@@ -37,9 +37,8 @@ import org.springframework.test.web.servlet.MockMvc;
  * …_pinsKnownDefect}, naming the slice that flips it.
  *
  * <p>Measured on {@code main} {@code aecf93279}: paths 1–6, 7a, 7c and 8 balance and move exactly
- * as expected; three paths are pinned — 7b (H-a, 649B), 7d (H-c, 649B) and 11 (seeded demo data,
- * R27 000,00, 646A). The red runs of their intended forms are in {@code
- * qa_cycle/evidence/phase92/649A/RED-RUNS.md}.
+ * as expected; two paths are pinned — 7b and 7d (649B); path 11 was closed by 646A. The red runs of
+ * their intended forms are in {@code qa_cycle/evidence/phase92/649A/RED-RUNS.md}.
  *
  * <p>646A swaps the harness internals to the effect columns; no expectation here changes except the
  * pins it closes (path 11). 649B flips the reversal pins (paths 7b, 7d).
@@ -413,20 +412,13 @@ class TrustEquationCharacterisationIntegrationTest {
   // --- Path 11: the seeded demo data ----------------------------------------------------------
 
   /**
-   * Path 11 — pinned defect, fixed in <b>646A</b> (R2, §16.3.15). First measurement of the baseline
-   * figure (§16.1.6, previously DEFERRED): on {@code main} {@code aecf93279} a freshly seeded legal
-   * demo tenant has cashbook R27 000,00 and client ledgers R0,00 — a difference of <b>R27
-   * 000,00</b>, matching the inventory's expected figure. {@code LegalDemoDataSeeder.saveTrustTxn}
-   * writes four {@code RECORDED} rows straight to the repository (deposits 50 000 + 15 000,
-   * payments 20 000 + 18 000) and no ledger card.
-   *
-   * <p>Intended (646A flips this pin): the seeder posts through {@code TrustPostingService}; EQ-2
-   * holds (cashbook R27 000,00 = client ledgers R30 000,00 + (−R3 000,00)) and one client is in
-   * debit by R3 000,00. Seeded into a separate tenant so the imbalance cannot leak into this
-   * class's firm-wide assertion.
+   * Path 11 — the seeded demo data (R2, §16.3.15). Pinned by 649A at a R27 000,00 difference
+   * (cashbook R27 000,00, stored cards R0,00); closed in 646A: the seeder posts through
+   * TrustPostingService, so EQ-2 holds — cashbook R27 000,00 = client ledgers R30 000,00 + (−R3
+   * 000,00). Seeded into a separate tenant (the demo seeder creates its own clients).
    */
   @Test
-  void seededDemoBooks_cashbookExceedsClientLedgersBy27000_pinsKnownDefect() {
+  void seededDemoBooks_cashbookEqualsClientLedgers() {
     var slug = "trust-eq-seeded-" + UUID.randomUUID().toString().substring(0, 8);
     var seededSchema =
         provisioningService.provisionTenant(slug, "Trust Eq Seeded Org", null).schemaName();
@@ -443,13 +435,12 @@ class TrustEquationCharacterisationIntegrationTest {
         .run(() -> snapshot[0] = harness.snapshot(accountIds.get(0)));
 
     assertThat(snapshot[0].cashbook()).as("seeded cashbook").isEqualByComparingTo("27000.00");
-    // PIN — intended (646A): client ledgers 27000.00 (30000.00 + -3000.00), difference 0.00.
     assertThat(snapshot[0].clientLedgers())
         .as("seeded client ledgers")
-        .isEqualByComparingTo("0.00");
+        .isEqualByComparingTo("27000.00");
     assertThat(snapshot[0].difference())
         .as("seeded cashbook − creditors")
-        .isEqualByComparingTo("27000.00");
+        .isEqualByComparingTo("0.00");
   }
 
   // --- helpers --------------------------------------------------------------------------------

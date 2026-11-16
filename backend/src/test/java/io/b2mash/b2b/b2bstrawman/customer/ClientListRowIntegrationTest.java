@@ -37,7 +37,7 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestTrustBalanceFactory;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustPostingService;
 import io.b2mash.b2b.b2bstrawman.view.SavedView;
 import io.b2mash.b2b.b2bstrawman.view.SavedViewRepository;
 import jakarta.persistence.EntityManagerFactory;
@@ -114,7 +114,7 @@ class ClientListRowIntegrationTest {
   @Autowired private InvoiceRepository invoiceRepository;
   @Autowired private FieldDefinitionRepository fieldDefinitionRepository;
   @Autowired private TrustAccountRepository trustAccountRepository;
-  @Autowired private ClientLedgerCardRepository clientLedgerCardRepository;
+  @Autowired private TrustPostingService trustPostingService;
   @Autowired private SavedViewRepository savedViewRepository;
   @Autowired private EntityTagService entityTagService;
   @Autowired private EntityManagerFactory entityManagerFactory;
@@ -235,14 +235,16 @@ class ClientListRowIntegrationTest {
 
           TestTrustBalanceFactory.seedTrustBalance(
               trustAccountRepository,
-              clientLedgerCardRepository,
+              trustPostingService,
               clientA,
-              new BigDecimal("15000.00"));
+              new BigDecimal("15000.00"),
+              ownerId);
           TestTrustBalanceFactory.seedTrustBalance(
               trustAccountRepository,
-              clientLedgerCardRepository,
+              trustPostingService,
               clientD,
-              new BigDecimal("200.00"));
+              new BigDecimal("200.00"),
+              ownerId);
 
           saveMatter("CLR Matter A1", clientA, false);
           saveMatter("CLR Matter A2", clientA, false);

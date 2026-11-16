@@ -211,9 +211,6 @@ export default async function ClientLedgersPage({
                           Total Deposits
                         </th>
                         <th className="pr-4 pb-3 text-right font-medium text-slate-500 dark:text-slate-400">
-                          Total Interest
-                        </th>
-                        <th className="pr-4 pb-3 text-right font-medium text-slate-500 dark:text-slate-400">
                           Total Payments
                         </th>
                         <th className="pr-4 pb-3 text-right font-medium text-slate-500 dark:text-slate-400">
@@ -247,9 +244,6 @@ export default async function ClientLedgersPage({
                           </td>
                           <td className="py-3 pr-4 text-right font-mono text-slate-700 tabular-nums dark:text-slate-300">
                             {formatCurrency(ledger.totalDeposits, currency)}
-                          </td>
-                          <td className="py-3 pr-4 text-right font-mono text-slate-700 tabular-nums dark:text-slate-300">
-                            {formatCurrency(ledger.totalInterestCredited, currency)}
                           </td>
                           <td className="py-3 pr-4 text-right font-mono text-slate-700 tabular-nums dark:text-slate-300">
                             {formatCurrency(ledger.totalPayments, currency)}

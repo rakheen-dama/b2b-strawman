@@ -20,8 +20,8 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountSer
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateTrustAccountRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.interest.InterestService.InterestAllocationLineResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.interest.InterestService.InterestAllocationResponse;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustPostingService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordDepositRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordPaymentRequest;
@@ -73,7 +73,7 @@ class InterestMatterAllocationIntegrationTest {
   @Autowired private TransactionTemplate transactionTemplate;
   @Autowired private TrustAccountService trustAccountService;
   @Autowired private TrustTransactionService transactionService;
-  @Autowired private TrustTransactionRepository transactionRepository;
+  @Autowired private TrustPostingService postingService;
 
   @Autowired
   private io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository customerProjectRepository;
@@ -457,7 +457,11 @@ class InterestMatterAllocationIntegrationTest {
     }
   }
 
-  /** A debit as written before the G89-F12 guard: APPROVED straight into the ledger. */
+  /**
+   * A debit as written before the G89-F12 guard: APPROVED straight into the ledger. Posted through
+   * {@link TrustPostingService} (Phase 92, 646A — the row CHECK refuses a posted row without {@code
+   * posted_at}); the posting service applies no sufficiency check, so the overdraft shape is kept.
+   */
   private void legacyApprovedPayment(
       UUID account, UUID client, UUID matter, String amount, LocalDate date) {
     int n = ++counter;
@@ -466,19 +470,21 @@ class InterestMatterAllocationIntegrationTest {
         () ->
             transactionTemplate.execute(
                 tx ->
-                    transactionRepository.save(
-                        new TrustTransaction(
-                            account,
-                            "PAYMENT",
-                            new BigDecimal(amount),
-                            client,
-                            matter,
-                            null,
-                            "IMA-LEGACY-PAY-" + n,
-                            "Pre-guard matter overdraft",
-                            date,
-                            "APPROVED",
-                            ownerId))));
+                    postingService.postOnApproval(
+                        postingService.recordAwaitingApproval(
+                            new TrustTransaction(
+                                account,
+                                "PAYMENT",
+                                new BigDecimal(amount),
+                                client,
+                                matter,
+                                null,
+                                "IMA-LEGACY-PAY-" + n,
+                                "Pre-guard matter overdraft",
+                                date,
+                                "AWAITING_APPROVAL",
+                                ownerId)),
+                        ownerId)));
   }
 
   /** Single-approval mode refuses self-approval — approve as the second member. */

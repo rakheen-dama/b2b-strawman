@@ -28,7 +28,7 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestTrustBalanceFactory;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustPostingService;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Set;
@@ -86,7 +86,7 @@ class CollectionsReadApiTest {
   @Autowired private InvoiceRepository invoiceRepository;
   @Autowired private CollectionActivityRepository activityRepository;
   @Autowired private TrustAccountRepository trustAccountRepository;
-  @Autowired private ClientLedgerCardRepository clientLedgerCardRepository;
+  @Autowired private TrustPostingService trustPostingService;
   @Autowired private MemberRepository memberRepository;
   @Autowired private ProjectRepository projectRepository;
   @Autowired private CustomerProjectRepository customerProjectRepository;
@@ -146,9 +146,10 @@ class CollectionsReadApiTest {
           seedSentInvoice(custEcho, "Echo Trust Co", "INV-E1", 1000, 20);
           TestTrustBalanceFactory.seedTrustBalance(
               trustAccountRepository,
-              clientLedgerCardRepository,
+              trustPostingService,
               custEcho,
-              BigDecimal.valueOf(84200));
+              BigDecimal.valueOf(84200),
+              ownerMemberId);
 
           // Two activities on Alpha (591A.4 status+reason visibility + drill-in paging).
           activityRepository.save(

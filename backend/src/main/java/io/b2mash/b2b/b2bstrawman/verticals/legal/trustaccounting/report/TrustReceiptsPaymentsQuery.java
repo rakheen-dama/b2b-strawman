@@ -96,7 +96,9 @@ public class TrustReceiptsPaymentsQuery implements ReportQuery {
           "clientName",
           tx.getCustomerId() != null ? customerNames.getOrDefault(tx.getCustomerId(), "-") : "-");
 
-      boolean isCredit = isReceiptType(tx.getTransactionType());
+      // Receipt or payment by the row's own client-ledger effect (ADR-378). Not cashbook_effect:
+      // transfers between clients would fall out of both columns and change the report.
+      boolean isCredit = tx.getLedgerEffect().signum() > 0;
       if (isCredit) {
         row.put("credit", tx.getAmount());
         row.put("debit", BigDecimal.ZERO);
@@ -110,10 +112,6 @@ public class TrustReceiptsPaymentsQuery implements ReportQuery {
       rows.add(row);
     }
     return rows;
-  }
-
-  private boolean isReceiptType(String type) {
-    return List.of("DEPOSIT", "INTEREST_CREDIT", "TRANSFER_IN").contains(type);
   }
 
   private Map<String, Object> computeSummary(List<Map<String, Object>> rows) {

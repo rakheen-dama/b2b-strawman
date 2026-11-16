@@ -2,6 +2,8 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -88,6 +90,23 @@ public class TrustTransaction {
 
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
+
+  // --- Posting effects (Phase 92, ADR-378). Written only by TrustPostingService.applyPosting. The
+  // initial values matter: Hibernate inserts explicit values, so the column defaults never apply
+  // to a JPA insert and an unposted row must carry CLIENT / 0 / 0 / null (chk_trust_txn_posting).
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "ledger", nullable = false, length = 20)
+  private TrustLedger ledger = TrustLedger.CLIENT;
+
+  @Column(name = "cashbook_effect", nullable = false, precision = 15, scale = 2)
+  private BigDecimal cashbookEffect = BigDecimal.ZERO;
+
+  @Column(name = "ledger_effect", nullable = false, precision = 15, scale = 2)
+  private BigDecimal ledgerEffect = BigDecimal.ZERO;
+
+  @Column(name = "posted_at")
+  private Instant postedAt;
 
   protected TrustTransaction() {}
 
@@ -215,6 +234,37 @@ public class TrustTransaction {
 
   public Instant getCreatedAt() {
     return createdAt;
+  }
+
+  /** The creditor ledger this row moves (ADR-378). */
+  public TrustLedger getLedger() {
+    return ledger;
+  }
+
+  /** Signed effect on the cashbook; 0 while unposted (and, in 646A, for reversals). */
+  public BigDecimal getCashbookEffect() {
+    return cashbookEffect;
+  }
+
+  /** Signed effect on {@link #getLedger()}; 0 while unposted (and, in 646A, for reversals). */
+  public BigDecimal getLedgerEffect() {
+    return ledgerEffect;
+  }
+
+  /** When the row was posted; null while AWAITING_APPROVAL or REJECTED. */
+  public Instant getPostedAt() {
+    return postedAt;
+  }
+
+  /**
+   * Writes the posting effects. Package-private and called only by {@link TrustPostingService}
+   * (ArchUnit {@code TrustPostingRulesTest}, ADR-378): effects come only from the registry.
+   */
+  void applyPosting(TrustLedgerEffect effect, Instant postedAt) {
+    this.ledger = effect.ledger();
+    this.cashbookEffect = effect.cashbookEffect();
+    this.ledgerEffect = effect.ledgerEffect();
+    this.postedAt = postedAt;
   }
 
   // --- Mutable setters (status lifecycle + reversal linking) ---

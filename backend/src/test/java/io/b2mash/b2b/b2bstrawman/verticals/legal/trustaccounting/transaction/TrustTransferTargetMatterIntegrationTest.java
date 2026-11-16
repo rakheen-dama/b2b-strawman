@@ -20,7 +20,6 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccount;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountType;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDate;
@@ -67,7 +66,7 @@ class TrustTransferTargetMatterIntegrationTest {
   @Autowired private TransactionTemplate transactionTemplate;
   @Autowired private TrustAccountRepository trustAccountRepository;
   @Autowired private TrustTransactionRepository transactionRepository;
-  @Autowired private ClientLedgerCardRepository ledgerCardRepository;
+  @Autowired private TrustLedgerQueryRepository ledgerQueries;
   @Autowired private CustomerRepository customerRepository;
   @Autowired private ProjectRepository projectRepository;
   @Autowired private Clock clock;
@@ -138,8 +137,8 @@ class TrustTransferTargetMatterIntegrationTest {
     assertThat(matterBalance(sourceMatter)).isEqualByComparingTo("600.00");
     assertThat(matterBalance(targetMatter)).isEqualByComparingTo("400.00");
     // Each client's portal trust view equals its firm ledger card
-    assertThat(portalBalance(source)).isEqualByComparingTo(cardBalance(source));
-    assertThat(portalBalance(target)).isEqualByComparingTo(cardBalance(target));
+    assertThat(portalBalance(source)).isEqualByComparingTo(clientBalance(source));
+    assertThat(portalBalance(target)).isEqualByComparingTo(clientBalance(target));
     assertThat(portalBalance(target)).isEqualByComparingTo("400.00");
   }
 
@@ -161,8 +160,8 @@ class TrustTransferTargetMatterIntegrationTest {
                     "Matter Unlinked Target Source Matter is not linked to client Unlinked Target"))
         .andExpect(jsonPath("$.code").value("MATTER_NOT_LINKED_TO_CLIENT"));
 
-    assertThat(cardBalance(source)).isEqualByComparingTo("1000.00");
-    assertThat(cardBalanceOrNull(target)).isNull();
+    assertThat(clientBalance(source)).isEqualByComparingTo("1000.00");
+    assertThat(clientBalanceOrNull(target)).isNull();
     assertThat(matterBalance(sourceMatter)).isEqualByComparingTo("1000.00");
   }
 
@@ -179,7 +178,7 @@ class TrustTransferTargetMatterIntegrationTest {
         .andExpect(jsonPath("$.title").value("Matter required"))
         .andExpect(
             jsonPath("$.detail").value("A matter is required for client trust transactions"));
-    assertThat(cardBalanceOrNull(target)).isNull();
+    assertThat(clientBalanceOrNull(target)).isNull();
   }
 
   @Test
@@ -236,8 +235,8 @@ class TrustTransferTargetMatterIntegrationTest {
               assertThat(r.getCustomerId()).isEqualTo(target);
               assertThat(r.getProjectId()).isEqualTo(targetMatter);
             });
-    assertThat(cardBalance(source)).isEqualByComparingTo("1000.00");
-    assertThat(cardBalance(target)).isEqualByComparingTo("0.00");
+    assertThat(clientBalance(source)).isEqualByComparingTo("1000.00");
+    assertThat(clientBalance(target)).isEqualByComparingTo("0.00");
     assertThat(matterBalance(sourceMatter)).isEqualByComparingTo("1000.00");
     assertThat(matterBalance(targetMatter)).isEqualByComparingTo("0.00");
   }
@@ -309,22 +308,23 @@ class TrustTransferTargetMatterIntegrationTest {
   }
 
   private BigDecimal matterBalance(UUID matter) {
-    var balance = as(() -> transactionRepository.calculateBalanceByProjectId(matter));
+    var balance = as(() -> ledgerQueries.matterBalance(matter));
     return balance == null ? BigDecimal.ZERO : balance;
   }
 
-  private BigDecimal cardBalance(UUID client) {
-    var balance = cardBalanceOrNull(client);
-    assertThat(balance).as("ledger card of %s", client).isNotNull();
+  private BigDecimal clientBalance(UUID client) {
+    var balance = clientBalanceOrNull(client);
+    assertThat(balance).as("client ledger of %s", client).isNotNull();
     return balance;
   }
 
-  private BigDecimal cardBalanceOrNull(UUID client) {
+  /** The client's derived balance on the account; null when the client has no posted row. */
+  private BigDecimal clientBalanceOrNull(UUID client) {
     return as(
         () ->
-            ledgerCardRepository
-                .findByTrustAccountIdAndCustomerId(trustAccountId, client)
-                .map(card -> card.getBalance())
+            ledgerQueries
+                .clientSummary(trustAccountId, client)
+                .map(ClientBalanceRow::getBalance)
                 .orElse(null));
   }
 

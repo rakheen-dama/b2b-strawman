@@ -28,9 +28,6 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTran
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTransactionRecordedEvent;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestment;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentRepository;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCard;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
-import jakarta.persistence.EntityManager;
 import jakarta.validation.constraints.NotBlank;
 import java.math.BigDecimal;
 import java.time.Clock;
@@ -41,7 +38,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,7 +71,8 @@ public class TrustTransactionService {
   static final String MATTER_REQUIRED_DETAIL = "A matter is required for client trust transactions";
 
   private final TrustTransactionRepository transactionRepository;
-  private final ClientLedgerCardRepository ledgerCardRepository;
+  private final TrustPostingService postingService;
+  private final TrustLedgerQueryRepository ledgerQueries;
   private final TrustInvestmentRepository trustInvestmentRepository;
   private final TrustAccountRepository trustAccountRepository;
   private final CustomerRepository customerRepository;
@@ -87,13 +84,13 @@ public class TrustTransactionService {
   private final PaymentEventRepository paymentEventRepository;
   private final VerticalModuleGuard moduleGuard;
   private final AuditService auditService;
-  private final EntityManager entityManager;
   private final ApplicationEventPublisher eventPublisher;
   private final Clock clock;
 
   public TrustTransactionService(
       TrustTransactionRepository transactionRepository,
-      ClientLedgerCardRepository ledgerCardRepository,
+      TrustPostingService postingService,
+      TrustLedgerQueryRepository ledgerQueries,
       TrustInvestmentRepository trustInvestmentRepository,
       TrustAccountRepository trustAccountRepository,
       CustomerRepository customerRepository,
@@ -105,11 +102,11 @@ public class TrustTransactionService {
       PaymentEventRepository paymentEventRepository,
       VerticalModuleGuard moduleGuard,
       AuditService auditService,
-      EntityManager entityManager,
       ApplicationEventPublisher eventPublisher,
       Clock clock) {
     this.transactionRepository = transactionRepository;
-    this.ledgerCardRepository = ledgerCardRepository;
+    this.postingService = postingService;
+    this.ledgerQueries = ledgerQueries;
     this.trustInvestmentRepository = trustInvestmentRepository;
     this.trustAccountRepository = trustAccountRepository;
     this.customerRepository = customerRepository;
@@ -121,7 +118,6 @@ public class TrustTransactionService {
     this.paymentEventRepository = paymentEventRepository;
     this.moduleGuard = moduleGuard;
     this.auditService = auditService;
-    this.entityManager = entityManager;
     this.eventPublisher = eventPublisher;
     this.clock = clock;
   }
@@ -361,22 +357,10 @@ public class TrustTransactionService {
             "RECORDED",
             memberId);
 
-    var saved = transactionRepository.save(transaction);
-
-    // Upsert client ledger card — use FOR UPDATE lock to prevent lost updates on concurrent
-    // deposits. If two concurrent inserts race, the second hits the unique constraint;
-    // we catch that and re-query with the lock to update the now-existing row.
-    var ledgerCard =
-        ledgerCardRepository
-            .findByAccountAndCustomerForUpdate(trustAccountId, request.clientId())
-            .orElse(null);
-
-    if (ledgerCard == null) {
-      ledgerCard = upsertNewLedgerCard(trustAccountId, request.clientId());
-    }
-
-    ledgerCard.addDeposit(request.amount(), request.transactionDate());
-    ledgerCardRepository.save(ledgerCard);
+    // Serialise with every other posting for this client (ADR-231 lock kept, ADR-378): ensure the
+    // lock anchor exists, lock it, then post. The balance is derived from the posted row.
+    postingService.lockClient(trustAccountId, request.clientId());
+    var saved = postingService.record(transaction);
 
     auditService.log(
         AuditEventBuilder.builder()
@@ -464,46 +448,20 @@ public class TrustTransactionService {
             ? request.targetClientId()
             : request.sourceClientId();
 
-    // Acquire locks in deterministic order
-    var firstLedger =
-        ledgerCardRepository
-            .findByAccountAndCustomerForUpdate(trustAccountId, firstId)
-            .orElse(null);
-    var secondLedger =
-        ledgerCardRepository
-            .findByAccountAndCustomerForUpdate(trustAccountId, secondId)
-            .orElse(null);
+    // Acquire the two clients' lock anchors in deterministic order (ADR-231, ADR-378)
+    postingService.lockClient(trustAccountId, firstId);
+    postingService.lockClient(trustAccountId, secondId);
 
-    // Resolve source and target ledger cards
-    ClientLedgerCard sourceLedger;
-    ClientLedgerCard targetLedger;
-    if (firstId.equals(request.sourceClientId())) {
-      sourceLedger = firstLedger;
-      targetLedger = secondLedger;
-    } else {
-      sourceLedger = secondLedger;
-      targetLedger = firstLedger;
-    }
-
-    // Source ledger must exist and have sufficient balance
-    if (sourceLedger == null) {
+    // Source must have a sufficient derived balance (a client with no posted row has R0,00)
+    var sourceAvailable =
+        ledgerQueries.clientBalance(trustAccountId, request.sourceClientId(), null);
+    if (sourceAvailable.compareTo(request.amount()) < 0) {
       throw new InvalidStateException(
           "Insufficient trust balance",
           "Insufficient trust balance for "
               + sourceCustomer.getName()
               + ". Available: "
-              + rand(BigDecimal.ZERO)
-              + ", Requested: "
-              + rand(request.amount()));
-    }
-
-    if (sourceLedger.getBalance().compareTo(request.amount()) < 0) {
-      throw new InvalidStateException(
-          "Insufficient trust balance",
-          "Insufficient trust balance for "
-              + sourceCustomer.getName()
-              + ". Available: "
-              + rand(sourceLedger.getBalance())
+              + rand(sourceAvailable)
               + ", Requested: "
               + rand(request.amount()));
     }
@@ -545,19 +503,8 @@ public class TrustTransactionService {
             "RECORDED",
             memberId);
 
-    var savedOut = transactionRepository.save(transferOut);
-    var savedIn = transactionRepository.save(transferIn);
-
-    // Update source ledger
-    sourceLedger.debitBalance(request.amount(), request.transactionDate());
-    ledgerCardRepository.save(sourceLedger);
-
-    // Upsert target ledger — handle concurrent insert race
-    if (targetLedger == null) {
-      targetLedger = upsertNewLedgerCard(trustAccountId, request.targetClientId());
-    }
-    targetLedger.creditBalance(request.amount(), request.transactionDate());
-    ledgerCardRepository.save(targetLedger);
+    var savedOut = postingService.record(transferOut);
+    var savedIn = postingService.record(transferIn);
 
     auditService.log(
         AuditEventBuilder.builder()
@@ -652,7 +599,7 @@ public class TrustTransactionService {
             "AWAITING_APPROVAL",
             memberId);
 
-    var saved = transactionRepository.save(transaction);
+    var saved = postingService.recordAwaitingApproval(transaction);
 
     auditService.log(
         AuditEventBuilder.builder()
@@ -768,7 +715,7 @@ public class TrustTransactionService {
 
     transaction.setInvoiceId(request.invoiceId());
 
-    var saved = transactionRepository.save(transaction);
+    var saved = postingService.recordAwaitingApproval(transaction);
 
     auditService.log(
         AuditEventBuilder.builder()
@@ -843,7 +790,7 @@ public class TrustTransactionService {
             "AWAITING_APPROVAL",
             memberId);
 
-    var saved = transactionRepository.save(transaction);
+    var saved = postingService.recordAwaitingApproval(transaction);
 
     auditService.log(
         AuditEventBuilder.builder()
@@ -944,10 +891,8 @@ public class TrustTransactionService {
     if (transaction.getApprovedBy() == null) {
       // First approval in dual mode
       // Recorder CAN be the first approver in dual mode (relaxed self-approval)
-      transaction.setApprovedBy(approverId);
-      transaction.setApprovedAt(Instant.now());
       // Status stays AWAITING_APPROVAL — second approval still needed
-      transactionRepository.save(transaction);
+      postingService.recordFirstApproval(transaction, approverId);
 
       auditService.log(
           AuditEventBuilder.builder()
@@ -991,8 +936,10 @@ public class TrustTransactionService {
    */
   private void performApprovalCompletion(
       TrustTransaction transaction, UUID approverId, boolean isDualMode) {
-    // Check balance for debit types
-    if (DEBIT_TYPES.contains(transaction.getTransactionType())) {
+    // Check balance for the types that post on approval (PAYMENT, FEE_TRANSFER, REFUND). A credit
+    // REVERSAL awaiting approval skips this block and posts at zero effect (646A/HEAD — H-a).
+    var type = TrustTransactionType.of(transaction.getTransactionType());
+    if (type.approval() == TrustTransactionType.Approval.REQUIRED) {
       var customer =
           customerRepository
               .findById(transaction.getCustomerId())
@@ -1001,14 +948,13 @@ public class TrustTransactionService {
                       new ResourceNotFoundException(
                           EntityNoun.CLIENT, transaction.getCustomerId()));
 
-      var ledgerCard =
-          ledgerCardRepository
-              .findByAccountAndCustomerForUpdate(
-                  transaction.getTrustAccountId(), transaction.getCustomerId())
-              .orElse(null);
+      // Serialise with the client's other postings, then read the derived balance (ADR-378)
+      postingService.lockClient(transaction.getTrustAccountId(), transaction.getCustomerId());
+      var availableBalance =
+          ledgerQueries.clientBalance(
+              transaction.getTrustAccountId(), transaction.getCustomerId(), null);
 
-      if (ledgerCard == null || ledgerCard.getBalance().compareTo(transaction.getAmount()) < 0) {
-        var availableBalance = ledgerCard != null ? ledgerCard.getBalance() : BigDecimal.ZERO;
+      if (availableBalance.compareTo(transaction.getAmount()) < 0) {
         throw new InvalidStateException(
             "Insufficient trust balance",
             "Insufficient trust balance for "
@@ -1020,7 +966,7 @@ public class TrustTransactionService {
       }
 
       // G89-F12: a debit on a matter (the fee transfer's matter is inferred from its fee note at
-      // record time) must also be covered by this client's money on that matter. The card lock
+      // record time) must also be covered by this client's money on that matter. The anchor lock
       // above serialises the client's postings; this transaction is still AWAITING_APPROVAL, so
       // the cell sum excludes it.
       requireMatterCellCovers(
@@ -1029,22 +975,6 @@ public class TrustTransactionService {
           customer.getName(),
           transaction.getProjectId(),
           transaction.getAmount());
-
-      // Update ledger based on transaction type
-      switch (transaction.getTransactionType()) {
-        case "PAYMENT" ->
-            ledgerCard.addPayment(transaction.getAmount(), transaction.getTransactionDate());
-        case "FEE_TRANSFER" ->
-            ledgerCard.addFeeTransfer(transaction.getAmount(), transaction.getTransactionDate());
-        case "REFUND" ->
-            ledgerCard.debitBalance(transaction.getAmount(), transaction.getTransactionDate());
-        default ->
-            throw new InvalidStateException(
-                "Unknown debit type",
-                "Cannot approve transaction of type: " + transaction.getTransactionType());
-      }
-
-      ledgerCardRepository.save(ledgerCard);
 
       // 441.9 / Phase 88 U15 (ADR-347, N-5): a fee transfer posts its real amount through the one
       // payment entry point — PARTIALLY_PAID when it leaves a balance, PAID when it clears it, and
@@ -1078,8 +1008,8 @@ public class TrustTransactionService {
       transaction.setApprovedBy(approverId);
       transaction.setApprovedAt(Instant.now());
     }
-    transaction.setStatus("APPROVED");
-    transactionRepository.save(transaction);
+    // APPROVED, effects from the registry, posted now (TrustPostingService, ADR-378)
+    postingService.postOnApproval(transaction, approverId);
 
     auditService.log(
         AuditEventBuilder.builder()
@@ -1139,11 +1069,7 @@ public class TrustTransactionService {
           "Transaction must be in AWAITING_APPROVAL status to be rejected");
     }
 
-    transaction.setRejectedBy(rejecterId);
-    transaction.setRejectedAt(Instant.now());
-    transaction.setRejectionReason(reason);
-    transaction.setStatus("REJECTED");
-    transactionRepository.save(transaction);
+    postingService.reject(transaction, rejecterId, reason);
 
     // G89-F87 (D41): an investment is created ACTIVE while its placement PAYMENT awaits approval.
     // A rejected placement never moved the money, so the investment is CANCELLED (terminal) in the
@@ -1213,12 +1139,6 @@ public class TrustTransactionService {
   }
 
   // --- 440.9: Transaction Reversal ---
-
-  private static final Set<String> CREDIT_TYPES =
-      Set.of("DEPOSIT", "TRANSFER_IN", "INTEREST_CREDIT");
-
-  private static final Set<String> DEBIT_TYPES =
-      Set.of("PAYMENT", "TRANSFER_OUT", "FEE_TRANSFER", "REFUND");
 
   @Transactional
   public TrustTransactionResponse reverseTransaction(UUID transactionId, String reason) {
@@ -1291,22 +1211,16 @@ public class TrustTransactionService {
 
     var memberId = RequestScopes.requireMemberId();
 
-    // TRANSFER_OUT reversal: reverse both legs (TRANSFER_OUT + paired TRANSFER_IN)
-    if ("TRANSFER_OUT".equals(original.getTransactionType())) {
+    // The original type's reversal rule (registry, ADR-378): PAIR (TRANSFER_OUT) reverses both
+    // legs; IMMEDIATE (debits — the money comes back) posts at once; NEEDS_APPROVAL (a deposit —
+    // the money leaves) awaits approval. Anything else (a REVERSAL) cannot be reversed.
+    var reversalRule = TrustTransactionType.of(original.getTransactionType()).reversal();
+    if (reversalRule == TrustTransactionType.Reversal.PAIR) {
       return reverseTransferOut(original, reason, memberId);
     }
 
-    boolean isCreditType = CREDIT_TYPES.contains(original.getTransactionType());
-    boolean isDebitType = DEBIT_TYPES.contains(original.getTransactionType());
-
-    // Determine reversal status based on original type
-    // Debit reversals (add money back) are immediate; credit reversals (remove money) need approval
-    String reversalStatus;
-    if (isDebitType) {
-      reversalStatus = "RECORDED";
-    } else if (isCreditType) {
-      reversalStatus = "AWAITING_APPROVAL";
-    } else {
+    boolean isDebitType = reversalRule == TrustTransactionType.Reversal.IMMEDIATE;
+    if (!isDebitType && reversalRule != TrustTransactionType.Reversal.NEEDS_APPROVAL) {
       throw new InvalidStateException(
           "Cannot reverse transaction",
           "Transaction type " + original.getTransactionType() + " cannot be reversed");
@@ -1326,35 +1240,21 @@ public class TrustTransactionService {
             reversalRef,
             reason,
             LocalDate.now(clock),
-            reversalStatus,
+            null, // status: decided by postReversal from the original's reversal rule
             memberId);
 
-    // Set reversal_of to link to the original
-    reversal.setReversalOf(original.getId());
+    // A debit reversal moves the client's balance: serialise with its other postings first
+    if (isDebitType && original.getCustomerId() != null) {
+      postingService.lockClient(original.getTrustAccountId(), original.getCustomerId());
+    }
 
-    var savedReversal = transactionRepository.save(reversal);
+    // Links reversal_of. A debit reversal (immediate) posts RECORDED (its final status, no
+    // approval needed) and marks the original REVERSED with its effects zeroed, so the money comes
+    // back to the derived balance (646A keeps HEAD semantics; 649B posts the contra entry). A
+    // credit reversal is saved AWAITING_APPROVAL and leaves the original untouched.
+    var savedReversal = postingService.postReversal(reversal, original);
 
-    // For debit reversals (immediate): mark original as REVERSED and update ledger.
-    // RECORDED status for debit reversals is the final status — no approval needed,
-    // analogous to DEPOSIT's RECORDED status. The cashbook query includes RECORDED.
     if (isDebitType) {
-      original.setReversedById(savedReversal.getId());
-      original.setStatus("REVERSED");
-      transactionRepository.save(original);
-
-      if (original.getCustomerId() != null) {
-        var ledgerCard =
-            ledgerCardRepository
-                .findByAccountAndCustomerForUpdate(
-                    original.getTrustAccountId(), original.getCustomerId())
-                .orElse(null);
-
-        if (ledgerCard != null) {
-          ledgerCard.creditBalance(original.getAmount(), LocalDate.now(clock));
-          ledgerCardRepository.save(ledgerCard);
-        }
-      }
-
       // GAP-L-70: cascade FEE_TRANSFER reversal back into the invoice domain.
       // When the trust ledger rolls back, the linked invoice must roll back symmetrically
       // (payment_event deleted; PAID/PARTIALLY_PAID -> SENT or PARTIALLY_PAID, recomputed from the
@@ -1426,7 +1326,7 @@ public class TrustTransactionService {
                         "original_transaction_id", original.getId().toString(),
                         "original_type", original.getTransactionType(),
                         "amount", original.getAmount().toString(),
-                        "reversal_status", reversalStatus,
+                        "reversal_status", savedReversal.getStatus(),
                         "reason", reason)))
             .build());
 
@@ -1472,34 +1372,18 @@ public class TrustTransactionService {
     UUID secondId =
         sourceCustomerId.compareTo(targetCustomerId) < 0 ? targetCustomerId : sourceCustomerId;
 
-    var firstLedger =
-        ledgerCardRepository
-            .findByAccountAndCustomerForUpdate(original.getTrustAccountId(), firstId)
-            .orElse(null);
-    var secondLedger =
-        ledgerCardRepository
-            .findByAccountAndCustomerForUpdate(original.getTrustAccountId(), secondId)
-            .orElse(null);
-
-    // Resolve source and target ledger cards
-    ClientLedgerCard sourceLedger;
-    ClientLedgerCard targetLedger;
-    if (firstId.equals(sourceCustomerId)) {
-      sourceLedger = firstLedger;
-      targetLedger = secondLedger;
-    } else {
-      sourceLedger = secondLedger;
-      targetLedger = firstLedger;
-    }
+    postingService.lockClient(original.getTrustAccountId(), firstId);
+    postingService.lockClient(original.getTrustAccountId(), secondId);
 
     // G89-F12: undoing the TRANSFER_IN debits the target, so the target must still hold the money —
-    // on its card and on the transfer's matter (the TRANSFER_IN is still posted, so both sums
-    // include it). Without this the target could already have spent it.
+    // on its derived balance and on the transfer's matter (the TRANSFER_IN is still posted, so
+    // both sums include it). Without this the target could already have spent it.
     var targetCustomer =
         customerRepository
             .findById(targetCustomerId)
             .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.CLIENT, targetCustomerId));
-    var targetAvailable = targetLedger != null ? targetLedger.getBalance() : BigDecimal.ZERO;
+    var targetAvailable =
+        ledgerQueries.clientBalance(original.getTrustAccountId(), targetCustomerId, null);
     if (targetAvailable.compareTo(pairedTransferIn.getAmount()) < 0) {
       throw new InvalidStateException(
           "Insufficient trust balance",
@@ -1531,10 +1415,11 @@ public class TrustTransactionService {
             reversalRef,
             reason,
             LocalDate.now(clock),
-            "RECORDED",
+            null, // status: decided by postReversal
             memberId);
-    outReversal.setReversalOf(original.getId());
-    var savedOutReversal = transactionRepository.save(outReversal);
+    // Posts the reversal and marks the TRANSFER_OUT REVERSED with its effect zeroed (credits the
+    // source back — HEAD semantics, 646A)
+    var savedOutReversal = postingService.postReversal(outReversal, original);
 
     // Create reversal for the TRANSFER_IN (debits target)
     var inReversal =
@@ -1548,32 +1433,11 @@ public class TrustTransactionService {
             reversalRef,
             reason,
             LocalDate.now(clock),
-            "RECORDED",
+            null, // status: decided by postReversal
             memberId);
-    inReversal.setReversalOf(pairedTransferIn.getId());
-    var savedInReversal = transactionRepository.save(inReversal);
-
-    // Mark both originals as REVERSED
-    original.setReversedById(savedOutReversal.getId());
-    original.setStatus("REVERSED");
-    transactionRepository.save(original);
-
-    pairedTransferIn.setReversedById(savedInReversal.getId());
-    pairedTransferIn.setStatus("REVERSED");
-    transactionRepository.save(pairedTransferIn);
-
-    // Update both ledger cards (locked above): credit source (add money back), debit target
-    // Credit source (add back transferred amount)
-    if (sourceLedger != null) {
-      sourceLedger.creditBalance(original.getAmount(), LocalDate.now(clock));
-      ledgerCardRepository.save(sourceLedger);
-    }
-
-    // Debit target (remove transferred amount)
-    if (targetLedger != null) {
-      targetLedger.debitBalance(original.getAmount(), LocalDate.now(clock));
-      ledgerCardRepository.save(targetLedger);
-    }
+    // Posts the reversal and marks the TRANSFER_IN REVERSED with its effect zeroed (debits the
+    // target)
+    postingService.postReversal(inReversal, pairedTransferIn);
 
     auditService.log(
         AuditEventBuilder.builder()
@@ -1607,8 +1471,7 @@ public class TrustTransactionService {
         .findById(trustAccountId)
         .orElseThrow(() -> new ResourceNotFoundException("TrustAccount", trustAccountId));
 
-    return new CashbookBalanceResponse(
-        transactionRepository.calculateCashbookBalance(trustAccountId));
+    return new CashbookBalanceResponse(ledgerQueries.cashbook(trustAccountId, null));
   }
 
   // --- Private Helpers ---
@@ -1617,9 +1480,8 @@ public class TrustTransactionService {
    * G89-F28 (D36): every new client trust posting names a matter linked to the client (directly,
    * {@code projects.customer_id}, or through {@code customer_projects} — the client's matter list).
    * A row without a matter never reaches the portal, whose trust view is per client and matter, so
-   * the client's portal balance would fall short of the firm ledger. Firm-level rows without a
-   * client (INTEREST_LPFF) and rows derived from an existing row (reversals, interest credits) do
-   * not pass through here.
+   * the client's portal balance would fall short of the firm ledger. Rows derived from an existing
+   * row (reversals) do not pass through here.
    */
   private void requireClientMatter(Customer client, UUID matterId) {
     if (matterId == null) {
@@ -1654,19 +1516,19 @@ public class TrustTransactionService {
 
   /**
    * G89-F12: a debit on a matter must be covered by this client's money on that matter in this
-   * trust account (the matter sub-ledger cell), not only by the client card — otherwise a refund of
-   * "matter + client-level credit" leaves the matter negative while the closure gate (which reads
-   * the matter) and the client card disagree, and a co-client can spend another client's money on a
-   * shared matter. No-op for an unmattered debit (the client card check covers it). Callers hold
-   * the client card's row lock, so the cell sum cannot race with another posting for the client.
+   * trust account (the matter sub-ledger cell), not only by the client balance — otherwise a refund
+   * of "matter + client-level credit" leaves the matter negative while the closure gate (which
+   * reads the matter) and the client balance disagree, and a co-client can spend another client's
+   * money on a shared matter. No-op for an unmattered debit (the client balance check covers it).
+   * Callers hold the client's lock anchor, so the cell sum cannot race with another posting for the
+   * client.
    */
   private void requireMatterCellCovers(
       UUID trustAccountId, UUID customerId, String clientName, UUID projectId, BigDecimal amount) {
     if (projectId == null) {
       return;
     }
-    var available =
-        transactionRepository.calculateMatterClientBalance(trustAccountId, customerId, projectId);
+    var available = ledgerQueries.matterCellBalance(trustAccountId, customerId, projectId, null);
     if (available == null) {
       available = BigDecimal.ZERO;
     }
@@ -1696,36 +1558,6 @@ public class TrustTransactionService {
   /** A rand amount for a refusal message, in the house en-ZA format ("R10 055,21"; G89-F40). */
   private static String rand(BigDecimal amount) {
     return VariableFormatter.formatCurrencyText(amount, TRUST_LOCALE);
-  }
-
-  /**
-   * Atomically ensures a ClientLedgerCard exists for the given account and customer. Uses a native
-   * INSERT ... ON CONFLICT DO NOTHING to handle the race where two concurrent transactions both see
-   * no existing row. After the upsert, re-queries with FOR UPDATE to lock and return the row.
-   */
-  private ClientLedgerCard upsertNewLedgerCard(UUID trustAccountId, UUID customerId) {
-    entityManager
-        .createNativeQuery(
-            """
-            INSERT INTO client_ledger_cards (id, trust_account_id, customer_id, balance,
-                total_deposits, total_payments, total_fee_transfers, total_interest_credited,
-                created_at, updated_at)
-            VALUES (gen_random_uuid(), :accountId, :customerId, 0, 0, 0, 0, 0, now(), now())
-            ON CONFLICT (trust_account_id, customer_id) DO NOTHING
-            """)
-        .setParameter("accountId", trustAccountId)
-        .setParameter("customerId", customerId)
-        .executeUpdate();
-
-    return ledgerCardRepository
-        .findByAccountAndCustomerForUpdate(trustAccountId, customerId)
-        .orElseThrow(
-            () ->
-                new IllegalStateException(
-                    "Ledger card missing after upsert for account="
-                        + trustAccountId
-                        + " customer="
-                        + customerId));
   }
 
   /**

@@ -4,7 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedger;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedgerEffect;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionType;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDate;
@@ -47,41 +50,34 @@ import org.springframework.stereotype.Component;
  *       without changing a single expectation except the pins it closes (task 646.9).
  * </ol>
  *
- * <h2>Version 0 (slice 649A) — the HEAD model</h2>
+ * <h2>Version 1 (646A) — effect columns; EQ-6 with the 646A reversal rule</h2>
  *
- * <p>Before the effect columns exist (646A), the oracle maps the terms onto the HEAD schema:
+ * <p>Every posted row carries its own effects (ADR-378), so every term is a sum over them, as at
+ * any date — v0's split between the stored card (today) and a derived sum (the past) is gone:
  *
  * <ul>
- *   <li>"Posted" = {@code status IN ('RECORDED','APPROVED')} (no {@code posted_at} yet).
- *   <li>{@code cashbook(A,D)} — the HEAD cashbook sign table ({@code
- *       TrustTransactionRepository.calculateCashbookBalance}: DEPOSIT, INTEREST_CREDIT +; PAYMENT,
- *       FEE_TRANSFER, REFUND, INTEREST_LPFF −; transfers and REVERSAL 0) over posted rows dated
- *       {@code <= D}.
- *   <li>{@code clientLedgers(A, today)} — the <b>stored</b> card total, {@code
- *       SUM(client_ledger_cards.balance)} for the account. This is the v0 comparison: cashbook
- *       against the stored cards. It is the same query as {@code
- *       ClientLedgerCardRepository.calculateTotalTrustBalance}, so at v0 the {@code
- *       ClientLedgerService} half of {@link #assertServicesAgree} is a tautology; it becomes a real
- *       check once 646A derives this term from the effect columns.
- *   <li>{@code clientLedgers(A, D < today)} — cards have no history, so the HEAD client sign table
- *       (DEPOSIT, TRANSFER_IN, INTEREST_CREDIT +; PAYMENT, TRANSFER_OUT, FEE_TRANSFER, REFUND,
- *       INTEREST_LPFF −) summed over every client's posted rows dated {@code <= D}. Not exercised
- *       by 649A's paths.
- *   <li>{@code investmentCreditors}, {@code fundLedger}, {@code unidentified}, {@code interAccount}
- *       — zero: no such ledgers on HEAD (648A, 647A, 647B, 648A add them).
- *   <li>{@link #clientLedger} — one client's stored card balance, zero when the client has no card.
- *   <li>EQ-4 (itemised unidentified deposits, 647B), EQ-5 (per investment, 648A) and EQ-6 (every
- *       posted row's effects re-derived from the registry, 646A) are no-ops until their columns
- *       exist.
- *   <li>{@link #assertBankAgrees} — statement closing balance + HEAD outstanding deposits − HEAD
- *       outstanding payments (posted, unmatched, dated {@code <= periodEnd}) against {@code
- *       cashbook(A, periodEnd)}. <b>Unexercised until 646C</b> (no 649A test calls it); the column
- *       names in {@code STATEMENT_SQL} and {@code OUTSTANDING_SQL} ({@code
- *       bank_statements.closing_balance}, {@code trust_transactions.bank_statement_line_id}) were
- *       checked against the tenant V1 baseline.
+ *   <li>"Posted" = {@code posted_at IS NOT NULL} (§16.1.2).
+ *   <li>{@code cashbook(A,D)} — {@code SUM(cashbook_effect)} over posted rows dated {@code <= D}.
+ *   <li>{@code clientLedgers(A,D)}, {@code investmentCreditors(A,D)}, {@code interAccount(A,D)} —
+ *       {@code SUM(ledger_effect)} over posted rows of the ledger {@code CLIENT}, {@code
+ *       CLIENT_INVESTMENT}, {@code INTER_ACCOUNT}, dated {@code <= D} (the last two are always 0 in
+ *       646A — no type posts to them yet).
+ *   <li>{@code fundLedger}, {@code unidentified} — zero: they need creditor accounts (646B/647A).
+ *   <li>{@link #clientLedger} — one client's {@code SUM(ledger_effect)} on the {@code CLIENT}
+ *       ledger, as at today.
+ *   <li>EQ-6 (in {@link #assertBalancedAsAt} and {@link #assertFirmBalanced}) — every posted row's
+ *       (ledger, cashbook effect, ledger effect) re-derived from the registry: {@code
+ *       TrustTransactionType.of(type).effectFor(amount)}, except the <b>646A interim rule</b>: a
+ *       {@code REVERSAL} row and a {@code REVERSED} original carry {@code (CLIENT, 0, 0)} (HEAD
+ *       semantics; 649B makes a REVERSAL carry its original's negated effect and leaves the
+ *       original's own). EQ-4 (647B) and EQ-5 (648A) are no-ops until their columns exist.
+ *   <li>{@link #assertBankAgrees} — statement closing balance + outstanding deposits − outstanding
+ *       payments (posted, unmatched, dated {@code <= periodEnd}; split on the sign of {@code
+ *       cashbook_effect}) against {@code cashbook(A, periodEnd)}. <b>Unexercised until 646C.</b>
  *   <li>{@link #assertServicesAgree} — {@code TrustTransactionService.getCashbookBalance} and
- *       {@code ClientLedgerService.getTotalTrustBalance}; the HEAD services have no as-at date, so
- *       v0 supports {@code asAt == today} only (646C / 649C replace them).
+ *       {@code ClientLedgerService.getTotalTrustBalance} against the oracle. Since 646A both are
+ *       derived by production SQL and the oracle by its own, so it is a real check; the services
+ *       still have no as-at date (as at today only — 646C / 649C).
  * </ul>
  */
 @Component
@@ -90,52 +86,36 @@ public final class TrustBooksHarness {
 
   private static final Pattern TENANT_SCHEMA = Pattern.compile("^tenant_[0-9a-f]{12}$");
 
-  /**
-   * HEAD cashbook sign table (TrustTransactionRepository.calculateCashbookBalance), as at a date.
-   */
+  /** The cashbook as at a date: every posted row's cashbook effect. */
   private static final String CASHBOOK_SQL =
       """
-      SELECT COALESCE(SUM(CASE
-          WHEN t.transaction_type IN ('DEPOSIT', 'INTEREST_CREDIT') THEN t.amount
-          WHEN t.transaction_type IN ('PAYMENT', 'FEE_TRANSFER', 'REFUND', 'INTEREST_LPFF')
-            THEN -t.amount
-          ELSE 0 END), 0)
-      FROM "%s".trust_transactions t
-      WHERE t.trust_account_id = ?
-        AND t.status IN ('RECORDED', 'APPROVED')
+      SELECT COALESCE(SUM(t.cashbook_effect), 0) FROM "%s".trust_transactions t
+      WHERE t.trust_account_id = ? AND t.posted_at IS NOT NULL AND t.transaction_date <= ?
+      """;
+
+  /** One ledger's total as at a date ({@code CLIENT}, {@code CLIENT_INVESTMENT}, …). */
+  private static final String LEDGER_TOTAL_SQL =
+      """
+      SELECT COALESCE(SUM(t.ledger_effect), 0) FROM "%s".trust_transactions t
+      WHERE t.trust_account_id = ? AND t.ledger = ? AND t.posted_at IS NOT NULL
         AND t.transaction_date <= ?
       """;
 
-  /** Stored card total (ClientLedgerCardRepository.calculateTotalTrustBalance). */
-  private static final String CARD_TOTAL_SQL =
+  /** One client's ledger as at a date. */
+  private static final String CLIENT_SQL =
       """
-      SELECT COALESCE(SUM(c.balance), 0)
-      FROM "%s".client_ledger_cards c
-      WHERE c.trust_account_id = ?
+      SELECT COALESCE(SUM(t.ledger_effect), 0) FROM "%s".trust_transactions t
+      WHERE t.trust_account_id = ? AND t.customer_id = ? AND t.ledger = 'CLIENT'
+        AND t.posted_at IS NOT NULL AND t.transaction_date <= ?
       """;
 
-  /** One client's stored card balance (0 when the client has no card). */
-  private static final String CARD_SQL =
+  /** EQ-6: every posted row with its stored effects. */
+  private static final String POSTED_ROWS_SQL =
       """
-      SELECT COALESCE(SUM(c.balance), 0)
-      FROM "%s".client_ledger_cards c
-      WHERE c.trust_account_id = ? AND c.customer_id = ?
-      """;
-
-  /** HEAD client sign table, every client, as at a past date (cards keep no history). */
-  private static final String DERIVED_CLIENT_TOTAL_SQL =
-      """
-      SELECT COALESCE(SUM(CASE
-          WHEN t.transaction_type IN ('DEPOSIT', 'TRANSFER_IN', 'INTEREST_CREDIT') THEN t.amount
-          WHEN t.transaction_type IN
-              ('PAYMENT', 'TRANSFER_OUT', 'FEE_TRANSFER', 'REFUND', 'INTEREST_LPFF')
-            THEN -t.amount
-          ELSE 0 END), 0)
+      SELECT t.id, t.transaction_type, t.amount, t.status, t.ledger, t.cashbook_effect,
+             t.ledger_effect
       FROM "%s".trust_transactions t
-      WHERE t.trust_account_id = ?
-        AND t.customer_id IS NOT NULL
-        AND t.status IN ('RECORDED', 'APPROVED')
-        AND t.transaction_date <= ?
+      WHERE t.trust_account_id = ? AND t.posted_at IS NOT NULL AND t.transaction_date <= ?
       """;
 
   private static final String ACCOUNT_IDS_SQL = "SELECT id FROM \"%s\".trust_accounts ORDER BY id";
@@ -145,20 +125,16 @@ public final class TrustBooksHarness {
       SELECT closing_balance FROM "%s".bank_statements WHERE id = ? AND trust_account_id = ?
       """;
 
-  /** HEAD outstanding items: posted, not matched to a statement line, dated on or before D. */
+  /** Outstanding items: posted, not matched to a statement line, dated on or before D. */
   private static final String OUTSTANDING_SQL =
       """
-      SELECT
-        COALESCE(SUM(CASE WHEN t.transaction_type IN ('DEPOSIT', 'INTEREST_CREDIT')
-                     THEN t.amount ELSE 0 END), 0) AS deposits,
-        COALESCE(SUM(CASE WHEN t.transaction_type IN
-                         ('PAYMENT', 'FEE_TRANSFER', 'REFUND', 'INTEREST_LPFF')
-                     THEN t.amount ELSE 0 END), 0) AS payments
+      SELECT COALESCE(SUM(t.cashbook_effect) FILTER (WHERE t.cashbook_effect > 0), 0)
+               AS deposits,
+             COALESCE(-SUM(t.cashbook_effect) FILTER (WHERE t.cashbook_effect < 0), 0)
+               AS payments
       FROM "%s".trust_transactions t
-      WHERE t.trust_account_id = ?
-        AND t.status IN ('RECORDED', 'APPROVED')
-        AND t.bank_statement_line_id IS NULL
-        AND t.transaction_date <= ?
+      WHERE t.trust_account_id = ? AND t.posted_at IS NOT NULL
+        AND t.bank_statement_line_id IS NULL AND t.transaction_date <= ?
       """;
 
   private final JdbcTemplate jdbc;
@@ -186,29 +162,30 @@ public final class TrustBooksHarness {
   public BooksSnapshot snapshotAsAt(UUID trustAccountId, LocalDate asAt) {
     var schema = schema();
     var cashbook = money(CASHBOOK_SQL.formatted(schema), trustAccountId, asAt);
-    var clientLedgers =
-        asAt.isBefore(today())
-            ? money(DERIVED_CLIENT_TOTAL_SQL.formatted(schema), trustAccountId, asAt)
-            : money(CARD_TOTAL_SQL.formatted(schema), trustAccountId);
+    var ledgerTotal = LEDGER_TOTAL_SQL.formatted(schema);
+    var clientLedgers = money(ledgerTotal, trustAccountId, TrustLedger.CLIENT.name(), asAt);
+    var investmentCreditors =
+        money(ledgerTotal, trustAccountId, TrustLedger.CLIENT_INVESTMENT.name(), asAt);
+    var interAccount = money(ledgerTotal, trustAccountId, TrustLedger.INTER_ACCOUNT.name(), asAt);
     return new BooksSnapshot(
         trustAccountId,
         asAt,
         cashbook,
         clientLedgers,
+        investmentCreditors,
         BigDecimal.ZERO,
         BigDecimal.ZERO,
-        BigDecimal.ZERO,
-        BigDecimal.ZERO);
+        interAccount);
   }
 
-  /** One client's ledger balance on the account, as at today (v0: stored card, 0 if none). */
+  /** One client's ledger balance on the account, as at today (0 when it has no posted row). */
   public BigDecimal clientLedger(UUID trustAccountId, UUID customerId) {
-    return money(CARD_SQL.formatted(schema()), trustAccountId, customerId);
+    return money(CLIENT_SQL.formatted(schema()), trustAccountId, customerId, today());
   }
 
   /**
    * Every equation the books can be checked against without a bank statement: EQ-2, EQ-4, EQ-5,
-   * EQ-6 (v0: EQ-2 only — see the class Javadoc), as at today.
+   * EQ-6 (646A: EQ-2 and EQ-6 — see the class Javadoc), as at today.
    */
   public void assertBalanced(UUID trustAccountId) {
     assertBalancedAsAt(trustAccountId, today());
@@ -221,10 +198,13 @@ public final class TrustBooksHarness {
             "EQ-2 on trust account %s as at %s: cashbook %s vs creditors %s (client ledgers %s)",
             trustAccountId, asAt, s.cashbook(), s.creditors(), s.clientLedgers())
         .isEqualByComparingTo(BigDecimal.ZERO);
-    // EQ-4 (647B), EQ-5 (648A), EQ-6 (646A): no-ops on the HEAD model.
+    var softly = new SoftAssertions();
+    assertEffectsDerived(softly, trustAccountId, asAt);
+    softly.assertAll();
+    // EQ-4 (647B), EQ-5 (648A): no-ops until their columns exist.
   }
 
-  /** EQ-3 over every trust account of the tenant (open or closed), plus EQ-2 for each. */
+  /** EQ-3 over every trust account of the tenant (open or closed), plus EQ-2 and EQ-6 for each. */
   public void assertFirmBalanced(LocalDate asAt) {
     var schema = schema();
     List<UUID> accountIds = jdbc.queryForList(ACCOUNT_IDS_SQL.formatted(schema), UUID.class);
@@ -239,12 +219,42 @@ public final class TrustBooksHarness {
               "EQ-2 on trust account %s as at %s: cashbook %s vs creditors %s (client ledgers %s)",
               accountId, asAt, s.cashbook(), s.creditors(), s.clientLedgers())
           .isEqualByComparingTo(BigDecimal.ZERO);
+      assertEffectsDerived(softly, accountId, asAt);
     }
     softly
         .assertThat(interAccountTotal)
         .as("EQ-3: Σ interAccount over the firm's %d trust accounts", accountIds.size())
         .isEqualByComparingTo(BigDecimal.ZERO);
     softly.assertAll();
+  }
+
+  /**
+   * EQ-6: every posted row's stored (ledger, cashbook effect, ledger effect) equals the registry's
+   * effect for its type and amount. 646A interim rule: a {@code REVERSAL} row and a {@code
+   * REVERSED} original carry {@code (CLIENT, 0, 0)} (HEAD semantics; 649B changes it).
+   */
+  private void assertEffectsDerived(SoftAssertions softly, UUID trustAccountId, LocalDate asAt) {
+    var rows = jdbc.queryForList(POSTED_ROWS_SQL.formatted(schema()), trustAccountId, asAt);
+    for (var row : rows) {
+      var type = (String) row.get("transaction_type");
+      var amount = (BigDecimal) row.get("amount");
+      var expected =
+          "REVERSAL".equals(type) || "REVERSED".equals(row.get("status"))
+              ? TrustLedgerEffect.zero(TrustLedger.CLIENT)
+              : TrustTransactionType.of(type).effectFor(amount);
+      var what =
+          "EQ-6 on trust account %s, %s %s %s (%s)"
+              .formatted(trustAccountId, row.get("status"), type, amount, row.get("id"));
+      softly.assertThat(row.get("ledger")).as(what + " ledger").isEqualTo(expected.ledger().name());
+      softly
+          .assertThat((BigDecimal) row.get("cashbook_effect"))
+          .as(what + " cashbook effect")
+          .isEqualByComparingTo(expected.cashbookEffect());
+      softly
+          .assertThat((BigDecimal) row.get("ledger_effect"))
+          .as(what + " ledger effect")
+          .isEqualByComparingTo(expected.ledgerEffect());
+    }
   }
 
   /**
@@ -274,12 +284,13 @@ public final class TrustBooksHarness {
   }
 
   /**
-   * The production services return the oracle's figures (v0: as at today only). At v0 the client
-   * ledger half compares the stored card total with itself — see the class Javadoc.
+   * The production services return the oracle's figures (as at today only — the services have no
+   * as-at date until 646C / 649C). Both halves are real checks since 646A: production derives each
+   * figure with its own SQL, the oracle with its own.
    */
   public void assertServicesAgree(UUID trustAccountId, LocalDate asAt) {
     assertThat(asAt)
-        .as("v0: the HEAD services have no as-at date; assertServicesAgree supports today only")
+        .as("the services have no as-at date; assertServicesAgree supports today only")
         .isEqualTo(today());
     var s = snapshotAsAt(trustAccountId, asAt);
     assertThat(trustTransactionService.getCashbookBalance(trustAccountId).balance())

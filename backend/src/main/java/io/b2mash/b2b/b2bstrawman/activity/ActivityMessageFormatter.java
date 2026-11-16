@@ -727,7 +727,6 @@ public class ActivityMessageFormatter {
       case "FEE_TRANSFER" -> "fee transfer";
       case "REFUND" -> "trust refund";
       case "REVERSAL" -> "trust reversal";
-      case "INTEREST_CREDIT" -> "interest credit";
       default -> "trust transaction";
     };
   }

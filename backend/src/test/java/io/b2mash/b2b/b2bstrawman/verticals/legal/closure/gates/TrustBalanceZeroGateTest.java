@@ -8,7 +8,7 @@ import static org.mockito.Mockito.when;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedgerQueryRepository;
 import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.UUID;
@@ -24,7 +24,7 @@ class TrustBalanceZeroGateTest {
   private static final UUID PROJECT_ID = UUID.randomUUID();
   private static final char NBSP = '\u00A0';
 
-  @Mock private TrustTransactionRepository trustTransactionRepository;
+  @Mock private TrustLedgerQueryRepository trustLedgerQueryRepository;
   @Mock private OrgSettingsRepository orgSettingsRepository;
   @Mock private Project project;
 
@@ -32,7 +32,7 @@ class TrustBalanceZeroGateTest {
 
   @BeforeEach
   void setUp() {
-    gate = new TrustBalanceZeroGate(trustTransactionRepository, orgSettingsRepository);
+    gate = new TrustBalanceZeroGate(trustLedgerQueryRepository, orgSettingsRepository);
     lenient().when(project.getId()).thenReturn(PROJECT_ID);
     // No settings row → resolveLocale(null) → en-ZA.
     lenient().when(orgSettingsRepository.findForCurrentTenant()).thenReturn(Optional.empty());
@@ -40,8 +40,7 @@ class TrustBalanceZeroGateTest {
 
   @Test
   void passesWhenBalanceIsZero() {
-    when(trustTransactionRepository.calculateBalanceByProjectId(PROJECT_ID))
-        .thenReturn(BigDecimal.ZERO);
+    when(trustLedgerQueryRepository.matterBalance(PROJECT_ID)).thenReturn(BigDecimal.ZERO);
 
     var result = gate.evaluate(project);
 
@@ -51,7 +50,7 @@ class TrustBalanceZeroGateTest {
 
   @Test
   void passesWhenRepositoryReturnsNull() {
-    when(trustTransactionRepository.calculateBalanceByProjectId(PROJECT_ID)).thenReturn(null);
+    when(trustLedgerQueryRepository.matterBalance(PROJECT_ID)).thenReturn(null);
 
     var result = gate.evaluate(project);
 
@@ -60,8 +59,7 @@ class TrustBalanceZeroGateTest {
 
   @Test
   void passMessageUsesTheFormatter() {
-    when(trustTransactionRepository.calculateBalanceByProjectId(PROJECT_ID))
-        .thenReturn(BigDecimal.ZERO);
+    when(trustLedgerQueryRepository.matterBalance(PROJECT_ID)).thenReturn(BigDecimal.ZERO);
 
     var result = gate.evaluate(project);
 
@@ -70,7 +68,7 @@ class TrustBalanceZeroGateTest {
 
   @Test
   void failsAndInterpolatesBalanceWhenNonZero() {
-    when(trustTransactionRepository.calculateBalanceByProjectId(PROJECT_ID))
+    when(trustLedgerQueryRepository.matterBalance(PROJECT_ID))
         .thenReturn(new BigDecimal("38000.00"));
 
     var result = gate.evaluate(project);
@@ -93,7 +91,7 @@ class TrustBalanceZeroGateTest {
     OrgSettings settings = mock(OrgSettings.class);
     when(settings.getDefaultCurrency()).thenReturn("USD");
     when(orgSettingsRepository.findForCurrentTenant()).thenReturn(Optional.of(settings));
-    when(trustTransactionRepository.calculateBalanceByProjectId(PROJECT_ID))
+    when(trustLedgerQueryRepository.matterBalance(PROJECT_ID))
         .thenReturn(new BigDecimal("1234.56"));
 
     var result = gate.evaluate(project);

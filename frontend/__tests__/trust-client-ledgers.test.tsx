@@ -117,7 +117,6 @@ function makeLedgerCard(overrides: Record<string, unknown> = {}) {
     totalRefunds: 0,
     totalTransfersIn: 0,
     totalTransfersOut: 0,
-    totalInterestCredited: 0,
     lastTransactionDate: "2026-04-01",
     createdAt: "2025-01-01T00:00:00Z",
     updatedAt: "2026-04-01T00:00:00Z",
@@ -217,8 +216,8 @@ describe("Client Ledgers", () => {
   });
 
   // Test 2: Non-zero balance filter
-  // G89-F13: the list shows the derived Interest and Refunds totals
-  it("shows Total Interest and Total Refunds columns", async () => {
+  // G89-F13: the list shows the derived Refunds total; Phase 92 (646A) removed the Interest column
+  it("shows Total Refunds and no Total Interest column", async () => {
     setupDefaultMocks();
     mockFetchClientLedgers.mockResolvedValue({
       content: [
@@ -227,10 +226,9 @@ describe("Client Ledgers", () => {
           clientName: "Refunded Client",
           balance: 0,
           totalDeposits: 5000,
-          totalInterestCredited: 1.34,
           totalPayments: 1250,
           totalFeeTransfers: 0,
-          totalRefunds: 3751.34,
+          totalRefunds: 3750,
         }),
       ],
       totalElements: 1,
@@ -242,14 +240,13 @@ describe("Client Ledgers", () => {
     await renderListPage();
 
     const table = screen.getByTestId("client-ledgers-table");
-    expect(within(table).getByText("Total Interest")).toBeInTheDocument();
+    expect(within(table).queryByText("Total Interest")).toBeNull();
     expect(within(table).getByText("Total Refunds")).toBeInTheDocument();
     // Existing headers stay
     expect(within(table).getByText("Total Deposits")).toBeInTheDocument();
     expect(within(table).getByText("Total Fee Transfers")).toBeInTheDocument();
     const row = screen.getByTestId("ledger-row-cust-636b");
-    expect(row.textContent).toContain(formatCurrency(1.34, "ZAR"));
-    expect(row.textContent).toContain(formatCurrency(3751.34, "ZAR"));
+    expect(row.textContent).toContain(formatCurrency(3750, "ZAR"));
   });
 
   it("passes nonZeroOnly filter to fetchClientLedgers", async () => {

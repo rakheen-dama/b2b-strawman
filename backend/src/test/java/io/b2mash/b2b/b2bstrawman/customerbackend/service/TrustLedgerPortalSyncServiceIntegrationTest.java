@@ -19,10 +19,12 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountTyp
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustDomainEvent;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTransactionApprovalEvent;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTransactionRecordedEvent;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustPostingService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordDepositRequest;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionType;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -60,6 +62,7 @@ class TrustLedgerPortalSyncServiceIntegrationTest {
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private TrustAccountRepository trustAccountRepository;
   @Autowired private TrustTransactionRepository trustTransactionRepository;
+  @Autowired private TrustPostingService trustPostingService;
   @Autowired private ProjectRepository projectRepository;
   @Autowired private ApplicationEventPublisher eventPublisher;
   @Autowired private PortalTrustReadModelRepository portalTrustRepo;
@@ -281,11 +284,18 @@ class TrustLedgerPortalSyncServiceIntegrationTest {
   // Event listener: interest posted (fan-out)
   // ==========================================================================
 
+  /**
+   * The interest-posted listener re-projects every matter of the account (it lives until 651A).
+   * Phase 92 (646A) removed the {@code INTEREST_CREDIT} type, so the fan-out is shown with a {@code
+   * DEPOSIT} that no per-transaction event projected.
+   */
   @Test
-  void interestPostedEventUpsertsInterestCreditRow() {
+  void interestPostedEventReprojectsTheAccount() {
     UUID txnId =
         recordApprovedTransaction(
-            "INTEREST_CREDIT", new BigDecimal("25.00"), "INT-SYNC-1", "Q1 interest credit");
+            "DEPOSIT", new BigDecimal("25.00"), "INT-SYNC-1", "Q1 interest fan-out");
+    assertThat(portalTrustRepo.findTransactions(customerId, matterId, null, null, 50, 0))
+        .noneMatch(t -> t.id().equals(txnId));
 
     publishInterestPostedEvent();
 
@@ -294,10 +304,10 @@ class TrustLedgerPortalSyncServiceIntegrationTest {
         .anyMatch(
             t ->
                 t.id().equals(txnId)
-                    && "INTEREST_CREDIT".equals(t.transactionType())
+                    && "DEPOSIT".equals(t.transactionType())
                     && t.amount().compareTo(new BigDecimal("25.00")) == 0);
     var balance = portalTrustRepo.findBalance(customerId, matterId).orElseThrow();
-    assertThat(balance.currentBalance()).isGreaterThan(BigDecimal.ZERO);
+    assertThat(balance.currentBalance()).isEqualByComparingTo("25.00");
   }
 
   // ==========================================================================
@@ -431,9 +441,9 @@ class TrustLedgerPortalSyncServiceIntegrationTest {
                               "RETAIN-1",
                               "Retained deposit",
                               LocalDate.of(2026, 2, 1),
-                              "APPROVED",
+                              "RECORDED",
                               memberId);
-                      trustTransactionRepository.save(txn);
+                      postApproved(txn);
                     }));
 
     // The cross-tenant guard added in issue #1267 requires ORG_ID to be bound and to match
@@ -477,9 +487,9 @@ class TrustLedgerPortalSyncServiceIntegrationTest {
                                 "BKF-" + i,
                                 "Backfill deposit " + i,
                                 LocalDate.of(2026, 1, 1 + i),
-                                "APPROVED",
+                                "RECORDED",
                                 memberId);
-                        trustTransactionRepository.save(txn);
+                        postApproved(txn);
                       }
                     }));
 
@@ -529,6 +539,24 @@ class TrustLedgerPortalSyncServiceIntegrationTest {
   // Helpers
   // ==========================================================================
 
+  /**
+   * Posts {@code draft} APPROVED with no event: a type that needs approval through {@code
+   * recordAwaitingApproval} + {@code postOnApproval}; a type posted when recorded (a deposit)
+   * through {@code record}, then hand-set APPROVED on the posted row (Phase 92, 646A: the row CHECK
+   * refuses a posted status written without the posting service).
+   */
+  private TrustTransaction postApproved(TrustTransaction draft) {
+    if (TrustTransactionType.of(draft.getTransactionType()).approval()
+        == TrustTransactionType.Approval.REQUIRED) {
+      draft.setStatus("AWAITING_APPROVAL");
+      return trustPostingService.postOnApproval(
+          trustPostingService.recordAwaitingApproval(draft), memberId);
+    }
+    var posted = trustPostingService.record(draft);
+    posted.setStatus("APPROVED");
+    return trustTransactionRepository.saveAndFlush(posted);
+  }
+
   private UUID recordApprovedTransaction(
       String type, BigDecimal amount, String reference, String description) {
     return recordApprovedTransactionOnDate(
@@ -556,9 +584,9 @@ class TrustLedgerPortalSyncServiceIntegrationTest {
                               reference,
                               description,
                               txnDate,
-                              "APPROVED",
+                              "RECORDED",
                               memberId);
-                      holder[0] = trustTransactionRepository.saveAndFlush(txn).getId();
+                      holder[0] = postApproved(txn).getId();
                     }));
     return holder[0];
   }
@@ -591,9 +619,9 @@ class TrustLedgerPortalSyncServiceIntegrationTest {
   }
 
   /**
-   * Seeds a {@code RECORDED}-status trust transaction directly via the repository (no event). Used
-   * by the GAP-L-52 listener test to exercise the {@link TrustTransactionRecordedEvent} branch in
-   * isolation.
+   * Seeds a {@code RECORDED}-status trust transaction through {@link TrustPostingService} (no event
+   * — the posting service publishes none). Used by the GAP-L-52 listener test to exercise the
+   * {@link TrustTransactionRecordedEvent} branch in isolation.
    */
   private UUID recordRecordedTransaction(
       String type, BigDecimal amount, String reference, String description) {
@@ -618,7 +646,7 @@ class TrustLedgerPortalSyncServiceIntegrationTest {
                               LocalDate.of(2026, 4, 1),
                               "RECORDED",
                               memberId);
-                      holder[0] = trustTransactionRepository.saveAndFlush(txn).getId();
+                      holder[0] = trustPostingService.record(txn).getId();
                     }));
     return holder[0];
   }

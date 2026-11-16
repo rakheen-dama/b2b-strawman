@@ -8,12 +8,16 @@ import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
-import java.math.BigDecimal;
 import java.time.Instant;
-import java.time.LocalDate;
-import java.util.Objects;
 import java.util.UUID;
 
+/**
+ * The per-client lock anchor (ADR-378, ADR-231): one row per (trust account, client), locked with
+ * {@link ClientLedgerCardRepository#findByAccountAndCustomerForUpdate} by every client posting
+ * path, so a sufficiency check and the posting it guards cannot race. It stores no balance: since
+ * Phase 92 (646A) a client's balance, totals and last transaction date are derived from the posting
+ * effects on {@code trust_transactions} ({@code TrustLedgerQueryRepository}).
+ */
 @Entity
 @Table(name = "client_ledger_cards")
 public class ClientLedgerCard {
@@ -27,24 +31,6 @@ public class ClientLedgerCard {
 
   @Column(name = "customer_id", nullable = false)
   private UUID customerId;
-
-  @Column(name = "balance", nullable = false, precision = 15, scale = 2)
-  private BigDecimal balance = BigDecimal.ZERO;
-
-  @Column(name = "total_deposits", nullable = false, precision = 15, scale = 2)
-  private BigDecimal totalDeposits = BigDecimal.ZERO;
-
-  @Column(name = "total_payments", nullable = false, precision = 15, scale = 2)
-  private BigDecimal totalPayments = BigDecimal.ZERO;
-
-  @Column(name = "total_fee_transfers", nullable = false, precision = 15, scale = 2)
-  private BigDecimal totalFeeTransfers = BigDecimal.ZERO;
-
-  @Column(name = "total_interest_credited", nullable = false, precision = 15, scale = 2)
-  private BigDecimal totalInterestCredited = BigDecimal.ZERO;
-
-  @Column(name = "last_transaction_date")
-  private LocalDate lastTransactionDate;
 
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
@@ -71,77 +57,6 @@ public class ClientLedgerCard {
     this.updatedAt = Instant.now();
   }
 
-  public void addDeposit(BigDecimal amount, LocalDate transactionDate) {
-    Objects.requireNonNull(amount, "amount must not be null");
-    if (amount.compareTo(BigDecimal.ZERO) <= 0) {
-      throw new IllegalArgumentException("amount must be positive");
-    }
-    this.balance = this.balance.add(amount);
-    this.totalDeposits = this.totalDeposits.add(amount);
-    updateLastTransactionDate(transactionDate);
-  }
-
-  /**
-   * Subtracts the given amount from the balance. Used for inter-client transfers. Running totals
-   * (totalPayments, totalFeeTransfers) are NOT updated here — those are updated by type-specific
-   * methods added in future slices (PAYMENT, FEE_TRANSFER transaction types).
-   */
-  public void debitBalance(BigDecimal amount, LocalDate transactionDate) {
-    Objects.requireNonNull(amount, "amount must not be null");
-    if (amount.compareTo(BigDecimal.ZERO) <= 0) {
-      throw new IllegalArgumentException("amount must be positive");
-    }
-    this.balance = this.balance.subtract(amount);
-    updateLastTransactionDate(transactionDate);
-  }
-
-  public void addPayment(BigDecimal amount, LocalDate transactionDate) {
-    Objects.requireNonNull(amount, "amount must not be null");
-    if (amount.compareTo(BigDecimal.ZERO) <= 0) {
-      throw new IllegalArgumentException("amount must be positive");
-    }
-    this.balance = this.balance.subtract(amount);
-    this.totalPayments = this.totalPayments.add(amount);
-    updateLastTransactionDate(transactionDate);
-  }
-
-  public void addFeeTransfer(BigDecimal amount, LocalDate transactionDate) {
-    Objects.requireNonNull(amount, "amount must not be null");
-    if (amount.compareTo(BigDecimal.ZERO) <= 0) {
-      throw new IllegalArgumentException("amount must be positive");
-    }
-    this.balance = this.balance.subtract(amount);
-    this.totalFeeTransfers = this.totalFeeTransfers.add(amount);
-    updateLastTransactionDate(transactionDate);
-  }
-
-  public void addInterestCredit(BigDecimal amount, LocalDate transactionDate) {
-    Objects.requireNonNull(amount, "amount must not be null");
-    if (amount.compareTo(BigDecimal.ZERO) <= 0) {
-      throw new IllegalArgumentException("amount must be positive");
-    }
-    this.balance = this.balance.add(amount);
-    this.totalInterestCredited = this.totalInterestCredited.add(amount);
-    updateLastTransactionDate(transactionDate);
-  }
-
-  public void creditBalance(BigDecimal amount, LocalDate transactionDate) {
-    Objects.requireNonNull(amount, "amount must not be null");
-    if (amount.compareTo(BigDecimal.ZERO) <= 0) {
-      throw new IllegalArgumentException("amount must be positive");
-    }
-    this.balance = this.balance.add(amount);
-    updateLastTransactionDate(transactionDate);
-  }
-
-  /** Only advances lastTransactionDate — never moves it backwards for backdated transactions. */
-  private void updateLastTransactionDate(LocalDate transactionDate) {
-    if (this.lastTransactionDate == null
-        || (transactionDate != null && transactionDate.isAfter(this.lastTransactionDate))) {
-      this.lastTransactionDate = transactionDate;
-    }
-  }
-
   public UUID getId() {
     return id;
   }
@@ -152,30 +67,6 @@ public class ClientLedgerCard {
 
   public UUID getCustomerId() {
     return customerId;
-  }
-
-  public BigDecimal getBalance() {
-    return balance;
-  }
-
-  public BigDecimal getTotalDeposits() {
-    return totalDeposits;
-  }
-
-  public BigDecimal getTotalPayments() {
-    return totalPayments;
-  }
-
-  public BigDecimal getTotalFeeTransfers() {
-    return totalFeeTransfers;
-  }
-
-  public BigDecimal getTotalInterestCredited() {
-    return totalInterestCredited;
-  }
-
-  public LocalDate getLastTransactionDate() {
-    return lastTransactionDate;
   }
 
   public Instant getCreatedAt() {

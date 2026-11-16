@@ -34,7 +34,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.DisbursementReposi
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.LegalDisbursement;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.VatTreatment;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustPostingService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import java.math.BigDecimal;
@@ -110,7 +110,7 @@ class MatterListRowIntegrationTest {
   @Autowired private DisbursementRepository disbursementRepository;
   @Autowired private CourtDateRepository courtDateRepository;
   @Autowired private TrustAccountRepository trustAccountRepository;
-  @Autowired private ClientLedgerCardRepository clientLedgerCardRepository;
+  @Autowired private TrustPostingService trustPostingService;
   @Autowired private EntityTagService entityTagService;
   @Autowired private EntityManager entityManager;
   @Autowired private EntityManagerFactory entityManagerFactory;
@@ -243,9 +243,10 @@ class MatterListRowIntegrationTest {
           courtDateRepository.saveAndFlush(courtDate(matterA, today.minusDays(2))); // past
           TestTrustBalanceFactory.seedTrustBalance(
               trustAccountRepository,
-              clientLedgerCardRepository,
+              trustPostingService,
               clientId,
-              new BigDecimal("15000.00"));
+              new BigDecimal("15000.00"),
+              ownerId);
         });
     // ADR-342: storage key, do not rename
     entityTagService.setEntityTags("PROJECT", matterA, List.of(tagId));

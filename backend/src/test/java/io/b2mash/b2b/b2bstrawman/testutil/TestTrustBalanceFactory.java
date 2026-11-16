@@ -3,35 +3,41 @@ package io.b2mash.b2b.b2bstrawman.testutil;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccount;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountType;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCard;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustPostingService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 
 /**
- * Shared trust-seeding recipe: creates an INVESTMENT {@link TrustAccount} and a {@link
- * ClientLedgerCard} with a single deposit so a customer surfaces a positive aggregate trust balance
- * (which drives {@code TrustAwareCollectionsAdvisor} → {@code TRUST_FUNDS_AVAILABLE} advice). Kept
- * in one place so the collections triage-service and read-API tests stay in sync (previously the
- * recipe was copied verbatim into both).
+ * Shared trust-seeding recipe: creates an INVESTMENT {@link TrustAccount} and posts a single {@code
+ * DEPOSIT} through {@link TrustPostingService} so a customer surfaces a positive derived trust
+ * balance (which drives {@code TrustAwareCollectionsAdvisor} → {@code TRUST_FUNDS_AVAILABLE}
+ * advice). Client balances are derived from posted rows since Phase 92 / 646A (ADR-378), so the
+ * recipe posts a row instead of writing a stored card. Kept in one place so the collections
+ * triage-service and read-API tests stay in sync.
  *
  * <p>Test-scope only — the {@code verticals.legal} imports here are fine; {@code
  * CollectionsCoreBoundaryTest} scans main sources under {@code collections/} only.
  */
 public final class TestTrustBalanceFactory {
 
+  /** A fixed past posting date — the derived balance has no as-at bound for these readers. */
+  private static final LocalDate SEED_DATE = LocalDate.of(2026, 1, 15);
+
   private TestTrustBalanceFactory() {}
 
   /**
-   * Seeds a trust account plus a client ledger card with a single {@code amount} deposit for {@code
-   * customerId}, so the customer's aggregate trust balance is positive.
+   * Seeds a trust account and posts a single {@code amount} deposit for {@code customerId}, so the
+   * customer's aggregate trust balance is positive. {@code recordedBy} must be a member of the
+   * tenant (FK {@code trust_transactions.recorded_by}).
    */
   public static void seedTrustBalance(
       TrustAccountRepository trustAccountRepository,
-      ClientLedgerCardRepository clientLedgerCardRepository,
+      TrustPostingService trustPostingService,
       UUID customerId,
-      BigDecimal amount) {
+      BigDecimal amount,
+      UUID recordedBy) {
     var trustAccount =
         new TrustAccount(
             "Test Trust",
@@ -42,11 +48,21 @@ public final class TestTrustBalanceFactory {
             false,
             false,
             null,
-            LocalDate.now(),
+            SEED_DATE,
             null);
     var savedTrustAccount = trustAccountRepository.save(trustAccount);
-    var ledgerCard = new ClientLedgerCard(savedTrustAccount.getId(), customerId);
-    ledgerCard.addDeposit(amount, LocalDate.now());
-    clientLedgerCardRepository.save(ledgerCard);
+    trustPostingService.record(
+        new TrustTransaction(
+            savedTrustAccount.getId(),
+            "DEPOSIT",
+            amount,
+            customerId,
+            null,
+            null,
+            "TEST-TRUST-" + UUID.randomUUID().toString().substring(0, 8),
+            "Test trust balance",
+            SEED_DATE,
+            "RECORDED",
+            recordedBy));
   }
 }

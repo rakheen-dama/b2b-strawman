@@ -8,9 +8,8 @@ import { LedgerTotalsBreakdown } from "@/components/trust/ledger-totals-breakdow
 afterEach(() => cleanup());
 
 const LEDGER = {
-  balance: 3751.34,
+  balance: 3750,
   totalDeposits: 5000,
-  totalInterestCredited: 1.34,
   totalTransfersIn: 0,
   totalPayments: 1250,
   totalFeeTransfers: 0,
@@ -30,11 +29,13 @@ describe("LedgerTotalsBreakdown — screen-reader signs", () => {
     }
   });
 
-  it("adds no 'less' to the deposits, interest or balance rows", () => {
+  it("adds no 'less' to the deposits or balance rows", () => {
     render(<LedgerTotalsBreakdown ledger={LEDGER} />);
 
-    for (const key of ["deposits", "interest", "balance"]) {
+    for (const key of ["deposits", "balance"]) {
       expect(term(key).textContent, key).not.toContain("less");
     }
+    // Phase 92 (646A): interest credits are no longer posted, so there is no interest row
+    expect(screen.queryByTestId("ledger-total-interest")).toBeNull();
   });
 });

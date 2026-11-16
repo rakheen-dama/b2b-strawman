@@ -10,7 +10,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountStatus;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedgerQueryRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -40,7 +40,7 @@ public class TrustInvestmentService {
   private final TrustInvestmentRepository investmentRepository;
   private final TrustAccountRepository trustAccountRepository;
   private final CustomerRepository customerRepository;
-  private final ClientLedgerCardRepository ledgerCardRepository;
+  private final TrustLedgerQueryRepository ledgerQueries;
   private final TrustTransactionService transactionService;
   private final VerticalModuleGuard moduleGuard;
   private final AuditService auditService;
@@ -50,7 +50,7 @@ public class TrustInvestmentService {
       TrustInvestmentRepository investmentRepository,
       TrustAccountRepository trustAccountRepository,
       CustomerRepository customerRepository,
-      ClientLedgerCardRepository ledgerCardRepository,
+      TrustLedgerQueryRepository ledgerQueries,
       TrustTransactionService transactionService,
       VerticalModuleGuard moduleGuard,
       AuditService auditService,
@@ -58,7 +58,7 @@ public class TrustInvestmentService {
     this.investmentRepository = investmentRepository;
     this.trustAccountRepository = trustAccountRepository;
     this.customerRepository = customerRepository;
-    this.ledgerCardRepository = ledgerCardRepository;
+    this.ledgerQueries = ledgerQueries;
     this.transactionService = transactionService;
     this.moduleGuard = moduleGuard;
     this.auditService = auditService;
@@ -125,13 +125,9 @@ public class TrustInvestmentService {
             .orElseThrow(
                 () -> new ResourceNotFoundException(EntityNoun.CLIENT, request.clientId()));
 
-    // Check client has sufficient balance
-    var ledgerCard =
-        ledgerCardRepository
-            .findByTrustAccountIdAndCustomerId(accountId, request.clientId())
-            .orElse(null);
-
-    if (ledgerCard == null || ledgerCard.getBalance().compareTo(request.principal()) < 0) {
+    // Check client has sufficient (derived) balance — no posted row means R0,00
+    var available = ledgerQueries.clientBalance(accountId, request.clientId(), null);
+    if (available.compareTo(request.principal()) < 0) {
       throw new InvalidStateException(
           "Insufficient balance",
           "Client does not have sufficient trust balance to place this investment");

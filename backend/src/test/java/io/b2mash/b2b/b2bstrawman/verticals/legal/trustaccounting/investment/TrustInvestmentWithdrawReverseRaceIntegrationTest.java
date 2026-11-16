@@ -20,8 +20,7 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccount;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountType;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedgerQueryRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService;
 import java.math.BigDecimal;
 import java.time.Clock;
@@ -76,10 +75,9 @@ class TrustInvestmentWithdrawReverseRaceIntegrationTest {
   @Autowired private OrgSettingsService orgSettingsService;
   @Autowired private TransactionTemplate transactionTemplate;
   @Autowired private TrustAccountRepository trustAccountRepository;
-  @Autowired private TrustTransactionRepository transactionRepository;
   @Autowired private TrustTransactionService transactionService;
   @Autowired private TrustInvestmentService investmentService;
-  @Autowired private ClientLedgerCardRepository ledgerCardRepository;
+  @Autowired private TrustLedgerQueryRepository trustLedgerQueryRepository;
   @Autowired private CustomerRepository customerRepository;
   @Autowired private ProjectRepository projectRepository;
   @Autowired private Clock clock;
@@ -235,7 +233,7 @@ class TrustInvestmentWithdrawReverseRaceIntegrationTest {
 
   /** R5 000 deposited, R1 000 placed and approved, then exactly one R1 000 credit back. */
   private void assertCreditedOnce(Placed placed) {
-    assertThat(cardBalance(placed.client())).isEqualByComparingTo("5000.00");
+    assertThat(clientBalance(placed.client())).isEqualByComparingTo("5000.00");
     assertThat(matterBalance(placed.matter())).isEqualByComparingTo("5000.00");
   }
 
@@ -281,7 +279,7 @@ class TrustInvestmentWithdrawReverseRaceIntegrationTest {
             post("/api/trust-transactions/" + placementId + "/approve")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, APPROVER_SUB)))
         .andExpect(status().isOk());
-    assertThat(cardBalance(client)).isEqualByComparingTo("4000.00");
+    assertThat(clientBalance(client)).isEqualByComparingTo("4000.00");
     return new Placed(client, matter, UUID.fromString(JsonPath.read(placed, "$.id")), placementId);
   }
 
@@ -310,17 +308,12 @@ class TrustInvestmentWithdrawReverseRaceIntegrationTest {
   }
 
   private BigDecimal matterBalance(UUID matter) {
-    var balance = as(() -> transactionRepository.calculateBalanceByProjectId(matter));
+    var balance = as(() -> trustLedgerQueryRepository.matterBalance(matter));
     return balance == null ? BigDecimal.ZERO : balance;
   }
 
-  private BigDecimal cardBalance(UUID client) {
-    return as(
-        () ->
-            ledgerCardRepository
-                .findByTrustAccountIdAndCustomerId(trustAccountId, client)
-                .orElseThrow()
-                .getBalance());
+  private BigDecimal clientBalance(UUID client) {
+    return as(() -> trustLedgerQueryRepository.clientBalance(trustAccountId, client, null));
   }
 
   private <T> T as(Supplier<T> action) {

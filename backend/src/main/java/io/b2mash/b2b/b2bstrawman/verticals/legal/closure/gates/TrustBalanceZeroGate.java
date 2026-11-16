@@ -6,7 +6,7 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.template.VariableFormatter;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.closure.ClosureGate;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.closure.GateResult;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedgerQueryRepository;
 import java.math.BigDecimal;
 import java.util.Locale;
 import java.util.Map;
@@ -14,22 +14,22 @@ import org.springframework.stereotype.Component;
 
 /**
  * Gate 1 — matter trust balance must be zero. A matter cannot close while it holds client funds
- * (Phase 67 §67.3.4 gate 1, ADR-248). The balance in the message goes through the canonical
- * plain-text currency formatter in the tenant's locale (Phase 88 626E) — "R38 000,00", never a raw
- * decimal.
+ * (Phase 67 §67.3.4 gate 1, ADR-248). The balance is the matter's derived {@code CLIENT} + {@code
+ * CLIENT_INVESTMENT} ledgers (Phase 92 §16.3.2, ADR-378): money still invested for the matter
+ * blocks closure too. The balance in the message goes through the canonical plain-text currency
+ * formatter in the tenant's locale (Phase 88 626E) — "R38 000,00", never a raw decimal.
  */
 @Component
 public class TrustBalanceZeroGate implements ClosureGate {
 
   static final String CODE = "TRUST_BALANCE_ZERO";
 
-  private final TrustTransactionRepository trustTransactionRepository;
+  private final TrustLedgerQueryRepository ledgerQueries;
   private final OrgSettingsRepository orgSettingsRepository;
 
   public TrustBalanceZeroGate(
-      TrustTransactionRepository trustTransactionRepository,
-      OrgSettingsRepository orgSettingsRepository) {
-    this.trustTransactionRepository = trustTransactionRepository;
+      TrustLedgerQueryRepository ledgerQueries, OrgSettingsRepository orgSettingsRepository) {
+    this.ledgerQueries = ledgerQueries;
     this.orgSettingsRepository = orgSettingsRepository;
   }
 
@@ -45,7 +45,7 @@ public class TrustBalanceZeroGate implements ClosureGate {
 
   @Override
   public GateResult evaluate(Project project) {
-    BigDecimal balance = trustTransactionRepository.calculateBalanceByProjectId(project.getId());
+    BigDecimal balance = ledgerQueries.matterBalance(project.getId());
     if (balance == null) {
       balance = BigDecimal.ZERO;
     }

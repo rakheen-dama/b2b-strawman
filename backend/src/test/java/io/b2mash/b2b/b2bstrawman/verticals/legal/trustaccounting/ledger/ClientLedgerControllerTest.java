@@ -182,7 +182,7 @@ class ClientLedgerControllerTest {
         .andExpect(jsonPath("$.totalDeposits").value(0))
         .andExpect(jsonPath("$.totalPayments").value(0))
         .andExpect(jsonPath("$.totalFeeTransfers").value(0))
-        .andExpect(jsonPath("$.totalInterestCredited").value(0))
+        .andExpect(jsonPath("$.totalInterestCredited").doesNotExist())
         .andExpect(jsonPath("$.lastTransactionDate").value(nullValue()))
         .andExpect(jsonPath("$.createdAt").value(nullValue()))
         .andExpect(jsonPath("$.updatedAt").value(nullValue()));

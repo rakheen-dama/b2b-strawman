@@ -5,7 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import io.b2mash.b2b.b2bstrawman.collections.CollectionsAdvisor.CollectionsAdvice;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedgerQueryRepository;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
@@ -27,14 +27,13 @@ import org.springframework.dao.DataAccessException;
 @ExtendWith(MockitoExtension.class)
 class TrustAwareCollectionsAdvisorTest {
 
-  @Mock private ClientLedgerCardRepository clientLedgerCardRepository;
+  @Mock private TrustLedgerQueryRepository trustLedgerQueryRepository;
 
   @InjectMocks private TrustAwareCollectionsAdvisor advisor;
 
   @Test
   void positiveBalance_yieldsTrustFundsAvailableAdviceWithHeldInTrustDetail() {
-    when(clientLedgerCardRepository.sumBalancesForCustomer(any()))
-        .thenReturn(new BigDecimal("84200.00"));
+    when(trustLedgerQueryRepository.generalBalance(any())).thenReturn(new BigDecimal("84200.00"));
 
     List<CollectionsAdvice> advice = advisor.adviseFor(UUID.randomUUID());
 
@@ -46,15 +45,14 @@ class TrustAwareCollectionsAdvisorTest {
 
   @Test
   void zeroBalance_yieldsNoAdvice() {
-    when(clientLedgerCardRepository.sumBalancesForCustomer(any())).thenReturn(BigDecimal.ZERO);
+    when(trustLedgerQueryRepository.generalBalance(any())).thenReturn(BigDecimal.ZERO);
 
     assertThat(advisor.adviseFor(UUID.randomUUID())).isEmpty();
   }
 
   @Test
   void negativeBalance_yieldsNoAdvice() {
-    when(clientLedgerCardRepository.sumBalancesForCustomer(any()))
-        .thenReturn(new BigDecimal("-100.00"));
+    when(trustLedgerQueryRepository.generalBalance(any())).thenReturn(new BigDecimal("-100.00"));
 
     assertThat(advisor.adviseFor(UUID.randomUUID())).isEmpty();
   }
@@ -62,8 +60,8 @@ class TrustAwareCollectionsAdvisorTest {
   @Test
   void absentTrustTables_failsOpenToEmptyNoError() {
     // Non-legal tenant: the ledger query throws because the relation does not exist.
-    when(clientLedgerCardRepository.sumBalancesForCustomer(any()))
-        .thenThrow(new DataAccessException("relation \"client_ledger_cards\" does not exist") {});
+    when(trustLedgerQueryRepository.generalBalance(any()))
+        .thenThrow(new DataAccessException("relation \"trust_transactions\" does not exist") {});
 
     assertThat(advisor.adviseFor(UUID.randomUUID())).isEmpty();
   }

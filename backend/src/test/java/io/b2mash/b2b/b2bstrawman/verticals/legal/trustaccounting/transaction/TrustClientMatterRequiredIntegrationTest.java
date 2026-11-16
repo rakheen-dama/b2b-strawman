@@ -20,7 +20,6 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccount;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountType;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
 import jakarta.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.time.Clock;
@@ -73,7 +72,8 @@ class TrustClientMatterRequiredIntegrationTest {
   @Autowired private TransactionTemplate transactionTemplate;
   @Autowired private TrustAccountRepository trustAccountRepository;
   @Autowired private TrustTransactionRepository transactionRepository;
-  @Autowired private ClientLedgerCardRepository ledgerCardRepository;
+  @Autowired private TrustPostingService postingService;
+  @Autowired private TrustLedgerQueryRepository ledgerQueries;
   @Autowired private CustomerRepository customerRepository;
   @Autowired private ProjectRepository projectRepository;
   @Autowired private EntityManager entityManager;
@@ -139,7 +139,7 @@ class TrustClientMatterRequiredIntegrationTest {
 
     assertThat(as(() -> transactionRepository.findAll()))
         .noneMatch(t -> client.equals(t.getCustomerId()));
-    assertThat(cardBalanceOrNull(client)).isNull();
+    assertThat(clientBalanceOrNull(client)).isNull();
   }
 
   @Test
@@ -152,8 +152,8 @@ class TrustClientMatterRequiredIntegrationTest {
     postTrust("deposit", depositBody(client, matter, "500.00", "TCMR-DEP-M2"))
         .andExpect(status().isCreated());
 
-    assertThat(cardBalanceOrNull(client)).isEqualByComparingTo("3000.00");
-    assertThat(portalBalance(client)).isEqualByComparingTo(cardBalanceOrNull(client));
+    assertThat(clientBalanceOrNull(client)).isEqualByComparingTo("3000.00");
+    assertThat(portalBalance(client)).isEqualByComparingTo(clientBalanceOrNull(client));
   }
 
   // --- every other client posting path ---
@@ -193,7 +193,7 @@ class TrustClientMatterRequiredIntegrationTest {
         .andExpect(jsonPath("$.status").value(400))
         .andExpect(jsonPath("$.title").value("Matter required"))
         .andExpect(jsonPath("$.detail").value(MATTER_REQUIRED));
-    assertThat(cardBalanceOrNull(target)).isNull();
+    assertThat(clientBalanceOrNull(target)).isNull();
   }
 
   @Test
@@ -280,7 +280,7 @@ class TrustClientMatterRequiredIntegrationTest {
             jsonPath("$.detail")
                 .value(
                     "Matter Someone Else's Matter is not linked to client Unlinked Matter Client"));
-    assertThat(cardBalanceOrNull(client)).isNull();
+    assertThat(clientBalanceOrNull(client)).isNull();
   }
 
   @Test
@@ -378,15 +378,11 @@ class TrustClientMatterRequiredIntegrationTest {
                               "TCMR-PAY-LEGACY",
                               "Legacy client-level payment",
                               today.minusDays(1),
-                              "APPROVED",
+                              "AWAITING_APPROVAL",
                               ownerId);
-                      var saved = transactionRepository.save(payment);
-                      var card =
-                          ledgerCardRepository
-                              .findByAccountAndCustomerForUpdate(trustAccountId, client)
-                              .orElseThrow();
-                      card.addPayment(new BigDecimal("400.00"), today.minusDays(1));
-                      ledgerCardRepository.save(card);
+                      var saved =
+                          postingService.postOnApproval(
+                              postingService.recordAwaitingApproval(payment), ownerId);
                       return saved.getId();
                     }));
 
@@ -402,7 +398,7 @@ class TrustClientMatterRequiredIntegrationTest {
             .getResponse()
             .getContentAsString();
     assertThat((Object) JsonPath.read(body, "$.matterId")).isNull();
-    assertThat(cardBalanceOrNull(client)).isEqualByComparingTo("1000.00");
+    assertThat(clientBalanceOrNull(client)).isEqualByComparingTo("1000.00");
   }
 
   // --- helpers ---
@@ -500,12 +496,13 @@ class TrustClientMatterRequiredIntegrationTest {
     return as(() -> transactionRepository.findById(transactionId).orElseThrow().getProjectId());
   }
 
-  private BigDecimal cardBalanceOrNull(UUID client) {
+  /** The client's derived balance on the account; null when the client has no posted row. */
+  private BigDecimal clientBalanceOrNull(UUID client) {
     return as(
         () ->
-            ledgerCardRepository
-                .findByTrustAccountIdAndCustomerId(trustAccountId, client)
-                .map(card -> card.getBalance())
+            ledgerQueries
+                .clientSummary(trustAccountId, client)
+                .map(ClientBalanceRow::getBalance)
                 .orElse(null));
   }
 

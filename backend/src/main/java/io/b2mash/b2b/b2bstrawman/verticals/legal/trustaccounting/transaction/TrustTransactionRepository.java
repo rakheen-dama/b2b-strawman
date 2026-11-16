@@ -3,7 +3,6 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction;
 import jakarta.persistence.LockModeType;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -76,9 +75,10 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
    * DESC, id DESC}), each row carrying its running balance (ADR-361, arch §14.3.3). The window runs
    * over POSTED rows only ({@code status IN ('RECORDED','APPROVED')}, REVERSAL excluded) in posting
    * order and BEFORE the filters narrow the page, so a type/status/date filter never changes a
-   * balance; non-posted and REVERSAL rows get a null balance. Type sets and status filter are
-   * identical to {@link #calculateClientBalanceAsOfDate}. Callers MUST pass a sort-free {@link
-   * Pageable} — the ORDER BY lives in the SQL and Spring Data appends only the page window (R6.7).
+   * balance; non-posted, REVERSED and REVERSAL rows get a null balance. Each row adds its own
+   * {@code ledger_effect} (Phase 92, ADR-378) — the same figure as {@link
+   * TrustLedgerQueryRepository#clientBalance}. Callers MUST pass a sort-free {@link Pageable} — the
+   * ORDER BY lives in the SQL and Spring Data appends only the page window (R6.7).
    *
    * <p>The CTE is {@code MATERIALIZED} on purpose: Postgres inlines a once-referenced,
    * side-effect-free CTE, and with cold statistics (a freshly provisioned tenant) the planner then
@@ -92,9 +92,7 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
           """
           WITH posted AS MATERIALIZED (
             SELECT t.id,
-                   SUM(CASE WHEN t.transaction_type IN ('DEPOSIT','TRANSFER_IN','INTEREST_CREDIT') THEN  t.amount
-                            WHEN t.transaction_type IN ('PAYMENT','TRANSFER_OUT','FEE_TRANSFER','REFUND','INTEREST_LPFF') THEN -t.amount
-                            ELSE 0 END)
+                   SUM(t.ledger_effect)
                      OVER (ORDER BY t.transaction_date, t.created_at, t.id
                            ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS running_balance
               FROM trust_transactions t
@@ -174,65 +172,16 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
   boolean existsByReversalOf(UUID reversalOf);
 
   /**
-   * Computes the cashbook balance for a trust account. Cashbook-positive: DEPOSIT, INTEREST_CREDIT.
-   * Cashbook-negative: PAYMENT, FEE_TRANSFER, REFUND, INTEREST_LPFF. Cashbook-neutral: TRANSFER_IN,
-   * TRANSFER_OUT. REVERSAL is excluded — debit reversals are already reflected in the client ledger
-   * card balances (updated inline), and credit reversals only affect balances when approved (Epic
-   * 441 scope).
-   */
-  @Query(
-      """
-      SELECT COALESCE(SUM(
-        CASE
-          WHEN t.transactionType IN ('DEPOSIT', 'INTEREST_CREDIT') THEN t.amount
-          WHEN t.transactionType IN ('PAYMENT', 'FEE_TRANSFER', 'REFUND', 'INTEREST_LPFF') THEN -t.amount
-          ELSE 0
-        END
-      ), 0)
-      FROM TrustTransaction t
-      WHERE t.trustAccountId = :trustAccountId
-        AND t.status IN ('RECORDED', 'APPROVED')
-      """)
-  BigDecimal calculateCashbookBalance(@Param("trustAccountId") UUID trustAccountId);
-
-  /**
-   * Sums transactions for a specific customer up to a given date, applying credit/debit logic.
-   * Credit types (DEPOSIT, TRANSFER_IN, INTEREST_CREDIT) add to balance. Debit types (PAYMENT,
-   * TRANSFER_OUT, FEE_TRANSFER, REFUND, INTEREST_LPFF) subtract from balance. REVERSAL is excluded
-   * — debit reversals are reflected via ledger card updates (inline), and credit reversals only
-   * affect balances when approved (Epic 441 scope).
-   */
-  @Query(
-      """
-      SELECT COALESCE(SUM(
-        CASE
-          WHEN t.transactionType IN ('DEPOSIT', 'TRANSFER_IN', 'INTEREST_CREDIT') THEN t.amount
-          WHEN t.transactionType IN ('PAYMENT', 'TRANSFER_OUT', 'FEE_TRANSFER', 'REFUND', 'INTEREST_LPFF') THEN -t.amount
-          ELSE 0
-        END
-      ), 0)
-      FROM TrustTransaction t
-      WHERE t.customerId = :customerId
-        AND t.trustAccountId = :trustAccountId
-        AND t.transactionDate <= :asOfDate
-        AND t.status IN ('RECORDED', 'APPROVED')
-      """)
-  BigDecimal calculateClientBalanceAsOfDate(
-      @Param("customerId") UUID customerId,
-      @Param("trustAccountId") UUID trustAccountId,
-      @Param("asOfDate") LocalDate asOfDate);
-
-  /**
    * Monthly net movements on one trust account for the trust-balance trend (Phase 90 643A, ADR-372,
    * arch §15.3.7): one row per SA calendar month from {@code windowStart} to {@code today}, plus
    * one row with a NULL {@code monthStart} holding everything dated before {@code windowStart} (the
-   * opening balance). {@code cashbookNet} uses the sign rule of {@link #calculateCashbookBalance};
-   * {@code ledgerNet} the rule of {@link #calculateClientBalanceAsOfDate} summed over clients (a
-   * row without a client — only INTEREST_LPFF, chk_trust_txn_customer_required — counts 0).
-   * RECORDED/APPROVED only; REVERSAL counts 0 (a reversed debit is itself REVERSED, G89-F13).
+   * opening balance). {@code cashbookNet} sums {@code cashbook_effect} (as {@link
+   * TrustLedgerQueryRepository#cashbook}); {@code ledgerNet} sums {@code ledger_effect} on the
+   * {@code CLIENT} ledger (as {@link TrustLedgerQueryRepository#clientLedgerTotal}). Posted rows
+   * only (Phase 92, ADR-378) — a REVERSED original and its REVERSAL carry zero effect in 646A.
    * {@code transaction_date} is already an SA business date (G88-F48), so months need no zone
    * conversion: the date is truncated as a zone-less {@code timestamp}. Rows after {@code today}
-   * are excluded. Uses idx_trust_txn_account_date.
+   * are excluded.
    */
   @Query(
       nativeQuery = true,
@@ -241,18 +190,12 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
           SELECT CASE WHEN t.transaction_date < :windowStart THEN NULL
                       ELSE CAST(date_trunc('month', CAST(t.transaction_date AS timestamp)) AS date)
                  END AS monthStart,
-                 COALESCE(SUM(CASE
-                   WHEN t.transaction_type IN ('DEPOSIT','INTEREST_CREDIT') THEN t.amount
-                   WHEN t.transaction_type IN ('PAYMENT','FEE_TRANSFER','REFUND','INTEREST_LPFF') THEN -t.amount
-                   ELSE 0 END), 0) AS cashbookNet,
-                 COALESCE(SUM(CASE
-                   WHEN t.customer_id IS NULL THEN 0
-                   WHEN t.transaction_type IN ('DEPOSIT','TRANSFER_IN','INTEREST_CREDIT') THEN t.amount
-                   WHEN t.transaction_type IN ('PAYMENT','TRANSFER_OUT','FEE_TRANSFER','REFUND','INTEREST_LPFF') THEN -t.amount
-                   ELSE 0 END), 0) AS ledgerNet
+                 COALESCE(SUM(t.cashbook_effect), 0) AS cashbookNet,
+                 COALESCE(SUM(t.ledger_effect)
+                   FILTER (WHERE t.ledger = 'CLIENT' AND t.customer_id IS NOT NULL), 0) AS ledgerNet
           FROM trust_transactions t
           WHERE t.trust_account_id = :trustAccountId
-            AND t.status IN ('RECORDED', 'APPROVED')
+            AND t.posted_at IS NOT NULL
             AND t.transaction_date <= :today
           GROUP BY 1
           ORDER BY 1 NULLS FIRST
@@ -261,126 +204,6 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
       @Param("trustAccountId") UUID trustAccountId,
       @Param("windowStart") LocalDate windowStart,
       @Param("today") LocalDate today);
-
-  /**
-   * Posted totals per client and transaction type on one trust account (G89-F13): RECORDED/APPROVED
-   * rows only, REVERSAL excluded — a reversed debit is itself marked REVERSED, so it drops out of
-   * its type's total, matching the balance. Feeds {@code LedgerTotals}, the client-ledger totals
-   * that reconcile to the balance. One query for any number of clients.
-   */
-  @Query(
-      """
-      SELECT t.customerId AS customerId, t.transactionType AS transactionType,
-             COALESCE(SUM(t.amount), 0) AS total
-      FROM TrustTransaction t
-      WHERE t.trustAccountId = :trustAccountId
-        AND t.customerId IN :customerIds
-        AND t.status IN ('RECORDED', 'APPROVED')
-        AND t.transactionType <> 'REVERSAL'
-      GROUP BY t.customerId, t.transactionType
-      """)
-  List<CustomerTypeTotalRow> sumPostedByCustomerAndType(
-      @Param("trustAccountId") UUID trustAccountId,
-      @Param("customerIds") Collection<UUID> customerIds);
-
-  /**
-   * {@link #sumPostedByCustomerAndType} up to and including {@code asOfDate} — the totals that
-   * reconcile to {@link #calculateClientBalanceAsOfDate} for the same date (the Client Trust
-   * Balances report with an as-of date).
-   */
-  @Query(
-      """
-      SELECT t.customerId AS customerId, t.transactionType AS transactionType,
-             COALESCE(SUM(t.amount), 0) AS total
-      FROM TrustTransaction t
-      WHERE t.trustAccountId = :trustAccountId
-        AND t.customerId IN :customerIds
-        AND t.transactionDate <= :asOfDate
-        AND t.status IN ('RECORDED', 'APPROVED')
-        AND t.transactionType <> 'REVERSAL'
-      GROUP BY t.customerId, t.transactionType
-      """)
-  List<CustomerTypeTotalRow> sumPostedByCustomerAndTypeAsOf(
-      @Param("trustAccountId") UUID trustAccountId,
-      @Param("customerIds") Collection<UUID> customerIds,
-      @Param("asOfDate") LocalDate asOfDate);
-
-  /**
-   * {@link #calculateClientBalanceAsOfDate} split by matter: one row per matter (and one with a
-   * null {@code projectId} for the client's unmattered rows), same sign rules and status filter, so
-   * the rows sum exactly to the client balance. The opening balances of the per-matter interest
-   * buckets (ADR-366).
-   */
-  @Query(
-      """
-      SELECT t.projectId AS projectId,
-        COALESCE(SUM(
-          CASE
-            WHEN t.transactionType IN ('DEPOSIT', 'TRANSFER_IN', 'INTEREST_CREDIT') THEN t.amount
-            WHEN t.transactionType IN ('PAYMENT', 'TRANSFER_OUT', 'FEE_TRANSFER', 'REFUND', 'INTEREST_LPFF') THEN -t.amount
-            ELSE 0
-          END
-        ), 0) AS balance
-      FROM TrustTransaction t
-      WHERE t.customerId = :customerId
-        AND t.trustAccountId = :trustAccountId
-        AND t.transactionDate <= :asOfDate
-        AND t.status IN ('RECORDED', 'APPROVED')
-      GROUP BY t.projectId
-      """)
-  List<MatterBalanceRow> calculateClientMatterBalancesAsOfDate(
-      @Param("customerId") UUID customerId,
-      @Param("trustAccountId") UUID trustAccountId,
-      @Param("asOfDate") LocalDate asOfDate);
-
-  /**
-   * Sums the per-matter trust balance by projectId, applying the same credit/debit sign rules as
-   * {@link #calculateClientBalanceAsOfDate}. Used by the matter closure gate {@code
-   * TRUST_BALANCE_ZERO} (Phase 67 §67.3.4 gate 1) — a matter cannot close while it holds client
-   * funds.
-   */
-  @Query(
-      """
-      SELECT COALESCE(SUM(
-        CASE
-          WHEN t.transactionType IN ('DEPOSIT', 'TRANSFER_IN', 'INTEREST_CREDIT') THEN t.amount
-          WHEN t.transactionType IN ('PAYMENT', 'TRANSFER_OUT', 'FEE_TRANSFER', 'REFUND', 'INTEREST_LPFF') THEN -t.amount
-          ELSE 0
-        END
-      ), 0)
-      FROM TrustTransaction t
-      WHERE t.projectId = :projectId
-        AND t.status IN ('RECORDED', 'APPROVED')
-      """)
-  BigDecimal calculateBalanceByProjectId(@Param("projectId") UUID projectId);
-
-  /**
-   * One client's money on one matter in one trust account — the matter sub-ledger cell (G89-F12).
-   * Same sign rules and RECORDED/APPROVED filter as {@link #calculateClientBalanceAsOfDate}. A
-   * debit on a matter must be covered by this cell, not merely by the client card: the closure gate
-   * reads the matter, and a co-client must never spend another client's money on a shared matter.
-   * The caller holds the client card's row lock ({@code findByAccountAndCustomerForUpdate}), which
-   * serialises every posting for the client, so the sum cannot race.
-   */
-  @Query(
-      """
-      SELECT COALESCE(SUM(
-        CASE
-          WHEN t.transactionType IN ('DEPOSIT', 'TRANSFER_IN', 'INTEREST_CREDIT') THEN t.amount
-          WHEN t.transactionType IN ('PAYMENT', 'TRANSFER_OUT', 'FEE_TRANSFER', 'REFUND', 'INTEREST_LPFF') THEN -t.amount
-          ELSE 0
-        END
-      ), 0)
-      FROM TrustTransaction t
-      WHERE t.trustAccountId = :trustAccountId
-        AND t.customerId = :customerId
-        AND t.projectId = :projectId
-        AND t.status IN ('RECORDED', 'APPROVED')
-      """)
-  BigDecimal calculateMatterClientBalance(
-      @Param("trustAccountId") UUID trustAccountId,
-      @Param("customerId") UUID customerId,
-      @Param("projectId") UUID projectId);
 
   /**
    * Finds unmatched candidate transactions for bank reconciliation auto-matching. Candidates are
@@ -411,7 +234,7 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
       WHERE t.trustAccountId = :trustAccountId
         AND t.status IN ('RECORDED', 'APPROVED')
         AND t.bankStatementLineId IS NULL
-        AND t.transactionType IN ('DEPOSIT', 'INTEREST_CREDIT')
+        AND t.transactionType = 'DEPOSIT'
       """)
   BigDecimal calculateOutstandingDeposits(@Param("trustAccountId") UUID trustAccountId);
 
@@ -423,7 +246,7 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
       WHERE t.trustAccountId = :trustAccountId
         AND t.status IN ('RECORDED', 'APPROVED')
         AND t.bankStatementLineId IS NULL
-        AND t.transactionType IN ('PAYMENT', 'FEE_TRANSFER', 'REFUND', 'INTEREST_LPFF')
+        AND t.transactionType IN ('PAYMENT', 'FEE_TRANSFER', 'REFUND')
       """)
   BigDecimal calculateOutstandingPayments(@Param("trustAccountId") UUID trustAccountId);
 

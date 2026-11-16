@@ -27,7 +27,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccount;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountStatus;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountType;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedgerQueryRepository;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
@@ -56,7 +56,7 @@ class ComplianceDataCollectorServiceTest {
   @Mock private ProcessingActivityRepository processingActivityRepository;
   @Mock private DataSubjectRequestRepository dataSubjectRequestRepository;
   @Mock private TrustAccountRepository trustAccountRepository;
-  @Mock private ClientLedgerCardRepository clientLedgerCardRepository;
+  @Mock private TrustLedgerQueryRepository trustLedgerQueryRepository;
   @Mock private PrescriptionTrackerRepository prescriptionTrackerRepository;
   @Mock private RetentionPolicyRepository retentionPolicyRepository;
   @Mock private RetentionService retentionService;
@@ -74,7 +74,7 @@ class ComplianceDataCollectorServiceTest {
             processingActivityRepository,
             dataSubjectRequestRepository,
             trustAccountRepository,
-            clientLedgerCardRepository,
+            trustLedgerQueryRepository,
             prescriptionTrackerRepository,
             retentionPolicyRepository,
             retentionService,
@@ -114,7 +114,7 @@ class ComplianceDataCollectorServiceTest {
     TrustAccount account = createTrustAccount();
     when(trustAccountRepository.findByStatus(TrustAccountStatus.ACTIVE))
         .thenReturn(List.of(account));
-    when(clientLedgerCardRepository.calculateTotalTrustBalance(account.getId()))
+    when(trustLedgerQueryRepository.clientLedgerTotal(account.getId(), null))
         .thenReturn(BigDecimal.valueOf(50000));
 
     // Court calendar (prescription) enabled

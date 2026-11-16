@@ -6,7 +6,6 @@ type LedgerTotals = Pick<
   ClientLedgerCard,
   | "balance"
   | "totalDeposits"
-  | "totalInterestCredited"
   | "totalTransfersIn"
   | "totalPayments"
   | "totalFeeTransfers"
@@ -30,7 +29,7 @@ interface Row {
 
 /**
  * The client ledger's posted totals as the sum that makes up its balance (G89-F13):
- * Deposits + Interest + Transfers in − Payments − Fee transfers − Refunds − Transfers out = Balance.
+ * Deposits + Transfers in − Payments − Fee transfers − Refunds − Transfers out = Balance.
  * Every total is derived server-side from the posted ledger, so the rows always reconcile.
  * Transfer rows are hidden while they are zero.
  */
@@ -41,7 +40,6 @@ export function LedgerTotalsBreakdown({
 }: LedgerTotalsBreakdownProps) {
   const rows: Row[] = [
     { key: "deposits", sign: "", label: "Deposits", amount: ledger.totalDeposits },
-    { key: "interest", sign: "+", label: "Interest", amount: ledger.totalInterestCredited },
     {
       key: "transfers-in",
       sign: "+",

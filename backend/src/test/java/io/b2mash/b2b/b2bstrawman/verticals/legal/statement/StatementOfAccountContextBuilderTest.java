@@ -45,6 +45,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLe
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService.LedgerStatementLine;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService.LedgerStatementResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionType;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
@@ -293,8 +294,9 @@ class StatementOfAccountContextBuilderTest {
   void trustBlock_classifiesEveryCanonicalLedgerType() {
     // Every ledger type produced by the trust subsystem must land in either deposits or
     // payments. If a type is dropped here the rendered statement stops reconciling with the
-    // opening/closing balances. The credit/debit sets mirror ClientLedgerService and
-    // TrustReconciliationService.
+    // opening/closing balances. Since Phase 92 (646A, ADR-378) the builder classifies a line by
+    // the sign of its ledger effect, never by its type name: a positive effect is a deposit, a
+    // negative one a payment, a zero-effect line is dropped.
     var project = projectWithCustomer("Coverage Matter", customerId);
     when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
     when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer("Client")));
@@ -310,14 +312,14 @@ class StatementOfAccountContextBuilderTest {
         List.of(
             ledgerLine("DEPOSIT", new BigDecimal("100.00")),
             ledgerLine("TRANSFER_IN", new BigDecimal("200.00")),
-            ledgerLine("INTEREST_CREDIT", new BigDecimal("5.00")),
             ledgerLine("PAYMENT", new BigDecimal("50.00")),
-            ledgerLine("DISBURSEMENT_PAYMENT", new BigDecimal("60.00")),
+            // A legacy type name the registry does not know still lands by its effect's sign.
+            ledgerLineWithEffect(
+                "DISBURSEMENT_PAYMENT", new BigDecimal("60.00"), new BigDecimal("-60.00")),
             ledgerLine("TRANSFER_OUT", new BigDecimal("70.00")),
             ledgerLine("FEE_TRANSFER", new BigDecimal("80.00")),
             ledgerLine("REFUND", new BigDecimal("90.00")),
-            ledgerLine("INTEREST_LPFF", new BigDecimal("3.00")),
-            ledgerLine("UNKNOWN_TYPE_X", new BigDecimal("1.00")));
+            ledgerLineWithEffect("UNKNOWN_TYPE_X", new BigDecimal("1.00"), BigDecimal.ZERO));
     when(clientLedgerService.getClientLedgerStatement(
             customerId, trustAccountId, periodStart, periodEnd))
         .thenReturn(new LedgerStatementResponse(BigDecimal.ZERO, BigDecimal.ZERO, lines));
@@ -333,12 +335,12 @@ class StatementOfAccountContextBuilderTest {
     @SuppressWarnings("unchecked")
     List<?> payments = (List<?>) trust.get("payments");
 
-    // Credits: DEPOSIT, TRANSFER_IN, INTEREST_CREDIT (3 lines).
-    assertThat(deposits).hasSize(3);
-    // Debits: PAYMENT, DISBURSEMENT_PAYMENT, TRANSFER_OUT, FEE_TRANSFER, REFUND, INTEREST_LPFF
-    // (6 lines). UNKNOWN_TYPE_X is intentionally dropped — the assertion guards against the
-    // classifier silently absorbing types it doesn't recognise.
-    assertThat(payments).hasSize(6);
+    // Credits: DEPOSIT, TRANSFER_IN (2 lines).
+    assertThat(deposits).hasSize(2);
+    // Debits: PAYMENT, DISBURSEMENT_PAYMENT, TRANSFER_OUT, FEE_TRANSFER, REFUND (5 lines).
+    // UNKNOWN_TYPE_X (zero effect) is intentionally dropped — the assertion guards against the
+    // classifier silently absorbing a line that moves no money.
+    assertThat(payments).hasSize(5);
   }
 
   @Test
@@ -800,7 +802,8 @@ class StatementOfAccountContextBuilderTest {
             "Initial deposit",
             LocalDate.of(2026, 4, 7),
             "POSTED",
-            BigDecimal.ZERO);
+            BigDecimal.ZERO,
+            new BigDecimal("500.00"));
     var pay =
         new ClientLedgerService.LedgerStatementLine(
             UUID.randomUUID(),
@@ -810,7 +813,8 @@ class StatementOfAccountContextBuilderTest {
             "Outgoing payment",
             LocalDate.of(2026, 4, 9),
             "POSTED",
-            BigDecimal.ZERO);
+            BigDecimal.ZERO,
+            new BigDecimal("-200.00"));
     var refund =
         new ClientLedgerService.LedgerStatementLine(
             UUID.randomUUID(),
@@ -820,7 +824,8 @@ class StatementOfAccountContextBuilderTest {
             "Refund to client",
             LocalDate.of(2026, 4, 10),
             "POSTED",
-            BigDecimal.ZERO);
+            BigDecimal.ZERO,
+            new BigDecimal("-100.00"));
     when(clientLedgerService.getClientLedgerStatement(
             customerId, trustAccountId, periodStart, periodEnd))
         .thenReturn(
@@ -1530,9 +1535,26 @@ class StatementOfAccountContextBuilderTest {
     return ledgerLine(type, amount, LocalDate.of(2026, 4, 15));
   }
 
+  /** A line whose ledger effect is the registry's effect for {@code type} (Phase 92, ADR-378). */
   private LedgerStatementLine ledgerLine(String type, BigDecimal amount, LocalDate date) {
+    var effect = TrustTransactionType.of(type).effectFor(amount).ledgerEffect();
     return new LedgerStatementLine(
-        UUID.randomUUID(), type, amount, "REF", "desc", date, "POSTED", BigDecimal.ZERO);
+        UUID.randomUUID(), type, amount, "REF", "desc", date, "POSTED", BigDecimal.ZERO, effect);
+  }
+
+  /** A line with an explicit ledger effect — for type names the registry does not know. */
+  private LedgerStatementLine ledgerLineWithEffect(
+      String type, BigDecimal amount, BigDecimal ledgerEffect) {
+    return new LedgerStatementLine(
+        UUID.randomUUID(),
+        type,
+        amount,
+        "REF",
+        "desc",
+        LocalDate.of(2026, 4, 15),
+        "POSTED",
+        BigDecimal.ZERO,
+        ledgerEffect);
   }
 
   private Invoice invoiceWithStatusTotalAndIssueDate(

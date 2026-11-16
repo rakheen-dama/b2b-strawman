@@ -36,7 +36,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -98,22 +97,6 @@ public class StatementOfAccountContextBuilder {
   static Map<String, String> formatHints() {
     return FORMAT_HINTS;
   }
-
-  // Mirror the canonical credit/debit classifications used by ClientLedgerService and
-  // TrustReconciliationService so every ledger type produced by the trust subsystem renders
-  // in either the deposits or payments section (otherwise the activity list stops reconciling
-  // with the opening/closing balances). DISBURSEMENT_PAYMENT is included on the debit side
-  // because the disbursement subsystem emits it via FEE_TRANSFER + payment recording.
-  private static final Set<String> TRUST_CREDIT_TYPES =
-      Set.of("DEPOSIT", "TRANSFER_IN", "INTEREST_CREDIT");
-  private static final Set<String> TRUST_DEBIT_TYPES =
-      Set.of(
-          "PAYMENT",
-          "DISBURSEMENT_PAYMENT",
-          "TRANSFER_OUT",
-          "FEE_TRANSFER",
-          "REFUND",
-          "INTEREST_LPFF");
 
   private final ProjectRepository projectRepository;
   private final CustomerRepository customerRepository;
@@ -595,15 +578,15 @@ public class StatementOfAccountContextBuilder {
               line.amount(),
               line.reference(),
               line.description());
-      String type = line.transactionType();
-      if (TRUST_CREDIT_TYPES.contains(type)) {
+      // Deposits or payments by the line's own posted effect on the client ledger (Phase 92,
+      // ADR-378) — the same figure the opening/closing balances sum, so the itemised tables always
+      // reconcile with them. No type-name table to keep in step.
+      int sign = line.ledgerEffect() != null ? line.ledgerEffect().signum() : 0;
+      if (sign > 0) {
         deposits.add(dto);
-      } else if (TRUST_DEBIT_TYPES.contains(type)) {
+      } else if (sign < 0) {
         payments.add(dto);
       }
-      // Unknown ledger types are ignored — TRUST_CREDIT_TYPES/TRUST_DEBIT_TYPES mirror the
-      // canonical sets in ClientLedgerService, so an unknown type here means a new type was
-      // added without updating both classifiers.
     }
     return new TrustBlock(opening, deposits, payments, closing);
   }

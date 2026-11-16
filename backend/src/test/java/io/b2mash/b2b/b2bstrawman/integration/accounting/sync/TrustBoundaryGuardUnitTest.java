@@ -8,7 +8,7 @@ import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLine;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.DisbursementRepository;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedgerQueryRepository;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
@@ -27,7 +27,7 @@ import org.springframework.dao.DataAccessException;
 class TrustBoundaryGuardUnitTest {
 
   @Mock private DisbursementRepository disbursementRepository;
-  @Mock private ClientLedgerCardRepository clientLedgerCardRepository;
+  @Mock private TrustLedgerQueryRepository trustLedgerQueryRepository;
 
   @InjectMocks private TrustBoundaryGuard trustBoundaryGuard;
 
@@ -37,9 +37,9 @@ class TrustBoundaryGuardUnitTest {
     when(disbursementRepository.findById(any()))
         .thenThrow(new DataAccessException("relation \"disbursements\" does not exist") {});
 
-    // Ledger card lookup also throws (trust tables absent)
-    when(clientLedgerCardRepository.sumBalancesForCustomer(any()))
-        .thenThrow(new DataAccessException("relation \"client_ledger_cards\" does not exist") {});
+    // Derived balance lookup also throws (trust tables absent)
+    when(trustLedgerQueryRepository.generalBalance(any()))
+        .thenThrow(new DataAccessException("relation \"trust_transactions\" does not exist") {});
 
     var invoice = createTestInvoice();
     var line = createTestInvoiceLineWithDisbursement(invoice.getId());
@@ -52,10 +52,10 @@ class TrustBoundaryGuardUnitTest {
   }
 
   @Test
-  void evaluate_permitsWhenOnlyLedgerCardTableMissing() {
-    // Disbursement table exists but has no trust-linked entries, ledger card table missing
-    when(clientLedgerCardRepository.sumBalancesForCustomer(any()))
-        .thenThrow(new DataAccessException("relation \"client_ledger_cards\" does not exist") {});
+  void evaluate_permitsWhenOnlyTrustTransactionTableMissing() {
+    // Disbursement table exists but has no trust-linked entries, trust transaction table missing
+    when(trustLedgerQueryRepository.generalBalance(any()))
+        .thenThrow(new DataAccessException("relation \"trust_transactions\" does not exist") {});
 
     var invoice = createTestInvoice();
     var line = createTestInvoiceLine(invoice.getId());

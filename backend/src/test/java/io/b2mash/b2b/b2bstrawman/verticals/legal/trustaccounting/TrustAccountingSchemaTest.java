@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
@@ -10,7 +9,6 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.time.LocalDate;
 import java.util.List;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.BeforeAll;
@@ -20,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -83,34 +80,31 @@ class TrustAccountingSchemaTest {
     }
   }
 
+  /**
+   * Phase 92 / 646A (ADR-378): client balances are derived from the posted rows, so {@code
+   * client_ledger_cards} is only the per-client lock anchor — the stored balance, the running
+   * totals, the last-transaction date, their CHECKs and {@code idx_client_ledger_balance} are gone.
+   * (Replaces {@code clientLedgerCardBalanceConstraintPreventsNegative}: the database no longer
+   * refuses a negative client balance — the CHECK it pinned was dropped with the column.)
+   */
   @Test
-  void clientLedgerCardBalanceConstraintPreventsNegative() throws Exception {
-    // Insert a valid trust account using schema-qualified table name
-    jdbcTemplate.update(
-        "INSERT INTO "
-            + tenantSchema
-            + ".trust_accounts "
-            + "(id, account_name, bank_name, branch_code, account_number, "
-            + " account_type, is_primary, require_dual_approval, status, opened_date, "
-            + " created_at, updated_at) "
-            + "VALUES (gen_random_uuid(), 'Test Trust Account', 'FNB', '250655', "
-            + "        '62123456789', 'GENERAL', true, false, 'ACTIVE', ?, now(), now())",
-        LocalDate.now());
+  void clientLedgerCardsHasOnlyTheLockAnchorColumns() {
+    List<String> columns =
+        jdbcTemplate.queryForList(
+            "SELECT column_name FROM information_schema.columns "
+                + "WHERE table_schema = ? AND table_name = 'client_ledger_cards'",
+            String.class,
+            tenantSchema);
+    assertThat(columns)
+        .containsExactlyInAnyOrder(
+            "id", "trust_account_id", "customer_id", "created_at", "updated_at");
 
-    // Attempt to insert a client_ledger_card with negative balance — should violate CHECK
-    assertThatThrownBy(
-            () ->
-                jdbcTemplate.update(
-                    "INSERT INTO "
-                        + tenantSchema
-                        + ".client_ledger_cards "
-                        + "(id, trust_account_id, customer_id, balance, total_deposits, "
-                        + " total_payments, total_fee_transfers, total_interest_credited, "
-                        + " created_at, updated_at) "
-                        + "SELECT gen_random_uuid(), id, gen_random_uuid(), -1, 0, 0, 0, 0, now(), now() "
-                        + "FROM "
-                        + tenantSchema
-                        + ".trust_accounts LIMIT 1"))
-        .isInstanceOf(DataIntegrityViolationException.class);
+    Integer balanceIndexes =
+        jdbcTemplate.queryForObject(
+            "SELECT count(*) FROM pg_indexes WHERE schemaname = ?"
+                + " AND indexname = 'idx_client_ledger_balance'",
+            Integer.class,
+            tenantSchema);
+    assertThat(balanceIndexes).isZero();
   }
 }

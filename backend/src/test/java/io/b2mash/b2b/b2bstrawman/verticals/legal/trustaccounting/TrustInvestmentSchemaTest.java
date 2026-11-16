@@ -123,9 +123,11 @@ class TrustInvestmentSchemaTest {
                 + tenantSchema
                 + ".trust_transactions "
                 + "(id, trust_account_id, customer_id, transaction_type, amount, "
-                + " reference, description, transaction_date, status, recorded_by, created_at) "
+                + " reference, description, transaction_date, status, recorded_by, created_at, "
+                + " ledger, cashbook_effect, ledger_effect, posted_at) "
                 + "VALUES (gen_random_uuid(), ?::uuid, ?::uuid, 'DEPOSIT', 10000.00, "
-                + "        'REF001', 'Test deposit', CURRENT_DATE, 'RECORDED', ?::uuid, now()) "
+                + "        'REF001', 'Test deposit', CURRENT_DATE, 'RECORDED', ?::uuid, now(), "
+                + "        'CLIENT', 10000.00, 10000.00, now()) "
                 + "RETURNING id::text",
             String.class,
             trustAccountId,

@@ -21,7 +21,6 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRep
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateTrustAccountRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTransactionRecordedEvent;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService.ClientHistoryFilter;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordDepositRequest;
@@ -46,9 +45,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.event.ApplicationEvents;
 import org.springframework.test.context.event.RecordApplicationEvents;
@@ -74,12 +71,10 @@ class TrustTransactionServiceTest {
   @Autowired private TrustAccountService trustAccountService;
   @Autowired private TrustAccountRepository trustAccountRepository;
   @Autowired private TrustTransactionRepository transactionRepository;
-  @Autowired private ClientLedgerCardRepository ledgerCardRepository;
   @Autowired private ClientLedgerService clientLedgerService;
   @Autowired private CustomerRepository customerRepository;
   @Autowired private AuditEventRepository auditEventRepository;
   @Autowired private EntityManager entityManager;
-  @Autowired private JdbcTemplate jdbcTemplate;
   @Autowired private InvoiceService invoiceService;
   @Autowired private InvoiceRepository invoiceRepository;
   @Autowired private NotificationRepository notificationRepository;
@@ -278,7 +273,7 @@ class TrustTransactionServiceTest {
   }
 
   @Test
-  void deposit_upsertsClientLedgerCardWithCorrectBalance() {
+  void deposit_derivesClientLedgerWithCorrectBalance() {
     runInTenant(
         () ->
             transactionTemplate.executeWithoutResult(
@@ -299,20 +294,17 @@ class TrustTransactionServiceTest {
 
                   transactionService.recordDeposit(trustAccountId, request);
 
-                  var ledger =
-                      ledgerCardRepository
-                          .findByTrustAccountIdAndCustomerId(trustAccountId, customer.getId())
-                          .orElseThrow();
+                  var ledger = ledger(trustAccountId, customer.getId());
 
-                  assertThat(ledger.getBalance()).isEqualByComparingTo(new BigDecimal("5000.00"));
-                  assertThat(ledger.getTotalDeposits())
+                  assertThat(ledger.balance()).isEqualByComparingTo(new BigDecimal("5000.00"));
+                  assertThat(ledger.totalDeposits())
                       .isEqualByComparingTo(new BigDecimal("5000.00"));
-                  assertThat(ledger.getLastTransactionDate()).isEqualTo(LocalDate.of(2026, 3, 2));
+                  assertThat(ledger.lastTransactionDate()).isEqualTo(LocalDate.of(2026, 3, 2));
                 }));
   }
 
   @Test
-  void secondDeposit_incrementsExistingLedgerCard() {
+  void secondDeposit_incrementsDerivedClientLedger() {
     runInTenant(
         () ->
             transactionTemplate.executeWithoutResult(
@@ -342,15 +334,12 @@ class TrustTransactionServiceTest {
                           "Second deposit",
                           LocalDate.of(2026, 3, 4)));
 
-                  var ledger =
-                      ledgerCardRepository
-                          .findByTrustAccountIdAndCustomerId(trustAccountId, customer.getId())
-                          .orElseThrow();
+                  var ledger = ledger(trustAccountId, customer.getId());
 
-                  assertThat(ledger.getBalance()).isEqualByComparingTo(new BigDecimal("5000.00"));
-                  assertThat(ledger.getTotalDeposits())
+                  assertThat(ledger.balance()).isEqualByComparingTo(new BigDecimal("5000.00"));
+                  assertThat(ledger.totalDeposits())
                       .isEqualByComparingTo(new BigDecimal("5000.00"));
-                  assertThat(ledger.getLastTransactionDate()).isEqualTo(LocalDate.of(2026, 3, 4));
+                  assertThat(ledger.lastTransactionDate()).isEqualTo(LocalDate.of(2026, 3, 4));
                 }));
   }
 
@@ -560,19 +549,13 @@ class TrustTransactionServiceTest {
                           null,
                           LocalDate.of(2026, 3, 11)));
 
-                  var sourceLedger =
-                      ledgerCardRepository
-                          .findByTrustAccountIdAndCustomerId(trustAccountId, sourceCustomer.getId())
-                          .orElseThrow();
+                  var sourceLedger = ledger(trustAccountId, sourceCustomer.getId());
 
-                  var targetLedger =
-                      ledgerCardRepository
-                          .findByTrustAccountIdAndCustomerId(trustAccountId, targetCustomer.getId())
-                          .orElseThrow();
+                  var targetLedger = ledger(trustAccountId, targetCustomer.getId());
 
-                  assertThat(sourceLedger.getBalance())
+                  assertThat(sourceLedger.balance())
                       .isEqualByComparingTo(new BigDecimal("5000.00"));
-                  assertThat(targetLedger.getBalance())
+                  assertThat(targetLedger.balance())
                       .isEqualByComparingTo(new BigDecimal("3000.00"));
                 }));
   }
@@ -755,51 +738,12 @@ class TrustTransactionServiceTest {
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
-                  var sourceLedger =
-                      ledgerCardRepository
-                          .findByTrustAccountIdAndCustomerId(trustAccountId, sourceId[0])
-                          .orElseThrow();
+                  var sourceLedger = ledger(trustAccountId, sourceId[0]);
 
-                  assertThat(sourceLedger.getBalance())
+                  assertThat(sourceLedger.balance())
                       .as("Source balance should be 2000 (5000 - one successful 3000 transfer)")
                       .isEqualByComparingTo(new BigDecimal("2000.00"));
                 }));
-  }
-
-  @Test
-  void checkConstraint_preventsNegativeBalance() {
-    UUID[] customerId = new UUID[1];
-
-    // Create ledger card via deposit in first transaction
-    runInTenant(
-        () ->
-            transactionTemplate.executeWithoutResult(
-                tx -> {
-                  var customer =
-                      customerRepository.save(
-                          TestCustomerFactory.createActiveCustomer(
-                              "Check Constraint Client", "check@test.com", memberId));
-                  customerId[0] = customer.getId();
-
-                  transactionService.recordDeposit(
-                      trustAccountId,
-                      new RecordDepositRequest(
-                          customer.getId(),
-                          trustMatterOf(customer.getId()),
-                          new BigDecimal("100.00"),
-                          "DEP-011",
-                          null,
-                          LocalDate.of(2026, 3, 16)));
-                }));
-
-    // Attempt to set negative balance directly via SQL in a separate transaction
-    assertThatThrownBy(
-            () ->
-                jdbcTemplate.update(
-                    "UPDATE \"%s\".client_ledger_cards SET balance = -1 WHERE customer_id = ?"
-                        .formatted(tenantSchema),
-                    customerId[0]))
-        .isInstanceOf(DataIntegrityViolationException.class);
   }
 
   @Test
@@ -845,12 +789,9 @@ class TrustTransactionServiceTest {
 
                   assertThat(result).hasSize(2);
 
-                  var sourceLedger =
-                      ledgerCardRepository
-                          .findByTrustAccountIdAndCustomerId(trustAccountId, sourceCustomer.getId())
-                          .orElseThrow();
+                  var sourceLedger = ledger(trustAccountId, sourceCustomer.getId());
 
-                  assertThat(sourceLedger.getBalance()).isEqualByComparingTo(BigDecimal.ZERO);
+                  assertThat(sourceLedger.balance()).isEqualByComparingTo(BigDecimal.ZERO);
                 }));
   }
 
@@ -912,14 +853,10 @@ class TrustTransactionServiceTest {
                   assertThat(original.getReversedById()).isNull();
 
                   // Ledger should NOT be updated (credit reversal awaits approval)
-                  var ledger =
-                      ledgerCardRepository
-                          .findByTrustAccountIdAndCustomerId(
-                              trustAccountId, original.getCustomerId())
-                          .orElseThrow();
+                  var ledger = ledger(trustAccountId, original.getCustomerId());
 
                   // Balance still has the deposit amount (5000) — not yet reduced
-                  assertThat(ledger.getBalance()).isEqualByComparingTo(new BigDecimal("5000.00"));
+                  assertThat(ledger.balance()).isEqualByComparingTo(new BigDecimal("5000.00"));
                 }));
   }
 
@@ -989,19 +926,13 @@ class TrustTransactionServiceTest {
             transactionTemplate.executeWithoutResult(
                 tx -> {
                   // Source balance before reversal: 10000 - 3000 = 7000
-                  var sourceLedgerBefore =
-                      ledgerCardRepository
-                          .findByTrustAccountIdAndCustomerId(trustAccountId, sourceCustomerId[0])
-                          .orElseThrow();
-                  assertThat(sourceLedgerBefore.getBalance())
+                  var sourceLedgerBefore = ledger(trustAccountId, sourceCustomerId[0]);
+                  assertThat(sourceLedgerBefore.balance())
                       .isEqualByComparingTo(new BigDecimal("7000.00"));
 
                   // Target balance before reversal: 3000 (received from transfer)
-                  var targetLedgerBefore =
-                      ledgerCardRepository
-                          .findByTrustAccountIdAndCustomerId(trustAccountId, targetCustomerId[0])
-                          .orElseThrow();
-                  assertThat(targetLedgerBefore.getBalance())
+                  var targetLedgerBefore = ledger(trustAccountId, targetCustomerId[0]);
+                  assertThat(targetLedgerBefore.balance())
                       .isEqualByComparingTo(new BigDecimal("3000.00"));
 
                   var reversalResponse =
@@ -1013,19 +944,13 @@ class TrustTransactionServiceTest {
                   assertThat(reversalResponse.reversalOf()).isEqualTo(transferOutTxnId[0]);
 
                   // Source ledger should be restored: 7000 + 3000 = 10000
-                  var sourceLedgerAfter =
-                      ledgerCardRepository
-                          .findByTrustAccountIdAndCustomerId(trustAccountId, sourceCustomerId[0])
-                          .orElseThrow();
-                  assertThat(sourceLedgerAfter.getBalance())
+                  var sourceLedgerAfter = ledger(trustAccountId, sourceCustomerId[0]);
+                  assertThat(sourceLedgerAfter.balance())
                       .isEqualByComparingTo(new BigDecimal("10000.00"));
 
                   // Target ledger should be debited: 3000 - 3000 = 0
-                  var targetLedgerAfter =
-                      ledgerCardRepository
-                          .findByTrustAccountIdAndCustomerId(trustAccountId, targetCustomerId[0])
-                          .orElseThrow();
-                  assertThat(targetLedgerAfter.getBalance()).isEqualByComparingTo(BigDecimal.ZERO);
+                  var targetLedgerAfter = ledger(trustAccountId, targetCustomerId[0]);
+                  assertThat(targetLedgerAfter.balance()).isEqualByComparingTo(BigDecimal.ZERO);
 
                   // The paired TRANSFER_IN should also be marked as REVERSED
                   var pairedIn = transactionRepository.findById(transferInTxnId[0]).orElseThrow();
@@ -1210,12 +1135,22 @@ class TrustTransactionServiceTest {
                               "Deposit for awaiting reversal test",
                               LocalDate.of(2026, 3, 24)));
 
-                  depositTxnId[0] = depositResponse.id();
+                  // A payment is recorded AWAITING_APPROVAL. (A posted deposit can no longer be
+                  // hand-set to AWAITING_APPROVAL: the row CHECK chk_trust_txn_posting refuses an
+                  // unposted status with posted_at set — Phase 92, 646A.)
+                  var paymentResponse =
+                      transactionService.recordPayment(
+                          trustAccountId,
+                          new RecordPaymentRequest(
+                              customer.getId(),
+                              trustMatterOf(customer.getId()),
+                              new BigDecimal("500.00"),
+                              "PAY-REV-004",
+                              "Payment awaiting approval",
+                              LocalDate.of(2026, 3, 24)));
+                  assertThat(paymentResponse.status()).isEqualTo("AWAITING_APPROVAL");
 
-                  // Set to AWAITING_APPROVAL to test this specific case
-                  var txn = transactionRepository.findById(depositTxnId[0]).orElseThrow();
-                  txn.setStatus("AWAITING_APPROVAL");
-                  transactionRepository.save(txn);
+                  depositTxnId[0] = paymentResponse.id();
                 }));
 
     // Attempt to reverse — should fail because it's not APPROVED
@@ -1298,7 +1233,7 @@ class TrustTransactionServiceTest {
 
   @Test
   void cashbookBalance_excludesRejectedTransactions() {
-    runInTenant(
+    runInTenantWithCapabilities(
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
@@ -1322,32 +1257,32 @@ class TrustTransactionServiceTest {
                           "Normal deposit",
                           LocalDate.of(2026, 3, 27)));
 
-                  // Create another deposit and reject it
-                  var depositToReject =
-                      transactionService.recordDeposit(
+                  // Record a payment and reject it. (A posted deposit can no longer be hand-set
+                  // to REJECTED: the row CHECK chk_trust_txn_posting refuses it — Phase 92, 646A;
+                  // only an awaiting-approval row can be rejected.)
+                  var paymentToReject =
+                      transactionService.recordPayment(
                           trustAccountId,
-                          new RecordDepositRequest(
+                          new RecordPaymentRequest(
                               customer.getId(),
                               trustMatterOf(customer.getId()),
                               new BigDecimal("3000.00"),
-                              "DEP-CB-004",
-                              "Rejected deposit",
+                              "PAY-CB-004",
+                              "Rejected payment",
                               LocalDate.of(2026, 3, 27)));
+                  var rejected =
+                      transactionService.rejectTransaction(
+                          paymentToReject.id(), memberId, "Not authorised");
+                  assertThat(rejected.status()).isEqualTo("REJECTED");
 
-                  // Set the second deposit to REJECTED
-                  var rejectedTxn =
-                      transactionRepository.findById(depositToReject.id()).orElseThrow();
-                  rejectedTxn.setStatus("REJECTED");
-                  transactionRepository.save(rejectedTxn);
-
-                  // Cashbook delta should only include the first deposit (8000),
-                  // not the rejected one (3000)
+                  // Cashbook delta should only include the deposit (8000), not the rejected
+                  // payment (−3000)
                   var balanceAfter =
                       transactionService.getCashbookBalance(trustAccountId).balance();
                   var delta = balanceAfter.subtract(balanceBefore);
 
                   assertThat(delta)
-                      .as("Rejected deposit should be excluded from cashbook balance")
+                      .as("Rejected payment should be excluded from cashbook balance")
                       .isEqualByComparingTo(new BigDecimal("8000.00"));
                 }));
   }
@@ -1412,7 +1347,7 @@ class TrustTransactionServiceTest {
   }
 
   @Test
-  void totalTrustBalance_equalsSumOfLedgerCardBalances() {
+  void totalTrustBalance_equalsSumOfDerivedClientBalances() {
     runInTenant(
         () ->
             transactionTemplate.executeWithoutResult(
@@ -1455,16 +1390,10 @@ class TrustTransactionServiceTest {
                   var totalBalance = totalBalanceResponse.balance();
 
                   // Get individual ledger card balances and sum them
-                  var ledger1 =
-                      ledgerCardRepository
-                          .findByTrustAccountIdAndCustomerId(trustAccountId, customer1.getId())
-                          .orElseThrow();
-                  var ledger2 =
-                      ledgerCardRepository
-                          .findByTrustAccountIdAndCustomerId(trustAccountId, customer2.getId())
-                          .orElseThrow();
+                  var ledger1 = ledger(trustAccountId, customer1.getId());
+                  var ledger2 = ledger(trustAccountId, customer2.getId());
 
-                  var expectedTotal = ledger1.getBalance().add(ledger2.getBalance());
+                  var expectedTotal = ledger1.balance().add(ledger2.balance());
 
                   // Total trust balance should include these two plus any other existing cards
                   assertThat(totalBalance).isGreaterThanOrEqualTo(expectedTotal);
@@ -1569,14 +1498,11 @@ class TrustTransactionServiceTest {
                   assertThat(response.approvedAt()).isNotNull();
 
                   // Verify ledger was debited
-                  var ledger =
-                      ledgerCardRepository
-                          .findByTrustAccountIdAndCustomerId(trustAccountId, customerId[0])
-                          .orElseThrow();
+                  var ledger = ledger(trustAccountId, customerId[0]);
 
                   // 10000 deposit - 3000 payment = 7000
-                  assertThat(ledger.getBalance()).isEqualByComparingTo(new BigDecimal("7000.00"));
-                  assertThat(ledger.getTotalPayments())
+                  assertThat(ledger.balance()).isEqualByComparingTo(new BigDecimal("7000.00"));
+                  assertThat(ledger.totalPayments())
                       .isEqualByComparingTo(new BigDecimal("3000.00"));
                 }));
   }
@@ -1730,12 +1656,9 @@ class TrustTransactionServiceTest {
                   assertThat(response.rejectionReason()).isEqualTo("Duplicate payment");
 
                   // Verify ledger was NOT debited (balance should remain 8000)
-                  var ledger =
-                      ledgerCardRepository
-                          .findByTrustAccountIdAndCustomerId(trustAccountId, customerId[0])
-                          .orElseThrow();
+                  var ledger = ledger(trustAccountId, customerId[0]);
 
-                  assertThat(ledger.getBalance()).isEqualByComparingTo(new BigDecimal("8000.00"));
+                  assertThat(ledger.balance()).isEqualByComparingTo(new BigDecimal("8000.00"));
                 }));
   }
 
@@ -1752,7 +1675,17 @@ class TrustTransactionServiceTest {
                           TestCustomerFactory.createActiveCustomer(
                               "Already Approved Client", "already_approved@test.com", memberId));
 
-                  // Record and manually set to APPROVED
+                  // Fund the client, then record the payment; it is approved once below
+                  transactionService.recordDeposit(
+                      trustAccountId,
+                      new RecordDepositRequest(
+                          customer.getId(),
+                          trustMatterOf(customer.getId()),
+                          new BigDecimal("1000.00"),
+                          "DEP-PAY-006",
+                          "Funding for the approval",
+                          LocalDate.of(2026, 4, 6)));
+
                   var response =
                       transactionService.recordPayment(
                           trustAccountId,
@@ -1765,11 +1698,15 @@ class TrustTransactionServiceTest {
                               LocalDate.of(2026, 4, 6)));
 
                   txnId[0] = response.id();
-
-                  var txn = transactionRepository.findById(txnId[0]).orElseThrow();
-                  txn.setStatus("APPROVED");
-                  transactionRepository.save(txn);
                 }));
+
+    // Approve it once, properly, through the service as the approver
+    runAsApprover(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx ->
+                    assertThat(transactionService.approveTransaction(txnId[0], approverId).status())
+                        .isEqualTo("APPROVED")));
 
     // Attempt to approve an already-APPROVED transaction
     runAsApprover(
@@ -2083,11 +2020,8 @@ class TrustTransactionServiceTest {
                   assertThat(response.secondApprovedAt()).isNotNull();
 
                   // Verify ledger was debited
-                  var ledger =
-                      ledgerCardRepository
-                          .findByTrustAccountIdAndCustomerId(dualApprovalAccountId, customerId[0])
-                          .orElseThrow();
-                  assertThat(ledger.getBalance()).isEqualByComparingTo(new BigDecimal("15000.00"));
+                  var ledger = ledger(dualApprovalAccountId, customerId[0]);
+                  assertThat(ledger.balance()).isEqualByComparingTo(new BigDecimal("15000.00"));
                 }));
   }
 
@@ -2869,6 +2803,11 @@ class TrustTransactionServiceTest {
   }
 
   // --- Helpers ---
+
+  /** The derived client ledger (balance, totals, last date — Phase 92, ADR-378). */
+  private ClientLedgerService.ClientLedgerCardResponse ledger(UUID accountId, UUID customerId) {
+    return clientLedgerService.getClientLedger(customerId, accountId);
+  }
 
   private void runAsSecondApprover(Runnable action) {
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)

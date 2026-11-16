@@ -71,11 +71,15 @@ public class TrustLedgerPortalSyncService {
       UUID.fromString("00000000-0000-0000-0000-000000000000");
 
   /**
-   * Firm-side transaction statuses that produce portal-visible rows. {@code RECORDED} covers rows
-   * posted when recorded (DEPOSIT, transfers); {@code APPROVED} covers the post-approval rows
-   * (PAYMENT/FEE_TRANSFER/REFUND).
+   * Firm-side transaction statuses that produce portal-visible rows — the posted statuses of {@code
+   * chk_trust_txn_posting}. {@code RECORDED} covers rows posted when recorded (DEPOSIT, transfers,
+   * immediate contra entries); {@code APPROVED} covers the post-approval rows
+   * (PAYMENT/FEE_TRANSFER/REFUND, an approved credit contra); {@code REVERSED} covers a reversed
+   * original, which still counts under the contra model (649B, ADR-378) — its {@code REVERSAL} row
+   * carries the negation. Both halves of the pair must be replayed, or the portal balance would be
+   * off by the amount.
    */
-  private static final List<String> PORTAL_STATUSES = List.of("RECORDED", "APPROVED");
+  private static final List<String> PORTAL_STATUSES = List.of("RECORDED", "APPROVED", "REVERSED");
 
   private final PortalTrustReadModelRepository portalTrustRepo;
   private final TrustTransactionRepository trustTransactionRepository;
@@ -210,7 +214,7 @@ public class TrustLedgerPortalSyncService {
   }
 
   /**
-   * Recomputes the portal read-model for every matter that has at least one non-reversal trust
+   * Recomputes the portal read-model for every matter that has at least one posted trust
    * transaction in the given account. Used by the interest-posted and reconciliation-completed
    * fan-out handlers.
    */
@@ -235,7 +239,8 @@ public class TrustLedgerPortalSyncService {
    * stamping each row with that transaction's own {@code customer_id} and a per-customer
    * progressive {@code running_balance}. Each row moves the balance by its own posted {@code
    * ledger_effect} (Phase 92, ADR-378) — the figure of {@code TrustLedgerQueryRepository} — and
-   * only types the registry marks client-visible are surfaced (REVERSAL is not, in 646A).
+   * only types the registry marks client-visible are surfaced. A reversed original and its {@code
+   * REVERSAL} contra are both replayed, each with its own effect (649B).
    *
    * <p>Used by the event-driven fan-out (approval, recorded, interest, reconciliation) and
    * internally by the backfill. Fetches the matter's transactions exactly once per call.
@@ -292,10 +297,10 @@ public class TrustLedgerPortalSyncService {
   // ── Backfill ───────────────────────────────────────────────────────────
 
   /**
-   * Rebuilds the portal trust read-model for a tenant by writing a row per non-reversal trust
-   * transaction (capped at {@link #BACKFILL_LIMIT_PER_MATTER} per matter) and the corresponding
-   * per-matter balance snapshot. Intended to be called on module activation (via {@code POST
-   * /internal/portal-resync/*}) or when repairing drift.
+   * Rebuilds the portal trust read-model for a tenant by writing a row per posted, client-visible
+   * trust transaction (capped at {@link #BACKFILL_LIMIT_PER_MATTER} per matter) and the
+   * corresponding per-matter balance snapshot. Intended to be called on module activation (via
+   * {@code POST /internal/portal-resync/*}) or when repairing drift.
    *
    * <p>Wipe-and-rewrite semantics: after upserting the fresh current-window projection for each
    * touched customer, the method deletes portal balance/transaction rows that fall outside the new
@@ -351,8 +356,8 @@ public class TrustLedgerPortalSyncService {
         SYSTEM_ACTOR_ID,
         () -> {
           // Load every trust transaction once, filter portal-eligible + portal-status inline
-          // and bucket by matter. (Previously this looped over [RECORDED, APPROVED] with
-          // a findAll() call inside — O(2N) heap load + silent duplicates.)
+          // and bucket by matter. (Previously this looped over the statuses with a findAll()
+          // call inside — O(2N) heap load + silent duplicates.)
           for (var txn : trustTransactionRepository.findAll()) {
             if (!PORTAL_STATUSES.contains(txn.getStatus())) {
               continue;
@@ -523,9 +528,9 @@ public class TrustLedgerPortalSyncService {
 
   /**
    * Only types the registry marks client-visible are surfaced ({@link
-   * TrustTransactionType#clientVisible()}). REVERSAL is not in 646A — it carries no effect and
-   * would confuse portal viewers (649B flips it with the contra model). A null or unknown code is
-   * not surfaced (lenient lookup — the type CHECK admits no other code).
+   * TrustTransactionType#clientVisible()}); since 649B that includes REVERSAL, the contra entry of
+   * a reversed original. A null or unknown code is not surfaced (lenient lookup — the type CHECK
+   * admits no other code).
    */
   private static boolean isPortalEligible(TrustTransaction txn) {
     return TrustTransactionType.find(txn.getTransactionType())

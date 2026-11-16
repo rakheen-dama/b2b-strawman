@@ -21,6 +21,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.Tru
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordPaymentRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordRefundRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordTransferRequest;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.ReverseRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.TrustTransactionResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionType;
 import java.math.BigDecimal;
@@ -402,8 +403,17 @@ public final class TrustBooksFixture {
       assertThat(statusOf(transactionId)).as("rejected row").isEqualTo("REJECTED");
     }
 
-    /** The maker reverses; the account moves by exactly {@code expected}. */
+    /** The maker reverses (dated today); the account moves by exactly {@code expected}. */
     public TrustTransactionResponse reverse(UUID account, UUID transactionId, Expected expected) {
+      return reverse(account, transactionId, expected, null);
+    }
+
+    /**
+     * The maker reverses with {@code reversalDate} (null = today); the account moves by exactly
+     * {@code expected} as at today.
+     */
+    public TrustTransactionResponse reverse(
+        UUID account, UUID transactionId, Expected expected, LocalDate reversalDate) {
       var reversal = new TrustTransactionResponse[1];
       as(
           memberId,
@@ -414,7 +424,8 @@ public final class TrustBooksFixture {
                   () ->
                       reversal[0] =
                           transactionService.reverseTransaction(
-                              transactionId, "trust books fixture: reversed")));
+                              transactionId,
+                              new ReverseRequest("trust books fixture: reversed", reversalDate))));
       assertThat(reversal[0].transactionType()).isEqualTo("REVERSAL");
       assertThat(reversal[0].reversalOf()).isEqualTo(transactionId);
       return reversal[0];
@@ -425,6 +436,12 @@ public final class TrustBooksFixture {
      * transaction" / {@code detail}, and nothing moves.
      */
     public void assertReversalRefused(UUID account, UUID transactionId, String detail) {
+      assertReversalRefused(account, transactionId, detail, null);
+    }
+
+    /** As {@link #assertReversalRefused(UUID, UUID, String)}, with {@code reversalDate}. */
+    public void assertReversalRefused(
+        UUID account, UUID transactionId, String detail, LocalDate reversalDate) {
       as(
           memberId,
           () ->
@@ -435,7 +452,9 @@ public final class TrustBooksFixture {
                       assertThatThrownBy(
                               () ->
                                   transactionService.reverseTransaction(
-                                      transactionId, "trust books fixture: reversed"))
+                                      transactionId,
+                                      new ReverseRequest(
+                                          "trust books fixture: reversed", reversalDate)))
                           .isInstanceOfSatisfying(
                               InvalidStateException.class,
                               e -> {
@@ -444,6 +463,25 @@ public final class TrustBooksFixture {
                                     .isEqualTo("Cannot reverse transaction");
                                 assertThat(e.getBody().getDetail()).isEqualTo(detail);
                               })));
+    }
+
+    /**
+     * The maker unmatches a statement line ({@code reverseForUnmatch}, 649B for 647A): every posted
+     * original linked to it is reversed by a contra dated the line's date; the account moves by
+     * exactly {@code expected}.
+     */
+    public List<TrustTransaction> reverseForUnmatch(
+        UUID account, UUID bankStatementLineId, Expected expected) {
+      @SuppressWarnings("unchecked")
+      List<TrustTransaction>[] contras = new List[1];
+      as(
+          memberId,
+          () ->
+              harness.assertMoves(
+                  account,
+                  expected,
+                  () -> contras[0] = transactionService.reverseForUnmatch(bankStatementLineId)));
+      return contras[0];
     }
 
     /**
@@ -472,9 +510,10 @@ public final class TrustBooksFixture {
     // --- direct writes (bypass the services; keep every such write here) -------------------
 
     /**
-     * Hand-sets {@code APPROVED}. On HEAD a deposit or {@code TRANSFER_OUT} is saved {@code
-     * RECORDED} and never becomes {@code APPROVED}, so this is the only route to a reversible
-     * credit — itself evidence for H-d (founder ruling #1); 649B removes the need.
+     * Hand-sets {@code APPROVED}. A deposit or {@code TRANSFER_OUT} is saved {@code RECORDED} and
+     * never becomes {@code APPROVED}; before 649B this was the only route to a reversible credit
+     * (evidence for H-d, founder ruling #1). Since 649B a {@code RECORDED} row is reversible, so
+     * this only keeps tests that state "an APPROVED credit" (H-a, path 7) isolated from H-d.
      */
     public void handSetApproved(UUID transactionId) {
       read(
@@ -521,10 +560,57 @@ public final class TrustBooksFixture {
           });
     }
 
+    /**
+     * A bank statement with one line dated {@code lineDate} for {@code transactionId}'s amount,
+     * linked to the row through {@link TrustPostingService#linkBankLine} (as a recorded statement
+     * line is in 647A). Returns the line id.
+     */
+    public UUID bankLineFor(UUID account, UUID transactionId, LocalDate lineDate) {
+      var statementId = UUID.randomUUID();
+      var lineId = UUID.randomUUID();
+      jdbc.update(
+          """
+          INSERT INTO "%s".bank_statements (id, trust_account_id, period_start, period_end,
+              opening_balance, closing_balance, file_key, file_name, format, line_count,
+              matched_count, status, imported_by)
+          VALUES (?, ?, ?, ?, 0, 0, 'trust-books/statement.csv', 'statement.csv', 'CSV', 1, 0,
+              'IMPORTED', ?)
+          """
+              .formatted(schema),
+          statementId,
+          account,
+          lineDate.withDayOfMonth(1),
+          lineDate,
+          memberId);
+      var amount =
+          read(() -> transactionRepository.findById(transactionId).orElseThrow().getAmount());
+      jdbc.update(
+          """
+          INSERT INTO "%s".bank_statement_lines (id, bank_statement_id, line_number,
+              transaction_date, description, amount)
+          VALUES (?, ?, 1, ?, 'Trust books statement line', ?)
+          """
+              .formatted(schema),
+          lineId,
+          statementId,
+          lineDate,
+          amount);
+      read(
+          () ->
+              postingService.linkBankLine(
+                  transactionRepository.findById(transactionId).orElseThrow(), lineId));
+      return lineId;
+    }
+
     // --- reads and harness assertions -------------------------------------------------------
 
     public String statusOf(UUID transactionId) {
       return read(() -> transactionRepository.findById(transactionId).orElseThrow().getStatus());
+    }
+
+    public LocalDate transactionDateOf(UUID transactionId) {
+      return read(
+          () -> transactionRepository.findById(transactionId).orElseThrow().getTransactionDate());
     }
 
     public UUID reversedByOf(UUID transactionId) {
@@ -536,6 +622,25 @@ public final class TrustBooksFixture {
     public BigDecimal clientLedger(UUID account, Client client) {
       var balance = new BigDecimal[1];
       as(memberId, () -> balance[0] = harness.clientLedger(account, client.id()));
+      return balance[0];
+    }
+
+    /** {@link TrustBooksHarness#snapshotAsAt}, as the maker. */
+    public BooksSnapshot snapshotAsAt(UUID account, LocalDate asAt) {
+      var snapshot = new BooksSnapshot[1];
+      as(memberId, () -> snapshot[0] = harness.snapshotAsAt(account, asAt));
+      return snapshot[0];
+    }
+
+    /** {@link TrustBooksHarness#assertBalancedAsAt} (EQ-2 and EQ-6), as the maker. */
+    public void assertBalancedAsAt(UUID account, LocalDate asAt) {
+      as(memberId, () -> harness.assertBalancedAsAt(account, asAt));
+    }
+
+    /** {@link TrustBooksHarness#clientLedgerAsAt}, as the maker. */
+    public BigDecimal clientLedgerAsAt(UUID account, Client client, LocalDate asAt) {
+      var balance = new BigDecimal[1];
+      as(memberId, () -> balance[0] = harness.clientLedgerAsAt(account, client.id(), asAt));
       return balance[0];
     }
 

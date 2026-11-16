@@ -20,6 +20,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.Tru
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordFeeTransferRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordRefundRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordTransferRequest;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.ReverseRequest;
 import jakarta.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.time.Clock;
@@ -215,7 +216,8 @@ class TrustPostingDateZoneIntegrationTest {
                   postingService.postOnApproval(stored, memberId);
 
                   var reversal =
-                      transactionService.reverseTransaction(feeTransfer.id(), "Zone reversal");
+                      transactionService.reverseTransaction(
+                          feeTransfer.id(), new ReverseRequest("Zone reversal", null));
 
                   assertThat(reversal.transactionDate()).isEqualTo(SAST_TODAY);
                   assertThat(lastLedgerDate(customer.getId())).isEqualTo(SAST_TODAY);
@@ -266,7 +268,8 @@ class TrustPostingDateZoneIntegrationTest {
                   transactionRepository.save(transferOut);
 
                   var outReversal =
-                      transactionService.reverseTransaction(transferOut.getId(), "Zone reversal");
+                      transactionService.reverseTransaction(
+                          transferOut.getId(), new ReverseRequest("Zone reversal", null));
 
                   assertThat(outReversal.transactionDate()).isEqualTo(SAST_TODAY);
                   var inReversalId =
@@ -318,7 +321,8 @@ class TrustPostingDateZoneIntegrationTest {
                   postingService.postOnApproval(stored, memberId);
 
                   var reversal =
-                      transactionService.reverseTransaction(refund.id(), "Zone reversal");
+                      transactionService.reverseTransaction(
+                          refund.id(), new ReverseRequest("Zone reversal", null));
 
                   assertThat(reversal.transactionDate()).isEqualTo(SAST_TODAY);
                   assertThat(lastLedgerDate(customer.getId())).isEqualTo(SAST_TODAY);

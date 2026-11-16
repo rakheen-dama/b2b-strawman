@@ -8,6 +8,7 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksFixture;
 import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness;
 import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness.Expected;
+import java.time.LocalDate;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -231,5 +232,167 @@ class TrustReversalEquationIntegrationTest {
     assertThat(books.statusOf(depositId)).as("original deposit").isEqualTo("REVERSED");
     assertThat(books.reversedByOf(depositId)).isEqualTo(reversal.id());
     books.assertServicesAgree(account);
+  }
+
+  // --- Paths 6 and 10: a debit reversed with an earlier reversal date ---------------------------
+
+  /**
+   * Paths 6 (contra shape) and 10 (§16.9.2): a R4 000 payment dated 1 March is reversed with a
+   * reversal date of 15 April. Today the pair nets to zero; as at any date before the payment
+   * neither counts, between the two dates the payment counts, from the reversal date both count —
+   * the original keeps its effects (EQ-6 v2 checks the shape of both rows on every date).
+   */
+  @Test
+  void debitReversedOnAnEarlierDate_asAtBalancesBeforeBetweenAndAfter() {
+    var account = books.freshAccount(false);
+    var client = books.newClient("P10");
+    books.deposit(account, client, "10000.00");
+    var paymentId = books.requestPayment(account, client, "4000.00");
+    books.approve(account, paymentId, approverId, Expected.cashbookAndClient("-4000.00"));
+    var reversalDate = LocalDate.of(2026, 4, 15);
+
+    var reversal =
+        books.reverse(account, paymentId, Expected.cashbookAndClient("4000.00"), reversalDate);
+
+    assertThat(reversal.status()).isEqualTo("RECORDED");
+    assertThat(reversal.transactionDate()).isEqualTo(reversalDate);
+    assertThat(books.statusOf(paymentId)).isEqualTo("REVERSED");
+    assertThat(books.reversedByOf(paymentId)).isEqualTo(reversal.id());
+    assertThat(books.transactionDateOf(paymentId))
+        .as("the original keeps its own date")
+        .isEqualTo(TrustBooksFixture.POSTING_DATE);
+
+    assertAsAt(account, client, LocalDate.of(2026, 2, 28), "0.00");
+    assertAsAt(account, client, LocalDate.of(2026, 3, 31), "6000.00");
+    assertAsAt(account, client, reversalDate.minusDays(1), "6000.00");
+    assertAsAt(account, client, reversalDate, "10000.00");
+    books.assertServicesAgree(account);
+  }
+
+  // --- Path 8 with a reversal date: both legs ---------------------------------------------------
+
+  /**
+   * Path 8 with {@code reversalDate} (§16.9.2): a {@code RECORDED} transfer (no hand-set — ruling
+   * #1) is reversed with an earlier date; both contra legs carry the date and the source and target
+   * ledgers are restored as at that date, not before it.
+   */
+  @Test
+  void transferReversedOnAnEarlierDate_bothLegsCarryTheDate() {
+    var account = books.freshAccount(false);
+    var source = books.newClient("P8d source");
+    var target = books.newClient("P8d target");
+    books.deposit(account, source, "10000.00");
+    var legs = books.transfer(account, source, target, "4000.00");
+    var transferOutId = legs.get(0).id();
+    var transferInId = legs.get(1).id();
+    var reversalDate = LocalDate.of(2026, 5, 10);
+
+    var outContra = books.reverse(account, transferOutId, Expected.none(), reversalDate);
+
+    var inContraId = books.reversedByOf(transferInId);
+    assertThat(inContraId).as("the TRANSFER_IN's contra").isNotNull();
+    assertThat(outContra.transactionDate()).isEqualTo(reversalDate);
+    assertThat(books.transactionDateOf(inContraId)).isEqualTo(reversalDate);
+    assertThat(books.statusOf(transferOutId)).isEqualTo("REVERSED");
+    assertThat(books.statusOf(transferInId)).isEqualTo("REVERSED");
+
+    var before = reversalDate.minusDays(1);
+    assertThat(books.clientLedgerAsAt(account, source, before)).isEqualByComparingTo("6000.00");
+    assertThat(books.clientLedgerAsAt(account, target, before)).isEqualByComparingTo("4000.00");
+    assertThat(books.clientLedgerAsAt(account, source, reversalDate))
+        .isEqualByComparingTo("10000.00");
+    assertThat(books.clientLedgerAsAt(account, target, reversalDate)).isEqualByComparingTo("0.00");
+    books.assertBalancedAsAt(account, before);
+    books.assertBalancedAsAt(account, reversalDate);
+    books.assertServicesAgree(account);
+  }
+
+  // --- Refusals ---------------------------------------------------------------------------------
+
+  @Test
+  void reversalDate_inTheFutureOrBeforeTheOriginal_isRefused() {
+    var account = books.freshAccount(false);
+    var client = books.newClient("Refused dates");
+    books.deposit(account, client, "5000.00");
+    var paymentId = books.requestPayment(account, client, "1000.00");
+    books.approve(account, paymentId, approverId, Expected.cashbookAndClient("-1000.00"));
+
+    books.assertReversalRefused(
+        account, paymentId, "The reversal date cannot be in the future", books.today().plusDays(1));
+    books.assertReversalRefused(
+        account,
+        paymentId,
+        "The reversal date cannot be before the transaction date (2026-03-01)",
+        TrustBooksFixture.POSTING_DATE.minusDays(1));
+
+    // Neither refusal wrote anything: the payment is still reversible.
+    assertThat(books.statusOf(paymentId)).isEqualTo("APPROVED");
+    books.reverse(account, paymentId, Expected.cashbookAndClient("1000.00"));
+  }
+
+  @Test
+  void aReversalOrAnAlreadyReversedRow_isRefused() {
+    var account = books.freshAccount(false);
+    var client = books.newClient("Refused rows");
+    books.deposit(account, client, "5000.00");
+    var paymentId = books.requestPayment(account, client, "1000.00");
+    books.approve(account, paymentId, approverId, Expected.cashbookAndClient("-1000.00"));
+    var contra = books.reverse(account, paymentId, Expected.cashbookAndClient("1000.00"));
+
+    books.assertReversalRefused(account, paymentId, "Transaction has already been reversed");
+    books.assertReversalRefused(
+        account, contra.id(), "Transaction type REVERSAL cannot be reversed");
+  }
+
+  @Test
+  void aSecondReversalWhileTheFirstAwaitsApproval_isRefused() {
+    var account = books.freshAccount(false);
+    var client = books.newClient("Refused pending");
+    var depositId = books.deposit(account, client, "5000.00");
+    var pending = books.reverse(account, depositId, Expected.none());
+    assertThat(pending.status()).isEqualTo("AWAITING_APPROVAL");
+
+    books.assertReversalRefused(account, depositId, "Transaction has already been reversed");
+  }
+
+  // --- reverseForUnmatch (649B for 647A, §16.3.5) ----------------------------------------------
+
+  /**
+   * Unmatching a recorded statement line reverses each posted original linked to it through the
+   * normal reversal path, the contra dated the <b>line's</b> date — so as at that date the pair
+   * nets to zero and no earlier as-at balance changes.
+   */
+  @Test
+  void reverseForUnmatch_reversesTheLinkedRow_onTheLinesDate() {
+    var account = books.freshAccount(false);
+    var client = books.newClient("Unmatch");
+    books.deposit(account, client, "8000.00");
+    var paymentId = books.requestPayment(account, client, "3000.00");
+    books.approve(account, paymentId, approverId, Expected.cashbookAndClient("-3000.00"));
+    var lineDate = TrustBooksFixture.POSTING_DATE.plusDays(2);
+    var lineId = books.bankLineFor(account, paymentId, lineDate);
+
+    var contras = books.reverseForUnmatch(account, lineId, Expected.cashbookAndClient("3000.00"));
+
+    assertThat(contras).hasSize(1);
+    var contra = contras.getFirst();
+    assertThat(contra.getTransactionType()).isEqualTo("REVERSAL");
+    assertThat(contra.getReversalOf()).isEqualTo(paymentId);
+    assertThat(contra.getStatus()).isEqualTo("RECORDED");
+    assertThat(contra.getTransactionDate()).isEqualTo(lineDate);
+    assertThat(books.statusOf(paymentId)).isEqualTo("REVERSED");
+    assertAsAt(account, client, lineDate.minusDays(1), "5000.00");
+    assertAsAt(account, client, lineDate, "8000.00");
+  }
+
+  /** Cashbook and the client's ledger as at {@code asAt}, both {@code amount}; books balanced. */
+  private void assertAsAt(
+      UUID account, TrustBooksFixture.Client client, LocalDate asAt, String amount) {
+    var snapshot = books.snapshotAsAt(account, asAt);
+    assertThat(snapshot.cashbook()).as("cashbook as at %s", asAt).isEqualByComparingTo(amount);
+    assertThat(books.clientLedgerAsAt(account, client, asAt))
+        .as("client ledger as at %s", asAt)
+        .isEqualByComparingTo(amount);
+    books.assertBalancedAsAt(account, asAt);
   }
 }

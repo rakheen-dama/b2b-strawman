@@ -112,8 +112,8 @@ class TrustTransactionTypeRegistryTest {
               "trust_transfer",
               "Transfer in",
               "Transfer in"),
-          // REVERSAL has no effect, ledger or origin of its own (its original's); not client
-          // visible in 646A — the portal and the statement exclude reversals until 649B (T16).
+          // REVERSAL has no effect, ledger or origin of its own (its original's); client visible
+          // since 649B — the contra entry is replayed to the portal with its reversed original.
           new Row(
               TrustTransactionType.REVERSAL,
               0,
@@ -122,7 +122,7 @@ class TrustTransactionTypeRegistryTest {
               Approval.WITH_ORIGINAL,
               Reversal.NONE,
               null,
-              false,
+              true,
               "trust_reversal",
               "Reversal",
               "Reversal"));

@@ -28,6 +28,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.Tru
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordPaymentRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordRefundRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordTransferRequest;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.ReverseRequest;
 import jakarta.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -837,7 +838,8 @@ class TrustTransactionServiceTest {
                 tx -> {
                   var reversalResponse =
                       transactionService.reverseTransaction(
-                          depositTxnId[0], "Client overpaid, reversing deposit");
+                          depositTxnId[0],
+                          new ReverseRequest("Client overpaid, reversing deposit", null));
 
                   assertThat(reversalResponse.transactionType()).isEqualTo("REVERSAL");
                   assertThat(reversalResponse.status()).isEqualTo("AWAITING_APPROVAL");
@@ -937,7 +939,7 @@ class TrustTransactionServiceTest {
 
                   var reversalResponse =
                       transactionService.reverseTransaction(
-                          transferOutTxnId[0], "Transfer was in error");
+                          transferOutTxnId[0], new ReverseRequest("Transfer was in error", null));
 
                   assertThat(reversalResponse.transactionType()).isEqualTo("REVERSAL");
                   assertThat(reversalResponse.status()).isEqualTo("RECORDED");
@@ -1058,7 +1060,8 @@ class TrustTransactionServiceTest {
             assertThatThrownBy(
                     () ->
                         transactionService.reverseTransaction(
-                            transferInTxnId[0], "Trying to reverse TRANSFER_IN directly"))
+                            transferInTxnId[0],
+                            new ReverseRequest("Trying to reverse TRANSFER_IN directly", null)))
                 .isInstanceOf(InvalidStateException.class)
                 .hasMessageContaining("TRANSFER_OUT"));
   }
@@ -1095,7 +1098,8 @@ class TrustTransactionServiceTest {
                   txn.setStatus("APPROVED");
                   transactionRepository.save(txn);
 
-                  transactionService.reverseTransaction(depositTxnId[0], "First reversal");
+                  transactionService.reverseTransaction(
+                      depositTxnId[0], new ReverseRequest("First reversal", null));
                 }));
 
     // Attempt to reverse the already-reversed transaction — should fail because a reversal
@@ -1105,7 +1109,7 @@ class TrustTransactionServiceTest {
             assertThatThrownBy(
                     () ->
                         transactionService.reverseTransaction(
-                            depositTxnId[0], "Second reversal attempt"))
+                            depositTxnId[0], new ReverseRequest("Second reversal attempt", null)))
                 .isInstanceOf(InvalidStateException.class)
                 .hasMessageContaining("already been reversed"));
   }
@@ -1153,15 +1157,17 @@ class TrustTransactionServiceTest {
                   depositTxnId[0] = paymentResponse.id();
                 }));
 
-    // Attempt to reverse — should fail because it's not APPROVED
+    // Attempt to reverse — should fail because it is not posted (649B, ruling #1: RECORDED or
+    // APPROVED rows are reversible; an AWAITING_APPROVAL row is not)
     runInTenant(
         () ->
             assertThatThrownBy(
                     () ->
                         transactionService.reverseTransaction(
-                            depositTxnId[0], "Cannot reverse awaiting approval"))
+                            depositTxnId[0],
+                            new ReverseRequest("Cannot reverse awaiting approval", null)))
                 .isInstanceOf(InvalidStateException.class)
-                .hasMessageContaining("APPROVED status"));
+                .hasMessageContaining("Only a recorded or approved transaction can be reversed"));
   }
 
   // --- 440.13: Cashbook balance tests ---

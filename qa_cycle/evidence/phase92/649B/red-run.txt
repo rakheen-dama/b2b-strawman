@@ -28,3 +28,28 @@ D15  ClientLedgerRunningBalanceIntegrationTest.statement_reversalInsideThePeriod
      contra model and before the findForStatement change.
 
 H-b  debitReversalForAClientWithoutAnAnchor_movesBothSides — green (closed by 646A), unchanged.
+
+D15 — red run with the contra model implemented and findForStatement UNCHANGED
+------------------------------------------------------------------------------
+Inner-loop Tier 2 (10 classes): Tests run: 144, Failures: 1, Errors: 0
+ClientLedgerRunningBalanceIntegrationTest.statement_reversalInsideThePeriodOfAnEarlierPayment_closesAtTheClientBalance  FAILURE
+  [closing balance == client balance at the period end] expected: 10000.00 but was: 6000.0
+  (opening = clientBalance(start-1) now includes the reversed payment -4000; the statement rows exclude its
+   REVERSAL contra (+4000) dated inside the period, so the closing balance falls short by the payment.)
+All other inner-loop classes green at this point (H-a, H-c, H-d, 7b, 7d, path 9 flipped green).
+
+GREEN — after the fix (contra model + V17 + findForStatement), final code
+-------------------------------------------------------------------------
+Tier-2 targeted sweep (82 classes; patterns Trust*Test, ClientLedger*Test, LedgerTotalsTest,
+DerivedLedgerBalanceIntegrationTest, LegalDemo*Test, Portal*Trust*Test, PortalEmailNotificationChannelIntegrationTest,
+PortalActivityTrustEventsIntegrationTest, BillingTrendIntegrationTest, Statement*Test,
+ClientTrustStatementContextIntegrationTest, ActivityMessageFormatterTest, MatterTrustBalanceEndpointTest,
+MatterListRowIntegrationTest, ClientListRowIntegrationTest, Interest*Test, DisbursementServiceTest, Collections*,
+FicaVerificationTrustAccessIntegrationTest, GeneratedDocumentTrustAccessIntegrationTest, DashboardActivityCacheTest,
+MatterScopedPublisherGuardTest, PortalReadModelOrgScopingGuardTest, ZoneAwareTimeArchTest):
+  Tests run: 847, Failures: 0, Errors: 0, Skipped: 0   (847 <testcase> elements)  BUILD SUCCESS
+Every flipped pin green: approvedCreditReversal_movesCashbookAndClient, approvedCreditReversal_refusedWhenTheClientNoLongerCoversIt,
+rejectedCreditReversal_leavesOriginalReversible, recordedDeposit_isReversible, recordedDepositReversal_approved_movesCashbookAndClient,
+creditReversalApproved_movesCashbookAndClient (7b), creditReversalRejectedThenReversedAgain_isAccepted (7d),
+statement_reversalInsideThePeriodOfAnEarlierPayment_closesAtTheClientBalance (D15).
+Tier 3 (full ./mvnw verify) NOT run — orchestrator-owned.

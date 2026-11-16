@@ -1,0 +1,18 @@
+# 649B — out-of-scope findings (reported, not fixed; re-spec into the named slice)
+
+Found while building 649B (contra reversal model). Each is a reader that filters on `status` / `transaction_type`
+instead of summing posted effects — ADR-378: "any reader that filtered on status instead of summing effects would be
+wrong". Under the contra model a reversed original stays posted as `REVERSED` and its `REVERSAL` row carries the
+negation; these readers see only half of the pair. None changes a derived balance (all of `TrustLedgerQueryRepository`
+sums `posted_at IS NOT NULL` rows); severity is lower than D15 (fixed in this slice, `findForStatement`).
+
+| # | Reader (main code) | Under the contra model | Suggested slice |
+|---|---|---|---|
+| F1 | `TrustTransactionRepository.findForReceiptsPayments` (`status IN ('RECORDED','APPROVED') AND transactionType <> 'REVERSAL'`) → Trust Receipts & Payments report | omits both halves of a reversed pair (the `REVERSED` original and its contra). Internally consistent (net 0), but the report no longer lists a payment the bank did make and the return the bank did make | 646C (books/reports over posted effects) |
+| F2 | `TrustTransactionRepository.findClientHistoryWithRunningBalance` (client-ledger `/history` window: `status IN ('RECORDED','APPROVED') AND transaction_type <> 'REVERSAL'`) | `REVERSED` originals and `REVERSAL` rows carry `runningBalance = null` (pinned by `ClientLedgerRunningBalanceIntegrationTest`), and intermediate running balances between the original's and the contra's dates omit the original. The first posted row still equals `clientBalance(today)` | 646C |
+| F3 | Reconciliation `findUnmatchedCandidates` (`status IN ('RECORDED','APPROVED')`) | a `REVERSAL` row now carries a cashbook effect and becomes an auto-match candidate; its `REVERSED` original is no longer a candidate | 646C / 647A |
+| F4 | Reconciliation `calculateOutstandingDeposits` / `calculateOutstandingPayments` (type lists `DEPOSIT` / `PAYMENT, FEE_TRANSFER, REFUND`, status `RECORDED`/`APPROVED`) | a reversed original drops out of the outstanding sums and its contra is not in either type list — the outstanding figures ignore both halves (net-zero only if both are unmatched) | 646C (outstanding rewritten over `cashbook_effect`, §16.3.3) |
+| F5 | `TrustReconciliationService.matchTransaction` (`APPROVED` or `RECORDED` only, `:372`) | a `REVERSED` original (still posted) cannot be matched to the bank line that shows it | 647A |
+| F6 | `TrustTransactionRepository.findDistinctTrustAccountIdsByCustomerId` (SoA account resolution: `RECORDED`/`APPROVED`, no `REVERSAL`) | a client whose only activity on an account was reversed is not resolved to that account | 646C |
+| F7 | `report/ClientLedgerStatementQuery` (`row.put("type", tx.getTransactionType())`) and `report/TrustReceiptsPaymentsQuery` (`:94`) | **pre-existing**: both reports print the raw type code in their "Type" column for every type (`DEPOSIT`, `PAYMENT`, …). Since D15 the client-ledger statement PDF also lists `REVERSAL` rows, which print `REVERSAL` the same way. The Statement of Account is unaffected (it labels via `TrustTransactionTypeLabels.label`, "Reversal"). Fix: `TrustTransactionTypeLabels.label(...)` in both rows | 646E (labels from the registry) |
+| F8 | Frontend `isInflowType(type)` on the transactions page and the client-ledger history page | **pre-existing** (REVERSAL rows were already listed): a `REVERSAL` row is drawn as an outflow (up-right arrow, no green) whatever it reverses — a payment's contra is an inflow. Fix: sign by the row's effect / registry `direction` | 646E (`direction` on the DTO) |

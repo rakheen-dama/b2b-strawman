@@ -22,6 +22,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRep
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountType;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedgerQueryRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.ReverseRequest;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDate;
@@ -138,7 +139,9 @@ class TrustInvestmentWithdrawReverseRaceIntegrationTest {
 
     var outcome =
         race(
-            () -> transactionService.reverseTransaction(placed.placementId(), "Placed in error"),
+            () ->
+                transactionService.reverseTransaction(
+                    placed.placementId(), new ReverseRequest("Placed in error", null)),
             () -> investmentService.withdrawInvestment(placed.investmentId()));
 
     assertThat(outcome.first())
@@ -158,7 +161,9 @@ class TrustInvestmentWithdrawReverseRaceIntegrationTest {
     var outcome =
         race(
             () -> investmentService.withdrawInvestment(placed.investmentId()),
-            () -> transactionService.reverseTransaction(placed.placementId(), "Placed in error"));
+            () ->
+                transactionService.reverseTransaction(
+                    placed.placementId(), new ReverseRequest("Placed in error", null)));
 
     assertThat(outcome.first()).as("the withdrawal (committed first)").isNull();
     assertThat(outcome.second())

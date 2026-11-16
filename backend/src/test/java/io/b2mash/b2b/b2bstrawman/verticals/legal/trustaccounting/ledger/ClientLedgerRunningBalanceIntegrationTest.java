@@ -24,6 +24,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.Tru
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordFeeTransferRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordPaymentRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordRefundRequest;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.ReverseRequest;
 import jakarta.persistence.EntityManager;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
@@ -304,7 +305,11 @@ class ClientLedgerRunningBalanceIntegrationTest {
     UUID paymentId = recordPayment(clientId, "4000.00", "RB-ST-PAY-" + n, 8);
     approve(paymentId);
     // The reversal is dated today: inside the statement period, the payment before it.
-    as(ownerId, () -> transactionService.reverseTransaction(paymentId, "Paid in error"));
+    as(
+        ownerId,
+        () ->
+            transactionService.reverseTransaction(
+                paymentId, new ReverseRequest("Paid in error", null)));
 
     var startDate = today.minusDays(5);
     var statementBody =
@@ -652,7 +657,11 @@ class ClientLedgerRunningBalanceIntegrationTest {
 
     UUID reversedPaymentId = recordPayment(clientId, "700.00", "RB-PAY-REV-" + n, 2);
     approve(reversedPaymentId);
-    as(ownerId, () -> transactionService.reverseTransaction(reversedPaymentId, "Paid in error"));
+    as(
+        ownerId,
+        () ->
+            transactionService.reverseTransaction(
+                reversedPaymentId, new ReverseRequest("Paid in error", null)));
 
     UUID awaitingPaymentId = recordPayment(clientId, "300.00", "RB-PAY-AWT-" + n, 1);
 

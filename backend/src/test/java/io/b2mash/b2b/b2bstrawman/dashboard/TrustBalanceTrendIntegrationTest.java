@@ -45,9 +45,12 @@ import org.springframework.transaction.support.TransactionTemplate;
  * cashbook and client-ledger balances over the last {@code months} SA calendar months, oldest
  * first, zero-filled. The series replays the RECORDED/APPROVED rows with the sign rules of the
  * cashbook and client-ledger reads, so its last point must equal {@code /cashbook-balance} and
- * {@code /total-balance}; REJECTED, AWAITING_APPROVAL and reversed rows move nothing. Gated exactly
- * like {@code /trust-position}: {@code VIEW_TRUST} (403), the {@code trust_accounting} module (403
- * "Module not enabled"), unknown account / no account (404), and {@code months} outside 1–24 (400).
+ * {@code /total-balance}; REJECTED and AWAITING_APPROVAL rows move nothing, and a reversed row
+ * (Phase 92 649B, contra model) counts in its own month while its contra counts in the reversal
+ * date's month — the reversal here is dated the payment's own date, so that month nets to zero and
+ * no other month changes. Gated exactly like {@code /trust-position}: {@code VIEW_TRUST} (403), the
+ * {@code trust_accounting} module (403 "Module not enabled"), unknown account / no account (404),
+ * and {@code months} outside 1–24 (400).
  *
  * <p>Seeded through REST only, dated relative to {@code LocalDate.now(KaziTime.ZONE)}; no row is
  * dated after today ({@code /cashbook-balance} has no date filter). FEE_TRANSFER is not seeded: it
@@ -146,7 +149,8 @@ class TrustBalanceTrendIntegrationTest {
     String reversed =
         record(admin, primaryAccountId, "payment", clientB, "2000.00", "PAY-DTT-REV", day(2));
     approve(reversed);
-    reverse(admin, reversed);
+    // Dated the payment's own date (649B reversalDate): the pair nets to zero in that month.
+    reverse(admin, reversed, day(2));
     transfer(owner, primaryAccountId, clientA, clientB, "1500.00", "TRF-DTT-2", day(2));
     // Last month and this month: deposits.
     record(owner, primaryAccountId, "deposit", clientA, "2500.00", "DEP-DTT-1", day(1));
@@ -299,7 +303,8 @@ class TrustBalanceTrendIntegrationTest {
   void reversedPaymentAndTransferLeaveTheirMonthUnchanged() throws Exception {
     String body = trend(TestJwtFactory.ownerJwt(ORG_ID, OWNER), 12, null);
     // Month 2-ago holds an approved-then-reversed 2000 payment and a 1500 transfer A → B: the
-    // reversed payment drops out, the transfer is cashbook-neutral and ledger-net-zero.
+    // reversed payment and its contra (dated the same day) net to zero, the transfer is
+    // cashbook-neutral and ledger-net-zero.
     assertThat(decimal(body, "$.months[9].cashbookBalance"))
         .isEqualByComparingTo(decimal(body, "$.months[8].cashbookBalance"));
     assertThat(decimal(body, "$.months[9].clientLedgerTotal"))
@@ -697,13 +702,16 @@ class TrustBalanceTrendIntegrationTest {
         .andExpect(jsonPath("$.status").value("REJECTED"));
   }
 
-  private void reverse(JwtRequestPostProcessor jwt, String transactionId) throws Exception {
+  private void reverse(JwtRequestPostProcessor jwt, String transactionId, LocalDate reversalDate)
+      throws Exception {
     mockMvc
         .perform(
             post("/api/trust-transactions/" + transactionId + "/reverse")
                 .with(jwt)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"reason\": \"Payment was made in error\"}"))
+                .content(
+                    "{\"reason\": \"Payment was made in error\", \"reversalDate\": \"%s\"}"
+                        .formatted(reversalDate)))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.transactionType").value("REVERSAL"));
   }

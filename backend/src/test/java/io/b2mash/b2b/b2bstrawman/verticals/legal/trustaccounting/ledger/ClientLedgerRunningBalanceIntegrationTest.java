@@ -17,6 +17,7 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateTrustAccountRequest;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedgerQueryRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordDepositRequest;
@@ -75,10 +76,9 @@ class ClientLedgerRunningBalanceIntegrationTest {
 
   private static final String ORG_ID = "org_ledger_running_balance";
   private static final String OWNER_SUB = "user_ledger_rb_owner";
-  private static final Set<String> CREDIT_TYPES =
-      Set.of("DEPOSIT", "TRANSFER_IN", "INTEREST_CREDIT");
+  private static final Set<String> CREDIT_TYPES = Set.of("DEPOSIT", "TRANSFER_IN");
   private static final Set<String> DEBIT_TYPES =
-      Set.of("PAYMENT", "TRANSFER_OUT", "FEE_TRANSFER", "REFUND", "INTEREST_LPFF");
+      Set.of("PAYMENT", "TRANSFER_OUT", "FEE_TRANSFER", "REFUND");
 
   @Autowired private MockMvc mockMvc;
   @Autowired private io.b2mash.b2b.b2bstrawman.project.ProjectRepository projectRepository;
@@ -88,7 +88,7 @@ class ClientLedgerRunningBalanceIntegrationTest {
   @Autowired private TransactionTemplate transactionTemplate;
   @Autowired private TrustAccountService trustAccountService;
   @Autowired private TrustTransactionService transactionService;
-  @Autowired private TrustTransactionRepository transactionRepository;
+  @Autowired private TrustLedgerQueryRepository trustLedgerQueryRepository;
   @Autowired private CustomerRepository customerRepository;
   @Autowired private EntityManager entityManager;
   @Autowired private DataSource dataSource;
@@ -195,8 +195,8 @@ class ClientLedgerRunningBalanceIntegrationTest {
             () ->
                 transactionTemplate.execute(
                     tx ->
-                        transactionRepository.calculateClientBalanceAsOfDate(
-                            ledger.clientId(), trustAccountId, today)));
+                        trustLedgerQueryRepository.clientBalance(
+                            trustAccountId, ledger.clientId(), today)));
     assertThat(money(firstPosted.get("runningBalance")))
         .isEqualByComparingTo(balanceAsOfToday)
         .isEqualByComparingTo("7850.00");

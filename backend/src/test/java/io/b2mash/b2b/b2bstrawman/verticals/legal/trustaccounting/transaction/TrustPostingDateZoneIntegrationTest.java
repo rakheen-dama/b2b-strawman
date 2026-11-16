@@ -15,7 +15,7 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateTrustAccountRequest;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordDepositRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordFeeTransferRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordRefundRequest;
@@ -88,7 +88,8 @@ class TrustPostingDateZoneIntegrationTest {
   @Autowired private TrustTransactionService transactionService;
   @Autowired private TrustAccountService trustAccountService;
   @Autowired private TrustTransactionRepository transactionRepository;
-  @Autowired private ClientLedgerCardRepository ledgerCardRepository;
+  @Autowired private ClientLedgerService clientLedgerService;
+  @Autowired private TrustPostingService postingService;
   @Autowired private CustomerRepository customerRepository;
   @Autowired private CollectionsReadService collectionsReadService;
   @Autowired private EntityManager entityManager;
@@ -208,20 +209,16 @@ class TrustPostingDateZoneIntegrationTest {
 
                   assertThat(feeTransfer.transactionDate()).isEqualTo(SAST_TODAY);
 
+                  // Approved through the posting service: the row CHECK refuses a hand-set
+                  // APPROVED without posted_at (Phase 92, 646A)
                   var stored = transactionRepository.findById(feeTransfer.id()).orElseThrow();
-                  stored.setStatus("APPROVED");
-                  transactionRepository.save(stored);
+                  postingService.postOnApproval(stored, memberId);
 
                   var reversal =
                       transactionService.reverseTransaction(feeTransfer.id(), "Zone reversal");
 
                   assertThat(reversal.transactionDate()).isEqualTo(SAST_TODAY);
-                  assertThat(
-                          ledgerCardRepository
-                              .findByTrustAccountIdAndCustomerId(trustAccountId, customer.getId())
-                              .orElseThrow()
-                              .getLastTransactionDate())
-                      .isEqualTo(SAST_TODAY);
+                  assertThat(lastLedgerDate(customer.getId())).isEqualTo(SAST_TODAY);
                 }));
   }
 
@@ -318,8 +315,7 @@ class TrustPostingDateZoneIntegrationTest {
                               "Refund to reverse",
                               USER_DATED));
                   var stored = transactionRepository.findById(refund.id()).orElseThrow();
-                  stored.setStatus("APPROVED");
-                  transactionRepository.save(stored);
+                  postingService.postOnApproval(stored, memberId);
 
                   var reversal =
                       transactionService.reverseTransaction(refund.id(), "Zone reversal");
@@ -390,11 +386,9 @@ class TrustPostingDateZoneIntegrationTest {
                 }));
   }
 
+  /** The client's last posted date — derived, reversal rows included (Phase 92, 646A T8). */
   private LocalDate lastLedgerDate(UUID customerId) {
-    return ledgerCardRepository
-        .findByTrustAccountIdAndCustomerId(trustAccountId, customerId)
-        .orElseThrow()
-        .getLastTransactionDate();
+    return clientLedgerService.getClientLedger(customerId, trustAccountId).lastTransactionDate();
   }
 
   private void insertSentFeeNote(UUID customerId, String invoiceNumber, LocalDate dueDate) {

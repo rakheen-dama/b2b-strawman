@@ -27,10 +27,8 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.LegalDisbursement;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccount;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountType;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCard;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustPostingService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -65,9 +63,8 @@ class TrustBoundaryGuardTest {
   @Autowired private CustomerRepository customerRepository;
   @Autowired private DisbursementRepository disbursementRepository;
   @Autowired private TrustAccountRepository trustAccountRepository;
-  @Autowired private ClientLedgerCardRepository clientLedgerCardRepository;
   @Autowired private ProjectRepository projectRepository;
-  @Autowired private TrustTransactionRepository trustTransactionRepository;
+  @Autowired private TrustPostingService trustPostingService;
   @Autowired private AccountingXeroConnectionRepository xeroConnectionRepository;
   @Autowired private OrgIntegrationRepository orgIntegrationRepository;
   @Autowired private TenantProvisioningService provisioningService;
@@ -191,9 +188,11 @@ class TrustBoundaryGuardTest {
                   "TRUST-DISB-001",
                   "Trust disbursement for court fee",
                   LocalDate.now(),
-                  "APPROVED",
+                  "AWAITING_APPROVAL",
                   memberId);
-          var savedTrustTx = trustTransactionRepository.save(trustTx);
+          var savedTrustTx =
+              trustPostingService.postOnApproval(
+                  trustPostingService.recordAwaitingApproval(trustTx), memberId);
 
           // Create a trust-linked disbursement
           var disbursement =
@@ -257,9 +256,19 @@ class TrustBoundaryGuardTest {
                   null);
           var savedTrustAccount = trustAccountRepository.save(trustAccount);
 
-          var ledgerCard = new ClientLedgerCard(savedTrustAccount.getId(), customer.getId());
-          ledgerCard.addDeposit(BigDecimal.valueOf(1000), LocalDate.now());
-          clientLedgerCardRepository.save(ledgerCard);
+          trustPostingService.record(
+              new TrustTransaction(
+                  savedTrustAccount.getId(),
+                  "DEPOSIT",
+                  BigDecimal.valueOf(1000),
+                  customer.getId(),
+                  null,
+                  null,
+                  "TRUST-BAL-001",
+                  "Trust balance deposit",
+                  LocalDate.now(),
+                  "RECORDED",
+                  memberId));
 
           var decision = trustBoundaryGuard.evaluate(invoice, List.of(line), customer);
 

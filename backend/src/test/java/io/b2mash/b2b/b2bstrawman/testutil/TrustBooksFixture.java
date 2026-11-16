@@ -12,6 +12,7 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness.Expected;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateTrustAccountRequest;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustPostingService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService;
@@ -21,6 +22,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.Tru
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordRefundRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordTransferRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.TrustTransactionResponse;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionType;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDate;
@@ -69,6 +71,7 @@ public final class TrustBooksFixture {
   private final TrustAccountService trustAccountService;
   private final TrustTransactionService transactionService;
   private final TrustTransactionRepository transactionRepository;
+  private final TrustPostingService postingService;
   private final CustomerRepository customerRepository;
   private final ProjectRepository projectRepository;
 
@@ -82,6 +85,7 @@ public final class TrustBooksFixture {
       TrustAccountService trustAccountService,
       TrustTransactionService transactionService,
       TrustTransactionRepository transactionRepository,
+      TrustPostingService postingService,
       CustomerRepository customerRepository,
       ProjectRepository projectRepository) {
     this.harness = harness;
@@ -93,6 +97,7 @@ public final class TrustBooksFixture {
     this.trustAccountService = trustAccountService;
     this.transactionService = transactionService;
     this.transactionRepository = transactionRepository;
+    this.postingService = postingService;
     this.customerRepository = customerRepository;
     this.projectRepository = projectRepository;
   }
@@ -458,29 +463,39 @@ public final class TrustBooksFixture {
     }
 
     /**
-     * Writes a row straight to the repository with the constructor {@code
-     * LegalDemoDataSeeder.saveTrustTxn} uses — no ledger card, no approval flow (H-b's setup). The
-     * setup becomes impossible once 646A's {@code chk_trust_txn_posting} forbids card-less posted
-     * rows; 646A retires it.
+     * Posts a row straight through {@link TrustPostingService}, bypassing {@link
+     * TrustTransactionService}: no lock anchor, no matter-cell or sufficiency check, no audit. A
+     * type posted when recorded ({@code DEPOSIT}, transfers) goes through {@code record}; a type
+     * that needs approval ({@code PAYMENT}, {@code FEE_TRANSFER}, {@code REFUND}) through {@code
+     * recordAwaitingApproval} then {@code postOnApproval} by the maker (so it ends {@code
+     * APPROVED}). Replaces 649A's {@code saveDirect} (646A closed H-b: a posted row can no longer
+     * be written without the posting service — {@code chk_trust_txn_posting}).
      */
-    public UUID saveDirect(UUID account, String type, String amount, Client client, String status) {
+    public UUID postDirect(UUID account, String type, String amount, Client client) {
+      var approval = TrustTransactionType.of(type).approval();
       return read(
-          () ->
-              transactionRepository
-                  .save(
-                      new TrustTransaction(
-                          account,
-                          type,
-                          new BigDecimal(amount),
-                          client.id(),
-                          client.matter(),
-                          null,
-                          "%s-%s".formatted(type.substring(0, 3), POSTING_DATE),
-                          "seeder-shaped row (direct repository write)",
-                          POSTING_DATE,
-                          status,
-                          memberId))
-                  .getId());
+          () -> {
+            var draft =
+                new TrustTransaction(
+                    account,
+                    type,
+                    new BigDecimal(amount),
+                    client.id(),
+                    client.matter(),
+                    null,
+                    reference(type.substring(0, 3)),
+                    "posted straight through TrustPostingService",
+                    POSTING_DATE,
+                    approval == TrustTransactionType.Approval.NONE
+                        ? "RECORDED"
+                        : "AWAITING_APPROVAL",
+                    memberId);
+            return approval == TrustTransactionType.Approval.NONE
+                ? postingService.record(draft).getId()
+                : postingService
+                    .postOnApproval(postingService.recordAwaitingApproval(draft), memberId)
+                    .getId();
+          });
     }
 
     // --- reads and harness assertions -------------------------------------------------------

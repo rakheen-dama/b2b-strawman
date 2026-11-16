@@ -30,6 +30,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.event.Disbursement
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccount;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountType;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustPostingService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import java.math.BigDecimal;
@@ -79,6 +80,7 @@ class DisbursementServiceTest {
   @Autowired private CustomerRepository customerRepository;
   @Autowired private ProjectRepository projectRepository;
   @Autowired private TrustTransactionRepository trustTransactionRepository;
+  @Autowired private TrustPostingService trustPostingService;
   @Autowired private TrustAccountRepository trustAccountRepository;
   @Autowired private InvoiceRepository invoiceRepository;
   @Autowired private InvoiceLineRepository invoiceLineRepository;
@@ -704,9 +706,10 @@ class DisbursementServiceTest {
   }
 
   /**
-   * Persists a trust transaction directly via the repository — the CHECK constraint allows {@code
-   * transactionType='PAYMENT'} and {@code status='APPROVED'}, which is what {@link
-   * DisbursementService#validateTrustLink} expects.
+   * Posts an APPROVED trust {@code PAYMENT} — what {@link DisbursementService#validateTrustLink}
+   * expects — through {@link TrustPostingService} ({@code recordAwaitingApproval} then {@code
+   * postOnApproval}): since Phase 92 (646A) the row CHECK refuses a posted row written without the
+   * posting service.
    */
   private TrustTransaction seedApprovedTrustTransaction(UUID projectForTx) {
     var tx =
@@ -720,9 +723,10 @@ class DisbursementServiceTest {
             "TRUSTREF-" + UUID.randomUUID(),
             "Approved trust payment",
             LocalDate.of(2026, 4, 1),
-            "APPROVED",
+            "AWAITING_APPROVAL",
             memberId);
-    return trustTransactionRepository.saveAndFlush(tx);
+    return trustPostingService.postOnApproval(
+        trustPostingService.recordAwaitingApproval(tx), memberId);
   }
 
   /** Persists a real Invoice + InvoiceLine so markBilled FK resolves. Returns the line id. */

@@ -20,8 +20,8 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustPostingService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import java.math.BigDecimal;
 import java.util.Set;
 import java.util.UUID;
@@ -82,7 +82,7 @@ class MatterTrustBalanceEndpointTest {
   @Autowired private CustomerRepository customerRepository;
   @Autowired private ProjectRepository projectRepository;
   @Autowired private MemberRepository memberRepository;
-  @Autowired private TrustTransactionRepository trustTransactionRepository;
+  @Autowired private TrustPostingService trustPostingService;
 
   private UUID matterA;
   private UUID matterB;
@@ -138,12 +138,13 @@ class MatterTrustBalanceEndpointTest {
     deposit(ownerJwt, trustAccountId, client[0], matterA, "50000.00", "DEP/634B/A");
     deposit(ownerJwt, trustAccountId, client[0], matterB, "12000.00", "DEP/634B/B");
     // Legacy client money not tagged to any matter — counts on no matter's balance. Recording one
-    // through the API is refused since G89-F28, so the pre-F28 row is written directly (D6: legacy
-    // rows are not backfilled).
+    // through the API is refused since G89-F28, so the pre-F28 row is posted straight through the
+    // posting service (D6: legacy rows are not backfilled; Phase 92 646A: the row CHECK refuses a
+    // posted row written without the posting service).
     ScopedValue.where(RequestScopes.TENANT_ID, schema)
         .run(
             () ->
-                trustTransactionRepository.save(
+                trustPostingService.record(
                     new TrustTransaction(
                         UUID.fromString(trustAccountId),
                         "DEPOSIT",

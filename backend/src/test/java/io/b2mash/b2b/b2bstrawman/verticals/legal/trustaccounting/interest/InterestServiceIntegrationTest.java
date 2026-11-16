@@ -16,7 +16,7 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedgerQueryRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -52,7 +52,7 @@ class InterestServiceIntegrationTest {
   @Autowired private TransactionTemplate transactionTemplate;
   @Autowired private InterestService interestService;
   @Autowired private TrustTransactionRepository trustTransactionRepository;
-  @Autowired private ClientLedgerCardRepository clientLedgerCardRepository;
+  @Autowired private TrustLedgerQueryRepository trustLedgerQueryRepository;
 
   private String tenantSchema;
   private UUID trustAccountId;
@@ -641,11 +641,10 @@ class InterestServiceIntegrationTest {
         ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
             .call(
                 () ->
-                    clientLedgerCardRepository
-                        .findByTrustAccountIdAndCustomerId(
-                            trustAccountId, UUID.fromString(customerId1))
-                        .orElseThrow()
-                        .getBalance());
+                    trustLedgerQueryRepository.clientBalance(
+                        trustAccountId, UUID.fromString(customerId1), null));
+
+    assertThat(preBalance).as("customer 1 holds its @BeforeAll deposits").isPositive();
 
     var runResponse =
         ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -671,7 +670,8 @@ class InterestServiceIntegrationTest {
                   .isEqualTo(InterestPostingGuardIntegrationTest.DETAIL);
             });
 
-    // No allocation points at a credit, no row carries the run's reference, the card is unchanged
+    // No allocation points at a credit, no row carries the run's reference, the derived client
+    // balance is unchanged
     var allocations =
         ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
             .call(() -> interestService.getAllocations(runResponse.id()));
@@ -695,11 +695,8 @@ class InterestServiceIntegrationTest {
         ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
             .call(
                 () ->
-                    clientLedgerCardRepository
-                        .findByTrustAccountIdAndCustomerId(
-                            trustAccountId, UUID.fromString(customerId1))
-                        .orElseThrow()
-                        .getBalance());
+                    trustLedgerQueryRepository.clientBalance(
+                        trustAccountId, UUID.fromString(customerId1), null));
     assertThat(postBalance).isEqualByComparingTo(preBalance);
   }
 

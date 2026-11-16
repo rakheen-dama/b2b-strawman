@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import io.b2mash.b2b.b2bstrawman.testutil.BooksSnapshot;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksFixture;
 import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness;
@@ -27,12 +26,10 @@ import org.springframework.test.web.servlet.MockMvc;
  * All four reproduced; each is committed as a pinned defect (the assertion states today's wrong
  * outcome, the method name ends {@code _pinsKnownDefect}, the Javadoc states the intended behaviour
  * and the fixing slice). The intended-behaviour versions and their red runs are in {@code
- * qa_cycle/evidence/phase92/649A/RED-RUNS.md}. 649B flips H-a, H-c and H-d; 646A retires H-b (its
- * setup becomes impossible — see the method).
+ * qa_cycle/evidence/phase92/649A/RED-RUNS.md}. 649B flips H-a, H-c and H-d; H-b closed by 646A
+ * (structural — closed by derived balances; its pin is now a green regression, see the method).
  *
- * <p>Two tenants: the main tenant holds H-a, H-c and H-d and ends with {@code
- * assertFirmBalanced(today)}; H-b deliberately leaves an account out of balance (cashbook ≠ client
- * ledgers), so it runs in a second, separate tenant that the firm-wide assertion does not cover.
+ * <p>One tenant: it holds H-a, H-b, H-c and H-d and ends with {@code assertFirmBalanced(today)}.
  * Setup and posting steps come from the shared {@link TrustBooksFixture}.
  */
 @SpringBootTest
@@ -43,23 +40,15 @@ import org.springframework.test.web.servlet.MockMvc;
 class TrustReversalEquationIntegrationTest {
 
   private static final String ORG_ID = "org_trust_reversal_equation";
-  private static final String CARDLESS_ORG_ID = "org_trust_reversal_cardless";
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private TrustTransactionService transactionService;
-  @Autowired private TrustBooksHarness harness;
   @Autowired private TrustBooksFixture fixture;
 
-  /** Main tenant: H-a, H-c, H-d; ends firm-balanced. */
+  /** The tenant: H-a, H-b, H-c, H-d; ends firm-balanced. */
   private TrustBooksFixture.Tenant books;
 
   private UUID approverId;
-
-  /** Separate tenant for H-b, which deliberately leaves an account out of balance. */
-  private TrustBooksFixture.Tenant cardless;
-
-  private UUID cardlessMemberId;
 
   @BeforeAll
   void setup() throws Exception {
@@ -82,22 +71,6 @@ class TrustReversalEquationIntegrationTest {
                 "owner"));
     fixture.enableTrustModule(tenantSchema);
     books = fixture.tenant(tenantSchema, ORG_ID, memberId);
-
-    var cardlessSchema =
-        provisioningService
-            .provisionTenant(CARDLESS_ORG_ID, "Trust Reversal Cardless Org", null)
-            .schemaName();
-    cardlessMemberId =
-        UUID.fromString(
-            TestMemberHelper.syncMember(
-                mockMvc,
-                CARDLESS_ORG_ID,
-                "user_rev_cardless_owner",
-                "rev_cardless@test.com",
-                "Rev Cardless Owner",
-                "owner"));
-    fixture.enableTrustModule(cardlessSchema);
-    cardless = fixture.tenant(cardlessSchema, CARDLESS_ORG_ID, cardlessMemberId);
   }
 
   @AfterAll
@@ -145,54 +118,30 @@ class TrustReversalEquationIntegrationTest {
   // --- H-b ------------------------------------------------------------------------------------
 
   /**
-   * H-b — pinned defect, <b>structural — closed by derived balances</b> in <b>646A</b>. Reproduced
-   * red on {@code main} {@code aecf93279} (see {@code qa_cycle/evidence/phase92/649A/RED-RUNS.md}).
+   * H-b — <b>structural — closed by derived balances (646A)</b>. Pinned by 649A as {@code
+   * debitReversalWithoutCard_movesCashbookOnly_pinsKnownDefect} (reproduced red on {@code main}
+   * {@code aecf93279}, see {@code qa_cycle/evidence/phase92/649A/RED-RUNS.md}): a posted debit for
+   * a client with no ledger card, written straight to the repository as {@code
+   * LegalDemoDataSeeder.saveTrustTxn} did, reversed into {@code cashbook − client ledgers} growing
+   * by the amount — the reversal credited a card only if one existed.
    *
-   * <p>A posted debit for a client with <b>no ledger card</b> is written straight to the
-   * repository, with the constructor {@code LegalDemoDataSeeder.saveTrustTxn} uses — but {@code
-   * APPROVED}, because the seeder's {@code RECORDED} is refused by the reversal guard. Today the
-   * reversal sets the original {@code REVERSED} (it drops out of the cashbook, which rises by the
-   * amount) but credits a card only if one exists, so {@code cashbook − client ledgers} grows by
-   * the amount.
-   *
-   * <p><b>Reproduces only through direct repository writes.</b> Two service-only routes were probed
-   * on {@code main} and both are refused (probes recorded in RED-RUNS.md, not committed): (1) the
-   * seeder's own {@code RECORDED} payment → {@code reverseTransaction} refused "Transaction must be
-   * in APPROVED status to be reversed"; (2) {@code recordPayment} for a client with no card then
-   * {@code approveTransaction} → refused "Insufficient trust balance … Available: R0,00". Cards are
-   * never deleted, so no service path produces a posted debit without a card.
-   *
-   * <p>Intended: a reversal moves both sides or neither, {@code difference()} unchanged. This pin
-   * is <b>closed (retired) by 646A</b> — the setup becomes impossible once card-less rows cannot
-   * exist ({@code chk_trust_txn_posting}; client ledgers derived from the rows), so 646A deletes or
-   * rewrites this test rather than flipping one assertion. The direct write is confined to {@link
-   * TrustBooksFixture.Tenant#saveDirect}. Runs in a separate tenant because it leaves the account
-   * out of balance.
+   * <p>Since 646A the client ledger is derived from the posted rows (ADR-378) and the card is only
+   * the per-client lock anchor, so whether an anchor exists no longer decides what a reversal
+   * moves; and the original setup is impossible ({@code chk_trust_txn_posting} refuses a posted row
+   * written without {@code TrustPostingService}). Green regression: the rows are posted straight
+   * through {@code TrustPostingService} — which creates no anchor — then the payment is reversed
+   * through the product, and both sides move by the amount.
    */
   @Test
-  void debitReversalWithoutCard_movesCashbookOnly_pinsKnownDefect() {
-    var account = cardless.freshAccount(false);
-    var client = cardless.newClient("H-b");
-    cardless.saveDirect(account, "DEPOSIT", "10000.00", client, "RECORDED");
-    var paymentId = cardless.saveDirect(account, "PAYMENT", "4000.00", client, "APPROVED");
+  void debitReversalForAClientWithoutAnAnchor_movesBothSides() {
+    var account = books.freshAccount(false);
+    var client = books.newClient("H-b");
+    books.postDirect(account, "DEPOSIT", "10000.00", client);
+    var paymentId = books.postDirect(account, "PAYMENT", "4000.00", client);
 
-    var before = new BooksSnapshot[1];
-    var after = new BooksSnapshot[1];
-    cardless.as(
-        cardlessMemberId,
-        () -> {
-          before[0] = harness.snapshot(account);
-          transactionService.reverseTransaction(paymentId, "H-b: paid to the wrong party");
-          after[0] = harness.snapshot(account);
-        });
+    books.reverse(account, paymentId, Expected.cashbookAndClient("4000.00"));
 
-    var moved = after[0].deltaSince(before[0]);
-    // PIN — intended: the difference does not move (both sides move, or neither).
-    assertThat(moved.cashbook()).as("cashbook moved").isEqualByComparingTo("4000.00");
-    assertThat(moved.clientLedgers()).as("client ledgers moved").isEqualByComparingTo("0.00");
-    assertThat(after[0].difference().subtract(before[0].difference()))
-        .as("cashbook − client ledgers moved")
-        .isEqualByComparingTo("4000.00");
+    assertThat(books.statusOf(paymentId)).as("the payment").isEqualTo("REVERSED");
   }
 
   // --- H-c ------------------------------------------------------------------------------------

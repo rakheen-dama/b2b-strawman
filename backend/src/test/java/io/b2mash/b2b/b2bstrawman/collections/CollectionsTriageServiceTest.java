@@ -16,7 +16,7 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestTrustBalanceFactory;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustPostingService;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -36,8 +36,8 @@ import org.springframework.test.web.servlet.MockMvc;
  * 592A.3 — deterministic triage signal derivations (§3.4) and advisor merge (§6.5), exercised
  * end-to-end over embedded Postgres with a dedicated tenant. Each scenario uses its OWN customer so
  * the per-customer signal lists are id-scoped and can be asserted exactly (count-bleed rule). The
- * advisor-merge legs seed a real {@code ClientLedgerCard} — every test tenant HAS the trust tables,
- * so the positive/zero paths run here; the absent-tables (non-legal tenant) path is unit-only in
+ * advisor-merge legs post a real trust {@code DEPOSIT} — every test tenant HAS the trust tables, so
+ * the positive/zero paths run here; the absent-tables (non-legal tenant) path is unit-only in
  * {@code TrustAwareCollectionsAdvisorTest}.
  */
 @SpringBootTest
@@ -56,7 +56,7 @@ class CollectionsTriageServiceTest {
   @Autowired private InvoiceRepository invoiceRepository;
   @Autowired private CollectionActivityRepository activityRepository;
   @Autowired private TrustAccountRepository trustAccountRepository;
-  @Autowired private ClientLedgerCardRepository clientLedgerCardRepository;
+  @Autowired private TrustPostingService trustPostingService;
   @Autowired private CollectionsTriageService triageService;
 
   private String tenantSchema;
@@ -71,7 +71,7 @@ class CollectionsTriageServiceTest {
   private UUID custEscalated; // FLAGGED ESCALATION on outstanding invoice → ESCALATED
   private UUID custEscalatedPartPaid; // same, but the invoice is PARTIALLY_PAID (622D)
   private UUID custTrust; // positive trust balance → TRUST_FUNDS_AVAILABLE (advisor)
-  private UUID custNoTrust; // no ledger card → zero balance → no advice
+  private UUID custNoTrust; // no trust deposit → zero balance → no advice
 
   @BeforeAll
   void setup() throws Exception {
@@ -162,11 +162,12 @@ class CollectionsTriageServiceTest {
           seedSentInvoice(custTrust, "Trust Co", "INV-T1", 20);
           TestTrustBalanceFactory.seedTrustBalance(
               trustAccountRepository,
-              clientLedgerCardRepository,
+              trustPostingService,
               custTrust,
-              BigDecimal.valueOf(1000));
+              BigDecimal.valueOf(1000),
+              ownerMemberId);
 
-          // NoTrust: outstanding invoice but no ledger card → zero balance → no advice.
+          // NoTrust: outstanding invoice but no trust deposit → zero balance → no advice.
           custNoTrust = seedCustomer("No Trust Co", "notrust@test.com");
           seedSentInvoice(custNoTrust, "No Trust Co", "INV-NT1", 20);
         });

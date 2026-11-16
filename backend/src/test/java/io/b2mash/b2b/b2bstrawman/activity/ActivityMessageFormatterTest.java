@@ -1646,8 +1646,10 @@ class ActivityMessageFormatterTest {
   void computedTrustApprovalWithoutTransactionTypeOrAmountUsesTheKey() {
     assertThat(message("trust_payment.approved", "trust_transaction", d()))
         .isEqualTo("Alice approved the trust payment");
+    // Phase 92 (646A): INTEREST_CREDIT is no longer a trust transaction type, so a historic key
+    // falls back to the generic noun.
     assertThat(message("trust_interest_credit.approved", "trust_transaction", d()))
-        .isEqualTo("Alice approved the interest credit");
+        .isEqualTo("Alice approved the trust transaction");
   }
 
   /** Every key the publishers emit today that can reach the matter feed / Home, plus neighbours. */

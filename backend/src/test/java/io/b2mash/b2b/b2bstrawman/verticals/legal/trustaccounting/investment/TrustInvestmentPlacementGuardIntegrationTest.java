@@ -21,8 +21,7 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccount;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountType;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedgerQueryRepository;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDate;
@@ -69,8 +68,7 @@ class TrustInvestmentPlacementGuardIntegrationTest {
   @Autowired private OrgSettingsService orgSettingsService;
   @Autowired private TransactionTemplate transactionTemplate;
   @Autowired private TrustAccountRepository trustAccountRepository;
-  @Autowired private TrustTransactionRepository transactionRepository;
-  @Autowired private ClientLedgerCardRepository ledgerCardRepository;
+  @Autowired private TrustLedgerQueryRepository trustLedgerQueryRepository;
   @Autowired private CustomerRepository customerRepository;
   @Autowired private ProjectRepository projectRepository;
   @Autowired private Clock clock;
@@ -136,7 +134,7 @@ class TrustInvestmentPlacementGuardIntegrationTest {
                 .value(
                     "The investment's placement payment must be approved before the investment can be withdrawn (placement payment status: AWAITING_APPROVAL)"));
 
-    assertThat(cardBalance(placed.client())).isEqualByComparingTo("5000.00");
+    assertThat(clientBalance(placed.client())).isEqualByComparingTo("5000.00");
     assertThat(matterBalance(placed.matter())).isEqualByComparingTo("5000.00");
   }
 
@@ -158,7 +156,7 @@ class TrustInvestmentPlacementGuardIntegrationTest {
         .andExpect(jsonPath("$.status").value(400))
         .andExpect(jsonPath("$.title").value("Invalid investment state"))
         .andExpect(jsonPath("$.detail").value("Investment must be ACTIVE or MATURED to withdraw"));
-    assertThat(cardBalance(placed.client())).isEqualByComparingTo("5000.00");
+    assertThat(clientBalance(placed.client())).isEqualByComparingTo("5000.00");
   }
 
   @Test
@@ -174,7 +172,7 @@ class TrustInvestmentPlacementGuardIntegrationTest {
             .getResponse()
             .getContentAsString();
     assertThat((String) JsonPath.read(body, "$.status")).isEqualTo("WITHDRAWN");
-    assertThat(cardBalance(placed.client())).isEqualByComparingTo("5000.00");
+    assertThat(clientBalance(placed.client())).isEqualByComparingTo("5000.00");
     assertThat(matterBalance(placed.matter())).isEqualByComparingTo("5000.00");
   }
 
@@ -198,7 +196,7 @@ class TrustInvestmentPlacementGuardIntegrationTest {
                 .value(
                     "This payment placed a trust investment (WITHDRAWN). Withdraw the investment instead of reversing its placement payment."));
 
-    assertThat(cardBalance(placed.client())).isEqualByComparingTo("5000.00");
+    assertThat(clientBalance(placed.client())).isEqualByComparingTo("5000.00");
     assertThat(matterBalance(placed.matter())).isEqualByComparingTo("5000.00");
   }
 
@@ -228,7 +226,7 @@ class TrustInvestmentPlacementGuardIntegrationTest {
                 .value(
                     "This payment placed a trust investment (ACTIVE). Withdraw the investment instead of reversing its placement payment."));
 
-    assertThat(cardBalance(placed.client())).isEqualByComparingTo("4000.00");
+    assertThat(clientBalance(placed.client())).isEqualByComparingTo("4000.00");
     assertThat(matterBalance(placed.matter())).isEqualByComparingTo("4000.00");
     String investment =
         mockMvc
@@ -320,7 +318,7 @@ class TrustInvestmentPlacementGuardIntegrationTest {
                     Map.<String, Object>of("trust_account_id", trustAccountId)));
     assertThat(register.rows()).noneMatch(row -> accountNumber.equals(row.get("accountNumber")));
     assertThat(register.rows()).noneMatch(row -> "CANCELLED".equals(row.get("status")));
-    assertThat(cardBalance(client)).isEqualByComparingTo("5000.00");
+    assertThat(clientBalance(client)).isEqualByComparingTo("5000.00");
   }
 
   private List<String> maturingIds() throws Exception {
@@ -419,17 +417,12 @@ class TrustInvestmentPlacementGuardIntegrationTest {
   }
 
   private BigDecimal matterBalance(UUID matter) {
-    var balance = as(() -> transactionRepository.calculateBalanceByProjectId(matter));
+    var balance = as(() -> trustLedgerQueryRepository.matterBalance(matter));
     return balance == null ? BigDecimal.ZERO : balance;
   }
 
-  private BigDecimal cardBalance(UUID client) {
-    return as(
-        () ->
-            ledgerCardRepository
-                .findByTrustAccountIdAndCustomerId(trustAccountId, client)
-                .orElseThrow()
-                .getBalance());
+  private BigDecimal clientBalance(UUID client) {
+    return as(() -> trustLedgerQueryRepository.clientBalance(trustAccountId, client, null));
   }
 
   private <T> T as(Supplier<T> action) {

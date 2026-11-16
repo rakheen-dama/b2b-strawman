@@ -19,14 +19,12 @@ class LedgerTotalsTest {
     var totals =
         LedgerTotals.ZERO
             .plus("DEPOSIT", new BigDecimal("5000.00"))
-            .plus("INTEREST_CREDIT", new BigDecimal("1.34"))
             .plus("PAYMENT", new BigDecimal("1250.00"))
-            .plus("REFUND", new BigDecimal("3751.34"));
+            .plus("REFUND", new BigDecimal("3750.00"));
 
     assertThat(totals.deposits()).isEqualByComparingTo("5000.00");
-    assertThat(totals.interestCredited()).isEqualByComparingTo("1.34");
     assertThat(totals.payments()).isEqualByComparingTo("1250.00");
-    assertThat(totals.refunds()).isEqualByComparingTo("3751.34");
+    assertThat(totals.refunds()).isEqualByComparingTo("3750.00");
     assertThat(totals.derivedBalance()).isEqualByComparingTo("0.00");
   }
 
@@ -35,25 +33,24 @@ class LedgerTotalsTest {
     var totals =
         new LedgerTotals(
             new BigDecimal("1000"),
-            new BigDecimal("10"),
             new BigDecimal("200"),
             new BigDecimal("300"),
             new BigDecimal("150"),
             new BigDecimal("50"),
             new BigDecimal("100"));
 
-    // 1000 + 10 + 200 − 300 − 150 − 50 − 100
-    assertThat(totals.derivedBalance()).isEqualByComparingTo("610");
+    // 1000 + 200 − 300 − 150 − 50 − 100
+    assertThat(totals.derivedBalance()).isEqualByComparingTo("600");
   }
 
   @Test
-  void plus_mapsEveryClientLedgerType_andIgnoresTheRest() {
+  void plus_mapsEveryClientLedgerType_andUnknownTypesLeaveTotalsUnchanged() {
     var totals =
         LedgerTotals.ZERO
             .plus("TRANSFER_IN", new BigDecimal("40"))
             .plus("TRANSFER_OUT", new BigDecimal("15"))
             .plus("FEE_TRANSFER", new BigDecimal("5"))
-            .plus("INTEREST_LPFF", new BigDecimal("999"))
+            .plus("NOT_A_TRUST_TYPE", new BigDecimal("999"))
             .plus("REVERSAL", new BigDecimal("999"))
             .plus("DEPOSIT", null);
 
@@ -70,13 +67,12 @@ class LedgerTotalsTest {
         LedgerTotals.byCustomer(
             List.of(
                 row(CLIENT_A, "DEPOSIT", "5000.00"),
-                row(CLIENT_A, "REFUND", "3751.34"),
+                row(CLIENT_A, "REFUND", "3750.00"),
                 row(CLIENT_B, "TRANSFER_IN", "400.00"),
-                row(CLIENT_A, "PAYMENT", "1250.00"),
-                row(CLIENT_A, "INTEREST_CREDIT", "1.34")));
+                row(CLIENT_A, "PAYMENT", "1250.00")));
 
     assertThat(totals).hasSize(2);
-    assertThat(totals.get(CLIENT_A).refunds()).isEqualByComparingTo("3751.34");
+    assertThat(totals.get(CLIENT_A).refunds()).isEqualByComparingTo("3750.00");
     assertThat(totals.get(CLIENT_A).derivedBalance()).isEqualByComparingTo("0.00");
     assertThat(totals.get(CLIENT_B).transfersIn()).isEqualByComparingTo("400.00");
     assertThat(totals.get(CLIENT_B).derivedBalance()).isEqualByComparingTo("400.00");

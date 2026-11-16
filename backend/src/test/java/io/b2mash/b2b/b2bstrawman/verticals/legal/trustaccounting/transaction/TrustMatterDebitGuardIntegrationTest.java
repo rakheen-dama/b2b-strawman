@@ -22,7 +22,6 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.closure.gates.TrustBalanceZeroGate;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateTrustAccountRequest;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordDepositRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordFeeTransferRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordPaymentRequest;
@@ -81,7 +80,8 @@ class TrustMatterDebitGuardIntegrationTest {
   @Autowired private TrustAccountService trustAccountService;
   @Autowired private TrustTransactionService transactionService;
   @Autowired private TrustTransactionRepository transactionRepository;
-  @Autowired private ClientLedgerCardRepository ledgerCardRepository;
+  @Autowired private TrustPostingService postingService;
+  @Autowired private TrustLedgerQueryRepository ledgerQueries;
   @Autowired private CustomerRepository customerRepository;
   @Autowired private ProjectRepository projectRepository;
   @Autowired private TrustBalanceZeroGate trustBalanceZeroGate;
@@ -150,7 +150,7 @@ class TrustMatterDebitGuardIntegrationTest {
     UUID matter = newMatter("636B Refund Matter");
     deposit(client, matter, "5000.00", 30);
     approve(payment(client, matter, "1250.00", 20));
-    legacyUnmatteredInterestCredit(client, "1.34", 10);
+    legacyUnmatteredCredit(client, "1.34", 10);
 
     UUID refundId = refund(client, matter, "3751.34", 1);
     var body =
@@ -173,7 +173,7 @@ class TrustMatterDebitGuardIntegrationTest {
 
     assertThat(statusOf(refundId)).isEqualTo("AWAITING_APPROVAL");
     assertThat(matterBalance(matter)).isEqualByComparingTo("3750.00");
-    assertThat(cardBalance(client)).isEqualByComparingTo("3751.34");
+    assertThat(clientBalance(client)).isEqualByComparingTo("3751.34");
   }
 
   @Test
@@ -182,15 +182,15 @@ class TrustMatterDebitGuardIntegrationTest {
     UUID matter = newMatter("Equal Refund Matter");
     deposit(client, matter, "5000.00", 30);
     approve(payment(client, matter, "1250.00", 20));
-    legacyUnmatteredInterestCredit(client, "1.34", 10);
+    legacyUnmatteredCredit(client, "1.34", 10);
 
     UUID refundId = refund(client, matter, "3750.00", 1);
     approveHttp(refundId).andExpect(status().isOk());
 
     assertThat(statusOf(refundId)).isEqualTo("APPROVED");
     assertThat(matterBalance(matter)).isEqualByComparingTo("0.00");
-    // The unmattered interest stays a client-level credit (D7)
-    assertThat(cardBalance(client)).isEqualByComparingTo("1.34");
+    // The unmattered credit stays a client-level credit (D7)
+    assertThat(clientBalance(client)).isEqualByComparingTo("1.34");
     assertThat(gatePasses(matter)).isTrue();
   }
 
@@ -213,7 +213,7 @@ class TrustMatterDebitGuardIntegrationTest {
 
     assertThat(statusOf(paymentId)).isEqualTo("AWAITING_APPROVAL");
     assertThat(matterBalance(matterM)).isEqualByComparingTo("1000.00");
-    assertThat(cardBalance(client)).isEqualByComparingTo("6000.00");
+    assertThat(clientBalance(client)).isEqualByComparingTo("6000.00");
   }
 
   @Test
@@ -267,7 +267,7 @@ class TrustMatterDebitGuardIntegrationTest {
 
     assertThat(statusOf(paymentId)).isEqualTo("AWAITING_APPROVAL");
     assertThat(matterBalance(matterM)).isEqualByComparingTo("5200.00");
-    assertThat(cardBalance(clientB)).isEqualByComparingTo("2200.00");
+    assertThat(clientBalance(clientB)).isEqualByComparingTo("2200.00");
   }
 
   @Test
@@ -307,8 +307,8 @@ class TrustMatterDebitGuardIntegrationTest {
         .andExpect(jsonPath("$.matterId").value(matterM.toString()));
 
     assertThat(matterBalance(matterM)).isEqualByComparingTo("1000.00");
-    assertThat(cardBalance(source)).isEqualByComparingTo("6000.00");
-    assertThat(cardBalanceOrNull(target)).isNull();
+    assertThat(clientBalance(source)).isEqualByComparingTo("6000.00");
+    assertThat(clientBalanceOrNull(target)).isNull();
   }
 
   @Test
@@ -374,8 +374,8 @@ class TrustMatterDebitGuardIntegrationTest {
     // Nothing reversed: both legs keep their status, no ledger card moved
     assertThat(statusOf(transferOutId)).isEqualTo("APPROVED");
     assertThat(statusOf(transferInId)).isEqualTo("RECORDED");
-    assertThat(cardBalance(source)).isEqualByComparingTo("0.00");
-    assertThat(cardBalance(target)).isEqualByComparingTo("5000.00");
+    assertThat(clientBalance(source)).isEqualByComparingTo("0.00");
+    assertThat(clientBalance(target)).isEqualByComparingTo("5000.00");
     assertThat(matterBalance(matterM)).isEqualByComparingTo("0.00");
     assertThat(matterBalance(matterT)).isEqualByComparingTo("0.00");
   }
@@ -387,7 +387,7 @@ class TrustMatterDebitGuardIntegrationTest {
 
     UUID refundId = refund(client, null, "800.00", 2);
     approveHttp(refundId).andExpect(status().isOk());
-    assertThat(cardBalance(client)).isEqualByComparingTo("200.00");
+    assertThat(clientBalance(client)).isEqualByComparingTo("200.00");
 
     UUID overRefundId = refund(client, null, "300.00", 1);
     approveHttp(overRefundId)
@@ -521,37 +521,30 @@ class TrustMatterDebitGuardIntegrationTest {
   }
 
   /**
-   * An unmattered INTEREST_CREDIT exactly as {@code InterestService.postInterestRun} wrote it
-   * before G89-F22 (project_id null, RECORDED, card credited) — the 636B ledger shape.
+   * An unmattered client-level credit — the 636B ledger shape (before G89-F22 the interest run
+   * credited the client with project_id null). Interest credits no longer exist (Phase 92, 646A),
+   * so the same money shape is an unmattered DEPOSIT posted through {@link TrustPostingService}.
    */
-  private void legacyUnmatteredInterestCredit(UUID client, String amount, int daysAgo) {
+  private void legacyUnmatteredCredit(UUID client, String amount, int daysAgo) {
     int n = ++counter;
     as(
         ownerId,
         () ->
             transactionTemplate.execute(
-                tx -> {
-                  var date = today.minusDays(daysAgo);
-                  transactionRepository.save(
-                      new TrustTransaction(
-                          trustAccountId,
-                          "INTEREST_CREDIT",
-                          new BigDecimal(amount),
-                          client,
-                          null,
-                          null,
-                          "INT-CREDIT-LEGACY-" + n,
-                          "Interest credit (legacy, client-level)",
-                          date,
-                          "RECORDED",
-                          ownerId));
-                  var card =
-                      ledgerCardRepository
-                          .findByAccountAndCustomerForUpdate(trustAccountId, client)
-                          .orElseThrow();
-                  card.addInterestCredit(new BigDecimal(amount), date);
-                  return ledgerCardRepository.save(card);
-                }));
+                tx ->
+                    postingService.record(
+                        new TrustTransaction(
+                            trustAccountId,
+                            "DEPOSIT",
+                            new BigDecimal(amount),
+                            client,
+                            null,
+                            null,
+                            "CREDIT-LEGACY-" + n,
+                            "Client-level credit (legacy, no matter)",
+                            today.minusDays(daysAgo),
+                            "RECORDED",
+                            ownerId))));
   }
 
   /** A SENT fee note with one line on {@code matter} (so a fee transfer infers that matter). */
@@ -609,22 +602,23 @@ class TrustMatterDebitGuardIntegrationTest {
 
   /** The matter sub-ledger — the closure gate's source. */
   private BigDecimal matterBalance(UUID matter) {
-    return as(ownerId, () -> transactionRepository.calculateBalanceByProjectId(matter));
+    return as(ownerId, () -> ledgerQueries.matterBalance(matter));
   }
 
-  private BigDecimal cardBalance(UUID client) {
-    var balance = cardBalanceOrNull(client);
-    assertThat(balance).as("ledger card of %s", client).isNotNull();
+  private BigDecimal clientBalance(UUID client) {
+    var balance = clientBalanceOrNull(client);
+    assertThat(balance).as("client ledger of %s", client).isNotNull();
     return balance;
   }
 
-  private BigDecimal cardBalanceOrNull(UUID client) {
+  /** The client's derived balance on the account; null when the client has no posted row. */
+  private BigDecimal clientBalanceOrNull(UUID client) {
     return as(
         ownerId,
         () ->
-            ledgerCardRepository
-                .findByTrustAccountIdAndCustomerId(trustAccountId, client)
-                .map(card -> card.getBalance())
+            ledgerQueries
+                .clientSummary(trustAccountId, client)
+                .map(ClientBalanceRow::getBalance)
                 .orElse(null));
   }
 

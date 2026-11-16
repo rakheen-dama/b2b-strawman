@@ -31,7 +31,6 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateTrustAccountRequest;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordDepositRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordFeeTransferRequest;
 import jakarta.persistence.EntityManager;
@@ -90,7 +89,8 @@ class TrustFeeTransferReversalCascadeTest {
   @Autowired private InvoiceRepository invoiceRepository;
   @Autowired private PaymentEventRepository paymentEventRepository;
   @Autowired private CustomerRepository customerRepository;
-  @Autowired private ClientLedgerCardRepository ledgerCardRepository;
+  @Autowired private TrustPostingService postingService;
+  @Autowired private TrustLedgerQueryRepository ledgerQueries;
   @Autowired private AuditService auditService;
   @Autowired private EntityManager entityManager;
   @Autowired private ApplicationEvents applicationEvents;
@@ -742,11 +742,9 @@ class TrustFeeTransferReversalCascadeTest {
                 tx -> transactionService.approveTransaction(txnId, approverId)));
   }
 
+  /** The client's derived balance on the account (Phase 92, ADR-378). */
   private BigDecimal ledgerBalance(UUID customerId) {
-    return ledgerCardRepository
-        .findByTrustAccountIdAndCustomerId(trustAccountId, customerId)
-        .orElseThrow()
-        .getBalance();
+    return ledgerQueries.clientBalance(trustAccountId, customerId, null);
   }
 
   @Test
@@ -785,10 +783,10 @@ class TrustFeeTransferReversalCascadeTest {
                               LocalDate.of(2026, 4, 25)));
                   paymentTxnIdHolder[0] = paymentResponse.id();
 
-                  // Approve the payment
+                  // Approve the payment (posted through the posting service: the row CHECK
+                  // refuses a hand-set APPROVED without posted_at — Phase 92, 646A)
                   var txn = transactionRepository.findById(paymentTxnIdHolder[0]).orElseThrow();
-                  txn.setStatus("APPROVED");
-                  transactionRepository.save(txn);
+                  postingService.postOnApproval(txn, approverId);
                 }));
 
     runInTenantWithCapabilities(

@@ -18,8 +18,6 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateTrustAccountRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report.ClientTrustBalancesQuery;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordDepositRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordPaymentRequest;
@@ -47,11 +45,12 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
 
 /**
- * G89-F13: the client-ledger totals must reconcile to the balance — Deposits + Interest + Transfers
- * in − Payments − Fee transfers − Refunds − Transfers out = Balance. Before the fix the card's
- * running counters were shown: refunds and transfers had no total at all, and a reversed payment
- * stayed in "Payments" (636B: R5 000 + R1,34 − R1 250 − R3 751,34 = 0 rendered as an unexplained
- * R0,00).
+ * G89-F13: the client-ledger totals must reconcile to the balance — Deposits + Transfers in −
+ * Payments − Fee transfers − Refunds − Transfers out = Balance. Before the fix the card's running
+ * counters were shown: refunds and transfers had no total at all, and a reversed payment stayed in
+ * "Payments" (636B: R5 000 + R1,34 − R1 250 − R3 751,34 = 0 rendered as an unexplained R0,00).
+ * Phase 92 (646A) removed the interest component: interest-credit postings no longer exist
+ * (ADR-378), so the 636B case reconciles without the R1,34.
  *
  * <p>Rows go through {@link TrustTransactionService}; approvals by a second member. Reads go
  * through the HTTP API (single ledger and the list). Each test seeds its own clients.
@@ -74,8 +73,6 @@ class ClientLedgerTotalsIntegrationTest {
   @Autowired private TransactionTemplate transactionTemplate;
   @Autowired private TrustAccountService trustAccountService;
   @Autowired private TrustTransactionService transactionService;
-  @Autowired private TrustTransactionRepository transactionRepository;
-  @Autowired private ClientLedgerCardRepository ledgerCardRepository;
   @Autowired private CustomerRepository customerRepository;
   @Autowired private Clock clock;
 
@@ -138,29 +135,28 @@ class ClientLedgerTotalsIntegrationTest {
   }
 
   @Test
-  void totals_reconcile_5000_plus_1_34_minus_1250_minus_3751_34_equals_0() throws Exception {
+  void totals_reconcile_5000_minus_1250_minus_3750_equals_0() throws Exception {
     UUID client = newClient("636B Totals Client");
     UUID matter = trustMatterOf(client);
     deposit(client, matter, "5000.00", 30);
     approve(payment(client, matter, "1250.00", 20));
-    postedInterestCredit(client, matter, "1.34", 10);
-    approve(refund(client, matter, "3751.34", 1));
+    approve(refund(client, matter, "3750.00", 1));
 
     var ledger = ledger(client);
     assertThat(money(ledger.get("balance"))).isEqualByComparingTo("0.00");
     assertThat(money(ledger.get("totalDeposits"))).isEqualByComparingTo("5000.00");
-    assertThat(money(ledger.get("totalInterestCredited"))).isEqualByComparingTo("1.34");
+    assertThat(ledger).doesNotContainKey("totalInterestCredited");
     assertThat(money(ledger.get("totalPayments"))).isEqualByComparingTo("1250.00");
     assertThat(money(ledger.get("totalFeeTransfers"))).isEqualByComparingTo("0.00");
-    assertThat(money(ledger.get("totalRefunds"))).isEqualByComparingTo("3751.34");
+    assertThat(money(ledger.get("totalRefunds"))).isEqualByComparingTo("3750.00");
     assertThat(money(ledger.get("totalTransfersIn"))).isEqualByComparingTo("0.00");
     assertThat(money(ledger.get("totalTransfersOut"))).isEqualByComparingTo("0.00");
     assertReconciles(ledger);
 
     // The list endpoint carries the same derived totals
     var row = listRow(client);
-    assertThat(money(row.get("totalRefunds"))).isEqualByComparingTo("3751.34");
-    assertThat(money(row.get("totalInterestCredited"))).isEqualByComparingTo("1.34");
+    assertThat(money(row.get("totalRefunds"))).isEqualByComparingTo("3750.00");
+    assertThat(row).doesNotContainKey("totalInterestCredited");
     assertReconciles(row);
   }
 
@@ -223,7 +219,7 @@ class ClientLedgerTotalsIntegrationTest {
     assertThat(money(asOf.get("totalDeposits"))).isEqualByComparingTo("1000.00");
     assertThat(money(asOf.get("totalPayments"))).isEqualByComparingTo("0.00");
 
-    // Without a date the row is the current card with all posted totals
+    // Without a date the row is the current derived balance with all posted totals
     var current = reportRow(client, null);
     assertThat(money(current.get("balance"))).isEqualByComparingTo("600.00");
     assertThat(money(current.get("totalPayments"))).isEqualByComparingTo("400.00");
@@ -246,11 +242,10 @@ class ClientLedgerTotalsIntegrationTest {
     return rows.getFirst();
   }
 
-  /** Deposits + Interest + Transfers in − Payments − Fee transfers − Refunds − Transfers out. */
+  /** Deposits + Transfers in − Payments − Fee transfers − Refunds − Transfers out. */
   private static void assertReconciles(Map<String, Object> ledger) {
     var derived =
         money(ledger.get("totalDeposits"))
-            .add(money(ledger.get("totalInterestCredited")))
             .add(money(ledger.get("totalTransfersIn")))
             .subtract(money(ledger.get("totalPayments")))
             .subtract(money(ledger.get("totalFeeTransfers")))
@@ -355,40 +350,6 @@ class ClientLedgerTotalsIntegrationTest {
                         "Refund",
                         today.minusDays(daysAgo)))
                 .id());
-  }
-
-  /**
-   * An INTEREST_CREDIT on the matter exactly as {@code InterestService.postInterestRun} writes one
-   * (RECORDED, card credited) — the R1,34 of 636B without running a whole interest period.
-   */
-  private void postedInterestCredit(UUID client, UUID matter, String amount, int daysAgo) {
-    int n = ++counter;
-    as(
-        ownerId,
-        () ->
-            transactionTemplate.execute(
-                tx -> {
-                  var date = today.minusDays(daysAgo);
-                  transactionRepository.save(
-                      new TrustTransaction(
-                          trustAccountId,
-                          "INTEREST_CREDIT",
-                          new BigDecimal(amount),
-                          client,
-                          matter,
-                          null,
-                          "CLT-INT-" + n,
-                          "Interest credit",
-                          date,
-                          "RECORDED",
-                          ownerId));
-                  var card =
-                      ledgerCardRepository
-                          .findByAccountAndCustomerForUpdate(trustAccountId, client)
-                          .orElseThrow();
-                  card.addInterestCredit(new BigDecimal(amount), date);
-                  return ledgerCardRepository.save(card);
-                }));
   }
 
   /** Single-approval mode refuses self-approval — approve as the second member. */

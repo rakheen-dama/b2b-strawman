@@ -8,10 +8,13 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.ClientBalanceRow;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.ClientHistoryRow;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedger;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedgerQueryRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionDirection;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.TrustTransactionResponse;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionTypeLabels;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -328,15 +331,21 @@ public class ClientLedgerService {
         row.getId(),
         row.getTrustAccountId(),
         row.getTransactionType(),
+        TrustTransactionTypeLabels.firmLabel(row.getTransactionType()),
+        TrustTransactionDirection.ofRow(row.getTransactionType(), row.getReversedType()),
+        row.getLedger() == null ? null : TrustLedger.valueOf(row.getLedger()),
         row.getAmount(),
         row.getCustomerId(),
         row.getProjectId(),
+        row.getCreditorAccountId(),
+        row.getInvestmentId(),
         row.getCounterpartyCustomerId(),
         row.getInvoiceId(),
         row.getReference(),
         row.getDescription(),
         row.getTransactionDate(),
         row.getStatus(),
+        row.getPostedAt(),
         row.getApprovedBy(),
         row.getApprovedAt(),
         row.getSecondApprovedBy(),
@@ -346,6 +355,7 @@ public class ClientLedgerService {
         row.getRejectionReason(),
         row.getReversalOf(),
         row.getReversedById(),
+        Boolean.TRUE.equals(row.getReversalPending()),
         row.getBankStatementLineId(),
         row.getRecordedBy(),
         row.getCreatedAt(),

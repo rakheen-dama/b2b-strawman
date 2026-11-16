@@ -43,11 +43,12 @@ public class TrustTransactionController {
       @RequestParam(required = false) UUID matterId,
       @RequestParam(required = false) String type,
       @RequestParam(required = false) String status,
+      @RequestParam(required = false) TrustLedger ledger,
       @RequestParam(defaultValue = "false") boolean excludeLinked,
       Pageable pageable) {
     return ResponseEntity.ok(
         trustTransactionService.listTransactions(
-            accountId, matterId, type, status, excludeLinked, pageable));
+            accountId, matterId, type, status, ledger, excludeLinked, pageable));
   }
 
   @GetMapping("/api/trust-accounts/{accountId}/transactions/{id}")

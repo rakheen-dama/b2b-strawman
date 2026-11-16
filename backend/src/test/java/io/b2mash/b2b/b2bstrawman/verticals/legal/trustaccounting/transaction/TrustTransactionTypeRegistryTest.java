@@ -537,4 +537,56 @@ class TrustTransactionTypeRegistryTest {
     assertThat(Arrays.stream(TrustLedger.values()).map(Enum::name))
         .containsExactly("CLIENT", "CLIENT_INVESTMENT", "NON_CLIENT", "INTER_ACCOUNT");
   }
+
+  // --- 646E: direction (ledger-effect sign; D2) ---
+
+  @Test
+  void direction_isTheLedgerSign_neutralOnlyForReversal() {
+    for (var type : TrustTransactionType.values()) {
+      var expected =
+          type == TrustTransactionType.REVERSAL
+              ? TrustTransactionDirection.NEUTRAL
+              : type.ledgerSign() > 0
+                  ? TrustTransactionDirection.IN
+                  : TrustTransactionDirection.OUT;
+      assertThat(type.direction()).as(type.name()).isEqualTo(expected);
+    }
+    assertThat(TrustTransactionType.TRANSFER_IN.direction())
+        .isEqualTo(TrustTransactionDirection.IN);
+    assertThat(TrustTransactionType.TRANSFER_OUT.direction())
+        .isEqualTo(TrustTransactionDirection.OUT);
+  }
+
+  @Test
+  void rowDirection_reversalIsTheOppositeOfItsOriginal_neutralWhenUnresolved() {
+    assertThat(TrustTransactionDirection.ofRow("REVERSAL", "PAYMENT"))
+        .isEqualTo(TrustTransactionDirection.IN);
+    assertThat(TrustTransactionDirection.ofRow("REVERSAL", "FEE_TRANSFER"))
+        .isEqualTo(TrustTransactionDirection.IN);
+    assertThat(TrustTransactionDirection.ofRow("REVERSAL", "DEPOSIT"))
+        .isEqualTo(TrustTransactionDirection.OUT);
+    assertThat(TrustTransactionDirection.ofRow("REVERSAL", "TRANSFER_IN"))
+        .isEqualTo(TrustTransactionDirection.OUT);
+    assertThat(TrustTransactionDirection.ofRow("REVERSAL", null))
+        .isEqualTo(TrustTransactionDirection.NEUTRAL);
+    assertThat(TrustTransactionDirection.ofRow("REVERSAL", "INTEREST_CREDIT"))
+        .isEqualTo(TrustTransactionDirection.NEUTRAL);
+    assertThat(TrustTransactionDirection.ofRow("PAYMENT", null))
+        .isEqualTo(TrustTransactionDirection.OUT);
+    assertThat(TrustTransactionDirection.ofRow("DEPOSIT", "PAYMENT"))
+        .isEqualTo(TrustTransactionDirection.IN);
+    // Unknown or retired codes never throw (D4)
+    assertThat(TrustTransactionDirection.ofRow("NOPE", null))
+        .isEqualTo(TrustTransactionDirection.NEUTRAL);
+    assertThat(TrustTransactionDirection.ofRow(null, null))
+        .isEqualTo(TrustTransactionDirection.NEUTRAL);
+  }
+
+  @Test
+  void direction_opposite() {
+    assertThat(TrustTransactionDirection.IN.opposite()).isEqualTo(TrustTransactionDirection.OUT);
+    assertThat(TrustTransactionDirection.OUT.opposite()).isEqualTo(TrustTransactionDirection.IN);
+    assertThat(TrustTransactionDirection.NEUTRAL.opposite())
+        .isEqualTo(TrustTransactionDirection.NEUTRAL);
+  }
 }

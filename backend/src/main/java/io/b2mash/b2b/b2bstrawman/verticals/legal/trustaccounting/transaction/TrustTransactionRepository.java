@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction;
 import jakarta.persistence.LockModeType;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -22,11 +23,12 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
    * Account-scoped transaction list with optional filters (Phase 88 Epic 621A). Every filter is
    * optional — {@code null} (or {@code excludeLinked=false}) disables its predicate, so a call with
    * no filters returns exactly what {@link #findByTrustAccountIdOrderByTransactionDateDesc} does.
-   * {@code projectId} is the matter (wire {@code matterId}). {@code excludeLinked} hides trust
-   * transactions already referenced by a disbursement ({@code legal_disbursements
-   * .trust_transaction_id}, index {@code idx_legal_disbursements_trust_tx}) so the disbursement
-   * trust-link picker cannot offer a used payment. JPQL (not native) so the callers' Pageable
-   * {@code sort=transactionDate,desc} resolves against the entity property.
+   * {@code projectId} is the matter (wire {@code matterId}); {@code ledger} the creditor ledger the
+   * row moves (646E). {@code excludeLinked} hides trust transactions already referenced by a
+   * disbursement ({@code legal_disbursements .trust_transaction_id}, index {@code
+   * idx_legal_disbursements_trust_tx}) so the disbursement trust-link picker cannot offer a used
+   * payment. JPQL (not native) so the callers' Pageable {@code sort=transactionDate,desc} resolves
+   * against the entity property.
    */
   @Query(
       """
@@ -35,6 +37,7 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
         AND (:projectId IS NULL OR t.projectId = :projectId)
         AND (:transactionType IS NULL OR t.transactionType = :transactionType)
         AND (:status IS NULL OR t.status = :status)
+        AND (:ledger IS NULL OR t.ledger = :ledger)
         AND (:excludeLinked = false
              OR NOT EXISTS (
                SELECT d.id FROM LegalDisbursement d WHERE d.trustTransactionId = t.id))
@@ -45,6 +48,7 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
       @Param("projectId") UUID projectId,
       @Param("transactionType") String transactionType,
       @Param("status") String status,
+      @Param("ledger") TrustLedger ledger,
       @Param("excludeLinked") boolean excludeLinked,
       Pageable pageable);
 
@@ -80,6 +84,10 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
    * TrustLedgerQueryRepository#clientBalance}. Callers MUST pass a sort-free {@link Pageable} — the
    * ORDER BY lives in the SQL and Spring Data appends only the page window (R6.7).
    *
+   * <p>646E: each row also carries its original's type ({@code reversedType}, a join to the unique
+   * id — the count query needs no join) for a REVERSAL's direction, and {@code reversalPending},
+   * the same predicate as {@link #findPendingReversalOriginalIds} as one hashed subplan.
+   *
    * <p>The CTE is {@code MATERIALIZED} on purpose: Postgres inlines a once-referenced,
    * side-effect-free CTE, and with cold statistics (a freshly provisioned tenant) the planner then
    * re-executed the window subquery once per outer row (WindowAgg loops=N → O(n²) per client).
@@ -112,9 +120,16 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
                  t.rejection_reason AS rejectionReason, t.reversal_of AS reversalOf,
                  t.reversed_by_id AS reversedById, t.bank_statement_line_id AS bankStatementLineId,
                  t.recorded_by AS recordedBy, t.created_at AS createdAt,
-                 p.running_balance AS runningBalance
+                 p.running_balance AS runningBalance,
+                 t.ledger AS ledger, t.creditor_account_id AS creditorAccountId,
+                 t.investment_id AS investmentId, t.posted_at AS postedAt,
+                 o.transaction_type AS reversedType,
+                 (t.id IN (SELECT r.reversal_of FROM trust_transactions r
+                            WHERE r.status = 'AWAITING_APPROVAL'
+                              AND r.reversal_of IS NOT NULL)) AS reversalPending
             FROM trust_transactions t
             LEFT JOIN posted p ON p.id = t.id
+            LEFT JOIN trust_transactions o ON o.id = t.reversal_of
           """
               + CLIENT_HISTORY_WHERE
               + " ORDER BY t.transaction_date DESC, t.created_at DESC, t.id DESC",
@@ -174,6 +189,20 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
    * 649B); a posted or pending contra still blocks a second reversal.
    */
   boolean existsByReversalOfAndStatusNot(UUID reversalOf, String status);
+
+  /**
+   * Of {@code ids}, the originals that have a contra awaiting approval (646E {@code
+   * reversalPending}). With {@code reversedById} this is the whole of the reversal guard's "already
+   * reversed" test ({@link #existsByReversalOfAndStatusNot} with {@code "REJECTED"}): a posted
+   * contra sets {@code reversedById}, a rejected one never blocks, so a pending one is the only
+   * blocking state the row's own columns do not show.
+   */
+  @Query(
+      """
+      SELECT r.reversalOf FROM TrustTransaction r
+      WHERE r.reversalOf IN :ids AND r.status = 'AWAITING_APPROVAL'
+      """)
+  List<UUID> findPendingReversalOriginalIds(@Param("ids") Collection<UUID> ids);
 
   /**
    * The non-{@code REVERSAL} rows in {@code statuses} linked to a bank statement line — the posted

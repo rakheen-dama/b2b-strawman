@@ -4,47 +4,59 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 /**
- * 633C D6 / G89 W2-c3: the trust-activity email's Type cell and the Statement of Account's trust
- * Payments Type column use client-facing labels (same copy as the portal trust page) and never
- * print a raw enum.
+ * 633C D6 / G89 W2-c3 / Phase 92 646E: every trust type label comes from the registry — {@link
+ * TrustTransactionTypeLabels#label} is the client copy (client surfaces), {@link
+ * TrustTransactionTypeLabels#firmLabel} the firm copy (DTOs, MCP, firm reports) — and no label ever
+ * prints a raw enum or throws on a code the registry does not know (D4).
  */
 class TrustTransactionTypeLabelsTest {
 
   @ParameterizedTest
-  @CsvSource({
-    "DEPOSIT, Deposit",
-    "PAYMENT, Payment",
-    "REFUND, Refund",
-    "FEE_TRANSFER, Fee transfer",
-    "INTEREST_CREDIT, Interest credited",
-    "INTEREST_LPFF, Interest to LPFF",
-    "TRANSFER_IN, Transfer in",
-    "TRANSFER_OUT, Transfer out",
-    "REVERSAL, Reversal"
-  })
-  void everyTrustTransactionType_hasAClientFacingLabel(String type, String label) {
-    assertThat(TrustTransactionTypeLabels.label(type)).isEqualTo(label);
+  @EnumSource(TrustTransactionType.class)
+  void everyRegistryType_readsItsLabelsFromTheRegistry(TrustTransactionType type) {
+    assertThat(TrustTransactionTypeLabels.label(type.name())).isEqualTo(type.clientLabel());
+    assertThat(TrustTransactionTypeLabels.firmLabel(type.name())).isEqualTo(type.label());
   }
 
   @Test
-  void unmappedType_fallsBackToSentenceCase() {
+  void theOriginalTypes_keepTheirCopy() {
+    assertThat(TrustTransactionTypeLabels.label("DEPOSIT")).isEqualTo("Deposit");
+    assertThat(TrustTransactionTypeLabels.label("FEE_TRANSFER")).isEqualTo("Fee transfer");
+    assertThat(TrustTransactionTypeLabels.label("TRANSFER_IN")).isEqualTo("Transfer in");
+    assertThat(TrustTransactionTypeLabels.label("REVERSAL")).isEqualTo("Reversal");
+    assertThat(TrustTransactionTypeLabels.firmLabel("FUND_INTEREST"))
+        .isEqualTo("Interest received for the Legal Practitioners' Fidelity Fund");
+  }
+
+  /**
+   * D4: a retired code (INTEREST_CREDIT / INTEREST_LPFF, deleted by V16 but still on historic audit
+   * events) or any unknown code falls back to sentence case — never the raw enum, never a throw.
+   */
+  @ParameterizedTest
+  @ValueSource(strings = {"INTEREST_CREDIT", "INTEREST_LPFF", "SOME_NEW_TYPE", "lower_case"})
+  void unknownOrRetiredCode_fallsBackToSentenceCase_neverThrows(String code) {
+    String expected =
+        Character.toUpperCase(code.charAt(0)) + code.substring(1).toLowerCase().replace('_', ' ');
+    assertThat(TrustTransactionTypeLabels.label(code)).isEqualTo(expected);
+    assertThat(TrustTransactionTypeLabels.firmLabel(code)).isEqualTo(expected);
+  }
+
+  @Test
+  void unknownCode_examples() {
     assertThat(TrustTransactionTypeLabels.label("SOME_NEW_TYPE")).isEqualTo("Some new type");
+    assertThat(TrustTransactionTypeLabels.firmLabel("INTEREST_LPFF")).isEqualTo("Interest lpff");
   }
 
   @Test
   void missingType_staysNullForTheTemplatePlaceholder() {
     assertThat(TrustTransactionTypeLabels.label(null)).isNull();
     assertThat(TrustTransactionTypeLabels.label(" ")).isNull();
-  }
-
-  /** The client-surface label agrees with the type registry's client label for a reversal. */
-  @Test
-  void reversalLabel_agreesWithTheRegistryClientLabel() {
-    assertThat(TrustTransactionTypeLabels.label("REVERSAL"))
-        .isEqualTo(TrustTransactionType.REVERSAL.clientLabel());
+    assertThat(TrustTransactionTypeLabels.firmLabel(null)).isNull();
+    assertThat(TrustTransactionTypeLabels.firmLabel(" ")).isNull();
   }
 
   /**

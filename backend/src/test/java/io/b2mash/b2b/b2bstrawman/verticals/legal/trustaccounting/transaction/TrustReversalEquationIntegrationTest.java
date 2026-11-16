@@ -21,16 +21,21 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
- * Phase 92 slice 649A (task 649.3, architecture §16.3.11, R8): the four reversal hypotheses
- * H-a..H-d, each reproduced red-first on {@code main} against the {@link TrustBooksHarness} oracle.
- * All four reproduced; each is committed as a pinned defect (the assertion states today's wrong
- * outcome, the method name ends {@code _pinsKnownDefect}, the Javadoc states the intended behaviour
- * and the fixing slice). The intended-behaviour versions and their red runs are in {@code
- * qa_cycle/evidence/phase92/649A/RED-RUNS.md}. 649B flips H-a, H-c and H-d; H-b closed by 646A
- * (structural — closed by derived balances; its pin is now a green regression, see the method).
+ * Phase 92 slices 649A / 649B (tasks 649.3, 649.7; architecture §16.3.11, §16.9.2 paths 6–10; R8):
+ * the four reversal hypotheses H-a..H-d against the {@link TrustBooksHarness} oracle, and the
+ * contra reversal model. 649A reproduced all four red on {@code main} and pinned them ({@code
+ * qa_cycle/evidence/phase92/649A/RED-RUNS.md}); H-b was closed by 646A (structural — derived
+ * balances; its pin is now a green regression); 649B flipped H-a, H-c and H-d to the intended
+ * behaviour after running them red on {@code main} ({@code
+ * qa_cycle/evidence/phase92/649B/red-run.txt}).
  *
- * <p>One tenant: it holds H-a, H-b, H-c and H-d and ends with {@code assertFirmBalanced(today)}.
- * Setup and posting steps come from the shared {@link TrustBooksFixture}.
+ * <p>Since 649B a reversal is a contra entry (ADR-378): the original stays posted with its effects
+ * and is marked {@code REVERSED}; the {@code REVERSAL} row carries the negated effects on its own
+ * date ({@code reversalDate}, default today), so every earlier as-at balance is unchanged.
+ *
+ * <p>One tenant; every test uses a fresh account; the class ends with {@code
+ * assertFirmBalanced(today)}. Setup and posting steps come from the shared {@link
+ * TrustBooksFixture}.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -81,36 +86,48 @@ class TrustReversalEquationIntegrationTest {
   // --- H-a ------------------------------------------------------------------------------------
 
   /**
-   * H-a — pinned defect, fixed in <b>649B</b> (contra reversal model). Reproduced red on {@code
-   * main} {@code aecf93279} (see {@code qa_cycle/evidence/phase92/649A/RED-RUNS.md}).
-   *
-   * <p>Today: approving a credit reversal moves neither the cashbook nor the client's ledger, and
-   * the original stays {@code APPROVED} with no {@code reversedById} — {@code
-   * performApprovalCompletion} skips its balance block for {@code REVERSAL} (not in {@code
-   * DEBIT_TYPES}) and nothing marks the original; the cashbook sign table counts {@code REVERSAL}
-   * as 0.
-   *
-   * <p>Intended (649B flips this pin): the approval step moves {@code
-   * Expected.cashbookAndClient("-5000.00")} and the original is {@code REVERSED}; refused at
-   * approval if the matter cell no longer covers the amount.
+   * H-a — reproduced red on {@code main} {@code aecf93279} (649A) and pinned there; fixed in
+   * <b>649B</b> (contra reversal model). Approving a credit reversal posts the contra entry: the
+   * cashbook and the client's ledger fall by the amount, the reversal is {@code APPROVED} and the
+   * original is {@code REVERSED} and points at it.
    */
   @Test
-  void approvedCreditReversal_movesNeitherCashbookNorClient_pinsKnownDefect() {
+  void approvedCreditReversal_movesCashbookAndClient() {
     var account = books.freshAccount(false);
     var client = books.newClient("H-a");
     var depositId = books.deposit(account, client, "5000.00");
-    // H-d evidence (ruling #1): a deposit is never APPROVED through the product, so the only way
-    // to reach a reversible credit on HEAD is to hand-set the status, as
-    // TrustTransactionServiceTest.reverseCreditTransaction_requiresApproval does.
+    // "An APPROVED credit": the hand-set stays so H-a is isolated from H-d (ruling #1).
     books.handSetApproved(depositId);
 
     var reversal = books.reverse(account, depositId, Expected.none());
 
-    // PIN — intended: Expected.cashbookAndClient("-5000.00")
-    books.approve(account, reversal.id(), approverId, Expected.none());
+    books.approve(account, reversal.id(), approverId, Expected.cashbookAndClient("-5000.00"));
 
     assertThat(books.statusOf(reversal.id())).as("the reversal").isEqualTo("APPROVED");
-    // PIN — intended: the original is REVERSED and points at its reversal.
+    assertThat(books.statusOf(depositId)).as("original deposit").isEqualTo("REVERSED");
+    assertThat(books.reversedByOf(depositId))
+        .as("original deposit reversedById")
+        .isEqualTo(reversal.id());
+  }
+
+  /**
+   * H-a, refusal half (§16.3.11): the contra takes money off the client, so at approval the client
+   * — and the matter cell — must still cover it. Here the client spent R4 000 of the R5 000 after
+   * the reversal was requested; the approval is refused and nothing moves.
+   */
+  @Test
+  void approvedCreditReversal_refusedWhenTheClientNoLongerCoversIt() {
+    var account = books.freshAccount(false);
+    var client = books.newClient("H-a refused");
+    var depositId = books.deposit(account, client, "5000.00");
+    books.handSetApproved(depositId);
+    var reversal = books.reverse(account, depositId, Expected.none());
+    var paymentId = books.requestPayment(account, client, "4000.00");
+    books.approve(account, paymentId, approverId, Expected.cashbookAndClient("-4000.00"));
+
+    books.assertApprovalRefused(account, reversal.id(), approverId, "Insufficient trust balance");
+
+    assertThat(books.statusOf(reversal.id())).as("the reversal").isEqualTo("AWAITING_APPROVAL");
     assertThat(books.statusOf(depositId)).as("original deposit").isEqualTo("APPROVED");
     assertThat(books.reversedByOf(depositId)).as("original deposit reversedById").isNull();
   }
@@ -147,57 +164,72 @@ class TrustReversalEquationIntegrationTest {
   // --- H-c ------------------------------------------------------------------------------------
 
   /**
-   * H-c — pinned defect, fixed in <b>649B</b>. Reproduced red on {@code main} {@code aecf93279}
-   * (see {@code qa_cycle/evidence/phase92/649A/RED-RUNS.md}).
-   *
-   * <p>Today: once a credit reversal is rejected the original can never be reversed again — {@code
-   * existsByReversalOf} counts the {@code REJECTED} contra row, so the second attempt is refused
-   * "Transaction has already been reversed".
-   *
-   * <p>Intended (649B flips this pin): a rejected reversal leaves the original reversible — the
-   * already-reversed check ignores {@code REJECTED} contra rows; the second attempt returns a
-   * {@code REVERSAL} awaiting approval for the same original, and moves nothing.
+   * H-c — reproduced red on {@code main} {@code aecf93279} (649A) and pinned there; fixed in
+   * <b>649B</b>. A rejected reversal leaves the original reversible: the already-reversed check
+   * ignores {@code REJECTED} contra rows, so the second attempt returns a {@code REVERSAL} awaiting
+   * approval for the same original, and moves nothing.
    */
   @Test
-  void rejectedCreditReversal_blocksLaterReversal_pinsKnownDefect() {
+  void rejectedCreditReversal_leavesOriginalReversible() {
     var account = books.freshAccount(false);
     var client = books.newClient("H-c");
     var depositId = books.deposit(account, client, "5000.00");
-    books.handSetApproved(depositId); // H-d evidence (ruling #1)
+    // Kept so H-c is isolated from H-d (on main the RECORDED deposit is refused for another
+    // reason).
+    books.handSetApproved(depositId);
 
     var firstReversal = books.reverse(account, depositId, Expected.none());
     books.reject(account, firstReversal.id(), approverId);
-    // Guards the pin: with the first reversal still pending, the refusal below would hold for a
-    // different reason and no longer show H-c.
     assertThat(books.statusOf(firstReversal.id())).as("first reversal").isEqualTo("REJECTED");
 
-    // PIN — intended: accepted, a REVERSAL AWAITING_APPROVAL for depositId.
-    books.assertReversalRefused(account, depositId, "Transaction has already been reversed");
+    var second = books.reverse(account, depositId, Expected.none());
+
+    assertThat(second.id()).isNotEqualTo(firstReversal.id());
+    assertThat(second.status()).isEqualTo("AWAITING_APPROVAL");
+    assertThat(second.reversalOf()).isEqualTo(depositId);
   }
 
   // --- H-d ------------------------------------------------------------------------------------
 
   /**
-   * H-d — pinned defect by founder ruling #1 (§16.12.2), fixed in <b>649B</b>. Reproduced red on
-   * {@code main} {@code aecf93279} (see {@code qa_cycle/evidence/phase92/649A/RED-RUNS.md}).
-   *
-   * <p>Today: a deposit recorded through the service stays {@code RECORDED} and is refused by the
-   * reversal guard "Transaction must be in APPROVED status to be reversed" — so the only credit a
-   * firm can record can never be reversed through the product.
-   *
-   * <p>Intended (649B flips this pin): any posted row ({@code RECORDED} or {@code APPROVED}) is
-   * reversible under its registry rule; reversing the deposit returns a {@code REVERSAL} {@code
-   * AWAITING_APPROVAL} (a credit — maker-checker unchanged) for the deposit, and moves nothing yet.
+   * H-d — founder ruling #1 (§16.12.2): reproduced red on {@code main} {@code aecf93279} (649A) and
+   * pinned there; fixed in <b>649B</b>. Any posted row ({@code RECORDED} or {@code APPROVED}) is
+   * reversible under its registry rule; reversing a deposit recorded through the service returns a
+   * {@code REVERSAL} {@code AWAITING_APPROVAL} (a credit — maker-checker unchanged) and moves
+   * nothing yet.
    */
   @Test
-  void recordedDeposit_cannotBeReversed_pinsKnownDefect() {
+  void recordedDeposit_isReversible() {
     var account = books.freshAccount(false);
     var client = books.newClient("H-d");
     var depositId = books.deposit(account, client, "5000.00");
     assertThat(books.statusOf(depositId)).isEqualTo("RECORDED");
 
-    // PIN — intended: accepted, a REVERSAL AWAITING_APPROVAL for depositId.
-    books.assertReversalRefused(
-        account, depositId, "Transaction must be in APPROVED status to be reversed");
+    var reversal = books.reverse(account, depositId, Expected.none());
+
+    assertThat(reversal.status()).isEqualTo("AWAITING_APPROVAL");
+    assertThat(books.statusOf(depositId)).as("original deposit").isEqualTo("RECORDED");
+  }
+
+  // --- Path 9: reversal of a RECORDED deposit (H-d, ruling #1) ---------------------------------
+
+  /**
+   * Path 9 (§16.9.2): a deposit recorded through the service — no hand-set — is reversed; the
+   * contra awaits approval and moves nothing; a second member approves it and the cashbook and the
+   * client fall by the amount; the deposit ends {@code REVERSED}, the contra {@code APPROVED}.
+   */
+  @Test
+  void recordedDepositReversal_approved_movesCashbookAndClient() {
+    var account = books.freshAccount(false);
+    var client = books.newClient("P9");
+    var depositId = books.deposit(account, client, "5000.00");
+
+    var reversal = books.reverse(account, depositId, Expected.none());
+    books.approve(account, reversal.id(), approverId, Expected.cashbookAndClient("-5000.00"));
+
+    assertThat(books.statusOf(reversal.id())).as("the reversal").isEqualTo("APPROVED");
+    assertThat(books.statusOf(depositId)).as("original deposit").isEqualTo("REVERSED");
+    assertThat(books.reversedByOf(depositId)).isEqualTo(reversal.id());
+    books.assertServicesAgree(account);
   }
 }

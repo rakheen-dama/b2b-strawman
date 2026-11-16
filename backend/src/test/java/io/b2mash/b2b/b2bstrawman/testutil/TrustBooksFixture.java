@@ -446,6 +446,29 @@ public final class TrustBooksFixture {
                               })));
     }
 
+    /**
+     * {@code approver}'s approval is refused with {@code InvalidStateException} (400) titled {@code
+     * title}, and nothing moves.
+     */
+    public void assertApprovalRefused(
+        UUID account, UUID transactionId, UUID approver, String title) {
+      as(
+          approver,
+          () ->
+              harness.assertMoves(
+                  account,
+                  Expected.none(),
+                  () ->
+                      assertThatThrownBy(
+                              () -> transactionService.approveTransaction(transactionId, approver))
+                          .isInstanceOfSatisfying(
+                              InvalidStateException.class,
+                              e -> {
+                                assertThat(e.getBody().getStatus()).isEqualTo(400);
+                                assertThat(e.getBody().getTitle()).isEqualTo(title);
+                              })));
+    }
+
     // --- direct writes (bypass the services; keep every such write here) -------------------
 
     /**

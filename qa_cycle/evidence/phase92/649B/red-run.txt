@@ -1,0 +1,30 @@
+649B — red run of the flipped pins on UNCHANGED production code (main 5d4704455)
+=====================================================================================
+Only test files changed (TrustReversalEquationIntegrationTest, TrustEquationCharacterisationIntegrationTest,
+ClientLedgerRunningBalanceIntegrationTest, testutil/TrustBooksFixture). Command (backend/):
+  ./mvnw test -Dtest="TrustReversalEquationIntegrationTest,TrustEquationCharacterisationIntegrationTest,ClientLedgerRunningBalanceIntegrationTest"
+
+Tests run: 33, Failures: 4, Errors: 4, Skipped: 0   -> BUILD FAILURE (expected: red on main)
+
+H-a  TrustReversalEquationIntegrationTest.approvedCreditReversal_movesCashbookAndClient           FAILURE
+     [cashbook moved by 0.00, expected -5000.00] / [clientLedgers moved by 0.00, expected -5000.00]
+H-a  TrustReversalEquationIntegrationTest.approvedCreditReversal_refusedWhenTheClientNoLongerCoversIt  FAILURE
+     Expecting code to raise a throwable.  (approval of the credit contra is never refused on main)
+H-c  TrustReversalEquationIntegrationTest.rejectedCreditReversal_leavesOriginalReversible          ERROR
+     InvalidStateException 400 'Cannot reverse transaction' / 'Transaction has already been reversed'
+H-d  TrustReversalEquationIntegrationTest.recordedDeposit_isReversible                             ERROR
+     InvalidStateException 400 'Cannot reverse transaction' / 'Transaction must be in APPROVED status to be reversed'
+P9   TrustReversalEquationIntegrationTest.recordedDepositReversal_approved_movesCashbookAndClient   ERROR
+     InvalidStateException 400 'Cannot reverse transaction' / 'Transaction must be in APPROVED status to be reversed'
+7b   TrustEquationCharacterisationIntegrationTest.creditReversalApproved_movesCashbookAndClient     FAILURE
+     [cashbook moved by 0.00, expected -5000.00] / [clientLedgers moved by 0.00, expected -5000.00]
+7d   TrustEquationCharacterisationIntegrationTest.creditReversalRejectedThenReversedAgain_isAccepted ERROR
+     InvalidStateException 400 'Cannot reverse transaction' / 'Transaction has already been reversed'
+D15  ClientLedgerRunningBalanceIntegrationTest.statement_reversalInsideThePeriodOfAnEarlierPayment_closesAtTheClientBalance  FAILURE
+     [the reversal is listed inside the period] Expecting JSONArray [] to contain ["REVERSAL"]
+     NOTE: on main the opening/closing balance assertions of this test PASS (closing 10000.00 ==
+     clientBalance(end)) — main zeroes the reversed payment, so the balance defect D15 does not exist on
+     main; it is introduced by the contra model. Its red balance run is recorded below, taken after the
+     contra model and before the findForStatement change.
+
+H-b  debitReversalForAClientWithoutAnAnchor_movesBothSides — green (closed by 646A), unchanged.

@@ -37,11 +37,14 @@ import org.springframework.test.web.servlet.MockMvc;
  * …_pinsKnownDefect}, naming the slice that flips it.
  *
  * <p>Measured on {@code main} {@code aecf93279}: paths 1–6, 7a, 7c and 8 balance and move exactly
- * as expected; two paths are pinned — 7b and 7d (649B); path 11 was closed by 646A. The red runs of
- * their intended forms are in {@code qa_cycle/evidence/phase92/649A/RED-RUNS.md}.
+ * as expected; two paths were pinned — 7b and 7d, flipped to the intended behaviour by 649B (red
+ * runs: {@code qa_cycle/evidence/phase92/649A/RED-RUNS.md} and {@code
+ * qa_cycle/evidence/phase92/649B/red-run.txt}); path 11 was closed by 646A.
  *
  * <p>646A swaps the harness internals to the effect columns; no expectation here changes except the
- * pins it closes (path 11). 649B flips the reversal pins (paths 7b, 7d).
+ * pins it closes (path 11). 649B flips the reversal pins (paths 7b, 7d); with harness EQ-6 v2 every
+ * reversal path here also checks the contra shape (the original keeps its effects, the {@code
+ * REVERSAL} row carries their negation).
  *
  * <p>Paths 7 and 8 reach a reversible row only by <b>hand-setting {@code APPROVED}</b> (a deposit
  * or a {@code TRANSFER_OUT} is saved {@code RECORDED} and never becomes {@code APPROVED}); each
@@ -319,28 +322,23 @@ class TrustEquationCharacterisationIntegrationTest {
   }
 
   /**
-   * Path 7b — pinned defect (same mechanism as H-a in {@code
-   * TrustReversalEquationIntegrationTest}), fixed in <b>649B</b>. Measured on {@code main} {@code
-   * aecf93279}: approving the credit reversal moved cashbook 0.00 and client ledgers 0.00 (books
-   * stay balanced; the money simply never leaves), the original stays {@code APPROVED}.
-   *
-   * <p>Intended (649B flips this pin): {@code Expected.cashbookAndClient("-5000.00")} and the
-   * original {@code REVERSED}.
+   * Path 7b — measured on {@code main} {@code aecf93279} as moving nothing (same mechanism as H-a
+   * in {@code TrustReversalEquationIntegrationTest}) and pinned there; fixed in <b>649B</b>:
+   * approving the credit reversal posts the contra entry, the cashbook and the client fall by the
+   * amount, and the original is {@code REVERSED}.
    */
   @Test
-  void creditReversalApproved_movesNothing_pinsKnownDefect() {
+  void creditReversalApproved_movesCashbookAndClient() {
     var account = books.freshAccount(false);
     var client = books.newClient("P7b");
     var depositId = books.deposit(account, client, "5000.00");
     books.handSetApproved(depositId); // H-d evidence (ruling #1)
     var reversal = books.reverse(account, depositId, Expected.none());
 
-    // PIN — intended: Expected.cashbookAndClient("-5000.00")
-    books.approve(account, reversal.id(), approverId, Expected.none());
+    books.approve(account, reversal.id(), approverId, Expected.cashbookAndClient("-5000.00"));
 
     assertThat(books.statusOf(reversal.id())).isEqualTo("APPROVED");
-    // PIN — intended: REVERSED
-    assertThat(books.statusOf(depositId)).isEqualTo("APPROVED");
+    assertThat(books.statusOf(depositId)).isEqualTo("REVERSED");
     books.assertServicesAgree(account);
   }
 
@@ -360,17 +358,13 @@ class TrustEquationCharacterisationIntegrationTest {
   }
 
   /**
-   * Path 7d — pinned defect (same mechanism as H-c in {@code
-   * TrustReversalEquationIntegrationTest}), fixed in <b>649B</b>. Measured on {@code main} {@code
-   * aecf93279}: after the first reversal is rejected, a second reversal is refused "Transaction has
-   * already been reversed" ({@code existsByReversalOf} counts the {@code REJECTED} row); nothing
-   * moves.
-   *
-   * <p>Intended (649B flips this pin): the second reversal is accepted — a {@code REVERSAL}
-   * awaiting approval, {@code Expected.none()}.
+   * Path 7d — measured on {@code main} {@code aecf93279} as refused "Transaction has already been
+   * reversed" (same mechanism as H-c in {@code TrustReversalEquationIntegrationTest}) and pinned
+   * there; fixed in <b>649B</b>: the rejected reversal is ignored, so the second reversal is
+   * accepted — a {@code REVERSAL} awaiting approval that moves nothing.
    */
   @Test
-  void creditReversalRejectedThenReversedAgain_isRefused_pinsKnownDefect() {
+  void creditReversalRejectedThenReversedAgain_isAccepted() {
     var account = books.freshAccount(false);
     var client = books.newClient("P7d");
     var depositId = books.deposit(account, client, "5000.00");
@@ -378,8 +372,10 @@ class TrustEquationCharacterisationIntegrationTest {
     var first = books.reverse(account, depositId, Expected.none());
     books.reject(account, first.id(), approverId);
 
-    // PIN — intended: accepted, a REVERSAL AWAITING_APPROVAL for depositId.
-    books.assertReversalRefused(account, depositId, "Transaction has already been reversed");
+    var second = books.reverse(account, depositId, Expected.none());
+
+    assertThat(second.status()).isEqualTo("AWAITING_APPROVAL");
+    assertThat(second.reversalOf()).isEqualTo(depositId);
     books.assertServicesAgree(account);
   }
 

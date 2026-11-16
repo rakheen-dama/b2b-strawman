@@ -263,6 +263,91 @@ class ClientLedgerRunningBalanceIntegrationTest {
     assertThat(reversalRow.get().get("runningBalance")).isNull();
   }
 
+  // --- Statement across a period boundary (649B, D15) ---
+
+  /**
+   * Phase 92 649B (D15): under the contra model a payment dated before the period still counts in
+   * the opening balance, so its reversal dated inside the period must be listed — otherwise the
+   * statement's closing balance falls short of the client's balance at the period end by the
+   * payment. The statement lists every posted row (the reversed original and its "Reversal" line,
+   * each with its own effect), so closing == {@code clientBalance(endDate)}.
+   */
+  @Test
+  void statement_reversalInsideThePeriodOfAnEarlierPayment_closesAtTheClientBalance()
+      throws Exception {
+    int n = ++clientCounter;
+    UUID clientId =
+        as(
+            ownerId,
+            () ->
+                transactionTemplate.execute(
+                    tx ->
+                        customerRepository
+                            .save(
+                                TestCustomerFactory.createActiveCustomer(
+                                    "RB Statement Client " + n,
+                                    "rb_statement_client_" + n + "@test.com",
+                                    ownerId))
+                            .getId()));
+    as(
+        ownerId,
+        () ->
+            transactionService.recordDeposit(
+                trustAccountId,
+                new RecordDepositRequest(
+                    clientId,
+                    trustMatterOf(clientId),
+                    new BigDecimal("10000.00"),
+                    "RB-ST-DEP-" + n,
+                    "Opening deposit",
+                    today.minusDays(10))));
+    UUID paymentId = recordPayment(clientId, "4000.00", "RB-ST-PAY-" + n, 8);
+    approve(paymentId);
+    // The reversal is dated today: inside the statement period, the payment before it.
+    as(ownerId, () -> transactionService.reverseTransaction(paymentId, "Paid in error"));
+
+    var startDate = today.minusDays(5);
+    var statementBody =
+        mockMvc
+            .perform(
+                get(
+                        "/api/trust-accounts/{acc}/client-ledgers/{client}/statement",
+                        trustAccountId,
+                        clientId)
+                    .param("startDate", startDate.toString())
+                    .param("endDate", today.toString())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUB)))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    BigDecimal balanceAtEnd =
+        as(
+            ownerId,
+            () ->
+                transactionTemplate.execute(
+                    tx ->
+                        trustLedgerQueryRepository.clientBalance(trustAccountId, clientId, today)));
+    BigDecimal balanceBeforeStart =
+        as(
+            ownerId,
+            () ->
+                transactionTemplate.execute(
+                    tx ->
+                        trustLedgerQueryRepository.clientBalance(
+                            trustAccountId, clientId, startDate.minusDays(1))));
+
+    assertThat(money(JsonPath.read(statementBody, "$.openingBalance")))
+        .as("opening balance == client balance the day before the period")
+        .isEqualByComparingTo(balanceBeforeStart);
+    assertThat(money(JsonPath.read(statementBody, "$.closingBalance")))
+        .as("closing balance == client balance at the period end")
+        .isEqualByComparingTo(balanceAtEnd)
+        .isEqualByComparingTo("10000.00");
+    List<String> types = JsonPath.read(statementBody, "$.transactions[*].transactionType");
+    assertThat(types).as("the reversal is listed inside the period").contains("REVERSAL");
+  }
+
   // --- Filters bind after the window ---
 
   @Test

@@ -11,6 +11,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
+import io.b2mash.b2b.b2bstrawman.testutil.ProblemDetailAssertions;
 import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
@@ -24,7 +25,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -259,79 +262,67 @@ class InterestControllerTest {
         .andExpect(jsonPath("$.length()").value(org.hamcrest.Matchers.greaterThanOrEqualTo(1)));
   }
 
+  // Phase 92 645A (§16.3.1): approve and post always answer 400 with the section 86(5) message.
+
   @Test
-  void approveInterestRun_returnsApprovedStatus() throws Exception {
+  void approveInterestRun_isRefused_runStaysDraft() throws Exception {
     var ownerJwt = TestJwtFactory.ownerJwt(ORG_ID, "user_interest_ctrl_owner");
     var owner2Jwt = TestJwtFactory.ownerJwt(ORG_ID, "user_interest_ctrl_owner2");
+    var runId = createAndCalculate(ownerJwt, "2025-10-01", "2025-10-31");
 
-    // Create and calculate an interest run
-    var createResult =
-        mockMvc
-            .perform(
-                post("/api/trust-accounts/" + trustAccountId + "/interest-runs")
-                    .with(ownerJwt)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "periodStart": "2025-10-01",
-                          "periodEnd": "2025-10-31"
-                        }
-                        """))
-            .andExpect(status().isCreated())
-            .andReturn();
-
-    var runId = JsonPath.read(createResult.getResponse().getContentAsString(), "$.id").toString();
+    // A second member: the refusal does not depend on the two-member rule
+    ProblemDetailAssertions.assertProblemWithDetail(
+        mockMvc.perform(post("/api/interest-runs/" + runId + "/approve").with(owner2Jwt)),
+        HttpStatus.BAD_REQUEST,
+        InterestPostingGuardIntegrationTest.TITLE,
+        InterestPostingGuardIntegrationTest.DETAIL);
 
     mockMvc
-        .perform(post("/api/interest-runs/" + runId + "/calculate").with(ownerJwt))
-        .andExpect(status().isOk());
-
-    // Approve with a different owner (self-approval prevention)
-    mockMvc
-        .perform(post("/api/interest-runs/" + runId + "/approve").with(owner2Jwt))
+        .perform(get("/api/interest-runs/" + runId).with(ownerJwt))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.status").value("APPROVED"))
-        .andExpect(jsonPath("$.approvedBy").isNotEmpty());
+        .andExpect(jsonPath("$.run.status").value("DRAFT"))
+        .andExpect(jsonPath("$.run.approvedBy").doesNotExist());
   }
 
   @Test
-  void postInterestRun_returnsPostedStatus() throws Exception {
+  void postInterestRun_isRefused_runStaysDraft() throws Exception {
     var ownerJwt = TestJwtFactory.ownerJwt(ORG_ID, "user_interest_ctrl_owner");
-    var owner2Jwt = TestJwtFactory.ownerJwt(ORG_ID, "user_interest_ctrl_owner2");
+    var runId = createAndCalculate(ownerJwt, "2025-11-01", "2025-11-30");
 
-    // Create, calculate, approve, then post
+    ProblemDetailAssertions.assertProblemWithDetail(
+        mockMvc.perform(post("/api/interest-runs/" + runId + "/post").with(ownerJwt)),
+        HttpStatus.BAD_REQUEST,
+        InterestPostingGuardIntegrationTest.TITLE,
+        InterestPostingGuardIntegrationTest.DETAIL);
+
+    mockMvc
+        .perform(get("/api/interest-runs/" + runId).with(ownerJwt))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.run.status").value("DRAFT"))
+        .andExpect(jsonPath("$.run.postedAt").doesNotExist());
+  }
+
+  /** Creates a run for the period and calculates it; returns its id. */
+  private String createAndCalculate(JwtRequestPostProcessor jwt, String start, String end)
+      throws Exception {
     var createResult =
         mockMvc
             .perform(
                 post("/api/trust-accounts/" + trustAccountId + "/interest-runs")
-                    .with(ownerJwt)
+                    .with(jwt)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
-                        {
-                          "periodStart": "2025-11-01",
-                          "periodEnd": "2025-11-30"
-                        }
-                        """))
+                        {"periodStart": "%s", "periodEnd": "%s"}
+                        """
+                            .formatted(start, end)))
             .andExpect(status().isCreated())
             .andReturn();
-
     var runId = JsonPath.read(createResult.getResponse().getContentAsString(), "$.id").toString();
-
     mockMvc
-        .perform(post("/api/interest-runs/" + runId + "/calculate").with(ownerJwt))
+        .perform(post("/api/interest-runs/" + runId + "/calculate").with(jwt))
         .andExpect(status().isOk());
-
-    mockMvc
-        .perform(post("/api/interest-runs/" + runId + "/approve").with(owner2Jwt))
-        .andExpect(status().isOk());
-
-    mockMvc
-        .perform(post("/api/interest-runs/" + runId + "/post").with(ownerJwt))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.status").value("POSTED"))
-        .andExpect(jsonPath("$.postedAt").isNotEmpty());
+    return runId;
   }
 
   // 630B (G88-F39): allocationCount tells a calculated DRAFT from a never-calculated one.

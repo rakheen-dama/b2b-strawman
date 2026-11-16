@@ -59,7 +59,6 @@ class InterestServiceIntegrationTest {
   private String customerId1;
   private String customerId2;
   private UUID ownerMemberId;
-  private UUID adminMemberId;
 
   @BeforeAll
   void setup() throws Exception {
@@ -75,16 +74,6 @@ class InterestServiceIntegrationTest {
                 "interest_owner@test.com",
                 "Interest Owner",
                 "owner"));
-
-    adminMemberId =
-        UUID.fromString(
-            TestMemberHelper.syncMember(
-                mockMvc,
-                ORG_ID,
-                "user_interest_admin",
-                "interest_admin@test.com",
-                "Interest Admin",
-                "admin"));
 
     // Enable the trust_accounting module
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -643,12 +632,21 @@ class InterestServiceIntegrationTest {
   }
 
   // ==========================================================================
-  // 445.11 -- Posting Integration Tests (4 tests)
+  // Phase 92 645A -- posting is refused (section 86(5)); nothing reaches the ledger
   // ==========================================================================
 
   @Test
-  void postInterestRun_createsInterestCreditPerClient() throws Exception {
-    // Create, calculate, approve (by admin), and post an interest run
+  void postInterestRun_isRefused_noInterestCreditWritten() throws Exception {
+    var preBalance =
+        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+            .call(
+                () ->
+                    clientLedgerCardRepository
+                        .findByTrustAccountIdAndCustomerId(
+                            trustAccountId, UUID.fromString(customerId1))
+                        .orElseThrow()
+                        .getBalance());
+
     var runResponse =
         ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
             .where(RequestScopes.MEMBER_ID, ownerMemberId)
@@ -656,90 +654,44 @@ class InterestServiceIntegrationTest {
                 () ->
                     interestService.createInterestRun(
                         trustAccountId, LocalDate.of(2026, 1, 1), LocalDate.of(2026, 1, 31)));
-
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .call(() -> interestService.calculateInterest(runResponse.id()));
 
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .where(RequestScopes.MEMBER_ID, adminMemberId)
-        .call(() -> interestService.approveInterestRun(runResponse.id()));
+    assertThatThrownBy(
+            () ->
+                ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+                    .where(RequestScopes.MEMBER_ID, ownerMemberId)
+                    .call(() -> interestService.postInterestRun(runResponse.id())))
+        .isInstanceOfSatisfying(
+            InvalidStateException.class,
+            e -> {
+              assertThat(e.getBody().getTitle())
+                  .isEqualTo(InterestPostingGuardIntegrationTest.TITLE);
+              assertThat(e.getBody().getDetail())
+                  .isEqualTo(InterestPostingGuardIntegrationTest.DETAIL);
+            });
 
-    var posted =
-        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-            .where(RequestScopes.MEMBER_ID, ownerMemberId)
-            .call(() -> interestService.postInterestRun(runResponse.id()));
-
-    assertThat(posted.status()).isEqualTo("POSTED");
-    assertThat(posted.postedAt()).isNotNull();
-
-    // Verify allocations have trust_transaction_id set
+    // No allocation points at a credit, no row carries the run's reference, the card is unchanged
     var allocations =
         ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-            .call(() -> interestService.getAllocations(posted.id()));
-
-    for (var alloc : allocations) {
-      if (alloc.clientShare().compareTo(BigDecimal.ZERO) > 0) {
-        assertThat(alloc.trustTransactionId()).isNotNull();
-
-        // Verify the transaction exists and is INTEREST_CREDIT
-        var txn =
-            ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-                .call(() -> trustTransactionRepository.findById(alloc.trustTransactionId()));
-        assertThat(txn).isPresent();
-        assertThat(txn.get().getTransactionType()).isEqualTo("INTEREST_CREDIT");
-        assertThat(txn.get().getAmount()).isEqualByComparingTo(alloc.clientShare());
-      }
-    }
-  }
-
-  @Test
-  void postInterestRun_createsSingleInterestLpffTransaction() throws Exception {
-    var runResponse =
-        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-            .where(RequestScopes.MEMBER_ID, ownerMemberId)
-            .call(
-                () ->
-                    interestService.createInterestRun(
-                        trustAccountId, LocalDate.of(2026, 2, 1), LocalDate.of(2026, 2, 28)));
-
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .call(() -> interestService.calculateInterest(runResponse.id()));
-
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .where(RequestScopes.MEMBER_ID, adminMemberId)
-        .call(() -> interestService.approveInterestRun(runResponse.id()));
-
-    var posted =
-        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-            .where(RequestScopes.MEMBER_ID, ownerMemberId)
-            .call(() -> interestService.postInterestRun(runResponse.id()));
-
-    // Find INTEREST_LPFF transaction with matching reference
-    var lpffRef = "INT-LPFF-" + posted.id();
-    var allTxns =
+            .call(() -> interestService.getAllocations(runResponse.id()));
+    assertThat(allocations)
+        .isNotEmpty()
+        .allSatisfy(a -> assertThat(a.trustTransactionId()).isNull());
+    var runRows =
         ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
             .call(
                 () ->
                     trustTransactionRepository
                         .findByTrustAccountIdOrderByTransactionDateDesc(
                             trustAccountId, org.springframework.data.domain.Pageable.unpaged())
-                        .getContent());
-
-    var lpffTxns =
-        allTxns.stream()
-            .filter(t -> "INTEREST_LPFF".equals(t.getTransactionType()))
-            .filter(t -> t.getReference().equals(lpffRef))
-            .toList();
-
-    assertThat(lpffTxns).hasSize(1);
-    assertThat(lpffTxns.getFirst().getAmount()).isEqualByComparingTo(posted.totalLpffShare());
-    assertThat(lpffTxns.getFirst().getCustomerId()).isNull();
-  }
-
-  @Test
-  void postInterestRun_clientLedgerBalancesIncreasedByClientShare() throws Exception {
-    // Record pre-posting balances
-    var preBalance1 =
+                        .getContent()
+                        .stream()
+                        .filter(t -> t.getReference() != null)
+                        .filter(t -> t.getReference().contains(runResponse.id().toString()))
+                        .toList());
+    assertThat(runRows).isEmpty();
+    var postBalance =
         ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
             .call(
                 () ->
@@ -748,117 +700,15 @@ class InterestServiceIntegrationTest {
                             trustAccountId, UUID.fromString(customerId1))
                         .orElseThrow()
                         .getBalance());
-
-    var preBalance2 =
-        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-            .call(
-                () ->
-                    clientLedgerCardRepository
-                        .findByTrustAccountIdAndCustomerId(
-                            trustAccountId, UUID.fromString(customerId2))
-                        .orElseThrow()
-                        .getBalance());
-
-    // Create, calculate, approve, post
-    var runResponse =
-        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-            .where(RequestScopes.MEMBER_ID, ownerMemberId)
-            .call(
-                () ->
-                    interestService.createInterestRun(
-                        trustAccountId, LocalDate.of(2026, 3, 1), LocalDate.of(2026, 3, 31)));
-
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .call(() -> interestService.calculateInterest(runResponse.id()));
-
-    // Get allocations to know expected client shares
-    var allocations =
-        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-            .call(() -> interestService.getAllocations(runResponse.id()));
-
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .where(RequestScopes.MEMBER_ID, adminMemberId)
-        .call(() -> interestService.approveInterestRun(runResponse.id()));
-
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .where(RequestScopes.MEMBER_ID, ownerMemberId)
-        .call(() -> interestService.postInterestRun(runResponse.id()));
-
-    // Check post-posting balances
-    var postBalance1 =
-        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-            .call(
-                () ->
-                    clientLedgerCardRepository
-                        .findByTrustAccountIdAndCustomerId(
-                            trustAccountId, UUID.fromString(customerId1))
-                        .orElseThrow()
-                        .getBalance());
-
-    var postBalance2 =
-        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-            .call(
-                () ->
-                    clientLedgerCardRepository
-                        .findByTrustAccountIdAndCustomerId(
-                            trustAccountId, UUID.fromString(customerId2))
-                        .orElseThrow()
-                        .getBalance());
-
-    var customer1Share =
-        allocations.stream()
-            .filter(a -> a.clientId().equals(UUID.fromString(customerId1)))
-            .findFirst()
-            .map(a -> a.clientShare())
-            .orElse(BigDecimal.ZERO);
-
-    var customer2Share =
-        allocations.stream()
-            .filter(a -> a.clientId().equals(UUID.fromString(customerId2)))
-            .findFirst()
-            .map(a -> a.clientShare())
-            .orElse(BigDecimal.ZERO);
-
-    assertThat(postBalance1).isEqualByComparingTo(preBalance1.add(customer1Share));
-    assertThat(postBalance2).isEqualByComparingTo(preBalance2.add(customer2Share));
-  }
-
-  @Test
-  void postedRun_cannotBeRecalculated() throws Exception {
-    var runResponse =
-        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-            .where(RequestScopes.MEMBER_ID, ownerMemberId)
-            .call(
-                () ->
-                    interestService.createInterestRun(
-                        trustAccountId, LocalDate.of(2026, 4, 1), LocalDate.of(2026, 4, 30)));
-
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .call(() -> interestService.calculateInterest(runResponse.id()));
-
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .where(RequestScopes.MEMBER_ID, adminMemberId)
-        .call(() -> interestService.approveInterestRun(runResponse.id()));
-
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .where(RequestScopes.MEMBER_ID, ownerMemberId)
-        .call(() -> interestService.postInterestRun(runResponse.id()));
-
-    // Try to recalculate -- should fail
-    assertThatThrownBy(
-            () ->
-                ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-                    .call(() -> interestService.calculateInterest(runResponse.id())))
-        .isInstanceOf(InvalidStateException.class)
-        .hasMessageContaining("non-DRAFT");
+    assertThat(postBalance).isEqualByComparingTo(preBalance);
   }
 
   // ==========================================================================
-  // 445.13 -- Self-Approval Prevention Test (1 test)
+  // 445.13 -- Self-Approval Prevention; Phase 92 645A: approval is refused for everyone
   // ==========================================================================
 
   @Test
-  void creatorCannotApproveOwnInterestRun() throws Exception {
+  void approveInterestRun_isRefusedBeforeTheTwoMemberRule() throws Exception {
     var runResponse =
         ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
             .where(RequestScopes.MEMBER_ID, ownerMemberId)
@@ -870,14 +720,17 @@ class InterestServiceIntegrationTest {
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .call(() -> interestService.calculateInterest(runResponse.id()));
 
-    // Owner created it, owner tries to approve -- should fail
+    // The creator approving would have hit the self-approval check; the posting guard precedes it
     assertThatThrownBy(
             () ->
                 ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
                     .where(RequestScopes.MEMBER_ID, ownerMemberId)
                     .call(() -> interestService.approveInterestRun(runResponse.id())))
-        .isInstanceOf(InvalidStateException.class)
-        .hasMessageContaining("Self-approval not allowed");
+        .isInstanceOfSatisfying(
+            InvalidStateException.class,
+            e ->
+                assertThat(e.getBody().getTitle())
+                    .isEqualTo(InterestPostingGuardIntegrationTest.TITLE));
   }
 
   // ==========================================================================

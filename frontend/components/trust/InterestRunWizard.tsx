@@ -28,8 +28,6 @@ import { createInterestRunSchema, type CreateInterestRunFormData } from "@/lib/s
 import {
   createInterestRun,
   calculateInterest,
-  approveInterestRun,
-  postInterestRun,
   fetchInterestRunDetail,
 } from "@/app/(app)/org/[slug]/trust-accounting/interest/actions";
 import { formatCurrency } from "@/lib/format";
@@ -44,15 +42,9 @@ interface InterestRunWizardProps {
   accountId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSuccess: () => void;
-  canApprove: boolean;
   currency: string;
-  /** 630B: resume a persisted run — loads its detail on open and jumps to the step its state implies. */
+  /** 630B: resume a persisted run — loads its detail on open and shows it at step 2 (Calculate). */
   initialRun?: InterestRun;
-  /** The viewer's members.id (MyCapabilitiesResponse.memberId); hides self-approval — the backend still refuses it. */
-  memberId?: string | null;
-  /** MANAGE_TRUST — gates Post (step 4). Default true: the "New Interest Run" mount is MANAGE_TRUST-gated. */
-  canManage?: boolean;
 }
 
 const STATUS_BADGE_VARIANT: Record<InterestRunStatus, "neutral" | "warning" | "success"> = {
@@ -66,22 +58,16 @@ function formatSharePercent(fraction: number): string {
   return `${(Number(fraction) * 100).toFixed(2)}%`;
 }
 
-/** Step a persisted run resumes at (§14.3.2): never-calculated DRAFT → 2, calculated DRAFT → 3, APPROVED → 4. */
-function resumeStep(run: InterestRun, allocationCount: number): number {
-  if (run.status === "APPROVED") return 4;
-  return allocationCount > 0 ? 3 : 2;
-}
-
+/**
+ * Create and calculate an interest run (two steps). Phase 92 645A (section 86(5)): a calculated run is
+ * never approved or posted, so the wizard ends at the calculation; a persisted run re-opens at step 2.
+ */
 export function InterestRunWizard({
   accountId,
   open,
   onOpenChange,
-  onSuccess,
-  canApprove,
   currency,
   initialRun,
-  memberId,
-  canManage = true,
 }: InterestRunWizardProps) {
   const router = useRouter();
   const [step, setStep] = useState(1);
@@ -112,7 +98,7 @@ export function InterestRunWizard({
         setRunId(detail.run.id);
         setRun(detail.run);
         setAllocations(detail.allocations);
-        setStep(resumeStep(detail.run, detail.allocations.length));
+        setStep(2);
       })
       .catch(() => {
         if (!cancelled) setError("Unable to load the interest run. Please try again.");
@@ -123,8 +109,6 @@ export function InterestRunWizard({
   }, [open, initialRunId]);
 
   const isResuming = !!initialRunId && runId !== initialRunId;
-  // The two-member rule (InterestService.approveInterestRun): the creator never approves.
-  const isCreator = !!memberId && !!run?.createdBy && run.createdBy === memberId;
 
   function handleOpenChange(newOpen: boolean) {
     onOpenChange(newOpen);
@@ -180,48 +164,7 @@ export function InterestRunWizard({
     }
   }
 
-  async function handleApprove() {
-    if (!runId) return;
-    setError(null);
-    setIsLoading(true);
-    try {
-      const result = await approveInterestRun(runId);
-      if (result.success && result.run) {
-        setRun(result.run);
-        setStep(4);
-        router.refresh();
-      } else {
-        setError(result.error ?? "Failed to approve interest run");
-      }
-    } catch {
-      setError("An unexpected error occurred");
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  async function handlePost() {
-    if (!runId) return;
-    setError(null);
-    setIsLoading(true);
-    try {
-      const result = await postInterestRun(runId);
-      if (result.success && result.run) {
-        setRun(result.run);
-        onSuccess();
-        router.refresh();
-        handleOpenChange(false);
-      } else {
-        setError(result.error ?? "Failed to post interest run");
-      }
-    } catch {
-      setError("An unexpected error occurred");
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  const stepLabels = ["Create", "Calculate", "Approve", "Post"];
+  const stepLabels = ["Create", "Calculate"];
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -229,7 +172,9 @@ export function InterestRunWizard({
         <DialogHeader>
           <DialogTitle>{initialRun ? "Interest Run" : "New Interest Run"}</DialogTitle>
           <DialogDescription>
-            {isResuming ? "Loading…" : `Step ${step} of 4 — ${stepLabels[step - 1]}`}
+            {isResuming
+              ? "Loading…"
+              : `Step ${step} of ${stepLabels.length} — ${stepLabels[step - 1]}`}
           </DialogDescription>
         </DialogHeader>
 
@@ -447,7 +392,7 @@ export function InterestRunWizard({
               >
                 Cancel
               </Button>
-              {allocations.length === 0 ? (
+              {allocations.length === 0 && (
                 <Button type="button" onClick={handleCalculate} disabled={isLoading}>
                   {isLoading ? (
                     <>
@@ -458,162 +403,6 @@ export function InterestRunWizard({
                     "Calculate Interest"
                   )}
                 </Button>
-              ) : canApprove && !isCreator ? (
-                <Button type="button" onClick={() => setStep(3)} disabled={isLoading}>
-                  Approve
-                </Button>
-              ) : isCreator ? (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setStep(3)}
-                  disabled={isLoading}
-                >
-                  Review
-                </Button>
-              ) : (
-                <p className="text-sm text-slate-500 dark:text-slate-400">
-                  Pending Approval — you do not have permission to approve interest runs.
-                </p>
-              )}
-            </DialogFooter>
-          </div>
-        )}
-
-        {/* Step 3 — Approve */}
-        {!isResuming && step === 3 && (
-          <div className="space-y-4">
-            {run && (
-              <div className="rounded-lg border border-slate-200 p-4 dark:border-slate-700">
-                <h3 className="mb-3 text-sm font-medium text-slate-950 dark:text-slate-50">
-                  Interest Run Totals
-                </h3>
-                <dl className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <dt className="text-slate-500 dark:text-slate-400">Total Interest</dt>
-                    <dd className="font-mono text-slate-950 tabular-nums dark:text-slate-50">
-                      {formatCurrency(run.totalInterest, currency)}
-                    </dd>
-                  </div>
-                  <div className="flex justify-between">
-                    <dt className="text-slate-500 dark:text-slate-400">LPFF Share</dt>
-                    <dd className="font-mono text-slate-950 tabular-nums dark:text-slate-50">
-                      {formatCurrency(run.totalLpffShare, currency)}
-                    </dd>
-                  </div>
-                  <div className="flex justify-between">
-                    <dt className="text-slate-500 dark:text-slate-400">Client Share</dt>
-                    <dd className="font-mono text-slate-950 tabular-nums dark:text-slate-50">
-                      {formatCurrency(run.totalClientShare, currency)}
-                    </dd>
-                  </div>
-                </dl>
-              </div>
-            )}
-
-            {error && <p className="text-destructive text-sm">{error}</p>}
-
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="plain"
-                onClick={() => handleOpenChange(false)}
-                disabled={isLoading}
-              >
-                Cancel
-              </Button>
-              {canApprove && !isCreator ? (
-                <Button type="button" onClick={handleApprove} disabled={isLoading}>
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-1.5 size-4 animate-spin" />
-                      Approving...
-                    </>
-                  ) : (
-                    "Approve Run"
-                  )}
-                </Button>
-              ) : isCreator ? (
-                <div className="flex flex-col items-end gap-1">
-                  <Button type="button" disabled>
-                    Approve Run
-                  </Button>
-                  <p
-                    className="text-xs text-slate-500 dark:text-slate-400"
-                    data-testid="interest-run-awaiting-approval"
-                  >
-                    Awaiting approval by another member
-                  </p>
-                </div>
-              ) : (
-                <p className="text-sm text-slate-500 dark:text-slate-400">
-                  Pending Approval — you do not have permission to approve interest runs.
-                </p>
-              )}
-            </DialogFooter>
-          </div>
-        )}
-
-        {/* Step 4 — Post */}
-        {!isResuming && step === 4 && (
-          <div className="space-y-4">
-            {run && (
-              <div className="rounded-lg border border-slate-200 p-4 dark:border-slate-700">
-                <div className="mb-3 flex items-center justify-between">
-                  <h3 className="text-sm font-medium text-slate-950 dark:text-slate-50">
-                    Approved Interest Run
-                  </h3>
-                  <Badge variant="warning">{INTEREST_RUN_STATUS_LABELS.APPROVED}</Badge>
-                </div>
-                <dl className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <dt className="text-slate-500 dark:text-slate-400">Total Interest</dt>
-                    <dd className="font-mono text-slate-950 tabular-nums dark:text-slate-50">
-                      {formatCurrency(run.totalInterest, currency)}
-                    </dd>
-                  </div>
-                  <div className="flex justify-between">
-                    <dt className="text-slate-500 dark:text-slate-400">LPFF Share</dt>
-                    <dd className="font-mono text-slate-950 tabular-nums dark:text-slate-50">
-                      {formatCurrency(run.totalLpffShare, currency)}
-                    </dd>
-                  </div>
-                  <div className="flex justify-between">
-                    <dt className="text-slate-500 dark:text-slate-400">Client Share</dt>
-                    <dd className="font-mono text-slate-950 tabular-nums dark:text-slate-50">
-                      {formatCurrency(run.totalClientShare, currency)}
-                    </dd>
-                  </div>
-                </dl>
-              </div>
-            )}
-
-            {error && <p className="text-destructive text-sm">{error}</p>}
-
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="plain"
-                onClick={() => handleOpenChange(false)}
-                disabled={isLoading}
-              >
-                Cancel
-              </Button>
-              {canManage ? (
-                <Button type="button" onClick={handlePost} disabled={isLoading}>
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-1.5 size-4 animate-spin" />
-                      Posting...
-                    </>
-                  ) : (
-                    "Post to Ledger"
-                  )}
-                </Button>
-              ) : (
-                <p className="text-sm text-slate-500 dark:text-slate-400">
-                  You do not have permission to post interest runs.
-                </p>
               )}
             </DialogFooter>
           </div>

@@ -191,6 +191,23 @@ class InterestRunDeleteIntegrationTest {
         .call(() -> interestRunRepository.findById(runId).isPresent());
   }
 
+  /**
+   * Simulates a run approved before the 645A posting guard (pattern:
+   * InterestPeriodGuardIntegrationTest.markApproved).
+   */
+  private void markApproved(UUID runId) {
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .run(
+            () ->
+                transactionTemplate.executeWithoutResult(
+                    tx -> {
+                      var run = interestRunRepository.findById(runId).orElseThrow();
+                      run.setStatus("APPROVED");
+                      run.setApprovedBy(adminMemberId);
+                      interestRunRepository.save(run);
+                    }));
+  }
+
   @Test
   void deleteCalculatedDraft_removesRunAndAllocations_andAudits() throws Exception {
     var runId = createAndCalculate(LocalDate.of(2026, 3, 1), LocalDate.of(2026, 3, 31));
@@ -250,10 +267,8 @@ class InterestRunDeleteIntegrationTest {
   @Test
   void deleteApprovedRun_isRefusedWithProblemDetail_andNothingIsDeleted() throws Exception {
     var runId = createAndCalculate(LocalDate.of(2026, 4, 1), LocalDate.of(2026, 4, 30));
-    // A second member approves (the creator cannot)
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .where(RequestScopes.MEMBER_ID, adminMemberId)
-        .call(() -> interestService.approveInterestRun(runId));
+    // A run approved before Phase 92 645A (approve is refused since); only DRAFT is deletable
+    markApproved(runId);
     int before = allocationsOf(runId);
     assertThat(before).isPositive();
 

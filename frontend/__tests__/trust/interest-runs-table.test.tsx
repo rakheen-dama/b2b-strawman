@@ -3,15 +3,14 @@ import { cleanup, render, screen, within, waitFor } from "@testing-library/react
 import userEvent from "@testing-library/user-event";
 
 // 630B (G88-F39, §14.12 #2): the interest runs table's Actions column, status label map and the
-// Delete draft confirmation. The backend stays the authority for every transition.
+// Delete draft confirmation. The backend stays the authority for every transition. Phase 92 645A: no
+// approve or post action (section 86(5)).
 
 vi.mock("server-only", () => ({}));
 
 const mockFetchInterestRuns = vi.fn();
 const mockCreateInterestRun = vi.fn();
 const mockCalculateInterest = vi.fn();
-const mockApproveInterestRun = vi.fn();
-const mockPostInterestRun = vi.fn();
 const mockDeleteInterestRun = vi.fn();
 const mockFetchInterestRunDetail = vi.fn();
 const mockFetchLpffRates = vi.fn();
@@ -21,8 +20,6 @@ vi.mock("@/app/(app)/org/[slug]/trust-accounting/interest/actions", () => ({
   fetchInterestRuns: (...args: unknown[]) => mockFetchInterestRuns(...args),
   createInterestRun: (...args: unknown[]) => mockCreateInterestRun(...args),
   calculateInterest: (...args: unknown[]) => mockCalculateInterest(...args),
-  approveInterestRun: (...args: unknown[]) => mockApproveInterestRun(...args),
-  postInterestRun: (...args: unknown[]) => mockPostInterestRun(...args),
   deleteInterestRun: (...args: unknown[]) => mockDeleteInterestRun(...args),
   fetchInterestRunDetail: (...args: unknown[]) => mockFetchInterestRunDetail(...args),
   fetchLpffRates: (...args: unknown[]) => mockFetchLpffRates(...args),
@@ -161,47 +158,38 @@ describe("Interest runs table — Actions column (630B)", () => {
     cleanup();
   });
 
-  it("an approver who did not create the run gets the lifecycle actions per status", async () => {
+  it("a manager gets Continue / Review / Delete draft per status — never Approve or Post", async () => {
     mockFetchMyCapabilities.mockResolvedValue(caps(ALL, OTHER));
     await renderPage();
 
     expect(buttonNames("d0")).toEqual(["Continue", "Delete draft"]);
-    expect(buttonNames("d2")).toEqual(["Review & approve", "Delete draft"]);
-    expect(within(row("d2")).queryByText("Awaiting approval by another member")).toBeNull();
-    expect(buttonNames("ap")).toEqual(["Post"]);
-    expect(buttonNames("po")).toEqual([]);
-  });
-
-  it("the creator sees Review with the awaiting-approval caption, never Review & approve", async () => {
-    mockFetchMyCapabilities.mockResolvedValue(caps(ALL, CREATOR));
-    await renderPage();
-
     expect(buttonNames("d2")).toEqual(["Review", "Delete draft"]);
-    expect(within(row("d2")).getByTestId("awaiting-approval-d2")).toHaveTextContent(
-      "Awaiting approval by another member"
-    );
-    // a never-calculated draft has nothing to approve yet — no caption
-    expect(within(row("d0")).queryByText("Awaiting approval by another member")).toBeNull();
+    // A legacy APPROVED run (approved before the guard) can only be reviewed read-only.
+    expect(buttonNames("ap")).toEqual(["Review"]);
+    expect(buttonNames("po")).toEqual([]);
+    expect(screen.queryByText("Awaiting approval by another member")).toBeNull();
   });
 
-  it("VIEW_TRUST only: Review on a calculated draft, no Continue / Post / Delete draft", async () => {
+  it("VIEW_TRUST only: Review on a calculated draft, no Continue / Delete draft / New Interest Run", async () => {
     mockFetchMyCapabilities.mockResolvedValue(caps(["VIEW_TRUST"], OTHER));
     await renderPage();
 
     expect(buttonNames("d0")).toEqual([]);
     expect(buttonNames("d2")).toEqual(["Review"]);
     expect(within(row("d2")).queryByText("Awaiting approval by another member")).toBeNull();
-    expect(buttonNames("ap")).toEqual([]);
+    expect(buttonNames("ap")).toEqual(["Review"]);
+    expect(buttonNames("po")).toEqual([]);
     expect(screen.queryByRole("button", { name: "Delete draft" })).toBeNull();
     expect(screen.queryByRole("button", { name: "New Interest Run" })).toBeNull();
   });
 
-  it("APPROVE_TRUST_PAYMENT without MANAGE_TRUST: Review & approve, no Post or Delete draft", async () => {
+  it("APPROVE_TRUST_PAYMENT without MANAGE_TRUST: Review only — no approve, Post or Delete draft", async () => {
     mockFetchMyCapabilities.mockResolvedValue(caps(["VIEW_TRUST", "APPROVE_TRUST_PAYMENT"], OTHER));
     await renderPage();
 
-    expect(buttonNames("d2")).toEqual(["Review & approve"]);
-    expect(buttonNames("ap")).toEqual([]);
+    expect(buttonNames("d2")).toEqual(["Review"]);
+    expect(buttonNames("ap")).toEqual(["Review"]);
+    expect(buttonNames("po")).toEqual([]);
     expect(screen.queryByRole("button", { name: "Delete draft" })).toBeNull();
   });
 
@@ -277,7 +265,7 @@ describe("Interest runs table — Actions column (630B)", () => {
     expect(mockRefresh).not.toHaveBeenCalled();
   });
 
-  it("Review & approve opens the wizard on the persisted run", async () => {
+  it("Review opens the wizard on the persisted run, read-only at step 2", async () => {
     const user = userEvent.setup();
     mockFetchMyCapabilities.mockResolvedValue(caps(ALL, OTHER));
     mockFetchInterestRunDetail.mockResolvedValue({
@@ -301,12 +289,47 @@ describe("Interest runs table — Actions column (630B)", () => {
     });
     await renderPage();
 
-    await user.click(within(row("d2")).getByRole("button", { name: "Review & approve" }));
+    await user.click(within(row("d2")).getByRole("button", { name: "Review" }));
 
     await waitFor(() => expect(mockFetchInterestRunDetail).toHaveBeenCalledWith("d2"));
     const wizard = await screen.findByTestId("interest-run-wizard");
-    await waitFor(() => expect(wizard).toHaveTextContent("Step 3 of 4"));
-    expect(within(wizard).getByRole("button", { name: "Approve Run" })).toBeEnabled();
+    await waitFor(() => expect(wizard).toHaveTextContent("Step 2 of 2"));
+    expect(within(wizard).getByTestId("allocations-table")).toBeInTheDocument();
+    expect(within(wizard).queryAllByRole("button", { name: /approve|post/i })).toEqual([]);
+  });
+
+  it("Review on a legacy APPROVED run opens the wizard read-only at step 2 — no approve or post", async () => {
+    const user = userEvent.setup();
+    mockFetchMyCapabilities.mockResolvedValue(caps(ALL, OTHER));
+    mockFetchInterestRunDetail.mockResolvedValue({
+      run: AP,
+      allocations: [
+        {
+          id: "alloc-ap",
+          interestRunId: "ap",
+          clientId: "cust-1",
+          averageDailyBalance: 1000,
+          daysInPeriod: 31,
+          grossInterest: 100,
+          lpffShare: 50,
+          clientShare: 50,
+          trustTransactionId: null,
+          lpffRateId: "rate-1",
+          statutoryRateApplied: false,
+          createdAt: "2026-04-01T09:00:00Z",
+        },
+      ],
+    });
+    await renderPage();
+
+    await user.click(within(row("ap")).getByRole("button", { name: "Review" }));
+
+    await waitFor(() => expect(mockFetchInterestRunDetail).toHaveBeenCalledWith("ap"));
+    const wizard = await screen.findByTestId("interest-run-wizard");
+    await waitFor(() => expect(wizard).toHaveTextContent("Step 2 of 2"));
+    expect(within(wizard).getByTestId("allocations-table")).toBeInTheDocument();
+    expect(within(wizard).queryAllByRole("button", { name: /approve|post/i })).toEqual([]);
+    expect(screen.queryAllByRole("button", { name: /approve|post/i })).toEqual([]);
   });
 });
 

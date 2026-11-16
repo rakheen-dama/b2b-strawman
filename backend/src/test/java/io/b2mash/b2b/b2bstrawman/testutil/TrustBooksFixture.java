@@ -416,7 +416,7 @@ public final class TrustBooksFixture {
     }
 
     /**
-     * The maker's reversal is refused with {@code InvalidStateException} "Cannot reverse
+     * The maker's reversal is refused with {@code InvalidStateException} (400) "Cannot reverse
      * transaction" / {@code detail}, and nothing moves.
      */
     public void assertReversalRefused(UUID account, UUID transactionId, String detail) {
@@ -434,6 +434,7 @@ public final class TrustBooksFixture {
                           .isInstanceOfSatisfying(
                               InvalidStateException.class,
                               e -> {
+                                assertThat(e.getBody().getStatus()).isEqualTo(400);
                                 assertThat(e.getBody().getTitle())
                                     .isEqualTo("Cannot reverse transaction");
                                 assertThat(e.getBody().getDetail()).isEqualTo(detail);

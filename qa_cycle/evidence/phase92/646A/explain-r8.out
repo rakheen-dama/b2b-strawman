@@ -1,0 +1,177 @@
+SET
+== BEFORE counts
+ txns | customers 
+------+-----------
+    6 |         5
+(1 row)
+
+BEGIN
+INSERT 0 200
+INSERT 0 50000
+ANALYZE
+== IN-TXN counts
+ txns_in_txn 
+-------------
+       50006
+(1 row)
+
+######## Q1 cashbook(trustAccountId, asAt = NULL)
+                                                          QUERY PLAN                                                           
+-------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=1912.09..1912.10 rows=1 width=32) (actual time=8.835..8.835 rows=1 loops=1)
+   Buffers: shared hit=1162
+   ->  Seq Scan on trust_transactions t  (cost=0.00..1787.08 rows=50004 width=5) (actual time=0.005..6.221 rows=50003 loops=1)
+         Filter: ((posted_at IS NOT NULL) AND (trust_account_id = '5c1a152f-df92-49b3-a0e1-d636b03febba'::uuid))
+         Rows Removed by Filter: 3
+         Buffers: shared hit=1162
+ Planning:
+   Buffers: shared hit=25
+ Planning Time: 0.146 ms
+ Execution Time: 8.851 ms
+(10 rows)
+
+######## Q1b cashbook(trustAccountId, asAt = 2026-06-30)
+                                                                          QUERY PLAN                                                                          
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=2009.47..2009.48 rows=1 width=32) (actual time=9.007..9.008 rows=1 loops=1)
+   Buffers: shared hit=1162
+   ->  Seq Scan on trust_transactions t  (cost=0.00..1912.09 rows=38953 width=5) (actual time=0.006..6.957 rows=39066 loops=1)
+         Filter: ((posted_at IS NOT NULL) AND (transaction_date <= '2026-06-30'::date) AND (trust_account_id = '5c1a152f-df92-49b3-a0e1-d636b03febba'::uuid))
+         Rows Removed by Filter: 10940
+         Buffers: shared hit=1162
+ Planning:
+   Buffers: shared hit=7
+ Planning Time: 0.121 ms
+ Execution Time: 9.020 ms
+(10 rows)
+
+######## Q2 clientLedgerTotal(trustAccountId, asAt = NULL)
+                                                                      QUERY PLAN                                                                       
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=2037.10..2037.11 rows=1 width=32) (actual time=10.799..10.800 rows=1 loops=1)
+   Buffers: shared hit=1162
+   ->  Seq Scan on trust_transactions t  (cost=0.00..1912.09 rows=50004 width=5) (actual time=0.005..7.851 rows=50003 loops=1)
+         Filter: ((posted_at IS NOT NULL) AND (trust_account_id = '5c1a152f-df92-49b3-a0e1-d636b03febba'::uuid) AND ((ledger)::text = 'CLIENT'::text))
+         Rows Removed by Filter: 3
+         Buffers: shared hit=1162
+ Planning:
+   Buffers: shared hit=7
+ Planning Time: 0.091 ms
+ Execution Time: 10.814 ms
+(10 rows)
+
+######## Q3 clientBalances(trustAccountId, asAt = NULL) — client-trust-balances report batch
+                                                                                        QUERY PLAN                                                                                         
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=2422.39..2422.89 rows=202 width=60) (actual time=15.478..15.486 rows=202 loops=1)
+   Sort Key: (min(created_at)), customer_id
+   Sort Method: quicksort  Memory: 37kB
+   Buffers: shared hit=1162
+   ->  HashAggregate  (cost=2412.13..2414.66 rows=202 width=60) (actual time=15.379..15.407 rows=202 loops=1)
+         Group Key: customer_id
+         Batches: 1  Memory Usage: 160kB
+         Buffers: shared hit=1162
+         ->  Seq Scan on trust_transactions t  (cost=0.00..1912.09 rows=50004 width=33) (actual time=0.007..8.351 rows=50003 loops=1)
+               Filter: ((customer_id IS NOT NULL) AND (posted_at IS NOT NULL) AND (trust_account_id = '5c1a152f-df92-49b3-a0e1-d636b03febba'::uuid) AND ((ledger)::text = 'CLIENT'::text))
+               Rows Removed by Filter: 3
+               Buffers: shared hit=1162
+ Planning:
+   Buffers: shared hit=16
+ Planning Time: 0.247 ms
+ Execution Time: 15.545 ms
+(16 rows)
+
+######## Q4 clientBalancePage(trustAccountId, page 0, size 20) — client-ledgers list page
+                                                                                           QUERY PLAN                                                                                            
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=2295.02..2295.07 rows=20 width=52) (actual time=14.589..14.592 rows=20 loops=1)
+   Buffers: shared hit=1162
+   ->  Sort  (cost=2295.02..2295.53 rows=202 width=52) (actual time=14.587..14.588 rows=20 loops=1)
+         Sort Key: (COALESCE(sum(ledger_effect), '0'::numeric)) DESC, customer_id
+         Sort Method: top-N heapsort  Memory: 27kB
+         Buffers: shared hit=1162
+         ->  HashAggregate  (cost=2287.12..2289.65 rows=202 width=52) (actual time=14.515..14.540 rows=202 loops=1)
+               Group Key: customer_id
+               Batches: 1  Memory Usage: 160kB
+               Buffers: shared hit=1162
+               ->  Seq Scan on trust_transactions t  (cost=0.00..1912.09 rows=50004 width=25) (actual time=0.007..7.956 rows=50003 loops=1)
+                     Filter: ((customer_id IS NOT NULL) AND (posted_at IS NOT NULL) AND (trust_account_id = '5c1a152f-df92-49b3-a0e1-d636b03febba'::uuid) AND ((ledger)::text = 'CLIENT'::text))
+                     Rows Removed by Filter: 3
+                     Buffers: shared hit=1162
+ Planning:
+   Buffers: shared hit=11
+ Planning Time: 0.109 ms
+ Execution Time: 14.661 ms
+(18 rows)
+
+######## Q4c clientBalancePage countQuery
+                                                                                        QUERY PLAN                                                                                         
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=6064.86..6064.87 rows=1 width=8) (actual time=20.177..20.178 rows=1 loops=1)
+   Buffers: shared hit=1162
+   ->  Sort  (cost=5814.84..5939.85 rows=50004 width=16) (actual time=15.848..17.999 rows=50003 loops=1)
+         Sort Key: customer_id
+         Sort Method: quicksort  Memory: 2708kB
+         Buffers: shared hit=1162
+         ->  Seq Scan on trust_transactions t  (cost=0.00..1912.09 rows=50004 width=16) (actual time=0.005..8.910 rows=50003 loops=1)
+               Filter: ((customer_id IS NOT NULL) AND (posted_at IS NOT NULL) AND (trust_account_id = '5c1a152f-df92-49b3-a0e1-d636b03febba'::uuid) AND ((ledger)::text = 'CLIENT'::text))
+               Rows Removed by Filter: 3
+               Buffers: shared hit=1162
+ Planning:
+   Buffers: shared hit=4
+ Planning Time: 0.086 ms
+ Execution Time: 20.300 ms
+(14 rows)
+
+######## Q5 generalBalancesByClient(20 customerIds) — matters/clients list batch
+                                                              QUERY PLAN                                                              
+--------------------------------------------------------------------------------------------------------------------------------------
+ HashAggregate  (cost=2081.92..2084.45 rows=202 width=52) (actual time=12.984..12.997 rows=20 loops=1)
+   Group Key: t.customer_id
+   Batches: 1  Memory Usage: 40kB
+   Buffers: shared hit=1162
+   ->  Hash Semi Join  (cost=0.45..2044.79 rows=4951 width=25) (actual time=0.037..12.371 rows=5000 loops=1)
+         Hash Cond: (t.customer_id = (('00000000-0000-4000-8000-'::text || lpad((g.g)::text, 12, '0'::text)))::uuid)
+         Buffers: shared hit=1162
+         ->  Seq Scan on trust_transactions t  (cost=0.00..1787.08 rows=50004 width=25) (actual time=0.006..7.454 rows=50003 loops=1)
+               Filter: ((posted_at IS NOT NULL) AND ((ledger)::text = 'CLIENT'::text))
+               Rows Removed by Filter: 3
+               Buffers: shared hit=1162
+         ->  Hash  (cost=0.20..0.20 rows=20 width=4) (actual time=0.022..0.023 rows=20 loops=1)
+               Buckets: 1024  Batches: 1  Memory Usage: 9kB
+               ->  Function Scan on generate_series g  (cost=0.00..0.20 rows=20 width=4) (actual time=0.006..0.007 rows=20 loops=1)
+ Planning:
+   Buffers: shared hit=13
+ Planning Time: 0.231 ms
+ Execution Time: 13.063 ms
+(18 rows)
+
+######## Q5-literal generalBalancesByClient(3 literal customerIds)
+                                                                                 QUERY PLAN                                                                                 
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ HashAggregate  (cost=1111.69..1114.15 rows=197 width=52) (actual time=0.373..0.375 rows=3 loops=1)
+   Group Key: customer_id
+   Batches: 1  Memory Usage: 40kB
+   Buffers: shared hit=264
+   ->  Bitmap Heap Scan on trust_transactions t  (cost=18.61..1106.13 rows=741 width=25) (actual time=0.058..0.311 rows=502 loops=1)
+         Recheck Cond: (customer_id = ANY ('{00000000-0000-4000-8000-000000000001,00000000-0000-4000-8000-000000000002,48eef20a-c21a-4975-ae06-ed9a34ea287e}'::uuid[]))
+         Filter: ((posted_at IS NOT NULL) AND ((ledger)::text = 'CLIENT'::text))
+         Rows Removed by Filter: 1
+         Heap Blocks: exact=258
+         Buffers: shared hit=264
+         ->  Bitmap Index Scan on idx_trust_txn_customer  (cost=0.00..18.43 rows=741 width=0) (actual time=0.037..0.037 rows=503 loops=1)
+               Index Cond: (customer_id = ANY ('{00000000-0000-4000-8000-000000000001,00000000-0000-4000-8000-000000000002,48eef20a-c21a-4975-ae06-ed9a34ea287e}'::uuid[]))
+               Buffers: shared hit=6
+ Planning:
+   Buffers: shared hit=1
+ Planning Time: 0.087 ms
+ Execution Time: 0.417 ms
+(17 rows)
+
+ROLLBACK
+== AFTER ROLLBACK counts (must equal BEFORE)
+ txns | customers | synthetic_txns_left | synthetic_customers_left 
+------+-----------+---------------------+--------------------------
+    6 |         5 |                   0 |                        0
+(1 row)
+

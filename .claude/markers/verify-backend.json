@@ -1,7 +1,7 @@
 {
-  "commit": "05f98e5f0",
-  "command": "cd backend && ./mvnw spotless:check -q && bash scripts/verify-preflight.sh && caffeinate -is ./mvnw clean verify -q",
+  "commit": "3285515df",
+  "command": "cd backend && bash scripts/verify.sh -q  (./mvnw verify under caffeinate, worktree-epic-646A)",
   "exit": 0,
-  "ts": "2026-11-16T15:15:46Z",
-  "summary": "PR #1787 (649A) BE-VERIFY @05f98e5f0: 6890 testcases / 0 failures / 0 errors / 26 skipped — 20 min (645A baseline 6865; delta +25 = 21 characterisation + 4 reversal-equation tests)"
+  "ts": "2026-11-16T18:04:05Z",
+  "summary": "PR #1788 (646A) head 3285515df — 6917 <testcase> / 0 failures / 0 errors / 26 skipped — 18 min (baseline 6890 after 649A: +28 new, -1 deleted)"
 }

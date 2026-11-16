@@ -1,0 +1,81 @@
+SET
+== accounts
+                  id                  |            account_name            | is_primary 
+--------------------------------------+------------------------------------+------------
+ 5c1a152f-df92-49b3-a0e1-d636b03febba | Mathebula & Partners Trust Account | t
+(1 row)
+
+== all trust_transactions (posting state)
+ transaction_type |      status       |  amount   | ledger | cashbook_effect | ledger_effect | posted |               client               |            reference            
+------------------+-------------------+-----------+--------+-----------------+---------------+--------+------------------------------------+---------------------------------
+ DEPOSIT          | RECORDED          | 250000.00 | CLIENT |       250000.00 |     250000.00 | t      | Moroka Family Trust mwjkwcb9be7b   | DEP/MOROKA/mwjkwcb9be7b
+ DEPOSIT          | RECORDED          |  45000.00 | CLIENT |        45000.00 |      45000.00 | t      | QuickCollect Services mwjkwcb9be7b | DEP/QC/mwjkwcb9be7b
+ FEE_TRANSFER     | APPROVED          |   8500.00 | CLIENT |        -8500.00 |      -8500.00 | t      | Moroka Family Trust mwjkwcb9be7b   | FEE/MOROKA/mwjkwcb9be7b
+ PAYMENT          | AWAITING_APPROVAL | 200000.00 | CLIENT |            0.00 |          0.00 | f      | Moroka Family Trust mwjkwcb9be7b   | INV-Standard Bank-FD-0987654321
+ PAYMENT          | AWAITING_APPROVAL |  30000.00 | CLIENT |            0.00 |          0.00 | f      | QuickCollect Services mwjkwcb9be7b | INV-Nedbank-CALL-1122334455
+ FEE_TRANSFER     | AWAITING_APPROVAL |    500.00 | CLIENT |            0.00 |          0.00 | f      | Sipho Ndlovu mwjkwcb9be7b          | FEE/SIPHO/mwjkwcb9be7b
+(6 rows)
+
+== per-client derived balance: SUM(ledger_effect) WHERE posted AND ledger=CLIENT
+                name                |             customer_id              | derived_balance 
+------------------------------------+--------------------------------------+-----------------
+ Moroka Family Trust mwjkwcb9be7b   | 48eef20a-c21a-4975-ae06-ed9a34ea287e |       241500.00
+ QuickCollect Services mwjkwcb9be7b | 1379330a-a0c8-407b-9e86-ed19155e26b6 |        45000.00
+(2 rows)
+
+== per-client HEAD-style sign-CASE over status IN (RECORDED, APPROVED)
+                name                |             customer_id              | head_style_balance 
+------------------------------------+--------------------------------------+--------------------
+ Moroka Family Trust mwjkwcb9be7b   | 48eef20a-c21a-4975-ae06-ed9a34ea287e |          241500.00
+ QuickCollect Services mwjkwcb9be7b | 1379330a-a0c8-407b-9e86-ed19155e26b6 |           45000.00
+(2 rows)
+
+== account cashbook: SUM(cashbook_effect) WHERE posted
+           trust_account_id           | derived_cashbook 
+--------------------------------------+------------------
+ 5c1a152f-df92-49b3-a0e1-d636b03febba |        286500.00
+(1 row)
+
+== account cashbook HEAD-style sign-CASE over status IN (RECORDED, APPROVED)
+           trust_account_id           | head_style_cashbook 
+--------------------------------------+---------------------
+ 5c1a152f-df92-49b3-a0e1-d636b03febba |           286500.00
+(1 row)
+
+== EQ-2: cashbook - sum(client ledger balances)
+ cashbook  | sum_client_ledgers | difference 
+-----------+--------------------+------------
+ 286500.00 |          286500.00 |       0.00
+(1 row)
+
+== invariant: posted-status rows with posted_at NULL (expect 0)
+ count 
+-------
+     0
+(1 row)
+
+== invariant: unposted-status rows with posted_at set or non-zero effect (expect 0)
+ count 
+-------
+     0
+(1 row)
+
+== invariant: posted rows with abs(ledger_effect) not in (0, amount) or cashbook not in (ledger, 0) (expect 0)
+ count 
+-------
+     0
+(1 row)
+
+== INTEREST_% rows (expect 0)
+ count 
+-------
+     0
+(1 row)
+
+== client_ledger_cards (lock anchors)
+           trust_account_id           |             customer_id              
+--------------------------------------+--------------------------------------
+ 5c1a152f-df92-49b3-a0e1-d636b03febba | 48eef20a-c21a-4975-ae06-ed9a34ea287e
+ 5c1a152f-df92-49b3-a0e1-d636b03febba | 1379330a-a0c8-407b-9e86-ed19155e26b6
+(2 rows)
+

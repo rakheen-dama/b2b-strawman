@@ -1,0 +1,5 @@
+  ✓  105 [chromium] › e2e/tests/legal-lifecycle/matter-team.spec.ts:126:7 › Matter team — Team tab (add, transfer, remove) › Carol (now lead): adds Bob, then removes him (3.0s)
+
+  105 passed (3.0m)
+duration_s=183
+Mon Nov 16 20:13:03 SAST 2026

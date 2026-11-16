@@ -1,0 +1,22 @@
+== built from: /Users/rakheendama/Projects/2026/worktree-epic-646A @ 3285515df
+e2e-frontend Up 24 seconds (healthy) 2026-11-16 20:15:07 +0200 SAST
+e2e-backend Up 39 seconds (healthy) 2026-11-16 20:15:07 +0200 SAST
+e2e-localstack Up 45 seconds (healthy) 2026-11-16 20:15:07 +0200 SAST
+e2e-postgres Up 45 seconds (healthy) 2026-11-16 20:15:07 +0200 SAST
+e2e-mock-idp Up 45 seconds (healthy) 2026-11-16 20:15:07 +0200 SAST
+e2e-mailpit Up 45 seconds (healthy) 2026-11-16 20:15:07 +0200 SAST
+== health
+{"groups":["liveness","readiness"],"status":"UP"}
+frontend :3001 HTTP 200
+tenant schema: tenant_7d218705360b
+== flyway
+ version |          description           | success |        installed_on        
+---------+--------------------------------+---------+----------------------------
+ 16      | phase92 trust posting core     | t       | 2026-11-16 18:15:35.463152
+ 15      | g89 trust investment cancelled | t       | 2026-11-16 18:15:35.458297
+(2 rows)
+
+== client_ledger_cards columns
+id,trust_account_id,customer_id,created_at,updated_at
+== trust_transactions effect columns
+cashbook_effect,ledger_effect,posted_at,ledger

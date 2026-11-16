@@ -1,0 +1,79 @@
+Trust Accounting
+
+LSSA-compliant trust account management for client funds
+
+Client Ledgers
+Record Transaction
+Trust Balance
+R 286 500,00
+
+Mathebula & Partners Trust Account cashbook balance
+
+Client ledgers R 286 500,00
+(agrees with the cashbook)
+
+Active Clients
+2
+Clients with trust balances
+Pending Approvals
+3
+Transactions awaiting approval
+Needs attention
+Reconciliation
+Not yet reconciled
+No reconciliation records found
+3 transactions awaiting approval
+Trust balance trend
+Month-end balances as currently recorded (ZAR)
+Cashbook
+Client ledgers
+Dec 2025
+Jan 2026
+Feb 2026
+Mar 2026
+Apr 2026
+May 2026
+Jun 2026
+Jul 2026
+Aug 2026
+Sep 2026
+Oct 2026
+Nov 2026
+R 0
+R 75 k
+R 150 k
+R 225 k
+R 300 k
+
+Trust balance trend: Cashbook from R 0,00 in Dec 2025 to R 286 500,00 in Nov 2026 (to date), peak R 286 500,00 in Nov 2026 (to date); Client ledgers from R 0,00 in Dec 2025 to R 286 500,00 in Nov 2026 (to date), peak R 286 500,00 in Nov 2026 (to date).
+
+View as table
+Recent Transactions
+Last 10 transactions across all client ledgers
+View all
+Recent trust transactions
+DATE	REFERENCE	TYPE	AMOUNT	STATUS
+16 Nov 2026	
+DEP/MOROKA/mwjkwcb9be7b
+	Deposit	
+R 250 000,00	RECORDED
+16 Nov 2026	
+DEP/QC/mwjkwcb9be7b
+	Deposit	
+R 45 000,00	RECORDED
+16 Nov 2026	
+FEE/MOROKA/mwjkwcb9be7b
+	Fee Transfer	
+R 8 500,00	APPROVED
+16 Nov 2026	
+INV-Standard Bank-FD-0987654321
+	Payment	
+R 200 000,00	AWAITING APPROVAL
+16 Nov 2026	
+INV-Nedbank-CALL-1122334455
+	Payment	
+R 30 000,00	AWAITING APPROVAL
+16 Nov 2026	
+FEE/SIPHO/mwjkwcb9be7b
+	Fee Transfer	
+R 500,00	AWAITING APPROVAL

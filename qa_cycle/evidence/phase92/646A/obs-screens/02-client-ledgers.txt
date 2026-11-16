@@ -1,0 +1,11 @@
+Client Ledgers
+
+Trust account balances by client
+
+Non-zero balances only
+Search
+Client Balances
+2 clients found
+Client Name	Trust Balance	Total Deposits	Total Payments	Total Fee Transfers	Total Refunds	Last Transaction
+Moroka Family Trust mwjkwcb9be7b	R 241 500,00	R 250 000,00	R 0,00	R 8 500,00	R 0,00	16 Nov 2026
+QuickCollect Services mwjkwcb9be7b	R 45 000,00	R 45 000,00	R 0,00	R 0,00	R 0,00	16 Nov 2026

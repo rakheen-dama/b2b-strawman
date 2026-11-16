@@ -1,0 +1,51 @@
+SET
+== BEFORE counts
+ txns | customers 
+------+-----------
+    6 |         5
+(1 row)
+
+BEGIN
+INSERT 0 200
+INSERT 0 50000
+ANALYZE
+== index validity
+         relname          | indisvalid | indisready |        predicate        
+--------------------------+------------+------------+-------------------------
+ idx_trust_txn_ledger_sum | t          | t          | (posted_at IS NOT NULL)
+(1 row)
+
+== SUPPLEMENTARY-2: enable_seqscan = off, enable_bitmapscan = off
+SET
+SET
+######## S2-Q4 clientBalancePage(page 0, size 20)
+                                                                                   QUERY PLAN                                                                                   
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=4688.18..4688.23 rows=20 width=52) (actual time=21.060..21.063 rows=20 loops=1)
+   Buffers: shared hit=50055
+   ->  Sort  (cost=4688.18..4688.69 rows=203 width=52) (actual time=21.059..21.060 rows=20 loops=1)
+         Sort Key: (COALESCE(sum(ledger_effect), '0'::numeric)) DESC, customer_id
+         Sort Method: top-N heapsort  Memory: 27kB
+         Buffers: shared hit=50055
+         ->  HashAggregate  (cost=4680.24..4682.78 rows=203 width=52) (actual time=20.974..21.007 rows=202 loops=1)
+               Group Key: customer_id
+               Batches: 1  Memory Usage: 160kB
+               Buffers: shared hit=50055
+               ->  Index Scan using idx_trust_txn_account_date on trust_transactions t  (cost=0.29..4305.22 rows=50003 width=24) (actual time=0.015..14.741 rows=50003 loops=1)
+                     Index Cond: (trust_account_id = '5c1a152f-df92-49b3-a0e1-d636b03febba'::uuid)
+                     Filter: ((customer_id IS NOT NULL) AND (posted_at IS NOT NULL) AND ((ledger)::text = 'CLIENT'::text))
+                     Rows Removed by Filter: 3
+                     Buffers: shared hit=50055
+ Planning:
+   Buffers: shared hit=112
+ Planning Time: 0.383 ms
+ Execution Time: 21.110 ms
+(19 rows)
+
+ROLLBACK
+== AFTER ROLLBACK counts (must equal BEFORE)
+ txns | customers | synthetic_txns_left | synthetic_customers_left 
+------+-----------+---------------------+--------------------------
+    6 |         5 |                   0 |                        0
+(1 row)
+

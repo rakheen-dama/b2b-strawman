@@ -1,0 +1,68 @@
+SET
+== BEFORE counts
+ txns | customers 
+------+-----------
+    6 |         5
+(1 row)
+
+BEGIN
+INSERT 0 200
+INSERT 0 50000
+ANALYZE
+== SUPPLEMENTARY: enable_seqscan = off (forces planner to show whether idx_trust_txn_ledger_sum is usable)
+SET
+######## S-Q1 cashbook(asAt = NULL)
+                                                                     QUERY PLAN                                                                     
+----------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=3873.92..3873.93 rows=1 width=32) (actual time=13.033..13.034 rows=1 loops=1)
+   Buffers: shared hit=2426
+   ->  Bitmap Heap Scan on trust_transactions t  (cost=799.84..3748.91 rows=50003 width=4) (actual time=2.174..10.470 rows=50003 loops=1)
+         Recheck Cond: (trust_account_id = '5c1a152f-df92-49b3-a0e1-d636b03febba'::uuid)
+         Filter: (posted_at IS NOT NULL)
+         Rows Removed by Filter: 3
+         Heap Blocks: exact=2324
+         Buffers: shared hit=2426
+         ->  Bitmap Index Scan on idx_trust_txn_account_date  (cost=0.00..787.33 rows=50006 width=0) (actual time=1.981..1.981 rows=100006 loops=1)
+               Index Cond: (trust_account_id = '5c1a152f-df92-49b3-a0e1-d636b03febba'::uuid)
+               Buffers: shared hit=102
+ Planning:
+   Buffers: shared hit=91
+ Planning Time: 0.399 ms
+ Execution Time: 13.080 ms
+(15 rows)
+
+######## S-Q4 clientBalancePage(page 0, size 20)
+                                                                           QUERY PLAN                                                                           
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=4256.85..4256.90 rows=20 width=52) (actual time=19.083..19.087 rows=20 loops=1)
+   Buffers: shared hit=2426
+   ->  Sort  (cost=4256.85..4257.35 rows=202 width=52) (actual time=19.082..19.083 rows=20 loops=1)
+         Sort Key: (COALESCE(sum(ledger_effect), '0'::numeric)) DESC, customer_id
+         Sort Method: top-N heapsort  Memory: 27kB
+         Buffers: shared hit=2426
+         ->  HashAggregate  (cost=4248.95..4251.47 rows=202 width=52) (actual time=18.998..19.027 rows=202 loops=1)
+               Group Key: customer_id
+               Batches: 1  Memory Usage: 160kB
+               Buffers: shared hit=2426
+               ->  Bitmap Heap Scan on trust_transactions t  (cost=799.84..3873.93 rows=50003 width=24) (actual time=2.097..12.203 rows=50003 loops=1)
+                     Recheck Cond: (trust_account_id = '5c1a152f-df92-49b3-a0e1-d636b03febba'::uuid)
+                     Filter: ((customer_id IS NOT NULL) AND (posted_at IS NOT NULL) AND ((ledger)::text = 'CLIENT'::text))
+                     Rows Removed by Filter: 3
+                     Heap Blocks: exact=2324
+                     Buffers: shared hit=2426
+                     ->  Bitmap Index Scan on idx_trust_txn_account_date  (cost=0.00..787.33 rows=50006 width=0) (actual time=1.910..1.910 rows=100006 loops=1)
+                           Index Cond: (trust_account_id = '5c1a152f-df92-49b3-a0e1-d636b03febba'::uuid)
+                           Buffers: shared hit=102
+ Planning:
+   Buffers: shared hit=32
+ Planning Time: 0.177 ms
+ Execution Time: 19.171 ms
+(23 rows)
+
+ROLLBACK
+== AFTER ROLLBACK counts (must equal BEFORE)
+ txns | customers | synthetic_txns_left | synthetic_customers_left 
+------+-----------+---------------------+--------------------------
+    6 |         5 |                   0 |                        0
+(1 row)
+

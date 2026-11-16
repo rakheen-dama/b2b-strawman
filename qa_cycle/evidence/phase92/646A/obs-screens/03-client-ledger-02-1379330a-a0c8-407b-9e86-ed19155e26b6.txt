@@ -1,0 +1,59 @@
+Back to Client Ledgers
+QuickCollect Services mwjkwcb9be7b
+
+Client ledger detail and transaction history
+
+Trust Balance
+
+R 45 000,00
+
+Ledger totals
+
+Deposits
+R 45 000,00
+−
+less
+Payments
+R 0,00
+−
+less
+Fee transfers
+R 0,00
+−
+less
+Refunds
+R 0,00
+=Balance
+R 45 000,00
+Generate Statement
+Select a date range and generate a PDF statement for this client
+From
+To
+Print Statement
+Status:
+All
+Recorded
+Awaiting Approval
+Approved
+Rejected
+Reversed
+Type:
+All
+Deposit
+Payment
+Transfer In
+Transfer Out
+Fee Transfer
+Refund
+Interest Credit
+Interest LPFF
+Reversal
+From
+To
+Transaction History
+2 transactions found
+Date	Reference	Type	Amount	Status	Running Balance
+16 Nov 2026	INV-Nedbank-CALL-1122334455	Payment	
+R 30 000,00	AWAITING APPROVAL	—
+16 Nov 2026	DEP/QC/mwjkwcb9be7b	Deposit	
+R 45 000,00	RECORDED	R 45 000,00

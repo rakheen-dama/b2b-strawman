@@ -1,0 +1,82 @@
+{
+  "pages": {
+    "overview": {
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting",
+      "screenshot": "/tmp/646A-evidence/obs/01-trust-overview.png",
+      "summaryCards": "Trust Balance\nR 286 500,00\n\nMathebula & Partners Trust Account cashbook balance\n\nClient ledgers R 286 500,00\n(agrees with the cashbook)\n\nActive Clients\n2\nClients with trust balances\nPending Approvals\n3\nTransactions awaiting approval\nNeeds attention\nReconciliation\nNot yet reconciled\nNo reconciliation records found"
+    },
+    "clientLedgers": {
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/client-ledgers",
+      "screenshot": "/tmp/646A-evidence/obs/02-client-ledgers.png",
+      "headers": [
+        "Client Name",
+        "Trust Balance",
+        "Total Deposits",
+        "Total Payments",
+        "Total Fee Transfers",
+        "Total Refunds",
+        "Last Transaction"
+      ],
+      "rows": [
+        {
+          "clientId": "48eef20a-c21a-4975-ae06-ed9a34ea287e",
+          "cells": [
+            "Moroka Family Trust mwjkwcb9be7b",
+            "R 241 500,00",
+            "R 250 000,00",
+            "R 0,00",
+            "R 8 500,00",
+            "R 0,00",
+            "16 Nov 2026"
+          ]
+        },
+        {
+          "clientId": "1379330a-a0c8-407b-9e86-ed19155e26b6",
+          "cells": [
+            "QuickCollect Services mwjkwcb9be7b",
+            "R 45 000,00",
+            "R 45 000,00",
+            "R 0,00",
+            "R 0,00",
+            "R 0,00",
+            "16 Nov 2026"
+          ]
+        }
+      ],
+      "hasTotalInterestColumn": false
+    },
+    "client_48eef20a-c21a-4975-ae06-ed9a34ea287e": {
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/client-ledgers/48eef20a-c21a-4975-ae06-ed9a34ea287e",
+      "screenshot": "/tmp/646A-evidence/obs/03-client-ledger-01-48eef20a-c21a-4975-ae06-ed9a34ea287e.png"
+    },
+    "client_1379330a-a0c8-407b-9e86-ed19155e26b6": {
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/client-ledgers/1379330a-a0c8-407b-9e86-ed19155e26b6",
+      "screenshot": "/tmp/646A-evidence/obs/03-client-ledger-02-1379330a-a0c8-407b-9e86-ed19155e26b6.png"
+    }
+  },
+  "consoleErrors": [],
+  "pageErrors": [],
+  "afterLoginUrl": "http://localhost:3001/org/e2e-test-org/dashboard",
+  "clientDetails": [
+    {
+      "clientId": "48eef20a-c21a-4975-ae06-ed9a34ea287e",
+      "name": "Moroka Family Trust mwjkwcb9be7b",
+      "listBalance": "R 241 500,00",
+      "transactionsFound": 3,
+      "ledgerTotalsText": "Ledger totals\n\nDeposits\nR 250 000,00\n−\nless\nPayments\nR 0,00\n−\nless\nFee transfers\nR 8 500,00\n−\nless\nRefunds\nR 0,00\n=Balance\nR 241 500,00",
+      "hasInterestCreditedRow": false,
+      "screenshot": "/tmp/646A-evidence/obs/03-client-ledger-01-48eef20a-c21a-4975-ae06-ed9a34ea287e.png"
+    },
+    {
+      "clientId": "1379330a-a0c8-407b-9e86-ed19155e26b6",
+      "name": "QuickCollect Services mwjkwcb9be7b",
+      "listBalance": "R 45 000,00",
+      "transactionsFound": 2,
+      "ledgerTotalsText": "Ledger totals\n\nDeposits\nR 45 000,00\n−\nless\nPayments\nR 0,00\n−\nless\nFee transfers\nR 0,00\n−\nless\nRefunds\nR 0,00\n=Balance\nR 45 000,00",
+      "hasInterestCreditedRow": false,
+      "screenshot": "/tmp/646A-evidence/obs/03-client-ledger-02-1379330a-a0c8-407b-9e86-ed19155e26b6.png"
+    }
+  ],
+  "mostTransactionsClient": "48eef20a-c21a-4975-ae06-ed9a34ea287e",
+  "interestMentions": []
+}

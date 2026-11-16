@@ -1,0 +1,99 @@
+== built from: /Users/rakheendama/Projects/2026/worktree-epic-646A @ 3285515df; jar V16 sha1 49e4ebb53a3a75dd985b36cadcfcc78ae2482e5e == worktree file sha1
+== tenant schemas
+     schema_name     
+---------------------
+ tenant_7d218705360b
+(1 row)
+
+== flyway
+ version |          description           | success |        installed_on        
+---------+--------------------------------+---------+----------------------------
+ 16      | phase92 trust posting core     | t       | 2026-11-16 18:09:16.969371
+ 15      | g89 trust investment cancelled | t       | 2026-11-16 18:09:16.963863
+ 14      | g89 contains trust data        | t       | 2026-11-16 18:09:16.956272
+(3 rows)
+
+== \d client_ledger_cards
+                    Table "tenant_7d218705360b.client_ledger_cards"
+      Column      |           Type           | Collation | Nullable |      Default      
+------------------+--------------------------+-----------+----------+-------------------
+ id               | uuid                     |           | not null | gen_random_uuid()
+ trust_account_id | uuid                     |           | not null | 
+ customer_id      | uuid                     |           | not null | 
+ created_at       | timestamp with time zone |           | not null | now()
+ updated_at       | timestamp with time zone |           | not null | now()
+Indexes:
+    "client_ledger_cards_pkey" PRIMARY KEY, btree (id)
+    "uq_client_ledger_account_customer" UNIQUE CONSTRAINT, btree (trust_account_id, customer_id)
+Foreign-key constraints:
+    "client_ledger_cards_customer_id_fkey" FOREIGN KEY (customer_id) REFERENCES tenant_7d218705360b.customers(id)
+    "client_ledger_cards_trust_account_id_fkey" FOREIGN KEY (trust_account_id) REFERENCES tenant_7d218705360b.trust_accounts(id)
+
+== \d trust_transactions
+                              Table "tenant_7d218705360b.trust_transactions"
+          Column          |           Type           | Collation | Nullable |           Default           
+--------------------------+--------------------------+-----------+----------+-----------------------------
+ id                       | uuid                     |           | not null | gen_random_uuid()
+ trust_account_id         | uuid                     |           | not null | 
+ transaction_type         | character varying(20)    |           | not null | 
+ amount                   | numeric(15,2)            |           | not null | 
+ customer_id              | uuid                     |           |          | 
+ project_id               | uuid                     |           |          | 
+ counterparty_customer_id | uuid                     |           |          | 
+ invoice_id               | uuid                     |           |          | 
+ reference                | character varying(200)   |           | not null | 
+ description              | text                     |           |          | 
+ transaction_date         | date                     |           | not null | 
+ status                   | character varying(20)    |           | not null | 
+ approved_by              | uuid                     |           |          | 
+ approved_at              | timestamp with time zone |           |          | 
+ second_approved_by       | uuid                     |           |          | 
+ second_approved_at       | timestamp with time zone |           |          | 
+ rejected_by              | uuid                     |           |          | 
+ rejected_at              | timestamp with time zone |           |          | 
+ rejection_reason         | character varying(500)   |           |          | 
+ reversal_of              | uuid                     |           |          | 
+ reversed_by_id           | uuid                     |           |          | 
+ bank_statement_line_id   | uuid                     |           |          | 
+ recorded_by              | uuid                     |           | not null | 
+ created_at               | timestamp with time zone |           | not null | now()
+ ledger                   | character varying(20)    |           | not null | 'CLIENT'::character varying
+ cashbook_effect          | numeric(15,2)            |           | not null | 0
+ ledger_effect            | numeric(15,2)            |           | not null | 0
+ posted_at                | timestamp with time zone |           |          | 
+Indexes:
+    "trust_transactions_pkey" PRIMARY KEY, btree (id)
+    "idx_trust_txn_account_date" btree (trust_account_id, transaction_date DESC)
+    "idx_trust_txn_customer" btree (customer_id, transaction_date DESC)
+    "idx_trust_txn_invoice" btree (invoice_id) WHERE invoice_id IS NOT NULL
+    "idx_trust_txn_ledger_sum" btree (trust_account_id, ledger, customer_id, transaction_date) INCLUDE (cashbook_effect, ledger_effect, project_id) WHERE posted_at IS NOT NULL
+    "idx_trust_txn_project" btree (project_id, customer_id, trust_account_id) WHERE project_id IS NOT NULL
+    "idx_trust_txn_reconciliation" btree (bank_statement_line_id) WHERE bank_statement_line_id IS NOT NULL
+    "idx_trust_txn_reference" btree (reference)
+    "idx_trust_txn_status" btree (status) WHERE status::text = 'AWAITING_APPROVAL'::text
+Check constraints:
+    "chk_trust_txn_amount_positive" CHECK (amount > 0::numeric)
+    "chk_trust_txn_customer_required" CHECK (transaction_type::text = 'INTEREST_LPFF'::text OR customer_id IS NOT NULL)
+    "chk_trust_txn_posting" CHECK (posted_at IS NULL AND (status::text = ANY (ARRAY['AWAITING_APPROVAL'::character varying, 'REJECTED'::character varying]::text[])) AND cashbook_effect = 0::numeric AND ledger_effect = 0::numeric OR posted_at IS NOT NULL AND (status::text = ANY (ARRAY['RECORDED'::character varying, 'APPROVED'::character varying, 'REVERSED'::character varying]::text[])) AND (abs(ledger_effect) = 0::numeric OR abs(ledger_effect) = amount) AND (cashbook_effect = ledger_effect OR cashbook_effect = 0::numeric))
+    "chk_trust_txn_status" CHECK (status::text = ANY (ARRAY['RECORDED'::character varying, 'AWAITING_APPROVAL'::character varying, 'APPROVED'::character varying, 'REJECTED'::character varying, 'REVERSED'::character varying]::text[]))
+    "chk_trust_txn_type" CHECK (transaction_type::text = ANY (ARRAY['DEPOSIT'::character varying, 'PAYMENT'::character varying, 'TRANSFER_IN'::character varying, 'TRANSFER_OUT'::character varying, 'FEE_TRANSFER'::character varying, 'REFUND'::character varying, 'REVERSAL'::character varying]::text[]))
+Foreign-key constraints:
+    "fk_trust_txn_bank_line" FOREIGN KEY (bank_statement_line_id) REFERENCES tenant_7d218705360b.bank_statement_lines(id)
+    "trust_transactions_counterparty_customer_id_fkey" FOREIGN KEY (counterparty_customer_id) REFERENCES tenant_7d218705360b.customers(id)
+    "trust_transactions_customer_id_fkey" FOREIGN KEY (customer_id) REFERENCES tenant_7d218705360b.customers(id)
+    "trust_transactions_invoice_id_fkey" FOREIGN KEY (invoice_id) REFERENCES tenant_7d218705360b.invoices(id)
+    "trust_transactions_project_id_fkey" FOREIGN KEY (project_id) REFERENCES tenant_7d218705360b.projects(id)
+    "trust_transactions_recorded_by_fkey" FOREIGN KEY (recorded_by) REFERENCES tenant_7d218705360b.members(id)
+    "trust_transactions_reversal_of_fkey" FOREIGN KEY (reversal_of) REFERENCES tenant_7d218705360b.trust_transactions(id)
+    "trust_transactions_reversed_by_id_fkey" FOREIGN KEY (reversed_by_id) REFERENCES tenant_7d218705360b.trust_transactions(id)
+    "trust_transactions_trust_account_id_fkey" FOREIGN KEY (trust_account_id) REFERENCES tenant_7d218705360b.trust_accounts(id)
+Referenced by:
+    TABLE "tenant_7d218705360b.bank_statement_lines" CONSTRAINT "bank_statement_lines_trust_transaction_id_fkey" FOREIGN KEY (trust_transaction_id) REFERENCES tenant_7d218705360b.trust_transactions(id)
+    TABLE "tenant_7d218705360b.interest_allocation_lines" CONSTRAINT "interest_allocation_lines_txn_fkey" FOREIGN KEY (trust_transaction_id) REFERENCES tenant_7d218705360b.trust_transactions(id)
+    TABLE "tenant_7d218705360b.interest_allocations" CONSTRAINT "interest_allocations_trust_transaction_id_fkey" FOREIGN KEY (trust_transaction_id) REFERENCES tenant_7d218705360b.trust_transactions(id)
+    TABLE "tenant_7d218705360b.legal_disbursements" CONSTRAINT "legal_disbursements_trust_transaction_id_fkey" FOREIGN KEY (trust_transaction_id) REFERENCES tenant_7d218705360b.trust_transactions(id) ON DELETE RESTRICT
+    TABLE "tenant_7d218705360b.trust_investments" CONSTRAINT "trust_investments_deposit_transaction_id_fkey" FOREIGN KEY (deposit_transaction_id) REFERENCES tenant_7d218705360b.trust_transactions(id)
+    TABLE "tenant_7d218705360b.trust_investments" CONSTRAINT "trust_investments_withdrawal_transaction_id_fkey" FOREIGN KEY (withdrawal_transaction_id) REFERENCES tenant_7d218705360b.trust_transactions(id)
+    TABLE "tenant_7d218705360b.trust_transactions" CONSTRAINT "trust_transactions_reversal_of_fkey" FOREIGN KEY (reversal_of) REFERENCES tenant_7d218705360b.trust_transactions(id)
+    TABLE "tenant_7d218705360b.trust_transactions" CONSTRAINT "trust_transactions_reversed_by_id_fkey" FOREIGN KEY (reversed_by_id) REFERENCES tenant_7d218705360b.trust_transactions(id)
+

@@ -1,0 +1,99 @@
+-- 646A R-8 EXPLAIN: 50 000 synthetic posted DEPOSIT rows inside ONE transaction, then ROLLBACK.
+\set ON_ERROR_STOP on
+SET search_path TO tenant_7d218705360b;
+\echo '== BEFORE counts'
+SELECT (SELECT count(*) FROM trust_transactions) AS txns, (SELECT count(*) FROM customers) AS customers;
+BEGIN;
+-- 200 synthetic customers (FK target for customer_id)
+INSERT INTO customers (id, name, email, created_by, customer_type, lifecycle_status)
+SELECT ('00000000-0000-4000-8000-' || lpad(g::text, 12, '0'))::uuid,
+       'R8 Synthetic Client ' || g, 'r8-synthetic-' || g || '@example.invalid',
+       (SELECT id FROM members ORDER BY created_at LIMIT 1), 'INDIVIDUAL', 'ACTIVE'
+  FROM generate_series(1, 200) g;
+-- 50 000 posted DEPOSIT rows on the primary account, round-robin over the 200 customers,
+-- transaction_date spread over ~2 years. Satisfies chk_trust_txn_posting (posted, RECORDED,
+-- |ledger_effect| = amount, cashbook_effect = ledger_effect), amount > 0, type, customer_required.
+INSERT INTO trust_transactions (trust_account_id, transaction_type, amount, customer_id, reference,
+                                transaction_date, status, recorded_by, created_at,
+                                ledger, cashbook_effect, ledger_effect, posted_at)
+SELECT '5c1a152f-df92-49b3-a0e1-d636b03febba'::uuid, 'DEPOSIT', a.amt,
+       ('00000000-0000-4000-8000-' || lpad(((g % 200) + 1)::text, 12, '0'))::uuid,
+       'R8/SYN/' || g, DATE '2025-01-01' + (g % 700), 'RECORDED',
+       (SELECT id FROM members ORDER BY created_at LIMIT 1), now(),
+       'CLIENT', a.amt, a.amt, now()
+  FROM generate_series(1, 50000) g
+  CROSS JOIN LATERAL (SELECT ((g % 997) + 1) * 10.00::numeric(15,2) AS amt) a;
+ANALYZE trust_transactions;
+\echo '== IN-TXN counts'
+SELECT count(*) AS txns_in_txn FROM trust_transactions;
+
+\echo '######## Q1 cashbook(trustAccountId, asAt = NULL)'
+EXPLAIN (ANALYZE, BUFFERS)
+SELECT COALESCE(SUM(t.cashbook_effect), 0) FROM trust_transactions t
+ WHERE t.trust_account_id = '5c1a152f-df92-49b3-a0e1-d636b03febba' AND t.posted_at IS NOT NULL
+   AND (CAST(NULL AS date) IS NULL OR t.transaction_date <= CAST(NULL AS date));
+
+\echo '######## Q1b cashbook(trustAccountId, asAt = 2026-06-30)'
+EXPLAIN (ANALYZE, BUFFERS)
+SELECT COALESCE(SUM(t.cashbook_effect), 0) FROM trust_transactions t
+ WHERE t.trust_account_id = '5c1a152f-df92-49b3-a0e1-d636b03febba' AND t.posted_at IS NOT NULL
+   AND (CAST('2026-06-30' AS date) IS NULL OR t.transaction_date <= CAST('2026-06-30' AS date));
+
+\echo '######## Q2 clientLedgerTotal(trustAccountId, asAt = NULL)'
+EXPLAIN (ANALYZE, BUFFERS)
+SELECT COALESCE(SUM(t.ledger_effect), 0) FROM trust_transactions t
+ WHERE t.trust_account_id = '5c1a152f-df92-49b3-a0e1-d636b03febba' AND t.ledger = 'CLIENT'
+   AND t.posted_at IS NOT NULL
+   AND (CAST(NULL AS date) IS NULL OR t.transaction_date <= CAST(NULL AS date));
+
+\echo '######## Q3 clientBalances(trustAccountId, asAt = NULL) — client-trust-balances report batch'
+EXPLAIN (ANALYZE, BUFFERS)
+SELECT t.customer_id AS customerId,
+       COALESCE(SUM(t.ledger_effect) FILTER (WHERE (CAST(NULL AS date) IS NULL OR t.transaction_date <= CAST(NULL AS date))), 0) AS balance,
+       MAX(t.transaction_date) FILTER (WHERE (CAST(NULL AS date) IS NULL OR t.transaction_date <= CAST(NULL AS date))) AS lastTransactionDate
+  FROM trust_transactions t
+ WHERE t.trust_account_id = '5c1a152f-df92-49b3-a0e1-d636b03febba' AND t.ledger = 'CLIENT'
+   AND t.customer_id IS NOT NULL AND t.posted_at IS NOT NULL
+ GROUP BY t.customer_id
+ ORDER BY MIN(t.created_at), t.customer_id;
+
+\echo '######## Q4 clientBalancePage(trustAccountId, page 0, size 20) — client-ledgers list page'
+EXPLAIN (ANALYZE, BUFFERS)
+SELECT t.customer_id AS customerId, COALESCE(SUM(t.ledger_effect), 0) AS balance,
+       MAX(t.transaction_date) AS lastTransactionDate
+  FROM trust_transactions t
+ WHERE t.trust_account_id = '5c1a152f-df92-49b3-a0e1-d636b03febba' AND t.ledger = 'CLIENT'
+   AND t.customer_id IS NOT NULL AND t.posted_at IS NOT NULL
+ GROUP BY t.customer_id
+ ORDER BY balance DESC, t.customer_id
+ OFFSET 0 ROWS FETCH FIRST 20 ROWS ONLY;
+
+\echo '######## Q4c clientBalancePage countQuery'
+EXPLAIN (ANALYZE, BUFFERS)
+SELECT count(DISTINCT t.customer_id) FROM trust_transactions t
+ WHERE t.trust_account_id = '5c1a152f-df92-49b3-a0e1-d636b03febba' AND t.ledger = 'CLIENT'
+   AND t.customer_id IS NOT NULL AND t.posted_at IS NOT NULL;
+
+\echo '######## Q5 generalBalancesByClient(20 customerIds) — matters/clients list batch'
+EXPLAIN (ANALYZE, BUFFERS)
+SELECT t.customer_id AS customerId, COALESCE(SUM(t.ledger_effect), 0) AS balance,
+       MAX(t.transaction_date) AS lastTransactionDate
+  FROM trust_transactions t
+ WHERE t.customer_id IN (SELECT ('00000000-0000-4000-8000-' || lpad(g::text, 12, '0'))::uuid FROM generate_series(1,20) g)
+   AND t.ledger = 'CLIENT' AND t.posted_at IS NOT NULL
+ GROUP BY t.customer_id;
+
+\echo '######## Q5-literal generalBalancesByClient(3 literal customerIds)'
+EXPLAIN (ANALYZE, BUFFERS)
+SELECT t.customer_id AS customerId, COALESCE(SUM(t.ledger_effect), 0) AS balance,
+       MAX(t.transaction_date) AS lastTransactionDate
+  FROM trust_transactions t
+ WHERE t.customer_id IN ('00000000-0000-4000-8000-000000000001','00000000-0000-4000-8000-000000000002','48eef20a-c21a-4975-ae06-ed9a34ea287e')
+   AND t.ledger = 'CLIENT' AND t.posted_at IS NOT NULL
+ GROUP BY t.customer_id;
+
+ROLLBACK;
+\echo '== AFTER ROLLBACK counts (must equal BEFORE)'
+SELECT (SELECT count(*) FROM trust_transactions) AS txns, (SELECT count(*) FROM customers) AS customers,
+       (SELECT count(*) FROM trust_transactions WHERE reference LIKE 'R8/SYN/%') AS synthetic_txns_left,
+       (SELECT count(*) FROM customers WHERE email LIKE 'r8-synthetic-%') AS synthetic_customers_left;

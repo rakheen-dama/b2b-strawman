@@ -1,0 +1,74 @@
+SET
+== accounts
+                  id                  |            account_name            | is_primary 
+--------------------------------------+------------------------------------+------------
+ eac59019-c227-44d4-93bf-72d445d4bcbe | Mathebula & Partners Trust Account | t
+(1 row)
+
+== all trust_transactions (posting state)
+ transaction_type |  status  | amount  | ledger | cashbook_effect | ledger_effect | posted |          client           |       reference        
+------------------+----------+---------+--------+-----------------+---------------+--------+---------------------------+------------------------
+ DEPOSIT          | RECORDED | 5000.00 | CLIENT |         5000.00 |       5000.00 | t      | Sipho Ndlovu mwjl3yu45ced | DEP/mwjl3yu45ced
+ PAYMENT          | APPROVED | 1250.00 | CLIENT |        -1250.00 |      -1250.00 | t      | Sipho Ndlovu mwjl3yu45ced | PAY/DEEDS/mwjl3yu45ced
+(2 rows)
+
+== per-client derived balance: SUM(ledger_effect) WHERE posted AND ledger=CLIENT
+           name            |             customer_id              | derived_balance 
+---------------------------+--------------------------------------+-----------------
+ Sipho Ndlovu mwjl3yu45ced | 5a1bb47f-e2ec-491f-8245-ff8f39e7d5f2 |         3750.00
+(1 row)
+
+== per-client HEAD-style sign-CASE over status IN (RECORDED, APPROVED)
+           name            |             customer_id              | head_style_balance 
+---------------------------+--------------------------------------+--------------------
+ Sipho Ndlovu mwjl3yu45ced | 5a1bb47f-e2ec-491f-8245-ff8f39e7d5f2 |            3750.00
+(1 row)
+
+== account cashbook: SUM(cashbook_effect) WHERE posted
+           trust_account_id           | derived_cashbook 
+--------------------------------------+------------------
+ eac59019-c227-44d4-93bf-72d445d4bcbe |          3750.00
+(1 row)
+
+== account cashbook HEAD-style sign-CASE over status IN (RECORDED, APPROVED)
+           trust_account_id           | head_style_cashbook 
+--------------------------------------+---------------------
+ eac59019-c227-44d4-93bf-72d445d4bcbe |             3750.00
+(1 row)
+
+== EQ-2: cashbook - sum(client ledger balances)
+ cashbook | sum_client_ledgers | difference 
+----------+--------------------+------------
+  3750.00 |            3750.00 |       0.00
+(1 row)
+
+== invariant: posted-status rows with posted_at NULL (expect 0)
+ count 
+-------
+     0
+(1 row)
+
+== invariant: unposted-status rows with posted_at set or non-zero effect (expect 0)
+ count 
+-------
+     0
+(1 row)
+
+== invariant: posted rows with abs(ledger_effect) not in (0, amount) or cashbook not in (ledger, 0) (expect 0)
+ count 
+-------
+     0
+(1 row)
+
+== INTEREST_% rows (expect 0)
+ count 
+-------
+     0
+(1 row)
+
+== client_ledger_cards (lock anchors)
+           trust_account_id           |             customer_id              
+--------------------------------------+--------------------------------------
+ eac59019-c227-44d4-93bf-72d445d4bcbe | 5a1bb47f-e2ec-491f-8245-ff8f39e7d5f2
+(1 row)
+

@@ -1,7 +1,7 @@
 {
-  "commit": "23a55222b",
-  "command": "cd frontend && rm -rf .next && pnpm run lint && pnpm run typecheck && pnpm run format:check && pnpm test && pnpm run build",
+  "commit": "3285515df",
+  "command": "cd frontend && pnpm install && pnpm lint && pnpm typecheck && pnpm format:check && pnpm build && pnpm test  (node v20.11.1, worktree-epic-646A)",
   "exit": 0,
-  "ts": "2026-11-16T11:51:05Z",
-  "summary": "PR #1786 (645A) FE-GATE @23a55222b (node v20.11.1): lint 0 errors (78 pre-existing warnings), typecheck ok, format ok, vitest 478 files / 4363 passed / 2 skipped (main baseline 4357/2), build ok; fresh-stack e2e (PLAYWRIGHT_BASE_URL=:3001) lifecycle 105/105, depth-ii 40/4 skipped — equal to main baseline"
+  "ts": "2026-11-16T18:06:55Z",
+  "summary": "PR #1788 (646A) head 3285515df — lint 0 errors, typecheck/format/build OK, vitest 478 files / 4363 passed / 2 skipped (baseline 4363/2)"
 }

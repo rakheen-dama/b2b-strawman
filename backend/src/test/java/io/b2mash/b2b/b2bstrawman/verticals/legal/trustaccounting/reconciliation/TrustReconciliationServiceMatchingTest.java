@@ -1,12 +1,14 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
@@ -372,6 +374,85 @@ class TrustReconciliationServiceMatchingTest {
                 assertThat(matchedTxn.getTransactionType()).isNotEqualTo("PAYMENT");
               }
             });
+  }
+
+  /**
+   * 646A (T6, ADR-378): the sign match reads {@code cashbook_effect}. An inter-client transfer is
+   * cashbook-neutral (both legs carry 0), so it never reaches the bank: it neither auto-matches a
+   * bank line nor can be matched to one by hand.
+   */
+  @Test
+  void transfer_isCashbookNeutral_neverMatchesABankLine() throws Exception {
+    createDeposit("SETUP-TRF-SIGN", "4444.44", "2026-03-25");
+    String targetId =
+        TestEntityHelper.createCustomer(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_ID, "user_match_owner"),
+            "Match Transfer Target",
+            "match_trf_target@test.com");
+    mockMvc
+        .perform(
+            post("/api/trust-accounts/" + trustAccountId + "/transactions/transfer")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_match_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"sourceClientId": "%s", "sourceMatterId": "%s", "targetClientId": "%s",
+                     "targetMatterId": "%s", "amount": 4444.44, "reference": "TRF-SIGN-001",
+                     "transactionDate": "2026-03-25"}
+                    """
+                        .formatted(
+                            customerId,
+                            trustMatterOf(customerId),
+                            targetId,
+                            trustMatterOf(targetId))))
+        .andExpect(status().isCreated());
+    List<UUID> legIds =
+        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+            .call(
+                () ->
+                    trustTransactionRepository.findAll().stream()
+                        .filter(t -> "TRF-SIGN-001".equals(t.getReference()))
+                        .map(t -> t.getId())
+                        .toList());
+    assertThat(legIds).hasSize(2);
+
+    // A debit line carrying the transfer's amount and reference
+    String statementId =
+        importStatement(
+            """
+            FNB Trust Account Statement - Account 62012345678
+            Date,Description,Amount,Balance,Reference
+            25/03/2026,Transfer,-4444.44,200000.00,TRF-SIGN-001
+            """);
+
+    var result =
+        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+            .call(() -> reconciliationService.autoMatchStatement(UUID.fromString(statementId)));
+    assertThat(result.autoMatched()).isEqualTo(0);
+
+    UUID lineId =
+        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+            .call(
+                () -> {
+                  var line =
+                      bankStatementLineRepository
+                          .findByBankStatementIdOrderByLineNumber(UUID.fromString(statementId))
+                          .getFirst();
+                  assertThat(line.getMatchStatus()).isEqualTo("UNMATCHED");
+                  assertThat(line.getTrustTransactionId()).isNull();
+                  return line.getId();
+                });
+
+    for (var legId : legIds) {
+      assertThatThrownBy(
+              () ->
+                  ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+                      .run(() -> reconciliationService.manualMatch(lineId, legId)))
+          .isInstanceOfSatisfying(
+              InvalidStateException.class,
+              e -> assertThat(e.getBody().getTitle()).isEqualTo("Sign mismatch"));
+    }
   }
 
   // --- 444.4: Manual match tests ---

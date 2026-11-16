@@ -6,7 +6,6 @@ import io.b2mash.b2b.b2bstrawman.reporting.ReportResult;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.LedgerTotals;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.ClientBalanceRow;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedgerQueryRepository;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -28,15 +27,11 @@ public class ClientTrustBalancesQuery implements ReportQuery {
 
   private final TrustLedgerQueryRepository ledgerQueries;
   private final CustomerRepository customerRepository;
-  private final TrustTransactionRepository transactionRepository;
 
   public ClientTrustBalancesQuery(
-      TrustLedgerQueryRepository ledgerQueries,
-      CustomerRepository customerRepository,
-      TrustTransactionRepository transactionRepository) {
+      TrustLedgerQueryRepository ledgerQueries, CustomerRepository customerRepository) {
     this.ledgerQueries = ledgerQueries;
     this.customerRepository = customerRepository;
-    this.transactionRepository = transactionRepository;
   }
 
   @Override
@@ -86,11 +81,7 @@ public class ClientTrustBalancesQuery implements ReportQuery {
         customerIds.isEmpty()
             ? Map.of()
             : LedgerTotals.byCustomer(
-                asOfDate != null
-                    ? transactionRepository.sumPostedByCustomerAndTypeAsOf(
-                        trustAccountId, customerIds, asOfDate)
-                    : transactionRepository.sumPostedByCustomerAndType(
-                        trustAccountId, customerIds));
+                ledgerQueries.clientTotalsByType(trustAccountId, customerIds, asOfDate));
 
     return clients.stream()
         .map(

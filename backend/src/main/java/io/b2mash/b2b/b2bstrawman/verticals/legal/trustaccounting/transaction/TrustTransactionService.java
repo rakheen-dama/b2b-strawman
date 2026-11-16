@@ -28,8 +28,6 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTran
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTransactionRecordedEvent;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestment;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentRepository;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCard;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
 import jakarta.validation.constraints.NotBlank;
 import java.math.BigDecimal;
 import java.time.Clock;
@@ -73,7 +71,6 @@ public class TrustTransactionService {
   static final String MATTER_REQUIRED_DETAIL = "A matter is required for client trust transactions";
 
   private final TrustTransactionRepository transactionRepository;
-  private final ClientLedgerCardRepository ledgerCardRepository;
   private final TrustPostingService postingService;
   private final TrustLedgerQueryRepository ledgerQueries;
   private final TrustInvestmentRepository trustInvestmentRepository;
@@ -92,7 +89,6 @@ public class TrustTransactionService {
 
   public TrustTransactionService(
       TrustTransactionRepository transactionRepository,
-      ClientLedgerCardRepository ledgerCardRepository,
       TrustPostingService postingService,
       TrustLedgerQueryRepository ledgerQueries,
       TrustInvestmentRepository trustInvestmentRepository,
@@ -109,7 +105,6 @@ public class TrustTransactionService {
       ApplicationEventPublisher eventPublisher,
       Clock clock) {
     this.transactionRepository = transactionRepository;
-    this.ledgerCardRepository = ledgerCardRepository;
     this.postingService = postingService;
     this.ledgerQueries = ledgerQueries;
     this.trustInvestmentRepository = trustInvestmentRepository;
@@ -364,7 +359,7 @@ public class TrustTransactionService {
 
     // Serialise with every other posting for this client (ADR-231 lock kept, ADR-378): ensure the
     // lock anchor exists, lock it, then post. The balance is derived from the posted row.
-    lockClient(trustAccountId, request.clientId());
+    postingService.lockClient(trustAccountId, request.clientId());
     var saved = postingService.record(transaction);
 
     auditService.log(
@@ -454,8 +449,8 @@ public class TrustTransactionService {
             : request.sourceClientId();
 
     // Acquire the two clients' lock anchors in deterministic order (ADR-231, ADR-378)
-    lockClient(trustAccountId, firstId);
-    lockClient(trustAccountId, secondId);
+    postingService.lockClient(trustAccountId, firstId);
+    postingService.lockClient(trustAccountId, secondId);
 
     // Source must have a sufficient derived balance (a client with no posted row has R0,00)
     var sourceAvailable =
@@ -896,10 +891,8 @@ public class TrustTransactionService {
     if (transaction.getApprovedBy() == null) {
       // First approval in dual mode
       // Recorder CAN be the first approver in dual mode (relaxed self-approval)
-      transaction.setApprovedBy(approverId);
-      transaction.setApprovedAt(Instant.now());
       // Status stays AWAITING_APPROVAL — second approval still needed
-      transactionRepository.save(transaction);
+      postingService.recordFirstApproval(transaction, approverId);
 
       auditService.log(
           AuditEventBuilder.builder()
@@ -956,7 +949,7 @@ public class TrustTransactionService {
                           EntityNoun.CLIENT, transaction.getCustomerId()));
 
       // Serialise with the client's other postings, then read the derived balance (ADR-378)
-      lockClient(transaction.getTrustAccountId(), transaction.getCustomerId());
+      postingService.lockClient(transaction.getTrustAccountId(), transaction.getCustomerId());
       var availableBalance =
           ledgerQueries.clientBalance(
               transaction.getTrustAccountId(), transaction.getCustomerId(), null);
@@ -1076,11 +1069,7 @@ public class TrustTransactionService {
           "Transaction must be in AWAITING_APPROVAL status to be rejected");
     }
 
-    transaction.setRejectedBy(rejecterId);
-    transaction.setRejectedAt(Instant.now());
-    transaction.setRejectionReason(reason);
-    transaction.setStatus("REJECTED");
-    transactionRepository.save(transaction);
+    postingService.reject(transaction, rejecterId, reason);
 
     // G89-F87 (D41): an investment is created ACTIVE while its placement PAYMENT awaits approval.
     // A rejected placement never moved the money, so the investment is CANCELLED (terminal) in the
@@ -1231,12 +1220,7 @@ public class TrustTransactionService {
     }
 
     boolean isDebitType = reversalRule == TrustTransactionType.Reversal.IMMEDIATE;
-    String reversalStatus;
-    if (isDebitType) {
-      reversalStatus = "RECORDED";
-    } else if (reversalRule == TrustTransactionType.Reversal.NEEDS_APPROVAL) {
-      reversalStatus = "AWAITING_APPROVAL";
-    } else {
+    if (!isDebitType && reversalRule != TrustTransactionType.Reversal.NEEDS_APPROVAL) {
       throw new InvalidStateException(
           "Cannot reverse transaction",
           "Transaction type " + original.getTransactionType() + " cannot be reversed");
@@ -1256,12 +1240,12 @@ public class TrustTransactionService {
             reversalRef,
             reason,
             LocalDate.now(clock),
-            reversalStatus,
+            null, // status: decided by postReversal from the original's reversal rule
             memberId);
 
     // A debit reversal moves the client's balance: serialise with its other postings first
     if (isDebitType && original.getCustomerId() != null) {
-      lockClient(original.getTrustAccountId(), original.getCustomerId());
+      postingService.lockClient(original.getTrustAccountId(), original.getCustomerId());
     }
 
     // Links reversal_of. A debit reversal (immediate) posts RECORDED (its final status, no
@@ -1342,7 +1326,7 @@ public class TrustTransactionService {
                         "original_transaction_id", original.getId().toString(),
                         "original_type", original.getTransactionType(),
                         "amount", original.getAmount().toString(),
-                        "reversal_status", reversalStatus,
+                        "reversal_status", savedReversal.getStatus(),
                         "reason", reason)))
             .build());
 
@@ -1388,8 +1372,8 @@ public class TrustTransactionService {
     UUID secondId =
         sourceCustomerId.compareTo(targetCustomerId) < 0 ? targetCustomerId : sourceCustomerId;
 
-    lockClient(original.getTrustAccountId(), firstId);
-    lockClient(original.getTrustAccountId(), secondId);
+    postingService.lockClient(original.getTrustAccountId(), firstId);
+    postingService.lockClient(original.getTrustAccountId(), secondId);
 
     // G89-F12: undoing the TRANSFER_IN debits the target, so the target must still hold the money —
     // on its derived balance and on the transfer's matter (the TRANSFER_IN is still posted, so
@@ -1431,7 +1415,7 @@ public class TrustTransactionService {
             reversalRef,
             reason,
             LocalDate.now(clock),
-            "RECORDED",
+            null, // status: decided by postReversal
             memberId);
     // Posts the reversal and marks the TRANSFER_OUT REVERSED with its effect zeroed (credits the
     // source back — HEAD semantics, 646A)
@@ -1449,7 +1433,7 @@ public class TrustTransactionService {
             reversalRef,
             reason,
             LocalDate.now(clock),
-            "RECORDED",
+            null, // status: decided by postReversal
             memberId);
     // Posts the reversal and marks the TRANSFER_IN REVERSED with its effect zeroed (debits the
     // target)
@@ -1574,25 +1558,6 @@ public class TrustTransactionService {
   /** A rand amount for a refusal message, in the house en-ZA format ("R10 055,21"; G89-F40). */
   private static String rand(BigDecimal amount) {
     return VariableFormatter.formatCurrencyText(amount, TRUST_LOCALE);
-  }
-
-  /**
-   * Ensures the client's lock anchor exists, then takes its row lock (ADR-231 lock kept, ADR-378).
-   * The native {@code INSERT … ON CONFLICT DO NOTHING} handles two concurrent first postings for
-   * the client; the {@code FOR UPDATE} re-query then serialises every posting for it, so a
-   * sufficiency check on the derived balance and the posting it guards cannot race.
-   */
-  private ClientLedgerCard lockClient(UUID trustAccountId, UUID customerId) {
-    ledgerCardRepository.insertLockAnchorIfAbsent(trustAccountId, customerId);
-    return ledgerCardRepository
-        .findByAccountAndCustomerForUpdate(trustAccountId, customerId)
-        .orElseThrow(
-            () ->
-                new IllegalStateException(
-                    "Lock anchor missing after upsert for account="
-                        + trustAccountId
-                        + " customer="
-                        + customerId));
   }
 
   /**

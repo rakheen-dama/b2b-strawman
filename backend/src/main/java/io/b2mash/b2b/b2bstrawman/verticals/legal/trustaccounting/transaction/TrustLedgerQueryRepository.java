@@ -174,6 +174,35 @@ public interface TrustLedgerQueryRepository extends Repository<TrustTransaction,
       @Param("trustAccountId") UUID trustAccountId, @Param("customerId") UUID customerId);
 
   /**
+   * Posted {@code CLIENT}-ledger effect per client and transaction type on one account, as at
+   * {@code asAt} (G89-F13): the rows {@code LedgerTotals} folds into the client-ledger totals. A
+   * REVERSAL row is grouped under the type of the row it reverses, so a reversal nets against the
+   * total it undoes; per client the rows therefore sum exactly to {@link #clientBalance} for the
+   * same {@code asAt}. (646A: a reversed original and its REVERSAL both carry zero effect, so the
+   * reversed amount drops out of its type's total, as under HEAD's status filter.) {@code total} is
+   * the signed {@code ledger_effect} sum. Callers short-circuit an empty collection.
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          SELECT t.customer_id AS customerId,
+                 COALESCE(o.transaction_type, t.transaction_type) AS transactionType,
+                 COALESCE(SUM(t.ledger_effect), 0) AS total
+            FROM trust_transactions t
+            LEFT JOIN trust_transactions o ON o.id = t.reversal_of
+           WHERE t.trust_account_id = :trustAccountId AND t.customer_id IN (:customerIds)
+             AND t.ledger = 'CLIENT' AND t.posted_at IS NOT NULL"""
+              + AS_AT
+              + """
+
+           GROUP BY t.customer_id, COALESCE(o.transaction_type, t.transaction_type)""")
+  List<CustomerTypeTotalRow> clientTotalsByType(
+      @Param("trustAccountId") UUID trustAccountId,
+      @Param("customerIds") Collection<UUID> customerIds,
+      @Param("asAt") LocalDate asAt);
+
+  /**
    * The matters and clients lists: each client's general ({@code CLIENT} ledger) balance across
    * every trust account. Callers short-circuit an empty collection ({@code IN ()} is invalid SQL).
    */

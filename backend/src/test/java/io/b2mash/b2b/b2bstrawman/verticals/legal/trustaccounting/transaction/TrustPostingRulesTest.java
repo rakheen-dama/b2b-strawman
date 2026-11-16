@@ -15,17 +15,24 @@ import com.tngtech.archunit.lang.ArchRule;
 
 /**
  * Phase 92 slice 646A (task 646.3, ADR-378, §16.2.2): {@link TrustPostingService} is the only
- * writer of posting effects, and nothing outside the posting core saves a trust transaction — the
- * demo seeder included (R2). Main classes only (tests may set up rows directly).
+ * writer of a trust transaction. Two rules, over main classes only (tests may set up rows
+ * directly):
  *
- * <p>The DB CHECK {@code chk_trust_txn_posting} (V16) is the runtime half: a posted status cannot
- * be stored without {@code posted_at}, which only {@code applyPosting} sets. A posted status passed
- * to the {@link TrustTransaction} constructor is invisible to ArchUnit — the status is a {@code
- * String} argument — so that case is left to the CHECK.
+ * <ul>
+ *   <li>(a) no class but {@code TrustPostingService} calls {@code TrustTransaction.applyPosting} —
+ *       the only setter of the effect columns and {@code posted_at};
+ *   <li>(b) no class but {@code TrustPostingService} calls {@code TrustTransactionRepository.save*}
+ *       ({@code save}, {@code saveAll}, {@code saveAndFlush}, …) — not the transaction service, not
+ *       reconciliation, not the demo seeder (R2). Unposted state changes go through {@code
+ *       recordFirstApproval} / {@code reject}, and reconciliation's bank-line link through {@code
+ *       linkBankLine}; none of them touches effects or {@code posted_at}.
+ * </ul>
  *
- * <p>Rule (b) allows {@code ..trustaccounting.transaction..} (the posting core and the service that
- * drives it) and {@code ..trustaccounting.reconciliation..}, which saves posted rows only to set
- * {@code bank_statement_line_id} — no effect changes.
+ * <p>Not enforced here: Hibernate dirty-checking flushes a managed row changed without a {@code
+ * save} call, and a posted status passed to the {@link TrustTransaction} constructor is a {@code
+ * String} argument — both are invisible to ArchUnit. The DB CHECK {@code chk_trust_txn_posting}
+ * (V16) is the runtime half: a posted status cannot be stored without {@code posted_at}, which only
+ * {@code applyPosting} sets.
  */
 @AnalyzeClasses(
     packages = "io.b2mash.b2b.b2bstrawman",
@@ -45,16 +52,15 @@ class TrustPostingRulesTest {
                   + " (ADR-378)");
 
   @ArchTest
-  static final ArchRule trust_rows_are_saved_only_by_the_posting_core =
+  static final ArchRule trust_rows_are_saved_only_by_the_posting_service =
       noClasses()
           .that()
-          .resideOutsideOfPackages(
-              "..trustaccounting.transaction..", "..trustaccounting.reconciliation..")
+          .doNotHaveFullyQualifiedName(TrustPostingService.class.getName())
           .should()
           .callMethodWhere(
               target(owner(assignableTo(TrustTransactionRepository.class)))
                   .and(target(nameStartingWith("save"))))
           .because(
-              "rows are posted through TrustPostingService; reconciliation only links lines"
-                  + " (R2, ADR-378)");
+              "trust rows are saved only by TrustPostingService — postings, unposted state"
+                  + " changes and bank-line links alike (R2, ADR-378)");
 }

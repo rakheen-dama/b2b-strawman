@@ -8,7 +8,10 @@ import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
-/** G89-F13: {@link LedgerTotals} folds per-type posted totals and reconciles to the balance. */
+/**
+ * G89-F13: {@link LedgerTotals} folds per-type posted totals and reconciles to the balance; each
+ * total's sign comes from {@code TrustTransactionType.ledgerSign()} (ADR-378).
+ */
 class LedgerTotalsTest {
 
   private static final UUID CLIENT_A = UUID.fromString("00000000-0000-0000-0000-00000000000a");
@@ -62,20 +65,25 @@ class LedgerTotalsTest {
   }
 
   @Test
-  void byCustomer_foldsRowsPerClient() {
+  void byCustomer_foldsSignedLedgerEffectRowsPerClient_intoPositiveTotals() {
+    // Rows carry the signed ledger_effect sum (TrustLedgerQueryRepository.clientTotalsByType);
+    // each type's ledgerSign() turns it back into the type's posted amount
     var totals =
         LedgerTotals.byCustomer(
             List.of(
                 row(CLIENT_A, "DEPOSIT", "5000.00"),
-                row(CLIENT_A, "REFUND", "3750.00"),
+                row(CLIENT_A, "REFUND", "-3750.00"),
                 row(CLIENT_B, "TRANSFER_IN", "400.00"),
-                row(CLIENT_A, "PAYMENT", "1250.00")));
+                row(CLIENT_B, "TRANSFER_OUT", "-150.00"),
+                row(CLIENT_A, "PAYMENT", "-1250.00")));
 
     assertThat(totals).hasSize(2);
     assertThat(totals.get(CLIENT_A).refunds()).isEqualByComparingTo("3750.00");
+    assertThat(totals.get(CLIENT_A).payments()).isEqualByComparingTo("1250.00");
+    assertThat(totals.get(CLIENT_B).transfersOut()).isEqualByComparingTo("150.00");
     assertThat(totals.get(CLIENT_A).derivedBalance()).isEqualByComparingTo("0.00");
     assertThat(totals.get(CLIENT_B).transfersIn()).isEqualByComparingTo("400.00");
-    assertThat(totals.get(CLIENT_B).derivedBalance()).isEqualByComparingTo("400.00");
+    assertThat(totals.get(CLIENT_B).derivedBalance()).isEqualByComparingTo("250.00");
   }
 
   private static CustomerTypeTotalRow row(UUID customerId, String type, String total) {

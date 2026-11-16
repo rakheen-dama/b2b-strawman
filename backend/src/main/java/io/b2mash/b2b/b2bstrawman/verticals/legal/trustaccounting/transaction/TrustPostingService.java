@@ -1,9 +1,11 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction;
 
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
 import java.time.Clock;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -16,19 +18,52 @@ import org.springframework.transaction.annotation.Transactional;
  * original's effects are zeroed, so it drops out of every sum as it did under the status filter; an
  * approved credit reversal moves nothing (H-a, pinned — fixed in 649B by the contra model).
  *
- * <p>{@code TrustPostingRulesTest} (ArchUnit) holds that no other main class calls {@code
- * TrustTransaction.applyPosting}; the row CHECK {@code chk_trust_txn_posting} (V16) refuses a
- * posted status without {@code posted_at} at the database.
+ * <p>It is also the only main class that saves a trust transaction: the unposted state changes
+ * (first approval in dual mode, rejection) and reconciliation's bank-line link go through the
+ * narrow methods below, none of which touches effects or {@code posted_at}. {@code
+ * TrustPostingRulesTest} (ArchUnit) holds that no other main class calls {@code
+ * TrustTransaction.applyPosting} or {@code TrustTransactionRepository.save*}; the row CHECK {@code
+ * chk_trust_txn_posting} (V16) refuses a posted status without {@code posted_at} at the database.
+ *
+ * <p>Every posting for a client runs under the client's lock anchor: callers take it with {@link
+ * #lockClient} before reading a derived balance and posting (§16.2.3, T5).
  */
 @Service
 public class TrustPostingService {
 
   private final TrustTransactionRepository transactionRepository;
+  private final ClientLedgerCardRepository ledgerCardRepository;
   private final Clock clock;
 
-  public TrustPostingService(TrustTransactionRepository transactionRepository, Clock clock) {
+  public TrustPostingService(
+      TrustTransactionRepository transactionRepository,
+      ClientLedgerCardRepository ledgerCardRepository,
+      Clock clock) {
     this.transactionRepository = transactionRepository;
+    this.ledgerCardRepository = ledgerCardRepository;
     this.clock = clock;
+  }
+
+  /**
+   * Ensures the client's lock anchor exists, then takes its row lock (ADR-231 lock kept, ADR-378).
+   * The native {@code INSERT … ON CONFLICT DO NOTHING} handles two concurrent first postings for
+   * the client; the {@code FOR UPDATE} re-query then serialises every posting for it, so a
+   * sufficiency check on the derived balance and the posting it guards cannot race. Two clients are
+   * locked in ascending UUID order by the caller. Joins the caller's transaction (mandatory): the
+   * lock is held until that transaction ends.
+   */
+  @Transactional(propagation = Propagation.MANDATORY)
+  public void lockClient(UUID trustAccountId, UUID customerId) {
+    ledgerCardRepository.insertLockAnchorIfAbsent(trustAccountId, customerId);
+    ledgerCardRepository
+        .findByAccountAndCustomerForUpdate(trustAccountId, customerId)
+        .orElseThrow(
+            () ->
+                new IllegalStateException(
+                    "Lock anchor missing after upsert for account="
+                        + trustAccountId
+                        + " customer="
+                        + customerId));
   }
 
   /** A row whose type posts when recorded (approval = NONE): persisted RECORDED and posted now. */
@@ -64,9 +99,7 @@ public class TrustPostingService {
    */
   @Transactional
   public TrustTransaction postOnApproval(TrustTransaction pending, UUID approverId) {
-    if (!"AWAITING_APPROVAL".equals(pending.getStatus())) {
-      throw new IllegalStateException("postOnApproval on a " + pending.getStatus() + " row");
-    }
+    requireAwaitingApproval(pending, "postOnApproval");
     if (pending.getApprovedBy() == null) {
       pending.setApprovedBy(approverId);
       pending.setApprovedAt(clock.instant());
@@ -83,10 +116,45 @@ public class TrustPostingService {
   }
 
   /**
-   * A REVERSAL row for {@code original}, by the original type's reversal rule. IMMEDIATE / PAIR /
-   * VIA_PAIR: the reversal posts RECORDED at zero effect and the original becomes REVERSED with its
-   * effects zeroed (HEAD semantics; 649B keeps the original's effect and posts the negation).
-   * NEEDS_APPROVAL: the reversal is saved AWAITING_APPROVAL (unposted); the original is untouched.
+   * Dual mode's first approval of a REQUIRED row: records the first approver and leaves the row
+   * AWAITING_APPROVAL and unposted (the second approval posts it through {@link #postOnApproval}).
+   */
+  @Transactional
+  public TrustTransaction recordFirstApproval(TrustTransaction pending, UUID approverId) {
+    requireAwaitingApproval(pending, "recordFirstApproval");
+    pending.setApprovedBy(approverId);
+    pending.setApprovedAt(clock.instant());
+    return transactionRepository.save(pending);
+  }
+
+  /** Rejects a row awaiting approval: REJECTED, never posted (effects stay zero). */
+  @Transactional
+  public TrustTransaction reject(TrustTransaction pending, UUID rejecterId, String reason) {
+    requireAwaitingApproval(pending, "reject");
+    pending.setRejectedBy(rejecterId);
+    pending.setRejectedAt(clock.instant());
+    pending.setRejectionReason(reason);
+    pending.setStatus("REJECTED");
+    return transactionRepository.save(pending);
+  }
+
+  /**
+   * Links (or, with a null {@code bankStatementLineId}, unlinks) a row and a bank statement line —
+   * reconciliation's only write to a trust row. Effects, status and {@code posted_at} are
+   * untouched.
+   */
+  @Transactional
+  public TrustTransaction linkBankLine(TrustTransaction transaction, UUID bankStatementLineId) {
+    transaction.setBankStatementLineId(bankStatementLineId);
+    return transactionRepository.save(transaction);
+  }
+
+  /**
+   * A REVERSAL row for {@code original}, by the original type's reversal rule — this method alone
+   * decides the reversal's status. IMMEDIATE / PAIR / VIA_PAIR: the reversal posts RECORDED at zero
+   * effect and the original becomes REVERSED with its effects zeroed (HEAD semantics; 649B keeps
+   * the original's effect and posts the negation). NEEDS_APPROVAL: the reversal is saved
+   * AWAITING_APPROVAL (unposted); the original is untouched. Any other rule is refused.
    */
   @Transactional
   public TrustTransaction postReversal(TrustTransaction reversal, TrustTransaction original) {
@@ -113,6 +181,12 @@ public class TrustPostingService {
               "Cannot reverse transaction",
               "Transaction type " + original.getTransactionType() + " cannot be reversed");
     };
+  }
+
+  private static void requireAwaitingApproval(TrustTransaction pending, String operation) {
+    if (!"AWAITING_APPROVAL".equals(pending.getStatus())) {
+      throw new IllegalStateException(operation + " on a " + pending.getStatus() + " row");
+    }
   }
 
   private static void require(boolean ok, TrustTransactionType type, String operation) {

@@ -296,7 +296,7 @@ public class ClientLedgerService {
       return Map.of();
     }
     return LedgerTotals.byCustomer(
-        transactionRepository.sumPostedByCustomerAndType(trustAccountId, customerIds));
+        ledgerQueries.clientTotalsByType(trustAccountId, customerIds, null));
   }
 
   private ClientLedgerCardResponse toResponse(

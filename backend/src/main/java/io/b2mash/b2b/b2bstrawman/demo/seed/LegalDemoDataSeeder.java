@@ -31,7 +31,6 @@ import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleRegistry;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccount;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountType;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustPostingService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
 import java.math.BigDecimal;
@@ -42,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
+import java.util.stream.Stream;
 import org.springframework.stereotype.Component;
 
 /**
@@ -80,7 +80,6 @@ public class LegalDemoDataSeeder extends BaseDemoDataSeeder {
   private final VerticalModuleRegistry verticalModuleRegistry;
   private final TrustAccountRepository trustAccountRepository;
   private final TrustPostingService trustPostingService;
-  private final ClientLedgerCardRepository clientLedgerCardRepository;
   private final ChecklistTemplateRepository checklistTemplateRepository;
   private final ChecklistTemplateItemRepository checklistTemplateItemRepository;
   private final ChecklistInstanceRepository checklistInstanceRepository;
@@ -101,7 +100,6 @@ public class LegalDemoDataSeeder extends BaseDemoDataSeeder {
       VerticalModuleRegistry verticalModuleRegistry,
       TrustAccountRepository trustAccountRepository,
       TrustPostingService trustPostingService,
-      ClientLedgerCardRepository clientLedgerCardRepository,
       ChecklistTemplateRepository checklistTemplateRepository,
       ChecklistTemplateItemRepository checklistTemplateItemRepository,
       ChecklistInstanceRepository checklistInstanceRepository,
@@ -121,7 +119,6 @@ public class LegalDemoDataSeeder extends BaseDemoDataSeeder {
     this.verticalModuleRegistry = verticalModuleRegistry;
     this.trustAccountRepository = trustAccountRepository;
     this.trustPostingService = trustPostingService;
-    this.clientLedgerCardRepository = clientLedgerCardRepository;
     this.checklistTemplateRepository = checklistTemplateRepository;
     this.checklistTemplateItemRepository = checklistTemplateItemRepository;
     this.checklistInstanceRepository = checklistInstanceRepository;
@@ -236,9 +233,11 @@ public class LegalDemoDataSeeder extends BaseDemoDataSeeder {
     UUID healthyMatter = firstMatterOf(healthy.id());
     UUID inDebitMatter = firstMatterOf(inDebit.id());
 
-    // The two clients' lock anchors (ADR-378) — every client with rows has one
-    clientLedgerCardRepository.insertLockAnchorIfAbsent(accountId, healthy.id());
-    clientLedgerCardRepository.insertLockAnchorIfAbsent(accountId, inDebit.id());
+    // The two clients' lock anchors (ADR-378) — every client with rows has one. Taken through the
+    // posting core, in ascending UUID order as every two-client posting does.
+    Stream.of(healthy.id(), inDebit.id())
+        .sorted()
+        .forEach(customerId -> trustPostingService.lockClient(accountId, customerId));
 
     // Healthy creditor: 50 000 in, 20 000 out -> +30 000.
     postDeposit(

@@ -1,6 +1,14 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger;
 
+import static io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionType.DEPOSIT;
+import static io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionType.FEE_TRANSFER;
+import static io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionType.PAYMENT;
+import static io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionType.REFUND;
+import static io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionType.TRANSFER_IN;
+import static io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionType.TRANSFER_OUT;
+
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.CustomerTypeTotalRow;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionType;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
@@ -8,11 +16,12 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * A client's posted trust totals on one account, grouped by transaction type (G89-F13). Derived
- * from the ledger itself ({@code TrustTransactionRepository.sumPostedByCustomerAndType}:
- * RECORDED/APPROVED, no REVERSAL), so the totals always reconcile: {@link #derivedBalance()} equals
- * the derived client balance. Each total's sign in that sum is its type's {@code
- * TrustTransactionType.ledgerSign()}.
+ * A client's posted trust totals on one account, one per transaction type (G89-F13). Each total is
+ * the type's posted amount (a positive figure for the UI); its sign in the balance is the type's
+ * {@link TrustTransactionType#ledgerSign()} — the registry, not this class, says which totals add
+ * and which subtract. Derived from {@code TrustLedgerQueryRepository.clientTotalsByType} (posted
+ * {@code CLIENT}-ledger effects, a reversal netted under the type it reverses), so {@link
+ * #derivedBalance()} equals {@code TrustLedgerQueryRepository.clientBalance} for the same date.
  */
 public record LedgerTotals(
     BigDecimal deposits,
@@ -31,57 +40,76 @@ public record LedgerTotals(
           BigDecimal.ZERO,
           BigDecimal.ZERO);
 
-  /** Deposits + Transfers in − Payments − Fee transfers − Refunds − Transfers out. */
+  /**
+   * Σ total × {@code ledgerSign()} over the types (deposits and transfers in add, the rest
+   * subtract).
+   */
   public BigDecimal derivedBalance() {
-    return deposits
-        .add(transfersIn)
-        .subtract(payments)
-        .subtract(feeTransfers)
-        .subtract(refunds)
-        .subtract(transfersOut);
+    return signed(DEPOSIT, deposits)
+        .add(signed(TRANSFER_IN, transfersIn))
+        .add(signed(PAYMENT, payments))
+        .add(signed(FEE_TRANSFER, feeTransfers))
+        .add(signed(REFUND, refunds))
+        .add(signed(TRANSFER_OUT, transfersOut));
   }
 
   /**
-   * Adds one type's posted total. A type that does not belong to these totals (REVERSAL, which the
-   * query excludes, or an unknown code) leaves the totals unchanged.
+   * Adds {@code amount} (a positive posted amount) to the type's total. REVERSAL has no total of
+   * its own (its effect is netted under the type it reverses); an unknown code (lenient reader,
+   * T15) leaves the totals unchanged. The switch is exhaustive, so a new registry type must be
+   * placed here before it compiles.
    */
   public LedgerTotals plus(String transactionType, BigDecimal amount) {
-    var value = amount != null ? amount : BigDecimal.ZERO;
-    return switch (transactionType) {
-      case "DEPOSIT" ->
+    var type = TrustTransactionType.find(transactionType);
+    if (type.isEmpty() || amount == null) {
+      return this;
+    }
+    return switch (type.get()) {
+      case DEPOSIT ->
           new LedgerTotals(
-              deposits.add(value), transfersIn, payments, feeTransfers, refunds, transfersOut);
-      case "TRANSFER_IN" ->
+              deposits.add(amount), transfersIn, payments, feeTransfers, refunds, transfersOut);
+      case TRANSFER_IN ->
           new LedgerTotals(
-              deposits, transfersIn.add(value), payments, feeTransfers, refunds, transfersOut);
-      case "PAYMENT" ->
+              deposits, transfersIn.add(amount), payments, feeTransfers, refunds, transfersOut);
+      case PAYMENT ->
           new LedgerTotals(
-              deposits, transfersIn, payments.add(value), feeTransfers, refunds, transfersOut);
-      case "FEE_TRANSFER" ->
+              deposits, transfersIn, payments.add(amount), feeTransfers, refunds, transfersOut);
+      case FEE_TRANSFER ->
           new LedgerTotals(
-              deposits, transfersIn, payments, feeTransfers.add(value), refunds, transfersOut);
-      case "REFUND" ->
+              deposits, transfersIn, payments, feeTransfers.add(amount), refunds, transfersOut);
+      case REFUND ->
           new LedgerTotals(
-              deposits, transfersIn, payments, feeTransfers, refunds.add(value), transfersOut);
-      case "TRANSFER_OUT" ->
+              deposits, transfersIn, payments, feeTransfers, refunds.add(amount), transfersOut);
+      case TRANSFER_OUT ->
           new LedgerTotals(
-              deposits, transfersIn, payments, feeTransfers, refunds, transfersOut.add(value));
-      default -> this;
+              deposits, transfersIn, payments, feeTransfers, refunds, transfersOut.add(amount));
+      case REVERSAL -> this;
     };
   }
 
   /**
-   * Folds per-type rows into one {@code LedgerTotals} per client (absent client = {@link #ZERO}).
+   * Folds per-type rows into one {@code LedgerTotals} per client (absent client = {@link #ZERO}). A
+   * row's {@code total} is a signed {@code ledger_effect} sum; × the type's {@code ledgerSign()}
+   * turns it into the type's posted amount.
    */
   public static Map<UUID, LedgerTotals> byCustomer(List<CustomerTypeTotalRow> rows) {
     var totals = new HashMap<UUID, LedgerTotals>();
     for (var row : rows) {
+      var amount =
+          TrustTransactionType.find(row.getTransactionType())
+              .map(type -> signed(type, row.getTotal()))
+              .orElse(BigDecimal.ZERO);
       totals.merge(
-          row.getCustomerId(),
-          ZERO.plus(row.getTransactionType(), row.getTotal()),
-          LedgerTotals::add);
+          row.getCustomerId(), ZERO.plus(row.getTransactionType(), amount), LedgerTotals::add);
     }
     return totals;
+  }
+
+  /**
+   * {@code value × type.ledgerSign()} — the sign is ±1, so this also maps a net back to an amount.
+   */
+  private static BigDecimal signed(TrustTransactionType type, BigDecimal value) {
+    return value.multiply(BigDecimal.valueOf(type.ledgerSign()));
   }
 
   private LedgerTotals add(LedgerTotals other) {

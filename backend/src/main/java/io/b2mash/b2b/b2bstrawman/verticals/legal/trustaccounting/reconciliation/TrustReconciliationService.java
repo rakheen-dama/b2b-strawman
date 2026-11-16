@@ -18,6 +18,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.parser.ParsedStatement;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.parser.StandardBankCsvParser;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedgerQueryRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustPostingService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import java.io.BufferedReader;
@@ -48,6 +49,7 @@ public class TrustReconciliationService {
   private final TrustTransactionRepository trustTransactionRepository;
   private final TrustReconciliationRepository trustReconciliationRepository;
   private final TrustLedgerQueryRepository ledgerQueries;
+  private final TrustPostingService postingService;
   private final StorageService storageService;
   private final VerticalModuleGuard moduleGuard;
   private final AuditService auditService;
@@ -60,6 +62,7 @@ public class TrustReconciliationService {
       TrustTransactionRepository trustTransactionRepository,
       TrustReconciliationRepository trustReconciliationRepository,
       TrustLedgerQueryRepository ledgerQueries,
+      TrustPostingService postingService,
       StorageService storageService,
       VerticalModuleGuard moduleGuard,
       AuditService auditService) {
@@ -69,6 +72,7 @@ public class TrustReconciliationService {
     this.trustTransactionRepository = trustTransactionRepository;
     this.trustReconciliationRepository = trustReconciliationRepository;
     this.ledgerQueries = ledgerQueries;
+    this.postingService = postingService;
     this.storageService = storageService;
     this.moduleGuard = moduleGuard;
     this.auditService = auditService;
@@ -401,8 +405,7 @@ public class TrustReconciliationService {
     line.setMatchConfidence(BigDecimal.ONE);
     bankStatementLineRepository.save(line);
 
-    transaction.setBankStatementLineId(lineId);
-    trustTransactionRepository.save(transaction);
+    postingService.linkBankLine(transaction, lineId);
 
     // Update matched count (statement already loaded above for trust account validation)
     statement.setMatchedCount(statement.getMatchedCount() + 1);
@@ -448,8 +451,7 @@ public class TrustReconciliationService {
           .findById(transactionId)
           .ifPresent(
               txn -> {
-                txn.setBankStatementLineId(null);
-                trustTransactionRepository.save(txn);
+                postingService.linkBankLine(txn, null);
               });
     }
 
@@ -860,8 +862,7 @@ public class TrustReconciliationService {
     line.setMatchConfidence(confidence);
     bankStatementLineRepository.save(line);
 
-    locked.setBankStatementLineId(line.getId());
-    trustTransactionRepository.save(locked);
+    postingService.linkBankLine(locked, line.getId());
   }
 
   // --- Private Helpers ---

@@ -16,9 +16,9 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRep
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountStatus;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountingConstants;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentRepository;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.lpff.LpffRate;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.lpff.LpffRateRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.ClientBalanceRow;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedgerQueryRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import java.math.BigDecimal;
@@ -38,7 +38,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,7 +55,6 @@ public class InterestService {
   private final LpffRateRepository lpffRateRepository;
   private final TrustTransactionRepository trustTransactionRepository;
   private final TrustLedgerQueryRepository ledgerQueries;
-  private final ClientLedgerCardRepository clientLedgerCardRepository;
   private final TrustInvestmentRepository investmentRepository;
   private final VerticalModuleGuard moduleGuard;
   private final AuditService auditService;
@@ -72,7 +70,6 @@ public class InterestService {
       LpffRateRepository lpffRateRepository,
       TrustTransactionRepository trustTransactionRepository,
       TrustLedgerQueryRepository ledgerQueries,
-      ClientLedgerCardRepository clientLedgerCardRepository,
       TrustInvestmentRepository investmentRepository,
       VerticalModuleGuard moduleGuard,
       AuditService auditService,
@@ -86,7 +83,6 @@ public class InterestService {
     this.lpffRateRepository = lpffRateRepository;
     this.trustTransactionRepository = trustTransactionRepository;
     this.ledgerQueries = ledgerQueries;
-    this.clientLedgerCardRepository = clientLedgerCardRepository;
     this.investmentRepository = investmentRepository;
     this.moduleGuard = moduleGuard;
     this.auditService = auditService;
@@ -243,11 +239,12 @@ public class InterestService {
     // Build rate segments
     var segments = buildRateSegments(periodStart, periodEnd, baseRate, midPeriodRates);
 
-    // Get all clients with ledger cards
-    var ledgerCards =
-        clientLedgerCardRepository
-            .findByTrustAccountId(accountId, PageRequest.of(0, 10_000))
-            .getContent();
+    // Every client with a posted CLIENT row on the account (the derived client list, ADR-378): a
+    // client without one has a zero balance throughout and earns no interest
+    var clientIds =
+        ledgerQueries.clientBalances(accountId, null).stream()
+            .map(ClientBalanceRow::getCustomerId)
+            .toList();
 
     // Remove any existing allocations (matter lines first: no ON DELETE CASCADE) from a previous
     // calculation of this draft run, and flush so the deletes precede the new inserts.
@@ -265,8 +262,7 @@ public class InterestService {
     var allocations = new ArrayList<InterestAllocation>();
     var pendingLines = new LinkedHashMap<InterestAllocation, List<PendingLine>>();
 
-    for (var ledgerCard : ledgerCards) {
-      var customerId = ledgerCard.getCustomerId();
+    for (var customerId : clientIds) {
       var clientGrossInterest = BigDecimal.ZERO;
       var clientLpffShareSum = BigDecimal.ZERO;
       var clientTotalBalanceDays = BigDecimal.ZERO;

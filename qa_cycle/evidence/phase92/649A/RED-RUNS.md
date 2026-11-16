@@ -195,6 +195,17 @@ Probe source (as run):
 To reproduce: replace each committed `…_pinsKnownDefect` method body with the intended form below (helpers are unchanged in the
 committed class) and run the command above. The pins differ from these only at the lines marked `// PIN — intended: …`.
 
+**Helpers moved after these runs (review fix, PR #1787).** The sources below are verbatim as run, against the per-class helpers
+of commit `c1872f0cd`. Those helpers now live in the shared `backend/src/test/java/io/b2mash/b2b/b2bstrawman/testutil/TrustBooksFixture.java`
+and the committed tests call them on a per-tenant handle: `freshAccount()` / `freshAccount(schema, member)` / `freshAccount(dual)` →
+`books.freshAccount(dual)` (`cardless.freshAccount(false)` for H-b); `newClient(…)` → `books.newClient(label)` (returns the client and
+its matter; H-b's explicit `openClientMatter` is folded in); `deposit`, `requestPayment`, `requestRefund`, `requestFeeTransfer`, `transfer`,
+`approve`, `reject(account, id)` → `books.reject(account, id, approverId)`, `reverse`, `handSetApproved`, `statusOf`, `reversedByOf`,
+`clientLedger`, `assertServicesAgree` → the same names on `books`; `as(…)` / `asIn(…)` → `books.as(member, …)` / `cardless.as(member, …)`;
+`saveSeederShapedTxn(account, type, amount, client, matter, status)` → `cardless.saveDirect(account, type, amount, client, status)`;
+the inline refused-reversal blocks (H-c, H-d, 7d) → `books.assertReversalRefused(account, id, detail)`. The pinned outcomes are
+unchanged; H-c additionally asserts the first reversal is `REJECTED` before the refused second attempt.
+
 ```java
   // H-a
   @Test

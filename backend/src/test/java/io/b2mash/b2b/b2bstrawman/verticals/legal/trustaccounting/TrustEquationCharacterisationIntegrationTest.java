@@ -1,46 +1,22 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.demo.seed.LegalDemoDataSeeder;
-import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceStatus;
 import io.b2mash.b2b.b2bstrawman.invoice.PaymentEventRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.PaymentEventStatus;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
-import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.testutil.BooksSnapshot;
-import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
-import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksFixture;
 import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness;
 import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness.Expected;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateTrustAccountRequest;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordDepositRequest;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordFeeTransferRequest;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordPaymentRequest;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordRefundRequest;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordTransferRequest;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.TrustTransactionResponse;
-import java.math.BigDecimal;
-import java.time.Clock;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -52,7 +28,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * Phase 92 slice 649A (task 649.2, architecture §16.9.2 paths 1–8 and 11): characterisation of
@@ -72,6 +47,8 @@ import org.springframework.transaction.support.TransactionTemplate;
  * <p>Paths 7 and 8 reach a reversible row only by <b>hand-setting {@code APPROVED}</b> (a deposit
  * or a {@code TRANSFER_OUT} is saved {@code RECORDED} and never becomes {@code APPROVED}); each
  * such setup is itself evidence for H-d (founder ruling #1) and is removed by 649B.
+ *
+ * <p>Setup and posting steps come from the shared {@link TrustBooksFixture}.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -81,45 +58,28 @@ import org.springframework.transaction.support.TransactionTemplate;
 class TrustEquationCharacterisationIntegrationTest {
 
   private static final String ORG_ID = "org_trust_equation_characterisation";
-  private static final Set<String> TRUST_CAPABILITIES =
-      Set.of("APPROVE_TRUST_PAYMENT", "MANAGE_TRUST", "VIEW_TRUST");
-  private static final LocalDate POSTING_DATE = LocalDate.of(2026, 3, 1);
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private OrganizationRepository organizationRepository;
-  @Autowired private OrgSettingsRepository orgSettingsRepository;
-  @Autowired private OrgSettingsService orgSettingsService;
-  @Autowired private TransactionTemplate transactionTemplate;
   @Autowired private JdbcTemplate jdbcTemplate;
-  @Autowired private TrustTransactionService transactionService;
-  @Autowired private TrustTransactionRepository transactionRepository;
-  @Autowired private TrustAccountService trustAccountService;
-  @Autowired private CustomerRepository customerRepository;
-  @Autowired private ProjectRepository projectRepository;
   @Autowired private InvoiceRepository invoiceRepository;
   @Autowired private PaymentEventRepository paymentEventRepository;
   @Autowired private LegalDemoDataSeeder legalDemoDataSeeder;
   @Autowired private TrustBooksHarness harness;
-  @Autowired private Clock clock;
+  @Autowired private TrustBooksFixture fixture;
 
-  private final AtomicInteger sequence = new AtomicInteger();
-
-  /** Each client's trust matter (G89-F28). */
-  private final Map<UUID, UUID> matters = new ConcurrentHashMap<>();
-
-  private String tenantSchema;
-  private UUID memberId;
+  private TrustBooksFixture.Tenant books;
   private UUID approverId;
   private UUID secondApproverId;
 
   @BeforeAll
   void setup() throws Exception {
-    tenantSchema =
+    var tenantSchema =
         provisioningService
             .provisionTenant(ORG_ID, "Trust Equation Characterisation Org", null)
             .schemaName();
-    memberId =
+    var memberId =
         UUID.fromString(
             TestMemberHelper.syncMember(
                 mockMvc, ORG_ID, "user_trust_eq_owner", "trust_eq@test.com", "Eq Owner", "owner"));
@@ -142,228 +102,221 @@ class TrustEquationCharacterisationIntegrationTest {
                 "Eq Second Approver",
                 "owner"));
 
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .run(
-            () ->
-                transactionTemplate.executeWithoutResult(
-                    tx -> {
-                      var settings = orgSettingsService.getOrCreateForCurrentTenant();
-                      settings.setEnabledModules(List.of("trust_accounting"));
-                      orgSettingsRepository.save(settings);
-                    }));
+    fixture.enableTrustModule(tenantSchema);
+    books = fixture.tenant(tenantSchema, ORG_ID, memberId);
   }
 
   @AfterAll
   void booksBalanceFirmWide() {
-    as(memberId, () -> harness.assertFirmBalanced(today()));
+    books.assertFirmBalanced();
   }
 
   // --- Path 1: deposit ------------------------------------------------------------------------
 
   @Test
   void deposit_movesCashbookAndClient() {
-    var account = freshAccount(false);
-    var client = newClient("P1");
-    deposit(account, client, "10000.00");
-    assertServicesAgree(account);
+    var account = books.freshAccount(false);
+    var client = books.newClient("P1");
+    books.deposit(account, client, "10000.00");
+    books.assertServicesAgree(account);
   }
 
   // --- Path 2: payment ------------------------------------------------------------------------
 
   @Test
   void paymentRequested_movesNothing() {
-    var account = freshAccount(false);
-    var client = newClient("P2a");
-    deposit(account, client, "10000.00");
-    requestPayment(account, client, "3000.00");
-    assertServicesAgree(account);
+    var account = books.freshAccount(false);
+    var client = books.newClient("P2a");
+    books.deposit(account, client, "10000.00");
+    books.requestPayment(account, client, "3000.00");
+    books.assertServicesAgree(account);
   }
 
   @Test
   void paymentApprovedSingleMode_movesCashbookAndClient() {
-    var account = freshAccount(false);
-    var client = newClient("P2b");
-    deposit(account, client, "10000.00");
-    var paymentId = requestPayment(account, client, "3000.00");
-    approve(account, paymentId, approverId, Expected.cashbookAndClient("-3000.00"));
-    assertThat(statusOf(paymentId)).isEqualTo("APPROVED");
-    assertServicesAgree(account);
+    var account = books.freshAccount(false);
+    var client = books.newClient("P2b");
+    books.deposit(account, client, "10000.00");
+    var paymentId = books.requestPayment(account, client, "3000.00");
+    books.approve(account, paymentId, approverId, Expected.cashbookAndClient("-3000.00"));
+    assertThat(books.statusOf(paymentId)).isEqualTo("APPROVED");
+    books.assertServicesAgree(account);
   }
 
   @Test
   void paymentDualMode_firstApprovalMovesNothing_secondPosts() {
-    var account = freshAccount(true);
-    var client = newClient("P2c");
-    deposit(account, client, "10000.00");
-    var paymentId = requestPayment(account, client, "3000.00");
-    approve(account, paymentId, approverId, Expected.none());
-    assertThat(statusOf(paymentId)).isEqualTo("AWAITING_APPROVAL");
-    approve(account, paymentId, secondApproverId, Expected.cashbookAndClient("-3000.00"));
-    assertThat(statusOf(paymentId)).isEqualTo("APPROVED");
-    assertServicesAgree(account);
+    var account = books.freshAccount(true);
+    var client = books.newClient("P2c");
+    books.deposit(account, client, "10000.00");
+    var paymentId = books.requestPayment(account, client, "3000.00");
+    books.approve(account, paymentId, approverId, Expected.none());
+    assertThat(books.statusOf(paymentId)).isEqualTo("AWAITING_APPROVAL");
+    books.approve(account, paymentId, secondApproverId, Expected.cashbookAndClient("-3000.00"));
+    assertThat(books.statusOf(paymentId)).isEqualTo("APPROVED");
+    books.assertServicesAgree(account);
   }
 
   @Test
   void paymentRejected_movesNothing() {
-    var account = freshAccount(false);
-    var client = newClient("P2d");
-    deposit(account, client, "10000.00");
-    var paymentId = requestPayment(account, client, "3000.00");
-    reject(account, paymentId);
-    assertThat(statusOf(paymentId)).isEqualTo("REJECTED");
-    assertServicesAgree(account);
+    var account = books.freshAccount(false);
+    var client = books.newClient("P2d");
+    books.deposit(account, client, "10000.00");
+    var paymentId = books.requestPayment(account, client, "3000.00");
+    books.reject(account, paymentId, approverId);
+    assertThat(books.statusOf(paymentId)).isEqualTo("REJECTED");
+    books.assertServicesAgree(account);
   }
 
   // --- Path 3: fee transfer -------------------------------------------------------------------
 
   @Test
   void feeTransferRequested_movesNothing() {
-    var account = freshAccount(false);
-    var client = newClient("P3a");
-    deposit(account, client, "5000.00");
-    requestFeeTransfer(account, client);
-    assertServicesAgree(account);
+    var account = books.freshAccount(false);
+    var client = books.newClient("P3a");
+    books.deposit(account, client, "5000.00");
+    books.requestFeeTransfer(account, client);
+    books.assertServicesAgree(account);
   }
 
   @Test
   void feeTransferApproved_movesCashbookAndClient() {
-    var account = freshAccount(false);
-    var client = newClient("P3b");
-    deposit(account, client, "5000.00");
-    var fee = requestFeeTransfer(account, client);
-    approve(account, fee.transactionId(), approverId, Expected.cashbookAndClient("-1150.00"));
+    var account = books.freshAccount(false);
+    var client = books.newClient("P3b");
+    books.deposit(account, client, "5000.00");
+    var fee = books.requestFeeTransfer(account, client);
+    books.approve(account, fee.transactionId(), approverId, Expected.cashbookAndClient("-1150.00"));
     assertThat(invoiceStatusOf(fee.invoiceId())).isEqualTo(InvoiceStatus.PAID);
-    assertServicesAgree(account);
+    books.assertServicesAgree(account);
   }
 
   @Test
   void feeTransferRejected_movesNothing() {
-    var account = freshAccount(false);
-    var client = newClient("P3c");
-    deposit(account, client, "5000.00");
-    var fee = requestFeeTransfer(account, client);
-    reject(account, fee.transactionId());
+    var account = books.freshAccount(false);
+    var client = books.newClient("P3c");
+    books.deposit(account, client, "5000.00");
+    var fee = books.requestFeeTransfer(account, client);
+    books.reject(account, fee.transactionId(), approverId);
     assertThat(invoiceStatusOf(fee.invoiceId())).isEqualTo(InvoiceStatus.SENT);
-    assertServicesAgree(account);
+    books.assertServicesAgree(account);
   }
 
   // --- Path 4: refund -------------------------------------------------------------------------
 
   @Test
   void refundRequested_movesNothing() {
-    var account = freshAccount(false);
-    var client = newClient("P4a");
-    deposit(account, client, "8000.00");
-    requestRefund(account, client, "2500.00");
-    assertServicesAgree(account);
+    var account = books.freshAccount(false);
+    var client = books.newClient("P4a");
+    books.deposit(account, client, "8000.00");
+    books.requestRefund(account, client, "2500.00");
+    books.assertServicesAgree(account);
   }
 
   @Test
   void refundApproved_movesCashbookAndClient() {
-    var account = freshAccount(false);
-    var client = newClient("P4b");
-    deposit(account, client, "8000.00");
-    var refundId = requestRefund(account, client, "2500.00");
-    approve(account, refundId, approverId, Expected.cashbookAndClient("-2500.00"));
-    assertServicesAgree(account);
+    var account = books.freshAccount(false);
+    var client = books.newClient("P4b");
+    books.deposit(account, client, "8000.00");
+    var refundId = books.requestRefund(account, client, "2500.00");
+    books.approve(account, refundId, approverId, Expected.cashbookAndClient("-2500.00"));
+    books.assertServicesAgree(account);
   }
 
   @Test
   void refundRejected_movesNothing() {
-    var account = freshAccount(false);
-    var client = newClient("P4c");
-    deposit(account, client, "8000.00");
-    var refundId = requestRefund(account, client, "2500.00");
-    reject(account, refundId);
-    assertServicesAgree(account);
+    var account = books.freshAccount(false);
+    var client = books.newClient("P4c");
+    books.deposit(account, client, "8000.00");
+    var refundId = books.requestRefund(account, client, "2500.00");
+    books.reject(account, refundId, approverId);
+    books.assertServicesAgree(account);
   }
 
   // --- Path 5: inter-client transfer ----------------------------------------------------------
 
   @Test
   void interClientTransfer_isCashbookNeutralAndClientTotalUnchanged() {
-    var account = freshAccount(false);
-    var source = newClient("P5 source");
-    var target = newClient("P5 target");
-    deposit(account, source, "10000.00");
+    var account = books.freshAccount(false);
+    var source = books.newClient("P5 source");
+    var target = books.newClient("P5 target");
+    books.deposit(account, source, "10000.00");
 
-    var sourceBefore = clientLedger(account, source);
-    var targetBefore = clientLedger(account, target);
-    transfer(account, source, target, "4000.00");
+    var sourceBefore = books.clientLedger(account, source);
+    var targetBefore = books.clientLedger(account, target);
+    books.transfer(account, source, target, "4000.00");
 
-    assertThat(clientLedger(account, source).subtract(sourceBefore))
+    assertThat(books.clientLedger(account, source).subtract(sourceBefore))
         .isEqualByComparingTo("-4000.00");
-    assertThat(clientLedger(account, target).subtract(targetBefore))
+    assertThat(books.clientLedger(account, target).subtract(targetBefore))
         .isEqualByComparingTo("4000.00");
-    assertServicesAgree(account);
+    books.assertServicesAgree(account);
   }
 
   // --- Path 6: reversal of a debit ------------------------------------------------------------
 
   @Test
   void paymentReversal_movesCashbookAndClientBack() {
-    var account = freshAccount(false);
-    var client = newClient("P6a");
-    deposit(account, client, "10000.00");
-    var paymentId = requestPayment(account, client, "3000.00");
-    approve(account, paymentId, approverId, Expected.cashbookAndClient("-3000.00"));
+    var account = books.freshAccount(false);
+    var client = books.newClient("P6a");
+    books.deposit(account, client, "10000.00");
+    var paymentId = books.requestPayment(account, client, "3000.00");
+    books.approve(account, paymentId, approverId, Expected.cashbookAndClient("-3000.00"));
 
-    var reversal = reverse(account, paymentId, Expected.cashbookAndClient("3000.00"));
+    var reversal = books.reverse(account, paymentId, Expected.cashbookAndClient("3000.00"));
 
     assertThat(reversal.status()).isEqualTo("RECORDED");
-    assertThat(statusOf(paymentId)).isEqualTo("REVERSED");
-    assertServicesAgree(account);
+    assertThat(books.statusOf(paymentId)).isEqualTo("REVERSED");
+    books.assertServicesAgree(account);
   }
 
   @Test
   void feeTransferReversal_movesBackAndCascadesToFeeNote() {
-    var account = freshAccount(false);
-    var client = newClient("P6b");
-    deposit(account, client, "5000.00");
-    var fee = requestFeeTransfer(account, client);
-    approve(account, fee.transactionId(), approverId, Expected.cashbookAndClient("-1150.00"));
+    var account = books.freshAccount(false);
+    var client = books.newClient("P6b");
+    books.deposit(account, client, "5000.00");
+    var fee = books.requestFeeTransfer(account, client);
+    books.approve(account, fee.transactionId(), approverId, Expected.cashbookAndClient("-1150.00"));
     assertThat(invoiceStatusOf(fee.invoiceId())).isEqualTo(InvoiceStatus.PAID);
 
-    reverse(account, fee.transactionId(), Expected.cashbookAndClient("1150.00"));
+    books.reverse(account, fee.transactionId(), Expected.cashbookAndClient("1150.00"));
 
-    assertThat(statusOf(fee.transactionId())).isEqualTo("REVERSED");
+    assertThat(books.statusOf(fee.transactionId())).isEqualTo("REVERSED");
     assertThat(invoiceStatusOf(fee.invoiceId()))
         .as("fee note PAID → SENT")
         .isEqualTo(InvoiceStatus.SENT);
     assertThat(completedPaymentEventsOf(fee.invoiceId()))
         .as("trust payment event removed")
         .isZero();
-    assertServicesAgree(account);
+    books.assertServicesAgree(account);
   }
 
   @Test
   void refundReversal_movesCashbookAndClientBack() {
-    var account = freshAccount(false);
-    var client = newClient("P6c");
-    deposit(account, client, "8000.00");
-    var refundId = requestRefund(account, client, "2500.00");
-    approve(account, refundId, approverId, Expected.cashbookAndClient("-2500.00"));
+    var account = books.freshAccount(false);
+    var client = books.newClient("P6c");
+    books.deposit(account, client, "8000.00");
+    var refundId = books.requestRefund(account, client, "2500.00");
+    books.approve(account, refundId, approverId, Expected.cashbookAndClient("-2500.00"));
 
-    reverse(account, refundId, Expected.cashbookAndClient("2500.00"));
+    books.reverse(account, refundId, Expected.cashbookAndClient("2500.00"));
 
-    assertThat(statusOf(refundId)).isEqualTo("REVERSED");
-    assertServicesAgree(account);
+    assertThat(books.statusOf(refundId)).isEqualTo("REVERSED");
+    books.assertServicesAgree(account);
   }
 
   // --- Path 7: reversal of a credit -----------------------------------------------------------
 
   @Test
   void creditReversalRequested_movesNothing() {
-    var account = freshAccount(false);
-    var client = newClient("P7a");
-    var depositId = deposit(account, client, "5000.00");
-    handSetApproved(depositId); // H-d evidence (ruling #1)
+    var account = books.freshAccount(false);
+    var client = books.newClient("P7a");
+    var depositId = books.deposit(account, client, "5000.00");
+    books.handSetApproved(depositId); // H-d evidence (ruling #1)
 
-    var reversal = reverse(account, depositId, Expected.none());
+    var reversal = books.reverse(account, depositId, Expected.none());
 
     assertThat(reversal.status()).isEqualTo("AWAITING_APPROVAL");
-    assertThat(statusOf(depositId)).isEqualTo("APPROVED");
-    assertServicesAgree(account);
+    assertThat(books.statusOf(depositId)).isEqualTo("APPROVED");
+    books.assertServicesAgree(account);
   }
 
   /**
@@ -377,34 +330,34 @@ class TrustEquationCharacterisationIntegrationTest {
    */
   @Test
   void creditReversalApproved_movesNothing_pinsKnownDefect() {
-    var account = freshAccount(false);
-    var client = newClient("P7b");
-    var depositId = deposit(account, client, "5000.00");
-    handSetApproved(depositId); // H-d evidence (ruling #1)
-    var reversal = reverse(account, depositId, Expected.none());
+    var account = books.freshAccount(false);
+    var client = books.newClient("P7b");
+    var depositId = books.deposit(account, client, "5000.00");
+    books.handSetApproved(depositId); // H-d evidence (ruling #1)
+    var reversal = books.reverse(account, depositId, Expected.none());
 
     // PIN — intended: Expected.cashbookAndClient("-5000.00")
-    approve(account, reversal.id(), approverId, Expected.none());
+    books.approve(account, reversal.id(), approverId, Expected.none());
 
-    assertThat(statusOf(reversal.id())).isEqualTo("APPROVED");
+    assertThat(books.statusOf(reversal.id())).isEqualTo("APPROVED");
     // PIN — intended: REVERSED
-    assertThat(statusOf(depositId)).isEqualTo("APPROVED");
-    assertServicesAgree(account);
+    assertThat(books.statusOf(depositId)).isEqualTo("APPROVED");
+    books.assertServicesAgree(account);
   }
 
   @Test
   void creditReversalRejected_movesNothing() {
-    var account = freshAccount(false);
-    var client = newClient("P7c");
-    var depositId = deposit(account, client, "5000.00");
-    handSetApproved(depositId); // H-d evidence (ruling #1)
-    var reversal = reverse(account, depositId, Expected.none());
+    var account = books.freshAccount(false);
+    var client = books.newClient("P7c");
+    var depositId = books.deposit(account, client, "5000.00");
+    books.handSetApproved(depositId); // H-d evidence (ruling #1)
+    var reversal = books.reverse(account, depositId, Expected.none());
 
-    reject(account, reversal.id());
+    books.reject(account, reversal.id(), approverId);
 
-    assertThat(statusOf(reversal.id())).isEqualTo("REJECTED");
-    assertThat(statusOf(depositId)).isEqualTo("APPROVED");
-    assertServicesAgree(account);
+    assertThat(books.statusOf(reversal.id())).isEqualTo("REJECTED");
+    assertThat(books.statusOf(depositId)).isEqualTo("APPROVED");
+    books.assertServicesAgree(account);
   }
 
   /**
@@ -419,58 +372,42 @@ class TrustEquationCharacterisationIntegrationTest {
    */
   @Test
   void creditReversalRejectedThenReversedAgain_isRefused_pinsKnownDefect() {
-    var account = freshAccount(false);
-    var client = newClient("P7d");
-    var depositId = deposit(account, client, "5000.00");
-    handSetApproved(depositId); // H-d evidence (ruling #1)
-    var first = reverse(account, depositId, Expected.none());
-    reject(account, first.id());
+    var account = books.freshAccount(false);
+    var client = books.newClient("P7d");
+    var depositId = books.deposit(account, client, "5000.00");
+    books.handSetApproved(depositId); // H-d evidence (ruling #1)
+    var first = books.reverse(account, depositId, Expected.none());
+    books.reject(account, first.id(), approverId);
 
-    as(
-        memberId,
-        () ->
-            harness.assertMoves(
-                account,
-                Expected.none(),
-                () ->
-                    // PIN — intended: accepted, status AWAITING_APPROVAL.
-                    assertThatThrownBy(
-                            () -> transactionService.reverseTransaction(depositId, "second"))
-                        .isInstanceOfSatisfying(
-                            InvalidStateException.class,
-                            e -> {
-                              assertThat(e.getBody().getTitle())
-                                  .isEqualTo("Cannot reverse transaction");
-                              assertThat(e.getBody().getDetail())
-                                  .isEqualTo("Transaction has already been reversed");
-                            })));
-    assertServicesAgree(account);
+    // PIN — intended: accepted, a REVERSAL AWAITING_APPROVAL for depositId.
+    books.assertReversalRefused(account, depositId, "Transaction has already been reversed");
+    books.assertServicesAgree(account);
   }
 
   // --- Path 8: reversal of a transfer ---------------------------------------------------------
 
   @Test
   void transferReversal_reversesBothLegs() {
-    var account = freshAccount(false);
-    var source = newClient("P8 source");
-    var target = newClient("P8 target");
-    deposit(account, source, "10000.00");
-    var legs = transfer(account, source, target, "4000.00");
+    var account = books.freshAccount(false);
+    var source = books.newClient("P8 source");
+    var target = books.newClient("P8 target");
+    books.deposit(account, source, "10000.00");
+    var legs = books.transfer(account, source, target, "4000.00");
     var transferOutId = legs.get(0).id();
     var transferInId = legs.get(1).id();
-    handSetApproved(transferOutId); // H-d evidence (ruling #1)
+    books.handSetApproved(transferOutId); // H-d evidence (ruling #1)
 
-    var sourceBefore = clientLedger(account, source);
-    var targetBefore = clientLedger(account, target);
-    reverse(account, transferOutId, Expected.none());
+    var sourceBefore = books.clientLedger(account, source);
+    var targetBefore = books.clientLedger(account, target);
+    books.reverse(account, transferOutId, Expected.none());
 
-    assertThat(clientLedger(account, source).subtract(sourceBefore))
+    assertThat(books.clientLedger(account, source).subtract(sourceBefore))
         .isEqualByComparingTo("4000.00");
-    assertThat(clientLedger(account, target).subtract(targetBefore))
+    assertThat(books.clientLedger(account, target).subtract(targetBefore))
         .isEqualByComparingTo("-4000.00");
-    assertThat(statusOf(transferOutId)).isEqualTo("REVERSED");
-    assertThat(statusOf(transferInId)).isEqualTo("REVERSED");
-    assertServicesAgree(account);
+    assertThat(books.statusOf(transferOutId)).isEqualTo("REVERSED");
+    assertThat(books.statusOf(transferInId)).isEqualTo("REVERSED");
+    books.assertServicesAgree(account);
   }
 
   // --- Path 11: the seeded demo data ----------------------------------------------------------
@@ -517,322 +454,15 @@ class TrustEquationCharacterisationIntegrationTest {
 
   // --- helpers --------------------------------------------------------------------------------
 
-  private record FeeTransfer(UUID transactionId, UUID invoiceId) {}
-
-  private LocalDate today() {
-    return LocalDate.now(clock);
-  }
-
-  private void as(UUID member, Runnable action) {
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .where(RequestScopes.ORG_ID, ORG_ID)
-        .where(RequestScopes.MEMBER_ID, member)
-        .where(RequestScopes.ORG_ROLE, "owner")
-        .where(RequestScopes.CAPABILITIES, TRUST_CAPABILITIES)
-        .run(action);
-  }
-
-  private void assertServicesAgree(UUID account) {
-    as(memberId, () -> harness.assertServicesAgree(account, today()));
-  }
-
-  private BigDecimal clientLedger(UUID account, UUID client) {
-    var balance = new BigDecimal[1];
-    as(memberId, () -> balance[0] = harness.clientLedger(account, client));
-    return balance[0];
-  }
-
-  /** A fresh non-primary GENERAL account (a tenant holds one primary GENERAL account). */
-  private UUID freshAccount(boolean dualApproval) {
-    var n = sequence.incrementAndGet();
-    var id = new UUID[1];
-    as(
-        memberId,
-        () ->
-            id[0] =
-                trustAccountService
-                    .createTrustAccount(
-                        new CreateTrustAccountRequest(
-                            "Equation " + n,
-                            "First National Bank",
-                            "250655",
-                            "EQ-" + n,
-                            "GENERAL",
-                            false,
-                            dualApproval,
-                            null,
-                            LocalDate.of(2026, 1, 1),
-                            "649A harness account"))
-                    .id());
-    return id[0];
-  }
-
-  /** An ACTIVE client with its own trust matter (G89-F28). */
-  private UUID newClient(String label) {
-    var n = sequence.incrementAndGet();
-    var client =
-        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-            .call(
-                () ->
-                    transactionTemplate.execute(
-                        tx ->
-                            customerRepository
-                                .save(
-                                    TestCustomerFactory.createActiveCustomer(
-                                        "Eq " + label + " " + n,
-                                        "trust_eq_" + n + "@test.com",
-                                        memberId))
-                                .getId()));
-    matters.put(
-        client,
-        TestTrustMatterHelper.openClientMatter(
-            tenantSchema,
-            transactionTemplate,
-            projectRepository,
-            client,
-            "Eq matter " + n,
-            memberId));
-    return client;
-  }
-
-  private UUID matterOf(UUID client) {
-    return matters.get(client);
-  }
-
-  private String reference(String prefix) {
-    return prefix + "-EQ-" + sequence.incrementAndGet();
-  }
-
-  /** Path 1: a deposit posts immediately (RECORDED). */
-  private UUID deposit(UUID account, UUID client, String amount) {
-    var id = new UUID[1];
-    as(
-        memberId,
-        () ->
-            harness.assertMoves(
-                account,
-                Expected.cashbookAndClient(amount),
-                () ->
-                    id[0] =
-                        transactionService
-                            .recordDeposit(
-                                account,
-                                new RecordDepositRequest(
-                                    client,
-                                    matterOf(client),
-                                    new BigDecimal(amount),
-                                    reference("DEP"),
-                                    "Deposit",
-                                    POSTING_DATE))
-                            .id()));
-    assertThat(statusOf(id[0])).isEqualTo("RECORDED");
-    return id[0];
-  }
-
-  /** A requested payment awaits approval and moves nothing. */
-  private UUID requestPayment(UUID account, UUID client, String amount) {
-    var id = new UUID[1];
-    as(
-        memberId,
-        () ->
-            harness.assertMoves(
-                account,
-                Expected.none(),
-                () ->
-                    id[0] =
-                        transactionService
-                            .recordPayment(
-                                account,
-                                new RecordPaymentRequest(
-                                    client,
-                                    matterOf(client),
-                                    new BigDecimal(amount),
-                                    reference("PAY"),
-                                    "Payment",
-                                    POSTING_DATE))
-                            .id()));
-    assertThat(statusOf(id[0])).isEqualTo("AWAITING_APPROVAL");
-    return id[0];
-  }
-
-  /** A requested refund awaits approval and moves nothing. */
-  private UUID requestRefund(UUID account, UUID client, String amount) {
-    var id = new UUID[1];
-    as(
-        memberId,
-        () ->
-            harness.assertMoves(
-                account,
-                Expected.none(),
-                () ->
-                    id[0] =
-                        transactionService
-                            .recordRefund(
-                                account,
-                                new RecordRefundRequest(
-                                    client,
-                                    matterOf(client),
-                                    new BigDecimal(amount),
-                                    reference("REF"),
-                                    "Refund",
-                                    POSTING_DATE))
-                            .id()));
-    assertThat(statusOf(id[0])).isEqualTo("AWAITING_APPROVAL");
-    return id[0];
-  }
-
-  /** A SENT fee note of R1 150,00 on the client's matter, and a requested fee transfer for it. */
-  private FeeTransfer requestFeeTransfer(UUID account, UUID client) {
-    var invoiceId = UUID.randomUUID();
-    jdbcTemplate.update(
-        """
-        INSERT INTO "%s".invoices (id, customer_id, invoice_number, status, currency,
-            subtotal, tax_amount, total, due_date,
-            customer_name, org_name, payment_destination, created_by, created_at, updated_at)
-        VALUES (?, ?, ?, 'SENT', 'ZAR', 1000.00, 150.00, 1150.00, '2026-05-30',
-            'Eq Client', 'Test Org', 'OPERATING', ?, now(), now())
-        """
-            .formatted(tenantSchema),
-        invoiceId,
-        client,
-        reference("INV"),
-        memberId);
-    jdbcTemplate.update(
-        """
-        INSERT INTO "%s".invoice_lines (id, invoice_id, project_id, line_type,
-            description, quantity, unit_price, amount, sort_order, tax_exempt,
-            created_at, updated_at)
-        VALUES (gen_random_uuid(), ?, ?, 'TIME', 'Eq work', 1, 1150.00, 1150.00, 0, false,
-            now(), now())
-        """
-            .formatted(tenantSchema),
-        invoiceId,
-        matterOf(client));
-
-    var id = new UUID[1];
-    as(
-        memberId,
-        () ->
-            harness.assertMoves(
-                account,
-                Expected.none(),
-                () ->
-                    id[0] =
-                        transactionService
-                            .recordFeeTransfer(
-                                account,
-                                new RecordFeeTransferRequest(
-                                    client, invoiceId, new BigDecimal("1150.00"), reference("FT")))
-                            .id()));
-    assertThat(statusOf(id[0])).isEqualTo("AWAITING_APPROVAL");
-    return new FeeTransfer(id[0], invoiceId);
-  }
-
-  private List<TrustTransactionResponse> transfer(
-      UUID account, UUID source, UUID target, String amount) {
-    @SuppressWarnings("unchecked")
-    List<TrustTransactionResponse>[] legs = new List[1];
-    as(
-        memberId,
-        () ->
-            harness.assertMoves(
-                account,
-                Expected.none(),
-                () ->
-                    legs[0] =
-                        transactionService.recordTransfer(
-                            account,
-                            new RecordTransferRequest(
-                                source,
-                                matterOf(source),
-                                target,
-                                matterOf(target),
-                                new BigDecimal(amount),
-                                reference("TRF"),
-                                "Inter-client transfer",
-                                POSTING_DATE))));
-    assertThat(legs[0])
-        .extracting(TrustTransactionResponse::transactionType)
-        .containsExactly("TRANSFER_OUT", "TRANSFER_IN");
-    return legs[0];
-  }
-
-  private void approve(UUID account, UUID transactionId, UUID approver, Expected expected) {
-    as(
-        approver,
-        () ->
-            harness.assertMoves(
-                account,
-                expected,
-                () -> transactionService.approveTransaction(transactionId, approver)));
-  }
-
-  private void reject(UUID account, UUID transactionId) {
-    as(
-        approverId,
-        () ->
-            harness.assertMoves(
-                account,
-                Expected.none(),
-                () ->
-                    transactionService.rejectTransaction(
-                        transactionId, approverId, "649A characterisation: rejected")));
-    assertThat(statusOf(transactionId)).isEqualTo("REJECTED");
-  }
-
-  private TrustTransactionResponse reverse(UUID account, UUID transactionId, Expected expected) {
-    var reversal = new TrustTransactionResponse[1];
-    as(
-        memberId,
-        () ->
-            harness.assertMoves(
-                account,
-                expected,
-                () ->
-                    reversal[0] =
-                        transactionService.reverseTransaction(
-                            transactionId, "649A characterisation: reversed")));
-    assertThat(reversal[0].transactionType()).isEqualTo("REVERSAL");
-    assertThat(reversal[0].reversalOf()).isEqualTo(transactionId);
-    return reversal[0];
-  }
-
-  private void handSetApproved(UUID transactionId) {
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .run(
-            () ->
-                transactionTemplate.executeWithoutResult(
-                    tx -> {
-                      var txn = transactionRepository.findById(transactionId).orElseThrow();
-                      txn.setStatus("APPROVED");
-                      transactionRepository.save(txn);
-                    }));
-  }
-
-  private String statusOf(UUID transactionId) {
-    return ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .call(
-            () ->
-                transactionTemplate.execute(
-                    tx -> transactionRepository.findById(transactionId).orElseThrow().getStatus()));
-  }
-
   private InvoiceStatus invoiceStatusOf(UUID invoiceId) {
-    return ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .call(
-            () ->
-                transactionTemplate.execute(
-                    tx -> invoiceRepository.findById(invoiceId).orElseThrow().getStatus()));
+    return books.read(() -> invoiceRepository.findById(invoiceId).orElseThrow().getStatus());
   }
 
   private int completedPaymentEventsOf(UUID invoiceId) {
-    return ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .call(
-            () ->
-                transactionTemplate.execute(
-                    tx ->
-                        paymentEventRepository
-                            .findByInvoiceIdAndStatus(invoiceId, PaymentEventStatus.COMPLETED)
-                            .size()));
+    return books.read(
+        () ->
+            paymentEventRepository
+                .findByInvoiceIdAndStatus(invoiceId, PaymentEventStatus.COMPLETED)
+                .size());
   }
 }

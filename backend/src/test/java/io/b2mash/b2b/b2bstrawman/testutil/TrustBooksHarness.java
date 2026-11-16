@@ -59,7 +59,10 @@ import org.springframework.stereotype.Component;
  *       {@code <= D}.
  *   <li>{@code clientLedgers(A, today)} — the <b>stored</b> card total, {@code
  *       SUM(client_ledger_cards.balance)} for the account. This is the v0 comparison: cashbook
- *       against the stored cards.
+ *       against the stored cards. It is the same query as {@code
+ *       ClientLedgerCardRepository.calculateTotalTrustBalance}, so at v0 the {@code
+ *       ClientLedgerService} half of {@link #assertServicesAgree} is a tautology; it becomes a real
+ *       check once 646A derives this term from the effect columns.
  *   <li>{@code clientLedgers(A, D < today)} — cards have no history, so the HEAD client sign table
  *       (DEPOSIT, TRANSFER_IN, INTEREST_CREDIT +; PAYMENT, TRANSFER_OUT, FEE_TRANSFER, REFUND,
  *       INTEREST_LPFF −) summed over every client's posted rows dated {@code <= D}. Not exercised
@@ -72,7 +75,10 @@ import org.springframework.stereotype.Component;
  *       exist.
  *   <li>{@link #assertBankAgrees} — statement closing balance + HEAD outstanding deposits − HEAD
  *       outstanding payments (posted, unmatched, dated {@code <= periodEnd}) against {@code
- *       cashbook(A, periodEnd)}. First used by 646C.
+ *       cashbook(A, periodEnd)}. <b>Unexercised until 646C</b> (no 649A test calls it); the column
+ *       names in {@code STATEMENT_SQL} and {@code OUTSTANDING_SQL} ({@code
+ *       bank_statements.closing_balance}, {@code trust_transactions.bank_statement_line_id}) were
+ *       checked against the tenant V1 baseline.
  *   <li>{@link #assertServicesAgree} — {@code TrustTransactionService.getCashbookBalance} and
  *       {@code ClientLedgerService.getTotalTrustBalance}; the HEAD services have no as-at date, so
  *       v0 supports {@code asAt == today} only (646C / 649C replace them).
@@ -241,7 +247,10 @@ public final class TrustBooksHarness {
     softly.assertAll();
   }
 
-  /** EQ-1 as at the reconciliation's period end, given its statement. */
+  /**
+   * EQ-1 as at the reconciliation's period end, given its statement. Unexercised until 646C — see
+   * the class Javadoc.
+   */
   public void assertBankAgrees(UUID trustAccountId, UUID bankStatementId, LocalDate periodEnd) {
     var schema = schema();
     var bank = money(STATEMENT_SQL.formatted(schema), bankStatementId, trustAccountId);
@@ -264,7 +273,10 @@ public final class TrustBooksHarness {
         .isEqualByComparingTo(cashbook);
   }
 
-  /** The production services return the oracle's figures (v0: as at today only). */
+  /**
+   * The production services return the oracle's figures (v0: as at today only). At v0 the client
+   * ledger half compares the stored card total with itself — see the class Javadoc.
+   */
   public void assertServicesAgree(UUID trustAccountId, LocalDate asAt) {
     assertThat(asAt)
         .as("v0: the HEAD services have no as-at date; assertServicesAgree supports today only")

@@ -1,32 +1,15 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
-import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
-import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
-import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.testutil.BooksSnapshot;
-import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
-import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksFixture;
 import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness;
 import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness.Expected;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateTrustAccountRequest;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordDepositRequest;
-import java.math.BigDecimal;
-import java.time.Clock;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -37,7 +20,6 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * Phase 92 slice 649A (task 649.3, architecture §16.3.11, R8): the four reversal hypotheses
@@ -45,11 +27,13 @@ import org.springframework.transaction.support.TransactionTemplate;
  * All four reproduced; each is committed as a pinned defect (the assertion states today's wrong
  * outcome, the method name ends {@code _pinsKnownDefect}, the Javadoc states the intended behaviour
  * and the fixing slice). The intended-behaviour versions and their red runs are in {@code
- * qa_cycle/evidence/phase92/649A/RED-RUNS.md}. 649B flips H-a, H-c and H-d; 646A flips H-b.
+ * qa_cycle/evidence/phase92/649A/RED-RUNS.md}. 649B flips H-a, H-c and H-d; 646A retires H-b (its
+ * setup becomes impossible — see the method).
  *
  * <p>Two tenants: the main tenant holds H-a, H-c and H-d and ends with {@code
  * assertFirmBalanced(today)}; H-b deliberately leaves an account out of balance (cashbook ≠ client
  * ledgers), so it runs in a second, separate tenant that the firm-wide assertion does not cover.
+ * Setup and posting steps come from the shared {@link TrustBooksFixture}.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -60,39 +44,30 @@ class TrustReversalEquationIntegrationTest {
 
   private static final String ORG_ID = "org_trust_reversal_equation";
   private static final String CARDLESS_ORG_ID = "org_trust_reversal_cardless";
-  private static final Set<String> TRUST_CAPABILITIES =
-      Set.of("APPROVE_TRUST_PAYMENT", "MANAGE_TRUST", "VIEW_TRUST");
-  private static final LocalDate DEPOSIT_DATE = LocalDate.of(2026, 3, 20);
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private OrgSettingsRepository orgSettingsRepository;
-  @Autowired private OrgSettingsService orgSettingsService;
-  @Autowired private TransactionTemplate transactionTemplate;
   @Autowired private TrustTransactionService transactionService;
-  @Autowired private TrustTransactionRepository transactionRepository;
-  @Autowired private TrustAccountService trustAccountService;
-  @Autowired private CustomerRepository customerRepository;
-  @Autowired private ProjectRepository projectRepository;
   @Autowired private TrustBooksHarness harness;
-  @Autowired private Clock clock;
+  @Autowired private TrustBooksFixture fixture;
 
-  private final AtomicInteger sequence = new AtomicInteger();
+  /** Main tenant: H-a, H-c, H-d; ends firm-balanced. */
+  private TrustBooksFixture.Tenant books;
 
-  private String tenantSchema;
-  private UUID memberId;
   private UUID approverId;
 
-  private String cardlessSchema;
+  /** Separate tenant for H-b, which deliberately leaves an account out of balance. */
+  private TrustBooksFixture.Tenant cardless;
+
   private UUID cardlessMemberId;
 
   @BeforeAll
   void setup() throws Exception {
-    tenantSchema =
+    var tenantSchema =
         provisioningService
             .provisionTenant(ORG_ID, "Trust Reversal Equation Org", null)
             .schemaName();
-    memberId =
+    var memberId =
         UUID.fromString(
             TestMemberHelper.syncMember(
                 mockMvc, ORG_ID, "user_rev_eq_owner", "rev_eq@test.com", "Rev Eq Owner", "owner"));
@@ -105,9 +80,10 @@ class TrustReversalEquationIntegrationTest {
                 "rev_eq_approver@test.com",
                 "Rev Eq Approver",
                 "owner"));
-    enableTrustModule(tenantSchema);
+    fixture.enableTrustModule(tenantSchema);
+    books = fixture.tenant(tenantSchema, ORG_ID, memberId);
 
-    cardlessSchema =
+    var cardlessSchema =
         provisioningService
             .provisionTenant(CARDLESS_ORG_ID, "Trust Reversal Cardless Org", null)
             .schemaName();
@@ -120,12 +96,13 @@ class TrustReversalEquationIntegrationTest {
                 "rev_cardless@test.com",
                 "Rev Cardless Owner",
                 "owner"));
-    enableTrustModule(cardlessSchema);
+    fixture.enableTrustModule(cardlessSchema);
+    cardless = fixture.tenant(cardlessSchema, CARDLESS_ORG_ID, cardlessMemberId);
   }
 
   @AfterAll
   void booksBalanceFirmWide() {
-    as(memberId, () -> harness.assertFirmBalanced(LocalDate.now(clock)));
+    books.assertFirmBalanced();
   }
 
   // --- H-a ------------------------------------------------------------------------------------
@@ -146,39 +123,23 @@ class TrustReversalEquationIntegrationTest {
    */
   @Test
   void approvedCreditReversal_movesNeitherCashbookNorClient_pinsKnownDefect() {
-    var account = freshAccount();
-    var client = newClient(tenantSchema, memberId, "H-a");
-    var depositId = deposit(account, client, "5000.00");
+    var account = books.freshAccount(false);
+    var client = books.newClient("H-a");
+    var depositId = books.deposit(account, client, "5000.00");
     // H-d evidence (ruling #1): a deposit is never APPROVED through the product, so the only way
     // to reach a reversible credit on HEAD is to hand-set the status, as
     // TrustTransactionServiceTest.reverseCreditTransaction_requiresApproval does.
-    handSetApproved(tenantSchema, depositId);
+    books.handSetApproved(depositId);
 
-    var reversalId = new UUID[1];
-    as(
-        memberId,
-        () ->
-            harness.assertMoves(
-                account,
-                Expected.none(),
-                () ->
-                    reversalId[0] =
-                        transactionService
-                            .reverseTransaction(depositId, "H-a: deposit banked in error")
-                            .id()));
+    var reversal = books.reverse(account, depositId, Expected.none());
 
-    as(
-        approverId,
-        () ->
-            harness.assertMoves(
-                account,
-                Expected.none(), // PIN — intended: Expected.cashbookAndClient("-5000.00")
-                () -> transactionService.approveTransaction(reversalId[0], approverId)));
+    // PIN — intended: Expected.cashbookAndClient("-5000.00")
+    books.approve(account, reversal.id(), approverId, Expected.none());
 
-    assertThat(statusOf(tenantSchema, reversalId[0])).as("the reversal").isEqualTo("APPROVED");
+    assertThat(books.statusOf(reversal.id())).as("the reversal").isEqualTo("APPROVED");
     // PIN — intended: the original is REVERSED and points at its reversal.
-    assertThat(statusOf(tenantSchema, depositId)).as("original deposit").isEqualTo("APPROVED");
-    assertThat(reversedByOf(tenantSchema, depositId)).as("original deposit reversedById").isNull();
+    assertThat(books.statusOf(depositId)).as("original deposit").isEqualTo("APPROVED");
+    assertThat(books.reversedByOf(depositId)).as("original deposit reversedById").isNull();
   }
 
   // --- H-b ------------------------------------------------------------------------------------
@@ -201,30 +162,23 @@ class TrustReversalEquationIntegrationTest {
    * {@code approveTransaction} → refused "Insufficient trust balance … Available: R0,00". Cards are
    * never deleted, so no service path produces a posted debit without a card.
    *
-   * <p>Intended (646A flips this pin — the card is gone and client ledgers are derived from the
-   * rows): a reversal moves both sides or neither, {@code difference()} unchanged. Runs in a
-   * separate tenant because it leaves the account out of balance.
+   * <p>Intended: a reversal moves both sides or neither, {@code difference()} unchanged. This pin
+   * is <b>closed (retired) by 646A</b> — the setup becomes impossible once card-less rows cannot
+   * exist ({@code chk_trust_txn_posting}; client ledgers derived from the rows), so 646A deletes or
+   * rewrites this test rather than flipping one assertion. The direct write is confined to {@link
+   * TrustBooksFixture.Tenant#saveDirect}. Runs in a separate tenant because it leaves the account
+   * out of balance.
    */
   @Test
   void debitReversalWithoutCard_movesCashbookOnly_pinsKnownDefect() {
-    var account = freshAccount(cardlessSchema, cardlessMemberId);
-    var client = newClient(cardlessSchema, cardlessMemberId, "H-b");
-    var matter =
-        TestTrustMatterHelper.openClientMatter(
-            cardlessSchema,
-            transactionTemplate,
-            projectRepository,
-            client,
-            "H-b matter",
-            cardlessMemberId);
-    saveSeederShapedTxn(account, "DEPOSIT", "10000.00", client, matter, "RECORDED");
-    var paymentId = saveSeederShapedTxn(account, "PAYMENT", "4000.00", client, matter, "APPROVED");
+    var account = cardless.freshAccount(false);
+    var client = cardless.newClient("H-b");
+    cardless.saveDirect(account, "DEPOSIT", "10000.00", client, "RECORDED");
+    var paymentId = cardless.saveDirect(account, "PAYMENT", "4000.00", client, "APPROVED");
 
     var before = new BooksSnapshot[1];
     var after = new BooksSnapshot[1];
-    asIn(
-        cardlessSchema,
-        CARDLESS_ORG_ID,
+    cardless.as(
         cardlessMemberId,
         () -> {
           before[0] = harness.snapshot(account);
@@ -257,38 +211,19 @@ class TrustReversalEquationIntegrationTest {
    */
   @Test
   void rejectedCreditReversal_blocksLaterReversal_pinsKnownDefect() {
-    var account = freshAccount();
-    var client = newClient(tenantSchema, memberId, "H-c");
-    var depositId = deposit(account, client, "5000.00");
-    handSetApproved(tenantSchema, depositId); // H-d evidence (ruling #1)
+    var account = books.freshAccount(false);
+    var client = books.newClient("H-c");
+    var depositId = books.deposit(account, client, "5000.00");
+    books.handSetApproved(depositId); // H-d evidence (ruling #1)
 
-    var firstReversal = new UUID[1];
-    as(
-        memberId,
-        () ->
-            firstReversal[0] =
-                transactionService.reverseTransaction(depositId, "H-c: first attempt").id());
-    as(
-        approverId,
-        () ->
-            harness.assertMoves(
-                account,
-                Expected.none(),
-                () ->
-                    transactionService.rejectTransaction(
-                        firstReversal[0], approverId, "H-c: wrong deposit chosen")));
+    var firstReversal = books.reverse(account, depositId, Expected.none());
+    books.reject(account, firstReversal.id(), approverId);
+    // Guards the pin: with the first reversal still pending, the refusal below would hold for a
+    // different reason and no longer show H-c.
+    assertThat(books.statusOf(firstReversal.id())).as("first reversal").isEqualTo("REJECTED");
 
-    as(
-        memberId,
-        () ->
-            harness.assertMoves(
-                account,
-                Expected.none(),
-                () ->
-                    // PIN — intended: accepted, a REVERSAL AWAITING_APPROVAL for depositId.
-                    assertRefused(
-                        () -> transactionService.reverseTransaction(depositId, "H-c: second"),
-                        "Transaction has already been reversed")));
+    // PIN — intended: accepted, a REVERSAL AWAITING_APPROVAL for depositId.
+    books.assertReversalRefused(account, depositId, "Transaction has already been reversed");
   }
 
   // --- H-d ------------------------------------------------------------------------------------
@@ -307,199 +242,13 @@ class TrustReversalEquationIntegrationTest {
    */
   @Test
   void recordedDeposit_cannotBeReversed_pinsKnownDefect() {
-    var account = freshAccount();
-    var client = newClient(tenantSchema, memberId, "H-d");
-    var depositId = deposit(account, client, "5000.00");
-    assertThat(statusOf(tenantSchema, depositId)).isEqualTo("RECORDED");
+    var account = books.freshAccount(false);
+    var client = books.newClient("H-d");
+    var depositId = books.deposit(account, client, "5000.00");
+    assertThat(books.statusOf(depositId)).isEqualTo("RECORDED");
 
-    as(
-        memberId,
-        () ->
-            harness.assertMoves(
-                account,
-                Expected.none(),
-                () ->
-                    // PIN — intended: accepted, a REVERSAL AWAITING_APPROVAL for depositId.
-                    assertRefused(
-                        () -> transactionService.reverseTransaction(depositId, "H-d: banked"),
-                        "Transaction must be in APPROVED status to be reversed")));
-  }
-
-  // --- helpers --------------------------------------------------------------------------------
-
-  private void enableTrustModule(String schema) {
-    ScopedValue.where(RequestScopes.TENANT_ID, schema)
-        .run(
-            () ->
-                transactionTemplate.executeWithoutResult(
-                    tx -> {
-                      var settings = orgSettingsService.getOrCreateForCurrentTenant();
-                      settings.setEnabledModules(List.of("trust_accounting"));
-                      orgSettingsRepository.save(settings);
-                    }));
-  }
-
-  private void as(UUID member, Runnable action) {
-    asIn(tenantSchema, ORG_ID, member, action);
-  }
-
-  private static void asIn(String schema, String orgId, UUID member, Runnable action) {
-    ScopedValue.where(RequestScopes.TENANT_ID, schema)
-        .where(RequestScopes.ORG_ID, orgId)
-        .where(RequestScopes.MEMBER_ID, member)
-        .where(RequestScopes.ORG_ROLE, "owner")
-        .where(RequestScopes.CAPABILITIES, TRUST_CAPABILITIES)
-        .run(action);
-  }
-
-  /** A fresh single-approval, non-primary GENERAL account in the main tenant. */
-  private UUID freshAccount() {
-    return freshAccount(tenantSchema, memberId);
-  }
-
-  private UUID freshAccount(String schema, UUID member) {
-    var n = sequence.incrementAndGet();
-    var id = new UUID[1];
-    asIn(
-        schema,
-        schema.equals(tenantSchema) ? ORG_ID : CARDLESS_ORG_ID,
-        member,
-        () ->
-            id[0] =
-                trustAccountService
-                    .createTrustAccount(
-                        new CreateTrustAccountRequest(
-                            "Reversal Equation " + n,
-                            "First National Bank",
-                            "250655",
-                            "REVEQ-" + n,
-                            "GENERAL",
-                            false,
-                            false,
-                            null,
-                            LocalDate.of(2026, 1, 1),
-                            "649A harness account"))
-                    .id());
-    return id[0];
-  }
-
-  /** An ACTIVE client; in the main tenant it also gets its trust matter (G89-F28). */
-  private UUID newClient(String schema, UUID createdBy, String label) {
-    var n = sequence.incrementAndGet();
-    var id =
-        ScopedValue.where(RequestScopes.TENANT_ID, schema)
-            .call(
-                () ->
-                    transactionTemplate.execute(
-                        tx ->
-                            customerRepository
-                                .save(
-                                    TestCustomerFactory.createActiveCustomer(
-                                        "Rev Eq " + label + " " + n,
-                                        "rev_eq_" + n + "@test.com",
-                                        createdBy))
-                                .getId()));
-    return id;
-  }
-
-  private UUID matterOf(UUID client) {
-    return TestTrustMatterHelper.openClientMatter(
-        tenantSchema, transactionTemplate, projectRepository, client, "Matter " + client, memberId);
-  }
-
-  /** A deposit recorded through the service (status RECORDED), dated in the past. */
-  private UUID deposit(UUID account, UUID client, String amount) {
-    var matter = matterOf(client);
-    var id = new UUID[1];
-    as(
-        memberId,
-        () ->
-            harness.assertMoves(
-                account,
-                Expected.cashbookAndClient(amount),
-                () ->
-                    id[0] =
-                        transactionService
-                            .recordDeposit(
-                                account,
-                                new RecordDepositRequest(
-                                    client,
-                                    matter,
-                                    new BigDecimal(amount),
-                                    "DEP-REVEQ-" + sequence.incrementAndGet(),
-                                    "Deposit",
-                                    DEPOSIT_DATE))
-                            .id()));
-    return id[0];
-  }
-
-  private void handSetApproved(String schema, UUID transactionId) {
-    ScopedValue.where(RequestScopes.TENANT_ID, schema)
-        .run(
-            () ->
-                transactionTemplate.executeWithoutResult(
-                    tx -> {
-                      var txn = transactionRepository.findById(transactionId).orElseThrow();
-                      txn.setStatus("APPROVED");
-                      transactionRepository.save(txn);
-                    }));
-  }
-
-  private static void assertRefused(Runnable action, String detail) {
-    assertThatThrownBy(action::run)
-        .isInstanceOfSatisfying(
-            InvalidStateException.class,
-            e -> {
-              assertThat(e.getBody().getTitle()).isEqualTo("Cannot reverse transaction");
-              assertThat(e.getBody().getDetail()).isEqualTo(detail);
-            });
-  }
-
-  private UUID reversedByOf(String schema, UUID transactionId) {
-    return ScopedValue.where(RequestScopes.TENANT_ID, schema)
-        .call(
-            () ->
-                transactionTemplate.execute(
-                    tx ->
-                        transactionRepository
-                            .findById(transactionId)
-                            .orElseThrow()
-                            .getReversedById()));
-  }
-
-  private String statusOf(String schema, UUID transactionId) {
-    return ScopedValue.where(RequestScopes.TENANT_ID, schema)
-        .call(
-            () ->
-                transactionTemplate.execute(
-                    tx -> transactionRepository.findById(transactionId).orElseThrow().getStatus()));
-  }
-
-  /**
-   * Writes a row straight to the repository in the cardless tenant, with the constructor {@code
-   * LegalDemoDataSeeder.saveTrustTxn} uses — no ledger card, no approval flow.
-   */
-  private UUID saveSeederShapedTxn(
-      UUID account, String type, String amount, UUID client, UUID matter, String status) {
-    return ScopedValue.where(RequestScopes.TENANT_ID, cardlessSchema)
-        .call(
-            () ->
-                transactionTemplate.execute(
-                    tx ->
-                        transactionRepository
-                            .save(
-                                new TrustTransaction(
-                                    account,
-                                    type,
-                                    new BigDecimal(amount),
-                                    client,
-                                    matter,
-                                    null,
-                                    "%s-%s".formatted(type.substring(0, 3), DEPOSIT_DATE),
-                                    "H-b seeder-shaped row",
-                                    DEPOSIT_DATE,
-                                    status,
-                                    cardlessMemberId))
-                            .getId()));
+    // PIN — intended: accepted, a REVERSAL AWAITING_APPROVAL for depositId.
+    books.assertReversalRefused(
+        account, depositId, "Transaction must be in APPROVED status to be reversed");
   }
 }

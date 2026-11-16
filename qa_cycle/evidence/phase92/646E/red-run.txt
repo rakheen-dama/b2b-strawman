@@ -1,0 +1,27 @@
+# 646E red runs on HEAD 6db212b63 (before any production change)
+
+## F7 (BE) — TrustReportQueryIntegrationTest, row.get("type") expected "Deposit"
+```
+  ["type"="DEPOSIT" (expected: "Deposit")]
+Expecting map:
+[ERROR] Tests run: 8, Failures: 2, Errors: 0, Skipped: 0
+[ERROR] Tests run: 8, Failures: 2, Errors: 0, Skipped: 0, Time elapsed: 25.65 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report.TrustReportQueryIntegrationTest
+```
+
+## F8 / R1 / labels / 646A found-1 (FE) — vitest on HEAD with the new 646E cases (production code unchanged)
+```
+ FAIL  __tests__/trust-transactions.test.tsx > Trust Transactions > styles a payment's reversal as an inflow and a neutral row without an arrow (F8)
+ FAIL  __tests__/trust-transactions.test.tsx > Trust Transactions > labels rows from typeLabel and lists the registry types as filter pills
+ FAIL  __tests__/trust-transactions.test.tsx > Trust Transactions > renders rows when the type registry cannot be fetched
+ FAIL  __tests__/trust-transactions.test.tsx > Trust Transactions > offers Reverse for posted rows per the reversal rule
+      Tests  4 failed | 19 passed (23)
+ FAIL  __tests__/trust/client-ledger-page.test.tsx > Client ledger card — server running balance (630C) > renders a refund's reversal as an inflow (F8)
+ FAIL  __tests__/trust/client-ledger-page.test.tsx > Client ledger card — type filters from the registry (646E) > lists the client-ledger subset of the registry, no retired interest pills
+      Tests  2 failed | 5 passed (7)
+
+F8  (transactions): REVERSAL of a PAYMENT, direction IN -> Received class 'text-slate-950' (outflow styling), expected text-green-600
+F8  (client ledger): REVERSAL of a REFUND, direction IN -> same outflow styling
+R1  (transactions): RECORDED DEPOSIT with reversalPending=true still renders data-testid=reversal-action-tx-pending
+Lbl (transactions): FEE_TRANSFER row renders 'Fee Transfer' (local map), not the DTO typeLabel 'Fee transfer'
+646A found-1 (client ledger): pills = All, Deposit, Payment, Transfer In, Transfer Out, Fee Transfer, Refund, Interest Credit, Interest LPFF, Reversal
+```

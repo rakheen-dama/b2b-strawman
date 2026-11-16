@@ -10,7 +10,7 @@ The exit gate (652F) compares against these numbers, not memory.
 | PORTAL-GATE | `cd portal && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build` | all exit 0 — vitest **51 files, 284 passed (284)** |
 | E2E-LEGAL lifecycle | fresh stack (`e2e-down.sh && e2e-up.sh`), `PLAYWRIGHT_BASE_URL=http://localhost:3001 pnpm test:e2e:legal-lifecycle --update-snapshots=missing` | **105 passed / 105** (3.5 min) |
 | E2E-LEGAL depth-ii | its own fresh stack, `PLAYWRIGHT_BASE_URL=http://localhost:3001 pnpm test:e2e:legal-depth-ii --update-snapshots=missing` | **40 passed, 4 skipped** (2.1 min) |
-| Demo tenant `cashbook − stored card total` | — | **DEFERRED** (note 3) — expected R27 000,00 per `.arch-context-phase92.md` §0.2, **not measured** |
+| Demo tenant `cashbook − stored card total` | — | **DEFERRED** on the stack (note 3) — expected R27 000,00 per `.arch-context-phase92.md` §0.2; **measured in 649A (PR #1787)** on a seeded test tenant (`TrustEquationCharacterisationIntegrationTest` path 11): cashbook R27 000,00 − stored cards R0,00 = **R27 000,00**, pinned for 646A |
 
 Notes
 1. `scripts/verify.sh` was not used because its preflight (`verify-preflight.sh`) SIGKILLs any b2b-strawman Maven JVM older than 90 min, which on this machine were the developer's live Keycloak dev-stack `spring-boot:run` backend and gateway (2.5 days old). The same command `verify.sh` execs (`caffeinate -is ./mvnw verify`) was run directly after confirming no Surefire/verify JVM was live.

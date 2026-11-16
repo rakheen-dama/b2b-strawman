@@ -18,6 +18,8 @@ vi.mock("@/lib/api/capabilities", () => ({
 
 // ── Mock parent trust actions ────────────────────────────────────
 vi.mock("@/app/(app)/org/[slug]/trust-accounting/actions", () => ({
+  // 646E: the detail page's type pills come from the registry endpoint
+  fetchTrustTransactionTypes: vi.fn().mockResolvedValue([]),
   fetchTrustAccounts: vi.fn().mockResolvedValue([
     {
       id: "acc-1",
@@ -129,6 +131,9 @@ function makeTx(overrides: Record<string, unknown> = {}) {
     id: "tx-1",
     trustAccountId: "acc-1",
     transactionType: "DEPOSIT",
+    typeLabel: "Deposit",
+    direction: "IN",
+    ledger: "CLIENT",
     amount: 50000,
     clientId: "cust-1",
     matterId: null,
@@ -147,9 +152,13 @@ function makeTx(overrides: Record<string, unknown> = {}) {
     rejectionReason: null,
     reversalOf: null,
     reversedById: null,
+    reversalPending: false,
     bankStatementLineId: null,
     recordedBy: "member-2",
     createdAt: "2026-04-01T09:00:00Z",
+    creditorAccountId: null,
+    investmentId: null,
+    postedAt: "2026-04-01T10:00:00Z",
     ...overrides,
   };
 }
@@ -299,6 +308,8 @@ describe("Client Ledgers", () => {
           id: "tx-2",
           reference: "PAY-001",
           transactionType: "PAYMENT",
+          typeLabel: "Payment",
+          direction: "OUT",
           amount: 10000,
           status: "APPROVED",
         }),

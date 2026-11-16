@@ -6,7 +6,10 @@ import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@b2mash/ui/card";
 import { Badge } from "@b2mash/ui/badge";
 import { Button } from "@b2mash/ui/button";
-import { fetchTrustAccounts } from "@/app/(app)/org/[slug]/trust-accounting/actions";
+import {
+  fetchTrustAccounts,
+  fetchTrustTransactionTypes,
+} from "@/app/(app)/org/[slug]/trust-accounting/actions";
 import {
   fetchClientLedger,
   fetchClientHistory,
@@ -17,10 +20,8 @@ import { ClientHistoryFilters } from "@/components/trust/client-history-filters"
 import { LedgerTotalsBreakdown } from "@/components/trust/ledger-totals-breakdown";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
 import {
-  isInflowType,
-  transactionTypeLabel,
   type TrustTransactionStatus,
-  type TrustTransactionType,
+  type TrustTransactionTypeInfo,
   type ClientLedgerCard,
 } from "@/lib/types";
 
@@ -51,17 +52,14 @@ const STATUS_OPTIONS: TrustTransactionStatus[] = [
   "REVERSED",
 ];
 
-const TYPE_OPTIONS: TrustTransactionType[] = [
-  "DEPOSIT",
-  "PAYMENT",
-  "TRANSFER_IN",
-  "TRANSFER_OUT",
-  "FEE_TRANSFER",
-  "REFUND",
-  "INTEREST_CREDIT",
-  "INTEREST_LPFF",
-  "REVERSAL",
-];
+/**
+ * The types a client ledger can hold (646E, D6): rows on the client's own ledger or its investment
+ * ledger, plus Reversal (ledger null — it moves its original's). Non-client and inter-account
+ * types never sit on a client ledger, so they are not offered as filters here.
+ */
+function isClientLedgerType(t: TrustTransactionTypeInfo): boolean {
+  return t.ledger === "CLIENT" || t.ledger === "CLIENT_INVESTMENT" || t.code === "REVERSAL";
+}
 
 // ── Page ──────────────────────────────────────────────────────────
 
@@ -128,6 +126,14 @@ export default async function ClientDetailPage({
 
   if (!ledgerCard) {
     notFound();
+  }
+
+  // The type registry (646E) for the filter pills — non-fatal: without it only the pills go.
+  let types: TrustTransactionTypeInfo[] = [];
+  try {
+    types = (await fetchTrustTransactionTypes()).filter(isClientLedgerType);
+  } catch {
+    types = [];
   }
 
   // Fetch transaction history
@@ -267,17 +273,17 @@ export default async function ClientDetailPage({
         >
           All
         </Link>
-        {TYPE_OPTIONS.map((type) => (
+        {types.map((t) => (
           <Link
-            key={type}
-            href={filterUrl({ type })}
+            key={t.code}
+            href={filterUrl({ type: t.code })}
             className={`rounded-full px-3 py-1 text-sm transition-colors ${
-              search.type === type
+              search.type === t.code
                 ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
                 : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
             }`}
           >
-            {transactionTypeLabel(type)}
+            {t.label}
           </Link>
         ))}
       </div>
@@ -353,23 +359,19 @@ export default async function ClientDetailPage({
                             {tx.reference}
                           </td>
                           <td className="py-3 pr-4">
-                            <Badge variant="neutral">
-                              {transactionTypeLabel(tx.transactionType as TrustTransactionType)}
-                            </Badge>
+                            <Badge variant="neutral">{tx.typeLabel}</Badge>
                           </td>
                           <td className="py-3 pr-4 text-right">
+                            {/* 646E F8: styling from the row's direction; NEUTRAL draws no arrow */}
                             <span
                               className={`inline-flex items-center gap-1 font-mono tabular-nums ${
-                                isInflowType(tx.transactionType as TrustTransactionType)
+                                tx.direction === "IN"
                                   ? "text-green-600 dark:text-green-400"
                                   : "text-slate-950 dark:text-slate-50"
                               }`}
                             >
-                              {isInflowType(tx.transactionType as TrustTransactionType) ? (
-                                <ArrowDownLeft className="size-3" />
-                              ) : (
-                                <ArrowUpRight className="size-3" />
-                              )}
+                              {tx.direction === "IN" && <ArrowDownLeft className="size-3" />}
+                              {tx.direction === "OUT" && <ArrowUpRight className="size-3" />}
                               {formatCurrency(tx.amount, currency)}
                             </span>
                           </td>

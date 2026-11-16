@@ -82,15 +82,21 @@ function defaultDashboardData() {
         id: "tx-1",
         trustAccountId: "acc-1",
         transactionType: "DEPOSIT" as const,
+        typeLabel: "Deposit",
+        direction: "IN" as const,
+        ledger: "CLIENT" as const,
         amount: 50000,
         clientId: "cust-1",
         matterId: null,
+        creditorAccountId: null,
+        investmentId: null,
         counterpartyClientId: null,
         invoiceId: null,
         reference: "DEP-001",
         description: "Initial deposit",
         transactionDate: "2026-04-01",
         status: "APPROVED" as const,
+        postedAt: "2026-04-01T10:00:00Z",
         approvedBy: "member-1",
         approvedAt: "2026-04-01T10:00:00Z",
         secondApprovedBy: null,
@@ -100,6 +106,7 @@ function defaultDashboardData() {
         rejectionReason: null,
         reversalOf: null,
         reversedById: null,
+        reversalPending: false,
         bankStatementLineId: null,
         recordedBy: "member-2",
         createdAt: "2026-04-01T09:00:00Z",
@@ -108,15 +115,21 @@ function defaultDashboardData() {
         id: "tx-2",
         trustAccountId: "acc-1",
         transactionType: "PAYMENT" as const,
+        typeLabel: "Payment",
+        direction: "OUT" as const,
+        ledger: "CLIENT" as const,
         amount: 15000,
         clientId: "cust-1",
         matterId: "proj-1",
+        creditorAccountId: null,
+        investmentId: null,
         counterpartyClientId: null,
         invoiceId: "inv-1",
         reference: "PAY-001",
         description: "Counsel fee",
         transactionDate: "2026-04-02",
         status: "AWAITING_APPROVAL" as const,
+        postedAt: null,
         approvedBy: null,
         approvedAt: null,
         secondApprovedBy: null,
@@ -126,6 +139,7 @@ function defaultDashboardData() {
         rejectionReason: null,
         reversalOf: null,
         reversedById: null,
+        reversalPending: false,
         bankStatementLineId: null,
         recordedBy: "member-2",
         createdAt: "2026-04-02T09:00:00Z",
@@ -460,13 +474,25 @@ describe("TrustAccountingPage", () => {
       ...data.recentTransactions[0],
       id: "tx-3",
       transactionType: "REFUND" as const,
+      typeLabel: "Refund",
+      direction: "OUT" as const,
       amount: 1000,
       reference: "REF-001",
       description: "Refund to client",
     };
+    // 646E: a row whose direction cannot be resolved (an orphan reversal) draws no arrow
+    const neutral = {
+      ...data.recentTransactions[0],
+      id: "tx-4",
+      transactionType: "REVERSAL",
+      typeLabel: "Reversal",
+      direction: "NEUTRAL" as const,
+      amount: 200,
+      reference: "REV-ORPHAN",
+    };
     mockFetchDashboardData.mockResolvedValue({
       ...data,
-      recentTransactions: [...data.recentTransactions, refund],
+      recentTransactions: [...data.recentTransactions, refund, neutral],
     });
     await renderPage();
 
@@ -485,6 +511,12 @@ describe("TrustAccountingPage", () => {
     expect(deposit).toHaveAttribute("data-direction", "in");
     expect(deposit.className).toContain("text-success-foreground");
     expect(deposit.querySelector(".lucide-arrow-down-left")).not.toBeNull();
+
+    const orphan = amountSpan("REV-ORPHAN");
+    expect(orphan).toHaveAttribute("data-direction", "neutral");
+    expect(orphan.className).not.toContain("text-success-foreground");
+    expect(orphan.querySelector("svg")).toBeNull();
+    expect(screen.getByText("Refund")).toBeInTheDocument();
   });
 
   it("renders Module Not Available when trust_accounting module is disabled", async () => {

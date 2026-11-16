@@ -45,8 +45,55 @@ vi.mock("@/app/(app)/org/[slug]/trust-accounting/transactions/actions", () => ({
   reverseTransaction: (...args: unknown[]) => mockReverseTransaction(...args),
 }));
 
+// ── Registry types (646E): the page reads labels, pills and reversal rules from
+// GET /api/trust-transaction-types — a subset of the real registry, real values.
+const { mockFetchTrustTransactionTypes } = vi.hoisted(() => ({
+  mockFetchTrustTransactionTypes: vi.fn(),
+}));
+
+function typeInfo(
+  code: string,
+  label: string,
+  direction: "IN" | "OUT" | "NEUTRAL",
+  reversal: string,
+  ledger: string | null = "CLIENT"
+) {
+  return {
+    code,
+    label,
+    direction,
+    ledger,
+    origin: ledger === null ? null : "FIRM",
+    requiresApproval: false,
+    reversal,
+    clientVisible: true,
+  };
+}
+
+const REGISTRY_TYPES = [
+  typeInfo("DEPOSIT", "Deposit", "IN", "NEEDS_APPROVAL"),
+  typeInfo("PAYMENT", "Payment", "OUT", "IMMEDIATE"),
+  typeInfo("FEE_TRANSFER", "Fee transfer", "OUT", "IMMEDIATE"),
+  typeInfo("REFUND", "Refund", "OUT", "IMMEDIATE"),
+  typeInfo("TRANSFER_OUT", "Transfer out", "OUT", "PAIR"),
+  typeInfo("TRANSFER_IN", "Transfer in", "IN", "VIA_PAIR"),
+  typeInfo("REVERSAL", "Reversal", "NEUTRAL", "NONE", null),
+  {
+    ...typeInfo(
+      "FUND_INTEREST",
+      "Interest received for the Legal Practitioners' Fidelity Fund",
+      "IN",
+      "IMMEDIATE",
+      "NON_CLIENT"
+    ),
+    origin: "BANK",
+    clientVisible: false,
+  },
+];
+
 // ── Mock parent trust actions ────────────────────────────────────
 vi.mock("@/app/(app)/org/[slug]/trust-accounting/actions", () => ({
+  fetchTrustTransactionTypes: (...args: unknown[]) => mockFetchTrustTransactionTypes(...args),
   fetchTrustAccounts: vi.fn().mockResolvedValue([
     {
       id: "acc-1",
@@ -137,6 +184,10 @@ function makeTx(overrides: Record<string, unknown> = {}) {
     id: "tx-1",
     trustAccountId: "acc-1",
     transactionType: "DEPOSIT",
+    // 646E: label and direction arrive on the DTO — the page never maps a type code itself.
+    typeLabel: "Deposit",
+    direction: "IN",
+    ledger: "CLIENT",
     amount: 50000,
     clientId: "cust-1",
     matterId: null,
@@ -155,9 +206,13 @@ function makeTx(overrides: Record<string, unknown> = {}) {
     rejectionReason: null,
     reversalOf: null,
     reversedById: null,
+    reversalPending: false,
     bankStatementLineId: null,
     recordedBy: "member-2",
     createdAt: "2026-04-01T09:00:00Z",
+    creditorAccountId: null,
+    investmentId: null,
+    postedAt: "2026-04-01T10:00:00Z",
     ...overrides,
   };
 }
@@ -175,6 +230,7 @@ async function renderTransactionsPage() {
 describe("Trust Transactions", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockFetchTrustTransactionTypes.mockResolvedValue(REGISTRY_TYPES);
   });
 
   afterEach(() => {
@@ -217,7 +273,14 @@ describe("Trust Transactions", () => {
   it("renders REFUND as an outflow (no green, up-right arrow)", async () => {
     mockFetchTransactions.mockResolvedValue({
       content: [
-        makeTx({ id: "tx-ref", reference: "REF-001", transactionType: "REFUND", amount: 1000 }),
+        makeTx({
+          id: "tx-ref",
+          reference: "REF-001",
+          transactionType: "REFUND",
+          typeLabel: "Refund",
+          direction: "OUT",
+          amount: 1000,
+        }),
         makeTx({ id: "tx-dep", reference: "DEP-001", transactionType: "DEPOSIT" }),
       ],
       totalElements: 2,
@@ -239,6 +302,103 @@ describe("Trust Transactions", () => {
       .getAllByRole("cell")[3]
       .querySelector("span") as HTMLElement;
     expect(depositAmount.className).toContain("text-green-600");
+  });
+
+  // 646E F8: in/out styling comes from the row's `direction` — a REVERSAL of a PAYMENT puts money
+  // back (IN), whatever its type code; a NEUTRAL row (orphan reversal) draws no arrow.
+  it("styles a payment's reversal as an inflow and a neutral row without an arrow (F8)", async () => {
+    mockFetchTransactions.mockResolvedValue({
+      content: [
+        makeTx({
+          id: "tx-rev-pay",
+          reference: "PAY-001",
+          transactionType: "REVERSAL",
+          typeLabel: "Reversal",
+          direction: "IN",
+          status: "RECORDED",
+          reversalOf: "tx-pay",
+        }),
+        makeTx({
+          id: "tx-orphan",
+          reference: "REV-002",
+          transactionType: "REVERSAL",
+          typeLabel: "Reversal",
+          direction: "NEUTRAL",
+          status: "RECORDED",
+        }),
+      ],
+      totalElements: 2,
+      totalPages: 1,
+      pageSize: 20,
+      pageNumber: 0,
+    });
+
+    await renderTransactionsPage();
+
+    const reversalAmount = within(screen.getByTestId("transaction-row-tx-rev-pay"))
+      .getAllByRole("cell")[3]
+      .querySelector("span") as HTMLElement;
+    expect(reversalAmount.className).toContain("text-green-600");
+    expect(reversalAmount.querySelector(".lucide-arrow-down-left")).not.toBeNull();
+    expect(reversalAmount.querySelector(".lucide-arrow-up-right")).toBeNull();
+
+    const neutralAmount = within(screen.getByTestId("transaction-row-tx-orphan"))
+      .getAllByRole("cell")[3]
+      .querySelector("span") as HTMLElement;
+    expect(neutralAmount.className).not.toContain("text-green-600");
+    expect(neutralAmount.querySelector("svg")).toBeNull();
+  });
+
+  // 646E: the type badge prints the DTO's typeLabel verbatim; the pills list the registry types.
+  it("labels rows from typeLabel and lists the registry types as filter pills", async () => {
+    mockFetchTransactions.mockResolvedValue({
+      content: [
+        makeTx({
+          id: "tx-fee",
+          reference: "FEE-001",
+          transactionType: "FEE_TRANSFER",
+          typeLabel: "Fee transfer",
+          direction: "OUT",
+        }),
+      ],
+      totalElements: 1,
+      totalPages: 1,
+      pageSize: 20,
+      pageNumber: 0,
+    });
+
+    await renderTransactionsPage();
+
+    const row = screen.getByTestId("transaction-row-tx-fee");
+    expect(within(row).getByText("Fee transfer")).toBeInTheDocument();
+    expect(within(row).queryByText("FEE_TRANSFER")).not.toBeInTheDocument();
+
+    const pills = within(screen.getByTestId("type-filters")).getAllByRole("link");
+    expect(pills.map((p) => p.textContent)).toEqual(["All", ...REGISTRY_TYPES.map((t) => t.label)]);
+    expect(pills[1]).toHaveAttribute("href", expect.stringContaining("type=DEPOSIT"));
+    expect(screen.queryByText("Interest Credit")).not.toBeInTheDocument();
+    expect(screen.queryByText("Interest LPFF")).not.toBeInTheDocument();
+  });
+
+  // 646E: a failed type fetch leaves the page usable — rows still render, only the pills go.
+  it("renders rows when the type registry cannot be fetched", async () => {
+    mockFetchTrustTransactionTypes.mockRejectedValue(new Error("boom"));
+    mockFetchTransactions.mockResolvedValue({
+      content: [makeTx({ id: "tx-1", reference: "DEP-001" })],
+      totalElements: 1,
+      totalPages: 1,
+      pageSize: 20,
+      pageNumber: 0,
+    });
+
+    await renderTransactionsPage();
+
+    expect(screen.getByText("DEP-001")).toBeInTheDocument();
+    expect(
+      within(screen.getByTestId("type-filters"))
+        .getAllByRole("link")
+        .map((p) => p.textContent)
+    ).toEqual(["All"]);
   });
 
   // Test 2: Deposit dialog submits correctly with the locked-picker pattern.
@@ -705,8 +865,17 @@ describe("Trust Transactions", () => {
         }),
         makeTx({ id: "tx-await", transactionType: "PAYMENT", status: "AWAITING_APPROVAL" }),
         makeTx({ id: "tx-rej", transactionType: "REFUND", status: "REJECTED" }),
+        // 646E R1: a deposit whose contra awaits approval — the backend refuses a second reversal
+        makeTx({
+          id: "tx-pending",
+          transactionType: "DEPOSIT",
+          status: "RECORDED",
+          reversalPending: true,
+        }),
+        // A type the registry list does not carry: no rule, so no Reverse
+        makeTx({ id: "tx-unknown", transactionType: "SOMETHING_NEW", status: "RECORDED" }),
       ],
-      totalElements: 8,
+      totalElements: 10,
       totalPages: 1,
       pageSize: 20,
       pageNumber: 0,
@@ -717,7 +886,15 @@ describe("Trust Transactions", () => {
     for (const id of ["tx-dep", "tx-pay", "tx-out"]) {
       expect(screen.getByTestId(`reversal-action-${id}`)).toBeInTheDocument();
     }
-    for (const id of ["tx-in", "tx-rev", "tx-reversed", "tx-await", "tx-rej"]) {
+    for (const id of [
+      "tx-in",
+      "tx-rev",
+      "tx-reversed",
+      "tx-await",
+      "tx-rej",
+      "tx-pending",
+      "tx-unknown",
+    ]) {
       expect(screen.queryByTestId(`reversal-action-${id}`)).not.toBeInTheDocument();
     }
   });

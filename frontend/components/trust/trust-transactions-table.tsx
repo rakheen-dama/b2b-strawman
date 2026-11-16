@@ -8,12 +8,7 @@ import { DateCell } from "@/components/data-table/cells";
 import { defineColumns } from "@/components/data-table/define-columns";
 import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import {
-  isInflowType,
-  transactionTypeLabel,
-  type TrustTransaction,
-  type TrustTransactionStatus,
-} from "@/lib/types";
+import { type TrustTransaction, type TrustTransactionStatus } from "@/lib/types";
 
 interface TrustTransactionsTableProps {
   /** The dashboard's recent transactions, passed through untouched (data identity = navigation). */
@@ -45,8 +40,9 @@ const getTransactionRowId = (row: TrustTransaction) => row.id;
 /**
  * Trust dashboard "Recent Transactions" on `DataTable` (Phase 90 643A). The server page passes only
  * serializable props; the column functions are built here (OQ #19). Column order Date, Reference,
- * Type, Amount, Status is unchanged. Money in = success token + down-left arrow, money out (REFUND
- * included, G88-F23) = foreground + up-right arrow; `data-direction` states it for tests.
+ * Type, Amount, Status is unchanged. Type and direction arrive on the row (Phase 92 646E): money in
+ * = success token + down-left arrow, money out (REFUND included, G88-F23) = foreground + up-right
+ * arrow, NEUTRAL = foreground, no arrow; `data-direction` states it for tests.
  */
 export function TrustTransactionsTable({ rows, currency, empty }: TrustTransactionsTableProps) {
   // Memoised: flexRender renders each cell function as a component, so a new column array would
@@ -74,28 +70,23 @@ export function TrustTransactionsTable({ rows, currency, empty }: TrustTransacti
         {
           id: "type",
           meta: { label: "Type" },
-          cell: ({ row }) => (
-            <Badge variant="neutral">{transactionTypeLabel(row.original.transactionType)}</Badge>
-          ),
+          cell: ({ row }) => <Badge variant="neutral">{row.original.typeLabel}</Badge>,
         },
         {
           id: "amount",
           meta: { label: "Amount", align: "end" },
           cell: ({ row }) => {
-            const inflow = isInflowType(row.original.transactionType);
+            const direction = row.original.direction;
             return (
               <span
-                data-direction={inflow ? "in" : "out"}
+                data-direction={direction.toLowerCase()}
                 className={cn(
                   "inline-flex items-center gap-1 font-mono tabular-nums",
-                  inflow ? "text-success-foreground" : "text-foreground"
+                  direction === "IN" ? "text-success-foreground" : "text-foreground"
                 )}
               >
-                {inflow ? (
-                  <ArrowDownLeft aria-hidden="true" className="size-3" />
-                ) : (
-                  <ArrowUpRight aria-hidden="true" className="size-3" />
-                )}
+                {direction === "IN" && <ArrowDownLeft aria-hidden="true" className="size-3" />}
+                {direction === "OUT" && <ArrowUpRight aria-hidden="true" className="size-3" />}
                 {formatCurrency(row.original.amount, currency)}
               </span>
             );

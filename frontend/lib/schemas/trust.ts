@@ -92,6 +92,13 @@ export type RejectionReasonFormData = z.infer<typeof rejectionReasonSchema>;
 
 export const reversalReasonSchema = z.object({
   reason: z.string().min(1, "Reason is required").max(500),
+  // Optional: the date the bank shows the reversal (blank = today). The server is the authority
+  // for "not in the future" and "not before the transaction's own date".
+  reversalDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD")
+    .optional()
+    .or(z.literal("")),
 });
 
 export type ReversalReasonFormData = z.infer<typeof reversalReasonSchema>;

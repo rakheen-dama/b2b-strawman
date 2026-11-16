@@ -79,10 +79,10 @@ public enum TrustTransactionType {
       "Transfer in",
       "Transfer in"),
   /**
-   * No effect of its own (§16.10.3): its ledger is its original's. Phase 92 646A posts every
-   * REVERSAL at zero effect and zeroes the reversed original (HEAD semantics, §16.7.2 step 3); 649B
-   * makes it a contra entry carrying the original's negated effect. Not client-visible in 646A: the
-   * portal sync and the statement exclude reversals, as on HEAD (649B flips it).
+   * No effect of its own (§16.10.3): a contra entry (649B, ADR-378) carrying the negation of its
+   * original's effect on its original's ledger, on its own date; the original stays posted and is
+   * marked {@code REVERSED}. Client-visible since 649B: the portal replays the reversed original
+   * and its contra together (each with its own effect), so the client sees both movements.
    */
   REVERSAL(
       0,
@@ -91,7 +91,7 @@ public enum TrustTransactionType {
       Approval.WITH_ORIGINAL,
       Reversal.NONE,
       null,
-      false,
+      true,
       "trust_reversal",
       "Reversal",
       "Reversal");
@@ -110,15 +110,18 @@ public enum TrustTransactionType {
 
   /** How a posted row of the type is reversed. */
   public enum Reversal {
-    /** The reversal posts at once. */
+    /** The contra entry posts at once. */
     IMMEDIATE,
-    /** The reversal is saved AWAITING_APPROVAL. */
+    /** The contra entry is saved AWAITING_APPROVAL and posts on final approval. */
     NEEDS_APPROVAL,
     /** Reversed together with its paired leg (TRANSFER_OUT reverses its TRANSFER_IN). */
     PAIR,
     /** Reversed only through its pair (a TRANSFER_IN is reversed via its TRANSFER_OUT). */
     VIA_PAIR,
-    /** Reversed by the owning workflow (later slices). */
+    /**
+     * Reversed only through its owner's own action (unmatching its statement line, reversing its
+     * interest entry — 647A / 648B); the generic reverse endpoint refuses it.
+     */
     OWNER,
     /** Cannot be reversed. */
     NONE

@@ -50,7 +50,7 @@ import org.springframework.stereotype.Component;
  *       without changing a single expectation except the pins it closes (task 646.9).
  * </ol>
  *
- * <h2>Version 1 (646A) — effect columns; EQ-6 with the 646A reversal rule</h2>
+ * <h2>Version 2 (649B) — effect columns; EQ-6 with contra reversals</h2>
  *
  * <p>Every posted row carries its own effects (ADR-378), so every term is a sum over them, as at
  * any date — v0's split between the stored card (today) and a derived sum (the past) is gone:
@@ -63,14 +63,16 @@ import org.springframework.stereotype.Component;
  *       CLIENT_INVESTMENT}, {@code INTER_ACCOUNT}, dated {@code <= D} (the last two are always 0 in
  *       646A — no type posts to them yet).
  *   <li>{@code fundLedger}, {@code unidentified} — zero: they need creditor accounts (646B/647A).
- *   <li>{@link #clientLedger} — one client's {@code SUM(ledger_effect)} on the {@code CLIENT}
- *       ledger, as at today.
+ *   <li>{@link #clientLedger} / {@link #clientLedgerAsAt} — one client's {@code SUM(ledger_effect)}
+ *       on the {@code CLIENT} ledger, as at today / a date.
  *   <li>EQ-6 (in {@link #assertBalancedAsAt} and {@link #assertFirmBalanced}) — every posted row's
  *       (ledger, cashbook effect, ledger effect) re-derived from the registry: {@code
- *       TrustTransactionType.of(type).effectFor(amount)}, except the <b>646A interim rule</b>: a
- *       {@code REVERSAL} row and a {@code REVERSED} original carry {@code (CLIENT, 0, 0)} (HEAD
- *       semantics; 649B makes a REVERSAL carry its original's negated effect and leaves the
- *       original's own). EQ-4 (647B) and EQ-5 (648A) are no-ops until their columns exist.
+ *       TrustTransactionType.of(type).effectFor(amount)} for every row, a {@code REVERSED} original
+ *       included (it keeps its own effects), and for a {@code REVERSAL} contra the negation of its
+ *       original's: {@code TrustTransactionType.of(originalType).effectFor(originalAmount)
+ *       .negated()} (649B, ADR-378; the 646A interim rule — both at {@code (CLIENT, 0, 0)} — is
+ *       gone). A posted {@code REVERSAL} with no original fails EQ-6. EQ-4 (647B) and EQ-5 (648A)
+ *       are no-ops until their columns exist.
  *   <li>{@link #assertBankAgrees} — statement closing balance + outstanding deposits − outstanding
  *       payments (posted, unmatched, dated {@code <= periodEnd}; split on the sign of {@code
  *       cashbook_effect}) against {@code cashbook(A, periodEnd)}. <b>Unexercised until 646C.</b>
@@ -109,12 +111,13 @@ public final class TrustBooksHarness {
         AND t.posted_at IS NOT NULL AND t.transaction_date <= ?
       """;
 
-  /** EQ-6: every posted row with its stored effects. */
+  /** EQ-6: every posted row with its stored effects (and, for a contra, its original's type). */
   private static final String POSTED_ROWS_SQL =
       """
       SELECT t.id, t.transaction_type, t.amount, t.status, t.ledger, t.cashbook_effect,
-             t.ledger_effect
+             t.ledger_effect, o.transaction_type AS original_type, o.amount AS original_amount
       FROM "%s".trust_transactions t
+      LEFT JOIN "%s".trust_transactions o ON o.id = t.reversal_of
       WHERE t.trust_account_id = ? AND t.posted_at IS NOT NULL AND t.transaction_date <= ?
       """;
 
@@ -180,7 +183,12 @@ public final class TrustBooksHarness {
 
   /** One client's ledger balance on the account, as at today (0 when it has no posted row). */
   public BigDecimal clientLedger(UUID trustAccountId, UUID customerId) {
-    return money(CLIENT_SQL.formatted(schema()), trustAccountId, customerId, today());
+    return clientLedgerAsAt(trustAccountId, customerId, today());
+  }
+
+  /** One client's ledger balance on the account, as at {@code asAt}. */
+  public BigDecimal clientLedgerAsAt(UUID trustAccountId, UUID customerId, LocalDate asAt) {
+    return money(CLIENT_SQL.formatted(schema()), trustAccountId, customerId, asAt);
   }
 
   /**
@@ -230,21 +238,32 @@ public final class TrustBooksHarness {
 
   /**
    * EQ-6: every posted row's stored (ledger, cashbook effect, ledger effect) equals the registry's
-   * effect for its type and amount. 646A interim rule: a {@code REVERSAL} row and a {@code
-   * REVERSED} original carry {@code (CLIENT, 0, 0)} (HEAD semantics; 649B changes it).
+   * effect for its type and amount — a {@code REVERSED} original included — and a {@code REVERSAL}
+   * contra's equals the negation of its original's (649B, ADR-378).
    */
   private void assertEffectsDerived(SoftAssertions softly, UUID trustAccountId, LocalDate asAt) {
-    var rows = jdbc.queryForList(POSTED_ROWS_SQL.formatted(schema()), trustAccountId, asAt);
+    var schema = schema();
+    var rows = jdbc.queryForList(POSTED_ROWS_SQL.formatted(schema, schema), trustAccountId, asAt);
     for (var row : rows) {
       var type = (String) row.get("transaction_type");
       var amount = (BigDecimal) row.get("amount");
-      var expected =
-          "REVERSAL".equals(type) || "REVERSED".equals(row.get("status"))
-              ? TrustLedgerEffect.zero(TrustLedger.CLIENT)
-              : TrustTransactionType.of(type).effectFor(amount);
       var what =
           "EQ-6 on trust account %s, %s %s %s (%s)"
               .formatted(trustAccountId, row.get("status"), type, amount, row.get("id"));
+      TrustLedgerEffect expected;
+      if ("REVERSAL".equals(type)) {
+        var originalType = (String) row.get("original_type");
+        softly.assertThat(originalType).as(what + " original").isNotNull();
+        if (originalType == null) {
+          continue;
+        }
+        expected =
+            TrustTransactionType.of(originalType)
+                .effectFor((BigDecimal) row.get("original_amount"))
+                .negated();
+      } else {
+        expected = TrustTransactionType.of(type).effectFor(amount);
+      }
       softly.assertThat(row.get("ledger")).as(what + " ledger").isEqualTo(expected.ledger().name());
       softly
           .assertThat((BigDecimal) row.get("cashbook_effect"))

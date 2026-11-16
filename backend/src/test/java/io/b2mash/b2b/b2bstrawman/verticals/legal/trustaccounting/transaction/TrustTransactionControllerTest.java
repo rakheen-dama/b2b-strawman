@@ -19,6 +19,8 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
+import java.time.Clock;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -47,6 +49,7 @@ class TrustTransactionControllerTest {
   @Autowired private OrgSettingsRepository orgSettingsRepository;
   @Autowired private OrgSettingsService orgSettingsService;
   @Autowired private TransactionTemplate transactionTemplate;
+  @Autowired private Clock clock;
 
   private String tenantSchema;
   private String trustAccountId;
@@ -549,6 +552,98 @@ class TrustTransactionControllerTest {
         .andExpect(jsonPath("$.transactionType").value("REVERSAL"))
         .andExpect(jsonPath("$.reversalOf").value(paymentId))
         .andExpect(jsonPath("$.id").isNotEmpty());
+  }
+
+  // --- Phase 92 649B: reversalDate (§16.3.11, ruling #6) ---
+
+  @Test
+  void postReverse_withoutReversalDate_datesTheContraToday() throws Exception {
+    var paymentId = approvedPayment("PAY-CTRL-REV-DEFAULT");
+
+    mockMvc
+        .perform(
+            post("/api/trust-transactions/" + paymentId + "/reverse")
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_txn_ctrl_admin"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"reason\": \"Payment was made in error\"}"))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.transactionType").value("REVERSAL"))
+        .andExpect(jsonPath("$.status").value("RECORDED"))
+        .andExpect(jsonPath("$.reversalOf").value(paymentId))
+        .andExpect(jsonPath("$.transactionDate").value(LocalDate.now(clock).toString()));
+  }
+
+  @Test
+  void postReverse_futureReversalDate_returns400() throws Exception {
+    var paymentId = approvedPayment("PAY-CTRL-REV-FUTURE");
+
+    mockMvc
+        .perform(
+            post("/api/trust-transactions/" + paymentId + "/reverse")
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_txn_ctrl_admin"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    "{\"reason\": \"Payment was made in error\", \"reversalDate\": \"%s\"}"
+                        .formatted(LocalDate.now(clock).plusDays(1))))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.title").value("Cannot reverse transaction"))
+        .andExpect(jsonPath("$.detail").value("The reversal date cannot be in the future"));
+
+    // Refused before anything was written: the payment is still reversible today.
+    mockMvc
+        .perform(
+            get("/api/trust-accounts/" + trustAccountId + "/transactions/" + paymentId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_txn_ctrl_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("APPROVED"))
+        .andExpect(jsonPath("$.reversedById").doesNotExist());
+  }
+
+  /** A R500,00 payment on the customer's matter, funded by a deposit and approved by the owner. */
+  private String approvedPayment(String reference) throws Exception {
+    var adminJwt = TestJwtFactory.adminJwt(ORG_ID, "user_txn_ctrl_admin");
+    mockMvc
+        .perform(
+            post("/api/trust-accounts/" + trustAccountId + "/transactions/deposit")
+                .with(adminJwt)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "clientId": "%s",
+                      "matterId": "%s",
+                      "amount": 500.00,
+                      "reference": "DEP-%s",
+                      "description": "Deposit for a reversal-date test",
+                      "transactionDate": "2026-03-01"
+                    }
+                    """
+                        .formatted(customerId, trustMatterOf(customerId), reference)))
+        .andExpect(status().isCreated());
+    var paymentResult =
+        mockMvc
+            .perform(
+                post("/api/trust-accounts/" + trustAccountId + "/transactions/payment")
+                    .with(adminJwt)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "clientId": "%s",
+                          "matterId": "%s",
+                          "amount": 500.00,
+                          "reference": "%s",
+                          "description": "Payment for a reversal-date test",
+                          "transactionDate": "2026-03-02"
+                        }
+                        """
+                            .formatted(customerId, trustMatterOf(customerId), reference)))
+            .andExpect(status().isCreated())
+            .andReturn();
+    var paymentId =
+        JsonPath.read(paymentResult.getResponse().getContentAsString(), "$.id").toString();
+    approve(paymentId);
+    return paymentId;
   }
 
   // --- Phase 88 Epic 621A: list filters honoured (matterId / type / status / excludeLinked) ---

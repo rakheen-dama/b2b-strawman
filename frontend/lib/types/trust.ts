@@ -80,6 +80,52 @@ export function isInflowType(type: TrustTransactionType): boolean {
   return INFLOW_TRANSACTION_TYPES.has(type);
 }
 
+/**
+ * How a posted row of each type is reversed — mirrors the backend registry's `reversal` attribute
+ * (TrustTransactionType, Phase 92 649B). Interim: 646E replaces this local map with the registry
+ * endpoint (`GET /api/trust-transaction-types`). Never rendered — no raw rule name on screen.
+ */
+export type TrustReversalRule =
+  | "IMMEDIATE"
+  | "NEEDS_APPROVAL"
+  | "PAIR"
+  | "VIA_PAIR"
+  | "OWNER"
+  | "NONE";
+
+export const TRUST_TRANSACTION_REVERSAL: Record<TrustTransactionType, TrustReversalRule> = {
+  DEPOSIT: "NEEDS_APPROVAL",
+  PAYMENT: "IMMEDIATE",
+  FEE_TRANSFER: "IMMEDIATE",
+  REFUND: "IMMEDIATE",
+  TRANSFER_OUT: "PAIR",
+  TRANSFER_IN: "VIA_PAIR",
+  REVERSAL: "NONE",
+  INTEREST_CREDIT: "NONE",
+  INTEREST_LPFF: "NONE",
+  DISBURSEMENT_PAYMENT: "NONE",
+};
+
+export function reversalRuleOf(type: TrustTransactionType): TrustReversalRule {
+  return TRUST_TRANSACTION_REVERSAL[type] ?? "NONE";
+}
+
+/**
+ * Whether the generic Reverse action is offered for a row: any posted row (RECORDED or APPROVED —
+ * founder ruling #1) not yet reversed, whose type reverses on the generic endpoint (at once, after
+ * approval, or with its paired transfer leg).
+ */
+export function canOfferReversal(tx: {
+  transactionType: TrustTransactionType;
+  status: TrustTransactionStatus;
+  reversedById: string | null;
+}): boolean {
+  if (tx.status !== "RECORDED" && tx.status !== "APPROVED") return false;
+  if (tx.reversedById !== null) return false;
+  const rule = reversalRuleOf(tx.transactionType);
+  return rule === "IMMEDIATE" || rule === "NEEDS_APPROVAL" || rule === "PAIR";
+}
+
 export type TrustTransactionStatus =
   | "RECORDED"
   | "AWAITING_APPROVAL"

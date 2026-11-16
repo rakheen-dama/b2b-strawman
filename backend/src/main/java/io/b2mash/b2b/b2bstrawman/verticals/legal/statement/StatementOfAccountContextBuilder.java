@@ -577,7 +577,9 @@ public class StatementOfAccountContextBuilder {
               TrustTransactionTypeLabels.label(line.transactionType()),
               line.amount(),
               line.reference(),
-              line.description());
+              // A REVERSAL line prints "Reversal — <reference>", never the firm's reason
+              TrustTransactionTypeLabels.clientDescription(
+                  line.transactionType(), line.description(), line.reference()));
       // Deposits or payments by the line's own posted effect on the client ledger (Phase 92,
       // ADR-378) — the same figure the opening/closing balances sum, so the itemised tables always
       // reconcile with them. No type-name table to keep in step.

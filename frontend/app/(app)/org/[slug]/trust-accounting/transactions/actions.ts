@@ -9,6 +9,7 @@ import type {
   RecordTransferFormData,
   RecordFeeTransferFormData,
   RecordRefundFormData,
+  ReversalReasonFormData,
 } from "@/lib/schemas/trust";
 
 // ── Response types ─────────────────────────────────────────────────
@@ -236,11 +237,13 @@ export async function rejectTransaction(
 
 export async function reverseTransaction(
   transactionId: string,
-  reason: string
+  data: ReversalReasonFormData
 ): Promise<ActionResult> {
   try {
     await api.post(`/api/trust-transactions/${transactionId}/reverse`, {
-      reason,
+      reason: data.reason,
+      // Blank means "today" — the server defaults a missing reversalDate to the SA business date.
+      reversalDate: data.reversalDate || null,
     });
     revalidatePath("/", "layout");
     return { success: true };

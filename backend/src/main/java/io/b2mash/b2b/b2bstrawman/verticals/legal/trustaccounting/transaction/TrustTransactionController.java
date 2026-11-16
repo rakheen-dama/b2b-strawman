@@ -120,7 +120,7 @@ public class TrustTransactionController {
   public ResponseEntity<TrustTransactionResponse> reverseTransaction(
       @PathVariable UUID id, @Valid @RequestBody ReverseRequest request) {
     return ResponseEntity.status(HttpStatus.CREATED)
-        .body(trustTransactionService.reverseTransaction(id, request.reason()));
+        .body(trustTransactionService.reverseTransaction(id, request));
   }
 
   // --- Query Endpoints (under /api/trust-accounts/{accountId}) ---

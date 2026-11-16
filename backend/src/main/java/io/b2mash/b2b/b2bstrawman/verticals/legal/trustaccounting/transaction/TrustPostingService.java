@@ -14,16 +14,19 @@ import org.springframework.transaction.annotation.Transactional;
  * those stay in {@link TrustTransactionService} under the client's lock anchor (§16.2.3) — so the
  * demo seeder can leave its second client in debit on purpose (§16.3.15).
  *
- * <p>Reversals keep the HEAD model in 646A: a REVERSAL row posts at zero effect and a reversed
- * original's effects are zeroed, so it drops out of every sum as it did under the status filter; an
- * approved credit reversal moves nothing (H-a, pinned — fixed in 649B by the contra model).
+ * <p>A reversal is a contra entry (649B, ADR-378, §16.3.11): the {@code REVERSAL} row carries the
+ * negation of its original's registry effect on the original's ledger, on its own date; the
+ * original keeps its effects and is only marked {@code REVERSED} with {@code reversedById}. So a
+ * balance as at any date before the reversal still shows the original — history is never rewritten.
+ * A credit contra awaiting approval posts in {@link #postReversalOnApproval}.
  *
  * <p>It is also the only main class that saves a trust transaction: the unposted state changes
  * (first approval in dual mode, rejection) and reconciliation's bank-line link go through the
  * narrow methods below, none of which touches effects or {@code posted_at}. {@code
  * TrustPostingRulesTest} (ArchUnit) holds that no other main class calls {@code
  * TrustTransaction.applyPosting} or {@code TrustTransactionRepository.save*}; the row CHECK {@code
- * chk_trust_txn_posting} (V16) refuses a posted status without {@code posted_at} at the database.
+ * chk_trust_txn_posting} (V16, tightened in V17) refuses a posted status without {@code posted_at},
+ * or a posted row that does not move its ledger by exactly its amount, at the database.
  *
  * <p>Every posting for a client runs under the client's lock anchor: callers take it with {@link
  * #lockClient} before reading a derived balance and posting (§16.2.3, T5).
@@ -91,28 +94,38 @@ public class TrustPostingService {
   }
 
   /**
-   * Final approval of a REQUIRED row, or of a credit REVERSAL awaiting approval: APPROVED, effects
-   * from the registry (a REVERSAL: zero in 646A — H-a), posted now. The caller has done
-   * maker-checker and the sufficiency check under the client's lock anchor. Sets {@code
+   * Final approval of a REQUIRED row: APPROVED, effects from the registry, posted now. The caller
+   * has done maker-checker and the sufficiency check under the client's lock anchor. Sets {@code
    * approvedBy}/{@code approvedAt} only when unset (dual mode's first approver is already recorded;
-   * single mode sets them before calling).
+   * single mode sets them before calling). A credit contra posts through {@link
+   * #postReversalOnApproval}, never here.
    */
   @Transactional
   public TrustTransaction postOnApproval(TrustTransaction pending, UUID approverId) {
     requireAwaitingApproval(pending, "postOnApproval");
-    if (pending.getApprovedBy() == null) {
-      pending.setApprovedBy(approverId);
-      pending.setApprovedAt(clock.instant());
-    }
-    pending.setStatus("APPROVED");
     var type = TrustTransactionType.of(pending.getTransactionType());
-    var effect =
-        type == TrustTransactionType.REVERSAL
-            ? TrustLedgerEffect.zero(
-                pending.getLedger()) // 646A/HEAD: H-a — 649B posts the negation
-            : type.effectFor(pending.getAmount());
-    pending.applyPosting(effect, clock.instant());
+    require(type.approval() == TrustTransactionType.Approval.REQUIRED, type, "postOnApproval");
+    markApproved(pending, approverId);
+    pending.applyPosting(type.effectFor(pending.getAmount()), clock.instant());
     return transactionRepository.save(pending);
+  }
+
+  /**
+   * Final approval of a credit contra ({@code NEEDS_APPROVAL} rule): the {@code REVERSAL} becomes
+   * APPROVED and posts the negation of {@code original}'s effect now; the original keeps its
+   * effects and is marked {@code REVERSED} (§16.3.11 — the H-a fix). The caller has locked the
+   * pending row and the original, done maker-checker and checked the client still covers it.
+   */
+  @Transactional
+  public TrustTransaction postReversalOnApproval(
+      TrustTransaction pending, TrustTransaction original, UUID approverId) {
+    requireAwaitingApproval(pending, "postReversalOnApproval");
+    requireContraOf(pending, original);
+    markApproved(pending, approverId);
+    pending.applyPosting(contraOf(original), clock.instant());
+    var saved = transactionRepository.save(pending);
+    markReversed(original, saved);
+    return saved;
   }
 
   /**
@@ -150,25 +163,25 @@ public class TrustPostingService {
   }
 
   /**
-   * A REVERSAL row for {@code original}, by the original type's reversal rule — this method alone
-   * decides the reversal's status. IMMEDIATE / PAIR / VIA_PAIR: the reversal posts RECORDED at zero
-   * effect and the original becomes REVERSED with its effects zeroed (HEAD semantics; 649B keeps
-   * the original's effect and posts the negation). NEEDS_APPROVAL: the reversal is saved
-   * AWAITING_APPROVAL (unposted); the original is untouched. Any other rule is refused.
+   * A {@code REVERSAL} row for {@code original}, by the original type's reversal rule — this method
+   * alone decides the reversal's status (§16.3.11). IMMEDIATE / PAIR / VIA_PAIR / OWNER (the caller
+   * has already confined OWNER to its owner's own path): the contra posts RECORDED now with the
+   * negation of the original's effect, and the original is marked {@code REVERSED} (its effects
+   * untouched). NEEDS_APPROVAL: the contra is saved AWAITING_APPROVAL (unposted) and the original
+   * is untouched until {@link #postReversalOnApproval}. Any other rule is refused. The reversal's
+   * date is the caller's ({@code reversalDate}).
    */
   @Transactional
   public TrustTransaction postReversal(TrustTransaction reversal, TrustTransaction original) {
     var rule = TrustTransactionType.of(original.getTransactionType()).reversal();
     reversal.setReversalOf(original.getId());
+    requireContraOf(reversal, original);
     return switch (rule) {
-      case IMMEDIATE, PAIR, VIA_PAIR -> {
+      case IMMEDIATE, PAIR, VIA_PAIR, OWNER -> {
         reversal.setStatus("RECORDED");
-        reversal.applyPosting(TrustLedgerEffect.zero(original.getLedger()), clock.instant());
+        reversal.applyPosting(contraOf(original), clock.instant());
         var saved = transactionRepository.save(reversal);
-        original.setReversedById(saved.getId());
-        original.setStatus("REVERSED");
-        original.applyPosting(TrustLedgerEffect.zero(original.getLedger()), original.getPostedAt());
-        transactionRepository.save(original);
+        markReversed(original, saved);
         yield saved;
       }
       case NEEDS_APPROVAL -> {
@@ -181,6 +194,45 @@ public class TrustPostingService {
               "Cannot reverse transaction",
               "Transaction type " + original.getTransactionType() + " cannot be reversed");
     };
+  }
+
+  /**
+   * §16.10.3: the registry's effect for the original, negated, on the original's ledger — the one
+   * place the contra's sign is decided (also read by the approval check in {@code
+   * TrustTransactionService}).
+   */
+  static TrustLedgerEffect contraOf(TrustTransaction original) {
+    return TrustTransactionType.of(original.getTransactionType())
+        .effectFor(original.getAmount())
+        .negated();
+  }
+
+  /** The original stays posted with its effects; it is only marked as reversed by the contra. */
+  private void markReversed(TrustTransaction original, TrustTransaction contra) {
+    if (original.getPostedAt() == null) {
+      throw new IllegalStateException(
+          "Reversing an unposted " + original.getStatus() + " row " + original.getId());
+    }
+    original.setReversedById(contra.getId());
+    original.setStatus("REVERSED");
+    transactionRepository.save(original);
+  }
+
+  private void markApproved(TrustTransaction pending, UUID approverId) {
+    if (pending.getApprovedBy() == null) {
+      pending.setApprovedBy(approverId);
+      pending.setApprovedAt(clock.instant());
+    }
+    pending.setStatus("APPROVED");
+  }
+
+  private static void requireContraOf(TrustTransaction reversal, TrustTransaction original) {
+    if (!"REVERSAL".equals(reversal.getTransactionType())
+        || !original.getId().equals(reversal.getReversalOf())
+        || reversal.getAmount().compareTo(original.getAmount()) != 0) {
+      throw new IllegalStateException(
+          "Row " + reversal.getId() + " is not the contra of " + original.getId());
+    }
   }
 
   private static void requireAwaitingApproval(TrustTransaction pending, String operation) {

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@b2mash/ui/button";
+import { Input } from "@b2mash/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -16,6 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -27,9 +29,17 @@ import { reversalReasonSchema, type ReversalReasonFormData } from "@/lib/schemas
 
 interface ReversalButtonProps {
   transactionId: string;
+  /** The row's own date (YYYY-MM-DD): the earliest reversal date the date picker offers. */
+  transactionDate?: string;
+  /** A deposit's reversal takes effect only once another member approves it. */
+  needsApproval?: boolean;
 }
 
-export function ReversalButton({ transactionId }: ReversalButtonProps) {
+export function ReversalButton({
+  transactionId,
+  transactionDate,
+  needsApproval = false,
+}: ReversalButtonProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -38,6 +48,7 @@ export function ReversalButton({ transactionId }: ReversalButtonProps) {
     resolver: zodResolver(reversalReasonSchema),
     defaultValues: {
       reason: "",
+      reversalDate: "",
     },
   });
 
@@ -54,7 +65,7 @@ export function ReversalButton({ transactionId }: ReversalButtonProps) {
     setIsSubmitting(true);
 
     try {
-      const result = await reverseTransaction(transactionId, data.reason);
+      const result = await reverseTransaction(transactionId, data);
       if (result.success) {
         handleOpenChange(false);
       } else {
@@ -84,7 +95,9 @@ export function ReversalButton({ transactionId }: ReversalButtonProps) {
           <DialogHeader>
             <DialogTitle>Reverse Transaction</DialogTitle>
             <DialogDescription>
-              This will create a reversal entry. Please provide a reason.
+              {needsApproval
+                ? "This will create a reversal entry. A deposit reversal must be approved by another member before it takes effect."
+                : "This will create a reversal entry. Please provide a reason."}
             </DialogDescription>
           </DialogHeader>
 
@@ -104,6 +117,28 @@ export function ReversalButton({ transactionId }: ReversalButtonProps) {
                         {...field}
                       />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="reversalDate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Reversal date (optional)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="date"
+                        min={transactionDate}
+                        data-testid="reversal-date-input"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Leave blank for today. Use the date the bank shows the reversal.
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}

@@ -168,8 +168,29 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
       @Param("transactionType") String transactionType,
       @Param("customerId") UUID customerId);
 
-  /** Checks whether a reversal transaction already exists for the given original transaction. */
-  boolean existsByReversalOf(UUID reversalOf);
+  /**
+   * Whether a reversal of the given original exists other than in {@code status} — called with
+   * {@code "REJECTED"}: a rejected contra never posted, so it leaves the original reversible (H-c,
+   * 649B); a posted or pending contra still blocks a second reversal.
+   */
+  boolean existsByReversalOfAndStatusNot(UUID reversalOf, String status);
+
+  /**
+   * The non-{@code REVERSAL} rows in {@code statuses} linked to a bank statement line — the posted
+   * originals a statement-line unmatch reverses ({@code reverseForUnmatch}, 649B for 647A). Oldest
+   * first, so the contras are written in posting order.
+   */
+  @Query(
+      """
+      SELECT t FROM TrustTransaction t
+      WHERE t.bankStatementLineId = :bankStatementLineId
+        AND t.status IN :statuses
+        AND t.transactionType <> 'REVERSAL'
+      ORDER BY t.transactionDate ASC, t.createdAt ASC, t.id ASC
+      """)
+  List<TrustTransaction> findPostedOriginalsByBankStatementLineId(
+      @Param("bankStatementLineId") UUID bankStatementLineId,
+      @Param("statuses") List<String> statuses);
 
   /**
    * Monthly net movements on one trust account for the trust-balance trend (Phase 90 643A, ADR-372,
@@ -178,10 +199,10 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
    * opening balance). {@code cashbookNet} sums {@code cashbook_effect} (as {@link
    * TrustLedgerQueryRepository#cashbook}); {@code ledgerNet} sums {@code ledger_effect} on the
    * {@code CLIENT} ledger (as {@link TrustLedgerQueryRepository#clientLedgerTotal}). Posted rows
-   * only (Phase 92, ADR-378) — a REVERSED original and its REVERSAL carry zero effect in 646A.
-   * {@code transaction_date} is already an SA business date (G88-F48), so months need no zone
-   * conversion: the date is truncated as a zone-less {@code timestamp}. Rows after {@code today}
-   * are excluded.
+   * only (Phase 92, ADR-378) — a REVERSED original counts in its own month and its REVERSAL (the
+   * contra, 649B) in the reversal date's month. {@code transaction_date} is already an SA business
+   * date (G88-F48), so months need no zone conversion: the date is truncated as a zone-less {@code
+   * timestamp}. Rows after {@code today} are excluded.
    */
   @Query(
       nativeQuery = true,
@@ -269,7 +290,13 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
       @Param("startDate") LocalDate startDate,
       @Param("endDate") LocalDate endDate);
 
-  /** Fetches transactions for a customer in date range, ordered by date ASC for statement. */
+  /**
+   * A customer's posted transactions on the client ledger in a date range, oldest first, for a
+   * statement (and the interest walk): every row with {@code posted_at} set — a reversed original
+   * and its {@code REVERSAL} contra included, each listed on its own date with its own effect
+   * (649B, ADR-378). The callers open at the derived {@code clientBalance(start − 1)}, which sums
+   * the same rows, so the closing balance always equals the client's balance at the end date.
+   */
   @Query(
       """
       SELECT t FROM TrustTransaction t
@@ -277,8 +304,8 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
         AND t.trustAccountId = :trustAccountId
         AND t.transactionDate >= :startDate
         AND t.transactionDate <= :endDate
-        AND t.status IN ('RECORDED', 'APPROVED')
-        AND t.transactionType <> 'REVERSAL'
+        AND t.ledger = io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedger.CLIENT
+        AND t.postedAt IS NOT NULL
       ORDER BY t.transactionDate ASC, t.createdAt ASC
       """)
   List<TrustTransaction> findForStatement(

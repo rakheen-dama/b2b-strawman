@@ -638,7 +638,87 @@ describe("Trust Transactions", () => {
     await user.click(screen.getByTestId("confirm-reverse-button"));
 
     await waitFor(() => {
-      expect(mockReverseTransaction).toHaveBeenCalledWith("tx-approved", "Duplicate entry");
+      expect(mockReverseTransaction).toHaveBeenCalledWith("tx-approved", {
+        reason: "Duplicate entry",
+        reversalDate: "",
+      });
     });
+  });
+
+  // Phase 92 649B: optional reversal date — the date the bank shows the reversal.
+  it("submits reversal with a reversal date", async () => {
+    mockReverseTransaction.mockResolvedValue({ success: true });
+    const user = userEvent.setup();
+
+    render(<ReversalButton transactionId="tx-approved" transactionDate="2026-03-01" />);
+
+    await user.click(screen.getByTestId("reverse-button"));
+    await waitFor(() => {
+      expect(screen.getByText("Reverse Transaction", { selector: "h2" })).toBeInTheDocument();
+    });
+
+    expect(screen.getByText("Reversal date (optional)")).toBeInTheDocument();
+    const dateInput = screen.getByTestId("reversal-date-input");
+    expect(dateInput).toHaveAttribute("min", "2026-03-01");
+    fireEvent.change(dateInput, { target: { value: "2026-04-15" } });
+    await user.type(screen.getByTestId("reversal-reason-input"), "Bank returned the payment");
+
+    await user.click(screen.getByTestId("confirm-reverse-button"));
+
+    await waitFor(() => {
+      expect(mockReverseTransaction).toHaveBeenCalledWith("tx-approved", {
+        reason: "Bank returned the payment",
+        reversalDate: "2026-04-15",
+      });
+    });
+  });
+
+  it("explains that a deposit reversal needs another member's approval", async () => {
+    const user = userEvent.setup();
+
+    render(<ReversalButton transactionId="tx-deposit" needsApproval />);
+
+    await user.click(screen.getByTestId("reverse-button"));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/must be approved by another member before it takes effect/)
+      ).toBeInTheDocument();
+    });
+    expect(screen.queryByText(/NEEDS_APPROVAL/)).not.toBeInTheDocument();
+  });
+
+  // Phase 92 649B (ruling #1): Reverse is offered for any posted row per its type's rule.
+  it("offers Reverse for posted rows per the reversal rule", async () => {
+    mockFetchTransactions.mockResolvedValue({
+      content: [
+        makeTx({ id: "tx-dep", transactionType: "DEPOSIT", status: "RECORDED" }),
+        makeTx({ id: "tx-pay", transactionType: "PAYMENT", status: "APPROVED" }),
+        makeTx({ id: "tx-out", transactionType: "TRANSFER_OUT", status: "RECORDED" }),
+        makeTx({ id: "tx-in", transactionType: "TRANSFER_IN", status: "RECORDED" }),
+        makeTx({ id: "tx-rev", transactionType: "REVERSAL", status: "RECORDED" }),
+        makeTx({
+          id: "tx-reversed",
+          transactionType: "PAYMENT",
+          status: "REVERSED",
+          reversedById: "tx-rev",
+        }),
+        makeTx({ id: "tx-await", transactionType: "PAYMENT", status: "AWAITING_APPROVAL" }),
+        makeTx({ id: "tx-rej", transactionType: "REFUND", status: "REJECTED" }),
+      ],
+      totalElements: 8,
+      totalPages: 1,
+      pageSize: 20,
+      pageNumber: 0,
+    });
+
+    await renderTransactionsPage();
+
+    for (const id of ["tx-dep", "tx-pay", "tx-out"]) {
+      expect(screen.getByTestId(`reversal-action-${id}`)).toBeInTheDocument();
+    }
+    for (const id of ["tx-in", "tx-rev", "tx-reversed", "tx-await", "tx-rej"]) {
+      expect(screen.queryByTestId(`reversal-action-${id}`)).not.toBeInTheDocument();
+    }
   });
 });

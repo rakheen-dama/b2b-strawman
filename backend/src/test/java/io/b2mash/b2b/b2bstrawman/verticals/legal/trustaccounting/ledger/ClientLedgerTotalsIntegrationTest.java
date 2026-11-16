@@ -23,6 +23,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.Tru
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordPaymentRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordRefundRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordTransferRequest;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.ReverseRequest;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDate;
@@ -166,7 +167,11 @@ class ClientLedgerTotalsIntegrationTest {
     deposit(client, null, "1000.00", 10);
     UUID paymentId = payment(client, null, "300.00", 5);
     approve(paymentId);
-    as(ownerId, () -> transactionService.reverseTransaction(paymentId, "Paid in error"));
+    as(
+        ownerId,
+        () ->
+            transactionService.reverseTransaction(
+                paymentId, new ReverseRequest("Paid in error", null)));
 
     var ledger = ledger(client);
     assertThat(money(ledger.get("balance"))).isEqualByComparingTo("1000.00");

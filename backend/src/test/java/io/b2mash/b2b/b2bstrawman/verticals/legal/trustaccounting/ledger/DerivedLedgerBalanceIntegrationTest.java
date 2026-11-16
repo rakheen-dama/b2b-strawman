@@ -206,9 +206,10 @@ class DerivedLedgerBalanceIntegrationTest {
    * H-B2 (PR #1788 review): the client-ledger totals are driven by the registry — {@link
    * LedgerTotals#derivedBalance()} signs each total by {@code TrustTransactionType.ledgerSign()} —
    * and equal {@link TrustLedgerQueryRepository#clientBalance} for a client with every type posted,
-   * a reversed payment and a reversed deposit included, now and as at a date. The visible totals
-   * are those of HEAD: a reversed payment drops out of Payments; a credit reversal moves nothing in
-   * 646A (H-a, fixed in 649B), so the reversed deposit stays in Deposits, as on HEAD.
+   * a reversed payment and a reversed deposit included, now and as at a date. A reversal's contra
+   * row is grouped under the type it reverses, so it nets there: the reversed payment drops out of
+   * Payments and, since 649B fixed H-a (the approved credit contra posts −2 000), the reversed
+   * deposit drops out of Deposits.
    */
   @Test
   void ledgerTotals_derivedBalance_equalsClientBalance_withEveryTypeAndReversals() {
@@ -217,11 +218,13 @@ class DerivedLedgerBalanceIntegrationTest {
     var b = books.newClient("DLB Totals B");
     books.deposit(account, a, "10000.00");
     books.deposit(account, b, "4000.00");
-    // A reversed deposit (credit reversal: requested, then approved — moves nothing, H-a)
+    // A reversed deposit (credit reversal: requested — moves nothing — then approved: the contra
+    // posts −2 000; 649B fixed H-a)
     var reversedDeposit = books.deposit(account, a, "2000.00");
     books.handSetApproved(reversedDeposit); // H-d evidence (ruling #1)
     var depositReversal = books.reverse(account, reversedDeposit, Expected.none());
-    books.approve(account, depositReversal.id(), approverId, Expected.none());
+    books.approve(
+        account, depositReversal.id(), approverId, Expected.cashbookAndClient("-2000.00"));
     // A reversed payment (the money comes back) and a payment that stands
     var reversedPayment = books.requestPayment(account, a, "3000.00");
     books.approve(account, reversedPayment, approverId, Expected.cashbookAndClient("-3000.00"));
@@ -250,14 +253,15 @@ class DerivedLedgerBalanceIntegrationTest {
         LedgerTotals.byCustomer(
             books.read(() -> ledgerQueries.clientTotalsByType(account, clients, null)));
     var totalsA = now.get(a.id());
-    assertThat(totalsA.deposits()).isEqualByComparingTo("12000.00");
+    // 10 000 + 2 000 − 2 000 (the deposit's contra nets under Deposits)
+    assertThat(totalsA.deposits()).isEqualByComparingTo("10000.00");
     assertThat(totalsA.transfersIn()).isEqualByComparingTo("600.00");
     assertThat(totalsA.payments()).isEqualByComparingTo("500.00");
     assertThat(totalsA.feeTransfers()).isEqualByComparingTo("1150.00");
     assertThat(totalsA.refunds()).isEqualByComparingTo("250.00");
     assertThat(totalsA.transfersOut()).isEqualByComparingTo("1500.00");
-    // 12 000 + 600 − 500 − 1 150 − 250 − 1 500
-    assertThat(books.clientLedger(account, a)).isEqualByComparingTo("9200.00");
+    // 10 000 + 600 − 500 − 1 150 − 250 − 1 500
+    assertThat(books.clientLedger(account, a)).isEqualByComparingTo("7200.00");
     assertThat(books.clientLedger(account, b)).isEqualByComparingTo("4900.00");
 
     for (var client : List.of(a, b)) {

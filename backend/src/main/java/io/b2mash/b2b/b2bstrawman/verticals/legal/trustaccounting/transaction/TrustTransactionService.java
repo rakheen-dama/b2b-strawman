@@ -28,11 +28,13 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTran
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTransactionRecordedEvent;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestment;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.BankStatementLineRepository;
 import jakarta.validation.constraints.NotBlank;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -85,6 +87,7 @@ public class TrustTransactionService {
   private final VerticalModuleGuard moduleGuard;
   private final AuditService auditService;
   private final ApplicationEventPublisher eventPublisher;
+  private final BankStatementLineRepository bankStatementLineRepository;
   private final Clock clock;
 
   public TrustTransactionService(
@@ -103,6 +106,7 @@ public class TrustTransactionService {
       VerticalModuleGuard moduleGuard,
       AuditService auditService,
       ApplicationEventPublisher eventPublisher,
+      BankStatementLineRepository bankStatementLineRepository,
       Clock clock) {
     this.transactionRepository = transactionRepository;
     this.postingService = postingService;
@@ -119,6 +123,7 @@ public class TrustTransactionService {
     this.moduleGuard = moduleGuard;
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
+    this.bankStatementLineRepository = bankStatementLineRepository;
     this.clock = clock;
   }
 
@@ -197,7 +202,11 @@ public class TrustTransactionService {
 
   public record RejectRequest(@NotBlank String reason) {}
 
-  public record ReverseRequest(@NotBlank String reason) {}
+  /**
+   * A reversal (§16.3.11). {@code reversalDate} is optional: the date the bank shows the reversal,
+   * from the original's date to today; null means today ({@code LocalDate.now(clock)}).
+   */
+  public record ReverseRequest(@NotBlank String reason, LocalDate reversalDate) {}
 
   public record CashbookBalanceResponse(BigDecimal balance) {}
 
@@ -936,45 +945,35 @@ public class TrustTransactionService {
    */
   private void performApprovalCompletion(
       TrustTransaction transaction, UUID approverId, boolean isDualMode) {
-    // Check balance for the types that post on approval (PAYMENT, FEE_TRANSFER, REFUND). A credit
-    // REVERSAL awaiting approval skips this block and posts at zero effect (646A/HEAD — H-a).
+    // A credit contra awaiting approval (a deposit reversal, NEEDS_APPROVAL — §16.3.11, the H-a
+    // fix) posts the negation of its original now; the client — and the matter cell — must still
+    // cover it. Lock order: the pending contra row (locked by the caller), the original row, then
+    // the client's lock anchor.
     var type = TrustTransactionType.of(transaction.getTransactionType());
-    if (type.approval() == TrustTransactionType.Approval.REQUIRED) {
-      var customer =
-          customerRepository
-              .findById(transaction.getCustomerId())
+    TrustTransaction original = null;
+    if (type == TrustTransactionType.REVERSAL) {
+      original =
+          transactionRepository
+              .findByIdForUpdate(transaction.getReversalOf())
               .orElseThrow(
                   () ->
                       new ResourceNotFoundException(
-                          EntityNoun.CLIENT, transaction.getCustomerId()));
-
-      // Serialise with the client's other postings, then read the derived balance (ADR-378)
-      postingService.lockClient(transaction.getTrustAccountId(), transaction.getCustomerId());
-      var availableBalance =
-          ledgerQueries.clientBalance(
-              transaction.getTrustAccountId(), transaction.getCustomerId(), null);
-
-      if (availableBalance.compareTo(transaction.getAmount()) < 0) {
+                          "TrustTransaction", transaction.getReversalOf()));
+      if (original.getReversedById() != null
+          || !("RECORDED".equals(original.getStatus())
+              || "APPROVED".equals(original.getStatus()))) {
         throw new InvalidStateException(
-            "Insufficient trust balance",
-            "Insufficient trust balance for "
-                + customer.getName()
-                + ". Available: "
-                + rand(availableBalance)
-                + ", Requested: "
-                + rand(transaction.getAmount()));
+            "Cannot approve transaction",
+            "The transaction this reversal undoes is no longer posted or has already been"
+                + " reversed");
       }
-
-      // G89-F12: a debit on a matter (the fee transfer's matter is inferred from its fee note at
-      // record time) must also be covered by this client's money on that matter. The anchor lock
-      // above serialises the client's postings; this transaction is still AWAITING_APPROVAL, so
-      // the cell sum excludes it.
-      requireMatterCellCovers(
-          transaction.getTrustAccountId(),
-          transaction.getCustomerId(),
-          customer.getName(),
-          transaction.getProjectId(),
-          transaction.getAmount());
+      if (TrustPostingService.contraOf(original).ledgerEffect().signum() < 0
+          && transaction.getCustomerId() != null) {
+        requireClientCovers(transaction);
+      }
+    } else if (type.approval() == TrustTransactionType.Approval.REQUIRED) {
+      // The types that post on approval (PAYMENT, FEE_TRANSFER, REFUND) take money off the client.
+      requireClientCovers(transaction);
 
       // 441.9 / Phase 88 U15 (ADR-347, N-5): a fee transfer posts its real amount through the one
       // payment entry point — PARTIALLY_PAID when it leaves a balance, PAID when it clears it, and
@@ -1008,8 +1007,14 @@ public class TrustTransactionService {
       transaction.setApprovedBy(approverId);
       transaction.setApprovedAt(Instant.now());
     }
-    // APPROVED, effects from the registry, posted now (TrustPostingService, ADR-378)
-    postingService.postOnApproval(transaction, approverId);
+    // APPROVED and posted now (TrustPostingService, ADR-378): a REQUIRED row takes its registry
+    // effects; a credit contra takes the negation of its original's, and the original is marked
+    // REVERSED (it keeps its own effects — as-at history is unchanged).
+    if (original != null) {
+      postingService.postReversalOnApproval(transaction, original, approverId);
+    } else {
+      postingService.postOnApproval(transaction, approverId);
+    }
 
     auditService.log(
         AuditEventBuilder.builder()
@@ -1040,6 +1045,55 @@ public class TrustTransactionService {
             approverId,
             RequestScopes.getTenantIdOrNull(),
             RequestScopes.getOrgIdOrNull()));
+
+    // A contra posts now: re-project the portal at once (§16.3.11; idempotent with the approval
+    // event's re-projection — the recorded-event email filter ignores REVERSAL).
+    if (original != null) {
+      publishContraRecorded(transaction, approverId);
+    }
+  }
+
+  /**
+   * The client — and, for a mattered row, the matter cell — must cover {@code transaction}'s
+   * amount, which is about to leave the client's ledger. Takes the client's lock anchor first, so
+   * the derived balances read here cannot race with another posting for the client; the row is
+   * still AWAITING_APPROVAL, so neither sum includes it.
+   */
+  private void requireClientCovers(TrustTransaction transaction) {
+    var customer =
+        customerRepository
+            .findById(transaction.getCustomerId())
+            .orElseThrow(
+                () ->
+                    new ResourceNotFoundException(EntityNoun.CLIENT, transaction.getCustomerId()));
+
+    // Serialise with the client's other postings, then read the derived balance (ADR-378)
+    postingService.lockClient(transaction.getTrustAccountId(), transaction.getCustomerId());
+    var availableBalance =
+        ledgerQueries.clientBalance(
+            transaction.getTrustAccountId(), transaction.getCustomerId(), null);
+
+    if (availableBalance.compareTo(transaction.getAmount()) < 0) {
+      throw new InvalidStateException(
+          "Insufficient trust balance",
+          "Insufficient trust balance for "
+              + customer.getName()
+              + ". Available: "
+              + rand(availableBalance)
+              + ", Requested: "
+              + rand(transaction.getAmount()));
+    }
+
+    // G89-F12: a debit on a matter (the fee transfer's matter is inferred from its fee note at
+    // record time) must also be covered by this client's money on that matter. The anchor lock
+    // above serialises the client's postings; this transaction is still AWAITING_APPROVAL, so the
+    // cell sum excludes it.
+    requireMatterCellCovers(
+        transaction.getTrustAccountId(),
+        transaction.getCustomerId(),
+        customer.getName(),
+        transaction.getProjectId(),
+        transaction.getAmount());
   }
 
   // --- 441.5: Reject Transaction ---
@@ -1138,13 +1192,22 @@ public class TrustTransactionService {
     return toResponse(transaction);
   }
 
-  // --- 440.9: Transaction Reversal ---
+  // --- 440.9 / 649B: Transaction Reversal (contra entry, §16.3.11, ADR-378) ---
 
+  /**
+   * Reverses a posted row ({@code RECORDED} or {@code APPROVED} — founder ruling #1, H-d) by its
+   * type's registry rule: IMMEDIATE posts the contra at once; NEEDS_APPROVAL saves it awaiting
+   * approval (it posts on approval, H-a); PAIR reverses both legs of a transfer; VIA_PAIR, OWNER
+   * and NONE are refused. The contra is dated {@code request.reversalDate()} (default today; from
+   * the original's date to today); the original keeps its effects and date, so every earlier as-at
+   * balance is unchanged.
+   */
   @Transactional
-  public TrustTransactionResponse reverseTransaction(UUID transactionId, String reason) {
+  public TrustTransactionResponse reverseTransaction(UUID transactionId, ReverseRequest request) {
     moduleGuard.requireModule(MODULE_ID);
 
-    // Validate reason is provided
+    // Validate reason is provided (service callers bypass the controller's @Valid)
+    String reason = request == null ? null : request.reason();
     if (reason == null || reason.isBlank()) {
       throw new InvalidStateException("Invalid reversal", "Reversal reason is required");
     }
@@ -1155,48 +1218,128 @@ public class TrustTransactionService {
             .findByIdForUpdate(transactionId)
             .orElseThrow(() -> new ResourceNotFoundException("TrustTransaction", transactionId));
 
-    // TRANSFER_IN cannot be reversed directly — reverse the paired TRANSFER_OUT instead,
-    // which will automatically reverse both legs.
-    if ("TRANSFER_IN".equals(original.getTransactionType())) {
+    // A TRANSFER_IN (rule VIA_PAIR) cannot be reversed directly — reverse the paired TRANSFER_OUT
+    // instead, which reverses both legs.
+    var reversalRule = TrustTransactionType.of(original.getTransactionType()).reversal();
+    if (reversalRule == TrustTransactionType.Reversal.VIA_PAIR) {
       throw new InvalidStateException(
           "Cannot reverse TRANSFER_IN directly",
           "Reverse the paired TRANSFER_OUT instead to undo both legs of the transfer");
     }
 
-    // Validate trust account is not closed
-    var account =
-        trustAccountRepository
-            .findById(original.getTrustAccountId())
+    requireReversible(original);
+
+    requireNotAPlacementPayment(original);
+
+    var memberId = RequestScopes.requireMemberId();
+
+    // The original type's reversal rule (registry, ADR-378): PAIR (TRANSFER_OUT) reverses both
+    // legs; IMMEDIATE (debits — the money comes back) posts at once; NEEDS_APPROVAL (a deposit —
+    // the money leaves) awaits approval. OWNER is reversed only through its owner's own action;
+    // NONE (a REVERSAL) cannot be reversed.
+    if (reversalRule == TrustTransactionType.Reversal.OWNER) {
+      throw new InvalidStateException(
+          "Cannot reverse transaction",
+          "This entry is reversed from its own screen (its statement line or investment), not"
+              + " here");
+    }
+    if (reversalRule != TrustTransactionType.Reversal.PAIR
+        && reversalRule != TrustTransactionType.Reversal.IMMEDIATE
+        && reversalRule != TrustTransactionType.Reversal.NEEDS_APPROVAL) {
+      throw new InvalidStateException(
+          "Cannot reverse transaction",
+          "Transaction type " + original.getTransactionType() + " cannot be reversed");
+    }
+
+    var reversalDate = resolveReversalDate(request.reversalDate(), original);
+
+    if (reversalRule == TrustTransactionType.Reversal.PAIR) {
+      return reverseTransferOut(original, reason, reversalDate, memberId);
+    }
+    return toResponse(postContra(original, reason, reversalDate, memberId));
+  }
+
+  /**
+   * Reverses every posted original linked to a bank statement line — the unmatch of a {@code
+   * RECORDED} line (§16.3.5; first caller in 647A). Each contra is dated the <b>line's</b> date
+   * (the bank never did what the row said, so the pair leaves no trace in any as-at balance) and
+   * goes through the normal reversal path; only rules that post at once are accepted ({@code
+   * IMMEDIATE}, and {@code OWNER} — the unmatch is the owner's own action). Neither the line nor
+   * the originals' {@code bank_statement_line_id} is touched here (647A's unmatch does that).
+   *
+   * <p><b>Precondition (647A contract):</b> the caller must only invoke this for a line whose rows
+   * were <i>recorded from the statement</i>. An ordinary match ({@code AUTO_MATCHED} / {@code
+   * MANUALLY_MATCHED}) also sets {@code bank_statement_line_id} on a real firm payment, and
+   * unmatching it must only clear the link — never book a contra. This method cannot tell the two
+   * apart: {@code chk_bank_line_match_status} has no "recorded" state until 647A adds it, at which
+   * point 647A refuses here unless the line is in that state.
+   *
+   * <p>All originals are locked (finder order) and checked before the first contra is posted, so a
+   * refusal leaves nothing half-reversed; each contra then takes its client's lock anchor (lock
+   * order: originals, then client anchor — the same as {@link #reverseTransaction}).
+   */
+  @Transactional
+  public List<TrustTransaction> reverseForUnmatch(UUID bankStatementLineId) {
+    moduleGuard.requireModule(MODULE_ID);
+
+    var line =
+        bankStatementLineRepository
+            .findById(bankStatementLineId)
             .orElseThrow(
-                () -> new ResourceNotFoundException("TrustAccount", original.getTrustAccountId()));
+                () -> new ResourceNotFoundException("BankStatementLine", bankStatementLineId));
+    var memberId = RequestScopes.requireMemberId();
 
-    if (TrustAccountStatus.CLOSED == account.getStatus()) {
-      throw new InvalidStateException("Cannot reverse transaction", "Trust account is closed");
+    record Unmatched(TrustTransaction original, LocalDate reversalDate) {}
+    var originals = new ArrayList<Unmatched>();
+    for (var candidate :
+        transactionRepository.findPostedOriginalsByBankStatementLineId(
+            bankStatementLineId, List.of("RECORDED", "APPROVED"))) {
+      var original =
+          transactionRepository
+              .findByIdForUpdate(candidate.getId())
+              .orElseThrow(
+                  () -> new ResourceNotFoundException("TrustTransaction", candidate.getId()));
+      var rule = TrustTransactionType.of(original.getTransactionType()).reversal();
+      if (rule != TrustTransactionType.Reversal.IMMEDIATE
+          && rule != TrustTransactionType.Reversal.OWNER) {
+        throw new InvalidStateException(
+            "Cannot unmatch statement line",
+            "A statement-line unmatch cannot reverse a "
+                + original.getTransactionType()
+                + " transaction (reversal rule "
+                + rule
+                + ")");
+      }
+      requireReversible(original);
+      requireNotAPlacementPayment(original);
+      originals.add(
+          new Unmatched(original, resolveReversalDate(line.getTransactionDate(), original)));
     }
 
-    // Validate status — only APPROVED transactions can be reversed
-    if (!"APPROVED".equals(original.getStatus())) {
-      throw new InvalidStateException(
-          "Cannot reverse transaction", "Transaction must be in APPROVED status to be reversed");
+    var contras = new ArrayList<TrustTransaction>();
+    for (var unmatched : originals) {
+      contras.add(
+          postContra(
+              unmatched.original(),
+              "Statement line unmatched",
+              unmatched.reversalDate(),
+              memberId));
     }
+    return contras;
+  }
 
-    // Validate not already reversed — check both the original's reversedById (set for debit
-    // reversals) and whether a reversal transaction already exists (covers credit reversals
-    // where the original is not yet marked REVERSED until approval in Epic 441).
-    if (original.getReversedById() != null
-        || transactionRepository.existsByReversalOf(original.getId())) {
-      throw new InvalidStateException(
-          "Cannot reverse transaction", "Transaction has already been reversed");
-    }
-
-    // G89-F86 (D40): a PAYMENT that placed a trust investment is never reversed, whatever the
-    // investment's status — the investment is withdrawn instead. While the investment is ACTIVE or
-    // MATURED a reversal would credit the client while the s86 register (and getMaturing, the
-    // Section 35 data pack) still shows the money invested, and the investment could never be
-    // withdrawn; once it is WITHDRAWN the withdrawal already returned the money, so a reversal
-    // would
-    // credit the client twice (PR #1757 review). Lock order as in TrustInvestmentService
-    // .withdrawInvestment — the placement row (locked above), then the investment row.
+  /**
+   * G89-F86 (D40): a PAYMENT that placed a trust investment is never reversed, whatever the
+   * investment's status — the investment is withdrawn instead. While the investment is ACTIVE or
+   * MATURED a reversal would credit the client while the s86 register (and getMaturing, the Section
+   * 35 data pack) still shows the money invested, and the investment could never be withdrawn; once
+   * it is WITHDRAWN the withdrawal already returned the money, so a reversal would credit the
+   * client twice (PR #1757 review). Applied by {@link #reverseTransaction} and {@link
+   * #reverseForUnmatch} (CodeRabbit, PR #1789). Lock order as in
+   * TrustInvestmentService.withdrawInvestment — the placement row (locked by the caller), then the
+   * investment row.
+   */
+  private void requireNotAPlacementPayment(TrustTransaction original) {
     var placedInvestment =
         "PAYMENT".equals(original.getTransactionType())
             ? trustInvestmentRepository.findByPlacementTransactionIdForUpdate(original.getId())
@@ -1208,53 +1351,87 @@ public class TrustTransactionService {
               + placedInvestment.get().getStatus()
               + "). Withdraw the investment instead of reversing its placement payment.");
     }
+  }
 
-    var memberId = RequestScopes.requireMemberId();
+  /**
+   * The checks every reversal path shares: the account is open, the original is posted ({@code
+   * RECORDED} or {@code APPROVED} — founder ruling #1, H-d) and not already reversed. A {@code
+   * REJECTED} contra never posted, so it does not count (H-c); a pending one still blocks.
+   */
+  private void requireReversible(TrustTransaction original) {
+    var account =
+        trustAccountRepository
+            .findById(original.getTrustAccountId())
+            .orElseThrow(
+                () -> new ResourceNotFoundException("TrustAccount", original.getTrustAccountId()));
 
-    // The original type's reversal rule (registry, ADR-378): PAIR (TRANSFER_OUT) reverses both
-    // legs; IMMEDIATE (debits — the money comes back) posts at once; NEEDS_APPROVAL (a deposit —
-    // the money leaves) awaits approval. Anything else (a REVERSAL) cannot be reversed.
-    var reversalRule = TrustTransactionType.of(original.getTransactionType()).reversal();
-    if (reversalRule == TrustTransactionType.Reversal.PAIR) {
-      return reverseTransferOut(original, reason, memberId);
+    if (TrustAccountStatus.CLOSED == account.getStatus()) {
+      throw new InvalidStateException("Cannot reverse transaction", "Trust account is closed");
     }
 
-    boolean isDebitType = reversalRule == TrustTransactionType.Reversal.IMMEDIATE;
-    if (!isDebitType && reversalRule != TrustTransactionType.Reversal.NEEDS_APPROVAL) {
+    if ("REVERSED".equals(original.getStatus())) {
+      throw new InvalidStateException(
+          "Cannot reverse transaction", "Transaction has already been reversed");
+    }
+    if (!"RECORDED".equals(original.getStatus()) && !"APPROVED".equals(original.getStatus())) {
+      throw new InvalidStateException(
+          "Cannot reverse transaction", "Only a recorded or approved transaction can be reversed");
+    }
+
+    if (original.getReversedById() != null
+        || transactionRepository.existsByReversalOfAndStatusNot(original.getId(), "REJECTED")) {
+      throw new InvalidStateException(
+          "Cannot reverse transaction", "Transaction has already been reversed");
+    }
+  }
+
+  /**
+   * The contra's date: {@code requested}, or today ({@code LocalDate.now(clock)}, the SA business
+   * date) when null; never in the future and never before the original's own date (§16.3.11).
+   */
+  private LocalDate resolveReversalDate(LocalDate requested, TrustTransaction original) {
+    var today = LocalDate.now(clock);
+    var reversalDate = requested != null ? requested : today;
+    if (reversalDate.isAfter(today)) {
+      throw new InvalidStateException(
+          "Cannot reverse transaction", "The reversal date cannot be in the future");
+    }
+    if (reversalDate.isBefore(original.getTransactionDate())) {
       throw new InvalidStateException(
           "Cannot reverse transaction",
-          "Transaction type " + original.getTransactionType() + " cannot be reversed");
+          "The reversal date cannot be before the transaction date ("
+              + original.getTransactionDate()
+              + ")");
     }
+    return reversalDate;
+  }
 
-    // Build reversal reference, truncating to 200-char column limit
-    String reversalRef = buildReversalReference(original.getReference());
+  /**
+   * One contra entry for {@code original} (IMMEDIATE, OWNER or NEEDS_APPROVAL rule), dated {@code
+   * reversalDate}. A contra that posts now runs under the client's lock anchor, cascades a fee
+   * transfer's reversal into its fee note, and re-projects the portal; a credit contra is saved
+   * awaiting approval and moves nothing yet. Audited as {@code trust_transaction.reversed}.
+   */
+  private TrustTransaction postContra(
+      TrustTransaction original, String reason, LocalDate reversalDate, UUID memberId) {
+    boolean postsNow =
+        TrustTransactionType.of(original.getTransactionType()).reversal()
+            != TrustTransactionType.Reversal.NEEDS_APPROVAL;
 
-    var reversal =
-        new TrustTransaction(
-            original.getTrustAccountId(),
-            "REVERSAL",
-            original.getAmount(),
-            original.getCustomerId(),
-            original.getProjectId(),
-            original.getCounterpartyCustomerId(),
-            reversalRef,
-            reason,
-            LocalDate.now(clock),
-            null, // status: decided by postReversal from the original's reversal rule
-            memberId);
+    var reversal = newContra(original, reason, reversalDate, memberId);
 
-    // A debit reversal moves the client's balance: serialise with its other postings first
-    if (isDebitType && original.getCustomerId() != null) {
+    // A contra that posts now moves the client's balance: serialise with its other postings first
+    if (postsNow && original.getCustomerId() != null) {
       postingService.lockClient(original.getTrustAccountId(), original.getCustomerId());
     }
 
-    // Links reversal_of. A debit reversal (immediate) posts RECORDED (its final status, no
-    // approval needed) and marks the original REVERSED with its effects zeroed, so the money comes
-    // back to the derived balance (646A keeps HEAD semantics; 649B posts the contra entry). A
-    // credit reversal is saved AWAITING_APPROVAL and leaves the original untouched.
+    // Links reversal_of. A contra that posts now is RECORDED (its final status) carrying the
+    // negation of the original's effect, and the original is marked REVERSED with its own effects
+    // kept (ADR-378). A credit contra is saved AWAITING_APPROVAL and leaves the original untouched
+    // until it is approved (performApprovalCompletion).
     var savedReversal = postingService.postReversal(reversal, original);
 
-    if (isDebitType) {
+    if (postsNow) {
       // GAP-L-70: cascade FEE_TRANSFER reversal back into the invoice domain.
       // When the trust ledger rolls back, the linked invoice must roll back symmetrically
       // (payment_event deleted; PAID/PARTIALLY_PAID -> SENT or PARTIALLY_PAID, recomputed from the
@@ -1308,10 +1485,8 @@ public class TrustTransactionService {
               original.getAmount());
         }
       }
+      publishContraRecorded(savedReversal, memberId);
     }
-    // For credit reversals (AWAITING_APPROVAL): do NOT mark the original as REVERSED yet.
-    // The original remains APPROVED until the reversal is itself approved (Epic 441 scope).
-    // Only the reversal_of FK on the new reversal transaction links them for now.
 
     auditService.log(
         AuditEventBuilder.builder()
@@ -1327,19 +1502,21 @@ public class TrustTransactionService {
                         "original_type", original.getTransactionType(),
                         "amount", original.getAmount().toString(),
                         "reversal_status", savedReversal.getStatus(),
-                        "reason", reason)))
+                        "reason", reason,
+                        "reversal_date", reversalDate.toString())))
             .build());
 
-    return toResponse(savedReversal);
+    return savedReversal;
   }
 
   /**
    * Reverses a TRANSFER_OUT by reversing both legs: the TRANSFER_OUT (credit back to source) and
-   * the paired TRANSFER_IN (debit from target). Transfer reversals are internal moves, so both legs
-   * are immediate (RECORDED, no approval needed) and cashbook-neutral.
+   * the paired TRANSFER_IN (debit from target). Transfer reversals are internal moves, so both
+   * contras post at once (RECORDED, no approval needed), cashbook-neutral, dated {@code
+   * reversalDate}.
    */
   private TrustTransactionResponse reverseTransferOut(
-      TrustTransaction original, String reason, UUID memberId) {
+      TrustTransaction original, String reason, LocalDate reversalDate, UUID memberId) {
     // Find the paired TRANSFER_IN: same reference, same trust account, TRANSFER_IN type,
     // targeted at the counterparty customer
     var pairedTransferIn =
@@ -1355,9 +1532,10 @@ public class TrustTransactionService {
                         "Cannot reverse transfer",
                         "Paired TRANSFER_IN not found for reference: " + original.getReference()));
 
-    // Validate paired TRANSFER_IN is not already reversed
+    // Validate paired TRANSFER_IN is not already reversed (a REJECTED contra never posted)
     if (pairedTransferIn.getReversedById() != null
-        || transactionRepository.existsByReversalOf(pairedTransferIn.getId())) {
+        || transactionRepository.existsByReversalOfAndStatusNot(
+            pairedTransferIn.getId(), "REJECTED")) {
       throw new InvalidStateException(
           "Cannot reverse transaction", "Paired TRANSFER_IN has already been reversed");
     }
@@ -1401,43 +1579,20 @@ public class TrustTransactionService {
         pairedTransferIn.getProjectId(),
         pairedTransferIn.getAmount());
 
-    String reversalRef = buildReversalReference(original.getReference());
+    // Contra for the TRANSFER_OUT (credits the source back); the TRANSFER_OUT is marked REVERSED
+    // and keeps its own effect
+    var savedOutReversal =
+        postingService.postReversal(newContra(original, reason, reversalDate, memberId), original);
 
-    // Create reversal for the TRANSFER_OUT (credits source back)
-    var outReversal =
-        new TrustTransaction(
-            original.getTrustAccountId(),
-            "REVERSAL",
-            original.getAmount(),
-            original.getCustomerId(),
-            original.getProjectId(),
-            original.getCounterpartyCustomerId(),
-            reversalRef,
-            reason,
-            LocalDate.now(clock),
-            null, // status: decided by postReversal
-            memberId);
-    // Posts the reversal and marks the TRANSFER_OUT REVERSED with its effect zeroed (credits the
-    // source back — HEAD semantics, 646A)
-    var savedOutReversal = postingService.postReversal(outReversal, original);
+    // Contra for the TRANSFER_IN (debits the target); the TRANSFER_IN is marked REVERSED and keeps
+    // its own effect. Same reference as the OUT contra (the pair shares one).
+    var savedInReversal =
+        postingService.postReversal(
+            newContra(pairedTransferIn, reason, reversalDate, memberId), pairedTransferIn);
 
-    // Create reversal for the TRANSFER_IN (debits target)
-    var inReversal =
-        new TrustTransaction(
-            pairedTransferIn.getTrustAccountId(),
-            "REVERSAL",
-            pairedTransferIn.getAmount(),
-            pairedTransferIn.getCustomerId(),
-            pairedTransferIn.getProjectId(),
-            pairedTransferIn.getCounterpartyCustomerId(),
-            reversalRef,
-            reason,
-            LocalDate.now(clock),
-            null, // status: decided by postReversal
-            memberId);
-    // Posts the reversal and marks the TRANSFER_IN REVERSED with its effect zeroed (debits the
-    // target)
-    postingService.postReversal(inReversal, pairedTransferIn);
+    // One recorded event per contra leg (as recordTransfer — GAP-L-52): both matters re-project.
+    publishContraRecorded(savedOutReversal, memberId);
+    publishContraRecorded(savedInReversal, memberId);
 
     auditService.log(
         AuditEventBuilder.builder()
@@ -1455,10 +1610,48 @@ public class TrustTransactionService {
                         "original_type", original.getTransactionType(),
                         "amount", original.getAmount().toString(),
                         "reversal_status", "RECORDED",
-                        "reason", reason)))
+                        "reason", reason,
+                        "reversal_date", reversalDate.toString())))
             .build());
 
     return toResponse(savedOutReversal);
+  }
+
+  /** A {@code REVERSAL} draft for {@code original}: its ledger target, its amount, its own date. */
+  private static TrustTransaction newContra(
+      TrustTransaction original, String reason, LocalDate reversalDate, UUID memberId) {
+    return new TrustTransaction(
+        original.getTrustAccountId(),
+        "REVERSAL",
+        original.getAmount(),
+        original.getCustomerId(),
+        original.getProjectId(),
+        original.getCounterpartyCustomerId(),
+        // Build reversal reference, truncating to 200-char column limit
+        buildReversalReference(original.getReference()),
+        reason,
+        reversalDate,
+        null, // status: decided by postReversal from the original's reversal rule
+        memberId);
+  }
+
+  /**
+   * A contra posted: publish the recorded event so the portal read-model re-projects the matter at
+   * once (§16.3.11). The portal email channel only mails deposits, so no client email is sent.
+   */
+  private void publishContraRecorded(TrustTransaction contra, UUID memberId) {
+    eventPublisher.publishEvent(
+        TrustTransactionRecordedEvent.recorded(
+            contra.getId(),
+            contra.getTrustAccountId(),
+            contra.getProjectId(),
+            "REVERSAL",
+            contra.getAmount(),
+            contra.getTransactionDate(),
+            contra.getCustomerId(),
+            memberId,
+            RequestScopes.getTenantIdOrNull(),
+            RequestScopes.getOrgIdOrNull()));
   }
 
   // --- 440.10: Cashbook Balance ---

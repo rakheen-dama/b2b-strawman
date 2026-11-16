@@ -33,6 +33,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountSer
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateTrustAccountRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordDepositRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordFeeTransferRequest;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.ReverseRequest;
 import jakarta.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -235,7 +236,8 @@ class TrustFeeTransferReversalCascadeTest {
                   applicationEvents.clear();
 
                   transactionService.reverseTransaction(
-                      feeTransferTxnIdHolder[0], "Filed against wrong invoice");
+                      feeTransferTxnIdHolder[0],
+                      new ReverseRequest("Filed against wrong invoice", null));
 
                   var invoice = invoiceRepository.findById(invoiceIdHolder[0]).orElseThrow();
                   assertThat(invoice.getStatus())
@@ -389,7 +391,8 @@ class TrustFeeTransferReversalCascadeTest {
                   applicationEvents.clear();
 
                   transactionService.reverseTransaction(
-                      feeTransferTxnIdHolder[0], "Trust transfer was wrong amount");
+                      feeTransferTxnIdHolder[0],
+                      new ReverseRequest("Trust transfer was wrong amount", null));
 
                   // ADR-347 (Phase 88 U15): amount_paid is recomputed from the remaining COMPLETED
                   // events — the prior 500.00 no longer covers the total, so the fee note is
@@ -638,7 +641,8 @@ class TrustFeeTransferReversalCascadeTest {
             transactionTemplate.executeWithoutResult(
                 tx -> {
                   applicationEvents.clear();
-                  transactionService.reverseTransaction(txnId, "Wrong matter");
+                  transactionService.reverseTransaction(
+                      txnId, new ReverseRequest("Wrong matter", null));
 
                   var invoice = invoiceRepository.findById(note.invoiceId()).orElseThrow();
                   assertThat(invoice.getStatus()).isEqualTo(InvoiceStatus.SENT);
@@ -796,7 +800,8 @@ class TrustFeeTransferReversalCascadeTest {
                   applicationEvents.clear();
 
                   // Reverse — should succeed without touching the invoice domain
-                  transactionService.reverseTransaction(paymentTxnIdHolder[0], "Bank error");
+                  transactionService.reverseTransaction(
+                      paymentTxnIdHolder[0], new ReverseRequest("Bank error", null));
 
                   // No invoice events published
                   assertThat(applicationEvents.stream(InvoicePaymentReversedEvent.class).toList())

@@ -24,6 +24,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.Tru
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordDepositRequest;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.ReverseRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionType;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -37,6 +38,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Import;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -69,6 +71,7 @@ class TrustLedgerPortalSyncServiceIntegrationTest {
   @Autowired private TrustLedgerPortalSyncService syncService;
   @Autowired private PlatformTransactionManager transactionManager;
   @Autowired private TrustTransactionService trustTransactionService;
+  @Autowired private JdbcTemplate jdbcTemplate;
 
   private String tenantSchema;
   private UUID customerId;
@@ -133,6 +136,11 @@ class TrustLedgerPortalSyncServiceIntegrationTest {
       portalTrustRepo.deleteTransactionsByCustomer(customerId);
       portalTrustRepo.deleteBalancesByCustomer(customerId);
     }
+    // A reversal links rows to each other (reversal_of / reversed_by_id self-FKs, no cascade):
+    // unlink them first so deleteAll can remove the rows in any order (649B).
+    jdbcTemplate.update(
+        "UPDATE \"%s\".trust_transactions SET reversal_of = NULL, reversed_by_id = NULL"
+            .formatted(tenantSchema));
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .where(RequestScopes.ORG_ID, ORG_ID)
         .where(RequestScopes.MEMBER_ID, memberId)
@@ -228,6 +236,92 @@ class TrustLedgerPortalSyncServiceIntegrationTest {
 
     var balance = portalTrustRepo.findBalance(customerId, matterId).orElseThrow();
     assertThat(balance.currentBalance()).isEqualByComparingTo("4200.00");
+  }
+
+  // ==========================================================================
+  // Phase 92 649B: a reversal re-projects the portal at once (§16.3.11). The
+  // contra posts with its own recorded event; the replay shows the reversed
+  // original and its "Reversal" row, each with its own effect.
+  // ==========================================================================
+
+  @Test
+  void reversalReprojectsThePortalAtOnce() {
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, memberId)
+        .run(
+            () ->
+                tenantTxTemplate.executeWithoutResult(
+                    status ->
+                        trustTransactionService.recordDeposit(
+                            trustAccountId,
+                            new RecordDepositRequest(
+                                customerId,
+                                matterId,
+                                new BigDecimal("3000.00"),
+                                "DEP-REV-SYNC-1",
+                                "Deposit before a reversed payment",
+                                LocalDate.of(2026, 4, 5)))));
+    // Approved without an event: the portal has not seen the payment yet.
+    UUID paymentId =
+        recordApprovedTransactionOnDate(
+            "PAYMENT",
+            new BigDecimal("1000.00"),
+            "PAY-REV-SYNC-1",
+            "Payment made in error",
+            LocalDate.of(2026, 4, 6));
+
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, memberId)
+        .run(
+            () ->
+                tenantTxTemplate.executeWithoutResult(
+                    status ->
+                        trustTransactionService.reverseTransaction(
+                            paymentId, new ReverseRequest("Paid in error", null))));
+
+    // No further event: the contra's own recorded event re-projected the matter.
+    var transactions = portalTrustRepo.findTransactions(customerId, matterId, null, null, 50, 0);
+    assertThat(transactions)
+        .extracting(t -> t.transactionType())
+        .containsExactlyInAnyOrder("DEPOSIT", "PAYMENT", "REVERSAL");
+    var payment =
+        transactions.stream()
+            .filter(t -> "PAYMENT".equals(t.transactionType()))
+            .findFirst()
+            .orElseThrow();
+    assertThat(payment.runningBalance()).isEqualByComparingTo("2000.00");
+    var reversal =
+        transactions.stream()
+            .filter(t -> "REVERSAL".equals(t.transactionType()))
+            .findFirst()
+            .orElseThrow();
+    assertThat(reversal.amount()).isEqualByComparingTo("1000.00");
+    assertThat(reversal.runningBalance()).isEqualByComparingTo("3000.00");
+    // PR #1789 review: the contra's description is the firm user's free-text reversal reason —
+    // never projected to the client. The portal shows a generated "<client label> — <reference>".
+    assertReversalDescriptionIsGenerated(reversal.description());
+
+    var balance = portalTrustRepo.findBalance(customerId, matterId).orElseThrow();
+    assertThat(balance.currentBalance()).isEqualByComparingTo("3000.00");
+
+    // The backfill projection path generates the same description.
+    ScopedValue.where(RequestScopes.ORG_ID, ORG_ID)
+        .call(() -> syncService.backfillForTenant(ORG_ID));
+    var backfilledReversal =
+        portalTrustRepo.findTransactions(customerId, matterId, null, null, 50, 0).stream()
+            .filter(t -> "REVERSAL".equals(t.transactionType()))
+            .findFirst()
+            .orElseThrow();
+    assertReversalDescriptionIsGenerated(backfilledReversal.description());
+  }
+
+  private static void assertReversalDescriptionIsGenerated(String description) {
+    assertThat(description)
+        .doesNotContain("Paid in error")
+        .doesNotContain("REVERSAL")
+        .isEqualTo("Reversal \u2014 REV-PAY-REV-SYNC-1");
   }
 
   // ==========================================================================

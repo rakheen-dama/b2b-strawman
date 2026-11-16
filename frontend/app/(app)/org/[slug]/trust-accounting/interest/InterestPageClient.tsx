@@ -58,9 +58,12 @@ type RowActionLabel = "Continue" | "Review";
 /**
  * §14.3.2 action table (ADR-362) without approve and post: a calculated run is never approved or
  * posted (Phase 92 645A, section 86(5)) and the backend refuses both. A never-calculated draft is
- * continued by a MANAGE_TRUST member; a calculated draft can be reviewed by anyone on the page.
+ * continued by a MANAGE_TRUST member; a calculated draft can be reviewed by anyone on the page. A
+ * legacy APPROVED run (approved before the guard) can only be reviewed read-only; POSTED offers
+ * nothing.
  */
 function rowAction(run: InterestRun, hasManageTrust: boolean): RowActionLabel | null {
+  if (run.status === "APPROVED") return "Review";
   if (run.status !== "DRAFT") return null;
   if (!(run.allocationCount > 0)) return hasManageTrust ? "Continue" : null;
   return "Review";

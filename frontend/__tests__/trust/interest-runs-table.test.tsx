@@ -164,7 +164,8 @@ describe("Interest runs table — Actions column (630B)", () => {
 
     expect(buttonNames("d0")).toEqual(["Continue", "Delete draft"]);
     expect(buttonNames("d2")).toEqual(["Review", "Delete draft"]);
-    expect(buttonNames("ap")).toEqual([]);
+    // A legacy APPROVED run (approved before the guard) can only be reviewed read-only.
+    expect(buttonNames("ap")).toEqual(["Review"]);
     expect(buttonNames("po")).toEqual([]);
     expect(screen.queryByText("Awaiting approval by another member")).toBeNull();
   });
@@ -176,7 +177,8 @@ describe("Interest runs table — Actions column (630B)", () => {
     expect(buttonNames("d0")).toEqual([]);
     expect(buttonNames("d2")).toEqual(["Review"]);
     expect(within(row("d2")).queryByText("Awaiting approval by another member")).toBeNull();
-    expect(buttonNames("ap")).toEqual([]);
+    expect(buttonNames("ap")).toEqual(["Review"]);
+    expect(buttonNames("po")).toEqual([]);
     expect(screen.queryByRole("button", { name: "Delete draft" })).toBeNull();
     expect(screen.queryByRole("button", { name: "New Interest Run" })).toBeNull();
   });
@@ -186,7 +188,8 @@ describe("Interest runs table — Actions column (630B)", () => {
     await renderPage();
 
     expect(buttonNames("d2")).toEqual(["Review"]);
-    expect(buttonNames("ap")).toEqual([]);
+    expect(buttonNames("ap")).toEqual(["Review"]);
+    expect(buttonNames("po")).toEqual([]);
     expect(screen.queryByRole("button", { name: "Delete draft" })).toBeNull();
   });
 
@@ -293,6 +296,40 @@ describe("Interest runs table — Actions column (630B)", () => {
     await waitFor(() => expect(wizard).toHaveTextContent("Step 2 of 2"));
     expect(within(wizard).getByTestId("allocations-table")).toBeInTheDocument();
     expect(within(wizard).queryAllByRole("button", { name: /approve|post/i })).toEqual([]);
+  });
+
+  it("Review on a legacy APPROVED run opens the wizard read-only at step 2 — no approve or post", async () => {
+    const user = userEvent.setup();
+    mockFetchMyCapabilities.mockResolvedValue(caps(ALL, OTHER));
+    mockFetchInterestRunDetail.mockResolvedValue({
+      run: AP,
+      allocations: [
+        {
+          id: "alloc-ap",
+          interestRunId: "ap",
+          clientId: "cust-1",
+          averageDailyBalance: 1000,
+          daysInPeriod: 31,
+          grossInterest: 100,
+          lpffShare: 50,
+          clientShare: 50,
+          trustTransactionId: null,
+          lpffRateId: "rate-1",
+          statutoryRateApplied: false,
+          createdAt: "2026-04-01T09:00:00Z",
+        },
+      ],
+    });
+    await renderPage();
+
+    await user.click(within(row("ap")).getByRole("button", { name: "Review" }));
+
+    await waitFor(() => expect(mockFetchInterestRunDetail).toHaveBeenCalledWith("ap"));
+    const wizard = await screen.findByTestId("interest-run-wizard");
+    await waitFor(() => expect(wizard).toHaveTextContent("Step 2 of 2"));
+    expect(within(wizard).getByTestId("allocations-table")).toBeInTheDocument();
+    expect(within(wizard).queryAllByRole("button", { name: /approve|post/i })).toEqual([]);
+    expect(screen.queryAllByRole("button", { name: /approve|post/i })).toEqual([]);
   });
 });
 

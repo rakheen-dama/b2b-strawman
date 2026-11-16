@@ -213,17 +213,21 @@ class InterestPostingGuardIntegrationTest {
     var runId = createAndCalculate(LocalDate.of(2025, 5, 1), LocalDate.of(2025, 5, 31));
     long before = rowsOnAccount();
 
-    mockMvc
-        .perform(
+    ProblemDetailAssertions.assertProblemWithDetail(
+        mockMvc.perform(
             post("/api/interest-runs/" + runId + "/approve")
-                .with(TestJwtFactory.adminJwt(ORG_ID, ADMIN_SUBJECT)))
-        .andExpect(status().isBadRequest());
+                .with(TestJwtFactory.adminJwt(ORG_ID, ADMIN_SUBJECT))),
+        HttpStatus.BAD_REQUEST,
+        TITLE,
+        DETAIL);
     markApproved(runId);
-    mockMvc
-        .perform(
+    ProblemDetailAssertions.assertProblemWithDetail(
+        mockMvc.perform(
             post("/api/interest-runs/" + runId + "/post")
-                .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUBJECT)))
-        .andExpect(status().isBadRequest());
+                .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUBJECT))),
+        HttpStatus.BAD_REQUEST,
+        TITLE,
+        DETAIL);
 
     // Id-scoped: this run's account only, and no row carries this run's reference
     assertThat(rowsOnAccount() - before).isZero();

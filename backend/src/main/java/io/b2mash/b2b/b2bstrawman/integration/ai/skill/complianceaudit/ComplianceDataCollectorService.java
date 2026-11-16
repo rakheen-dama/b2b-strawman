@@ -25,7 +25,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrack
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccount;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountStatus;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedgerQueryRepository;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Duration;
@@ -71,7 +71,7 @@ public class ComplianceDataCollectorService {
   private final ProcessingActivityRepository processingActivityRepository;
   private final DataSubjectRequestRepository dataSubjectRequestRepository;
   private final TrustAccountRepository trustAccountRepository;
-  private final ClientLedgerCardRepository clientLedgerCardRepository;
+  private final TrustLedgerQueryRepository trustLedgerQueries;
   private final PrescriptionTrackerRepository prescriptionTrackerRepository;
   private final RetentionPolicyRepository retentionPolicyRepository;
   private final RetentionService retentionService;
@@ -85,7 +85,7 @@ public class ComplianceDataCollectorService {
       ProcessingActivityRepository processingActivityRepository,
       DataSubjectRequestRepository dataSubjectRequestRepository,
       TrustAccountRepository trustAccountRepository,
-      ClientLedgerCardRepository clientLedgerCardRepository,
+      TrustLedgerQueryRepository trustLedgerQueries,
       PrescriptionTrackerRepository prescriptionTrackerRepository,
       RetentionPolicyRepository retentionPolicyRepository,
       RetentionService retentionService,
@@ -97,7 +97,7 @@ public class ComplianceDataCollectorService {
     this.processingActivityRepository = processingActivityRepository;
     this.dataSubjectRequestRepository = dataSubjectRequestRepository;
     this.trustAccountRepository = trustAccountRepository;
-    this.clientLedgerCardRepository = clientLedgerCardRepository;
+    this.trustLedgerQueries = trustLedgerQueries;
     this.prescriptionTrackerRepository = prescriptionTrackerRepository;
     this.retentionPolicyRepository = retentionPolicyRepository;
     this.retentionService = retentionService;
@@ -278,13 +278,12 @@ public class ComplianceDataCollectorService {
         trustAccountRepository.findByStatus(TrustAccountStatus.ACTIVE);
     int accountCount = activeAccounts.size();
 
-    // Check for negative balances (boundary violations) on client ledger cards
+    // Check for negative balances (boundary violations) on the derived client ledgers (ADR-378)
     List<String> violations = new ArrayList<>();
     int unreconciledItems = 0;
 
     for (TrustAccount account : activeAccounts) {
-      BigDecimal totalBalance =
-          clientLedgerCardRepository.calculateTotalTrustBalance(account.getId());
+      BigDecimal totalBalance = trustLedgerQueries.clientLedgerTotal(account.getId(), null);
       if (totalBalance.compareTo(BigDecimal.ZERO) < 0) {
         violations.add(
             "Account '"

@@ -31,8 +31,9 @@ import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleRegistry;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccount;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountType;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustPostingService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -78,7 +79,8 @@ public class LegalDemoDataSeeder extends BaseDemoDataSeeder {
 
   private final VerticalModuleRegistry verticalModuleRegistry;
   private final TrustAccountRepository trustAccountRepository;
-  private final TrustTransactionRepository trustTransactionRepository;
+  private final TrustPostingService trustPostingService;
+  private final ClientLedgerCardRepository clientLedgerCardRepository;
   private final ChecklistTemplateRepository checklistTemplateRepository;
   private final ChecklistTemplateItemRepository checklistTemplateItemRepository;
   private final ChecklistInstanceRepository checklistInstanceRepository;
@@ -98,7 +100,8 @@ public class LegalDemoDataSeeder extends BaseDemoDataSeeder {
       ProjectMemberRepository projectMemberRepository,
       VerticalModuleRegistry verticalModuleRegistry,
       TrustAccountRepository trustAccountRepository,
-      TrustTransactionRepository trustTransactionRepository,
+      TrustPostingService trustPostingService,
+      ClientLedgerCardRepository clientLedgerCardRepository,
       ChecklistTemplateRepository checklistTemplateRepository,
       ChecklistTemplateItemRepository checklistTemplateItemRepository,
       ChecklistInstanceRepository checklistInstanceRepository,
@@ -117,7 +120,8 @@ public class LegalDemoDataSeeder extends BaseDemoDataSeeder {
         projectMemberRepository);
     this.verticalModuleRegistry = verticalModuleRegistry;
     this.trustAccountRepository = trustAccountRepository;
-    this.trustTransactionRepository = trustTransactionRepository;
+    this.trustPostingService = trustPostingService;
+    this.clientLedgerCardRepository = clientLedgerCardRepository;
     this.checklistTemplateRepository = checklistTemplateRepository;
     this.checklistTemplateItemRepository = checklistTemplateItemRepository;
     this.checklistInstanceRepository = checklistInstanceRepository;
@@ -192,8 +196,10 @@ public class LegalDemoDataSeeder extends BaseDemoDataSeeder {
   /**
    * Seeds one SECTION_86 trust account with deposits and a payment that leaves one trust creditor
    * in debit — a Rule 54.14.9 ("no trust creditor in debit") anomaly the trust-reconciliation skill
-   * is meant to flag. Balances count RECORDED/APPROVED transactions: DEPOSIT adds, PAYMENT
-   * subtracts.
+   * is meant to flag. Every row is posted through {@link TrustPostingService} (R2, §16.3.15):
+   * deposits are recorded, payments recorded awaiting approval and then approved. The service
+   * applies no sufficiency check, so the second client is left R3 000,00 in debit on purpose
+   * (ruling #2). EQ-2 holds: cashbook R27 000,00 = R30 000,00 + (−R3 000,00).
    */
   private void seedTrustAccounting(List<CustomerInfo> customers, UUID createdBy) {
     List<CustomerInfo> active =
@@ -230,8 +236,12 @@ public class LegalDemoDataSeeder extends BaseDemoDataSeeder {
     UUID healthyMatter = firstMatterOf(healthy.id());
     UUID inDebitMatter = firstMatterOf(inDebit.id());
 
+    // The two clients' lock anchors (ADR-378) — every client with rows has one
+    clientLedgerCardRepository.insertLockAnchorIfAbsent(accountId, healthy.id());
+    clientLedgerCardRepository.insertLockAnchorIfAbsent(accountId, inDebit.id());
+
     // Healthy creditor: 50 000 in, 20 000 out -> +30 000.
-    saveTrustTxn(
+    postDeposit(
         accountId,
         "DEPOSIT",
         "50000.00",
@@ -240,7 +250,7 @@ public class LegalDemoDataSeeder extends BaseDemoDataSeeder {
         "Funds received on account",
         60,
         createdBy);
-    saveTrustTxn(
+    postPayment(
         accountId,
         "PAYMENT",
         "20000.00",
@@ -250,7 +260,7 @@ public class LegalDemoDataSeeder extends BaseDemoDataSeeder {
         30,
         createdBy);
     // Debit creditor: 15 000 in, 18 000 out -> -3 000 (overpayment in error).
-    saveTrustTxn(
+    postDeposit(
         accountId,
         "DEPOSIT",
         "15000.00",
@@ -259,7 +269,7 @@ public class LegalDemoDataSeeder extends BaseDemoDataSeeder {
         "Deposit on account",
         50,
         createdBy);
-    saveTrustTxn(
+    postPayment(
         accountId,
         "PAYMENT",
         "18000.00",
@@ -274,7 +284,40 @@ public class LegalDemoDataSeeder extends BaseDemoDataSeeder {
         inDebit.name());
   }
 
-  private void saveTrustTxn(
+  /** A deposit posts when recorded. */
+  private void postDeposit(
+      UUID accountId,
+      String type,
+      String amount,
+      UUID customerId,
+      UUID matterId,
+      String description,
+      int daysAgo,
+      UUID recordedBy) {
+    trustPostingService.record(
+        draft(accountId, type, amount, customerId, matterId, description, daysAgo, recordedBy));
+  }
+
+  /**
+   * A payment is recorded awaiting approval, then approved — no sufficiency check by design (the
+   * second client ends at −R3 000,00).
+   */
+  private void postPayment(
+      UUID accountId,
+      String type,
+      String amount,
+      UUID customerId,
+      UUID matterId,
+      String description,
+      int daysAgo,
+      UUID recordedBy) {
+    var pending =
+        trustPostingService.recordAwaitingApproval(
+            draft(accountId, type, amount, customerId, matterId, description, daysAgo, recordedBy));
+    trustPostingService.postOnApproval(pending, recordedBy);
+  }
+
+  private TrustTransaction draft(
       UUID accountId,
       String type,
       String amount,
@@ -284,20 +327,18 @@ public class LegalDemoDataSeeder extends BaseDemoDataSeeder {
       int daysAgo,
       UUID recordedBy) {
     LocalDate date = daysAgoDate(daysAgo);
-    TrustTransaction txn =
-        new TrustTransaction(
-            accountId,
-            type,
-            new BigDecimal(amount),
-            customerId,
-            matterId,
-            null,
-            "%s-%s".formatted(type.substring(0, 3), date),
-            description,
-            date,
-            "RECORDED",
-            recordedBy);
-    trustTransactionRepository.save(txn);
+    return new TrustTransaction(
+        accountId,
+        type,
+        new BigDecimal(amount),
+        customerId,
+        matterId,
+        null,
+        "%s-%s".formatted(type.substring(0, 3), date),
+        description,
+        date,
+        "RECORDED",
+        recordedBy);
   }
 
   /** The client's first matter by name (createProjects opens at least one per active client). */

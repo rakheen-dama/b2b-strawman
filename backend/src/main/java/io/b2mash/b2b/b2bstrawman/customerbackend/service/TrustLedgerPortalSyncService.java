@@ -11,6 +11,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTran
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTransactionRecordedEvent;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionType;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -70,9 +71,9 @@ public class TrustLedgerPortalSyncService {
       UUID.fromString("00000000-0000-0000-0000-000000000000");
 
   /**
-   * Firm-side transaction statuses that produce portal-visible rows. {@code RECORDED} covers
-   * auto-approved DEPOSIT/INTEREST_CREDIT and pre-approval PAYMENT/FEE_TRANSFER/REFUND rows; {@code
-   * APPROVED} covers the post-approval rows.
+   * Firm-side transaction statuses that produce portal-visible rows. {@code RECORDED} covers rows
+   * posted when recorded (DEPOSIT, transfers); {@code APPROVED} covers the post-approval rows
+   * (PAYMENT/FEE_TRANSFER/REFUND).
    */
   private static final List<String> PORTAL_STATUSES = List.of("RECORDED", "APPROVED");
 
@@ -232,14 +233,9 @@ public class TrustLedgerPortalSyncService {
   /**
    * Replays every portal-eligible trust transaction on {@code matterId} in chronological order,
    * stamping each row with that transaction's own {@code customer_id} and a per-customer
-   * progressive {@code running_balance}. The sign convention matches {@code
-   * TrustTransactionRepository.calculateClientBalanceAsOfDate}:
-   *
-   * <ul>
-   *   <li>Credit (+amount): DEPOSIT, TRANSFER_IN, INTEREST_CREDIT
-   *   <li>Debit (-amount): PAYMENT, TRANSFER_OUT, FEE_TRANSFER, REFUND, INTEREST_LPFF
-   *   <li>REVERSAL and any other types: excluded from portal rows
-   * </ul>
+   * progressive {@code running_balance}. Each row moves the balance by its own posted {@code
+   * ledger_effect} (Phase 92, ADR-378) — the figure of {@code TrustLedgerQueryRepository} — and
+   * only types the registry marks client-visible are surfaced (REVERSAL is not, in 646A).
    *
    * <p>Used by the event-driven fan-out (approval, recorded, interest, reconciliation) and
    * internally by the backfill. Fetches the matter's transactions exactly once per call.
@@ -422,7 +418,7 @@ public class TrustLedgerPortalSyncService {
                   written++;
                 }
                 // The final `running` value after walking every transaction is the matter's
-                // current balance — equivalent to calculateBalanceByProjectId but computed
+                // current balance — equivalent to the derived matter balance but computed
                 // without an extra round-trip per matter.
                 portalTrustRepo.upsertBalance(
                     rollup.customerId, rollup.matterId, running, latestOccurredAt);
@@ -526,34 +522,24 @@ public class TrustLedgerPortalSyncService {
   }
 
   /**
-   * REVERSAL rows are not surfaced — per the firm-side repository convention they do not affect the
-   * per-matter balance and would confuse portal viewers.
+   * Only types the registry marks client-visible are surfaced ({@link
+   * TrustTransactionType#clientVisible()}). REVERSAL is not in 646A — it carries no effect and
+   * would confuse portal viewers (649B flips it with the contra model). A null or unknown code is
+   * not surfaced (lenient lookup — the type CHECK admits no other code).
    */
   private static boolean isPortalEligible(TrustTransaction txn) {
-    if (txn.getTransactionType() == null) {
-      return false;
-    }
-    return !"REVERSAL".equals(txn.getTransactionType());
+    return TrustTransactionType.find(txn.getTransactionType())
+        .map(TrustTransactionType::clientVisible)
+        .orElse(false);
   }
 
   /**
-   * Returns {@code +amount} for credit-type transactions (DEPOSIT, TRANSFER_IN, INTEREST_CREDIT),
-   * {@code -amount} for debit-type transactions (PAYMENT, TRANSFER_OUT, FEE_TRANSFER, REFUND,
-   * INTEREST_LPFF), and zero for any other type — matching the sign convention used by {@link
-   * TrustTransactionRepository#calculateClientBalanceAsOfDate} and {@link
-   * TrustTransactionRepository#calculateBalanceByProjectId}.
+   * The row's own posted effect on its client ledger (Phase 92, ADR-378): {@code +amount} for a
+   * credit, {@code -amount} for a debit, zero for an unposted or zero-effect row — the figure every
+   * derived balance in {@code TrustLedgerQueryRepository} sums.
    */
   private static BigDecimal signedAmount(TrustTransaction txn) {
-    String type = txn.getTransactionType();
-    if (type == null) {
-      return BigDecimal.ZERO;
-    }
-    return switch (type) {
-      case "DEPOSIT", "TRANSFER_IN", "INTEREST_CREDIT" -> txn.getAmount();
-      case "PAYMENT", "TRANSFER_OUT", "FEE_TRANSFER", "REFUND", "INTEREST_LPFF" ->
-          txn.getAmount().negate();
-      default -> BigDecimal.ZERO;
-    };
+    return txn.getLedgerEffect() != null ? txn.getLedgerEffect() : BigDecimal.ZERO;
   }
 
   /**

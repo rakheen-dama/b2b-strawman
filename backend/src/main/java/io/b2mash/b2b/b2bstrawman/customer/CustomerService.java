@@ -36,7 +36,7 @@ import io.b2mash.b2b.b2bstrawman.setupstatus.CustomerReadinessService;
 import io.b2mash.b2b.b2bstrawman.tag.EntityTagService;
 import io.b2mash.b2b.b2bstrawman.tag.TagFilterUtil;
 import io.b2mash.b2b.b2bstrawman.tag.dto.TagResponse;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedgerQueryRepository;
 import io.b2mash.b2b.b2bstrawman.view.CustomFieldFilterUtil;
 import io.b2mash.b2b.b2bstrawman.view.ViewFilterHelper;
 import java.math.BigDecimal;
@@ -86,7 +86,7 @@ public class CustomerService {
   private final InformationRequestService informationRequestService;
   private final CustomerReadinessService customerReadinessService;
   private final ClientListRowRepository clientListRowRepository;
-  private final ClientLedgerCardRepository clientLedgerCardRepository;
+  private final TrustLedgerQueryRepository trustLedgerQueries;
   private final OrgSettingsRepository orgSettingsRepository;
 
   public CustomerService(
@@ -107,7 +107,7 @@ public class CustomerService {
       InformationRequestService informationRequestService,
       CustomerReadinessService customerReadinessService,
       ClientListRowRepository clientListRowRepository,
-      ClientLedgerCardRepository clientLedgerCardRepository,
+      TrustLedgerQueryRepository trustLedgerQueries,
       OrgSettingsRepository orgSettingsRepository) {
     this.repository = repository;
     this.auditService = auditService;
@@ -126,7 +126,7 @@ public class CustomerService {
     this.informationRequestService = informationRequestService;
     this.customerReadinessService = customerReadinessService;
     this.clientListRowRepository = clientListRowRepository;
-    this.clientLedgerCardRepository = clientLedgerCardRepository;
+    this.trustLedgerQueries = trustLedgerQueries;
     this.orgSettingsRepository = orgSettingsRepository;
   }
 
@@ -326,7 +326,8 @@ public class CustomerService {
       return Map.of();
     }
     Map<UUID, BigDecimal> balances = new HashMap<>();
-    for (var row : clientLedgerCardRepository.sumBalancesByCustomerIdIn(clientIds)) {
+    // Each client's general (CLIENT ledger) balance across every trust account, derived (ADR-378)
+    for (var row : trustLedgerQueries.generalBalancesByClient(clientIds)) {
       balances.put(row.getCustomerId(), row.getBalance());
     }
     return balances;

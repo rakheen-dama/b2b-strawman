@@ -5,7 +5,7 @@ import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLine;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.DisbursementPaymentSource;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.DisbursementRepository;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedgerQueryRepository;
 import java.math.BigDecimal;
 import java.util.List;
 import org.slf4j.Logger;
@@ -20,7 +20,7 @@ import org.springframework.stereotype.Service;
  * <ol>
  *   <li>Invoice-level trust flag ({@code is_trust_invoice} custom field)
  *   <li>Line items linked to trust-account disbursements
- *   <li>Customer has active trust balances (via client ledger cards)
+ *   <li>Customer has active trust balances (derived client-ledger balance, ADR-378)
  * </ol>
  *
  * <p>Fail-closed: any unexpected exception during evaluation returns refused. Non-legal tenants
@@ -32,13 +32,12 @@ public class TrustBoundaryGuard {
   private static final Logger log = LoggerFactory.getLogger(TrustBoundaryGuard.class);
 
   private final DisbursementRepository disbursementRepository;
-  private final ClientLedgerCardRepository clientLedgerCardRepository;
+  private final TrustLedgerQueryRepository ledgerQueries;
 
   public TrustBoundaryGuard(
-      DisbursementRepository disbursementRepository,
-      ClientLedgerCardRepository clientLedgerCardRepository) {
+      DisbursementRepository disbursementRepository, TrustLedgerQueryRepository ledgerQueries) {
     this.disbursementRepository = disbursementRepository;
-    this.clientLedgerCardRepository = clientLedgerCardRepository;
+    this.ledgerQueries = ledgerQueries;
   }
 
   /**
@@ -113,13 +112,14 @@ public class TrustBoundaryGuard {
   }
 
   /**
-   * Checks whether the customer has any non-zero trust balances via client ledger cards. If the
-   * trust tables do not exist (non-legal tenant), the query will throw a {@link
-   * DataAccessException} which is caught and treated as "no trust data = not a trust concern".
+   * Checks whether the customer has a non-zero general (client-ledger) trust balance across every
+   * trust account, derived from the posted rows (ADR-378). If the trust tables do not exist
+   * (non-legal tenant), the query will throw a {@link DataAccessException} which is caught and
+   * treated as "no trust data = not a trust concern".
    */
   private TrustBoundaryDecision checkCustomerTrustBalance(Customer customer) {
     try {
-      BigDecimal trustBalance = clientLedgerCardRepository.sumBalancesForCustomer(customer.getId());
+      BigDecimal trustBalance = ledgerQueries.generalBalance(customer.getId());
       if (trustBalance != null && trustBalance.compareTo(BigDecimal.ZERO) != 0) {
         return TrustBoundaryDecision.refused(
             "Client '%s' has active trust balance of %s"
@@ -127,7 +127,7 @@ public class TrustBoundaryGuard {
       }
     } catch (DataAccessException e) {
       // Trust tables do not exist for this tenant — skip this condition
-      log.debug("Client ledger card lookup failed (non-legal tenant?): {}", e.getMessage());
+      log.debug("Client trust balance lookup failed (non-legal tenant?): {}", e.getMessage());
     }
     return TrustBoundaryDecision.permit();
   }

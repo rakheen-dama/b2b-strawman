@@ -542,10 +542,10 @@ public class DashboardService {
   /**
    * Month-end balances for {@code accountId} (else the primary, else the first account) over the
    * last {@code months} SA calendar months, oldest first, zero-filled (ADR-372, arch §15.3.7).
-   * Replays the currently effective RECORDED/APPROVED rows by business date with the sign rules of
-   * calculateCashbookBalance / calculateClientBalanceAsOfDate; rows dated after today are excluded.
-   * The current month is "as of today" ({@code partial}). Not cached (no invalidation hook on trust
-   * writes, like trust-position).
+   * Replays the posted rows' effects by business date (cashbook_effect and the CLIENT ledger's
+   * ledger_effect, ADR-378); rows dated after today are excluded. The current month is "as of
+   * today" ({@code partial}). Not cached (no invalidation hook on trust writes, like
+   * trust-position).
    */
   @Transactional(readOnly = true)
   public TrustBalanceTrendResponse getTrustBalanceTrend(UUID accountId, int months) {

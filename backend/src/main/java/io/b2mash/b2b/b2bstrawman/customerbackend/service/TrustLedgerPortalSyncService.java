@@ -134,6 +134,9 @@ public class TrustLedgerPortalSyncService {
    * produced by {@code TrustTransactionService.recordTransfer}. These paths bypass the
    * awaiting-approval / approved lifecycle, so {@link
    * #onTrustTransactionApproval(TrustTransactionApprovalEvent)} never fires for them (GAP-L-52).
+   * Since 649B every contra ({@code REVERSAL}) row publishes this event when it posts — at once for
+   * an immediate reversal, and at final approval for a contra that needed approval (a deposit
+   * reversal) — so the matter re-projects with the reversed original and its contra together.
    */
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onTrustTransactionRecorded(TrustTransactionRecordedEvent event) {
@@ -285,7 +288,7 @@ public class TrustLedgerPortalSyncService {
           txn.getTransactionDate(),
           recordedAt(txn),
           occurredAt,
-          sanitiser.sanitise(txn.getDescription(), txn.getTransactionType(), txn.getReference()),
+          portalDescription(txn),
           txn.getReference());
     }
     for (var entry : runningByCustomer.entrySet()) {
@@ -416,8 +419,7 @@ public class TrustLedgerPortalSyncService {
                       txn.getTransactionDate(),
                       recordedAt(txn),
                       occurredAt,
-                      sanitiser.sanitise(
-                          txn.getDescription(), txn.getTransactionType(), txn.getReference()),
+                      portalDescription(txn),
                       txn.getReference());
                   retainedTxnIds.add(txn.getId());
                   written++;
@@ -517,6 +519,20 @@ public class TrustLedgerPortalSyncService {
   }
 
   // ── Pure helpers ──────────────────────────────────────────────────────
+
+  /**
+   * The description the portal stores for a row. A {@code REVERSAL} row's own description is the
+   * firm user's free-text reversal reason, which never reaches the client (PR #1789 review): the
+   * portal gets a generated "{@code <client label> — <reference>}" instead. Every other type's
+   * description goes through the ADR-254 sanitiser unchanged.
+   */
+  private String portalDescription(TrustTransaction txn) {
+    if (TrustTransactionType.REVERSAL.name().equals(txn.getTransactionType())) {
+      return sanitiser.sanitise(
+          null, TrustTransactionType.REVERSAL.clientLabel(), txn.getReference());
+    }
+    return sanitiser.sanitise(txn.getDescription(), txn.getTransactionType(), txn.getReference());
+  }
 
   /**
    * Portal surfaces are customer/matter scoped. A trust transaction must carry both to be

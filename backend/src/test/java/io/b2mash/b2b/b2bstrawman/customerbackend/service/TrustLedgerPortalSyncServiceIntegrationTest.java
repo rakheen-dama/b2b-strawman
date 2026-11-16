@@ -299,9 +299,29 @@ class TrustLedgerPortalSyncServiceIntegrationTest {
             .orElseThrow();
     assertThat(reversal.amount()).isEqualByComparingTo("1000.00");
     assertThat(reversal.runningBalance()).isEqualByComparingTo("3000.00");
+    // PR #1789 review: the contra's description is the firm user's free-text reversal reason —
+    // never projected to the client. The portal shows a generated "<client label> — <reference>".
+    assertReversalDescriptionIsGenerated(reversal.description());
 
     var balance = portalTrustRepo.findBalance(customerId, matterId).orElseThrow();
     assertThat(balance.currentBalance()).isEqualByComparingTo("3000.00");
+
+    // The backfill projection path generates the same description.
+    ScopedValue.where(RequestScopes.ORG_ID, ORG_ID)
+        .call(() -> syncService.backfillForTenant(ORG_ID));
+    var backfilledReversal =
+        portalTrustRepo.findTransactions(customerId, matterId, null, null, 50, 0).stream()
+            .filter(t -> "REVERSAL".equals(t.transactionType()))
+            .findFirst()
+            .orElseThrow();
+    assertReversalDescriptionIsGenerated(backfilledReversal.description());
+  }
+
+  private static void assertReversalDescriptionIsGenerated(String description) {
+    assertThat(description)
+        .doesNotContain("Paid in error")
+        .doesNotContain("REVERSAL")
+        .isEqualTo("Reversal \u2014 REV-PAY-REV-SYNC-1");
   }
 
   // ==========================================================================

@@ -196,8 +196,12 @@ public class TrustPostingService {
     };
   }
 
-  /** §16.10.3: the registry's effect for the original, negated, on the original's ledger. */
-  private static TrustLedgerEffect contraOf(TrustTransaction original) {
+  /**
+   * §16.10.3: the registry's effect for the original, negated, on the original's ledger — the one
+   * place the contra's sign is decided (also read by the approval check in {@code
+   * TrustTransactionService}).
+   */
+  static TrustLedgerEffect contraOf(TrustTransaction original) {
     return TrustTransactionType.of(original.getTransactionType())
         .effectFor(original.getAmount())
         .negated();

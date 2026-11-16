@@ -53,3 +53,26 @@ rejectedCreditReversal_leavesOriginalReversible, recordedDeposit_isReversible, r
 creditReversalApproved_movesCashbookAndClient (7b), creditReversalRejectedThenReversedAgain_isAccepted (7d),
 statement_reversalInsideThePeriodOfAnEarlierPayment_closesAtTheClientBalance (D15).
 Tier 3 (full ./mvnw verify) NOT run — orchestrator-owned.
+
+Review fix — reason leak (PR #1789 review cycle 1, HIGH, S1)
+------------------------------------------------------------
+RED on head 1ae3b5b63 (assertions written before the fix):
+  ./mvnw test -Dtest='StatementOfAccountContextBuilderTest#trustBlock_reversalRowCarriesAGeneratedDescription_neverTheFirmReason,
+                      TrustLedgerPortalSyncServiceIntegrationTest#reversalReprojectsThePortalAtOnce'
+  Tests run: 2, Failures: 2, Errors: 0, Skipped: 0
+  TrustLedgerPortalSyncServiceIntegrationTest.reversalReprojectsThePortalAtOnce:304->assertReversalDescriptionIsGenerated:322
+    Expecting actual: "Paid in error"  not to contain: "Paid in error"
+    (the portal REVERSAL row carried the firm user's reversal reason verbatim)
+  StatementOfAccountContextBuilderTest.trustBlock_reversalRowCarriesAGeneratedDescription_neverTheFirmReason:402
+    Expecting actual: "Clerk keyed the wrong matter, internal mix-up"  not to contain: "wrong matter"
+    (the SoA Deposits row for a payment's contra printed the reason)
+GREEN after the fix (TrustLedgerPortalSyncService.portalDescription + StatementOfAccountContextBuilder.clientDescription),
+plus the review mediums (contraOf reuse, reverseForUnmatch InvalidStateException + lock-all-then-post):
+  Tier-2 targeted sweep, 34 classes (portal sync, all Statement*Test, ClientTrustStatementContextIntegrationTest,
+  TrustReversalEquation/EquationCharacterisation/TransactionService/PostingRules/TransactionController/TypeRegistry/
+  ReversalContraMigration, ClientLedgerRunningBalance, DerivedLedgerBalance, and every test class importing a changed
+  class): 345 <testcase> elements, 0 failures, 0 errors, 0 skipped. exit 0.
+  Both new assertions green: reversalReprojectsThePortalAtOnce (event + backfill paths → "Reversal — REV-PAY-REV-SYNC-1"),
+  trustBlock_reversalRowCarriesAGeneratedDescription_neverTheFirmReason ("Reversal — REV-PAY-77"; the payment keeps
+  its own description).
+Tier 3 (full ./mvnw verify) NOT run — orchestrator-owned.

@@ -967,11 +967,8 @@ public class TrustTransactionService {
             "The transaction this reversal undoes is no longer posted or has already been"
                 + " reversed");
       }
-      var contra =
-          TrustTransactionType.of(original.getTransactionType())
-              .effectFor(original.getAmount())
-              .negated();
-      if (contra.ledgerEffect().signum() < 0 && transaction.getCustomerId() != null) {
+      if (TrustPostingService.contraOf(original).ledgerEffect().signum() < 0
+          && transaction.getCustomerId() != null) {
         requireClientCovers(transaction);
       }
     } else if (type.approval() == TrustTransactionType.Approval.REQUIRED) {
@@ -1287,6 +1284,17 @@ public class TrustTransactionService {
    * goes through the normal reversal path; only rules that post at once are accepted ({@code
    * IMMEDIATE}, and {@code OWNER} — the unmatch is the owner's own action). Neither the line nor
    * the originals' {@code bank_statement_line_id} is touched here (647A's unmatch does that).
+   *
+   * <p><b>Precondition (647A contract):</b> the caller must only invoke this for a line whose rows
+   * were <i>recorded from the statement</i>. An ordinary match ({@code AUTO_MATCHED} / {@code
+   * MANUALLY_MATCHED}) also sets {@code bank_statement_line_id} on a real firm payment, and
+   * unmatching it must only clear the link — never book a contra. This method cannot tell the two
+   * apart: {@code chk_bank_line_match_status} has no "recorded" state until 647A adds it, at which
+   * point 647A refuses here unless the line is in that state.
+   *
+   * <p>All originals are locked (finder order) and checked before the first contra is posted, so a
+   * refusal leaves nothing half-reversed; each contra then takes its client's lock anchor (lock
+   * order: originals, then client anchor — the same as {@link #reverseTransaction}).
    */
   @Transactional
   public List<TrustTransaction> reverseForUnmatch(UUID bankStatementLineId) {
@@ -1299,7 +1307,8 @@ public class TrustTransactionService {
                 () -> new ResourceNotFoundException("BankStatementLine", bankStatementLineId));
     var memberId = RequestScopes.requireMemberId();
 
-    var contras = new ArrayList<TrustTransaction>();
+    record Unmatched(TrustTransaction original, LocalDate reversalDate) {}
+    var originals = new ArrayList<Unmatched>();
     for (var candidate :
         transactionRepository.findPostedOriginalsByBankStatementLineId(
             bankStatementLineId, List.of("RECORDED", "APPROVED"))) {
@@ -1311,18 +1320,27 @@ public class TrustTransactionService {
       var rule = TrustTransactionType.of(original.getTransactionType()).reversal();
       if (rule != TrustTransactionType.Reversal.IMMEDIATE
           && rule != TrustTransactionType.Reversal.OWNER) {
-        throw new IllegalStateException(
-            "A statement-line unmatch cannot reverse "
+        throw new InvalidStateException(
+            "Cannot unmatch statement line",
+            "A statement-line unmatch cannot reverse a "
                 + original.getTransactionType()
-                + " row "
-                + original.getId()
-                + " (reversal rule "
+                + " transaction (reversal rule "
                 + rule
                 + ")");
       }
       requireReversible(original);
-      var reversalDate = resolveReversalDate(line.getTransactionDate(), original);
-      contras.add(postContra(original, "Statement line unmatched", reversalDate, memberId));
+      originals.add(
+          new Unmatched(original, resolveReversalDate(line.getTransactionDate(), original)));
+    }
+
+    var contras = new ArrayList<TrustTransaction>();
+    for (var unmatched : originals) {
+      contras.add(
+          postContra(
+              unmatched.original(),
+              "Statement line unmatched",
+              unmatched.reversalDate(),
+              memberId));
     }
     return contras;
   }

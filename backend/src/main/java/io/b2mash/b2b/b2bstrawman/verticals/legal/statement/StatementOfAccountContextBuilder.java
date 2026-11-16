@@ -577,7 +577,7 @@ public class StatementOfAccountContextBuilder {
               TrustTransactionTypeLabels.label(line.transactionType()),
               line.amount(),
               line.reference(),
-              line.description());
+              clientDescription(line));
       // Deposits or payments by the line's own posted effect on the client ledger (Phase 92,
       // ADR-378) — the same figure the opening/closing balances sum, so the itemised tables always
       // reconcile with them. No type-name table to keep in step.
@@ -589,6 +589,21 @@ public class StatementOfAccountContextBuilder {
       }
     }
     return new TrustBlock(opening, deposits, payments, closing);
+  }
+
+  /**
+   * The Description cell the client reads. A {@code REVERSAL} row's own description is the firm
+   * user's free-text reversal reason, which never reaches the client (PR #1789 review): it prints
+   * "{@code Reversal — <reference>}" instead. Every other type keeps its own description; the
+   * firm-side client-ledger statement is unchanged.
+   */
+  private static String clientDescription(ClientLedgerService.LedgerStatementLine line) {
+    if ("REVERSAL".equals(line.transactionType())) {
+      return TrustTransactionTypeLabels.label(line.transactionType())
+          + " \u2014 "
+          + line.reference();
+    }
+    return line.description();
   }
 
   private LinkedHashMap<String, Object> toSummaryMap(StatementSummary s) {

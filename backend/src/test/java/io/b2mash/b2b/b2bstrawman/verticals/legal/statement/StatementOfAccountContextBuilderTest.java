@@ -344,6 +344,68 @@ class StatementOfAccountContextBuilderTest {
   }
 
   @Test
+  void trustBlock_reversalRowCarriesAGeneratedDescription_neverTheFirmReason() {
+    // PR #1789 review (Phase 92 649B): a REVERSAL row's description is the firm user's free-text
+    // reversal reason. The Statement of Account goes to the client, so the row prints a generated
+    // "<label> — <reference>" instead; every other type keeps its own description.
+    var project = projectWithCustomer("Reversal Matter", customerId);
+    when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer("Client")));
+    when(timeEntryRepository.findByFilters(eq(projectId), eq(null), eq(periodStart), eq(periodEnd)))
+        .thenReturn(List.of());
+    when(disbursementService.listForStatement(projectId, periodStart, periodEnd))
+        .thenReturn(List.of());
+    when(trustTransactionRepository.findDistinctTrustAccountIdsByCustomerId(customerId))
+        .thenReturn(List.of(trustAccountId));
+
+    var payment =
+        new LedgerStatementLine(
+            UUID.randomUUID(),
+            "PAYMENT",
+            new BigDecimal("400.00"),
+            "PAY-77",
+            "Payment to sheriff",
+            LocalDate.of(2026, 4, 10),
+            "REVERSED",
+            BigDecimal.ZERO,
+            new BigDecimal("-400.00"));
+    // The payment's contra: a credit, so it lands in Deposits
+    var contra =
+        new LedgerStatementLine(
+            UUID.randomUUID(),
+            "REVERSAL",
+            new BigDecimal("400.00"),
+            "REV-PAY-77",
+            "Clerk keyed the wrong matter, internal mix-up",
+            LocalDate.of(2026, 4, 12),
+            "RECORDED",
+            BigDecimal.ZERO,
+            new BigDecimal("400.00"));
+    when(clientLedgerService.getClientLedgerStatement(
+            customerId, trustAccountId, periodStart, periodEnd))
+        .thenReturn(
+            new LedgerStatementResponse(
+                BigDecimal.ZERO, BigDecimal.ZERO, List.of(payment, contra)));
+    when(invoiceRepository.findByProjectId(projectId)).thenReturn(List.of());
+
+    var context = builder.build(projectId, periodStart, periodEnd);
+
+    @SuppressWarnings("unchecked")
+    Map<String, Object> trust = (Map<String, Object>) context.get("trust");
+    @SuppressWarnings("unchecked")
+    List<Map<String, Object>> deposits = (List<Map<String, Object>>) trust.get("deposits");
+    @SuppressWarnings("unchecked")
+    List<Map<String, Object>> payments = (List<Map<String, Object>>) trust.get("payments");
+
+    assertThat(deposits).hasSize(1);
+    assertThat((String) deposits.getFirst().get("description"))
+        .doesNotContain("wrong matter")
+        .isEqualTo("Reversal \u2014 REV-PAY-77");
+    assertThat(payments).hasSize(1);
+    assertThat(payments.getFirst().get("description")).isEqualTo("Payment to sheriff");
+  }
+
+  @Test
   void periodFilter_excludesOutOfRangeFees() {
     var project = projectWithCustomer("Filtered Matter", customerId);
     when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));

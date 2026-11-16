@@ -20,7 +20,9 @@ import { ReversalButton } from "@/components/trust/reversal-button";
 import { TransactionFilters } from "@/components/trust/transaction-filters";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
 import {
+  canOfferReversal,
   isInflowType,
+  reversalRuleOf,
   transactionTypeLabel,
   type OrgMember,
   type TrustTransactionStatus,
@@ -421,9 +423,16 @@ export default async function TransactionsPage({
                                 />
                               </span>
                             )}
-                            {tx.status === "APPROVED" && canManageTrust && (
+                            {/* Phase 92 649B: any posted row, per its type's reversal rule */}
+                            {canManageTrust && canOfferReversal(tx) && (
                               <span data-testid={`reversal-action-${tx.id}`}>
-                                <ReversalButton transactionId={tx.id} />
+                                <ReversalButton
+                                  transactionId={tx.id}
+                                  transactionDate={tx.transactionDate}
+                                  needsApproval={
+                                    reversalRuleOf(tx.transactionType) === "NEEDS_APPROVAL"
+                                  }
+                                />
                               </span>
                             )}
                           </td>

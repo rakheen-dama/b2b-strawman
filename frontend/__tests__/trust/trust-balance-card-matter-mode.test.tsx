@@ -75,9 +75,9 @@ const CLIENT_LEDGER = {
   trustAccountId: "acc-1",
   clientId: "cust-1",
   clientName: "Moroka Holdings",
+  // Reconciles without an interest component (646A): 5 001,34 − 1 250 = 3 751,34
   balance: 3751.34,
-  totalDeposits: 5000,
-  totalInterestCredited: 1.34,
+  totalDeposits: 5001.34,
   totalTransfersIn: 0,
   totalPayments: 1250,
   totalFeeTransfers: 0,

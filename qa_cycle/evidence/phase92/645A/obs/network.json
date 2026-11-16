@@ -1,0 +1,80 @@
+[
+  {
+    "user": "bob",
+    "phase": "request",
+    "method": "POST",
+    "url": "http://localhost:8081/api/interest-runs/59dcfaa9-8991-4e4f-a6fe-d9488cb00746/approve",
+    "headers": {
+      "sec-ch-ua-platform": "\"macOS\"",
+      "authorization": "Bearer <redacted mock-IDP JWT>",
+      "referer": "http://localhost:3001/",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/147.0.7727.15 Safari/537.36",
+      "sec-ch-ua": "\"HeadlessChrome\";v=\"147\", \"Not.A/Brand\";v=\"8\", \"Chromium\";v=\"147\"",
+      "content-type": "application/json",
+      "sec-ch-ua-mobile": "?0"
+    }
+  },
+  {
+    "user": "bob",
+    "phase": "response",
+    "method": "POST",
+    "url": "http://localhost:8081/api/interest-runs/59dcfaa9-8991-4e4f-a6fe-d9488cb00746/approve",
+    "status": 400,
+    "statusText": "",
+    "headers": {
+      "transfer-encoding": "chunked",
+      "cache-control": "no-cache, no-store, max-age=0, must-revalidate",
+      "pragma": "no-cache",
+      "connection": "close",
+      "access-control-allow-credentials": "true",
+      "x-content-type-options": "nosniff",
+      "expires": "0",
+      "access-control-allow-origin": "http://localhost:3001",
+      "x-xss-protection": "0",
+      "date": "Mon, 16 Nov 2026 11:42:13 GMT",
+      "content-type": "application/problem+json",
+      "vary": "Origin, Access-Control-Request-Method, Access-Control-Request-Headers",
+      "x-frame-options": "DENY"
+    },
+    "body": "{\"detail\":\"Interest on trust money vests in the Legal Practitioners' Fidelity Fund (section 86(5) of the Legal Practice Act). Kazi no longer posts calculated interest. Record interest from the bank statement instead.\",\"instance\":\"/api/interest-runs/59dcfaa9-8991-4e4f-a6fe-d9488cb00746/approve\",\"status\":400,\"title\":\"Interest runs are not posted\"}"
+  },
+  {
+    "user": "alice",
+    "phase": "request",
+    "method": "POST",
+    "url": "http://localhost:8081/api/interest-runs/59dcfaa9-8991-4e4f-a6fe-d9488cb00746/post",
+    "headers": {
+      "sec-ch-ua-platform": "\"macOS\"",
+      "authorization": "Bearer <redacted mock-IDP JWT>",
+      "referer": "http://localhost:3001/",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/147.0.7727.15 Safari/537.36",
+      "sec-ch-ua": "\"HeadlessChrome\";v=\"147\", \"Not.A/Brand\";v=\"8\", \"Chromium\";v=\"147\"",
+      "content-type": "application/json",
+      "sec-ch-ua-mobile": "?0"
+    }
+  },
+  {
+    "user": "alice",
+    "phase": "response",
+    "method": "POST",
+    "url": "http://localhost:8081/api/interest-runs/59dcfaa9-8991-4e4f-a6fe-d9488cb00746/post",
+    "status": 400,
+    "statusText": "",
+    "headers": {
+      "transfer-encoding": "chunked",
+      "cache-control": "no-cache, no-store, max-age=0, must-revalidate",
+      "pragma": "no-cache",
+      "connection": "close",
+      "access-control-allow-credentials": "true",
+      "x-content-type-options": "nosniff",
+      "expires": "0",
+      "access-control-allow-origin": "http://localhost:3001",
+      "x-xss-protection": "0",
+      "date": "Mon, 16 Nov 2026 11:42:15 GMT",
+      "content-type": "application/problem+json",
+      "vary": "Origin, Access-Control-Request-Method, Access-Control-Request-Headers",
+      "x-frame-options": "DENY"
+    },
+    "body": "{\"detail\":\"Interest on trust money vests in the Legal Practitioners' Fidelity Fund (section 86(5) of the Legal Practice Act). Kazi no longer posts calculated interest. Record interest from the bank statement instead.\",\"instance\":\"/api/interest-runs/59dcfaa9-8991-4e4f-a6fe-d9488cb00746/post\",\"status\":400,\"title\":\"Interest runs are not posted\"}"
+  }
+]

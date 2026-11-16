@@ -1,0 +1,47 @@
+{
+  "runId": "59dcfaa9-8991-4e4f-a6fe-d9488cb00746",
+  "calls": [
+    {
+      "user": "bob",
+      "endpoint": "POST /api/interest-runs/59dcfaa9-8991-4e4f-a6fe-d9488cb00746/approve",
+      "madeFrom": "page.evaluate(fetch) on http://localhost:3001/org/e2e-test-org/trust-accounting/interest",
+      "tokenFromBrowserCookie": true,
+      "status": 400,
+      "contentType": "application/problem+json",
+      "body": {
+        "detail": "Interest on trust money vests in the Legal Practitioners' Fidelity Fund (section 86(5) of the Legal Practice Act). Kazi no longer posts calculated interest. Record interest from the bank statement instead.",
+        "instance": "/api/interest-runs/59dcfaa9-8991-4e4f-a6fe-d9488cb00746/approve",
+        "status": 400,
+        "title": "Interest runs are not posted"
+      },
+      "titleMatches": true,
+      "detailMatches": true,
+      "uiStatusAfter": "Draft",
+      "uiPostedAtAfter": "—",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 400 ()"
+      ]
+    },
+    {
+      "user": "alice",
+      "endpoint": "POST /api/interest-runs/59dcfaa9-8991-4e4f-a6fe-d9488cb00746/post",
+      "madeFrom": "page.evaluate(fetch) on http://localhost:3001/org/e2e-test-org/trust-accounting/interest",
+      "tokenFromBrowserCookie": true,
+      "status": 400,
+      "contentType": "application/problem+json",
+      "body": {
+        "detail": "Interest on trust money vests in the Legal Practitioners' Fidelity Fund (section 86(5) of the Legal Practice Act). Kazi no longer posts calculated interest. Record interest from the bank statement instead.",
+        "instance": "/api/interest-runs/59dcfaa9-8991-4e4f-a6fe-d9488cb00746/post",
+        "status": 400,
+        "title": "Interest runs are not posted"
+      },
+      "titleMatches": true,
+      "detailMatches": true,
+      "uiStatusAfter": "Draft",
+      "uiPostedAtAfter": "—",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 400 ()"
+      ]
+    }
+  ]
+}

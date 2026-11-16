@@ -1,7 +1,7 @@
 {
-  "commit": "20955954f",
-  "command": "cd backend && bash scripts/verify.sh -q  (= ./mvnw verify under preflight + caffeinate)",
+  "commit": "23a55222b",
+  "command": "cd backend && ./mvnw spotless:check && caffeinate -is ./mvnw clean verify -q (verify.sh's exec line; preflight skipped — it would SIGKILL the live KC dev-stack spring-boot:run JVMs)",
   "exit": 0,
-  "ts": "2026-11-13T04:29:21Z",
-  "summary": "643B PR #1776 BE-VERIFY @20955954f (last backend change; later heads frontend-only): 6871 testcases / 0 failures / 0 errors / 26 skipped — 21:21 min"
+  "ts": "2026-11-16T11:27:50Z",
+  "summary": "PR #1786 (645A) BE-VERIFY @23a55222b: 6865 testcases / 0 failures / 0 errors / 26 skipped — 19 min (main baseline 251100d54: 6871; delta -6 = 9 @Test removed, 3 added)"
 }

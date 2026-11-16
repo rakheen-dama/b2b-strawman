@@ -1,0 +1,36 @@
+### AFTER API calls
+          observed_at          
+-------------------------------
+ 2026-11-16 11:42:16.276592+00
+(1 row)
+
+                  id                  | status | approved_by | posted_at | total_interest | total_lpff_share | total_client_share |          updated_at           
+--------------------------------------+--------+-------------+-----------+----------------+------------------+--------------------+-------------------------------
+ 59dcfaa9-8991-4e4f-a6fe-d9488cb00746 | DRAFT  |             |           |          51.02 |            25.52 |              25.50 | 2026-11-16 11:38:35.297571+00
+(1 row)
+
+ txns_referencing_run 
+----------------------
+                    0
+(1 row)
+
+      transaction_type      | n 
+----------------------------+---
+ INTEREST_* (account total) | 0
+(1 row)
+
+ account_txn_total 
+-------------------
+                 6
+(1 row)
+
+ allocations | allocations_linked_to_txn 
+-------------+---------------------------
+           2 |                         0
+(1 row)
+
+ alloc_lines_linked_to_txn 
+---------------------------
+                         0
+(1 row)
+

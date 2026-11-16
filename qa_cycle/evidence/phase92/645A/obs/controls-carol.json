@@ -1,0 +1,229 @@
+{
+  "user": "carol",
+  "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/interest",
+  "httpStatus": 200,
+  "finalUrl": "http://localhost:3001/org/e2e-test-org/trust-accounting/interest",
+  "interestPageVisible": true,
+  "h1": [
+    "Interest"
+  ],
+  "noticePresent": true,
+  "noticeText": "Calculated interest is not posted. Interest on trust money vests in the Legal Practitioners' Fidelity Fund (section 86(5) of the Legal Practice Act). Record interest from the bank statement when you reconcile.",
+  "noticeVerbatim": true,
+  "noticeRole": "alert",
+  "allPageControls": [
+    {
+      "tag": "a",
+      "role": "link",
+      "name": "Skip to content",
+      "testid": null,
+      "visible": true
+    },
+    {
+      "tag": "button",
+      "role": "button",
+      "name": "Search, Command K",
+      "testid": null,
+      "visible": true
+    },
+    {
+      "tag": "button",
+      "role": "button",
+      "name": "TODAY",
+      "testid": null,
+      "visible": true
+    },
+    {
+      "tag": "a",
+      "role": "link",
+      "name": "Home",
+      "testid": null,
+      "visible": true
+    },
+    {
+      "tag": "a",
+      "role": "link",
+      "name": "My work",
+      "testid": null,
+      "visible": true
+    },
+    {
+      "tag": "a",
+      "role": "link",
+      "name": "Diary",
+      "testid": null,
+      "visible": true
+    },
+    {
+      "tag": "button",
+      "role": "button",
+      "name": "MATTERS",
+      "testid": null,
+      "visible": true
+    },
+    {
+      "tag": "a",
+      "role": "link",
+      "name": "Matters",
+      "testid": null,
+      "visible": true
+    },
+    {
+      "tag": "a",
+      "role": "link",
+      "name": "New matter",
+      "testid": null,
+      "visible": true
+    },
+    {
+      "tag": "a",
+      "role": "link",
+      "name": "Conflict check",
+      "testid": null,
+      "visible": true
+    },
+    {
+      "tag": "a",
+      "role": "link",
+      "name": "Adverse parties",
+      "testid": null,
+      "visible": true
+    },
+    {
+      "tag": "button",
+      "role": "button",
+      "name": "FEES",
+      "testid": null,
+      "visible": true
+    },
+    {
+      "tag": "button",
+      "role": "button",
+      "name": "TRUST",
+      "testid": null,
+      "visible": true
+    },
+    {
+      "tag": "button",
+      "role": "button",
+      "name": "FIRM",
+      "testid": null,
+      "visible": true
+    },
+    {
+      "tag": "a",
+      "role": "link",
+      "name": "Notifications",
+      "testid": null,
+      "visible": true
+    },
+    {
+      "tag": "button",
+      "role": "button",
+      "name": "Toggle menu",
+      "testid": null,
+      "visible": true
+    },
+    {
+      "tag": "a",
+      "role": "link",
+      "name": "E2E Test Organization",
+      "testid": null,
+      "visible": true
+    },
+    {
+      "tag": "a",
+      "role": "link",
+      "name": "Trust accounting",
+      "testid": null,
+      "visible": true
+    },
+    {
+      "tag": "button",
+      "role": "button",
+      "name": "Search, Command K",
+      "testid": null,
+      "visible": true
+    },
+    {
+      "tag": "button",
+      "role": "button",
+      "name": "Notifications",
+      "testid": null,
+      "visible": true
+    },
+    {
+      "tag": "button",
+      "role": "button",
+      "name": "CM",
+      "testid": null,
+      "visible": true
+    },
+    {
+      "tag": "button",
+      "role": "button",
+      "name": "Review",
+      "testid": null,
+      "visible": true
+    }
+  ],
+  "pageBodyControls": [
+    {
+      "tag": "button",
+      "role": "button",
+      "name": "Review",
+      "testid": null,
+      "visible": true
+    }
+  ],
+  "roleQueryMatches": {
+    "buttonPostApprove_page": 0,
+    "linkPostApprove_page": 0,
+    "menuitemPostApprove_page": 0
+  },
+  "rows": [
+    {
+      "testid": "run-row-59dcfaa9-8991-4e4f-a6fe-d9488cb00746",
+      "runId": "59dcfaa9-8991-4e4f-a6fe-d9488cb00746",
+      "status": "Draft",
+      "postedAt": "—",
+      "controls": [
+        {
+          "tag": "button",
+          "role": "button",
+          "name": "Review",
+          "testid": null,
+          "visible": true
+        }
+      ],
+      "menuItems": []
+    }
+  ],
+  "shellControlsMatchingPostApprove": [],
+  "offendingPageBodyOrRowControls": [],
+  "noPostApproveControl": true,
+  "wizard": {
+    "opened": true,
+    "actionName": "Review",
+    "text": "Interest Run Step 2 of 2 — Calculate 1 Create 2 Calculate Period: 2026-10-17 to 2026-11-16 Run ID: 59dcfaa9-8991-4e4f-a6fe-d9488cb00746 Draft Client Avg Daily Balance Gross Interest LPFF Rate LPFF Share Client Share QuickCollect Services mwj6ubc7f281 R 1 451,61 R 8,01 LPFF arrangement rate 50.00% R 4,01 R 4,00 Moroka Family Trust mwj6ubc7f281 R 7 790,32 R 43,01 LPFF arrangement rate 50.00% R 21,51 R 21,50 Cancel Close",
+    "controls": [
+      {
+        "tag": "button",
+        "role": "button",
+        "name": "Cancel",
+        "testid": null,
+        "visible": true
+      },
+      {
+        "tag": "button",
+        "role": "button",
+        "name": "Close",
+        "testid": null,
+        "visible": true
+      }
+    ],
+    "roleQueryPostApproveReview": 0,
+    "noPostApprove": true
+  },
+  "consoleErrors": []
+}

@@ -37,6 +37,7 @@ export const ENTITY_TYPE_LABELS: Readonly<Record<string, string>> = Object.freez
   // Trust accounting
   trust_transaction: "Trust transaction",
   trust_account: "Trust account",
+  trust_creditor_account: "Trust creditor account",
   trust_investment: "Trust investment",
   trust_reconciliation: "Trust reconciliation",
   bank_statement: "Bank statement",

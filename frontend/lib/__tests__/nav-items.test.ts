@@ -10,15 +10,15 @@ const ALL_ITEMS = NAV_GROUPS.flatMap((g) => g.items);
 const zone = (id: string) => NAV_GROUPS.find((g) => g.id === id)!;
 const item = (label: string) => ALL_ITEMS.find((i) => i.label === label);
 
-// Phase 87 S6a/S6b (612A/612B/613D, ADR-339 §12.6.1): 28 items = 3 + 5 + 3 + 6 + 7 + 4. Today is
+// Phase 87 S6a/S6b (612A/612B/613D, ADR-339 §12.6.1): 29 items = 3 + 5 + 3 + 6 + 8 + 4. Today is
 // Home, My work, Diary (613D replaced the interim Calendar + Court calendar pair); Fees has 6
-// (612B added "Unbilled work").
+// (612B added "Unbilled work"); Trust has 8 (Phase 92 646B added "Other trust creditors").
 const ZONE_SIZES: Record<string, number> = {
   today: 3,
   matters: 5,
   clients: 3,
   fees: 6,
-  trust: 7,
+  trust: 8,
   firm: 4,
 };
 
@@ -48,14 +48,16 @@ describe("NAV_GROUPS — six zones around the attorney's week (ADR-339)", () => 
     ]);
   });
 
-  it("has 28 items with the expected per-zone sizes", () => {
+  it("has 29 items with the expected per-zone sizes", () => {
     expect(Object.fromEntries(NAV_GROUPS.map((g) => [g.id, g.items.length]))).toEqual(ZONE_SIZES);
-    expect(ALL_ITEMS).toHaveLength(28);
+    expect(ALL_ITEMS).toHaveLength(29);
   });
 
-  it("keeps every zone at ≤ 6 items except trust (≤ 7)", () => {
+  // Phase 92 646B (D7): trust is 8 while "Other trust creditors" and "Interest" coexist — back to 7
+  // when "Interest" leaves in 651C.
+  it("keeps every zone at ≤ 6 items except trust (≤ 8)", () => {
     for (const g of NAV_GROUPS) {
-      expect(g.items.length, g.id).toBeLessThanOrEqual(g.id === "trust" ? 7 : 6);
+      expect(g.items.length, g.id).toBeLessThanOrEqual(g.id === "trust" ? 8 : 6);
     }
   });
 
@@ -155,11 +157,12 @@ describe("NAV_GROUPS — six zones around the attorney's week (ADR-339)", () => 
     expect(item("Information requests")).toBeUndefined();
   });
 
-  it("Trust: seven items, all VIEW_TRUST + trust_accounting", () => {
+  it("Trust: eight items, all VIEW_TRUST + trust_accounting", () => {
     expect(zone("trust").items.map((i) => i.label)).toEqual([
       "Overview",
       "Transactions",
       "Client ledgers",
+      "Other trust creditors",
       "Reconciliation",
       "Interest",
       "Investments",

@@ -1,0 +1,220 @@
+package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.query.Param;
+
+/**
+ * Every derived trust balance (Phase 92, ADR-378, architecture §16.3.2): sums over the
+ * posting-effect columns of posted rows ({@code posted_at IS NOT NULL}). No type name appears in
+ * this SQL — a row's sign and ledger were fixed by {@link TrustPostingService} from {@link
+ * TrustTransactionType} when it was posted.
+ *
+ * <p>{@code asAt} is nullable: null = every posted row regardless of date (the "current" figure the
+ * stored card and the undated queries gave on HEAD, future-dated rows included — T2), a date = as
+ * at that SA business date. The bind is cast on both occurrences so Postgres can type a null.
+ * Callers pass {@code LocalDate.now(clock)} when they mean today, never {@code CURRENT_DATE}.
+ * Index: {@code idx_trust_txn_ledger_sum} (V16).
+ */
+public interface TrustLedgerQueryRepository extends Repository<TrustTransaction, UUID> {
+
+  /** The optional as-at bound, appended to a WHERE clause. */
+  String AS_AT = " AND (CAST(:asAt AS date) IS NULL OR t.transaction_date <= CAST(:asAt AS date))";
+
+  /** The optional as-at bound as a bare predicate (inside a FILTER clause). */
+  String IN_RANGE = "(CAST(:asAt AS date) IS NULL OR t.transaction_date <= CAST(:asAt AS date))";
+
+  /** The account's cashbook: what the bank should hold for it. */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          SELECT COALESCE(SUM(t.cashbook_effect), 0) FROM trust_transactions t
+           WHERE t.trust_account_id = :trustAccountId AND t.posted_at IS NOT NULL"""
+              + AS_AT)
+  BigDecimal cashbook(@Param("trustAccountId") UUID trustAccountId, @Param("asAt") LocalDate asAt);
+
+  /** The total of the client ledgers on the account ({@code CLIENT} ledger). */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          SELECT COALESCE(SUM(t.ledger_effect), 0) FROM trust_transactions t
+           WHERE t.trust_account_id = :trustAccountId AND t.ledger = 'CLIENT'
+             AND t.posted_at IS NOT NULL"""
+              + AS_AT)
+  BigDecimal clientLedgerTotal(
+      @Param("trustAccountId") UUID trustAccountId, @Param("asAt") LocalDate asAt);
+
+  /** One client's balance on one account. */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          SELECT COALESCE(SUM(t.ledger_effect), 0) FROM trust_transactions t
+           WHERE t.trust_account_id = :trustAccountId AND t.customer_id = :customerId
+             AND t.ledger = 'CLIENT' AND t.posted_at IS NOT NULL"""
+              + AS_AT)
+  BigDecimal clientBalance(
+      @Param("trustAccountId") UUID trustAccountId,
+      @Param("customerId") UUID customerId,
+      @Param("asAt") LocalDate asAt);
+
+  /**
+   * The matter sub-ledger cell (G89-F12): one client's money on one matter in one account. The
+   * caller holds the client's lock anchor, which serialises every posting for the client.
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          SELECT COALESCE(SUM(t.ledger_effect), 0) FROM trust_transactions t
+           WHERE t.trust_account_id = :trustAccountId AND t.customer_id = :customerId
+             AND t.project_id = :projectId AND t.ledger = 'CLIENT'
+             AND t.posted_at IS NOT NULL"""
+              + AS_AT)
+  BigDecimal matterCellBalance(
+      @Param("trustAccountId") UUID trustAccountId,
+      @Param("customerId") UUID customerId,
+      @Param("projectId") UUID projectId,
+      @Param("asAt") LocalDate asAt);
+
+  /**
+   * One client's balance per matter (a null {@code projectId} = the unmattered rows); the rows sum
+   * exactly to {@link #clientBalance}. The opening balances of the per-matter interest buckets
+   * (ADR-366).
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          SELECT t.project_id AS projectId, COALESCE(SUM(t.ledger_effect), 0) AS balance
+            FROM trust_transactions t
+           WHERE t.trust_account_id = :trustAccountId AND t.customer_id = :customerId
+             AND t.ledger = 'CLIENT' AND t.posted_at IS NOT NULL"""
+              + AS_AT
+              + """
+
+           GROUP BY t.project_id""")
+  List<MatterBalanceRow> clientMatterBalances(
+      @Param("trustAccountId") UUID trustAccountId,
+      @Param("customerId") UUID customerId,
+      @Param("asAt") LocalDate asAt);
+
+  /**
+   * Every client with a posted {@code CLIENT} row on the account — membership is date-free, so a
+   * client is listed exactly when it would have had a card (T7) — with its balance and last posted
+   * date as at {@code asAt}. The client-trust-balances report.
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          SELECT t.customer_id AS customerId,
+                 COALESCE(SUM(t.ledger_effect) FILTER (WHERE """
+              + IN_RANGE
+              + """
+                 ), 0) AS balance,
+                 MAX(t.transaction_date) FILTER (WHERE """
+              + IN_RANGE
+              + """
+                 ) AS lastTransactionDate
+            FROM trust_transactions t
+           WHERE t.trust_account_id = :trustAccountId AND t.ledger = 'CLIENT'
+             AND t.customer_id IS NOT NULL AND t.posted_at IS NOT NULL
+           GROUP BY t.customer_id
+           ORDER BY MIN(t.created_at), t.customer_id""")
+  List<ClientBalanceRow> clientBalances(
+      @Param("trustAccountId") UUID trustAccountId, @Param("asAt") LocalDate asAt);
+
+  /**
+   * The client-ledgers list page: balance descending (the UI's {@code sort=balance,desc} — T4),
+   * paged in SQL. Callers pass a sort-free {@code PageRequest.of(page, size)}: the ORDER BY lives
+   * here.
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          SELECT t.customer_id AS customerId, COALESCE(SUM(t.ledger_effect), 0) AS balance,
+                 MAX(t.transaction_date) AS lastTransactionDate
+            FROM trust_transactions t
+           WHERE t.trust_account_id = :trustAccountId AND t.ledger = 'CLIENT'
+             AND t.customer_id IS NOT NULL AND t.posted_at IS NOT NULL
+           GROUP BY t.customer_id
+           ORDER BY balance DESC, t.customer_id""",
+      countQuery =
+          """
+          SELECT count(DISTINCT t.customer_id) FROM trust_transactions t
+           WHERE t.trust_account_id = :trustAccountId AND t.ledger = 'CLIENT'
+             AND t.customer_id IS NOT NULL AND t.posted_at IS NOT NULL""")
+  Page<ClientBalanceRow> clientBalancePage(
+      @Param("trustAccountId") UUID trustAccountId, Pageable pageable);
+
+  /** One client on one account (the client-ledger card): empty when it has no posted row. */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          SELECT t.customer_id AS customerId, COALESCE(SUM(t.ledger_effect), 0) AS balance,
+                 MAX(t.transaction_date) AS lastTransactionDate
+            FROM trust_transactions t
+           WHERE t.trust_account_id = :trustAccountId AND t.customer_id = :customerId
+             AND t.ledger = 'CLIENT' AND t.posted_at IS NOT NULL
+           GROUP BY t.customer_id""")
+  Optional<ClientBalanceRow> clientSummary(
+      @Param("trustAccountId") UUID trustAccountId, @Param("customerId") UUID customerId);
+
+  /**
+   * The matters and clients lists: each client's general ({@code CLIENT} ledger) balance across
+   * every trust account. Callers short-circuit an empty collection ({@code IN ()} is invalid SQL).
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          SELECT t.customer_id AS customerId, COALESCE(SUM(t.ledger_effect), 0) AS balance,
+                 MAX(t.transaction_date) AS lastTransactionDate
+            FROM trust_transactions t
+           WHERE t.customer_id IN (:customerIds) AND t.ledger = 'CLIENT'
+             AND t.posted_at IS NOT NULL
+           GROUP BY t.customer_id""")
+  List<ClientBalanceRow> generalBalancesByClient(
+      @Param("customerIds") Collection<UUID> customerIds);
+
+  /**
+   * One client's general ({@code CLIENT} ledger) balance across every trust account — {@code
+   * TrustBoundaryGuard} and {@code TrustAwareCollectionsAdvisor}. Invested money is not available
+   * to pay a fee note, so it is not added (§16.3.2 consumer table).
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          SELECT COALESCE(SUM(t.ledger_effect), 0) FROM trust_transactions t
+           WHERE t.customer_id = :customerId AND t.ledger = 'CLIENT'
+             AND t.posted_at IS NOT NULL""")
+  BigDecimal generalBalance(@Param("customerId") UUID customerId);
+
+  /**
+   * The money held for a matter: {@code CLIENT} + {@code CLIENT_INVESTMENT} (§16.3.2) — the matter
+   * closure gate {@code TRUST_BALANCE_ZERO} and the matter trust tile. A matter with money still
+   * invested cannot be closed as "nil trust balance".
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          SELECT COALESCE(SUM(t.ledger_effect), 0) FROM trust_transactions t
+           WHERE t.project_id = :projectId AND t.ledger IN ('CLIENT', 'CLIENT_INVESTMENT')
+             AND t.posted_at IS NOT NULL""")
+  BigDecimal matterBalance(@Param("projectId") UUID projectId);
+}

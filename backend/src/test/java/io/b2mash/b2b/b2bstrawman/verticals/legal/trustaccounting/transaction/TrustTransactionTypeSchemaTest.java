@@ -20,11 +20,11 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
 /**
- * Phase 92 slice 646A (task 646.2, ADR-378): the database's {@code chk_trust_txn_type} lists
- * exactly the registry's types — no more (a type the code cannot post) and no fewer (a type the
- * database would refuse). Read from {@code pg_constraint} scoped to a freshly provisioned tenant
- * schema, so it checks what the tenant migrations actually build. ({@code @AutoConfigureMockMvc}
- * only to share the common test context.)
+ * Phase 92 slices 646A / 646B (tasks 646.2 / 646.13, ADR-378): the database's {@code
+ * chk_trust_txn_type} lists exactly the registry's 25 types (646B's V18 swaps in the full list) —
+ * no more (a type the code cannot post) and no fewer (a type the database would refuse). Read from
+ * {@code pg_constraint} scoped to a freshly provisioned tenant schema, so it checks what the tenant
+ * migrations actually build. ({@code @AutoConfigureMockMvc} only to share the common test context.)
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -72,6 +72,7 @@ class TrustTransactionTypeSchemaTest {
     Set<String> registry =
         Arrays.stream(TrustTransactionType.values()).map(Enum::name).collect(Collectors.toSet());
 
+    assertThat(constrained).hasSize(25);
     assertThat(constrained)
         .as("chk_trust_txn_type (%s) vs TrustTransactionType.values()", definition)
         .containsExactlyInAnyOrderElementsOf(registry);

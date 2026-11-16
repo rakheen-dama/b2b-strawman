@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.CustomerTypeTotalRow;
 import java.math.BigDecimal;
@@ -62,6 +63,39 @@ class LedgerTotalsTest {
     assertThat(totals.feeTransfers()).isEqualByComparingTo("5");
     assertThat(totals.deposits()).isEqualByComparingTo("0");
     assertThat(totals.derivedBalance()).isEqualByComparingTo("20");
+  }
+
+  @Test
+  void plus_nonClientLedgerTypesAreANoOp_andUnplacedClientLedgerTypesFailLoudly() {
+    // 646B (D4): the fifteen types that never sit on the CLIENT ledger leave the totals unchanged;
+    // the three CLIENT-ledger types first posted in 647B / 648A must be placed before they post.
+    var base = LedgerTotals.ZERO.plus("DEPOSIT", new BigDecimal("100"));
+    for (var type :
+        List.of(
+            "FUND_INTEREST",
+            "FUND_SWEEP",
+            "BANK_CHARGE",
+            "CHARGE_REFUND",
+            "UNIDENTIFIED_DEPOSIT",
+            "UNIDENT_ALLOC_OUT",
+            "UNIDENT_FUND_PAY",
+            "INV_RECEIVE",
+            "INV_INTEREST",
+            "FUND_INV_SHARE",
+            "INV_WITHDRAW",
+            "FIRM_INV_PLACE",
+            "FIRM_INV_RECEIVE",
+            "FIRM_INV_WITHDRAW",
+            "FIRM_INV_RETURN")) {
+      assertThat(base.plus(type, new BigDecimal("999"))).as(type).isEqualTo(base);
+    }
+    for (var type : List.of("UNIDENT_ALLOC_IN", "INV_PLACE", "INV_RETURN")) {
+      assertThatThrownBy(() -> base.plus(type, new BigDecimal("1")))
+          .as(type)
+          .isInstanceOf(IllegalStateException.class)
+          .hasMessageContaining(type)
+          .hasMessageContaining("647B / 648A");
+    }
   }
 
   @Test

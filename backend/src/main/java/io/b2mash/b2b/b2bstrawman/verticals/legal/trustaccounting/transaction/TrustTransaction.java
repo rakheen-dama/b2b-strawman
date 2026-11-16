@@ -108,6 +108,20 @@ public class TrustTransaction {
   @Column(name = "posted_at")
   private Instant postedAt;
 
+  // Phase 92 / 646B (ADR-376): no setters yet — the slice that first posts a non-client or
+  // investment row (647A / 648A) adds the mutator it needs; until then both are always null, which
+  // CLIENT rows require (chk_trust_txn_ledger_target).
+
+  /**
+   * The non-client creditor account a NON_CLIENT row moves (ADR-376, chk_trust_txn_ledger_target).
+   */
+  @Column(name = "creditor_account_id")
+  private UUID creditorAccountId;
+
+  /** The investment the row belongs to — every INV_*, FIRM_INV_* and FUND_INV_SHARE row (648A). */
+  @Column(name = "investment_id")
+  private UUID investmentId;
+
   protected TrustTransaction() {}
 
   public TrustTransaction(
@@ -239,6 +253,16 @@ public class TrustTransaction {
   /** The creditor ledger this row moves (ADR-378). */
   public TrustLedger getLedger() {
     return ledger;
+  }
+
+  /** The non-client creditor account a NON_CLIENT row moves; null on every other ledger. */
+  public UUID getCreditorAccountId() {
+    return creditorAccountId;
+  }
+
+  /** The investment the row belongs to; null when it belongs to none. */
+  public UUID getInvestmentId() {
+    return investmentId;
   }
 
   /** Signed effect on the cashbook; 0 while unposted (and, in 646A, for reversals). */

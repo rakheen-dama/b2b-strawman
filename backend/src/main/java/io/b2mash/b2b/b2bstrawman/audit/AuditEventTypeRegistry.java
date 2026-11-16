@@ -99,6 +99,14 @@ public class AuditEventTypeRegistry {
                 AuditEventGroup.FINANCIAL),
             new AuditEventTypeMetadata(
                 "trust.*", "Trust Activity", AuditSeverity.NOTICE, AuditEventGroup.FINANCIAL),
+            // FINANCIAL — trust creditor ledger (Phase 92 646B, ADR-376): the two non-client
+            // creditor accounts opened with every trust account. Additive key (registry pin 50 →
+            // 51).
+            new AuditEventTypeMetadata(
+                "trust_creditor_account.created",
+                "Trust creditor account opened",
+                AuditSeverity.INFO,
+                AuditEventGroup.FINANCIAL),
             // DATA — data protection
             new AuditEventTypeMetadata(
                 "dataprotection.dsar.*",

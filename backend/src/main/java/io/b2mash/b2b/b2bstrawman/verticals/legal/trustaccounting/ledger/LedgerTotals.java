@@ -84,6 +84,28 @@ public record LedgerTotals(
           new LedgerTotals(
               deposits, transfersIn, payments, feeTransfers, refunds, transfersOut.add(amount));
       case REVERSAL -> this;
+      // Never on the CLIENT ledger: clientTotalsByType filters ledger = 'CLIENT' (a reversal row
+      // carries its original's ledger), so these cannot reach the totals.
+      case FUND_INTEREST,
+          FUND_SWEEP,
+          BANK_CHARGE,
+          CHARGE_REFUND,
+          UNIDENTIFIED_DEPOSIT,
+          UNIDENT_ALLOC_OUT,
+          UNIDENT_FUND_PAY,
+          INV_RECEIVE,
+          INV_INTEREST,
+          FUND_INV_SHARE,
+          INV_WITHDRAW,
+          FIRM_INV_PLACE,
+          FIRM_INV_RECEIVE,
+          FIRM_INV_WITHDRAW,
+          FIRM_INV_RETURN ->
+          this;
+      // CLIENT-ledger types not posted before 647B / 648A: the slice that posts one places it here.
+      case UNIDENT_ALLOC_IN, INV_PLACE, INV_RETURN ->
+          throw new IllegalStateException(
+              transactionType + " has no client-ledger total yet (647B / 648A place it)");
     };
   }
 

@@ -69,6 +69,22 @@ public interface TrustLedgerQueryRepository extends Repository<TrustTransaction,
       @Param("asAt") LocalDate asAt);
 
   /**
+   * One non-client creditor account's balance (ADR-376): SUM(ledger_effect) over its posted {@code
+   * NON_CLIENT} rows. A Fund ledger may be in debit (founder decision 9, ADR-381). Index: {@code
+   * idx_trust_txn_creditor_account} (V18).
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          SELECT COALESCE(SUM(t.ledger_effect), 0) FROM trust_transactions t
+           WHERE t.creditor_account_id = :creditorAccountId AND t.ledger = 'NON_CLIENT'
+             AND t.posted_at IS NOT NULL"""
+              + AS_AT)
+  BigDecimal creditorAccountBalance(
+      @Param("creditorAccountId") UUID creditorAccountId, @Param("asAt") LocalDate asAt);
+
+  /**
    * The matter sub-ledger cell (G89-F12): one client's money on one matter in one account. The
    * caller holds the client's lock anchor, which serialises every posting for the client.
    */

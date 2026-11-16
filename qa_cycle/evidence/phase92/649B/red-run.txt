@@ -76,3 +76,26 @@ plus the review mediums (contraOf reuse, reverseForUnmatch InvalidStateException
   trustBlock_reversalRowCarriesAGeneratedDescription_neverTheFirmReason ("Reversal — REV-PAY-77"; the payment keeps
   its own description).
 Tier 3 (full ./mvnw verify) NOT run — orchestrator-owned.
+
+CodeRabbit fix — unmatch placement guard (PR #1789, CodeRabbit fix cycle)
+---------------------------------------------------------------------------
+RED on head ddebda00a (test written before the fix):
+  ./mvnw test -Dtest=TrustReversalEquationIntegrationTest
+  Tests run: 13, Failures: 1, Errors: 0, Skipped: 0
+  TrustReversalEquationIntegrationTest.reverseForUnmatch_refusesAnInvestmentsPlacementPayment
+    Expecting code to raise a throwable.
+    (a R1 000 investment placed and its placement PAYMENT approved, the payment linked to a statement line;
+     reverseForUnmatch posted a contra for the placement payment instead of refusing)
+  The same run also had approvedCreditReversal_refusedWhenTheClientNoLongerCoversIt green with the new detail
+  assertion ("Insufficient trust balance for <client>. Available: R1 000,00, Requested: R5 000,00").
+GREEN after the fix (TrustTransactionService.requireNotAPlacementPayment — the reverseTransaction guard extracted
+unchanged — now also called in reverseForUnmatch before any contra posts):
+  refusal 400 "Cannot reverse transaction" / "This payment placed a trust investment (ACTIVE). Withdraw the
+  investment instead of reversing its placement payment."; nothing moves; payment stays APPROVED, reversedById null,
+  investment ACTIVE.
+  Tier-2 targeted sweep, 15 classes (TrustReversalEquation, TrustEquationCharacterisation, DerivedLedgerBalance,
+  TrustTransactionService, TrustTransactionController, TrustPostingRules, and every Placement/TrustInvestment test class:
+  TrustInvestmentPlacementGuard, TrustInvestmentWithdrawReverseRace, TrustInvestmentService, TrustInvestmentController,
+  TrustInvestmentSchema, InvestmentBasisInterest, InvestmentReportBasis, TrustClientMatterRequired, TrustReportQuery):
+  169 <testcase> elements, 0 failures, 0 errors, 0 skipped. exit 0.
+Tier 3 (full ./mvnw verify) NOT run — orchestrator-owned.

@@ -121,8 +121,8 @@ public final class TrustBooksFixture {
     return new Tenant(schema, orgId, memberId);
   }
 
-  /** An ACTIVE client and its own trust matter (G89-F28). */
-  public record Client(UUID id, UUID matter) {}
+  /** An ACTIVE client (named {@code name}) and its own trust matter (G89-F28). */
+  public record Client(UUID id, UUID matter, String name) {}
 
   /** A requested fee transfer and the SENT fee note it settles. */
   public record FeeTransfer(UUID transactionId, UUID invoiceId) {}
@@ -194,15 +194,14 @@ public final class TrustBooksFixture {
     /** An ACTIVE client with its own trust matter (G89-F28). */
     public Client newClient(String label) {
       var n = sequence.incrementAndGet();
+      var name = "Trust Books " + label + " " + n;
       UUID client =
           read(
               () ->
                   customerRepository
                       .save(
                           TestCustomerFactory.createActiveCustomer(
-                              "Trust Books " + label + " " + n,
-                              "trust_books_" + n + "@test.com",
-                              memberId))
+                              name, "trust_books_" + n + "@test.com", memberId))
                       .getId());
       var matter =
           TestTrustMatterHelper.openClientMatter(
@@ -212,7 +211,7 @@ public final class TrustBooksFixture {
               client,
               "Trust books matter " + n,
               memberId);
-      return new Client(client, matter);
+      return new Client(client, matter, name);
     }
 
     // --- posting paths (each asserted through TrustBooksHarness.assertMoves) ----------------
@@ -485,11 +484,35 @@ public final class TrustBooksFixture {
     }
 
     /**
-     * {@code approver}'s approval is refused with {@code InvalidStateException} (400) titled {@code
-     * title}, and nothing moves.
+     * The maker's statement-line unmatch ({@code reverseForUnmatch}) is refused with {@code
+     * InvalidStateException} (400) {@code title} / {@code detail}, and nothing moves.
+     */
+    public void assertUnmatchRefused(
+        UUID account, UUID bankStatementLineId, String title, String detail) {
+      as(
+          memberId,
+          () ->
+              harness.assertMoves(
+                  account,
+                  Expected.none(),
+                  () ->
+                      assertThatThrownBy(
+                              () -> transactionService.reverseForUnmatch(bankStatementLineId))
+                          .isInstanceOfSatisfying(
+                              InvalidStateException.class,
+                              e -> {
+                                assertThat(e.getBody().getStatus()).isEqualTo(400);
+                                assertThat(e.getBody().getTitle()).isEqualTo(title);
+                                assertThat(e.getBody().getDetail()).isEqualTo(detail);
+                              })));
+    }
+
+    /**
+     * {@code approver}'s approval is refused with {@code InvalidStateException} (400) {@code title}
+     * / {@code detail}, and nothing moves.
      */
     public void assertApprovalRefused(
-        UUID account, UUID transactionId, UUID approver, String title) {
+        UUID account, UUID transactionId, UUID approver, String title, String detail) {
       as(
           approver,
           () ->
@@ -504,6 +527,7 @@ public final class TrustBooksFixture {
                               e -> {
                                 assertThat(e.getBody().getStatus()).isEqualTo(400);
                                 assertThat(e.getBody().getTitle()).isEqualTo(title);
+                                assertThat(e.getBody().getDetail()).isEqualTo(detail);
                               })));
     }
 

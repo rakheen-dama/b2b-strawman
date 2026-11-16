@@ -8,6 +8,11 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksFixture;
 import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness;
 import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness.Expected;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.PlaceInvestmentRequest;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterAll;
@@ -50,10 +55,13 @@ class TrustReversalEquationIntegrationTest {
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private TrustBooksFixture fixture;
+  @Autowired private TrustInvestmentService investmentService;
+  @Autowired private TrustInvestmentRepository investmentRepository;
 
   /** The tenant: H-a, H-b, H-c, H-d; ends firm-balanced. */
   private TrustBooksFixture.Tenant books;
 
+  private UUID memberId;
   private UUID approverId;
 
   @BeforeAll
@@ -62,7 +70,7 @@ class TrustReversalEquationIntegrationTest {
         provisioningService
             .provisionTenant(ORG_ID, "Trust Reversal Equation Org", null)
             .schemaName();
-    var memberId =
+    memberId =
         UUID.fromString(
             TestMemberHelper.syncMember(
                 mockMvc, ORG_ID, "user_rev_eq_owner", "rev_eq@test.com", "Rev Eq Owner", "owner"));
@@ -126,7 +134,14 @@ class TrustReversalEquationIntegrationTest {
     var paymentId = books.requestPayment(account, client, "4000.00");
     books.approve(account, paymentId, approverId, Expected.cashbookAndClient("-4000.00"));
 
-    books.assertApprovalRefused(account, reversal.id(), approverId, "Insufficient trust balance");
+    books.assertApprovalRefused(
+        account,
+        reversal.id(),
+        approverId,
+        "Insufficient trust balance",
+        "Insufficient trust balance for "
+            + client.name()
+            + ". Available: R1\u00a0000,00, Requested: R5\u00a0000,00");
 
     assertThat(books.statusOf(reversal.id())).as("the reversal").isEqualTo("AWAITING_APPROVAL");
     assertThat(books.statusOf(depositId)).as("original deposit").isEqualTo("APPROVED");
@@ -383,6 +398,59 @@ class TrustReversalEquationIntegrationTest {
     assertThat(books.statusOf(paymentId)).isEqualTo("REVERSED");
     assertAsAt(account, client, lineDate.minusDays(1), "5000.00");
     assertAsAt(account, client, lineDate, "8000.00");
+  }
+
+  /**
+   * CodeRabbit on PR #1789: the unmatch path must refuse an investment's placement PAYMENT exactly
+   * as {@code reverseTransaction} does (G89-F86) — otherwise the payment is credited back and
+   * marked {@code REVERSED} while its investment stays ACTIVE with no money behind it (and can
+   * never be withdrawn). Nothing moves; the payment stays APPROVED and the investment ACTIVE.
+   */
+  @Test
+  void reverseForUnmatch_refusesAnInvestmentsPlacementPayment() {
+    var account = books.freshAccount(false);
+    var client = books.newClient("Unmatch placement");
+    books.deposit(account, client, "5000.00");
+    var investmentId = new UUID[1];
+    var placementId = new UUID[1];
+    books.as(
+        memberId,
+        () -> {
+          var placed =
+              investmentService.placeInvestment(
+                  account,
+                  new PlaceInvestmentRequest(
+                      client.id(),
+                      client.matter(),
+                      "Unmatch Bank",
+                      "UNMATCH-INV-1",
+                      new BigDecimal("1000.00"),
+                      new BigDecimal("0.07"),
+                      TrustBooksFixture.POSTING_DATE,
+                      null,
+                      null,
+                      InvestmentBasis.FIRM_DISCRETION));
+          investmentId[0] = placed.id();
+          placementId[0] = placed.depositTransactionId();
+        });
+    books.approve(account, placementId[0], approverId, Expected.cashbookAndClient("-1000.00"));
+    var lineId =
+        books.bankLineFor(account, placementId[0], TrustBooksFixture.POSTING_DATE.plusDays(2));
+
+    books.assertUnmatchRefused(
+        account,
+        lineId,
+        "Cannot reverse transaction",
+        "This payment placed a trust investment (ACTIVE). Withdraw the investment instead of"
+            + " reversing its placement payment.");
+
+    assertThat(books.statusOf(placementId[0])).as("placement payment").isEqualTo("APPROVED");
+    assertThat(books.reversedByOf(placementId[0])).as("placement reversedById").isNull();
+    assertThat(
+            books.read(
+                () -> investmentRepository.findById(investmentId[0]).orElseThrow().getStatus()))
+        .as("investment")
+        .isEqualTo("ACTIVE");
   }
 
   /** Cashbook and the client's ledger as at {@code asAt}, both {@code amount}; books balanced. */

@@ -1229,25 +1229,7 @@ public class TrustTransactionService {
 
     requireReversible(original);
 
-    // G89-F86 (D40): a PAYMENT that placed a trust investment is never reversed, whatever the
-    // investment's status — the investment is withdrawn instead. While the investment is ACTIVE or
-    // MATURED a reversal would credit the client while the s86 register (and getMaturing, the
-    // Section 35 data pack) still shows the money invested, and the investment could never be
-    // withdrawn; once it is WITHDRAWN the withdrawal already returned the money, so a reversal
-    // would
-    // credit the client twice (PR #1757 review). Lock order as in TrustInvestmentService
-    // .withdrawInvestment — the placement row (locked above), then the investment row.
-    var placedInvestment =
-        "PAYMENT".equals(original.getTransactionType())
-            ? trustInvestmentRepository.findByPlacementTransactionIdForUpdate(original.getId())
-            : Optional.<TrustInvestment>empty();
-    if (placedInvestment.isPresent()) {
-      throw new InvalidStateException(
-          "Cannot reverse transaction",
-          "This payment placed a trust investment ("
-              + placedInvestment.get().getStatus()
-              + "). Withdraw the investment instead of reversing its placement payment.");
-    }
+    requireNotAPlacementPayment(original);
 
     var memberId = RequestScopes.requireMemberId();
 
@@ -1329,6 +1311,7 @@ public class TrustTransactionService {
                 + ")");
       }
       requireReversible(original);
+      requireNotAPlacementPayment(original);
       originals.add(
           new Unmatched(original, resolveReversalDate(line.getTransactionDate(), original)));
     }
@@ -1343,6 +1326,31 @@ public class TrustTransactionService {
               memberId));
     }
     return contras;
+  }
+
+  /**
+   * G89-F86 (D40): a PAYMENT that placed a trust investment is never reversed, whatever the
+   * investment's status — the investment is withdrawn instead. While the investment is ACTIVE or
+   * MATURED a reversal would credit the client while the s86 register (and getMaturing, the Section
+   * 35 data pack) still shows the money invested, and the investment could never be withdrawn; once
+   * it is WITHDRAWN the withdrawal already returned the money, so a reversal would credit the
+   * client twice (PR #1757 review). Applied by {@link #reverseTransaction} and {@link
+   * #reverseForUnmatch} (CodeRabbit, PR #1789). Lock order as in
+   * TrustInvestmentService.withdrawInvestment — the placement row (locked by the caller), then the
+   * investment row.
+   */
+  private void requireNotAPlacementPayment(TrustTransaction original) {
+    var placedInvestment =
+        "PAYMENT".equals(original.getTransactionType())
+            ? trustInvestmentRepository.findByPlacementTransactionIdForUpdate(original.getId())
+            : Optional.<TrustInvestment>empty();
+    if (placedInvestment.isPresent()) {
+      throw new InvalidStateException(
+          "Cannot reverse transaction",
+          "This payment placed a trust investment ("
+              + placedInvestment.get().getStatus()
+              + "). Withdraw the investment instead of reversing its placement payment.");
+    }
   }
 
   /**

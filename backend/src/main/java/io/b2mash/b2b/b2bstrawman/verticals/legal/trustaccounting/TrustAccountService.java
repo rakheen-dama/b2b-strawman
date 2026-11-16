@@ -9,10 +9,9 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.dto.MatterTrustBalanceResponse;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.lpff.LpffRate;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.lpff.LpffRateRepository;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedgerQueryRepository;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
@@ -32,33 +31,30 @@ public class TrustAccountService {
   private static final String MODULE_ID = "trust_accounting";
 
   private final TrustAccountRepository trustAccountRepository;
-  private final ClientLedgerCardRepository ledgerCardRepository;
   private final LpffRateRepository lpffRateRepository;
   private final VerticalModuleGuard moduleGuard;
   private final AuditService auditService;
   private final Clock clock;
   private final ProjectAccessService projectAccessService;
-  private final TrustTransactionRepository trustTransactionRepository;
+  private final TrustLedgerQueryRepository ledgerQueries;
   private final OrgSettingsService orgSettingsService;
 
   public TrustAccountService(
       TrustAccountRepository trustAccountRepository,
-      ClientLedgerCardRepository ledgerCardRepository,
       LpffRateRepository lpffRateRepository,
       VerticalModuleGuard moduleGuard,
       AuditService auditService,
       Clock clock,
       ProjectAccessService projectAccessService,
-      TrustTransactionRepository trustTransactionRepository,
+      TrustLedgerQueryRepository ledgerQueries,
       OrgSettingsService orgSettingsService) {
     this.trustAccountRepository = trustAccountRepository;
-    this.ledgerCardRepository = ledgerCardRepository;
     this.lpffRateRepository = lpffRateRepository;
     this.moduleGuard = moduleGuard;
     this.auditService = auditService;
     this.clock = clock;
     this.projectAccessService = projectAccessService;
-    this.trustTransactionRepository = trustTransactionRepository;
+    this.ledgerQueries = ledgerQueries;
     this.orgSettingsService = orgSettingsService;
   }
 
@@ -133,9 +129,7 @@ public class TrustAccountService {
   public MatterTrustBalanceResponse matterBalance(UUID projectId, ActorContext actor) {
     projectAccessService.requireViewAccess(projectId, actor);
     BigDecimal balance =
-        moduleGuard.isModuleEnabled(MODULE_ID)
-            ? trustTransactionRepository.calculateBalanceByProjectId(projectId)
-            : null;
+        moduleGuard.isModuleEnabled(MODULE_ID) ? ledgerQueries.matterBalance(projectId) : null;
     return new MatterTrustBalanceResponse(
         projectId,
         balance != null ? balance : BigDecimal.ZERO,
@@ -271,8 +265,8 @@ public class TrustAccountService {
       throw new InvalidStateException("Cannot close trust account", "Account is already closed");
     }
 
-    // Closing guard: check client ledger balances sum to zero
-    BigDecimal totalBalance = ledgerCardRepository.calculateTotalTrustBalance(id);
+    // Closing guard: the (derived) client ledgers on the account must sum to zero
+    BigDecimal totalBalance = ledgerQueries.clientLedgerTotal(id, null);
     if (totalBalance.compareTo(BigDecimal.ZERO) != 0) {
       throw new InvalidStateException(
           "Cannot close trust account",

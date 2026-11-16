@@ -6,7 +6,9 @@ import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.ClientBalanceRow;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.ClientHistoryRow;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedgerQueryRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.TrustTransactionResponse;
@@ -17,8 +19,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -33,28 +37,30 @@ public class ClientLedgerService {
 
   private final ClientLedgerCardRepository ledgerCardRepository;
   private final TrustTransactionRepository transactionRepository;
+  private final TrustLedgerQueryRepository ledgerQueries;
   private final CustomerRepository customerRepository;
   private final VerticalModuleGuard moduleGuard;
 
   public ClientLedgerService(
       ClientLedgerCardRepository ledgerCardRepository,
       TrustTransactionRepository transactionRepository,
+      TrustLedgerQueryRepository ledgerQueries,
       CustomerRepository customerRepository,
       VerticalModuleGuard moduleGuard) {
     this.ledgerCardRepository = ledgerCardRepository;
     this.transactionRepository = transactionRepository;
+    this.ledgerQueries = ledgerQueries;
     this.customerRepository = customerRepository;
     this.moduleGuard = moduleGuard;
   }
 
-  private static final Set<String> CREDIT_TYPES =
-      Set.of("DEPOSIT", "TRANSFER_IN", "INTEREST_CREDIT");
-
-  private static final Set<String> DEBIT_TYPES =
-      Set.of("PAYMENT", "TRANSFER_OUT", "FEE_TRANSFER", "REFUND", "INTEREST_LPFF");
-
   // --- DTO Records ---
 
+  /**
+   * One client's ledger on one account. {@code balance}, the totals and {@code lastTransactionDate}
+   * are derived from the posted rows (ADR-378); {@code id}, {@code createdAt} and {@code updatedAt}
+   * are the client's lock anchor's, null when it has none.
+   */
   public record ClientLedgerCardResponse(
       UUID id,
       UUID trustAccountId,
@@ -64,10 +70,8 @@ public class ClientLedgerService {
       BigDecimal totalDeposits,
       BigDecimal totalPayments,
       BigDecimal totalFeeTransfers,
-      BigDecimal totalInterestCredited,
       // G89-F13: every total is derived from the posted ledger (LedgerTotals), so
-      // deposits + interest + transfers in - payments - fee transfers - refunds - transfers out
-      // == balance
+      // deposits + transfers in - payments - fee transfers - refunds - transfers out == balance
       BigDecimal totalRefunds,
       BigDecimal totalTransfersIn,
       BigDecimal totalTransfersOut,
@@ -96,7 +100,10 @@ public class ClientLedgerService {
       String description,
       LocalDate transactionDate,
       String status,
-      BigDecimal runningBalance) {}
+      BigDecimal runningBalance,
+      // Phase 92 (ADR-378): the row's signed effect on the client ledger — the statement and the
+      // Statement of Account classify lines by its sign, never by type name
+      BigDecimal ledgerEffect) {}
 
   // --- Service Methods ---
 
@@ -104,45 +111,37 @@ public class ClientLedgerService {
   public ClientLedgerCardResponse getClientLedger(UUID customerId, UUID trustAccountId) {
     moduleGuard.requireModule(MODULE_ID);
 
-    return ledgerCardRepository
-        .findByTrustAccountIdAndCustomerId(trustAccountId, customerId)
-        .map(
-            card ->
-                toResponse(
-                    card,
-                    customerNameOf(card),
-                    totalsFor(trustAccountId, List.of(customerId))
-                        .getOrDefault(customerId, LedgerTotals.ZERO)))
-        .orElseGet(
-            () -> {
-              // No ledger card yet is a valid state — card is lazily created on the first
-              // deposit/payment via TrustTransactionService.applyTransaction. But an unknown
-              // customer ID is a genuine 404. Resolve the customer first so we can distinguish
-              // "no card yet" (valid customer, synthetic empty response) from "customer not found"
-              // (throw). See GAP-S4-06 + PR #1004 review finding.
-              Customer customer =
-                  customerRepository
-                      .findById(customerId)
-                      .orElseThrow(
-                          () -> new ResourceNotFoundException(EntityNoun.CLIENT, customerId));
-              return emptyLedgerCardResponse(customer, trustAccountId);
-            });
+    // An unknown customer ID is a genuine 404; a known client with no posted row is a valid
+    // zero-balance state (GAP-S4-06 + PR #1004 review finding) — the "Trust" tab on every new
+    // matter renders a clean R0.00 state instead of a 404.
+    Customer customer =
+        customerRepository
+            .findById(customerId)
+            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.CLIENT, customerId));
+    var summary = ledgerQueries.clientSummary(trustAccountId, customerId);
+    var anchor = ledgerCardRepository.findByTrustAccountIdAndCustomerId(trustAccountId, customerId);
+    if (summary.isEmpty() && anchor.isEmpty()) {
+      return emptyLedgerCardResponse(customer, trustAccountId);
+    }
+    return toResponse(
+        trustAccountId,
+        customerId,
+        customer.getName(),
+        summary,
+        anchor,
+        totalsFor(trustAccountId, List.of(customerId)).getOrDefault(customerId, LedgerTotals.ZERO));
   }
 
   /**
-   * Synthetic zero-balance response for customers who have no ledger card yet (i.e. no trust
-   * transactions have been recorded). The ledger card is lazily created on the first
-   * deposit/payment via {@code TrustTransactionService.applyTransaction}. Returning a synthetic
-   * empty response here lets the "Trust" tab on every new matter render a clean R0.00 state instead
-   * of a 404 error. Caller must ensure the customer exists — see {@link #getClientLedger}.
+   * Synthetic zero-balance response for a client with no posted trust row and no lock anchor on the
+   * account. Caller must ensure the customer exists — see {@link #getClientLedger}.
    */
   private ClientLedgerCardResponse emptyLedgerCardResponse(Customer customer, UUID trustAccountId) {
     return new ClientLedgerCardResponse(
-        null, // no persistent card id yet
+        null, // no lock anchor yet
         trustAccountId,
         customer.getId(),
         customer.getName(),
-        BigDecimal.ZERO,
         BigDecimal.ZERO,
         BigDecimal.ZERO,
         BigDecimal.ZERO,
@@ -155,28 +154,45 @@ public class ClientLedgerService {
         null); // updatedAt
   }
 
+  /**
+   * The client ledgers of an account: every client with a posted row (ADR-378 — a client with rows
+   * and no anchor is listed), balance descending, paged in SQL. The caller's sort is ignored (the
+   * UI sends {@code sort=balance,desc}, which the derived query applies itself — there is no stored
+   * {@code balance} property to sort on).
+   */
   @Transactional(readOnly = true)
   public Page<ClientLedgerCardResponse> listClientLedgers(UUID trustAccountId, Pageable pageable) {
     moduleGuard.requireModule(MODULE_ID);
 
-    Page<ClientLedgerCard> page =
-        ledgerCardRepository.findByTrustAccountId(trustAccountId, pageable);
+    Pageable unsorted =
+        pageable.isPaged()
+            ? PageRequest.of(pageable.getPageNumber(), pageable.getPageSize())
+            : Pageable.unpaged();
+    Page<ClientBalanceRow> page = ledgerQueries.clientBalancePage(trustAccountId, unsorted);
 
-    // Batch-load customer names to avoid N+1
+    // Batch-load customer names, lock anchors and derived totals to avoid N+1
     Set<UUID> customerIds =
-        page.getContent().stream().map(ClientLedgerCard::getCustomerId).collect(Collectors.toSet());
+        page.getContent().stream().map(ClientBalanceRow::getCustomerId).collect(Collectors.toSet());
     Map<UUID, String> customerNames =
         customerRepository.findByIdIn(customerIds).stream()
             .collect(Collectors.toMap(c -> c.getId(), c -> c.getName()));
+    Map<UUID, ClientLedgerCard> anchors =
+        ledgerCardRepository
+            .findByTrustAccountIdAndCustomerIdIn(trustAccountId, customerIds)
+            .stream()
+            .collect(Collectors.toMap(ClientLedgerCard::getCustomerId, Function.identity()));
     // One batch query for the page's derived totals (G89-F13)
     Map<UUID, LedgerTotals> totals = totalsFor(trustAccountId, customerIds);
 
     return page.map(
-        entity ->
+        row ->
             toResponse(
-                entity,
-                customerNames.getOrDefault(entity.getCustomerId(), "(deleted customer)"),
-                totals.getOrDefault(entity.getCustomerId(), LedgerTotals.ZERO)));
+                trustAccountId,
+                row.getCustomerId(),
+                customerNames.getOrDefault(row.getCustomerId(), "(deleted customer)"),
+                Optional.of(row),
+                Optional.ofNullable(anchors.get(row.getCustomerId())),
+                totals.getOrDefault(row.getCustomerId(), LedgerTotals.ZERO)));
   }
 
   /**
@@ -218,15 +234,13 @@ public class ClientLedgerService {
   public BigDecimal getClientBalanceAsOfDate(
       UUID customerId, UUID trustAccountId, LocalDate asOfDate) {
     moduleGuard.requireModule(MODULE_ID);
-    return transactionRepository.calculateClientBalanceAsOfDate(
-        customerId, trustAccountId, asOfDate);
+    return ledgerQueries.clientBalance(trustAccountId, customerId, asOfDate);
   }
 
   @Transactional(readOnly = true)
   public TotalBalanceResponse getTotalTrustBalance(UUID trustAccountId) {
     moduleGuard.requireModule(MODULE_ID);
-    return new TotalBalanceResponse(
-        ledgerCardRepository.calculateTotalTrustBalance(trustAccountId));
+    return new TotalBalanceResponse(ledgerQueries.clientLedgerTotal(trustAccountId, null));
   }
 
   @Transactional(readOnly = true)
@@ -241,8 +255,7 @@ public class ClientLedgerService {
 
     // Get the opening balance as of the day before the start date
     BigDecimal openingBalance =
-        transactionRepository.calculateClientBalanceAsOfDate(
-            customerId, trustAccountId, startDate.minusDays(1));
+        ledgerQueries.clientBalance(trustAccountId, customerId, startDate.minusDays(1));
 
     // Fetch transactions in the date range
     List<TrustTransaction> transactions =
@@ -253,7 +266,8 @@ public class ClientLedgerService {
     BigDecimal runningBalance = openingBalance;
 
     for (TrustTransaction txn : transactions) {
-      BigDecimal effect = computeLedgerEffect(txn);
+      // The row's own posted effect (ADR-378) — no type-name sign table
+      BigDecimal effect = txn.getLedgerEffect();
       runningBalance = runningBalance.add(effect);
 
       lines.add(
@@ -265,29 +279,13 @@ public class ClientLedgerService {
               txn.getDescription(),
               txn.getTransactionDate(),
               txn.getStatus(),
-              runningBalance));
+              runningBalance,
+              effect));
     }
 
     BigDecimal closingBalance = lines.isEmpty() ? openingBalance : lines.getLast().runningBalance();
 
     return new LedgerStatementResponse(openingBalance, closingBalance, lines);
-  }
-
-  /**
-   * Computes the ledger effect of a transaction on the client's balance. Credit types add to
-   * balance; debit types subtract from balance. REVERSAL transactions are excluded from statement
-   * queries (they should not appear here), but if they do, this will throw. Reversals affect
-   * balances through direct ledger card updates (debit reversals) or the approval flow (credit
-   * reversals, Epic 441).
-   */
-  private BigDecimal computeLedgerEffect(TrustTransaction txn) {
-    if (CREDIT_TYPES.contains(txn.getTransactionType())) {
-      return txn.getAmount();
-    } else if (DEBIT_TYPES.contains(txn.getTransactionType())) {
-      return txn.getAmount().negate();
-    }
-    throw new InvalidStateException(
-        "Unsupported transaction type for ledger statement", txn.getTransactionType());
   }
 
   // --- Private Helpers ---
@@ -301,31 +299,28 @@ public class ClientLedgerService {
         transactionRepository.sumPostedByCustomerAndType(trustAccountId, customerIds));
   }
 
-  private String customerNameOf(ClientLedgerCard entity) {
-    return customerRepository
-        .findById(entity.getCustomerId())
-        .map(c -> c.getName())
-        .orElse("(deleted customer)");
-  }
-
   private ClientLedgerCardResponse toResponse(
-      ClientLedgerCard entity, String customerName, LedgerTotals totals) {
+      UUID trustAccountId,
+      UUID customerId,
+      String customerName,
+      Optional<ClientBalanceRow> summary,
+      Optional<ClientLedgerCard> anchor,
+      LedgerTotals totals) {
     return new ClientLedgerCardResponse(
-        entity.getId(),
-        entity.getTrustAccountId(),
-        entity.getCustomerId(),
+        anchor.map(ClientLedgerCard::getId).orElse(null),
+        trustAccountId,
+        customerId,
         customerName,
-        entity.getBalance(),
+        summary.map(ClientBalanceRow::getBalance).orElse(BigDecimal.ZERO),
         totals.deposits(),
         totals.payments(),
         totals.feeTransfers(),
-        totals.interestCredited(),
         totals.refunds(),
         totals.transfersIn(),
         totals.transfersOut(),
-        entity.getLastTransactionDate(),
-        entity.getCreatedAt(),
-        entity.getUpdatedAt());
+        summary.map(ClientBalanceRow::getLastTransactionDate).orElse(null),
+        anchor.map(ClientLedgerCard::getCreatedAt).orElse(null),
+        anchor.map(ClientLedgerCard::getUpdatedAt).orElse(null));
   }
 
   private static TrustTransactionResponse toTransactionResponse(ClientHistoryRow row) {

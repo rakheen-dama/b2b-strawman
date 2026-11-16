@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger;
 
 import jakarta.persistence.LockModeType;
-import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -10,9 +9,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+/**
+ * The per-client lock anchors (ADR-378). Balances are not stored here — see {@code
+ * TrustLedgerQueryRepository}.
+ */
 public interface ClientLedgerCardRepository extends JpaRepository<ClientLedgerCard, UUID> {
 
   Optional<ClientLedgerCard> findByTrustAccountIdAndCustomerId(
@@ -26,28 +30,26 @@ public interface ClientLedgerCardRepository extends JpaRepository<ClientLedgerCa
 
   Page<ClientLedgerCard> findByTrustAccountId(UUID trustAccountId, Pageable pageable);
 
-  /** Sums the balance across all client ledger cards for a trust account. */
-  @Query(
-      "SELECT COALESCE(SUM(c.balance), 0) FROM ClientLedgerCard c WHERE c.trustAccountId = :trustAccountId")
-  BigDecimal calculateTotalTrustBalance(@Param("trustAccountId") UUID trustAccountId);
-
-  /** Sums the balance across all client ledger cards for a customer. Used by TrustBoundaryGuard. */
-  @Query(
-      "SELECT COALESCE(SUM(c.balance), 0) FROM ClientLedgerCard c WHERE c.customerId = :customerId")
-  BigDecimal sumBalancesForCustomer(@Param("customerId") UUID customerId);
+  /**
+   * The lock anchors of a page of clients (the client-ledgers list: id / createdAt / updatedAt).
+   */
+  List<ClientLedgerCard> findByTrustAccountIdAndCustomerIdIn(
+      UUID trustAccountId, Collection<UUID> customerIds);
 
   /**
-   * Batch variant of {@link #sumBalancesForCustomer}: one row per customer that has at least one
-   * ledger card (absent customers have a zero balance). Used by the Matters list (Phase 87, Epic
-   * 615A) and reusable by the Clients list.
+   * Ensures the client's lock anchor exists (ADR-378, ADR-231): {@code INSERT … ON CONFLICT DO
+   * NOTHING}, safe when two first postings for the client race. Callers then lock it with {@link
+   * #findByAccountAndCustomerForUpdate}. Returns the number of rows inserted (0 or 1).
    */
+  @Modifying
   @Query(
-      """
-      SELECT c.customerId AS customerId, COALESCE(SUM(c.balance), 0) AS balance
-      FROM ClientLedgerCard c
-      WHERE c.customerId IN :customerIds
-      GROUP BY c.customerId
-      """)
-  List<ClientTrustBalanceProjection> sumBalancesByCustomerIdIn(
-      @Param("customerIds") Collection<UUID> customerIds);
+      nativeQuery = true,
+      value =
+          """
+          INSERT INTO client_ledger_cards (id, trust_account_id, customer_id, created_at, updated_at)
+          VALUES (gen_random_uuid(), :accountId, :customerId, now(), now())
+          ON CONFLICT (trust_account_id, customer_id) DO NOTHING
+          """)
+  int insertLockAnchorIfAbsent(
+      @Param("accountId") UUID accountId, @Param("customerId") UUID customerId);
 }

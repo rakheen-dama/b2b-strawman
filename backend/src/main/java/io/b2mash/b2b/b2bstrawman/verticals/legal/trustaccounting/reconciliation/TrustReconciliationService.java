@@ -8,7 +8,6 @@ import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.parser.AbsaCsvParser;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.parser.BankStatementParseException;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.parser.BankStatementParser;
@@ -18,6 +17,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.parser.NedbankCsvParser;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.parser.ParsedStatement;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.parser.StandardBankCsvParser;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedgerQueryRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import java.io.BufferedReader;
@@ -30,7 +30,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,21 +42,12 @@ public class TrustReconciliationService {
   private static final String MODULE_ID = "trust_accounting";
   private static final BigDecimal AUTO_MATCH_THRESHOLD = new BigDecimal("0.80");
 
-  // Note: TRANSFER_IN appears in CREDIT_TYPES because from the bank statement's perspective,
-  // an inter-account transfer creates a credit on the receiving account. Transfer transactions
-  // create two records (TRANSFER_OUT on source, TRANSFER_IN on destination), but each record
-  // belongs to its respective trust account, so sign matching is correct per-account.
-  private static final Set<String> CREDIT_TYPES =
-      Set.of("DEPOSIT", "TRANSFER_IN", "INTEREST_CREDIT");
-  private static final Set<String> DEBIT_TYPES =
-      Set.of("PAYMENT", "TRANSFER_OUT", "FEE_TRANSFER", "REFUND", "INTEREST_LPFF");
-
   private final BankStatementRepository bankStatementRepository;
   private final BankStatementLineRepository bankStatementLineRepository;
   private final TrustAccountRepository trustAccountRepository;
   private final TrustTransactionRepository trustTransactionRepository;
   private final TrustReconciliationRepository trustReconciliationRepository;
-  private final ClientLedgerCardRepository clientLedgerCardRepository;
+  private final TrustLedgerQueryRepository ledgerQueries;
   private final StorageService storageService;
   private final VerticalModuleGuard moduleGuard;
   private final AuditService auditService;
@@ -69,7 +59,7 @@ public class TrustReconciliationService {
       TrustAccountRepository trustAccountRepository,
       TrustTransactionRepository trustTransactionRepository,
       TrustReconciliationRepository trustReconciliationRepository,
-      ClientLedgerCardRepository clientLedgerCardRepository,
+      TrustLedgerQueryRepository ledgerQueries,
       StorageService storageService,
       VerticalModuleGuard moduleGuard,
       AuditService auditService) {
@@ -78,7 +68,7 @@ public class TrustReconciliationService {
     this.trustAccountRepository = trustAccountRepository;
     this.trustTransactionRepository = trustTransactionRepository;
     this.trustReconciliationRepository = trustReconciliationRepository;
-    this.clientLedgerCardRepository = clientLedgerCardRepository;
+    this.ledgerQueries = ledgerQueries;
     this.storageService = storageService;
     this.moduleGuard = moduleGuard;
     this.auditService = auditService;
@@ -632,8 +622,9 @@ public class TrustReconciliationService {
 
     UUID accountId = reconciliation.getTrustAccountId();
     BigDecimal bankBalance = bankStatement.getClosingBalance();
-    BigDecimal cashbookBalance = trustTransactionRepository.calculateCashbookBalance(accountId);
-    BigDecimal clientLedgerTotal = clientLedgerCardRepository.calculateTotalTrustBalance(accountId);
+    // Derived from the posting effects (ADR-378); the equation itself is unchanged until 646C
+    BigDecimal cashbookBalance = ledgerQueries.cashbook(accountId, null);
+    BigDecimal clientLedgerTotal = ledgerQueries.clientLedgerTotal(accountId, null);
     BigDecimal outstandingDeposits =
         trustTransactionRepository.calculateOutstandingDeposits(accountId);
     BigDecimal outstandingPayments =
@@ -753,13 +744,16 @@ public class TrustReconciliationService {
 
   // --- Auto-Match Strategy Helpers ---
 
+  /**
+   * A bank line matches a posted row moving the cashbook the same way (ADR-378, §16.2.1): a credit
+   * line a row with a positive {@code cashbook_effect}, a debit line a negative one.
+   * Cashbook-neutral rows (transfers between clients, zero-effect reversals) never reach the bank,
+   * so they never auto-match.
+   */
   private boolean isSignCompatible(BankStatementLine line, TrustTransaction candidate) {
     boolean lineIsCredit = line.getAmount().compareTo(BigDecimal.ZERO) > 0;
-    if (lineIsCredit) {
-      return CREDIT_TYPES.contains(candidate.getTransactionType());
-    } else {
-      return DEBIT_TYPES.contains(candidate.getTransactionType());
-    }
+    int effect = candidate.getCashbookEffect().signum();
+    return lineIsCredit ? effect > 0 : effect < 0;
   }
 
   private boolean tryExactReferenceMatch(

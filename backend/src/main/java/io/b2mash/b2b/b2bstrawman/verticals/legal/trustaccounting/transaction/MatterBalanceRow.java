@@ -5,8 +5,8 @@ import java.util.UUID;
 
 /**
  * One client's trust balance on one matter as of a date — a row of {@link
- * TrustTransactionRepository#calculateClientMatterBalancesAsOfDate}. {@code projectId} is null for
- * the client's unmattered (client-level) rows.
+ * TrustLedgerQueryRepository#clientMatterBalances}. {@code projectId} is null for the client's
+ * unmattered (client-level) rows.
  */
 public interface MatterBalanceRow {
 

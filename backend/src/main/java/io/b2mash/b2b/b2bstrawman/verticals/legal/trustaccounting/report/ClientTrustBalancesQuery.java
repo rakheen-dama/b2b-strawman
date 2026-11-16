@@ -3,9 +3,9 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.reporting.ReportQuery;
 import io.b2mash.b2b.b2bstrawman.reporting.ReportResult;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCard;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.LedgerTotals;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.ClientBalanceRow;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedgerQueryRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import java.math.BigDecimal;
 import java.util.LinkedHashMap;
@@ -13,23 +13,28 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
-/** Point-in-time client balances for a trust account. */
+/**
+ * Point-in-time client balances for a trust account. Driven by the clients with posted rows on the
+ * account (ADR-378 — a client with transactions and no lock anchor can no longer be missing); each
+ * balance is derived as at {@code asOfDate} (or every posted row when absent). The columns are
+ * unchanged (§16.8.6): {@code totalInterestCredited} stays, always zero, until the report
+ * definition is edited (650C).
+ */
 @Component
 public class ClientTrustBalancesQuery implements ReportQuery {
 
-  private final ClientLedgerCardRepository ledgerCardRepository;
+  private final TrustLedgerQueryRepository ledgerQueries;
   private final CustomerRepository customerRepository;
   private final TrustTransactionRepository transactionRepository;
 
   public ClientTrustBalancesQuery(
-      ClientLedgerCardRepository ledgerCardRepository,
+      TrustLedgerQueryRepository ledgerQueries,
       CustomerRepository customerRepository,
       TrustTransactionRepository transactionRepository) {
-    this.ledgerCardRepository = ledgerCardRepository;
+    this.ledgerQueries = ledgerQueries;
     this.customerRepository = customerRepository;
     this.transactionRepository = transactionRepository;
   }
@@ -64,15 +69,13 @@ public class ClientTrustBalancesQuery implements ReportQuery {
     var trustAccountId = ReportParamUtils.requireUuid(parameters, "trust_account_id");
     var asOfDate = ReportParamUtils.parseDate(parameters, "asOfDate");
 
-    // Fetch all ledger cards for this trust account
-    var ledgerCards =
-        ledgerCardRepository
-            .findByTrustAccountId(trustAccountId, PageRequest.of(0, 10_000))
-            .getContent();
+    // Every client with a posted row on the account (membership is date-free), balance as at
+    // asOfDate
+    List<ClientBalanceRow> clients = ledgerQueries.clientBalances(trustAccountId, asOfDate);
 
     // Batch-load customer names
     var customerIds =
-        ledgerCards.stream().map(ClientLedgerCard::getCustomerId).collect(Collectors.toSet());
+        clients.stream().map(ClientBalanceRow::getCustomerId).collect(Collectors.toSet());
     var customerNames =
         customerRepository.findByIdIn(customerIds).stream()
             .collect(Collectors.toMap(c -> c.getId(), c -> c.getName()));
@@ -89,31 +92,26 @@ public class ClientTrustBalancesQuery implements ReportQuery {
                     : transactionRepository.sumPostedByCustomerAndType(
                         trustAccountId, customerIds));
 
-    return ledgerCards.stream()
+    return clients.stream()
         .map(
-            card -> {
+            client -> {
               var row = new LinkedHashMap<String, Object>();
               row.put(
-                  "clientName", customerNames.getOrDefault(card.getCustomerId(), "Unknown Client"));
-              row.put("customerId", card.getCustomerId());
+                  "clientName",
+                  customerNames.getOrDefault(client.getCustomerId(), "Unknown Client"));
+              row.put("customerId", client.getCustomerId());
+              row.put("balance", client.getBalance());
 
-              // When asOfDate is provided, compute historical balance from transactions
-              BigDecimal balance =
-                  asOfDate != null
-                      ? transactionRepository.calculateClientBalanceAsOfDate(
-                          card.getCustomerId(), trustAccountId, asOfDate)
-                      : card.getBalance();
-              row.put("balance", balance);
-
-              var cardTotals = totals.getOrDefault(card.getCustomerId(), LedgerTotals.ZERO);
-              row.put("totalDeposits", cardTotals.deposits());
-              row.put("totalPayments", cardTotals.payments());
-              row.put("totalFeeTransfers", cardTotals.feeTransfers());
-              row.put("totalInterestCredited", cardTotals.interestCredited());
+              var clientTotals = totals.getOrDefault(client.getCustomerId(), LedgerTotals.ZERO);
+              row.put("totalDeposits", clientTotals.deposits());
+              row.put("totalPayments", clientTotals.payments());
+              row.put("totalFeeTransfers", clientTotals.feeTransfers());
+              // Column kept (§16.8.6, definition edits are 650C); no interest is posted any more
+              row.put("totalInterestCredited", BigDecimal.ZERO);
               row.put(
                   "lastTransactionDate",
-                  card.getLastTransactionDate() != null
-                      ? card.getLastTransactionDate().toString()
+                  client.getLastTransactionDate() != null
+                      ? client.getLastTransactionDate().toString()
                       : null);
               row.put("asOfDate", asOfDate != null ? asOfDate.toString() : null);
               return (Map<String, Object>) row;

@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.interest;
 
-import io.b2mash.b2b.b2bstrawman.audit.AuditDetails;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
@@ -16,12 +15,11 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountStatus;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountingConstants;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustDomainEvent;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.lpff.LpffRate;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.lpff.LpffRateRepository;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedgerQueryRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -35,13 +33,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,25 +49,19 @@ public class InterestService {
 
   private static final String MODULE_ID = "trust_accounting";
 
-  private static final Set<String> CREDIT_TYPES =
-      Set.of("DEPOSIT", "TRANSFER_IN", "INTEREST_CREDIT");
-
-  private static final Set<String> DEBIT_TYPES =
-      Set.of("PAYMENT", "TRANSFER_OUT", "FEE_TRANSFER", "REFUND", "INTEREST_LPFF");
-
   private final InterestRunRepository interestRunRepository;
   private final InterestAllocationRepository interestAllocationRepository;
   private final InterestAllocationLineRepository interestAllocationLineRepository;
   private final TrustAccountRepository trustAccountRepository;
   private final LpffRateRepository lpffRateRepository;
   private final TrustTransactionRepository trustTransactionRepository;
+  private final TrustLedgerQueryRepository ledgerQueries;
   private final ClientLedgerCardRepository clientLedgerCardRepository;
   private final TrustInvestmentRepository investmentRepository;
   private final VerticalModuleGuard moduleGuard;
   private final AuditService auditService;
   private final CustomerRepository customerRepository;
   private final ProjectRepository projectRepository;
-  private final ApplicationEventPublisher eventPublisher;
   private final Clock clock;
 
   public InterestService(
@@ -81,13 +71,13 @@ public class InterestService {
       TrustAccountRepository trustAccountRepository,
       LpffRateRepository lpffRateRepository,
       TrustTransactionRepository trustTransactionRepository,
+      TrustLedgerQueryRepository ledgerQueries,
       ClientLedgerCardRepository clientLedgerCardRepository,
       TrustInvestmentRepository investmentRepository,
       VerticalModuleGuard moduleGuard,
       AuditService auditService,
       CustomerRepository customerRepository,
       ProjectRepository projectRepository,
-      ApplicationEventPublisher eventPublisher,
       Clock clock) {
     this.interestRunRepository = interestRunRepository;
     this.interestAllocationRepository = interestAllocationRepository;
@@ -95,13 +85,13 @@ public class InterestService {
     this.trustAccountRepository = trustAccountRepository;
     this.lpffRateRepository = lpffRateRepository;
     this.trustTransactionRepository = trustTransactionRepository;
+    this.ledgerQueries = ledgerQueries;
     this.clientLedgerCardRepository = clientLedgerCardRepository;
     this.investmentRepository = investmentRepository;
     this.moduleGuard = moduleGuard;
     this.auditService = auditService;
     this.customerRepository = customerRepository;
     this.projectRepository = projectRepository;
-    this.eventPublisher = eventPublisher;
     this.clock = clock;
   }
 
@@ -454,215 +444,25 @@ public class InterestService {
     return new InterestRunDetailResponse(toRunResponse(run), allocations);
   }
 
+  /**
+   * Refused (Phase 92 645A, ADR-375): a calculated interest run is never approved. The body was
+   * deleted in 646A; the endpoint goes in 651A.
+   */
   @Transactional
   public InterestRunResponse approveInterestRun(UUID runId) {
     moduleGuard.requireModule(MODULE_ID);
-    refuseInterestPosting();
-
-    var approverId = RequestScopes.requireMemberId();
-
-    var run =
-        interestRunRepository
-            .findById(runId)
-            .orElseThrow(() -> new ResourceNotFoundException("InterestRun", runId));
-
-    if (!"DRAFT".equals(run.getStatus())) {
-      throw new InvalidStateException(
-          "Invalid interest run state", "Interest run must be in DRAFT status to be approved");
-    }
-
-    // A DRAFT created before the create-time guard existed (G89-F11) must not be approved either
-    requirePeriodEnded(run.getPeriodEnd());
-
-    // Prevent approval of uncalculated runs (no allocations = nothing to post)
-    var allocations = interestAllocationRepository.findByInterestRunId(runId);
-    if (allocations.isEmpty()) {
-      throw new InvalidStateException(
-          "Interest run not calculated",
-          "Cannot approve an interest run with no calculated allocations");
-    }
-
-    // Self-approval prevention: approver cannot be the creator
-    if (run.getCreatedBy() != null && approverId.equals(run.getCreatedBy())) {
-      throw new InvalidStateException(
-          "Self-approval not allowed",
-          "The interest run creator cannot approve their own interest run");
-    }
-
-    run.setStatus("APPROVED");
-    run.setApprovedBy(approverId);
-    run = interestRunRepository.save(run);
-
-    auditService.log(
-        AuditEventBuilder.builder()
-            .eventType("interest_run.approved")
-            .entityType("interest_run")
-            .entityId(run.getId())
-            .details(
-                Map.of(
-                    "approved_by", approverId.toString(),
-                    "total_interest", run.getTotalInterest().toString()))
-            .build());
-
-    return toRunResponse(run);
+    throw interestPostingRefused();
   }
 
+  /**
+   * Refused (Phase 92 645A, ADR-375): a calculated interest run is never posted. The posting body
+   * (the client interest credits and the LPFF share) was deleted in 646A; the endpoint goes in
+   * 651A.
+   */
   @Transactional
   public InterestRunResponse postInterestRun(UUID runId) {
     moduleGuard.requireModule(MODULE_ID);
-    refuseInterestPosting();
-
-    var memberId = RequestScopes.requireMemberId();
-
-    var run =
-        interestRunRepository
-            .findById(runId)
-            .orElseThrow(() -> new ResourceNotFoundException("InterestRun", runId));
-
-    if (!"APPROVED".equals(run.getStatus())) {
-      throw new InvalidStateException(
-          "Invalid interest run state", "Interest run must be in APPROVED status to be posted");
-    }
-
-    // Posting dates the INTEREST_CREDIT / INTEREST_LPFF rows on period_end: never in the future
-    requirePeriodEnded(run.getPeriodEnd());
-
-    // Re-validate trust account is still ACTIVE (may have been frozen/closed since approval)
-    var trustAccountIdForCheck = run.getTrustAccountId();
-    var account =
-        trustAccountRepository
-            .findById(trustAccountIdForCheck)
-            .orElseThrow(
-                () -> new ResourceNotFoundException("TrustAccount", trustAccountIdForCheck));
-    if (account.getStatus() != TrustAccountStatus.ACTIVE) {
-      throw new InvalidStateException(
-          "Invalid account state", "Trust account must be ACTIVE to post an interest run");
-    }
-
-    var allocations = interestAllocationRepository.findByInterestRunId(runId);
-    var accountId = run.getTrustAccountId();
-    var transactionDate = run.getPeriodEnd();
-
-    var linesByAllocation = linesByAllocation(allocations);
-    var description =
-        "Interest credit for period " + run.getPeriodStart() + " to " + run.getPeriodEnd();
-
-    // ADR-366: one INTEREST_CREDIT per matter line, carrying the line's matter, so the matter
-    // sub-ledger (closure gate, matter Trust tab, portal) holds the interest it earned. A run with
-    // no lines (calculated before V12, D6) posts one client-level credit as before.
-    for (var allocation : allocations) {
-      if (allocation.getClientShare().compareTo(BigDecimal.ZERO) > 0) {
-        var customerId = allocation.getCustomerId();
-
-        // Lock the client card once, before writing any of the client's credits
-        var ledgerCard =
-            clientLedgerCardRepository
-                .findByAccountAndCustomerForUpdate(accountId, customerId)
-                .orElseThrow(
-                    () ->
-                        new InvalidStateException(
-                            "Ledger card not found",
-                            "No client ledger card found for client " + customerId));
-
-        var lines = linesByAllocation.getOrDefault(allocation.getId(), List.of());
-        if (lines.isEmpty()) {
-          var savedTxn =
-              trustTransactionRepository.save(
-                  interestCredit(
-                      accountId,
-                      allocation.getClientShare(),
-                      customerId,
-                      null,
-                      interestCreditReference(runId, customerId, null),
-                      description,
-                      transactionDate,
-                      memberId));
-          auditInterestCredit(savedTxn);
-          allocation.setTrustTransactionId(savedTxn.getId());
-        } else {
-          for (var line : lines) {
-            var reference = interestCreditReference(runId, customerId, line.getProjectId());
-            var savedTxn =
-                trustTransactionRepository.save(
-                    interestCredit(
-                        accountId,
-                        line.getClientShare(),
-                        customerId,
-                        line.getProjectId(),
-                        reference,
-                        description,
-                        transactionDate,
-                        memberId));
-            auditInterestCredit(savedTxn);
-            line.setTrustTransactionId(savedTxn.getId());
-          }
-          interestAllocationLineRepository.saveAll(lines);
-          // The allocation points at its credit only when there is exactly one
-          allocation.setTrustTransactionId(
-              lines.size() == 1 ? lines.getFirst().getTrustTransactionId() : null);
-        }
-
-        // The card takes the client share once (the lines sum to it)
-        ledgerCard.addInterestCredit(allocation.getClientShare(), transactionDate);
-        clientLedgerCardRepository.save(ledgerCard);
-      }
-    }
-
-    interestAllocationRepository.saveAll(allocations);
-
-    // Create single INTEREST_LPFF transaction if total LPFF share > 0
-    if (run.getTotalLpffShare().compareTo(BigDecimal.ZERO) > 0) {
-      var lpffTxn =
-          new TrustTransaction(
-              accountId,
-              "INTEREST_LPFF",
-              run.getTotalLpffShare(),
-              null, // No customer for LPFF — firm-level outflow
-              null,
-              null,
-              "INT-LPFF-" + runId,
-              "LPFF interest share for period "
-                  + run.getPeriodStart()
-                  + " to "
-                  + run.getPeriodEnd(),
-              transactionDate,
-              "RECORDED",
-              memberId);
-      trustTransactionRepository.save(lpffTxn);
-    }
-
-    run.setStatus("POSTED");
-    run.setPostedAt(clock.instant());
-    run = interestRunRepository.save(run);
-
-    auditService.log(
-        AuditEventBuilder.builder()
-            .eventType("interest_run.posted")
-            .entityType("interest_run")
-            .entityId(run.getId())
-            .details(
-                Map.of(
-                    "posted_by", memberId.toString(),
-                    "total_interest", run.getTotalInterest().toString(),
-                    "total_lpff_share", run.getTotalLpffShare().toString(),
-                    "total_client_share", run.getTotalClientShare().toString()))
-            .build());
-
-    // G89-F22: both listeners run AFTER_COMMIT — the portal trust read-model re-projects every
-    // matter on the account (the matter interest credits), and firm admins/owners are notified.
-    eventPublisher.publishEvent(
-        TrustDomainEvent.InterestPosted.of(
-            run.getId(),
-            accountId,
-            run.getPeriodStart(),
-            run.getPeriodEnd(),
-            run.getTotalInterest(),
-            run.getTotalClientShare(),
-            run.getApprovedBy(),
-            RequestScopes.getTenantIdOrNull(),
-            RequestScopes.getOrgIdOrNull()));
-
-    return toRunResponse(run);
+    throw interestPostingRefused();
   }
 
   /**
@@ -724,12 +524,11 @@ public class InterestService {
   /**
    * Phase 92 645A (§16.3.1, ADR-375): interest on trust money vests in the Legal Practitioners'
    * Fidelity Fund (section 86(5) of the Legal Practice Act), so a calculated run is never approved
-   * or posted. Called first, after the module guard, by both methods; always throws. No audit event
-   * (a refusal is not an event). The bodies behind it are deleted in 646A and the endpoints in
-   * 651A.
+   * or posted. Thrown by both methods right after the module guard. No audit event (a refusal is
+   * not an event). The bodies behind it were deleted in 646A; the endpoints go in 651A.
    */
-  private static void refuseInterestPosting() {
-    throw new InvalidStateException(
+  private static InvalidStateException interestPostingRefused() {
+    return new InvalidStateException(
         "Interest runs are not posted",
         "Interest on trust money vests in the Legal Practitioners' Fidelity Fund (section 86(5) of the "
             + "Legal Practice Act). Kazi no longer posts calculated interest. Record interest from the "
@@ -800,8 +599,7 @@ public class InterestService {
 
     var balances = new LinkedHashMap<Bucket, BigDecimal>();
     for (var row :
-        trustTransactionRepository.calculateClientMatterBalancesAsOfDate(
-            customerId, accountId, segStart.minusDays(1))) {
+        ledgerQueries.clientMatterBalances(accountId, customerId, segStart.minusDays(1))) {
       balances.put(
           new Bucket(row.getProjectId()),
           row.getBalance() != null ? row.getBalance() : BigDecimal.ZERO);
@@ -814,18 +612,8 @@ public class InterestService {
       var txnDate = txn.getTransactionDate();
       accrue(balances, segBalanceDays, ChronoUnit.DAYS.between(currentDate, txnDate));
 
-      // Apply transaction effect to its own bucket
-      var bucket = new Bucket(txn.getProjectId());
-      if (CREDIT_TYPES.contains(txn.getTransactionType())) {
-        balances.merge(bucket, txn.getAmount(), BigDecimal::add);
-      } else if (DEBIT_TYPES.contains(txn.getTransactionType())) {
-        balances.merge(bucket, txn.getAmount().negate(), BigDecimal::add);
-      } else {
-        log.warn(
-            "Unrecognized transaction type '{}' for transaction {} — ignored in interest balance calculation",
-            txn.getTransactionType(),
-            txn.getId());
-      }
+      // Apply the row's own posted effect (ADR-378) to its bucket
+      balances.merge(new Bucket(txn.getProjectId()), txn.getLedgerEffect(), BigDecimal::add);
 
       currentDate = txnDate;
     }
@@ -1103,64 +891,6 @@ public class InterestService {
                     .computeIfAbsent(line.getInterestAllocationId(), id -> new ArrayList<>())
                     .add(line));
     return byAllocation;
-  }
-
-  /**
-   * The INTEREST_CREDIT reference (ADR-366). A matter line is run + matter + the client's first 8
-   * hex characters, so co-clients on one matter in one run get distinct references (reference-based
-   * bank matching); 93 characters. The unmattered line keeps run + client (84). Run + client +
-   * matter in full would be 121 characters, past the portal read-model's {@code reference
-   * varchar(100)}, which would abort the portal fan-out for the whole account.
-   */
-  static String interestCreditReference(UUID runId, UUID customerId, UUID projectId) {
-    if (projectId == null) {
-      return "INT-CREDIT-" + runId + "-" + customerId;
-    }
-    return "INT-CREDIT-" + runId + "-" + projectId + "-" + customerId.toString().substring(0, 8);
-  }
-
-  /**
-   * G89-F44: one audit row per posted INTEREST_CREDIT, scoped to its client and matter, so the
-   * client's portal "Firm actions" tab can show it (allow-listed) and the matter feed records it.
-   * The run-level {@code interest_run.posted} row has no client, so it can never reach a portal.
-   */
-  private void auditInterestCredit(TrustTransaction credit) {
-    auditService.log(
-        AuditEventBuilder.builder()
-            .eventType("trust_interest_credit.recorded")
-            .entityType("trust_transaction")
-            .entityId(credit.getId())
-            .details(
-                AuditDetails.matterScoped(
-                    credit.getProjectId(),
-                    credit.getCustomerId(),
-                    Map.of(
-                        "amount", credit.getAmount().toString(),
-                        "reference", credit.getReference())))
-            .build());
-  }
-
-  private static TrustTransaction interestCredit(
-      UUID accountId,
-      BigDecimal amount,
-      UUID customerId,
-      UUID projectId,
-      String reference,
-      String description,
-      LocalDate transactionDate,
-      UUID memberId) {
-    return new TrustTransaction(
-        accountId,
-        "INTEREST_CREDIT",
-        amount,
-        customerId,
-        projectId,
-        null,
-        reference,
-        description,
-        transactionDate,
-        "RECORDED",
-        memberId);
   }
 
   private InterestAllocationResponse toAllocationResponse(

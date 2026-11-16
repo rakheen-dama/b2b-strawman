@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report;
 
 import io.b2mash.b2b.b2bstrawman.reporting.ReportQuery;
 import io.b2mash.b2b.b2bstrawman.reporting.ReportResult;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedgerQueryRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import java.math.BigDecimal;
 import java.util.LinkedHashMap;
@@ -15,9 +16,12 @@ import org.springframework.stereotype.Component;
 public class ClientLedgerStatementQuery implements ReportQuery {
 
   private final TrustTransactionRepository transactionRepository;
+  private final TrustLedgerQueryRepository ledgerQueries;
 
-  public ClientLedgerStatementQuery(TrustTransactionRepository transactionRepository) {
+  public ClientLedgerStatementQuery(
+      TrustTransactionRepository transactionRepository, TrustLedgerQueryRepository ledgerQueries) {
     this.transactionRepository = transactionRepository;
+    this.ledgerQueries = ledgerQueries;
   }
 
   @Override
@@ -58,8 +62,7 @@ public class ClientLedgerStatementQuery implements ReportQuery {
 
     // Calculate opening balance (all transactions before dateFrom)
     var openingBalance =
-        transactionRepository.calculateClientBalanceAsOfDate(
-            customerId, trustAccountId, dateFrom.minusDays(1));
+        ledgerQueries.clientBalance(trustAccountId, customerId, dateFrom.minusDays(1));
 
     // Get transactions in the date range
     var transactions =
@@ -75,7 +78,8 @@ public class ClientLedgerStatementQuery implements ReportQuery {
       row.put("type", tx.getTransactionType());
       row.put("description", tx.getDescription());
 
-      boolean isCredit = isCreditType(tx.getTransactionType());
+      // Credit or debit by the row's own posted effect (ADR-378), never by type name
+      boolean isCredit = tx.getLedgerEffect().signum() > 0;
       if (isCredit) {
         row.put("credit", tx.getAmount());
         row.put("debit", BigDecimal.ZERO);
@@ -91,10 +95,6 @@ public class ClientLedgerStatementQuery implements ReportQuery {
 
     // Closing balance is the final running balance after all transactions
     return new QueryResult(rows, openingBalance, runningBalance);
-  }
-
-  private boolean isCreditType(String type) {
-    return List.of("DEPOSIT", "TRANSFER_IN", "INTEREST_CREDIT").contains(type);
   }
 
   private Map<String, Object> computeSummary(QueryResult queryResult) {

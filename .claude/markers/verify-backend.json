@@ -1,7 +1,7 @@
 {
-  "commit": "6e485f412",
-  "command": "cd backend && ./mvnw spotless:apply && bash scripts/verify.sh -q",
+  "commit": "563ef6185",
+  "command": "cd backend && ./mvnw spotless:check && caffeinate -is bash scripts/verify.sh",
   "exit": 0,
-  "ts": "2026-11-17T13:28:14Z",
-  "summary": "PR #1795 (647C) @6e485f412 — 7131 testcases / 0 failures / 0 errors / 26 skipped (841 surefire reports, counted from <testcase>) — 28:51 min; Backend CI pass 25m56s"
+  "ts": "2026-11-17T16:00:35Z",
+  "summary": "PR #1796 (647B) @563ef6185 — BUILD SUCCESS; 7158 testcases / 0 failures / 0 errors / 26 skipped (<testcase> count) — 23:33 min"
 }

@@ -1,0 +1,204 @@
+-- 647B OBS read-only evidence output (schema tenant_7d218705360b) 2026-11-17T16:10:46.598Z
+
+== [baseline: creditor accounts]
+select id, trust_account_id, account_type, name from tenant_7d218705360b.trust_creditor_accounts
+                  id                  |           trust_account_id           |       account_type        |                           name                            
+--------------------------------------+--------------------------------------+---------------------------+-----------------------------------------------------------
+ 89244f66-9eea-4b9c-89a6-31d1407bef9c | 24986ae5-030e-447b-9a99-8da5d43f3e51 | FUND_INTEREST_AND_CHARGES | Legal Practitioners' Fidelity Fund — interest and charges
+ 867d7e71-7e73-4b94-add4-ef8931091437 | 24986ae5-030e-447b-9a99-8da5d43f3e51 | UNIDENTIFIED_DEPOSITS     | Unidentified deposits
+(2 rows)
+
+
+== [baseline: trust transactions]
+select id, transaction_type, amount, status, transaction_date, posted_at is not null as posted, ledger, ledger_effect, cashbook_effect, reference, bank_statement_line_id, unidentified_deposit_id from tenant_7d218705360b.trust_transactions order by transaction_date, created_at
+                  id                  | transaction_type |  amount   |      status       | transaction_date | posted | ledger | ledger_effect | cashbook_effect |            reference            | bank_statement_line_id | unidentified_deposit_id 
+--------------------------------------+------------------+-----------+-------------------+------------------+--------+--------+---------------+-----------------+---------------------------------+------------------------+-------------------------
+ 14827117-1fde-46de-b0bd-78a55d70d1fd | DEPOSIT          | 250000.00 | RECORDED          | 2026-11-17       | t      | CLIENT |     250000.00 |       250000.00 | DEP/MOROKA/mwkvvpzx1671         |                        | 
+ 94d7b3cf-4833-4f88-85a1-20e62a573c9e | DEPOSIT          |  45000.00 | RECORDED          | 2026-11-17       | t      | CLIENT |      45000.00 |        45000.00 | DEP/QC/mwkvvpzx1671             |                        | 
+ 5c7120e2-b15c-4ab9-bb37-f997dcdd2b21 | FEE_TRANSFER     |   8500.00 | APPROVED          | 2026-11-17       | t      | CLIENT |      -8500.00 |        -8500.00 | FEE/MOROKA/mwkvvpzx1671         |                        | 
+ a2ea54ac-1455-4b9a-bb07-f8af6875650d | PAYMENT          | 200000.00 | AWAITING_APPROVAL | 2026-11-17       | f      | CLIENT |          0.00 |            0.00 | INV-Standard Bank-FD-0987654321 |                        | 
+ 23bfe9f5-2372-4c4b-94f4-b743b89d132e | PAYMENT          |  30000.00 | AWAITING_APPROVAL | 2026-11-17       | f      | CLIENT |          0.00 |            0.00 | INV-Nedbank-CALL-1122334455     |                        | 
+ 6b9d5b53-b1bc-4d11-8650-96e2f56ea362 | FEE_TRANSFER     |    500.00 | AWAITING_APPROVAL | 2026-11-17       | f      | CLIENT |          0.00 |            0.00 | FEE/SIPHO/mwkvvpzx1671          |                        | 
+(6 rows)
+
+
+== [baseline: statements / recons / items]
+select (select count(*) from tenant_7d218705360b.bank_statements) statements, (select count(*) from tenant_7d218705360b.bank_statement_lines) lines, (select count(*) from tenant_7d218705360b.trust_reconciliations) recons, (select count(*) from tenant_7d218705360b.unidentified_deposits) items
+ statements | lines | recons | items 
+------------+-------+--------+-------
+          0 |     0 |      0 |     0
+(1 row)
+
+
+== [baseline: EQ-2 as at today]
+select (select coalesce(sum(cashbook_effect),0) from tenant_7d218705360b.trust_transactions where trust_account_id='24986ae5-030e-447b-9a99-8da5d43f3e51' and posted_at is not null and transaction_date <= date '2026-11-17') cashbook, (select coalesce(sum(ledger_effect),0) from tenant_7d218705360b.trust_transactions where trust_account_id='24986ae5-030e-447b-9a99-8da5d43f3e51' and posted_at is not null and transaction_date <= date '2026-11-17') all_creditors, (select coalesce(sum(t.ledger_effect),0) from tenant_7d218705360b.trust_transactions t join tenant_7d218705360b.trust_creditor_accounts c on c.id=t.creditor_account_id where t.trust_account_id='24986ae5-030e-447b-9a99-8da5d43f3e51' and c.account_type='UNIDENTIFIED_DEPOSITS' and t.posted_at is not null and t.transaction_date <= date '2026-11-17') unidentified_ledger, (select coalesce(sum(t.ledger_effect),0) from tenant_7d218705360b.trust_transactions t join tenant_7d218705360b.trust_creditor_accounts c on c.id=t.creditor_account_id where t.trust_account_id='24986ae5-030e-447b-9a99-8da5d43f3e51' and c.account_type='FUND_INTEREST_AND_CHARGES' and t.posted_at is not null and t.transaction_date <= date '2026-11-17') fund_ledger
+ cashbook  | all_creditors | unidentified_ledger | fund_ledger 
+-----------+---------------+---------------------+-------------
+ 286500.00 |     286500.00 |                   0 |           0
+(1 row)
+
+
+== [00-baseline: unidentified_deposits rows]
+select d.id, d.trust_account_id, d.creditor_account_id, d.deposit_transaction_id, d.bank_statement_line_id, d.received_date, d.bank_description, d.bank_reference, d.amount, d.status, d.resolved_date, d.resolution_transaction_id, d.notes, d.created_at from tenant_7d218705360b.unidentified_deposits d where d.trust_account_id='24986ae5-030e-447b-9a99-8da5d43f3e51' order by d.received_date, d.created_at, d.id
+ id | trust_account_id | creditor_account_id | deposit_transaction_id | bank_statement_line_id | received_date | bank_description | bank_reference | amount | status | resolved_date | resolution_transaction_id | notes | created_at 
+----+------------------+---------------------+------------------------+------------------------+---------------+------------------+----------------+--------+--------+---------------+---------------------------+-------+------------
+(0 rows)
+
+
+== [00-baseline: unidentified ledger balance as at today]
+select coalesce(sum(ledger_effect),0) from tenant_7d218705360b.trust_transactions where creditor_account_id='867d7e71-7e73-4b94-add4-ef8931091437' and ledger='NON_CLIENT' and posted_at is not null and transaction_date <= date '2026-11-17'
+ coalesce 
+----------
+        0
+(1 row)
+
+
+== [a: lines at import]
+select l.line_number, l.id, l.transaction_date, l.description, l.reference, l.amount, l.match_status, l.suggested_classification, l.classification, l.trust_transaction_id, l.match_confidence, (select matched_count from tenant_7d218705360b.bank_statements s where s.id=l.bank_statement_id) as stmt_matched_count from tenant_7d218705360b.bank_statement_lines l where l.bank_statement_id='f863753f-67e6-42bb-9833-3156a67cf567' order by l.line_number
+ line_number |                  id                  | transaction_date |        description        |     reference     | amount  | match_status | suggested_classification | classification | trust_transaction_id | match_confidence | stmt_matched_count 
+-------------+--------------------------------------+------------------+---------------------------+-------------------+---------+--------------+--------------------------+----------------+----------------------+------------------+--------------------
+           1 | 97d1f906-2349-45e0-9c26-50c238486464 | 2026-11-12       | DEPOSIT UNKNOWN REF 12345 | UNK/OBS647B/W2SMN | 4321.09 | UNMATCHED    |                          |                |                      |                  |                  0
+           2 | 937b6200-07fd-416c-a193-e6d47a8be31a | 2026-11-17       | MONTHLY SERVICE FEE       | SVC/OBS647B/W2SMN |  -57.50 | UNMATCHED    | BANK_CHARGE              |                |                      |                  |                  0
+(2 rows)
+
+
+== [a: lines after auto-match]
+select l.line_number, l.id, l.transaction_date, l.description, l.reference, l.amount, l.match_status, l.suggested_classification, l.classification, l.trust_transaction_id, l.match_confidence, (select matched_count from tenant_7d218705360b.bank_statements s where s.id=l.bank_statement_id) as stmt_matched_count from tenant_7d218705360b.bank_statement_lines l where l.bank_statement_id='f863753f-67e6-42bb-9833-3156a67cf567' order by l.line_number
+ line_number |                  id                  | transaction_date |        description        |     reference     | amount  | match_status | suggested_classification | classification | trust_transaction_id | match_confidence | stmt_matched_count 
+-------------+--------------------------------------+------------------+---------------------------+-------------------+---------+--------------+--------------------------+----------------+----------------------+------------------+--------------------
+           1 | 97d1f906-2349-45e0-9c26-50c238486464 | 2026-11-12       | DEPOSIT UNKNOWN REF 12345 | UNK/OBS647B/W2SMN | 4321.09 | UNMATCHED    |                          |                |                      |                  |                  0
+           2 | 937b6200-07fd-416c-a193-e6d47a8be31a | 2026-11-17       | MONTHLY SERVICE FEE       | SVC/OBS647B/W2SMN |  -57.50 | UNMATCHED    | BANK_CHARGE              |                |                      |                  |                  0
+(2 rows)
+
+
+== [c: line 1 after record]
+select l.line_number, l.id, l.transaction_date, l.description, l.reference, l.amount, l.match_status, l.suggested_classification, l.classification, l.trust_transaction_id, l.match_confidence, (select matched_count from tenant_7d218705360b.bank_statements s where s.id=l.bank_statement_id) as stmt_matched_count from tenant_7d218705360b.bank_statement_lines l where l.bank_statement_id='f863753f-67e6-42bb-9833-3156a67cf567' order by l.line_number
+ line_number |                  id                  | transaction_date |        description        |     reference     | amount  | match_status | suggested_classification |    classification    |         trust_transaction_id         | match_confidence | stmt_matched_count 
+-------------+--------------------------------------+------------------+---------------------------+-------------------+---------+--------------+--------------------------+----------------------+--------------------------------------+------------------+--------------------
+           1 | 97d1f906-2349-45e0-9c26-50c238486464 | 2026-11-12       | DEPOSIT UNKNOWN REF 12345 | UNK/OBS647B/W2SMN | 4321.09 | RECORDED     |                          | UNIDENTIFIED_DEPOSIT | 6a15a693-2857-40fb-81d6-0043aeb5301f |                  |                  1
+           2 | 937b6200-07fd-416c-a193-e6d47a8be31a | 2026-11-17       | MONTHLY SERVICE FEE       | SVC/OBS647B/W2SMN |  -57.50 | UNMATCHED    | BANK_CHARGE              |                      |                                      |                  |                  1
+(2 rows)
+
+
+== [d: the item]
+select d.id, d.trust_account_id, d.creditor_account_id, d.deposit_transaction_id, d.bank_statement_line_id, d.received_date, d.bank_description, d.bank_reference, d.amount, d.status, d.resolved_date, d.resolution_transaction_id, d.notes, d.created_at from tenant_7d218705360b.unidentified_deposits d where d.bank_statement_line_id='97d1f906-2349-45e0-9c26-50c238486464' order by d.received_date, d.created_at, d.id
+                  id                  |           trust_account_id           |         creditor_account_id          |        deposit_transaction_id        |        bank_statement_line_id        | received_date |     bank_description      |  bank_reference   | amount  | status | resolved_date | resolution_transaction_id |             notes             |          created_at           
+--------------------------------------+--------------------------------------+--------------------------------------+--------------------------------------+--------------------------------------+---------------+---------------------------+-------------------+---------+--------+---------------+---------------------------+-------------------------------+-------------------------------
+ 142ca912-2ee2-414d-9b25-db5ca3318ad7 | 24986ae5-030e-447b-9a99-8da5d43f3e51 | 867d7e71-7e73-4b94-add4-ef8931091437 | 6a15a693-2857-40fb-81d6-0043aeb5301f | 97d1f906-2349-45e0-9c26-50c238486464 | 2026-11-12    | DEPOSIT UNKNOWN REF 12345 | UNK/OBS647B/W2SMN | 4321.09 | HELD   |               |                           | OBS 647B W2SMN unknown credit | 2026-11-17 16:11:28.619444+00
+(1 row)
+
+
+== [d: the deposit row]
+select t.id, t.transaction_type, t.status, t.amount, t.transaction_date, t.ledger, t.ledger_effect, t.cashbook_effect, t.posted_at is not null as posted, t.creditor_account_id, t.bank_statement_line_id, t.unidentified_deposit_id, t.reference, t.reversal_of, t.reversed_by_id, t.created_at from tenant_7d218705360b.trust_transactions t where t.bank_statement_line_id='97d1f906-2349-45e0-9c26-50c238486464' order by t.created_at
+                  id                  |   transaction_type   |  status  | amount  | transaction_date |   ledger   | ledger_effect | cashbook_effect | posted |         creditor_account_id          |        bank_statement_line_id        |       unidentified_deposit_id        |     reference     | reversal_of | reversed_by_id |          created_at           
+--------------------------------------+----------------------+----------+---------+------------------+------------+---------------+-----------------+--------+--------------------------------------+--------------------------------------+--------------------------------------+-------------------+-------------+----------------+-------------------------------
+ 6a15a693-2857-40fb-81d6-0043aeb5301f | UNIDENTIFIED_DEPOSIT | RECORDED | 4321.09 | 2026-11-12       | NON_CLIENT |       4321.09 |         4321.09 | t      | 867d7e71-7e73-4b94-add4-ef8931091437 | 97d1f906-2349-45e0-9c26-50c238486464 | 142ca912-2ee2-414d-9b25-db5ca3318ad7 | UNK/OBS647B/W2SMN |             |                | 2026-11-17 16:11:28.623889+00
+(1 row)
+
+
+== [d-after-record: unidentified_deposits rows]
+select d.id, d.trust_account_id, d.creditor_account_id, d.deposit_transaction_id, d.bank_statement_line_id, d.received_date, d.bank_description, d.bank_reference, d.amount, d.status, d.resolved_date, d.resolution_transaction_id, d.notes, d.created_at from tenant_7d218705360b.unidentified_deposits d where d.trust_account_id='24986ae5-030e-447b-9a99-8da5d43f3e51' order by d.received_date, d.created_at, d.id
+                  id                  |           trust_account_id           |         creditor_account_id          |        deposit_transaction_id        |        bank_statement_line_id        | received_date |     bank_description      |  bank_reference   | amount  | status | resolved_date | resolution_transaction_id |             notes             |          created_at           
+--------------------------------------+--------------------------------------+--------------------------------------+--------------------------------------+--------------------------------------+---------------+---------------------------+-------------------+---------+--------+---------------+---------------------------+-------------------------------+-------------------------------
+ 142ca912-2ee2-414d-9b25-db5ca3318ad7 | 24986ae5-030e-447b-9a99-8da5d43f3e51 | 867d7e71-7e73-4b94-add4-ef8931091437 | 6a15a693-2857-40fb-81d6-0043aeb5301f | 97d1f906-2349-45e0-9c26-50c238486464 | 2026-11-12    | DEPOSIT UNKNOWN REF 12345 | UNK/OBS647B/W2SMN | 4321.09 | HELD   |               |                           | OBS 647B W2SMN unknown credit | 2026-11-17 16:11:28.619444+00
+(1 row)
+
+
+== [d-after-record: unidentified ledger balance as at today]
+select coalesce(sum(ledger_effect),0) from tenant_7d218705360b.trust_transactions where creditor_account_id='867d7e71-7e73-4b94-add4-ef8931091437' and ledger='NON_CLIENT' and posted_at is not null and transaction_date <= date '2026-11-17'
+ coalesce 
+----------
+  4321.09
+(1 row)
+
+
+== [d: EQ-2 as at today]
+select (select coalesce(sum(cashbook_effect),0) from tenant_7d218705360b.trust_transactions where trust_account_id='24986ae5-030e-447b-9a99-8da5d43f3e51' and posted_at is not null and transaction_date <= date '2026-11-17') cashbook, (select coalesce(sum(ledger_effect),0) from tenant_7d218705360b.trust_transactions where trust_account_id='24986ae5-030e-447b-9a99-8da5d43f3e51' and posted_at is not null and transaction_date <= date '2026-11-17') all_creditors, (select coalesce(sum(t.ledger_effect),0) from tenant_7d218705360b.trust_transactions t join tenant_7d218705360b.trust_creditor_accounts c on c.id=t.creditor_account_id where t.trust_account_id='24986ae5-030e-447b-9a99-8da5d43f3e51' and c.account_type='UNIDENTIFIED_DEPOSITS' and t.posted_at is not null and t.transaction_date <= date '2026-11-17') unidentified_ledger, (select coalesce(sum(t.ledger_effect),0) from tenant_7d218705360b.trust_transactions t join tenant_7d218705360b.trust_creditor_accounts c on c.id=t.creditor_account_id where t.trust_account_id='24986ae5-030e-447b-9a99-8da5d43f3e51' and c.account_type='FUND_INTEREST_AND_CHARGES' and t.posted_at is not null and t.transaction_date <= date '2026-11-17') fund_ledger
+ cashbook  | all_creditors | unidentified_ledger | fund_ledger 
+-----------+---------------+---------------------+-------------
+ 290821.09 |     290821.09 |             4321.09 |           0
+(1 row)
+
+
+== [e: the item after unmatch]
+select d.id, d.trust_account_id, d.creditor_account_id, d.deposit_transaction_id, d.bank_statement_line_id, d.received_date, d.bank_description, d.bank_reference, d.amount, d.status, d.resolved_date, d.resolution_transaction_id, d.notes, d.created_at from tenant_7d218705360b.unidentified_deposits d where d.id='142ca912-2ee2-414d-9b25-db5ca3318ad7' order by d.received_date, d.created_at, d.id
+                  id                  |           trust_account_id           |         creditor_account_id          |        deposit_transaction_id        |        bank_statement_line_id        | received_date |     bank_description      |  bank_reference   | amount  |  status  | resolved_date | resolution_transaction_id |             notes             |          created_at           
+--------------------------------------+--------------------------------------+--------------------------------------+--------------------------------------+--------------------------------------+---------------+---------------------------+-------------------+---------+----------+---------------+---------------------------+-------------------------------+-------------------------------
+ 142ca912-2ee2-414d-9b25-db5ca3318ad7 | 24986ae5-030e-447b-9a99-8da5d43f3e51 | 867d7e71-7e73-4b94-add4-ef8931091437 | 6a15a693-2857-40fb-81d6-0043aeb5301f | 97d1f906-2349-45e0-9c26-50c238486464 | 2026-11-12    | DEPOSIT UNKNOWN REF 12345 | UNK/OBS647B/W2SMN | 4321.09 | REVERSED | 2026-11-12    |                           | OBS 647B W2SMN unknown credit | 2026-11-17 16:11:28.619444+00
+(1 row)
+
+
+== [e: original after unmatch]
+select t.id, t.transaction_type, t.status, t.amount, t.transaction_date, t.ledger, t.ledger_effect, t.cashbook_effect, t.posted_at is not null as posted, t.creditor_account_id, t.bank_statement_line_id, t.unidentified_deposit_id, t.reference, t.reversal_of, t.reversed_by_id, t.created_at from tenant_7d218705360b.trust_transactions t where t.id='6a15a693-2857-40fb-81d6-0043aeb5301f' order by t.created_at
+                  id                  |   transaction_type   |  status  | amount  | transaction_date |   ledger   | ledger_effect | cashbook_effect | posted |         creditor_account_id          | bank_statement_line_id |       unidentified_deposit_id        |     reference     | reversal_of |            reversed_by_id            |          created_at           
+--------------------------------------+----------------------+----------+---------+------------------+------------+---------------+-----------------+--------+--------------------------------------+------------------------+--------------------------------------+-------------------+-------------+--------------------------------------+-------------------------------
+ 6a15a693-2857-40fb-81d6-0043aeb5301f | UNIDENTIFIED_DEPOSIT | REVERSED | 4321.09 | 2026-11-12       | NON_CLIENT |       4321.09 |         4321.09 | t      | 867d7e71-7e73-4b94-add4-ef8931091437 |                        | 142ca912-2ee2-414d-9b25-db5ca3318ad7 | UNK/OBS647B/W2SMN |             | 4da4c7a0-6314-4f63-bac1-ea52b25dccae | 2026-11-17 16:11:28.623889+00
+(1 row)
+
+
+== [e: contra]
+select t.id, t.transaction_type, t.status, t.amount, t.transaction_date, t.ledger, t.ledger_effect, t.cashbook_effect, t.posted_at is not null as posted, t.creditor_account_id, t.bank_statement_line_id, t.unidentified_deposit_id, t.reference, t.reversal_of, t.reversed_by_id, t.created_at from tenant_7d218705360b.trust_transactions t where t.reversal_of='6a15a693-2857-40fb-81d6-0043aeb5301f' order by t.created_at
+                  id                  | transaction_type |  status  | amount  | transaction_date |   ledger   | ledger_effect | cashbook_effect | posted |         creditor_account_id          | bank_statement_line_id |       unidentified_deposit_id        |       reference       |             reversal_of              | reversed_by_id |         created_at         
+--------------------------------------+------------------+----------+---------+------------------+------------+---------------+-----------------+--------+--------------------------------------+------------------------+--------------------------------------+-----------------------+--------------------------------------+----------------+----------------------------
+ 4da4c7a0-6314-4f63-bac1-ea52b25dccae | REVERSAL         | RECORDED | 4321.09 | 2026-11-12       | NON_CLIENT |      -4321.09 |        -4321.09 | t      | 867d7e71-7e73-4b94-add4-ef8931091437 |                        | 142ca912-2ee2-414d-9b25-db5ca3318ad7 | REV-UNK/OBS647B/W2SMN | 6a15a693-2857-40fb-81d6-0043aeb5301f |                | 2026-11-17 16:12:03.122+00
+(1 row)
+
+
+== [e: every row naming the item]
+select t.id, t.transaction_type, t.status, t.amount, t.transaction_date, t.ledger, t.ledger_effect, t.cashbook_effect, t.posted_at is not null as posted, t.creditor_account_id, t.bank_statement_line_id, t.unidentified_deposit_id, t.reference, t.reversal_of, t.reversed_by_id, t.created_at from tenant_7d218705360b.trust_transactions t where t.unidentified_deposit_id='142ca912-2ee2-414d-9b25-db5ca3318ad7' order by t.created_at
+                  id                  |   transaction_type   |  status  | amount  | transaction_date |   ledger   | ledger_effect | cashbook_effect | posted |         creditor_account_id          | bank_statement_line_id |       unidentified_deposit_id        |       reference       |             reversal_of              |            reversed_by_id            |          created_at           
+--------------------------------------+----------------------+----------+---------+------------------+------------+---------------+-----------------+--------+--------------------------------------+------------------------+--------------------------------------+-----------------------+--------------------------------------+--------------------------------------+-------------------------------
+ 6a15a693-2857-40fb-81d6-0043aeb5301f | UNIDENTIFIED_DEPOSIT | REVERSED | 4321.09 | 2026-11-12       | NON_CLIENT |       4321.09 |         4321.09 | t      | 867d7e71-7e73-4b94-add4-ef8931091437 |                        | 142ca912-2ee2-414d-9b25-db5ca3318ad7 | UNK/OBS647B/W2SMN     |                                      | 4da4c7a0-6314-4f63-bac1-ea52b25dccae | 2026-11-17 16:11:28.623889+00
+ 4da4c7a0-6314-4f63-bac1-ea52b25dccae | REVERSAL             | RECORDED | 4321.09 | 2026-11-12       | NON_CLIENT |      -4321.09 |        -4321.09 | t      | 867d7e71-7e73-4b94-add4-ef8931091437 |                        | 142ca912-2ee2-414d-9b25-db5ca3318ad7 | REV-UNK/OBS647B/W2SMN | 6a15a693-2857-40fb-81d6-0043aeb5301f |                                      | 2026-11-17 16:12:03.122+00
+(2 rows)
+
+
+== [e: lines after unmatch]
+select l.line_number, l.id, l.transaction_date, l.description, l.reference, l.amount, l.match_status, l.suggested_classification, l.classification, l.trust_transaction_id, l.match_confidence, (select matched_count from tenant_7d218705360b.bank_statements s where s.id=l.bank_statement_id) as stmt_matched_count from tenant_7d218705360b.bank_statement_lines l where l.bank_statement_id='f863753f-67e6-42bb-9833-3156a67cf567' order by l.line_number
+ line_number |                  id                  | transaction_date |        description        |     reference     | amount  | match_status | suggested_classification | classification | trust_transaction_id | match_confidence | stmt_matched_count 
+-------------+--------------------------------------+------------------+---------------------------+-------------------+---------+--------------+--------------------------+----------------+----------------------+------------------+--------------------
+           1 | 97d1f906-2349-45e0-9c26-50c238486464 | 2026-11-12       | DEPOSIT UNKNOWN REF 12345 | UNK/OBS647B/W2SMN | 4321.09 | UNMATCHED    |                          |                |                      |                  |                  0
+           2 | 937b6200-07fd-416c-a193-e6d47a8be31a | 2026-11-17       | MONTHLY SERVICE FEE       | SVC/OBS647B/W2SMN |  -57.50 | UNMATCHED    | BANK_CHARGE              |                |                      |                  |                  0
+(2 rows)
+
+
+== [e-after-unmatch: unidentified_deposits rows]
+select d.id, d.trust_account_id, d.creditor_account_id, d.deposit_transaction_id, d.bank_statement_line_id, d.received_date, d.bank_description, d.bank_reference, d.amount, d.status, d.resolved_date, d.resolution_transaction_id, d.notes, d.created_at from tenant_7d218705360b.unidentified_deposits d where d.trust_account_id='24986ae5-030e-447b-9a99-8da5d43f3e51' order by d.received_date, d.created_at, d.id
+                  id                  |           trust_account_id           |         creditor_account_id          |        deposit_transaction_id        |        bank_statement_line_id        | received_date |     bank_description      |  bank_reference   | amount  |  status  | resolved_date | resolution_transaction_id |             notes             |          created_at           
+--------------------------------------+--------------------------------------+--------------------------------------+--------------------------------------+--------------------------------------+---------------+---------------------------+-------------------+---------+----------+---------------+---------------------------+-------------------------------+-------------------------------
+ 142ca912-2ee2-414d-9b25-db5ca3318ad7 | 24986ae5-030e-447b-9a99-8da5d43f3e51 | 867d7e71-7e73-4b94-add4-ef8931091437 | 6a15a693-2857-40fb-81d6-0043aeb5301f | 97d1f906-2349-45e0-9c26-50c238486464 | 2026-11-12    | DEPOSIT UNKNOWN REF 12345 | UNK/OBS647B/W2SMN | 4321.09 | REVERSED | 2026-11-12    |                           | OBS 647B W2SMN unknown credit | 2026-11-17 16:11:28.619444+00
+(1 row)
+
+
+== [e-after-unmatch: unidentified ledger balance as at today]
+select coalesce(sum(ledger_effect),0) from tenant_7d218705360b.trust_transactions where creditor_account_id='867d7e71-7e73-4b94-add4-ef8931091437' and ledger='NON_CLIENT' and posted_at is not null and transaction_date <= date '2026-11-17'
+ coalesce 
+----------
+     0.00
+(1 row)
+
+
+== [e: EQ-2 as at today]
+select (select coalesce(sum(cashbook_effect),0) from tenant_7d218705360b.trust_transactions where trust_account_id='24986ae5-030e-447b-9a99-8da5d43f3e51' and posted_at is not null and transaction_date <= date '2026-11-17') cashbook, (select coalesce(sum(ledger_effect),0) from tenant_7d218705360b.trust_transactions where trust_account_id='24986ae5-030e-447b-9a99-8da5d43f3e51' and posted_at is not null and transaction_date <= date '2026-11-17') all_creditors, (select coalesce(sum(t.ledger_effect),0) from tenant_7d218705360b.trust_transactions t join tenant_7d218705360b.trust_creditor_accounts c on c.id=t.creditor_account_id where t.trust_account_id='24986ae5-030e-447b-9a99-8da5d43f3e51' and c.account_type='UNIDENTIFIED_DEPOSITS' and t.posted_at is not null and t.transaction_date <= date '2026-11-17') unidentified_ledger, (select coalesce(sum(t.ledger_effect),0) from tenant_7d218705360b.trust_transactions t join tenant_7d218705360b.trust_creditor_accounts c on c.id=t.creditor_account_id where t.trust_account_id='24986ae5-030e-447b-9a99-8da5d43f3e51' and c.account_type='FUND_INTEREST_AND_CHARGES' and t.posted_at is not null and t.transaction_date <= date '2026-11-17') fund_ledger
+ cashbook  | all_creditors | unidentified_ledger | fund_ledger 
+-----------+---------------+---------------------+-------------
+ 286500.00 |     286500.00 |                0.00 |           0
+(1 row)
+
+
+== [f-prep (obs-fprep.cjs): items after re-record]
+select d.id, d.received_date, d.bank_description, d.amount, d.status, d.resolved_date, d.deposit_transaction_id, (select count(*) from tenant_7d218705360b.trust_transactions t where t.unidentified_deposit_id=d.id) rows_naming_item from tenant_7d218705360b.unidentified_deposits d order by d.received_date, d.created_at, d.id
+                  id                  | received_date |     bank_description      | amount  |  status  | resolved_date |        deposit_transaction_id        | rows_naming_item 
+--------------------------------------+---------------+---------------------------+---------+----------+---------------+--------------------------------------+------------------
+ 142ca912-2ee2-414d-9b25-db5ca3318ad7 | 2026-11-12    | DEPOSIT UNKNOWN REF 12345 | 4321.09 | REVERSED | 2026-11-12    | 6a15a693-2857-40fb-81d6-0043aeb5301f |                2
+ df437686-cd00-404d-a575-c43e0a3a5727 | 2026-11-15    | DEPOSIT UNKNOWN REF 67890 | 1500.00 | HELD     |               | 1ac35aba-44d1-4d4f-ba97-122df3c828bd |                1
+(2 rows)
+
+
+== [f-prep: EQ-2 (all dates)]
+select (select coalesce(sum(cashbook_effect),0) from tenant_7d218705360b.trust_transactions where posted_at is not null) cashbook, (select coalesce(sum(ledger_effect),0) from tenant_7d218705360b.trust_transactions where posted_at is not null) all_creditors
+ cashbook  | all_creditors 
+-----------+---------------
+ 287942.50 |     287942.50
+(1 row)
+

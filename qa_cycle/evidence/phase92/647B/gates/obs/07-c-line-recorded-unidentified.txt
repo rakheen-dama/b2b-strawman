@@ -1,0 +1,127 @@
+Skip to content
+Kazi
+E2E Test Organization
+Search...
+⌘K
+TODAY
+Home
+My work
+Diary
+MATTERS
+Matters
+New matter
+Conflict check
+Adverse parties
+AI reviews
+CLIENTS
+Clients
+FICA & compliance
+Data requests
+FEES
+TRUST
+FIRM
+Platform Admin
+Notifications
+AO
+
+Alice Owner
+
+alice@e2e-test.local
+
+Toggle menu
+E2E Test Organization
+Trust accounting
+Reconciliation
+New
+Search
+⌘K
+11 unread notifications
+11
+e2e-test-org
+AO
+Back to Reconciliation
+New Reconciliation
+
+Reconcile your trust account with a bank statement
+
+1
+Select Account
+2
+Upload Statement
+3
+Auto-Match
+4
+Review & Match
+5
+Complete
+Matching Progress
+1 / 2 lines resolved
+Bank Statement Lines
+#1
+12 Nov 2026
+
+DEPOSIT UNKNOWN REF 12345
+
+Ref: UNK/OBS647B/W2SMN
+
+R 4 321,09 CR
+
+Recorded: Unidentified deposit
+Unmatch
+#2
+17 Nov 2026
+
+MONTHLY SERVICE FEE
+
+Ref: SVC/OBS647B/W2SMN
+
+R 57,50 DR
+
+Unmatched
+Unmatched Trust Transactions
+
+FEE/MOROKA/mwkvvpzx1671
+
+17 Nov 2026 · Fee transfer
+
+R 8 500,00
+
+As at 17 Nov 2026
+Bank and cashbook
+Bank balance
+R 4 263,59
++ Outstanding deposits
+R 295 000,00
+− Outstanding payments
+R 8 500,00
+= Adjusted bank balance
+R 290 763,59
+Cashbook
+R 290 821,09
+Difference
+-R 57,50
+Cashbook and trust creditors
+Cashbook
+R 290 821,09
+Trust creditors
+R 290 821,09
+Difference
+R 0,00
+Trust creditors
+Client ledgers
+R 286 500,00
+Legal Practitioners' Fidelity Fund — interest and charges
+R 0,00
+Unidentified deposits
+R 4 321,09
+
+1 statement line is neither matched nor excluded
+
+Excluded statement lines total R 0,00. An excluded line adjusts nothing: excluding a real bank movement leaves its amount as the difference between the bank and the cashbook.
+
+Reconciliation is not balanced
+Complete Reconciliation
+Back
+Command Palette
+
+Search pages and settings

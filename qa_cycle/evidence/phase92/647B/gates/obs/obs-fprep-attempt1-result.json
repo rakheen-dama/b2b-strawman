@@ -1,0 +1,14 @@
+{
+  "startedAt": "2026-11-17T16:15:09.187Z",
+  "consoleErrors": [],
+  "pageErrors": [],
+  "csv": {
+    "name": "statement-OBS647B-FPREP-W8G9M.csv",
+    "date": "2026-11-16",
+    "today": "2026-11-17"
+  },
+  "uploadResult": "Statement imported successfully Lines imported: 1 File: statement-OBS647B-FPREP-W8G9M.csv Period: 2026-11-16 to 2026-11-16 Format: CSV",
+  "statement2": "be3e3724-0499-4f54-9e05-60cdf0c3d3d1",
+  "line": "fd603b63-8b2e-4ffb-aa61-d5f6da5def30",
+  "fatal": "locator.waitFor: Timeout 60000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByTestId('reconciliation-split-pane') to be visible\u001b[22m\n\n    at /Users/rakheendama/Projects/2026/worktree-epic-647B/qa_cycle/evidence/phase92/647B/gates/obs-fprep.cjs:53:14"
+}

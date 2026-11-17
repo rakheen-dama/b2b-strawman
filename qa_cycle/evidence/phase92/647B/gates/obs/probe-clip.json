@@ -1,0 +1,1294 @@
+{
+  "at": "2026-11-17T16:17:15.971Z",
+  "widths": [
+    {
+      "unidentified": {
+        "testid": "unidentified-deposits-table",
+        "vw": 1280,
+        "clipBy": "DIV.relative w-full overflow-x-auto",
+        "clipLeft": 305,
+        "clipRight": 1231,
+        "tableLeft": 305,
+        "tableRight": 1231,
+        "tableScrollWidth": 926,
+        "chain": [
+          {
+            "tag": "TABLE",
+            "testid": "unidentified-deposits-table",
+            "cls": "w-full caption-bottom text-sm tabular-nums",
+            "overflowX": "visible",
+            "clientWidth": 926,
+            "scrollWidth": 926,
+            "left": 305,
+            "right": 1231
+          },
+          {
+            "tag": "DIV",
+            "testid": null,
+            "cls": "relative w-full overflow-x-auto",
+            "overflowX": "auto",
+            "clientWidth": 926,
+            "scrollWidth": 926,
+            "left": 305,
+            "right": 1231
+          },
+          {
+            "tag": "DIV",
+            "testid": null,
+            "cls": "@container",
+            "overflowX": "visible",
+            "clientWidth": 926,
+            "scrollWidth": 926,
+            "left": 305,
+            "right": 1231
+          },
+          {
+            "tag": "DIV",
+            "testid": null,
+            "cls": "space-y-3",
+            "overflowX": "visible",
+            "clientWidth": 926,
+            "scrollWidth": 926,
+            "left": 305,
+            "right": 1231
+          },
+          {
+            "tag": "DIV",
+            "testid": null,
+            "cls": "px-6",
+            "overflowX": "visible",
+            "clientWidth": 974,
+            "scrollWidth": 974,
+            "left": 281,
+            "right": 1255
+          },
+          {
+            "tag": "DIV",
+            "testid": "unidentified-deposits-section",
+            "cls": "bg-card text-card-foreground flex flex-col gap-6 rounded-lg border border-slate-200/80 py-6 shadow-sm dark:border-slate-",
+            "overflowX": "visible",
+            "clientWidth": 974,
+            "scrollWidth": 974,
+            "left": 280,
+            "right": 1256
+          }
+        ],
+        "header": [
+          {
+            "text": "RECEIVED",
+            "left": 305,
+            "right": 466,
+            "scrollWidth": 161,
+            "clientWidth": 161,
+            "inside": true,
+            "truncated": false
+          },
+          {
+            "text": "DESCRIPTION",
+            "left": 466,
+            "right": 833,
+            "scrollWidth": 367,
+            "clientWidth": 367,
+            "inside": true,
+            "truncated": false
+          },
+          {
+            "text": "AMOUNT",
+            "left": 833,
+            "right": 992,
+            "scrollWidth": 159,
+            "clientWidth": 159,
+            "inside": true,
+            "truncated": false
+          },
+          {
+            "text": "AGE",
+            "left": 992,
+            "right": 1085,
+            "scrollWidth": 93,
+            "clientWidth": 93,
+            "inside": true,
+            "truncated": false
+          },
+          {
+            "text": "STATUS",
+            "left": 1085,
+            "right": 1231,
+            "scrollWidth": 146,
+            "clientWidth": 146,
+            "inside": true,
+            "truncated": false
+          }
+        ],
+        "rows": [
+          [
+            {
+              "text": "12 Nov 2026",
+              "left": 305,
+              "right": 466,
+              "scrollWidth": 161,
+              "clientWidth": 161,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "DEPOSIT UNKNOWN REF 12345 UNK/OBS647B/W2SMN",
+              "left": 466,
+              "right": 833,
+              "scrollWidth": 367,
+              "clientWidth": 367,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "R 4 321,09",
+              "left": 833,
+              "right": 992,
+              "scrollWidth": 159,
+              "clientWidth": 159,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "—",
+              "left": 992,
+              "right": 1085,
+              "scrollWidth": 93,
+              "clientWidth": 93,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "Reversed",
+              "left": 1085,
+              "right": 1231,
+              "scrollWidth": 146,
+              "clientWidth": 146,
+              "inside": true,
+              "truncated": false
+            }
+          ],
+          [
+            {
+              "text": "15 Nov 2026",
+              "left": 305,
+              "right": 466,
+              "scrollWidth": 161,
+              "clientWidth": 161,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "DEPOSIT UNKNOWN REF 67890 UNK2/OBS647B/WAAEH",
+              "left": 466,
+              "right": 833,
+              "scrollWidth": 367,
+              "clientWidth": 367,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "R 1 500,00",
+              "left": 833,
+              "right": 992,
+              "scrollWidth": 159,
+              "clientWidth": 159,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "2 days",
+              "left": 992,
+              "right": 1085,
+              "scrollWidth": 93,
+              "clientWidth": 93,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "Held",
+              "left": 1085,
+              "right": 1231,
+              "scrollWidth": 146,
+              "clientWidth": 146,
+              "inside": true,
+              "truncated": false
+            }
+          ]
+        ],
+        "allInside": true,
+        "noneTruncated": true,
+        "noHorizontalOverflow": true
+      },
+      "fund": {
+        "testid": "fund-ledger-table",
+        "vw": 1280,
+        "clipBy": "DIV.relative w-full overflow-x-auto",
+        "clipLeft": 305,
+        "clipRight": 1231,
+        "tableLeft": 305,
+        "tableRight": 1231,
+        "tableScrollWidth": 926,
+        "chain": [
+          {
+            "tag": "TABLE",
+            "testid": "fund-ledger-table",
+            "cls": "w-full caption-bottom text-sm tabular-nums",
+            "overflowX": "visible",
+            "clientWidth": 926,
+            "scrollWidth": 926,
+            "left": 305,
+            "right": 1231
+          },
+          {
+            "tag": "DIV",
+            "testid": null,
+            "cls": "relative w-full overflow-x-auto",
+            "overflowX": "auto",
+            "clientWidth": 926,
+            "scrollWidth": 926,
+            "left": 305,
+            "right": 1231
+          },
+          {
+            "tag": "DIV",
+            "testid": null,
+            "cls": "@container",
+            "overflowX": "visible",
+            "clientWidth": 926,
+            "scrollWidth": 926,
+            "left": 305,
+            "right": 1231
+          },
+          {
+            "tag": "DIV",
+            "testid": null,
+            "cls": "space-y-3",
+            "overflowX": "visible",
+            "clientWidth": 926,
+            "scrollWidth": 926,
+            "left": 305,
+            "right": 1231
+          },
+          {
+            "tag": "DIV",
+            "testid": null,
+            "cls": "px-6",
+            "overflowX": "visible",
+            "clientWidth": 974,
+            "scrollWidth": 974,
+            "left": 281,
+            "right": 1255
+          },
+          {
+            "tag": "DIV",
+            "testid": "fund-ledger-section",
+            "cls": "bg-card text-card-foreground flex flex-col gap-6 rounded-lg border border-slate-200/80 py-6 shadow-sm dark:border-slate-",
+            "overflowX": "visible",
+            "clientWidth": 974,
+            "scrollWidth": 974,
+            "left": 280,
+            "right": 1256
+          }
+        ],
+        "header": [
+          {
+            "text": "DATE",
+            "left": 305,
+            "right": 406,
+            "scrollWidth": 101,
+            "clientWidth": 101,
+            "inside": true,
+            "truncated": false
+          },
+          {
+            "text": "REFERENCE",
+            "left": 406,
+            "right": 559,
+            "scrollWidth": 153,
+            "clientWidth": 153,
+            "inside": true,
+            "truncated": false
+          },
+          {
+            "text": "DESCRIPTION",
+            "left": 559,
+            "right": 715,
+            "scrollWidth": 156,
+            "clientWidth": 156,
+            "inside": true,
+            "truncated": false
+          },
+          {
+            "text": "TYPE",
+            "left": 715,
+            "right": 818,
+            "scrollWidth": 103,
+            "clientWidth": 103,
+            "inside": true,
+            "truncated": false
+          },
+          {
+            "text": "AMOUNT",
+            "left": 818,
+            "right": 909,
+            "scrollWidth": 91,
+            "clientWidth": 91,
+            "inside": true,
+            "truncated": false
+          },
+          {
+            "text": "BANK CHARGE",
+            "left": 909,
+            "right": 1090,
+            "scrollWidth": 181,
+            "clientWidth": 181,
+            "inside": true,
+            "truncated": false
+          },
+          {
+            "text": "RUNNING BALANCE",
+            "left": 1090,
+            "right": 1231,
+            "scrollWidth": 141,
+            "clientWidth": 141,
+            "inside": true,
+            "truncated": false
+          }
+        ],
+        "rows": [
+          [
+            {
+              "text": "17 Nov 2026",
+              "left": 305,
+              "right": 406,
+              "scrollWidth": 101,
+              "clientWidth": 101,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "SVC/OBS647B/W2SMN",
+              "left": 406,
+              "right": 559,
+              "scrollWidth": 153,
+              "clientWidth": 153,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "MONTHLY SERVICE FEE",
+              "left": 559,
+              "right": 715,
+              "scrollWidth": 156,
+              "clientWidth": 156,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "Bank charge",
+              "left": 715,
+              "right": 818,
+              "scrollWidth": 103,
+              "clientWidth": 103,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "R 57,50",
+              "left": 818,
+              "right": 909,
+              "scrollWidth": 91,
+              "clientWidth": 91,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "Not recoverable · VAT R 7,50",
+              "left": 909,
+              "right": 1090,
+              "scrollWidth": 181,
+              "clientWidth": 181,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "-R 57,50",
+              "left": 1090,
+              "right": 1231,
+              "scrollWidth": 141,
+              "clientWidth": 141,
+              "inside": true,
+              "truncated": false
+            }
+          ]
+        ],
+        "allInside": true,
+        "noneTruncated": true,
+        "noHorizontalOverflow": true
+      },
+      "width": 1280,
+      "ok": true
+    },
+    {
+      "unidentified": {
+        "testid": "unidentified-deposits-table",
+        "vw": 1440,
+        "clipBy": "DIV.relative w-full overflow-x-auto",
+        "clipLeft": 305,
+        "clipRight": 1391,
+        "tableLeft": 305,
+        "tableRight": 1391,
+        "tableScrollWidth": 1086,
+        "chain": [
+          {
+            "tag": "TABLE",
+            "testid": "unidentified-deposits-table",
+            "cls": "w-full caption-bottom text-sm tabular-nums",
+            "overflowX": "visible",
+            "clientWidth": 1086,
+            "scrollWidth": 1086,
+            "left": 305,
+            "right": 1391
+          },
+          {
+            "tag": "DIV",
+            "testid": null,
+            "cls": "relative w-full overflow-x-auto",
+            "overflowX": "auto",
+            "clientWidth": 1086,
+            "scrollWidth": 1086,
+            "left": 305,
+            "right": 1391
+          },
+          {
+            "tag": "DIV",
+            "testid": null,
+            "cls": "@container",
+            "overflowX": "visible",
+            "clientWidth": 1086,
+            "scrollWidth": 1086,
+            "left": 305,
+            "right": 1391
+          },
+          {
+            "tag": "DIV",
+            "testid": null,
+            "cls": "space-y-3",
+            "overflowX": "visible",
+            "clientWidth": 1086,
+            "scrollWidth": 1086,
+            "left": 305,
+            "right": 1391
+          },
+          {
+            "tag": "DIV",
+            "testid": null,
+            "cls": "px-6",
+            "overflowX": "visible",
+            "clientWidth": 1134,
+            "scrollWidth": 1134,
+            "left": 281,
+            "right": 1415
+          },
+          {
+            "tag": "DIV",
+            "testid": "unidentified-deposits-section",
+            "cls": "bg-card text-card-foreground flex flex-col gap-6 rounded-lg border border-slate-200/80 py-6 shadow-sm dark:border-slate-",
+            "overflowX": "visible",
+            "clientWidth": 1134,
+            "scrollWidth": 1134,
+            "left": 280,
+            "right": 1416
+          }
+        ],
+        "header": [
+          {
+            "text": "RECEIVED",
+            "left": 305,
+            "right": 494,
+            "scrollWidth": 189,
+            "clientWidth": 189,
+            "inside": true,
+            "truncated": false
+          },
+          {
+            "text": "DESCRIPTION",
+            "left": 494,
+            "right": 924,
+            "scrollWidth": 431,
+            "clientWidth": 431,
+            "inside": true,
+            "truncated": false
+          },
+          {
+            "text": "AMOUNT",
+            "left": 924,
+            "right": 1111,
+            "scrollWidth": 186,
+            "clientWidth": 186,
+            "inside": true,
+            "truncated": false
+          },
+          {
+            "text": "AGE",
+            "left": 1111,
+            "right": 1220,
+            "scrollWidth": 109,
+            "clientWidth": 109,
+            "inside": true,
+            "truncated": false
+          },
+          {
+            "text": "STATUS",
+            "left": 1220,
+            "right": 1391,
+            "scrollWidth": 171,
+            "clientWidth": 171,
+            "inside": true,
+            "truncated": false
+          }
+        ],
+        "rows": [
+          [
+            {
+              "text": "12 Nov 2026",
+              "left": 305,
+              "right": 494,
+              "scrollWidth": 189,
+              "clientWidth": 189,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "DEPOSIT UNKNOWN REF 12345 UNK/OBS647B/W2SMN",
+              "left": 494,
+              "right": 924,
+              "scrollWidth": 431,
+              "clientWidth": 431,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "R 4 321,09",
+              "left": 924,
+              "right": 1111,
+              "scrollWidth": 186,
+              "clientWidth": 186,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "—",
+              "left": 1111,
+              "right": 1220,
+              "scrollWidth": 109,
+              "clientWidth": 109,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "Reversed",
+              "left": 1220,
+              "right": 1391,
+              "scrollWidth": 171,
+              "clientWidth": 171,
+              "inside": true,
+              "truncated": false
+            }
+          ],
+          [
+            {
+              "text": "15 Nov 2026",
+              "left": 305,
+              "right": 494,
+              "scrollWidth": 189,
+              "clientWidth": 189,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "DEPOSIT UNKNOWN REF 67890 UNK2/OBS647B/WAAEH",
+              "left": 494,
+              "right": 924,
+              "scrollWidth": 431,
+              "clientWidth": 431,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "R 1 500,00",
+              "left": 924,
+              "right": 1111,
+              "scrollWidth": 186,
+              "clientWidth": 186,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "2 days",
+              "left": 1111,
+              "right": 1220,
+              "scrollWidth": 109,
+              "clientWidth": 109,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "Held",
+              "left": 1220,
+              "right": 1391,
+              "scrollWidth": 171,
+              "clientWidth": 171,
+              "inside": true,
+              "truncated": false
+            }
+          ]
+        ],
+        "allInside": true,
+        "noneTruncated": true,
+        "noHorizontalOverflow": true
+      },
+      "fund": {
+        "testid": "fund-ledger-table",
+        "vw": 1440,
+        "clipBy": "DIV.relative w-full overflow-x-auto",
+        "clipLeft": 305,
+        "clipRight": 1391,
+        "tableLeft": 305,
+        "tableRight": 1391,
+        "tableScrollWidth": 1086,
+        "chain": [
+          {
+            "tag": "TABLE",
+            "testid": "fund-ledger-table",
+            "cls": "w-full caption-bottom text-sm tabular-nums",
+            "overflowX": "visible",
+            "clientWidth": 1086,
+            "scrollWidth": 1086,
+            "left": 305,
+            "right": 1391
+          },
+          {
+            "tag": "DIV",
+            "testid": null,
+            "cls": "relative w-full overflow-x-auto",
+            "overflowX": "auto",
+            "clientWidth": 1086,
+            "scrollWidth": 1086,
+            "left": 305,
+            "right": 1391
+          },
+          {
+            "tag": "DIV",
+            "testid": null,
+            "cls": "@container",
+            "overflowX": "visible",
+            "clientWidth": 1086,
+            "scrollWidth": 1086,
+            "left": 305,
+            "right": 1391
+          },
+          {
+            "tag": "DIV",
+            "testid": null,
+            "cls": "space-y-3",
+            "overflowX": "visible",
+            "clientWidth": 1086,
+            "scrollWidth": 1086,
+            "left": 305,
+            "right": 1391
+          },
+          {
+            "tag": "DIV",
+            "testid": null,
+            "cls": "px-6",
+            "overflowX": "visible",
+            "clientWidth": 1134,
+            "scrollWidth": 1134,
+            "left": 281,
+            "right": 1415
+          },
+          {
+            "tag": "DIV",
+            "testid": "fund-ledger-section",
+            "cls": "bg-card text-card-foreground flex flex-col gap-6 rounded-lg border border-slate-200/80 py-6 shadow-sm dark:border-slate-",
+            "overflowX": "visible",
+            "clientWidth": 1134,
+            "scrollWidth": 1134,
+            "left": 280,
+            "right": 1416
+          }
+        ],
+        "header": [
+          {
+            "text": "DATE",
+            "left": 305,
+            "right": 416,
+            "scrollWidth": 111,
+            "clientWidth": 111,
+            "inside": true,
+            "truncated": false
+          },
+          {
+            "text": "REFERENCE",
+            "left": 416,
+            "right": 604,
+            "scrollWidth": 188,
+            "clientWidth": 188,
+            "inside": true,
+            "truncated": false
+          },
+          {
+            "text": "DESCRIPTION",
+            "left": 604,
+            "right": 793,
+            "scrollWidth": 189,
+            "clientWidth": 189,
+            "inside": true,
+            "truncated": false
+          },
+          {
+            "text": "TYPE",
+            "left": 793,
+            "right": 914,
+            "scrollWidth": 121,
+            "clientWidth": 121,
+            "inside": true,
+            "truncated": false
+          },
+          {
+            "text": "AMOUNT",
+            "left": 914,
+            "right": 1014,
+            "scrollWidth": 100,
+            "clientWidth": 100,
+            "inside": true,
+            "truncated": false
+          },
+          {
+            "text": "BANK CHARGE",
+            "left": 1014,
+            "right": 1236,
+            "scrollWidth": 222,
+            "clientWidth": 222,
+            "inside": true,
+            "truncated": false
+          },
+          {
+            "text": "RUNNING BALANCE",
+            "left": 1236,
+            "right": 1391,
+            "scrollWidth": 155,
+            "clientWidth": 155,
+            "inside": true,
+            "truncated": false
+          }
+        ],
+        "rows": [
+          [
+            {
+              "text": "17 Nov 2026",
+              "left": 305,
+              "right": 416,
+              "scrollWidth": 111,
+              "clientWidth": 111,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "SVC/OBS647B/W2SMN",
+              "left": 416,
+              "right": 604,
+              "scrollWidth": 188,
+              "clientWidth": 188,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "MONTHLY SERVICE FEE",
+              "left": 604,
+              "right": 793,
+              "scrollWidth": 189,
+              "clientWidth": 189,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "Bank charge",
+              "left": 793,
+              "right": 914,
+              "scrollWidth": 121,
+              "clientWidth": 121,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "R 57,50",
+              "left": 914,
+              "right": 1014,
+              "scrollWidth": 100,
+              "clientWidth": 100,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "Not recoverable · VAT R 7,50",
+              "left": 1014,
+              "right": 1236,
+              "scrollWidth": 222,
+              "clientWidth": 222,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "-R 57,50",
+              "left": 1236,
+              "right": 1391,
+              "scrollWidth": 155,
+              "clientWidth": 155,
+              "inside": true,
+              "truncated": false
+            }
+          ]
+        ],
+        "allInside": true,
+        "noneTruncated": true,
+        "noHorizontalOverflow": true
+      },
+      "width": 1440,
+      "ok": true
+    },
+    {
+      "unidentified": {
+        "testid": "unidentified-deposits-table",
+        "vw": 1920,
+        "clipBy": "DIV.relative w-full overflow-x-auto",
+        "clipLeft": 497,
+        "clipRight": 1679,
+        "tableLeft": 497,
+        "tableRight": 1679,
+        "tableScrollWidth": 1182,
+        "chain": [
+          {
+            "tag": "TABLE",
+            "testid": "unidentified-deposits-table",
+            "cls": "w-full caption-bottom text-sm tabular-nums",
+            "overflowX": "visible",
+            "clientWidth": 1182,
+            "scrollWidth": 1182,
+            "left": 497,
+            "right": 1679
+          },
+          {
+            "tag": "DIV",
+            "testid": null,
+            "cls": "relative w-full overflow-x-auto",
+            "overflowX": "auto",
+            "clientWidth": 1182,
+            "scrollWidth": 1182,
+            "left": 497,
+            "right": 1679
+          },
+          {
+            "tag": "DIV",
+            "testid": null,
+            "cls": "@container",
+            "overflowX": "visible",
+            "clientWidth": 1182,
+            "scrollWidth": 1182,
+            "left": 497,
+            "right": 1679
+          },
+          {
+            "tag": "DIV",
+            "testid": null,
+            "cls": "space-y-3",
+            "overflowX": "visible",
+            "clientWidth": 1182,
+            "scrollWidth": 1182,
+            "left": 497,
+            "right": 1679
+          },
+          {
+            "tag": "DIV",
+            "testid": null,
+            "cls": "px-6",
+            "overflowX": "visible",
+            "clientWidth": 1230,
+            "scrollWidth": 1230,
+            "left": 473,
+            "right": 1703
+          },
+          {
+            "tag": "DIV",
+            "testid": "unidentified-deposits-section",
+            "cls": "bg-card text-card-foreground flex flex-col gap-6 rounded-lg border border-slate-200/80 py-6 shadow-sm dark:border-slate-",
+            "overflowX": "visible",
+            "clientWidth": 1230,
+            "scrollWidth": 1230,
+            "left": 472,
+            "right": 1704
+          }
+        ],
+        "header": [
+          {
+            "text": "RECEIVED",
+            "left": 497,
+            "right": 702,
+            "scrollWidth": 205,
+            "clientWidth": 205,
+            "inside": true,
+            "truncated": false
+          },
+          {
+            "text": "DESCRIPTION",
+            "left": 702,
+            "right": 1171,
+            "scrollWidth": 469,
+            "clientWidth": 469,
+            "inside": true,
+            "truncated": false
+          },
+          {
+            "text": "AMOUNT",
+            "left": 1171,
+            "right": 1374,
+            "scrollWidth": 203,
+            "clientWidth": 203,
+            "inside": true,
+            "truncated": false
+          },
+          {
+            "text": "AGE",
+            "left": 1374,
+            "right": 1493,
+            "scrollWidth": 119,
+            "clientWidth": 119,
+            "inside": true,
+            "truncated": false
+          },
+          {
+            "text": "STATUS",
+            "left": 1493,
+            "right": 1679,
+            "scrollWidth": 186,
+            "clientWidth": 186,
+            "inside": true,
+            "truncated": false
+          }
+        ],
+        "rows": [
+          [
+            {
+              "text": "12 Nov 2026",
+              "left": 497,
+              "right": 702,
+              "scrollWidth": 205,
+              "clientWidth": 205,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "DEPOSIT UNKNOWN REF 12345 UNK/OBS647B/W2SMN",
+              "left": 702,
+              "right": 1171,
+              "scrollWidth": 469,
+              "clientWidth": 469,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "R 4 321,09",
+              "left": 1171,
+              "right": 1374,
+              "scrollWidth": 203,
+              "clientWidth": 203,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "—",
+              "left": 1374,
+              "right": 1493,
+              "scrollWidth": 119,
+              "clientWidth": 119,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "Reversed",
+              "left": 1493,
+              "right": 1679,
+              "scrollWidth": 186,
+              "clientWidth": 186,
+              "inside": true,
+              "truncated": false
+            }
+          ],
+          [
+            {
+              "text": "15 Nov 2026",
+              "left": 497,
+              "right": 702,
+              "scrollWidth": 205,
+              "clientWidth": 205,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "DEPOSIT UNKNOWN REF 67890 UNK2/OBS647B/WAAEH",
+              "left": 702,
+              "right": 1171,
+              "scrollWidth": 469,
+              "clientWidth": 469,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "R 1 500,00",
+              "left": 1171,
+              "right": 1374,
+              "scrollWidth": 203,
+              "clientWidth": 203,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "2 days",
+              "left": 1374,
+              "right": 1493,
+              "scrollWidth": 119,
+              "clientWidth": 119,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "Held",
+              "left": 1493,
+              "right": 1679,
+              "scrollWidth": 186,
+              "clientWidth": 186,
+              "inside": true,
+              "truncated": false
+            }
+          ]
+        ],
+        "allInside": true,
+        "noneTruncated": true,
+        "noHorizontalOverflow": true
+      },
+      "fund": {
+        "testid": "fund-ledger-table",
+        "vw": 1920,
+        "clipBy": "DIV.relative w-full overflow-x-auto",
+        "clipLeft": 497,
+        "clipRight": 1679,
+        "tableLeft": 497,
+        "tableRight": 1679,
+        "tableScrollWidth": 1182,
+        "chain": [
+          {
+            "tag": "TABLE",
+            "testid": "fund-ledger-table",
+            "cls": "w-full caption-bottom text-sm tabular-nums",
+            "overflowX": "visible",
+            "clientWidth": 1182,
+            "scrollWidth": 1182,
+            "left": 497,
+            "right": 1679
+          },
+          {
+            "tag": "DIV",
+            "testid": null,
+            "cls": "relative w-full overflow-x-auto",
+            "overflowX": "auto",
+            "clientWidth": 1182,
+            "scrollWidth": 1182,
+            "left": 497,
+            "right": 1679
+          },
+          {
+            "tag": "DIV",
+            "testid": null,
+            "cls": "@container",
+            "overflowX": "visible",
+            "clientWidth": 1182,
+            "scrollWidth": 1182,
+            "left": 497,
+            "right": 1679
+          },
+          {
+            "tag": "DIV",
+            "testid": null,
+            "cls": "space-y-3",
+            "overflowX": "visible",
+            "clientWidth": 1182,
+            "scrollWidth": 1182,
+            "left": 497,
+            "right": 1679
+          },
+          {
+            "tag": "DIV",
+            "testid": null,
+            "cls": "px-6",
+            "overflowX": "visible",
+            "clientWidth": 1230,
+            "scrollWidth": 1230,
+            "left": 473,
+            "right": 1703
+          },
+          {
+            "tag": "DIV",
+            "testid": "fund-ledger-section",
+            "cls": "bg-card text-card-foreground flex flex-col gap-6 rounded-lg border border-slate-200/80 py-6 shadow-sm dark:border-slate-",
+            "overflowX": "visible",
+            "clientWidth": 1230,
+            "scrollWidth": 1230,
+            "left": 472,
+            "right": 1704
+          }
+        ],
+        "header": [
+          {
+            "text": "DATE",
+            "left": 497,
+            "right": 618,
+            "scrollWidth": 121,
+            "clientWidth": 121,
+            "inside": true,
+            "truncated": false
+          },
+          {
+            "text": "REFERENCE",
+            "left": 618,
+            "right": 823,
+            "scrollWidth": 205,
+            "clientWidth": 205,
+            "inside": true,
+            "truncated": false
+          },
+          {
+            "text": "DESCRIPTION",
+            "left": 823,
+            "right": 1028,
+            "scrollWidth": 206,
+            "clientWidth": 206,
+            "inside": true,
+            "truncated": false
+          },
+          {
+            "text": "TYPE",
+            "left": 1028,
+            "right": 1160,
+            "scrollWidth": 131,
+            "clientWidth": 131,
+            "inside": true,
+            "truncated": false
+          },
+          {
+            "text": "AMOUNT",
+            "left": 1160,
+            "right": 1268,
+            "scrollWidth": 109,
+            "clientWidth": 109,
+            "inside": true,
+            "truncated": false
+          },
+          {
+            "text": "BANK CHARGE",
+            "left": 1268,
+            "right": 1510,
+            "scrollWidth": 242,
+            "clientWidth": 242,
+            "inside": true,
+            "truncated": false
+          },
+          {
+            "text": "RUNNING BALANCE",
+            "left": 1510,
+            "right": 1679,
+            "scrollWidth": 169,
+            "clientWidth": 169,
+            "inside": true,
+            "truncated": false
+          }
+        ],
+        "rows": [
+          [
+            {
+              "text": "17 Nov 2026",
+              "left": 497,
+              "right": 618,
+              "scrollWidth": 121,
+              "clientWidth": 121,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "SVC/OBS647B/W2SMN",
+              "left": 618,
+              "right": 823,
+              "scrollWidth": 205,
+              "clientWidth": 205,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "MONTHLY SERVICE FEE",
+              "left": 823,
+              "right": 1028,
+              "scrollWidth": 206,
+              "clientWidth": 206,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "Bank charge",
+              "left": 1028,
+              "right": 1160,
+              "scrollWidth": 131,
+              "clientWidth": 131,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "R 57,50",
+              "left": 1160,
+              "right": 1268,
+              "scrollWidth": 109,
+              "clientWidth": 109,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "Not recoverable · VAT R 7,50",
+              "left": 1268,
+              "right": 1510,
+              "scrollWidth": 242,
+              "clientWidth": 242,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "-R 57,50",
+              "left": 1510,
+              "right": 1679,
+              "scrollWidth": 169,
+              "clientWidth": 169,
+              "inside": true,
+              "truncated": false
+            }
+          ]
+        ],
+        "allInside": true,
+        "noneTruncated": true,
+        "noHorizontalOverflow": true
+      },
+      "width": 1920,
+      "ok": true
+    }
+  ],
+  "consoleErrors": [],
+  "verdict": "PASS"
+}

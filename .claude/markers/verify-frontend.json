@@ -1,7 +1,7 @@
 {
-  "commit": "df8550113",
+  "commit": "563ef6185",
   "command": "cd frontend && rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (node v20.11.1)",
   "exit": 0,
-  "ts": "2026-11-17T14:02:42Z",
-  "summary": "PR #1795 (647C) @df8550113 — lint/typecheck/format OK; vitest 480 files, 4423 passed / 2 skipped; build OK — 162 s"
+  "ts": "2026-11-17T15:42:40Z",
+  "summary": "PR #1796 (647B) @563ef6185 — lint/typecheck/format OK; vitest 480 files, 4433 passed / 2 skipped; build OK — 179 s"
 }

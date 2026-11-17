@@ -36,3 +36,12 @@ paging one list keeps the other's place; with `itemsPage = 0` the hrefs are byte
 
 - A future-dated line can be recorded but not unmatched until its date (647A found.md #3 / 647C found.md #4) —
   applies equally to an unidentified deposit; not re-tested here.
+
+## F-4 — a future-dated HELD item breaks harness EQ-4 rule (d) (orchestrator, from the re-review @563ef6185)
+
+The review fix clamped `ageDays` to ≥ 0, so a future-dated item lists with age 0 and no one-year flag. Such an item
+is HELD from recording but has no balance as at today, so `TrustBooksHarness.assertItemised` rule (d)
+("as at today, an item is HELD exactly when it is open") would fail for it. No test records one, so nothing is red.
+This is not a 647B defect: it follows from 647A found.md #3 / 647C found.md #4 (a future-dated statement line can
+be recorded). Resolve it with that same product/legal call: either refuse future-dated lines at record time, or
+evaluate rule (d) as at `max(today, received_date)`.

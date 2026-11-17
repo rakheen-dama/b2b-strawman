@@ -1,0 +1,24 @@
+stack1-up start 2026-11-17T16:01:51Z
+stack1-up end 2026-11-17T16:05:05Z rc 0
+.lc.start 2026-11-17T16:05:12Z
+.lc.end 2026-11-17T16:10:11Z
+.lc.rc 1
+.obs.start 2026-11-17T16:10:46.000Z
+.obs.end 2026-11-17T16:13:40.000Z
+.obs.rc 1
+.fprep.start 2026-11-17T16:15:08Z
+.fprep.end 2026-11-17T16:16:11Z rc 1
+.fprep2.start 2026-11-17T16:16:33Z
+.fprep2.end 2026-11-17T16:17:09Z rc 0
+.probe.start 2026-11-17T16:17:15Z
+.probe.end 2026-11-17T16:17:20Z rc 0
+stack1b-up start 2026-11-17T16:18:05Z
+stack1b-up end 2026-11-17T16:19:16Z rc 0
+.lc2.start 2026-11-17T16:19:19Z
+.lc2.end 2026-11-17T16:22:50Z
+.lc2.rc 0
+stack2-up start 2026-11-17T16:23:16Z
+stack2-up end 2026-11-17T16:24:27Z rc 0
+.d2.start 2026-11-17T16:24:29Z
+.d2.end 2026-11-17T16:26:26Z
+.d2.rc 0

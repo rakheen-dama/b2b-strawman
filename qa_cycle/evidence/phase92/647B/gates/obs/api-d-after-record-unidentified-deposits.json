@@ -1,0 +1,34 @@
+{
+  "path": "/api/trust-accounts/24986ae5-030e-447b-9a99-8da5d43f3e51/unidentified-deposits?page=0&size=25",
+  "status": 200,
+  "body": {
+    "content": [
+      {
+        "id": "142ca912-2ee2-414d-9b25-db5ca3318ad7",
+        "trustAccountId": "24986ae5-030e-447b-9a99-8da5d43f3e51",
+        "receivedDate": "2026-11-12",
+        "bankDescription": "DEPOSIT UNKNOWN REF 12345",
+        "bankReference": "UNK/OBS647B/W2SMN",
+        "amount": 4321.09,
+        "status": "HELD",
+        "ageDays": 5,
+        "olderThanOneYear": false,
+        "allocatedClientId": null,
+        "allocatedClientName": null,
+        "allocatedMatterId": null,
+        "allocatedMatterName": null,
+        "resolutionTransactionId": null,
+        "resolutionStatus": null,
+        "resolvedDate": null,
+        "bankStatementLineId": "97d1f906-2349-45e0-9c26-50c238486464",
+        "notes": "OBS 647B W2SMN unknown credit"
+      }
+    ],
+    "page": {
+      "size": 25,
+      "number": 0,
+      "totalElements": 1,
+      "totalPages": 1
+    }
+  }
+}

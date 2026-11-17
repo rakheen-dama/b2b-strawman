@@ -1,0 +1,490 @@
+{
+  "steps": {
+    "baseline": {
+      "txCount": 6,
+      "itemCount": 0,
+      "eq": {
+        "cashbook": 286500,
+        "allCreditors": 286500,
+        "unidentified": 0,
+        "fund": 0
+      },
+      "page": {
+        "label": "00-baseline",
+        "cardText": "Unidentified deposits R 0,00 Deposits whose owner is not yet known",
+        "cardValue": 0,
+        "cardApi": 0,
+        "sqlBalance": 0,
+        "headers": [],
+        "uiRowCount": 0,
+        "uiRows": [],
+        "emptyShown": true,
+        "errorShown": false,
+        "api": {
+          "content": [],
+          "page": {
+            "size": 25,
+            "number": 0,
+            "totalElements": 0,
+            "totalPages": 0
+          }
+        },
+        "apiStatus": 200,
+        "apiHeld": {
+          "content": [],
+          "page": {
+            "size": 20,
+            "number": 0,
+            "totalElements": 0,
+            "totalPages": 0
+          }
+        },
+        "shot": "01-00-baseline-other-creditors.png"
+      }
+    },
+    "a": {
+      "periodEnd": "2026-11-17",
+      "uploadResult": "Statement imported successfully Lines imported: 2 File: statement-OBS647B-W2SMN.csv Period: 2026-11-12 to 2026-11-17 Format: CSV",
+      "shotUpload": "02-a-statement-uploaded.png",
+      "autoMatchResult": "Auto-matched 0 lines 2 lines remaining for manual review",
+      "shotAutoMatch": "03-a-auto-match-result.png",
+      "refusalBanner": null,
+      "progress": "Matching Progress 0 / 2 lines resolved",
+      "line1Text": "#1 12 Nov 2026 DEPOSIT UNKNOWN REF 12345 Ref: UNK/OBS647B/W2SMN R 4 321,09 CR Unmatched",
+      "shotReview": "04-a-review-step-unmatched-line.png",
+      "line1": {
+        "matchStatus": "UNMATCHED",
+        "trustTransactionId": "<null>",
+        "suggestedAtImport": "<null>"
+      },
+      "txCountAfter": 6,
+      "checks": {
+        "twoLinesImported": true,
+        "noRefusal": true,
+        "reconCreated": true,
+        "line1UnmatchedAfterAutoMatch": true,
+        "line1NoSuggestion": true,
+        "line1ShownUnmatched": true,
+        "nothingPosted": true
+      }
+    },
+    "b": {
+      "debit": {
+        "offered": [
+          "FUND_SWEEP",
+          "BANK_CHARGE"
+        ],
+        "labels": [
+          "Interest paid to the Legal Practitioners' Fidelity Fund",
+          "Bank charge"
+        ],
+        "text": "Record from statement Line #2, 17 Nov 2026 — MONTHLY SERVICE FEE — R 57,50 DR. The entry is dated the line's date and posts at once; unmatching the line reverses it. What is this line? Interest paid to the Legal Practitioners' Fidelity Fund Bank charge Suggested from the line's description — check it before recording. Recoverable from the Fidelity Fund? Recoverable Not recoverable Is this charge on the Legal Practitioners' Fidelity Fund's list of recoverable bank charges? VAT included in the charge Enter 0 if the charge carries no VAT. Notes (optional) Cancel Record Close",
+        "shot": "05-b-debit-line-dialog.png",
+        "txCountUnchanged": true
+      },
+      "txCountBefore": 6,
+      "itemCountBefore": 0,
+      "credit": {
+        "offered": [
+          "FUND_INTEREST",
+          "CHARGE_REFUND",
+          "UNIDENTIFIED_DEPOSIT"
+        ],
+        "labels": [
+          "Interest received for the Legal Practitioners' Fidelity Fund",
+          "Bank charge refunded from the business account",
+          "Unidentified deposit"
+        ],
+        "preChecked": [],
+        "textBefore": "Record from statement Line #1, 12 Nov 2026 — DEPOSIT UNKNOWN REF 12345 — R 4 321,09 CR. The entry is dated the line's date and posts at once; unmatching the line reverses it. What is this line? Interest received for the Legal Practitioners' Fidelity Fund Bank charge refunded from the business account Unidentified deposit Notes (optional) Cancel Record Close",
+        "noteVisible": true,
+        "noteText": "Held on the unidentified deposits ledger until you identify the owner.",
+        "chargeFieldsVisible": false,
+        "shot": "06-b-credit-line-unidentified-chosen.png"
+      },
+      "checks": {
+        "debitDoesNotOfferUnidentified": true,
+        "debitCancelPostedNothing": true,
+        "creditOffersUnidentified": true,
+        "creditNothingPreselected": true,
+        "unidentifiedNoteShown": true
+      }
+    },
+    "c": {
+      "badge": "Recorded: Unidentified deposit",
+      "errorBanner": null,
+      "lineText": "#1 12 Nov 2026 DEPOSIT UNKNOWN REF 12345 Ref: UNK/OBS647B/W2SMN R 4 321,09 CR Recorded: Unidentified deposit Unmatch",
+      "shot": "07-c-line-recorded-unidentified.png",
+      "lineSql": " line_number |                  id                  | transaction_date |        description        |     reference     | amount  | match_status | suggested_classification |    classification    |         trust_transaction_id         | match_confidence | stmt_matched_count \n-------------+--------------------------------------+------------------+---------------------------+-------------------+---------+--------------+--------------------------+----------------------+--------------------------------------+------------------+--------------------\n           1 | 97d1f906-2349-45e0-9c26-50c238486464 | 2026-11-12       | DEPOSIT UNKNOWN REF 12345 | UNK/OBS647B/W2SMN | 4321.09 | RECORDED     |                          | UNIDENTIFIED_DEPOSIT | 6a15a693-2857-40fb-81d6-0043aeb5301f |                  |                  1\n           2 | 937b6200-07fd-416c-a193-e6d47a8be31a | 2026-11-17       | MONTHLY SERVICE FEE       | SVC/OBS647B/W2SMN |  -57.50 | UNMATCHED    | BANK_CHARGE              |                      |                                      |                  |                  1\n(2 rows)\n\n",
+      "line": {
+        "matchStatus": "RECORDED",
+        "classification": "UNIDENTIFIED_DEPOSIT",
+        "trustTransactionId": "6a15a693-2857-40fb-81d6-0043aeb5301f"
+      },
+      "txCountAfter": 7,
+      "itemCountAfter": 1,
+      "checks": {
+        "badgeLabel": true,
+        "noRawEnum": true,
+        "noError": true,
+        "lineRecorded": true,
+        "oneRowCreated": true,
+        "oneItemCreated": true
+      }
+    },
+    "d": {
+      "itemSql": "                  id                  |           trust_account_id           |         creditor_account_id          |        deposit_transaction_id        |        bank_statement_line_id        | received_date |     bank_description      |  bank_reference   | amount  | status | resolved_date | resolution_transaction_id |             notes             |          created_at           \n--------------------------------------+--------------------------------------+--------------------------------------+--------------------------------------+--------------------------------------+---------------+---------------------------+-------------------+---------+--------+---------------+---------------------------+-------------------------------+-------------------------------\n 142ca912-2ee2-414d-9b25-db5ca3318ad7 | 24986ae5-030e-447b-9a99-8da5d43f3e51 | 867d7e71-7e73-4b94-add4-ef8931091437 | 6a15a693-2857-40fb-81d6-0043aeb5301f | 97d1f906-2349-45e0-9c26-50c238486464 | 2026-11-12    | DEPOSIT UNKNOWN REF 12345 | UNK/OBS647B/W2SMN | 4321.09 | HELD   |               |                           | OBS 647B W2SMN unknown credit | 2026-11-17 16:11:28.619444+00\n(1 row)\n\n",
+      "item": {
+        "id": "142ca912-2ee2-414d-9b25-db5ca3318ad7",
+        "depositTransactionId": "6a15a693-2857-40fb-81d6-0043aeb5301f",
+        "receivedDate": "2026-11-12",
+        "description": "DEPOSIT UNKNOWN REF 12345",
+        "reference": "UNK/OBS647B/W2SMN",
+        "amount": 4321.09,
+        "status": "HELD",
+        "resolvedDate": "<null>",
+        "creditorAccountId": "867d7e71-7e73-4b94-add4-ef8931091437"
+      },
+      "rowSql": "                  id                  |   transaction_type   |  status  | amount  | transaction_date |   ledger   | ledger_effect | cashbook_effect | posted |         creditor_account_id          |        bank_statement_line_id        |       unidentified_deposit_id        |     reference     | reversal_of | reversed_by_id |          created_at           \n--------------------------------------+----------------------+----------+---------+------------------+------------+---------------+-----------------+--------+--------------------------------------+--------------------------------------+--------------------------------------+-------------------+-------------+----------------+-------------------------------\n 6a15a693-2857-40fb-81d6-0043aeb5301f | UNIDENTIFIED_DEPOSIT | RECORDED | 4321.09 | 2026-11-12       | NON_CLIENT |       4321.09 |         4321.09 | t      | 867d7e71-7e73-4b94-add4-ef8931091437 | 97d1f906-2349-45e0-9c26-50c238486464 | 142ca912-2ee2-414d-9b25-db5ca3318ad7 | UNK/OBS647B/W2SMN |             |                | 2026-11-17 16:11:28.623889+00\n(1 row)\n\n",
+      "row": {
+        "id": "6a15a693-2857-40fb-81d6-0043aeb5301f",
+        "type": "UNIDENTIFIED_DEPOSIT",
+        "status": "RECORDED",
+        "amount": 4321.09,
+        "date": "2026-11-12",
+        "ledger": "NON_CLIENT",
+        "ledgerEffect": 4321.09,
+        "cashbookEffect": 4321.09,
+        "posted": true,
+        "unidentifiedDepositId": "142ca912-2ee2-414d-9b25-db5ca3318ad7",
+        "creditorAccountId": "867d7e71-7e73-4b94-add4-ef8931091437"
+      },
+      "page": {
+        "label": "d-after-record",
+        "cardText": "Unidentified deposits R 4 321,09 Deposits whose owner is not yet known",
+        "cardValue": 4321.09,
+        "cardApi": 4321.09,
+        "sqlBalance": 4321.09,
+        "headers": [
+          "RECEIVED",
+          "DESCRIPTION",
+          "AMOUNT",
+          "AGE",
+          "STATUS"
+        ],
+        "uiRowCount": 1,
+        "uiRows": [
+          {
+            "cells": [
+              "12 Nov 2026",
+              "DEPOSIT UNKNOWN REF 12345 UNK/OBS647B/W2SMN",
+              "R 4 321,09",
+              "5 days",
+              "Held"
+            ],
+            "status": "Held",
+            "ageText": "5 days",
+            "overOneYear": false,
+            "amount": 4321.09
+          }
+        ],
+        "emptyShown": false,
+        "errorShown": false,
+        "api": {
+          "content": [
+            {
+              "id": "142ca912-2ee2-414d-9b25-db5ca3318ad7",
+              "trustAccountId": "24986ae5-030e-447b-9a99-8da5d43f3e51",
+              "receivedDate": "2026-11-12",
+              "bankDescription": "DEPOSIT UNKNOWN REF 12345",
+              "bankReference": "UNK/OBS647B/W2SMN",
+              "amount": 4321.09,
+              "status": "HELD",
+              "ageDays": 5,
+              "olderThanOneYear": false,
+              "allocatedClientId": null,
+              "allocatedClientName": null,
+              "allocatedMatterId": null,
+              "allocatedMatterName": null,
+              "resolutionTransactionId": null,
+              "resolutionStatus": null,
+              "resolvedDate": null,
+              "bankStatementLineId": "97d1f906-2349-45e0-9c26-50c238486464",
+              "notes": "OBS 647B W2SMN unknown credit"
+            }
+          ],
+          "page": {
+            "size": 25,
+            "number": 0,
+            "totalElements": 1,
+            "totalPages": 1
+          }
+        },
+        "apiStatus": 200,
+        "apiHeld": {
+          "content": [
+            {
+              "id": "142ca912-2ee2-414d-9b25-db5ca3318ad7",
+              "trustAccountId": "24986ae5-030e-447b-9a99-8da5d43f3e51",
+              "receivedDate": "2026-11-12",
+              "bankDescription": "DEPOSIT UNKNOWN REF 12345",
+              "bankReference": "UNK/OBS647B/W2SMN",
+              "amount": 4321.09,
+              "status": "HELD",
+              "ageDays": 5,
+              "olderThanOneYear": false,
+              "allocatedClientId": null,
+              "allocatedClientName": null,
+              "allocatedMatterId": null,
+              "allocatedMatterName": null,
+              "resolutionTransactionId": null,
+              "resolutionStatus": null,
+              "resolvedDate": null,
+              "bankStatementLineId": "97d1f906-2349-45e0-9c26-50c238486464",
+              "notes": "OBS 647B W2SMN unknown credit"
+            }
+          ],
+          "page": {
+            "size": 20,
+            "number": 0,
+            "totalElements": 1,
+            "totalPages": 1
+          }
+        },
+        "shot": "08-d-after-record-other-creditors.png"
+      },
+      "eq": {
+        "cashbook": 290821.09,
+        "allCreditors": 290821.09,
+        "unidentified": 4321.09,
+        "fund": 0
+      },
+      "figures": {
+        "expectedAgeDays": 5,
+        "receivedDate": {
+          "sql": "2026-11-12",
+          "api": "2026-11-12",
+          "ui": "12 Nov 2026"
+        },
+        "description": {
+          "sql": "DEPOSIT UNKNOWN REF 12345",
+          "api": "DEPOSIT UNKNOWN REF 12345",
+          "ui": "DEPOSIT UNKNOWN REF 12345 UNK/OBS647B/W2SMN"
+        },
+        "amount": {
+          "sql": 4321.09,
+          "api": 4321.09,
+          "ui": 4321.09
+        },
+        "ageDays": {
+          "api": 5,
+          "ui": "5 days"
+        },
+        "status": {
+          "sql": "HELD",
+          "api": "HELD",
+          "ui": "Held"
+        },
+        "ledgerBalance": {
+          "ui": 4321.09,
+          "api": 4321.09,
+          "sql": 4321.09
+        }
+      },
+      "checks": {
+        "oneUiRow": true,
+        "itemHeldSql": true,
+        "itemLinkedBothWays": true,
+        "rowShape": true,
+        "receivedDateUiApiSql": true,
+        "descriptionUiApiSql": true,
+        "amountUiApiSql": true,
+        "ageUiApiExpected": true,
+        "statusHeldUiApiSql": true,
+        "heldFilterApi": true,
+        "ledgerCardUiApiSql": true,
+        "equationHolds": true
+      }
+    },
+    "e": {
+      "txCountBefore": 7,
+      "dialogText": "Unmatch recorded line? This line was recorded as Unidentified deposit. Unmatching it reverses the entry it created, dated 12 Nov 2026 — the line's date. The line returns to Unmatched. Keep Unmatch and reverse",
+      "shotDialog": "09-e-unmatch-recorded-confirmation.png",
+      "lineText": "#1 12 Nov 2026 DEPOSIT UNKNOWN REF 12345 Ref: UNK/OBS647B/W2SMN R 4 321,09 CR Unmatched",
+      "errorBanner": null,
+      "shotAfter": "10-e-after-unmatch.png",
+      "itemSql": "                  id                  |           trust_account_id           |         creditor_account_id          |        deposit_transaction_id        |        bank_statement_line_id        | received_date |     bank_description      |  bank_reference   | amount  |  status  | resolved_date | resolution_transaction_id |             notes             |          created_at           \n--------------------------------------+--------------------------------------+--------------------------------------+--------------------------------------+--------------------------------------+---------------+---------------------------+-------------------+---------+----------+---------------+---------------------------+-------------------------------+-------------------------------\n 142ca912-2ee2-414d-9b25-db5ca3318ad7 | 24986ae5-030e-447b-9a99-8da5d43f3e51 | 867d7e71-7e73-4b94-add4-ef8931091437 | 6a15a693-2857-40fb-81d6-0043aeb5301f | 97d1f906-2349-45e0-9c26-50c238486464 | 2026-11-12    | DEPOSIT UNKNOWN REF 12345 | UNK/OBS647B/W2SMN | 4321.09 | REVERSED | 2026-11-12    |                           | OBS 647B W2SMN unknown credit | 2026-11-17 16:11:28.619444+00\n(1 row)\n\n",
+      "originalSql": "                  id                  |   transaction_type   |  status  | amount  | transaction_date |   ledger   | ledger_effect | cashbook_effect | posted |         creditor_account_id          | bank_statement_line_id |       unidentified_deposit_id        |     reference     | reversal_of |            reversed_by_id            |          created_at           \n--------------------------------------+----------------------+----------+---------+------------------+------------+---------------+-----------------+--------+--------------------------------------+------------------------+--------------------------------------+-------------------+-------------+--------------------------------------+-------------------------------\n 6a15a693-2857-40fb-81d6-0043aeb5301f | UNIDENTIFIED_DEPOSIT | REVERSED | 4321.09 | 2026-11-12       | NON_CLIENT |       4321.09 |         4321.09 | t      | 867d7e71-7e73-4b94-add4-ef8931091437 |                        | 142ca912-2ee2-414d-9b25-db5ca3318ad7 | UNK/OBS647B/W2SMN |             | 4da4c7a0-6314-4f63-bac1-ea52b25dccae | 2026-11-17 16:11:28.623889+00\n(1 row)\n\n",
+      "contraSql": "                  id                  | transaction_type |  status  | amount  | transaction_date |   ledger   | ledger_effect | cashbook_effect | posted |         creditor_account_id          | bank_statement_line_id |       unidentified_deposit_id        |       reference       |             reversal_of              | reversed_by_id |         created_at         \n--------------------------------------+------------------+----------+---------+------------------+------------+---------------+-----------------+--------+--------------------------------------+------------------------+--------------------------------------+-----------------------+--------------------------------------+----------------+----------------------------\n 4da4c7a0-6314-4f63-bac1-ea52b25dccae | REVERSAL         | RECORDED | 4321.09 | 2026-11-12       | NON_CLIENT |      -4321.09 |        -4321.09 | t      | 867d7e71-7e73-4b94-add4-ef8931091437 |                        | 142ca912-2ee2-414d-9b25-db5ca3318ad7 | REV-UNK/OBS647B/W2SMN | 6a15a693-2857-40fb-81d6-0043aeb5301f |                | 2026-11-17 16:12:03.122+00\n(1 row)\n\n",
+      "itemRowsSql": "                  id                  |   transaction_type   |  status  | amount  | transaction_date |   ledger   | ledger_effect | cashbook_effect | posted |         creditor_account_id          | bank_statement_line_id |       unidentified_deposit_id        |       reference       |             reversal_of              |            reversed_by_id            |          created_at           \n--------------------------------------+----------------------+----------+---------+------------------+------------+---------------+-----------------+--------+--------------------------------------+------------------------+--------------------------------------+-----------------------+--------------------------------------+--------------------------------------+-------------------------------\n 6a15a693-2857-40fb-81d6-0043aeb5301f | UNIDENTIFIED_DEPOSIT | REVERSED | 4321.09 | 2026-11-12       | NON_CLIENT |       4321.09 |         4321.09 | t      | 867d7e71-7e73-4b94-add4-ef8931091437 |                        | 142ca912-2ee2-414d-9b25-db5ca3318ad7 | UNK/OBS647B/W2SMN     |                                      | 4da4c7a0-6314-4f63-bac1-ea52b25dccae | 2026-11-17 16:11:28.623889+00\n 4da4c7a0-6314-4f63-bac1-ea52b25dccae | REVERSAL             | RECORDED | 4321.09 | 2026-11-12       | NON_CLIENT |      -4321.09 |        -4321.09 | t      | 867d7e71-7e73-4b94-add4-ef8931091437 |                        | 142ca912-2ee2-414d-9b25-db5ca3318ad7 | REV-UNK/OBS647B/W2SMN | 6a15a693-2857-40fb-81d6-0043aeb5301f |                                      | 2026-11-17 16:12:03.122+00\n(2 rows)\n\n",
+      "lineSql": " line_number |                  id                  | transaction_date |        description        |     reference     | amount  | match_status | suggested_classification | classification | trust_transaction_id | match_confidence | stmt_matched_count \n-------------+--------------------------------------+------------------+---------------------------+-------------------+---------+--------------+--------------------------+----------------+----------------------+------------------+--------------------\n           1 | 97d1f906-2349-45e0-9c26-50c238486464 | 2026-11-12       | DEPOSIT UNKNOWN REF 12345 | UNK/OBS647B/W2SMN | 4321.09 | UNMATCHED    |                          |                |                      |                  |                  0\n           2 | 937b6200-07fd-416c-a193-e6d47a8be31a | 2026-11-17       | MONTHLY SERVICE FEE       | SVC/OBS647B/W2SMN |  -57.50 | UNMATCHED    | BANK_CHARGE              |                |                      |                  |                  0\n(2 rows)\n\n",
+      "item": {
+        "status": "REVERSED",
+        "resolvedDate": "2026-11-12"
+      },
+      "original": {
+        "id": "6a15a693-2857-40fb-81d6-0043aeb5301f",
+        "status": "REVERSED",
+        "reversedBy": "4da4c7a0-6314-4f63-bac1-ea52b25dccae"
+      },
+      "contra": {
+        "id": "4da4c7a0-6314-4f63-bac1-ea52b25dccae",
+        "type": "REVERSAL",
+        "date": "2026-11-12",
+        "ledgerEffect": -4321.09,
+        "cashbookEffect": -4321.09,
+        "unidentifiedDepositId": "142ca912-2ee2-414d-9b25-db5ca3318ad7",
+        "creditorAccountId": "867d7e71-7e73-4b94-add4-ef8931091437"
+      },
+      "itemLedgerNet": 0,
+      "line": {
+        "matchStatus": "UNMATCHED",
+        "classification": "<null>",
+        "trustTransactionId": "<null>"
+      },
+      "txCountAfter": 8,
+      "page": {
+        "label": "e-after-unmatch",
+        "cardText": "Unidentified deposits R 0,00 Deposits whose owner is not yet known",
+        "cardValue": 0,
+        "cardApi": 0,
+        "sqlBalance": 0,
+        "headers": [
+          "RECEIVED",
+          "DESCRIPTION",
+          "AMOUNT",
+          "AGE",
+          "STATUS"
+        ],
+        "uiRowCount": 1,
+        "uiRows": [
+          {
+            "cells": [
+              "12 Nov 2026",
+              "DEPOSIT UNKNOWN REF 12345 UNK/OBS647B/W2SMN",
+              "R 4 321,09",
+              "—",
+              "Reversed"
+            ],
+            "status": "Reversed",
+            "ageText": null,
+            "overOneYear": false,
+            "amount": 4321.09
+          }
+        ],
+        "emptyShown": false,
+        "errorShown": false,
+        "api": {
+          "content": [
+            {
+              "id": "142ca912-2ee2-414d-9b25-db5ca3318ad7",
+              "trustAccountId": "24986ae5-030e-447b-9a99-8da5d43f3e51",
+              "receivedDate": "2026-11-12",
+              "bankDescription": "DEPOSIT UNKNOWN REF 12345",
+              "bankReference": "UNK/OBS647B/W2SMN",
+              "amount": 4321.09,
+              "status": "REVERSED",
+              "ageDays": 5,
+              "olderThanOneYear": false,
+              "allocatedClientId": null,
+              "allocatedClientName": null,
+              "allocatedMatterId": null,
+              "allocatedMatterName": null,
+              "resolutionTransactionId": null,
+              "resolutionStatus": null,
+              "resolvedDate": "2026-11-12",
+              "bankStatementLineId": "97d1f906-2349-45e0-9c26-50c238486464",
+              "notes": "OBS 647B W2SMN unknown credit"
+            }
+          ],
+          "page": {
+            "size": 25,
+            "number": 0,
+            "totalElements": 1,
+            "totalPages": 1
+          }
+        },
+        "apiStatus": 200,
+        "apiHeld": {
+          "content": [],
+          "page": {
+            "size": 20,
+            "number": 0,
+            "totalElements": 0,
+            "totalPages": 0
+          }
+        },
+        "shot": "11-e-after-unmatch-other-creditors.png"
+      },
+      "eq": {
+        "cashbook": 286500,
+        "allCreditors": 286500,
+        "unidentified": 0,
+        "fund": 0
+      },
+      "checks": {
+        "dialogSaysReversed": true,
+        "lineUnmatchedUi": true,
+        "noError": true,
+        "lineUnmatchedSql": true,
+        "itemReversedSql": true,
+        "originalReversed": true,
+        "contraShape": true,
+        "oneRowCreated": true,
+        "itemLedgerNetsToZero": true,
+        "tableShowsReversed": true,
+        "heldFilterEmpty": true,
+        "ledgerBackToBaseline": true,
+        "equationHolds": true
+      }
+    },
+    "fPrep": {
+      "line2Badge": "Recorded: Bank charge"
+    }
+  },
+  "consoleErrors": [],
+  "pageErrors": [],
+  "notes": [],
+  "startedAt": "2026-11-17T16:10:46.501Z",
+  "run": "W2SMN",
+  "ids": {
+    "account": "24986ae5-030e-447b-9a99-8da5d43f3e51",
+    "udAccount": "867d7e71-7e73-4b94-add4-ef8931091437",
+    "fundAccount": "89244f66-9eea-4b9c-89a6-31d1407bef9c",
+    "statement": "f863753f-67e6-42bb-9833-3156a67cf567",
+    "recon": "c4dbda1d-08f2-440b-be0d-e88ac087f598"
+  },
+  "dates": {
+    "today": "2026-11-17",
+    "periodEnd": "2026-11-17",
+    "expectedAgeDays": 5
+  },
+  "lines": [
+    {
+      "n": 1,
+      "date": "2026-11-12",
+      "desc": "DEPOSIT UNKNOWN REF 12345",
+      "ref": "UNK/OBS647B/W2SMN",
+      "amount": 4321.09,
+      "id": "97d1f906-2349-45e0-9c26-50c238486464",
+      "suggestedAtImport": "<null>"
+    },
+    {
+      "n": 2,
+      "date": "2026-11-17",
+      "desc": "MONTHLY SERVICE FEE",
+      "ref": "SVC/OBS647B/W2SMN",
+      "amount": -57.5,
+      "id": "937b6200-07fd-416c-a193-e6d47a8be31a",
+      "suggestedAtImport": "BANK_CHARGE"
+    }
+  ],
+  "csv": [
+    "Standard Bank Trust Account - OBS 647B W2SMN",
+    "Date,Description,Reference,Amount,Balance",
+    "2026-11-12,DEPOSIT UNKNOWN REF 12345,UNK/OBS647B/W2SMN,4321.09,4321.09",
+    "2026-11-17,MONTHLY SERVICE FEE,SVC/OBS647B/W2SMN,-57.50,4263.59"
+  ],
+  "fatal": "locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByTestId('record-btn-97d1f906-2349-45e0-9c26-50c238486464')\u001b[22m\n\n    at openDialog (/Users/rakheendama/Projects/2026/worktree-epic-647B/qa_cycle/evidence/phase92/647B/gates/obs.cjs:257:50)\n    at async /Users/rakheendama/Projects/2026/worktree-epic-647B/qa_cycle/evidence/phase92/647B/gates/obs.cjs:428:29",
+  "finishedAt": "2026-11-17T16:13:40.249Z"
+}

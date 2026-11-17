@@ -1,0 +1,36 @@
+{
+  "startedAt": "2026-11-17T16:16:34.381Z",
+  "consoleErrors": [],
+  "pageErrors": [],
+  "csv": {
+    "name": "statement-OBS647B-FPREP-WAAEH.csv",
+    "date": "2026-11-15",
+    "today": "2026-11-17"
+  },
+  "uploadResult": "Statement imported successfully Lines imported: 1 File: statement-OBS647B-FPREP-WAAEH.csv Period: 2026-11-15 to 2026-11-15 Format: CSV",
+  "statement2": "632ecd95-d614-4a0e-8b09-7d610b4eb463",
+  "line": "e0180a39-dbfc-40e3-a11c-9d0f287f892f",
+  "refusalBanner": null,
+  "offered": [
+    "FUND_INTEREST",
+    "CHARGE_REFUND",
+    "UNIDENTIFIED_DEPOSIT"
+  ],
+  "line1Badge": "Recorded: Unidentified deposit",
+  "items": [
+    "REVERSED",
+    "HELD"
+  ],
+  "eq": {
+    "cashbook": 287942.5,
+    "allCreditors": 287942.5
+  },
+  "checks": {
+    "offered": true,
+    "line1Badge": true,
+    "itemsReversedThenHeld": true,
+    "noRefusal": true,
+    "equation": true
+  },
+  "finishedAt": "2026-11-17T16:17:08.979Z"
+}

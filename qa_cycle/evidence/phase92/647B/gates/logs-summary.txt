@@ -1,0 +1,91 @@
+647B gates — summary of every *.log in this dir (the *.log files are gitignored)
+
+== depth-ii.log (9784 bytes, 54 lines)
+  4 skipped
+  40 passed (1.9m)
+full per-test list: depth-ii-summary.txt
+
+== lifecycle-run1.log (25401 bytes, 180 lines)
+  2 failed
+  12 did not run
+  91 passed (4.6m)
+  ✘   80 [chromium] › e2e/tests/legal-lifecycle/day-75-complex.spec.ts:224:7 › Day 75 — Complex Engagement & Adverse Parties › Alice: Log 360min on Moroka estate matter (21.6s)
+  ✘   84 [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:83:7 › Day 90 — Quarter Review › Alice: Matters list shows the lifecycle's six matters (5.9s)
+full per-test list: lifecycle-run1-summary.txt; failure context: lifecycle-run1-failures/
+
+== lifecycle.log (20651 bytes, 114 lines)
+  105 passed (3.5m)
+full per-test list: lifecycle-summary.txt
+
+== obs/obs-fprep-attempt1-output.log (290 bytes, 7 lines)
+stdout of obs-fprep.cjs attempt 1 (period end = today)
+FPREP FAILED locator.waitFor: Timeout 60000ms exceeded.
+
+== obs/obs-fprep-output.log (934 bytes, 36 lines)
+stdout of obs-fprep.cjs attempt 2 = obs/obs-fprep-result.json; 'FPREP FAILED' lines: 0
+
+== obs/obs-output.log (420 bytes, 8 lines)
+stdout of obs.cjs; its JSON is in obs/obs-result.json
+OBS FAILED: locator.click: Timeout 30000ms exceeded.
+(steps a-e completed with every check true before the f-prep timeout; see README)
+
+== obs/probe-clip-output.log (35424 bytes, 1294 lines)
+stdout of probe-clip.cjs = obs/probe-clip.json; 'PROBE FAILED' lines: 0; verdict: "verdict": "PASS"
+
+== stack0-down.log (137 bytes, 4 lines)
+Stack stopped. All containers and volumes removed.
+Run 'bash compose/scripts/e2e-up.sh' to start fresh.
+
+== stack1-backend.log (252997 bytes, 503 lines)
+level counts / WARN breakdown: see stack1-log-breakdown.txt
+{'INFO': 348, 'WARN': 134}
+lines with level ERROR: 0
+
+== stack1-build.log (28148 bytes, 603 lines)
+Building from source at: /Users/rakheendama/Projects/2026/worktree-epic-647B
+e2e-up rc: see timings.txt
+
+== stack1-down.log (1344 bytes, 38 lines)
+Stack stopped. All containers and volumes removed.
+Run 'bash compose/scripts/e2e-up.sh' to start fresh.
+
+== stack1-frontend.log (11731 bytes, 161 lines)
+'⨯' lines: 39
+  39 ⨯ Error: The destination stream closed early.
+first/last ⨯: 2026-11-17T16:05:18.855486050Z 2026-11-17T16:09:51.017039843Z 
+
+== stack1b-backend.log (254372 bytes, 501 lines)
+level counts / WARN breakdown: see stack1b-log-breakdown.txt
+{'INFO': 326, 'WARN': 151}
+lines with level ERROR: 0
+
+== stack1b-build.log (11003 bytes, 368 lines)
+Building from source at: /Users/rakheendama/Projects/2026/worktree-epic-647B
+e2e-up rc: see timings.txt
+
+== stack1b-down.log (1344 bytes, 38 lines)
+Stack stopped. All containers and volumes removed.
+Run 'bash compose/scripts/e2e-up.sh' to start fresh.
+
+== stack1b-frontend.log (10276 bytes, 141 lines)
+'⨯' lines: 34
+  34 ⨯ Error: The destination stream closed early.
+first/last ⨯: 2026-11-17T16:19:24.751944428Z 2026-11-17T16:22:36.631179794Z 
+
+== stack2-backend.log (250484 bytes, 504 lines)
+level counts / WARN breakdown: see stack2-log-breakdown.txt
+{'INFO': 272, 'WARN': 199}
+lines with level ERROR: 0
+
+== stack2-build.log (10893 bytes, 365 lines)
+Building from source at: /Users/rakheendama/Projects/2026/worktree-epic-647B
+e2e-up rc: see timings.txt
+
+== stack2-down.log (1344 bytes, 38 lines)
+Stack stopped. All containers and volumes removed.
+Run 'bash compose/scripts/e2e-up.sh' to start fresh.
+
+== stack2-frontend.log (673 bytes, 9 lines)
+'⨯' lines: 1
+   1 ⨯ Error: The destination stream closed early.
+first/last ⨯: 2026-11-17T16:25:26.967814970Z 2026-11-17T16:25:26.967814970Z 

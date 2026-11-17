@@ -1,0 +1,74 @@
+== worktree: /Users/rakheendama/Projects/2026/worktree-epic-647B @ 563ef6185e8a186c077b517e711ee86948fc26df
+== build log source lines:
+Building from source at: /Users/rakheendama/Projects/2026/worktree-epic-647B
+  Tail logs:   docker compose -f /Users/rakheendama/Projects/2026/worktree-epic-647B/compose/docker-compose.e2e.yml logs -f backend frontend
+== jar entries (647B-new / 647B-touched classes):
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/creditor/UnidentifiedDepositRepository.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/creditor/UnidentifiedDepositService$UnidentifiedDepositResponse.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/creditor/UnidentifiedDepositService.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/creditor/UnidentifiedDepositStatus.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/creditor/UnidentifiedDepositService$StatementCredit.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/creditor/UnidentifiedDepositController.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/creditor/UnidentifiedDeposit.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/creditor/UnidentifiedDepositService$Opened.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/reconciliation/StatementLineClassification.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/reconciliation/StatementLinePostingService.class
+== UnidentifiedDepositController.class contains '/api/trust-accounts/{accountId}/unidentified-deposits' (647B): 1
+== UnidentifiedDepositService$StatementCredit.class exists (647B): 1
+== UnidentifiedDepositService.class contains 'lockHeldForUnmatch': 1 ; 'markReversedByUnmatch': 1
+== StatementLineClassification.class contains 'UNIDENTIFIED_DEPOSIT' (647B): 1
+== StatementLinePostingService.class contains 'StatementCredit' (647B): 4 ; 'An unidentified deposit is recorded only on a trust banking account': 1
+== jar migrations (latest tenant V*):
+db/migration/tenant/V19__phase92_trust_recon_breakdown.sql
+db/migration/tenant/V20__phase92_statement_line_classification.sql
+db/migration/tenant/V21__phase92_unidentified_deposits.sql
+== frontend container: 647B strings in .next (excluding cache):
+-- 'unidentified-deposits-table':
+/app/frontend/.next/server/chunks/ssr/frontend_04y_z9a._.js
+/app/frontend/.next/static/chunks/0owce1lawfqvj.js
+-- 'unidentified-deposit-row':
+/app/frontend/.next/server/chunks/ssr/frontend_04y_z9a._.js
+/app/frontend/.next/static/chunks/0owce1lawfqvj.js
+-- 'unidentified-deposits-section':
+/app/frontend/.next/server/chunks/ssr/_1tc6pd4._.js
+-- 'classification-unidentified-note':
+/app/frontend/.next/server/chunks/ssr/1oju_app_(app)_org_[slug]_trust-accounting_reconciliation_new_page_tsx_0gjhtfk._.js
+/app/frontend/.next/static/chunks/2vzswwb5uglhu.js
+-- 'Unidentified deposit':
+/app/frontend/.next/server/chunks/ssr/_0xjtsqv._.js
+/app/frontend/.next/server/chunks/ssr/frontend_04y_z9a._.js
+/app/frontend/.next/server/chunks/ssr/_10os-qz._.js
+/app/frontend/.next/server/chunks/ssr/_0mtbz-s._.js
+-- 'Held on the unidentified deposits ledger':
+/app/frontend/.next/server/chunks/ssr/1oju_app_(app)_org_[slug]_trust-accounting_reconciliation_new_page_tsx_0gjhtfk._.js
+/app/frontend/.next/static/chunks/2vzswwb5uglhu.js
+== health: {"groups":["liveness","readiness"],"status":"UP"}  frontend :3001 HTTP 200
+== tenant schemas: tenant_7d218705360b
+ version |              description              | success |        installed_on        
+---------+---------------------------------------+---------+----------------------------
+ 21      | phase92 unidentified deposits         | t       | 2026-11-17 16:23:47.275822
+ 20      | phase92 statement line classification | t       | 2026-11-17 16:23:47.267189
+ 19      | phase92 trust recon breakdown         | t       | 2026-11-17 16:23:47.25886
+ 18      | phase92 trust creditor accounts       | t       | 2026-11-17 16:23:47.238877
+(4 rows)
+
+ trust_accounts | creditor_accounts | trust_txns | statements | recons | unidentified_deposits 
+----------------+-------------------+------------+------------+--------+-----------------------
+              1 |                 2 |          0 |          0 |      0 |                     0
+(1 row)
+
+      table_name       |       column_name       |     data_type     
+-----------------------+-------------------------+-------------------
+ trust_transactions    | unidentified_deposit_id | uuid
+ unidentified_deposits | deposit_transaction_id  | uuid
+ unidentified_deposits | resolved_date           | date
+ unidentified_deposits | status                  | character varying
+(4 rows)
+
+              conname              
+-----------------------------------
+ chk_trust_txn_unidentified_item
+ chk_unidentified_deposit_resolved
+ uq_unidentified_deposit_txn
+(3 rows)
+

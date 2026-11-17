@@ -42,10 +42,10 @@ const TrendAreaChart = dynamic(
   }
 );
 
-/** Slot 1 cashbook, slot 3 client ledgers (ADR-370: colour follows the entity; all slots pinned). */
+/** Slot 1 cashbook, slot 3 trust creditors (ADR-370: colour follows the entity; all slots pinned). */
 const SERIES: ChartSeries[] = [
   { key: "cashbook", label: "Cashbook", slot: 1 },
-  { key: "ledger", label: "Client ledgers", slot: 3 },
+  { key: "ledger", label: "Trust creditors", slot: 3 },
 ];
 
 interface TrustBalanceTrendChartProps {
@@ -56,8 +56,8 @@ interface TrustBalanceTrendChartProps {
 }
 
 /**
- * Trust dashboard balance trend (Phase 90 643A, ADR-372): month-end cashbook vs client-ledger
- * balances for the last 12 SA months, the current month labelled "(to date)" and drawn dashed.
+ * Trust dashboard balance trend (Phase 90 643A, ADR-372): month-end cashbook vs trust-creditor
+ * balances (every trust creditor since 646D) for the last 12 SA months, the current month labelled "(to date)" and drawn dashed.
  * Absent and error states render through ChartCard without loading recharts. An all-zero series
  * is drawn as a flat line: zero balances do not mean "no postings" (a month can net to zero).
  */

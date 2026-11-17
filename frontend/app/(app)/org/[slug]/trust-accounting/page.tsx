@@ -97,7 +97,7 @@ function TrustBalanceHint({
         ) : (
           <AlertTriangle aria-hidden="true" className="text-danger-foreground size-3 shrink-0" />
         )}
-        <span>Client ledgers {formatCurrency(position.clientLedgerTotal, currency)}</span>
+        <span>Trust creditors {formatCurrency(position.creditorBreakdown.total, currency)}</span>
         {balanced ? <span className="sr-only">(agrees with the cashbook)</span> : null}
       </p>
       {balanced ? null : (

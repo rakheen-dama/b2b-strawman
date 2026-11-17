@@ -9,3 +9,5 @@ Date,Description,Reference,Amount,Balance
 24 Mar 2026,"Disbursement, courier fees",DIS-COU-019,-450.00,251050.00
 27 Mar 2026,Interest earned,INT-NDB-0326,195.30,251245.30
 31 Mar 2026,Account maintenance fee,FEE-NDB-0326,-99.00,251146.30
+31 Mar 2026,Fidelity Fund interest transfer,LPFF-NDB-0326,-195.30,250951.00
+31 Mar 2026,Account fee reversal,FEE-REV-0326,99.00,251050.00

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { cleanup, render, screen, within } from "@testing-library/react";
 import { formatCurrency } from "@/lib/format";
-import type { TrustCreditorAccount } from "@/lib/types";
+import type { CreditorLedgerPage, TrustCreditorAccount, TrustTransaction } from "@/lib/types";
 
 // Must mock server-only before importing components that use it
 vi.mock("server-only", () => ({}));
@@ -25,8 +25,10 @@ vi.mock("@/app/(app)/org/[slug]/trust-accounting/actions", () => ({
 
 // ── Mock creditor ledger actions ─────────────────────────────────
 const mockFetchCreditorAccounts = vi.fn();
+const mockFetchCreditorLedgerRows = vi.fn();
 vi.mock("@/app/(app)/org/[slug]/trust-accounting/other-creditors/actions", () => ({
   fetchCreditorAccounts: (...args: unknown[]) => mockFetchCreditorAccounts(...args),
+  fetchCreditorLedgerRows: (...args: unknown[]) => mockFetchCreditorLedgerRows(...args),
 }));
 
 // ── Mock next/navigation ─────────────────────────────────────────
@@ -34,6 +36,8 @@ vi.mock("next/navigation", () => ({
   notFound: () => {
     throw new Error("NEXT_NOT_FOUND");
   },
+  // DataTable calls useRouter() unconditionally (FundLedgerTable)
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }),
 }));
 
 import OtherTrustCreditorsPage from "@/app/(app)/org/[slug]/trust-accounting/other-creditors/page";
@@ -79,9 +83,101 @@ function creditorAccounts(fund: { balance: number; inDebit: boolean }): TrustCre
   ];
 }
 
-async function renderPage() {
+function fundRow(overrides: Partial<TrustTransaction> = {}): TrustTransaction {
+  return {
+    id: "tx-1",
+    trustAccountId: "acc-1",
+    transactionType: "FUND_INTEREST",
+    typeLabel: "Interest received for the Legal Practitioners' Fidelity Fund",
+    direction: "IN",
+    ledger: "NON_CLIENT",
+    amount: 1234.56,
+    clientId: null as unknown as string,
+    matterId: null,
+    creditorAccountId: "ca-fund",
+    investmentId: null,
+    counterpartyClientId: null,
+    invoiceId: null,
+    reference: "INT-OCT",
+    description: "Interest earned",
+    transactionDate: "2026-10-20",
+    status: "RECORDED",
+    postedAt: "2026-10-20T10:00:00Z",
+    approvedBy: null,
+    approvedAt: null,
+    secondApprovedBy: null,
+    secondApprovedAt: null,
+    rejectedBy: null,
+    rejectedAt: null,
+    rejectionReason: null,
+    reversalOf: null,
+    reversedById: null,
+    reversalPending: false,
+    bankStatementLineId: "line-1",
+    recordedBy: "member-1",
+    createdAt: "2026-10-20T10:00:00Z",
+    runningBalance: 1234.56,
+    chargeRecoverable: null,
+    chargeVatAmount: null,
+    ...overrides,
+  };
+}
+
+function ledgerPage(content: TrustTransaction[]): CreditorLedgerPage {
+  return {
+    content,
+    page: {
+      totalElements: content.length,
+      totalPages: content.length > 0 ? 1 : 0,
+      size: 25,
+      number: 0,
+    },
+  };
+}
+
+/** The exit-month worked set, newest first (as the endpoint returns it). */
+const WORKED_SET: TrustTransaction[] = [
+  fundRow({
+    id: "tx-sweep",
+    transactionType: "FUND_SWEEP",
+    typeLabel: "Interest paid to the Legal Practitioners' Fidelity Fund",
+    direction: "OUT",
+    amount: 1119.56,
+    reference: "LPFF-OCT",
+    transactionDate: "2026-10-24",
+    runningBalance: -57.5,
+  }),
+  fundRow({
+    id: "tx-charge-not",
+    transactionType: "BANK_CHARGE",
+    typeLabel: "Bank charge",
+    direction: "OUT",
+    amount: 57.5,
+    reference: "CHG-2",
+    transactionDate: "2026-10-22",
+    runningBalance: 1062.06,
+    chargeRecoverable: false,
+    chargeVatAmount: 7.5,
+  }),
+  fundRow({
+    id: "tx-charge-rec",
+    transactionType: "BANK_CHARGE",
+    typeLabel: "Bank charge",
+    direction: "OUT",
+    amount: 115,
+    reference: "CHG-1",
+    transactionDate: "2026-10-22",
+    runningBalance: 1119.56,
+    chargeRecoverable: true,
+    chargeVatAmount: 15,
+  }),
+  fundRow({ id: "tx-interest" }),
+];
+
+async function renderPage(search: { page?: string } = {}) {
   const result = await OtherTrustCreditorsPage({
     params: Promise.resolve({ slug: "test-org" }),
+    searchParams: Promise.resolve(search),
   });
   render(result);
 }
@@ -103,6 +199,7 @@ describe("Other trust creditors page", () => {
     mockFetchCreditorAccounts.mockResolvedValue(
       creditorAccounts({ balance: 300.25, inDebit: false })
     );
+    mockFetchCreditorLedgerRows.mockResolvedValue(ledgerPage([]));
   });
 
   afterEach(() => cleanup());
@@ -170,5 +267,140 @@ describe("Other trust creditors page", () => {
     await expect(renderPage()).rejects.toThrow("NEXT_NOT_FOUND");
     expect(mockFetchTrustAccounts).not.toHaveBeenCalled();
     expect(mockFetchCreditorAccounts).not.toHaveBeenCalled();
+  });
+  // ── The Fund ledger's rows (647C) ──────────────────────────────
+
+  it("lists the Fund ledger's rows newest first with their running balances", async () => {
+    mockFetchCreditorLedgerRows.mockResolvedValue(
+      ledgerPage([
+        fundRow({
+          id: "tx-pending",
+          transactionType: "CHARGE_REFUND",
+          typeLabel: "Bank charge refunded from the business account",
+          status: "AWAITING_APPROVAL",
+          postedAt: null,
+          runningBalance: null,
+          reference: "REF-PENDING",
+        }),
+        ...WORKED_SET,
+      ])
+    );
+    await renderPage();
+
+    expect(mockFetchCreditorLedgerRows).toHaveBeenCalledWith("ca-fund", { page: 0, size: 25 });
+    const section = screen.getByTestId("fund-ledger-section");
+    expect(
+      within(section).getByText("Legal Practitioners' Fidelity Fund — interest and charges")
+    ).toBeInTheDocument();
+
+    const rows = screen.getAllByTestId("fund-ledger-row");
+    expect(rows.map((r) => within(r).getAllByRole("cell")[1].textContent)).toEqual([
+      "REF-PENDING",
+      "LPFF-OCT",
+      "CHG-2",
+      "CHG-1",
+      "INT-OCT",
+    ]);
+    const balances = screen.getAllByTestId("fund-ledger-balance").map((c) => c.textContent);
+    // formatCurrency emits a non-breaking space; compare the raw text
+    expect(balances).toEqual([
+      "—",
+      formatCurrency(-57.5, "ZAR"),
+      formatCurrency(1062.06, "ZAR"),
+      formatCurrency(1119.56, "ZAR"),
+      formatCurrency(1234.56, "ZAR"),
+    ]);
+    expect(rows[1]).toHaveTextContent("Interest paid to the Legal Practitioners' Fidelity Fund");
+    const table = screen.getByTestId("fund-ledger-table");
+    expect(table).not.toHaveTextContent("FUND_SWEEP");
+    expect(table).not.toHaveTextContent("BANK_CHARGE");
+    expect(table).not.toHaveTextContent("AWAITING_APPROVAL");
+  });
+
+  it("shows a bank charge's recoverable flag and VAT, and nothing for other rows", async () => {
+    mockFetchCreditorLedgerRows.mockResolvedValue(ledgerPage(WORKED_SET));
+    await renderPage();
+
+    const charges = screen.getAllByTestId("fund-ledger-charge");
+    expect(charges).toHaveLength(4);
+    expect(charges[0]).toHaveTextContent("—"); // sweep
+    expect(charges[1].textContent).toBe(`Not recoverable · VAT ${formatCurrency(7.5, "ZAR")}`);
+    expect(charges[2].textContent).toBe(`Recoverable · VAT ${formatCurrency(15, "ZAR")}`);
+    expect(charges[3]).toHaveTextContent("—"); // interest
+  });
+
+  it("shows an empty Fund ledger, and keeps the balances when the rows fail to load", async () => {
+    await renderPage();
+    expect(screen.getByTestId("fund-ledger-empty")).toBeInTheDocument();
+    expect(screen.queryByTestId("fund-ledger-error")).not.toBeInTheDocument();
+
+    cleanup();
+    mockFetchCreditorLedgerRows.mockRejectedValue(new Error("boom"));
+    await renderPage();
+    expect(screen.getByTestId("fund-ledger-error")).toBeInTheDocument();
+    expect(screen.queryByTestId("fund-ledger-table")).not.toBeInTheDocument();
+    expect(screen.getByTestId("creditor-FUND_INTEREST_AND_CHARGES")).toBeInTheDocument();
+    expect(screen.queryByTestId("error-state")).not.toBeInTheDocument();
+  });
+
+  it("says a page past the last has no entries and links back to the first page", async () => {
+    // The ledger has 3 rows on one page; `?page=4` is past the end, so the server returns none.
+    mockFetchCreditorLedgerRows.mockResolvedValue({
+      content: [],
+      page: { totalElements: 3, totalPages: 1, size: 25, number: 4 },
+    });
+    await renderPage({ page: "4" });
+
+    expect(mockFetchCreditorLedgerRows).toHaveBeenCalledWith("ca-fund", { page: 4, size: 25 });
+    const message = screen.getByTestId("fund-ledger-page-out-of-range");
+    expect(message).toHaveTextContent("No entries on this page.");
+    expect(within(message).getByRole("link", { name: "Go to the first page" })).toHaveAttribute(
+      "href",
+      "/org/test-org/trust-accounting/other-creditors?page=0"
+    );
+    expect(screen.queryByTestId("fund-ledger-empty")).not.toBeInTheDocument();
+  });
+
+  it("labels an unposted row with its status, never the raw enum, and keeps Reversed", async () => {
+    mockFetchCreditorLedgerRows.mockResolvedValue(
+      ledgerPage([
+        fundRow({
+          id: "tx-awaiting",
+          transactionType: "CHARGE_REFUND",
+          typeLabel: "Bank charge refunded from the business account",
+          status: "AWAITING_APPROVAL",
+          postedAt: null,
+          runningBalance: null,
+          reference: "REF-PENDING-2",
+        }),
+        fundRow({
+          id: "tx-rejected",
+          transactionType: "CHARGE_REFUND",
+          typeLabel: "Bank charge refunded from the business account",
+          status: "REJECTED",
+          postedAt: null,
+          runningBalance: null,
+          reference: "REF-DECLINED",
+        }),
+        fundRow({ id: "tx-reversed", status: "REVERSED", reference: "INT-REVERSED" }),
+        fundRow({ id: "tx-recorded" }),
+      ])
+    );
+    await renderPage();
+
+    const rows = screen.getAllByTestId("fund-ledger-row");
+    expect(within(rows[0]).getByTestId("fund-ledger-status")).toHaveTextContent(
+      "Awaiting approval"
+    );
+    expect(within(rows[1]).getByTestId("fund-ledger-status")).toHaveTextContent("Rejected");
+    // A posted row (reversed or not) carries no status badge; the reversed one keeps "Reversed".
+    expect(within(rows[2]).queryByTestId("fund-ledger-status")).not.toBeInTheDocument();
+    expect(within(rows[2]).getByText("Reversed")).toBeInTheDocument();
+    expect(within(rows[3]).queryByTestId("fund-ledger-status")).not.toBeInTheDocument();
+
+    const table = screen.getByTestId("fund-ledger-table");
+    expect(table).not.toHaveTextContent("AWAITING_APPROVAL");
+    expect(table).not.toHaveTextContent("AWAITING APPROVAL");
+    expect(table).not.toHaveTextContent("REJECTED");
   });
 });

@@ -10,3 +10,5 @@ Date,Description,Amount,Balance,Reference
 25/03/2026,Interest earned,156.75,223956.75,INT-MAR-2026
 28/03/2026,Bank charges,-85.50,223871.25,CHG-MAR-2026
 31/03/2026,EFT from Pillay & Co,18000.00,241871.25,REF-PC-004
+31/03/2026,LPFF interest transfer,-156.75,241714.50,LPFF-MAR-2026
+31/03/2026,Bank charges refund,85.50,241800.00,CHG-REF-MAR

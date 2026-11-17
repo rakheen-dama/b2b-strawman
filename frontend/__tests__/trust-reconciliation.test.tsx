@@ -1007,6 +1007,55 @@ describe("Trust Reconciliation", () => {
       expect(await screen.findByTestId("charge-vat-input")).toBeInTheDocument();
     });
 
+    it("pre-selects the parser's suggestion and shows its fields, without recording (647C)", async () => {
+      const onRecord = vi.fn().mockResolvedValue({ success: true });
+      renderPane(
+        [makeBankLine({ id: "line-dr", amount: -57.5, suggestedClassification: "BANK_CHARGE" })],
+        { onRecord }
+      );
+      await openRecordDialog("line-dr");
+
+      expect(screen.getByRole("radio", { name: "Bank charge" })).toBeChecked();
+      expect(screen.getByRole("radio", { name: FUND_SWEEP })).not.toBeChecked();
+      expect(await screen.findByTestId("charge-vat-input")).toBeInTheDocument();
+      expect(screen.getByTestId("classification-suggested-note")).toBeInTheDocument();
+      expect(onRecord).not.toHaveBeenCalled();
+
+      // The firm may choose otherwise: the note goes with the suggestion
+      fireEvent.click(screen.getByRole("radio", { name: FUND_SWEEP }));
+      expect(screen.getByRole("radio", { name: FUND_SWEEP })).toBeChecked();
+      expect(screen.queryByTestId("classification-suggested-note")).not.toBeInTheDocument();
+      expect(onRecord).not.toHaveBeenCalled();
+    });
+
+    it("pre-selects nothing without a suggestion, or for one the line's sign does not allow (647C)", async () => {
+      const noneChecked = () =>
+        screen.getAllByRole("radio").every((r) => r.getAttribute("aria-checked") !== "true");
+
+      renderPane([
+        makeBankLine({ id: "line-dr", amount: -57.5, suggestedClassification: "FUND_INTEREST" }),
+      ]);
+      await openRecordDialog("line-dr");
+      expect(noneChecked()).toBe(true);
+      expect(screen.queryByTestId("classification-suggested-note")).not.toBeInTheDocument();
+      cleanup();
+
+      renderPane([
+        makeBankLine({
+          id: "line-cr",
+          amount: 400,
+          suggestedClassification: "INVESTMENT_INTEREST",
+        }),
+      ]);
+      await openRecordDialog("line-cr");
+      expect(noneChecked()).toBe(true);
+      cleanup();
+
+      renderPane([makeBankLine({ id: "line-cr", amount: 1234.56, suggestedClassification: null })]);
+      await openRecordDialog("line-cr");
+      expect(noneChecked()).toBe(true);
+    });
+
     it("asks a bank charge for recoverable and VAT, and refuses VAT at or above the charge", async () => {
       const user = userEvent.setup({ pointerEventsCheck: 0 });
       const onRecord = vi.fn().mockResolvedValue({ success: true });

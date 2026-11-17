@@ -22,6 +22,7 @@ import {
 import { fetchTrustAccounts } from "@/app/(app)/org/[slug]/trust-accounting/actions";
 import { fetchTransactions } from "@/app/(app)/org/[slug]/trust-accounting/transactions/actions";
 import { formatCurrency } from "@/lib/format";
+import { todayInSA } from "@b2mash/shared/date";
 import type {
   TrustAccount,
   BankStatementResponse,
@@ -404,7 +405,9 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
           <CardHeader>
             <CardTitle>Select Trust Account & Period</CardTitle>
             <CardDescription>
-              Choose the trust account and the statement period end date
+              Choose the trust account and the period end. The period end is the firm&apos;s choice
+              and every figure is calculated as at that date; the bank statement must have no line
+              after the period end.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -452,6 +455,7 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
                       setPeriodEnd(e.target.value);
                       resetFromStep2();
                     }}
+                    max={todayInSA()}
                     className="w-48"
                     data-testid="period-end-input"
                   />
@@ -609,10 +613,10 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
                 </div>
                 <div>
                   <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                    Client Ledger Total
+                    Trust creditors
                   </p>
                   <p className="mt-1 font-mono text-lg text-slate-950 tabular-nums dark:text-slate-50">
-                    {formatCurrency(reconciliation.clientLedgerTotal, DEFAULT_CURRENCY)}
+                    {formatCurrency(reconciliation.creditorBreakdown.total, DEFAULT_CURRENCY)}
                   </p>
                 </div>
               </div>

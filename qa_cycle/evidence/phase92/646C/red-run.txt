@@ -1,0 +1,70 @@
+# 646C red runs on HEAD 59691960e (before any production change)
+
+Test-side changes present for the run: the R1-R5 cases in TrustReconciliationServiceReconciliationTest
+(every test moved to an isolated account), the new TrustPositionAsAtIntegrationTest (R6, R7 through
+the existing TrustReconciliationService API), the harness oracle's OUTSTANDING_SQL dated by the
+statement line's date (+ fund/unidentified terms), and the R8/R9 cases in trust-reconciliation.test.tsx.
+No file under backend/src/main or frontend/components|app|lib was changed.
+
+## R1-R5 (BE) — TrustReconciliationServiceReconciliationTest
+```
+[ERROR] Tests run: 11, Failures: 5, Errors: 0, Skipped: 0, Time elapsed: 26.30 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationServiceReconciliationTest
+[ERROR] ...TrustReconciliationServiceReconciliationTest.createReconciliation_refusedWithoutABankStatement <<< FAILURE!
+Expecting code to raise a throwable.
+[ERROR] ...TrustReconciliationServiceReconciliationTest.createReconciliation_refusedWhenTheStatementHasALineAfterThePeriodEnd <<< FAILURE!
+Expecting code to raise a throwable.
+[ERROR] ...TrustReconciliationServiceReconciliationTest.createReconciliation_refusedWhenAnotherStatementCoversTheGap <<< FAILURE!
+Expecting code to raise a throwable.
+[ERROR] ...TrustReconciliationServiceReconciliationTest.createReconciliation_refusedForAFuturePeriodEnd <<< FAILURE!
+Expecting code to raise a throwable.
+[ERROR] ...TrustReconciliationServiceReconciliationTest.calculateReconciliation_statementEndingBeforeTheMonthEnd_reconcilesAsAtThePeriodEnd:447 [outstanding]
+expected: 0.00
+ but was: 4000.00
+```
+
+## R6 / R7 (BE) — TrustPositionAsAtIntegrationTest (harness-backed)
+```
+[ERROR] Tests run: 2, Failures: 2, Errors: 0, Skipped: 0, Time elapsed: 1.004 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustPositionAsAtIntegrationTest
+[ERROR] ...TrustPositionAsAtIntegrationTest.path22_paymentMatchedToANextMonthLine_isOutstandingAtTheFirstMonthEndOnly <<< FAILURE!
+[March o/s payments (its line is dated 2 April)]
+expected: 400.00
+ but was: 0
+[ERROR] ...TrustPositionAsAtIntegrationTest.reversedMatchedDeposit_contraIsAnOutstandingPayment <<< FAILURE!
+[o/s payments (the unmatched contra)]
+expected: 1000.00
+ but was: 0
+[ERROR] Tests run: 13, Failures: 7, Errors: 0, Skipped: 0
+[INFO] BUILD FAILURE
+```
+
+## R8 / R9 (FE) — vitest __tests__/trust-reconciliation.test.tsx (production code unchanged)
+```
+     x shows both comparisons, the creditor breakdown and the line totals as at the period end
+     x keeps Complete enabled when balanced even with unresolved lines (gate lands in 649C)
+     x labels an unmatched transaction from its typeLabel, not the raw type
+      Tests  3 failed | 10 passed (13)
+
+R8:  Expected element to have text content: /As at 31 Mar 2026/
+     Received: Three-Way Balance CheckBank BalanceR 101 000,00Cashbook Balance...Client Ledger Total...
+R8:  Unable to find an element by: [data-testid="unresolved-line-count"]
+R9:  Expected element to have text content: Fee transfer
+     Received: FT-00101 Mar 2026 · FEE TRANSFERDeposit from Smith & CoR 15 000,00
+```
+
+R1  createReconciliation accepts a null bank statement (no refusal).
+R2  a statement with a line dated 2 April is accepted for a 31 March period end.
+R3  another statement of the account with a 20 March line is ignored when reconciling a statement
+    ending 5 March to 31 March.
+R4  a period end of tomorrow (SA date) is accepted.
+R5  HEAD computes every term "as at now": the deposit dated 5 April is a March outstanding deposit
+    (R4 000) and in March's cashbook — the reconciliation shows balanced only because the April
+    deposit is added to both sides, with March figures that were never true.
+R6  path 22: HEAD dates a match by when it was made — the payment matched to a 2 April line is not
+    outstanding as at 31 March; March's adjusted bank R1 000 differs from the cashbook R600.
+R7  649B F4: the reversed deposit is REVERSED (status filter drops it) and its contra is type REVERSAL
+    (not in the payment type list): outstanding = 0, adjusted bank R1 000 vs cashbook R0.
+R8  the split pane renders only the "Three-Way Balance Check" — no as-at heading, no comparisons,
+    no creditor breakdown, no unresolved-line count or excluded total.
+    (Ruling O4: unresolved lines do not gate Complete in 646C; the second R8 case asserts the
+    count is shown and Complete stays enabled when balanced — red only because the count is absent.)
+R9  F-646E-1: ReconciliationSplitPane prints tx.transactionType.replace(/_/g, " ") ("FEE TRANSFER").

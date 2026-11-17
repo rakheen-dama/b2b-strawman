@@ -43,6 +43,58 @@ function statusLabel(status: BankStatementLineMatchStatus): string {
   }
 }
 
+function SummaryRow({
+  label,
+  value,
+  currency,
+  muted = false,
+}: {
+  label: string;
+  value: number;
+  currency: string;
+  muted?: boolean;
+}) {
+  return (
+    <div className="flex items-baseline justify-between gap-4 text-sm">
+      <dt
+        className={
+          muted ? "text-slate-500 dark:text-slate-400" : "text-slate-700 dark:text-slate-300"
+        }
+      >
+        {label}
+      </dt>
+      <dd className="font-mono text-slate-950 tabular-nums dark:text-slate-50">
+        {formatCurrency(value, currency)}
+      </dd>
+    </div>
+  );
+}
+
+function DifferenceRow({
+  value,
+  currency,
+  testId,
+}: {
+  value: number;
+  currency: string;
+  testId: string;
+}) {
+  const agrees = value === 0;
+  return (
+    <div className="flex items-baseline justify-between gap-4 border-t border-slate-200 pt-1 text-sm font-medium dark:border-slate-700">
+      <dt className="text-slate-950 dark:text-slate-50">Difference</dt>
+      <dd
+        className={`font-mono tabular-nums ${
+          agrees ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
+        }`}
+        data-testid={testId}
+      >
+        {formatCurrency(value, currency)}
+      </dd>
+    </div>
+  );
+}
+
 // ── Props ─────────────────────────────────────────────────────────
 
 interface ReconciliationSplitPaneProps {
@@ -300,8 +352,7 @@ export function ReconciliationSplitPane({
                           {tx.reference}
                         </p>
                         <p className="text-xs text-slate-500 dark:text-slate-400">
-                          {formatLocalDate(tx.transactionDate)} &middot;{" "}
-                          {tx.transactionType.replace(/_/g, " ")}
+                          {formatLocalDate(tx.transactionDate)} &middot; {tx.typeLabel}
                         </p>
                         {tx.description && (
                           <p className="mt-0.5 truncate text-xs text-slate-500 dark:text-slate-400">
@@ -336,100 +387,195 @@ export function ReconciliationSplitPane({
         </Card>
       </div>
 
-      {/* Three-Way Balance Summary */}
       {reconciliation && (
-        <Card data-testid="balance-summary">
-          <CardHeader>
-            <CardTitle className="text-base">Three-Way Balance Check</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-              <div>
-                <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                  Bank Balance
-                </p>
-                <p className="mt-1 font-mono text-lg text-slate-950 tabular-nums dark:text-slate-50">
-                  {formatCurrency(reconciliation.bankBalance, currency)}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                  Cashbook Balance
-                </p>
-                <p className="mt-1 font-mono text-lg text-slate-950 tabular-nums dark:text-slate-50">
-                  {formatCurrency(reconciliation.cashbookBalance, currency)}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                  Client Ledger Total
-                </p>
-                <p className="mt-1 font-mono text-lg text-slate-950 tabular-nums dark:text-slate-50">
-                  {formatCurrency(reconciliation.clientLedgerTotal, currency)}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                  Outstanding Deposits
-                </p>
-                <p className="mt-1 font-mono text-sm text-slate-700 tabular-nums dark:text-slate-300">
-                  {formatCurrency(reconciliation.outstandingDeposits, currency)}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                  Outstanding Payments
-                </p>
-                <p className="mt-1 font-mono text-sm text-slate-700 tabular-nums dark:text-slate-300">
-                  {formatCurrency(reconciliation.outstandingPayments, currency)}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                  Adjusted Bank Balance
-                </p>
-                <p
-                  className={`mt-1 font-mono text-lg tabular-nums ${
-                    reconciliation.isBalanced
-                      ? "text-green-600 dark:text-green-400"
-                      : "text-red-600 dark:text-red-400"
-                  }`}
-                >
-                  {formatCurrency(reconciliation.adjustedBankBalance, currency)}
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-4 flex items-center justify-between border-t border-slate-200 pt-4 dark:border-slate-700">
-              <div className="flex items-center gap-2">
-                {reconciliation.isBalanced ? (
-                  <>
-                    <CheckCircle2 className="size-5 text-green-600 dark:text-green-400" />
-                    <span className="text-sm font-medium text-green-600 dark:text-green-400">
-                      Reconciliation is balanced
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <XCircle className="size-5 text-red-600 dark:text-red-400" />
-                    <span className="text-sm font-medium text-red-600 dark:text-red-400">
-                      Reconciliation is not balanced
-                    </span>
-                  </>
-                )}
-              </div>
-              <Button
-                type="button"
-                onClick={onComplete}
-                disabled={!reconciliation.isBalanced || isCompleting}
-                data-testid="complete-reconciliation-btn"
-              >
-                {isCompleting ? "Completing..." : "Complete Reconciliation"}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        <ReconciliationSummary
+          reconciliation={reconciliation}
+          currency={currency}
+          onComplete={onComplete}
+          isCompleting={isCompleting}
+        />
       )}
     </div>
+  );
+}
+
+/** The trust equation as at the period end: two comparisons and the creditor breakdown (646C). */
+function ReconciliationSummary({
+  reconciliation,
+  currency,
+  onComplete,
+  isCompleting,
+}: {
+  reconciliation: TrustReconciliationResponse;
+  currency: string;
+  onComplete: () => Promise<void>;
+  isCompleting: boolean;
+}) {
+  const breakdown = reconciliation.creditorBreakdown;
+  return (
+    <Card data-testid="balance-summary">
+      <CardHeader>
+        <CardTitle className="text-base">
+          As at {formatLocalDate(reconciliation.periodEnd)}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <section data-testid="comparison-bank-cashbook">
+            <h3 className="text-sm font-medium text-slate-950 dark:text-slate-50">
+              Bank and cashbook
+            </h3>
+            <dl className="mt-2 space-y-1">
+              <SummaryRow
+                label="Bank balance"
+                value={reconciliation.bankBalance}
+                currency={currency}
+              />
+              <SummaryRow
+                label="+ Outstanding deposits"
+                value={reconciliation.outstandingDeposits}
+                currency={currency}
+                muted
+              />
+              <SummaryRow
+                label="− Outstanding payments"
+                value={reconciliation.outstandingPayments}
+                currency={currency}
+                muted
+              />
+              <SummaryRow
+                label="= Adjusted bank balance"
+                value={reconciliation.adjustedBankBalance}
+                currency={currency}
+              />
+              <SummaryRow
+                label="Cashbook"
+                value={reconciliation.cashbookBalance}
+                currency={currency}
+              />
+              <DifferenceRow
+                value={reconciliation.bankToCashbookDifference}
+                currency={currency}
+                testId="bank-to-cashbook-difference"
+              />
+            </dl>
+          </section>
+
+          <section data-testid="comparison-cashbook-creditors">
+            <h3 className="text-sm font-medium text-slate-950 dark:text-slate-50">
+              Cashbook and trust creditors
+            </h3>
+            <dl className="mt-2 space-y-1">
+              <SummaryRow
+                label="Cashbook"
+                value={reconciliation.cashbookBalance}
+                currency={currency}
+              />
+              <SummaryRow label="Trust creditors" value={breakdown.total} currency={currency} />
+              <DifferenceRow
+                value={reconciliation.cashbookToCreditorsDifference}
+                currency={currency}
+                testId="cashbook-to-creditors-difference"
+              />
+            </dl>
+          </section>
+        </div>
+
+        <section
+          data-testid="creditor-breakdown"
+          className="border-t border-slate-200 pt-4 dark:border-slate-700"
+        >
+          <h3 className="text-sm font-medium text-slate-950 dark:text-slate-50">Trust creditors</h3>
+          <dl className="mt-2 space-y-1">
+            <SummaryRow
+              label="Client ledgers"
+              value={breakdown.clientLedgers}
+              currency={currency}
+            />
+            {breakdown.investmentCreditors !== 0 && (
+              <SummaryRow
+                label="Investment creditors (section 86(4))"
+                value={breakdown.investmentCreditors}
+                currency={currency}
+              />
+            )}
+            <SummaryRow
+              label="Legal Practitioners' Fidelity Fund — interest and charges"
+              value={breakdown.fundInterestAndCharges}
+              currency={currency}
+            />
+            <SummaryRow
+              label="Unidentified deposits"
+              value={breakdown.unidentifiedDeposits}
+              currency={currency}
+            />
+            {breakdown.interAccount !== 0 && (
+              <SummaryRow
+                label={
+                  breakdown.interAccount < 0
+                    ? "Placed in section 86(3) investment accounts"
+                    : "Held for the firm's trust creditors"
+                }
+                value={breakdown.interAccount}
+                currency={currency}
+              />
+            )}
+            {breakdown.otherNonClient !== 0 && (
+              <SummaryRow
+                label="Other non-client trust creditors"
+                value={breakdown.otherNonClient}
+                currency={currency}
+              />
+            )}
+          </dl>
+        </section>
+
+        <section className="space-y-1 border-t border-slate-200 pt-4 text-sm dark:border-slate-700">
+          <p className="text-slate-700 dark:text-slate-300" data-testid="unresolved-line-count">
+            {reconciliation.unresolvedLineCount === 1
+              ? "1 statement line is neither matched nor excluded"
+              : `${reconciliation.unresolvedLineCount} statement lines are neither matched nor excluded`}
+          </p>
+          <p className="text-slate-700 dark:text-slate-300" data-testid="excluded-lines-total">
+            Excluded statement lines total{" "}
+            <span className="font-mono tabular-nums">
+              {formatCurrency(reconciliation.excludedLinesTotal, currency)}
+            </span>
+            . An excluded line adjusts nothing: excluding a real bank movement leaves its amount as
+            the difference between the bank and the cashbook.
+          </p>
+        </section>
+
+        <div className="flex items-center justify-between border-t border-slate-200 pt-4 dark:border-slate-700">
+          <div className="flex items-center gap-2">
+            {reconciliation.isBalanced ? (
+              <>
+                <CheckCircle2 className="size-5 text-green-600 dark:text-green-400" />
+                <span className="text-sm font-medium text-green-600 dark:text-green-400">
+                  Reconciliation is balanced
+                </span>
+              </>
+            ) : (
+              <>
+                <XCircle className="size-5 text-red-600 dark:text-red-400" />
+                <span className="text-sm font-medium text-red-600 dark:text-red-400">
+                  Reconciliation is not balanced
+                </span>
+              </>
+            )}
+          </div>
+          {/* 646C (ruling O4): Complete follows the backend's isBalanced check only. The
+                unresolved-line gate (G4) lands in 649C together with its backend enforcement. */}
+          <Button
+            type="button"
+            onClick={onComplete}
+            disabled={!reconciliation.isBalanced || isCompleting}
+            data-testid="complete-reconciliation-btn"
+          >
+            {isCompleting ? "Completing..." : "Complete Reconciliation"}
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

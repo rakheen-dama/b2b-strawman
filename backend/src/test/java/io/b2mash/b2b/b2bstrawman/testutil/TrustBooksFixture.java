@@ -626,6 +626,130 @@ public final class TrustBooksFixture {
       return lineId;
     }
 
+    /**
+     * The account's non-client creditor account of {@code accountType} (646B opens one {@code
+     * FUND_INTEREST_AND_CHARGES} and one {@code UNIDENTIFIED_DEPOSITS} account per trust account).
+     */
+    public UUID creditorAccount(UUID account, String accountType) {
+      return jdbc.queryForObject(
+          """
+          SELECT id FROM "%s".trust_creditor_accounts WHERE trust_account_id = ? AND account_type = ?
+          """
+              .formatted(schema),
+          UUID.class,
+          account,
+          accountType);
+    }
+
+    /**
+     * A creditor account of a type no service opens (646C: the {@code otherNonClient} term). There
+     * is no CHECK on {@code account_type} (ADR-376). A row on it unbalances the harness oracle,
+     * which has no such term — use it only in a tenant that never runs {@code assertFirmBalanced}.
+     */
+    public UUID openCreditorAccountDirect(UUID account, String accountType) {
+      var id = UUID.randomUUID();
+      jdbc.update(
+          """
+          INSERT INTO "%s".trust_creditor_accounts (id, trust_account_id, account_type, name)
+          VALUES (?, ?, ?, ?)
+          """
+              .formatted(schema),
+          id,
+          account,
+          accountType,
+          "Trust books " + accountType);
+      return id;
+    }
+
+    /**
+     * A {@code trust_investments} row on {@code account} for {@code client} (646C: rows of the
+     * {@code CLIENT_INVESTMENT} and {@code INTER_ACCOUNT} ledgers need an {@code investment_id}).
+     * {@code anchorTransactionId} satisfies the NOT NULL {@code deposit_transaction_id} FK.
+     */
+    public UUID investmentDirect(UUID account, Client client, UUID anchorTransactionId) {
+      var id = UUID.randomUUID();
+      jdbc.update(
+          """
+          INSERT INTO "%s".trust_investments (id, trust_account_id, customer_id, institution,
+              account_number, principal, interest_rate, deposit_date, deposit_transaction_id,
+              investment_basis)
+          VALUES (?, ?, ?, 'Trust Books Bank', ?, 1000.00, 0.0500, ?, ?, 'FIRM_DISCRETION')
+          """
+              .formatted(schema),
+          id,
+          account,
+          client.id(),
+          reference("INVACC"),
+          POSTING_DATE,
+          anchorTransactionId);
+      return id;
+    }
+
+    /**
+     * A posted {@code NON_CLIENT} row of {@code type} dated {@code date}, on the account's creditor
+     * account of the type's registry creditor type (646C). Written straight to the table: {@code
+     * TrustTransaction} has no setter for {@code creditor_account_id} yet (646B found.md).
+     */
+    public UUID postNonClientDirect(UUID account, String type, String amount, LocalDate date) {
+      var creditorType = TrustTransactionType.of(type).creditorAccountType();
+      assertThat(creditorType).as("%s has a registry creditor account type", type).isNotNull();
+      return postLedgerRowDirect(
+          account,
+          type,
+          amount,
+          date,
+          null,
+          null,
+          creditorAccount(account, creditorType.name()),
+          null);
+    }
+
+    /**
+     * A posted row of {@code type} dated {@code date} with its registry effects, written straight
+     * to the table (646C; keep every direct write here). The caller supplies the ledger target
+     * {@code chk_trust_txn_ledger_target} needs: {@code CLIENT} → client; {@code CLIENT_INVESTMENT}
+     * → client + investment; {@code NON_CLIENT} → creditor account; {@code INTER_ACCOUNT} →
+     * investment. Status {@code RECORDED}, {@code posted_at} set ({@code chk_trust_txn_posting}).
+     */
+    public UUID postLedgerRowDirect(
+        UUID account,
+        String type,
+        String amount,
+        LocalDate date,
+        UUID customerId,
+        UUID projectId,
+        UUID creditorAccountId,
+        UUID investmentId) {
+      var value = new BigDecimal(amount);
+      var effect = TrustTransactionType.of(type).effectFor(value);
+      var id = UUID.randomUUID();
+      jdbc.update(
+          """
+          INSERT INTO "%s".trust_transactions (id, trust_account_id, transaction_type, amount,
+              customer_id, project_id, creditor_account_id, investment_id, reference, description,
+              transaction_date, status, recorded_by, ledger, cashbook_effect, ledger_effect,
+              posted_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'trust books direct ledger row', ?, 'RECORDED', ?,
+              ?, ?, ?, now())
+          """
+              .formatted(schema),
+          id,
+          account,
+          type,
+          value,
+          customerId,
+          projectId,
+          creditorAccountId,
+          investmentId,
+          reference(type.substring(0, 3)),
+          date,
+          memberId,
+          effect.ledger().name(),
+          effect.cashbookEffect(),
+          effect.ledgerEffect());
+      return id;
+    }
+
     // --- reads and harness assertions -------------------------------------------------------
 
     public String statusOf(UUID transactionId) {
@@ -671,6 +795,11 @@ public final class TrustBooksFixture {
     /** {@link TrustBooksHarness#assertServicesAgree} as at today, as the maker. */
     public void assertServicesAgree(UUID account) {
       as(memberId, () -> harness.assertServicesAgree(account, today()));
+    }
+
+    /** {@link TrustBooksHarness#assertServicesAgree} as at {@code asAt}, as the maker (646C). */
+    public void assertServicesAgree(UUID account, LocalDate asAt) {
+      as(memberId, () -> harness.assertServicesAgree(account, asAt));
     }
 
     /** {@link TrustBooksHarness#assertFirmBalanced} as at today, as the maker. */

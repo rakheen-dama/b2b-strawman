@@ -267,17 +267,46 @@ export interface BankStatementResponse {
 
 export type TrustReconciliationStatus = "DRAFT" | "COMPLETED";
 
+/**
+ * The creditor side of a reconciliation as at its period end — mirrors backend
+ * `TrustReconciliationService.CreditorBreakdown` (646C; key order = Java component order).
+ */
+export interface TrustCreditorBreakdown {
+  clientLedgers: number;
+  investmentCreditors: number;
+  fundInterestAndCharges: number;
+  unidentifiedDeposits: number;
+  otherNonClient: number;
+  interAccount: number;
+  total: number;
+}
+
+/**
+ * Mirrors backend `TrustReconciliationService.TrustReconciliationResponse` (646C; key order =
+ * Java component order). Every figure is as at `periodEnd`.
+ */
 export interface TrustReconciliationResponse {
   id: string;
   trustAccountId: string;
   periodEnd: string;
-  bankStatementId: string;
+  bankStatementId: string | null;
   bankBalance: number;
-  cashbookBalance: number;
-  clientLedgerTotal: number;
   outstandingDeposits: number;
   outstandingPayments: number;
   adjustedBankBalance: number;
+  cashbookBalance: number;
+  clientLedgerTotal: number;
+  creditorBreakdown: TrustCreditorBreakdown;
+  /** adjusted bank − cashbook (EQ-1) */
+  bankToCashbookDifference: number;
+  /** cashbook − trust creditors (EQ-2) */
+  cashbookToCreditorsDifference: number;
+  /** adjusted bank − trust creditors */
+  difference: number;
+  /** signed total of the statement's excluded lines (adjusts nothing) */
+  excludedLinesTotal: number;
+  /** statement lines neither matched nor excluded */
+  unresolvedLineCount: number;
   isBalanced: boolean;
   status: TrustReconciliationStatus;
   completedBy: string | null;

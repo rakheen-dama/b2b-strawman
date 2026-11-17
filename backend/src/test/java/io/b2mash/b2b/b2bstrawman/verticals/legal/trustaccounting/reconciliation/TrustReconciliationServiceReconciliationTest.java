@@ -19,6 +19,7 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -54,8 +55,9 @@ class TrustReconciliationServiceReconciliationTest {
   @Autowired private TrustReconciliationService reconciliationService;
   @Autowired private TrustReconciliationRepository trustReconciliationRepository;
 
+  @Autowired private Clock clock;
+
   private String tenantSchema;
-  private UUID trustAccountId;
   private String customerId;
 
   /** Counter to generate unique account numbers for isolated trust accounts. */
@@ -80,40 +82,17 @@ class TrustReconciliationServiceReconciliationTest {
                       orgSettingsRepository.save(settings);
                     }));
 
-    // Create a trust account
-    var ownerJwt = TestJwtFactory.ownerJwt(ORG_ID, "user_rcalc_owner");
-    var accountResult =
-        mockMvc
-            .perform(
-                post("/api/trust-accounts")
-                    .with(ownerJwt)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "accountName": "Recon Calc Test Trust Account",
-                          "bankName": "First National Bank",
-                          "branchCode": "250655",
-                          "accountNumber": "62000000002",
-                          "accountType": "GENERAL",
-                          "isPrimary": false,
-                          "requireDualApproval": false,
-                          "openedDate": "2026-01-15"
-                        }
-                        """))
-            .andExpect(status().isCreated())
-            .andReturn();
-    trustAccountId = UUID.fromString(TestEntityHelper.extractId(accountResult));
-
     // Create a customer for deposits
+    var ownerJwt = TestJwtFactory.ownerJwt(ORG_ID, "user_rcalc_owner");
     customerId =
         TestEntityHelper.createCustomer(
             mockMvc, ownerJwt, "Recon Calc Test Customer", "rcalc_cust@test.com");
   }
 
   /**
-   * Creates a fresh trust account isolated from other tests, ensuring deterministic reconciliation
-   * state.
+   * Creates a fresh trust account isolated from other tests (646C: every test — the period rules
+   * look at every statement of the account, so a shared account's statements would refuse each
+   * other's reconciliations).
    */
   private UUID createIsolatedTrustAccount() throws Exception {
     isolatedAccountCounter++;
@@ -170,12 +149,14 @@ class TrustReconciliationServiceReconciliationTest {
   }
 
   private String importStatementForAccount(UUID accountId, String csv) throws Exception {
+    return importStatementForAccount(
+        accountId, "recon-calc-test-" + System.nanoTime() + ".csv", csv);
+  }
+
+  private String importStatementForAccount(UUID accountId, String fileName, String csv)
+      throws Exception {
     var csvFile =
-        new MockMultipartFile(
-            "file",
-            "recon-calc-test-" + System.nanoTime() + ".csv",
-            "text/csv",
-            csv.getBytes(StandardCharsets.UTF_8));
+        new MockMultipartFile("file", fileName, "text/csv", csv.getBytes(StandardCharsets.UTF_8));
 
     var result =
         mockMvc
@@ -188,85 +169,54 @@ class TrustReconciliationServiceReconciliationTest {
     return JsonPath.read(result.getResponse().getContentAsString(), "$.id").toString();
   }
 
-  private String createDeposit(String reference, String amount, String date) throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/api/trust-accounts/" + trustAccountId + "/transactions/deposit")
-                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rcalc_owner"))
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clientId": "%s",
-                          "matterId": "%s",
-                          "amount": %s,
-                          "reference": "%s",
-                          "description": "Test deposit",
-                          "transactionDate": "%s"
-                        }
-                        """
-                            .formatted(
-                                customerId, trustMatterOf(customerId), amount, reference, date)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.id").toString();
+  private TrustReconciliationService.TrustReconciliationResponse create(
+      UUID accountId, LocalDate periodEnd, String statementId) {
+    return ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .call(
+            () ->
+                reconciliationService.createReconciliation(
+                    accountId,
+                    periodEnd,
+                    statementId == null ? null : UUID.fromString(statementId)));
   }
 
-  private String createPayment(String reference, String amount, String date) throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/api/trust-accounts/" + trustAccountId + "/transactions/payment")
-                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rcalc_owner"))
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clientId": "%s",
-                          "matterId": "%s",
-                          "amount": %s,
-                          "reference": "%s",
-                          "description": "Test payment",
-                          "transactionDate": "%s"
-                        }
-                        """
-                            .formatted(
-                                customerId, trustMatterOf(customerId), amount, reference, date)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.id").toString();
+  private TrustReconciliationService.TrustReconciliationResponse calculate(UUID reconciliationId) {
+    return ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .call(() -> reconciliationService.calculateReconciliation(reconciliationId));
   }
 
-  private String importStatement(String csv) throws Exception {
-    var csvFile =
-        new MockMultipartFile(
-            "file",
-            "recon-calc-test-" + System.nanoTime() + ".csv",
-            "text/csv",
-            csv.getBytes(StandardCharsets.UTF_8));
+  private void autoMatch(String statementId) {
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .run(() -> reconciliationService.autoMatchStatement(UUID.fromString(statementId)));
+  }
 
-    var result =
-        mockMvc
-            .perform(
-                multipart("/api/trust-accounts/{accountId}/bank-statements", trustAccountId)
-                    .file(csvFile)
-                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rcalc_owner")))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.id").toString();
+  /**
+   * {@code createReconciliation} is refused with a 400 ProblemDetail {@code title}/{@code detail}.
+   */
+  private void assertCreateRefused(
+      UUID accountId, LocalDate periodEnd, String statementId, String title, String detail) {
+    assertThatThrownBy(() -> create(accountId, periodEnd, statementId))
+        .isInstanceOfSatisfying(
+            InvalidStateException.class,
+            e -> {
+              assertThat(e.getBody().getStatus()).isEqualTo(400);
+              assertThat(e.getBody().getTitle()).isEqualTo(title);
+              assertThat(e.getBody().getDetail()).isEqualTo(detail);
+            });
   }
 
   // --- Task 444.9: Reconciliation Calculation Tests ---
 
   @Test
   void calculateReconciliation_populatesAllBalanceFields() throws Exception {
+    UUID accountId = createIsolatedTrustAccount();
     // Create a deposit (will appear as unmatched cashbook entry)
-    createDeposit("DEP-CALC-001", "50000.00", "2026-03-01");
+    createDepositForAccount(accountId, "DEP-CALC-001", "50000.00", "2026-03-01");
 
     // Import a bank statement with closing balance of 50000
     var statementId =
-        importStatement(
+        importStatementForAccount(
+            accountId,
             """
             FNB Trust Account Statement - Account 62000000002
             Date,Description,Amount,Balance,Reference
@@ -275,20 +225,11 @@ class TrustReconciliationServiceReconciliationTest {
             """);
 
     // Auto-match to link the deposit to the bank statement line
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .run(() -> reconciliationService.autoMatchStatement(UUID.fromString(statementId)));
+    autoMatch(statementId);
 
     // Create a reconciliation and calculate
-    var reconResponse =
-        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-            .call(
-                () ->
-                    reconciliationService.createReconciliation(
-                        trustAccountId, LocalDate.of(2026, 3, 31), UUID.fromString(statementId)));
-
-    var calculated =
-        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-            .call(() -> reconciliationService.calculateReconciliation(reconResponse.id()));
+    var reconResponse = create(accountId, LocalDate.of(2026, 3, 31), statementId);
+    var calculated = calculate(reconResponse.id());
 
     assertThat(calculated.bankBalance()).isEqualByComparingTo(new BigDecimal("50000.00"));
     assertThat(calculated.cashbookBalance()).isNotNull();
@@ -318,21 +259,10 @@ class TrustReconciliationServiceReconciliationTest {
             """);
 
     // Auto-match the deposit to the bank statement line (eliminates outstanding items)
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .run(() -> reconciliationService.autoMatchStatement(UUID.fromString(statementId)));
+    autoMatch(statementId);
 
-    var reconResponse =
-        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-            .call(
-                () ->
-                    reconciliationService.createReconciliation(
-                        isolatedAccountId,
-                        LocalDate.of(2026, 3, 31),
-                        UUID.fromString(statementId)));
-
-    var calculated =
-        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-            .call(() -> reconciliationService.calculateReconciliation(reconResponse.id()));
+    var reconResponse = create(isolatedAccountId, LocalDate.of(2026, 3, 31), statementId);
+    var calculated = calculate(reconResponse.id());
 
     // All three values must agree for isBalanced to be true:
     // adjustedBankBalance == cashbookBalance == clientLedgerTotal
@@ -344,67 +274,254 @@ class TrustReconciliationServiceReconciliationTest {
         .isZero();
     assertThat(calculated.isBalanced()).isTrue();
     assertThat(calculated.bankBalance()).isEqualByComparingTo(new BigDecimal("25000.00"));
+
+    // 646C: the creditor side broken down, both comparisons and the line figures
+    var breakdown = calculated.creditorBreakdown();
+    assertThat(breakdown.clientLedgers()).isEqualByComparingTo("25000.00");
+    assertThat(breakdown.investmentCreditors()).isEqualByComparingTo("0");
+    assertThat(breakdown.fundInterestAndCharges()).isEqualByComparingTo("0");
+    assertThat(breakdown.unidentifiedDeposits()).isEqualByComparingTo("0");
+    assertThat(breakdown.otherNonClient()).isEqualByComparingTo("0");
+    assertThat(breakdown.interAccount()).isEqualByComparingTo("0");
+    assertThat(breakdown.total()).isEqualByComparingTo("25000.00");
+    assertThat(calculated.bankToCashbookDifference()).isEqualByComparingTo("0");
+    assertThat(calculated.cashbookToCreditorsDifference()).isEqualByComparingTo("0");
+    assertThat(calculated.difference()).isEqualByComparingTo("0");
+    assertThat(calculated.excludedLinesTotal()).isEqualByComparingTo("0");
+    assertThat(calculated.unresolvedLineCount()).isZero();
+
+    // The stored breakdown is what a later read returns
+    var reread =
+        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+            .call(() -> reconciliationService.getReconciliation(reconResponse.id()));
+    assertThat(reread.creditorBreakdown())
+        .usingRecursiveComparison()
+        .withComparatorForType(BigDecimal::compareTo, BigDecimal.class)
+        .isEqualTo(calculated.creditorBreakdown());
+    assertThat(reread.difference()).isEqualByComparingTo(calculated.difference());
+  }
+
+  /**
+   * 646C: an excluded line adjusts nothing — excluding a real bank movement leaves exactly that
+   * amount as the bank-to-cashbook difference; the response shows the excluded total and the count
+   * of lines neither matched nor excluded.
+   */
+  @Test
+  void calculateReconciliation_reportsExcludedTotalAndUnresolvedLines() throws Exception {
+    UUID accountId = createIsolatedTrustAccount();
+    createDepositForAccount(accountId, "DEP-EXC-001", "25000.00", "2026-03-05");
+    var statementId =
+        importStatementForAccount(
+            accountId,
+            """
+            FNB Trust Account Statement - Account 62100000000
+            Date,Description,Amount,Balance,Reference
+            05/03/2026,Deposit received,25000.00,25000.00,DEP-EXC-001
+            10/03/2026,Bank charge,-15.00,24985.00,CHG-EXC
+            12/03/2026,Unknown credit,100.00,25085.00,UNK-EXC
+            """);
+    autoMatch(statementId);
+    var chargeLine =
+        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+            .call(() -> reconciliationService.getBankStatement(UUID.fromString(statementId)))
+            .lines()
+            .stream()
+            .filter(l -> "CHG-EXC".equals(l.reference()))
+            .findFirst()
+            .orElseThrow();
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .run(() -> reconciliationService.excludeLine(chargeLine.id(), "bank charge test"));
+
+    var calculated = calculate(create(accountId, LocalDate.of(2026, 3, 31), statementId).id());
+
+    assertThat(calculated.bankBalance()).isEqualByComparingTo("25085.00");
+    assertThat(calculated.cashbookBalance()).isEqualByComparingTo("25000.00");
+    assertThat(calculated.creditorBreakdown().total()).isEqualByComparingTo("25000.00");
+    assertThat(calculated.bankToCashbookDifference()).isEqualByComparingTo("85.00");
+    assertThat(calculated.cashbookToCreditorsDifference()).isEqualByComparingTo("0");
+    assertThat(calculated.difference()).isEqualByComparingTo("85.00");
+    assertThat(calculated.excludedLinesTotal()).isEqualByComparingTo("-15.00");
+    assertThat(calculated.unresolvedLineCount()).isEqualTo(1);
+    assertThat(calculated.isBalanced()).isFalse();
   }
 
   @Test
   void calculateReconciliation_isBalancedFalseWithDiscrepancy() throws Exception {
+    UUID accountId = createIsolatedTrustAccount();
     // Create a deposit that won't be on any bank statement line (unmatched = outstanding)
-    createDeposit("DEP-DISC-001", "10000.00", "2026-03-10");
+    createDepositForAccount(accountId, "DEP-DISC-001", "10000.00", "2026-03-10");
 
     // Import a statement that does NOT include this deposit
     var statementId =
-        importStatement(
+        importStatementForAccount(
+            accountId,
             """
             FNB Trust Account Statement - Account 62000000002
             Date,Description,Amount,Balance,Reference
             10/03/2026,Other transaction,5000.00,80000.00,OTHER-001
             """);
 
-    var reconResponse =
-        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-            .call(
-                () ->
-                    reconciliationService.createReconciliation(
-                        trustAccountId, LocalDate.of(2026, 3, 31), UUID.fromString(statementId)));
+    var reconResponse = create(accountId, LocalDate.of(2026, 3, 31), statementId);
+    var calculated = calculate(reconResponse.id());
 
-    var calculated =
-        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-            .call(() -> reconciliationService.calculateReconciliation(reconResponse.id()));
-
-    // With unmatched deposits the adjusted bank balance will differ from cashbook balance
-    // (bank says 80000, but we have extra cashbook entries not reflected in bank)
-    // The exact values depend on test ordering, but we can assert the formula was applied
-    assertThat(calculated.outstandingDeposits()).isGreaterThanOrEqualTo(BigDecimal.ZERO);
-    assertThat(calculated.adjustedBankBalance()).isNotNull();
+    // Bank 80 000 + outstanding deposit 10 000 = 90 000 against a cashbook of 10 000
+    assertThat(calculated.outstandingDeposits()).isEqualByComparingTo("10000.00");
+    assertThat(calculated.adjustedBankBalance()).isEqualByComparingTo("90000.00");
+    assertThat(calculated.cashbookBalance()).isEqualByComparingTo("10000.00");
+    assertThat(calculated.isBalanced()).isFalse();
   }
 
   @Test
   void calculateReconciliation_identifiesOutstandingItems() throws Exception {
+    UUID accountId = createIsolatedTrustAccount();
     // Create an unmatched deposit (outstanding deposit)
-    createDeposit("DEP-OUT-001", "15000.00", "2026-03-15");
+    createDepositForAccount(accountId, "DEP-OUT-001", "15000.00", "2026-03-15");
 
     // Import a statement that doesn't include this deposit
     var statementId =
-        importStatement(
+        importStatementForAccount(
+            accountId,
             """
             FNB Trust Account Statement - Account 62000000002
             Date,Description,Amount,Balance,Reference
             15/03/2026,Bank charge,-100.00,79900.00,CHARGE-001
             """);
 
-    var reconResponse =
-        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-            .call(
-                () ->
-                    reconciliationService.createReconciliation(
-                        trustAccountId, LocalDate.of(2026, 3, 31), UUID.fromString(statementId)));
+    var reconResponse = create(accountId, LocalDate.of(2026, 3, 31), statementId);
+    var calculated = calculate(reconResponse.id());
 
-    var calculated =
-        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-            .call(() -> reconciliationService.calculateReconciliation(reconResponse.id()));
+    // The unmatched DEP-OUT-001 (15000) is the only outstanding deposit
+    assertThat(calculated.outstandingDeposits()).isEqualByComparingTo(new BigDecimal("15000.00"));
+  }
 
-    // Outstanding deposits should include at least the unmatched DEP-OUT-001 (15000)
-    assertThat(calculated.outstandingDeposits()).isGreaterThanOrEqualTo(new BigDecimal("15000.00"));
+  // --- 646C: the period rules of createReconciliation (§16.3.4) ---
+
+  /** R1 — a reconciliation needs its bank statement. */
+  @Test
+  void createReconciliation_refusedWithoutABankStatement() throws Exception {
+    UUID accountId = createIsolatedTrustAccount();
+
+    assertCreateRefused(
+        accountId,
+        LocalDate.of(2026, 3, 31),
+        null,
+        "Missing bank statement",
+        "Import the bank statement for this period before starting the reconciliation.");
+  }
+
+  /** R2 — the statement may hold no line dated after the period end. */
+  @Test
+  void createReconciliation_refusedWhenTheStatementHasALineAfterThePeriodEnd() throws Exception {
+    UUID accountId = createIsolatedTrustAccount();
+    var statementId =
+        importStatementForAccount(
+            accountId,
+            """
+            FNB Trust Account Statement - Account 62100000000
+            Date,Description,Amount,Balance,Reference
+            20/03/2026,Deposit received,1000.00,1000.00,R2-001
+            02/04/2026,Deposit received,500.00,1500.00,R2-002
+            """);
+
+    assertCreateRefused(
+        accountId,
+        LocalDate.of(2026, 3, 31),
+        statementId,
+        "Statement does not fit the period end",
+        "This statement has lines dated after 31 March 2026. Choose a later period end, or import"
+            + " a statement that ends on or before it.");
+  }
+
+  /**
+   * R3 — another imported statement of the account with movements between this statement's last
+   * line and the period end refuses the reconciliation (the bank balance as at the period end is
+   * not this statement's closing balance).
+   */
+  @Test
+  void createReconciliation_refusedWhenAnotherStatementCoversTheGap() throws Exception {
+    UUID accountId = createIsolatedTrustAccount();
+    var earlyId =
+        importStatementForAccount(
+            accountId,
+            "r3-early.csv",
+            """
+            FNB Trust Account Statement - Account 62100000000
+            Date,Description,Amount,Balance,Reference
+            05/03/2026,Deposit received,1000.00,1000.00,R3-001
+            """);
+    importStatementForAccount(
+        accountId,
+        "r3-late.csv",
+        """
+        FNB Trust Account Statement - Account 62100000000
+        Date,Description,Amount,Balance,Reference
+        20/03/2026,Deposit received,500.00,1500.00,R3-002
+        """);
+
+    assertCreateRefused(
+        accountId,
+        LocalDate.of(2026, 3, 31),
+        earlyId,
+        "Statement does not fit the period end",
+        "Statement r3-late.csv has movements between this statement's last line and 31 March 2026."
+            + " Reconcile against the statement that covers the period end.");
+  }
+
+  /** R4 — the period end cannot be in the future (SA business date, the injected Clock). */
+  @Test
+  void createReconciliation_refusedForAFuturePeriodEnd() throws Exception {
+    UUID accountId = createIsolatedTrustAccount();
+    var statementId =
+        importStatementForAccount(
+            accountId,
+            """
+            FNB Trust Account Statement - Account 62100000000
+            Date,Description,Amount,Balance,Reference
+            05/03/2026,Deposit received,1000.00,1000.00,R4-001
+            """);
+
+    assertCreateRefused(
+        accountId,
+        LocalDate.now(clock).plusDays(1),
+        statementId,
+        "Invalid period end",
+        "The period end cannot be in the future");
+  }
+
+  /**
+   * R5 — a statement whose last line is before the month end reconciles to the month end, and the
+   * figures are as at that date: a deposit dated in April is neither in March's cashbook nor a
+   * March outstanding item.
+   */
+  @Test
+  void calculateReconciliation_statementEndingBeforeTheMonthEnd_reconcilesAsAtThePeriodEnd()
+      throws Exception {
+    UUID accountId = createIsolatedTrustAccount();
+    createDepositForAccount(accountId, "DEP-R5-001", "25000.00", "2026-03-05");
+    var statementId =
+        importStatementForAccount(
+            accountId,
+            """
+            FNB Trust Account Statement - Account 62100000000
+            Date,Description,Amount,Balance,Reference
+            05/03/2026,Deposit received,25000.00,25000.00,DEP-R5-001
+            """);
+    autoMatch(statementId);
+    createDepositForAccount(accountId, "DEP-R5-002", "4000.00", "2026-04-05");
+
+    var reconResponse = create(accountId, LocalDate.of(2026, 3, 31), statementId);
+    var calculated = calculate(reconResponse.id());
+
+    assertThat(calculated.bankBalance()).as("bank").isEqualByComparingTo("25000.00");
+    assertThat(calculated.outstandingDeposits()).as("outstanding").isEqualByComparingTo("0.00");
+    assertThat(calculated.adjustedBankBalance()).as("adjusted").isEqualByComparingTo("25000.00");
+    assertThat(calculated.cashbookBalance())
+        .as("cashbook 31 March")
+        .isEqualByComparingTo("25000.00");
+    assertThat(calculated.clientLedgerTotal())
+        .as("clients 31 March")
+        .isEqualByComparingTo("25000.00");
+    assertThat(calculated.isBalanced()).isTrue();
   }
 
   // --- Task 444.10: Completion Guard Tests ---
@@ -427,21 +544,10 @@ class TrustReconciliationServiceReconciliationTest {
             20/03/2026,Deposit received,30000.00,30000.00,DEP-COMP-001
             """);
 
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .run(() -> reconciliationService.autoMatchStatement(UUID.fromString(statementId)));
+    autoMatch(statementId);
 
-    var reconResponse =
-        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-            .call(
-                () ->
-                    reconciliationService.createReconciliation(
-                        isolatedAccountId,
-                        LocalDate.of(2026, 3, 31),
-                        UUID.fromString(statementId)));
-
-    var calculated =
-        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-            .call(() -> reconciliationService.calculateReconciliation(reconResponse.id()));
+    var reconResponse = create(isolatedAccountId, LocalDate.of(2026, 3, 31), statementId);
+    var calculated = calculate(reconResponse.id());
 
     assertThat(calculated.isBalanced())
         .as("Reconciliation must be balanced before completing — check test data setup")
@@ -459,15 +565,18 @@ class TrustReconciliationServiceReconciliationTest {
 
   @Test
   void completeReconciliation_failsWhenNotBalanced() throws Exception {
-    // Create a reconciliation in DRAFT with is_balanced = false (default)
-    var reconResponse =
-        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-            .call(
-                () ->
-                    reconciliationService.createReconciliation(
-                        trustAccountId, LocalDate.of(2026, 3, 31), null));
+    UUID accountId = createIsolatedTrustAccount();
+    var statementId =
+        importStatementForAccount(
+            accountId,
+            """
+            FNB Trust Account Statement - Account 62100000000
+            Date,Description,Amount,Balance,Reference
+            05/03/2026,Deposit received,1000.00,1000.00,NB-001
+            """);
+    // A DRAFT reconciliation never calculated: is_balanced = false (default)
+    var reconResponse = create(accountId, LocalDate.of(2026, 3, 31), statementId);
 
-    // The reconciliation has zero balances (never calculated) and is_balanced = false
     // Attempting to complete should fail
     assertThatThrownBy(
             () ->

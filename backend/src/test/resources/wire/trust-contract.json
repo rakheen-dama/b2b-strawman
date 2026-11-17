@@ -6,6 +6,98 @@
     "TrustTransactionType.Reversal" : [ "IMMEDIATE", "NEEDS_APPROVAL", "PAIR", "VIA_PAIR", "OWNER", "NONE" ]
   },
   "records" : {
+    "CreditorBreakdown" : [ {
+      "name" : "clientLedgers",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "investmentCreditors",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "fundInterestAndCharges",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "unidentifiedDeposits",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "otherNonClient",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "interAccount",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "total",
+      "type" : "java.math.BigDecimal"
+    } ],
+    "TrustReconciliationResponse" : [ {
+      "name" : "id",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "trustAccountId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "periodEnd",
+      "type" : "java.time.LocalDate"
+    }, {
+      "name" : "bankStatementId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "bankBalance",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "outstandingDeposits",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "outstandingPayments",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "adjustedBankBalance",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "cashbookBalance",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "clientLedgerTotal",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "creditorBreakdown",
+      "type" : "io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService$CreditorBreakdown"
+    }, {
+      "name" : "bankToCashbookDifference",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "cashbookToCreditorsDifference",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "difference",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "excludedLinesTotal",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "unresolvedLineCount",
+      "type" : "int"
+    }, {
+      "name" : "isBalanced",
+      "type" : "boolean"
+    }, {
+      "name" : "status",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "completedBy",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "completedAt",
+      "type" : "java.time.Instant"
+    }, {
+      "name" : "notes",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "createdAt",
+      "type" : "java.time.Instant"
+    }, {
+      "name" : "updatedAt",
+      "type" : "java.time.Instant"
+    } ],
     "TrustTransactionResponse" : [ {
       "name" : "id",
       "type" : "java.util.UUID"

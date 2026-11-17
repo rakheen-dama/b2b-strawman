@@ -2,7 +2,8 @@
  * Day 45 — Reconciliation & Prescription Tracking
  *
  * Bank reconciliation: start the wizard for the firm's trust account and reach the bank-statement
- * upload step (the CSV import + 3-way match is not driven — see the GAP note in the test). A
+ * upload step (the CSV import and the two comparisons — bank vs cashbook, cashbook vs trust
+ * creditors, as at the period end — are not driven: see the GAP note in the test). A
  * prescription tracker for Sipho's personal-injury claim (Delict, 3 years), the Sipho motion
  * postponed (the backend schedules the new date), and payment of Apex's R40,250 fee note.
  *
@@ -61,7 +62,11 @@ test.describe.serial("Day 45 — Reconciliation & Prescription", () => {
       await expect(steps).toContainText(step);
     }
 
-    // Step 1: account + period end
+    // Step 1: account + period end — the firm's choice, never in the future (646C)
+    await expect(page.getByTestId("step-select")).toContainText(
+      "The period end is the firm's choice and every figure is calculated as at that date; the bank statement must have no line after the period end."
+    );
+    await expect(page.getByTestId("period-end-input")).toHaveAttribute("max", isoDate());
     const account = page.getByTestId("account-select");
     const option = account.locator("option", { hasText: TRUST_ACCOUNT.name });
     await expect(option).toBeAttached({ timeout: 15_000 });
@@ -80,10 +85,9 @@ test.describe.serial("Day 45 — Reconciliation & Prescription", () => {
     // No statement yet, so the wizard cannot advance
     await expect(page.getByTestId("step-next-btn")).toBeDisabled();
 
-    // GAP: Bank CSV upload feature is not yet implemented. The test verifies that the
-    // reconciliation page loads and the manual matching UI is accessible. Actual CSV import
-    // and 3-way reconciliation (bank = cashbook = client ledger) will be tested once the
-    // upload endpoint and parsing logic are built.
+    // GAP: no CSV is uploaded here, so the review step's two comparisons (adjusted bank vs
+    // cashbook, cashbook vs trust creditors, as at the period end — 646C) are not reached. The
+    // full flow lives in the exit spec.
     // (Phase 88 628E: the wizard is driven to its upload step; no CSV is uploaded and auto-match
     // is not run — OD-7 item 6.)
 

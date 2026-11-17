@@ -3,7 +3,9 @@ import { describe, it, expect } from "vitest";
 // typecheck and vitest. Path: __tests__ → frontend → repo root.
 import contract from "../../backend/src/test/resources/wire/trust-contract.json";
 import type {
+  TrustCreditorBreakdown,
   TrustLedger,
+  TrustReconciliationResponse,
   TrustReversalRule,
   TrustTransaction,
   TrustTransactionDirection,
@@ -48,6 +50,8 @@ const TS_UNIONS: Record<keyof typeof enums, string[]> = {
 describe("trust wire shapes match the backend contract (ADR-365)", () => {
   it("pins exactly the trust records", () => {
     expect(Object.keys(records).sort()).toEqual([
+      "CreditorBreakdown",
+      "TrustReconciliationResponse",
       "TrustTransactionResponse",
       "TrustTransactionTypeResponse",
     ]);
@@ -103,6 +107,56 @@ describe("trust wire shapes match the backend contract (ADR-365)", () => {
       clientVisible: false,
     };
     expect(Object.keys(literal)).toEqual(componentNames(records.TrustTransactionTypeResponse));
+  });
+
+  it("TrustReconciliationResponse ↔ TrustReconciliationService.TrustReconciliationResponse (646C)", () => {
+    const literal: Required<TrustReconciliationResponse> = {
+      id: "",
+      trustAccountId: "",
+      periodEnd: "",
+      bankStatementId: null,
+      bankBalance: 0,
+      outstandingDeposits: 0,
+      outstandingPayments: 0,
+      adjustedBankBalance: 0,
+      cashbookBalance: 0,
+      clientLedgerTotal: 0,
+      creditorBreakdown: {
+        clientLedgers: 0,
+        investmentCreditors: 0,
+        fundInterestAndCharges: 0,
+        unidentifiedDeposits: 0,
+        otherNonClient: 0,
+        interAccount: 0,
+        total: 0,
+      },
+      bankToCashbookDifference: 0,
+      cashbookToCreditorsDifference: 0,
+      difference: 0,
+      excludedLinesTotal: 0,
+      unresolvedLineCount: 0,
+      isBalanced: false,
+      status: "DRAFT",
+      completedBy: null,
+      completedAt: null,
+      notes: null,
+      createdAt: "",
+      updatedAt: "",
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(records.TrustReconciliationResponse));
+  });
+
+  it("TrustCreditorBreakdown ↔ TrustReconciliationService.CreditorBreakdown (646C)", () => {
+    const literal: Required<TrustCreditorBreakdown> = {
+      clientLedgers: 0,
+      investmentCreditors: 0,
+      fundInterestAndCharges: 0,
+      unidentifiedDeposits: 0,
+      otherNonClient: 0,
+      interAccount: 0,
+      total: 0,
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(records.CreditorBreakdown));
   });
 
   it("pins exactly the enums the trust records carry", () => {

@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.dashboard;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -20,7 +21,9 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -31,6 +34,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -110,12 +114,38 @@ class TrustPositionIntegrationTest {
     record(owner, primaryAccountId, "payment", clientId, "2000.00", "PAY-DTP-1"); // awaiting
     record(owner, secondAccountId, "deposit", clientId, "500.00", "DEP-DTP-2");
 
+    // 646C: a reconciliation needs its statement, with no line after the period end
+    var csv =
+        """
+        FNB Trust Account Statement - Account 62000000101
+        Date,Description,Amount,Balance,Reference
+        %s,Deposit received,10000.00,10000.00,DEP-DTP-1
+        """
+            .formatted(today.minusDays(10).format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+    var statementResult =
+        mockMvc
+            .perform(
+                multipart("/api/trust-accounts/{accountId}/bank-statements", primaryAccountId)
+                    .file(
+                        new MockMultipartFile(
+                            "file",
+                            "dtp-statement.csv",
+                            "text/csv",
+                            csv.getBytes(StandardCharsets.UTF_8)))
+                    .with(owner))
+            .andExpect(status().isCreated())
+            .andReturn();
+    String statementId =
+        JsonPath.read(statementResult.getResponse().getContentAsString(), "$.id").toString();
+
     mockMvc
         .perform(
             post("/api/trust-accounts/" + primaryAccountId + "/reconciliations")
                 .with(owner)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"periodEnd\": \"%s\"}".formatted(reconciledTo)))
+                .content(
+                    "{\"periodEnd\": \"%s\", \"bankStatementId\": \"%s\"}"
+                        .formatted(reconciledTo, statementId)))
         .andExpect(status().isCreated());
 
     provisioningService.provisionTenant(NO_MODULE_ORG_ID, "Trust Position No Module Org", null);

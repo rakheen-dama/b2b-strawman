@@ -402,6 +402,8 @@ class TrustReconciliationControllerTest {
 
   @Test
   void createReconciliation_returns201() throws Exception {
+    // An isolated account: the period rules (646C) look at every statement of the account
+    String isolatedAccountId = createIsolatedTrustAccount();
     // First import a bank statement to link to the reconciliation
     var csv =
         """
@@ -417,7 +419,7 @@ class TrustReconciliationControllerTest {
     var importResult =
         mockMvc
             .perform(
-                multipart("/api/trust-accounts/{accountId}/bank-statements", trustAccountId)
+                multipart("/api/trust-accounts/{accountId}/bank-statements", isolatedAccountId)
                     .file(csvFile)
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_recon_owner")))
             .andExpect(status().isCreated())
@@ -428,7 +430,7 @@ class TrustReconciliationControllerTest {
 
     mockMvc
         .perform(
-            post("/api/trust-accounts/{accountId}/reconciliations", trustAccountId)
+            post("/api/trust-accounts/{accountId}/reconciliations", isolatedAccountId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_recon_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -440,10 +442,30 @@ class TrustReconciliationControllerTest {
                     """
                         .formatted(statementId)))
         .andExpect(status().isCreated())
-        .andExpect(jsonPath("$.trustAccountId").value(trustAccountId))
+        .andExpect(jsonPath("$.trustAccountId").value(isolatedAccountId))
         .andExpect(jsonPath("$.status").value("DRAFT"))
         .andExpect(jsonPath("$.isBalanced").value(false))
-        .andExpect(jsonPath("$.periodEnd").value("2026-03-31"));
+        .andExpect(jsonPath("$.periodEnd").value("2026-03-31"))
+        .andExpect(jsonPath("$.creditorBreakdown.total").value(0))
+        .andExpect(jsonPath("$.unresolvedLineCount").value(1));
+  }
+
+  /** 646C: a reconciliation needs its bank statement — a request without one is a 400. */
+  @Test
+  void createReconciliation_withoutABankStatement_returns400() throws Exception {
+    String isolatedAccountId = createIsolatedTrustAccount();
+
+    mockMvc
+        .perform(
+            post("/api/trust-accounts/{accountId}/reconciliations", isolatedAccountId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_recon_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"periodEnd\": \"2026-03-31\"}"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.title").value("Validation failed"))
+        .andExpect(jsonPath("$.detail").value("1 field(s) have validation errors"))
+        .andExpect(jsonPath("$.fieldErrors[0].field").value("bankStatementId"));
   }
 
   @Test

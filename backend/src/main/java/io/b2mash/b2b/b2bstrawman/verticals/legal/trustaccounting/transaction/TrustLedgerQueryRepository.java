@@ -262,4 +262,73 @@ public interface TrustLedgerQueryRepository extends Repository<TrustTransaction,
            WHERE t.project_id = :projectId AND t.ledger IN ('CLIENT', 'CLIENT_INVESTMENT')
              AND t.posted_at IS NOT NULL""")
   BigDecimal matterBalance(@Param("projectId") UUID projectId);
+
+  /**
+   * Every book-side term of EQ-2 for one account as at {@code asAt} (Phase 92 646C, §16.3.3,
+   * ADR-377): the cashbook and the six creditor terms. {@code otherNonClient} is always zero in
+   * this phase; it is a term so a future creditor type is counted from its first row. {@code asAt}
+   * is required. Index: {@code idx_trust_txn_ledger_sum} (V16).
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          SELECT
+            COALESCE(SUM(t.cashbook_effect), 0) AS cashbook,
+            COALESCE(SUM(t.ledger_effect) FILTER (WHERE t.ledger = 'CLIENT'), 0) AS clientLedgers,
+            COALESCE(SUM(t.ledger_effect) FILTER (WHERE t.ledger = 'CLIENT_INVESTMENT'), 0)
+              AS investmentCreditors,
+            COALESCE(SUM(t.ledger_effect) FILTER (WHERE t.ledger = 'NON_CLIENT'
+                                                    AND ca.account_type = 'FUND_INTEREST_AND_CHARGES'), 0)
+              AS fundLedger,
+            COALESCE(SUM(t.ledger_effect) FILTER (WHERE t.ledger = 'NON_CLIENT'
+                                                    AND ca.account_type = 'UNIDENTIFIED_DEPOSITS'), 0)
+              AS unidentified,
+            COALESCE(SUM(t.ledger_effect) FILTER (WHERE t.ledger = 'NON_CLIENT'
+                                                    AND ca.account_type NOT IN ('FUND_INTEREST_AND_CHARGES',
+                                                                                'UNIDENTIFIED_DEPOSITS')), 0)
+              AS otherNonClient,
+            COALESCE(SUM(t.ledger_effect) FILTER (WHERE t.ledger = 'INTER_ACCOUNT'), 0) AS interAccount
+          FROM trust_transactions t
+          LEFT JOIN trust_creditor_accounts ca ON ca.id = t.creditor_account_id
+          WHERE t.trust_account_id = :trustAccountId
+            AND t.posted_at IS NOT NULL
+            AND t.transaction_date <= CAST(:asAt AS date)
+          """)
+  TrustPositionRow position(
+      @Param("trustAccountId") UUID trustAccountId, @Param("asAt") LocalDate asAt);
+
+  /**
+   * Outstanding items as at {@code asAt} (646C, §16.3.3, ADR-377): posted rows that move the
+   * cashbook, dated on or before {@code asAt}, not matched to a statement line dated on or before
+   * {@code asAt} — a match is dated by the LINE's date, never by when it was made. A reversed row
+   * and its posted reversal, neither on a statement line, cancel and are not outstanding.
+   * Cashbook-neutral rows never reach the bank and are never outstanding. Replaces the old
+   * status/type-list pair (649B F4). {@code asAt} is required.
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          SELECT
+            COALESCE( SUM(t.cashbook_effect) FILTER (WHERE t.cashbook_effect > 0), 0) AS outstandingDeposits,
+            COALESCE(-SUM(t.cashbook_effect) FILTER (WHERE t.cashbook_effect < 0), 0) AS outstandingPayments
+          FROM trust_transactions t
+          LEFT JOIN bank_statement_lines l ON l.id = t.bank_statement_line_id
+          WHERE t.trust_account_id = :trustAccountId
+            AND t.posted_at IS NOT NULL
+            AND t.cashbook_effect <> 0
+            AND t.transaction_date <= CAST(:asAt AS date)
+            AND (t.bank_statement_line_id IS NULL OR l.transaction_date > CAST(:asAt AS date))
+            AND NOT (t.bank_statement_line_id IS NULL AND t.reversed_by_id IS NOT NULL AND EXISTS (
+                       SELECT 1 FROM trust_transactions r
+                        WHERE r.id = t.reversed_by_id AND r.posted_at IS NOT NULL
+                          AND r.bank_statement_line_id IS NULL
+                          AND r.transaction_date <= CAST(:asAt AS date)))
+            AND NOT (t.bank_statement_line_id IS NULL AND t.reversal_of IS NOT NULL AND EXISTS (
+                       SELECT 1 FROM trust_transactions o
+                        WHERE o.id = t.reversal_of AND o.bank_statement_line_id IS NULL))
+          """)
+  OutstandingItemsRow outstanding(
+      @Param("trustAccountId") UUID trustAccountId, @Param("asAt") LocalDate asAt);
 }

@@ -1,0 +1,74 @@
+{
+  "path": "/api/trust-accounts/35d40888-03fb-4ef3-a72c-e9940060871f/unidentified-deposits?page=0&size=25",
+  "status": 200,
+  "body": {
+    "content": [
+      {
+        "id": "da88d7a5-54fb-4a04-aaf2-3f92dcd6bc19",
+        "trustAccountId": "35d40888-03fb-4ef3-a72c-e9940060871f",
+        "receivedDate": "2026-11-10",
+        "bankDescription": "DEPOSIT UNKNOWN REF A163PR",
+        "bankReference": "UNK-A/OBS647D/163PR",
+        "amount": 4321.09,
+        "status": "ALLOCATED",
+        "ageDays": 7,
+        "olderThanOneYear": false,
+        "allocatedClientId": "31244ee8-2fad-4b13-817b-97216971f986",
+        "allocatedClientName": "Moroka Family Trust mwl0skwm827e",
+        "allocatedMatterId": "5f17849e-4d39-4f97-ba3a-3faf02b753bf",
+        "allocatedMatterName": "Estate Late Peter Moroka mwl0skwm827e",
+        "resolutionTransactionId": "cbf2e39b-75d6-4793-85d0-d0ca1466448d",
+        "resolutionStatus": "APPROVED",
+        "resolvedDate": "2026-11-14",
+        "bankStatementLineId": "2f14c2fb-13ef-4a7a-8a59-573bffcd3cc8",
+        "notes": "OBS 647D 163PR unknown credit A"
+      },
+      {
+        "id": "49d8d9f1-94f8-40c7-abb7-482e71544562",
+        "trustAccountId": "35d40888-03fb-4ef3-a72c-e9940060871f",
+        "receivedDate": "2026-11-12",
+        "bankDescription": "DEPOSIT UNKNOWN REF B163PR",
+        "bankReference": "UNK-B/OBS647D/163PR",
+        "amount": 1234.56,
+        "status": "HELD",
+        "ageDays": 5,
+        "olderThanOneYear": false,
+        "allocatedClientId": null,
+        "allocatedClientName": null,
+        "allocatedMatterId": null,
+        "allocatedMatterName": null,
+        "resolutionTransactionId": null,
+        "resolutionStatus": null,
+        "resolvedDate": null,
+        "bankStatementLineId": "2d047c6f-73b6-48c8-9fbc-bd2630e41b11",
+        "notes": "OBS 647D 163PR unknown credit B"
+      },
+      {
+        "id": "67de55e8-6691-4881-ac6e-0445c4512969",
+        "trustAccountId": "35d40888-03fb-4ef3-a72c-e9940060871f",
+        "receivedDate": "2026-11-13",
+        "bankDescription": "DEPOSIT UNKNOWN REF C163PR",
+        "bankReference": "UNK-C/OBS647D/163PR",
+        "amount": 777,
+        "status": "HELD",
+        "ageDays": 4,
+        "olderThanOneYear": false,
+        "allocatedClientId": null,
+        "allocatedClientName": null,
+        "allocatedMatterId": null,
+        "allocatedMatterName": null,
+        "resolutionTransactionId": null,
+        "resolutionStatus": null,
+        "resolvedDate": null,
+        "bankStatementLineId": "b59a8dc7-3580-4f43-86c7-1c434e565c80",
+        "notes": "OBS 647D 163PR unknown credit C"
+      }
+    ],
+    "page": {
+      "size": 25,
+      "number": 0,
+      "totalElements": 3,
+      "totalPages": 1
+    }
+  }
+}

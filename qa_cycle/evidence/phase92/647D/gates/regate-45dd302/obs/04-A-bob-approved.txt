@@ -1,0 +1,129 @@
+Skip to content
+Kazi
+E2E Test Organization
+Search...
+⌘K
+TODAY
+Home
+My work
+Diary
+MATTERS
+Matters
+New matter
+Conflict check
+Adverse parties
+AI reviews
+CLIENTS
+Clients
+FICA & compliance
+Data requests
+FEES
+TRUST
+FIRM
+Notifications
+BA
+
+Bob Admin
+
+bob@e2e-test.local
+
+Toggle menu
+E2E Test Organization
+Trust accounting
+Transactions
+Search
+⌘K
+21 unread notifications
+21
+e2e-test-org
+BA
+Transactions
+
+Trust account transaction history
+
+Record Transaction
+Status:
+All
+Recorded
+Awaiting Approval
+Approved
+Rejected
+Reversed
+Type:
+All
+Deposit
+Payment
+Fee transfer
+Refund
+Transfer out
+Transfer in
+Reversal
+Interest received for the Legal Practitioners' Fidelity Fund
+Interest paid to the Legal Practitioners' Fidelity Fund
+Bank charge
+Bank charge refunded from the business account
+Unidentified deposit
+Unidentified deposit allocated
+Deposit identified and allocated
+Unidentified deposit paid to the Fund
+Placed in section 86(4) investment
+Investment capital received
+Section 86(4) investment interest
+Fund share of section 86(4) interest (5%)
+Investment withdrawn
+Investment returned to trust
+Placed in section 86(3) investment account
+Section 86(3) investment capital received
+Section 86(3) investment withdrawn
+Section 86(3) investment returned to trust
+From
+To
+Client ID
+Matter ID
+Transaction History
+12 transactions found
+Date	Reference	Type	Amount	Status	Actions
+17 Nov 2026	DEP/MOROKA/mwl2ro8o8d3b	Deposit	
+R 250 000,00	RECORDED	
+Reverse
+17 Nov 2026	DEP/QC/mwl2ro8o8d3b	Deposit	
+R 45 000,00	RECORDED	
+Reverse
+17 Nov 2026	FEE/MOROKA/mwl2ro8o8d3b	Fee transfer	
+R 8 500,00	APPROVED	
+Reverse
+17 Nov 2026	INV-Standard Bank-FD-0987654321	Payment	
+R 200 000,00	AWAITING APPROVAL	
+Approve
+Reject
+
+17 Nov 2026	INV-Nedbank-CALL-1122334455	Payment	
+R 30 000,00	AWAITING APPROVAL	
+Approve
+Reject
+
+17 Nov 2026	FEE/SIPHO/mwl2ro8o8d3b	Fee transfer	
+R 500,00	AWAITING APPROVAL	
+Approve
+Reject
+
+14 Nov 2026	UNK-D/RG647D/2VTTB	Unidentified deposit	
+R 2 500,25	RECORDED	
+14 Nov 2026	UID-CAE0981F	Unidentified deposit allocated
+To Moroka Family Trust mwl2ro8o8d3b — Estate Late Peter Moroka mwl2ro8o8d3b: deposit received 10 November 2026 — DEPOSIT UNKNOWN REF A2VTTB
+	
+R 4 321,09	APPROVED	
+Reverse
+14 Nov 2026	UID-CAE0981F	Deposit identified and allocated	
+R 4 321,09	APPROVED	
+13 Nov 2026	UNK-C/RG647D/2VTTB	Unidentified deposit	
+R 777,00	RECORDED	
+12 Nov 2026	UNK-B/RG647D/2VTTB	Unidentified deposit	
+R 1 234,56	RECORDED	
+10 Nov 2026	UNK-A/RG647D/2VTTB	Unidentified deposit	
+R 4 321,09	RECORDED	
+Command Palette
+
+Search pages and settings
+
+Transaction approved

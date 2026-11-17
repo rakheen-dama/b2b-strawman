@@ -1,0 +1,19 @@
+stack1-up start 2026-11-17T18:20:08Z
+stack1-up end 2026-11-17T18:22:32Z rc 0
+.lc.start 2026-11-17T18:22:43Z
+.lc.end 2026-11-17T18:26:15Z
+.lc.rc 0
+.obs.start 2026-11-17T18:33:17Z
+.obsg.start 2026-11-17T18:55:31Z
+.obsg.end 2026-11-17T18:57:10Z rc 0
+.portal.start 2026-11-17T18:57:53Z
+.portal.end 2026-11-17T18:58:00Z rc 0
+.probe.start 2026-11-17T18:58:36Z
+.probe.end 2026-11-17T18:58:45Z rc 0
+.obs.end 2026-11-17T18:53:17.357Z rc 1 (harness TypeError in step g; the shell wrapper was then reaped at the 10-min tool ceiling — see README)
+.diag.end 2026-11-17T18:59:20Z (approx; diag-tx-width.cjs, read-only)
+stack2-up start 2026-11-17T18:59:56Z
+stack2-up end 2026-11-17T19:00:36Z rc 0
+.d2.start 2026-11-17T19:00:48Z
+.d2.end 2026-11-17T19:02:58Z
+.d2.rc 0

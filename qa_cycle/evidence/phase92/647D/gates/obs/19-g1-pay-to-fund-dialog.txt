@@ -1,0 +1,108 @@
+Skip to content
+Kazi
+E2E Test Organization
+Search...
+⌘K
+TODAY
+Home
+My work
+Diary
+MATTERS
+Matters
+New matter
+Conflict check
+Adverse parties
+AI reviews
+CLIENTS
+Clients
+FICA & compliance
+Data requests
+FEES
+TRUST
+FIRM
+Platform Admin
+Notifications
+AO
+
+Alice Owner
+
+alice@e2e-test.local
+
+Toggle menu
+E2E Test Organization
+Trust accounting
+Other trust creditors
+Search
+⌘K
+13 unread notifications
+13
+e2e-test-org
+AO
+Other trust creditors
+
+Trust money held for creditors who are not clients: the Legal Practitioners' Fidelity Fund's interest and charges, and deposits not yet identified
+
+Legal Practitioners' Fidelity Fund — interest and charges
+R 0,00
+Interest received for the Fund, less bank charges
+Unidentified deposits
+R 6 332,65
+Deposits whose owner is not yet known
+Legal Practitioners' Fidelity Fund — interest and charges
+Interest received, transfers to the Fund, bank charges and refunds, newest first, with the running balance
+
+No entries on the Fund ledger yet. Record interest, transfers and bank charges from the bank statement when you reconcile.
+
+Unidentified deposits
+Bank credits whose owner is not yet known, oldest first, with their age
+Unidentified deposits
+RECEIVED	DESCRIPTION	AMOUNT	AGE	STATUS	ACTIONS
+10 Nov 2026	
+DEPOSIT UNKNOWN REF A163PR
+UNK-A/OBS647D/163PR
+	R 4 321,09	
+7 days
+	
+Held
+	
+Allocate
+Pay to the Fund
+
+12 Nov 2026	
+DEPOSIT UNKNOWN REF B163PR
+UNK-B/OBS647D/163PR
+	R 1 234,56	
+5 days
+	
+Held
+	
+Allocate
+Pay to the Fund
+
+13 Nov 2026	
+DEPOSIT UNKNOWN REF C163PR
+UNK-C/OBS647D/163PR
+	R 777,00	
+4 days
+	
+Held
+	
+Allocate
+Pay to the Fund
+Command Palette
+
+Search pages and settings
+
+Pay to the Fidelity Fund
+
+Received 12 Nov 2026 — DEPOSIT UNKNOWN REF B163PR — R 1 234,56. Another member must approve the payment.
+
+Held for 5 days
+
+This deposit has been held for less than a year. Unclaimed trust money is ordinarily paid to the Legal Practitioners' Fidelity Fund only after the period the Act sets — check before you request this payment.
+Payment reference
+Payment date
+Notes (optional)
+Cancel
+Request payment
+Close

@@ -1,0 +1,13 @@
+{
+  "path": "/api/trust-accounts/35d40888-03fb-4ef3-a72c-e9940060871f/unidentified-deposits?page=0&size=25",
+  "status": 200,
+  "body": {
+    "content": [],
+    "page": {
+      "size": 25,
+      "number": 0,
+      "totalElements": 0,
+      "totalPages": 0
+    }
+  }
+}

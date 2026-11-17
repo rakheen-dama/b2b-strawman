@@ -1,0 +1,31 @@
+{
+  "at": "2026-11-17T18:57:54.089Z",
+  "email": "moroka.trust.mwl0skwm827e@example.com",
+  "matter": "5f17849e-4d39-4f97-ba3a-3faf02b753bf",
+  "consoleErrors": [
+    {
+      "url": "http://localhost:3012/auth/exchange?token=W200hZxmcX9U_jXKbZBMK-X9pso37heffyMvWyn4VhQ&orgId=e2e-test-org",
+      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    }
+  ],
+  "expectedDescription": "Deposit received 10 November 2026 — DEPOSIT UNKNOWN REF A163PR",
+  "afterExchangeUrl": "http://localhost:3012/matters",
+  "afterExchangeText": "Skip to content E2E Test Organization Moroka Family Trust mwl0skwm827e Portal Home Matters Trust statement Diary dates Fee notes Documents & requests Activity Profile Logout Your matters All Active Past Estate Late Peter Moroka mwl0skwm827e Active Administration of deceased estate from reporting to ",
+  "text1440": "Skip to content E2E Test Organization Moroka Family Trust mwl0skwm827e Portal Home Matters Trust statement Diary dates Fee notes Documents & requests Activity Profile Logout Back to trust Trust balance R 241 500,00 As of 17 Nov 2026 Estate Late Peter Moroka mwl0skwm827e Transactions Date Type Description Amount Running balance 17 Nov 2026 Reversal Reversal — REV-UID-DA88D7A5 R 4 321,09 R 241 500,00 17 Nov 2026 Fee transfer FEE_TRANSFER — FEE/MOROKA/mwl0skwm827e R 8 500,00 R 245 821,09 17 Nov 2026 Deposit Estate Late Peter Moroka — transfer from executor R 250 000,00 R 254 321,09 14 Nov 2026 Deposit identified and allocated Deposit received 10 November 2026 — DEPOSIT UNKNOWN REF A163PR R 4 321,09 R 4 321,09 Statements No statement documents yet Powered by Kazi",
+  "text1280": "Skip to content E2E Test Organization Moroka Family Trust mwl0skwm827e Portal Home Matters Trust statement Diary dates Fee notes Documents & requests Activity Profile Logout Back to trust Trust balance R 241 500,00 As of 17 Nov 2026 Estate Late Peter Moroka mwl0skwm827e Transactions Date Type Description Amount Running balance 17 Nov 2026 Reversal Reversal — REV-UID-DA88D7A5 R 4 321,09 R 241 500,00 17 Nov 2026 Fee transfer FEE_TRANSFER — FEE/MOROKA/mwl0skwm827e R 8 500,00 R 245 821,09 17 Nov 2026 Deposit Estate Late Peter Moroka — transfer from executor R 250 000,00 R 254 321,09 14 Nov 2026 Deposit identified and allocated Deposit received 10 November 2026 — DEPOSIT UNKNOWN REF A163PR R 4 321,09 R 4 321,09 Statements No statement documents yet Powered by Kazi",
+  "text390": "Skip to content E2E Test Organization Moroka Family Trust mwl0skwm827e Back to trust Trust balance R 241 500,00 As of 17 Nov 2026 Estate Late Peter Moroka mwl0skwm827e Transactions Reversal — REV-UID-DA88D7A5 17 Nov 2026 · Reversal R 4 321,09 Bal R 241 500,00 FEE_TRANSFER — FEE/MOROKA/mwl0skwm827e 17 Nov 2026 · Fee transfer R 8 500,00 Bal R 245 821,09 Estate Late Peter Moroka — transfer from executor 17 Nov 2026 · Deposit R 250 000,00 Bal R 254 321,09 Deposit received 10 November 2026 — DEPOSIT UNKNOWN REF A163PR 14 Nov 2026 · Deposit identified and allocated R 4 321,09 Bal R 4 321,09 Statements No statement documents yet Powered by Kazi",
+  "rows": [
+    "Date Type Description Amount Running balance",
+    "17 Nov 2026 Reversal Reversal — REV-UID-DA88D7A5 R 4 321,09 R 241 500,00",
+    "17 Nov 2026 Fee transfer FEE_TRANSFER — FEE/MOROKA/mwl0skwm827e R 8 500,00 R 245 821,09",
+    "17 Nov 2026 Deposit Estate Late Peter Moroka — transfer from executor R 250 000,00 R 254 321,09",
+    "14 Nov 2026 Deposit identified and allocated Deposit received 10 November 2026 — DEPOSIT UNKNOWN REF A163PR R 4 321,09 R 4 321,09"
+  ],
+  "checks": {
+    "labelShown": true,
+    "descriptionVerbatimD12": true,
+    "noFirmOnlyLabels": true,
+    "mobileLabelShown": true
+  },
+  "verdict": "PASS"
+}

@@ -1,0 +1,13 @@
+{
+  "path": "/api/trust-creditor-accounts/89d0334e-7908-4a32-addb-043086101e02/transactions?page=0&size=25",
+  "status": 200,
+  "body": {
+    "content": [],
+    "page": {
+      "size": 25,
+      "number": 0,
+      "totalElements": 0,
+      "totalPages": 0
+    }
+  }
+}

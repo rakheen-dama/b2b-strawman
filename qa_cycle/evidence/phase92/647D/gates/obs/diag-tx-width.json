@@ -1,0 +1,190 @@
+{
+  "asIs": {
+    "table": 1011,
+    "wrapper": 926,
+    "scroll": 1011,
+    "cols": [
+      "Date:50",
+      "Reference:220",
+      "Type:253",
+      "Amount:133",
+      "Status:165",
+      "Actions:191"
+    ]
+  },
+  "typeCells": [
+    {
+      "label": "Deposit",
+      "badgeW": 67,
+      "badgeWhiteSpace": "nowrap",
+      "desc": null,
+      "descW": null,
+      "cellW": 253
+    },
+    {
+      "label": "Deposit",
+      "badgeW": 67,
+      "badgeWhiteSpace": "nowrap",
+      "desc": null,
+      "descW": null,
+      "cellW": 253
+    },
+    {
+      "label": "Fee transfer",
+      "badgeW": 92,
+      "badgeWhiteSpace": "nowrap",
+      "desc": null,
+      "descW": null,
+      "cellW": 253
+    },
+    {
+      "label": "Payment",
+      "badgeW": 72,
+      "badgeWhiteSpace": "nowrap",
+      "desc": null,
+      "descW": null,
+      "cellW": 253
+    },
+    {
+      "label": "Payment",
+      "badgeW": 72,
+      "badgeWhiteSpace": "nowrap",
+      "desc": null,
+      "descW": null,
+      "cellW": 253
+    },
+    {
+      "label": "Fee transfer",
+      "badgeW": 92,
+      "badgeWhiteSpace": "nowrap",
+      "desc": null,
+      "descW": null,
+      "cellW": 253
+    },
+    {
+      "label": "Reversal",
+      "badgeW": 71,
+      "badgeWhiteSpace": "nowrap",
+      "desc": null,
+      "descW": null,
+      "cellW": 253
+    },
+    {
+      "label": "Reversal",
+      "badgeW": 71,
+      "badgeWhiteSpace": "nowrap",
+      "desc": null,
+      "descW": null,
+      "cellW": 253
+    },
+    {
+      "label": "Unidentified deposit paid to the Fund",
+      "badgeW": 237,
+      "badgeWhiteSpace": "nowrap",
+      "desc": "To the Legal Practitioners' Fidelity Fund: deposit received ",
+      "descW": 237,
+      "cellW": 253
+    },
+    {
+      "label": "Unidentified deposit paid to the Fund",
+      "badgeW": 237,
+      "badgeWhiteSpace": "nowrap",
+      "desc": "To the Legal Practitioners' Fidelity Fund: deposit received ",
+      "descW": 237,
+      "cellW": 253
+    },
+    {
+      "label": "Unidentified deposit allocated",
+      "badgeW": 196,
+      "badgeWhiteSpace": "nowrap",
+      "desc": "To Moroka Family Trust mwl0skwm827e — Estate Late Peter Moro",
+      "descW": 237,
+      "cellW": 253
+    },
+    {
+      "label": "Deposit identified and allocated",
+      "badgeW": 205,
+      "badgeWhiteSpace": "nowrap",
+      "desc": null,
+      "descW": null,
+      "cellW": 253
+    },
+    {
+      "label": "Unidentified deposit",
+      "badgeW": 139,
+      "badgeWhiteSpace": "nowrap",
+      "desc": null,
+      "descW": null,
+      "cellW": 253
+    },
+    {
+      "label": "Unidentified deposit",
+      "badgeW": 139,
+      "badgeWhiteSpace": "nowrap",
+      "desc": null,
+      "descW": null,
+      "cellW": 253
+    },
+    {
+      "label": "Unidentified deposit",
+      "badgeW": 139,
+      "badgeWhiteSpace": "nowrap",
+      "desc": null,
+      "descW": null,
+      "cellW": 253
+    }
+  ],
+  "descriptionLinesHidden": {
+    "table": 1011,
+    "wrapper": 926,
+    "scroll": 1011,
+    "cols": [
+      "Date:50",
+      "Reference:220",
+      "Type:253",
+      "Amount:133",
+      "Status:165",
+      "Actions:191"
+    ]
+  },
+  "resolutionRowsHidden": {
+    "table": 926,
+    "wrapper": 926,
+    "scroll": 926,
+    "cols": [
+      "Date:57",
+      "Reference:225",
+      "Type:155",
+      "Amount:133",
+      "Status:165",
+      "Actions:191"
+    ],
+    "hiddenRows": 4
+  },
+  "badgesWrap": {
+    "table": 926,
+    "wrapper": 926,
+    "scroll": 926,
+    "cols": [
+      "Date:59",
+      "Reference:227",
+      "Type:152",
+      "Amount:133",
+      "Status:165",
+      "Actions:191"
+    ]
+  },
+  "restored": {
+    "table": 1011,
+    "wrapper": 926,
+    "scroll": 1011,
+    "cols": [
+      "Date:50",
+      "Reference:220",
+      "Type:253",
+      "Amount:133",
+      "Status:165",
+      "Actions:191"
+    ]
+  }
+}

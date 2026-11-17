@@ -1,0 +1,139 @@
+Skip to content
+Kazi
+E2E Test Organization
+Search...
+⌘K
+TODAY
+Home
+My work
+Diary
+MATTERS
+Matters
+New matter
+Conflict check
+Adverse parties
+AI reviews
+CLIENTS
+Clients
+FICA & compliance
+Data requests
+FEES
+TRUST
+FIRM
+Platform Admin
+Notifications
+AO
+
+Alice Owner
+
+alice@e2e-test.local
+
+Toggle menu
+E2E Test Organization
+Trust accounting
+Search
+⌘K
+13 unread notifications
+13
+e2e-test-org
+AO
+Trust Accounting
+
+LSSA-compliant trust account management for client funds
+
+Client Ledgers
+Record Transaction
+Trust Balance
+R 292 832,65
+
+Mathebula & Partners Trust Account cashbook balance
+
+Trust creditors R 292 832,65
+(agrees with the cashbook)
+
+Active Clients
+2
+Clients with trust balances
+Pending Approvals
+3
+Transactions awaiting approval
+Needs attention
+Reconciliation
+Balanced
+Period to 13 Nov 2026, in draft
+3 transactions awaiting approval
+Trust balance trend
+Month-end balances as currently recorded (ZAR)
+Cashbook
+Trust creditors
+Dec 2025
+Jan 2026
+Feb 2026
+Mar 2026
+Apr 2026
+May 2026
+Jun 2026
+Jul 2026
+Aug 2026
+Sep 2026
+Oct 2026
+Nov 2026
+R 0
+R 75 k
+R 150 k
+R 225 k
+R 300 k
+
+Trust balance trend: Cashbook from R 0,00 in Dec 2025 to R 292 832,65 in Nov 2026 (to date), peak R 292 832,65 in Nov 2026 (to date); Trust creditors from R 0,00 in Dec 2025 to R 292 832,65 in Nov 2026 (to date), peak R 292 832,65 in Nov 2026 (to date).
+
+View as table
+Recent Transactions
+Last 10 transactions across all client ledgers
+View all
+Recent trust transactions
+DATE	REFERENCE	TYPE	AMOUNT	STATUS
+17 Nov 2026	
+DEP/MOROKA/mwl0skwm827e
+	Deposit	
+R 250 000,00	RECORDED
+17 Nov 2026	
+DEP/QC/mwl0skwm827e
+	Deposit	
+R 45 000,00	RECORDED
+17 Nov 2026	
+FEE/MOROKA/mwl0skwm827e
+	Fee transfer	
+R 8 500,00	APPROVED
+17 Nov 2026	
+INV-Standard Bank-FD-0987654321
+	Payment	
+R 200 000,00	AWAITING APPROVAL
+17 Nov 2026	
+INV-Nedbank-CALL-1122334455
+	Payment	
+R 30 000,00	AWAITING APPROVAL
+17 Nov 2026	
+FEE/SIPHO/mwl0skwm827e
+	Fee transfer	
+R 500,00	AWAITING APPROVAL
+14 Nov 2026	
+UID-DA88D7A5
+	Unidentified deposit allocated	
+R 4 321,09	APPROVED
+14 Nov 2026	
+UID-DA88D7A5
+	Deposit identified and allocated	
+R 4 321,09	APPROVED
+13 Nov 2026	
+UNK-C/OBS647D/163PR
+	Unidentified deposit	
+R 777,00	RECORDED
+12 Nov 2026	
+UNK-B/OBS647D/163PR
+	Unidentified deposit	
+R 1 234,56	RECORDED
+Command Palette
+
+Search pages and settings
+
+R 0

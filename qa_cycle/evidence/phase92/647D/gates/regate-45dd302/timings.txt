@@ -1,0 +1,11 @@
+stack1-up start 2026-11-17T19:15:26Z
+stack1-up end 2026-11-17T19:17:53Z rc 0
+.lc.start 2026-11-17T19:18:01Z
+.lc.end 2026-11-17T19:21:08Z rc 0
+.obs.start 2026-11-17T19:21:17Z
+.obs.end 2026-11-17T19:22:54Z rc 0
+stack2-up start 2026-11-17T19:23:11Z
+stack2-up end 2026-11-17T19:23:54Z rc 0
+.d2.start 2026-11-17T19:24:01Z
+.d2.end 2026-11-17T19:26:04Z rc 0
+stack2-down 2026-11-17T19:26:20Z

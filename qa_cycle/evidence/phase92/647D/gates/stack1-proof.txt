@@ -1,0 +1,68 @@
+== worktree: /Users/rakheendama/Projects/2026/worktree-epic-647D @ 0915e8b0db55230cd5016215ee3d1bc2cae8f123
+== build log source lines:
+Building from source at: /Users/rakheendama/Projects/2026/worktree-epic-647D
+  Tail logs:   docker compose -f /Users/rakheendama/Projects/2026/worktree-epic-647D/compose/docker-compose.e2e.yml logs -f backend frontend
+== jar entries (647D-new / 647D-touched classes):
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/transaction/TrustClientMatterRule.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/transaction/UnidentifiedResolutionHooks.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/transaction/TrustPostingService.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/creditor/UnidentifiedDepositRepository.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/creditor/UnidentifiedDepositService$UnidentifiedDepositResponse.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/creditor/UnidentifiedDepositService.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/creditor/UnidentifiedDepositStatus.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/creditor/UnidentifiedDepositService$AllocateRequest.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/creditor/UnidentifiedDepositService$Names.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/creditor/UnidentifiedDepositService$StatementCredit.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/creditor/UnidentifiedDepositController.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/creditor/UnidentifiedDepositService$PayToFundRequest.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/creditor/UnidentifiedDeposit.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/creditor/UnidentifiedDepositService$Opened.class
+== TrustClientMatterRule.class exists (647D new): 1
+== UnidentifiedResolutionHooks.class exists (647D new): 1
+== UnidentifiedDepositService.class contains 'onResolutionApproved': 2 ; 'existsPostedResolutionOfItem' (fix cycle 1, F-647D-1): 1 ; 'findLatestReopeningDate' (R2): 1 ; 'Deposit received ': 1
+== UnidentifiedDepositService.class contains 'can no longer be unmatched' (F-647D-1 refusal text): 1
+== UnidentifiedDepositController.class contains '/allocate': 1 ; '/pay-to-fund': 1
+== TrustTransactionService.class contains 'reverseUnidentifiedAllocation' (D6): 2
+== TrustPostingService.class contains 'recordWithPair' (D3): 2
+== TrustTransactionRepository.class contains 'existsPostedResolutionOfItem': 1
+== jar migrations (latest tenant V*):
+db/migration/tenant/V19__phase92_trust_recon_breakdown.sql
+db/migration/tenant/V20__phase92_statement_line_classification.sql
+db/migration/tenant/V21__phase92_unidentified_deposits.sql
+== frontend container: 647D strings in .next (excluding cache):
+-- 'allocate-unidentified-dialog':
+/app/frontend/.next/server/chunks/ssr/frontend_components_trust_02woek0._.js
+/app/frontend/.next/static/chunks/19gsnmimf-ja2.js
+-- 'pay-to-fund-dialog':
+/app/frontend/.next/server/chunks/ssr/frontend_components_trust_02woek0._.js
+/app/frontend/.next/static/chunks/19gsnmimf-ja2.js
+-- 'pay-to-fund-under-one-year-warning':
+/app/frontend/.next/server/chunks/ssr/frontend_components_trust_02woek0._.js
+/app/frontend/.next/static/chunks/19gsnmimf-ja2.js
+-- 'unidentified-deposit-pending':
+/app/frontend/.next/server/chunks/ssr/frontend_components_trust_02woek0._.js
+/app/frontend/.next/static/chunks/19gsnmimf-ja2.js
+-- 'unidentified-deposit-allocated-to':
+/app/frontend/.next/server/chunks/ssr/frontend_components_trust_02woek0._.js
+/app/frontend/.next/static/chunks/19gsnmimf-ja2.js
+-- 'awaiting approval':
+/app/frontend/.next/server/chunks/ssr/frontend_20m29r5._.js
+/app/frontend/.next/server/chunks/ssr/frontend_0aq6lz6._.js
+/app/frontend/.next/server/chunks/ssr/frontend_1pu8hti._.js
+/app/frontend/.next/server/chunks/ssr/frontend_07uhjd7._.js
+-- 'UNIDENT_FUND_PAY':
+/app/frontend/.next/server/chunks/ssr/_13ydhih._.js
+== health: {"groups":["liveness","readiness"],"status":"UP"}  frontend :3001 HTTP 200
+== tenant schemas: tenant_7d218705360b
+ version |              description              | success |        installed_on        
+---------+---------------------------------------+---------+----------------------------
+ 21      | phase92 unidentified deposits         | t       | 2026-11-17 18:22:07.738723
+ 20      | phase92 statement line classification | t       | 2026-11-17 18:22:07.729525
+ 19      | phase92 trust recon breakdown         | t       | 2026-11-17 18:22:07.721341
+(3 rows)
+
+ trust_accounts | creditor_accounts | trust_txns | statements | recons | unidentified_deposits 
+----------------+-------------------+------------+------------+--------+-----------------------
+              1 |                 2 |          0 |          0 |      0 |                     0
+(1 row)
+

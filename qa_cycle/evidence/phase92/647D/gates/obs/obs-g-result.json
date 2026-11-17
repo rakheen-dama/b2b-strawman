@@ -1,0 +1,5324 @@
+{
+  "steps": {
+    "g": {
+      "booksBefore": {
+        "asAt": "2026-11-17",
+        "cashbook": 292832.65,
+        "allCreditors": 292832.65,
+        "clientLedgers": 286500,
+        "unidentified": 6332.65,
+        "fund": 0,
+        "moroka": 241500,
+        "balanced": true
+      },
+      "B": {
+        "dialogFromObs": "Pay to the Fidelity Fund Received 12 Nov 2026 — DEPOSIT UNKNOWN REF B163PR — R 1 234,56. Another member must approve the payment. Held for 5 days This deposit has been held for less than a year. Unclaimed trust money is ordinarily paid to the Legal Practitioners' Fidelity Fund only after the period the Act sets — check before you request this payment. Payment reference Payment date Notes (optional) Cancel Request payment Close",
+        "age": "Held for 5 days",
+        "warningShown": true,
+        "txId": "6906010c-ba51-4227-8009-227f2cea98cd",
+        "reference": "LPFF-B/OBS647D/163PR",
+        "tx": {
+          "type": "UNIDENT_FUND_PAY",
+          "status": "AWAITING_APPROVAL",
+          "date": "2026-11-17",
+          "ledger": "NON_CLIENT",
+          "ledgerEffect": 0,
+          "cashbookEffect": 0,
+          "posted": false,
+          "customer": "<null>",
+          "project": "<null>",
+          "creditor": "267ee0c7-1373-43ad-95a2-cf53e3ece1f5",
+          "item": "49d8d9f1-94f8-40c7-abb7-482e71544562",
+          "reference": "LPFF-B/OBS647D/163PR",
+          "description": "To the Legal Practitioners' Fidelity Fund: deposit received 12 November 2026 — DEPOSIT UNKNOWN REF B163PR",
+          "reversedBy": "<null>",
+          "recordedBy": "bbd9baf4-a970-4ea8-ab19-66817f624bc8",
+          "approvedBy": "<null>"
+        },
+        "item": {
+          "status": "HELD",
+          "resolvedDate": "<null>",
+          "resolutionTx": "6906010c-ba51-4227-8009-227f2cea98cd",
+          "customer": "<null>",
+          "project": "<null>",
+          "creditTx": "<null>"
+        },
+        "page": {
+          "cardValue": 6332.65,
+          "cardApi": 6332.65,
+          "fundApi": 0,
+          "sqlBalance": 6332.65,
+          "headers": [
+            "RECEIVED",
+            "DESCRIPTION",
+            "AMOUNT",
+            "AGE",
+            "STATUS",
+            "ACTIONS"
+          ],
+          "n": 3,
+          "rows": {
+            "DEPOSIT UNKNOWN REF A163PR UNK-A/OBS647D/163PR": {
+              "id": "da88d7a5-54fb-4a04-aaf2-3f92dcd6bc19",
+              "cells": [
+                "10 Nov 2026",
+                "DEPOSIT UNKNOWN REF A163PR UNK-A/OBS647D/163PR",
+                "R 4 321,09",
+                "7 days",
+                "Held",
+                "Allocate Pay to the Fund"
+              ],
+              "status": "Held",
+              "pending": null,
+              "allocatedTo": null,
+              "hasAllocate": true,
+              "hasPayToFund": true,
+              "amount": 4321.09
+            },
+            "DEPOSIT UNKNOWN REF B163PR UNK-B/OBS647D/163PR": {
+              "id": null,
+              "cells": [
+                "12 Nov 2026",
+                "DEPOSIT UNKNOWN REF B163PR UNK-B/OBS647D/163PR",
+                "R 1 234,56",
+                "5 days",
+                "Held",
+                "Payment to the Fund awaiting approval"
+              ],
+              "status": "Held",
+              "pending": "Payment to the Fund awaiting approval",
+              "allocatedTo": null,
+              "hasAllocate": false,
+              "hasPayToFund": false,
+              "amount": 1234.56
+            },
+            "DEPOSIT UNKNOWN REF C163PR UNK-C/OBS647D/163PR": {
+              "id": "67de55e8-6691-4881-ac6e-0445c4512969",
+              "cells": [
+                "13 Nov 2026",
+                "DEPOSIT UNKNOWN REF C163PR UNK-C/OBS647D/163PR",
+                "R 777,00",
+                "4 days",
+                "Held",
+                "Allocate Pay to the Fund"
+              ],
+              "status": "Held",
+              "pending": null,
+              "allocatedTo": null,
+              "hasAllocate": true,
+              "hasPayToFund": true,
+              "amount": 777
+            }
+          },
+          "api": [
+            {
+              "id": "da88d7a5-54fb-4a04-aaf2-3f92dcd6bc19",
+              "trustAccountId": "35d40888-03fb-4ef3-a72c-e9940060871f",
+              "receivedDate": "2026-11-10",
+              "bankDescription": "DEPOSIT UNKNOWN REF A163PR",
+              "bankReference": "UNK-A/OBS647D/163PR",
+              "amount": 4321.09,
+              "status": "HELD",
+              "ageDays": 7,
+              "olderThanOneYear": false,
+              "allocatedClientId": null,
+              "allocatedClientName": null,
+              "allocatedMatterId": null,
+              "allocatedMatterName": null,
+              "resolutionTransactionId": null,
+              "resolutionStatus": null,
+              "resolvedDate": null,
+              "bankStatementLineId": "2f14c2fb-13ef-4a7a-8a59-573bffcd3cc8",
+              "notes": "OBS 647D 163PR unknown credit A"
+            },
+            {
+              "id": "49d8d9f1-94f8-40c7-abb7-482e71544562",
+              "trustAccountId": "35d40888-03fb-4ef3-a72c-e9940060871f",
+              "receivedDate": "2026-11-12",
+              "bankDescription": "DEPOSIT UNKNOWN REF B163PR",
+              "bankReference": "UNK-B/OBS647D/163PR",
+              "amount": 1234.56,
+              "status": "HELD",
+              "ageDays": 5,
+              "olderThanOneYear": false,
+              "allocatedClientId": null,
+              "allocatedClientName": null,
+              "allocatedMatterId": null,
+              "allocatedMatterName": null,
+              "resolutionTransactionId": "6906010c-ba51-4227-8009-227f2cea98cd",
+              "resolutionStatus": "AWAITING_APPROVAL",
+              "resolvedDate": null,
+              "bankStatementLineId": "2d047c6f-73b6-48c8-9fbc-bd2630e41b11",
+              "notes": "OBS 647D 163PR unknown credit B"
+            },
+            {
+              "id": "67de55e8-6691-4881-ac6e-0445c4512969",
+              "trustAccountId": "35d40888-03fb-4ef3-a72c-e9940060871f",
+              "receivedDate": "2026-11-13",
+              "bankDescription": "DEPOSIT UNKNOWN REF C163PR",
+              "bankReference": "UNK-C/OBS647D/163PR",
+              "amount": 777,
+              "status": "HELD",
+              "ageDays": 4,
+              "olderThanOneYear": false,
+              "allocatedClientId": null,
+              "allocatedClientName": null,
+              "allocatedMatterId": null,
+              "allocatedMatterName": null,
+              "resolutionTransactionId": null,
+              "resolutionStatus": null,
+              "resolvedDate": null,
+              "bankStatementLineId": "b59a8dc7-3580-4f43-86c7-1c434e565c80",
+              "notes": "OBS 647D 163PR unknown credit C"
+            }
+          ],
+          "files": [
+            "31-g2-fund-pending-other-creditors-alice-1440.png",
+            "31-g2-fund-pending-other-creditors-alice-1280.png"
+          ]
+        },
+        "uiRow": {
+          "id": null,
+          "cells": [
+            "12 Nov 2026",
+            "DEPOSIT UNKNOWN REF B163PR UNK-B/OBS647D/163PR",
+            "R 1 234,56",
+            "5 days",
+            "Held",
+            "Payment to the Fund awaiting approval"
+          ],
+          "status": "Held",
+          "pending": "Payment to the Fund awaiting approval",
+          "allocatedTo": null,
+          "hasAllocate": false,
+          "hasPayToFund": false,
+          "amount": 1234.56
+        },
+        "apiItem": {
+          "id": "49d8d9f1-94f8-40c7-abb7-482e71544562",
+          "trustAccountId": "35d40888-03fb-4ef3-a72c-e9940060871f",
+          "receivedDate": "2026-11-12",
+          "bankDescription": "DEPOSIT UNKNOWN REF B163PR",
+          "bankReference": "UNK-B/OBS647D/163PR",
+          "amount": 1234.56,
+          "status": "HELD",
+          "ageDays": 5,
+          "olderThanOneYear": false,
+          "allocatedClientId": null,
+          "allocatedClientName": null,
+          "allocatedMatterId": null,
+          "allocatedMatterName": null,
+          "resolutionTransactionId": "6906010c-ba51-4227-8009-227f2cea98cd",
+          "resolutionStatus": "AWAITING_APPROVAL",
+          "resolvedDate": null,
+          "bankStatementLineId": "2d047c6f-73b6-48c8-9fbc-bd2630e41b11",
+          "notes": "OBS 647D 163PR unknown credit B"
+        },
+        "booksAfterRequest": {
+          "asAt": "2026-11-17",
+          "cashbook": 292832.65,
+          "allCreditors": 292832.65,
+          "clientLedgers": 286500,
+          "unidentified": 6332.65,
+          "fund": 0,
+          "moroka": 241500,
+          "balanced": true
+        },
+        "bobRow": {
+          "cells": [
+            "17 Nov 2026",
+            "LPFF-B/OBS647D/163PR",
+            "Unidentified deposit paid to the Fund To the Legal Practitioners' Fidelity Fund: deposit received 12 November 2026 — DEPOSIT UNKNOWN REF B163PR",
+            "R 1 234,56",
+            "AWAITING APPROVAL",
+            "Approve Reject"
+          ],
+          "description": "To the Legal Practitioners' Fidelity Fund: deposit received 12 November 2026 — DEPOSIT UNKNOWN REF B163PR",
+          "hasApprove": true,
+          "hasReverse": false,
+          "files": [
+            "32-g3-bob-fund-pending-transactions-bob-1440.png",
+            "32-g3-bob-fund-pending-transactions-bob-1280.png"
+          ]
+        },
+        "bobAfter": [
+          "33-g4-bob-fund-approved-1440.png",
+          "33-g4-bob-fund-approved-1280.png"
+        ],
+        "txAfter": {
+          "type": "UNIDENT_FUND_PAY",
+          "status": "APPROVED",
+          "date": "2026-11-17",
+          "ledger": "NON_CLIENT",
+          "ledgerEffect": -1234.56,
+          "cashbookEffect": -1234.56,
+          "posted": true,
+          "customer": "<null>",
+          "project": "<null>",
+          "creditor": "267ee0c7-1373-43ad-95a2-cf53e3ece1f5",
+          "item": "49d8d9f1-94f8-40c7-abb7-482e71544562",
+          "reference": "LPFF-B/OBS647D/163PR",
+          "description": "To the Legal Practitioners' Fidelity Fund: deposit received 12 November 2026 — DEPOSIT UNKNOWN REF B163PR",
+          "reversedBy": "<null>",
+          "recordedBy": "bbd9baf4-a970-4ea8-ab19-66817f624bc8",
+          "approvedBy": "834376bb-67e4-4fc2-b729-c0cb63f8e06c"
+        },
+        "itemAfter": {
+          "status": "PAID_TO_FUND",
+          "resolvedDate": "2026-11-17",
+          "resolutionTx": "6906010c-ba51-4227-8009-227f2cea98cd",
+          "customer": "<null>",
+          "project": "<null>",
+          "creditTx": "<null>"
+        },
+        "booksAfter": {
+          "asAt": "2026-11-17",
+          "cashbook": 291598.09,
+          "allCreditors": 291598.09,
+          "clientLedgers": 286500,
+          "unidentified": 5098.09,
+          "fund": 0,
+          "moroka": 241500,
+          "balanced": true
+        },
+        "delta": {
+          "cashbook": -1234.56,
+          "unidentified": -1234.56,
+          "fund": 0,
+          "moroka": 0,
+          "clientLedgers": 0
+        },
+        "pageAfter": {
+          "cardValue": 5098.09,
+          "cardApi": 5098.09,
+          "fundApi": 0,
+          "sqlBalance": 5098.09,
+          "headers": [
+            "RECEIVED",
+            "DESCRIPTION",
+            "AMOUNT",
+            "AGE",
+            "STATUS",
+            "ACTIONS"
+          ],
+          "n": 3,
+          "rows": {
+            "DEPOSIT UNKNOWN REF A163PR UNK-A/OBS647D/163PR": {
+              "id": "da88d7a5-54fb-4a04-aaf2-3f92dcd6bc19",
+              "cells": [
+                "10 Nov 2026",
+                "DEPOSIT UNKNOWN REF A163PR UNK-A/OBS647D/163PR",
+                "R 4 321,09",
+                "7 days",
+                "Held",
+                "Allocate Pay to the Fund"
+              ],
+              "status": "Held",
+              "pending": null,
+              "allocatedTo": null,
+              "hasAllocate": true,
+              "hasPayToFund": true,
+              "amount": 4321.09
+            },
+            "DEPOSIT UNKNOWN REF B163PR UNK-B/OBS647D/163PR": {
+              "id": null,
+              "cells": [
+                "12 Nov 2026",
+                "DEPOSIT UNKNOWN REF B163PR UNK-B/OBS647D/163PR",
+                "R 1 234,56",
+                "—",
+                "Paid to the Fund",
+                "—"
+              ],
+              "status": "Paid to the Fund",
+              "pending": null,
+              "allocatedTo": null,
+              "hasAllocate": false,
+              "hasPayToFund": false,
+              "amount": 1234.56
+            },
+            "DEPOSIT UNKNOWN REF C163PR UNK-C/OBS647D/163PR": {
+              "id": "67de55e8-6691-4881-ac6e-0445c4512969",
+              "cells": [
+                "13 Nov 2026",
+                "DEPOSIT UNKNOWN REF C163PR UNK-C/OBS647D/163PR",
+                "R 777,00",
+                "4 days",
+                "Held",
+                "Allocate Pay to the Fund"
+              ],
+              "status": "Held",
+              "pending": null,
+              "allocatedTo": null,
+              "hasAllocate": true,
+              "hasPayToFund": true,
+              "amount": 777
+            }
+          },
+          "api": [
+            {
+              "id": "da88d7a5-54fb-4a04-aaf2-3f92dcd6bc19",
+              "trustAccountId": "35d40888-03fb-4ef3-a72c-e9940060871f",
+              "receivedDate": "2026-11-10",
+              "bankDescription": "DEPOSIT UNKNOWN REF A163PR",
+              "bankReference": "UNK-A/OBS647D/163PR",
+              "amount": 4321.09,
+              "status": "HELD",
+              "ageDays": 7,
+              "olderThanOneYear": false,
+              "allocatedClientId": null,
+              "allocatedClientName": null,
+              "allocatedMatterId": null,
+              "allocatedMatterName": null,
+              "resolutionTransactionId": null,
+              "resolutionStatus": null,
+              "resolvedDate": null,
+              "bankStatementLineId": "2f14c2fb-13ef-4a7a-8a59-573bffcd3cc8",
+              "notes": "OBS 647D 163PR unknown credit A"
+            },
+            {
+              "id": "49d8d9f1-94f8-40c7-abb7-482e71544562",
+              "trustAccountId": "35d40888-03fb-4ef3-a72c-e9940060871f",
+              "receivedDate": "2026-11-12",
+              "bankDescription": "DEPOSIT UNKNOWN REF B163PR",
+              "bankReference": "UNK-B/OBS647D/163PR",
+              "amount": 1234.56,
+              "status": "PAID_TO_FUND",
+              "ageDays": 5,
+              "olderThanOneYear": false,
+              "allocatedClientId": null,
+              "allocatedClientName": null,
+              "allocatedMatterId": null,
+              "allocatedMatterName": null,
+              "resolutionTransactionId": "6906010c-ba51-4227-8009-227f2cea98cd",
+              "resolutionStatus": "APPROVED",
+              "resolvedDate": "2026-11-17",
+              "bankStatementLineId": "2d047c6f-73b6-48c8-9fbc-bd2630e41b11",
+              "notes": "OBS 647D 163PR unknown credit B"
+            },
+            {
+              "id": "67de55e8-6691-4881-ac6e-0445c4512969",
+              "trustAccountId": "35d40888-03fb-4ef3-a72c-e9940060871f",
+              "receivedDate": "2026-11-13",
+              "bankDescription": "DEPOSIT UNKNOWN REF C163PR",
+              "bankReference": "UNK-C/OBS647D/163PR",
+              "amount": 777,
+              "status": "HELD",
+              "ageDays": 4,
+              "olderThanOneYear": false,
+              "allocatedClientId": null,
+              "allocatedClientName": null,
+              "allocatedMatterId": null,
+              "allocatedMatterName": null,
+              "resolutionTransactionId": null,
+              "resolutionStatus": null,
+              "resolvedDate": null,
+              "bankStatementLineId": "b59a8dc7-3580-4f43-86c7-1c434e565c80",
+              "notes": "OBS 647D 163PR unknown credit C"
+            }
+          ],
+          "files": [
+            "34-g5-paid-to-fund-other-creditors-alice-1440.png",
+            "34-g5-paid-to-fund-other-creditors-alice-1280.png"
+          ]
+        },
+        "uiAfter": {
+          "id": null,
+          "cells": [
+            "12 Nov 2026",
+            "DEPOSIT UNKNOWN REF B163PR UNK-B/OBS647D/163PR",
+            "R 1 234,56",
+            "—",
+            "Paid to the Fund",
+            "—"
+          ],
+          "status": "Paid to the Fund",
+          "pending": null,
+          "allocatedTo": null,
+          "hasAllocate": false,
+          "hasPayToFund": false,
+          "amount": 1234.56
+        },
+        "apiAfter": {
+          "id": "49d8d9f1-94f8-40c7-abb7-482e71544562",
+          "trustAccountId": "35d40888-03fb-4ef3-a72c-e9940060871f",
+          "receivedDate": "2026-11-12",
+          "bankDescription": "DEPOSIT UNKNOWN REF B163PR",
+          "bankReference": "UNK-B/OBS647D/163PR",
+          "amount": 1234.56,
+          "status": "PAID_TO_FUND",
+          "ageDays": 5,
+          "olderThanOneYear": false,
+          "allocatedClientId": null,
+          "allocatedClientName": null,
+          "allocatedMatterId": null,
+          "allocatedMatterName": null,
+          "resolutionTransactionId": "6906010c-ba51-4227-8009-227f2cea98cd",
+          "resolutionStatus": "APPROVED",
+          "resolvedDate": "2026-11-17",
+          "bankStatementLineId": "2d047c6f-73b6-48c8-9fbc-bd2630e41b11",
+          "notes": "OBS 647D 163PR unknown credit B"
+        },
+        "fundLedgerApi": {
+          "content": [],
+          "page": {
+            "size": 25,
+            "number": 0,
+            "totalElements": 0,
+            "totalPages": 0
+          }
+        },
+        "udLedgerApi": {
+          "content": [
+            {
+              "id": "6906010c-ba51-4227-8009-227f2cea98cd",
+              "trustAccountId": "35d40888-03fb-4ef3-a72c-e9940060871f",
+              "transactionType": "UNIDENT_FUND_PAY",
+              "typeLabel": "Unidentified deposit paid to the Fund",
+              "direction": "OUT",
+              "ledger": "NON_CLIENT",
+              "amount": 1234.56,
+              "clientId": null,
+              "matterId": null,
+              "creditorAccountId": "267ee0c7-1373-43ad-95a2-cf53e3ece1f5",
+              "investmentId": null,
+              "counterpartyClientId": null,
+              "invoiceId": null,
+              "reference": "LPFF-B/OBS647D/163PR",
+              "description": "To the Legal Practitioners' Fidelity Fund: deposit received 12 November 2026 — DEPOSIT UNKNOWN REF B163PR",
+              "transactionDate": "2026-11-17",
+              "status": "APPROVED",
+              "postedAt": "2026-11-17T18:55:40.048306Z",
+              "approvedBy": "834376bb-67e4-4fc2-b729-c0cb63f8e06c",
+              "approvedAt": "2026-11-17T18:55:40.048238Z",
+              "secondApprovedBy": null,
+              "secondApprovedAt": null,
+              "rejectedBy": null,
+              "rejectedAt": null,
+              "rejectionReason": null,
+              "reversalOf": null,
+              "reversedById": null,
+              "reversalPending": false,
+              "bankStatementLineId": null,
+              "recordedBy": "bbd9baf4-a970-4ea8-ab19-66817f624bc8",
+              "createdAt": "2026-11-17T18:53:16.929333Z",
+              "runningBalance": 5098.09,
+              "chargeRecoverable": null,
+              "chargeVatAmount": null
+            },
+            {
+              "id": "5db4d29f-c7df-4428-8588-b6119203f9c6",
+              "trustAccountId": "35d40888-03fb-4ef3-a72c-e9940060871f",
+              "transactionType": "REVERSAL",
+              "typeLabel": "Reversal",
+              "direction": "IN",
+              "ledger": "NON_CLIENT",
+              "amount": 4321.09,
+              "clientId": null,
+              "matterId": null,
+              "creditorAccountId": "267ee0c7-1373-43ad-95a2-cf53e3ece1f5",
+              "investmentId": null,
+              "counterpartyClientId": null,
+              "invoiceId": null,
+              "reference": "REV-UID-DA88D7A5",
+              "description": "OBS 647D 163PR: allocated to the wrong client",
+              "transactionDate": "2026-11-17",
+              "status": "RECORDED",
+              "postedAt": "2026-11-17T18:47:03.973944Z",
+              "approvedBy": null,
+              "approvedAt": null,
+              "secondApprovedBy": null,
+              "secondApprovedAt": null,
+              "rejectedBy": null,
+              "rejectedAt": null,
+              "rejectionReason": null,
+              "reversalOf": "cbf2e39b-75d6-4793-85d0-d0ca1466448d",
+              "reversedById": null,
+              "reversalPending": false,
+              "bankStatementLineId": null,
+              "recordedBy": "bbd9baf4-a970-4ea8-ab19-66817f624bc8",
+              "createdAt": "2026-11-17T18:47:03.974222Z",
+              "runningBalance": 6332.65,
+              "chargeRecoverable": null,
+              "chargeVatAmount": null
+            },
+            {
+              "id": "cbf2e39b-75d6-4793-85d0-d0ca1466448d",
+              "trustAccountId": "35d40888-03fb-4ef3-a72c-e9940060871f",
+              "transactionType": "UNIDENT_ALLOC_OUT",
+              "typeLabel": "Unidentified deposit allocated",
+              "direction": "OUT",
+              "ledger": "NON_CLIENT",
+              "amount": 4321.09,
+              "clientId": null,
+              "matterId": null,
+              "creditorAccountId": "267ee0c7-1373-43ad-95a2-cf53e3ece1f5",
+              "investmentId": null,
+              "counterpartyClientId": null,
+              "invoiceId": null,
+              "reference": "UID-DA88D7A5",
+              "description": "To Moroka Family Trust mwl0skwm827e — Estate Late Peter Moroka mwl0skwm827e: deposit received 10 November 2026 — DEPOSIT UNKNOWN REF A163PR",
+              "transactionDate": "2026-11-14",
+              "status": "REVERSED",
+              "postedAt": "2026-11-17T18:40:47.662057Z",
+              "approvedBy": "834376bb-67e4-4fc2-b729-c0cb63f8e06c",
+              "approvedAt": "2026-11-17T18:40:47.661988Z",
+              "secondApprovedBy": null,
+              "secondApprovedAt": null,
+              "rejectedBy": null,
+              "rejectedAt": null,
+              "rejectionReason": null,
+              "reversalOf": null,
+              "reversedById": "5db4d29f-c7df-4428-8588-b6119203f9c6",
+              "reversalPending": false,
+              "bankStatementLineId": null,
+              "recordedBy": "bbd9baf4-a970-4ea8-ab19-66817f624bc8",
+              "createdAt": "2026-11-17T18:37:37.843923Z",
+              "runningBalance": 2011.56,
+              "chargeRecoverable": null,
+              "chargeVatAmount": null
+            },
+            {
+              "id": "81d663bf-b76a-44ce-8dce-ced1d305ec7e",
+              "trustAccountId": "35d40888-03fb-4ef3-a72c-e9940060871f",
+              "transactionType": "UNIDENTIFIED_DEPOSIT",
+              "typeLabel": "Unidentified deposit",
+              "direction": "IN",
+              "ledger": "NON_CLIENT",
+              "amount": 777,
+              "clientId": null,
+              "matterId": null,
+              "creditorAccountId": "267ee0c7-1373-43ad-95a2-cf53e3ece1f5",
+              "investmentId": null,
+              "counterpartyClientId": null,
+              "invoiceId": null,
+              "reference": "UNK-C/OBS647D/163PR",
+              "description": "DEPOSIT UNKNOWN REF C163PR",
+              "transactionDate": "2026-11-13",
+              "status": "RECORDED",
+              "postedAt": "2026-11-17T18:34:29.655350Z",
+              "approvedBy": null,
+              "approvedAt": null,
+              "secondApprovedBy": null,
+              "secondApprovedAt": null,
+              "rejectedBy": null,
+              "rejectedAt": null,
+              "rejectionReason": null,
+              "reversalOf": null,
+              "reversedById": null,
+              "reversalPending": false,
+              "bankStatementLineId": "b59a8dc7-3580-4f43-86c7-1c434e565c80",
+              "recordedBy": "bbd9baf4-a970-4ea8-ab19-66817f624bc8",
+              "createdAt": "2026-11-17T18:34:29.655397Z",
+              "runningBalance": 6332.65,
+              "chargeRecoverable": null,
+              "chargeVatAmount": null
+            },
+            {
+              "id": "c05f8217-9e1c-4f7b-bef7-428644d60cca",
+              "trustAccountId": "35d40888-03fb-4ef3-a72c-e9940060871f",
+              "transactionType": "UNIDENTIFIED_DEPOSIT",
+              "typeLabel": "Unidentified deposit",
+              "direction": "IN",
+              "ledger": "NON_CLIENT",
+              "amount": 1234.56,
+              "clientId": null,
+              "matterId": null,
+              "creditorAccountId": "267ee0c7-1373-43ad-95a2-cf53e3ece1f5",
+              "investmentId": null,
+              "counterpartyClientId": null,
+              "invoiceId": null,
+              "reference": "UNK-B/OBS647D/163PR",
+              "description": "DEPOSIT UNKNOWN REF B163PR",
+              "transactionDate": "2026-11-12",
+              "status": "RECORDED",
+              "postedAt": "2026-11-17T18:34:28.114777Z",
+              "approvedBy": null,
+              "approvedAt": null,
+              "secondApprovedBy": null,
+              "secondApprovedAt": null,
+              "rejectedBy": null,
+              "rejectedAt": null,
+              "rejectionReason": null,
+              "reversalOf": null,
+              "reversedById": null,
+              "reversalPending": false,
+              "bankStatementLineId": "2d047c6f-73b6-48c8-9fbc-bd2630e41b11",
+              "recordedBy": "bbd9baf4-a970-4ea8-ab19-66817f624bc8",
+              "createdAt": "2026-11-17T18:34:28.114845Z",
+              "runningBalance": 5555.65,
+              "chargeRecoverable": null,
+              "chargeVatAmount": null
+            },
+            {
+              "id": "b01fbfde-88b2-4b42-bb30-00fbabfcce33",
+              "trustAccountId": "35d40888-03fb-4ef3-a72c-e9940060871f",
+              "transactionType": "UNIDENTIFIED_DEPOSIT",
+              "typeLabel": "Unidentified deposit",
+              "direction": "IN",
+              "ledger": "NON_CLIENT",
+              "amount": 4321.09,
+              "clientId": null,
+              "matterId": null,
+              "creditorAccountId": "267ee0c7-1373-43ad-95a2-cf53e3ece1f5",
+              "investmentId": null,
+              "counterpartyClientId": null,
+              "invoiceId": null,
+              "reference": "UNK-A/OBS647D/163PR",
+              "description": "DEPOSIT UNKNOWN REF A163PR",
+              "transactionDate": "2026-11-10",
+              "status": "RECORDED",
+              "postedAt": "2026-11-17T18:34:26.570781Z",
+              "approvedBy": null,
+              "approvedAt": null,
+              "secondApprovedBy": null,
+              "secondApprovedAt": null,
+              "rejectedBy": null,
+              "rejectedAt": null,
+              "rejectionReason": null,
+              "reversalOf": null,
+              "reversedById": null,
+              "reversalPending": false,
+              "bankStatementLineId": "2f14c2fb-13ef-4a7a-8a59-573bffcd3cc8",
+              "recordedBy": "bbd9baf4-a970-4ea8-ab19-66817f624bc8",
+              "createdAt": "2026-11-17T18:34:26.571029Z",
+              "runningBalance": 4321.09,
+              "chargeRecoverable": null,
+              "chargeVatAmount": null
+            }
+          ],
+          "page": {
+            "size": 25,
+            "number": 0,
+            "totalElements": 6,
+            "totalPages": 1
+          }
+        },
+        "checks": {
+          "ageText": true,
+          "underOneYearWarning": true,
+          "oneRowPending": true,
+          "pendingTextUi": true,
+          "nothingMovedOnRequest": true,
+          "bobRowDescription": true,
+          "approvedPosted": true,
+          "itemPaidToFund": true,
+          "movesPerPostingTable": true,
+          "booksBalance": true,
+          "uiApiPaid": true,
+          "unidentifiedUiApiSql": true,
+          "fundLedgerUnchangedApi": true
+        }
+      },
+      "booksBeforeC": {
+        "asAt": "2026-11-17",
+        "cashbook": 291598.09,
+        "allCreditors": 291598.09,
+        "clientLedgers": 286500,
+        "unidentified": 5098.09,
+        "fund": 0,
+        "moroka": 241500,
+        "balanced": true
+      },
+      "C": {
+        "dialogText": "Pay to the Fidelity Fund Received 13 Nov 2026 — DEPOSIT UNKNOWN REF C163PR — R 777,00. Another member must approve the payment. Held for 4 days This deposit has been held for less than a year. Unclaimed trust money is ordinarily paid to the Legal Practitioners' Fidelity Fund only after the period the Act sets — check before you request this payment. Payment reference Payment date Notes (optional) Cancel Request payment Close",
+        "age": "Held for 4 days",
+        "warningVisible": true,
+        "warningRole": "status",
+        "warning": "This deposit has been held for less than a year. Unclaimed trust money is ordinarily paid to the Legal Practitioners' Fidelity Fund only after the period the Act sets — check before you request this payment.",
+        "defaultDate": "2026-11-17",
+        "dateMin": "2026-11-13",
+        "dateMax": "2026-11-17",
+        "reference": "LPFF-C/OBS647D/163PR",
+        "files": [
+          "36-gc1-pay-to-fund-dialog-1440.png",
+          "36-gc1-pay-to-fund-dialog-1280.png"
+        ],
+        "txId": "496626f2-8245-4a90-bf61-e8dc1b1fe2bc",
+        "rowsAdded": 1,
+        "tx": {
+          "type": "UNIDENT_FUND_PAY",
+          "status": "AWAITING_APPROVAL",
+          "date": "2026-11-17",
+          "ledger": "NON_CLIENT",
+          "ledgerEffect": 0,
+          "cashbookEffect": 0,
+          "posted": false,
+          "customer": "<null>",
+          "project": "<null>",
+          "creditor": "267ee0c7-1373-43ad-95a2-cf53e3ece1f5",
+          "item": "67de55e8-6691-4881-ac6e-0445c4512969",
+          "reference": "LPFF-C/OBS647D/163PR",
+          "description": "To the Legal Practitioners' Fidelity Fund: deposit received 13 November 2026 — DEPOSIT UNKNOWN REF C163PR",
+          "reversedBy": "<null>",
+          "recordedBy": "bbd9baf4-a970-4ea8-ab19-66817f624bc8",
+          "approvedBy": "<null>"
+        },
+        "page": {
+          "cardValue": 5098.09,
+          "cardApi": 5098.09,
+          "fundApi": 0,
+          "sqlBalance": 5098.09,
+          "headers": [
+            "RECEIVED",
+            "DESCRIPTION",
+            "AMOUNT",
+            "AGE",
+            "STATUS",
+            "ACTIONS"
+          ],
+          "n": 3,
+          "rows": {
+            "DEPOSIT UNKNOWN REF A163PR UNK-A/OBS647D/163PR": {
+              "id": "da88d7a5-54fb-4a04-aaf2-3f92dcd6bc19",
+              "cells": [
+                "10 Nov 2026",
+                "DEPOSIT UNKNOWN REF A163PR UNK-A/OBS647D/163PR",
+                "R 4 321,09",
+                "7 days",
+                "Held",
+                "Allocate Pay to the Fund"
+              ],
+              "status": "Held",
+              "pending": null,
+              "allocatedTo": null,
+              "hasAllocate": true,
+              "hasPayToFund": true,
+              "amount": 4321.09
+            },
+            "DEPOSIT UNKNOWN REF B163PR UNK-B/OBS647D/163PR": {
+              "id": null,
+              "cells": [
+                "12 Nov 2026",
+                "DEPOSIT UNKNOWN REF B163PR UNK-B/OBS647D/163PR",
+                "R 1 234,56",
+                "—",
+                "Paid to the Fund",
+                "—"
+              ],
+              "status": "Paid to the Fund",
+              "pending": null,
+              "allocatedTo": null,
+              "hasAllocate": false,
+              "hasPayToFund": false,
+              "amount": 1234.56
+            },
+            "DEPOSIT UNKNOWN REF C163PR UNK-C/OBS647D/163PR": {
+              "id": null,
+              "cells": [
+                "13 Nov 2026",
+                "DEPOSIT UNKNOWN REF C163PR UNK-C/OBS647D/163PR",
+                "R 777,00",
+                "4 days",
+                "Held",
+                "Payment to the Fund awaiting approval"
+              ],
+              "status": "Held",
+              "pending": "Payment to the Fund awaiting approval",
+              "allocatedTo": null,
+              "hasAllocate": false,
+              "hasPayToFund": false,
+              "amount": 777
+            }
+          },
+          "api": [
+            {
+              "id": "da88d7a5-54fb-4a04-aaf2-3f92dcd6bc19",
+              "trustAccountId": "35d40888-03fb-4ef3-a72c-e9940060871f",
+              "receivedDate": "2026-11-10",
+              "bankDescription": "DEPOSIT UNKNOWN REF A163PR",
+              "bankReference": "UNK-A/OBS647D/163PR",
+              "amount": 4321.09,
+              "status": "HELD",
+              "ageDays": 7,
+              "olderThanOneYear": false,
+              "allocatedClientId": null,
+              "allocatedClientName": null,
+              "allocatedMatterId": null,
+              "allocatedMatterName": null,
+              "resolutionTransactionId": null,
+              "resolutionStatus": null,
+              "resolvedDate": null,
+              "bankStatementLineId": "2f14c2fb-13ef-4a7a-8a59-573bffcd3cc8",
+              "notes": "OBS 647D 163PR unknown credit A"
+            },
+            {
+              "id": "49d8d9f1-94f8-40c7-abb7-482e71544562",
+              "trustAccountId": "35d40888-03fb-4ef3-a72c-e9940060871f",
+              "receivedDate": "2026-11-12",
+              "bankDescription": "DEPOSIT UNKNOWN REF B163PR",
+              "bankReference": "UNK-B/OBS647D/163PR",
+              "amount": 1234.56,
+              "status": "PAID_TO_FUND",
+              "ageDays": 5,
+              "olderThanOneYear": false,
+              "allocatedClientId": null,
+              "allocatedClientName": null,
+              "allocatedMatterId": null,
+              "allocatedMatterName": null,
+              "resolutionTransactionId": "6906010c-ba51-4227-8009-227f2cea98cd",
+              "resolutionStatus": "APPROVED",
+              "resolvedDate": "2026-11-17",
+              "bankStatementLineId": "2d047c6f-73b6-48c8-9fbc-bd2630e41b11",
+              "notes": "OBS 647D 163PR unknown credit B"
+            },
+            {
+              "id": "67de55e8-6691-4881-ac6e-0445c4512969",
+              "trustAccountId": "35d40888-03fb-4ef3-a72c-e9940060871f",
+              "receivedDate": "2026-11-13",
+              "bankDescription": "DEPOSIT UNKNOWN REF C163PR",
+              "bankReference": "UNK-C/OBS647D/163PR",
+              "amount": 777,
+              "status": "HELD",
+              "ageDays": 4,
+              "olderThanOneYear": false,
+              "allocatedClientId": null,
+              "allocatedClientName": null,
+              "allocatedMatterId": null,
+              "allocatedMatterName": null,
+              "resolutionTransactionId": "496626f2-8245-4a90-bf61-e8dc1b1fe2bc",
+              "resolutionStatus": "AWAITING_APPROVAL",
+              "resolvedDate": null,
+              "bankStatementLineId": "b59a8dc7-3580-4f43-86c7-1c434e565c80",
+              "notes": "OBS 647D 163PR unknown credit C"
+            }
+          ],
+          "files": [
+            "37-gc2-fund-pending-other-creditors-alice-1440.png",
+            "37-gc2-fund-pending-other-creditors-alice-1280.png"
+          ]
+        },
+        "uiRow": {
+          "id": null,
+          "cells": [
+            "13 Nov 2026",
+            "DEPOSIT UNKNOWN REF C163PR UNK-C/OBS647D/163PR",
+            "R 777,00",
+            "4 days",
+            "Held",
+            "Payment to the Fund awaiting approval"
+          ],
+          "status": "Held",
+          "pending": "Payment to the Fund awaiting approval",
+          "allocatedTo": null,
+          "hasAllocate": false,
+          "hasPayToFund": false,
+          "amount": 777
+        },
+        "txAfter": {
+          "type": "UNIDENT_FUND_PAY",
+          "status": "REJECTED",
+          "date": "2026-11-17",
+          "ledger": "NON_CLIENT",
+          "ledgerEffect": 0,
+          "cashbookEffect": 0,
+          "posted": false,
+          "customer": "<null>",
+          "project": "<null>",
+          "creditor": "267ee0c7-1373-43ad-95a2-cf53e3ece1f5",
+          "item": "67de55e8-6691-4881-ac6e-0445c4512969",
+          "reference": "LPFF-C/OBS647D/163PR",
+          "description": "To the Legal Practitioners' Fidelity Fund: deposit received 13 November 2026 — DEPOSIT UNKNOWN REF C163PR",
+          "reversedBy": "<null>",
+          "recordedBy": "bbd9baf4-a970-4ea8-ab19-66817f624bc8",
+          "approvedBy": "<null>"
+        },
+        "itemAfter": {
+          "status": "HELD",
+          "resolvedDate": "<null>",
+          "resolutionTx": "<null>",
+          "customer": "<null>",
+          "project": "<null>",
+          "creditTx": "<null>"
+        },
+        "booksAfter": {
+          "asAt": "2026-11-17",
+          "cashbook": 291598.09,
+          "allCreditors": 291598.09,
+          "clientLedgers": 286500,
+          "unidentified": 5098.09,
+          "fund": 0,
+          "moroka": 241500,
+          "balanced": true
+        },
+        "pageAfter": {
+          "cardValue": 5098.09,
+          "cardApi": 5098.09,
+          "fundApi": 0,
+          "sqlBalance": 5098.09,
+          "headers": [
+            "RECEIVED",
+            "DESCRIPTION",
+            "AMOUNT",
+            "AGE",
+            "STATUS",
+            "ACTIONS"
+          ],
+          "n": 3,
+          "rows": {
+            "DEPOSIT UNKNOWN REF A163PR UNK-A/OBS647D/163PR": {
+              "id": "da88d7a5-54fb-4a04-aaf2-3f92dcd6bc19",
+              "cells": [
+                "10 Nov 2026",
+                "DEPOSIT UNKNOWN REF A163PR UNK-A/OBS647D/163PR",
+                "R 4 321,09",
+                "7 days",
+                "Held",
+                "Allocate Pay to the Fund"
+              ],
+              "status": "Held",
+              "pending": null,
+              "allocatedTo": null,
+              "hasAllocate": true,
+              "hasPayToFund": true,
+              "amount": 4321.09
+            },
+            "DEPOSIT UNKNOWN REF B163PR UNK-B/OBS647D/163PR": {
+              "id": null,
+              "cells": [
+                "12 Nov 2026",
+                "DEPOSIT UNKNOWN REF B163PR UNK-B/OBS647D/163PR",
+                "R 1 234,56",
+                "—",
+                "Paid to the Fund",
+                "—"
+              ],
+              "status": "Paid to the Fund",
+              "pending": null,
+              "allocatedTo": null,
+              "hasAllocate": false,
+              "hasPayToFund": false,
+              "amount": 1234.56
+            },
+            "DEPOSIT UNKNOWN REF C163PR UNK-C/OBS647D/163PR": {
+              "id": "67de55e8-6691-4881-ac6e-0445c4512969",
+              "cells": [
+                "13 Nov 2026",
+                "DEPOSIT UNKNOWN REF C163PR UNK-C/OBS647D/163PR",
+                "R 777,00",
+                "4 days",
+                "Held",
+                "Allocate Pay to the Fund"
+              ],
+              "status": "Held",
+              "pending": null,
+              "allocatedTo": null,
+              "hasAllocate": true,
+              "hasPayToFund": true,
+              "amount": 777
+            }
+          },
+          "api": [
+            {
+              "id": "da88d7a5-54fb-4a04-aaf2-3f92dcd6bc19",
+              "trustAccountId": "35d40888-03fb-4ef3-a72c-e9940060871f",
+              "receivedDate": "2026-11-10",
+              "bankDescription": "DEPOSIT UNKNOWN REF A163PR",
+              "bankReference": "UNK-A/OBS647D/163PR",
+              "amount": 4321.09,
+              "status": "HELD",
+              "ageDays": 7,
+              "olderThanOneYear": false,
+              "allocatedClientId": null,
+              "allocatedClientName": null,
+              "allocatedMatterId": null,
+              "allocatedMatterName": null,
+              "resolutionTransactionId": null,
+              "resolutionStatus": null,
+              "resolvedDate": null,
+              "bankStatementLineId": "2f14c2fb-13ef-4a7a-8a59-573bffcd3cc8",
+              "notes": "OBS 647D 163PR unknown credit A"
+            },
+            {
+              "id": "49d8d9f1-94f8-40c7-abb7-482e71544562",
+              "trustAccountId": "35d40888-03fb-4ef3-a72c-e9940060871f",
+              "receivedDate": "2026-11-12",
+              "bankDescription": "DEPOSIT UNKNOWN REF B163PR",
+              "bankReference": "UNK-B/OBS647D/163PR",
+              "amount": 1234.56,
+              "status": "PAID_TO_FUND",
+              "ageDays": 5,
+              "olderThanOneYear": false,
+              "allocatedClientId": null,
+              "allocatedClientName": null,
+              "allocatedMatterId": null,
+              "allocatedMatterName": null,
+              "resolutionTransactionId": "6906010c-ba51-4227-8009-227f2cea98cd",
+              "resolutionStatus": "APPROVED",
+              "resolvedDate": "2026-11-17",
+              "bankStatementLineId": "2d047c6f-73b6-48c8-9fbc-bd2630e41b11",
+              "notes": "OBS 647D 163PR unknown credit B"
+            },
+            {
+              "id": "67de55e8-6691-4881-ac6e-0445c4512969",
+              "trustAccountId": "35d40888-03fb-4ef3-a72c-e9940060871f",
+              "receivedDate": "2026-11-13",
+              "bankDescription": "DEPOSIT UNKNOWN REF C163PR",
+              "bankReference": "UNK-C/OBS647D/163PR",
+              "amount": 777,
+              "status": "HELD",
+              "ageDays": 4,
+              "olderThanOneYear": false,
+              "allocatedClientId": null,
+              "allocatedClientName": null,
+              "allocatedMatterId": null,
+              "allocatedMatterName": null,
+              "resolutionTransactionId": null,
+              "resolutionStatus": null,
+              "resolvedDate": null,
+              "bankStatementLineId": "b59a8dc7-3580-4f43-86c7-1c434e565c80",
+              "notes": "OBS 647D 163PR unknown credit C"
+            }
+          ],
+          "files": [
+            "40-gc5-rejected-held-other-creditors-alice-1440.png",
+            "40-gc5-rejected-held-other-creditors-alice-1280.png"
+          ]
+        },
+        "uiAfter": {
+          "id": "67de55e8-6691-4881-ac6e-0445c4512969",
+          "cells": [
+            "13 Nov 2026",
+            "DEPOSIT UNKNOWN REF C163PR UNK-C/OBS647D/163PR",
+            "R 777,00",
+            "4 days",
+            "Held",
+            "Allocate Pay to the Fund"
+          ],
+          "status": "Held",
+          "pending": null,
+          "allocatedTo": null,
+          "hasAllocate": true,
+          "hasPayToFund": true,
+          "amount": 777
+        },
+        "checks": {
+          "ageText": true,
+          "underOneYearWarning": true,
+          "dateWindow": true,
+          "oneRowPending": true,
+          "pendingTextUi": true,
+          "rejectedNotPosted": true,
+          "itemHeldResolutionCleared": true,
+          "nothingMoved": true,
+          "uiHeldActionsBack": true
+        }
+      }
+    },
+    "dPortal": {
+      "ui": "DEFERRED",
+      "error": "page.waitForURL: Timeout 60000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n  navigated to \"http://localhost:3012/auth/exchange?token=7_j9yh7KCBanmHEyLEfCY0B_keEajdrh892cHM_GbMA&orgId=e2e-test-org\"\n============================================================",
+      "checks": {
+        "labelShown": false,
+        "descriptionVerbatimD12": false,
+        "noFirmOnlyLabels": false
+      }
+    },
+    "final": {
+      "books": {
+        "asAt": "2026-11-17",
+        "cashbook": 291598.09,
+        "allCreditors": 291598.09,
+        "clientLedgers": 286500,
+        "unidentified": 5098.09,
+        "fund": 0,
+        "moroka": 241500,
+        "balanced": true
+      },
+      "booksAtAllocationDate": {
+        "asAt": "2026-11-14",
+        "cashbook": 6332.65,
+        "allCreditors": 6332.65,
+        "clientLedgers": 4321.09,
+        "unidentified": 2011.56,
+        "fund": 0,
+        "moroka": 241500,
+        "balanced": true
+      },
+      "booksAtReceiptA": {
+        "asAt": "2026-11-10",
+        "cashbook": 4321.09,
+        "allCreditors": 4321.09,
+        "clientLedgers": 0,
+        "unidentified": 4321.09,
+        "fund": 0,
+        "moroka": 241500,
+        "balanced": true
+      },
+      "firmOnlyInPortal": 0,
+      "tx": {
+        "cells": [
+          "14 Nov 2026",
+          "UID-DA88D7A5",
+          "Unidentified deposit allocated To Moroka Family Trust mwl0skwm827e — Estate Late Peter Moroka mwl0skwm827e: deposit received 10 November 2026 — DEPOSIT UNKNOWN REF A163PR",
+          "R 4 321,09",
+          "REVERSED",
+          ""
+        ],
+        "description": "To Moroka Family Trust mwl0skwm827e — Estate Late Peter Moroka mwl0skwm827e: deposit received 10 November 2026 — DEPOSIT UNKNOWN REF A163PR",
+        "hasApprove": false,
+        "hasReverse": false,
+        "files": [
+          "41-z1-final-transactions-alice-1440.png",
+          "41-z1-final-transactions-alice-1280.png"
+        ]
+      },
+      "position": {
+        "trustAccountId": "35d40888-03fb-4ef3-a72c-e9940060871f",
+        "accountName": "Mathebula & Partners Trust Account",
+        "bankName": "Standard Bank",
+        "cashbookBalance": 291598.09,
+        "clientLedgerTotal": 286500,
+        "creditorBreakdown": {
+          "clientLedgers": 286500,
+          "investmentCreditors": 0,
+          "fundInterestAndCharges": 0,
+          "unidentifiedDeposits": 5098.09,
+          "otherNonClient": 0,
+          "interAccount": 0,
+          "total": 291598.09
+        },
+        "difference": 0,
+        "lastReconciliationPeriodEnd": "2026-11-13",
+        "lastReconciliationStatus": "DRAFT",
+        "lastReconciliationBalanced": true,
+        "daysSinceReconciliation": 4,
+        "pendingApprovalCount": 3,
+        "accounts": [
+          {
+            "id": "35d40888-03fb-4ef3-a72c-e9940060871f",
+            "accountName": "Mathebula & Partners Trust Account",
+            "isPrimary": true
+          }
+        ]
+      },
+      "checks": {
+        "booksBalanceToday": true,
+        "booksBalanceAtAllocationDate": true,
+        "booksBalanceAtReceiptA": true,
+        "noFirmOnlyRowsInPortal": true,
+        "positionBalanced": true
+      }
+    }
+  },
+  "consoleErrors": [
+    {
+      "tab": "portal",
+      "url": "http://localhost:3012/auth/exchange?token=7_j9yh7KCBanmHEyLEfCY0B_keEajdrh892cHM_GbMA&orgId=e2e-test-org",
+      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    }
+  ],
+  "pageErrors": [],
+  "notes": [],
+  "clip": [
+    {
+      "label": "g2-items-fund-pending",
+      "widths": [
+        {
+          "width": 1280,
+          "ok": true,
+          "tables": [
+            {
+              "testid": "unidentified-deposits-table",
+              "vw": 1280,
+              "clipBy": "DIV.relative w-full overflow-x-auto",
+              "clipLeft": 305,
+              "clipRight": 1231,
+              "tableLeft": 305,
+              "tableRight": 1231,
+              "tableScrollWidth": 926,
+              "chain": [
+                {
+                  "tag": "TABLE",
+                  "testid": "unidentified-deposits-table",
+                  "overflowX": "visible",
+                  "clientWidth": 926,
+                  "scrollWidth": 926,
+                  "left": 305,
+                  "right": 1231
+                },
+                {
+                  "tag": "DIV",
+                  "testid": null,
+                  "overflowX": "auto",
+                  "clientWidth": 926,
+                  "scrollWidth": 926,
+                  "left": 305,
+                  "right": 1231
+                },
+                {
+                  "tag": "DIV",
+                  "testid": null,
+                  "overflowX": "visible",
+                  "clientWidth": 926,
+                  "scrollWidth": 926,
+                  "left": 305,
+                  "right": 1231
+                },
+                {
+                  "tag": "DIV",
+                  "testid": null,
+                  "overflowX": "visible",
+                  "clientWidth": 926,
+                  "scrollWidth": 926,
+                  "left": 305,
+                  "right": 1231
+                },
+                {
+                  "tag": "DIV",
+                  "testid": null,
+                  "overflowX": "visible",
+                  "clientWidth": 974,
+                  "scrollWidth": 974,
+                  "left": 281,
+                  "right": 1255
+                },
+                {
+                  "tag": "DIV",
+                  "testid": "unidentified-deposits-section",
+                  "overflowX": "visible",
+                  "clientWidth": 974,
+                  "scrollWidth": 974,
+                  "left": 280,
+                  "right": 1256
+                }
+              ],
+              "header": [
+                {
+                  "text": "RECEIVED",
+                  "left": 305,
+                  "right": 417,
+                  "inside": true,
+                  "truncated": false
+                },
+                {
+                  "text": "DESCRIPTION",
+                  "left": 417,
+                  "right": 685,
+                  "inside": true,
+                  "truncated": false
+                },
+                {
+                  "text": "AMOUNT",
+                  "left": 685,
+                  "right": 796,
+                  "inside": true,
+                  "truncated": false
+                },
+                {
+                  "text": "AGE",
+                  "left": 796,
+                  "right": 860,
+                  "inside": true,
+                  "truncated": false
+                },
+                {
+                  "text": "STATUS",
+                  "left": 860,
+                  "right": 934,
+                  "inside": true,
+                  "truncated": false
+                },
+                {
+                  "text": "ACTIONS",
+                  "left": 934,
+                  "right": 1231,
+                  "inside": true,
+                  "truncated": false
+                }
+              ],
+              "rows": [
+                [
+                  {
+                    "text": "10 Nov 2026",
+                    "left": 305,
+                    "right": 417,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "DEPOSIT UNKNOWN REF A163PR UNK-A/OBS647D/163PR",
+                    "left": 417,
+                    "right": 685,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 4 321,09",
+                    "left": 685,
+                    "right": 796,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "7 days",
+                    "left": 796,
+                    "right": 860,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Held",
+                    "left": 860,
+                    "right": 934,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Allocate Pay to the Fund",
+                    "left": 934,
+                    "right": 1231,
+                    "inside": true,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "12 Nov 2026",
+                    "left": 305,
+                    "right": 417,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "DEPOSIT UNKNOWN REF B163PR UNK-B/OBS647D/163PR",
+                    "left": 417,
+                    "right": 685,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 1 234,56",
+                    "left": 685,
+                    "right": 796,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "5 days",
+                    "left": 796,
+                    "right": 860,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Held",
+                    "left": 860,
+                    "right": 934,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Payment to the Fund awaiting approval",
+                    "left": 934,
+                    "right": 1231,
+                    "inside": true,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "13 Nov 2026",
+                    "left": 305,
+                    "right": 417,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "DEPOSIT UNKNOWN REF C163PR UNK-C/OBS647D/163PR",
+                    "left": 417,
+                    "right": 685,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 777,00",
+                    "left": 685,
+                    "right": 796,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "4 days",
+                    "left": 796,
+                    "right": 860,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Held",
+                    "left": 860,
+                    "right": 934,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Allocate Pay to the Fund",
+                    "left": 934,
+                    "right": 1231,
+                    "inside": true,
+                    "truncated": false
+                  }
+                ]
+              ],
+              "allInside": true,
+              "noneTruncated": true,
+              "noHorizontalOverflow": true
+            }
+          ]
+        },
+        {
+          "width": 1440,
+          "ok": true,
+          "tables": [
+            {
+              "testid": "unidentified-deposits-table",
+              "vw": 1440,
+              "clipBy": "DIV.relative w-full overflow-x-auto",
+              "clipLeft": 305,
+              "clipRight": 1391,
+              "tableLeft": 305,
+              "tableRight": 1391,
+              "tableScrollWidth": 1086,
+              "chain": [
+                {
+                  "tag": "TABLE",
+                  "testid": "unidentified-deposits-table",
+                  "overflowX": "visible",
+                  "clientWidth": 1086,
+                  "scrollWidth": 1086,
+                  "left": 305,
+                  "right": 1391
+                },
+                {
+                  "tag": "DIV",
+                  "testid": null,
+                  "overflowX": "auto",
+                  "clientWidth": 1086,
+                  "scrollWidth": 1086,
+                  "left": 305,
+                  "right": 1391
+                },
+                {
+                  "tag": "DIV",
+                  "testid": null,
+                  "overflowX": "visible",
+                  "clientWidth": 1086,
+                  "scrollWidth": 1086,
+                  "left": 305,
+                  "right": 1391
+                },
+                {
+                  "tag": "DIV",
+                  "testid": null,
+                  "overflowX": "visible",
+                  "clientWidth": 1086,
+                  "scrollWidth": 1086,
+                  "left": 305,
+                  "right": 1391
+                },
+                {
+                  "tag": "DIV",
+                  "testid": null,
+                  "overflowX": "visible",
+                  "clientWidth": 1134,
+                  "scrollWidth": 1134,
+                  "left": 281,
+                  "right": 1415
+                },
+                {
+                  "tag": "DIV",
+                  "testid": "unidentified-deposits-section",
+                  "overflowX": "visible",
+                  "clientWidth": 1134,
+                  "scrollWidth": 1134,
+                  "left": 280,
+                  "right": 1416
+                }
+              ],
+              "header": [
+                {
+                  "text": "RECEIVED",
+                  "left": 305,
+                  "right": 436,
+                  "inside": true,
+                  "truncated": false
+                },
+                {
+                  "text": "DESCRIPTION",
+                  "left": 436,
+                  "right": 750,
+                  "inside": true,
+                  "truncated": false
+                },
+                {
+                  "text": "AMOUNT",
+                  "left": 750,
+                  "right": 880,
+                  "inside": true,
+                  "truncated": false
+                },
+                {
+                  "text": "AGE",
+                  "left": 880,
+                  "right": 956,
+                  "inside": true,
+                  "truncated": false
+                },
+                {
+                  "text": "STATUS",
+                  "left": 956,
+                  "right": 1042,
+                  "inside": true,
+                  "truncated": false
+                },
+                {
+                  "text": "ACTIONS",
+                  "left": 1042,
+                  "right": 1391,
+                  "inside": true,
+                  "truncated": false
+                }
+              ],
+              "rows": [
+                [
+                  {
+                    "text": "10 Nov 2026",
+                    "left": 305,
+                    "right": 436,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "DEPOSIT UNKNOWN REF A163PR UNK-A/OBS647D/163PR",
+                    "left": 436,
+                    "right": 750,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 4 321,09",
+                    "left": 750,
+                    "right": 880,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "7 days",
+                    "left": 880,
+                    "right": 956,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Held",
+                    "left": 956,
+                    "right": 1042,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Allocate Pay to the Fund",
+                    "left": 1042,
+                    "right": 1391,
+                    "inside": true,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "12 Nov 2026",
+                    "left": 305,
+                    "right": 436,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "DEPOSIT UNKNOWN REF B163PR UNK-B/OBS647D/163PR",
+                    "left": 436,
+                    "right": 750,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 1 234,56",
+                    "left": 750,
+                    "right": 880,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "5 days",
+                    "left": 880,
+                    "right": 956,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Held",
+                    "left": 956,
+                    "right": 1042,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Payment to the Fund awaiting approval",
+                    "left": 1042,
+                    "right": 1391,
+                    "inside": true,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "13 Nov 2026",
+                    "left": 305,
+                    "right": 436,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "DEPOSIT UNKNOWN REF C163PR UNK-C/OBS647D/163PR",
+                    "left": 436,
+                    "right": 750,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 777,00",
+                    "left": 750,
+                    "right": 880,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "4 days",
+                    "left": 880,
+                    "right": 956,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Held",
+                    "left": 956,
+                    "right": 1042,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Allocate Pay to the Fund",
+                    "left": 1042,
+                    "right": 1391,
+                    "inside": true,
+                    "truncated": false
+                  }
+                ]
+              ],
+              "allInside": true,
+              "noneTruncated": true,
+              "noHorizontalOverflow": true
+            }
+          ]
+        }
+      ],
+      "ok": true
+    },
+    {
+      "label": "g3-transactions-fund-pending",
+      "widths": [
+        {
+          "width": 1280,
+          "ok": false,
+          "tables": [
+            {
+              "testid": "transactions-table",
+              "vw": 1280,
+              "clipBy": "DIV.overflow-x-auto",
+              "clipLeft": 305,
+              "clipRight": 1231,
+              "tableLeft": 305,
+              "tableRight": 1316,
+              "tableScrollWidth": 1011,
+              "chain": [
+                {
+                  "tag": "TABLE",
+                  "testid": "transactions-table",
+                  "overflowX": "visible",
+                  "clientWidth": 1011,
+                  "scrollWidth": 1011,
+                  "left": 305,
+                  "right": 1316
+                },
+                {
+                  "tag": "DIV",
+                  "testid": null,
+                  "overflowX": "auto",
+                  "clientWidth": 926,
+                  "scrollWidth": 1011,
+                  "left": 305,
+                  "right": 1231
+                },
+                {
+                  "tag": "DIV",
+                  "testid": null,
+                  "overflowX": "visible",
+                  "clientWidth": 974,
+                  "scrollWidth": 974,
+                  "left": 281,
+                  "right": 1255
+                },
+                {
+                  "tag": "DIV",
+                  "testid": null,
+                  "overflowX": "visible",
+                  "clientWidth": 974,
+                  "scrollWidth": 974,
+                  "left": 280,
+                  "right": 1256
+                },
+                {
+                  "tag": "DIV",
+                  "testid": null,
+                  "overflowX": "visible",
+                  "clientWidth": 976,
+                  "scrollWidth": 976,
+                  "left": 280,
+                  "right": 1256
+                },
+                {
+                  "tag": "DIV",
+                  "testid": null,
+                  "overflowX": "visible",
+                  "clientWidth": 976,
+                  "scrollWidth": 976,
+                  "left": 280,
+                  "right": 1256
+                }
+              ],
+              "header": [
+                {
+                  "text": "Date",
+                  "left": 305,
+                  "right": 355,
+                  "inside": true,
+                  "truncated": false
+                },
+                {
+                  "text": "Reference",
+                  "left": 355,
+                  "right": 575,
+                  "inside": true,
+                  "truncated": false
+                },
+                {
+                  "text": "Type",
+                  "left": 575,
+                  "right": 828,
+                  "inside": true,
+                  "truncated": false
+                },
+                {
+                  "text": "Amount",
+                  "left": 828,
+                  "right": 960,
+                  "inside": true,
+                  "truncated": false
+                },
+                {
+                  "text": "Status",
+                  "left": 960,
+                  "right": 1125,
+                  "inside": true,
+                  "truncated": false
+                },
+                {
+                  "text": "Actions",
+                  "left": 1125,
+                  "right": 1316,
+                  "inside": false,
+                  "truncated": false
+                }
+              ],
+              "rows": [
+                [
+                  {
+                    "text": "17 Nov 2026",
+                    "left": 305,
+                    "right": 355,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "DEP/MOROKA/mwl0skwm827e",
+                    "left": 355,
+                    "right": 575,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Deposit",
+                    "left": 575,
+                    "right": 828,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 250 000,00",
+                    "left": 828,
+                    "right": 960,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "RECORDED",
+                    "left": 960,
+                    "right": 1125,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Reverse",
+                    "left": 1125,
+                    "right": 1316,
+                    "inside": false,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "17 Nov 2026",
+                    "left": 305,
+                    "right": 355,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "DEP/QC/mwl0skwm827e",
+                    "left": 355,
+                    "right": 575,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Deposit",
+                    "left": 575,
+                    "right": 828,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 45 000,00",
+                    "left": 828,
+                    "right": 960,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "RECORDED",
+                    "left": 960,
+                    "right": 1125,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Reverse",
+                    "left": 1125,
+                    "right": 1316,
+                    "inside": false,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "17 Nov 2026",
+                    "left": 305,
+                    "right": 355,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "FEE/MOROKA/mwl0skwm827e",
+                    "left": 355,
+                    "right": 575,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Fee transfer",
+                    "left": 575,
+                    "right": 828,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 8 500,00",
+                    "left": 828,
+                    "right": 960,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "APPROVED",
+                    "left": 960,
+                    "right": 1125,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Reverse",
+                    "left": 1125,
+                    "right": 1316,
+                    "inside": false,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "17 Nov 2026",
+                    "left": 305,
+                    "right": 355,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "INV-Standard Bank-FD-0987654321",
+                    "left": 355,
+                    "right": 575,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Payment",
+                    "left": 575,
+                    "right": 828,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 200 000,00",
+                    "left": 828,
+                    "right": 960,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "AWAITING APPROVAL",
+                    "left": 960,
+                    "right": 1125,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Approve Reject",
+                    "left": 1125,
+                    "right": 1316,
+                    "inside": false,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "17 Nov 2026",
+                    "left": 305,
+                    "right": 355,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "INV-Nedbank-CALL-1122334455",
+                    "left": 355,
+                    "right": 575,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Payment",
+                    "left": 575,
+                    "right": 828,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 30 000,00",
+                    "left": 828,
+                    "right": 960,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "AWAITING APPROVAL",
+                    "left": 960,
+                    "right": 1125,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Approve Reject",
+                    "left": 1125,
+                    "right": 1316,
+                    "inside": false,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "17 Nov 2026",
+                    "left": 305,
+                    "right": 355,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "FEE/SIPHO/mwl0skwm827e",
+                    "left": 355,
+                    "right": 575,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Fee transfer",
+                    "left": 575,
+                    "right": 828,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 500,00",
+                    "left": 828,
+                    "right": 960,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "AWAITING APPROVAL",
+                    "left": 960,
+                    "right": 1125,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Approve Reject",
+                    "left": 1125,
+                    "right": 1316,
+                    "inside": false,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "17 Nov 2026",
+                    "left": 305,
+                    "right": 355,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "REV-UID-DA88D7A5",
+                    "left": 355,
+                    "right": 575,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Reversal",
+                    "left": 575,
+                    "right": 828,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 4 321,09",
+                    "left": 828,
+                    "right": 960,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "RECORDED",
+                    "left": 960,
+                    "right": 1125,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "",
+                    "left": 1125,
+                    "right": 1316,
+                    "inside": false,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "17 Nov 2026",
+                    "left": 305,
+                    "right": 355,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "REV-UID-DA88D7A5",
+                    "left": 355,
+                    "right": 575,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Reversal",
+                    "left": 575,
+                    "right": 828,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 4 321,09",
+                    "left": 828,
+                    "right": 960,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "RECORDED",
+                    "left": 960,
+                    "right": 1125,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "",
+                    "left": 1125,
+                    "right": 1316,
+                    "inside": false,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "17 Nov 2026",
+                    "left": 305,
+                    "right": 355,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "LPFF-B/OBS647D/163PR",
+                    "left": 355,
+                    "right": 575,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Unidentified deposit paid to the Fund To the Legal Practitioners' Fidelity Fund: deposit received 12 November 2026 — DEP",
+                    "left": 575,
+                    "right": 828,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 1 234,56",
+                    "left": 828,
+                    "right": 960,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "AWAITING APPROVAL",
+                    "left": 960,
+                    "right": 1125,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Approve Reject",
+                    "left": 1125,
+                    "right": 1316,
+                    "inside": false,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "14 Nov 2026",
+                    "left": 305,
+                    "right": 355,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "UID-DA88D7A5",
+                    "left": 355,
+                    "right": 575,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Unidentified deposit allocated To Moroka Family Trust mwl0skwm827e — Estate Late Peter Moroka mwl0skwm827e: deposit rece",
+                    "left": 575,
+                    "right": 828,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 4 321,09",
+                    "left": 828,
+                    "right": 960,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "REVERSED",
+                    "left": 960,
+                    "right": 1125,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "",
+                    "left": 1125,
+                    "right": 1316,
+                    "inside": false,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "14 Nov 2026",
+                    "left": 305,
+                    "right": 355,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "UID-DA88D7A5",
+                    "left": 355,
+                    "right": 575,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Deposit identified and allocated",
+                    "left": 575,
+                    "right": 828,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 4 321,09",
+                    "left": 828,
+                    "right": 960,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "REVERSED",
+                    "left": 960,
+                    "right": 1125,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "",
+                    "left": 1125,
+                    "right": 1316,
+                    "inside": false,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "13 Nov 2026",
+                    "left": 305,
+                    "right": 355,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "UNK-C/OBS647D/163PR",
+                    "left": 355,
+                    "right": 575,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Unidentified deposit",
+                    "left": 575,
+                    "right": 828,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 777,00",
+                    "left": 828,
+                    "right": 960,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "RECORDED",
+                    "left": 960,
+                    "right": 1125,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "",
+                    "left": 1125,
+                    "right": 1316,
+                    "inside": false,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "12 Nov 2026",
+                    "left": 305,
+                    "right": 355,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "UNK-B/OBS647D/163PR",
+                    "left": 355,
+                    "right": 575,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Unidentified deposit",
+                    "left": 575,
+                    "right": 828,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 1 234,56",
+                    "left": 828,
+                    "right": 960,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "RECORDED",
+                    "left": 960,
+                    "right": 1125,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "",
+                    "left": 1125,
+                    "right": 1316,
+                    "inside": false,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "10 Nov 2026",
+                    "left": 305,
+                    "right": 355,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "UNK-A/OBS647D/163PR",
+                    "left": 355,
+                    "right": 575,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Unidentified deposit",
+                    "left": 575,
+                    "right": 828,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 4 321,09",
+                    "left": 828,
+                    "right": 960,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "RECORDED",
+                    "left": 960,
+                    "right": 1125,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "",
+                    "left": 1125,
+                    "right": 1316,
+                    "inside": false,
+                    "truncated": false
+                  }
+                ]
+              ],
+              "allInside": false,
+              "noneTruncated": true,
+              "noHorizontalOverflow": false
+            }
+          ]
+        },
+        {
+          "width": 1440,
+          "ok": true,
+          "tables": [
+            {
+              "testid": "transactions-table",
+              "vw": 1440,
+              "clipBy": "DIV.overflow-x-auto",
+              "clipLeft": 305,
+              "clipRight": 1391,
+              "tableLeft": 305,
+              "tableRight": 1391,
+              "tableScrollWidth": 1086,
+              "chain": [
+                {
+                  "tag": "TABLE",
+                  "testid": "transactions-table",
+                  "overflowX": "visible",
+                  "clientWidth": 1086,
+                  "scrollWidth": 1086,
+                  "left": 305,
+                  "right": 1391
+                },
+                {
+                  "tag": "DIV",
+                  "testid": null,
+                  "overflowX": "auto",
+                  "clientWidth": 1086,
+                  "scrollWidth": 1086,
+                  "left": 305,
+                  "right": 1391
+                },
+                {
+                  "tag": "DIV",
+                  "testid": null,
+                  "overflowX": "visible",
+                  "clientWidth": 1134,
+                  "scrollWidth": 1134,
+                  "left": 281,
+                  "right": 1415
+                },
+                {
+                  "tag": "DIV",
+                  "testid": null,
+                  "overflowX": "visible",
+                  "clientWidth": 1134,
+                  "scrollWidth": 1134,
+                  "left": 280,
+                  "right": 1416
+                },
+                {
+                  "tag": "DIV",
+                  "testid": null,
+                  "overflowX": "visible",
+                  "clientWidth": 1136,
+                  "scrollWidth": 1136,
+                  "left": 280,
+                  "right": 1416
+                },
+                {
+                  "tag": "DIV",
+                  "testid": null,
+                  "overflowX": "visible",
+                  "clientWidth": 1136,
+                  "scrollWidth": 1136,
+                  "left": 280,
+                  "right": 1416
+                }
+              ],
+              "header": [
+                {
+                  "text": "Date",
+                  "left": 305,
+                  "right": 376,
+                  "inside": true,
+                  "truncated": false
+                },
+                {
+                  "text": "Reference",
+                  "left": 376,
+                  "right": 613,
+                  "inside": true,
+                  "truncated": false
+                },
+                {
+                  "text": "Type",
+                  "left": 613,
+                  "right": 903,
+                  "inside": true,
+                  "truncated": false
+                },
+                {
+                  "text": "Amount",
+                  "left": 903,
+                  "right": 1036,
+                  "inside": true,
+                  "truncated": false
+                },
+                {
+                  "text": "Status",
+                  "left": 1036,
+                  "right": 1200,
+                  "inside": true,
+                  "truncated": false
+                },
+                {
+                  "text": "Actions",
+                  "left": 1200,
+                  "right": 1391,
+                  "inside": true,
+                  "truncated": false
+                }
+              ],
+              "rows": [
+                [
+                  {
+                    "text": "17 Nov 2026",
+                    "left": 305,
+                    "right": 376,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "DEP/MOROKA/mwl0skwm827e",
+                    "left": 376,
+                    "right": 613,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Deposit",
+                    "left": 613,
+                    "right": 903,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 250 000,00",
+                    "left": 903,
+                    "right": 1036,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "RECORDED",
+                    "left": 1036,
+                    "right": 1200,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Reverse",
+                    "left": 1200,
+                    "right": 1391,
+                    "inside": true,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "17 Nov 2026",
+                    "left": 305,
+                    "right": 376,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "DEP/QC/mwl0skwm827e",
+                    "left": 376,
+                    "right": 613,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Deposit",
+                    "left": 613,
+                    "right": 903,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 45 000,00",
+                    "left": 903,
+                    "right": 1036,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "RECORDED",
+                    "left": 1036,
+                    "right": 1200,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Reverse",
+                    "left": 1200,
+                    "right": 1391,
+                    "inside": true,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "17 Nov 2026",
+                    "left": 305,
+                    "right": 376,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "FEE/MOROKA/mwl0skwm827e",
+                    "left": 376,
+                    "right": 613,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Fee transfer",
+                    "left": 613,
+                    "right": 903,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 8 500,00",
+                    "left": 903,
+                    "right": 1036,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "APPROVED",
+                    "left": 1036,
+                    "right": 1200,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Reverse",
+                    "left": 1200,
+                    "right": 1391,
+                    "inside": true,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "17 Nov 2026",
+                    "left": 305,
+                    "right": 376,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "INV-Standard Bank-FD-0987654321",
+                    "left": 376,
+                    "right": 613,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Payment",
+                    "left": 613,
+                    "right": 903,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 200 000,00",
+                    "left": 903,
+                    "right": 1036,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "AWAITING APPROVAL",
+                    "left": 1036,
+                    "right": 1200,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Approve Reject",
+                    "left": 1200,
+                    "right": 1391,
+                    "inside": true,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "17 Nov 2026",
+                    "left": 305,
+                    "right": 376,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "INV-Nedbank-CALL-1122334455",
+                    "left": 376,
+                    "right": 613,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Payment",
+                    "left": 613,
+                    "right": 903,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 30 000,00",
+                    "left": 903,
+                    "right": 1036,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "AWAITING APPROVAL",
+                    "left": 1036,
+                    "right": 1200,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Approve Reject",
+                    "left": 1200,
+                    "right": 1391,
+                    "inside": true,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "17 Nov 2026",
+                    "left": 305,
+                    "right": 376,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "FEE/SIPHO/mwl0skwm827e",
+                    "left": 376,
+                    "right": 613,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Fee transfer",
+                    "left": 613,
+                    "right": 903,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 500,00",
+                    "left": 903,
+                    "right": 1036,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "AWAITING APPROVAL",
+                    "left": 1036,
+                    "right": 1200,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Approve Reject",
+                    "left": 1200,
+                    "right": 1391,
+                    "inside": true,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "17 Nov 2026",
+                    "left": 305,
+                    "right": 376,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "REV-UID-DA88D7A5",
+                    "left": 376,
+                    "right": 613,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Reversal",
+                    "left": 613,
+                    "right": 903,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 4 321,09",
+                    "left": 903,
+                    "right": 1036,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "RECORDED",
+                    "left": 1036,
+                    "right": 1200,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "",
+                    "left": 1200,
+                    "right": 1391,
+                    "inside": true,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "17 Nov 2026",
+                    "left": 305,
+                    "right": 376,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "REV-UID-DA88D7A5",
+                    "left": 376,
+                    "right": 613,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Reversal",
+                    "left": 613,
+                    "right": 903,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 4 321,09",
+                    "left": 903,
+                    "right": 1036,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "RECORDED",
+                    "left": 1036,
+                    "right": 1200,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "",
+                    "left": 1200,
+                    "right": 1391,
+                    "inside": true,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "17 Nov 2026",
+                    "left": 305,
+                    "right": 376,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "LPFF-B/OBS647D/163PR",
+                    "left": 376,
+                    "right": 613,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Unidentified deposit paid to the Fund To the Legal Practitioners' Fidelity Fund: deposit received 12 November 2026 — DEP",
+                    "left": 613,
+                    "right": 903,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 1 234,56",
+                    "left": 903,
+                    "right": 1036,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "AWAITING APPROVAL",
+                    "left": 1036,
+                    "right": 1200,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Approve Reject",
+                    "left": 1200,
+                    "right": 1391,
+                    "inside": true,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "14 Nov 2026",
+                    "left": 305,
+                    "right": 376,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "UID-DA88D7A5",
+                    "left": 376,
+                    "right": 613,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Unidentified deposit allocated To Moroka Family Trust mwl0skwm827e — Estate Late Peter Moroka mwl0skwm827e: deposit rece",
+                    "left": 613,
+                    "right": 903,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 4 321,09",
+                    "left": 903,
+                    "right": 1036,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "REVERSED",
+                    "left": 1036,
+                    "right": 1200,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "",
+                    "left": 1200,
+                    "right": 1391,
+                    "inside": true,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "14 Nov 2026",
+                    "left": 305,
+                    "right": 376,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "UID-DA88D7A5",
+                    "left": 376,
+                    "right": 613,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Deposit identified and allocated",
+                    "left": 613,
+                    "right": 903,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 4 321,09",
+                    "left": 903,
+                    "right": 1036,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "REVERSED",
+                    "left": 1036,
+                    "right": 1200,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "",
+                    "left": 1200,
+                    "right": 1391,
+                    "inside": true,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "13 Nov 2026",
+                    "left": 305,
+                    "right": 376,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "UNK-C/OBS647D/163PR",
+                    "left": 376,
+                    "right": 613,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Unidentified deposit",
+                    "left": 613,
+                    "right": 903,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 777,00",
+                    "left": 903,
+                    "right": 1036,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "RECORDED",
+                    "left": 1036,
+                    "right": 1200,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "",
+                    "left": 1200,
+                    "right": 1391,
+                    "inside": true,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "12 Nov 2026",
+                    "left": 305,
+                    "right": 376,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "UNK-B/OBS647D/163PR",
+                    "left": 376,
+                    "right": 613,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Unidentified deposit",
+                    "left": 613,
+                    "right": 903,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 1 234,56",
+                    "left": 903,
+                    "right": 1036,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "RECORDED",
+                    "left": 1036,
+                    "right": 1200,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "",
+                    "left": 1200,
+                    "right": 1391,
+                    "inside": true,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "10 Nov 2026",
+                    "left": 305,
+                    "right": 376,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "UNK-A/OBS647D/163PR",
+                    "left": 376,
+                    "right": 613,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Unidentified deposit",
+                    "left": 613,
+                    "right": 903,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 4 321,09",
+                    "left": 903,
+                    "right": 1036,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "RECORDED",
+                    "left": 1036,
+                    "right": 1200,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "",
+                    "left": 1200,
+                    "right": 1391,
+                    "inside": true,
+                    "truncated": false
+                  }
+                ]
+              ],
+              "allInside": true,
+              "noneTruncated": true,
+              "noHorizontalOverflow": true
+            }
+          ]
+        }
+      ],
+      "ok": false
+    },
+    {
+      "label": "z1-transactions-final",
+      "widths": [
+        {
+          "width": 1280,
+          "ok": false,
+          "tables": [
+            {
+              "testid": "transactions-table",
+              "vw": 1280,
+              "clipBy": "DIV.overflow-x-auto",
+              "clipLeft": 305,
+              "clipRight": 1231,
+              "tableLeft": 305,
+              "tableRight": 1316,
+              "tableScrollWidth": 1011,
+              "chain": [
+                {
+                  "tag": "TABLE",
+                  "testid": "transactions-table",
+                  "overflowX": "visible",
+                  "clientWidth": 1011,
+                  "scrollWidth": 1011,
+                  "left": 305,
+                  "right": 1316
+                },
+                {
+                  "tag": "DIV",
+                  "testid": null,
+                  "overflowX": "auto",
+                  "clientWidth": 926,
+                  "scrollWidth": 1011,
+                  "left": 305,
+                  "right": 1231
+                },
+                {
+                  "tag": "DIV",
+                  "testid": null,
+                  "overflowX": "visible",
+                  "clientWidth": 974,
+                  "scrollWidth": 974,
+                  "left": 281,
+                  "right": 1255
+                },
+                {
+                  "tag": "DIV",
+                  "testid": null,
+                  "overflowX": "visible",
+                  "clientWidth": 974,
+                  "scrollWidth": 974,
+                  "left": 280,
+                  "right": 1256
+                },
+                {
+                  "tag": "DIV",
+                  "testid": null,
+                  "overflowX": "visible",
+                  "clientWidth": 976,
+                  "scrollWidth": 976,
+                  "left": 280,
+                  "right": 1256
+                },
+                {
+                  "tag": "DIV",
+                  "testid": null,
+                  "overflowX": "visible",
+                  "clientWidth": 976,
+                  "scrollWidth": 976,
+                  "left": 280,
+                  "right": 1256
+                }
+              ],
+              "header": [
+                {
+                  "text": "Date",
+                  "left": 305,
+                  "right": 355,
+                  "inside": true,
+                  "truncated": false
+                },
+                {
+                  "text": "Reference",
+                  "left": 355,
+                  "right": 575,
+                  "inside": true,
+                  "truncated": false
+                },
+                {
+                  "text": "Type",
+                  "left": 575,
+                  "right": 828,
+                  "inside": true,
+                  "truncated": false
+                },
+                {
+                  "text": "Amount",
+                  "left": 828,
+                  "right": 960,
+                  "inside": true,
+                  "truncated": false
+                },
+                {
+                  "text": "Status",
+                  "left": 960,
+                  "right": 1125,
+                  "inside": true,
+                  "truncated": false
+                },
+                {
+                  "text": "Actions",
+                  "left": 1125,
+                  "right": 1316,
+                  "inside": false,
+                  "truncated": false
+                }
+              ],
+              "rows": [
+                [
+                  {
+                    "text": "17 Nov 2026",
+                    "left": 305,
+                    "right": 355,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "DEP/MOROKA/mwl0skwm827e",
+                    "left": 355,
+                    "right": 575,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Deposit",
+                    "left": 575,
+                    "right": 828,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 250 000,00",
+                    "left": 828,
+                    "right": 960,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "RECORDED",
+                    "left": 960,
+                    "right": 1125,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Reverse",
+                    "left": 1125,
+                    "right": 1316,
+                    "inside": false,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "17 Nov 2026",
+                    "left": 305,
+                    "right": 355,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "DEP/QC/mwl0skwm827e",
+                    "left": 355,
+                    "right": 575,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Deposit",
+                    "left": 575,
+                    "right": 828,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 45 000,00",
+                    "left": 828,
+                    "right": 960,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "RECORDED",
+                    "left": 960,
+                    "right": 1125,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Reverse",
+                    "left": 1125,
+                    "right": 1316,
+                    "inside": false,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "17 Nov 2026",
+                    "left": 305,
+                    "right": 355,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "FEE/MOROKA/mwl0skwm827e",
+                    "left": 355,
+                    "right": 575,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Fee transfer",
+                    "left": 575,
+                    "right": 828,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 8 500,00",
+                    "left": 828,
+                    "right": 960,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "APPROVED",
+                    "left": 960,
+                    "right": 1125,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Reverse",
+                    "left": 1125,
+                    "right": 1316,
+                    "inside": false,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "17 Nov 2026",
+                    "left": 305,
+                    "right": 355,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "INV-Standard Bank-FD-0987654321",
+                    "left": 355,
+                    "right": 575,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Payment",
+                    "left": 575,
+                    "right": 828,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 200 000,00",
+                    "left": 828,
+                    "right": 960,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "AWAITING APPROVAL",
+                    "left": 960,
+                    "right": 1125,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Approve Reject",
+                    "left": 1125,
+                    "right": 1316,
+                    "inside": false,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "17 Nov 2026",
+                    "left": 305,
+                    "right": 355,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "INV-Nedbank-CALL-1122334455",
+                    "left": 355,
+                    "right": 575,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Payment",
+                    "left": 575,
+                    "right": 828,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 30 000,00",
+                    "left": 828,
+                    "right": 960,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "AWAITING APPROVAL",
+                    "left": 960,
+                    "right": 1125,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Approve Reject",
+                    "left": 1125,
+                    "right": 1316,
+                    "inside": false,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "17 Nov 2026",
+                    "left": 305,
+                    "right": 355,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "FEE/SIPHO/mwl0skwm827e",
+                    "left": 355,
+                    "right": 575,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Fee transfer",
+                    "left": 575,
+                    "right": 828,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 500,00",
+                    "left": 828,
+                    "right": 960,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "AWAITING APPROVAL",
+                    "left": 960,
+                    "right": 1125,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Approve Reject",
+                    "left": 1125,
+                    "right": 1316,
+                    "inside": false,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "17 Nov 2026",
+                    "left": 305,
+                    "right": 355,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "REV-UID-DA88D7A5",
+                    "left": 355,
+                    "right": 575,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Reversal",
+                    "left": 575,
+                    "right": 828,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 4 321,09",
+                    "left": 828,
+                    "right": 960,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "RECORDED",
+                    "left": 960,
+                    "right": 1125,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "",
+                    "left": 1125,
+                    "right": 1316,
+                    "inside": false,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "17 Nov 2026",
+                    "left": 305,
+                    "right": 355,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "REV-UID-DA88D7A5",
+                    "left": 355,
+                    "right": 575,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Reversal",
+                    "left": 575,
+                    "right": 828,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 4 321,09",
+                    "left": 828,
+                    "right": 960,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "RECORDED",
+                    "left": 960,
+                    "right": 1125,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "",
+                    "left": 1125,
+                    "right": 1316,
+                    "inside": false,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "17 Nov 2026",
+                    "left": 305,
+                    "right": 355,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "LPFF-B/OBS647D/163PR",
+                    "left": 355,
+                    "right": 575,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Unidentified deposit paid to the Fund To the Legal Practitioners' Fidelity Fund: deposit received 12 November 2026 — DEP",
+                    "left": 575,
+                    "right": 828,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 1 234,56",
+                    "left": 828,
+                    "right": 960,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "APPROVED",
+                    "left": 960,
+                    "right": 1125,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Reverse",
+                    "left": 1125,
+                    "right": 1316,
+                    "inside": false,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "17 Nov 2026",
+                    "left": 305,
+                    "right": 355,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "LPFF-C/OBS647D/163PR",
+                    "left": 355,
+                    "right": 575,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Unidentified deposit paid to the Fund To the Legal Practitioners' Fidelity Fund: deposit received 13 November 2026 — DEP",
+                    "left": 575,
+                    "right": 828,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 777,00",
+                    "left": 828,
+                    "right": 960,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "REJECTED",
+                    "left": 960,
+                    "right": 1125,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "",
+                    "left": 1125,
+                    "right": 1316,
+                    "inside": false,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "14 Nov 2026",
+                    "left": 305,
+                    "right": 355,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "UID-DA88D7A5",
+                    "left": 355,
+                    "right": 575,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Unidentified deposit allocated To Moroka Family Trust mwl0skwm827e — Estate Late Peter Moroka mwl0skwm827e: deposit rece",
+                    "left": 575,
+                    "right": 828,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 4 321,09",
+                    "left": 828,
+                    "right": 960,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "REVERSED",
+                    "left": 960,
+                    "right": 1125,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "",
+                    "left": 1125,
+                    "right": 1316,
+                    "inside": false,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "14 Nov 2026",
+                    "left": 305,
+                    "right": 355,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "UID-DA88D7A5",
+                    "left": 355,
+                    "right": 575,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Deposit identified and allocated",
+                    "left": 575,
+                    "right": 828,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 4 321,09",
+                    "left": 828,
+                    "right": 960,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "REVERSED",
+                    "left": 960,
+                    "right": 1125,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "",
+                    "left": 1125,
+                    "right": 1316,
+                    "inside": false,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "13 Nov 2026",
+                    "left": 305,
+                    "right": 355,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "UNK-C/OBS647D/163PR",
+                    "left": 355,
+                    "right": 575,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Unidentified deposit",
+                    "left": 575,
+                    "right": 828,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 777,00",
+                    "left": 828,
+                    "right": 960,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "RECORDED",
+                    "left": 960,
+                    "right": 1125,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "",
+                    "left": 1125,
+                    "right": 1316,
+                    "inside": false,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "12 Nov 2026",
+                    "left": 305,
+                    "right": 355,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "UNK-B/OBS647D/163PR",
+                    "left": 355,
+                    "right": 575,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Unidentified deposit",
+                    "left": 575,
+                    "right": 828,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 1 234,56",
+                    "left": 828,
+                    "right": 960,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "RECORDED",
+                    "left": 960,
+                    "right": 1125,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "",
+                    "left": 1125,
+                    "right": 1316,
+                    "inside": false,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "10 Nov 2026",
+                    "left": 305,
+                    "right": 355,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "UNK-A/OBS647D/163PR",
+                    "left": 355,
+                    "right": 575,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Unidentified deposit",
+                    "left": 575,
+                    "right": 828,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 4 321,09",
+                    "left": 828,
+                    "right": 960,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "RECORDED",
+                    "left": 960,
+                    "right": 1125,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "",
+                    "left": 1125,
+                    "right": 1316,
+                    "inside": false,
+                    "truncated": false
+                  }
+                ]
+              ],
+              "allInside": false,
+              "noneTruncated": true,
+              "noHorizontalOverflow": false
+            }
+          ]
+        },
+        {
+          "width": 1440,
+          "ok": true,
+          "tables": [
+            {
+              "testid": "transactions-table",
+              "vw": 1440,
+              "clipBy": "DIV.overflow-x-auto",
+              "clipLeft": 305,
+              "clipRight": 1391,
+              "tableLeft": 305,
+              "tableRight": 1391,
+              "tableScrollWidth": 1086,
+              "chain": [
+                {
+                  "tag": "TABLE",
+                  "testid": "transactions-table",
+                  "overflowX": "visible",
+                  "clientWidth": 1086,
+                  "scrollWidth": 1086,
+                  "left": 305,
+                  "right": 1391
+                },
+                {
+                  "tag": "DIV",
+                  "testid": null,
+                  "overflowX": "auto",
+                  "clientWidth": 1086,
+                  "scrollWidth": 1086,
+                  "left": 305,
+                  "right": 1391
+                },
+                {
+                  "tag": "DIV",
+                  "testid": null,
+                  "overflowX": "visible",
+                  "clientWidth": 1134,
+                  "scrollWidth": 1134,
+                  "left": 281,
+                  "right": 1415
+                },
+                {
+                  "tag": "DIV",
+                  "testid": null,
+                  "overflowX": "visible",
+                  "clientWidth": 1134,
+                  "scrollWidth": 1134,
+                  "left": 280,
+                  "right": 1416
+                },
+                {
+                  "tag": "DIV",
+                  "testid": null,
+                  "overflowX": "visible",
+                  "clientWidth": 1136,
+                  "scrollWidth": 1136,
+                  "left": 280,
+                  "right": 1416
+                },
+                {
+                  "tag": "DIV",
+                  "testid": null,
+                  "overflowX": "visible",
+                  "clientWidth": 1136,
+                  "scrollWidth": 1136,
+                  "left": 280,
+                  "right": 1416
+                }
+              ],
+              "header": [
+                {
+                  "text": "Date",
+                  "left": 305,
+                  "right": 376,
+                  "inside": true,
+                  "truncated": false
+                },
+                {
+                  "text": "Reference",
+                  "left": 376,
+                  "right": 613,
+                  "inside": true,
+                  "truncated": false
+                },
+                {
+                  "text": "Type",
+                  "left": 613,
+                  "right": 903,
+                  "inside": true,
+                  "truncated": false
+                },
+                {
+                  "text": "Amount",
+                  "left": 903,
+                  "right": 1036,
+                  "inside": true,
+                  "truncated": false
+                },
+                {
+                  "text": "Status",
+                  "left": 1036,
+                  "right": 1200,
+                  "inside": true,
+                  "truncated": false
+                },
+                {
+                  "text": "Actions",
+                  "left": 1200,
+                  "right": 1391,
+                  "inside": true,
+                  "truncated": false
+                }
+              ],
+              "rows": [
+                [
+                  {
+                    "text": "17 Nov 2026",
+                    "left": 305,
+                    "right": 376,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "DEP/MOROKA/mwl0skwm827e",
+                    "left": 376,
+                    "right": 613,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Deposit",
+                    "left": 613,
+                    "right": 903,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 250 000,00",
+                    "left": 903,
+                    "right": 1036,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "RECORDED",
+                    "left": 1036,
+                    "right": 1200,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Reverse",
+                    "left": 1200,
+                    "right": 1391,
+                    "inside": true,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "17 Nov 2026",
+                    "left": 305,
+                    "right": 376,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "DEP/QC/mwl0skwm827e",
+                    "left": 376,
+                    "right": 613,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Deposit",
+                    "left": 613,
+                    "right": 903,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 45 000,00",
+                    "left": 903,
+                    "right": 1036,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "RECORDED",
+                    "left": 1036,
+                    "right": 1200,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Reverse",
+                    "left": 1200,
+                    "right": 1391,
+                    "inside": true,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "17 Nov 2026",
+                    "left": 305,
+                    "right": 376,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "FEE/MOROKA/mwl0skwm827e",
+                    "left": 376,
+                    "right": 613,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Fee transfer",
+                    "left": 613,
+                    "right": 903,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 8 500,00",
+                    "left": 903,
+                    "right": 1036,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "APPROVED",
+                    "left": 1036,
+                    "right": 1200,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Reverse",
+                    "left": 1200,
+                    "right": 1391,
+                    "inside": true,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "17 Nov 2026",
+                    "left": 305,
+                    "right": 376,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "INV-Standard Bank-FD-0987654321",
+                    "left": 376,
+                    "right": 613,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Payment",
+                    "left": 613,
+                    "right": 903,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 200 000,00",
+                    "left": 903,
+                    "right": 1036,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "AWAITING APPROVAL",
+                    "left": 1036,
+                    "right": 1200,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Approve Reject",
+                    "left": 1200,
+                    "right": 1391,
+                    "inside": true,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "17 Nov 2026",
+                    "left": 305,
+                    "right": 376,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "INV-Nedbank-CALL-1122334455",
+                    "left": 376,
+                    "right": 613,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Payment",
+                    "left": 613,
+                    "right": 903,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 30 000,00",
+                    "left": 903,
+                    "right": 1036,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "AWAITING APPROVAL",
+                    "left": 1036,
+                    "right": 1200,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Approve Reject",
+                    "left": 1200,
+                    "right": 1391,
+                    "inside": true,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "17 Nov 2026",
+                    "left": 305,
+                    "right": 376,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "FEE/SIPHO/mwl0skwm827e",
+                    "left": 376,
+                    "right": 613,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Fee transfer",
+                    "left": 613,
+                    "right": 903,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 500,00",
+                    "left": 903,
+                    "right": 1036,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "AWAITING APPROVAL",
+                    "left": 1036,
+                    "right": 1200,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Approve Reject",
+                    "left": 1200,
+                    "right": 1391,
+                    "inside": true,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "17 Nov 2026",
+                    "left": 305,
+                    "right": 376,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "REV-UID-DA88D7A5",
+                    "left": 376,
+                    "right": 613,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Reversal",
+                    "left": 613,
+                    "right": 903,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 4 321,09",
+                    "left": 903,
+                    "right": 1036,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "RECORDED",
+                    "left": 1036,
+                    "right": 1200,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "",
+                    "left": 1200,
+                    "right": 1391,
+                    "inside": true,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "17 Nov 2026",
+                    "left": 305,
+                    "right": 376,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "REV-UID-DA88D7A5",
+                    "left": 376,
+                    "right": 613,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Reversal",
+                    "left": 613,
+                    "right": 903,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 4 321,09",
+                    "left": 903,
+                    "right": 1036,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "RECORDED",
+                    "left": 1036,
+                    "right": 1200,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "",
+                    "left": 1200,
+                    "right": 1391,
+                    "inside": true,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "17 Nov 2026",
+                    "left": 305,
+                    "right": 376,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "LPFF-B/OBS647D/163PR",
+                    "left": 376,
+                    "right": 613,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Unidentified deposit paid to the Fund To the Legal Practitioners' Fidelity Fund: deposit received 12 November 2026 — DEP",
+                    "left": 613,
+                    "right": 903,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 1 234,56",
+                    "left": 903,
+                    "right": 1036,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "APPROVED",
+                    "left": 1036,
+                    "right": 1200,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Reverse",
+                    "left": 1200,
+                    "right": 1391,
+                    "inside": true,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "17 Nov 2026",
+                    "left": 305,
+                    "right": 376,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "LPFF-C/OBS647D/163PR",
+                    "left": 376,
+                    "right": 613,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Unidentified deposit paid to the Fund To the Legal Practitioners' Fidelity Fund: deposit received 13 November 2026 — DEP",
+                    "left": 613,
+                    "right": 903,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 777,00",
+                    "left": 903,
+                    "right": 1036,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "REJECTED",
+                    "left": 1036,
+                    "right": 1200,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "",
+                    "left": 1200,
+                    "right": 1391,
+                    "inside": true,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "14 Nov 2026",
+                    "left": 305,
+                    "right": 376,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "UID-DA88D7A5",
+                    "left": 376,
+                    "right": 613,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Unidentified deposit allocated To Moroka Family Trust mwl0skwm827e — Estate Late Peter Moroka mwl0skwm827e: deposit rece",
+                    "left": 613,
+                    "right": 903,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 4 321,09",
+                    "left": 903,
+                    "right": 1036,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "REVERSED",
+                    "left": 1036,
+                    "right": 1200,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "",
+                    "left": 1200,
+                    "right": 1391,
+                    "inside": true,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "14 Nov 2026",
+                    "left": 305,
+                    "right": 376,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "UID-DA88D7A5",
+                    "left": 376,
+                    "right": 613,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Deposit identified and allocated",
+                    "left": 613,
+                    "right": 903,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 4 321,09",
+                    "left": 903,
+                    "right": 1036,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "REVERSED",
+                    "left": 1036,
+                    "right": 1200,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "",
+                    "left": 1200,
+                    "right": 1391,
+                    "inside": true,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "13 Nov 2026",
+                    "left": 305,
+                    "right": 376,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "UNK-C/OBS647D/163PR",
+                    "left": 376,
+                    "right": 613,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Unidentified deposit",
+                    "left": 613,
+                    "right": 903,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 777,00",
+                    "left": 903,
+                    "right": 1036,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "RECORDED",
+                    "left": 1036,
+                    "right": 1200,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "",
+                    "left": 1200,
+                    "right": 1391,
+                    "inside": true,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "12 Nov 2026",
+                    "left": 305,
+                    "right": 376,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "UNK-B/OBS647D/163PR",
+                    "left": 376,
+                    "right": 613,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Unidentified deposit",
+                    "left": 613,
+                    "right": 903,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 1 234,56",
+                    "left": 903,
+                    "right": 1036,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "RECORDED",
+                    "left": 1036,
+                    "right": 1200,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "",
+                    "left": 1200,
+                    "right": 1391,
+                    "inside": true,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "10 Nov 2026",
+                    "left": 305,
+                    "right": 376,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "UNK-A/OBS647D/163PR",
+                    "left": 376,
+                    "right": 613,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Unidentified deposit",
+                    "left": 613,
+                    "right": 903,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 4 321,09",
+                    "left": 903,
+                    "right": 1036,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "RECORDED",
+                    "left": 1036,
+                    "right": 1200,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "",
+                    "left": 1200,
+                    "right": 1391,
+                    "inside": true,
+                    "truncated": false
+                  }
+                ]
+              ],
+              "allInside": true,
+              "noneTruncated": true,
+              "noHorizontalOverflow": true
+            }
+          ]
+        }
+      ],
+      "ok": false
+    },
+    {
+      "label": "z2-items-final",
+      "widths": [
+        {
+          "width": 1280,
+          "ok": true,
+          "tables": [
+            {
+              "testid": "unidentified-deposits-table",
+              "vw": 1280,
+              "clipBy": "DIV.relative w-full overflow-x-auto",
+              "clipLeft": 305,
+              "clipRight": 1231,
+              "tableLeft": 305,
+              "tableRight": 1231,
+              "tableScrollWidth": 926,
+              "chain": [
+                {
+                  "tag": "TABLE",
+                  "testid": "unidentified-deposits-table",
+                  "overflowX": "visible",
+                  "clientWidth": 926,
+                  "scrollWidth": 926,
+                  "left": 305,
+                  "right": 1231
+                },
+                {
+                  "tag": "DIV",
+                  "testid": null,
+                  "overflowX": "auto",
+                  "clientWidth": 926,
+                  "scrollWidth": 926,
+                  "left": 305,
+                  "right": 1231
+                },
+                {
+                  "tag": "DIV",
+                  "testid": null,
+                  "overflowX": "visible",
+                  "clientWidth": 926,
+                  "scrollWidth": 926,
+                  "left": 305,
+                  "right": 1231
+                },
+                {
+                  "tag": "DIV",
+                  "testid": null,
+                  "overflowX": "visible",
+                  "clientWidth": 926,
+                  "scrollWidth": 926,
+                  "left": 305,
+                  "right": 1231
+                },
+                {
+                  "tag": "DIV",
+                  "testid": null,
+                  "overflowX": "visible",
+                  "clientWidth": 974,
+                  "scrollWidth": 974,
+                  "left": 281,
+                  "right": 1255
+                },
+                {
+                  "tag": "DIV",
+                  "testid": "unidentified-deposits-section",
+                  "overflowX": "visible",
+                  "clientWidth": 974,
+                  "scrollWidth": 974,
+                  "left": 280,
+                  "right": 1256
+                }
+              ],
+              "header": [
+                {
+                  "text": "RECEIVED",
+                  "left": 305,
+                  "right": 409,
+                  "inside": true,
+                  "truncated": false
+                },
+                {
+                  "text": "DESCRIPTION",
+                  "left": 409,
+                  "right": 657,
+                  "inside": true,
+                  "truncated": false
+                },
+                {
+                  "text": "AMOUNT",
+                  "left": 657,
+                  "right": 760,
+                  "inside": true,
+                  "truncated": false
+                },
+                {
+                  "text": "AGE",
+                  "left": 760,
+                  "right": 820,
+                  "inside": true,
+                  "truncated": false
+                },
+                {
+                  "text": "STATUS",
+                  "left": 820,
+                  "right": 955,
+                  "inside": true,
+                  "truncated": false
+                },
+                {
+                  "text": "ACTIONS",
+                  "left": 955,
+                  "right": 1231,
+                  "inside": true,
+                  "truncated": false
+                }
+              ],
+              "rows": [
+                [
+                  {
+                    "text": "10 Nov 2026",
+                    "left": 305,
+                    "right": 409,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "DEPOSIT UNKNOWN REF A163PR UNK-A/OBS647D/163PR",
+                    "left": 409,
+                    "right": 657,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 4 321,09",
+                    "left": 657,
+                    "right": 760,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "7 days",
+                    "left": 760,
+                    "right": 820,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Held",
+                    "left": 820,
+                    "right": 955,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Allocate Pay to the Fund",
+                    "left": 955,
+                    "right": 1231,
+                    "inside": true,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "12 Nov 2026",
+                    "left": 305,
+                    "right": 409,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "DEPOSIT UNKNOWN REF B163PR UNK-B/OBS647D/163PR",
+                    "left": 409,
+                    "right": 657,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 1 234,56",
+                    "left": 657,
+                    "right": 760,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "—",
+                    "left": 760,
+                    "right": 820,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Paid to the Fund",
+                    "left": 820,
+                    "right": 955,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "—",
+                    "left": 955,
+                    "right": 1231,
+                    "inside": true,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "13 Nov 2026",
+                    "left": 305,
+                    "right": 409,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "DEPOSIT UNKNOWN REF C163PR UNK-C/OBS647D/163PR",
+                    "left": 409,
+                    "right": 657,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 777,00",
+                    "left": 657,
+                    "right": 760,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "4 days",
+                    "left": 760,
+                    "right": 820,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Held",
+                    "left": 820,
+                    "right": 955,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Allocate Pay to the Fund",
+                    "left": 955,
+                    "right": 1231,
+                    "inside": true,
+                    "truncated": false
+                  }
+                ]
+              ],
+              "allInside": true,
+              "noneTruncated": true,
+              "noHorizontalOverflow": true
+            }
+          ]
+        },
+        {
+          "width": 1440,
+          "ok": true,
+          "tables": [
+            {
+              "testid": "unidentified-deposits-table",
+              "vw": 1440,
+              "clipBy": "DIV.relative w-full overflow-x-auto",
+              "clipLeft": 305,
+              "clipRight": 1391,
+              "tableLeft": 305,
+              "tableRight": 1391,
+              "tableScrollWidth": 1086,
+              "chain": [
+                {
+                  "tag": "TABLE",
+                  "testid": "unidentified-deposits-table",
+                  "overflowX": "visible",
+                  "clientWidth": 1086,
+                  "scrollWidth": 1086,
+                  "left": 305,
+                  "right": 1391
+                },
+                {
+                  "tag": "DIV",
+                  "testid": null,
+                  "overflowX": "auto",
+                  "clientWidth": 1086,
+                  "scrollWidth": 1086,
+                  "left": 305,
+                  "right": 1391
+                },
+                {
+                  "tag": "DIV",
+                  "testid": null,
+                  "overflowX": "visible",
+                  "clientWidth": 1086,
+                  "scrollWidth": 1086,
+                  "left": 305,
+                  "right": 1391
+                },
+                {
+                  "tag": "DIV",
+                  "testid": null,
+                  "overflowX": "visible",
+                  "clientWidth": 1086,
+                  "scrollWidth": 1086,
+                  "left": 305,
+                  "right": 1391
+                },
+                {
+                  "tag": "DIV",
+                  "testid": null,
+                  "overflowX": "visible",
+                  "clientWidth": 1134,
+                  "scrollWidth": 1134,
+                  "left": 281,
+                  "right": 1415
+                },
+                {
+                  "tag": "DIV",
+                  "testid": "unidentified-deposits-section",
+                  "overflowX": "visible",
+                  "clientWidth": 1134,
+                  "scrollWidth": 1134,
+                  "left": 280,
+                  "right": 1416
+                }
+              ],
+              "header": [
+                {
+                  "text": "RECEIVED",
+                  "left": 305,
+                  "right": 427,
+                  "inside": true,
+                  "truncated": false
+                },
+                {
+                  "text": "DESCRIPTION",
+                  "left": 427,
+                  "right": 718,
+                  "inside": true,
+                  "truncated": false
+                },
+                {
+                  "text": "AMOUNT",
+                  "left": 718,
+                  "right": 838,
+                  "inside": true,
+                  "truncated": false
+                },
+                {
+                  "text": "AGE",
+                  "left": 838,
+                  "right": 909,
+                  "inside": true,
+                  "truncated": false
+                },
+                {
+                  "text": "STATUS",
+                  "left": 909,
+                  "right": 1068,
+                  "inside": true,
+                  "truncated": false
+                },
+                {
+                  "text": "ACTIONS",
+                  "left": 1068,
+                  "right": 1391,
+                  "inside": true,
+                  "truncated": false
+                }
+              ],
+              "rows": [
+                [
+                  {
+                    "text": "10 Nov 2026",
+                    "left": 305,
+                    "right": 427,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "DEPOSIT UNKNOWN REF A163PR UNK-A/OBS647D/163PR",
+                    "left": 427,
+                    "right": 718,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 4 321,09",
+                    "left": 718,
+                    "right": 838,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "7 days",
+                    "left": 838,
+                    "right": 909,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Held",
+                    "left": 909,
+                    "right": 1068,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Allocate Pay to the Fund",
+                    "left": 1068,
+                    "right": 1391,
+                    "inside": true,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "12 Nov 2026",
+                    "left": 305,
+                    "right": 427,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "DEPOSIT UNKNOWN REF B163PR UNK-B/OBS647D/163PR",
+                    "left": 427,
+                    "right": 718,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 1 234,56",
+                    "left": 718,
+                    "right": 838,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "—",
+                    "left": 838,
+                    "right": 909,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Paid to the Fund",
+                    "left": 909,
+                    "right": 1068,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "—",
+                    "left": 1068,
+                    "right": 1391,
+                    "inside": true,
+                    "truncated": false
+                  }
+                ],
+                [
+                  {
+                    "text": "13 Nov 2026",
+                    "left": 305,
+                    "right": 427,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "DEPOSIT UNKNOWN REF C163PR UNK-C/OBS647D/163PR",
+                    "left": 427,
+                    "right": 718,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "R 777,00",
+                    "left": 718,
+                    "right": 838,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "4 days",
+                    "left": 838,
+                    "right": 909,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Held",
+                    "left": 909,
+                    "right": 1068,
+                    "inside": true,
+                    "truncated": false
+                  },
+                  {
+                    "text": "Allocate Pay to the Fund",
+                    "left": 1068,
+                    "right": 1391,
+                    "inside": true,
+                    "truncated": false
+                  }
+                ]
+              ],
+              "allInside": true,
+              "noneTruncated": true,
+              "noHorizontalOverflow": true
+            }
+          ]
+        }
+      ],
+      "ok": true
+    }
+  ],
+  "startedAt": "2026-11-17T18:55:31.921Z",
+  "run": "1YO9M",
+  "ids": {
+    "account": "35d40888-03fb-4ef3-a72c-e9940060871f",
+    "udAccount": "267ee0c7-1373-43ad-95a2-cf53e3ece1f5",
+    "fundAccount": "89d0334e-7908-4a32-addb-043086101e02",
+    "moroka": "31244ee8-2fad-4b13-817b-97216971f986",
+    "morokaName": "Moroka Family Trust mwl0skwm827e",
+    "morokaMatter": "5f17849e-4d39-4f97-ba3a-3faf02b753bf",
+    "morokaMatterName": "Estate Late Peter Moroka mwl0skwm827e",
+    "alice": "bbd9baf4-a970-4ea8-ab19-66817f624bc8",
+    "bob": "834376bb-67e4-4fc2-b729-c0cb63f8e06c",
+    "statement": "e5f11d60-1237-4ef7-b6b3-d2df1f67145c",
+    "allocOut": "cbf2e39b-75d6-4793-85d0-d0ca1466448d",
+    "allocIn": "9cae8806-6a07-4489-84e2-d96d468d04fd"
+  },
+  "dates": {
+    "today": "2026-11-17",
+    "periodEnd": "2026-11-13",
+    "allocationDate": "2026-11-14"
+  },
+  "verdict": {
+    "gB": true,
+    "gC": true,
+    "dPortalUi": "DEFERRED",
+    "dPortal": false,
+    "final": true,
+    "clip": [
+      "g2-items-fund-pending:OK",
+      "g3-transactions-fund-pending:CLIPPED",
+      "z1-transactions-final:CLIPPED",
+      "z2-items-final:OK"
+    ],
+    "consoleErrors": 1,
+    "pageErrors": 0
+  },
+  "finishedAt": "2026-11-17T18:57:03.893Z"
+}

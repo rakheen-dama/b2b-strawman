@@ -1,0 +1,13 @@
+  ✓   5 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:197:7 › Day 5 — Disbursements (Phase 67) › [setup] Alice + Bob: Fund Sipho's trust ledger and approve a deeds-office trust payment (6.9s)
+  ✓   6 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:272:7 › Day 5 — Disbursements (Phase 67) › Bob: Create deeds-office TRUST_ACCOUNT disbursement with trust link (4.5s)
+  ✓   7 [chromium] › e2e/tests/legal-depth-ii/day-05-disbursements.spec.ts:315:7 › Day 5 — Disbursements (Phase 67) › Alice (Thandi): Approve trust-linked disbursement (1.7s)
+  ✓  21 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:202:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › [setup] Alice (Thandi): Billing rate override for Alice on Sipho's client (2.4s)
+  ✓  22 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:227:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › [setup] Alice (Thandi): Log 2h on Sipho's matter — letter of demand (3.4s)
+  ✓  23 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:258:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice (Thandi): Open Statements tab on oldest matter (1.9s)
+  ✓  24 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:273:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice: Generate Statement of Account with HTML preview (2.9s)
+  ✓  25 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:294:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice: Save Statement — listed on the matter, PDF downloadable from the Documents tab (3.7s)
+  -  26 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:361:8 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice: Statements-tab Download fetches the PDF
+  ✓  27 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:376:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice (Thandi): Write off one approved-UNBILLED disbursement (2.1s)
+  ✓  28 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:398:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice: Verify write-off audit event present in audit log (2.0s)
+  ✓  29 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:425:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice: Statement after the write-off — sheriff fee out of the disbursements and the WIP (2.3s)
+  ✓  30 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:438:7 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice: Verify written-off disbursement excluded from next invoice draft (2.4s)

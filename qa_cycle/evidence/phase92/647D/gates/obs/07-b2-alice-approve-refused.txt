@@ -1,0 +1,127 @@
+Skip to content
+Kazi
+E2E Test Organization
+Search...
+⌘K
+TODAY
+Home
+My work
+Diary
+MATTERS
+Matters
+New matter
+Conflict check
+Adverse parties
+AI reviews
+CLIENTS
+Clients
+FICA & compliance
+Data requests
+FEES
+TRUST
+FIRM
+Platform Admin
+Notifications
+AO
+
+Alice Owner
+
+alice@e2e-test.local
+
+Toggle menu
+E2E Test Organization
+Trust accounting
+Transactions
+Search
+⌘K
+12 unread notifications
+12
+e2e-test-org
+AO
+Transactions
+
+Trust account transaction history
+
+Record Transaction
+Status:
+All
+Recorded
+Awaiting Approval
+Approved
+Rejected
+Reversed
+Type:
+All
+Deposit
+Payment
+Fee transfer
+Refund
+Transfer out
+Transfer in
+Reversal
+Interest received for the Legal Practitioners' Fidelity Fund
+Interest paid to the Legal Practitioners' Fidelity Fund
+Bank charge
+Bank charge refunded from the business account
+Unidentified deposit
+Unidentified deposit allocated
+Deposit identified and allocated
+Unidentified deposit paid to the Fund
+Placed in section 86(4) investment
+Investment capital received
+Section 86(4) investment interest
+Fund share of section 86(4) interest (5%)
+Investment withdrawn
+Investment returned to trust
+Placed in section 86(3) investment account
+Section 86(3) investment capital received
+Section 86(3) investment withdrawn
+Section 86(3) investment returned to trust
+From
+To
+Client ID
+Matter ID
+Transaction History
+10 transactions found
+Date	Reference	Type	Amount	Status	Actions
+17 Nov 2026	DEP/MOROKA/mwl0skwm827e	Deposit	
+R 250 000,00	RECORDED	
+Reverse
+17 Nov 2026	DEP/QC/mwl0skwm827e	Deposit	
+R 45 000,00	RECORDED	
+Reverse
+17 Nov 2026	FEE/MOROKA/mwl0skwm827e	Fee transfer	
+R 8 500,00	APPROVED	
+Reverse
+17 Nov 2026	INV-Standard Bank-FD-0987654321	Payment	
+R 200 000,00	AWAITING APPROVAL	
+Approve
+Reject
+
+17 Nov 2026	INV-Nedbank-CALL-1122334455	Payment	
+R 30 000,00	AWAITING APPROVAL	
+Approve
+Reject
+
+17 Nov 2026	FEE/SIPHO/mwl0skwm827e	Fee transfer	
+R 500,00	AWAITING APPROVAL	
+Approve
+Reject
+
+14 Nov 2026	UID-DA88D7A5	Unidentified deposit allocated
+To Moroka Family Trust mwl0skwm827e — Estate Late Peter Moroka mwl0skwm827e: deposit received 10 November 2026 — DEPOSIT UNKNOWN REF A163PR
+	
+R 4 321,09	AWAITING APPROVAL	
+Approve
+Reject
+The transaction recorder cannot be the sole approver. A different member with APPROVE_TRUST_PAYMENT capability must approve this transaction.
+
+13 Nov 2026	UNK-C/OBS647D/163PR	Unidentified deposit	
+R 777,00	RECORDED	
+12 Nov 2026	UNK-B/OBS647D/163PR	Unidentified deposit	
+R 1 234,56	RECORDED	
+10 Nov 2026	UNK-A/OBS647D/163PR	Unidentified deposit	
+R 4 321,09	RECORDED	
+Command Palette
+
+Search pages and settings

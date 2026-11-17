@@ -1,0 +1,140 @@
+Skip to content
+Kazi
+E2E Test Organization
+Search...
+⌘K
+TODAY
+Home
+My work
+Diary
+MATTERS
+Matters
+New matter
+Conflict check
+Adverse parties
+AI reviews
+CLIENTS
+Clients
+FICA & compliance
+Data requests
+FEES
+TRUST
+FIRM
+Platform Admin
+Notifications
+AO
+
+Alice Owner
+
+alice@e2e-test.local
+
+Toggle menu
+E2E Test Organization
+Trust accounting
+Reconciliation
+New
+Search
+⌘K
+13 unread notifications
+13
+e2e-test-org
+AO
+Back to Reconciliation
+New Reconciliation
+
+Reconcile your trust account with a bank statement
+
+1
+Select Account
+2
+Upload Statement
+3
+Auto-Match
+4
+Review & Match
+5
+Complete
+This deposit has already been allocated or paid to the Fund and that was later undone, so its statement line can no longer be unmatched.
+Matching Progress
+3 / 3 lines resolved
+Bank Statement Lines
+#1
+10 Nov 2026
+
+DEPOSIT UNKNOWN REF A163PR
+
+Ref: UNK-A/OBS647D/163PR
+
+R 4 321,09 CR
+
+Recorded: Unidentified deposit
+Unmatch
+#2
+12 Nov 2026
+
+DEPOSIT UNKNOWN REF B163PR
+
+Ref: UNK-B/OBS647D/163PR
+
+R 1 234,56 CR
+
+Recorded: Unidentified deposit
+Unmatch
+#3
+13 Nov 2026
+
+DEPOSIT UNKNOWN REF C163PR
+
+Ref: UNK-C/OBS647D/163PR
+
+R 777,00 CR
+
+Recorded: Unidentified deposit
+Unmatch
+Unmatched Trust Transactions
+
+FEE/MOROKA/mwl0skwm827e
+
+17 Nov 2026 · Fee transfer
+
+R 8 500,00
+
+As at 13 Nov 2026
+Bank and cashbook
+Bank balance
+R 6 332,65
++ Outstanding deposits
+R 0,00
+− Outstanding payments
+R 0,00
+= Adjusted bank balance
+R 6 332,65
+Cashbook
+R 6 332,65
+Difference
+R 0,00
+Cashbook and trust creditors
+Cashbook
+R 6 332,65
+Trust creditors
+R 6 332,65
+Difference
+R 0,00
+Trust creditors
+Client ledgers
+R 0,00
+Legal Practitioners' Fidelity Fund — interest and charges
+R 0,00
+Unidentified deposits
+R 6 332,65
+
+0 statement lines are neither matched nor excluded
+
+Excluded statement lines total R 0,00. An excluded line adjusts nothing: excluding a real bank movement leaves its amount as the difference between the bank and the cashbook.
+
+Reconciliation is balanced
+Complete Reconciliation
+Back
+Command Palette
+
+Search pages and settings

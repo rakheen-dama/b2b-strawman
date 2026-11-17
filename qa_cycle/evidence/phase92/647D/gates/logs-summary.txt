@@ -1,0 +1,72 @@
+647D gates — summary of every *.log in this dir and obs/ (the *.log files are gitignored)
+
+== depth-ii.log (9783 bytes, 54 lines)
+  4 skipped
+  40 passed (2.1m)
+full per-test list: ./depth-ii-summary.txt
+
+== lifecycle.log (20654 bytes, 114 lines)
+  105 passed (3.3m)
+full per-test list: ./lifecycle-summary.txt
+
+== obs/diag-tx-width-output.log (3804 bytes, 190 lines)
+stdout of diag-tx-width.cjs; JSON obs/diag-tx-width.json
+
+== obs/obs-g-output.log (290 bytes, 15 lines)
+stdout of obs-g.cjs (continuation: g B approve, g C reject, final); JSON obs/obs-g-result.json
+{  "gB": true,  "gC": true,  "dPortalUi": "DEFERRED",  "dPortal": false,  "final": true,  "clip": [    "g2-items-fund-pending:OK",    "g3-transactions-fund-pending:CLIPPED",    "z1-transactions-final:CLIPPED",    "z2-items-final:OK"  ],  "consoleErrors": 1,  "pageErrors": 0}
+
+== obs/obs-output.log (435 bytes, 4 lines)
+stdout of obs.cjs (steps prep, a-f, and g up to B's request); its JSON is obs/obs-result.json
+OBS FAILED: TypeError: Cannot read properties of undefined (reading '0')
+    at itemDb (/Users/rakheendama/Projects/2026/worktree-epic-647D/qa_cycle/evidence/phase92/647D/gates/obs.cjs:243:372)
+    at requestFund (/Users/rakheendama/Projects/2026/worktree-epic-647D/qa_cycle/evidence/phase92/647D/gates/obs.cjs:651:14)
+
+== obs/portal-dev-server-output.log (2124 bytes, 29 lines)
+next dev (branch portal) on :3012, NEXT_PUBLIC_PORTAL_API_URL=http://localhost:8081
+▲ Next.js 16.3.8 (Turbopack)
+- Local:         http://localhost:3012
+- Network:       http://192.168.0.113:3012
+✓ Ready in 497ms
+
+== obs/portal-obs-output.log (910 bytes, 22 lines)
+stdout of portal-obs.cjs; JSON obs/portal-obs.json
+  "verdict": "PASS",
+
+== obs/probe-clip-output.log (84609 bytes, 3157 lines)
+stdout of probe-clip.cjs; JSON obs/probe-clip.json
+  "verdict": "FAIL"
+
+== stack0-down.log (137 bytes, 4 lines)
+Stack stopped. All containers and volumes removed.
+Run 'bash compose/scripts/e2e-up.sh' to start fresh.
+
+== stack1-backend.log (303752 bytes, 614 lines)
+level counts / WARN breakdown: see ./stack1-log-breakdown.txt
+{'INFO': 439, 'WARN': 151}
+
+== stack1-build.log (28078 bytes, 603 lines)
+Building from source at: /Users/rakheendama/Projects/2026/worktree-epic-647D
+
+
+== stack1-down.log (1344 bytes, 38 lines)
+Stack stopped. All containers and volumes removed.
+Run 'bash compose/scripts/e2e-up.sh' to start fresh.
+
+== stack1-frontend.log (12604 bytes, 173 lines)
+frontend ⨯ lines: 42 (all 'The destination stream closed early.' during the suite unless stated in README)
+
+== stack2-backend.log (249615 bytes, 502 lines)
+level counts / WARN breakdown: see ./stack2-log-breakdown.txt
+{'INFO': 270, 'WARN': 199}
+
+== stack2-build.log (10984 bytes, 368 lines)
+Building from source at: /Users/rakheendama/Projects/2026/worktree-epic-647D
+
+
+== stack2-down.log (1344 bytes, 38 lines)
+Stack stopped. All containers and volumes removed.
+Run 'bash compose/scripts/e2e-up.sh' to start fresh.
+
+== stack2-frontend.log (673 bytes, 9 lines)
+frontend ⨯ lines: 1 (all 'The destination stream closed early.' during the suite unless stated in README)

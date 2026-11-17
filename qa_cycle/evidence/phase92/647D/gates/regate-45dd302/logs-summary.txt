@@ -1,0 +1,46 @@
+647D re-gate @ 45dd3022f — summary of every *.log in this dir and obs/ (the *.log files are gitignored)
+
+== lifecycle.log (20657 bytes, 114 lines)
+  105 passed (3.0m)
+
+== depth-ii.log (9783 bytes, 54 lines)
+  4 skipped
+  40 passed (2.0m)
+
+== stack1-backend.log (256562 bytes, 506 lines)
+level counts: {'INFO': 331, 'WARN': 151}  (breakdown: stack1-log-breakdown.txt)
+
+== stack1-frontend.log (3233 bytes, 77 lines)
+⨯ lines: 18 — all 'The destination stream closed early.'
+
+== stack2-backend.log (249615 bytes, 502 lines)
+level counts: {'INFO': 270, 'WARN': 199}  (breakdown: stack2-log-breakdown.txt)
+
+== stack2-frontend.log (394 bytes, 9 lines)
+⨯ lines: 1 — all 'The destination stream closed early.'
+
+== stack0-down.log (137 bytes, 4 lines)
+Stack stopped. All containers and volumes removed.
+Run 'bash compose/scripts/e2e-up.sh' to start fresh.
+
+== stack1-down.log (1344 bytes, 38 lines)
+Stack stopped. All containers and volumes removed.
+Run 'bash compose/scripts/e2e-up.sh' to start fresh.
+
+== stack2-down.log (1344 bytes, 38 lines)
+Stack stopped. All containers and volumes removed.
+Run 'bash compose/scripts/e2e-up.sh' to start fresh.
+
+== stack1-build.log (15805 bytes, 477 lines)
+Building from source at: /Users/rakheendama/Projects/2026/worktree-epic-647D
+
+
+== stack2-build.log (10955 bytes, 366 lines)
+Building from source at: /Users/rakheendama/Projects/2026/worktree-epic-647D
+
+
+== obs/regate-obs-output.log (1494 bytes, 81 lines)
+stdout of regate-obs.cjs (verdict JSON; full result obs/regate-obs-result.json)
+  "hPASS": true,
+  "consoleErrors": 0,
+  "pageErrors": 0

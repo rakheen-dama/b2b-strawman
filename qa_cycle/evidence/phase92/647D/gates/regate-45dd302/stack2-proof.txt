@@ -1,0 +1,35 @@
+== worktree: /Users/rakheendama/Projects/2026/worktree-epic-647D @ 45dd3022f06a590b5dd1e22b2232bc6ed214d394
+== build log source lines:
+Building from source at: /Users/rakheendama/Projects/2026/worktree-epic-647D
+  Tail logs:   docker compose -f /Users/rakheendama/Projects/2026/worktree-epic-647D/compose/docker-compose.e2e.yml logs -f backend frontend
+== build log: frontend image built in this run (not cached):
+== frontend container: transactions-page chunks containing 'transaction-type-' AND 'whitespace-normal' (the 45dd302 fix):
+/app/frontend/.next/server/chunks/ssr/_13ydhih._.js
+-- the fix's className and testid inside those chunks (context excerpt):
+className:"py-3 pr-4",children:[(0,b.jsx)(o.Badge,{variant:"neutral",className:"shrink whitespace-normal","data-testid":`transaction-type-${a.id}`,children:a.typeLabel}),z.has(a.transactionType)&&a.description&&(0,b.jsx)("sp
+-- transactions page route chunk(s) (app/(app)/org/[slug]/trust-accounting/transactions):
+page
+page.js
+page.js.map
+page.js.nft.json
+page_client-reference-manifest.js
+== 647D strings still present in .next (feature build sanity):
+-- 'allocate-unidentified-dialog': 2 files
+-- 'pay-to-fund-dialog': 2 files
+-- 'unidentified-deposit-pending': 2 files
+-- 'transaction-description-': 1 files
+== backend jar: TrustClientMatterRule.class 1, UnidentifiedResolutionHooks.class 1, UnidentifiedDepositService 'existsPostedResolutionOfItem' 1
+== jar latest tenant migration:
+db/migration/tenant/V21__phase92_unidentified_deposits.sql
+== health: {"groups":["liveness","readiness"],"status":"UP"}  frontend :3001 HTTP 200
+== tenant schemas: tenant_7d218705360b
+ version |          description          | success 
+---------+-------------------------------+---------
+ 21      | phase92 unidentified deposits | t
+(1 row)
+
+ trust_txns | statements | recons | items 
+------------+------------+--------+-------
+          0 |          0 |      0 |     0
+(1 row)
+

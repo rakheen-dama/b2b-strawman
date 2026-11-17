@@ -1,7 +1,7 @@
 {
-  "commit": "563ef6185",
-  "command": "cd frontend && rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (node v20.11.1)",
+  "commit": "45dd3022f",
+  "command": "cd frontend && rm -rf .next && pnpm install --frozen-lockfile && pnpm run lint && pnpm run typecheck && pnpm run format:check && pnpm test && pnpm run build (nvm node v20.11.1, NODE_OPTIONS=\"\")",
   "exit": 0,
-  "ts": "2026-11-17T15:42:40Z",
-  "summary": "PR #1796 (647B) @563ef6185 — lint/typecheck/format OK; vitest 480 files, 4433 passed / 2 skipped; build OK — 179 s"
+  "ts": "2026-11-17T19:28:27Z",
+  "summary": "PR #1797 (647D) @45dd3022f — lint 0 errors (78 warnings), typecheck, format:check, build OK; vitest 481 files, 4444 passed / 2 skipped"
 }

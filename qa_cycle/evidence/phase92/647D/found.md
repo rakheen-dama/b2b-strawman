@@ -40,3 +40,18 @@ Reported while building; the fix-cycle-1 outcome (orchestrator rulings R1–R8) 
 
 - **Where:** `gates/found-obs.md` H-1b. After a refused self-approval ("The transaction recorder cannot be the sole approver. …"), the error span of the existing `ApprovalBadge` (`frontend/components/trust/approval-badge.tsx`) sits inline after Approve/Reject with no width limit, and at 1440 runs past the table wrapper's right edge.
 - **Pre-existing:** the same pattern applies to every refused approval on the transactions page, not only 647D rows. Not fixed per orchestrator ruling; suggested fix: give the error span a max width / wrap (or render it below the buttons) with a vitest case.
+
+## Orchestrator additions after merge (PR #1797 → fc214b595, 2026-11-17)
+
+These are non-blocking items from the final re-reviews @0915e8b0d / @45dd3022f and the re-gate. None was fixed in this slice.
+
+- **F-647D-6:** The allocate and Fund-payment date pickers use `min` = `receivedDate`, even for a reopened item. A reopened item is one whose earlier resolution was undone. For such an item, the server's lower bound is the latest undo's date (`findLatestReopeningDate`), which the response does not expose.
+  - Effect: the user can pick a date that the server then refuses, with an explicit 400 that names the earliest date.
+  - Fix: expose `earliestResolutionDate` on `UnidentifiedDepositResponse` and use it as the picker's `min`. This touches a pinned wire record (Agent A Medium).
+- **F-647D-7:** Once any resolution has posted, the statement line can never be unmatched, even after that resolution is undone. This is the F-647D-1 refusal, and it is an accepted trade-off.
+  - Possible later relief: date the unmatch contra no earlier than the latest resolution reversal. The line-dated cashbook matching rules must be confirmed first (Agent B Medium; this is CodeRabbit's second option).
+- **F-647D-8:** `requireDateInWindow` now queries the repository. It joins the `UnidentifiedDepositService` class-growth item, which the earlier note already defers to 649C (Agent B Medium).
+- **F-647D-9 (re-gate H-2, cosmetic):** At 1280 px the Transactions page squeezes the Type column to 155 px. Long references with no spaces, such as `DEP/MOROKA/…`, hold the Reference column at 223 px.
+  - Effect: "Unidentified deposit paid to the Fund" wraps to 3 lines and the pending-row description lines run 6–8 lines.
+  - Nothing clips or overlaps, and every label is on one line at 1440 px and wider.
+  - Remedies: a minimum width on the Type column, or let references break. Evidence: `gates/regate-45dd302/README.md`.

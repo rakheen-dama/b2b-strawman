@@ -1,7 +1,7 @@
 {
-  "commit": "23a55222b",
-  "command": "cd portal && rm -rf .next && pnpm run lint && pnpm run typecheck && pnpm run format:check && pnpm test && pnpm run build",
+  "commit": "0915e8b0d",
+  "command": "cd portal && pnpm run lint && pnpm run typecheck && pnpm run format:check && pnpm test && pnpm run build (nvm node v20.11.1, NODE_OPTIONS=\"\")",
   "exit": 0,
-  "ts": "2026-11-16T11:51:05Z",
-  "summary": "PR #1786 (645A) PORTAL-GATE @23a55222b: lint/typecheck/format ok, vitest 51 files / 284 passed, build ok (portal change = e2e spec comment only)"
+  "ts": "2026-11-17T19:28:27Z",
+  "summary": "PR #1797 (647D) @0915e8b0d — lint, typecheck, format:check, build OK; vitest 51 files, 285 passed. portal/ unchanged after 02fd16615."
 }

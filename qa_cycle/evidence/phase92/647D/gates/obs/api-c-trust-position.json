@@ -1,0 +1,33 @@
+{
+  "path": "/api/dashboard/trust-position?accountId=35d40888-03fb-4ef3-a72c-e9940060871f",
+  "status": 200,
+  "body": {
+    "trustAccountId": "35d40888-03fb-4ef3-a72c-e9940060871f",
+    "accountName": "Mathebula & Partners Trust Account",
+    "bankName": "Standard Bank",
+    "cashbookBalance": 292832.65,
+    "clientLedgerTotal": 290821.09,
+    "creditorBreakdown": {
+      "clientLedgers": 290821.09,
+      "investmentCreditors": 0,
+      "fundInterestAndCharges": 0,
+      "unidentifiedDeposits": 2011.56,
+      "otherNonClient": 0,
+      "interAccount": 0,
+      "total": 292832.65
+    },
+    "difference": 0,
+    "lastReconciliationPeriodEnd": "2026-11-13",
+    "lastReconciliationStatus": "DRAFT",
+    "lastReconciliationBalanced": true,
+    "daysSinceReconciliation": 4,
+    "pendingApprovalCount": 3,
+    "accounts": [
+      {
+        "id": "35d40888-03fb-4ef3-a72c-e9940060871f",
+        "accountName": "Mathebula & Partners Trust Account",
+        "isPrimary": true
+      }
+    ]
+  }
+}

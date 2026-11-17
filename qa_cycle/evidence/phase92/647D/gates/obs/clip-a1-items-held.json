@@ -1,0 +1,512 @@
+{
+  "label": "a1-items-held",
+  "widths": [
+    {
+      "width": 1280,
+      "ok": true,
+      "tables": [
+        {
+          "testid": "unidentified-deposits-table",
+          "vw": 1280,
+          "clipBy": "DIV.relative w-full overflow-x-auto",
+          "clipLeft": 305,
+          "clipRight": 1231,
+          "tableLeft": 305,
+          "tableRight": 1231,
+          "tableScrollWidth": 926,
+          "chain": [
+            {
+              "tag": "TABLE",
+              "testid": "unidentified-deposits-table",
+              "overflowX": "visible",
+              "clientWidth": 926,
+              "scrollWidth": 926,
+              "left": 305,
+              "right": 1231
+            },
+            {
+              "tag": "DIV",
+              "testid": null,
+              "overflowX": "auto",
+              "clientWidth": 926,
+              "scrollWidth": 926,
+              "left": 305,
+              "right": 1231
+            },
+            {
+              "tag": "DIV",
+              "testid": null,
+              "overflowX": "visible",
+              "clientWidth": 926,
+              "scrollWidth": 926,
+              "left": 305,
+              "right": 1231
+            },
+            {
+              "tag": "DIV",
+              "testid": null,
+              "overflowX": "visible",
+              "clientWidth": 926,
+              "scrollWidth": 926,
+              "left": 305,
+              "right": 1231
+            },
+            {
+              "tag": "DIV",
+              "testid": null,
+              "overflowX": "visible",
+              "clientWidth": 974,
+              "scrollWidth": 974,
+              "left": 281,
+              "right": 1255
+            },
+            {
+              "tag": "DIV",
+              "testid": "unidentified-deposits-section",
+              "overflowX": "visible",
+              "clientWidth": 974,
+              "scrollWidth": 974,
+              "left": 280,
+              "right": 1256
+            }
+          ],
+          "header": [
+            {
+              "text": "RECEIVED",
+              "left": 305,
+              "right": 417,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "DESCRIPTION",
+              "left": 417,
+              "right": 685,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "AMOUNT",
+              "left": 685,
+              "right": 796,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "AGE",
+              "left": 796,
+              "right": 860,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "STATUS",
+              "left": 860,
+              "right": 934,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "ACTIONS",
+              "left": 934,
+              "right": 1231,
+              "inside": true,
+              "truncated": false
+            }
+          ],
+          "rows": [
+            [
+              {
+                "text": "10 Nov 2026",
+                "left": 305,
+                "right": 417,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "DEPOSIT UNKNOWN REF A163PR UNK-A/OBS647D/163PR",
+                "left": 417,
+                "right": 685,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "R 4 321,09",
+                "left": 685,
+                "right": 796,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "7 days",
+                "left": 796,
+                "right": 860,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "Held",
+                "left": 860,
+                "right": 934,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "Allocate Pay to the Fund",
+                "left": 934,
+                "right": 1231,
+                "inside": true,
+                "truncated": false
+              }
+            ],
+            [
+              {
+                "text": "12 Nov 2026",
+                "left": 305,
+                "right": 417,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "DEPOSIT UNKNOWN REF B163PR UNK-B/OBS647D/163PR",
+                "left": 417,
+                "right": 685,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "R 1 234,56",
+                "left": 685,
+                "right": 796,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "5 days",
+                "left": 796,
+                "right": 860,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "Held",
+                "left": 860,
+                "right": 934,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "Allocate Pay to the Fund",
+                "left": 934,
+                "right": 1231,
+                "inside": true,
+                "truncated": false
+              }
+            ],
+            [
+              {
+                "text": "13 Nov 2026",
+                "left": 305,
+                "right": 417,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "DEPOSIT UNKNOWN REF C163PR UNK-C/OBS647D/163PR",
+                "left": 417,
+                "right": 685,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "R 777,00",
+                "left": 685,
+                "right": 796,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "4 days",
+                "left": 796,
+                "right": 860,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "Held",
+                "left": 860,
+                "right": 934,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "Allocate Pay to the Fund",
+                "left": 934,
+                "right": 1231,
+                "inside": true,
+                "truncated": false
+              }
+            ]
+          ],
+          "allInside": true,
+          "noneTruncated": true,
+          "noHorizontalOverflow": true
+        }
+      ]
+    },
+    {
+      "width": 1440,
+      "ok": true,
+      "tables": [
+        {
+          "testid": "unidentified-deposits-table",
+          "vw": 1440,
+          "clipBy": "DIV.relative w-full overflow-x-auto",
+          "clipLeft": 305,
+          "clipRight": 1391,
+          "tableLeft": 305,
+          "tableRight": 1391,
+          "tableScrollWidth": 1086,
+          "chain": [
+            {
+              "tag": "TABLE",
+              "testid": "unidentified-deposits-table",
+              "overflowX": "visible",
+              "clientWidth": 1086,
+              "scrollWidth": 1086,
+              "left": 305,
+              "right": 1391
+            },
+            {
+              "tag": "DIV",
+              "testid": null,
+              "overflowX": "auto",
+              "clientWidth": 1086,
+              "scrollWidth": 1086,
+              "left": 305,
+              "right": 1391
+            },
+            {
+              "tag": "DIV",
+              "testid": null,
+              "overflowX": "visible",
+              "clientWidth": 1086,
+              "scrollWidth": 1086,
+              "left": 305,
+              "right": 1391
+            },
+            {
+              "tag": "DIV",
+              "testid": null,
+              "overflowX": "visible",
+              "clientWidth": 1086,
+              "scrollWidth": 1086,
+              "left": 305,
+              "right": 1391
+            },
+            {
+              "tag": "DIV",
+              "testid": null,
+              "overflowX": "visible",
+              "clientWidth": 1134,
+              "scrollWidth": 1134,
+              "left": 281,
+              "right": 1415
+            },
+            {
+              "tag": "DIV",
+              "testid": "unidentified-deposits-section",
+              "overflowX": "visible",
+              "clientWidth": 1134,
+              "scrollWidth": 1134,
+              "left": 280,
+              "right": 1416
+            }
+          ],
+          "header": [
+            {
+              "text": "RECEIVED",
+              "left": 305,
+              "right": 436,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "DESCRIPTION",
+              "left": 436,
+              "right": 750,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "AMOUNT",
+              "left": 750,
+              "right": 880,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "AGE",
+              "left": 880,
+              "right": 956,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "STATUS",
+              "left": 956,
+              "right": 1042,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "ACTIONS",
+              "left": 1042,
+              "right": 1391,
+              "inside": true,
+              "truncated": false
+            }
+          ],
+          "rows": [
+            [
+              {
+                "text": "10 Nov 2026",
+                "left": 305,
+                "right": 436,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "DEPOSIT UNKNOWN REF A163PR UNK-A/OBS647D/163PR",
+                "left": 436,
+                "right": 750,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "R 4 321,09",
+                "left": 750,
+                "right": 880,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "7 days",
+                "left": 880,
+                "right": 956,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "Held",
+                "left": 956,
+                "right": 1042,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "Allocate Pay to the Fund",
+                "left": 1042,
+                "right": 1391,
+                "inside": true,
+                "truncated": false
+              }
+            ],
+            [
+              {
+                "text": "12 Nov 2026",
+                "left": 305,
+                "right": 436,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "DEPOSIT UNKNOWN REF B163PR UNK-B/OBS647D/163PR",
+                "left": 436,
+                "right": 750,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "R 1 234,56",
+                "left": 750,
+                "right": 880,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "5 days",
+                "left": 880,
+                "right": 956,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "Held",
+                "left": 956,
+                "right": 1042,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "Allocate Pay to the Fund",
+                "left": 1042,
+                "right": 1391,
+                "inside": true,
+                "truncated": false
+              }
+            ],
+            [
+              {
+                "text": "13 Nov 2026",
+                "left": 305,
+                "right": 436,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "DEPOSIT UNKNOWN REF C163PR UNK-C/OBS647D/163PR",
+                "left": 436,
+                "right": 750,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "R 777,00",
+                "left": 750,
+                "right": 880,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "4 days",
+                "left": 880,
+                "right": 956,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "Held",
+                "left": 956,
+                "right": 1042,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "Allocate Pay to the Fund",
+                "left": 1042,
+                "right": 1391,
+                "inside": true,
+                "truncated": false
+              }
+            ]
+          ],
+          "allInside": true,
+          "noneTruncated": true,
+          "noHorizontalOverflow": true
+        }
+      ]
+    }
+  ],
+  "ok": true
+}

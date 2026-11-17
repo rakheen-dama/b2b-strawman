@@ -24,6 +24,7 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.DisbursementPaymentSource;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.DisbursementRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.LegalDisbursement;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccount;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountType;
@@ -253,7 +254,8 @@ class TrustBoundaryGuardTest {
                   false,
                   null,
                   LocalDate.now(),
-                  null);
+                  null,
+                  InvestmentBasis.FIRM_DISCRETION);
           var savedTrustAccount = trustAccountRepository.save(trustAccount);
 
           trustPostingService.record(

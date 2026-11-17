@@ -1,0 +1,12 @@
+# 648C red run #2 — production code in place, V22 with §16.7.7's CHECK text verbatim:
+#   (account_type = 'INVESTMENT' AND investment_basis IN ('FIRM_DISCRETION','CLIENT_INSTRUCTION'))
+#   OR (account_type <> 'INVESTMENT' AND investment_basis IS NULL)
+# Batch-1 targeted run (first attempt), excerpt:
+[ERROR] TrustAccountingSchemaTest.anInvestmentAccountMustCarryItsBasis:117
+  Expecting code to raise a throwable.        <- INSERT INVESTMENT with investment_basis NULL was ACCEPTED
+[ERROR] InvestmentAccountBasisMigrationTest.theCheckRefusesTheBadShapes_andAcceptsTheGoodOnes:141->assertRefused:198
+  Expecting code to raise a throwable.        <- same, on the scratch schema
+[ERROR] InvestmentAccountBasisMigrationTest.theConstraintExists_andNamesBothBases  (test bug: "char" || unknown — fixed with contype::text)
+[ERROR] Tests run: 115, Failures: 2, Errors: 1, Skipped: 0
+# Cause: NULL IN (...) is NULL -> TRUE AND NULL = NULL; FALSE OR NULL = NULL; a CHECK passes on NULL.
+# Fix: the INVESTMENT branch adds `investment_basis IS NOT NULL` (V22). Re-run: 115/115 green.

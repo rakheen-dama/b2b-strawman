@@ -92,6 +92,18 @@ vi.mock("@/app/(app)/org/[slug]/trust-accounting/transactions/actions", () => ({
 
 vi.mock("@/app/(app)/org/[slug]/trust-accounting/actions", () => ({
   fetchTrustAccounts: vi.fn().mockResolvedValue([]),
+  // AddTrustAccountButton → CreateTrustAccountDialog (the settings tab renders it)
+  createTrustAccount: vi.fn(),
+}));
+
+// 648C: the Fees & Trust › Trust accounting tab (an async server tab) is rendered below
+vi.mock("@/lib/api/capabilities", () => ({
+  fetchMyCapabilities: vi
+    .fn()
+    .mockResolvedValue({ capabilities: [], role: "owner", isAdmin: false, isOwner: true }),
+}));
+vi.mock("@/app/(app)/org/[slug]/trust-accounting/interest/actions", () => ({
+  fetchLpffRates: vi.fn().mockResolvedValue([]),
 }));
 
 vi.mock("@/app/(app)/org/[slug]/trust-accounting/client-ledgers/actions", () => ({
@@ -115,6 +127,9 @@ import { CustomerGroupedTabs } from "@/components/customers/customer-grouped-tab
 import { TrustBalanceCard } from "@/components/trust/TrustBalanceCard";
 import { NAV_GROUPS } from "@/lib/nav-items";
 import { getSettingsFamily, settingsHref } from "@/lib/settings-nav";
+import { fetchTrustAccounts } from "@/app/(app)/org/[slug]/trust-accounting/actions";
+import { renderTrustAccountingTab } from "@/app/(app)/org/[slug]/settings/fees/_tabs/trust-accounting";
+import type { TrustAccount } from "@/lib/types/trust";
 
 afterEach(() => cleanup());
 beforeEach(() => vi.clearAllMocks());
@@ -272,6 +287,96 @@ describe("Trust settings page", () => {
       "/org/acme/settings/fees?tab=trust-accounting"
     );
     expect(trustTab!.description).toContain("trust accounts");
+  });
+
+  // 648C (ADR-379): the section in the Act's words; an investment account's basis; no raw enum
+  function account(overrides: Partial<TrustAccount>): TrustAccount {
+    return {
+      id: "acc",
+      accountName: "Account",
+      bankName: "Standard Bank",
+      branchCode: "051001",
+      accountNumber: "1234567890",
+      accountType: "GENERAL",
+      investmentBasis: null,
+      section: "S86_2",
+      isPrimary: false,
+      requireDualApproval: false,
+      paymentApprovalThreshold: null,
+      status: "ACTIVE",
+      openedDate: "2026-01-01",
+      closedDate: null,
+      notes: null,
+      createdAt: "2026-01-01T00:00:00Z",
+      updatedAt: "2026-01-01T00:00:00Z",
+      ...overrides,
+    };
+  }
+
+  const RAW_ENUMS = [
+    "GENERAL",
+    "INVESTMENT",
+    "SECTION_86",
+    "FIRM_DISCRETION",
+    "CLIENT_INSTRUCTION",
+    "S86_2",
+    "S86_3",
+    "S86_4",
+  ];
+
+  // Case-sensitive, whole-word: "Section 86(3) investment account" is fine, "INVESTMENT" is not
+  function expectNoRawEnum(el: HTMLElement) {
+    for (const raw of RAW_ENUMS) {
+      expect(el.textContent).not.toMatch(new RegExp(`\\b${raw}\\b`));
+    }
+  }
+
+  it("shows each account's section in words — never the raw type", async () => {
+    vi.mocked(fetchTrustAccounts).mockResolvedValueOnce([
+      account({ id: "g", accountName: "Main Trust", isPrimary: true }),
+      account({ id: "s", accountName: "Section 86 Trust", accountType: "SECTION_86" }),
+    ]);
+
+    render(await renderTrustAccountingTab());
+
+    const card = within(screen.getByTestId("trust-accounts-section"));
+    expect(card.getAllByText("Section 86(2) trust banking account")).toHaveLength(2);
+    expectNoRawEnum(screen.getByTestId("trust-accounts-section"));
+  });
+
+  it("shows the investment basis on investment accounts only", async () => {
+    vi.mocked(fetchTrustAccounts).mockResolvedValueOnce([
+      account({ id: "g", accountName: "Main Trust", isPrimary: true }),
+      account({
+        id: "i3",
+        accountName: "Call Account",
+        accountType: "INVESTMENT",
+        investmentBasis: "FIRM_DISCRETION",
+        section: "S86_3",
+      }),
+      account({
+        id: "i4",
+        accountName: "Client Deposit",
+        accountType: "INVESTMENT",
+        investmentBasis: "CLIENT_INSTRUCTION",
+        section: "S86_4",
+      }),
+    ]);
+
+    render(await renderTrustAccountingTab());
+
+    const card = within(screen.getByTestId("trust-accounts-section"));
+    expect(card.getByText("Section 86(3) investment account")).toBeInTheDocument();
+    expect(card.getByText("Invested at the firm's discretion")).toBeInTheDocument();
+    expect(card.getByText("Section 86(4) investment account")).toBeInTheDocument();
+    expect(card.getByText("Invested on a client's instruction")).toBeInTheDocument();
+    // One basis line per investment account; the general account has none
+    expect(card.getAllByTestId("trust-account-basis")).toHaveLength(2);
+    const generalSection = card
+      .getAllByTestId("trust-account-section")
+      .find((el) => el.textContent === "Section 86(2) trust banking account");
+    expect(generalSection).toBeDefined();
+    expectNoRawEnum(screen.getByTestId("trust-accounts-section"));
   });
 });
 

@@ -1,0 +1,41 @@
+# 648C red run — test-compile against main @ 0ab1f6c6c with the new/changed tests only (no production change)
+# command: ./mvnw test-compile -q
+  symbol:   method getInvestmentBasis()
+  symbol:   method investmentBasis()
+  symbol:   method section()
+  symbol:   variable TrustAccountSection
+[ERROR]   symbol:   method getInvestmentBasis()
+[ERROR]   symbol:   method investmentBasis()
+[ERROR]   symbol:   method section()
+[ERROR]   symbol:   variable TrustAccountSection
+[ERROR] backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/TrustAccountServiceTest.java:[129,23] constructor CreateTrustAccountRequest in record io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateTrustAccountRequest cannot be applied to given types;
+[ERROR] backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/TrustAccountServiceTest.java:[213,23] constructor CreateTrustAccountRequest in record io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateTrustAccountRequest cannot be applied to given types;
+[ERROR] backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/TrustAccountServiceTest.java:[229,23] constructor UpdateTrustAccountRequest in record io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.UpdateTrustAccountRequest cannot be applied to given types;
+[ERROR] backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/TrustAccountServiceTest.java:[259,23] constructor CreateTrustAccountRequest in record io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateTrustAccountRequest cannot be applied to given types;
+[ERROR] backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/TrustAccountServiceTest.java:[290,23] constructor CreateTrustAccountRequest in record io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateTrustAccountRequest cannot be applied to given types;
+[ERROR] backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/TrustAccountServiceTest.java:[323,23] constructor CreateTrustAccountRequest in record io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateTrustAccountRequest cannot be applied to given types;
+[ERROR] backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/TrustAccountServiceTest.java:[340,23] constructor CreateTrustAccountRequest in record io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateTrustAccountRequest cannot be applied to given types;
+[ERROR] backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/TrustAccountServiceTest.java:[373,23] constructor CreateTrustAccountRequest in record io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateTrustAccountRequest cannot be applied to given types;
+[ERROR] backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/TrustAccountServiceTest.java:[479,23] constructor CreateTrustAccountRequest in record io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateTrustAccountRequest cannot be applied to given types;
+[ERROR] backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/TrustAccountServiceTest.java:[514,23] constructor CreateTrustAccountRequest in record io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateTrustAccountRequest cannot be applied to given types;
+[ERROR] backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/TrustAccountServiceTest.java:[595,34] cannot find symbol
+[ERROR] backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/TrustAccountServiceTest.java:[596,34] cannot find symbol
+[ERROR] backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/TrustAccountServiceTest.java:[596,56] cannot find symbol
+[ERROR] backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/TrustAccountServiceTest.java:[597,36] cannot find symbol
+[ERROR] backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/TrustAccountServiceTest.java:[599,36] cannot find symbol
+[ERROR] backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/TrustAccountServiceTest.java:[599,58] cannot find symbol
+[ERROR] backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/TrustAccountServiceTest.java:[606,31] cannot find symbol
+[ERROR] backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/TrustAccountServiceTest.java:[608,76] cannot find symbol
+[ERROR] backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/TrustAccountServiceTest.java:[609,34] cannot find symbol
+[ERROR] backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/TrustAccountServiceTest.java:[639,40] cannot find symbol
+[ERROR] backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/TrustAccountServiceTest.java:[640,40] cannot find symbol
+[ERROR] backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/TrustAccountServiceTest.java:[640,62] cannot find symbol
+[ERROR] backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/TrustAccountServiceTest.java:[673,31] constructor CreateTrustAccountRequest in record io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateTrustAccountRequest cannot be applied to given types;
+[ERROR] backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/TrustAccountServiceTest.java:[718,27] constructor UpdateTrustAccountRequest in record io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.UpdateTrustAccountRequest cannot be applied to given types;
+[ERROR] backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/TrustAccountServiceTest.java:[729,61] cannot find symbol
+[ERROR] backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/TrustAccountServiceTest.java:[734,27] constructor UpdateTrustAccountRequest in record io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.UpdateTrustAccountRequest cannot be applied to given types;
+[ERROR] backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/TrustAccountServiceTest.java:[745,59] cannot find symbol
+[ERROR] backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/TrustAccountServiceTest.java:[787,29] constructor UpdateTrustAccountRequest in record io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.UpdateTrustAccountRequest cannot be applied to given types;
+[ERROR] backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/TrustAccountServiceTest.java:[804,75] cannot find symbol
+[ERROR] backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/TrustAccountServiceTest.java:[806,75] cannot find symbol
+[ERROR] backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/TrustAccountServiceTest.java:[814,12] constructor CreateTrustAccountRequest in record io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateTrustAccountRequest cannot be applied to given types;

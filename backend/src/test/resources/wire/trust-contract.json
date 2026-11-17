@@ -1,5 +1,9 @@
 {
   "enums" : {
+    "InvestmentBasis" : [ "FIRM_DISCRETION", "CLIENT_INSTRUCTION" ],
+    "TrustAccountSection" : [ "S86_2", "S86_3", "S86_4" ],
+    "TrustAccountStatus" : [ "ACTIVE", "CLOSED" ],
+    "TrustAccountType" : [ "GENERAL", "INVESTMENT", "SECTION_86" ],
     "TrustLedger" : [ "CLIENT", "CLIENT_INVESTMENT", "NON_CLIENT", "INTER_ACCOUNT" ],
     "TrustTransactionDirection" : [ "IN", "OUT", "NEUTRAL" ],
     "TrustTransactionType.Origin" : [ "FIRM", "BANK" ],
@@ -108,6 +112,40 @@
       "name" : "lines",
       "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService$BankStatementLineResponse>"
     } ],
+    "CreateTrustAccountRequest" : [ {
+      "name" : "accountName",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "bankName",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "branchCode",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "accountNumber",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "accountType",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "isPrimary",
+      "type" : "java.lang.Boolean"
+    }, {
+      "name" : "requireDualApproval",
+      "type" : "java.lang.Boolean"
+    }, {
+      "name" : "paymentApprovalThreshold",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "openedDate",
+      "type" : "java.time.LocalDate"
+    }, {
+      "name" : "notes",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "investmentBasis",
+      "type" : "io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis"
+    } ],
     "CreditorBreakdown" : [ {
       "name" : "clientLedgers",
       "type" : "java.math.BigDecimal"
@@ -159,6 +197,58 @@
     }, {
       "name" : "creditorBreakdown",
       "type" : "io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService$CreditorBreakdown"
+    } ],
+    "TrustAccountResponse" : [ {
+      "name" : "id",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "accountName",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "bankName",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "branchCode",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "accountNumber",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "accountType",
+      "type" : "io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountType"
+    }, {
+      "name" : "investmentBasis",
+      "type" : "io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis"
+    }, {
+      "name" : "section",
+      "type" : "io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountSection"
+    }, {
+      "name" : "isPrimary",
+      "type" : "boolean"
+    }, {
+      "name" : "requireDualApproval",
+      "type" : "boolean"
+    }, {
+      "name" : "paymentApprovalThreshold",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "status",
+      "type" : "io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountStatus"
+    }, {
+      "name" : "openedDate",
+      "type" : "java.time.LocalDate"
+    }, {
+      "name" : "closedDate",
+      "type" : "java.time.LocalDate"
+    }, {
+      "name" : "notes",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "createdAt",
+      "type" : "java.time.Instant"
+    }, {
+      "name" : "updatedAt",
+      "type" : "java.time.Instant"
     } ],
     "TrustPositionResponse" : [ {
       "name" : "trustAccountId",

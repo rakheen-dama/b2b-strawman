@@ -5,7 +5,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.audit.AuditEvent;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
@@ -134,7 +136,8 @@ class TrustAccountServiceTest {
                           false,
                           null,
                           LocalDate.of(2026, 2, 1),
-                          null);
+                          null,
+                          InvestmentBasis.FIRM_DISCRETION);
 
                   trustAccountService.createTrustAccount(request);
 
@@ -217,7 +220,8 @@ class TrustAccountServiceTest {
                           false,
                           null,
                           LocalDate.of(2026, 1, 15),
-                          null);
+                          null,
+                          InvestmentBasis.FIRM_DISCRETION);
 
                   var created = trustAccountService.createTrustAccount(createRequest);
 
@@ -229,7 +233,8 @@ class TrustAccountServiceTest {
                           "0000000002",
                           true,
                           new BigDecimal("50000.00"),
-                          "Updated notes");
+                          "Updated notes",
+                          null);
 
                   var updated = trustAccountService.updateTrustAccount(created.id(), updateRequest);
 
@@ -261,7 +266,8 @@ class TrustAccountServiceTest {
                           false,
                           null,
                           LocalDate.of(2026, 1, 20),
-                          null);
+                          null,
+                          InvestmentBasis.FIRM_DISCRETION);
 
                   var created = trustAccountService.createTrustAccount(createRequest);
 
@@ -291,7 +297,8 @@ class TrustAccountServiceTest {
                           false,
                           null,
                           LocalDate.of(2026, 1, 25),
-                          null);
+                          null,
+                          InvestmentBasis.FIRM_DISCRETION);
 
                   var created = trustAccountService.createTrustAccount(createRequest);
                   trustAccountService.closeTrustAccount(created.id());
@@ -323,7 +330,8 @@ class TrustAccountServiceTest {
                           false,
                           null,
                           LocalDate.of(2026, 2, 1),
-                          null);
+                          null,
+                          InvestmentBasis.FIRM_DISCRETION);
 
                   trustAccountService.createTrustAccount(activeRequest);
 
@@ -339,7 +347,8 @@ class TrustAccountServiceTest {
                           false,
                           null,
                           LocalDate.of(2026, 2, 1),
-                          null);
+                          null,
+                          InvestmentBasis.FIRM_DISCRETION);
 
                   var closedAccount = trustAccountService.createTrustAccount(closedRequest);
                   trustAccountService.closeTrustAccount(closedAccount.id());
@@ -371,7 +380,8 @@ class TrustAccountServiceTest {
                           false,
                           null,
                           LocalDate.of(2026, 1, 1),
-                          null);
+                          null,
+                          InvestmentBasis.FIRM_DISCRETION);
 
                   var account = trustAccountService.createTrustAccount(createRequest);
 
@@ -476,7 +486,8 @@ class TrustAccountServiceTest {
                           false,
                           null,
                           LocalDate.of(2026, 1, 1),
-                          null);
+                          null,
+                          InvestmentBasis.FIRM_DISCRETION);
 
                   var account = trustAccountService.createTrustAccount(createRequest);
                   accountId[0] = account.id();
@@ -510,7 +521,8 @@ class TrustAccountServiceTest {
                           false,
                           null,
                           LocalDate.of(2026, 1, 1),
-                          null);
+                          null,
+                          InvestmentBasis.FIRM_DISCRETION);
 
                   var account = trustAccountService.createTrustAccount(createRequest);
                   accountId[0] = account.id();
@@ -563,7 +575,277 @@ class TrustAccountServiceTest {
                 .hasMessageContaining("No LPFF rate configured"));
   }
 
+  // --- 648C: an investment account carries its basis (ADR-379) ---
+
+  @Test
+  void createInvestmentAccount_carriesItsBasisAndDerivedSection_andAuditsTheBasis() {
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var firm =
+                      trustAccountService.createTrustAccount(
+                          investmentRequest(
+                              "Basis s86(3) Account", InvestmentBasis.FIRM_DISCRETION));
+                  var client =
+                      trustAccountService.createTrustAccount(
+                          investmentRequest(
+                              "Basis s86(4) Account", InvestmentBasis.CLIENT_INSTRUCTION));
+
+                  assertThat(firm.investmentBasis()).isEqualTo(InvestmentBasis.FIRM_DISCRETION);
+                  assertThat(firm.section()).isEqualTo(TrustAccountSection.S86_3);
+                  assertThat(client.investmentBasis())
+                      .isEqualTo(InvestmentBasis.CLIENT_INSTRUCTION);
+                  assertThat(client.section()).isEqualTo(TrustAccountSection.S86_4);
+
+                  // Persisted, and read back the same way
+                  assertThat(
+                          trustAccountRepository
+                              .findById(client.id())
+                              .orElseThrow()
+                              .getInvestmentBasis())
+                      .isEqualTo(InvestmentBasis.CLIENT_INSTRUCTION);
+                  assertThat(trustAccountService.getTrustAccount(firm.id()).section())
+                      .isEqualTo(TrustAccountSection.S86_3);
+
+                  var created = createdAudit(client.id());
+                  assertThat(created.getDetails())
+                      .containsEntry("investment_basis", "CLIENT_INSTRUCTION")
+                      .containsEntry("account_type", "INVESTMENT");
+                }));
+  }
+
+  @Test
+  void createNonInvestmentAccount_reportsUnderSection86_2_withNoBasis() {
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  for (var type : List.of("GENERAL", "SECTION_86")) {
+                    var response =
+                        trustAccountService.createTrustAccount(
+                            new CreateTrustAccountRequest(
+                                "No Basis " + type,
+                                "Absa",
+                                "632005",
+                                "40" + type.length(),
+                                type,
+                                false,
+                                false,
+                                null,
+                                LocalDate.of(2026, 3, 1),
+                                null));
+
+                    assertThat(response.investmentBasis()).isNull();
+                    assertThat(response.section()).isEqualTo(TrustAccountSection.S86_2);
+                    assertThat(createdAudit(response.id()).getDetails())
+                        .doesNotContainKey("investment_basis");
+                  }
+                }));
+  }
+
+  @Test
+  void createTrustAccount_refusesAnInvestmentWithoutBasis_andABasisOnAnyOtherType() {
+    long before = accountCount();
+
+    runInTenant(
+        () ->
+            assertThatThrownBy(
+                    () ->
+                        trustAccountService.createTrustAccount(investmentRequest("No Basis", null)))
+                .isInstanceOfSatisfying(
+                    InvalidStateException.class,
+                    e -> {
+                      assertThat(e.getBody().getTitle()).isEqualTo("Investment basis required");
+                      assertThat(e.getBody().getDetail())
+                          .isEqualTo(
+                              "An investment account needs its basis: section 86(3) (the firm"
+                                  + " invests surplus trust money) or section 86(4) (invested on a"
+                                  + " client's instruction).");
+                    }));
+
+    for (var type : List.of("GENERAL", "SECTION_86")) {
+      runInTenant(
+          () ->
+              assertThatThrownBy(
+                      () ->
+                          trustAccountService.createTrustAccount(
+                              new CreateTrustAccountRequest(
+                                  "Basis On " + type,
+                                  "Absa",
+                                  "632005",
+                                  "5550009999",
+                                  type,
+                                  false,
+                                  false,
+                                  null,
+                                  LocalDate.of(2026, 3, 1),
+                                  null,
+                                  InvestmentBasis.FIRM_DISCRETION)))
+                  .isInstanceOfSatisfying(
+                      InvalidStateException.class,
+                      e -> {
+                        assertThat(e.getBody().getTitle())
+                            .isEqualTo("Investment basis not allowed");
+                        assertThat(e.getBody().getDetail())
+                            .isEqualTo(
+                                "Only an investment account carries an investment basis. A trust"
+                                    + " banking account reports under section 86(2).");
+                      }));
+    }
+
+    // Refused before anything is written
+    assertThat(accountCount()).isEqualTo(before);
+  }
+
+  @Test
+  void updateTrustAccount_setsTheBasisOnAnInvestmentAccountOnly() {
+    UUID[] ids = new UUID[2];
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var investment =
+                      trustAccountService.createTrustAccount(
+                          investmentRequest(
+                              "Basis Update Investment", InvestmentBasis.FIRM_DISCRETION));
+                  ids[0] = investment.id();
+
+                  // null = unchanged
+                  var unchanged =
+                      trustAccountService.updateTrustAccount(
+                          investment.id(),
+                          new UpdateTrustAccountRequest(
+                              "Basis Update Investment (renamed)",
+                              null,
+                              null,
+                              null,
+                              null,
+                              null,
+                              null,
+                              null));
+                  assertThat(unchanged.investmentBasis())
+                      .isEqualTo(InvestmentBasis.FIRM_DISCRETION);
+                  assertThat(unchanged.section()).isEqualTo(TrustAccountSection.S86_3);
+
+                  var changed =
+                      trustAccountService.updateTrustAccount(
+                          investment.id(),
+                          new UpdateTrustAccountRequest(
+                              null,
+                              null,
+                              null,
+                              null,
+                              null,
+                              null,
+                              null,
+                              InvestmentBasis.CLIENT_INSTRUCTION));
+                  assertThat(changed.investmentBasis())
+                      .isEqualTo(InvestmentBasis.CLIENT_INSTRUCTION);
+                  assertThat(changed.section()).isEqualTo(TrustAccountSection.S86_4);
+
+                  var updatedEvents =
+                      auditEventRepository
+                          .findByFilter(
+                              "trust_account",
+                              investment.id(),
+                              null,
+                              "trust_account.updated",
+                              null,
+                              null,
+                              PageRequest.of(0, 10))
+                          .getContent();
+                  assertThat(updatedEvents)
+                      .anySatisfy(
+                          e ->
+                              assertThat(e.getDetails())
+                                  .containsEntry("investment_basis", "CLIENT_INSTRUCTION"));
+
+                  ids[1] =
+                      trustAccountService
+                          .createTrustAccount(
+                              new CreateTrustAccountRequest(
+                                  "Basis Update General",
+                                  "Absa",
+                                  "632005",
+                                  "5550007777",
+                                  "GENERAL",
+                                  false,
+                                  false,
+                                  null,
+                                  LocalDate.of(2026, 3, 1),
+                                  null))
+                          .id();
+                }));
+
+    runInTenant(
+        () ->
+            assertThatThrownBy(
+                    () ->
+                        trustAccountService.updateTrustAccount(
+                            ids[1],
+                            new UpdateTrustAccountRequest(
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                InvestmentBasis.FIRM_DISCRETION)))
+                .isInstanceOfSatisfying(
+                    InvalidStateException.class,
+                    e ->
+                        assertThat(e.getBody().getTitle())
+                            .isEqualTo("Investment basis not allowed")));
+
+    runInTenant(
+        () -> {
+          assertThat(trustAccountRepository.findById(ids[1]).orElseThrow().getInvestmentBasis())
+              .isNull();
+          assertThat(trustAccountRepository.findById(ids[0]).orElseThrow().getInvestmentBasis())
+              .isEqualTo(InvestmentBasis.CLIENT_INSTRUCTION);
+        });
+  }
+
   // --- Helpers ---
+
+  private static CreateTrustAccountRequest investmentRequest(String name, InvestmentBasis basis) {
+    return new CreateTrustAccountRequest(
+        name,
+        "Investec",
+        "580105",
+        "7770001234",
+        "INVESTMENT",
+        false,
+        false,
+        null,
+        LocalDate.of(2026, 3, 1),
+        null,
+        basis);
+  }
+
+  private AuditEvent createdAudit(UUID accountId) {
+    var events =
+        auditEventRepository
+            .findByFilter(
+                "trust_account",
+                accountId,
+                null,
+                "trust_account.created",
+                null,
+                null,
+                PageRequest.of(0, 10))
+            .getContent();
+    assertThat(events).hasSize(1);
+    return events.getFirst();
+  }
+
+  private long accountCount() {
+    long[] count = new long[1];
+    runInTenant(() -> count[0] = trustAccountRepository.count());
+    return count[0];
+  }
 
   private void runInTenant(Runnable action) {
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)

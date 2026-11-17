@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { cleanup, render, screen, fireEvent } from "@testing-library/react";
+import { cleanup, render, screen, fireEvent, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 
 // -- Mock server-only -----------------------------------------------------
 vi.mock("server-only", () => ({}));
@@ -31,7 +32,10 @@ vi.mock("@/app/(app)/org/[slug]/trust-accounting/interest/actions", () => ({
 }));
 
 // -- Mock parent trust actions --------------------------------------------
+const mockCreateTrustAccount = vi.fn();
+
 vi.mock("@/app/(app)/org/[slug]/trust-accounting/actions", () => ({
+  createTrustAccount: (...args: unknown[]) => mockCreateTrustAccount(...args),
   fetchTrustAccounts: vi.fn().mockResolvedValue([
     {
       id: "acc-1",
@@ -40,6 +44,8 @@ vi.mock("@/app/(app)/org/[slug]/trust-accounting/actions", () => ({
       branchCode: "250655",
       accountNumber: "1234567890",
       accountType: "GENERAL",
+      investmentBasis: null,
+      section: "S86_2",
       isPrimary: true,
       requireDualApproval: false,
       paymentApprovalThreshold: null,
@@ -108,6 +114,7 @@ vi.mock("next/link", () => ({
 import InvestmentsPage from "@/app/(app)/org/[slug]/trust-accounting/investments/page";
 import { PlaceInvestmentDialog } from "@/components/trust/PlaceInvestmentDialog";
 import { InterestRunWizard } from "@/components/trust/InterestRunWizard";
+import { CreateTrustAccountDialog } from "@/components/trust/CreateTrustAccountDialog";
 
 // -- Helpers --------------------------------------------------------------
 
@@ -416,5 +423,62 @@ describe("Epic 455 — Investment Basis", () => {
       expect(arrangementCell).toBeInTheDocument();
       expect(screen.getByText("Arrangement Client")).toBeInTheDocument();
     });
+  });
+
+  // 648C (ADR-379): an investment account carries its basis — section 86(3) or 86(4)
+  it("the account dialog asks for the basis only for an Investment account", async () => {
+    const user = userEvent.setup();
+    render(<CreateTrustAccountDialog open={true} onOpenChange={vi.fn()} />);
+
+    // General (the default): no basis select
+    expect(screen.queryByTestId("trust-account-basis-select")).not.toBeInTheDocument();
+
+    await user.click(screen.getByTestId("trust-account-type-select"));
+    await user.click(screen.getByRole("option", { name: "Investment" }));
+    await user.click(screen.getByTestId("trust-account-basis-select"));
+    expect(
+      screen.getByRole("option", {
+        name: "Section 86(3) — the firm invests surplus trust money",
+      })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("option", { name: "Section 86(4) — invested on a client's instruction" })
+    ).toBeInTheDocument();
+    await user.click(
+      screen.getByRole("option", { name: "Section 86(4) — invested on a client's instruction" })
+    );
+
+    // Back to General: the select is gone
+    await user.click(screen.getByTestId("trust-account-type-select"));
+    await user.click(screen.getByRole("option", { name: "General" }));
+    expect(screen.queryByTestId("trust-account-basis-select")).not.toBeInTheDocument();
+  });
+
+  it("an Investment account cannot be created without its basis; with one, the basis is sent", async () => {
+    const user = userEvent.setup();
+    mockCreateTrustAccount.mockResolvedValue({ success: true, account: { id: "acc-new" } });
+    render(<CreateTrustAccountDialog open={true} onOpenChange={vi.fn()} />);
+
+    await user.type(screen.getByLabelText("Account Name"), "Call Account");
+    await user.type(screen.getByLabelText("Bank Name"), "Investec");
+    await user.type(screen.getByLabelText("Branch Code"), "580105");
+    await user.type(screen.getByLabelText("Account Number"), "7770001234");
+    await user.click(screen.getByTestId("trust-account-type-select"));
+    await user.click(screen.getByRole("option", { name: "Investment" }));
+
+    await user.click(screen.getByRole("button", { name: "Create Account" }));
+    expect(await screen.findByText("Choose the investment basis")).toBeInTheDocument();
+    expect(mockCreateTrustAccount).not.toHaveBeenCalled();
+
+    await user.click(screen.getByTestId("trust-account-basis-select"));
+    await user.click(
+      screen.getByRole("option", { name: "Section 86(4) — invested on a client's instruction" })
+    );
+    await user.click(screen.getByRole("button", { name: "Create Account" }));
+
+    await waitFor(() => expect(mockCreateTrustAccount).toHaveBeenCalledTimes(1));
+    expect(mockCreateTrustAccount).toHaveBeenCalledWith(
+      expect.objectContaining({ accountType: "INVESTMENT", investmentBasis: "CLIENT_INSTRUCTION" })
+    );
   });
 });

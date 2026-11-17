@@ -6,6 +6,7 @@ import { settle } from "@/lib/settle";
 import type { WidgetResult } from "@/lib/dashboard-home";
 import type { TrustBalanceTrendResponse, TrustPositionResponse } from "@/lib/dashboard-types";
 import type {
+  CreateTrustAccountRequest,
   MatterTrustBalance,
   TrustAccount,
   TrustTransaction,
@@ -47,25 +48,12 @@ export async function fetchMatterTrustBalance(
   );
 }
 
-export interface CreateTrustAccountInput {
-  accountName: string;
-  bankName: string;
-  branchCode: string;
-  accountNumber: string;
-  accountType?: "GENERAL" | "INVESTMENT" | "SECTION_86";
-  isPrimary?: boolean;
-  requireDualApproval?: boolean;
-  paymentApprovalThreshold?: number | null;
-  openedDate?: string;
-  notes?: string;
-}
-
 export type CreateTrustAccountResult =
   | { success: true; account: TrustAccount }
   | { success: false; error: string };
 
 export async function createTrustAccount(
-  input: CreateTrustAccountInput
+  input: CreateTrustAccountRequest
 ): Promise<CreateTrustAccountResult> {
   try {
     const account = await api.post<TrustAccount>("/api/trust-accounts", input);

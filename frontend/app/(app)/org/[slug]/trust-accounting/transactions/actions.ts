@@ -166,6 +166,8 @@ export async function recordFeeTransfer(
       invoiceId: data.invoiceId,
       amount: data.amount,
       reference: data.reference,
+      // Blank means "today" — the server defaults a missing transactionDate to the SA business date.
+      transactionDate: data.transactionDate || null,
     });
     revalidatePath("/", "layout");
     return { success: true };

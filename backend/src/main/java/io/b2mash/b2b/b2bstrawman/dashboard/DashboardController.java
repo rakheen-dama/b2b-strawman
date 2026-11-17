@@ -132,7 +132,7 @@ public class DashboardController {
 
   /**
    * Returns the trust position for the primary (or requested) trust account: cashbook balance vs
-   * client-ledger total, latest reconciliation and pending approvals. Composes the existing trust
+   * trust-creditor total, latest reconciliation and pending approvals. Composes the existing trust
    * reads, so it reveals nothing they do not.
    */
   @GetMapping("/api/dashboard/trust-position")
@@ -143,8 +143,8 @@ public class DashboardController {
   }
 
   /**
-   * Month-end cashbook and client-ledger balances for the primary (or requested) trust account over
-   * the last {@code months} SA calendar months (1–24, default 12), oldest first, zero-filled
+   * Month-end cashbook and trust-creditor balances for the primary (or requested) trust account
+   * over the last {@code months} SA calendar months (1–24, default 12), oldest first, zero-filled
    * (ADR-372). Same gate as trust-position.
    */
   @GetMapping("/api/dashboard/trust-balance-trend")

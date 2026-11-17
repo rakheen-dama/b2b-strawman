@@ -182,8 +182,13 @@ export interface CashbookBalance {
   balance: number;
 }
 
+/**
+ * Mirrors backend `ClientLedgerService.TotalBalanceResponse` (646D): `balance` is the client
+ * ledgers (meaning unchanged); `creditorBreakdown` is every trust creditor as at the requested date.
+ */
 export interface TotalBalance {
   balance: number;
+  creditorBreakdown: TrustCreditorBreakdown;
 }
 
 /**

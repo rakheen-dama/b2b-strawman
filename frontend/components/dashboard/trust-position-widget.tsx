@@ -33,8 +33,9 @@ function lastReconciliationText(data: TrustPositionResponse): string {
 
 /**
  * Trust position (614B, arch §12.3.3): the headline is the difference between the bank cashbook
- * and the client ledgers — "does the bank agree with the ledgers". Primary account only; no
- * switcher yet (follow-up), so more than one account is noted rather than hidden.
+ * and every trust creditor (client ledgers, investment creditors, Fund interest and charges,
+ * unidentified deposits) — EQ-2, §16.3.2 (646D). Primary account only; no switcher yet
+ * (follow-up), so more than one account is noted rather than hidden.
  */
 export function TrustPositionWidget({ slug, data }: TrustPositionWidgetProps) {
   const balanced = data ? isBalanced(data.difference) : false;
@@ -76,9 +77,12 @@ export function TrustPositionWidget({ slug, data }: TrustPositionWidgetProps) {
             <dd className="text-foreground text-right font-mono text-sm font-medium tabular-nums">
               {formatCurrency(data.cashbookBalance)}
             </dd>
-            <dt className="text-muted-foreground">Client ledgers</dt>
-            <dd className="text-foreground text-right font-mono text-sm font-medium tabular-nums">
-              {formatCurrency(data.clientLedgerTotal)}
+            <dt className="text-muted-foreground">Trust creditors</dt>
+            <dd
+              className="text-foreground text-right font-mono text-sm font-medium tabular-nums"
+              data-testid="trust-position-creditors"
+            >
+              {formatCurrency(data.creditorBreakdown.total)}
             </dd>
             <dt className="text-muted-foreground">Last reconciliation</dt>
             <dd className="text-foreground text-right">{lastReconciliationText(data)}</dd>

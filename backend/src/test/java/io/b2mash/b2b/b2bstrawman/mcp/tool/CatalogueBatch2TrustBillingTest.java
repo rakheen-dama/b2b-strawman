@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
+import io.b2mash.b2b.b2bstrawman.config.KaziTime;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.mcp.McpEnablementService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
@@ -21,6 +22,8 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksFixture;
+import java.time.LocalDate;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -74,6 +77,7 @@ class CatalogueBatch2TrustBillingTest {
   @Autowired private TransactionTemplate transactionTemplate;
   @Autowired private CustomerRepository customerRepository;
   @Autowired private McpEnablementService enablementService;
+  @Autowired private TrustBooksFixture trustBooksFixture;
 
   private String tenantSchema;
   private String trustAccountId;
@@ -160,6 +164,17 @@ class CatalogueBatch2TrustBillingTest {
                                 "Trust Customer Matter",
                                 ownerMemberId))))
         .andExpect(status().isCreated());
+
+    // 646D: non-client trust creditors beside the client ledger (no customer, so the client-branch
+    // and client-history tests are unaffected) — Fund interest R50, unidentified deposit R300.
+    var books = trustBooksFixture.tenant(tenantSchema, ORG_ID, ownerMemberId);
+    books.postNonClientDirect(
+        UUID.fromString(trustAccountId), "FUND_INTEREST", "50.00", LocalDate.of(2026, 3, 10));
+    books.postNonClientDirect(
+        UUID.fromString(trustAccountId),
+        "UNIDENTIFIED_DEPOSIT",
+        "300.00",
+        LocalDate.of(2026, 3, 10));
 
     // Invoice for billing tools (invoiceClientId seeded above as an ACTIVE customer)
     matterId = TestEntityHelper.createProject(mockMvc, owner, "Billing Matter");
@@ -306,6 +321,78 @@ class CatalogueBatch2TrustBillingTest {
     assertThat(payload.has("balanceMinor")).isTrue();
     assertThat(payload.at("/balanceMinor").asLong()).isEqualTo(2_500_000L);
     assertThat(payload.at("/currency").asString()).isNotBlank();
+  }
+
+  /** 646D (§16.6.5): without a client the tool returns the account's trust position. */
+  @Test
+  void getTrustBalanceWithoutClientReturnsTheTrustPosition() throws Exception {
+    JwtRequestPostProcessor owner = TestJwtFactory.ownerJwt(ORG_ID, "user_owner");
+    JsonNode result =
+        callTool(
+            owner,
+            openSession(owner),
+            "get_trust_balance",
+            "{\"trustAccountId\":\"%s\"}".formatted(trustAccountId));
+    assertThat(result.at("/isError").asBoolean(false)).isFalse();
+    JsonNode payload = resultPayload(result);
+    assertThat(payload.has("cashbookMinor")).as("payload %s", payload).isTrue();
+    assertThat(payload.at("/balanceMinor").asLong()).isEqualTo(2_500_000L); // client ledgers
+    assertThat(payload.at("/investedMinor").asLong()).isEqualTo(0L);
+    assertThat(payload.at("/fundLedgerMinor").asLong()).isEqualTo(5_000L);
+    assertThat(payload.at("/unidentifiedDepositsMinor").asLong()).isEqualTo(30_000L);
+    assertThat(payload.at("/totalTrustCreditorsMinor").asLong()).isEqualTo(2_535_000L);
+    assertThat(payload.at("/cashbookMinor").asLong()).isEqualTo(2_535_000L);
+    assertThat(payload.at("/asAt").asString()).isEqualTo(LocalDate.now(KaziTime.ZONE).toString());
+  }
+
+  /** 646D: an unknown account is a clean not_found (it was a silent zero). */
+  @Test
+  void getTrustBalanceOfAnUnknownAccountIsNotFound() throws Exception {
+    JwtRequestPostProcessor owner = TestJwtFactory.ownerJwt(ORG_ID, "user_owner");
+    JsonNode result =
+        callTool(
+            owner,
+            openSession(owner),
+            "get_trust_balance",
+            "{\"trustAccountId\":\"%s\"}".formatted(UUID.randomUUID()));
+    assertThat(result.at("/isError").asBoolean()).isTrue();
+    assertThat(resultPayload(result).at("/error").asString()).isEqualTo("not_found");
+  }
+
+  /** 646D (review CR-1): a real client on an unknown account is not_found, not a silent zero. */
+  @Test
+  void getTrustBalanceOfAClientOnAnUnknownAccountIsNotFound() throws Exception {
+    JwtRequestPostProcessor owner = TestJwtFactory.ownerJwt(ORG_ID, "user_owner");
+    JsonNode result =
+        callTool(
+            owner,
+            openSession(owner),
+            "get_trust_balance",
+            "{\"trustAccountId\":\"%s\",\"customerId\":\"%s\"}"
+                .formatted(UUID.randomUUID(), customerId));
+    assertThat(result.at("/isError").asBoolean()).as("result %s", result).isTrue();
+    assertThat(resultPayload(result).at("/error").asString()).isEqualTo("not_found");
+  }
+
+  /**
+   * 646D (review): an unknown client on a real account is not_found, and the non-leaking message
+   * names both ids the call took — it must not claim the (existing) trust account is missing.
+   */
+  @Test
+  void getTrustBalanceOfAnUnknownClientIsNotFoundWithoutBlamingTheAccount() throws Exception {
+    JwtRequestPostProcessor owner = TestJwtFactory.ownerJwt(ORG_ID, "user_owner");
+    JsonNode result =
+        callTool(
+            owner,
+            openSession(owner),
+            "get_trust_balance",
+            "{\"trustAccountId\":\"%s\",\"customerId\":\"%s\"}"
+                .formatted(trustAccountId, UUID.randomUUID()));
+    assertThat(result.at("/isError").asBoolean()).as("result %s", result).isTrue();
+    JsonNode payload = resultPayload(result);
+    assertThat(payload.at("/error").asString()).isEqualTo("not_found");
+    assertThat(payload.at("/message").asString())
+        .isEqualTo("No trust account or client found for that id, or you do not have access.");
   }
 
   @Test

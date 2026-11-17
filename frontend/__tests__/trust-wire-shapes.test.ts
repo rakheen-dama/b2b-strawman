@@ -2,7 +2,9 @@ import { describe, it, expect } from "vitest";
 // ADR-365 / Phase 92 646E (WIRE-PIN): static, relative import — a missing or renamed JSON fails
 // typecheck and vitest. Path: __tests__ → frontend → repo root.
 import contract from "../../backend/src/test/resources/wire/trust-contract.json";
+import type { TrustPositionResponse } from "@/lib/dashboard-types";
 import type {
+  TotalBalance,
   TrustCreditorBreakdown,
   TrustLedger,
   TrustReconciliationResponse,
@@ -51,6 +53,8 @@ describe("trust wire shapes match the backend contract (ADR-365)", () => {
   it("pins exactly the trust records", () => {
     expect(Object.keys(records).sort()).toEqual([
       "CreditorBreakdown",
+      "TotalBalanceResponse",
+      "TrustPositionResponse",
       "TrustReconciliationResponse",
       "TrustTransactionResponse",
       "TrustTransactionTypeResponse",
@@ -157,6 +161,49 @@ describe("trust wire shapes match the backend contract (ADR-365)", () => {
       total: 0,
     };
     expect(Object.keys(literal)).toEqual(componentNames(records.CreditorBreakdown));
+  });
+
+  it("TrustPositionResponse ↔ dashboard.dto.TrustPositionResponse (646D)", () => {
+    const literal: Required<TrustPositionResponse> = {
+      trustAccountId: "",
+      accountName: "",
+      bankName: "",
+      cashbookBalance: 0,
+      clientLedgerTotal: 0,
+      creditorBreakdown: {
+        clientLedgers: 0,
+        investmentCreditors: 0,
+        fundInterestAndCharges: 0,
+        unidentifiedDeposits: 0,
+        otherNonClient: 0,
+        interAccount: 0,
+        total: 0,
+      },
+      difference: 0,
+      lastReconciliationPeriodEnd: null,
+      lastReconciliationStatus: null,
+      lastReconciliationBalanced: null,
+      daysSinceReconciliation: null,
+      pendingApprovalCount: 0,
+      accounts: [],
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(records.TrustPositionResponse));
+  });
+
+  it("TotalBalance ↔ ClientLedgerService.TotalBalanceResponse (646D)", () => {
+    const literal: Required<TotalBalance> = {
+      balance: 0,
+      creditorBreakdown: {
+        clientLedgers: 0,
+        investmentCreditors: 0,
+        fundInterestAndCharges: 0,
+        unidentifiedDeposits: 0,
+        otherNonClient: 0,
+        interAccount: 0,
+        total: 0,
+      },
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(records.TotalBalanceResponse));
   });
 
   it("pins exactly the enums the trust records carry", () => {

@@ -1,5 +1,7 @@
 // Dashboard API response types
 
+import type { TrustCreditorBreakdown } from "@/lib/types/trust";
+
 export interface TrendPoint {
   period: string;
   value: number;
@@ -184,8 +186,11 @@ export interface TrustPositionResponse {
   accountName: string;
   bankName: string;
   cashbookBalance: number;
+  /** Client ledgers (general). */
   clientLedgerTotal: number;
-  /** cashbookBalance − clientLedgerTotal; 0 = balanced. */
+  /** Every trust creditor as at today; `total` is the creditor side of EQ-2 (646D). */
+  creditorBreakdown: TrustCreditorBreakdown;
+  /** cashbookBalance − creditorBreakdown.total; 0 = balanced (EQ-2). */
   difference: number;
   lastReconciliationPeriodEnd: string | null;
   lastReconciliationStatus: "DRAFT" | "COMPLETED" | null;
@@ -202,6 +207,7 @@ export interface TrustBalanceTrendPoint {
   /** yyyy-MM-dd — month end, or `asOf` for the current month. */
   periodEnd: string;
   cashbookBalance: number;
+  /** Every trust creditor (646D; field name kept — shape unchanged, §16.4.4). */
   clientLedgerTotal: number;
   /** true only for the current month ("to date"). */
   partial: boolean;
@@ -216,6 +222,7 @@ export interface TrustBalanceTrendResponse {
   /** yyyy-MM-dd, SA business date. */
   asOf: string;
   openingCashbookBalance: number;
+  /** Every trust creditor before the window (646D; field name kept — shape unchanged). */
   openingClientLedgerTotal: number;
   months: TrustBalanceTrendPoint[];
   accounts: TrustAccountRef[];

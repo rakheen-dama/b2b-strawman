@@ -225,11 +225,12 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
    * arch §15.3.7): one row per SA calendar month from {@code windowStart} to {@code today}, plus
    * one row with a NULL {@code monthStart} holding everything dated before {@code windowStart} (the
    * opening balance). {@code cashbookNet} sums {@code cashbook_effect} (as {@link
-   * TrustLedgerQueryRepository#cashbook}); {@code ledgerNet} sums {@code ledger_effect} on the
-   * {@code CLIENT} ledger (as {@link TrustLedgerQueryRepository#clientLedgerTotal}). Posted rows
-   * only (Phase 92, ADR-378) — a REVERSED original counts in its own month and its REVERSAL (the
-   * contra, 649B) in the reversal date's month. {@code transaction_date} is already an SA business
-   * date (G88-F48), so months need no zone conversion: the date is truncated as a zone-less {@code
+   * TrustLedgerQueryRepository#cashbook}); {@code ledgerNet} sums {@code ledger_effect} over every
+   * ledger — client, investment, non-client and inter-account — so it is the monthly movement of
+   * {@code TrustBooksService.position(…).creditorTotal()} (646D, §16.4.4). Posted rows only (Phase
+   * 92, ADR-378) — a REVERSED original counts in its own month and its REVERSAL (the contra, 649B)
+   * in the reversal date's month. {@code transaction_date} is already an SA business date
+   * (G88-F48), so months need no zone conversion: the date is truncated as a zone-less {@code
    * timestamp}. Rows after {@code today} are excluded.
    */
   @Query(
@@ -240,8 +241,7 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
                       ELSE CAST(date_trunc('month', CAST(t.transaction_date AS timestamp)) AS date)
                  END AS monthStart,
                  COALESCE(SUM(t.cashbook_effect), 0) AS cashbookNet,
-                 COALESCE(SUM(t.ledger_effect)
-                   FILTER (WHERE t.ledger = 'CLIENT' AND t.customer_id IS NOT NULL), 0) AS ledgerNet
+                 COALESCE(SUM(t.ledger_effect), 0) AS ledgerNet
           FROM trust_transactions t
           WHERE t.trust_account_id = :trustAccountId
             AND t.posted_at IS NOT NULL

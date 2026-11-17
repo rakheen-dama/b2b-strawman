@@ -16,6 +16,7 @@ import { Input } from "@b2mash/ui/input";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -24,6 +25,7 @@ import {
 import { Loader2 } from "lucide-react";
 import { recordFeeTransfer } from "@/app/(app)/org/[slug]/trust-accounting/transactions/actions";
 import { recordFeeTransferSchema, type RecordFeeTransferFormData } from "@/lib/schemas/trust";
+import { todayInSA } from "@b2mash/shared/date";
 
 interface RecordFeeTransferDialogProps {
   accountId: string;
@@ -48,6 +50,7 @@ export function RecordFeeTransferDialog({
       invoiceId: "",
       amount: 0,
       reference: "",
+      transactionDate: "",
     },
   });
 
@@ -148,6 +151,29 @@ export function RecordFeeTransferDialog({
                   <FormControl>
                     <Input placeholder="e.g. FEE/2026/001" maxLength={200} {...field} />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="transactionDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Fee transfer date (optional)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="date"
+                      max={todayInSA()}
+                      data-testid="fee-transfer-date-input"
+                      {...field}
+                      value={field.value ?? ""}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Leave blank for today. Use the date the bank shows the transfer.
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

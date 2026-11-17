@@ -162,6 +162,15 @@ function position(overrides: Record<string, unknown> = {}) {
     bankName: "FNB",
     cashbookBalance: 125000.5,
     clientLedgerTotal: 125000.5,
+    creditorBreakdown: {
+      clientLedgers: 125000.5,
+      investmentCreditors: 0,
+      fundInterestAndCharges: 0,
+      unidentifiedDeposits: 0,
+      otherNonClient: 0,
+      interAccount: 0,
+      total: 125000.5,
+    },
     difference: 0,
     lastReconciliationPeriodEnd: "2026-10-31",
     lastReconciliationStatus: "COMPLETED",
@@ -298,13 +307,13 @@ describe("TrustAccountingPage", () => {
     expect(cards.queryByText("Not yet reconciled")).not.toBeInTheDocument();
   });
 
-  it("a balanced position shows the client-ledger total with no difference line", async () => {
+  it("a balanced position shows the trust-creditor total with no difference line", async () => {
     setupDefaultMocks();
     await renderPage();
 
     const balance = tile("Trust Balance");
-    expect(balance.getByText(/^Client ledgers R/)).toHaveTextContent(
-      /Client ledgers R[\s\u00A0]125[\s\u00A0,]000[,.]50/
+    expect(balance.getByText(/^Trust creditors R/)).toHaveTextContent(
+      /Trust creditors R[\s\u00A0]125[\s\u00A0,]000[,.]50/
     );
     expect(balance.queryByText(/^Difference/)).not.toBeInTheDocument();
     expect(tile("Reconciliation").queryByText(/in draft/)).not.toBeInTheDocument();
@@ -316,6 +325,15 @@ describe("TrustAccountingPage", () => {
       state: "ok",
       data: position({
         clientLedgerTotal: 124999.16,
+        creditorBreakdown: {
+          clientLedgers: 124999.16,
+          investmentCreditors: 0,
+          fundInterestAndCharges: 0,
+          unidentifiedDeposits: 0,
+          otherNonClient: 0,
+          interAccount: 0,
+          total: 124999.16,
+        },
         difference: 1.34,
         lastReconciliationPeriodEnd: "2026-11-13",
         lastReconciliationStatus: "DRAFT",

@@ -106,7 +106,7 @@ describe("TrustBalanceTrendChart", () => {
     const summary = document.querySelector('[data-slot="chart-summary"]')?.textContent ?? "";
     expect(summary).toContain("Trust balance trend:");
     expect(summary).toContain("Cashbook from");
-    expect(summary).toContain("Client ledgers");
+    expect(summary).toContain("Trust creditors");
     expect(summary).toContain("in Dec 2025");
     expect(summary).toContain("in Nov 2026 (to date)");
   });

@@ -3,6 +3,8 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
+import io.b2mash.b2b.b2bstrawman.dashboard.dto.TrustPositionResponse;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService;
 import java.io.IOException;
@@ -29,7 +31,8 @@ import tools.jackson.databind.json.JsonMapper;
  * then compares the JSON byte-for-byte to {@code src/test/resources/wire/trust-contract.json}. The
  * frontend twin {@code frontend/__tests__/trust-wire-shapes.test.ts} imports the same JSON and
  * asserts each TS literal's key list and each TS string union's members against it. Later Phase 92
- * slices add their new or changed trust DTOs to {@link #PINNED}.
+ * slices add their new or changed trust DTOs to {@link #PINNED}; 646D adds the dashboard trust
+ * position and the total-balance response (both carry the creditor breakdown).
  *
  * <p>The actual is always written to {@code target/wire/trust-contract.actual.json}. Regenerate
  * ONLY deliberately with {@code -Dtrust.contract.update=true}; the PR that does so must say why in
@@ -42,7 +45,9 @@ class TrustWireContractTest {
           TrustTransactionService.TrustTransactionResponse.class,
           TrustTransactionService.TrustTransactionTypeResponse.class,
           TrustReconciliationService.TrustReconciliationResponse.class,
-          TrustReconciliationService.CreditorBreakdown.class);
+          TrustReconciliationService.CreditorBreakdown.class,
+          TrustPositionResponse.class,
+          ClientLedgerService.TotalBalanceResponse.class);
 
   private static final String UPDATE_FLAG = "trust.contract.update";
   private static final Path SNAPSHOT = Path.of("src/test/resources/wire/trust-contract.json");

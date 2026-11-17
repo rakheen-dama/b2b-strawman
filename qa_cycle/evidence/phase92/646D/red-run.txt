@@ -1,0 +1,127 @@
+# 646D red runs on HEAD f7246ced2 (before any production change)
+
+Test-side changes present for the run: R1/R4 cases in TrustPositionIntegrationTest (own creditors
+tenant via TrustBooksFixture, assertEqualsParts on creditorBreakdown.total), R2 in
+TrustBalanceTrendIntegrationTest (own creditors tenant; the two last-point tests retargeted onto
+/total-balance creditorBreakdown.total), R3 in CatalogueBatch2TrustBillingTest (Fund interest R50 +
+unidentified deposit R300 on the batch-2 account; plus the unknown-account not_found case), R5 (+3)
+in TrustTransactionServiceTest, F1 in trust-position-widget.test.tsx and F2 in trust-transactions.test.tsx.
+No file under backend/src/main or frontend/components|app|lib was changed.
+
+Command: ./mvnw test -Dtest='TrustPositionIntegrationTest,TrustBalanceTrendIntegrationTest,CatalogueBatch2TrustBillingTest,TrustTransactionServiceTest'
+Result:  [ERROR] Tests run: 87, Failures: 8, Errors: 4, Skipped: 0
+(@AfterAll assertFirmBalanced on both creditors tenants passed: the fixture books balance under EQ-2.)
+
+## R1 / R4 (BE) — TrustPositionIntegrationTest
+```
+[ERROR] ...TrustPositionIntegrationTest.balanceEndpointsAnswerAsAtTheRequestedDate -- Time elapsed: 0.011 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+expected: 10000.00
+ but was: 10550.0
+[ERROR] ...TrustPositionIntegrationTest.requestedAccountPositionEqualsItsParts -- Time elapsed: 0.030 s <<< ERROR!
+com.jayway.jsonpath.PathNotFoundException: Missing property in path $['creditorBreakdown']
+[ERROR] ...TrustPositionIntegrationTest.primaryAccountPositionEqualsItsParts -- Time elapsed: 0.028 s <<< ERROR!
+com.jayway.jsonpath.PathNotFoundException: Missing property in path $['creditorBreakdown']
+[ERROR] ...TrustPositionIntegrationTest.totalBalanceOfAnUnknownAccountIsNotFound -- Time elapsed: 0.009 s <<< FAILURE!
+java.lang.AssertionError: Status expected:<404> but was:<200>
+[ERROR] ...TrustPositionIntegrationTest.positionComparesTheCashbookWithEveryTrustCreditor -- Time elapsed: 0.012 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+expected: 0
+ but was: 550.0
+[ERROR] Tests run: 11, Failures: 3, Errors: 2, Skipped: 0, Time elapsed: 2.747 s <<< FAILURE! -- in ...TrustPositionIntegrationTest
+```
+R1 positionComparesTheCashbookWithEveryTrustCreditor: difference 550.0 (= Fund R250 + unidentified R300)
+on balanced books. R4: cashbook-balance?asAt=2026-03-31 ignores asAt (10550.0, expected 10000.00);
+total-balance has no creditorBreakdown; an unknown account answers 200 (expected 404). The two existing
+"equals its parts" tests error on the missing $.creditorBreakdown.
+
+## R2 (BE) — TrustBalanceTrendIntegrationTest
+```
+[ERROR] ...TrustBalanceTrendIntegrationTest.ledgerSeriesCountsEveryTrustCreditor -- Time elapsed: 0.014 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+[trust creditors, month 1] 
+expected: 1050.00
+ but was: 1000.0
+[ERROR] ...TrustBalanceTrendIntegrationTest.lastPointEqualsTheLiveCashbookAndTrustCreditorReads -- Time elapsed: 0.026 s <<< ERROR!
+com.jayway.jsonpath.PathNotFoundException: Missing property in path $['creditorBreakdown']
+[ERROR] ...TrustBalanceTrendIntegrationTest.requestedAccountReturnsItsOwnSeries -- Time elapsed: 0.023 s <<< ERROR!
+com.jayway.jsonpath.PathNotFoundException: Missing property in path $['creditorBreakdown']
+[ERROR] Tests run: 19, Failures: 1, Errors: 2, Skipped: 0, Time elapsed: 3.523 s <<< FAILURE! -- in ...TrustBalanceTrendIntegrationTest
+```
+The ledger series stays at 1000.0 in the month the Fund interest posts (expected 1050.00).
+
+## R3 (BE) — CatalogueBatch2TrustBillingTest
+```
+[ERROR] ...CatalogueBatch2TrustBillingTest.getTrustBalanceOfAnUnknownAccountIsNotFound -- Time elapsed: 0.041 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+Expecting value to be true but was false
+[ERROR] ...CatalogueBatch2TrustBillingTest.getTrustBalanceWithoutClientReturnsTheTrustPosition -- Time elapsed: 0.028 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+[payload {"trustAccountId":"17e9673e-494e-42ee-803a-9ff9e9b9e4b1","customerId":null,"balanceMinor":2500000,"currency":"USD"}] 
+Expecting value to be true but was false
+[ERROR] Tests run: 9, Failures: 2, Errors: 0, Skipped: 0, Time elapsed: 29.01 s <<< FAILURE! -- in ...CatalogueBatch2TrustBillingTest
+```
+The account branch returns only balanceMinor (client ledgers, described as the "total"); an unknown
+account returns isError=false with a silent zero.
+
+## R5 (BE) — TrustTransactionServiceTest (+3)
+```
+[ERROR] ...TrustTransactionServiceTest.feeTransfer_backDated_postsOnItsDate -- Time elapsed: 0.032 s <<< FAILURE!
+java.lang.AssertionError: JSON path "$.transactionDate" expected:<2026-04-08> but was:<2026-11-17>
+[ERROR] ...TrustTransactionServiceTest.feeTransfer_futureTransactionDate_isRefused -- Time elapsed: 0.028 s <<< FAILURE!
+java.lang.AssertionError: Status expected:<400> but was:<201>
+[ERROR] Tests run: 48, Failures: 2, Errors: 0, Skipped: 0, Time elapsed: 1.742 s <<< FAILURE! -- in ...TrustTransactionServiceTest
+[ERROR] Tests run: 87, Failures: 8, Errors: 4, Skipped: 0
+```
+feeTransfer_withoutTransactionDate_isDatedToday is GREEN on main by design (it pins the default).
+feeTransfer_backDated_postsOnItsDate: the unknown JSON property is ignored, so the row is dated today.
+feeTransfer_futureTransactionDate_isRefused: a future date is accepted (201).
+
+## F1 / F2 (FE) — vitest __tests__/dashboard/trust-position-widget.test.tsx, __tests__/trust-transactions.test.tsx
+Command: pnpm exec vitest run __tests__/dashboard/trust-position-widget.test.tsx __tests__/trust-transactions.test.tsx
+```
+     × balanced: 'Balanced' badge, bank vs trust creditors, last reconciliation, pending approvals 31ms
+     × compares the cashbook with every trust creditor (646D) 6ms
+     × submits a back-dated fee transfer and refuses a future date 14ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  __tests__/trust-transactions.test.tsx > Trust Transactions > submits a back-dated fee transfer and refuses a future date
+TestingLibraryElementError: Unable to find an element with the text: Fee transfer date (optional). This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+ FAIL  __tests__/dashboard/trust-position-widget.test.tsx > TrustPositionWidget > balanced: 'Balanced' badge, bank vs trust creditors, last reconciliation, pending approvals
+TestingLibraryElementError: Unable to find an element with the text: Trust creditors. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+ FAIL  __tests__/dashboard/trust-position-widget.test.tsx > TrustPositionWidget > compares the cashbook with every trust creditor (646D)
+TestingLibraryElementError: Unable to find an element with the text: Trust creditors. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+ Test Files  2 failed (2)
+      Tests  3 failed | 27 passed (30)
+```
+
+Note (after the red run): the R5 helper's fee note was changed from APPROVED to SENT once
+production code was in — approving a fee transfer posts a payment on the fee note, which needs
+SENT or PARTIALLY_PAID (`InvoiceTransitionService.postPayment`; 409 otherwise). `recordFeeTransfer`
+accepts both statuses on main, and the red assertion ($.transactionDate expected 2026-04-08, was
+today) fires before the approval step, so the red stands for the stated reason.
+
+## Review fix CR-1
+
+`CatalogueBatch2TrustBillingTest#getTrustBalanceOfAClientOnAnUnknownAccountIsNotFound` on HEAD `a85e728e6`
+(before the fix) — a real customerId on a random (unknown) trustAccountId; expected an MCP `not_found`,
+got a successful silent zero (the client branch never checked the account):
+
+```
+[ERROR] CatalogueBatch2TrustBillingTest.getTrustBalanceOfAClientOnAnUnknownAccountIsNotFound:373 [result {"content":[{"type":"text","text":"{\"trustAccountId\":\"750f3ecc-5bbf-4a68-8657-6cfb2bbfae20\",\"customerId\":\"208c44bc-c25a-4463-bad1-e932bc7d1c91\",\"balanceMinor\":0,\"currency\":\"USD\",\"investedMinor\":null,\"fundLedgerMinor\":null,\"unidentifiedDepositsMinor\":null,\"totalTrustCreditorsMinor\":null,\"cashbookMinor\":null,\"asAt\":null}"}],"isError":false}]
+Expecting value to be true but was false
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0
+```
+
+## Review fix — MCP not_found noun on the client branch (orchestrator, red on d80ac503d)
+Found by the CR-1 fixer: with a customerId, an unknown CLIENT on a real account was reported as
+"No trust account found…" (the catch introduced in 646D used one noun for both ids).
+Command: ./mvnw test -Dtest=CatalogueBatch2TrustBillingTest
+```
+[ERROR] Tests run: 11, Failures: 1, Errors: 0, Skipped: 0 -- in ...CatalogueBatch2TrustBillingTest
+[ERROR] ...getTrustBalanceOfAnUnknownClientIsNotFoundWithoutBlamingTheAccount <<< FAILURE!
+expected: "No trust account or client found for that id, or you do not have access."
+ but was: "No trust account found for that id, or you do not have access."
+```
+Fix: TrustTools picks the noun "trust account or client" when a customerId was given (McpError.notFound
+stays non-leaking — it never says which id missed). Green: CatalogueBatch2TrustBillingTest 11/11,
+McpToolContractTest 1/1.

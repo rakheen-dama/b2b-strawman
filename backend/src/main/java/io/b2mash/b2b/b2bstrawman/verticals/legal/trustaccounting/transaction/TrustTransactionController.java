@@ -12,6 +12,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.Tru
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.ReverseRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.TrustTransactionResponse;
 import jakarta.validation.Valid;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -135,7 +136,8 @@ public class TrustTransactionController {
 
   @GetMapping("/api/trust-accounts/{accountId}/cashbook-balance")
   @RequiresCapability("VIEW_TRUST")
-  public ResponseEntity<CashbookBalanceResponse> getCashbookBalance(@PathVariable UUID accountId) {
-    return ResponseEntity.ok(trustTransactionService.getCashbookBalance(accountId));
+  public ResponseEntity<CashbookBalanceResponse> getCashbookBalance(
+      @PathVariable UUID accountId, @RequestParam(required = false) LocalDate asAt) {
+    return ResponseEntity.ok(trustTransactionService.getCashbookBalance(accountId, asAt));
   }
 }

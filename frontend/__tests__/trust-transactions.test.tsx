@@ -12,6 +12,7 @@ const mockRecordTransfer = vi.fn();
 const mockApproveTransaction = vi.fn();
 const mockRejectTransaction = vi.fn();
 const mockReverseTransaction = vi.fn();
+const mockRecordFeeTransfer = vi.fn();
 const mockRouterRefresh = vi.fn();
 const mockToastSuccess = vi.fn();
 
@@ -38,7 +39,7 @@ vi.mock("@/app/(app)/org/[slug]/trust-accounting/transactions/actions", () => ({
   recordDeposit: (...args: unknown[]) => mockRecordDeposit(...args),
   recordPayment: vi.fn(),
   recordTransfer: (...args: unknown[]) => mockRecordTransfer(...args),
-  recordFeeTransfer: vi.fn(),
+  recordFeeTransfer: (...args: unknown[]) => mockRecordFeeTransfer(...args),
   recordRefund: vi.fn(),
   approveTransaction: (...args: unknown[]) => mockApproveTransaction(...args),
   rejectTransaction: (...args: unknown[]) => mockRejectTransaction(...args),
@@ -174,6 +175,8 @@ vi.mock("next/link", () => ({
 import TransactionsPage from "@/app/(app)/org/[slug]/trust-accounting/transactions/page";
 import { RecordDepositDialog } from "@/components/trust/RecordDepositDialog";
 import { RecordTransferDialog } from "@/components/trust/RecordTransferDialog";
+import { RecordFeeTransferDialog } from "@/components/trust/RecordFeeTransferDialog";
+import { todayInSA } from "@b2mash/shared/date";
 import { ApprovalBadge } from "@/components/trust/approval-badge";
 import { ReversalButton } from "@/components/trust/reversal-button";
 
@@ -897,5 +900,41 @@ describe("Trust Transactions", () => {
     ]) {
       expect(screen.queryByTestId(`reversal-action-${id}`)).not.toBeInTheDocument();
     }
+  });
+
+  // Phase 92 646D (ruling #6): optional fee-transfer date — the date the bank shows the transfer.
+  it("submits a back-dated fee transfer and refuses a future date", async () => {
+    mockRecordFeeTransfer.mockResolvedValue({ success: true });
+    render(<RecordFeeTransferDialog accountId="acc-1" open={true} onOpenChange={vi.fn()} />);
+
+    expect(screen.getByText("Fee transfer date (optional)")).toBeInTheDocument();
+    fireEvent.change(screen.getByPlaceholderText("Client UUID"), {
+      target: { value: "550e8400-e29b-41d4-a716-446655440000" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Fee note UUID"), {
+      target: { value: "660e8400-e29b-41d4-a716-446655440001" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("0.00"), { target: { value: "1150" } });
+    fireEvent.change(screen.getByPlaceholderText("e.g. FEE/2026/001"), {
+      target: { value: "FEE/2026/BACK" },
+    });
+    const dateInput = screen.getByTestId("fee-transfer-date-input");
+    expect(dateInput).toHaveAttribute("max", todayInSA());
+
+    fireEvent.change(dateInput, { target: { value: "2999-01-01" } });
+    fireEvent.submit(dateInput.closest("form")!);
+    expect(
+      await screen.findByText("The fee transfer date cannot be in the future")
+    ).toBeInTheDocument();
+    expect(mockRecordFeeTransfer).not.toHaveBeenCalled();
+
+    fireEvent.change(dateInput, { target: { value: "2026-03-15" } });
+    fireEvent.submit(dateInput.closest("form")!);
+    await waitFor(() =>
+      expect(mockRecordFeeTransfer).toHaveBeenCalledWith(
+        "acc-1",
+        expect.objectContaining({ transactionDate: "2026-03-15", reference: "FEE/2026/BACK" })
+      )
+    );
   });
 });

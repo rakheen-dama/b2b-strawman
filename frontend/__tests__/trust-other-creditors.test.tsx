@@ -218,7 +218,7 @@ const WORKED_SET: TrustTransaction[] = [
   fundRow({ id: "tx-interest" }),
 ];
 
-async function renderPage(search: { page?: string } = {}) {
+async function renderPage(search: { page?: string; itemsPage?: string } = {}) {
   const result = await OtherTrustCreditorsPage({
     params: Promise.resolve({ slug: "test-org" }),
     searchParams: Promise.resolve(search),
@@ -538,5 +538,95 @@ describe("Other trust creditors page", () => {
     expect(screen.getByTestId("fund-ledger-section")).toBeInTheDocument();
     expect(screen.getByTestId("fund-ledger-empty")).toBeInTheDocument();
     expect(screen.queryByTestId("error-state")).not.toBeInTheDocument();
+  });
+
+  // ── Paging: `?page=` the Fund ledger, `?itemsPage=` the items ───
+
+  const BASE = "/org/test-org/trust-accounting/other-creditors";
+
+  /** A page of `totalPages` with `number` current — one row is enough to render the pager. */
+  function pagedFund(number: number, totalPages: number): CreditorLedgerPage {
+    return {
+      content: [fundRow()],
+      page: { totalElements: totalPages * 25, totalPages, size: 25, number },
+    };
+  }
+
+  function pagedItems(number: number, totalPages: number): UnidentifiedDepositPage {
+    return {
+      content: [unidentifiedItem()],
+      page: { totalElements: totalPages * 25, totalPages, size: 25, number },
+    };
+  }
+
+  function pagerLink(sectionTestId: string, name: "Previous" | "Next") {
+    return within(screen.getByTestId(sectionTestId)).getByRole("link", { name });
+  }
+
+  it("fetches the items page named by ?itemsPage=, and the Fund ledger's own page", async () => {
+    await renderPage({ itemsPage: "2" });
+
+    expect(mockFetchUnidentifiedDeposits).toHaveBeenCalledWith("acc-1", { page: 2, size: 25 });
+    expect(mockFetchCreditorLedgerRows).toHaveBeenCalledWith("ca-fund", { page: 0, size: 25 });
+  });
+
+  it("says an items page past the last has no items and links back to the first items page", async () => {
+    // Two items on one page; `?itemsPage=3` is past the end, so the server returns none.
+    mockFetchUnidentifiedDeposits.mockResolvedValue({
+      content: [],
+      page: { totalElements: 2, totalPages: 1, size: 25, number: 3 },
+    });
+    await renderPage({ page: "0", itemsPage: "3" });
+
+    expect(mockFetchUnidentifiedDeposits).toHaveBeenCalledWith("acc-1", { page: 3, size: 25 });
+    const message = screen.getByTestId("unidentified-deposits-page-out-of-range");
+    expect(message).toHaveTextContent("No unidentified deposits on this page.");
+    expect(within(message).getByRole("link", { name: "Go to the first page" })).toHaveAttribute(
+      "href",
+      `${BASE}?page=0`
+    );
+    expect(screen.queryByTestId("unidentified-deposits-empty")).not.toBeInTheDocument();
+    // The Fund ledger's first page is not out of range.
+    expect(screen.queryByTestId("fund-ledger-page-out-of-range")).not.toBeInTheDocument();
+  });
+
+  it("keeps ?itemsPage= on the Fund ledger's links and ?page= on the items' links", async () => {
+    mockFetchCreditorLedgerRows.mockResolvedValue(pagedFund(1, 3));
+    mockFetchUnidentifiedDeposits.mockResolvedValue(pagedItems(2, 4));
+    await renderPage({ page: "1", itemsPage: "2" });
+
+    expect(pagerLink("fund-ledger-section", "Previous")).toHaveAttribute(
+      "href",
+      `${BASE}?page=0&itemsPage=2`
+    );
+    expect(pagerLink("fund-ledger-section", "Next")).toHaveAttribute(
+      "href",
+      `${BASE}?page=2&itemsPage=2`
+    );
+    expect(pagerLink("unidentified-deposits-section", "Previous")).toHaveAttribute(
+      "href",
+      `${BASE}?page=1&itemsPage=1`
+    );
+    expect(pagerLink("unidentified-deposits-section", "Next")).toHaveAttribute(
+      "href",
+      `${BASE}?page=1&itemsPage=3`
+    );
+  });
+
+  it("omits ?itemsPage= from the Fund ledger's links when the items are on their first page", async () => {
+    mockFetchCreditorLedgerRows.mockResolvedValue(pagedFund(1, 3));
+    mockFetchUnidentifiedDeposits.mockResolvedValue(pagedItems(0, 2));
+    await renderPage({ page: "1" });
+
+    expect(pagerLink("fund-ledger-section", "Previous")).toHaveAttribute("href", `${BASE}?page=0`);
+    expect(pagerLink("fund-ledger-section", "Next")).toHaveAttribute("href", `${BASE}?page=2`);
+    // The items are on their first page: Previous is a disabled button, Next keeps ?page=1.
+    const items = screen.getByTestId("unidentified-deposits-section");
+    expect(within(items).queryByRole("link", { name: "Previous" })).not.toBeInTheDocument();
+    expect(within(items).getByRole("button", { name: "Previous" })).toBeDisabled();
+    expect(pagerLink("unidentified-deposits-section", "Next")).toHaveAttribute(
+      "href",
+      `${BASE}?page=1&itemsPage=1`
+    );
   });
 });

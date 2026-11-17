@@ -53,9 +53,9 @@ import org.springframework.stereotype.Component;
  *
  * <h2>Version 4 (647B) — EQ-4: unidentified deposits are itemised</h2>
  *
- * <p>{@link #assertBalancedAsAt} and {@link #assertFirmBalanced} check EQ-4 for every account
- * (ADR-376, §16.1.2), from the ledger rows alone — never from the item's status columns, except
- * (d):
+ * <p>{@link #assertBalancedAsAt} and {@link #assertFirmBalanced} check EQ-4 for every account, and
+ * {@link #assertMoves} checks it as at today after every step (ADR-376, §16.1.2), from the ledger
+ * rows alone — never from the item's status columns, except (d):
  *
  * <ol type="a">
  *   <li>every posted row on an {@code UNIDENTIFIED_DEPOSITS} creditor account dated {@code <= D}
@@ -519,8 +519,9 @@ public final class TrustBooksHarness {
   }
 
   /**
-   * Runs {@code action}, then asserts the account balanced and that each term moved by exactly the
-   * stated delta. All failures are reported together.
+   * Runs {@code action}, then asserts the account balanced (EQ-2, and EQ-4 as at today — the
+   * unidentified term is itemised, 647.11) and that each term moved by exactly the stated delta.
+   * All failures are reported together.
    */
   public void assertMoves(UUID trustAccountId, Expected expected, Runnable action) {
     var before = snapshot(trustAccountId);
@@ -542,6 +543,7 @@ public final class TrustBooksHarness {
     term(softly, "fundLedger", moved.fundLedger(), expected.fundLedger());
     term(softly, "unidentified", moved.unidentified(), expected.unidentified());
     term(softly, "interAccount", moved.interAccount(), expected.interAccount());
+    assertItemised(softly, trustAccountId, after.asAt(), after.unidentified());
     softly.assertAll();
   }
 

@@ -6,7 +6,6 @@ import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.BankStatementLine;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustPostingService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
 import java.math.BigDecimal;
@@ -30,8 +29,9 @@ import org.springframework.transaction.annotation.Transactional;
  * the Fund are 647D.
  *
  * <p>Dependency direction: {@code StatementLinePostingService} calls this service; this service
- * never calls back (it depends on the {@link BankStatementLine} entity type and {@link
- * TrustPostingService} only). Every posting goes through {@link TrustPostingService}.
+ * never calls back and imports nothing from the {@code reconciliation} package — the caller hands
+ * the line's values over as a {@link StatementCredit}. It depends on {@link TrustPostingService}
+ * only; every posting goes through it.
  */
 @Service
 public class UnidentifiedDepositService {
@@ -67,10 +67,11 @@ public class UnidentifiedDepositService {
   // --- DTO Records ---
 
   /**
-   * One item (§16.3.6). {@code ageDays} counts from the received date to today for every item;
-   * {@code olderThanOneYear} flags only a HELD item older than 365 days. Allocation and resolution
-   * fields are null until 647D ({@code allocatedClientName}, {@code allocatedMatterName} and {@code
-   * resolutionStatus} are filled there).
+   * One item (§16.3.6). {@code ageDays} counts from the received date to today for every item
+   * (never negative — 0 for an item received after today); {@code olderThanOneYear} flags only a
+   * HELD item older than 365 days. Allocation and resolution fields are null until 647D ({@code
+   * allocatedClientName}, {@code allocatedMatterName} and {@code resolutionStatus} are filled
+   * there).
    */
   public record UnidentifiedDepositResponse(
       UUID id,
@@ -91,6 +92,14 @@ public class UnidentifiedDepositService {
       LocalDate resolvedDate,
       UUID bankStatementLineId,
       String notes) {}
+
+  /**
+   * The statement line's values an item copies (§16.3.6): its id, date (the received date),
+   * description and reference. Owned here so this package never depends on the {@code
+   * reconciliation} package's entity.
+   */
+  public record StatementCredit(
+      UUID lineId, LocalDate receivedDate, String bankDescription, String bankReference) {}
 
   /** The item and the row that opened it. */
   public record Opened(UnidentifiedDeposit item, TrustTransaction depositRow) {}
@@ -132,17 +141,17 @@ public class UnidentifiedDepositService {
    */
   @Transactional(propagation = Propagation.MANDATORY)
   public Opened open(
-      BankStatementLine line, UUID creditorAccountId, TrustTransaction draft, String notes) {
+      StatementCredit line, UUID creditorAccountId, TrustTransaction draft, String notes) {
     moduleGuard.requireModule(MODULE_ID);
     var item =
         depositRepository.saveAndFlush(
             new UnidentifiedDeposit(
                 draft.getTrustAccountId(),
                 creditorAccountId,
-                line.getId(),
-                line.getTransactionDate(),
-                line.getDescription(),
-                line.getReference(),
+                line.lineId(),
+                line.receivedDate(),
+                line.bankDescription(),
+                line.bankReference(),
                 draft.getAmount(),
                 notes == null || notes.isBlank() ? null : notes));
     draft.setUnidentifiedDepositId(item.getId());
@@ -219,7 +228,9 @@ public class UnidentifiedDepositService {
   }
 
   private static UnidentifiedDepositResponse toResponse(UnidentifiedDeposit d, LocalDate today) {
-    int ageDays = (int) ChronoUnit.DAYS.between(d.getReceivedDate(), today);
+    // Clamped: a future-dated statement line can be recorded today (647A), and a negative age
+    // must never reach the wire.
+    int ageDays = (int) Math.max(0, ChronoUnit.DAYS.between(d.getReceivedDate(), today));
     boolean held = d.getStatus() == UnidentifiedDepositStatus.HELD;
     return new UnidentifiedDepositResponse(
         d.getId(),

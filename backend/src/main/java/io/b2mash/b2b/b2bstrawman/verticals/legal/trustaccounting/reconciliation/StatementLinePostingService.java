@@ -12,6 +12,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountTyp
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.TrustCreditorAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.UnidentifiedDeposit;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.UnidentifiedDepositService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.UnidentifiedDepositService.StatementCredit;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService.BankStatementLineResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustPostingService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
@@ -204,7 +205,10 @@ public class StatementLinePostingService {
     UUID unidentifiedDepositId = null;
     if (classification == StatementLineClassification.UNIDENTIFIED_DEPOSIT) {
       // The item first, so the row names it (chk_trust_txn_unidentified_item); open posts the row.
-      var opened = unidentifiedDepositService.open(line, creditor.getId(), row, request.notes());
+      var credit =
+          new StatementCredit(
+              line.getId(), line.getTransactionDate(), line.getDescription(), line.getReference());
+      var opened = unidentifiedDepositService.open(credit, creditor.getId(), row, request.notes());
       saved = opened.depositRow();
       unidentifiedDepositId = opened.item().getId();
     } else {

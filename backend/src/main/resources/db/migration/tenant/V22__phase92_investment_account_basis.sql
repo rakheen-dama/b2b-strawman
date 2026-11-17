@@ -1,9 +1,9 @@
 -- Phase 92 / 648C (ADR-379; architecture §16.2.7, the trust_accounts part of §16.7.7): a trust
 -- investment account (account_type = 'INVESTMENT') carries the basis of the money it holds —
 -- FIRM_DISCRETION (section 86(3)) or CLIENT_INSTRUCTION (section 86(4)) — non-null exactly on
--- INVESTMENT accounts. Existing INVESTMENT accounts (test and collections fixtures; no real tenant
--- holds one) default to FIRM_DISCRETION. GENERAL and SECTION_86 rows (the demo seeder's main account
--- is SECTION_86) stay NULL. No row is deleted; no index (the column is never a lookup key). The
+-- INVESTMENT accounts. Any existing INVESTMENT accounts default to FIRM_DISCRETION. GENERAL and
+-- SECTION_86 rows (the demo seeder's main account is SECTION_86) stay NULL. No row is deleted; no
+-- index (the column is never a lookup key). The
 -- trust_investments half of §16.7.7 is 648A's migration. Idempotent: ADD COLUMN IF NOT EXISTS, the
 -- UPDATE touches only NULL rows, and the constraint is guarded on pg_constraint scoped to
 -- current_schema(). The INVESTMENT branch tests investment_basis IS NOT NULL explicitly: with a NULL

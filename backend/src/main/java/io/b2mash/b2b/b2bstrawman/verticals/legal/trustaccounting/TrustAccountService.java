@@ -274,6 +274,7 @@ public class TrustAccountService {
     }
 
     // 648A must refuse a basis change while investments are held (648C found.md F-2)
+    var priorBasis = account.getInvestmentBasis();
     if (request.investmentBasis() != null) {
       requireBasisMatchesType(account.getAccountType(), request.investmentBasis(), false);
       account.setInvestmentBasis(request.investmentBasis());
@@ -308,6 +309,10 @@ public class TrustAccountService {
     updatedDetails.put("bank_name", saved.getBankName());
     if (saved.getInvestmentBasis() != null) {
       updatedDetails.put("investment_basis", saved.getInvestmentBasis().name());
+      // A basis change moves the account between s86(3) and s86(4) (Rule 54.28) — keep the prior
+      if (priorBasis != null && priorBasis != saved.getInvestmentBasis()) {
+        updatedDetails.put("investment_basis_from", priorBasis.name());
+      }
     }
     auditService.log(
         AuditEventBuilder.builder()

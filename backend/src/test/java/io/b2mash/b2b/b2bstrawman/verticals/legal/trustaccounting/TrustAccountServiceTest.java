@@ -755,11 +755,20 @@ class TrustAccountServiceTest {
                               null,
                               PageRequest.of(0, 10))
                           .getContent();
+                  // the basis change records the prior basis (s86(3) -> s86(4)); the rename
+                  // (basis unchanged) does not
                   assertThat(updatedEvents)
                       .anySatisfy(
                           e ->
                               assertThat(e.getDetails())
-                                  .containsEntry("investment_basis", "CLIENT_INSTRUCTION"));
+                                  .containsEntry("investment_basis", "CLIENT_INSTRUCTION")
+                                  .containsEntry("investment_basis_from", "FIRM_DISCRETION"));
+                  assertThat(updatedEvents)
+                      .anySatisfy(
+                          e ->
+                              assertThat(e.getDetails())
+                                  .containsEntry("investment_basis", "FIRM_DISCRETION")
+                                  .doesNotContainKey("investment_basis_from"));
 
                   ids[1] =
                       trustAccountService

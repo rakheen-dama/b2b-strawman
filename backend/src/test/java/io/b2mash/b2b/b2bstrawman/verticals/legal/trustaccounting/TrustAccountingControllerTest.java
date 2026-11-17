@@ -1,5 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting;
 
+import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -473,7 +475,8 @@ class TrustAccountingControllerTest {
                     }
                     """))
         .andExpect(status().isCreated())
-        .andExpect(jsonPath("$.investmentBasis").doesNotExist())
+        .andExpect(jsonPath("$", hasKey("investmentBasis")))
+        .andExpect(jsonPath("$.investmentBasis").value(nullValue()))
         .andExpect(jsonPath("$.section").value("S86_2"));
 
     mockMvc
@@ -622,7 +625,8 @@ class TrustAccountingControllerTest {
             get("/api/trust-accounts/" + generalId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_trust_ctrl_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.investmentBasis").doesNotExist())
+        .andExpect(jsonPath("$", hasKey("investmentBasis")))
+        .andExpect(jsonPath("$.investmentBasis").value(nullValue()))
         .andExpect(jsonPath("$.section").value("S86_2"));
   }
 }

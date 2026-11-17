@@ -382,7 +382,15 @@ export default async function TransactionsPage({
                             {tx.reference}
                           </td>
                           <td className="py-3 pr-4">
-                            <Badge variant="neutral">{tx.typeLabel}</Badge>
+                            {/* 647D OBS h: long registry labels ("Unidentified deposit paid to
+                                the Fund") wrap instead of pushing Actions off-screen at 1280 */}
+                            <Badge
+                              variant="neutral"
+                              className="shrink whitespace-normal"
+                              data-testid={`transaction-type-${tx.id}`}
+                            >
+                              {tx.typeLabel}
+                            </Badge>
                             {/* 647D: an unidentified deposit's allocation or payment to the Fund
                                 says where the money goes, so the approver can judge it (both
                                 are firm-only rows; no other row's description is shown here) */}

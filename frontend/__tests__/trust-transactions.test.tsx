@@ -331,6 +331,39 @@ describe("Trust Transactions", () => {
     expect(screen.queryByText("Initial deposit")).not.toBeInTheDocument();
   });
 
+  // 647D OBS h: at 1280 px the nowrap type badge of "Unidentified deposit paid to the Fund" widened
+  // the table past its scroll wrapper and pushed Approve/Reject off-screen; type badges now wrap.
+  it("lets a long type label wrap so the Actions column stays on-screen (647D OBS h)", async () => {
+    mockFetchTransactions.mockResolvedValue({
+      content: [
+        makeTx({
+          id: "tx-fund",
+          transactionType: "UNIDENT_FUND_PAY",
+          typeLabel: "Unidentified deposit paid to the Fund",
+          direction: "NEUTRAL",
+          ledger: "NON_CLIENT",
+          clientId: null,
+          status: "AWAITING_APPROVAL",
+          approvedBy: null,
+          approvedAt: null,
+          postedAt: null,
+        }),
+      ],
+      totalElements: 1,
+      totalPages: 1,
+      pageSize: 20,
+      pageNumber: 0,
+    });
+
+    await renderTransactionsPage();
+
+    const badge = screen.getByTestId("transaction-type-tx-fund");
+    expect(badge).toHaveTextContent("Unidentified deposit paid to the Fund");
+    expect(badge).toHaveClass("shrink", "whitespace-normal");
+    expect(badge).not.toHaveClass("whitespace-nowrap");
+    expect(badge).not.toHaveClass("shrink-0");
+  });
+
   // G88-F23 (Phase 89 630C): REFUND moves money out of trust — outflow colour + arrow.
   it("renders REFUND as an outflow (no green, up-right arrow)", async () => {
     mockFetchTransactions.mockResolvedValue({

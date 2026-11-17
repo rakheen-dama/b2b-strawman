@@ -29,3 +29,14 @@ Reported while building; the fix-cycle-1 outcome (orchestrator rulings R1–R8) 
 - **Where:** `frontend/components/trust/TrustEntityPickers.tsx` (`TrustCustomerPicker`, `TrustMatterPicker`): rendered inside `FormItem` with a `FormLabel`, but the trigger button does not receive the `FormControl` slot's `id` / `aria-describedby` / `aria-invalid`, so the label is not programmatically tied to the picker and a field error is not announced on it.
 - **Pre-existing:** `RecordDepositDialog` (and the other trust dialogs using the pickers) have the same gap; 647D's `AllocateUnidentifiedDialog` inherits it.
 - **Why not fixed:** a shared component change outside the slice's scope (ruling R8). Suggested fix: wrap the picker trigger in `FormControl` (or forward `id`/`aria-*` props) in the shared pickers, with one vitest case per picker.
+
+## F-647D-4 — Second call-site wrapping trust type Badge: add a `wrap` prop to the shared `@b2mash/ui` Badge — follow-up (OBS h fix, fix cycle 2)
+
+- **Context:** OBS h (`gates/found-obs.md` H-1). At 1280 px the transactions page table grew to 1011 px inside a 926 px `overflow-x-auto` wrapper, pushing the Actions column (Approve/Reject on pending rows) 85 px off-screen. Cause: the shared Badge's `whitespace-nowrap shrink-0` kept 647D's long registry labels ("Unidentified deposit paid to the Fund", "Deposit identified and allocated", "Unidentified deposit allocated") on one line.
+- **Fixed in-slice (fix cycle 2):** call-site `className="shrink whitespace-normal"` on the type Badge in `frontend/app/(app)/org/[slug]/trust-accounting/transactions/page.tsx`, the same fix as 647C F-1 (`frontend/components/trust/FundLedgerTable.tsx`). Short labels render unchanged (they fit on one line). Test: `trust-transactions.test.tsx` "lets a long type label wrap so the Actions column stays on-screen (647D OBS h)".
+- **Follow-up (not done here, shared component out of slice scope):** this is the **second** occurrence of a call-site wrapping Badge. Per the 647C note ("if a second wrapping Badge appears, add a `wrap` prop"), add a `wrap` variant/prop to `packages/ui/src/badge.tsx` (`shrink whitespace-normal`) and switch both call sites to it.
+
+## F-647D-5 — A refused approval's inline error text is cut off in the Actions cell — recorded, not fixed (pre-existing)
+
+- **Where:** `gates/found-obs.md` H-1b. After a refused self-approval ("The transaction recorder cannot be the sole approver. …"), the error span of the existing `ApprovalBadge` (`frontend/components/trust/approval-badge.tsx`) sits inline after Approve/Reject with no width limit, and at 1440 runs past the table wrapper's right edge.
+- **Pre-existing:** the same pattern applies to every refused approval on the transactions page, not only 647D rows. Not fixed per orchestrator ruling; suggested fix: give the error span a max width / wrap (or render it below the buttons) with a vitest case.

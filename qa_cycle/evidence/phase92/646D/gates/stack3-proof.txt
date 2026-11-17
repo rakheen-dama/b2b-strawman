@@ -1,0 +1,60 @@
+== worktree: /Users/rakheendama/Projects/2026/worktree-epic-646D @ bea18744318e651b770d85595fd654c1ad3f37ec
+== build log source lines:
+Building from source at: /Users/rakheendama/Projects/2026/worktree-epic-646D
+  Tail logs:   docker compose -f /Users/rakheendama/Projects/2026/worktree-epic-646D/compose/docker-compose.e2e.yml logs -f backend frontend
+== jar entries (646D-touched classes):
+io/b2mash/b2b/b2bstrawman/mcp/dto/McpTrustBalanceDto.class
+io/b2mash/b2b/b2bstrawman/mcp/tool/TrustTools.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/ledger/ClientLedgerService.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/transaction/TrustTransactionService.class
+== McpTrustBalanceDto.class contains 'totalTrustCreditorsMinor' (646D): 2
+== McpTrustBalanceDto.class contains 'cashbookMinor' (646D): 2
+== TrustTools.class contains 'trust account or client' (646D review fix CR-1): 1
+== TrustTransactionService.class contains 'The fee transfer date cannot be in the future' (646D): 1
+== ClientLedgerService$TotalBalanceResponse.class contains 'creditorBreakdown' (646D): 2
+== jar migrations (latest tenant V*):
+db/migration/tenant/V17__phase92_trust_reversal_contra.sql
+db/migration/tenant/V18__phase92_trust_creditor_accounts.sql
+db/migration/tenant/V19__phase92_trust_recon_breakdown.sql
+== frontend container: 646D strings in .next (excluding cache):
+-- 'Fee transfer date (optional)':
+/app/frontend/.next/server/chunks/ssr/frontend_components_trust_RecordDepositDialog_tsx_20dd-5i._.js
+/app/frontend/.next/static/chunks/1gx97_mud_uqe.js
+/app/frontend/.next/static/chunks/1m7y54k86doyp.js
+/app/frontend/.next/static/chunks/3zqnudg66rie3.js
+-- 'trust-position-creditors':
+/app/frontend/.next/server/chunks/ssr/frontend_0c0sh2v._.js
+-- 'fee-transfer-date-input':
+/app/frontend/.next/server/chunks/ssr/frontend_components_trust_RecordDepositDialog_tsx_20dd-5i._.js
+/app/frontend/.next/static/chunks/1gx97_mud_uqe.js
+/app/frontend/.next/static/chunks/1m7y54k86doyp.js
+/app/frontend/.next/static/chunks/3zqnudg66rie3.js
+-- 'The fee transfer date cannot be in the future':
+/app/frontend/.next/server/chunks/ssr/frontend_lib_schemas_trust_ts_08akgps._.js
+/app/frontend/.next/server/chunks/ssr/frontend_lib_schemas_index_ts_0tntwfm._.js
+/app/frontend/.next/server/chunks/ssr/frontend_lib_schemas_0pmhovv._.js
+/app/frontend/.next/server/chunks/ssr/_1jzn030._.js
+-- 'Trust creditors':
+/app/frontend/.next/server/chunks/ssr/frontend_0c0sh2v._.js
+/app/frontend/.next/server/chunks/ssr/_1aoymt4._.js
+/app/frontend/.next/server/chunks/ssr/_0yhbiy2._.js
+/app/frontend/.next/server/chunks/ssr/1oju_app_(app)_org_[slug]_trust-accounting_reconciliation_new_page_tsx_0gjhtfk._.js
+-- old label 'Client ledgers' still in the trend-chart / widget chunks? (expect only recon breakdown chunks):
+/app/frontend/.next/static/chunks/047pceqfbctq5.js
+/app/frontend/.next/static/chunks/2v45k7dc-nc6-.js
+/app/frontend/.next/static/chunks/1jzy83e8yhwv6.js
+== health: {"groups":["liveness","readiness"],"status":"UP"}  frontend :3001 HTTP 200
+== tenant schemas: tenant_7d218705360b
+ version |           description           | success |        installed_on        
+---------+---------------------------------+---------+----------------------------
+ 19      | phase92 trust recon breakdown   | t       | 2026-11-17 09:38:38.796622
+ 18      | phase92 trust creditor accounts | t       | 2026-11-17 09:38:38.776056
+ 17      | phase92 trust reversal contra   | t       | 2026-11-17 09:38:38.765914
+ 16      | phase92 trust posting core      | t       | 2026-11-17 09:38:38.744786
+(4 rows)
+
+ trust_accounts | creditor_accounts | trust_txns | recons 
+----------------+-------------------+------------+--------
+              1 |                 2 |          0 |      0
+(1 row)
+

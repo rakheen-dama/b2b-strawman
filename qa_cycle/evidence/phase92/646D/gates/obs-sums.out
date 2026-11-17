@@ -1,0 +1,283 @@
+-- 646D OBS read-only evidence output (schema tenant_7d218705360b) 2026-11-17T09:31:25.710Z
+
+== [baseline: trust transactions]
+select id, transaction_type, amount, status, transaction_date, posted_at is not null as posted, ledger, ledger_effect, cashbook_effect, reference, customer_id from tenant_7d218705360b.trust_transactions order by transaction_date, created_at
+                  id                  | transaction_type |  amount   |      status       | transaction_date | posted | ledger | ledger_effect | cashbook_effect |            reference            |             customer_id              
+--------------------------------------+------------------+-----------+-------------------+------------------+--------+--------+---------------+-----------------+---------------------------------+--------------------------------------
+ a42c26e9-10a8-4f42-b2a6-7ea43fbca2ae | DEPOSIT          | 250000.00 | RECORDED          | 2026-11-17       | t      | CLIENT |     250000.00 |       250000.00 | DEP/MOROKA/mwkhoa43c736         | 8ed45d08-1c71-4cc8-b7bb-d9d24dd3a2b8
+ fa55f100-b12c-46b4-98e8-64c8c30d27ca | DEPOSIT          |  45000.00 | RECORDED          | 2026-11-17       | t      | CLIENT |      45000.00 |        45000.00 | DEP/QC/mwkhoa43c736             | 5e5de490-6a26-4739-9034-6d466dcc2083
+ 5f517605-4edb-40fa-adf6-766e1c6f7b3f | FEE_TRANSFER     |   8500.00 | APPROVED          | 2026-11-17       | t      | CLIENT |      -8500.00 |        -8500.00 | FEE/MOROKA/mwkhoa43c736         | 8ed45d08-1c71-4cc8-b7bb-d9d24dd3a2b8
+ 431a3ad5-ae58-401a-9fce-1bf990c0ba24 | PAYMENT          | 200000.00 | AWAITING_APPROVAL | 2026-11-17       | f      | CLIENT |          0.00 |            0.00 | INV-Standard Bank-FD-0987654321 | 8ed45d08-1c71-4cc8-b7bb-d9d24dd3a2b8
+ 6a705ea9-9a5e-494e-984e-779835338326 | PAYMENT          |  30000.00 | AWAITING_APPROVAL | 2026-11-17       | f      | CLIENT |          0.00 |            0.00 | INV-Nedbank-CALL-1122334455     | 5e5de490-6a26-4739-9034-6d466dcc2083
+ 6012e680-b8fb-4506-99b8-2b781732d0f7 | FEE_TRANSFER     |    500.00 | AWAITING_APPROVAL | 2026-11-17       | f      | CLIENT |          0.00 |            0.00 | FEE/SIPHO/mwkhoa43c736          | 6ad22359-287b-46b6-9d33-90fd463ce81a
+(6 rows)
+
+
+== [baseline: creditor accounts]
+select id, account_type, name from tenant_7d218705360b.trust_creditor_accounts
+                  id                  |       account_type        |                           name                            
+--------------------------------------+---------------------------+-----------------------------------------------------------
+ e6551197-9932-4e70-bab5-83b7f0319c61 | FUND_INTEREST_AND_CHARGES | Legal Practitioners' Fidelity Fund — interest and charges
+ 46847b74-5387-46c7-aa88-968145f85f33 | UNIDENTIFIED_DEPOSITS     | Unidentified deposits
+(2 rows)
+
+
+== [baseline: open fee notes]
+select i.id, i.invoice_number, i.status, i.total, i.amount_paid, c.name as client, i.customer_id from tenant_7d218705360b.invoices i join tenant_7d218705360b.customers c on c.id=i.customer_id where i.status in ('APPROVED','SENT','PARTIALLY_PAID') order by i.created_at
+                  id                  | invoice_number |     status     |  total  | amount_paid |              client              |             customer_id              
+--------------------------------------+----------------+----------------+---------+-------------+----------------------------------+--------------------------------------
+ b2edf074-8634-469d-b7fe-381603f0b6b1 | INV-0001       | SENT           | 8625.00 |        0.00 | Acme Corp                        | 2f416968-3f68-4dc6-bae1-734476abc5fd
+ 2b9f8ec3-6333-4d67-822d-b95b0e64a9cd | INV-0003       | SENT           | 5482.63 |        0.00 | Sipho Ndlovu mwkhoa43c736        | 6ad22359-287b-46b6-9d33-90fd463ce81a
+ 3f869925-10d9-4119-af88-c251e925c4f1 | INV-0002       | PARTIALLY_PAID | 8625.00 |     8500.00 | Moroka Family Trust mwkhoa43c736 | 8ed45d08-1c71-4cc8-b7bb-d9d24dd3a2b8
+(3 rows)
+
+
+== [baseline: chosen client's posted rows]
+select transaction_type, amount, status, transaction_date, ledger_effect, cashbook_effect, reference from tenant_7d218705360b.trust_transactions where customer_id='2f416968-3f68-4dc6-bae1-734476abc5fd' order by transaction_date, created_at
+ transaction_type | amount | status | transaction_date | ledger_effect | cashbook_effect | reference 
+------------------+--------+--------+------------------+---------------+-----------------+-----------
+(0 rows)
+
+
+== [01-lifecycle-books: position as at 2026-11-17]
+select
+  coalesce(sum(t.cashbook_effect),0) as cashbook,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='CLIENT'),0) as client_ledgers,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='CLIENT_INVESTMENT'),0) as investment,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT' and ca.account_type='FUND_INTEREST_AND_CHARGES'),0) as fund_ledger,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT' and ca.account_type='UNIDENTIFIED_DEPOSITS'),0) as unidentified,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT' and ca.account_type not in ('FUND_INTEREST_AND_CHARGES','UNIDENTIFIED_DEPOSITS')),0) as other_non_client,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='INTER_ACCOUNT'),0) as inter_account,
+  coalesce(sum(t.ledger_effect),0) as all_ledgers,
+  count(*) as posted_rows
+from tenant_7d218705360b.trust_transactions t left join tenant_7d218705360b.trust_creditor_accounts ca on ca.id=t.creditor_account_id
+where t.trust_account_id='df0ccb75-5c9e-4666-be6c-a1321a63172f' and t.posted_at is not null and t.transaction_date <= date '2026-11-17'
+ cashbook  | client_ledgers | investment | fund_ledger | unidentified | other_non_client | inter_account | all_ledgers | posted_rows 
+-----------+----------------+------------+-------------+--------------+------------------+---------------+-------------+-------------
+ 286500.00 |      286500.00 |          0 |           0 |            0 |                0 |             0 |   286500.00 |           3
+(1 row)
+
+
+== [01-lifecycle-books trend prev month: position as at 2026-10-31]
+select
+  coalesce(sum(t.cashbook_effect),0) as cashbook,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='CLIENT'),0) as client_ledgers,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='CLIENT_INVESTMENT'),0) as investment,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT' and ca.account_type='FUND_INTEREST_AND_CHARGES'),0) as fund_ledger,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT' and ca.account_type='UNIDENTIFIED_DEPOSITS'),0) as unidentified,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT' and ca.account_type not in ('FUND_INTEREST_AND_CHARGES','UNIDENTIFIED_DEPOSITS')),0) as other_non_client,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='INTER_ACCOUNT'),0) as inter_account,
+  coalesce(sum(t.ledger_effect),0) as all_ledgers,
+  count(*) as posted_rows
+from tenant_7d218705360b.trust_transactions t left join tenant_7d218705360b.trust_creditor_accounts ca on ca.id=t.creditor_account_id
+where t.trust_account_id='df0ccb75-5c9e-4666-be6c-a1321a63172f' and t.posted_at is not null and t.transaction_date <= date '2026-10-31'
+ cashbook | client_ledgers | investment | fund_ledger | unidentified | other_non_client | inter_account | all_ledgers | posted_rows 
+----------+----------------+------------+-------------+--------------+------------------+---------------+-------------+-------------
+        0 |              0 |          0 |           0 |            0 |                0 |             0 |           0 |           0
+(1 row)
+
+
+== [deposit row]
+select id, transaction_type, amount, status, transaction_date, posted_at is not null as posted, ledger, ledger_effect, cashbook_effect, reference, customer_id, project_id, invoice_id, recorded_by, approved_by from tenant_7d218705360b.trust_transactions where id='608b10d8-1dad-487e-abc3-6e8835581062'
+                  id                  | transaction_type | amount  |  status  | transaction_date | posted | ledger | ledger_effect | cashbook_effect |     reference     |             customer_id              |              project_id              | invoice_id |             recorded_by              | approved_by 
+--------------------------------------+------------------+---------+----------+------------------+--------+--------+---------------+-----------------+-------------------+--------------------------------------+--------------------------------------+------------+--------------------------------------+-------------
+ 608b10d8-1dad-487e-abc3-6e8835581062 | DEPOSIT          | 1000.00 | RECORDED | 2026-11-12       | t      | CLIENT |       1000.00 |         1000.00 | DEP/OBS646D/HT7QW | 2f416968-3f68-4dc6-bae1-734476abc5fd | 3aea2217-bfa4-4d06-875e-6a774da93fe0 |            | 9e4d0fe8-1834-490e-b632-e4d8328f96b7 | 
+(1 row)
+
+
+== [c: fee transfer recorded]
+select id, transaction_type, amount, status, transaction_date, posted_at is not null as posted, ledger, ledger_effect, cashbook_effect, reference, customer_id, project_id, invoice_id, recorded_by, approved_by from tenant_7d218705360b.trust_transactions where id='a2e3cb07-3625-4090-8e58-d1c7f791c558'
+                  id                  | transaction_type | amount |      status       | transaction_date | posted | ledger | ledger_effect | cashbook_effect |      reference      |             customer_id              |              project_id              |              invoice_id              |             recorded_by              | approved_by 
+--------------------------------------+------------------+--------+-------------------+------------------+--------+--------+---------------+-----------------+---------------------+--------------------------------------+--------------------------------------+--------------------------------------+--------------------------------------+-------------
+ a2e3cb07-3625-4090-8e58-d1c7f791c558 | FEE_TRANSFER     | 100.00 | AWAITING_APPROVAL | 2026-11-14       | f      | CLIENT |          0.00 |            0.00 | FEE/OBS646D/HT7QW-C | 2f416968-3f68-4dc6-bae1-734476abc5fd | 3aea2217-bfa4-4d06-875e-6a774da93fe0 | b2edf074-8634-469d-b7fe-381603f0b6b1 | 9e4d0fe8-1834-490e-b632-e4d8328f96b7 | 
+(1 row)
+
+
+== [c: fee transfer approved]
+select id, transaction_type, amount, status, transaction_date, posted_at is not null as posted, ledger, ledger_effect, cashbook_effect, reference, customer_id, project_id, invoice_id, recorded_by, approved_by from tenant_7d218705360b.trust_transactions where id='a2e3cb07-3625-4090-8e58-d1c7f791c558'
+                  id                  | transaction_type | amount |  status  | transaction_date | posted | ledger | ledger_effect | cashbook_effect |      reference      |             customer_id              |              project_id              |              invoice_id              |             recorded_by              |             approved_by              
+--------------------------------------+------------------+--------+----------+------------------+--------+--------+---------------+-----------------+---------------------+--------------------------------------+--------------------------------------+--------------------------------------+--------------------------------------+--------------------------------------
+ a2e3cb07-3625-4090-8e58-d1c7f791c558 | FEE_TRANSFER     | 100.00 | APPROVED | 2026-11-14       | t      | CLIENT |       -100.00 |         -100.00 | FEE/OBS646D/HT7QW-C | 2f416968-3f68-4dc6-bae1-734476abc5fd | 3aea2217-bfa4-4d06-875e-6a774da93fe0 | b2edf074-8634-469d-b7fe-381603f0b6b1 | 9e4d0fe8-1834-490e-b632-e4d8328f96b7 | b2a498c9-c230-4d90-a332-8c2f03b561d8
+(1 row)
+
+
+== [c: as at dayBeforeDep: position as at 2026-11-11]
+select
+  coalesce(sum(t.cashbook_effect),0) as cashbook,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='CLIENT'),0) as client_ledgers,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='CLIENT_INVESTMENT'),0) as investment,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT' and ca.account_type='FUND_INTEREST_AND_CHARGES'),0) as fund_ledger,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT' and ca.account_type='UNIDENTIFIED_DEPOSITS'),0) as unidentified,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT' and ca.account_type not in ('FUND_INTEREST_AND_CHARGES','UNIDENTIFIED_DEPOSITS')),0) as other_non_client,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='INTER_ACCOUNT'),0) as inter_account,
+  coalesce(sum(t.ledger_effect),0) as all_ledgers,
+  count(*) as posted_rows
+from tenant_7d218705360b.trust_transactions t left join tenant_7d218705360b.trust_creditor_accounts ca on ca.id=t.creditor_account_id
+where t.trust_account_id='df0ccb75-5c9e-4666-be6c-a1321a63172f' and t.posted_at is not null and t.transaction_date <= date '2026-11-11'
+ cashbook | client_ledgers | investment | fund_ledger | unidentified | other_non_client | inter_account | all_ledgers | posted_rows 
+----------+----------------+------------+-------------+--------------+------------------+---------------+-------------+-------------
+        0 |              0 |          0 |           0 |            0 |                0 |             0 |           0 |           0
+(1 row)
+
+
+== [c: as at dep: position as at 2026-11-12]
+select
+  coalesce(sum(t.cashbook_effect),0) as cashbook,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='CLIENT'),0) as client_ledgers,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='CLIENT_INVESTMENT'),0) as investment,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT' and ca.account_type='FUND_INTEREST_AND_CHARGES'),0) as fund_ledger,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT' and ca.account_type='UNIDENTIFIED_DEPOSITS'),0) as unidentified,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT' and ca.account_type not in ('FUND_INTEREST_AND_CHARGES','UNIDENTIFIED_DEPOSITS')),0) as other_non_client,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='INTER_ACCOUNT'),0) as inter_account,
+  coalesce(sum(t.ledger_effect),0) as all_ledgers,
+  count(*) as posted_rows
+from tenant_7d218705360b.trust_transactions t left join tenant_7d218705360b.trust_creditor_accounts ca on ca.id=t.creditor_account_id
+where t.trust_account_id='df0ccb75-5c9e-4666-be6c-a1321a63172f' and t.posted_at is not null and t.transaction_date <= date '2026-11-12'
+ cashbook | client_ledgers | investment | fund_ledger | unidentified | other_non_client | inter_account | all_ledgers | posted_rows 
+----------+----------------+------------+-------------+--------------+------------------+---------------+-------------+-------------
+  1000.00 |        1000.00 |          0 |           0 |            0 |                0 |             0 |     1000.00 |           1
+(1 row)
+
+
+== [c: as at dayBeforeBack: position as at 2026-11-13]
+select
+  coalesce(sum(t.cashbook_effect),0) as cashbook,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='CLIENT'),0) as client_ledgers,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='CLIENT_INVESTMENT'),0) as investment,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT' and ca.account_type='FUND_INTEREST_AND_CHARGES'),0) as fund_ledger,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT' and ca.account_type='UNIDENTIFIED_DEPOSITS'),0) as unidentified,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT' and ca.account_type not in ('FUND_INTEREST_AND_CHARGES','UNIDENTIFIED_DEPOSITS')),0) as other_non_client,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='INTER_ACCOUNT'),0) as inter_account,
+  coalesce(sum(t.ledger_effect),0) as all_ledgers,
+  count(*) as posted_rows
+from tenant_7d218705360b.trust_transactions t left join tenant_7d218705360b.trust_creditor_accounts ca on ca.id=t.creditor_account_id
+where t.trust_account_id='df0ccb75-5c9e-4666-be6c-a1321a63172f' and t.posted_at is not null and t.transaction_date <= date '2026-11-13'
+ cashbook | client_ledgers | investment | fund_ledger | unidentified | other_non_client | inter_account | all_ledgers | posted_rows 
+----------+----------------+------------+-------------+--------------+------------------+---------------+-------------+-------------
+  1000.00 |        1000.00 |          0 |           0 |            0 |                0 |             0 |     1000.00 |           1
+(1 row)
+
+
+== [c: as at back: position as at 2026-11-14]
+select
+  coalesce(sum(t.cashbook_effect),0) as cashbook,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='CLIENT'),0) as client_ledgers,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='CLIENT_INVESTMENT'),0) as investment,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT' and ca.account_type='FUND_INTEREST_AND_CHARGES'),0) as fund_ledger,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT' and ca.account_type='UNIDENTIFIED_DEPOSITS'),0) as unidentified,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT' and ca.account_type not in ('FUND_INTEREST_AND_CHARGES','UNIDENTIFIED_DEPOSITS')),0) as other_non_client,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='INTER_ACCOUNT'),0) as inter_account,
+  coalesce(sum(t.ledger_effect),0) as all_ledgers,
+  count(*) as posted_rows
+from tenant_7d218705360b.trust_transactions t left join tenant_7d218705360b.trust_creditor_accounts ca on ca.id=t.creditor_account_id
+where t.trust_account_id='df0ccb75-5c9e-4666-be6c-a1321a63172f' and t.posted_at is not null and t.transaction_date <= date '2026-11-14'
+ cashbook | client_ledgers | investment | fund_ledger | unidentified | other_non_client | inter_account | all_ledgers | posted_rows 
+----------+----------------+------------+-------------+--------------+------------------+---------------+-------------+-------------
+   900.00 |         900.00 |          0 |           0 |            0 |                0 |             0 |      900.00 |           2
+(1 row)
+
+
+== [c: as at today: position as at 2026-11-17]
+select
+  coalesce(sum(t.cashbook_effect),0) as cashbook,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='CLIENT'),0) as client_ledgers,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='CLIENT_INVESTMENT'),0) as investment,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT' and ca.account_type='FUND_INTEREST_AND_CHARGES'),0) as fund_ledger,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT' and ca.account_type='UNIDENTIFIED_DEPOSITS'),0) as unidentified,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT' and ca.account_type not in ('FUND_INTEREST_AND_CHARGES','UNIDENTIFIED_DEPOSITS')),0) as other_non_client,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='INTER_ACCOUNT'),0) as inter_account,
+  coalesce(sum(t.ledger_effect),0) as all_ledgers,
+  count(*) as posted_rows
+from tenant_7d218705360b.trust_transactions t left join tenant_7d218705360b.trust_creditor_accounts ca on ca.id=t.creditor_account_id
+where t.trust_account_id='df0ccb75-5c9e-4666-be6c-a1321a63172f' and t.posted_at is not null and t.transaction_date <= date '2026-11-17'
+ cashbook  | client_ledgers | investment | fund_ledger | unidentified | other_non_client | inter_account | all_ledgers | posted_rows 
+-----------+----------------+------------+-------------+--------------+------------------+---------------+-------------+-------------
+ 287400.00 |      287400.00 |          0 |           0 |            0 |                0 |             0 |   287400.00 |           5
+(1 row)
+
+
+== [c: fee note after approval]
+select id, invoice_number, status, total, amount_paid from tenant_7d218705360b.invoices where id='b2edf074-8634-469d-b7fe-381603f0b6b1'
+                  id                  | invoice_number |     status     |  total  | amount_paid 
+--------------------------------------+----------------+----------------+---------+-------------
+ b2edf074-8634-469d-b7fe-381603f0b6b1 | INV-0001       | PARTIALLY_PAID | 8625.00 |      100.00
+(1 row)
+
+
+== [e: default-date fee transfer approved]
+select id, transaction_type, amount, status, transaction_date, posted_at is not null as posted, ledger, ledger_effect, cashbook_effect, reference, customer_id, project_id, invoice_id, recorded_by, approved_by from tenant_7d218705360b.trust_transactions where id='993db6bb-3d72-42e8-a141-74a5965ca426'
+                  id                  | transaction_type | amount |  status  | transaction_date | posted | ledger | ledger_effect | cashbook_effect |      reference      |             customer_id              |              project_id              |              invoice_id              |             recorded_by              |             approved_by              
+--------------------------------------+------------------+--------+----------+------------------+--------+--------+---------------+-----------------+---------------------+--------------------------------------+--------------------------------------+--------------------------------------+--------------------------------------+--------------------------------------
+ 993db6bb-3d72-42e8-a141-74a5965ca426 | FEE_TRANSFER     |  50.00 | APPROVED | 2026-11-17       | t      | CLIENT |        -50.00 |          -50.00 | FEE/OBS646D/HT7QW-E | 2f416968-3f68-4dc6-bae1-734476abc5fd | 3aea2217-bfa4-4d06-875e-6a774da93fe0 | b2edf074-8634-469d-b7fe-381603f0b6b1 | 9e4d0fe8-1834-490e-b632-e4d8328f96b7 | b2a498c9-c230-4d90-a332-8c2f03b561d8
+(1 row)
+
+
+== [e: fee note after]
+select id, invoice_number, status, total, amount_paid from tenant_7d218705360b.invoices where id='b2edf074-8634-469d-b7fe-381603f0b6b1'
+                  id                  | invoice_number |     status     |  total  | amount_paid 
+--------------------------------------+----------------+----------------+---------+-------------
+ b2edf074-8634-469d-b7fe-381603f0b6b1 | INV-0001       | PARTIALLY_PAID | 8625.00 |      150.00
+(1 row)
+
+
+== [02-after-fee-transfers: position as at 2026-11-17]
+select
+  coalesce(sum(t.cashbook_effect),0) as cashbook,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='CLIENT'),0) as client_ledgers,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='CLIENT_INVESTMENT'),0) as investment,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT' and ca.account_type='FUND_INTEREST_AND_CHARGES'),0) as fund_ledger,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT' and ca.account_type='UNIDENTIFIED_DEPOSITS'),0) as unidentified,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT' and ca.account_type not in ('FUND_INTEREST_AND_CHARGES','UNIDENTIFIED_DEPOSITS')),0) as other_non_client,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='INTER_ACCOUNT'),0) as inter_account,
+  coalesce(sum(t.ledger_effect),0) as all_ledgers,
+  count(*) as posted_rows
+from tenant_7d218705360b.trust_transactions t left join tenant_7d218705360b.trust_creditor_accounts ca on ca.id=t.creditor_account_id
+where t.trust_account_id='df0ccb75-5c9e-4666-be6c-a1321a63172f' and t.posted_at is not null and t.transaction_date <= date '2026-11-17'
+ cashbook  | client_ledgers | investment | fund_ledger | unidentified | other_non_client | inter_account | all_ledgers | posted_rows 
+-----------+----------------+------------+-------------+--------------+------------------+---------------+-------------+-------------
+ 287350.00 |      287350.00 |          0 |           0 |            0 |                0 |             0 |   287350.00 |           6
+(1 row)
+
+
+== [02-after-fee-transfers trend prev month: position as at 2026-10-31]
+select
+  coalesce(sum(t.cashbook_effect),0) as cashbook,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='CLIENT'),0) as client_ledgers,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='CLIENT_INVESTMENT'),0) as investment,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT' and ca.account_type='FUND_INTEREST_AND_CHARGES'),0) as fund_ledger,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT' and ca.account_type='UNIDENTIFIED_DEPOSITS'),0) as unidentified,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT' and ca.account_type not in ('FUND_INTEREST_AND_CHARGES','UNIDENTIFIED_DEPOSITS')),0) as other_non_client,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='INTER_ACCOUNT'),0) as inter_account,
+  coalesce(sum(t.ledger_effect),0) as all_ledgers,
+  count(*) as posted_rows
+from tenant_7d218705360b.trust_transactions t left join tenant_7d218705360b.trust_creditor_accounts ca on ca.id=t.creditor_account_id
+where t.trust_account_id='df0ccb75-5c9e-4666-be6c-a1321a63172f' and t.posted_at is not null and t.transaction_date <= date '2026-10-31'
+ cashbook | client_ledgers | investment | fund_ledger | unidentified | other_non_client | inter_account | all_ledgers | posted_rows 
+----------+----------------+------------+-------------+--------------+------------------+---------------+-------------+-------------
+        0 |              0 |          0 |           0 |            0 |                0 |             0 |           0 |           0
+(1 row)
+
+
+== [final: OBS rows]
+select id, transaction_type, amount, status, transaction_date, posted_at is not null as posted, ledger_effect, cashbook_effect, reference, recorded_by, approved_by from tenant_7d218705360b.trust_transactions where reference like '%OBS646D/HT7QW%' order by created_at
+                  id                  | transaction_type | amount  |  status  | transaction_date | posted | ledger_effect | cashbook_effect |      reference      |             recorded_by              |             approved_by              
+--------------------------------------+------------------+---------+----------+------------------+--------+---------------+-----------------+---------------------+--------------------------------------+--------------------------------------
+ 608b10d8-1dad-487e-abc3-6e8835581062 | DEPOSIT          | 1000.00 | RECORDED | 2026-11-12       | t      |       1000.00 |         1000.00 | DEP/OBS646D/HT7QW   | 9e4d0fe8-1834-490e-b632-e4d8328f96b7 | 
+ a2e3cb07-3625-4090-8e58-d1c7f791c558 | FEE_TRANSFER     |  100.00 | APPROVED | 2026-11-14       | t      |       -100.00 |         -100.00 | FEE/OBS646D/HT7QW-C | 9e4d0fe8-1834-490e-b632-e4d8328f96b7 | b2a498c9-c230-4d90-a332-8c2f03b561d8
+ 993db6bb-3d72-42e8-a141-74a5965ca426 | FEE_TRANSFER     |   50.00 | APPROVED | 2026-11-17       | t      |        -50.00 |          -50.00 | FEE/OBS646D/HT7QW-E | 9e4d0fe8-1834-490e-b632-e4d8328f96b7 | b2a498c9-c230-4d90-a332-8c2f03b561d8
+(3 rows)
+
+
+== [final: chosen client's ledger as at each OBS date]
+select d::date as as_at, coalesce((select sum(ledger_effect) from tenant_7d218705360b.trust_transactions where customer_id='2f416968-3f68-4dc6-bae1-734476abc5fd' and trust_account_id='df0ccb75-5c9e-4666-be6c-a1321a63172f' and ledger='CLIENT' and posted_at is not null and transaction_date <= d::date),0) as client_balance from generate_series(date '2026-11-11', date '2026-11-17', interval '1 day') d
+   as_at    | client_balance 
+------------+----------------
+ 2026-11-11 |              0
+ 2026-11-12 |        1000.00
+ 2026-11-13 |        1000.00
+ 2026-11-14 |         900.00
+ 2026-11-15 |         900.00
+ 2026-11-16 |         900.00
+ 2026-11-17 |         850.00
+(7 rows)
+

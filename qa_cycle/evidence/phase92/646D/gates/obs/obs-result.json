@@ -1,0 +1,603 @@
+{
+  "steps": {
+    "state1": {
+      "label": "01-lifecycle-books",
+      "sql": {
+        "asAt": "2026-11-17",
+        "cashbook": 286500,
+        "clientLedgers": 286500,
+        "investmentCreditors": 0,
+        "fundInterestAndCharges": 0,
+        "unidentifiedDeposits": 0,
+        "otherNonClient": 0,
+        "interAccount": 0,
+        "creditorTotal": 286500,
+        "allLedgerEffects": 286500,
+        "postedRows": 3,
+        "difference": 0
+      },
+      "widgetCount": 1,
+      "a": {
+        "rows": [
+          [
+            "Bank cashbook",
+            "R 286 500,00"
+          ],
+          [
+            "Trust creditors",
+            "R 286 500,00"
+          ],
+          [
+            "Last reconciliation",
+            "Never reconciled"
+          ],
+          [
+            "Awaiting approval",
+            "3"
+          ]
+        ],
+        "headline": "R 0,00",
+        "widgetText": "Trust position Open reconciliation R 0,00 Balanced Mathebula & Partners Trust Account, Standard Bank Bank cashbook R 286 500,00 Trust creditors R 286 500,00 Last reconciliation Never reconciled Awaiting approval 3",
+        "hasClientLedgersRow": false,
+        "ui": {
+          "cashbook": 286500,
+          "creditorTotal": 286500,
+          "difference": 0
+        },
+        "balancedBadge": true,
+        "shot": "01-a-01-lifecycle-books-home-widget.png",
+        "api": {
+          "status": 200,
+          "cashbookBalance": 286500,
+          "clientLedgerTotal": 286500,
+          "creditorBreakdown": {
+            "clientLedgers": 286500,
+            "investmentCreditors": 0,
+            "fundInterestAndCharges": 0,
+            "unidentifiedDeposits": 0,
+            "otherNonClient": 0,
+            "interAccount": 0,
+            "total": 286500
+          },
+          "difference": 0
+        },
+        "match": {
+          "cashbook": true,
+          "creditorTotal": true,
+          "clientLedgers": true,
+          "difference": true,
+          "nonClientTermsZero": true
+        }
+      },
+      "b": {
+        "hint": "Trust creditors R 286 500,00",
+        "hintCard": "Trust Balance R 286 500,00 Mathebula & Partners Trust Account cashbook balance Trust creditors R 286 500,00 (agrees with the cashbook)",
+        "hintCreditors": 286500,
+        "hintHasClientLedgers": false,
+        "trendText": "Trust balance trendMonth-end balances as currently recorded (ZAR)CashbookTrust creditorsDec 2025Jan 2026Feb 2026Mar 2026Apr 2026May 2026Jun 2026Jul 2026Aug 2026Sep 2026Oct 2026Nov 2026R 0R 75 kR 150 kR 225 kR 300 kTrust balance trend: Cashbook from R 0,00 in Dec 2025 to R 286 500,00 in Nov 2026 (to date), peak R 286 500,00 in Nov 2026 (to date); Trust creditors from R 0,00 in Dec 2025 to R 286 500,00 in Nov 2026 (to date), peak R 286 500,00 in Nov 2026 (to date).View as table",
+        "trendLegend": [],
+        "trendSeriesLabelTrustCreditors": true,
+        "trendSeriesLabelClientLedgers": false,
+        "shot": "02-b-01-lifecycle-books-trust-overview.png",
+        "api": {
+          "totalBalance": {
+            "balance": 286500,
+            "creditorBreakdown": {
+              "clientLedgers": 286500,
+              "investmentCreditors": 0,
+              "fundInterestAndCharges": 0,
+              "unidentifiedDeposits": 0,
+              "otherNonClient": 0,
+              "interAccount": 0,
+              "total": 286500
+            }
+          },
+          "cashbookBalance": {
+            "balance": 286500
+          },
+          "trendLast": {
+            "month": "2026-11",
+            "periodEnd": "2026-11-17",
+            "cashbookBalance": 286500,
+            "clientLedgerTotal": 286500,
+            "partial": true
+          },
+          "trendPrev": {
+            "month": "2026-10",
+            "periodEnd": "2026-10-31",
+            "cashbookBalance": 0,
+            "clientLedgerTotal": 0,
+            "partial": false
+          },
+          "trendStatus": 200
+        },
+        "match": {
+          "hintCreditors": true,
+          "totalBalanceClientLedgers": true,
+          "cashbookBalance": true,
+          "trendLastLedger": true,
+          "trendLastCashbook": true,
+          "trendPrevMonth": true
+        }
+      }
+    },
+    "deposit": {
+      "row": "12 Nov 2026 DEP/OBS646D/HT7QW Deposit R 1 000,00 RECORDED Reverse",
+      "sql": "                  id                  | transaction_type | amount  |  status  | transaction_date | posted | ledger | ledger_effect | cashbook_effect |     reference     |             customer_id              |              project_id              | invoice_id |             recorded_by              | approved_by \n--------------------------------------+------------------+---------+----------+------------------+--------+--------+---------------+-----------------+-------------------+--------------------------------------+--------------------------------------+------------+--------------------------------------+-------------\n 608b10d8-1dad-487e-abc3-6e8835581062 | DEPOSIT          | 1000.00 | RECORDED | 2026-11-12       | t      | CLIENT |       1000.00 |         1000.00 | DEP/OBS646D/HT7QW | 2f416968-3f68-4dc6-bae1-734476abc5fd | 3aea2217-bfa4-4d06-875e-6a774da93fe0 |            | 9e4d0fe8-1834-490e-b632-e4d8328f96b7 | \n(1 row)\n\n",
+      "shot": "03-dep-backdated-deposit-recorded.png"
+    },
+    "d": {
+      "feeCountBefore": 2,
+      "txCountBefore": 7,
+      "label": "Fee transfer date (optional)",
+      "description": "Leave blank for today. Use the date the bank shows the transfer.",
+      "maxAttr": "2026-11-17",
+      "initialValue": "",
+      "typedValue": "2026-11-18",
+      "validity": {
+        "rangeOverflow": true,
+        "valid": false,
+        "validationMessage": "Value must be 2026/11/17 or earlier."
+      },
+      "formNoValidate": false,
+      "dialogStillOpen": true,
+      "dialogText": "Record Fee Transfer Transfer fees from trust to the office account against an unpaid fee note. Client ID Fee note ID Amount Reference Fee transfer date (optional) Leave blank for today. Use the date the bank shows the transfer. Cancel Record Fee Transfer Close",
+      "visibleMessage": null,
+      "ariaInvalid": "false",
+      "shot": "04-d1-future-date-refused.png",
+      "feeCountAfterUi": 2,
+      "txCountAfterUi": 7,
+      "apiProbe": {
+        "path": "/api/trust-accounts/df0ccb75-5c9e-4666-be6c-a1321a63172f/transactions/fee-transfer",
+        "request": {
+          "clientId": "2f416968-3f68-4dc6-bae1-734476abc5fd",
+          "invoiceId": "b2edf074-8634-469d-b7fe-381603f0b6b1",
+          "amount": 100,
+          "reference": "FEE/OBS646D/HT7QW-C-PROBE",
+          "transactionDate": "2026-11-18"
+        },
+        "status": 400,
+        "body": {
+          "detail": "The fee transfer date cannot be in the future",
+          "instance": "/api/trust-accounts/df0ccb75-5c9e-4666-be6c-a1321a63172f/transactions/fee-transfer",
+          "status": 400,
+          "title": "Invalid fee transfer"
+        }
+      },
+      "feeCountAfterProbe": 2,
+      "txCountAfterProbe": 7
+    },
+    "c": {
+      "cashbookAsAtBackBefore": {
+        "balance": 1000
+      },
+      "typedValue": "2026-11-14",
+      "messageClearedOrStale": 0,
+      "rowRecorded": "14 Nov 2026 FEE/OBS646D/HT7QW-C Fee transfer R 100,00 AWAITING APPROVAL Approve Reject",
+      "shotRecorded": "05-c1-backdated-fee-transfer-awaiting-approval.png",
+      "apiRecorded": {
+        "id": "a2e3cb07-3625-4090-8e58-d1c7f791c558",
+        "trustAccountId": "df0ccb75-5c9e-4666-be6c-a1321a63172f",
+        "transactionType": "FEE_TRANSFER",
+        "typeLabel": "Fee transfer",
+        "direction": "OUT",
+        "ledger": "CLIENT",
+        "amount": 100,
+        "clientId": "2f416968-3f68-4dc6-bae1-734476abc5fd",
+        "matterId": "3aea2217-bfa4-4d06-875e-6a774da93fe0",
+        "creditorAccountId": null,
+        "investmentId": null,
+        "counterpartyClientId": null,
+        "invoiceId": "b2edf074-8634-469d-b7fe-381603f0b6b1",
+        "reference": "FEE/OBS646D/HT7QW-C",
+        "description": null,
+        "transactionDate": "2026-11-14",
+        "status": "AWAITING_APPROVAL",
+        "postedAt": null,
+        "approvedBy": null,
+        "approvedAt": null,
+        "secondApprovedBy": null,
+        "secondApprovedAt": null,
+        "rejectedBy": null,
+        "rejectedAt": null,
+        "rejectionReason": null,
+        "reversalOf": null,
+        "reversedById": null,
+        "reversalPending": false,
+        "bankStatementLineId": null,
+        "recordedBy": "9e4d0fe8-1834-490e-b632-e4d8328f96b7",
+        "createdAt": "2026-11-17T09:32:17.635504Z",
+        "runningBalance": null
+      },
+      "sqlRecorded": "                  id                  | transaction_type | amount |      status       | transaction_date | posted | ledger | ledger_effect | cashbook_effect |      reference      |             customer_id              |              project_id              |              invoice_id              |             recorded_by              | approved_by \n--------------------------------------+------------------+--------+-------------------+------------------+--------+--------+---------------+-----------------+---------------------+--------------------------------------+--------------------------------------+--------------------------------------+--------------------------------------+-------------\n a2e3cb07-3625-4090-8e58-d1c7f791c558 | FEE_TRANSFER     | 100.00 | AWAITING_APPROVAL | 2026-11-14       | f      | CLIENT |          0.00 |            0.00 | FEE/OBS646D/HT7QW-C | 2f416968-3f68-4dc6-bae1-734476abc5fd | 3aea2217-bfa4-4d06-875e-6a774da93fe0 | b2edf074-8634-469d-b7fe-381603f0b6b1 | 9e4d0fe8-1834-490e-b632-e4d8328f96b7 | \n(1 row)\n\n",
+      "cashbookAsAtBackWhileAwaiting": {
+        "balance": 1000
+      },
+      "rowApprovedBefore": "14 Nov 2026 FEE/OBS646D/HT7QW-C Fee transfer R 100,00 AWAITING APPROVAL Approve Reject",
+      "rowApproved": "14 Nov 2026 FEE/OBS646D/HT7QW-C Fee transfer R 100,00 APPROVED Reverse",
+      "shotApproved": "06-c2-backdated-fee-transfer-approved.png",
+      "apiApproved": {
+        "id": "a2e3cb07-3625-4090-8e58-d1c7f791c558",
+        "trustAccountId": "df0ccb75-5c9e-4666-be6c-a1321a63172f",
+        "transactionType": "FEE_TRANSFER",
+        "typeLabel": "Fee transfer",
+        "direction": "OUT",
+        "ledger": "CLIENT",
+        "amount": 100,
+        "clientId": "2f416968-3f68-4dc6-bae1-734476abc5fd",
+        "matterId": "3aea2217-bfa4-4d06-875e-6a774da93fe0",
+        "creditorAccountId": null,
+        "investmentId": null,
+        "counterpartyClientId": null,
+        "invoiceId": "b2edf074-8634-469d-b7fe-381603f0b6b1",
+        "reference": "FEE/OBS646D/HT7QW-C",
+        "description": null,
+        "transactionDate": "2026-11-14",
+        "status": "APPROVED",
+        "postedAt": "2026-11-17T09:32:20.075362Z",
+        "approvedBy": "b2a498c9-c230-4d90-a332-8c2f03b561d8",
+        "approvedAt": "2026-11-17T09:32:20.075301Z",
+        "secondApprovedBy": null,
+        "secondApprovedAt": null,
+        "rejectedBy": null,
+        "rejectedAt": null,
+        "rejectionReason": null,
+        "reversalOf": null,
+        "reversedById": null,
+        "reversalPending": false,
+        "bankStatementLineId": null,
+        "recordedBy": "9e4d0fe8-1834-490e-b632-e4d8328f96b7",
+        "createdAt": "2026-11-17T09:32:17.635504Z",
+        "runningBalance": null
+      },
+      "sqlApproved": "                  id                  | transaction_type | amount |  status  | transaction_date | posted | ledger | ledger_effect | cashbook_effect |      reference      |             customer_id              |              project_id              |              invoice_id              |             recorded_by              |             approved_by              \n--------------------------------------+------------------+--------+----------+------------------+--------+--------+---------------+-----------------+---------------------+--------------------------------------+--------------------------------------+--------------------------------------+--------------------------------------+--------------------------------------\n a2e3cb07-3625-4090-8e58-d1c7f791c558 | FEE_TRANSFER     | 100.00 | APPROVED | 2026-11-14       | t      | CLIENT |       -100.00 |         -100.00 | FEE/OBS646D/HT7QW-C | 2f416968-3f68-4dc6-bae1-734476abc5fd | 3aea2217-bfa4-4d06-875e-6a774da93fe0 | b2edf074-8634-469d-b7fe-381603f0b6b1 | 9e4d0fe8-1834-490e-b632-e4d8328f96b7 | b2a498c9-c230-4d90-a332-8c2f03b561d8\n(1 row)\n\n",
+      "sqlApprovedDate": "2026-11-14",
+      "sqlApprovedStatus": "APPROVED|true|b2a498c9-c230-4d90-a332-8c2f03b561d8",
+      "asAt": {
+        "dayBeforeDep": {
+          "date": "2026-11-11",
+          "apiCashbook": 0,
+          "apiStatus": 200,
+          "apiClientLedgers": 0,
+          "apiCreditorTotal": 0,
+          "sqlCashbook": 0,
+          "sqlClientLedgers": 0,
+          "sqlCreditorTotal": 0,
+          "chosenClientLedgerSql": 0,
+          "match": true
+        },
+        "dep": {
+          "date": "2026-11-12",
+          "apiCashbook": 1000,
+          "apiStatus": 200,
+          "apiClientLedgers": 1000,
+          "apiCreditorTotal": 1000,
+          "sqlCashbook": 1000,
+          "sqlClientLedgers": 1000,
+          "sqlCreditorTotal": 1000,
+          "chosenClientLedgerSql": 1000,
+          "match": true
+        },
+        "dayBeforeBack": {
+          "date": "2026-11-13",
+          "apiCashbook": 1000,
+          "apiStatus": 200,
+          "apiClientLedgers": 1000,
+          "apiCreditorTotal": 1000,
+          "sqlCashbook": 1000,
+          "sqlClientLedgers": 1000,
+          "sqlCreditorTotal": 1000,
+          "chosenClientLedgerSql": 1000,
+          "match": true
+        },
+        "back": {
+          "date": "2026-11-14",
+          "apiCashbook": 900,
+          "apiStatus": 200,
+          "apiClientLedgers": 900,
+          "apiCreditorTotal": 900,
+          "sqlCashbook": 900,
+          "sqlClientLedgers": 900,
+          "sqlCreditorTotal": 900,
+          "chosenClientLedgerSql": 900,
+          "match": true
+        },
+        "today": {
+          "date": "2026-11-17",
+          "apiCashbook": 287400,
+          "apiStatus": 200,
+          "apiClientLedgers": 287400,
+          "apiCreditorTotal": 287400,
+          "sqlCashbook": 287400,
+          "sqlClientLedgers": 287400,
+          "sqlCreditorTotal": 287400,
+          "chosenClientLedgerSql": 900,
+          "match": true
+        }
+      },
+      "cashbookStepAtBack": -100,
+      "creditorStepAtBack": -100,
+      "cashbookStepAtDep": 1000,
+      "feeNoteAfter": "                  id                  | invoice_number |     status     |  total  | amount_paid \n--------------------------------------+----------------+----------------+---------+-------------\n b2edf074-8634-469d-b7fe-381603f0b6b1 | INV-0001       | PARTIALLY_PAID | 8625.00 |      100.00\n(1 row)\n\n"
+    },
+    "e": {
+      "initialValue": "",
+      "valueAtSubmit": "",
+      "rowRecorded": "17 Nov 2026 FEE/OBS646D/HT7QW-E Fee transfer R 50,00 AWAITING APPROVAL Approve Reject",
+      "apiRecorded": {
+        "id": "993db6bb-3d72-42e8-a141-74a5965ca426",
+        "trustAccountId": "df0ccb75-5c9e-4666-be6c-a1321a63172f",
+        "transactionType": "FEE_TRANSFER",
+        "typeLabel": "Fee transfer",
+        "direction": "OUT",
+        "ledger": "CLIENT",
+        "amount": 50,
+        "clientId": "2f416968-3f68-4dc6-bae1-734476abc5fd",
+        "matterId": "3aea2217-bfa4-4d06-875e-6a774da93fe0",
+        "creditorAccountId": null,
+        "investmentId": null,
+        "counterpartyClientId": null,
+        "invoiceId": "b2edf074-8634-469d-b7fe-381603f0b6b1",
+        "reference": "FEE/OBS646D/HT7QW-E",
+        "description": null,
+        "transactionDate": "2026-11-17",
+        "status": "AWAITING_APPROVAL",
+        "postedAt": null,
+        "approvedBy": null,
+        "approvedAt": null,
+        "secondApprovedBy": null,
+        "secondApprovedAt": null,
+        "rejectedBy": null,
+        "rejectedAt": null,
+        "rejectionReason": null,
+        "reversalOf": null,
+        "reversedById": null,
+        "reversalPending": false,
+        "bankStatementLineId": null,
+        "recordedBy": "9e4d0fe8-1834-490e-b632-e4d8328f96b7",
+        "createdAt": "2026-11-17T09:32:24.876492Z",
+        "runningBalance": null
+      },
+      "rowApproved": "17 Nov 2026 FEE/OBS646D/HT7QW-E Fee transfer R 50,00 APPROVED Reverse",
+      "shot": "07-e1-default-date-fee-transfer-approved.png",
+      "apiApproved": {
+        "id": "993db6bb-3d72-42e8-a141-74a5965ca426",
+        "trustAccountId": "df0ccb75-5c9e-4666-be6c-a1321a63172f",
+        "transactionType": "FEE_TRANSFER",
+        "typeLabel": "Fee transfer",
+        "direction": "OUT",
+        "ledger": "CLIENT",
+        "amount": 50,
+        "clientId": "2f416968-3f68-4dc6-bae1-734476abc5fd",
+        "matterId": "3aea2217-bfa4-4d06-875e-6a774da93fe0",
+        "creditorAccountId": null,
+        "investmentId": null,
+        "counterpartyClientId": null,
+        "invoiceId": "b2edf074-8634-469d-b7fe-381603f0b6b1",
+        "reference": "FEE/OBS646D/HT7QW-E",
+        "description": null,
+        "transactionDate": "2026-11-17",
+        "status": "APPROVED",
+        "postedAt": "2026-11-17T09:32:26.360554Z",
+        "approvedBy": "b2a498c9-c230-4d90-a332-8c2f03b561d8",
+        "approvedAt": "2026-11-17T09:32:26.360505Z",
+        "secondApprovedBy": null,
+        "secondApprovedAt": null,
+        "rejectedBy": null,
+        "rejectedAt": null,
+        "rejectionReason": null,
+        "reversalOf": null,
+        "reversedById": null,
+        "reversalPending": false,
+        "bankStatementLineId": null,
+        "recordedBy": "9e4d0fe8-1834-490e-b632-e4d8328f96b7",
+        "createdAt": "2026-11-17T09:32:24.876492Z",
+        "runningBalance": null
+      },
+      "sql": "                  id                  | transaction_type | amount |  status  | transaction_date | posted | ledger | ledger_effect | cashbook_effect |      reference      |             customer_id              |              project_id              |              invoice_id              |             recorded_by              |             approved_by              \n--------------------------------------+------------------+--------+----------+------------------+--------+--------+---------------+-----------------+---------------------+--------------------------------------+--------------------------------------+--------------------------------------+--------------------------------------+--------------------------------------\n 993db6bb-3d72-42e8-a141-74a5965ca426 | FEE_TRANSFER     |  50.00 | APPROVED | 2026-11-17       | t      | CLIENT |        -50.00 |          -50.00 | FEE/OBS646D/HT7QW-E | 2f416968-3f68-4dc6-bae1-734476abc5fd | 3aea2217-bfa4-4d06-875e-6a774da93fe0 | b2edf074-8634-469d-b7fe-381603f0b6b1 | 9e4d0fe8-1834-490e-b632-e4d8328f96b7 | b2a498c9-c230-4d90-a332-8c2f03b561d8\n(1 row)\n\n",
+      "sqlDate": "2026-11-17",
+      "sqlStatus": "APPROVED|true",
+      "feeNoteAfter": "                  id                  | invoice_number |     status     |  total  | amount_paid \n--------------------------------------+----------------+----------------+---------+-------------\n b2edf074-8634-469d-b7fe-381603f0b6b1 | INV-0001       | PARTIALLY_PAID | 8625.00 |      150.00\n(1 row)\n\n"
+    },
+    "state2": {
+      "label": "02-after-fee-transfers",
+      "sql": {
+        "asAt": "2026-11-17",
+        "cashbook": 287350,
+        "clientLedgers": 287350,
+        "investmentCreditors": 0,
+        "fundInterestAndCharges": 0,
+        "unidentifiedDeposits": 0,
+        "otherNonClient": 0,
+        "interAccount": 0,
+        "creditorTotal": 287350,
+        "allLedgerEffects": 287350,
+        "postedRows": 6,
+        "difference": 0
+      },
+      "widgetCount": 1,
+      "a": {
+        "rows": [
+          [
+            "Bank cashbook",
+            "R 287 350,00"
+          ],
+          [
+            "Trust creditors",
+            "R 287 350,00"
+          ],
+          [
+            "Last reconciliation",
+            "Never reconciled"
+          ],
+          [
+            "Awaiting approval",
+            "3"
+          ]
+        ],
+        "headline": "R 0,00",
+        "widgetText": "Trust position Open reconciliation R 0,00 Balanced Mathebula & Partners Trust Account, Standard Bank Bank cashbook R 287 350,00 Trust creditors R 287 350,00 Last reconciliation Never reconciled Awaiting approval 3",
+        "hasClientLedgersRow": false,
+        "ui": {
+          "cashbook": 287350,
+          "creditorTotal": 287350,
+          "difference": 0
+        },
+        "balancedBadge": true,
+        "shot": "08-a-02-after-fee-transfers-home-widget.png",
+        "api": {
+          "status": 200,
+          "cashbookBalance": 287350,
+          "clientLedgerTotal": 287350,
+          "creditorBreakdown": {
+            "clientLedgers": 287350,
+            "investmentCreditors": 0,
+            "fundInterestAndCharges": 0,
+            "unidentifiedDeposits": 0,
+            "otherNonClient": 0,
+            "interAccount": 0,
+            "total": 287350
+          },
+          "difference": 0
+        },
+        "match": {
+          "cashbook": true,
+          "creditorTotal": true,
+          "clientLedgers": true,
+          "difference": true,
+          "nonClientTermsZero": true
+        }
+      },
+      "b": {
+        "hint": "Trust creditors R 287 350,00",
+        "hintCard": "Trust Balance R 287 350,00 Mathebula & Partners Trust Account cashbook balance Trust creditors R 287 350,00 (agrees with the cashbook)",
+        "hintCreditors": 287350,
+        "hintHasClientLedgers": false,
+        "trendText": "Trust balance trendMonth-end balances as currently recorded (ZAR)CashbookTrust creditorsDec 2025Jan 2026Feb 2026Mar 2026Apr 2026May 2026Jun 2026Jul 2026Aug 2026Sep 2026Oct 2026Nov 2026R 0R 75 kR 150 kR 225 kR 300 kTrust balance trend: Cashbook from R 0,00 in Dec 2025 to R 287 350,00 in Nov 2026 (to date), peak R 287 350,00 in Nov 2026 (to date); Trust creditors from R 0,00 in Dec 2025 to R 287 350,00 in Nov 2026 (to date), peak R 287 350,00 in Nov 2026 (to date).View as table",
+        "trendLegend": [],
+        "trendSeriesLabelTrustCreditors": true,
+        "trendSeriesLabelClientLedgers": false,
+        "shot": "09-b-02-after-fee-transfers-trust-overview.png",
+        "api": {
+          "totalBalance": {
+            "balance": 287350,
+            "creditorBreakdown": {
+              "clientLedgers": 287350,
+              "investmentCreditors": 0,
+              "fundInterestAndCharges": 0,
+              "unidentifiedDeposits": 0,
+              "otherNonClient": 0,
+              "interAccount": 0,
+              "total": 287350
+            }
+          },
+          "cashbookBalance": {
+            "balance": 287350
+          },
+          "trendLast": {
+            "month": "2026-11",
+            "periodEnd": "2026-11-17",
+            "cashbookBalance": 287350,
+            "clientLedgerTotal": 287350,
+            "partial": true
+          },
+          "trendPrev": {
+            "month": "2026-10",
+            "periodEnd": "2026-10-31",
+            "cashbookBalance": 0,
+            "clientLedgerTotal": 0,
+            "partial": false
+          },
+          "trendStatus": 200
+        },
+        "match": {
+          "hintCreditors": true,
+          "totalBalanceClientLedgers": true,
+          "cashbookBalance": true,
+          "trendLastLedger": true,
+          "trendLastCashbook": true,
+          "trendPrevMonth": true
+        }
+      }
+    }
+  },
+  "consoleErrors": [],
+  "pageErrors": [],
+  "notes": [],
+  "startedAt": "2026-11-17T09:31:24.907Z",
+  "dates": {
+    "today": "2026-11-17",
+    "future": "2026-11-18",
+    "back": "2026-11-14",
+    "dayBeforeBack": "2026-11-13",
+    "dep": "2026-11-12",
+    "dayBeforeDep": "2026-11-11"
+  },
+  "run": "HT7QW",
+  "refs": {
+    "dep": "DEP/OBS646D/HT7QW",
+    "feeC": "FEE/OBS646D/HT7QW-C",
+    "feeE": "FEE/OBS646D/HT7QW-E"
+  },
+  "amounts": {
+    "dep": 1000,
+    "feeC": 100,
+    "feeE": 50
+  },
+  "ids": {
+    "account": "df0ccb75-5c9e-4666-be6c-a1321a63172f",
+    "feeNote": "b2edf074-8634-469d-b7fe-381603f0b6b1",
+    "client": "2f416968-3f68-4dc6-bae1-734476abc5fd",
+    "clientName": "Acme Corp",
+    "feeNoteNumber": "INV-0001",
+    "feeNoteStatus": "SENT",
+    "feeNoteTotal": "8625.00",
+    "feeNotePaid": "0.00",
+    "matter": "3aea2217-bfa4-4d06-875e-6a774da93fe0",
+    "matterName": "Website Redesign",
+    "matterStatus": "ACTIVE",
+    "alice": "9e4d0fe8-1834-490e-b632-e4d8328f96b7",
+    "bob": "b2a498c9-c230-4d90-a332-8c2f03b561d8",
+    "deposit": "608b10d8-1dad-487e-abc3-6e8835581062",
+    "feeC": "a2e3cb07-3625-4090-8e58-d1c7f791c558",
+    "feeE": "993db6bb-3d72-42e8-a141-74a5965ca426"
+  },
+  "account": [
+    [
+      "df0ccb75-5c9e-4666-be6c-a1321a63172f",
+      "Mathebula & Partners Trust Account",
+      "Standard Bank",
+      "f",
+      ""
+    ]
+  ],
+  "feeNoteCandidates": [
+    [
+      "b2edf074-8634-469d-b7fe-381603f0b6b1",
+      "2f416968-3f68-4dc6-bae1-734476abc5fd",
+      "Acme Corp",
+      "INV-0001",
+      "SENT",
+      "8625.00",
+      "0.00",
+      "3aea2217-bfa4-4d06-875e-6a774da93fe0",
+      "Website Redesign",
+      "ACTIVE",
+      "t"
+    ],
+    [
+      "2b9f8ec3-6333-4d67-822d-b95b0e64a9cd",
+      "6ad22359-287b-46b6-9d33-90fd463ce81a",
+      "Sipho Ndlovu mwkhoa43c736",
+      "INV-0003",
+      "SENT",
+      "5482.63",
+      "0.00",
+      "2b1b352f-5adf-4d0f-89d6-4e51b29478ce",
+      "Ndlovu v RAF mwkhoa43c736",
+      "ACTIVE",
+      "t"
+    ]
+  ],
+  "finishedAt": "2026-11-17T09:32:34.118Z"
+}

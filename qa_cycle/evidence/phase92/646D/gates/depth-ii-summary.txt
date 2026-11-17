@@ -1,0 +1,9 @@
+E2E-LEGAL depth-ii — stack #2 (fresh) — worktree-epic-646D @ bea18744318e651b770d85595fd654c1ad3f37ec
+start 2026-11-17T09:34:31Z  end 2026-11-17T09:36:38Z  rc 0
+✓ lines: 40
+  -  26 [chromium] › e2e/tests/legal-depth-ii/day-30-45-soa-writeoff.spec.ts:361:8 › Day 30-45 — Statement of Account + Write-off (Phase 67) › Alice: Statements-tab Download fetches the PDF
+  -  42 [chromium] › e2e/tests/legal-depth-ii/null-prefetch-probe.spec.ts:74:9 › Next null-prefetch blank-segment probe (opt-in) › Matters list -> matter (projects/[id]): 120 fresh-session clicks render the destination
+  -  43 [chromium] › e2e/tests/legal-depth-ii/null-prefetch-probe.spec.ts:74:9 › Next null-prefetch blank-segment probe (opt-in) › Reports -> report detail (reports/[reportSlug]): 120 fresh-session clicks render the destination
+  -  44 [chromium] › e2e/tests/legal-depth-ii/null-prefetch-probe.spec.ts:74:9 › Next null-prefetch blank-segment probe (opt-in) › Sidebar /projects -> /dashboard: 120 fresh-session clicks render the destination
+  4 skipped
+  40 passed (2.1m)

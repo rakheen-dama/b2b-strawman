@@ -1,0 +1,301 @@
+Skip to content
+Kazi
+E2E Test Organization
+Search...
+⌘K
+TODAY
+Home
+My work
+Diary
+MATTERS
+Matters
+New matter
+Conflict check
+Adverse parties
+AI reviews
+CLIENTS
+Clients
+FICA & compliance
+Data requests
+FEES
+TRUST
+FIRM
+Platform Admin
+Notifications
+AO
+
+Alice Owner
+
+alice@e2e-test.local
+
+Toggle menu
+E2E Test Organization
+Home
+Search
+⌘K
+11 unread notifications
+11
+e2e-test-org
+AO
+Home
+
+What needs you today
+
+Last 30 days
+
+Active matters
+8
+Hours logged
+13,8h
+First week 0,0h, latest week 13,8h, peak 13,8h in week 6 of 6.
+Billable %
+100,0%
+Overdue tasks
+0
+Today's diary
+Open diary
+
+Nothing in the diary today
+
+Unbilled WIP
+Open unbilled work
+
+R 16 250,00
+
+6h 30m of unbilled time
+
+Alice Owner
+R 16 250,00
+
+Disbursements not yet billed
+R 0,00
+
+Debtors
+Open collections
+
+3
+
+clients owe fees
+
+Acme Corp
+R 8 625,00
+Not yet overdue
+Current R 8 625,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00
+Sipho Ndlovu mwkhoa43c736
+R 5 482,63
+Not yet overdue
+Current R 5 482,63, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00
+Moroka Family Trust mwkhoa43c736
+R 125,00
+Not yet overdue
+Current R 125,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00
+Current
+30 days
+60 days
+90+ days
+Trust position
+Open reconciliation
+
+R 0,00
+
+Balanced
+
+Mathebula & Partners Trust Account, Standard Bank
+
+Bank cashbook
+R 286 500,00
+Trust creditors
+R 286 500,00
+Last reconciliation
+Never reconciled
+Awaiting approval
+3
+FICA outstanding
+View all
+Open compliance
+
+3
+
+of 5 active clients without completed FICA
+
+Apex Holdings mwkhoa43c736
+Not started
+0 days
+Moroka Family Trust mwkhoa43c736
+In progress
+0 days
+QuickCollect Services mwkhoa43c736
+Not started
+0 days
+Incomplete profiles
+Matter Health
+All
+At Risk
+Over estimate
+MATTER
+STATUS
+PROGRESS
+HOURS
+TASKS
+
+Team spec mwkhrvqo07a1
+
+Healthy
+0%
+0h
+0/9
+
+Apex Annual Returns mwkhoa43c736
+
+Apex Holdings mwkhoa43c736
+
+Healthy
+0%
+0h
+0/9
+
+Ndlovu Property Dispute mwkhoa43c736
+
+Sipho Ndlovu mwkhoa43c736
+
+Healthy
+0%
+0h
+0/9
+
+QC Debt Recovery #1 mwkhoa43c736
+
+QuickCollect Services mwkhoa43c736
+
+Healthy
+0%
+1.0h
+0/9
+
+Apex Shareholder Agreement mwkhoa43c736
+
+Apex Holdings mwkhoa43c736
+
+Healthy
+0%
+30m
+0/9
+
+Ndlovu v RAF mwkhoa43c736
+
+Sipho Ndlovu mwkhoa43c736
+
+Healthy
+0%
+5.3h
+0/9
+
+Estate Late Peter Moroka mwkhoa43c736
+
+Moroka Family Trust mwkhoa43c736
+
+Healthy
+22%
+7.0h
+2/9
+
+Website Redesign
+
+Acme Corp
+
+Unknown
+0%
+0h
+0/0
+View all matters →
+Sensitive events
+Last 7 days
+NOTICE
+5
+WARNING
+0
+CRITICAL
+0
+No sensitive events in the last 7 days.
+
+View all →
+Recent Activity
+CM
+
+Carol Member removed a member from the matter team
+
+just now
+CM
+
+Carol Member added a member to the matter team
+
+just now
+BA
+
+Bob Admin made a team member the matter lead
+
+1 minute ago
+BA
+
+Bob Admin changed a matter team member's role to member
+
+1 minute ago
+AO
+
+Alice Owner added a member to the matter team
+
+1 minute ago
+AO
+
+Alice Owner opened the matter from template "Litigation (Personal Injury / General)"
+
+1 minute ago
+AO
+
+Alice Owner recorded a fee transfer of R500,00 from trust (FEE/SIPHO/mwkhoa43c736)
+
+1 minute ago
+AO
+
+Alice Owner generated document "engagement-letter-litigation-ndlovu-v-raf-mwkhoa43c736-2026-11-17.pdf" from template "Engagement Letter — Litigation"
+
+1 minute ago
+AO
+
+Alice Owner opened the matter from template "Commercial (Corporate & Contract)"
+
+1 minute ago
+AO
+
+Alice Owner logged 6h on task "Prepare Liquidation & Distribution account"
+
+1 minute ago
+AO
+
+Alice Owner completed task "Open estate bank account"
+
+1 minute ago
+AO
+
+Alice Owner claimed task "Open estate bank account"
+
+1 minute ago
+AO
+
+Alice Owner completed task "Advertise for creditors (Gazette + local newspaper)"
+
+1 minute ago
+AO
+
+Alice Owner claimed task "Advertise for creditors (Gazette + local newspaper)"
+
+1 minute ago
+AO
+
+Alice Owner linked adverse party "Pillay Holdings (Pty) Ltd" to the matter
+
+1 minute ago
+View all activity →
+Command Palette
+
+Search pages and settings

@@ -1,0 +1,105 @@
+{
+  "path": "/api/dashboard/trust-balance-trend?accountId=df0ccb75-5c9e-4666-be6c-a1321a63172f&months=12",
+  "status": 200,
+  "body": {
+    "trustAccountId": "df0ccb75-5c9e-4666-be6c-a1321a63172f",
+    "accountName": "Mathebula & Partners Trust Account",
+    "currency": "ZAR",
+    "asOf": "2026-11-17",
+    "openingCashbookBalance": 0,
+    "openingClientLedgerTotal": 0,
+    "months": [
+      {
+        "month": "2025-12",
+        "periodEnd": "2025-12-31",
+        "cashbookBalance": 0,
+        "clientLedgerTotal": 0,
+        "partial": false
+      },
+      {
+        "month": "2026-01",
+        "periodEnd": "2026-01-31",
+        "cashbookBalance": 0,
+        "clientLedgerTotal": 0,
+        "partial": false
+      },
+      {
+        "month": "2026-02",
+        "periodEnd": "2026-02-28",
+        "cashbookBalance": 0,
+        "clientLedgerTotal": 0,
+        "partial": false
+      },
+      {
+        "month": "2026-03",
+        "periodEnd": "2026-03-31",
+        "cashbookBalance": 0,
+        "clientLedgerTotal": 0,
+        "partial": false
+      },
+      {
+        "month": "2026-04",
+        "periodEnd": "2026-04-30",
+        "cashbookBalance": 0,
+        "clientLedgerTotal": 0,
+        "partial": false
+      },
+      {
+        "month": "2026-05",
+        "periodEnd": "2026-05-31",
+        "cashbookBalance": 0,
+        "clientLedgerTotal": 0,
+        "partial": false
+      },
+      {
+        "month": "2026-06",
+        "periodEnd": "2026-06-30",
+        "cashbookBalance": 0,
+        "clientLedgerTotal": 0,
+        "partial": false
+      },
+      {
+        "month": "2026-07",
+        "periodEnd": "2026-07-31",
+        "cashbookBalance": 0,
+        "clientLedgerTotal": 0,
+        "partial": false
+      },
+      {
+        "month": "2026-08",
+        "periodEnd": "2026-08-31",
+        "cashbookBalance": 0,
+        "clientLedgerTotal": 0,
+        "partial": false
+      },
+      {
+        "month": "2026-09",
+        "periodEnd": "2026-09-30",
+        "cashbookBalance": 0,
+        "clientLedgerTotal": 0,
+        "partial": false
+      },
+      {
+        "month": "2026-10",
+        "periodEnd": "2026-10-31",
+        "cashbookBalance": 0,
+        "clientLedgerTotal": 0,
+        "partial": false
+      },
+      {
+        "month": "2026-11",
+        "periodEnd": "2026-11-17",
+        "cashbookBalance": 287350,
+        "clientLedgerTotal": 287350,
+        "partial": true
+      }
+    ],
+    "accounts": [
+      {
+        "id": "df0ccb75-5c9e-4666-be6c-a1321a63172f",
+        "accountName": "Mathebula & Partners Trust Account",
+        "isPrimary": true
+      }
+    ]
+  }
+}

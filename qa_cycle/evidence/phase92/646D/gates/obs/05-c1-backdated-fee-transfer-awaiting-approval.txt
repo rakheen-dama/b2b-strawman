@@ -1,0 +1,121 @@
+Skip to content
+Kazi
+E2E Test Organization
+Search...
+⌘K
+TODAY
+Home
+My work
+Diary
+MATTERS
+Matters
+New matter
+Conflict check
+Adverse parties
+AI reviews
+CLIENTS
+Clients
+FICA & compliance
+Data requests
+FEES
+TRUST
+FIRM
+Platform Admin
+Notifications
+AO
+
+Alice Owner
+
+alice@e2e-test.local
+
+Toggle menu
+E2E Test Organization
+Trust accounting
+Transactions
+Search
+⌘K
+12 unread notifications
+12
+e2e-test-org
+AO
+Transactions
+
+Trust account transaction history
+
+Record Transaction
+Status:
+All
+Recorded
+Awaiting Approval
+Approved
+Rejected
+Reversed
+Type:
+All
+Deposit
+Payment
+Fee transfer
+Refund
+Transfer out
+Transfer in
+Reversal
+Interest received for the Legal Practitioners' Fidelity Fund
+Interest paid to the Legal Practitioners' Fidelity Fund
+Bank charge
+Bank charge refunded from the business account
+Unidentified deposit
+Unidentified deposit allocated
+Deposit identified and allocated
+Unidentified deposit paid to the Fund
+Placed in section 86(4) investment
+Investment capital received
+Section 86(4) investment interest
+Fund share of section 86(4) interest (5%)
+Investment withdrawn
+Investment returned to trust
+Placed in section 86(3) investment account
+Section 86(3) investment capital received
+Section 86(3) investment withdrawn
+Section 86(3) investment returned to trust
+From
+To
+Client ID
+Matter ID
+Transaction History
+8 transactions found
+Date	Reference	Type	Amount	Status	Actions
+17 Nov 2026	DEP/MOROKA/mwkhoa43c736	Deposit	
+R 250 000,00	RECORDED	
+Reverse
+17 Nov 2026	DEP/QC/mwkhoa43c736	Deposit	
+R 45 000,00	RECORDED	
+Reverse
+17 Nov 2026	FEE/MOROKA/mwkhoa43c736	Fee transfer	
+R 8 500,00	APPROVED	
+Reverse
+17 Nov 2026	INV-Standard Bank-FD-0987654321	Payment	
+R 200 000,00	AWAITING APPROVAL	
+Approve
+Reject
+
+17 Nov 2026	INV-Nedbank-CALL-1122334455	Payment	
+R 30 000,00	AWAITING APPROVAL	
+Approve
+Reject
+
+17 Nov 2026	FEE/SIPHO/mwkhoa43c736	Fee transfer	
+R 500,00	AWAITING APPROVAL	
+Approve
+Reject
+
+14 Nov 2026	FEE/OBS646D/HT7QW-C	Fee transfer	
+R 100,00	AWAITING APPROVAL	
+Approve
+Reject
+
+12 Nov 2026	DEP/OBS646D/HT7QW	Deposit	
+R 1 000,00	RECORDED	
+Reverse
+Command Palette
+
+Search pages and settings

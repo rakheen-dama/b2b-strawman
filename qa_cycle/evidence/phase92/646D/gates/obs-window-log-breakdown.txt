@@ -1,0 +1,15 @@
+{'INFO': 17, 'WARN': 32}
+   4 WARN PDType1Font: Using fallback font LiberationSans for base font Helvetica
+   4 WARN PDType1Font: Using fallback font LiberationSans for base font ZapfDingbats
+   2 WARN PDType1Font: Using fallback font LiberationSans for base font Courier-BoldOblique
+   2 WARN PDType1Font: Using fallback font LiberationSans for base font Courier-Oblique
+   2 WARN PDType1Font: Using fallback font LiberationSans for base font Courier-Bold
+   2 WARN PDType1Font: Using fallback font LiberationSans for base font Courier
+   2 WARN PDType1Font: Using fallback font LiberationSans for base font Times-BoldItalic
+   2 WARN PDType1Font: Using fallback font LiberationSans for base font Times-Italic
+   2 WARN PDType1Font: Using fallback font LiberationSans for base font Times-Bold
+   2 WARN PDType1Font: Using fallback font LiberationSans for base font Times-Roman
+   2 WARN PDType1Font: Using fallback font LiberationSans for base font Helvetica-BoldOblique
+   2 WARN PDType1Font: Using fallback font LiberationSans for base font Helvetica-Oblique
+   2 WARN PDType1Font: Using fallback font LiberationSans for base font Helvetica-Bold
+   2 WARN PDType1Font: Using fallback font LiberationSans for base font Symbol

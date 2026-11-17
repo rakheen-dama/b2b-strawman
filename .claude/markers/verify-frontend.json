@@ -1,7 +1,7 @@
 {
-  "commit": "92b4b5550",
-  "command": "cd frontend && rm -rf .next && pnpm run lint && pnpm run typecheck && pnpm run format:check && pnpm test && pnpm run build  (node v20.11.1, worktree-epic-646C)",
+  "commit": "a85e728e6",
+  "command": "cd frontend && rm -rf .next && pnpm run lint && pnpm run typecheck && pnpm run format:check && pnpm test && pnpm run build  (node v20.11.1, worktree-epic-646D)",
   "exit": 0,
-  "ts": "2026-11-17T07:31:14Z",
-  "summary": "PR #1792 (646C) head 92b4b5550 — lint 0 errors (78 pre-existing warnings), typecheck OK, format:check OK, vitest 480 files / 4394 passed / 2 skipped (baseline 4387/2 after 646E: +7), build OK"
+  "ts": "2026-11-17T08:43:31Z",
+  "summary": "PR #1793 (646D) at a85e728e6 (no frontend/packages/portal file changed through head bea187443) — lint 0 errors (78 pre-existing warnings), typecheck OK, format:check OK, vitest 480 files / 4398 passed / 2 skipped (baseline 4394/2 after 646C: +4), build OK"
 }

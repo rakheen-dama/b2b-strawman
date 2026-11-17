@@ -1,0 +1,17 @@
+{
+  "path": "/api/trust-accounts/df0ccb75-5c9e-4666-be6c-a1321a63172f/transactions/fee-transfer",
+  "request": {
+    "clientId": "2f416968-3f68-4dc6-bae1-734476abc5fd",
+    "invoiceId": "b2edf074-8634-469d-b7fe-381603f0b6b1",
+    "amount": 100,
+    "reference": "FEE/OBS646D/HT7QW-C-PROBE",
+    "transactionDate": "2026-11-18"
+  },
+  "status": 400,
+  "body": {
+    "detail": "The fee transfer date cannot be in the future",
+    "instance": "/api/trust-accounts/df0ccb75-5c9e-4666-be6c-a1321a63172f/transactions/fee-transfer",
+    "status": 400,
+    "title": "Invalid fee transfer"
+  }
+}

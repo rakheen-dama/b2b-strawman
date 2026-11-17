@@ -1,0 +1,7 @@
+{
+  "path": "/api/trust-accounts/df0ccb75-5c9e-4666-be6c-a1321a63172f/cashbook-balance?asAt=2026-11-13",
+  "status": 200,
+  "body": {
+    "balance": 1000
+  }
+}

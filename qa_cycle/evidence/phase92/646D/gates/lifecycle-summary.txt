@@ -1,0 +1,4 @@
+E2E-LEGAL lifecycle — stack #1 — worktree-epic-646D @ bea18744318e651b770d85595fd654c1ad3f37ec
+start 2026-11-17T09:27:31Z  end 2026-11-17T09:30:33Z  rc 0
+✓ lines: 105
+  105 passed (3.0m)

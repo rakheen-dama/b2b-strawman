@@ -1,0 +1,16 @@
+{
+  "path": "/api/trust-accounts/df0ccb75-5c9e-4666-be6c-a1321a63172f/total-balance?asAt=2026-11-17",
+  "status": 200,
+  "body": {
+    "balance": 287400,
+    "creditorBreakdown": {
+      "clientLedgers": 287400,
+      "investmentCreditors": 0,
+      "fundInterestAndCharges": 0,
+      "unidentifiedDeposits": 0,
+      "otherNonClient": 0,
+      "interAccount": 0,
+      "total": 287400
+    }
+  }
+}

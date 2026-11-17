@@ -1,0 +1,79 @@
+{
+  "steps": {},
+  "consoleErrors": [],
+  "pageErrors": [],
+  "notes": [],
+  "startedAt": "2026-11-17T09:30:57.154Z",
+  "dates": {
+    "today": "2026-11-17",
+    "future": "2026-11-18",
+    "back": "2026-11-14",
+    "dayBeforeBack": "2026-11-13",
+    "dep": "2026-11-12",
+    "dayBeforeDep": "2026-11-11"
+  },
+  "run": "HSMBW",
+  "refs": {
+    "dep": "DEP/OBS646D/HSMBW",
+    "feeC": "FEE/OBS646D/HSMBW-C",
+    "feeE": "FEE/OBS646D/HSMBW-E"
+  },
+  "amounts": {
+    "dep": 1000,
+    "feeC": 100,
+    "feeE": 50
+  },
+  "ids": {
+    "account": "df0ccb75-5c9e-4666-be6c-a1321a63172f",
+    "feeNote": "b2edf074-8634-469d-b7fe-381603f0b6b1",
+    "client": "2f416968-3f68-4dc6-bae1-734476abc5fd",
+    "clientName": "Acme Corp",
+    "feeNoteNumber": "INV-0001",
+    "feeNoteStatus": "SENT",
+    "feeNoteTotal": "8625.00",
+    "feeNotePaid": "0.00",
+    "matter": "3aea2217-bfa4-4d06-875e-6a774da93fe0",
+    "matterName": "Website Redesign",
+    "matterStatus": "ACTIVE",
+    "alice": "9e4d0fe8-1834-490e-b632-e4d8328f96b7",
+    "bob": "b2a498c9-c230-4d90-a332-8c2f03b561d8"
+  },
+  "account": [
+    [
+      "df0ccb75-5c9e-4666-be6c-a1321a63172f",
+      "Mathebula & Partners Trust Account",
+      "Standard Bank",
+      "f",
+      ""
+    ]
+  ],
+  "feeNoteCandidates": [
+    [
+      "b2edf074-8634-469d-b7fe-381603f0b6b1",
+      "2f416968-3f68-4dc6-bae1-734476abc5fd",
+      "Acme Corp",
+      "INV-0001",
+      "SENT",
+      "8625.00",
+      "0.00",
+      "3aea2217-bfa4-4d06-875e-6a774da93fe0",
+      "Website Redesign",
+      "ACTIVE",
+      "t"
+    ],
+    [
+      "2b9f8ec3-6333-4d67-822d-b95b0e64a9cd",
+      "6ad22359-287b-46b6-9d33-90fd463ce81a",
+      "Sipho Ndlovu mwkhoa43c736",
+      "INV-0003",
+      "SENT",
+      "5482.63",
+      "0.00",
+      "2b1b352f-5adf-4d0f-89d6-4e51b29478ce",
+      "Ndlovu v RAF mwkhoa43c736",
+      "ACTIVE",
+      "t"
+    ]
+  ],
+  "fatal": "locator.waitFor: Error: strict mode violation: getByTestId('trust-position-widget') resolved to 2 elements:\n    1) <div data-slot=\"card\" data-testid=\"trust-position-widget\" class=\"bg-card text-card-foreground flex flex-col rounded-lg border border-slate-200/80 dark:border-slate-800/80 gap-4 py-5 shadow-(--shadow-card)\">…</div> aka locator('#main-content').getByTestId('trust-position-widget')\n    2) <div data-slot=\"card\" data-testid=\"trust-position-widget\" class=\"bg-card text-card-foreground flex flex-col rounded-lg border border-slate-200/80 dark:border-slate-800/80 gap-4 py-5 shadow-(--shadow-card)\">…</div> aka getByTestId('trust-position-widget').nth(1)\n\nCall log:\n\u001b[2m  - waiting for getByTestId('trust-position-widget') to be visible\u001b[22m\n\n    at widgets (/Users/rakheendama/Projects/2026/worktree-epic-646D/qa_cycle/evidence/phase92/646D/gates/obs.cjs:145:11)\n    at async /Users/rakheendama/Projects/2026/worktree-epic-646D/qa_cycle/evidence/phase92/646D/gates/obs.cjs:273:25"
+}

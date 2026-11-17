@@ -15,6 +15,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.Tru
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.TrustTransactionResponse;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
@@ -79,13 +80,15 @@ public class StatementLinePostingService {
 
   /**
    * What the firm confirms for a line. {@code chargeRecoverable} and {@code chargeVatAmount} are
-   * required for {@code BANK_CHARGE} and refused on every other classification. {@code notes} is
-   * kept in the audit only (no column). 648B adds the section 86(4) interest fields.
+   * required for {@code BANK_CHARGE} and refused on every other classification ({@code
+   * chargeVatAmount} at most two decimals: numeric(15,2)). {@code notes} is kept in the audit only
+   * (no column). 648B adds the section 86(4) interest fields.
    */
   public record RecordFromLineRequest(
       @NotNull StatementLineClassification classification,
       Boolean chargeRecoverable,
-      BigDecimal chargeVatAmount,
+      @Digits(integer = 13, fraction = 2, message = "The VAT amount has at most two decimal places")
+          BigDecimal chargeVatAmount,
       @Size(max = 2000) String notes) {}
 
   /**
@@ -121,9 +124,10 @@ public class StatementLinePostingService {
       throw new InvalidStateException(
           RECORD_TITLE, "This statement line is already matched, recorded or excluded");
     }
+    // Line, then statement: the statement lock serialises the matched_count update.
     var statement =
         statementRepository
-            .findById(line.getBankStatementId())
+            .findByIdForUpdate(line.getBankStatementId())
             .orElseThrow(
                 () -> new ResourceNotFoundException("BankStatement", line.getBankStatementId()));
     var account =
@@ -182,7 +186,7 @@ public class StatementLinePostingService {
     line.setTrustTransactionId(saved.getId());
     line.setMatchConfidence(null);
     lineRepository.save(line);
-    statement.setMatchedCount(statement.getMatchedCount() + 1);
+    statement.incrementMatched();
     statementRepository.save(statement);
 
     var created = List.of(saved);
@@ -231,10 +235,10 @@ public class StatementLinePostingService {
     lineRepository.save(line);
     var statement =
         statementRepository
-            .findById(line.getBankStatementId())
+            .findByIdForUpdate(line.getBankStatementId())
             .orElseThrow(
                 () -> new ResourceNotFoundException("BankStatement", line.getBankStatementId()));
-    statement.setMatchedCount(Math.max(0, statement.getMatchedCount() - 1));
+    statement.decrementMatched();
     statementRepository.save(statement);
 
     // 4. Audit — the reversed originals' ids (each contra already logs its own reversal).

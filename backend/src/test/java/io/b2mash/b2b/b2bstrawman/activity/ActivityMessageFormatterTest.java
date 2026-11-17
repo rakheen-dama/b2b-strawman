@@ -1989,6 +1989,30 @@ class ActivityMessageFormatterTest {
   }
 
   @Test
+  void bankStatementLineEventsAreTrustEvents_amountNeedsViewTrust() {
+    // 647A review: a recorded statement line is trust money — FINANCIAL_VISIBILITY alone must not
+    // read its amount (or reference); VIEW_TRUST does.
+    var details = d("classification", "BANK_CHARGE", "amount", "57.50", "reference", "CHG-77");
+    String noTrust =
+        messageAs(
+            new ActivityMessageFormatter.AmountVisibility(true, false),
+            "bank_statement_line.recorded",
+            "bank_statement_line",
+            details);
+    assertThat(noTrust)
+        .isEqualTo("Alice recorded a statement line as a bank charge")
+        .doesNotContain("57,50")
+        .doesNotContain("CHG-77");
+    assertThat(
+            messageAs(
+                new ActivityMessageFormatter.AmountVisibility(false, true),
+                "bank_statement_line.recorded",
+                "bank_statement_line",
+                details))
+        .isEqualTo("Alice recorded a statement line as a bank charge of R57,50");
+  }
+
+  @Test
   void unknownKeysAndEntityTypesFallBackToTheLegalGeneric() {
     for (int i = 0; i < 25; i++) {
       String noise = UUID.randomUUID().toString().replace("-", "").substring(0, 8);

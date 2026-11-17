@@ -18,8 +18,11 @@ public interface BankStatementLineRepository extends JpaRepository<BankStatement
   List<BankStatementLine> findByMatchStatus(String matchStatus);
 
   /**
-   * Locks the line for a record-from-statement or an unmatch (647A): two members acting on one line
-   * are serialised, and the second sees the first's state.
+   * Locks the line row (PESSIMISTIC_WRITE) before its match state is read, for every state change
+   * on one line — record from statement, manual match, exclude and unmatch (647A). Two members
+   * acting on the same line are serialised: the second waits for the first's commit and then sees
+   * its state (and is refused if the line is no longer {@code UNMATCHED} / matched), so no stale
+   * write overwrites a recorded, matched or excluded line. Taken before the statement lock.
    */
   @Lock(LockModeType.PESSIMISTIC_WRITE)
   @Query("SELECT l FROM BankStatementLine l WHERE l.id = :id")

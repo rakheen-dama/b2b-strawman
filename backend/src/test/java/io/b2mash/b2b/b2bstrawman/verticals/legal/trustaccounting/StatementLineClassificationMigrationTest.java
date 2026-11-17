@@ -152,8 +152,8 @@ class StatementLineClassificationMigrationTest {
             texts(
                 "SELECT line_number, match_status, COALESCE(classification, 'NULL'),"
                     + " COALESCE(suggested_classification, 'NULL')"
-                    + " FROM \"%s\".bank_statement_lines WHERE bank_statement_id = '%bankStatement'"
-                    + " ORDER BY line_number"))
+                    + " FROM \"%s\".bank_statement_lines WHERE id IN ('%lineUnmatched',"
+                    + " '%lineAuto', '%lineManual', '%lineExcluded') ORDER BY line_number"))
         .containsExactly(
             "1|UNMATCHED|NULL|NULL",
             "2|AUTO_MATCHED|NULL|NULL",

@@ -675,9 +675,13 @@ public class ActivityMessageFormatter {
       String entityType,
       Map<String, Object> details,
       AmountVisibility visibility) {
+    // A bank statement line is trust money too (647A): its recorded amount needs VIEW_TRUST.
     boolean trustEvent =
         "trust_transaction".equals(entityType)
-            || (eventType != null && eventType.startsWith("trust_"));
+            || "bank_statement_line".equals(entityType)
+            || (eventType != null
+                && (eventType.startsWith("trust_")
+                    || eventType.startsWith("bank_statement_line.")));
     Set<String> hidden;
     if (trustEvent) {
       hidden = visibility.trust() ? Set.of() : Set.of("amount", "reference");

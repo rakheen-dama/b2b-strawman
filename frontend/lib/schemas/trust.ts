@@ -120,13 +120,21 @@ export type ReversalReasonFormData = z.infer<typeof reversalReasonSchema>;
  * needs whether it is recoverable and its VAT; the server refuses both on any other
  * classification, and is the authority for every rule here.
  */
+/** At most two decimal places (cents) — the column is numeric(15,2); tolerant of float error. */
+const hasAtMostTwoDecimals = (value: number) =>
+  Math.abs(value * 100 - Math.round(value * 100)) < 1e-6;
+
 export const recordFromStatementSchema = z
   .object({
     classification: z.enum(["FUND_INTEREST", "FUND_SWEEP", "BANK_CHARGE", "CHARGE_REFUND"], {
       message: "Choose what this line is",
     }),
     chargeRecoverable: z.boolean().optional(),
-    chargeVatAmount: z.number().min(0, "VAT cannot be negative").optional(),
+    chargeVatAmount: z
+      .number()
+      .min(0, "VAT cannot be negative")
+      .refine(hasAtMostTwoDecimals, "VAT has at most two decimal places")
+      .optional(),
     notes: z.string().max(2000).optional().or(z.literal("")),
   })
   .superRefine((data, ctx) => {

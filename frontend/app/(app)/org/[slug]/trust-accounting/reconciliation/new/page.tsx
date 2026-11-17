@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@b2mash/ui/button";
@@ -86,7 +86,12 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
   // Clear downstream state when an earlier wizard step changes so that
   // stale data from a previous account/period/statement is never shown.
 
+  // Bumped by every reset: an async result started before a reset belongs to the old wizard and
+  // is dropped (handleRecord's recalculation, 647A).
+  const wizardGeneration = useRef(0);
+
   const resetFromStep2 = useCallback(() => {
+    wizardGeneration.current += 1;
     setStatement(null);
     setLines([]);
     setAutoMatchResult(null);
@@ -96,6 +101,7 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
   }, []);
 
   const resetFromStep3 = useCallback(() => {
+    wizardGeneration.current += 1;
     setAutoMatchResult(null);
     setReconciliation(null);
     setUnmatchedTransactions([]);
@@ -326,6 +332,7 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
       input: RecordFromStatementFormData
     ): Promise<{ success: boolean; error?: string }> => {
       setError(null);
+      const generation = wizardGeneration.current;
       const result = await recordFromStatement(lineId, input);
       if (!result.success || !result.data) {
         return { success: false, error: result.error ?? "Failed to record the line" };
@@ -334,6 +341,10 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
       setLines((prev) => prev.map((l) => (l.id === lineId ? updated : l)));
       if (reconciliation) {
         const calcResult = await calculateReconciliation(reconciliation.id);
+        if (generation !== wizardGeneration.current) {
+          // The wizard was reset while recalculating: this result is the old reconciliation's.
+          return { success: true };
+        }
         if (calcResult.success && calcResult.data) {
           setReconciliation(calcResult.data);
         } else {

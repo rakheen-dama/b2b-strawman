@@ -396,9 +396,11 @@ public class TrustReconciliationService {
   public void manualMatch(UUID lineId, UUID transactionId) {
     moduleGuard.requireModule(MODULE_ID);
 
+    // Locked before its state is read (647A): a concurrent record-from-statement cannot be
+    // overwritten by this match acting on a stale UNMATCHED state.
     var line =
         bankStatementLineRepository
-            .findById(lineId)
+            .findByIdForUpdate(lineId)
             .orElseThrow(() -> new ResourceNotFoundException("BankStatementLine", lineId));
 
     if (!"UNMATCHED".equals(line.getMatchStatus())) {
@@ -423,10 +425,11 @@ public class TrustReconciliationService {
           "Invalid match state", "Transaction must be APPROVED or RECORDED to match");
     }
 
-    // Verify the line and transaction belong to the same trust account
+    // Verify the line and transaction belong to the same trust account (statement locked after
+    // the line: it serialises the matched_count update)
     var statement =
         bankStatementRepository
-            .findById(line.getBankStatementId())
+            .findByIdForUpdate(line.getBankStatementId())
             .orElseThrow(
                 () -> new ResourceNotFoundException("BankStatement", line.getBankStatementId()));
     if (!statement.getTrustAccountId().equals(transaction.getTrustAccountId())) {
@@ -456,7 +459,7 @@ public class TrustReconciliationService {
     postingService.linkBankLine(transaction, lineId);
 
     // Update matched count (statement already loaded above for trust account validation)
-    statement.setMatchedCount(statement.getMatchedCount() + 1);
+    statement.incrementMatched();
     bankStatementRepository.save(statement);
 
     auditService.log(
@@ -511,13 +514,13 @@ public class TrustReconciliationService {
               });
     }
 
-    // Decrement matched count
+    // Decrement matched count (statement locked after the line)
     var statement =
         bankStatementRepository
-            .findById(line.getBankStatementId())
+            .findByIdForUpdate(line.getBankStatementId())
             .orElseThrow(
                 () -> new ResourceNotFoundException("BankStatement", line.getBankStatementId()));
-    statement.setMatchedCount(Math.max(0, statement.getMatchedCount() - 1));
+    statement.decrementMatched();
     bankStatementRepository.save(statement);
 
     auditService.log(
@@ -534,9 +537,10 @@ public class TrustReconciliationService {
   public void excludeLine(UUID lineId, String reason) {
     moduleGuard.requireModule(MODULE_ID);
 
+    // Locked before its state is read (647A): see manualMatch.
     var line =
         bankStatementLineRepository
-            .findById(lineId)
+            .findByIdForUpdate(lineId)
             .orElseThrow(() -> new ResourceNotFoundException("BankStatementLine", lineId));
 
     if (!"UNMATCHED".equals(line.getMatchStatus())) {

@@ -150,6 +150,16 @@ public class BankStatement {
     this.matchedCount = matchedCount;
   }
 
+  /** One more line matched or recorded; call on a row locked with {@code findByIdForUpdate}. */
+  public void incrementMatched() {
+    this.matchedCount++;
+  }
+
+  /** One fewer line matched or recorded (never below zero); call on a locked row. */
+  public void decrementMatched() {
+    this.matchedCount = Math.max(0, this.matchedCount - 1);
+  }
+
   public String getStatus() {
     return status;
   }

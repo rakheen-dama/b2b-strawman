@@ -335,6 +335,31 @@ class StatementLinePostingIntegrationTest {
   }
 
   @Test
+  void aRecordedChargeRefund_reversesOnUnmatch_dated_the_lines_date() throws Exception {
+    var account = books.freshAccount(false);
+    var date = pastDate();
+    var line = books.unmatchedLine(account, date, "57.50", "FEE REFUND");
+    var rowId = recordAndMove(account, line, "{\"classification\":\"CHARGE_REFUND\"}", "57.50");
+
+    moves(
+        account,
+        Expected.cashbookAndFund("-57.50"),
+        () -> unmatch(line.lineId()).andExpect(status().isOk()));
+
+    var contras = reversalsOf(rowId);
+    assertThat(contras).hasSize(1);
+    assertThat(contras.getFirst().getTransactionDate()).isEqualTo(date);
+    assertThat(contras.getFirst().getCreditorAccountId())
+        .isEqualTo(books.creditorAccount(account, FUND));
+    assertThat(row(rowId).getStatus()).isEqualTo("REVERSED");
+    assertThat(row(rowId).getBankStatementLineId()).isNull();
+    assertThat(line(line.lineId()).getMatchStatus()).isEqualTo("UNMATCHED");
+    assertThat(line(line.lineId()).getClassification()).isNull();
+    assertThat(matchedCount(line)).isZero();
+    books.assertBalancedAsAt(account, date);
+  }
+
+  @Test
   void afterUnmatch_theCancellingPairIsNotAnOutstandingItem() throws Exception {
     var account = books.freshAccount(false);
     var date = pastDate();
@@ -492,7 +517,26 @@ class StatementLinePostingIntegrationTest {
         "{\"classification\":\"FUND_SWEEP\",\"chargeRecoverable\":true}",
         RECORD_TITLE,
         "Recoverable and VAT apply only to a bank charge");
+    // More than two decimals would round to the charge itself in numeric(15,2) and break
+    // chk_trust_txn_charge (a 500): refused as a validation error before the service runs.
+    moves(
+        account,
+        Expected.none(),
+        () ->
+            record(
+                    line.lineId(),
+                    "{\"classification\":\"BANK_CHARGE\",\"chargeRecoverable\":true,"
+                        + "\"chargeVatAmount\":7.499}")
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.title").value("Validation failed"))
+                .andExpect(jsonPath("$.detail").value("1 field(s) have validation errors"))
+                .andExpect(jsonPath("$.fieldErrors[0].field").value("chargeVatAmount"))
+                .andExpect(
+                    jsonPath("$.fieldErrors[0].message")
+                        .value("The VAT amount has at most two decimal places")));
     assertThat(line(line.lineId()).getMatchStatus()).isEqualTo("UNMATCHED");
+    assertThat(matchedCount(line)).isZero();
   }
 
   @Test
@@ -521,12 +565,22 @@ class StatementLinePostingIntegrationTest {
         Expected.none(),
         () ->
             record(credit.lineId(), "{\"classification\":\"UNIDENTIFIED_DEPOSIT\"}")
-                .andExpect(status().isBadRequest()));
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.title").value("Malformed request body"))
+                .andExpect(
+                    jsonPath("$.detail").value("The request body could not be read or parsed")));
     // No classification at all (@NotNull).
     moves(
         account,
         Expected.none(),
-        () -> record(credit.lineId(), "{}").andExpect(status().isBadRequest()));
+        () ->
+            record(credit.lineId(), "{}")
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.title").value("Validation failed"))
+                .andExpect(jsonPath("$.detail").value("1 field(s) have validation errors"))
+                .andExpect(jsonPath("$.fieldErrors[0].field").value("classification")));
     assertRecordRefused(
         account,
         zero.lineId(),
@@ -554,7 +608,10 @@ class StatementLinePostingIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"classification\":\"FUND_INTEREST\"}"))
                 .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.title").value("Access denied")));
+                .andExpect(jsonPath("$.status").value(403))
+                .andExpect(jsonPath("$.title").value("Access denied"))
+                .andExpect(
+                    jsonPath("$.detail").value("Insufficient permissions for this operation")));
     assertThat(line(line.lineId()).getMatchStatus()).isEqualTo("UNMATCHED");
 
     recordAndMove(account, line, "{\"classification\":\"FUND_INTEREST\"}", "40.00");
@@ -566,7 +623,11 @@ class StatementLinePostingIntegrationTest {
                 .perform(
                     post("/api/bank-statement-lines/{lineId}/unmatch", line.lineId())
                         .with(TestJwtFactory.memberJwt(ORG_ID, MEMBER)))
-                .andExpect(status().isForbidden()));
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.status").value(403))
+                .andExpect(jsonPath("$.title").value("Access denied"))
+                .andExpect(
+                    jsonPath("$.detail").value("Insufficient permissions for this operation")));
     assertThat(line(line.lineId()).getMatchStatus()).isEqualTo("RECORDED");
   }
 
@@ -734,6 +795,7 @@ class StatementLinePostingIntegrationTest {
         () ->
             record(lineId, json)
                 .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.title").value(title))
                 .andExpect(jsonPath("$.detail").value(detail)));
     assertThat(matchedCount(statementId)).as("matched_count after %s", json).isEqualTo(countBefore);

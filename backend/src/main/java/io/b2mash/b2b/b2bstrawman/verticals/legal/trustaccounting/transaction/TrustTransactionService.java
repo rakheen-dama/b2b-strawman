@@ -233,7 +233,8 @@ public class TrustTransactionService {
       // ADR-361: server-computed on the client-ledger /history endpoint only; null on every other
       // producer and on non-posted / REVERSAL rows.
       BigDecimal runningBalance,
-      // 647A (ADR-381): BANK_CHARGE only — recoverable from the bank, and the VAT in the amount;
+      // 647A (ADR-381): BANK_CHARGE only — whether the charge is on the Fidelity Fund's
+      // recoverable list (the firm's assertion; Kazi does not check it), and the VAT in the amount;
       // null on every other row (chk_trust_txn_charge).
       Boolean chargeRecoverable,
       BigDecimal chargeVatAmount) {}

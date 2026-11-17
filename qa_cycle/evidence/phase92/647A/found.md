@@ -51,10 +51,9 @@ suggested owner. Orchestrator rulings on the brief's §14 decisions are recorded
 
 ## 6. Other observations from building 647A
 
-- **VAT with more than two decimals.** `RecordFromLineRequest.chargeVatAmount` is not scale-checked;
-  Postgres `numeric(15,2)` rounds a value such as `7.555` on write. The spec does not ask for a scale
-  refusal; the dialog sends what the user types. Low; a `@Digits(fraction = 2)` on the request would
-  close it (owner: whichever slice next touches the request — 647B).
+- **VAT with more than two decimals — FIXED in the PR #1794 review round.** `chargeVatAmount` now
+  carries `@Digits(integer = 13, fraction = 2)` (400 "Validation failed") and the Zod schema refuses
+  more than two decimals; `7.499` on a −7.50 line no longer reaches `chk_trust_txn_charge` as a 500.
 - **Native number validation in the Record dialog.** In jsdom (vitest) an `<input type="number"
   step="0.01">` holding `7.5` blocked the form submit with no message (adding `noValidate` made the
   same test pass, so native constraint validation was the cause; a real browser was not checked). The dialog's form is `noValidate`: the Zod schema (and the server) are the
@@ -64,3 +63,24 @@ suggested owner. Orchestrator rulings on the brief's §14 decisions are recorded
   `classification`, `reversed_transaction_ids`, `statement_id` for a recorded line only (the
   `AUTO_MATCHED` / `MANUALLY_MATCHED` path is unchanged, per the brief). The activity sentence
   distinguishes the two by the presence of `classification`.
+
+## 7. Out of scope from the PR #1794 review round (orchestrator rulings)
+
+- **`autoMatchStatement` does not lock the lines it matches.** The review round put a
+  `findByIdForUpdate` line lock on `manualMatch`, `excludeLine`, `unmatch` and record-from-statement,
+  and a statement lock (`BankStatementRepository.findByIdForUpdate`, line-then-statement order) on
+  every path in `TrustReconciliationService` / `StatementLinePostingService` that changes
+  `matched_count` — except auto-match. `autoMatchStatement` reads the statement and its `UNMATCHED`
+  lines without a lock and sets `matched_count = alreadyMatched + autoMatched`, so a record / manual
+  match committed on the same statement while auto-match runs can be overwritten (a line flipped to
+  `AUTO_MATCHED` over a `RECORDED` state, or the count losing an update). Fix: lock the statement
+  first, then re-read each candidate line under `findByIdForUpdate` and skip it unless still
+  `UNMATCHED`. Owner: orchestrator to assign (652A/652B touch the matching flow).
+- **Stale recalculation after a wizard reset in the three pre-existing handlers.** The review round
+  added a wizard-generation guard to `handleRecord` only (`reconciliation/new/page.tsx`).
+  `handleMatch`, `handleExclude` and `handleUnmatch` share the defect: each awaits
+  `calculateReconciliation(reconciliation.id)` and then calls `setReconciliation(...)` with no check,
+  so a Back-and-reset while the recalculation is in flight restores the old account's reconciliation
+  into the new wizard (and `handleStartReview` then reuses it instead of creating one). Owner
+  **652A**, which already owns those handlers' missing `else` on a failed recalculation; the same
+  `wizardGeneration` ref is there to reuse.

@@ -49,7 +49,8 @@ interface RecordFromStatementDialogProps {
  * Record from statement (647A, ADR-380): the firm confirms what an unmatched bank statement line
  * is, and the entry is posted dated the line's date. Owns its trigger (a plain button beside
  * Exclude — never an adjacent `asChild` trigger). Offers only the classifications that agree with
- * the line's sign; a bank charge also asks whether it is recoverable and its VAT.
+ * the line's sign; a bank charge also asks whether it is on the Fidelity Fund's recoverable list
+ * (the firm's assertion — Kazi does not check it, ADR-381) and its VAT.
  */
 export function RecordFromStatementDialog({
   line,
@@ -76,6 +77,13 @@ export function RecordFromStatementDialog({
   const classification = useWatch({ control: form.control, name: "classification" });
 
   function handleOpenChange(next: boolean) {
+    // Escape / overlay / X while a record is in flight: stay open so its outcome (and any refusal)
+    // is shown. The successful-submit path closes through setDialogOpen.
+    if (!next && isSubmitting) return;
+    setDialogOpen(next);
+  }
+
+  function setDialogOpen(next: boolean) {
     setOpen(next);
     if (!next) {
       setError(null);
@@ -92,7 +100,7 @@ export function RecordFromStatementDialog({
         setError(result.error ?? "Failed to record the line");
         return;
       }
-      handleOpenChange(false);
+      setDialogOpen(false);
     } catch {
       setError("An unexpected error occurred");
     } finally {
@@ -170,7 +178,7 @@ export function RecordFromStatementDialog({
                     name="chargeRecoverable"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Recoverable from the bank?</FormLabel>
+                        <FormLabel>Recoverable from the Fidelity Fund?</FormLabel>
                         <FormControl>
                           <RadioGroup
                             value={field.value === undefined ? "" : field.value ? "yes" : "no"}
@@ -192,8 +200,8 @@ export function RecordFromStatementDialog({
                           </RadioGroup>
                         </FormControl>
                         <FormDescription>
-                          Either way the charge is taken from the Fidelity Fund interest and charges
-                          ledger.
+                          Is this charge on the Legal Practitioners&apos; Fidelity Fund&apos;s list
+                          of recoverable bank charges?
                         </FormDescription>
                         <FormMessage />
                       </FormItem>

@@ -25,3 +25,19 @@ org.springframework.dao.DataIntegrityViolationException:
 ... was aborted: ERROR: new row for relation "trust_transactions" violates check constraint "chk_trust_txn_ledger_target"
   Detail: Failing row contains (0af4c43a-e036-493c-9a7f-5314bb0a039d, e1f398c3-6b8d-4a2f-bcf2-1ebf5659c806, REVERSAL, 40.00, null, null, null, null, REV-FUN-TB-41, trust books fixture: reversed, 2026-11-17, RECORDED, null, null, null, null, null, null, null, d2317bcf-3dba-41ee-bb86-91bde194f6f7, null, null, 51c28b89-7fab-4bcf-adc1-6b7f11432bae, 2026-11-17 10:21:00.628824+00, NON_CLIENT, 40.00, 40.00, 2026-11-17 10:21:00.628766+00, null, null, null, null).  Call getNextException to see other errors in the batch.] [insert into trust_transactions (amount,approved_at,approved_by,bank_statement_line_id,cashbook_effect,charge_recoverable,charge_vat_amount,counterparty_customer_id,created_at,credit
   => main's postReversal copies neither creditor_account_id nor investment_id onto the contra; the NON_CLIENT REVERSAL row has creditor_account_id NULL and violates chk_trust_txn_ledger_target (SQLState 23514).
+
+=== Review fix (PR #1794, finding 3) — bank_statement_line.* activity redaction, before the production fix ===
+ActivityMessageFormatter.redact() treated only entity type trust_transaction / event keys "trust_*" as trust events,
+so bank_statement_line.recorded showed its amount to a viewer with FINANCIAL_VISIBILITY but without VIEW_TRUST.
+New test ActivityMessageFormatterTest.bankStatementLineEventsAreTrustEvents_amountNeedsViewTrust; redact() UNCHANGED.
+Command: cd backend && ./mvnw test -Dtest=ActivityMessageFormatterTest   (run 2026-11-17 SAST)
+
+[ERROR] Tests run: 220, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 0.303 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.activity.ActivityMessageFormatterTest
+[ERROR] io.b2mash.b2b.b2bstrawman.activity.ActivityMessageFormatterTest.bankStatementLineEventsAreTrustEvents_amountNeedsViewTrust -- Time elapsed: 0.010 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+
+expected: "Alice recorded a statement line as a bank charge"
+ but was: "Alice recorded a statement line as a bank charge of R57,50"
+	at io.b2mash.b2b.b2bstrawman.activity.ActivityMessageFormatterTest.bankStatementLineEventsAreTrustEvents_amountNeedsViewTrust(ActivityMessageFormatterTest.java:2003)
+  => AmountVisibility(financial=true, trust=false) read the recorded line's R57,50. Fix: redact() treats entity type
+     bank_statement_line (and bank_statement_line.* keys) as trust events, so amount/reference need VIEW_TRUST.

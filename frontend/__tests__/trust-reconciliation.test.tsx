@@ -128,6 +128,7 @@ import NewReconciliationPage from "@/app/(app)/org/[slug]/trust-accounting/recon
 import { BankStatementUpload } from "@/components/trust/BankStatementUpload";
 import { ReconciliationSplitPane } from "@/components/trust/ReconciliationSplitPane";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
+import { recordFromStatementSchemaFor } from "@/lib/schemas/trust";
 import { STATEMENT_LINE_CLASSIFICATIONS } from "@/lib/types";
 import type {
   BankStatementLineResponse,
@@ -1027,6 +1028,30 @@ describe("Trust Reconciliation", () => {
       expect(onRecord).not.toHaveBeenCalled();
     });
 
+    it("refuses a VAT amount with more than two decimals", async () => {
+      const schema = recordFromStatementSchemaFor(7.5);
+      const charge = { classification: "BANK_CHARGE" as const, chargeRecoverable: true };
+      const tooPrecise = schema.safeParse({ ...charge, chargeVatAmount: 7.499 });
+      expect(tooPrecise.success).toBe(false);
+      expect(tooPrecise.error?.issues.map((i) => i.message)).toContain(
+        "VAT has at most two decimal places"
+      );
+      expect(schema.safeParse({ ...charge, chargeVatAmount: 0.29 }).success).toBe(true);
+      expect(schema.safeParse({ ...charge, chargeVatAmount: 7.49 }).success).toBe(true);
+
+      const user = userEvent.setup({ pointerEventsCheck: 0 });
+      const onRecord = vi.fn().mockResolvedValue({ success: true });
+      renderPane([makeBankLine({ id: "line-dr", amount: -7.5 })], { onRecord });
+      await openRecordDialog("line-dr");
+      await user.click(screen.getByRole("radio", { name: "Bank charge" }));
+      await user.click(screen.getByRole("radio", { name: "Recoverable" }));
+      await user.type(screen.getByTestId("charge-vat-input"), "7.499");
+      await user.click(screen.getByTestId("record-submit"));
+
+      expect(await screen.findByText("VAT has at most two decimal places")).toBeInTheDocument();
+      expect(onRecord).not.toHaveBeenCalled();
+    });
+
     it("submits a valid bank charge and closes the dialog", async () => {
       const user = userEvent.setup({ pointerEventsCheck: 0 });
       const onRecord = vi.fn().mockResolvedValue({ success: true });
@@ -1068,6 +1093,48 @@ describe("Trust Reconciliation", () => {
         "This statement line is already matched, recorded or excluded"
       );
       expect(screen.getByTestId("record-from-statement-dialog")).toBeInTheDocument();
+    });
+
+    it("stays open on Escape while a record is in flight and shows its later refusal", async () => {
+      const user = userEvent.setup({ pointerEventsCheck: 0 });
+      let resolveRecord: (value: { success: boolean; error?: string }) => void = () => {};
+      const onRecord = vi.fn(
+        () =>
+          new Promise<{ success: boolean; error?: string }>((resolve) => {
+            resolveRecord = resolve;
+          })
+      );
+      renderPane([makeBankLine({ id: "line-cr", amount: 25 })], { onRecord });
+      await openRecordDialog("line-cr");
+
+      await user.click(screen.getByRole("radio", { name: FUND_INTEREST }));
+      await user.click(screen.getByTestId("record-submit"));
+      await waitFor(() => expect(onRecord).toHaveBeenCalledTimes(1));
+
+      await user.keyboard("{Escape}");
+      expect(screen.getByTestId("record-from-statement-dialog")).toBeInTheDocument();
+
+      await act(async () => {
+        resolveRecord({ success: false, error: "Trust account is closed" });
+      });
+      expect(await screen.findByRole("alert")).toHaveTextContent("Trust account is closed");
+      expect(screen.getByTestId("record-from-statement-dialog")).toBeInTheDocument();
+    });
+
+    it("labels the recoverable question for the Fidelity Fund's list", async () => {
+      const user = userEvent.setup({ pointerEventsCheck: 0 });
+      renderPane([makeBankLine({ id: "line-dr", amount: -57.5 })]);
+      await openRecordDialog("line-dr");
+
+      await user.click(screen.getByRole("radio", { name: "Bank charge" }));
+
+      expect(screen.getByText("Recoverable from the Fidelity Fund?")).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          "Is this charge on the Legal Practitioners' Fidelity Fund's list of recoverable bank charges?"
+        )
+      ).toBeInTheDocument();
+      expect(screen.queryByText(/from the bank\?/)).not.toBeInTheDocument();
     });
 
     it("shows a recorded line's classification label and counts it as resolved", () => {
@@ -1236,6 +1303,108 @@ describe("Trust Reconciliation", () => {
       expect(screen.getByTestId("recorded-badge-line-1")).toHaveTextContent(
         `Recorded: ${FUND_INTEREST}`
       );
+    });
+
+    it("ignores a recalculation that lands after the wizard was reset", async () => {
+      const user = userEvent.setup({ pointerEventsCheck: 0 });
+      const line = makeBankLine({ id: "line-1", amount: 1234.56, reference: "INT-OCT" });
+      const statement = {
+        id: "stmt-1",
+        trustAccountId: "acc-1",
+        periodStart: "2026-03-01",
+        periodEnd: "2026-03-31",
+        openingBalance: 0,
+        closingBalance: 1234.56,
+        fileName: "march-2026.csv",
+        format: "CSV",
+        lineCount: 1,
+        matchedCount: 0,
+        status: "IMPORTED",
+        importedBy: "member-1",
+        createdAt: "2026-04-01T00:00:00Z",
+        updatedAt: "2026-04-01T00:00:00Z",
+        lines: [line],
+      };
+      mockUploadBankStatement.mockResolvedValue({ success: true, data: statement });
+      mockAutoMatch.mockResolvedValue({
+        success: true,
+        data: { totalLines: 1, autoMatched: 0, alreadyMatched: 0, unmatched: 1 },
+      });
+      mockFetchBankStatement.mockResolvedValue(statement);
+      mockCreateReconciliation.mockResolvedValue({
+        success: true,
+        data: makeRecon({ status: "DRAFT", isBalanced: false, completedAt: null }),
+      });
+      let resolveRecalc: (value: { success: boolean; error?: string }) => void = () => {};
+      mockCalculateReconciliation
+        .mockResolvedValueOnce({
+          success: true,
+          data: makeRecon({ status: "DRAFT", isBalanced: false, completedAt: null }),
+        })
+        .mockImplementationOnce(
+          () =>
+            new Promise((resolve) => {
+              resolveRecalc = resolve;
+            })
+        );
+      mockRecordFromStatement.mockResolvedValue({
+        success: true,
+        data: {
+          line: {
+            ...line,
+            matchStatus: "RECORDED",
+            classification: "FUND_INTEREST",
+            classificationLabel: FUND_INTEREST,
+            trustTransactionId: "tx-new",
+            createdTransactionIds: ["tx-new"],
+          },
+          transactions: [],
+          unidentifiedDepositId: null,
+          investmentInterestId: null,
+        },
+      });
+
+      await act(async () => {
+        render(
+          <Suspense fallback={null}>
+            <NewReconciliationPage params={Promise.resolve({ slug: "acme" })} />
+          </Suspense>
+        );
+      });
+      await waitFor(() => expect(screen.getByTestId("account-select")).toHaveValue("acc-1"));
+      fireEvent.change(screen.getByTestId("period-end-input"), {
+        target: { value: "2026-03-31" },
+      });
+      fireEvent.click(screen.getByTestId("step-next-btn"));
+      fireEvent.change(await screen.findByTestId("file-input"), {
+        target: { files: [new File(["csv"], "march-2026.csv", { type: "text/csv" })] },
+      });
+      await waitFor(() => expect(screen.getByTestId("step-next-btn")).toBeEnabled());
+      fireEvent.click(screen.getByTestId("step-next-btn"));
+      fireEvent.click(await screen.findByTestId("auto-match-btn"));
+      expect(await screen.findByText("Auto-matched 0 lines")).toBeInTheDocument();
+      fireEvent.click(screen.getByTestId("step-next-btn"));
+      expect(await screen.findByTestId("reconciliation-split-pane")).toBeInTheDocument();
+
+      await openRecordDialog("line-1");
+      await user.click(screen.getByRole("radio", { name: FUND_INTEREST }));
+      await user.click(screen.getByTestId("record-submit"));
+      await waitFor(() => expect(mockCalculateReconciliation).toHaveBeenCalledTimes(2));
+
+      // Back to step 1 while the recalculation is in flight, and change the period (a reset).
+      fireEvent.click(screen.getByRole("button", { name: "Back", hidden: true }));
+      fireEvent.click(await screen.findByTestId("auto-match-back-btn"));
+      fireEvent.click(await screen.findByRole("button", { name: "Back" }));
+      fireEvent.change(await screen.findByTestId("period-end-input"), {
+        target: { value: "2026-02-28" },
+      });
+
+      await act(async () => {
+        resolveRecalc({ success: false, error: "boom" });
+      });
+
+      expect(screen.getByTestId("step-select")).toBeInTheDocument();
+      expect(screen.queryByTestId("reconciliation-error")).not.toBeInTheDocument();
     });
   });
 });

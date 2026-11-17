@@ -153,7 +153,10 @@ export interface TrustTransaction {
    * REVERSAL rows (and on every other endpoint).
    */
   runningBalance: number | null;
-  /** 647A (ADR-381): BANK_CHARGE only — recoverable from the bank; null on every other row. */
+  /**
+   * 647A (ADR-381): BANK_CHARGE only — the firm's assertion that the charge is on the Fidelity
+   * Fund's recoverable list (Kazi does not check it); null on every other row.
+   */
   chargeRecoverable: boolean | null;
   /** 647A: BANK_CHARGE only — the VAT included in `amount`; null on every other row. */
   chargeVatAmount: number | null;

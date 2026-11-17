@@ -157,7 +157,9 @@ public class TrustTools {
           } catch (ModuleNotEnabledException e) {
             return McpToolErrors.asResult(McpError.moduleDisabled(TRUST_MODULE), objectMapper);
           } catch (ResourceNotFoundException e) {
-            return McpToolErrors.asResult(McpError.notFound("trust account"), objectMapper);
+            // with a client the miss may be either id; the non-leaking message must not say which
+            String noun = customerId != null ? "trust account or client" : "trust account";
+            return McpToolErrors.asResult(McpError.notFound(noun), objectMapper);
           }
         });
   }

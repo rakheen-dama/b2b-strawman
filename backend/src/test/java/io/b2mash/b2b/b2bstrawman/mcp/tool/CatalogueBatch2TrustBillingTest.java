@@ -374,6 +374,27 @@ class CatalogueBatch2TrustBillingTest {
     assertThat(resultPayload(result).at("/error").asString()).isEqualTo("not_found");
   }
 
+  /**
+   * 646D (review): an unknown client on a real account is not_found, and the non-leaking message
+   * names both ids the call took — it must not claim the (existing) trust account is missing.
+   */
+  @Test
+  void getTrustBalanceOfAnUnknownClientIsNotFoundWithoutBlamingTheAccount() throws Exception {
+    JwtRequestPostProcessor owner = TestJwtFactory.ownerJwt(ORG_ID, "user_owner");
+    JsonNode result =
+        callTool(
+            owner,
+            openSession(owner),
+            "get_trust_balance",
+            "{\"trustAccountId\":\"%s\",\"customerId\":\"%s\"}"
+                .formatted(trustAccountId, UUID.randomUUID()));
+    assertThat(result.at("/isError").asBoolean()).as("result %s", result).isTrue();
+    JsonNode payload = resultPayload(result);
+    assertThat(payload.at("/error").asString()).isEqualTo("not_found");
+    assertThat(payload.at("/message").asString())
+        .isEqualTo("No trust account or client found for that id, or you do not have access.");
+  }
+
   @Test
   void getTrustBalanceWithoutViewTrustIsForbiddenAndAudited() throws Exception {
     String roleId =

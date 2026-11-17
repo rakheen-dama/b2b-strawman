@@ -51,6 +51,24 @@ import org.springframework.stereotype.Component;
  *       without changing a single expectation except the pins it closes (task 646.9).
  * </ol>
  *
+ * <h2>Version 4 (647B) — EQ-4: unidentified deposits are itemised</h2>
+ *
+ * <p>{@link #assertBalancedAsAt} and {@link #assertFirmBalanced} check EQ-4 for every account, and
+ * {@link #assertMoves} checks it as at today after every step (ADR-376, §16.1.2), from the ledger
+ * rows alone — never from the item's status columns, except (d):
+ *
+ * <ol type="a">
+ *   <li>every posted row on an {@code UNIDENTIFIED_DEPOSITS} creditor account dated {@code <= D}
+ *       names its item ({@code unidentified_deposit_id}, reversals included);
+ *   <li>each item's balance as at D ({@code SUM(ledger_effect)} of its own posted {@code
+ *       NON_CLIENT} rows dated {@code <= D}) is 0 or its amount — an item is never part-open;
+ *   <li>Σ amount of the items open as at D (balance = amount) equals the unidentified term;
+ *   <li>as at today, an item is {@code HELD} exactly when it is open.
+ * </ol>
+ *
+ * <p>{@link Expected#cashbookAndUnidentified} is the move of a deposit recorded as unidentified.
+ * EQ-5 (648A) is still a no-op.
+ *
  * <h2>Version 3 (646C) — every term as at a date; outstanding items by line date</h2>
  *
  * <ul>
@@ -87,8 +105,8 @@ import org.springframework.stereotype.Component;
  *       included (it keeps its own effects), and for a {@code REVERSAL} contra the negation of its
  *       original's: {@code TrustTransactionType.of(originalType).effectFor(originalAmount)
  *       .negated()} (649B, ADR-378; the 646A interim rule — both at {@code (CLIENT, 0, 0)} — is
- *       gone). A posted {@code REVERSAL} with no original fails EQ-6. EQ-4 (647B) and EQ-5 (648A)
- *       are no-ops until their columns exist.
+ *       gone). A posted {@code REVERSAL} with no original fails EQ-6. EQ-4 is implemented in v4
+ *       (647B); EQ-5 (648A) is a no-op until its columns exist.
  *   <li>{@link #assertBankAgrees} — statement closing balance + outstanding deposits − outstanding
  *       payments (posted, unmatched, dated {@code <= periodEnd}; split on the sign of {@code
  *       cashbook_effect}) against {@code cashbook(A, periodEnd)} — v2 dated a match by match time;
@@ -181,6 +199,29 @@ public final class TrustBooksHarness {
         AND t.posted_at IS NOT NULL AND t.transaction_date <= ?
       """;
 
+  /** EQ-4 (a): posted unidentified-ledger rows (reversals included) that name no item. */
+  private static final String UNIDENTIFIED_ROWS_WITHOUT_ITEM_SQL =
+      """
+      SELECT count(*) FROM "%1$s".trust_transactions t
+      JOIN "%1$s".trust_creditor_accounts ca ON ca.id = t.creditor_account_id
+      WHERE t.trust_account_id = ? AND t.ledger = 'NON_CLIENT'
+        AND ca.account_type = 'UNIDENTIFIED_DEPOSITS' AND t.posted_at IS NOT NULL
+        AND t.transaction_date <= ? AND t.unidentified_deposit_id IS NULL
+      """;
+
+  /**
+   * EQ-4 (b–d): each item of the account with its amount, status and its balance as at D from its
+   * own posted rows. Binds D, account.
+   */
+  private static final String ITEM_BALANCES_SQL =
+      """
+      SELECT d.id, d.amount, d.status,
+             COALESCE((SELECT SUM(t.ledger_effect) FROM "%1$s".trust_transactions t
+                        WHERE t.unidentified_deposit_id = d.id AND t.ledger = 'NON_CLIENT'
+                          AND t.posted_at IS NOT NULL AND t.transaction_date <= ?), 0) AS balance
+      FROM "%1$s".unidentified_deposits d WHERE d.trust_account_id = ?
+      """;
+
   private final JdbcTemplate jdbc;
   private final Clock clock;
   private final TrustTransactionService trustTransactionService;
@@ -255,8 +296,9 @@ public final class TrustBooksHarness {
         .isEqualByComparingTo(BigDecimal.ZERO);
     var softly = new SoftAssertions();
     assertEffectsDerived(softly, trustAccountId, asAt);
+    assertItemised(softly, trustAccountId, asAt, s.unidentified());
     softly.assertAll();
-    // EQ-4 (647B), EQ-5 (648A): no-ops until their columns exist.
+    // EQ-5 (648A): a no-op until its columns exist.
   }
 
   /** EQ-3 over every trust account of the tenant (open or closed), plus EQ-2 and EQ-6 for each. */
@@ -275,6 +317,7 @@ public final class TrustBooksHarness {
               accountId, asAt, s.cashbook(), s.creditors(), s.clientLedgers())
           .isEqualByComparingTo(BigDecimal.ZERO);
       assertEffectsDerived(softly, accountId, asAt);
+      assertItemised(softly, accountId, asAt, s.unidentified());
     }
     softly
         .assertThat(interAccountTotal)
@@ -321,6 +364,60 @@ public final class TrustBooksHarness {
           .as(what + " ledger effect")
           .isEqualByComparingTo(expected.ledgerEffect());
     }
+  }
+
+  /**
+   * EQ-4 (647B, ADR-376): unidentified deposits are itemised — see the class Javadoc (a)–(d). The
+   * unidentified term is the oracle's own ({@link #snapshotAsAt}).
+   */
+  private void assertItemised(
+      SoftAssertions softly, UUID trustAccountId, LocalDate asAt, BigDecimal unidentifiedTerm) {
+    var schema = schema();
+    Long unnamed =
+        jdbc.queryForObject(
+            UNIDENTIFIED_ROWS_WITHOUT_ITEM_SQL.formatted(schema), Long.class, trustAccountId, asAt);
+    softly
+        .assertThat(unnamed)
+        .as(
+            "EQ-4 on trust account %s as at %s: unidentified-ledger rows naming no item",
+            trustAccountId, asAt)
+        .isZero();
+    var items = jdbc.queryForList(ITEM_BALANCES_SQL.formatted(schema), asAt, trustAccountId);
+    boolean today = asAt.equals(today());
+    var openTotal = BigDecimal.ZERO;
+    for (var item : items) {
+      var amount = (BigDecimal) item.get("amount");
+      var balance = (BigDecimal) item.get("balance");
+      var what =
+          "EQ-4 on trust account %s as at %s, item %s (%s, %s): balance %s"
+              .formatted(
+                  trustAccountId,
+                  asAt,
+                  item.get("id"),
+                  item.get("status"),
+                  amount.toPlainString(),
+                  balance.toPlainString());
+      boolean open = balance.compareTo(amount) == 0;
+      softly
+          .assertThat(open || balance.signum() == 0)
+          .as(what + " — must be 0 or the amount")
+          .isTrue();
+      if (open) {
+        openTotal = openTotal.add(amount);
+      }
+      if (today) {
+        softly
+            .assertThat("HELD".equals(item.get("status")))
+            .as(what + " — HELD exactly when open as at today")
+            .isEqualTo(open);
+      }
+    }
+    softly
+        .assertThat(openTotal)
+        .as(
+            "EQ-4 on trust account %s as at %s: Σ open items vs the unidentified term %s",
+            trustAccountId, asAt, unidentifiedTerm)
+        .isEqualByComparingTo(unidentifiedTerm);
   }
 
   /**
@@ -422,8 +519,9 @@ public final class TrustBooksHarness {
   }
 
   /**
-   * Runs {@code action}, then asserts the account balanced and that each term moved by exactly the
-   * stated delta. All failures are reported together.
+   * Runs {@code action}, then asserts the account balanced (EQ-2, and EQ-4 as at today — the
+   * unidentified term is itemised, 647.11) and that each term moved by exactly the stated delta.
+   * All failures are reported together.
    */
   public void assertMoves(UUID trustAccountId, Expected expected, Runnable action) {
     var before = snapshot(trustAccountId);
@@ -445,6 +543,7 @@ public final class TrustBooksHarness {
     term(softly, "fundLedger", moved.fundLedger(), expected.fundLedger());
     term(softly, "unidentified", moved.unidentified(), expected.unidentified());
     term(softly, "interAccount", moved.interAccount(), expected.interAccount());
+    assertItemised(softly, trustAccountId, after.asAt(), after.unidentified());
     softly.assertAll();
   }
 
@@ -505,6 +604,15 @@ public final class TrustBooksHarness {
       var amount = new BigDecimal(signedAmount);
       return new Expected(
           amount, BigDecimal.ZERO, BigDecimal.ZERO, amount, BigDecimal.ZERO, BigDecimal.ZERO);
+    }
+
+    /**
+     * Cashbook and the unidentified-deposits ledger move together by {@code signedAmount} (647B).
+     */
+    public static Expected cashbookAndUnidentified(String signedAmount) {
+      var amount = new BigDecimal(signedAmount);
+      return new Expected(
+          amount, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, amount, BigDecimal.ZERO);
     }
   }
 }

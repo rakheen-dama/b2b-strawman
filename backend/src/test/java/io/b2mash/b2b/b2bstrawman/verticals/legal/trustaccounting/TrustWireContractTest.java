@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.TrustPositionResponse;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.UnidentifiedDepositService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.StatementLinePostingService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService;
@@ -34,7 +35,7 @@ import tools.jackson.databind.json.JsonMapper;
  * asserts each TS literal's key list and each TS string union's members against it. Later Phase 92
  * slices add their new or changed trust DTOs to {@link #PINNED}; 646D adds the dashboard trust
  * position and the total-balance response (both carry the creditor breakdown); 647A the bank
- * statement, its line and the record-from-statement response.
+ * statement, its line and the record-from-statement response; 647B the unidentified deposit.
  *
  * <p>The actual is always written to {@code target/wire/trust-contract.actual.json}. Regenerate
  * ONLY deliberately with {@code -Dtrust.contract.update=true}; the PR that does so must say why in
@@ -53,7 +54,9 @@ class TrustWireContractTest {
           // 647A: the statement GET's lines gain classification + created ids; record response
           TrustReconciliationService.BankStatementResponse.class,
           TrustReconciliationService.BankStatementLineResponse.class,
-          StatementLinePostingService.RecordFromLineResponse.class);
+          StatementLinePostingService.RecordFromLineResponse.class,
+          // 647B: one unidentified deposit (GET /api/trust-accounts/{id}/unidentified-deposits)
+          UnidentifiedDepositService.UnidentifiedDepositResponse.class);
 
   private static final String UPDATE_FLAG = "trust.contract.update";
   private static final Path SNAPSHOT = Path.of("src/test/resources/wire/trust-contract.json");

@@ -254,12 +254,16 @@ export type BankStatementLineMatchStatus =
   /** 647A: posted from — the firm recorded the line as a classification. */
   | "RECORDED";
 
-/** Mirrors backend `StatementLineClassification` (647A: the four Fund classifications). */
+/**
+ * Mirrors backend `StatementLineClassification` (647A: the four Fund classifications; 647B: an
+ * unidentified deposit — a credit whose owner is not yet known, held as an item).
+ */
 export type StatementLineClassification =
   | "FUND_INTEREST"
   | "FUND_SWEEP"
   | "BANK_CHARGE"
-  | "CHARGE_REFUND";
+  | "CHARGE_REFUND"
+  | "UNIDENTIFIED_DEPOSIT";
 
 /**
  * The classifications the Record from statement dialog offers, with the line sign each accepts
@@ -282,6 +286,7 @@ export const STATEMENT_LINE_CLASSIFICATIONS: ReadonlyArray<{
     lineSign: 1,
     label: "Bank charge refunded from the business account",
   },
+  { value: "UNIDENTIFIED_DEPOSIT", lineSign: 1, label: "Unidentified deposit" },
   {
     value: "FUND_SWEEP",
     lineSign: -1,
@@ -542,5 +547,51 @@ export interface TrustCreditorAccount {
  */
 export interface CreditorLedgerPage {
   content: TrustTransaction[];
+  page: { totalElements: number; totalPages: number; size: number; number: number };
+}
+
+// Unidentified deposits (Phase 92 647B, ADR-376) — GET /api/trust-accounts/{id}/unidentified-deposits
+
+/** `UnidentifiedDepositStatus` (647B, ADR-376) — the item's present state; never printed raw. */
+export type UnidentifiedDepositStatus = "HELD" | "ALLOCATED" | "PAID_TO_FUND" | "REVERSED";
+
+export const UNIDENTIFIED_DEPOSIT_STATUS_LABELS: Record<UnidentifiedDepositStatus, string> = {
+  HELD: "Held",
+  ALLOCATED: "Allocated to a client",
+  PAID_TO_FUND: "Paid to the Fund",
+  REVERSED: "Reversed",
+};
+
+/**
+ * `UnidentifiedDepositService.UnidentifiedDepositResponse` (647B, §16.3.6) — keys in the Java
+ * record's order (pinned by `__tests__/trust-wire-shapes.test.ts`, ADR-365). `status` is a String
+ * on the wire, typed here as the union. `ageDays` counts from the received date to today;
+ * `olderThanOneYear` flags only a held item older than 365 days. The allocation and resolution
+ * fields stay null until 647D.
+ */
+export interface UnidentifiedDeposit {
+  id: string;
+  trustAccountId: string;
+  receivedDate: string;
+  bankDescription: string;
+  bankReference: string | null;
+  amount: number;
+  status: UnidentifiedDepositStatus;
+  ageDays: number;
+  olderThanOneYear: boolean;
+  allocatedClientId: string | null;
+  allocatedClientName: string | null;
+  allocatedMatterId: string | null;
+  allocatedMatterName: string | null;
+  resolutionTransactionId: string | null;
+  resolutionStatus: string | null;
+  resolvedDate: string | null;
+  bankStatementLineId: string;
+  notes: string | null;
+}
+
+/** `GET /api/trust-accounts/{id}/unidentified-deposits` (647B) — a Spring Data VIA_DTO page. */
+export interface UnidentifiedDepositPage {
+  content: UnidentifiedDeposit[];
   page: { totalElements: number; totalPages: number; size: number; number: number };
 }

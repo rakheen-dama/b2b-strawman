@@ -8,7 +8,11 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountStatus;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountType;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.TrustCreditorAccountRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.UnidentifiedDeposit;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.UnidentifiedDepositService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.UnidentifiedDepositService.StatementCredit;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService.BankStatementLineResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustPostingService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
@@ -35,6 +39,10 @@ import org.springframework.transaction.annotation.Transactional;
  * no approval (the bank has already moved the money). Unmatching a recorded line reverses what it
  * created as a same-date contra through the normal reversal path.
  *
+ * <p>647B (ADR-376): a credit recorded as {@code UNIDENTIFIED_DEPOSIT} also opens an item ({@link
+ * UnidentifiedDepositService#open}) that its row names; unmatching that line is allowed only while
+ * the item is HELD with no pending resolution, and reverses the item with its row.
+ *
  * <p>Dependency direction: {@link TrustReconciliationService} calls this service (for {@code
  * unmatch}); this service never calls back — it builds its line response through the static {@link
  * BankStatementLineResponse#of}.
@@ -52,6 +60,7 @@ public class StatementLinePostingService {
   private final TrustTransactionRepository transactionRepository;
   private final TrustPostingService postingService;
   private final TrustTransactionService transactionService;
+  private final UnidentifiedDepositService unidentifiedDepositService;
   private final VerticalModuleGuard moduleGuard;
   private final AuditService auditService;
 
@@ -63,6 +72,7 @@ public class StatementLinePostingService {
       TrustTransactionRepository transactionRepository,
       TrustPostingService postingService,
       TrustTransactionService transactionService,
+      UnidentifiedDepositService unidentifiedDepositService,
       VerticalModuleGuard moduleGuard,
       AuditService auditService) {
     this.lineRepository = lineRepository;
@@ -72,6 +82,7 @@ public class StatementLinePostingService {
     this.transactionRepository = transactionRepository;
     this.postingService = postingService;
     this.transactionService = transactionService;
+    this.unidentifiedDepositService = unidentifiedDepositService;
     this.moduleGuard = moduleGuard;
     this.auditService = auditService;
   }
@@ -81,8 +92,9 @@ public class StatementLinePostingService {
   /**
    * What the firm confirms for a line. {@code chargeRecoverable} and {@code chargeVatAmount} are
    * required for {@code BANK_CHARGE} and refused on every other classification ({@code
-   * chargeVatAmount} at most two decimals: numeric(15,2)). {@code notes} is kept in the audit only
-   * (no column). 648B adds the section 86(4) interest fields.
+   * chargeVatAmount} at most two decimals: numeric(15,2)). {@code notes} is kept in the audit (no
+   * column on the line); an unidentified deposit also keeps it on its item (647B). 648B adds the
+   * section 86(4) interest fields.
    */
   public record RecordFromLineRequest(
       @NotNull StatementLineClassification classification,
@@ -92,8 +104,9 @@ public class StatementLinePostingService {
       @Size(max = 2000) String notes) {}
 
   /**
-   * The recorded line and the rows it created. {@code unidentifiedDepositId} (647B) and {@code
-   * investmentInterestId} (648B) are always null in 647A — the spec's response shape (§16.4.3).
+   * The recorded line and the rows it created. {@code unidentifiedDepositId} is the item an {@code
+   * UNIDENTIFIED_DEPOSIT} opened (647B), null otherwise; {@code investmentInterestId} (648B) is
+   * always null until then — the spec's response shape (§16.4.3).
    */
   public record RecordFromLineResponse(
       BankStatementLineResponse line,
@@ -105,10 +118,13 @@ public class StatementLinePostingService {
 
   /**
    * Records an {@code UNMATCHED} line as {@code request.classification()}: one posted {@code
-   * NON_CLIENT} row on the account's Fund interest-and-charges ledger, {@code amount = |line|},
-   * dated the line's date, linked to the line; the line becomes {@code RECORDED} and the
-   * statement's {@code matched_count} rises by one. Every check runs before the first write, so a
-   * refusal moves nothing. No sufficiency check: a Fund ledger in debit is allowed (ADR-381).
+   * NON_CLIENT} row on the account's ledger for the type (the Fund interest-and-charges ledger, or
+   * the unidentified-deposits ledger), {@code amount = |line|}, dated the line's date, linked to
+   * the line; the line becomes {@code RECORDED} and the statement's {@code matched_count} rises by
+   * one. An {@code UNIDENTIFIED_DEPOSIT} also opens a HELD item, saved before the row so the row
+   * names it (647B), and is refused on an investment account. Every check runs before the first
+   * write, so a refusal moves nothing. No sufficiency check: a Fund ledger in debit is allowed
+   * (ADR-381).
    */
   @Transactional
   public RecordFromLineResponse recordFromLine(UUID lineId, RecordFromLineRequest request) {
@@ -146,8 +162,15 @@ public class StatementLinePostingService {
     var amount = line.getAmount().abs();
     requireSignAgrees(classification, line.getAmount());
     requireChargeDetail(classification, request, amount);
+    if (classification == StatementLineClassification.UNIDENTIFIED_DEPOSIT
+        && account.getAccountType() == TrustAccountType.INVESTMENT) {
+      throw new InvalidStateException(
+          RECORD_TITLE,
+          "An unidentified deposit is recorded only on a trust banking account. On an investment"
+              + " account, exclude the line and take it up with the bank.");
+    }
 
-    // Rule 3 — the row, on the account's Fund ledger, linked to the line before its one save.
+    // Rule 3 — the row, on the type's creditor ledger, linked to the line before its one save.
     var type = classification.transactionType();
     var creditor =
         creditorAccountRepository
@@ -178,7 +201,19 @@ public class StatementLinePostingService {
       row.setChargeDetail(request.chargeRecoverable(), request.chargeVatAmount());
     }
     row.setBankStatementLineId(line.getId());
-    var saved = postingService.record(row);
+    TrustTransaction saved;
+    UUID unidentifiedDepositId = null;
+    if (classification == StatementLineClassification.UNIDENTIFIED_DEPOSIT) {
+      // The item first, so the row names it (chk_trust_txn_unidentified_item); open posts the row.
+      var credit =
+          new StatementCredit(
+              line.getId(), line.getTransactionDate(), line.getDescription(), line.getReference());
+      var opened = unidentifiedDepositService.open(credit, creditor.getId(), row, request.notes());
+      saved = opened.depositRow();
+      unidentifiedDepositId = opened.item().getId();
+    } else {
+      saved = postingService.record(row);
+    }
 
     // Rule 4 — the line (status and classification in one save: chk_bank_line_classification).
     line.setMatchStatus("RECORDED");
@@ -195,7 +230,7 @@ public class StatementLinePostingService {
     return new RecordFromLineResponse(
         BankStatementLineResponse.of(line, created.stream().map(TrustTransaction::getId).toList()),
         transactionService.toResponses(created),
-        null,
+        unidentifiedDepositId,
         null);
   }
 
@@ -205,6 +240,11 @@ public class StatementLinePostingService {
    * UNMATCHED} with no classification (its suggestion is kept); {@code matched_count} falls by one.
    * A row already reversed through the generic endpoint has nothing left to reverse — the line is
    * still reset. {@link TrustReconciliationService#unmatch} routes only recorded lines here.
+   *
+   * <p>An {@code UNIDENTIFIED_DEPOSIT} line (647B): its item is locked after the line and before
+   * any transaction (lock order line → item → transactions → statement) and must be HELD with no
+   * pending resolution (else 400 "Undo the allocation first", nothing moves); the opening row's
+   * contra carries the item, and the item becomes {@code REVERSED} on the line's date.
    */
   @Transactional
   public void unmatch(UUID lineId) {
@@ -218,6 +258,12 @@ public class StatementLinePostingService {
           "Cannot unmatch statement line", "Only a line recorded from the statement is reversed");
     }
     var classification = line.getClassification();
+
+    // 0. An unidentified deposit: lock its item and refuse while a resolution is pending (647B).
+    UnidentifiedDeposit item = null;
+    if (StatementLineClassification.UNIDENTIFIED_DEPOSIT.name().equals(classification)) {
+      item = unidentifiedDepositService.lockHeldForUnmatch(line.getTrustTransactionId());
+    }
 
     // 1. Reverse first: reverseForUnmatch finds the originals by their link to the line.
     var contras = transactionService.reverseForUnmatch(lineId);
@@ -240,6 +286,21 @@ public class StatementLinePostingService {
                 () -> new ResourceNotFoundException("BankStatement", line.getBankStatementId()));
     statement.decrementMatched();
     statementRepository.save(statement);
+
+    // 3b. The item follows its opening row: REVERSED on the contra's date (= the line's date).
+    if (item != null) {
+      var itemId = item.getId();
+      var depositTransactionId = item.getDepositTransactionId();
+      var contra =
+          contras.stream()
+              .filter(c -> depositTransactionId.equals(c.getReversalOf()))
+              .findFirst()
+              .orElseThrow(
+                  () ->
+                      new IllegalStateException(
+                          "The opening row of unidentified deposit " + itemId + " has no contra"));
+      unidentifiedDepositService.markReversedByUnmatch(item, contra);
+    }
 
     // 4. Audit — the reversed originals' ids (each contra already logs its own reversal).
     var details = new LinkedHashMap<String, Object>();
@@ -290,6 +351,9 @@ public class StatementLinePostingService {
       rowDetails.put("transaction_date", row.getTransactionDate().toString());
       rowDetails.put("bank_statement_line_id", line.getId().toString());
       rowDetails.put("creditor_account_id", row.getCreditorAccountId().toString());
+      if (row.getUnidentifiedDepositId() != null) {
+        rowDetails.put("unidentified_deposit_id", row.getUnidentifiedDepositId().toString());
+      }
       if (row.getChargeRecoverable() != null) {
         rowDetails.put("recoverable", row.getChargeRecoverable().toString());
         rowDetails.put("vat_amount", row.getChargeVatAmount().toPlainString());

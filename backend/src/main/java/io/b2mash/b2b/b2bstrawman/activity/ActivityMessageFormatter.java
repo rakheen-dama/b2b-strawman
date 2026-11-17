@@ -337,6 +337,15 @@ public class ActivityMessageFormatter {
       case "trust_bank_charge.recorded" -> formatTrustRecorded(actorName, "a bank charge", details);
       case "trust_charge_refund.recorded" ->
           formatTrustRecorded(actorName, "a bank charge refund", details);
+      // Unidentified deposits (Phase 92 647B, ADR-376): the row, the item it opens, its reversal
+      case "trust_unidentified_deposit.recorded" ->
+          formatTrustRecorded(actorName, "an unidentified deposit", details);
+      case "unidentified_deposit.opened" ->
+          "%s held an unidentified deposit%s until its owner is identified"
+              .formatted(actorName, ofMoney(details, "amount"));
+      case "unidentified_deposit.reversed" ->
+          "%s reversed an unidentified deposit%s when its statement line was unmatched"
+              .formatted(actorName, ofMoney(details, "amount"));
       case "bank_statement_line.recorded" ->
           "%s recorded a statement line%s%s"
               .formatted(
@@ -675,13 +684,16 @@ public class ActivityMessageFormatter {
       String entityType,
       Map<String, Object> details,
       AmountVisibility visibility) {
-    // A bank statement line is trust money too (647A): its recorded amount needs VIEW_TRUST.
+    // A bank statement line (647A) and an unidentified deposit (647B) are trust money too: their
+    // amounts need VIEW_TRUST.
     boolean trustEvent =
         "trust_transaction".equals(entityType)
             || "bank_statement_line".equals(entityType)
+            || "unidentified_deposit".equals(entityType)
             || (eventType != null
                 && (eventType.startsWith("trust_")
-                    || eventType.startsWith("bank_statement_line.")));
+                    || eventType.startsWith("bank_statement_line.")
+                    || eventType.startsWith("unidentified_deposit.")));
     Set<String> hidden;
     if (trustEvent) {
       hidden = visibility.trust() ? Set.of() : Set.of("amount", "reference");
@@ -784,6 +796,7 @@ public class ActivityMessageFormatter {
                   case FUND_SWEEP -> "interest paid to the Legal Practitioners' Fidelity Fund";
                   case BANK_CHARGE -> "a bank charge";
                   case CHARGE_REFUND -> "a bank charge refund";
+                  case UNIDENTIFIED_DEPOSIT -> "an unidentified deposit";
                 })
         .orElse(null);
   }
@@ -1071,6 +1084,7 @@ public class ActivityMessageFormatter {
             Map.entry("trust_account", "a trust account"),
             Map.entry("trust_investment", "a trust investment"),
             Map.entry("trust_reconciliation", "a trust reconciliation"),
+            Map.entry("unidentified_deposit", "an unidentified deposit"),
             Map.entry("org_settings", "the firm settings"),
             Map.entry("collection_activity", "a collection reminder"));
 

@@ -11,12 +11,19 @@ import { fetchTrustAccounts } from "@/app/(app)/org/[slug]/trust-accounting/acti
 import {
   fetchCreditorAccounts,
   fetchCreditorLedgerRows,
+  fetchUnidentifiedDeposits,
 } from "@/app/(app)/org/[slug]/trust-accounting/other-creditors/actions";
 import { FundLedgerTable } from "@/components/trust/FundLedgerTable";
+import { UnidentifiedDepositsTable } from "@/components/trust/UnidentifiedDepositsTable";
 import { formatCurrency } from "@/lib/format";
-import type { CreditorLedgerPage, TrustCreditorAccount } from "@/lib/types";
+import type {
+  CreditorLedgerPage,
+  TrustCreditorAccount,
+  UnidentifiedDepositPage,
+} from "@/lib/types";
 
 const FUND_LEDGER_PAGE_SIZE = 25;
+const UNIDENTIFIED_PAGE_SIZE = 25;
 
 // ── Page ──────────────────────────────────────────────────────────
 
@@ -24,18 +31,21 @@ const FUND_LEDGER_PAGE_SIZE = 25;
  * "Other trust creditors" (Phase 92 646B, ADR-376): the trust account's non-client creditor
  * ledgers — the Legal Practitioners' Fidelity Fund's interest and charges, and deposits whose owner
  * is not yet known — with their balances as at today. Under the balances, the Fund ledger's rows
- * with their running balances (647C), paged by `?page=`; the unidentified items arrive in 647B.
+ * with their running balances (647C), paged by `?page=`, and the unidentified deposits as items,
+ * oldest first with their age and status (647B), paged by `?itemsPage=`. Each list has its own
+ * fetch and error state, so one failing never hides the balances or the other list.
  */
 export default async function OtherTrustCreditorsPage({
   params,
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<{ page?: string; itemsPage?: string }>;
 }) {
   const { slug } = await params;
   const search = await searchParams;
   const pageNumber = Math.max(0, Number.parseInt(search.page ?? "0", 10) || 0);
+  const itemsPageNumber = Math.max(0, Number.parseInt(search.itemsPage ?? "0", 10) || 0);
 
   // Module gating
   let settings;
@@ -97,8 +107,28 @@ export default async function OtherTrustCreditorsPage({
     }
   }
 
+  // The unidentified deposits (647B): their own flag, like the Fund ledger's rows.
+  let items: UnidentifiedDepositPage | null = null;
+  let itemsError = false;
+  if (accountId && creditorAccounts) {
+    try {
+      items = await fetchUnidentifiedDeposits(accountId, {
+        page: itemsPageNumber,
+        size: UNIDENTIFIED_PAGE_SIZE,
+      });
+    } catch {
+      itemsError = true;
+    }
+  }
+
   const currency = settings.defaultCurrency ?? "ZAR";
-  const pageUrl = (page: number) => `/org/${slug}/trust-accounting/other-creditors?page=${page}`;
+  // Each list pages on its own parameter (`?page=` the Fund ledger, `?itemsPage=` the items) and
+  // keeps the other's place.
+  const listUrl = (page: number, itemsPage: number) =>
+    `/org/${slug}/trust-accounting/other-creditors?page=${page}` +
+    (itemsPage > 0 ? `&itemsPage=${itemsPage}` : "");
+  const pageUrl = (page: number) => listUrl(page, itemsPageNumber);
+  const itemsPageUrl = (itemsPage: number) => listUrl(pageNumber, itemsPage);
 
   return (
     <div className="space-y-8" data-testid="other-creditors-page">
@@ -207,46 +237,118 @@ export default async function OtherTrustCreditorsPage({
                     )
                   }
                 />
-                {fundRows.page.totalPages > 1 && (
-                  <div className="mt-4 flex items-center justify-between border-t border-slate-200 pt-4 dark:border-slate-700">
-                    <p className="text-sm text-slate-500 dark:text-slate-400">
-                      Page {fundRows.page.number + 1} of {fundRows.page.totalPages}
-                    </p>
-                    <div className="flex items-center gap-2">
-                      {fundRows.page.number > 0 ? (
-                        <Button asChild variant="outline" size="sm">
-                          <Link href={pageUrl(fundRows.page.number - 1)}>
-                            <ChevronLeft className="mr-1 size-4" />
-                            Previous
-                          </Link>
-                        </Button>
-                      ) : (
-                        <Button variant="outline" size="sm" disabled>
-                          <ChevronLeft className="mr-1 size-4" />
-                          Previous
-                        </Button>
-                      )}
-                      {fundRows.page.number < fundRows.page.totalPages - 1 ? (
-                        <Button asChild variant="outline" size="sm">
-                          <Link href={pageUrl(fundRows.page.number + 1)}>
-                            Next
-                            <ChevronRight className="ml-1 size-4" />
-                          </Link>
-                        </Button>
-                      ) : (
-                        <Button variant="outline" size="sm" disabled>
-                          Next
-                          <ChevronRight className="ml-1 size-4" />
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                )}
+                <LedgerPager page={fundRows.page} hrefFor={pageUrl} />
               </>
             )}
           </CardContent>
         </Card>
       )}
+
+      {/* The unidentified deposits, as items (647B) */}
+      {creditorAccounts && (
+        <Card data-testid="unidentified-deposits-section">
+          <CardHeader>
+            <CardTitle>Unidentified deposits</CardTitle>
+            <CardDescription>
+              Bank credits whose owner is not yet known, oldest first, with their age
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {itemsError && (
+              <p
+                role="alert"
+                className="text-sm text-slate-500 dark:text-slate-400"
+                data-testid="unidentified-deposits-error"
+              >
+                Unable to load the unidentified deposits. Please try again later.
+              </p>
+            )}
+            {items && (
+              <>
+                <UnidentifiedDepositsTable
+                  items={items.content}
+                  currency={currency}
+                  empty={
+                    itemsPageNumber > 0 ? (
+                      <p
+                        className="py-6 text-center text-sm text-slate-500 dark:text-slate-400"
+                        data-testid="unidentified-deposits-page-out-of-range"
+                      >
+                        No unidentified deposits on this page.{" "}
+                        <Link
+                          href={itemsPageUrl(0)}
+                          className="text-foreground font-medium underline underline-offset-4"
+                        >
+                          Go to the first page
+                        </Link>
+                      </p>
+                    ) : (
+                      <p
+                        className="py-6 text-center text-sm text-slate-500 dark:text-slate-400"
+                        data-testid="unidentified-deposits-empty"
+                      >
+                        No unidentified deposits. Record an unknown credit from the bank statement
+                        when you reconcile.
+                      </p>
+                    )
+                  }
+                />
+                <LedgerPager page={items.page} hrefFor={itemsPageUrl} />
+              </>
+            )}
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+// ── Pager ─────────────────────────────────────────────────────────
+
+/** Previous / next links for one server-paged list; nothing when it fits on one page. */
+function LedgerPager({
+  page,
+  hrefFor,
+}: {
+  page: { number: number; totalPages: number };
+  hrefFor: (page: number) => string;
+}) {
+  if (page.totalPages <= 1) {
+    return null;
+  }
+  return (
+    <div className="mt-4 flex items-center justify-between border-t border-slate-200 pt-4 dark:border-slate-700">
+      <p className="text-sm text-slate-500 dark:text-slate-400">
+        Page {page.number + 1} of {page.totalPages}
+      </p>
+      <div className="flex items-center gap-2">
+        {page.number > 0 ? (
+          <Button asChild variant="outline" size="sm">
+            <Link href={hrefFor(page.number - 1)}>
+              <ChevronLeft className="mr-1 size-4" />
+              Previous
+            </Link>
+          </Button>
+        ) : (
+          <Button variant="outline" size="sm" disabled>
+            <ChevronLeft className="mr-1 size-4" />
+            Previous
+          </Button>
+        )}
+        {page.number < page.totalPages - 1 ? (
+          <Button asChild variant="outline" size="sm">
+            <Link href={hrefFor(page.number + 1)}>
+              Next
+              <ChevronRight className="ml-1 size-4" />
+            </Link>
+          </Button>
+        ) : (
+          <Button variant="outline" size="sm" disabled>
+            Next
+            <ChevronRight className="ml-1 size-4" />
+          </Button>
+        )}
+      </div>
     </div>
   );
 }

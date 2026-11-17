@@ -123,6 +123,15 @@ public class TrustTransaction {
   @Column(name = "investment_id")
   private UUID investmentId;
 
+  /**
+   * The unidentified deposit a row belongs to (647B, ADR-376): required on UNIDENTIFIED_DEPOSIT,
+   * UNIDENT_ALLOC_OUT and UNIDENT_FUND_PAY (chk_trust_txn_unidentified_item), copied onto their
+   * REVERSAL rows (copyLedgerTargetFrom) and onto UNIDENT_ALLOC_IN (647D). It is what makes "open
+   * as at a date" derivable from the ledger (EQ-4).
+   */
+  @Column(name = "unidentified_deposit_id")
+  private UUID unidentifiedDepositId;
+
   // --- Bank-charge detail (Phase 92 / 647A, ADR-381): non-null exactly on BANK_CHARGE rows
   // (chk_trust_txn_charge: 0 <= charge_vat_amount < amount).
 
@@ -277,6 +286,11 @@ public class TrustTransaction {
     return investmentId;
   }
 
+  /** The unidentified deposit the row belongs to (647B); null when it belongs to none. */
+  public UUID getUnidentifiedDepositId() {
+    return unidentifiedDepositId;
+  }
+
   public Boolean getChargeRecoverable() {
     return chargeRecoverable;
   }
@@ -368,6 +382,11 @@ public class TrustTransaction {
     this.creditorAccountId = creditorAccountId;
   }
 
+  /** Set once, before the row is first saved (647B open; 647D resolution rows). */
+  public void setUnidentifiedDepositId(UUID unidentifiedDepositId) {
+    this.unidentifiedDepositId = unidentifiedDepositId;
+  }
+
   /** A BANK_CHARGE's detail (647A; chk_trust_txn_charge — both set exactly on BANK_CHARGE rows). */
   public void setChargeDetail(Boolean recoverable, BigDecimal vatAmount) {
     this.chargeRecoverable = recoverable;
@@ -375,13 +394,15 @@ public class TrustTransaction {
   }
 
   /**
-   * A contra carries its original's ledger target (§16.3.11): creditor account and investment. The
-   * client and matter are copied by the constructor in {@code newContra}. Charge detail is NOT
-   * copied — {@code chk_trust_txn_charge} requires it null on a REVERSAL. Package-private: {@link
-   * TrustPostingService} only.
+   * A contra carries its original's ledger target (§16.3.11): creditor account, investment and
+   * unidentified deposit (647B — a contra names its item, so EQ-4 derives "open as at a date" from
+   * the item's own rows). The client and matter are copied by the constructor in {@code newContra}.
+   * Charge detail is NOT copied — {@code chk_trust_txn_charge} requires it null on a REVERSAL.
+   * Package-private: {@link TrustPostingService} only.
    */
   void copyLedgerTargetFrom(TrustTransaction original) {
     this.creditorAccountId = original.creditorAccountId;
     this.investmentId = original.investmentId;
+    this.unidentifiedDepositId = original.unidentifiedDepositId;
   }
 }

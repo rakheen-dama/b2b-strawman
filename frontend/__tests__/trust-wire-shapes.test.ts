@@ -15,6 +15,7 @@ import type {
   TrustTransaction,
   TrustTransactionDirection,
   TrustTransactionTypeInfo,
+  UnidentifiedDeposit,
 } from "@/lib/types/trust";
 
 const { records, enums } = contract;
@@ -64,6 +65,7 @@ describe("trust wire shapes match the backend contract (ADR-365)", () => {
       "TrustReconciliationResponse",
       "TrustTransactionResponse",
       "TrustTransactionTypeResponse",
+      "UnidentifiedDepositResponse",
     ]);
   });
 
@@ -278,6 +280,30 @@ describe("trust wire shapes match the backend contract (ADR-365)", () => {
       investmentInterestId: null,
     };
     expect(Object.keys(literal)).toEqual(componentNames(records.RecordFromLineResponse));
+  });
+
+  it("UnidentifiedDeposit ↔ UnidentifiedDepositService.UnidentifiedDepositResponse (647B)", () => {
+    const literal: Required<UnidentifiedDeposit> = {
+      id: "",
+      trustAccountId: "",
+      receivedDate: "",
+      bankDescription: "",
+      bankReference: null,
+      amount: 0,
+      status: "HELD",
+      ageDays: 0,
+      olderThanOneYear: false,
+      allocatedClientId: null,
+      allocatedClientName: null,
+      allocatedMatterId: null,
+      allocatedMatterName: null,
+      resolutionTransactionId: null,
+      resolutionStatus: null,
+      resolvedDate: null,
+      bankStatementLineId: "",
+      notes: null,
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(records.UnidentifiedDepositResponse));
   });
 
   it("pins exactly the enums the trust records carry", () => {

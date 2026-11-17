@@ -51,7 +51,9 @@ interface RecordFromStatementDialogProps {
  * Exclude — never an adjacent `asChild` trigger). Offers only the classifications that agree with
  * the line's sign; a bank charge also asks whether it is on the Fidelity Fund's recoverable list
  * (the firm's assertion — Kazi does not check it, ADR-381) and its VAT. The parser's suggestion
- * (647C) pre-selects a classification; the firm still confirms it.
+ * (647C) pre-selects a classification; the firm still confirms it. A credit can also be recorded
+ * as an unidentified deposit (647B, ADR-376), held as an item until its owner is identified; the
+ * dialog filters by sign only, so on an investment account the server's refusal is shown here.
  */
 export function RecordFromStatementDialog({
   line,
@@ -174,6 +176,11 @@ export function RecordFromStatementDialog({
                     {suggested && field.value === suggested && (
                       <FormDescription data-testid="classification-suggested-note">
                         Suggested from the line&apos;s description — check it before recording.
+                      </FormDescription>
+                    )}
+                    {field.value === "UNIDENTIFIED_DEPOSIT" && (
+                      <FormDescription data-testid="classification-unidentified-note">
+                        Held on the unidentified deposits ledger until you identify the owner.
                       </FormDescription>
                     )}
                     <FormMessage />

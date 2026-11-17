@@ -126,9 +126,10 @@ const hasAtMostTwoDecimals = (value: number) =>
 
 export const recordFromStatementSchema = z
   .object({
-    classification: z.enum(["FUND_INTEREST", "FUND_SWEEP", "BANK_CHARGE", "CHARGE_REFUND"], {
-      message: "Choose what this line is",
-    }),
+    classification: z.enum(
+      ["FUND_INTEREST", "FUND_SWEEP", "BANK_CHARGE", "CHARGE_REFUND", "UNIDENTIFIED_DEPOSIT"],
+      { message: "Choose what this line is" }
+    ),
     chargeRecoverable: z.boolean().optional(),
     chargeVatAmount: z
       .number()

@@ -1299,6 +1299,33 @@ class ActivityMessageFormatterTest {
             "bank_statement_line",
             d("classification", "UNIDENTIFIED_SOMETHING", "amount", "10"),
             "Alice recorded a statement line of R10,00"),
+        // --- unidentified deposits (Phase 92 647B) ---
+        Arguments.of(
+            "bank_statement_line.recorded",
+            "bank_statement_line",
+            d("classification", "UNIDENTIFIED_DEPOSIT", "amount", "300.00"),
+            "Alice recorded a statement line as an unidentified deposit of R300,00"),
+        Arguments.of(
+            "trust_unidentified_deposit.recorded",
+            "trust_transaction",
+            d("amount", "300.00", "reference", "STMT-4-20261103"),
+            "Alice recorded an unidentified deposit of R300,00 (STMT-4-20261103)"),
+        Arguments.of(
+            "unidentified_deposit.opened",
+            "unidentified_deposit",
+            d("amount", "300.00", "received_date", "2026-11-03"),
+            "Alice held an unidentified deposit of R300,00 until its owner is identified"),
+        Arguments.of(
+            "unidentified_deposit.opened",
+            "unidentified_deposit",
+            d(),
+            "Alice held an unidentified deposit until its owner is identified"),
+        Arguments.of(
+            "unidentified_deposit.reversed",
+            "unidentified_deposit",
+            d("amount", "300.00", "resolved_date", "2026-11-03"),
+            "Alice reversed an unidentified deposit of R300,00 when its statement line was"
+                + " unmatched"),
         Arguments.of(
             "bank_statement_line.unmatched",
             "bank_statement_line",
@@ -1808,6 +1835,9 @@ class ActivityMessageFormatterTest {
           new String[] {"trust_fund_sweep.recorded", "trust_transaction"},
           new String[] {"trust_bank_charge.recorded", "trust_transaction"},
           new String[] {"trust_charge_refund.recorded", "trust_transaction"},
+          new String[] {"trust_unidentified_deposit.recorded", "trust_transaction"},
+          new String[] {"unidentified_deposit.opened", "unidentified_deposit"},
+          new String[] {"unidentified_deposit.reversed", "unidentified_deposit"},
           new String[] {"bank_statement_line.recorded", "bank_statement_line"},
           new String[] {"bank_statement_line.unmatched", "bank_statement_line"},
           new String[] {"trust_payment.approved", "trust_transaction"},
@@ -2010,6 +2040,36 @@ class ActivityMessageFormatterTest {
                 "bank_statement_line",
                 details))
         .isEqualTo("Alice recorded a statement line as a bank charge of R57,50");
+  }
+
+  @Test
+  void unidentifiedDepositEventsAreTrustEvents_amountNeedsViewTrust() {
+    // 647B: an unidentified deposit is trust money — FINANCIAL_VISIBILITY alone must not read its
+    // amount; VIEW_TRUST does.
+    var details = d("amount", "300.00", "received_date", "2026-11-03");
+    for (var key : List.of("unidentified_deposit.opened", "unidentified_deposit.reversed")) {
+      String noTrust =
+          messageAs(
+              new ActivityMessageFormatter.AmountVisibility(true, false),
+              key,
+              "unidentified_deposit",
+              details);
+      assertThat(noTrust).as(key).doesNotContain("300").doesNotContain("R");
+      String withTrust =
+          messageAs(
+              new ActivityMessageFormatter.AmountVisibility(false, true),
+              key,
+              "unidentified_deposit",
+              details);
+      assertThat(withTrust).as(key).contains("of R300,00");
+    }
+    assertThat(
+            messageAs(
+                new ActivityMessageFormatter.AmountVisibility(true, false),
+                "unidentified_deposit.opened",
+                "unidentified_deposit",
+                details))
+        .isEqualTo("Alice held an unidentified deposit until its owner is identified");
   }
 
   @Test

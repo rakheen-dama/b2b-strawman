@@ -130,6 +130,24 @@ public class AuditEventTypeRegistry {
                 "Bank charge refund recorded",
                 AuditSeverity.INFO,
                 AuditEventGroup.FINANCIAL),
+            // FINANCIAL — unidentified deposits (Phase 92 647B, ADR-376): the row recorded from a
+            // statement line and the item it opens / its reversal when the line is unmatched.
+            // Additive keys (pin 55 → 58).
+            new AuditEventTypeMetadata(
+                "trust_unidentified_deposit.recorded",
+                "Unidentified deposit recorded",
+                AuditSeverity.INFO,
+                AuditEventGroup.FINANCIAL),
+            new AuditEventTypeMetadata(
+                "unidentified_deposit.opened",
+                "Unidentified deposit held",
+                AuditSeverity.INFO,
+                AuditEventGroup.FINANCIAL),
+            new AuditEventTypeMetadata(
+                "unidentified_deposit.reversed",
+                "Unidentified deposit reversed",
+                AuditSeverity.INFO,
+                AuditEventGroup.FINANCIAL),
             // DATA — data protection
             new AuditEventTypeMetadata(
                 "dataprotection.dsar.*",

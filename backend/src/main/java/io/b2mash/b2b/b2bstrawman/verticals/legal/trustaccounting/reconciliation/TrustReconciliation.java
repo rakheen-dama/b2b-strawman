@@ -50,6 +50,28 @@ public class TrustReconciliation {
   @Column(name = "adjusted_bank_balance", nullable = false, precision = 15, scale = 2)
   private BigDecimal adjustedBankBalance;
 
+  // The creditor side as calculated as at period_end (646C, V19, §16.2.11). integrity_flags (V19)
+  // is mapped and first written by 649C.
+  @Column(name = "investment_creditor_total", nullable = false, precision = 15, scale = 2)
+  private BigDecimal investmentCreditorTotal;
+
+  @Column(name = "fund_ledger_balance", nullable = false, precision = 15, scale = 2)
+  private BigDecimal fundLedgerBalance;
+
+  @Column(name = "unidentified_deposit_total", nullable = false, precision = 15, scale = 2)
+  private BigDecimal unidentifiedDepositTotal;
+
+  @Column(name = "inter_account_balance", nullable = false, precision = 15, scale = 2)
+  private BigDecimal interAccountBalance;
+
+  /** The six-term creditor side (§16.1.2 {@code creditors(A,D)}). */
+  @Column(name = "creditor_total", nullable = false, precision = 15, scale = 2)
+  private BigDecimal creditorTotal;
+
+  /** {@code adjusted_bank_balance − creditor_total} (§16.3.4 step 3). */
+  @Column(name = "difference", nullable = false, precision = 15, scale = 2)
+  private BigDecimal difference;
+
   @Column(name = "is_balanced", nullable = false)
   private boolean isBalanced;
 
@@ -84,6 +106,12 @@ public class TrustReconciliation {
     this.outstandingDeposits = BigDecimal.ZERO;
     this.outstandingPayments = BigDecimal.ZERO;
     this.adjustedBankBalance = BigDecimal.ZERO;
+    this.investmentCreditorTotal = BigDecimal.ZERO;
+    this.fundLedgerBalance = BigDecimal.ZERO;
+    this.unidentifiedDepositTotal = BigDecimal.ZERO;
+    this.interAccountBalance = BigDecimal.ZERO;
+    this.creditorTotal = BigDecimal.ZERO;
+    this.difference = BigDecimal.ZERO;
     this.isBalanced = false;
     this.status = ReconciliationStatus.DRAFT;
   }
@@ -210,5 +238,53 @@ public class TrustReconciliation {
 
   public Instant getUpdatedAt() {
     return updatedAt;
+  }
+
+  public BigDecimal getInvestmentCreditorTotal() {
+    return investmentCreditorTotal;
+  }
+
+  public void setInvestmentCreditorTotal(BigDecimal investmentCreditorTotal) {
+    this.investmentCreditorTotal = investmentCreditorTotal;
+  }
+
+  public BigDecimal getFundLedgerBalance() {
+    return fundLedgerBalance;
+  }
+
+  public void setFundLedgerBalance(BigDecimal fundLedgerBalance) {
+    this.fundLedgerBalance = fundLedgerBalance;
+  }
+
+  public BigDecimal getUnidentifiedDepositTotal() {
+    return unidentifiedDepositTotal;
+  }
+
+  public void setUnidentifiedDepositTotal(BigDecimal unidentifiedDepositTotal) {
+    this.unidentifiedDepositTotal = unidentifiedDepositTotal;
+  }
+
+  public BigDecimal getInterAccountBalance() {
+    return interAccountBalance;
+  }
+
+  public void setInterAccountBalance(BigDecimal interAccountBalance) {
+    this.interAccountBalance = interAccountBalance;
+  }
+
+  public BigDecimal getCreditorTotal() {
+    return creditorTotal;
+  }
+
+  public void setCreditorTotal(BigDecimal creditorTotal) {
+    this.creditorTotal = creditorTotal;
+  }
+
+  public BigDecimal getDifference() {
+    return difference;
+  }
+
+  public void setDifference(BigDecimal difference) {
+    this.difference = difference;
   }
 }

@@ -123,6 +123,7 @@ import ReconciliationListPage from "@/app/(app)/org/[slug]/trust-accounting/reco
 import NewReconciliationPage from "@/app/(app)/org/[slug]/trust-accounting/reconciliation/new/page";
 import { BankStatementUpload } from "@/components/trust/BankStatementUpload";
 import { ReconciliationSplitPane } from "@/components/trust/ReconciliationSplitPane";
+import { formatCurrency } from "@/lib/format";
 import type {
   BankStatementLineResponse,
   TrustReconciliationResponse,
@@ -138,11 +139,25 @@ function makeRecon(overrides: Record<string, unknown> = {}) {
     periodEnd: "2026-03-31",
     bankStatementId: "stmt-1",
     bankBalance: 142500,
-    cashbookBalance: 145000,
-    clientLedgerTotal: 145000,
     outstandingDeposits: 2500,
     outstandingPayments: 0,
     adjustedBankBalance: 145000,
+    cashbookBalance: 145000,
+    clientLedgerTotal: 145000,
+    creditorBreakdown: {
+      clientLedgers: 145000,
+      investmentCreditors: 0,
+      fundInterestAndCharges: 0,
+      unidentifiedDeposits: 0,
+      otherNonClient: 0,
+      interAccount: 0,
+      total: 145000,
+    },
+    bankToCashbookDifference: 0,
+    cashbookToCreditorsDifference: 0,
+    difference: 0,
+    excludedLinesTotal: 0,
+    unresolvedLineCount: 0,
     isBalanced: true,
     status: "COMPLETED",
     completedBy: "member-1",
@@ -412,6 +427,144 @@ describe("Trust Reconciliation", () => {
     const completeBtn = screen.getByTestId("complete-reconciliation-btn");
     expect(completeBtn).toBeDisabled();
     expect(screen.getByText("Reconciliation is not balanced")).toBeInTheDocument();
+  });
+
+  // 646C R8: the summary is two comparisons with their own differences, the
+  // creditor breakdown, the unresolved-line count and the excluded-lines total.
+  it("shows both comparisons, the creditor breakdown and the line totals as at the period end", () => {
+    render(
+      <ReconciliationSplitPane
+        lines={[]}
+        unmatchedTransactions={[]}
+        reconciliation={
+          makeRecon({
+            status: "DRAFT",
+            isBalanced: false,
+            bankBalance: 101000,
+            outstandingDeposits: 0,
+            outstandingPayments: 500,
+            adjustedBankBalance: 100500,
+            cashbookBalance: 101630,
+            clientLedgerTotal: 100380,
+            creditorBreakdown: {
+              clientLedgers: 100380,
+              investmentCreditors: 0,
+              fundInterestAndCharges: 0,
+              unidentifiedDeposits: 1250,
+              otherNonClient: 0,
+              interAccount: -2000,
+              total: 99630,
+            },
+            bankToCashbookDifference: -1130,
+            cashbookToCreditorsDifference: 2000,
+            difference: 870,
+            excludedLinesTotal: -75,
+            unresolvedLineCount: 2,
+          }) as unknown as TrustReconciliationResponse
+        }
+        currency="ZAR"
+        onMatch={vi.fn()}
+        onExclude={vi.fn()}
+        onUnmatch={vi.fn()}
+        onComplete={vi.fn()}
+        isCompleting={false}
+      />
+    );
+
+    const summary = screen.getByTestId("balance-summary");
+    expect(summary).toHaveTextContent(/As at 31 Mar 2026/);
+    expect(summary).not.toHaveTextContent("Three-Way Balance Check");
+
+    const bankCashbook = screen.getByTestId("comparison-bank-cashbook");
+    expect(bankCashbook).toHaveTextContent("Bank balance");
+    expect(bankCashbook).toHaveTextContent("Adjusted bank balance");
+    expect(bankCashbook).toHaveTextContent("Cashbook");
+    expect(screen.getByTestId("bank-to-cashbook-difference").textContent).toContain(
+      formatCurrency(-1130, "ZAR")
+    );
+
+    const cashbookCreditors = screen.getByTestId("comparison-cashbook-creditors");
+    expect(cashbookCreditors).toHaveTextContent("Trust creditors");
+    expect(cashbookCreditors.textContent).toContain(formatCurrency(99630, "ZAR"));
+    expect(screen.getByTestId("cashbook-to-creditors-difference").textContent).toContain(
+      formatCurrency(2000, "ZAR")
+    );
+
+    const breakdown = screen.getByTestId("creditor-breakdown");
+    expect(breakdown).toHaveTextContent("Client ledgers");
+    expect(breakdown).toHaveTextContent(
+      "Legal Practitioners' Fidelity Fund — interest and charges"
+    );
+    expect(breakdown).toHaveTextContent("Unidentified deposits");
+    expect(breakdown).toHaveTextContent("Placed in section 86(3) investment accounts");
+    // zero terms shown only where non-zero
+    expect(breakdown).not.toHaveTextContent("Investment creditors");
+    expect(breakdown).not.toHaveTextContent("Other non-client trust creditors");
+
+    expect(screen.getByTestId("unresolved-line-count")).toHaveTextContent(
+      "2 statement lines are neither matched nor excluded"
+    );
+    expect(screen.getByTestId("excluded-lines-total").textContent).toContain(
+      formatCurrency(-75, "ZAR")
+    );
+  });
+
+  // 646C R8 / ruling O4: unresolved lines are shown but do not gate Complete in
+  // 646C — the backend still completes on isBalanced alone (the gate is 649C).
+  it("keeps Complete enabled when balanced even with unresolved lines (gate lands in 649C)", () => {
+    render(
+      <ReconciliationSplitPane
+        lines={[]}
+        unmatchedTransactions={[]}
+        reconciliation={
+          makeRecon({
+            status: "DRAFT",
+            isBalanced: true,
+            unresolvedLineCount: 1,
+          }) as unknown as TrustReconciliationResponse
+        }
+        currency="ZAR"
+        onMatch={vi.fn()}
+        onExclude={vi.fn()}
+        onUnmatch={vi.fn()}
+        onComplete={vi.fn()}
+        isCompleting={false}
+      />
+    );
+
+    expect(screen.getByTestId("unresolved-line-count")).toHaveTextContent(
+      "1 statement line is neither matched nor excluded"
+    );
+    expect(screen.getByTestId("complete-reconciliation-btn")).toBeEnabled();
+  });
+
+  // 646C R9 (F-646E-1): an unmatched row prints its registry label, never the raw type.
+  it("labels an unmatched transaction from its typeLabel, not the raw type", () => {
+    render(
+      <ReconciliationSplitPane
+        lines={[]}
+        unmatchedTransactions={[
+          makeTx({
+            id: "tx-ft",
+            transactionType: "FEE_TRANSFER",
+            typeLabel: "Fee transfer",
+            direction: "OUT",
+            reference: "FT-001",
+          }),
+        ]}
+        reconciliation={null}
+        currency="ZAR"
+        onMatch={vi.fn()}
+        onExclude={vi.fn()}
+        onUnmatch={vi.fn()}
+        onComplete={vi.fn()}
+        isCompleting={false}
+      />
+    );
+
+    const row = screen.getByTestId("transaction-tx-ft");
+    expect(row).toHaveTextContent("Fee transfer");
+    expect(row).not.toHaveTextContent("FEE TRANSFER");
   });
   // Test 6: the wizard reaches the review step after auto-match. The backend's
   // auto-match response is counts only (TrustReconciliationService.MatchResult);
@@ -710,5 +863,53 @@ describe("Trust Reconciliation", () => {
       });
     });
     expect(await screen.findByTestId("reconciliation-split-pane")).toBeInTheDocument();
+  });
+
+  // Test 11: `max` on the date input does not stop a typed future date, so Next
+  // refuses a period end after today (South Africa time) and stays on step 1.
+  describe("period end in the future", () => {
+    beforeEach(() => {
+      // 22:30 UTC on 17 Nov is 00:30 on 18 Nov in South Africa (UTC+2): today is 2026-11-18.
+      vi.useFakeTimers({ toFake: ["Date"] });
+      vi.setSystemTime(new Date("2026-11-17T22:30:00Z"));
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    async function renderStepOne() {
+      await act(async () => {
+        render(
+          <Suspense fallback={null}>
+            <NewReconciliationPage params={Promise.resolve({ slug: "acme" })} />
+          </Suspense>
+        );
+      });
+      await waitFor(() => expect(screen.getByTestId("account-select")).toHaveValue("acc-1"));
+    }
+
+    it("keeps step 1 with an error when the period end is after today", async () => {
+      await renderStepOne();
+      fireEvent.change(screen.getByTestId("period-end-input"), {
+        target: { value: "2026-11-19" },
+      });
+      fireEvent.click(screen.getByTestId("step-next-btn"));
+
+      expect(screen.getByTestId("step-select")).toBeInTheDocument();
+      expect(screen.queryByTestId("file-input")).not.toBeInTheDocument();
+      expect(screen.getByText("The period end cannot be in the future")).toBeInTheDocument();
+    });
+
+    it("advances to the upload step when the period end is today", async () => {
+      await renderStepOne();
+      fireEvent.change(screen.getByTestId("period-end-input"), {
+        target: { value: "2026-11-18" },
+      });
+      fireEvent.click(screen.getByTestId("step-next-btn"));
+
+      expect(await screen.findByTestId("file-input")).toBeInTheDocument();
+      expect(screen.queryByText("The period end cannot be in the future")).not.toBeInTheDocument();
+    });
   });
 });

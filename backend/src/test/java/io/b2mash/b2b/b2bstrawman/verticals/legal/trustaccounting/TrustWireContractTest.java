@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService;
 import java.io.IOException;
 import java.lang.reflect.RecordComponent;
@@ -39,7 +40,9 @@ class TrustWireContractTest {
   static final List<Class<?>> PINNED =
       List.of(
           TrustTransactionService.TrustTransactionResponse.class,
-          TrustTransactionService.TrustTransactionTypeResponse.class);
+          TrustTransactionService.TrustTransactionTypeResponse.class,
+          TrustReconciliationService.TrustReconciliationResponse.class,
+          TrustReconciliationService.CreditorBreakdown.class);
 
   private static final String UPDATE_FLAG = "trust.contract.update";
   private static final Path SNAPSHOT = Path.of("src/test/resources/wire/trust-contract.json");

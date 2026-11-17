@@ -22,6 +22,7 @@ import {
 import { fetchTrustAccounts } from "@/app/(app)/org/[slug]/trust-accounting/actions";
 import { fetchTransactions } from "@/app/(app)/org/[slug]/trust-accounting/transactions/actions";
 import { formatCurrency } from "@/lib/format";
+import { todayInSA } from "@b2mash/shared/date";
 import type {
   TrustAccount,
   BankStatementResponse,
@@ -56,6 +57,7 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
   const [accounts, setAccounts] = useState<TrustAccount[]>([]);
   const [selectedAccountId, setSelectedAccountId] = useState<string>("");
   const [periodEnd, setPeriodEnd] = useState("");
+  const [periodEndError, setPeriodEndError] = useState<string | null>(null);
   const [loadingAccounts, setLoadingAccounts] = useState(true);
 
   // Step 2: Upload
@@ -404,7 +406,9 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
           <CardHeader>
             <CardTitle>Select Trust Account & Period</CardTitle>
             <CardDescription>
-              Choose the trust account and the statement period end date
+              Choose the trust account and the period end. The period end is the firm&apos;s choice
+              and every figure is calculated as at that date; the bank statement must have no line
+              after the period end.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -450,17 +454,38 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
                     value={periodEnd}
                     onChange={(e) => {
                       setPeriodEnd(e.target.value);
+                      setPeriodEndError(null);
                       resetFromStep2();
                     }}
+                    max={todayInSA()}
+                    aria-invalid={periodEndError ? true : undefined}
+                    aria-describedby={periodEndError ? "period-end-error" : undefined}
                     className="w-48"
                     data-testid="period-end-input"
                   />
+                  {periodEndError && (
+                    <p
+                      id="period-end-error"
+                      role="alert"
+                      className="text-sm text-red-700 dark:text-red-300"
+                      data-testid="period-end-error"
+                    >
+                      {periodEndError}
+                    </p>
+                  )}
                 </div>
 
                 <div className="flex justify-end pt-2">
                   <Button
                     type="button"
-                    onClick={() => setCurrentStep(2)}
+                    onClick={() => {
+                      // `max` does not stop a typed date; the backend refuses a future period end.
+                      if (periodEnd > todayInSA()) {
+                        setPeriodEndError("The period end cannot be in the future");
+                        return;
+                      }
+                      setCurrentStep(2);
+                    }}
                     disabled={!selectedAccountId || !periodEnd}
                     data-testid="step-next-btn"
                   >
@@ -609,10 +634,10 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
                 </div>
                 <div>
                   <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                    Client Ledger Total
+                    Trust creditors
                   </p>
                   <p className="mt-1 font-mono text-lg text-slate-950 tabular-nums dark:text-slate-50">
-                    {formatCurrency(reconciliation.clientLedgerTotal, DEFAULT_CURRENCY)}
+                    {formatCurrency(reconciliation.creditorBreakdown.total, DEFAULT_CURRENCY)}
                   </p>
                 </div>
               </div>

@@ -8,6 +8,7 @@ import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustBooksService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.parser.AbsaCsvParser;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.parser.BankStatementParseException;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.parser.BankStatementParser;
@@ -17,7 +18,6 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.parser.NedbankCsvParser;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.parser.ParsedStatement;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.parser.StandardBankCsvParser;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedgerQueryRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustPostingService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
@@ -27,9 +27,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -43,16 +46,21 @@ public class TrustReconciliationService {
   private static final String MODULE_ID = "trust_accounting";
   private static final BigDecimal AUTO_MATCH_THRESHOLD = new BigDecimal("0.80");
 
+  /** How a period end is written in a refusal ("31 March 2026"). */
+  private static final DateTimeFormatter PERIOD_END_FORMAT =
+      DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.ENGLISH);
+
   private final BankStatementRepository bankStatementRepository;
   private final BankStatementLineRepository bankStatementLineRepository;
   private final TrustAccountRepository trustAccountRepository;
   private final TrustTransactionRepository trustTransactionRepository;
   private final TrustReconciliationRepository trustReconciliationRepository;
-  private final TrustLedgerQueryRepository ledgerQueries;
+  private final TrustBooksService trustBooksService;
   private final TrustPostingService postingService;
   private final StorageService storageService;
   private final VerticalModuleGuard moduleGuard;
   private final AuditService auditService;
+  private final Clock clock;
   private final List<BankStatementParser> parsers;
 
   public TrustReconciliationService(
@@ -61,21 +69,23 @@ public class TrustReconciliationService {
       TrustAccountRepository trustAccountRepository,
       TrustTransactionRepository trustTransactionRepository,
       TrustReconciliationRepository trustReconciliationRepository,
-      TrustLedgerQueryRepository ledgerQueries,
+      TrustBooksService trustBooksService,
       TrustPostingService postingService,
       StorageService storageService,
       VerticalModuleGuard moduleGuard,
-      AuditService auditService) {
+      AuditService auditService,
+      Clock clock) {
     this.bankStatementRepository = bankStatementRepository;
     this.bankStatementLineRepository = bankStatementLineRepository;
     this.trustAccountRepository = trustAccountRepository;
     this.trustTransactionRepository = trustTransactionRepository;
     this.trustReconciliationRepository = trustReconciliationRepository;
-    this.ledgerQueries = ledgerQueries;
+    this.trustBooksService = trustBooksService;
     this.postingService = postingService;
     this.storageService = storageService;
     this.moduleGuard = moduleGuard;
     this.auditService = auditService;
+    this.clock = clock;
     // Parsers are plain classes (not Spring beans). GenericCsvParser must be last (always matches).
     this.parsers =
         List.of(
@@ -506,17 +516,44 @@ public class TrustReconciliationService {
 
   // --- Reconciliation DTOs ---
 
+  /**
+   * The creditor side of a reconciliation as at its period end (§16.1.2 {@code creditors(A,D)}):
+   * the six terms and their total. {@code otherNonClient} has no column (always zero in Phase 92):
+   * it is the stored total minus the five stored terms.
+   */
+  public record CreditorBreakdown(
+      BigDecimal clientLedgers,
+      BigDecimal investmentCreditors,
+      BigDecimal fundInterestAndCharges,
+      BigDecimal unidentifiedDeposits,
+      BigDecimal otherNonClient,
+      BigDecimal interAccount,
+      BigDecimal total) {}
+
+  /**
+   * A reconciliation (§16.4.4; {@code integrityFlags} lands in 649C, {@code monthlyListId} in
+   * 650A). Every figure is as at {@code periodEnd}. {@code bankToCashbookDifference = adjusted bank
+   * − cashbook} (EQ-1), {@code cashbookToCreditorsDifference = cashbook − creditors} (EQ-2), {@code
+   * difference = adjusted bank − creditors}. {@code excludedLinesTotal} (signed) and {@code
+   * unresolvedLineCount} are read live from the statement's lines.
+   */
   public record TrustReconciliationResponse(
       UUID id,
       UUID trustAccountId,
       LocalDate periodEnd,
       UUID bankStatementId,
       BigDecimal bankBalance,
-      BigDecimal cashbookBalance,
-      BigDecimal clientLedgerTotal,
       BigDecimal outstandingDeposits,
       BigDecimal outstandingPayments,
       BigDecimal adjustedBankBalance,
+      BigDecimal cashbookBalance,
+      BigDecimal clientLedgerTotal,
+      CreditorBreakdown creditorBreakdown,
+      BigDecimal bankToCashbookDifference,
+      BigDecimal cashbookToCreditorsDifference,
+      BigDecimal difference,
+      BigDecimal excludedLinesTotal,
+      int unresolvedLineCount,
       boolean isBalanced,
       String status,
       UUID completedBy,
@@ -526,10 +563,19 @@ public class TrustReconciliationService {
       Instant updatedAt) {}
 
   public record CreateReconciliationRequest(
-      @jakarta.validation.constraints.NotNull LocalDate periodEnd, UUID bankStatementId) {}
+      @jakarta.validation.constraints.NotNull LocalDate periodEnd,
+      @jakarta.validation.constraints.NotNull UUID bankStatementId) {}
 
   // --- Reconciliation Methods ---
 
+  /**
+   * Starts a reconciliation of {@code accountId} as at {@code periodEnd} — the firm's choice, never
+   * derived from the statement (§16.3.4, ADR-377). The statement is required and must fit the
+   * period end, so that its closing balance is the bank balance as at {@code periodEnd}: it belongs
+   * to the account, has no line after {@code periodEnd}, no other imported statement of the account
+   * has a line between its last line and {@code periodEnd}, and {@code periodEnd} is not in the
+   * future. The first failing rule refuses (400).
+   */
   @Transactional
   public TrustReconciliationResponse createReconciliation(
       UUID accountId, LocalDate periodEnd, UUID bankStatementId) {
@@ -539,17 +585,16 @@ public class TrustReconciliationService {
         .findById(accountId)
         .orElseThrow(() -> new ResourceNotFoundException("TrustAccount", accountId));
 
-    if (bankStatementId != null) {
-      var statement =
-          bankStatementRepository
-              .findById(bankStatementId)
-              .orElseThrow(() -> new ResourceNotFoundException("BankStatement", bankStatementId));
-      if (!statement.getTrustAccountId().equals(accountId)) {
-        throw new InvalidStateException(
-            "Trust account mismatch",
-            "Bank statement does not belong to the specified trust account");
-      }
+    if (bankStatementId == null) {
+      throw new InvalidStateException(
+          "Missing bank statement",
+          "Import the bank statement for this period before starting the reconciliation.");
     }
+    var statement =
+        bankStatementRepository
+            .findById(bankStatementId)
+            .orElseThrow(() -> new ResourceNotFoundException("BankStatement", bankStatementId));
+    requireStatementFitsPeriodEnd(accountId, statement, periodEnd);
 
     var reconciliation = new TrustReconciliation(accountId, periodEnd, bankStatementId);
     reconciliation = trustReconciliationRepository.save(reconciliation);
@@ -561,10 +606,58 @@ public class TrustReconciliationService {
             .entityId(reconciliation.getId())
             .details(
                 Map.of(
-                    "trust_account_id", accountId.toString(), "period_end", periodEnd.toString()))
+                    "trust_account_id",
+                    accountId.toString(),
+                    "period_end",
+                    periodEnd.toString(),
+                    "bank_statement_id",
+                    bankStatementId.toString()))
             .build());
 
     return toReconciliationResponse(reconciliation);
+  }
+
+  /**
+   * The four period rules of §16.3.4, in order; the first failure refuses. Checked at create and
+   * again at every calculate (a later import can make a statement stop fitting its period end).
+   */
+  private void requireStatementFitsPeriodEnd(
+      UUID accountId, BankStatement statement, LocalDate periodEnd) {
+    if (!statement.getTrustAccountId().equals(accountId)) {
+      throw new InvalidStateException(
+          "Trust account mismatch",
+          "Bank statement does not belong to the specified trust account");
+    }
+    var periodEndText = periodEnd.format(PERIOD_END_FORMAT);
+    // The parsers set period_end to the last line's date; a statement with no lines falls back to
+    // it
+    LocalDate lastLine =
+        bankStatementLineRepository
+            .findLastLineDate(statement.getId())
+            .orElse(statement.getPeriodEnd());
+    if (lastLine.isAfter(periodEnd)) {
+      throw new InvalidStateException(
+          "Statement does not fit the period end",
+          "This statement has lines dated after "
+              + periodEndText
+              + ". Choose a later period end, or import a statement that ends on or before it.");
+    }
+    var covering =
+        bankStatementLineRepository.findOtherStatementsWithLinesBetween(
+            accountId, statement.getId(), lastLine, periodEnd);
+    if (!covering.isEmpty()) {
+      throw new InvalidStateException(
+          "Statement does not fit the period end",
+          "Statement "
+              + covering.getFirst()
+              + " has movements between this statement's last line and "
+              + periodEndText
+              + ". Reconcile against the statement that covers the period end.");
+    }
+    if (periodEnd.isAfter(LocalDate.now(clock))) {
+      throw new InvalidStateException(
+          "Invalid period end", "The period end cannot be in the future");
+    }
   }
 
   @Transactional(readOnly = true)
@@ -617,33 +710,36 @@ public class TrustReconciliationService {
           "A bank statement must be linked to calculate the reconciliation");
     }
 
-    var bankStatement =
+    UUID accountId = reconciliation.getTrustAccountId();
+    LocalDate periodEnd = reconciliation.getPeriodEnd();
+    // A statement imported after the draft was created can break the period rules; the closing
+    // balance is the bank balance as at the period end only while the statement still fits it
+    var statement =
         bankStatementRepository
             .findById(bankStatementId)
             .orElseThrow(() -> new ResourceNotFoundException("BankStatement", bankStatementId));
+    requireStatementFitsPeriodEnd(accountId, statement, periodEnd);
 
-    UUID accountId = reconciliation.getTrustAccountId();
-    BigDecimal bankBalance = bankStatement.getClosingBalance();
-    // Derived from the posting effects (ADR-378); the equation itself is unchanged until 646C
-    BigDecimal cashbookBalance = ledgerQueries.cashbook(accountId, null);
-    BigDecimal clientLedgerTotal = ledgerQueries.clientLedgerTotal(accountId, null);
-    BigDecimal outstandingDeposits =
-        trustTransactionRepository.calculateOutstandingDeposits(accountId);
-    BigDecimal outstandingPayments =
-        trustTransactionRepository.calculateOutstandingPayments(accountId);
-    BigDecimal adjustedBankBalance =
-        bankBalance.add(outstandingDeposits).subtract(outstandingPayments);
+    // Every term as at the period end (§16.3.4 steps 1-4, ADR-377); integrity flags are 649C
+    var position = trustBooksService.position(accountId, periodEnd);
+    var bank = trustBooksService.bankPosition(accountId, bankStatementId, periodEnd);
 
+    reconciliation.setBankBalance(bank.bankBalance());
+    reconciliation.setOutstandingDeposits(bank.outstandingDeposits());
+    reconciliation.setOutstandingPayments(bank.outstandingPayments());
+    reconciliation.setAdjustedBankBalance(bank.adjustedBankBalance());
+    reconciliation.setCashbookBalance(position.cashbook());
+    reconciliation.setClientLedgerTotal(position.clientLedgers());
+    reconciliation.setInvestmentCreditorTotal(position.investmentCreditors());
+    reconciliation.setFundLedgerBalance(position.fundLedger());
+    reconciliation.setUnidentifiedDepositTotal(position.unidentifiedDeposits());
+    reconciliation.setInterAccountBalance(position.interAccount());
+    reconciliation.setCreditorTotal(position.creditorTotal());
+    reconciliation.setDifference(bank.adjustedBankBalance().subtract(position.creditorTotal()));
+    // EQ-1 and EQ-2 as at the period end
     boolean isBalanced =
-        adjustedBankBalance.compareTo(cashbookBalance) == 0
-            && cashbookBalance.compareTo(clientLedgerTotal) == 0;
-
-    reconciliation.setBankBalance(bankBalance);
-    reconciliation.setCashbookBalance(cashbookBalance);
-    reconciliation.setClientLedgerTotal(clientLedgerTotal);
-    reconciliation.setOutstandingDeposits(outstandingDeposits);
-    reconciliation.setOutstandingPayments(outstandingPayments);
-    reconciliation.setAdjustedBankBalance(adjustedBankBalance);
+        bank.adjustedBankBalance().compareTo(position.cashbook()) == 0
+            && position.cashbook().compareTo(position.creditorTotal()) == 0;
     reconciliation.setBalanced(isBalanced);
 
     reconciliation = trustReconciliationRepository.save(reconciliation);
@@ -658,11 +754,15 @@ public class TrustReconciliationService {
                     "trust_account_id",
                     accountId.toString(),
                     "bank_balance",
-                    bankBalance.toString(),
+                    bank.bankBalance().toString(),
                     "cashbook_balance",
-                    cashbookBalance.toString(),
+                    position.cashbook().toString(),
                     "client_ledger_total",
-                    clientLedgerTotal.toString(),
+                    position.clientLedgers().toString(),
+                    "creditor_total",
+                    position.creditorTotal().toString(),
+                    "difference",
+                    reconciliation.getDifference().toString(),
                     "is_balanced",
                     isBalanced))
             .build());
@@ -724,17 +824,50 @@ public class TrustReconciliationService {
   }
 
   private TrustReconciliationResponse toReconciliationResponse(TrustReconciliation recon) {
+    var namedTerms =
+        recon
+            .getClientLedgerTotal()
+            .add(recon.getInvestmentCreditorTotal())
+            .add(recon.getFundLedgerBalance())
+            .add(recon.getUnidentifiedDepositTotal())
+            .add(recon.getInterAccountBalance());
+    var breakdown =
+        new CreditorBreakdown(
+            recon.getClientLedgerTotal(),
+            recon.getInvestmentCreditorTotal(),
+            recon.getFundLedgerBalance(),
+            recon.getUnidentifiedDepositTotal(),
+            recon.getCreditorTotal().subtract(namedTerms),
+            recon.getInterAccountBalance(),
+            recon.getCreditorTotal());
+    UUID statementId = recon.getBankStatementId();
+    BigDecimal excludedLinesTotal =
+        statementId == null
+            ? BigDecimal.ZERO
+            : bankStatementLineRepository.sumExcludedAmount(statementId);
+    int unresolvedLineCount =
+        statementId == null
+            ? 0
+            : Math.toIntExact(
+                bankStatementLineRepository.countByBankStatementIdAndMatchStatus(
+                    statementId, "UNMATCHED"));
     return new TrustReconciliationResponse(
         recon.getId(),
         recon.getTrustAccountId(),
         recon.getPeriodEnd(),
-        recon.getBankStatementId(),
+        statementId,
         recon.getBankBalance(),
-        recon.getCashbookBalance(),
-        recon.getClientLedgerTotal(),
         recon.getOutstandingDeposits(),
         recon.getOutstandingPayments(),
         recon.getAdjustedBankBalance(),
+        recon.getCashbookBalance(),
+        recon.getClientLedgerTotal(),
+        breakdown,
+        recon.getAdjustedBankBalance().subtract(recon.getCashbookBalance()),
+        recon.getCashbookBalance().subtract(recon.getCreditorTotal()),
+        recon.getDifference(),
+        excludedLinesTotal,
+        unresolvedLineCount,
         recon.isBalanced(),
         recon.getStatus().name(),
         recon.getCompletedBy(),

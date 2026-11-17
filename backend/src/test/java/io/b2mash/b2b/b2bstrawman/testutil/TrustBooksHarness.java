@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.testutil;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustBooksService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedger;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedgerEffect;
@@ -50,6 +51,22 @@ import org.springframework.stereotype.Component;
  *       without changing a single expectation except the pins it closes (task 646.9).
  * </ol>
  *
+ * <h2>Version 3 (646C) — every term as at a date; outstanding items by line date</h2>
+ *
+ * <ul>
+ *   <li>{@code fundLedger}, {@code unidentified} — {@code SUM(ledger_effect)} over posted {@code
+ *       NON_CLIENT} rows whose creditor account is of type {@code FUND_INTEREST_AND_CHARGES} /
+ *       {@code UNIDENTIFIED_DEPOSITS}, dated {@code <= D} (were zero in v2). A third creditor type
+ *       has no oracle term, so a row on one unbalances EQ-2 here (test it in its own tenant).
+ *   <li>{@link #assertBankAgrees} — outstanding items are dated by the <b>statement line's</b> date
+ *       (a match to a line after D is still outstanding as at D); a reversed row and its posted
+ *       contra, neither on a line, cancel (ADR-377, §16.3.3). It also checks {@code
+ *       TrustBooksService.bankPosition}.
+ *   <li>{@link #assertServicesAgree} — {@code TrustBooksService.position} against every oracle term
+ *       at <b>any</b> date; the two undated legacy services are still checked when the date is
+ *       today.
+ * </ul>
+ *
  * <h2>Version 2 (649B) — effect columns; EQ-6 with contra reversals</h2>
  *
  * <p>Every posted row carries its own effects (ADR-378), so every term is a sum over them, as at
@@ -62,7 +79,6 @@ import org.springframework.stereotype.Component;
  *       {@code SUM(ledger_effect)} over posted rows of the ledger {@code CLIENT}, {@code
  *       CLIENT_INVESTMENT}, {@code INTER_ACCOUNT}, dated {@code <= D} (the last two are always 0 in
  *       646A — no type posts to them yet).
- *   <li>{@code fundLedger}, {@code unidentified} — zero: they need creditor accounts (646B/647A).
  *   <li>{@link #clientLedger} / {@link #clientLedgerAsAt} — one client's {@code SUM(ledger_effect)}
  *       on the {@code CLIENT} ledger, as at today / a date.
  *   <li>EQ-6 (in {@link #assertBalancedAsAt} and {@link #assertFirmBalanced}) — every posted row's
@@ -75,11 +91,12 @@ import org.springframework.stereotype.Component;
  *       are no-ops until their columns exist.
  *   <li>{@link #assertBankAgrees} — statement closing balance + outstanding deposits − outstanding
  *       payments (posted, unmatched, dated {@code <= periodEnd}; split on the sign of {@code
- *       cashbook_effect}) against {@code cashbook(A, periodEnd)}. <b>Unexercised until 646C.</b>
+ *       cashbook_effect}) against {@code cashbook(A, periodEnd)} — v2 dated a match by match time;
+ *       v3 dates it by the line's date.
  *   <li>{@link #assertServicesAgree} — {@code TrustTransactionService.getCashbookBalance} and
  *       {@code ClientLedgerService.getTotalTrustBalance} against the oracle. Since 646A both are
- *       derived by production SQL and the oracle by its own, so it is a real check; the services
- *       still have no as-at date (as at today only — 646C / 649C).
+ *       derived by production SQL and the oracle by its own, so it is a real check (v3 adds {@code
+ *       TrustBooksService.position} at any date).
  * </ul>
  */
 @Component
@@ -128,32 +145,59 @@ public final class TrustBooksHarness {
       SELECT closing_balance FROM "%s".bank_statements WHERE id = ? AND trust_account_id = ?
       """;
 
-  /** Outstanding items: posted, not matched to a statement line, dated on or before D. */
+  /**
+   * Outstanding items as at D (646C, ADR-377): posted rows moving the cashbook, dated on or before
+   * D, not on a statement line dated on or before D — a match is dated by the <b>line's</b> date. A
+   * reversed row and its posted contra, neither on a line, cancel (the entry never reached the
+   * bank). Binds: account, D, D, D.
+   */
   private static final String OUTSTANDING_SQL =
       """
       SELECT COALESCE(SUM(t.cashbook_effect) FILTER (WHERE t.cashbook_effect > 0), 0)
                AS deposits,
              COALESCE(-SUM(t.cashbook_effect) FILTER (WHERE t.cashbook_effect < 0), 0)
                AS payments
-      FROM "%s".trust_transactions t
-      WHERE t.trust_account_id = ? AND t.posted_at IS NOT NULL
-        AND t.bank_statement_line_id IS NULL AND t.transaction_date <= ?
+      FROM "%1$s".trust_transactions t
+      LEFT JOIN "%1$s".bank_statement_lines l ON l.id = t.bank_statement_line_id
+      WHERE t.trust_account_id = ? AND t.posted_at IS NOT NULL AND t.cashbook_effect <> 0
+        AND t.transaction_date <= ?
+        AND (t.bank_statement_line_id IS NULL OR l.transaction_date > ?)
+        AND NOT (t.bank_statement_line_id IS NULL AND t.reversed_by_id IS NOT NULL
+                 AND EXISTS (SELECT 1 FROM "%1$s".trust_transactions c
+                              WHERE c.id = t.reversed_by_id AND c.posted_at IS NOT NULL
+                                AND c.bank_statement_line_id IS NULL
+                                AND c.transaction_date <= ?))
+        AND NOT (t.bank_statement_line_id IS NULL AND t.reversal_of IS NOT NULL
+                 AND EXISTS (SELECT 1 FROM "%1$s".trust_transactions o
+                              WHERE o.id = t.reversal_of AND o.bank_statement_line_id IS NULL))
+      """;
+
+  /** One non-client creditor ledger's total as at a date, by the creditor account's type. */
+  private static final String NON_CLIENT_TOTAL_SQL =
+      """
+      SELECT COALESCE(SUM(t.ledger_effect), 0) FROM "%1$s".trust_transactions t
+      JOIN "%1$s".trust_creditor_accounts ca ON ca.id = t.creditor_account_id
+      WHERE t.trust_account_id = ? AND t.ledger = 'NON_CLIENT' AND ca.account_type = ?
+        AND t.posted_at IS NOT NULL AND t.transaction_date <= ?
       """;
 
   private final JdbcTemplate jdbc;
   private final Clock clock;
   private final TrustTransactionService trustTransactionService;
   private final ClientLedgerService clientLedgerService;
+  private final TrustBooksService trustBooksService;
 
   public TrustBooksHarness(
       JdbcTemplate jdbc,
       Clock clock,
       TrustTransactionService trustTransactionService,
-      ClientLedgerService clientLedgerService) {
+      ClientLedgerService clientLedgerService,
+      TrustBooksService trustBooksService) {
     this.jdbc = jdbc;
     this.clock = clock;
     this.trustTransactionService = trustTransactionService;
     this.clientLedgerService = clientLedgerService;
+    this.trustBooksService = trustBooksService;
   }
 
   /** Every term as at today. */
@@ -170,14 +214,17 @@ public final class TrustBooksHarness {
     var investmentCreditors =
         money(ledgerTotal, trustAccountId, TrustLedger.CLIENT_INVESTMENT.name(), asAt);
     var interAccount = money(ledgerTotal, trustAccountId, TrustLedger.INTER_ACCOUNT.name(), asAt);
+    var nonClientTotal = NON_CLIENT_TOTAL_SQL.formatted(schema);
+    var fundLedger = money(nonClientTotal, trustAccountId, "FUND_INTEREST_AND_CHARGES", asAt);
+    var unidentified = money(nonClientTotal, trustAccountId, "UNIDENTIFIED_DEPOSITS", asAt);
     return new BooksSnapshot(
         trustAccountId,
         asAt,
         cashbook,
         clientLedgers,
         investmentCreditors,
-        BigDecimal.ZERO,
-        BigDecimal.ZERO,
+        fundLedger,
+        unidentified,
         interAccount);
   }
 
@@ -277,47 +324,101 @@ public final class TrustBooksHarness {
   }
 
   /**
-   * EQ-1 as at the reconciliation's period end, given its statement. Unexercised until 646C — see
-   * the class Javadoc.
+   * EQ-1 as at the reconciliation's period end, given its statement: the statement's closing
+   * balance + outstanding deposits − outstanding payments (dated by line date, v3) against {@code
+   * cashbook(A, periodEnd)}; and {@code TrustBooksService.bankPosition} returns the same figures.
    */
   public void assertBankAgrees(UUID trustAccountId, UUID bankStatementId, LocalDate periodEnd) {
     var schema = schema();
     var bank = money(STATEMENT_SQL.formatted(schema), bankStatementId, trustAccountId);
     var outstanding =
-        jdbc.queryForMap(OUTSTANDING_SQL.formatted(schema), trustAccountId, periodEnd);
-    var adjustedBank =
-        bank.add((BigDecimal) outstanding.get("deposits"))
-            .subtract((BigDecimal) outstanding.get("payments"));
+        jdbc.queryForMap(
+            OUTSTANDING_SQL.formatted(schema), trustAccountId, periodEnd, periodEnd, periodEnd);
+    var deposits = (BigDecimal) outstanding.get("deposits");
+    var payments = (BigDecimal) outstanding.get("payments");
+    var adjustedBank = bank.add(deposits).subtract(payments);
     var cashbook = money(CASHBOOK_SQL.formatted(schema), trustAccountId, periodEnd);
     assertThat(adjustedBank)
         .as(
             "EQ-1 on trust account %s as at %s: adjusted bank (bank %s + outstanding deposits %s"
                 + " − outstanding payments %s) vs cashbook %s",
-            trustAccountId,
-            periodEnd,
-            bank,
-            outstanding.get("deposits"),
-            outstanding.get("payments"),
-            cashbook)
+            trustAccountId, periodEnd, bank, deposits, payments, cashbook)
         .isEqualByComparingTo(cashbook);
+    var service = trustBooksService.bankPosition(trustAccountId, bankStatementId, periodEnd);
+    var softly = new SoftAssertions();
+    softly
+        .assertThat(service.bankBalance())
+        .as("bankPosition.bankBalance")
+        .isEqualByComparingTo(bank);
+    softly
+        .assertThat(service.outstandingDeposits())
+        .as("bankPosition.outstandingDeposits")
+        .isEqualByComparingTo(deposits);
+    softly
+        .assertThat(service.outstandingPayments())
+        .as("bankPosition.outstandingPayments")
+        .isEqualByComparingTo(payments);
+    softly
+        .assertThat(service.adjustedBankBalance())
+        .as("bankPosition.adjustedBankBalance")
+        .isEqualByComparingTo(adjustedBank);
+    softly.assertAll();
   }
 
   /**
-   * The production services return the oracle's figures (as at today only — the services have no
-   * as-at date until 646C / 649C). Both halves are real checks since 646A: production derives each
-   * figure with its own SQL, the oracle with its own.
+   * The production services return the oracle's figures as at {@code asAt}: {@code
+   * TrustBooksService.position} at any date, term by term ({@code otherNonClient} must be zero —
+   * the oracle has no such term); and, when {@code asAt} is today, the two undated legacy reads
+   * ({@code getCashbookBalance}, {@code getTotalTrustBalance}).
    */
   public void assertServicesAgree(UUID trustAccountId, LocalDate asAt) {
-    assertThat(asAt)
-        .as("the services have no as-at date; assertServicesAgree supports today only")
-        .isEqualTo(today());
     var s = snapshotAsAt(trustAccountId, asAt);
-    assertThat(trustTransactionService.getCashbookBalance(trustAccountId).balance())
-        .as("TrustTransactionService.getCashbookBalance vs oracle cashbook")
-        .isEqualByComparingTo(s.cashbook());
-    assertThat(clientLedgerService.getTotalTrustBalance(trustAccountId).balance())
-        .as("ClientLedgerService.getTotalTrustBalance vs oracle client ledgers")
+    var p = trustBooksService.position(trustAccountId, asAt);
+    var softly = new SoftAssertions();
+    softly.assertThat(p.cashbook()).as("position.cashbook").isEqualByComparingTo(s.cashbook());
+    softly
+        .assertThat(p.clientLedgers())
+        .as("position.clientLedgers")
         .isEqualByComparingTo(s.clientLedgers());
+    softly
+        .assertThat(p.investmentCreditors())
+        .as("position.investmentCreditors")
+        .isEqualByComparingTo(s.investmentCreditors());
+    softly
+        .assertThat(p.fundLedger())
+        .as("position.fundLedger")
+        .isEqualByComparingTo(s.fundLedger());
+    softly
+        .assertThat(p.unidentifiedDeposits())
+        .as("position.unidentifiedDeposits")
+        .isEqualByComparingTo(s.unidentified());
+    softly
+        .assertThat(p.interAccount())
+        .as("position.interAccount")
+        .isEqualByComparingTo(s.interAccount());
+    softly
+        .assertThat(p.otherNonClient())
+        .as("position.otherNonClient")
+        .isEqualByComparingTo(BigDecimal.ZERO);
+    softly
+        .assertThat(p.creditorTotal())
+        .as("position.creditorTotal")
+        .isEqualByComparingTo(s.creditors());
+    softly
+        .assertThat(p.difference())
+        .as("position.difference")
+        .isEqualByComparingTo(s.difference());
+    if (asAt.equals(today())) {
+      softly
+          .assertThat(trustTransactionService.getCashbookBalance(trustAccountId).balance())
+          .as("TrustTransactionService.getCashbookBalance vs oracle cashbook")
+          .isEqualByComparingTo(s.cashbook());
+      softly
+          .assertThat(clientLedgerService.getTotalTrustBalance(trustAccountId).balance())
+          .as("ClientLedgerService.getTotalTrustBalance vs oracle client ledgers")
+          .isEqualByComparingTo(s.clientLedgers());
+    }
+    softly.assertAll();
   }
 
   /**

@@ -864,4 +864,52 @@ describe("Trust Reconciliation", () => {
     });
     expect(await screen.findByTestId("reconciliation-split-pane")).toBeInTheDocument();
   });
+
+  // Test 11: `max` on the date input does not stop a typed future date, so Next
+  // refuses a period end after today (South Africa time) and stays on step 1.
+  describe("period end in the future", () => {
+    beforeEach(() => {
+      // 22:30 UTC on 17 Nov is 00:30 on 18 Nov in South Africa (UTC+2): today is 2026-11-18.
+      vi.useFakeTimers({ toFake: ["Date"] });
+      vi.setSystemTime(new Date("2026-11-17T22:30:00Z"));
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    async function renderStepOne() {
+      await act(async () => {
+        render(
+          <Suspense fallback={null}>
+            <NewReconciliationPage params={Promise.resolve({ slug: "acme" })} />
+          </Suspense>
+        );
+      });
+      await waitFor(() => expect(screen.getByTestId("account-select")).toHaveValue("acc-1"));
+    }
+
+    it("keeps step 1 with an error when the period end is after today", async () => {
+      await renderStepOne();
+      fireEvent.change(screen.getByTestId("period-end-input"), {
+        target: { value: "2026-11-19" },
+      });
+      fireEvent.click(screen.getByTestId("step-next-btn"));
+
+      expect(screen.getByTestId("step-select")).toBeInTheDocument();
+      expect(screen.queryByTestId("file-input")).not.toBeInTheDocument();
+      expect(screen.getByText("The period end cannot be in the future")).toBeInTheDocument();
+    });
+
+    it("advances to the upload step when the period end is today", async () => {
+      await renderStepOne();
+      fireEvent.change(screen.getByTestId("period-end-input"), {
+        target: { value: "2026-11-18" },
+      });
+      fireEvent.click(screen.getByTestId("step-next-btn"));
+
+      expect(await screen.findByTestId("file-input")).toBeInTheDocument();
+      expect(screen.queryByText("The period end cannot be in the future")).not.toBeInTheDocument();
+    });
+  });
 });

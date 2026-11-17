@@ -49,3 +49,10 @@ row, edge pinned), O7 (`integrity_flags` added, unmapped), O8 (this folder).
   spec-mandated (architecture §16.3.3).
 - `books` ↔ `reconciliation` package cycle — accepted: it matches the existing
   `transaction` ↔ `reconciliation` cycle; `LayerDependencyRulesTest` stays green.
+- CodeRabbit CR-1 (same-date statements both pass rule 3) — deferred: needs a duplicate /
+  re-import statement policy beyond §16.3.4; recorded as F-646C-1 in `found.md` (owner 652C or a
+  founder re-spec).
+- CodeRabbit CR-2 (calculate re-checks statement fitness) — already fixed in 4fd2fd3e9.
+- CodeRabbit CR-3 (a typed future period end passes step 1) — fixed: Next refuses a date after
+  `todayInSA()` with the backend's wording inline; red first (`red-run.txt` § "CodeRabbit fix —
+  future period end blocked in step 1").

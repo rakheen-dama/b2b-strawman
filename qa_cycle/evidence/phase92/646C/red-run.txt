@@ -95,3 +95,18 @@ setFundLedgerBalance/setUnidentifiedDepositTotal sources makes the breakdown tes
 [fund] 
 expected: 50.00
  but was: 300.00
+
+## CodeRabbit fix — future period end blocked in step 1
+
+Test: frontend/__tests__/trust-reconciliation.test.tsx > "period end in the future" (Date faked at
+2026-11-17T22:30:00Z = 2026-11-18 00:30 SAST; typed 2026-11-19, clicked Next). On 4fd2fd3e9 the
+wizard advanced to step 2 (upload) although the backend would refuse the period end:
+
+       × keeps step 1 with an error when the period end is after today 18ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  __tests__/trust-reconciliation.test.tsx > Trust Reconciliation > period end in the future > keeps step 1 with an error when the period end is after today
+TestingLibraryElementError: Unable to find an element by: [data-testid="step-select"]
+      Tests  1 failed | 14 passed (15)
+
+After the fix (Next compares periodEnd with todayInSA() and shows the backend's wording inline):
+      Tests  15 passed (15)

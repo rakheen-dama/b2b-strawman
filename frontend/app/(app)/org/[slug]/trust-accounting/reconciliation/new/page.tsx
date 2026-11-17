@@ -57,6 +57,7 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
   const [accounts, setAccounts] = useState<TrustAccount[]>([]);
   const [selectedAccountId, setSelectedAccountId] = useState<string>("");
   const [periodEnd, setPeriodEnd] = useState("");
+  const [periodEndError, setPeriodEndError] = useState<string | null>(null);
   const [loadingAccounts, setLoadingAccounts] = useState(true);
 
   // Step 2: Upload
@@ -453,18 +454,38 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
                     value={periodEnd}
                     onChange={(e) => {
                       setPeriodEnd(e.target.value);
+                      setPeriodEndError(null);
                       resetFromStep2();
                     }}
                     max={todayInSA()}
+                    aria-invalid={periodEndError ? true : undefined}
+                    aria-describedby={periodEndError ? "period-end-error" : undefined}
                     className="w-48"
                     data-testid="period-end-input"
                   />
+                  {periodEndError && (
+                    <p
+                      id="period-end-error"
+                      role="alert"
+                      className="text-sm text-red-700 dark:text-red-300"
+                      data-testid="period-end-error"
+                    >
+                      {periodEndError}
+                    </p>
+                  )}
                 </div>
 
                 <div className="flex justify-end pt-2">
                   <Button
                     type="button"
-                    onClick={() => setCurrentStep(2)}
+                    onClick={() => {
+                      // `max` does not stop a typed date; the backend refuses a future period end.
+                      if (periodEnd > todayInSA()) {
+                        setPeriodEndError("The period end cannot be in the future");
+                        return;
+                      }
+                      setCurrentStep(2);
+                    }}
                     disabled={!selectedAccountId || !periodEnd}
                     data-testid="step-next-btn"
                   >

@@ -1,0 +1,1669 @@
+{
+  "steps": {
+    "baseline": {
+      "creditors": {
+        "cardText": "Legal Practitioners' Fidelity Fund — interest and charges R 0,00 Interest received for the Fund, less bank charges",
+        "ui": 0,
+        "api": {
+          "id": "4966f021-937f-430a-b3a0-0746c48c7c6e",
+          "trustAccountId": "bc212ce3-4ad0-41dc-8400-600191f1fbfb",
+          "accountType": "FUND_INTEREST_AND_CHARGES",
+          "name": "Legal Practitioners' Fidelity Fund — interest and charges",
+          "balance": 0,
+          "inDebit": false,
+          "asAt": "2026-11-17"
+        },
+        "sqlFund": 0,
+        "shot": "01-00-baseline-other-creditors.png",
+        "match": true
+      },
+      "eq": {
+        "before": {
+          "asAt": "2026-11-09",
+          "status": [
+            200,
+            200
+          ],
+          "apiCashbook": 0,
+          "apiCreditorTotal": 0,
+          "apiFund": 0,
+          "apiClientLedgers": 0,
+          "sqlCashbook": 0,
+          "sqlCreditorTotal": 0,
+          "sqlFund": 0,
+          "sqlClientLedgers": 0,
+          "sqlDifference": 0,
+          "match": true,
+          "equationHolds": true
+        },
+        "line1": {
+          "asAt": "2026-11-10",
+          "status": [
+            200,
+            200
+          ],
+          "apiCashbook": 0,
+          "apiCreditorTotal": 0,
+          "apiFund": 0,
+          "apiClientLedgers": 0,
+          "sqlCashbook": 0,
+          "sqlCreditorTotal": 0,
+          "sqlFund": 0,
+          "sqlClientLedgers": 0,
+          "sqlDifference": 0,
+          "match": true,
+          "equationHolds": true
+        },
+        "line2": {
+          "asAt": "2026-11-11",
+          "status": [
+            200,
+            200
+          ],
+          "apiCashbook": 0,
+          "apiCreditorTotal": 0,
+          "apiFund": 0,
+          "apiClientLedgers": 0,
+          "sqlCashbook": 0,
+          "sqlCreditorTotal": 0,
+          "sqlFund": 0,
+          "sqlClientLedgers": 0,
+          "sqlDifference": 0,
+          "match": true,
+          "equationHolds": true
+        },
+        "line3": {
+          "asAt": "2026-11-12",
+          "status": [
+            200,
+            200
+          ],
+          "apiCashbook": 0,
+          "apiCreditorTotal": 0,
+          "apiFund": 0,
+          "apiClientLedgers": 0,
+          "sqlCashbook": 0,
+          "sqlCreditorTotal": 0,
+          "sqlFund": 0,
+          "sqlClientLedgers": 0,
+          "sqlDifference": 0,
+          "match": true,
+          "equationHolds": true
+        },
+        "line4": {
+          "asAt": "2026-11-13",
+          "status": [
+            200,
+            200
+          ],
+          "apiCashbook": 0,
+          "apiCreditorTotal": 0,
+          "apiFund": 0,
+          "apiClientLedgers": 0,
+          "sqlCashbook": 0,
+          "sqlCreditorTotal": 0,
+          "sqlFund": 0,
+          "sqlClientLedgers": 0,
+          "sqlDifference": 0,
+          "match": true,
+          "equationHolds": true
+        },
+        "line5": {
+          "asAt": "2026-11-14",
+          "status": [
+            200,
+            200
+          ],
+          "apiCashbook": 0,
+          "apiCreditorTotal": 0,
+          "apiFund": 0,
+          "apiClientLedgers": 0,
+          "sqlCashbook": 0,
+          "sqlCreditorTotal": 0,
+          "sqlFund": 0,
+          "sqlClientLedgers": 0,
+          "sqlDifference": 0,
+          "match": true,
+          "equationHolds": true
+        },
+        "today": {
+          "asAt": "2026-11-17",
+          "status": [
+            200,
+            200
+          ],
+          "apiCashbook": 286500,
+          "apiCreditorTotal": 286500,
+          "apiFund": 0,
+          "apiClientLedgers": 286500,
+          "sqlCashbook": 286500,
+          "sqlCreditorTotal": 286500,
+          "sqlFund": 0,
+          "sqlClientLedgers": 286500,
+          "sqlDifference": 0,
+          "match": true,
+          "equationHolds": true
+        }
+      },
+      "txCount": 6
+    },
+    "wizard": {
+      "periodEnd": "2026-11-14",
+      "uploadResult": "Statement imported successfully Lines imported: 5 File: statement-OBS647A-MUSQT.csv Period: 2026-11-10 to 2026-11-14 Format: CSV",
+      "shotUpload": "02-w1-statement-uploaded.png",
+      "autoMatch": "Auto-matched 0 lines 5 lines remaining for manual review",
+      "refusalBanner": null,
+      "progress": "Matching Progress 0 / 5 lines resolved",
+      "summary": [
+        [
+          "Bank balance",
+          "R 57,50"
+        ],
+        [
+          "+ Outstanding deposits",
+          "R 0,00"
+        ],
+        [
+          "− Outstanding payments",
+          "R 0,00"
+        ],
+        [
+          "= Adjusted bank balance",
+          "R 57,50"
+        ],
+        [
+          "Cashbook",
+          "R 0,00"
+        ],
+        [
+          "Difference",
+          "R 57,50"
+        ],
+        [
+          "Cashbook",
+          "R 0,00"
+        ],
+        [
+          "Trust creditors",
+          "R 0,00"
+        ],
+        [
+          "Difference",
+          "R 0,00"
+        ],
+        [
+          "Client ledgers",
+          "R 0,00"
+        ],
+        [
+          "Legal Practitioners' Fidelity Fund — interest and charges",
+          "R 0,00"
+        ],
+        [
+          "Unidentified deposits",
+          "R 0,00"
+        ]
+      ],
+      "shotReview": "03-w2-review-step-before-record.png",
+      "reconApi": {
+        "id": "f6b01cd5-bee6-46e9-b7dc-51cd8161c205",
+        "trustAccountId": "bc212ce3-4ad0-41dc-8400-600191f1fbfb",
+        "periodEnd": "2026-11-14",
+        "bankStatementId": "5c691fe1-fcdb-4c21-bd6a-c0e0fe3b9bd5",
+        "bankBalance": 57.5,
+        "outstandingDeposits": 0,
+        "outstandingPayments": 0,
+        "adjustedBankBalance": 57.5,
+        "cashbookBalance": 0,
+        "clientLedgerTotal": 0,
+        "creditorBreakdown": {
+          "clientLedgers": 0,
+          "investmentCreditors": 0,
+          "fundInterestAndCharges": 0,
+          "unidentifiedDeposits": 0,
+          "otherNonClient": 0,
+          "interAccount": 0,
+          "total": 0
+        },
+        "bankToCashbookDifference": 57.5,
+        "cashbookToCreditorsDifference": 0,
+        "difference": 57.5,
+        "excludedLinesTotal": 0,
+        "unresolvedLineCount": 5,
+        "isBalanced": false,
+        "status": "DRAFT",
+        "completedBy": null,
+        "completedAt": null,
+        "notes": null,
+        "createdAt": "2026-11-17T11:52:42.644619Z",
+        "updatedAt": "2026-11-17T11:52:42.717010Z"
+      }
+    },
+    "a": {
+      "lines": [
+        {
+          "n": 1,
+          "lineId": "2379ecae-adff-4455-9ce6-05a4afbde70b",
+          "amount": 1234.56,
+          "date": "2026-11-10",
+          "classification": "FUND_INTEREST",
+          "matchedBefore": 0,
+          "txCountBefore": 6,
+          "dialogDescription": "Line #1, 10 Nov 2026 — Interest credit — R 1 234,56 CR. The entry is dated the line's date and posts at once; unmatching the line reverses it.",
+          "optionsOffered": [
+            "Interest received for the Legal Practitioners' Fidelity Fund",
+            "Bank charge refunded from the business account"
+          ],
+          "optionValues": [
+            "FUND_INTEREST",
+            "CHARGE_REFUND"
+          ],
+          "chargeFieldsBeforeChoice": 0,
+          "chargeFieldsAfterChoice": 0,
+          "dialogText": "Record from statement Line #1, 10 Nov 2026 — Interest credit — R 1 234,56 CR. The entry is dated the line's date and posts at once; unmatching the line reverses it. What is this line? Interest received for the Legal Practitioners' Fidelity Fund Bank charge refunded from the business account Notes (optional) Cancel Record Close",
+          "shotDialog": "04-a1-record-dialog-FUND_INTEREST.png",
+          "badge": "Recorded: Interest received for the Legal Practitioners' Fidelity Fund",
+          "errorBanner": null,
+          "progress": "Matching Progress 1 / 5 lines resolved",
+          "rowSql": "                  id                  | transaction_type |  status  | amount  | transaction_date |   ledger   | ledger_effect | cashbook_effect | posted |         creditor_account_id          |       creditor_type       |        bank_statement_line_id        | charge_recoverable | charge_vat_amount |     reference     | reversal_of | reversed_by_id | approved_by \n--------------------------------------+------------------+----------+---------+------------------+------------+---------------+-----------------+--------+--------------------------------------+---------------------------+--------------------------------------+--------------------+-------------------+-------------------+-------------+----------------+-------------\n 974db0d6-6133-451d-a70f-c5865cda150b | FUND_INTEREST    | RECORDED | 1234.56 | 2026-11-10       | NON_CLIENT |       1234.56 |         1234.56 | t      | 4966f021-937f-430a-b3a0-0746c48c7c6e | FUND_INTEREST_AND_CHARGES | 2379ecae-adff-4455-9ce6-05a4afbde70b |                    |                   | INT/OBS647A/MUSQT |             |                | \n(1 row)\n\n",
+          "row": {
+            "id": "974db0d6-6133-451d-a70f-c5865cda150b",
+            "type": "FUND_INTEREST",
+            "status": "RECORDED",
+            "amount": 1234.56,
+            "date": "2026-11-10",
+            "ledger": "NON_CLIENT",
+            "ledgerEffect": 1234.56,
+            "cashbookEffect": 1234.56,
+            "posted": "t",
+            "creditorAccountId": "4966f021-937f-430a-b3a0-0746c48c7c6e",
+            "chargeRecoverable": "",
+            "chargeVat": "",
+            "lineLink": "2379ecae-adff-4455-9ce6-05a4afbde70b",
+            "approvedBy": ""
+          },
+          "lineSql": " line_number |                  id                  | transaction_date |  amount  | match_status | classification |         trust_transaction_id         | stmt_matched_count \n-------------+--------------------------------------+------------------+----------+--------------+----------------+--------------------------------------+--------------------\n           1 | 2379ecae-adff-4455-9ce6-05a4afbde70b | 2026-11-10       |  1234.56 | RECORDED     | FUND_INTEREST  | 974db0d6-6133-451d-a70f-c5865cda150b |                  1\n           2 | 77139b6a-9ee5-4943-81ee-bc4f8931b721 | 2026-11-11       | -1119.56 | UNMATCHED    |                |                                      |                  1\n           3 | 2aaa8dfc-9dd6-4c79-99f8-bdf437806d73 | 2026-11-12       |   -57.50 | UNMATCHED    |                |                                      |                  1\n           4 | 513e1347-aa43-482b-8a69-768021abb593 | 2026-11-13       |   115.00 | UNMATCHED    |                |                                      |                  1\n           5 | dfdc4e4d-f3ee-4bca-a530-7b2d3d8205ea | 2026-11-14       |  -115.00 | UNMATCHED    |                |                                      |                  1\n(5 rows)\n\n",
+          "line": {
+            "matchStatus": "RECORDED",
+            "classification": "FUND_INTEREST",
+            "trustTransactionId": "974db0d6-6133-451d-a70f-c5865cda150b"
+          },
+          "matchedAfter": 1,
+          "txCountAfter": 7,
+          "apiTx": {
+            "id": "974db0d6-6133-451d-a70f-c5865cda150b",
+            "trustAccountId": "bc212ce3-4ad0-41dc-8400-600191f1fbfb",
+            "transactionType": "FUND_INTEREST",
+            "typeLabel": "Interest received for the Legal Practitioners' Fidelity Fund",
+            "direction": "IN",
+            "ledger": "NON_CLIENT",
+            "amount": 1234.56,
+            "clientId": null,
+            "matterId": null,
+            "creditorAccountId": "4966f021-937f-430a-b3a0-0746c48c7c6e",
+            "investmentId": null,
+            "counterpartyClientId": null,
+            "invoiceId": null,
+            "reference": "INT/OBS647A/MUSQT",
+            "description": "Interest credit",
+            "transactionDate": "2026-11-10",
+            "status": "RECORDED",
+            "postedAt": "2026-11-17T11:53:16.592305Z",
+            "approvedBy": null,
+            "approvedAt": null,
+            "secondApprovedBy": null,
+            "secondApprovedAt": null,
+            "rejectedBy": null,
+            "rejectedAt": null,
+            "rejectionReason": null,
+            "reversalOf": null,
+            "reversedById": null,
+            "reversalPending": false,
+            "bankStatementLineId": "2379ecae-adff-4455-9ce6-05a4afbde70b",
+            "recordedBy": "a8bf9921-29b6-4671-bfc9-bcec9f9ac8f1",
+            "createdAt": "2026-11-17T11:53:16.593019Z",
+            "runningBalance": null,
+            "chargeRecoverable": null,
+            "chargeVatAmount": null
+          },
+          "delta": {
+            "cashbook": 1234.56,
+            "fund": 1234.56,
+            "expected": 1234.56
+          },
+          "checks": {
+            "type": true,
+            "status": true,
+            "amount": true,
+            "date": true,
+            "ledger": true,
+            "creditor": true,
+            "link": true,
+            "posted": true,
+            "noApproval": true,
+            "charge": true,
+            "lineRecorded": true,
+            "matchedPlusOne": true,
+            "oneRowCreated": true,
+            "cashbookDelta": true,
+            "fundDelta": true,
+            "badge": true,
+            "apiTx": true
+          }
+        },
+        {
+          "n": 2,
+          "lineId": "77139b6a-9ee5-4943-81ee-bc4f8931b721",
+          "amount": -1119.56,
+          "date": "2026-11-11",
+          "classification": "FUND_SWEEP",
+          "matchedBefore": 1,
+          "txCountBefore": 7,
+          "dialogDescription": "Line #2, 11 Nov 2026 — Fidelity Fund interest transfer — R 1 119,56 DR. The entry is dated the line's date and posts at once; unmatching the line reverses it.",
+          "optionsOffered": [
+            "Interest paid to the Legal Practitioners' Fidelity Fund",
+            "Bank charge"
+          ],
+          "optionValues": [
+            "FUND_SWEEP",
+            "BANK_CHARGE"
+          ],
+          "chargeFieldsBeforeChoice": 0,
+          "chargeFieldsAfterChoice": 0,
+          "dialogText": "Record from statement Line #2, 11 Nov 2026 — Fidelity Fund interest transfer — R 1 119,56 DR. The entry is dated the line's date and posts at once; unmatching the line reverses it. What is this line? Interest paid to the Legal Practitioners' Fidelity Fund Bank charge Notes (optional) Cancel Record Close",
+          "shotDialog": "05-a2-record-dialog-FUND_SWEEP.png",
+          "badge": "Recorded: Interest paid to the Legal Practitioners' Fidelity Fund",
+          "errorBanner": null,
+          "progress": "Matching Progress 2 / 5 lines resolved",
+          "rowSql": "                  id                  | transaction_type |  status  | amount  | transaction_date |   ledger   | ledger_effect | cashbook_effect | posted |         creditor_account_id          |       creditor_type       |        bank_statement_line_id        | charge_recoverable | charge_vat_amount |     reference      | reversal_of | reversed_by_id | approved_by \n--------------------------------------+------------------+----------+---------+------------------+------------+---------------+-----------------+--------+--------------------------------------+---------------------------+--------------------------------------+--------------------+-------------------+--------------------+-------------+----------------+-------------\n 49dced14-f9a5-42e5-a552-23e88387715d | FUND_SWEEP       | RECORDED | 1119.56 | 2026-11-11       | NON_CLIENT |      -1119.56 |        -1119.56 | t      | 4966f021-937f-430a-b3a0-0746c48c7c6e | FUND_INTEREST_AND_CHARGES | 77139b6a-9ee5-4943-81ee-bc4f8931b721 |                    |                   | LPFF/OBS647A/MUSQT |             |                | \n(1 row)\n\n",
+          "row": {
+            "id": "49dced14-f9a5-42e5-a552-23e88387715d",
+            "type": "FUND_SWEEP",
+            "status": "RECORDED",
+            "amount": 1119.56,
+            "date": "2026-11-11",
+            "ledger": "NON_CLIENT",
+            "ledgerEffect": -1119.56,
+            "cashbookEffect": -1119.56,
+            "posted": "t",
+            "creditorAccountId": "4966f021-937f-430a-b3a0-0746c48c7c6e",
+            "chargeRecoverable": "",
+            "chargeVat": "",
+            "lineLink": "77139b6a-9ee5-4943-81ee-bc4f8931b721",
+            "approvedBy": ""
+          },
+          "lineSql": " line_number |                  id                  | transaction_date |  amount  | match_status | classification |         trust_transaction_id         | stmt_matched_count \n-------------+--------------------------------------+------------------+----------+--------------+----------------+--------------------------------------+--------------------\n           1 | 2379ecae-adff-4455-9ce6-05a4afbde70b | 2026-11-10       |  1234.56 | RECORDED     | FUND_INTEREST  | 974db0d6-6133-451d-a70f-c5865cda150b |                  2\n           2 | 77139b6a-9ee5-4943-81ee-bc4f8931b721 | 2026-11-11       | -1119.56 | RECORDED     | FUND_SWEEP     | 49dced14-f9a5-42e5-a552-23e88387715d |                  2\n           3 | 2aaa8dfc-9dd6-4c79-99f8-bdf437806d73 | 2026-11-12       |   -57.50 | UNMATCHED    |                |                                      |                  2\n           4 | 513e1347-aa43-482b-8a69-768021abb593 | 2026-11-13       |   115.00 | UNMATCHED    |                |                                      |                  2\n           5 | dfdc4e4d-f3ee-4bca-a530-7b2d3d8205ea | 2026-11-14       |  -115.00 | UNMATCHED    |                |                                      |                  2\n(5 rows)\n\n",
+          "line": {
+            "matchStatus": "RECORDED",
+            "classification": "FUND_SWEEP",
+            "trustTransactionId": "49dced14-f9a5-42e5-a552-23e88387715d"
+          },
+          "matchedAfter": 2,
+          "txCountAfter": 8,
+          "apiTx": {
+            "id": "49dced14-f9a5-42e5-a552-23e88387715d",
+            "trustAccountId": "bc212ce3-4ad0-41dc-8400-600191f1fbfb",
+            "transactionType": "FUND_SWEEP",
+            "typeLabel": "Interest paid to the Legal Practitioners' Fidelity Fund",
+            "direction": "OUT",
+            "ledger": "NON_CLIENT",
+            "amount": 1119.56,
+            "clientId": null,
+            "matterId": null,
+            "creditorAccountId": "4966f021-937f-430a-b3a0-0746c48c7c6e",
+            "investmentId": null,
+            "counterpartyClientId": null,
+            "invoiceId": null,
+            "reference": "LPFF/OBS647A/MUSQT",
+            "description": "Fidelity Fund interest transfer",
+            "transactionDate": "2026-11-11",
+            "status": "RECORDED",
+            "postedAt": "2026-11-17T11:53:49.392868Z",
+            "approvedBy": null,
+            "approvedAt": null,
+            "secondApprovedBy": null,
+            "secondApprovedAt": null,
+            "rejectedBy": null,
+            "rejectedAt": null,
+            "rejectionReason": null,
+            "reversalOf": null,
+            "reversedById": null,
+            "reversalPending": false,
+            "bankStatementLineId": "77139b6a-9ee5-4943-81ee-bc4f8931b721",
+            "recordedBy": "a8bf9921-29b6-4671-bfc9-bcec9f9ac8f1",
+            "createdAt": "2026-11-17T11:53:49.393330Z",
+            "runningBalance": null,
+            "chargeRecoverable": null,
+            "chargeVatAmount": null
+          },
+          "delta": {
+            "cashbook": -1119.56,
+            "fund": -1119.56,
+            "expected": -1119.56
+          },
+          "checks": {
+            "type": true,
+            "status": true,
+            "amount": true,
+            "date": true,
+            "ledger": true,
+            "creditor": true,
+            "link": true,
+            "posted": true,
+            "noApproval": true,
+            "charge": true,
+            "lineRecorded": true,
+            "matchedPlusOne": true,
+            "oneRowCreated": true,
+            "cashbookDelta": true,
+            "fundDelta": true,
+            "badge": true,
+            "apiTx": true
+          }
+        },
+        {
+          "n": 3,
+          "lineId": "2aaa8dfc-9dd6-4c79-99f8-bdf437806d73",
+          "amount": -57.5,
+          "date": "2026-11-12",
+          "classification": "BANK_CHARGE",
+          "matchedBefore": 2,
+          "txCountBefore": 8,
+          "dialogDescription": "Line #3, 12 Nov 2026 — Monthly service fee — R 57,50 DR. The entry is dated the line's date and posts at once; unmatching the line reverses it.",
+          "optionsOffered": [
+            "Interest paid to the Legal Practitioners' Fidelity Fund",
+            "Bank charge"
+          ],
+          "optionValues": [
+            "FUND_SWEEP",
+            "BANK_CHARGE"
+          ],
+          "chargeFieldsBeforeChoice": 0,
+          "chargeQuestion": "Recoverable from the Fidelity Fund?",
+          "chargeDescription": "Is this charge on the Legal Practitioners' Fidelity Fund's list of recoverable bank charges?",
+          "chargeOptions": [
+            "Recoverable",
+            "Not recoverable"
+          ],
+          "dialogText": "Record from statement Line #3, 12 Nov 2026 — Monthly service fee — R 57,50 DR. The entry is dated the line's date and posts at once; unmatching the line reverses it. What is this line? Interest paid to the Legal Practitioners' Fidelity Fund Bank charge Recoverable from the Fidelity Fund? Recoverable Not recoverable Is this charge on the Legal Practitioners' Fidelity Fund's list of recoverable bank charges? VAT included in the charge Enter 0 if the charge carries no VAT. Notes (optional) Cancel Record Close",
+          "shotDialog": "06-a3-record-dialog-BANK_CHARGE.png",
+          "badge": "Recorded: Bank charge",
+          "errorBanner": null,
+          "progress": "Matching Progress 3 / 5 lines resolved",
+          "rowSql": "                  id                  | transaction_type |  status  | amount | transaction_date |   ledger   | ledger_effect | cashbook_effect | posted |         creditor_account_id          |       creditor_type       |        bank_statement_line_id        | charge_recoverable | charge_vat_amount |     reference     | reversal_of | reversed_by_id | approved_by \n--------------------------------------+------------------+----------+--------+------------------+------------+---------------+-----------------+--------+--------------------------------------+---------------------------+--------------------------------------+--------------------+-------------------+-------------------+-------------+----------------+-------------\n 7accbcab-08ae-4020-a324-51eb88062570 | BANK_CHARGE      | RECORDED |  57.50 | 2026-11-12       | NON_CLIENT |        -57.50 |          -57.50 | t      | 4966f021-937f-430a-b3a0-0746c48c7c6e | FUND_INTEREST_AND_CHARGES | 2aaa8dfc-9dd6-4c79-99f8-bdf437806d73 | t                  |              7.50 | SVC/OBS647A/MUSQT |             |                | \n(1 row)\n\n",
+          "row": {
+            "id": "7accbcab-08ae-4020-a324-51eb88062570",
+            "type": "BANK_CHARGE",
+            "status": "RECORDED",
+            "amount": 57.5,
+            "date": "2026-11-12",
+            "ledger": "NON_CLIENT",
+            "ledgerEffect": -57.5,
+            "cashbookEffect": -57.5,
+            "posted": "t",
+            "creditorAccountId": "4966f021-937f-430a-b3a0-0746c48c7c6e",
+            "chargeRecoverable": "true",
+            "chargeVat": "7.50",
+            "lineLink": "2aaa8dfc-9dd6-4c79-99f8-bdf437806d73",
+            "approvedBy": ""
+          },
+          "lineSql": " line_number |                  id                  | transaction_date |  amount  | match_status | classification |         trust_transaction_id         | stmt_matched_count \n-------------+--------------------------------------+------------------+----------+--------------+----------------+--------------------------------------+--------------------\n           1 | 2379ecae-adff-4455-9ce6-05a4afbde70b | 2026-11-10       |  1234.56 | RECORDED     | FUND_INTEREST  | 974db0d6-6133-451d-a70f-c5865cda150b |                  3\n           2 | 77139b6a-9ee5-4943-81ee-bc4f8931b721 | 2026-11-11       | -1119.56 | RECORDED     | FUND_SWEEP     | 49dced14-f9a5-42e5-a552-23e88387715d |                  3\n           3 | 2aaa8dfc-9dd6-4c79-99f8-bdf437806d73 | 2026-11-12       |   -57.50 | RECORDED     | BANK_CHARGE    | 7accbcab-08ae-4020-a324-51eb88062570 |                  3\n           4 | 513e1347-aa43-482b-8a69-768021abb593 | 2026-11-13       |   115.00 | UNMATCHED    |                |                                      |                  3\n           5 | dfdc4e4d-f3ee-4bca-a530-7b2d3d8205ea | 2026-11-14       |  -115.00 | UNMATCHED    |                |                                      |                  3\n(5 rows)\n\n",
+          "line": {
+            "matchStatus": "RECORDED",
+            "classification": "BANK_CHARGE",
+            "trustTransactionId": "7accbcab-08ae-4020-a324-51eb88062570"
+          },
+          "matchedAfter": 3,
+          "txCountAfter": 9,
+          "apiTx": {
+            "id": "7accbcab-08ae-4020-a324-51eb88062570",
+            "trustAccountId": "bc212ce3-4ad0-41dc-8400-600191f1fbfb",
+            "transactionType": "BANK_CHARGE",
+            "typeLabel": "Bank charge",
+            "direction": "OUT",
+            "ledger": "NON_CLIENT",
+            "amount": 57.5,
+            "clientId": null,
+            "matterId": null,
+            "creditorAccountId": "4966f021-937f-430a-b3a0-0746c48c7c6e",
+            "investmentId": null,
+            "counterpartyClientId": null,
+            "invoiceId": null,
+            "reference": "SVC/OBS647A/MUSQT",
+            "description": "Monthly service fee",
+            "transactionDate": "2026-11-12",
+            "status": "RECORDED",
+            "postedAt": "2026-11-17T11:54:22.858424Z",
+            "approvedBy": null,
+            "approvedAt": null,
+            "secondApprovedBy": null,
+            "secondApprovedAt": null,
+            "rejectedBy": null,
+            "rejectedAt": null,
+            "rejectionReason": null,
+            "reversalOf": null,
+            "reversedById": null,
+            "reversalPending": false,
+            "bankStatementLineId": "2aaa8dfc-9dd6-4c79-99f8-bdf437806d73",
+            "recordedBy": "a8bf9921-29b6-4671-bfc9-bcec9f9ac8f1",
+            "createdAt": "2026-11-17T11:54:22.858536Z",
+            "runningBalance": null,
+            "chargeRecoverable": true,
+            "chargeVatAmount": 7.5
+          },
+          "delta": {
+            "cashbook": -57.5,
+            "fund": -57.5,
+            "expected": -57.5
+          },
+          "checks": {
+            "type": true,
+            "status": true,
+            "amount": true,
+            "date": true,
+            "ledger": true,
+            "creditor": true,
+            "link": true,
+            "posted": true,
+            "noApproval": true,
+            "charge": true,
+            "lineRecorded": true,
+            "matchedPlusOne": true,
+            "oneRowCreated": true,
+            "cashbookDelta": true,
+            "fundDelta": true,
+            "badge": true,
+            "apiTx": true
+          }
+        },
+        {
+          "n": 4,
+          "lineId": "513e1347-aa43-482b-8a69-768021abb593",
+          "amount": 115,
+          "date": "2026-11-13",
+          "classification": "CHARGE_REFUND",
+          "matchedBefore": 3,
+          "txCountBefore": 9,
+          "dialogDescription": "Line #4, 13 Nov 2026 — Fee refund from business account — R 115,00 CR. The entry is dated the line's date and posts at once; unmatching the line reverses it.",
+          "optionsOffered": [
+            "Interest received for the Legal Practitioners' Fidelity Fund",
+            "Bank charge refunded from the business account"
+          ],
+          "optionValues": [
+            "FUND_INTEREST",
+            "CHARGE_REFUND"
+          ],
+          "chargeFieldsBeforeChoice": 0,
+          "chargeFieldsAfterChoice": 0,
+          "dialogText": "Record from statement Line #4, 13 Nov 2026 — Fee refund from business account — R 115,00 CR. The entry is dated the line's date and posts at once; unmatching the line reverses it. What is this line? Interest received for the Legal Practitioners' Fidelity Fund Bank charge refunded from the business account Notes (optional) Cancel Record Close",
+          "shotDialog": "07-a4-record-dialog-CHARGE_REFUND.png",
+          "badge": "Recorded: Bank charge refunded from the business account",
+          "errorBanner": null,
+          "progress": "Matching Progress 4 / 5 lines resolved",
+          "rowSql": "                  id                  | transaction_type |  status  | amount | transaction_date |   ledger   | ledger_effect | cashbook_effect | posted |         creditor_account_id          |       creditor_type       |        bank_statement_line_id        | charge_recoverable | charge_vat_amount |     reference     | reversal_of | reversed_by_id | approved_by \n--------------------------------------+------------------+----------+--------+------------------+------------+---------------+-----------------+--------+--------------------------------------+---------------------------+--------------------------------------+--------------------+-------------------+-------------------+-------------+----------------+-------------\n 5cc18959-a37a-4faf-89e7-c827865a5ee7 | CHARGE_REFUND    | RECORDED | 115.00 | 2026-11-13       | NON_CLIENT |        115.00 |          115.00 | t      | 4966f021-937f-430a-b3a0-0746c48c7c6e | FUND_INTEREST_AND_CHARGES | 513e1347-aa43-482b-8a69-768021abb593 |                    |                   | RFD/OBS647A/MUSQT |             |                | \n(1 row)\n\n",
+          "row": {
+            "id": "5cc18959-a37a-4faf-89e7-c827865a5ee7",
+            "type": "CHARGE_REFUND",
+            "status": "RECORDED",
+            "amount": 115,
+            "date": "2026-11-13",
+            "ledger": "NON_CLIENT",
+            "ledgerEffect": 115,
+            "cashbookEffect": 115,
+            "posted": "t",
+            "creditorAccountId": "4966f021-937f-430a-b3a0-0746c48c7c6e",
+            "chargeRecoverable": "",
+            "chargeVat": "",
+            "lineLink": "513e1347-aa43-482b-8a69-768021abb593",
+            "approvedBy": ""
+          },
+          "lineSql": " line_number |                  id                  | transaction_date |  amount  | match_status | classification |         trust_transaction_id         | stmt_matched_count \n-------------+--------------------------------------+------------------+----------+--------------+----------------+--------------------------------------+--------------------\n           1 | 2379ecae-adff-4455-9ce6-05a4afbde70b | 2026-11-10       |  1234.56 | RECORDED     | FUND_INTEREST  | 974db0d6-6133-451d-a70f-c5865cda150b |                  4\n           2 | 77139b6a-9ee5-4943-81ee-bc4f8931b721 | 2026-11-11       | -1119.56 | RECORDED     | FUND_SWEEP     | 49dced14-f9a5-42e5-a552-23e88387715d |                  4\n           3 | 2aaa8dfc-9dd6-4c79-99f8-bdf437806d73 | 2026-11-12       |   -57.50 | RECORDED     | BANK_CHARGE    | 7accbcab-08ae-4020-a324-51eb88062570 |                  4\n           4 | 513e1347-aa43-482b-8a69-768021abb593 | 2026-11-13       |   115.00 | RECORDED     | CHARGE_REFUND  | 5cc18959-a37a-4faf-89e7-c827865a5ee7 |                  4\n           5 | dfdc4e4d-f3ee-4bca-a530-7b2d3d8205ea | 2026-11-14       |  -115.00 | UNMATCHED    |                |                                      |                  4\n(5 rows)\n\n",
+          "line": {
+            "matchStatus": "RECORDED",
+            "classification": "CHARGE_REFUND",
+            "trustTransactionId": "5cc18959-a37a-4faf-89e7-c827865a5ee7"
+          },
+          "matchedAfter": 4,
+          "txCountAfter": 10,
+          "apiTx": {
+            "id": "5cc18959-a37a-4faf-89e7-c827865a5ee7",
+            "trustAccountId": "bc212ce3-4ad0-41dc-8400-600191f1fbfb",
+            "transactionType": "CHARGE_REFUND",
+            "typeLabel": "Bank charge refunded from the business account",
+            "direction": "IN",
+            "ledger": "NON_CLIENT",
+            "amount": 115,
+            "clientId": null,
+            "matterId": null,
+            "creditorAccountId": "4966f021-937f-430a-b3a0-0746c48c7c6e",
+            "investmentId": null,
+            "counterpartyClientId": null,
+            "invoiceId": null,
+            "reference": "RFD/OBS647A/MUSQT",
+            "description": "Fee refund from business account",
+            "transactionDate": "2026-11-13",
+            "status": "RECORDED",
+            "postedAt": "2026-11-17T11:54:58.121814Z",
+            "approvedBy": null,
+            "approvedAt": null,
+            "secondApprovedBy": null,
+            "secondApprovedAt": null,
+            "rejectedBy": null,
+            "rejectedAt": null,
+            "rejectionReason": null,
+            "reversalOf": null,
+            "reversedById": null,
+            "reversalPending": false,
+            "bankStatementLineId": "513e1347-aa43-482b-8a69-768021abb593",
+            "recordedBy": "a8bf9921-29b6-4671-bfc9-bcec9f9ac8f1",
+            "createdAt": "2026-11-17T11:54:58.122437Z",
+            "runningBalance": null,
+            "chargeRecoverable": null,
+            "chargeVatAmount": null
+          },
+          "delta": {
+            "cashbook": 115,
+            "fund": 115,
+            "expected": 115
+          },
+          "checks": {
+            "type": true,
+            "status": true,
+            "amount": true,
+            "date": true,
+            "ledger": true,
+            "creditor": true,
+            "link": true,
+            "posted": true,
+            "noApproval": true,
+            "charge": true,
+            "lineRecorded": true,
+            "matchedPlusOne": true,
+            "oneRowCreated": true,
+            "cashbookDelta": true,
+            "fundDelta": true,
+            "badge": true,
+            "apiTx": true
+          }
+        },
+        {
+          "n": 5,
+          "lineId": "dfdc4e4d-f3ee-4bca-a530-7b2d3d8205ea",
+          "amount": -115,
+          "date": "2026-11-14",
+          "classification": "BANK_CHARGE",
+          "matchedBefore": 4,
+          "txCountBefore": 10,
+          "dialogDescription": "Line #5, 14 Nov 2026 — Cash deposit fee — R 115,00 DR. The entry is dated the line's date and posts at once; unmatching the line reverses it.",
+          "optionsOffered": [
+            "Interest paid to the Legal Practitioners' Fidelity Fund",
+            "Bank charge"
+          ],
+          "optionValues": [
+            "FUND_SWEEP",
+            "BANK_CHARGE"
+          ],
+          "chargeFieldsBeforeChoice": 0,
+          "chargeQuestion": "Recoverable from the Fidelity Fund?",
+          "chargeDescription": "Is this charge on the Legal Practitioners' Fidelity Fund's list of recoverable bank charges?",
+          "chargeOptions": [
+            "Recoverable",
+            "Not recoverable"
+          ],
+          "dialogText": "Record from statement Line #5, 14 Nov 2026 — Cash deposit fee — R 115,00 DR. The entry is dated the line's date and posts at once; unmatching the line reverses it. What is this line? Interest paid to the Legal Practitioners' Fidelity Fund Bank charge Recoverable from the Fidelity Fund? Recoverable Not recoverable Is this charge on the Legal Practitioners' Fidelity Fund's list of recoverable bank charges? VAT included in the charge Enter 0 if the charge carries no VAT. Notes (optional) Cancel Record Close",
+          "shotDialog": "08-a5-record-dialog-BANK_CHARGE.png",
+          "badge": "Recorded: Bank charge",
+          "errorBanner": null,
+          "progress": "Matching Progress 5 / 5 lines resolved",
+          "rowSql": "                  id                  | transaction_type |  status  | amount | transaction_date |   ledger   | ledger_effect | cashbook_effect | posted |         creditor_account_id          |       creditor_type       |        bank_statement_line_id        | charge_recoverable | charge_vat_amount |     reference     | reversal_of | reversed_by_id | approved_by \n--------------------------------------+------------------+----------+--------+------------------+------------+---------------+-----------------+--------+--------------------------------------+---------------------------+--------------------------------------+--------------------+-------------------+-------------------+-------------+----------------+-------------\n 5afbfcb1-59af-4e91-9669-03d410b5b667 | BANK_CHARGE      | RECORDED | 115.00 | 2026-11-14       | NON_CLIENT |       -115.00 |         -115.00 | t      | 4966f021-937f-430a-b3a0-0746c48c7c6e | FUND_INTEREST_AND_CHARGES | dfdc4e4d-f3ee-4bca-a530-7b2d3d8205ea | f                  |              0.00 | CDF/OBS647A/MUSQT |             |                | \n(1 row)\n\n",
+          "row": {
+            "id": "5afbfcb1-59af-4e91-9669-03d410b5b667",
+            "type": "BANK_CHARGE",
+            "status": "RECORDED",
+            "amount": 115,
+            "date": "2026-11-14",
+            "ledger": "NON_CLIENT",
+            "ledgerEffect": -115,
+            "cashbookEffect": -115,
+            "posted": "t",
+            "creditorAccountId": "4966f021-937f-430a-b3a0-0746c48c7c6e",
+            "chargeRecoverable": "false",
+            "chargeVat": "0.00",
+            "lineLink": "dfdc4e4d-f3ee-4bca-a530-7b2d3d8205ea",
+            "approvedBy": ""
+          },
+          "lineSql": " line_number |                  id                  | transaction_date |  amount  | match_status | classification |         trust_transaction_id         | stmt_matched_count \n-------------+--------------------------------------+------------------+----------+--------------+----------------+--------------------------------------+--------------------\n           1 | 2379ecae-adff-4455-9ce6-05a4afbde70b | 2026-11-10       |  1234.56 | RECORDED     | FUND_INTEREST  | 974db0d6-6133-451d-a70f-c5865cda150b |                  5\n           2 | 77139b6a-9ee5-4943-81ee-bc4f8931b721 | 2026-11-11       | -1119.56 | RECORDED     | FUND_SWEEP     | 49dced14-f9a5-42e5-a552-23e88387715d |                  5\n           3 | 2aaa8dfc-9dd6-4c79-99f8-bdf437806d73 | 2026-11-12       |   -57.50 | RECORDED     | BANK_CHARGE    | 7accbcab-08ae-4020-a324-51eb88062570 |                  5\n           4 | 513e1347-aa43-482b-8a69-768021abb593 | 2026-11-13       |   115.00 | RECORDED     | CHARGE_REFUND  | 5cc18959-a37a-4faf-89e7-c827865a5ee7 |                  5\n           5 | dfdc4e4d-f3ee-4bca-a530-7b2d3d8205ea | 2026-11-14       |  -115.00 | RECORDED     | BANK_CHARGE    | 5afbfcb1-59af-4e91-9669-03d410b5b667 |                  5\n(5 rows)\n\n",
+          "line": {
+            "matchStatus": "RECORDED",
+            "classification": "BANK_CHARGE",
+            "trustTransactionId": "5afbfcb1-59af-4e91-9669-03d410b5b667"
+          },
+          "matchedAfter": 5,
+          "txCountAfter": 11,
+          "apiTx": {
+            "id": "5afbfcb1-59af-4e91-9669-03d410b5b667",
+            "trustAccountId": "bc212ce3-4ad0-41dc-8400-600191f1fbfb",
+            "transactionType": "BANK_CHARGE",
+            "typeLabel": "Bank charge",
+            "direction": "OUT",
+            "ledger": "NON_CLIENT",
+            "amount": 115,
+            "clientId": null,
+            "matterId": null,
+            "creditorAccountId": "4966f021-937f-430a-b3a0-0746c48c7c6e",
+            "investmentId": null,
+            "counterpartyClientId": null,
+            "invoiceId": null,
+            "reference": "CDF/OBS647A/MUSQT",
+            "description": "Cash deposit fee",
+            "transactionDate": "2026-11-14",
+            "status": "RECORDED",
+            "postedAt": "2026-11-17T11:55:31.028573Z",
+            "approvedBy": null,
+            "approvedAt": null,
+            "secondApprovedBy": null,
+            "secondApprovedAt": null,
+            "rejectedBy": null,
+            "rejectedAt": null,
+            "rejectionReason": null,
+            "reversalOf": null,
+            "reversedById": null,
+            "reversalPending": false,
+            "bankStatementLineId": "dfdc4e4d-f3ee-4bca-a530-7b2d3d8205ea",
+            "recordedBy": "a8bf9921-29b6-4671-bfc9-bcec9f9ac8f1",
+            "createdAt": "2026-11-17T11:55:31.028682Z",
+            "runningBalance": null,
+            "chargeRecoverable": false,
+            "chargeVatAmount": 0
+          },
+          "delta": {
+            "cashbook": -115,
+            "fund": -115,
+            "expected": -115
+          },
+          "checks": {
+            "type": true,
+            "status": true,
+            "amount": true,
+            "date": true,
+            "ledger": true,
+            "creditor": true,
+            "link": true,
+            "posted": true,
+            "noApproval": true,
+            "charge": true,
+            "lineRecorded": true,
+            "matchedPlusOne": true,
+            "oneRowCreated": true,
+            "cashbookDelta": true,
+            "fundDelta": true,
+            "badge": true,
+            "apiTx": true
+          }
+        }
+      ],
+      "shotBadges": "09-a6-all-lines-recorded-badges.png",
+      "badges": [
+        "Recorded: Interest received for the Legal Practitioners' Fidelity Fund",
+        "Recorded: Interest paid to the Legal Practitioners' Fidelity Fund",
+        "Recorded: Bank charge",
+        "Recorded: Bank charge refunded from the business account",
+        "Recorded: Bank charge"
+      ],
+      "progress": "Matching Progress 5 / 5 lines resolved",
+      "summary": [
+        [
+          "Bank balance",
+          "R 57,50"
+        ],
+        [
+          "+ Outstanding deposits",
+          "R 0,00"
+        ],
+        [
+          "− Outstanding payments",
+          "R 0,00"
+        ],
+        [
+          "= Adjusted bank balance",
+          "R 57,50"
+        ],
+        [
+          "Cashbook",
+          "R 57,50"
+        ],
+        [
+          "Difference",
+          "R 0,00"
+        ],
+        [
+          "Cashbook",
+          "R 57,50"
+        ],
+        [
+          "Trust creditors",
+          "R 57,50"
+        ],
+        [
+          "Difference",
+          "R 0,00"
+        ],
+        [
+          "Client ledgers",
+          "R 0,00"
+        ],
+        [
+          "Legal Practitioners' Fidelity Fund — interest and charges",
+          "R 57,50"
+        ],
+        [
+          "Unidentified deposits",
+          "R 0,00"
+        ]
+      ],
+      "reconApi": {
+        "id": "f6b01cd5-bee6-46e9-b7dc-51cd8161c205",
+        "trustAccountId": "bc212ce3-4ad0-41dc-8400-600191f1fbfb",
+        "periodEnd": "2026-11-14",
+        "bankStatementId": "5c691fe1-fcdb-4c21-bd6a-c0e0fe3b9bd5",
+        "bankBalance": 57.5,
+        "outstandingDeposits": 0,
+        "outstandingPayments": 0,
+        "adjustedBankBalance": 57.5,
+        "cashbookBalance": 57.5,
+        "clientLedgerTotal": 0,
+        "creditorBreakdown": {
+          "clientLedgers": 0,
+          "investmentCreditors": 0,
+          "fundInterestAndCharges": 57.5,
+          "unidentifiedDeposits": 0,
+          "otherNonClient": 0,
+          "interAccount": 0,
+          "total": 57.5
+        },
+        "bankToCashbookDifference": 0,
+        "cashbookToCreditorsDifference": 0,
+        "difference": 0,
+        "excludedLinesTotal": 0,
+        "unresolvedLineCount": 0,
+        "isBalanced": true,
+        "status": "DRAFT",
+        "completedBy": null,
+        "completedAt": null,
+        "notes": null,
+        "createdAt": "2026-11-17T11:52:42.644619Z",
+        "updatedAt": "2026-11-17T11:55:31.094326Z"
+      },
+      "statementApi": {
+        "id": "5c691fe1-fcdb-4c21-bd6a-c0e0fe3b9bd5",
+        "trustAccountId": "bc212ce3-4ad0-41dc-8400-600191f1fbfb",
+        "periodStart": "2026-11-10",
+        "periodEnd": "2026-11-14",
+        "openingBalance": 0,
+        "closingBalance": 57.5,
+        "fileName": "statement-OBS647A-MUSQT.csv",
+        "format": "CSV",
+        "lineCount": 5,
+        "matchedCount": 5,
+        "status": "IMPORTED",
+        "importedBy": "a8bf9921-29b6-4671-bfc9-bcec9f9ac8f1",
+        "createdAt": "2026-11-17T11:52:41.623801Z",
+        "updatedAt": "2026-11-17T11:55:31.030319Z",
+        "lines": [
+          {
+            "id": "2379ecae-adff-4455-9ce6-05a4afbde70b",
+            "lineNumber": 1,
+            "transactionDate": "2026-11-10",
+            "description": "Interest credit",
+            "reference": "INT/OBS647A/MUSQT",
+            "amount": 1234.56,
+            "runningBalance": 1234.56,
+            "matchStatus": "RECORDED",
+            "trustTransactionId": "974db0d6-6133-451d-a70f-c5865cda150b",
+            "matchConfidence": null,
+            "classification": "FUND_INTEREST",
+            "classificationLabel": "Interest received for the Legal Practitioners' Fidelity Fund",
+            "suggestedClassification": null,
+            "createdTransactionIds": [
+              "974db0d6-6133-451d-a70f-c5865cda150b"
+            ]
+          },
+          {
+            "id": "77139b6a-9ee5-4943-81ee-bc4f8931b721",
+            "lineNumber": 2,
+            "transactionDate": "2026-11-11",
+            "description": "Fidelity Fund interest transfer",
+            "reference": "LPFF/OBS647A/MUSQT",
+            "amount": -1119.56,
+            "runningBalance": 115,
+            "matchStatus": "RECORDED",
+            "trustTransactionId": "49dced14-f9a5-42e5-a552-23e88387715d",
+            "matchConfidence": null,
+            "classification": "FUND_SWEEP",
+            "classificationLabel": "Interest paid to the Legal Practitioners' Fidelity Fund",
+            "suggestedClassification": null,
+            "createdTransactionIds": [
+              "49dced14-f9a5-42e5-a552-23e88387715d"
+            ]
+          },
+          {
+            "id": "2aaa8dfc-9dd6-4c79-99f8-bdf437806d73",
+            "lineNumber": 3,
+            "transactionDate": "2026-11-12",
+            "description": "Monthly service fee",
+            "reference": "SVC/OBS647A/MUSQT",
+            "amount": -57.5,
+            "runningBalance": 57.5,
+            "matchStatus": "RECORDED",
+            "trustTransactionId": "7accbcab-08ae-4020-a324-51eb88062570",
+            "matchConfidence": null,
+            "classification": "BANK_CHARGE",
+            "classificationLabel": "Bank charge",
+            "suggestedClassification": null,
+            "createdTransactionIds": [
+              "7accbcab-08ae-4020-a324-51eb88062570"
+            ]
+          },
+          {
+            "id": "513e1347-aa43-482b-8a69-768021abb593",
+            "lineNumber": 4,
+            "transactionDate": "2026-11-13",
+            "description": "Fee refund from business account",
+            "reference": "RFD/OBS647A/MUSQT",
+            "amount": 115,
+            "runningBalance": 172.5,
+            "matchStatus": "RECORDED",
+            "trustTransactionId": "5cc18959-a37a-4faf-89e7-c827865a5ee7",
+            "matchConfidence": null,
+            "classification": "CHARGE_REFUND",
+            "classificationLabel": "Bank charge refunded from the business account",
+            "suggestedClassification": null,
+            "createdTransactionIds": [
+              "5cc18959-a37a-4faf-89e7-c827865a5ee7"
+            ]
+          },
+          {
+            "id": "dfdc4e4d-f3ee-4bca-a530-7b2d3d8205ea",
+            "lineNumber": 5,
+            "transactionDate": "2026-11-14",
+            "description": "Cash deposit fee",
+            "reference": "CDF/OBS647A/MUSQT",
+            "amount": -115,
+            "runningBalance": 57.5,
+            "matchStatus": "RECORDED",
+            "trustTransactionId": "5afbfcb1-59af-4e91-9669-03d410b5b667",
+            "matchConfidence": null,
+            "classification": "BANK_CHARGE",
+            "classificationLabel": "Bank charge",
+            "suggestedClassification": null,
+            "createdTransactionIds": [
+              "5afbfcb1-59af-4e91-9669-03d410b5b667"
+            ]
+          }
+        ]
+      }
+    },
+    "b": {
+      "rowsSql": "                  id                  | transaction_type |  status  | amount  | transaction_date |   ledger   | ledger_effect | cashbook_effect | posted |         creditor_account_id          |       creditor_type       |        bank_statement_line_id        | charge_recoverable | charge_vat_amount |     reference      | reversal_of | reversed_by_id | approved_by \n--------------------------------------+------------------+----------+---------+------------------+------------+---------------+-----------------+--------+--------------------------------------+---------------------------+--------------------------------------+--------------------+-------------------+--------------------+-------------+----------------+-------------\n 974db0d6-6133-451d-a70f-c5865cda150b | FUND_INTEREST    | RECORDED | 1234.56 | 2026-11-10       | NON_CLIENT |       1234.56 |         1234.56 | t      | 4966f021-937f-430a-b3a0-0746c48c7c6e | FUND_INTEREST_AND_CHARGES | 2379ecae-adff-4455-9ce6-05a4afbde70b |                    |                   | INT/OBS647A/MUSQT  |             |                | \n 49dced14-f9a5-42e5-a552-23e88387715d | FUND_SWEEP       | RECORDED | 1119.56 | 2026-11-11       | NON_CLIENT |      -1119.56 |        -1119.56 | t      | 4966f021-937f-430a-b3a0-0746c48c7c6e | FUND_INTEREST_AND_CHARGES | 77139b6a-9ee5-4943-81ee-bc4f8931b721 |                    |                   | LPFF/OBS647A/MUSQT |             |                | \n 7accbcab-08ae-4020-a324-51eb88062570 | BANK_CHARGE      | RECORDED |   57.50 | 2026-11-12       | NON_CLIENT |        -57.50 |          -57.50 | t      | 4966f021-937f-430a-b3a0-0746c48c7c6e | FUND_INTEREST_AND_CHARGES | 2aaa8dfc-9dd6-4c79-99f8-bdf437806d73 | t                  |              7.50 | SVC/OBS647A/MUSQT  |             |                | \n 5cc18959-a37a-4faf-89e7-c827865a5ee7 | CHARGE_REFUND    | RECORDED |  115.00 | 2026-11-13       | NON_CLIENT |        115.00 |          115.00 | t      | 4966f021-937f-430a-b3a0-0746c48c7c6e | FUND_INTEREST_AND_CHARGES | 513e1347-aa43-482b-8a69-768021abb593 |                    |                   | RFD/OBS647A/MUSQT  |             |                | \n 5afbfcb1-59af-4e91-9669-03d410b5b667 | BANK_CHARGE      | RECORDED |  115.00 | 2026-11-14       | NON_CLIENT |       -115.00 |         -115.00 | t      | 4966f021-937f-430a-b3a0-0746c48c7c6e | FUND_INTEREST_AND_CHARGES | dfdc4e4d-f3ee-4bca-a530-7b2d3d8205ea | f                  |              0.00 | CDF/OBS647A/MUSQT  |             |                | \n(5 rows)\n\n",
+      "linesSql": " line_number |                  id                  | transaction_date |  amount  | match_status | classification |         trust_transaction_id         | stmt_matched_count \n-------------+--------------------------------------+------------------+----------+--------------+----------------+--------------------------------------+--------------------\n           1 | 2379ecae-adff-4455-9ce6-05a4afbde70b | 2026-11-10       |  1234.56 | RECORDED     | FUND_INTEREST  | 974db0d6-6133-451d-a70f-c5865cda150b |                  5\n           2 | 77139b6a-9ee5-4943-81ee-bc4f8931b721 | 2026-11-11       | -1119.56 | RECORDED     | FUND_SWEEP     | 49dced14-f9a5-42e5-a552-23e88387715d |                  5\n           3 | 2aaa8dfc-9dd6-4c79-99f8-bdf437806d73 | 2026-11-12       |   -57.50 | RECORDED     | BANK_CHARGE    | 7accbcab-08ae-4020-a324-51eb88062570 |                  5\n           4 | 513e1347-aa43-482b-8a69-768021abb593 | 2026-11-13       |   115.00 | RECORDED     | CHARGE_REFUND  | 5cc18959-a37a-4faf-89e7-c827865a5ee7 |                  5\n           5 | dfdc4e4d-f3ee-4bca-a530-7b2d3d8205ea | 2026-11-14       |  -115.00 | RECORDED     | BANK_CHARGE    | 5afbfcb1-59af-4e91-9669-03d410b5b667 |                  5\n(5 rows)\n\n",
+      "matchedCount": 5,
+      "creditors": {
+        "cardText": "Legal Practitioners' Fidelity Fund — interest and charges R 57,50 Interest received for the Fund, less bank charges",
+        "ui": 57.5,
+        "api": {
+          "id": "4966f021-937f-430a-b3a0-0746c48c7c6e",
+          "trustAccountId": "bc212ce3-4ad0-41dc-8400-600191f1fbfb",
+          "accountType": "FUND_INTEREST_AND_CHARGES",
+          "name": "Legal Practitioners' Fidelity Fund — interest and charges",
+          "balance": 57.5,
+          "inDebit": false,
+          "asAt": "2026-11-17"
+        },
+        "sqlFund": 57.5,
+        "shot": "10-b-after-record-other-creditors.png",
+        "match": true
+      },
+      "eq": {
+        "before": {
+          "asAt": "2026-11-09",
+          "status": [
+            200,
+            200
+          ],
+          "apiCashbook": 0,
+          "apiCreditorTotal": 0,
+          "apiFund": 0,
+          "apiClientLedgers": 0,
+          "sqlCashbook": 0,
+          "sqlCreditorTotal": 0,
+          "sqlFund": 0,
+          "sqlClientLedgers": 0,
+          "sqlDifference": 0,
+          "match": true,
+          "equationHolds": true
+        },
+        "line1": {
+          "asAt": "2026-11-10",
+          "status": [
+            200,
+            200
+          ],
+          "apiCashbook": 1234.56,
+          "apiCreditorTotal": 1234.56,
+          "apiFund": 1234.56,
+          "apiClientLedgers": 0,
+          "sqlCashbook": 1234.56,
+          "sqlCreditorTotal": 1234.56,
+          "sqlFund": 1234.56,
+          "sqlClientLedgers": 0,
+          "sqlDifference": 0,
+          "match": true,
+          "equationHolds": true
+        },
+        "line2": {
+          "asAt": "2026-11-11",
+          "status": [
+            200,
+            200
+          ],
+          "apiCashbook": 115,
+          "apiCreditorTotal": 115,
+          "apiFund": 115,
+          "apiClientLedgers": 0,
+          "sqlCashbook": 115,
+          "sqlCreditorTotal": 115,
+          "sqlFund": 115,
+          "sqlClientLedgers": 0,
+          "sqlDifference": 0,
+          "match": true,
+          "equationHolds": true
+        },
+        "line3": {
+          "asAt": "2026-11-12",
+          "status": [
+            200,
+            200
+          ],
+          "apiCashbook": 57.5,
+          "apiCreditorTotal": 57.5,
+          "apiFund": 57.5,
+          "apiClientLedgers": 0,
+          "sqlCashbook": 57.5,
+          "sqlCreditorTotal": 57.5,
+          "sqlFund": 57.5,
+          "sqlClientLedgers": 0,
+          "sqlDifference": 0,
+          "match": true,
+          "equationHolds": true
+        },
+        "line4": {
+          "asAt": "2026-11-13",
+          "status": [
+            200,
+            200
+          ],
+          "apiCashbook": 172.5,
+          "apiCreditorTotal": 172.5,
+          "apiFund": 172.5,
+          "apiClientLedgers": 0,
+          "sqlCashbook": 172.5,
+          "sqlCreditorTotal": 172.5,
+          "sqlFund": 172.5,
+          "sqlClientLedgers": 0,
+          "sqlDifference": 0,
+          "match": true,
+          "equationHolds": true
+        },
+        "line5": {
+          "asAt": "2026-11-14",
+          "status": [
+            200,
+            200
+          ],
+          "apiCashbook": 57.5,
+          "apiCreditorTotal": 57.5,
+          "apiFund": 57.5,
+          "apiClientLedgers": 0,
+          "sqlCashbook": 57.5,
+          "sqlCreditorTotal": 57.5,
+          "sqlFund": 57.5,
+          "sqlClientLedgers": 0,
+          "sqlDifference": 0,
+          "match": true,
+          "equationHolds": true
+        },
+        "today": {
+          "asAt": "2026-11-17",
+          "status": [
+            200,
+            200
+          ],
+          "apiCashbook": 286557.5,
+          "apiCreditorTotal": 286557.5,
+          "apiFund": 57.5,
+          "apiClientLedgers": 286500,
+          "sqlCashbook": 286557.5,
+          "sqlCreditorTotal": 286557.5,
+          "sqlFund": 57.5,
+          "sqlClientLedgers": 286500,
+          "sqlDifference": 0,
+          "match": true,
+          "equationHolds": true
+        }
+      },
+      "fundMovementToday": 57.5,
+      "cashbookMovementToday": 57.5
+    },
+    "d": {
+      "offered": [
+        {
+          "line": 1,
+          "amount": 1234.56,
+          "offered": [
+            "Interest received for the Legal Practitioners' Fidelity Fund",
+            "Bank charge refunded from the business account"
+          ],
+          "values": [
+            "FUND_INTEREST",
+            "CHARGE_REFUND"
+          ]
+        },
+        {
+          "line": 2,
+          "amount": -1119.56,
+          "offered": [
+            "Interest paid to the Legal Practitioners' Fidelity Fund",
+            "Bank charge"
+          ],
+          "values": [
+            "FUND_SWEEP",
+            "BANK_CHARGE"
+          ]
+        },
+        {
+          "line": 3,
+          "amount": -57.5,
+          "offered": [
+            "Interest paid to the Legal Practitioners' Fidelity Fund",
+            "Bank charge"
+          ],
+          "values": [
+            "FUND_SWEEP",
+            "BANK_CHARGE"
+          ]
+        },
+        {
+          "line": 4,
+          "amount": 115,
+          "offered": [
+            "Interest received for the Legal Practitioners' Fidelity Fund",
+            "Bank charge refunded from the business account"
+          ],
+          "values": [
+            "FUND_INTEREST",
+            "CHARGE_REFUND"
+          ]
+        },
+        {
+          "line": 5,
+          "amount": -115,
+          "offered": [
+            "Interest paid to the Legal Practitioners' Fidelity Fund",
+            "Bank charge"
+          ],
+          "values": [
+            "FUND_SWEEP",
+            "BANK_CHARGE"
+          ]
+        }
+      ],
+      "line3ReopenedOffered": [
+        "Interest paid to the Legal Practitioners' Fidelity Fund",
+        "Bank charge"
+      ],
+      "line3ReopenedValues": [
+        "FUND_SWEEP",
+        "BANK_CHARGE"
+      ],
+      "shotReopened": "14-d1-line3-reopened-dialog-debit-options.png",
+      "txCountBeforeProbe": 12,
+      "lineBeforeProbe": "UNMATCHED|<null>",
+      "probe": {
+        "path": "/api/bank-statement-lines/2aaa8dfc-9dd6-4c79-99f8-bdf437806d73/record",
+        "request": {
+          "classification": "FUND_INTEREST"
+        },
+        "status": 400,
+        "body": {
+          "detail": "Interest received for the Legal Practitioners' Fidelity Fund is recorded from a credit line; this line is a debit",
+          "instance": "/api/bank-statement-lines/2aaa8dfc-9dd6-4c79-99f8-bdf437806d73/record",
+          "status": 400,
+          "title": "Classification does not match the line"
+        }
+      },
+      "txCountAfterProbe": 12,
+      "lineAfterProbe": "UNMATCHED|<null>"
+    },
+    "c": {
+      "beforeEq": {
+        "line3": {
+          "asAt": "2026-11-12",
+          "status": [
+            200,
+            200
+          ],
+          "apiCashbook": 57.5,
+          "apiCreditorTotal": 57.5,
+          "apiFund": 57.5,
+          "apiClientLedgers": 0,
+          "sqlCashbook": 57.5,
+          "sqlCreditorTotal": 57.5,
+          "sqlFund": 57.5,
+          "sqlClientLedgers": 0,
+          "sqlDifference": 0,
+          "match": true,
+          "equationHolds": true
+        },
+        "today": {
+          "asAt": "2026-11-17",
+          "status": [
+            200,
+            200
+          ],
+          "apiCashbook": 286557.5,
+          "apiCreditorTotal": 286557.5,
+          "apiFund": 57.5,
+          "apiClientLedgers": 286500,
+          "sqlCashbook": 286557.5,
+          "sqlCreditorTotal": 286557.5,
+          "sqlFund": 57.5,
+          "sqlClientLedgers": 286500,
+          "sqlDifference": 0,
+          "match": true,
+          "equationHolds": true
+        }
+      },
+      "matchedBefore": 5,
+      "txCountBefore": 11,
+      "dialogText": "Unmatch recorded line? This line was recorded as Bank charge. Unmatching it reverses the entry it created, dated 12 Nov 2026 — the line's date. The line returns to Unmatched. Keep Unmatch and reverse",
+      "shotDialog": "11-c1-unmatch-recorded-confirmation.png",
+      "lineText": "#3 12 Nov 2026 Monthly service fee Ref: SVC/OBS647A/MUSQT R 57,50 DR Unmatched",
+      "errorBanner": null,
+      "progress": "Matching Progress 4 / 5 lines resolved",
+      "summary": [
+        [
+          "Bank balance",
+          "R 57,50"
+        ],
+        [
+          "+ Outstanding deposits",
+          "R 0,00"
+        ],
+        [
+          "− Outstanding payments",
+          "R 0,00"
+        ],
+        [
+          "= Adjusted bank balance",
+          "R 57,50"
+        ],
+        [
+          "Cashbook",
+          "R 115,00"
+        ],
+        [
+          "Difference",
+          "-R 57,50"
+        ],
+        [
+          "Cashbook",
+          "R 115,00"
+        ],
+        [
+          "Trust creditors",
+          "R 115,00"
+        ],
+        [
+          "Difference",
+          "R 0,00"
+        ],
+        [
+          "Client ledgers",
+          "R 0,00"
+        ],
+        [
+          "Legal Practitioners' Fidelity Fund — interest and charges",
+          "R 115,00"
+        ],
+        [
+          "Unidentified deposits",
+          "R 0,00"
+        ]
+      ],
+      "shotAfter": "12-c2-after-unmatch.png",
+      "originalSql": "                  id                  | transaction_type |  status  | amount | transaction_date |   ledger   | ledger_effect | cashbook_effect | posted |         creditor_account_id          |       creditor_type       | bank_statement_line_id | charge_recoverable | charge_vat_amount |     reference     | reversal_of |            reversed_by_id            | approved_by \n--------------------------------------+------------------+----------+--------+------------------+------------+---------------+-----------------+--------+--------------------------------------+---------------------------+------------------------+--------------------+-------------------+-------------------+-------------+--------------------------------------+-------------\n 7accbcab-08ae-4020-a324-51eb88062570 | BANK_CHARGE      | REVERSED |  57.50 | 2026-11-12       | NON_CLIENT |        -57.50 |          -57.50 | t      | 4966f021-937f-430a-b3a0-0746c48c7c6e | FUND_INTEREST_AND_CHARGES |                        | t                  |              7.50 | SVC/OBS647A/MUSQT |             | c0657aa9-79eb-4b12-9ec2-8fdd786ea49f | \n(1 row)\n\n",
+      "contraSql": "                  id                  | transaction_type |  status  | amount | transaction_date |   ledger   | ledger_effect | cashbook_effect | posted |         creditor_account_id          |       creditor_type       | bank_statement_line_id | charge_recoverable | charge_vat_amount |       reference       |             reversal_of              | reversed_by_id | approved_by \n--------------------------------------+------------------+----------+--------+------------------+------------+---------------+-----------------+--------+--------------------------------------+---------------------------+------------------------+--------------------+-------------------+-----------------------+--------------------------------------+----------------+-------------\n c0657aa9-79eb-4b12-9ec2-8fdd786ea49f | REVERSAL         | RECORDED |  57.50 | 2026-11-12       | NON_CLIENT |         57.50 |           57.50 | t      | 4966f021-937f-430a-b3a0-0746c48c7c6e | FUND_INTEREST_AND_CHARGES |                        |                    |                   | REV-SVC/OBS647A/MUSQT | 7accbcab-08ae-4020-a324-51eb88062570 |                | \n(1 row)\n\n",
+      "original": {
+        "status": "REVERSED",
+        "lineLink": "",
+        "reversedBy": "c0657aa9-79eb-4b12-9ec2-8fdd786ea49f"
+      },
+      "contra": {
+        "id": "c0657aa9-79eb-4b12-9ec2-8fdd786ea49f",
+        "type": "REVERSAL",
+        "status": "RECORDED",
+        "amount": 57.5,
+        "date": "2026-11-12",
+        "ledger": "NON_CLIENT",
+        "ledgerEffect": 57.5,
+        "cashbookEffect": 57.5,
+        "posted": "t",
+        "creditorAccountId": "4966f021-937f-430a-b3a0-0746c48c7c6e",
+        "lineLink": ""
+      },
+      "line": {
+        "matchStatus": "UNMATCHED",
+        "classification": "<null>",
+        "trustTransactionId": "<null>"
+      },
+      "matchedAfter": 4,
+      "txCountAfter": 12,
+      "apiContra": {
+        "id": "c0657aa9-79eb-4b12-9ec2-8fdd786ea49f",
+        "trustAccountId": "bc212ce3-4ad0-41dc-8400-600191f1fbfb",
+        "transactionType": "REVERSAL",
+        "typeLabel": "Reversal",
+        "direction": "IN",
+        "ledger": "NON_CLIENT",
+        "amount": 57.5,
+        "clientId": null,
+        "matterId": null,
+        "creditorAccountId": "4966f021-937f-430a-b3a0-0746c48c7c6e",
+        "investmentId": null,
+        "counterpartyClientId": null,
+        "invoiceId": null,
+        "reference": "REV-SVC/OBS647A/MUSQT",
+        "description": "Statement line unmatched",
+        "transactionDate": "2026-11-12",
+        "status": "RECORDED",
+        "postedAt": "2026-11-17T11:56:06.922917Z",
+        "approvedBy": null,
+        "approvedAt": null,
+        "secondApprovedBy": null,
+        "secondApprovedAt": null,
+        "rejectedBy": null,
+        "rejectedAt": null,
+        "rejectionReason": null,
+        "reversalOf": "7accbcab-08ae-4020-a324-51eb88062570",
+        "reversedById": null,
+        "reversalPending": false,
+        "bankStatementLineId": null,
+        "recordedBy": "a8bf9921-29b6-4671-bfc9-bcec9f9ac8f1",
+        "createdAt": "2026-11-17T11:56:06.923138Z",
+        "runningBalance": null,
+        "chargeRecoverable": null,
+        "chargeVatAmount": null
+      },
+      "apiOriginal": {
+        "id": "7accbcab-08ae-4020-a324-51eb88062570",
+        "trustAccountId": "bc212ce3-4ad0-41dc-8400-600191f1fbfb",
+        "transactionType": "BANK_CHARGE",
+        "typeLabel": "Bank charge",
+        "direction": "OUT",
+        "ledger": "NON_CLIENT",
+        "amount": 57.5,
+        "clientId": null,
+        "matterId": null,
+        "creditorAccountId": "4966f021-937f-430a-b3a0-0746c48c7c6e",
+        "investmentId": null,
+        "counterpartyClientId": null,
+        "invoiceId": null,
+        "reference": "SVC/OBS647A/MUSQT",
+        "description": "Monthly service fee",
+        "transactionDate": "2026-11-12",
+        "status": "REVERSED",
+        "postedAt": "2026-11-17T11:54:22.858424Z",
+        "approvedBy": null,
+        "approvedAt": null,
+        "secondApprovedBy": null,
+        "secondApprovedAt": null,
+        "rejectedBy": null,
+        "rejectedAt": null,
+        "rejectionReason": null,
+        "reversalOf": null,
+        "reversedById": "c0657aa9-79eb-4b12-9ec2-8fdd786ea49f",
+        "reversalPending": false,
+        "bankStatementLineId": null,
+        "recordedBy": "a8bf9921-29b6-4671-bfc9-bcec9f9ac8f1",
+        "createdAt": "2026-11-17T11:54:22.858536Z",
+        "runningBalance": null,
+        "chargeRecoverable": true,
+        "chargeVatAmount": 7.5
+      },
+      "linesSql": " line_number |                  id                  | transaction_date |  amount  | match_status | classification |         trust_transaction_id         | stmt_matched_count \n-------------+--------------------------------------+------------------+----------+--------------+----------------+--------------------------------------+--------------------\n           1 | 2379ecae-adff-4455-9ce6-05a4afbde70b | 2026-11-10       |  1234.56 | RECORDED     | FUND_INTEREST  | 974db0d6-6133-451d-a70f-c5865cda150b |                  4\n           2 | 77139b6a-9ee5-4943-81ee-bc4f8931b721 | 2026-11-11       | -1119.56 | RECORDED     | FUND_SWEEP     | 49dced14-f9a5-42e5-a552-23e88387715d |                  4\n           3 | 2aaa8dfc-9dd6-4c79-99f8-bdf437806d73 | 2026-11-12       |   -57.50 | UNMATCHED    |                |                                      |                  4\n           4 | 513e1347-aa43-482b-8a69-768021abb593 | 2026-11-13       |   115.00 | RECORDED     | CHARGE_REFUND  | 5cc18959-a37a-4faf-89e7-c827865a5ee7 |                  4\n           5 | dfdc4e4d-f3ee-4bca-a530-7b2d3d8205ea | 2026-11-14       |  -115.00 | RECORDED     | BANK_CHARGE    | 5afbfcb1-59af-4e91-9669-03d410b5b667 |                  4\n(5 rows)\n\n",
+      "creditors": {
+        "cardText": "Legal Practitioners' Fidelity Fund — interest and charges R 115,00 Interest received for the Fund, less bank charges",
+        "ui": 115,
+        "api": {
+          "id": "4966f021-937f-430a-b3a0-0746c48c7c6e",
+          "trustAccountId": "bc212ce3-4ad0-41dc-8400-600191f1fbfb",
+          "accountType": "FUND_INTEREST_AND_CHARGES",
+          "name": "Legal Practitioners' Fidelity Fund — interest and charges",
+          "balance": 115,
+          "inDebit": false,
+          "asAt": "2026-11-17"
+        },
+        "sqlFund": 115,
+        "shot": "13-c-after-unmatch-other-creditors.png",
+        "match": true
+      },
+      "eq": {
+        "line2": {
+          "asAt": "2026-11-11",
+          "status": [
+            200,
+            200
+          ],
+          "apiCashbook": 115,
+          "apiCreditorTotal": 115,
+          "apiFund": 115,
+          "apiClientLedgers": 0,
+          "sqlCashbook": 115,
+          "sqlCreditorTotal": 115,
+          "sqlFund": 115,
+          "sqlClientLedgers": 0,
+          "sqlDifference": 0,
+          "match": true,
+          "equationHolds": true
+        },
+        "line3": {
+          "asAt": "2026-11-12",
+          "status": [
+            200,
+            200
+          ],
+          "apiCashbook": 115,
+          "apiCreditorTotal": 115,
+          "apiFund": 115,
+          "apiClientLedgers": 0,
+          "sqlCashbook": 115,
+          "sqlCreditorTotal": 115,
+          "sqlFund": 115,
+          "sqlClientLedgers": 0,
+          "sqlDifference": 0,
+          "match": true,
+          "equationHolds": true
+        },
+        "today": {
+          "asAt": "2026-11-17",
+          "status": [
+            200,
+            200
+          ],
+          "apiCashbook": 286615,
+          "apiCreditorTotal": 286615,
+          "apiFund": 115,
+          "apiClientLedgers": 286500,
+          "sqlCashbook": 286615,
+          "sqlCreditorTotal": 286615,
+          "sqlFund": 115,
+          "sqlClientLedgers": 286500,
+          "sqlDifference": 0,
+          "match": true,
+          "equationHolds": true
+        }
+      },
+      "reconApi": {
+        "id": "f6b01cd5-bee6-46e9-b7dc-51cd8161c205",
+        "trustAccountId": "bc212ce3-4ad0-41dc-8400-600191f1fbfb",
+        "periodEnd": "2026-11-14",
+        "bankStatementId": "5c691fe1-fcdb-4c21-bd6a-c0e0fe3b9bd5",
+        "bankBalance": 57.5,
+        "outstandingDeposits": 0,
+        "outstandingPayments": 0,
+        "adjustedBankBalance": 57.5,
+        "cashbookBalance": 115,
+        "clientLedgerTotal": 0,
+        "creditorBreakdown": {
+          "clientLedgers": 0,
+          "investmentCreditors": 0,
+          "fundInterestAndCharges": 115,
+          "unidentifiedDeposits": 0,
+          "otherNonClient": 0,
+          "interAccount": 0,
+          "total": 115
+        },
+        "bankToCashbookDifference": -57.5,
+        "cashbookToCreditorsDifference": 0,
+        "difference": -57.5,
+        "excludedLinesTotal": 0,
+        "unresolvedLineCount": 1,
+        "isBalanced": false,
+        "status": "DRAFT",
+        "completedBy": null,
+        "completedAt": null,
+        "notes": null,
+        "createdAt": "2026-11-17T11:52:42.644619Z",
+        "updatedAt": "2026-11-17T11:56:07.251227Z"
+      },
+      "checks": {
+        "contraType": true,
+        "contraDate": true,
+        "contraAmount": true,
+        "contraFundLedger": true,
+        "contraEffects": true,
+        "contraUnlinked": true,
+        "originalReversed": true,
+        "originalUnlinked": true,
+        "originalReversedBy": true,
+        "lineUnmatched": true,
+        "matchedMinusOne": true,
+        "oneRowCreated": true,
+        "fundRestored": true,
+        "cashbookRestored": true,
+        "fundAtLine3Restored": true,
+        "fundAtLine2Unchanged": true,
+        "equationToday": true,
+        "equationLine3": true,
+        "badgeGone": true
+      }
+    }
+  },
+  "consoleErrors": [],
+  "pageErrors": [],
+  "notes": [],
+  "startedAt": "2026-11-17T11:52:36.859Z",
+  "run": "MUSQT",
+  "dates": {
+    "today": "2026-11-17",
+    "before": "2026-11-09",
+    "periodEnd": "2026-11-14",
+    "line1": "2026-11-10",
+    "line2": "2026-11-11",
+    "line3": "2026-11-12",
+    "line4": "2026-11-13",
+    "line5": "2026-11-14"
+  },
+  "lines": [
+    {
+      "n": 1,
+      "date": "2026-11-10",
+      "desc": "Interest credit",
+      "ref": "INT/OBS647A/MUSQT",
+      "amount": 1234.56,
+      "cls": "FUND_INTEREST",
+      "id": "2379ecae-adff-4455-9ce6-05a4afbde70b",
+      "txId": "974db0d6-6133-451d-a70f-c5865cda150b"
+    },
+    {
+      "n": 2,
+      "date": "2026-11-11",
+      "desc": "Fidelity Fund interest transfer",
+      "ref": "LPFF/OBS647A/MUSQT",
+      "amount": -1119.56,
+      "cls": "FUND_SWEEP",
+      "id": "77139b6a-9ee5-4943-81ee-bc4f8931b721",
+      "txId": "49dced14-f9a5-42e5-a552-23e88387715d"
+    },
+    {
+      "n": 3,
+      "date": "2026-11-12",
+      "desc": "Monthly service fee",
+      "ref": "SVC/OBS647A/MUSQT",
+      "amount": -57.5,
+      "cls": "BANK_CHARGE",
+      "recoverable": true,
+      "vat": "7.50",
+      "id": "2aaa8dfc-9dd6-4c79-99f8-bdf437806d73",
+      "txId": "7accbcab-08ae-4020-a324-51eb88062570"
+    },
+    {
+      "n": 4,
+      "date": "2026-11-13",
+      "desc": "Fee refund from business account",
+      "ref": "RFD/OBS647A/MUSQT",
+      "amount": 115,
+      "cls": "CHARGE_REFUND",
+      "id": "513e1347-aa43-482b-8a69-768021abb593",
+      "txId": "5cc18959-a37a-4faf-89e7-c827865a5ee7"
+    },
+    {
+      "n": 5,
+      "date": "2026-11-14",
+      "desc": "Cash deposit fee",
+      "ref": "CDF/OBS647A/MUSQT",
+      "amount": -115,
+      "cls": "BANK_CHARGE",
+      "recoverable": false,
+      "vat": "0",
+      "id": "dfdc4e4d-f3ee-4bca-a530-7b2d3d8205ea",
+      "txId": "5afbfcb1-59af-4e91-9669-03d410b5b667"
+    }
+  ],
+  "ids": {
+    "account": "bc212ce3-4ad0-41dc-8400-600191f1fbfb",
+    "fundAccount": "4966f021-937f-430a-b3a0-0746c48c7c6e",
+    "statement": "5c691fe1-fcdb-4c21-bd6a-c0e0fe3b9bd5",
+    "recon": "f6b01cd5-bee6-46e9-b7dc-51cd8161c205"
+  },
+  "account": [
+    [
+      "bc212ce3-4ad0-41dc-8400-600191f1fbfb",
+      "Mathebula & Partners Trust Account",
+      "Standard Bank",
+      "0123456789",
+      "t",
+      "ACTIVE"
+    ]
+  ],
+  "csv": [
+    "Standard Bank Trust Account - OBS 647A MUSQT",
+    "Date,Description,Reference,Amount,Balance",
+    "2026-11-10,Interest credit,INT/OBS647A/MUSQT,1234.56,1234.56",
+    "2026-11-11,Fidelity Fund interest transfer,LPFF/OBS647A/MUSQT,-1119.56,115.00",
+    "2026-11-12,Monthly service fee,SVC/OBS647A/MUSQT,-57.50,57.50",
+    "2026-11-13,Fee refund from business account,RFD/OBS647A/MUSQT,115.00,172.50",
+    "2026-11-14,Cash deposit fee,CDF/OBS647A/MUSQT,-115.00,57.50"
+  ],
+  "finishedAt": "2026-11-17T11:56:44.417Z"
+}

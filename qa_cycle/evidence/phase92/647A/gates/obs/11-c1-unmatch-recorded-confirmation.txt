@@ -1,0 +1,168 @@
+Skip to content
+Kazi
+E2E Test Organization
+Search...
+⌘K
+TODAY
+Home
+My work
+Diary
+MATTERS
+Matters
+New matter
+Conflict check
+Adverse parties
+AI reviews
+CLIENTS
+Clients
+FICA & compliance
+Data requests
+FEES
+TRUST
+FIRM
+Platform Admin
+Notifications
+AO
+
+Alice Owner
+
+alice@e2e-test.local
+
+Toggle menu
+E2E Test Organization
+Trust accounting
+Reconciliation
+New
+Search
+⌘K
+11 unread notifications
+11
+e2e-test-org
+AO
+Back to Reconciliation
+New Reconciliation
+
+Reconcile your trust account with a bank statement
+
+1
+Select Account
+2
+Upload Statement
+3
+Auto-Match
+4
+Review & Match
+5
+Complete
+Matching Progress
+5 / 5 lines resolved
+Bank Statement Lines
+#1
+10 Nov 2026
+
+Interest credit
+
+Ref: INT/OBS647A/MUSQT
+
+R 1 234,56 CR
+
+Recorded: Interest received for the Legal Practitioners' Fidelity Fund
+Unmatch
+#2
+11 Nov 2026
+
+Fidelity Fund interest transfer
+
+Ref: LPFF/OBS647A/MUSQT
+
+R 1 119,56 DR
+
+Recorded: Interest paid to the Legal Practitioners' Fidelity Fund
+Unmatch
+#3
+12 Nov 2026
+
+Monthly service fee
+
+Ref: SVC/OBS647A/MUSQT
+
+R 57,50 DR
+
+Recorded: Bank charge
+Unmatch
+#4
+13 Nov 2026
+
+Fee refund from business account
+
+Ref: RFD/OBS647A/MUSQT
+
+R 115,00 CR
+
+Recorded: Bank charge refunded from the business account
+Unmatch
+#5
+14 Nov 2026
+
+Cash deposit fee
+
+Ref: CDF/OBS647A/MUSQT
+
+R 115,00 DR
+
+Recorded: Bank charge
+Unmatch
+Unmatched Trust Transactions
+
+FEE/MOROKA/mwkmq5ta91aa
+
+17 Nov 2026 · Fee transfer
+
+R 8 500,00
+
+As at 14 Nov 2026
+Bank and cashbook
+Bank balance
+R 57,50
++ Outstanding deposits
+R 0,00
+− Outstanding payments
+R 0,00
+= Adjusted bank balance
+R 57,50
+Cashbook
+R 57,50
+Difference
+R 0,00
+Cashbook and trust creditors
+Cashbook
+R 57,50
+Trust creditors
+R 57,50
+Difference
+R 0,00
+Trust creditors
+Client ledgers
+R 0,00
+Legal Practitioners' Fidelity Fund — interest and charges
+R 57,50
+Unidentified deposits
+R 0,00
+
+0 statement lines are neither matched nor excluded
+
+Excluded statement lines total R 0,00. An excluded line adjusts nothing: excluding a real bank movement leaves its amount as the difference between the bank and the cashbook.
+
+Reconciliation is balanced
+Complete Reconciliation
+Back
+Command Palette
+
+Search pages and settings
+
+Unmatch recorded line?
+
+This line was recorded as Bank charge. Unmatching it reverses the entry it created, dated 12 Nov 2026 — the line's date. The line returns to Unmatched.
+
+Keep
+Unmatch and reverse

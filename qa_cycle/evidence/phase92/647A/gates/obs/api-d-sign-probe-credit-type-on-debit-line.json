@@ -1,0 +1,13 @@
+{
+  "path": "/api/bank-statement-lines/2aaa8dfc-9dd6-4c79-99f8-bdf437806d73/record",
+  "request": {
+    "classification": "FUND_INTEREST"
+  },
+  "status": 400,
+  "body": {
+    "detail": "Interest received for the Legal Practitioners' Fidelity Fund is recorded from a credit line; this line is a debit",
+    "instance": "/api/bank-statement-lines/2aaa8dfc-9dd6-4c79-99f8-bdf437806d73/record",
+    "status": 400,
+    "title": "Classification does not match the line"
+  }
+}

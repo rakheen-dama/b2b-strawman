@@ -1,7 +1,7 @@
 {
-  "commit": "bea187443",
-  "command": "cd backend && ./mvnw -q spotless:check && ./mvnw -q clean && bash scripts/verify.sh -q  (./mvnw verify under caffeinate, worktree-epic-646D)",
+  "commit": "ab1714caf",
+  "command": "cd backend && bash scripts/verify.sh -q  (./mvnw verify under caffeinate, worktree-epic-647A) && ./mvnw -q spotless:check",
   "exit": 0,
-  "ts": "2026-11-17T09:23:27Z",
-  "summary": "PR #1793 (646D) head bea187443 — 7048 <testcase> / 0 failures / 0 errors / 26 skipped — ~24 min (baseline 7037 after 646C: +11)"
+  "ts": "2026-11-17T11:40:00Z",
+  "summary": "PR #1794 (647A) head ab1714caf — 7093 <testcase> / 0 failures / 0 errors / 26 skipped — ~22 min (baseline 7048 after 646D: +45); spotless:check OK"
 }

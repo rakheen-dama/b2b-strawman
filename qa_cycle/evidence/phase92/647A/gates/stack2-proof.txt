@@ -1,0 +1,53 @@
+== worktree: /Users/rakheendama/Projects/2026/worktree-epic-647A @ ab1714cafa60b85abd666d25036aeca28ce58c2e
+== build log source lines:
+Building from source at: /Users/rakheendama/Projects/2026/worktree-epic-647A
+  Tail logs:   docker compose -f /Users/rakheendama/Projects/2026/worktree-epic-647A/compose/docker-compose.e2e.yml logs -f backend frontend
+== jar entries (647A-touched classes):
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/transaction/TrustTransactionService.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/reconciliation/StatementLineClassification.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/reconciliation/StatementLinePostingService.class
+== StatementLinePostingService.class contains 'A zero-amount statement line cannot be recorded' (647A): 1
+== StatementLinePostingService.class contains 'Only a line recorded from the statement is reversed' (647A): 1
+== StatementLinePostingService$RecordFromLineRequest.class contains 'The VAT amount has at most two decimal places' (647A review fix): 1
+== TrustReconciliationController.class contains '/api/bank-statement-lines/{lineId}/record' (647A): 1
+== TrustTransactionService.class contains 'reverseForUnmatch' (647A): 2
+== jar migrations (latest tenant V*):
+db/migration/tenant/V18__phase92_trust_creditor_accounts.sql
+db/migration/tenant/V19__phase92_trust_recon_breakdown.sql
+db/migration/tenant/V20__phase92_statement_line_classification.sql
+== frontend container: 647A strings in .next (excluding cache):
+-- 'Recoverable from the Fidelity Fund':
+/app/frontend/.next/server/chunks/ssr/1oju_app_(app)_org_[slug]_trust-accounting_reconciliation_new_page_tsx_0gjhtfk._.js
+/app/frontend/.next/static/chunks/2lee2yn99x49u.js
+-- 'record-from-statement-dialog':
+/app/frontend/.next/server/chunks/ssr/1oju_app_(app)_org_[slug]_trust-accounting_reconciliation_new_page_tsx_0gjhtfk._.js
+/app/frontend/.next/static/chunks/2lee2yn99x49u.js
+-- 'Unmatch and reverse':
+/app/frontend/.next/server/chunks/ssr/1oju_app_(app)_org_[slug]_trust-accounting_reconciliation_new_page_tsx_0gjhtfk._.js
+/app/frontend/.next/static/chunks/2lee2yn99x49u.js
+-- 'unmatch-recorded-dialog':
+/app/frontend/.next/server/chunks/ssr/1oju_app_(app)_org_[slug]_trust-accounting_reconciliation_new_page_tsx_0gjhtfk._.js
+/app/frontend/.next/static/chunks/2lee2yn99x49u.js
+-- 'Bank charge refunded from the business account':
+/app/frontend/.next/server/chunks/ssr/frontend_lib_1q18f8m._.js
+/app/frontend/.next/server/chunks/ssr/_0bfqog2._.js
+/app/frontend/.next/static/chunks/0a3myw9lfa6nn.js
+/app/frontend/.next/static/chunks/1zu0p--pqnh_7.js
+-- 'Recorded: ':
+/app/frontend/.next/server/chunks/ssr/1oju_app_(app)_org_[slug]_trust-accounting_reconciliation_new_page_tsx_0gjhtfk._.js
+/app/frontend/.next/static/chunks/2lee2yn99x49u.js
+== health: {"groups":["liveness","readiness"],"status":"UP"}  frontend :3001 HTTP 200
+== tenant schemas: tenant_7d218705360b
+ version |              description              | success |        installed_on        
+---------+---------------------------------------+---------+----------------------------
+ 20      | phase92 statement line classification | t       | 2026-11-17 11:58:17.547261
+ 19      | phase92 trust recon breakdown         | t       | 2026-11-17 11:58:17.533605
+ 18      | phase92 trust creditor accounts       | t       | 2026-11-17 11:58:17.499214
+ 17      | phase92 trust reversal contra         | t       | 2026-11-17 11:58:17.485878
+(4 rows)
+
+ trust_accounts | creditor_accounts | trust_txns | statements | recons 
+----------------+-------------------+------------+------------+--------
+              1 |                 2 |          0 |          0 |      0
+(1 row)
+

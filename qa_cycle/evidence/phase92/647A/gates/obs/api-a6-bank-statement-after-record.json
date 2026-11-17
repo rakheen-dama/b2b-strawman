@@ -1,0 +1,112 @@
+{
+  "path": "/api/bank-statements/5c691fe1-fcdb-4c21-bd6a-c0e0fe3b9bd5",
+  "status": 200,
+  "body": {
+    "id": "5c691fe1-fcdb-4c21-bd6a-c0e0fe3b9bd5",
+    "trustAccountId": "bc212ce3-4ad0-41dc-8400-600191f1fbfb",
+    "periodStart": "2026-11-10",
+    "periodEnd": "2026-11-14",
+    "openingBalance": 0,
+    "closingBalance": 57.5,
+    "fileName": "statement-OBS647A-MUSQT.csv",
+    "format": "CSV",
+    "lineCount": 5,
+    "matchedCount": 5,
+    "status": "IMPORTED",
+    "importedBy": "a8bf9921-29b6-4671-bfc9-bcec9f9ac8f1",
+    "createdAt": "2026-11-17T11:52:41.623801Z",
+    "updatedAt": "2026-11-17T11:55:31.030319Z",
+    "lines": [
+      {
+        "id": "2379ecae-adff-4455-9ce6-05a4afbde70b",
+        "lineNumber": 1,
+        "transactionDate": "2026-11-10",
+        "description": "Interest credit",
+        "reference": "INT/OBS647A/MUSQT",
+        "amount": 1234.56,
+        "runningBalance": 1234.56,
+        "matchStatus": "RECORDED",
+        "trustTransactionId": "974db0d6-6133-451d-a70f-c5865cda150b",
+        "matchConfidence": null,
+        "classification": "FUND_INTEREST",
+        "classificationLabel": "Interest received for the Legal Practitioners' Fidelity Fund",
+        "suggestedClassification": null,
+        "createdTransactionIds": [
+          "974db0d6-6133-451d-a70f-c5865cda150b"
+        ]
+      },
+      {
+        "id": "77139b6a-9ee5-4943-81ee-bc4f8931b721",
+        "lineNumber": 2,
+        "transactionDate": "2026-11-11",
+        "description": "Fidelity Fund interest transfer",
+        "reference": "LPFF/OBS647A/MUSQT",
+        "amount": -1119.56,
+        "runningBalance": 115,
+        "matchStatus": "RECORDED",
+        "trustTransactionId": "49dced14-f9a5-42e5-a552-23e88387715d",
+        "matchConfidence": null,
+        "classification": "FUND_SWEEP",
+        "classificationLabel": "Interest paid to the Legal Practitioners' Fidelity Fund",
+        "suggestedClassification": null,
+        "createdTransactionIds": [
+          "49dced14-f9a5-42e5-a552-23e88387715d"
+        ]
+      },
+      {
+        "id": "2aaa8dfc-9dd6-4c79-99f8-bdf437806d73",
+        "lineNumber": 3,
+        "transactionDate": "2026-11-12",
+        "description": "Monthly service fee",
+        "reference": "SVC/OBS647A/MUSQT",
+        "amount": -57.5,
+        "runningBalance": 57.5,
+        "matchStatus": "RECORDED",
+        "trustTransactionId": "7accbcab-08ae-4020-a324-51eb88062570",
+        "matchConfidence": null,
+        "classification": "BANK_CHARGE",
+        "classificationLabel": "Bank charge",
+        "suggestedClassification": null,
+        "createdTransactionIds": [
+          "7accbcab-08ae-4020-a324-51eb88062570"
+        ]
+      },
+      {
+        "id": "513e1347-aa43-482b-8a69-768021abb593",
+        "lineNumber": 4,
+        "transactionDate": "2026-11-13",
+        "description": "Fee refund from business account",
+        "reference": "RFD/OBS647A/MUSQT",
+        "amount": 115,
+        "runningBalance": 172.5,
+        "matchStatus": "RECORDED",
+        "trustTransactionId": "5cc18959-a37a-4faf-89e7-c827865a5ee7",
+        "matchConfidence": null,
+        "classification": "CHARGE_REFUND",
+        "classificationLabel": "Bank charge refunded from the business account",
+        "suggestedClassification": null,
+        "createdTransactionIds": [
+          "5cc18959-a37a-4faf-89e7-c827865a5ee7"
+        ]
+      },
+      {
+        "id": "dfdc4e4d-f3ee-4bca-a530-7b2d3d8205ea",
+        "lineNumber": 5,
+        "transactionDate": "2026-11-14",
+        "description": "Cash deposit fee",
+        "reference": "CDF/OBS647A/MUSQT",
+        "amount": -115,
+        "runningBalance": 57.5,
+        "matchStatus": "RECORDED",
+        "trustTransactionId": "5afbfcb1-59af-4e91-9669-03d410b5b667",
+        "matchConfidence": null,
+        "classification": "BANK_CHARGE",
+        "classificationLabel": "Bank charge",
+        "suggestedClassification": null,
+        "createdTransactionIds": [
+          "5afbfcb1-59af-4e91-9669-03d410b5b667"
+        ]
+      }
+    ]
+  }
+}

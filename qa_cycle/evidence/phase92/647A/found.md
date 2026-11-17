@@ -73,9 +73,21 @@ suggested owner. Orchestrator rulings on the brief's §14 decisions are recorded
   `matched_count` — except auto-match. `autoMatchStatement` reads the statement and its `UNMATCHED`
   lines without a lock and sets `matched_count = alreadyMatched + autoMatched`, so a record / manual
   match committed on the same statement while auto-match runs can be overwritten (a line flipped to
-  `AUTO_MATCHED` over a `RECORDED` state, or the count losing an update). Fix: lock the statement
-  first, then re-read each candidate line under `findByIdForUpdate` and skip it unless still
-  `UNMATCHED`. Owner: orchestrator to assign (652A/652B touch the matching flow).
+  `AUTO_MATCHED` over a `RECORDED` state, or the count losing an update). **Corrected fix order
+  (re-review of ab1714caf, Agent A Medium 1):** follow the documented line-then-statement order —
+  lock each candidate line under `findByIdForUpdate` first and skip it unless still `UNMATCHED`,
+  then lock its transaction (manualMatch's line → transaction order), and take the statement lock
+  **last**, applying the delta with `incrementMatched` instead of setting `alreadyMatched +
+  autoMatched`. Locking the statement first (the earlier wording here) would deadlock against
+  record / manualMatch / unmatch, which hold the line and then wait on the statement.
+  Owner: orchestrator to assign (652A/652B touch the matching flow).
+- **New since ab1714caf: manualMatch vs auto-match can deadlock.** `manualMatch` now locks line →
+  transaction, while `autoMatchStatement` locks each candidate transaction (`applyAutoMatch`) and then
+  writes its lines. A member manually matching line L to T while another runs auto-match on the same
+  statement (auto-match holding T, later writing L) deadlocks; Postgres detects it (40P01) and aborts
+  one request, which surfaces as a generic server error (no `CannotAcquireLockException` handler).
+  Nothing is corrupted — before this PR the same race could silently overwrite. Ruled acceptable for
+  647A; it closes with the auto-match locking fix above.
 - **Stale recalculation after a wizard reset in the three pre-existing handlers.** The review round
   added a wizard-generation guard to `handleRecord` only (`reconciliation/new/page.tsx`).
   `handleMatch`, `handleExclude` and `handleUnmatch` share the defect: each awaits

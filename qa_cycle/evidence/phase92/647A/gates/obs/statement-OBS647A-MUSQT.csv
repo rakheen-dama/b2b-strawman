@@ -1,0 +1,7 @@
+Standard Bank Trust Account - OBS 647A MUSQT
+Date,Description,Reference,Amount,Balance
+2026-11-10,Interest credit,INT/OBS647A/MUSQT,1234.56,1234.56
+2026-11-11,Fidelity Fund interest transfer,LPFF/OBS647A/MUSQT,-1119.56,115.00
+2026-11-12,Monthly service fee,SVC/OBS647A/MUSQT,-57.50,57.50
+2026-11-13,Fee refund from business account,RFD/OBS647A/MUSQT,115.00,172.50
+2026-11-14,Cash deposit fee,CDF/OBS647A/MUSQT,-115.00,57.50

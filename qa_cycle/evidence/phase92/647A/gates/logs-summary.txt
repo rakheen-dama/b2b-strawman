@@ -1,0 +1,53 @@
+647A gates — summary of every *.log in this dir (the *.log files are gitignored)
+
+== depth-ii.log (9785 bytes, 54 lines)
+  4 skipped
+  40 passed (2.9m)
+full per-test list: depth-ii-summary.txt
+
+== lifecycle.log (20651 bytes, 114 lines)
+  105 passed (3.3m)
+full per-test list: lifecycle-summary.txt
+
+== obs/obs-output.log (74751 bytes, 1669 lines)
+stdout of obs.cjs = the JSON in obs/obs-result.json; 'OBS FAILED' lines: 0
+
+== stack0-down.log (137 bytes, 4 lines)
+Stack stopped. All containers and volumes removed.
+Run 'bash compose/scripts/e2e-up.sh' to start fresh.
+
+== stack1-backend.log (261314 bytes, 517 lines)
+level counts / WARN breakdown: see stack1-log-breakdown.txt
+{'INFO': 342, 'WARN': 151}
+lines containing "ERROR": 0
+
+== stack1-build.log (28069 bytes, 602 lines)
+Building from source at: /Users/rakheendama/Projects/2026/worktree-epic-647A
+e2e-up rc: see timings.txt (stackN-up rc 0)
+
+== stack1-down.log (1344 bytes, 38 lines)
+Stack stopped. All containers and volumes removed.
+Run 'bash compose/scripts/e2e-up.sh' to start fresh.
+
+== stack1-frontend.log (7075 bytes, 97 lines)
+'⨯' lines: 23
+  23 ⨯ Error: The destination stream closed early.
+first/last ⨯: 2026-11-17T11:49:04.603807304Z 2026-11-17T11:52:06.915975805Z 
+
+== stack2-backend.log (250469 bytes, 504 lines)
+level counts / WARN breakdown: see stack2-log-breakdown.txt
+{'INFO': 272, 'WARN': 199}
+lines containing "ERROR": 0
+
+== stack2-build.log (11022 bytes, 371 lines)
+Building from source at: /Users/rakheendama/Projects/2026/worktree-epic-647A
+e2e-up rc: see timings.txt (stackN-up rc 0)
+
+== stack2-down.log (1344 bytes, 38 lines)
+Stack stopped. All containers and volumes removed.
+Run 'bash compose/scripts/e2e-up.sh' to start fresh.
+
+== stack2-frontend.log (964 bytes, 13 lines)
+'⨯' lines: 2
+   2 ⨯ Error: The destination stream closed early.
+first/last ⨯: 2026-11-17T11:59:42.894577793Z 2026-11-17T12:00:32.749100844Z 

@@ -8,7 +8,11 @@ import { DateCell, EmptyCell, MoneyCell } from "@/components/data-table/cells";
 import { defineColumns } from "@/components/data-table/define-columns";
 import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import type { TrustTransaction } from "@/lib/types";
+import {
+  TRUST_TRANSACTION_STATUS_LABELS,
+  type TrustTransaction,
+  type TrustTransactionStatus,
+} from "@/lib/types";
 
 interface FundLedgerTableProps {
   /** One page of the Fund ledger's rows, newest first, passed through untouched. */
@@ -21,9 +25,21 @@ interface FundLedgerTableProps {
 const getFundRowId = (row: TrustTransaction) => row.id;
 
 /**
+ * Statuses whose row has posted its effects (a reversed row posted, then was reversed — it keeps
+ * its own "Reversed" badge). Any other status (awaiting approval, rejected) has no running
+ * balance, so the row says why with a status badge.
+ */
+const POSTED_STATUSES: ReadonlySet<TrustTransactionStatus> = new Set([
+  "RECORDED",
+  "APPROVED",
+  "REVERSED",
+]);
+
+/**
  * The Legal Practitioners' Fidelity Fund ledger's rows (Phase 92 647C, §16.4.2) on `DataTable`:
  * interest received, transfers to the Fund, bank charges and refunds, and their reversals — newest
- * first, each with the server-computed running balance (null on an unposted row → "—"). A bank
+ * first, each with the server-computed running balance (null on an unposted row → "—", with the
+ * row's status as a badge). A bank
  * charge shows whether it is recoverable and its VAT (ADR-381). Types print the server's label,
  * never the code. Paged by the server (`pageSize={null}`).
  */
@@ -66,6 +82,14 @@ export function FundLedgerTable({ rows, currency, empty }: FundLedgerTableProps)
             <span className="inline-flex flex-wrap items-center gap-1">
               <Badge variant="neutral">{row.original.typeLabel}</Badge>
               {row.original.status === "REVERSED" && <Badge variant="outline">Reversed</Badge>}
+              {!POSTED_STATUSES.has(row.original.status) && (
+                <Badge
+                  variant={row.original.status === "REJECTED" ? "destructive" : "warning"}
+                  data-testid="fund-ledger-status"
+                >
+                  {TRUST_TRANSACTION_STATUS_LABELS[row.original.status] ?? "Not posted"}
+                </Badge>
+              )}
             </span>
           ),
         },

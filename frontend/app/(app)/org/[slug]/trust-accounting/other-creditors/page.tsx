@@ -182,13 +182,29 @@ export default async function OtherTrustCreditorsPage({
                   rows={fundRows.content}
                   currency={currency}
                   empty={
-                    <p
-                      className="py-6 text-center text-sm text-slate-500 dark:text-slate-400"
-                      data-testid="fund-ledger-empty"
-                    >
-                      No entries on the Fund ledger yet. Record interest, transfers and bank charges
-                      from the bank statement when you reconcile.
-                    </p>
+                    // A `?page=` past the last page is not an empty ledger: say so and link back.
+                    pageNumber > 0 ? (
+                      <p
+                        className="py-6 text-center text-sm text-slate-500 dark:text-slate-400"
+                        data-testid="fund-ledger-page-out-of-range"
+                      >
+                        No entries on this page.{" "}
+                        <Link
+                          href={pageUrl(0)}
+                          className="text-foreground font-medium underline underline-offset-4"
+                        >
+                          Go to the first page
+                        </Link>
+                      </p>
+                    ) : (
+                      <p
+                        className="py-6 text-center text-sm text-slate-500 dark:text-slate-400"
+                        data-testid="fund-ledger-empty"
+                      >
+                        No entries on the Fund ledger yet. Record interest, transfers and bank
+                        charges from the bank statement when you reconcile.
+                      </p>
+                    )
                   }
                 />
                 {fundRows.page.totalPages > 1 && (

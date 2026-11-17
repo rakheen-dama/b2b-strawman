@@ -471,7 +471,9 @@ class TrustCreditorAccountIntegrationTest {
     mockMvc
         .perform(get(fundRowsUrl(unknown)).with(owner()))
         .andExpect(status().isNotFound())
-        .andExpect(jsonPath("$.title").value("TrustCreditorAccount not found"));
+        .andExpect(jsonPath("$.status").value(404))
+        .andExpect(jsonPath("$.title").value("TrustCreditorAccount not found"))
+        .andExpect(jsonPath("$.detail").value("No trustcreditoraccount found with id " + unknown));
 
     var accountId = createTrustAccount("Creditor Ledgers R4", "62000000204");
     var fundId = books.creditorAccount(UUID.fromString(accountId), "FUND_INTEREST_AND_CHARGES");
@@ -482,13 +484,21 @@ class TrustCreditorAccountIntegrationTest {
     mockMvc
         .perform(get(fundRowsUrl(fundId)).with(TestJwtFactory.memberJwt(ORG_ID, NO_TRUST_SUBJECT)))
         .andExpect(status().isForbidden())
-        .andExpect(jsonPath("$.title").value("Access denied"));
+        .andExpect(jsonPath("$.status").value(403))
+        .andExpect(jsonPath("$.title").value("Access denied"))
+        .andExpect(jsonPath("$.detail").value("Insufficient permissions for this operation"));
     mockMvc
         .perform(
             get(fundRowsUrl(unknown))
                 .with(TestJwtFactory.ownerJwt(NO_MODULE_ORG_ID, NO_MODULE_OWNER_SUBJECT)))
         .andExpect(status().isForbidden())
-        .andExpect(jsonPath("$.title").value("Module not enabled"));
+        .andExpect(jsonPath("$.status").value(403))
+        .andExpect(jsonPath("$.title").value("Module not enabled"))
+        .andExpect(
+            jsonPath("$.detail")
+                .value(
+                    "This feature is not enabled for your organization. "
+                        + "An admin can enable it in Settings → Features."));
   }
 
   // ============ Part B — scratch schema, V17 → V18 ============

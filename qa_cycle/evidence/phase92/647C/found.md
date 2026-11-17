@@ -61,3 +61,30 @@ Owner: orchestrator to assign.
 - Mitigations already in the design: auto-match runs first and clears the suggestion of every line
   it matches; the system never acts on a suggestion; the firm confirms in the dialog. Whole-word
   matching would be a product change — raise it if OBS shows it misleads.
+
+## 4. Product/legal call — a statement line dated after today can be recorded (owner: orchestrator)
+
+Raised by CodeRabbit on PR #1795 (the newest Fund-ledger running balance can differ from the Fund
+card). Orchestrator ruling: **not a 647C defect** — a row's running balance is the balance as at
+that row's date, and the card is as at today. Nothing is changed in 647C. Paths below are under
+`backend/src/main/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/`.
+
+- 647A's `StatementLinePostingService.recordFromLine` (`reconciliation/StatementLinePostingService.java:114`)
+  has **no date-after-today refusal**. Its checks are: line is `UNMATCHED` (`:123`), account not
+  closed (`:138`), sign agrees and charge detail (`:147-148`). The row is then posted with the
+  **line's** date as-is (`line.getTransactionDate()`, `:173`) through `postingService.record`
+  (`:181`), and `TrustPostingService` does not check dates either. The statement import
+  (`TrustReconciliationService.importBankStatement`, `reconciliation/TrustReconciliationService.java:172`)
+  has no future-date check, and `recordFromLine` does not require a reconciliation. The only
+  "not in the future" rule on this path is the reconciliation **period end**
+  (`reconciliation/TrustReconciliationService.java:727-729`). The manual paths do refuse future
+  dates: fee transfer (`transaction/TrustTransactionService.java:1484`) and reversal date
+  (`transaction/TrustTransactionService.java:1498`).
+- Consequence: if a statement line dated after today is recorded (e.g. a bank-dated value date, or a
+  wrong date in the CSV), the newest Fund-ledger row's running balance (as at the row's date) differs
+  from the Fund card on `/trust-accounting/other-creditors`, which is as at today
+  (`creditor/TrustCreditorLedgerService.java:77`, `LocalDate.now(clock)`). Both figures are
+  correct for their own date. They reconcile again once that date is reached.
+- Decision needed: should recording from a statement line (and/or the import) refuse a line dated
+  after today, like the fee-transfer and reversal paths do? Or should a future-dated row be allowed
+  and flagged? This is a product/legal call, not a 647C fix.

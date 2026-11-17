@@ -109,6 +109,15 @@ export type TrustTransactionStatus =
   | "REJECTED"
   | "REVERSED";
 
+/** Firm-side status words for a trust transaction (ADR-362: never the raw enum). */
+export const TRUST_TRANSACTION_STATUS_LABELS: Record<TrustTransactionStatus, string> = {
+  RECORDED: "Recorded",
+  AWAITING_APPROVAL: "Awaiting approval",
+  APPROVED: "Approved",
+  REJECTED: "Rejected",
+  REVERSED: "Reversed",
+};
+
 /**
  * `TrustTransactionService.TrustTransactionResponse` — keys in the Java record's order (pinned by
  * `__tests__/trust-wire-shapes.test.ts`, ADR-365).

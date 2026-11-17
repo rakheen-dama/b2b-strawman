@@ -174,10 +174,10 @@ const WORKED_SET: TrustTransaction[] = [
   fundRow({ id: "tx-interest" }),
 ];
 
-async function renderPage() {
+async function renderPage(search: { page?: string } = {}) {
   const result = await OtherTrustCreditorsPage({
     params: Promise.resolve({ slug: "test-org" }),
-    searchParams: Promise.resolve({}),
+    searchParams: Promise.resolve(search),
   });
   render(result);
 }
@@ -341,5 +341,66 @@ describe("Other trust creditors page", () => {
     expect(screen.queryByTestId("fund-ledger-table")).not.toBeInTheDocument();
     expect(screen.getByTestId("creditor-FUND_INTEREST_AND_CHARGES")).toBeInTheDocument();
     expect(screen.queryByTestId("error-state")).not.toBeInTheDocument();
+  });
+
+  it("says a page past the last has no entries and links back to the first page", async () => {
+    // The ledger has 3 rows on one page; `?page=4` is past the end, so the server returns none.
+    mockFetchCreditorLedgerRows.mockResolvedValue({
+      content: [],
+      page: { totalElements: 3, totalPages: 1, size: 25, number: 4 },
+    });
+    await renderPage({ page: "4" });
+
+    expect(mockFetchCreditorLedgerRows).toHaveBeenCalledWith("ca-fund", { page: 4, size: 25 });
+    const message = screen.getByTestId("fund-ledger-page-out-of-range");
+    expect(message).toHaveTextContent("No entries on this page.");
+    expect(within(message).getByRole("link", { name: "Go to the first page" })).toHaveAttribute(
+      "href",
+      "/org/test-org/trust-accounting/other-creditors?page=0"
+    );
+    expect(screen.queryByTestId("fund-ledger-empty")).not.toBeInTheDocument();
+  });
+
+  it("labels an unposted row with its status, never the raw enum, and keeps Reversed", async () => {
+    mockFetchCreditorLedgerRows.mockResolvedValue(
+      ledgerPage([
+        fundRow({
+          id: "tx-awaiting",
+          transactionType: "CHARGE_REFUND",
+          typeLabel: "Bank charge refunded from the business account",
+          status: "AWAITING_APPROVAL",
+          postedAt: null,
+          runningBalance: null,
+          reference: "REF-PENDING-2",
+        }),
+        fundRow({
+          id: "tx-rejected",
+          transactionType: "CHARGE_REFUND",
+          typeLabel: "Bank charge refunded from the business account",
+          status: "REJECTED",
+          postedAt: null,
+          runningBalance: null,
+          reference: "REF-DECLINED",
+        }),
+        fundRow({ id: "tx-reversed", status: "REVERSED", reference: "INT-REVERSED" }),
+        fundRow({ id: "tx-recorded" }),
+      ])
+    );
+    await renderPage();
+
+    const rows = screen.getAllByTestId("fund-ledger-row");
+    expect(within(rows[0]).getByTestId("fund-ledger-status")).toHaveTextContent(
+      "Awaiting approval"
+    );
+    expect(within(rows[1]).getByTestId("fund-ledger-status")).toHaveTextContent("Rejected");
+    // A posted row (reversed or not) carries no status badge; the reversed one keeps "Reversed".
+    expect(within(rows[2]).queryByTestId("fund-ledger-status")).not.toBeInTheDocument();
+    expect(within(rows[2]).getByText("Reversed")).toBeInTheDocument();
+    expect(within(rows[3]).queryByTestId("fund-ledger-status")).not.toBeInTheDocument();
+
+    const table = screen.getByTestId("fund-ledger-table");
+    expect(table).not.toHaveTextContent("AWAITING_APPROVAL");
+    expect(table).not.toHaveTextContent("AWAITING APPROVAL");
+    expect(table).not.toHaveTextContent("REJECTED");
   });
 });

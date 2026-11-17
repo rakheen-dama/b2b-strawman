@@ -28,6 +28,53 @@
       "name" : "total",
       "type" : "java.math.BigDecimal"
     } ],
+    "TotalBalanceResponse" : [ {
+      "name" : "balance",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "creditorBreakdown",
+      "type" : "io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService$CreditorBreakdown"
+    } ],
+    "TrustPositionResponse" : [ {
+      "name" : "trustAccountId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "accountName",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "bankName",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "cashbookBalance",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "clientLedgerTotal",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "creditorBreakdown",
+      "type" : "io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService$CreditorBreakdown"
+    }, {
+      "name" : "difference",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "lastReconciliationPeriodEnd",
+      "type" : "java.time.LocalDate"
+    }, {
+      "name" : "lastReconciliationStatus",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "lastReconciliationBalanced",
+      "type" : "java.lang.Boolean"
+    }, {
+      "name" : "daysSinceReconciliation",
+      "type" : "java.lang.Integer"
+    }, {
+      "name" : "pendingApprovalCount",
+      "type" : "int"
+    }, {
+      "name" : "accounts",
+      "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.dashboard.dto.TrustPositionResponse$TrustAccountRef>"
+    } ],
     "TrustReconciliationResponse" : [ {
       "name" : "id",
       "type" : "java.util.UUID"

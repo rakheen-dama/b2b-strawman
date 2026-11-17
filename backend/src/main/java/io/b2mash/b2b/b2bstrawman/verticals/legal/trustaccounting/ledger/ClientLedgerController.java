@@ -70,7 +70,8 @@ public class ClientLedgerController {
 
   @GetMapping("/api/trust-accounts/{accountId}/total-balance")
   @RequiresCapability("VIEW_TRUST")
-  public ResponseEntity<TotalBalanceResponse> getTotalBalance(@PathVariable UUID accountId) {
-    return ResponseEntity.ok(clientLedgerService.getTotalTrustBalance(accountId));
+  public ResponseEntity<TotalBalanceResponse> getTotalBalance(
+      @PathVariable UUID accountId, @RequestParam(required = false) LocalDate asAt) {
+    return ResponseEntity.ok(clientLedgerService.getTotalTrustBalance(accountId, asAt));
   }
 }

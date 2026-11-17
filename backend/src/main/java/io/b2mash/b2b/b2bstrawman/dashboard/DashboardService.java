@@ -59,9 +59,10 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.DisbursementReposi
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.TrustAccountResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountType;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustBooksService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliation;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService.CreditorBreakdown;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustMonthlyMovementProjection;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService;
@@ -127,7 +128,7 @@ public class DashboardService {
   private final TrustAccountService trustAccountService;
   private final TrustTransactionService trustTransactionService;
   private final TrustTransactionRepository trustTransactionRepository;
-  private final ClientLedgerService clientLedgerService;
+  private final TrustBooksService trustBooksService;
   private final TrustReconciliationRepository trustReconciliationRepository;
   private final DisbursementRepository disbursementRepository;
   private final ActivityService activityService;
@@ -154,7 +155,7 @@ public class DashboardService {
       TrustAccountService trustAccountService,
       TrustTransactionService trustTransactionService,
       TrustTransactionRepository trustTransactionRepository,
-      ClientLedgerService clientLedgerService,
+      TrustBooksService trustBooksService,
       TrustReconciliationRepository trustReconciliationRepository,
       DisbursementRepository disbursementRepository,
       ActivityService activityService,
@@ -173,7 +174,7 @@ public class DashboardService {
     this.trustAccountService = trustAccountService;
     this.trustTransactionService = trustTransactionService;
     this.trustTransactionRepository = trustTransactionRepository;
-    this.clientLedgerService = clientLedgerService;
+    this.trustBooksService = trustBooksService;
     this.trustReconciliationRepository = trustReconciliationRepository;
     this.disbursementRepository = disbursementRepository;
     this.activityService = activityService;
@@ -508,29 +509,31 @@ public class DashboardService {
 
   /**
    * Trust position for {@code accountId}, or the primary GENERAL account (falling back to the first
-   * active account). Composes the services behind {@code /cashbook-balance}, {@code /total-balance}
-   * and {@code /pending-approvals}, so module-guard and 404 semantics match the parts; only the
-   * latest reconciliation is read from its repository. 404 when no trust account exists.
+   * active account). Composes {@link TrustBooksService#position} as at today (the terms behind
+   * {@code /cashbook-balance} and {@code /total-balance}) and {@code /pending-approvals}, so
+   * module-guard and 404 semantics match the parts; only the latest reconciliation is read from its
+   * repository. {@code difference = cashbook − every trust creditor} (EQ-2, §16.3.2, 646D). 404
+   * when no trust account exists.
    */
   @Transactional(readOnly = true)
   public TrustPositionResponse getTrustPosition(UUID accountId) {
     moduleGuard.requireModule(TRUST_ACCOUNTING_MODULE);
     var accounts = trustAccountService.listTrustAccounts();
     var account = resolveTrustAccount(accountId, accounts);
-    BigDecimal cashbook = trustTransactionService.getCashbookBalance(account.id()).balance();
-    BigDecimal ledger = clientLedgerService.getTotalTrustBalance(account.id()).balance();
+    LocalDate today = LocalDate.now(clock);
+    var position = trustBooksService.position(account.id(), today);
     int pendingApprovals = trustTransactionService.getPendingApprovals(account.id()).size();
     Optional<TrustReconciliation> latest =
         trustReconciliationRepository.findFirstByTrustAccountIdOrderByPeriodEndDescCreatedAtDesc(
             account.id());
-    LocalDate today = LocalDate.now(clock);
     return new TrustPositionResponse(
         account.id(),
         account.accountName(),
         account.bankName(),
-        cashbook,
-        ledger,
-        cashbook.subtract(ledger),
+        position.cashbook(),
+        position.clientLedgers(),
+        CreditorBreakdown.of(position),
+        position.difference(),
         latest.map(TrustReconciliation::getPeriodEnd).orElse(null),
         latest.map(r -> r.getStatus().name()).orElse(null),
         latest.map(TrustReconciliation::isBalanced).orElse(null),
@@ -542,10 +545,10 @@ public class DashboardService {
   /**
    * Month-end balances for {@code accountId} (else the primary, else the first account) over the
    * last {@code months} SA calendar months, oldest first, zero-filled (ADR-372, arch §15.3.7).
-   * Replays the posted rows' effects by business date (cashbook_effect and the CLIENT ledger's
-   * ledger_effect, ADR-378); rows dated after today are excluded. The current month is "as of
-   * today" ({@code partial}). Not cached (no invalidation hook on trust writes, like
-   * trust-position).
+   * Replays the posted rows' effects by business date (cashbook_effect and the ledger_effect of
+   * every trust creditor — client, investment, non-client and inter-account, 646D; ADR-378); rows
+   * dated after today are excluded. The current month is "as of today" ({@code partial}). Not
+   * cached (no invalidation hook on trust writes, like trust-position).
    */
   @Transactional(readOnly = true)
   public TrustBalanceTrendResponse getTrustBalanceTrend(UUID accountId, int months) {

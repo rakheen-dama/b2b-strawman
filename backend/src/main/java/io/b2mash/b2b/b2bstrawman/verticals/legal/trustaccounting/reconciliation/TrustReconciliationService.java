@@ -528,7 +528,22 @@ public class TrustReconciliationService {
       BigDecimal unidentifiedDeposits,
       BigDecimal otherNonClient,
       BigDecimal interAccount,
-      BigDecimal total) {}
+      BigDecimal total) {
+
+    /**
+     * The creditor side of a live {@code position} (646D: dashboard trust position, total-balance).
+     */
+    public static CreditorBreakdown of(TrustBooksService.TrustPosition position) {
+      return new CreditorBreakdown(
+          position.clientLedgers(),
+          position.investmentCreditors(),
+          position.fundLedger(),
+          position.unidentifiedDeposits(),
+          position.otherNonClient(),
+          position.interAccount(),
+          position.creditorTotal());
+    }
+  }
 
   /**
    * A reconciliation (§16.4.4; {@code integrityFlags} lands in 649C, {@code monthlyListId} in

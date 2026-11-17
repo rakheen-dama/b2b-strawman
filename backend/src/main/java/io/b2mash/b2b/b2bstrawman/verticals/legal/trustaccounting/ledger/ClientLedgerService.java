@@ -6,6 +6,8 @@ import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustBooksService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService.CreditorBreakdown;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.ClientBalanceRow;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.ClientHistoryRow;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedger;
@@ -16,6 +18,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.Tru
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.TrustTransactionResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionTypeLabels;
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -43,18 +46,24 @@ public class ClientLedgerService {
   private final TrustLedgerQueryRepository ledgerQueries;
   private final CustomerRepository customerRepository;
   private final VerticalModuleGuard moduleGuard;
+  private final TrustBooksService trustBooksService;
+  private final Clock clock;
 
   public ClientLedgerService(
       ClientLedgerCardRepository ledgerCardRepository,
       TrustTransactionRepository transactionRepository,
       TrustLedgerQueryRepository ledgerQueries,
       CustomerRepository customerRepository,
-      VerticalModuleGuard moduleGuard) {
+      VerticalModuleGuard moduleGuard,
+      TrustBooksService trustBooksService,
+      Clock clock) {
     this.ledgerCardRepository = ledgerCardRepository;
     this.transactionRepository = transactionRepository;
     this.ledgerQueries = ledgerQueries;
     this.customerRepository = customerRepository;
     this.moduleGuard = moduleGuard;
+    this.trustBooksService = trustBooksService;
+    this.clock = clock;
   }
 
   // --- DTO Records ---
@@ -87,7 +96,11 @@ public class ClientLedgerService {
       BigDecimal closingBalance,
       List<LedgerStatementLine> transactions) {}
 
-  public record TotalBalanceResponse(BigDecimal balance) {}
+  /**
+   * The account's client ledgers ({@code balance}, meaning unchanged) with every trust creditor
+   * beside them in {@code creditorBreakdown} (§16.4.1, 646D).
+   */
+  public record TotalBalanceResponse(BigDecimal balance, CreditorBreakdown creditorBreakdown) {}
 
   /** Optional /history filters (ADR-361); every null field disables its predicate. */
   public record ClientHistoryFilter(
@@ -240,10 +253,22 @@ public class ClientLedgerService {
     return ledgerQueries.clientBalance(trustAccountId, customerId, asOfDate);
   }
 
+  /**
+   * Client ledgers and every trust creditor as at {@code asAt} (null = today, {@code
+   * LocalDate.now(clock)}) — 646D. 404 for an unknown account ({@link TrustBooksService#position}).
+   */
+  @Transactional(readOnly = true)
+  public TotalBalanceResponse getTotalTrustBalance(UUID trustAccountId, LocalDate asAt) {
+    moduleGuard.requireModule(MODULE_ID);
+    var position =
+        trustBooksService.position(trustAccountId, asAt != null ? asAt : LocalDate.now(clock));
+    return new TotalBalanceResponse(position.clientLedgers(), CreditorBreakdown.of(position));
+  }
+
+  /** As at today. */
   @Transactional(readOnly = true)
   public TotalBalanceResponse getTotalTrustBalance(UUID trustAccountId) {
-    moduleGuard.requireModule(MODULE_ID);
-    return new TotalBalanceResponse(ledgerQueries.clientLedgerTotal(trustAccountId, null));
+    return getTotalTrustBalance(trustAccountId, null);
   }
 
   @Transactional(readOnly = true)

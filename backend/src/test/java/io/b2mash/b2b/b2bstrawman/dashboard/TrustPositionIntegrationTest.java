@@ -20,12 +20,14 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksFixture;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -42,10 +44,11 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * {@code GET /api/dashboard/trust-position} (Phase 87, Epic 614A). The composite must equal the
- * three trust reads it composes ({@code /cashbook-balance}, {@code /total-balance}, {@code
- * /pending-approvals}) and be gated exactly like them: {@code VIEW_TRUST} (403) and the {@code
- * trust_accounting} module (403 "Module not enabled"). Note the system {@code member} role holds
- * {@code VIEW_TRUST}, so the 403 case uses a custom role without it.
+ * three trust reads it composes ({@code /cashbook-balance}, {@code /total-balance} and its creditor
+ * breakdown, {@code /pending-approvals}) — {@code difference = cashbook − trust creditors} (EQ-2,
+ * 646D) — and be gated exactly like them: {@code VIEW_TRUST} (403) and the {@code trust_accounting}
+ * module (403 "Module not enabled"). Note the system {@code member} role holds {@code VIEW_TRUST},
+ * so the 403 case uses a custom role without it.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -75,6 +78,12 @@ class TrustPositionIntegrationTest {
 
   private static final String CLOSED_PRIMARY_OWNER = "user_dtp_closedprim_owner";
 
+  /** 646D: a tenant whose books hold non-client creditors as well as a client (R1, R4). */
+  private static final String CREDITORS_ORG_ID = "org_dash_trust_position_creditors";
+
+  private static final String CREDITORS_OWNER = "user_dtp_creditors_owner";
+  private static final LocalDate MARCH_END = LocalDate.of(2026, 3, 31);
+
   @Autowired private MockMvc mockMvc;
   @Autowired private io.b2mash.b2b.b2bstrawman.customer.CustomerRepository customerRepository;
   @Autowired private io.b2mash.b2b.b2bstrawman.project.ProjectRepository projectRepository;
@@ -82,6 +91,7 @@ class TrustPositionIntegrationTest {
   @Autowired private OrgSettingsRepository orgSettingsRepository;
   @Autowired private OrgSettingsService orgSettingsService;
   @Autowired private TransactionTemplate transactionTemplate;
+  @Autowired private TrustBooksFixture trustBooksFixture;
 
   private final LocalDate today = LocalDate.now(KaziTime.ZONE);
   private final LocalDate reconciledTo = today.minusDays(5);
@@ -89,6 +99,8 @@ class TrustPositionIntegrationTest {
   private String tenantSchema;
   private String primaryAccountId;
   private String secondAccountId;
+  private TrustBooksFixture.Tenant creditorBooks;
+  private UUID creditorsAccountId;
 
   @BeforeAll
   void setup() throws Exception {
@@ -182,6 +194,36 @@ class TrustPositionIntegrationTest {
         "DTP ClosedPrim Owner",
         "owner");
     enableTrustAccounting(closedPrimarySchema);
+
+    // 646D: client ledgers R10 000 (1 March) beside Fund interest R250 and an unidentified
+    // deposit R300 (10 April) — EQ-2 balances at R10 550.
+    String creditorsSchema =
+        provisioningService
+            .provisionTenant(CREDITORS_ORG_ID, "Trust Position Creditors Org", null)
+            .schemaName();
+    UUID creditorsOwnerId =
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc,
+                CREDITORS_ORG_ID,
+                CREDITORS_OWNER,
+                "dtp_creditors@test.com",
+                "DTP Creditors Owner",
+                "owner"));
+    trustBooksFixture.enableTrustModule(creditorsSchema);
+    creditorBooks = trustBooksFixture.tenant(creditorsSchema, CREDITORS_ORG_ID, creditorsOwnerId);
+    creditorsAccountId = creditorBooks.freshAccount(false); // the tenant's only account
+    var client = creditorBooks.newClient("dashboard");
+    creditorBooks.deposit(creditorsAccountId, client, "10000.00"); // dated 2026-03-01
+    creditorBooks.postNonClientDirect(
+        creditorsAccountId, "FUND_INTEREST", "250.00", LocalDate.of(2026, 4, 10));
+    creditorBooks.postNonClientDirect(
+        creditorsAccountId, "UNIDENTIFIED_DEPOSIT", "300.00", LocalDate.of(2026, 4, 10));
+  }
+
+  @AfterAll
+  void creditorBooksBalance() {
+    creditorBooks.assertFirmBalanced(); // harness rule of use
   }
 
   @Test
@@ -328,18 +370,76 @@ class TrustPositionIntegrationTest {
         .andExpect(jsonPath("$.accounts", hasSize(1)));
   }
 
+  /** 646D (§16.3.2): the composite compares the cashbook with every trust creditor. */
+  @Test
+  void positionComparesTheCashbookWithEveryTrustCreditor() throws Exception {
+    String body =
+        read(
+            TestJwtFactory.ownerJwt(CREDITORS_ORG_ID, CREDITORS_OWNER),
+            "/api/dashboard/trust-position?accountId=" + creditorsAccountId);
+    assertThat(decimal(body, "$.difference")).isEqualByComparingTo("0");
+    assertThat(decimal(body, "$.cashbookBalance")).isEqualByComparingTo("10550.00");
+    assertThat(decimal(body, "$.clientLedgerTotal")).isEqualByComparingTo("10000.00");
+    assertThat(decimal(body, "$.creditorBreakdown.clientLedgers")).isEqualByComparingTo("10000.00");
+    assertThat(decimal(body, "$.creditorBreakdown.fundInterestAndCharges"))
+        .isEqualByComparingTo("250.00");
+    assertThat(decimal(body, "$.creditorBreakdown.unidentifiedDeposits"))
+        .isEqualByComparingTo("300.00");
+    assertThat(decimal(body, "$.creditorBreakdown.investmentCreditors")).isEqualByComparingTo("0");
+    assertThat(decimal(body, "$.creditorBreakdown.total")).isEqualByComparingTo("10550.00");
+  }
+
+  /** 646D: {@code asAt} on the two balance endpoints (absent = today). */
+  @Test
+  void balanceEndpointsAnswerAsAtTheRequestedDate() throws Exception {
+    var owner = TestJwtFactory.ownerJwt(CREDITORS_ORG_ID, CREDITORS_OWNER);
+    String base = "/api/trust-accounts/" + creditorsAccountId;
+    // as at 31 March only the client deposit (1 March) is on the books
+    assertThat(decimal(read(owner, base + "/cashbook-balance?asAt=" + MARCH_END), "$.balance"))
+        .isEqualByComparingTo("10000.00");
+    String march = read(owner, base + "/total-balance?asAt=" + MARCH_END);
+    assertThat(decimal(march, "$.balance")).isEqualByComparingTo("10000.00");
+    assertThat(decimal(march, "$.creditorBreakdown.total")).isEqualByComparingTo("10000.00");
+    assertThat(decimal(march, "$.creditorBreakdown.fundInterestAndCharges"))
+        .isEqualByComparingTo("0");
+    // no asAt = today: client ledgers stay `balance`; the other creditors sit beside it
+    String now = read(owner, base + "/total-balance");
+    assertThat(decimal(now, "$.balance")).isEqualByComparingTo("10000.00");
+    assertThat(decimal(now, "$.creditorBreakdown.fundInterestAndCharges"))
+        .isEqualByComparingTo("250.00");
+    assertThat(decimal(now, "$.creditorBreakdown.unidentifiedDeposits"))
+        .isEqualByComparingTo("300.00");
+    assertThat(decimal(now, "$.creditorBreakdown.total")).isEqualByComparingTo("10550.00");
+    assertThat(decimal(read(owner, base + "/cashbook-balance"), "$.balance"))
+        .isEqualByComparingTo("10550.00");
+  }
+
+  /** 646D behaviour change: an unknown account was a silent 200 / 0; it is now 404. */
+  @Test
+  void totalBalanceOfAnUnknownAccountIsNotFound() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/trust-accounts/" + UUID.randomUUID() + "/total-balance")
+                .with(TestJwtFactory.ownerJwt(CREDITORS_ORG_ID, CREDITORS_OWNER)))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.status").value(404));
+  }
+
   // --- helpers ---
 
   private void assertEqualsParts(JwtRequestPostProcessor jwt, String body, String accountId)
       throws Exception {
     String base = "/api/trust-accounts/" + accountId;
     BigDecimal cashbook = decimal(read(jwt, base + "/cashbook-balance"), "$.balance");
-    BigDecimal ledger = decimal(read(jwt, base + "/total-balance"), "$.balance");
+    String total = read(jwt, base + "/total-balance");
+    BigDecimal ledger = decimal(total, "$.balance");
+    BigDecimal creditors = decimal(total, "$.creditorBreakdown.total");
     int pending = JsonPath.<List<Object>>read(read(jwt, base + "/pending-approvals"), "$").size();
 
     assertThat(decimal(body, "$.cashbookBalance")).isEqualByComparingTo(cashbook);
     assertThat(decimal(body, "$.clientLedgerTotal")).isEqualByComparingTo(ledger);
-    assertThat(decimal(body, "$.difference")).isEqualByComparingTo(cashbook.subtract(ledger));
+    assertThat(decimal(body, "$.creditorBreakdown.total")).isEqualByComparingTo(creditors);
+    assertThat(decimal(body, "$.difference")).isEqualByComparingTo(cashbook.subtract(creditors));
     assertThat(pendingCount(body)).isEqualTo(pending);
   }
 

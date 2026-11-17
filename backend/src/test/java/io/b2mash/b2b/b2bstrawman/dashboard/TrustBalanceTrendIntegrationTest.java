@@ -19,6 +19,7 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksFixture;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -27,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -42,19 +44,21 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * {@code GET /api/dashboard/trust-balance-trend} (Phase 90 643A, ADR-372, arch §15.3.7): month-end
- * cashbook and client-ledger balances over the last {@code months} SA calendar months, oldest
- * first, zero-filled. The series replays the RECORDED/APPROVED rows with the sign rules of the
- * cashbook and client-ledger reads, so its last point must equal {@code /cashbook-balance} and
- * {@code /total-balance}; REJECTED and AWAITING_APPROVAL rows move nothing, and a reversed row
+ * cashbook and trust-creditor balances over the last {@code months} SA calendar months, oldest
+ * first, zero-filled. The ledger series sums every posted row's ledger effect — client, investment,
+ * non-client and inter-account (646D, §16.4.4; the field keeps its name {@code clientLedgerTotal})
+ * — so its last point must equal {@code /cashbook-balance} and {@code /total-balance}'s {@code
+ * creditorBreakdown.total}; REJECTED and AWAITING_APPROVAL rows move nothing, and a reversed row
  * (Phase 92 649B, contra model) counts in its own month while its contra counts in the reversal
  * date's month — the reversal here is dated the payment's own date, so that month nets to zero and
  * no other month changes. Gated exactly like {@code /trust-position}: {@code VIEW_TRUST} (403), the
  * {@code trust_accounting} module (403 "Module not enabled"), unknown account / no account (404),
  * and {@code months} outside 1–24 (400).
  *
- * <p>Seeded through REST only, dated relative to {@code LocalDate.now(KaziTime.ZONE)}; no row is
- * dated after today ({@code /cashbook-balance} has no date filter). FEE_TRANSFER is not seeded: it
- * shares PAYMENT's branch in both sign rules and needs an approved fee note over REST.
+ * <p>Seeded through REST only (the 646D creditors tenant through {@code TrustBooksFixture}), dated
+ * relative to {@code LocalDate.now(KaziTime.ZONE)}; no row is dated after today ({@code
+ * /cashbook-balance} reads as at today since 646D). FEE_TRANSFER is not seeded: it shares PAYMENT's
+ * branch in both sign rules and needs an approved fee note over REST.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -86,6 +90,11 @@ class TrustBalanceTrendIntegrationTest {
 
   private static final String CLOSED_PRIMARY_OWNER = "user_dtt_closedprim_owner";
 
+  /** 646D: a tenant whose books hold non-client creditors as well as a client (R2). */
+  private static final String CREDITORS_ORG_ID = "org_dash_trust_trend_creditors";
+
+  private static final String CREDITORS_OWNER = "user_dtt_creditors_owner";
+
   @Autowired private MockMvc mockMvc;
   @Autowired private io.b2mash.b2b.b2bstrawman.customer.CustomerRepository customerRepository;
   @Autowired private io.b2mash.b2b.b2bstrawman.project.ProjectRepository projectRepository;
@@ -93,6 +102,7 @@ class TrustBalanceTrendIntegrationTest {
   @Autowired private OrgSettingsRepository orgSettingsRepository;
   @Autowired private OrgSettingsService orgSettingsService;
   @Autowired private TransactionTemplate transactionTemplate;
+  @Autowired private TrustBooksFixture trustBooksFixture;
 
   private final LocalDate today = LocalDate.now(KaziTime.ZONE);
   private final YearMonth current = YearMonth.from(today);
@@ -100,6 +110,8 @@ class TrustBalanceTrendIntegrationTest {
   private String tenantSchema;
   private String primaryAccountId;
   private String secondAccountId;
+  private TrustBooksFixture.Tenant creditorBooks;
+  private UUID creditorsAccountId;
 
   /**
    * Hand-computed month-end balance of the primary account, keyed by months-ago (0 = current). The
@@ -207,6 +219,34 @@ class TrustBalanceTrendIntegrationTest {
         "DTT ClosedPrim Owner",
         "owner");
     enableTrustAccounting(closedPrimarySchema);
+
+    // 646D: a client deposit before the window, Fund interest last month and an unidentified
+    // deposit this month — the ledger series must track the cashbook.
+    String creditorsSchema =
+        provisioningService
+            .provisionTenant(CREDITORS_ORG_ID, "Trust Trend Creditors Org", null)
+            .schemaName();
+    UUID creditorsOwnerId =
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc,
+                CREDITORS_ORG_ID,
+                CREDITORS_OWNER,
+                "dtt_creditors@test.com",
+                "DTT Creditors Owner",
+                "owner"));
+    trustBooksFixture.enableTrustModule(creditorsSchema);
+    creditorBooks = trustBooksFixture.tenant(creditorsSchema, CREDITORS_ORG_ID, creditorsOwnerId);
+    creditorsAccountId = creditorBooks.freshAccount(false);
+    var client = creditorBooks.newClient("trend");
+    creditorBooks.deposit(creditorsAccountId, client, "1000.00"); // 2026-03-01: before the window
+    creditorBooks.postNonClientDirect(creditorsAccountId, "FUND_INTEREST", "50.00", day(1));
+    creditorBooks.postNonClientDirect(creditorsAccountId, "UNIDENTIFIED_DEPOSIT", "300.00", day(0));
+  }
+
+  @AfterAll
+  void creditorBooksBalance() {
+    creditorBooks.assertFirmBalanced(); // harness rule of use
   }
 
   @Test
@@ -270,15 +310,19 @@ class TrustBalanceTrendIntegrationTest {
   }
 
   @Test
-  void lastPointEqualsTheLiveCashbookAndClientLedgerReads() throws Exception {
+  void lastPointEqualsTheLiveCashbookAndTrustCreditorReads() throws Exception {
     var owner = TestJwtFactory.ownerJwt(ORG_ID, OWNER);
     String body = trend(owner, 12, null);
     String base = "/api/trust-accounts/" + primaryAccountId;
     BigDecimal cashbook = decimal(read(owner, base + "/cashbook-balance"), "$.balance");
-    BigDecimal ledger = decimal(read(owner, base + "/total-balance"), "$.balance");
+    String total = read(owner, base + "/total-balance");
 
     assertThat(decimal(body, "$.months[11].cashbookBalance")).isEqualByComparingTo(cashbook);
-    assertThat(decimal(body, "$.months[11].clientLedgerTotal")).isEqualByComparingTo(ledger);
+    assertThat(decimal(body, "$.months[11].clientLedgerTotal"))
+        .isEqualByComparingTo(decimal(total, "$.creditorBreakdown.total"));
+    // client rows only on this account: every trust creditor is a client ledger
+    assertThat(decimal(body, "$.months[11].clientLedgerTotal"))
+        .isEqualByComparingTo(decimal(total, "$.balance"));
     assertThat(cashbook).isEqualByComparingTo(primaryBalance.get(0));
   }
 
@@ -397,8 +441,32 @@ class TrustBalanceTrendIntegrationTest {
     String base = "/api/trust-accounts/" + secondAccountId;
     assertThat(decimal(body, "$.months[11].cashbookBalance"))
         .isEqualByComparingTo(decimal(read(owner, base + "/cashbook-balance"), "$.balance"));
+    String total = read(owner, base + "/total-balance");
     assertThat(decimal(body, "$.months[11].clientLedgerTotal"))
-        .isEqualByComparingTo(decimal(read(owner, base + "/total-balance"), "$.balance"));
+        .isEqualByComparingTo(decimal(total, "$.creditorBreakdown.total"));
+    assertThat(decimal(body, "$.months[11].clientLedgerTotal"))
+        .isEqualByComparingTo(decimal(total, "$.balance"));
+  }
+
+  /** 646D (§16.4.4): the ledger series is every trust creditor, so it tracks the cashbook. */
+  @Test
+  void ledgerSeriesCountsEveryTrustCreditor() throws Exception {
+    var owner = TestJwtFactory.ownerJwt(CREDITORS_ORG_ID, CREDITORS_OWNER);
+    String body = trend(owner, 3, creditorsAccountId.toString());
+    assertThat(decimal(body, "$.openingClientLedgerTotal")).isEqualByComparingTo("1000.00");
+    String[] expected = {"1000.00", "1050.00", "1350.00"};
+    for (int i = 0; i < 3; i++) {
+      assertThat(decimal(body, "$.months[%d].cashbookBalance".formatted(i)))
+          .as("cashbook, month %d", i)
+          .isEqualByComparingTo(expected[i]);
+      assertThat(decimal(body, "$.months[%d].clientLedgerTotal".formatted(i)))
+          .as("trust creditors, month %d", i)
+          .isEqualByComparingTo(expected[i]);
+    }
+    String base = "/api/trust-accounts/" + creditorsAccountId;
+    assertThat(decimal(body, "$.months[2].clientLedgerTotal"))
+        .isEqualByComparingTo(
+            decimal(read(owner, base + "/total-balance"), "$.creditorBreakdown.total"));
   }
 
   @Test

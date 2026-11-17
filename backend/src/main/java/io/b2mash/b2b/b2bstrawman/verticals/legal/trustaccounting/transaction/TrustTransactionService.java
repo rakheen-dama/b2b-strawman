@@ -1713,15 +1713,23 @@ public class TrustTransactionService {
 
   // --- 440.10: Cashbook Balance ---
 
+  /** The cashbook as at {@code asAt} (null = today, {@code LocalDate.now(clock)}) — 646D. */
   @Transactional(readOnly = true)
-  public CashbookBalanceResponse getCashbookBalance(UUID trustAccountId) {
+  public CashbookBalanceResponse getCashbookBalance(UUID trustAccountId, LocalDate asAt) {
     moduleGuard.requireModule(MODULE_ID);
 
     trustAccountRepository
         .findById(trustAccountId)
         .orElseThrow(() -> new ResourceNotFoundException("TrustAccount", trustAccountId));
 
-    return new CashbookBalanceResponse(ledgerQueries.cashbook(trustAccountId, null));
+    return new CashbookBalanceResponse(
+        ledgerQueries.cashbook(trustAccountId, asAt != null ? asAt : LocalDate.now(clock)));
+  }
+
+  /** The cashbook as at today. */
+  @Transactional(readOnly = true)
+  public CashbookBalanceResponse getCashbookBalance(UUID trustAccountId) {
+    return getCashbookBalance(trustAccountId, null);
   }
 
   // --- Private Helpers ---

@@ -68,7 +68,21 @@ import org.springframework.stereotype.Component;
  *
  * <p>{@link Expected#cashbookAndUnidentified} is the move of a deposit recorded as unidentified
  * (and of its payment to the Fund, 647D); {@link Expected#clientFromUnidentified} is the move of
- * its allocation to a client (647D). EQ-5 (648A) is still a no-op.
+ * its allocation to a client (647D).
+ *
+ * <h2>Version 5 (648A) — EQ-5: each investment's rows tie to its record</h2>
+ *
+ * <p>{@link #assertBalancedAsAt}, {@link #assertFirmBalanced} and {@link #assertMoves} check EQ-5
+ * for every {@code trust_investments} row held in the account ({@code investment_account_id}):
+ * {@code SUM(ledger_effect)} of the investment's posted rows on the account on the {@code
+ * CLIENT_INVESTMENT} (section 86(4)) or {@code INTER_ACCOUNT} (section 86(3)) ledger, dated {@code
+ * <= D}, equals the principal (once its placement row — {@code deposit_transaction_id} — is posted
+ * and dated {@code <= D}) + its posted {@code INV_INTEREST} entries dated {@code <= D} − the
+ * withdrawal amount (once {@code withdrawal_date <= D}); and a committed investment names its
+ * placement row. {@link Expected#cashbookAndInvestment} and {@link
+ * Expected#cashbookAndInterAccount} are the moves of a placement on the investment account (and,
+ * negated, of a withdrawal); {@link #assertMoves(UUID, Expected, UUID, Expected, Runnable)} asserts
+ * a two-account step.
  *
  * <h2>Version 3 (646C) — every term as at a date; outstanding items by line date</h2>
  *
@@ -107,7 +121,7 @@ import org.springframework.stereotype.Component;
  *       original's: {@code TrustTransactionType.of(originalType).effectFor(originalAmount)
  *       .negated()} (649B, ADR-378; the 646A interim rule — both at {@code (CLIENT, 0, 0)} — is
  *       gone). A posted {@code REVERSAL} with no original fails EQ-6. EQ-4 is implemented in v4
- *       (647B); EQ-5 (648A) is a no-op until its columns exist.
+ *       (647B); EQ-5 in v5 (648A).
  *   <li>{@link #assertBankAgrees} — statement closing balance + outstanding deposits − outstanding
  *       payments (posted, unmatched, dated {@code <= periodEnd}; split on the sign of {@code
  *       cashbook_effect}) against {@code cashbook(A, periodEnd)} — v2 dated a match by match time;
@@ -223,6 +237,37 @@ public final class TrustBooksHarness {
       FROM "%1$s".unidentified_deposits d WHERE d.trust_account_id = ?
       """;
 
+  /** One client's investment ledger ({@code CLIENT_INVESTMENT}) on the account, as at a date. */
+  private static final String CLIENT_INVESTMENT_SQL =
+      """
+      SELECT COALESCE(SUM(t.ledger_effect), 0) FROM "%s".trust_transactions t
+      WHERE t.trust_account_id = ? AND t.customer_id = ? AND t.ledger = 'CLIENT_INVESTMENT'
+        AND t.posted_at IS NOT NULL AND t.transaction_date <= ?
+      """;
+
+  /**
+   * EQ-5 (648A): each investment held in the account with its record's terms and its rows' balance
+   * as at D. Binds D (placement), D (interest), D (balance), D (withdrawal), account.
+   */
+  private static final String INVESTMENT_BALANCES_SQL =
+      """
+      SELECT i.id, i.status, i.principal, i.deposit_transaction_id,
+             COALESCE((SELECT i.principal FROM "%1$s".trust_transactions p
+                        WHERE p.id = i.deposit_transaction_id AND p.posted_at IS NOT NULL
+                          AND p.transaction_date <= ?), 0) AS placed,
+             COALESCE((SELECT SUM(t.ledger_effect) FROM "%1$s".trust_transactions t
+                        WHERE t.investment_id = i.id AND t.trust_account_id = i.investment_account_id
+                          AND t.transaction_type = 'INV_INTEREST' AND t.posted_at IS NOT NULL
+                          AND t.transaction_date <= ?), 0) AS interest,
+             COALESCE((SELECT SUM(t.ledger_effect) FROM "%1$s".trust_transactions t
+                        WHERE t.investment_id = i.id AND t.trust_account_id = i.investment_account_id
+                          AND t.ledger IN ('CLIENT_INVESTMENT', 'INTER_ACCOUNT')
+                          AND t.posted_at IS NOT NULL AND t.transaction_date <= ?), 0) AS balance,
+             CASE WHEN i.withdrawal_date <= ? THEN COALESCE(i.withdrawal_amount, 0) ELSE 0 END
+               AS withdrawn
+      FROM "%1$s".trust_investments i WHERE i.investment_account_id = ?
+      """;
+
   private final JdbcTemplate jdbc;
   private final Clock clock;
   private final TrustTransactionService trustTransactionService;
@@ -281,8 +326,17 @@ public final class TrustBooksHarness {
   }
 
   /**
+   * One client's investment ledger ({@code CLIENT_INVESTMENT} — section 86(4) money) on the
+   * account, as at today (648A). A client's total = {@link #clientLedger} on the banking account +
+   * this on the investment account.
+   */
+  public BigDecimal clientInvestmentLedger(UUID trustAccountId, UUID customerId) {
+    return money(CLIENT_INVESTMENT_SQL.formatted(schema()), trustAccountId, customerId, today());
+  }
+
+  /**
    * Every equation the books can be checked against without a bank statement: EQ-2, EQ-4, EQ-5,
-   * EQ-6 (646A: EQ-2 and EQ-6 — see the class Javadoc), as at today.
+   * EQ-6 (see the class Javadoc), as at today.
    */
   public void assertBalanced(UUID trustAccountId) {
     assertBalancedAsAt(trustAccountId, today());
@@ -298,11 +352,14 @@ public final class TrustBooksHarness {
     var softly = new SoftAssertions();
     assertEffectsDerived(softly, trustAccountId, asAt);
     assertItemised(softly, trustAccountId, asAt, s.unidentified());
+    assertInvestmentsTied(softly, trustAccountId, asAt);
     softly.assertAll();
-    // EQ-5 (648A): a no-op until its columns exist.
   }
 
-  /** EQ-3 over every trust account of the tenant (open or closed), plus EQ-2 and EQ-6 for each. */
+  /**
+   * EQ-3 over every trust account of the tenant (open or closed), plus EQ-2, EQ-4, EQ-5 and EQ-6
+   * for each.
+   */
   public void assertFirmBalanced(LocalDate asAt) {
     var schema = schema();
     List<UUID> accountIds = jdbc.queryForList(ACCOUNT_IDS_SQL.formatted(schema), UUID.class);
@@ -319,6 +376,7 @@ public final class TrustBooksHarness {
           .isEqualByComparingTo(BigDecimal.ZERO);
       assertEffectsDerived(softly, accountId, asAt);
       assertItemised(softly, accountId, asAt, s.unidentified());
+      assertInvestmentsTied(softly, accountId, asAt);
     }
     softly
         .assertThat(interAccountTotal)
@@ -419,6 +477,40 @@ public final class TrustBooksHarness {
             "EQ-4 on trust account %s as at %s: Σ open items vs the unidentified term %s",
             trustAccountId, asAt, unidentifiedTerm)
         .isEqualByComparingTo(unidentifiedTerm);
+  }
+
+  /**
+   * EQ-5 (648A, §16.1.2): every investment held in the account ties to its record — see the class
+   * Javadoc. A committed investment always names its placement row.
+   */
+  private void assertInvestmentsTied(SoftAssertions softly, UUID trustAccountId, LocalDate asAt) {
+    var rows =
+        jdbc.queryForList(
+            INVESTMENT_BALANCES_SQL.formatted(schema()), asAt, asAt, asAt, asAt, trustAccountId);
+    for (var row : rows) {
+      var placed = (BigDecimal) row.get("placed");
+      var interest = (BigDecimal) row.get("interest");
+      var withdrawn = (BigDecimal) row.get("withdrawn");
+      var balance = (BigDecimal) row.get("balance");
+      var expected = placed.add(interest).subtract(withdrawn);
+      var what =
+          "EQ-5 on trust account %s as at %s, investment %s (%s, principal %s)"
+              .formatted(
+                  trustAccountId, asAt, row.get("id"), row.get("status"), row.get("principal"));
+      softly
+          .assertThat(row.get("deposit_transaction_id"))
+          .as(what + " — names its placement row")
+          .isNotNull();
+      softly
+          .assertThat(balance)
+          .as(
+              what + " — rows %s vs placed %s + interest %s − withdrawn %s",
+              balance.toPlainString(),
+              placed.toPlainString(),
+              interest.toPlainString(),
+              withdrawn.toPlainString())
+          .isEqualByComparingTo(expected);
+    }
   }
 
   /**
@@ -545,7 +637,18 @@ public final class TrustBooksHarness {
     term(softly, "unidentified", moved.unidentified(), expected.unidentified());
     term(softly, "interAccount", moved.interAccount(), expected.interAccount());
     assertItemised(softly, trustAccountId, after.asAt(), after.unidentified());
+    assertInvestmentsTied(softly, trustAccountId, after.asAt());
     softly.assertAll();
+  }
+
+  /**
+   * A step that moves two accounts (648A — an investment's placement or withdrawal moves the
+   * funding account and the investment account): {@link #assertMoves(UUID, Expected, Runnable)} on
+   * each.
+   */
+  public void assertMoves(
+      UUID firstAccountId, Expected first, UUID secondAccountId, Expected second, Runnable action) {
+    assertMoves(firstAccountId, first, () -> assertMoves(secondAccountId, second, action));
   }
 
   private static void term(
@@ -605,6 +708,27 @@ public final class TrustBooksHarness {
       var amount = new BigDecimal(signedAmount);
       return new Expected(
           amount, BigDecimal.ZERO, BigDecimal.ZERO, amount, BigDecimal.ZERO, BigDecimal.ZERO);
+    }
+
+    /**
+     * Cashbook and the investment creditors ({@code CLIENT_INVESTMENT}) move together by {@code
+     * signedAmount} — a section 86(4) placement (+) or withdrawal (−) on the investment account
+     * (648A).
+     */
+    public static Expected cashbookAndInvestment(String signedAmount) {
+      var amount = new BigDecimal(signedAmount);
+      return new Expected(
+          amount, BigDecimal.ZERO, amount, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
+    }
+
+    /**
+     * Cashbook and the inter-account term move together by {@code signedAmount} — a section 86(3)
+     * placement or withdrawal, on either account (648A; the terms cancel firm-wide, EQ-3).
+     */
+    public static Expected cashbookAndInterAccount(String signedAmount) {
+      var amount = new BigDecimal(signedAmount);
+      return new Expected(
+          amount, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, amount);
     }
 
     /**

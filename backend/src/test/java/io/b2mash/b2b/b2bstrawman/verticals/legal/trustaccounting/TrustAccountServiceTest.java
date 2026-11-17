@@ -31,6 +31,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -52,6 +53,7 @@ class TrustAccountServiceTest {
   @Autowired private TrustAccountRepository trustAccountRepository;
   @Autowired private AuditEventRepository auditEventRepository;
   @Autowired private TrustCreditorAccountRepository creditorAccountRepository;
+  @Autowired private JdbcTemplate jdbcTemplate;
 
   private String tenantSchema;
   private UUID memberId;
@@ -817,7 +819,130 @@ class TrustAccountServiceTest {
         });
   }
 
+  // --- 648A (648C found.md F-2): a basis change is refused while investments are held ---
+
+  @Test
+  void updateTrustAccount_refusesABasisChange_whileTheAccountHoldsAnActiveOrMaturedInvestment() {
+    for (var status : List.of("ACTIVE", "MATURED")) {
+      UUID[] ids = new UUID[2];
+      runInTenant(
+          () ->
+              transactionTemplate.executeWithoutResult(
+                  tx -> {
+                    ids[0] =
+                        trustAccountService
+                            .createTrustAccount(
+                                investmentRequest(
+                                    "Basis Held " + status, InvestmentBasis.FIRM_DISCRETION))
+                            .id();
+                    ids[1] = fundingAccount("Basis Held Funding " + status);
+                  }));
+      investmentDirect(ids[1], ids[0], status);
+
+      runInTenant(
+          () ->
+              assertThatThrownBy(
+                      () ->
+                          trustAccountService.updateTrustAccount(
+                              ids[0], basisUpdate(InvestmentBasis.CLIENT_INSTRUCTION)))
+                  .as("basis change with a %s investment", status)
+                  .isInstanceOfSatisfying(
+                      InvalidStateException.class,
+                      e -> {
+                        assertThat(e.getBody().getTitle())
+                            .isEqualTo("Cannot change investment basis");
+                        assertThat(e.getBody().getDetail())
+                            .isEqualTo(
+                                "This investment account holds investments; withdraw them"
+                                    + " before changing its basis.");
+                      }));
+
+      runInTenant(
+          () -> {
+            assertThat(trustAccountRepository.findById(ids[0]).orElseThrow().getInvestmentBasis())
+                .isEqualTo(InvestmentBasis.FIRM_DISCRETION);
+            // The same basis (no change) and other details still update
+            var same =
+                trustAccountService.updateTrustAccount(
+                    ids[0], basisUpdate(InvestmentBasis.FIRM_DISCRETION));
+            assertThat(same.investmentBasis()).isEqualTo(InvestmentBasis.FIRM_DISCRETION);
+            var renamed =
+                trustAccountService.updateTrustAccount(
+                    ids[0],
+                    new UpdateTrustAccountRequest(
+                        "Basis Held Renamed " + status, null, null, null, null, null, null, null));
+            assertThat(renamed.accountName()).isEqualTo("Basis Held Renamed " + status);
+          });
+    }
+  }
+
+  @Test
+  void updateTrustAccount_allowsABasisChange_whenItsInvestmentsAreWithdrawnOrCancelled() {
+    UUID[] ids = new UUID[2];
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  ids[0] =
+                      trustAccountService
+                          .createTrustAccount(
+                              investmentRequest("Basis Released", InvestmentBasis.FIRM_DISCRETION))
+                          .id();
+                  ids[1] = fundingAccount("Basis Released Funding");
+                }));
+    investmentDirect(ids[1], ids[0], "WITHDRAWN");
+    investmentDirect(ids[1], ids[0], "CANCELLED");
+
+    runInTenant(
+        () -> {
+          var changed =
+              trustAccountService.updateTrustAccount(
+                  ids[0], basisUpdate(InvestmentBasis.CLIENT_INSTRUCTION));
+          assertThat(changed.investmentBasis()).isEqualTo(InvestmentBasis.CLIENT_INSTRUCTION);
+        });
+  }
+
   // --- Helpers ---
+
+  private static UpdateTrustAccountRequest basisUpdate(InvestmentBasis basis) {
+    return new UpdateTrustAccountRequest(null, null, null, null, null, null, null, basis);
+  }
+
+  /** A non-primary GENERAL account (the funding account of a directly written investment). */
+  private UUID fundingAccount(String name) {
+    return trustAccountService
+        .createTrustAccount(
+            new CreateTrustAccountRequest(
+                name,
+                "Absa",
+                "632005",
+                "5550008888",
+                "GENERAL",
+                false,
+                false,
+                null,
+                LocalDate.of(2026, 3, 1),
+                null))
+        .id();
+  }
+
+  /**
+   * A section 86(3) investment of {@code status} held in {@code investmentAccountId}, written
+   * straight to the table (no posting — the basis check reads only the investment's status).
+   */
+  private void investmentDirect(UUID fundingAccountId, UUID investmentAccountId, String status) {
+    jdbcTemplate.update(
+        """
+        INSERT INTO "%s".trust_investments (trust_account_id, investment_account_id, institution,
+            account_number, principal, interest_rate, deposit_date, status, investment_basis)
+        VALUES (?, ?, 'Investec', 'F2-HELD', 1000.00, 0.0500, DATE '2026-03-01', ?,
+            'FIRM_DISCRETION')
+        """
+            .formatted(tenantSchema),
+        fundingAccountId,
+        investmentAccountId,
+        status);
+  }
 
   private static CreateTrustAccountRequest investmentRequest(String name, InvestmentBasis basis) {
     return new CreateTrustAccountRequest(

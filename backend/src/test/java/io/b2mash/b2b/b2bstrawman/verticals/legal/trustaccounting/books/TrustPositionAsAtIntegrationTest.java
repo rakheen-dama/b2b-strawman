@@ -222,20 +222,22 @@ class TrustPositionAsAtIntegrationTest {
   void everyTerm_isCountedFromItsOwnDate() {
     var account = books.freshAccount(false);
     var client = books.newClient("as at");
-    var depositId = books.deposit(account, client, "1000.00");
+    books.deposit(account, client, "1000.00");
     books.postNonClientDirect(account, "FUND_INTEREST", "50.00", LocalDate.of(2026, 4, 10));
     books.postNonClientDirect(account, "BANK_CHARGE", "20.00", LocalDate.of(2026, 5, 10));
     books.postNonClientDirect(account, "UNIDENTIFIED_DEPOSIT", "300.00", LocalDate.of(2026, 5, 10));
-    var investment = books.investmentDirect(account, client, depositId);
-    books.postLedgerRowDirect(
-        account,
-        "INV_RECEIVE",
-        "200.00",
-        LocalDate.of(2026, 6, 10),
-        client.id(),
-        client.matter(),
-        null,
-        investment);
+    var investment = books.investmentDirect(account, account, client, "200.00");
+    var received =
+        books.postLedgerRowDirect(
+            account,
+            "INV_RECEIVE",
+            "200.00",
+            LocalDate.of(2026, 6, 10),
+            client.id(),
+            client.matter(),
+            null,
+            investment);
+    books.linkPlacementDirect(investment, received);
 
     assertPosition(account, LocalDate.of(2026, 2, 28), "0", "0", "0", "0", "0", "0");
     assertPosition(account, MARCH_END, "1000.00", "1000.00", "0", "0", "0", "0");
@@ -299,13 +301,15 @@ class TrustPositionAsAtIntegrationTest {
     var placing = books.freshAccount(false);
     var holding = books.freshAccount(false);
     var client = books.newClient("EQ-3");
-    var depositId = books.deposit(placing, client, "1000.00");
-    var investment = books.investmentDirect(holding, client, depositId);
+    books.deposit(placing, client, "1000.00");
+    var investment = books.investmentDirect(placing, holding, null, "500.00");
     var placedOn = LocalDate.of(2026, 6, 1);
-    books.postLedgerRowDirect(
-        placing, "FIRM_INV_PLACE", "500.00", placedOn, null, null, null, investment);
+    var placed =
+        books.postLedgerRowDirect(
+            placing, "FIRM_INV_PLACE", "500.00", placedOn, null, null, null, investment);
     books.postLedgerRowDirect(
         holding, "FIRM_INV_RECEIVE", "500.00", placedOn, null, null, null, investment);
+    books.linkPlacementDirect(investment, placed);
 
     assertPosition(placing, LocalDate.of(2026, 5, 31), "1000.00", "1000.00", "0", "0", "0", "0");
     assertPosition(
@@ -346,24 +350,28 @@ class TrustPositionAsAtIntegrationTest {
     var placing = books.freshAccount(false);
     var client = books.newClient("breakdown");
     var depositId = books.deposit(account, client, "1000.00");
-    var placingDepositId = books.deposit(placing, client, "1000.00");
+    books.deposit(placing, client, "1000.00");
     var tenth = LocalDate.of(2026, 3, 10);
     books.postNonClientDirect(account, "FUND_INTEREST", "50.00", tenth);
-    var clientInvestment = books.investmentDirect(account, client, depositId);
-    books.postLedgerRowDirect(
-        account,
-        "INV_RECEIVE",
-        "200.00",
-        tenth,
-        client.id(),
-        client.matter(),
-        null,
-        clientInvestment);
-    var placement = books.investmentDirect(account, client, placingDepositId);
-    books.postLedgerRowDirect(
-        placing, "FIRM_INV_PLACE", "700.00", tenth, null, null, null, placement);
+    var clientInvestment = books.investmentDirect(account, account, client, "200.00");
+    var received =
+        books.postLedgerRowDirect(
+            account,
+            "INV_RECEIVE",
+            "200.00",
+            tenth,
+            client.id(),
+            client.matter(),
+            null,
+            clientInvestment);
+    books.linkPlacementDirect(clientInvestment, received);
+    var placement = books.investmentDirect(placing, account, null, "700.00");
+    var placed =
+        books.postLedgerRowDirect(
+            placing, "FIRM_INV_PLACE", "700.00", tenth, null, null, null, placement);
     books.postLedgerRowDirect(
         account, "FIRM_INV_RECEIVE", "700.00", tenth, null, null, null, placement);
+    books.linkPlacementDirect(placement, placed);
 
     var march =
         importStatement(

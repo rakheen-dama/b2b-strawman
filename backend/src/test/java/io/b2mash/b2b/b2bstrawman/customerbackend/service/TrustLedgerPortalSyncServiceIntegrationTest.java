@@ -141,6 +141,12 @@ class TrustLedgerPortalSyncServiceIntegrationTest {
     jdbcTemplate.update(
         "UPDATE \"%s\".trust_transactions SET reversal_of = NULL, reversed_by_id = NULL"
             .formatted(tenantSchema));
+    // 648A: an investment's rows name it (investment_id) and it names its placement row
+    // (deposit_transaction_id) — delete its rows first, then the investments.
+    jdbcTemplate.update(
+        "DELETE FROM \"%s\".trust_transactions WHERE investment_id IS NOT NULL"
+            .formatted(tenantSchema));
+    jdbcTemplate.update("DELETE FROM \"%s\".trust_investments".formatted(tenantSchema));
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .where(RequestScopes.ORG_ID, ORG_ID)
         .where(RequestScopes.MEMBER_ID, memberId)
@@ -236,6 +242,102 @@ class TrustLedgerPortalSyncServiceIntegrationTest {
 
     var balance = portalTrustRepo.findBalance(customerId, matterId).orElseThrow();
     assertThat(balance.currentBalance()).isEqualByComparingTo("4200.00");
+  }
+
+  // ==========================================================================
+  // Phase 92 648A (open question #8): a client's investment-ledger rows
+  // (CLIENT_INVESTMENT) never reach the general running balance — 648D replaces
+  // this with the split projection. INV_PLACE / INV_RETURN are CLIENT-ledger
+  // rows and are projected as ordinary rows.
+  // ==========================================================================
+
+  @Test
+  void aClientInvestmentLedgerRowNeverReachesThePortalRunningBalance() {
+    UUID deposit =
+        recordApprovedTransactionOnDate(
+            "DEPOSIT",
+            new BigDecimal("1000.00"),
+            "INV-SYNC-DEP",
+            "Deposit before the investment",
+            LocalDate.of(2026, 2, 1));
+    var investmentAccountId = UUID.randomUUID();
+    jdbcTemplate.update(
+        """
+        INSERT INTO "%s".trust_accounts (id, account_name, bank_name, branch_code, account_number,
+            account_type, is_primary, require_dual_approval, status, opened_date, investment_basis)
+        VALUES (?, 'Portal Sync s86(4)', 'Investec', '580105', ?, 'INVESTMENT', false, false,
+            'ACTIVE', DATE '2026-01-01', 'CLIENT_INSTRUCTION')
+        """
+            .formatted(tenantSchema),
+        investmentAccountId,
+        "INV-" + investmentAccountId.toString().substring(0, 8));
+    var investmentId = UUID.randomUUID();
+    jdbcTemplate.update(
+        """
+        INSERT INTO "%s".trust_investments (id, trust_account_id, investment_account_id,
+            customer_id, project_id, institution, account_number, principal, interest_rate,
+            deposit_date, investment_basis)
+        VALUES (?, ?, ?, ?, ?, 'Investec', 'CALL-1', 200.00, 0.0500, DATE '2026-02-02',
+            'CLIENT_INSTRUCTION')
+        """
+            .formatted(tenantSchema),
+        investmentId,
+        trustAccountId,
+        investmentAccountId,
+        customerId,
+        matterId);
+    // The placement (CLIENT ledger, client-visible) on the funding account; the capital received
+    // and the interest (CLIENT_INVESTMENT ledger) on the investment account
+    var placement =
+        investmentRow(
+            trustAccountId, "INV_PLACE", "200.00", investmentId, LocalDate.of(2026, 2, 2));
+    investmentRow(
+        investmentAccountId, "INV_RECEIVE", "200.00", investmentId, LocalDate.of(2026, 2, 2));
+    investmentRow(
+        investmentAccountId, "INV_INTEREST", "9.50", investmentId, LocalDate.of(2026, 2, 3));
+    assertThat(TrustTransactionType.INV_INTEREST.clientVisible()).isTrue();
+
+    publishRecordedEvent(deposit, "DEPOSIT", new BigDecimal("1000.00"));
+
+    var transactions = portalTrustRepo.findTransactions(customerId, matterId, null, null, 50, 0);
+    assertThat(transactions)
+        .extracting(t -> t.transactionType())
+        .containsExactlyInAnyOrder("DEPOSIT", "INV_PLACE");
+    assertThat(transactions)
+        .filteredOn(t -> t.id().equals(placement))
+        .singleElement()
+        .satisfies(t -> assertThat(t.runningBalance()).isEqualByComparingTo("800.00"));
+    var balance = portalTrustRepo.findBalance(customerId, matterId).orElseThrow();
+    assertThat(balance.currentBalance()).isEqualByComparingTo("800.00");
+  }
+
+  /** A posted investment row of {@code type} for the client and matter, written to the table. */
+  private UUID investmentRow(
+      UUID account, String type, String amount, UUID investmentId, LocalDate date) {
+    var id = UUID.randomUUID();
+    var effect = TrustTransactionType.of(type).effectFor(new BigDecimal(amount));
+    jdbcTemplate.update(
+        """
+        INSERT INTO "%s".trust_transactions (id, trust_account_id, transaction_type, amount,
+            customer_id, project_id, investment_id, reference, description, transaction_date,
+            status, recorded_by, ledger, cashbook_effect, ledger_effect, posted_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Investment row', ?, 'RECORDED', ?, ?, ?, ?, now())
+        """
+            .formatted(tenantSchema),
+        id,
+        account,
+        type,
+        new BigDecimal(amount),
+        customerId,
+        matterId,
+        investmentId,
+        "INV-SYNC-" + type,
+        date,
+        memberId,
+        effect.ledger().name(),
+        effect.cashbookEffect(),
+        effect.ledgerEffect());
+    return id;
   }
 
   // ==========================================================================

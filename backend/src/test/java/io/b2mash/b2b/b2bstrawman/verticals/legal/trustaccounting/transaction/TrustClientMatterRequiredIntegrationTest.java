@@ -17,6 +17,8 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestTrustInvestmentAccountHelper;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccount;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountType;
@@ -86,6 +88,7 @@ class TrustClientMatterRequiredIntegrationTest {
   private String tenantSchema;
   private UUID ownerId;
   private UUID trustAccountId;
+  private UUID investmentAccountId;
   private LocalDate today;
   private int counter = 0;
 
@@ -123,6 +126,13 @@ class TrustClientMatterRequiredIntegrationTest {
                                   "G89-F28 tests"))
                           .getId();
                     }));
+    investmentAccountId =
+        TestTrustInvestmentAccountHelper.openInvestmentAccount(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUB),
+            "Matter Required s86(4)",
+            "6200-000-TCMR-I",
+            InvestmentBasis.CLIENT_INSTRUCTION);
   }
 
   // --- the defect: a no-matter deposit is refused; a matter deposit reaches the portal ---
@@ -348,7 +358,9 @@ class TrustClientMatterRequiredIntegrationTest {
         mockMvc
             .perform(
                 post("/api/trust-investments/" + investmentId + "/withdraw")
-                    .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUB)))
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUB))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"withdrawalDate\": \"%s\"}".formatted(today)))
             .andExpect(status().isOk())
             .andReturn()
             .getResponse()
@@ -423,11 +435,11 @@ class TrustClientMatterRequiredIntegrationTest {
   private String investmentBody(UUID client, UUID matter) {
     String matterField = matter == null ? "" : "\"matterId\": \"%s\",".formatted(matter);
     return """
-        {"clientId": "%s", %s "institution": "Test Bank", "accountNumber": "INV-%d",
-         "principal": 1000.00, "interestRate": 0.07, "depositDate": "%s",
-         "investmentBasis": "FIRM_DISCRETION"}
+        {"investmentAccountId": "%s", "clientId": "%s", %s "institution": "Test Bank",
+         "accountNumber": "INV-%d", "principal": 1000.00, "interestRate": 0.07,
+         "depositDate": "%s", "investmentBasis": "CLIENT_INSTRUCTION"}
         """
-        .formatted(client, matterField, ++counter, today);
+        .formatted(investmentAccountId, client, matterField, ++counter, today);
   }
 
   /** A client with R1 000 on a matter of its own. */

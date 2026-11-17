@@ -27,7 +27,6 @@ import {
   clientId,
   currentLifecycleRun,
   lifecycleClientName,
-  morokaClient,
   morokaMatter,
   qcClient,
   qcMatter,
@@ -162,8 +161,9 @@ test.describe.serial("Day 90 — Quarter Review", () => {
     await expect(page.getByTestId("investments-page")).toBeVisible({ timeout: 15_000 });
     await expect(page.getByTestId("investment-basis-filter")).toBeVisible();
     const rows = page.locator("main tbody tr");
-    await expect(rows.filter({ hasText: morokaClient() })).toContainText("Firm");
-    await expect(rows.filter({ hasText: qcClient() })).toContainText("Client Instruction");
+    // Phase 92 648A: the section 86(3) deposit names no client (found by its account number)
+    await expect(rows.filter({ hasText: "FD-0987654321" })).toContainText("Firm (section 86(3))");
+    await expect(rows.filter({ hasText: qcClient() })).toContainText("Section 86(4)");
 
     // Screenshot: investment register
     await captureScreenshot(page, "day-90-investment-register-loaded");

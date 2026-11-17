@@ -388,4 +388,40 @@ public interface TrustLedgerQueryRepository extends Repository<TrustTransaction,
           """)
   OutstandingItemsRow outstanding(
       @Param("trustAccountId") UUID trustAccountId, @Param("asAt") LocalDate asAt);
+
+  /**
+   * An investment's balance (648A, §16.3.7): its posted rows on the account holding it — the {@code
+   * CLIENT_INVESTMENT} ledger for a section 86(4) investment (capital plus every net interest
+   * entry, less the withdrawal), the {@code INTER_ACCOUNT} ledger for a section 86(3) one (its
+   * principal while held). The Fund's share ({@code NON_CLIENT}) is not the investment's. What a
+   * withdrawal returns; zero once withdrawn.
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          SELECT COALESCE(SUM(t.ledger_effect), 0) FROM trust_transactions t
+           WHERE t.investment_id = :investmentId AND t.trust_account_id = :investmentAccountId
+             AND t.ledger IN ('CLIENT_INVESTMENT', 'INTER_ACCOUNT') AND t.posted_at IS NOT NULL""")
+  BigDecimal investmentBalance(
+      @Param("investmentId") UUID investmentId,
+      @Param("investmentAccountId") UUID investmentAccountId);
+
+  /**
+   * {@link #investmentBalance} for a page of investments at once (an investment with no row: 0).
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          SELECT i.id AS investmentId, COALESCE(SUM(t.ledger_effect), 0) AS balance
+            FROM trust_investments i
+            LEFT JOIN trust_transactions t ON t.investment_id = i.id
+                  AND t.trust_account_id = i.investment_account_id
+                  AND t.ledger IN ('CLIENT_INVESTMENT', 'INTER_ACCOUNT')
+                  AND t.posted_at IS NOT NULL
+           WHERE i.id IN (:investmentIds)
+           GROUP BY i.id""")
+  List<InvestmentBalanceRow> investmentBalances(
+      @Param("investmentIds") Collection<UUID> investmentIds);
 }

@@ -475,16 +475,25 @@ export interface TrustDashboardData {
 
 // Trust investment types
 
-/** CANCELLED: the placement payment was rejected, so nothing was invested (G89-F87). */
+/** CANCELLED: the placement was rejected, so nothing was invested (G89-F87, 648A). */
 export type TrustInvestmentStatus = "ACTIVE" | "MATURED" | "WITHDRAWN" | "CANCELLED";
 
 export type InvestmentBasis = "FIRM_DISCRETION" | "CLIENT_INSTRUCTION";
 
+/**
+ * An investment (648A, ADR-379): placed from the funding trust banking account
+ * (`trustAccountId`) into an INVESTMENT trust account (`investmentAccountId`) of the same basis.
+ * The client and matter are null for section 86(3); `balance` is what a withdrawal would return
+ * now (zero until the placement is approved, and after the withdrawal).
+ */
 export interface TrustInvestment {
   id: string;
   trustAccountId: string;
-  clientId: string;
-  clientName: string;
+  investmentAccountId: string;
+  investmentAccountName: string | null;
+  clientId: string | null;
+  clientName: string | null;
+  matterId: string | null;
   institution: string;
   accountNumber: string;
   principal: number;
@@ -492,15 +501,39 @@ export interface TrustInvestment {
   depositDate: string;
   maturityDate: string | null;
   interestEarned: number;
+  balance: number;
   status: TrustInvestmentStatus;
   withdrawalDate: string | null;
   withdrawalAmount: number | null;
-  depositTransactionId: string;
+  depositTransactionId: string | null;
   withdrawalTransactionId: string | null;
   notes: string | null;
   investmentBasis: InvestmentBasis;
   createdAt: string;
   updatedAt: string;
+}
+
+/** `POST /api/trust-accounts/{fundingAccountId}/investments` (648A). */
+export interface PlaceInvestmentRequest {
+  investmentAccountId: string;
+  /** Section 86(4) only; omitted for section 86(3). */
+  clientId?: string | null;
+  /** Section 86(4) only; omitted for section 86(3). */
+  matterId?: string | null;
+  institution: string;
+  accountNumber: string;
+  principal: number;
+  /** A decimal (0.075 = 7.5%). */
+  interestRate: number;
+  depositDate: string;
+  maturityDate?: string | null;
+  notes?: string | null;
+  investmentBasis: InvestmentBasis;
+}
+
+/** `POST /api/trust-investments/{id}/withdraw` (648A): the amount is derived, never typed. */
+export interface WithdrawInvestmentRequest {
+  withdrawalDate: string;
 }
 
 // Interest run types

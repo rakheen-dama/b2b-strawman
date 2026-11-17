@@ -2,27 +2,31 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.config.KaziTime;
+import io.b2mash.b2b.b2bstrawman.audit.AuditEvent;
+import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
-import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
-import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
-import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
-import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
-import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksFixture;
+import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksFixture.Client;
+import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness;
+import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness.Expected;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.PlaceInvestmentRequest;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.TrustInvestmentResponse;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.WithdrawInvestmentRequest;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedger;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -30,11 +34,31 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.support.TransactionTemplate;
 
+/**
+ * Phase 92 slice 648A (task 648.5; ADR-379; architecture §16.3.7, §16.9.2 paths 17–19): investments
+ * on the books, across two accounts — the funding trust banking account {@code G} and an {@code
+ * INVESTMENT} trust account {@code I} whose basis is the investment's.
+ *
+ * <ul>
+ *   <li><b>Path 17</b> — a section 86(4) placement: the request moves nothing on either account;
+ *       the approval posts {@code INV_PLACE} on G (cashbook and client −P) and {@code INV_RECEIVE}
+ *       on I (cashbook and investment creditors +P) — the client's total is unchanged; a rejection
+ *       moves nothing and cancels the investment.
+ *   <li><b>Path 18</b> — a section 86(3) placement and its return: {@code FIRM_INV_*} on the
+ *       inter-account ledger of both accounts (the terms cancel firm-wide, EQ-3); no client moves.
+ *   <li><b>Path 19</b> — a section 86(4) withdrawal: {@code INV_WITHDRAW} on I and {@code
+ *       INV_RETURN} on G (the placement's matter), both RECORDED, for the investment's balance.
+ * </ul>
+ *
+ * <p>Every step is asserted through {@link TrustBooksHarness#assertMoves} on both accounts, which
+ * also checks EQ-5 for each investment; the class ends with {@code assertFirmBalanced(today)}.
+ * Every refusal moves nothing on either account.
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
 @Import(TestcontainersConfiguration.class)
@@ -43,493 +67,762 @@ import org.springframework.transaction.support.TransactionTemplate;
 class TrustInvestmentServiceIntegrationTest {
 
   private static final String ORG_ID = "org_trust_invest_test";
+  private static final String OWNER = "user_invest_owner";
+  private static final String APPROVER = "user_invest_approver";
+  private static final String SECOND = "user_invest_second";
+
+  private static final String PLACE_TITLE = "Cannot place investment";
+  private static final String WITHDRAW_TITLE = "Cannot withdraw investment";
+  private static final String PLACEMENT_NOT_REVERSIBLE =
+      "This entry placed a trust investment. Withdraw the investment instead of reversing its"
+          + " placement.";
+  private static final String INVESTMENT_ROW_NOT_REVERSIBLE =
+      "Investment entries cannot be reversed. Withdraw the investment instead.";
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private OrgSettingsRepository orgSettingsRepository;
-  @Autowired private OrgSettingsService orgSettingsService;
-  @Autowired private TransactionTemplate transactionTemplate;
+  @Autowired private TrustBooksFixture fixture;
+  @Autowired private TrustBooksHarness harness;
   @Autowired private TrustInvestmentService investmentService;
   @Autowired private TrustInvestmentRepository investmentRepository;
-  @Autowired private ProjectRepository projectRepository;
   @Autowired private TrustTransactionService transactionService;
+  @Autowired private TrustTransactionRepository transactionRepository;
+  @Autowired private AuditEventRepository auditEventRepository;
+  @Autowired private JdbcTemplate jdbc;
 
-  private String tenantSchema;
-  private UUID trustAccountId;
-  private UUID customerId;
-  private UUID matterId;
-  private UUID ownerMemberId;
-  private UUID approverMemberId;
+  private TrustBooksFixture.Tenant books;
+  private UUID ownerId;
+  private UUID approverId;
+  private UUID secondId;
 
   @BeforeAll
   void setup() throws Exception {
-    tenantSchema =
+    var schema =
         provisioningService.provisionTenant(ORG_ID, "Trust Investment Test Org", null).schemaName();
-
-    ownerMemberId =
+    ownerId =
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, OWNER, "invest_owner@test.com", "Investment Owner", "owner"));
+    approverId =
         UUID.fromString(
             TestMemberHelper.syncMember(
                 mockMvc,
                 ORG_ID,
-                "user_invest_owner",
-                "invest_owner@test.com",
-                "Investment Owner",
-                "owner"));
-    approverMemberId =
-        UUID.fromString(
-            TestMemberHelper.syncMember(
-                mockMvc,
-                ORG_ID,
-                "user_invest_approver",
+                APPROVER,
                 "invest_approver@test.com",
                 "Investment Approver",
-                "owner"));
-
-    // Enable the trust_accounting module
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .run(
-            () ->
-                transactionTemplate.executeWithoutResult(
-                    tx -> {
-                      var settings = orgSettingsService.getOrCreateForCurrentTenant();
-                      settings.setEnabledModules(List.of("trust_accounting"));
-                      orgSettingsRepository.save(settings);
-                    }));
-
-    var ownerJwt = TestJwtFactory.ownerJwt(ORG_ID, "user_invest_owner");
-
-    // Create a trust account
-    var accountResult =
-        mockMvc
-            .perform(
-                post("/api/trust-accounts")
-                    .with(ownerJwt)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "accountName": "Investment Test Trust Account",
-                          "bankName": "First National Bank",
-                          "branchCode": "250655",
-                          "accountNumber": "62000000200",
-                          "accountType": "GENERAL",
-                          "isPrimary": false,
-                          "requireDualApproval": false,
-                          "openedDate": "2026-01-01"
-                        }
-                        """))
-            .andExpect(status().isCreated())
-            .andReturn();
-    trustAccountId = UUID.fromString(TestEntityHelper.extractId(accountResult));
-
-    // Create customer
-    customerId =
+                "admin"));
+    secondId =
         UUID.fromString(
-            TestEntityHelper.createCustomer(
-                mockMvc, ownerJwt, "Investment Client Alpha", "invest_alpha@test.com"));
-
-    matterId =
-        TestTrustMatterHelper.openClientMatter(
-            tenantSchema,
-            transactionTemplate,
-            projectRepository,
-            customerId,
-            "Investment Matter Alpha",
-            ownerMemberId);
-
-    // Deposit funds for the customer (100,000)
-    createDeposit(
-        trustAccountId,
-        customerId.toString(),
-        new BigDecimal("100000.00"),
-        "DEP-INVEST-001",
-        "2026-01-15");
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, SECOND, "invest_second@test.com", "Investment Second", "admin"));
+    fixture.enableTrustModule(schema);
+    books = fixture.tenant(schema, ORG_ID, ownerId);
   }
 
-  // --- Helper Methods ---
-
-  /** The placement PAYMENT approved by a second member (single mode refuses self-approval). */
-  private void approvePlacement(UUID placementTransactionId) {
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .where(RequestScopes.ORG_ID, ORG_ID)
-        .where(RequestScopes.MEMBER_ID, approverMemberId)
-        .where(RequestScopes.ORG_ROLE, "owner")
-        .where(
-            RequestScopes.CAPABILITIES,
-            java.util.Set.of("APPROVE_TRUST_PAYMENT", "MANAGE_TRUST", "VIEW_TRUST"))
-        .run(() -> transactionService.approveTransaction(placementTransactionId, approverMemberId));
+  @AfterAll
+  void booksBalanceFirmWide() {
+    books.assertFirmBalanced();
   }
 
-  private void createDeposit(
-      UUID accountId, String custId, BigDecimal amount, String reference, String date)
-      throws Exception {
-    var ownerJwt = TestJwtFactory.ownerJwt(ORG_ID, "user_invest_owner");
-    mockMvc
-        .perform(
-            post("/api/trust-accounts/" + accountId + "/transactions/deposit")
-                .with(ownerJwt)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {
-                      "clientId": "%s",
-                      "matterId": "%s",
-                      "amount": %s,
-                      "reference": "%s",
-                      "description": "Test deposit",
-                      "transactionDate": "%s"
-                    }
-                    """
-                        .formatted(custId, matterId, amount.toPlainString(), reference, date)))
-        .andExpect(status().isCreated());
-  }
-
-  // --- 446.4: Investment Lifecycle Tests ---
+  // --- path 17: section 86(4) placement ---------------------------------------------------
 
   @Test
-  void placeInvestment_createsPaymentTransactionAndInvestmentRecord() throws Exception {
-    var response =
-        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-            .where(RequestScopes.MEMBER_ID, ownerMemberId)
-            .call(
-                () ->
-                    investmentService.placeInvestment(
-                        trustAccountId,
-                        new TrustInvestmentService.PlaceInvestmentRequest(
-                            customerId,
-                            matterId,
-                            "ABSA Bank",
-                            "9012345678",
-                            new BigDecimal("50000.00"),
-                            new BigDecimal("0.0650"),
-                            LocalDate.of(2026, 2, 1),
-                            LocalDate.of(2026, 8, 1),
-                            "6-month fixed deposit",
-                            InvestmentBasis.FIRM_DISCRETION)));
+  void path17_clientInstruction_requestMovesNothing_approvalMovesBothAccounts_clientTotalSame() {
+    var funding = books.freshAccount(false);
+    var investmentAccount = books.freshInvestmentAccount(InvestmentBasis.CLIENT_INSTRUCTION);
+    var client = books.newClient("s86(4)");
+    books.deposit(funding, client, "5000.00");
 
-    assertThat(response.status()).isEqualTo("ACTIVE");
-    assertThat(response.principal()).isEqualByComparingTo(new BigDecimal("50000.00"));
-    assertThat(response.interestRate()).isEqualByComparingTo(new BigDecimal("0.0650"));
-    assertThat(response.institution()).isEqualTo("ABSA Bank");
-    assertThat(response.accountNumber()).isEqualTo("9012345678");
-    assertThat(response.interestEarned()).isEqualByComparingTo(BigDecimal.ZERO);
-    assertThat(response.depositTransactionId()).isNotNull();
-    assertThat(response.maturityDate()).isEqualTo(LocalDate.of(2026, 8, 1));
-    assertThat(response.notes()).isEqualTo("6-month fixed deposit");
-    assertThat(response.trustAccountId()).isEqualTo(trustAccountId);
-    assertThat(response.clientId()).isEqualTo(customerId);
+    var placed = books.requestPlacement(funding, investmentAccount, client, "2000.00");
+
+    var investment = investment(placed.id());
+    assertThat(investment.getStatus()).isEqualTo("ACTIVE");
+    assertThat(investment.getTrustAccountId()).isEqualTo(funding);
+    assertThat(investment.getInvestmentAccountId()).isEqualTo(investmentAccount);
+    assertThat(investment.getCustomerId()).isEqualTo(client.id());
+    assertThat(investment.getProjectId()).isEqualTo(client.matter());
+    assertThat(investment.getInvestmentBasis()).isEqualTo(InvestmentBasis.CLIENT_INSTRUCTION);
+    assertThat(investment.getDepositTransactionId()).isEqualTo(placed.depositTransactionId());
+    var reference = "INV-" + placed.id().toString().substring(0, 8).toUpperCase(Locale.ROOT);
+    var placement = row(placed.depositTransactionId());
+    assertThat(placement.getTransactionType()).isEqualTo("INV_PLACE");
+    assertThat(placement.getTrustAccountId()).isEqualTo(funding);
+    assertThat(placement.getStatus()).isEqualTo("AWAITING_APPROVAL");
+    assertThat(placement.getInvestmentId()).isEqualTo(placed.id());
+    assertThat(placement.getCustomerId()).isEqualTo(client.id());
+    assertThat(placement.getProjectId()).isEqualTo(client.matter());
+    assertThat(placement.getReference()).isEqualTo(reference);
+    assertThat(placed.investmentAccountId()).isEqualTo(investmentAccount);
+    assertThat(placed.matterId()).isEqualTo(client.matter());
+    assertThat(placed.clientName()).isEqualTo(client.name());
+    assertThat(placed.balance()).isEqualByComparingTo("0");
+    assertThat(
+            audit("trust_investment.placed", placed.id()).getDetails().get("investment_account_id"))
+        .isEqualTo(investmentAccount.toString());
+    assertThat(audit("trust_investment.placed", placed.id()).getDetails())
+        .containsEntry("funding_account_id", funding.toString())
+        .containsEntry("investment_basis", "CLIENT_INSTRUCTION")
+        .containsEntry("reference", reference);
+
+    books.approvePlacement(
+        funding,
+        Expected.cashbookAndClient("-2000.00"),
+        investmentAccount,
+        Expected.cashbookAndInvestment("2000.00"),
+        placed.depositTransactionId(),
+        approverId);
+
+    assertThat(books.statusOf(placed.depositTransactionId())).isEqualTo("APPROVED");
+    var receive = rowOf(placed.id(), "INV_RECEIVE");
+    assertThat(receive.getTrustAccountId()).isEqualTo(investmentAccount);
+    assertThat(receive.getStatus()).isEqualTo("APPROVED");
+    assertThat(receive.getLedger()).isEqualTo(TrustLedger.CLIENT_INVESTMENT);
+    assertThat(receive.getAmount()).isEqualByComparingTo("2000.00");
+    assertThat(receive.getCustomerId()).isEqualTo(client.id());
+    assertThat(receive.getProjectId()).isEqualTo(client.matter());
+    assertThat(receive.getReference()).isEqualTo(reference);
+    assertThat(receive.getTransactionDate()).isEqualTo(placement.getTransactionDate());
+    assertThat(receive.getApprovedBy()).isEqualTo(approverId);
+
+    // The client's total (general on G + invested on I) is unchanged (L7)
+    assertThat(books.clientLedger(funding, client)).isEqualByComparingTo("3000.00");
+    assertThat(books.clientInvestmentLedger(investmentAccount, client))
+        .isEqualByComparingTo("2000.00");
+    assertThat(
+            books
+                .clientLedger(funding, client)
+                .add(books.clientInvestmentLedger(investmentAccount, client)))
+        .isEqualByComparingTo("5000.00");
+    assertThat(get(placed.id()).balance()).isEqualByComparingTo("2000.00");
+    books.assertServicesAgree(funding);
+    books.assertServicesAgree(investmentAccount);
   }
 
   @Test
-  void recordInterestEarned_incrementsTotal() throws Exception {
-    // Place an investment first
-    var placed =
-        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-            .where(RequestScopes.MEMBER_ID, ownerMemberId)
-            .call(
+  void path17_rejection_movesNothing_andCancelsTheInvestment() {
+    var funding = books.freshAccount(false);
+    var investmentAccount = books.freshInvestmentAccount(InvestmentBasis.CLIENT_INSTRUCTION);
+    var client = books.newClient("s86(4) rejected");
+    books.deposit(funding, client, "1000.00");
+    var placed = books.requestPlacement(funding, investmentAccount, client, "600.00");
+
+    books.as(
+        approverId,
+        () ->
+            harness.assertMoves(
+                funding,
+                Expected.none(),
+                investmentAccount,
+                Expected.none(),
                 () ->
-                    investmentService.placeInvestment(
-                        trustAccountId,
-                        new TrustInvestmentService.PlaceInvestmentRequest(
-                            customerId,
-                            matterId,
-                            "Nedbank",
-                            "5551234567",
-                            new BigDecimal("10000.00"),
-                            new BigDecimal("0.0700"),
-                            LocalDate.of(2026, 2, 1),
-                            LocalDate.of(2026, 5, 1),
-                            null,
-                            InvestmentBasis.FIRM_DISCRETION)));
+                    transactionService.rejectTransaction(
+                        placed.depositTransactionId(), approverId, "Client changed their mind")));
 
-    // Record interest twice
-    var afterFirst =
-        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-            .where(RequestScopes.MEMBER_ID, ownerMemberId)
-            .call(
-                () ->
-                    investmentService.recordInterestEarned(placed.id(), new BigDecimal("175.00")));
-
-    assertThat(afterFirst.interestEarned()).isEqualByComparingTo(new BigDecimal("175.00"));
-
-    var afterSecond =
-        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-            .where(RequestScopes.MEMBER_ID, ownerMemberId)
-            .call(
-                () ->
-                    investmentService.recordInterestEarned(placed.id(), new BigDecimal("125.00")));
-
-    assertThat(afterSecond.interestEarned()).isEqualByComparingTo(new BigDecimal("300.00"));
+    assertThat(books.statusOf(placed.depositTransactionId())).isEqualTo("REJECTED");
+    assertThat(investment(placed.id()).getStatus()).isEqualTo("CANCELLED");
+    assertThat(audit("trust_investment.cancelled", placed.id()).getDetails())
+        .containsEntry("investment_account_id", investmentAccount.toString())
+        .containsEntry("funding_account_id", funding.toString())
+        .containsEntry("reason", "Client changed their mind");
+    // Nothing to withdraw
+    assertWithdrawRefused(
+        funding,
+        investmentAccount,
+        placed.id(),
+        books.today(),
+        "Only an active investment can be withdrawn.");
   }
 
   @Test
-  void withdrawInvestment_createsDepositWithPrincipalPlusInterest() throws Exception {
-    // Place an investment
-    var placed =
-        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-            .where(RequestScopes.MEMBER_ID, ownerMemberId)
-            .call(
-                () ->
-                    investmentService.placeInvestment(
-                        trustAccountId,
-                        new TrustInvestmentService.PlaceInvestmentRequest(
-                            customerId,
-                            matterId,
-                            "Standard Bank",
-                            "7778889990",
-                            new BigDecimal("5000.00"),
-                            new BigDecimal("0.0550"),
-                            LocalDate.of(2026, 2, 1),
-                            null, // call deposit — no maturity date
-                            "Call deposit",
-                            InvestmentBasis.FIRM_DISCRETION)));
+  void path17_dualApproval_postsBothRowsOnlyOnTheSecondApproval() {
+    var funding = books.freshAccount(true);
+    var investmentAccount = books.freshInvestmentAccount(InvestmentBasis.CLIENT_INSTRUCTION);
+    var client = books.newClient("s86(4) dual");
+    books.deposit(funding, client, "1000.00");
+    var placed = books.requestPlacement(funding, investmentAccount, client, "400.00");
 
-    // Record some interest
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .where(RequestScopes.MEMBER_ID, ownerMemberId)
-        .run(() -> investmentService.recordInterestEarned(placed.id(), new BigDecimal("250.00")));
+    books.approvePlacement(
+        funding,
+        Expected.none(),
+        investmentAccount,
+        Expected.none(),
+        placed.depositTransactionId(),
+        approverId);
+    assertThat(books.statusOf(placed.depositTransactionId())).isEqualTo("AWAITING_APPROVAL");
 
-    // PR #1757 review: only a completed (approved) placement can be withdrawn
-    approvePlacement(placed.depositTransactionId());
+    books.approvePlacement(
+        funding,
+        Expected.cashbookAndClient("-400.00"),
+        investmentAccount,
+        Expected.cashbookAndInvestment("400.00"),
+        placed.depositTransactionId(),
+        secondId);
+    var receive = rowOf(placed.id(), "INV_RECEIVE");
+    assertThat(receive.getApprovedBy()).isEqualTo(approverId);
+    assertThat(receive.getSecondApprovedBy()).isEqualTo(secondId);
+  }
 
-    // Withdraw
+  // --- path 18: section 86(3) placement and return -----------------------------------------
+
+  @Test
+  void path18_firmDiscretion_placementAndReturn_interAccountOnBoth_noClientMoves() {
+    var funding = books.freshAccount(false);
+    var investmentAccount = books.freshInvestmentAccount(InvestmentBasis.FIRM_DISCRETION);
+    var client = books.newClient("s86(3) funds");
+    books.deposit(funding, client, "5000.00");
+
+    var placed = books.requestPlacement(funding, investmentAccount, null, "1500.00");
+    assertThat(placed.clientId()).isNull();
+    assertThat(placed.clientName()).isNull();
+    assertThat(placed.matterId()).isNull();
+    var placement = row(placed.depositTransactionId());
+    assertThat(placement.getTransactionType()).isEqualTo("FIRM_INV_PLACE");
+    assertThat(placement.getCustomerId()).isNull();
+    assertThat(placement.getProjectId()).isNull();
+    assertThat(placement.getInvestmentId()).isEqualTo(placed.id());
+    assertThat(audit("trust_investment.placed", placed.id()).getDetails())
+        .doesNotContainKey("customer_id")
+        .containsEntry("investment_basis", "FIRM_DISCRETION");
+
+    books.approvePlacement(
+        funding,
+        Expected.cashbookAndInterAccount("-1500.00"),
+        investmentAccount,
+        Expected.cashbookAndInterAccount("1500.00"),
+        placed.depositTransactionId(),
+        approverId);
+    var receive = rowOf(placed.id(), "FIRM_INV_RECEIVE");
+    assertThat(receive.getLedger()).isEqualTo(TrustLedger.INTER_ACCOUNT);
+    assertThat(receive.getCustomerId()).isNull();
+    assertThat(receive.getStatus()).isEqualTo("APPROVED");
+    assertThat(books.clientLedger(funding, client)).isEqualByComparingTo("5000.00");
+    assertThat(get(placed.id()).balance()).isEqualByComparingTo("1500.00");
+    books.assertFirmBalanced();
+
+    var withdrawalDate = books.today();
     var withdrawn =
-        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-            .where(RequestScopes.MEMBER_ID, ownerMemberId)
-            .call(() -> investmentService.withdrawInvestment(placed.id()));
+        books.withdraw(
+            funding,
+            Expected.cashbookAndInterAccount("1500.00"),
+            investmentAccount,
+            Expected.cashbookAndInterAccount("-1500.00"),
+            placed.id(),
+            withdrawalDate);
 
+    var wdReference = "INV-WD-" + placed.id().toString().substring(0, 8).toUpperCase(Locale.ROOT);
+    var out = rowOf(placed.id(), "FIRM_INV_WITHDRAW");
+    var back = rowOf(placed.id(), "FIRM_INV_RETURN");
+    assertThat(out.getTrustAccountId()).isEqualTo(investmentAccount);
+    assertThat(back.getTrustAccountId()).isEqualTo(funding);
+    for (var leg : List.of(out, back)) {
+      assertThat(leg.getStatus()).isEqualTo("RECORDED");
+      assertThat(leg.getAmount()).isEqualByComparingTo("1500.00");
+      assertThat(leg.getReference()).isEqualTo(wdReference);
+      assertThat(leg.getTransactionDate()).isEqualTo(withdrawalDate);
+      assertThat(leg.getCustomerId()).isNull();
+    }
     assertThat(withdrawn.status()).isEqualTo("WITHDRAWN");
-    assertThat(withdrawn.withdrawalAmount())
-        .isEqualByComparingTo(new BigDecimal("5250.00")); // 5000 + 250
-    assertThat(withdrawn.withdrawalDate()).isEqualTo(LocalDate.now(KaziTime.ZONE));
-    assertThat(withdrawn.withdrawalTransactionId()).isNotNull();
+    assertThat(withdrawn.withdrawalAmount()).isEqualByComparingTo("1500.00");
+    assertThat(withdrawn.withdrawalDate()).isEqualTo(withdrawalDate);
+    assertThat(withdrawn.withdrawalTransactionId()).isEqualTo(back.getId());
+    assertThat(withdrawn.balance()).isEqualByComparingTo("0");
+    assertThat(books.clientLedger(funding, client)).isEqualByComparingTo("5000.00");
+    books.assertFirmBalanced();
+  }
+
+  // --- path 19: section 86(4) withdrawal ---------------------------------------------------
+
+  @Test
+  void path19_clientInstruction_withdrawal_returnsTheBalanceToThePlacementsMatter() {
+    var funding = books.freshAccount(false);
+    var investmentAccount = books.freshInvestmentAccount(InvestmentBasis.CLIENT_INSTRUCTION);
+    var client = books.newClient("s86(4) withdrawal");
+    books.deposit(funding, client, "5000.00");
+    var placed = books.requestPlacement(funding, investmentAccount, client, "2000.00");
+    books.approvePlacement(
+        funding,
+        Expected.cashbookAndClient("-2000.00"),
+        investmentAccount,
+        Expected.cashbookAndInvestment("2000.00"),
+        placed.depositTransactionId(),
+        approverId);
+    // A net interest entry on the investment (648B records these; written here so the withdrawal
+    // amount is shown to be the investment's balance, not its principal)
+    books.postLedgerRowDirect(
+        investmentAccount,
+        "INV_INTEREST",
+        "25.00",
+        TrustBooksFixture.POSTING_DATE,
+        client.id(),
+        client.matter(),
+        null,
+        placed.id());
+    assertThat(get(placed.id()).balance()).isEqualByComparingTo("2025.00");
+
+    var withdrawalDate = books.today().minusDays(1);
+    var withdrawn =
+        books.withdraw(
+            funding,
+            Expected.cashbookAndClient("2025.00"),
+            investmentAccount,
+            Expected.cashbookAndInvestment("-2025.00"),
+            placed.id(),
+            withdrawalDate);
+
+    var wdReference = "INV-WD-" + placed.id().toString().substring(0, 8).toUpperCase(Locale.ROOT);
+    var out = rowOf(placed.id(), "INV_WITHDRAW");
+    var back = rowOf(placed.id(), "INV_RETURN");
+    assertThat(out.getTrustAccountId()).isEqualTo(investmentAccount);
+    assertThat(out.getLedger()).isEqualTo(TrustLedger.CLIENT_INVESTMENT);
+    assertThat(back.getTrustAccountId()).isEqualTo(funding);
+    assertThat(back.getLedger()).isEqualTo(TrustLedger.CLIENT);
+    for (var leg : List.of(out, back)) {
+      assertThat(leg.getStatus()).isEqualTo("RECORDED");
+      assertThat(leg.getAmount()).isEqualByComparingTo("2025.00");
+      assertThat(leg.getCustomerId()).isEqualTo(client.id());
+      assertThat(leg.getProjectId()).isEqualTo(client.matter());
+      assertThat(leg.getReference()).isEqualTo(wdReference);
+      assertThat(leg.getTransactionDate()).isEqualTo(withdrawalDate);
+      assertThat(leg.getApprovedBy()).isNull();
+    }
+    assertThat(withdrawn.status()).isEqualTo("WITHDRAWN");
+    assertThat(withdrawn.withdrawalAmount()).isEqualByComparingTo("2025.00");
+    assertThat(withdrawn.withdrawalTransactionId()).isEqualTo(back.getId());
+    assertThat(books.clientLedger(funding, client)).isEqualByComparingTo("5025.00");
+    assertThat(books.clientInvestmentLedger(investmentAccount, client)).isEqualByComparingTo("0");
+    assertThat(audit("trust_investment.withdrawn", placed.id()).getDetails())
+        .containsEntry("withdrawal_amount", "2025.00")
+        .containsEntry("investment_account_id", investmentAccount.toString())
+        .containsEntry("funding_account_id", funding.toString());
+
+    // Once withdrawn, never again
+    assertWithdrawRefused(
+        funding,
+        investmentAccount,
+        placed.id(),
+        withdrawalDate,
+        "Only an active investment can be withdrawn.");
   }
 
   @Test
-  void getMaturing_returnsInvestmentsMaturingWithinWindow() throws Exception {
-    // Place an investment that matures soon (within 30 days from today)
-    var maturingSoon =
-        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-            .where(RequestScopes.MEMBER_ID, ownerMemberId)
-            .call(
-                () ->
-                    investmentService.placeInvestment(
-                        trustAccountId,
-                        new TrustInvestmentService.PlaceInvestmentRequest(
-                            customerId,
-                            matterId,
-                            "FNB",
-                            "1112223334",
-                            new BigDecimal("2000.00"),
-                            new BigDecimal("0.0500"),
-                            LocalDate.now(KaziTime.ZONE).minusDays(60),
-                            LocalDate.now(KaziTime.ZONE).plusDays(10), // matures in 10 days
-                            "Short-term deposit",
-                            InvestmentBasis.FIRM_DISCRETION)));
+  void withdrawal_isRefused_whileThePlacementAwaitsApproval_andOutsideItsDates() {
+    var funding = books.freshAccount(false);
+    var investmentAccount = books.freshInvestmentAccount(InvestmentBasis.CLIENT_INSTRUCTION);
+    var client = books.newClient("withdrawal refusals");
+    books.deposit(funding, client, "1000.00");
+    var placed = books.requestPlacement(funding, investmentAccount, client, "500.00");
 
-    // Place an investment that matures far in the future
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .where(RequestScopes.MEMBER_ID, ownerMemberId)
-        .call(
+    assertWithdrawRefused(
+        funding,
+        investmentAccount,
+        placed.id(),
+        books.today(),
+        "The investment's placement must be approved before the investment can be withdrawn"
+            + " (the placement is awaiting approval).");
+
+    books.approvePlacement(
+        funding,
+        Expected.cashbookAndClient("-500.00"),
+        investmentAccount,
+        Expected.cashbookAndInvestment("500.00"),
+        placed.depositTransactionId(),
+        approverId);
+    assertWithdrawRefused(
+        funding,
+        investmentAccount,
+        placed.id(),
+        TrustBooksFixture.POSTING_DATE.minusDays(1),
+        "The withdrawal date cannot be before the investment's deposit date.");
+    assertWithdrawRefused(
+        funding,
+        investmentAccount,
+        placed.id(),
+        books.today().plusDays(1),
+        "The withdrawal date cannot be in the future.");
+    assertThat(investment(placed.id()).getStatus()).isEqualTo("ACTIVE");
+  }
+
+  // --- placement checks ---------------------------------------------------------------------
+
+  @Test
+  void placement_basisMustMatchTheInvestmentAccount() {
+    var funding = books.freshAccount(false);
+    var firmAccount = books.freshInvestmentAccount(InvestmentBasis.FIRM_DISCRETION);
+    var clientAccount = books.freshInvestmentAccount(InvestmentBasis.CLIENT_INSTRUCTION);
+    var client = books.newClient("basis mismatch");
+    books.deposit(funding, client, "1000.00");
+
+    assertPlacementRefused(
+        funding,
+        firmAccount,
+        request(firmAccount, client, "100.00", InvestmentBasis.CLIENT_INSTRUCTION),
+        PLACE_TITLE,
+        "The investment account holds section 86(3) investments; this placement is a section"
+            + " 86(4) investment. Choose an investment account of the same basis.");
+    assertPlacementRefused(
+        funding,
+        clientAccount,
+        request(clientAccount, null, "100.00", InvestmentBasis.FIRM_DISCRETION),
+        PLACE_TITLE,
+        "The investment account holds section 86(4) investments; this placement is a section"
+            + " 86(3) investment. Choose an investment account of the same basis.");
+  }
+
+  @Test
+  void placement_needsABankingAccountToFundIt_andAnInvestmentAccountToHoldIt() {
+    var funding = books.freshAccount(false);
+    var other = books.freshAccount(false);
+    var investmentAccount = books.freshInvestmentAccount(InvestmentBasis.FIRM_DISCRETION);
+    var client = books.newClient("account types");
+    books.deposit(funding, client, "1000.00");
+
+    assertPlacementRefused(
+        investmentAccount,
+        funding,
+        request(investmentAccount, null, "100.00", InvestmentBasis.FIRM_DISCRETION),
+        PLACE_TITLE,
+        "An investment is placed from a trust banking account, not from an investment account.");
+    assertPlacementRefused(
+        funding,
+        other,
+        request(other, null, "100.00", InvestmentBasis.FIRM_DISCRETION),
+        PLACE_TITLE,
+        "The money must be placed in a trust investment account.");
+  }
+
+  @Test
+  void placement_section86_4_namesTheClientAndMatter_section86_3_namesNeither() {
+    var funding = books.freshAccount(false);
+    var firmAccount = books.freshInvestmentAccount(InvestmentBasis.FIRM_DISCRETION);
+    var clientAccount = books.freshInvestmentAccount(InvestmentBasis.CLIENT_INSTRUCTION);
+    var client = books.newClient("client and matter");
+    books.deposit(funding, client, "1000.00");
+
+    assertPlacementRefused(
+        funding,
+        clientAccount,
+        new PlaceInvestmentRequest(
+            clientAccount,
+            null,
+            client.matter(),
+            "Bank",
+            "ACC",
+            new BigDecimal("100.00"),
+            new BigDecimal("0.05"),
+            TrustBooksFixture.POSTING_DATE,
+            null,
+            null,
+            InvestmentBasis.CLIENT_INSTRUCTION),
+        "Client required",
+        "A section 86(4) investment names the client and the matter whose money is invested.");
+    assertPlacementRefused(
+        funding,
+        clientAccount,
+        new PlaceInvestmentRequest(
+            clientAccount,
+            client.id(),
+            null,
+            "Bank",
+            "ACC",
+            new BigDecimal("100.00"),
+            new BigDecimal("0.05"),
+            TrustBooksFixture.POSTING_DATE,
+            null,
+            null,
+            InvestmentBasis.CLIENT_INSTRUCTION),
+        "Matter required",
+        "A matter is required for client trust transactions");
+    var noClient =
+        "A section 86(3) investment is the firm's placement of surplus trust money and names no"
+            + " client or matter.";
+    assertPlacementRefused(
+        funding,
+        firmAccount,
+        new PlaceInvestmentRequest(
+            firmAccount,
+            client.id(),
+            null,
+            "Bank",
+            "ACC",
+            new BigDecimal("100.00"),
+            new BigDecimal("0.05"),
+            TrustBooksFixture.POSTING_DATE,
+            null,
+            null,
+            InvestmentBasis.FIRM_DISCRETION),
+        PLACE_TITLE,
+        noClient);
+    assertPlacementRefused(
+        funding,
+        firmAccount,
+        new PlaceInvestmentRequest(
+            firmAccount,
+            null,
+            client.matter(),
+            "Bank",
+            "ACC",
+            new BigDecimal("100.00"),
+            new BigDecimal("0.05"),
+            TrustBooksFixture.POSTING_DATE,
+            null,
+            null,
+            InvestmentBasis.FIRM_DISCRETION),
+        PLACE_TITLE,
+        noClient);
+  }
+
+  @Test
+  void placement_mustBeCovered_byTheMatterCell_orByTheCashbook() {
+    var funding = books.freshAccount(false);
+    var firmAccount = books.freshInvestmentAccount(InvestmentBasis.FIRM_DISCRETION);
+    var clientAccount = books.freshInvestmentAccount(InvestmentBasis.CLIENT_INSTRUCTION);
+    var client = books.newClient("cover");
+    books.deposit(funding, client, "1000.00");
+
+    assertPlacementRefused(
+        funding,
+        clientAccount,
+        request(clientAccount, client, "1000.01", InvestmentBasis.CLIENT_INSTRUCTION),
+        "Insufficient trust balance",
+        "Insufficient trust balance on matter "
+            + matterName(client)
+            + " for "
+            + client.name()
+            + ". Available on matter: R1\u00a0000,00, Requested: R1\u00a0000,01");
+    assertPlacementRefused(
+        funding,
+        firmAccount,
+        request(firmAccount, null, "1000.01", InvestmentBasis.FIRM_DISCRETION),
+        "Insufficient trust balance",
+        "The trust account's cashbook does not cover this section 86(3) placement. Available:"
+            + " R1\u00a0000,00, Requested: R1\u00a0000,01");
+  }
+
+  // --- reversal refused on the type (replaces G89-F86) -------------------------------------
+
+  @Test
+  void everyInvestmentRow_isRefusedReversal_onItsType() {
+    var funding = books.freshAccount(false);
+    var clientAccount = books.freshInvestmentAccount(InvestmentBasis.CLIENT_INSTRUCTION);
+    var firmAccount = books.freshInvestmentAccount(InvestmentBasis.FIRM_DISCRETION);
+    var client = books.newClient("reversal refused");
+    books.deposit(funding, client, "5000.00");
+
+    var clientPlaced = books.requestPlacement(funding, clientAccount, client, "1000.00");
+    books.approvePlacement(
+        funding,
+        Expected.cashbookAndClient("-1000.00"),
+        clientAccount,
+        Expected.cashbookAndInvestment("1000.00"),
+        clientPlaced.depositTransactionId(),
+        approverId);
+    var firmPlaced = books.requestPlacement(funding, firmAccount, null, "500.00");
+    books.approvePlacement(
+        funding,
+        Expected.cashbookAndInterAccount("-500.00"),
+        firmAccount,
+        Expected.cashbookAndInterAccount("500.00"),
+        firmPlaced.depositTransactionId(),
+        approverId);
+
+    books.assertReversalRefused(
+        funding, clientPlaced.depositTransactionId(), PLACEMENT_NOT_REVERSIBLE);
+    books.assertReversalRefused(
+        funding, firmPlaced.depositTransactionId(), PLACEMENT_NOT_REVERSIBLE);
+    books.assertReversalRefused(
+        clientAccount,
+        rowOf(clientPlaced.id(), "INV_RECEIVE").getId(),
+        INVESTMENT_ROW_NOT_REVERSIBLE);
+    books.assertReversalRefused(
+        firmAccount,
+        rowOf(firmPlaced.id(), "FIRM_INV_RECEIVE").getId(),
+        INVESTMENT_ROW_NOT_REVERSIBLE);
+
+    books.withdraw(
+        funding,
+        Expected.cashbookAndClient("1000.00"),
+        clientAccount,
+        Expected.cashbookAndInvestment("-1000.00"),
+        clientPlaced.id(),
+        books.today());
+    // After the withdrawal the placement still cannot be reversed (no double credit)
+    books.assertReversalRefused(
+        funding, clientPlaced.depositTransactionId(), PLACEMENT_NOT_REVERSIBLE);
+    books.assertReversalRefused(
+        funding, rowOf(clientPlaced.id(), "INV_RETURN").getId(), INVESTMENT_ROW_NOT_REVERSIBLE);
+    books.assertReversalRefused(
+        clientAccount,
+        rowOf(clientPlaced.id(), "INV_WITHDRAW").getId(),
+        INVESTMENT_ROW_NOT_REVERSIBLE);
+    assertThat(books.clientLedger(funding, client)).isEqualByComparingTo("5000.00");
+  }
+
+  // --- reads --------------------------------------------------------------------------------
+
+  @Test
+  void list_acceptsTheFundingOrTheInvestmentAccount_andFiltersByBasis() {
+    var funding = books.freshAccount(false);
+    var firmAccount = books.freshInvestmentAccount(InvestmentBasis.FIRM_DISCRETION);
+    var clientAccount = books.freshInvestmentAccount(InvestmentBasis.CLIENT_INSTRUCTION);
+    var client = books.newClient("list");
+    books.deposit(funding, client, "2000.00");
+    var firm = books.requestPlacement(funding, firmAccount, null, "300.00");
+    var forClient = books.requestPlacement(funding, clientAccount, client, "400.00");
+
+    assertThat(list(funding, null))
+        .extracting(TrustInvestmentResponse::id)
+        .containsExactlyInAnyOrder(firm.id(), forClient.id());
+    assertThat(list(funding, InvestmentBasis.FIRM_DISCRETION))
+        .extracting(TrustInvestmentResponse::id)
+        .containsExactly(firm.id());
+    assertThat(list(clientAccount, null))
+        .singleElement()
+        .satisfies(
+            r -> {
+              assertThat(r.id()).isEqualTo(forClient.id());
+              assertThat(r.clientName()).isEqualTo(client.name());
+              assertThat(r.investmentAccountName()).startsWith("Trust Books Investment");
+            });
+    assertThat(list(firmAccount, null))
+        .singleElement()
+        .satisfies(
+            r -> {
+              assertThat(r.clientId()).isNull();
+              assertThat(r.clientName()).isNull();
+            });
+  }
+
+  // --- helpers ------------------------------------------------------------------------------
+
+  private PlaceInvestmentRequest request(
+      UUID investmentAccount, Client client, String principal, InvestmentBasis basis) {
+    return new PlaceInvestmentRequest(
+        investmentAccount,
+        client == null ? null : client.id(),
+        client == null ? null : client.matter(),
+        "Trust Books Bank",
+        "ACC-REFUSED",
+        new BigDecimal(principal),
+        new BigDecimal("0.0500"),
+        TrustBooksFixture.POSTING_DATE,
+        null,
+        null,
+        basis);
+  }
+
+  /** The placement is refused (400 {@code title} / {@code detail}); nothing moves on either. */
+  private void assertPlacementRefused(
+      UUID funding,
+      UUID investmentAccount,
+      PlaceInvestmentRequest request,
+      String title,
+      String detail) {
+    books.as(
+        ownerId,
+        () ->
+            harness.assertMoves(
+                funding,
+                Expected.none(),
+                investmentAccount,
+                Expected.none(),
+                () ->
+                    assertThatThrownBy(() -> investmentService.placeInvestment(funding, request))
+                        .isInstanceOfSatisfying(
+                            InvalidStateException.class,
+                            e -> {
+                              assertThat(e.getBody().getStatus()).isEqualTo(400);
+                              assertThat(e.getBody().getTitle()).isEqualTo(title);
+                              assertThat(e.getBody().getDetail()).isEqualTo(detail);
+                            })));
+  }
+
+  /** The withdrawal is refused (400 "Cannot withdraw investment"); nothing moves on either. */
+  private void assertWithdrawRefused(
+      UUID funding, UUID investmentAccount, UUID investmentId, LocalDate date, String detail) {
+    books.as(
+        ownerId,
+        () ->
+            harness.assertMoves(
+                funding,
+                Expected.none(),
+                investmentAccount,
+                Expected.none(),
+                () ->
+                    assertThatThrownBy(
+                            () ->
+                                investmentService.withdrawInvestment(
+                                    investmentId, new WithdrawInvestmentRequest(date)))
+                        .isInstanceOfSatisfying(
+                            InvalidStateException.class,
+                            e -> {
+                              assertThat(e.getBody().getStatus()).isEqualTo(400);
+                              assertThat(e.getBody().getTitle()).isEqualTo(WITHDRAW_TITLE);
+                              assertThat(e.getBody().getDetail()).isEqualTo(detail);
+                            })));
+  }
+
+  private List<TrustInvestmentResponse> list(UUID accountId, InvestmentBasis basis) {
+    @SuppressWarnings("unchecked")
+    List<TrustInvestmentResponse>[] page = new List[1];
+    books.as(
+        ownerId,
+        () ->
+            page[0] =
+                investmentService
+                    .listInvestments(accountId, basis, PageRequest.of(0, 50))
+                    .getContent());
+    return page[0];
+  }
+
+  private TrustInvestmentResponse get(UUID investmentId) {
+    var response = new TrustInvestmentResponse[1];
+    books.as(ownerId, () -> response[0] = investmentService.getInvestment(investmentId));
+    return response[0];
+  }
+
+  private TrustInvestment investment(UUID id) {
+    return books.read(() -> investmentRepository.findById(id).orElseThrow());
+  }
+
+  private TrustTransaction row(UUID id) {
+    return books.read(() -> transactionRepository.findById(id).orElseThrow());
+  }
+
+  /** The investment's one row of {@code type}. */
+  private TrustTransaction rowOf(UUID investmentId, String type) {
+    var id =
+        jdbc.queryForObject(
+            "SELECT id FROM \"%s\".trust_transactions WHERE investment_id = ? AND transaction_type = ?"
+                .formatted(books.schema()),
+            UUID.class,
+            investmentId,
+            type);
+    return row(id);
+  }
+
+  private String matterName(Client client) {
+    return jdbc.queryForObject(
+        "SELECT name FROM \"%s\".projects WHERE id = ?".formatted(books.schema()),
+        String.class,
+        client.matter());
+  }
+
+  private AuditEvent audit(String eventType, UUID investmentId) {
+    var events =
+        books.read(
             () ->
-                investmentService.placeInvestment(
-                    trustAccountId,
-                    new TrustInvestmentService.PlaceInvestmentRequest(
-                        customerId,
-                        matterId,
-                        "Capitec",
-                        "4445556667",
-                        new BigDecimal("1000.00"),
-                        new BigDecimal("0.0400"),
-                        LocalDate.now(KaziTime.ZONE).minusDays(30),
-                        LocalDate.now(KaziTime.ZONE).plusDays(365), // matures in a year
-                        "Long-term deposit",
-                        InvestmentBasis.FIRM_DISCRETION)));
-
-    // Query for investments maturing within 30 days
-    var maturing =
-        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-            .where(RequestScopes.MEMBER_ID, ownerMemberId)
-            .call(() -> investmentService.getMaturing(trustAccountId, 30));
-
-    assertThat(maturing).isNotEmpty();
-    assertThat(maturing).anyMatch(inv -> inv.id().equals(maturingSoon.id()));
-    assertThat(maturing)
-        .noneMatch(
-            inv -> inv.institution().equals("Capitec") && inv.accountNumber().equals("4445556667"));
-  }
-
-  // --- 446.5: Investment Edge Case Tests ---
-
-  @Test
-  void placeInvestment_withInsufficientBalance_fails() {
-    assertThatThrownBy(
-            () ->
-                ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-                    .where(RequestScopes.MEMBER_ID, ownerMemberId)
-                    .call(
-                        () ->
-                            investmentService.placeInvestment(
-                                trustAccountId,
-                                new TrustInvestmentService.PlaceInvestmentRequest(
-                                    customerId,
-                                    matterId,
-                                    "Investec",
-                                    "9998887776",
-                                    new BigDecimal("999999999.00"), // way more than balance
-                                    new BigDecimal("0.0800"),
-                                    LocalDate.of(2026, 3, 1),
-                                    LocalDate.of(2026, 9, 1),
-                                    null,
-                                    InvestmentBasis.FIRM_DISCRETION))))
-        .isInstanceOf(InvalidStateException.class)
-        .hasMessageContaining("Insufficient balance");
-  }
-
-  @Test
-  void withdrawInvestment_alreadyWithdrawn_fails() throws Exception {
-    // Place and withdraw an investment
-    var placed =
-        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-            .where(RequestScopes.MEMBER_ID, ownerMemberId)
-            .call(
-                () ->
-                    investmentService.placeInvestment(
-                        trustAccountId,
-                        new TrustInvestmentService.PlaceInvestmentRequest(
-                            customerId,
-                            matterId,
-                            "Absa",
-                            "3332221110",
-                            new BigDecimal("1000.00"),
-                            new BigDecimal("0.0500"),
-                            LocalDate.of(2026, 2, 1),
-                            null,
-                            null,
-                            InvestmentBasis.FIRM_DISCRETION)));
-
-    approvePlacement(placed.depositTransactionId());
-
-    // Withdraw first time — should succeed
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .where(RequestScopes.MEMBER_ID, ownerMemberId)
-        .run(() -> investmentService.withdrawInvestment(placed.id()));
-
-    // Withdraw again — should fail
-    assertThatThrownBy(
-            () ->
-                ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-                    .where(RequestScopes.MEMBER_ID, ownerMemberId)
-                    .call(() -> investmentService.withdrawInvestment(placed.id())))
-        .isInstanceOf(InvalidStateException.class)
-        .hasMessageContaining("ACTIVE or MATURED");
-  }
-
-  // --- 453.6: Investment basis field tests ---
-
-  @Test
-  void placeInvestment_withClientInstruction_persistsCorrectly() throws Exception {
-    var response =
-        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-            .where(RequestScopes.MEMBER_ID, ownerMemberId)
-            .call(
-                () ->
-                    investmentService.placeInvestment(
-                        trustAccountId,
-                        new TrustInvestmentService.PlaceInvestmentRequest(
-                            customerId,
-                            matterId,
-                            "Investec",
-                            "4440001111",
-                            new BigDecimal("3000.00"),
-                            new BigDecimal("0.0750"),
-                            LocalDate.of(2026, 3, 1),
-                            LocalDate.of(2026, 9, 1),
-                            "Client-instructed deposit",
-                            InvestmentBasis.CLIENT_INSTRUCTION)));
-
-    assertThat(response.investmentBasis()).isEqualTo(InvestmentBasis.CLIENT_INSTRUCTION);
-    assertThat(response.status()).isEqualTo("ACTIVE");
-  }
-
-  @Test
-  void placeInvestment_withFirmDiscretion_persistsCorrectly() throws Exception {
-    var response =
-        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-            .where(RequestScopes.MEMBER_ID, ownerMemberId)
-            .call(
-                () ->
-                    investmentService.placeInvestment(
-                        trustAccountId,
-                        new TrustInvestmentService.PlaceInvestmentRequest(
-                            customerId,
-                            matterId,
-                            "Capitec",
-                            "5550002222",
-                            new BigDecimal("2000.00"),
-                            new BigDecimal("0.0600"),
-                            LocalDate.of(2026, 3, 1),
-                            LocalDate.of(2026, 9, 1),
-                            "Firm-discretion deposit",
-                            InvestmentBasis.FIRM_DISCRETION)));
-
-    assertThat(response.investmentBasis()).isEqualTo(InvestmentBasis.FIRM_DISCRETION);
-    assertThat(response.status()).isEqualTo("ACTIVE");
-  }
-
-  @Test
-  void placeInvestment_defaultBasis_isFirmDiscretion() throws Exception {
-    // The entity defaults to FIRM_DISCRETION when the column DB default is applied.
-    // Since InvestmentBasis is @NotNull on request, the service always gets an explicit value.
-    // This test verifies that passing FIRM_DISCRETION explicitly works the same as the DB default.
-    var response =
-        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-            .where(RequestScopes.MEMBER_ID, ownerMemberId)
-            .call(
-                () ->
-                    investmentService.placeInvestment(
-                        trustAccountId,
-                        new TrustInvestmentService.PlaceInvestmentRequest(
-                            customerId,
-                            matterId,
-                            "Standard Bank",
-                            "6660003333",
-                            new BigDecimal("1500.00"),
-                            new BigDecimal("0.0500"),
-                            LocalDate.of(2026, 3, 1),
-                            null,
-                            null,
-                            InvestmentBasis.FIRM_DISCRETION)));
-
-    assertThat(response.investmentBasis()).isEqualTo(InvestmentBasis.FIRM_DISCRETION);
-  }
-
-  @Test
-  void getInvestment_returnsBasisInResponse() throws Exception {
-    var placed =
-        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-            .where(RequestScopes.MEMBER_ID, ownerMemberId)
-            .call(
-                () ->
-                    investmentService.placeInvestment(
-                        trustAccountId,
-                        new TrustInvestmentService.PlaceInvestmentRequest(
-                            customerId,
-                            matterId,
-                            "FNB",
-                            "7770004444",
-                            new BigDecimal("1000.00"),
-                            new BigDecimal("0.0450"),
-                            LocalDate.of(2026, 3, 1),
-                            LocalDate.of(2026, 6, 1),
-                            null,
-                            InvestmentBasis.CLIENT_INSTRUCTION)));
-
-    var fetched =
-        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-            .where(RequestScopes.MEMBER_ID, ownerMemberId)
-            .call(() -> investmentService.getInvestment(placed.id()));
-
-    assertThat(fetched.investmentBasis()).isEqualTo(InvestmentBasis.CLIENT_INSTRUCTION);
+                auditEventRepository
+                    .findByFilter(
+                        "trust_investment",
+                        investmentId,
+                        null,
+                        eventType,
+                        null,
+                        null,
+                        PageRequest.of(0, 10))
+                    .getContent());
+    assertThat(events).as(eventType).hasSize(1);
+    return events.getFirst();
   }
 }

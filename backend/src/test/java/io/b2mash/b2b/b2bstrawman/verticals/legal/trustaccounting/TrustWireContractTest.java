@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.fail;
 
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.TrustPositionResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.UnidentifiedDepositService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.StatementLinePostingService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService;
@@ -37,7 +38,8 @@ import tools.jackson.databind.json.JsonMapper;
  * position and the total-balance response (both carry the creditor breakdown); 647A the bank
  * statement, its line and the record-from-statement response; 647B the unidentified deposit; 647D
  * the two requests that resolve it (allocate, pay to the Fund); 648C the trust account response
- * (investment basis and derived section) and the create request.
+ * (investment basis and derived section) and the create request; 648A the investment response
+ * (investment account, matter, balance; nullable client) and its place and withdraw requests.
  *
  * <p>The actual is always written to {@code target/wire/trust-contract.actual.json}. Regenerate
  * ONLY deliberately with {@code -Dtrust.contract.update=true}; the PR that does so must say why in
@@ -64,7 +66,11 @@ class TrustWireContractTest {
           UnidentifiedDepositService.PayToFundRequest.class,
           // 648C: the account response (investmentBasis + derived section) and the create request
           TrustAccountService.TrustAccountResponse.class,
-          TrustAccountService.CreateTrustAccountRequest.class);
+          TrustAccountService.CreateTrustAccountRequest.class,
+          // 648A: an investment held in an investment account, and its place / withdraw requests
+          TrustInvestmentService.TrustInvestmentResponse.class,
+          TrustInvestmentService.PlaceInvestmentRequest.class,
+          TrustInvestmentService.WithdrawInvestmentRequest.class);
 
   private static final String UPDATE_FLAG = "trust.contract.update";
   private static final Path SNAPSHOT = Path.of("src/test/resources/wire/trust-contract.json");

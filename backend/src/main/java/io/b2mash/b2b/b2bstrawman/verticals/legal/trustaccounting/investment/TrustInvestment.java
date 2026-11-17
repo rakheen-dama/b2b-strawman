@@ -24,11 +24,24 @@ public class TrustInvestment {
   @GeneratedValue(strategy = GenerationType.UUID)
   private UUID id;
 
+  /** The funding trust banking account the money came from and returns to (Rule 54.14.7.3). */
   @Column(name = "trust_account_id", nullable = false)
   private UUID trustAccountId;
 
-  @Column(name = "customer_id", nullable = false)
+  /**
+   * The INVESTMENT trust account holding the money (648A, ADR-379); its basis equals the
+   * investment's (service check).
+   */
+  @Column(name = "investment_account_id", nullable = false)
+  private UUID investmentAccountId;
+
+  /** The client — section 86(4) only; null for a section 86(3) investment (V23 CHECK). */
+  @Column(name = "customer_id")
   private UUID customerId;
+
+  /** The matter whose money is invested — section 86(4) only (V23 CHECK). */
+  @Column(name = "project_id")
+  private UUID projectId;
 
   @Column(name = "institution", nullable = false, length = 200)
   private String institution;
@@ -60,7 +73,11 @@ public class TrustInvestment {
   @Column(name = "withdrawal_amount", precision = 15, scale = 2)
   private BigDecimal withdrawalAmount;
 
-  @Column(name = "deposit_transaction_id", nullable = false)
+  /**
+   * The placement row ({@code INV_PLACE} / {@code FIRM_INV_PLACE}). Null only inside the placing
+   * transaction: the investment is saved first so the placement row can carry its id (§16.3.7).
+   */
+  @Column(name = "deposit_transaction_id")
   private UUID depositTransactionId;
 
   @Column(name = "withdrawal_transaction_id")
@@ -83,18 +100,21 @@ public class TrustInvestment {
 
   public TrustInvestment(
       UUID trustAccountId,
+      UUID investmentAccountId,
       UUID customerId,
+      UUID projectId,
       String institution,
       String accountNumber,
       BigDecimal principal,
       BigDecimal interestRate,
       LocalDate depositDate,
       LocalDate maturityDate,
-      UUID depositTransactionId,
       String notes,
       InvestmentBasis investmentBasis) {
     this.trustAccountId = trustAccountId;
+    this.investmentAccountId = investmentAccountId;
     this.customerId = customerId;
+    this.projectId = projectId;
     this.institution = institution;
     this.accountNumber = accountNumber;
     this.principal = principal;
@@ -103,7 +123,6 @@ public class TrustInvestment {
     this.maturityDate = maturityDate;
     this.interestEarned = BigDecimal.ZERO;
     this.status = "ACTIVE";
-    this.depositTransactionId = depositTransactionId;
     this.notes = notes;
     this.investmentBasis = investmentBasis;
   }
@@ -128,6 +147,14 @@ public class TrustInvestment {
 
   public UUID getTrustAccountId() {
     return trustAccountId;
+  }
+
+  public UUID getInvestmentAccountId() {
+    return investmentAccountId;
+  }
+
+  public UUID getProjectId() {
+    return projectId;
   }
 
   public UUID getCustomerId() {
@@ -199,6 +226,11 @@ public class TrustInvestment {
   }
 
   // --- Setters (mutable fields only) ---
+
+  /** Set once, inside the placing transaction, after the placement row is saved (§16.3.7). */
+  public void setDepositTransactionId(UUID depositTransactionId) {
+    this.depositTransactionId = depositTransactionId;
+  }
 
   public void setInterestEarned(BigDecimal interestEarned) {
     this.interestEarned = interestEarned;

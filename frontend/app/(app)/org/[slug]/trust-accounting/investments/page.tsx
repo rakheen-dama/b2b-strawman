@@ -7,7 +7,12 @@ import { fetchTrustAccounts } from "@/app/(app)/org/[slug]/trust-accounting/acti
 import { fetchInvestments } from "@/app/(app)/org/[slug]/trust-accounting/investments/actions";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import type { TrustInvestment, TrustInvestmentStatus, InvestmentBasis } from "@/lib/types/trust";
+import type {
+  InvestmentBasis,
+  TrustAccount,
+  TrustInvestment,
+  TrustInvestmentStatus,
+} from "@/lib/types/trust";
 import { InvestmentPageClient } from "./InvestmentPageClient";
 import { InvestmentBasisFilter } from "./InvestmentBasisFilter";
 import { daysBetween, todayInSA } from "@b2mash/shared/date";
@@ -22,15 +27,26 @@ const STATUS_BADGE_VARIANT: Record<TrustInvestmentStatus, "neutral" | "success" 
 };
 
 /**
- * Status text in the register. CANCELLED (G89-F87: the placement payment was rejected, nothing was
- * invested) reads "Cancelled"; the other statuses keep their existing text.
+ * Status text in the register (no raw enum on screen). CANCELLED: the placement was rejected, so
+ * nothing was invested (G89-F87).
  */
 const STATUS_LABEL: Record<TrustInvestmentStatus, string> = {
-  ACTIVE: "ACTIVE",
-  MATURED: "MATURED",
-  WITHDRAWN: "WITHDRAWN",
+  ACTIVE: "Active",
+  MATURED: "Matured",
+  WITHDRAWN: "Withdrawn",
   CANCELLED: "Cancelled",
 };
+
+/**
+ * 648A: an ACTIVE investment holds nothing until its placement is approved (the placement is a
+ * pending trust payment; the money reaches the investment account on approval).
+ */
+function isAwaitingApproval(inv: TrustInvestment): boolean {
+  return inv.status === "ACTIVE" && Number(inv.balance) <= 0;
+}
+
+/** A section 86(3) investment is the firm's surplus trust money; it names no client. */
+const FIRM_CLIENT_LABEL = "Firm (section 86(3))";
 
 const BASIS_BADGE_VARIANT: Record<InvestmentBasis, "neutral" | "lead"> = {
   FIRM_DISCRETION: "neutral",
@@ -38,8 +54,8 @@ const BASIS_BADGE_VARIANT: Record<InvestmentBasis, "neutral" | "lead"> = {
 };
 
 const BASIS_LABEL: Record<InvestmentBasis, string> = {
-  FIRM_DISCRETION: "Firm",
-  CLIENT_INSTRUCTION: "Client Instruction",
+  FIRM_DISCRETION: "Section 86(3)",
+  CLIENT_INSTRUCTION: "Section 86(4)",
 };
 
 // -- Maturity helper ------------------------------------------------------
@@ -93,15 +109,20 @@ export default async function InvestmentsPage({
   const hasManageTrust =
     capData.isAdmin || capData.isOwner || capData.capabilities.includes("MANAGE_TRUST");
 
-  // Fetch primary trust account
+  // The funding (primary trust banking) account, and the investment accounts (648A)
   let accountId: string | null = null;
+  let investmentAccounts: TrustAccount[] = [];
   let accountFetchError = false;
   try {
     const accounts = await fetchTrustAccounts();
-    const primary = accounts.find((a) => a.isPrimary) ?? accounts[0];
+    const banking = accounts.filter((a) => a.accountType !== "INVESTMENT");
+    const primary = banking.find((a) => a.isPrimary) ?? banking[0];
     if (primary) {
       accountId = primary.id;
     }
+    investmentAccounts = accounts.filter(
+      (a) => a.accountType === "INVESTMENT" && a.status === "ACTIVE"
+    );
   } catch {
     accountFetchError = true;
   }
@@ -131,7 +152,12 @@ export default async function InvestmentsPage({
           </p>
         </div>
         {hasManageTrust && accountId && (
-          <InvestmentPageClient accountId={accountId} variant="place" currency={currency} />
+          <InvestmentPageClient
+            accountId={accountId}
+            variant="place"
+            investmentAccounts={investmentAccounts}
+            currency={currency}
+          />
         )}
       </div>
 
@@ -180,6 +206,9 @@ export default async function InvestmentsPage({
                         Basis
                       </th>
                       <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
+                        Investment account
+                      </th>
+                      <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
                         Institution
                       </th>
                       <th className="pr-4 pb-3 text-right font-medium text-slate-500 dark:text-slate-400">
@@ -199,6 +228,9 @@ export default async function InvestmentsPage({
                       </th>
                       <th className="pr-4 pb-3 text-right font-medium text-slate-500 dark:text-slate-400">
                         Interest Earned
+                      </th>
+                      <th className="pr-4 pb-3 text-right font-medium text-slate-500 dark:text-slate-400">
+                        Balance
                       </th>
                       <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
                         Status
@@ -223,7 +255,7 @@ export default async function InvestmentsPage({
                           data-testid={maturing ? "maturity-alert" : `investment-row-${inv.id}`}
                         >
                           <td className="py-3 pr-4 text-slate-950 dark:text-slate-50">
-                            {inv.clientName}
+                            {inv.clientName ?? FIRM_CLIENT_LABEL}
                           </td>
                           <td className="py-3 pr-4">
                             <Badge variant={BASIS_BADGE_VARIANT[inv.investmentBasis]}>
@@ -231,7 +263,13 @@ export default async function InvestmentsPage({
                             </Badge>
                           </td>
                           <td className="py-3 pr-4 text-slate-950 dark:text-slate-50">
+                            {inv.investmentAccountName}
+                          </td>
+                          <td className="py-3 pr-4 text-slate-950 dark:text-slate-50">
                             {inv.institution}
+                            <span className="block text-xs text-slate-500 dark:text-slate-400">
+                              {inv.accountNumber}
+                            </span>
                           </td>
                           <td className="py-3 pr-4 text-right font-mono text-slate-950 tabular-nums dark:text-slate-50">
                             {formatCurrency(inv.principal, currency)}
@@ -259,20 +297,26 @@ export default async function InvestmentsPage({
                           <td className="py-3 pr-4 text-right font-mono text-slate-950 tabular-nums dark:text-slate-50">
                             {formatCurrency(inv.interestEarned, currency)}
                           </td>
+                          <td className="py-3 pr-4 text-right font-mono text-slate-950 tabular-nums dark:text-slate-50">
+                            {formatCurrency(inv.balance, currency)}
+                          </td>
                           <td className="py-3 pr-4">
-                            <Badge variant={STATUS_BADGE_VARIANT[inv.status]}>
-                              {STATUS_LABEL[inv.status]}
-                            </Badge>
+                            {isAwaitingApproval(inv) ? (
+                              <Badge variant="warning">Awaiting approval</Badge>
+                            ) : (
+                              <Badge variant={STATUS_BADGE_VARIANT[inv.status]}>
+                                {STATUS_LABEL[inv.status]}
+                              </Badge>
+                            )}
                           </td>
                           {hasManageTrust && (
                             <td className="py-3">
-                              {inv.status === "ACTIVE" && (
+                              {inv.status === "ACTIVE" && !isAwaitingApproval(inv) && (
                                 <InvestmentPageClient
                                   accountId={accountId!}
                                   variant="actions"
                                   investmentId={inv.id}
-                                  investmentPrincipal={inv.principal}
-                                  investmentInterestEarned={inv.interestEarned}
+                                  investmentBalance={inv.balance}
                                   currency={currency}
                                 />
                               )}

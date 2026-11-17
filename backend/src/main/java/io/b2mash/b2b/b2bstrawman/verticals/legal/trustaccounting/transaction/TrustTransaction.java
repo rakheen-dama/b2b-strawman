@@ -109,8 +109,8 @@ public class TrustTransaction {
   private Instant postedAt;
 
   // Phase 92 / 646B (ADR-376). 647A added setCreditorAccountId (the first NON_CLIENT rows, recorded
-  // from a statement line) and copyLedgerTargetFrom (a contra carries its original's target);
-  // investmentId is set only by copyLedgerTargetFrom until 648A adds its own mutator. Both stay
+  // from a statement line) and copyLedgerTargetFrom (a contra carries its original's target); 648A
+  // added setInvestmentId (every investment row names its investment). creditorAccountId stays
   // null on CLIENT rows (chk_trust_txn_ledger_target).
 
   /**
@@ -380,6 +380,15 @@ public class TrustTransaction {
    */
   public void setCreditorAccountId(UUID creditorAccountId) {
     this.creditorAccountId = creditorAccountId;
+  }
+
+  /**
+   * Set once, before the row is first saved (648A placement, receive, withdraw and return rows):
+   * required on the {@code CLIENT_INVESTMENT} and {@code INTER_ACCOUNT} rows
+   * (chk_trust_txn_ledger_target), and set on the {@code CLIENT} legs too, for EQ-5.
+   */
+  public void setInvestmentId(UUID investmentId) {
+    this.investmentId = investmentId;
   }
 
   /** Set once, before the row is first saved (647B open; 647D resolution rows). */

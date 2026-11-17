@@ -24,8 +24,6 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRep
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountStatus;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTransactionApprovalEvent;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTransactionRecordedEvent;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestment;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.BankStatementLineRepository;
 import jakarta.validation.constraints.NotBlank;
 import java.math.BigDecimal;
@@ -41,7 +39,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -74,14 +71,37 @@ public class TrustTransactionService {
   private static final Set<TrustTransactionType> UNIDENTIFIED_RESOLUTIONS =
       EnumSet.of(TrustTransactionType.UNIDENT_ALLOC_OUT, TrustTransactionType.UNIDENT_FUND_PAY);
 
+  /**
+   * An investment's placement rows (648A, §16.3.7): their approval posts the receive leg on the
+   * investment account and their rejection cancels the investment, through {@link
+   * InvestmentPlacementHooks}.
+   */
+  private static final Set<TrustTransactionType> PLACEMENTS =
+      EnumSet.of(TrustTransactionType.INV_PLACE, TrustTransactionType.FIRM_INV_PLACE);
+
+  /**
+   * Every row an investment's placement, receipt, withdrawal or return writes (648A): none is ever
+   * reversed (registry {@code reversal = NONE}) — the investment is withdrawn instead.
+   */
+  private static final Set<TrustTransactionType> INVESTMENT_ROWS =
+      EnumSet.of(
+          TrustTransactionType.INV_PLACE,
+          TrustTransactionType.INV_RECEIVE,
+          TrustTransactionType.INV_WITHDRAW,
+          TrustTransactionType.INV_RETURN,
+          TrustTransactionType.FIRM_INV_PLACE,
+          TrustTransactionType.FIRM_INV_RECEIVE,
+          TrustTransactionType.FIRM_INV_WITHDRAW,
+          TrustTransactionType.FIRM_INV_RETURN);
+
   private final TrustTransactionRepository transactionRepository;
   private final TrustPostingService postingService;
   private final TrustLedgerQueryRepository ledgerQueries;
-  private final TrustInvestmentRepository trustInvestmentRepository;
   private final TrustAccountRepository trustAccountRepository;
   private final CustomerRepository customerRepository;
   private final TrustClientMatterRule clientMatterRule;
   private final UnidentifiedResolutionHooks unidentifiedResolutionHooks;
+  private final InvestmentPlacementHooks investmentPlacementHooks;
   private final ProjectRepository projectRepository;
   private final InvoiceRepository invoiceRepository;
   private final InvoiceLineRepository invoiceLineRepository;
@@ -97,11 +117,11 @@ public class TrustTransactionService {
       TrustTransactionRepository transactionRepository,
       TrustPostingService postingService,
       TrustLedgerQueryRepository ledgerQueries,
-      TrustInvestmentRepository trustInvestmentRepository,
       TrustAccountRepository trustAccountRepository,
       CustomerRepository customerRepository,
       TrustClientMatterRule clientMatterRule,
       UnidentifiedResolutionHooks unidentifiedResolutionHooks,
+      InvestmentPlacementHooks investmentPlacementHooks,
       ProjectRepository projectRepository,
       InvoiceRepository invoiceRepository,
       InvoiceLineRepository invoiceLineRepository,
@@ -115,11 +135,11 @@ public class TrustTransactionService {
     this.transactionRepository = transactionRepository;
     this.postingService = postingService;
     this.ledgerQueries = ledgerQueries;
-    this.trustInvestmentRepository = trustInvestmentRepository;
     this.trustAccountRepository = trustAccountRepository;
     this.customerRepository = customerRepository;
     this.clientMatterRule = clientMatterRule;
     this.unidentifiedResolutionHooks = unidentifiedResolutionHooks;
+    this.investmentPlacementHooks = investmentPlacementHooks;
     this.projectRepository = projectRepository;
     this.invoiceRepository = invoiceRepository;
     this.invoiceLineRepository = invoiceLineRepository;
@@ -349,63 +369,10 @@ public class TrustTransactionService {
 
   @Transactional
   public TrustTransactionResponse recordDeposit(UUID trustAccountId, RecordDepositRequest request) {
-    return postDeposit(trustAccountId, request, true);
+    return postDeposit(trustAccountId, request);
   }
 
-  /**
-   * Credits a withdrawn trust investment back to the client: the deposit carries the matter the
-   * placement payment ({@code placementTransactionId}) debited, so the money returns to the matter
-   * it left (G89-F28). The matter is derived, not chosen, so it is not re-validated; a placement
-   * recorded before G89-F28 has no matter and its withdrawal mirrors it client-level (D6: no
-   * backfill of legacy rows).
-   *
-   * <p>PR #1757 review: the withdrawal returns money the placement took, so the placement payment
-   * must be completed (APPROVED). While it awaits approval, once rejected, or once reversed, the
-   * client was never (or is no longer) debited and a withdrawal would create trust money.
-   */
-  @Transactional
-  public TrustTransactionResponse recordInvestmentWithdrawal(
-      UUID trustAccountId, UUID placementTransactionId, RecordDepositRequest request) {
-    // Checked under the placement row lock (the same lock reverseTransaction takes first), so a
-    // concurrent reversal of the placement either commits before this check or waits for it.
-    var placement =
-        placementTransactionId == null
-            ? null
-            : transactionRepository.findByIdForUpdate(placementTransactionId).orElse(null);
-    if (placement == null || !"APPROVED".equals(placement.getStatus())) {
-      throw new InvalidStateException(
-          "Cannot withdraw investment",
-          "The investment's placement payment must be approved before the investment can be"
-              + " withdrawn (placement payment status: "
-              + (placement == null ? "missing" : placement.getStatus())
-              + ")");
-    }
-    UUID placementMatterId = placement.getProjectId();
-    return postDeposit(
-        trustAccountId,
-        new RecordDepositRequest(
-            request.clientId(),
-            placementMatterId,
-            request.amount(),
-            request.reference(),
-            request.description(),
-            request.transactionDate()),
-        false);
-  }
-
-  /**
-   * Locks an investment's placement PAYMENT row — the first lock of both the withdrawal and a
-   * reversal of the placement (PR #1757 security review); the investment row is locked second.
-   */
-  @Transactional
-  public void lockInvestmentPlacement(UUID placementTransactionId) {
-    if (placementTransactionId != null) {
-      transactionRepository.findByIdForUpdate(placementTransactionId);
-    }
-  }
-
-  private TrustTransactionResponse postDeposit(
-      UUID trustAccountId, RecordDepositRequest request, boolean requireMatter) {
+  private TrustTransactionResponse postDeposit(UUID trustAccountId, RecordDepositRequest request) {
     moduleGuard.requireModule(MODULE_ID);
     validateAmount(request.amount());
     validateReference(request.reference());
@@ -425,9 +392,7 @@ public class TrustTransactionService {
             .orElseThrow(
                 () -> new ResourceNotFoundException(EntityNoun.CLIENT, request.clientId()));
 
-    if (requireMatter) {
-      clientMatterRule.requireClientMatter(customer, request.matterId());
-    }
+    clientMatterRule.requireClientMatter(customer, request.matterId());
 
     var memberId = RequestScopes.requireMemberId();
 
@@ -1104,6 +1069,11 @@ public class TrustTransactionService {
     if (UNIDENTIFIED_RESOLUTIONS.contains(type)) {
       unidentifiedResolutionHooks.onResolutionApproved(transaction);
     }
+    // 648A: an approved placement posts its receive leg on the investment account in the same
+    // transaction (lock order: this row, then the investment row).
+    if (PLACEMENTS.contains(type)) {
+      investmentPlacementHooks.onPlacementApproved(transaction);
+    }
 
     auditService.log(
         AuditEventBuilder.builder()
@@ -1220,38 +1190,11 @@ public class TrustTransactionService {
       unidentifiedResolutionHooks.onResolutionRejected(transaction);
     }
 
-    // G89-F87 (D41): an investment is created ACTIVE while its placement PAYMENT awaits approval.
-    // A rejected placement never moved the money, so the investment is CANCELLED (terminal) in the
-    // same transaction — otherwise it stays ACTIVE on the s86 register, in getMaturing and in the
-    // Section 35 data pack with nothing behind it. Lock order as withdrawInvestment and
-    // reverseTransaction: the placement row (locked above), then the investment row.
-    if ("PAYMENT".equals(transaction.getTransactionType())) {
-      trustInvestmentRepository
-          .findByPlacementTransactionIdForUpdate(transaction.getId())
-          .filter(
-              investment ->
-                  "ACTIVE".equals(investment.getStatus())
-                      || "MATURED".equals(investment.getStatus()))
-          .ifPresent(
-              investment -> {
-                investment.setStatus("CANCELLED");
-                trustInvestmentRepository.save(investment);
-                auditService.log(
-                    AuditEventBuilder.builder()
-                        .eventType("trust_investment.cancelled")
-                        .entityType("trust_investment")
-                        .entityId(investment.getId())
-                        .details(
-                            AuditDetails.matterScoped(
-                                transaction.getProjectId(),
-                                transaction.getCustomerId(),
-                                Map.of(
-                                    "placement_transaction_id",
-                                    transaction.getId().toString(),
-                                    "reason",
-                                    reason)))
-                        .build());
-              });
+    // G89-F87 (D41), 648A: an investment is saved ACTIVE while its placement awaits approval; a
+    // rejected placement never moved the money, so the investment is CANCELLED in the same
+    // transaction (lock order: this row, then the investment row).
+    if (PLACEMENTS.contains(TrustTransactionType.of(transaction.getTransactionType()))) {
+      investmentPlacementHooks.onPlacementRejected(transaction, reason);
     }
 
     auditService.log(
@@ -1331,7 +1274,11 @@ public class TrustTransactionService {
 
     requireReversible(original);
 
-    requireNotAPlacementPayment(original);
+    // 648A (replaces G89-F86): an investment's rows are never reversed — the investment is
+    // withdrawn instead. Refused on the type, under the row lock already held on the original.
+    if (INVESTMENT_ROWS.contains(type)) {
+      throw new InvalidStateException("Cannot reverse transaction", investmentRowRefusal(type));
+    }
 
     var memberId = RequestScopes.requireMemberId();
 
@@ -1416,7 +1363,12 @@ public class TrustTransactionService {
               .findByIdForUpdate(candidate.getId())
               .orElseThrow(
                   () -> new ResourceNotFoundException("TrustTransaction", candidate.getId()));
-      var rule = TrustTransactionType.of(original.getTransactionType()).reversal();
+      var originalType = TrustTransactionType.of(original.getTransactionType());
+      if (INVESTMENT_ROWS.contains(originalType)) {
+        throw new InvalidStateException(
+            "Cannot unmatch statement line", investmentRowRefusal(originalType));
+      }
+      var rule = originalType.reversal();
       if (rule != TrustTransactionType.Reversal.IMMEDIATE
           && rule != TrustTransactionType.Reversal.OWNER) {
         throw new InvalidStateException(
@@ -1428,7 +1380,6 @@ public class TrustTransactionService {
                 + ")");
       }
       requireReversible(original);
-      requireNotAPlacementPayment(original);
       originals.add(
           new Unmatched(original, resolveReversalDate(line.getTransactionDate(), original)));
     }
@@ -1446,28 +1397,16 @@ public class TrustTransactionService {
   }
 
   /**
-   * G89-F86 (D40): a PAYMENT that placed a trust investment is never reversed, whatever the
-   * investment's status — the investment is withdrawn instead. While the investment is ACTIVE or
-   * MATURED a reversal would credit the client while the s86 register (and getMaturing, the Section
-   * 35 data pack) still shows the money invested, and the investment could never be withdrawn; once
-   * it is WITHDRAWN the withdrawal already returned the money, so a reversal would credit the
-   * client twice (PR #1757 review). Applied by {@link #reverseTransaction} and {@link
-   * #reverseForUnmatch} (CodeRabbit, PR #1789). Lock order as in
-   * TrustInvestmentService.withdrawInvestment — the placement row (locked by the caller), then the
-   * investment row.
+   * 648A (replaces G89-F86): why an investment row cannot be reversed. A placement is undone by
+   * withdrawing the investment (its whole balance returns to the funding account); every other
+   * investment row is likewise final (registry {@code reversal = NONE}), so a withdrawn
+   * investment's placement can never be reversed into a second credit.
    */
-  private void requireNotAPlacementPayment(TrustTransaction original) {
-    var placedInvestment =
-        "PAYMENT".equals(original.getTransactionType())
-            ? trustInvestmentRepository.findByPlacementTransactionIdForUpdate(original.getId())
-            : Optional.<TrustInvestment>empty();
-    if (placedInvestment.isPresent()) {
-      throw new InvalidStateException(
-          "Cannot reverse transaction",
-          "This payment placed a trust investment ("
-              + placedInvestment.get().getStatus()
-              + "). Withdraw the investment instead of reversing its placement payment.");
-    }
+  private static String investmentRowRefusal(TrustTransactionType type) {
+    return PLACEMENTS.contains(type)
+        ? "This entry placed a trust investment. Withdraw the investment instead of reversing its"
+            + " placement."
+        : "Investment entries cannot be reversed. Withdraw the investment instead.";
   }
 
   /**

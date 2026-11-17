@@ -1376,6 +1376,16 @@ class ActivityMessageFormatterTest {
             d("transaction_type", "UNIDENT_FUND_PAY", "amount", "300.00"),
             "Alice rejected the payment of an unidentified deposit to the Fund of R300,00"),
         Arguments.of(
+            "trust_inv_place.approved",
+            "trust_transaction",
+            d("transaction_type", "INV_PLACE", "amount", "500.00"),
+            "Alice approved the placement in a section 86(4) investment of R500,00"),
+        Arguments.of(
+            "trust_firm_inv_place.rejected",
+            "trust_transaction",
+            d("transaction_type", "FIRM_INV_PLACE", "amount", "500.00"),
+            "Alice rejected the placement in a section 86(3) investment account of R500,00"),
+        Arguments.of(
             "bank_statement_line.unmatched",
             "bank_statement_line",
             d("classification", "FUND_SWEEP", "statement_id", "s-1"),
@@ -1801,13 +1811,16 @@ class ActivityMessageFormatterTest {
    */
   @Test
   void computedTrustApprovalForARegistryOnlyType_readsTheRegistryLabel() {
+    // 648A: the placements have their own nouns ("approved the placed in …" did not read).
     assertThat(
             message(
                 "trust_firm_inv_place.approved",
                 "trust_transaction",
                 d("transaction_type", "FIRM_INV_PLACE", "amount", "2500.00")))
         .isEqualTo(
-            "Alice approved the placed in section 86(3) investment account of R2" + NB + "500,00");
+            "Alice approved the placement in a section 86(3) investment account of R2"
+                + NB
+                + "500,00");
     // 647D: the unidentified-deposit resolutions have their own nouns (their registry labels do
     // not read as a noun after "approved the").
     assertThat(

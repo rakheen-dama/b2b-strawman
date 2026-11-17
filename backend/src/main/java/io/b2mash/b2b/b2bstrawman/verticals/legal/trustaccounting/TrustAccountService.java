@@ -10,6 +10,7 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.TrustCreditorLedgerService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.dto.MatterTrustBalanceResponse;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.lpff.LpffRate;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.lpff.LpffRateRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedgerQueryRepository;
@@ -41,6 +42,7 @@ public class TrustAccountService {
   private final TrustLedgerQueryRepository ledgerQueries;
   private final OrgSettingsService orgSettingsService;
   private final TrustCreditorLedgerService creditorLedgerService;
+  private final TrustInvestmentRepository investmentRepository;
 
   public TrustAccountService(
       TrustAccountRepository trustAccountRepository,
@@ -51,7 +53,8 @@ public class TrustAccountService {
       ProjectAccessService projectAccessService,
       TrustLedgerQueryRepository ledgerQueries,
       OrgSettingsService orgSettingsService,
-      TrustCreditorLedgerService creditorLedgerService) {
+      TrustCreditorLedgerService creditorLedgerService,
+      TrustInvestmentRepository investmentRepository) {
     this.trustAccountRepository = trustAccountRepository;
     this.lpffRateRepository = lpffRateRepository;
     this.moduleGuard = moduleGuard;
@@ -61,6 +64,7 @@ public class TrustAccountService {
     this.ledgerQueries = ledgerQueries;
     this.orgSettingsService = orgSettingsService;
     this.creditorLedgerService = creditorLedgerService;
+    this.investmentRepository = investmentRepository;
   }
 
   // --- DTO Records ---
@@ -263,9 +267,11 @@ public class TrustAccountService {
   public TrustAccountResponse updateTrustAccount(UUID id, UpdateTrustAccountRequest request) {
     moduleGuard.requireModule(MODULE_ID);
 
+    // Locked: a basis change serialises with a placement into the account (648A, which takes the
+    // same row lock on the investment account)
     var account =
         trustAccountRepository
-            .findById(id)
+            .findByIdForUpdate(id)
             .orElseThrow(() -> new ResourceNotFoundException("TrustAccount", id));
 
     if (TrustAccountStatus.CLOSED == account.getStatus()) {
@@ -273,10 +279,18 @@ public class TrustAccountService {
           "Cannot update trust account", "Account is closed and cannot be modified");
     }
 
-    // 648A must refuse a basis change while investments are held (648C found.md F-2)
     var priorBasis = account.getInvestmentBasis();
     if (request.investmentBasis() != null) {
       requireBasisMatchesType(account.getAccountType(), request.investmentBasis(), false);
+      // 648C found.md F-2: the basis classifies the investments the account holds (section 86(3)
+      // or 86(4)), so it cannot change while any is held
+      if (request.investmentBasis() != priorBasis
+          && investmentRepository.existsByInvestmentAccountIdAndStatusIn(
+              id, List.of("ACTIVE", "MATURED"))) {
+        throw new InvalidStateException(
+            "Cannot change investment basis",
+            "This investment account holds investments; withdraw them before changing its basis.");
+      }
       account.setInvestmentBasis(request.investmentBasis());
     }
 

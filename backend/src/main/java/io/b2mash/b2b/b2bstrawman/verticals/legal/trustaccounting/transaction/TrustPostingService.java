@@ -97,23 +97,29 @@ public class TrustPostingService {
   }
 
   /**
-   * A WITH_PAIR row (§16.2.1 — {@code UNIDENT_ALLOC_IN} from 647D): never recorded on its own;
-   * created APPROVED and posted now, in the transaction that posts {@code pair}, whose approvers it
-   * inherits ("take effect with their pair and inherit whatever control their pair had"). {@code
+   * A WITH_PAIR row (§16.2.1 — {@code UNIDENT_ALLOC_IN} from 647D; {@code INV_RECEIVE}, {@code
+   * INV_RETURN} and their {@code FIRM_INV_*} twins from 648A): never recorded on its own; posted
+   * now, in the transaction that posts {@code pair}, taking its pair's status and — when the pair
+   * was approved — its approvers ("take effect with their pair and inherit whatever control their
+   * pair had"). The pair is posted and {@code APPROVED} (a placement's receive leg) or {@code
+   * RECORDED} (a withdrawal's return leg — the withdrawal needs no approval, §16.3.7). {@code
    * MANDATORY}: a pair leg must never post outside its pair's transaction.
    */
   @Transactional(propagation = Propagation.MANDATORY)
   public TrustTransaction recordWithPair(TrustTransaction draft, TrustTransaction pair) {
     var type = TrustTransactionType.of(draft.getTransactionType());
     require(type.approval() == TrustTransactionType.Approval.WITH_PAIR, type, "recordWithPair");
-    if (pair.getPostedAt() == null || !"APPROVED".equals(pair.getStatus())) {
+    boolean approved = "APPROVED".equals(pair.getStatus());
+    if (pair.getPostedAt() == null || !(approved || "RECORDED".equals(pair.getStatus()))) {
       throw new IllegalStateException("recordWithPair: pair " + pair.getId() + " is not posted");
     }
-    draft.setStatus("APPROVED");
-    draft.setApprovedBy(pair.getApprovedBy());
-    draft.setApprovedAt(pair.getApprovedAt());
-    draft.setSecondApprovedBy(pair.getSecondApprovedBy());
-    draft.setSecondApprovedAt(pair.getSecondApprovedAt());
+    draft.setStatus(pair.getStatus());
+    if (approved) {
+      draft.setApprovedBy(pair.getApprovedBy());
+      draft.setApprovedAt(pair.getApprovedAt());
+      draft.setSecondApprovedBy(pair.getSecondApprovedBy());
+      draft.setSecondApprovedAt(pair.getSecondApprovedAt());
+    }
     draft.applyPosting(type.effectFor(draft.getAmount()), clock.instant());
     return transactionRepository.save(draft);
   }

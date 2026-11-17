@@ -217,6 +217,36 @@ public class AuditEventTypeRegistry {
                 "Payment of an unidentified deposit to the Fidelity Fund rejected",
                 AuditSeverity.INFO,
                 AuditEventGroup.FINANCIAL),
+            new AuditEventTypeMetadata(
+                "trust_inv_place.first_approved",
+                "Placement in a section 86(4) investment given first approval",
+                AuditSeverity.INFO,
+                AuditEventGroup.FINANCIAL),
+            new AuditEventTypeMetadata(
+                "trust_inv_place.approved",
+                "Placement in a section 86(4) investment approved",
+                AuditSeverity.INFO,
+                AuditEventGroup.FINANCIAL),
+            new AuditEventTypeMetadata(
+                "trust_inv_place.rejected",
+                "Placement in a section 86(4) investment rejected",
+                AuditSeverity.INFO,
+                AuditEventGroup.FINANCIAL),
+            new AuditEventTypeMetadata(
+                "trust_firm_inv_place.first_approved",
+                "Placement in a section 86(3) investment account given first approval",
+                AuditSeverity.INFO,
+                AuditEventGroup.FINANCIAL),
+            new AuditEventTypeMetadata(
+                "trust_firm_inv_place.approved",
+                "Placement in a section 86(3) investment account approved",
+                AuditSeverity.INFO,
+                AuditEventGroup.FINANCIAL),
+            new AuditEventTypeMetadata(
+                "trust_firm_inv_place.rejected",
+                "Placement in a section 86(3) investment account rejected",
+                AuditSeverity.INFO,
+                AuditEventGroup.FINANCIAL),
             // DATA — data protection
             new AuditEventTypeMetadata(
                 "dataprotection.dsar.*",

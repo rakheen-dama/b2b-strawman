@@ -82,7 +82,10 @@ import {
   recordRefund,
   recordTransfer,
 } from "@/app/(app)/org/[slug]/trust-accounting/transactions/actions";
-import { placeInvestment } from "@/app/(app)/org/[slug]/trust-accounting/investments/actions";
+import {
+  placeInvestment,
+  withdrawInvestment,
+} from "@/app/(app)/org/[slug]/trust-accounting/investments/actions";
 import { fetchClientLedgers } from "@/app/(app)/org/[slug]/trust-accounting/client-ledgers/actions";
 import { importXeroCustomers } from "@/lib/api/integrations";
 import {
@@ -95,6 +98,7 @@ const C = "11111111-1111-1111-1111-111111111111";
 const C2 = "22222222-2222-2222-2222-222222222222";
 const M = "33333333-3333-3333-3333-333333333333";
 const M2 = "44444444-4444-4444-4444-444444444444";
+const IA = "55555555-5555-4555-8555-555555555555";
 
 function lastPost(): [string, Record<string, unknown>] {
   return mockPost.mock.calls.at(-1) as [string, Record<string, unknown>];
@@ -383,6 +387,8 @@ describe("legal wire bodies (Phase 87 S3 Batch 4)", () => {
 
   it("placeInvestment sends clientId + matterId (never customerId/projectId) and a decimal rate", async () => {
     await placeInvestment("ta-1", {
+      investmentBasis: "CLIENT_INSTRUCTION",
+      investmentAccountId: IA,
       customerId: C,
       projectId: M,
       institution: "ABSA",
@@ -390,16 +396,50 @@ describe("legal wire bodies (Phase 87 S3 Batch 4)", () => {
       principal: 1000,
       interestRate: 7.5,
       depositDate: "2026-10-01",
-      investmentBasis: "CLIENT_INSTRUCTION",
     });
     const [path, body] = lastPost();
     expect(path).toBe("/api/trust-accounts/ta-1/investments");
+    // 648A: placed into an investment account of the basis
+    expect(body.investmentAccountId).toBe(IA);
     expect(body.clientId).toBe(C);
     // G89-F28: the invested money's matter
     expect(body.matterId).toBe(M);
     expect(body).not.toHaveProperty("customerId");
     expect(body).not.toHaveProperty("projectId");
     expect(body.interestRate).toBeCloseTo(0.075);
+  });
+
+  // 648A: a section 86(3) investment is the firm's surplus trust money — it names no client or
+  // matter (the backend refuses either with 400).
+  it("placeInvestment omits the client and matter for a section 86(3) investment", async () => {
+    await placeInvestment("ta-1", {
+      investmentBasis: "FIRM_DISCRETION",
+      investmentAccountId: IA,
+      customerId: "",
+      projectId: "",
+      institution: "Investec",
+      accountNumber: "FD-1",
+      principal: 5000,
+      interestRate: 8,
+      depositDate: "2026-10-01",
+      maturityDate: "",
+      notes: "",
+    });
+    const [, body] = lastPost();
+    expect(body.investmentAccountId).toBe(IA);
+    expect(body.investmentBasis).toBe("FIRM_DISCRETION");
+    expect(body).not.toHaveProperty("clientId");
+    expect(body).not.toHaveProperty("matterId");
+    expect(body).not.toHaveProperty("customerId");
+    expect(body).not.toHaveProperty("projectId");
+  });
+
+  // 648A: the withdrawal takes its date (@NotNull on the backend); the amount is derived.
+  it("withdrawInvestment POSTs the withdrawal date and no amount", async () => {
+    await withdrawInvestment("inv-1", { withdrawalDate: "2026-11-01" });
+    expect(mockPost).toHaveBeenCalledWith("/api/trust-investments/inv-1/withdraw", {
+      withdrawalDate: "2026-11-01",
+    });
   });
 
   it("importXeroCustomers POSTs /api/integrations/xero/import-clients", async () => {

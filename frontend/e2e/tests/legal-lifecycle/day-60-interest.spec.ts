@@ -4,10 +4,12 @@
  * Interest run on the trust account: create the run for the last 30 days and calculate the
  * per-client allocations at the Day 0 LPFF rate (6.5%, 50% LPFF share). A calculated run is never
  * approved or posted (Phase 92 645A, section 86(5)): neither Bob nor Alice is offered an Approve or
- * Post action, and the API refuses both with the section 86(5) message. Investments: Moroka R200,000 Standard
- * Bank fixed deposit (firm surplus funds, s86(3)) and QuickCollect R30,000 Nedbank call account
- * (client instruction, s86(4)). Second billing cycle (new Sipho time → fee note), timesheet report
- * and profitability report.
+ * Post action, and the API refuses both with the section 86(5) message. Investments (Phase 92 648A,
+ * ADR-379 — the authorised direction of 60.12–60.20): each is placed from the trust banking account
+ * into an investment account of its basis and Bob approves the placement — a R200,000 Standard Bank
+ * fixed deposit of the firm's surplus trust money (s86(3), names no client) and QuickCollect's
+ * R30,000 Nedbank call account on its instruction (s86(4); the client's total is unchanged). Second
+ * billing cycle (new Sipho time → fee note), timesheet report and profitability report.
  *
  * Records come from the lifecycle run (helpers/legal-lifecycle.ts): Days 0–45 must have run on the
  * same stack (trust account + LPFF rate, deposits, Moroka's fee transfer, rated time).
@@ -20,8 +22,14 @@
 import { test, expect, type Page } from "@playwright/test";
 import { loginAs } from "../../fixtures/auth";
 import { captureScreenshot } from "../../helpers/screenshot";
-import { apiStatus } from "../../helpers/api";
-import { BASE, clickThrough, isoDate, openMatter } from "../../helpers/legal-depth-ii";
+import { apiOk, apiStatus } from "../../helpers/api";
+import {
+  BASE,
+  clickThrough,
+  escapeRegExp,
+  isoDate,
+  openMatter,
+} from "../../helpers/legal-depth-ii";
 import {
   clientId,
   feeNoteTotalsRow,
@@ -30,6 +38,7 @@ import {
   matterId,
   morokaClient,
   openClientFeeNotes,
+  openTrustTransactions,
   qcClient,
   randPattern,
   recordValue,
@@ -45,19 +54,78 @@ async function openInvestments(page: Page): Promise<void> {
   await expect(page.getByRole("heading", { level: 1, name: "Investments" })).toBeVisible();
 }
 
-/** Places a trust investment for a client on its matter (the dialog takes raw UUIDs). */
+type Basis = "s86(3)" | "s86(4)";
+
+const BASIS_RADIO: Record<Basis, string> = {
+  "s86(3)": "Section 86(3) — the firm invests surplus trust money",
+  "s86(4)": "Section 86(4) — invested on a client's instruction",
+};
+
+/** The investment accounts the placements go into (648A: one per basis, added from the dialog). */
+const INVESTMENT_ACCOUNTS = {
+  "s86(3)": {
+    name: "Standard Bank Section 86(3) Investments",
+    bank: "Standard Bank",
+    branchCode: "051001",
+    accountNumber: "0863000001",
+  },
+  "s86(4)": {
+    name: "Nedbank Section 86(4) Investments",
+    bank: "Nedbank",
+    branchCode: "198765",
+    accountNumber: "0864000001",
+  },
+} as const;
+
+const S863_DEPOSIT = "FD-0987654321";
+const S864_DEPOSIT = "CALL-1122334455";
+
+/**
+ * Picks the basis's investment account in the Place Investment dialog, adding it first ("Add
+ * investment account" opens the account dialog preset to the basis) when the firm has none.
+ */
+async function chooseInvestmentAccount(page: Page, basis: Basis): Promise<void> {
+  const account = INVESTMENT_ACCOUNTS[basis];
+  const dialog = page.getByTestId("place-investment-dialog");
+  await dialog.getByTestId("investment-account-select").click();
+  await expect(page.getByRole("listbox")).toBeVisible();
+  const option = page.getByRole("option", { name: new RegExp(`^${escapeRegExp(account.name)} `) });
+  if ((await option.count()) > 0) {
+    await option.first().click();
+    return;
+  }
+  await page.keyboard.press("Escape");
+  await dialog.getByRole("button", { name: "Add investment account" }).click();
+  const add = page.getByRole("dialog", { name: "Add Investment Account" });
+  await expect(add).toBeVisible();
+  await expect(add.getByTestId("trust-account-type-select")).toHaveText("Investment");
+  await expect(add.getByTestId("trust-account-basis-select")).toContainText(
+    basis === "s86(3)" ? "Section 86(3)" : "Section 86(4)"
+  );
+  await add.getByLabel("Account Name").fill(account.name);
+  await add.getByLabel("Bank Name").fill(account.bank);
+  await add.getByLabel("Branch Code").fill(account.branchCode);
+  await add.getByLabel("Account Number").fill(account.accountNumber);
+  await add.getByRole("button", { name: "Create Account" }).click();
+  await expect(add).toBeHidden({ timeout: 15_000 });
+  await expect(dialog.getByTestId("investment-account-select")).toContainText(account.name);
+}
+
+/**
+ * Places a trust investment from the trust banking account into the basis's investment account.
+ * A section 86(4) investment names the client and the matter whose money it is (the dialog takes
+ * raw UUIDs); a section 86(3) one names neither — the dialog does not ask.
+ */
 async function placeInvestment(
   page: Page,
   opts: {
-    clientId: string;
-    /** The client's matter whose trust money is invested (required since G89-F28). */
-    matterId: string;
+    basis: Basis;
+    client?: { clientId: string; matterId: string };
     institution: string;
     accountNumber: string;
     principal: string;
     ratePercent: string;
     maturityDate?: string;
-    basis: "Firm (surplus trust funds)" | "Client instruction";
     notes: string;
   }
 ): Promise<void> {
@@ -65,8 +133,18 @@ async function placeInvestment(
   await page.getByRole("button", { name: "Place Investment" }).click();
   const dialog = page.getByTestId("place-investment-dialog");
   await expect(dialog.getByRole("heading", { name: "Place Investment" })).toBeVisible();
-  await dialog.getByLabel("Client ID").fill(opts.clientId);
-  await dialog.getByLabel("Matter ID").fill(opts.matterId);
+  await dialog.getByRole("radio", { name: BASIS_RADIO[opts.basis] }).check();
+  await expect(dialog.getByTestId("investment-basis-help")).toHaveText(
+    opts.basis === "s86(4)" ? /5%|statutory/i : /Fidelity Fund/
+  );
+  await chooseInvestmentAccount(page, opts.basis);
+  if (opts.basis === "s86(4)") {
+    await dialog.getByLabel("Client ID").fill(opts.client!.clientId);
+    await dialog.getByLabel("Matter ID").fill(opts.client!.matterId);
+  } else {
+    await expect(dialog.getByLabel("Client ID")).toHaveCount(0);
+    await expect(dialog.getByLabel("Matter ID")).toHaveCount(0);
+  }
   await dialog.getByLabel("Institution").fill(opts.institution);
   await dialog.getByLabel("Account Number").fill(opts.accountNumber);
   await dialog.getByLabel("Principal").fill(opts.principal);
@@ -75,15 +153,73 @@ async function placeInvestment(
     await dialog.getByLabel("Maturity Date (optional)").fill(opts.maturityDate);
   }
   await dialog.getByLabel("Notes (optional)").fill(opts.notes);
-  await dialog.getByRole("radio", { name: opts.basis }).check();
-  await expect(dialog.getByTestId("investment-basis-help")).toHaveText(
-    opts.basis === "Client instruction" ? /5%|statutory/i : /arrangement/i
-  );
-  // Pressed from the keyboard: on the suite's 1280×720 viewport the dialog is taller than the
-  // screen and does not scroll, so its "Place Investment" button sits off-screen (follow-up:
-  // components/ui/dialog.tsx:56-70 has no max-height / overflow-y-auto)
   await dialog.getByRole("button", { name: "Place Investment" }).press("Enter");
   await expect(dialog).toBeHidden({ timeout: 15_000 });
+}
+
+interface InvestmentWire {
+  id: string;
+  accountNumber: string;
+  clientId: string | null;
+  matterId: string | null;
+  balance: number;
+  status: string;
+  depositTransactionId: string | null;
+}
+
+/** The primary trust banking account's id (the investments' funding account). */
+async function fundingAccountId(): Promise<string> {
+  const accounts =
+    await apiOk<{ id: string; accountType: string; isPrimary: boolean }[]>("/api/trust-accounts");
+  const banking = accounts.filter((a) => a.accountType !== "INVESTMENT");
+  const funding = banking.find((a) => a.isPrimary) ?? banking[0];
+  expect(funding, "the trust banking account").toBeDefined();
+  return funding!.id;
+}
+
+/** The investment placed under the deposit `accountNumber` (read through the API). */
+async function investmentNumbered(accountNumber: string): Promise<InvestmentWire> {
+  const funding = await fundingAccountId();
+  const page = await apiOk<{ content: InvestmentWire[] }>(
+    `/api/trust-accounts/${funding}/investments?size=100`
+  );
+  const matches = page.content.filter((i) => i.accountNumber === accountNumber);
+  expect(matches, `one investment numbered ${accountNumber}`).toHaveLength(1);
+  return matches[0];
+}
+
+/** The client's general (client ledger) balance on the funding account. */
+async function generalBalance(client: string): Promise<number> {
+  const funding = await fundingAccountId();
+  const card = await apiOk<{ balance: number }>(
+    `/api/trust-accounts/${funding}/client-ledgers/${client}`
+  );
+  return Number(card.balance);
+}
+
+/** The money held for the matter: its general balance plus what is invested for it. */
+async function matterTotal(matter: string): Promise<number> {
+  const total = await apiOk<{ balance: number }>(`/api/matters/${matter}/trust-balance`);
+  return Number(total.balance);
+}
+
+/** Bob approves an investment's pending placement on Trust → Transactions. */
+async function approvePlacement(page: Page, investment: InvestmentWire): Promise<void> {
+  expect(investment.depositTransactionId, "the placement row").not.toBeNull();
+  const txId = investment.depositTransactionId!;
+  await openTrustTransactions(page);
+  const row = page.getByTestId(`transaction-row-${txId}`);
+  await expect(row).toContainText("AWAITING APPROVAL", { timeout: 15_000 });
+  // The approver sees where the money goes
+  await expect(page.getByTestId(`transaction-description-${txId}`)).toContainText(
+    /Placed in section 86\([34]\) investment at/
+  );
+  await page
+    .getByTestId(`approval-actions-${txId}`)
+    .getByRole("button", { name: "Approve" })
+    .click();
+  await expect(row).toContainText("APPROVED", { timeout: 15_000 });
+  await expect(row).not.toContainText("AWAITING");
 }
 
 test.describe.serial("Day 60 — Interest Run & Investments", () => {
@@ -227,7 +363,7 @@ test.describe.serial("Day 60 — Interest Run & Investments", () => {
     await expect(run.getByTestId("run-posted-at")).toHaveText("—");
   });
 
-  // ── 60.11-60.17: Investment — Moroka R200,000 Fixed Deposit ───────
+  // ── 60.11-60.17: Investment — R200,000 Fixed Deposit (s86(3), the firm's surplus) ───
   test("Alice: Navigate to Investment Register", async ({ page }) => {
     await loginAs(page, "alice");
     await openInvestments(page);
@@ -235,57 +371,113 @@ test.describe.serial("Day 60 — Interest Run & Investments", () => {
     await expect(page.getByTestId("empty-investments")).toBeVisible();
   });
 
-  test("Alice: Place investment — Moroka R200,000 Standard Bank Fixed Deposit (s86(3))", async ({
+  test("Alice: Place investment — R200,000 Standard Bank Fixed Deposit (s86(3), names no client)", async ({
     page,
   }) => {
     await loginAs(page, "alice");
     await placeInvestment(page, {
-      clientId: clientId("moroka"),
-      matterId: matterId("moroka"),
+      basis: "s86(3)",
       institution: "Standard Bank",
-      accountNumber: "FD-0987654321",
+      accountNumber: S863_DEPOSIT,
       principal: "200000",
       ratePercent: "8.5",
       maturityDate: isoDate(90),
-      basis: "Firm (surplus trust funds)",
-      notes: "90-day fixed deposit — surplus estate funds",
+      notes: "90-day fixed deposit — the firm's surplus trust money",
     });
-    const row = page.locator("main tbody tr").filter({ hasText: morokaClient() });
+    const row = page.locator("main tbody tr").filter({ hasText: S863_DEPOSIT });
     await expect(row).toHaveCount(1, { timeout: 15_000 });
-    await expect(row).toContainText("Firm");
+    await expect(row).toContainText("Firm (section 86(3))");
+    await expect(row).not.toContainText(morokaClient());
+    await expect(row).toContainText("Section 86(3)");
+    await expect(row).toContainText(INVESTMENT_ACCOUNTS["s86(3)"].name);
     await expect(row).toContainText("Standard Bank");
     await expect(row).toContainText(randPattern("200 000,00"));
     await expect(row).toContainText("8.50%");
     await expect(row).toContainText("Arrangement");
-    await expect(row).toContainText("ACTIVE");
+    // Nothing moves until the placement is approved
+    await expect(row).toContainText("Awaiting approval");
+
+    const investment = await investmentNumbered(S863_DEPOSIT);
+    expect(investment.clientId).toBeNull();
+    expect(investment.matterId).toBeNull();
+    expect(Number(investment.balance)).toBe(0);
 
     // Screenshot: investment placed
     await captureScreenshot(page, "day-60-investment-s86-placed");
     await captureScreenshot(page, "investment-s86-selection", { curated: true });
   });
 
-  // ── 60.18-60.20: Investment — QuickCollect R30,000 Call Account ────
+  test("Bob: Approve the s86(3) placement — R200,000 reaches the investment account; no client's balance moves", async ({
+    page,
+  }) => {
+    await loginAs(page, "bob");
+    const investment = await investmentNumbered(S863_DEPOSIT);
+    const morokaBefore = await generalBalance(clientId("moroka"));
+    await approvePlacement(page, investment);
+
+    const placed = await investmentNumbered(S863_DEPOSIT);
+    expect(placed.status).toBe("ACTIVE");
+    expect(Number(placed.balance)).toBe(200000);
+    expect(await generalBalance(clientId("moroka"))).toBe(morokaBefore);
+
+    await openInvestments(page);
+    const row = page.locator("main tbody tr").filter({ hasText: S863_DEPOSIT });
+    await expect(row).toContainText("Active", { timeout: 15_000 });
+    await expect(row).not.toContainText("Awaiting approval");
+  });
+
+  // ── 60.18-60.20: Investment — QuickCollect R30,000 Call Account (s86(4)) ────
   test("Alice: Place investment — QuickCollect R30,000 Nedbank Call Account (s86(4))", async ({
     page,
   }) => {
     await loginAs(page, "alice");
     await placeInvestment(page, {
-      clientId: clientId("qc"),
-      matterId: matterId("qc"),
+      basis: "s86(4)",
+      client: { clientId: clientId("qc"), matterId: matterId("qc") },
       institution: "Nedbank",
-      accountNumber: "CALL-1122334455",
+      accountNumber: S864_DEPOSIT,
       principal: "30000",
       ratePercent: "7.25",
-      basis: "Client instruction",
       notes: "Call account on QuickCollect's written instruction",
     });
     const row = page.locator("main tbody tr").filter({ hasText: qcClient() });
     await expect(row).toHaveCount(1, { timeout: 15_000 });
-    await expect(row).toContainText("Client Instruction");
+    await expect(row).toContainText("Section 86(4)");
+    await expect(row).toContainText(INVESTMENT_ACCOUNTS["s86(4)"].name);
     await expect(row).toContainText("Nedbank");
     await expect(row).toContainText(randPattern("30 000,00"));
     await expect(row).toContainText("5% (statutory)");
     await expect(row).toContainText("Call deposit");
+    await expect(row).toContainText("Awaiting approval");
+
+    // 60.20: the register tells the two bases apart
+    const firmRow = page.locator("main tbody tr").filter({ hasText: S863_DEPOSIT });
+    await expect(firmRow).toContainText("Section 86(3)");
+  });
+
+  test("Bob: Approve the s86(4) placement — QuickCollect's total is unchanged, R30,000 now invested", async ({
+    page,
+  }) => {
+    await loginAs(page, "bob");
+    const investment = await investmentNumbered(S864_DEPOSIT);
+    expect(investment.clientId).toBe(clientId("qc"));
+    expect(investment.matterId).toBe(matterId("qc"));
+    const totalBefore = await matterTotal(matterId("qc"));
+    const generalBefore = await generalBalance(clientId("qc"));
+
+    await approvePlacement(page, investment);
+
+    // The money moved from QuickCollect's general balance to its section 86(4) investment: the
+    // client's total trust money is unchanged
+    expect(await matterTotal(matterId("qc"))).toBe(totalBefore);
+    expect(await generalBalance(clientId("qc"))).toBe(generalBefore - 30000);
+    const placed = await investmentNumbered(S864_DEPOSIT);
+    expect(Number(placed.balance)).toBe(30000);
+
+    await openInvestments(page);
+    const row = page.locator("main tbody tr").filter({ hasText: qcClient() });
+    await expect(row).toContainText("Active", { timeout: 15_000 });
+    await expect(row.getByRole("button", { name: "Withdraw" })).toBeVisible();
   });
 
   // ── 60.21-60.24: Second billing cycle fee notes ───────────────────

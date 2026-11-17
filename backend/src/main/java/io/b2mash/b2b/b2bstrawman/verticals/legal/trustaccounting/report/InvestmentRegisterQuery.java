@@ -14,6 +14,8 @@ import java.math.RoundingMode;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +24,9 @@ import org.springframework.stereotype.Component;
 /** Investment list with status, principal, interest earned for a trust account. */
 @Component
 public class InvestmentRegisterQuery implements ReportQuery {
+
+  /** The client column of a section 86(3) investment — the firm's own placement (648A). */
+  static final String FIRM_CLIENT_LABEL = "Firm (section 86(3))";
 
   private final TrustInvestmentRepository investmentRepository;
   private final CustomerRepository customerRepository;
@@ -81,13 +86,12 @@ public class InvestmentRegisterQuery implements ReportQuery {
       }
       investments =
           investmentRepository
-              .findByTrustAccountIdAndInvestmentBasisOrderByDepositDateDesc(
-                  trustAccountId, basis, PageRequest.of(0, 10_000))
+              .findByFundingOrInvestmentAccount(trustAccountId, basis, PageRequest.of(0, 10_000))
               .getContent();
     } else {
       investments =
           investmentRepository
-              .findByTrustAccountIdOrderByDepositDateDesc(trustAccountId, PageRequest.of(0, 10_000))
+              .findByFundingOrInvestmentAccount(trustAccountId, null, PageRequest.of(0, 10_000))
               .getContent();
     }
 
@@ -120,19 +124,27 @@ public class InvestmentRegisterQuery implements ReportQuery {
                 .setScale(0, RoundingMode.HALF_UP)
             + "% (statutory)";
 
-    // Batch-load customer names
+    // Batch-load customer names (a section 86(3) investment names no client — 648A)
     var customerIds =
-        investments.stream().map(TrustInvestment::getCustomerId).collect(Collectors.toSet());
+        investments.stream()
+            .map(TrustInvestment::getCustomerId)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toSet());
     var customerNames =
-        customerRepository.findByIdIn(customerIds).stream()
-            .collect(Collectors.toMap(c -> c.getId(), c -> c.getName()));
+        customerIds.isEmpty()
+            ? Map.<UUID, String>of()
+            : customerRepository.findByIdIn(customerIds).stream()
+                .collect(Collectors.toMap(c -> c.getId(), c -> c.getName()));
 
     return investments.stream()
         .map(
             inv -> {
               var row = new LinkedHashMap<String, Object>();
               row.put(
-                  "clientName", customerNames.getOrDefault(inv.getCustomerId(), "Unknown Client"));
+                  "clientName",
+                  inv.getCustomerId() == null
+                      ? FIRM_CLIENT_LABEL
+                      : customerNames.getOrDefault(inv.getCustomerId(), "Unknown Client"));
               row.put("institution", inv.getInstitution());
               row.put("accountNumber", inv.getAccountNumber());
               row.put("principal", inv.getPrincipal());

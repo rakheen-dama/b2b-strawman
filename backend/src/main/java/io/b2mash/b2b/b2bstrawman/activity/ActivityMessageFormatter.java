@@ -801,6 +801,9 @@ public class ActivityMessageFormatter {
       // "approved the …".
       case "UNIDENT_ALLOC_OUT" -> "allocation of an unidentified deposit";
       case "UNIDENT_FUND_PAY" -> "payment of an unidentified deposit to the Fund";
+      // 648A: "placed in section 86(4) investment" does not read as a noun either.
+      case "INV_PLACE" -> "placement in a section 86(4) investment";
+      case "FIRM_INV_PLACE" -> "placement in a section 86(3) investment account";
       default ->
           TrustTransactionType.find(code)
               .map(type -> decapitalise(type.label()))

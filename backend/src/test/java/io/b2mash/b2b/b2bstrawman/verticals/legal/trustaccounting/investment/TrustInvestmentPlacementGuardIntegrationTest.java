@@ -18,6 +18,8 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestTrustInvestmentAccountHelper;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccount;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountType;
@@ -44,12 +46,13 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.support.TransactionTemplate;
 
 /**
- * PR #1757 review (CodeRabbit): an investment withdrawal credits the client (on the placement's
- * matter) with the money the placement PAYMENT debited — so it is only allowed once that payment
- * has actually been completed (APPROVED). While the placement awaits approval, after it is
- * rejected, or after it has been reversed, nothing was debited and a withdrawal would create trust
- * money. Conversely, once the investment is withdrawn, reversing its placement payment would credit
- * the client a second time, so that reversal is refused.
+ * PR #1757 review (CodeRabbit), 648A: an investment withdrawal returns, on the placement's matter,
+ * the money the placement ({@code INV_PLACE}) moved to the investment account — so it is only
+ * allowed once that placement has been approved. While the placement awaits approval, or after it
+ * is rejected (which cancels the investment, G89-F87), nothing was invested and a withdrawal would
+ * create trust money. Conversely the placement is never reversed — before or after the withdrawal —
+ * it is refused on its type (registry {@code reversal = NONE}, replacing G89-F86's investment
+ * lookup), so the client can never be credited twice.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -80,6 +83,7 @@ class TrustInvestmentPlacementGuardIntegrationTest {
   private String tenantSchema;
   private UUID ownerId;
   private UUID trustAccountId;
+  private UUID investmentAccountId;
   private LocalDate today;
   private int counter = 0;
 
@@ -119,6 +123,13 @@ class TrustInvestmentPlacementGuardIntegrationTest {
                                   "PR #1757 investment tests"))
                           .getId();
                     }));
+    investmentAccountId =
+        TestTrustInvestmentAccountHelper.openInvestmentAccount(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUB),
+            "Placement Guard s86(4)",
+            "6200-000-TIPG-I",
+            InvestmentBasis.CLIENT_INSTRUCTION);
   }
 
   @Test
@@ -132,7 +143,8 @@ class TrustInvestmentPlacementGuardIntegrationTest {
         .andExpect(
             jsonPath("$.detail")
                 .value(
-                    "The investment's placement payment must be approved before the investment can be withdrawn (placement payment status: AWAITING_APPROVAL)"));
+                    "The investment's placement must be approved before the investment can be"
+                        + " withdrawn (the placement is awaiting approval)."));
 
     assertThat(clientBalance(placed.client())).isEqualByComparingTo("5000.00");
     assertThat(matterBalance(placed.matter())).isEqualByComparingTo("5000.00");
@@ -154,8 +166,8 @@ class TrustInvestmentPlacementGuardIntegrationTest {
     withdraw(placed.investmentId())
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.status").value(400))
-        .andExpect(jsonPath("$.title").value("Invalid investment state"))
-        .andExpect(jsonPath("$.detail").value("Investment must be ACTIVE or MATURED to withdraw"));
+        .andExpect(jsonPath("$.title").value("Cannot withdraw investment"))
+        .andExpect(jsonPath("$.detail").value("Only an active investment can be withdrawn."));
     assertThat(clientBalance(placed.client())).isEqualByComparingTo("5000.00");
   }
 
@@ -163,7 +175,10 @@ class TrustInvestmentPlacementGuardIntegrationTest {
   void withdraw_afterPlacementApproved_creditsThePlacementMatter() throws Exception {
     Placed placed = place("Approved Placement");
     approve(placed.placementId());
-    assertThat(matterBalance(placed.matter())).isEqualByComparingTo("4000.00");
+    // 648A: the placement moves R1 000 from the matter's general cell to its section 86(4)
+    // investment — the money held for the matter is unchanged.
+    assertThat(matterCell(placed)).isEqualByComparingTo("4000.00");
+    assertThat(matterBalance(placed.matter())).isEqualByComparingTo("5000.00");
 
     String body =
         withdraw(placed.investmentId())
@@ -173,6 +188,7 @@ class TrustInvestmentPlacementGuardIntegrationTest {
             .getContentAsString();
     assertThat((String) JsonPath.read(body, "$.status")).isEqualTo("WITHDRAWN");
     assertThat(clientBalance(placed.client())).isEqualByComparingTo("5000.00");
+    assertThat(matterCell(placed)).isEqualByComparingTo("5000.00");
     assertThat(matterBalance(placed.matter())).isEqualByComparingTo("5000.00");
   }
 
@@ -194,17 +210,17 @@ class TrustInvestmentPlacementGuardIntegrationTest {
         .andExpect(
             jsonPath("$.detail")
                 .value(
-                    "This payment placed a trust investment (WITHDRAWN). Withdraw the investment instead of reversing its placement payment."));
+                    "This entry placed a trust investment. Withdraw the investment instead of"
+                        + " reversing its placement."));
 
     assertThat(clientBalance(placed.client())).isEqualByComparingTo("5000.00");
     assertThat(matterBalance(placed.matter())).isEqualByComparingTo("5000.00");
   }
 
   /**
-   * G89-F86 (MEDIUM, D40): reversing the placement of a still-ACTIVE investment credited the client
-   * back while the investment stayed ACTIVE on the s86 register with no money behind it (and could
-   * never be withdrawn). A placement payment with an investment is never reversed — the investment
-   * is withdrawn instead.
+   * G89-F86 (MEDIUM, D40), 648A: reversing the placement of a still-ACTIVE investment would credit
+   * the client back while the investment stays ACTIVE with the money on the investment account. The
+   * placement is refused on its type; the investment is withdrawn instead.
    */
   @Test
   void reversingAnActiveInvestmentsPlacement_rejected_investmentStaysActive_nothingCredited()
@@ -224,10 +240,13 @@ class TrustInvestmentPlacementGuardIntegrationTest {
         .andExpect(
             jsonPath("$.detail")
                 .value(
-                    "This payment placed a trust investment (ACTIVE). Withdraw the investment instead of reversing its placement payment."));
+                    "This entry placed a trust investment. Withdraw the investment instead of"
+                        + " reversing its placement."));
 
     assertThat(clientBalance(placed.client())).isEqualByComparingTo("4000.00");
-    assertThat(matterBalance(placed.matter())).isEqualByComparingTo("4000.00");
+    assertThat(matterCell(placed)).isEqualByComparingTo("4000.00");
+    // the R1 000 is still invested for the matter
+    assertThat(matterBalance(placed.matter())).isEqualByComparingTo("5000.00");
     String investment =
         mockMvc
             .perform(
@@ -241,9 +260,9 @@ class TrustInvestmentPlacementGuardIntegrationTest {
   }
 
   /**
-   * G89-F87 (MEDIUM, D41): the investment is created ACTIVE while its placement PAYMENT still
-   * awaits approval. A rejected placement left it ACTIVE on the s86 register, in getMaturing and in
-   * the Section 35 data pack with no money behind it. Rejecting the placement now cancels the
+   * G89-F87 (MEDIUM, D41): the investment is created ACTIVE while its placement still awaits
+   * approval. A rejected placement left it ACTIVE on the s86 register, in getMaturing and in the
+   * Section 35 data pack with no money behind it. Rejecting the placement now cancels the
    * investment (terminal CANCELLED), which drops out of the maturing list and the register.
    */
   @Test
@@ -271,12 +290,13 @@ class TrustInvestmentPlacementGuardIntegrationTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
-                        {"clientId": "%s", "matterId": "%s", "institution": "Cancel Bank",
-                         "accountNumber": "%s", "principal": 1000.00,
-                         "interestRate": 0.07, "depositDate": "%s", "maturityDate": "%s",
-                         "investmentBasis": "FIRM_DISCRETION"}
+                        {"investmentAccountId": "%s", "clientId": "%s", "matterId": "%s",
+                         "institution": "Cancel Bank", "accountNumber": "%s",
+                         "principal": 1000.00, "interestRate": 0.07, "depositDate": "%s",
+                         "maturityDate": "%s", "investmentBasis": "CLIENT_INSTRUCTION"}
                         """
                             .formatted(
+                                investmentAccountId,
                                 client,
                                 matter,
                                 accountNumber,
@@ -362,11 +382,17 @@ class TrustInvestmentPlacementGuardIntegrationTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
-                        {"clientId": "%s", "matterId": "%s", "institution": "Test Bank",
-                         "accountNumber": "TIPG-%d", "principal": 1000.00, "interestRate": 0.07,
-                         "depositDate": "%s", "investmentBasis": "FIRM_DISCRETION"}
+                        {"investmentAccountId": "%s", "clientId": "%s", "matterId": "%s",
+                         "institution": "Test Bank", "accountNumber": "TIPG-%d",
+                         "principal": 1000.00, "interestRate": 0.07, "depositDate": "%s",
+                         "investmentBasis": "CLIENT_INSTRUCTION"}
                         """
-                            .formatted(client, matter, ++counter, today.minusDays(4))))
+                            .formatted(
+                                investmentAccountId,
+                                client,
+                                matter,
+                                ++counter,
+                                today.minusDays(4))))
             .andExpect(status().isCreated())
             .andReturn()
             .getResponse()
@@ -389,7 +415,9 @@ class TrustInvestmentPlacementGuardIntegrationTest {
   private ResultActions withdraw(UUID investmentId) throws Exception {
     return mockMvc.perform(
         post("/api/trust-investments/" + investmentId + "/withdraw")
-            .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUB)));
+            .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUB))
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"withdrawalDate\": \"%s\"}".formatted(today)));
   }
 
   private UUID newClient(String name) {
@@ -419,6 +447,14 @@ class TrustInvestmentPlacementGuardIntegrationTest {
   private BigDecimal matterBalance(UUID matter) {
     var balance = as(() -> trustLedgerQueryRepository.matterBalance(matter));
     return balance == null ? BigDecimal.ZERO : balance;
+  }
+
+  /** The matter's general (CLIENT ledger) cell on the funding account. */
+  private BigDecimal matterCell(Placed placed) {
+    return as(
+        () ->
+            trustLedgerQueryRepository.matterCellBalance(
+                trustAccountId, placed.client(), placed.matter(), null));
   }
 
   private BigDecimal clientBalance(UUID client) {

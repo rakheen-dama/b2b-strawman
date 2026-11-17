@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { cleanup, render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { cleanup, render, screen, fireEvent, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 // -- Mock server-only -----------------------------------------------------
@@ -34,28 +34,52 @@ vi.mock("@/app/(app)/org/[slug]/trust-accounting/interest/actions", () => ({
 // -- Mock parent trust actions --------------------------------------------
 const mockCreateTrustAccount = vi.fn();
 
+const { account, FIRM_ACCOUNT, CLIENT_ACCOUNT } = vi.hoisted(() => {
+  const account = (overrides: Record<string, unknown> = {}) => ({
+    id: "acc-x",
+    accountName: "Account",
+    bankName: "Investec",
+    branchCode: "580105",
+    accountNumber: "1234567890",
+    accountType: "GENERAL",
+    investmentBasis: null,
+    section: "S86_2",
+    isPrimary: false,
+    requireDualApproval: false,
+    paymentApprovalThreshold: null,
+    status: "ACTIVE",
+    openedDate: "2025-01-01",
+    closedDate: null,
+    notes: null,
+    createdAt: "2025-01-01T00:00:00Z",
+    updatedAt: "2025-01-01T00:00:00Z",
+    ...overrides,
+  });
+  return {
+    account,
+    FIRM_ACCOUNT: "f1f1f1f1-0000-4000-8000-000000000001",
+    CLIENT_ACCOUNT: "c4c4c4c4-0000-4000-8000-000000000004",
+  };
+});
+
 vi.mock("@/app/(app)/org/[slug]/trust-accounting/actions", () => ({
   createTrustAccount: (...args: unknown[]) => mockCreateTrustAccount(...args),
   fetchTrustAccounts: vi.fn().mockResolvedValue([
-    {
-      id: "acc-1",
-      accountName: "Main Trust",
-      bankName: "FNB",
-      branchCode: "250655",
-      accountNumber: "1234567890",
-      accountType: "GENERAL",
-      investmentBasis: null,
-      section: "S86_2",
-      isPrimary: true,
-      requireDualApproval: false,
-      paymentApprovalThreshold: null,
-      status: "ACTIVE",
-      openedDate: "2025-01-01",
-      closedDate: null,
-      notes: null,
-      createdAt: "2025-01-01T00:00:00Z",
-      updatedAt: "2025-01-01T00:00:00Z",
-    },
+    account({ id: "acc-1", accountName: "Main Trust", accountType: "GENERAL", isPrimary: true }),
+    account({
+      id: FIRM_ACCOUNT,
+      accountName: "Section 86(3) Call Account",
+      accountType: "INVESTMENT",
+      investmentBasis: "FIRM_DISCRETION",
+      section: "S86_3",
+    }),
+    account({
+      id: CLIENT_ACCOUNT,
+      accountName: "Section 86(4) Fixed Deposit",
+      accountType: "INVESTMENT",
+      investmentBasis: "CLIENT_INSTRUCTION",
+      section: "S86_4",
+    }),
   ]),
 }));
 
@@ -115,6 +139,7 @@ import InvestmentsPage from "@/app/(app)/org/[slug]/trust-accounting/investments
 import { PlaceInvestmentDialog } from "@/components/trust/PlaceInvestmentDialog";
 import { InterestRunWizard } from "@/components/trust/InterestRunWizard";
 import { CreateTrustAccountDialog } from "@/components/trust/CreateTrustAccountDialog";
+import type { TrustAccount } from "@/lib/types/trust";
 
 // -- Helpers --------------------------------------------------------------
 
@@ -122,15 +147,19 @@ function makeInvestment(overrides: Record<string, unknown> = {}) {
   return {
     id: "inv-1",
     trustAccountId: "acc-1",
-    clientId: "cust-1111-2222-3333-444444444444",
-    clientName: "Acme Corp",
+    investmentAccountId: FIRM_ACCOUNT,
+    investmentAccountName: "Section 86(3) Call Account",
+    clientId: null,
+    clientName: null,
+    matterId: null,
     institution: "FNB Money Market",
     accountNumber: "INV-001",
     principal: 500000,
     interestRate: 0.075,
     depositDate: "2026-01-15",
     maturityDate: "2026-07-15",
-    interestEarned: 18750,
+    interestEarned: 0,
+    balance: 500000,
     status: "ACTIVE",
     withdrawalDate: null,
     withdrawalAmount: null,
@@ -144,6 +173,35 @@ function makeInvestment(overrides: Record<string, unknown> = {}) {
   };
 }
 
+const INVESTMENT_ACCOUNTS = [
+  account({
+    id: FIRM_ACCOUNT,
+    accountName: "Section 86(3) Call Account",
+    accountType: "INVESTMENT",
+    investmentBasis: "FIRM_DISCRETION",
+    section: "S86_3",
+  }),
+  account({
+    id: CLIENT_ACCOUNT,
+    accountName: "Section 86(4) Fixed Deposit",
+    accountType: "INVESTMENT",
+    investmentBasis: "CLIENT_INSTRUCTION",
+    section: "S86_4",
+  }),
+] as TrustAccount[];
+
+function renderPlaceDialog() {
+  return render(
+    <PlaceInvestmentDialog
+      accountId="acc-1"
+      investmentAccounts={INVESTMENT_ACCOUNTS}
+      open={true}
+      onOpenChange={vi.fn()}
+      onSuccess={vi.fn()}
+    />
+  );
+}
+
 async function renderInvestmentsPage(searchParams: Record<string, string> = {}) {
   const result = await InvestmentsPage({
     params: Promise.resolve({ slug: "acme" }),
@@ -154,7 +212,7 @@ async function renderInvestmentsPage(searchParams: Record<string, string> = {}) 
 
 // -- Tests ----------------------------------------------------------------
 
-describe("Epic 455 — Investment Basis", () => {
+describe("Epic 455 / 648A — Investment Basis and investment accounts", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -163,54 +221,35 @@ describe("Epic 455 — Investment Basis", () => {
     cleanup();
   });
 
-  // Test 1: Place Investment dialog renders radio group with correct options
-  it("Place Investment dialog renders investment basis radio group", () => {
-    render(
-      <PlaceInvestmentDialog
-        accountId="acc-1"
-        open={true}
-        onOpenChange={vi.fn()}
-        onSuccess={vi.fn()}
-      />
-    );
+  // 648A (ADR-379): the basis comes first and is worded as the Act's sections
+  it("Place Investment dialog asks for the basis in the Act's terms", () => {
+    renderPlaceDialog();
 
-    expect(screen.getByText("Investment initiated by")).toBeInTheDocument();
-    expect(screen.getByText("Firm (surplus trust funds)")).toBeInTheDocument();
-    expect(screen.getByText("Client instruction")).toBeInTheDocument();
+    expect(screen.getByText("Investment basis")).toBeInTheDocument();
+    expect(
+      screen.getByLabelText("Section 86(3) — the firm invests surplus trust money")
+    ).toBeInTheDocument();
+    expect(
+      screen.getByLabelText("Section 86(4) — invested on a client's instruction")
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/FIRM_DISCRETION|CLIENT_INSTRUCTION/)).not.toBeInTheDocument();
   });
 
-  // Test 2: Selecting CLIENT_INSTRUCTION shows statutory help text
-  it("shows statutory help text when CLIENT_INSTRUCTION is selected", () => {
-    render(
-      <PlaceInvestmentDialog
-        accountId="acc-1"
-        open={true}
-        onOpenChange={vi.fn()}
-        onSuccess={vi.fn()}
-      />
-    );
+  it("shows who the interest belongs to for each basis", () => {
+    renderPlaceDialog();
 
-    // Default is FIRM_DISCRETION
+    // Default is section 86(3)
     const helpText = screen.getByTestId("investment-basis-help");
-    expect(helpText.textContent).toContain("LPFF arrangement rate");
+    expect(helpText.textContent).toContain("Legal Practitioners");
+    expect(helpText.textContent).toContain("Fidelity Fund");
 
-    // Click Client instruction radio
-    const clientRadio = screen.getByLabelText("Client instruction");
-    fireEvent.click(clientRadio);
+    fireEvent.click(screen.getByLabelText("Section 86(4) — invested on a client's instruction"));
 
     expect(helpText.textContent).toContain("5% to the LPFF (Section 86(5))");
   });
 
-  // Test 3: 86(6) advisory note renders in dialog
   it("renders Section 86(6) advisory note in Place Investment dialog", () => {
-    render(
-      <PlaceInvestmentDialog
-        accountId="acc-1"
-        open={true}
-        onOpenChange={vi.fn()}
-        onSuccess={vi.fn()}
-      />
-    );
+    renderPlaceDialog();
 
     expect(screen.getByTestId("section-86-6-advisory")).toBeInTheDocument();
     expect(
@@ -218,53 +257,145 @@ describe("Epic 455 — Investment Basis", () => {
     ).toBeInTheDocument();
   });
 
-  // Test 4: Register table shows basis column
-  it("register table shows basis column with correct badges", async () => {
-    mockFetchInvestments.mockResolvedValue([
-      makeInvestment({
-        id: "inv-firm",
-        clientName: "Firm Client",
-        investmentBasis: "FIRM_DISCRETION",
+  it("the investment account picker offers only the accounts of the chosen basis", async () => {
+    const user = userEvent.setup();
+    renderPlaceDialog();
+
+    await user.click(screen.getByTestId("investment-account-select"));
+    expect(
+      screen.getByRole("option", { name: /Section 86\(3\) Call Account/ })
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("option", { name: /Section 86\(4\) Fixed Deposit/ })).toBeNull();
+    await user.keyboard("{Escape}");
+
+    await user.click(screen.getByLabelText("Section 86(4) — invested on a client's instruction"));
+    await user.click(screen.getByTestId("investment-account-select"));
+    expect(
+      screen.getByRole("option", { name: /Section 86\(4\) Fixed Deposit/ })
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("option", { name: /Section 86\(3\) Call Account/ })).toBeNull();
+  });
+
+  it("asks for the client and matter only for a section 86(4) investment", async () => {
+    const user = userEvent.setup();
+    renderPlaceDialog();
+
+    expect(screen.queryByPlaceholderText("Client UUID")).not.toBeInTheDocument();
+    expect(screen.queryByPlaceholderText("Matter UUID")).not.toBeInTheDocument();
+
+    await user.click(screen.getByLabelText("Section 86(4) — invested on a client's instruction"));
+    expect(screen.getByPlaceholderText("Client UUID")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Matter UUID")).toBeInTheDocument();
+
+    await user.click(screen.getByLabelText("Section 86(3) — the firm invests surplus trust money"));
+    expect(screen.queryByPlaceholderText("Client UUID")).not.toBeInTheDocument();
+  });
+
+  it('"Add investment account" opens the account dialog preset to the basis and selects the new account', async () => {
+    const user = userEvent.setup();
+    const NEW_ACCOUNT = "a0a0a0a0-0000-4000-8000-00000000000a";
+    mockCreateTrustAccount.mockResolvedValue({
+      success: true,
+      account: account({
+        id: NEW_ACCOUNT,
+        accountName: "New Section 86(4) Account",
+        accountType: "INVESTMENT",
+        investmentBasis: "CLIENT_INSTRUCTION",
+        section: "S86_4",
       }),
+    });
+    renderPlaceDialog();
+
+    await user.click(screen.getByLabelText("Section 86(4) — invested on a client's instruction"));
+    await user.click(screen.getByRole("button", { name: "Add investment account" }));
+
+    const form = await screen.findByTestId("create-trust-account-form");
+    expect(within(form).getByTestId("trust-account-type-select")).toHaveTextContent("Investment");
+    expect(within(form).getByTestId("trust-account-type-select")).toBeDisabled();
+    expect(within(form).getByTestId("trust-account-basis-select")).toHaveTextContent(
+      "Section 86(4) — invested on a client's instruction"
+    );
+    expect(within(form).getByTestId("trust-account-basis-select")).toBeDisabled();
+
+    await user.type(within(form).getByLabelText("Account Name"), "New Section 86(4) Account");
+    await user.type(within(form).getByLabelText("Bank Name"), "Investec");
+    await user.type(within(form).getByLabelText("Branch Code"), "580105");
+    await user.type(within(form).getByLabelText("Account Number"), "7770009999");
+    await user.click(within(form).getByRole("button", { name: "Create Account" }));
+
+    await waitFor(() =>
+      expect(mockCreateTrustAccount).toHaveBeenCalledWith(
+        expect.objectContaining({
+          accountType: "INVESTMENT",
+          investmentBasis: "CLIENT_INSTRUCTION",
+          isPrimary: false,
+        })
+      )
+    );
+    await waitFor(() =>
+      expect(screen.getByTestId("investment-account-select")).toHaveTextContent(
+        "New Section 86(4) Account"
+      )
+    );
+  });
+
+  it("register shows the investment account, the client or the firm, the balance and readable statuses", async () => {
+    mockFetchInvestments.mockResolvedValue([
+      makeInvestment({ id: "inv-firm" }),
       makeInvestment({
         id: "inv-client",
-        clientName: "Client Instruction Client",
-        investmentBasis: "CLIENT_INSTRUCTION",
-      }),
-    ]);
-
-    await renderInvestmentsPage();
-
-    // Check column header
-    expect(screen.getByText("Basis")).toBeInTheDocument();
-
-    // Check badge labels
-    expect(screen.getByText("Firm")).toBeInTheDocument();
-    expect(screen.getByText("Client Instruction")).toBeInTheDocument();
-  });
-
-  // Test 5: Register table shows "5% (statutory)" for CLIENT_INSTRUCTION investments
-  it('register table shows "5% (statutory)" for CLIENT_INSTRUCTION investments', async () => {
-    mockFetchInvestments.mockResolvedValue([
-      makeInvestment({
-        id: "inv-client-inst",
+        investmentAccountId: CLIENT_ACCOUNT,
+        investmentAccountName: "Section 86(4) Fixed Deposit",
+        clientId: "cust-1",
         clientName: "Client Instruction Co",
+        matterId: "mat-1",
         investmentBasis: "CLIENT_INSTRUCTION",
+        principal: 200000,
+        balance: 201250,
+        status: "MATURED",
       }),
     ]);
 
     await renderInvestmentsPage();
 
-    expect(screen.getByText("5% (statutory)")).toBeInTheDocument();
+    expect(screen.getByText("Investment account")).toBeInTheDocument();
+    expect(screen.getByText("Balance")).toBeInTheDocument();
+
+    const firmRow = screen.getByTestId("investment-row-inv-firm");
+    expect(within(firmRow).getByText("Firm (section 86(3))")).toBeInTheDocument();
+    expect(within(firmRow).getByText("Section 86(3) Call Account")).toBeInTheDocument();
+    expect(within(firmRow).getByText("Section 86(3)")).toBeInTheDocument();
+    expect(within(firmRow).getByText("Active")).toBeInTheDocument();
+
+    const clientRow = screen.getByTestId("investment-row-inv-client");
+    expect(within(clientRow).getByText("Client Instruction Co")).toBeInTheDocument();
+    expect(within(clientRow).getByText("Section 86(4) Fixed Deposit")).toBeInTheDocument();
+    expect(within(clientRow).getByText("Section 86(4)")).toBeInTheDocument();
+    expect(within(clientRow).getByText("Matured")).toBeInTheDocument();
+    expect(within(clientRow).getByText("5% (statutory)")).toBeInTheDocument();
+    expect(clientRow.textContent).toMatch(/201[\s\u00a0]250,00/);
+
+    const table = screen.getByTestId("investments-table");
+    expect(table.textContent).not.toMatch(/ACTIVE|MATURED|FIRM_DISCRETION|CLIENT_INSTRUCTION/);
   });
 
-  // Test 6: Filter dropdown renders and passes investmentBasis to fetchInvestments
+  it("a placement awaiting approval offers no withdrawal", async () => {
+    mockFetchInvestments.mockResolvedValue([makeInvestment({ id: "inv-pending", balance: 0 })]);
+
+    await renderInvestmentsPage();
+
+    const row = screen.getByTestId("investment-row-inv-pending");
+    expect(within(row).getByText("Awaiting approval")).toBeInTheDocument();
+    expect(within(row).queryByRole("button", { name: "Withdraw" })).toBeNull();
+  });
+
   it("filter dropdown renders and investmentBasis flows to fetchInvestments", async () => {
     mockFetchInvestments.mockResolvedValue([makeInvestment()]);
 
     await renderInvestmentsPage({ investmentBasis: "CLIENT_INSTRUCTION" });
 
     expect(screen.getByTestId("investment-basis-filter")).toBeInTheDocument();
+    // the funding (primary banking) account, never an investment account
     expect(mockFetchInvestments).toHaveBeenCalledWith("acc-1", "CLIENT_INSTRUCTION");
   });
 

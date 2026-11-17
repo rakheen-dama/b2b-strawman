@@ -9,6 +9,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustDomainEvent;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTransactionApprovalEvent;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTransactionRecordedEvent;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedger;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionType;
@@ -548,11 +549,16 @@ public class TrustLedgerPortalSyncService {
    * TrustTransactionType#clientVisible()}); since 649B that includes REVERSAL, the contra entry of
    * a reversed original. A null or unknown code is not surfaced (lenient lookup — the type CHECK
    * admits no other code).
+   *
+   * <p>648A (open question #8): only {@code CLIENT}-ledger rows — a client's investment-ledger rows
+   * ({@code CLIENT_INVESTMENT}, on the investment account) never reach the general running balance.
+   * 648D replaces this with the split projection.
    */
   private static boolean isPortalEligible(TrustTransaction txn) {
-    return TrustTransactionType.find(txn.getTransactionType())
-        .map(TrustTransactionType::clientVisible)
-        .orElse(false);
+    return txn.getLedger() == TrustLedger.CLIENT
+        && TrustTransactionType.find(txn.getTransactionType())
+            .map(TrustTransactionType::clientVisible)
+            .orElse(false);
   }
 
   /**

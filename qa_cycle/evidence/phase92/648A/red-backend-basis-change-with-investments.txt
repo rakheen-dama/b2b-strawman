@@ -1,0 +1,11 @@
+# 648A red run #2 (648C found.md F-2) — 2026-11-18, base 8ca0441ba + V23 only (TrustAccountService unchanged)
+# cd backend && ./mvnw test -Dtest='TrustAccountServiceTest#updateTrustAccount_*' -q
+[ERROR] Tests run: 4, Failures: 1, Errors: 0, Skipped: 0 <<< FAILURE! -- in ...trustaccounting.TrustAccountServiceTest
+[ERROR]   TrustAccountServiceTest.updateTrustAccount_refusesABasisChange_whileTheAccountHoldsAnActiveOrMaturedInvestment:842->runInTenant:989->lambda$...:844
+Expecting code to raise a throwable.      <- PUT basis FIRM_DISCRETION -> CLIENT_INSTRUCTION on an INVESTMENT account holding an ACTIVE investment was ACCEPTED
+# (updateTrustAccount_allowsABasisChange_whenItsInvestmentsAreWithdrawnOrCancelled and the 648C basis tests pass.)
+# Cause: TrustAccountService.updateTrustAccount only carried the comment
+#   "// 648A must refuse a basis change while investments are held (648C found.md F-2)".
+# Fix: under the account row lock (findByIdForUpdate — the lock placement also takes on the investment account),
+#   a basis change is refused (InvalidStateException "Cannot change investment basis") while
+#   trust_investments has an ACTIVE or MATURED row with investment_account_id = the account.

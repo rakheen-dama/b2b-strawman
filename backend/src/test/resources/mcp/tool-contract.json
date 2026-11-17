@@ -428,6 +428,24 @@
     }, {
       "name" : "currency",
       "type" : "java.lang.String"
+    }, {
+      "name" : "investedMinor",
+      "type" : "java.lang.Long"
+    }, {
+      "name" : "fundLedgerMinor",
+      "type" : "java.lang.Long"
+    }, {
+      "name" : "unidentifiedDepositsMinor",
+      "type" : "java.lang.Long"
+    }, {
+      "name" : "totalTrustCreditorsMinor",
+      "type" : "java.lang.Long"
+    }, {
+      "name" : "cashbookMinor",
+      "type" : "java.lang.Long"
+    }, {
+      "name" : "asAt",
+      "type" : "java.time.LocalDate"
     } ],
     "dto.McpTrustTransactionItem" : [ {
       "name" : "id",
@@ -763,12 +781,12 @@
     },
     "name" : "get_matter_activity"
   }, {
-    "description" : "Get a trust balance for a trust account. If a clientId is supplied, returns that client's ledger-card balance on the account; otherwise returns the account's total trust balance. Money is returned as minor units (e.g. cents) plus a currency code. Requires the VIEW_TRUST capability and the trust-accounting module — a firm without trust accounting receives a clean module_disabled error.",
+    "description" : "Get a trust balance for a trust account. With a customerId, returns that client's general trust balance on the account in balanceMinor. Without one, returns the account's trust position as at today (asAt): balanceMinor is the total of the client ledgers on the account, and beside it investedMinor (section 86(4) investments held for clients), fundLedgerMinor (Fund interest and charges), unidentifiedDepositsMinor, totalTrustCreditorsMinor (every trust creditor) and cashbookMinor (what the bank should hold for the account); the books balance when cashbookMinor equals totalTrustCreditorsMinor. Money is returned as minor units (e.g. cents) plus a currency code. Requires the VIEW_TRUST capability and the trust-accounting module — a firm without trust accounting receives a clean module_disabled error.",
     "inputSchema" : {
       "$schema" : "https://json-schema.org/draft/2020-12/schema",
       "properties" : {
         "customerId" : {
-          "description" : "Client (customer) id — omit for the account total.",
+          "description" : "Client (customer) id — omit for the account's trust position.",
           "format" : "uuid",
           "type" : "string"
         },

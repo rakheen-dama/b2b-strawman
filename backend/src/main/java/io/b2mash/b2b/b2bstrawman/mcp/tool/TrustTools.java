@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.mcp.tool;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.exception.ModuleNotEnabledException;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.mcp.McpAuditMetadata;
 import io.b2mash.b2b.b2bstrawman.mcp.McpCapabilityGuard;
 import io.b2mash.b2b.b2bstrawman.mcp.McpEnablementService;
@@ -14,8 +15,12 @@ import io.b2mash.b2b.b2bstrawman.mcp.dto.McpPage;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpTrustBalanceDto;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpTrustTransactionItem;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustBooksService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService.ClientHistoryFilter;
+import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.LocalDate;
 import java.util.UUID;
 import org.springframework.ai.mcp.annotation.McpTool;
 import org.springframework.ai.mcp.annotation.McpToolParam;
@@ -30,7 +35,9 @@ import tools.jackson.databind.ObjectMapper;
  * McpError#forbidden()} returned (never thrown — throwing would leak as "Error invoking method").
  * For a non-legal tenant the underlying {@link ClientLedgerService} throws {@link
  * ModuleNotEnabledException}; we catch it and return a clean {@link
- * McpError#moduleDisabled(String)} rather than a stack trace.
+ * McpError#moduleDisabled(String)} rather than a stack trace. An unknown trust account ({@link
+ * ResourceNotFoundException} from {@link TrustBooksService#position}) is a clean {@link
+ * McpError#notFound(String)} (646D).
  *
  * <p>Money: the trust DTOs carry {@link java.math.BigDecimal} major units with no currency; the MCP
  * boundary carries minor units (long) + a currency code resolved from {@link OrgSettingsService}.
@@ -42,40 +49,52 @@ public class TrustTools {
   private static final String TRUST_MODULE = "trust accounting";
 
   private final ClientLedgerService clientLedgerService;
+  private final TrustBooksService trustBooksService;
   private final OrgSettingsService orgSettingsService;
   private final AuditService auditService;
   private final ObjectMapper objectMapper;
   private final McpEnablementService enablement;
   private final McpMetrics metrics;
+  private final Clock clock;
 
   public TrustTools(
       ClientLedgerService clientLedgerService,
+      TrustBooksService trustBooksService,
       OrgSettingsService orgSettingsService,
       AuditService auditService,
       ObjectMapper objectMapper,
       McpEnablementService enablement,
-      McpMetrics metrics) {
+      McpMetrics metrics,
+      Clock clock) {
     this.clientLedgerService = clientLedgerService;
+    this.trustBooksService = trustBooksService;
     this.orgSettingsService = orgSettingsService;
     this.auditService = auditService;
     this.objectMapper = objectMapper;
     this.enablement = enablement;
     this.metrics = metrics;
+    this.clock = clock;
   }
 
   @McpTool(
       name = "get_trust_balance",
       description =
-          "Get a trust balance for a trust account. If a clientId is supplied, returns that"
-              + " client's ledger-card balance on the account; otherwise returns the account's"
-              + " total trust balance. Money is returned as minor units (e.g. cents) plus a"
-              + " currency code. Requires the VIEW_TRUST capability and the trust-accounting module"
-              + " — a firm without trust accounting receives a clean module_disabled error.")
+          "Get a trust balance for a trust account. With a customerId, returns that client's"
+              + " general trust balance on the account in balanceMinor. Without one, returns the"
+              + " account's trust position as at today (asAt): balanceMinor is the total of the"
+              + " client ledgers on the account, and beside it investedMinor (section 86(4)"
+              + " investments held for clients), fundLedgerMinor (Fund interest and charges),"
+              + " unidentifiedDepositsMinor, totalTrustCreditorsMinor (every trust creditor) and"
+              + " cashbookMinor (what the bank should hold for the account); the books balance"
+              + " when cashbookMinor equals totalTrustCreditorsMinor. Money is returned as minor"
+              + " units (e.g. cents) plus a currency code. Requires the VIEW_TRUST capability and"
+              + " the trust-accounting module — a firm without trust accounting receives a clean"
+              + " module_disabled error.")
   public Object getTrustBalance(
       @McpToolParam(description = "Trust account id.") UUID trustAccountId,
       @McpToolParam(
               required = false,
-              description = "Client (customer) id — omit for the account total.")
+              description = "Client (customer) id — omit for the account's trust position.")
           UUID customerId) {
     if (!enablement.effectiveState()) {
       return McpToolErrors.asResult(McpError.notEnabled(), objectMapper);
@@ -96,16 +115,29 @@ public class TrustTools {
                   new McpTrustBalanceDto(
                       trustAccountId,
                       customerId,
-                      card.balance().movePointRight(2).longValueExact(),
-                      currency);
+                      minor(card.balance()),
+                      currency,
+                      null,
+                      null,
+                      null,
+                      null,
+                      null,
+                      null);
             } else {
-              var total = clientLedgerService.getTotalTrustBalance(trustAccountId);
+              // EQ-2's terms as at today (§16.6.5, 646D); balanceMinor keeps its meaning
+              var position = trustBooksService.position(trustAccountId, LocalDate.now(clock));
               dto =
                   new McpTrustBalanceDto(
                       trustAccountId,
                       null,
-                      total.balance().movePointRight(2).longValueExact(),
-                      currency);
+                      minor(position.clientLedgers()),
+                      currency,
+                      minor(position.investmentCreditors()),
+                      minor(position.fundLedger()),
+                      minor(position.unidentifiedDeposits()),
+                      minor(position.creditorTotal()),
+                      minor(position.cashbook()),
+                      position.asAt());
             }
             var meta =
                 McpAuditMetadata.builder()
@@ -118,8 +150,14 @@ public class TrustTools {
             return dto;
           } catch (ModuleNotEnabledException e) {
             return McpToolErrors.asResult(McpError.moduleDisabled(TRUST_MODULE), objectMapper);
+          } catch (ResourceNotFoundException e) {
+            return McpToolErrors.asResult(McpError.notFound("trust account"), objectMapper);
           }
         });
+  }
+
+  private static long minor(BigDecimal amount) {
+    return amount.movePointRight(2).longValueExact();
   }
 
   @McpTool(

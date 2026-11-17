@@ -1,0 +1,132 @@
+{
+  "enums" : {
+    "TrustLedger" : [ "CLIENT", "CLIENT_INVESTMENT", "NON_CLIENT", "INTER_ACCOUNT" ],
+    "TrustTransactionDirection" : [ "IN", "OUT", "NEUTRAL" ],
+    "TrustTransactionType.Origin" : [ "FIRM", "BANK" ],
+    "TrustTransactionType.Reversal" : [ "IMMEDIATE", "NEEDS_APPROVAL", "PAIR", "VIA_PAIR", "OWNER", "NONE" ]
+  },
+  "records" : {
+    "TrustTransactionResponse" : [ {
+      "name" : "id",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "trustAccountId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "transactionType",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "typeLabel",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "direction",
+      "type" : "io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionDirection"
+    }, {
+      "name" : "ledger",
+      "type" : "io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedger"
+    }, {
+      "name" : "amount",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "clientId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "matterId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "creditorAccountId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "investmentId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "counterpartyClientId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "invoiceId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "reference",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "description",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "transactionDate",
+      "type" : "java.time.LocalDate"
+    }, {
+      "name" : "status",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "postedAt",
+      "type" : "java.time.Instant"
+    }, {
+      "name" : "approvedBy",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "approvedAt",
+      "type" : "java.time.Instant"
+    }, {
+      "name" : "secondApprovedBy",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "secondApprovedAt",
+      "type" : "java.time.Instant"
+    }, {
+      "name" : "rejectedBy",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "rejectedAt",
+      "type" : "java.time.Instant"
+    }, {
+      "name" : "rejectionReason",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "reversalOf",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "reversedById",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "reversalPending",
+      "type" : "boolean"
+    }, {
+      "name" : "bankStatementLineId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "recordedBy",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "createdAt",
+      "type" : "java.time.Instant"
+    }, {
+      "name" : "runningBalance",
+      "type" : "java.math.BigDecimal"
+    } ],
+    "TrustTransactionTypeResponse" : [ {
+      "name" : "code",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "label",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "direction",
+      "type" : "io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionDirection"
+    }, {
+      "name" : "ledger",
+      "type" : "io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedger"
+    }, {
+      "name" : "origin",
+      "type" : "io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionType$Origin"
+    }, {
+      "name" : "requiresApproval",
+      "type" : "boolean"
+    }, {
+      "name" : "reversal",
+      "type" : "io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionType$Reversal"
+    }, {
+      "name" : "clientVisible",
+      "type" : "boolean"
+    } ]
+  }
+}

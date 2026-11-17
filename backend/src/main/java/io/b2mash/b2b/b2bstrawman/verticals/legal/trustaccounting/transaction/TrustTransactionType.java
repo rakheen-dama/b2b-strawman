@@ -445,6 +445,15 @@ public enum TrustTransactionType {
   }
 
   /**
+   * Which way a row of this type moves its ledger — the sign of {@link #ledgerSign()}; NEUTRAL for
+   * REVERSAL (a reversal row takes its original's opposite, {@link
+   * TrustTransactionDirection#ofRow}).
+   */
+  public TrustTransactionDirection direction() {
+    return TrustTransactionDirection.of(this);
+  }
+
+  /**
    * For a {@link TrustLedger#NON_CLIENT} type: which creditor account of the trust account the row
    * moves (ADR-376); null for every other ledger.
    */

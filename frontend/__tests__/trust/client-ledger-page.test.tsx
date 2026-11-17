@@ -15,8 +15,37 @@ vi.mock("@/lib/api/capabilities", () => ({
   fetchMyCapabilities: (...args: unknown[]) => mockFetchMyCapabilities(...args),
 }));
 
+// ── Registry types (646E): pills come from GET /api/trust-transaction-types ──
+const { REGISTRY_TYPES } = vi.hoisted(() => {
+  const typeInfo = (code: string, label: string, ledger: string | null) => ({
+    code,
+    label,
+    direction: ledger === null ? "NEUTRAL" : "IN",
+    ledger,
+    origin: ledger === null ? null : "FIRM",
+    requiresApproval: false,
+    reversal: "NONE",
+    clientVisible: true,
+  });
+  return {
+    REGISTRY_TYPES: [
+      typeInfo("DEPOSIT", "Deposit", "CLIENT"),
+      typeInfo("REFUND", "Refund", "CLIENT"),
+      typeInfo("REVERSAL", "Reversal", null),
+      typeInfo(
+        "FUND_INTEREST",
+        "Interest received for the Legal Practitioners' Fidelity Fund",
+        "NON_CLIENT"
+      ),
+      typeInfo("INV_INTEREST", "Section 86(4) investment interest", "CLIENT_INVESTMENT"),
+      typeInfo("FIRM_INV_PLACE", "Placed in section 86(3) investment account", "INTER_ACCOUNT"),
+    ],
+  };
+});
+
 // ── Mock parent trust actions ────────────────────────────────────
 vi.mock("@/app/(app)/org/[slug]/trust-accounting/actions", () => ({
+  fetchTrustTransactionTypes: vi.fn().mockResolvedValue(REGISTRY_TYPES),
   fetchTrustAccounts: vi.fn().mockResolvedValue([
     {
       id: "acc-1",
@@ -127,6 +156,9 @@ function makeTx(overrides: Record<string, unknown> = {}) {
     id: "tx-1",
     trustAccountId: "acc-1",
     transactionType: "DEPOSIT",
+    typeLabel: "Deposit",
+    direction: "IN",
+    ledger: "CLIENT",
     amount: 10000,
     clientId: "cust-1",
     matterId: null,
@@ -145,9 +177,13 @@ function makeTx(overrides: Record<string, unknown> = {}) {
     rejectionReason: null,
     reversalOf: null,
     reversedById: null,
+    reversalPending: false,
     bankStatementLineId: null,
     recordedBy: "member-1",
     createdAt: "2026-10-01T09:00:00Z",
+    creditorAccountId: null,
+    investmentId: null,
+    postedAt: "2026-10-01T09:00:00Z",
     runningBalance: 10000,
     ...overrides,
   };
@@ -181,7 +217,14 @@ describe("Client ledger card — server running balance (630C)", () => {
     setupDefaultMocks();
     mockFetchClientHistory.mockResolvedValue({
       content: [
-        makeTx({ id: "tx-ref", transactionType: "REFUND", amount: 1000, runningBalance: 9000 }),
+        makeTx({
+          id: "tx-ref",
+          transactionType: "REFUND",
+          typeLabel: "Refund",
+          direction: "OUT",
+          amount: 1000,
+          runningBalance: 9000,
+        }),
         makeTx({ id: "tx-dep", transactionType: "DEPOSIT", amount: 10000, runningBalance: 10000 }),
       ],
       totalElements: 22,
@@ -203,6 +246,8 @@ describe("Client ledger card — server running balance (630C)", () => {
         makeTx({
           id: "tx-rej",
           transactionType: "PAYMENT",
+          typeLabel: "Payment",
+          direction: "OUT",
           amount: 500,
           status: "REJECTED",
           reference: "PAY-REJ",
@@ -211,6 +256,8 @@ describe("Client ledger card — server running balance (630C)", () => {
         makeTx({
           id: "tx-ft",
           transactionType: "FEE_TRANSFER",
+          typeLabel: "Fee transfer",
+          direction: "OUT",
           amount: 1150,
           status: "APPROVED",
           reference: "FT-001",
@@ -219,6 +266,8 @@ describe("Client ledger card — server running balance (630C)", () => {
         makeTx({
           id: "tx-ref",
           transactionType: "REFUND",
+          typeLabel: "Refund",
+          direction: "OUT",
           amount: 1000,
           status: "APPROVED",
           reference: "REF-001",
@@ -247,6 +296,8 @@ describe("Client ledger card — server running balance (630C)", () => {
         makeTx({
           id: "tx-ref",
           transactionType: "REFUND",
+          typeLabel: "Refund",
+          direction: "OUT",
           amount: 1000,
           status: "APPROVED",
           runningBalance: 9000,
@@ -269,6 +320,67 @@ describe("Client ledger card — server running balance (630C)", () => {
     const deposit = amountSpan("tx-dep");
     expect(deposit.className).toContain("text-green-600");
     expect(deposit.querySelector(".lucide-arrow-down-left")).not.toBeNull();
+  });
+
+  // 646E F8: the arrow follows the row's `direction` — a refund's reversal returns money (IN).
+  it("renders a refund's reversal as an inflow (F8)", async () => {
+    setupDefaultMocks();
+    mockFetchClientHistory.mockResolvedValue({
+      content: [
+        makeTx({
+          id: "tx-rev",
+          transactionType: "REVERSAL",
+          typeLabel: "Reversal",
+          direction: "IN",
+          reversalOf: "tx-ref",
+          runningBalance: null,
+        }),
+      ],
+      totalElements: 1,
+      totalPages: 1,
+      pageSize: 20,
+      pageNumber: 0,
+    });
+
+    await renderDetailPage();
+
+    const reversal = amountSpan("tx-rev");
+    expect(reversal.className).toContain("text-green-600");
+    expect(reversal.querySelector(".lucide-arrow-down-left")).not.toBeNull();
+    expect(within(screen.getByTestId("history-row-tx-rev")).getByText("Reversal")).toBeVisible();
+  });
+});
+
+describe("Client ledger card — type filters from the registry (646E)", () => {
+  afterEach(() => {
+    cleanup();
+    vi.clearAllMocks();
+  });
+
+  // 646A found-1: the retired "Interest Credit" / "Interest LPFF" pills are gone; a client ledger
+  // lists only the types that can sit on it (CLIENT / CLIENT_INVESTMENT ledgers, plus Reversal).
+  it("lists the client-ledger subset of the registry, no retired interest pills", async () => {
+    setupDefaultMocks();
+    mockFetchClientHistory.mockResolvedValue({
+      content: [],
+      totalElements: 0,
+      totalPages: 0,
+      pageSize: 20,
+      pageNumber: 0,
+    });
+
+    await renderDetailPage();
+
+    const pills = within(screen.getByTestId("type-filters")).getAllByRole("link");
+    expect(pills.map((p) => p.textContent)).toEqual([
+      "All",
+      "Deposit",
+      "Refund",
+      "Reversal",
+      "Section 86(4) investment interest",
+    ]);
+    expect(screen.queryByText("Interest Credit")).not.toBeInTheDocument();
+    expect(screen.queryByText("Interest LPFF")).not.toBeInTheDocument();
   });
 });
 

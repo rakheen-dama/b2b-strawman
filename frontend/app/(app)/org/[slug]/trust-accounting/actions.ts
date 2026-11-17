@@ -9,6 +9,7 @@ import type {
   MatterTrustBalance,
   TrustAccount,
   TrustTransaction,
+  TrustTransactionTypeInfo,
   CashbookBalance,
   ClientLedgerCard,
   TrustDashboardData,
@@ -82,6 +83,14 @@ export async function fetchRecentTransactions(accountId: string): Promise<TrustT
     `/api/trust-accounts/${accountId}/transactions?size=10&sort=transactionDate,desc`
   );
   return result.content;
+}
+
+/**
+ * The trust transaction type registry as data (§16.4.1, a bare array) — every type filter and
+ * reversal rule reads from it; no screen hard-codes a type list (Phase 92 646E).
+ */
+export async function fetchTrustTransactionTypes(): Promise<TrustTransactionTypeInfo[]> {
+  return api.get<TrustTransactionTypeInfo[]>("/api/trust-transaction-types");
 }
 
 export async function fetchPendingApprovals(accountId: string): Promise<TrustTransaction[]> {

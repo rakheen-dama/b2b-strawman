@@ -439,6 +439,15 @@
       "name" : "type",
       "type" : "java.lang.String"
     }, {
+      "name" : "typeLabel",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "direction",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "ledger",
+      "type" : "java.lang.String"
+    }, {
       "name" : "amountMinor",
       "type" : "long"
     }, {

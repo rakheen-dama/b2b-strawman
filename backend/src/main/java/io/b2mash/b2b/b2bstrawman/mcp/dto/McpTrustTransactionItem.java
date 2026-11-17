@@ -12,7 +12,12 @@ import java.util.UUID;
  *
  * @param id the transaction id
  * @param date the transaction date
- * @param type transaction type (e.g. DEPOSIT, PAYMENT)
+ * @param type transaction type code (e.g. DEPOSIT, PAYMENT)
+ * @param typeLabel the type's label from the registry — read this, never map {@code type} (§16.6.5)
+ * @param direction IN, OUT or NEUTRAL — the way the row moves its own ledger (a reversal is the
+ *     opposite of what it reverses)
+ * @param ledger the creditor ledger the row moves (CLIENT, CLIENT_INVESTMENT, NON_CLIENT,
+ *     INTER_ACCOUNT)
  * @param amountMinor amount in minor units
  * @param currency 3-letter currency code (firm default)
  * @param reference caller-supplied reference
@@ -22,6 +27,9 @@ public record McpTrustTransactionItem(
     UUID id,
     LocalDate date,
     String type,
+    String typeLabel,
+    String direction,
+    String ledger,
     long amountMinor,
     String currency,
     String reference,
@@ -35,6 +43,9 @@ public record McpTrustTransactionItem(
         tx.id(),
         tx.transactionDate(),
         tx.transactionType(),
+        tx.typeLabel(),
+        tx.direction() == null ? null : tx.direction().name(),
+        tx.ledger() == null ? null : tx.ledger().name(),
         tx.amount().movePointRight(2).longValueExact(),
         currency,
         tx.reference(),

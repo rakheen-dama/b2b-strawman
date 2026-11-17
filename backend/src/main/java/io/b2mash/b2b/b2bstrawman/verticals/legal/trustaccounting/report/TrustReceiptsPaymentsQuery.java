@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.reporting.ReportQuery;
 import io.b2mash.b2b.b2bstrawman.reporting.ReportResult;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionTypeLabels;
 import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -91,7 +92,7 @@ public class TrustReceiptsPaymentsQuery implements ReportQuery {
       var row = new LinkedHashMap<String, Object>();
       row.put("date", tx.getTransactionDate().toString());
       row.put("reference", tx.getReference());
-      row.put("type", tx.getTransactionType());
+      row.put("type", TrustTransactionTypeLabels.firmLabel(tx.getTransactionType()));
       row.put(
           "clientName",
           tx.getCustomerId() != null ? customerNames.getOrDefault(tx.getCustomerId(), "-") : "-");

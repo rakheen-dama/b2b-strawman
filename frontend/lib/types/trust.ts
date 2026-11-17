@@ -36,55 +36,20 @@ export interface LpffRate {
 
 // Trust transaction types
 
-export type TrustTransactionType =
-  | "DEPOSIT"
-  | "PAYMENT"
-  | "TRANSFER_IN"
-  | "TRANSFER_OUT"
-  | "FEE_TRANSFER"
-  | "REFUND"
-  | "INTEREST_CREDIT"
-  | "INTEREST_LPFF"
-  | "REVERSAL"
-  | "DISBURSEMENT_PAYMENT";
-
-const TRUST_TRANSACTION_TYPE_LABELS: Record<TrustTransactionType, string> = {
-  DEPOSIT: "Deposit",
-  PAYMENT: "Payment",
-  TRANSFER_IN: "Transfer In",
-  TRANSFER_OUT: "Transfer Out",
-  FEE_TRANSFER: "Fee Transfer",
-  REFUND: "Refund",
-  INTEREST_CREDIT: "Interest Credit",
-  INTEREST_LPFF: "Interest LPFF",
-  REVERSAL: "Reversal",
-  DISBURSEMENT_PAYMENT: "Disbursement Payment",
-};
-
-export function transactionTypeLabel(type: TrustTransactionType): string {
-  return TRUST_TRANSACTION_TYPE_LABELS[type] ?? type;
-}
-
 /**
- * Transaction types that move money INTO the client's trust ledger — the credit set of the backend
- * balance queries (TrustTransactionRepository.calculateClientBalanceAsOfDate). Everything else
- * (PAYMENT, TRANSFER_OUT, FEE_TRANSFER, REFUND, INTEREST_LPFF, …) renders as an outflow (G88-F23).
+ * A trust transaction type code — a key of the backend registry (`TrustTransactionType`, 25 types).
+ * No local list or label map (Phase 92 646E): labels, direction and reversal rules arrive from the
+ * API — on every transaction (`typeLabel`, `direction`) and from `GET /api/trust-transaction-types`.
  */
-const INFLOW_TRANSACTION_TYPES: ReadonlySet<TrustTransactionType> = new Set([
-  "DEPOSIT",
-  "TRANSFER_IN",
-  "INTEREST_CREDIT",
-]);
+export type TrustTransactionType = string;
 
-export function isInflowType(type: TrustTransactionType): boolean {
-  return INFLOW_TRANSACTION_TYPES.has(type);
-}
+/** Which way a row moves its own ledger; a reversal is the opposite of what it reverses. */
+export type TrustTransactionDirection = "IN" | "OUT" | "NEUTRAL";
 
-/**
- * How a posted row of each type is reversed — mirrors the backend registry's `reversal` attribute
- * (TrustTransactionType, Phase 92 649B). Interim: 646E replaces this local map with the registry
- * endpoint (`GET /api/trust-transaction-types`). Never rendered — no raw rule name on screen.
- */
+/** The creditor ledger a row moves (ADR-378). */
+export type TrustLedger = "CLIENT" | "CLIENT_INVESTMENT" | "NON_CLIENT" | "INTER_ACCOUNT";
+
+/** How a posted row of a type is reversed (registry `reversal`). Never rendered. */
 export type TrustReversalRule =
   | "IMMEDIATE"
   | "NEEDS_APPROVAL"
@@ -93,36 +58,47 @@ export type TrustReversalRule =
   | "OWNER"
   | "NONE";
 
-export const TRUST_TRANSACTION_REVERSAL: Record<TrustTransactionType, TrustReversalRule> = {
-  DEPOSIT: "NEEDS_APPROVAL",
-  PAYMENT: "IMMEDIATE",
-  FEE_TRANSFER: "IMMEDIATE",
-  REFUND: "IMMEDIATE",
-  TRANSFER_OUT: "PAIR",
-  TRANSFER_IN: "VIA_PAIR",
-  REVERSAL: "NONE",
-  INTEREST_CREDIT: "NONE",
-  INTEREST_LPFF: "NONE",
-  DISBURSEMENT_PAYMENT: "NONE",
-};
+/** One registry entry — `GET /api/trust-transaction-types` (§16.4.1), declaration order. */
+export interface TrustTransactionTypeInfo {
+  code: string;
+  /** The firm label — the only text a screen prints for the type. */
+  label: string;
+  direction: TrustTransactionDirection;
+  /** Null for REVERSAL (it moves its original's ledger). */
+  ledger: TrustLedger | null;
+  /** Null for REVERSAL (it inherits its original's origin). */
+  origin: "FIRM" | "BANK" | null;
+  requiresApproval: boolean;
+  reversal: TrustReversalRule;
+  clientVisible: boolean;
+}
 
-export function reversalRuleOf(type: TrustTransactionType): TrustReversalRule {
-  return TRUST_TRANSACTION_REVERSAL[type] ?? "NONE";
+/** The registry's reversal rule for a type code; a code the list does not carry is "NONE". */
+export function reversalRuleFor(
+  code: string,
+  types: readonly TrustTransactionTypeInfo[]
+): TrustReversalRule {
+  return types.find((t) => t.code === code)?.reversal ?? "NONE";
 }
 
 /**
  * Whether the generic Reverse action is offered for a row: any posted row (RECORDED or APPROVED —
- * founder ruling #1) not yet reversed, whose type reverses on the generic endpoint (at once, after
- * approval, or with its paired transfer leg).
+ * founder ruling #1) not yet reversed and with no contra awaiting approval (R1 — the backend
+ * refuses both), whose type reverses on the generic endpoint (at once, after approval, or with
+ * its paired transfer leg).
  */
-export function canOfferReversal(tx: {
-  transactionType: TrustTransactionType;
-  status: TrustTransactionStatus;
-  reversedById: string | null;
-}): boolean {
+export function canOfferReversal(
+  tx: {
+    transactionType: string;
+    status: TrustTransactionStatus;
+    reversedById: string | null;
+    reversalPending: boolean;
+  },
+  types: readonly TrustTransactionTypeInfo[]
+): boolean {
   if (tx.status !== "RECORDED" && tx.status !== "APPROVED") return false;
-  if (tx.reversedById !== null) return false;
-  const rule = reversalRuleOf(tx.transactionType);
+  if (tx.reversedById !== null || tx.reversalPending) return false;
+  const rule = reversalRuleFor(tx.transactionType, types);
   return rule === "IMMEDIATE" || rule === "NEEDS_APPROVAL" || rule === "PAIR";
 }
 
@@ -133,19 +109,31 @@ export type TrustTransactionStatus =
   | "REJECTED"
   | "REVERSED";
 
+/**
+ * `TrustTransactionService.TrustTransactionResponse` — keys in the Java record's order (pinned by
+ * `__tests__/trust-wire-shapes.test.ts`, ADR-365).
+ */
 export interface TrustTransaction {
   id: string;
   trustAccountId: string;
   transactionType: TrustTransactionType;
+  /** The registry's firm label — print this, never the code. */
+  typeLabel: string;
+  direction: TrustTransactionDirection;
+  ledger: TrustLedger;
   amount: number;
   clientId: string;
   matterId: string | null;
+  creditorAccountId: string | null;
+  investmentId: string | null;
   counterpartyClientId: string | null;
   invoiceId: string | null;
   reference: string;
   description: string | null;
   transactionDate: string;
   status: TrustTransactionStatus;
+  /** When the row posted its effects; null while unposted (awaiting approval, rejected). */
+  postedAt: string | null;
   approvedBy: string | null;
   approvedAt: string | null;
   secondApprovedBy: string | null;
@@ -155,6 +143,8 @@ export interface TrustTransaction {
   rejectionReason: string | null;
   reversalOf: string | null;
   reversedById: string | null;
+  /** A contra of this row awaits approval — a second reversal is refused (R1). */
+  reversalPending: boolean;
   bankStatementLineId: string | null;
   recordedBy: string;
   createdAt: string;

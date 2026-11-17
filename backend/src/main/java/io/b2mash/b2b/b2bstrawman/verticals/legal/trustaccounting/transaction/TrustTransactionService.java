@@ -35,16 +35,21 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -171,19 +176,31 @@ public class TrustTransactionService {
       String description,
       LocalDate transactionDate) {}
 
+  /**
+   * One trust transaction (§16.4.1). {@code typeLabel} is the registry's firm label; {@code
+   * direction} the way the row moves its own ledger ({@link TrustTransactionDirection#ofRow});
+   * {@code reversalPending} is true while a contra of this row awaits approval — the one blocking
+   * state the other fields do not show (a posted contra sets {@code reversedById}).
+   */
   public record TrustTransactionResponse(
       UUID id,
       UUID trustAccountId,
       String transactionType,
+      String typeLabel,
+      TrustTransactionDirection direction,
+      TrustLedger ledger,
       BigDecimal amount,
       UUID clientId,
       UUID matterId,
+      UUID creditorAccountId,
+      UUID investmentId,
       UUID counterpartyClientId,
       UUID invoiceId,
       String reference,
       String description,
       LocalDate transactionDate,
       String status,
+      Instant postedAt,
       UUID approvedBy,
       Instant approvedAt,
       UUID secondApprovedBy,
@@ -193,12 +210,29 @@ public class TrustTransactionService {
       String rejectionReason,
       UUID reversalOf,
       UUID reversedById,
+      boolean reversalPending,
       UUID bankStatementLineId,
       UUID recordedBy,
       Instant createdAt,
       // ADR-361: server-computed on the client-ledger /history endpoint only; null on every other
       // producer and on non-posted / REVERSAL rows.
       BigDecimal runningBalance) {}
+
+  /**
+   * One registry entry as data (§16.4.1) — feeds every type filter. {@code label} is the firm
+   * label; {@code ledger} and {@code origin} are null for REVERSAL (its original's). {@code
+   * requiresApproval} is true for maker-checker types ({@code Approval.REQUIRED}); a {@code
+   * WITH_PAIR} row follows its pair and is never recorded alone.
+   */
+  public record TrustTransactionTypeResponse(
+      String code,
+      String label,
+      TrustTransactionDirection direction,
+      TrustLedger ledger,
+      TrustTransactionType.Origin origin,
+      boolean requiresApproval,
+      TrustTransactionType.Reversal reversal,
+      boolean clientVisible) {}
 
   public record RejectRequest(@NotBlank String reason) {}
 
@@ -213,10 +247,33 @@ public class TrustTransactionService {
   // --- Service Methods ---
 
   /**
+   * The transaction type registry as data, in declaration order (the filter order) — no screen
+   * hard-codes a type list (§16.4.1).
+   */
+  @Transactional(readOnly = true)
+  public List<TrustTransactionTypeResponse> listTransactionTypes() {
+    moduleGuard.requireModule(MODULE_ID);
+    return Arrays.stream(TrustTransactionType.values())
+        .map(
+            t ->
+                new TrustTransactionTypeResponse(
+                    t.name(),
+                    t.label(),
+                    t.direction(),
+                    t.ledger(),
+                    t.origin(),
+                    t.approval() == TrustTransactionType.Approval.REQUIRED,
+                    t.reversal(),
+                    t.clientVisible()))
+        .toList();
+  }
+
+  /**
    * Lists a trust account's transactions, newest first. All filters are optional; with none set the
    * result equals the historical unfiltered list. {@code matterId} narrows to the matter's
-   * transactions ({@code trust_transactions.project_id}); {@code excludeLinked} hides transactions
-   * already linked to a legal disbursement (Phase 88 Epic 621A — trust-link picker).
+   * transactions ({@code trust_transactions.project_id}); {@code ledger} to one creditor ledger;
+   * {@code excludeLinked} hides transactions already linked to a legal disbursement (Phase 88 Epic
+   * 621A — trust-link picker).
    */
   @Transactional(readOnly = true)
   public Page<TrustTransactionResponse> listTransactions(
@@ -224,6 +281,7 @@ public class TrustTransactionService {
       UUID matterId,
       String transactionType,
       String status,
+      TrustLedger ledger,
       boolean excludeLinked,
       Pageable pageable) {
     moduleGuard.requireModule(MODULE_ID);
@@ -232,9 +290,11 @@ public class TrustTransactionService {
         .findById(trustAccountId)
         .orElseThrow(() -> new ResourceNotFoundException("TrustAccount", trustAccountId));
 
-    return transactionRepository
-        .findFiltered(trustAccountId, matterId, transactionType, status, excludeLinked, pageable)
-        .map(this::toResponse);
+    var page =
+        transactionRepository.findFiltered(
+            trustAccountId, matterId, transactionType, status, ledger, excludeLinked, pageable);
+    return new PageImpl<>(
+        toResponses(page.getContent()), page.getPageable(), page.getTotalElements());
   }
 
   @Transactional(readOnly = true)
@@ -261,11 +321,8 @@ public class TrustTransactionService {
         .findById(trustAccountId)
         .orElseThrow(() -> new ResourceNotFoundException("TrustAccount", trustAccountId));
 
-    return transactionRepository
-        .findByStatusAndTrustAccountId("AWAITING_APPROVAL", trustAccountId)
-        .stream()
-        .map(this::toResponse)
-        .toList();
+    return toResponses(
+        transactionRepository.findByStatusAndTrustAccountId("AWAITING_APPROVAL", trustAccountId));
   }
 
   @Transactional
@@ -1788,19 +1845,66 @@ public class TrustTransactionService {
   }
 
   private TrustTransactionResponse toResponse(TrustTransaction entity) {
+    return toResponses(List.of(entity)).getFirst();
+  }
+
+  /**
+   * Maps a page of rows with two batched lookups, never one per row: the types of the originals the
+   * page's REVERSAL rows reverse (for their {@code direction}), and which of the page's posted rows
+   * have a contra awaiting approval ({@code reversalPending}).
+   */
+  private List<TrustTransactionResponse> toResponses(List<TrustTransaction> rows) {
+    Set<UUID> originalIds = new HashSet<>();
+    List<UUID> postedIds = new ArrayList<>();
+    for (var row : rows) {
+      if ("REVERSAL".equals(row.getTransactionType()) && row.getReversalOf() != null) {
+        originalIds.add(row.getReversalOf());
+      }
+      if ("RECORDED".equals(row.getStatus()) || "APPROVED".equals(row.getStatus())) {
+        postedIds.add(row.getId());
+      }
+    }
+    Map<UUID, String> reversedTypes = new HashMap<>();
+    if (!originalIds.isEmpty()) {
+      for (var original : transactionRepository.findAllById(originalIds)) {
+        reversedTypes.put(original.getId(), original.getTransactionType());
+      }
+    }
+    Set<UUID> pending =
+        postedIds.isEmpty()
+            ? Set.of()
+            : new HashSet<>(transactionRepository.findPendingReversalOriginalIds(postedIds));
+    return rows.stream()
+        .map(
+            row ->
+                toResponse(
+                    row,
+                    row.getReversalOf() == null ? null : reversedTypes.get(row.getReversalOf()),
+                    row.getId() != null && pending.contains(row.getId())))
+        .toList();
+  }
+
+  private static TrustTransactionResponse toResponse(
+      TrustTransaction entity, String reversedType, boolean reversalPending) {
     return new TrustTransactionResponse(
         entity.getId(),
         entity.getTrustAccountId(),
         entity.getTransactionType(),
+        TrustTransactionTypeLabels.firmLabel(entity.getTransactionType()),
+        TrustTransactionDirection.ofRow(entity.getTransactionType(), reversedType),
+        entity.getLedger(),
         entity.getAmount(),
         entity.getCustomerId(),
         entity.getProjectId(),
+        entity.getCreditorAccountId(),
+        entity.getInvestmentId(),
         entity.getCounterpartyCustomerId(),
         entity.getInvoiceId(),
         entity.getReference(),
         entity.getDescription(),
         entity.getTransactionDate(),
         entity.getStatus(),
+        entity.getPostedAt(),
         entity.getApprovedBy(),
         entity.getApprovedAt(),
         entity.getSecondApprovedBy(),
@@ -1810,6 +1914,7 @@ public class TrustTransactionService {
         entity.getRejectionReason(),
         entity.getReversalOf(),
         entity.getReversedById(),
+        reversalPending,
         entity.getBankStatementLineId(),
         entity.getRecordedBy(),
         entity.getCreatedAt(),

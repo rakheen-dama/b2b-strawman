@@ -764,6 +764,162 @@ class TrustTransactionControllerTest {
         .andExpect(jsonPath("$.content[*].id", containsInAnyOrder(linked, free)));
   }
 
+  // --- Phase 92 646E: registry as data on the transaction DTO ---
+
+  @Test
+  void getTransactions_rowsCarryTypeLabelDirectionLedger_andFilterByLedger() throws Exception {
+    var ownerJwt = TestJwtFactory.ownerJwt(ORG_ID, "user_txn_ctrl_owner");
+    var clientId =
+        TestEntityHelper.createCustomer(
+            mockMvc, ownerJwt, "Trust Registry Client", "trust_registry_client@test.com");
+    var matter = clientMatter(clientId, "Trust Registry Matter");
+    var depositId = recordDeposit(clientId, matter, "2000.00", "DEP-646E-A");
+    var pendingId = recordPayment(clientId, matter, "300.00", "PAY-646E-A"); // AWAITING_APPROVAL
+
+    mockMvc
+        .perform(
+            get("/api/trust-accounts/" + trustAccountId + "/transactions/" + depositId)
+                .with(ownerJwt))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.typeLabel").value("Deposit"))
+        .andExpect(jsonPath("$.direction").value("IN"))
+        .andExpect(jsonPath("$.ledger").value("CLIENT"))
+        .andExpect(jsonPath("$.creditorAccountId").value(org.hamcrest.Matchers.nullValue()))
+        .andExpect(jsonPath("$.investmentId").value(org.hamcrest.Matchers.nullValue()))
+        .andExpect(jsonPath("$.postedAt").isNotEmpty())
+        .andExpect(jsonPath("$.reversalPending").value(false));
+
+    // Unposted rows still show the way they will move (D2)
+    mockMvc
+        .perform(
+            get("/api/trust-accounts/" + trustAccountId + "/transactions/" + pendingId)
+                .with(ownerJwt))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("AWAITING_APPROVAL"))
+        .andExpect(jsonPath("$.typeLabel").value("Payment"))
+        .andExpect(jsonPath("$.direction").value("OUT"))
+        .andExpect(jsonPath("$.postedAt").value(org.hamcrest.Matchers.nullValue()));
+
+    // The list carries the same fields; ?ledger=CLIENT keeps this test's rows, NON_CLIENT drops
+    // them
+    mockMvc
+        .perform(
+            get("/api/trust-accounts/" + trustAccountId + "/transactions")
+                .param("matterId", matter)
+                .param("ledger", "CLIENT")
+                .with(ownerJwt))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[*].id", containsInAnyOrder(depositId, pendingId)))
+        .andExpect(jsonPath("$.content[*].ledger", everyItem(is("CLIENT"))))
+        .andExpect(jsonPath("$.page.totalElements").value(2));
+    mockMvc
+        .perform(
+            get("/api/trust-accounts/" + trustAccountId + "/transactions")
+                .param("matterId", matter)
+                .param("ledger", "NON_CLIENT")
+                .with(ownerJwt))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content", hasSize(0)));
+  }
+
+  @Test
+  void reversals_takeTheOppositeDirection_andAPendingContraIsFlagged() throws Exception {
+    var ownerJwt = TestJwtFactory.ownerJwt(ORG_ID, "user_txn_ctrl_owner");
+    var adminJwt = TestJwtFactory.adminJwt(ORG_ID, "user_txn_ctrl_admin");
+    var clientId =
+        TestEntityHelper.createCustomer(
+            mockMvc, ownerJwt, "Trust Reversal Dir Client", "trust_reversal_dir@test.com");
+    var matter = clientMatter(clientId, "Trust Reversal Dir Matter");
+    var depositId = recordDeposit(clientId, matter, "3000.00", "DEP-646E-R");
+    var paymentId = recordPayment(clientId, matter, "400.00", "PAY-646E-R");
+    approve(paymentId);
+
+    // A payment's reversal posts at once and puts the money back: IN (F8)
+    var paymentContra =
+        mockMvc
+            .perform(
+                post("/api/trust-transactions/" + paymentId + "/reverse")
+                    .with(adminJwt)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"reason\":\"Paid twice\"}"))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.transactionType").value("REVERSAL"))
+            .andExpect(jsonPath("$.typeLabel").value("Reversal"))
+            .andExpect(jsonPath("$.direction").value("IN"))
+            .andReturn();
+    var paymentContraId =
+        JsonPath.read(paymentContra.getResponse().getContentAsString(), "$.id").toString();
+
+    // A deposit's reversal waits for approval and takes the money out: OUT, unposted
+    var depositContra =
+        mockMvc
+            .perform(
+                post("/api/trust-transactions/" + depositId + "/reverse")
+                    .with(adminJwt)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"reason\":\"Cheque bounced\"}"))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.status").value("AWAITING_APPROVAL"))
+            .andExpect(jsonPath("$.direction").value("OUT"))
+            .andExpect(jsonPath("$.postedAt").value(org.hamcrest.Matchers.nullValue()))
+            .andReturn();
+    var depositContraId =
+        JsonPath.read(depositContra.getResponse().getContentAsString(), "$.id").toString();
+
+    // R1: the deposit is still RECORDED with no reversedById, but its contra is pending
+    mockMvc
+        .perform(
+            get("/api/trust-accounts/" + trustAccountId + "/transactions/" + depositId)
+                .with(ownerJwt))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("RECORDED"))
+        .andExpect(jsonPath("$.reversedById").value(org.hamcrest.Matchers.nullValue()))
+        .andExpect(jsonPath("$.reversalPending").value(true));
+    // The payment's contra posted: REVERSED with reversedById, nothing pending
+    mockMvc
+        .perform(
+            get("/api/trust-accounts/" + trustAccountId + "/transactions/" + paymentId)
+                .with(ownerJwt))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("REVERSED"))
+        .andExpect(jsonPath("$.reversedById").value(paymentContraId))
+        .andExpect(jsonPath("$.reversalPending").value(false));
+
+    // The list (batched lookups) agrees row for row
+    mockMvc
+        .perform(
+            get("/api/trust-accounts/" + trustAccountId + "/transactions")
+                .param("matterId", matter)
+                .with(ownerJwt))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content", hasSize(4)))
+        .andExpect(jsonPath("$.content[?(@.id == '%s')].direction", paymentContraId).value("IN"))
+        .andExpect(jsonPath("$.content[?(@.id == '%s')].direction", depositContraId).value("OUT"))
+        .andExpect(jsonPath("$.content[?(@.id == '%s')].reversalPending", depositId).value(true))
+        .andExpect(jsonPath("$.content[?(@.id == '%s')].reversalPending", paymentId).value(false));
+
+    // The client-ledger history (native query) carries the same fields
+    var history =
+        "/api/trust-accounts/" + trustAccountId + "/client-ledgers/" + clientId + "/history";
+    mockMvc
+        .perform(get(history).with(ownerJwt))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content", hasSize(4)))
+        .andExpect(
+            jsonPath("$.content[?(@.id == '%s')].typeLabel", paymentContraId).value("Reversal"))
+        .andExpect(jsonPath("$.content[?(@.id == '%s')].direction", paymentContraId).value("IN"))
+        .andExpect(jsonPath("$.content[?(@.id == '%s')].direction", depositContraId).value("OUT"))
+        .andExpect(jsonPath("$.content[?(@.id == '%s')].direction", paymentId).value("OUT"))
+        .andExpect(jsonPath("$.content[?(@.id == '%s')].typeLabel", depositId).value("Deposit"))
+        .andExpect(jsonPath("$.content[?(@.id == '%s')].ledger", depositId).value("CLIENT"))
+        .andExpect(jsonPath("$.content[?(@.id == '%s')].reversalPending", depositId).value(true))
+        .andExpect(jsonPath("$.content[?(@.id == '%s')].reversalPending", paymentId).value(false))
+        .andExpect(jsonPath("$.content[?(@.id == '%s')].postedAt", depositId).isNotEmpty())
+        .andExpect(
+            jsonPath("$.content[?(@.id == '%s')].postedAt", depositContraId)
+                .value(org.hamcrest.Matchers.contains(org.hamcrest.Matchers.nullValue())));
+  }
+
   private String recordDeposit(String clientId, String matterId, String amount, String reference)
       throws Exception {
     return recordTxn("deposit", clientId, matterId, amount, reference, "2026-03-01");

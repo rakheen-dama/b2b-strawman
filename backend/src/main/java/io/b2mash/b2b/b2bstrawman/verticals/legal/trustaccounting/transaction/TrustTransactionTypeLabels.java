@@ -1,44 +1,47 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction;
 
 import java.util.Locale;
-import java.util.Map;
+import java.util.function.Function;
 
 /**
- * Client-facing labels for a trust transaction type (tenant {@code chk_trust_txn_type}). Same copy
- * as the portal trust page ({@code portal/lib/labels.ts} TRUST_TRANSACTION_TYPE_LABELS), so the
- * client reads one vocabulary in the portal, the trust-activity email (633C D6) and the Statement
- * of Account's trust Payments table (G89 W2-c3).
+ * Labels for a trust transaction type, read from the registry ({@link TrustTransactionType}, Phase
+ * 92 646E) — no map of its own. Two audiences (649B privacy rule): {@link #label} is the client's
+ * copy ({@link TrustTransactionType#clientLabel()}) for every client surface — the portal trust
+ * ledger, the trust-activity email (633C D6), the Statement of Account (G89 W2-c3) and the Client
+ * Trust Statement; {@link #firmLabel} is the firm's ({@link TrustTransactionType#label()}) for the
+ * transaction DTOs, MCP and the firm reports. Neither throws: a code the registry does not know (a
+ * retired type on a historic row or event) falls back to sentence case, never the raw enum.
  */
 public final class TrustTransactionTypeLabels {
-
-  private static final Map<String, String> LABELS =
-      Map.of(
-          "DEPOSIT", "Deposit",
-          "PAYMENT", "Payment",
-          "REFUND", "Refund",
-          "FEE_TRANSFER", "Fee transfer",
-          "INTEREST_CREDIT", "Interest credited",
-          "INTEREST_LPFF", "Interest to LPFF",
-          "TRANSFER_IN", "Transfer in",
-          "TRANSFER_OUT", "Transfer out",
-          "REVERSAL", "Reversal");
 
   private TrustTransactionTypeLabels() {}
 
   /**
-   * The label for {@code transactionType}; an unmapped value falls back to sentence case ({@code
-   * "SOME_TYPE"} → {@code "Some type"}), never the raw enum. Null/blank stays null so a template
-   * can print its own placeholder.
+   * The client-facing label for {@code transactionType}: the registry's {@code clientLabel}; an
+   * unknown value falls back to sentence case ({@code "SOME_TYPE"} → {@code "Some type"}).
+   * Null/blank stays null so a template can print its own placeholder.
    */
   public static String label(String transactionType) {
+    return labelOf(transactionType, TrustTransactionType::clientLabel);
+  }
+
+  /** The firm label for {@code transactionType} (the registry's {@code label}); same fallbacks. */
+  public static String firmLabel(String transactionType) {
+    return labelOf(transactionType, TrustTransactionType::label);
+  }
+
+  private static String labelOf(
+      String transactionType, Function<TrustTransactionType, String> registryLabel) {
     if (transactionType == null || transactionType.isBlank()) {
       return null;
     }
-    String label = LABELS.get(transactionType);
-    if (label != null) {
-      return label;
-    }
-    String text = transactionType.trim().replace('_', ' ').toLowerCase(Locale.ROOT);
+    return TrustTransactionType.find(transactionType)
+        .map(registryLabel)
+        .orElseGet(() -> sentenceCase(transactionType));
+  }
+
+  private static String sentenceCase(String code) {
+    String text = code.trim().replace('_', ' ').toLowerCase(Locale.ROOT);
     return Character.toUpperCase(text.charAt(0)) + text.substring(1);
   }
 

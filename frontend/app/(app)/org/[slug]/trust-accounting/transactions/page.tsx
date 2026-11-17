@@ -9,7 +9,10 @@ import { getCurrentUserEmail } from "@/lib/auth";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@b2mash/ui/card";
 import { Badge } from "@b2mash/ui/badge";
 import { Button } from "@b2mash/ui/button";
-import { fetchTrustAccounts } from "@/app/(app)/org/[slug]/trust-accounting/actions";
+import {
+  fetchTrustAccounts,
+  fetchTrustTransactionTypes,
+} from "@/app/(app)/org/[slug]/trust-accounting/actions";
 import {
   fetchTransactions,
   type TransactionPage,
@@ -21,12 +24,10 @@ import { TransactionFilters } from "@/components/trust/transaction-filters";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
 import {
   canOfferReversal,
-  isInflowType,
-  reversalRuleOf,
-  transactionTypeLabel,
+  reversalRuleFor,
   type OrgMember,
   type TrustTransactionStatus,
-  type TrustTransactionType,
+  type TrustTransactionTypeInfo,
 } from "@/lib/types";
 
 // ── Helpers ───────────────────────────────────────────────────────
@@ -54,18 +55,6 @@ const STATUS_OPTIONS: TrustTransactionStatus[] = [
   "APPROVED",
   "REJECTED",
   "REVERSED",
-];
-
-const TYPE_OPTIONS: TrustTransactionType[] = [
-  "DEPOSIT",
-  "PAYMENT",
-  "TRANSFER_IN",
-  "TRANSFER_OUT",
-  "FEE_TRANSFER",
-  "REFUND",
-  "INTEREST_CREDIT",
-  "INTEREST_LPFF",
-  "REVERSAL",
 ];
 
 // ── Page ──────────────────────────────────────────────────────────
@@ -114,6 +103,17 @@ export default async function TransactionsPage({
   const canApproveTrust =
     capData.isAdmin || capData.isOwner || capData.capabilities.includes("APPROVE_TRUST_PAYMENT");
 
+  // The type registry (646E): filter pills and reversal rules. Static, so it is fetched
+  // concurrently with the account and transaction fetches below. Non-fatal — without it the rows
+  // still render (labels and direction arrive on each row), only the pills and Reverse go.
+  const typesPromise: Promise<TrustTransactionTypeInfo[]> = (async () => {
+    try {
+      return await fetchTrustTransactionTypes();
+    } catch {
+      return [];
+    }
+  })();
+
   // Fetch primary trust account
   let accountId: string | null = null;
   let accountFetchError = false;
@@ -147,6 +147,8 @@ export default async function TransactionsPage({
       fetchError = true;
     }
   }
+
+  const types = await typesPromise;
 
   // Fetch the customer roster for the picker dialogs (Deposit/Payment/
   // Refund). Trimmed to {id, name, email} so the prop crosses the
@@ -269,17 +271,17 @@ export default async function TransactionsPage({
         >
           All
         </Link>
-        {TYPE_OPTIONS.map((type) => (
+        {types.map((t) => (
           <Link
-            key={type}
-            href={filterUrl({ type })}
+            key={t.code}
+            href={filterUrl({ type: t.code })}
             className={`rounded-full px-3 py-1 text-sm transition-colors ${
-              search.type === type
+              search.type === t.code
                 ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
                 : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
             }`}
           >
-            {transactionTypeLabel(type)}
+            {t.label}
           </Link>
         ))}
       </div>
@@ -377,23 +379,20 @@ export default async function TransactionsPage({
                             {tx.reference}
                           </td>
                           <td className="py-3 pr-4">
-                            <Badge variant="neutral">
-                              {transactionTypeLabel(tx.transactionType)}
-                            </Badge>
+                            <Badge variant="neutral">{tx.typeLabel}</Badge>
                           </td>
                           <td className="py-3 pr-4 text-right">
+                            {/* 646E F8: styling from the row's direction (a reversal is the
+                                opposite of what it reverses); NEUTRAL draws no arrow */}
                             <span
                               className={`inline-flex items-center gap-1 font-mono tabular-nums ${
-                                isInflowType(tx.transactionType)
+                                tx.direction === "IN"
                                   ? "text-green-600 dark:text-green-400"
                                   : "text-slate-950 dark:text-slate-50"
                               }`}
                             >
-                              {isInflowType(tx.transactionType) ? (
-                                <ArrowDownLeft className="size-3" />
-                              ) : (
-                                <ArrowUpRight className="size-3" />
-                              )}
+                              {tx.direction === "IN" && <ArrowDownLeft className="size-3" />}
+                              {tx.direction === "OUT" && <ArrowUpRight className="size-3" />}
                               {formatCurrency(tx.amount, currency)}
                             </span>
                           </td>
@@ -424,13 +423,13 @@ export default async function TransactionsPage({
                               </span>
                             )}
                             {/* Phase 92 649B: any posted row, per its type's reversal rule */}
-                            {canManageTrust && canOfferReversal(tx) && (
+                            {canManageTrust && canOfferReversal(tx, types) && (
                               <span data-testid={`reversal-action-${tx.id}`}>
                                 <ReversalButton
                                   transactionId={tx.id}
                                   transactionDate={tx.transactionDate}
                                   needsApproval={
-                                    reversalRuleOf(tx.transactionType) === "NEEDS_APPROVAL"
+                                    reversalRuleFor(tx.transactionType, types) === "NEEDS_APPROVAL"
                                   }
                                 />
                               </span>

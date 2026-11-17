@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditEvent;
 import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
 import io.b2mash.b2b.b2bstrawman.template.VariableFormatter;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionType;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
@@ -716,19 +717,36 @@ public class ActivityMessageFormatter {
     return "%s rejected %s".formatted(actorName, what);
   }
 
+  /**
+   * The noun for a trust type in a feed sentence. The six original types (plus the legacy audit key
+   * {@code TRANSFER}) keep their established prose; every other type reads its registry label
+   * ({@link TrustTransactionType#label()}, first letter lower-cased) — Phase 92 646E. An unknown or
+   * retired code (a historic audit row) reads "trust transaction"; this never throws.
+   */
   private static String trustTypeNoun(String transactionType) {
     if (transactionType == null) {
       return "trust transaction";
     }
-    return switch (transactionType.toUpperCase(Locale.ROOT)) {
+    String code = transactionType.toUpperCase(Locale.ROOT);
+    return switch (code) {
       case "DEPOSIT" -> "trust deposit";
       case "PAYMENT" -> "trust payment";
       case "TRANSFER", "TRANSFER_OUT", "TRANSFER_IN" -> "trust transfer";
       case "FEE_TRANSFER" -> "fee transfer";
       case "REFUND" -> "trust refund";
       case "REVERSAL" -> "trust reversal";
-      default -> "trust transaction";
+      default ->
+          TrustTransactionType.find(code)
+              .map(type -> decapitalise(type.label()))
+              .orElse("trust transaction");
     };
+  }
+
+  /**
+   * Lower-cases only the first character, so "Legal Practitioners' Fidelity Fund" keeps capitals.
+   */
+  private static String decapitalise(String label) {
+    return label.isEmpty() ? label : Character.toLowerCase(label.charAt(0)) + label.substring(1);
   }
 
   private String formatRateReSnapshot(String actorName, Map<String, Object> details) {

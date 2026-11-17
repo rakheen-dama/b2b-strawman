@@ -273,6 +273,8 @@ class TrustReportQueryIntegrationTest {
           assertThat(result.rows().getFirst()).containsKey("date");
           assertThat(result.rows().getFirst()).containsKey("reference");
           assertThat(result.rows().getFirst()).containsKey("type");
+          // F7 (646E): the firm report prints the registry label, never the stored code
+          assertThat(result.rows().getFirst()).containsEntry("type", "Deposit");
           assertThat(result.rows().getFirst()).containsKey("clientName");
           assertThat(result.rows().getFirst()).containsKey("credit");
           assertThat(result.rows().getFirst()).containsKey("debit");
@@ -343,6 +345,8 @@ class TrustReportQueryIntegrationTest {
           assertThat(firstRow).containsKey("date");
           assertThat(firstRow).containsKey("reference");
           assertThat(firstRow).containsKey("type");
+          // F7 (646E): the registry label, never the stored code
+          assertThat(firstRow).containsEntry("type", "Deposit");
           assertThat(firstRow).containsKey("credit");
           assertThat(firstRow).containsKey("debit");
           assertThat(firstRow).containsKey("runningBalance");

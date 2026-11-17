@@ -65,4 +65,20 @@ public interface ClientHistoryRow {
   Instant getCreatedAt();
 
   BigDecimal getRunningBalance();
+
+  // --- 646E (registry as data) ---
+
+  String getLedger();
+
+  UUID getCreditorAccountId();
+
+  UUID getInvestmentId();
+
+  Instant getPostedAt();
+
+  /** The stored type of the row this one reverses ({@code reversal_of}); null otherwise. */
+  String getReversedType();
+
+  /** Whether a contra of this row awaits approval. */
+  Boolean getReversalPending();
 }

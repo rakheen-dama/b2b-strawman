@@ -374,6 +374,11 @@ class CatalogueBatch2TrustBillingTest {
     JsonNode payload = resultPayload(result);
     assertThat(payload.at("/size").asInt()).isEqualTo(50);
     assertThat(payload.at("/total").asLong()).isGreaterThanOrEqualTo(1);
+    // Phase 92 646E (§16.6.5): each item carries the registry label, direction and ledger
+    assertThat(payload.at("/items/0/type").asString()).isEqualTo("DEPOSIT");
+    assertThat(payload.at("/items/0/typeLabel").asString()).isEqualTo("Deposit");
+    assertThat(payload.at("/items/0/direction").asString()).isEqualTo("IN");
+    assertThat(payload.at("/items/0/ledger").asString()).isEqualTo("CLIENT");
   }
 
   @Test

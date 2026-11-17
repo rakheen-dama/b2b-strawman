@@ -1,0 +1,144 @@
+Skip to content
+Kazi
+E2E Test Organization
+Search...
+⌘K
+TODAY
+Home
+My work
+Diary
+MATTERS
+Matters
+New matter
+Conflict check
+Adverse parties
+AI reviews
+CLIENTS
+Clients
+FICA & compliance
+Data requests
+FEES
+TRUST
+FIRM
+Platform Admin
+Notifications
+AO
+
+Alice Owner
+
+alice@e2e-test.local
+
+Toggle menu
+E2E Test Organization
+Trust accounting
+Search
+⌘K
+13 unread notifications
+13
+e2e-test-org
+AO
+Trust Accounting
+
+LSSA-compliant trust account management for client funds
+
+Client Ledgers
+Record Transaction
+Trust Balance
+R 306 500,00
+
+Mathebula & Partners Trust Account cashbook balance
+
+Client ledgers R 306 500,00
+(agrees with the cashbook)
+
+Active Clients
+3
+Clients with trust balances
+Pending Approvals
+4
+Transactions awaiting approval
+Needs attention
+Reconciliation
+Not yet reconciled
+No reconciliation records found
+4 transactions awaiting approval
+Trust balance trend
+Month-end balances as currently recorded (ZAR)
+May 2026
+Cashbook
+R 0,00
+Client ledgers
+R 0,00
+Cashbook
+Client ledgers
+Dec 2025
+Jan 2026
+Feb 2026
+Mar 2026
+Apr 2026
+May 2026
+Jun 2026
+Jul 2026
+Aug 2026
+Sep 2026
+Oct 2026
+Nov 2026
+R 0
+R 80 k
+R 160 k
+R 240 k
+R 320 k
+
+Trust balance trend: Cashbook from R 0,00 in Dec 2025 to R 306 500,00 in Nov 2026 (to date), peak R 306 500,00 in Nov 2026 (to date); Client ledgers from R 0,00 in Dec 2025 to R 306 500,00 in Nov 2026 (to date), peak R 306 500,00 in Nov 2026 (to date).
+
+View as table
+Recent Transactions
+Last 10 transactions across all client ledgers
+View all
+Recent trust transactions
+DATE	REFERENCE	TYPE	AMOUNT	STATUS
+17 Nov 2026	
+DEP/MOROKA/mwjz8i6e9689
+	Deposit	
+R 250 000,00	RECORDED
+17 Nov 2026	
+DEP/QC/mwjz8i6e9689
+	Deposit	
+R 45 000,00	RECORDED
+17 Nov 2026	
+FEE/MOROKA/mwjz8i6e9689
+	Fee transfer	
+R 8 500,00	APPROVED
+17 Nov 2026	
+INV-Standard Bank-FD-0987654321
+	Payment	
+R 200 000,00	AWAITING APPROVAL
+17 Nov 2026	
+INV-Nedbank-CALL-1122334455
+	Payment	
+R 30 000,00	AWAITING APPROVAL
+17 Nov 2026	
+FEE/SIPHO/mwjz8i6e9689
+	Fee transfer	
+R 500,00	AWAITING APPROVAL
+17 Nov 2026	
+REV-OBS646E-PAY-ZDF70
+	Reversal	
+R 4 000,00	RECORDED
+17 Nov 2026	
+REV-DEP/QC/mwjz8i6e9689
+	Reversal	
+R 45 000,00	AWAITING APPROVAL
+15 Nov 2026	
+OBS646E-PAY-ZDF70
+	Payment	
+R 4 000,00	REVERSED
+14 Nov 2026	
+OBS646E-DEP-ZDF70
+	Deposit	
+R 20 000,00	RECORDED
+Command Palette
+
+Search pages and settings
+
+R 0

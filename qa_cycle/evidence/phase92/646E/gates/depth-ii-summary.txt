@@ -1,0 +1,5 @@
+Gate 1b E2E-LEGAL depth-ii (stack #2, fresh after e2e-down wipe: flyway V16-V18 installed 00:57:50 UTC, 0 trust txns before the suite)
+40 passed / 4 skipped / 0 failed in 2.1m (127 s wall), rc=0. Baseline 40 passed / 4 skipped: MATCH.
+Skips (baseline): day-30-45-soa-writeoff.spec.ts:361 (fixme); null-prefetch-probe.spec.ts:74 x3 (opt-in).
+.last-run.json: status passed, failedTests [].
+Read-only sums after the run: Sipho DEPOSIT +5 000, PAYMENT -1 250 -> cashbook 3 750.00 = client ledgers 3 750.00 (EQ-2 0.00), same as 646B.

@@ -1,0 +1,85 @@
+Skip to content
+Kazi
+E2E Test Organization
+Search...
+⌘K
+TODAY
+Home
+My work
+Diary
+MATTERS
+Matters
+New matter
+Conflict check
+Adverse parties
+AI reviews
+CLIENTS
+Clients
+FICA & compliance
+Data requests
+FEES
+TRUST
+FIRM
+Platform Admin
+Notifications
+AO
+
+Alice Owner
+
+alice@e2e-test.local
+
+Toggle menu
+E2E Test Organization
+Reports
+Trust Receipts & Payments
+Search
+⌘K
+13 unread notifications
+13
+e2e-test-org
+AO
+Back to Reports
+Trust Receipts & Payments
+
+Chronological journal of all trust receipts and payments for a date range.
+
+Trust Account
+*
+Mathebula & Partners Trust Account ••••6789
+From Date
+*
+To Date
+*
+Run Report
+Export CSV
+Export PDF
+
+Total Receipts
+
+R 315 000,00
+
+Total Payments
+
+R 8 500,00
+
+Net Movement
+
+R 306 500,00
+
+Transaction Count
+
+4
+
+DATE	REFERENCE	TYPE	CLIENT	CREDIT	DEBIT	BALANCE
+2026-11-14	OBS646E-DEP-ZDF70	Deposit	Apex Holdings mwjz8i6e9689	R 20 000,00	R 0,00	R 20 000,00
+2026-11-17	DEP/MOROKA/mwjz8i6e9689	Deposit	Moroka Family Trust mwjz8i6e9689	R 250 000,00	R 0,00	R 270 000,00
+2026-11-17	DEP/QC/mwjz8i6e9689	Deposit	QuickCollect Services mwjz8i6e9689	R 45 000,00	R 0,00	R 315 000,00
+2026-11-17	FEE/MOROKA/mwjz8i6e9689	Fee transfer	Moroka Family Trust mwjz8i6e9689	R 0,00	R 8 500,00	R 306 500,00
+
+Page 1 of 1
+
+Previous
+Next
+Command Palette
+
+Search pages and settings

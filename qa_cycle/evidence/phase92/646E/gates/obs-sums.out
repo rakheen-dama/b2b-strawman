@@ -1,0 +1,102 @@
+-- 646E OBS read-only evidence output (schema tenant_7d218705360b) 2026-11-17T00:55:15.386Z
+
+== [baseline: customers]
+select id, name from tenant_7d218705360b.customers order by created_at
+                  id                  |                name                
+--------------------------------------+------------------------------------
+ c1e6c041-3dba-46eb-8779-548ad08c8eae | Acme Corp
+ 45417469-795d-4425-bafc-d08f46fb4641 | Sipho Ndlovu mwjz8i6e9689
+ d4b1aaa9-5003-4637-babf-3fcbe12fd781 | Apex Holdings mwjz8i6e9689
+ d357944c-96ec-4b89-933d-d5f0a2634375 | Moroka Family Trust mwjz8i6e9689
+ ecc7289a-b930-46ca-aca5-4405a5dcf5e9 | QuickCollect Services mwjz8i6e9689
+(5 rows)
+
+
+== [baseline: all trust transactions]
+select id, transaction_type, amount, status, transaction_date, posted_at is not null as posted, ledger, ledger_effect,
+            cashbook_effect, reversal_of, reversed_by_id, reference from tenant_7d218705360b.trust_transactions where true order by created_at
+                  id                  | transaction_type |  amount   |      status       | transaction_date | posted | ledger | ledger_effect | cashbook_effect | reversal_of | reversed_by_id |            reference            
+--------------------------------------+------------------+-----------+-------------------+------------------+--------+--------+---------------+-----------------+-------------+----------------+---------------------------------
+ 5fb813fa-9ff7-408a-8db6-8d3bb4125de9 | DEPOSIT          | 250000.00 | RECORDED          | 2026-11-17       | t      | CLIENT |     250000.00 |       250000.00 |             |                | DEP/MOROKA/mwjz8i6e9689
+ 1a220bef-bb32-4e83-8598-aebef177f315 | DEPOSIT          |  45000.00 | RECORDED          | 2026-11-17       | t      | CLIENT |      45000.00 |        45000.00 |             |                | DEP/QC/mwjz8i6e9689
+ 4f60ac01-ee7d-461d-b7b8-3b6ec69321ec | FEE_TRANSFER     |   8500.00 | APPROVED          | 2026-11-17       | t      | CLIENT |      -8500.00 |        -8500.00 |             |                | FEE/MOROKA/mwjz8i6e9689
+ e8fd3c60-8ab5-428b-b29f-da9f3afb48bd | PAYMENT          | 200000.00 | AWAITING_APPROVAL | 2026-11-17       | f      | CLIENT |          0.00 |            0.00 |             |                | INV-Standard Bank-FD-0987654321
+ 6ab4b031-7318-425c-a91e-a99af125074f | PAYMENT          |  30000.00 | AWAITING_APPROVAL | 2026-11-17       | f      | CLIENT |          0.00 |            0.00 |             |                | INV-Nedbank-CALL-1122334455
+ 8b5d689f-da61-4d41-b6f8-72c3de32aa52 | FEE_TRANSFER     |    500.00 | AWAITING_APPROVAL | 2026-11-17       | f      | CLIENT |          0.00 |            0.00 |             |                | FEE/SIPHO/mwjz8i6e9689
+(6 rows)
+
+
+== [c: Apex deposit + payment + contra]
+select id, transaction_type, amount, status, transaction_date, posted_at is not null as posted, ledger, ledger_effect,
+            cashbook_effect, reversal_of, reversed_by_id, reference from tenant_7d218705360b.trust_transactions where id in ('f6b95509-d6d5-4e60-930a-990fe6840336','22b2848a-d6e6-4f9b-b6a5-a8fccc07cd5c','f291ded5-ee2b-4204-98d2-72b8ae4ccb89') order by created_at
+                  id                  | transaction_type |  amount  |  status  | transaction_date | posted | ledger | ledger_effect | cashbook_effect |             reversal_of              |            reversed_by_id            |       reference       
+--------------------------------------+------------------+----------+----------+------------------+--------+--------+---------------+-----------------+--------------------------------------+--------------------------------------+-----------------------
+ f6b95509-d6d5-4e60-930a-990fe6840336 | DEPOSIT          | 20000.00 | RECORDED | 2026-11-14       | t      | CLIENT |      20000.00 |        20000.00 |                                      |                                      | OBS646E-DEP-ZDF70
+ 22b2848a-d6e6-4f9b-b6a5-a8fccc07cd5c | PAYMENT          |  4000.00 | REVERSED | 2026-11-15       | t      | CLIENT |      -4000.00 |        -4000.00 |                                      | f291ded5-ee2b-4204-98d2-72b8ae4ccb89 | OBS646E-PAY-ZDF70
+ f291ded5-ee2b-4204-98d2-72b8ae4ccb89 | REVERSAL         |  4000.00 | RECORDED | 2026-11-17       | t      | CLIENT |       4000.00 |         4000.00 | 22b2848a-d6e6-4f9b-b6a5-a8fccc07cd5c |                                      | REV-OBS646E-PAY-ZDF70
+(3 rows)
+
+
+== [d: QC deposit + pending contra]
+select id, transaction_type, amount, status, transaction_date, posted_at is not null as posted, ledger, ledger_effect,
+            cashbook_effect, reversal_of, reversed_by_id, reference from tenant_7d218705360b.trust_transactions where id in ('1a220bef-bb32-4e83-8598-aebef177f315','3726a838-f357-4f28-b26b-b040756ab0a4') order by created_at
+                  id                  | transaction_type |  amount  |      status       | transaction_date | posted | ledger | ledger_effect | cashbook_effect |             reversal_of              | reversed_by_id |        reference        
+--------------------------------------+------------------+----------+-------------------+------------------+--------+--------+---------------+-----------------+--------------------------------------+----------------+-------------------------
+ 1a220bef-bb32-4e83-8598-aebef177f315 | DEPOSIT          | 45000.00 | RECORDED          | 2026-11-17       | t      | CLIENT |      45000.00 |        45000.00 |                                      |                | DEP/QC/mwjz8i6e9689
+ 3726a838-f357-4f28-b26b-b040756ab0a4 | REVERSAL         | 45000.00 | AWAITING_APPROVAL | 2026-11-17       | f      | CLIENT |          0.00 |            0.00 | 1a220bef-bb32-4e83-8598-aebef177f315 |                | REV-DEP/QC/mwjz8i6e9689
+(2 rows)
+
+
+== [g: statement-equivalent rows (posted, CLIENT, Apex, from..today)]
+select transaction_date, transaction_type, status, ledger_effect, reference from tenant_7d218705360b.trust_transactions where ledger='CLIENT' and posted_at is not null and customer_id='d4b1aaa9-5003-4637-babf-3fcbe12fd781' and transaction_date between '2026-11-12' and '2026-11-17' order by transaction_date, created_at
+ transaction_date | transaction_type |  status  | ledger_effect |       reference       
+------------------+------------------+----------+---------------+-----------------------
+ 2026-11-14       | DEPOSIT          | RECORDED |      20000.00 | OBS646E-DEP-ZDF70
+ 2026-11-15       | PAYMENT          | REVERSED |      -4000.00 | OBS646E-PAY-ZDF70
+ 2026-11-17       | REVERSAL         | RECORDED |       4000.00 | REV-OBS646E-PAY-ZDF70
+(3 rows)
+
+
+== [g: receipts-payments-equivalent rows (from..today)]
+select transaction_date, transaction_type, status, cashbook_effect, reference from tenant_7d218705360b.trust_transactions where transaction_date between '2026-11-12' and '2026-11-17' order by transaction_date, created_at
+ transaction_date | transaction_type |      status       | cashbook_effect |            reference            
+------------------+------------------+-------------------+-----------------+---------------------------------
+ 2026-11-14       | DEPOSIT          | RECORDED          |        20000.00 | OBS646E-DEP-ZDF70
+ 2026-11-15       | PAYMENT          | REVERSED          |        -4000.00 | OBS646E-PAY-ZDF70
+ 2026-11-17       | DEPOSIT          | RECORDED          |       250000.00 | DEP/MOROKA/mwjz8i6e9689
+ 2026-11-17       | DEPOSIT          | RECORDED          |        45000.00 | DEP/QC/mwjz8i6e9689
+ 2026-11-17       | FEE_TRANSFER     | APPROVED          |        -8500.00 | FEE/MOROKA/mwjz8i6e9689
+ 2026-11-17       | PAYMENT          | AWAITING_APPROVAL |            0.00 | INV-Standard Bank-FD-0987654321
+ 2026-11-17       | PAYMENT          | AWAITING_APPROVAL |            0.00 | INV-Nedbank-CALL-1122334455
+ 2026-11-17       | FEE_TRANSFER     | AWAITING_APPROVAL |            0.00 | FEE/SIPHO/mwjz8i6e9689
+ 2026-11-17       | REVERSAL         | RECORDED          |         4000.00 | REV-OBS646E-PAY-ZDF70
+ 2026-11-17       | REVERSAL         | AWAITING_APPROVAL |            0.00 | REV-DEP/QC/mwjz8i6e9689
+(10 rows)
+
+
+== [final: EQ-2]
+select (select coalesce(sum(cashbook_effect),0) from tenant_7d218705360b.trust_transactions where posted_at is not null) as cashbook,
+            (select coalesce(sum(ledger_effect),0) from tenant_7d218705360b.trust_transactions where posted_at is not null and ledger='CLIENT') as sum_client_ledgers
+ cashbook  | sum_client_ledgers 
+-----------+--------------------
+ 306500.00 |          306500.00
+(1 row)
+
+
+== [final: all trust transactions]
+select id, transaction_type, amount, status, transaction_date, posted_at is not null as posted, ledger, ledger_effect,
+            cashbook_effect, reversal_of, reversed_by_id, reference from tenant_7d218705360b.trust_transactions where true order by created_at
+                  id                  | transaction_type |  amount   |      status       | transaction_date | posted | ledger | ledger_effect | cashbook_effect |             reversal_of              |            reversed_by_id            |            reference            
+--------------------------------------+------------------+-----------+-------------------+------------------+--------+--------+---------------+-----------------+--------------------------------------+--------------------------------------+---------------------------------
+ 5fb813fa-9ff7-408a-8db6-8d3bb4125de9 | DEPOSIT          | 250000.00 | RECORDED          | 2026-11-17       | t      | CLIENT |     250000.00 |       250000.00 |                                      |                                      | DEP/MOROKA/mwjz8i6e9689
+ 1a220bef-bb32-4e83-8598-aebef177f315 | DEPOSIT          |  45000.00 | RECORDED          | 2026-11-17       | t      | CLIENT |      45000.00 |        45000.00 |                                      |                                      | DEP/QC/mwjz8i6e9689
+ 4f60ac01-ee7d-461d-b7b8-3b6ec69321ec | FEE_TRANSFER     |   8500.00 | APPROVED          | 2026-11-17       | t      | CLIENT |      -8500.00 |        -8500.00 |                                      |                                      | FEE/MOROKA/mwjz8i6e9689
+ e8fd3c60-8ab5-428b-b29f-da9f3afb48bd | PAYMENT          | 200000.00 | AWAITING_APPROVAL | 2026-11-17       | f      | CLIENT |          0.00 |            0.00 |                                      |                                      | INV-Standard Bank-FD-0987654321
+ 6ab4b031-7318-425c-a91e-a99af125074f | PAYMENT          |  30000.00 | AWAITING_APPROVAL | 2026-11-17       | f      | CLIENT |          0.00 |            0.00 |                                      |                                      | INV-Nedbank-CALL-1122334455
+ 8b5d689f-da61-4d41-b6f8-72c3de32aa52 | FEE_TRANSFER     |    500.00 | AWAITING_APPROVAL | 2026-11-17       | f      | CLIENT |          0.00 |            0.00 |                                      |                                      | FEE/SIPHO/mwjz8i6e9689
+ f6b95509-d6d5-4e60-930a-990fe6840336 | DEPOSIT          |  20000.00 | RECORDED          | 2026-11-14       | t      | CLIENT |      20000.00 |        20000.00 |                                      |                                      | OBS646E-DEP-ZDF70
+ 22b2848a-d6e6-4f9b-b6a5-a8fccc07cd5c | PAYMENT          |   4000.00 | REVERSED          | 2026-11-15       | t      | CLIENT |      -4000.00 |        -4000.00 |                                      | f291ded5-ee2b-4204-98d2-72b8ae4ccb89 | OBS646E-PAY-ZDF70
+ f291ded5-ee2b-4204-98d2-72b8ae4ccb89 | REVERSAL         |   4000.00 | RECORDED          | 2026-11-17       | t      | CLIENT |       4000.00 |         4000.00 | 22b2848a-d6e6-4f9b-b6a5-a8fccc07cd5c |                                      | REV-OBS646E-PAY-ZDF70
+ 3726a838-f357-4f28-b26b-b040756ab0a4 | REVERSAL         |  45000.00 | AWAITING_APPROVAL | 2026-11-17       | f      | CLIENT |          0.00 |            0.00 | 1a220bef-bb32-4e83-8598-aebef177f315 |                                      | REV-DEP/QC/mwjz8i6e9689
+(10 rows)
+

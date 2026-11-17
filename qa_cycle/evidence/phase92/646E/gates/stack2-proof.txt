@@ -1,0 +1,27 @@
+== worktree: /Users/rakheendama/Projects/2026/worktree-epic-646E @ d3964c700a81a8ec5dce7d1764a5afdfc1935165
+== build log source lines:
+Building from source at: /Users/rakheendama/Projects/2026/worktree-epic-646E
+  Tail logs:   docker compose -f /Users/rakheendama/Projects/2026/worktree-epic-646E/compose/docker-compose.e2e.yml logs -f backend frontend
+== jar classes (TrustTransactionTypeController new in 646E, TrustTransactionDirection new in 646E):
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/transaction/TrustTransactionTypeController.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/transaction/TrustTransactionDirection.class
+== controller class contains mapping literal: api/trust-transaction-types
+== frontend container: fetchTrustTransactionTypes / trust-transaction-types in .next server chunks:
+/app/frontend/.next/server/chunks/ssr/frontend_0aq6lz6._.js
+/app/frontend/.next/server/chunks/ssr/frontend_0wch-h2._.js
+/app/frontend/.next/server/chunks/ssr/frontend_167120w._.js
+== health: {"groups":["liveness","readiness"],"status":"UP"}  frontend :3001 HTTP 200
+== unauthenticated GET /api/trust-transaction-types: HTTP 401 (401 = endpoint mapped behind auth)
+== tenant schemas: tenant_7d218705360b
+ version |           description           | success |        installed_on        
+---------+---------------------------------+---------+----------------------------
+ 18      | phase92 trust creditor accounts | t       | 2026-11-17 00:57:50.561562
+ 17      | phase92 trust reversal contra   | t       | 2026-11-17 00:57:50.555025
+ 16      | phase92 trust posting core      | t       | 2026-11-17 00:57:50.537744
+(3 rows)
+
+ trust_accounts | creditor_accounts | trust_txns 
+----------------+-------------------+------------
+              1 |                 2 |          0
+(1 row)
+

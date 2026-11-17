@@ -1,0 +1,109 @@
+Skip to content
+Kazi
+E2E Test Organization
+Search...
+⌘K
+TODAY
+Home
+My work
+Diary
+MATTERS
+Matters
+New matter
+Conflict check
+Adverse parties
+AI reviews
+CLIENTS
+Clients
+FICA & compliance
+Data requests
+FEES
+TRUST
+FIRM
+Platform Admin
+Notifications
+AO
+
+Alice Owner
+
+alice@e2e-test.local
+
+Toggle menu
+E2E Test Organization
+Trust accounting
+Client ledgers
+Client ledger
+Search
+⌘K
+13 unread notifications
+13
+e2e-test-org
+AO
+Back to Client Ledgers
+Apex Holdings mwjz8i6e9689
+
+Client ledger detail and transaction history
+
+Trust Balance
+
+R 20 000,00
+
+Ledger totals
+
+Deposits
+R 20 000,00
+−
+less
+Payments
+R 0,00
+−
+less
+Fee transfers
+R 0,00
+−
+less
+Refunds
+R 0,00
+=Balance
+R 20 000,00
+Generate Statement
+Select a date range and generate a PDF statement for this client
+From
+To
+Print Statement
+Status:
+All
+Recorded
+Awaiting Approval
+Approved
+Rejected
+Reversed
+Type:
+All
+Deposit
+Payment
+Fee transfer
+Refund
+Transfer out
+Transfer in
+Reversal
+Deposit identified and allocated
+Placed in section 86(4) investment
+Investment capital received
+Section 86(4) investment interest
+Investment withdrawn
+Investment returned to trust
+From
+To
+Transaction History
+3 transactions found
+Date	Reference	Type	Amount	Status	Running Balance
+17 Nov 2026	REV-OBS646E-PAY-ZDF70	Reversal	
+R 4 000,00	RECORDED	—
+15 Nov 2026	OBS646E-PAY-ZDF70	Payment	
+R 4 000,00	REVERSED	—
+14 Nov 2026	OBS646E-DEP-ZDF70	Deposit	
+R 20 000,00	RECORDED	R 20 000,00
+Command Palette
+
+Search pages and settings

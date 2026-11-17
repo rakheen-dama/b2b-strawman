@@ -1,7 +1,7 @@
 {
-  "commit": "65d0f7f72",
-  "command": "cd frontend && rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build  (node v20.11.1, worktree-epic-646B)",
+  "commit": "d3964c700",
+  "command": "cd frontend && rm -rf .next && pnpm install && pnpm run lint && pnpm run typecheck && pnpm run format:check && pnpm test && pnpm run build  (node v20.11.1, worktree-epic-646E)",
   "exit": 0,
-  "ts": "2026-11-16T22:38:25Z",
-  "summary": "PR #1790 (646B) head 65d0f7f72 — lint 0 errors (78 pre-existing warnings), typecheck/format/build OK (route /org/[slug]/trust-accounting/other-creditors emitted), vitest 479 files / 4370 passed / 2 skipped (baseline 4366/2 after 649B, +4)"
+  "ts": "2026-11-17T00:47:00Z",
+  "summary": "PR #1791 (646E) head d3964c700 — lint 0 errors (78 pre-existing warnings), typecheck OK, format:check OK, vitest 480 files / 4387 passed / 2 skipped (baseline 4370/2: +17), build OK"
 }

@@ -1,0 +1,1111 @@
+{
+  "steps": {
+    "a": {
+      "status": 200,
+      "count": 25,
+      "deposit": {
+        "code": "DEPOSIT",
+        "label": "Deposit",
+        "direction": "IN",
+        "ledger": "CLIENT",
+        "origin": "FIRM",
+        "requiresApproval": false,
+        "reversal": "NEEDS_APPROVAL",
+        "clientVisible": true
+      },
+      "reversal": {
+        "code": "REVERSAL",
+        "label": "Reversal",
+        "direction": "NEUTRAL",
+        "ledger": null,
+        "origin": null,
+        "requiresApproval": false,
+        "reversal": "NONE",
+        "clientVisible": true
+      },
+      "labels": [
+        "DEPOSIT=Deposit",
+        "PAYMENT=Payment",
+        "FEE_TRANSFER=Fee transfer",
+        "REFUND=Refund",
+        "TRANSFER_OUT=Transfer out",
+        "TRANSFER_IN=Transfer in",
+        "REVERSAL=Reversal",
+        "FUND_INTEREST=Interest received for the Legal Practitioners' Fidelity Fund",
+        "FUND_SWEEP=Interest paid to the Legal Practitioners' Fidelity Fund",
+        "BANK_CHARGE=Bank charge",
+        "CHARGE_REFUND=Bank charge refunded from the business account",
+        "UNIDENTIFIED_DEPOSIT=Unidentified deposit",
+        "UNIDENT_ALLOC_OUT=Unidentified deposit allocated",
+        "UNIDENT_ALLOC_IN=Deposit identified and allocated",
+        "UNIDENT_FUND_PAY=Unidentified deposit paid to the Fund",
+        "INV_PLACE=Placed in section 86(4) investment",
+        "INV_RECEIVE=Investment capital received",
+        "INV_INTEREST=Section 86(4) investment interest",
+        "FUND_INV_SHARE=Fund share of section 86(4) interest (5%)",
+        "INV_WITHDRAW=Investment withdrawn",
+        "INV_RETURN=Investment returned to trust",
+        "FIRM_INV_PLACE=Placed in section 86(3) investment account",
+        "FIRM_INV_RECEIVE=Section 86(3) investment capital received",
+        "FIRM_INV_WITHDRAW=Section 86(3) investment withdrawn",
+        "FIRM_INV_RETURN=Section 86(3) investment returned to trust"
+      ],
+      "keys": [
+        "code",
+        "label",
+        "direction",
+        "ledger",
+        "origin",
+        "requiresApproval",
+        "reversal",
+        "clientVisible"
+      ],
+      "noTokenStatus": 401
+    },
+    "b": {
+      "pills": [
+        {
+          "text": "All",
+          "href": "/org/e2e-test-org/trust-accounting/transactions",
+          "active": true
+        },
+        {
+          "text": "Deposit",
+          "href": "/org/e2e-test-org/trust-accounting/transactions?type=DEPOSIT",
+          "active": false
+        },
+        {
+          "text": "Payment",
+          "href": "/org/e2e-test-org/trust-accounting/transactions?type=PAYMENT",
+          "active": false
+        },
+        {
+          "text": "Fee transfer",
+          "href": "/org/e2e-test-org/trust-accounting/transactions?type=FEE_TRANSFER",
+          "active": false
+        },
+        {
+          "text": "Refund",
+          "href": "/org/e2e-test-org/trust-accounting/transactions?type=REFUND",
+          "active": false
+        },
+        {
+          "text": "Transfer out",
+          "href": "/org/e2e-test-org/trust-accounting/transactions?type=TRANSFER_OUT",
+          "active": false
+        },
+        {
+          "text": "Transfer in",
+          "href": "/org/e2e-test-org/trust-accounting/transactions?type=TRANSFER_IN",
+          "active": false
+        },
+        {
+          "text": "Reversal",
+          "href": "/org/e2e-test-org/trust-accounting/transactions?type=REVERSAL",
+          "active": false
+        },
+        {
+          "text": "Interest received for the Legal Practitioners' Fidelity Fund",
+          "href": "/org/e2e-test-org/trust-accounting/transactions?type=FUND_INTEREST",
+          "active": false
+        },
+        {
+          "text": "Interest paid to the Legal Practitioners' Fidelity Fund",
+          "href": "/org/e2e-test-org/trust-accounting/transactions?type=FUND_SWEEP",
+          "active": false
+        },
+        {
+          "text": "Bank charge",
+          "href": "/org/e2e-test-org/trust-accounting/transactions?type=BANK_CHARGE",
+          "active": false
+        },
+        {
+          "text": "Bank charge refunded from the business account",
+          "href": "/org/e2e-test-org/trust-accounting/transactions?type=CHARGE_REFUND",
+          "active": false
+        },
+        {
+          "text": "Unidentified deposit",
+          "href": "/org/e2e-test-org/trust-accounting/transactions?type=UNIDENTIFIED_DEPOSIT",
+          "active": false
+        },
+        {
+          "text": "Unidentified deposit allocated",
+          "href": "/org/e2e-test-org/trust-accounting/transactions?type=UNIDENT_ALLOC_OUT",
+          "active": false
+        },
+        {
+          "text": "Deposit identified and allocated",
+          "href": "/org/e2e-test-org/trust-accounting/transactions?type=UNIDENT_ALLOC_IN",
+          "active": false
+        },
+        {
+          "text": "Unidentified deposit paid to the Fund",
+          "href": "/org/e2e-test-org/trust-accounting/transactions?type=UNIDENT_FUND_PAY",
+          "active": false
+        },
+        {
+          "text": "Placed in section 86(4) investment",
+          "href": "/org/e2e-test-org/trust-accounting/transactions?type=INV_PLACE",
+          "active": false
+        },
+        {
+          "text": "Investment capital received",
+          "href": "/org/e2e-test-org/trust-accounting/transactions?type=INV_RECEIVE",
+          "active": false
+        },
+        {
+          "text": "Section 86(4) investment interest",
+          "href": "/org/e2e-test-org/trust-accounting/transactions?type=INV_INTEREST",
+          "active": false
+        },
+        {
+          "text": "Fund share of section 86(4) interest (5%)",
+          "href": "/org/e2e-test-org/trust-accounting/transactions?type=FUND_INV_SHARE",
+          "active": false
+        },
+        {
+          "text": "Investment withdrawn",
+          "href": "/org/e2e-test-org/trust-accounting/transactions?type=INV_WITHDRAW",
+          "active": false
+        },
+        {
+          "text": "Investment returned to trust",
+          "href": "/org/e2e-test-org/trust-accounting/transactions?type=INV_RETURN",
+          "active": false
+        },
+        {
+          "text": "Placed in section 86(3) investment account",
+          "href": "/org/e2e-test-org/trust-accounting/transactions?type=FIRM_INV_PLACE",
+          "active": false
+        },
+        {
+          "text": "Section 86(3) investment capital received",
+          "href": "/org/e2e-test-org/trust-accounting/transactions?type=FIRM_INV_RECEIVE",
+          "active": false
+        },
+        {
+          "text": "Section 86(3) investment withdrawn",
+          "href": "/org/e2e-test-org/trust-accounting/transactions?type=FIRM_INV_WITHDRAW",
+          "active": false
+        },
+        {
+          "text": "Section 86(3) investment returned to trust",
+          "href": "/org/e2e-test-org/trust-accounting/transactions?type=FIRM_INV_RETURN",
+          "active": false
+        }
+      ],
+      "pillCount": 25,
+      "pillLabelsMatchRegistryInOrder": true,
+      "pillHrefCodes": [
+        "DEPOSIT",
+        "PAYMENT",
+        "FEE_TRANSFER",
+        "REFUND",
+        "TRANSFER_OUT",
+        "TRANSFER_IN",
+        "REVERSAL",
+        "FUND_INTEREST",
+        "FUND_SWEEP",
+        "BANK_CHARGE",
+        "CHARGE_REFUND",
+        "UNIDENTIFIED_DEPOSIT",
+        "UNIDENT_ALLOC_OUT",
+        "UNIDENT_ALLOC_IN",
+        "UNIDENT_FUND_PAY",
+        "INV_PLACE",
+        "INV_RECEIVE",
+        "INV_INTEREST",
+        "FUND_INV_SHARE",
+        "INV_WITHDRAW",
+        "INV_RETURN",
+        "FIRM_INV_PLACE",
+        "FIRM_INV_RECEIVE",
+        "FIRM_INV_WITHDRAW",
+        "FIRM_INV_RETURN"
+      ],
+      "pillHrefsMatchRegistry": true,
+      "interestPills": [],
+      "titleCaseOldPills": [],
+      "shot": "01-b1-transactions-page.png",
+      "rows": [
+        {
+          "id": "5fb813fa-9ff7-408a-8db6-8d3bb4125de9",
+          "cells": [
+            "17 Nov 2026",
+            "DEP/MOROKA/mwjz8i6e9689",
+            "Deposit",
+            "R 250 000,00",
+            "RECORDED",
+            "Reverse"
+          ],
+          "typeBadge": "Deposit",
+          "green": true,
+          "arrow": "IN",
+          "svgClass": "lucide lucide-arrow-down-left size-3"
+        },
+        {
+          "id": "1a220bef-bb32-4e83-8598-aebef177f315",
+          "cells": [
+            "17 Nov 2026",
+            "DEP/QC/mwjz8i6e9689",
+            "Deposit",
+            "R 45 000,00",
+            "RECORDED",
+            "Reverse"
+          ],
+          "typeBadge": "Deposit",
+          "green": true,
+          "arrow": "IN",
+          "svgClass": "lucide lucide-arrow-down-left size-3"
+        },
+        {
+          "id": "4f60ac01-ee7d-461d-b7b8-3b6ec69321ec",
+          "cells": [
+            "17 Nov 2026",
+            "FEE/MOROKA/mwjz8i6e9689",
+            "Fee transfer",
+            "R 8 500,00",
+            "APPROVED",
+            "Reverse"
+          ],
+          "typeBadge": "Fee transfer",
+          "green": false,
+          "arrow": "OUT",
+          "svgClass": "lucide lucide-arrow-up-right size-3"
+        },
+        {
+          "id": "e8fd3c60-8ab5-428b-b29f-da9f3afb48bd",
+          "cells": [
+            "17 Nov 2026",
+            "INV-Standard Bank-FD-0987654321",
+            "Payment",
+            "R 200 000,00",
+            "AWAITING APPROVAL",
+            "Approve Reject"
+          ],
+          "typeBadge": "Payment",
+          "green": false,
+          "arrow": "OUT",
+          "svgClass": "lucide lucide-arrow-up-right size-3"
+        },
+        {
+          "id": "6ab4b031-7318-425c-a91e-a99af125074f",
+          "cells": [
+            "17 Nov 2026",
+            "INV-Nedbank-CALL-1122334455",
+            "Payment",
+            "R 30 000,00",
+            "AWAITING APPROVAL",
+            "Approve Reject"
+          ],
+          "typeBadge": "Payment",
+          "green": false,
+          "arrow": "OUT",
+          "svgClass": "lucide lucide-arrow-up-right size-3"
+        },
+        {
+          "id": "8b5d689f-da61-4d41-b6f8-72c3de32aa52",
+          "cells": [
+            "17 Nov 2026",
+            "FEE/SIPHO/mwjz8i6e9689",
+            "Fee transfer",
+            "R 500,00",
+            "AWAITING APPROVAL",
+            "Approve Reject"
+          ],
+          "typeBadge": "Fee transfer",
+          "green": false,
+          "arrow": "OUT",
+          "svgClass": "lucide lucide-arrow-up-right size-3"
+        }
+      ],
+      "rawCodesInBody": [],
+      "filteredUrl": "http://localhost:3001/org/e2e-test-org/trust-accounting/transactions?type=DEPOSIT",
+      "filteredRows": [
+        {
+          "id": "5fb813fa-9ff7-408a-8db6-8d3bb4125de9",
+          "cells": [
+            "17 Nov 2026",
+            "DEP/MOROKA/mwjz8i6e9689",
+            "Deposit",
+            "R 250 000,00",
+            "RECORDED",
+            "Reverse"
+          ],
+          "typeBadge": "Deposit",
+          "green": true,
+          "arrow": "IN",
+          "svgClass": "lucide lucide-arrow-down-left size-3"
+        },
+        {
+          "id": "1a220bef-bb32-4e83-8598-aebef177f315",
+          "cells": [
+            "17 Nov 2026",
+            "DEP/QC/mwjz8i6e9689",
+            "Deposit",
+            "R 45 000,00",
+            "RECORDED",
+            "Reverse"
+          ],
+          "typeBadge": "Deposit",
+          "green": true,
+          "arrow": "IN",
+          "svgClass": "lucide lucide-arrow-down-left size-3"
+        }
+      ],
+      "filteredAllDeposit": true,
+      "filteredActivePill": [
+        "Deposit"
+      ],
+      "filteredShot": "02-b2-transactions-filtered-deposit.png",
+      "sqlDepositCount": "2"
+    },
+    "c": {
+      "deposit": {
+        "closed": true,
+        "error": null
+      },
+      "payment": {
+        "closed": true,
+        "error": null
+      },
+      "bobApprovePayment": "",
+      "paymentRowApproved": {
+        "id": "22b2848a-d6e6-4f9b-b6a5-a8fccc07cd5c",
+        "cells": [
+          "15 Nov 2026",
+          "OBS646E-PAY-ZDF70",
+          "Payment",
+          "R 4 000,00",
+          "APPROVED",
+          "Reverse"
+        ],
+        "typeBadge": "Payment",
+        "green": false,
+        "arrow": "OUT",
+        "svgClass": "lucide lucide-arrow-up-right size-3"
+      },
+      "approvedShot": "05-c3-payment-approved-bob.png",
+      "reverseOfferedOnApprovedPayment": true,
+      "dialogText": "Reverse Transaction This will create a reversal entry. Please provide a reason. Reason Reversal date (optional) Leave blank for today. Use the date the bank shows the reversal. Cancel Reverse Transaction Close",
+      "reverseSubmit": {
+        "closed": true,
+        "error": null
+      },
+      "contraRow": {
+        "id": "f291ded5-ee2b-4204-98d2-72b8ae4ccb89",
+        "cells": [
+          "17 Nov 2026",
+          "REV-OBS646E-PAY-ZDF70",
+          "Reversal",
+          "R 4 000,00",
+          "RECORDED",
+          ""
+        ],
+        "typeBadge": "Reversal",
+        "green": true,
+        "arrow": "IN",
+        "svgClass": "lucide lucide-arrow-down-left size-3"
+      },
+      "paymentRowAfter": {
+        "id": "22b2848a-d6e6-4f9b-b6a5-a8fccc07cd5c",
+        "cells": [
+          "15 Nov 2026",
+          "OBS646E-PAY-ZDF70",
+          "Payment",
+          "R 4 000,00",
+          "REVERSED",
+          ""
+        ],
+        "typeBadge": "Payment",
+        "green": false,
+        "arrow": "OUT",
+        "svgClass": "lucide lucide-arrow-up-right size-3"
+      },
+      "reversedShot": "06-c4-payment-reversed-contra-inflow.png",
+      "apiContra": {
+        "status": 200,
+        "body": {
+          "id": "f291ded5-ee2b-4204-98d2-72b8ae4ccb89",
+          "trustAccountId": "df68b885-f40e-4077-b5c3-a5c3f43ed73d",
+          "transactionType": "REVERSAL",
+          "typeLabel": "Reversal",
+          "direction": "IN",
+          "ledger": "CLIENT",
+          "amount": 4000,
+          "clientId": "d4b1aaa9-5003-4637-babf-3fcbe12fd781",
+          "matterId": "f5bfc0d5-1ee4-4f3a-a1ee-10eba40b994a",
+          "creditorAccountId": null,
+          "investmentId": null,
+          "counterpartyClientId": null,
+          "invoiceId": null,
+          "reference": "REV-OBS646E-PAY-ZDF70",
+          "description": "OBS646E payee bank rejected the EFT ZDF70",
+          "transactionDate": "2026-11-17",
+          "status": "RECORDED",
+          "postedAt": "2026-11-17T00:56:03.644921Z",
+          "approvedBy": null,
+          "approvedAt": null,
+          "secondApprovedBy": null,
+          "secondApprovedAt": null,
+          "rejectedBy": null,
+          "rejectedAt": null,
+          "rejectionReason": null,
+          "reversalOf": "22b2848a-d6e6-4f9b-b6a5-a8fccc07cd5c",
+          "reversedById": null,
+          "reversalPending": false,
+          "bankStatementLineId": null,
+          "recordedBy": "a7802e12-3bb7-4273-b1a5-1d3f5fe8b551",
+          "createdAt": "2026-11-17T00:56:03.645025Z",
+          "runningBalance": null
+        }
+      },
+      "apiPayment": {
+        "status": 200,
+        "body": {
+          "id": "22b2848a-d6e6-4f9b-b6a5-a8fccc07cd5c",
+          "trustAccountId": "df68b885-f40e-4077-b5c3-a5c3f43ed73d",
+          "transactionType": "PAYMENT",
+          "typeLabel": "Payment",
+          "direction": "OUT",
+          "ledger": "CLIENT",
+          "amount": 4000,
+          "clientId": "d4b1aaa9-5003-4637-babf-3fcbe12fd781",
+          "matterId": "f5bfc0d5-1ee4-4f3a-a1ee-10eba40b994a",
+          "creditorAccountId": null,
+          "investmentId": null,
+          "counterpartyClientId": null,
+          "invoiceId": null,
+          "reference": "OBS646E-PAY-ZDF70",
+          "description": "OBS 646E payee: Deeds Office",
+          "transactionDate": "2026-11-15",
+          "status": "REVERSED",
+          "postedAt": "2026-11-17T00:55:28.398278Z",
+          "approvedBy": "bfc1a5f1-bdc9-4086-91f3-ac46ecba1412",
+          "approvedAt": "2026-11-17T00:55:28.398196Z",
+          "secondApprovedBy": null,
+          "secondApprovedAt": null,
+          "rejectedBy": null,
+          "rejectedAt": null,
+          "rejectionReason": null,
+          "reversalOf": null,
+          "reversedById": "f291ded5-ee2b-4204-98d2-72b8ae4ccb89",
+          "reversalPending": false,
+          "bankStatementLineId": null,
+          "recordedBy": "a7802e12-3bb7-4273-b1a5-1d3f5fe8b551",
+          "createdAt": "2026-11-17T00:55:26.633100Z",
+          "runningBalance": null
+        }
+      }
+    },
+    "d": {
+      "reverseOfferedBefore": true,
+      "apiDepositBefore": {
+        "status": 200,
+        "body": {
+          "id": "1a220bef-bb32-4e83-8598-aebef177f315",
+          "trustAccountId": "df68b885-f40e-4077-b5c3-a5c3f43ed73d",
+          "transactionType": "DEPOSIT",
+          "typeLabel": "Deposit",
+          "direction": "IN",
+          "ledger": "CLIENT",
+          "amount": 45000,
+          "clientId": "ecc7289a-b930-46ca-aca5-4405a5dcf5e9",
+          "matterId": "c4d52295-31a3-47b7-b0f7-7ff74eb0e1df",
+          "creditorAccountId": null,
+          "investmentId": null,
+          "counterpartyClientId": null,
+          "invoiceId": null,
+          "reference": "DEP/QC/mwjz8i6e9689",
+          "description": "QuickCollect Services — collections deposit",
+          "transactionDate": "2026-11-17",
+          "status": "RECORDED",
+          "postedAt": "2026-11-17T00:52:43.449583Z",
+          "approvedBy": null,
+          "approvedAt": null,
+          "secondApprovedBy": null,
+          "secondApprovedAt": null,
+          "rejectedBy": null,
+          "rejectedAt": null,
+          "rejectionReason": null,
+          "reversalOf": null,
+          "reversedById": null,
+          "reversalPending": false,
+          "bankStatementLineId": null,
+          "recordedBy": "a7802e12-3bb7-4273-b1a5-1d3f5fe8b551",
+          "createdAt": "2026-11-17T00:52:43.449815Z",
+          "runningBalance": null
+        }
+      },
+      "dialogText": "Reverse Transaction This will create a reversal entry. A deposit reversal must be approved by another member before it takes effect. Reason Reversal date (optional) Leave blank for today. Use the date the bank shows the reversal. Cancel Reverse Transaction Close",
+      "reverseSubmit": {
+        "closed": true,
+        "error": null
+      },
+      "contraRow": {
+        "id": "3726a838-f357-4f28-b26b-b040756ab0a4",
+        "cells": [
+          "17 Nov 2026",
+          "REV-DEP/QC/mwjz8i6e9689",
+          "Reversal",
+          "R 45 000,00",
+          "AWAITING APPROVAL",
+          "Approve Reject"
+        ],
+        "typeBadge": "Reversal",
+        "green": false,
+        "arrow": "OUT",
+        "svgClass": "lucide lucide-arrow-up-right size-3"
+      },
+      "depositRow": {
+        "id": "1a220bef-bb32-4e83-8598-aebef177f315",
+        "cells": [
+          "17 Nov 2026",
+          "DEP/QC/mwjz8i6e9689",
+          "Deposit",
+          "R 45 000,00",
+          "RECORDED",
+          ""
+        ],
+        "typeBadge": "Deposit",
+        "green": true,
+        "arrow": "IN",
+        "svgClass": "lucide lucide-arrow-down-left size-3"
+      },
+      "reverseOfferedWhilePending": 0,
+      "shot": "07-d1-deposit-contra-pending.png",
+      "apiDeposit": {
+        "status": 200,
+        "body": {
+          "id": "1a220bef-bb32-4e83-8598-aebef177f315",
+          "trustAccountId": "df68b885-f40e-4077-b5c3-a5c3f43ed73d",
+          "transactionType": "DEPOSIT",
+          "typeLabel": "Deposit",
+          "direction": "IN",
+          "ledger": "CLIENT",
+          "amount": 45000,
+          "clientId": "ecc7289a-b930-46ca-aca5-4405a5dcf5e9",
+          "matterId": "c4d52295-31a3-47b7-b0f7-7ff74eb0e1df",
+          "creditorAccountId": null,
+          "investmentId": null,
+          "counterpartyClientId": null,
+          "invoiceId": null,
+          "reference": "DEP/QC/mwjz8i6e9689",
+          "description": "QuickCollect Services — collections deposit",
+          "transactionDate": "2026-11-17",
+          "status": "RECORDED",
+          "postedAt": "2026-11-17T00:52:43.449583Z",
+          "approvedBy": null,
+          "approvedAt": null,
+          "secondApprovedBy": null,
+          "secondApprovedAt": null,
+          "rejectedBy": null,
+          "rejectedAt": null,
+          "rejectionReason": null,
+          "reversalOf": null,
+          "reversedById": null,
+          "reversalPending": true,
+          "bankStatementLineId": null,
+          "recordedBy": "a7802e12-3bb7-4273-b1a5-1d3f5fe8b551",
+          "createdAt": "2026-11-17T00:52:43.449815Z",
+          "runningBalance": null
+        }
+      },
+      "apiContra": {
+        "status": 200,
+        "body": {
+          "id": "3726a838-f357-4f28-b26b-b040756ab0a4",
+          "trustAccountId": "df68b885-f40e-4077-b5c3-a5c3f43ed73d",
+          "transactionType": "REVERSAL",
+          "typeLabel": "Reversal",
+          "direction": "OUT",
+          "ledger": "CLIENT",
+          "amount": 45000,
+          "clientId": "ecc7289a-b930-46ca-aca5-4405a5dcf5e9",
+          "matterId": "c4d52295-31a3-47b7-b0f7-7ff74eb0e1df",
+          "creditorAccountId": null,
+          "investmentId": null,
+          "counterpartyClientId": null,
+          "invoiceId": null,
+          "reference": "REV-DEP/QC/mwjz8i6e9689",
+          "description": "OBS646E cheque returned unpaid ZDF70",
+          "transactionDate": "2026-11-17",
+          "status": "AWAITING_APPROVAL",
+          "postedAt": null,
+          "approvedBy": null,
+          "approvedAt": null,
+          "secondApprovedBy": null,
+          "secondApprovedAt": null,
+          "rejectedBy": null,
+          "rejectedAt": null,
+          "rejectionReason": null,
+          "reversalOf": "1a220bef-bb32-4e83-8598-aebef177f315",
+          "reversedById": null,
+          "reversalPending": false,
+          "bankStatementLineId": null,
+          "recordedBy": "a7802e12-3bb7-4273-b1a5-1d3f5fe8b551",
+          "createdAt": "2026-11-17T00:56:05.727406Z",
+          "runningBalance": null
+        }
+      }
+    },
+    "e": {
+      "expectedClientPills": [
+        "Deposit",
+        "Payment",
+        "Fee transfer",
+        "Refund",
+        "Transfer out",
+        "Transfer in",
+        "Reversal",
+        "Deposit identified and allocated",
+        "Placed in section 86(4) investment",
+        "Investment capital received",
+        "Section 86(4) investment interest",
+        "Investment withdrawn",
+        "Investment returned to trust"
+      ],
+      "apex": {
+        "pills": [
+          "Deposit",
+          "Payment",
+          "Fee transfer",
+          "Refund",
+          "Transfer out",
+          "Transfer in",
+          "Reversal",
+          "Deposit identified and allocated",
+          "Placed in section 86(4) investment",
+          "Investment capital received",
+          "Section 86(4) investment interest",
+          "Investment withdrawn",
+          "Investment returned to trust"
+        ],
+        "pillsMatchExpected": true,
+        "interestPills": [
+          "Section 86(4) investment interest"
+        ],
+        "rows": [
+          {
+            "id": "f291ded5-ee2b-4204-98d2-72b8ae4ccb89",
+            "cells": [
+              "17 Nov 2026",
+              "REV-OBS646E-PAY-ZDF70",
+              "Reversal",
+              "R 4 000,00",
+              "RECORDED",
+              "—"
+            ],
+            "typeBadge": "Reversal",
+            "green": true,
+            "arrow": "IN",
+            "svgClass": "lucide lucide-arrow-down-left size-3"
+          },
+          {
+            "id": "22b2848a-d6e6-4f9b-b6a5-a8fccc07cd5c",
+            "cells": [
+              "15 Nov 2026",
+              "OBS646E-PAY-ZDF70",
+              "Payment",
+              "R 4 000,00",
+              "REVERSED",
+              "—"
+            ],
+            "typeBadge": "Payment",
+            "green": false,
+            "arrow": "OUT",
+            "svgClass": "lucide lucide-arrow-up-right size-3"
+          },
+          {
+            "id": "f6b95509-d6d5-4e60-930a-990fe6840336",
+            "cells": [
+              "14 Nov 2026",
+              "OBS646E-DEP-ZDF70",
+              "Deposit",
+              "R 20 000,00",
+              "RECORDED",
+              "R 20 000,00"
+            ],
+            "typeBadge": "Deposit",
+            "green": true,
+            "arrow": "IN",
+            "svgClass": "lucide lucide-arrow-down-left size-3"
+          }
+        ],
+        "comparison": [
+          {
+            "id": "f291ded5-ee2b-4204-98d2-72b8ae4ccb89",
+            "ledgerLabel": "Reversal",
+            "txPageLabel": "Reversal",
+            "sameLabel": true,
+            "ledgerArrow": "IN",
+            "txPageArrow": "IN"
+          },
+          {
+            "id": "22b2848a-d6e6-4f9b-b6a5-a8fccc07cd5c",
+            "ledgerLabel": "Payment",
+            "txPageLabel": "Payment",
+            "sameLabel": true,
+            "ledgerArrow": "OUT",
+            "txPageArrow": "OUT"
+          },
+          {
+            "id": "f6b95509-d6d5-4e60-930a-990fe6840336",
+            "ledgerLabel": "Deposit",
+            "txPageLabel": "Deposit",
+            "sameLabel": true,
+            "ledgerArrow": "IN",
+            "txPageArrow": "IN"
+          }
+        ],
+        "allSame": true,
+        "shot": "08-e-apex-client-ledger.png",
+        "rawCodesInBody": []
+      },
+      "qc": {
+        "pills": [
+          "Deposit",
+          "Payment",
+          "Fee transfer",
+          "Refund",
+          "Transfer out",
+          "Transfer in",
+          "Reversal",
+          "Deposit identified and allocated",
+          "Placed in section 86(4) investment",
+          "Investment capital received",
+          "Section 86(4) investment interest",
+          "Investment withdrawn",
+          "Investment returned to trust"
+        ],
+        "pillsMatchExpected": true,
+        "interestPills": [
+          "Section 86(4) investment interest"
+        ],
+        "rows": [
+          {
+            "id": "3726a838-f357-4f28-b26b-b040756ab0a4",
+            "cells": [
+              "17 Nov 2026",
+              "REV-DEP/QC/mwjz8i6e9689",
+              "Reversal",
+              "R 45 000,00",
+              "AWAITING APPROVAL",
+              "—"
+            ],
+            "typeBadge": "Reversal",
+            "green": false,
+            "arrow": "OUT",
+            "svgClass": "lucide lucide-arrow-up-right size-3"
+          },
+          {
+            "id": "6ab4b031-7318-425c-a91e-a99af125074f",
+            "cells": [
+              "17 Nov 2026",
+              "INV-Nedbank-CALL-1122334455",
+              "Payment",
+              "R 30 000,00",
+              "AWAITING APPROVAL",
+              "—"
+            ],
+            "typeBadge": "Payment",
+            "green": false,
+            "arrow": "OUT",
+            "svgClass": "lucide lucide-arrow-up-right size-3"
+          },
+          {
+            "id": "1a220bef-bb32-4e83-8598-aebef177f315",
+            "cells": [
+              "17 Nov 2026",
+              "DEP/QC/mwjz8i6e9689",
+              "Deposit",
+              "R 45 000,00",
+              "RECORDED",
+              "R 45 000,00"
+            ],
+            "typeBadge": "Deposit",
+            "green": true,
+            "arrow": "IN",
+            "svgClass": "lucide lucide-arrow-down-left size-3"
+          }
+        ],
+        "comparison": [
+          {
+            "id": "3726a838-f357-4f28-b26b-b040756ab0a4",
+            "ledgerLabel": "Reversal",
+            "txPageLabel": "Reversal",
+            "sameLabel": true,
+            "ledgerArrow": "OUT",
+            "txPageArrow": "OUT"
+          },
+          {
+            "id": "6ab4b031-7318-425c-a91e-a99af125074f",
+            "ledgerLabel": "Payment",
+            "txPageLabel": "Payment",
+            "sameLabel": true,
+            "ledgerArrow": "OUT",
+            "txPageArrow": "OUT"
+          },
+          {
+            "id": "1a220bef-bb32-4e83-8598-aebef177f315",
+            "ledgerLabel": "Deposit",
+            "txPageLabel": "Deposit",
+            "sameLabel": true,
+            "ledgerArrow": "IN",
+            "txPageArrow": "IN"
+          }
+        ],
+        "allSame": true,
+        "shot": "09-e-qc-client-ledger.png",
+        "rawCodesInBody": []
+      }
+    },
+    "f": {
+      "recent": [
+        {
+          "direction": "in",
+          "svg": "lucide lucide-arrow-down-left size-3",
+          "cells": [
+            "17 Nov 2026",
+            "DEP/MOROKA/mwjz8i6e9689",
+            "Deposit",
+            "R 250 000,00",
+            "RECORDED"
+          ]
+        },
+        {
+          "direction": "in",
+          "svg": "lucide lucide-arrow-down-left size-3",
+          "cells": [
+            "17 Nov 2026",
+            "DEP/QC/mwjz8i6e9689",
+            "Deposit",
+            "R 45 000,00",
+            "RECORDED"
+          ]
+        },
+        {
+          "direction": "out",
+          "svg": "lucide lucide-arrow-up-right size-3",
+          "cells": [
+            "17 Nov 2026",
+            "FEE/MOROKA/mwjz8i6e9689",
+            "Fee transfer",
+            "R 8 500,00",
+            "APPROVED"
+          ]
+        },
+        {
+          "direction": "out",
+          "svg": "lucide lucide-arrow-up-right size-3",
+          "cells": [
+            "17 Nov 2026",
+            "INV-Standard Bank-FD-0987654321",
+            "Payment",
+            "R 200 000,00",
+            "AWAITING APPROVAL"
+          ]
+        },
+        {
+          "direction": "out",
+          "svg": "lucide lucide-arrow-up-right size-3",
+          "cells": [
+            "17 Nov 2026",
+            "INV-Nedbank-CALL-1122334455",
+            "Payment",
+            "R 30 000,00",
+            "AWAITING APPROVAL"
+          ]
+        },
+        {
+          "direction": "out",
+          "svg": "lucide lucide-arrow-up-right size-3",
+          "cells": [
+            "17 Nov 2026",
+            "FEE/SIPHO/mwjz8i6e9689",
+            "Fee transfer",
+            "R 500,00",
+            "AWAITING APPROVAL"
+          ]
+        },
+        {
+          "direction": "in",
+          "svg": "lucide lucide-arrow-down-left size-3",
+          "cells": [
+            "17 Nov 2026",
+            "REV-OBS646E-PAY-ZDF70",
+            "Reversal",
+            "R 4 000,00",
+            "RECORDED"
+          ]
+        },
+        {
+          "direction": "out",
+          "svg": "lucide lucide-arrow-up-right size-3",
+          "cells": [
+            "17 Nov 2026",
+            "REV-DEP/QC/mwjz8i6e9689",
+            "Reversal",
+            "R 45 000,00",
+            "AWAITING APPROVAL"
+          ]
+        },
+        {
+          "direction": "out",
+          "svg": "lucide lucide-arrow-up-right size-3",
+          "cells": [
+            "15 Nov 2026",
+            "OBS646E-PAY-ZDF70",
+            "Payment",
+            "R 4 000,00",
+            "REVERSED"
+          ]
+        },
+        {
+          "direction": "in",
+          "svg": "lucide lucide-arrow-down-left size-3",
+          "cells": [
+            "14 Nov 2026",
+            "OBS646E-DEP-ZDF70",
+            "Deposit",
+            "R 20 000,00",
+            "RECORDED"
+          ]
+        }
+      ],
+      "directions": [
+        "in",
+        "out"
+      ],
+      "shot": "10-f1-trust-overview.png",
+      "rawCodesInBody": []
+    },
+    "g": {
+      "statement": {
+        "shot": "11-g1-client-ledger-statement-apex.png",
+        "table": {
+          "heads": [
+            "DATE",
+            "REFERENCE",
+            "TYPE",
+            "DESCRIPTION",
+            "DEBIT",
+            "CREDIT",
+            "RUNNING BALANCE"
+          ],
+          "rows": [
+            [
+              "2026-11-14",
+              "OBS646E-DEP-ZDF70",
+              "Deposit",
+              "OBS 646E funding deposit",
+              "R 0,00",
+              "R 20 000,00",
+              "R 20 000,00"
+            ],
+            [
+              "2026-11-15",
+              "OBS646E-PAY-ZDF70",
+              "Payment",
+              "OBS 646E payee: Deeds Office",
+              "R 4 000,00",
+              "R 0,00",
+              "R 16 000,00"
+            ],
+            [
+              "2026-11-17",
+              "REV-OBS646E-PAY-ZDF70",
+              "Reversal",
+              "OBS646E payee bank rejected the EFT ZDF70",
+              "R 0,00",
+              "R 4 000,00",
+              "R 20 000,00"
+            ]
+          ]
+        },
+        "text": "Run Report\nExport CSV\nExport PDF\n\nOpening Balance\n\nR 0,00\n\nClosing Balance\n\nR 20 000,00\n\nTotal Debits\n\nR 4 000,00\n\nTotal Credits\n\nR 24 000,00\n\nTransaction Count\n\n3\n\nDATE\tREFERENCE\tTYPE\tDESCRIPTION\tDEBIT\tCREDIT\tRUNNING BALANCE\n2026-11-14\tOBS646E-DEP-ZDF70\tDeposit\tOBS 646E funding deposit\tR 0,00\tR 20 000,00\tR 20 000,00\n2026-11-15\tOBS646E-PAY-ZDF70\tPayment\tOBS 646E payee: Deeds Office\tR 4 000,00\tR 0,00\tR 16 000,00\n2026-11-17\tREV-OBS646E-PAY-ZDF70\tReversal\tOBS646E payee bank rejected the EFT ZDF70\tR 0,00\tR 4 000,00\tR 20 000,00\n\nPage 1 of 1\n\nPrevious\nNext\nCommand Palette\n\nSearch pages and settings",
+        "rawCodes": [],
+        "showsReversalReason": true
+      },
+      "receiptsPayments": {
+        "shot": "12-g2-receipts-payments.png",
+        "table": {
+          "heads": [
+            "DATE",
+            "REFERENCE",
+            "TYPE",
+            "CLIENT",
+            "CREDIT",
+            "DEBIT",
+            "BALANCE"
+          ],
+          "rows": [
+            [
+              "2026-11-14",
+              "OBS646E-DEP-ZDF70",
+              "Deposit",
+              "Apex Holdings mwjz8i6e9689",
+              "R 20 000,00",
+              "R 0,00",
+              "R 20 000,00"
+            ],
+            [
+              "2026-11-17",
+              "DEP/MOROKA/mwjz8i6e9689",
+              "Deposit",
+              "Moroka Family Trust mwjz8i6e9689",
+              "R 250 000,00",
+              "R 0,00",
+              "R 270 000,00"
+            ],
+            [
+              "2026-11-17",
+              "DEP/QC/mwjz8i6e9689",
+              "Deposit",
+              "QuickCollect Services mwjz8i6e9689",
+              "R 45 000,00",
+              "R 0,00",
+              "R 315 000,00"
+            ],
+            [
+              "2026-11-17",
+              "FEE/MOROKA/mwjz8i6e9689",
+              "Fee transfer",
+              "Moroka Family Trust mwjz8i6e9689",
+              "R 0,00",
+              "R 8 500,00",
+              "R 306 500,00"
+            ]
+          ]
+        },
+        "text": "Run Report\nExport CSV\nExport PDF\n\nTotal Receipts\n\nR 315 000,00\n\nTotal Payments\n\nR 8 500,00\n\nNet Movement\n\nR 306 500,00\n\nTransaction Count\n\n4\n\nDATE\tREFERENCE\tTYPE\tCLIENT\tCREDIT\tDEBIT\tBALANCE\n2026-11-14\tOBS646E-DEP-ZDF70\tDeposit\tApex Holdings mwjz8i6e9689\tR 20 000,00\tR 0,00\tR 20 000,00\n2026-11-17\tDEP/MOROKA/mwjz8i6e9689\tDeposit\tMoroka Family Trust mwjz8i6e9689\tR 250 000,00\tR 0,00\tR 270 000,00\n2026-11-17\tDEP/QC/mwjz8i6e9689\tDeposit\tQuickCollect Services mwjz8i6e9689\tR 45 000,00\tR 0,00\tR 315 000,00\n2026-11-17\tFEE/MOROKA/mwjz8i6e9689\tFee transfer\tMoroka Family Trust mwjz8i6e9689\tR 0,00\tR 8 500,00\tR 306 500,00\n\nPage 1 of 1\n\nPrevious\nNext\nCommand Palette\n\nSearch pages and settings",
+        "rawCodes": []
+      }
+    }
+  },
+  "consoleErrors": [],
+  "pageErrors": [],
+  "notes": [],
+  "dates": {
+    "today": "2026-11-17",
+    "deposit": "2026-11-14",
+    "payment": "2026-11-15",
+    "from": "2026-11-12"
+  },
+  "refs": {
+    "apexDeposit": "OBS646E-DEP-ZDF70",
+    "apexPayment": "OBS646E-PAY-ZDF70"
+  },
+  "ids": {
+    "account": "df68b885-f40e-4077-b5c3-a5c3f43ed73d",
+    "qc": "ecc7289a-b930-46ca-aca5-4405a5dcf5e9",
+    "apex": "d4b1aaa9-5003-4637-babf-3fcbe12fd781",
+    "moroka": "d357944c-96ec-4b89-933d-d5f0a2634375",
+    "qcDeposit": "1a220bef-bb32-4e83-8598-aebef177f315",
+    "apexDeposit": "f6b95509-d6d5-4e60-930a-990fe6840336",
+    "apexPayment": "22b2848a-d6e6-4f9b-b6a5-a8fccc07cd5c",
+    "apexPayContra": "f291ded5-ee2b-4204-98d2-72b8ae4ccb89",
+    "qcContra": "3726a838-f357-4f28-b26b-b040756ab0a4"
+  }
+}

@@ -1,0 +1,11 @@
+           name            | transaction_type |  status  | ledger_effect 
+---------------------------+------------------+----------+---------------
+ Sipho Ndlovu mwjzhlzh6ac2 | DEPOSIT          | RECORDED |       5000.00
+ Sipho Ndlovu mwjzhlzh6ac2 | PAYMENT          | APPROVED |      -1250.00
+(2 rows)
+
+ cashbook | client_ledgers 
+----------+----------------
+  3750.00 |        3750.00
+(1 row)
+

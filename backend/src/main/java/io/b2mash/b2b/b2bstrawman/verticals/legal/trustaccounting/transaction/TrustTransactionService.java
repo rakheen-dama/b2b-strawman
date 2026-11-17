@@ -4,7 +4,6 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditDetails;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
-import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
@@ -36,6 +35,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -77,13 +77,21 @@ public class TrustTransactionService {
   /** The refusal detail for a client trust posting without a matter (G89-F28, D36). */
   static final String MATTER_REQUIRED_DETAIL = "A matter is required for client trust transactions";
 
+  /**
+   * The rows that resolve an unidentified deposit (647D, §16.3.6): their approval, rejection and
+   * reversal also move the item, through {@link UnidentifiedResolutionHooks}.
+   */
+  private static final Set<TrustTransactionType> UNIDENTIFIED_RESOLUTIONS =
+      EnumSet.of(TrustTransactionType.UNIDENT_ALLOC_OUT, TrustTransactionType.UNIDENT_FUND_PAY);
+
   private final TrustTransactionRepository transactionRepository;
   private final TrustPostingService postingService;
   private final TrustLedgerQueryRepository ledgerQueries;
   private final TrustInvestmentRepository trustInvestmentRepository;
   private final TrustAccountRepository trustAccountRepository;
   private final CustomerRepository customerRepository;
-  private final CustomerProjectRepository customerProjectRepository;
+  private final TrustClientMatterRule clientMatterRule;
+  private final UnidentifiedResolutionHooks unidentifiedResolutionHooks;
   private final ProjectRepository projectRepository;
   private final InvoiceRepository invoiceRepository;
   private final InvoiceLineRepository invoiceLineRepository;
@@ -102,7 +110,8 @@ public class TrustTransactionService {
       TrustInvestmentRepository trustInvestmentRepository,
       TrustAccountRepository trustAccountRepository,
       CustomerRepository customerRepository,
-      CustomerProjectRepository customerProjectRepository,
+      TrustClientMatterRule clientMatterRule,
+      UnidentifiedResolutionHooks unidentifiedResolutionHooks,
       ProjectRepository projectRepository,
       InvoiceRepository invoiceRepository,
       InvoiceLineRepository invoiceLineRepository,
@@ -119,7 +128,8 @@ public class TrustTransactionService {
     this.trustInvestmentRepository = trustInvestmentRepository;
     this.trustAccountRepository = trustAccountRepository;
     this.customerRepository = customerRepository;
-    this.customerProjectRepository = customerProjectRepository;
+    this.clientMatterRule = clientMatterRule;
+    this.unidentifiedResolutionHooks = unidentifiedResolutionHooks;
     this.projectRepository = projectRepository;
     this.invoiceRepository = invoiceRepository;
     this.invoiceLineRepository = invoiceLineRepository;
@@ -1052,8 +1062,12 @@ public class TrustTransactionService {
         requireClientCovers(transaction);
       }
     } else if (type.approval() == TrustTransactionType.Approval.REQUIRED) {
-      // The types that post on approval (PAYMENT, FEE_TRANSFER, REFUND) take money off the client.
-      requireClientCovers(transaction);
+      // A CLIENT-ledger debit (PAYMENT, FEE_TRANSFER, REFUND) takes money off the client; an
+      // unidentified-deposit resolution (UNIDENT_ALLOC_OUT, UNIDENT_FUND_PAY: NON_CLIENT, no
+      // client on the row) takes it off its own item, whole by construction (§16.2.4).
+      if (type.ledger() == TrustLedger.CLIENT) {
+        requireClientCovers(transaction);
+      }
 
       // 441.9 / Phase 88 U15 (ADR-347, N-5): a fee transfer posts its real amount through the one
       // payment entry point — PARTIALLY_PAID when it leaves a balance, PAID when it clears it, and
@@ -1094,6 +1108,11 @@ public class TrustTransactionService {
       postingService.postReversalOnApproval(transaction, original, approverId);
     } else {
       postingService.postOnApproval(transaction, approverId);
+    }
+    // 647D: an approved allocation posts its UNIDENT_ALLOC_IN and the item leaves HELD in the same
+    // transaction (lock order: this row, the item, then the client's lock anchor).
+    if (UNIDENTIFIED_RESOLUTIONS.contains(type)) {
+      unidentifiedResolutionHooks.onResolutionApproved(transaction);
     }
 
     auditService.log(
@@ -1205,6 +1224,12 @@ public class TrustTransactionService {
 
     postingService.reject(transaction, rejecterId, reason);
 
+    // 647D: a rejected allocation or payment to the Fund leaves its item HELD, resolution cleared.
+    if (UNIDENTIFIED_RESOLUTIONS.contains(
+        TrustTransactionType.of(transaction.getTransactionType()))) {
+      unidentifiedResolutionHooks.onResolutionRejected(transaction);
+    }
+
     // G89-F87 (D41): an investment is created ACTIVE while its placement PAYMENT awaits approval.
     // A rejected placement never moved the money, so the investment is CANCELLED (terminal) in the
     // same transaction — otherwise it stays ACTIVE on the s86 register, in getMaturing and in the
@@ -1298,10 +1323,17 @@ public class TrustTransactionService {
             .findByIdForUpdate(transactionId)
             .orElseThrow(() -> new ResourceNotFoundException("TrustTransaction", transactionId));
 
-    // A TRANSFER_IN (rule VIA_PAIR) cannot be reversed directly — reverse the paired TRANSFER_OUT
-    // instead, which reverses both legs.
-    var reversalRule = TrustTransactionType.of(original.getTransactionType()).reversal();
+    // A VIA_PAIR row cannot be reversed directly — reverse its pair, which reverses both legs: a
+    // TRANSFER_IN through its TRANSFER_OUT, an UNIDENT_ALLOC_IN through its UNIDENT_ALLOC_OUT
+    // (647D).
+    var type = TrustTransactionType.of(original.getTransactionType());
+    var reversalRule = type.reversal();
     if (reversalRule == TrustTransactionType.Reversal.VIA_PAIR) {
+      if (type == TrustTransactionType.UNIDENT_ALLOC_IN) {
+        throw new InvalidStateException(
+            "Cannot reverse transaction",
+            "Reverse the unidentified deposit's allocation instead to undo both entries");
+      }
       throw new InvalidStateException(
           "Cannot reverse TRANSFER_IN directly",
           "Reverse the paired TRANSFER_OUT instead to undo both legs of the transfer");
@@ -1333,8 +1365,18 @@ public class TrustTransactionService {
 
     var reversalDate = resolveReversalDate(request.reversalDate(), original);
 
+    // PAIR by type (647D, F-646E-3): each pair has its own second leg and its own lookup.
     if (reversalRule == TrustTransactionType.Reversal.PAIR) {
-      return reverseTransferOut(original, reason, reversalDate, memberId);
+      return switch (type) {
+        case TRANSFER_OUT -> reverseTransferOut(original, reason, reversalDate, memberId);
+        case UNIDENT_ALLOC_OUT ->
+            reverseUnidentifiedAllocation(original, reason, reversalDate, memberId);
+        default -> throw new IllegalStateException("No pair reversal for " + type);
+      };
+    }
+    // A payment to the Fund that bounced: its item is HELD again, in the same transaction.
+    if (type == TrustTransactionType.UNIDENT_FUND_PAY) {
+      unidentifiedResolutionHooks.onResolutionReversed(original, reversalDate);
     }
     return toResponse(postContra(original, reason, reversalDate, memberId));
   }
@@ -1718,6 +1760,85 @@ public class TrustTransactionService {
     return toResponse(savedOutReversal);
   }
 
+  /**
+   * Undoes an approved allocation of an unidentified deposit (§16.3.6 "Undo", 647D): the item
+   * returns to HELD, and both legs are reversed as a pair, dated {@code reversalDate} — the {@code
+   * UNIDENT_ALLOC_OUT} (unidentified ledger +) and its {@code UNIDENT_ALLOC_IN} (client −);
+   * cashbook-neutral. Like a transfer reversal, the client must still hold the money, on that
+   * matter. The pair is found through the item ({@code allocation_credit_transaction_id}), never by
+   * reference. Lock order: the ALLOC_OUT (locked by the caller) → the item (hook) → the ALLOC_IN →
+   * the client's lock anchor. A refusal rolls everything back, the item's return to HELD included.
+   */
+  private TrustTransactionResponse reverseUnidentifiedAllocation(
+      TrustTransaction original, String reason, LocalDate reversalDate, UUID memberId) {
+    UUID creditId = unidentifiedResolutionHooks.onResolutionReversed(original, reversalDate);
+    var credit =
+        transactionRepository
+            .findByIdForUpdate(creditId)
+            .orElseThrow(() -> new ResourceNotFoundException("TrustTransaction", creditId));
+    if (credit.getReversedById() != null
+        || transactionRepository.existsByReversalOfAndStatusNot(credit.getId(), "REJECTED")) {
+      throw new InvalidStateException(
+          "Cannot reverse transaction", "The allocated deposit has already been reversed");
+    }
+
+    postingService.lockClient(credit.getTrustAccountId(), credit.getCustomerId());
+    var client =
+        customerRepository
+            .findById(credit.getCustomerId())
+            .orElseThrow(
+                () -> new ResourceNotFoundException(EntityNoun.CLIENT, credit.getCustomerId()));
+    var available =
+        ledgerQueries.clientBalance(credit.getTrustAccountId(), credit.getCustomerId(), null);
+    if (available.compareTo(credit.getAmount()) < 0) {
+      throw new InvalidStateException(
+          "Insufficient trust balance",
+          "Insufficient trust balance for "
+              + client.getName()
+              + ". Available: "
+              + rand(available)
+              + ", Requested: "
+              + rand(credit.getAmount()));
+    }
+    requireMatterCellCovers(
+        credit.getTrustAccountId(),
+        credit.getCustomerId(),
+        client.getName(),
+        credit.getProjectId(),
+        credit.getAmount());
+
+    // Both contras post at once (PAIR / VIA_PAIR) and carry the item's id (postReversal copies the
+    // ledger target), so EQ-4 reads the item as allocated until the reversal date.
+    var outContra =
+        postingService.postReversal(newContra(original, reason, reversalDate, memberId), original);
+    var inContra =
+        postingService.postReversal(newContra(credit, reason, reversalDate, memberId), credit);
+    // NON_CLIENT: the portal sync skips it (no client). CLIENT: the client's matter re-projects.
+    publishContraRecorded(outContra, memberId);
+    publishContraRecorded(inContra, memberId);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("trust_transaction.reversed")
+            .entityType("trust_transaction")
+            .entityId(outContra.getId())
+            .details(
+                AuditDetails.matterScoped(
+                    credit.getProjectId(),
+                    credit.getCustomerId(),
+                    Map.of(
+                        "original_transaction_id", original.getId().toString(),
+                        "paired_allocation_credit_id", credit.getId().toString(),
+                        "original_type", original.getTransactionType(),
+                        "amount", original.getAmount().toString(),
+                        "reversal_status", "RECORDED",
+                        "reason", reason,
+                        "reversal_date", reversalDate.toString())))
+            .build());
+
+    return toResponse(outContra);
+  }
+
   /** A {@code REVERSAL} draft for {@code original}: its ledger target, its amount, its own date. */
   private static TrustTransaction newContra(
       TrustTransaction original, String reason, LocalDate reversalDate, UUID memberId) {
@@ -1778,42 +1899,13 @@ public class TrustTransactionService {
 
   // --- Private Helpers ---
 
-  /**
-   * G89-F28 (D36): every new client trust posting names a matter linked to the client (directly,
-   * {@code projects.customer_id}, or through {@code customer_projects} — the client's matter list).
-   * A row without a matter never reaches the portal, whose trust view is per client and matter, so
-   * the client's portal balance would fall short of the firm ledger. Rows derived from an existing
-   * row (reversals) do not pass through here.
-   */
+  /** G89-F28 (D36): the client posting's matter must be linked to the client. */
   private void requireClientMatter(Customer client, UUID matterId) {
-    if (matterId == null) {
-      throw matterRequired(null);
-    }
-    var matter =
-        projectRepository
-            .findById(matterId)
-            .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.MATTER, matterId));
-    if (client.getId().equals(matter.getCustomerId())
-        || customerProjectRepository.existsByCustomerIdAndProjectId(client.getId(), matterId)) {
-      return;
-    }
-    var properties = new LinkedHashMap<String, Object>();
-    properties.put("code", MATTER_NOT_LINKED_TO_CLIENT);
-    properties.put("matterId", matterId);
-    throw InvalidStateException.withProperties(
-        "Matter not linked to client",
-        "Matter " + matter.getName() + " is not linked to client " + client.getName(),
-        properties);
+    clientMatterRule.requireClientMatter(client, matterId);
   }
 
   private static InvalidStateException matterRequired(String reason) {
-    var properties = new LinkedHashMap<String, Object>();
-    properties.put("code", MATTER_REQUIRED);
-    if (reason != null) {
-      properties.put("reason", reason);
-    }
-    return InvalidStateException.withProperties(
-        "Matter required", MATTER_REQUIRED_DETAIL, properties);
+    return TrustClientMatterRule.matterRequired(reason);
   }
 
   /**

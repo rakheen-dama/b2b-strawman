@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { cleanup, render, screen, within } from "@testing-library/react";
+import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { todayInSA } from "@b2mash/shared/date";
 import { formatCurrency } from "@/lib/format";
 import type {
   CreditorLedgerPage,
@@ -33,10 +35,25 @@ vi.mock("@/app/(app)/org/[slug]/trust-accounting/actions", () => ({
 const mockFetchCreditorAccounts = vi.fn();
 const mockFetchCreditorLedgerRows = vi.fn();
 const mockFetchUnidentifiedDeposits = vi.fn();
+const mockAllocateUnidentifiedDeposit = vi.fn();
+const mockPayUnidentifiedDepositToFund = vi.fn();
 vi.mock("@/app/(app)/org/[slug]/trust-accounting/other-creditors/actions", () => ({
   fetchCreditorAccounts: (...args: unknown[]) => mockFetchCreditorAccounts(...args),
   fetchCreditorLedgerRows: (...args: unknown[]) => mockFetchCreditorLedgerRows(...args),
   fetchUnidentifiedDeposits: (...args: unknown[]) => mockFetchUnidentifiedDeposits(...args),
+  allocateUnidentifiedDeposit: (...args: unknown[]) => mockAllocateUnidentifiedDeposit(...args),
+  payUnidentifiedDepositToFund: (...args: unknown[]) => mockPayUnidentifiedDepositToFund(...args),
+}));
+
+// ── Mock the client roster and the matter picker's fetch (647D) ───
+const mockListClients = vi.fn();
+vi.mock("@/lib/api/clients", () => ({
+  listClients: (...args: unknown[]) => mockListClients(...args),
+}));
+
+const mockFetchCustomerProjects = vi.fn();
+vi.mock("@/app/(app)/org/[slug]/clients/[id]/actions", () => ({
+  fetchCustomerProjects: (...args: unknown[]) => mockFetchCustomerProjects(...args),
 }));
 
 // ── Mock next/navigation ─────────────────────────────────────────
@@ -179,6 +196,26 @@ function itemsPage(content: UnidentifiedDeposit[]): UnidentifiedDepositPage {
   };
 }
 
+/** The client and matter of an allocation (UUIDs: the schema checks them). */
+const CLIENT = {
+  id: "550e8400-e29b-41d4-a716-446655440000",
+  name: "Sipho Dlamini",
+  email: "sipho@example.com",
+};
+const MATTER = {
+  id: "770e8400-e29b-41d4-a716-446655440002",
+  name: "Estate late M Dlamini",
+  referenceNumber: null,
+};
+
+/** A member who may manage trust (647D actions). */
+const MANAGER_CAPABILITIES = {
+  capabilities: ["VIEW_TRUST", "MANAGE_TRUST"],
+  role: "member",
+  isAdmin: false,
+  isOwner: false,
+};
+
 /** The exit-month worked set, newest first (as the endpoint returns it). */
 const WORKED_SET: TrustTransaction[] = [
   fundRow({
@@ -245,6 +282,8 @@ describe("Other trust creditors page", () => {
     );
     mockFetchCreditorLedgerRows.mockResolvedValue(ledgerPage([]));
     mockFetchUnidentifiedDeposits.mockResolvedValue(itemsPage([]));
+    mockListClients.mockResolvedValue([CLIENT]);
+    mockFetchCustomerProjects.mockResolvedValue([MATTER]);
   });
 
   afterEach(() => cleanup());
@@ -628,5 +667,164 @@ describe("Other trust creditors page", () => {
       "href",
       `${BASE}?page=1&itemsPage=1`
     );
+  });
+
+  // ── Unidentified deposits: resolve (647D) ───────────────────────
+
+  it("offers Allocate and Pay to the Fund on a held item with MANAGE_TRUST, and nothing with VIEW_TRUST only", async () => {
+    mockFetchUnidentifiedDeposits.mockResolvedValue(itemsPage([unidentifiedItem()]));
+    await renderPage();
+
+    // VIEW_TRUST only (the default member): no actions, no client roster fetched.
+    expect(screen.queryByTestId("allocate-btn-ud-1")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("pay-to-fund-btn-ud-1")).not.toBeInTheDocument();
+    expect(mockListClients).not.toHaveBeenCalled();
+
+    cleanup();
+    mockFetchMyCapabilities.mockResolvedValue(MANAGER_CAPABILITIES);
+    await renderPage();
+
+    const row = screen.getByTestId("unidentified-deposit-row");
+    expect(within(row).getByTestId("allocate-btn-ud-1")).toHaveTextContent("Allocate");
+    expect(within(row).getByTestId("pay-to-fund-btn-ud-1")).toHaveTextContent("Pay to the Fund");
+    expect(mockListClients).toHaveBeenCalledWith({ status: "ACTIVE" });
+  });
+
+  it("requests an allocation from the dialog and shows the server's refusal", async () => {
+    const user = userEvent.setup();
+    mockFetchMyCapabilities.mockResolvedValue(MANAGER_CAPABILITIES);
+    mockFetchUnidentifiedDeposits.mockResolvedValue(itemsPage([unidentifiedItem()]));
+    mockAllocateUnidentifiedDeposit.mockResolvedValue({
+      success: false,
+      error: "This deposit already has a pending allocation or payment",
+    });
+    await renderPage();
+
+    await user.click(screen.getByTestId("allocate-btn-ud-1"));
+    const dialog = await screen.findByTestId("allocate-unidentified-dialog");
+    expect(dialog).toHaveTextContent("CREDIT TRANSFER J SMITH");
+    expect(dialog).toHaveTextContent("Another member must approve the allocation");
+
+    await user.click(within(dialog).getByTestId("allocate-customer-trigger"));
+    await user.click(await screen.findByText("Sipho Dlamini"));
+    const matterTrigger = within(dialog).getByTestId("allocate-matter-trigger");
+    await waitFor(() => expect(matterTrigger).toHaveTextContent("Select a matter..."));
+    await user.click(matterTrigger);
+    await user.click(await screen.findByText("Estate late M Dlamini"));
+    await waitFor(() => expect(matterTrigger).toHaveTextContent("Estate late M Dlamini"));
+    expect(within(dialog).getByTestId("allocate-date")).toHaveValue(todayInSA());
+
+    await user.click(within(dialog).getByTestId("allocate-submit"));
+
+    await waitFor(() =>
+      expect(mockAllocateUnidentifiedDeposit).toHaveBeenCalledWith("ud-1", {
+        customerId: CLIENT.id,
+        projectId: MATTER.id,
+        allocationDate: todayInSA(),
+        notes: "",
+      })
+    );
+    expect(await within(dialog).findByRole("alert")).toHaveTextContent(
+      "This deposit already has a pending allocation or payment"
+    );
+    // A refusal keeps the dialog open.
+    expect(screen.getByTestId("allocate-unidentified-dialog")).toBeInTheDocument();
+  });
+
+  it("shows the item's age and the under-one-year warning in the Fund dialog, and no warning over a year", async () => {
+    const user = userEvent.setup();
+    mockFetchMyCapabilities.mockResolvedValue(MANAGER_CAPABILITIES);
+    mockFetchUnidentifiedDeposits.mockResolvedValue(
+      itemsPage([
+        unidentifiedItem({ id: "ud-young", ageDays: 14 }),
+        unidentifiedItem({ id: "ud-old", ageDays: 400, olderThanOneYear: true }),
+      ])
+    );
+    mockPayUnidentifiedDepositToFund.mockResolvedValue({ success: true });
+    await renderPage();
+
+    await user.click(screen.getByTestId("pay-to-fund-btn-ud-young"));
+    let dialog = await screen.findByTestId("pay-to-fund-dialog");
+    expect(within(dialog).getByTestId("pay-to-fund-age")).toHaveTextContent("Held for 14 days");
+    const warning = within(dialog).getByTestId("pay-to-fund-under-one-year-warning");
+    expect(warning).toHaveAttribute("role", "status");
+    expect(warning).toHaveTextContent("held for less than a year");
+    expect(warning).toHaveTextContent("Legal Practitioners' Fidelity Fund");
+
+    // A warning, never a block: the request goes through.
+    await user.type(within(dialog).getByTestId("pay-to-fund-reference"), "LPFF-UID-1");
+    await user.click(within(dialog).getByTestId("pay-to-fund-submit"));
+    await waitFor(() =>
+      expect(mockPayUnidentifiedDepositToFund).toHaveBeenCalledWith("ud-young", {
+        reference: "LPFF-UID-1",
+        transactionDate: todayInSA(),
+        notes: "",
+      })
+    );
+    await waitFor(() => expect(screen.queryByTestId("pay-to-fund-dialog")).not.toBeInTheDocument());
+
+    await user.click(screen.getByTestId("pay-to-fund-btn-ud-old"));
+    dialog = await screen.findByTestId("pay-to-fund-dialog");
+    expect(within(dialog).getByTestId("pay-to-fund-age")).toHaveTextContent("Held for 400 days");
+    expect(
+      within(dialog).queryByTestId("pay-to-fund-under-one-year-warning")
+    ).not.toBeInTheDocument();
+  });
+
+  it("says a pending resolution awaits approval with no actions, and names an allocated item's client and matter", async () => {
+    mockFetchMyCapabilities.mockResolvedValue(MANAGER_CAPABILITIES);
+    mockFetchUnidentifiedDeposits.mockResolvedValue(
+      itemsPage([
+        unidentifiedItem({
+          id: "ud-pending-alloc",
+          allocatedClientId: CLIENT.id,
+          allocatedClientName: CLIENT.name,
+          allocatedMatterId: MATTER.id,
+          allocatedMatterName: MATTER.name,
+          resolutionTransactionId: "tx-alloc",
+          resolutionStatus: "AWAITING_APPROVAL",
+        }),
+        unidentifiedItem({
+          id: "ud-pending-fund",
+          resolutionTransactionId: "tx-fund",
+          resolutionStatus: "AWAITING_APPROVAL",
+        }),
+        unidentifiedItem({
+          id: "ud-allocated",
+          status: "ALLOCATED",
+          allocatedClientId: CLIENT.id,
+          allocatedClientName: CLIENT.name,
+          allocatedMatterId: MATTER.id,
+          allocatedMatterName: MATTER.name,
+          resolutionTransactionId: "tx-alloc-2",
+          resolutionStatus: "APPROVED",
+          resolvedDate: "2026-11-10",
+        }),
+      ])
+    );
+    await renderPage();
+
+    const rows = screen.getAllByTestId("unidentified-deposit-row");
+    expect(within(rows[0]).getByTestId("unidentified-deposit-pending")).toHaveTextContent(
+      "Allocation to Sipho Dlamini awaiting approval"
+    );
+    expect(within(rows[1]).getByTestId("unidentified-deposit-pending")).toHaveTextContent(
+      "Payment to the Fund awaiting approval"
+    );
+    for (const row of rows.slice(0, 2)) {
+      expect(within(row).getByTestId("unidentified-deposit-status")).toHaveTextContent("Held");
+    }
+    expect(within(rows[2]).getByTestId("unidentified-deposit-status")).toHaveTextContent(
+      "Allocated to a client"
+    );
+    expect(within(rows[2]).getByTestId("unidentified-deposit-allocated-to")).toHaveTextContent(
+      "Sipho Dlamini — Estate late M Dlamini"
+    );
+    expect(screen.queryByRole("button", { name: /Allocate/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Pay to the Fund/ })).not.toBeInTheDocument();
+    // Never a raw code on the screen.
+    const table = screen.getByTestId("unidentified-deposits-table");
+    expect(table).not.toHaveTextContent("AWAITING_APPROVAL");
+    expect(table).not.toHaveTextContent("ALLOCATED");
   });
 });

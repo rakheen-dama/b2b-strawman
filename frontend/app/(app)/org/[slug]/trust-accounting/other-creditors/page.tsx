@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ChevronLeft, ChevronRight, HandCoins, Inbox, Landmark } from "lucide-react";
 import { getOrgSettings } from "@/lib/api/settings";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
+import { listClients } from "@/lib/api/clients";
 import { Button } from "@b2mash/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@b2mash/ui/card";
 import { PageHeader } from "@b2mash/ui/page-header";
@@ -15,6 +16,7 @@ import {
 } from "@/app/(app)/org/[slug]/trust-accounting/other-creditors/actions";
 import { FundLedgerTable } from "@/components/trust/FundLedgerTable";
 import { UnidentifiedDepositsTable } from "@/components/trust/UnidentifiedDepositsTable";
+import type { TrustPickerCustomer } from "@/components/trust/TrustEntityPickers";
 import { formatCurrency } from "@/lib/format";
 import type {
   CreditorLedgerPage,
@@ -33,7 +35,9 @@ const UNIDENTIFIED_PAGE_SIZE = 25;
  * is not yet known — with their balances as at today. Under the balances, the Fund ledger's rows
  * with their running balances (647C), paged by `?page=`, and the unidentified deposits as items,
  * oldest first with their age and status (647B), paged by `?itemsPage=`. Each list has its own
- * fetch and error state, so one failing never hides the balances or the other list.
+ * fetch and error state, so one failing never hides the balances or the other list. With
+ * MANAGE_TRUST a held item can be allocated to a client or paid to the Fund (647D; approval on the
+ * transactions page), so the page also fetches the active client roster for the picker.
  */
 export default async function OtherTrustCreditorsPage({
   params,
@@ -67,6 +71,8 @@ export default async function OtherTrustCreditorsPage({
   if (!hasViewTrust) {
     notFound();
   }
+  const canManageTrust =
+    capData.isAdmin || capData.isOwner || capData.capabilities.includes("MANAGE_TRUST");
 
   // Fetch primary trust account
   let accountId: string | null = null;
@@ -118,6 +124,19 @@ export default async function OtherTrustCreditorsPage({
       });
     } catch {
       itemsError = true;
+    }
+  }
+
+  // The client roster for the allocation picker (647D): only for MANAGE_TRUST, trimmed to
+  // {id, name, email} for the server → client boundary. Non-fatal: the picker shows its own empty
+  // state.
+  let pickerCustomers: TrustPickerCustomer[] = [];
+  if (canManageTrust && items && items.content.some((item) => item.status === "HELD")) {
+    try {
+      const customers = await listClients({ status: "ACTIVE" });
+      pickerCustomers = customers.map((c) => ({ id: c.id, name: c.name, email: c.email ?? "" }));
+    } catch {
+      pickerCustomers = [];
     }
   }
 
@@ -268,6 +287,8 @@ export default async function OtherTrustCreditorsPage({
                 <UnidentifiedDepositsTable
                   items={items.content}
                   currency={currency}
+                  canManage={canManageTrust}
+                  customers={pickerCustomers}
                   empty={
                     itemsPageNumber > 0 ? (
                       <p

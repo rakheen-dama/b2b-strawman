@@ -566,8 +566,11 @@ export const UNIDENTIFIED_DEPOSIT_STATUS_LABELS: Record<UnidentifiedDepositStatu
  * `UnidentifiedDepositService.UnidentifiedDepositResponse` (647B, §16.3.6) — keys in the Java
  * record's order (pinned by `__tests__/trust-wire-shapes.test.ts`, ADR-365). `status` is a String
  * on the wire, typed here as the union. `ageDays` counts from the received date to today;
- * `olderThanOneYear` flags only a held item older than 365 days. The allocation and resolution
- * fields stay null until 647D.
+ * `olderThanOneYear` flags only a held item older than 365 days. From 647D the allocated client and
+ * matter (with names) are set from an allocation's request until it is rejected or undone, and
+ * `resolutionStatus` is the pending or approved resolution row's status (`AWAITING_APPROVAL` /
+ * `APPROVED`), null when there is none — a held item with a `resolutionTransactionId` is awaiting
+ * approval.
  */
 export interface UnidentifiedDeposit {
   id: string;
@@ -587,6 +590,27 @@ export interface UnidentifiedDeposit {
   resolutionStatus: string | null;
   resolvedDate: string | null;
   bankStatementLineId: string;
+  notes: string | null;
+}
+
+/**
+ * `UnidentifiedDepositService.AllocateRequest` (647D) — `POST /api/unidentified-deposits/{id}/allocate`
+ * body, keys in the Java record's order (pinned, ADR-365). `allocationDate` null = today.
+ */
+export interface AllocateUnidentifiedRequest {
+  clientId: string;
+  matterId: string;
+  allocationDate: string | null;
+  notes: string | null;
+}
+
+/**
+ * `UnidentifiedDepositService.PayToFundRequest` (647D) — `POST /api/unidentified-deposits/{id}/pay-to-fund`
+ * body, keys in the Java record's order (pinned, ADR-365).
+ */
+export interface PayToFundRequest {
+  reference: string;
+  transactionDate: string;
   notes: string | null;
 }
 

@@ -59,6 +59,9 @@ const STATUS_OPTIONS: TrustTransactionStatus[] = [
 
 // ── Page ──────────────────────────────────────────────────────────
 
+/** Unidentified-deposit resolutions (647D): their description names where the money goes. */
+const RESOLUTION_TYPES: ReadonlySet<string> = new Set(["UNIDENT_ALLOC_OUT", "UNIDENT_FUND_PAY"]);
+
 export default async function TransactionsPage({
   params,
   searchParams,
@@ -380,6 +383,17 @@ export default async function TransactionsPage({
                           </td>
                           <td className="py-3 pr-4">
                             <Badge variant="neutral">{tx.typeLabel}</Badge>
+                            {/* 647D: an unidentified deposit's allocation or payment to the Fund
+                                says where the money goes, so the approver can judge it (both
+                                are firm-only rows; no other row's description is shown here) */}
+                            {RESOLUTION_TYPES.has(tx.transactionType) && tx.description && (
+                              <span
+                                className="mt-1 block max-w-xs text-xs whitespace-normal text-slate-500 dark:text-slate-400"
+                                data-testid={`transaction-description-${tx.id}`}
+                              >
+                                {tx.description}
+                              </span>
+                            )}
                           </td>
                           <td className="py-3 pr-4 text-right">
                             {/* 646E F8: styling from the row's direction (a reversal is the

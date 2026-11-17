@@ -1,0 +1,17 @@
+F-646E-3 — RED run (reproduce-before-fix), 2026-11-17, branch epic-647D/unidentified-deposits-resolve
+Base: main @ 74bb52cb7 + 647D allocate/approve code, BEFORE TrustTransactionService.reverseTransaction routes PAIR by type.
+Not reproducible on main through the product: nothing creates UNIDENT_ALLOC_OUT before 647D.
+
+Command: ./mvnw test -Dtest='UnidentifiedDepositIntegrationTest#allocation_undoneAfterApproval_reopensTheItem_EQ4BeforeBetweenAfter' -q
+
+      HTTP Method = POST
+      Request URI = /api/trust-transactions/c51ba6e9-3fce-4f1b-83b6-2bac6c9367b5/reverse
+           Status = 400
+             Body = {"detail":"Paired TRANSFER_IN not found for reference: UID-341ED3BF","instance":"/api/trust-transactions/c51ba6e9-3fce-4f1b-83b6-2bac6c9367b5/reverse","status":400,"title":"Cannot reverse transfer"}
+
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 27.41 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.UnidentifiedDepositIntegrationTest
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.UnidentifiedDepositIntegrationTest.allocation_undoneAfterApproval_reopensTheItem_EQ4BeforeBetweenAfter -- Time elapsed: 0.775 s <<< FAILURE!
+java.lang.AssertionError: Status expected:<201> but was:<400>
+	at org.springframework.test.util.AssertionErrors.fail(AssertionErrors.java:62)
+[ERROR]   UnidentifiedDepositIntegrationTest.allocation_undoneAfterApproval_reopensTheItem_EQ4BeforeBetweenAfter:750->moves:1160->lambda$moves$0:1163->lambda$moves$1:1168->lambda$allocation_undoneAfterApproval_reopensTheItem_EQ4BeforeBetweenAfter$0:753 Status expected:<201> but was:<400>
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0

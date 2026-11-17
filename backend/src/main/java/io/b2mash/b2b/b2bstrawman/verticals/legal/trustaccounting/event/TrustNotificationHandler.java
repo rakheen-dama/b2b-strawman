@@ -6,6 +6,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.Notification;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationService;
 import io.b2mash.b2b.b2bstrawman.notification.channel.NotificationDispatcher;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionTypeLabels;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -127,8 +128,7 @@ public class TrustNotificationHandler {
         notificationService.notifyAdminsAndOwners(
             "TRUST_PAYMENT_AWAITING_APPROVAL",
             "Trust " + formatTransactionType(event.transactionType()) + " requires approval",
-            "A "
-                + formatTransactionType(event.transactionType())
+            withArticle(formatTransactionType(event.transactionType()))
                 + " of R"
                 + event.amount()
                 + " requires your approval.",
@@ -228,8 +228,22 @@ public class TrustNotificationHandler {
     dispatchAll(notifications);
   }
 
-  private String formatTransactionType(String transactionType) {
-    return transactionType.toLowerCase().replace('_', ' ');
+  /**
+   * The type's firm label, decapitalised for the middle of a title (647D): "payment", "fee
+   * transfer", "refund", "reversal" as before, and "unidentified deposit allocated" / "unidentified
+   * deposit paid to the Fund" instead of a raw code.
+   */
+  static String formatTransactionType(String transactionType) {
+    String label = TrustTransactionTypeLabels.firmLabel(transactionType);
+    if (label == null || label.isEmpty()) {
+      return "transaction";
+    }
+    return Character.toLowerCase(label.charAt(0)) + label.substring(1);
+  }
+
+  /** "A payment", "An unidentified deposit allocated" — sentence-initial article. */
+  static String withArticle(String noun) {
+    return ("aeiou".indexOf(noun.charAt(0)) >= 0 ? "An " : "A ") + noun;
   }
 
   private void dispatchAll(List<Notification> notifications) {

@@ -1326,6 +1326,55 @@ class ActivityMessageFormatterTest {
             d("amount", "300.00", "resolved_date", "2026-11-03"),
             "Alice reversed an unidentified deposit of R300,00 when its statement line was"
                 + " unmatched"),
+        // --- unidentified deposits resolved (Phase 92 647D) ---
+        Arguments.of(
+            "unidentified_deposit.allocation_requested",
+            "unidentified_deposit",
+            d("amount", "300.00", "allocation_date", "2026-11-10"),
+            "Alice asked to allocate an unidentified deposit of R300,00 to a client"),
+        Arguments.of(
+            "unidentified_deposit.allocated",
+            "unidentified_deposit",
+            d("amount", "300.00", "resolved_date", "2026-11-10"),
+            "Alice allocated an unidentified deposit of R300,00 to a client"),
+        Arguments.of(
+            "unidentified_deposit.allocation_rejected",
+            "unidentified_deposit",
+            d("amount", "300.00", "reason", "Wrong client"),
+            "Alice rejected the allocation of an unidentified deposit of R300,00"),
+        Arguments.of(
+            "unidentified_deposit.payment_requested",
+            "unidentified_deposit",
+            d("amount", "300.00", "reference", "LPFF-1"),
+            "Alice asked to pay an unidentified deposit of R300,00 to the Legal Practitioners'"
+                + " Fidelity Fund"),
+        Arguments.of(
+            "unidentified_deposit.paid_to_fund",
+            "unidentified_deposit",
+            d("amount", "300.00"),
+            "Alice paid an unidentified deposit of R300,00 to the Legal Practitioners' Fidelity"
+                + " Fund"),
+        Arguments.of(
+            "unidentified_deposit.payment_rejected",
+            "unidentified_deposit",
+            d("amount", "300.00"),
+            "Alice rejected the payment of an unidentified deposit of R300,00 to the Legal"
+                + " Practitioners' Fidelity Fund"),
+        Arguments.of(
+            "unidentified_deposit.reopened",
+            "unidentified_deposit",
+            d("amount", "300.00", "resolution_type", "UNIDENT_ALLOC_OUT"),
+            "Alice reopened an unidentified deposit of R300,00"),
+        Arguments.of(
+            "trust_unident_alloc_out.approved",
+            "trust_transaction",
+            d("transaction_type", "UNIDENT_ALLOC_OUT", "amount", "300.00"),
+            "Alice approved the allocation of an unidentified deposit of R300,00"),
+        Arguments.of(
+            "trust_unident_fund_pay.rejected",
+            "trust_transaction",
+            d("transaction_type", "UNIDENT_FUND_PAY", "amount", "300.00"),
+            "Alice rejected the payment of an unidentified deposit to the Fund of R300,00"),
         Arguments.of(
             "bank_statement_line.unmatched",
             "bank_statement_line",
@@ -1754,11 +1803,22 @@ class ActivityMessageFormatterTest {
   void computedTrustApprovalForARegistryOnlyType_readsTheRegistryLabel() {
     assertThat(
             message(
+                "trust_firm_inv_place.approved",
+                "trust_transaction",
+                d("transaction_type", "FIRM_INV_PLACE", "amount", "2500.00")))
+        .isEqualTo(
+            "Alice approved the placed in section 86(3) investment account of R2" + NB + "500,00");
+    // 647D: the unidentified-deposit resolutions have their own nouns (their registry labels do
+    // not read as a noun after "approved the").
+    assertThat(
+            message(
                 "trust_unident_fund_pay.approved",
                 "trust_transaction",
                 d("transaction_type", "UNIDENT_FUND_PAY", "amount", "2500.00")))
         .isEqualTo(
-            "Alice approved the unidentified deposit paid to the Fund of R2" + NB + "500,00");
+            "Alice approved the payment of an unidentified deposit to the Fund of R2"
+                + NB
+                + "500,00");
     assertThat(
             message(
                 "trust_fund_sweep.rejected",
@@ -1838,6 +1898,15 @@ class ActivityMessageFormatterTest {
           new String[] {"trust_unidentified_deposit.recorded", "trust_transaction"},
           new String[] {"unidentified_deposit.opened", "unidentified_deposit"},
           new String[] {"unidentified_deposit.reversed", "unidentified_deposit"},
+          new String[] {"unidentified_deposit.allocation_requested", "unidentified_deposit"},
+          new String[] {"unidentified_deposit.allocated", "unidentified_deposit"},
+          new String[] {"unidentified_deposit.allocation_rejected", "unidentified_deposit"},
+          new String[] {"unidentified_deposit.payment_requested", "unidentified_deposit"},
+          new String[] {"unidentified_deposit.paid_to_fund", "unidentified_deposit"},
+          new String[] {"unidentified_deposit.payment_rejected", "unidentified_deposit"},
+          new String[] {"unidentified_deposit.reopened", "unidentified_deposit"},
+          new String[] {"trust_unident_alloc_out.approved", "trust_transaction"},
+          new String[] {"trust_unident_fund_pay.approved", "trust_transaction"},
           new String[] {"bank_statement_line.recorded", "bank_statement_line"},
           new String[] {"bank_statement_line.unmatched", "bank_statement_line"},
           new String[] {"trust_payment.approved", "trust_transaction"},

@@ -8,9 +8,13 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustClientMatterRule;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustPostingService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDate;
@@ -18,6 +22,7 @@ import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -51,8 +56,13 @@ class UnidentifiedDepositAgeUnitTest {
             deposits,
             accounts,
             mock(TrustPostingService.class),
+            mock(TrustTransactionRepository.class),
+            mock(CustomerRepository.class),
+            mock(ProjectRepository.class),
+            mock(TrustClientMatterRule.class),
             mock(VerticalModuleGuard.class),
             mock(AuditService.class),
+            mock(ApplicationEventPublisher.class),
             Clock.fixed(TODAY.atStartOfDay(ZONE).toInstant(), ZONE));
 
     var content = service.list(account, null, PageRequest.of(0, 25)).getContent();

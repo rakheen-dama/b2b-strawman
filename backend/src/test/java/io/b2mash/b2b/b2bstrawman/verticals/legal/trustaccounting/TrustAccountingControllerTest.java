@@ -531,6 +531,7 @@ class TrustAccountingControllerTest {
                     }
                     """))
         .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
         .andExpect(jsonPath("$.title").value("Investment basis required"))
         .andExpect(
             jsonPath("$.detail")
@@ -558,6 +559,7 @@ class TrustAccountingControllerTest {
                     }
                     """))
         .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
         .andExpect(jsonPath("$.title").value("Investment basis not allowed"))
         .andExpect(
             jsonPath("$.detail")
@@ -584,7 +586,9 @@ class TrustAccountingControllerTest {
                     }
                     """))
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.title").value("Malformed request body"));
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.title").value("Malformed request body"))
+        .andExpect(jsonPath("$.detail").value("The request body could not be read or parsed"));
 
     // PUT: a basis on a non-investment account
     var general =
@@ -618,7 +622,13 @@ class TrustAccountingControllerTest {
                     { "investmentBasis": "CLIENT_INSTRUCTION" }
                     """))
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.title").value("Investment basis not allowed"));
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.title").value("Investment basis not allowed"))
+        .andExpect(
+            jsonPath("$.detail")
+                .value(
+                    "Only an investment account carries an investment basis. A trust banking"
+                        + " account reports under section 86(2)."));
 
     mockMvc
         .perform(

@@ -15,6 +15,7 @@ import io.b2mash.b2b.b2bstrawman.mcp.dto.McpPage;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpTrustBalanceDto;
 import io.b2mash.b2b.b2bstrawman.mcp.dto.McpTrustTransactionItem;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustBooksService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService.ClientHistoryFilter;
@@ -36,8 +37,8 @@ import tools.jackson.databind.ObjectMapper;
  * For a non-legal tenant the underlying {@link ClientLedgerService} throws {@link
  * ModuleNotEnabledException}; we catch it and return a clean {@link
  * McpError#moduleDisabled(String)} rather than a stack trace. An unknown trust account ({@link
- * ResourceNotFoundException} from {@link TrustBooksService#position}) is a clean {@link
- * McpError#notFound(String)} (646D).
+ * ResourceNotFoundException} from {@link TrustBooksService#position} or, on the client branch,
+ * {@link TrustAccountService#getTrustAccount}) is a clean {@link McpError#notFound(String)} (646D).
  *
  * <p>Money: the trust DTOs carry {@link java.math.BigDecimal} major units with no currency; the MCP
  * boundary carries minor units (long) + a currency code resolved from {@link OrgSettingsService}.
@@ -50,6 +51,7 @@ public class TrustTools {
 
   private final ClientLedgerService clientLedgerService;
   private final TrustBooksService trustBooksService;
+  private final TrustAccountService trustAccountService;
   private final OrgSettingsService orgSettingsService;
   private final AuditService auditService;
   private final ObjectMapper objectMapper;
@@ -60,6 +62,7 @@ public class TrustTools {
   public TrustTools(
       ClientLedgerService clientLedgerService,
       TrustBooksService trustBooksService,
+      TrustAccountService trustAccountService,
       OrgSettingsService orgSettingsService,
       AuditService auditService,
       ObjectMapper objectMapper,
@@ -68,6 +71,7 @@ public class TrustTools {
       Clock clock) {
     this.clientLedgerService = clientLedgerService;
     this.trustBooksService = trustBooksService;
+    this.trustAccountService = trustAccountService;
     this.orgSettingsService = orgSettingsService;
     this.auditService = auditService;
     this.objectMapper = objectMapper;
@@ -110,6 +114,8 @@ public class TrustTools {
             String currency = orgSettingsService.getDefaultCurrency();
             McpTrustBalanceDto dto;
             if (customerId != null) {
+              // the ledger read checks only the client; an unknown account must not read as zero
+              trustAccountService.getTrustAccount(trustAccountId);
               var card = clientLedgerService.getClientLedger(customerId, trustAccountId);
               dto =
                   new McpTrustBalanceDto(

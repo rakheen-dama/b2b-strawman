@@ -359,6 +359,21 @@ class CatalogueBatch2TrustBillingTest {
     assertThat(resultPayload(result).at("/error").asString()).isEqualTo("not_found");
   }
 
+  /** 646D (review CR-1): a real client on an unknown account is not_found, not a silent zero. */
+  @Test
+  void getTrustBalanceOfAClientOnAnUnknownAccountIsNotFound() throws Exception {
+    JwtRequestPostProcessor owner = TestJwtFactory.ownerJwt(ORG_ID, "user_owner");
+    JsonNode result =
+        callTool(
+            owner,
+            openSession(owner),
+            "get_trust_balance",
+            "{\"trustAccountId\":\"%s\",\"customerId\":\"%s\"}"
+                .formatted(UUID.randomUUID(), customerId));
+    assertThat(result.at("/isError").asBoolean()).as("result %s", result).isTrue();
+    assertThat(resultPayload(result).at("/error").asString()).isEqualTo("not_found");
+  }
+
   @Test
   void getTrustBalanceWithoutViewTrustIsForbiddenAndAudited() throws Exception {
     String roleId =

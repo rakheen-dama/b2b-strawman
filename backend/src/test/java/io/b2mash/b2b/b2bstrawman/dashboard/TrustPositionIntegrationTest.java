@@ -417,12 +417,15 @@ class TrustPositionIntegrationTest {
   /** 646D behaviour change: an unknown account was a silent 200 / 0; it is now 404. */
   @Test
   void totalBalanceOfAnUnknownAccountIsNotFound() throws Exception {
+    UUID unknown = UUID.randomUUID();
     mockMvc
         .perform(
-            get("/api/trust-accounts/" + UUID.randomUUID() + "/total-balance")
+            get("/api/trust-accounts/" + unknown + "/total-balance")
                 .with(TestJwtFactory.ownerJwt(CREDITORS_ORG_ID, CREDITORS_OWNER)))
         .andExpect(status().isNotFound())
-        .andExpect(jsonPath("$.status").value(404));
+        .andExpect(jsonPath("$.status").value(404))
+        .andExpect(jsonPath("$.title").value("TrustAccount not found"))
+        .andExpect(jsonPath("$.detail").value("No trustaccount found with id " + unknown));
   }
 
   // --- helpers ---

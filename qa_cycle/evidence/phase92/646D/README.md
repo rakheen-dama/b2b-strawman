@@ -17,7 +17,9 @@ Builder evidence. OBS, E2E-LEGAL and the full backend verify are the orchestrato
   - F1 (FE, `trust-position-widget.test.tsx`) — no "Trust creditors" row. F2 (FE,
     `trust-transactions.test.tsx`) — no "Fee transfer date (optional)" field.
 - `found.md` — F-646D-1 (no lower bound on the fee-transfer date, ruling D8 → 650A/649C), F-646D-2
-  (harness dated-read follow-up, O11).
+  (harness dated-read follow-up, O11), F-646D-3 (`CreditorBreakdown` owner, review follow-up) and the
+  review note that the FE prettier concern on `trust-balance-trend-chart.tsx` was a false positive.
+- `red-run.txt` § Review fix CR-1 — MCP client branch on an unknown account returned a silent zero.
 
 Builder gates (this worktree, Tier 2 — the full verify is NOT run by the builder):
 - Backend targeted: 118 classes, 886 testcases (`<testcase>` count), 0 failures / 0 errors / 0 skipped —

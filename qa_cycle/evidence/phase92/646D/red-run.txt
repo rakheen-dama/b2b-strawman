@@ -99,3 +99,15 @@ production code was in — approving a fee transfer posts a payment on the fee n
 SENT or PARTIALLY_PAID (`InvoiceTransitionService.postPayment`; 409 otherwise). `recordFeeTransfer`
 accepts both statuses on main, and the red assertion ($.transactionDate expected 2026-04-08, was
 today) fires before the approval step, so the red stands for the stated reason.
+
+## Review fix CR-1
+
+`CatalogueBatch2TrustBillingTest#getTrustBalanceOfAClientOnAnUnknownAccountIsNotFound` on HEAD `a85e728e6`
+(before the fix) — a real customerId on a random (unknown) trustAccountId; expected an MCP `not_found`,
+got a successful silent zero (the client branch never checked the account):
+
+```
+[ERROR] CatalogueBatch2TrustBillingTest.getTrustBalanceOfAClientOnAnUnknownAccountIsNotFound:373 [result {"content":[{"type":"text","text":"{\"trustAccountId\":\"750f3ecc-5bbf-4a68-8657-6cfb2bbfae20\",\"customerId\":\"208c44bc-c25a-4463-bad1-e932bc7d1c91\",\"balanceMinor\":0,\"currency\":\"USD\",\"investedMinor\":null,\"fundLedgerMinor\":null,\"unidentifiedDepositsMinor\":null,\"totalTrustCreditorsMinor\":null,\"cashbookMinor\":null,\"asAt\":null}"}],"isError":false}]
+Expecting value to be true but was false
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0
+```

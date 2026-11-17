@@ -23,3 +23,18 @@ Phase rule: a defect outside the stated scope is written here, reported, and re-
 - 646D adds `asAt` overloads to both reads; they are proven by `TrustPositionIntegrationTest`
   (`balanceEndpointsAnswerAsAtTheRequestedDate`) but the harness does not assert them at an arbitrary date.
 - Why deferred: test-harness hardening, +1 file, not a defect. Suggested owner: the next HARNESS slice.
+
+## F-646D-3 — `CreditorBreakdown` lives in the reconciliation package but is a books concept (follow-up)
+
+- Where: `CreditorBreakdown` is nested in `TrustReconciliationService` but is now consumed by the dashboard,
+  the ledger (`total-balance`) and MCP; its natural owner is `books` / `TrustBooksService` (the `books` and
+  `reconciliation` packages now depend on each other). Raised by the architecture reviewer on PR #1793.
+- Why deferred: moving it changes the trust wire pin (`trust-contract.json`, ADR-365) and its FE twin; not a
+  defect. Suggested fix: move it (or give `TrustPosition` a `creditorBreakdown()`) the next time the trust
+  wire pin is touched.
+
+## Review note — frontend prettier concern was a false positive
+
+- A reviewer flagged `frontend/components/trust/trust-balance-trend-chart.tsx` formatting; `format:check`
+  was green at `a85e728e6` (builder gates in README.md) and `prettier --check` on the file and its test is
+  clean on re-check during the review fix. No change made.

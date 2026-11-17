@@ -165,8 +165,24 @@ public class TrustTransactionService {
       String description,
       LocalDate transactionDate) {}
 
+  /**
+   * A fee transfer from a client's trust money to the firm against a fee note. {@code
+   * transactionDate} is optional (ruling #6, §16.4.1): the date the bank shows the transfer; null =
+   * today ({@code LocalDate.now(clock)}); never in the future.
+   */
   public record RecordFeeTransferRequest(
-      UUID clientId, UUID invoiceId, BigDecimal amount, String reference) {}
+      UUID clientId,
+      UUID invoiceId,
+      BigDecimal amount,
+      String reference,
+      LocalDate transactionDate) {
+
+    /** Undated: the transfer is dated today. */
+    public RecordFeeTransferRequest(
+        UUID clientId, UUID invoiceId, BigDecimal amount, String reference) {
+      this(clientId, invoiceId, amount, reference, null);
+    }
+  }
 
   public record RecordRefundRequest(
       UUID clientId,
@@ -706,6 +722,7 @@ public class TrustTransactionService {
     moduleGuard.requireModule(MODULE_ID);
     validateAmount(request.amount());
     validateReference(request.reference());
+    var transactionDate = resolveFeeTransferDate(request.transactionDate());
 
     var account =
         trustAccountRepository
@@ -775,7 +792,7 @@ public class TrustTransactionService {
             null,
             request.reference(),
             null,
-            LocalDate.now(clock),
+            transactionDate,
             "AWAITING_APPROVAL",
             memberId);
 
@@ -1440,6 +1457,22 @@ public class TrustTransactionService {
       throw new InvalidStateException(
           "Cannot reverse transaction", "Transaction has already been reversed");
     }
+  }
+
+  /**
+   * The fee transfer's date (ruling #6): {@code requested}, or today ({@code LocalDate.now(clock)},
+   * the SA business date) when null; never in the future. No lower bound — the ruling sets none.
+   */
+  private LocalDate resolveFeeTransferDate(LocalDate requested) {
+    var today = LocalDate.now(clock);
+    if (requested == null) {
+      return today;
+    }
+    if (requested.isAfter(today)) {
+      throw new InvalidStateException(
+          "Invalid fee transfer", "The fee transfer date cannot be in the future");
+    }
+    return requested;
   }
 
   /**

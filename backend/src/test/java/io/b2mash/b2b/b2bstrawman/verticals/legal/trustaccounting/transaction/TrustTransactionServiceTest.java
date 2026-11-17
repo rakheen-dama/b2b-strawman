@@ -2,7 +2,11 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
@@ -15,6 +19,7 @@ import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
@@ -31,6 +36,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.Tru
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.ReverseRequest;
 import jakarta.persistence.EntityManager;
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
@@ -47,6 +53,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.event.ApplicationEvents;
 import org.springframework.test.context.event.RecordApplicationEvents;
@@ -80,6 +87,7 @@ class TrustTransactionServiceTest {
   @Autowired private InvoiceRepository invoiceRepository;
   @Autowired private NotificationRepository notificationRepository;
   @Autowired private ApplicationEvents applicationEvents;
+  @Autowired private Clock clock;
 
   private String tenantSchema;
   private UUID memberId;
@@ -2251,6 +2259,147 @@ class TrustTransactionServiceTest {
                   assertThat(response.status()).isEqualTo("APPROVED");
                   assertThat(response.secondApprovedBy()).isEqualTo(secondApproverId);
                 }));
+  }
+
+  // --- 646D (ruling #6): optional fee-transfer date ---
+
+  @Test
+  void feeTransfer_withoutTransactionDate_isDatedToday() {
+    runInTenantWithCapabilities(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var feeNote = fundedFeeNote("Undated", "INV-FT-646D-UNDATED");
+                  var response =
+                      transactionService.recordFeeTransfer(
+                          trustAccountId,
+                          new RecordFeeTransferRequest(
+                              feeNote[0], feeNote[1], new BigDecimal("1150.00"), "FT-UNDATED"));
+                  assertThat(response.transactionDate()).isEqualTo(LocalDate.now(clock));
+                }));
+  }
+
+  @Test
+  void feeTransfer_backDated_postsOnItsDate() throws Exception {
+    var feeNote = new UUID[2];
+    runInTenantWithCapabilities(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var ids = fundedFeeNote("Back Dated", "INV-FT-646D-BACK");
+                  feeNote[0] = ids[0];
+                  feeNote[1] = ids[1];
+                }));
+
+    String body =
+        mockMvc
+            .perform(
+                post("/api/trust-accounts/" + trustAccountId + "/transactions/fee-transfer")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_trust_txn_owner"))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"clientId":"%s","invoiceId":"%s","amount":1150.00,
+                         "reference":"FT-BACKDATED","transactionDate":"2026-04-08"}"""
+                            .formatted(feeNote[0], feeNote[1])))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.transactionDate").value("2026-04-08"))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    var transactionId = UUID.fromString(JsonPath.read(body, "$.id"));
+
+    runAsApprover(() -> transactionService.approveTransaction(transactionId, approverId));
+
+    runInTenant(
+        () -> {
+          assertThat(
+                  clientLedgerService.getClientBalanceAsOfDate(
+                      feeNote[0], trustAccountId, LocalDate.of(2026, 4, 8)))
+              .isEqualByComparingTo("13850.00");
+          assertThat(
+                  clientLedgerService.getClientBalanceAsOfDate(
+                      feeNote[0], trustAccountId, LocalDate.of(2026, 4, 7)))
+              .isEqualByComparingTo("15000.00");
+        });
+  }
+
+  @Test
+  void feeTransfer_futureTransactionDate_isRefused() throws Exception {
+    var feeNote = new UUID[2];
+    runInTenantWithCapabilities(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var ids = fundedFeeNote("Future", "INV-FT-646D-FUTURE");
+                  feeNote[0] = ids[0];
+                  feeNote[1] = ids[1];
+                }));
+
+    mockMvc
+        .perform(
+            post("/api/trust-accounts/" + trustAccountId + "/transactions/fee-transfer")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_trust_txn_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"clientId":"%s","invoiceId":"%s","amount":1150.00,
+                     "reference":"FT-FUTURE","transactionDate":"%s"}"""
+                        .formatted(feeNote[0], feeNote[1], LocalDate.now(clock).plusDays(1))))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.title").value("Invalid fee transfer"))
+        .andExpect(jsonPath("$.detail").value("The fee transfer date cannot be in the future"));
+
+    // nothing written: the client (unique to this test) has no fee transfer
+    runInTenant(
+        () ->
+            assertThat(transactionRepository.findByCustomerId(feeNote[0]))
+                .noneMatch(t -> "FEE_TRANSFER".equals(t.getTransactionType())));
+  }
+
+  /**
+   * A client funded with R15 000 (2026-04-07) and a SENT R1 150 fee note (approval posts a payment
+   * on it, which needs SENT or PARTIALLY_PAID) with one line on the client's trust matter; returns
+   * {clientId, invoiceId}. Runs inside the caller's transaction.
+   */
+  private UUID[] fundedFeeNote(String label, String invoiceNumber) {
+    var customer =
+        customerRepository.save(
+            TestCustomerFactory.createActiveCustomer(
+                "Fee Transfer " + label + " Client",
+                invoiceNumber.toLowerCase() + "@test.com",
+                memberId));
+    transactionService.recordDeposit(
+        trustAccountId,
+        new RecordDepositRequest(
+            customer.getId(),
+            trustMatterOf(customer.getId()),
+            new BigDecimal("15000.00"),
+            "DEP-" + invoiceNumber,
+            "Funding for fee transfer",
+            LocalDate.of(2026, 4, 7)));
+    var invoiceId = UUID.randomUUID();
+    entityManager
+        .createNativeQuery(
+            """
+            INSERT INTO invoices (id, customer_id, invoice_number, status,
+                subtotal, tax_amount, total, currency, due_date,
+                customer_name, org_name, created_by, created_at, updated_at)
+            VALUES (:id, :customerId, :invoiceNumber, 'SENT',
+                1000.00, 150.00, 1150.00, 'ZAR', :dueDate,
+                :customerName, 'Test Org', :createdBy, now(), now())
+            """)
+        .setParameter("id", invoiceId)
+        .setParameter("customerId", customer.getId())
+        .setParameter("invoiceNumber", invoiceNumber)
+        .setParameter("dueDate", LocalDate.of(2026, 5, 1))
+        .setParameter("customerName", customer.getName())
+        .setParameter("createdBy", memberId)
+        .executeUpdate();
+    lineOnTrustMatter(invoiceId, customer.getId());
+    entityManager.flush();
+    return new UUID[] {customer.getId(), invoiceId};
   }
 
   // --- 441.12: Concurrent Approval and Fee Transfer Tests ---

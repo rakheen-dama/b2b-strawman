@@ -115,6 +115,58 @@ export const reversalReasonSchema = z.object({
 
 export type ReversalReasonFormData = z.infer<typeof reversalReasonSchema>;
 
+/**
+ * Record from statement (647A, ADR-380): what an unmatched statement line is. A bank charge also
+ * needs whether it is recoverable and its VAT; the server refuses both on any other
+ * classification, and is the authority for every rule here.
+ */
+export const recordFromStatementSchema = z
+  .object({
+    classification: z.enum(["FUND_INTEREST", "FUND_SWEEP", "BANK_CHARGE", "CHARGE_REFUND"], {
+      message: "Choose what this line is",
+    }),
+    chargeRecoverable: z.boolean().optional(),
+    chargeVatAmount: z.number().min(0, "VAT cannot be negative").optional(),
+    notes: z.string().max(2000).optional().or(z.literal("")),
+  })
+  .superRefine((data, ctx) => {
+    if (data.classification !== "BANK_CHARGE") {
+      return;
+    }
+    if (data.chargeRecoverable === undefined) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["chargeRecoverable"],
+        message: "Say whether the charge is recoverable",
+      });
+    }
+    if (data.chargeVatAmount === undefined || Number.isNaN(data.chargeVatAmount)) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["chargeVatAmount"],
+        message: "Enter the VAT amount (0 if none)",
+      });
+    }
+  });
+
+export type RecordFromStatementFormData = z.infer<typeof recordFromStatementSchema>;
+
+/** {@link recordFromStatementSchema} for a line of `chargeAmount`: the VAT must be below it. */
+export const recordFromStatementSchemaFor = (chargeAmount: number) =>
+  recordFromStatementSchema.superRefine((data, ctx) => {
+    if (
+      data.classification === "BANK_CHARGE" &&
+      data.chargeVatAmount !== undefined &&
+      data.chargeVatAmount >= chargeAmount
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["chargeVatAmount"],
+        message: "VAT must be less than the charge",
+      });
+    }
+  });
+
 export const createInterestRunSchema = z
   .object({
     periodStart: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD"),

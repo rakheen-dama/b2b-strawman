@@ -6,7 +6,9 @@ import type {
   BankStatementResponse,
   TrustReconciliationResponse,
   MatchResultResponse,
+  RecordFromLineResponse,
 } from "@/lib/types";
+import type { RecordFromStatementFormData } from "@/lib/schemas/trust";
 
 // ── Response types ─────────────────────────────────────────────────
 
@@ -182,6 +184,40 @@ export async function excludeLine(lineId: string, reason: string): Promise<Actio
     return {
       success: false,
       error: error instanceof Error ? error.message : "Failed to exclude line",
+    };
+  }
+}
+
+/**
+ * Record from statement (647A, ADR-380): posts the row the firm confirmed for an unmatched line.
+ * Charge detail is sent only for a bank charge (the server refuses it on any other
+ * classification). The error is the server's ProblemDetail detail, shown in the dialog.
+ */
+export async function recordFromStatement(
+  lineId: string,
+  input: RecordFromStatementFormData
+): Promise<{ success: boolean; data?: RecordFromLineResponse; error?: string }> {
+  const notes = input.notes ? input.notes : null;
+  const body =
+    input.classification === "BANK_CHARGE"
+      ? {
+          classification: input.classification,
+          chargeRecoverable: input.chargeRecoverable,
+          chargeVatAmount: input.chargeVatAmount,
+          notes,
+        }
+      : { classification: input.classification, notes };
+  try {
+    const data = await api.post<RecordFromLineResponse>(
+      `/api/bank-statement-lines/${lineId}/record`,
+      body
+    );
+    revalidatePath("/", "layout");
+    return { success: true, data };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to record the line",
     };
   }
 }

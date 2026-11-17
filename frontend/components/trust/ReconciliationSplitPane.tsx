@@ -5,6 +5,16 @@ import { CheckCircle2, XCircle, Link2, Unlink } from "lucide-react";
 import { Button } from "@b2mash/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@b2mash/ui/card";
 import { Badge } from "@b2mash/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { RecordFromStatementDialog } from "@/components/trust/RecordFromStatementDialog";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
 import type {
   BankStatementLineResponse,
@@ -12,6 +22,7 @@ import type {
   TrustTransaction,
   TrustReconciliationResponse,
 } from "@/lib/types";
+import type { RecordFromStatementFormData } from "@/lib/schemas/trust";
 
 // ── Helpers ───────────────────────────────────────────────────────
 
@@ -23,6 +34,8 @@ function lineColorClasses(status: BankStatementLineMatchStatus): string {
       return "border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950";
     case "EXCLUDED":
       return "border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800";
+    case "RECORDED":
+      return "border-teal-200 bg-teal-50 dark:border-teal-900 dark:bg-teal-950";
     case "UNMATCHED":
     default:
       return "border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950";
@@ -37,10 +50,89 @@ function statusLabel(status: BankStatementLineMatchStatus): string {
       return "Matched";
     case "EXCLUDED":
       return "Excluded";
+    case "RECORDED":
+      return "Recorded";
     case "UNMATCHED":
     default:
       return "Unmatched";
   }
+}
+
+/** A line is resolved once it is matched, recorded from or excluded. */
+const RESOLVED_STATUSES: ReadonlySet<BankStatementLineMatchStatus> = new Set([
+  "AUTO_MATCHED",
+  "MANUALLY_MATCHED",
+  "EXCLUDED",
+  "RECORDED",
+]);
+
+/**
+ * Unmatch of a line recorded from the statement (647A): reverses the entries it created, so it asks
+ * first. Owns its trigger (a plain button — never an adjacent `asChild` trigger).
+ */
+function UnmatchRecordedLineDialog({
+  line,
+  disabled,
+  onConfirm,
+}: {
+  line: BankStatementLineResponse;
+  disabled: boolean;
+  onConfirm: (lineId: string) => Promise<void>;
+}) {
+  const [open, setOpen] = useState(false);
+  const [isWorking, setIsWorking] = useState(false);
+  const entries = line.createdTransactionIds.length || 1;
+
+  async function handleConfirm() {
+    setIsWorking(true);
+    try {
+      await onConfirm(line.id);
+      setOpen(false);
+    } finally {
+      setIsWorking(false);
+    }
+  }
+
+  return (
+    <AlertDialog open={open} onOpenChange={setOpen}>
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={() => setOpen(true)}
+        disabled={disabled}
+        data-testid={`unmatch-btn-${line.id}`}
+      >
+        <Unlink className="mr-1 size-3" />
+        Unmatch
+      </Button>
+      <AlertDialogContent data-testid="unmatch-recorded-dialog">
+        <AlertDialogHeader>
+          <AlertDialogTitle>Unmatch recorded line?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This line was recorded as {line.classificationLabel ?? "an entry from the statement"}.
+            Unmatching it reverses the {entries === 1 ? "entry" : `${entries} entries`} it created,
+            dated {formatLocalDate(line.transactionDate)} — the line&apos;s date. The line returns
+            to Unmatched.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel variant="plain" disabled={isWorking}>
+            Keep
+          </AlertDialogCancel>
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={handleConfirm}
+            disabled={isWorking}
+            data-testid="unmatch-recorded-confirm"
+          >
+            {isWorking ? "Reversing..." : "Unmatch and reverse"}
+          </Button>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
 }
 
 function SummaryRow({
@@ -105,6 +197,11 @@ interface ReconciliationSplitPaneProps {
   onMatch: (lineId: string, transactionId: string) => Promise<void>;
   onExclude: (lineId: string) => Promise<void>;
   onUnmatch: (lineId: string) => Promise<void>;
+  /** Record from statement (647A); a refusal comes back as `error` for the dialog to show. */
+  onRecord: (
+    lineId: string,
+    input: RecordFromStatementFormData
+  ) => Promise<{ success: boolean; error?: string }>;
   onComplete: () => Promise<void>;
   isCompleting: boolean;
 }
@@ -117,6 +214,7 @@ export function ReconciliationSplitPane({
   onMatch,
   onExclude,
   onUnmatch,
+  onRecord,
   onComplete,
   isCompleting,
 }: ReconciliationSplitPaneProps) {
@@ -125,12 +223,7 @@ export function ReconciliationSplitPane({
 
   // Calculate progress
   const totalLines = lines.length;
-  const matchedLines = lines.filter(
-    (l) =>
-      l.matchStatus === "AUTO_MATCHED" ||
-      l.matchStatus === "MANUALLY_MATCHED" ||
-      l.matchStatus === "EXCLUDED"
-  ).length;
+  const matchedLines = lines.filter((l) => RESOLVED_STATUSES.has(l.matchStatus)).length;
   const progressPercent = totalLines > 0 ? (matchedLines / totalLines) * 100 : 0;
 
   // Find candidate transactions for selected line (same absolute amount)
@@ -181,6 +274,22 @@ export function ReconciliationSplitPane({
       }
     },
     [onUnmatch]
+  );
+
+  const handleRecord = useCallback(
+    async (lineId: string, input: RecordFromStatementFormData) => {
+      setActionInProgress(lineId);
+      try {
+        const result = await onRecord(lineId, input);
+        if (result.success) {
+          setSelectedLineId(null);
+        }
+        return result;
+      } finally {
+        setActionInProgress(null);
+      }
+    },
+    [onRecord]
   );
 
   return (
@@ -261,22 +370,34 @@ export function ReconciliationSplitPane({
                           {formatCurrency(Math.abs(line.amount), currency)}
                           {line.amount < 0 ? " DR" : " CR"}
                         </p>
-                        <Badge
-                          variant={
-                            line.matchStatus === "UNMATCHED"
-                              ? "warning"
-                              : line.matchStatus === "AUTO_MATCHED"
-                                ? "success"
-                                : "neutral"
-                          }
-                          className="mt-1"
-                        >
-                          {statusLabel(line.matchStatus)}
-                        </Badge>
+                        {line.matchStatus === "RECORDED" ? (
+                          <Badge
+                            variant="success"
+                            className="mt-1 max-w-56 text-left whitespace-normal"
+                            data-testid={`recorded-badge-${line.id}`}
+                          >
+                            {line.classificationLabel
+                              ? `Recorded: ${line.classificationLabel}`
+                              : statusLabel(line.matchStatus)}
+                          </Badge>
+                        ) : (
+                          <Badge
+                            variant={
+                              line.matchStatus === "UNMATCHED"
+                                ? "warning"
+                                : line.matchStatus === "AUTO_MATCHED"
+                                  ? "success"
+                                  : "neutral"
+                            }
+                            className="mt-1"
+                          >
+                            {statusLabel(line.matchStatus)}
+                          </Badge>
+                        )}
                       </div>
                     </div>
 
-                    {/* Actions for matched/excluded lines */}
+                    {/* Actions for matched lines (unmatch at once) */}
                     {(line.matchStatus === "AUTO_MATCHED" ||
                       line.matchStatus === "MANUALLY_MATCHED") && (
                       <div className="mt-2 flex justify-end">
@@ -289,6 +410,7 @@ export function ReconciliationSplitPane({
                             handleUnmatch(line.id);
                           }}
                           disabled={isProcessing}
+                          data-testid={`unmatch-btn-${line.id}`}
                         >
                           <Unlink className="mr-1 size-3" />
                           Unmatch
@@ -296,9 +418,37 @@ export function ReconciliationSplitPane({
                       </div>
                     )}
 
-                    {/* Actions for unmatched lines */}
+                    {/* A recorded line: unmatch reverses its entries, so it asks first. The
+                        wrapper stops clicks inside the (portalled) dialog reaching the line. */}
+                    {line.matchStatus === "RECORDED" && (
+                      <div
+                        className="mt-2 flex justify-end"
+                        role="presentation"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <UnmatchRecordedLineDialog
+                          line={line}
+                          disabled={isProcessing}
+                          onConfirm={handleUnmatch}
+                        />
+                      </div>
+                    )}
+
+                    {/* Actions for unmatched lines. React events bubble out of the portalled
+                        Record dialog: the wrapper keeps an inner click from deselecting the line
+                        (which would unmount the dialog). */}
                     {line.matchStatus === "UNMATCHED" && isSelected && (
-                      <div className="mt-2 flex justify-end">
+                      <div
+                        className="mt-2 flex justify-end gap-1"
+                        role="presentation"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <RecordFromStatementDialog
+                          line={line}
+                          currency={currency}
+                          disabled={isProcessing}
+                          onRecord={handleRecord}
+                        />
                         <Button
                           type="button"
                           variant="ghost"

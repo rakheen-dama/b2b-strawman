@@ -153,6 +153,10 @@ export interface TrustTransaction {
    * REVERSAL rows (and on every other endpoint).
    */
   runningBalance: number | null;
+  /** 647A (ADR-381): BANK_CHARGE only — recoverable from the bank; null on every other row. */
+  chargeRecoverable: boolean | null;
+  /** 647A: BANK_CHARGE only — the VAT included in `amount`; null on every other row. */
+  chargeVatAmount: number | null;
 }
 
 // Client ledger types
@@ -233,8 +237,50 @@ export type BankStatementLineMatchStatus =
   | "UNMATCHED"
   | "AUTO_MATCHED"
   | "MANUALLY_MATCHED"
-  | "EXCLUDED";
+  | "EXCLUDED"
+  /** 647A: posted from — the firm recorded the line as a classification. */
+  | "RECORDED";
 
+/** Mirrors backend `StatementLineClassification` (647A: the four Fund classifications). */
+export type StatementLineClassification =
+  | "FUND_INTEREST"
+  | "FUND_SWEEP"
+  | "BANK_CHARGE"
+  | "CHARGE_REFUND";
+
+/**
+ * The classifications the Record from statement dialog offers, with the line sign each accepts
+ * (+1 credit, -1 debit) — mirrors the backend enum. The labels are the registry's firm labels
+ * (`TrustTransactionType.label()`), byte-identical (pinned in `trust-reconciliation.test.tsx`). A
+ * stored line's badge shows the server's `classificationLabel`, never this list.
+ */
+export const STATEMENT_LINE_CLASSIFICATIONS: ReadonlyArray<{
+  value: StatementLineClassification;
+  lineSign: 1 | -1;
+  label: string;
+}> = [
+  {
+    value: "FUND_INTEREST",
+    lineSign: 1,
+    label: "Interest received for the Legal Practitioners' Fidelity Fund",
+  },
+  {
+    value: "CHARGE_REFUND",
+    lineSign: 1,
+    label: "Bank charge refunded from the business account",
+  },
+  {
+    value: "FUND_SWEEP",
+    lineSign: -1,
+    label: "Interest paid to the Legal Practitioners' Fidelity Fund",
+  },
+  { value: "BANK_CHARGE", lineSign: -1, label: "Bank charge" },
+];
+
+/**
+ * `TrustReconciliationService.BankStatementLineResponse` — keys in the Java record's order
+ * (pinned by `__tests__/trust-wire-shapes.test.ts`, ADR-365).
+ */
 export interface BankStatementLineResponse {
   id: string;
   lineNumber: number;
@@ -242,12 +288,26 @@ export interface BankStatementLineResponse {
   description: string;
   reference: string | null;
   amount: number;
-  runningBalance: number;
+  runningBalance: number | null;
   matchStatus: BankStatementLineMatchStatus;
   trustTransactionId: string | null;
   matchConfidence: number | null;
-  excludedReason: string | null;
-  createdAt: string;
+  /** The confirmed classification code of a RECORDED line (a string on the wire); else null. */
+  classification: string | null;
+  /** The server's label for `classification` — print this, never the code. */
+  classificationLabel: string | null;
+  /** The parser's suggestion (647C fills it). */
+  suggestedClassification: string | null;
+  /** The rows a RECORDED line created; [] for every other line. */
+  createdTransactionIds: string[];
+}
+
+/** `StatementLinePostingService.RecordFromLineResponse` (647A). */
+export interface RecordFromLineResponse {
+  line: BankStatementLineResponse;
+  transactions: TrustTransaction[];
+  unidentifiedDepositId: string | null;
+  investmentInterestId: string | null;
 }
 
 export interface BankStatementResponse {

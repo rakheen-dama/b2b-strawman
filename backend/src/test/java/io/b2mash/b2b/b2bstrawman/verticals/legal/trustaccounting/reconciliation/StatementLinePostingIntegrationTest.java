@@ -18,6 +18,7 @@ import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksFixture;
 import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksFixture.StatementLine;
 import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness;
 import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness.Expected;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateTrustAccountRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustBooksService;
@@ -832,7 +833,8 @@ class StatementLinePostingIntegrationTest {
                             false,
                             null,
                             LocalDate.of(2026, 1, 1),
-                            "647B investment account"))
+                            "647B investment account",
+                            InvestmentBasis.FIRM_DISCRETION))
                     .id());
     return id[0];
   }

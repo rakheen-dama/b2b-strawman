@@ -7,8 +7,14 @@ import type {
   AllocateUnidentifiedRequest,
   BankStatementLineResponse,
   BankStatementResponse,
+  CreateTrustAccountRequest,
+  InvestmentBasis,
   RecordFromLineResponse,
   TotalBalance,
+  TrustAccount,
+  TrustAccountSection,
+  TrustAccountStatus,
+  TrustAccountType,
   TrustCreditorBreakdown,
   TrustLedger,
   TrustReconciliationResponse,
@@ -27,6 +33,25 @@ const componentNames = (components: { name: string }[]) => components.map((c) =>
 // Each TS string union as an exhaustive record: `satisfies Record<Union, true>` fails
 // `pnpm typecheck` on a missing or extra member, so the key list IS the union's member list.
 const TS_UNIONS: Record<keyof typeof enums, string[]> = {
+  // 648C: the trust account response's enums
+  InvestmentBasis: Object.keys({
+    FIRM_DISCRETION: true,
+    CLIENT_INSTRUCTION: true,
+  } satisfies Record<InvestmentBasis, true>),
+  TrustAccountSection: Object.keys({
+    S86_2: true,
+    S86_3: true,
+    S86_4: true,
+  } satisfies Record<TrustAccountSection, true>),
+  TrustAccountStatus: Object.keys({
+    ACTIVE: true,
+    CLOSED: true,
+  } satisfies Record<TrustAccountStatus, true>),
+  TrustAccountType: Object.keys({
+    GENERAL: true,
+    INVESTMENT: true,
+    SECTION_86: true,
+  } satisfies Record<TrustAccountType, true>),
   TrustTransactionDirection: Object.keys({
     IN: true,
     OUT: true,
@@ -61,10 +86,12 @@ describe("trust wire shapes match the backend contract (ADR-365)", () => {
       "AllocateRequest",
       "BankStatementLineResponse",
       "BankStatementResponse",
+      "CreateTrustAccountRequest",
       "CreditorBreakdown",
       "PayToFundRequest",
       "RecordFromLineResponse",
       "TotalBalanceResponse",
+      "TrustAccountResponse",
       "TrustPositionResponse",
       "TrustReconciliationResponse",
       "TrustTransactionResponse",
@@ -327,6 +354,46 @@ describe("trust wire shapes match the backend contract (ADR-365)", () => {
       notes: null,
     };
     expect(Object.keys(literal)).toEqual(componentNames(records.PayToFundRequest));
+  });
+
+  it("TrustAccount ↔ TrustAccountService.TrustAccountResponse (648C)", () => {
+    const literal: Required<TrustAccount> = {
+      id: "",
+      accountName: "",
+      bankName: "",
+      branchCode: "",
+      accountNumber: "",
+      accountType: "GENERAL",
+      investmentBasis: null,
+      section: "S86_2",
+      isPrimary: false,
+      requireDualApproval: false,
+      paymentApprovalThreshold: null,
+      status: "ACTIVE",
+      openedDate: "",
+      closedDate: null,
+      notes: null,
+      createdAt: "",
+      updatedAt: "",
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(records.TrustAccountResponse));
+  });
+
+  it("CreateTrustAccountRequest ↔ TrustAccountService.CreateTrustAccountRequest (648C)", () => {
+    const literal: Required<CreateTrustAccountRequest> = {
+      accountName: "",
+      bankName: "",
+      branchCode: "",
+      accountNumber: "",
+      accountType: "GENERAL",
+      isPrimary: false,
+      requireDualApproval: false,
+      paymentApprovalThreshold: null,
+      openedDate: "",
+      notes: "",
+      investmentBasis: "FIRM_DISCRETION",
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(records.CreateTrustAccountRequest));
   });
 
   it("pins exactly the enums the trust records carry", () => {

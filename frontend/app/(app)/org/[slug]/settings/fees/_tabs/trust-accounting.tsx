@@ -6,7 +6,12 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@b2ma
 import { Badge } from "@b2mash/ui/badge";
 import { Section866Advisory } from "@/components/trust/Section866Advisory";
 import { AddTrustAccountButton } from "@/components/trust/AddTrustAccountButton";
-import type { TrustAccount, LpffRate } from "@/lib/types/trust";
+import {
+  INVESTMENT_BASIS_ACCOUNT_LABELS,
+  TRUST_ACCOUNT_SECTION_LABELS,
+  type TrustAccount,
+  type LpffRate,
+} from "@/lib/types/trust";
 
 /**
  * Fees & Trust › Trust accounting tab (Phase 87 S9, ADR-341) — the former trust-accounting settings
@@ -87,7 +92,7 @@ export async function renderTrustAccountingTab() {
                 {trustAccounts.map((account) => (
                   <div
                     key={account.id}
-                    className="flex items-center justify-between py-3 first:pt-0 last:pb-0"
+                    className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0"
                   >
                     <div>
                       <div className="flex items-center gap-2">
@@ -104,7 +109,20 @@ export async function renderTrustAccountingTab() {
                         {account.accountNumber}
                       </p>
                     </div>
-                    <p className="text-sm text-slate-400">{account.accountType}</p>
+                    {/* ADR-379: the section in the Act's words, and an investment account's basis */}
+                    <div className="text-right" data-testid="trust-account-section">
+                      <p className="text-sm text-slate-500 dark:text-slate-400">
+                        {TRUST_ACCOUNT_SECTION_LABELS[account.section]}
+                      </p>
+                      {account.investmentBasis && (
+                        <p
+                          className="text-xs text-slate-500 dark:text-slate-400"
+                          data-testid="trust-account-basis"
+                        >
+                          {INVESTMENT_BASIS_ACCOUNT_LABELS[account.investmentBasis]}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>

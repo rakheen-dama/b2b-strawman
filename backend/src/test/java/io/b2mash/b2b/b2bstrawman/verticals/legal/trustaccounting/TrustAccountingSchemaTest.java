@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
@@ -18,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -106,5 +108,47 @@ class TrustAccountingSchemaTest {
             Integer.class,
             tenantSchema);
     assertThat(balanceIndexes).isZero();
+  }
+
+  // --- 648C (ADR-379): chk_trust_account_investment_basis on a provisioned tenant ---
+
+  @Test
+  void anInvestmentAccountMustCarryItsBasis() {
+    assertThatThrownBy(() -> insertAccount("Investment No Basis", "INVESTMENT", null))
+        .isInstanceOf(DataIntegrityViolationException.class)
+        .hasMessageContaining("chk_trust_account_investment_basis");
+    assertThatThrownBy(() -> insertAccount("Investment Unknown Basis", "INVESTMENT", "OTHER"))
+        .isInstanceOf(DataIntegrityViolationException.class)
+        .hasMessageContaining("chk_trust_account_investment_basis");
+
+    assertThat(insertAccount("Investment s86(3)", "INVESTMENT", "FIRM_DISCRETION")).isEqualTo(1);
+    assertThat(insertAccount("Investment s86(4)", "INVESTMENT", "CLIENT_INSTRUCTION")).isEqualTo(1);
+  }
+
+  @Test
+  void aNonInvestmentAccountCarriesNoBasis() {
+    assertThatThrownBy(() -> insertAccount("General With Basis", "GENERAL", "FIRM_DISCRETION"))
+        .isInstanceOf(DataIntegrityViolationException.class)
+        .hasMessageContaining("chk_trust_account_investment_basis");
+    assertThatThrownBy(
+            () -> insertAccount("Section 86 With Basis", "SECTION_86", "CLIENT_INSTRUCTION"))
+        .isInstanceOf(DataIntegrityViolationException.class)
+        .hasMessageContaining("chk_trust_account_investment_basis");
+
+    // is_primary false: idx_trust_accounts_primary_general allows one primary GENERAL per tenant
+    assertThat(insertAccount("General No Basis", "GENERAL", null)).isEqualTo(1);
+    assertThat(insertAccount("Section 86 No Basis", "SECTION_86", null)).isEqualTo(1);
+  }
+
+  private int insertAccount(String name, String accountType, String investmentBasis) {
+    return jdbcTemplate.update(
+        "INSERT INTO \""
+            + tenantSchema
+            + "\".trust_accounts (account_name, bank_name, branch_code, account_number,"
+            + " account_type, is_primary, investment_basis, opened_date)"
+            + " VALUES (?, 'Schema Bank', '250655', '6200000000', ?, false, ?, DATE '2026-01-01')",
+        name,
+        accountType,
+        investmentBasis);
   }
 }

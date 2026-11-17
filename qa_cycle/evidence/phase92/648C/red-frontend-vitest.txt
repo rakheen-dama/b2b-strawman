@@ -1,0 +1,9 @@
+# 648C FE red run — the new vitest cases against main's production files (@ 0ab1f6c6c); tests from this slice
+# command: pnpm exec vitest run __tests__/trust-tabs-settings.test.tsx __tests__/trust-investment-basis.test.tsx
+     × shows each account's section in words — never the raw type 27ms
+     × shows the investment basis on investment accounts only 11ms
+     × the account dialog asks for the basis only for an Investment account 94ms
+     × an Investment account cannot be created without its basis; with one, the basis is sent 1271ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+ Test Files  2 failed (2)
+      Tests  4 failed | 20 passed (24)

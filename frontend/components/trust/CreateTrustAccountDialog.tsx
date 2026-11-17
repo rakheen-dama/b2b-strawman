@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { Button } from "@b2mash/ui/button";
@@ -27,6 +27,7 @@ import {
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -54,6 +55,7 @@ function getDefaultValues(): CreateTrustAccountFormData {
     branchCode: "",
     accountNumber: "",
     accountType: "GENERAL",
+    investmentBasis: undefined,
     openedDate: getTodayIso(),
     isPrimary: true,
     requireDualApproval: false,
@@ -75,6 +77,7 @@ export function CreateTrustAccountDialog({
     resolver: zodResolver(createTrustAccountSchema),
     defaultValues: getDefaultValues(),
   });
+  const accountType = useWatch({ control: form.control, name: "accountType" });
 
   function handleOpenChange(next: boolean) {
     onOpenChange(next);
@@ -102,6 +105,8 @@ export function CreateTrustAccountDialog({
             : null,
         openedDate: values.openedDate,
         notes: values.notes && values.notes.trim().length > 0 ? values.notes : undefined,
+        // ADR-379: only an investment account carries a basis (the backend refuses it otherwise)
+        investmentBasis: values.accountType === "INVESTMENT" ? values.investmentBasis : undefined,
       });
 
       if (result.success) {
@@ -200,7 +205,15 @@ export function CreateTrustAccountDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Account Type</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        if (value !== "INVESTMENT") {
+                          form.setValue("investmentBasis", undefined);
+                        }
+                      }}
+                      value={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger data-testid="trust-account-type-select">
                           <SelectValue placeholder="Select account type" />
@@ -231,6 +244,39 @@ export function CreateTrustAccountDialog({
                 )}
               />
             </div>
+
+            {accountType === "INVESTMENT" && (
+              <FormField
+                control={form.control}
+                name="investmentBasis"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Investment basis</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value ?? ""}>
+                      <FormControl>
+                        <SelectTrigger data-testid="trust-account-basis-select" className="w-full">
+                          <SelectValue placeholder="Select the basis" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="FIRM_DISCRETION">
+                          Section 86(3) — the firm invests surplus trust money
+                        </SelectItem>
+                        <SelectItem value="CLIENT_INSTRUCTION">
+                          Section 86(4) — invested on a client&apos;s instruction
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormDescription>
+                      Interest on a section 86(3) investment belongs to the Legal
+                      Practitioners&apos; Fidelity Fund. On a section 86(4) investment the client
+                      receives 95% and the Fund 5%.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
             <FormField
               control={form.control}

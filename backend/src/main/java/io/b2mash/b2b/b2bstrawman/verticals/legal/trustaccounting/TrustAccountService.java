@@ -19,6 +19,7 @@ import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -74,7 +75,36 @@ public class TrustAccountService {
       Boolean requireDualApproval,
       BigDecimal paymentApprovalThreshold,
       LocalDate openedDate,
-      String notes) {}
+      String notes,
+      // ADR-379: required when accountType is INVESTMENT, refused otherwise.
+      InvestmentBasis investmentBasis) {
+
+    /** A non-investment account (GENERAL, SECTION_86): no investment basis. */
+    public CreateTrustAccountRequest(
+        String accountName,
+        String bankName,
+        String branchCode,
+        String accountNumber,
+        String accountType,
+        Boolean isPrimary,
+        Boolean requireDualApproval,
+        BigDecimal paymentApprovalThreshold,
+        LocalDate openedDate,
+        String notes) {
+      this(
+          accountName,
+          bankName,
+          branchCode,
+          accountNumber,
+          accountType,
+          isPrimary,
+          requireDualApproval,
+          paymentApprovalThreshold,
+          openedDate,
+          notes,
+          null);
+    }
+  }
 
   public record UpdateTrustAccountRequest(
       String accountName,
@@ -83,7 +113,9 @@ public class TrustAccountService {
       String accountNumber,
       Boolean requireDualApproval,
       BigDecimal paymentApprovalThreshold,
-      String notes) {}
+      String notes,
+      // ADR-379: null = unchanged; set only on an INVESTMENT account, refused otherwise.
+      InvestmentBasis investmentBasis) {}
 
   public record TrustAccountResponse(
       UUID id,
@@ -92,6 +124,10 @@ public class TrustAccountService {
       String branchCode,
       String accountNumber,
       TrustAccountType accountType,
+      // Null unless the account is INVESTMENT (ADR-379).
+      InvestmentBasis investmentBasis,
+      // Derived from the type and the basis (OL-1: GENERAL and SECTION_86 → S86_2).
+      TrustAccountSection section,
       boolean isPrimary,
       boolean requireDualApproval,
       BigDecimal paymentApprovalThreshold,
@@ -172,6 +208,7 @@ public class TrustAccountService {
         request.accountType() != null
             ? TrustAccountType.valueOf(request.accountType())
             : TrustAccountType.GENERAL;
+    requireBasisMatchesType(accountType, request.investmentBasis(), true);
 
     var account =
         new TrustAccount(
@@ -184,20 +221,24 @@ public class TrustAccountService {
             dualApproval,
             request.paymentApprovalThreshold(),
             request.openedDate() != null ? request.openedDate() : LocalDate.now(clock),
-            request.notes());
+            request.notes(),
+            request.investmentBasis());
 
     var saved = trustAccountRepository.save(account);
 
+    var createdDetails = new LinkedHashMap<String, Object>();
+    createdDetails.put("account_name", saved.getAccountName());
+    createdDetails.put("bank_name", saved.getBankName());
+    createdDetails.put("account_type", saved.getAccountType().name());
+    if (saved.getInvestmentBasis() != null) {
+      createdDetails.put("investment_basis", saved.getInvestmentBasis().name());
+    }
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("trust_account.created")
             .entityType("trust_account")
             .entityId(saved.getId())
-            .details(
-                Map.of(
-                    "account_name", saved.getAccountName(),
-                    "bank_name", saved.getBankName(),
-                    "account_type", saved.getAccountType().name()))
+            .details(createdDetails)
             .build());
 
     // Every trust account carries its two non-client creditor ledgers (ADR-376)
@@ -232,6 +273,13 @@ public class TrustAccountService {
           "Cannot update trust account", "Account is closed and cannot be modified");
     }
 
+    // 648A must refuse a basis change while investments are held (648C found.md F-2)
+    var priorBasis = account.getInvestmentBasis();
+    if (request.investmentBasis() != null) {
+      requireBasisMatchesType(account.getAccountType(), request.investmentBasis(), false);
+      account.setInvestmentBasis(request.investmentBasis());
+    }
+
     if (request.accountName() != null) {
       account.setAccountName(request.accountName());
     }
@@ -256,15 +304,22 @@ public class TrustAccountService {
 
     var saved = trustAccountRepository.save(account);
 
+    var updatedDetails = new LinkedHashMap<String, Object>();
+    updatedDetails.put("account_name", saved.getAccountName());
+    updatedDetails.put("bank_name", saved.getBankName());
+    if (saved.getInvestmentBasis() != null) {
+      updatedDetails.put("investment_basis", saved.getInvestmentBasis().name());
+      // A basis change moves the account between s86(3) and s86(4) (Rule 54.28) — keep the prior
+      if (priorBasis != null && priorBasis != saved.getInvestmentBasis()) {
+        updatedDetails.put("investment_basis_from", priorBasis.name());
+      }
+    }
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("trust_account.updated")
             .entityType("trust_account")
             .entityId(saved.getId())
-            .details(
-                Map.of(
-                    "account_name", saved.getAccountName(),
-                    "bank_name", saved.getBankName()))
+            .details(updatedDetails)
             .build());
 
     return toResponse(saved);
@@ -391,6 +446,28 @@ public class TrustAccountService {
 
   // --- Private Helpers ---
 
+  /**
+   * ADR-379: an INVESTMENT account carries its basis (required on create); no other type carries
+   * one. Thrown before anything is saved. The DB CHECK {@code chk_trust_account_investment_basis}
+   * is the backstop.
+   */
+  private static void requireBasisMatchesType(
+      TrustAccountType type, InvestmentBasis basis, boolean creating) {
+    if (type == TrustAccountType.INVESTMENT) {
+      if (creating && basis == null) {
+        throw new InvalidStateException(
+            "Investment basis required",
+            "An investment account needs its basis: section 86(3) (the firm invests surplus trust"
+                + " money) or section 86(4) (invested on a client's instruction).");
+      }
+    } else if (basis != null) {
+      throw new InvalidStateException(
+          "Investment basis not allowed",
+          "Only an investment account carries an investment basis. A trust banking account"
+              + " reports under section 86(2).");
+    }
+  }
+
   private TrustAccountResponse toResponse(TrustAccount entity) {
     return new TrustAccountResponse(
         entity.getId(),
@@ -399,6 +476,8 @@ public class TrustAccountService {
         entity.getBranchCode(),
         entity.getAccountNumber(),
         entity.getAccountType(),
+        entity.getInvestmentBasis(),
+        entity.getSection(),
         entity.isPrimary(),
         entity.getRequireDualApproval(),
         entity.getPaymentApprovalThreshold(),

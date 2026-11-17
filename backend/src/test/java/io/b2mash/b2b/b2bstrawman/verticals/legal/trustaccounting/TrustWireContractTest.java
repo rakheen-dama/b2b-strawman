@@ -36,7 +36,8 @@ import tools.jackson.databind.json.JsonMapper;
  * slices add their new or changed trust DTOs to {@link #PINNED}; 646D adds the dashboard trust
  * position and the total-balance response (both carry the creditor breakdown); 647A the bank
  * statement, its line and the record-from-statement response; 647B the unidentified deposit; 647D
- * the two requests that resolve it (allocate, pay to the Fund).
+ * the two requests that resolve it (allocate, pay to the Fund); 648C the trust account response
+ * (investment basis and derived section) and the create request.
  *
  * <p>The actual is always written to {@code target/wire/trust-contract.actual.json}. Regenerate
  * ONLY deliberately with {@code -Dtrust.contract.update=true}; the PR that does so must say why in
@@ -60,7 +61,10 @@ class TrustWireContractTest {
           UnidentifiedDepositService.UnidentifiedDepositResponse.class,
           // 647D: the two resolution requests the frontend sends (allocate / pay to the Fund)
           UnidentifiedDepositService.AllocateRequest.class,
-          UnidentifiedDepositService.PayToFundRequest.class);
+          UnidentifiedDepositService.PayToFundRequest.class,
+          // 648C: the account response (investmentBasis + derived section) and the create request
+          TrustAccountService.TrustAccountResponse.class,
+          TrustAccountService.CreateTrustAccountRequest.class);
 
   private static final String UPDATE_FLAG = "trust.contract.update";
   private static final Path SNAPSHOT = Path.of("src/test/resources/wire/trust-contract.json");

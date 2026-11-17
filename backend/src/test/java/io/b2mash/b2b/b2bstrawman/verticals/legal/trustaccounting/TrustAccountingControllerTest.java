@@ -1,5 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting;
 
+import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -404,5 +406,237 @@ class TrustAccountingControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$.length()").value(org.hamcrest.Matchers.greaterThanOrEqualTo(1)));
+  }
+
+  // --- 648C: investment basis on the wire (ADR-379) ---
+
+  @Test
+  void investmentAccount_carriesBasisAndSection_onCreateGetAndList() throws Exception {
+    var result =
+        mockMvc
+            .perform(
+                post("/api/trust-accounts")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_trust_ctrl_owner"))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "accountName": "Section 86(4) Investment",
+                          "bankName": "Investec",
+                          "branchCode": "580105",
+                          "accountNumber": "71000000001",
+                          "accountType": "INVESTMENT",
+                          "investmentBasis": "CLIENT_INSTRUCTION",
+                          "isPrimary": false
+                        }
+                        """))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.accountType").value("INVESTMENT"))
+            .andExpect(jsonPath("$.investmentBasis").value("CLIENT_INSTRUCTION"))
+            .andExpect(jsonPath("$.section").value("S86_4"))
+            .andReturn();
+    String id = JsonPath.read(result.getResponse().getContentAsString(), "$.id");
+
+    mockMvc
+        .perform(
+            post("/api/trust-accounts")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_trust_ctrl_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "accountName": "Section 86(3) Investment",
+                      "bankName": "Investec",
+                      "branchCode": "580105",
+                      "accountNumber": "71000000002",
+                      "accountType": "INVESTMENT",
+                      "investmentBasis": "FIRM_DISCRETION",
+                      "isPrimary": false
+                    }
+                    """))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.investmentBasis").value("FIRM_DISCRETION"))
+        .andExpect(jsonPath("$.section").value("S86_3"));
+
+    mockMvc
+        .perform(
+            post("/api/trust-accounts")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_trust_ctrl_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "accountName": "Section 86 Banking Account",
+                      "bankName": "Absa",
+                      "branchCode": "632005",
+                      "accountNumber": "71000000003",
+                      "accountType": "SECTION_86",
+                      "isPrimary": false
+                    }
+                    """))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$", hasKey("investmentBasis")))
+        .andExpect(jsonPath("$.investmentBasis").value(nullValue()))
+        .andExpect(jsonPath("$.section").value("S86_2"));
+
+    mockMvc
+        .perform(
+            get("/api/trust-accounts/" + id)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_trust_ctrl_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.investmentBasis").value("CLIENT_INSTRUCTION"))
+        .andExpect(jsonPath("$.section").value("S86_4"));
+
+    mockMvc
+        .perform(
+            get("/api/trust-accounts")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_trust_ctrl_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[?(@.id == '" + id + "')].section").value("S86_4"))
+        .andExpect(
+            jsonPath("$[?(@.id == '" + id + "')].investmentBasis").value("CLIENT_INSTRUCTION"));
+
+    // PUT: a basis on an investment account is set
+    mockMvc
+        .perform(
+            put("/api/trust-accounts/" + id)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_trust_ctrl_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    { "investmentBasis": "FIRM_DISCRETION" }
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.investmentBasis").value("FIRM_DISCRETION"))
+        .andExpect(jsonPath("$.section").value("S86_3"));
+  }
+
+  @Test
+  void basisRefusals_return400ProblemDetail() throws Exception {
+    // INVESTMENT without a basis
+    mockMvc
+        .perform(
+            post("/api/trust-accounts")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_trust_ctrl_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "accountName": "Investment Without Basis",
+                      "bankName": "Investec",
+                      "branchCode": "580105",
+                      "accountNumber": "72000000001",
+                      "accountType": "INVESTMENT",
+                      "isPrimary": false
+                    }
+                    """))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.title").value("Investment basis required"))
+        .andExpect(
+            jsonPath("$.detail")
+                .value(
+                    "An investment account needs its basis: section 86(3) (the firm invests"
+                        + " surplus trust money) or section 86(4) (invested on a client's"
+                        + " instruction)."));
+
+    // GENERAL with a basis
+    mockMvc
+        .perform(
+            post("/api/trust-accounts")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_trust_ctrl_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "accountName": "General With Basis",
+                      "bankName": "Absa",
+                      "branchCode": "632005",
+                      "accountNumber": "72000000002",
+                      "accountType": "GENERAL",
+                      "investmentBasis": "FIRM_DISCRETION",
+                      "isPrimary": false
+                    }
+                    """))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.title").value("Investment basis not allowed"))
+        .andExpect(
+            jsonPath("$.detail")
+                .value(
+                    "Only an investment account carries an investment basis. A trust banking"
+                        + " account reports under section 86(2)."));
+
+    // An unknown basis is unreadable
+    mockMvc
+        .perform(
+            post("/api/trust-accounts")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_trust_ctrl_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "accountName": "Investment Unknown Basis",
+                      "bankName": "Investec",
+                      "branchCode": "580105",
+                      "accountNumber": "72000000003",
+                      "accountType": "INVESTMENT",
+                      "investmentBasis": "SECTION_86_5",
+                      "isPrimary": false
+                    }
+                    """))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.title").value("Malformed request body"))
+        .andExpect(jsonPath("$.detail").value("The request body could not be read or parsed"));
+
+    // PUT: a basis on a non-investment account
+    var general =
+        mockMvc
+            .perform(
+                post("/api/trust-accounts")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_trust_ctrl_owner"))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "accountName": "General For Basis Update",
+                          "bankName": "Absa",
+                          "branchCode": "632005",
+                          "accountNumber": "72000000004",
+                          "accountType": "GENERAL",
+                          "isPrimary": false
+                        }
+                        """))
+            .andExpect(status().isCreated())
+            .andReturn();
+    String generalId = JsonPath.read(general.getResponse().getContentAsString(), "$.id");
+
+    mockMvc
+        .perform(
+            put("/api/trust-accounts/" + generalId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_trust_ctrl_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    { "investmentBasis": "CLIENT_INSTRUCTION" }
+                    """))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.title").value("Investment basis not allowed"))
+        .andExpect(
+            jsonPath("$.detail")
+                .value(
+                    "Only an investment account carries an investment basis. A trust banking"
+                        + " account reports under section 86(2)."));
+
+    mockMvc
+        .perform(
+            get("/api/trust-accounts/" + generalId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_trust_ctrl_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$", hasKey("investmentBasis")))
+        .andExpect(jsonPath("$.investmentBasis").value(nullValue()))
+        .andExpect(jsonPath("$.section").value("S86_2"));
   }
 }

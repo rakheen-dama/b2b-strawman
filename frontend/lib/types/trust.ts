@@ -4,6 +4,27 @@ export type TrustAccountType = "GENERAL" | "INVESTMENT" | "SECTION_86";
 
 export type TrustAccountStatus = "ACTIVE" | "CLOSED";
 
+/**
+ * The section of the Legal Practice Act an account reports under (ADR-379), derived on the backend
+ * from the type and, for an investment account, its basis. A section 86 trust account reports
+ * under section 86(2) like a general one (working assumption OL-1).
+ */
+export type TrustAccountSection = "S86_2" | "S86_3" | "S86_4";
+
+/** Firm-side section words (ADR-362: never the raw enum). */
+export const TRUST_ACCOUNT_SECTION_LABELS: Record<TrustAccountSection, string> = {
+  S86_2: "Section 86(2) trust banking account",
+  S86_3: "Section 86(3) investment account",
+  S86_4: "Section 86(4) investment account",
+};
+
+/** How an investment account's money was invested, in the Act's terms (never the raw enum). */
+export const INVESTMENT_BASIS_ACCOUNT_LABELS: Record<InvestmentBasis, string> = {
+  FIRM_DISCRETION: "Invested at the firm's discretion",
+  CLIENT_INSTRUCTION: "Invested on a client's instruction",
+};
+
+/** Mirrors TrustAccountService.TrustAccountResponse (pinned: trust-wire-shapes.test.ts). */
 export interface TrustAccount {
   id: string;
   accountName: string;
@@ -11,6 +32,9 @@ export interface TrustAccount {
   branchCode: string;
   accountNumber: string;
   accountType: TrustAccountType;
+  /** Null unless the account is an investment account (ADR-379). */
+  investmentBasis: InvestmentBasis | null;
+  section: TrustAccountSection;
   isPrimary: boolean;
   requireDualApproval: boolean;
   paymentApprovalThreshold: number | null;
@@ -20,6 +44,24 @@ export interface TrustAccount {
   notes: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+/**
+ * Mirrors TrustAccountService.CreateTrustAccountRequest (pinned: trust-wire-shapes.test.ts).
+ * `investmentBasis` is required for an investment account and refused for any other type.
+ */
+export interface CreateTrustAccountRequest {
+  accountName: string;
+  bankName: string;
+  branchCode: string;
+  accountNumber: string;
+  accountType?: TrustAccountType;
+  isPrimary?: boolean;
+  requireDualApproval?: boolean;
+  paymentApprovalThreshold?: number | null;
+  openedDate?: string;
+  notes?: string;
+  investmentBasis?: InvestmentBasis;
 }
 
 // LPFF rate types

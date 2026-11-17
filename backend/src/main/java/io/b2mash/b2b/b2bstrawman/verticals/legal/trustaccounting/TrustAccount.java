@@ -39,6 +39,11 @@ public class TrustAccount {
   @Column(name = "account_type", nullable = false, length = 20)
   private TrustAccountType accountType;
 
+  /** ADR-379: non-null exactly on INVESTMENT accounts (chk_trust_account_investment_basis). */
+  @Enumerated(EnumType.STRING)
+  @Column(name = "investment_basis", length = 20)
+  private InvestmentBasis investmentBasis;
+
   @Column(name = "is_primary", nullable = false)
   private boolean primary;
 
@@ -69,6 +74,7 @@ public class TrustAccount {
 
   protected TrustAccount() {}
 
+  /** A non-investment account (GENERAL, SECTION_86): no investment basis. */
   public TrustAccount(
       String accountName,
       String bankName,
@@ -80,6 +86,33 @@ public class TrustAccount {
       BigDecimal paymentApprovalThreshold,
       LocalDate openedDate,
       String notes) {
+    this(
+        accountName,
+        bankName,
+        branchCode,
+        accountNumber,
+        accountType,
+        primary,
+        requireDualApproval,
+        paymentApprovalThreshold,
+        openedDate,
+        notes,
+        null);
+  }
+
+  /** An account with its investment basis — required for INVESTMENT, null for any other type. */
+  public TrustAccount(
+      String accountName,
+      String bankName,
+      String branchCode,
+      String accountNumber,
+      TrustAccountType accountType,
+      boolean primary,
+      boolean requireDualApproval,
+      BigDecimal paymentApprovalThreshold,
+      LocalDate openedDate,
+      String notes,
+      InvestmentBasis investmentBasis) {
     this.accountName = accountName;
     this.bankName = bankName;
     this.branchCode = branchCode;
@@ -91,6 +124,7 @@ public class TrustAccount {
     this.status = TrustAccountStatus.ACTIVE;
     this.openedDate = openedDate;
     this.notes = notes;
+    this.investmentBasis = investmentBasis;
   }
 
   @PrePersist
@@ -143,6 +177,19 @@ public class TrustAccount {
 
   public TrustAccountType getAccountType() {
     return accountType;
+  }
+
+  public InvestmentBasis getInvestmentBasis() {
+    return investmentBasis;
+  }
+
+  public void setInvestmentBasis(InvestmentBasis investmentBasis) {
+    this.investmentBasis = investmentBasis;
+  }
+
+  /** The section the account reports under (derived; OL-1 lives in {@link TrustAccountSection}). */
+  public TrustAccountSection getSection() {
+    return TrustAccountSection.of(accountType, investmentBasis);
   }
 
   public boolean isPrimary() {

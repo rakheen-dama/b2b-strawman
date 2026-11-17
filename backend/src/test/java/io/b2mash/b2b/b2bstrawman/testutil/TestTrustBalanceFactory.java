@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.testutil;
 
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccount;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountType;
@@ -10,12 +11,13 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 /**
- * Shared trust-seeding recipe: creates an INVESTMENT {@link TrustAccount} and posts a single {@code
- * DEPOSIT} through {@link TrustPostingService} so a customer surfaces a positive derived trust
- * balance (which drives {@code TrustAwareCollectionsAdvisor} → {@code TRUST_FUNDS_AVAILABLE}
- * advice). Client balances are derived from posted rows since Phase 92 / 646A (ADR-378), so the
- * recipe posts a row instead of writing a stored card. Kept in one place so the collections
- * triage-service and read-API tests stay in sync.
+ * Shared trust-seeding recipe: creates an INVESTMENT {@link TrustAccount} (section 86(3) basis — an
+ * INVESTMENT account carries its basis since 648C, ADR-379) and posts a single {@code DEPOSIT}
+ * through {@link TrustPostingService} so a customer surfaces a positive derived trust balance
+ * (which drives {@code TrustAwareCollectionsAdvisor} → {@code TRUST_FUNDS_AVAILABLE} advice).
+ * Client balances are derived from posted rows since Phase 92 / 646A (ADR-378), so the recipe posts
+ * a row instead of writing a stored card. Kept in one place so the collections triage-service and
+ * read-API tests stay in sync.
  *
  * <p>Test-scope only — the {@code verticals.legal} imports here are fine; {@code
  * CollectionsCoreBoundaryTest} scans main sources under {@code collections/} only.
@@ -49,7 +51,8 @@ public final class TestTrustBalanceFactory {
             false,
             null,
             SEED_DATE,
-            null);
+            null,
+            InvestmentBasis.FIRM_DISCRETION);
     var savedTrustAccount = trustAccountRepository.save(trustAccount);
     trustPostingService.record(
         new TrustTransaction(

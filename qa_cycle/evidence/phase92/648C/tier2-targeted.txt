@@ -1,0 +1,45 @@
+# 648C Tier-2 targeted backend runs (builder; NOT the merge-bar full verify) — worktree epic-648C, base 0ab1f6c6c + slice changes
+## Batch 1 (new + changed)
+Tests run: 7, Failures: 0, Errors: 0, Skipped: 0 — integration.accounting.sync.TrustBoundaryGuardTest
+Tests run: 12, Failures: 0, Errors: 0, Skipped: 0 — project.MatterListRowIntegrationTest
+Tests run: 12, Failures: 0, Errors: 0, Skipped: 0 — collections.CollectionsReadApiTest
+Tests run: 9, Failures: 0, Errors: 0, Skipped: 0 — collections.CollectionsTriageServiceTest
+Tests run: 16, Failures: 0, Errors: 0, Skipped: 0 — customer.ClientListRowIntegrationTest
+Tests run: 23, Failures: 0, Errors: 0, Skipped: 0 — verticals.legal.trustaccounting.reconciliation.StatementLinePostingIntegrationTest
+Tests run: 4, Failures: 0, Errors: 0, Skipped: 0 — verticals.legal.trustaccounting.TrustAccountingSchemaTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0 — verticals.legal.trustaccounting.InvestmentAccountBasisMigrationTest
+Tests run: 11, Failures: 0, Errors: 0, Skipped: 0 — verticals.legal.trustaccounting.TrustAccountingControllerTest
+Tests run: 15, Failures: 0, Errors: 0, Skipped: 0 — verticals.legal.trustaccounting.TrustAccountServiceTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0 — verticals.legal.trustaccounting.TrustWireContractTest
+[INFO] Tests run: 115, Failures: 0, Errors: 0, Skipped: 0
+## Batch 2 (callers, consumers, seeder, schema parity, terminology)
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0 — demo.seed.LegalDemoTrustBooksIntegrationTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0 — integration.ai.skill.fica.FicaVerificationTrustAccessIntegrationTest
+Tests run: 6, Failures: 0, Errors: 0, Skipped: 0 — integration.ai.skill.complianceaudit.ComplianceDataCollectorServiceTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0 — template.ClientTrustStatementContextIntegrationTest
+Tests run: 12, Failures: 0, Errors: 0, Skipped: 0 — template.GeneratedDocumentTrustAccessIntegrationTest
+Tests run: 6, Failures: 0, Errors: 0, Skipped: 0 — provisioning.BaselineSchemaParityTest
+Tests run: 11, Failures: 0, Errors: 0, Skipped: 0 — mcp.tool.CatalogueBatch2TrustBillingTest
+Tests run: 19, Failures: 0, Errors: 0, Skipped: 0 — dashboard.TrustBalanceTrendIntegrationTest
+Tests run: 11, Failures: 0, Errors: 0, Skipped: 0 — dashboard.TrustPositionIntegrationTest
+Tests run: 6, Failures: 0, Errors: 0, Skipped: 0 — architecture.TerminologyRemnantScanTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0 — customerbackend.service.PortalTrustLongReferenceIntegrationTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0 — customerbackend.service.PortalTrustTransactionDateIntegrationTest
+Tests run: 13, Failures: 0, Errors: 0, Skipped: 0 — customerbackend.service.TrustLedgerPortalSyncServiceIntegrationTest
+Tests run: 22, Failures: 0, Errors: 0, Skipped: 0 — verticals.legal.disbursement.DisbursementServiceTest
+Tests run: 31, Failures: 0, Errors: 0, Skipped: 0 — verticals.legal.statement.StatementOfAccountContextBuilderTest
+Tests run: 6, Failures: 0, Errors: 0, Skipped: 0 — verticals.legal.statement.StatementTrustVisibilityIntegrationTest
+Tests run: 9, Failures: 0, Errors: 0, Skipped: 0 — verticals.legal.trustaccounting.UnidentifiedDepositsMigrationTest
+Tests run: 4, Failures: 0, Errors: 0, Skipped: 0 — verticals.legal.trustaccounting.transaction.TrustTransferTargetMatterIntegrationTest
+Tests run: 8, Failures: 0, Errors: 0, Skipped: 0 — verticals.legal.trustaccounting.transaction.TrustMatterDebitGuardIntegrationTest
+Tests run: 8, Failures: 0, Errors: 0, Skipped: 0 — verticals.legal.trustaccounting.transaction.TrustFeeTransferReversalCascadeTest
+Tests run: 48, Failures: 0, Errors: 0, Skipped: 0 — verticals.legal.trustaccounting.transaction.TrustTransactionServiceTest
+Tests run: 12, Failures: 0, Errors: 0, Skipped: 0 — verticals.legal.trustaccounting.transaction.TrustClientMatterRequiredIntegrationTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0 — verticals.legal.trustaccounting.transaction.TrustPostingDateZoneIntegrationTest
+Tests run: 7, Failures: 0, Errors: 0, Skipped: 0 — verticals.legal.trustaccounting.interest.InterestMatterAllocationIntegrationTest
+Tests run: 6, Failures: 0, Errors: 0, Skipped: 0 — verticals.legal.trustaccounting.ledger.ClientLedgerRunningBalanceIntegrationTest
+Tests run: 4, Failures: 0, Errors: 0, Skipped: 0 — verticals.legal.trustaccounting.ledger.ClientLedgerTotalsIntegrationTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0 — verticals.legal.trustaccounting.investment.TrustInvestmentWithdrawReverseRaceIntegrationTest
+Tests run: 6, Failures: 0, Errors: 0, Skipped: 0 — verticals.legal.trustaccounting.investment.TrustInvestmentPlacementGuardIntegrationTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0 — verticals.legal.trustaccounting.TrustCoexistenceTest
+[INFO] Tests run: 280, Failures: 0, Errors: 0, Skipped: 0

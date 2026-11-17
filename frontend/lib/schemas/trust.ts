@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { todayInSA } from "@b2mash/shared/date";
 
 export const createTrustAccountSchema = z.object({
   accountName: z.string().min(1, "Account name is required").max(200),
@@ -69,6 +70,17 @@ export const recordFeeTransferSchema = z.object({
   invoiceId: z.string().uuid("Must be a valid fee note UUID"),
   amount: z.number().positive("Amount must be greater than zero"),
   reference: z.string().min(1, "Reference is required").max(200),
+  // Optional (ruling #6, 646D): the date the bank shows the transfer; blank = today. Never in the
+  // future — the server refuses it too, with the same sentence.
+  transactionDate: z
+    .string()
+    .refine((d) => d === "" || /^\d{4}-\d{2}-\d{2}$/.test(d), {
+      message: "Date must be YYYY-MM-DD",
+    })
+    .refine((d) => d === "" || d <= todayInSA(), {
+      message: "The fee transfer date cannot be in the future",
+    })
+    .optional(),
 });
 
 export type RecordFeeTransferFormData = z.infer<typeof recordFeeTransferSchema>;

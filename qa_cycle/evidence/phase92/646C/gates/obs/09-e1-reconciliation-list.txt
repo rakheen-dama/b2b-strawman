@@ -1,0 +1,53 @@
+Skip to content
+Kazi
+E2E Test Organization
+Search...
+⌘K
+TODAY
+Home
+My work
+Diary
+MATTERS
+Matters
+New matter
+Conflict check
+Adverse parties
+AI reviews
+CLIENTS
+Clients
+FICA & compliance
+Data requests
+FEES
+TRUST
+FIRM
+Platform Admin
+Notifications
+AO
+
+Alice Owner
+
+alice@e2e-test.local
+
+Toggle menu
+E2E Test Organization
+Trust accounting
+Reconciliation
+Search
+⌘K
+11 unread notifications
+11
+e2e-test-org
+AO
+Reconciliation
+
+Trust account bank reconciliation history
+
+New Reconciliation
+Reconciliation History
+1 reconciliation found
+Period	Bank Balance	Cashbook Balance	Client Ledger Total	Status	Completed
+17 Nov 2026	R 241 414,50	R 286 500,00	R 286 500,00	
+Unbalanced	---
+Command Palette
+
+Search pages and settings

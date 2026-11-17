@@ -22,3 +22,23 @@ Phase rule: a defect outside the stated scope is written here, reported, and re-
   gets its own S3 key), so a blanket "same last date" refusal would contradict that decision.
 - Suggested owner: **652C** (wizard and import defects), or a founder re-spec of the statement
   import / selection policy. No code change in 646C.
+
+## Handed to their owning slices at merge (PR #1792 second CodeRabbit pass on 92b4b5550 + final reviews)
+
+Already specified in the architecture; recorded here so the owning builder picks them up. No code change in 646C.
+
+- **649C — completion gate.** CodeRabbit (Major ×2): `completeReconciliation` trusts the stored
+  `is_balanced` and does not re-run `requireStatementFitsPeriodEnd`, so a statement imported or a
+  transaction posted after the last calculate is not caught at complete. Architecture §16.3.4: the
+  gate "recalculates first (never trusts stored figures)" and evaluates G1–G4. 649C's tests should
+  cover both scenarios (a later-imported statement covering the period end; a reversal dated inside
+  the period posted after calculate).
+- **652A — wizard reports a failed recalculation.** CodeRabbit (Minor): `handleMatch`,
+  `handleExclude`, `handleUnmatch` in `reconciliation/new/page.tsx` ignore
+  `{ success: false }` from `calculateReconciliation`. Since 646C, calculate can refuse (period
+  rules re-checked), so the stale summary is now reachable. Exactly 652A's row in §16.13.
+- **649C — comment nits (architecture reviewer, Medium).** `TrustReconciliation.java` comment on
+  `integrity_flags` reads as if mapped in 646C (it is created in V19, mapped/written by 649C);
+  `TrustReconciliationService.java` ~555-557 comment cut mid-sentence. 649C edits both files.
+- **OBS notes** (`gates/found-obs.md`): O-1 manual-match pane lists approved transactions only
+  (→ 652B); O-2 the period-end refusal comes after import + auto-match (→ 652C, or no action).

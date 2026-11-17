@@ -1,0 +1,286 @@
+-- 646C OBS read-only evidence output (schema tenant_7d218705360b) 2026-11-17T07:38:34.089Z
+
+== [baseline: trust transactions]
+select id, transaction_type, amount, status, transaction_date, posted_at is not null as posted, ledger, ledger_effect, cashbook_effect, reference, bank_statement_line_id from tenant_7d218705360b.trust_transactions order by transaction_date, created_at
+                  id                  | transaction_type |  amount   |      status       | transaction_date | posted | ledger | ledger_effect | cashbook_effect |            reference            | bank_statement_line_id 
+--------------------------------------+------------------+-----------+-------------------+------------------+--------+--------+---------------+-----------------+---------------------------------+------------------------
+ b1d952fe-0928-44dd-b413-be9b252e94a8 | DEPOSIT          | 250000.00 | RECORDED          | 2026-11-17       | t      | CLIENT |     250000.00 |       250000.00 | DEP/MOROKA/mwkdnayiff1d         | 
+ 228d1aa6-f936-4300-a1b7-fbf93ae59d56 | DEPOSIT          |  45000.00 | RECORDED          | 2026-11-17       | t      | CLIENT |      45000.00 |        45000.00 | DEP/QC/mwkdnayiff1d             | 
+ 4143515e-b1bc-47fb-8722-17deddcd2d5b | FEE_TRANSFER     |   8500.00 | APPROVED          | 2026-11-17       | t      | CLIENT |      -8500.00 |        -8500.00 | FEE/MOROKA/mwkdnayiff1d         | 
+ 0bcede75-b732-4be3-8e62-b5feeb149c57 | PAYMENT          | 200000.00 | AWAITING_APPROVAL | 2026-11-17       | f      | CLIENT |          0.00 |            0.00 | INV-Standard Bank-FD-0987654321 | 
+ 02fb0649-a880-49e2-8ed8-3f6c1d49873f | PAYMENT          |  30000.00 | AWAITING_APPROVAL | 2026-11-17       | f      | CLIENT |          0.00 |            0.00 | INV-Nedbank-CALL-1122334455     | 
+ 38c1d64f-c1a8-4ea5-8ca9-040bf3b29750 | FEE_TRANSFER     |    500.00 | AWAITING_APPROVAL | 2026-11-17       | f      | CLIENT |          0.00 |            0.00 | FEE/SIPHO/mwkdnayiff1d          | 
+(6 rows)
+
+
+== [baseline: creditor accounts]
+select id, account_type, name from tenant_7d218705360b.trust_creditor_accounts
+                  id                  |       account_type        |                           name                            
+--------------------------------------+---------------------------+-----------------------------------------------------------
+ a6db3f42-d95f-4705-a9b8-e7ae7dec6172 | FUND_INTEREST_AND_CHARGES | Legal Practitioners' Fidelity Fund — interest and charges
+ 0d3a71bb-3c37-454e-97b7-c23abfadd8e3 | UNIDENTIFIED_DEPOSITS     | Unidentified deposits
+(2 rows)
+
+
+== [baseline: position as at 2026-11-17]
+select
+  coalesce(sum(t.cashbook_effect),0) as cashbook,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='CLIENT'),0) as client_ledgers,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='CLIENT_INVESTMENT'),0) as investment,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT' and ca.account_type='FUND_INTEREST_AND_CHARGES'),0) as fund_ledger,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT' and ca.account_type='UNIDENTIFIED_DEPOSITS'),0) as unidentified,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT' and ca.account_type not in ('FUND_INTEREST_AND_CHARGES','UNIDENTIFIED_DEPOSITS')),0) as other_non_client,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='INTER_ACCOUNT'),0) as inter_account
+from tenant_7d218705360b.trust_transactions t left join tenant_7d218705360b.trust_creditor_accounts ca on ca.id=t.creditor_account_id
+where t.trust_account_id='8c0b38dc-152b-49c4-bc50-499fdc43272b' and t.posted_at is not null and t.transaction_date <= date '2026-11-17'
+ cashbook  | client_ledgers | investment | fund_ledger | unidentified | other_non_client | inter_account 
+-----------+----------------+------------+-------------+--------------+------------------+---------------
+ 286500.00 |      286500.00 |          0 |           0 |            0 |                0 |             0
+(1 row)
+
+
+== [baseline: outstanding as at 2026-11-17]
+select
+  coalesce( sum(t.cashbook_effect) filter (where t.cashbook_effect > 0),0) as outstanding_deposits,
+  coalesce(-sum(t.cashbook_effect) filter (where t.cashbook_effect < 0),0) as outstanding_payments
+from tenant_7d218705360b.trust_transactions t left join tenant_7d218705360b.bank_statement_lines l on l.id=t.bank_statement_line_id
+where t.trust_account_id='8c0b38dc-152b-49c4-bc50-499fdc43272b' and t.posted_at is not null and t.cashbook_effect <> 0
+  and t.transaction_date <= date '2026-11-17'
+  and (t.bank_statement_line_id is null or l.transaction_date > date '2026-11-17')
+  and not (t.bank_statement_line_id is null and t.reversed_by_id is not null and exists (
+       select 1 from tenant_7d218705360b.trust_transactions r where r.id=t.reversed_by_id and r.posted_at is not null
+          and r.bank_statement_line_id is null and r.transaction_date <= date '2026-11-17'))
+  and not (t.bank_statement_line_id is null and t.reversal_of is not null and exists (
+       select 1 from tenant_7d218705360b.trust_transactions o where o.id=t.reversal_of and o.bank_statement_line_id is null))
+ outstanding_deposits | outstanding_payments 
+----------------------+----------------------
+            295000.00 |              8500.00
+(1 row)
+
+
+== [baseline: statement + lines]
+select s.closing_balance, s.opening_balance, s.line_count, s.matched_count from tenant_7d218705360b.bank_statements s where s.id='00000000-0000-0000-0000-000000000000'
+ closing_balance | opening_balance | line_count | matched_count 
+-----------------+-----------------+------------+---------------
+(0 rows)
+
+
+== [baseline: lines]
+select line_number, transaction_date, reference, amount, running_balance, match_status, trust_transaction_id, match_confidence from tenant_7d218705360b.bank_statement_lines where bank_statement_id='00000000-0000-0000-0000-000000000000' order by line_number
+ line_number | transaction_date | reference | amount | running_balance | match_status | trust_transaction_id | match_confidence 
+-------------+------------------+-----------+--------+-----------------+--------------+----------------------+------------------
+(0 rows)
+
+
+== [state 01-review-opened: position as at 2026-11-17]
+select
+  coalesce(sum(t.cashbook_effect),0) as cashbook,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='CLIENT'),0) as client_ledgers,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='CLIENT_INVESTMENT'),0) as investment,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT' and ca.account_type='FUND_INTEREST_AND_CHARGES'),0) as fund_ledger,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT' and ca.account_type='UNIDENTIFIED_DEPOSITS'),0) as unidentified,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT' and ca.account_type not in ('FUND_INTEREST_AND_CHARGES','UNIDENTIFIED_DEPOSITS')),0) as other_non_client,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='INTER_ACCOUNT'),0) as inter_account
+from tenant_7d218705360b.trust_transactions t left join tenant_7d218705360b.trust_creditor_accounts ca on ca.id=t.creditor_account_id
+where t.trust_account_id='8c0b38dc-152b-49c4-bc50-499fdc43272b' and t.posted_at is not null and t.transaction_date <= date '2026-11-17'
+ cashbook  | client_ledgers | investment | fund_ledger | unidentified | other_non_client | inter_account 
+-----------+----------------+------------+-------------+--------------+------------------+---------------
+ 286500.00 |      286500.00 |          0 |           0 |            0 |                0 |             0
+(1 row)
+
+
+== [state 01-review-opened: outstanding as at 2026-11-17]
+select
+  coalesce( sum(t.cashbook_effect) filter (where t.cashbook_effect > 0),0) as outstanding_deposits,
+  coalesce(-sum(t.cashbook_effect) filter (where t.cashbook_effect < 0),0) as outstanding_payments
+from tenant_7d218705360b.trust_transactions t left join tenant_7d218705360b.bank_statement_lines l on l.id=t.bank_statement_line_id
+where t.trust_account_id='8c0b38dc-152b-49c4-bc50-499fdc43272b' and t.posted_at is not null and t.cashbook_effect <> 0
+  and t.transaction_date <= date '2026-11-17'
+  and (t.bank_statement_line_id is null or l.transaction_date > date '2026-11-17')
+  and not (t.bank_statement_line_id is null and t.reversed_by_id is not null and exists (
+       select 1 from tenant_7d218705360b.trust_transactions r where r.id=t.reversed_by_id and r.posted_at is not null
+          and r.bank_statement_line_id is null and r.transaction_date <= date '2026-11-17'))
+  and not (t.bank_statement_line_id is null and t.reversal_of is not null and exists (
+       select 1 from tenant_7d218705360b.trust_transactions o where o.id=t.reversal_of and o.bank_statement_line_id is null))
+ outstanding_deposits | outstanding_payments 
+----------------------+----------------------
+             45000.00 |              8500.00
+(1 row)
+
+
+== [state 01-review-opened: statement + lines]
+select s.closing_balance, s.opening_balance, s.line_count, s.matched_count from tenant_7d218705360b.bank_statements s where s.id='e4f08b79-9edb-4583-8605-7ee423c9ec2c'
+ closing_balance | opening_balance | line_count | matched_count 
+-----------------+-----------------+------------+---------------
+       241414.50 |            0.00 |          3 |             1
+(1 row)
+
+
+== [state 01-review-opened: lines]
+select line_number, transaction_date, reference, amount, running_balance, match_status, trust_transaction_id, match_confidence from tenant_7d218705360b.bank_statement_lines where bank_statement_id='e4f08b79-9edb-4583-8605-7ee423c9ec2c' order by line_number
+ line_number | transaction_date |        reference        |  amount   | running_balance | match_status |         trust_transaction_id         | match_confidence 
+-------------+------------------+-------------------------+-----------+-----------------+--------------+--------------------------------------+------------------
+           1 | 2026-11-15       | DEP/MOROKA/mwkdnayiff1d | 250000.00 |       250000.00 | AUTO_MATCHED | b1d952fe-0928-44dd-b413-be9b252e94a8 |             1.00
+           2 | 2026-11-16       | EFT-OBS646C-DS39J       |  -8500.00 |       241500.00 | UNMATCHED    | 4143515e-b1bc-47fb-8722-17deddcd2d5b |             0.60
+           3 | 2026-11-17       | CHG-OBS646C-DS39J       |    -85.50 |       241414.50 | UNMATCHED    |                                      |                 
+(3 rows)
+
+
+== [state 01-review-opened: stored reconciliation row]
+select period_end, bank_balance, outstanding_deposits, outstanding_payments, adjusted_bank_balance, cashbook_balance, client_ledger_total, investment_creditor_total, fund_ledger_balance, unidentified_deposit_total, inter_account_balance, creditor_total, difference, is_balanced, status, integrity_flags from tenant_7d218705360b.trust_reconciliations where id='d58cf725-ada0-4d92-ad30-d2ce3cf71ba3'
+ period_end | bank_balance | outstanding_deposits | outstanding_payments | adjusted_bank_balance | cashbook_balance | client_ledger_total | investment_creditor_total | fund_ledger_balance | unidentified_deposit_total | inter_account_balance | creditor_total | difference | is_balanced | status | integrity_flags 
+------------+--------------+----------------------+----------------------+-----------------------+------------------+---------------------+---------------------------+---------------------+----------------------------+-----------------------+----------------+------------+-------------+--------+-----------------
+ 2026-11-17 |    241414.50 |             45000.00 |              8500.00 |             277914.50 |        286500.00 |           286500.00 |                      0.00 |                0.00 |                       0.00 |                  0.00 |      286500.00 |   -8585.50 | f           | DRAFT  | []
+(1 row)
+
+
+== [state 02-after-manual-match: position as at 2026-11-17]
+select
+  coalesce(sum(t.cashbook_effect),0) as cashbook,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='CLIENT'),0) as client_ledgers,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='CLIENT_INVESTMENT'),0) as investment,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT' and ca.account_type='FUND_INTEREST_AND_CHARGES'),0) as fund_ledger,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT' and ca.account_type='UNIDENTIFIED_DEPOSITS'),0) as unidentified,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT' and ca.account_type not in ('FUND_INTEREST_AND_CHARGES','UNIDENTIFIED_DEPOSITS')),0) as other_non_client,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='INTER_ACCOUNT'),0) as inter_account
+from tenant_7d218705360b.trust_transactions t left join tenant_7d218705360b.trust_creditor_accounts ca on ca.id=t.creditor_account_id
+where t.trust_account_id='8c0b38dc-152b-49c4-bc50-499fdc43272b' and t.posted_at is not null and t.transaction_date <= date '2026-11-17'
+ cashbook  | client_ledgers | investment | fund_ledger | unidentified | other_non_client | inter_account 
+-----------+----------------+------------+-------------+--------------+------------------+---------------
+ 286500.00 |      286500.00 |          0 |           0 |            0 |                0 |             0
+(1 row)
+
+
+== [state 02-after-manual-match: outstanding as at 2026-11-17]
+select
+  coalesce( sum(t.cashbook_effect) filter (where t.cashbook_effect > 0),0) as outstanding_deposits,
+  coalesce(-sum(t.cashbook_effect) filter (where t.cashbook_effect < 0),0) as outstanding_payments
+from tenant_7d218705360b.trust_transactions t left join tenant_7d218705360b.bank_statement_lines l on l.id=t.bank_statement_line_id
+where t.trust_account_id='8c0b38dc-152b-49c4-bc50-499fdc43272b' and t.posted_at is not null and t.cashbook_effect <> 0
+  and t.transaction_date <= date '2026-11-17'
+  and (t.bank_statement_line_id is null or l.transaction_date > date '2026-11-17')
+  and not (t.bank_statement_line_id is null and t.reversed_by_id is not null and exists (
+       select 1 from tenant_7d218705360b.trust_transactions r where r.id=t.reversed_by_id and r.posted_at is not null
+          and r.bank_statement_line_id is null and r.transaction_date <= date '2026-11-17'))
+  and not (t.bank_statement_line_id is null and t.reversal_of is not null and exists (
+       select 1 from tenant_7d218705360b.trust_transactions o where o.id=t.reversal_of and o.bank_statement_line_id is null))
+ outstanding_deposits | outstanding_payments 
+----------------------+----------------------
+             45000.00 |                    0
+(1 row)
+
+
+== [state 02-after-manual-match: statement + lines]
+select s.closing_balance, s.opening_balance, s.line_count, s.matched_count from tenant_7d218705360b.bank_statements s where s.id='e4f08b79-9edb-4583-8605-7ee423c9ec2c'
+ closing_balance | opening_balance | line_count | matched_count 
+-----------------+-----------------+------------+---------------
+       241414.50 |            0.00 |          3 |             2
+(1 row)
+
+
+== [state 02-after-manual-match: lines]
+select line_number, transaction_date, reference, amount, running_balance, match_status, trust_transaction_id, match_confidence from tenant_7d218705360b.bank_statement_lines where bank_statement_id='e4f08b79-9edb-4583-8605-7ee423c9ec2c' order by line_number
+ line_number | transaction_date |        reference        |  amount   | running_balance |   match_status   |         trust_transaction_id         | match_confidence 
+-------------+------------------+-------------------------+-----------+-----------------+------------------+--------------------------------------+------------------
+           1 | 2026-11-15       | DEP/MOROKA/mwkdnayiff1d | 250000.00 |       250000.00 | AUTO_MATCHED     | b1d952fe-0928-44dd-b413-be9b252e94a8 |             1.00
+           2 | 2026-11-16       | EFT-OBS646C-DS39J       |  -8500.00 |       241500.00 | MANUALLY_MATCHED | 4143515e-b1bc-47fb-8722-17deddcd2d5b |             1.00
+           3 | 2026-11-17       | CHG-OBS646C-DS39J       |    -85.50 |       241414.50 | UNMATCHED        |                                      |                 
+(3 rows)
+
+
+== [state 02-after-manual-match: stored reconciliation row]
+select period_end, bank_balance, outstanding_deposits, outstanding_payments, adjusted_bank_balance, cashbook_balance, client_ledger_total, investment_creditor_total, fund_ledger_balance, unidentified_deposit_total, inter_account_balance, creditor_total, difference, is_balanced, status, integrity_flags from tenant_7d218705360b.trust_reconciliations where id='d58cf725-ada0-4d92-ad30-d2ce3cf71ba3'
+ period_end | bank_balance | outstanding_deposits | outstanding_payments | adjusted_bank_balance | cashbook_balance | client_ledger_total | investment_creditor_total | fund_ledger_balance | unidentified_deposit_total | inter_account_balance | creditor_total | difference | is_balanced | status | integrity_flags 
+------------+--------------+----------------------+----------------------+-----------------------+------------------+---------------------+---------------------------+---------------------+----------------------------+-----------------------+----------------+------------+-------------+--------+-----------------
+ 2026-11-17 |    241414.50 |             45000.00 |                 0.00 |             286414.50 |        286500.00 |           286500.00 |                      0.00 |                0.00 |                       0.00 |                  0.00 |      286500.00 |     -85.50 | f           | DRAFT  | []
+(1 row)
+
+
+== [state 03-after-exclude: position as at 2026-11-17]
+select
+  coalesce(sum(t.cashbook_effect),0) as cashbook,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='CLIENT'),0) as client_ledgers,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='CLIENT_INVESTMENT'),0) as investment,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT' and ca.account_type='FUND_INTEREST_AND_CHARGES'),0) as fund_ledger,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT' and ca.account_type='UNIDENTIFIED_DEPOSITS'),0) as unidentified,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT' and ca.account_type not in ('FUND_INTEREST_AND_CHARGES','UNIDENTIFIED_DEPOSITS')),0) as other_non_client,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='INTER_ACCOUNT'),0) as inter_account
+from tenant_7d218705360b.trust_transactions t left join tenant_7d218705360b.trust_creditor_accounts ca on ca.id=t.creditor_account_id
+where t.trust_account_id='8c0b38dc-152b-49c4-bc50-499fdc43272b' and t.posted_at is not null and t.transaction_date <= date '2026-11-17'
+ cashbook  | client_ledgers | investment | fund_ledger | unidentified | other_non_client | inter_account 
+-----------+----------------+------------+-------------+--------------+------------------+---------------
+ 286500.00 |      286500.00 |          0 |           0 |            0 |                0 |             0
+(1 row)
+
+
+== [state 03-after-exclude: outstanding as at 2026-11-17]
+select
+  coalesce( sum(t.cashbook_effect) filter (where t.cashbook_effect > 0),0) as outstanding_deposits,
+  coalesce(-sum(t.cashbook_effect) filter (where t.cashbook_effect < 0),0) as outstanding_payments
+from tenant_7d218705360b.trust_transactions t left join tenant_7d218705360b.bank_statement_lines l on l.id=t.bank_statement_line_id
+where t.trust_account_id='8c0b38dc-152b-49c4-bc50-499fdc43272b' and t.posted_at is not null and t.cashbook_effect <> 0
+  and t.transaction_date <= date '2026-11-17'
+  and (t.bank_statement_line_id is null or l.transaction_date > date '2026-11-17')
+  and not (t.bank_statement_line_id is null and t.reversed_by_id is not null and exists (
+       select 1 from tenant_7d218705360b.trust_transactions r where r.id=t.reversed_by_id and r.posted_at is not null
+          and r.bank_statement_line_id is null and r.transaction_date <= date '2026-11-17'))
+  and not (t.bank_statement_line_id is null and t.reversal_of is not null and exists (
+       select 1 from tenant_7d218705360b.trust_transactions o where o.id=t.reversal_of and o.bank_statement_line_id is null))
+ outstanding_deposits | outstanding_payments 
+----------------------+----------------------
+             45000.00 |                    0
+(1 row)
+
+
+== [state 03-after-exclude: statement + lines]
+select s.closing_balance, s.opening_balance, s.line_count, s.matched_count from tenant_7d218705360b.bank_statements s where s.id='e4f08b79-9edb-4583-8605-7ee423c9ec2c'
+ closing_balance | opening_balance | line_count | matched_count 
+-----------------+-----------------+------------+---------------
+       241414.50 |            0.00 |          3 |             2
+(1 row)
+
+
+== [state 03-after-exclude: lines]
+select line_number, transaction_date, reference, amount, running_balance, match_status, trust_transaction_id, match_confidence from tenant_7d218705360b.bank_statement_lines where bank_statement_id='e4f08b79-9edb-4583-8605-7ee423c9ec2c' order by line_number
+ line_number | transaction_date |        reference        |  amount   | running_balance |   match_status   |         trust_transaction_id         | match_confidence 
+-------------+------------------+-------------------------+-----------+-----------------+------------------+--------------------------------------+------------------
+           1 | 2026-11-15       | DEP/MOROKA/mwkdnayiff1d | 250000.00 |       250000.00 | AUTO_MATCHED     | b1d952fe-0928-44dd-b413-be9b252e94a8 |             1.00
+           2 | 2026-11-16       | EFT-OBS646C-DS39J       |  -8500.00 |       241500.00 | MANUALLY_MATCHED | 4143515e-b1bc-47fb-8722-17deddcd2d5b |             1.00
+           3 | 2026-11-17       | CHG-OBS646C-DS39J       |    -85.50 |       241414.50 | EXCLUDED         |                                      |                 
+(3 rows)
+
+
+== [state 03-after-exclude: stored reconciliation row]
+select period_end, bank_balance, outstanding_deposits, outstanding_payments, adjusted_bank_balance, cashbook_balance, client_ledger_total, investment_creditor_total, fund_ledger_balance, unidentified_deposit_total, inter_account_balance, creditor_total, difference, is_balanced, status, integrity_flags from tenant_7d218705360b.trust_reconciliations where id='d58cf725-ada0-4d92-ad30-d2ce3cf71ba3'
+ period_end | bank_balance | outstanding_deposits | outstanding_payments | adjusted_bank_balance | cashbook_balance | client_ledger_total | investment_creditor_total | fund_ledger_balance | unidentified_deposit_total | inter_account_balance | creditor_total | difference | is_balanced | status | integrity_flags 
+------------+--------------+----------------------+----------------------+-----------------------+------------------+---------------------+---------------------------+---------------------+----------------------------+-----------------------+----------------+------------+-------------+--------+-----------------
+ 2026-11-17 |    241414.50 |             45000.00 |                 0.00 |             286414.50 |        286500.00 |           286500.00 |                      0.00 |                0.00 |                       0.00 |                  0.00 |      286500.00 |     -85.50 | f           | DRAFT  | []
+(1 row)
+
+
+== [b: line ↔ transaction links]
+select l.line_number, l.reference, l.amount, l.match_status, l.excluded_reason, t.id as txn, t.transaction_type, t.status, t.reference as txn_ref, t.bank_statement_line_id = l.id as linked from tenant_7d218705360b.bank_statement_lines l left join tenant_7d218705360b.trust_transactions t on t.id = l.trust_transaction_id where l.bank_statement_id='e4f08b79-9edb-4583-8605-7ee423c9ec2c' order by l.line_number
+ line_number |        reference        |  amount   |   match_status   | excluded_reason |                 txn                  | transaction_type |  status  |         txn_ref         | linked 
+-------------+-------------------------+-----------+------------------+-----------------+--------------------------------------+------------------+----------+-------------------------+--------
+           1 | DEP/MOROKA/mwkdnayiff1d | 250000.00 | AUTO_MATCHED     |                 | b1d952fe-0928-44dd-b413-be9b252e94a8 | DEPOSIT          | RECORDED | DEP/MOROKA/mwkdnayiff1d | t
+           2 | EFT-OBS646C-DS39J       |  -8500.00 | MANUALLY_MATCHED |                 | 4143515e-b1bc-47fb-8722-17deddcd2d5b | FEE_TRANSFER     | APPROVED | FEE/MOROKA/mwkdnayiff1d | t
+           3 | CHG-OBS646C-DS39J       |    -85.50 | EXCLUDED         | Non-trust item  |                                      |                  |          |                         | 
+(3 rows)
+
+
+== [final: reconciliations]
+select id, period_end, status, is_balanced, bank_balance, adjusted_bank_balance, cashbook_balance, creditor_total, difference from tenant_7d218705360b.trust_reconciliations order by created_at
+                  id                  | period_end | status | is_balanced | bank_balance | adjusted_bank_balance | cashbook_balance | creditor_total | difference 
+--------------------------------------+------------+--------+-------------+--------------+-----------------------+------------------+----------------+------------
+ d58cf725-ada0-4d92-ad30-d2ce3cf71ba3 | 2026-11-17 | DRAFT  | f           |    241414.50 |             286414.50 |        286500.00 |      286500.00 |     -85.50
+(1 row)
+
+
+== [final: bank statements]
+select id, file_name, period_start, period_end, closing_balance, line_count, matched_count from tenant_7d218705360b.bank_statements order by created_at
+                  id                  |          file_name          | period_start | period_end | closing_balance | line_count | matched_count 
+--------------------------------------+-----------------------------+--------------+------------+-----------------+------------+---------------
+ e4f08b79-9edb-4583-8605-7ee423c9ec2c | obs646c-DS39J-statement.csv | 2026-11-15   | 2026-11-17 |       241414.50 |          3 |             2
+ ce0ea4e9-f0d9-4b83-9361-0756539dbb3d | obs646c-DS39J-late.csv      | 2026-11-16   | 2026-11-17 |           20.11 |          2 |             0
+(2 rows)
+

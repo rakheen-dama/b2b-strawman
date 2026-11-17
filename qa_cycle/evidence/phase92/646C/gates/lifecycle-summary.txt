@@ -1,0 +1,7 @@
+  105 passed (3.2m)
+rc=0 wall=195s
+  ✓   59 [chromium] › e2e/tests/legal-lifecycle/day-45-recon-prescription.spec.ts:41:7 › Day 45 — Reconciliation & Prescription › Alice: Navigate to Trust Reconciliation page (370ms)
+  ✓   60 [chromium] › e2e/tests/legal-lifecycle/day-45-recon-prescription.spec.ts:51:7 › Day 45 — Reconciliation & Prescription › Alice: Start a bank reconciliation — select the trust account and period end, reach the statement upload step (637ms)
+  ✓   61 [chromium] › e2e/tests/legal-lifecycle/day-45-recon-prescription.spec.ts:100:7 › Day 45 — Reconciliation & Prescription › Alice: Create prescription tracker for Sipho (Delict, 3 years) (2.0s)
+  ✓   62 [chromium] › e2e/tests/legal-lifecycle/day-45-recon-prescription.spec.ts:136:7 › Day 45 — Reconciliation & Prescription › Alice: Court date lifecycle — Sipho's motion SCHEDULED → POSTPONED, the new date SCHEDULED (1.8s)
+  ✓   63 [chromium] › e2e/tests/legal-lifecycle/day-45-recon-prescription.spec.ts:164:7 › Day 45 — Reconciliation & Prescription › Alice: Record payment on Apex fee note (R40,250) → PAID (896ms)

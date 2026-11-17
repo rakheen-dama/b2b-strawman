@@ -1,0 +1,36 @@
+{
+  "status": 200,
+  "body": {
+    "id": "d58cf725-ada0-4d92-ad30-d2ce3cf71ba3",
+    "trustAccountId": "8c0b38dc-152b-49c4-bc50-499fdc43272b",
+    "periodEnd": "2026-11-17",
+    "bankStatementId": "e4f08b79-9edb-4583-8605-7ee423c9ec2c",
+    "bankBalance": 241414.5,
+    "outstandingDeposits": 45000,
+    "outstandingPayments": 0,
+    "adjustedBankBalance": 286414.5,
+    "cashbookBalance": 286500,
+    "clientLedgerTotal": 286500,
+    "creditorBreakdown": {
+      "clientLedgers": 286500,
+      "investmentCreditors": 0,
+      "fundInterestAndCharges": 0,
+      "unidentifiedDeposits": 0,
+      "otherNonClient": 0,
+      "interAccount": 0,
+      "total": 286500
+    },
+    "bankToCashbookDifference": -85.5,
+    "cashbookToCreditorsDifference": 0,
+    "difference": -85.5,
+    "excludedLinesTotal": -85.5,
+    "unresolvedLineCount": 0,
+    "isBalanced": false,
+    "status": "DRAFT",
+    "completedBy": null,
+    "completedAt": null,
+    "notes": null,
+    "createdAt": "2026-11-17T07:38:41.515176Z",
+    "updatedAt": "2026-11-17T07:38:43.670762Z"
+  }
+}

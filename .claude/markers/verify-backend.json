@@ -1,7 +1,7 @@
 {
-  "commit": "d3964c700",
-  "command": "cd backend && ./mvnw -q spotless:check && ./mvnw -q clean && bash scripts/verify.sh -q  (./mvnw verify under caffeinate, worktree-epic-646E)",
+  "commit": "92b4b5550",
+  "command": "cd backend && ./mvnw -q spotless:check && ./mvnw -q clean && bash scripts/verify.sh -q  (./mvnw verify under caffeinate, worktree-epic-646C)",
   "exit": 0,
-  "ts": "2026-11-17T00:43:10Z",
-  "summary": "PR #1791 (646E) head d3964c700 — 7009 <testcase> / 0 failures / 0 errors / 26 skipped — ~30 min (baseline 6978 after 646B: +31)"
+  "ts": "2026-11-17T07:27:35Z",
+  "summary": "PR #1792 (646C) head 92b4b5550 — 7037 <testcase> / 0 failures / 0 errors / 26 skipped — ~24 min (baseline 7009 after 646E: +28)"
 }

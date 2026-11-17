@@ -1,4 +1,4 @@
-# 648A — found while building and in review (F-1/F-2 reported only; F-3/F-4/F-5 fixed in this slice)
+# 648A — found while building and in review (F-1/F-2 reported only; F-3/F-4/F-5 fixed in this slice; F-6 OPEN — founder ruling)
 
 ## F-1 (hand-off to 648E, already planned): the client ledger card's totals do not count investment rows
 
@@ -33,19 +33,28 @@ rows are present, the register's bases, and records a pending R500 Sipho fee tra
 
 ## F-3 (accepted ruling OPEN-3, re-raised by the automated security review): s86(3) cover is checked at request only
 
-Status: **fixed in 648A (review cycle 1)** — orchestrator ruling: OPEN-3 reversed. Reproduced first
-(`red-backend-review-f3.txt`: the second approval posted). Fix: at the final approval of a
-`FIRM_INV_PLACE`, `TrustTransactionService.requireCashbookCoversFirmPlacement` locks the funding
-account row (lock order: placement row, then funding account) and refuses unless
-`cashbook(G, today) >= amount` with the request's own refusal ("Insufficient trust balance" / "The
-trust account's cashbook does not cover this section 86(3) placement. …"); `placeInvestment` now
-takes the funding account's lock too (funding, then investment account), so the request's read and
-the approval's re-read are serialised. Pinned by
+Status: **fixed in 648A (review cycles 1 and 2)** — orchestrator ruling: OPEN-3 reversed.
+Reproduced first (`red-backend-review-f3.txt`: the second approval posted). Fix: at the final
+approval of a placement, `TrustTransactionService` dispatches to
+`InvestmentPlacementHooks.onPlacementApproving` (review cycle 2: moved behind the hook —
+`TrustInvestmentService` owns the funding-account lock, the cashbook re-check and the refusal
+wording once, shared with the request). For a `FIRM_INV_PLACE` it locks the funding account row
+and refuses unless `cashbook(G, today) >= amount` with the request's own refusal ("Insufficient
+trust balance" / "The trust account's cashbook does not cover this section 86(3) placement. …").
+`placeInvestment` takes the funding account's lock too (funding, then investment account), so the
+request's read and the approval's re-read are serialised. Approval lock order: placement row →
+funding account (hook, s86(3)) → client anchor (s86(4), `requireClientCovers`) → investment row.
+Pinned by
 `TrustInvestmentServiceIntegrationTest.section86_3_cover_isCheckedAgainAtApproval_soTwoPendingPlacementsCannotOverdrawTheCashbook`
-(two pending R3 000 placements against R5 000: the first approves, the second is refused with
-`assertMoves` none on both accounts, stays AWAITING_APPROVAL; the class ends `assertFirmBalanced`).
-Residual (not this slice): a client payment's approval locks the client anchor, not the account,
-so it is not serialised with a concurrent s86(3) approval; each re-reads its own cover.
+(sequential: two pending R3 000 placements against R5 000: the first approves, the second is
+refused with `assertMoves` none on both accounts, stays AWAITING_APPROVAL) and, review cycle 2,
+`TrustInvestmentServiceIntegrationTest.twoSection86_3_approvalsAtOnce_secondWaitsOnTheFundingAccountLock_andIsRefused`
+(concurrent: the first approval's transaction is held open after posting; the second is observed
+in `pg_stat_activity` blocked by the first's backend on a trust_accounts query, then refused once
+the first commits; exactly one placement posts; red without the lock —
+`red-backend-review2-concurrent.txt`). The class ends `assertFirmBalanced`. The cashbook exposure
+that remains through **client** debits is F-6 below (it replaces the earlier "Residual" note here,
+which named only the concurrent case).
 
 Original text (as found):
 
@@ -57,6 +66,58 @@ R286 500 cashbook both pass the request check; approving both overdraws the bank
 cashbook (−R113 500). This is the OPEN-3 default the orchestrator accepted ("check at request
 only"); it is flagged here and in the PR for a decision. Suggested follow-up: at approval of a
 `FIRM_INV_PLACE`, under the account's lock, re-check `cashbook(G, max(today, date)) ≥ amount`.
+
+## F-6 (review cycle 2, Reviewer A HIGH): a client debit after a section 86(3) placement can take the cashbook into debit
+
+Status: **OPEN — founder ruling required (sufficiency model, §16 line 628 / R14 / ADR-380)**.
+**Owner: 649C.** Orchestrator ruling (b): not changed in 648A; the current behaviour is pinned.
+
+A section 86(3) placement lowers the banking account's cashbook and leaves every client ledger as it
+was — the `INTER_ACCOUNT` ledger carries the offset. A client payment, refund or fee transfer is
+checked at record and again at approval (`TrustTransactionService.requireClientCovers`, under the
+client's lock anchor) against the client's ledger and matter cell only, never the account's
+cashbook, so:
+
+- **Sequential case (no race needed):** G's cashbook R5 000, all client A's → a R3 000 s86(3)
+  placement is approved (cashbook R2 000; A's ledger still R5 000) → a R4 000 payment for A passes
+  `requireClientCovers` and posts → G's cashbook is **−R2 000**, A's ledger R1 000, G's
+  inter-account term −R3 000. EQ-2 on G (−2 000 = 1 000 + (−3 000)) and EQ-3 firm-wide still hold
+  because the inter-account term cancels against the investment account's, so `assertFirmBalanced`
+  does not detect it.
+- **Concurrent variant:** a client debit's approval locks the transaction row then the client's
+  lock anchor, never the account row, so it is not serialised with an s86(3) approval (which locks
+  the funding account). Each re-reads its own cover — the placement the cashbook (which excludes
+  the pending payment), the payment the client ledger (which the placement does not touch) — so
+  both post even when the cashbook covers only one of them. With F-6's model the same outcome is
+  reachable sequentially anyway; the concurrent case adds no new end state.
+
+Why not fixed here: the Phase 92 architecture fixes the sufficiency-check model — §16 (~line 628)
+"Sufficiency checks stay where they are (record time and approval time, under the client card's
+row lock) and read the derived balance … Pending debits are not reserved, as today", founder
+decision R14 "no hard block on posting", ADR-380 "never a block on recording a transaction". A
+cashbook block on every client-ledger debit changes that model and is a founder call.
+
+Options for the founder:
+
+- **(b, proposed — 649C):** an integrity flag "trust banking account cashbook in debit"
+  (warning-level, alongside `CLIENT_LEDGER_IN_DEBIT`), raised when a GENERAL account's derived
+  cashbook as at a date is below zero. No posting is blocked; the condition is surfaced.
+- **(a, alternative):** at every `CLIENT`-ledger debit approval (PAYMENT, REFUND, FEE_TRANSFER,
+  INV_PLACE, and a debit contra), lock the trust account row and require `cashbook(account, today) ≥
+  amount` in addition to the client/matter cover. Lock-order constraint: the account lock must be
+  taken **before** the client anchor — `placeInvestment` locks funding account → investment
+  account → client anchor, and the s86(3) approval locks placement row → funding account; a
+  payment approval today takes transaction row → client anchor, so (a) must become transaction row
+  → account → client anchor (never anchor then account, or an s86(4) placement request and a
+  payment approval for the same client can deadlock). This also serialises every client debit on
+  the account with every other, a throughput cost on a busy banking account.
+
+Pinned by
+`TrustInvestmentServiceIntegrationTest.clientPaymentAfterASection86_3Placement_isCheckedAgainstTheClientLedgerOnly_ruling648A_F6`
+(the sequential case above: the payment posts, `assertMoves` shows cashbook and client −R4 000
+exactly, G's cashbook is −R2 000, client R1 000, inter-account −R3 000, `assertBalancedAsAt` on
+both accounts and `assertFirmBalanced` hold). Whichever option the founder picks, that test is the
+one to flip.
 
 ## F-4 (pre-existing guard, newly reachable): an investment account can be closed while it holds investments
 

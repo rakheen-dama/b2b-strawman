@@ -9,9 +9,20 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction;
  * depends on {@link TrustTransactionService} (no bean cycle) — the pattern of {@link
  * UnidentifiedResolutionHooks}.
  *
- * <p>Lock order: the placement row (locked by the caller) → the investment row.
+ * <p>Lock order: the placement row (locked by the caller) → the funding account ({@link
+ * #onPlacementApproving}, section 86(3)) → the client's lock anchor (section 86(4), taken by the
+ * caller's client-cover check) → the investment row.
  */
 public interface InvestmentPlacementHooks {
+
+  /**
+   * The placement row is about to post (final approval), before the caller's client-cover check: a
+   * section 86(3) placement ({@code FIRM_INV_PLACE}) takes no client's money, so its cover — the
+   * funding account's cashbook — is re-read here under the funding account's lock and the approval
+   * refused ({@code InvalidStateException}) when it no longer covers the amount (648A review F-3).
+   * A section 86(4) placement's cover is its client's, which the caller checks.
+   */
+  void onPlacementApproving(TrustTransaction placement);
 
   /**
    * The placement row has just posted (final approval) on the funding account: the receive leg

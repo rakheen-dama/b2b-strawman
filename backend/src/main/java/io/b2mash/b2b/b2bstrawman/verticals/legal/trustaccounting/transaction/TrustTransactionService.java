@@ -1002,16 +1002,18 @@ public class TrustTransactionService {
         requireClientCovers(transaction);
       }
     } else if (type.approval() == TrustTransactionType.Approval.REQUIRED) {
-      // A CLIENT-ledger debit (PAYMENT, FEE_TRANSFER, REFUND) takes money off the client; an
-      // unidentified-deposit resolution (UNIDENT_ALLOC_OUT, UNIDENT_FUND_PAY: NON_CLIENT, no
-      // client on the row) takes it off its own item, whole by construction (§16.2.4).
+      // 648A review F-3: a placement's owner re-checks the cover the client check below cannot
+      // (a section 86(3) placement's is the funding account's cashbook). Lock order: this row, the
+      // funding account, then the client's lock anchor (section 86(4), below).
+      if (PLACEMENTS.contains(type)) {
+        investmentPlacementHooks.onPlacementApproving(transaction);
+      }
+      // A CLIENT-ledger debit (PAYMENT, FEE_TRANSFER, REFUND, INV_PLACE) takes money off the
+      // client; an unidentified-deposit resolution (UNIDENT_ALLOC_OUT, UNIDENT_FUND_PAY:
+      // NON_CLIENT, no client on the row) takes it off its own item, whole by construction
+      // (§16.2.4).
       if (type.ledger() == TrustLedger.CLIENT) {
         requireClientCovers(transaction);
-      }
-      // 648A review F-3: a section 86(3) placement takes no client's money, so the client check
-      // above never covers it — its cover is the funding account's cashbook, read again now.
-      if (type == TrustTransactionType.FIRM_INV_PLACE) {
-        requireCashbookCoversFirmPlacement(transaction);
       }
 
       // 441.9 / Phase 88 U15 (ADR-347, N-5): a fee transfer posts its real amount through the one
@@ -1143,31 +1145,6 @@ public class TrustTransactionService {
         customer.getName(),
         transaction.getProjectId(),
         transaction.getAmount());
-  }
-
-  /**
-   * 648A review F-3: the funding account's cashbook must still cover a section 86(3) placement at
-   * its final approval — the request-time check was unlocked and pending placements move nothing,
-   * so two placements that each passed it, or a payment approved in between, could otherwise
-   * overdraw the cashbook. Lock order: the placement row (held by the caller), then the funding
-   * account row, which serialises section 86(3) approvals on the account with each other and with a
-   * new placement request. The row is still AWAITING_APPROVAL, so the cashbook excludes it. Same
-   * refusal as the request ({@code TrustInvestmentService.placeInvestment}).
-   */
-  private void requireCashbookCoversFirmPlacement(TrustTransaction placement) {
-    trustAccountRepository
-        .findByIdForUpdate(placement.getTrustAccountId())
-        .orElseThrow(
-            () -> new ResourceNotFoundException("TrustAccount", placement.getTrustAccountId()));
-    var cashbook = ledgerQueries.cashbook(placement.getTrustAccountId(), LocalDate.now(clock));
-    if (cashbook.compareTo(placement.getAmount()) < 0) {
-      throw new InvalidStateException(
-          "Insufficient trust balance",
-          "The trust account's cashbook does not cover this section 86(3) placement. Available: "
-              + rand(cashbook)
-              + ", Requested: "
-              + rand(placement.getAmount()));
-    }
   }
 
   // --- 441.5: Reject Transaction ---

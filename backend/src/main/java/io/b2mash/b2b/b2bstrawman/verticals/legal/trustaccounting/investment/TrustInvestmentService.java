@@ -246,7 +246,6 @@ public class TrustInvestmentService implements InvestmentPlacementHooks {
           PLACE_TITLE, "The maturity date cannot be before the deposit date.");
     }
 
-    var today = LocalDate.now(clock);
     Customer client = null;
     Project matter = null;
     if (basis == InvestmentBasis.CLIENT_INSTRUCTION) {
@@ -287,16 +286,8 @@ public class TrustInvestmentService implements InvestmentPlacementHooks {
                 + " no client or matter.");
       }
       // Read under the funding account's lock; checked again at approval under the same lock
-      // (TrustTransactionService.requireCashbookCoversFirmPlacement — review F-3)
-      var cashbook = ledgerQueries.cashbook(fundingAccountId, today);
-      if (cashbook.compareTo(request.principal()) < 0) {
-        throw new InvalidStateException(
-            "Insufficient trust balance",
-            "The trust account's cashbook does not cover this section 86(3) placement. Available: "
-                + rand(cashbook)
-                + ", Requested: "
-                + rand(request.principal()));
-      }
+      // (onPlacementApproving — review F-3)
+      requireCashbookCovers(fundingAccountId, request.principal());
     }
 
     // Insert order (§16.3.7): investment → reference → placement row with investment_id → link
@@ -364,6 +355,30 @@ public class TrustInvestmentService implements InvestmentPlacementHooks {
             RequestScopes.getOrgIdOrNull()));
 
     return toResponse(investment);
+  }
+
+  /**
+   * The placement row is about to post (final approval; 648A review F-3): a section 86(3)
+   * placement's cover is the funding account's cashbook, which the request read but a pending
+   * placement does not reserve — so it is read again here under the funding account's lock (the
+   * lock {@link #placeInvestment} takes), which serialises section 86(3) approvals on the account
+   * with each other and with a new placement request. The row is still AWAITING_APPROVAL, so the
+   * cashbook excludes it. A section 86(4) placement's cover is its client's, checked by the caller
+   * under the client's lock anchor. Lock order: the placement row (caller), then the funding
+   * account.
+   */
+  @Override
+  @Transactional(propagation = Propagation.MANDATORY)
+  public void onPlacementApproving(TrustTransaction placement) {
+    moduleGuard.requireModule(MODULE_ID);
+    if (!"FIRM_INV_PLACE".equals(placement.getTransactionType())) {
+      return;
+    }
+    trustAccountRepository
+        .findByIdForUpdate(placement.getTrustAccountId())
+        .orElseThrow(
+            () -> new ResourceNotFoundException("TrustAccount", placement.getTrustAccountId()));
+    requireCashbookCovers(placement.getTrustAccountId(), placement.getAmount());
   }
 
   /**
@@ -673,6 +688,23 @@ public class TrustInvestmentService implements InvestmentPlacementHooks {
     return investmentRepository
         .findByIdForUpdate(investmentId)
         .orElseThrow(() -> new ResourceNotFoundException("TrustInvestment", investmentId));
+  }
+
+  /**
+   * A section 86(3) placement's cover: the funding account's cashbook as at today must cover {@code
+   * principal}. The caller holds the funding account's lock. The one refusal for the request and
+   * the approval.
+   */
+  private void requireCashbookCovers(UUID fundingAccountId, BigDecimal principal) {
+    var cashbook = ledgerQueries.cashbook(fundingAccountId, LocalDate.now(clock));
+    if (cashbook.compareTo(principal) < 0) {
+      throw new InvalidStateException(
+          "Insufficient trust balance",
+          "The trust account's cashbook does not cover this section 86(3) placement. Available: "
+              + rand(cashbook)
+              + ", Requested: "
+              + rand(principal));
+    }
   }
 
   /** The first 8 hex digits of the investment's id, upper case (both legs of a pair share it). */

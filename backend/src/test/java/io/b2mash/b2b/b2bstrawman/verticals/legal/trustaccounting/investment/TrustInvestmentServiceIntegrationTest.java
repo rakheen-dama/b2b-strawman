@@ -23,11 +23,17 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.Tru
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService;
+import jakarta.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.LockSupport;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -40,6 +46,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * Phase 92 slice 648A (task 648.5; ADR-379; architecture §16.3.7, §16.9.2 paths 17–19): investments
@@ -95,6 +102,8 @@ class TrustInvestmentServiceIntegrationTest {
   @Autowired private TrustTransactionRepository transactionRepository;
   @Autowired private AuditEventRepository auditEventRepository;
   @Autowired private JdbcTemplate jdbc;
+  @Autowired private TransactionTemplate transactionTemplate;
+  @Autowired private EntityManager entityManager;
 
   private TrustBooksFixture.Tenant books;
   private UUID ownerId;
@@ -666,6 +675,166 @@ class TrustInvestmentServiceIntegrationTest {
     books.assertFirmBalanced();
   }
 
+  /**
+   * Review cycle 2 (Reviewer A, Medium): two section 86(3) approvals at once. Both placements pass
+   * at request (pending placements move nothing). The first approval's transaction is held open
+   * after it has posted; the second approval then blocks on the funding account's lock (observed in
+   * {@code pg_stat_activity}: a trust_accounts query blocked by the first transaction's backend,
+   * not a sleep), and once the first commits it re-reads the cashbook and is refused — exactly one
+   * placement posts, nothing moves for the other, and the books balance.
+   */
+  @Test
+  void twoSection86_3_approvalsAtOnce_secondWaitsOnTheFundingAccountLock_andIsRefused() {
+    var funding = books.freshAccount(false);
+    var firmAccount = books.freshInvestmentAccount(InvestmentBasis.FIRM_DISCRETION);
+    var client = books.newClient("s86(3) concurrent approvals");
+    books.deposit(funding, client, "5000.00");
+    var first = books.requestPlacement(funding, firmAccount, null, "3000.00");
+    var second = books.requestPlacement(funding, firmAccount, null, "3000.00");
+
+    var firstPosted = new CountDownLatch(1);
+    var commitFirst = new CountDownLatch(1);
+    var firstBackendPid = new AtomicReference<Integer>();
+    var firstError = new AtomicReference<Throwable>();
+    var secondError = new AtomicReference<Throwable>();
+    var secondFinished = new AtomicBoolean(false);
+    var secondFinishedBeforeCommit = new AtomicBoolean(true);
+
+    books.as(
+        approverId,
+        () ->
+            harness.assertMoves(
+                funding,
+                Expected.cashbookAndInterAccount("-3000.00"),
+                firmAccount,
+                Expected.cashbookAndInterAccount("3000.00"),
+                () -> {
+                  Thread firstThread =
+                      Thread.ofPlatform()
+                          .start(
+                              () ->
+                                  books.as(
+                                      approverId,
+                                      () -> {
+                                        try {
+                                          transactionTemplate.executeWithoutResult(
+                                              tx -> {
+                                                transactionService.approveTransaction(
+                                                    first.depositTransactionId(), approverId);
+                                                firstBackendPid.set(
+                                                    ((Number)
+                                                            entityManager
+                                                                .createNativeQuery(
+                                                                    "SELECT pg_backend_pid()")
+                                                                .getSingleResult())
+                                                        .intValue());
+                                                firstPosted.countDown();
+                                                awaitLatch(commitFirst);
+                                              });
+                                        } catch (Throwable t) {
+                                          firstError.set(t);
+                                          firstPosted.countDown();
+                                        }
+                                      }));
+                  awaitLatch(firstPosted);
+                  assertThat(firstError.get()).as("the first approval").isNull();
+
+                  Thread secondThread =
+                      Thread.ofPlatform()
+                          .start(
+                              () ->
+                                  books.as(
+                                      approverId,
+                                      () -> {
+                                        try {
+                                          transactionService.approveTransaction(
+                                              second.depositTransactionId(), approverId);
+                                        } catch (Throwable t) {
+                                          secondError.set(t);
+                                        } finally {
+                                          secondFinished.set(true);
+                                        }
+                                      }));
+                  try {
+                    awaitBlockedOnTrustAccountLockHeldBy(firstBackendPid.get(), secondFinished);
+                    secondFinishedBeforeCommit.set(secondFinished.get());
+                  } finally {
+                    commitFirst.countDown();
+                    join(firstThread);
+                    join(secondThread);
+                  }
+                }));
+
+    assertThat(firstError.get()).as("the first approval").isNull();
+    assertThat(secondFinishedBeforeCommit.get())
+        .as("the second approval waited for the funding account lock the first held")
+        .isFalse();
+    assertThat(secondError.get())
+        .as("the second approval, re-read after the first committed")
+        .isInstanceOfSatisfying(
+            InvalidStateException.class,
+            e -> {
+              assertThat(e.getBody().getStatus()).isEqualTo(400);
+              assertThat(e.getBody().getTitle()).isEqualTo("Insufficient trust balance");
+              assertThat(e.getBody().getDetail())
+                  .isEqualTo(
+                      "The trust account's cashbook does not cover this section 86(3) placement."
+                          + " Available: R2 000,00, Requested: R3 000,00");
+            });
+    assertThat(books.statusOf(first.depositTransactionId())).isEqualTo("APPROVED");
+    assertThat(books.statusOf(second.depositTransactionId())).isEqualTo("AWAITING_APPROVAL");
+    assertThat(investment(second.id()).getStatus()).isEqualTo("ACTIVE");
+    assertThat(get(second.id()).balance()).isEqualByComparingTo("0");
+    assertThat(books.snapshotAsAt(funding, books.today()).cashbook())
+        .isEqualByComparingTo("2000.00");
+    books.assertBalancedAsAt(funding, books.today());
+    books.assertBalancedAsAt(firmAccount, books.today());
+    books.assertFirmBalanced();
+  }
+
+  /**
+   * ORCHESTRATOR RULING 648A F-6 (found.md; §16 "sufficiency checks stay where they are", R14 "no
+   * hard block on posting", ADR-380): a client payment's sufficiency is checked against the
+   * client's ledger and matter cell only — not the account's cashbook. A section 86(3) placement
+   * lowers the cashbook and leaves every client ledger as it was (the inter-account ledger carries
+   * the offset), so a later payment for the same client posts and takes the cashbook into debit.
+   * This test PINS that behaviour until the founder rules on the sufficiency model (owner 649C);
+   * the books still balance — EQ-2/EQ-3 hold because the inter-account term carries the placement.
+   */
+  @Test
+  void clientPaymentAfterASection86_3Placement_isCheckedAgainstTheClientLedgerOnly_ruling648A_F6() {
+    var funding = books.freshAccount(false);
+    var firmAccount = books.freshInvestmentAccount(InvestmentBasis.FIRM_DISCRETION);
+    var client = books.newClient("F-6 payment after s86(3)");
+    books.deposit(funding, client, "5000.00");
+
+    var placed = books.requestPlacement(funding, firmAccount, null, "3000.00");
+    books.approvePlacement(
+        funding,
+        Expected.cashbookAndInterAccount("-3000.00"),
+        firmAccount,
+        Expected.cashbookAndInterAccount("3000.00"),
+        placed.depositTransactionId(),
+        approverId);
+    assertThat(books.snapshotAsAt(funding, books.today()).cashbook())
+        .isEqualByComparingTo("2000.00");
+    assertThat(books.clientLedger(funding, client)).isEqualByComparingTo("5000.00");
+
+    var payment = books.requestPayment(funding, client, "4000.00");
+    books.approve(funding, payment, approverId, Expected.cashbookAndClient("-4000.00"));
+
+    assertThat(books.statusOf(payment)).isEqualTo("APPROVED");
+    var after = books.snapshotAsAt(funding, books.today());
+    assertThat(after.cashbook())
+        .as("G's cashbook, in debit by R2 000")
+        .isEqualByComparingTo("-2000.00");
+    assertThat(books.clientLedger(funding, client)).isEqualByComparingTo("1000.00");
+    assertThat(after.interAccount()).isEqualByComparingTo("-3000.00");
+    books.assertBalancedAsAt(funding, books.today());
+    books.assertBalancedAsAt(firmAccount, books.today());
+    books.assertFirmBalanced();
+  }
+
   @Test
   void placement_maturityDate_cannotBeBeforeTheDepositDate() {
     var funding = books.freshAccount(false);
@@ -858,6 +1027,49 @@ class TrustInvestmentServiceIntegrationTest {
         null,
         null,
         basis);
+  }
+
+  /**
+   * Waits (bounded, 30 s) until a backend blocked by {@code holderPid} is running a trust_accounts
+   * query — the second approval waiting on the funding account's row lock. Fails if the waiter
+   * finishes first (it did not wait) or never blocks.
+   */
+  private void awaitBlockedOnTrustAccountLockHeldBy(int holderPid, AtomicBoolean waiterFinished) {
+    long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(30);
+    while (System.nanoTime() < deadline) {
+      Long blocked =
+          jdbc.queryForObject(
+              "SELECT count(*) FROM pg_stat_activity WHERE ? = ANY(pg_blocking_pids(pid))"
+                  + " AND query ILIKE '%trust_accounts%'",
+              Long.class, holderPid);
+      if (blocked != null && blocked > 0) {
+        return;
+      }
+      assertThat(waiterFinished.get())
+          .as("the second approval finished without waiting for the funding account lock")
+          .isFalse();
+      LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(10)); // poll interval
+    }
+    throw new AssertionError("the second approval never blocked on the funding account lock");
+  }
+
+  private static void awaitLatch(CountDownLatch latch) {
+    try {
+      assertThat(latch.await(30, TimeUnit.SECONDS)).as("latch released within 30 s").isTrue();
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new AssertionError(e);
+    }
+  }
+
+  private static void join(Thread thread) {
+    try {
+      thread.join(30_000);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new AssertionError(e);
+    }
+    assertThat(thread.isAlive()).as("thread finished within 30 s").isFalse();
   }
 
   /** The placement is refused (400 {@code title} / {@code detail}); nothing moves on either. */

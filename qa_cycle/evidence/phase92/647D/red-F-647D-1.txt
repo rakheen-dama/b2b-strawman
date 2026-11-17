@@ -1,0 +1,20 @@
+# F-647D-1 — RED run (reproduce-before-fix), 647D fix cycle 1
+# Worktree head 02fd16615 (production code unchanged); run 2026-11-17 19:44 SAST
+# Command: ./mvnw test -Dtest='UnidentifiedDepositIntegrationTest#unmatch_afterAnUndoneAllocationOrFundPayment_isRefused_EQ4HoldsAsAtEveryDate+probeRed_F647D1_unmatchAfterUndo_breaksEQ4AsAtAPastDate+...'
+# Path: line received D0 (today-10) -> recorded unidentified -> allocation dated D1 (today-6) approved -> undone dated D2 (today-3) -> unmatch the line.
+# (1) the final-form test expects 400 on the unmatch; today the unmatch succeeds (200).
+# (2) the probe lets the unmatch succeed and checks EQ-4 as at D1 (inside [D1, D2)): the item reads -70.00.
+# The probe test methods were temporary and removed after this capture; the final-form test is green after the fix.
+
+[ERROR]   UnidentifiedDepositIntegrationTest.unmatch_afterAnUndoneAllocationOrFundPayment_isRefused_EQ4HoldsAsAtEveryDate:1128->assertUnmatchRefusedAfterUndo:1167->moves:1388->lambda$moves$0:1391->lambda$moves$1:1396->lambda$assertUnmatchRefusedAfterUndo$0:1171->refused:1581 Status expected:<400> but was:<200>
+[ERROR]   UnidentifiedDepositIntegrationTest.probeRed_F647D1_unmatchAfterUndo_breaksEQ4AsAtAPastDate:1300 
+Multiple Failures (2 failures)
+-- failure 1 --
+[EQ-4 on trust account babcf990-9d05-472a-a098-c8e8c6f3aa3b as at 2026-11-11, item ac499c58-6bd8-4e05-8b72-e68c717ea59d (REVERSED, 70.00): balance -70.00 — must be 0 or the amount] 
+Expecting value to be true but was false
+at TrustBooksHarness.assertItemised(TrustBooksHarness.java:405)
+-- failure 2 --
+[EQ-4 on trust account babcf990-9d05-472a-a098-c8e8c6f3aa3b as at 2026-11-11: Σ open items vs the unidentified term -70.00] 
+expected: -70.00
+ but was: 0
+at TrustBooksHarness.assertItemised(TrustBooksHarness.java:421)

@@ -771,6 +771,45 @@ describe("Other trust creditors page", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("returns focus to each opener on close, and opens each dialog with fresh defaults", async () => {
+    const user = userEvent.setup();
+    mockFetchMyCapabilities.mockResolvedValue(MANAGER_CAPABILITIES);
+    mockFetchUnidentifiedDeposits.mockResolvedValue(itemsPage([unidentifiedItem()]));
+    await renderPage();
+
+    // Pay to the Fund: edit, cancel with Escape — focus back on the opener; reopened, it is fresh.
+    const payOpener = screen.getByTestId("pay-to-fund-btn-ud-1");
+    await user.click(payOpener);
+    let dialog = await screen.findByTestId("pay-to-fund-dialog");
+    await user.type(within(dialog).getByTestId("pay-to-fund-reference"), "LPFF-STALE");
+    await user.clear(within(dialog).getByTestId("pay-to-fund-date"));
+    await user.type(within(dialog).getByTestId("pay-to-fund-date"), "2026-01-02");
+    await user.keyboard("{Escape}");
+    await waitFor(() => expect(screen.queryByTestId("pay-to-fund-dialog")).not.toBeInTheDocument());
+    await waitFor(() => expect(payOpener).toHaveFocus());
+    await user.click(payOpener);
+    dialog = await screen.findByTestId("pay-to-fund-dialog");
+    expect(within(dialog).getByTestId("pay-to-fund-reference")).toHaveValue("");
+    expect(within(dialog).getByTestId("pay-to-fund-date")).toHaveValue(todayInSA());
+    await user.keyboard("{Escape}");
+    await waitFor(() => expect(screen.queryByTestId("pay-to-fund-dialog")).not.toBeInTheDocument());
+
+    // Allocate: the same.
+    const allocateOpener = screen.getByTestId("allocate-btn-ud-1");
+    await user.click(allocateOpener);
+    dialog = await screen.findByTestId("allocate-unidentified-dialog");
+    await user.type(within(dialog).getByTestId("allocate-notes"), "Stale note");
+    await user.keyboard("{Escape}");
+    await waitFor(() =>
+      expect(screen.queryByTestId("allocate-unidentified-dialog")).not.toBeInTheDocument()
+    );
+    await waitFor(() => expect(allocateOpener).toHaveFocus());
+    await user.click(allocateOpener);
+    dialog = await screen.findByTestId("allocate-unidentified-dialog");
+    expect(within(dialog).getByTestId("allocate-notes")).toHaveValue("");
+    expect(within(dialog).getByTestId("allocate-date")).toHaveValue(todayInSA());
+  });
+
   it("says a pending resolution awaits approval with no actions, and names an allocated item's client and matter", async () => {
     mockFetchMyCapabilities.mockResolvedValue(MANAGER_CAPABILITIES);
     mockFetchUnidentifiedDeposits.mockResolvedValue(

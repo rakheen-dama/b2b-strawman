@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Landmark, Loader2, AlertTriangle } from "lucide-react";
@@ -56,6 +56,8 @@ export function PayToFundDialog({ item, currency }: PayToFundDialogProps) {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Radix only tracks a DialogTrigger, so the owned button restores focus itself on close.
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   const form = useForm<PayToFundFormData>({
     resolver: zodResolver(payToFundSchema),
@@ -70,7 +72,8 @@ export function PayToFundDialog({ item, currency }: PayToFundDialogProps) {
 
   function setDialogOpen(next: boolean) {
     setOpen(next);
-    if (!next) {
+    if (next) {
+      // Fresh defaults on every open (today's date as of the opening, not of the first render).
       setError(null);
       form.reset(defaultValues());
     }
@@ -99,7 +102,10 @@ export function PayToFundDialog({ item, currency }: PayToFundDialogProps) {
         type="button"
         variant="outline"
         size="sm"
-        onClick={() => setOpen(true)}
+        ref={triggerRef}
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        onClick={() => setDialogOpen(true)}
         data-testid={`pay-to-fund-btn-${item.id}`}
       >
         <Landmark className="mr-1 size-3" />
@@ -107,7 +113,14 @@ export function PayToFundDialog({ item, currency }: PayToFundDialogProps) {
       </Button>
 
       <Dialog open={open} onOpenChange={handleOpenChange}>
-        <DialogContent className="sm:max-w-lg" data-testid="pay-to-fund-dialog">
+        <DialogContent
+          className="sm:max-w-lg"
+          data-testid="pay-to-fund-dialog"
+          onCloseAutoFocus={(event) => {
+            event.preventDefault();
+            triggerRef.current?.focus();
+          }}
+        >
           <DialogHeader>
             <DialogTitle>Pay to the Fidelity Fund</DialogTitle>
             <DialogDescription>

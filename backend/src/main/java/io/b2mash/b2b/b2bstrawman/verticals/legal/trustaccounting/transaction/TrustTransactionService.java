@@ -3,7 +3,6 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction;
 import io.b2mash.b2b.b2bstrawman.audit.AuditDetails;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
-import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
@@ -67,15 +66,6 @@ public class TrustTransactionService {
   /** ProblemDetail {@code code} of a debit refused by the matter sub-ledger guard (G89-F12). */
   public static final String INSUFFICIENT_MATTER_TRUST_BALANCE =
       "INSUFFICIENT_MATTER_TRUST_BALANCE";
-
-  /** ProblemDetail {@code code} of a client posting refused for want of a matter (G89-F28). */
-  public static final String MATTER_REQUIRED = "MATTER_REQUIRED";
-
-  /** ProblemDetail {@code code} of a client posting on a matter not linked to it (G89-F28). */
-  public static final String MATTER_NOT_LINKED_TO_CLIENT = "MATTER_NOT_LINKED_TO_CLIENT";
-
-  /** The refusal detail for a client trust posting without a matter (G89-F28, D36). */
-  static final String MATTER_REQUIRED_DETAIL = "A matter is required for client trust transactions";
 
   /**
    * The rows that resolve an unidentified deposit (647D, §16.3.6): their approval, rejection and
@@ -436,7 +426,7 @@ public class TrustTransactionService {
                 () -> new ResourceNotFoundException(EntityNoun.CLIENT, request.clientId()));
 
     if (requireMatter) {
-      requireClientMatter(customer, request.matterId());
+      clientMatterRule.requireClientMatter(customer, request.matterId());
     }
 
     var memberId = RequestScopes.requireMemberId();
@@ -531,8 +521,8 @@ public class TrustTransactionService {
 
     // G89-F28 / D39: each leg sits on its own client's matter, both checked before either is
     // written — TRANSFER_OUT on the source's matter, TRANSFER_IN on the target's.
-    requireClientMatter(sourceCustomer, request.sourceMatterId());
-    requireClientMatter(targetCustomer, request.targetMatterId());
+    clientMatterRule.requireClientMatter(sourceCustomer, request.sourceMatterId());
+    clientMatterRule.requireClientMatter(targetCustomer, request.targetMatterId());
 
     var memberId = RequestScopes.requireMemberId();
 
@@ -679,7 +669,7 @@ public class TrustTransactionService {
             .orElseThrow(
                 () -> new ResourceNotFoundException(EntityNoun.CLIENT, request.clientId()));
 
-    requireClientMatter(customer, request.matterId());
+    clientMatterRule.requireClientMatter(customer, request.matterId());
 
     var memberId = RequestScopes.requireMemberId();
 
@@ -789,14 +779,14 @@ public class TrustTransactionService {
     // client. The matter comes from the fee note: refused when the fee note has no single matter,
     // and (PR #1757 review) when that matter is no longer linked to the client.
     if (inferredProjectId == null) {
-      throw matterRequired(
+      throw TrustClientMatterRule.matterRequired(
           "Fee note "
               + (invoice.getInvoiceNumber() != null
                   ? invoice.getInvoiceNumber()
                   : invoice.getId().toString())
               + " does not belong to a single matter, so the transfer has no matter to post to.");
     }
-    requireClientMatter(customer, inferredProjectId);
+    clientMatterRule.requireClientMatter(customer, inferredProjectId);
 
     var transaction =
         new TrustTransaction(
@@ -871,7 +861,7 @@ public class TrustTransactionService {
             .orElseThrow(
                 () -> new ResourceNotFoundException(EntityNoun.CLIENT, request.clientId()));
 
-    requireClientMatter(customer, request.matterId());
+    clientMatterRule.requireClientMatter(customer, request.matterId());
 
     var memberId = RequestScopes.requireMemberId();
 
@@ -1771,7 +1761,13 @@ public class TrustTransactionService {
    */
   private TrustTransactionResponse reverseUnidentifiedAllocation(
       TrustTransaction original, String reason, LocalDate reversalDate, UUID memberId) {
-    UUID creditId = unidentifiedResolutionHooks.onResolutionReversed(original, reversalDate);
+    UUID creditId =
+        unidentifiedResolutionHooks
+            .onResolutionReversed(original, reversalDate)
+            .orElseThrow(
+                () ->
+                    new IllegalStateException(
+                        "Allocation " + original.getId() + " has no credit leg to reverse"));
     var credit =
         transactionRepository
             .findByIdForUpdate(creditId)
@@ -1898,15 +1894,6 @@ public class TrustTransactionService {
   }
 
   // --- Private Helpers ---
-
-  /** G89-F28 (D36): the client posting's matter must be linked to the client. */
-  private void requireClientMatter(Customer client, UUID matterId) {
-    clientMatterRule.requireClientMatter(client, matterId);
-  }
-
-  private static InvalidStateException matterRequired(String reason) {
-    return TrustClientMatterRule.matterRequired(reason);
-  }
 
   /**
    * G89-F12: a debit on a matter must be covered by this client's money on that matter in this

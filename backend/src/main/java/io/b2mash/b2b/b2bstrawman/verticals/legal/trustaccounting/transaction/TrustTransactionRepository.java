@@ -204,6 +204,37 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
   List<UUID> findPendingReversalOriginalIds(@Param("ids") Collection<UUID> ids);
 
   /**
+   * Whether a resolution of the unidentified deposit ({@code UNIDENT_ALLOC_OUT} / {@code
+   * UNIDENT_FUND_PAY}) ever posted — reversed since or not (647D, F-647D-1). A rejected or pending
+   * one never posted ({@code posted_at} null) and does not count.
+   */
+  @Query(
+      """
+      SELECT COUNT(t) > 0 FROM TrustTransaction t
+      WHERE t.unidentifiedDepositId = :itemId
+        AND t.transactionType IN ('UNIDENT_ALLOC_OUT', 'UNIDENT_FUND_PAY')
+        AND t.postedAt IS NOT NULL
+      """)
+  boolean existsPostedResolutionOfItem(@Param("itemId") UUID itemId);
+
+  /**
+   * The date of the latest posted contra of a resolution of the unidentified deposit — the day the
+   * item was last reopened by an undo (647D fix cycle 1); empty when it never was.
+   */
+  @Query(
+      """
+      SELECT MAX(c.transactionDate) FROM TrustTransaction c
+      WHERE c.unidentifiedDepositId = :itemId
+        AND c.transactionType = 'REVERSAL'
+        AND c.postedAt IS NOT NULL
+        AND c.reversalOf IN (
+          SELECT r.id FROM TrustTransaction r
+          WHERE r.unidentifiedDepositId = :itemId
+            AND r.transactionType IN ('UNIDENT_ALLOC_OUT', 'UNIDENT_FUND_PAY'))
+      """)
+  Optional<LocalDate> findLatestReopeningDate(@Param("itemId") UUID itemId);
+
+  /**
    * The non-{@code REVERSAL} rows in {@code statuses} linked to a bank statement line — the posted
    * originals a statement-line unmatch reverses ({@code reverseForUnmatch}, 649B for 647A). Oldest
    * first, so the contras are written in posting order.

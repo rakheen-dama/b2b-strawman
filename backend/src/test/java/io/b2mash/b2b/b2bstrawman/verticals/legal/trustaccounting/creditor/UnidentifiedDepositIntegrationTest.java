@@ -1,6 +1,8 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -11,6 +13,7 @@ import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEvent;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
+import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
@@ -25,6 +28,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedger;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -103,6 +107,7 @@ class UnidentifiedDepositIntegrationTest {
   @Autowired private BankStatementRepository statementRepository;
   @Autowired private UnidentifiedDepositRepository depositRepository;
   @Autowired private AuditEventRepository auditEventRepository;
+  @Autowired private ProjectRepository projectRepository;
   @Autowired private JdbcTemplate jdbc;
 
   private TrustBooksFixture.Tenant books;
@@ -664,7 +669,13 @@ class UnidentifiedDepositIntegrationTest {
             approve(allocOutId, owner())
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.title").value("Self-approval not allowed")));
+                .andExpect(jsonPath("$.title").value("Self-approval not allowed"))
+                .andExpect(
+                    jsonPath("$.detail")
+                        .value(
+                            "The transaction recorder cannot be the sole approver. A different"
+                                + " member with APPROVE_TRUST_PAYMENT capability must approve this"
+                                + " transaction.")));
     assertThat(row(allocOutId).getStatus()).isEqualTo("AWAITING_APPROVAL");
     assertThat(item(itemId).getStatus()).isEqualTo(UnidentifiedDepositStatus.HELD);
 
@@ -694,6 +705,153 @@ class UnidentifiedDepositIntegrationTest {
     assertThat(credit.getApprovedBy()).isEqualTo(approverId);
     assertThat(credit.getSecondApprovedBy()).isEqualTo(secondId);
     books.assertServicesAgree(account);
+  }
+
+  @Test
+  void allocation_dualModeBelowTheThreshold_oneApprovalByAnotherMemberPosts() throws Exception {
+    var account = books.freshAccount(true, new BigDecimal("1000.00")); // dual from R1 000
+    var client = books.newClient("AllocThreshold");
+    var line = books.unmatchedLine(account, pastDate(), "80.00", "UID-ALLOC-THRESHOLD");
+    var itemId = recordItem(account, line, "80.00");
+    var allocOutId = requestAllocation(account, itemId, client, null);
+
+    approveMoves(account, allocOutId, approver(), Expected.clientFromUnidentified("+80.00"));
+    assertThat(row(allocOutId).getStatus()).isEqualTo("APPROVED");
+    var item = item(itemId);
+    assertThat(item.getStatus()).isEqualTo(UnidentifiedDepositStatus.ALLOCATED);
+    var credit = row(item.getAllocationCreditTransactionId());
+    assertThat(credit.getApprovedBy()).isEqualTo(approverId);
+    assertThat(credit.getSecondApprovedBy()).isNull();
+    assertThat(books.clientLedger(account, client)).isEqualByComparingTo("80.00");
+  }
+
+  @Test
+  void allocation_approval_rechecksTheClientMatterLink_andARefusalLeavesItPending()
+      throws Exception {
+    // CodeRabbit (fix cycle 1): the UNIDENT_ALLOC_IN is a new client posting made at approval.
+    var account = books.freshAccount(false);
+    var client = books.newClient("AllocLinkGone");
+    var matterOwner = books.newClient("AllocLinkOwner");
+    var matterId = matterOwner.matter();
+    // Linked through the client's matter list (customer_projects), through the product's API.
+    mockMvc
+        .perform(post("/api/clients/{c}/matters/{m}", client.id(), matterId).with(owner()))
+        .andExpect(status().isCreated());
+    var line = books.unmatchedLine(account, pastDate(), "110.00", "UID-ALLOC-UNLINKED");
+    var itemId = recordItem(account, line, "110.00");
+    var body = new String[1];
+    moves(
+        account,
+        Expected.none(),
+        () ->
+            body[0] =
+                allocate(itemId, allocateJson(client, matterId, null), owner())
+                    .andExpect(status().isOk())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString());
+    var allocOutId = UUID.fromString(JsonPath.read(body[0], "$.resolutionTransactionId"));
+
+    // The matter is unlinked from the client before the approval.
+    mockMvc
+        .perform(delete("/api/clients/{c}/matters/{m}", client.id(), matterId).with(owner()))
+        .andExpect(status().isNoContent());
+
+    moves(
+        account,
+        Expected.none(),
+        () ->
+            approve(allocOutId, approver())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.title").value("Matter not linked to client"))
+                .andExpect(
+                    jsonPath("$.detail")
+                        .value(
+                            "Matter "
+                                + matterName(matterId)
+                                + " is not linked to client "
+                                + client.name()))
+                .andExpect(jsonPath("$.code").value("MATTER_NOT_LINKED_TO_CLIENT"))
+                .andExpect(jsonPath("$.matterId").value(matterId.toString())));
+
+    var pending = row(allocOutId);
+    assertThat(pending.getStatus()).isEqualTo("AWAITING_APPROVAL");
+    assertThat(pending.getPostedAt()).isNull();
+    assertThat(pending.getApprovedBy()).isNull();
+    var item = item(itemId);
+    assertThat(item.getStatus()).isEqualTo(UnidentifiedDepositStatus.HELD);
+    assertThat(item.getResolutionTransactionId()).isEqualTo(allocOutId);
+    assertThat(item.getAllocationCreditTransactionId()).isNull();
+    assertThat(rowsOfItem(itemId, "UNIDENT_ALLOC_IN")).isEmpty();
+    assertThat(auditCount("unidentified_deposit", itemId, "unidentified_deposit.allocated"))
+        .isZero();
+
+    // Still pending: it can be rejected, and the item is held with nothing pending.
+    rejectMoves(account, allocOutId);
+    assertThat(item(itemId).getResolutionTransactionId()).isNull();
+    assertThat(item(itemId).getStatus()).isEqualTo(UnidentifiedDepositStatus.HELD);
+  }
+
+  @Test
+  void allocation_undo_refusedWhenTheClientNoLongerHoldsIt() throws Exception {
+    // A refused undo rolls back with it: the item's return to HELD included.
+    var account = books.freshAccount(false);
+    var client = books.newClient("AllocSpent");
+    var line = books.unmatchedLine(account, pastDate(), "300.00", "UID-ALLOC-SPENT");
+    var itemId = recordItem(account, line, "300.00");
+    var allocOutId = requestAllocation(account, itemId, client, null);
+    approveMoves(account, allocOutId, approver(), Expected.clientFromUnidentified("+300.00"));
+    var creditId = item(itemId).getAllocationCreditTransactionId();
+
+    // The client spends it: a payment through the normal API, approved.
+    var paymentBody = new String[1];
+    moves(
+        account,
+        Expected.none(),
+        () ->
+            paymentBody[0] =
+                mockMvc
+                    .perform(
+                        post("/api/trust-accounts/{a}/transactions/payment", account)
+                            .with(owner())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(
+                                """
+                                {"clientId":"%s","matterId":"%s","amount":300.00,\
+                                "reference":"UID-SPENT-PAY","description":"Paid to the seller",\
+                                "transactionDate":"%s"}"""
+                                    .formatted(client.id(), client.matter(), books.today())))
+                    .andExpect(status().isCreated())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString());
+    var paymentId = UUID.fromString(JsonPath.read(paymentBody[0], "$.id"));
+    approveMoves(account, paymentId, approver(), Expected.cashbookAndClient("-300.00"));
+
+    moves(
+        account,
+        Expected.none(),
+        () ->
+            refused(
+                reverse(allocOutId, null),
+                "Insufficient trust balance",
+                "Insufficient trust balance for "
+                    + client.name()
+                    + ". Available: R0,00, Requested: R300,00"));
+
+    var item = item(itemId);
+    assertThat(item.getStatus()).isEqualTo(UnidentifiedDepositStatus.ALLOCATED);
+    assertThat(item.getResolutionTransactionId()).isEqualTo(allocOutId);
+    assertThat(item.getAllocationCreditTransactionId()).isEqualTo(creditId);
+    assertThat(item.getAllocatedCustomerId()).isEqualTo(client.id());
+    assertThat(item.getResolvedDate()).isNotNull();
+    assertThat(row(allocOutId).getStatus()).isEqualTo("APPROVED");
+    assertThat(row(creditId).getStatus()).isEqualTo("APPROVED");
+    assertThat(reversalsOf(allocOutId)).isEmpty();
+    assertThat(reversalsOf(creditId)).isEmpty();
+    assertThat(auditCount("unidentified_deposit", itemId, "unidentified_deposit.reopened"))
+        .isZero();
   }
 
   @Test
@@ -831,14 +989,10 @@ class UnidentifiedDepositIntegrationTest {
         account,
         Expected.none(),
         () ->
-            reverse(creditId, null)
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.title").value("Cannot reverse transaction"))
-                .andExpect(
-                    jsonPath("$.detail")
-                        .value(
-                            "Reverse the unidentified deposit's allocation instead to undo both"
-                                + " entries")));
+            refused(
+                reverse(creditId, null),
+                "Cannot reverse transaction",
+                "Reverse the unidentified deposit's allocation instead to undo both entries"));
     assertThat(row(creditId).getStatus()).isEqualTo("APPROVED");
     assertThat(item(itemId).getStatus()).isEqualTo(UnidentifiedDepositStatus.ALLOCATED);
   }
@@ -899,19 +1053,46 @@ class UnidentifiedDepositIntegrationTest {
               .andExpect(status().isBadRequest())
               .andExpect(jsonPath("$.status").value(400))
               .andExpect(jsonPath("$.title").value("Matter not linked to client"))
+              .andExpect(
+                  jsonPath("$.detail")
+                      .value(
+                          "Matter "
+                              + matterName(other.matter())
+                              + " is not linked to client "
+                              + client.name()))
               .andExpect(jsonPath("$.code").value("MATTER_NOT_LINKED_TO_CLIENT"))
               .andExpect(jsonPath("$.matterId").value(other.matter().toString()));
           var unknown = UUID.randomUUID();
           allocate(unknown, allocateJson(client, client.matter(), null), owner())
               .andExpect(status().isNotFound())
-              .andExpect(jsonPath("$.title").value("Unidentified deposit not found"));
+              .andExpect(jsonPath("$.status").value(404))
+              .andExpect(jsonPath("$.title").value("Unidentified deposit not found"))
+              .andExpect(
+                  jsonPath("$.detail").value("No unidentified deposit found with id " + unknown));
           payToFund(unknown, fundJson("LPFF-404", books.today()), owner())
               .andExpect(status().isNotFound())
-              .andExpect(jsonPath("$.title").value("Unidentified deposit not found"));
+              .andExpect(jsonPath("$.status").value(404))
+              .andExpect(jsonPath("$.title").value("Unidentified deposit not found"))
+              .andExpect(
+                  jsonPath("$.detail").value("No unidentified deposit found with id " + unknown));
           // Missing client and matter: bean validation.
-          allocate(itemId, "{}", owner()).andExpect(status().isBadRequest());
+          allocate(itemId, "{}", owner())
+              .andExpect(status().isBadRequest())
+              .andExpect(jsonPath("$.status").value(400))
+              .andExpect(jsonPath("$.title").value("Validation failed"))
+              .andExpect(jsonPath("$.detail").value("2 field(s) have validation errors"))
+              .andExpect(
+                  jsonPath("$.fieldErrors[*].field")
+                      .value(containsInAnyOrder("clientId", "matterId")));
           // Missing reference / date on a payment: bean validation.
-          payToFund(itemId, "{\"reference\":\"\"}", owner()).andExpect(status().isBadRequest());
+          payToFund(itemId, "{\"reference\":\"\"}", owner())
+              .andExpect(status().isBadRequest())
+              .andExpect(jsonPath("$.status").value(400))
+              .andExpect(jsonPath("$.title").value("Validation failed"))
+              .andExpect(jsonPath("$.detail").value("2 field(s) have validation errors"))
+              .andExpect(
+                  jsonPath("$.fieldErrors[*].field")
+                      .value(containsInAnyOrder("reference", "transactionDate")));
         });
     var item = item(itemId);
     assertThat(item.getResolutionTransactionId()).isNull();
@@ -974,10 +1155,8 @@ class UnidentifiedDepositIntegrationTest {
         account,
         Expected.none(),
         () -> {
-          allocate(itemId, allocateJson(client, client.matter(), null), member)
-              .andExpect(status().isForbidden());
-          payToFund(itemId, fundJson("LPFF-403", books.today()), member)
-              .andExpect(status().isForbidden());
+          forbidden(allocate(itemId, allocateJson(client, client.matter(), null), member));
+          forbidden(payToFund(itemId, fundJson("LPFF-403", books.today()), member));
         });
     assertThat(item(itemId).getResolutionTransactionId()).isNull();
   }
@@ -1093,6 +1272,187 @@ class UnidentifiedDepositIntegrationTest {
         .containsEntry("resolution_type", "UNIDENT_FUND_PAY")
         .containsEntry("reversal_date", reversalDate.toString())
         .doesNotContainKey("project_id");
+  }
+
+  // --- after an undo (647D fix cycle 1) --------------------------------------------------
+
+  private static final String UNMATCH_AFTER_UNDO_DETAIL =
+      "This deposit has already been allocated or paid to the Fund and that was later undone, so"
+          + " its statement line can no longer be unmatched.";
+
+  @Test
+  void unmatch_afterAnUndoneAllocationOrFundPayment_isRefused_EQ4HoldsAsAtEveryDate()
+      throws Exception {
+    // F-647D-1: the unmatch contra would be dated the line's (received) date, so the item would
+    // read -L between the resolution's date and its reversal's — refused instead.
+    var today = books.today();
+    var received = today.minusDays(10);
+    var resolutionDate = today.minusDays(6);
+    var reversalDate = today.minusDays(3);
+
+    // An allocation, approved, then undone.
+    var account = books.freshAccount(false);
+    var client = books.newClient("UnmatchAfterUndo");
+    var line = books.unmatchedLine(account, received, "70.00", "UID-UNDO-UNMATCH");
+    var itemId = recordItem(account, line, "70.00");
+    var rowId = item(itemId).getDepositTransactionId();
+    var allocOutId = requestAllocation(account, itemId, client, resolutionDate);
+    approveMoves(account, allocOutId, approver(), Expected.clientFromUnidentified("+70.00"));
+    moves(
+        account,
+        Expected.clientFromUnidentified("-70.00"),
+        () -> reverse(allocOutId, reversalDate).andExpect(status().isCreated()));
+    assertThat(item(itemId).getStatus()).isEqualTo(UnidentifiedDepositStatus.HELD);
+
+    assertUnmatchRefusedAfterUndo(account, line, rowId, itemId);
+    assertUnidentifiedAsAt(account, received.minusDays(1), "0");
+    assertUnidentifiedAsAt(account, received, "70.00");
+    assertUnidentifiedAsAt(account, resolutionDate, "0");
+    assertUnidentifiedAsAt(account, reversalDate.minusDays(1), "0");
+    assertUnidentifiedAsAt(account, reversalDate, "70.00");
+    assertUnidentifiedAsAt(account, today, "70.00");
+
+    // A payment to the Fund, approved, then reversed (bounced).
+    var fundAccount = books.freshAccount(false);
+    var fundLine = books.unmatchedLine(fundAccount, received, "45.00", "UID-UNDO-UNMATCH-FUND");
+    var fundItemId = recordItem(fundAccount, fundLine, "45.00");
+    var payId = requestFundPayment(fundAccount, fundItemId, resolutionDate);
+    approveMoves(fundAccount, payId, approver(), Expected.cashbookAndUnidentified("-45.00"));
+    moves(
+        fundAccount,
+        Expected.cashbookAndUnidentified("+45.00"),
+        () -> reverse(payId, reversalDate).andExpect(status().isCreated()));
+
+    assertUnmatchRefusedAfterUndo(
+        fundAccount, fundLine, item(fundItemId).getDepositTransactionId(), fundItemId);
+    assertUnidentifiedAsAt(fundAccount, received, "45.00");
+    assertUnidentifiedAsAt(fundAccount, resolutionDate, "0");
+    assertUnidentifiedAsAt(fundAccount, reversalDate.minusDays(1), "0");
+    assertUnidentifiedAsAt(fundAccount, reversalDate, "45.00");
+    assertUnidentifiedAsAt(fundAccount, today, "45.00");
+
+    // A rejected resolution never posted: the line can still be unmatched.
+    var rejectAccount = books.freshAccount(false);
+    var rejectLine = books.unmatchedLine(rejectAccount, received, "35.00", "UID-UNDO-UNMATCH-REJ");
+    var rejectItemId = recordItem(rejectAccount, rejectLine, "35.00");
+    rejectMoves(rejectAccount, requestAllocation(rejectAccount, rejectItemId, client, null));
+    unmatchMoves(rejectAccount, rejectLine, "-35.00");
+    assertThat(item(rejectItemId).getStatus()).isEqualTo(UnidentifiedDepositStatus.REVERSED);
+    assertUnidentifiedAsAt(rejectAccount, received, "0");
+  }
+
+  private void assertUnmatchRefusedAfterUndo(
+      UUID account, StatementLine line, UUID rowId, UUID itemId) {
+    moves(
+        account,
+        Expected.none(),
+        () ->
+            refused(
+                unmatch(line.lineId()),
+                "Cannot unmatch statement line",
+                UNMATCH_AFTER_UNDO_DETAIL));
+    assertThat(line(line.lineId()).getMatchStatus()).isEqualTo("RECORDED");
+    assertThat(row(rowId).getStatus()).isEqualTo("RECORDED");
+    assertThat(reversalsOf(rowId)).isEmpty();
+    assertThat(matchedCount(line)).isEqualTo(1);
+    var item = item(itemId);
+    assertThat(item.getStatus()).isEqualTo(UnidentifiedDepositStatus.HELD);
+    assertThat(item.getResolutionTransactionId()).isNull();
+    assertThat(auditCount("unidentified_deposit", itemId, "unidentified_deposit.reversed"))
+        .isZero();
+  }
+
+  @Test
+  void resolution_afterAnUndo_cannotBeDatedBeforeTheUndo() throws Exception {
+    // CodeRabbit (fix cycle 1): a re-resolution dated before the latest undo's reversal date would
+    // take the item below zero between that date and the reversal.
+    var today = books.today();
+    var received = today.minusDays(10);
+    var firstDate = today.minusDays(8);
+    var reversalDate = today.minusDays(4);
+    var account = books.freshAccount(false);
+    var client = books.newClient("BackdatedAfterUndo");
+    var line = books.unmatchedLine(account, received, "90.00", "UID-BACKDATED");
+    var itemId = recordItem(account, line, "90.00");
+    var allocOutId = requestAllocation(account, itemId, client, firstDate);
+    approveMoves(account, allocOutId, approver(), Expected.clientFromUnidentified("+90.00"));
+    moves(
+        account,
+        Expected.clientFromUnidentified("-90.00"),
+        () -> reverse(allocOutId, reversalDate).andExpect(status().isCreated()));
+
+    moves(
+        account,
+        Expected.none(),
+        () -> {
+          refused(
+              allocate(
+                  itemId,
+                  allocateJson(client, client.matter(), reversalDate.minusDays(1)),
+                  owner()),
+              "Cannot allocate deposit",
+              afterUndoDetail("allocation", reversalDate));
+          refused(
+              allocate(itemId, allocateJson(client, client.matter(), firstDate), owner()),
+              "Cannot allocate deposit",
+              afterUndoDetail("allocation", reversalDate));
+          refused(
+              payToFund(itemId, fundJson("LPFF-BACKDATED", reversalDate.minusDays(1)), owner()),
+              "Cannot pay deposit to the Fund",
+              afterUndoDetail("payment", reversalDate));
+        });
+    assertThat(item(itemId).getResolutionTransactionId()).isNull();
+
+    // On the undo's own date it is allowed, and EQ-4 holds as at every date.
+    var again = requestAllocation(account, itemId, client, reversalDate);
+    approveMoves(account, again, approver(), Expected.clientFromUnidentified("+90.00"));
+    assertUnidentifiedAsAt(account, firstDate.minusDays(1), "90.00");
+    assertUnidentifiedAsAt(account, firstDate, "0");
+    assertUnidentifiedAsAt(account, reversalDate.minusDays(1), "0");
+    assertUnidentifiedAsAt(account, reversalDate, "0");
+    assertUnidentifiedAsAt(account, today, "0");
+
+    // After a bounced payment to the Fund, the same lower bound.
+    var fundAccount = books.freshAccount(false);
+    var fundLine = books.unmatchedLine(fundAccount, received, "40.00", "UID-BACKDATED-FUND");
+    var fundItemId = recordItem(fundAccount, fundLine, "40.00");
+    var payId = requestFundPayment(fundAccount, fundItemId, firstDate);
+    approveMoves(fundAccount, payId, approver(), Expected.cashbookAndUnidentified("-40.00"));
+    moves(
+        fundAccount,
+        Expected.cashbookAndUnidentified("+40.00"),
+        () -> reverse(payId, reversalDate).andExpect(status().isCreated()));
+    moves(
+        fundAccount,
+        Expected.none(),
+        () -> {
+          refused(
+              allocate(
+                  fundItemId,
+                  allocateJson(client, client.matter(), reversalDate.minusDays(1)),
+                  owner()),
+              "Cannot allocate deposit",
+              afterUndoDetail("allocation", reversalDate));
+          refused(
+              payToFund(fundItemId, fundJson("LPFF-BACKDATED-2", firstDate), owner()),
+              "Cannot pay deposit to the Fund",
+              afterUndoDetail("payment", reversalDate));
+        });
+    var repaid = requestFundPayment(fundAccount, fundItemId, reversalDate);
+    approveMoves(fundAccount, repaid, approver(), Expected.cashbookAndUnidentified("-40.00"));
+    assertUnidentifiedAsAt(fundAccount, firstDate.minusDays(1), "40.00");
+    assertUnidentifiedAsAt(fundAccount, firstDate, "0");
+    assertUnidentifiedAsAt(fundAccount, reversalDate.minusDays(1), "0");
+    assertUnidentifiedAsAt(fundAccount, reversalDate, "0");
+  }
+
+  private static String afterUndoDetail(String noun, LocalDate reopened) {
+    return "The "
+        + noun
+        + " date must be from "
+        + reopened
+        + " (the date this deposit's earlier allocation or payment to the Fund was undone) to"
+        + " today";
   }
 
   // --- audit -----------------------------------------------------------------------------
@@ -1348,6 +1708,18 @@ class UnidentifiedDepositIntegrationTest {
                     .formatted(reversalDate == null ? "null" : "\"" + reversalDate + "\"")));
   }
 
+  private static void forbidden(ResultActions result) throws Exception {
+    result
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.status").value(403))
+        .andExpect(jsonPath("$.title").value("Access denied"))
+        .andExpect(jsonPath("$.detail").value("Insufficient permissions for this operation"));
+  }
+
+  private String matterName(UUID matterId) {
+    return books.read(() -> projectRepository.findById(matterId).orElseThrow().getName());
+  }
+
   private static void refused(ResultActions result, String title, String detail) throws Exception {
     result
         .andExpect(status().isBadRequest())
@@ -1388,6 +1760,15 @@ class UnidentifiedDepositIntegrationTest {
                 .toList());
   }
 
+  private List<TrustTransaction> rowsOfItem(UUID itemId, String type) {
+    return books.read(
+        () ->
+            transactionRepository.findAll().stream()
+                .filter(t -> itemId.equals(t.getUnidentifiedDepositId()))
+                .filter(t -> type.equals(t.getTransactionType()))
+                .toList());
+  }
+
   private BankStatementLine line(UUID lineId) {
     return books.read(() -> lineRepository.findById(lineId).orElseThrow());
   }
@@ -1407,6 +1788,15 @@ class UnidentifiedDepositIntegrationTest {
                     .getContent());
     assertThat(events).as("%s on %s", eventType, entityId).hasSize(1);
     return events.getFirst();
+  }
+
+  private long auditCount(String entityType, UUID entityId, String eventType) {
+    return books.read(
+        () ->
+            auditEventRepository
+                .findByFilter(
+                    entityType, entityId, null, eventType, null, null, PageRequest.of(0, 10))
+                .getTotalElements());
   }
 
   private String createCustomRole(String name, String capability) throws Exception {

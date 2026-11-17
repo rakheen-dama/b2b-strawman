@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, UserCheck } from "lucide-react";
@@ -63,6 +63,8 @@ export function AllocateUnidentifiedDialog({
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Radix only tracks a DialogTrigger, so the owned button restores focus itself on close.
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   const form = useForm<AllocateUnidentifiedFormData>({
     resolver: zodResolver(allocateUnidentifiedSchema),
@@ -78,7 +80,8 @@ export function AllocateUnidentifiedDialog({
 
   function setDialogOpen(next: boolean) {
     setOpen(next);
-    if (!next) {
+    if (next) {
+      // Fresh defaults on every open (today's date as of the opening, not of the first render).
       setError(null);
       form.reset(defaultValues());
     }
@@ -107,7 +110,10 @@ export function AllocateUnidentifiedDialog({
         type="button"
         variant="outline"
         size="sm"
-        onClick={() => setOpen(true)}
+        ref={triggerRef}
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        onClick={() => setDialogOpen(true)}
         data-testid={`allocate-btn-${item.id}`}
       >
         <UserCheck className="mr-1 size-3" />
@@ -115,7 +121,14 @@ export function AllocateUnidentifiedDialog({
       </Button>
 
       <Dialog open={open} onOpenChange={handleOpenChange}>
-        <DialogContent className="sm:max-w-lg" data-testid="allocate-unidentified-dialog">
+        <DialogContent
+          className="sm:max-w-lg"
+          data-testid="allocate-unidentified-dialog"
+          onCloseAutoFocus={(event) => {
+            event.preventDefault();
+            triggerRef.current?.focus();
+          }}
+        >
           <DialogHeader>
             <DialogTitle>Allocate to a client</DialogTitle>
             <DialogDescription>

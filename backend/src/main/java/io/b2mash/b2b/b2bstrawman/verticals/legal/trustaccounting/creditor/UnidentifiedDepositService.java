@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import org.springframework.context.ApplicationEventPublisher;
@@ -74,6 +75,9 @@ public class UnidentifiedDepositService implements UnidentifiedResolutionHooks {
       "This deposit already has a pending allocation or payment";
   private static final String NOT_HELD_DETAIL =
       "Only a held deposit can be allocated or paid to the Fund";
+  private static final String RESOLVED_BEFORE_DETAIL =
+      "This deposit has already been allocated or paid to the Fund and that was later undone, so"
+          + " its statement line can no longer be unmatched.";
   private static final String ALLOC_OUT = "UNIDENT_ALLOC_OUT";
   private static final String ALLOC_IN = "UNIDENT_ALLOC_IN";
   private static final String FUND_PAY = "UNIDENT_FUND_PAY";
@@ -253,7 +257,10 @@ public class UnidentifiedDepositService implements UnidentifiedResolutionHooks {
    * The unmatch hook, before anything is reversed (lock order line → item → transactions →
    * statement): locks the item a {@code RECORDED} line opened — found by the line's primary row —
    * and refuses unless it is HELD with no pending or approved resolution (400 "Undo the allocation
-   * first"; a pending payment to the Fund is refused the same way). {@code MANDATORY}: runs inside
+   * first"; a pending payment to the Fund is refused the same way). It also refuses an item whose
+   * allocation or payment to the Fund ever posted, even though undone since (F-647D-1): the opening
+   * row's contra is dated the line's date, before the resolution's, so the item would read below
+   * zero as at every date from the resolution to its undo (EQ-4). {@code MANDATORY}: runs inside
    * {@code StatementLinePostingService.unmatch}.
    */
   @Transactional(propagation = Propagation.MANDATORY)
@@ -269,6 +276,9 @@ public class UnidentifiedDepositService implements UnidentifiedResolutionHooks {
                             + depositTransactionId));
     if (!item.isHeldWithoutResolution()) {
       throw new InvalidStateException(UNMATCH_TITLE, "Undo the allocation first");
+    }
+    if (transactionRepository.existsPostedResolutionOfItem(item.getId())) {
+      throw new InvalidStateException(UNMATCH_TITLE, RESOLVED_BEFORE_DETAIL);
     }
     return item;
   }
@@ -312,7 +322,7 @@ public class UnidentifiedDepositService implements UnidentifiedResolutionHooks {
             .findById(request.clientId())
             .orElseThrow(
                 () -> new ResourceNotFoundException(EntityNoun.CLIENT, request.clientId()));
-    clientMatterRule.requireClientMatter(client, request.matterId());
+    var matter = clientMatterRule.requireClientMatter(client, request.matterId());
     var today = LocalDate.now(clock);
     var date =
         requireDateInWindow(
@@ -323,11 +333,6 @@ public class UnidentifiedDepositService implements UnidentifiedResolutionHooks {
             "allocation");
     var memberId = RequestScopes.requireMemberId();
     postingService.lockClient(item.getTrustAccountId(), client.getId());
-    var matter =
-        projectRepository
-            .findById(request.matterId())
-            .orElseThrow(
-                () -> new ResourceNotFoundException(EntityNoun.MATTER, request.matterId()));
 
     var draft =
         new TrustTransaction(
@@ -369,12 +374,7 @@ public class UnidentifiedDepositService implements UnidentifiedResolutionHooks {
     moduleGuard.requireModule(MODULE_ID);
     var item = lockItem(depositId);
     requireResolvable(item, PAY_TITLE);
-    if (request.reference() == null || request.reference().isBlank()) {
-      throw new InvalidStateException(PAY_TITLE, "A payment reference is required");
-    }
-    if (request.transactionDate() == null) {
-      throw new InvalidStateException(PAY_TITLE, "A payment date is required");
-    }
+    // reference and transactionDate: @NotBlank / @NotNull, enforced by @Valid on the controller.
     var today = LocalDate.now(clock);
     var date = requireDateInWindow(request.transactionDate(), item, today, PAY_TITLE, "payment");
     var memberId = RequestScopes.requireMemberId();
@@ -411,8 +411,11 @@ public class UnidentifiedDepositService implements UnidentifiedResolutionHooks {
    * The resolution row has just posted on final approval. An allocation: the {@code
    * UNIDENT_ALLOC_IN} credit leg is created APPROVED and posted for the client and matter (same
    * date and reference, its approvers inherited), described "Deposit received {date} — {bank
-   * description}"; the item is ALLOCATED. A payment to the Fund: the item is PAID_TO_FUND. Lock
-   * order: the resolution row (caller), the item, the client's lock anchor.
+   * description}"; the item is ALLOCATED. The credit is a new client posting, so the client–matter
+   * link is checked again here (G89-F28): a matter unlinked since the request refuses the approval
+   * (400), which rolls back with it — the allocation stays pending and can be rejected. A payment
+   * to the Fund: the item is PAID_TO_FUND. Lock order: the resolution row (caller), the item, the
+   * client's lock anchor.
    */
   @Override
   @Transactional(propagation = Propagation.MANDATORY)
@@ -427,6 +430,11 @@ public class UnidentifiedDepositService implements UnidentifiedResolutionHooks {
     if (ALLOC_OUT.equals(resolution.getTransactionType())) {
       var customerId = item.getAllocatedCustomerId();
       var projectId = item.getAllocatedProjectId();
+      var client =
+          customerRepository
+              .findById(customerId)
+              .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.CLIENT, customerId));
+      clientMatterRule.requireClientMatter(client, projectId);
       postingService.lockClient(item.getTrustAccountId(), customerId);
       var draft =
           new TrustTransaction(
@@ -510,11 +518,11 @@ public class UnidentifiedDepositService implements UnidentifiedResolutionHooks {
    * transaction): the item returns to HELD with its resolved date, resolution and allocated ids
    * cleared. Its rows keep the item's id, so it still reads as allocated / paid between the
    * resolution's date and the reversal's (EQ-4). Returns the {@code UNIDENT_ALLOC_IN} to reverse
-   * with an allocation, null for a payment to the Fund.
+   * with an allocation, empty for a payment to the Fund.
    */
   @Override
   @Transactional(propagation = Propagation.MANDATORY)
-  public UUID onResolutionReversed(TrustTransaction resolution, LocalDate reversalDate) {
+  public Optional<UUID> onResolutionReversed(TrustTransaction resolution, LocalDate reversalDate) {
     moduleGuard.requireModule(MODULE_ID);
     boolean allocation = ALLOC_OUT.equals(resolution.getTransactionType());
     var item =
@@ -540,10 +548,10 @@ public class UnidentifiedDepositService implements UnidentifiedResolutionHooks {
           "unidentified_deposit.reopened",
           item,
           AuditDetails.matterScoped(projectId, customerId, details));
-      return creditId;
+      return Optional.of(creditId);
     }
     audit("unidentified_deposit.reopened", item, details);
-    return null;
+    return Optional.empty();
   }
 
   // --- Helpers ---
@@ -599,10 +607,30 @@ public class UnidentifiedDepositService implements UnidentifiedResolutionHooks {
     }
   }
 
-  /** A resolution is dated from the item's received date to today (OL-6, OL-4 ruling). */
-  private static LocalDate requireDateInWindow(
+  /**
+   * A resolution is dated from the item's received date to today (OL-6, OL-4 ruling) — and, for an
+   * item reopened by an undo, not before the latest undo's date (its reopening contra, read from
+   * the item's own posted rows): dated earlier, the item would read below zero between the two
+   * dates (EQ-4).
+   */
+  private LocalDate requireDateInWindow(
       LocalDate date, UnidentifiedDeposit item, LocalDate today, String title, String noun) {
-    if (date.isBefore(item.getReceivedDate()) || date.isAfter(today)) {
+    var reopened =
+        transactionRepository
+            .findLatestReopeningDate(item.getId())
+            .filter(d -> d.isAfter(item.getReceivedDate()));
+    if (reopened.isPresent()) {
+      if (date.isBefore(reopened.get()) || date.isAfter(today)) {
+        throw new InvalidStateException(
+            title,
+            "The "
+                + noun
+                + " date must be from "
+                + reopened.get()
+                + " (the date this deposit's earlier allocation or payment to the Fund was undone)"
+                + " to today");
+      }
+    } else if (date.isBefore(item.getReceivedDate()) || date.isAfter(today)) {
       throw new InvalidStateException(
           title,
           "The "

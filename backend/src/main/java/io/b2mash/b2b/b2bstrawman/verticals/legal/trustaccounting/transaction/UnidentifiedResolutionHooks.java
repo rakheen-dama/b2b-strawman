@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction;
 
 import java.time.LocalDate;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -27,8 +28,8 @@ public interface UnidentifiedResolutionHooks {
 
   /**
    * Before the resolution's contra(s) post (same transaction): locks the item and returns it to
-   * HELD. Returns the posted {@code UNIDENT_ALLOC_IN} to reverse with an allocation, null for a
+   * HELD. Returns the posted {@code UNIDENT_ALLOC_IN} to reverse with an allocation, empty for a
    * payment to the Fund.
    */
-  UUID onResolutionReversed(TrustTransaction resolution, LocalDate reversalDate);
+  Optional<UUID> onResolutionReversed(TrustTransaction resolution, LocalDate reversalDate);
 }

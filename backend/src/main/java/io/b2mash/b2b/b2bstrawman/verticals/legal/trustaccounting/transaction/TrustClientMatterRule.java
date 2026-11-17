@@ -5,6 +5,7 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import java.util.LinkedHashMap;
 import java.util.UUID;
@@ -19,11 +20,19 @@ import org.springframework.stereotype.Component;
  *
  * <p>Shared by {@link TrustTransactionService} and, from 647D, the allocation of an unidentified
  * deposit ({@code creditor.UnidentifiedDepositService}) — one copy of the rule, one refusal shape
- * ({@link TrustTransactionService#MATTER_REQUIRED}, {@link
- * TrustTransactionService#MATTER_NOT_LINKED_TO_CLIENT}).
+ * ({@link #MATTER_REQUIRED}, {@link #MATTER_NOT_LINKED_TO_CLIENT}).
  */
 @Component
 public class TrustClientMatterRule {
+
+  /** ProblemDetail {@code code} of a client posting refused for want of a matter (G89-F28). */
+  public static final String MATTER_REQUIRED = "MATTER_REQUIRED";
+
+  /** ProblemDetail {@code code} of a client posting on a matter not linked to it (G89-F28). */
+  public static final String MATTER_NOT_LINKED_TO_CLIENT = "MATTER_NOT_LINKED_TO_CLIENT";
+
+  /** The refusal detail for a client trust posting without a matter (G89-F28, D36). */
+  static final String MATTER_REQUIRED_DETAIL = "A matter is required for client trust transactions";
 
   private final ProjectRepository projectRepository;
   private final CustomerProjectRepository customerProjectRepository;
@@ -36,9 +45,9 @@ public class TrustClientMatterRule {
 
   /**
    * Refuses (400) a null matter ("Matter required") or a matter not linked to {@code client}
-   * ("Matter not linked to client"); 404 for an unknown matter.
+   * ("Matter not linked to client"); 404 for an unknown matter. Returns the matter, loaded once.
    */
-  public void requireClientMatter(Customer client, UUID matterId) {
+  public Project requireClientMatter(Customer client, UUID matterId) {
     if (matterId == null) {
       throw matterRequired(null);
     }
@@ -48,10 +57,10 @@ public class TrustClientMatterRule {
             .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.MATTER, matterId));
     if (client.getId().equals(matter.getCustomerId())
         || customerProjectRepository.existsByCustomerIdAndProjectId(client.getId(), matterId)) {
-      return;
+      return matter;
     }
     var properties = new LinkedHashMap<String, Object>();
-    properties.put("code", TrustTransactionService.MATTER_NOT_LINKED_TO_CLIENT);
+    properties.put("code", MATTER_NOT_LINKED_TO_CLIENT);
     properties.put("matterId", matterId);
     throw InvalidStateException.withProperties(
         "Matter not linked to client",
@@ -62,11 +71,11 @@ public class TrustClientMatterRule {
   /** The "Matter required" refusal, with an optional {@code reason} property. */
   static InvalidStateException matterRequired(String reason) {
     var properties = new LinkedHashMap<String, Object>();
-    properties.put("code", TrustTransactionService.MATTER_REQUIRED);
+    properties.put("code", MATTER_REQUIRED);
     if (reason != null) {
       properties.put("reason", reason);
     }
     return InvalidStateException.withProperties(
-        "Matter required", TrustTransactionService.MATTER_REQUIRED_DETAIL, properties);
+        "Matter required", MATTER_REQUIRED_DETAIL, properties);
   }
 }

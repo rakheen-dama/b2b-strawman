@@ -25,3 +25,20 @@ Phase rule: a defect outside the stated scope is written here, reported, and re-
   the URL but not the rows — the list stays unfiltered with no indication.
 - Not fixed here (scope: 646E is registry-as-data). Needs its own slice: either add the three
   filters to the endpoint (JPQL predicates + params) or remove the inputs from the page.
+
+## F-646E-3 — PAIR reversals always route to the TRANSFER_OUT path (flag-forward → 647A)
+
+- PR #1791 review (Reviewer A). The frontend now offers Reverse for every registry type whose rule
+  is `IMMEDIATE`, `NEEDS_APPROVAL` or `PAIR` (`frontend/lib/types/trust.ts`, `canOfferReversal`),
+  matching the backend's rule-level gate
+  (`backend/src/main/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/transaction/TrustTransactionService.java:1303-1309`).
+- But the backend's `PAIR` branch always calls `reverseTransferOut` (`TrustTransactionService.java:1313-1315`),
+  which looks up a paired **`TRANSFER_IN`** by reference and counterparty client (`:1575-1590`).
+  `TRANSFER_OUT` is not the only `PAIR` type: `UNIDENT_ALLOC_OUT` is registered `Reversal.PAIR`
+  (`TrustTransactionType.java:167-173`). Reversing one would fail with
+  "Paired TRANSFER_IN not found for reference: …".
+- Unreachable today: no production code creates `UNIDENT_ALLOC_OUT` rows (only the registry,
+  `LedgerTotals` and the V18 check constraint name it).
+- **647A** (creditor mutators — the slice that first writes `UNIDENT_ALLOC_OUT`/`UNIDENT_ALLOC_IN`)
+  must route `PAIR` reversals by type (its own paired-leg lookup), with a test that reverses an
+  allocation pair through `POST …/reverse`. No code change in 646E.

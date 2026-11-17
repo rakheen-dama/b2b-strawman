@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Locale;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -40,7 +41,8 @@ class TrustTransactionTypeLabelsTest {
   @ValueSource(strings = {"INTEREST_CREDIT", "INTEREST_LPFF", "SOME_NEW_TYPE", "lower_case"})
   void unknownOrRetiredCode_fallsBackToSentenceCase_neverThrows(String code) {
     String expected =
-        Character.toUpperCase(code.charAt(0)) + code.substring(1).toLowerCase().replace('_', ' ');
+        Character.toUpperCase(code.charAt(0))
+            + code.substring(1).toLowerCase(Locale.ROOT).replace('_', ' ');
     assertThat(TrustTransactionTypeLabels.label(code)).isEqualTo(expected);
     assertThat(TrustTransactionTypeLabels.firmLabel(code)).isEqualTo(expected);
   }

@@ -100,6 +100,16 @@ export default async function ClientDetailPage({
     notFound();
   }
 
+  // The type registry (646E) for the filter pills — static, so it is fetched concurrently with
+  // the account, ledger and history fetches below. Non-fatal: without it only the pills go.
+  const typesPromise: Promise<TrustTransactionTypeInfo[]> = (async () => {
+    try {
+      return (await fetchTrustTransactionTypes()).filter(isClientLedgerType);
+    } catch {
+      return [];
+    }
+  })();
+
   // Fetch primary trust account
   let accountId: string | null = null;
   try {
@@ -128,14 +138,6 @@ export default async function ClientDetailPage({
     notFound();
   }
 
-  // The type registry (646E) for the filter pills — non-fatal: without it only the pills go.
-  let types: TrustTransactionTypeInfo[] = [];
-  try {
-    types = (await fetchTrustTransactionTypes()).filter(isClientLedgerType);
-  } catch {
-    types = [];
-  }
-
   // Fetch transaction history
   let historyPage: ClientHistoryPage | null = null;
   let fetchError = false;
@@ -151,6 +153,8 @@ export default async function ClientDetailPage({
   } catch {
     fetchError = true;
   }
+
+  const types = await typesPromise;
 
   const currentPage = historyPage?.pageNumber ?? 0;
   const totalPages = historyPage?.totalPages ?? 0;

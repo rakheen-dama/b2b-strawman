@@ -10,6 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,12 +22,13 @@ import tools.jackson.databind.json.JsonMapper;
 
 /**
  * ADR-365 wire-shape pin for the trust transaction screens (Phase 92 646E — WIRE-PIN starts here).
- * Snapshots the record components — name and generic type, in declaration order — of the response
- * records the frontend mirrors in {@code lib/types/trust.ts}, and compares them byte-for-byte to
- * {@code src/test/resources/wire/trust-contract.json}. The frontend twin {@code
- * frontend/__tests__/trust-wire-shapes.test.ts} imports the same JSON and asserts each TS literal's
- * key list against it. Later Phase 92 slices add their new or changed trust DTOs to {@link
- * #PINNED}.
+ * Snapshots, under {@code records}, the record components — name and generic type, in declaration
+ * order — of the response records the frontend mirrors in {@code lib/types/trust.ts}, and, under
+ * {@code enums}, the constants (declaration order) of every enum a pinned record component carries;
+ * then compares the JSON byte-for-byte to {@code src/test/resources/wire/trust-contract.json}. The
+ * frontend twin {@code frontend/__tests__/trust-wire-shapes.test.ts} imports the same JSON and
+ * asserts each TS literal's key list and each TS string union's members against it. Later Phase 92
+ * slices add their new or changed trust DTOs to {@link #PINNED}.
  *
  * <p>The actual is always written to {@code target/wire/trust-contract.actual.json}. Regenerate
  * ONLY deliberately with {@code -Dtrust.contract.update=true}; the PR that does so must say why in
@@ -51,7 +53,10 @@ class TrustWireContractTest {
 
   @Test
   void pinnedRecordShapesMatchCommittedSnapshot() throws IOException {
-    String actual = normalise(CANONICAL.writeValueAsString(recordShapes()));
+    Map<String, Object> contract = new TreeMap<>();
+    contract.put("records", recordShapes());
+    contract.put("enums", enumConstants());
+    String actual = normalise(CANONICAL.writeValueAsString(contract));
     Files.createDirectories(ACTUAL.getParent());
     Files.writeString(ACTUAL, actual, StandardCharsets.UTF_8);
 
@@ -101,6 +106,27 @@ class TrustWireContractTest {
           .isNull();
     }
     return shapes;
+  }
+
+  /**
+   * {@code Name -> [CONSTANT, ...]} in declaration order, for every enum-typed component of a
+   * pinned record; a nested enum is keyed {@code Outer.Inner} (e.g. {@code
+   * TrustTransactionType.Reversal}).
+   */
+  private static Map<String, List<String>> enumConstants() {
+    Map<String, List<String>> enums = new TreeMap<>();
+    for (Class<?> c : PINNED) {
+      for (RecordComponent rc : c.getRecordComponents()) {
+        Class<?> type = rc.getType();
+        if (!type.isEnum()) {
+          continue;
+        }
+        List<String> constants =
+            Arrays.stream(type.getEnumConstants()).map(e -> ((Enum<?>) e).name()).toList();
+        enums.put(type.getCanonicalName().substring(type.getPackageName().length() + 1), constants);
+      }
+    }
+    return enums;
   }
 
   private static String normalise(String s) {

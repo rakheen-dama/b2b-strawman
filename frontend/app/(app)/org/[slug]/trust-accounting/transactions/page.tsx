@@ -103,6 +103,17 @@ export default async function TransactionsPage({
   const canApproveTrust =
     capData.isAdmin || capData.isOwner || capData.capabilities.includes("APPROVE_TRUST_PAYMENT");
 
+  // The type registry (646E): filter pills and reversal rules. Static, so it is fetched
+  // concurrently with the account and transaction fetches below. Non-fatal — without it the rows
+  // still render (labels and direction arrive on each row), only the pills and Reverse go.
+  const typesPromise: Promise<TrustTransactionTypeInfo[]> = (async () => {
+    try {
+      return await fetchTrustTransactionTypes();
+    } catch {
+      return [];
+    }
+  })();
+
   // Fetch primary trust account
   let accountId: string | null = null;
   let accountFetchError = false;
@@ -114,15 +125,6 @@ export default async function TransactionsPage({
     }
   } catch {
     accountFetchError = true;
-  }
-
-  // The type registry (646E): filter pills and reversal rules. Non-fatal — without it the rows
-  // still render (labels and direction arrive on each row), only the pills and Reverse go.
-  let types: TrustTransactionTypeInfo[] = [];
-  try {
-    types = await fetchTrustTransactionTypes();
-  } catch {
-    types = [];
   }
 
   // Fetch transactions
@@ -145,6 +147,8 @@ export default async function TransactionsPage({
       fetchError = true;
     }
   }
+
+  const types = await typesPromise;
 
   // Fetch the customer roster for the picker dialogs (Deposit/Payment/
   // Refund). Trimmed to {id, name, email} so the prop crosses the

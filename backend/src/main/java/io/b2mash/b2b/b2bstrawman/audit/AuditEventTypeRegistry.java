@@ -148,6 +148,75 @@ public class AuditEventTypeRegistry {
                 "Unidentified deposit reversed",
                 AuditSeverity.INFO,
                 AuditEventGroup.FINANCIAL),
+            // FINANCIAL — unidentified deposits resolved (Phase 92 647D, ADR-376): the item's
+            // allocation / payment to the Fund and their undo, and the resolution rows' approval
+            // events (explicit labels — the synthesised ones read "Trust unident alloc out …").
+            // Additive keys (pin 58 → 71).
+            new AuditEventTypeMetadata(
+                "unidentified_deposit.allocation_requested",
+                "Unidentified deposit allocation requested",
+                AuditSeverity.INFO,
+                AuditEventGroup.FINANCIAL),
+            new AuditEventTypeMetadata(
+                "unidentified_deposit.allocated",
+                "Unidentified deposit allocated to a client",
+                AuditSeverity.INFO,
+                AuditEventGroup.FINANCIAL),
+            new AuditEventTypeMetadata(
+                "unidentified_deposit.allocation_rejected",
+                "Unidentified deposit allocation rejected",
+                AuditSeverity.INFO,
+                AuditEventGroup.FINANCIAL),
+            new AuditEventTypeMetadata(
+                "unidentified_deposit.payment_requested",
+                "Payment to the Fidelity Fund requested",
+                AuditSeverity.INFO,
+                AuditEventGroup.FINANCIAL),
+            new AuditEventTypeMetadata(
+                "unidentified_deposit.paid_to_fund",
+                "Unidentified deposit paid to the Fidelity Fund",
+                AuditSeverity.INFO,
+                AuditEventGroup.FINANCIAL),
+            new AuditEventTypeMetadata(
+                "unidentified_deposit.payment_rejected",
+                "Payment to the Fidelity Fund rejected",
+                AuditSeverity.INFO,
+                AuditEventGroup.FINANCIAL),
+            new AuditEventTypeMetadata(
+                "unidentified_deposit.reopened",
+                "Unidentified deposit reopened",
+                AuditSeverity.INFO,
+                AuditEventGroup.FINANCIAL),
+            new AuditEventTypeMetadata(
+                "trust_unident_alloc_out.first_approved",
+                "Allocation of an unidentified deposit given first approval",
+                AuditSeverity.INFO,
+                AuditEventGroup.FINANCIAL),
+            new AuditEventTypeMetadata(
+                "trust_unident_alloc_out.approved",
+                "Allocation of an unidentified deposit approved",
+                AuditSeverity.INFO,
+                AuditEventGroup.FINANCIAL),
+            new AuditEventTypeMetadata(
+                "trust_unident_alloc_out.rejected",
+                "Allocation of an unidentified deposit rejected",
+                AuditSeverity.INFO,
+                AuditEventGroup.FINANCIAL),
+            new AuditEventTypeMetadata(
+                "trust_unident_fund_pay.first_approved",
+                "Payment of an unidentified deposit to the Fidelity Fund given first approval",
+                AuditSeverity.INFO,
+                AuditEventGroup.FINANCIAL),
+            new AuditEventTypeMetadata(
+                "trust_unident_fund_pay.approved",
+                "Payment of an unidentified deposit to the Fidelity Fund approved",
+                AuditSeverity.INFO,
+                AuditEventGroup.FINANCIAL),
+            new AuditEventTypeMetadata(
+                "trust_unident_fund_pay.rejected",
+                "Payment of an unidentified deposit to the Fidelity Fund rejected",
+                AuditSeverity.INFO,
+                AuditEventGroup.FINANCIAL),
             // DATA — data protection
             new AuditEventTypeMetadata(
                 "dataprotection.dsar.*",

@@ -37,6 +37,9 @@ export const TRUST_TRANSACTION_TYPE_LABELS: Record<string, string> = {
   TRANSFER_IN: "Transfer in",
   TRANSFER_OUT: "Transfer out",
   REVERSAL: "Reversal",
+  // Phase 92 647D: an unidentified deposit identified and allocated to the client (the registry's
+  // client label). This map goes in 648D, when the portal DTO carries `typeLabel`.
+  UNIDENT_ALLOC_IN: "Deposit identified and allocated",
 };
 
 /** Portal deadline status (PortalDeadlineStatus; 633C D2). Typed so a new status must get a label. */

@@ -66,8 +66,9 @@ import org.springframework.stereotype.Component;
  *   <li>as at today, an item is {@code HELD} exactly when it is open.
  * </ol>
  *
- * <p>{@link Expected#cashbookAndUnidentified} is the move of a deposit recorded as unidentified.
- * EQ-5 (648A) is still a no-op.
+ * <p>{@link Expected#cashbookAndUnidentified} is the move of a deposit recorded as unidentified
+ * (and of its payment to the Fund, 647D); {@link Expected#clientFromUnidentified} is the move of
+ * its allocation to a client (647D). EQ-5 (648A) is still a no-op.
  *
  * <h2>Version 3 (646C) — every term as at a date; outstanding items by line date</h2>
  *
@@ -613,6 +614,22 @@ public final class TrustBooksHarness {
       var amount = new BigDecimal(signedAmount);
       return new Expected(
           amount, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, amount, BigDecimal.ZERO);
+    }
+
+    /**
+     * An allocation of an unidentified deposit (647D): the client ledgers move by {@code
+     * signedAmount} and the unidentified-deposits ledger by its negation; the cashbook is unchanged
+     * ("+250" = allocated, "-250" = the allocation undone).
+     */
+    public static Expected clientFromUnidentified(String signedAmount) {
+      var amount = new BigDecimal(signedAmount);
+      return new Expected(
+          BigDecimal.ZERO,
+          amount,
+          BigDecimal.ZERO,
+          BigDecimal.ZERO,
+          amount.negate(),
+          BigDecimal.ZERO);
     }
   }
 }

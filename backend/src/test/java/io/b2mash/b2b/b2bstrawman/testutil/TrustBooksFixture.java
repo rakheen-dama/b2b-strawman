@@ -171,6 +171,14 @@ public final class TrustBooksFixture {
 
     /** A fresh non-primary GENERAL account (a tenant holds one primary GENERAL account). */
     public UUID freshAccount(boolean dualApproval) {
+      return freshAccount(dualApproval, null);
+    }
+
+    /**
+     * As {@link #freshAccount(boolean)}, with a payment-approval threshold: in dual mode a row
+     * below it needs one approval only (null = dual approval always).
+     */
+    public UUID freshAccount(boolean dualApproval, BigDecimal paymentApprovalThreshold) {
       var n = sequence.incrementAndGet();
       var id = new UUID[1];
       as(
@@ -187,7 +195,7 @@ public final class TrustBooksFixture {
                               "GENERAL",
                               false,
                               dualApproval,
-                              null,
+                              paymentApprovalThreshold,
                               LocalDate.of(2026, 1, 1),
                               "649A harness account"))
                       .id());

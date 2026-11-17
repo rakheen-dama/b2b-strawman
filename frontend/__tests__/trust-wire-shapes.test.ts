@@ -4,6 +4,7 @@ import { describe, it, expect } from "vitest";
 import contract from "../../backend/src/test/resources/wire/trust-contract.json";
 import type { TrustPositionResponse } from "@/lib/dashboard-types";
 import type {
+  AllocateUnidentifiedRequest,
   BankStatementLineResponse,
   BankStatementResponse,
   RecordFromLineResponse,
@@ -14,6 +15,7 @@ import type {
   TrustReversalRule,
   TrustTransaction,
   TrustTransactionDirection,
+  PayToFundRequest,
   TrustTransactionTypeInfo,
   UnidentifiedDeposit,
 } from "@/lib/types/trust";
@@ -56,9 +58,11 @@ const TS_UNIONS: Record<keyof typeof enums, string[]> = {
 describe("trust wire shapes match the backend contract (ADR-365)", () => {
   it("pins exactly the trust records", () => {
     expect(Object.keys(records).sort()).toEqual([
+      "AllocateRequest",
       "BankStatementLineResponse",
       "BankStatementResponse",
       "CreditorBreakdown",
+      "PayToFundRequest",
       "RecordFromLineResponse",
       "TotalBalanceResponse",
       "TrustPositionResponse",
@@ -304,6 +308,25 @@ describe("trust wire shapes match the backend contract (ADR-365)", () => {
       notes: null,
     };
     expect(Object.keys(literal)).toEqual(componentNames(records.UnidentifiedDepositResponse));
+  });
+
+  it("AllocateUnidentifiedRequest ↔ UnidentifiedDepositService.AllocateRequest (647D)", () => {
+    const literal: Required<AllocateUnidentifiedRequest> = {
+      clientId: "",
+      matterId: "",
+      allocationDate: null,
+      notes: null,
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(records.AllocateRequest));
+  });
+
+  it("PayToFundRequest ↔ UnidentifiedDepositService.PayToFundRequest (647D)", () => {
+    const literal: Required<PayToFundRequest> = {
+      reference: "",
+      transactionDate: "",
+      notes: null,
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(records.PayToFundRequest));
   });
 
   it("pins exactly the enums the trust records carry", () => {

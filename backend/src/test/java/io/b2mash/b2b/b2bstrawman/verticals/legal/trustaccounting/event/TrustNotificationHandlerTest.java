@@ -66,6 +66,25 @@ class TrustNotificationHandlerTest {
   }
 
   @Test
+  void transactionTypeInTitles_isTheFirmLabel_existingTypesUnchanged() {
+    // 647D (ruling D15): the four approval types read exactly as before (byte-identical) ...
+    assertThat(TrustNotificationHandler.formatTransactionType("PAYMENT")).isEqualTo("payment");
+    assertThat(TrustNotificationHandler.formatTransactionType("FEE_TRANSFER"))
+        .isEqualTo("fee transfer");
+    assertThat(TrustNotificationHandler.formatTransactionType("REFUND")).isEqualTo("refund");
+    assertThat(TrustNotificationHandler.formatTransactionType("REVERSAL")).isEqualTo("reversal");
+    // ... and the unidentified-deposit resolutions read as words, never a raw code.
+    assertThat(TrustNotificationHandler.formatTransactionType("UNIDENT_ALLOC_OUT"))
+        .isEqualTo("unidentified deposit allocated");
+    assertThat(TrustNotificationHandler.formatTransactionType("UNIDENT_FUND_PAY"))
+        .isEqualTo("unidentified deposit paid to the Fund");
+    assertThat(TrustNotificationHandler.withArticle("payment")).isEqualTo("A payment");
+    assertThat(TrustNotificationHandler.withArticle("fee transfer")).isEqualTo("A fee transfer");
+    assertThat(TrustNotificationHandler.withArticle("unidentified deposit allocated"))
+        .isEqualTo("An unidentified deposit allocated");
+  }
+
+  @Test
   void awaitingApprovalEvent_sendsNotificationsToApprovers() {
     // Publish an awaiting approval event inside a transaction so @TransactionalEventListener fires
     runInTenantWithCapabilities(

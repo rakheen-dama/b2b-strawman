@@ -6,6 +6,19 @@
     "TrustTransactionType.Reversal" : [ "IMMEDIATE", "NEEDS_APPROVAL", "PAIR", "VIA_PAIR", "OWNER", "NONE" ]
   },
   "records" : {
+    "AllocateRequest" : [ {
+      "name" : "clientId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "matterId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "allocationDate",
+      "type" : "java.time.LocalDate"
+    }, {
+      "name" : "notes",
+      "type" : "java.lang.String"
+    } ],
     "BankStatementLineResponse" : [ {
       "name" : "id",
       "type" : "java.util.UUID"
@@ -116,6 +129,16 @@
     }, {
       "name" : "total",
       "type" : "java.math.BigDecimal"
+    } ],
+    "PayToFundRequest" : [ {
+      "name" : "reference",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "transactionDate",
+      "type" : "java.time.LocalDate"
+    }, {
+      "name" : "notes",
+      "type" : "java.lang.String"
     } ],
     "RecordFromLineResponse" : [ {
       "name" : "line",

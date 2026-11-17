@@ -346,6 +346,28 @@ public class ActivityMessageFormatter {
       case "unidentified_deposit.reversed" ->
           "%s reversed an unidentified deposit%s when its statement line was unmatched"
               .formatted(actorName, ofMoney(details, "amount"));
+      // Unidentified deposits resolved (Phase 92 647D): allocation, payment to the Fund, undo
+      case "unidentified_deposit.allocation_requested" ->
+          "%s asked to allocate an unidentified deposit%s to a client"
+              .formatted(actorName, ofMoney(details, "amount"));
+      case "unidentified_deposit.allocated" ->
+          "%s allocated an unidentified deposit%s to a client"
+              .formatted(actorName, ofMoney(details, "amount"));
+      case "unidentified_deposit.allocation_rejected" ->
+          "%s rejected the allocation of an unidentified deposit%s"
+              .formatted(actorName, ofMoney(details, "amount"));
+      case "unidentified_deposit.payment_requested" ->
+          "%s asked to pay an unidentified deposit%s to the Legal Practitioners' Fidelity Fund"
+              .formatted(actorName, ofMoney(details, "amount"));
+      case "unidentified_deposit.paid_to_fund" ->
+          "%s paid an unidentified deposit%s to the Legal Practitioners' Fidelity Fund"
+              .formatted(actorName, ofMoney(details, "amount"));
+      case "unidentified_deposit.payment_rejected" ->
+          ("%s rejected the payment of an unidentified deposit%s to the Legal Practitioners'"
+                  + " Fidelity Fund")
+              .formatted(actorName, ofMoney(details, "amount"));
+      case "unidentified_deposit.reopened" ->
+          "%s reopened an unidentified deposit%s".formatted(actorName, ofMoney(details, "amount"));
       case "bank_statement_line.recorded" ->
           "%s recorded a statement line%s%s"
               .formatted(
@@ -775,6 +797,10 @@ public class ActivityMessageFormatter {
       case "FEE_TRANSFER" -> "fee transfer";
       case "REFUND" -> "trust refund";
       case "REVERSAL" -> "trust reversal";
+      // 647D: the registry labels ("Unidentified deposit allocated") do not read as a noun in
+      // "approved the …".
+      case "UNIDENT_ALLOC_OUT" -> "allocation of an unidentified deposit";
+      case "UNIDENT_FUND_PAY" -> "payment of an unidentified deposit to the Fund";
       default ->
           TrustTransactionType.find(code)
               .map(type -> decapitalise(type.label()))

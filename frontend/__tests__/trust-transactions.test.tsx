@@ -272,6 +272,98 @@ describe("Trust Transactions", () => {
     expect(screen.getByText("2 transactions found")).toBeInTheDocument();
   });
 
+  // Phase 92 647D: a pending allocation of an unidentified deposit sits in the approvals list with
+  // its label and a line saying where the money goes; no other row prints its description here.
+  it("shows a pending unidentified-deposit allocation with its label, destination and Approve/Reject", async () => {
+    mockFetchTrustTransactionTypes.mockResolvedValue([
+      ...REGISTRY_TYPES,
+      {
+        ...typeInfo(
+          "UNIDENT_ALLOC_OUT",
+          "Unidentified deposit allocated",
+          "NEUTRAL",
+          "PAIR",
+          "NON_CLIENT"
+        ),
+        requiresApproval: true,
+        clientVisible: false,
+      },
+    ]);
+    mockFetchTransactions.mockResolvedValue({
+      content: [
+        makeTx({
+          id: "tx-alloc",
+          transactionType: "UNIDENT_ALLOC_OUT",
+          typeLabel: "Unidentified deposit allocated",
+          direction: "NEUTRAL",
+          ledger: "NON_CLIENT",
+          amount: 300,
+          clientId: null,
+          creditorAccountId: "ca-unidentified",
+          reference: "UID-1A2B3C4D",
+          description:
+            "To Sipho Dlamini — Estate late M Dlamini: deposit received 3 November 2026 — CREDIT TRANSFER J SMITH",
+          status: "AWAITING_APPROVAL",
+          approvedBy: null,
+          approvedAt: null,
+          postedAt: null,
+        }),
+        makeTx({ id: "tx-dep", reference: "DEP-001" }),
+      ],
+      totalElements: 2,
+      totalPages: 1,
+      pageSize: 20,
+      pageNumber: 0,
+    });
+
+    await renderTransactionsPage();
+
+    const row = screen.getByTestId("transaction-row-tx-alloc");
+    expect(within(row).getByText("Unidentified deposit allocated")).toBeInTheDocument();
+    expect(within(row).getByTestId("transaction-description-tx-alloc")).toHaveTextContent(
+      "To Sipho Dlamini — Estate late M Dlamini: deposit received 3 November 2026"
+    );
+    expect(within(row).getByTestId("approve-button")).toBeInTheDocument();
+    expect(within(row).getByTestId("reject-button")).toBeInTheDocument();
+    expect(row).not.toHaveTextContent("UNIDENT_ALLOC_OUT");
+    // A deposit's description stays off this list.
+    expect(screen.queryByTestId("transaction-description-tx-dep")).not.toBeInTheDocument();
+    expect(screen.queryByText("Initial deposit")).not.toBeInTheDocument();
+  });
+
+  // 647D OBS h: at 1280 px the nowrap type badge of "Unidentified deposit paid to the Fund" widened
+  // the table past its scroll wrapper and pushed Approve/Reject off-screen; type badges now wrap.
+  it("lets a long type label wrap so the Actions column stays on-screen (647D OBS h)", async () => {
+    mockFetchTransactions.mockResolvedValue({
+      content: [
+        makeTx({
+          id: "tx-fund",
+          transactionType: "UNIDENT_FUND_PAY",
+          typeLabel: "Unidentified deposit paid to the Fund",
+          direction: "NEUTRAL",
+          ledger: "NON_CLIENT",
+          clientId: null,
+          status: "AWAITING_APPROVAL",
+          approvedBy: null,
+          approvedAt: null,
+          postedAt: null,
+        }),
+      ],
+      totalElements: 1,
+      totalPages: 1,
+      pageSize: 20,
+      pageNumber: 0,
+    });
+
+    await renderTransactionsPage();
+
+    const badge = screen.getByTestId("transaction-type-tx-fund");
+    expect(badge).toHaveTextContent("Unidentified deposit paid to the Fund");
+    expect(badge).toHaveClass("shrink", "whitespace-normal");
+    expect(badge).not.toHaveClass("whitespace-nowrap");
+    expect(badge).not.toHaveClass("shrink-0");
+  });
+
   // G88-F23 (Phase 89 630C): REFUND moves money out of trust — outflow colour + arrow.
   it("renders REFUND as an outflow (no green, up-right arrow)", async () => {
     mockFetchTransactions.mockResolvedValue({

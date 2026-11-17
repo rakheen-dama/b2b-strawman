@@ -19,9 +19,10 @@ import java.util.UUID;
  * One bank credit whose owner is not yet known (Phase 92, ADR-376, §16.2.5): opened when a
  * statement line is recorded as {@code UNIDENTIFIED_DEPOSIT}, held on the trust account's
  * unidentified-deposits ledger until it is allocated to a client and matter or paid to the Fund
- * (647D), or reversed when its line is unmatched (647B). Every ledger row that moves the item names
- * it ({@code trust_transactions.unidentified_deposit_id}), so whether it was open as at a date is
- * derived from those rows (EQ-4); {@link #getStatus()} describes the present only.
+ * (647D — and back to HELD when that is undone), or reversed when its line is unmatched (647B).
+ * Every ledger row that moves the item names it ({@code
+ * trust_transactions.unidentified_deposit_id}), so whether it was open as at a date is derived from
+ * those rows (EQ-4); {@link #getStatus()} describes the present only.
  */
 @Entity
 @Table(name = "unidentified_deposits")
@@ -144,6 +145,77 @@ public class UnidentifiedDeposit {
     }
     this.status = UnidentifiedDepositStatus.REVERSED;
     this.resolvedDate = contraDate;
+  }
+
+  /**
+   * A resolution was requested (647D): the pending {@code UNIDENT_ALLOC_OUT} or {@code
+   * UNIDENT_FUND_PAY} row, and for an allocation its client and matter (both null for a payment to
+   * the Fund). The item stays HELD until the row posts.
+   */
+  public void requestResolution(UUID resolutionTransactionId, UUID customerId, UUID projectId) {
+    if (!isHeldWithoutResolution()) {
+      throw new IllegalStateException(
+          "Unidentified deposit " + id + " is not held without a resolution");
+    }
+    this.resolutionTransactionId = resolutionTransactionId;
+    this.allocatedCustomerId = customerId;
+    this.allocatedProjectId = projectId;
+  }
+
+  /** The allocation posted: ALLOCATED on {@code date} (chk_unidentified_deposit_allocated). */
+  public void markAllocated(UUID allocationCreditTransactionId, LocalDate date) {
+    if (status != UnidentifiedDepositStatus.HELD
+        || resolutionTransactionId == null
+        || allocatedCustomerId == null
+        || allocatedProjectId == null) {
+      throw new IllegalStateException(
+          "Unidentified deposit " + id + " has no pending allocation to complete");
+    }
+    this.allocationCreditTransactionId = allocationCreditTransactionId;
+    this.status = UnidentifiedDepositStatus.ALLOCATED;
+    this.resolvedDate = date;
+  }
+
+  /** The payment to the Fund posted: PAID_TO_FUND on {@code date}. */
+  public void markPaidToFund(LocalDate date) {
+    if (status != UnidentifiedDepositStatus.HELD
+        || resolutionTransactionId == null
+        || allocatedCustomerId != null
+        || allocatedProjectId != null) {
+      throw new IllegalStateException(
+          "Unidentified deposit " + id + " has no pending payment to the Fund to complete");
+    }
+    this.status = UnidentifiedDepositStatus.PAID_TO_FUND;
+    this.resolvedDate = date;
+  }
+
+  /** The resolution was rejected: HELD, the resolution and the allocated ids cleared. */
+  public void clearResolution() {
+    if (status != UnidentifiedDepositStatus.HELD || resolutionTransactionId == null) {
+      throw new IllegalStateException("Unidentified deposit " + id + " has no pending resolution");
+    }
+    this.resolutionTransactionId = null;
+    this.allocatedCustomerId = null;
+    this.allocatedProjectId = null;
+  }
+
+  /**
+   * The resolution was reversed (an allocation undone, a payment to the Fund returned): HELD again,
+   * with {@code resolved_date}, the resolution, credit and allocated ids cleared. Whether the item
+   * was open at a past date is read from its rows, never from these columns (EQ-4).
+   */
+  public void reopen() {
+    if (status != UnidentifiedDepositStatus.ALLOCATED
+        && status != UnidentifiedDepositStatus.PAID_TO_FUND) {
+      throw new IllegalStateException(
+          "Unidentified deposit " + id + " is " + status + ", not allocated or paid to the Fund");
+    }
+    this.status = UnidentifiedDepositStatus.HELD;
+    this.resolvedDate = null;
+    this.resolutionTransactionId = null;
+    this.allocationCreditTransactionId = null;
+    this.allocatedCustomerId = null;
+    this.allocatedProjectId = null;
   }
 
   public UUID getId() {

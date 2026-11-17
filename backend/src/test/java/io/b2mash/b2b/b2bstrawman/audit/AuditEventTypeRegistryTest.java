@@ -252,10 +252,14 @@ class AuditEventTypeRegistryTest {
     // 55.
     // + 3 trust_unidentified_deposit.recorded, unidentified_deposit.opened / .reversed (Phase 92
     // 647B) = 58.
+    // + 7 unidentified_deposit.allocation_requested/allocated/allocation_rejected/
+    // payment_requested/paid_to_fund/payment_rejected/reopened and 6
+    // trust_unident_alloc_out.* / trust_unident_fund_pay.* (first_approved, approved, rejected)
+    // (Phase 92 647D) = 71.
     // Default fallback is synthesised inside resolve() and must NOT appear in entries().
     // (Phase 86 slice 2 / Epic 596B removed the 5 deal.* SALES entries; Phase 86 slice 3 / Epic
     // 597B removed proposal.*; Phase 86 slice 7 / Epic 601 removed six ai.specialist.* entries.)
-    assertThat(registry.entries()).hasSize(58);
+    assertThat(registry.entries()).hasSize(71);
     assertThat(registry.entries())
         .extracting(AuditEventTypeMetadata::eventType)
         .doesNotContain("(default fallback)")
@@ -274,7 +278,20 @@ class AuditEventTypeRegistryTest {
             "disbursement.restored",
             "invoice.partially_paid",
             "invoice.payment_excess",
-            "acceptance.declined")
+            "acceptance.declined",
+            "unidentified_deposit.allocation_requested",
+            "unidentified_deposit.allocated",
+            "unidentified_deposit.allocation_rejected",
+            "unidentified_deposit.payment_requested",
+            "unidentified_deposit.paid_to_fund",
+            "unidentified_deposit.payment_rejected",
+            "unidentified_deposit.reopened",
+            "trust_unident_alloc_out.first_approved",
+            "trust_unident_alloc_out.approved",
+            "trust_unident_alloc_out.rejected",
+            "trust_unident_fund_pay.first_approved",
+            "trust_unident_fund_pay.approved",
+            "trust_unident_fund_pay.rejected")
         .doesNotContain(
             "ai.specialist.*",
             "ai.specialist.invoked",
@@ -306,8 +323,8 @@ class AuditEventTypeRegistryTest {
 
   @Test
   void entriesMatchingWithEmptyOrNullReturnsAll() {
-    assertThat(registry.entriesMatching(Set.of())).hasSize(58);
-    assertThat(registry.entriesMatching(null)).hasSize(58);
+    assertThat(registry.entriesMatching(Set.of())).hasSize(71);
+    assertThat(registry.entriesMatching(null)).hasSize(71);
   }
 
   @Test

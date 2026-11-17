@@ -116,6 +116,36 @@ export const reversalReasonSchema = z.object({
 export type ReversalReasonFormData = z.infer<typeof reversalReasonSchema>;
 
 /**
+ * Allocate an unidentified deposit to a client and matter (647D, §16.3.6). The allocation date —
+ * the day the firm identified the owner — is optional (blank = today); the server is the authority
+ * for its window (from the received date to today).
+ */
+export const allocateUnidentifiedSchema = z.object({
+  customerId: z.string().uuid("Choose a client"),
+  projectId: requiredMatter,
+  allocationDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD")
+    .optional()
+    .or(z.literal("")),
+  notes: z.string().max(2000).optional().or(z.literal("")),
+});
+
+export type AllocateUnidentifiedFormData = z.infer<typeof allocateUnidentifiedSchema>;
+
+/**
+ * Pay an unidentified deposit to the Legal Practitioners' Fidelity Fund (647D, §16.3.6): the
+ * payment's own reference and date. The server is the authority for the date's window.
+ */
+export const payToFundSchema = z.object({
+  reference: z.string().trim().min(1, "Reference is required").max(200),
+  transactionDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD"),
+  notes: z.string().max(2000).optional().or(z.literal("")),
+});
+
+export type PayToFundFormData = z.infer<typeof payToFundSchema>;
+
+/**
  * Record from statement (647A, ADR-380): what an unmatched statement line is. A bank charge also
  * needs whether it is recoverable and its VAT; the server refuses both on any other
  * classification, and is the authority for every rule here.

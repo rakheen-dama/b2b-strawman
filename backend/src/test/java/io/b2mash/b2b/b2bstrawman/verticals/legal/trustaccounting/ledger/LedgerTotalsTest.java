@@ -68,7 +68,7 @@ class LedgerTotalsTest {
   @Test
   void plus_nonClientLedgerTypesAreANoOp_andUnplacedClientLedgerTypesFailLoudly() {
     // 646B (D4): the fifteen types that never sit on the CLIENT ledger leave the totals unchanged;
-    // the three CLIENT-ledger types first posted in 647B / 648A must be placed before they post.
+    // the two CLIENT-ledger types first posted in 648A must be placed before they post.
     var base = LedgerTotals.ZERO.plus("DEPOSIT", new BigDecimal("100"));
     for (var type :
         List.of(
@@ -89,13 +89,26 @@ class LedgerTotalsTest {
             "FIRM_INV_RETURN")) {
       assertThat(base.plus(type, new BigDecimal("999"))).as(type).isEqualTo(base);
     }
-    for (var type : List.of("UNIDENT_ALLOC_IN", "INV_PLACE", "INV_RETURN")) {
+    for (var type : List.of("INV_PLACE", "INV_RETURN")) {
       assertThatThrownBy(() -> base.plus(type, new BigDecimal("1")))
           .as(type)
           .isInstanceOf(IllegalStateException.class)
           .hasMessageContaining(type)
-          .hasMessageContaining("647B / 648A");
+          .hasMessageContaining("648A places it");
     }
+  }
+
+  @Test
+  void plus_unidentifiedDepositAllocatedToTheClient_countsAsADeposit() {
+    // 647D (ruling D13): to the client an identified deposit is their deposit, received later.
+    var totals =
+        LedgerTotals.ZERO
+            .plus("DEPOSIT", new BigDecimal("100"))
+            .plus("UNIDENT_ALLOC_IN", new BigDecimal("250"));
+
+    assertThat(totals.deposits()).isEqualByComparingTo("350");
+    assertThat(totals.transfersIn()).isEqualByComparingTo("0");
+    assertThat(totals.derivedBalance()).isEqualByComparingTo("350");
   }
 
   @Test

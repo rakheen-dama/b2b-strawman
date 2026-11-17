@@ -152,6 +152,39 @@ describe("TransactionList", () => {
     expect(screen.queryByText(/REFUND/)).toBeNull();
   });
 
+  it("labels an allocated unidentified deposit in words, never the code (647D)", async () => {
+    mockGetMatterTransactions.mockResolvedValueOnce(
+      buildPage([
+        {
+          id: "t-alloc",
+          transactionType: "UNIDENT_ALLOC_IN",
+          amount: 300,
+          runningBalance: 300,
+          transactionDate: "2026-11-10",
+          occurredAt: "2026-11-10T08:30:00Z",
+          description:
+            "Deposit received 3 November 2026 — CREDIT TRANSFER J SMITH",
+          reference: "UID-1A2B3C4D",
+        },
+      ]),
+    );
+
+    render(<TransactionList matterId="matter-1" />);
+
+    await waitFor(() =>
+      expect(
+        screen.getAllByText("Deposit identified and allocated").length,
+      ).toBeGreaterThan(0),
+    );
+    expect(
+      screen.getAllByText(
+        "Deposit received 3 November 2026 — CREDIT TRANSFER J SMITH",
+      ).length,
+    ).toBeGreaterThan(0);
+    expect(screen.queryByText(/UNIDENT_ALLOC_IN/)).toBeNull();
+    expect(screen.queryByText(/Unident alloc in/i)).toBeNull();
+  });
+
   it("dates each row by its transaction date, not the day it was recorded (G89-F39)", async () => {
     mockGetMatterTransactions.mockResolvedValueOnce(
       buildPage([

@@ -65,7 +65,9 @@ public record LedgerTotals(
       return this;
     }
     return switch (type.get()) {
-      case DEPOSIT ->
+      // An unidentified deposit identified and allocated to the client (647D) is, to the client,
+      // their deposit received later: it adds to deposits (both types have ledgerSign +1).
+      case DEPOSIT, UNIDENT_ALLOC_IN ->
           new LedgerTotals(
               deposits.add(amount), transfersIn, payments, feeTransfers, refunds, transfersOut);
       case TRANSFER_IN ->
@@ -102,10 +104,10 @@ public record LedgerTotals(
           FIRM_INV_WITHDRAW,
           FIRM_INV_RETURN ->
           this;
-      // CLIENT-ledger types not posted before 647B / 648A: the slice that posts one places it here.
-      case UNIDENT_ALLOC_IN, INV_PLACE, INV_RETURN ->
+      // CLIENT-ledger types not posted before 648A: the slice that posts one places it here.
+      case INV_PLACE, INV_RETURN ->
           throw new IllegalStateException(
-              transactionType + " has no client-ledger total yet (647B / 648A place it)");
+              transactionType + " has no client-ledger total yet (648A places it)");
     };
   }
 

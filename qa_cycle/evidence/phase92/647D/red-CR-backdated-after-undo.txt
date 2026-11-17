@@ -1,0 +1,20 @@
+# CodeRabbit Major (UnidentifiedDepositService ~l.605) — RED run: backdated resolution after an undo, 647D fix cycle 1
+# Worktree head 02fd16615 (production code unchanged); run 2026-11-17 19:44 SAST
+# Command: ./mvnw test -Dtest='UnidentifiedDepositIntegrationTest#resolution_afterAnUndo_cannotBeDatedBeforeTheUndo+probeRed_backdatedResolutionAfterUndo_breaksEQ4+...'
+# Path: received today-10 -> allocation dated today-8 approved -> undone dated D2 = today-4 -> a new allocation dated today-7 (before D2).
+# (1) the final-form test expects 400 on the backdated allocation; today it is accepted (200).
+# (2) the probe approves the backdated re-allocation and checks EQ-4 as at D2-1: the item reads -90.00.
+# The probe test methods were temporary and removed after this capture; the final-form test is green after the fix.
+
+[ERROR]   UnidentifiedDepositIntegrationTest.resolution_afterAnUndo_cannotBeDatedBeforeTheUndo:1205->moves:1388->lambda$moves$0:1391->lambda$moves$1:1396->lambda$resolution_afterAnUndo_cannotBeDatedBeforeTheUndo$1:1209->refused:1581 Status expected:<400> but was:<200>
+[ERROR]   UnidentifiedDepositIntegrationTest.probeRed_backdatedResolutionAfterUndo_breaksEQ4:1323 
+Multiple Failures (2 failures)
+-- failure 1 --
+[EQ-4 on trust account e3eefa37-7894-4928-a63a-030a537749f1 as at 2026-11-12, item 14d0aadb-03c7-4496-bb45-40a560492e2a (ALLOCATED, 90.00): balance -90.00 — must be 0 or the amount] 
+Expecting value to be true but was false
+at TrustBooksHarness.assertItemised(TrustBooksHarness.java:405)
+-- failure 2 --
+[EQ-4 on trust account e3eefa37-7894-4928-a63a-030a537749f1 as at 2026-11-12: Σ open items vs the unidentified term -90.00] 
+expected: -90.00
+ but was: 0
+at TrustBooksHarness.assertItemised(TrustBooksHarness.java:421)

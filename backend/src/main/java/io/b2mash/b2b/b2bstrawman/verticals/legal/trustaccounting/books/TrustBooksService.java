@@ -27,9 +27,9 @@ import org.springframework.transaction.annotation.Transactional;
  *   <li>{@link #firmPosition} — every trust account of the firm (open or closed) and the firm
  *       totals; EQ-3 holds when the summed inter-account term is zero.
  *   <li>{@link #bankPosition} — EQ-1's bank side at a reconciliation's period end: the statement's
- *       closing balance carried to the date (sound because {@code createReconciliation} refuses a
- *       statement that does not fit the period end, §16.3.4) and the outstanding items dated by the
- *       statement line's date.
+ *       closing balance carried to the date (sound because {@code createReconciliation} and {@code
+ *       calculateReconciliation} refuse a statement that does not fit the period end, §16.3.4) and
+ *       the outstanding items dated by the statement line's date.
  * </ul>
  *
  * <p>"Today" is the caller's {@code LocalDate.now(clock)}; {@code asAt} is never null.

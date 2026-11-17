@@ -488,6 +488,131 @@ class TrustReconciliationServiceReconciliationTest {
         "The period end cannot be in the future");
   }
 
+  /** Rule 1 — the statement must belong to the account being reconciled. */
+  @Test
+  void createReconciliation_refusedWhenTheStatementBelongsToAnotherAccount() throws Exception {
+    UUID accountId = createIsolatedTrustAccount();
+    UUID otherAccountId = createIsolatedTrustAccount();
+    var otherStatementId =
+        importStatementForAccount(
+            otherAccountId,
+            """
+            FNB Trust Account Statement - Account 62100000000
+            Date,Description,Amount,Balance,Reference
+            05/03/2026,Deposit received,1000.00,1000.00,RULE1-001
+            """);
+
+    assertCreateRefused(
+        accountId,
+        LocalDate.of(2026, 3, 31),
+        otherStatementId,
+        "Trust account mismatch",
+        "Bank statement does not belong to the specified trust account");
+  }
+
+  /** Rule 2 boundary — a line dated exactly on the period end fits it. */
+  @Test
+  void createReconciliation_acceptsAStatementLineDatedOnThePeriodEnd() throws Exception {
+    UUID accountId = createIsolatedTrustAccount();
+    var statementId =
+        importStatementForAccount(
+            accountId,
+            """
+            FNB Trust Account Statement - Account 62100000000
+            Date,Description,Amount,Balance,Reference
+            05/03/2026,Deposit received,1000.00,1000.00,RULE2-001
+            31/03/2026,Deposit received,500.00,1500.00,RULE2-002
+            """);
+
+    var created = create(accountId, LocalDate.of(2026, 3, 31), statementId);
+
+    assertThat(created.periodEnd()).isEqualTo(LocalDate.of(2026, 3, 31));
+    assertThat(created.status()).isEqualTo("DRAFT");
+  }
+
+  /** Rule 3 boundary — another statement's line dated exactly on the period end refuses. */
+  @Test
+  void createReconciliation_refusedWhenAnotherStatementHasALineOnThePeriodEnd() throws Exception {
+    UUID accountId = createIsolatedTrustAccount();
+    var earlyId =
+        importStatementForAccount(
+            accountId,
+            "rule3-early.csv",
+            """
+            FNB Trust Account Statement - Account 62100000000
+            Date,Description,Amount,Balance,Reference
+            05/03/2026,Deposit received,1000.00,1000.00,RULE3-001
+            """);
+    importStatementForAccount(
+        accountId,
+        "rule3-on-period-end.csv",
+        """
+        FNB Trust Account Statement - Account 62100000000
+        Date,Description,Amount,Balance,Reference
+        31/03/2026,Deposit received,500.00,1500.00,RULE3-002
+        """);
+
+    assertCreateRefused(
+        accountId,
+        LocalDate.of(2026, 3, 31),
+        earlyId,
+        "Statement does not fit the period end",
+        "Statement rule3-on-period-end.csv has movements between this statement's last line and 31"
+            + " March 2026. Reconcile against the statement that covers the period end.");
+  }
+
+  /**
+   * Rule 3 boundary — another statement's line dated on this statement's last line date is not in
+   * the gap (the gap starts after the last line), so it does not refuse.
+   */
+  @Test
+  void createReconciliation_acceptsAnotherStatementLineOnThisStatementsLastLineDate()
+      throws Exception {
+    UUID accountId = createIsolatedTrustAccount();
+    var earlyId =
+        importStatementForAccount(
+            accountId,
+            "rule3-early-same-day.csv",
+            """
+            FNB Trust Account Statement - Account 62100000000
+            Date,Description,Amount,Balance,Reference
+            05/03/2026,Deposit received,1000.00,1000.00,RULE3-003
+            """);
+    importStatementForAccount(
+        accountId,
+        "rule3-same-day.csv",
+        """
+        FNB Trust Account Statement - Account 62100000000
+        Date,Description,Amount,Balance,Reference
+        05/03/2026,Deposit received,500.00,1500.00,RULE3-004
+        """);
+
+    var created = create(accountId, LocalDate.of(2026, 3, 31), earlyId);
+
+    assertThat(created.bankStatementId()).isEqualTo(UUID.fromString(earlyId));
+    assertThat(created.status()).isEqualTo("DRAFT");
+  }
+
+  /** Rule 4 boundary — a period end of today (SA business date, the injected Clock) is accepted. */
+  @Test
+  void createReconciliation_acceptsAPeriodEndOfToday() throws Exception {
+    UUID accountId = createIsolatedTrustAccount();
+    var statementId =
+        importStatementForAccount(
+            accountId,
+            """
+            FNB Trust Account Statement - Account 62100000000
+            Date,Description,Amount,Balance,Reference
+            05/03/2026,Deposit received,1000.00,1000.00,RULE4-001
+            """);
+    var today = LocalDate.now(clock);
+
+    var created = create(accountId, today, statementId);
+
+    assertThat(created.periodEnd()).isEqualTo(today);
+    assertThat(created.status()).isEqualTo("DRAFT");
+  }
+
   /**
    * R5 — a statement whose last line is before the month end reconciles to the month end, and the
    * figures are as at that date: a deposit dated in April is neither in March's cashbook nor a

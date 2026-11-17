@@ -23,3 +23,29 @@ Rulings applied: O1 (24 code files), O2 (day-45 stops at upload; asserts step-1 
 today), O3 (titles/sentences pinned), O4 (Complete gated on `isBalanced` only; unresolved count
 shown), O5 (`otherNonClient` tested in its own tenant), O6 (V19 backfills `difference` for every
 row, edge pinned), O7 (`integrity_flags` added, unmapped), O8 (this folder).
+
+## Review fixes (PR #1792)
+
+- High 1 — `TrustPositionAsAtIntegrationTest.reconciliation_storesAndReturnsEveryCreditorTermInItsOwnComponent`:
+  five distinct non-zero creditor terms (client 1 000, investment 200, Fund 50, unidentified 300,
+  inter-account 700), every breakdown component, the stored columns (`creditor_total`,
+  `difference`) and a `getReconciliation` re-read. Passes on HEAD; a swapped
+  fund/unidentified setter makes it fail (`red-run.txt`).
+- High 2 — rule 1 (account mismatch) and the boundaries of rules 2–4 in
+  `TrustReconciliationServiceReconciliationTest` (pass on HEAD: coverage, not defects).
+- Medium — `calculateReconciliation` re-runs `requireStatementFitsPeriodEnd`; red first
+  (`red-run.txt` § "Review fix — calculate re-checks the period rules"). `completeReconciliation`
+  is not re-checked: it acts on the stored `is_balanced` that the last calculate set (a draft never
+  calculated stays unbalanced), so a statement imported after the last calculate is caught at the
+  next calculate. Closing that window at complete is left to 649C (integrity flags / complete gates).
+- Medium — day-45 spec comment now points at the planned Phase 92 exit spec (652E).
+
+## Review notes — accepted / deferred
+
+- N+1 in `listReconciliations` via `toReconciliationResponse` (two line queries per row) — accepted:
+  a trust account holds one reconciliation per month, so volumes stay small.
+- `CreditorBreakdown.of(...)` extraction — deferred: extract when 649C / 650B adds a second consumer.
+- Nested records in `TrustReconciliationService` / `TrustBooksService` — accepted: the signature is
+  spec-mandated (architecture §16.3.3).
+- `books` ↔ `reconciliation` package cycle — accepted: it matches the existing
+  `transaction` ↔ `reconciliation` cycle; `LayerDependencyRulesTest` stays green.

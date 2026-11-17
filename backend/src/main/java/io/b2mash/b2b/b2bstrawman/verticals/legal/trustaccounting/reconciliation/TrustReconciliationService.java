@@ -617,7 +617,10 @@ public class TrustReconciliationService {
     return toReconciliationResponse(reconciliation);
   }
 
-  /** The four period rules of §16.3.4, in order; the first failure refuses. */
+  /**
+   * The four period rules of §16.3.4, in order; the first failure refuses. Checked at create and
+   * again at every calculate (a later import can make a statement stop fitting its period end).
+   */
   private void requireStatementFitsPeriodEnd(
       UUID accountId, BankStatement statement, LocalDate periodEnd) {
     if (!statement.getTrustAccountId().equals(accountId)) {
@@ -707,9 +710,17 @@ public class TrustReconciliationService {
           "A bank statement must be linked to calculate the reconciliation");
     }
 
-    // Every term as at the period end (§16.3.4 steps 1-4, ADR-377); integrity flags are 649C
     UUID accountId = reconciliation.getTrustAccountId();
     LocalDate periodEnd = reconciliation.getPeriodEnd();
+    // A statement imported after the draft was created can break the period rules; the closing
+    // balance is the bank balance as at the period end only while the statement still fits it
+    var statement =
+        bankStatementRepository
+            .findById(bankStatementId)
+            .orElseThrow(() -> new ResourceNotFoundException("BankStatement", bankStatementId));
+    requireStatementFitsPeriodEnd(accountId, statement, periodEnd);
+
+    // Every term as at the period end (§16.3.4 steps 1-4, ADR-377); integrity flags are 649C
     var position = trustBooksService.position(accountId, periodEnd);
     var bank = trustBooksService.bankPosition(accountId, bankStatementId, periodEnd);
 

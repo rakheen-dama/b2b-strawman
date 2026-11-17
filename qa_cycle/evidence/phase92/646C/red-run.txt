@@ -68,3 +68,30 @@ R8  the split pane renders only the "Three-Way Balance Check" — no as-at headi
     (Ruling O4: unresolved lines do not gate Complete in 646C; the second R8 case asserts the
     count is shown and Complete stays enabled when balanced — red only because the count is absent.)
 R9  F-646E-1: ReconciliationSplitPane prints tx.transactionType.replace(/_/g, " ") ("FEE TRANSFER").
+
+## Review fix — calculate re-checks the period rules
+
+Run on unmodified production code (head c79577111) with the new tests only:
+./mvnw test -Dtest=TrustPositionAsAtIntegrationTest,TrustReconciliationServiceReconciliationTest
+
+[INFO] Tests run: 17, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 42.54 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationServiceReconciliationTest
+[ERROR] Tests run: 9, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 1.937 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustPositionAsAtIntegrationTest
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustPositionAsAtIntegrationTest.calculate_refusedWhenAStatementImportedAfterCreateCoversThePeriodEnd -- Time elapsed: 0.085 s <<< FAILURE!
+Expecting code to raise a throwable.
+Expecting code to raise a throwable.
+[ERROR] Tests run: 26, Failures: 1, Errors: 0, Skipped: 0
+
+Probe (throwaway, reverted) of calculate on HEAD in the same scenario:
+RED-PROBE calculate on HEAD: isBalanced=true bankBalance=1000.00 outstandingPayments=300.00 adjustedBankBalance=700.00 cashbookBalance=700.00 creditorTotal=700.00 difference=0.00
+
+Scenario: statement A (late-a.csv, one line 1 March, closing R1 000) fits 31 March at create;
+statement B (late-b.csv, 25 March -R300, closing R700) is imported after create; the R300
+payment (posted 1 March) is unmatched. HEAD calculate reports balanced on bank R1 000 with the
+payment outstanding although the bank held R700 — it should refuse with rule 3.
+
+The breakdown test (reconciliation_storesAndReturnsEveryCreditorTermInItsOwnComponent) and the five
+rule boundary tests pass on HEAD (coverage gaps, not defects). Mutation check: swapping
+setFundLedgerBalance/setUnidentifiedDepositTotal sources makes the breakdown test fail:
+[fund] 
+expected: 50.00
+ but was: 300.00

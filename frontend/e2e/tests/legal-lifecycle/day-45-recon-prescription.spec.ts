@@ -87,7 +87,7 @@ test.describe.serial("Day 45 — Reconciliation & Prescription", () => {
 
     // GAP: no CSV is uploaded here, so the review step's two comparisons (adjusted bank vs
     // cashbook, cashbook vs trust creditors, as at the period end — 646C) are not reached. The
-    // full flow lives in the exit spec.
+    // full flow is planned for the Phase 92 exit spec (652E, trust-balanced-month.spec.ts).
     // (Phase 88 628E: the wizard is driven to its upload step; no CSV is uploaded and auto-match
     // is not run — OD-7 item 6.)
 

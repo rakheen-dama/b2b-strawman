@@ -4,12 +4,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksFixture;
 import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness;
 import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness.Expected;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService.BankStatementResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService.TrustReconciliationResponse;
@@ -60,6 +62,7 @@ class TrustPositionAsAtIntegrationTest {
   @Autowired private TrustBooksFixture fixture;
   @Autowired private TrustBooksHarness harness;
   @Autowired private TrustReconciliationService reconciliationService;
+  @Autowired private TrustReconciliationRepository reconciliationRepository;
   @Autowired private TrustBooksService trustBooksService;
   @Autowired private TrustLedgerQueryRepository ledgerQueries;
 
@@ -318,6 +321,163 @@ class TrustPositionAsAtIntegrationTest {
             firm[0].accounts().stream()
                 .map(TrustBooksService.TrustPosition::cashbook)
                 .reduce(BigDecimal.ZERO, BigDecimal::add));
+  }
+
+  // --- the stored breakdown: every term distinct and non-zero ---------------------------------
+
+  /**
+   * Review fix (PR #1792): every creditor term is stored in its own column and read back into its
+   * own breakdown component. Account A holds a client deposit of R1 000 (1 March) and, on 10 March,
+   * Fund interest R50, an unidentified deposit R300, a section 86(4) investment receipt R200 and a
+   * section 86(3) placement R700 received from account B — five distinct non-zero terms, so a
+   * swapped setter or getter fails. The March statement shows the deposit and an unknown R100
+   * credit (unmatched): bank R1 100 + outstanding R1 250 = adjusted R2 350 against cashbook =
+   * creditors R2 250, a stored difference of R100.
+   */
+  @Test
+  void reconciliation_storesAndReturnsEveryCreditorTermInItsOwnComponent() {
+    var account = books.freshAccount(false);
+    var placing = books.freshAccount(false);
+    var client = books.newClient("breakdown");
+    var depositId = books.deposit(account, client, "1000.00");
+    var placingDepositId = books.deposit(placing, client, "1000.00");
+    var tenth = LocalDate.of(2026, 3, 10);
+    books.postNonClientDirect(account, "FUND_INTEREST", "50.00", tenth);
+    books.postNonClientDirect(account, "UNIDENTIFIED_DEPOSIT", "300.00", tenth);
+    var clientInvestment = books.investmentDirect(account, client, depositId);
+    books.postLedgerRowDirect(
+        account,
+        "INV_RECEIVE",
+        "200.00",
+        tenth,
+        client.id(),
+        client.matter(),
+        null,
+        clientInvestment);
+    var placement = books.investmentDirect(account, client, placingDepositId);
+    books.postLedgerRowDirect(
+        placing, "FIRM_INV_PLACE", "700.00", tenth, null, null, null, placement);
+    books.postLedgerRowDirect(
+        account, "FIRM_INV_RECEIVE", "700.00", tenth, null, null, null, placement);
+    assertPosition(account, MARCH_END, "2250.00", "1000.00", "200.00", "50.00", "300.00", "700.00");
+    assertPosition(placing, MARCH_END, "300.00", "1000.00", "0", "0", "0", "-700.00");
+
+    var march =
+        importStatement(
+            account,
+            "breakdown-march.csv",
+            """
+            01/03/2026,Deposit received,1000.00,1000.00,BRK-DEP
+            05/03/2026,Unknown credit,100.00,1100.00,BRK-UNK""");
+    var depositLine =
+        march.lines().stream()
+            .filter(l -> "BRK-DEP".equals(l.reference()))
+            .findFirst()
+            .orElseThrow()
+            .id();
+    books.as(memberId, () -> reconciliationService.manualMatch(depositLine, depositId));
+
+    var recon = reconcile(account, MARCH_END, march.id());
+    assertThat(recon.bankBalance()).as("bank").isEqualByComparingTo("1100.00");
+    assertThat(recon.outstandingDeposits()).as("o/s deposits").isEqualByComparingTo("1250.00");
+    assertThat(recon.outstandingPayments()).as("o/s payments").isEqualByComparingTo("0");
+    assertThat(recon.adjustedBankBalance()).as("adjusted").isEqualByComparingTo("2350.00");
+    assertThat(recon.cashbookBalance()).as("cashbook").isEqualByComparingTo("2250.00");
+    assertThat(recon.clientLedgerTotal()).as("client ledger total").isEqualByComparingTo("1000.00");
+    var breakdown = recon.creditorBreakdown();
+    assertThat(breakdown.clientLedgers()).as("client ledgers").isEqualByComparingTo("1000.00");
+    assertThat(breakdown.investmentCreditors())
+        .as("investment creditors")
+        .isEqualByComparingTo("200.00");
+    assertThat(breakdown.fundInterestAndCharges()).as("fund").isEqualByComparingTo("50.00");
+    assertThat(breakdown.unidentifiedDeposits()).as("unidentified").isEqualByComparingTo("300.00");
+    assertThat(breakdown.interAccount()).as("inter-account").isEqualByComparingTo("700.00");
+    assertThat(breakdown.otherNonClient()).as("other non-client").isEqualByComparingTo("0");
+    assertThat(breakdown.total()).as("creditor total").isEqualByComparingTo("2250.00");
+    assertThat(recon.bankToCashbookDifference()).as("EQ-1").isEqualByComparingTo("100.00");
+    assertThat(recon.cashbookToCreditorsDifference()).as("EQ-2").isEqualByComparingTo("0");
+    assertThat(recon.difference()).as("difference").isEqualByComparingTo("100.00");
+    assertThat(recon.unresolvedLineCount()).as("unresolved lines").isEqualTo(1);
+    assertThat(recon.isBalanced()).as("balanced").isFalse();
+
+    // The stored columns, each term in its own
+    var stored = books.read(() -> reconciliationRepository.findById(recon.id()).orElseThrow());
+    assertThat(stored.getClientLedgerTotal()).as("stored client").isEqualByComparingTo("1000.00");
+    assertThat(stored.getInvestmentCreditorTotal())
+        .as("stored investment")
+        .isEqualByComparingTo("200.00");
+    assertThat(stored.getFundLedgerBalance()).as("stored fund").isEqualByComparingTo("50.00");
+    assertThat(stored.getUnidentifiedDepositTotal())
+        .as("stored unidentified")
+        .isEqualByComparingTo("300.00");
+    assertThat(stored.getInterAccountBalance())
+        .as("stored inter-account")
+        .isEqualByComparingTo("700.00");
+    assertThat(stored.getCreditorTotal()).as("stored creditor_total").isEqualByComparingTo("2250");
+    assertThat(stored.getDifference()).as("stored difference").isEqualByComparingTo("100.00");
+
+    // A later read returns the same figures
+    var reread = new TrustReconciliationResponse[1];
+    books.as(memberId, () -> reread[0] = reconciliationService.getReconciliation(recon.id()));
+    assertThat(reread[0].creditorBreakdown())
+        .usingRecursiveComparison()
+        .withComparatorForType(BigDecimal::compareTo, BigDecimal.class)
+        .isEqualTo(breakdown);
+    assertThat(reread[0].difference()).as("re-read difference").isEqualByComparingTo("100.00");
+    assertThat(reread[0].bankToCashbookDifference())
+        .as("re-read EQ-1")
+        .isEqualByComparingTo("100.00");
+    assertThat(reread[0].cashbookToCreditorsDifference())
+        .as("re-read EQ-2")
+        .isEqualByComparingTo("0");
+  }
+
+  // --- calculate re-checks the period rules ---------------------------------------------------
+
+  /**
+   * Review fix (PR #1792): a statement imported after a DRAFT was created can break rule 3, so
+   * {@code calculate} re-checks the period rules. Statement A (one line, 1 March, closing R1 000)
+   * fits 31 March when the reconciliation is created; statement B, imported afterwards, holds the
+   * R300 payment leaving the bank on 25 March. With A's closing balance the R300 payment would be
+   * an outstanding item and the month would show balanced on a bank balance of R1 000 although the
+   * bank held R700 — calculate is refused instead, with the same ProblemDetail as create.
+   */
+  @Test
+  void calculate_refusedWhenAStatementImportedAfterCreateCoversThePeriodEnd() {
+    var account = books.freshAccount(false);
+    var client = books.newClient("late statement");
+    var depositId = books.deposit(account, client, "1000.00");
+    var paymentId = books.requestPayment(account, client, "300.00");
+    books.approve(account, paymentId, approverId, Expected.cashbookAndClient("-300.00"));
+    var statementA =
+        importStatement(
+            account, "late-a.csv", "01/03/2026,Deposit received,1000.00,1000.00,LATE-DEP");
+    match(statementA, depositId);
+    var created = new TrustReconciliationResponse[1];
+    books.as(
+        memberId,
+        () ->
+            created[0] =
+                reconciliationService.createReconciliation(account, MARCH_END, statementA.id()));
+
+    importStatement(account, "late-b.csv", "25/03/2026,Payment made,-300.00,700.00,LATE-PAY");
+
+    books.as(
+        memberId,
+        () ->
+            assertThatThrownBy(() -> reconciliationService.calculateReconciliation(created[0].id()))
+                .isInstanceOfSatisfying(
+                    InvalidStateException.class,
+                    e -> {
+                      assertThat(e.getBody().getStatus()).isEqualTo(400);
+                      assertThat(e.getBody().getTitle())
+                          .isEqualTo("Statement does not fit the period end");
+                      assertThat(e.getBody().getDetail())
+                          .isEqualTo(
+                              "Statement late-b.csv has movements between this statement's last"
+                                  + " line and 31 March 2026. Reconcile against the statement that"
+                                  + " covers the period end.");
+                    }));
   }
 
   // --- otherNonClient (its own tenant: the oracle has no such term) ---------------------------

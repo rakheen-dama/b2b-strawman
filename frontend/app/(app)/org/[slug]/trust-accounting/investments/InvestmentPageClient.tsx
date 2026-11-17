@@ -17,6 +17,8 @@ interface InvestmentPageClientProps {
   investmentId?: string;
   /** What a withdrawal would return now (648A). */
   investmentBalance?: number;
+  /** Interest is recorded on an ACTIVE investment only (a MATURED one can still be withdrawn). */
+  canRecordInterest?: boolean;
   currency?: string;
 }
 
@@ -26,6 +28,7 @@ export function InvestmentPageClient({
   investmentAccounts,
   investmentId,
   investmentBalance,
+  canRecordInterest = true,
   currency,
 }: InvestmentPageClientProps) {
   const router = useRouter();
@@ -54,9 +57,11 @@ export function InvestmentPageClient({
 
   return (
     <div className="flex gap-2">
-      <Button variant="outline" size="sm" onClick={() => setInterestOpen(true)}>
-        Record Interest
-      </Button>
+      {canRecordInterest && (
+        <Button variant="outline" size="sm" onClick={() => setInterestOpen(true)}>
+          Record Interest
+        </Button>
+      )}
       <Button variant="outline" size="sm" onClick={() => setWithdrawOpen(true)}>
         Withdraw
       </Button>

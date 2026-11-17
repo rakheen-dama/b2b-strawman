@@ -161,6 +161,7 @@ function makeInvestment(overrides: Record<string, unknown> = {}) {
     interestEarned: 0,
     balance: 500000,
     status: "ACTIVE",
+    awaitingApproval: false,
     withdrawalDate: null,
     withdrawalAmount: null,
     depositTransactionId: "txn-1",
@@ -380,13 +381,41 @@ describe("Epic 455 / 648A — Investment Basis and investment accounts", () => {
   });
 
   it("a placement awaiting approval offers no withdrawal", async () => {
-    mockFetchInvestments.mockResolvedValue([makeInvestment({ id: "inv-pending", balance: 0 })]);
+    mockFetchInvestments.mockResolvedValue([
+      makeInvestment({ id: "inv-pending", balance: 0, awaitingApproval: true }),
+    ]);
 
     await renderInvestmentsPage();
 
     const row = screen.getByTestId("investment-row-inv-pending");
     expect(within(row).getByText("Awaiting approval")).toBeInTheDocument();
     expect(within(row).queryByRole("button", { name: "Withdraw" })).toBeNull();
+  });
+
+  // 648A review: "awaiting approval" is the server's flag, never inferred from a zero balance
+  it("an approved investment is not labelled awaiting approval, whatever its balance", async () => {
+    mockFetchInvestments.mockResolvedValue([
+      makeInvestment({ id: "inv-zero", balance: 0, awaitingApproval: false }),
+    ]);
+
+    await renderInvestmentsPage();
+
+    const row = screen.getByTestId("investment-row-inv-zero");
+    expect(within(row).queryByText("Awaiting approval")).toBeNull();
+    expect(within(row).getByText("Active")).toBeInTheDocument();
+  });
+
+  // The backend withdraws an ACTIVE or MATURED investment; interest is recorded on ACTIVE only
+  it("a matured investment can be withdrawn but takes no interest entry", async () => {
+    mockFetchInvestments.mockResolvedValue([
+      makeInvestment({ id: "inv-matured", status: "MATURED" }),
+    ]);
+
+    await renderInvestmentsPage();
+
+    const row = screen.getByTestId("investment-row-inv-matured");
+    expect(within(row).getByRole("button", { name: "Withdraw" })).toBeInTheDocument();
+    expect(within(row).queryByRole("button", { name: "Record Interest" })).toBeNull();
   });
 
   it("filter dropdown renders and investmentBasis flows to fetchInvestments", async () => {
@@ -554,6 +583,18 @@ describe("Epic 455 / 648A — Investment Basis and investment accounts", () => {
       expect(arrangementCell).toBeInTheDocument();
       expect(screen.getByText("Arrangement Client")).toBeInTheDocument();
     });
+  });
+
+  // 648A (E2E day 60): stacked over Place Investment on a 720-px viewport the account form (with
+  // the basis select and its help) is taller than the screen — its content must scroll, or
+  // "Create Account" sits outside the viewport
+  it("the account dialog's content scrolls within the viewport", () => {
+    render(<CreateTrustAccountDialog open={true} onOpenChange={vi.fn()} />);
+
+    // DialogContent puts the testid on its positioned wrapper and the className on the panel
+    const panel = screen.getByTestId("create-trust-account-dialog").firstElementChild;
+    expect(panel).toHaveClass("max-h-[90vh]");
+    expect(panel).toHaveClass("overflow-y-auto");
   });
 
   // 648C (ADR-379): an investment account carries its basis — section 86(3) or 86(4)

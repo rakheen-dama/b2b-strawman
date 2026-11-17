@@ -902,6 +902,75 @@ class TrustAccountServiceTest {
         });
   }
 
+  // --- 648A review F-4: an account is not closed while an investment is held through it ---
+
+  @Test
+  void closeTrustAccount_isRefused_whileItHoldsOrFundsAnActiveOrMaturedInvestment() {
+    for (var status : List.of("ACTIVE", "MATURED")) {
+      UUID[] ids = new UUID[2];
+      runInTenant(
+          () ->
+              transactionTemplate.executeWithoutResult(
+                  tx -> {
+                    ids[0] =
+                        trustAccountService
+                            .createTrustAccount(
+                                investmentRequest(
+                                    "Close Held " + status, InvestmentBasis.FIRM_DISCRETION))
+                            .id();
+                    ids[1] = fundingAccount("Close Held Funding " + status);
+                  }));
+      investmentDirect(ids[1], ids[0], status);
+
+      // The investment account holding it, and the banking account it was placed from
+      for (var accountId : ids) {
+        runInTenant(
+            () ->
+                assertThatThrownBy(() -> trustAccountService.closeTrustAccount(accountId))
+                    .as("close with a %s investment", status)
+                    .isInstanceOfSatisfying(
+                        InvalidStateException.class,
+                        e -> {
+                          assertThat(e.getBody().getTitle())
+                              .isEqualTo("Cannot close trust account");
+                          assertThat(e.getBody().getDetail())
+                              .isEqualTo(
+                                  "An investment placed from or held in this account has not been"
+                                      + " withdrawn. Withdraw it before closing the account.");
+                        }));
+        runInTenant(
+            () ->
+                assertThat(trustAccountRepository.findById(accountId).orElseThrow().getStatus())
+                    .isEqualTo(TrustAccountStatus.ACTIVE));
+      }
+    }
+  }
+
+  @Test
+  void closeTrustAccount_isAllowed_whenItsInvestmentsAreWithdrawnOrCancelled() {
+    UUID[] ids = new UUID[2];
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  ids[0] =
+                      trustAccountService
+                          .createTrustAccount(
+                              investmentRequest("Close Released", InvestmentBasis.FIRM_DISCRETION))
+                          .id();
+                  ids[1] = fundingAccount("Close Released Funding");
+                }));
+    investmentDirect(ids[1], ids[0], "WITHDRAWN");
+    investmentDirect(ids[1], ids[0], "CANCELLED");
+
+    for (var accountId : ids) {
+      runInTenant(
+          () ->
+              assertThat(trustAccountService.closeTrustAccount(accountId).status())
+                  .isEqualTo(TrustAccountStatus.CLOSED));
+    }
+  }
+
   // --- Helpers ---
 
   private static UpdateTrustAccountRequest basisUpdate(InvestmentBasis basis) {

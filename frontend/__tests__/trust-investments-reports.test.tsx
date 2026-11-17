@@ -131,6 +131,7 @@ function makeInvestment(overrides: Record<string, unknown> = {}) {
     interestEarned: 0,
     balance: 500000,
     status: "ACTIVE",
+    awaitingApproval: false,
     withdrawalDate: null,
     withdrawalAmount: null,
     depositTransactionId: "txn-1",

@@ -79,21 +79,6 @@ public class TrustTransactionService {
   private static final Set<TrustTransactionType> PLACEMENTS =
       EnumSet.of(TrustTransactionType.INV_PLACE, TrustTransactionType.FIRM_INV_PLACE);
 
-  /**
-   * Every row an investment's placement, receipt, withdrawal or return writes (648A): none is ever
-   * reversed (registry {@code reversal = NONE}) — the investment is withdrawn instead.
-   */
-  private static final Set<TrustTransactionType> INVESTMENT_ROWS =
-      EnumSet.of(
-          TrustTransactionType.INV_PLACE,
-          TrustTransactionType.INV_RECEIVE,
-          TrustTransactionType.INV_WITHDRAW,
-          TrustTransactionType.INV_RETURN,
-          TrustTransactionType.FIRM_INV_PLACE,
-          TrustTransactionType.FIRM_INV_RECEIVE,
-          TrustTransactionType.FIRM_INV_WITHDRAW,
-          TrustTransactionType.FIRM_INV_RETURN);
-
   private final TrustTransactionRepository transactionRepository;
   private final TrustPostingService postingService;
   private final TrustLedgerQueryRepository ledgerQueries;
@@ -1023,6 +1008,11 @@ public class TrustTransactionService {
       if (type.ledger() == TrustLedger.CLIENT) {
         requireClientCovers(transaction);
       }
+      // 648A review F-3: a section 86(3) placement takes no client's money, so the client check
+      // above never covers it — its cover is the funding account's cashbook, read again now.
+      if (type == TrustTransactionType.FIRM_INV_PLACE) {
+        requireCashbookCoversFirmPlacement(transaction);
+      }
 
       // 441.9 / Phase 88 U15 (ADR-347, N-5): a fee transfer posts its real amount through the one
       // payment entry point — PARTIALLY_PAID when it leaves a balance, PAID when it clears it, and
@@ -1155,6 +1145,31 @@ public class TrustTransactionService {
         transaction.getAmount());
   }
 
+  /**
+   * 648A review F-3: the funding account's cashbook must still cover a section 86(3) placement at
+   * its final approval — the request-time check was unlocked and pending placements move nothing,
+   * so two placements that each passed it, or a payment approved in between, could otherwise
+   * overdraw the cashbook. Lock order: the placement row (held by the caller), then the funding
+   * account row, which serialises section 86(3) approvals on the account with each other and with a
+   * new placement request. The row is still AWAITING_APPROVAL, so the cashbook excludes it. Same
+   * refusal as the request ({@code TrustInvestmentService.placeInvestment}).
+   */
+  private void requireCashbookCoversFirmPlacement(TrustTransaction placement) {
+    trustAccountRepository
+        .findByIdForUpdate(placement.getTrustAccountId())
+        .orElseThrow(
+            () -> new ResourceNotFoundException("TrustAccount", placement.getTrustAccountId()));
+    var cashbook = ledgerQueries.cashbook(placement.getTrustAccountId(), LocalDate.now(clock));
+    if (cashbook.compareTo(placement.getAmount()) < 0) {
+      throw new InvalidStateException(
+          "Insufficient trust balance",
+          "The trust account's cashbook does not cover this section 86(3) placement. Available: "
+              + rand(cashbook)
+              + ", Requested: "
+              + rand(placement.getAmount()));
+    }
+  }
+
   // --- 441.5: Reject Transaction ---
 
   @Transactional
@@ -1276,7 +1291,7 @@ public class TrustTransactionService {
 
     // 648A (replaces G89-F86): an investment's rows are never reversed — the investment is
     // withdrawn instead. Refused on the type, under the row lock already held on the original.
-    if (INVESTMENT_ROWS.contains(type)) {
+    if (isFinalInvestmentRow(type)) {
       throw new InvalidStateException("Cannot reverse transaction", investmentRowRefusal(type));
     }
 
@@ -1364,7 +1379,7 @@ public class TrustTransactionService {
               .orElseThrow(
                   () -> new ResourceNotFoundException("TrustTransaction", candidate.getId()));
       var originalType = TrustTransactionType.of(original.getTransactionType());
-      if (INVESTMENT_ROWS.contains(originalType)) {
+      if (isFinalInvestmentRow(originalType)) {
         throw new InvalidStateException(
             "Cannot unmatch statement line", investmentRowRefusal(originalType));
       }
@@ -1394,6 +1409,16 @@ public class TrustTransactionService {
               memberId));
     }
     return contras;
+  }
+
+  /**
+   * 648A: an investment's row that is never reversed — registry-derived ({@link
+   * TrustTransactionType#isInvestmentRow()} with {@code reversal = NONE}): the placement, receipt,
+   * withdrawal and return legs of both bases. An investment row the registry lets its owner reverse
+   * ({@code INV_INTEREST}, {@code OWNER} — 648B, from its investment) keeps the owner refusal.
+   */
+  private static boolean isFinalInvestmentRow(TrustTransactionType type) {
+    return type.isInvestmentRow() && type.reversal() == TrustTransactionType.Reversal.NONE;
   }
 
   /**

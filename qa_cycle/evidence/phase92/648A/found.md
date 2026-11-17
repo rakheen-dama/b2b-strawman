@@ -1,4 +1,4 @@
-# 648A — found while building (reported, not fixed in this slice)
+# 648A — found while building and in review (F-1/F-2 reported only; F-3/F-4/F-5 fixed in this slice)
 
 ## F-1 (hand-off to 648E, already planned): the client ledger card's totals do not count investment rows
 
@@ -33,8 +33,21 @@ rows are present, the register's bases, and records a pending R500 Sipho fee tra
 
 ## F-3 (accepted ruling OPEN-3, re-raised by the automated security review): s86(3) cover is checked at request only
 
-Status: from code reading (the request-only check is pinned by the 648A tests; the double-approval
-overdraft itself is not reproduced by a test in this slice).
+Status: **fixed in 648A (review cycle 1)** — orchestrator ruling: OPEN-3 reversed. Reproduced first
+(`red-backend-review-f3.txt`: the second approval posted). Fix: at the final approval of a
+`FIRM_INV_PLACE`, `TrustTransactionService.requireCashbookCoversFirmPlacement` locks the funding
+account row (lock order: placement row, then funding account) and refuses unless
+`cashbook(G, today) >= amount` with the request's own refusal ("Insufficient trust balance" / "The
+trust account's cashbook does not cover this section 86(3) placement. …"); `placeInvestment` now
+takes the funding account's lock too (funding, then investment account), so the request's read and
+the approval's re-read are serialised. Pinned by
+`TrustInvestmentServiceIntegrationTest.section86_3_cover_isCheckedAgainAtApproval_soTwoPendingPlacementsCannotOverdrawTheCashbook`
+(two pending R3 000 placements against R5 000: the first approves, the second is refused with
+`assertMoves` none on both accounts, stays AWAITING_APPROVAL; the class ends `assertFirmBalanced`).
+Residual (not this slice): a client payment's approval locks the client anchor, not the account,
+so it is not serialised with a concurrent s86(3) approval; each re-reads its own cover.
+
+Original text (as found):
 
 `placeInvestment` refuses a section 86(3) placement when `cashbook(G, today) < principal`, but
 `FIRM_INV_PLACE` is an `INTER_ACCOUNT` row, so approval (`TrustTransactionService`, which re-checks
@@ -47,7 +60,21 @@ only"); it is flagged here and in the PR for a decision. Suggested follow-up: at
 
 ## F-4 (pre-existing guard, newly reachable): an investment account can be closed while it holds investments
 
-Status: hypothesis from code reading — not reproduced by a test in this slice.
+Status: **fixed in 648A (review cycle 1)** — reproduced first (`red-backend-review-f4.txt`: both
+closes succeeded). Fix: `TrustAccountService.closeTrustAccount` (under the account's lock) also
+refuses while an investment placed from **or** held in the account is ACTIVE/MATURED
+(`TrustInvestmentRepository.existsByFundingOrInvestmentAccountAndStatusIn` — a placement awaiting
+approval is ACTIVE, so it counts; this also covers CodeRabbit's funding-account point on this
+file) and on a non-zero cashbook ("Non-zero cashbook balance of R… must be resolved first.");
+`withdrawInvestment` refuses unless both accounts are ACTIVE. Pinned by
+`TrustAccountServiceTest.closeTrustAccount_isRefused_whileItHoldsOrFundsAnActiveOrMaturedInvestment`,
+`TrustAccountServiceTest.closeTrustAccount_isAllowed_whenItsInvestmentsAreWithdrawnOrCancelled`,
+`TrustInvestmentServiceIntegrationTest.investmentAccount_isNotClosed_whileItHoldsTheInvestment_andWithdrawalNeedsBothActive`
+(pending and approved placement both block; withdrawal refused on a closed account with nothing
+moved; close succeeds after the withdrawal) and
+`TrustInvestmentServiceIntegrationTest.account_isNotClosed_whileItsCashbookIsNotZero`.
+
+Original text (as found):
 
 `TrustAccountService.closeTrustAccount` refuses only a non-zero **client-ledger** total
 (`clientLedgerTotal`, `ledger = 'CLIENT'`). An `INVESTMENT` account's rows are `CLIENT_INVESTMENT`
@@ -59,3 +86,31 @@ section 86(3) investment funded from it is outstanding. Not fixed here (the clos
 648.3–648.6, and refusing the withdrawal alone would strand the money). Suggested fix: refuse
 `closeTrustAccount` while `existsByInvestmentAccountIdAndStatusIn(id, ACTIVE/MATURED)` or the
 account's cashbook is non-zero, and refuse a withdrawal unless both accounts are `ACTIVE`.
+
+## F-5 (found by the orchestrator's E2E run on 2accb1674, fixed in 648A review cycle 1): "Create Account" outside the viewport
+
+Status: **found and fixed**. `day-60-interest.spec.ts:374` ("Place investment — R200,000 …
+(s86(3), names no client)") failed: the stacked "Add Investment Account" dialog
+(`CreateTrustAccountDialog`, opened from `PlaceInvestmentDialog`) is taller than the 720-px test
+viewport since 648C added the basis select and its help text, and its content did not scroll, so
+Playwright reported "Create Account" outside of the viewport (screenshot in the orchestrator's run
+artefacts). Fix in the product: the dialog content takes the repo's pattern `max-h-[90vh]
+overflow-y-auto` (as `PlaceInvestmentDialog` and `RecordTransferDialog`). Pinned by the vitest
+`trust-investment-basis.test.tsx` › "the account dialog's content scrolls within the viewport"
+(red without the classes: `red-frontend-review-dialog-scroll.txt`). The E2E re-run is the
+orchestrator's.
+
+## Review cycle 1 — deferred to 648B (reported only)
+
+- **Recorded interest is not on the books** (CodeRabbit, `TrustInvestmentService.java:464`):
+  `PUT /api/trust-investments/{id}/interest` still only adds to `interestEarned` (OPEN-2, kept until
+  648B), so a withdrawal returns the ledger balance without it. 648B replaces the endpoint with
+  posted `INV_INTEREST` / `FUND_INV_SHARE` rows; the withdraw dialog no longer promises that
+  recorded interest returns.
+- **Withdrawal date vs later investment entries** (CodeRabbit, `TrustLedgerQueryRepository.java:405`):
+  `investmentBalance` has no as-at bound. Unreachable in 648A — an investment's only rows before
+  its withdrawal are the receive leg dated the deposit date, and the withdrawal date is refused
+  before the deposit date — but once 648B posts interest rows a withdrawal dated before one would
+  return it early. 648B must pick the policy (refuse a withdrawal dated before the investment's
+  last posted entry, or withdraw the as-at balance).
+

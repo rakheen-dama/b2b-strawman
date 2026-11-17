@@ -689,7 +689,11 @@ class TrustInvestmentControllerTest {
                       "investmentBasis": "FIRM_DISCRETION"
                     }
                     """))
-        .andExpect(status().isBadRequest());
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.title").value("Validation failed"))
+        .andExpect(jsonPath("$.detail").value("1 field(s) have validation errors"))
+        .andExpect(jsonPath("$.fieldErrors[0].field").value("investmentAccountId"));
   }
 
   @Test
@@ -720,6 +724,16 @@ class TrustInvestmentControllerTest {
             .andReturn();
     var investmentId =
         JsonPath.read(investResult.getResponse().getContentAsString(), "$.id").toString();
+    // Approved first, so the request reaches the date's validation (a pending placement is
+    // refused on its own)
+    var placementId =
+        JsonPath.read(investResult.getResponse().getContentAsString(), "$.depositTransactionId")
+            .toString();
+    mockMvc
+        .perform(
+            post("/api/trust-transactions/" + placementId + "/approve")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_invest_ctrl_approver")))
+        .andExpect(status().isOk());
 
     mockMvc
         .perform(
@@ -727,7 +741,11 @@ class TrustInvestmentControllerTest {
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_invest_ctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{}"))
-        .andExpect(status().isBadRequest());
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.title").value("Validation failed"))
+        .andExpect(jsonPath("$.detail").value("1 field(s) have validation errors"))
+        .andExpect(jsonPath("$.fieldErrors[0].field").value("withdrawalDate"));
   }
 
   private final java.util.Map<String, UUID> trustMatters = new java.util.HashMap<>();

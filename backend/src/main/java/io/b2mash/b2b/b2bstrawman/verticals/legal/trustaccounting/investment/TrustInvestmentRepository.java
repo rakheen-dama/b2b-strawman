@@ -52,6 +52,20 @@ public interface TrustInvestmentRepository extends JpaRepository<TrustInvestment
   boolean existsByInvestmentAccountIdAndStatusIn(
       UUID investmentAccountId, Collection<String> statuses);
 
+  /**
+   * Whether an investment in one of {@code statuses} was placed from, or is held in, the account
+   * (648A review F-4: the account cannot be closed while one is). An investment whose placement
+   * still awaits approval is {@code ACTIVE}, so it counts.
+   */
+  @Query(
+      """
+      SELECT COUNT(i) > 0 FROM TrustInvestment i
+       WHERE (i.trustAccountId = :accountId OR i.investmentAccountId = :accountId)
+         AND i.status IN :statuses
+      """)
+  boolean existsByFundingOrInvestmentAccountAndStatusIn(
+      @Param("accountId") UUID accountId, @Param("statuses") Collection<String> statuses);
+
   List<TrustInvestment> findByTrustAccountIdAndCustomerId(UUID trustAccountId, UUID customerId);
 
   List<TrustInvestment> findByStatusAndMaturityDateBetween(

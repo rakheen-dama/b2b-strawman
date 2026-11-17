@@ -114,7 +114,8 @@ export function WithdrawInvestmentDialog({
                 </span>
               </div>
               <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                The capital and the interest recorded on the investment.
+                The capital and any section 86(4) interest posted to the books (section 86(3)
+                interest belongs to the Legal Practitioners&apos; Fidelity Fund).
               </p>
             </div>
 

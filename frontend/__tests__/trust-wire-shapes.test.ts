@@ -420,6 +420,7 @@ describe("trust wire shapes match the backend contract (ADR-365)", () => {
       interestEarned: 0,
       balance: 0,
       status: "ACTIVE",
+      awaitingApproval: false,
       withdrawalDate: null,
       withdrawalAmount: null,
       depositTransactionId: null,

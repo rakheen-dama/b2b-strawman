@@ -124,7 +124,11 @@ export function PlaceInvestmentDialog({
 
   function handleAccountCreated(account: TrustAccount) {
     setAddedAccounts((previous) => [...previous, account]);
-    form.setValue("investmentAccountId", account.id, { shouldValidate: true });
+    // The basis may have changed while the account was being created: select it only if it still
+    // fits the placement (the picker lists it under its own basis either way)
+    if (account.investmentBasis === form.getValues("investmentBasis")) {
+      form.setValue("investmentAccountId", account.id, { shouldValidate: true });
+    }
   }
 
   async function handleSubmit(data: PlaceInvestmentFormData) {

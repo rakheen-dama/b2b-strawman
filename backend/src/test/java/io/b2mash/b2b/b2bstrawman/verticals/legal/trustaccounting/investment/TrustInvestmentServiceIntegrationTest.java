@@ -14,6 +14,8 @@ import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksFixture.Client;
 import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness;
 import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness.Expected;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountStatus;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.PlaceInvestmentRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.TrustInvestmentResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.WithdrawInvestmentRequest;
@@ -78,12 +80,16 @@ class TrustInvestmentServiceIntegrationTest {
           + " placement.";
   private static final String INVESTMENT_ROW_NOT_REVERSIBLE =
       "Investment entries cannot be reversed. Withdraw the investment instead.";
+  private static final String INVESTMENT_HELD_ON_CLOSE =
+      "An investment placed from or held in this account has not been withdrawn. Withdraw it"
+          + " before closing the account.";
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private TrustBooksFixture fixture;
   @Autowired private TrustBooksHarness harness;
   @Autowired private TrustInvestmentService investmentService;
+  @Autowired private TrustAccountService trustAccountService;
   @Autowired private TrustInvestmentRepository investmentRepository;
   @Autowired private TrustTransactionService transactionService;
   @Autowired private TrustTransactionRepository transactionRepository;
@@ -157,6 +163,7 @@ class TrustInvestmentServiceIntegrationTest {
     assertThat(placed.matterId()).isEqualTo(client.matter());
     assertThat(placed.clientName()).isEqualTo(client.name());
     assertThat(placed.balance()).isEqualByComparingTo("0");
+    assertThat(placed.awaitingApproval()).isTrue();
     assertThat(
             audit("trust_investment.placed", placed.id()).getDetails().get("investment_account_id"))
         .isEqualTo(investmentAccount.toString());
@@ -195,6 +202,7 @@ class TrustInvestmentServiceIntegrationTest {
                 .add(books.clientInvestmentLedger(investmentAccount, client)))
         .isEqualByComparingTo("5000.00");
     assertThat(get(placed.id()).balance()).isEqualByComparingTo("2000.00");
+    assertThat(get(placed.id()).awaitingApproval()).isFalse();
     books.assertServicesAgree(funding);
     books.assertServicesAgree(investmentAccount);
   }
@@ -599,6 +607,147 @@ class TrustInvestmentServiceIntegrationTest {
             + " R1\u00a0000,00, Requested: R1\u00a0000,01");
   }
 
+  /**
+   * Review F-3 (OPEN-3 reversed): a section 86(3) placement moves no client money, so the
+   * client-cover check at approval never ran for it. Two placements that each pass the request
+   * check (pending placements move nothing) must not both post — the second approval re-reads the
+   * cashbook under the funding account's lock and is refused, moving nothing on either account.
+   */
+  @Test
+  void
+      section86_3_cover_isCheckedAgainAtApproval_soTwoPendingPlacementsCannotOverdrawTheCashbook() {
+    var funding = books.freshAccount(false);
+    var firmAccount = books.freshInvestmentAccount(InvestmentBasis.FIRM_DISCRETION);
+    var client = books.newClient("s86(3) double approval");
+    books.deposit(funding, client, "5000.00");
+
+    var first = books.requestPlacement(funding, firmAccount, null, "3000.00");
+    var second = books.requestPlacement(funding, firmAccount, null, "3000.00");
+
+    books.approvePlacement(
+        funding,
+        Expected.cashbookAndInterAccount("-3000.00"),
+        firmAccount,
+        Expected.cashbookAndInterAccount("3000.00"),
+        first.depositTransactionId(),
+        approverId);
+
+    books.as(
+        approverId,
+        () ->
+            harness.assertMoves(
+                funding,
+                Expected.none(),
+                firmAccount,
+                Expected.none(),
+                () ->
+                    assertThatThrownBy(
+                            () ->
+                                transactionService.approveTransaction(
+                                    second.depositTransactionId(), approverId))
+                        .isInstanceOfSatisfying(
+                            InvalidStateException.class,
+                            e -> {
+                              assertThat(e.getBody().getStatus()).isEqualTo(400);
+                              assertThat(e.getBody().getTitle())
+                                  .isEqualTo("Insufficient trust balance");
+                              assertThat(e.getBody().getDetail())
+                                  .isEqualTo(
+                                      "The trust account's cashbook does not cover this section"
+                                          + " 86(3) placement. Available: R2 000,00,"
+                                          + " Requested: R3 000,00");
+                            })));
+
+    assertThat(books.statusOf(second.depositTransactionId())).isEqualTo("AWAITING_APPROVAL");
+    assertThat(investment(second.id()).getStatus()).isEqualTo("ACTIVE");
+    assertThat(get(second.id()).balance()).isEqualByComparingTo("0");
+    assertThat(get(second.id()).awaitingApproval()).isTrue();
+    assertThat(get(first.id()).awaitingApproval()).isFalse();
+    books.assertFirmBalanced();
+  }
+
+  @Test
+  void placement_maturityDate_cannotBeBeforeTheDepositDate() {
+    var funding = books.freshAccount(false);
+    var firmAccount = books.freshInvestmentAccount(InvestmentBasis.FIRM_DISCRETION);
+    var client = books.newClient("maturity date");
+    books.deposit(funding, client, "1000.00");
+    var base = request(firmAccount, null, "100.00", InvestmentBasis.FIRM_DISCRETION);
+
+    assertPlacementRefused(
+        funding,
+        firmAccount,
+        new PlaceInvestmentRequest(
+            base.investmentAccountId(),
+            null,
+            null,
+            base.institution(),
+            base.accountNumber(),
+            base.principal(),
+            base.interestRate(),
+            base.depositDate(),
+            base.depositDate().minusDays(1),
+            null,
+            base.investmentBasis()),
+        PLACE_TITLE,
+        "The maturity date cannot be before the deposit date.");
+  }
+
+  // --- review F-4: closing an account while an investment is held through it ----------------
+
+  @Test
+  void investmentAccount_isNotClosed_whileItHoldsTheInvestment_andWithdrawalNeedsBothActive() {
+    var funding = books.freshAccount(false);
+    var investmentAccount = books.freshInvestmentAccount(InvestmentBasis.CLIENT_INSTRUCTION);
+    var client = books.newClient("close guard");
+    books.deposit(funding, client, "1000.00");
+
+    // Pending: nothing has reached the investment account yet, but the placement names it
+    var placed = books.requestPlacement(funding, investmentAccount, client, "400.00");
+    assertCloseRefused(investmentAccount, INVESTMENT_HELD_ON_CLOSE);
+
+    books.approvePlacement(
+        funding,
+        Expected.cashbookAndClient("-400.00"),
+        investmentAccount,
+        Expected.cashbookAndInvestment("400.00"),
+        placed.depositTransactionId(),
+        approverId);
+    assertCloseRefused(investmentAccount, INVESTMENT_HELD_ON_CLOSE);
+
+    // An account closed before the guard existed: the withdrawal is refused, nothing moves
+    setAccountStatusDirect(investmentAccount, "CLOSED");
+    assertWithdrawRefused(
+        funding,
+        investmentAccount,
+        placed.id(),
+        books.today(),
+        "The trust account the investment was placed from and the investment account holding it"
+            + " must both be active to withdraw it.");
+    setAccountStatusDirect(investmentAccount, "ACTIVE");
+
+    books.withdraw(
+        funding,
+        Expected.cashbookAndClient("400.00"),
+        investmentAccount,
+        Expected.cashbookAndInvestment("-400.00"),
+        placed.id(),
+        books.today());
+    books.as(
+        ownerId,
+        () ->
+            assertThat(trustAccountService.closeTrustAccount(investmentAccount).status())
+                .isEqualTo(TrustAccountStatus.CLOSED));
+  }
+
+  @Test
+  void account_isNotClosed_whileItsCashbookIsNotZero() {
+    var account = books.freshAccount(false);
+    // Money held for no client (an unidentified deposit): every client ledger is zero
+    books.unidentifiedDepositDirect(account, "250.00", TrustBooksFixture.POSTING_DATE);
+    assertCloseRefused(account, "Non-zero cashbook balance of R250.00 must be resolved first.");
+  }
+
   // --- reversal refused on the type (replaces G89-F86) -------------------------------------
 
   @Test
@@ -735,6 +884,40 @@ class TrustInvestmentServiceIntegrationTest {
                               assertThat(e.getBody().getTitle()).isEqualTo(title);
                               assertThat(e.getBody().getDetail()).isEqualTo(detail);
                             })));
+  }
+
+  /** Closing the account is refused (400 "Cannot close trust account"); it stays active. */
+  private void assertCloseRefused(UUID accountId, String detail) {
+    books.as(
+        ownerId,
+        () ->
+            harness.assertMoves(
+                accountId,
+                Expected.none(),
+                () ->
+                    assertThatThrownBy(() -> trustAccountService.closeTrustAccount(accountId))
+                        .isInstanceOfSatisfying(
+                            InvalidStateException.class,
+                            e -> {
+                              assertThat(e.getBody().getStatus()).isEqualTo(400);
+                              assertThat(e.getBody().getTitle())
+                                  .isEqualTo("Cannot close trust account");
+                              assertThat(e.getBody().getDetail()).isEqualTo(detail);
+                            })));
+    assertThat(
+            jdbc.queryForObject(
+                "SELECT status FROM \"%s\".trust_accounts WHERE id = ?".formatted(books.schema()),
+                String.class,
+                accountId))
+        .isEqualTo("ACTIVE");
+  }
+
+  /** Sets an account's status straight in the table (an account closed before the F-4 guard). */
+  private void setAccountStatusDirect(UUID accountId, String status) {
+    jdbc.update(
+        "UPDATE \"%s\".trust_accounts SET status = ? WHERE id = ?".formatted(books.schema()),
+        status,
+        accountId);
   }
 
   /** The withdrawal is refused (400 "Cannot withdraw investment"); nothing moves on either. */

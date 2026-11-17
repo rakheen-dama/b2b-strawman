@@ -139,7 +139,10 @@ export function CreateTrustAccountDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent
+        className="max-h-[90vh] overflow-y-auto sm:max-w-lg"
+        data-testid="create-trust-account-dialog"
+      >
         <DialogHeader>
           <DialogTitle>{preset ? "Add Investment Account" : "Add Trust Account"}</DialogTitle>
           <DialogDescription>

@@ -1,0 +1,67 @@
+# 648A review cycle 1 — F-4 red (tests written before the fix) + item 7 (maturity date) red
+# date: 2026-11-17T23:12:13Z  head: 2accb1674 + new tests only
+# command: ./mvnw test -Dtest=TrustInvestmentServiceIntegrationTest,TrustAccountServiceTest -q
+
+[ERROR] Tests run: 16, Failures: 4, Errors: 0, Skipped: 0, Time elapsed: 14.49 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentServiceIntegrationTest
+[ERROR] Tests run: 19, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 1.404 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountServiceTest
+[ERROR] Tests run: 35, Failures: 5, Errors: 0, Skipped: 0
+
+io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountServiceTest.closeTrustAccount_isRefused_whileItHoldsOrFundsAnActiveOrMaturedInvestment -- Time elapsed: 0.015 s <<< FAILURE!
+java.lang.AssertionError: 
+
+Expecting code to raise a throwable.
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountServiceTest.lambda$closeTrustAccount_isRefused_whileItHoldsOrFundsAnActiveOrMaturedInvestment$2(TrustAccountServiceTest.java:929)
+	at java.base/jdk.internal.vm.ScopedValueContainer.runWithoutScope(ScopedValueContainer.java:112)
+	at java.base/jdk.internal.vm.ScopedValueContainer.run(ScopedValueContainer.java:98)
+	at java.base/java.lang.ScopedValue$Carrier.run(ScopedValue.java:466)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountServiceTest.runInTenant(TrustAccountServiceTest.java:1058)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountServiceTest.closeTrustAccount_isRefused_whileItHoldsOrFundsAnActiveOrMaturedInvestment(TrustAccountServiceTest.java:927)
+
+
+io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentServiceIntegrationTest.investmentAccount_isNotClosed_whileItHoldsTheInvestment_andWithdrawalNeedsBothActive -- Time elapsed: 0.058 s <<< FAILURE!
+java.lang.AssertionError: 
+
+Expecting code to raise a throwable.
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentServiceIntegrationTest.lambda$assertCloseRefused$1(TrustInvestmentServiceIntegrationTest.java:894)
+	at io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness.assertMoves(TrustBooksHarness.java:621)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentServiceIntegrationTest.lambda$assertCloseRefused$0(TrustInvestmentServiceIntegrationTest.java:890)
+	at java.base/jdk.internal.vm.ScopedValueContainer.runWithoutScope(ScopedValueContainer.java:112)
+	at java.base/jdk.internal.vm.ScopedValueContainer.run(ScopedValueContainer.java:98)
+	at java.base/java.lang.ScopedValue$Carrier.run(ScopedValue.java:466)
+	at io.b2mash.b2b.b2bstrawman.testutil.TrustBooksFixture$Tenant.as(TrustBooksFixture.java:169)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentServiceIntegrationTest.assertCloseRefused(TrustInvestmentServiceIntegrationTest.java:887)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentServiceIntegrationTest.investmentAccount_isNotClosed_whileItHoldsTheInvestment_andWithdrawalNeedsBothActive(TrustInvestmentServiceIntegrationTest.java:703)
+
+io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentServiceIntegrationTest.section86_3_cover_isCheckedAgainAtApproval_soTwoPendingPlacementsCannotOverdrawTheCashbook -- Time elapsed: 0.110 s <<< FAILURE!
+
+io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentServiceIntegrationTest.account_isNotClosed_whileItsCashbookIsNotZero -- Time elapsed: 0.043 s <<< FAILURE!
+java.lang.AssertionError: 
+
+Expecting code to raise a throwable.
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentServiceIntegrationTest.lambda$assertCloseRefused$1(TrustInvestmentServiceIntegrationTest.java:894)
+	at io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness.assertMoves(TrustBooksHarness.java:621)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentServiceIntegrationTest.lambda$assertCloseRefused$0(TrustInvestmentServiceIntegrationTest.java:890)
+	at java.base/jdk.internal.vm.ScopedValueContainer.runWithoutScope(ScopedValueContainer.java:112)
+	at java.base/jdk.internal.vm.ScopedValueContainer.run(ScopedValueContainer.java:98)
+	at java.base/java.lang.ScopedValue$Carrier.run(ScopedValue.java:466)
+	at io.b2mash.b2b.b2bstrawman.testutil.TrustBooksFixture$Tenant.as(TrustBooksFixture.java:169)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentServiceIntegrationTest.assertCloseRefused(TrustInvestmentServiceIntegrationTest.java:887)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentServiceIntegrationTest.account_isNotClosed_whileItsCashbookIsNotZero(TrustInvestmentServiceIntegrationTest.java:744)
+
+io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentServiceIntegrationTest.investmentAccount_isNotClosed_whileItHoldsTheInvestment_andWithdrawalNeedsBothActive -- Time elapsed: 0.058 s <<< FAILURE!
+
+io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentServiceIntegrationTest.placement_maturityDate_cannotBeBeforeTheDepositDate -- Time elapsed: 0.047 s <<< FAILURE!
+java.lang.AssertionError: 
+
+Expecting actual throwable to be an instance of:
+  io.b2mash.b2b.b2bstrawman.exception.InvalidStateException
+but was:
+  org.springframework.dao.DataIntegrityViolationException: could not execute batch [Batch entry 0 insert into trust_investments (account_number,created_at,customer_id,deposit_date,deposit_transaction_id,institution,interest_earned,interest_rate,investment_account_id,investment_basis,maturity_date,notes,principal,project_id,status,trust_account_id,updated_at,withdrawal_amount,withdrawal_date,withdrawal_transaction_id,id) values (('ACC-REFUSED'),('2026-11-17 23:12:01.81542+00'::timestamp with time zone),(NULL),('2026-03-01 +00'::date),(NULL),('Trust Books Bank'),('0'::numeric),('0.0500'::numeric),('a3fca4f8-ccff-4b0e-afd8-1b3d55d50bc0'::uuid),('FIRM_DISCRETION'),('2026-02-28 +00'::date),(NULL),('100.00'::numeric),(NULL),('ACTIVE'),('11b449ec-114b-44f8-88bc-0e2b76bc01e0'::uuid),('2026-11-17 23:12:01.81542+00'::timestamp with time zone),(NULL),(NULL),(NULL),('8b50d736-399b-42af-90ab-b8ed4fd1e10e'::uuid)) was aborted: ERROR: new row for relation "trust_investments" violates check constraint "chk_trust_invest_maturity"
+  Detail: Failing row contains (8b50d736-399b-42af-90ab-b8ed4fd1e10e, 11b449ec-114b-44f8-88bc-0e2b76bc01e0, null, Trust Books Bank, ACC-REFUSED, 100.00, 0.0500, 2026-03-01, 2026-02-28, 0.00, ACTIVE, null, null, null, null, null, 2026-11-17 23:12:01.81542+00, 2026-11-17 23:12:01.81542+00, FIRM_DISCRETION, a3fca4f8-ccff-4b0e-afd8-1b3d55d50bc0, null).  Call getNextException to see other errors in the batch.] [insert into trust_investments (account_number,created_at,customer_id,deposit_date,deposit_transaction_id,institution,interest_earned,interest_rate,investment_account_id,investment_basis,maturity_date,notes,principal,project_id,status,trust_account_id,updated_at,withdrawal_amount,withdrawal_date,withdrawal_transaction_id,id) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)]; SQL [insert into trust_investments (account_number,created_at,customer_id,deposit_date,deposit_transaction_id,institution,interest_earned,interest_rate,investment_account_id,investment_basis,maturity_date,notes,principal,project_id,status,trust_account_id,updated_at,withdrawal_amount,withdrawal_date,withdrawal_transaction_id,id) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)]; constraint [chk_trust_invest_maturity]
+	at org.springframework.orm.jpa.hibernate.HibernateExceptionTranslator.convertHibernateAccessException(HibernateExceptionTranslator.java:169)
+	at org.springframework.orm.jpa.hibernate.HibernateExceptionTranslator.convertHibernateAccessException(HibernateExceptionTranslator.java:131)
+	at org.springframework.orm.jpa.hibernate.HibernateExceptionTranslator.translateExceptionIfPossible(HibernateExceptionTranslator.java:105)
+	...(120 remaining lines not displayed - this can be changed with Assertions.setMaxStackTraceElementsDisplayed)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentServiceIntegrationTest.lambda$assertPlacementRefused$1(TrustInvestmentServiceIntegrationTest.java:876)
+	at io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness.assertMoves(TrustBooksHarness.java:621)
+	at io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness.lambda$assertMoves$0(TrustBooksHarness.java:651)

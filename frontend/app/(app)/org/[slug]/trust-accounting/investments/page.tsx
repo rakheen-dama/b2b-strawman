@@ -37,13 +37,8 @@ const STATUS_LABEL: Record<TrustInvestmentStatus, string> = {
   CANCELLED: "Cancelled",
 };
 
-/**
- * 648A: an ACTIVE investment holds nothing until its placement is approved (the placement is a
- * pending trust payment; the money reaches the investment account on approval).
- */
-function isAwaitingApproval(inv: TrustInvestment): boolean {
-  return inv.status === "ACTIVE" && Number(inv.balance) <= 0;
-}
+/** The backend withdraws a held investment — ACTIVE or MATURED (648A). */
+const WITHDRAWABLE: ReadonlySet<TrustInvestmentStatus> = new Set(["ACTIVE", "MATURED"]);
 
 /** A section 86(3) investment is the firm's surplus trust money; it names no client. */
 const FIRM_CLIENT_LABEL = "Firm (section 86(3))";
@@ -301,7 +296,7 @@ export default async function InvestmentsPage({
                             {formatCurrency(inv.balance, currency)}
                           </td>
                           <td className="py-3 pr-4">
-                            {isAwaitingApproval(inv) ? (
+                            {inv.awaitingApproval ? (
                               <Badge variant="warning">Awaiting approval</Badge>
                             ) : (
                               <Badge variant={STATUS_BADGE_VARIANT[inv.status]}>
@@ -311,12 +306,13 @@ export default async function InvestmentsPage({
                           </td>
                           {hasManageTrust && (
                             <td className="py-3">
-                              {inv.status === "ACTIVE" && !isAwaitingApproval(inv) && (
+                              {WITHDRAWABLE.has(inv.status) && !inv.awaitingApproval && (
                                 <InvestmentPageClient
                                   accountId={accountId!}
                                   variant="actions"
                                   investmentId={inv.id}
                                   investmentBalance={inv.balance}
+                                  canRecordInterest={inv.status === "ACTIVE"}
                                   currency={currency}
                                 />
                               )}

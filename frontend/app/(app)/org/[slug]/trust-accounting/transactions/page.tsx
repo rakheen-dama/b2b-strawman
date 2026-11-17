@@ -131,7 +131,10 @@ export default async function TransactionsPage({
   let accountFetchError = false;
   try {
     const accounts = await fetchTrustAccounts();
-    const primary = accounts.find((a) => a.isPrimary) ?? accounts[0];
+    // A trust banking account, never an investment account (648A): placements are requested and
+    // approved on the account the money leaves — the same rule as the investments page
+    const banking = accounts.filter((a) => a.accountType !== "INVESTMENT");
+    const primary = banking.find((a) => a.isPrimary) ?? banking[0];
     if (primary) {
       accountId = primary.id;
     }

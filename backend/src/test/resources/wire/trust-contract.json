@@ -333,6 +333,9 @@
       "name" : "status",
       "type" : "java.lang.String"
     }, {
+      "name" : "awaitingApproval",
+      "type" : "boolean"
+    }, {
       "name" : "withdrawalDate",
       "type" : "java.time.LocalDate"
     }, {

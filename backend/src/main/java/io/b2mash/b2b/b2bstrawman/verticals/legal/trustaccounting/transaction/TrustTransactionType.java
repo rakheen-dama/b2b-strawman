@@ -465,6 +465,22 @@ public enum TrustTransactionType {
     return approval;
   }
 
+  /**
+   * A row of a trust investment (648A, §16.3.7) — derived from the ledger, not listed: every type
+   * on an investment's own ledger ({@link TrustLedger#CLIENT_INVESTMENT} for section 86(4), {@link
+   * TrustLedger#INTER_ACCOUNT} for section 86(3) — the ledgers {@code chk_trust_txn_ledger_target}
+   * ties to {@code investment_id}), and a {@code CLIENT}-ledger type paired with one of them (the
+   * placement {@code INV_PLACE} and the return {@code INV_RETURN}). Such a row is never reversed on
+   * the generic paths: the investment is withdrawn instead. {@code
+   * TrustTransactionTypeRegistryTest} pins the set.
+   */
+  public boolean isInvestmentRow() {
+    return ledger == TrustLedger.CLIENT_INVESTMENT
+        || ledger == TrustLedger.INTER_ACCOUNT
+        || this == INV_PLACE
+        || this == INV_RETURN;
+  }
+
   public Reversal reversal() {
     return reversal;
   }

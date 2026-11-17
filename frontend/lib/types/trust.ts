@@ -503,6 +503,8 @@ export interface TrustInvestment {
   interestEarned: number;
   balance: number;
   status: TrustInvestmentStatus;
+  /** True while the placement awaits approval — nothing has moved yet (648A, server-computed). */
+  awaitingApproval: boolean;
   withdrawalDate: string | null;
   withdrawalAmount: number | null;
   depositTransactionId: string | null;

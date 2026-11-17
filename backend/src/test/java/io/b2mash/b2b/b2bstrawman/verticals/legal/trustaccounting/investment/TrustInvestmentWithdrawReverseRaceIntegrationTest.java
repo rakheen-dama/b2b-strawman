@@ -33,6 +33,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeAll;
@@ -176,6 +177,11 @@ class TrustInvestmentWithdrawReverseRaceIntegrationTest {
                     placed.placementId(), new ReverseRequest("Placed in error", null)));
 
     assertThat(outcome.first()).as("the withdrawal (committed first)").isNull();
+    // The lock order is still exercised: the reversal waited for the placement row lock the
+    // withdrawal held (its refusal on the type is read under that lock), it did not run ahead
+    assertThat(outcome.secondFinishedBeforeCommit())
+        .as("the reversal finished while the withdrawal still held the placement row lock")
+        .isFalse();
     assertThat(outcome.second())
         .as("the reversal, which waited for the placement row lock")
         .isInstanceOf(InvalidStateException.class)
@@ -191,7 +197,11 @@ class TrustInvestmentWithdrawReverseRaceIntegrationTest {
 
   // --- race harness ---
 
-  private record Outcome(Throwable first, Throwable second) {}
+  /**
+   * Each side's failure (null = succeeded), and whether {@code second} had already finished when
+   * {@code first} was released to commit (false = it was blocked on a lock {@code first} held).
+   */
+  private record Outcome(Throwable first, Throwable second, boolean secondFinishedBeforeCommit) {}
 
   /**
    * Runs {@code first} in a transaction that stays open after it returns, starts {@code second} on
@@ -203,6 +213,7 @@ class TrustInvestmentWithdrawReverseRaceIntegrationTest {
     var releaseFirst = new CountDownLatch(1);
     var firstError = new AtomicReference<Throwable>();
     var secondError = new AtomicReference<Throwable>();
+    var secondFinished = new AtomicBoolean(false);
 
     Thread firstThread =
         Thread.ofPlatform()
@@ -233,14 +244,17 @@ class TrustInvestmentWithdrawReverseRaceIntegrationTest {
                     as(second);
                   } catch (Throwable t) {
                     secondError.set(t);
+                  } finally {
+                    secondFinished.set(true);
                   }
                 });
     // Give the second operation time to read and check (or block on a lock) before committing
     Thread.sleep(1500);
+    boolean secondFinishedBeforeCommit = secondFinished.get();
     releaseFirst.countDown();
     firstThread.join(30_000);
     secondThread.join(30_000);
-    return new Outcome(firstError.get(), secondError.get());
+    return new Outcome(firstError.get(), secondError.get(), secondFinishedBeforeCommit);
   }
 
   private static void await(CountDownLatch latch) {

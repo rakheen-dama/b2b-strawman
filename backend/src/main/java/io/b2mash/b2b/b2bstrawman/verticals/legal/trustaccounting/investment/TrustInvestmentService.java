@@ -75,8 +75,11 @@ import org.springframework.transaction.annotation.Transactional;
  * investment's id on the placement pair, {@code INV-WD-} and the same digits on the withdrawal
  * pair. Every posting goes through {@link TrustPostingService}; the transaction repository is read
  * and locked only. Implements {@link InvestmentPlacementHooks} (no dependency on {@link
- * TrustTransactionService}, so no bean cycle). Lock order: the placement row, then the investment
- * row (then the client's lock anchor).
+ * TrustTransactionService}, so no bean cycle). Lock order: a placement request takes the funding
+ * account, then the investment account (then the client's lock anchor); its approval, the placement
+ * row, then the funding account (section 86(3)) or the client's lock anchor (section 86(4)), then
+ * the investment row; a withdrawal, the placement row, then the investment row (then the client's
+ * lock anchor).
  */
 @Service
 public class TrustInvestmentService implements InvestmentPlacementHooks {
@@ -155,7 +158,8 @@ public class TrustInvestmentService implements InvestmentPlacementHooks {
   /**
    * An investment. {@code trustAccountId} is the funding account; {@code clientId}, {@code
    * clientName} and {@code matterId} are null for section 86(3); {@code balance} is what a
-   * withdrawal would return now (zero until the placement is approved and after the withdrawal).
+   * withdrawal would return now (zero until the placement is approved and after the withdrawal);
+   * {@code awaitingApproval} is true while the placement row awaits approval (nothing has moved).
    */
   public record TrustInvestmentResponse(
       UUID id,
@@ -174,6 +178,7 @@ public class TrustInvestmentService implements InvestmentPlacementHooks {
       BigDecimal interestEarned,
       BigDecimal balance,
       String status,
+      boolean awaitingApproval,
       LocalDate withdrawalDate,
       BigDecimal withdrawalAmount,
       UUID depositTransactionId,
@@ -195,9 +200,13 @@ public class TrustInvestmentService implements InvestmentPlacementHooks {
       UUID fundingAccountId, PlaceInvestmentRequest request) {
     moduleGuard.requireModule(MODULE_ID);
 
+    // Locked (648A review F-3/F-4): serialises the section 86(3) cashbook read with a placement's
+    // approval (which re-reads it under this lock) and the placement with the account's closing.
+    // Lock order: the funding account, then the investment account (a banking account is never an
+    // investment account, so two placements cannot lock them in opposite orders).
     var funding =
         trustAccountRepository
-            .findById(fundingAccountId)
+            .findByIdForUpdate(fundingAccountId)
             .orElseThrow(() -> new ResourceNotFoundException("TrustAccount", fundingAccountId));
     if (funding.getAccountType() == TrustAccountType.INVESTMENT) {
       throw new InvalidStateException(
@@ -231,6 +240,10 @@ public class TrustInvestmentService implements InvestmentPlacementHooks {
               + " investments; this placement is a "
               + section(basis)
               + " investment. Choose an investment account of the same basis.");
+    }
+    if (request.maturityDate() != null && request.maturityDate().isBefore(request.depositDate())) {
+      throw new InvalidStateException(
+          PLACE_TITLE, "The maturity date cannot be before the deposit date.");
     }
 
     var today = LocalDate.now(clock);
@@ -273,6 +286,8 @@ public class TrustInvestmentService implements InvestmentPlacementHooks {
             "A section 86(3) investment is the firm's placement of surplus trust money and names"
                 + " no client or matter.");
       }
+      // Read under the funding account's lock; checked again at approval under the same lock
+      // (TrustTransactionService.requireCashbookCoversFirmPlacement — review F-3)
       var cashbook = ledgerQueries.cashbook(fundingAccountId, today);
       if (cashbook.compareTo(request.principal()) < 0) {
         throw new InvalidStateException(
@@ -452,6 +467,21 @@ public class TrustInvestmentService implements InvestmentPlacementHooks {
     if (date.isAfter(LocalDate.now(clock))) {
       throw new InvalidStateException(
           WITHDRAW_TITLE, "The withdrawal date cannot be in the future.");
+    }
+    // 648A review F-4: both legs post, so both accounts must be open (closing either is refused
+    // while the investment is held; this covers an account closed before that guard)
+    for (var accountId :
+        List.of(investment.getTrustAccountId(), investment.getInvestmentAccountId())) {
+      var account =
+          trustAccountRepository
+              .findById(accountId)
+              .orElseThrow(() -> new ResourceNotFoundException("TrustAccount", accountId));
+      if (account.getStatus() != TrustAccountStatus.ACTIVE) {
+        throw new InvalidStateException(
+            WITHDRAW_TITLE,
+            "The trust account the investment was placed from and the investment account holding"
+                + " it must both be active to withdraw it.");
+      }
     }
 
     boolean forClient = investment.getInvestmentBasis() == InvestmentBasis.CLIENT_INSTRUCTION;
@@ -691,9 +721,9 @@ public class TrustInvestmentService implements InvestmentPlacementHooks {
   }
 
   /**
-   * Batch-loaded names and balances for a page: three queries at most, never one per row. A section
-   * 86(3) investment has no client ({@code clientName} null); a deleted client reads "(deleted
-   * customer)".
+   * Batch-loaded names, balances and placement statuses for a page: four queries at most, never one
+   * per row. A section 86(3) investment has no client ({@code clientName} null); a deleted client
+   * reads "(deleted customer)".
    */
   private List<TrustInvestmentResponse> toResponses(List<TrustInvestment> investments) {
     if (investments.isEmpty()) {
@@ -712,6 +742,19 @@ public class TrustInvestmentService implements InvestmentPlacementHooks {
             .stream()
             .collect(
                 Collectors.toMap(TrustAccount::getId, TrustAccount::getAccountName, (a, b) -> a));
+    // The placement rows' statuses: awaitingApproval is the server's answer, not a FE inference
+    var placementIds =
+        investments.stream()
+            .map(TrustInvestment::getDepositTransactionId)
+            .filter(Objects::nonNull)
+            .toList();
+    Set<UUID> awaiting =
+        placementIds.isEmpty()
+            ? Set.of()
+            : transactionRepository.findAllById(placementIds).stream()
+                .filter(t -> "AWAITING_APPROVAL".equals(t.getStatus()))
+                .map(TrustTransaction::getId)
+                .collect(Collectors.toSet());
     Map<UUID, BigDecimal> balances =
         ledgerQueries.investmentBalances(ids(investments, TrustInvestment::getId)).stream()
             .collect(
@@ -741,6 +784,8 @@ public class TrustInvestmentService implements InvestmentPlacementHooks {
                     inv.getInterestEarned(),
                     balances.getOrDefault(inv.getId(), BigDecimal.ZERO),
                     inv.getStatus(),
+                    inv.getDepositTransactionId() != null
+                        && awaiting.contains(inv.getDepositTransactionId()),
                     inv.getWithdrawalDate(),
                     inv.getWithdrawalAmount(),
                     inv.getDepositTransactionId(),

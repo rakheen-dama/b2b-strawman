@@ -439,6 +439,26 @@ class TrustTransactionTypeRegistryTest {
   }
 
   @Test
+  void investmentRows_areTheInvestmentLedgersAndTheClientLegsPairedWithThem() {
+    assertThat(TrustTransactionType.values())
+        .filteredOn(TrustTransactionType::isInvestmentRow)
+        .containsExactlyInAnyOrder(
+            TrustTransactionType.INV_PLACE,
+            TrustTransactionType.INV_RECEIVE,
+            TrustTransactionType.INV_INTEREST,
+            TrustTransactionType.INV_WITHDRAW,
+            TrustTransactionType.INV_RETURN,
+            TrustTransactionType.FIRM_INV_PLACE,
+            TrustTransactionType.FIRM_INV_RECEIVE,
+            TrustTransactionType.FIRM_INV_WITHDRAW,
+            TrustTransactionType.FIRM_INV_RETURN);
+    // Every one but the owner-reversed interest entry (648B) is final: withdrawn, never reversed
+    assertThat(TrustTransactionType.values())
+        .filteredOn(type -> type.isInvestmentRow() && type.reversal() != Reversal.NONE)
+        .containsExactly(TrustTransactionType.INV_INTEREST);
+  }
+
+  @Test
   void names_fitTheVarchar20Column() {
     assertThat(TrustTransactionType.values())
         .allSatisfy(type -> assertThat(type.name()).hasSizeLessThanOrEqualTo(20));

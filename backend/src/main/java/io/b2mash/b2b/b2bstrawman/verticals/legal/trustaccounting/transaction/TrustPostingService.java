@@ -113,6 +113,26 @@ public class TrustPostingService {
     if (pair.getPostedAt() == null || !(approved || "RECORDED".equals(pair.getStatus()))) {
       throw new IllegalStateException("recordWithPair: pair " + pair.getId() + " is not posted");
     }
+    // The pair's status must be the one its own type posts with: REQUIRED → APPROVED, NONE →
+    // RECORDED — so a leg never inherits a status (and approvers) its pair could not have earned.
+    var pairApproval = TrustTransactionType.of(pair.getTransactionType()).approval();
+    var pairPostsAs =
+        switch (pairApproval) {
+          case REQUIRED -> "APPROVED";
+          case NONE -> "RECORDED";
+          case WITH_PAIR, WITH_ORIGINAL -> null;
+        };
+    if (!pair.getStatus().equals(pairPostsAs)) {
+      throw new IllegalStateException(
+          "recordWithPair: pair "
+              + pair.getId()
+              + " is "
+              + pair.getStatus()
+              + " but its type "
+              + pair.getTransactionType()
+              + " posts with approval "
+              + pairApproval);
+    }
     draft.setStatus(pair.getStatus());
     if (approved) {
       draft.setApprovedBy(pair.getApprovedBy());

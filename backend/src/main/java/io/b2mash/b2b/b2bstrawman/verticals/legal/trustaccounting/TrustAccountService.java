@@ -362,6 +362,26 @@ public class TrustAccountService {
               + totalBalance.toPlainString()
               + " must be resolved first.");
     }
+    // 648A review F-4: an investment's money is on no client ledger (CLIENT_INVESTMENT /
+    // INTER_ACCOUNT), and a pending placement has moved nothing yet — so neither the account an
+    // investment is held in nor the account it was placed from closes while it is held (a later
+    // withdrawal would post on a closed account). Under this account's lock, which a placement
+    // request takes on both accounts.
+    if (investmentRepository.existsByFundingOrInvestmentAccountAndStatusIn(
+        id, List.of("ACTIVE", "MATURED"))) {
+      throw new InvalidStateException(
+          "Cannot close trust account",
+          "An investment placed from or held in this account has not been withdrawn. Withdraw it"
+              + " before closing the account.");
+    }
+    // ... and the bank must hold nothing for it: money held for no client (an unidentified
+    // deposit, the Fund's or the firm's) is on no client ledger either.
+    BigDecimal cashbook = ledgerQueries.cashbook(id, null);
+    if (cashbook.compareTo(BigDecimal.ZERO) != 0) {
+      throw new InvalidStateException(
+          "Cannot close trust account",
+          "Non-zero cashbook balance of R" + cashbook.toPlainString() + " must be resolved first.");
+    }
 
     account.setStatus(TrustAccountStatus.CLOSED);
     account.setClosedDate(LocalDate.now(clock));

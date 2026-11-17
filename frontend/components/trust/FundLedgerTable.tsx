@@ -80,7 +80,11 @@ export function FundLedgerTable({ rows, currency, empty }: FundLedgerTableProps)
           meta: { label: "Type", cellClassName: "whitespace-normal" },
           cell: ({ row }) => (
             <span className="inline-flex flex-wrap items-center gap-1">
-              <Badge variant="neutral">{row.original.typeLabel}</Badge>
+              {/* F-1: the Fund's labels are long ("Interest received for the Legal Practitioners'
+                  Fidelity Fund"); the badge wraps instead of widening the table past the card. */}
+              <Badge variant="neutral" className="shrink whitespace-normal">
+                {row.original.typeLabel}
+              </Badge>
               {row.original.status === "REVERSED" && <Badge variant="outline">Reversed</Badge>}
               {!POSTED_STATUSES.has(row.original.status) && (
                 <Badge
@@ -115,7 +119,7 @@ export function FundLedgerTable({ rows, currency, empty }: FundLedgerTableProps)
         },
         {
           id: "charge",
-          meta: { label: "Bank charge" },
+          meta: { label: "Bank charge", cellClassName: "whitespace-normal" },
           cell: ({ row }) => {
             const { chargeRecoverable, chargeVatAmount } = row.original;
             return (
@@ -126,7 +130,12 @@ export function FundLedgerTable({ rows, currency, empty }: FundLedgerTableProps)
                   <>
                     {chargeRecoverable ? "Recoverable" : "Not recoverable"}
                     {typeof chargeVatAmount === "number" && (
-                      <> · VAT {formatCurrency(chargeVatAmount, currency)}</>
+                      <>
+                        {" · "}
+                        <span className="whitespace-nowrap">
+                          VAT {formatCurrency(chargeVatAmount, currency)}
+                        </span>
+                      </>
                     )}
                   </>
                 )}

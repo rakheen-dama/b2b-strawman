@@ -33,6 +33,9 @@ rows are present, the register's bases, and records a pending R500 Sipho fee tra
 
 ## F-3 (accepted ruling OPEN-3, re-raised by the automated security review): s86(3) cover is checked at request only
 
+Status: from code reading (the request-only check is pinned by the 648A tests; the double-approval
+overdraft itself is not reproduced by a test in this slice).
+
 `placeInvestment` refuses a section 86(3) placement when `cashbook(G, today) < principal`, but
 `FIRM_INV_PLACE` is an `INTER_ACCOUNT` row, so approval (`TrustTransactionService`, which re-checks
 cover only for `CLIENT`-ledger types) does not re-check it, and the request check does not deduct
@@ -43,6 +46,8 @@ only"); it is flagged here and in the PR for a decision. Suggested follow-up: at
 `FIRM_INV_PLACE`, under the account's lock, re-check `cashbook(G, max(today, date)) ≥ amount`.
 
 ## F-4 (pre-existing guard, newly reachable): an investment account can be closed while it holds investments
+
+Status: hypothesis from code reading — not reproduced by a test in this slice.
 
 `TrustAccountService.closeTrustAccount` refuses only a non-zero **client-ledger** total
 (`clientLedgerTotal`, `ledger = 'CLIENT'`). An `INVESTMENT` account's rows are `CLIENT_INVESTMENT`

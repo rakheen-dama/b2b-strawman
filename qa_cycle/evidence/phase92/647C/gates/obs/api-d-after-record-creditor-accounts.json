@@ -1,0 +1,24 @@
+{
+  "path": "/api/trust-accounts/9c678aa3-e2b6-4921-9a73-74053f8acee0/creditor-accounts",
+  "status": 200,
+  "body": [
+    {
+      "id": "a01987bd-3424-475a-8878-f8f096fc151a",
+      "trustAccountId": "9c678aa3-e2b6-4921-9a73-74053f8acee0",
+      "accountType": "FUND_INTEREST_AND_CHARGES",
+      "name": "Legal Practitioners' Fidelity Fund — interest and charges",
+      "balance": 115,
+      "inDebit": false,
+      "asAt": "2026-11-17"
+    },
+    {
+      "id": "ba78fed2-5977-44e8-a076-0d813eb9e8bc",
+      "trustAccountId": "9c678aa3-e2b6-4921-9a73-74053f8acee0",
+      "accountType": "UNIDENTIFIED_DEPOSITS",
+      "name": "Unidentified deposits",
+      "balance": 0,
+      "inDebit": false,
+      "asAt": "2026-11-17"
+    }
+  ]
+}

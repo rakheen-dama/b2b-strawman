@@ -1,7 +1,7 @@
 {
-  "commit": "ab1714caf",
-  "command": "cd backend && bash scripts/verify.sh -q  (./mvnw verify under caffeinate, worktree-epic-647A) && ./mvnw -q spotless:check",
+  "commit": "6e485f412",
+  "command": "cd backend && ./mvnw spotless:apply && bash scripts/verify.sh -q",
   "exit": 0,
-  "ts": "2026-11-17T11:40:00Z",
-  "summary": "PR #1794 (647A) head ab1714caf — 7093 <testcase> / 0 failures / 0 errors / 26 skipped — ~22 min (baseline 7048 after 646D: +45); spotless:check OK"
+  "ts": "2026-11-17T13:28:14Z",
+  "summary": "PR #1795 (647C) @6e485f412 — 7131 testcases / 0 failures / 0 errors / 26 skipped (841 surefire reports, counted from <testcase>) — 28:51 min; Backend CI pass 25m56s"
 }

@@ -1,0 +1,491 @@
+{
+  "at": "2026-11-17T13:45:11.655Z",
+  "widths": [
+    {
+      "chain": [
+        {
+          "tag": "TABLE",
+          "testid": "fund-ledger-table",
+          "cls": "w-full caption-bottom text-sm tabular-nums",
+          "overflowX": "visible",
+          "clientWidth": 1102,
+          "scrollWidth": 1102,
+          "left": 305,
+          "right": 1407
+        },
+        {
+          "tag": "DIV",
+          "testid": null,
+          "cls": "relative w-full overflow-x-auto",
+          "overflowX": "auto",
+          "clientWidth": 926,
+          "scrollWidth": 1102,
+          "left": 305,
+          "right": 1231
+        },
+        {
+          "tag": "DIV",
+          "testid": null,
+          "cls": "@container",
+          "overflowX": "visible",
+          "clientWidth": 926,
+          "scrollWidth": 926,
+          "left": 305,
+          "right": 1231
+        },
+        {
+          "tag": "DIV",
+          "testid": null,
+          "cls": "space-y-3",
+          "overflowX": "visible",
+          "clientWidth": 926,
+          "scrollWidth": 926,
+          "left": 305,
+          "right": 1231
+        },
+        {
+          "tag": "DIV",
+          "testid": null,
+          "cls": "px-6",
+          "overflowX": "visible",
+          "clientWidth": 974,
+          "scrollWidth": 974,
+          "left": 281,
+          "right": 1255
+        },
+        {
+          "tag": "DIV",
+          "testid": "fund-ledger-section",
+          "cls": "bg-card text-card-foreground flex flex-col gap-6 rounded-lg border border-slate-200/80 py-6 shadow-sm dark:border-slate-",
+          "overflowX": "visible",
+          "clientWidth": 974,
+          "scrollWidth": 974,
+          "left": 280,
+          "right": 1256
+        }
+      ],
+      "header": [
+        {
+          "text": "DATE",
+          "right": 406,
+          "scrollWidth": 101,
+          "clientWidth": 101
+        },
+        {
+          "text": "REFERENCE",
+          "right": 497,
+          "scrollWidth": 91,
+          "clientWidth": 91
+        },
+        {
+          "text": "DESCRIPTION",
+          "right": 601,
+          "scrollWidth": 104,
+          "clientWidth": 104
+        },
+        {
+          "text": "TYPE",
+          "right": 971,
+          "scrollWidth": 370,
+          "clientWidth": 370
+        },
+        {
+          "text": "AMOUNT",
+          "right": 1087,
+          "scrollWidth": 116,
+          "clientWidth": 116
+        },
+        {
+          "text": "BANK CHARGE",
+          "right": 1266,
+          "scrollWidth": 179,
+          "clientWidth": 179
+        },
+        {
+          "text": "RUNNING BALANCE",
+          "right": 1407,
+          "scrollWidth": 141,
+          "clientWidth": 141
+        }
+      ],
+      "balances": [
+        {
+          "text": "R 172,50",
+          "spanRight": 1399,
+          "tdRight": 1407,
+          "tdScrollWidth": 141,
+          "tdClientWidth": 141,
+          "tdOverflow": "visible",
+          "tdTextOverflow": "clip",
+          "tdPaddingRight": "8px"
+        },
+        {
+          "text": "R 115,00",
+          "spanRight": 1399,
+          "tdRight": 1407,
+          "tdScrollWidth": 141,
+          "tdClientWidth": 141,
+          "tdOverflow": "visible",
+          "tdTextOverflow": "clip",
+          "tdPaddingRight": "8px"
+        },
+        {
+          "text": "R 57,50",
+          "spanRight": 1399,
+          "tdRight": 1407,
+          "tdScrollWidth": 141,
+          "tdClientWidth": 141,
+          "tdOverflow": "visible",
+          "tdTextOverflow": "clip",
+          "tdPaddingRight": "8px"
+        },
+        {
+          "text": "R 115,00",
+          "spanRight": 1399,
+          "tdRight": 1407,
+          "tdScrollWidth": 141,
+          "tdClientWidth": 141,
+          "tdOverflow": "visible",
+          "tdTextOverflow": "clip",
+          "tdPaddingRight": "8px"
+        },
+        {
+          "text": "R 1 234,56",
+          "spanRight": 1399,
+          "tdRight": 1407,
+          "tdScrollWidth": 141,
+          "tdClientWidth": 141,
+          "tdOverflow": "visible",
+          "tdTextOverflow": "clip",
+          "tdPaddingRight": "8px"
+        }
+      ],
+      "width": 1280,
+      "clipped": true
+    },
+    {
+      "chain": [
+        {
+          "tag": "TABLE",
+          "testid": "fund-ledger-table",
+          "cls": "w-full caption-bottom text-sm tabular-nums",
+          "overflowX": "visible",
+          "clientWidth": 1102,
+          "scrollWidth": 1102,
+          "left": 305,
+          "right": 1407
+        },
+        {
+          "tag": "DIV",
+          "testid": null,
+          "cls": "relative w-full overflow-x-auto",
+          "overflowX": "auto",
+          "clientWidth": 1086,
+          "scrollWidth": 1102,
+          "left": 305,
+          "right": 1391
+        },
+        {
+          "tag": "DIV",
+          "testid": null,
+          "cls": "@container",
+          "overflowX": "visible",
+          "clientWidth": 1086,
+          "scrollWidth": 1086,
+          "left": 305,
+          "right": 1391
+        },
+        {
+          "tag": "DIV",
+          "testid": null,
+          "cls": "space-y-3",
+          "overflowX": "visible",
+          "clientWidth": 1086,
+          "scrollWidth": 1086,
+          "left": 305,
+          "right": 1391
+        },
+        {
+          "tag": "DIV",
+          "testid": null,
+          "cls": "px-6",
+          "overflowX": "visible",
+          "clientWidth": 1134,
+          "scrollWidth": 1134,
+          "left": 281,
+          "right": 1415
+        },
+        {
+          "tag": "DIV",
+          "testid": "fund-ledger-section",
+          "cls": "bg-card text-card-foreground flex flex-col gap-6 rounded-lg border border-slate-200/80 py-6 shadow-sm dark:border-slate-",
+          "overflowX": "visible",
+          "clientWidth": 1134,
+          "scrollWidth": 1134,
+          "left": 280,
+          "right": 1416
+        }
+      ],
+      "header": [
+        {
+          "text": "DATE",
+          "right": 406,
+          "scrollWidth": 101,
+          "clientWidth": 101
+        },
+        {
+          "text": "REFERENCE",
+          "right": 497,
+          "scrollWidth": 91,
+          "clientWidth": 91
+        },
+        {
+          "text": "DESCRIPTION",
+          "right": 601,
+          "scrollWidth": 104,
+          "clientWidth": 104
+        },
+        {
+          "text": "TYPE",
+          "right": 971,
+          "scrollWidth": 370,
+          "clientWidth": 370
+        },
+        {
+          "text": "AMOUNT",
+          "right": 1087,
+          "scrollWidth": 116,
+          "clientWidth": 116
+        },
+        {
+          "text": "BANK CHARGE",
+          "right": 1266,
+          "scrollWidth": 179,
+          "clientWidth": 179
+        },
+        {
+          "text": "RUNNING BALANCE",
+          "right": 1407,
+          "scrollWidth": 141,
+          "clientWidth": 141
+        }
+      ],
+      "balances": [
+        {
+          "text": "R 172,50",
+          "spanRight": 1399,
+          "tdRight": 1407,
+          "tdScrollWidth": 141,
+          "tdClientWidth": 141,
+          "tdOverflow": "visible",
+          "tdTextOverflow": "clip",
+          "tdPaddingRight": "8px"
+        },
+        {
+          "text": "R 115,00",
+          "spanRight": 1399,
+          "tdRight": 1407,
+          "tdScrollWidth": 141,
+          "tdClientWidth": 141,
+          "tdOverflow": "visible",
+          "tdTextOverflow": "clip",
+          "tdPaddingRight": "8px"
+        },
+        {
+          "text": "R 57,50",
+          "spanRight": 1399,
+          "tdRight": 1407,
+          "tdScrollWidth": 141,
+          "tdClientWidth": 141,
+          "tdOverflow": "visible",
+          "tdTextOverflow": "clip",
+          "tdPaddingRight": "8px"
+        },
+        {
+          "text": "R 115,00",
+          "spanRight": 1399,
+          "tdRight": 1407,
+          "tdScrollWidth": 141,
+          "tdClientWidth": 141,
+          "tdOverflow": "visible",
+          "tdTextOverflow": "clip",
+          "tdPaddingRight": "8px"
+        },
+        {
+          "text": "R 1 234,56",
+          "spanRight": 1399,
+          "tdRight": 1407,
+          "tdScrollWidth": 141,
+          "tdClientWidth": 141,
+          "tdOverflow": "visible",
+          "tdTextOverflow": "clip",
+          "tdPaddingRight": "8px"
+        }
+      ],
+      "width": 1440,
+      "clipped": true
+    },
+    {
+      "chain": [
+        {
+          "tag": "TABLE",
+          "testid": "fund-ledger-table",
+          "cls": "w-full caption-bottom text-sm tabular-nums",
+          "overflowX": "visible",
+          "clientWidth": 1182,
+          "scrollWidth": 1182,
+          "left": 497,
+          "right": 1679
+        },
+        {
+          "tag": "DIV",
+          "testid": null,
+          "cls": "relative w-full overflow-x-auto",
+          "overflowX": "auto",
+          "clientWidth": 1182,
+          "scrollWidth": 1182,
+          "left": 497,
+          "right": 1679
+        },
+        {
+          "tag": "DIV",
+          "testid": null,
+          "cls": "@container",
+          "overflowX": "visible",
+          "clientWidth": 1182,
+          "scrollWidth": 1182,
+          "left": 497,
+          "right": 1679
+        },
+        {
+          "tag": "DIV",
+          "testid": null,
+          "cls": "space-y-3",
+          "overflowX": "visible",
+          "clientWidth": 1182,
+          "scrollWidth": 1182,
+          "left": 497,
+          "right": 1679
+        },
+        {
+          "tag": "DIV",
+          "testid": null,
+          "cls": "px-6",
+          "overflowX": "visible",
+          "clientWidth": 1230,
+          "scrollWidth": 1230,
+          "left": 473,
+          "right": 1703
+        },
+        {
+          "tag": "DIV",
+          "testid": "fund-ledger-section",
+          "cls": "bg-card text-card-foreground flex flex-col gap-6 rounded-lg border border-slate-200/80 py-6 shadow-sm dark:border-slate-",
+          "overflowX": "visible",
+          "clientWidth": 1230,
+          "scrollWidth": 1230,
+          "left": 472,
+          "right": 1704
+        }
+      ],
+      "header": [
+        {
+          "text": "DATE",
+          "right": 598,
+          "scrollWidth": 101,
+          "clientWidth": 101
+        },
+        {
+          "text": "REFERENCE",
+          "right": 720,
+          "scrollWidth": 122,
+          "clientWidth": 122
+        },
+        {
+          "text": "DESCRIPTION",
+          "right": 873,
+          "scrollWidth": 153,
+          "clientWidth": 153
+        },
+        {
+          "text": "TYPE",
+          "right": 1243,
+          "scrollWidth": 370,
+          "clientWidth": 370
+        },
+        {
+          "text": "AMOUNT",
+          "right": 1359,
+          "scrollWidth": 116,
+          "clientWidth": 116
+        },
+        {
+          "text": "BANK CHARGE",
+          "right": 1538,
+          "scrollWidth": 179,
+          "clientWidth": 179
+        },
+        {
+          "text": "RUNNING BALANCE",
+          "right": 1679,
+          "scrollWidth": 141,
+          "clientWidth": 141
+        }
+      ],
+      "balances": [
+        {
+          "text": "R 172,50",
+          "spanRight": 1671,
+          "tdRight": 1679,
+          "tdScrollWidth": 141,
+          "tdClientWidth": 141,
+          "tdOverflow": "visible",
+          "tdTextOverflow": "clip",
+          "tdPaddingRight": "8px"
+        },
+        {
+          "text": "R 115,00",
+          "spanRight": 1671,
+          "tdRight": 1679,
+          "tdScrollWidth": 141,
+          "tdClientWidth": 141,
+          "tdOverflow": "visible",
+          "tdTextOverflow": "clip",
+          "tdPaddingRight": "8px"
+        },
+        {
+          "text": "R 57,50",
+          "spanRight": 1671,
+          "tdRight": 1679,
+          "tdScrollWidth": 141,
+          "tdClientWidth": 141,
+          "tdOverflow": "visible",
+          "tdTextOverflow": "clip",
+          "tdPaddingRight": "8px"
+        },
+        {
+          "text": "R 115,00",
+          "spanRight": 1671,
+          "tdRight": 1679,
+          "tdScrollWidth": 141,
+          "tdClientWidth": 141,
+          "tdOverflow": "visible",
+          "tdTextOverflow": "clip",
+          "tdPaddingRight": "8px"
+        },
+        {
+          "text": "R 1 234,56",
+          "spanRight": 1671,
+          "tdRight": 1679,
+          "tdScrollWidth": 141,
+          "tdClientWidth": 141,
+          "tdOverflow": "visible",
+          "tdTextOverflow": "clip",
+          "tdPaddingRight": "8px"
+        }
+      ],
+      "width": 1920,
+      "clipped": false
+    }
+  ]
+}

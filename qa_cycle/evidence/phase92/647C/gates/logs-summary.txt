@@ -1,0 +1,56 @@
+647C gates — summary of every *.log in this dir (the *.log files are gitignored)
+
+== depth-ii.log (9784 bytes, 54 lines)
+  4 skipped
+  40 passed (2.2m)
+full per-test list: depth-ii-summary.txt
+
+== lifecycle.log (20656 bytes, 114 lines)
+  105 passed (3.4m)
+full per-test list: lifecycle-summary.txt
+
+== obs/obs-output.log (60277 bytes, 1392 lines)
+stdout of obs.cjs = the JSON in obs/obs-result.json; 'OBS FAILED' lines: 0
+
+== obs/probe-clip-output.log (12418 bytes, 491 lines)
+stdout of probe-clip.cjs = obs/probe-clip.json; 'PROBE FAILED' lines: 0
+
+== stack0-down.log (137 bytes, 4 lines)
+Stack stopped. All containers and volumes removed.
+Run 'bash compose/scripts/e2e-up.sh' to start fresh.
+
+== stack1-backend.log (261748 bytes, 518 lines)
+level counts / WARN breakdown: see stack1-log-breakdown.txt
+{'INFO': 343, 'WARN': 151}
+lines with level ERROR: 0
+
+== stack1-build.log (27946 bytes, 596 lines)
+Building from source at: /Users/rakheendama/Projects/2026/worktree-epic-647C
+e2e-up rc: see timings.txt
+
+== stack1-down.log (1344 bytes, 38 lines)
+Stack stopped. All containers and volumes removed.
+Run 'bash compose/scripts/e2e-up.sh' to start fresh.
+
+== stack1-frontend.log (10858 bytes, 149 lines)
+'⨯' lines: 36
+  36 ⨯ Error: The destination stream closed early.
+first/last ⨯: 2026-11-17T13:36:29.617950509Z 2026-11-17T13:39:36.315398970Z 
+
+== stack2-backend.log (250470 bytes, 504 lines)
+level counts / WARN breakdown: see stack2-log-breakdown.txt
+{'INFO': 272, 'WARN': 199}
+lines with level ERROR: 0
+
+== stack2-build.log (11100 bytes, 374 lines)
+Building from source at: /Users/rakheendama/Projects/2026/worktree-epic-647C
+e2e-up rc: see timings.txt
+
+== stack2-down.log (1344 bytes, 38 lines)
+Stack stopped. All containers and volumes removed.
+Run 'bash compose/scripts/e2e-up.sh' to start fresh.
+
+== stack2-frontend.log (673 bytes, 9 lines)
+'⨯' lines: 1
+   1 ⨯ Error: The destination stream closed early.
+first/last ⨯: 2026-11-17T13:48:00.255221134Z 2026-11-17T13:48:00.255221134Z 

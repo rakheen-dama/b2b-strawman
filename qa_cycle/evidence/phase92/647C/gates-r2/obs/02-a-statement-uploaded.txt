@@ -1,0 +1,70 @@
+Skip to content
+Kazi
+E2E Test Organization
+Search...
+⌘K
+TODAY
+Home
+My work
+Diary
+MATTERS
+Matters
+New matter
+Conflict check
+Adverse parties
+AI reviews
+CLIENTS
+Clients
+FICA & compliance
+Data requests
+FEES
+TRUST
+FIRM
+Platform Admin
+Notifications
+AO
+
+Alice Owner
+
+alice@e2e-test.local
+
+Toggle menu
+E2E Test Organization
+Trust accounting
+Reconciliation
+New
+Search
+⌘K
+11 unread notifications
+11
+e2e-test-org
+AO
+Back to Reconciliation
+New Reconciliation
+
+Reconcile your trust account with a bank statement
+
+1
+Select Account
+2
+Upload Statement
+3
+Auto-Match
+4
+Review & Match
+5
+Complete
+Upload Bank Statement
+Upload a CSV bank statement file to begin reconciliation
+Choose Different File
+statement-OBS647C-RQH2F.csv
+Statement imported successfully
+Lines imported: 6
+File: statement-OBS647C-RQH2F.csv
+Period: 2026-11-10 to 2026-11-17
+Format: CSV
+Back
+Next
+Command Palette
+
+Search pages and settings

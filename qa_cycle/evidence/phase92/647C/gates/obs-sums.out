@@ -1,0 +1,257 @@
+-- 647C OBS read-only evidence output (schema tenant_7d218705360b) 2026-11-17T13:40:10.819Z
+
+== [baseline: creditor accounts]
+select id, trust_account_id, account_type, name from tenant_7d218705360b.trust_creditor_accounts
+                  id                  |           trust_account_id           |       account_type        |                           name                            
+--------------------------------------+--------------------------------------+---------------------------+-----------------------------------------------------------
+ a01987bd-3424-475a-8878-f8f096fc151a | 9c678aa3-e2b6-4921-9a73-74053f8acee0 | FUND_INTEREST_AND_CHARGES | Legal Practitioners' Fidelity Fund — interest and charges
+ ba78fed2-5977-44e8-a076-0d813eb9e8bc | 9c678aa3-e2b6-4921-9a73-74053f8acee0 | UNIDENTIFIED_DEPOSITS     | Unidentified deposits
+(2 rows)
+
+
+== [baseline: trust transactions]
+select id, transaction_type, amount, status, transaction_date, posted_at is not null as posted, ledger, ledger_effect, cashbook_effect, reference, bank_statement_line_id from tenant_7d218705360b.trust_transactions order by transaction_date, created_at
+                  id                  | transaction_type |  amount   |      status       | transaction_date | posted | ledger | ledger_effect | cashbook_effect |            reference            | bank_statement_line_id 
+--------------------------------------+------------------+-----------+-------------------+------------------+--------+--------+---------------+-----------------+---------------------------------+------------------------
+ b20cdeef-3a57-4940-a11b-7fae043447d3 | DEPOSIT          | 250000.00 | RECORDED          | 2026-11-17       | t      | CLIENT |     250000.00 |       250000.00 | DEP/MOROKA/mwkqkcdh76db         | 
+ 32a0fba6-3796-4db8-8dc9-d4fa2d76ea4f | DEPOSIT          |  45000.00 | RECORDED          | 2026-11-17       | t      | CLIENT |      45000.00 |        45000.00 | DEP/QC/mwkqkcdh76db             | 
+ 4d43bdd4-7136-4aa7-895e-62301505d6ce | FEE_TRANSFER     |   8500.00 | APPROVED          | 2026-11-17       | t      | CLIENT |      -8500.00 |        -8500.00 | FEE/MOROKA/mwkqkcdh76db         | 
+ 3b569ec1-b0fb-414f-b645-020ae7647a49 | PAYMENT          | 200000.00 | AWAITING_APPROVAL | 2026-11-17       | f      | CLIENT |          0.00 |            0.00 | INV-Standard Bank-FD-0987654321 | 
+ fe201dbf-85a0-441d-a0db-70df487fddc6 | PAYMENT          |  30000.00 | AWAITING_APPROVAL | 2026-11-17       | f      | CLIENT |          0.00 |            0.00 | INV-Nedbank-CALL-1122334455     | 
+ 69643664-cdff-4dc3-8332-4422cb0a5f30 | FEE_TRANSFER     |    500.00 | AWAITING_APPROVAL | 2026-11-17       | f      | CLIENT |          0.00 |            0.00 | FEE/SIPHO/mwkqkcdh76db          | 
+(6 rows)
+
+
+== [baseline: statements / recons]
+select (select count(*) from tenant_7d218705360b.bank_statements) statements, (select count(*) from tenant_7d218705360b.bank_statement_lines) lines, (select count(*) from tenant_7d218705360b.trust_reconciliations) recons
+ statements | lines | recons 
+------------+-------+--------
+          0 |     0 |      0
+(1 row)
+
+
+== [00-baseline: Fund ledger rows + window running balance]
+with posted as (
+  select t.id, sum(t.ledger_effect) over (order by t.transaction_date, t.created_at, t.id rows between unbounded preceding and current row) as running_balance
+  from tenant_7d218705360b.trust_transactions t where t.creditor_account_id='a01987bd-3424-475a-8878-f8f096fc151a' and t.ledger='NON_CLIENT' and t.posted_at is not null)
+select t.id, t.transaction_date, t.transaction_type, t.status, t.amount, t.ledger_effect, p.running_balance, t.reference, coalesce(t.charge_recoverable::text,'') as charge_recoverable, coalesce(t.charge_vat_amount::text,'') as charge_vat_amount, coalesce(t.reversal_of::text,'') as reversal_of, t.created_at
+from tenant_7d218705360b.trust_transactions t left join posted p on p.id=t.id
+where t.creditor_account_id='a01987bd-3424-475a-8878-f8f096fc151a' and t.ledger='NON_CLIENT'
+order by t.transaction_date desc, t.created_at desc, t.id desc
+ id | transaction_date | transaction_type | status | amount | ledger_effect | running_balance | reference | charge_recoverable | charge_vat_amount | reversal_of | created_at 
+----+------------------+------------------+--------+--------+---------------+-----------------+-----------+--------------------+-------------------+-------------+------------
+(0 rows)
+
+
+== [00-baseline: Fund creditor balance as at today]
+select coalesce(sum(ledger_effect),0) from tenant_7d218705360b.trust_transactions where creditor_account_id='a01987bd-3424-475a-8878-f8f096fc151a' and ledger='NON_CLIENT' and posted_at is not null and transaction_date <= date '2026-11-17'
+ coalesce 
+----------
+        0
+(1 row)
+
+
+== [a: lines at import (before auto-match)]
+select l.line_number, l.id, l.transaction_date, l.description, l.reference, l.amount, l.match_status, l.suggested_classification, l.classification, l.trust_transaction_id, l.match_confidence, (select matched_count from tenant_7d218705360b.bank_statements s where s.id=l.bank_statement_id) as stmt_matched_count from tenant_7d218705360b.bank_statement_lines l where l.bank_statement_id='16dae0a0-9823-41a8-a89b-ee5920dbcae6' order by l.line_number
+ line_number |                  id                  | transaction_date |            description            |        reference        |  amount  | match_status | suggested_classification | classification | trust_transaction_id | match_confidence | stmt_matched_count 
+-------------+--------------------------------------+------------------+-----------------------------------+-------------------------+----------+--------------+--------------------------+----------------+----------------------+------------------+--------------------
+           1 | f097eaf0-b678-44cb-848f-b06457c7bff9 | 2026-11-10       | CREDIT INTEREST                   | INT/OBS647C/QP4KZ       |  1234.56 | UNMATCHED    | FUND_INTEREST            |                |                      |                  |                  0
+           2 | 8ee724fd-4c00-4da9-bde2-37eb6aa42d7e | 2026-11-11       | LPFF FIDELITY FUND INTEREST SWEEP | LPFF/OBS647C/QP4KZ      | -1119.56 | UNMATCHED    | FUND_SWEEP               |                |                      |                  |                  0
+           3 | f4b2b1e2-3920-499c-aa5e-8bb83a556b7f | 2026-11-12       | MONTHLY SERVICE FEE               | SVC/OBS647C/QP4KZ       |   -57.50 | UNMATCHED    | BANK_CHARGE              |                |                      |                  |                  0
+           4 | 0bec1438-90c0-4ad5-911b-824a4b47f9b6 | 2026-11-13       | SERVICE FEE REFUND                | RFD/OBS647C/QP4KZ       |    57.50 | UNMATCHED    | CHARGE_REFUND            |                |                      |                  |                  0
+           5 | 6492ef35-6ba7-406c-ac94-7f32a2f947e7 | 2026-11-14       | DEPOSIT J NKOSI                   | DEP/OBS647C/QP4KZ       |  3210.00 | UNMATCHED    |                          |                |                      |                  |                  0
+           6 | ed12b0a2-4fee-48f8-b174-1eaabeeff86e | 2026-11-17       | TRUST TO BUSINESS FEE TRANSFER    | FEE/MOROKA/mwkqkcdh76db | -8500.00 | UNMATCHED    | BANK_CHARGE              |                |                      |                  |                  0
+(6 rows)
+
+
+== [b: lines after auto-match]
+select l.line_number, l.id, l.transaction_date, l.description, l.reference, l.amount, l.match_status, l.suggested_classification, l.classification, l.trust_transaction_id, l.match_confidence, (select matched_count from tenant_7d218705360b.bank_statements s where s.id=l.bank_statement_id) as stmt_matched_count from tenant_7d218705360b.bank_statement_lines l where l.bank_statement_id='16dae0a0-9823-41a8-a89b-ee5920dbcae6' order by l.line_number
+ line_number |                  id                  | transaction_date |            description            |        reference        |  amount  | match_status | suggested_classification | classification |         trust_transaction_id         | match_confidence | stmt_matched_count 
+-------------+--------------------------------------+------------------+-----------------------------------+-------------------------+----------+--------------+--------------------------+----------------+--------------------------------------+------------------+--------------------
+           1 | f097eaf0-b678-44cb-848f-b06457c7bff9 | 2026-11-10       | CREDIT INTEREST                   | INT/OBS647C/QP4KZ       |  1234.56 | UNMATCHED    | FUND_INTEREST            |                |                                      |                  |                  1
+           2 | 8ee724fd-4c00-4da9-bde2-37eb6aa42d7e | 2026-11-11       | LPFF FIDELITY FUND INTEREST SWEEP | LPFF/OBS647C/QP4KZ      | -1119.56 | UNMATCHED    | FUND_SWEEP               |                |                                      |                  |                  1
+           3 | f4b2b1e2-3920-499c-aa5e-8bb83a556b7f | 2026-11-12       | MONTHLY SERVICE FEE               | SVC/OBS647C/QP4KZ       |   -57.50 | UNMATCHED    | BANK_CHARGE              |                |                                      |                  |                  1
+           4 | 0bec1438-90c0-4ad5-911b-824a4b47f9b6 | 2026-11-13       | SERVICE FEE REFUND                | RFD/OBS647C/QP4KZ       |    57.50 | UNMATCHED    | CHARGE_REFUND            |                |                                      |                  |                  1
+           5 | 6492ef35-6ba7-406c-ac94-7f32a2f947e7 | 2026-11-14       | DEPOSIT J NKOSI                   | DEP/OBS647C/QP4KZ       |  3210.00 | UNMATCHED    |                          |                |                                      |                  |                  1
+           6 | ed12b0a2-4fee-48f8-b174-1eaabeeff86e | 2026-11-17       | TRUST TO BUSINESS FEE TRANSFER    | FEE/MOROKA/mwkqkcdh76db | -8500.00 | AUTO_MATCHED |                          |                | 4d43bdd4-7136-4aa7-895e-62301505d6ce |             1.00 |                  1
+(6 rows)
+
+
+== [b: auto-match target row after auto-match]
+select t.id, t.transaction_type, t.status, t.amount, t.transaction_date, t.ledger, t.ledger_effect, t.cashbook_effect, t.posted_at is not null as posted, t.creditor_account_id, t.bank_statement_line_id, t.charge_recoverable, t.charge_vat_amount, t.reference, t.reversal_of, t.reversed_by_id, t.created_at from tenant_7d218705360b.trust_transactions t where t.id='4d43bdd4-7136-4aa7-895e-62301505d6ce' order by t.created_at
+                  id                  | transaction_type |  status  | amount  | transaction_date | ledger | ledger_effect | cashbook_effect | posted | creditor_account_id |        bank_statement_line_id        | charge_recoverable | charge_vat_amount |        reference        | reversal_of | reversed_by_id |          created_at           
+--------------------------------------+------------------+----------+---------+------------------+--------+---------------+-----------------+--------+---------------------+--------------------------------------+--------------------+-------------------+-------------------------+-------------+----------------+-------------------------------
+ 4d43bdd4-7136-4aa7-895e-62301505d6ce | FEE_TRANSFER     | APPROVED | 8500.00 | 2026-11-17       | CLIENT |      -8500.00 |        -8500.00 | t      |                     | ed12b0a2-4fee-48f8-b174-1eaabeeff86e |                    |                   | FEE/MOROKA/mwkqkcdh76db |             |                | 2026-11-17 13:38:21.503871+00
+(1 row)
+
+
+== [c: rows linked to OBS lines after the look pass (expect none)]
+select t.id, t.transaction_type, t.status, t.amount, t.transaction_date, t.ledger, t.ledger_effect, t.cashbook_effect, t.posted_at is not null as posted, t.creditor_account_id, t.bank_statement_line_id, t.charge_recoverable, t.charge_vat_amount, t.reference, t.reversal_of, t.reversed_by_id, t.created_at from tenant_7d218705360b.trust_transactions t where t.bank_statement_line_id in (select id from tenant_7d218705360b.bank_statement_lines where bank_statement_id='16dae0a0-9823-41a8-a89b-ee5920dbcae6') and t.id <> '4d43bdd4-7136-4aa7-895e-62301505d6ce' order by t.created_at
+ id | transaction_type | status | amount | transaction_date | ledger | ledger_effect | cashbook_effect | posted | creditor_account_id | bank_statement_line_id | charge_recoverable | charge_vat_amount | reference | reversal_of | reversed_by_id | created_at 
+----+------------------+--------+--------+------------------+--------+---------------+-----------------+--------+---------------------+------------------------+--------------------+-------------------+-----------+-------------+----------------+------------
+(0 rows)
+
+
+== [c: line 1 rows before Record (expect 0)]
+select count(*) as rows_for_line from tenant_7d218705360b.trust_transactions where bank_statement_line_id='f097eaf0-b678-44cb-848f-b06457c7bff9'
+ rows_for_line 
+---------------
+             0
+(1 row)
+
+
+== [c: row posted for line 1 (FUND_INTEREST)]
+select t.id, t.transaction_type, t.status, t.amount, t.transaction_date, t.ledger, t.ledger_effect, t.cashbook_effect, t.posted_at is not null as posted, t.creditor_account_id, t.bank_statement_line_id, t.charge_recoverable, t.charge_vat_amount, t.reference, t.reversal_of, t.reversed_by_id, t.created_at from tenant_7d218705360b.trust_transactions t where t.bank_statement_line_id='f097eaf0-b678-44cb-848f-b06457c7bff9' order by t.created_at
+                  id                  | transaction_type |  status  | amount  | transaction_date |   ledger   | ledger_effect | cashbook_effect | posted |         creditor_account_id          |        bank_statement_line_id        | charge_recoverable | charge_vat_amount |     reference     | reversal_of | reversed_by_id |          created_at           
+--------------------------------------+------------------+----------+---------+------------------+------------+---------------+-----------------+--------+--------------------------------------+--------------------------------------+--------------------+-------------------+-------------------+-------------+----------------+-------------------------------
+ a47cd4cc-25a5-4859-903e-8e360326847d | FUND_INTEREST    | RECORDED | 1234.56 | 2026-11-10       | NON_CLIENT |       1234.56 |         1234.56 | t      | a01987bd-3424-475a-8878-f8f096fc151a | f097eaf0-b678-44cb-848f-b06457c7bff9 |                    |                   | INT/OBS647C/QP4KZ |             |                | 2026-11-17 13:41:28.192215+00
+(1 row)
+
+
+== [c: line 2 rows before Record (expect 0)]
+select count(*) as rows_for_line from tenant_7d218705360b.trust_transactions where bank_statement_line_id='8ee724fd-4c00-4da9-bde2-37eb6aa42d7e'
+ rows_for_line 
+---------------
+             0
+(1 row)
+
+
+== [c: row posted for line 2 (FUND_SWEEP)]
+select t.id, t.transaction_type, t.status, t.amount, t.transaction_date, t.ledger, t.ledger_effect, t.cashbook_effect, t.posted_at is not null as posted, t.creditor_account_id, t.bank_statement_line_id, t.charge_recoverable, t.charge_vat_amount, t.reference, t.reversal_of, t.reversed_by_id, t.created_at from tenant_7d218705360b.trust_transactions t where t.bank_statement_line_id='8ee724fd-4c00-4da9-bde2-37eb6aa42d7e' order by t.created_at
+                  id                  | transaction_type |  status  | amount  | transaction_date |   ledger   | ledger_effect | cashbook_effect | posted |         creditor_account_id          |        bank_statement_line_id        | charge_recoverable | charge_vat_amount |     reference      | reversal_of | reversed_by_id |          created_at           
+--------------------------------------+------------------+----------+---------+------------------+------------+---------------+-----------------+--------+--------------------------------------+--------------------------------------+--------------------+-------------------+--------------------+-------------+----------------+-------------------------------
+ c5b0ac79-f215-40da-92d1-5b7dff3bbb19 | FUND_SWEEP       | RECORDED | 1119.56 | 2026-11-11       | NON_CLIENT |      -1119.56 |        -1119.56 | t      | a01987bd-3424-475a-8878-f8f096fc151a | 8ee724fd-4c00-4da9-bde2-37eb6aa42d7e |                    |                   | LPFF/OBS647C/QP4KZ |             |                | 2026-11-17 13:42:00.374533+00
+(1 row)
+
+
+== [c: line 3 rows before Record (expect 0)]
+select count(*) as rows_for_line from tenant_7d218705360b.trust_transactions where bank_statement_line_id='f4b2b1e2-3920-499c-aa5e-8bb83a556b7f'
+ rows_for_line 
+---------------
+             0
+(1 row)
+
+
+== [c: row posted for line 3 (BANK_CHARGE)]
+select t.id, t.transaction_type, t.status, t.amount, t.transaction_date, t.ledger, t.ledger_effect, t.cashbook_effect, t.posted_at is not null as posted, t.creditor_account_id, t.bank_statement_line_id, t.charge_recoverable, t.charge_vat_amount, t.reference, t.reversal_of, t.reversed_by_id, t.created_at from tenant_7d218705360b.trust_transactions t where t.bank_statement_line_id='f4b2b1e2-3920-499c-aa5e-8bb83a556b7f' order by t.created_at
+                  id                  | transaction_type |  status  | amount | transaction_date |   ledger   | ledger_effect | cashbook_effect | posted |         creditor_account_id          |        bank_statement_line_id        | charge_recoverable | charge_vat_amount |     reference     | reversal_of | reversed_by_id |          created_at           
+--------------------------------------+------------------+----------+--------+------------------+------------+---------------+-----------------+--------+--------------------------------------+--------------------------------------+--------------------+-------------------+-------------------+-------------+----------------+-------------------------------
+ d13f6191-06df-4f5a-8676-96fb1011e0d2 | BANK_CHARGE      | RECORDED |  57.50 | 2026-11-12       | NON_CLIENT |        -57.50 |          -57.50 | t      | a01987bd-3424-475a-8878-f8f096fc151a | f4b2b1e2-3920-499c-aa5e-8bb83a556b7f | t                  |              7.50 | SVC/OBS647C/QP4KZ |             |                | 2026-11-17 13:42:32.741371+00
+(1 row)
+
+
+== [c: line 4 rows before Record (expect 0)]
+select count(*) as rows_for_line from tenant_7d218705360b.trust_transactions where bank_statement_line_id='0bec1438-90c0-4ad5-911b-824a4b47f9b6'
+ rows_for_line 
+---------------
+             0
+(1 row)
+
+
+== [c: row posted for line 4 (CHARGE_REFUND)]
+select t.id, t.transaction_type, t.status, t.amount, t.transaction_date, t.ledger, t.ledger_effect, t.cashbook_effect, t.posted_at is not null as posted, t.creditor_account_id, t.bank_statement_line_id, t.charge_recoverable, t.charge_vat_amount, t.reference, t.reversal_of, t.reversed_by_id, t.created_at from tenant_7d218705360b.trust_transactions t where t.bank_statement_line_id='0bec1438-90c0-4ad5-911b-824a4b47f9b6' order by t.created_at
+                  id                  | transaction_type |  status  | amount | transaction_date |   ledger   | ledger_effect | cashbook_effect | posted |         creditor_account_id          |        bank_statement_line_id        | charge_recoverable | charge_vat_amount |     reference     | reversal_of | reversed_by_id |          created_at           
+--------------------------------------+------------------+----------+--------+------------------+------------+---------------+-----------------+--------+--------------------------------------+--------------------------------------+--------------------+-------------------+-------------------+-------------+----------------+-------------------------------
+ 862e5d44-785d-4391-ab20-65b93ebd0f6d | CHARGE_REFUND    | RECORDED |  57.50 | 2026-11-13       | NON_CLIENT |         57.50 |           57.50 | t      | a01987bd-3424-475a-8878-f8f096fc151a | 0bec1438-90c0-4ad5-911b-824a4b47f9b6 |                    |                   | RFD/OBS647C/QP4KZ |             |                | 2026-11-17 13:43:04.835317+00
+(1 row)
+
+
+== [d-after-record: Fund ledger rows + window running balance]
+with posted as (
+  select t.id, sum(t.ledger_effect) over (order by t.transaction_date, t.created_at, t.id rows between unbounded preceding and current row) as running_balance
+  from tenant_7d218705360b.trust_transactions t where t.creditor_account_id='a01987bd-3424-475a-8878-f8f096fc151a' and t.ledger='NON_CLIENT' and t.posted_at is not null)
+select t.id, t.transaction_date, t.transaction_type, t.status, t.amount, t.ledger_effect, p.running_balance, t.reference, coalesce(t.charge_recoverable::text,'') as charge_recoverable, coalesce(t.charge_vat_amount::text,'') as charge_vat_amount, coalesce(t.reversal_of::text,'') as reversal_of, t.created_at
+from tenant_7d218705360b.trust_transactions t left join posted p on p.id=t.id
+where t.creditor_account_id='a01987bd-3424-475a-8878-f8f096fc151a' and t.ledger='NON_CLIENT'
+order by t.transaction_date desc, t.created_at desc, t.id desc
+                  id                  | transaction_date | transaction_type |  status  | amount  | ledger_effect | running_balance |     reference      | charge_recoverable | charge_vat_amount | reversal_of |          created_at           
+--------------------------------------+------------------+------------------+----------+---------+---------------+-----------------+--------------------+--------------------+-------------------+-------------+-------------------------------
+ 862e5d44-785d-4391-ab20-65b93ebd0f6d | 2026-11-13       | CHARGE_REFUND    | RECORDED |   57.50 |         57.50 |          115.00 | RFD/OBS647C/QP4KZ  |                    |                   |             | 2026-11-17 13:43:04.835317+00
+ d13f6191-06df-4f5a-8676-96fb1011e0d2 | 2026-11-12       | BANK_CHARGE      | RECORDED |   57.50 |        -57.50 |           57.50 | SVC/OBS647C/QP4KZ  | true               | 7.50              |             | 2026-11-17 13:42:32.741371+00
+ c5b0ac79-f215-40da-92d1-5b7dff3bbb19 | 2026-11-11       | FUND_SWEEP       | RECORDED | 1119.56 |      -1119.56 |          115.00 | LPFF/OBS647C/QP4KZ |                    |                   |             | 2026-11-17 13:42:00.374533+00
+ a47cd4cc-25a5-4859-903e-8e360326847d | 2026-11-10       | FUND_INTEREST    | RECORDED | 1234.56 |       1234.56 |         1234.56 | INT/OBS647C/QP4KZ  |                    |                   |             | 2026-11-17 13:41:28.192215+00
+(4 rows)
+
+
+== [d-after-record: Fund creditor balance as at today]
+select coalesce(sum(ledger_effect),0) from tenant_7d218705360b.trust_transactions where creditor_account_id='a01987bd-3424-475a-8878-f8f096fc151a' and ledger='NON_CLIENT' and posted_at is not null and transaction_date <= date '2026-11-17'
+ coalesce 
+----------
+   115.00
+(1 row)
+
+
+== [f: original after unmatch]
+select t.id, t.transaction_type, t.status, t.amount, t.transaction_date, t.ledger, t.ledger_effect, t.cashbook_effect, t.posted_at is not null as posted, t.creditor_account_id, t.bank_statement_line_id, t.charge_recoverable, t.charge_vat_amount, t.reference, t.reversal_of, t.reversed_by_id, t.created_at from tenant_7d218705360b.trust_transactions t where t.id='d13f6191-06df-4f5a-8676-96fb1011e0d2' order by t.created_at
+                  id                  | transaction_type |  status  | amount | transaction_date |   ledger   | ledger_effect | cashbook_effect | posted |         creditor_account_id          | bank_statement_line_id | charge_recoverable | charge_vat_amount |     reference     | reversal_of |            reversed_by_id            |          created_at           
+--------------------------------------+------------------+----------+--------+------------------+------------+---------------+-----------------+--------+--------------------------------------+------------------------+--------------------+-------------------+-------------------+-------------+--------------------------------------+-------------------------------
+ d13f6191-06df-4f5a-8676-96fb1011e0d2 | BANK_CHARGE      | REVERSED |  57.50 | 2026-11-12       | NON_CLIENT |        -57.50 |          -57.50 | t      | a01987bd-3424-475a-8878-f8f096fc151a |                        | t                  |              7.50 | SVC/OBS647C/QP4KZ |             | ba4aa882-02ac-4365-a8ad-f81388635ccd | 2026-11-17 13:42:32.741371+00
+(1 row)
+
+
+== [f: contra]
+select t.id, t.transaction_type, t.status, t.amount, t.transaction_date, t.ledger, t.ledger_effect, t.cashbook_effect, t.posted_at is not null as posted, t.creditor_account_id, t.bank_statement_line_id, t.charge_recoverable, t.charge_vat_amount, t.reference, t.reversal_of, t.reversed_by_id, t.created_at from tenant_7d218705360b.trust_transactions t where t.reversal_of='d13f6191-06df-4f5a-8676-96fb1011e0d2' order by t.created_at
+                  id                  | transaction_type |  status  | amount | transaction_date |   ledger   | ledger_effect | cashbook_effect | posted |         creditor_account_id          | bank_statement_line_id | charge_recoverable | charge_vat_amount |       reference       |             reversal_of              | reversed_by_id |          created_at           
+--------------------------------------+------------------+----------+--------+------------------+------------+---------------+-----------------+--------+--------------------------------------+------------------------+--------------------+-------------------+-----------------------+--------------------------------------+----------------+-------------------------------
+ ba4aa882-02ac-4365-a8ad-f81388635ccd | REVERSAL         | RECORDED |  57.50 | 2026-11-12       | NON_CLIENT |         57.50 |           57.50 | t      | a01987bd-3424-475a-8878-f8f096fc151a |                        |                    |                   | REV-SVC/OBS647C/QP4KZ | d13f6191-06df-4f5a-8676-96fb1011e0d2 |                | 2026-11-17 13:43:40.315803+00
+(1 row)
+
+
+== [f-after-unmatch: Fund ledger rows + window running balance]
+with posted as (
+  select t.id, sum(t.ledger_effect) over (order by t.transaction_date, t.created_at, t.id rows between unbounded preceding and current row) as running_balance
+  from tenant_7d218705360b.trust_transactions t where t.creditor_account_id='a01987bd-3424-475a-8878-f8f096fc151a' and t.ledger='NON_CLIENT' and t.posted_at is not null)
+select t.id, t.transaction_date, t.transaction_type, t.status, t.amount, t.ledger_effect, p.running_balance, t.reference, coalesce(t.charge_recoverable::text,'') as charge_recoverable, coalesce(t.charge_vat_amount::text,'') as charge_vat_amount, coalesce(t.reversal_of::text,'') as reversal_of, t.created_at
+from tenant_7d218705360b.trust_transactions t left join posted p on p.id=t.id
+where t.creditor_account_id='a01987bd-3424-475a-8878-f8f096fc151a' and t.ledger='NON_CLIENT'
+order by t.transaction_date desc, t.created_at desc, t.id desc
+                  id                  | transaction_date | transaction_type |  status  | amount  | ledger_effect | running_balance |       reference       | charge_recoverable | charge_vat_amount |             reversal_of              |          created_at           
+--------------------------------------+------------------+------------------+----------+---------+---------------+-----------------+-----------------------+--------------------+-------------------+--------------------------------------+-------------------------------
+ 862e5d44-785d-4391-ab20-65b93ebd0f6d | 2026-11-13       | CHARGE_REFUND    | RECORDED |   57.50 |         57.50 |          172.50 | RFD/OBS647C/QP4KZ     |                    |                   |                                      | 2026-11-17 13:43:04.835317+00
+ ba4aa882-02ac-4365-a8ad-f81388635ccd | 2026-11-12       | REVERSAL         | RECORDED |   57.50 |         57.50 |          115.00 | REV-SVC/OBS647C/QP4KZ |                    |                   | d13f6191-06df-4f5a-8676-96fb1011e0d2 | 2026-11-17 13:43:40.315803+00
+ d13f6191-06df-4f5a-8676-96fb1011e0d2 | 2026-11-12       | BANK_CHARGE      | REVERSED |   57.50 |        -57.50 |           57.50 | SVC/OBS647C/QP4KZ     | true               | 7.50              |                                      | 2026-11-17 13:42:32.741371+00
+ c5b0ac79-f215-40da-92d1-5b7dff3bbb19 | 2026-11-11       | FUND_SWEEP       | RECORDED | 1119.56 |      -1119.56 |          115.00 | LPFF/OBS647C/QP4KZ    |                    |                   |                                      | 2026-11-17 13:42:00.374533+00
+ a47cd4cc-25a5-4859-903e-8e360326847d | 2026-11-10       | FUND_INTEREST    | RECORDED | 1234.56 |       1234.56 |         1234.56 | INT/OBS647C/QP4KZ     |                    |                   |                                      | 2026-11-17 13:41:28.192215+00
+(5 rows)
+
+
+== [f-after-unmatch: Fund creditor balance as at today]
+select coalesce(sum(ledger_effect),0) from tenant_7d218705360b.trust_transactions where creditor_account_id='a01987bd-3424-475a-8878-f8f096fc151a' and ledger='NON_CLIENT' and posted_at is not null and transaction_date <= date '2026-11-17'
+ coalesce 
+----------
+   172.50
+(1 row)
+
+
+== [final: OBS statement lines]
+select l.line_number, l.id, l.transaction_date, l.description, l.reference, l.amount, l.match_status, l.suggested_classification, l.classification, l.trust_transaction_id, l.match_confidence, (select matched_count from tenant_7d218705360b.bank_statements s where s.id=l.bank_statement_id) as stmt_matched_count from tenant_7d218705360b.bank_statement_lines l where l.bank_statement_id='16dae0a0-9823-41a8-a89b-ee5920dbcae6' order by l.line_number
+ line_number |                  id                  | transaction_date |            description            |        reference        |  amount  | match_status | suggested_classification | classification |         trust_transaction_id         | match_confidence | stmt_matched_count 
+-------------+--------------------------------------+------------------+-----------------------------------+-------------------------+----------+--------------+--------------------------+----------------+--------------------------------------+------------------+--------------------
+           1 | f097eaf0-b678-44cb-848f-b06457c7bff9 | 2026-11-10       | CREDIT INTEREST                   | INT/OBS647C/QP4KZ       |  1234.56 | RECORDED     | FUND_INTEREST            | FUND_INTEREST  | a47cd4cc-25a5-4859-903e-8e360326847d |                  |                  4
+           2 | 8ee724fd-4c00-4da9-bde2-37eb6aa42d7e | 2026-11-11       | LPFF FIDELITY FUND INTEREST SWEEP | LPFF/OBS647C/QP4KZ      | -1119.56 | RECORDED     | FUND_SWEEP               | FUND_SWEEP     | c5b0ac79-f215-40da-92d1-5b7dff3bbb19 |                  |                  4
+           3 | f4b2b1e2-3920-499c-aa5e-8bb83a556b7f | 2026-11-12       | MONTHLY SERVICE FEE               | SVC/OBS647C/QP4KZ       |   -57.50 | UNMATCHED    | BANK_CHARGE              |                |                                      |                  |                  4
+           4 | 0bec1438-90c0-4ad5-911b-824a4b47f9b6 | 2026-11-13       | SERVICE FEE REFUND                | RFD/OBS647C/QP4KZ       |    57.50 | RECORDED     | CHARGE_REFUND            | CHARGE_REFUND  | 862e5d44-785d-4391-ab20-65b93ebd0f6d |                  |                  4
+           5 | 6492ef35-6ba7-406c-ac94-7f32a2f947e7 | 2026-11-14       | DEPOSIT J NKOSI                   | DEP/OBS647C/QP4KZ       |  3210.00 | UNMATCHED    |                          |                |                                      |                  |                  4
+           6 | ed12b0a2-4fee-48f8-b174-1eaabeeff86e | 2026-11-17       | TRUST TO BUSINESS FEE TRANSFER    | FEE/MOROKA/mwkqkcdh76db | -8500.00 | AUTO_MATCHED |                          |                | 4d43bdd4-7136-4aa7-895e-62301505d6ce |             1.00 |                  4
+(6 rows)
+
+
+== [final: OBS rows]
+select t.id, t.transaction_type, t.status, t.amount, t.transaction_date, t.ledger, t.ledger_effect, t.cashbook_effect, t.posted_at is not null as posted, t.creditor_account_id, t.bank_statement_line_id, t.charge_recoverable, t.charge_vat_amount, t.reference, t.reversal_of, t.reversed_by_id, t.created_at from tenant_7d218705360b.trust_transactions t where t.reference like '%/OBS647C/QP4KZ' or t.reversal_of in (select id from tenant_7d218705360b.trust_transactions where reference like '%/OBS647C/QP4KZ') order by t.created_at
+                  id                  | transaction_type |  status  | amount  | transaction_date |   ledger   | ledger_effect | cashbook_effect | posted |         creditor_account_id          |        bank_statement_line_id        | charge_recoverable | charge_vat_amount |       reference       |             reversal_of              |            reversed_by_id            |          created_at           
+--------------------------------------+------------------+----------+---------+------------------+------------+---------------+-----------------+--------+--------------------------------------+--------------------------------------+--------------------+-------------------+-----------------------+--------------------------------------+--------------------------------------+-------------------------------
+ a47cd4cc-25a5-4859-903e-8e360326847d | FUND_INTEREST    | RECORDED | 1234.56 | 2026-11-10       | NON_CLIENT |       1234.56 |         1234.56 | t      | a01987bd-3424-475a-8878-f8f096fc151a | f097eaf0-b678-44cb-848f-b06457c7bff9 |                    |                   | INT/OBS647C/QP4KZ     |                                      |                                      | 2026-11-17 13:41:28.192215+00
+ c5b0ac79-f215-40da-92d1-5b7dff3bbb19 | FUND_SWEEP       | RECORDED | 1119.56 | 2026-11-11       | NON_CLIENT |      -1119.56 |        -1119.56 | t      | a01987bd-3424-475a-8878-f8f096fc151a | 8ee724fd-4c00-4da9-bde2-37eb6aa42d7e |                    |                   | LPFF/OBS647C/QP4KZ    |                                      |                                      | 2026-11-17 13:42:00.374533+00
+ d13f6191-06df-4f5a-8676-96fb1011e0d2 | BANK_CHARGE      | REVERSED |   57.50 | 2026-11-12       | NON_CLIENT |        -57.50 |          -57.50 | t      | a01987bd-3424-475a-8878-f8f096fc151a |                                      | t                  |              7.50 | SVC/OBS647C/QP4KZ     |                                      | ba4aa882-02ac-4365-a8ad-f81388635ccd | 2026-11-17 13:42:32.741371+00
+ 862e5d44-785d-4391-ab20-65b93ebd0f6d | CHARGE_REFUND    | RECORDED |   57.50 | 2026-11-13       | NON_CLIENT |         57.50 |           57.50 | t      | a01987bd-3424-475a-8878-f8f096fc151a | 0bec1438-90c0-4ad5-911b-824a4b47f9b6 |                    |                   | RFD/OBS647C/QP4KZ     |                                      |                                      | 2026-11-17 13:43:04.835317+00
+ ba4aa882-02ac-4365-a8ad-f81388635ccd | REVERSAL         | RECORDED |   57.50 | 2026-11-12       | NON_CLIENT |         57.50 |           57.50 | t      | a01987bd-3424-475a-8878-f8f096fc151a |                                      |                    |                   | REV-SVC/OBS647C/QP4KZ | d13f6191-06df-4f5a-8676-96fb1011e0d2 |                                      | 2026-11-17 13:43:40.315803+00
+(5 rows)
+
+
+== [final: EQ-2 cashbook vs creditors as at today]
+select (select coalesce(sum(cashbook_effect),0) from tenant_7d218705360b.trust_transactions where trust_account_id='9c678aa3-e2b6-4921-9a73-74053f8acee0' and posted_at is not null and transaction_date <= date '2026-11-17') cashbook, (select coalesce(sum(ledger_effect),0) from tenant_7d218705360b.trust_transactions where trust_account_id='9c678aa3-e2b6-4921-9a73-74053f8acee0' and posted_at is not null and transaction_date <= date '2026-11-17') all_creditors, (select coalesce(sum(ledger_effect),0) from tenant_7d218705360b.trust_transactions where creditor_account_id='a01987bd-3424-475a-8878-f8f096fc151a' and ledger='NON_CLIENT' and posted_at is not null and transaction_date <= date '2026-11-17') fund_ledger
+ cashbook  | all_creditors | fund_ledger 
+-----------+---------------+-------------
+ 286672.50 |     286672.50 |      172.50
+(1 row)
+

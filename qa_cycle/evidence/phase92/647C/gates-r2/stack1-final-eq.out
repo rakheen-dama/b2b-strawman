@@ -1,0 +1,6 @@
+select (select coalesce(sum(cashbook_effect),0) from tenant_7d218705360b.trust_transactions where trust_account_id='9428d0a8-ff3e-4e83-9641-fc70925cb2f7' and posted_at is not null and transaction_date <= date '2026-11-17') cashbook, (select coalesce(sum(ledger_effect),0) from tenant_7d218705360b.trust_transactions where trust_account_id='9428d0a8-ff3e-4e83-9641-fc70925cb2f7' and posted_at is not null and transaction_date <= date '2026-11-17') all_creditors, (select coalesce(sum(ledger_effect),0) from tenant_7d218705360b.trust_transactions where creditor_account_id='6272042b-ff3b-4e5d-9f26-868f0b65711f' and ledger='NON_CLIENT' and posted_at is not null and transaction_date <= date '2026-11-17') fund_ledger
+ cashbook  | all_creditors | fund_ledger 
+-----------+---------------+-------------
+ 286672.50 |     286672.50 |      172.50
+(1 row)
+

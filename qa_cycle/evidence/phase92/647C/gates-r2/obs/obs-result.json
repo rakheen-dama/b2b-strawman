@@ -1,0 +1,1392 @@
+{
+  "steps": {
+    "baseline": {
+      "txCount": 6,
+      "fund": {
+        "label": "00-baseline",
+        "query": "",
+        "cardText": "Legal Practitioners' Fidelity Fund — interest and charges R 0,00 Interest received for the Fund, less bank charges",
+        "cardValue": 0,
+        "cardApi": 0,
+        "sqlBalance": 0,
+        "uiRowCount": 0,
+        "sqlRowCount": 0,
+        "apiTotalElements": 0,
+        "apiStatus": 200,
+        "uiRows": [],
+        "sqlRows": [],
+        "perRow": [],
+        "shot": "01-00-baseline-other-creditors.png",
+        "checks": {
+          "oneUiRowPerEntry": false,
+          "apiRowCount": true,
+          "newestFirstSameOrderUiApiSql": true,
+          "everyRowRunningBalanceUiApiSql": true,
+          "topRunningEqualsStatCard": false,
+          "statCardEqualsApiEqualsSql": true,
+          "topRunningEqualsSqlBalance": false
+        }
+      }
+    },
+    "a": {
+      "periodEnd": "2026-11-17",
+      "uploadResult": "Statement imported successfully Lines imported: 6 File: statement-OBS647C-RQH2F.csv Period: 2026-11-10 to 2026-11-17 Format: CSV",
+      "shotUpload": "02-a-statement-uploaded.png",
+      "linesSql": " line_number |                  id                  | transaction_date |            description            |        reference        |  amount  | match_status | suggested_classification | classification | trust_transaction_id | match_confidence | stmt_matched_count \n-------------+--------------------------------------+------------------+-----------------------------------+-------------------------+----------+--------------+--------------------------+----------------+----------------------+------------------+--------------------\n           1 | 4c27bbf7-3d43-4206-bb41-1582073c3e8a | 2026-11-10       | CREDIT INTEREST                   | INT/OBS647C/RQH2F       |  1234.56 | UNMATCHED    | FUND_INTEREST            |                |                      |                  |                  0\n           2 | 38b0d1e8-3bca-45ee-a1d5-328e69abcd59 | 2026-11-11       | LPFF FIDELITY FUND INTEREST SWEEP | LPFF/OBS647C/RQH2F      | -1119.56 | UNMATCHED    | FUND_SWEEP               |                |                      |                  |                  0\n           3 | e2b5ea0d-361f-49df-88f5-ce003b925e82 | 2026-11-12       | MONTHLY SERVICE FEE               | SVC/OBS647C/RQH2F       |   -57.50 | UNMATCHED    | BANK_CHARGE              |                |                      |                  |                  0\n           4 | add5fa6b-1d35-488e-9049-f1539b449c1f | 2026-11-13       | SERVICE FEE REFUND                | RFD/OBS647C/RQH2F       |    57.50 | UNMATCHED    | CHARGE_REFUND            |                |                      |                  |                  0\n           5 | 4973ca6a-9788-4de4-aeb5-dd92064c8526 | 2026-11-14       | DEPOSIT J NKOSI                   | DEP/OBS647C/RQH2F       |  3210.00 | UNMATCHED    |                          |                |                      |                  |                  0\n           6 | 80c42a7d-2c15-4da0-8143-cc118da3d7e1 | 2026-11-17       | TRUST TO BUSINESS FEE TRANSFER    | FEE/MOROKA/mwkrm7wvb962 | -8500.00 | UNMATCHED    | BANK_CHARGE              |                |                      |                  |                  0\n(6 rows)\n\n",
+      "imported": [
+        {
+          "lineNumber": 1,
+          "id": "4c27bbf7-3d43-4206-bb41-1582073c3e8a",
+          "description": "CREDIT INTEREST",
+          "amount": 1234.56,
+          "suggested": "FUND_INTEREST",
+          "matchStatus": "UNMATCHED"
+        },
+        {
+          "lineNumber": 2,
+          "id": "38b0d1e8-3bca-45ee-a1d5-328e69abcd59",
+          "description": "LPFF FIDELITY FUND INTEREST SWEEP",
+          "amount": -1119.56,
+          "suggested": "FUND_SWEEP",
+          "matchStatus": "UNMATCHED"
+        },
+        {
+          "lineNumber": 3,
+          "id": "e2b5ea0d-361f-49df-88f5-ce003b925e82",
+          "description": "MONTHLY SERVICE FEE",
+          "amount": -57.5,
+          "suggested": "BANK_CHARGE",
+          "matchStatus": "UNMATCHED"
+        },
+        {
+          "lineNumber": 4,
+          "id": "add5fa6b-1d35-488e-9049-f1539b449c1f",
+          "description": "SERVICE FEE REFUND",
+          "amount": 57.5,
+          "suggested": "CHARGE_REFUND",
+          "matchStatus": "UNMATCHED"
+        },
+        {
+          "lineNumber": 5,
+          "id": "4973ca6a-9788-4de4-aeb5-dd92064c8526",
+          "description": "DEPOSIT J NKOSI",
+          "amount": 3210,
+          "suggested": "<null>",
+          "matchStatus": "UNMATCHED"
+        },
+        {
+          "lineNumber": 6,
+          "id": "80c42a7d-2c15-4da0-8143-cc118da3d7e1",
+          "description": "TRUST TO BUSINESS FEE TRANSFER",
+          "amount": -8500,
+          "suggested": "BANK_CHARGE",
+          "matchStatus": "UNMATCHED"
+        }
+      ],
+      "txCountAfterImport": 6,
+      "perLine": [
+        {
+          "n": 1,
+          "desc": "CREDIT INTEREST",
+          "amount": 1234.56,
+          "expected": "FUND_INTEREST",
+          "stored": "FUND_INTEREST",
+          "ok": true
+        },
+        {
+          "n": 2,
+          "desc": "LPFF FIDELITY FUND INTEREST SWEEP",
+          "amount": -1119.56,
+          "expected": "FUND_SWEEP",
+          "stored": "FUND_SWEEP",
+          "ok": true
+        },
+        {
+          "n": 3,
+          "desc": "MONTHLY SERVICE FEE",
+          "amount": -57.5,
+          "expected": "BANK_CHARGE",
+          "stored": "BANK_CHARGE",
+          "ok": true
+        },
+        {
+          "n": 4,
+          "desc": "SERVICE FEE REFUND",
+          "amount": 57.5,
+          "expected": "CHARGE_REFUND",
+          "stored": "CHARGE_REFUND",
+          "ok": true
+        },
+        {
+          "n": 5,
+          "desc": "DEPOSIT J NKOSI",
+          "amount": 3210,
+          "expected": "<null>",
+          "stored": "<null>",
+          "ok": true
+        },
+        {
+          "n": 6,
+          "desc": "TRUST TO BUSINESS FEE TRANSFER",
+          "amount": -8500,
+          "expected": "BANK_CHARGE",
+          "stored": "BANK_CHARGE",
+          "ok": true
+        }
+      ],
+      "checks": {
+        "everyLineAsExpected": true,
+        "lineCount": true,
+        "nothingPostedAtImport": true
+      }
+    },
+    "b": {
+      "autoMatchResult": "Auto-matched 1 lines 5 lines remaining for manual review",
+      "shotAutoMatch": "03-b-auto-match-result.png",
+      "linesSql": " line_number |                  id                  | transaction_date |            description            |        reference        |  amount  | match_status | suggested_classification | classification |         trust_transaction_id         | match_confidence | stmt_matched_count \n-------------+--------------------------------------+------------------+-----------------------------------+-------------------------+----------+--------------+--------------------------+----------------+--------------------------------------+------------------+--------------------\n           1 | 4c27bbf7-3d43-4206-bb41-1582073c3e8a | 2026-11-10       | CREDIT INTEREST                   | INT/OBS647C/RQH2F       |  1234.56 | UNMATCHED    | FUND_INTEREST            |                |                                      |                  |                  1\n           2 | 38b0d1e8-3bca-45ee-a1d5-328e69abcd59 | 2026-11-11       | LPFF FIDELITY FUND INTEREST SWEEP | LPFF/OBS647C/RQH2F      | -1119.56 | UNMATCHED    | FUND_SWEEP               |                |                                      |                  |                  1\n           3 | e2b5ea0d-361f-49df-88f5-ce003b925e82 | 2026-11-12       | MONTHLY SERVICE FEE               | SVC/OBS647C/RQH2F       |   -57.50 | UNMATCHED    | BANK_CHARGE              |                |                                      |                  |                  1\n           4 | add5fa6b-1d35-488e-9049-f1539b449c1f | 2026-11-13       | SERVICE FEE REFUND                | RFD/OBS647C/RQH2F       |    57.50 | UNMATCHED    | CHARGE_REFUND            |                |                                      |                  |                  1\n           5 | 4973ca6a-9788-4de4-aeb5-dd92064c8526 | 2026-11-14       | DEPOSIT J NKOSI                   | DEP/OBS647C/RQH2F       |  3210.00 | UNMATCHED    |                          |                |                                      |                  |                  1\n           6 | 80c42a7d-2c15-4da0-8143-cc118da3d7e1 | 2026-11-17       | TRUST TO BUSINESS FEE TRANSFER    | FEE/MOROKA/mwkrm7wvb962 | -8500.00 | AUTO_MATCHED |                          |                | 8d65a67a-75d5-481b-b29b-d52b8daf315f |             1.00 |                  1\n(6 rows)\n\n",
+      "lines": [
+        {
+          "n": 1,
+          "matchStatus": "UNMATCHED",
+          "suggested": "FUND_INTEREST",
+          "trustTransactionId": "<null>"
+        },
+        {
+          "n": 2,
+          "matchStatus": "UNMATCHED",
+          "suggested": "FUND_SWEEP",
+          "trustTransactionId": "<null>"
+        },
+        {
+          "n": 3,
+          "matchStatus": "UNMATCHED",
+          "suggested": "BANK_CHARGE",
+          "trustTransactionId": "<null>"
+        },
+        {
+          "n": 4,
+          "matchStatus": "UNMATCHED",
+          "suggested": "CHARGE_REFUND",
+          "trustTransactionId": "<null>"
+        },
+        {
+          "n": 5,
+          "matchStatus": "UNMATCHED",
+          "suggested": "<null>",
+          "trustTransactionId": "<null>"
+        },
+        {
+          "n": 6,
+          "matchStatus": "AUTO_MATCHED",
+          "suggested": "<null>",
+          "trustTransactionId": "8d65a67a-75d5-481b-b29b-d52b8daf315f"
+        }
+      ],
+      "txCountAfterAutoMatch": 6,
+      "target": {
+        "id": "8d65a67a-75d5-481b-b29b-d52b8daf315f",
+        "reference": "FEE/MOROKA/mwkrm7wvb962",
+        "amount": 8500,
+        "date": "2026-11-17",
+        "type": "FEE_TRANSFER"
+      },
+      "targetRowSql": "                  id                  | transaction_type |  status  | amount  | transaction_date | ledger | ledger_effect | cashbook_effect | posted | creditor_account_id |        bank_statement_line_id        | charge_recoverable | charge_vat_amount |        reference        | reversal_of | reversed_by_id |          created_at           \n--------------------------------------+------------------+----------+---------+------------------+--------+---------------+-----------------+--------+---------------------+--------------------------------------+--------------------+-------------------+-------------------------+-------------+----------------+-------------------------------\n 8d65a67a-75d5-481b-b29b-d52b8daf315f | FEE_TRANSFER     | APPROVED | 8500.00 | 2026-11-17       | CLIENT |      -8500.00 |        -8500.00 | t      |                     | 80c42a7d-2c15-4da0-8143-cc118da3d7e1 |                    |                   | FEE/MOROKA/mwkrm7wvb962 |             |                | 2026-11-17 14:07:36.854132+00\n(1 row)\n\n",
+      "checks": {
+        "suggestedAtImportWasBankCharge": true,
+        "autoMatched": true,
+        "linkedToTarget": true,
+        "suggestionClearedByAutoMatch": true,
+        "otherLinesKeptSuggestion": true,
+        "autoMatchCreatedNoRow": true
+      },
+      "refusalBanner": null,
+      "statementApi": {
+        "id": "cbf17f02-bbb2-4b61-bca0-effead8e4b1d",
+        "trustAccountId": "9428d0a8-ff3e-4e83-9641-fc70925cb2f7",
+        "periodStart": "2026-11-10",
+        "periodEnd": "2026-11-17",
+        "openingBalance": 0,
+        "closingBalance": -5175,
+        "fileName": "statement-OBS647C-RQH2F.csv",
+        "format": "CSV",
+        "lineCount": 6,
+        "matchedCount": 1,
+        "status": "IMPORTED",
+        "importedBy": "5545eebe-2eef-4f1e-b281-461d096b754a",
+        "createdAt": "2026-11-17T14:09:16.455809Z",
+        "updatedAt": "2026-11-17T14:09:17.634311Z",
+        "lines": [
+          {
+            "id": "4c27bbf7-3d43-4206-bb41-1582073c3e8a",
+            "lineNumber": 1,
+            "transactionDate": "2026-11-10",
+            "description": "CREDIT INTEREST",
+            "reference": "INT/OBS647C/RQH2F",
+            "amount": 1234.56,
+            "runningBalance": 1234.56,
+            "matchStatus": "UNMATCHED",
+            "trustTransactionId": null,
+            "matchConfidence": null,
+            "classification": null,
+            "classificationLabel": null,
+            "suggestedClassification": "FUND_INTEREST",
+            "createdTransactionIds": []
+          },
+          {
+            "id": "38b0d1e8-3bca-45ee-a1d5-328e69abcd59",
+            "lineNumber": 2,
+            "transactionDate": "2026-11-11",
+            "description": "LPFF FIDELITY FUND INTEREST SWEEP",
+            "reference": "LPFF/OBS647C/RQH2F",
+            "amount": -1119.56,
+            "runningBalance": 115,
+            "matchStatus": "UNMATCHED",
+            "trustTransactionId": null,
+            "matchConfidence": null,
+            "classification": null,
+            "classificationLabel": null,
+            "suggestedClassification": "FUND_SWEEP",
+            "createdTransactionIds": []
+          },
+          {
+            "id": "e2b5ea0d-361f-49df-88f5-ce003b925e82",
+            "lineNumber": 3,
+            "transactionDate": "2026-11-12",
+            "description": "MONTHLY SERVICE FEE",
+            "reference": "SVC/OBS647C/RQH2F",
+            "amount": -57.5,
+            "runningBalance": 57.5,
+            "matchStatus": "UNMATCHED",
+            "trustTransactionId": null,
+            "matchConfidence": null,
+            "classification": null,
+            "classificationLabel": null,
+            "suggestedClassification": "BANK_CHARGE",
+            "createdTransactionIds": []
+          },
+          {
+            "id": "add5fa6b-1d35-488e-9049-f1539b449c1f",
+            "lineNumber": 4,
+            "transactionDate": "2026-11-13",
+            "description": "SERVICE FEE REFUND",
+            "reference": "RFD/OBS647C/RQH2F",
+            "amount": 57.5,
+            "runningBalance": 115,
+            "matchStatus": "UNMATCHED",
+            "trustTransactionId": null,
+            "matchConfidence": null,
+            "classification": null,
+            "classificationLabel": null,
+            "suggestedClassification": "CHARGE_REFUND",
+            "createdTransactionIds": []
+          },
+          {
+            "id": "4973ca6a-9788-4de4-aeb5-dd92064c8526",
+            "lineNumber": 5,
+            "transactionDate": "2026-11-14",
+            "description": "DEPOSIT J NKOSI",
+            "reference": "DEP/OBS647C/RQH2F",
+            "amount": 3210,
+            "runningBalance": 3325,
+            "matchStatus": "UNMATCHED",
+            "trustTransactionId": null,
+            "matchConfidence": null,
+            "classification": null,
+            "classificationLabel": null,
+            "suggestedClassification": null,
+            "createdTransactionIds": []
+          },
+          {
+            "id": "80c42a7d-2c15-4da0-8143-cc118da3d7e1",
+            "lineNumber": 6,
+            "transactionDate": "2026-11-17",
+            "description": "TRUST TO BUSINESS FEE TRANSFER",
+            "reference": "FEE/MOROKA/mwkrm7wvb962",
+            "amount": -8500,
+            "runningBalance": -5175,
+            "matchStatus": "AUTO_MATCHED",
+            "trustTransactionId": "8d65a67a-75d5-481b-b29b-d52b8daf315f",
+            "matchConfidence": 1,
+            "classification": null,
+            "classificationLabel": null,
+            "suggestedClassification": null,
+            "createdTransactionIds": []
+          }
+        ]
+      },
+      "progress": "Matching Progress 1 / 6 lines resolved",
+      "shotReview": "04-b-review-step.png",
+      "apiSuggestions": [
+        {
+          "id": "4c27bbf7-3d43-4206-bb41-1582073c3e8a",
+          "description": "CREDIT INTEREST",
+          "matchStatus": "UNMATCHED",
+          "suggestedClassification": "FUND_INTEREST"
+        },
+        {
+          "id": "38b0d1e8-3bca-45ee-a1d5-328e69abcd59",
+          "description": "LPFF FIDELITY FUND INTEREST SWEEP",
+          "matchStatus": "UNMATCHED",
+          "suggestedClassification": "FUND_SWEEP"
+        },
+        {
+          "id": "e2b5ea0d-361f-49df-88f5-ce003b925e82",
+          "description": "MONTHLY SERVICE FEE",
+          "matchStatus": "UNMATCHED",
+          "suggestedClassification": "BANK_CHARGE"
+        },
+        {
+          "id": "add5fa6b-1d35-488e-9049-f1539b449c1f",
+          "description": "SERVICE FEE REFUND",
+          "matchStatus": "UNMATCHED",
+          "suggestedClassification": "CHARGE_REFUND"
+        },
+        {
+          "id": "4973ca6a-9788-4de4-aeb5-dd92064c8526",
+          "description": "DEPOSIT J NKOSI",
+          "matchStatus": "UNMATCHED",
+          "suggestedClassification": null
+        },
+        {
+          "id": "80c42a7d-2c15-4da0-8143-cc118da3d7e1",
+          "description": "TRUST TO BUSINESS FEE TRANSFER",
+          "matchStatus": "AUTO_MATCHED",
+          "suggestedClassification": null
+        }
+      ]
+    },
+    "c": {
+      "look": [
+        {
+          "offered": [
+            "FUND_INTEREST",
+            "CHARGE_REFUND"
+          ],
+          "checked": [
+            "FUND_INTEREST"
+          ],
+          "noteVisible": true,
+          "noteText": "Suggested from the line's description — check it before recording.",
+          "chargeRecoverableVisible": false,
+          "chargeVatVisible": false,
+          "text": "Record from statement Line #1, 10 Nov 2026 — CREDIT INTEREST — R 1 234,56 CR. The entry is dated the line's date and posts at once; unmatching the line reverses it. What is this line? Interest received for the Legal Practitioners' Fidelity Fund Bank charge refunded from the business account Suggested from the line's description — check it before recording. Notes (optional) Cancel Record Close",
+          "n": 1,
+          "expected": "FUND_INTEREST",
+          "shot": "05-c-look-line1-FUND_INTEREST.png",
+          "txCountUnchanged": true,
+          "lineStillUnmatched": true,
+          "ok": true
+        },
+        {
+          "offered": [
+            "FUND_SWEEP",
+            "BANK_CHARGE"
+          ],
+          "checked": [
+            "FUND_SWEEP"
+          ],
+          "noteVisible": true,
+          "noteText": "Suggested from the line's description — check it before recording.",
+          "chargeRecoverableVisible": false,
+          "chargeVatVisible": false,
+          "text": "Record from statement Line #2, 11 Nov 2026 — LPFF FIDELITY FUND INTEREST SWEEP — R 1 119,56 DR. The entry is dated the line's date and posts at once; unmatching the line reverses it. What is this line? Interest paid to the Legal Practitioners' Fidelity Fund Bank charge Suggested from the line's description — check it before recording. Notes (optional) Cancel Record Close",
+          "n": 2,
+          "expected": "FUND_SWEEP",
+          "shot": "06-c-look-line2-FUND_SWEEP.png",
+          "txCountUnchanged": true,
+          "lineStillUnmatched": true,
+          "ok": true
+        },
+        {
+          "offered": [
+            "FUND_SWEEP",
+            "BANK_CHARGE"
+          ],
+          "checked": [
+            "BANK_CHARGE"
+          ],
+          "noteVisible": true,
+          "noteText": "Suggested from the line's description — check it before recording.",
+          "chargeRecoverableVisible": true,
+          "chargeVatVisible": true,
+          "text": "Record from statement Line #3, 12 Nov 2026 — MONTHLY SERVICE FEE — R 57,50 DR. The entry is dated the line's date and posts at once; unmatching the line reverses it. What is this line? Interest paid to the Legal Practitioners' Fidelity Fund Bank charge Suggested from the line's description — check it before recording. Recoverable from the Fidelity Fund? Recoverable Not recoverable Is this charge on the Legal Practitioners' Fidelity Fund's list of recoverable bank charges? VAT included in the charge Enter 0 if the charge carries no VAT. Notes (optional) Cancel Record Close",
+          "n": 3,
+          "expected": "BANK_CHARGE",
+          "shot": "07-c-look-line3-BANK_CHARGE.png",
+          "txCountUnchanged": true,
+          "lineStillUnmatched": true,
+          "ok": true
+        },
+        {
+          "offered": [
+            "FUND_INTEREST",
+            "CHARGE_REFUND"
+          ],
+          "checked": [
+            "CHARGE_REFUND"
+          ],
+          "noteVisible": true,
+          "noteText": "Suggested from the line's description — check it before recording.",
+          "chargeRecoverableVisible": false,
+          "chargeVatVisible": false,
+          "text": "Record from statement Line #4, 13 Nov 2026 — SERVICE FEE REFUND — R 57,50 CR. The entry is dated the line's date and posts at once; unmatching the line reverses it. What is this line? Interest received for the Legal Practitioners' Fidelity Fund Bank charge refunded from the business account Suggested from the line's description — check it before recording. Notes (optional) Cancel Record Close",
+          "n": 4,
+          "expected": "CHARGE_REFUND",
+          "shot": "08-c-look-line4-CHARGE_REFUND.png",
+          "txCountUnchanged": true,
+          "lineStillUnmatched": true,
+          "ok": true
+        },
+        {
+          "offered": [
+            "FUND_INTEREST",
+            "CHARGE_REFUND"
+          ],
+          "checked": [],
+          "noteVisible": false,
+          "noteText": null,
+          "chargeRecoverableVisible": false,
+          "chargeVatVisible": false,
+          "text": "Record from statement Line #5, 14 Nov 2026 — DEPOSIT J NKOSI — R 3 210,00 CR. The entry is dated the line's date and posts at once; unmatching the line reverses it. What is this line? Interest received for the Legal Practitioners' Fidelity Fund Bank charge refunded from the business account Notes (optional) Cancel Record Close",
+          "n": 5,
+          "expected": null,
+          "shot": "09-c-look-line5-ORDINARY.png",
+          "txCountUnchanged": true,
+          "lineStillUnmatched": true,
+          "ok": true
+        }
+      ],
+      "record": [
+        {
+          "n": 1,
+          "cls": "FUND_INTEREST",
+          "txCountBeforeClick": 6,
+          "rowsForLineBeforeClick": 0,
+          "dialog": {
+            "offered": [
+              "FUND_INTEREST",
+              "CHARGE_REFUND"
+            ],
+            "checked": [
+              "FUND_INTEREST"
+            ],
+            "noteVisible": true,
+            "noteText": "Suggested from the line's description — check it before recording.",
+            "chargeRecoverableVisible": false,
+            "chargeVatVisible": false,
+            "text": "Record from statement Line #1, 10 Nov 2026 — CREDIT INTEREST — R 1 234,56 CR. The entry is dated the line's date and posts at once; unmatching the line reverses it. What is this line? Interest received for the Legal Practitioners' Fidelity Fund Bank charge refunded from the business account Suggested from the line's description — check it before recording. Notes (optional) Cancel Record Close"
+          },
+          "preselected": true,
+          "shot": "10-c-record-line1-FUND_INTEREST.png",
+          "badge": "Recorded: Interest received for the Legal Practitioners' Fidelity Fund",
+          "errorBanner": null,
+          "rowSql": "                  id                  | transaction_type |  status  | amount  | transaction_date |   ledger   | ledger_effect | cashbook_effect | posted |         creditor_account_id          |        bank_statement_line_id        | charge_recoverable | charge_vat_amount |     reference     | reversal_of | reversed_by_id |          created_at           \n--------------------------------------+------------------+----------+---------+------------------+------------+---------------+-----------------+--------+--------------------------------------+--------------------------------------+--------------------+-------------------+-------------------+-------------+----------------+-------------------------------\n e5eae8c2-8804-4fb9-9d39-a172fe564807 | FUND_INTEREST    | RECORDED | 1234.56 | 2026-11-10       | NON_CLIENT |       1234.56 |         1234.56 | t      | 6272042b-ff3b-4e5d-9f26-868f0b65711f | 4c27bbf7-3d43-4206-bb41-1582073c3e8a |                    |                   | INT/OBS647C/RQH2F |             |                | 2026-11-17 14:10:30.536007+00\n(1 row)\n\n",
+          "row": {
+            "id": "e5eae8c2-8804-4fb9-9d39-a172fe564807",
+            "type": "FUND_INTEREST",
+            "status": "RECORDED",
+            "amount": 1234.56,
+            "date": "2026-11-10",
+            "chargeRecoverable": "",
+            "chargeVat": "",
+            "ledgerEffect": 1234.56
+          },
+          "txCountAfter": 7,
+          "line": {
+            "matchStatus": "RECORDED",
+            "classification": "FUND_INTEREST",
+            "suggested": "FUND_INTEREST"
+          },
+          "checks": {
+            "preselected": true,
+            "noteVisible": true,
+            "nothingBeforeClick": true,
+            "oneRowCreated": true,
+            "type": true,
+            "recorded": true,
+            "date": true,
+            "amount": true,
+            "charge": true,
+            "lineRecorded": true,
+            "badge": true,
+            "noError": true
+          }
+        },
+        {
+          "n": 2,
+          "cls": "FUND_SWEEP",
+          "txCountBeforeClick": 7,
+          "rowsForLineBeforeClick": 0,
+          "dialog": {
+            "offered": [
+              "FUND_SWEEP",
+              "BANK_CHARGE"
+            ],
+            "checked": [
+              "FUND_SWEEP"
+            ],
+            "noteVisible": true,
+            "noteText": "Suggested from the line's description — check it before recording.",
+            "chargeRecoverableVisible": false,
+            "chargeVatVisible": false,
+            "text": "Record from statement Line #2, 11 Nov 2026 — LPFF FIDELITY FUND INTEREST SWEEP — R 1 119,56 DR. The entry is dated the line's date and posts at once; unmatching the line reverses it. What is this line? Interest paid to the Legal Practitioners' Fidelity Fund Bank charge Suggested from the line's description — check it before recording. Notes (optional) Cancel Record Close"
+          },
+          "preselected": true,
+          "shot": "11-c-record-line2-FUND_SWEEP.png",
+          "badge": "Recorded: Interest paid to the Legal Practitioners' Fidelity Fund",
+          "errorBanner": null,
+          "rowSql": "                  id                  | transaction_type |  status  | amount  | transaction_date |   ledger   | ledger_effect | cashbook_effect | posted |         creditor_account_id          |        bank_statement_line_id        | charge_recoverable | charge_vat_amount |     reference      | reversal_of | reversed_by_id |          created_at           \n--------------------------------------+------------------+----------+---------+------------------+------------+---------------+-----------------+--------+--------------------------------------+--------------------------------------+--------------------+-------------------+--------------------+-------------+----------------+-------------------------------\n bc26a837-8e94-4611-8e83-c401c11f78e3 | FUND_SWEEP       | RECORDED | 1119.56 | 2026-11-11       | NON_CLIENT |      -1119.56 |        -1119.56 | t      | 6272042b-ff3b-4e5d-9f26-868f0b65711f | 38b0d1e8-3bca-45ee-a1d5-328e69abcd59 |                    |                   | LPFF/OBS647C/RQH2F |             |                | 2026-11-17 14:11:02.594775+00\n(1 row)\n\n",
+          "row": {
+            "id": "bc26a837-8e94-4611-8e83-c401c11f78e3",
+            "type": "FUND_SWEEP",
+            "status": "RECORDED",
+            "amount": 1119.56,
+            "date": "2026-11-11",
+            "chargeRecoverable": "",
+            "chargeVat": "",
+            "ledgerEffect": -1119.56
+          },
+          "txCountAfter": 8,
+          "line": {
+            "matchStatus": "RECORDED",
+            "classification": "FUND_SWEEP",
+            "suggested": "FUND_SWEEP"
+          },
+          "checks": {
+            "preselected": true,
+            "noteVisible": true,
+            "nothingBeforeClick": true,
+            "oneRowCreated": true,
+            "type": true,
+            "recorded": true,
+            "date": true,
+            "amount": true,
+            "charge": true,
+            "lineRecorded": true,
+            "badge": true,
+            "noError": true
+          }
+        },
+        {
+          "n": 3,
+          "cls": "BANK_CHARGE",
+          "txCountBeforeClick": 8,
+          "rowsForLineBeforeClick": 0,
+          "dialog": {
+            "offered": [
+              "FUND_SWEEP",
+              "BANK_CHARGE"
+            ],
+            "checked": [
+              "BANK_CHARGE"
+            ],
+            "noteVisible": true,
+            "noteText": "Suggested from the line's description — check it before recording.",
+            "chargeRecoverableVisible": true,
+            "chargeVatVisible": true,
+            "text": "Record from statement Line #3, 12 Nov 2026 — MONTHLY SERVICE FEE — R 57,50 DR. The entry is dated the line's date and posts at once; unmatching the line reverses it. What is this line? Interest paid to the Legal Practitioners' Fidelity Fund Bank charge Suggested from the line's description — check it before recording. Recoverable from the Fidelity Fund? Recoverable Not recoverable Is this charge on the Legal Practitioners' Fidelity Fund's list of recoverable bank charges? VAT included in the charge Enter 0 if the charge carries no VAT. Notes (optional) Cancel Record Close"
+          },
+          "preselected": true,
+          "shot": "12-c-record-line3-BANK_CHARGE.png",
+          "badge": "Recorded: Bank charge",
+          "errorBanner": null,
+          "rowSql": "                  id                  | transaction_type |  status  | amount | transaction_date |   ledger   | ledger_effect | cashbook_effect | posted |         creditor_account_id          |        bank_statement_line_id        | charge_recoverable | charge_vat_amount |     reference     | reversal_of | reversed_by_id |          created_at           \n--------------------------------------+------------------+----------+--------+------------------+------------+---------------+-----------------+--------+--------------------------------------+--------------------------------------+--------------------+-------------------+-------------------+-------------+----------------+-------------------------------\n 7931fd5b-92bb-41af-b497-cc1cfc0dec46 | BANK_CHARGE      | RECORDED |  57.50 | 2026-11-12       | NON_CLIENT |        -57.50 |          -57.50 | t      | 6272042b-ff3b-4e5d-9f26-868f0b65711f | e2b5ea0d-361f-49df-88f5-ce003b925e82 | t                  |              7.50 | SVC/OBS647C/RQH2F |             |                | 2026-11-17 14:11:34.879904+00\n(1 row)\n\n",
+          "row": {
+            "id": "7931fd5b-92bb-41af-b497-cc1cfc0dec46",
+            "type": "BANK_CHARGE",
+            "status": "RECORDED",
+            "amount": 57.5,
+            "date": "2026-11-12",
+            "chargeRecoverable": "true",
+            "chargeVat": "7.50",
+            "ledgerEffect": -57.5
+          },
+          "txCountAfter": 9,
+          "line": {
+            "matchStatus": "RECORDED",
+            "classification": "BANK_CHARGE",
+            "suggested": "BANK_CHARGE"
+          },
+          "checks": {
+            "preselected": true,
+            "noteVisible": true,
+            "nothingBeforeClick": true,
+            "oneRowCreated": true,
+            "type": true,
+            "recorded": true,
+            "date": true,
+            "amount": true,
+            "charge": true,
+            "lineRecorded": true,
+            "badge": true,
+            "noError": true
+          }
+        },
+        {
+          "n": 4,
+          "cls": "CHARGE_REFUND",
+          "txCountBeforeClick": 9,
+          "rowsForLineBeforeClick": 0,
+          "dialog": {
+            "offered": [
+              "FUND_INTEREST",
+              "CHARGE_REFUND"
+            ],
+            "checked": [
+              "CHARGE_REFUND"
+            ],
+            "noteVisible": true,
+            "noteText": "Suggested from the line's description — check it before recording.",
+            "chargeRecoverableVisible": false,
+            "chargeVatVisible": false,
+            "text": "Record from statement Line #4, 13 Nov 2026 — SERVICE FEE REFUND — R 57,50 CR. The entry is dated the line's date and posts at once; unmatching the line reverses it. What is this line? Interest received for the Legal Practitioners' Fidelity Fund Bank charge refunded from the business account Suggested from the line's description — check it before recording. Notes (optional) Cancel Record Close"
+          },
+          "preselected": true,
+          "shot": "13-c-record-line4-CHARGE_REFUND.png",
+          "badge": "Recorded: Bank charge refunded from the business account",
+          "errorBanner": null,
+          "rowSql": "                  id                  | transaction_type |  status  | amount | transaction_date |   ledger   | ledger_effect | cashbook_effect | posted |         creditor_account_id          |        bank_statement_line_id        | charge_recoverable | charge_vat_amount |     reference     | reversal_of | reversed_by_id |          created_at           \n--------------------------------------+------------------+----------+--------+------------------+------------+---------------+-----------------+--------+--------------------------------------+--------------------------------------+--------------------+-------------------+-------------------+-------------+----------------+-------------------------------\n ccec35a1-c32d-44f7-b842-b15d090813f2 | CHARGE_REFUND    | RECORDED |  57.50 | 2026-11-13       | NON_CLIENT |         57.50 |           57.50 | t      | 6272042b-ff3b-4e5d-9f26-868f0b65711f | add5fa6b-1d35-488e-9049-f1539b449c1f |                    |                   | RFD/OBS647C/RQH2F |             |                | 2026-11-17 14:12:07.211046+00\n(1 row)\n\n",
+          "row": {
+            "id": "ccec35a1-c32d-44f7-b842-b15d090813f2",
+            "type": "CHARGE_REFUND",
+            "status": "RECORDED",
+            "amount": 57.5,
+            "date": "2026-11-13",
+            "chargeRecoverable": "",
+            "chargeVat": "",
+            "ledgerEffect": 57.5
+          },
+          "txCountAfter": 10,
+          "line": {
+            "matchStatus": "RECORDED",
+            "classification": "CHARGE_REFUND",
+            "suggested": "CHARGE_REFUND"
+          },
+          "checks": {
+            "preselected": true,
+            "noteVisible": true,
+            "nothingBeforeClick": true,
+            "oneRowCreated": true,
+            "type": true,
+            "recorded": true,
+            "date": true,
+            "amount": true,
+            "charge": true,
+            "lineRecorded": true,
+            "badge": true,
+            "noError": true
+          }
+        }
+      ],
+      "txCountAfterLook": 6,
+      "shotAfterRecord": "14-c-all-recorded.png",
+      "lookChecks": {
+        "everyDialogAsExpected": true,
+        "nothingPostedByLooking": true
+      },
+      "recordChecks": [
+        {
+          "n": 1,
+          "allTrue": true
+        },
+        {
+          "n": 2,
+          "allTrue": true
+        },
+        {
+          "n": 3,
+          "allTrue": true
+        },
+        {
+          "n": 4,
+          "allTrue": true
+        }
+      ]
+    },
+    "d": {
+      "fund": {
+        "label": "d-after-record",
+        "query": "",
+        "cardText": "Legal Practitioners' Fidelity Fund — interest and charges R 115,00 Interest received for the Fund, less bank charges",
+        "cardValue": 115,
+        "cardApi": 115,
+        "sqlBalance": 115,
+        "uiRowCount": 4,
+        "sqlRowCount": 4,
+        "apiTotalElements": 4,
+        "apiStatus": 200,
+        "uiRows": [
+          {
+            "cells": [
+              "13 Nov 2026",
+              "RFD/OBS647C/RQH2F",
+              "SERVICE FEE REFUND",
+              "Bank charge refunded from the business account",
+              "R 57,50",
+              "—",
+              "R 115,00"
+            ],
+            "balanceText": "R 115,00",
+            "chargeText": "—",
+            "reversedBadge": false,
+            "balance": 115
+          },
+          {
+            "cells": [
+              "12 Nov 2026",
+              "SVC/OBS647C/RQH2F",
+              "MONTHLY SERVICE FEE",
+              "Bank charge",
+              "R 57,50",
+              "Recoverable · VAT R 7,50",
+              "R 57,50"
+            ],
+            "balanceText": "R 57,50",
+            "chargeText": "Recoverable · VAT R 7,50",
+            "reversedBadge": false,
+            "balance": 57.5
+          },
+          {
+            "cells": [
+              "11 Nov 2026",
+              "LPFF/OBS647C/RQH2F",
+              "LPFF FIDELITY FUND INTEREST SWEEP",
+              "Interest paid to the Legal Practitioners' Fidelity Fund",
+              "R 1 119,56",
+              "—",
+              "R 115,00"
+            ],
+            "balanceText": "R 115,00",
+            "chargeText": "—",
+            "reversedBadge": false,
+            "balance": 115
+          },
+          {
+            "cells": [
+              "10 Nov 2026",
+              "INT/OBS647C/RQH2F",
+              "CREDIT INTEREST",
+              "Interest received for the Legal Practitioners' Fidelity Fund",
+              "R 1 234,56",
+              "—",
+              "R 1 234,56"
+            ],
+            "balanceText": "R 1 234,56",
+            "chargeText": "—",
+            "reversedBadge": false,
+            "balance": 1234.56
+          }
+        ],
+        "sqlRows": [
+          {
+            "id": "ccec35a1-c32d-44f7-b842-b15d090813f2",
+            "date": "2026-11-13",
+            "type": "CHARGE_REFUND",
+            "status": "RECORDED",
+            "amount": 57.5,
+            "ledgerEffect": 57.5,
+            "runningBalance": 115,
+            "reference": "RFD/OBS647C/RQH2F",
+            "chargeRecoverable": "",
+            "chargeVat": "",
+            "reversalOf": ""
+          },
+          {
+            "id": "7931fd5b-92bb-41af-b497-cc1cfc0dec46",
+            "date": "2026-11-12",
+            "type": "BANK_CHARGE",
+            "status": "RECORDED",
+            "amount": 57.5,
+            "ledgerEffect": -57.5,
+            "runningBalance": 57.5,
+            "reference": "SVC/OBS647C/RQH2F",
+            "chargeRecoverable": "true",
+            "chargeVat": "7.50",
+            "reversalOf": ""
+          },
+          {
+            "id": "bc26a837-8e94-4611-8e83-c401c11f78e3",
+            "date": "2026-11-11",
+            "type": "FUND_SWEEP",
+            "status": "RECORDED",
+            "amount": 1119.56,
+            "ledgerEffect": -1119.56,
+            "runningBalance": 115,
+            "reference": "LPFF/OBS647C/RQH2F",
+            "chargeRecoverable": "",
+            "chargeVat": "",
+            "reversalOf": ""
+          },
+          {
+            "id": "e5eae8c2-8804-4fb9-9d39-a172fe564807",
+            "date": "2026-11-10",
+            "type": "FUND_INTEREST",
+            "status": "RECORDED",
+            "amount": 1234.56,
+            "ledgerEffect": 1234.56,
+            "runningBalance": 1234.56,
+            "reference": "INT/OBS647C/RQH2F",
+            "chargeRecoverable": "",
+            "chargeVat": "",
+            "reversalOf": ""
+          }
+        ],
+        "perRow": [
+          {
+            "i": 0,
+            "id": "ccec35a1-c32d-44f7-b842-b15d090813f2",
+            "type": "CHARGE_REFUND",
+            "status": "RECORDED",
+            "date": "2026-11-13",
+            "reference": "RFD/OBS647C/RQH2F",
+            "sqlRunning": 115,
+            "apiRunning": 115,
+            "uiRunning": 115,
+            "uiReference": "RFD/OBS647C/RQH2F",
+            "uiCharge": "—",
+            "uiReversedBadge": false,
+            "idMatchesApi": true,
+            "refMatchesUi": true,
+            "runningMatches": true
+          },
+          {
+            "i": 1,
+            "id": "7931fd5b-92bb-41af-b497-cc1cfc0dec46",
+            "type": "BANK_CHARGE",
+            "status": "RECORDED",
+            "date": "2026-11-12",
+            "reference": "SVC/OBS647C/RQH2F",
+            "sqlRunning": 57.5,
+            "apiRunning": 57.5,
+            "uiRunning": 57.5,
+            "uiReference": "SVC/OBS647C/RQH2F",
+            "uiCharge": "Recoverable · VAT R 7,50",
+            "uiReversedBadge": false,
+            "idMatchesApi": true,
+            "refMatchesUi": true,
+            "runningMatches": true
+          },
+          {
+            "i": 2,
+            "id": "bc26a837-8e94-4611-8e83-c401c11f78e3",
+            "type": "FUND_SWEEP",
+            "status": "RECORDED",
+            "date": "2026-11-11",
+            "reference": "LPFF/OBS647C/RQH2F",
+            "sqlRunning": 115,
+            "apiRunning": 115,
+            "uiRunning": 115,
+            "uiReference": "LPFF/OBS647C/RQH2F",
+            "uiCharge": "—",
+            "uiReversedBadge": false,
+            "idMatchesApi": true,
+            "refMatchesUi": true,
+            "runningMatches": true
+          },
+          {
+            "i": 3,
+            "id": "e5eae8c2-8804-4fb9-9d39-a172fe564807",
+            "type": "FUND_INTEREST",
+            "status": "RECORDED",
+            "date": "2026-11-10",
+            "reference": "INT/OBS647C/RQH2F",
+            "sqlRunning": 1234.56,
+            "apiRunning": 1234.56,
+            "uiRunning": 1234.56,
+            "uiReference": "INT/OBS647C/RQH2F",
+            "uiCharge": "—",
+            "uiReversedBadge": false,
+            "idMatchesApi": true,
+            "refMatchesUi": true,
+            "runningMatches": true
+          }
+        ],
+        "shot": "15-d-after-record-other-creditors.png",
+        "checks": {
+          "oneUiRowPerEntry": true,
+          "apiRowCount": true,
+          "newestFirstSameOrderUiApiSql": true,
+          "everyRowRunningBalanceUiApiSql": true,
+          "topRunningEqualsStatCard": true,
+          "statCardEqualsApiEqualsSql": true,
+          "topRunningEqualsSqlBalance": true
+        }
+      },
+      "chargeRows": [
+        "Recoverable · VAT R 7,50"
+      ],
+      "checks": {
+        "oneUiRowPerEntry": true,
+        "apiRowCount": true,
+        "newestFirstSameOrderUiApiSql": true,
+        "everyRowRunningBalanceUiApiSql": true,
+        "topRunningEqualsStatCard": true,
+        "statCardEqualsApiEqualsSql": true,
+        "topRunningEqualsSqlBalance": true,
+        "chargeDetailShown": true
+      }
+    },
+    "e": {
+      "outOfRangeVisible": true,
+      "outOfRangeText": "No entries on this page. Go to the first page",
+      "rowsOnPage50": 0,
+      "emptyLedgerMessageShown": false,
+      "apiPage50": {
+        "content": [],
+        "page": {
+          "size": 25,
+          "number": 50,
+          "totalElements": 4,
+          "totalPages": 1
+        }
+      },
+      "shot": "16-e-page50-out-of-range.png",
+      "urlAfterLink": "http://localhost:3001/org/e2e-test-org/trust-accounting/other-creditors?page=0",
+      "rowsAfterLink": 4,
+      "shotAfter": "17-e-after-go-to-first-page.png",
+      "checks": {
+        "outOfRangeShown": true,
+        "noRowsOnPage50": true,
+        "notTheEmptyLedgerMessage": true,
+        "linkGoesToPage0": true,
+        "rowsShownAfterLink": true
+      }
+    },
+    "f": {
+      "txCountBefore": 10,
+      "dialogText": "Unmatch recorded line? This line was recorded as Bank charge. Unmatching it reverses the entry it created, dated 12 Nov 2026 — the line's date. The line returns to Unmatched. Keep Unmatch and reverse",
+      "shotDialog": "18-f-unmatch-recorded-confirmation.png",
+      "lineText": "#3 12 Nov 2026 MONTHLY SERVICE FEE Ref: SVC/OBS647C/RQH2F R 57,50 DR Unmatched",
+      "errorBanner": null,
+      "shotAfter": "19-f-after-unmatch.png",
+      "originalSql": "                  id                  | transaction_type |  status  | amount | transaction_date |   ledger   | ledger_effect | cashbook_effect | posted |         creditor_account_id          | bank_statement_line_id | charge_recoverable | charge_vat_amount |     reference     | reversal_of |            reversed_by_id            |          created_at           \n--------------------------------------+------------------+----------+--------+------------------+------------+---------------+-----------------+--------+--------------------------------------+------------------------+--------------------+-------------------+-------------------+-------------+--------------------------------------+-------------------------------\n 7931fd5b-92bb-41af-b497-cc1cfc0dec46 | BANK_CHARGE      | REVERSED |  57.50 | 2026-11-12       | NON_CLIENT |        -57.50 |          -57.50 | t      | 6272042b-ff3b-4e5d-9f26-868f0b65711f |                        | t                  |              7.50 | SVC/OBS647C/RQH2F |             | 131ff4db-69fc-4dd1-a199-05c23ae22ffb | 2026-11-17 14:11:34.879904+00\n(1 row)\n\n",
+      "contraSql": "                  id                  | transaction_type |  status  | amount | transaction_date |   ledger   | ledger_effect | cashbook_effect | posted |         creditor_account_id          | bank_statement_line_id | charge_recoverable | charge_vat_amount |       reference       |             reversal_of              | reversed_by_id |          created_at           \n--------------------------------------+------------------+----------+--------+------------------+------------+---------------+-----------------+--------+--------------------------------------+------------------------+--------------------+-------------------+-----------------------+--------------------------------------+----------------+-------------------------------\n 131ff4db-69fc-4dd1-a199-05c23ae22ffb | REVERSAL         | RECORDED |  57.50 | 2026-11-12       | NON_CLIENT |         57.50 |           57.50 | t      | 6272042b-ff3b-4e5d-9f26-868f0b65711f |                        |                    |                   | REV-SVC/OBS647C/RQH2F | 7931fd5b-92bb-41af-b497-cc1cfc0dec46 |                | 2026-11-17 14:12:42.649735+00\n(1 row)\n\n",
+      "original": {
+        "id": "7931fd5b-92bb-41af-b497-cc1cfc0dec46",
+        "status": "REVERSED",
+        "reversedBy": "131ff4db-69fc-4dd1-a199-05c23ae22ffb"
+      },
+      "contra": {
+        "id": "131ff4db-69fc-4dd1-a199-05c23ae22ffb",
+        "type": "REVERSAL",
+        "date": "2026-11-12",
+        "ledgerEffect": 57.5
+      },
+      "line": {
+        "matchStatus": "UNMATCHED",
+        "classification": "<null>",
+        "suggested": "BANK_CHARGE"
+      },
+      "txCountAfter": 11,
+      "fund": {
+        "label": "f-after-unmatch",
+        "query": "",
+        "cardText": "Legal Practitioners' Fidelity Fund — interest and charges R 172,50 Interest received for the Fund, less bank charges",
+        "cardValue": 172.5,
+        "cardApi": 172.5,
+        "sqlBalance": 172.5,
+        "uiRowCount": 5,
+        "sqlRowCount": 5,
+        "apiTotalElements": 5,
+        "apiStatus": 200,
+        "uiRows": [
+          {
+            "cells": [
+              "13 Nov 2026",
+              "RFD/OBS647C/RQH2F",
+              "SERVICE FEE REFUND",
+              "Bank charge refunded from the business account",
+              "R 57,50",
+              "—",
+              "R 172,50"
+            ],
+            "balanceText": "R 172,50",
+            "chargeText": "—",
+            "reversedBadge": false,
+            "balance": 172.5
+          },
+          {
+            "cells": [
+              "12 Nov 2026",
+              "REV-SVC/OBS647C/RQH2F",
+              "Statement line unmatched",
+              "Reversal",
+              "R 57,50",
+              "—",
+              "R 115,00"
+            ],
+            "balanceText": "R 115,00",
+            "chargeText": "—",
+            "reversedBadge": false,
+            "balance": 115
+          },
+          {
+            "cells": [
+              "12 Nov 2026",
+              "SVC/OBS647C/RQH2F",
+              "MONTHLY SERVICE FEE",
+              "Bank charge Reversed",
+              "R 57,50",
+              "Recoverable · VAT R 7,50",
+              "R 57,50"
+            ],
+            "balanceText": "R 57,50",
+            "chargeText": "Recoverable · VAT R 7,50",
+            "reversedBadge": true,
+            "balance": 57.5
+          },
+          {
+            "cells": [
+              "11 Nov 2026",
+              "LPFF/OBS647C/RQH2F",
+              "LPFF FIDELITY FUND INTEREST SWEEP",
+              "Interest paid to the Legal Practitioners' Fidelity Fund",
+              "R 1 119,56",
+              "—",
+              "R 115,00"
+            ],
+            "balanceText": "R 115,00",
+            "chargeText": "—",
+            "reversedBadge": false,
+            "balance": 115
+          },
+          {
+            "cells": [
+              "10 Nov 2026",
+              "INT/OBS647C/RQH2F",
+              "CREDIT INTEREST",
+              "Interest received for the Legal Practitioners' Fidelity Fund",
+              "R 1 234,56",
+              "—",
+              "R 1 234,56"
+            ],
+            "balanceText": "R 1 234,56",
+            "chargeText": "—",
+            "reversedBadge": false,
+            "balance": 1234.56
+          }
+        ],
+        "sqlRows": [
+          {
+            "id": "ccec35a1-c32d-44f7-b842-b15d090813f2",
+            "date": "2026-11-13",
+            "type": "CHARGE_REFUND",
+            "status": "RECORDED",
+            "amount": 57.5,
+            "ledgerEffect": 57.5,
+            "runningBalance": 172.5,
+            "reference": "RFD/OBS647C/RQH2F",
+            "chargeRecoverable": "",
+            "chargeVat": "",
+            "reversalOf": ""
+          },
+          {
+            "id": "131ff4db-69fc-4dd1-a199-05c23ae22ffb",
+            "date": "2026-11-12",
+            "type": "REVERSAL",
+            "status": "RECORDED",
+            "amount": 57.5,
+            "ledgerEffect": 57.5,
+            "runningBalance": 115,
+            "reference": "REV-SVC/OBS647C/RQH2F",
+            "chargeRecoverable": "",
+            "chargeVat": "",
+            "reversalOf": "7931fd5b-92bb-41af-b497-cc1cfc0dec46"
+          },
+          {
+            "id": "7931fd5b-92bb-41af-b497-cc1cfc0dec46",
+            "date": "2026-11-12",
+            "type": "BANK_CHARGE",
+            "status": "REVERSED",
+            "amount": 57.5,
+            "ledgerEffect": -57.5,
+            "runningBalance": 57.5,
+            "reference": "SVC/OBS647C/RQH2F",
+            "chargeRecoverable": "true",
+            "chargeVat": "7.50",
+            "reversalOf": ""
+          },
+          {
+            "id": "bc26a837-8e94-4611-8e83-c401c11f78e3",
+            "date": "2026-11-11",
+            "type": "FUND_SWEEP",
+            "status": "RECORDED",
+            "amount": 1119.56,
+            "ledgerEffect": -1119.56,
+            "runningBalance": 115,
+            "reference": "LPFF/OBS647C/RQH2F",
+            "chargeRecoverable": "",
+            "chargeVat": "",
+            "reversalOf": ""
+          },
+          {
+            "id": "e5eae8c2-8804-4fb9-9d39-a172fe564807",
+            "date": "2026-11-10",
+            "type": "FUND_INTEREST",
+            "status": "RECORDED",
+            "amount": 1234.56,
+            "ledgerEffect": 1234.56,
+            "runningBalance": 1234.56,
+            "reference": "INT/OBS647C/RQH2F",
+            "chargeRecoverable": "",
+            "chargeVat": "",
+            "reversalOf": ""
+          }
+        ],
+        "perRow": [
+          {
+            "i": 0,
+            "id": "ccec35a1-c32d-44f7-b842-b15d090813f2",
+            "type": "CHARGE_REFUND",
+            "status": "RECORDED",
+            "date": "2026-11-13",
+            "reference": "RFD/OBS647C/RQH2F",
+            "sqlRunning": 172.5,
+            "apiRunning": 172.5,
+            "uiRunning": 172.5,
+            "uiReference": "RFD/OBS647C/RQH2F",
+            "uiCharge": "—",
+            "uiReversedBadge": false,
+            "idMatchesApi": true,
+            "refMatchesUi": true,
+            "runningMatches": true
+          },
+          {
+            "i": 1,
+            "id": "131ff4db-69fc-4dd1-a199-05c23ae22ffb",
+            "type": "REVERSAL",
+            "status": "RECORDED",
+            "date": "2026-11-12",
+            "reference": "REV-SVC/OBS647C/RQH2F",
+            "sqlRunning": 115,
+            "apiRunning": 115,
+            "uiRunning": 115,
+            "uiReference": "REV-SVC/OBS647C/RQH2F",
+            "uiCharge": "—",
+            "uiReversedBadge": false,
+            "idMatchesApi": true,
+            "refMatchesUi": true,
+            "runningMatches": true
+          },
+          {
+            "i": 2,
+            "id": "7931fd5b-92bb-41af-b497-cc1cfc0dec46",
+            "type": "BANK_CHARGE",
+            "status": "REVERSED",
+            "date": "2026-11-12",
+            "reference": "SVC/OBS647C/RQH2F",
+            "sqlRunning": 57.5,
+            "apiRunning": 57.5,
+            "uiRunning": 57.5,
+            "uiReference": "SVC/OBS647C/RQH2F",
+            "uiCharge": "Recoverable · VAT R 7,50",
+            "uiReversedBadge": true,
+            "idMatchesApi": true,
+            "refMatchesUi": true,
+            "runningMatches": true
+          },
+          {
+            "i": 3,
+            "id": "bc26a837-8e94-4611-8e83-c401c11f78e3",
+            "type": "FUND_SWEEP",
+            "status": "RECORDED",
+            "date": "2026-11-11",
+            "reference": "LPFF/OBS647C/RQH2F",
+            "sqlRunning": 115,
+            "apiRunning": 115,
+            "uiRunning": 115,
+            "uiReference": "LPFF/OBS647C/RQH2F",
+            "uiCharge": "—",
+            "uiReversedBadge": false,
+            "idMatchesApi": true,
+            "refMatchesUi": true,
+            "runningMatches": true
+          },
+          {
+            "i": 4,
+            "id": "e5eae8c2-8804-4fb9-9d39-a172fe564807",
+            "type": "FUND_INTEREST",
+            "status": "RECORDED",
+            "date": "2026-11-10",
+            "reference": "INT/OBS647C/RQH2F",
+            "sqlRunning": 1234.56,
+            "apiRunning": 1234.56,
+            "uiRunning": 1234.56,
+            "uiReference": "INT/OBS647C/RQH2F",
+            "uiCharge": "—",
+            "uiReversedBadge": false,
+            "idMatchesApi": true,
+            "refMatchesUi": true,
+            "runningMatches": true
+          }
+        ],
+        "shot": "20-f-after-unmatch-other-creditors.png",
+        "checks": {
+          "oneUiRowPerEntry": true,
+          "apiRowCount": true,
+          "newestFirstSameOrderUiApiSql": true,
+          "everyRowRunningBalanceUiApiSql": true,
+          "topRunningEqualsStatCard": true,
+          "statCardEqualsApiEqualsSql": true,
+          "topRunningEqualsSqlBalance": true
+        }
+      },
+      "checks": {
+        "originalReversed": true,
+        "contraIsReversal": true,
+        "oneRowCreated": true,
+        "lineUnmatched": true,
+        "originalRowShownWithReversedBadge": true,
+        "contraRowShown": true,
+        "ledger_oneUiRowPerEntry": true,
+        "ledger_apiRowCount": true,
+        "ledger_newestFirstSameOrderUiApiSql": true,
+        "ledger_everyRowRunningBalanceUiApiSql": true,
+        "ledger_topRunningEqualsStatCard": true,
+        "ledger_statCardEqualsApiEqualsSql": true,
+        "ledger_topRunningEqualsSqlBalance": true
+      },
+      "suggestionKeptAfterUnmatch": true,
+      "reopened": {
+        "offered": [
+          "FUND_SWEEP",
+          "BANK_CHARGE"
+        ],
+        "checked": [
+          "BANK_CHARGE"
+        ],
+        "noteVisible": true,
+        "noteText": "Suggested from the line's description — check it before recording.",
+        "chargeRecoverableVisible": true,
+        "chargeVatVisible": true,
+        "text": "Record from statement Line #3, 12 Nov 2026 — MONTHLY SERVICE FEE — R 57,50 DR. The entry is dated the line's date and posts at once; unmatching the line reverses it. What is this line? Interest paid to the Legal Practitioners' Fidelity Fund Bank charge Suggested from the line's description — check it before recording. Recoverable from the Fidelity Fund? Recoverable Not recoverable Is this charge on the Legal Practitioners' Fidelity Fund's list of recoverable bank charges? VAT included in the charge Enter 0 if the charge carries no VAT. Notes (optional) Cancel Record Close"
+      },
+      "shotReopen": "21-f-line3-reopened-after-unmatch.png",
+      "txCountAfterReopen": 11
+    }
+  },
+  "consoleErrors": [],
+  "pageErrors": [],
+  "notes": [],
+  "startedAt": "2026-11-17T14:09:13.182Z",
+  "run": "RQH2F",
+  "ids": {
+    "account": "9428d0a8-ff3e-4e83-9641-fc70925cb2f7",
+    "fundAccount": "6272042b-ff3b-4e5d-9f26-868f0b65711f",
+    "statement": "cbf17f02-bbb2-4b61-bca0-effead8e4b1d",
+    "recon": "2b83041a-6d3a-448a-8044-c1488a6acee1"
+  },
+  "autoMatchTarget": {
+    "id": "8d65a67a-75d5-481b-b29b-d52b8daf315f",
+    "reference": "FEE/MOROKA/mwkrm7wvb962",
+    "amount": 8500,
+    "date": "2026-11-17",
+    "type": "FEE_TRANSFER"
+  },
+  "dates": {
+    "today": "2026-11-17",
+    "periodEnd": "2026-11-17"
+  },
+  "lines": [
+    {
+      "n": 1,
+      "date": "2026-11-10",
+      "desc": "CREDIT INTEREST",
+      "ref": "INT/OBS647C/RQH2F",
+      "amount": 1234.56,
+      "expect": "FUND_INTEREST",
+      "record": {
+        "cls": "FUND_INTEREST"
+      },
+      "id": "4c27bbf7-3d43-4206-bb41-1582073c3e8a",
+      "suggestedAtImport": "FUND_INTEREST",
+      "txId": "e5eae8c2-8804-4fb9-9d39-a172fe564807"
+    },
+    {
+      "n": 2,
+      "date": "2026-11-11",
+      "desc": "LPFF FIDELITY FUND INTEREST SWEEP",
+      "ref": "LPFF/OBS647C/RQH2F",
+      "amount": -1119.56,
+      "expect": "FUND_SWEEP",
+      "record": {
+        "cls": "FUND_SWEEP"
+      },
+      "id": "38b0d1e8-3bca-45ee-a1d5-328e69abcd59",
+      "suggestedAtImport": "FUND_SWEEP",
+      "txId": "bc26a837-8e94-4611-8e83-c401c11f78e3"
+    },
+    {
+      "n": 3,
+      "date": "2026-11-12",
+      "desc": "MONTHLY SERVICE FEE",
+      "ref": "SVC/OBS647C/RQH2F",
+      "amount": -57.5,
+      "expect": "BANK_CHARGE",
+      "record": {
+        "cls": "BANK_CHARGE",
+        "recoverable": true,
+        "vat": "7.50"
+      },
+      "id": "e2b5ea0d-361f-49df-88f5-ce003b925e82",
+      "suggestedAtImport": "BANK_CHARGE",
+      "txId": "7931fd5b-92bb-41af-b497-cc1cfc0dec46"
+    },
+    {
+      "n": 4,
+      "date": "2026-11-13",
+      "desc": "SERVICE FEE REFUND",
+      "ref": "RFD/OBS647C/RQH2F",
+      "amount": 57.5,
+      "expect": "CHARGE_REFUND",
+      "record": {
+        "cls": "CHARGE_REFUND"
+      },
+      "id": "add5fa6b-1d35-488e-9049-f1539b449c1f",
+      "suggestedAtImport": "CHARGE_REFUND",
+      "txId": "ccec35a1-c32d-44f7-b842-b15d090813f2"
+    },
+    {
+      "n": 5,
+      "date": "2026-11-14",
+      "desc": "DEPOSIT J NKOSI",
+      "ref": "DEP/OBS647C/RQH2F",
+      "amount": 3210,
+      "expect": null,
+      "id": "4973ca6a-9788-4de4-aeb5-dd92064c8526",
+      "suggestedAtImport": "<null>"
+    },
+    {
+      "n": 6,
+      "date": "2026-11-17",
+      "desc": "TRUST TO BUSINESS FEE TRANSFER",
+      "ref": "FEE/MOROKA/mwkrm7wvb962",
+      "amount": -8500,
+      "expect": "BANK_CHARGE",
+      "autoMatch": true,
+      "id": "80c42a7d-2c15-4da0-8143-cc118da3d7e1",
+      "suggestedAtImport": "BANK_CHARGE"
+    }
+  ],
+  "csv": [
+    "Standard Bank Trust Account - OBS 647C RQH2F",
+    "Date,Description,Reference,Amount,Balance",
+    "2026-11-10,CREDIT INTEREST,INT/OBS647C/RQH2F,1234.56,1234.56",
+    "2026-11-11,LPFF FIDELITY FUND INTEREST SWEEP,LPFF/OBS647C/RQH2F,-1119.56,115.00",
+    "2026-11-12,MONTHLY SERVICE FEE,SVC/OBS647C/RQH2F,-57.50,57.50",
+    "2026-11-13,SERVICE FEE REFUND,RFD/OBS647C/RQH2F,57.50,115.00",
+    "2026-11-14,DEPOSIT J NKOSI,DEP/OBS647C/RQH2F,3210.00,3325.00",
+    "2026-11-17,TRUST TO BUSINESS FEE TRANSFER,FEE/MOROKA/mwkrm7wvb962,-8500.00,-5175.00"
+  ],
+  "verdict": {
+    "a": "PASS",
+    "b": "PASS",
+    "c": "PASS",
+    "d": "PASS",
+    "e": "PASS",
+    "f": "PASS",
+    "consoleErrors": 0,
+    "pageErrors": 0
+  },
+  "finishedAt": "2026-11-17T14:13:18.604Z"
+}

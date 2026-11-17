@@ -1,0 +1,180 @@
+Skip to content
+Kazi
+E2E Test Organization
+Search...
+⌘K
+TODAY
+Home
+My work
+Diary
+MATTERS
+Matters
+New matter
+Conflict check
+Adverse parties
+AI reviews
+CLIENTS
+Clients
+FICA & compliance
+Data requests
+FEES
+TRUST
+FIRM
+Platform Admin
+Notifications
+AO
+
+Alice Owner
+
+alice@e2e-test.local
+
+Toggle menu
+E2E Test Organization
+Trust accounting
+Reconciliation
+New
+Search
+⌘K
+11 unread notifications
+11
+e2e-test-org
+AO
+Back to Reconciliation
+New Reconciliation
+
+Reconcile your trust account with a bank statement
+
+1
+Select Account
+2
+Upload Statement
+3
+Auto-Match
+4
+Review & Match
+5
+Complete
+Matching Progress
+1 / 6 lines resolved
+Bank Statement Lines
+#1
+10 Nov 2026
+
+CREDIT INTEREST
+
+Ref: INT/OBS647C/QP4KZ
+
+R 1 234,56 CR
+
+Unmatched
+#2
+11 Nov 2026
+
+LPFF FIDELITY FUND INTEREST SWEEP
+
+Ref: LPFF/OBS647C/QP4KZ
+
+R 1 119,56 DR
+
+Unmatched
+Record from statement
+Exclude
+#3
+12 Nov 2026
+
+MONTHLY SERVICE FEE
+
+Ref: SVC/OBS647C/QP4KZ
+
+R 57,50 DR
+
+Unmatched
+#4
+13 Nov 2026
+
+SERVICE FEE REFUND
+
+Ref: RFD/OBS647C/QP4KZ
+
+R 57,50 CR
+
+Unmatched
+#5
+14 Nov 2026
+
+DEPOSIT J NKOSI
+
+Ref: DEP/OBS647C/QP4KZ
+
+R 3 210,00 CR
+
+Unmatched
+#6
+17 Nov 2026
+
+TRUST TO BUSINESS FEE TRANSFER
+
+Ref: FEE/MOROKA/mwkqkcdh76db
+
+R 8 500,00 DR
+
+Auto-matched
+Unmatch
+Unmatched Trust Transactions
+
+All transactions are matched
+
+As at 17 Nov 2026
+Bank and cashbook
+Bank balance
+-R 5 175,00
++ Outstanding deposits
+R 295 000,00
+− Outstanding payments
+R 0,00
+= Adjusted bank balance
+R 289 825,00
+Cashbook
+R 286 500,00
+Difference
+R 3 325,00
+Cashbook and trust creditors
+Cashbook
+R 286 500,00
+Trust creditors
+R 286 500,00
+Difference
+R 0,00
+Trust creditors
+Client ledgers
+R 286 500,00
+Legal Practitioners' Fidelity Fund — interest and charges
+R 0,00
+Unidentified deposits
+R 0,00
+
+5 statement lines are neither matched nor excluded
+
+Excluded statement lines total R 0,00. An excluded line adjusts nothing: excluding a real bank movement leaves its amount as the difference between the bank and the cashbook.
+
+Reconciliation is not balanced
+Complete Reconciliation
+Back
+Command Palette
+
+Search pages and settings
+
+Record from statement
+
+Line #2, 11 Nov 2026 — LPFF FIDELITY FUND INTEREST SWEEP — R 1 119,56 DR. The entry is dated the line's date and posts at once; unmatching the line reverses it.
+
+What is this line?
+Interest paid to the Legal Practitioners' Fidelity Fund
+Bank charge
+
+Suggested from the line's description — check it before recording.
+
+Notes (optional)
+Cancel
+Record
+Close

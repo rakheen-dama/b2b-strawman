@@ -1,0 +1,1279 @@
+{
+  "at": "2026-11-17T14:14:48.800Z",
+  "widths": [
+    {
+      "tableWidth": 926,
+      "tableOffsetWidth": 926,
+      "tableRight": 1231,
+      "wrapper": {
+        "cls": "relative w-full overflow-x-auto",
+        "overflowX": "auto",
+        "clientWidth": 926,
+        "scrollWidth": 926,
+        "left": 305,
+        "right": 1231,
+        "top": 421,
+        "height": 401
+      },
+      "visibleLeft": 305,
+      "visibleRight": 1231,
+      "clippers": [],
+      "docScrollWidth": 1280,
+      "docClientWidth": 1280,
+      "header": [
+        {
+          "text": "DATE",
+          "left": 305,
+          "right": 406.1,
+          "top": 421,
+          "height": 40,
+          "lines": 1,
+          "scrollW": 101,
+          "clientW": 101
+        },
+        {
+          "text": "REFERENCE",
+          "left": 406.1,
+          "right": 523.4,
+          "top": 421,
+          "height": 40,
+          "lines": 1,
+          "scrollW": 117,
+          "clientW": 117
+        },
+        {
+          "text": "DESCRIPTION",
+          "left": 523.4,
+          "right": 668.8,
+          "top": 421,
+          "height": 40,
+          "lines": 1,
+          "scrollW": 145,
+          "clientW": 145
+        },
+        {
+          "text": "TYPE",
+          "left": 668.8,
+          "right": 847,
+          "top": 421,
+          "height": 40,
+          "lines": 1,
+          "scrollW": 178,
+          "clientW": 178
+        },
+        {
+          "text": "AMOUNT",
+          "left": 847,
+          "right": 963,
+          "top": 421,
+          "height": 40,
+          "lines": 1,
+          "scrollW": 116,
+          "clientW": 116
+        },
+        {
+          "text": "BANK CHARGE",
+          "left": 963,
+          "right": 1089.7,
+          "top": 421,
+          "height": 40,
+          "lines": 1,
+          "scrollW": 127,
+          "clientW": 127
+        },
+        {
+          "text": "RUNNING BALANCE",
+          "left": 1089.7,
+          "right": 1231,
+          "top": 421,
+          "height": 40,
+          "lines": 1,
+          "scrollW": 141,
+          "clientW": 141
+        }
+      ],
+      "balHeader": {
+        "text": "RUNNING BALANCE",
+        "left": 1089.7,
+        "right": 1231,
+        "top": 421,
+        "height": 40,
+        "lines": 1,
+        "scrollW": 141,
+        "clientW": 141
+      },
+      "rows": [
+        {
+          "balanceText": "R 172,50",
+          "balanceSpan": {
+            "left": 1155.8,
+            "right": 1223,
+            "top": 488,
+            "height": 17
+          },
+          "balanceTd": {
+            "left": 1089.7,
+            "right": 1231,
+            "top": 462,
+            "height": 71
+          },
+          "balanceLines": 1,
+          "balTdScrollW": 141,
+          "balTdClientW": 141,
+          "amountText": "R 57,50",
+          "amount": {
+            "left": 847,
+            "right": 963,
+            "top": 462,
+            "height": 71
+          },
+          "amountLines": 1,
+          "amtTdScrollW": 116,
+          "amtTdClientW": 116,
+          "chargeText": "—",
+          "chargeLines": 1,
+          "charge": {
+            "left": 963,
+            "right": 1089.7,
+            "top": 462,
+            "height": 71
+          },
+          "badges": [
+            {
+              "text": "Bank charge refunded from the business account",
+              "left": 676.8,
+              "right": 839,
+              "top": 470,
+              "height": 54,
+              "lines": 3,
+              "scrollW": 160,
+              "clientW": 160,
+              "scrollH": 52,
+              "clientH": 52,
+              "whiteSpace": "normal",
+              "overflow": "hidden",
+              "textOverflow": "clip",
+              "overflowWrap": "normal",
+              "wordBreak": "normal",
+              "insideVisible": true,
+              "words": 7
+            }
+          ]
+        },
+        {
+          "balanceText": "R 115,00",
+          "balanceSpan": {
+            "left": 1155.8,
+            "right": 1223,
+            "top": 562,
+            "height": 17
+          },
+          "balanceTd": {
+            "left": 1089.7,
+            "right": 1231,
+            "top": 532,
+            "height": 77
+          },
+          "balanceLines": 1,
+          "balTdScrollW": 141,
+          "balTdClientW": 141,
+          "amountText": "R 57,50",
+          "amount": {
+            "left": 847,
+            "right": 963,
+            "top": 532,
+            "height": 77
+          },
+          "amountLines": 1,
+          "amtTdScrollW": 116,
+          "amtTdClientW": 116,
+          "chargeText": "—",
+          "chargeLines": 1,
+          "charge": {
+            "left": 963,
+            "right": 1089.7,
+            "top": 532,
+            "height": 77
+          },
+          "badges": [
+            {
+              "text": "Reversal",
+              "left": 676.8,
+              "right": 747.9,
+              "top": 560,
+              "height": 22,
+              "lines": 1,
+              "scrollW": 69,
+              "clientW": 69,
+              "scrollH": 20,
+              "clientH": 20,
+              "whiteSpace": "normal",
+              "overflow": "hidden",
+              "textOverflow": "clip",
+              "overflowWrap": "normal",
+              "wordBreak": "normal",
+              "insideVisible": true,
+              "words": 1
+            }
+          ]
+        },
+        {
+          "balanceText": "R 57,50",
+          "balanceSpan": {
+            "left": 1164.2,
+            "right": 1223,
+            "top": 633,
+            "height": 17
+          },
+          "balanceTd": {
+            "left": 1089.7,
+            "right": 1231,
+            "top": 609,
+            "height": 65
+          },
+          "balanceLines": 1,
+          "balTdScrollW": 141,
+          "balTdClientW": 141,
+          "amountText": "R 57,50",
+          "amount": {
+            "left": 847,
+            "right": 963,
+            "top": 609,
+            "height": 65
+          },
+          "amountLines": 1,
+          "amtTdScrollW": 116,
+          "amtTdClientW": 116,
+          "chargeText": "Recoverable · VAT R 7,50",
+          "chargeLines": 2,
+          "charge": {
+            "left": 963,
+            "right": 1089.7,
+            "top": 609,
+            "height": 65
+          },
+          "badges": [
+            {
+              "text": "Bank charge",
+              "left": 676.8,
+              "right": 770.7,
+              "top": 618,
+              "height": 22,
+              "lines": 1,
+              "scrollW": 92,
+              "clientW": 92,
+              "scrollH": 20,
+              "clientH": 20,
+              "whiteSpace": "normal",
+              "overflow": "hidden",
+              "textOverflow": "clip",
+              "overflowWrap": "normal",
+              "wordBreak": "normal",
+              "insideVisible": true,
+              "words": 2
+            },
+            {
+              "text": "Reversed",
+              "left": 676.8,
+              "right": 752.5,
+              "top": 644,
+              "height": 22,
+              "lines": 1,
+              "scrollW": 74,
+              "clientW": 74,
+              "scrollH": 20,
+              "clientH": 20,
+              "whiteSpace": "nowrap",
+              "overflow": "hidden",
+              "textOverflow": "clip",
+              "overflowWrap": "normal",
+              "wordBreak": "normal",
+              "insideVisible": true,
+              "words": 1
+            }
+          ]
+        },
+        {
+          "balanceText": "R 115,00",
+          "balanceSpan": {
+            "left": 1155.8,
+            "right": 1223,
+            "top": 704,
+            "height": 17
+          },
+          "balanceTd": {
+            "left": 1089.7,
+            "right": 1231,
+            "top": 674,
+            "height": 77
+          },
+          "balanceLines": 1,
+          "balTdScrollW": 141,
+          "balTdClientW": 141,
+          "amountText": "R 1 119,56",
+          "amount": {
+            "left": 847,
+            "right": 963,
+            "top": 674,
+            "height": 77
+          },
+          "amountLines": 1,
+          "amtTdScrollW": 116,
+          "amtTdClientW": 116,
+          "chargeText": "—",
+          "chargeLines": 1,
+          "charge": {
+            "left": 963,
+            "right": 1089.7,
+            "top": 674,
+            "height": 77
+          },
+          "badges": [
+            {
+              "text": "Interest paid to the Legal Practitioners' Fidelity Fund",
+              "left": 676.8,
+              "right": 839,
+              "top": 686,
+              "height": 54,
+              "lines": 3,
+              "scrollW": 160,
+              "clientW": 160,
+              "scrollH": 52,
+              "clientH": 52,
+              "whiteSpace": "normal",
+              "overflow": "hidden",
+              "textOverflow": "clip",
+              "overflowWrap": "normal",
+              "wordBreak": "normal",
+              "insideVisible": true,
+              "words": 8
+            }
+          ]
+        },
+        {
+          "balanceText": "R 1 234,56",
+          "balanceSpan": {
+            "left": 1139,
+            "right": 1223,
+            "top": 778,
+            "height": 17
+          },
+          "balanceTd": {
+            "left": 1089.7,
+            "right": 1231,
+            "top": 751,
+            "height": 71
+          },
+          "balanceLines": 1,
+          "balTdScrollW": 141,
+          "balTdClientW": 141,
+          "amountText": "R 1 234,56",
+          "amount": {
+            "left": 847,
+            "right": 963,
+            "top": 751,
+            "height": 71
+          },
+          "amountLines": 1,
+          "amtTdScrollW": 116,
+          "amtTdClientW": 116,
+          "chargeText": "—",
+          "chargeLines": 1,
+          "charge": {
+            "left": 963,
+            "right": 1089.7,
+            "top": 751,
+            "height": 71
+          },
+          "badges": [
+            {
+              "text": "Interest received for the Legal Practitioners' Fidelity Fund",
+              "left": 676.8,
+              "right": 839,
+              "top": 760,
+              "height": 54,
+              "lines": 3,
+              "scrollW": 160,
+              "clientW": 160,
+              "scrollH": 52,
+              "clientH": 52,
+              "whiteSpace": "normal",
+              "overflow": "hidden",
+              "textOverflow": "clip",
+              "overflowWrap": "normal",
+              "wordBreak": "normal",
+              "insideVisible": true,
+              "words": 8
+            }
+          ]
+        }
+      ],
+      "width": 1280,
+      "checks": {
+        "tableFitsWrapper": true,
+        "balanceHeaderInsideVisible": true,
+        "everyBalanceInsideVisible": true,
+        "balanceOneLine": true,
+        "amountOneLine": true,
+        "badgesReadable": true,
+        "noPageHorizontalOverflow": true
+      },
+      "maxBalanceRight": 1231,
+      "allPass": true
+    },
+    {
+      "tableWidth": 1086,
+      "tableOffsetWidth": 1086,
+      "tableRight": 1391,
+      "wrapper": {
+        "cls": "relative w-full overflow-x-auto",
+        "overflowX": "auto",
+        "clientWidth": 1086,
+        "scrollWidth": 1086,
+        "left": 305,
+        "right": 1391,
+        "top": 421,
+        "height": 345
+      },
+      "visibleLeft": 305,
+      "visibleRight": 1391,
+      "clippers": [],
+      "docScrollWidth": 1440,
+      "docClientWidth": 1440,
+      "header": [
+        {
+          "text": "DATE",
+          "left": 305,
+          "right": 406.1,
+          "top": 421,
+          "height": 40,
+          "lines": 1,
+          "scrollW": 101,
+          "clientW": 101
+        },
+        {
+          "text": "REFERENCE",
+          "left": 406.1,
+          "right": 552,
+          "top": 421,
+          "height": 40,
+          "lines": 1,
+          "scrollW": 146,
+          "clientW": 146
+        },
+        {
+          "text": "DESCRIPTION",
+          "left": 552,
+          "right": 742.5,
+          "top": 421,
+          "height": 40,
+          "lines": 1,
+          "scrollW": 191,
+          "clientW": 191
+        },
+        {
+          "text": "TYPE",
+          "left": 742.5,
+          "right": 988.5,
+          "top": 421,
+          "height": 40,
+          "lines": 1,
+          "scrollW": 246,
+          "clientW": 246
+        },
+        {
+          "text": "AMOUNT",
+          "left": 988.5,
+          "right": 1104.5,
+          "top": 421,
+          "height": 40,
+          "lines": 1,
+          "scrollW": 116,
+          "clientW": 116
+        },
+        {
+          "text": "BANK CHARGE",
+          "left": 1104.5,
+          "right": 1249.7,
+          "top": 421,
+          "height": 40,
+          "lines": 1,
+          "scrollW": 145,
+          "clientW": 145
+        },
+        {
+          "text": "RUNNING BALANCE",
+          "left": 1249.7,
+          "right": 1391,
+          "top": 421,
+          "height": 40,
+          "lines": 1,
+          "scrollW": 141,
+          "clientW": 141
+        }
+      ],
+      "balHeader": {
+        "text": "RUNNING BALANCE",
+        "left": 1249.7,
+        "right": 1391,
+        "top": 421,
+        "height": 40,
+        "lines": 1,
+        "scrollW": 141,
+        "clientW": 141
+      },
+      "rows": [
+        {
+          "balanceText": "R 172,50",
+          "balanceSpan": {
+            "left": 1315.8,
+            "right": 1383,
+            "top": 481,
+            "height": 17
+          },
+          "balanceTd": {
+            "left": 1249.7,
+            "right": 1391,
+            "top": 462,
+            "height": 57
+          },
+          "balanceLines": 1,
+          "balTdScrollW": 141,
+          "balTdClientW": 141,
+          "amountText": "R 57,50",
+          "amount": {
+            "left": 988.5,
+            "right": 1104.5,
+            "top": 462,
+            "height": 57
+          },
+          "amountLines": 1,
+          "amtTdScrollW": 116,
+          "amtTdClientW": 116,
+          "chargeText": "—",
+          "chargeLines": 1,
+          "charge": {
+            "left": 1104.5,
+            "right": 1249.7,
+            "top": 462,
+            "height": 57
+          },
+          "badges": [
+            {
+              "text": "Bank charge refunded from the business account",
+              "left": 750.5,
+              "right": 980.5,
+              "top": 471,
+              "height": 38,
+              "lines": 2,
+              "scrollW": 228,
+              "clientW": 228,
+              "scrollH": 36,
+              "clientH": 36,
+              "whiteSpace": "normal",
+              "overflow": "hidden",
+              "textOverflow": "clip",
+              "overflowWrap": "normal",
+              "wordBreak": "normal",
+              "insideVisible": true,
+              "words": 7
+            }
+          ]
+        },
+        {
+          "balanceText": "R 115,00",
+          "balanceSpan": {
+            "left": 1315.8,
+            "right": 1383,
+            "top": 548,
+            "height": 17
+          },
+          "balanceTd": {
+            "left": 1249.7,
+            "right": 1391,
+            "top": 518,
+            "height": 77
+          },
+          "balanceLines": 1,
+          "balTdScrollW": 141,
+          "balTdClientW": 141,
+          "amountText": "R 57,50",
+          "amount": {
+            "left": 988.5,
+            "right": 1104.5,
+            "top": 518,
+            "height": 77
+          },
+          "amountLines": 1,
+          "amtTdScrollW": 116,
+          "amtTdClientW": 116,
+          "chargeText": "—",
+          "chargeLines": 1,
+          "charge": {
+            "left": 1104.5,
+            "right": 1249.7,
+            "top": 518,
+            "height": 77
+          },
+          "badges": [
+            {
+              "text": "Reversal",
+              "left": 750.5,
+              "right": 821.6,
+              "top": 546,
+              "height": 22,
+              "lines": 1,
+              "scrollW": 69,
+              "clientW": 69,
+              "scrollH": 20,
+              "clientH": 20,
+              "whiteSpace": "normal",
+              "overflow": "hidden",
+              "textOverflow": "clip",
+              "overflowWrap": "normal",
+              "wordBreak": "normal",
+              "insideVisible": true,
+              "words": 1
+            }
+          ]
+        },
+        {
+          "balanceText": "R 57,50",
+          "balanceSpan": {
+            "left": 1324.2,
+            "right": 1383,
+            "top": 615,
+            "height": 17
+          },
+          "balanceTd": {
+            "left": 1249.7,
+            "right": 1391,
+            "top": 595,
+            "height": 57
+          },
+          "balanceLines": 1,
+          "balTdScrollW": 141,
+          "balTdClientW": 141,
+          "amountText": "R 57,50",
+          "amount": {
+            "left": 988.5,
+            "right": 1104.5,
+            "top": 595,
+            "height": 57
+          },
+          "amountLines": 1,
+          "amtTdScrollW": 116,
+          "amtTdClientW": 116,
+          "chargeText": "Recoverable · VAT R 7,50",
+          "chargeLines": 2,
+          "charge": {
+            "left": 1104.5,
+            "right": 1249.7,
+            "top": 595,
+            "height": 57
+          },
+          "badges": [
+            {
+              "text": "Bank charge",
+              "left": 750.5,
+              "right": 844.4,
+              "top": 613,
+              "height": 22,
+              "lines": 1,
+              "scrollW": 92,
+              "clientW": 92,
+              "scrollH": 20,
+              "clientH": 20,
+              "whiteSpace": "normal",
+              "overflow": "hidden",
+              "textOverflow": "clip",
+              "overflowWrap": "normal",
+              "wordBreak": "normal",
+              "insideVisible": true,
+              "words": 2
+            },
+            {
+              "text": "Reversed",
+              "left": 848.4,
+              "right": 924,
+              "top": 613,
+              "height": 22,
+              "lines": 1,
+              "scrollW": 74,
+              "clientW": 74,
+              "scrollH": 20,
+              "clientH": 20,
+              "whiteSpace": "nowrap",
+              "overflow": "hidden",
+              "textOverflow": "clip",
+              "overflowWrap": "normal",
+              "wordBreak": "normal",
+              "insideVisible": true,
+              "words": 1
+            }
+          ]
+        },
+        {
+          "balanceText": "R 115,00",
+          "balanceSpan": {
+            "left": 1315.8,
+            "right": 1383,
+            "top": 672,
+            "height": 17
+          },
+          "balanceTd": {
+            "left": 1249.7,
+            "right": 1391,
+            "top": 652,
+            "height": 57
+          },
+          "balanceLines": 1,
+          "balTdScrollW": 141,
+          "balTdClientW": 141,
+          "amountText": "R 1 119,56",
+          "amount": {
+            "left": 988.5,
+            "right": 1104.5,
+            "top": 652,
+            "height": 57
+          },
+          "amountLines": 1,
+          "amtTdScrollW": 116,
+          "amtTdClientW": 116,
+          "chargeText": "—",
+          "chargeLines": 1,
+          "charge": {
+            "left": 1104.5,
+            "right": 1249.7,
+            "top": 652,
+            "height": 57
+          },
+          "badges": [
+            {
+              "text": "Interest paid to the Legal Practitioners' Fidelity Fund",
+              "left": 750.5,
+              "right": 980.5,
+              "top": 662,
+              "height": 38,
+              "lines": 2,
+              "scrollW": 228,
+              "clientW": 228,
+              "scrollH": 36,
+              "clientH": 36,
+              "whiteSpace": "normal",
+              "overflow": "hidden",
+              "textOverflow": "clip",
+              "overflowWrap": "normal",
+              "wordBreak": "normal",
+              "insideVisible": true,
+              "words": 8
+            }
+          ]
+        },
+        {
+          "balanceText": "R 1 234,56",
+          "balanceSpan": {
+            "left": 1299,
+            "right": 1383,
+            "top": 729,
+            "height": 17
+          },
+          "balanceTd": {
+            "left": 1249.7,
+            "right": 1391,
+            "top": 709,
+            "height": 57
+          },
+          "balanceLines": 1,
+          "balTdScrollW": 141,
+          "balTdClientW": 141,
+          "amountText": "R 1 234,56",
+          "amount": {
+            "left": 988.5,
+            "right": 1104.5,
+            "top": 709,
+            "height": 57
+          },
+          "amountLines": 1,
+          "amtTdScrollW": 116,
+          "amtTdClientW": 116,
+          "chargeText": "—",
+          "chargeLines": 1,
+          "charge": {
+            "left": 1104.5,
+            "right": 1249.7,
+            "top": 709,
+            "height": 57
+          },
+          "badges": [
+            {
+              "text": "Interest received for the Legal Practitioners' Fidelity Fund",
+              "left": 750.5,
+              "right": 980.5,
+              "top": 719,
+              "height": 38,
+              "lines": 2,
+              "scrollW": 228,
+              "clientW": 228,
+              "scrollH": 36,
+              "clientH": 36,
+              "whiteSpace": "normal",
+              "overflow": "hidden",
+              "textOverflow": "clip",
+              "overflowWrap": "normal",
+              "wordBreak": "normal",
+              "insideVisible": true,
+              "words": 8
+            }
+          ]
+        }
+      ],
+      "width": 1440,
+      "checks": {
+        "tableFitsWrapper": true,
+        "balanceHeaderInsideVisible": true,
+        "everyBalanceInsideVisible": true,
+        "balanceOneLine": true,
+        "amountOneLine": true,
+        "badgesReadable": true,
+        "noPageHorizontalOverflow": true
+      },
+      "maxBalanceRight": 1391,
+      "allPass": true
+    },
+    {
+      "tableWidth": 1182,
+      "tableOffsetWidth": 1182,
+      "tableRight": 1679,
+      "wrapper": {
+        "cls": "relative w-full overflow-x-auto",
+        "overflowX": "auto",
+        "clientWidth": 1182,
+        "scrollWidth": 1182,
+        "left": 497,
+        "right": 1679,
+        "top": 421,
+        "height": 343
+      },
+      "visibleLeft": 497,
+      "visibleRight": 1679,
+      "clippers": [],
+      "docScrollWidth": 1920,
+      "docClientWidth": 1920,
+      "header": [
+        {
+          "text": "DATE",
+          "left": 497,
+          "right": 598.1,
+          "top": 421,
+          "height": 40,
+          "lines": 1,
+          "scrollW": 101,
+          "clientW": 101
+        },
+        {
+          "text": "REFERENCE",
+          "left": 598.1,
+          "right": 761.1,
+          "top": 421,
+          "height": 40,
+          "lines": 1,
+          "scrollW": 163,
+          "clientW": 163
+        },
+        {
+          "text": "DESCRIPTION",
+          "left": 761.1,
+          "right": 978.7,
+          "top": 421,
+          "height": 40,
+          "lines": 1,
+          "scrollW": 218,
+          "clientW": 218
+        },
+        {
+          "text": "TYPE",
+          "left": 978.7,
+          "right": 1265.4,
+          "top": 421,
+          "height": 40,
+          "lines": 1,
+          "scrollW": 287,
+          "clientW": 287
+        },
+        {
+          "text": "AMOUNT",
+          "left": 1265.4,
+          "right": 1381.4,
+          "top": 421,
+          "height": 40,
+          "lines": 1,
+          "scrollW": 116,
+          "clientW": 116
+        },
+        {
+          "text": "BANK CHARGE",
+          "left": 1381.4,
+          "right": 1537.7,
+          "top": 421,
+          "height": 40,
+          "lines": 1,
+          "scrollW": 156,
+          "clientW": 156
+        },
+        {
+          "text": "RUNNING BALANCE",
+          "left": 1537.7,
+          "right": 1679,
+          "top": 421,
+          "height": 40,
+          "lines": 1,
+          "scrollW": 141,
+          "clientW": 141
+        }
+      ],
+      "balHeader": {
+        "text": "RUNNING BALANCE",
+        "left": 1537.7,
+        "right": 1679,
+        "top": 421,
+        "height": 40,
+        "lines": 1,
+        "scrollW": 141,
+        "clientW": 141
+      },
+      "rows": [
+        {
+          "balanceText": "R 172,50",
+          "balanceSpan": {
+            "left": 1603.8,
+            "right": 1671,
+            "top": 481,
+            "height": 17
+          },
+          "balanceTd": {
+            "left": 1537.7,
+            "right": 1679,
+            "top": 462,
+            "height": 57
+          },
+          "balanceLines": 1,
+          "balTdScrollW": 141,
+          "balTdClientW": 141,
+          "amountText": "R 57,50",
+          "amount": {
+            "left": 1265.4,
+            "right": 1381.4,
+            "top": 462,
+            "height": 57
+          },
+          "amountLines": 1,
+          "amtTdScrollW": 116,
+          "amtTdClientW": 116,
+          "chargeText": "—",
+          "chargeLines": 1,
+          "charge": {
+            "left": 1381.4,
+            "right": 1537.7,
+            "top": 462,
+            "height": 57
+          },
+          "badges": [
+            {
+              "text": "Bank charge refunded from the business account",
+              "left": 986.7,
+              "right": 1257.4,
+              "top": 471,
+              "height": 38,
+              "lines": 2,
+              "scrollW": 269,
+              "clientW": 269,
+              "scrollH": 36,
+              "clientH": 36,
+              "whiteSpace": "normal",
+              "overflow": "hidden",
+              "textOverflow": "clip",
+              "overflowWrap": "normal",
+              "wordBreak": "normal",
+              "insideVisible": true,
+              "words": 7
+            }
+          ]
+        },
+        {
+          "balanceText": "R 115,00",
+          "balanceSpan": {
+            "left": 1603.8,
+            "right": 1671,
+            "top": 548,
+            "height": 17
+          },
+          "balanceTd": {
+            "left": 1537.7,
+            "right": 1679,
+            "top": 518,
+            "height": 77
+          },
+          "balanceLines": 1,
+          "balTdScrollW": 141,
+          "balTdClientW": 141,
+          "amountText": "R 57,50",
+          "amount": {
+            "left": 1265.4,
+            "right": 1381.4,
+            "top": 518,
+            "height": 77
+          },
+          "amountLines": 1,
+          "amtTdScrollW": 116,
+          "amtTdClientW": 116,
+          "chargeText": "—",
+          "chargeLines": 1,
+          "charge": {
+            "left": 1381.4,
+            "right": 1537.7,
+            "top": 518,
+            "height": 77
+          },
+          "badges": [
+            {
+              "text": "Reversal",
+              "left": 986.7,
+              "right": 1057.8,
+              "top": 546,
+              "height": 22,
+              "lines": 1,
+              "scrollW": 69,
+              "clientW": 69,
+              "scrollH": 20,
+              "clientH": 20,
+              "whiteSpace": "normal",
+              "overflow": "hidden",
+              "textOverflow": "clip",
+              "overflowWrap": "normal",
+              "wordBreak": "normal",
+              "insideVisible": true,
+              "words": 1
+            }
+          ]
+        },
+        {
+          "balanceText": "R 57,50",
+          "balanceSpan": {
+            "left": 1612.2,
+            "right": 1671,
+            "top": 615,
+            "height": 17
+          },
+          "balanceTd": {
+            "left": 1537.7,
+            "right": 1679,
+            "top": 595,
+            "height": 57
+          },
+          "balanceLines": 1,
+          "balTdScrollW": 141,
+          "balTdClientW": 141,
+          "amountText": "R 57,50",
+          "amount": {
+            "left": 1265.4,
+            "right": 1381.4,
+            "top": 595,
+            "height": 57
+          },
+          "amountLines": 1,
+          "amtTdScrollW": 116,
+          "amtTdClientW": 116,
+          "chargeText": "Recoverable · VAT R 7,50",
+          "chargeLines": 2,
+          "charge": {
+            "left": 1381.4,
+            "right": 1537.7,
+            "top": 595,
+            "height": 57
+          },
+          "badges": [
+            {
+              "text": "Bank charge",
+              "left": 986.7,
+              "right": 1080.6,
+              "top": 613,
+              "height": 22,
+              "lines": 1,
+              "scrollW": 92,
+              "clientW": 92,
+              "scrollH": 20,
+              "clientH": 20,
+              "whiteSpace": "normal",
+              "overflow": "hidden",
+              "textOverflow": "clip",
+              "overflowWrap": "normal",
+              "wordBreak": "normal",
+              "insideVisible": true,
+              "words": 2
+            },
+            {
+              "text": "Reversed",
+              "left": 1084.6,
+              "right": 1160.3,
+              "top": 613,
+              "height": 22,
+              "lines": 1,
+              "scrollW": 74,
+              "clientW": 74,
+              "scrollH": 20,
+              "clientH": 20,
+              "whiteSpace": "nowrap",
+              "overflow": "hidden",
+              "textOverflow": "clip",
+              "overflowWrap": "normal",
+              "wordBreak": "normal",
+              "insideVisible": true,
+              "words": 1
+            }
+          ]
+        },
+        {
+          "balanceText": "R 115,00",
+          "balanceSpan": {
+            "left": 1603.8,
+            "right": 1671,
+            "top": 672,
+            "height": 17
+          },
+          "balanceTd": {
+            "left": 1537.7,
+            "right": 1679,
+            "top": 652,
+            "height": 57
+          },
+          "balanceLines": 1,
+          "balTdScrollW": 141,
+          "balTdClientW": 141,
+          "amountText": "R 1 119,56",
+          "amount": {
+            "left": 1265.4,
+            "right": 1381.4,
+            "top": 652,
+            "height": 57
+          },
+          "amountLines": 1,
+          "amtTdScrollW": 116,
+          "amtTdClientW": 116,
+          "chargeText": "—",
+          "chargeLines": 1,
+          "charge": {
+            "left": 1381.4,
+            "right": 1537.7,
+            "top": 652,
+            "height": 57
+          },
+          "badges": [
+            {
+              "text": "Interest paid to the Legal Practitioners' Fidelity Fund",
+              "left": 986.7,
+              "right": 1257.4,
+              "top": 662,
+              "height": 38,
+              "lines": 2,
+              "scrollW": 269,
+              "clientW": 269,
+              "scrollH": 36,
+              "clientH": 36,
+              "whiteSpace": "normal",
+              "overflow": "hidden",
+              "textOverflow": "clip",
+              "overflowWrap": "normal",
+              "wordBreak": "normal",
+              "insideVisible": true,
+              "words": 8
+            }
+          ]
+        },
+        {
+          "balanceText": "R 1 234,56",
+          "balanceSpan": {
+            "left": 1587,
+            "right": 1671,
+            "top": 728,
+            "height": 17
+          },
+          "balanceTd": {
+            "left": 1537.7,
+            "right": 1679,
+            "top": 709,
+            "height": 55
+          },
+          "balanceLines": 1,
+          "balTdScrollW": 141,
+          "balTdClientW": 141,
+          "amountText": "R 1 234,56",
+          "amount": {
+            "left": 1265.4,
+            "right": 1381.4,
+            "top": 709,
+            "height": 55
+          },
+          "amountLines": 1,
+          "amtTdScrollW": 116,
+          "amtTdClientW": 116,
+          "chargeText": "—",
+          "chargeLines": 1,
+          "charge": {
+            "left": 1381.4,
+            "right": 1537.7,
+            "top": 709,
+            "height": 55
+          },
+          "badges": [
+            {
+              "text": "Interest received for the Legal Practitioners' Fidelity Fund",
+              "left": 986.7,
+              "right": 1257.4,
+              "top": 718,
+              "height": 38,
+              "lines": 2,
+              "scrollW": 269,
+              "clientW": 269,
+              "scrollH": 36,
+              "clientH": 36,
+              "whiteSpace": "normal",
+              "overflow": "hidden",
+              "textOverflow": "clip",
+              "overflowWrap": "normal",
+              "wordBreak": "normal",
+              "insideVisible": true,
+              "words": 8
+            }
+          ]
+        }
+      ],
+      "width": 1920,
+      "checks": {
+        "tableFitsWrapper": true,
+        "balanceHeaderInsideVisible": true,
+        "everyBalanceInsideVisible": true,
+        "balanceOneLine": true,
+        "amountOneLine": true,
+        "badgesReadable": true,
+        "noPageHorizontalOverflow": true
+      },
+      "maxBalanceRight": 1679,
+      "allPass": true
+    }
+  ],
+  "consoleErrors": [
+    {
+      "width": 1280,
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "text": "MockAuthContextProvider: failed to fetch userinfo TypeError: Failed to fetch\n    at http://localhost:3001/_next/static/chunks/1kvf-7k8cibf1.js:1:1582\n    at iw (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:118706)\n    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142848)\n    at uh (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142510)\n    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142828)\n    at uh (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142510)\n    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142893)\n    at uh (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142510)\n    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142828)\n    at uh (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142510)"
+    },
+    {
+      "width": 1440,
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "text": "MockAuthContextProvider: failed to fetch userinfo TypeError: Failed to fetch"
+    }
+  ],
+  "pageErrors": [],
+  "verdict": "F-1 FIXED (all checks true at all widths)"
+}

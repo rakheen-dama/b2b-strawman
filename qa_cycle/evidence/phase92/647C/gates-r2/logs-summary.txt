@@ -1,0 +1,65 @@
+647C gates round 2 — summary of every *.log in this dir (the *.log files are gitignored)
+
+== depth-ii-rerun.log (4841 bytes, 31 lines)
+  1 skipped
+  20 passed (54.7s)
+
+== depth-ii.log (12361 bytes, 90 lines)
+  1 failed
+  4 skipped
+  7 did not run
+  32 passed (2.0m)
+
+== lifecycle.log (20655 bytes, 114 lines)
+  105 passed (3.1m)
+
+== obs/obs-output.log (60277 bytes, 1392 lines)
+stdout of obs.cjs = obs/obs-result.json; 'OBS FAILED' lines: 0
+
+== obs/probe-clip-output.log (851 bytes, 4 lines)
+1280 table 926 wrapper 926 scrollW 926 visR 1231 hdrR 1231 maxBalR 1231 {"tableFitsWrapper":true,"balanceHeaderInsideVisible":true,"everyBalanceInsideVisible":true,"balanceOneLine":true,"amountOneLine":true,"badgesReadable":true,"noPageHorizontalOverflow":true}
+1440 table 1086 wrapper 1086 scrollW 1086 visR 1391 hdrR 1391 maxBalR 1391 {"tableFitsWrapper":true,"balanceHeaderInsideVisible":true,"everyBalanceInsideVisible":true,"balanceOneLine":true,"amountOneLine":true,"badgesReadable":true,"noPageHorizontalOverflow":true}
+1920 table 1182 wrapper 1182 scrollW 1182 visR 1679 hdrR 1679 maxBalR 1679 {"tableFitsWrapper":true,"balanceHeaderInsideVisible":true,"everyBalanceInsideVisible":true,"balanceOneLine":true,"amountOneLine":true,"badgesReadable":true,"noPageHorizontalOverflow":true}
+F-1 FIXED (all checks true at all widths) console 2 page 0
+
+== obs/probe-clip-run1-output.log (840 bytes, 4 lines)
+1280 table 926 wrapper 926 scrollW 926 visR 1231 hdrR 1231 maxBalR 1231 {"tableFitsWrapper":true,"balanceHeaderInsideVisible":true,"everyBalanceInsideVisible":true,"balanceOneLine":true,"amountOneLine":false,"badgesReadable":true,"noPageHorizontalOverflow":true}
+1440 table 1086 wrapper 1086 scrollW 1086 visR 1391 hdrR 1391 maxBalR 1391 {"tableFitsWrapper":true,"balanceHeaderInsideVisible":true,"everyBalanceInsideVisible":true,"balanceOneLine":true,"amountOneLine":false,"badgesReadable":true,"noPageHorizontalOverflow":true}
+1920 table 1182 wrapper 1182 scrollW 1182 visR 1679 hdrR 1679 maxBalR 1679 {"tableFitsWrapper":true,"balanceHeaderInsideVisible":true,"everyBalanceInsideVisible":true,"balanceOneLine":true,"amountOneLine":false,"badgesReadable":true,"noPageHorizontalOverflow":true}
+F-1 STILL OPEN (see checks) console 1 page 0
+
+== stack0-down.log (137 bytes, 4 lines)
+Stack stopped. All containers and volumes removed.
+Run 'bash compose/scripts/e2e-up.sh' to start fresh.
+
+== stack1-backend.log (261749 bytes, 518 lines)
+level counts: {'INFO': 343, 'WARN': 151}; lines with level ERROR: 0
+
+== stack1-build.log (15804 bytes, 477 lines)
+Building from source at: /Users/rakheendama/Projects/2026/worktree-epic-647C
+e2e-up rc: see timings.txt
+
+== stack1-down.log (1344 bytes, 38 lines)
+Stack stopped. All containers and volumes removed.
+Run 'bash compose/scripts/e2e-up.sh' to start fresh.
+
+== stack1-frontend.log (9694 bytes, 133 lines)
+'⨯' lines: 32
+  32 ⨯ Error: The destination stream closed early.
+first/last ⨯: 2026-11-17T14:05:57.805801299Z 2026-11-17T14:08:46.193882627Z 
+
+== stack2-backend.log (263601 bytes, 527 lines)
+level counts: {'INFO': 295, 'WARN': 199}; lines with level ERROR: 0
+
+== stack2-build.log (11109 bytes, 374 lines)
+Building from source at: /Users/rakheendama/Projects/2026/worktree-epic-647C
+e2e-up rc: see timings.txt
+
+== stack2-down.log (1344 bytes, 38 lines)
+Stack stopped. All containers and volumes removed.
+Run 'bash compose/scripts/e2e-up.sh' to start fresh.
+
+== stack2-frontend.log (673 bytes, 9 lines)
+'⨯' lines: 1
+   1 ⨯ Error: The destination stream closed early.
+first/last ⨯: 2026-11-17T14:18:20.148430462Z 2026-11-17T14:18:20.148430462Z 

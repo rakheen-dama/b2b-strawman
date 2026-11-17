@@ -1,0 +1,13 @@
+{
+  "path": "/api/trust-creditor-accounts/a01987bd-3424-475a-8878-f8f096fc151a/transactions?page=0&size=25",
+  "status": 200,
+  "body": {
+    "content": [],
+    "page": {
+      "size": 25,
+      "number": 0,
+      "totalElements": 0,
+      "totalPages": 0
+    }
+  }
+}

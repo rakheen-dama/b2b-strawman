@@ -1,0 +1,7 @@
+-- taken AFTER run 1 + the Day5+Day30-45 re-run (two Day 5 runs on this stack)
+select (select coalesce(sum(cashbook_effect),0) from tenant_7d218705360b.trust_transactions where trust_account_id='8665779d-052e-4c99-956a-f618a35e6e7d' and posted_at is not null) cashbook, (select coalesce(sum(ledger_effect),0) from tenant_7d218705360b.trust_transactions where trust_account_id='8665779d-052e-4c99-956a-f618a35e6e7d' and posted_at is not null) all_creditors, (select coalesce(sum(ledger_effect),0) from tenant_7d218705360b.trust_transactions where trust_account_id='8665779d-052e-4c99-956a-f618a35e6e7d' and ledger='CLIENT' and posted_at is not null) client_ledgers, (select count(*) from tenant_7d218705360b.trust_transactions where posted_at is not null) posted, (select count(*) from tenant_7d218705360b.bank_statements) statements
+ cashbook | all_creditors | client_ledgers | posted | statements 
+----------+---------------+----------------+--------+------------
+  7500.00 |       7500.00 |        7500.00 |      4 |          0
+(1 row)
+

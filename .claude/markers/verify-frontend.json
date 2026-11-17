@@ -1,7 +1,7 @@
 {
-  "commit": "ab1714caf",
-  "command": "cd frontend && rm -rf .next && pnpm install --frozen-lockfile && pnpm run lint && pnpm run typecheck && pnpm run format:check && pnpm test && pnpm run build  (node v20.11.1, worktree-epic-647A)",
+  "commit": "df8550113",
+  "command": "cd frontend && rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (node v20.11.1)",
   "exit": 0,
-  "ts": "2026-11-17T11:43:00Z",
-  "summary": "PR #1794 (647A) head ab1714caf — lint 0 errors (78 pre-existing warnings), typecheck OK, format:check OK, vitest 480 files / 4416 passed / 2 skipped (baseline 4398/2 after 646D: +18), build OK"
+  "ts": "2026-11-17T14:02:42Z",
+  "summary": "PR #1795 (647C) @df8550113 — lint/typecheck/format OK; vitest 480 files, 4423 passed / 2 skipped; build OK — 162 s"
 }

@@ -1,0 +1,71 @@
+== worktree: /Users/rakheendama/Projects/2026/worktree-epic-647C @ 6e485f412845e8fcaa1d91cafa54f7b63745b3d4
+== build log source lines:
+Building from source at: /Users/rakheendama/Projects/2026/worktree-epic-647C
+  Tail logs:   docker compose -f /Users/rakheendama/Projects/2026/worktree-epic-647C/compose/docker-compose.e2e.yml logs -f backend frontend
+== jar entries (647C-touched classes):
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/transaction/TrustLedgerQueryRepository.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/transaction/CreditorLedgerRow.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/creditor/TrustCreditorLedgerService.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/creditor/TrustCreditorLedgerController.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/reconciliation/TrustReconciliationService.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/reconciliation/parser/CsvBankStatementParser.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/reconciliation/parser/ParsedStatementLine.class
+== CsvBankStatementParser.class: 647C keyword logic
+   contains 'suggestClassification': 1
+   contains 'containsAny': 1
+   contains 'LPFF': 1
+   contains 'FIDELITY': 1
+   contains 'COMMISSION': 1
+   contains 'REFUND': 1
+   contains 'REVERSAL': 1
+   contains 'INTEREST': 2
+   contains 'SERVICE': 1
+== ParsedStatementLine.class contains 'suggestedClassification' (647C): 2
+== TrustCreditorLedgerController.class contains '/api/trust-creditor-accounts/{creditorAccountId}/transactions' (647C): 1
+== TrustCreditorLedgerService.class contains 'listCreditorTransactions' (647C): 1
+== CreditorLedgerRow.class exists (647C): 1 ; contains 'getChargeVatAmount': 1
+== TrustLedgerQueryRepository.class contains 'creditorLedgerRows' (647C): 1
+== TrustReconciliationService.class contains 'setSuggestedClassification' (647C): 1
+== jar migrations (latest tenant V*):
+db/migration/tenant/V18__phase92_trust_creditor_accounts.sql
+db/migration/tenant/V19__phase92_trust_recon_breakdown.sql
+db/migration/tenant/V20__phase92_statement_line_classification.sql
+== frontend container: 647C strings in .next (excluding cache):
+-- 'fund-ledger-table':
+/app/frontend/.next/server/chunks/ssr/frontend_17gbpfc._.js
+/app/frontend/.next/static/chunks/172yjm2etxz12.js
+-- 'classification-suggested-note':
+/app/frontend/.next/server/chunks/ssr/1oju_app_(app)_org_[slug]_trust-accounting_reconciliation_new_page_tsx_0gjhtfk._.js
+/app/frontend/.next/static/chunks/06ntv9oyfvlf7.js
+-- 'Go to the first page':
+/app/frontend/.next/server/chunks/ssr/_07mqp2k._.js
+-- 'Awaiting approval':
+/app/frontend/.next/server/chunks/ssr/frontend_lib_1q18f8m._.js
+/app/frontend/.next/server/chunks/ssr/frontend_0c0sh2v._.js
+/app/frontend/.next/server/chunks/ssr/_0vjm_ox._.js
+/app/frontend/.next/server/chunks/ssr/frontend_17gbpfc._.js
+-- 'fund-ledger-page-out-of-range':
+/app/frontend/.next/server/chunks/ssr/_07mqp2k._.js
+-- 'Suggested from the line':
+/app/frontend/.next/server/chunks/ssr/1oju_app_(app)_org_[slug]_trust-accounting_reconciliation_new_page_tsx_0gjhtfk._.js
+/app/frontend/.next/static/chunks/06ntv9oyfvlf7.js
+== health: {"groups":["liveness","readiness"],"status":"UP"}  frontend :3001 HTTP 200
+== tenant schemas: tenant_7d218705360b
+ version |              description              | success |        installed_on        
+---------+---------------------------------------+---------+----------------------------
+ 20      | phase92 statement line classification | t       | 2026-11-17 13:46:22.068348
+ 19      | phase92 trust recon breakdown         | t       | 2026-11-17 13:46:22.059507
+ 18      | phase92 trust creditor accounts       | t       | 2026-11-17 13:46:22.040374
+ 17      | phase92 trust reversal contra         | t       | 2026-11-17 13:46:22.03316
+(4 rows)
+
+ trust_accounts | creditor_accounts | trust_txns | statements | recons 
+----------------+-------------------+------------+------------+--------
+              1 |                 2 |          0 |          0 |      0
+(1 row)
+
+       column_name        |     data_type     
+--------------------------+-------------------
+ suggested_classification | character varying
+(1 row)
+

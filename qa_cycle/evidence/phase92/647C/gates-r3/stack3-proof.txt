@@ -1,0 +1,4 @@
+chunks with shrink whitespace-normal: 2
+chunks with fund-ledger-table: 2
+tenant_7d218705360b trust_txns=0 statements=0
+df85501137f690a42d680e1867605d0332e933ef

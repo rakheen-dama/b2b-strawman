@@ -230,8 +230,9 @@ public class TrustTransactionService {
       UUID bankStatementLineId,
       UUID recordedBy,
       Instant createdAt,
-      // ADR-361: server-computed on the client-ledger /history endpoint only; null on every other
-      // producer and on non-posted / REVERSAL rows.
+      // ADR-361: server-computed on the client-ledger /history endpoint (null on non-posted /
+      // REVERSAL rows) and the creditor-ledger /transactions endpoint (647C: null on unposted rows
+      // only); null on every other producer.
       BigDecimal runningBalance,
       // 647A (ADR-381): BANK_CHARGE only — whether the charge is on the Fidelity Fund's
       // recoverable list (the firm's assertion; Kazi does not check it), and the VAT in the amount;

@@ -85,6 +85,63 @@ public interface TrustLedgerQueryRepository extends Repository<TrustTransaction,
       @Param("creditorAccountId") UUID creditorAccountId, @Param("asAt") LocalDate asAt);
 
   /**
+   * One non-client creditor account's rows, newest first ({@code transaction_date DESC, created_at
+   * DESC, id DESC}), each carrying its running balance (Phase 92 / 647C, §16.4.2; ADR-361 window,
+   * ADR-378 effects): SUM(ledger_effect) over the account's POSTED {@code NON_CLIENT} rows ({@code
+   * posted_at IS NOT NULL} — the same row set as {@link #creditorAccountBalance}, so a REVERSED
+   * original and its REVERSAL contra each count on their own date and the newest row's balance is
+   * the ledger balance) in posting order {@code (transaction_date, created_at, id)}, computed in a
+   * MATERIALIZED CTE before the page is cut (see {@code
+   * TrustTransactionRepository#findClientHistoryWithRunningBalance} for why it is materialised);
+   * unposted rows (awaiting approval, rejected) carry null. Callers pass a sort-free {@link
+   * Pageable} — the ORDER BY lives here. Index: {@code idx_trust_txn_creditor_account} (V18).
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          WITH posted AS MATERIALIZED (
+            SELECT t.id,
+                   SUM(t.ledger_effect)
+                     OVER (ORDER BY t.transaction_date, t.created_at, t.id
+                           ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS running_balance
+              FROM trust_transactions t
+             WHERE t.creditor_account_id = :creditorAccountId AND t.ledger = 'NON_CLIENT'
+               AND t.posted_at IS NOT NULL
+          )
+          SELECT t.id AS id, t.trust_account_id AS trustAccountId,
+                 t.transaction_type AS transactionType, t.amount AS amount,
+                 t.customer_id AS customerId, t.project_id AS projectId,
+                 t.counterparty_customer_id AS counterpartyCustomerId, t.invoice_id AS invoiceId,
+                 t.reference AS reference, t.description AS description,
+                 t.transaction_date AS transactionDate, t.status AS status,
+                 t.approved_by AS approvedBy, t.approved_at AS approvedAt,
+                 t.second_approved_by AS secondApprovedBy, t.second_approved_at AS secondApprovedAt,
+                 t.rejected_by AS rejectedBy, t.rejected_at AS rejectedAt,
+                 t.rejection_reason AS rejectionReason, t.reversal_of AS reversalOf,
+                 t.reversed_by_id AS reversedById, t.bank_statement_line_id AS bankStatementLineId,
+                 t.recorded_by AS recordedBy, t.created_at AS createdAt,
+                 p.running_balance AS runningBalance,
+                 t.ledger AS ledger, t.creditor_account_id AS creditorAccountId,
+                 t.investment_id AS investmentId, t.posted_at AS postedAt,
+                 o.transaction_type AS reversedType,
+                 (t.id IN (SELECT r.reversal_of FROM trust_transactions r
+                            WHERE r.status = 'AWAITING_APPROVAL'
+                              AND r.reversal_of IS NOT NULL)) AS reversalPending,
+                 t.charge_recoverable AS chargeRecoverable, t.charge_vat_amount AS chargeVatAmount
+            FROM trust_transactions t
+            LEFT JOIN posted p ON p.id = t.id
+            LEFT JOIN trust_transactions o ON o.id = t.reversal_of
+           WHERE t.creditor_account_id = :creditorAccountId AND t.ledger = 'NON_CLIENT'
+           ORDER BY t.transaction_date DESC, t.created_at DESC, t.id DESC""",
+      countQuery =
+          """
+          SELECT count(*) FROM trust_transactions t
+           WHERE t.creditor_account_id = :creditorAccountId AND t.ledger = 'NON_CLIENT'""")
+  Page<CreditorLedgerRow> creditorLedgerRows(
+      @Param("creditorAccountId") UUID creditorAccountId, Pageable pageable);
+
+  /**
    * The matter sub-ledger cell (G89-F12): one client's money on one matter in one account. The
    * caller holds the client's lock anchor, which serialises every posting for the client.
    */

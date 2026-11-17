@@ -132,8 +132,9 @@ public class TrustReconciliationService {
       UUID trustTransactionId,
       BigDecimal matchConfidence,
       // 647A (§16.4.3): the confirmed classification of a RECORDED line (null otherwise) and its
-      // label; the parser's suggestion (647C fills it); the rows a recorded line created ([]
-      // for every other line — a matched line's row existed before the match).
+      // label; the parser's suggestion (647C: stored at import, null once auto-matched); the rows
+      // a recorded line created ([] for every other line — a matched line's row existed before
+      // the match).
       String classification,
       String classificationLabel,
       String suggestedClassification,
@@ -251,6 +252,10 @@ public class TrustReconciliationService {
               parsedLine.reference(),
               parsedLine.amount(),
               parsedLine.runningBalance());
+      // 647C (§16.3.5): the parser's suggestion, stored at import; never acted on by the system.
+      if (parsedLine.suggestedClassification() != null) {
+        line.setSuggestedClassification(parsedLine.suggestedClassification().name());
+      }
       savedLines.add(bankStatementLineRepository.save(line));
     }
 
@@ -1058,6 +1063,9 @@ public class TrustReconciliationService {
     line.setMatchStatus("AUTO_MATCHED");
     line.setTrustTransactionId(locked.getId());
     line.setMatchConfidence(confidence);
+    // §16.3.5 / ADR-380 (647C): auto-match runs first; a line that auto-matches keeps no
+    // suggestion.
+    line.setSuggestedClassification(null);
     bankStatementLineRepository.save(line);
 
     postingService.linkBankLine(locked, line.getId());

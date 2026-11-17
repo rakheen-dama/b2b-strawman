@@ -2,9 +2,12 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor;
 
 import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.TrustCreditorLedgerService.TrustCreditorAccountResponse;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.TrustTransactionResponse;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,5 +28,13 @@ public class TrustCreditorLedgerController {
   public ResponseEntity<List<TrustCreditorAccountResponse>> list(
       @PathVariable UUID accountId, @RequestParam(required = false) LocalDate asAt) {
     return ResponseEntity.ok(creditorLedgerService.listCreditorAccounts(accountId, asAt));
+  }
+
+  @GetMapping("/api/trust-creditor-accounts/{creditorAccountId}/transactions")
+  @RequiresCapability("VIEW_TRUST")
+  public ResponseEntity<Page<TrustTransactionResponse>> transactions(
+      @PathVariable UUID creditorAccountId, Pageable pageable) {
+    return ResponseEntity.ok(
+        creditorLedgerService.listCreditorTransactions(creditorAccountId, pageable));
   }
 }

@@ -2,13 +2,20 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.StatementLineClassification;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Objects;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 class BankStatementParserTest {
 
@@ -65,7 +72,7 @@ class BankStatementParserTest {
 
     assertThat(result.periodStart()).isEqualTo(LocalDate.of(2026, 3, 1));
     assertThat(result.periodEnd()).isEqualTo(LocalDate.of(2026, 3, 31));
-    assertThat(result.lines()).hasSize(10);
+    assertThat(result.lines()).hasSize(12);
 
     // Verify first data line (opening balance line)
     var firstLine = result.lines().getFirst();
@@ -92,7 +99,7 @@ class BankStatementParserTest {
 
     assertThat(result.periodStart()).isEqualTo(LocalDate.of(2026, 3, 1));
     assertThat(result.periodEnd()).isEqualTo(LocalDate.of(2026, 3, 31));
-    assertThat(result.lines()).hasSize(9);
+    assertThat(result.lines()).hasSize(11);
 
     // Verify yyyy-MM-dd date parsing
     var depositLine = result.lines().get(1);
@@ -108,7 +115,7 @@ class BankStatementParserTest {
 
     assertThat(result.periodStart()).isEqualTo(LocalDate.of(2026, 3, 1));
     assertThat(result.periodEnd()).isEqualTo(LocalDate.of(2026, 3, 31));
-    assertThat(result.lines()).hasSize(9);
+    assertThat(result.lines()).hasSize(11);
 
     // Verify "dd MMM yyyy" date parsing
     var depositLine = result.lines().get(1);
@@ -127,7 +134,7 @@ class BankStatementParserTest {
 
     assertThat(result.periodStart()).isEqualTo(LocalDate.of(2026, 3, 1));
     assertThat(result.periodEnd()).isEqualTo(LocalDate.of(2026, 3, 31));
-    assertThat(result.lines()).hasSize(9);
+    assertThat(result.lines()).hasSize(11);
 
     // Verify first data line (opening balance)
     var firstLine = result.lines().getFirst();
@@ -155,7 +162,7 @@ class BankStatementParserTest {
 
     assertThat(result.periodStart()).isEqualTo(LocalDate.of(2026, 3, 1));
     assertThat(result.periodEnd()).isEqualTo(LocalDate.of(2026, 3, 31));
-    assertThat(result.lines()).hasSize(7);
+    assertThat(result.lines()).hasSize(9);
 
     // Verify the generic parser detects dd/MM/yyyy format
     var transferLine = result.lines().get(3);
@@ -201,6 +208,169 @@ class BankStatementParserTest {
     assertThat(result.lines()).hasSize(2);
     assertThat(result.lines().getFirst().description()).isEqualTo("Valid Transaction");
     assertThat(result.lines().getLast().description()).isEqualTo("Another Valid");
+  }
+
+  // --- Parser suggestions (Phase 92 / 647C, §16.3.5 keyword table, ADR-380) ---
+
+  private static final StatementLineClassification FUND_INTEREST =
+      StatementLineClassification.FUND_INTEREST;
+  private static final StatementLineClassification FUND_SWEEP =
+      StatementLineClassification.FUND_SWEEP;
+  private static final StatementLineClassification BANK_CHARGE =
+      StatementLineClassification.BANK_CHARGE;
+  private static final StatementLineClassification CHARGE_REFUND =
+      StatementLineClassification.CHARGE_REFUND;
+
+  /**
+   * One case per keyword row, the exclusions, case-insensitivity, the two precedence choices (a
+   * sweep wins over a charge on a debit; a charge refund wins over interest on a credit), a zero
+   * amount and ordinary lines. The last three rows pin the substring matching the spec asks for
+   * ("contains"): "fee" inside an ordinary payment's description suggests a bank charge — weak by
+   * design; auto-match clears it when it matches and the firm always confirms.
+   */
+  @ParameterizedTest(name = "{0} {1} -> {2}")
+  @CsvSource(
+      nullValues = "NONE",
+      value = {
+        "LPFF TRANSFER, -1119.56, FUND_SWEEP",
+        "Fidelity Fund interest, -20.00, FUND_SWEEP",
+        "lpff sweep, -5.00, FUND_SWEEP",
+        "LPFF service fee, -15.00, FUND_SWEEP",
+        "INTEREST CREDIT, 1234.56, FUND_INTEREST",
+        "interest earned, 156.75, FUND_INTEREST",
+        "LPFF interest, 100.00, NONE",
+        "Fidelity interest, 100.00, NONE",
+        "CASH DEPOSIT FEE, -57.50, BANK_CHARGE",
+        "Bank charges, -85.50, BANK_CHARGE",
+        "Commission, -10.00, BANK_CHARGE",
+        "Monthly service fee, -125.00, BANK_CHARGE",
+        "Fee refund, 57.50, CHARGE_REFUND",
+        "Charge reversal, 15.00, CHARGE_REFUND",
+        "Interest fee refund, 12.00, CHARGE_REFUND",
+        "Refund from supplier, 100.00, NONE",
+        "Service fee, 10.00, NONE",
+        "Interest, -10.00, NONE",
+        "Interest, 0.00, NONE",
+        "Bank charges, 0.00, NONE",
+        "Deposit from Smith & Associates, 25000.00, NONE",
+        "Payment to SARS, -12500.00, NONE",
+        "Sheriff fees payment, -6200.00, BANK_CHARGE",
+        "'Disbursement, courier fees', -450.00, BANK_CHARGE",
+        "Advocate consultation fee, -6500.00, BANK_CHARGE",
+      })
+  void suggestClassification_followsTheKeywordTable(
+      String description, String amount, StatementLineClassification expected) {
+    assertThat(genericParser.suggestClassification(description, new BigDecimal(amount)))
+        .isEqualTo(expected);
+  }
+
+  @Test
+  void suggestClassification_nullDescriptionOrAmount_suggestsNothing() {
+    assertThat(genericParser.suggestClassification(null, new BigDecimal("-10.00"))).isNull();
+    assertThat(genericParser.suggestClassification("Bank charges", null)).isNull();
+  }
+
+  @Test
+  void fnbFixture_suggestionsPerLine() throws IOException {
+    assertThat(suggestions(fnbParser, "fnb-sample.csv"))
+        .containsExactly(
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            FUND_INTEREST,
+            BANK_CHARGE,
+            null,
+            FUND_SWEEP,
+            CHARGE_REFUND);
+  }
+
+  @Test
+  void standardBankFixture_suggestionsPerLine() throws IOException {
+    // index 2 "Sheriff fees payment" → BANK_CHARGE: a false positive by design ("FEE" substring)
+    assertThat(suggestions(standardBankParser, "standard-bank-sample.csv"))
+        .containsExactly(
+            null,
+            null,
+            BANK_CHARGE,
+            null,
+            null,
+            null,
+            null,
+            FUND_INTEREST,
+            BANK_CHARGE,
+            FUND_SWEEP,
+            CHARGE_REFUND);
+  }
+
+  @Test
+  void nedbankFixture_suggestionsPerLine() throws IOException {
+    // index 6 "Disbursement, courier fees" → BANK_CHARGE: a false positive by design
+    assertThat(suggestions(nedbankParser, "nedbank-sample.csv"))
+        .containsExactly(
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            BANK_CHARGE,
+            FUND_INTEREST,
+            BANK_CHARGE,
+            FUND_SWEEP,
+            CHARGE_REFUND);
+  }
+
+  @Test
+  void absaFixture_suggestionsPerLine() throws IOException {
+    // index 6 "Advocate consultation fee" → BANK_CHARGE: a false positive by design
+    assertThat(suggestions(absaParser, "absa-sample.csv"))
+        .containsExactly(
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            BANK_CHARGE,
+            FUND_INTEREST,
+            BANK_CHARGE,
+            FUND_SWEEP,
+            CHARGE_REFUND);
+  }
+
+  @Test
+  void genericFixture_suggestionsPerLine() throws IOException {
+    assertThat(suggestions(genericParser, "generic-sample.csv"))
+        .containsExactly(
+            null, null, null, null, null, FUND_INTEREST, BANK_CHARGE, FUND_SWEEP, CHARGE_REFUND);
+  }
+
+  /**
+   * UNIDENTIFIED_DEPOSIT (647B) and INVESTMENT_INTEREST (648B) are never suggested: every
+   * suggestion over every fixture line is one of the four Fund classifications, or none.
+   */
+  @Test
+  void suggestions_areOnlyTheFourFundClassifications() throws IOException {
+    var all = new ArrayList<StatementLineClassification>();
+    all.addAll(suggestions(fnbParser, "fnb-sample.csv"));
+    all.addAll(suggestions(standardBankParser, "standard-bank-sample.csv"));
+    all.addAll(suggestions(nedbankParser, "nedbank-sample.csv"));
+    all.addAll(suggestions(absaParser, "absa-sample.csv"));
+    all.addAll(suggestions(genericParser, "generic-sample.csv"));
+    assertThat(all.stream().filter(Objects::nonNull).toList())
+        .isNotEmpty()
+        .allMatch(EnumSet.of(FUND_INTEREST, FUND_SWEEP, BANK_CHARGE, CHARGE_REFUND)::contains);
+  }
+
+  private List<StatementLineClassification> suggestions(
+      CsvBankStatementParser parser, String fixture) throws IOException {
+    return parser.parse(fixtureStream(fixture)).lines().stream()
+        .map(ParsedStatementLine::suggestedClassification)
+        .toList();
   }
 
   private InputStream fixtureStream(String fileName) {

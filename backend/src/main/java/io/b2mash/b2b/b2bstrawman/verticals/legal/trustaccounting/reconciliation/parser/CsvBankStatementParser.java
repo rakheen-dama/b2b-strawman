@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.parser;
 
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.StatementLineClassification;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,6 +12,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -210,7 +212,65 @@ public abstract class CsvBankStatementParser implements BankStatementParser {
       balance = parseAmount(columns[balanceColumn()].trim());
     }
 
-    return new ParsedStatementLine(date, description, reference, amount, balance);
+    return new ParsedStatementLine(
+        date, description, reference, amount, balance, suggestClassification(description, amount));
+  }
+
+  /**
+   * The parser's suggestion for one line (Phase 92 / 647C, ADR-380, architecture §16.3.5): one
+   * shared keyword table, case-insensitive, on the description, by the line's sign. Overridable,
+   * but no bank parser overrides it in this phase — how each bank words these lines is not
+   * published (L4), so bank-specific rules would be guesses.
+   *
+   * <ul>
+   *   <li>debit + {@code LPFF} or {@code FIDELITY} → {@code FUND_SWEEP}
+   *   <li>debit + {@code FEE}, {@code CHARGE}, {@code COMMISSION} or {@code SERVICE} → {@code
+   *       BANK_CHARGE} (a sweep wins over a charge)
+   *   <li>credit + ({@code FEE} or {@code CHARGE}) and ({@code REFUND} or {@code REVERSAL}) →
+   *       {@code CHARGE_REFUND} (the specific rule wins over interest)
+   *   <li>credit + {@code INTEREST}, not {@code LPFF}/{@code FIDELITY} → {@code FUND_INTEREST}
+   * </ul>
+   *
+   * <p>{@code UNIDENTIFIED_DEPOSIT} is never suggested: the absence of a match is not evidence of
+   * an unknown owner. {@code INVESTMENT_INTEREST} (a section 86(4) account) is not suggested before
+   * 648B. A zero amount, or no keyword, suggests nothing. Weak by design — a substring match, so
+   * "Sheriff fees payment" suggests a bank charge; auto-match runs first and clears the suggestion
+   * of every line it matches, and the firm always confirms.
+   *
+   * @return the suggestion, or null
+   */
+  protected StatementLineClassification suggestClassification(
+      String description, BigDecimal amount) {
+    if (description == null || amount == null || amount.signum() == 0) {
+      return null;
+    }
+    String text = description.toUpperCase(Locale.ROOT);
+    boolean fund = containsAny(text, "LPFF", "FIDELITY");
+    if (amount.signum() < 0) {
+      if (fund) {
+        return StatementLineClassification.FUND_SWEEP;
+      }
+      if (containsAny(text, "FEE", "CHARGE", "COMMISSION", "SERVICE")) {
+        return StatementLineClassification.BANK_CHARGE;
+      }
+      return null;
+    }
+    if (containsAny(text, "FEE", "CHARGE") && containsAny(text, "REFUND", "REVERSAL")) {
+      return StatementLineClassification.CHARGE_REFUND;
+    }
+    if (text.contains("INTEREST") && !fund) {
+      return StatementLineClassification.FUND_INTEREST;
+    }
+    return null;
+  }
+
+  private static boolean containsAny(String text, String... keywords) {
+    for (String keyword : keywords) {
+      if (text.contains(keyword)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   protected LocalDate parseDate(String value) {

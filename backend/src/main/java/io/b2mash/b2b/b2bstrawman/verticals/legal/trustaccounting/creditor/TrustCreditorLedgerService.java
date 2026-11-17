@@ -3,7 +3,12 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.CreditorLedgerRow;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedger;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedgerQueryRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionDirection;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.TrustTransactionResponse;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionTypeLabels;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDate;
@@ -11,6 +16,9 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -87,6 +95,29 @@ public class TrustCreditorLedgerService {
   }
 
   /**
+   * One non-client creditor ledger's rows, newest first, each with its running balance (§16.4.2,
+   * 647C): a Fund ledger's interest, transfers to the Fund, bank charges (with recoverable and VAT)
+   * and refunds, and their contras. Paged; the posting order is fixed in the query, so any client
+   * sort is dropped. The newest posted row's balance is the ledger balance of {@link
+   * #listCreditorAccounts} (same row set, {@code posted_at IS NOT NULL}).
+   */
+  @Transactional(readOnly = true)
+  public Page<TrustTransactionResponse> listCreditorTransactions(
+      UUID creditorAccountId, Pageable pageable) {
+    moduleGuard.requireModule(MODULE_ID);
+    if (!creditorAccountRepository.existsById(creditorAccountId)) {
+      throw new ResourceNotFoundException("TrustCreditorAccount", creditorAccountId);
+    }
+    Pageable unsorted =
+        pageable.isPaged()
+            ? PageRequest.of(pageable.getPageNumber(), pageable.getPageSize())
+            : Pageable.unpaged();
+    return ledgerQueries
+        .creditorLedgerRows(creditorAccountId, unsorted)
+        .map(TrustCreditorLedgerService::toResponse);
+  }
+
+  /**
    * Opens one creditor account of every {@link TrustCreditorAccountType} the trust account lacks,
    * under its default name, and returns the rows created (idempotent: none on a second call).
    *
@@ -106,5 +137,44 @@ public class TrustCreditorLedgerService {
       }
     }
     return created;
+  }
+
+  /** Mirrors {@code ClientLedgerService.toTransactionResponse}, plus a bank charge's detail. */
+  private static TrustTransactionResponse toResponse(CreditorLedgerRow row) {
+    return new TrustTransactionResponse(
+        row.getId(),
+        row.getTrustAccountId(),
+        row.getTransactionType(),
+        TrustTransactionTypeLabels.firmLabel(row.getTransactionType()),
+        TrustTransactionDirection.ofRow(row.getTransactionType(), row.getReversedType()),
+        row.getLedger() == null ? null : TrustLedger.valueOf(row.getLedger()),
+        row.getAmount(),
+        row.getCustomerId(),
+        row.getProjectId(),
+        row.getCreditorAccountId(),
+        row.getInvestmentId(),
+        row.getCounterpartyCustomerId(),
+        row.getInvoiceId(),
+        row.getReference(),
+        row.getDescription(),
+        row.getTransactionDate(),
+        row.getStatus(),
+        row.getPostedAt(),
+        row.getApprovedBy(),
+        row.getApprovedAt(),
+        row.getSecondApprovedBy(),
+        row.getSecondApprovedAt(),
+        row.getRejectedBy(),
+        row.getRejectedAt(),
+        row.getRejectionReason(),
+        row.getReversalOf(),
+        row.getReversedById(),
+        Boolean.TRUE.equals(row.getReversalPending()),
+        row.getBankStatementLineId(),
+        row.getRecordedBy(),
+        row.getCreatedAt(),
+        row.getRunningBalance(),
+        row.getChargeRecoverable(),
+        row.getChargeVatAmount());
   }
 }

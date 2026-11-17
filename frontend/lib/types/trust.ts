@@ -149,8 +149,9 @@ export interface TrustTransaction {
   recordedBy: string;
   createdAt: string;
   /**
-   * ADR-361: server-computed on the client-ledger /history endpoint only; null on non-posted and
-   * REVERSAL rows (and on every other endpoint).
+   * ADR-361: server-computed on the client-ledger /history endpoint (null on non-posted and
+   * REVERSAL rows) and on the creditor-ledger /transactions endpoint (647C: null on unposted rows
+   * only); null on every other endpoint.
    */
   runningBalance: number | null;
   /**
@@ -299,7 +300,10 @@ export interface BankStatementLineResponse {
   classification: string | null;
   /** The server's label for `classification` — print this, never the code. */
   classificationLabel: string | null;
-  /** The parser's suggestion (647C fills it). */
+  /**
+   * The parser's suggestion (647C, §16.3.5): stored at import, null once auto-matched. It only
+   * pre-selects the Record from statement dialog; nothing is posted without the firm's confirmation.
+   */
   suggestedClassification: string | null;
   /** The rows a RECORDED line created; [] for every other line. */
   createdTransactionIds: string[];
@@ -521,4 +525,13 @@ export interface TrustCreditorAccount {
   balance: number;
   inDebit: boolean;
   asAt: string;
+}
+
+/**
+ * `GET /api/trust-creditor-accounts/{id}/transactions` (647C, §16.4.2) — one creditor ledger's rows,
+ * newest first, each with its running balance; a Spring Data VIA_DTO page.
+ */
+export interface CreditorLedgerPage {
+  content: TrustTransaction[];
+  page: { totalElements: number; totalPages: number; size: number; number: number };
 }

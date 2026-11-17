@@ -17,6 +17,7 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksFixture;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionType;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
@@ -134,6 +135,7 @@ class TrustCreditorAccountIntegrationTest {
   @Autowired private TransactionTemplate transactionTemplate;
   @Autowired private JdbcTemplate jdbcTemplate;
   @Autowired private Clock clock;
+  @Autowired private TrustBooksFixture fixture;
 
   @Autowired
   @Qualifier("migrationDataSource")
@@ -143,6 +145,7 @@ class TrustCreditorAccountIntegrationTest {
   private String ownerMemberId;
   private String fundLedgerScratchId;
   private List<String> fingerprintBefore;
+  private TrustBooksFixture.Tenant books;
 
   @BeforeAll
   void setup() throws Exception {
@@ -184,6 +187,7 @@ class TrustCreditorAccountIntegrationTest {
                       orgSettingsRepository.save(settings);
                     }));
     assignRole(noTrustMemberId, createCustomRole("Trust Creditor No Trust Role", "VIEW_LEGAL"));
+    books = fixture.tenant(tenantSchema, ORG_ID, UUID.fromString(ownerMemberId));
 
     // A second tenant with the module off (precedent: TrustPositionIntegrationTest)
     provisioningService.provisionTenant(NO_MODULE_ORG_ID, "Trust Creditor No Module Org", null);
@@ -326,6 +330,165 @@ class TrustCreditorAccountIntegrationTest {
         .andExpect(jsonPath("$.status").value(403))
         .andExpect(jsonPath("$.title").value("Module not enabled"))
         .andExpect(jsonPath("$.moduleId").value("trust_accounting"));
+  }
+
+  // ============ Part A — the Fund ledger's rows (647C, §16.4.2) ============
+
+  /**
+   * The exit-month worked set on a fresh account, recorded from one statement through the real
+   * write path ({@code POST /api/bank-statement-lines/{id}/record}): interest +1 234,56 on d1; a
+   * recoverable charge 115,00 (VAT 15,00) and then a non-recoverable charge 57,50 (VAT 7,50) on d2;
+   * a sweep 1 119,56 on d3. Running balances in posting order: 1 234,56 → 1 119,56 → 1 062,06 →
+   * −57,50.
+   */
+  private record FundSet(String accountId, UUID fundId, UUID sweepLineId) {}
+
+  private FundSet recordWorkedSet(String name, String accountNumber) throws Exception {
+    var accountId = createTrustAccount(name, accountNumber);
+    var account = UUID.fromString(accountId);
+    var d1 = LocalDate.now(clock).minusDays(10);
+    var d2 = d1.plusDays(2);
+    var d3 = d1.plusDays(4);
+    var interest = books.unmatchedLine(account, d1, "1234.56", "INT-" + accountNumber);
+    var chargeRecoverable = books.addLine(interest.statementId(), 2, d2, "-115.00", null);
+    var chargeNot = books.addLine(interest.statementId(), 3, d2, "-57.50", null);
+    var sweep = books.addLine(interest.statementId(), 4, d3, "-1119.56", "LPFF-" + accountNumber);
+
+    recordLine(interest.lineId(), "{\"classification\":\"FUND_INTEREST\"}");
+    recordLine(
+        chargeRecoverable,
+        "{\"classification\":\"BANK_CHARGE\",\"chargeRecoverable\":true,\"chargeVatAmount\":15.00}");
+    recordLine(
+        chargeNot,
+        "{\"classification\":\"BANK_CHARGE\",\"chargeRecoverable\":false,\"chargeVatAmount\":7.50}");
+    recordLine(sweep, "{\"classification\":\"FUND_SWEEP\"}");
+    return new FundSet(
+        accountId, books.creditorAccount(account, "FUND_INTEREST_AND_CHARGES"), sweep);
+  }
+
+  @Test
+  void fundLedgerRows_newestFirst_inPostingOrder() throws Exception {
+    var set = recordWorkedSet("Creditor Ledgers R1", "62000000201");
+
+    var body = getBody(fundRowsUrl(set.fundId()));
+    assertThat(JsonPath.<List<String>>read(body, "$.content[*].transactionType"))
+        .containsExactly("FUND_SWEEP", "BANK_CHARGE", "BANK_CHARGE", "FUND_INTEREST");
+    assertThat(amounts(body, "amount")).containsExactly("1119.56", "57.50", "115.00", "1234.56");
+    assertThat(JsonPath.<String>read(body, "$.content[0].typeLabel"))
+        .isEqualTo("Interest paid to the Legal Practitioners' Fidelity Fund");
+    assertThat(JsonPath.<String>read(body, "$.content[3].typeLabel"))
+        .isEqualTo("Interest received for the Legal Practitioners' Fidelity Fund");
+    assertThat(JsonPath.<List<String>>read(body, "$.content[*].direction"))
+        .containsExactly("OUT", "OUT", "OUT", "IN");
+    assertThat(JsonPath.<List<String>>read(body, "$.content[*].ledger")).containsOnly("NON_CLIENT");
+    assertThat(JsonPath.<List<String>>read(body, "$.content[*].creditorAccountId"))
+        .containsOnly(set.fundId().toString());
+    assertThat(JsonPath.<List<String>>read(body, "$.content[*].trustAccountId"))
+        .containsOnly(set.accountId());
+    assertThat(JsonPath.<Integer>read(body, "$.page.totalElements")).isEqualTo(4);
+    assertThat(JsonPath.<Integer>read(body, "$.page.number")).isZero();
+
+    // The other creditor ledger of the same account has no rows
+    var unidentified =
+        books.creditorAccount(UUID.fromString(set.accountId()), "UNIDENTIFIED_DEPOSITS");
+    var empty = getBody(fundRowsUrl(unidentified));
+    assertThat(JsonPath.<List<Object>>read(empty, "$.content")).isEmpty();
+    assertThat(JsonPath.<Integer>read(empty, "$.page.totalElements")).isZero();
+  }
+
+  @Test
+  void runningBalance_isTheWindowOverPostedRows_beforePaging_andEndsAtTheLedgerBalance()
+      throws Exception {
+    var set = recordWorkedSet("Creditor Ledgers R2", "62000000202");
+
+    var body = getBody(fundRowsUrl(set.fundId()));
+    assertThat(amounts(body, "runningBalance"))
+        .containsExactly("-57.50", "1062.06", "1119.56", "1234.56");
+
+    // The window runs before the page is cut: page 1 of size 2 keeps the older rows' balances
+    var page1 = getBody(fundRowsUrl(set.fundId()) + "?page=1&size=2");
+    assertThat(JsonPath.<List<String>>read(page1, "$.content[*].transactionType"))
+        .containsExactly("BANK_CHARGE", "FUND_INTEREST");
+    assertThat(amounts(page1, "runningBalance")).containsExactly("1119.56", "1234.56");
+    assertThat(JsonPath.<Integer>read(page1, "$.page.totalPages")).isEqualTo(2);
+
+    // The newest row's balance is the ledger balance (same row set: posted_at IS NOT NULL)
+    var accounts = getBody(creditorAccountsUrl(set.accountId()));
+    assertThat(balance(accounts, 0)).isEqualByComparingTo("-57.50");
+    assertThat((Boolean) JsonPath.read(accounts, "$[0].inDebit")).isTrue();
+    assertThat(new BigDecimal(amounts(body, "runningBalance").getFirst()))
+        .isEqualByComparingTo(balance(accounts, 0));
+
+    // Unmatch the sweep line: a same-date REVERSAL contra; the original is REVERSED and keeps its
+    // own effect and balance (every posted row counts), the newest balance is the ledger balance.
+    mockMvc
+        .perform(
+            post("/api/bank-statement-lines/{lineId}/unmatch", set.sweepLineId()).with(owner()))
+        .andExpect(status().isOk());
+
+    var after = getBody(fundRowsUrl(set.fundId()));
+    assertThat(JsonPath.<List<String>>read(after, "$.content[*].transactionType"))
+        .containsExactly("REVERSAL", "FUND_SWEEP", "BANK_CHARGE", "BANK_CHARGE", "FUND_INTEREST");
+    assertThat(JsonPath.<List<String>>read(after, "$.content[*].status"))
+        .containsExactly("RECORDED", "REVERSED", "RECORDED", "RECORDED", "RECORDED");
+    assertThat(JsonPath.<String>read(after, "$.content[0].direction")).isEqualTo("IN");
+    assertThat(amounts(after, "runningBalance"))
+        .containsExactly("1062.06", "-57.50", "1062.06", "1119.56", "1234.56");
+    var accountsAfter = getBody(creditorAccountsUrl(set.accountId()));
+    assertThat(balance(accountsAfter, 0)).isEqualByComparingTo("1062.06");
+    assertThat(new BigDecimal(amounts(after, "runningBalance").getFirst()))
+        .isEqualByComparingTo(balance(accountsAfter, 0));
+  }
+
+  @Test
+  void bankCharges_showRecoverableAndVat_otherRowsCarryNone() throws Exception {
+    var set = recordWorkedSet("Creditor Ledgers R3", "62000000203");
+    mockMvc
+        .perform(
+            post("/api/bank-statement-lines/{lineId}/unmatch", set.sweepLineId()).with(owner()))
+        .andExpect(status().isOk());
+
+    // Newest first: REVERSAL, FUND_SWEEP (reversed), charge 57.50, charge 115.00, FUND_INTEREST
+    mockMvc
+        .perform(get(fundRowsUrl(set.fundId())).with(owner()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content.length()").value(5))
+        .andExpect(jsonPath("$.content[0].chargeRecoverable").isEmpty())
+        .andExpect(jsonPath("$.content[0].chargeVatAmount").isEmpty())
+        .andExpect(jsonPath("$.content[1].chargeRecoverable").isEmpty())
+        .andExpect(jsonPath("$.content[1].chargeVatAmount").isEmpty())
+        .andExpect(jsonPath("$.content[2].chargeRecoverable").value(false))
+        .andExpect(jsonPath("$.content[2].chargeVatAmount").value(7.50))
+        .andExpect(jsonPath("$.content[3].chargeRecoverable").value(true))
+        .andExpect(jsonPath("$.content[3].chargeVatAmount").value(15.00))
+        .andExpect(jsonPath("$.content[4].chargeRecoverable").isEmpty())
+        .andExpect(jsonPath("$.content[4].chargeVatAmount").isEmpty());
+  }
+
+  @Test
+  void fundLedgerRows_unknownCreditor404_viewTrustRequired_moduleGuardFirst() throws Exception {
+    var unknown = UUID.randomUUID();
+    mockMvc
+        .perform(get(fundRowsUrl(unknown)).with(owner()))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.title").value("TrustCreditorAccount not found"));
+
+    var accountId = createTrustAccount("Creditor Ledgers R4", "62000000204");
+    var fundId = books.creditorAccount(UUID.fromString(accountId), "FUND_INTEREST_AND_CHARGES");
+    mockMvc
+        .perform(get(fundRowsUrl(fundId)).with(TestJwtFactory.memberJwt(ORG_ID, MEMBER_SUBJECT)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content.length()").value(0));
+    mockMvc
+        .perform(get(fundRowsUrl(fundId)).with(TestJwtFactory.memberJwt(ORG_ID, NO_TRUST_SUBJECT)))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.title").value("Access denied"));
+    mockMvc
+        .perform(
+            get(fundRowsUrl(unknown))
+                .with(TestJwtFactory.ownerJwt(NO_MODULE_ORG_ID, NO_MODULE_OWNER_SUBJECT)))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.title").value("Module not enabled"));
   }
 
   // ============ Part B — scratch schema, V17 → V18 ============
@@ -519,6 +682,28 @@ class TrustCreditorAccountIntegrationTest {
 
   private static String creditorAccountsUrl(String accountId) {
     return "/api/trust-accounts/" + accountId + "/creditor-accounts";
+  }
+
+  private static String fundRowsUrl(UUID creditorAccountId) {
+    return "/api/trust-creditor-accounts/" + creditorAccountId + "/transactions";
+  }
+
+  private void recordLine(UUID lineId, String json) throws Exception {
+    mockMvc
+        .perform(
+            post("/api/bank-statement-lines/{lineId}/record", lineId)
+                .with(owner())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json))
+        .andExpect(status().isCreated());
+  }
+
+  /** A numeric field of every page row, as plain strings (JSON numbers may arrive as Double). */
+  private static List<String> amounts(String body, String field) {
+    List<Object> values = JsonPath.read(body, "$.content[*]." + field);
+    return values.stream()
+        .map(v -> new BigDecimal(String.valueOf(v)).setScale(2).toPlainString())
+        .toList();
   }
 
   private String createTrustAccount(String name, String accountNumber) throws Exception {

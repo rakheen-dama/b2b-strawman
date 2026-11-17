@@ -2,8 +2,10 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.jayway.jsonpath.JsonPath;
@@ -309,6 +311,91 @@ class TrustReconciliationServiceMatchingTest {
               assertThat(line.getMatchStatus()).isEqualTo("UNMATCHED");
               assertThat(line.getMatchConfidence()).isEqualByComparingTo(new BigDecimal("0.60"));
             });
+  }
+
+  // --- 647C: parser suggestions stored at import; an auto-matched line keeps none (§16.3.5) ---
+
+  @Test
+  void import_storesTheParsersSuggestion_andAnAutoMatchedLineKeepsNone() throws Exception {
+    createDeposit("REF-SUGG-INT-001", "4321.09", "2026-03-12");
+
+    String statementId =
+        importStatement(
+            """
+            FNB Trust Account Statement - Account 62012345678
+            Date,Description,Amount,Balance,Reference
+            12/03/2026,Interest deposit received,4321.09,104321.09,REF-SUGG-INT-001
+            13/03/2026,Bank charges,-17.23,104303.86,CHG-SUGG-001
+            """);
+
+    // At import: credit + INTEREST → FUND_INTEREST; debit + CHARGE → BANK_CHARGE
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .run(
+            () -> {
+              var lines =
+                  bankStatementLineRepository.findByBankStatementIdOrderByLineNumber(
+                      UUID.fromString(statementId));
+              assertThat(lines)
+                  .extracting(BankStatementLine::getSuggestedClassification)
+                  .containsExactly("FUND_INTEREST", "BANK_CHARGE");
+            });
+
+    var result =
+        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+            .call(() -> reconciliationService.autoMatchStatement(UUID.fromString(statementId)));
+    assertThat(result.autoMatched()).isEqualTo(1);
+
+    // Auto-match ran first: the matched line keeps no suggestion; the unmatched one keeps its own
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .run(
+            () -> {
+              var lines =
+                  bankStatementLineRepository.findByBankStatementIdOrderByLineNumber(
+                      UUID.fromString(statementId));
+              assertThat(lines.get(0).getMatchStatus()).isEqualTo("AUTO_MATCHED");
+              assertThat(lines.get(0).getSuggestedClassification()).isNull();
+              assertThat(lines.get(1).getMatchStatus()).isEqualTo("UNMATCHED");
+              assertThat(lines.get(1).getSuggestedClassification()).isEqualTo("BANK_CHARGE");
+            });
+  }
+
+  @Test
+  void closeDateLine_staysUnmatched_andKeepsItsSuggestion() throws Exception {
+    // A deposit two days off the line's date: the 0.60 path, which never auto-matches
+    createDeposit("REF-SUGG-CLOSE-001", "7654.32", "2026-03-17");
+
+    String statementId =
+        importStatement(
+            """
+            FNB Trust Account Statement - Account 62012345678
+            Date,Description,Amount,Balance,Reference
+            19/03/2026,Interest on call deposit,7654.32,107654.32,SUGG-CLOSE-OTHER
+            """);
+
+    var result =
+        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+            .call(() -> reconciliationService.autoMatchStatement(UUID.fromString(statementId)));
+    assertThat(result.autoMatched()).isEqualTo(0);
+
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .run(
+            () -> {
+              var line =
+                  bankStatementLineRepository
+                      .findByBankStatementIdOrderByLineNumber(UUID.fromString(statementId))
+                      .getFirst();
+              assertThat(line.getMatchStatus()).isEqualTo("UNMATCHED");
+              assertThat(line.getMatchConfidence()).isEqualByComparingTo(new BigDecimal("0.60"));
+              assertThat(line.getSuggestedClassification()).isEqualTo("FUND_INTEREST");
+            });
+
+    // On the wire: the statement GET carries the suggestion for the dialog to pre-select
+    mockMvc
+        .perform(
+            get("/api/bank-statements/" + statementId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_match_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.lines[0].suggestedClassification").value("FUND_INTEREST"));
   }
 
   @Test

@@ -9,3 +9,5 @@ Date,Description,Reference,Amount,Balance
 2026-03-23,Disbursement - expert witness,DIS-EXP-007,-8500.00,282500.00
 2026-03-28,Interest credit,INT-2026-03,218.45,282718.45
 2026-03-31,Monthly service fee,SVC-MAR-26,-125.00,282593.45
+2026-03-31,LPFF interest sweep,LPFF-2026-03,-218.45,282375.00
+2026-03-31,Service fee refund,SVC-REF-26,125.00,282500.00

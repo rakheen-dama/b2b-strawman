@@ -9,3 +9,5 @@ Date,Description,Reference,Amount,Balance
 26/03/2026,Advocate consultation fee,ADV-CON-033,-6500.00,160000.00
 29/03/2026,Interest credit,INT-ABS-0326,132.80,160132.80
 31/03/2026,Monthly account fee,FEE-ABS-0326,-110.00,160022.80
+31/03/2026,LPFF transfer,LPFF-ABS-0326,-132.80,159890.00
+31/03/2026,Monthly account fee refund,FEE-REF-0326,110.00,160000.00

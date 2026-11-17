@@ -50,7 +50,8 @@ interface RecordFromStatementDialogProps {
  * is, and the entry is posted dated the line's date. Owns its trigger (a plain button beside
  * Exclude — never an adjacent `asChild` trigger). Offers only the classifications that agree with
  * the line's sign; a bank charge also asks whether it is on the Fidelity Fund's recoverable list
- * (the firm's assertion — Kazi does not check it, ADR-381) and its VAT.
+ * (the firm's assertion — Kazi does not check it, ADR-381) and its VAT. The parser's suggestion
+ * (647C) pre-selects a classification; the firm still confirms it.
  */
 export function RecordFromStatementDialog({
   line,
@@ -64,11 +65,15 @@ export function RecordFromStatementDialog({
 
   const sign = line.amount >= 0 ? 1 : -1;
   const choices = STATEMENT_LINE_CLASSIFICATIONS.filter((c) => c.lineSign === sign);
+  // 647C (§16.3.5): the parser's suggestion pre-selects the classification — only when it is one
+  // the line's sign allows (a mismatched or not-yet-offered code pre-selects nothing). Never
+  // submitted on its own: the firm still presses Record.
+  const suggested = choices.find((c) => c.value === line.suggestedClassification)?.value;
 
   const form = useForm<RecordFromStatementFormData>({
     resolver: zodResolver(recordFromStatementSchemaFor(Math.abs(line.amount))),
     defaultValues: {
-      classification: undefined,
+      classification: suggested,
       chargeRecoverable: undefined,
       chargeVatAmount: undefined,
       notes: "",
@@ -166,6 +171,11 @@ export function RecordFromStatementDialog({
                         ))}
                       </RadioGroup>
                     </FormControl>
+                    {suggested && field.value === suggested && (
+                      <FormDescription data-testid="classification-suggested-note">
+                        Suggested from the line&apos;s description — check it before recording.
+                      </FormDescription>
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}

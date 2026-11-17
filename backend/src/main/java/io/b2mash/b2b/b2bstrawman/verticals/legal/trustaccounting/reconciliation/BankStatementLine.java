@@ -61,7 +61,11 @@ public class BankStatementLine {
   @Column(name = "classification", length = 30)
   private String classification;
 
-  /** The parser's suggestion, set at import (647C writes it); never acted on by the system. */
+  /**
+   * The parser's suggestion (a {@link StatementLineClassification} code, §16.3.5): written at
+   * import (647C), cleared when the line auto-matches, kept through a recorded line's unmatch.
+   * Never acted on by the system — it only pre-selects the Record from statement dialog.
+   */
   @Column(name = "suggested_classification", length = 30)
   private String suggestedClassification;
 
@@ -167,6 +171,11 @@ public class BankStatementLine {
 
   public String getSuggestedClassification() {
     return suggestedClassification;
+  }
+
+  /** The parser's suggestion (647C): written at import, cleared when the line auto-matches. */
+  public void setSuggestedClassification(String suggestedClassification) {
+    this.suggestedClassification = suggestedClassification;
   }
 
   public Instant getCreatedAt() {

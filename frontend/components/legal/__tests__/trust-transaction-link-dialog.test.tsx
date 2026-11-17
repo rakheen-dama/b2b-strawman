@@ -54,6 +54,8 @@ function makeTx(overrides: Partial<TrustTransaction> = {}): TrustTransaction {
     recordedBy: "u1",
     createdAt: "2026-03-01T10:00:00Z",
     runningBalance: null,
+    chargeRecoverable: null,
+    chargeVatAmount: null,
     ...overrides,
   };
 }

@@ -1243,6 +1243,72 @@ class ActivityMessageFormatterTest {
             "trust_transaction",
             d("amount", "300", "reference", "REF-1"),
             "Alice recorded a trust refund of R300,00 (REF-1)"),
+        // --- record from statement (Phase 92 647A) ---
+        Arguments.of(
+            "trust_fund_interest.recorded",
+            "trust_transaction",
+            d("amount", "1234.56", "reference", "STMT-3-20261031"),
+            "Alice recorded interest received for the Legal Practitioners' Fidelity Fund of R1"
+                + NB
+                + "234,56 (STMT-3-20261031)"),
+        Arguments.of(
+            "trust_fund_sweep.recorded",
+            "trust_transaction",
+            d("amount", "1119.56", "reference", "LPFF-OCT"),
+            "Alice recorded a payment of interest to the Legal Practitioners' Fidelity Fund of R1"
+                + NB
+                + "119,56 (LPFF-OCT)"),
+        Arguments.of(
+            "trust_bank_charge.recorded",
+            "trust_transaction",
+            d(
+                "amount",
+                "57.50",
+                "reference",
+                "STMT-16-20261030",
+                "recoverable",
+                "false",
+                "vat_amount",
+                "7.50"),
+            "Alice recorded a bank charge of R57,50 (STMT-16-20261030)"),
+        Arguments.of(
+            "trust_bank_charge.recorded",
+            "trust_transaction",
+            d("amount", "not-a-number", "reference", "CHG-1"),
+            "Alice recorded a bank charge (CHG-1)"),
+        Arguments.of(
+            "trust_charge_refund.recorded",
+            "trust_transaction",
+            d("amount", "57.50", "reference", "REFUND-1"),
+            "Alice recorded a bank charge refund of R57,50 (REFUND-1)"),
+        Arguments.of(
+            "bank_statement_line.recorded",
+            "bank_statement_line",
+            d("classification", "BANK_CHARGE", "amount", "57.50"),
+            "Alice recorded a statement line as a bank charge of R57,50"),
+        Arguments.of(
+            "bank_statement_line.recorded",
+            "bank_statement_line",
+            d("classification", "FUND_INTEREST", "amount", "1234.56"),
+            "Alice recorded a statement line as interest received for the Legal Practitioners'"
+                + " Fidelity Fund of R1"
+                + NB
+                + "234,56"),
+        Arguments.of(
+            "bank_statement_line.recorded",
+            "bank_statement_line",
+            d("classification", "UNIDENTIFIED_SOMETHING", "amount", "10"),
+            "Alice recorded a statement line of R10,00"),
+        Arguments.of(
+            "bank_statement_line.unmatched",
+            "bank_statement_line",
+            d("classification", "FUND_SWEEP", "statement_id", "s-1"),
+            "Alice unmatched a recorded bank statement line and reversed its entries"),
+        Arguments.of(
+            "bank_statement_line.unmatched",
+            "bank_statement_line",
+            d(),
+            "Alice unmatched a bank statement line"),
         Arguments.of(
             "trust_transaction.reversed",
             "trust_transaction",
@@ -1738,6 +1804,12 @@ class ActivityMessageFormatterTest {
           new String[] {"trust_fee_transfer.recorded", "trust_transaction"},
           new String[] {"trust_refund.recorded", "trust_transaction"},
           new String[] {"trust_interest_credit.recorded", "trust_transaction"},
+          new String[] {"trust_fund_interest.recorded", "trust_transaction"},
+          new String[] {"trust_fund_sweep.recorded", "trust_transaction"},
+          new String[] {"trust_bank_charge.recorded", "trust_transaction"},
+          new String[] {"trust_charge_refund.recorded", "trust_transaction"},
+          new String[] {"bank_statement_line.recorded", "bank_statement_line"},
+          new String[] {"bank_statement_line.unmatched", "bank_statement_line"},
           new String[] {"trust_payment.approved", "trust_transaction"},
           new String[] {"trust_fee_transfer.approved", "trust_transaction"},
           new String[] {"trust_refund.approved", "trust_transaction"},
@@ -1914,6 +1986,30 @@ class ActivityMessageFormatterTest {
                 ActivityMessageFormatter.AmountVisibility.ALL, "invoice.paid", "invoice", details))
         .isEqualTo(
             "Alice recorded a payment of R5" + NB + "000,00 on fee note INV-0004 — paid in full");
+  }
+
+  @Test
+  void bankStatementLineEventsAreTrustEvents_amountNeedsViewTrust() {
+    // 647A review: a recorded statement line is trust money — FINANCIAL_VISIBILITY alone must not
+    // read its amount (or reference); VIEW_TRUST does.
+    var details = d("classification", "BANK_CHARGE", "amount", "57.50", "reference", "CHG-77");
+    String noTrust =
+        messageAs(
+            new ActivityMessageFormatter.AmountVisibility(true, false),
+            "bank_statement_line.recorded",
+            "bank_statement_line",
+            details);
+    assertThat(noTrust)
+        .isEqualTo("Alice recorded a statement line as a bank charge")
+        .doesNotContain("57,50")
+        .doesNotContain("CHG-77");
+    assertThat(
+            messageAs(
+                new ActivityMessageFormatter.AmountVisibility(false, true),
+                "bank_statement_line.recorded",
+                "bank_statement_line",
+                details))
+        .isEqualTo("Alice recorded a statement line as a bank charge of R57,50");
   }
 
   @Test

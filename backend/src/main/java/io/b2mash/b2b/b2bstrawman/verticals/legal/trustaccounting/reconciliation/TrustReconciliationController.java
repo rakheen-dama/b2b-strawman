@@ -1,6 +1,8 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation;
 
 import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.StatementLinePostingService.RecordFromLineRequest;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.StatementLinePostingService.RecordFromLineResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService.BankStatementResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService.CreateReconciliationRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService.MatchResult;
@@ -26,9 +28,13 @@ import org.springframework.web.multipart.MultipartFile;
 public class TrustReconciliationController {
 
   private final TrustReconciliationService trustReconciliationService;
+  private final StatementLinePostingService statementLinePostingService;
 
-  public TrustReconciliationController(TrustReconciliationService trustReconciliationService) {
+  public TrustReconciliationController(
+      TrustReconciliationService trustReconciliationService,
+      StatementLinePostingService statementLinePostingService) {
     this.trustReconciliationService = trustReconciliationService;
+    this.statementLinePostingService = statementLinePostingService;
   }
 
   @PostMapping(
@@ -68,6 +74,14 @@ public class TrustReconciliationController {
       @PathVariable UUID lineId, @Valid @RequestBody ManualMatchRequest request) {
     trustReconciliationService.manualMatch(lineId, request.transactionId());
     return ResponseEntity.ok().build();
+  }
+
+  @PostMapping("/api/bank-statement-lines/{lineId}/record")
+  @RequiresCapability("MANAGE_TRUST")
+  public ResponseEntity<RecordFromLineResponse> recordFromLine(
+      @PathVariable UUID lineId, @Valid @RequestBody RecordFromLineRequest request) {
+    return ResponseEntity.status(HttpStatus.CREATED)
+        .body(statementLinePostingService.recordFromLine(lineId, request));
   }
 
   @PostMapping("/api/bank-statement-lines/{lineId}/unmatch")

@@ -384,6 +384,9 @@ public class ClientLedgerService {
         row.getBankStatementLineId(),
         row.getRecordedBy(),
         row.getCreatedAt(),
-        row.getRunningBalance());
+        row.getRunningBalance(),
+        // a client-ledger row is never a bank charge (647A, chk_trust_txn_charge)
+        null,
+        null);
   }
 }

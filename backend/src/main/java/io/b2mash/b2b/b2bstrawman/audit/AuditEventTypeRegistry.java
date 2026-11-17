@@ -107,6 +107,29 @@ public class AuditEventTypeRegistry {
                 "Trust creditor account opened",
                 AuditSeverity.INFO,
                 AuditEventGroup.FINANCIAL),
+            // FINANCIAL — rows recorded from a bank statement line on the Fund interest-and-charges
+            // ledger (Phase 92 647A, ADR-380/381). Explicit labels because the synthesised ones
+            // read "Trust fund …", which is not the Fidelity Fund. Additive keys (pin 51 → 55).
+            new AuditEventTypeMetadata(
+                "trust_fund_interest.recorded",
+                "Fidelity Fund interest recorded",
+                AuditSeverity.INFO,
+                AuditEventGroup.FINANCIAL),
+            new AuditEventTypeMetadata(
+                "trust_fund_sweep.recorded",
+                "Fidelity Fund payment recorded",
+                AuditSeverity.INFO,
+                AuditEventGroup.FINANCIAL),
+            new AuditEventTypeMetadata(
+                "trust_bank_charge.recorded",
+                "Bank charge recorded",
+                AuditSeverity.INFO,
+                AuditEventGroup.FINANCIAL),
+            new AuditEventTypeMetadata(
+                "trust_charge_refund.recorded",
+                "Bank charge refund recorded",
+                AuditSeverity.INFO,
+                AuditEventGroup.FINANCIAL),
             // DATA — data protection
             new AuditEventTypeMetadata(
                 "dataprotection.dsar.*",

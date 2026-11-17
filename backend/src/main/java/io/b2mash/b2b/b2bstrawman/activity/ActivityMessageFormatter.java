@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditEvent;
 import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
 import io.b2mash.b2b.b2bstrawman.template.VariableFormatter;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.StatementLineClassification;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionType;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -324,6 +325,29 @@ public class ActivityMessageFormatter {
       case "trust_fee_transfer.recorded" ->
           "%s recorded a fee transfer%s from trust%s"
               .formatted(actorName, ofMoney(details, "amount"), ref(details, "reference"));
+      // Record from statement (Phase 92 647A): the Fund ledger's bank-originated rows
+      case "trust_fund_interest.recorded" ->
+          formatTrustRecorded(
+              actorName, "interest received for the Legal Practitioners' Fidelity Fund", details);
+      case "trust_fund_sweep.recorded" ->
+          formatTrustRecorded(
+              actorName,
+              "a payment of interest to the Legal Practitioners' Fidelity Fund",
+              details);
+      case "trust_bank_charge.recorded" -> formatTrustRecorded(actorName, "a bank charge", details);
+      case "trust_charge_refund.recorded" ->
+          formatTrustRecorded(actorName, "a bank charge refund", details);
+      case "bank_statement_line.recorded" ->
+          "%s recorded a statement line%s%s"
+              .formatted(
+                  actorName,
+                  prefixed(" as ", statementLineClassificationNoun(str(details, "classification"))),
+                  ofMoney(details, "amount"));
+      case "bank_statement_line.unmatched" ->
+          str(details, "classification") == null
+              ? "%s unmatched a bank statement line".formatted(actorName)
+              : "%s unmatched a recorded bank statement line and reversed its entries"
+                  .formatted(actorName);
       case "trust_transaction.reversed" ->
           "%s reversed %s%s"
               .formatted(
@@ -651,9 +675,13 @@ public class ActivityMessageFormatter {
       String entityType,
       Map<String, Object> details,
       AmountVisibility visibility) {
+    // A bank statement line is trust money too (647A): its recorded amount needs VIEW_TRUST.
     boolean trustEvent =
         "trust_transaction".equals(entityType)
-            || (eventType != null && eventType.startsWith("trust_"));
+            || "bank_statement_line".equals(entityType)
+            || (eventType != null
+                && (eventType.startsWith("trust_")
+                    || eventType.startsWith("bank_statement_line.")));
     Set<String> hidden;
     if (trustEvent) {
       hidden = visibility.trust() ? Set.of() : Set.of("amount", "reference");
@@ -740,6 +768,24 @@ public class ActivityMessageFormatter {
               .map(type -> decapitalise(type.label()))
               .orElse("trust transaction");
     };
+  }
+
+  /**
+   * What a statement line was recorded as, in a feed sentence (647A); null for an unknown code, so
+   * the sentence simply omits it.
+   */
+  private static String statementLineClassificationNoun(String classification) {
+    return StatementLineClassification.find(classification)
+        .map(
+            c ->
+                switch (c) {
+                  case FUND_INTEREST ->
+                      "interest received for the Legal Practitioners' Fidelity Fund";
+                  case FUND_SWEEP -> "interest paid to the Legal Practitioners' Fidelity Fund";
+                  case BANK_CHARGE -> "a bank charge";
+                  case CHARGE_REFUND -> "a bank charge refund";
+                })
+        .orElse(null);
   }
 
   /**

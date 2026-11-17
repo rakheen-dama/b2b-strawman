@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@b2mash/ui/button";
@@ -15,6 +15,7 @@ import {
   manualMatch,
   excludeLine,
   unmatch,
+  recordFromStatement,
   createReconciliation,
   calculateReconciliation,
   completeReconciliation,
@@ -30,6 +31,7 @@ import type {
   TrustTransaction,
   TrustReconciliationResponse,
 } from "@/lib/types";
+import type { RecordFromStatementFormData } from "@/lib/schemas/trust";
 
 // ── Constants ─────────────────────────────────────────────────────
 
@@ -84,7 +86,12 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
   // Clear downstream state when an earlier wizard step changes so that
   // stale data from a previous account/period/statement is never shown.
 
+  // Bumped by every reset: an async result started before a reset belongs to the old wizard and
+  // is dropped (handleRecord's recalculation, 647A).
+  const wizardGeneration = useRef(0);
+
   const resetFromStep2 = useCallback(() => {
+    wizardGeneration.current += 1;
     setStatement(null);
     setLines([]);
     setAutoMatchResult(null);
@@ -94,6 +101,7 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
   }, []);
 
   const resetFromStep3 = useCallback(() => {
+    wizardGeneration.current += 1;
     setAutoMatchResult(null);
     setReconciliation(null);
     setUnmatchedTransactions([]);
@@ -283,6 +291,9 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
                     ...l,
                     matchStatus: "UNMATCHED" as const,
                     trustTransactionId: null,
+                    classification: null,
+                    classificationLabel: null,
+                    createdTransactionIds: [],
                   }
                 : l
             )
@@ -311,6 +322,42 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
       }
     },
     [selectedAccountId, reconciliation]
+  );
+
+  // Handle record from statement (647A). A refusal is returned to the dialog (shown there, the
+  // dialog stays open); a failed recalculation after a successful record goes to the banner.
+  const handleRecord = useCallback(
+    async (
+      lineId: string,
+      input: RecordFromStatementFormData
+    ): Promise<{ success: boolean; error?: string }> => {
+      setError(null);
+      const generation = wizardGeneration.current;
+      const result = await recordFromStatement(lineId, input);
+      if (!result.success || !result.data) {
+        return { success: false, error: result.error ?? "Failed to record the line" };
+      }
+      const updated = result.data.line;
+      setLines((prev) => prev.map((l) => (l.id === lineId ? updated : l)));
+      if (reconciliation) {
+        const calcResult = await calculateReconciliation(reconciliation.id);
+        if (generation !== wizardGeneration.current) {
+          // The wizard was reset while recalculating: this result is the old reconciliation's.
+          return { success: true };
+        }
+        if (calcResult.success && calcResult.data) {
+          setReconciliation(calcResult.data);
+        } else {
+          setError(
+            `The line was recorded but the reconciliation could not be recalculated: ${
+              calcResult.error ?? "unknown error"
+            }`
+          );
+        }
+      }
+      return { success: true };
+    },
+    [reconciliation]
   );
 
   // Handle complete
@@ -395,7 +442,10 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
 
       {/* Error banner */}
       {error && (
-        <div className="rounded-md bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
+        <div
+          data-testid="reconciliation-error"
+          className="rounded-md bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950 dark:text-red-300"
+        >
           {error}
         </div>
       )}
@@ -595,6 +645,7 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
             onMatch={handleMatch}
             onExclude={handleExclude}
             onUnmatch={handleUnmatch}
+            onRecord={handleRecord}
             onComplete={handleComplete}
             isCompleting={isCompleting}
           />

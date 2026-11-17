@@ -31,10 +31,12 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -61,6 +63,7 @@ public class TrustReconciliationService {
   private final VerticalModuleGuard moduleGuard;
   private final AuditService auditService;
   private final Clock clock;
+  private final StatementLinePostingService statementLinePostingService;
   private final List<BankStatementParser> parsers;
 
   public TrustReconciliationService(
@@ -74,7 +77,8 @@ public class TrustReconciliationService {
       StorageService storageService,
       VerticalModuleGuard moduleGuard,
       AuditService auditService,
-      Clock clock) {
+      Clock clock,
+      StatementLinePostingService statementLinePostingService) {
     this.bankStatementRepository = bankStatementRepository;
     this.bankStatementLineRepository = bankStatementLineRepository;
     this.trustAccountRepository = trustAccountRepository;
@@ -86,6 +90,7 @@ public class TrustReconciliationService {
     this.moduleGuard = moduleGuard;
     this.auditService = auditService;
     this.clock = clock;
+    this.statementLinePostingService = statementLinePostingService;
     // Parsers are plain classes (not Spring beans). GenericCsvParser must be last (always matches).
     this.parsers =
         List.of(
@@ -125,7 +130,40 @@ public class TrustReconciliationService {
       BigDecimal runningBalance,
       String matchStatus,
       UUID trustTransactionId,
-      BigDecimal matchConfidence) {}
+      BigDecimal matchConfidence,
+      // 647A (§16.4.3): the confirmed classification of a RECORDED line (null otherwise) and its
+      // label; the parser's suggestion (647C fills it); the rows a recorded line created ([]
+      // for every other line — a matched line's row existed before the match).
+      String classification,
+      String classificationLabel,
+      String suggestedClassification,
+      List<UUID> createdTransactionIds) {
+
+    /**
+     * The one line mapping — used by the statement GET and by {@code StatementLinePostingService}
+     * (a static factory, so that service never depends on this one).
+     */
+    public static BankStatementLineResponse of(
+        BankStatementLine line, List<UUID> createdTransactionIds) {
+      return new BankStatementLineResponse(
+          line.getId(),
+          line.getLineNumber(),
+          line.getTransactionDate(),
+          line.getDescription(),
+          line.getReference(),
+          line.getAmount(),
+          line.getRunningBalance(),
+          line.getMatchStatus(),
+          line.getTrustTransactionId(),
+          line.getMatchConfidence(),
+          line.getClassification(),
+          StatementLineClassification.find(line.getClassification())
+              .map(StatementLineClassification::label)
+              .orElse(null),
+          line.getSuggestedClassification(),
+          List.copyOf(createdTransactionIds));
+    }
+  }
 
   // --- Service Methods ---
 
@@ -358,9 +396,11 @@ public class TrustReconciliationService {
   public void manualMatch(UUID lineId, UUID transactionId) {
     moduleGuard.requireModule(MODULE_ID);
 
+    // Locked before its state is read (647A): a concurrent record-from-statement cannot be
+    // overwritten by this match acting on a stale UNMATCHED state.
     var line =
         bankStatementLineRepository
-            .findById(lineId)
+            .findByIdForUpdate(lineId)
             .orElseThrow(() -> new ResourceNotFoundException("BankStatementLine", lineId));
 
     if (!"UNMATCHED".equals(line.getMatchStatus())) {
@@ -385,10 +425,11 @@ public class TrustReconciliationService {
           "Invalid match state", "Transaction must be APPROVED or RECORDED to match");
     }
 
-    // Verify the line and transaction belong to the same trust account
+    // Verify the line and transaction belong to the same trust account (statement locked after
+    // the line: it serialises the matched_count update)
     var statement =
         bankStatementRepository
-            .findById(line.getBankStatementId())
+            .findByIdForUpdate(line.getBankStatementId())
             .orElseThrow(
                 () -> new ResourceNotFoundException("BankStatement", line.getBankStatementId()));
     if (!statement.getTrustAccountId().equals(transaction.getTrustAccountId())) {
@@ -418,7 +459,7 @@ public class TrustReconciliationService {
     postingService.linkBankLine(transaction, lineId);
 
     // Update matched count (statement already loaded above for trust account validation)
-    statement.setMatchedCount(statement.getMatchedCount() + 1);
+    statement.incrementMatched();
     bankStatementRepository.save(statement);
 
     auditService.log(
@@ -436,10 +477,18 @@ public class TrustReconciliationService {
   public void unmatch(UUID lineId) {
     moduleGuard.requireModule(MODULE_ID);
 
+    // Locked before its state is read (647A): a second concurrent unmatch waits and then sees the
+    // first one's result, instead of acting on a stale RECORDED / matched state.
     var line =
         bankStatementLineRepository
-            .findById(lineId)
+            .findByIdForUpdate(lineId)
             .orElseThrow(() -> new ResourceNotFoundException("BankStatementLine", lineId));
+
+    // A recorded line created its rows: unmatching it reverses them, on the line's date (647A).
+    if ("RECORDED".equals(line.getMatchStatus())) {
+      statementLinePostingService.unmatch(lineId);
+      return;
+    }
 
     if (!"AUTO_MATCHED".equals(line.getMatchStatus())
         && !"MANUALLY_MATCHED".equals(line.getMatchStatus())) {
@@ -465,13 +514,13 @@ public class TrustReconciliationService {
               });
     }
 
-    // Decrement matched count
+    // Decrement matched count (statement locked after the line)
     var statement =
         bankStatementRepository
-            .findById(line.getBankStatementId())
+            .findByIdForUpdate(line.getBankStatementId())
             .orElseThrow(
                 () -> new ResourceNotFoundException("BankStatement", line.getBankStatementId()));
-    statement.setMatchedCount(Math.max(0, statement.getMatchedCount() - 1));
+    statement.decrementMatched();
     bankStatementRepository.save(statement);
 
     auditService.log(
@@ -488,9 +537,10 @@ public class TrustReconciliationService {
   public void excludeLine(UUID lineId, String reason) {
     moduleGuard.requireModule(MODULE_ID);
 
+    // Locked before its state is read (647A): see manualMatch.
     var line =
         bankStatementLineRepository
-            .findById(lineId)
+            .findByIdForUpdate(lineId)
             .orElseThrow(() -> new ResourceNotFoundException("BankStatementLine", lineId));
 
     if (!"UNMATCHED".equals(line.getMatchStatus())) {
@@ -499,8 +549,8 @@ public class TrustReconciliationService {
     }
 
     // Intentionally does NOT update matchedCount: excluded lines are not "matched" in the
-    // reconciliation sense. matchedCount tracks only AUTO_MATCHED + MANUALLY_MATCHED lines,
-    // so the reconciliation progress percentage remains accurate.
+    // reconciliation sense. matchedCount tracks matched (AUTO_MATCHED + MANUALLY_MATCHED) and
+    // recorded (RECORDED, 647A) lines, so the reconciliation progress percentage remains accurate.
     line.setMatchStatus("EXCLUDED");
     line.setExcludedReason(reason);
     bankStatementLineRepository.save(line);
@@ -1034,6 +1084,21 @@ public class TrustReconciliationService {
   }
 
   private BankStatementResponse toResponse(BankStatement statement, List<BankStatementLine> lines) {
+    // One batched lookup for the rows the statement's RECORDED lines created (647A).
+    var recordedIds =
+        lines.stream()
+            .filter(line -> "RECORDED".equals(line.getMatchStatus()))
+            .map(BankStatementLine::getId)
+            .toList();
+    Map<UUID, List<UUID>> created =
+        recordedIds.isEmpty()
+            ? Map.of()
+            : trustTransactionRepository.findByBankStatementLineIdIn(recordedIds).stream()
+                .collect(
+                    Collectors.groupingBy(
+                        TrustTransaction::getBankStatementLineId,
+                        LinkedHashMap::new,
+                        Collectors.mapping(TrustTransaction::getId, Collectors.toList())));
     return new BankStatementResponse(
         statement.getId(),
         statement.getTrustAccountId(),
@@ -1049,7 +1114,12 @@ public class TrustReconciliationService {
         statement.getImportedBy(),
         statement.getCreatedAt(),
         statement.getUpdatedAt(),
-        lines.stream().map(this::toLineResponse).toList());
+        lines.stream()
+            .map(
+                line ->
+                    BankStatementLineResponse.of(
+                        line, created.getOrDefault(line.getId(), List.of())))
+            .toList());
   }
 
   /**
@@ -1066,19 +1136,5 @@ public class TrustReconciliationService {
     // Replace characters not in the safe set with underscores
     name = name.replaceAll("[^a-zA-Z0-9._-]", "_");
     return name.isBlank() ? "upload.csv" : name;
-  }
-
-  private BankStatementLineResponse toLineResponse(BankStatementLine line) {
-    return new BankStatementLineResponse(
-        line.getId(),
-        line.getLineNumber(),
-        line.getTransactionDate(),
-        line.getDescription(),
-        line.getReference(),
-        line.getAmount(),
-        line.getRunningBalance(),
-        line.getMatchStatus(),
-        line.getTrustTransactionId(),
-        line.getMatchConfidence());
   }
 }

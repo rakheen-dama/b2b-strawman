@@ -4,6 +4,9 @@ import { describe, it, expect } from "vitest";
 import contract from "../../backend/src/test/resources/wire/trust-contract.json";
 import type { TrustPositionResponse } from "@/lib/dashboard-types";
 import type {
+  BankStatementLineResponse,
+  BankStatementResponse,
+  RecordFromLineResponse,
   TotalBalance,
   TrustCreditorBreakdown,
   TrustLedger,
@@ -52,7 +55,10 @@ const TS_UNIONS: Record<keyof typeof enums, string[]> = {
 describe("trust wire shapes match the backend contract (ADR-365)", () => {
   it("pins exactly the trust records", () => {
     expect(Object.keys(records).sort()).toEqual([
+      "BankStatementLineResponse",
+      "BankStatementResponse",
       "CreditorBreakdown",
+      "RecordFromLineResponse",
       "TotalBalanceResponse",
       "TrustPositionResponse",
       "TrustReconciliationResponse",
@@ -95,6 +101,8 @@ describe("trust wire shapes match the backend contract (ADR-365)", () => {
       recordedBy: "",
       createdAt: "",
       runningBalance: null,
+      chargeRecoverable: null,
+      chargeVatAmount: null,
     };
     expect(Object.keys(literal)).toEqual(componentNames(records.TrustTransactionResponse));
   });
@@ -204,6 +212,72 @@ describe("trust wire shapes match the backend contract (ADR-365)", () => {
       },
     };
     expect(Object.keys(literal)).toEqual(componentNames(records.TotalBalanceResponse));
+  });
+
+  it("BankStatementLineResponse ↔ TrustReconciliationService.BankStatementLineResponse (647A)", () => {
+    const literal: Required<BankStatementLineResponse> = {
+      id: "",
+      lineNumber: 0,
+      transactionDate: "",
+      description: "",
+      reference: null,
+      amount: 0,
+      runningBalance: null,
+      matchStatus: "UNMATCHED",
+      trustTransactionId: null,
+      matchConfidence: null,
+      classification: null,
+      classificationLabel: null,
+      suggestedClassification: null,
+      createdTransactionIds: [],
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(records.BankStatementLineResponse));
+  });
+
+  it("BankStatementResponse ↔ TrustReconciliationService.BankStatementResponse (647A)", () => {
+    const literal: Required<BankStatementResponse> = {
+      id: "",
+      trustAccountId: "",
+      periodStart: "",
+      periodEnd: "",
+      openingBalance: 0,
+      closingBalance: 0,
+      fileName: "",
+      format: "CSV",
+      lineCount: 0,
+      matchedCount: 0,
+      status: "IMPORTED",
+      importedBy: "",
+      createdAt: "",
+      updatedAt: "",
+      lines: [],
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(records.BankStatementResponse));
+  });
+
+  it("RecordFromLineResponse ↔ StatementLinePostingService.RecordFromLineResponse (647A)", () => {
+    const literal: Required<RecordFromLineResponse> = {
+      line: {
+        id: "",
+        lineNumber: 0,
+        transactionDate: "",
+        description: "",
+        reference: null,
+        amount: 0,
+        runningBalance: null,
+        matchStatus: "RECORDED",
+        trustTransactionId: null,
+        matchConfidence: null,
+        classification: null,
+        classificationLabel: null,
+        suggestedClassification: null,
+        createdTransactionIds: [],
+      },
+      transactions: [],
+      unidentifiedDepositId: null,
+      investmentInterestId: null,
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(records.RecordFromLineResponse));
   });
 
   it("pins exactly the enums the trust records carry", () => {

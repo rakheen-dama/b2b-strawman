@@ -124,6 +124,9 @@ public final class TrustBooksFixture {
   /** An ACTIVE client (named {@code name}) and its own trust matter (G89-F28). */
   public record Client(UUID id, UUID matter, String name) {}
 
+  /** A bank statement and one of its lines (647A). */
+  public record StatementLine(UUID statementId, UUID lineId) {}
+
   /** A requested fee transfer and the SENT fee note it settles. */
   public record FeeTransfer(UUID transactionId, UUID invoiceId) {}
 
@@ -585,9 +588,11 @@ public final class TrustBooksFixture {
     }
 
     /**
-     * A bank statement with one line dated {@code lineDate} for {@code transactionId}'s amount,
-     * linked to the row through {@link TrustPostingService#linkBankLine} (as a recorded statement
-     * line is in 647A). Returns the line id.
+     * A bank statement with one line dated {@code lineDate} for {@code transactionId}'s amount: a
+     * line recorded from the statement (647A — {@code RECORDED}, so {@code reverseForUnmatch}
+     * accepts it), linked to the row through {@link TrustPostingService#linkBankLine}. The {@code
+     * FUND_SWEEP} classification only satisfies {@code chk_bank_line_classification}; it is not a
+     * claim about the row's type. Returns the line id.
      */
     public UUID bankLineFor(UUID account, UUID transactionId, LocalDate lineDate) {
       var statementId = UUID.randomUUID();
@@ -611,18 +616,98 @@ public final class TrustBooksFixture {
       jdbc.update(
           """
           INSERT INTO "%s".bank_statement_lines (id, bank_statement_id, line_number,
-              transaction_date, description, amount)
-          VALUES (?, ?, 1, ?, 'Trust books statement line', ?)
+              transaction_date, description, amount, match_status, classification,
+              trust_transaction_id)
+          VALUES (?, ?, 1, ?, 'Trust books statement line', ?, 'RECORDED', 'FUND_SWEEP', ?)
           """
               .formatted(schema),
           lineId,
           statementId,
           lineDate,
-          amount);
+          amount,
+          transactionId);
       read(
           () ->
               postingService.linkBankLine(
                   transactionRepository.findById(transactionId).orElseThrow(), lineId));
+      return lineId;
+    }
+
+    /**
+     * As {@link #bankLineFor}, but the line is an ordinary match ({@code MANUALLY_MATCHED}, no
+     * classification): the row existed before the match, so unmatching it must never book a contra
+     * (649B found.md R3, 647A). Returns the line id.
+     */
+    public UUID matchedLineFor(UUID account, UUID transactionId, LocalDate lineDate) {
+      var lineId = bankLineFor(account, transactionId, lineDate);
+      jdbc.update(
+          """
+          UPDATE "%s".bank_statement_lines SET match_status = 'MANUALLY_MATCHED',
+              classification = NULL WHERE id = ?
+          """
+              .formatted(schema),
+          lineId);
+      return lineId;
+    }
+
+    /**
+     * A bank statement on {@code account} with one {@code UNMATCHED} line #1 dated {@code date} for
+     * {@code signedAmount} (credit positive, debit negative) and {@code reference} (nullable),
+     * written straight to the tables (647A) — the statement import targets only the account it is
+     * uploaded to, and a harness test needs a line on a fresh account.
+     */
+    public StatementLine unmatchedLine(
+        UUID account, LocalDate date, String signedAmount, String reference) {
+      var statementId = UUID.randomUUID();
+      jdbc.update(
+          """
+          INSERT INTO "%s".bank_statements (id, trust_account_id, period_start, period_end,
+              opening_balance, closing_balance, file_key, file_name, format, line_count,
+              matched_count, status, imported_by)
+          VALUES (?, ?, ?, ?, 0, 0, 'trust-books/statement.csv', 'statement.csv', 'CSV', 1, 0,
+              'IMPORTED', ?)
+          """
+              .formatted(schema),
+          statementId,
+          account,
+          date.withDayOfMonth(1),
+          date,
+          memberId);
+      return new StatementLine(statementId, addLine(statementId, 1, date, signedAmount, reference));
+    }
+
+    /**
+     * Adds an {@code UNMATCHED} line {@code lineNumber} to {@code statementId} (647A); the
+     * statement's {@code line_count} and {@code period_end} follow. Returns the line id.
+     */
+    public UUID addLine(
+        UUID statementId, int lineNumber, LocalDate date, String signedAmount, String reference) {
+      var lineId = UUID.randomUUID();
+      jdbc.update(
+          """
+          INSERT INTO "%s".bank_statement_lines (id, bank_statement_id, line_number,
+              transaction_date, description, reference, amount)
+          VALUES (?, ?, ?, ?, ?, ?, ?)
+          """
+              .formatted(schema),
+          lineId,
+          statementId,
+          lineNumber,
+          date,
+          "Trust books statement line " + lineNumber,
+          reference,
+          new BigDecimal(signedAmount));
+      // chk_bank_stmt_counts (matched_count <= line_count): the statement counts its lines.
+      jdbc.update(
+          """
+          UPDATE "%s".bank_statements SET line_count = (SELECT count(*) FROM
+              "%s".bank_statement_lines WHERE bank_statement_id = ?),
+              period_end = GREATEST(period_end, ?) WHERE id = ?
+          """
+              .formatted(schema, schema),
+          statementId,
+          date,
+          statementId);
       return lineId;
     }
 
@@ -687,8 +772,8 @@ public final class TrustBooksFixture {
 
     /**
      * A posted {@code NON_CLIENT} row of {@code type} dated {@code date}, on the account's creditor
-     * account of the type's registry creditor type (646C). Written straight to the table: {@code
-     * TrustTransaction} has no setter for {@code creditor_account_id} yet (646B found.md).
+     * account of the type's registry creditor type (646C). Written straight to the table, so the
+     * row exists without a statement line ({@code BANK_CHARGE} gets recoverable / VAT 0).
      */
     public UUID postNonClientDirect(UUID account, String type, String amount, LocalDate date) {
       var creditorType = TrustTransactionType.of(type).creditorAccountType();
@@ -722,15 +807,16 @@ public final class TrustBooksFixture {
         UUID investmentId) {
       var value = new BigDecimal(amount);
       var effect = TrustTransactionType.of(type).effectFor(value);
+      var isCharge = "BANK_CHARGE".equals(type);
       var id = UUID.randomUUID();
       jdbc.update(
           """
           INSERT INTO "%s".trust_transactions (id, trust_account_id, transaction_type, amount,
               customer_id, project_id, creditor_account_id, investment_id, reference, description,
               transaction_date, status, recorded_by, ledger, cashbook_effect, ledger_effect,
-              posted_at)
+              posted_at, charge_recoverable, charge_vat_amount)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'trust books direct ledger row', ?, 'RECORDED', ?,
-              ?, ?, ?, now())
+              ?, ?, ?, now(), ?, ?)
           """
               .formatted(schema),
           id,
@@ -746,7 +832,10 @@ public final class TrustBooksFixture {
           memberId,
           effect.ledger().name(),
           effect.cashbookEffect(),
-          effect.ledgerEffect());
+          effect.ledgerEffect(),
+          // chk_trust_txn_charge (647A): charge detail exactly on BANK_CHARGE rows
+          isCharge ? Boolean.TRUE : null,
+          isCharge ? BigDecimal.ZERO : null);
       return id;
     }
 

@@ -1,0 +1,61 @@
+-- 648C OBS read-only evidence output (schema tenant_7d218705360b) 2026-11-17T21:06:01.831Z
+
+== [baseline: trust accounts]
+select account_name, account_type, coalesce(investment_basis,'<null>') investment_basis, is_primary, status, created_at from tenant_7d218705360b.trust_accounts order by created_at
+            account_name            | account_type | investment_basis | is_primary | status |          created_at           
+------------------------------------+--------------+------------------+------------+--------+-------------------------------
+ Mathebula & Partners Trust Account | GENERAL      | <null>           | t          | ACTIVE | 2026-11-17 20:59:41.345885+00
+(1 row)
+
+
+== [a: trust accounts after create]
+select account_name, account_type, coalesce(investment_basis,'<null>') investment_basis, is_primary, status, created_at from tenant_7d218705360b.trust_accounts order by created_at
+            account_name            | account_type | investment_basis | is_primary | status |          created_at           
+------------------------------------+--------------+------------------+------------+--------+-------------------------------
+ Mathebula & Partners Trust Account | GENERAL      | <null>           | t          | ACTIVE | 2026-11-17 20:59:41.345885+00
+ OBS s86(3) Investment 6MHSR        | INVESTMENT   | FIRM_DISCRETION  | f          | ACTIVE | 2026-11-17 21:06:19.632769+00
+(2 rows)
+
+
+== [b: trust accounts after create]
+select account_name, account_type, coalesce(investment_basis,'<null>') investment_basis, is_primary, status, created_at from tenant_7d218705360b.trust_accounts order by created_at
+            account_name            | account_type |  investment_basis  | is_primary | status |          created_at           
+------------------------------------+--------------+--------------------+------------+--------+-------------------------------
+ Mathebula & Partners Trust Account | GENERAL      | <null>             | t          | ACTIVE | 2026-11-17 20:59:41.345885+00
+ OBS s86(3) Investment 6MHSR        | INVESTMENT   | FIRM_DISCRETION    | f          | ACTIVE | 2026-11-17 21:06:19.632769+00
+ OBS s86(4) Investment 6MHSR        | INVESTMENT   | CLIENT_INSTRUCTION | f          | ACTIVE | 2026-11-17 21:06:26.06563+00
+(3 rows)
+
+
+== [c: trust accounts after the General create]
+select account_name, account_type, coalesce(investment_basis,'<null>') investment_basis, is_primary, status, created_at from tenant_7d218705360b.trust_accounts order by created_at
+            account_name            | account_type |  investment_basis  | is_primary | status |          created_at           
+------------------------------------+--------------+--------------------+------------+--------+-------------------------------
+ Mathebula & Partners Trust Account | GENERAL      | <null>             | t          | ACTIVE | 2026-11-17 20:59:41.345885+00
+ OBS s86(3) Investment 6MHSR        | INVESTMENT   | FIRM_DISCRETION    | f          | ACTIVE | 2026-11-17 21:06:19.632769+00
+ OBS s86(4) Investment 6MHSR        | INVESTMENT   | CLIENT_INSTRUCTION | f          | ACTIVE | 2026-11-17 21:06:26.06563+00
+ OBS General 6MHSR                  | GENERAL      | <null>             | f          | ACTIVE | 2026-11-17 21:06:34.590451+00
+(4 rows)
+
+
+== [d: trust accounts after the refusal probes]
+select account_name, account_type, coalesce(investment_basis,'<null>') investment_basis, is_primary, status, created_at from tenant_7d218705360b.trust_accounts order by created_at
+            account_name            | account_type |  investment_basis  | is_primary | status |          created_at           
+------------------------------------+--------------+--------------------+------------+--------+-------------------------------
+ Mathebula & Partners Trust Account | GENERAL      | <null>             | t          | ACTIVE | 2026-11-17 20:59:41.345885+00
+ OBS s86(3) Investment 6MHSR        | INVESTMENT   | FIRM_DISCRETION    | f          | ACTIVE | 2026-11-17 21:06:19.632769+00
+ OBS s86(4) Investment 6MHSR        | INVESTMENT   | CLIENT_INSTRUCTION | f          | ACTIVE | 2026-11-17 21:06:26.06563+00
+ OBS General 6MHSR                  | GENERAL      | <null>             | f          | ACTIVE | 2026-11-17 21:06:34.590451+00
+(4 rows)
+
+
+== [final: audit trust_account events]
+select event_type, entity_id, details, occurred_at from tenant_7d218705360b.audit_events where entity_type='trust_account' order by occurred_at desc limit 6
+      event_type       |              entity_id               |                                                                                      details                                                                                       |          occurred_at          
+-----------------------+--------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------
+ trust_account.created | 3a7a5e59-ccfb-4b6a-b1d4-3adb713e39c9 | {"bank_name": "Standard Bank", "actor_name": "Alice Owner", "account_name": "OBS General 6MHSR", "account_type": "GENERAL"}                                                        | 2026-11-17 21:06:34.59122+00
+ trust_account.created | cd6ea2ca-bfcf-40c3-adde-079203359fa7 | {"bank_name": "Standard Bank", "actor_name": "Alice Owner", "account_name": "OBS s86(4) Investment 6MHSR", "account_type": "INVESTMENT", "investment_basis": "CLIENT_INSTRUCTION"} | 2026-11-17 21:06:26.066386+00
+ trust_account.created | 3e459e5b-62e9-4907-a768-f14e839267e2 | {"bank_name": "Standard Bank", "actor_name": "Alice Owner", "account_name": "OBS s86(3) Investment 6MHSR", "account_type": "INVESTMENT", "investment_basis": "FIRM_DISCRETION"}    | 2026-11-17 21:06:19.633616+00
+ trust_account.created | e8e15aae-9ee8-4fcc-ac06-18f7e7857ba1 | {"bank_name": "Standard Bank", "actor_name": "Alice Owner", "account_name": "Mathebula & Partners Trust Account", "account_type": "GENERAL"}                                       | 2026-11-17 20:59:41.347955+00
+(4 rows)
+

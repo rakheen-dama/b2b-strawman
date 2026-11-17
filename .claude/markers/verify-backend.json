@@ -1,7 +1,7 @@
 {
-  "commit": "0915e8b0d",
-  "command": "cd backend && ./mvnw spotless:check && caffeinate -is bash scripts/verify.sh -q",
+  "commit": "4bb0d595f",
+  "command": "cd backend && ./mvnw clean -q && bash scripts/verify.sh -q (full suite; preflight + caffeinate)",
   "exit": 0,
-  "ts": "2026-11-17T19:28:27Z",
-  "summary": "PR #1797 (647D) @0915e8b0d — BUILD SUCCESS; 7192 testcases / 0 failures / 0 errors / 26 skipped (<testcase> count) — 25:02 min. Later PR commits (45dd3022f) touch frontend + qa_cycle only."
+  "ts": "2026-11-17T21:37:04Z",
+  "summary": "PR #1798 (648C) @4bb0d595f — 7205 testcases / 0 failures / 0 errors / 26 skipped (<testcase> count), 21:15–21:37 UTC; also green @ef8b6c19b (7205/26); Backend CI pass @4bb0d595f"
 }

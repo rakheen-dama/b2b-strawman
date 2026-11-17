@@ -1,0 +1,24 @@
+{
+  "method": "GET",
+  "path": "/api/trust-accounts/cd6ea2ca-bfcf-40c3-adde-079203359fa7",
+  "status": 200,
+  "body": {
+    "id": "cd6ea2ca-bfcf-40c3-adde-079203359fa7",
+    "accountName": "OBS s86(4) Investment 6MHSR",
+    "bankName": "Standard Bank",
+    "branchCode": "051001",
+    "accountNumber": "648C6MHSR2",
+    "accountType": "INVESTMENT",
+    "investmentBasis": "CLIENT_INSTRUCTION",
+    "section": "S86_4",
+    "isPrimary": false,
+    "requireDualApproval": false,
+    "paymentApprovalThreshold": null,
+    "status": "ACTIVE",
+    "openedDate": "2026-11-17",
+    "closedDate": null,
+    "notes": null,
+    "createdAt": "2026-11-17T21:06:26.065630Z",
+    "updatedAt": "2026-11-17T21:06:26.065630Z"
+  }
+}

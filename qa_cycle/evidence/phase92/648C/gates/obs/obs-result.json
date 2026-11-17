@@ -1,0 +1,559 @@
+{
+  "steps": {
+    "baseline": {
+      "count": 1,
+      "auditCount": 1,
+      "apiList": {
+        "method": "GET",
+        "path": "/api/trust-accounts",
+        "status": 200,
+        "body": [
+          {
+            "id": "e8e15aae-9ee8-4fcc-ac06-18f7e7857ba1",
+            "accountName": "Mathebula & Partners Trust Account",
+            "bankName": "Standard Bank",
+            "branchCode": "051001",
+            "accountNumber": "0123456789",
+            "accountType": "GENERAL",
+            "investmentBasis": null,
+            "section": "S86_2",
+            "isPrimary": true,
+            "requireDualApproval": false,
+            "paymentApprovalThreshold": null,
+            "status": "ACTIVE",
+            "openedDate": "2026-11-17",
+            "closedDate": null,
+            "notes": null,
+            "createdAt": "2026-11-17T20:59:41.345885Z",
+            "updatedAt": "2026-11-17T20:59:41.345885Z"
+          }
+        ]
+      },
+      "files": [
+        "01-baseline-settings-1440.png",
+        "01-baseline-settings-1280.png"
+      ],
+      "primaryRow": {
+        "text": "Mathebula & Partners Trust Account Primary ACTIVE Standard Bank · 051001 · 0123456789 Section 86(2) trust banking account",
+        "sectionLabel": "Section 86(2) trust banking account",
+        "basisLine": null
+      },
+      "primaryApi": {
+        "accountType": "GENERAL",
+        "investmentBasis": null,
+        "section": "S86_2"
+      }
+    },
+    "e": {
+      "scans": [
+        {
+          "label": "baseline-settings-card",
+          "rawInInnerText": [],
+          "rawInTextContent": [],
+          "knownF4InInnerText": [
+            "ACTIVE"
+          ],
+          "clean": true
+        },
+        {
+          "label": "dialog-general",
+          "rawInInnerText": [],
+          "rawInTextContent": [],
+          "knownF4InInnerText": [],
+          "clean": true
+        },
+        {
+          "label": "dialog-section86",
+          "rawInInnerText": [],
+          "rawInTextContent": [],
+          "knownF4InInnerText": [],
+          "clean": true
+        },
+        {
+          "label": "dialog-investment",
+          "rawInInnerText": [],
+          "rawInTextContent": [],
+          "knownF4InInnerText": [],
+          "clean": true
+        },
+        {
+          "label": "basis-listbox",
+          "rawInInnerText": [],
+          "rawInTextContent": [],
+          "knownF4InInnerText": [],
+          "clean": true
+        },
+        {
+          "label": "dialog-a-filled",
+          "rawInInnerText": [],
+          "rawInTextContent": [],
+          "knownF4InInnerText": [],
+          "clean": true
+        },
+        {
+          "label": "dialog-b-filled",
+          "rawInInnerText": [],
+          "rawInTextContent": [],
+          "knownF4InInnerText": [],
+          "clean": true
+        },
+        {
+          "label": "dialog-switched-to-general",
+          "rawInInnerText": [],
+          "rawInTextContent": [],
+          "knownF4InInnerText": [],
+          "clean": true
+        },
+        {
+          "label": "final-settings-card",
+          "rawInInnerText": [],
+          "rawInTextContent": [],
+          "knownF4InInnerText": [
+            "ACTIVE"
+          ],
+          "clean": true
+        },
+        {
+          "label": "final-settings-main",
+          "rawInInnerText": [],
+          "rawInTextContent": [],
+          "knownF4InInnerText": [
+            "ACTIVE"
+          ],
+          "clean": true
+        }
+      ],
+      "pass": true
+    },
+    "c": {
+      "defaultTypeText": "General",
+      "generalBasisSelectCount": 0,
+      "generalBasisLabelCount": 0,
+      "filesGeneral": [
+        "02-c1-dialog-general-1440.png",
+        "02-c1-dialog-general-1280.png"
+      ],
+      "s86TypeText": "Section 86 Trust Account",
+      "s86BasisSelectCount": 0,
+      "s86BasisLabelCount": 0,
+      "filesS86": [
+        "03-c2-dialog-section86-1440.png",
+        "03-c2-dialog-section86-1280.png"
+      ],
+      "primaryAfterUntick": "false",
+      "beforeSwitchBasisSelectCount": 1,
+      "beforeSwitchBasisText": "Section 86(4) — invested on a client's instruction",
+      "filesBeforeSwitch": [
+        "11-c3-dialog-investment-86-4-before-switch-1440.png",
+        "11-c3-dialog-investment-86-4-before-switch-1280.png"
+      ],
+      "afterSwitchBasisSelectCount": 0,
+      "afterSwitchBasisLabelCount": 0,
+      "afterSwitchTypeText": "General",
+      "filesAfterSwitch": [
+        "12-c4-dialog-switched-to-general-1440.png",
+        "12-c4-dialog-switched-to-general-1280.png"
+      ],
+      "postsDuringSubmit": [
+        {
+          "at": "2026-11-17T21:06:34.580Z",
+          "url": "http://localhost:3001/org/e2e-test-org/settings/fees?tab=trust-accounting",
+          "nextAction": "400cec4f0cb248ff08c29ca4284b928896b1bc1852"
+        }
+      ],
+      "countBefore": 3,
+      "countAfter": 4,
+      "ui": {
+        "text": "OBS General 6MHSR ACTIVE Standard Bank · 051001 · 648C6MHSR3 Section 86(2) trust banking account",
+        "sectionLabel": "Section 86(2) trust banking account",
+        "basisLine": null
+      },
+      "filesSettings": [
+        "13-c5-settings-general-1440.png",
+        "13-c5-settings-general-1280.png"
+      ],
+      "db": {
+        "id": "3a7a5e59-ccfb-4b6a-b1d4-3adb713e39c9",
+        "accountType": "GENERAL",
+        "investmentBasis": "<null>",
+        "isPrimary": false
+      },
+      "api": {
+        "accountType": "GENERAL",
+        "investmentBasis": null,
+        "section": "S86_2",
+        "isPrimary": false
+      },
+      "pass": true
+    },
+    "investmentNoBasis": {
+      "typeText": "Investment",
+      "basisSelectCount": 1,
+      "basisTriggerText": "Select the basis",
+      "description": "Interest on a section 86(3) investment belongs to the Legal Practitioners' Fidelity Fund. On a section 86(4) investment the client receives 95% and the Fund 5%.",
+      "files": [
+        "04-b0-dialog-investment-1440.png",
+        "04-b0-dialog-investment-1280.png"
+      ],
+      "options": [
+        "Section 86(3) — the firm invests surplus trust money",
+        "Section 86(4) — invested on a client's instruction"
+      ],
+      "filesOpen": [
+        "05-b0-dialog-investment-basis-open-1440.png"
+      ],
+      "dialogStillOpen": true,
+      "primaryAfterUntick": "false",
+      "inlineMessage": true,
+      "postsDuringSubmit": [],
+      "countBefore": 1,
+      "countAfter": 1,
+      "noRowNamed": "0",
+      "filesRefused": [
+        "06-b1-dialog-investment-no-basis-refused-1440.png",
+        "06-b1-dialog-investment-no-basis-refused-1280.png"
+      ],
+      "pass": true
+    },
+    "a": {
+      "name": "OBS s86(3) Investment 6MHSR",
+      "primaryAfterUntick": "false",
+      "basisTriggerText": "Section 86(3) — the firm invests surplus trust money",
+      "filesDialog": [
+        "07-a1-dialog-S86_3-1440.png",
+        "07-a1-dialog-S86_3-1280.png"
+      ],
+      "postsDuringSubmit": [
+        {
+          "at": "2026-11-17T21:06:19.614Z",
+          "url": "http://localhost:3001/org/e2e-test-org/settings/fees?tab=trust-accounting",
+          "nextAction": "400cec4f0cb248ff08c29ca4284b928896b1bc1852"
+        }
+      ],
+      "countBefore": 1,
+      "countAfter": 2,
+      "ui": {
+        "text": "OBS s86(3) Investment 6MHSR ACTIVE Standard Bank · 051001 · 648C6MHSR1 Section 86(3) investment account Invested at the firm's discretion",
+        "sectionLabel": "Section 86(3) investment account",
+        "basisLine": "Invested at the firm's discretion"
+      },
+      "filesSettings": [
+        "08-a2-settings-S86_3-1440.png",
+        "08-a2-settings-S86_3-1280.png"
+      ],
+      "db": {
+        "id": "3e459e5b-62e9-4907-a768-f14e839267e2",
+        "accountType": "INVESTMENT",
+        "investmentBasis": "FIRM_DISCRETION",
+        "isPrimary": false
+      },
+      "api": {
+        "list": {
+          "accountType": "INVESTMENT",
+          "investmentBasis": "FIRM_DISCRETION",
+          "section": "S86_3",
+          "isPrimary": false
+        },
+        "byId": {
+          "status": 200,
+          "accountType": "INVESTMENT",
+          "investmentBasis": "FIRM_DISCRETION",
+          "section": "S86_3"
+        }
+      },
+      "pass": true
+    },
+    "b": {
+      "name": "OBS s86(4) Investment 6MHSR",
+      "primaryAfterUntick": "false",
+      "basisTriggerText": "Section 86(4) — invested on a client's instruction",
+      "filesDialog": [
+        "09-b1-dialog-S86_4-1440.png",
+        "09-b1-dialog-S86_4-1280.png"
+      ],
+      "postsDuringSubmit": [
+        {
+          "at": "2026-11-17T21:06:26.056Z",
+          "url": "http://localhost:3001/org/e2e-test-org/settings/fees?tab=trust-accounting",
+          "nextAction": "400cec4f0cb248ff08c29ca4284b928896b1bc1852"
+        }
+      ],
+      "countBefore": 2,
+      "countAfter": 3,
+      "ui": {
+        "text": "OBS s86(4) Investment 6MHSR ACTIVE Standard Bank · 051001 · 648C6MHSR2 Section 86(4) investment account Invested on a client's instruction",
+        "sectionLabel": "Section 86(4) investment account",
+        "basisLine": "Invested on a client's instruction"
+      },
+      "filesSettings": [
+        "10-b2-settings-S86_4-1440.png",
+        "10-b2-settings-S86_4-1280.png"
+      ],
+      "db": {
+        "id": "cd6ea2ca-bfcf-40c3-adde-079203359fa7",
+        "accountType": "INVESTMENT",
+        "investmentBasis": "CLIENT_INSTRUCTION",
+        "isPrimary": false
+      },
+      "api": {
+        "list": {
+          "accountType": "INVESTMENT",
+          "investmentBasis": "CLIENT_INSTRUCTION",
+          "section": "S86_4",
+          "isPrimary": false
+        },
+        "byId": {
+          "status": 200,
+          "accountType": "INVESTMENT",
+          "investmentBasis": "CLIENT_INSTRUCTION",
+          "section": "S86_4"
+        }
+      },
+      "pass": true
+    },
+    "d": {
+      "countBefore": 4,
+      "generalWithBasis": {
+        "request": {
+          "method": "POST",
+          "url": "http://localhost:8081/api/trust-accounts",
+          "headers": {
+            "Authorization": "Bearer <alice mock-auth-token from the browser context>",
+            "Content-Type": "application/json"
+          },
+          "body": {
+            "bankName": "Standard Bank",
+            "branchCode": "051001",
+            "isPrimary": false,
+            "requireDualApproval": false,
+            "openedDate": "2026-11-17",
+            "accountName": "OBS refused GENERAL+basis 6MHSR",
+            "accountNumber": "648C6MHSRR1",
+            "accountType": "GENERAL",
+            "investmentBasis": "FIRM_DISCRETION"
+          }
+        },
+        "response": {
+          "status": 400,
+          "contentType": "application/problem+json",
+          "body": {
+            "detail": "Only an investment account carries an investment basis. A trust banking account reports under section 86(2).",
+            "instance": "/api/trust-accounts",
+            "status": 400,
+            "title": "Investment basis not allowed"
+          }
+        }
+      },
+      "investmentNoBasis": {
+        "request": {
+          "method": "POST",
+          "url": "http://localhost:8081/api/trust-accounts",
+          "headers": {
+            "Authorization": "Bearer <alice mock-auth-token from the browser context>",
+            "Content-Type": "application/json"
+          },
+          "body": {
+            "bankName": "Standard Bank",
+            "branchCode": "051001",
+            "isPrimary": false,
+            "requireDualApproval": false,
+            "openedDate": "2026-11-17",
+            "accountName": "OBS refused INVESTMENT-no-basis 6MHSR",
+            "accountNumber": "648C6MHSRR2",
+            "accountType": "INVESTMENT"
+          }
+        },
+        "response": {
+          "status": 400,
+          "contentType": "application/problem+json",
+          "body": {
+            "detail": "An investment account needs its basis: section 86(3) (the firm invests surplus trust money) or section 86(4) (invested on a client's instruction).",
+            "instance": "/api/trust-accounts",
+            "status": 400,
+            "title": "Investment basis required"
+          }
+        }
+      },
+      "countAfter": 4,
+      "rowsNamedRefused": "0",
+      "pass": true
+    },
+    "final": {
+      "apiList": [
+        {
+          "accountName": "Mathebula & Partners Trust Account",
+          "accountType": "GENERAL",
+          "investmentBasis": null,
+          "section": "S86_2",
+          "isPrimary": true
+        },
+        {
+          "accountName": "OBS s86(3) Investment 6MHSR",
+          "accountType": "INVESTMENT",
+          "investmentBasis": "FIRM_DISCRETION",
+          "section": "S86_3",
+          "isPrimary": false
+        },
+        {
+          "accountName": "OBS s86(4) Investment 6MHSR",
+          "accountType": "INVESTMENT",
+          "investmentBasis": "CLIENT_INSTRUCTION",
+          "section": "S86_4",
+          "isPrimary": false
+        },
+        {
+          "accountName": "OBS General 6MHSR",
+          "accountType": "GENERAL",
+          "investmentBasis": null,
+          "section": "S86_2",
+          "isPrimary": false
+        }
+      ],
+      "everyHasKeys": true,
+      "audit": [
+        {
+          "eventType": "trust_account.created",
+          "details": {
+            "bank_name": "Standard Bank",
+            "actor_name": "Alice Owner",
+            "account_name": "Mathebula & Partners Trust Account",
+            "account_type": "GENERAL"
+          }
+        },
+        {
+          "eventType": "trust_account.created",
+          "details": {
+            "bank_name": "Standard Bank",
+            "actor_name": "Alice Owner",
+            "account_name": "OBS s86(3) Investment 6MHSR",
+            "account_type": "INVESTMENT",
+            "investment_basis": "FIRM_DISCRETION"
+          }
+        },
+        {
+          "eventType": "trust_account.created",
+          "details": {
+            "bank_name": "Standard Bank",
+            "actor_name": "Alice Owner",
+            "account_name": "OBS s86(4) Investment 6MHSR",
+            "account_type": "INVESTMENT",
+            "investment_basis": "CLIENT_INSTRUCTION"
+          }
+        },
+        {
+          "eventType": "trust_account.created",
+          "details": {
+            "bank_name": "Standard Bank",
+            "actor_name": "Alice Owner",
+            "account_name": "OBS General 6MHSR",
+            "account_type": "GENERAL"
+          }
+        }
+      ],
+      "auditCountDelta": 3,
+      "files": [
+        "14-z-final-settings-1440.png",
+        "14-z-final-settings-1280.png"
+      ],
+      "rows": [
+        {
+          "name": "Mathebula & Partners Trust Account",
+          "text": "Mathebula & Partners Trust Account Primary ACTIVE Standard Bank · 051001 · 0123456789 Section 86(2) trust banking account",
+          "sectionLabel": "Section 86(2) trust banking account",
+          "basisLine": null
+        },
+        {
+          "name": "OBS s86(3) Investment 6MHSR",
+          "text": "OBS s86(3) Investment 6MHSR ACTIVE Standard Bank · 051001 · 648C6MHSR1 Section 86(3) investment account Invested at the firm's discretion",
+          "sectionLabel": "Section 86(3) investment account",
+          "basisLine": "Invested at the firm's discretion"
+        },
+        {
+          "name": "OBS s86(4) Investment 6MHSR",
+          "text": "OBS s86(4) Investment 6MHSR ACTIVE Standard Bank · 051001 · 648C6MHSR2 Section 86(4) investment account Invested on a client's instruction",
+          "sectionLabel": "Section 86(4) investment account",
+          "basisLine": "Invested on a client's instruction"
+        },
+        {
+          "name": "OBS General 6MHSR",
+          "text": "OBS General 6MHSR ACTIVE Standard Bank · 051001 · 648C6MHSR3 Section 86(2) trust banking account",
+          "sectionLabel": "Section 86(2) trust banking account",
+          "basisLine": null
+        }
+      ]
+    }
+  },
+  "consoleErrors": [],
+  "pageErrors": [],
+  "posts": [
+    {
+      "at": "2026-11-17T21:06:02.514Z",
+      "url": "http://localhost:8090/token",
+      "nextAction": null
+    },
+    {
+      "at": "2026-11-17T21:06:02.766Z",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "nextAction": "00eec7f0191f1b5b51a5de48e73279b5daaf778633"
+    },
+    {
+      "at": "2026-11-17T21:06:03.041Z",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "nextAction": "008b971d5e4bc4dc0c737d211005da3c477b6cbd15"
+    },
+    {
+      "at": "2026-11-17T21:06:03.185Z",
+      "url": "http://localhost:3001/org/e2e-test-org/settings/fees?tab=trust-accounting",
+      "nextAction": "00eec7f0191f1b5b51a5de48e73279b5daaf778633"
+    },
+    {
+      "at": "2026-11-17T21:06:19.614Z",
+      "url": "http://localhost:3001/org/e2e-test-org/settings/fees?tab=trust-accounting",
+      "nextAction": "400cec4f0cb248ff08c29ca4284b928896b1bc1852"
+    },
+    {
+      "at": "2026-11-17T21:06:20.053Z",
+      "url": "http://localhost:3001/org/e2e-test-org/settings/fees?tab=trust-accounting",
+      "nextAction": "00eec7f0191f1b5b51a5de48e73279b5daaf778633"
+    },
+    {
+      "at": "2026-11-17T21:06:26.056Z",
+      "url": "http://localhost:3001/org/e2e-test-org/settings/fees?tab=trust-accounting",
+      "nextAction": "400cec4f0cb248ff08c29ca4284b928896b1bc1852"
+    },
+    {
+      "at": "2026-11-17T21:06:26.618Z",
+      "url": "http://localhost:3001/org/e2e-test-org/settings/fees?tab=trust-accounting",
+      "nextAction": "00eec7f0191f1b5b51a5de48e73279b5daaf778633"
+    },
+    {
+      "at": "2026-11-17T21:06:34.580Z",
+      "url": "http://localhost:3001/org/e2e-test-org/settings/fees?tab=trust-accounting",
+      "nextAction": "400cec4f0cb248ff08c29ca4284b928896b1bc1852"
+    },
+    {
+      "at": "2026-11-17T21:06:35.019Z",
+      "url": "http://localhost:3001/org/e2e-test-org/settings/fees?tab=trust-accounting",
+      "nextAction": "00eec7f0191f1b5b51a5de48e73279b5daaf778633"
+    },
+    {
+      "at": "2026-11-17T21:06:38.004Z",
+      "url": "http://localhost:3001/org/e2e-test-org/settings/fees?tab=trust-accounting",
+      "nextAction": "00eec7f0191f1b5b51a5de48e73279b5daaf778633"
+    }
+  ],
+  "notes": [],
+  "startedAt": "2026-11-17T21:06:01.754Z",
+  "run": "6MHSR",
+  "finishedAt": "2026-11-17T21:06:40.211Z",
+  "summary": {
+    "a": true,
+    "b": true,
+    "c": true,
+    "d": true,
+    "e": true,
+    "investmentNoBasis": true,
+    "consoleErrors": 0,
+    "pageErrors": 0
+  }
+}

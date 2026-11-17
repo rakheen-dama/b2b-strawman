@@ -1,0 +1,18 @@
+innerText:
+Trust Accounts
+Manage your firm's trust bank accounts
+Add Account
+
+Mathebula & Partners Trust Account
+
+Primary
+ACTIVE
+
+Standard Bank · 051001 · 0123456789
+
+Section 86(2) trust banking account
+
+The bank must have an arrangement with the Legal Practitioners Fidelity Fund (Section 86(6)). Contact the LPFF to verify.
+
+---- textContent:
+Trust AccountsManage your firm's trust bank accountsAdd AccountMathebula & Partners Trust AccountPrimaryACTIVEStandard Bank · 051001 · 0123456789Section 86(2) trust banking accountThe bank must have an arrangement with the Legal Practitioners Fidelity Fund (Section 86(6)). Contact the LPFF to verify.

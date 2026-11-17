@@ -1,0 +1,600 @@
+{
+  "at": "2026-11-17T21:07:17.716Z",
+  "widths": [
+    {
+      "width": 1280,
+      "card": {
+        "vw": 1280,
+        "root": {
+          "left": 544,
+          "right": 1256,
+          "clientWidth": 710,
+          "scrollWidth": 710
+        },
+        "rootInsideViewport": true,
+        "offenders": [],
+        "truncated": [],
+        "noHorizontalOverflow": true,
+        "ok": true
+      },
+      "rows": [
+        {
+          "text": "Mathebula & Partners Trust Account Primary ACTIVE Standard Bank · 051001 · 0123456789 Section 86(2) trust banking account",
+          "left": 569,
+          "right": 1231,
+          "scrollWidth": 662,
+          "clientWidth": 662,
+          "sectionLeft": 999,
+          "sectionRight": 1231,
+          "sectionInsideRow": true,
+          "sectionLines": [
+            {
+              "text": "Section 86(2) trust banking account",
+              "height": 40,
+              "scrollWidth": 232,
+              "clientWidth": 232
+            }
+          ]
+        },
+        {
+          "text": "OBS s86(3) Investment 6MHSR ACTIVE Standard Bank · 051001 · 648C6MHSR1 Section 86(3) investment account Invested at the firm's discretion",
+          "left": 569,
+          "right": 1231,
+          "scrollWidth": 662,
+          "clientWidth": 662,
+          "sectionLeft": 1011,
+          "sectionRight": 1231,
+          "sectionInsideRow": true,
+          "sectionLines": [
+            {
+              "text": "Section 86(3) investment account",
+              "height": 20,
+              "scrollWidth": 220,
+              "clientWidth": 220
+            },
+            {
+              "text": "Invested at the firm's discretion",
+              "height": 16,
+              "scrollWidth": 220,
+              "clientWidth": 220
+            }
+          ]
+        },
+        {
+          "text": "OBS s86(4) Investment 6MHSR ACTIVE Standard Bank · 051001 · 648C6MHSR2 Section 86(4) investment account Invested on a client's instruction",
+          "left": 569,
+          "right": 1231,
+          "scrollWidth": 662,
+          "clientWidth": 662,
+          "sectionLeft": 1011,
+          "sectionRight": 1231,
+          "sectionInsideRow": true,
+          "sectionLines": [
+            {
+              "text": "Section 86(4) investment account",
+              "height": 20,
+              "scrollWidth": 220,
+              "clientWidth": 220
+            },
+            {
+              "text": "Invested on a client's instruction",
+              "height": 16,
+              "scrollWidth": 220,
+              "clientWidth": 220
+            }
+          ]
+        },
+        {
+          "text": "OBS General 6MHSR ACTIVE Standard Bank · 051001 · 648C6MHSR3 Section 86(2) trust banking account",
+          "left": 569,
+          "right": 1231,
+          "scrollWidth": 662,
+          "clientWidth": 662,
+          "sectionLeft": 997,
+          "sectionRight": 1231,
+          "sectionInsideRow": true,
+          "sectionLines": [
+            {
+              "text": "Section 86(2) trust banking account",
+              "height": 20,
+              "scrollWidth": 234,
+              "clientWidth": 234
+            }
+          ]
+        }
+      ],
+      "dialogOpenSelect": {
+        "vw": 1280,
+        "root": {
+          "left": 384,
+          "right": 896,
+          "clientWidth": 512,
+          "scrollWidth": 512
+        },
+        "rootInsideViewport": true,
+        "offenders": [],
+        "truncated": [
+          {
+            "el": "span \"Close\"",
+            "scrollWidth": 41,
+            "clientWidth": 1,
+            "overflowX": "hidden",
+            "textOverflow": "clip"
+          }
+        ],
+        "noHorizontalOverflow": true,
+        "ok": false
+      },
+      "listbox": {
+        "vw": 1280,
+        "root": {
+          "left": 410,
+          "right": 871,
+          "clientWidth": 459,
+          "scrollWidth": 459
+        },
+        "rootInsideViewport": true,
+        "offenders": [],
+        "truncated": [],
+        "noHorizontalOverflow": true,
+        "ok": true
+      },
+      "options": [
+        {
+          "text": "Section 86(3) — the firm invests surplus trust money",
+          "left": 415,
+          "right": 866,
+          "height": 32,
+          "insideViewport": true,
+          "scrollWidth": 451,
+          "clientWidth": 451,
+          "truncated": false
+        },
+        {
+          "text": "Section 86(4) — invested on a client's instruction",
+          "left": 415,
+          "right": 866,
+          "height": 32,
+          "insideViewport": true,
+          "scrollWidth": 451,
+          "clientWidth": 451,
+          "truncated": false
+        }
+      ],
+      "trigger": {
+        "text": "Section 86(4) — invested on a client's instruction",
+        "left": 409,
+        "right": 871,
+        "insideDialog": true,
+        "valueScrollWidth": 317,
+        "valueClientWidth": 317,
+        "valueTruncated": false
+      },
+      "dialogPicked": {
+        "vw": 1280,
+        "root": {
+          "left": 384,
+          "right": 896,
+          "clientWidth": 512,
+          "scrollWidth": 512
+        },
+        "rootInsideViewport": true,
+        "offenders": [],
+        "truncated": [
+          {
+            "el": "span \"Close\"",
+            "scrollWidth": 41,
+            "clientWidth": 1,
+            "overflowX": "hidden",
+            "textOverflow": "clip"
+          }
+        ],
+        "noHorizontalOverflow": true,
+        "ok": false
+      },
+      "ok": false
+    },
+    {
+      "width": 1440,
+      "card": {
+        "vw": 1440,
+        "root": {
+          "left": 544,
+          "right": 1416,
+          "clientWidth": 870,
+          "scrollWidth": 870
+        },
+        "rootInsideViewport": true,
+        "offenders": [],
+        "truncated": [],
+        "noHorizontalOverflow": true,
+        "ok": true
+      },
+      "rows": [
+        {
+          "text": "Mathebula & Partners Trust Account Primary ACTIVE Standard Bank · 051001 · 0123456789 Section 86(2) trust banking account",
+          "left": 569,
+          "right": 1391,
+          "scrollWidth": 822,
+          "clientWidth": 822,
+          "sectionLeft": 1157,
+          "sectionRight": 1391,
+          "sectionInsideRow": true,
+          "sectionLines": [
+            {
+              "text": "Section 86(2) trust banking account",
+              "height": 20,
+              "scrollWidth": 234,
+              "clientWidth": 234
+            }
+          ]
+        },
+        {
+          "text": "OBS s86(3) Investment 6MHSR ACTIVE Standard Bank · 051001 · 648C6MHSR1 Section 86(3) investment account Invested at the firm's discretion",
+          "left": 569,
+          "right": 1391,
+          "scrollWidth": 822,
+          "clientWidth": 822,
+          "sectionLeft": 1171,
+          "sectionRight": 1391,
+          "sectionInsideRow": true,
+          "sectionLines": [
+            {
+              "text": "Section 86(3) investment account",
+              "height": 20,
+              "scrollWidth": 220,
+              "clientWidth": 220
+            },
+            {
+              "text": "Invested at the firm's discretion",
+              "height": 16,
+              "scrollWidth": 220,
+              "clientWidth": 220
+            }
+          ]
+        },
+        {
+          "text": "OBS s86(4) Investment 6MHSR ACTIVE Standard Bank · 051001 · 648C6MHSR2 Section 86(4) investment account Invested on a client's instruction",
+          "left": 569,
+          "right": 1391,
+          "scrollWidth": 822,
+          "clientWidth": 822,
+          "sectionLeft": 1171,
+          "sectionRight": 1391,
+          "sectionInsideRow": true,
+          "sectionLines": [
+            {
+              "text": "Section 86(4) investment account",
+              "height": 20,
+              "scrollWidth": 220,
+              "clientWidth": 220
+            },
+            {
+              "text": "Invested on a client's instruction",
+              "height": 16,
+              "scrollWidth": 220,
+              "clientWidth": 220
+            }
+          ]
+        },
+        {
+          "text": "OBS General 6MHSR ACTIVE Standard Bank · 051001 · 648C6MHSR3 Section 86(2) trust banking account",
+          "left": 569,
+          "right": 1391,
+          "scrollWidth": 822,
+          "clientWidth": 822,
+          "sectionLeft": 1157,
+          "sectionRight": 1391,
+          "sectionInsideRow": true,
+          "sectionLines": [
+            {
+              "text": "Section 86(2) trust banking account",
+              "height": 20,
+              "scrollWidth": 234,
+              "clientWidth": 234
+            }
+          ]
+        }
+      ],
+      "dialogOpenSelect": {
+        "vw": 1440,
+        "root": {
+          "left": 464,
+          "right": 976,
+          "clientWidth": 512,
+          "scrollWidth": 512
+        },
+        "rootInsideViewport": true,
+        "offenders": [],
+        "truncated": [
+          {
+            "el": "span \"Close\"",
+            "scrollWidth": 41,
+            "clientWidth": 1,
+            "overflowX": "hidden",
+            "textOverflow": "clip"
+          }
+        ],
+        "noHorizontalOverflow": true,
+        "ok": false
+      },
+      "listbox": {
+        "vw": 1440,
+        "root": {
+          "left": 490,
+          "right": 951,
+          "clientWidth": 459,
+          "scrollWidth": 459
+        },
+        "rootInsideViewport": true,
+        "offenders": [],
+        "truncated": [],
+        "noHorizontalOverflow": true,
+        "ok": true
+      },
+      "options": [
+        {
+          "text": "Section 86(3) — the firm invests surplus trust money",
+          "left": 495,
+          "right": 946,
+          "height": 32,
+          "insideViewport": true,
+          "scrollWidth": 451,
+          "clientWidth": 451,
+          "truncated": false
+        },
+        {
+          "text": "Section 86(4) — invested on a client's instruction",
+          "left": 495,
+          "right": 946,
+          "height": 32,
+          "insideViewport": true,
+          "scrollWidth": 451,
+          "clientWidth": 451,
+          "truncated": false
+        }
+      ],
+      "trigger": {
+        "text": "Section 86(4) — invested on a client's instruction",
+        "left": 489,
+        "right": 951,
+        "insideDialog": true,
+        "valueScrollWidth": 317,
+        "valueClientWidth": 317,
+        "valueTruncated": false
+      },
+      "dialogPicked": {
+        "vw": 1440,
+        "root": {
+          "left": 464,
+          "right": 976,
+          "clientWidth": 512,
+          "scrollWidth": 512
+        },
+        "rootInsideViewport": true,
+        "offenders": [],
+        "truncated": [
+          {
+            "el": "span \"Close\"",
+            "scrollWidth": 41,
+            "clientWidth": 1,
+            "overflowX": "hidden",
+            "textOverflow": "clip"
+          }
+        ],
+        "noHorizontalOverflow": true,
+        "ok": false
+      },
+      "ok": false
+    },
+    {
+      "width": 1920,
+      "card": {
+        "vw": 1920,
+        "root": {
+          "left": 736,
+          "right": 1704,
+          "clientWidth": 966,
+          "scrollWidth": 966
+        },
+        "rootInsideViewport": true,
+        "offenders": [],
+        "truncated": [],
+        "noHorizontalOverflow": true,
+        "ok": true
+      },
+      "rows": [
+        {
+          "text": "Mathebula & Partners Trust Account Primary ACTIVE Standard Bank · 051001 · 0123456789 Section 86(2) trust banking account",
+          "left": 761,
+          "right": 1679,
+          "scrollWidth": 918,
+          "clientWidth": 918,
+          "sectionLeft": 1445,
+          "sectionRight": 1679,
+          "sectionInsideRow": true,
+          "sectionLines": [
+            {
+              "text": "Section 86(2) trust banking account",
+              "height": 20,
+              "scrollWidth": 234,
+              "clientWidth": 234
+            }
+          ]
+        },
+        {
+          "text": "OBS s86(3) Investment 6MHSR ACTIVE Standard Bank · 051001 · 648C6MHSR1 Section 86(3) investment account Invested at the firm's discretion",
+          "left": 761,
+          "right": 1679,
+          "scrollWidth": 918,
+          "clientWidth": 918,
+          "sectionLeft": 1459,
+          "sectionRight": 1679,
+          "sectionInsideRow": true,
+          "sectionLines": [
+            {
+              "text": "Section 86(3) investment account",
+              "height": 20,
+              "scrollWidth": 220,
+              "clientWidth": 220
+            },
+            {
+              "text": "Invested at the firm's discretion",
+              "height": 16,
+              "scrollWidth": 220,
+              "clientWidth": 220
+            }
+          ]
+        },
+        {
+          "text": "OBS s86(4) Investment 6MHSR ACTIVE Standard Bank · 051001 · 648C6MHSR2 Section 86(4) investment account Invested on a client's instruction",
+          "left": 761,
+          "right": 1679,
+          "scrollWidth": 918,
+          "clientWidth": 918,
+          "sectionLeft": 1459,
+          "sectionRight": 1679,
+          "sectionInsideRow": true,
+          "sectionLines": [
+            {
+              "text": "Section 86(4) investment account",
+              "height": 20,
+              "scrollWidth": 220,
+              "clientWidth": 220
+            },
+            {
+              "text": "Invested on a client's instruction",
+              "height": 16,
+              "scrollWidth": 220,
+              "clientWidth": 220
+            }
+          ]
+        },
+        {
+          "text": "OBS General 6MHSR ACTIVE Standard Bank · 051001 · 648C6MHSR3 Section 86(2) trust banking account",
+          "left": 761,
+          "right": 1679,
+          "scrollWidth": 918,
+          "clientWidth": 918,
+          "sectionLeft": 1445,
+          "sectionRight": 1679,
+          "sectionInsideRow": true,
+          "sectionLines": [
+            {
+              "text": "Section 86(2) trust banking account",
+              "height": 20,
+              "scrollWidth": 234,
+              "clientWidth": 234
+            }
+          ]
+        }
+      ],
+      "dialogOpenSelect": {
+        "vw": 1920,
+        "root": {
+          "left": 704,
+          "right": 1216,
+          "clientWidth": 512,
+          "scrollWidth": 512
+        },
+        "rootInsideViewport": true,
+        "offenders": [],
+        "truncated": [
+          {
+            "el": "span \"Close\"",
+            "scrollWidth": 41,
+            "clientWidth": 1,
+            "overflowX": "hidden",
+            "textOverflow": "clip"
+          }
+        ],
+        "noHorizontalOverflow": true,
+        "ok": false
+      },
+      "listbox": {
+        "vw": 1920,
+        "root": {
+          "left": 730,
+          "right": 1191,
+          "clientWidth": 459,
+          "scrollWidth": 459
+        },
+        "rootInsideViewport": true,
+        "offenders": [],
+        "truncated": [],
+        "noHorizontalOverflow": true,
+        "ok": true
+      },
+      "options": [
+        {
+          "text": "Section 86(3) — the firm invests surplus trust money",
+          "left": 735,
+          "right": 1186,
+          "height": 32,
+          "insideViewport": true,
+          "scrollWidth": 451,
+          "clientWidth": 451,
+          "truncated": false
+        },
+        {
+          "text": "Section 86(4) — invested on a client's instruction",
+          "left": 735,
+          "right": 1186,
+          "height": 32,
+          "insideViewport": true,
+          "scrollWidth": 451,
+          "clientWidth": 451,
+          "truncated": false
+        }
+      ],
+      "trigger": {
+        "text": "Section 86(4) — invested on a client's instruction",
+        "left": 729,
+        "right": 1191,
+        "insideDialog": true,
+        "valueScrollWidth": 317,
+        "valueClientWidth": 317,
+        "valueTruncated": false
+      },
+      "dialogPicked": {
+        "vw": 1920,
+        "root": {
+          "left": 704,
+          "right": 1216,
+          "clientWidth": 512,
+          "scrollWidth": 512
+        },
+        "rootInsideViewport": true,
+        "offenders": [],
+        "truncated": [
+          {
+            "el": "span \"Close\"",
+            "scrollWidth": 41,
+            "clientWidth": 1,
+            "overflowX": "hidden",
+            "textOverflow": "clip"
+          }
+        ],
+        "noHorizontalOverflow": true,
+        "ok": false
+      },
+      "ok": false
+    }
+  ],
+  "consoleErrors": [
+    {
+      "width": 1280,
+      "text": "MockAuthContextProvider: failed to fetch userinfo TypeError: Failed to fetch"
+    },
+    {
+      "width": 1440,
+      "text": "MockAuthContextProvider: failed to fetch userinfo TypeError: Failed to fetch\n    at http://localhost:3001/_next/static/chunks/1kvf-7k8cibf1.js:1:1582\n    at iw (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:118706)\n    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142848)\n    at uh (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142510)\n    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142828)\n    at uh (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142510)\n    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142893)\n    at uh (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142510)\n    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142828)\n    at uh (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142510)"
+    },
+    {
+      "width": 1920,
+      "text": "MockAuthContextProvider: failed to fetch userinfo TypeError: Failed to fetch"
+    }
+  ],
+  "pageErrors": [],
+  "verdict": "FAIL"
+}

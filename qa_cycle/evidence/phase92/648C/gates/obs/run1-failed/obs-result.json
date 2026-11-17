@@ -1,0 +1,155 @@
+{
+  "steps": {
+    "baseline": {
+      "count": 1,
+      "auditCount": 1,
+      "apiList": {
+        "method": "GET",
+        "path": "/api/trust-accounts",
+        "status": 200,
+        "body": [
+          {
+            "id": "e8e15aae-9ee8-4fcc-ac06-18f7e7857ba1",
+            "accountName": "Mathebula & Partners Trust Account",
+            "bankName": "Standard Bank",
+            "branchCode": "051001",
+            "accountNumber": "0123456789",
+            "accountType": "GENERAL",
+            "investmentBasis": null,
+            "section": "S86_2",
+            "isPrimary": true,
+            "requireDualApproval": false,
+            "paymentApprovalThreshold": null,
+            "status": "ACTIVE",
+            "openedDate": "2026-11-17",
+            "closedDate": null,
+            "notes": null,
+            "createdAt": "2026-11-17T20:59:41.345885Z",
+            "updatedAt": "2026-11-17T20:59:41.345885Z"
+          }
+        ]
+      },
+      "files": [
+        "01-baseline-settings-1440.png",
+        "01-baseline-settings-1280.png"
+      ],
+      "primaryRow": {
+        "text": "Mathebula & Partners Trust Account Primary ACTIVE Standard Bank · 051001 · 0123456789 Section 86(2) trust banking account",
+        "sectionLabel": "Section 86(2) trust banking account",
+        "basisLine": null
+      },
+      "primaryApi": {
+        "accountType": "GENERAL",
+        "investmentBasis": null,
+        "section": "S86_2"
+      }
+    },
+    "e": {
+      "scans": [
+        {
+          "label": "baseline-settings-card",
+          "rawInInnerText": [],
+          "rawInTextContent": [],
+          "knownF4InInnerText": [
+            "ACTIVE"
+          ],
+          "clean": true
+        },
+        {
+          "label": "dialog-general",
+          "rawInInnerText": [],
+          "rawInTextContent": [],
+          "knownF4InInnerText": [],
+          "clean": true
+        },
+        {
+          "label": "dialog-section86",
+          "rawInInnerText": [],
+          "rawInTextContent": [],
+          "knownF4InInnerText": [],
+          "clean": true
+        },
+        {
+          "label": "dialog-investment",
+          "rawInInnerText": [],
+          "rawInTextContent": [],
+          "knownF4InInnerText": [],
+          "clean": true
+        }
+      ]
+    },
+    "c": {
+      "defaultTypeText": "General",
+      "generalBasisSelectCount": 0,
+      "generalBasisLabelCount": 0,
+      "filesGeneral": [
+        "02-c1-dialog-general-1440.png",
+        "02-c1-dialog-general-1280.png"
+      ],
+      "s86TypeText": "Section 86 Trust Account",
+      "s86BasisSelectCount": 0,
+      "s86BasisLabelCount": 0,
+      "filesS86": [
+        "03-c2-dialog-section86-1440.png",
+        "03-c2-dialog-section86-1280.png"
+      ]
+    },
+    "investmentNoBasis": {
+      "typeText": "Investment",
+      "basisSelectCount": 1,
+      "basisTriggerText": "Select the basis",
+      "description": "Interest on a section 86(3) investment belongs to the Legal Practitioners' Fidelity Fund. On a section 86(4) investment the client receives 95% and the Fund 5%.",
+      "files": [
+        "04-b0-dialog-investment-1440.png",
+        "04-b0-dialog-investment-1280.png"
+      ],
+      "options": [
+        "Section 86(3) — the firm invests surplus trust money",
+        "Section 86(4) — invested on a client's instruction"
+      ],
+      "filesOpen": [
+        "05-b0-dialog-investment-basis-open-1440.png"
+      ]
+    }
+  },
+  "consoleErrors": [],
+  "pageErrors": [],
+  "posts": [
+    {
+      "at": "2026-11-17T21:04:26.128Z",
+      "url": "http://localhost:8090/token",
+      "nextAction": null
+    },
+    {
+      "at": "2026-11-17T21:04:26.369Z",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "nextAction": "00eec7f0191f1b5b51a5de48e73279b5daaf778633"
+    },
+    {
+      "at": "2026-11-17T21:04:26.412Z",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "nextAction": "008b971d5e4bc4dc0c737d211005da3c477b6cbd15"
+    },
+    {
+      "at": "2026-11-17T21:04:26.819Z",
+      "url": "http://localhost:3001/org/e2e-test-org/settings/fees?tab=trust-accounting",
+      "nextAction": "00eec7f0191f1b5b51a5de48e73279b5daaf778633"
+    },
+    {
+      "at": "2026-11-17T21:04:56.814Z",
+      "url": "http://localhost:3001/org/e2e-test-org/settings/fees?tab=trust-accounting",
+      "nextAction": "00eec7f0191f1b5b51a5de48e73279b5daaf778633"
+    },
+    {
+      "at": "2026-11-17T21:05:26.890Z",
+      "url": "http://localhost:3001/org/e2e-test-org/settings/fees?tab=trust-accounting",
+      "nextAction": "00eec7f0191f1b5b51a5de48e73279b5daaf778633"
+    }
+  ],
+  "notes": [
+    "crop b0-basis-listbox-crop failed: TimeoutError: locator.screenshot: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('listbox')\u001b[22m\n"
+  ],
+  "startedAt": "2026-11-17T21:04:25.343Z",
+  "run": "6KFEN",
+  "error": "locator.evaluate: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('listbox')\u001b[22m\n\n    at scanRaw (/Users/rakheendama/Projects/2026/worktree-epic-648C/qa_cycle/evidence/phase92/648C/gates/obs.cjs:147:44)\n    at /Users/rakheendama/Projects/2026/worktree-epic-648C/qa_cycle/evidence/phase92/648C/gates/obs.cjs:219:9"
+}

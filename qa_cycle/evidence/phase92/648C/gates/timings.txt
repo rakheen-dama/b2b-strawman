@@ -1,0 +1,23 @@
+stack1-up start 2026-11-17T20:58:12Z
+stack1-up end 2026-11-17T21:00:08Z rc 0
+.lc.start 2026-11-17T21:00:19Z
+.lc.end 2026-11-17T21:03:42Z
+.lc.rc 0
+.obs.start 2026-11-17T21:04:25Z
+.obs.run1 failed (harness: listbox closed by viewport resize; no state change, trust_accounts count 1) — archived in obs/run1-failed
+.obs.run2.start 2026-11-17T21:06:01Z
+.obs.run2.end 2026-11-17T21:06:40Z rc 0
+.probe.start 2026-11-17T21:06:59Z
+.probe.end 2026-11-17T21:07:09Z rc 1
+.probe run1 rc 1 (harness: page.evaluate arity) — re-run
+.probe.start 2026-11-17T21:07:17Z
+.probe.end 2026-11-17T21:07:37Z rc 0
+.probe run2 rc 0 verdict FAIL — harness false positives (sr-only Close span; userinfo console error from no post-login settle); kept in obs/probe-run2; re-run
+.probe.start 2026-11-17T21:07:56Z
+.probe.end 2026-11-17T21:08:16Z rc 0
+stack2-up start 2026-11-17T21:08:54Z
+stack2-up end 2026-11-17T21:09:30Z rc 0
+.d2.start 2026-11-17T21:10:07Z
+.d2.end 2026-11-17T21:12:05Z
+.d2.rc 0
+stack2-down 2026-11-17T21:12:43Z

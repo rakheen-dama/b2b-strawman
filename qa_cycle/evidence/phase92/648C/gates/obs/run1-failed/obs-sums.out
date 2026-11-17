@@ -1,0 +1,9 @@
+-- 648C OBS read-only evidence output (schema tenant_7d218705360b) 2026-11-17T21:04:25.429Z
+
+== [baseline: trust accounts]
+select account_name, account_type, coalesce(investment_basis,'<null>') investment_basis, is_primary, status, created_at from tenant_7d218705360b.trust_accounts order by created_at
+            account_name            | account_type | investment_basis | is_primary | status |          created_at           
+------------------------------------+--------------+------------------+------------+--------+-------------------------------
+ Mathebula & Partners Trust Account | GENERAL      | <null>           | t          | ACTIVE | 2026-11-17 20:59:41.345885+00
+(1 row)
+

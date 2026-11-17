@@ -1,0 +1,79 @@
+== worktree: /Users/rakheendama/Projects/2026/worktree-epic-648C @ 4bb0d595fda6b8c1ad5c55fca19636a438ded5d7
+== build log source lines:
+Building from source at: /Users/rakheendama/Projects/2026/worktree-epic-648C
+  Tail logs:   docker compose -f /Users/rakheendama/Projects/2026/worktree-epic-648C/compose/docker-compose.e2e.yml logs -f backend frontend
+== jar entries (648C-new / 648C-touched classes):
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/TrustAccountSection.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/TrustAccountService$UpdateTrustAccountRequest.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/TrustAccountService$CreateTrustAccountRequest.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/TrustAccountService$CreateLpffRateRequest.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/TrustAccountService.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/TrustAccountService$TrustAccountResponse.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/TrustAccountService$LpffRateResponse.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/InvestmentBasis.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/TrustAccount.class
+== TrustAccountSection.class exists (648C new): 1 ; contains S86_2/S86_3/S86_4: 1/1/1
+== TrustAccountService.class contains 'Investment basis required': 1 ; 'Investment basis not allowed': 1 ; 'investment_basis' (audit detail): 2
+== TrustAccountService$TrustAccountResponse.class contains 'investmentBasis': 2 ; 'section': 2
+== TrustAccountService$CreateTrustAccountRequest.class contains 'investmentBasis': 2
+== TrustAccount.class contains 'investment_basis': 1 ; 'getSection': 1
+== jar migrations (latest tenant V*):
+db/migration/tenant/V20__phase92_statement_line_classification.sql
+db/migration/tenant/V21__phase92_unidentified_deposits.sql
+db/migration/tenant/V22__phase92_investment_account_basis.sql
+== V22 in jar contains 'investment_basis IS NOT NULL' (F-1 deviation): 2
+== frontend container: 648C strings in .next (excluding cache):
+-- 'trust-account-basis-select':
+/app/frontend/.next/server/chunks/ssr/frontend_components_trust_AddTrustAccountButton_tsx_13c4uoj._.js
+/app/frontend/.next/server/chunks/ssr/_0-fpb3a._.js
+/app/frontend/.next/static/chunks/3_hzooh3fzqt4.js
+/app/frontend/.next/static/chunks/1wwiung7p17ns.js
+-- 'the firm invests surplus trust money':
+/app/frontend/.next/server/chunks/ssr/frontend_components_trust_AddTrustAccountButton_tsx_13c4uoj._.js
+/app/frontend/.next/server/chunks/ssr/_0-fpb3a._.js
+/app/frontend/.next/static/chunks/3_hzooh3fzqt4.js
+/app/frontend/.next/static/chunks/1wwiung7p17ns.js
+-- 'invested on a client':
+/app/frontend/.next/server/chunks/ssr/frontend_components_trust_AddTrustAccountButton_tsx_13c4uoj._.js
+/app/frontend/.next/server/chunks/ssr/_0-fpb3a._.js
+/app/frontend/.next/static/chunks/3_hzooh3fzqt4.js
+/app/frontend/.next/static/chunks/1wwiung7p17ns.js
+-- 'Choose the investment basis':
+/app/frontend/.next/server/chunks/ssr/_1sv4c71._.js
+/app/frontend/.next/server/chunks/ssr/_18sjpww._.js
+/app/frontend/.next/server/chunks/ssr/frontend_lib_schemas_index_ts_0tntwfm._.js
+/app/frontend/.next/server/chunks/ssr/frontend_lib_1q18f8m._.js
+-- 'Section 86(4) investment account':
+/app/frontend/.next/server/chunks/ssr/_13ydhih._.js
+/app/frontend/.next/server/chunks/ssr/_17f5eez._.js
+/app/frontend/.next/server/chunks/ssr/[root-of-the-server]__0whnase._.js
+-- 'Invested at the firm':
+/app/frontend/.next/server/chunks/ssr/_13ydhih._.js
+/app/frontend/.next/server/chunks/ssr/_17f5eez._.js
+/app/frontend/.next/server/chunks/ssr/[root-of-the-server]__0whnase._.js
+-- 'trust-account-section':
+/app/frontend/.next/server/chunks/ssr/frontend_1ta7bj3._.js
+== health: {"groups":["liveness","readiness"],"status":"UP"}  frontend :3001 HTTP 200
+== tenant schemas: tenant_7d218705360b
+ version |              description              | success |        installed_on        
+---------+---------------------------------------+---------+----------------------------
+ 22      | phase92 investment account basis      | t       | 2026-11-17 20:59:39.175326
+ 21      | phase92 unidentified deposits         | t       | 2026-11-17 20:59:39.157743
+ 20      | phase92 statement line classification | t       | 2026-11-17 20:59:39.150358
+(3 rows)
+
+   column_name    |     data_type     | character_maximum_length | is_nullable 
+------------------+-------------------+--------------------------+-------------
+ investment_basis | character varying |                       20 | YES
+(1 row)
+
+              conname               |                                                                                                                                               pg_get_constraintdef                                                                                                                                                
+------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ chk_trust_account_investment_basis | CHECK (((((account_type)::text = 'INVESTMENT'::text) AND (investment_basis IS NOT NULL) AND ((investment_basis)::text = ANY ((ARRAY['FIRM_DISCRETION'::character varying, 'CLIENT_INSTRUCTION'::character varying])::text[]))) OR (((account_type)::text <> 'INVESTMENT'::text) AND (investment_basis IS NULL))))
+(1 row)
+
+            account_name            | account_type | investment_basis | is_primary 
+------------------------------------+--------------+------------------+------------
+ Mathebula & Partners Trust Account | GENERAL      |                  | t
+(1 row)
+

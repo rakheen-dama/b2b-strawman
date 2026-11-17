@@ -1,0 +1,31 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "http://localhost:8081/api/trust-accounts",
+    "headers": {
+      "Authorization": "Bearer <alice mock-auth-token from the browser context>",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "bankName": "Standard Bank",
+      "branchCode": "051001",
+      "isPrimary": false,
+      "requireDualApproval": false,
+      "openedDate": "2026-11-17",
+      "accountName": "OBS refused GENERAL+basis 6MHSR",
+      "accountNumber": "648C6MHSRR1",
+      "accountType": "GENERAL",
+      "investmentBasis": "FIRM_DISCRETION"
+    }
+  },
+  "response": {
+    "status": 400,
+    "contentType": "application/problem+json",
+    "body": {
+      "detail": "Only an investment account carries an investment basis. A trust banking account reports under section 86(2).",
+      "instance": "/api/trust-accounts",
+      "status": 400,
+      "title": "Investment basis not allowed"
+    }
+  }
+}

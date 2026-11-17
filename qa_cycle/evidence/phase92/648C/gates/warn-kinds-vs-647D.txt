@@ -1,0 +1,2 @@
+WARN/ERROR kinds (normalised) in 648C stack1+stack2 breakdowns that are absent from 647D's stack1+stack2 breakdowns:
+(end of list)

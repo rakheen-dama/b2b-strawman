@@ -1,0 +1,60 @@
+648C gates — summary of every *.log in this dir and obs/ (the *.log files are gitignored)
+
+== depth-ii.log (9785 bytes, 54 lines)
+  4 skipped
+  40 passed (1.9m)
+full per-test list: ./depth-ii-summary.txt
+
+== lifecycle.log (20655 bytes, 114 lines)
+  105 passed (3.3m)
+full per-test list: ./lifecycle-summary.txt
+
+== obs/obs-output.log (138 bytes, 10 lines)
+stdout of obs.cjs run 2 (the run of record); JSON obs/obs-result.json
+{  "a": true,  "b": true,  "c": true,  "d": true,  "e": true,  "investmentNoBasis": true,  "consoleErrors": 0,  "pageErrors": 0}
+
+== obs/run1-failed/obs-output.log (370 bytes, 8 lines)
+stdout of obs.cjs run 1 (harness: a viewport resize closed the Radix listbox; it failed before any submit, trust_accounts count stayed 1)
+OBS FAILED locator.evaluate: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for getByRole('listbox')[22m
+
+== obs/probe-clip-output.log (1814 bytes, 79 lines)
+stdout of probe-clip.cjs run 3 (the run of record); JSON obs/probe-clip.json
+  "verdict": "PASS",
+
+== obs/probe-run2/probe-clip-output.log (1820 bytes, 79 lines)
+stdout of probe-clip.cjs run 2 (harness false positives: sr-only 'Close' span; 3 userinfo console errors from no post-login settle). Run 1 (rc 1, page.evaluate arity) produced no JSON.
+  "verdict": "FAIL",
+
+== stack0-down.log (137 bytes, 4 lines)
+Stack stopped. All containers and volumes removed.
+Run 'bash compose/scripts/e2e-up.sh' to start fresh.
+
+== stack1-build.log (27978 bytes, 594 lines)
+Building from source at: /Users/rakheendama/Projects/2026/worktree-epic-648C
+
+== stack1-backend.log (260905 bytes, 516 lines)
+level counts / WARN breakdown: ./stack1-log-breakdown.txt; OBS window: ./obs-window-log-breakdown.txt, ./obs-window-backend-lines.txt
+{'INFO': 341, 'WARN': 151}
+
+== stack1-frontend.log (3901 bytes, 93 lines)
+frontend ⨯ lines: 22 (all 'The destination stream closed early.', all timestamped 21:00:30–21:03:27 UTC, inside the lifecycle run; 0 in the OBS window)
+
+== stack1-down.log (1344 bytes, 38 lines)
+Stack stopped. All containers and volumes removed.
+Run 'bash compose/scripts/e2e-up.sh' to start fresh.
+
+== stack2-build.log (10898 bytes, 365 lines)
+Building from source at: /Users/rakheendama/Projects/2026/worktree-epic-648C
+
+== stack2-backend.log (250930 bytes, 505 lines)
+level counts / WARN breakdown: ./stack2-log-breakdown.txt
+{'INFO': 273, 'WARN': 199}
+
+== stack2-frontend.log (394 bytes, 9 lines)
+frontend ⨯ lines: 1 ('The destination stream closed early.', during depth-ii)
+
+== stack2-down.log (1344 bytes, 38 lines)
+Stack stopped. All containers and volumes removed.
+Run 'bash compose/scripts/e2e-up.sh' to start fresh.

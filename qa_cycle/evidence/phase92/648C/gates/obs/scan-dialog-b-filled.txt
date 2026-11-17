@@ -1,0 +1,38 @@
+innerText:
+Add Trust Account
+
+Register a new trust bank account for the firm. This account will be available for receipts, payments, and reconciliation.
+
+Account Name
+Bank Name
+Branch Code
+Account Number
+Account Type
+Investment
+General
+Investment
+Section 86 Trust Account
+Opened Date
+Investment basis
+Section 86(4) — invested on a client's instruction
+Section 86(3) — the firm invests surplus trust money
+Section 86(4) — invested on a client's instruction
+
+Interest on a section 86(3) investment belongs to the Legal Practitioners' Fidelity Fund. On a section 86(4) investment the client receives 95% and the Fund 5%.
+
+Set as primary trust account
+
+The primary account is used by default for dashboards and reporting.
+
+Require dual approval
+
+When enabled, trust payments need two approvers before release.
+
+Payment Approval Threshold (ZAR)
+Notes (Optional)
+Cancel
+Create Account
+Close
+
+---- textContent:
+Add Trust AccountRegister a new trust bank account for the firm. This account will be available for receipts, payments, and reconciliation.Account NameBank NameBranch CodeAccount NumberAccount TypeInvestmentGeneralInvestmentSection 86 Trust AccountOpened DateInvestment basisSection 86(4) — invested on a client's instructionSection 86(3) — the firm invests surplus trust moneySection 86(4) — invested on a client's instructionInterest on a section 86(3) investment belongs to the Legal Practitioners' Fidelity Fund. On a section 86(4) investment the client receives 95% and the Fund 5%.Set as primary trust accountThe primary account is used by default for dashboards and reporting.Require dual approvalWhen enabled, trust payments need two approvers before release.Payment Approval Threshold (ZAR)Notes (Optional)CancelCreate AccountClose

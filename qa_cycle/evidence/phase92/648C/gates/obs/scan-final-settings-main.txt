@@ -1,0 +1,123 @@
+innerText:
+Firm
+Matters
+Documents
+Fees & Trust
+Rates
+Tax
+Time recording
+Fee runs
+Collections
+Trust accounting
+Connections
+Rates
+Tax
+Time recording
+Fee runs
+Collections
+Trust accounting
+Trust Accounting Settings
+
+Manage trust accounts, approval settings, LPFF rates, and reminder configuration.
+
+Trust Accounts
+Manage your firm's trust bank accounts
+Add Account
+
+Mathebula & Partners Trust Account
+
+Primary
+ACTIVE
+
+Standard Bank · 051001 · 0123456789
+
+Section 86(2) trust banking account
+
+OBS s86(3) Investment 6MHSR
+
+ACTIVE
+
+Standard Bank · 051001 · 648C6MHSR1
+
+Section 86(3) investment account
+
+Invested at the firm's discretion
+
+OBS s86(4) Investment 6MHSR
+
+ACTIVE
+
+Standard Bank · 051001 · 648C6MHSR2
+
+Section 86(4) investment account
+
+Invested on a client's instruction
+
+OBS General 6MHSR
+
+ACTIVE
+
+Standard Bank · 051001 · 648C6MHSR3
+
+Section 86(2) trust banking account
+
+The bank must have an arrangement with the Legal Practitioners Fidelity Fund (Section 86(6)). Contact the LPFF to verify.
+Approval Settings
+Configure transaction approval requirements
+
+Mathebula & Partners Trust Account
+
+Single approval
+
+Single
+
+OBS s86(3) Investment 6MHSR
+
+Single approval
+
+Single
+
+OBS s86(4) Investment 6MHSR
+
+Single approval
+
+Single
+
+OBS General 6MHSR
+
+Single approval
+
+Single
+LPFF Rates
+Law Practice Fidelity Fund interest rate configuration
+Effective From	Rate	LPFF Share	Notes
+2025/11/17	6.50%	50.00%	Scenario 0.63 test rate
+Reminder Settings
+Configure trust-related notification reminders
+
+Low Balance Alert
+
+Notify when a client's trust balance drops below a threshold
+
+Configured per account
+
+Reconciliation Due
+
+Remind to complete monthly bank reconciliation
+
+Monthly
+
+Investment Maturity
+
+Alert before fixed deposits mature
+
+7 days before
+
+Interest Run Due
+
+Remind to run monthly interest calculations
+
+Monthly
+
+---- textContent:
+FirmMattersDocumentsFees & TrustRatesTaxTime recordingFee runsCollectionsTrust accountingConnectionsRatesTaxTime recordingFee runsCollectionsTrust accountingTrust Accounting SettingsManage trust accounts, approval settings, LPFF rates, and reminder configuration.Trust AccountsManage your firm's trust bank accountsAdd AccountMathebula & Partners Trust AccountPrimaryACTIVEStandard Bank · 051001 · 0123456789Section 86(2) trust banking accountOBS s86(3) Investment 6MHSRACTIVEStandard Bank · 051001 · 648C6MHSR1Section 86(3) investment accountInvested at the firm's discretionOBS s86(4) Investment 6MHSRACTIVEStandard Bank · 051001 · 648C6MHSR2Section 86(4) investment accountInvested on a client's instructionOBS General 6MHSRACTIVEStandard Bank · 051001 · 648C6MHSR3Section 86(2) trust banking accountThe bank must have an arrangement with the Legal Practitioners Fidelity Fund (Section 86(6)). Contact the LPFF to verify.Approval SettingsConfigure transaction approval requirementsMathebula & Partners Trust AccountSingle approvalSingleOBS s86(3) Investment 6MHSRSingle approvalSingleOBS s86(4) Investment 6MHSRSingle approvalSingleOBS General 6MHSRSingle approvalSingleLPFF RatesLaw Practice Fidelity Fund interest rate configurationEffective FromRateLPFF ShareNotes2025/11/176.50%50.00%Scenario 0.63 test rateReminder SettingsConfigure trust-related notification remindersLow Balance AlertNotify when a client's trust balance drops below a thresholdConfigured per accountReconciliation DueRemind to complete monthly bank reconciliationMonthlyInvestment MaturityAlert before fixed deposits mature7 days beforeInterest Run DueRemind to run monthly interest calculationsMonthly

@@ -1,0 +1,31 @@
+innerText:
+Add Trust Account
+
+Register a new trust bank account for the firm. This account will be available for receipts, payments, and reconciliation.
+
+Account Name
+Bank Name
+Branch Code
+Account Number
+Account Type
+General
+General
+Investment
+Section 86 Trust Account
+Opened Date
+Set as primary trust account
+
+The primary account is used by default for dashboards and reporting.
+
+Require dual approval
+
+When enabled, trust payments need two approvers before release.
+
+Payment Approval Threshold (ZAR)
+Notes (Optional)
+Cancel
+Create Account
+Close
+
+---- textContent:
+Add Trust AccountRegister a new trust bank account for the firm. This account will be available for receipts, payments, and reconciliation.Account NameBank NameBranch CodeAccount NumberAccount TypeGeneralGeneralInvestmentSection 86 Trust AccountOpened DateSet as primary trust accountThe primary account is used by default for dashboards and reporting.Require dual approvalWhen enabled, trust payments need two approvers before release.Payment Approval Threshold (ZAR)Notes (Optional)CancelCreate AccountClose

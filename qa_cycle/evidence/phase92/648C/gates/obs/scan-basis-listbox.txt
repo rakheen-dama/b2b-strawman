@@ -1,0 +1,6 @@
+innerText:
+Section 86(3) — the firm invests surplus trust money
+Section 86(4) — invested on a client's instruction
+
+---- textContent:
+[data-radix-select-viewport]{scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;}[data-radix-select-viewport]::-webkit-scrollbar{display:none}Section 86(3) — the firm invests surplus trust moneySection 86(4) — invested on a client's instruction

@@ -1,11 +1,13 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation;
 
+import jakarta.persistence.LockModeType;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -14,6 +16,14 @@ public interface BankStatementLineRepository extends JpaRepository<BankStatement
   List<BankStatementLine> findByBankStatementIdOrderByLineNumber(UUID bankStatementId);
 
   List<BankStatementLine> findByMatchStatus(String matchStatus);
+
+  /**
+   * Locks the line for a record-from-statement or an unmatch (647A): two members acting on one line
+   * are serialised, and the second sees the first's state.
+   */
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @Query("SELECT l FROM BankStatementLine l WHERE l.id = :id")
+  Optional<BankStatementLine> findByIdForUpdate(@Param("id") UUID id);
 
   List<BankStatementLine> findByBankStatementIdAndMatchStatusOrderByTransactionDateAscIdAsc(
       UUID bankStatementId, String matchStatus);

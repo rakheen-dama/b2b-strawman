@@ -1,0 +1,27 @@
+647A red run — HF-1 (646B found.md) and HF-2 (649B found.md R3), before their production fixes
+Branch epic-647A/record-from-statement on main 1c9fa37c8; V20 migration, entity fields and fixture changes applied; TrustPostingService.postReversal and TrustTransactionService.reverseForUnmatch UNCHANGED from main.
+Command: cd backend && ./mvnw test -Dtest=TrustReversalEquationIntegrationTest -q   (run 2026-11-17 12:21 SAST)
+
+[ERROR] Tests run: 15, Failures: 1, Errors: 1, Skipped: 0, Time elapsed: 26.77 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustReversalEquationIntegrationTest
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustReversalEquationIntegrationTest.reverseForUnmatch_refusesALineThatIsNotRecorded -- Time elapsed: 0.078 s <<< FAILURE!
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustReversalEquationIntegrationTest.genericReversalOfANonClientRow_carriesItsCreditorAccount -- Time elapsed: 0.025 s <<< ERROR!
+[ERROR]   TrustReversalEquationIntegrationTest.reverseForUnmatch_refusesALineThatIsNotRecorded:472 
+[ERROR]   TrustReversalEquationIntegrationTest.genericReversalOfANonClientRow_carriesItsCreditorAccount:495 » DataIntegrityViolation could not execute batch [Batch entry 0 insert into trust_transactions (amount,approved_at,approved_by,bank_statement_line_id,cashbook_effect,charge_recoverable,charge_vat_amount,counterparty_customer_id,created_at,creditor_account_id,customer_id,description,investment_id,invoice_id,ledger,ledger_effect,posted_at,project_id,recorded_by,reference,rejected_at,rejected_by,rejection_reason,reversal_of,reversed_by_id,second_approved_at,second_approved_by,status,transac
+[ERROR] Tests run: 15, Failures: 1, Errors: 1, Skipped: 0
+
+--- HF-2 (reverseForUnmatch_refusesALineThatIsNotRecorded) — surefire detail:
+io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustReversalEquationIntegrationTest.reverseForUnmatch_refusesALineThatIsNotRecorded -- Time elapsed: 0.078 s <<< FAILURE!
+java.lang.AssertionError: 
+
+Expecting code to raise a throwable.
+	at io.b2mash.b2b.b2bstrawman.testutil.TrustBooksFixture$Tenant.lambda$assertUnmatchRefused$1(TrustBooksFixture.java:499)
+	at io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness.assertMoves(TrustBooksHarness.java:430)
+	at io.b2mash.b2b.b2bstrawman.testutil.TrustBooksFixture$Tenant.lambda$assertUnmatchRefused$0(TrustBooksFixture.java:495)
+  => main's reverseForUnmatch accepted a MANUALLY_MATCHED line and booked a contra against a payment that existed before the match.
+
+--- HF-1 (genericReversalOfANonClientRow_carriesItsCreditorAccount) — surefire detail:
+io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustReversalEquationIntegrationTest.genericReversalOfANonClientRow_carriesItsCreditorAccount -- Time elapsed: 0.025 s <<< ERROR!
+org.springframework.dao.DataIntegrityViolationException: 
+... was aborted: ERROR: new row for relation "trust_transactions" violates check constraint "chk_trust_txn_ledger_target"
+  Detail: Failing row contains (0af4c43a-e036-493c-9a7f-5314bb0a039d, e1f398c3-6b8d-4a2f-bcf2-1ebf5659c806, REVERSAL, 40.00, null, null, null, null, REV-FUN-TB-41, trust books fixture: reversed, 2026-11-17, RECORDED, null, null, null, null, null, null, null, d2317bcf-3dba-41ee-bb86-91bde194f6f7, null, null, 51c28b89-7fab-4bcf-adc1-6b7f11432bae, 2026-11-17 10:21:00.628824+00, NON_CLIENT, 40.00, 40.00, 2026-11-17 10:21:00.628766+00, null, null, null, null).  Call getNextException to see other errors in the batch.] [insert into trust_transactions (amount,approved_at,approved_by,bank_statement_line_id,cashbook_effect,charge_recoverable,charge_vat_amount,counterparty_customer_id,created_at,credit
+  => main's postReversal copies neither creditor_account_id nor investment_id onto the contra; the NON_CLIENT REVERSAL row has creditor_account_id NULL and violates chk_trust_txn_ledger_target (SQLState 23514).

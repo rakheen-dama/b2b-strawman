@@ -57,6 +57,7 @@ class TrustReversalEquationIntegrationTest {
   @Autowired private TrustBooksFixture fixture;
   @Autowired private TrustInvestmentService investmentService;
   @Autowired private TrustInvestmentRepository investmentRepository;
+  @Autowired private TrustTransactionRepository transactionRepository;
 
   /** The tenant: H-a, H-b, H-c, H-d; ends firm-balanced. */
   private TrustBooksFixture.Tenant books;
@@ -451,6 +452,59 @@ class TrustReversalEquationIntegrationTest {
                 () -> investmentRepository.findById(investmentId[0]).orElseThrow().getStatus()))
         .as("investment")
         .isEqualTo("ACTIVE");
+  }
+
+  /**
+   * 649B found.md R3 (647A, HF-2): {@code reverseForUnmatch} reverses only what a line recorded
+   * from the statement created. An ordinary match links a row that existed before the match;
+   * unmatching it must never book a contra. Refused; nothing moves; the payment stays APPROVED.
+   */
+  @Test
+  void reverseForUnmatch_refusesALineThatIsNotRecorded() {
+    var account = books.freshAccount(false);
+    var client = books.newClient("Unmatch matched");
+    books.deposit(account, client, "4000.00");
+    var paymentId = books.requestPayment(account, client, "1500.00");
+    books.approve(account, paymentId, approverId, Expected.cashbookAndClient("-1500.00"));
+    var lineId =
+        books.matchedLineFor(account, paymentId, TrustBooksFixture.POSTING_DATE.plusDays(2));
+
+    books.assertUnmatchRefused(
+        account,
+        lineId,
+        "Cannot unmatch statement line",
+        "Only a line recorded from the statement has entries to reverse");
+
+    assertThat(books.statusOf(paymentId)).as("matched payment").isEqualTo("APPROVED");
+    assertThat(books.reversedByOf(paymentId)).as("matched payment reversedById").isNull();
+  }
+
+  /**
+   * 646B found.md (647A, HF-1): a contra carries its original's ledger target (§16.3.11). Reversing
+   * a posted {@code NON_CLIENT} row through the generic endpoint ({@code FUND_SWEEP} reverses
+   * {@code IMMEDIATE}) must produce a contra on the original's creditor account — before 647A the
+   * contra had none and {@code chk_trust_txn_ledger_target} refused it.
+   */
+  @Test
+  void genericReversalOfANonClientRow_carriesItsCreditorAccount() {
+    var account = books.freshAccount(false);
+    var fund = books.creditorAccount(account, "FUND_INTEREST_AND_CHARGES");
+    var sweepId =
+        books.postNonClientDirect(account, "FUND_SWEEP", "40.00", TrustBooksFixture.POSTING_DATE);
+
+    var contra = books.reverse(account, sweepId, Expected.cashbookAndFund("40.00"));
+
+    assertThat(contra.ledger()).isEqualTo(TrustLedger.NON_CLIENT);
+    assertThat(contra.creditorAccountId()).isEqualTo(fund);
+    assertThat(books.read(() -> transactionRepository.findById(contra.id()).orElseThrow()))
+        .satisfies(
+            row -> {
+              assertThat(row.getCreditorAccountId()).as("contra creditor account").isEqualTo(fund);
+              assertThat(row.getInvestmentId()).isNull();
+              assertThat(row.getChargeRecoverable()).isNull();
+              assertThat(row.getChargeVatAmount()).isNull();
+            });
+    assertThat(books.statusOf(sweepId)).isEqualTo("REVERSED");
   }
 
   /** Cashbook and the client's ledger as at {@code asAt}, both {@code amount}; books balanced. */

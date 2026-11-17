@@ -31,6 +31,22 @@ class AuditEventTypeRegistryTest {
   }
 
   @Test
+  void recordFromStatementKeys_haveTheirFidelityFundLabels() {
+    // Phase 92 647A (D5): explicit entries, because the synthesised label would read "Trust fund
+    // interest recorded" — "trust fund" is not the Legal Practitioners' Fidelity Fund.
+    var resolved = registry.resolve("trust_fund_interest.recorded");
+    assertThat(resolved.label()).isEqualTo("Fidelity Fund interest recorded");
+    assertThat(resolved.severity()).isEqualTo(AuditSeverity.INFO);
+    assertThat(resolved.group()).isEqualTo(AuditEventGroup.FINANCIAL);
+    assertThat(registry.resolve("trust_fund_sweep.recorded").label())
+        .isEqualTo("Fidelity Fund payment recorded");
+    assertThat(registry.resolve("trust_bank_charge.recorded").label())
+        .isEqualTo("Bank charge recorded");
+    assertThat(registry.resolve("trust_charge_refund.recorded").label())
+        .isEqualTo("Bank charge refund recorded");
+  }
+
+  @Test
   void prefixMatchUsedWhenNoExactMatch() {
     // matter.closure.* should match an unregistered child like matter.closure.something_else.
     var resolved = registry.resolve("matter.closure.something_else");
@@ -214,10 +230,12 @@ class AuditEventTypeRegistryTest {
     // 3 ai.gate.* — exact, same classification as their prefix; stored keys unchanged)
     // + 1 invoice.receipt_generated (exact, Phase 89 632B — additive ADR-342 key)
     // + 1 trust_creditor_account.created (Phase 92 646B) = 51.
+    // + 4 trust_fund_interest/_fund_sweep/_bank_charge/_charge_refund.recorded (Phase 92 647A) =
+    // 55.
     // Default fallback is synthesised inside resolve() and must NOT appear in entries().
     // (Phase 86 slice 2 / Epic 596B removed the 5 deal.* SALES entries; Phase 86 slice 3 / Epic
     // 597B removed proposal.*; Phase 86 slice 7 / Epic 601 removed six ai.specialist.* entries.)
-    assertThat(registry.entries()).hasSize(51);
+    assertThat(registry.entries()).hasSize(55);
     assertThat(registry.entries())
         .extracting(AuditEventTypeMetadata::eventType)
         .doesNotContain("(default fallback)")
@@ -268,8 +286,8 @@ class AuditEventTypeRegistryTest {
 
   @Test
   void entriesMatchingWithEmptyOrNullReturnsAll() {
-    assertThat(registry.entriesMatching(Set.of())).hasSize(51);
-    assertThat(registry.entriesMatching(null)).hasSize(51);
+    assertThat(registry.entriesMatching(Set.of())).hasSize(55);
+    assertThat(registry.entriesMatching(null)).hasSize(55);
   }
 
   @Test

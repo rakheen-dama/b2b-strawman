@@ -108,9 +108,10 @@ public class TrustTransaction {
   @Column(name = "posted_at")
   private Instant postedAt;
 
-  // Phase 92 / 646B (ADR-376): no setters yet — the slice that first posts a non-client or
-  // investment row (647A / 648A) adds the mutator it needs; until then both are always null, which
-  // CLIENT rows require (chk_trust_txn_ledger_target).
+  // Phase 92 / 646B (ADR-376). 647A added setCreditorAccountId (the first NON_CLIENT rows, recorded
+  // from a statement line) and copyLedgerTargetFrom (a contra carries its original's target);
+  // investmentId is set only by copyLedgerTargetFrom until 648A adds its own mutator. Both stay
+  // null on CLIENT rows (chk_trust_txn_ledger_target).
 
   /**
    * The non-client creditor account a NON_CLIENT row moves (ADR-376, chk_trust_txn_ledger_target).
@@ -121,6 +122,17 @@ public class TrustTransaction {
   /** The investment the row belongs to — every INV_*, FIRM_INV_* and FUND_INV_SHARE row (648A). */
   @Column(name = "investment_id")
   private UUID investmentId;
+
+  // --- Bank-charge detail (Phase 92 / 647A, ADR-381): non-null exactly on BANK_CHARGE rows
+  // (chk_trust_txn_charge: 0 <= charge_vat_amount < amount).
+
+  /** BANK_CHARGE only: whether the charge is on the Fund's recoverable list. */
+  @Column(name = "charge_recoverable")
+  private Boolean chargeRecoverable;
+
+  /** BANK_CHARGE only: the VAT included in {@code amount}. */
+  @Column(name = "charge_vat_amount", precision = 15, scale = 2)
+  private BigDecimal chargeVatAmount;
 
   protected TrustTransaction() {}
 
@@ -265,6 +277,14 @@ public class TrustTransaction {
     return investmentId;
   }
 
+  public Boolean getChargeRecoverable() {
+    return chargeRecoverable;
+  }
+
+  public BigDecimal getChargeVatAmount() {
+    return chargeVatAmount;
+  }
+
   /** Signed effect on the cashbook; 0 while unposted (and, in 646A, for reversals). */
   public BigDecimal getCashbookEffect() {
     return cashbookEffect;
@@ -339,5 +359,29 @@ public class TrustTransaction {
 
   public void setBankStatementLineId(UUID bankStatementLineId) {
     this.bankStatementLineId = bankStatementLineId;
+  }
+
+  /**
+   * The non-client creditor account a NON_CLIENT row posts to (647A; chk_trust_txn_ledger_target).
+   */
+  public void setCreditorAccountId(UUID creditorAccountId) {
+    this.creditorAccountId = creditorAccountId;
+  }
+
+  /** A BANK_CHARGE's detail (647A; chk_trust_txn_charge — both set exactly on BANK_CHARGE rows). */
+  public void setChargeDetail(Boolean recoverable, BigDecimal vatAmount) {
+    this.chargeRecoverable = recoverable;
+    this.chargeVatAmount = vatAmount;
+  }
+
+  /**
+   * A contra carries its original's ledger target (§16.3.11): creditor account and investment. The
+   * client and matter are copied by the constructor in {@code newContra}. Charge detail is NOT
+   * copied — {@code chk_trust_txn_charge} requires it null on a REVERSAL. Package-private: {@link
+   * TrustPostingService} only.
+   */
+  void copyLedgerTargetFrom(TrustTransaction original) {
+    this.creditorAccountId = original.creditorAccountId;
+    this.investmentId = original.investmentId;
   }
 }

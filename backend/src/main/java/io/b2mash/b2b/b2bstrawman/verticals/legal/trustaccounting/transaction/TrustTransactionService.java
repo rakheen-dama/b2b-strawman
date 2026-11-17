@@ -232,7 +232,11 @@ public class TrustTransactionService {
       Instant createdAt,
       // ADR-361: server-computed on the client-ledger /history endpoint only; null on every other
       // producer and on non-posted / REVERSAL rows.
-      BigDecimal runningBalance) {}
+      BigDecimal runningBalance,
+      // 647A (ADR-381): BANK_CHARGE only — recoverable from the bank, and the VAT in the amount;
+      // null on every other row (chk_trust_txn_charge).
+      Boolean chargeRecoverable,
+      BigDecimal chargeVatAmount) {}
 
   /**
    * One registry entry as data (§16.4.1) — feeds every type filter. {@code label} is the firm
@@ -1341,12 +1345,11 @@ public class TrustTransactionService {
    * IMMEDIATE}, and {@code OWNER} — the unmatch is the owner's own action). Neither the line nor
    * the originals' {@code bank_statement_line_id} is touched here (647A's unmatch does that).
    *
-   * <p><b>Precondition (647A contract):</b> the caller must only invoke this for a line whose rows
-   * were <i>recorded from the statement</i>. An ordinary match ({@code AUTO_MATCHED} / {@code
-   * MANUALLY_MATCHED}) also sets {@code bank_statement_line_id} on a real firm payment, and
-   * unmatching it must only clear the link — never book a contra. This method cannot tell the two
-   * apart: {@code chk_bank_line_match_status} has no "recorded" state until 647A adds it, at which
-   * point 647A refuses here unless the line is in that state.
+   * <p><b>Enforced precondition (647A, 649B found.md R3):</b> the line must be {@code RECORDED} —
+   * its rows were <i>recorded from the statement</i>. An ordinary match ({@code AUTO_MATCHED} /
+   * {@code MANUALLY_MATCHED}) also sets {@code bank_statement_line_id} on a real firm payment, and
+   * unmatching it must only clear the link — never book a contra; any other line state is refused
+   * ({@code InvalidStateException}).
    *
    * <p>All originals are locked (finder order) and checked before the first contra is posted, so a
    * refusal leaves nothing half-reversed; each contra then takes its client's lock anchor (lock
@@ -1361,6 +1364,12 @@ public class TrustTransactionService {
             .findById(bankStatementLineId)
             .orElseThrow(
                 () -> new ResourceNotFoundException("BankStatementLine", bankStatementLineId));
+    // The line's match status (not a transaction status): only a recorded line created its rows.
+    if (!"RECORDED".equals(line.getMatchStatus())) {
+      throw new InvalidStateException(
+          "Cannot unmatch statement line",
+          "Only a line recorded from the statement has entries to reverse");
+    }
     var memberId = RequestScopes.requireMemberId();
 
     record Unmatched(TrustTransaction original, LocalDate reversalDate) {}
@@ -1892,9 +1901,10 @@ public class TrustTransactionService {
   /**
    * Maps a page of rows with two batched lookups, never one per row: the types of the originals the
    * page's REVERSAL rows reverse (for their {@code direction}), and which of the page's posted rows
-   * have a contra awaiting approval ({@code reversalPending}).
+   * have a contra awaiting approval ({@code reversalPending}). Public for the services that post
+   * rows outside this one ({@code StatementLinePostingService}, 647A).
    */
-  private List<TrustTransactionResponse> toResponses(List<TrustTransaction> rows) {
+  public List<TrustTransactionResponse> toResponses(List<TrustTransaction> rows) {
     Set<UUID> originalIds = new HashSet<>();
     List<UUID> postedIds = new ArrayList<>();
     for (var row : rows) {
@@ -1959,6 +1969,8 @@ public class TrustTransactionService {
         entity.getBankStatementLineId(),
         entity.getRecordedBy(),
         entity.getCreatedAt(),
-        null);
+        null,
+        entity.getChargeRecoverable(),
+        entity.getChargeVatAmount());
   }
 }

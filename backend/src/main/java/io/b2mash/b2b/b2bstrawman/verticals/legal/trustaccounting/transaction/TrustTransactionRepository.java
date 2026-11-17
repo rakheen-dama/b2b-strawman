@@ -221,6 +221,32 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
       @Param("statuses") List<String> statuses);
 
   /**
+   * Every row linked to a bank statement line, whatever its status (647A): the rows a recorded line
+   * created, unlinked when it is unmatched. Oldest first.
+   */
+  @Query(
+      """
+      SELECT t FROM TrustTransaction t
+      WHERE t.bankStatementLineId = :bankStatementLineId
+      ORDER BY t.createdAt ASC, t.id ASC
+      """)
+  List<TrustTransaction> findByBankStatementLineId(
+      @Param("bankStatementLineId") UUID bankStatementLineId);
+
+  /**
+   * Every row linked to any of {@code bankStatementLineIds}, oldest first — the statement GET's
+   * batched "created transactions" of its recorded lines (647A).
+   */
+  @Query(
+      """
+      SELECT t FROM TrustTransaction t
+      WHERE t.bankStatementLineId IN :bankStatementLineIds
+      ORDER BY t.createdAt ASC, t.id ASC
+      """)
+  List<TrustTransaction> findByBankStatementLineIdIn(
+      @Param("bankStatementLineIds") Collection<UUID> bankStatementLineIds);
+
+  /**
    * Monthly net movements on one trust account for the trust-balance trend (Phase 90 643A, ADR-372,
    * arch §15.3.7): one row per SA calendar month from {@code windowStart} to {@code today}, plus
    * one row with a NULL {@code monthStart} holding everything dated before {@code windowStart} (the

@@ -57,6 +57,7 @@ class TrustReconciliationServiceMatchingTest {
   @Autowired private TrustTransactionRepository trustTransactionRepository;
 
   private String tenantSchema;
+  private UUID ownerMemberId;
   private String trustAccountId;
   private String customerId;
 
@@ -65,8 +66,15 @@ class TrustReconciliationServiceMatchingTest {
     tenantSchema =
         provisioningService.provisionTenant(ORG_ID, "Trust Matching Test Org", null).schemaName();
 
-    TestMemberHelper.syncMember(
-        mockMvc, ORG_ID, "user_match_owner", "match_owner@test.com", "Match Owner", "owner");
+    ownerMemberId =
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_match_owner",
+                "match_owner@test.com",
+                "Match Owner",
+                "owner"));
     TestMemberHelper.syncMember(
         mockMvc, ORG_ID, "user_match_admin", "match_admin@test.com", "Match Admin", "admin");
 
@@ -670,6 +678,154 @@ class TrustReconciliationServiceMatchingTest {
               assertThat(lines).hasSize(1);
               assertThat(lines.getFirst().getMatchStatus()).isEqualTo("UNMATCHED");
             });
+  }
+
+  // --- 647A: unmatch by line state (task 647.3) ---
+
+  /**
+   * A recorded line created its row: unmatching it through the reconciliation service delegates to
+   * {@code StatementLinePostingService.unmatch}, which reverses the row with a contra dated the
+   * line's date and resets the line.
+   */
+  @Test
+  void unmatch_ofARecordedLine_reversesItsEntries_andResetsTheLine() throws Exception {
+    String statementId =
+        importStatement(
+            """
+            FNB Trust Account Statement - Account 62012345678
+            Date,Description,Amount,Balance,Reference
+            27/03/2026,Credit interest,246.81,250094.32,INT-MAR-647A
+            """);
+    UUID lineId = firstLineOf(statementId);
+    var recorded =
+        mockMvc
+            .perform(
+                post("/api/bank-statement-lines/{lineId}/record", lineId)
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_match_owner"))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"classification\":\"FUND_INTEREST\"}"))
+            .andExpect(status().isCreated())
+            .andReturn();
+    UUID rowId =
+        UUID.fromString(
+            JsonPath.read(recorded.getResponse().getContentAsString(), "$.transactions[0].id"));
+    assertThat(matchedCountOf(statementId)).isEqualTo(1);
+
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, ownerMemberId)
+        .run(() -> reconciliationService.unmatch(lineId));
+
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .run(
+            () -> {
+              var line = bankStatementLineRepository.findById(lineId).orElseThrow();
+              assertThat(line.getMatchStatus()).isEqualTo("UNMATCHED");
+              assertThat(line.getClassification()).isNull();
+              assertThat(line.getTrustTransactionId()).isNull();
+
+              var original = trustTransactionRepository.findById(rowId).orElseThrow();
+              assertThat(original.getStatus()).isEqualTo("REVERSED");
+              assertThat(original.getBankStatementLineId()).isNull();
+
+              var contras =
+                  trustTransactionRepository.findAll().stream()
+                      .filter(t -> rowId.equals(t.getReversalOf()))
+                      .toList();
+              assertThat(contras).singleElement();
+              assertThat(contras.getFirst().getTransactionDate())
+                  .isEqualTo(java.time.LocalDate.of(2026, 3, 27));
+              assertThat(contras.getFirst().getStatus()).isEqualTo("RECORDED");
+            });
+    assertThat(matchedCountOf(statementId)).isZero();
+  }
+
+  /**
+   * AC9: unmatching an ordinary match is unchanged — the link is cleared and nothing is reversed
+   * (the row existed before the match).
+   */
+  @Test
+  void unmatch_ofAMatchedLine_staysAsBefore_noContra() throws Exception {
+    String depositId = createDeposit("REF-UNMATCH-647A", "4321.09", "2026-03-21");
+    String statementId =
+        importStatement(
+            """
+            FNB Trust Account Statement - Account 62012345678
+            Date,Description,Amount,Balance,Reference
+            21/03/2026,Deposit,4321.09,254415.41,UNMATCH-647A
+            """);
+    UUID lineId = firstLineOf(statementId);
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .run(() -> reconciliationService.manualMatch(lineId, UUID.fromString(depositId)));
+
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .run(() -> reconciliationService.unmatch(lineId));
+
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .run(
+            () -> {
+              assertThat(
+                      bankStatementLineRepository.findById(lineId).orElseThrow().getMatchStatus())
+                  .isEqualTo("UNMATCHED");
+              var deposit =
+                  trustTransactionRepository.findById(UUID.fromString(depositId)).orElseThrow();
+              assertThat(deposit.getStatus()).isEqualTo("RECORDED");
+              assertThat(deposit.getBankStatementLineId()).isNull();
+              assertThat(deposit.getReversedById()).isNull();
+              assertThat(
+                      trustTransactionRepository.findAll().stream()
+                          .filter(t -> deposit.getId().equals(t.getReversalOf())))
+                  .as("no contra for a matched line")
+                  .isEmpty();
+            });
+    assertThat(matchedCountOf(statementId)).isZero();
+  }
+
+  /** An excluded line still cannot be unmatched (there is no un-exclude). */
+  @Test
+  void unmatch_ofAnExcludedLine_isStillRefused() throws Exception {
+    String statementId =
+        importStatement(
+            """
+            FNB Trust Account Statement - Account 62012345678
+            Date,Description,Amount,Balance,Reference
+            23/03/2026,Bank fee,-61.00,254354.41,BANK-FEE-647A
+            """);
+    UUID lineId = firstLineOf(statementId);
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .run(() -> reconciliationService.excludeLine(lineId, "Not a trust movement"));
+
+    assertThatThrownBy(
+            () ->
+                ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+                    .run(() -> reconciliationService.unmatch(lineId)))
+        .isInstanceOf(InvalidStateException.class);
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .run(
+            () ->
+                assertThat(
+                        bankStatementLineRepository.findById(lineId).orElseThrow().getMatchStatus())
+                    .isEqualTo("EXCLUDED"));
+  }
+
+  private UUID firstLineOf(String statementId) {
+    return ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .call(
+            () ->
+                bankStatementLineRepository
+                    .findByBankStatementIdOrderByLineNumber(UUID.fromString(statementId))
+                    .getFirst()
+                    .getId());
+  }
+
+  private int matchedCountOf(String statementId) {
+    return ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .call(
+            () ->
+                bankStatementRepository
+                    .findById(UUID.fromString(statementId))
+                    .orElseThrow()
+                    .getMatchedCount());
   }
 
   private final java.util.Map<String, UUID> trustMatters = new java.util.HashMap<>();

@@ -53,6 +53,18 @@ public class BankStatementLine {
   @Column(name = "excluded_reason", length = 200)
   private String excludedReason;
 
+  /**
+   * The {@link StatementLineClassification} the firm confirmed (647A); non-null exactly when {@code
+   * match_status = 'RECORDED'} ({@code chk_bank_line_classification}). Stored as the code so a
+   * later slice's value never breaks this reader.
+   */
+  @Column(name = "classification", length = 30)
+  private String classification;
+
+  /** The parser's suggestion, set at import (647C writes it); never acted on by the system. */
+  @Column(name = "suggested_classification", length = 30)
+  private String suggestedClassification;
+
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
 
@@ -143,6 +155,18 @@ public class BankStatementLine {
 
   public void setExcludedReason(String excludedReason) {
     this.excludedReason = excludedReason;
+  }
+
+  public String getClassification() {
+    return classification;
+  }
+
+  public void setClassification(String classification) {
+    this.classification = classification;
+  }
+
+  public String getSuggestedClassification() {
+    return suggestedClassification;
   }
 
   public Instant getCreatedAt() {

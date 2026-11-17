@@ -6,6 +6,95 @@
     "TrustTransactionType.Reversal" : [ "IMMEDIATE", "NEEDS_APPROVAL", "PAIR", "VIA_PAIR", "OWNER", "NONE" ]
   },
   "records" : {
+    "BankStatementLineResponse" : [ {
+      "name" : "id",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "lineNumber",
+      "type" : "int"
+    }, {
+      "name" : "transactionDate",
+      "type" : "java.time.LocalDate"
+    }, {
+      "name" : "description",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "reference",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "amount",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "runningBalance",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "matchStatus",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "trustTransactionId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "matchConfidence",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "classification",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "classificationLabel",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "suggestedClassification",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "createdTransactionIds",
+      "type" : "java.util.List<java.util.UUID>"
+    } ],
+    "BankStatementResponse" : [ {
+      "name" : "id",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "trustAccountId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "periodStart",
+      "type" : "java.time.LocalDate"
+    }, {
+      "name" : "periodEnd",
+      "type" : "java.time.LocalDate"
+    }, {
+      "name" : "openingBalance",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "closingBalance",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "fileName",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "format",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "lineCount",
+      "type" : "int"
+    }, {
+      "name" : "matchedCount",
+      "type" : "int"
+    }, {
+      "name" : "status",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "importedBy",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "createdAt",
+      "type" : "java.time.Instant"
+    }, {
+      "name" : "updatedAt",
+      "type" : "java.time.Instant"
+    }, {
+      "name" : "lines",
+      "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService$BankStatementLineResponse>"
+    } ],
     "CreditorBreakdown" : [ {
       "name" : "clientLedgers",
       "type" : "java.math.BigDecimal"
@@ -27,6 +116,19 @@
     }, {
       "name" : "total",
       "type" : "java.math.BigDecimal"
+    } ],
+    "RecordFromLineResponse" : [ {
+      "name" : "line",
+      "type" : "io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService$BankStatementLineResponse"
+    }, {
+      "name" : "transactions",
+      "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService$TrustTransactionResponse>"
+    }, {
+      "name" : "unidentifiedDepositId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "investmentInterestId",
+      "type" : "java.util.UUID"
     } ],
     "TotalBalanceResponse" : [ {
       "name" : "balance",
@@ -240,6 +342,12 @@
       "type" : "java.time.Instant"
     }, {
       "name" : "runningBalance",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "chargeRecoverable",
+      "type" : "java.lang.Boolean"
+    }, {
+      "name" : "chargeVatAmount",
       "type" : "java.math.BigDecimal"
     } ],
     "TrustTransactionTypeResponse" : [ {

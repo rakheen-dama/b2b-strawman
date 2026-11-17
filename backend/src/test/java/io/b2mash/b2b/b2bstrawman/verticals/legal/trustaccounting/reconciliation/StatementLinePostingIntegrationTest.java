@@ -1,0 +1,798 @@
+package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.jayway.jsonpath.JsonPath;
+import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.audit.AuditEvent;
+import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
+import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.BooksSnapshot;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksFixture;
+import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksFixture.StatementLine;
+import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness;
+import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness.Expected;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustBooksService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustBooksService.BankPosition;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedger;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.UUID;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
+
+/**
+ * Phase 92 slice 647A (task 647.5; architecture §16.3.5, §16.9.2 paths 12 and 13; ADR-380,
+ * ADR-381): record from statement. An unmatched statement line is recorded as {@code
+ * FUND_INTEREST}, {@code FUND_SWEEP}, {@code BANK_CHARGE} or {@code CHARGE_REFUND}: one posted
+ * {@code NON_CLIENT} row on the account's Fund interest-and-charges ledger, dated the line's date,
+ * linked to the line, which becomes {@code RECORDED}. Unmatching a recorded line reverses what it
+ * created with a contra dated the line's date. Every posting step is asserted through the {@link
+ * TrustBooksHarness} ({@code assertMoves}); the class ends with {@code assertFirmBalanced(today)}.
+ *
+ * <p>One tenant; every test uses a fresh trust account; HTTP status, titles and details are
+ * asserted through MockMvc.
+ */
+@SpringBootTest
+@AutoConfigureMockMvc
+@Import(TestcontainersConfiguration.class)
+@ActiveProfiles("test")
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+class StatementLinePostingIntegrationTest {
+
+  private static final String ORG_ID = "org_statement_line_posting";
+  private static final String OWNER = "user_slp_owner";
+  private static final String MEMBER = "user_slp_member";
+  private static final String RECORD_TITLE = "Cannot record statement line";
+  private static final String FUND = "FUND_INTEREST_AND_CHARGES";
+  private static final String FUND_INTEREST_LABEL =
+      "Interest received for the Legal Practitioners' Fidelity Fund";
+
+  @Autowired private MockMvc mockMvc;
+  @Autowired private TenantProvisioningService provisioningService;
+  @Autowired private TrustBooksFixture fixture;
+  @Autowired private TrustBooksHarness harness;
+  @Autowired private TrustTransactionRepository transactionRepository;
+  @Autowired private BankStatementLineRepository lineRepository;
+  @Autowired private BankStatementRepository statementRepository;
+  @Autowired private TrustBooksService booksService;
+  @Autowired private TrustAccountService trustAccountService;
+  @Autowired private AuditEventRepository auditEventRepository;
+
+  private TrustBooksFixture.Tenant books;
+  private UUID ownerId;
+
+  @BeforeAll
+  void setup() throws Exception {
+    var schema =
+        provisioningService
+            .provisionTenant(ORG_ID, "Statement Line Posting Org", null)
+            .schemaName();
+    ownerId =
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, OWNER, "slp_owner@test.com", "SLP Owner", "owner"));
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, MEMBER, "slp_member@test.com", "SLP Member", "member");
+    fixture.enableTrustModule(schema);
+    books = fixture.tenant(schema, ORG_ID, ownerId);
+  }
+
+  @AfterAll
+  void booksBalanceFirmWide() {
+    books.assertFirmBalanced();
+  }
+
+  /** A date ten days back: in the past, so a recorded line can also be unmatched. */
+  private LocalDate pastDate() {
+    return books.today().minusDays(10);
+  }
+
+  // --- path 12: each classification -------------------------------------------------------
+
+  @Test
+  void recordsFundInterest_fromACreditLine_dated_the_lines_date() throws Exception {
+    var account = books.freshAccount(false);
+    var date = pastDate();
+    var line = books.unmatchedLine(account, date, "1234.56", "INT-OCT");
+
+    var body = new String[1];
+    moves(
+        account,
+        Expected.cashbookAndFund("1234.56"),
+        () ->
+            body[0] =
+                record(line.lineId(), "{\"classification\":\"FUND_INTEREST\"}")
+                    .andExpect(status().isCreated())
+                    .andExpect(jsonPath("$.line.id").value(line.lineId().toString()))
+                    .andExpect(jsonPath("$.line.matchStatus").value("RECORDED"))
+                    .andExpect(jsonPath("$.line.classification").value("FUND_INTEREST"))
+                    .andExpect(jsonPath("$.line.classificationLabel").value(FUND_INTEREST_LABEL))
+                    .andExpect(jsonPath("$.line.suggestedClassification").isEmpty())
+                    .andExpect(jsonPath("$.line.matchConfidence").isEmpty())
+                    .andExpect(jsonPath("$.transactions.length()").value(1))
+                    .andExpect(jsonPath("$.transactions[0].transactionType").value("FUND_INTEREST"))
+                    .andExpect(jsonPath("$.transactions[0].typeLabel").value(FUND_INTEREST_LABEL))
+                    .andExpect(jsonPath("$.transactions[0].ledger").value("NON_CLIENT"))
+                    .andExpect(jsonPath("$.transactions[0].status").value("RECORDED"))
+                    .andExpect(jsonPath("$.transactions[0].amount").value(1234.56))
+                    .andExpect(jsonPath("$.transactions[0].transactionDate").value(date.toString()))
+                    .andExpect(jsonPath("$.transactions[0].chargeRecoverable").isEmpty())
+                    .andExpect(jsonPath("$.transactions[0].chargeVatAmount").isEmpty())
+                    .andExpect(jsonPath("$.unidentifiedDepositId").isEmpty())
+                    .andExpect(jsonPath("$.investmentInterestId").isEmpty())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString());
+
+    var rowId = UUID.fromString(JsonPath.read(body[0], "$.transactions[0].id"));
+    assertThat(JsonPath.<String>read(body[0], "$.line.createdTransactionIds[0]"))
+        .isEqualTo(rowId.toString());
+    assertThat(JsonPath.<String>read(body[0], "$.line.trustTransactionId"))
+        .isEqualTo(rowId.toString());
+
+    var row = row(rowId);
+    assertThat(row.getTransactionType()).isEqualTo("FUND_INTEREST");
+    assertThat(row.getBankStatementLineId()).isEqualTo(line.lineId());
+    assertThat(row.getCreditorAccountId()).isEqualTo(books.creditorAccount(account, FUND));
+    assertThat(row.getCustomerId()).isNull();
+    assertThat(row.getProjectId()).isNull();
+    assertThat(row.getLedger()).isEqualTo(TrustLedger.NON_CLIENT);
+    assertThat(row.getReference()).isEqualTo("INT-OCT");
+    assertThat(row.getDescription()).isEqualTo("Trust books statement line 1");
+    assertThat(row.getTransactionDate()).isEqualTo(date);
+    assertThat(row.getChargeRecoverable()).isNull();
+    assertThat(row.getChargeVatAmount()).isNull();
+
+    var recorded = line(line.lineId());
+    assertThat(recorded.getMatchStatus()).isEqualTo("RECORDED");
+    assertThat(recorded.getClassification()).isEqualTo("FUND_INTEREST");
+    assertThat(recorded.getTrustTransactionId()).isEqualTo(rowId);
+    assertThat(recorded.getMatchConfidence()).isNull();
+    assertThat(matchedCount(line)).isEqualTo(1);
+
+    // Dated the line's date: not in the books the day before, in them on the day.
+    assertThat(books.snapshotAsAt(account, date.minusDays(1)).fundLedger())
+        .isEqualByComparingTo("0");
+    assertThat(books.snapshotAsAt(account, date).fundLedger()).isEqualByComparingTo("1234.56");
+    assertThat(books.snapshotAsAt(account, date).cashbook()).isEqualByComparingTo("1234.56");
+  }
+
+  @Test
+  void recordsFundSweep_fromADebitLine_withTheStatementReference_andNoSufficiencyCheck()
+      throws Exception {
+    var account = books.freshAccount(false);
+    var date = pastDate();
+    var line = books.unmatchedLine(account, date, "-500.00", null);
+
+    var rowId = recordAndMove(account, line, "{\"classification\":\"FUND_SWEEP\"}", "-500.00");
+
+    assertThat(row(rowId).getReference())
+        .isEqualTo("STMT-1-" + date.format(DateTimeFormatter.BASIC_ISO_DATE));
+    // The Fund ledger was empty: a sweep drives it into debit, and nothing refuses it.
+    var snapshot = snapshot(account);
+    assertThat(snapshot.fundLedger()).isEqualByComparingTo("-500.00");
+    assertThat(snapshot.cashbook()).isEqualByComparingTo("-500.00");
+    assertBalanced(account);
+  }
+
+  @Test
+  void recordsBankCharge_recoverable_withVat() throws Exception {
+    var account = books.freshAccount(false);
+    var line = books.unmatchedLine(account, pastDate(), "-57.50", "SERVICE FEE");
+
+    var body = new String[1];
+    moves(
+        account,
+        Expected.cashbookAndFund("-57.50"),
+        () ->
+            body[0] =
+                record(
+                        line.lineId(),
+                        "{\"classification\":\"BANK_CHARGE\",\"chargeRecoverable\":true,"
+                            + "\"chargeVatAmount\":7.50}")
+                    .andExpect(status().isCreated())
+                    .andExpect(jsonPath("$.line.classificationLabel").value("Bank charge"))
+                    .andExpect(jsonPath("$.transactions[0].transactionType").value("BANK_CHARGE"))
+                    .andExpect(jsonPath("$.transactions[0].direction").value("OUT"))
+                    .andExpect(jsonPath("$.transactions[0].amount").value(57.5))
+                    .andExpect(jsonPath("$.transactions[0].chargeRecoverable").value(true))
+                    .andExpect(jsonPath("$.transactions[0].chargeVatAmount").value(7.5))
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString());
+
+    var row = row(UUID.fromString(JsonPath.read(body[0], "$.transactions[0].id")));
+    assertThat(row.getChargeRecoverable()).isTrue();
+    assertThat(row.getChargeVatAmount()).isEqualByComparingTo("7.50");
+  }
+
+  @Test
+  void recordsBankCharge_notRecoverable_zeroVat() throws Exception {
+    var account = books.freshAccount(false);
+    var line = books.unmatchedLine(account, pastDate(), "-12.00", "CASH FEE");
+
+    var rowId =
+        recordAndMove(
+            account,
+            line,
+            "{\"classification\":\"BANK_CHARGE\",\"chargeRecoverable\":false,"
+                + "\"chargeVatAmount\":0}",
+            "-12.00");
+
+    var row = row(rowId);
+    assertThat(row.getChargeRecoverable()).isFalse();
+    assertThat(row.getChargeVatAmount()).isEqualByComparingTo("0.00");
+  }
+
+  @Test
+  void recordsChargeRefund_fromACreditLine() throws Exception {
+    var account = books.freshAccount(false);
+    var line = books.unmatchedLine(account, pastDate(), "57.50", "FEE REFUND");
+
+    var rowId = recordAndMove(account, line, "{\"classification\":\"CHARGE_REFUND\"}", "57.50");
+
+    assertThat(row(rowId).getTransactionType()).isEqualTo("CHARGE_REFUND");
+    assertThat(line(line.lineId()).getClassification()).isEqualTo("CHARGE_REFUND");
+  }
+
+  // --- path 13: the Fund ledger in debit --------------------------------------------------
+
+  @Test
+  void aChargeBeforeAnyInterest_drivesTheFundLedgerIntoDebit_andTheBooksStayBalanced()
+      throws Exception {
+    var account = books.freshAccount(false);
+    var interestDate = pastDate();
+    var chargeDate = interestDate.minusDays(5);
+    var charge = books.unmatchedLine(account, chargeDate, "-57.50", "CHG-EARLY");
+    var interestLine = books.addLine(charge.statementId(), 2, interestDate, "100.00", "INT-LATE");
+
+    recordAndMove(
+        account,
+        charge,
+        "{\"classification\":\"BANK_CHARGE\",\"chargeRecoverable\":true,\"chargeVatAmount\":7.50}",
+        "-57.50");
+
+    assertThat(snapshot(account).fundLedger()).isEqualByComparingTo("-57.50");
+    assertBalanced(account);
+    books.assertBalancedAsAt(account, chargeDate);
+    assertThat(books.snapshotAsAt(account, chargeDate).fundLedger()).isEqualByComparingTo("-57.50");
+
+    recordAndMove(
+        account,
+        new StatementLine(charge.statementId(), interestLine),
+        "{\"classification\":\"FUND_INTEREST\"}",
+        "100.00");
+
+    assertThat(snapshot(account).fundLedger()).isEqualByComparingTo("42.50");
+    books.assertBalancedAsAt(account, interestDate);
+    assertThat(matchedCount(charge)).isEqualTo(2);
+  }
+
+  // --- path 12: unmatch reverses on the line's date ---------------------------------------
+
+  @Test
+  void aRecordedLine_reversesOnUnmatch_dated_the_lines_date() throws Exception {
+    var account = books.freshAccount(false);
+    var date = pastDate();
+    var line = books.unmatchedLine(account, date, "-300.00", "LPFF-SWEEP");
+    var beforeOnTheDay = books.snapshotAsAt(account, date);
+    var rowId = recordAndMove(account, line, "{\"classification\":\"FUND_SWEEP\"}", "-300.00");
+
+    moves(
+        account,
+        Expected.cashbookAndFund("300.00"),
+        () -> unmatch(line.lineId()).andExpect(status().isOk()));
+
+    var contras = reversalsOf(rowId);
+    assertThat(contras).hasSize(1);
+    var contra = contras.getFirst();
+    assertThat(contra.getTransactionDate()).as("contra dated the line's date").isEqualTo(date);
+    assertThat(contra.getStatus()).isEqualTo("RECORDED");
+    assertThat(contra.getLedger()).isEqualTo(TrustLedger.NON_CLIENT);
+    assertThat(contra.getCreditorAccountId()).isEqualTo(books.creditorAccount(account, FUND));
+    assertThat(contra.getBankStatementLineId()).isNull();
+    assertThat(contra.getChargeRecoverable()).isNull();
+
+    var original = row(rowId);
+    assertThat(original.getStatus()).isEqualTo("REVERSED");
+    assertThat(original.getReversedById()).isEqualTo(contra.getId());
+    assertThat(original.getBankStatementLineId()).as("original unlinked").isNull();
+
+    var unmatched = line(line.lineId());
+    assertThat(unmatched.getMatchStatus()).isEqualTo("UNMATCHED");
+    assertThat(unmatched.getClassification()).isNull();
+    assertThat(unmatched.getTrustTransactionId()).isNull();
+    assertThat(unmatched.getSuggestedClassification()).isNull();
+    assertThat(matchedCount(line)).isZero();
+
+    // The pair nets to zero on the line's date: as at that date nothing changed.
+    var afterOnTheDay = books.snapshotAsAt(account, date);
+    assertThat(afterOnTheDay.cashbook()).isEqualByComparingTo(beforeOnTheDay.cashbook());
+    assertThat(afterOnTheDay.fundLedger()).isEqualByComparingTo(beforeOnTheDay.fundLedger());
+    books.assertBalancedAsAt(account, date);
+  }
+
+  @Test
+  void afterUnmatch_theCancellingPairIsNotAnOutstandingItem() throws Exception {
+    var account = books.freshAccount(false);
+    var date = pastDate();
+    var line = books.unmatchedLine(account, date, "1234.56", "INT-PAIR");
+    var dates = List.of(date, date.plusDays(1), books.today());
+    var before = dates.stream().map(asAt -> bankPosition(account, line, asAt)).toList();
+
+    recordAndMove(account, line, "{\"classification\":\"FUND_INTEREST\"}", "1234.56");
+    moves(
+        account,
+        Expected.cashbookAndFund("-1234.56"),
+        () -> unmatch(line.lineId()).andExpect(status().isOk()));
+
+    for (int i = 0; i < dates.size(); i++) {
+      var after = bankPosition(account, line, dates.get(i));
+      assertThat(after.outstandingDeposits())
+          .as("outstanding deposits as at %s", dates.get(i))
+          .isEqualByComparingTo(before.get(i).outstandingDeposits());
+      assertThat(after.outstandingPayments())
+          .as("outstanding payments as at %s", dates.get(i))
+          .isEqualByComparingTo(before.get(i).outstandingPayments());
+    }
+  }
+
+  @Test
+  void unmatch_afterTheRowWasReversedGenerically_resetsTheLine_andMovesNothing() throws Exception {
+    var account = books.freshAccount(false);
+    var line = books.unmatchedLine(account, pastDate(), "-300.00", "SWEEP-GEN");
+    var rowId = recordAndMove(account, line, "{\"classification\":\"FUND_SWEEP\"}", "-300.00");
+
+    // FUND_SWEEP reverses IMMEDIATE on the generic endpoint; the contra carries the Fund ledger
+    // (HF-1 through the real record path).
+    var generic = books.reverse(account, rowId, Expected.cashbookAndFund("300.00"));
+    assertThat(generic.creditorAccountId()).isEqualTo(books.creditorAccount(account, FUND));
+
+    moves(account, Expected.none(), () -> unmatch(line.lineId()).andExpect(status().isOk()));
+
+    assertThat(line(line.lineId()).getMatchStatus()).isEqualTo("UNMATCHED");
+    assertThat(line(line.lineId()).getClassification()).isNull();
+    assertThat(row(rowId).getBankStatementLineId()).isNull();
+    assertThat(reversalsOf(rowId)).as("no second contra").hasSize(1);
+    assertThat(matchedCount(line)).isZero();
+  }
+
+  // --- refusals: 400, and nothing moves ---------------------------------------------------
+
+  @Test
+  void aLineAlreadyMatched_isRefused() throws Exception {
+    var account = books.freshAccount(false);
+    var date = pastDate();
+    var interestId = books.postNonClientDirect(account, "FUND_INTEREST", "10.00", date);
+    var lineId = books.matchedLineFor(account, interestId, date);
+
+    assertRecordRefused(
+        account,
+        lineId,
+        "{\"classification\":\"FUND_INTEREST\"}",
+        RECORD_TITLE,
+        "This statement line is already matched, recorded or excluded");
+    assertThat(line(lineId).getMatchStatus()).isEqualTo("MANUALLY_MATCHED");
+  }
+
+  @Test
+  void aLineAlreadyRecorded_isRefused() throws Exception {
+    var account = books.freshAccount(false);
+    var line = books.unmatchedLine(account, pastDate(), "25.00", "INT-TWICE");
+    var rowId = recordAndMove(account, line, "{\"classification\":\"FUND_INTEREST\"}", "25.00");
+
+    assertRecordRefused(
+        account,
+        line.lineId(),
+        "{\"classification\":\"CHARGE_REFUND\"}",
+        RECORD_TITLE,
+        "This statement line is already matched, recorded or excluded");
+    assertThat(line(line.lineId()).getTrustTransactionId()).isEqualTo(rowId);
+    assertThat(line(line.lineId()).getClassification()).isEqualTo("FUND_INTEREST");
+    assertThat(matchedCount(line)).isEqualTo(1);
+  }
+
+  @Test
+  void anExcludedLine_isRefused() throws Exception {
+    var account = books.freshAccount(false);
+    var line = books.unmatchedLine(account, pastDate(), "9.00", "EXCL");
+    mockMvc
+        .perform(
+            post("/api/bank-statement-lines/{lineId}/exclude", line.lineId())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"reason\":\"Bank error\"}"))
+        .andExpect(status().isOk());
+
+    assertRecordRefused(
+        account,
+        line.lineId(),
+        "{\"classification\":\"FUND_INTEREST\"}",
+        RECORD_TITLE,
+        "This statement line is already matched, recorded or excluded");
+    assertThat(line(line.lineId()).getMatchStatus()).isEqualTo("EXCLUDED");
+  }
+
+  @Test
+  void aClassificationAgainstTheLinesSign_isRefused_inBothDirections() throws Exception {
+    var account = books.freshAccount(false);
+    var debit = books.unmatchedLine(account, pastDate(), "-20.00", "DR");
+    var credit = books.unmatchedLine(account, pastDate(), "20.00", "CR");
+
+    assertRecordRefused(
+        account,
+        debit.lineId(),
+        "{\"classification\":\"FUND_INTEREST\"}",
+        "Classification does not match the line",
+        FUND_INTEREST_LABEL + " is recorded from a credit line; this line is a debit");
+    assertRecordRefused(
+        account,
+        credit.lineId(),
+        "{\"classification\":\"BANK_CHARGE\",\"chargeRecoverable\":true,\"chargeVatAmount\":0}",
+        "Classification does not match the line",
+        "Bank charge is recorded from a debit line; this line is a credit");
+  }
+
+  @Test
+  void aBankChargeWithoutOrWithBadDetail_andDetailOnANonCharge_areRefused() throws Exception {
+    var account = books.freshAccount(false);
+    var line = books.unmatchedLine(account, pastDate(), "-57.50", "CHG");
+    var missing = "A bank charge needs whether it is recoverable and its VAT amount";
+    var vatRange = "The VAT amount must be zero or more and less than the charge";
+
+    assertRecordRefused(
+        account,
+        line.lineId(),
+        "{\"classification\":\"BANK_CHARGE\",\"chargeVatAmount\":7.50}",
+        RECORD_TITLE,
+        missing);
+    assertRecordRefused(
+        account,
+        line.lineId(),
+        "{\"classification\":\"BANK_CHARGE\",\"chargeRecoverable\":true}",
+        RECORD_TITLE,
+        missing);
+    assertRecordRefused(
+        account,
+        line.lineId(),
+        "{\"classification\":\"BANK_CHARGE\",\"chargeRecoverable\":true,\"chargeVatAmount\":57.50}",
+        RECORD_TITLE,
+        vatRange);
+    assertRecordRefused(
+        account,
+        line.lineId(),
+        "{\"classification\":\"BANK_CHARGE\",\"chargeRecoverable\":true,\"chargeVatAmount\":-1}",
+        RECORD_TITLE,
+        vatRange);
+    assertRecordRefused(
+        account,
+        line.lineId(),
+        "{\"classification\":\"FUND_SWEEP\",\"chargeRecoverable\":true}",
+        RECORD_TITLE,
+        "Recoverable and VAT apply only to a bank charge");
+    assertThat(line(line.lineId()).getMatchStatus()).isEqualTo("UNMATCHED");
+  }
+
+  @Test
+  void aLineOnAClosedAccount_isRefused() throws Exception {
+    var account = books.freshAccount(false);
+    var line = books.unmatchedLine(account, pastDate(), "15.00", "LATE");
+    books.as(ownerId, () -> trustAccountService.closeTrustAccount(account));
+
+    assertRecordRefused(
+        account,
+        line.lineId(),
+        "{\"classification\":\"FUND_INTEREST\"}",
+        RECORD_TITLE,
+        "Trust account is closed");
+  }
+
+  @Test
+  void aClassificationNotYetSupported_andAZeroLine_areRefused() throws Exception {
+    var account = books.freshAccount(false);
+    var credit = books.unmatchedLine(account, pastDate(), "15.00", "UNKNOWN DEPOSIT");
+    var zero = books.unmatchedLine(account, pastDate(), "0.00", "BALANCE B/F");
+
+    // 647B's classification is not in 647A's enum: Jackson refuses it (the detail is not ours).
+    moves(
+        account,
+        Expected.none(),
+        () ->
+            record(credit.lineId(), "{\"classification\":\"UNIDENTIFIED_DEPOSIT\"}")
+                .andExpect(status().isBadRequest()));
+    // No classification at all (@NotNull).
+    moves(
+        account,
+        Expected.none(),
+        () -> record(credit.lineId(), "{}").andExpect(status().isBadRequest()));
+    assertRecordRefused(
+        account,
+        zero.lineId(),
+        "{\"classification\":\"FUND_INTEREST\"}",
+        RECORD_TITLE,
+        "A zero-amount statement line cannot be recorded");
+    assertThat(line(credit.lineId()).getMatchStatus()).isEqualTo("UNMATCHED");
+  }
+
+  // --- who, and no approval ---------------------------------------------------------------
+
+  @Test
+  void aMemberWithViewTrustOnly_isForbidden_andNothingMoves() throws Exception {
+    var account = books.freshAccount(false);
+    var line = books.unmatchedLine(account, pastDate(), "40.00", "INT-MEMBER");
+
+    moves(
+        account,
+        Expected.none(),
+        () ->
+            mockMvc
+                .perform(
+                    post("/api/bank-statement-lines/{lineId}/record", line.lineId())
+                        .with(TestJwtFactory.memberJwt(ORG_ID, MEMBER))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"classification\":\"FUND_INTEREST\"}"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.title").value("Access denied")));
+    assertThat(line(line.lineId()).getMatchStatus()).isEqualTo("UNMATCHED");
+
+    recordAndMove(account, line, "{\"classification\":\"FUND_INTEREST\"}", "40.00");
+    moves(
+        account,
+        Expected.none(),
+        () ->
+            mockMvc
+                .perform(
+                    post("/api/bank-statement-lines/{lineId}/unmatch", line.lineId())
+                        .with(TestJwtFactory.memberJwt(ORG_ID, MEMBER)))
+                .andExpect(status().isForbidden()));
+    assertThat(line(line.lineId()).getMatchStatus()).isEqualTo("RECORDED");
+  }
+
+  @Test
+  void noApprovalStep_theRowIsRecordedAtOnce_byTheCaller() throws Exception {
+    var account = books.freshAccount(true);
+    var line = books.unmatchedLine(account, pastDate(), "-80.00", "SWEEP-DUAL");
+
+    var rowId = recordAndMove(account, line, "{\"classification\":\"FUND_SWEEP\"}", "-80.00");
+
+    var row = row(rowId);
+    assertThat(row.getStatus()).isEqualTo("RECORDED");
+    assertThat(row.getPostedAt()).isNotNull();
+    assertThat(row.getRecordedBy()).isEqualTo(ownerId);
+    assertThat(row.getApprovedBy()).isNull();
+    assertThat(
+            books.read(
+                () ->
+                    transactionRepository.findAll().stream()
+                        .filter(t -> account.equals(t.getTrustAccountId()))
+                        .filter(t -> "AWAITING_APPROVAL".equals(t.getStatus()))
+                        .count()))
+        .isZero();
+  }
+
+  // --- the statement GET and the audit trail ----------------------------------------------
+
+  @Test
+  void statementGet_carriesTheLineClassificationAndCreatedIds() throws Exception {
+    var account = books.freshAccount(false);
+    var date = pastDate();
+    var first = books.unmatchedLine(account, date, "-57.50", "CHG-GET");
+    books.addLine(first.statementId(), 2, date, "11.00", "OTHER");
+    var rowId =
+        recordAndMove(
+            account,
+            first,
+            "{\"classification\":\"BANK_CHARGE\",\"chargeRecoverable\":false,"
+                + "\"chargeVatAmount\":7.50}",
+            "-57.50");
+
+    mockMvc
+        .perform(
+            get("/api/bank-statements/{statementId}", first.statementId())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.matchedCount").value(1))
+        .andExpect(jsonPath("$.lines[0].matchStatus").value("RECORDED"))
+        .andExpect(jsonPath("$.lines[0].classification").value("BANK_CHARGE"))
+        .andExpect(jsonPath("$.lines[0].classificationLabel").value("Bank charge"))
+        .andExpect(jsonPath("$.lines[0].suggestedClassification").isEmpty())
+        .andExpect(jsonPath("$.lines[0].createdTransactionIds.length()").value(1))
+        .andExpect(jsonPath("$.lines[0].createdTransactionIds[0]").value(rowId.toString()))
+        .andExpect(jsonPath("$.lines[1].matchStatus").value("UNMATCHED"))
+        .andExpect(jsonPath("$.lines[1].classification").isEmpty())
+        .andExpect(jsonPath("$.lines[1].classificationLabel").isEmpty())
+        .andExpect(jsonPath("$.lines[1].createdTransactionIds").isArray())
+        .andExpect(jsonPath("$.lines[1].createdTransactionIds").isEmpty());
+  }
+
+  @Test
+  void audit_recordAndUnmatch() throws Exception {
+    var account = books.freshAccount(false);
+    var line = books.unmatchedLine(account, pastDate(), "-57.50", "CHG-AUDIT");
+    var rowId =
+        recordAndMove(
+            account,
+            line,
+            "{\"classification\":\"BANK_CHARGE\",\"chargeRecoverable\":false,"
+                + "\"chargeVatAmount\":7.50,\"notes\":\"Cash fee\"}",
+            "-57.50");
+    moves(
+        account,
+        Expected.cashbookAndFund("57.50"),
+        () -> unmatch(line.lineId()).andExpect(status().isOk()));
+
+    var recorded = audit("bank_statement_line", line.lineId(), "bank_statement_line.recorded");
+    assertThat(recorded.getDetails())
+        .containsEntry("classification", "BANK_CHARGE")
+        .containsEntry("amount", "57.50")
+        .containsEntry("statement_id", line.statementId().toString())
+        .containsEntry("transaction_ids", List.of(rowId.toString()))
+        .containsEntry("notes", "Cash fee");
+    assertThat(recorded.getActorId()).isEqualTo(ownerId);
+
+    var charge = audit("trust_transaction", rowId, "trust_bank_charge.recorded");
+    assertThat(charge.getDetails())
+        .containsEntry("recoverable", "false")
+        .containsEntry("vat_amount", "7.50")
+        .containsEntry("amount", "57.50")
+        .containsEntry("reference", "CHG-AUDIT")
+        .containsEntry("bank_statement_line_id", line.lineId().toString())
+        .containsEntry("creditor_account_id", books.creditorAccount(account, FUND).toString());
+
+    var unmatched = audit("bank_statement_line", line.lineId(), "bank_statement_line.unmatched");
+    assertThat(unmatched.getDetails())
+        .containsEntry("classification", "BANK_CHARGE")
+        .containsEntry("reversed_transaction_ids", List.of(rowId.toString()))
+        .containsEntry("statement_id", line.statementId().toString());
+  }
+
+  // --- helpers ----------------------------------------------------------------------------
+
+  /** A MockMvc step that may throw. */
+  @FunctionalInterface
+  private interface Step {
+    void run() throws Exception;
+  }
+
+  /** {@link TrustBooksHarness#assertMoves} as the owner, around a MockMvc step. */
+  private void moves(UUID account, Expected expected, Step step) {
+    books.as(
+        ownerId,
+        () ->
+            harness.assertMoves(
+                account,
+                expected,
+                () -> {
+                  try {
+                    step.run();
+                  } catch (Exception e) {
+                    throw new IllegalStateException(e);
+                  }
+                }));
+  }
+
+  private ResultActions record(UUID lineId, String json) throws Exception {
+    return mockMvc.perform(
+        post("/api/bank-statement-lines/{lineId}/record", lineId)
+            .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER))
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(json));
+  }
+
+  private ResultActions unmatch(UUID lineId) throws Exception {
+    return mockMvc.perform(
+        post("/api/bank-statement-lines/{lineId}/unmatch", lineId)
+            .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER)));
+  }
+
+  /** Records {@code line} (201), asserting cashbook and Fund move by {@code signedAmount}. */
+  private UUID recordAndMove(UUID account, StatementLine line, String json, String signedAmount) {
+    var body = new String[1];
+    moves(
+        account,
+        Expected.cashbookAndFund(signedAmount),
+        () ->
+            body[0] =
+                record(line.lineId(), json)
+                    .andExpect(status().isCreated())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString());
+    return UUID.fromString(JsonPath.read(body[0], "$.transactions[0].id"));
+  }
+
+  /** The record is refused with 400 {@code title} / {@code detail}; nothing moves. */
+  private void assertRecordRefused(
+      UUID account, UUID lineId, String json, String title, String detail) {
+    var statementId = line(lineId).getBankStatementId();
+    var countBefore = matchedCount(statementId);
+    moves(
+        account,
+        Expected.none(),
+        () ->
+            record(lineId, json)
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.title").value(title))
+                .andExpect(jsonPath("$.detail").value(detail)));
+    assertThat(matchedCount(statementId)).as("matched_count after %s", json).isEqualTo(countBefore);
+  }
+
+  private BooksSnapshot snapshot(UUID account) {
+    var snapshot = new BooksSnapshot[1];
+    books.as(ownerId, () -> snapshot[0] = harness.snapshot(account));
+    return snapshot[0];
+  }
+
+  private void assertBalanced(UUID account) {
+    books.as(ownerId, () -> harness.assertBalanced(account));
+  }
+
+  private BankPosition bankPosition(UUID account, StatementLine line, LocalDate asAt) {
+    var position = new BankPosition[1];
+    books.as(
+        ownerId,
+        () ->
+            position[0] =
+                books.read(() -> booksService.bankPosition(account, line.statementId(), asAt)));
+    return position[0];
+  }
+
+  private TrustTransaction row(UUID id) {
+    return books.read(() -> transactionRepository.findById(id).orElseThrow());
+  }
+
+  private List<TrustTransaction> reversalsOf(UUID originalId) {
+    return books.read(
+        () ->
+            transactionRepository.findAll().stream()
+                .filter(t -> originalId.equals(t.getReversalOf()))
+                .toList());
+  }
+
+  private BankStatementLine line(UUID lineId) {
+    return books.read(() -> lineRepository.findById(lineId).orElseThrow());
+  }
+
+  private int matchedCount(StatementLine line) {
+    return matchedCount(line.statementId());
+  }
+
+  private int matchedCount(UUID statementId) {
+    return books.read(
+        () -> statementRepository.findById(statementId).orElseThrow().getMatchedCount());
+  }
+
+  private AuditEvent audit(String entityType, UUID entityId, String eventType) {
+    var events =
+        books.read(
+            () ->
+                auditEventRepository
+                    .findByFilter(
+                        entityType, entityId, null, eventType, null, null, PageRequest.of(0, 10))
+                    .getContent());
+    assertThat(events).as("%s on %s", eventType, entityId).hasSize(1);
+    return events.getFirst();
+  }
+}

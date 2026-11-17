@@ -374,6 +374,61 @@
     }, {
       "name" : "clientVisible",
       "type" : "boolean"
+    } ],
+    "UnidentifiedDepositResponse" : [ {
+      "name" : "id",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "trustAccountId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "receivedDate",
+      "type" : "java.time.LocalDate"
+    }, {
+      "name" : "bankDescription",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "bankReference",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "amount",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "status",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "ageDays",
+      "type" : "int"
+    }, {
+      "name" : "olderThanOneYear",
+      "type" : "boolean"
+    }, {
+      "name" : "allocatedClientId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "allocatedClientName",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "allocatedMatterId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "allocatedMatterName",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "resolutionTransactionId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "resolutionStatus",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "resolvedDate",
+      "type" : "java.time.LocalDate"
+    }, {
+      "name" : "bankStatementLineId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "notes",
+      "type" : "java.lang.String"
     } ]
   }
 }

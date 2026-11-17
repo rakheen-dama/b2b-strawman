@@ -773,9 +773,14 @@ public final class TrustBooksFixture {
     /**
      * A posted {@code NON_CLIENT} row of {@code type} dated {@code date}, on the account's creditor
      * account of the type's registry creditor type (646C). Written straight to the table, so the
-     * row exists without a statement line ({@code BANK_CHARGE} gets recoverable / VAT 0).
+     * row exists without a statement line ({@code BANK_CHARGE} gets recoverable / VAT 0) — except
+     * {@code UNIDENTIFIED_DEPOSIT}, which exists only as an item opened from its line (647B): see
+     * {@link #unidentifiedDepositDirect}.
      */
     public UUID postNonClientDirect(UUID account, String type, String amount, LocalDate date) {
+      if ("UNIDENTIFIED_DEPOSIT".equals(type)) {
+        return unidentifiedDepositDirect(account, amount, date);
+      }
       var creditorType = TrustTransactionType.of(type).creditorAccountType();
       assertThat(creditorType).as("%s has a registry creditor account type", type).isNotNull();
       return postLedgerRowDirect(
@@ -805,6 +810,86 @@ public final class TrustBooksFixture {
         UUID projectId,
         UUID creditorAccountId,
         UUID investmentId) {
+      return insertLedgerRow(
+          account,
+          type,
+          amount,
+          date,
+          customerId,
+          projectId,
+          creditorAccountId,
+          investmentId,
+          null,
+          null);
+    }
+
+    /**
+     * An unidentified deposit in the shape record-from-statement leaves it (647B, ADR-376), written
+     * straight to the tables: its own statement with one credit line dated {@code date}, {@code
+     * RECORDED} as {@code UNIDENTIFIED_DEPOSIT}; a {@code HELD} item for the line; the posted
+     * {@code UNIDENTIFIED_DEPOSIT} row on the account's unidentified-deposits ledger naming the
+     * item and the line ({@code chk_trust_txn_unidentified_item}); the item's opening row; {@code
+     * matched_count} 1. EQ-4 holds for it. Returns the row id.
+     */
+    public UUID unidentifiedDepositDirect(UUID account, String amount, LocalDate date) {
+      var line = unmatchedLine(account, date, amount, reference("UID"));
+      var creditorAccountId = creditorAccount(account, "UNIDENTIFIED_DEPOSITS");
+      var itemId = UUID.randomUUID();
+      jdbc.update(
+          """
+          INSERT INTO "%s".unidentified_deposits (id, trust_account_id, creditor_account_id,
+              bank_statement_line_id, received_date, bank_description, amount, status)
+          VALUES (?, ?, ?, ?, ?, 'Trust books statement line 1', ?, 'HELD')
+          """
+              .formatted(schema),
+          itemId,
+          account,
+          creditorAccountId,
+          line.lineId(),
+          date,
+          new BigDecimal(amount));
+      var rowId =
+          insertLedgerRow(
+              account,
+              "UNIDENTIFIED_DEPOSIT",
+              amount,
+              date,
+              null,
+              null,
+              creditorAccountId,
+              null,
+              itemId,
+              line.lineId());
+      jdbc.update(
+          "UPDATE \"%s\".unidentified_deposits SET deposit_transaction_id = ? WHERE id = ?"
+              .formatted(schema),
+          rowId,
+          itemId);
+      jdbc.update(
+          """
+          UPDATE "%s".bank_statement_lines SET match_status = 'RECORDED',
+              classification = 'UNIDENTIFIED_DEPOSIT', trust_transaction_id = ? WHERE id = ?
+          """
+              .formatted(schema),
+          rowId,
+          line.lineId());
+      jdbc.update(
+          "UPDATE \"%s\".bank_statements SET matched_count = 1 WHERE id = ?".formatted(schema),
+          line.statementId());
+      return rowId;
+    }
+
+    private UUID insertLedgerRow(
+        UUID account,
+        String type,
+        String amount,
+        LocalDate date,
+        UUID customerId,
+        UUID projectId,
+        UUID creditorAccountId,
+        UUID investmentId,
+        UUID unidentifiedDepositId,
+        UUID bankStatementLineId) {
       var value = new BigDecimal(amount);
       var effect = TrustTransactionType.of(type).effectFor(value);
       var isCharge = "BANK_CHARGE".equals(type);
@@ -814,9 +899,10 @@ public final class TrustBooksFixture {
           INSERT INTO "%s".trust_transactions (id, trust_account_id, transaction_type, amount,
               customer_id, project_id, creditor_account_id, investment_id, reference, description,
               transaction_date, status, recorded_by, ledger, cashbook_effect, ledger_effect,
-              posted_at, charge_recoverable, charge_vat_amount)
+              posted_at, charge_recoverable, charge_vat_amount, unidentified_deposit_id,
+              bank_statement_line_id)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'trust books direct ledger row', ?, 'RECORDED', ?,
-              ?, ?, ?, now(), ?, ?)
+              ?, ?, ?, now(), ?, ?, ?, ?)
           """
               .formatted(schema),
           id,
@@ -835,7 +921,9 @@ public final class TrustBooksFixture {
           effect.ledgerEffect(),
           // chk_trust_txn_charge (647A): charge detail exactly on BANK_CHARGE rows
           isCharge ? Boolean.TRUE : null,
-          isCharge ? BigDecimal.ZERO : null);
+          isCharge ? BigDecimal.ZERO : null,
+          unidentifiedDepositId,
+          bankStatementLineId);
       return id;
     }
 

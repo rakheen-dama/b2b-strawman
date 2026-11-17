@@ -5,15 +5,18 @@ import java.util.Optional;
 
 /**
  * What a statement line is recorded as (Phase 92, ADR-380, architecture §16.3.5). Each value names
- * the line sign it accepts and the trust transaction type it posts. 647B adds {@code
- * UNIDENTIFIED_DEPOSIT} and 648B {@code INVESTMENT_INTEREST}, each with its own logic (the DB CHECK
- * {@code chk_bank_line_classification} already admits all six — V20).
+ * the line sign it accepts and the trust transaction type it posts. 647B added {@code
+ * UNIDENTIFIED_DEPOSIT} (it also opens an item — {@code UnidentifiedDepositService}); 648B adds
+ * {@code INVESTMENT_INTEREST} (the DB CHECK {@code chk_bank_line_classification} already admits all
+ * six — V20). {@code UNIDENTIFIED_DEPOSIT} is never suggested (V20 keeps it out of {@code
+ * suggested_classification}).
  */
 public enum StatementLineClassification {
   FUND_INTEREST(1, TrustTransactionType.FUND_INTEREST),
   FUND_SWEEP(-1, TrustTransactionType.FUND_SWEEP),
   BANK_CHARGE(-1, TrustTransactionType.BANK_CHARGE),
-  CHARGE_REFUND(1, TrustTransactionType.CHARGE_REFUND);
+  CHARGE_REFUND(1, TrustTransactionType.CHARGE_REFUND),
+  UNIDENTIFIED_DEPOSIT(1, TrustTransactionType.UNIDENTIFIED_DEPOSIT);
 
   /** +1: recorded from a credit line; -1: from a debit line. */
   private final int lineSign;

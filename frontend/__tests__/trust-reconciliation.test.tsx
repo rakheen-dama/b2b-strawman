@@ -964,25 +964,58 @@ describe("Trust Reconciliation", () => {
       return screen.findByTestId("record-from-statement-dialog");
     }
 
-    it("pins the four classification labels to the registry's firm labels", () => {
+    it("pins the five classification labels to the registry's firm labels", () => {
       expect(STATEMENT_LINE_CLASSIFICATIONS.map((c) => [c.value, c.lineSign, c.label])).toEqual([
         ["FUND_INTEREST", 1, FUND_INTEREST],
         ["CHARGE_REFUND", 1, CHARGE_REFUND],
+        ["UNIDENTIFIED_DEPOSIT", 1, "Unidentified deposit"],
         ["FUND_SWEEP", -1, FUND_SWEEP],
         ["BANK_CHARGE", -1, "Bank charge"],
       ]);
     });
 
-    it("offers a credit line only interest received and a charge refund", async () => {
+    it("offers a credit line interest received, a charge refund and an unidentified deposit", async () => {
       renderPane([makeBankLine({ id: "line-cr", amount: 1234.56 })]);
 
       await openRecordDialog("line-cr");
 
       const radios = screen.getAllByRole("radio");
-      expect(radios).toHaveLength(2);
+      expect(radios).toHaveLength(3);
       expect(screen.getByRole("radio", { name: FUND_INTEREST })).toBeInTheDocument();
       expect(screen.getByRole("radio", { name: CHARGE_REFUND })).toBeInTheDocument();
+      expect(screen.getByRole("radio", { name: "Unidentified deposit" })).toBeInTheDocument();
       expect(screen.queryByRole("radio", { name: "Bank charge" })).not.toBeInTheDocument();
+    });
+
+    it("records a credit as an unidentified deposit, with no charge fields (647B)", async () => {
+      const user = userEvent.setup({ pointerEventsCheck: 0 });
+      const onRecord = vi.fn().mockResolvedValue({ success: true });
+      renderPane([makeBankLine({ id: "line-cr", amount: 300 })], { onRecord });
+      await openRecordDialog("line-cr");
+
+      await user.click(screen.getByRole("radio", { name: "Unidentified deposit" }));
+      expect(screen.getByTestId("classification-unidentified-note")).toHaveTextContent(
+        "Held on the unidentified deposits ledger until you identify the owner."
+      );
+      expect(screen.queryByTestId("charge-recoverable-radio")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("charge-vat-input")).not.toBeInTheDocument();
+      await user.type(screen.getByTestId("record-notes-input"), "Ask the bank");
+      await user.click(screen.getByTestId("record-submit"));
+
+      await waitFor(() => expect(onRecord).toHaveBeenCalledTimes(1));
+      expect(onRecord).toHaveBeenCalledWith(
+        "line-cr",
+        expect.objectContaining({ classification: "UNIDENTIFIED_DEPOSIT", notes: "Ask the bank" })
+      );
+      await waitFor(() =>
+        expect(screen.queryByTestId("record-from-statement-dialog")).not.toBeInTheDocument()
+      );
+    });
+
+    it("does not offer an unidentified deposit on a debit line", async () => {
+      renderPane([makeBankLine({ id: "line-dr", amount: -300 })]);
+      await openRecordDialog("line-dr");
+      expect(screen.queryByRole("radio", { name: "Unidentified deposit" })).not.toBeInTheDocument();
     });
 
     it("offers a debit line only the Fund payment and a bank charge", async () => {

@@ -11,6 +11,9 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksFixture;
 import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness;
 import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness.Expected;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.StatementLineClassification;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.StatementLinePostingService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.StatementLinePostingService.RecordFromLineRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService.BankStatementResponse;
@@ -62,6 +65,7 @@ class TrustPositionAsAtIntegrationTest {
   @Autowired private TrustBooksFixture fixture;
   @Autowired private TrustBooksHarness harness;
   @Autowired private TrustReconciliationService reconciliationService;
+  @Autowired private StatementLinePostingService statementLinePostingService;
   @Autowired private TrustReconciliationRepository reconciliationRepository;
   @Autowired private TrustBooksService trustBooksService;
   @Autowired private TrustLedgerQueryRepository ledgerQueries;
@@ -330,9 +334,11 @@ class TrustPositionAsAtIntegrationTest {
    * own breakdown component. Account A holds a client deposit of R1 000 (1 March) and, on 10 March,
    * Fund interest R50, an unidentified deposit R300, a section 86(4) investment receipt R200 and a
    * section 86(3) placement R700 received from account B — five distinct non-zero terms, so a
-   * swapped setter or getter fails. The March statement shows the deposit and an unknown R100
-   * credit (unmatched): bank R1 100 + outstanding R1 250 = adjusted R2 350 against cashbook =
-   * creditors R2 250, a stored difference of R100.
+   * swapped setter or getter fails. The March statement shows the deposit, an unknown R100 credit
+   * (unmatched) and the R300 credit, which is recorded from the statement as an unidentified
+   * deposit (647B: an unidentified deposit exists only as an item opened from its line): bank R1
+   * 400 + outstanding R950 (Fund interest, investment receipt, placement) = adjusted R2 350 against
+   * cashbook = creditors R2 250, a stored difference of R100.
    */
   @Test
   void reconciliation_storesAndReturnsEveryCreditorTermInItsOwnComponent() {
@@ -343,7 +349,6 @@ class TrustPositionAsAtIntegrationTest {
     var placingDepositId = books.deposit(placing, client, "1000.00");
     var tenth = LocalDate.of(2026, 3, 10);
     books.postNonClientDirect(account, "FUND_INTEREST", "50.00", tenth);
-    books.postNonClientDirect(account, "UNIDENTIFIED_DEPOSIT", "300.00", tenth);
     var clientInvestment = books.investmentDirect(account, client, depositId);
     books.postLedgerRowDirect(
         account,
@@ -359,8 +364,6 @@ class TrustPositionAsAtIntegrationTest {
         placing, "FIRM_INV_PLACE", "700.00", tenth, null, null, null, placement);
     books.postLedgerRowDirect(
         account, "FIRM_INV_RECEIVE", "700.00", tenth, null, null, null, placement);
-    assertPosition(account, MARCH_END, "2250.00", "1000.00", "200.00", "50.00", "300.00", "700.00");
-    assertPosition(placing, MARCH_END, "300.00", "1000.00", "0", "0", "0", "-700.00");
 
     var march =
         importStatement(
@@ -368,7 +371,8 @@ class TrustPositionAsAtIntegrationTest {
             "breakdown-march.csv",
             """
             01/03/2026,Deposit received,1000.00,1000.00,BRK-DEP
-            05/03/2026,Unknown credit,100.00,1100.00,BRK-UNK""");
+            05/03/2026,Unknown credit,100.00,1100.00,BRK-UNK
+            10/03/2026,Unidentified credit,300.00,1400.00,BRK-UID""");
     var depositLine =
         march.lines().stream()
             .filter(l -> "BRK-DEP".equals(l.reference()))
@@ -376,10 +380,25 @@ class TrustPositionAsAtIntegrationTest {
             .orElseThrow()
             .id();
     books.as(memberId, () -> reconciliationService.manualMatch(depositLine, depositId));
+    var unidentifiedLine =
+        march.lines().stream()
+            .filter(l -> "BRK-UID".equals(l.reference()))
+            .findFirst()
+            .orElseThrow()
+            .id();
+    books.as(
+        memberId,
+        () ->
+            statementLinePostingService.recordFromLine(
+                unidentifiedLine,
+                new RecordFromLineRequest(
+                    StatementLineClassification.UNIDENTIFIED_DEPOSIT, null, null, null)));
+    assertPosition(account, MARCH_END, "2250.00", "1000.00", "200.00", "50.00", "300.00", "700.00");
+    assertPosition(placing, MARCH_END, "300.00", "1000.00", "0", "0", "0", "-700.00");
 
     var recon = reconcile(account, MARCH_END, march.id());
-    assertThat(recon.bankBalance()).as("bank").isEqualByComparingTo("1100.00");
-    assertThat(recon.outstandingDeposits()).as("o/s deposits").isEqualByComparingTo("1250.00");
+    assertThat(recon.bankBalance()).as("bank").isEqualByComparingTo("1400.00");
+    assertThat(recon.outstandingDeposits()).as("o/s deposits").isEqualByComparingTo("950.00");
     assertThat(recon.outstandingPayments()).as("o/s payments").isEqualByComparingTo("0");
     assertThat(recon.adjustedBankBalance()).as("adjusted").isEqualByComparingTo("2350.00");
     assertThat(recon.cashbookBalance()).as("cashbook").isEqualByComparingTo("2250.00");

@@ -170,9 +170,10 @@ public class TrustPostingService {
    * untouched). NEEDS_APPROVAL: the contra is saved AWAITING_APPROVAL (unposted) and the original
    * is untouched until {@link #postReversalOnApproval}. Any other rule is refused. The reversal's
    * date is the caller's ({@code reversalDate}). Either way the contra carries the original's
-   * ledger target — creditor account and investment (647A, 646B found.md; the caller's {@code
-   * newContra} copies client and matter) — so a {@code NON_CLIENT} contra satisfies {@code
-   * chk_trust_txn_ledger_target}. Charge detail is not copied ({@code chk_trust_txn_charge}).
+   * ledger target — creditor account, investment and unidentified deposit (647A, 646B found.md,
+   * 647B; the caller's {@code newContra} copies client and matter) — so a {@code NON_CLIENT} contra
+   * satisfies {@code chk_trust_txn_ledger_target}. Charge detail is not copied ({@code
+   * chk_trust_txn_charge}).
    */
   @Transactional
   public TrustTransaction postReversal(TrustTransaction reversal, TrustTransaction original) {

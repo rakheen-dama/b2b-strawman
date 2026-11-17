@@ -1,7 +1,13 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { cleanup, render, screen, within } from "@testing-library/react";
 import { formatCurrency } from "@/lib/format";
-import type { CreditorLedgerPage, TrustCreditorAccount, TrustTransaction } from "@/lib/types";
+import type {
+  CreditorLedgerPage,
+  TrustCreditorAccount,
+  TrustTransaction,
+  UnidentifiedDeposit,
+  UnidentifiedDepositPage,
+} from "@/lib/types";
 
 // Must mock server-only before importing components that use it
 vi.mock("server-only", () => ({}));
@@ -26,9 +32,11 @@ vi.mock("@/app/(app)/org/[slug]/trust-accounting/actions", () => ({
 // ── Mock creditor ledger actions ─────────────────────────────────
 const mockFetchCreditorAccounts = vi.fn();
 const mockFetchCreditorLedgerRows = vi.fn();
+const mockFetchUnidentifiedDeposits = vi.fn();
 vi.mock("@/app/(app)/org/[slug]/trust-accounting/other-creditors/actions", () => ({
   fetchCreditorAccounts: (...args: unknown[]) => mockFetchCreditorAccounts(...args),
   fetchCreditorLedgerRows: (...args: unknown[]) => mockFetchCreditorLedgerRows(...args),
+  fetchUnidentifiedDeposits: (...args: unknown[]) => mockFetchUnidentifiedDeposits(...args),
 }));
 
 // ── Mock next/navigation ─────────────────────────────────────────
@@ -135,6 +143,42 @@ function ledgerPage(content: TrustTransaction[]): CreditorLedgerPage {
   };
 }
 
+function unidentifiedItem(overrides: Partial<UnidentifiedDeposit> = {}): UnidentifiedDeposit {
+  return {
+    id: "ud-1",
+    trustAccountId: "acc-1",
+    receivedDate: "2026-11-03",
+    bankDescription: "CREDIT TRANSFER J SMITH",
+    bankReference: "REF-9921",
+    amount: 300,
+    status: "HELD",
+    ageDays: 14,
+    olderThanOneYear: false,
+    allocatedClientId: null,
+    allocatedClientName: null,
+    allocatedMatterId: null,
+    allocatedMatterName: null,
+    resolutionTransactionId: null,
+    resolutionStatus: null,
+    resolvedDate: null,
+    bankStatementLineId: "line-9",
+    notes: null,
+    ...overrides,
+  };
+}
+
+function itemsPage(content: UnidentifiedDeposit[]): UnidentifiedDepositPage {
+  return {
+    content,
+    page: {
+      totalElements: content.length,
+      totalPages: content.length > 0 ? 1 : 0,
+      size: 25,
+      number: 0,
+    },
+  };
+}
+
 /** The exit-month worked set, newest first (as the endpoint returns it). */
 const WORKED_SET: TrustTransaction[] = [
   fundRow({
@@ -200,6 +244,7 @@ describe("Other trust creditors page", () => {
       creditorAccounts({ balance: 300.25, inDebit: false })
     );
     mockFetchCreditorLedgerRows.mockResolvedValue(ledgerPage([]));
+    mockFetchUnidentifiedDeposits.mockResolvedValue(itemsPage([]));
   });
 
   afterEach(() => cleanup());
@@ -402,5 +447,96 @@ describe("Other trust creditors page", () => {
     expect(table).not.toHaveTextContent("AWAITING_APPROVAL");
     expect(table).not.toHaveTextContent("AWAITING APPROVAL");
     expect(table).not.toHaveTextContent("REJECTED");
+  });
+
+  // ── Unidentified deposits (647B) ────────────────────────────────
+
+  it("lists the unidentified deposits oldest first with received date, amount, age and status label", async () => {
+    mockFetchUnidentifiedDeposits.mockResolvedValue(
+      itemsPage([
+        unidentifiedItem({
+          id: "ud-old",
+          receivedDate: "2026-09-01",
+          bankDescription: "DEPOSIT CASH BRANCH 0412",
+          bankReference: null,
+          amount: 1000,
+          ageDays: 77,
+        }),
+        unidentifiedItem(),
+      ])
+    );
+    await renderPage();
+
+    expect(mockFetchUnidentifiedDeposits).toHaveBeenCalledWith("acc-1", { page: 0, size: 25 });
+    const section = screen.getByTestId("unidentified-deposits-section");
+    expect(
+      within(section).getByText("Unidentified deposits", { selector: '[data-slot="card-title"]' })
+    ).toBeInTheDocument();
+    const rows = screen.getAllByTestId("unidentified-deposit-row");
+    expect(rows).toHaveLength(2);
+    expect(rows[0]).toHaveTextContent("DEPOSIT CASH BRANCH 0412");
+    expect(rows[0].textContent).toContain(formatCurrency(1000, "ZAR"));
+    expect(within(rows[0]).getByTestId("unidentified-deposit-age")).toHaveTextContent("77 days");
+    expect(rows[1]).toHaveTextContent("CREDIT TRANSFER J SMITH");
+    expect(rows[1]).toHaveTextContent("REF-9921");
+    expect(rows[1].textContent).toContain(formatCurrency(300, "ZAR"));
+    expect(within(rows[1]).getByTestId("unidentified-deposit-age")).toHaveTextContent("14 days");
+    expect(within(rows[1]).getByTestId("unidentified-deposit-status")).toHaveTextContent("Held");
+    expect(screen.queryByTestId("unidentified-over-one-year")).not.toBeInTheDocument();
+
+    const table = screen.getByTestId("unidentified-deposits-table");
+    expect(table).not.toHaveTextContent("HELD");
+    expect(table).not.toHaveTextContent("UNIDENTIFIED_DEPOSIT");
+  });
+
+  it("flags an item held over one year, and shows a reversed item's label with no age", async () => {
+    mockFetchUnidentifiedDeposits.mockResolvedValue(
+      itemsPage([
+        unidentifiedItem({
+          id: "ud-year",
+          receivedDate: "2025-11-15",
+          ageDays: 367,
+          olderThanOneYear: true,
+        }),
+        unidentifiedItem({
+          id: "ud-reversed",
+          status: "REVERSED",
+          ageDays: 14,
+          resolvedDate: "2026-11-03",
+        }),
+      ])
+    );
+    await renderPage();
+
+    const rows = screen.getAllByTestId("unidentified-deposit-row");
+    expect(within(rows[0]).getByTestId("unidentified-deposit-age")).toHaveTextContent("367 days");
+    expect(within(rows[0]).getByTestId("unidentified-over-one-year")).toHaveTextContent(
+      "Over one year"
+    );
+    expect(within(rows[1]).getByTestId("unidentified-deposit-status")).toHaveTextContent(
+      "Reversed"
+    );
+    expect(within(rows[1]).queryByTestId("unidentified-deposit-age")).not.toBeInTheDocument();
+    expect(within(rows[1]).queryByTestId("unidentified-over-one-year")).not.toBeInTheDocument();
+    expect(screen.getByTestId("unidentified-deposits-table")).not.toHaveTextContent("REVERSED");
+  });
+
+  it("shows no items as empty, and keeps the balances and the Fund ledger when the items fail", async () => {
+    await renderPage();
+    expect(screen.getByTestId("unidentified-deposits-empty")).toHaveTextContent(
+      "No unidentified deposits."
+    );
+    expect(screen.queryByTestId("unidentified-deposits-error")).not.toBeInTheDocument();
+
+    cleanup();
+    mockFetchUnidentifiedDeposits.mockRejectedValue(new Error("boom"));
+    await renderPage();
+    expect(screen.getByTestId("unidentified-deposits-error")).toBeInTheDocument();
+    expect(screen.queryByTestId("unidentified-deposits-table")).not.toBeInTheDocument();
+    expect(screen.getByTestId("creditor-UNIDENTIFIED_DEPOSITS")).toBeInTheDocument();
+    expect(screen.getByTestId("creditor-FUND_INTEREST_AND_CHARGES")).toBeInTheDocument();
+    expect(screen.getByTestId("fund-ledger-section")).toBeInTheDocument();
+    expect(screen.getByTestId("fund-ledger-empty")).toBeInTheDocument();
+    expect(screen.queryByTestId("error-state")).not.toBeInTheDocument();
   });
 });

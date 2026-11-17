@@ -19,6 +19,7 @@ import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksFixture.StatementLine;
 import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness;
 import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness.Expected;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateTrustAccountRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustBooksService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustBooksService.BankPosition;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedger;
@@ -50,6 +51,11 @@ import org.springframework.test.web.servlet.ResultActions;
  * linked to the line, which becomes {@code RECORDED}. Unmatching a recorded line reverses what it
  * created with a contra dated the line's date. Every posting step is asserted through the {@link
  * TrustBooksHarness} ({@code assertMoves}); the class ends with {@code assertFirmBalanced(today)}.
+ *
+ * <p>647B adds {@code UNIDENTIFIED_DEPOSIT} on the same endpoint (a credit line, on the account's
+ * unidentified-deposits ledger, opening an item — its own path 14 lives in {@code
+ * UnidentifiedDepositIntegrationTest}); it is refused on an investment account. The "not yet
+ * supported" case now uses 648B's {@code INVESTMENT_INTEREST}.
  *
  * <p>One tenant; every test uses a fresh trust account; HTTP status, titles and details are
  * asserted through MockMvc.
@@ -559,12 +565,12 @@ class StatementLinePostingIntegrationTest {
     var credit = books.unmatchedLine(account, pastDate(), "15.00", "UNKNOWN DEPOSIT");
     var zero = books.unmatchedLine(account, pastDate(), "0.00", "BALANCE B/F");
 
-    // 647B's classification is not in 647A's enum: Jackson refuses it (the detail is not ours).
+    // 648B's classification is not in the enum yet: Jackson refuses it (the detail is not ours).
     moves(
         account,
         Expected.none(),
         () ->
-            record(credit.lineId(), "{\"classification\":\"UNIDENTIFIED_DEPOSIT\"}")
+            record(credit.lineId(), "{\"classification\":\"INVESTMENT_INTEREST\"}")
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.title").value("Malformed request body"))
@@ -588,6 +594,82 @@ class StatementLinePostingIntegrationTest {
         RECORD_TITLE,
         "A zero-amount statement line cannot be recorded");
     assertThat(line(credit.lineId()).getMatchStatus()).isEqualTo("UNMATCHED");
+  }
+
+  // --- 647B: an unidentified deposit on the shared endpoint ---------------------------------
+
+  @Test
+  void recordsUnidentifiedDeposit_fromACreditLine_openingAnItem() throws Exception {
+    var account = books.freshAccount(false);
+    var date = pastDate();
+    var line = books.unmatchedLine(account, date, "300.00", "UNKNOWN-CR");
+    books.addLine(line.statementId(), 2, date, "11.00", "OTHER");
+
+    var body = new String[1];
+    moves(
+        account,
+        Expected.cashbookAndUnidentified("300.00"),
+        () ->
+            body[0] =
+                record(line.lineId(), "{\"classification\":\"UNIDENTIFIED_DEPOSIT\"}")
+                    .andExpect(status().isCreated())
+                    .andExpect(jsonPath("$.line.matchStatus").value("RECORDED"))
+                    .andExpect(jsonPath("$.line.classification").value("UNIDENTIFIED_DEPOSIT"))
+                    .andExpect(jsonPath("$.line.classificationLabel").value("Unidentified deposit"))
+                    .andExpect(
+                        jsonPath("$.transactions[0].transactionType").value("UNIDENTIFIED_DEPOSIT"))
+                    .andExpect(
+                        jsonPath("$.transactions[0].typeLabel").value("Unidentified deposit"))
+                    .andExpect(jsonPath("$.transactions[0].ledger").value("NON_CLIENT"))
+                    .andExpect(jsonPath("$.unidentifiedDepositId").isNotEmpty())
+                    .andExpect(jsonPath("$.investmentInterestId").isEmpty())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString());
+
+    var rowId = UUID.fromString(JsonPath.read(body[0], "$.transactions[0].id"));
+    var row = row(rowId);
+    assertThat(row.getCreditorAccountId())
+        .isEqualTo(books.creditorAccount(account, "UNIDENTIFIED_DEPOSITS"));
+    assertThat(row.getUnidentifiedDepositId())
+        .isEqualTo(UUID.fromString(JsonPath.read(body[0], "$.unidentifiedDepositId")));
+    assertThat(matchedCount(line)).isEqualTo(1);
+
+    mockMvc
+        .perform(
+            get("/api/bank-statements/{statementId}", line.statementId())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.matchedCount").value(1))
+        .andExpect(jsonPath("$.lines[0].matchStatus").value("RECORDED"))
+        .andExpect(jsonPath("$.lines[0].classification").value("UNIDENTIFIED_DEPOSIT"))
+        .andExpect(jsonPath("$.lines[0].classificationLabel").value("Unidentified deposit"))
+        .andExpect(jsonPath("$.lines[0].createdTransactionIds[0]").value(rowId.toString()))
+        .andExpect(jsonPath("$.lines[1].matchStatus").value("UNMATCHED"));
+  }
+
+  @Test
+  void anUnidentifiedDeposit_onAnInvestmentAccount_orFromADebitLine_isRefused() throws Exception {
+    var investmentAccount = investmentAccount();
+    var credit = books.unmatchedLine(investmentAccount, pastDate(), "300.00", "INV-CR");
+    assertRecordRefused(
+        investmentAccount,
+        credit.lineId(),
+        "{\"classification\":\"UNIDENTIFIED_DEPOSIT\"}",
+        RECORD_TITLE,
+        "An unidentified deposit is recorded only on a trust banking account. On an investment"
+            + " account, exclude the line and take it up with the bank.");
+    assertThat(line(credit.lineId()).getMatchStatus()).isEqualTo("UNMATCHED");
+
+    var account = books.freshAccount(false);
+    var debit = books.unmatchedLine(account, pastDate(), "-300.00", "DEBIT");
+    assertRecordRefused(
+        account,
+        debit.lineId(),
+        "{\"classification\":\"UNIDENTIFIED_DEPOSIT\"}",
+        "Classification does not match the line",
+        "Unidentified deposit is recorded from a credit line; this line is a debit");
+    assertThat(line(debit.lineId()).getMatchStatus()).isEqualTo("UNMATCHED");
   }
 
   // --- who, and no approval ---------------------------------------------------------------
@@ -730,6 +812,30 @@ class StatementLinePostingIntegrationTest {
   }
 
   // --- helpers ----------------------------------------------------------------------------
+
+  /** A fresh non-primary INVESTMENT trust account (647B: unidentified deposits are refused). */
+  private UUID investmentAccount() {
+    var id = new UUID[1];
+    books.as(
+        ownerId,
+        () ->
+            id[0] =
+                trustAccountService
+                    .createTrustAccount(
+                        new CreateTrustAccountRequest(
+                            "SLP Investment " + UUID.randomUUID().toString().substring(0, 8),
+                            "First National Bank",
+                            "250655",
+                            "SLP-INV-" + UUID.randomUUID().toString().substring(0, 8),
+                            "INVESTMENT",
+                            false,
+                            false,
+                            null,
+                            LocalDate.of(2026, 1, 1),
+                            "647B investment account"))
+                    .id());
+    return id[0];
+  }
 
   /** A MockMvc step that may throw. */
   @FunctionalInterface

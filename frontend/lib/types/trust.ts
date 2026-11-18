@@ -44,6 +44,11 @@ export interface TrustAccount {
   notes: string | null;
   createdAt: string;
   updatedAt: string;
+  /**
+   * The latest period end (yyyy-MM-dd) of the account's locked Rule 54.15 lists; null when none
+   * (650D, §16.3.10). Posting dialogs warn — never refuse — on a date on or before it.
+   */
+  lockedThrough: string | null;
 }
 
 /**

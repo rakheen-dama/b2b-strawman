@@ -1,0 +1,62 @@
+{
+  "run": "PW7CK",
+  "primary": "826a94a2-ccb5-40ff-8bdb-c1be9e08c610",
+  "d1": {
+    "client": "Acme Corp",
+    "matter": "Website Redesign",
+    "amount": 10000,
+    "ref": "DEP/OBS650D/PW7CK/1",
+    "date": "2026-10-05",
+    "warningBeforeSubmit": {
+      "shown": 0,
+      "text": null,
+      "role": null,
+      "submitEnabled": true
+    },
+    "id": "3f742ffe-ffe6-4b50-be89-254fae84a2ce",
+    "status": "RECORDED",
+    "amountSql": 10000,
+    "dateSql": "2026-10-05",
+    "postedAt": "2026-11-18 22:53:23.14839+00"
+  },
+  "listId": "8949deff-2c10-48b5-bfb9-c4bd066c7678",
+  "lockedBefore": "10000.00|0.00|0.00|10000.00|10000.00|10000.00|0.00|0.00|0.00|0.00|10000.00|0.00|bc66048af56571d6f56aebfa1d259990|d751713988987e9331980363e24189ce|2026-11-18 22:53:28.283293+00",
+  "d2": {
+    "client": "Acme Corp",
+    "matter": "Website Redesign",
+    "amount": 750,
+    "ref": "DEP/OBS650D/PW7CK/BACK",
+    "date": "2026-10-28",
+    "shot": "01-deposit-before-submit",
+    "warningBeforeSubmit": {
+      "shown": 1,
+      "text": "This date falls in a month whose list is locked. The entry will be recorded and shown as a later adjustment.",
+      "role": "status",
+      "submitEnabled": true
+    },
+    "id": "5651152f-144c-4b99-a1ef-5a8c1edfa704",
+    "status": "RECORDED",
+    "amountSql": 750,
+    "dateSql": "2026-10-28",
+    "postedAt": "2026-11-18 22:54:04.704657+00"
+  },
+  "p1": {
+    "client": "Acme Corp",
+    "matter": "Website Redesign",
+    "amount": 100,
+    "ref": "PAY/OBS650D/PW7CK/BACK",
+    "date": "2026-10-29",
+    "warningBeforeSubmit": {
+      "shown": 1,
+      "text": "This date falls in a month whose list is locked. The entry will be recorded and shown as a later adjustment.",
+      "role": "status",
+      "submitEnabled": true
+    },
+    "id": "0e6a712f-5d17-4a7e-b95b-a47bb55e45d7",
+    "status": "AWAITING_APPROVAL",
+    "amountSql": 100,
+    "dateSql": "2026-10-29",
+    "postedAt": ""
+  },
+  "acmeId": "a14dc8cd-bc7c-4ac0-8c3e-ce8218dce32c"
+}

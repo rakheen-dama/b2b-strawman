@@ -24,9 +24,16 @@ interface TransactionActionsProps {
    * Refund). Server-fetched by the parent page.
    */
   customers: TrustPickerCustomer[];
+  /** TrustAccount.lockedThrough of accountId (650D): the dialogs warn on a date on or before it. */
+  lockedThrough: string | null;
 }
 
-export function TransactionActions({ accountId, slug, customers }: TransactionActionsProps) {
+export function TransactionActions({
+  accountId,
+  slug,
+  customers,
+  lockedThrough,
+}: TransactionActionsProps) {
   const [depositOpen, setDepositOpen] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [transferOpen, setTransferOpen] = useState(false);
@@ -58,28 +65,33 @@ export function TransactionActions({ accountId, slug, customers }: TransactionAc
         slug={slug}
         open={depositOpen}
         onOpenChange={setDepositOpen}
+        lockedThrough={lockedThrough}
         customers={customers}
       />
       <RecordPaymentDialog
         accountId={accountId}
         open={paymentOpen}
         onOpenChange={setPaymentOpen}
+        lockedThrough={lockedThrough}
         customers={customers}
       />
       <RecordTransferDialog
         accountId={accountId}
         open={transferOpen}
         onOpenChange={setTransferOpen}
+        lockedThrough={lockedThrough}
       />
       <RecordFeeTransferDialog
         accountId={accountId}
         open={feeTransferOpen}
         onOpenChange={setFeeTransferOpen}
+        lockedThrough={lockedThrough}
       />
       <RecordRefundDialog
         accountId={accountId}
         open={refundOpen}
         onOpenChange={setRefundOpen}
+        lockedThrough={lockedThrough}
         customers={customers}
       />
     </>

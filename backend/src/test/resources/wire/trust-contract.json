@@ -734,6 +734,9 @@
     }, {
       "name" : "updatedAt",
       "type" : "java.time.Instant"
+    }, {
+      "name" : "lockedThrough",
+      "type" : "java.time.LocalDate"
     } ],
     "TrustIntegrityReport" : [ {
       "name" : "trustAccountId",

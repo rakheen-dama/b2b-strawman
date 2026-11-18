@@ -8,6 +8,8 @@ import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustMonthlyListRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustMonthlyListRepository.LockedThroughRow;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.TrustCreditorLedgerService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.dto.MatterTrustBalanceResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentRepository;
@@ -20,11 +22,13 @@ import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,6 +47,7 @@ public class TrustAccountService {
   private final OrgSettingsService orgSettingsService;
   private final TrustCreditorLedgerService creditorLedgerService;
   private final TrustInvestmentRepository investmentRepository;
+  private final TrustMonthlyListRepository monthlyListRepository;
 
   public TrustAccountService(
       TrustAccountRepository trustAccountRepository,
@@ -54,7 +59,8 @@ public class TrustAccountService {
       TrustLedgerQueryRepository ledgerQueries,
       OrgSettingsService orgSettingsService,
       TrustCreditorLedgerService creditorLedgerService,
-      TrustInvestmentRepository investmentRepository) {
+      TrustInvestmentRepository investmentRepository,
+      TrustMonthlyListRepository monthlyListRepository) {
     this.trustAccountRepository = trustAccountRepository;
     this.lpffRateRepository = lpffRateRepository;
     this.moduleGuard = moduleGuard;
@@ -65,6 +71,7 @@ public class TrustAccountService {
     this.orgSettingsService = orgSettingsService;
     this.creditorLedgerService = creditorLedgerService;
     this.investmentRepository = investmentRepository;
+    this.monthlyListRepository = monthlyListRepository;
   }
 
   // --- DTO Records ---
@@ -140,7 +147,10 @@ public class TrustAccountService {
       LocalDate closedDate,
       String notes,
       Instant createdAt,
-      Instant updatedAt) {}
+      Instant updatedAt,
+      // 650D (§16.3.10, ADR-382): the latest period end of the account's locked Rule 54.15 lists;
+      // null when none. Posting dialogs warn (never refuse) on a date on or before it.
+      LocalDate lockedThrough) {}
 
   public record CreateLpffRateRequest(
       @NotNull LocalDate effectiveFrom,
@@ -184,9 +194,9 @@ public class TrustAccountService {
   public List<TrustAccountResponse> listTrustAccounts() {
     moduleGuard.requireModule(MODULE_ID);
 
-    return trustAccountRepository.findByStatus(TrustAccountStatus.ACTIVE).stream()
-        .map(this::toResponse)
-        .toList();
+    var accounts = trustAccountRepository.findByStatus(TrustAccountStatus.ACTIVE);
+    var lockedThrough = lockedThroughByAccount(accounts.stream().map(TrustAccount::getId).toList());
+    return accounts.stream().map(a -> toResponse(a, lockedThrough.get(a.getId()))).toList();
   }
 
   @Transactional(readOnly = true)
@@ -502,7 +512,26 @@ public class TrustAccountService {
     }
   }
 
+  /**
+   * 650D: the latest locked Rule 54.15 list period end of each account (absent = none) — one
+   * statement for all of them, none for an empty list.
+   */
+  private Map<UUID, LocalDate> lockedThroughByAccount(Collection<UUID> accountIds) {
+    if (accountIds.isEmpty()) {
+      return Map.of();
+    }
+    return monthlyListRepository.findLockedThroughByTrustAccountIdIn(accountIds).stream()
+        .collect(
+            Collectors.toMap(
+                LockedThroughRow::getTrustAccountId, LockedThroughRow::getLockedThrough));
+  }
+
+  /** One account's response (get / create / update / close / primary): one extra statement. */
   private TrustAccountResponse toResponse(TrustAccount entity) {
+    return toResponse(entity, lockedThroughByAccount(List.of(entity.getId())).get(entity.getId()));
+  }
+
+  private TrustAccountResponse toResponse(TrustAccount entity, LocalDate lockedThrough) {
     return new TrustAccountResponse(
         entity.getId(),
         entity.getAccountName(),
@@ -520,7 +549,8 @@ public class TrustAccountService {
         entity.getClosedDate(),
         entity.getNotes(),
         entity.getCreatedAt(),
-        entity.getUpdatedAt());
+        entity.getUpdatedAt(),
+        lockedThrough);
   }
 
   private LpffRateResponse toLpffResponse(LpffRate entity) {

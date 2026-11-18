@@ -1,0 +1,69 @@
+{
+  "phase": "p",
+  "startedAt": "2026-11-18T22:54:01.664Z",
+  "consoleErrors": [],
+  "pageErrors": [],
+  "checks": {
+    "d: warning visible in the deposit dialog before submit, submit enabled": true,
+    "d: deposit 2026-10-28 R 750 recorded (RECORDED, posted after the lock)": true,
+    "d: payment 2026-10-29 R 100 recorded (a row exists, no refusal)": true,
+    "d: locked list row unchanged (12 money columns, md5 lines/flags, locked_at)": true,
+    "d: list page 'Entered after this list was locked' shows the deposit": true,
+    "d: API adjustmentsSinceLock.entries contains the deposit": true,
+    "d: lockedThrough still 2026-10-31": true,
+    "d: no raw enum on the list page": true
+  },
+  "afterLock": "Entered after this list was locked Entries dated on or before 31 Oct 2026 and recorded after the list was locked. They are part of the books, not of this list. Date Entered Type Client Reference Cashbook 28 Oct 2026 19 Nov 2026, 00:54 Deposit Acme Corp DEP/OBS650D/PW7CK/BACK R 750,00 Trust creditors as at 31 Oct 2026 are now R 10 750,00, a change of R 750,00 from the locked list.",
+  "afterLockRows": [
+    {
+      "testid": "after-lock-entry-5651152f-144c-4b99-a1ef-5a8c1edfa704",
+      "cells": [
+        "28 Oct 2026",
+        "19 Nov 2026, 00:54",
+        "Deposit",
+        "Acme Corp",
+        "DEP/OBS650D/PW7CK/BACK",
+        "R 750,00"
+      ]
+    }
+  ],
+  "listCodes": [],
+  "d2": {
+    "client": "Acme Corp",
+    "matter": "Website Redesign",
+    "amount": 750,
+    "ref": "DEP/OBS650D/PW7CK/BACK",
+    "date": "2026-10-28",
+    "shot": "01-deposit-before-submit",
+    "warningBeforeSubmit": {
+      "shown": 1,
+      "text": "This date falls in a month whose list is locked. The entry will be recorded and shown as a later adjustment.",
+      "role": "status",
+      "submitEnabled": true
+    },
+    "id": "5651152f-144c-4b99-a1ef-5a8c1edfa704",
+    "status": "RECORDED",
+    "amountSql": 750,
+    "dateSql": "2026-10-28",
+    "postedAt": "2026-11-18 22:54:04.704657+00"
+  },
+  "p1": {
+    "client": "Acme Corp",
+    "matter": "Website Redesign",
+    "amount": 100,
+    "ref": "PAY/OBS650D/PW7CK/BACK",
+    "date": "2026-10-29",
+    "warningBeforeSubmit": {
+      "shown": 1,
+      "text": "This date falls in a month whose list is locked. The entry will be recorded and shown as a later adjustment.",
+      "role": "status",
+      "submitEnabled": true
+    },
+    "id": "0e6a712f-5d17-4a7e-b95b-a47bb55e45d7",
+    "status": "AWAITING_APPROVAL",
+    "amountSql": 100,
+    "dateSql": "2026-10-29",
+    "postedAt": ""
+  },
+  "endedAt": "2026-11-18T22:54:12.025Z"
+}

@@ -1,0 +1,20 @@
+650D OBS — log summary
+Stack: fresh e2e mock-auth stack built from worktree head 8f9fb18e75e1ffa8c27367f5c4d94f6aae86cc28
+OBS window: 2026-11-18T22:53:07Z – 2026-11-18T22:54:31Z (SAST 2026-11-19 00:53:07 – 00:54:31)
+Phases in order: l (22:53:13–22:53:30Z), w (22:53:36–22:53:48Z), p (22:54:01–22:54:12Z), c (22:54:19–22:54:23Z)
+
+Backend container (docker logs e2e-backend --since/--until the window; obs/backend.log, gitignored):
+  6 lines: 6 INFO, 0 WARN, 0 ERROR, 0 exception/stack-trace lines.
+  INFO = 4 x DefaultJobEnqueuer fanOutToAllTenants (scheduler), 2 x PortalEmailService "Portal notification sent
+  template=portal-trust-activity" (one per RECORDED deposit, D1 and the back-dated R 750,00).
+  Outside the window (container startup + seed, before 22:53:07Z): 46 WARN, 0 ERROR — PDFBox fallback fonts,
+  font-cache build, BeanPostProcessor eligibility, LibreOffice not found, seed invoice tax_number_missing,
+  DOCUMENT_GENERATED no recipients. None is a request failure; none involves trust accounting.
+  The Micrometer uri-tag cap WARN seen on earlier Phase 92 stacks did not fire in this short window.
+
+Frontend container (docker logs e2e-frontend over the window; obs/frontend.log, gitignored):
+  0 lines over the window. Whole container log: 5 startup lines (Next.js 16.3.8 ready), no error/warn.
+
+Browser (Playwright listeners, result-<phase>.json): 0 console errors, 0 page errors in every phase (l, w, p, c).
+
+Verdict: 0 ERROR, 0 WARN, 0 exceptions in the OBS window.

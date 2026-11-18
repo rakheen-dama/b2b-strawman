@@ -39,6 +39,26 @@ public interface TrustMonthlyListRepository extends JpaRepository<TrustMonthlyLi
   }
 
   /**
+   * The latest locked period end of each of {@code trustAccountIds} that has a locked list (650D,
+   * §16.3.10: {@code TrustAccountResponse.lockedThrough}) — one statement for a list of accounts;
+   * accounts with no list are absent. Served by {@code uq_trust_monthly_list_account_period}.
+   */
+  @Query(
+      "SELECT m.trustAccountId AS trustAccountId, MAX(m.periodEnd) AS lockedThrough"
+          + " FROM TrustMonthlyList m WHERE m.trustAccountId IN :trustAccountIds"
+          + " GROUP BY m.trustAccountId")
+  List<LockedThroughRow> findLockedThroughByTrustAccountIdIn(
+      @Param("trustAccountIds") Collection<UUID> trustAccountIds);
+
+  /** One row of {@link #findLockedThroughByTrustAccountIdIn}. */
+  interface LockedThroughRow {
+
+    UUID getTrustAccountId();
+
+    LocalDate getLockedThrough();
+  }
+
+  /**
    * For each locked list of the account with {@code period_end} on or before {@code asAt}: the
    * posted rows dated on or before its period end and posted after it was locked (§16.3.10) — their
    * count and net cashbook effect. Lists with no such row are not returned. One statement for the

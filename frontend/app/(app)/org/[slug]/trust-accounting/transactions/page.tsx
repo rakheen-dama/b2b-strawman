@@ -128,6 +128,8 @@ export default async function TransactionsPage({
 
   // Fetch primary trust account
   let accountId: string | null = null;
+  // 650D: the account's latest locked list period end — the posting dialogs warn on or before it
+  let lockedThrough: string | null = null;
   let accountFetchError = false;
   try {
     const accounts = await fetchTrustAccounts();
@@ -137,6 +139,7 @@ export default async function TransactionsPage({
     const primary = banking.find((a) => a.isPrimary) ?? banking[0];
     if (primary) {
       accountId = primary.id;
+      lockedThrough = primary.lockedThrough ?? null;
     }
   } catch {
     accountFetchError = true;
@@ -239,7 +242,12 @@ export default async function TransactionsPage({
           </p>
         </div>
         {canManageTrust && accountId && (
-          <TransactionActions accountId={accountId} slug={slug} customers={pickerCustomers} />
+          <TransactionActions
+            accountId={accountId}
+            slug={slug}
+            customers={pickerCustomers}
+            lockedThrough={lockedThrough}
+          />
         )}
       </div>
 

@@ -631,7 +631,7 @@ describe("trust wire shapes match the backend contract (ADR-365)", () => {
     expect(Object.keys(literal)).toEqual(componentNames(records.PayToFundRequest));
   });
 
-  it("TrustAccount ↔ TrustAccountService.TrustAccountResponse (648C)", () => {
+  it("TrustAccount ↔ TrustAccountService.TrustAccountResponse (648C, 650D)", () => {
     const literal: Required<TrustAccount> = {
       id: "",
       accountName: "",
@@ -650,6 +650,7 @@ describe("trust wire shapes match the backend contract (ADR-365)", () => {
       notes: null,
       createdAt: "",
       updatedAt: "",
+      lockedThrough: null,
     };
     expect(Object.keys(literal)).toEqual(componentNames(records.TrustAccountResponse));
   });

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@b2mash/ui/button";
 import {
@@ -25,11 +25,14 @@ import {
 import { Loader2 } from "lucide-react";
 import { recordTransfer } from "@/app/(app)/org/[slug]/trust-accounting/transactions/actions";
 import { recordTransferSchema, type RecordTransferFormData } from "@/lib/schemas/trust";
+import { LockedMonthWarning } from "./locked-month-warning";
 
 interface RecordTransferDialogProps {
   accountId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** The account's latest locked list period end (650D); null when none. */
+  lockedThrough: string | null;
 }
 
 function getDefaultValues() {
@@ -47,7 +50,12 @@ function getDefaultValues() {
   };
 }
 
-export function RecordTransferDialog({ accountId, open, onOpenChange }: RecordTransferDialogProps) {
+export function RecordTransferDialog({
+  accountId,
+  open,
+  onOpenChange,
+  lockedThrough,
+}: RecordTransferDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -55,6 +63,8 @@ export function RecordTransferDialog({ accountId, open, onOpenChange }: RecordTr
     resolver: zodResolver(recordTransferSchema),
     defaultValues: getDefaultValues(),
   });
+  // 650D: the date the locked-month warning keys on
+  const transactionDate = useWatch({ control: form.control, name: "transactionDate" });
 
   function handleOpenChange(newOpen: boolean) {
     onOpenChange(newOpen);
@@ -216,6 +226,8 @@ export function RecordTransferDialog({ accountId, open, onOpenChange }: RecordTr
                 </FormItem>
               )}
             />
+
+            <LockedMonthWarning date={transactionDate} lockedThrough={lockedThrough} />
 
             {error && <p className="text-destructive text-sm">{error}</p>}
 

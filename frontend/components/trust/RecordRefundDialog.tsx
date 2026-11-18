@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@b2mash/ui/button";
 import {
@@ -30,6 +30,7 @@ import {
   TrustMatterPicker,
   type TrustPickerCustomer,
 } from "./TrustEntityPickers";
+import { LockedMonthWarning } from "./locked-month-warning";
 
 interface RecordRefundDialogProps {
   accountId: string;
@@ -42,6 +43,8 @@ interface RecordRefundDialogProps {
   defaultCustomerId?: string;
   /** When set, locks the matter picker to this id. */
   defaultProjectId?: string;
+  /** The account's latest locked list period end (650D); null when none. */
+  lockedThrough: string | null;
 }
 
 function getDefaultValues(defaultCustomerId?: string, defaultProjectId?: string) {
@@ -65,6 +68,7 @@ export function RecordRefundDialog({
   customers,
   defaultCustomerId,
   defaultProjectId,
+  lockedThrough,
 }: RecordRefundDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -73,6 +77,8 @@ export function RecordRefundDialog({
     resolver: zodResolver(recordRefundSchema),
     defaultValues: getDefaultValues(defaultCustomerId, defaultProjectId),
   });
+  // 650D: the date the locked-month warning keys on
+  const transactionDate = useWatch({ control: form.control, name: "transactionDate" });
 
   const customerId = form.watch("customerId");
 
@@ -209,6 +215,8 @@ export function RecordRefundDialog({
                 </FormItem>
               )}
             />
+
+            <LockedMonthWarning date={transactionDate} lockedThrough={lockedThrough} />
 
             {error && <p className="text-destructive text-sm">{error}</p>}
 

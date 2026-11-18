@@ -115,6 +115,7 @@ const MAIN_TRUST_ACCOUNT = {
   notes: null,
   createdAt: "2025-01-01T00:00:00Z",
   updatedAt: "2025-01-01T00:00:00Z",
+  lockedThrough: null,
 };
 
 // OBS-1001: dependent matter combobox calls fetchCustomerProjects via SWR.
@@ -175,6 +176,8 @@ vi.mock("next/link", () => ({
 // ── Imports after mocks ──────────────────────────────────────────
 import TransactionsPage from "@/app/(app)/org/[slug]/trust-accounting/transactions/page";
 import { RecordDepositDialog } from "@/components/trust/RecordDepositDialog";
+import { RecordPaymentDialog } from "@/components/trust/RecordPaymentDialog";
+import { RecordRefundDialog } from "@/components/trust/RecordRefundDialog";
 import { RecordTransferDialog } from "@/components/trust/RecordTransferDialog";
 import { RecordFeeTransferDialog } from "@/components/trust/RecordFeeTransferDialog";
 import { todayInSA } from "@b2mash/shared/date";
@@ -581,6 +584,7 @@ describe("Trust Transactions", () => {
     render(
       <RecordDepositDialog
         accountId="acc-1"
+        lockedThrough={null}
         slug="acme"
         open={true}
         onOpenChange={vi.fn()}
@@ -637,6 +641,7 @@ describe("Trust Transactions", () => {
     render(
       <RecordDepositDialog
         accountId="acc-1"
+        lockedThrough={null}
         slug="acme"
         open={true}
         onOpenChange={vi.fn()}
@@ -671,7 +676,14 @@ describe("Trust Transactions", () => {
   // without it the dialog shows a field error under Target Matter and does not submit.
   it("refuses a transfer without a target matter with a field error (D39)", async () => {
     mockRecordTransfer.mockClear();
-    render(<RecordTransferDialog accountId="acc-1" open={true} onOpenChange={vi.fn()} />);
+    render(
+      <RecordTransferDialog
+        accountId="acc-1"
+        open={true}
+        onOpenChange={vi.fn()}
+        lockedThrough={null}
+      />
+    );
 
     fireEvent.change(screen.getByPlaceholderText("Source client UUID"), {
       target: { value: "550e8400-e29b-41d4-a716-446655440000" },
@@ -699,7 +711,14 @@ describe("Trust Transactions", () => {
   // PR #1757 review round 2: the transfer dialog grew to nine fields, so its content scrolls at
   // short viewport heights like PlaceInvestmentDialog and the repo's other tall dialogs.
   it("transfer dialog scrolls at short viewport heights", () => {
-    render(<RecordTransferDialog accountId="acc-1" open={true} onOpenChange={vi.fn()} />);
+    render(
+      <RecordTransferDialog
+        accountId="acc-1"
+        open={true}
+        onOpenChange={vi.fn()}
+        lockedThrough={null}
+      />
+    );
 
     // DialogContent puts its className on the panel inside the positioned dialog element
     const panel = screen.getByRole("dialog").firstElementChild as HTMLElement;
@@ -710,7 +729,14 @@ describe("Trust Transactions", () => {
 
   it("submits a transfer with both matters (D39)", async () => {
     mockRecordTransfer.mockResolvedValue({ success: true });
-    render(<RecordTransferDialog accountId="acc-1" open={true} onOpenChange={vi.fn()} />);
+    render(
+      <RecordTransferDialog
+        accountId="acc-1"
+        open={true}
+        onOpenChange={vi.fn()}
+        lockedThrough={null}
+      />
+    );
 
     fireEvent.change(screen.getByPlaceholderText("Source client UUID"), {
       target: { value: "550e8400-e29b-41d4-a716-446655440000" },
@@ -751,6 +777,7 @@ describe("Trust Transactions", () => {
     render(
       <RecordDepositDialog
         accountId="acc-1"
+        lockedThrough={null}
         slug="acme"
         open={true}
         onOpenChange={vi.fn()}
@@ -784,6 +811,7 @@ describe("Trust Transactions", () => {
     render(
       <RecordDepositDialog
         accountId="acc-1"
+        lockedThrough={null}
         slug="acme"
         open={true}
         onOpenChange={vi.fn()}
@@ -1072,7 +1100,14 @@ describe("Trust Transactions", () => {
   // Phase 92 646D (ruling #6): optional fee-transfer date — the date the bank shows the transfer.
   it("submits a back-dated fee transfer and refuses a future date", async () => {
     mockRecordFeeTransfer.mockResolvedValue({ success: true });
-    render(<RecordFeeTransferDialog accountId="acc-1" open={true} onOpenChange={vi.fn()} />);
+    render(
+      <RecordFeeTransferDialog
+        accountId="acc-1"
+        open={true}
+        onOpenChange={vi.fn()}
+        lockedThrough={null}
+      />
+    );
 
     expect(screen.getByText("Fee transfer date (optional)")).toBeInTheDocument();
     fireEvent.change(screen.getByPlaceholderText("Client UUID"), {
@@ -1103,5 +1138,164 @@ describe("Trust Transactions", () => {
         expect.objectContaining({ transactionDate: "2026-03-15", reference: "FEE/2026/BACK" })
       )
     );
+  });
+  // Phase 92 650D (§16.3.10, ADR-382): a date on or before the account's latest locked list
+  // period end warns — never refuses.
+  const LOCKED =
+    "This date falls in a month whose list is locked. The entry will be recorded and shown as a later adjustment.";
+  const SIPHO = {
+    id: "550e8400-e29b-41d4-a716-446655440000",
+    name: "Sipho Dlamini",
+    email: "sipho@example.com",
+  };
+
+  it("warns on a date on or before the locked month end and still records the deposit (650D)", async () => {
+    mockRecordDeposit.mockResolvedValue({ success: true });
+    render(
+      <RecordDepositDialog
+        accountId="acc-1"
+        slug="acme"
+        open={true}
+        onOpenChange={vi.fn()}
+        customers={[SIPHO]}
+        defaultCustomerId={SIPHO.id}
+        defaultProjectId="770e8400-e29b-41d4-a716-446655440002"
+        lockedThrough="2026-03-31"
+      />
+    );
+    fireEvent.change(screen.getByPlaceholderText("0.00"), { target: { value: "750" } });
+    fireEvent.change(screen.getByPlaceholderText("e.g. DEP/2026/001"), {
+      target: { value: "DEP/2026/BACK" },
+    });
+    const date = screen.getByLabelText("Transaction Date");
+
+    fireEvent.change(date, { target: { value: "2026-04-01" } });
+    expect(screen.queryByTestId("locked-month-warning")).not.toBeInTheDocument();
+
+    // The boundary: equal to lockedThrough is "on or before"
+    fireEvent.change(date, { target: { value: "2026-03-31" } });
+    const warning = screen.getByTestId("locked-month-warning");
+    expect(warning).toHaveTextContent(LOCKED);
+    expect(warning).toHaveAttribute("role", "status");
+    expect(screen.getByRole("status")).toBe(warning);
+    const form = date.closest("form")!;
+    expect(form.querySelector('button[type="submit"]')).not.toBeDisabled();
+
+    fireEvent.change(date, { target: { value: "2026-03-15" } });
+    expect(screen.getByTestId("locked-month-warning")).toHaveTextContent(LOCKED);
+    fireEvent.submit(form);
+    await waitFor(() =>
+      expect(mockRecordDeposit).toHaveBeenCalledWith(
+        "acc-1",
+        expect.objectContaining({ transactionDate: "2026-03-15", reference: "DEP/2026/BACK" })
+      )
+    );
+  });
+
+  it("shows the locked-month warning in all five posting dialogs only on or before lockedThrough (650D)", () => {
+    mockRecordDeposit.mockClear();
+    mockRecordTransfer.mockClear();
+    mockRecordFeeTransfer.mockClear();
+    const dialogs: Array<[string, () => ReturnType<typeof render>]> = [
+      [
+        "deposit",
+        () =>
+          render(
+            <RecordDepositDialog
+              accountId="acc-1"
+              slug="acme"
+              open={true}
+              onOpenChange={vi.fn()}
+              customers={[SIPHO]}
+              defaultCustomerId={SIPHO.id}
+              lockedThrough="2026-03-31"
+            />
+          ),
+      ],
+      [
+        "payment",
+        () =>
+          render(
+            <RecordPaymentDialog
+              accountId="acc-1"
+              open={true}
+              onOpenChange={vi.fn()}
+              customers={[SIPHO]}
+              defaultCustomerId={SIPHO.id}
+              lockedThrough="2026-03-31"
+            />
+          ),
+      ],
+      [
+        "refund",
+        () =>
+          render(
+            <RecordRefundDialog
+              accountId="acc-1"
+              open={true}
+              onOpenChange={vi.fn()}
+              customers={[SIPHO]}
+              defaultCustomerId={SIPHO.id}
+              lockedThrough="2026-03-31"
+            />
+          ),
+      ],
+      [
+        "transfer",
+        () =>
+          render(
+            <RecordTransferDialog
+              accountId="acc-1"
+              open={true}
+              onOpenChange={vi.fn()}
+              lockedThrough="2026-03-31"
+            />
+          ),
+      ],
+    ];
+    for (const [name, renderDialog] of dialogs) {
+      const { unmount } = renderDialog();
+      const date = screen.getByLabelText("Transaction Date");
+      fireEvent.change(date, { target: { value: "2026-03-20" } });
+      expect(screen.getByTestId("locked-month-warning"), name).toHaveTextContent(LOCKED);
+      fireEvent.change(date, { target: { value: "2026-04-15" } });
+      expect(screen.queryByTestId("locked-month-warning"), name).not.toBeInTheDocument();
+      unmount();
+    }
+
+    // Fee transfer: a blank date means today, which is after the lock — no warning
+    const fee = render(
+      <RecordFeeTransferDialog
+        accountId="acc-1"
+        open={true}
+        onOpenChange={vi.fn()}
+        lockedThrough="2026-03-31"
+      />
+    );
+    expect(screen.queryByTestId("locked-month-warning")).not.toBeInTheDocument();
+    const feeDate = screen.getByTestId("fee-transfer-date-input");
+    fireEvent.change(feeDate, { target: { value: "2026-03-20" } });
+    expect(screen.getByTestId("locked-month-warning")).toHaveTextContent(LOCKED);
+    fireEvent.change(feeDate, { target: { value: "2026-04-15" } });
+    expect(screen.queryByTestId("locked-month-warning")).not.toBeInTheDocument();
+    fee.unmount();
+
+    // null: nothing is locked, so even an old date shows no warning
+    render(
+      <RecordTransferDialog
+        accountId="acc-1"
+        open={true}
+        onOpenChange={vi.fn()}
+        lockedThrough={null}
+      />
+    );
+    fireEvent.change(screen.getByLabelText("Transaction Date"), {
+      target: { value: "2020-01-31" },
+    });
+    expect(screen.queryByTestId("locked-month-warning")).not.toBeInTheDocument();
+
+    expect(mockRecordDeposit).not.toHaveBeenCalled();
+    expect(mockRecordTransfer).not.toHaveBeenCalled();
+    expect(mockRecordFeeTransfer).not.toHaveBeenCalled();
   });
 });

@@ -41,6 +41,7 @@ Columns: **id** · **source** (slice / found.md) · **decision taken** · **alte
 | FU-7 | O-1 | `legal-za` template pack: SoA label; version bump + reconcile entry + seeder reconcile test. |
 | FU-8 | F-17 | `backend/pom.xml` Surefire `-Xmx` raise (durable fix: cull context-cache keys); full verify + CI ×2 green. |
 | FU-10 | F-13 | After-lock boundary: order by a database-side value (DB `now()` / commit sequence) instead of app-host `clock.instant()`; red test with a skewed clock. |
+| FU-11 | 650A F-12 | UNIDENT_ALLOC_OUT approval lock order: lock the unidentified item and the destination client's anchor before the first posting (account FOR SHARE) lock, in the F-10/F-11 global order; red `pg_blocking_pids` test with a concurrent s86(4) placement for the same client first. |
 | FU-9 | F-6a + F-6b | One PR with FU-1: approval-time cashbook cover check for all firm-initiated outflows under an account lock (lock order: transaction row → account → client anchor), `CASHBOOK_IN_DEBIT` integrity flag; recording paths untouched. Red tests first (two pending placements; payment after a s86(3) placement). |
 
 ## Decisions taken by slice agents (append below — newest last)
@@ -49,3 +50,16 @@ Columns: **id** · **source** (slice / found.md) · **decision taken** · **alte
 |---|---|---|---|---|---|
 | F-13 | 650A found.md (orchestrator, protocol) | After-lock section compares app-host clock times: **accepted for now** (all deployments are single-host; the ledger itself stays correct); **database-side ordering** scheduled as follow-up FU-10 — the conservative option, before any multi-host deployment. | accept permanently | yes | DEFAULT |
 | R-1 note | 650A found.md | Confirms FU-3's approach: report/document reads run inside a writing transaction, so snapshot isolation there has no effect — FU-3 must use a separate read-only `REQUIRES_NEW` sub-transaction. | — | yes | DEFAULT |
+| 650D D-1 | 650D brief | `lockedThrough` is the **last** component of `TrustAccountResponse` (and the last key of the TS type / wire literal). | insert next to `closedDate` | yes | DEFAULT |
+| 650D D-2 | 650D brief | `TrustAccountService` injects `TrustMonthlyListRepository` directly (one batched JPQL `max(periodEnd) … group by trustAccountId` with an interface projection), not `TrustMonthlyListService`. | inject the service (13 deps, bean-cycle risk) | yes | DEFAULT |
+| 650D D-3 | 650D brief | `lockedThrough` is computed **per account, for every account type** (no type filter), per ADR-382. | banking accounts only | yes | DEFAULT |
+| 650D D-4 | 650D brief | One shared `components/trust/locked-month-warning.tsx` (`LockedMonthWarning`, `isOnOrBeforeLock`, `LOCKED_MONTH_WARNING`) rendered under each dialog's date field. | inline JSX ×5 | yes | DEFAULT |
+| 650D D-5 | 650D brief | `lockedThrough: string \| null` is a **required** prop on the five dialogs and `TransactionActions`, so typecheck forces every mount site to wire it. | optional prop | yes | DEFAULT |
+| 650D D-6 | 650D brief | Fee transfer compares `value \|\| todayInSA()` (blank date = today on the server, 646D). | no warning on blank | yes | DEFAULT |
+| 650D D-7 | 650D brief | `TrustBalanceCard` reads `lockedThrough` from the SWR accounts list it already fetches; `null` when `trustAccountId` is passed in (no fetch). | extra fetch | yes | DEFAULT |
+| 650D D-8 | 650D brief | `TrustAccountingController` unchanged (already one-line delegation returning the service record). | add logic there | yes | DEFAULT |
+| 650D D-9 | 650D brief | The warning uses the exact task sentence; it does not name the locked month. | name the month | yes | DEFAULT |
+| 650D D-10 | 650D brief | Mount sites (`transaction-actions.tsx`, `transactions/page.tsx`, `TrustBalanceCard.tsx`) changed to wire the prop — required wiring, not scope creep. | — | yes | DEFAULT |
+| 650D D-11 | 650D brief | No portal / MCP DTO / dashboard DTO change (grep: no portal consumer; MCP and dashboard read other fields). | — | yes | DEFAULT |
+| 650D D-12 | 650D build | The dialogs read the date with `useWatch({ control, name: "transactionDate" })`, not `form.watch`, so the React Compiler keeps compiling the Transfer and Fee-transfer dialogs (lint stays at the 78-warning baseline; `useWatch` precedent: `PlaceInvestmentDialog`). | `form.watch` (brief sketch; +2 `incompatible-library` warnings) | yes | DEFAULT |
+| 650A F-12 | 650A found.md ("→ 650D") | The UNIDENT_ALLOC_OUT approval ↔ s86(4) placement deadlock (LOW, 40P01 → one request fails, rolled back, no corruption) is **not absorbed into 650D**. The task-file header says no pending slice widens its scope, and 650D's own scope is the locked-month warning. Scheduled as follow-up FU-11. | fix in 650D | yes | DEFAULT |

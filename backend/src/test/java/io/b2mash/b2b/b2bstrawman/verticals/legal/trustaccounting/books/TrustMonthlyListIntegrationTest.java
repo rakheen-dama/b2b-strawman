@@ -2,6 +2,8 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -614,6 +616,75 @@ class TrustMonthlyListIntegrationTest {
         .andExpect(jsonPath("$.status").value(403))
         .andExpect(jsonPath("$.title").value("Access denied"))
         .andExpect(jsonPath("$.detail").value("Insufficient permissions for this operation"));
+  }
+
+  // --- lockedThrough on the account (650D) -----------------------------------------------------
+
+  /**
+   * 650D (§16.3.10, ADR-382): the trust account carries {@code lockedThrough}, the latest period
+   * end of its locked lists, null until one is locked; a mid-month completion locks nothing; a
+   * posting dated on or before it is still recorded (never a refusal) and never moves it.
+   */
+  @Test
+  void lockedThrough_onTheAccount_isTheLatestLockedMonthEnd_andAPostingDatedBeforeItStillRecords()
+      throws Exception {
+    var owner = TestJwtFactory.ownerJwt(ORG_ID, OWNER);
+    var midMonth = books.freshAccount(false);
+    var account = books.freshAccount(false);
+    mockMvc
+        .perform(get("/api/trust-accounts/{id}", account).with(owner))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$", hasKey("lockedThrough")))
+        .andExpect(jsonPath("$.lockedThrough").value(nullValue()));
+
+    var midStatement = matchedMarchStatement(midMonth, "tml-lt-mid.csv");
+    complete(reconcile(midMonth, LocalDate.of(2026, 3, 15), midStatement.id()).id());
+    mockMvc
+        .perform(get("/api/trust-accounts/{id}", midMonth).with(owner))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$", hasKey("lockedThrough")))
+        .andExpect(jsonPath("$.lockedThrough").value(nullValue()));
+
+    var client = books.newClient("locked through");
+    var february =
+        books.postLedgerRowDirect(
+            account,
+            "DEPOSIT",
+            "100.00",
+            LocalDate.of(2026, 2, 10),
+            client.id(),
+            client.matter(),
+            null,
+            null);
+    var febStatement =
+        importStatement(
+            account, "tml-lt-feb.csv", "10/02/2026,Deposit received,100.00,100.00,TML-LTF");
+    match(febStatement, 0, february);
+    complete(reconcile(account, FEBRUARY_END, febStatement.id()).id());
+    var march = books.deposit(account, client, "900.00");
+    var marchStatement =
+        importStatement(
+            account, "tml-lt-march.csv", "01/03/2026,Deposit received,900.00,1000.00,TML-LTM");
+    match(marchStatement, 0, march);
+    complete(reconcile(account, MARCH_END, marchStatement.id()).id());
+
+    mockMvc
+        .perform(get("/api/trust-accounts/{id}", account).with(owner))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.lockedThrough").value("2026-03-31"));
+    mockMvc
+        .perform(get("/api/trust-accounts").with(owner))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[?(@.id == '" + account + "')].lockedThrough").value("2026-03-31"));
+
+    // Never a refusal: a deposit dated 1 March (on or before the lock) is recorded
+    var backdated = new UUID[1];
+    books.as(memberId, () -> backdated[0] = marchDeposit(account, client, "TML-LT-BACK"));
+    assertThat(books.statusOf(backdated[0])).isEqualTo("RECORDED");
+    mockMvc
+        .perform(get("/api/trust-accounts/{id}", account).with(owner))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.lockedThrough").value("2026-03-31"));
   }
 
   // --- the lock and a concurrent posting (650A review C1 / found.md F-1) ------------------------

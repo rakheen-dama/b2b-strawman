@@ -81,6 +81,9 @@ export function TrustBalanceCard({
     trustAccountId ??
     accounts?.find((a) => a.isPrimary && a.status === "ACTIVE")?.id ??
     accounts?.[0]?.id;
+  // 650D: the posting dialogs warn on a date on or before the account's latest locked list. A
+  // passed-in trustAccountId skips the accounts fetch, so there is nothing to read (null).
+  const lockedThrough = accounts?.find((a) => a.id === resolvedAccountId)?.lockedThrough ?? null;
 
   // Fetch client ledger for this customer
   const ledgerCacheKey =
@@ -234,6 +237,7 @@ export function TrustBalanceCard({
                     slug={slug}
                     open={depositOpen}
                     onOpenChange={setDepositOpen}
+                    lockedThrough={lockedThrough}
                     onSuccess={handleMutationSuccess}
                     customers={[{ id: customerId, name: ledger.clientName, email: "" }]}
                     defaultCustomerId={customerId}
@@ -243,6 +247,7 @@ export function TrustBalanceCard({
                     accountId={resolvedAccountId}
                     open={paymentOpen}
                     onOpenChange={setPaymentOpen}
+                    lockedThrough={lockedThrough}
                     onSuccess={handleMutationSuccess}
                     customers={[{ id: customerId, name: ledger.clientName, email: "" }]}
                     defaultCustomerId={customerId}
@@ -252,6 +257,7 @@ export function TrustBalanceCard({
                     accountId={resolvedAccountId}
                     open={feeTransferOpen}
                     onOpenChange={setFeeTransferOpen}
+                    lockedThrough={lockedThrough}
                     onSuccess={handleMutationSuccess}
                   />
                 </div>

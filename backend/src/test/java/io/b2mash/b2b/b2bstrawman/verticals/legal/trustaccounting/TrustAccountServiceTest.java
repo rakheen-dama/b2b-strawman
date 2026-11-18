@@ -15,6 +15,7 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateLpffRateRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateTrustAccountRequest;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.TrustAccountResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.UpdateTrustAccountRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.TrustCreditorAccount;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.TrustCreditorAccountRepository;
@@ -971,6 +972,87 @@ class TrustAccountServiceTest {
     }
   }
 
+  // --- 650D: lockedThrough (§16.3.10, ADR-382) ---
+
+  @Test
+  void lockedThrough_isTheLatestLockedPeriodEnd_ofEachAccount_onGetAndList() {
+    UUID[] ids = new UUID[3];
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  ids[0] = fundingAccount("Locked Through A");
+                  ids[1] = fundingAccount("Locked Through B");
+                  ids[2] = fundingAccount("Locked Through C");
+                }));
+    // Out of order, so the latest period end (not the last insert) is what is asserted
+    lockedListDirect(ids[0], LocalDate.of(2026, 1, 31));
+    lockedListDirect(ids[0], LocalDate.of(2026, 3, 31));
+    lockedListDirect(ids[0], LocalDate.of(2026, 2, 28));
+    lockedListDirect(ids[1], LocalDate.of(2026, 2, 28));
+
+    runInTenant(
+        () -> {
+          assertThat(trustAccountService.getTrustAccount(ids[0]).lockedThrough())
+              .isEqualTo(LocalDate.of(2026, 3, 31));
+          assertThat(trustAccountService.getTrustAccount(ids[1]).lockedThrough())
+              .as("per account: A's lists never set B's lockedThrough")
+              .isEqualTo(LocalDate.of(2026, 2, 28));
+          assertThat(trustAccountService.getTrustAccount(ids[2]).lockedThrough()).isNull();
+
+          assertThat(trustAccountService.listTrustAccounts())
+              .extracting(TrustAccountResponse::id, TrustAccountResponse::lockedThrough)
+              .contains(
+                  tuple(ids[0], LocalDate.of(2026, 3, 31)),
+                  tuple(ids[1], LocalDate.of(2026, 2, 28)),
+                  tuple(ids[2], null));
+        });
+  }
+
+  @Test
+  void lockedThrough_isNullUntilAListIsLocked_andEveryAccountResponseCarriesIt() {
+    UUID[] id = new UUID[1];
+    runInTenant(
+        () -> {
+          var created =
+              trustAccountService.createTrustAccount(
+                  new CreateTrustAccountRequest(
+                      "Locked Through D",
+                      "Absa",
+                      "632005",
+                      "5550008888",
+                      "GENERAL",
+                      false,
+                      false,
+                      null,
+                      LocalDate.of(2026, 3, 1),
+                      null));
+          assertThat(created.lockedThrough()).as("create response").isNull();
+          id[0] = created.id();
+          assertThat(trustAccountService.getTrustAccount(id[0]).lockedThrough()).isNull();
+        });
+
+    lockedListDirect(id[0], LocalDate.of(2026, 4, 30));
+
+    runInTenant(
+        () -> {
+          assertThat(
+                  trustAccountService
+                      .updateTrustAccount(
+                          id[0],
+                          new UpdateTrustAccountRequest(
+                              "Locked Through D renamed", null, null, null, null, null, null, null))
+                      .lockedThrough())
+              .as("update response")
+              .isEqualTo(LocalDate.of(2026, 4, 30));
+          assertThat(trustAccountService.getTrustAccount(id[0]).lockedThrough())
+              .isEqualTo(LocalDate.of(2026, 4, 30));
+          assertThat(trustAccountService.closeTrustAccount(id[0]).lockedThrough())
+              .as("close response")
+              .isEqualTo(LocalDate.of(2026, 4, 30));
+        });
+  }
+
   // --- Helpers ---
 
   private static UpdateTrustAccountRequest basisUpdate(InvestmentBasis basis) {
@@ -1011,6 +1093,42 @@ class TrustAccountServiceTest {
         fundingAccountId,
         investmentAccountId,
         status);
+  }
+
+  /**
+   * A locked Rule 54.15 list of {@code accountId} for {@code periodEnd} (a month end), with its
+   * COMPLETED reconciliation, written straight to the tables (650D: lockedThrough reads only
+   * trust_monthly_lists.period_end; the lock path itself is TrustMonthlyListIntegrationTest's).
+   */
+  private void lockedListDirect(UUID accountId, LocalDate periodEnd) {
+    UUID reconciliationId =
+        jdbcTemplate.queryForObject(
+            """
+            INSERT INTO "%s".trust_reconciliations (trust_account_id, period_end, bank_balance,
+                cashbook_balance, client_ledger_total, adjusted_bank_balance, is_balanced, status,
+                completed_by, completed_at)
+            VALUES (?, ?, 0, 0, 0, 0, true, 'COMPLETED', ?, now())
+            RETURNING id
+            """
+                .formatted(tenantSchema),
+            UUID.class,
+            accountId,
+            periodEnd,
+            memberId);
+    jdbcTemplate.update(
+        """
+        INSERT INTO "%s".trust_monthly_lists (trust_account_id, period_end, reconciliation_id,
+            bank_balance, outstanding_deposits, outstanding_payments, adjusted_bank_balance,
+            cashbook_balance, client_ledger_total, investment_creditor_total, fund_ledger_balance,
+            unidentified_deposit_total, inter_account_balance, creditor_total, difference, lines,
+            locked_by, locked_at)
+        VALUES (?, ?, ?, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '[]'::jsonb, ?, now())
+        """
+            .formatted(tenantSchema),
+        accountId,
+        periodEnd,
+        reconciliationId,
+        memberId);
   }
 
   private static CreateTrustAccountRequest investmentRequest(String name, InvestmentBasis basis) {

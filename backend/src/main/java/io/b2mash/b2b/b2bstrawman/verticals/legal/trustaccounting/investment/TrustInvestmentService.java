@@ -88,11 +88,14 @@ import org.springframework.transaction.annotation.Transactional;
  * investment's id on the placement pair, {@code INV-WD-} and the same digits on the withdrawal
  * pair. Every posting goes through {@link TrustPostingService}; the transaction repository is read
  * and locked only. Implements {@link InvestmentPlacementHooks} (no dependency on {@code
- * TrustTransactionService}, so no bean cycle; its amount rule is {@link TrustAmounts}). Lock order:
- * a placement request takes the funding account, then the investment account (then the client's
- * lock anchor); its approval, the placement row, then the funding account (section 86(3)) or the
- * client's lock anchor (section 86(4)), then the investment row; a withdrawal, the placement row,
- * then the investment row (then the client's lock anchor).
+ * TrustTransactionService}, so no bean cycle; its amount rule is {@link TrustAmounts}). Lock order
+ * (the global order in {@link TrustPostingService}, 650A F-10/F-11): a placement request takes the
+ * client's lock anchor (section 86(4)), then the funding account, then the investment account; its
+ * approval, the placement row, then the funding account (section 86(3)) or the client's lock anchor
+ * (section 86(4)), then the investment row, posting on the funding account before the investment
+ * account; a withdrawal, the placement row, then the investment row, then the client's lock anchor
+ * (section 86(4)), then the funding account, then the investment account — both accounts locked
+ * before either leg posts.
  *
  * <p>648B — section 86(4) interest entries ({@link TrustInvestmentInterest}, §16.3.8): {@link
  * #recordInterest} from a bank advice, or from a statement line (here and through {@code
@@ -102,8 +105,8 @@ import org.springframework.transaction.annotation.Transactional;
  * then the investment row, then the statement; {@link #reverseInterest}, the investment row, then
  * the entry, then its rows (no client anchor: a debit of credited interest cannot take the
  * investment ledger below its principal); an {@code INVESTMENT_INTEREST} line's unmatch, the line,
- * then the investment row, then the entry ({@link #lockEntryForUnmatch}), then its rows and the
- * client's anchor on the investment account, then the statement. The contra drafts come from {@link
+ * then the investment row, then the entry ({@link #lockEntryForUnmatch}), then the statement, then
+ * its rows and the client's anchor on the investment account. The contra drafts come from {@link
  * TrustPostingService#contraDraft} (no {@code TrustTransactionService} dependency).
  */
 @Service
@@ -309,10 +312,22 @@ public class TrustInvestmentService implements InvestmentPlacementHooks {
       throw new InvalidStateException(PLACE_TITLE, "The deposit date cannot be in the future.");
     }
 
+    // Section 86(4): the client's lock anchor first (650A F-11) — the global lock order
+    // (TrustPostingService) puts a client's anchor before the account rows, and a posting for the
+    // client takes the anchor and then the account's posting lock. Taken only when the account and
+    // the client exist; otherwise the checks below refuse the request.
+    if (request.investmentBasis() == InvestmentBasis.CLIENT_INSTRUCTION
+        && request.clientId() != null
+        && trustAccountRepository.existsById(fundingAccountId)
+        && customerRepository.existsById(request.clientId())) {
+      postingService.lockClient(fundingAccountId, request.clientId());
+    }
+
     // Locked (648A review F-3/F-4): serialises the section 86(3) cashbook read with a placement's
     // approval (which re-reads it under this lock) and the placement with the account's closing.
-    // Lock order: the funding account, then the investment account (a banking account is never an
-    // investment account, so two placements cannot lock them in opposite orders).
+    // Lock order: the funding account, then the investment account (the global order puts the
+    // trust banking account before the investment account; a banking account is never an
+    // investment account).
     var funding =
         trustAccountRepository
             .findByIdForUpdate(fundingAccountId)
@@ -371,8 +386,8 @@ public class TrustInvestmentService implements InvestmentPlacementHooks {
                   () -> new ResourceNotFoundException(EntityNoun.CLIENT, request.clientId()));
       matter = clientMatterRule.requireClientMatter(client, request.matterId());
       // The client's money on the matter must cover the placement — read under the client's lock
-      // anchor (it is checked again at approval, TrustTransactionService.requireClientCovers)
-      postingService.lockClient(fundingAccountId, client.getId());
+      // anchor, taken above (it is checked again at approval,
+      // TrustTransactionService.requireClientCovers)
       var available =
           ledgerQueries.matterCellBalance(fundingAccountId, client.getId(), matter.getId(), null);
       if (available.compareTo(request.principal()) < 0) {
@@ -603,13 +618,21 @@ public class TrustInvestmentService implements InvestmentPlacementHooks {
               + lastEntry.get()
               + ").");
     }
+    boolean forClient = investment.getInvestmentBasis() == InvestmentBasis.CLIENT_INSTRUCTION;
+    if (forClient) {
+      postingService.lockClient(investment.getTrustAccountId(), investment.getCustomerId());
+    }
     // 648A review F-4: both legs post, so both accounts must be open (closing either is refused
-    // while the investment is held; this covers an account closed before that guard)
+    // while the investment is held; this covers an account closed before that guard). 650A F-10:
+    // read under both accounts' posting locks, taken here in the global order — the client's
+    // anchor (above), the funding (banking) account, then the investment account — before the
+    // withdrawal leg posts on the investment account; posting it first would take the investment
+    // account before the funding account, the reverse of a placement's order.
     for (var accountId :
         List.of(investment.getTrustAccountId(), investment.getInvestmentAccountId())) {
       var account =
           trustAccountRepository
-              .findById(accountId)
+              .findByIdForShare(accountId)
               .orElseThrow(() -> new ResourceNotFoundException("TrustAccount", accountId));
       if (account.getStatus() != TrustAccountStatus.ACTIVE) {
         throw new InvalidStateException(
@@ -619,10 +642,6 @@ public class TrustInvestmentService implements InvestmentPlacementHooks {
       }
     }
 
-    boolean forClient = investment.getInvestmentBasis() == InvestmentBasis.CLIENT_INSTRUCTION;
-    if (forClient) {
-      postingService.lockClient(investment.getTrustAccountId(), investment.getCustomerId());
-    }
     var amount =
         forClient
             ? ledgerQueries.investmentBalance(

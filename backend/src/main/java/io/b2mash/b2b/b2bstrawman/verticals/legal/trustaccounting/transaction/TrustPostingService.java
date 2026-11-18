@@ -41,6 +41,30 @@ import org.springframework.transaction.annotation.Transactional;
  * F-1): a shared row lock on the trust account, held to commit, which the Rule 54.15 list's lock
  * waits for — so no posting can be stamped before a list's {@code locked_at} and commit after the
  * list has read the books.
+ *
+ * <p>The global lock order (650A F-1, F-10, F-11) — every trust path takes the locks it needs in
+ * this order, and none from an earlier step after one from a later step:
+ *
+ * <ol>
+ *   <li>the path's own rows, in the order documented at each path — a bank statement line, an
+ *       unidentified deposit item, an investment's placement row then its investment row then an
+ *       interest entry, trust transaction rows — and the bank statement;
+ *   <li>client lock anchors ({@link #lockClient}; two clients in ascending UUID order);
+ *   <li>trust account rows: the posting lock ({@code FOR SHARE}, {@link #postedNow}) or an
+ *       account-level lock ({@code FOR UPDATE}: the Rule 54.15 list, an account's update or
+ *       closing, a placement request, a section 86(3) placement's approval). A path that touches
+ *       two accounts — only an investment's placement, approval or withdrawal, never two accounts
+ *       of the same type — takes the trust banking account before the investment account.
+ * </ol>
+ *
+ * Account rows come last because the posting lock is taken here, after the caller's locks: a path
+ * that takes an account lock itself takes its client anchors first ({@code
+ * TrustInvestmentService.placeInvestment}) and both accounts before the first leg posts ({@code
+ * withdrawInvestment}). One exception: a placement's approval locks its new investment row after
+ * the funding account — safe because it holds the placement row, which a withdrawal or rejection of
+ * that investment takes first, and interest on an investment whose placement is unapproved is
+ * refused before it posts. Within one transaction an account row held {@code FOR UPDATE} may be
+ * re-taken {@code FOR SHARE} (already held), never the reverse (a lock upgrade).
  */
 @Service
 public class TrustPostingService {
@@ -314,7 +338,8 @@ public class TrustPostingService {
    * share it; the Rule 54.15 list's {@code FOR UPDATE} on the same row waits for every posting in
    * flight to commit before it reads the books, and a posting that starts while the list is locking
    * waits for it — so its {@code posted_at} falls after the list's {@code locked_at}. Taken here,
-   * the one place {@code posted_at} is written, after the caller's own locks.
+   * the one place {@code posted_at} is written, after the caller's own locks — the last step of the
+   * global lock order (class Javadoc).
    */
   private Instant postedNow(TrustTransaction row) {
     trustAccountRepository.findByIdForShare(row.getTrustAccountId());

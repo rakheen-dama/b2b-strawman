@@ -121,12 +121,28 @@ The document MUST include all of these, adapted to whatever the requirements ask
 - Access control tables per entity/operation
 - Role hierarchy: Owner > Admin > Project Lead > Contributor
 
-#### Section N.10 — Capability Slices
+#### Section N.10 — Cross-cutting Decisions (MANDATORY, every phase)
+Phase 92 lesson: calls nobody made at architecture time surfaced mid-slice — duplicate same-date statements, whether reversal reasons appear on reports a firm can send to clients, "Trust balance held" vs "Held in trust", dropping a retired column's totals in a migration, a statement reading two balances in separate queries (possible double count), reports gated by a financial-visibility capability instead of the trust-view one. Each either stopped the run or was decided by a slice agent.
+
+Answer every item. Each answer is **RULED** (decision + one-line rationale) or **DEFERRED to `<slice id>`** with a proposed default. Never blank, never "the builder decides", never "N/A" without saying why.
+
+| # | Item | The answer must state |
+|---|---|---|
+| X1 | **Authorization** | For every new or changed read surface — screen, API, report/export, generated document, portal view, MCP tool — the capability that gates it. A surface that inherits a broader or different gate than its siblings is called out. |
+| X2 | **Read consistency & transaction boundaries** | For every figure composed from more than one query: one transaction / snapshot, or why a race between the reads is harmless. Name the double count or torn total it prevents. |
+| X3 | **User-facing wording** | The exact text of every new figure, label, status and document heading, in domain/statutory terms. No raw enums; one term per concept across firm UI, portal, documents and reports. |
+| X4 | **Fate of retired data** | For every retired column, table, endpoint or type: migrate / carry over / drop — with the reason and who loses what (firms, clients, reports, portal, history). |
+| X5 | **Concurrency of state transitions** | Approvals, locks, completes, imports, double-submit, duplicate creates (same entity + same date/period): what wins, what is refused (409 / idempotent return), and the constraint or lock that enforces it. |
+
+End the section with a **Founder decisions** table — `#`, question, recommendation, blocks (slice ids) — listing every product, legal or policy call in the document, including any X1–X5 answer that is one. These are ruled BEFORE `/breakdown` runs; anything still unruled is carried into the task file as `OPEN — blocks <slice ids>`.
+
+#### Section N.11 — Capability Slices
 - 3-6 independently deployable slices
 - Each with: scope (backend/frontend), key deliverables, dependencies, test expectations
+- State the build order as an explicit sequence of slice ids (it may differ from numeric order)
 - Designed for the `/breakdown` skill to turn into full epics
 
-#### Section N.11 — ADR Index
+#### Section N.12 — ADR Index
 - Table linking to all ADRs (existing referenced + new)
 
 ### Writing Style Rules
@@ -188,6 +204,9 @@ Review the architecture document at {MAIN_DOC_PATH} and ADR files at adr/ADR-{NN
 2. Completeness — all sections present, all requirements covered
 3. Compatibility — follows existing entity patterns, correct migration/ADR numbering, permission model alignment
 4. Implementability — can an engineer derive epics from this?
+5. Cross-cutting decisions — every X1–X5 item answered (RULED or DEFERRED to a named slice with a
+   default); every new read surface has a gating capability; every product/legal/policy call is in
+   the Founder decisions table.
 
 List issues if found. Be concise.
 ```
@@ -202,6 +221,8 @@ Show the user:
 - Section number for ARCHITECTURE.md merge
 - Migration number(s)
 - Capability slice count
+- The **Founder decisions** table, verbatim — ask for rulings now; `/breakdown` should not start
+  while a decision that blocks a slice is unruled
 - Any open questions or assumptions made
 
 ## Error Handling

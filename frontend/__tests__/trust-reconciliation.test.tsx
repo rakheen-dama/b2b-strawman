@@ -21,6 +21,7 @@ const mockFetchBankStatement = vi.fn();
 const mockFetchBankStatements = vi.fn();
 const mockFetchReconciliation = vi.fn();
 const mockRecordFromStatement = vi.fn();
+const mockFetchMonthlyList = vi.fn();
 
 vi.mock("@/app/(app)/org/[slug]/trust-accounting/reconciliation/actions", () => ({
   fetchReconciliations: (...args: unknown[]) => mockFetchReconciliations(...args),
@@ -36,6 +37,7 @@ vi.mock("@/app/(app)/org/[slug]/trust-accounting/reconciliation/actions", () => 
   fetchBankStatements: (...args: unknown[]) => mockFetchBankStatements(...args),
   fetchReconciliation: (...args: unknown[]) => mockFetchReconciliation(...args),
   recordFromStatement: (...args: unknown[]) => mockRecordFromStatement(...args),
+  fetchMonthlyList: (...args: unknown[]) => mockFetchMonthlyList(...args),
 }));
 
 // ── Mock parent trust actions ────────────────────────────────────
@@ -132,6 +134,7 @@ vi.mock("next/link", () => ({
 // ── Imports after mocks ──────────────────────────────────────────
 import ReconciliationListPage from "@/app/(app)/org/[slug]/trust-accounting/reconciliation/page";
 import NewReconciliationPage from "@/app/(app)/org/[slug]/trust-accounting/reconciliation/new/page";
+import MonthlyListPage from "@/app/(app)/org/[slug]/trust-accounting/reconciliation/lists/[listId]/page";
 import { BankStatementUpload } from "@/components/trust/BankStatementUpload";
 import { ReconciliationSplitPane } from "@/components/trust/ReconciliationSplitPane";
 import { fetchTransactions } from "@/app/(app)/org/[slug]/trust-accounting/transactions/actions";
@@ -140,6 +143,7 @@ import { recordFromStatementSchemaFor } from "@/lib/schemas/trust";
 import { STATEMENT_LINE_CLASSIFICATIONS } from "@/lib/types";
 import type {
   BankStatementLineResponse,
+  MonthlyList,
   TrustAccountSection,
   TrustInvestment,
   TrustReconciliationResponse,
@@ -179,9 +183,108 @@ function makeRecon(overrides: Record<string, unknown> = {}) {
     status: "COMPLETED",
     completedBy: "member-1",
     completedAt: "2026-04-02T14:00:00Z",
+    monthlyListId: null,
     notes: null,
     createdAt: "2026-04-01T00:00:00Z",
     updatedAt: "2026-04-02T14:00:00Z",
+    ...overrides,
+  };
+}
+
+function makeMonthlyList(overrides: Partial<MonthlyList> = {}): MonthlyList {
+  return {
+    id: "list-1",
+    trustAccountId: "acc-1",
+    trustAccountName: "Main Trust",
+    periodEnd: "2026-03-31",
+    reconciliationId: "recon-1",
+    bankBalance: 142500,
+    outstandingDeposits: 2500,
+    outstandingPayments: 0,
+    adjustedBankBalance: 145000,
+    cashbookBalance: 145000,
+    clientLedgerTotal: 143750,
+    investmentCreditorTotal: 0,
+    fundLedgerBalance: 0,
+    unidentifiedDepositTotal: 1250,
+    interAccountBalance: 0,
+    creditorTotal: 145000,
+    difference: 0,
+    lines: [
+      {
+        kind: "CLIENT",
+        clientId: "cust-1",
+        name: "Ndlovu Family Trust",
+        matters: [
+          { matterId: "matter-1", name: "Estate late M Ndlovu", balance: 100000 },
+          { matterId: null, name: null, balance: 3750 },
+        ],
+        balance: 103750,
+        unidentifiedDepositId: null,
+        receivedDate: null,
+        bankDescription: null,
+      },
+      {
+        kind: "CLIENT_INVESTMENT",
+        clientId: "cust-2",
+        name: "Khumalo Holdings",
+        matters: [],
+        balance: 40000,
+        unidentifiedDepositId: null,
+        receivedDate: null,
+        bankDescription: null,
+      },
+      {
+        kind: "FUND",
+        clientId: null,
+        name: "Legal Practitioners' Fidelity Fund — interest and charges",
+        matters: [],
+        balance: 0,
+        unidentifiedDepositId: null,
+        receivedDate: null,
+        bankDescription: null,
+      },
+      {
+        kind: "UNIDENTIFIED",
+        clientId: null,
+        name: "ACB CREDIT UNKNOWN",
+        matters: [],
+        balance: 1250,
+        unidentifiedDepositId: "item-1",
+        receivedDate: "2026-03-22",
+        bankDescription: "ACB CREDIT UNKNOWN",
+      },
+    ],
+    integrityFlags: [],
+    lockedBy: "member-1",
+    lockedByName: "Alice Owner",
+    lockedAt: "2026-04-02T14:00:00Z",
+    adjustmentsSinceLock: {
+      entries: [
+        {
+          transactionId: "tx-late",
+          transactionDate: "2026-03-15",
+          postedAt: "2026-04-10T09:00:00Z",
+          transactionType: "DEPOSIT",
+          typeLabel: "Deposit",
+          ledger: "CLIENT",
+          clientId: "cust-1",
+          clientName: "Ndlovu Family Trust",
+          reference: "DEP-LATE",
+          description: "Late deposit",
+          cashbookEffect: 250,
+          ledgerEffect: 250,
+        },
+      ],
+      cashbook: 250,
+      clientLedgers: 250,
+      investmentCreditors: 0,
+      fundLedger: 0,
+      unidentifiedDeposits: 0,
+      interAccount: 0,
+      liveCreditorTotal: 145250,
+      changeInCreditorTotal: 250,
+    },
     ...overrides,
   };
 }
@@ -1151,6 +1254,154 @@ describe("Trust Reconciliation", () => {
     expect(mockCompleteReconciliation).toHaveBeenCalledWith("recon-1");
     expect(mockCalculateReconciliation).toHaveBeenCalledTimes(1);
     expect(screen.queryByTestId("reconciliation-error")).not.toBeInTheDocument();
+  });
+
+  // 650A: the Rule 54.15 monthly list lock
+  describe("monthly list lock (650A)", () => {
+    /** The currency as the DOM's normalised text content reads it (non-breaking spaces → spaces). */
+    const zar = (amount: number) => formatCurrency(amount, "ZAR").replace(/\s/g, " ");
+
+    it("marks a month-end reconciliation's locked list on the list page, and nothing on a draft", async () => {
+      mockFetchReconciliations.mockResolvedValue({
+        content: [
+          makeRecon({ id: "recon-1", monthlyListId: "list-1" }),
+          makeRecon({
+            id: "recon-2",
+            periodEnd: "2026-04-15",
+            status: "DRAFT",
+            completedAt: null,
+            monthlyListId: null,
+          }),
+        ],
+        totalElements: 2,
+        totalPages: 1,
+        pageSize: 20,
+        pageNumber: 0,
+      });
+
+      await renderReconciliationList();
+
+      const marker = screen.getByTestId("list-locked-recon-1");
+      expect(marker).toHaveTextContent("List locked");
+      expect(marker).toHaveAttribute(
+        "href",
+        "/org/acme/trust-accounting/reconciliation/lists/list-1"
+      );
+      expect(screen.queryByTestId("list-locked-recon-2")).not.toBeInTheDocument();
+    });
+
+    it("says on step 5 that the month's list was locked and links to it", async () => {
+      await driveToReviewWithAllLinesAutoMatched();
+      mockCalculateReconciliation.mockResolvedValue({
+        success: true,
+        data: makeRecon({ status: "DRAFT", isBalanced: true, completedAt: null }),
+      });
+      mockCompleteReconciliation.mockResolvedValue({
+        success: true,
+        data: makeRecon({ status: "COMPLETED", monthlyListId: "list-1" }),
+      });
+
+      fireEvent.click(screen.getByTestId("step-next-btn"));
+      expect(await screen.findByTestId("reconciliation-split-pane")).toBeInTheDocument();
+      fireEvent.click(screen.getByTestId("complete-reconciliation-btn"));
+
+      const locked = await screen.findByTestId("monthly-list-locked");
+      expect(locked).toHaveTextContent("March 2026 list locked");
+      expect(locked).toHaveTextContent(
+        `${zar(145000)} agrees with the cashbook and the adjusted bank balance.`
+      );
+      expect(screen.getByTestId("view-locked-list")).toHaveAttribute(
+        "href",
+        "/org/acme/trust-accounting/reconciliation/lists/list-1"
+      );
+      expect(screen.queryByTestId("monthly-list-not-locked")).not.toBeInTheDocument();
+    });
+
+    it("says on step 5 that no list was locked for a mid-month period end", async () => {
+      await driveToReviewWithAllLinesAutoMatched();
+      mockCalculateReconciliation.mockResolvedValue({
+        success: true,
+        data: makeRecon({ status: "DRAFT", isBalanced: true, completedAt: null }),
+      });
+      mockCompleteReconciliation.mockResolvedValue({
+        success: true,
+        data: makeRecon({ status: "COMPLETED", periodEnd: "2026-03-15", monthlyListId: null }),
+      });
+
+      fireEvent.click(screen.getByTestId("step-next-btn"));
+      expect(await screen.findByTestId("reconciliation-split-pane")).toBeInTheDocument();
+      fireEvent.click(screen.getByTestId("complete-reconciliation-btn"));
+
+      const notLocked = await screen.findByTestId("monthly-list-not-locked");
+      expect(notLocked).toHaveTextContent(
+        `No monthly list was locked: ${formatLocalDate("2026-03-15")} is not the last day of a month.`
+      );
+      expect(screen.queryByTestId("view-locked-list")).not.toBeInTheDocument();
+    });
+
+    it("shows a locked list's totals, creditors by kind label, matters and the entries made after the lock", async () => {
+      mockFetchMonthlyList.mockResolvedValue(makeMonthlyList());
+
+      render(
+        await MonthlyListPage({ params: Promise.resolve({ slug: "acme", listId: "list-1" }) })
+      );
+
+      expect(mockFetchMonthlyList).toHaveBeenCalledWith("list-1");
+      expect(
+        screen.getByText(`Trust creditors list — ${formatLocalDate("2026-03-31")}`)
+      ).toBeInTheDocument();
+      const creditors = screen.getByTestId("monthly-list-creditors");
+      expect(within(creditors).getByText("Ndlovu Family Trust")).toBeInTheDocument();
+      expect(within(creditors).getByText("Invested (section 86(4))")).toBeInTheDocument();
+      expect(within(creditors).getByText("Legal Practitioners' Fidelity Fund")).toBeInTheDocument();
+      expect(within(creditors).getByText("Estate late M Ndlovu")).toBeInTheDocument();
+      expect(within(creditors).getByText("Not linked to a matter")).toBeInTheDocument();
+      expect(
+        within(creditors).getByText(
+          `ACB CREDIT UNKNOWN · received ${formatLocalDate("2026-03-22")}`
+        )
+      ).toBeInTheDocument();
+      // No raw kind ever reaches the screen
+      expect(creditors).not.toHaveTextContent("CLIENT_INVESTMENT");
+      expect(creditors).not.toHaveTextContent("UNIDENTIFIED");
+      expect(creditors).toHaveTextContent(zar(145000));
+
+      const afterLock = screen.getByTestId("monthly-list-after-lock");
+      expect(within(afterLock).getByText("Entered after this list was locked")).toBeInTheDocument();
+      const entry = within(afterLock).getByTestId("after-lock-entry-tx-late");
+      expect(entry).toHaveTextContent("Deposit");
+      expect(entry).toHaveTextContent("DEP-LATE");
+      expect(entry).toHaveTextContent(zar(250));
+      expect(afterLock).toHaveTextContent(zar(145250));
+    });
+
+    it("says nothing was entered after the lock when there are no such entries", async () => {
+      mockFetchMonthlyList.mockResolvedValue(
+        makeMonthlyList({
+          adjustmentsSinceLock: {
+            entries: [],
+            cashbook: 0,
+            clientLedgers: 0,
+            investmentCreditors: 0,
+            fundLedger: 0,
+            unidentifiedDeposits: 0,
+            interAccount: 0,
+            liveCreditorTotal: 145000,
+            changeInCreditorTotal: 0,
+          },
+        })
+      );
+
+      render(
+        await MonthlyListPage({ params: Promise.resolve({ slug: "acme", listId: "list-1" }) })
+      );
+
+      expect(
+        within(screen.getByTestId("monthly-list-after-lock")).getByText(
+          "Nothing has been entered after this list was locked."
+        )
+      ).toBeInTheDocument();
+    });
   });
 
   // Test 10: while the review step is being prepared (transactions, create,

@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Plus, CheckCircle2, AlertCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, CheckCircle2, AlertCircle, Lock } from "lucide-react";
 import { getOrgSettings } from "@/lib/api/settings";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@b2mash/ui/card";
@@ -185,8 +185,11 @@ export default async function ReconciliationListPage({
                         <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
                           Status
                         </th>
-                        <th className="pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
+                        <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
                           Completed
+                        </th>
+                        <th className="pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
+                          Monthly list
                         </th>
                       </tr>
                     </thead>
@@ -222,10 +225,25 @@ export default async function ReconciliationListPage({
                               </Badge>
                             )}
                           </td>
-                          <td className="py-3 text-slate-700 dark:text-slate-300">
+                          <td className="py-3 pr-4 text-slate-700 dark:text-slate-300">
                             {recon.completedAt
                               ? formatLocalDate(recon.completedAt.split("T")[0])
                               : "---"}
+                          </td>
+                          <td className="py-3 text-slate-700 dark:text-slate-300">
+                            {recon.monthlyListId ? (
+                              <Link
+                                href={`/org/${slug}/trust-accounting/reconciliation/lists/${recon.monthlyListId}`}
+                                data-testid={`list-locked-${recon.id}`}
+                              >
+                                <Badge variant="neutral">
+                                  <Lock className="mr-1 size-3" />
+                                  List locked
+                                </Badge>
+                              </Link>
+                            ) : (
+                              "---"
+                            )}
                           </td>
                         </tr>
                       ))}

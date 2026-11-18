@@ -1,5 +1,6 @@
 {
   "enums" : {
+    "CreditorLine.Kind" : [ "CLIENT", "CLIENT_INVESTMENT", "FUND", "UNIDENTIFIED", "INTER_ACCOUNT" ],
     "InterestPresentation" : [ "GROSS", "NET" ],
     "InvestmentBasis" : [ "FIRM_DISCRETION", "CLIENT_INSTRUCTION" ],
     "StatementLineClassification" : [ "FUND_INTEREST", "FUND_SWEEP", "BANK_CHARGE", "CHARGE_REFUND", "UNIDENTIFIED_DEPOSIT", "INVESTMENT_INTEREST" ],
@@ -12,6 +13,71 @@
     "TrustTransactionType.Reversal" : [ "IMMEDIATE", "NEEDS_APPROVAL", "PAIR", "VIA_PAIR", "OWNER", "NONE" ]
   },
   "records" : {
+    "AdjustmentEntry" : [ {
+      "name" : "transactionId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "transactionDate",
+      "type" : "java.time.LocalDate"
+    }, {
+      "name" : "postedAt",
+      "type" : "java.time.Instant"
+    }, {
+      "name" : "transactionType",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "typeLabel",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "ledger",
+      "type" : "io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedger"
+    }, {
+      "name" : "clientId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "clientName",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "reference",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "description",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "cashbookEffect",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "ledgerEffect",
+      "type" : "java.math.BigDecimal"
+    } ],
+    "AdjustmentsSinceLock" : [ {
+      "name" : "entries",
+      "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustMonthlyListService$AdjustmentEntry>"
+    }, {
+      "name" : "cashbook",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "clientLedgers",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "investmentCreditors",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "fundLedger",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "unidentifiedDeposits",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "interAccount",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "liveCreditorTotal",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "changeInCreditorTotal",
+      "type" : "java.math.BigDecimal"
+    } ],
     "AllocateRequest" : [ {
       "name" : "clientId",
       "type" : "java.util.UUID"
@@ -235,6 +301,31 @@
       "name" : "total",
       "type" : "java.math.BigDecimal"
     } ],
+    "CreditorLine" : [ {
+      "name" : "kind",
+      "type" : "io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.CreditorLine$Kind"
+    }, {
+      "name" : "clientId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "name",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "matters",
+      "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.CreditorLine$MatterBalance>"
+    }, {
+      "name" : "balance",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "unidentifiedDepositId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "receivedDate",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "bankDescription",
+      "type" : "java.lang.String"
+    } ],
     "FirmIntegrityReport" : [ {
       "name" : "asAt",
       "type" : "java.time.LocalDate"
@@ -357,6 +448,123 @@
     }, {
       "name" : "clientTaxReference",
       "type" : "java.lang.String"
+    } ],
+    "MatterBalance" : [ {
+      "name" : "matterId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "name",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "balance",
+      "type" : "java.math.BigDecimal"
+    } ],
+    "MonthlyListResponse" : [ {
+      "name" : "id",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "trustAccountId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "trustAccountName",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "periodEnd",
+      "type" : "java.time.LocalDate"
+    }, {
+      "name" : "reconciliationId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "bankBalance",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "outstandingDeposits",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "outstandingPayments",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "adjustedBankBalance",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "cashbookBalance",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "clientLedgerTotal",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "investmentCreditorTotal",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "fundLedgerBalance",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "unidentifiedDepositTotal",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "interAccountBalance",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "creditorTotal",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "difference",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "lines",
+      "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.CreditorLine>"
+    }, {
+      "name" : "integrityFlags",
+      "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.IntegrityFlag>"
+    }, {
+      "name" : "lockedBy",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "lockedByName",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "lockedAt",
+      "type" : "java.time.Instant"
+    }, {
+      "name" : "adjustmentsSinceLock",
+      "type" : "io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustMonthlyListService$AdjustmentsSinceLock"
+    } ],
+    "MonthlyListSummary" : [ {
+      "name" : "id",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "trustAccountId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "periodEnd",
+      "type" : "java.time.LocalDate"
+    }, {
+      "name" : "reconciliationId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "adjustedBankBalance",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "cashbookBalance",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "creditorTotal",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "difference",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "lockedBy",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "lockedByName",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "lockedAt",
+      "type" : "java.time.Instant"
+    }, {
+      "name" : "adjustmentCount",
+      "type" : "long"
     } ],
     "PayToFundRequest" : [ {
       "name" : "reference",
@@ -762,6 +970,9 @@
     }, {
       "name" : "completedAt",
       "type" : "java.time.Instant"
+    }, {
+      "name" : "monthlyListId",
+      "type" : "java.util.UUID"
     }, {
       "name" : "notes",
       "type" : "java.lang.String"

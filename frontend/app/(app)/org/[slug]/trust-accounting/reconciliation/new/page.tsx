@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Lock } from "lucide-react";
 import { Button } from "@b2mash/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@b2mash/ui/card";
 import { Input } from "@b2mash/ui/input";
@@ -23,7 +24,7 @@ import {
 import { fetchTrustAccounts } from "@/app/(app)/org/[slug]/trust-accounting/actions";
 import { fetchTransactions } from "@/app/(app)/org/[slug]/trust-accounting/transactions/actions";
 import { useInterestEligibleInvestments } from "@/hooks/use-interest-eligible-investments";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, formatLocalDate } from "@/lib/format";
 import { todayInSA } from "@b2mash/shared/date";
 import type {
   TrustAccount,
@@ -55,6 +56,16 @@ async function fetchUnmatchedTransactions(accountId: string): Promise<TrustTrans
     size: 1000, // TODO: implement proper pagination for large trust accounts
   });
   return txPage.content.filter((tx) => !tx.bankStatementLineId);
+}
+
+/** "2026-03-31" → "March 2026" (the month a list locks for). */
+function monthYear(yyyyMmDd: string): string {
+  const [year, month] = yyyyMmDd.split("-").map(Number);
+  if (!year || !month) return "";
+  return new Date(year, month - 1, 1).toLocaleDateString("en-ZA", {
+    month: "long",
+    year: "numeric",
+  });
 }
 
 const STEP_LABELS = [
@@ -763,6 +774,36 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
                 </div>
               </div>
             )}
+            {reconciliation &&
+              (reconciliation.monthlyListId ? (
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-900">
+                  <p
+                    className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300"
+                    data-testid="monthly-list-locked"
+                  >
+                    <Lock className="size-4 shrink-0 text-teal-600 dark:text-teal-400" />
+                    {monthYear(reconciliation.periodEnd)} list locked —{" "}
+                    {formatCurrency(reconciliation.creditorBreakdown.total, DEFAULT_CURRENCY)}{" "}
+                    agrees with the cashbook and the adjusted bank balance.
+                  </p>
+                  <Button asChild variant="outline" size="sm">
+                    <Link
+                      href={`/org/${slug}/trust-accounting/reconciliation/lists/${reconciliation.monthlyListId}`}
+                      data-testid="view-locked-list"
+                    >
+                      View the locked list
+                    </Link>
+                  </Button>
+                </div>
+              ) : (
+                <p
+                  className="text-sm text-slate-600 dark:text-slate-400"
+                  data-testid="monthly-list-not-locked"
+                >
+                  No monthly list was locked: {formatLocalDate(reconciliation.periodEnd)} is not the
+                  last day of a month.
+                </p>
+              ))}
             <div className="flex justify-end pt-2">
               <Button
                 type="button"

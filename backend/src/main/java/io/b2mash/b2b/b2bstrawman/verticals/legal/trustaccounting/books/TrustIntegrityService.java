@@ -1,8 +1,9 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books;
 
+import static io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.IntegrityMessages.rand;
+
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
-import io.b2mash.b2b.b2bstrawman.template.VariableFormatter;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccount;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
@@ -23,11 +24,9 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.Uni
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -47,7 +46,8 @@ import org.springframework.transaction.annotation.Transactional;
  * information the firm acts on. The report is {@code balanced} when no flag is blocking. The check
  * is read-only and <b>never runs on a posting path and never refuses a posting</b> (founder
  * decision 7): its only callers are {@link TrustIntegrityController}, the reconciliation's
- * calculate and completion gate, the dashboard trust position and the test harness.
+ * calculate and completion gate, the dashboard trust position, the live Rule 54.15 list and the
+ * trust-position report (650A) and the test harness.
  *
  * <p>The reads are separate statements: {@code REPEATABLE_READ} keeps them on one snapshot when the
  * check runs on its own (648E R-2). Joined to a caller's transaction (calculate, complete, the
@@ -61,7 +61,7 @@ public class TrustIntegrityService {
   public static final String BLOCKING = "BLOCKING";
   public static final String WARNING = "WARNING";
 
-  // The eleven codes of §16.3.9 (BACKDATED_AFTER_LOCK is 650A's).
+  // The twelve codes of §16.3.9.
   /** EQ-1 fails at a reconciliation's period end. Blocking. */
   public static final String BANK_DIFFERENCE = "BANK_DIFFERENCE";
 
@@ -92,6 +92,12 @@ public class TrustIntegrityService {
   /** Non-recoverable bank charges not yet refunded from the business account (E3). Warning. */
   public static final String CHARGES_TO_REFUND = "CHARGES_TO_REFUND";
 
+  /**
+   * Entries dated in a month whose Rule 54.15 list is locked and posted after the lock (650A,
+   * §16.3.10): recorded and shown against the list, never refused. Warning.
+   */
+  public static final String BACKDATED_AFTER_LOCK = "BACKDATED_AFTER_LOCK";
+
   /** Subject kinds (D-5). */
   public static final String SUBJECT_CLIENT = "CLIENT";
 
@@ -100,12 +106,7 @@ public class TrustIntegrityService {
   public static final String SUBJECT_INVESTMENT = "INVESTMENT";
   public static final String SUBJECT_BANK_STATEMENT = "BANK_STATEMENT";
   public static final String SUBJECT_TRUST_ACCOUNT = "TRUST_ACCOUNT";
-
-  private static final Locale TRUST_LOCALE = VariableFormatter.resolveLocale("ZAR");
-
-  /** How a date is written in a flag message ("31 March 2026"). */
-  private static final DateTimeFormatter DATE_FORMAT =
-      DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.ENGLISH);
+  public static final String SUBJECT_MONTHLY_LIST = "MONTHLY_LIST";
 
   /**
    * One trust account as at {@code asAt}: the EQ-2 terms, the EQ-1 terms when a statement is given
@@ -151,6 +152,7 @@ public class TrustIntegrityService {
   private final BankStatementLineRepository bankStatementLineRepository;
   private final TrustCreditorAccountRepository creditorAccountRepository;
   private final CustomerRepository customerRepository;
+  private final TrustMonthlyListRepository monthlyListRepository;
   private final VerticalModuleGuard moduleGuard;
   private final Clock clock;
 
@@ -163,6 +165,7 @@ public class TrustIntegrityService {
       BankStatementLineRepository bankStatementLineRepository,
       TrustCreditorAccountRepository creditorAccountRepository,
       CustomerRepository customerRepository,
+      TrustMonthlyListRepository monthlyListRepository,
       VerticalModuleGuard moduleGuard,
       Clock clock) {
     this.trustBooksService = trustBooksService;
@@ -173,6 +176,7 @@ public class TrustIntegrityService {
     this.bankStatementLineRepository = bankStatementLineRepository;
     this.creditorAccountRepository = creditorAccountRepository;
     this.customerRepository = customerRepository;
+    this.monthlyListRepository = monthlyListRepository;
     this.moduleGuard = moduleGuard;
     this.clock = clock;
   }
@@ -231,7 +235,7 @@ public class TrustIntegrityService {
               "Section 86(3) placements do not net to zero across the trust accounts: "
                   + rand(firm.interAccount().abs())
                   + " is placed or held without its other side as at "
-                  + format(date)
+                  + IntegrityMessages.date(date)
                   + ".",
               firm.interAccount().abs(),
               subjects));
@@ -282,7 +286,7 @@ public class TrustIntegrityService {
                   + " by "
                   + rand(diff)
                   + " as at "
-                  + format(date)
+                  + IntegrityMessages.date(date)
                   + ".",
               diff,
               List.of()));
@@ -333,6 +337,7 @@ public class TrustIntegrityService {
     clientsInDebit(accountId, date).ifPresent(flags::add);
     unidentifiedOverOneYear(date, items).ifPresent(flags::add);
     chargesToRefund(accountId, date).ifPresent(flags::add);
+    backdatedAfterLock(accountId, date).ifPresent(flags::add);
 
     // Blocking first; the stable sort keeps the table order within each severity
     flags.sort(Comparator.comparing(f -> isBlocking(f) ? 0 : 1));
@@ -369,7 +374,7 @@ public class TrustIntegrityService {
     var text =
         new StringBuilder()
             .append("As at ")
-            .append(format(p.asAt()))
+            .append(IntegrityMessages.date(p.asAt()))
             .append(" the cashbook is ")
             .append(rand(p.cashbook()))
             .append(" and trust creditors total ")
@@ -421,7 +426,7 @@ public class TrustIntegrityService {
                 + ": its ledger rows total "
                 + rand(item.getBalance())
                 + " as at "
-                + format(date)
+                + IntegrityMessages.date(date)
                 + ".");
       } else if (today
           && !item.getReceivedDate().isAfter(date)
@@ -429,11 +434,11 @@ public class TrustIntegrityService {
         sentences.add(
             described
                 + " is recorded as "
-                + statusWords(item.getStatus())
+                + IntegrityMessages.statusWords(item.getStatus())
                 + " but its ledger rows total "
                 + rand(item.getBalance())
                 + " as at "
-                + format(date)
+                + IntegrityMessages.date(date)
                 + ".");
       } else {
         continue;
@@ -476,7 +481,7 @@ public class TrustIntegrityService {
               + " against "
               + rand(expected)
               + " placed, credited and withdrawn as at "
-              + format(date)
+              + IntegrityMessages.date(date)
               + ".");
       subjects.add(
           new FlagSubject(SUBJECT_INVESTMENT, row.getInvestmentId(), name, row.getBalance().abs()));
@@ -645,30 +650,50 @@ public class TrustIntegrityService {
             List.of()));
   }
 
+  /**
+   * Entries back-dated into a locked month (§16.3.10, ADR-382): for each locked list of the account
+   * with {@code period_end} on or before the date, the posted rows dated on or before its period
+   * end and posted after it was locked. One statement per account (grouped by list); one subject
+   * per list. A warning: such an entry is recorded and shown against the list, never refused.
+   */
+  private Optional<IntegrityFlag> backdatedAfterLock(UUID accountId, LocalDate date) {
+    var rows = monthlyListRepository.backdatedAfterLock(accountId, date);
+    if (rows.isEmpty()) {
+      return Optional.empty();
+    }
+    var sentences = new ArrayList<String>();
+    var subjects = new ArrayList<FlagSubject>();
+    for (var row : rows) {
+      long count = row.getEntryCount();
+      String month = IntegrityMessages.monthYear(row.getPeriodEnd());
+      sentences.add(
+          (count == 1 ? "1 entry dated on or before " : count + " entries dated on or before ")
+              + IntegrityMessages.date(row.getPeriodEnd())
+              + (count == 1 ? " was" : " were")
+              + " entered after the "
+              + month
+              + " list was locked.");
+      var net = row.getCashbookEffect().abs();
+      subjects.add(
+          new FlagSubject(
+              SUBJECT_MONTHLY_LIST,
+              row.getMonthlyListId(),
+              month + " list",
+              net.signum() == 0 ? null : net));
+    }
+    return Optional.of(
+        flag(
+            BACKDATED_AFTER_LOCK,
+            WARNING,
+            String.join(" ", sentences),
+            null,
+            List.copyOf(subjects)));
+  }
+
   // --- helpers -----------------------------------------------------------------------------------
 
   private static IntegrityFlag flag(
       String code, String severity, String message, BigDecimal amount, List<FlagSubject> subjects) {
     return new IntegrityFlag(code, severity, message, amount, subjects);
-  }
-
-  /** An unidentified deposit's status in words (never the raw value). */
-  private static String statusWords(String status) {
-    return switch (status) {
-      case "HELD" -> "held";
-      case "ALLOCATED" -> "allocated to a client";
-      case "PAID_TO_FUND" -> "paid to the Fund";
-      case "REVERSED" -> "reversed";
-      default -> "resolved";
-    };
-  }
-
-  /** A rand amount in the house en-ZA format ("R10 055,21"; G89-F40). */
-  static String rand(BigDecimal amount) {
-    return VariableFormatter.formatCurrencyText(amount, TRUST_LOCALE);
-  }
-
-  private static String format(LocalDate date) {
-    return date.format(DATE_FORMAT);
   }
 }

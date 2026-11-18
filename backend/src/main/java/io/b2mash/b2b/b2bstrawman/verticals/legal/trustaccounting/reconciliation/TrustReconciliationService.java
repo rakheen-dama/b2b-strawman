@@ -13,6 +13,9 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.Integrity
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustBooksService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustIntegrityService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustIntegrityService.TrustIntegrityReport;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustMonthlyList;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustMonthlyListRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustMonthlyListService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.parser.AbsaCsvParser;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.parser.BankStatementParseException;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.parser.BankStatementParser;
@@ -63,6 +66,8 @@ public class TrustReconciliationService {
   private final TrustTransactionRepository trustTransactionRepository;
   private final TrustReconciliationRepository trustReconciliationRepository;
   private final TrustIntegrityService integrityService;
+  private final TrustMonthlyListService monthlyListService;
+  private final TrustMonthlyListRepository monthlyListRepository;
   private final TrustPostingService postingService;
   private final StorageService storageService;
   private final VerticalModuleGuard moduleGuard;
@@ -78,6 +83,8 @@ public class TrustReconciliationService {
       TrustTransactionRepository trustTransactionRepository,
       TrustReconciliationRepository trustReconciliationRepository,
       TrustIntegrityService integrityService,
+      TrustMonthlyListService monthlyListService,
+      TrustMonthlyListRepository monthlyListRepository,
       TrustPostingService postingService,
       StorageService storageService,
       VerticalModuleGuard moduleGuard,
@@ -90,6 +97,8 @@ public class TrustReconciliationService {
     this.trustTransactionRepository = trustTransactionRepository;
     this.trustReconciliationRepository = trustReconciliationRepository;
     this.integrityService = integrityService;
+    this.monthlyListService = monthlyListService;
+    this.monthlyListRepository = monthlyListRepository;
     this.postingService = postingService;
     this.storageService = storageService;
     this.moduleGuard = moduleGuard;
@@ -617,12 +626,13 @@ public class TrustReconciliationService {
   }
 
   /**
-   * A reconciliation (§16.4.4; {@code monthlyListId} lands in 650A). Every figure is as at {@code
-   * periodEnd}. {@code bankToCashbookDifference = adjusted bank − cashbook} (EQ-1), {@code
+   * A reconciliation (§16.4.4). Every figure is as at {@code periodEnd}. {@code
+   * bankToCashbookDifference = adjusted bank − cashbook} (EQ-1), {@code
    * cashbookToCreditorsDifference = cashbook − creditors} (EQ-2), {@code difference = adjusted bank
    * − creditors}. {@code excludedLinesTotal} (signed) and {@code unresolvedLineCount} are read live
    * from the statement's lines. {@code integrityFlags} are the flags of the last calculation (649C,
-   * §16.3.4 step 5): a blocking flag stops completion.
+   * §16.3.4 step 5): a blocking flag stops completion. {@code monthlyListId} is the Rule 54.15 list
+   * this reconciliation locked when it completed to a month end (650A, ADR-382); null otherwise.
    */
   public record TrustReconciliationResponse(
       UUID id,
@@ -646,6 +656,7 @@ public class TrustReconciliationService {
       String status,
       UUID completedBy,
       Instant completedAt,
+      UUID monthlyListId,
       String notes,
       Instant createdAt,
       Instant updatedAt) {}
@@ -823,7 +834,10 @@ public class TrustReconciliationService {
    * of the first failing condition in the order G1 → G4 and one sentence per failing condition in
    * the detail. Warning flags never block (a client or the Fund ledger in debit is flag-only —
    * ruling #5, OL-7, decision 9). On success the reconciliation is {@code COMPLETED}, its statement
-   * {@code RECONCILED}, and the flags are stored.
+   * {@code RECONCILED}, the flags are stored and, when the period end is the last day of a calendar
+   * month, the account's Rule 54.15 list is locked in the same transaction (650A, ADR-382) — the
+   * month the firm chose, never the statement's last line date. A refusal by the lock (the month
+   * already locked) rolls the completion back.
    */
   @Transactional
   public TrustReconciliationResponse completeReconciliation(UUID reconciliationId) {
@@ -864,6 +878,12 @@ public class TrustReconciliationService {
     statement.setStatus("RECONCILED");
     bankStatementRepository.save(statement);
 
+    // A direct call, not an event: the lock must be atomic with completion (R10, ADR-382)
+    TrustMonthlyList monthlyList =
+        TrustMonthlyListService.isMonthEnd(reconciliation.getPeriodEnd())
+            ? monthlyListService.lock(reconciliation)
+            : null;
+
     var details = new LinkedHashMap<String, Object>();
     details.put("trust_account_id", reconciliation.getTrustAccountId().toString());
     details.put("period_end", reconciliation.getPeriodEnd().toString());
@@ -873,6 +893,9 @@ public class TrustReconciliationService {
     details.put("creditor_total", reconciliation.getCreditorTotal().toString());
     details.put("difference", reconciliation.getDifference().toString());
     details.put("flags", report.flags().stream().map(IntegrityFlag::code).toList());
+    if (monthlyList != null) {
+      details.put("monthly_list_id", monthlyList.getId().toString());
+    }
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("trust_reconciliation.completed")
@@ -1042,6 +1065,9 @@ public class TrustReconciliationService {
         recon.getStatus().name(),
         recon.getCompletedBy(),
         recon.getCompletedAt(),
+        recon.getStatus() == ReconciliationStatus.COMPLETED
+            ? monthlyListRepository.findIdByReconciliationId(recon.getId()).orElse(null)
+            : null,
         recon.getNotes(),
         recon.getCreatedAt(),
         recon.getUpdatedAt());

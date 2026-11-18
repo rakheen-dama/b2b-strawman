@@ -22,6 +22,7 @@ export const INTEGRITY_FLAG_LABELS: Record<IntegrityFlagCode, string> = {
   CLIENT_LEDGER_IN_DEBIT: "Client ledger in debit",
   UNIDENTIFIED_OVER_ONE_YEAR: "Unidentified deposit held over a year",
   CHARGES_TO_REFUND: "Bank charges to refund from the business account",
+  BACKDATED_AFTER_LOCK: "Entered after a monthly list was locked",
 };
 
 export const INTEGRITY_SEVERITY_LABELS: Record<IntegritySeverity, string> = {
@@ -37,6 +38,7 @@ export const FLAG_SUBJECT_KIND_LABELS: Record<FlagSubjectKind, string> = {
   INVESTMENT: "Investment",
   BANK_STATEMENT: "Bank statement",
   TRUST_ACCOUNT: "Trust account",
+  MONTHLY_LIST: "Monthly list",
 };
 
 /**
@@ -73,6 +75,10 @@ export function integritySubjectHref(slug: string, subject: FlagSubject): string
       return `${base}/investments`;
     case "BANK_STATEMENT":
       return `${base}/reconciliation`;
+    case "MONTHLY_LIST":
+      return subject.id
+        ? `${base}/reconciliation/lists/${encodeURIComponent(subject.id)}`
+        : `${base}/reconciliation`;
     default:
       return null;
   }

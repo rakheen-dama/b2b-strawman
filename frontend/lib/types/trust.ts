@@ -467,7 +467,7 @@ export interface TrustCreditorBreakdown {
 // Integrity check types (649C) — mirror backend `books.TrustIntegrityService` and
 // `books.TrustBooksService` records (key order = Java component order).
 
-/** The eleven flag codes of the integrity check (§16.3.9; `BACKDATED_AFTER_LOCK` arrives in 650A). */
+/** The twelve flag codes of the integrity check (§16.3.9). */
 export type IntegrityFlagCode =
   | "BANK_DIFFERENCE"
   | "BOOKS_OUT_OF_BALANCE"
@@ -478,7 +478,8 @@ export type IntegrityFlagCode =
   | "FUND_LEDGER_IN_DEBIT"
   | "CLIENT_LEDGER_IN_DEBIT"
   | "UNIDENTIFIED_OVER_ONE_YEAR"
-  | "CHARGES_TO_REFUND";
+  | "CHARGES_TO_REFUND"
+  | "BACKDATED_AFTER_LOCK";
 
 /** A BLOCKING flag means the books are not provably right; a WARNING never blocks completion. */
 export type IntegritySeverity = "BLOCKING" | "WARNING";
@@ -490,7 +491,8 @@ export type FlagSubjectKind =
   | "UNIDENTIFIED_DEPOSIT"
   | "INVESTMENT"
   | "BANK_STATEMENT"
-  | "TRUST_ACCOUNT";
+  | "TRUST_ACCOUNT"
+  | "MONTHLY_LIST";
 
 /** Mirrors `books.FlagSubject`; `amount` is a positive magnitude or null. */
 export interface FlagSubject {
@@ -602,9 +604,127 @@ export interface TrustReconciliationResponse {
   status: TrustReconciliationStatus;
   completedBy: string | null;
   completedAt: string | null;
+  /** The Rule 54.15 list this reconciliation locked on completing to a month end (650A); else null. */
+  monthlyListId: string | null;
   notes: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+// Rule 54.15 monthly trust creditor list (650A, ADR-382) — mirror backend
+// `books.CreditorLine` and `books.TrustMonthlyListService` records (key order = Java order).
+
+/** What a creditor line is a balance of (`CreditorLine.Kind`). */
+export type CreditorLineKind =
+  | "CLIENT"
+  | "CLIENT_INVESTMENT"
+  | "FUND"
+  | "UNIDENTIFIED"
+  | "INTER_ACCOUNT";
+
+/** No raw kind on screen (guarded by the wire test's union check). */
+export const CREDITOR_LINE_KIND_LABELS: Record<CreditorLineKind, string> = {
+  CLIENT: "Client",
+  CLIENT_INVESTMENT: "Invested (section 86(4))",
+  FUND: "Legal Practitioners' Fidelity Fund",
+  UNIDENTIFIED: "Unidentified deposit",
+  INTER_ACCOUNT: "Section 86(3) placements",
+};
+
+/** Mirrors `CreditorLine.MatterBalance`; `matterId` null = rows not linked to a matter. */
+export interface CreditorMatterBalance {
+  matterId: string | null;
+  name: string | null;
+  balance: number;
+}
+
+/** Mirrors `books.CreditorLine` — one trust creditor as at the list's date (signed balance). */
+export interface CreditorLine {
+  kind: CreditorLineKind;
+  clientId: string | null;
+  name: string | null;
+  matters: CreditorMatterBalance[];
+  balance: number;
+  unidentifiedDepositId: string | null;
+  /** ISO date (`yyyy-MM-dd`), unidentified deposits only. */
+  receivedDate: string | null;
+  bankDescription: string | null;
+}
+
+/** Mirrors `TrustMonthlyListService.MonthlyListSummary` — one locked list without its lines. */
+export interface MonthlyListSummary {
+  id: string;
+  trustAccountId: string;
+  periodEnd: string;
+  reconciliationId: string;
+  adjustedBankBalance: number;
+  cashbookBalance: number;
+  creditorTotal: number;
+  difference: number;
+  lockedBy: string;
+  lockedByName: string | null;
+  lockedAt: string;
+  adjustmentCount: number;
+}
+
+/** Mirrors `TrustMonthlyListService.AdjustmentEntry` — a row entered after the list was locked. */
+export interface MonthlyListAdjustmentEntry {
+  transactionId: string;
+  transactionDate: string;
+  postedAt: string;
+  transactionType: string;
+  /** The registry label — render this, never `transactionType`. */
+  typeLabel: string;
+  ledger: TrustLedger;
+  clientId: string | null;
+  clientName: string | null;
+  reference: string | null;
+  description: string | null;
+  cashbookEffect: number;
+  ledgerEffect: number;
+}
+
+/**
+ * Mirrors `TrustMonthlyListService.AdjustmentsSinceLock` — rows dated on or before the period end
+ * and posted after the lock; each term is the live position at the period end minus the locked one.
+ */
+export interface MonthlyListAdjustments {
+  entries: MonthlyListAdjustmentEntry[];
+  cashbook: number;
+  clientLedgers: number;
+  investmentCreditors: number;
+  fundLedger: number;
+  unidentifiedDeposits: number;
+  interAccount: number;
+  liveCreditorTotal: number;
+  changeInCreditorTotal: number;
+}
+
+/** Mirrors `TrustMonthlyListService.MonthlyListResponse` — `GET /api/trust-monthly-lists/{id}`. */
+export interface MonthlyList {
+  id: string;
+  trustAccountId: string;
+  trustAccountName: string | null;
+  periodEnd: string;
+  reconciliationId: string;
+  bankBalance: number;
+  outstandingDeposits: number;
+  outstandingPayments: number;
+  adjustedBankBalance: number;
+  cashbookBalance: number;
+  clientLedgerTotal: number;
+  investmentCreditorTotal: number;
+  fundLedgerBalance: number;
+  unidentifiedDepositTotal: number;
+  interAccountBalance: number;
+  creditorTotal: number;
+  difference: number;
+  lines: CreditorLine[];
+  integrityFlags: IntegrityFlag[];
+  lockedBy: string;
+  lockedByName: string | null;
+  lockedAt: string;
+  adjustmentsSinceLock: MonthlyListAdjustments;
 }
 
 /** Counts only — mirrors backend `TrustReconciliationService.MatchResult`. The updated lines come from `GET /api/bank-statements/{id}`. */

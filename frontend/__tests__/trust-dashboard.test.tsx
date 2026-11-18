@@ -827,6 +827,19 @@ const FLAG_CASES: {
     linkName: "Other trust creditors",
     href: "/org/acme/trust-accounting/other-creditors",
   },
+  {
+    code: "BACKDATED_AFTER_LOCK",
+    flag: {
+      code: "BACKDATED_AFTER_LOCK",
+      severity: "WARNING",
+      message:
+        "1 entry dated on or before 31 March 2026 was entered after the March 2026 list was locked.",
+      amount: null,
+      subjects: [{ kind: "MONTHLY_LIST", id: "list-1", name: "March 2026 list", amount: 250 }],
+    },
+    linkName: "March 2026 list",
+    href: "/org/acme/trust-accounting/reconciliation/lists/list-1",
+  },
 ];
 
 /** A report raising `flag` where the backend raises it: firm-level for EQ-3, else on the account. */

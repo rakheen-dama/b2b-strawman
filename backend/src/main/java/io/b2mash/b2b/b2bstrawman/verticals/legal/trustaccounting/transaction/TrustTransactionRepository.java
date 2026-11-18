@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction;
 
 import jakarta.persistence.LockModeType;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
@@ -394,4 +395,23 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
       ORDER BY t.trustAccountId ASC
       """)
   List<UUID> findDistinctTrustAccountIdsByCustomerId(@Param("customerId") UUID customerId);
+
+  /**
+   * 650A (§16.3.10, ADR-382): the rows entered after a monthly list was locked and dated on or
+   * before its period end — posted after {@code lockedAt}, oldest posting first. The list's
+   * "Entered after this list was locked" schedule.
+   */
+  @Query(
+      """
+      SELECT t FROM TrustTransaction t
+      WHERE t.trustAccountId = :trustAccountId
+        AND t.transactionDate <= :periodEnd
+        AND t.postedAt IS NOT NULL
+        AND t.postedAt > :lockedAt
+      ORDER BY t.postedAt ASC, t.id ASC
+      """)
+  List<TrustTransaction> findPostedAfterLock(
+      @Param("trustAccountId") UUID trustAccountId,
+      @Param("periodEnd") LocalDate periodEnd,
+      @Param("lockedAt") Instant lockedAt);
 }

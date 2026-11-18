@@ -1,0 +1,100 @@
+{
+  "method": "GET",
+  "url": "/api/trust-monthly-lists/2dd48bc2-e8f2-4561-b74f-528eb836153f",
+  "status": 200,
+  "body": {
+    "id": "2dd48bc2-e8f2-4561-b74f-528eb836153f",
+    "trustAccountId": "e9fd502f-1a2e-4379-bfd8-776de7cb5570",
+    "trustAccountName": "Mathebula & Partners Trust Account",
+    "periodEnd": "2026-10-31",
+    "reconciliationId": "1c134061-896f-4a95-8dd7-4d74875d00b8",
+    "bankBalance": 12500,
+    "outstandingDeposits": 4000,
+    "outstandingPayments": 0,
+    "adjustedBankBalance": 16500,
+    "cashbookBalance": 16500,
+    "clientLedgerTotal": 16500,
+    "investmentCreditorTotal": 0,
+    "fundLedgerBalance": 0,
+    "unidentifiedDepositTotal": 0,
+    "interAccountBalance": 0,
+    "creditorTotal": 16500,
+    "difference": 0,
+    "lines": [
+      {
+        "kind": "CLIENT",
+        "clientId": "942a16cb-bb7d-40e9-ad7d-eef31f20e3e9",
+        "name": "Acme Corp",
+        "matters": [
+          {
+            "matterId": "cddda80c-db68-4592-8dcb-e1a155bc7cc1",
+            "name": "OBS 650A Transfer LXBGH",
+            "balance": 2500
+          },
+          {
+            "matterId": "c12301fd-c1cb-4e71-8f40-4bc0f323faa9",
+            "name": "Website Redesign",
+            "balance": 10000
+          }
+        ],
+        "balance": 12500,
+        "unidentifiedDepositId": null,
+        "receivedDate": null,
+        "bankDescription": null,
+        "totalDeposits": 12500,
+        "totalPayments": 0,
+        "totalFeeTransfers": 0,
+        "lastTransactionDate": "2026-10-20"
+      },
+      {
+        "kind": "CLIENT",
+        "clientId": "379b98ee-e5a7-48c8-abc3-f41b5e67b3f2",
+        "name": "OBS 650A Holdings LXBGH",
+        "matters": [
+          {
+            "matterId": "593bdd5c-f3f2-4855-838c-2d079baecd4c",
+            "name": "OBS 650A Contract LXBGH",
+            "balance": 4000
+          }
+        ],
+        "balance": 4000,
+        "unidentifiedDepositId": null,
+        "receivedDate": null,
+        "bankDescription": null,
+        "totalDeposits": 4000,
+        "totalPayments": 0,
+        "totalFeeTransfers": 0,
+        "lastTransactionDate": "2026-10-22"
+      },
+      {
+        "kind": "FUND",
+        "clientId": null,
+        "name": "Legal Practitioners' Fidelity Fund — interest and charges",
+        "matters": [],
+        "balance": 0,
+        "unidentifiedDepositId": null,
+        "receivedDate": null,
+        "bankDescription": null,
+        "totalDeposits": null,
+        "totalPayments": null,
+        "totalFeeTransfers": null,
+        "lastTransactionDate": null
+      }
+    ],
+    "integrityFlags": [],
+    "lockedBy": "91032164-8cce-4469-8416-a1e20f52b023",
+    "lockedByName": "Alice Owner",
+    "lockedAt": "2026-11-18T21:03:04.622551Z",
+    "adjustmentsSinceLock": {
+      "entries": [],
+      "cashbook": 0,
+      "clientLedgers": 0,
+      "investmentCreditors": 0,
+      "fundLedger": 0,
+      "unidentifiedDeposits": 0,
+      "interAccount": 0,
+      "liveCreditorTotal": 16500,
+      "changeInCreditorTotal": 0
+    }
+  }
+}

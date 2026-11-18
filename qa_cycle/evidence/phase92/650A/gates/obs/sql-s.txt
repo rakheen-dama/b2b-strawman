@@ -1,0 +1,27 @@
+-- 650A OBS phase s read-only SQL (schema tenant_7d218705360b) 2026-11-18T21:02:07.169Z
+
+== [s: clients and matters]
+select c.id, c.name, c.lifecycle_status, p.id matter_id, p.name matter from tenant_7d218705360b.customers c join tenant_7d218705360b.projects p on p.customer_id=c.id order by c.name, p.name
+                  id                  |          name           | lifecycle_status |              matter_id               |         matter          
+--------------------------------------+-------------------------+------------------+--------------------------------------+-------------------------
+ 942a16cb-bb7d-40e9-ad7d-eef31f20e3e9 | Acme Corp               | ACTIVE           | cddda80c-db68-4592-8dcb-e1a155bc7cc1 | OBS 650A Transfer LXBGH
+ 942a16cb-bb7d-40e9-ad7d-eef31f20e3e9 | Acme Corp               | ACTIVE           | c12301fd-c1cb-4e71-8f40-4bc0f323faa9 | Website Redesign
+ 379b98ee-e5a7-48c8-abc3-f41b5e67b3f2 | OBS 650A Holdings LXBGH | ONBOARDING       | 593bdd5c-f3f2-4855-838c-2d079baecd4c | OBS 650A Contract LXBGH
+(3 rows)
+
+
+== [s: trust accounts (the primary is used)]
+select id, account_name, account_type, is_primary from tenant_7d218705360b.trust_accounts
+                  id                  |            account_name            | account_type | is_primary 
+--------------------------------------+------------------------------------+--------------+------------
+ e9fd502f-1a2e-4379-bfd8-776de7cb5570 | Mathebula & Partners Trust Account | GENERAL      | t
+(1 row)
+
+
+== [s: primary account empty before the run]
+select count(*) postings, (select count(*) from tenant_7d218705360b.trust_monthly_lists) lists, (select count(*) from tenant_7d218705360b.trust_reconciliations) recons from tenant_7d218705360b.trust_transactions
+ postings | lists | recons 
+----------+-------+--------
+        0 |     0 |      0
+(1 row)
+

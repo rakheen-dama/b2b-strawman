@@ -1,0 +1,73 @@
+Skip to content
+Kazi
+E2E Test Organization
+Search...
+⌘K
+TODAY
+Home
+My work
+Diary
+MATTERS
+Matters
+New matter
+Conflict check
+Adverse parties
+AI reviews
+CLIENTS
+Clients
+FICA & compliance
+Data requests
+FEES
+TRUST
+FIRM
+Platform Admin
+Notifications
+AO
+
+Alice Owner
+
+alice@e2e-test.local
+
+Toggle menu
+E2E Test Organization
+Trust accounting
+Reconciliation
+Monthly lists
+Monthly list
+Search
+⌘K
+2 unread notifications
+2
+e2e-test-org
+AO
+Trust creditors list — 31 Oct 2026
+
+Mathebula & Partners Trust Account · Locked 18 Nov 2026, 23:03 by Alice Owner · Rule 54.15
+
+Reconciliation
+Adjusted bank balance
+R 16 500,00
+Cashbook
+R 16 500,00
+Trust creditors
+R 16 500,00
+Difference
+R 0,00
+Trust creditors as at 31 Oct 2026
+Frozen when the reconciliation completed. Trust cash, estates and other trust assets are not recorded in Kazi and are not included in this comparison.
+Trust creditor	Kind	Balance
+Acme Corp	Client	R 12 500,00
+OBS 650A Transfer LXBGH	Matter	R 2 500,00
+Website Redesign	Matter	R 10 000,00
+OBS 650A Holdings LXBGH	Client	R 4 000,00
+OBS 650A Contract LXBGH	Matter	R 4 000,00
+Legal Practitioners' Fidelity Fund — interest and charges	Legal Practitioners' Fidelity Fund	R 0,00
+Total trust creditors	R 16 500,00
+Entered after this list was locked
+Entries dated on or before 31 Oct 2026 and recorded after the list was locked. They are part of the books, not of this list.
+
+Nothing has been entered after this list was locked.
+
+Command Palette
+
+Search pages and settings

@@ -1,0 +1,93 @@
+Skip to content
+Kazi
+E2E Test Organization
+Search...
+⌘K
+TODAY
+Home
+My work
+Diary
+MATTERS
+Matters
+New matter
+Conflict check
+Adverse parties
+AI reviews
+CLIENTS
+Clients
+FICA & compliance
+Data requests
+FEES
+TRUST
+FIRM
+Platform Admin
+Notifications
+AO
+
+Alice Owner
+
+alice@e2e-test.local
+
+Toggle menu
+E2E Test Organization
+Reports
+Section 35 Data Pack
+Search
+⌘K
+2 unread notifications
+2
+e2e-test-org
+AO
+Back to Reports
+Section 35 Data Pack
+
+Composite report combining all trust sub-reports for Section 35 compliance.
+
+Trust Account
+*
+Mathebula & Partners Trust Account ••••6789
+Financial Year End
+*
+Run Report
+Export CSV
+Export PDF
+
+Section Count
+
+5
+
+Financial Year Start
+
+2025-11-19
+
+Financial Year End
+
+2026-11-18
+
+Total Trust Balance At Year End
+
+R 17 250,00
+
+SECTION	ITEM	AMOUNT
+Trust Receipts & Payments	2026-10-05 · DEP/OBS650A/LXBGH/1 · Acme Corp (Deposit)	R 10 000,00
+Trust Receipts & Payments	2026-10-20 · DEP/OBS650A/LXBGH/2 · Acme Corp (Deposit)	R 2 500,00
+Trust Receipts & Payments	2026-10-22 · DEP/OBS650A/LXBGH/3 · OBS 650A Holdings LXBGH (Deposit)	R 4 000,00
+Trust Receipts & Payments	2026-10-28 · DEP/OBS650A/LXBGH/4 · Acme Corp (Deposit)	R 750,00
+Trust Receipts & Payments	Total	R 17 250,00
+Client Trust Balances	Acme Corp	R 13 250,00
+Client Trust Balances	OBS 650A Holdings LXBGH	R 4 000,00
+Client Trust Balances	Total	R 17 250,00
+Trust Reconciliation	Bank Balance per Statement	R 12 500,00
+Trust Reconciliation	Add: Outstanding Deposits	R 4 000,00
+Trust Reconciliation	Less: Outstanding Payments	R 0,00
+Trust Reconciliation	Adjusted Bank Balance	R 16 500,00
+Trust Reconciliation	Cashbook Balance	R 16 500,00
+Trust Reconciliation	Client Ledger Total	R 16 500,00
+
+Page 1 of 1
+
+Previous
+Next
+Command Palette
+
+Search pages and settings

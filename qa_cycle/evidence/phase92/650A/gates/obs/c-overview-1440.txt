@@ -1,0 +1,137 @@
+Skip to content
+Kazi
+E2E Test Organization
+Search...
+⌘K
+TODAY
+Home
+My work
+Diary
+MATTERS
+Matters
+New matter
+Conflict check
+Adverse parties
+AI reviews
+CLIENTS
+Clients
+FICA & compliance
+Data requests
+FEES
+TRUST
+FIRM
+Platform Admin
+Notifications
+AO
+
+Alice Owner
+
+alice@e2e-test.local
+
+Toggle menu
+E2E Test Organization
+Trust accounting
+Search
+⌘K
+2 unread notifications
+2
+e2e-test-org
+AO
+Trust Accounting
+
+LSSA-compliant trust account management for client funds
+
+Client Ledgers
+Record Transaction
+Trust Balance
+R 17 250,00
+
+Mathebula & Partners Trust Account cashbook balance
+
+Trust creditors R 17 250,00
+(agrees with the cashbook)
+
+Active Clients
+2
+Clients with trust balances
+Pending Approvals
+0
+Transactions awaiting approval
+Reconciliation
+Balanced
+Last reconciled 31 Oct 2026 · 18 days ago
+Cashbook
+R 17 250,00
+All trust accounts
+Client ledgers
+R 17 250,00
+Money held for clients
+Other trust creditors
+R 0,00
+Fund interest and charges, and unidentified deposits
+Invested
+R 0,00
+Section 86(4) investments for clients
+Trust integrity
+As at 18 Nov 2026, all trust accounts
+
+Books balance
+
+Warning
+Entered after a monthly list was locked
+
+1 entry dated on or before 31 October 2026 was entered after the October 2026 list was locked.
+
+October 2026 list
+R 750,00
+Trust balance trend
+Month-end balances as currently recorded (ZAR)
+Cashbook
+Trust creditors
+Dec 2025
+Jan 2026
+Feb 2026
+Mar 2026
+Apr 2026
+May 2026
+Jun 2026
+Jul 2026
+Aug 2026
+Sep 2026
+Oct 2026
+Nov 2026
+R 0
+R 4,5 k
+R 9 k
+R 13,5 k
+R 18 k
+
+Trust balance trend: Cashbook from R 0,00 in Dec 2025 to R 17 250,00 in Nov 2026 (to date), peak R 17 250,00 in Oct 2026; Trust creditors from R 0,00 in Dec 2025 to R 17 250,00 in Nov 2026 (to date), peak R 17 250,00 in Oct 2026.
+
+View as table
+Recent Transactions
+Last 10 transactions across all client ledgers
+View all
+Recent trust transactions
+DATE	REFERENCE	TYPE	AMOUNT	STATUS
+28 Oct 2026	
+DEP/OBS650A/LXBGH/4
+	Deposit	
+R 750,00	RECORDED
+22 Oct 2026	
+DEP/OBS650A/LXBGH/3
+	Deposit	
+R 4 000,00	RECORDED
+20 Oct 2026	
+DEP/OBS650A/LXBGH/2
+	Deposit	
+R 2 500,00	RECORDED
+05 Oct 2026	
+DEP/OBS650A/LXBGH/1
+	Deposit	
+R 10 000,00	RECORDED
+Command Palette
+
+Search pages and settings
+
+R 0

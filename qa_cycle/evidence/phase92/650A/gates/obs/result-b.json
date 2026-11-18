@@ -1,0 +1,49 @@
+{
+  "phase": "b",
+  "startedAt": "2026-11-18T21:02:20.860Z",
+  "apiWrites": [],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "checks": {
+    "b: deposit recorded through the UI, dated 5 Oct 2026, posted": true,
+    "b: reconciliation COMPLETED, no trust_monthly_lists row": true,
+    "b: list row Monthly list cell is a dash, no badge": true,
+    "b: no raw enum in step 5": true,
+    "b: step 5 'No monthly list was locked: 15 Oct 2026 is not the last day of a month.'": true
+  },
+  "complete": {
+    "before": {
+      "summary": "As at 15 Oct 2026 Bank and cashbook Bank balance R 10 000,00 + Outstanding deposits R 0,00 \u2212 Outstanding payments R 0,00 = Adjusted bank balance R 10 000,00 Cashbook R 10 000,00 Difference R 0,00 Cashbook and trust creditors Cashbook R 10 000,00 Trust creditors R 10 000,00 Difference R 0,00 Trust creditors Client ledgers R 10 000,00 Legal Practitioners' Fidelity Fund \u2014 interest and charges R 0,00 Unidentified deposits R 0,00 0 statement lines are neither matched, recorded nor excluded Excluded statement lines total R 0,00. An excluded line adjusts nothing: excluding a real bank movement leaves its amount as the difference between the bank and the cashbook. Reconciliation is balanced Complete Reconciliation",
+      "completeEnabled": true,
+      "progress": "Matching Progress\n1 / 1 lines resolved"
+    },
+    "step5": "Reconciliation Complete The reconciliation has been completed successfully Bank Balance R 10 000,00 Cashbook Balance R 10 000,00 Trust creditors R 10 000,00 No monthly list was locked: 15 Oct 2026 is not the last day of a month. Done"
+  },
+  "notLocked": "No monthly list was locked: 15 Oct 2026 is not the last day of a month.",
+  "lockedShown": 0,
+  "step5Codes": [],
+  "list": {
+    "headers": [
+      "Period",
+      "Bank Balance",
+      "Cashbook Balance",
+      "Client Ledger Total",
+      "Status",
+      "Completed",
+      "Monthly list"
+    ],
+    "cells": [
+      "15 Oct 2026",
+      "R 10 000,00",
+      "R 10 000,00",
+      "R 10 000,00",
+      "Balanced",
+      "18 Nov 2026",
+      "---"
+    ],
+    "monthlyListCell": "---",
+    "badge": 0
+  },
+  "endedAt": "2026-11-18T21:02:34.306Z",
+  "checkNote": "The harness first expected the long date form ('15 October 2026'); the product writes dates with formatLocalDate ('15 Oct 2026'), as on every trust page. The check was corrected in obs.cjs and re-evaluated here on the recorded notLocked text (not re-run: a re-run would post a second 5 Oct deposit)."
+}

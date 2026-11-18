@@ -1,0 +1,51 @@
+{
+  "at": "2026-11-18T12:35:44.187Z",
+  "path": "/portal/trust/movements?limit=50",
+  "status": 200,
+  "body": [
+    {
+      "id": "e783777a-62aa-4184-809d-5c1f56cf6994",
+      "type": "INV_INTEREST",
+      "typeLabel": "Section 86(4) investment interest",
+      "amount": 95,
+      "currency": "ZAR",
+      "transactionDate": "2026-11-18",
+      "occurredAt": "2026-11-18T12:35:39.090521Z",
+      "matterName": "Website Redesign",
+      "description": "Section 86(4) investment interest (Nedbank)"
+    },
+    {
+      "id": "28cd8482-a811-4a7e-bfe2-c6abd392b39c",
+      "type": "INV_PLACE",
+      "typeLabel": "Placed in section 86(4) investment",
+      "amount": 10000,
+      "currency": "ZAR",
+      "transactionDate": "2026-11-18",
+      "occurredAt": "2026-11-18T12:35:37.345487Z",
+      "matterName": "Website Redesign",
+      "description": "Placed in section 86(4) investment at Nedbank (OBS 648D s86(4) Investment Account)"
+    },
+    {
+      "id": "dadb7dfa-5b35-4c5e-88a5-c5f17570de70",
+      "type": "DEPOSIT",
+      "typeLabel": "Deposit",
+      "amount": 20000,
+      "currency": "ZAR",
+      "transactionDate": "2026-11-18",
+      "occurredAt": "2026-11-18T12:34:05.132195Z",
+      "matterName": "Website Redesign",
+      "description": "OBS 648D funding deposit"
+    },
+    {
+      "id": "dda5a6e1-db32-4006-b0ec-2d849e6f7999",
+      "type": "DEPOSIT",
+      "typeLabel": "Deposit",
+      "amount": 1500,
+      "currency": "ZAR",
+      "transactionDate": "2026-11-18",
+      "occurredAt": "2026-11-18T12:27:28.492383Z",
+      "matterName": "Website Redesign",
+      "description": "Portal Day 21 deposit 3jdsh"
+    }
+  ]
+}

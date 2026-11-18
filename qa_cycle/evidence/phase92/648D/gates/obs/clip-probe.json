@@ -1,0 +1,724 @@
+{
+  "w1440": {
+    "vw": 1440,
+    "clipBy": "DIV.hidden overflow-x-auto rounded-lg border border-sl",
+    "clipLeft": 296,
+    "clipRight": 1384,
+    "tableScrollWidth": 1086,
+    "wrapperScrollWidth": 1086,
+    "wrapperClientWidth": 1086,
+    "docScrollWidth": 1440,
+    "header": [
+      {
+        "text": "Date",
+        "left": 297,
+        "right": 401,
+        "inside": true,
+        "truncated": false
+      },
+      {
+        "text": "Type",
+        "left": 401,
+        "right": 626,
+        "inside": true,
+        "truncated": false
+      },
+      {
+        "text": "Description",
+        "left": 626,
+        "right": 1121,
+        "inside": true,
+        "truncated": false
+      },
+      {
+        "text": "Amount",
+        "left": 1121,
+        "right": 1245,
+        "inside": true,
+        "truncated": false
+      },
+      {
+        "text": "Running balance",
+        "left": 1245,
+        "right": 1383,
+        "inside": true,
+        "truncated": false
+      }
+    ],
+    "rows": [
+      [
+        {
+          "text": "18 Nov 2026",
+          "left": 297,
+          "right": 401,
+          "inside": true,
+          "truncated": false
+        },
+        {
+          "text": "Section 86(4) investment interest",
+          "left": 401,
+          "right": 626,
+          "inside": true,
+          "truncated": false
+        },
+        {
+          "text": "Section 86(4) investment interest (Nedbank)",
+          "left": 626,
+          "right": 1121,
+          "inside": true,
+          "truncated": false
+        },
+        {
+          "text": "R 95,00",
+          "left": 1121,
+          "right": 1245,
+          "inside": true,
+          "truncated": false
+        },
+        {
+          "text": "R 10 095,00 Invested",
+          "left": 1245,
+          "right": 1383,
+          "inside": true,
+          "truncated": false
+        }
+      ],
+      [
+        {
+          "text": "18 Nov 2026",
+          "left": 297,
+          "right": 401,
+          "inside": true,
+          "truncated": false
+        },
+        {
+          "text": "Placed in section 86(4) investment",
+          "left": 401,
+          "right": 626,
+          "inside": true,
+          "truncated": false
+        },
+        {
+          "text": "Placed in section 86(4) investment at Nedbank (OBS 648D s86(4) Investment Account)",
+          "left": 626,
+          "right": 1121,
+          "inside": true,
+          "truncated": false
+        },
+        {
+          "text": "R 10 000,00",
+          "left": 1121,
+          "right": 1245,
+          "inside": true,
+          "truncated": false
+        },
+        {
+          "text": "R 11 500,00",
+          "left": 1245,
+          "right": 1383,
+          "inside": true,
+          "truncated": false
+        }
+      ],
+      [
+        {
+          "text": "18 Nov 2026",
+          "left": 297,
+          "right": 401,
+          "inside": true,
+          "truncated": false
+        },
+        {
+          "text": "Deposit",
+          "left": 401,
+          "right": 626,
+          "inside": true,
+          "truncated": false
+        },
+        {
+          "text": "OBS 648D funding deposit",
+          "left": 626,
+          "right": 1121,
+          "inside": true,
+          "truncated": false
+        },
+        {
+          "text": "R 20 000,00",
+          "left": 1121,
+          "right": 1245,
+          "inside": true,
+          "truncated": false
+        },
+        {
+          "text": "R 21 500,00",
+          "left": 1245,
+          "right": 1383,
+          "inside": true,
+          "truncated": false
+        }
+      ],
+      [
+        {
+          "text": "18 Nov 2026",
+          "left": 297,
+          "right": 401,
+          "inside": true,
+          "truncated": false
+        },
+        {
+          "text": "Deposit",
+          "left": 401,
+          "right": 626,
+          "inside": true,
+          "truncated": false
+        },
+        {
+          "text": "Portal Day 21 deposit 3jdsh",
+          "left": 626,
+          "right": 1121,
+          "inside": true,
+          "truncated": false
+        },
+        {
+          "text": "R 1 500,00",
+          "left": 1121,
+          "right": 1245,
+          "inside": true,
+          "truncated": false
+        },
+        {
+          "text": "R 1 500,00",
+          "left": 1245,
+          "right": 1383,
+          "inside": true,
+          "truncated": false
+        }
+      ]
+    ],
+    "qualifiers": [
+      {
+        "text": "Invested",
+        "left": 1261,
+        "right": 1367,
+        "inCell": true,
+        "inClip": true
+      }
+    ],
+    "cardKids": [
+      {
+        "text": "R 21 595,00",
+        "left": 321,
+        "right": 1359,
+        "inCard": true,
+        "truncated": false
+      },
+      {
+        "text": "In the firm's trust account",
+        "left": 321,
+        "right": 488,
+        "inCard": true,
+        "truncated": false
+      },
+      {
+        "text": "R 11 500,00",
+        "left": 1267,
+        "right": 1359,
+        "inCard": true,
+        "truncated": false
+      },
+      {
+        "text": "Invested on your instruction (section 86(4))",
+        "left": 321,
+        "right": 602,
+        "inCard": true,
+        "truncated": false
+      },
+      {
+        "text": "R 10 095,00",
+        "left": 1267,
+        "right": 1359,
+        "inCard": true,
+        "truncated": false
+      },
+      {
+        "text": "As of 18 Nov 2026",
+        "left": 321,
+        "right": 1359,
+        "inCard": true,
+        "truncated": false
+      },
+      {
+        "text": "Website Redesign",
+        "left": 321,
+        "right": 1359,
+        "inCard": true,
+        "truncated": false
+      }
+    ],
+    "allInside": true,
+    "noneTruncated": true,
+    "noHorizontalOverflow": true,
+    "qualifiersOk": true,
+    "cardOk": true
+  },
+  "w1280": {
+    "vw": 1280,
+    "clipBy": "DIV.hidden overflow-x-auto rounded-lg border border-sl",
+    "clipLeft": 272,
+    "clipRight": 1248,
+    "tableScrollWidth": 974,
+    "wrapperScrollWidth": 974,
+    "wrapperClientWidth": 974,
+    "docScrollWidth": 1280,
+    "header": [
+      {
+        "text": "Date",
+        "left": 273,
+        "right": 369,
+        "inside": true,
+        "truncated": false
+      },
+      {
+        "text": "Type",
+        "left": 369,
+        "right": 570,
+        "inside": true,
+        "truncated": false
+      },
+      {
+        "text": "Description",
+        "left": 570,
+        "right": 987,
+        "inside": true,
+        "truncated": false
+      },
+      {
+        "text": "Amount",
+        "left": 987,
+        "right": 1112,
+        "inside": true,
+        "truncated": false
+      },
+      {
+        "text": "Running balance",
+        "left": 1112,
+        "right": 1247,
+        "inside": true,
+        "truncated": false
+      }
+    ],
+    "rows": [
+      [
+        {
+          "text": "18 Nov 2026",
+          "left": 273,
+          "right": 369,
+          "inside": true,
+          "truncated": false
+        },
+        {
+          "text": "Section 86(4) investment interest",
+          "left": 369,
+          "right": 570,
+          "inside": true,
+          "truncated": false
+        },
+        {
+          "text": "Section 86(4) investment interest (Nedbank)",
+          "left": 570,
+          "right": 987,
+          "inside": true,
+          "truncated": false
+        },
+        {
+          "text": "R 95,00",
+          "left": 987,
+          "right": 1112,
+          "inside": true,
+          "truncated": false
+        },
+        {
+          "text": "R 10 095,00 Invested",
+          "left": 1112,
+          "right": 1247,
+          "inside": true,
+          "truncated": false
+        }
+      ],
+      [
+        {
+          "text": "18 Nov 2026",
+          "left": 273,
+          "right": 369,
+          "inside": true,
+          "truncated": false
+        },
+        {
+          "text": "Placed in section 86(4) investment",
+          "left": 369,
+          "right": 570,
+          "inside": true,
+          "truncated": false
+        },
+        {
+          "text": "Placed in section 86(4) investment at Nedbank (OBS 648D s86(4) Investment Account)",
+          "left": 570,
+          "right": 987,
+          "inside": true,
+          "truncated": false
+        },
+        {
+          "text": "R 10 000,00",
+          "left": 987,
+          "right": 1112,
+          "inside": true,
+          "truncated": false
+        },
+        {
+          "text": "R 11 500,00",
+          "left": 1112,
+          "right": 1247,
+          "inside": true,
+          "truncated": false
+        }
+      ],
+      [
+        {
+          "text": "18 Nov 2026",
+          "left": 273,
+          "right": 369,
+          "inside": true,
+          "truncated": false
+        },
+        {
+          "text": "Deposit",
+          "left": 369,
+          "right": 570,
+          "inside": true,
+          "truncated": false
+        },
+        {
+          "text": "OBS 648D funding deposit",
+          "left": 570,
+          "right": 987,
+          "inside": true,
+          "truncated": false
+        },
+        {
+          "text": "R 20 000,00",
+          "left": 987,
+          "right": 1112,
+          "inside": true,
+          "truncated": false
+        },
+        {
+          "text": "R 21 500,00",
+          "left": 1112,
+          "right": 1247,
+          "inside": true,
+          "truncated": false
+        }
+      ],
+      [
+        {
+          "text": "18 Nov 2026",
+          "left": 273,
+          "right": 369,
+          "inside": true,
+          "truncated": false
+        },
+        {
+          "text": "Deposit",
+          "left": 369,
+          "right": 570,
+          "inside": true,
+          "truncated": false
+        },
+        {
+          "text": "Portal Day 21 deposit 3jdsh",
+          "left": 570,
+          "right": 987,
+          "inside": true,
+          "truncated": false
+        },
+        {
+          "text": "R 1 500,00",
+          "left": 987,
+          "right": 1112,
+          "inside": true,
+          "truncated": false
+        },
+        {
+          "text": "R 1 500,00",
+          "left": 1112,
+          "right": 1247,
+          "inside": true,
+          "truncated": false
+        }
+      ]
+    ],
+    "qualifiers": [
+      {
+        "text": "Invested",
+        "left": 1128,
+        "right": 1231,
+        "inCell": true,
+        "inClip": true
+      }
+    ],
+    "cardKids": [
+      {
+        "text": "R 21 595,00",
+        "left": 297,
+        "right": 1223,
+        "inCard": true,
+        "truncated": false
+      },
+      {
+        "text": "In the firm's trust account",
+        "left": 297,
+        "right": 464,
+        "inCard": true,
+        "truncated": false
+      },
+      {
+        "text": "R 11 500,00",
+        "left": 1131,
+        "right": 1223,
+        "inCard": true,
+        "truncated": false
+      },
+      {
+        "text": "Invested on your instruction (section 86(4))",
+        "left": 297,
+        "right": 578,
+        "inCard": true,
+        "truncated": false
+      },
+      {
+        "text": "R 10 095,00",
+        "left": 1131,
+        "right": 1223,
+        "inCard": true,
+        "truncated": false
+      },
+      {
+        "text": "As of 18 Nov 2026",
+        "left": 297,
+        "right": 1223,
+        "inCard": true,
+        "truncated": false
+      },
+      {
+        "text": "Website Redesign",
+        "left": 297,
+        "right": 1223,
+        "inCard": true,
+        "truncated": false
+      }
+    ],
+    "allInside": true,
+    "noneTruncated": true,
+    "noHorizontalOverflow": true,
+    "qualifiersOk": true,
+    "cardOk": true
+  },
+  "w390": {
+    "vw": 390,
+    "docScrollWidth": 390,
+    "items": [
+      {
+        "left": 16,
+        "right": 374,
+        "insideViewport": true,
+        "kids": [
+          {
+            "text": "Section 86(4) investment interest (Nedbank)",
+            "left": 33,
+            "right": 172,
+            "ok": true,
+            "truncated": false
+          },
+          {
+            "text": "18 Nov 2026 · Section 86(4) investment interest",
+            "left": 33,
+            "right": 172,
+            "ok": true,
+            "truncated": false
+          },
+          {
+            "text": "R 95,00",
+            "left": 184,
+            "right": 357,
+            "ok": true,
+            "truncated": false
+          },
+          {
+            "text": "Invested bal R 10 095,00",
+            "left": 184,
+            "right": 357,
+            "ok": true,
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "left": 16,
+        "right": 374,
+        "insideViewport": true,
+        "kids": [
+          {
+            "text": "Placed in section 86(4) investment at Nedbank (OBS 648D s86(4) Investment Account)",
+            "left": 33,
+            "right": 237,
+            "ok": true,
+            "truncated": false
+          },
+          {
+            "text": "18 Nov 2026 · Placed in section 86(4) investment",
+            "left": 33,
+            "right": 237,
+            "ok": true,
+            "truncated": false
+          },
+          {
+            "text": "R 10 000,00",
+            "left": 249,
+            "right": 357,
+            "ok": true,
+            "truncated": false
+          },
+          {
+            "text": "Bal R 11 500,00",
+            "left": 249,
+            "right": 357,
+            "ok": true,
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "left": 16,
+        "right": 374,
+        "insideViewport": true,
+        "kids": [
+          {
+            "text": "OBS 648D funding deposit",
+            "left": 33,
+            "right": 237,
+            "ok": true,
+            "truncated": false
+          },
+          {
+            "text": "18 Nov 2026 · Deposit",
+            "left": 33,
+            "right": 237,
+            "ok": true,
+            "truncated": false
+          },
+          {
+            "text": "R 20 000,00",
+            "left": 249,
+            "right": 357,
+            "ok": true,
+            "truncated": false
+          },
+          {
+            "text": "Bal R 21 500,00",
+            "left": 249,
+            "right": 357,
+            "ok": true,
+            "truncated": false
+          }
+        ]
+      },
+      {
+        "left": 16,
+        "right": 374,
+        "insideViewport": true,
+        "kids": [
+          {
+            "text": "Portal Day 21 deposit 3jdsh",
+            "left": 33,
+            "right": 244,
+            "ok": true,
+            "truncated": false
+          },
+          {
+            "text": "18 Nov 2026 · Deposit",
+            "left": 33,
+            "right": 244,
+            "ok": true,
+            "truncated": false
+          },
+          {
+            "text": "R 1 500,00",
+            "left": 256,
+            "right": 357,
+            "ok": true,
+            "truncated": false
+          },
+          {
+            "text": "Bal R 1 500,00",
+            "left": 256,
+            "right": 357,
+            "ok": true,
+            "truncated": false
+          }
+        ]
+      }
+    ],
+    "cardKids": [
+      {
+        "text": "R 21 595,00",
+        "left": 41,
+        "right": 349,
+        "ok": true,
+        "truncated": false
+      },
+      {
+        "text": "In the firm's trust account",
+        "left": 41,
+        "right": 208,
+        "ok": true,
+        "truncated": false
+      },
+      {
+        "text": "R 11 500,00",
+        "left": 257,
+        "right": 349,
+        "ok": true,
+        "truncated": false
+      },
+      {
+        "text": "Invested on your instruction (section 86(4))",
+        "left": 41,
+        "right": 241,
+        "ok": true,
+        "truncated": false
+      },
+      {
+        "text": "R 10 095,00",
+        "left": 257,
+        "right": 349,
+        "ok": true,
+        "truncated": false
+      },
+      {
+        "text": "As of 18 Nov 2026",
+        "left": 41,
+        "right": 349,
+        "ok": true,
+        "truncated": false
+      },
+      {
+        "text": "Website Redesign",
+        "left": 41,
+        "right": 349,
+        "ok": true,
+        "truncated": false
+      }
+    ],
+    "ok": true
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "at": "2026-11-18T12:34:04.934Z",
+  "user": "user_e2e_alice",
+  "method": "POST",
+  "path": "/api/trust-accounts",
+  "status": 201,
+  "request": {
+    "accountName": "OBS 648D s86(4) Investment Account",
+    "bankName": "Nedbank",
+    "branchCode": "198765",
+    "accountNumber": "OBS648D-S864-ACCT",
+    "accountType": "INVESTMENT",
+    "isPrimary": false,
+    "requireDualApproval": false,
+    "openedDate": "2026-11-18",
+    "notes": "648D OBS",
+    "investmentBasis": "CLIENT_INSTRUCTION"
+  },
+  "body": {
+    "id": "d6bee85a-6e5f-4d79-9144-6f41a5ac0ae1",
+    "accountName": "OBS 648D s86(4) Investment Account",
+    "bankName": "Nedbank",
+    "branchCode": "198765",
+    "accountNumber": "OBS648D-S864-ACCT",
+    "accountType": "INVESTMENT",
+    "investmentBasis": "CLIENT_INSTRUCTION",
+    "section": "S86_4",
+    "isPrimary": false,
+    "requireDualApproval": false,
+    "paymentApprovalThreshold": null,
+    "status": "ACTIVE",
+    "openedDate": "2026-11-18",
+    "closedDate": null,
+    "notes": "648D OBS",
+    "createdAt": "2026-11-18T12:34:04.903868425Z",
+    "updatedAt": "2026-11-18T12:34:04.903868425Z"
+  }
+}

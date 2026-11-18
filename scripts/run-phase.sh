@@ -22,22 +22,11 @@
 #   ./scripts/run-phase.sh 10 --dry-run    # Preview slice order, no execution
 #   ./scripts/run-phase.sh 10 --no-caffeinate  # Skip sleep prevention
 #
-# By default, uses `caffeinate -i` on macOS to prevent idle sleep during execution.
-# This ensures long-running phases aren't suspended when the laptop lid closes or
-# the machine goes idle. Use --no-caffeinate to disable this behavior.
+# By default, keeps macOS awake for the whole run with a background loop of OVERLAPPING
+# `caffeinate -dimsu` assertions (see "Sleep prevention" below), and warns when the machine
+# is on battery (a closed lid on battery sleeps regardless). Use --no-caffeinate to disable.
 #
 set -euo pipefail
-
-# ─── Sleep prevention (macOS) ────────────────────────────────────────────────
-#
-# Re-exec under caffeinate if available and not already caffeinated.
-# caffeinate -i prevents idle sleep; -s prevents sleep on AC power (lid close).
-# The process tree inherits the assertion, so all child claude processes are covered.
-
-if [[ -z "${CAFFEINATED:-}" && "$*" != *"--no-caffeinate"* ]] && command -v caffeinate &>/dev/null; then
-  export CAFFEINATED=1
-  exec caffeinate -is "$0" "$@"
-fi
 
 # ─── Arguments ────────────────────────────────────────────────────────────────
 
@@ -213,6 +202,29 @@ if [[ "$DRY_RUN" == true ]]; then
   exit 0
 fi
 
+# ─── Sleep prevention (macOS) ────────────────────────────────────────────────
+#
+# Phase 92 lesson (2026-11-17/18): a single `exec caffeinate -is "$0"` wrapper was killed
+# mid-run (cause not found), orphaning this script with no assertion; the Mac then idle-slept
+# ~30 min mid-slice, and a non-overlapping caffeinate loop still slept in the gap between
+# cycles. So: a background loop starts a fresh 180s `caffeinate -dimsu` every 60s — always
+# 2–3 live assertions, no gap, a killed one replaced within a minute — and stops when this
+# script exits. -s only holds on AC power, so warn when on battery.
+
+if [[ "$*" != *"--no-caffeinate"* ]] && command -v caffeinate &>/dev/null; then
+  RUNNER_PID=$$
+  ( while kill -0 "$RUNNER_PID" 2>/dev/null; do
+      caffeinate -dimsu -t 180 &
+      sleep 60
+    done ) >/dev/null 2>&1 &
+  KEEPAWAKE_PID=$!
+  trap 'kill "$KEEPAWAKE_PID" 2>/dev/null || true' EXIT
+  log "Sleep prevention: overlapping caffeinate loop (pid ${KEEPAWAKE_PID})"
+  if command -v pmset &>/dev/null && pmset -g batt 2>/dev/null | grep -q "Battery Power"; then
+    log "WARNING: on BATTERY power — a closed lid will sleep the Mac and stop this run. Plug in."
+  fi
+fi
+
 # ─── Execute slices ───────────────────────────────────────────────────────────
 
 log "Starting phase ${PHASE} execution..."
@@ -232,9 +244,11 @@ for i in "${!SLICES_TO_RUN[@]}"; do
   git checkout main >> "$LOG_FILE" 2>&1
   git pull --ff-only >> "$LOG_FILE" 2>&1
 
-  # Run claude with fresh context (timeout: 200 min = 12000 sec)
+  # Run claude with fresh context (timeout: 260 min = 15600 sec). Raised from 200 min after
+  # Phase 92: slices whose gates find a real defect need fix + re-gate time (647D 185m,
+  # 648A timed out at 200m one commit from merge).
   SLICE_START=$(date +%s)
-  SLICE_TIMEOUT=12000
+  SLICE_TIMEOUT=15600
 
   # Unset CLAUDECODE to avoid nested session detection.
   # CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=0: without it, -p stops background subagents 10 min

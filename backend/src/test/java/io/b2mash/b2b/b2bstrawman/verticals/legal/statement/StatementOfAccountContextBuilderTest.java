@@ -1555,10 +1555,13 @@ class StatementOfAccountContextBuilderTest {
 
     assertThat(trust.get("status")).isEqualTo("available");
     assertThat(trust).doesNotContainKey("invested");
+    // build() reads the invested statement exactly once
+    verify(clientLedgerService, times(1)).getClientInvestedStatement(any(), any(), any(), any());
+
     // the persisted snapshot's trust figure is the general balance, unchanged (R-C)
     assertThat(builder.computeSummary(projectId, periodStart, periodEnd).trustBalanceHeld())
         .isEqualByComparingTo("50285.00");
-    // the summary path never reads the invested block: build() read it once, computeSummary not
+    // the summary path never reads the invested block: still the one read from build()
     verify(clientLedgerService, times(1)).getClientInvestedStatement(any(), any(), any(), any());
   }
 

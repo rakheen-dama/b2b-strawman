@@ -85,3 +85,118 @@ PASS [e] report screen QC: stat cards unchanged (no invested card, no [object Ob
 PASS [g] firm client ledger QC (648E): Plus R 30 095,00 invested — R 45 095,00 held in trust in total
 PASS [g] firm client ledger Sipho: no invested line
 80/80 passed
+
+# ── 2026-11-18 CodeRabbit round 2: OFFLINE re-run of the check phase only (hardened obs.cjs; stack DOWN, nothing re-captured) ──
+# The capture/pdf/report/ledger artefacts above are the 6bff38cd0 run's, unchanged. This re-run re-reads them and, new in round 2,
+# binds each preview/PDF artefact to the record of the run that produced it (PDF: ghostscript re-extraction == recorded text,
+# expected generated-document ids for the stored SoAs, client/matter identity in the text), reads the CTS PDF Type column from the
+# text layout, checks the report JSON null-safely (incl. general opening/debits/credits) and the report screen's rendered cards.
+# cwd /tmp (paths resolve from __dirname; Playwright not loaded). obs/obs-checks.json now holds this run's 97 results.
+# node qa_cycle/evidence/phase92/648F/gates/obs.cjs check a439fc17-e793-4467-9ce0-2620abfd0f6b 86ec1730-ad58-4ede-b202-4398f8c37778  → exit 0
+PASS [a] capture record obs-result-capture.json present, no fatal error
+PASS [c] stored-PDF record obs-result-pdf.json present, no fatal error
+PASS [a] CTS QC preview: preview text bound to the capture record
+PASS [a] CTS QC pdf: PDF bound to that run's successful download of the expected document
+PASS [a] CTS QC preview: "Section 86(4) investment" block
+PASS [a] CTS QC preview: Placed in section 86(4) investment: R30 000,00
+PASS [a] CTS QC preview: Gross interest: R100,00
+PASS [a] CTS QC preview: Fund share (5%): R5,00
+PASS [a] CTS QC preview: Net interest: R95,00
+PASS [a] CTS QC preview: Investment returned to trust: R0,00
+PASS [a] CTS QC preview: Current Balance heading
+PASS [a] CTS QC preview: In the firm's trust account: R15 000,00
+PASS [a] CTS QC preview: Invested on your instruction (section 86(4)): R30 095,00 (block + Current Balance = 2×)
+PASS [a] CTS QC preview: Held in trust: R45 095,00
+PASS [a] CTS QC preview: general closing balance R15 000,00
+PASS [b] CTS QC preview: no raw/abbreviated type labels (Inv place|Inv return|Inv receive|Inv interest|INV_|FIRM_INV|FEE_TRANSFER|INTEREST_LPFF|INTEREST_CREDIT)
+PASS [b] CTS QC preview: "Placed in section 86(4) investment" text present (whole document — text presence, not the Type cell)
+PASS [b] CTS QC preview: "Deposit" text present (whole document — text presence, not the Type cell)
+PASS [a] CTS QC preview: no reversal reasons
+PASS [a] CTS QC pdf: "Section 86(4) investment" block
+PASS [a] CTS QC pdf: Placed in section 86(4) investment: R30 000,00
+PASS [a] CTS QC pdf: Gross interest: R100,00
+PASS [a] CTS QC pdf: Fund share (5%): R5,00
+PASS [a] CTS QC pdf: Net interest: R95,00
+PASS [a] CTS QC pdf: Investment returned to trust: R0,00
+PASS [a] CTS QC pdf: Current Balance heading
+PASS [a] CTS QC pdf: In the firm's trust account: R15 000,00
+PASS [a] CTS QC pdf: Invested on your instruction (section 86(4)): R30 095,00 (block + Current Balance = 2×)
+PASS [a] CTS QC pdf: Held in trust: R45 095,00
+PASS [a] CTS QC pdf: general closing balance R15 000,00
+PASS [b] CTS QC pdf: no raw/abbreviated type labels (Inv place|Inv return|Inv receive|Inv interest|INV_|FIRM_INV|FEE_TRANSFER|INTEREST_LPFF|INTEREST_CREDIT)
+PASS [b] CTS QC pdf: "Placed in section 86(4) investment" text present (whole document — text presence, not the Type cell)
+PASS [b] CTS QC pdf: "Deposit" text present (whole document — text presence, not the Type cell)
+PASS [a] CTS QC pdf: no reversal reasons
+PASS [b] CTS QC pdf: general table Type column (PDF text layout) = [Deposit, Placed in section 86(4) investment]
+PASS [b] CTS QC preview: tables present in the capture record
+PASS [b] CTS QC preview: general table Type column = [Deposit, Placed in section 86(4) investment]
+PASS [a] CTS QC preview: no interest / Fund row in the general table
+PASS [c] SoA QC preview: tables present in the capture record
+PASS [c] SoA QC preview: Deposits + Payments tables both have a Type column (Date|Type|Reference|Description|Amount)
+PASS [c] SoA QC preview: Deposits row Type = Deposit
+PASS [c] SoA QC preview: Payments row Type = Placed in section 86(4) investment
+PASS [c] SoA QC preview: no interest / Fund row in Deposits/Payments
+PASS [c] SoA QC preview: preview text bound to the capture record
+PASS [c] SoA QC pdf(stored): PDF bound to that run's successful download of the expected document
+PASS [c] SoA QC preview: "Section 86(4) investment" block
+PASS [c] SoA QC preview: block Opening balance: R0,00
+PASS [c] SoA QC preview: Placed: R30 000,00
+PASS [c] SoA QC preview: Gross R100,00 / Fund (5%) R5,00 / Net R95,00
+PASS [c] SoA QC preview: Returned R0,00
+PASS [c] SoA QC preview: closing Invested on your instruction: R30 095,00
+PASS [c] SoA QC preview: Trust Activity closing balance R15 000,00
+PASS [c] SoA QC preview: no raw type labels
+PASS [c] SoA QC preview: no reversal reasons
+PASS [c] SoA QC pdf(stored): "Section 86(4) investment" block
+PASS [c] SoA QC pdf(stored): block Opening balance: R0,00
+PASS [c] SoA QC pdf(stored): Placed: R30 000,00
+PASS [c] SoA QC pdf(stored): Gross R100,00 / Fund (5%) R5,00 / Net R95,00
+PASS [c] SoA QC pdf(stored): Returned R0,00
+PASS [c] SoA QC pdf(stored): closing Invested on your instruction: R30 095,00
+PASS [c] SoA QC pdf(stored): Trust Activity closing balance R15 000,00
+PASS [c] SoA QC pdf(stored): no raw type labels
+PASS [c] SoA QC pdf(stored): no reversal reasons
+PASS [d] Sipho CTS preview: preview text bound to the capture record
+PASS [d] Sipho CTS pdf: PDF bound to that run's successful download of the expected document
+PASS [d] Sipho SoA preview: preview text bound to the capture record
+PASS [d] Sipho SoA pdf(stored): PDF bound to that run's successful download of the expected document
+PASS [d] Sipho CTS preview: no "Section 86(4) investment"
+PASS [d] Sipho CTS preview: no "Invested on your instruction"
+PASS [d] Sipho CTS preview: keeps "The current balance held in trust on your behalf is R3 750,00."
+PASS [d] Sipho CTS preview: no three-line split
+PASS [d] Sipho CTS preview: no raw type labels
+PASS [d] Sipho CTS pdf: no "Section 86(4) investment"
+PASS [d] Sipho CTS pdf: no "Invested on your instruction"
+PASS [d] Sipho CTS pdf: keeps "The current balance held in trust on your behalf is R3 750,00."
+PASS [d] Sipho CTS pdf: no three-line split
+PASS [d] Sipho CTS pdf: no raw type labels
+PASS [d] Sipho SoA preview: no "Section 86(4) investment"
+PASS [d] Sipho SoA preview: no "Invested on your instruction"
+PASS [d] Sipho SoA preview: Trust balance held R3 750,00
+PASS [d] Sipho SoA preview: no raw type labels
+PASS [d] Sipho SoA pdf(stored): no "Section 86(4) investment"
+PASS [d] Sipho SoA pdf(stored): no "Invested on your instruction"
+PASS [d] Sipho SoA pdf(stored): Trust balance held R3 750,00
+PASS [d] Sipho SoA pdf(stored): no raw type labels
+PASS [e] report QC: HTTP 200
+PASS [e] report QC: summary.invested present (an object)
+PASS [e] report QC: summary.invested keys exactly the 7 named, in order
+PASS [e] report QC: summary.invested values = 0 / 30000 / 100 / 5 / 95 / 0 / 30095
+PASS [e] report QC: general summary unchanged (opening 0, closing 15000, debits 30000, credits 45000, 2 rows)
+PASS [e] report Sipho: HTTP 200 with a summary and no summary.invested
+PASS [e] report screen QC: captured without a screen error
+PASS [e] report screen QC: rendered — stat cards exactly Opening / Closing / Debits / Credits / Count (R 0,00 / R 15 000,00 / R 30 000,00 / R 45 000,00 / 2), table header after
+PASS [e] report screen QC: no invested card, no [object Object]
+PASS [g] ledger record obs-result-ledger.json present, no fatal error
+PASS [g] firm client ledger QC (648E): Plus R 30 095,00 invested — R 45 095,00 held in trust in total
+PASS [g] firm client ledger Sipho: no invested line
+97/97 passed
+# Negative controls (temporary copies of obs/, not committed) — each exits 1 with the named FAIL:
+#   obs-result-capture.json removed → "capture record … present" + every CTS/SoA preview binding/table check FAIL (28/49)
+#   summary.invested removed → "summary.invested present" FAIL, no crash, obs-checks.json written (94/97)
+#   invested.openingBalance = null → values check FAIL (96/97); general openingBalance = 1 → general summary FAIL (96/97)
+#   stored SoA QC status 404 (no text) → "PDF bound …" FAIL ["HTTP 404", "record has no PDF text"] (87/89)
+#   soa-quickcollect.pdf replaced by soa-sipho.pdf → "ghostscript re-extraction of the PDF ≠ the run's record" (87/89)
+#   report screenQc.mainText = still-loading text → "rendered — stat cards exactly …" + absence check FAIL (95/97)
+#   SoA ids swapped / not given → both stored-PDF bindings FAIL (82/86)
+#   CTS PDF text with the placement Type cell blanked → Type column reads "Deposit" (≠ expected) while whole-text presence still passes

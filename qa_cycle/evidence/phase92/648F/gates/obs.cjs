@@ -14,18 +14,27 @@
 // psql is READ-ONLY (SELECT) evidence. No writes other than what the firm UI itself does when a
 // statement is generated (SoA "Preview & Save" stores the statement — a normal firm action).
 // Usage: node obs.cjs <phase>   phase = capture | report | ledger | all | pdf <soaQcGeneratedId> <soaSiphoGeneratedId>
-const W = "/Users/rakheendama/Projects/2026/worktree-epic-648F";
-const { chromium } = require(`${W}/frontend/node_modules/@playwright/test`);
+//                                     | check <soaQcGeneratedId> <soaSiphoGeneratedId>   (offline: saved evidence + ghostscript only)
+// Exit status: nonzero when a check fails, or a browser phase records a fatal error / a failed stored-PDF download.
+// (Hardened in the 648F CodeRabbit round 2: paths from __dirname, lazy Playwright, PDF artefacts bound to
+// their run's record, null-safe report checks, positive report-screen card check, nonzero exit.)
 const fs = require("fs");
+const path = require("path");
+const crypto = require("crypto");
+const os = require("os");
 const { execFileSync } = require("child_process");
+// this file lives in <repo>/qa_cycle/evidence/phase92/648F/gates
+const W = path.resolve(__dirname, "../../../../..");
+/** Playwright is loaded only by the browser phases, so `check` runs without the frontend's node_modules. */
+const loadChromium = () => require(require.resolve("@playwright/test", { paths: [path.join(W, "frontend")] })).chromium;
 
 const FIRM = "http://localhost:3001";
 const BACKEND = "http://localhost:8081";
 const IDP = "http://localhost:8090";
 const SLUG = "e2e-test-org";
 const BASE = `${FIRM}/org/${SLUG}`;
-const EV = `${W}/qa_cycle/evidence/phase92/648F/gates`;
-const OUT = `${EV}/obs`;
+const EV = __dirname;
+const OUT = path.join(EV, "obs");
 fs.mkdirSync(OUT, { recursive: true });
 const PHASE = process.argv[2] || "all";
 
@@ -43,6 +52,14 @@ const save = () => fs.writeFileSync(resultFile, JSON.stringify(result, null, 2))
 
 const norm = (s) => (s || "").replace(/[\s  ]+/g, " ").trim();
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const sha256File = (f) => crypto.createHash("sha256").update(fs.readFileSync(f)).digest("hex");
+/** Removes a document's PDF artefacts before a download, so a failed download cannot leave an earlier run's files behind. */
+function clearPdfArtefacts(tag) {
+  const png = new RegExp(`^${tag}-pdf-p\\d+\\.png$`);
+  for (const f of fs.readdirSync(OUT)) {
+    if (f === `${tag}.pdf` || f === `${tag}-pdf.txt` || png.test(f)) fs.rmSync(path.join(OUT, f));
+  }
+}
 
 // ── ghostscript PDF → text + PNG ────────────────────────────────────
 function pdfToText(pdf, txt) {
@@ -121,6 +138,7 @@ async function captureCts(ctx, p, who) {
   fs.writeFileSync(`${OUT}/${tag}-preview.txt`, r.text);
   // PDF through the dialog
   try {
+    clearPdfArtefacts(tag);
     const btn = dialog.getByRole("button", { name: /^(Download PDF|Download anyway)$/ });
     await btn.waitFor({ timeout: 15_000 });
     const dl = p.waitForEvent("download", { timeout: 60_000 });
@@ -129,6 +147,7 @@ async function captureCts(ctx, p, who) {
     rec.pdfFilename = d.suggestedFilename();
     const pdf = `${OUT}/${tag}.pdf`;
     await d.saveAs(pdf);
+    rec.pdfSha256 = sha256File(pdf); rec.runStartedAt = result.startedAt;
     rec.pdfText = pdfToText(pdf, `${OUT}/${tag}-pdf.txt`);
     pdfToPng(pdf, `${OUT}/${tag}-pdf`);
   } catch (e) { rec.pdfError = String(e).slice(0, 400); }
@@ -165,12 +184,14 @@ async function captureSoa(ctx, p, who) {
   rec.previewText = r.text; rec.previewTables = r.tables;
   fs.writeFileSync(`${OUT}/${tag}-preview.txt`, r.text);
   try {
+    clearPdfArtefacts(tag);
     const dl = p.waitForEvent("download", { timeout: 45_000 });
     await dialog.getByTestId("statement-download-btn").click();
     const d = await dl;
     rec.pdfFilename = d.suggestedFilename();
     const pdf = `${OUT}/${tag}.pdf`;
     await d.saveAs(pdf);
+    rec.pdfSha256 = sha256File(pdf); rec.runStartedAt = result.startedAt;
     rec.pdfText = pdfToText(pdf, `${OUT}/${tag}-pdf.txt`);
     pdfToPng(pdf, `${OUT}/${tag}-pdf`);
   } catch (e) {
@@ -213,7 +234,11 @@ async function reportScreen(p, who, tag) {
   await p.locator("#param-dateFrom").fill(PERIOD.from);
   await p.locator("#param-dateTo").fill(PERIOD.to);
   await p.getByRole("button", { name: /^(Run Report|Run)$/ }).click();
-  await p.waitForTimeout(4000);
+  // wait for the rendered results (stat cards + table), not a fixed delay: a still-loading screen has no
+  // invested card either, so the absence checks only mean something once the report has rendered
+  await p.locator("main").getByText("Transaction Count", { exact: true }).waitFor({ timeout: 30_000 });
+  await p.locator("main table").first().waitFor({ timeout: 30_000 });
+  rec.statCards = await p.locator("main div.grid").first().locator(":scope > *").evaluateAll((cards) => cards.map((c) => (c.querySelector("p") || c).innerText.trim()));
   await p.screenshot({ path: `${OUT}/report-screen-${tag}-1280.png`, fullPage: true });
   rec.mainText = norm(await p.locator("main").innerText());
   rec.mentionsInvested = /invest/i.test(rec.mainText);
@@ -227,11 +252,13 @@ async function reportScreen(p, who, tag) {
 // (known e2e-stack environment issue, 628F blockers/generated-doc-download-env.txt). The same stored
 // PDF is fetched from the host with Alice's bearer; the redirect to localhost:4567 resolves here.
 async function storedPdf(p, token, generatedId, tag) {
+  clearPdfArtefacts(tag);
   const res = await p.request.get(`${BACKEND}/api/generated-documents/${generatedId}/download`, { headers: { Authorization: `Bearer ${token}` }, maxRedirects: 5 });
-  const rec = { generatedId, status: res.status(), contentType: res.headers()["content-type"] };
+  const rec = { generatedId, status: res.status(), contentType: res.headers()["content-type"], runStartedAt: result.startedAt };
   if (res.ok()) {
     const pdf = `${OUT}/${tag}.pdf`;
     fs.writeFileSync(pdf, await res.body());
+    rec.pdfSha256 = sha256File(pdf);
     rec.pdfText = pdfToText(pdf, `${OUT}/${tag}-pdf.txt`);
     pdfToPng(pdf, `${OUT}/${tag}-pdf`);
   } else rec.body = (await res.text()).slice(0, 400);
@@ -249,18 +276,102 @@ async function ledgerPage(p, who) {
 }
 
 // ── check phase: assertions over the saved rendered text (preview innerText + PDF text) and JSON ──
-function runChecks() {
-  const rd = (f) => (fs.existsSync(`${OUT}/${f}`) ? fs.readFileSync(`${OUT}/${f}`, "utf8") : null);
+// Offline: reads only the saved evidence (+ ghostscript to re-extract PDF text). Every artefact must be
+// bound to the record of the run that produced it; a missing record or a failed download is a FAILED
+// check, never a skipped one. Returns the number of failed checks.
+function runChecks(expectSoaQcId, expectSoaSiphoId) {
+  const rd = (f) => (fs.existsSync(path.join(OUT, f)) ? fs.readFileSync(path.join(OUT, f), "utf8") : null);
+  const rdJson = (f) => { const t = rd(f); if (t == null) return null; try { return JSON.parse(t); } catch { return null; } };
   const n = (s) => norm(s);
   const has = (t, re) => (typeof re === "string" ? n(t).includes(re) : re.test(n(t)));
-  const R = (amt) => new RegExp(`R ?${amt.replace(/ /g, "[ \\u00a0\\u202f]?")}`); // "30 095,00"
   const after = (t, label, amt) => new RegExp(`${label.replace(/[()]/g, "\\$&")}:? ?R ?${amt.replace(/ /g, " ?")}`).test(n(t).replace(/ \n/g, " "));
   const checks = [];
-  const ck = (cp, name, ok, detail) => checks.push({ cp, name, ok: !!ok, ...(detail ? { detail } : {}) });
+  const ck = (cp, name, ok, detail) => checks.push({ cp, name, ok: !!ok, ...(detail !== undefined ? { detail } : {}) });
   const NO_RAW = /Inv place|Inv return|Inv receive|Inv interest|INV_|FIRM_INV|FEE_TRANSFER|INTEREST_LPFF|INTEREST_CREDIT/;
   const NO_REVERSAL = /[Rr]evers/;
-  for (const [src, f] of [["preview", "cts-quickcollect-preview.txt"], ["pdf", "cts-quickcollect-pdf.txt"]]) {
-    const t = rd(f); if (!t) { ck("a", `CTS QC ${src} present`, false); continue; }
+
+  const capture = rdJson("obs-result-capture.json");
+  const stored = rdJson("obs-result-pdf.json");
+  ck("a", "capture record obs-result-capture.json present, no fatal error", capture && !capture.fatal, capture ? capture.fatal : "missing");
+  ck("c", "stored-PDF record obs-result-pdf.json present, no fatal error", stored && !stored.fatal, stored ? stored.fatal : "missing");
+  const doc = (rec, key) => (rec && rec.docs && rec.docs[key]) || null;
+
+  /** Preview text counts only when the capture record has it and the saved -preview.txt is that text. */
+  function boundPreview(cp, label, rec, file) {
+    const t = rd(file);
+    const problems = [];
+    if (!rec) problems.push("no capture record for this document");
+    else if (typeof rec.previewText !== "string" || !rec.previewText) problems.push("capture record has no preview text");
+    if (t == null) problems.push(`${file} missing`);
+    if (!problems.length && t !== rec.previewText) problems.push(`${file} ≠ the capture record's preview text`);
+    ck(cp, `${label}: preview text bound to the capture record`, !problems.length, problems.length ? problems : undefined);
+    return problems.length ? null : t;
+  }
+
+  /**
+   * A PDF artefact counts only when the record of the run that fetched it shows a successful download of the
+   * expected document (no download error; for a stored document HTTP 200, application/pdf and the expected
+   * generated-document id) and the files on disk are that download: the sha256 the run recorded (runs after
+   * round 2), the saved -pdf.txt, and a fresh ghostscript re-extraction of the .pdf all equal the record.
+   * Returns the PDF text, or null (binding failed → the text checks below record failures).
+   */
+  function boundPdf(cp, label, rec, tag, identity) {
+    const pdf = path.join(OUT, `${tag}.pdf`);
+    const txtFile = path.join(OUT, `${tag}-pdf.txt`);
+    const problems = [];
+    if (!rec) problems.push("no run record for this PDF");
+    else {
+      if (rec.pdfError) problems.push(`download failed in that run: ${String(rec.pdfError).slice(0, 160)}`);
+      if ("status" in rec && rec.status !== 200) problems.push(`HTTP ${rec.status}`);
+      if ("contentType" in rec && !/^application\/pdf\b/.test(rec.contentType || "")) problems.push(`content-type ${rec.contentType}`);
+      if ("generatedId" in identity) {
+        if (!identity.generatedId) problems.push("expected generated-document id not given (node obs.cjs check <soaQcId> <soaSiphoId>)");
+        else if (rec.generatedId !== identity.generatedId) problems.push(`record is generated document ${rec.generatedId}, expected ${identity.generatedId}`);
+      }
+      if (typeof rec.pdfText !== "string" || !rec.pdfText) problems.push("record has no PDF text");
+    }
+    if (!fs.existsSync(pdf)) problems.push(`${tag}.pdf missing`);
+    if (!fs.existsSync(txtFile)) problems.push(`${tag}-pdf.txt missing`);
+    if (!problems.length) {
+      if (rec.pdfSha256 && sha256File(pdf) !== rec.pdfSha256) problems.push("PDF sha256 ≠ the run's record");
+      if (fs.readFileSync(txtFile, "utf8") !== rec.pdfText) problems.push(`${tag}-pdf.txt ≠ the run's record`);
+      const tmp = path.join(os.tmpdir(), `obs-648F-${process.pid}-${tag}.txt`);
+      try {
+        if (pdfToText(pdf, tmp) !== rec.pdfText) problems.push("ghostscript re-extraction of the PDF ≠ the run's record");
+      } catch (e) {
+        problems.push(`ghostscript re-extraction failed: ${String(e).slice(0, 160)}`);
+      } finally {
+        fs.rmSync(tmp, { force: true });
+      }
+      if (identity.text && !n(rec.pdfText).includes(identity.text)) problems.push(`PDF is not the expected document (no "${identity.text}")`);
+    }
+    ck(cp, `${label}: PDF bound to that run's successful download of the expected document`, !problems.length, problems.length ? problems : undefined);
+    return problems.length ? null : rec.pdfText;
+  }
+
+  /**
+   * The CTS general table's Type column read from the PDF text layout (ghostscript txtwrite keeps the
+   * columns): the characters between the header's "Type" and "Reference" offsets, on every line from the
+   * header to "Closing balance", joined. Wrapped cells ("Placed in / section 86 / (4) / investment") join back.
+   */
+  function pdfTypeColumn(t) {
+    const lines = t.split(/\r?\n/);
+    const h = lines.findIndex((l) => /\bDate\s+Type\s+Reference\s+Description\s+Amount\s+Balance\b/.test(l));
+    if (h < 0) return null;
+    const from = lines[h].indexOf("Type");
+    const to = lines[h].indexOf("Reference");
+    const cells = [];
+    for (let i = h + 1; i < lines.length && !/^\s*Closing balance/.test(lines[i]); i++) cells.push(lines[i].slice(from, to).trim());
+    return cells.filter(Boolean).join(" ");
+  }
+  const squash = (s) => (s || "").replace(/\s+/g, "");
+
+  const ctsQc = doc(capture, "cts-quickcollect");
+  for (const [src, t] of [
+    ["preview", boundPreview("a", "CTS QC preview", ctsQc, "cts-quickcollect-preview.txt")],
+    ["pdf", boundPdf("a", "CTS QC pdf", ctsQc, "cts-quickcollect", { text: ctsQc && ctsQc.clientHeading ? `Client: ${ctsQc.clientHeading}` : "Client: QuickCollect" })],
+  ]) {
+    if (!t) { ck("a", `CTS QC ${src}: evidence usable`, false, "see the binding check above"); continue; }
     ck("a", `CTS QC ${src}: "Section 86(4) investment" block`, has(t, "Section 86(4) investment"));
     ck("a", `CTS QC ${src}: Placed in section 86(4) investment: R30 000,00`, after(t, "Placed in section 86(4) investment", "30 000,00"));
     ck("a", `CTS QC ${src}: Gross interest: R100,00`, after(t, "Gross interest", "100,00"));
@@ -273,26 +384,39 @@ function runChecks() {
     ck("a", `CTS QC ${src}: Held in trust: R45 095,00`, after(t, "Held in trust", "45 095,00"));
     ck("a", `CTS QC ${src}: general closing balance R15 000,00`, after(t, "Closing balance", "15 000,00"));
     ck("b", `CTS QC ${src}: no raw/abbreviated type labels (${NO_RAW.source})`, !NO_RAW.test(t));
-    ck("b", `CTS QC ${src}: "Placed in section 86(4) investment" Type label`, has(t, "Placed in section 86(4) investment"));
-    ck("b", `CTS QC ${src}: "Deposit" Type label`, has(t, "Deposit"));
+    // text presence only: the phrase is also the placement's description and the block's label, so this
+    // does not prove the Type cell — the Type cell is checked structurally (preview table / PDF column) below
+    ck("b", `CTS QC ${src}: "Placed in section 86(4) investment" text present (whole document — text presence, not the Type cell)`, has(t, "Placed in section 86(4) investment"));
+    ck("b", `CTS QC ${src}: "Deposit" text present (whole document — text presence, not the Type cell)`, has(t, "Deposit"));
     ck("a", `CTS QC ${src}: no reversal reasons`, !NO_REVERSAL.test(t));
+    if (src === "pdf") {
+      const col = pdfTypeColumn(t);
+      ck("b", "CTS QC pdf: general table Type column (PDF text layout) = [Deposit, Placed in section 86(4) investment]", col != null && squash(col) === squash("Deposit Placed in section 86(4) investment"), col);
+    }
   }
   // CTS general table: only the two CLIENT-ledger rows; the INV_INTEREST (investment ledger) row is in the block only
-  const ctsRes = rd("obs-result-capture.json") && JSON.parse(rd("obs-result-capture.json"));
-  if (ctsRes) {
-    const tbl = (ctsRes.docs["cts-quickcollect"].previewTables || []).find((x) => x.rows[0] && x.rows[0].includes("Balance"));
-    ck("b", "CTS QC preview: general table Type column = [Deposit, Placed in section 86(4) investment]", tbl && JSON.stringify(tbl.rows.slice(1).map((r) => r[1])) === JSON.stringify(["Deposit", "Placed in section 86(4) investment"]), tbl && tbl.rows);
-    ck("a", "CTS QC preview: no interest / Fund row in the general table", tbl && !tbl.rows.slice(1).some((r) => /interest|Fund/i.test(r.join(" "))));
-    const soa = ctsRes.docs["soa-quickcollect"].previewTables || [];
-    const hdrs = soa.map((x) => x.rows[0]);
-    const typeTables = soa.filter((x) => x.rows[0] && x.rows[0].join("|") === "Date|Type|Reference|Description|Amount");
-    ck("c", "SoA QC preview: Deposits + Payments tables both have a Type column (Date|Type|Reference|Description|Amount)", typeTables.length === 2, hdrs);
-    ck("c", "SoA QC preview: Deposits row Type = Deposit", typeTables[0] && typeTables[0].rows[1][1] === "Deposit", typeTables[0] && typeTables[0].rows);
-    ck("c", "SoA QC preview: Payments row Type = Placed in section 86(4) investment", typeTables[1] && typeTables[1].rows[1][1] === "Placed in section 86(4) investment", typeTables[1] && typeTables[1].rows);
-    ck("c", "SoA QC preview: no interest / Fund row in Deposits/Payments", typeTables.every((x) => !x.rows.slice(1).some((r) => /interest|Fund/i.test(r.join(" ")))));
-  }
-  for (const [src, f] of [["preview", "soa-quickcollect-preview.txt"], ["pdf(stored)", "soa-quickcollect-pdf.txt"]]) {
-    const t = rd(f); if (!t) { ck("c", `SoA QC ${src} present`, false); continue; }
+  const ctsTables = ctsQc && ctsQc.previewTables;
+  ck("b", "CTS QC preview: tables present in the capture record", Array.isArray(ctsTables) && ctsTables.length > 0);
+  const tbl = (ctsTables || []).find((x) => x.rows && x.rows[0] && x.rows[0].includes("Balance"));
+  ck("b", "CTS QC preview: general table Type column = [Deposit, Placed in section 86(4) investment]", tbl && JSON.stringify(tbl.rows.slice(1).map((r) => r[1])) === JSON.stringify(["Deposit", "Placed in section 86(4) investment"]), tbl ? tbl.rows : "no general table");
+  ck("a", "CTS QC preview: no interest / Fund row in the general table", tbl && !tbl.rows.slice(1).some((r) => /interest|Fund/i.test(r.join(" "))));
+  const soaQc = doc(capture, "soa-quickcollect");
+  const soaTables = soaQc && soaQc.previewTables;
+  ck("c", "SoA QC preview: tables present in the capture record", Array.isArray(soaTables) && soaTables.length > 0);
+  const hdrs = (soaTables || []).map((x) => x.rows && x.rows[0]);
+  const typeTables = (soaTables || []).filter((x) => x.rows && x.rows[0] && x.rows[0].join("|") === "Date|Type|Reference|Description|Amount");
+  ck("c", "SoA QC preview: Deposits + Payments tables both have a Type column (Date|Type|Reference|Description|Amount)", typeTables.length === 2, hdrs);
+  ck("c", "SoA QC preview: Deposits row Type = Deposit", typeTables[0] && typeTables[0].rows[1] && typeTables[0].rows[1][1] === "Deposit", typeTables[0] && typeTables[0].rows);
+  ck("c", "SoA QC preview: Payments row Type = Placed in section 86(4) investment", typeTables[1] && typeTables[1].rows[1] && typeTables[1].rows[1][1] === "Placed in section 86(4) investment", typeTables[1] && typeTables[1].rows);
+  ck("c", "SoA QC preview: no interest / Fund row in Deposits/Payments", typeTables.length === 2 && typeTables.every((x) => !x.rows.slice(1).some((r) => /interest|Fund/i.test(r.join(" ")))));
+
+  // SoA PDFs: the dialog's Download PDF fails on the e2e stack (see README) — that capture-record error is
+  // expected and recovered: the stored statement is fetched by the pdf phase and bound here by generated id.
+  for (const [src, t] of [
+    ["preview", boundPreview("c", "SoA QC preview", soaQc, "soa-quickcollect-preview.txt")],
+    ["pdf(stored)", boundPdf("c", "SoA QC pdf(stored)", doc(stored, "soa-quickcollect-stored"), "soa-quickcollect", { generatedId: expectSoaQcId, text: `Reference: SOA-${QC.matterId.slice(0, 8)}-` })],
+  ]) {
+    if (!t) { ck("c", `SoA QC ${src}: evidence usable`, false, "see the binding check above"); continue; }
     const blk = n(t).split("Section 86(4) investment").slice(1).join("Section 86(4) investment");
     ck("c", `SoA QC ${src}: "Section 86(4) investment" block`, has(t, "Section 86(4) investment"));
     ck("c", `SoA QC ${src}: block Opening balance: R0,00`, /^ ?Opening balance:? ?R ?0,00/.test(blk));
@@ -304,71 +428,119 @@ function runChecks() {
     ck("c", `SoA QC ${src}: no raw type labels`, !NO_RAW.test(t));
     ck("c", `SoA QC ${src}: no reversal reasons`, !NO_REVERSAL.test(t));
   }
-  for (const [doc, f] of [["CTS preview", "cts-sipho-preview.txt"], ["CTS pdf", "cts-sipho-pdf.txt"], ["SoA preview", "soa-sipho-preview.txt"], ["SoA pdf(stored)", "soa-sipho-pdf.txt"]]) {
-    const t = rd(f); if (!t) { ck("d", `Sipho ${doc} present`, false); continue; }
-    ck("d", `Sipho ${doc}: no "Section 86(4) investment"`, !has(t, "Section 86(4) investment") && !/86\(4\)/.test(t));
-    ck("d", `Sipho ${doc}: no "Invested on your instruction"`, !has(t, "Invested on your instruction"));
-    if (doc.startsWith("CTS")) {
-      ck("d", `Sipho ${doc}: keeps "The current balance held in trust on your behalf is R3 750,00."`, /The current balance held in trust on your behalf is R ?3 ?750,00\./.test(n(t)));
-      ck("d", `Sipho ${doc}: no three-line split`, !has(t, "In the firm's trust account") && !has(t, "Held in trust:"));
-    } else ck("d", `Sipho ${doc}: Trust balance held R3 750,00`, after(t, "Trust balance held", "3 750,00"));
-    ck("d", `Sipho ${doc}: no raw type labels`, !NO_RAW.test(t));
+  const ctsSipho = doc(capture, "cts-sipho");
+  const soaSipho = doc(capture, "soa-sipho");
+  for (const [d, t] of [
+    ["CTS preview", boundPreview("d", "Sipho CTS preview", ctsSipho, "cts-sipho-preview.txt")],
+    ["CTS pdf", boundPdf("d", "Sipho CTS pdf", ctsSipho, "cts-sipho", { text: ctsSipho && ctsSipho.clientHeading ? `Client: ${ctsSipho.clientHeading}` : "Client: Sipho" })],
+    ["SoA preview", boundPreview("d", "Sipho SoA preview", soaSipho, "soa-sipho-preview.txt")],
+    ["SoA pdf(stored)", boundPdf("d", "Sipho SoA pdf(stored)", doc(stored, "soa-sipho-stored"), "soa-sipho", { generatedId: expectSoaSiphoId, text: `Reference: SOA-${SIPHO.matterId.slice(0, 8)}-` })],
+  ]) {
+    if (!t) { ck("d", `Sipho ${d}: evidence usable`, false, "see the binding check above"); continue; }
+    ck("d", `Sipho ${d}: no "Section 86(4) investment"`, !has(t, "Section 86(4) investment") && !/86\(4\)/.test(t));
+    ck("d", `Sipho ${d}: no "Invested on your instruction"`, !has(t, "Invested on your instruction"));
+    if (d.startsWith("CTS")) {
+      ck("d", `Sipho ${d}: keeps "The current balance held in trust on your behalf is R3 750,00."`, /The current balance held in trust on your behalf is R ?3 ?750,00\./.test(n(t)));
+      ck("d", `Sipho ${d}: no three-line split`, !has(t, "In the firm's trust account") && !has(t, "Held in trust:"));
+    } else ck("d", `Sipho ${d}: Trust balance held R3 750,00`, after(t, "Trust balance held", "3 750,00"));
+    ck("d", `Sipho ${d}: no raw type labels`, !NO_RAW.test(t));
   }
-  const rq = rd("api-report-quickcollect.json") && JSON.parse(rd("api-report-quickcollect.json"));
-  const rs = rd("api-report-sipho.json") && JSON.parse(rd("api-report-sipho.json"));
-  const want = { openingBalance: 0, capitalPlaced: 30000, interestGross: 100, interestFundShare: 5, interestNet: 95, returnedToTrust: 0, closingBalance: 30095 };
-  ck("e", "report QC: HTTP 200", rq && rq.status === 200);
-  ck("e", "report QC: summary.invested keys exactly the 7 named, in order", rq && JSON.stringify(Object.keys(rq.body.summary.invested || {})) === JSON.stringify(Object.keys(want)), rq && rq.body.summary.invested);
-  ck("e", "report QC: summary.invested values = 0 / 30000 / 100 / 5 / 95 / 0 / 30095", rq && Object.entries(want).every(([k, v]) => Number(rq.body.summary.invested[k]) === v));
-  ck("e", "report QC: general summary unchanged (opening 0, closing 15000, 2 rows)", rq && rq.body.summary.closingBalance === 15000 && rq.body.summary.transactionCount === 2);
-  ck("e", "report Sipho: no summary.invested", rs && rs.status === 200 && !("invested" in rs.body.summary), rs && rs.body.summary);
-  const rr = rd("obs-result-report.json") && JSON.parse(rd("obs-result-report.json"));
-  const sc = rr && rr.report.screenQc;
-  ck("e", "report screen QC: stat cards unchanged (no invested card, no [object Object])", sc && !sc.showsObjectObject && !/Invested|Capital Placed|Interest Gross/.test(sc.mainText.split("DATE REFERENCE")[0]), sc && sc.mainText.split("DATE REFERENCE")[0]);
-  const lg = rd("obs-result-ledger.json") && JSON.parse(rd("obs-result-ledger.json"));
-  ck("g", "firm client ledger QC (648E): Plus R 30 095,00 invested — R 45 095,00 held in trust in total", lg && /Plus R ?30 ?095,00 invested \(section 86\(4\)\) — R ?45 ?095,00 held in trust in total/.test(lg.ledger.qc.investedText || ""), lg && lg.ledger.qc);
-  ck("g", "firm client ledger Sipho: no invested line", lg && lg.ledger.sipho.investedText === null);
-  fs.writeFileSync(`${OUT}/obs-checks.json`, JSON.stringify({ at: new Date().toISOString(), total: checks.length, failed: checks.filter((c) => !c.ok).length, checks }, null, 2));
-  for (const c of checks) console.log(`${c.ok ? "PASS" : "FAIL"} [${c.cp}] ${c.name}${c.ok ? "" : "  " + JSON.stringify(c.detail || "")}`);
-  console.log(`${checks.filter((c) => c.ok).length}/${checks.length} passed`);
-}
-if (PHASE === "check") { runChecks(); process.exit(0); }
 
-(async () => {
-  browser = await chromium.launch();
-  const { ctx, p } = await firmPage();
+  // report API JSON: null-safe; JSON values compared as-is (null is not 0)
+  const rq = rdJson("api-report-quickcollect.json");
+  const rs = rdJson("api-report-sipho.json");
+  const want = { openingBalance: 0, capitalPlaced: 30000, interestGross: 100, interestFundShare: 5, interestNet: 95, returnedToTrust: 0, closingBalance: 30095 };
+  const sum = rq && rq.status === 200 && rq.body && typeof rq.body === "object" ? rq.body.summary : undefined;
+  const inv = sum && sum.invested;
+  const isObj = (x) => x != null && typeof x === "object" && !Array.isArray(x);
+  ck("e", "report QC: HTTP 200", rq && rq.status === 200, rq ? rq.status : "api-report-quickcollect.json missing");
+  ck("e", "report QC: summary.invested present (an object)", isObj(inv), sum);
+  ck("e", "report QC: summary.invested keys exactly the 7 named, in order", isObj(inv) && JSON.stringify(Object.keys(inv)) === JSON.stringify(Object.keys(want)), inv);
+  ck("e", "report QC: summary.invested values = 0 / 30000 / 100 / 5 / 95 / 0 / 30095", isObj(inv) && Object.entries(want).every(([k, v]) => inv[k] === v), inv);
+  ck("e", "report QC: general summary unchanged (opening 0, closing 15000, debits 30000, credits 45000, 2 rows)", isObj(sum) && sum.openingBalance === 0 && sum.closingBalance === 15000 && sum.totalDebits === 30000 && sum.totalCredits === 45000 && sum.transactionCount === 2, sum);
+  const ssum = rs && rs.status === 200 && rs.body && typeof rs.body === "object" ? rs.body.summary : undefined;
+  ck("e", "report Sipho: HTTP 200 with a summary and no summary.invested", isObj(ssum) && !("invested" in ssum), rs ? (ssum || rs.status) : "api-report-sipho.json missing");
+
+  // report screen: first prove it rendered (exactly the five stat cards with the report's values, then the
+  // table header), only then that nothing else (an invested card, "[object Object]") is on it
+  const rr = rdJson("obs-result-report.json");
+  const sc = rr && rr.report && rr.report.screenQc;
+  const screenErr = rr && rr.report && rr.report.screenQcError;
+  ck("e", "report screen QC: captured without a screen error", sc && typeof sc.mainText === "string" && !screenErr, screenErr || (rr ? "no screenQc" : "obs-result-report.json missing"));
+  const mt = sc && typeof sc.mainText === "string" ? sc.mainText : "";
+  const cardsText = mt.includes("Export PDF") && mt.includes("DATE REFERENCE") ? mt.split("DATE REFERENCE")[0].split("Export PDF").slice(1).join("Export PDF").trim() : null;
+  const CARDS = ["Opening Balance", "Closing Balance", "Total Debits", "Total Credits", "Transaction Count"];
+  const CARDS_RE = /^Opening Balance R 0,00 Closing Balance R 15 000,00 Total Debits R 30 000,00 Total Credits R 45 000,00 Transaction Count 2$/;
+  ck("e", "report screen QC: rendered — stat cards exactly Opening / Closing / Debits / Credits / Count (R 0,00 / R 15 000,00 / R 30 000,00 / R 45 000,00 / 2), table header after", cardsText != null && CARDS_RE.test(cardsText) && (!sc.statCards || JSON.stringify(sc.statCards) === JSON.stringify(CARDS)), { cardsText, statCards: sc && sc.statCards });
+  ck("e", "report screen QC: no invested card, no [object Object]", cardsText != null && !sc.showsObjectObject && !/\[object Object\]/.test(mt) && !/Invested|Capital Placed|Interest Gross/.test(cardsText), cardsText);
+
+  const lg = rdJson("obs-result-ledger.json");
+  const lq = lg && lg.ledger && lg.ledger.qc;
+  const ls = lg && lg.ledger && lg.ledger.sipho;
+  ck("g", "ledger record obs-result-ledger.json present, no fatal error", lg && !lg.fatal, lg ? lg.fatal : "missing");
+  ck("g", "firm client ledger QC (648E): Plus R 30 095,00 invested — R 45 095,00 held in trust in total", lq && /Plus R ?30 ?095,00 invested \(section 86\(4\)\) — R ?45 ?095,00 held in trust in total/.test(lq.investedText || ""), lq);
+  ck("g", "firm client ledger Sipho: no invested line", ls && ls.investedText === null, ls);
+
+  const failed = checks.filter((c) => !c.ok).length;
+  fs.writeFileSync(path.join(OUT, "obs-checks.json"), JSON.stringify({ at: new Date().toISOString(), args: { expectSoaQcId: expectSoaQcId || null, expectSoaSiphoId: expectSoaSiphoId || null }, total: checks.length, failed, checks }, null, 2));
+  for (const c of checks) console.log(`${c.ok ? "PASS" : "FAIL"} [${c.cp}] ${c.name}${c.ok ? "" : "  " + JSON.stringify(c.detail === undefined ? "" : c.detail)}`);
+  console.log(`${checks.length - failed}/${checks.length} passed`);
+  return failed;
+}
+
+if (PHASE === "check") {
+  let failed;
   try {
-    if (PHASE === "capture" || PHASE === "all") {
-      await captureCts(ctx, p, QC);
-      await captureSoa(ctx, p, QC);
-      await captureCts(ctx, p, SIPHO);
-      await captureSoa(ctx, p, SIPHO);
-    }
-    if (PHASE === "report" || PHASE === "all") {
-      const token = await aliceToken();
-      result.report.qc = await reportApi(p, token, QC, "quickcollect");
-      result.report.sipho = await reportApi(p, token, SIPHO, "sipho");
-      try { result.report.screenQc = await reportScreen(p, { ...QC, searchName: "QuickCollect" }, "quickcollect"); } catch (e) { result.report.screenQcError = String(e).slice(0, 400); await p.screenshot({ path: `${OUT}/report-screen-error-1280.png`, fullPage: true }); }
-      save();
-    }
-    if (PHASE === "pdf") {
-      const token = await aliceToken();
-      result.docs["soa-quickcollect-stored"] = await storedPdf(p, token, process.argv[3], "soa-quickcollect");
-      result.docs["soa-sipho-stored"] = await storedPdf(p, token, process.argv[4], "soa-sipho");
-      save();
-    }
-    if (PHASE === "ledger" || PHASE === "all") {
-      result.ledger.qc = await ledgerPage(p, QC);
-      result.ledger.sipho = await ledgerPage(p, SIPHO);
-      save();
-    }
+    failed = runChecks(process.argv[3], process.argv[4]);
   } catch (e) {
-    result.fatal = String(e.stack || e).slice(0, 1500);
-    await p.screenshot({ path: `${OUT}/fatal-${PHASE}-1280.png`, fullPage: true }).catch(() => {});
-  } finally {
-    result.finishedAt = new Date().toISOString();
-    save();
-    await browser.close();
-    console.log(JSON.stringify({ fatal: result.fatal, docs: Object.fromEntries(Object.entries(result.docs).map(([k, v]) => [k, { pdf: v.pdfFilename, pdfError: v.pdfError, textLen: (v.previewText || "").length }])), report: Object.keys(result.report), consoleErrors: result.consoleErrors.length, pageErrors: result.pageErrors.length }, null, 2));
+    console.error(`check phase crashed: ${e.stack || e}`);
+    failed = 1;
   }
-})();
+  process.exitCode = failed ? 1 : 0;
+} else {
+  (async () => {
+    let p;
+    try {
+      browser = await loadChromium().launch();
+      const fp = await firmPage();
+      const ctx = fp.ctx;
+      p = fp.p;
+      if (PHASE === "capture" || PHASE === "all") {
+        await captureCts(ctx, p, QC);
+        await captureSoa(ctx, p, QC);
+        await captureCts(ctx, p, SIPHO);
+        await captureSoa(ctx, p, SIPHO);
+      }
+      if (PHASE === "report" || PHASE === "all") {
+        const token = await aliceToken();
+        result.report.qc = await reportApi(p, token, QC, "quickcollect");
+        result.report.sipho = await reportApi(p, token, SIPHO, "sipho");
+        try { result.report.screenQc = await reportScreen(p, { ...QC, searchName: "QuickCollect" }, "quickcollect"); } catch (e) { result.report.screenQcError = String(e).slice(0, 400); await p.screenshot({ path: `${OUT}/report-screen-error-1280.png`, fullPage: true }); }
+        save();
+      }
+      if (PHASE === "pdf") {
+        if (!process.argv[3] || !process.argv[4]) throw new Error("usage: node obs.cjs pdf <soaQcGeneratedId> <soaSiphoGeneratedId>");
+        const token = await aliceToken();
+        result.docs["soa-quickcollect-stored"] = await storedPdf(p, token, process.argv[3], "soa-quickcollect");
+        result.docs["soa-sipho-stored"] = await storedPdf(p, token, process.argv[4], "soa-sipho");
+        const bad = Object.entries(result.docs).filter(([, v]) => v.status !== 200).map(([k, v]) => `${k}: HTTP ${v.status}`);
+        if (bad.length) { result.notes.push(`stored-PDF download failed: ${bad.join(", ")}`); process.exitCode = 1; }
+        save();
+      }
+      if (PHASE === "ledger" || PHASE === "all") {
+        result.ledger.qc = await ledgerPage(p, QC);
+        result.ledger.sipho = await ledgerPage(p, SIPHO);
+        save();
+      }
+    } catch (e) {
+      result.fatal = String(e.stack || e).slice(0, 1500);
+      if (p) await p.screenshot({ path: `${OUT}/fatal-${PHASE}-1280.png`, fullPage: true }).catch(() => {});
+    } finally {
+      result.finishedAt = new Date().toISOString();
+      save(); // diagnostics first, then the exit status
+      if (result.fatal) process.exitCode = 1;
+      if (browser) await browser.close().catch(() => {});
+      console.log(JSON.stringify({ fatal: result.fatal, docs: Object.fromEntries(Object.entries(result.docs).map(([k, v]) => [k, { pdf: v.pdfFilename, pdfError: v.pdfError, status: v.status, textLen: (v.previewText || "").length }])), report: Object.keys(result.report), consoleErrors: result.consoleErrors.length, pageErrors: result.pageErrors.length }, null, 2));
+    }
+  })();
+}

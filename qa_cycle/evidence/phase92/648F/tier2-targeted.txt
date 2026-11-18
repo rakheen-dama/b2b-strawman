@@ -62,3 +62,24 @@ Result (counted from target/surefire-reports <testcase> elements):
   errors:    0
   skipped:   0
   failing classes: none
+
+## round-2 CodeRabbit (2026-11-18, test-only changes on top of 4e0f23781; no src/main change)
+Changed: LegalZaTemplateReconcileIntegrationTest (case (aa) renamed
+  cssEditedV15StatementOfAccount_getsTheV16BodyFromTheReconcileBlock_cssKept_notRepinned — asserts the stored
+  content_hash stays the v15 install pin and is not the re-pinned hash of the v16 body + css);
+  StatementOfAccountContextBuilderTest (investedBlock_absent_whenNothingWasInvestedOrMoved — invested lookup verified
+  times(1) right after build(), and still times(1) after computeSummary()).
+Command: ./mvnw test -Dtest="LegalZaTemplateReconcileIntegrationTest,StatementOfAccountContextBuilderTest,TemplatePackSeederReconcileTest" -q  → exit 0
+Result (counted from target/surefire-reports <testcase> elements):
+  LegalZaTemplateReconcileIntegrationTest  (34)
+  StatementOfAccountContextBuilderTest  (35)
+  TemplatePackSeederReconcileTest  (13)
+  classes:   3
+  testcases: 82
+  failures:  0
+  errors:    0
+  skipped:   0
+Negative control (not committed): with the (aa) assertion temporarily pointed at the re-pinned value
+  computeContentHash(v16 body, css), the case FAILED: expected "9156602a…2a3f" (what a re-pin would store) but was
+  "e863016e…2a73" (the v15 pin) — so the committed assertion would fail if reconcile re-pinned the CSS-edited row.
+Tier 3 (full ./mvnw verify) NOT run in this pass.

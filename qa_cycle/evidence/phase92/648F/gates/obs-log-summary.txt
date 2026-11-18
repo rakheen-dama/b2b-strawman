@@ -80,3 +80,9 @@
 2026-11-18T14:19:25.271 INFO AutomationPackInstaller Installed automation pack automation-legal-za with 4 rules for tenant tenant_7d218705360b
 2026-11-18T14:19:25.274 INFO PackInstallService Internal install of pack automation-legal-za completed for tenant tenant_7d218705360b
 2026-11-18T14:19:25.291 INFO ProjectTemplatePackSeeder Applied project-template pack legal-za-project-templates v4 for tenant tenant_7d218705360b
+
+## re-check 2026-11-18 (CodeRabbit round 2)
+logcount.sh hardened (fails on an unreadable log; bounds compared as parsed UTC instants, open when omitted) and re-run against the
+retained obs/backend.log (now committed, 459 KB): `logcount.sh obs/backend.log 2026-11-18T14:35:42Z 2026-11-18T14:41:02Z` and
+`logcount.sh obs/backend.log` reproduce the two level/WARN tables above line for line (diffed); ERROR lines in the whole log: 0.
+The recorded counts are unchanged.

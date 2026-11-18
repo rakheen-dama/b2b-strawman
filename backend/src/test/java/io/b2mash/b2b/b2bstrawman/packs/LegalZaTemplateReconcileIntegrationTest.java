@@ -1197,15 +1197,18 @@ class LegalZaTemplateReconcileIntegrationTest {
 
   /**
    * (aa) A css-edited v15 statement of account is skipped by the refresh pass; the new v15 → v16
-   * {@code content} entry applies the body and keeps the css.
+   * {@code content} entry applies the body and keeps the css — and the row is not re-pinned (its
+   * stored {@code content_hash} stays the v15 install hash, so it still reads as tenant-edited).
    */
   @Test
-  void cssEditedV15StatementOfAccount_getsTheV16BodyFromTheReconcileBlock_cssKept() {
+  void cssEditedV15StatementOfAccount_getsTheV16BodyFromTheReconcileBlock_cssKept_notRepinned() {
     String css = "p { line-height: 1.6; }";
+    var pinned = new ArrayList<String>();
     simulateV15Tenant(
         rows -> {
           var row = rows.get("statement-of-account");
           row.updateContent(row.getName(), row.getDescription(), row.getContent(), css);
+          pinned.add(row.getContentHash()); // the v15 (body, null css) hash, stored with the edit
         },
         true);
     // body + version restored by restoreInstallVersionAndV16Bodies (also when this fails early)
@@ -1217,6 +1220,15 @@ class LegalZaTemplateReconcileIntegrationTest {
           assertThat(ContentHashUtil.hashOf(row.getContent()))
               .isEqualTo(ContentHashUtil.hashOf(shippedBody("statement-of-account")));
           assertThat(row.getCss()).isEqualTo(css);
+          assertThat(pinned.getFirst())
+              .as("the fixture pinned the v15 install hash")
+              .isEqualTo(
+                  templatePackInstaller.computeContentHash(v15Body("statement-of-account"), null));
+          assertThat(row.getContentHash())
+              .as("a tenant-edited row is never re-pinned")
+              .isEqualTo(pinned.getFirst())
+              .isNotEqualTo(
+                  templatePackInstaller.computeContentHash(row.getContent(), row.getCss()));
           assertThat(installedVersion()).isEqualTo(CURRENT_VERSION);
           return null;
         });

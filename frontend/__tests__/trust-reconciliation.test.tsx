@@ -134,6 +134,7 @@ import ReconciliationListPage from "@/app/(app)/org/[slug]/trust-accounting/reco
 import NewReconciliationPage from "@/app/(app)/org/[slug]/trust-accounting/reconciliation/new/page";
 import { BankStatementUpload } from "@/components/trust/BankStatementUpload";
 import { ReconciliationSplitPane } from "@/components/trust/ReconciliationSplitPane";
+import { fetchTransactions } from "@/app/(app)/org/[slug]/trust-accounting/transactions/actions";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
 import { recordFromStatementSchemaFor } from "@/lib/schemas/trust";
 import { STATEMENT_LINE_CLASSIFICATIONS } from "@/lib/types";
@@ -1000,6 +1001,135 @@ describe("Trust Reconciliation", () => {
     expect(screen.getByTestId("reconciliation-flag-BANK_DIFFERENCE")).toBeInTheDocument();
     expect(screen.getByTestId("complete-reconciliation-btn")).toBeDisabled();
     expect(screen.queryByTestId("step-complete")).not.toBeInTheDocument();
+  });
+
+  // F-OBS-1: a refusal can come from another user's change (here: line-1 unmatched elsewhere), so
+  // the wizard also re-reads the statement lines and the candidate transactions — the progress
+  // count, the line badge and the line's actions follow the database, not the wizard's old state.
+  it("re-reads the statement lines and transactions when completion is refused", async () => {
+    await driveToReviewWithAllLinesAutoMatched();
+    mockCalculateReconciliation
+      .mockResolvedValueOnce({
+        success: true,
+        data: makeRecon({ status: "DRAFT", isBalanced: true, completedAt: null }),
+      })
+      .mockResolvedValueOnce({
+        success: true,
+        data: makeRecon({
+          status: "DRAFT",
+          completedAt: null,
+          isBalanced: false,
+          unresolvedLineCount: 1,
+        }),
+      });
+    mockCompleteReconciliation.mockResolvedValue({
+      success: false,
+      error: "1 statement line is neither matched, recorded nor excluded.",
+    });
+
+    fireEvent.click(screen.getByTestId("step-next-btn"));
+    expect(await screen.findByTestId("reconciliation-split-pane")).toBeInTheDocument();
+    expect(screen.getByText("1 / 1 lines resolved")).toBeInTheDocument();
+    expect(screen.getByTestId("unmatch-btn-line-1")).toBeInTheDocument();
+    const statementReads = mockFetchBankStatement.mock.calls.length;
+    const transactionReads = vi.mocked(fetchTransactions).mock.calls.length;
+
+    // Another user unmatched line-1: the database now has it UNMATCHED and tx-1 free again.
+    mockFetchBankStatement.mockResolvedValue({
+      id: "stmt-1",
+      lines: [makeBankLine({ id: "line-1", matchStatus: "UNMATCHED", trustTransactionId: null })],
+    });
+    vi.mocked(fetchTransactions).mockResolvedValueOnce({
+      content: [makeTx({ id: "tx-1" })],
+      totalElements: 1,
+      totalPages: 1,
+      pageSize: 1000,
+      pageNumber: 0,
+    });
+
+    fireEvent.click(screen.getByTestId("complete-reconciliation-btn"));
+
+    expect(await screen.findByTestId("reconciliation-error")).toBeInTheDocument();
+    expect(mockFetchBankStatement).toHaveBeenCalledTimes(statementReads + 1);
+    expect(mockFetchBankStatement).toHaveBeenLastCalledWith("stmt-1");
+    expect(vi.mocked(fetchTransactions)).toHaveBeenCalledTimes(transactionReads + 1);
+    expect(await screen.findByText("0 / 1 lines resolved")).toBeInTheDocument();
+    const line = screen.getByTestId("bank-line-line-1");
+    expect(within(line).getByText("Unmatched")).toBeInTheDocument();
+    expect(screen.queryByTestId("unmatch-btn-line-1")).not.toBeInTheDocument();
+    expect(screen.getByTestId("transaction-tx-1")).toBeInTheDocument();
+    // The line can be resolved again on screen: selecting it offers its actions.
+    fireEvent.click(line);
+    expect(screen.getByTestId("exclude-btn-line-1")).toBeInTheDocument();
+    expect(screen.getByTestId("match-btn-tx-1")).toBeInTheDocument();
+  });
+
+  // F-OBS-1: if the re-read fails the refusal stays on screen and says the lines may be stale.
+  it("keeps the refusal and says the lines may be out of date when the re-read fails", async () => {
+    await driveToReviewWithAllLinesAutoMatched();
+    mockCalculateReconciliation.mockResolvedValue({
+      success: true,
+      data: makeRecon({ status: "DRAFT", isBalanced: true, completedAt: null }),
+    });
+    mockCompleteReconciliation.mockResolvedValue({
+      success: false,
+      error: "1 statement line is neither matched, recorded nor excluded.",
+    });
+
+    fireEvent.click(screen.getByTestId("step-next-btn"));
+    expect(await screen.findByTestId("reconciliation-split-pane")).toBeInTheDocument();
+    mockFetchBankStatement.mockRejectedValueOnce(new Error("Network down"));
+    fireEvent.click(screen.getByTestId("complete-reconciliation-btn"));
+
+    expect(await screen.findByTestId("reconciliation-error")).toHaveTextContent(
+      "1 statement line is neither matched, recorded nor excluded. The statement lines could not be refreshed and may be out of date."
+    );
+    expect(screen.getByText("1 / 1 lines resolved")).toBeInTheDocument();
+  });
+
+  // O-OBS-2: the refusal's ProblemDetail title is the banner heading, its sentences beneath it.
+  it("shows the refusal's title as the banner heading above its sentences", async () => {
+    await driveToReviewWithAllLinesAutoMatched();
+    const sentences =
+      "Adjusted bank balance R2 250,00 differs from the cashbook R1 000,00 by R1 250,00 as at 31 March 2026. 1 statement line is neither matched, recorded nor excluded.";
+    mockCalculateReconciliation.mockResolvedValue({
+      success: true,
+      data: makeRecon({ status: "DRAFT", isBalanced: true, completedAt: null }),
+    });
+    mockCompleteReconciliation.mockResolvedValue({
+      success: false,
+      error: sentences,
+      errorTitle: "Reconciliation does not balance",
+    });
+
+    fireEvent.click(screen.getByTestId("step-next-btn"));
+    expect(await screen.findByTestId("reconciliation-split-pane")).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId("complete-reconciliation-btn"));
+
+    const banner = await screen.findByTestId("reconciliation-error");
+    const title = within(banner).getByTestId("reconciliation-error-title");
+    expect(title).toHaveTextContent(/^Reconciliation does not balance$/);
+    expect(within(banner).getByText(sentences)).toBeInTheDocument();
+    // The heading comes first, the sentences beneath it.
+    expect(banner.firstElementChild).toBe(title);
+  });
+
+  // A banner error without a title (every other wizard error) stays a plain message.
+  it("shows a refusal without a title as a plain message", async () => {
+    await driveToReviewWithAllLinesAutoMatched();
+    mockCalculateReconciliation.mockResolvedValue({
+      success: true,
+      data: makeRecon({ status: "DRAFT", isBalanced: true, completedAt: null }),
+    });
+    mockCompleteReconciliation.mockResolvedValue({ success: false, error: "Network down" });
+
+    fireEvent.click(screen.getByTestId("step-next-btn"));
+    expect(await screen.findByTestId("reconciliation-split-pane")).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId("complete-reconciliation-btn"));
+
+    const banner = await screen.findByTestId("reconciliation-error");
+    expect(banner).toHaveTextContent(/^Network down$/);
+    expect(within(banner).queryByTestId("reconciliation-error-title")).not.toBeInTheDocument();
   });
 
   it("completes when balanced with no unresolved lines and no blocking flag", async () => {

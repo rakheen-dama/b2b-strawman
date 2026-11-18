@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { api, API_BASE, getAuthFetchOptions } from "@/lib/api";
+import { api, API_BASE, ApiError, getAuthFetchOptions } from "@/lib/api";
 import type {
   BankStatementResponse,
   TrustReconciliationResponse,
@@ -276,10 +276,14 @@ export async function calculateReconciliation(reconciliationId: string): Promise
   }
 }
 
+// A refusal carries its ProblemDetail title as well as its detail (O-OBS-2): the gate (649C) puts
+// the refused condition in the title ("Reconciliation does not balance") and its sentences in the
+// detail. `errorTitle` is set only when it adds to `error` (the client falls back to the title).
 export async function completeReconciliation(reconciliationId: string): Promise<{
   success: boolean;
   data?: TrustReconciliationResponse;
   error?: string;
+  errorTitle?: string;
 }> {
   try {
     const result = await api.post<TrustReconciliationResponse>(
@@ -288,9 +292,12 @@ export async function completeReconciliation(reconciliationId: string): Promise<
     revalidatePath("/", "layout");
     return { success: true, data: result };
   } catch (error) {
+    const title = error instanceof ApiError ? error.detail?.title : undefined;
+    const message = error instanceof Error ? error.message : "Failed to complete reconciliation";
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to complete reconciliation",
+      error: message,
+      ...(title && title !== message ? { errorTitle: title } : {}),
     };
   }
 }

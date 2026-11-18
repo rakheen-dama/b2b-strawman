@@ -8,15 +8,33 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 vi.mock("server-only", () => ({}));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 
-const { mockGet } = vi.hoisted(() => ({ mockGet: vi.fn() }));
+const { mockGet, mockPost, MockApiError } = vi.hoisted(() => {
+  // Stands in for lib/api/client's ApiError: the message is the ProblemDetail's `detail || title`.
+  class MockApiError extends Error {
+    constructor(
+      public status: number,
+      message: string,
+      public detail?: { title?: string; detail?: string }
+    ) {
+      super(message);
+    }
+  }
+  return { mockGet: vi.fn(), mockPost: vi.fn(), MockApiError };
+});
 
 vi.mock("@/lib/api", () => ({
-  api: { get: (...args: unknown[]) => mockGet(...args), post: vi.fn(), put: vi.fn() },
+  api: {
+    get: (...args: unknown[]) => mockGet(...args),
+    post: (...args: unknown[]) => mockPost(...args),
+    put: vi.fn(),
+  },
   API_BASE: "http://backend",
+  ApiError: MockApiError,
   getAuthFetchOptions: vi.fn(),
 }));
 
 import {
+  completeReconciliation,
   fetchBankStatements,
   fetchReconciliations,
 } from "@/app/(app)/org/[slug]/trust-accounting/reconciliation/actions";
@@ -69,5 +87,53 @@ describe("trust reconciliation actions accept the backend JSON array (G89-F17)",
 
     expect(mockGet).toHaveBeenCalledWith("/api/trust-accounts/acc-1/bank-statements");
     expect(statements.map((s) => s.id)).toEqual(["s1", "s2"]);
+  });
+});
+
+// O-OBS-2: the completion gate's refusal puts the refused condition in the ProblemDetail title and
+// its sentences in the detail; the action returns both so the wizard banner can show the title.
+describe("completeReconciliation refusal (O-OBS-2)", () => {
+  // Braces: a beforeEach that returns a function runs it as teardown (it would call mockPost).
+  beforeEach(() => {
+    mockPost.mockReset();
+  });
+
+  it("returns the ProblemDetail title alongside the detail sentences", async () => {
+    const detail =
+      "Adjusted bank balance R100,00 differs from the cashbook R1 415,00 by R1 315,00 as at 18 November 2026. 1 statement line is neither matched, recorded nor excluded.";
+    mockPost.mockRejectedValue(
+      new MockApiError(400, detail, { title: "Reconciliation does not balance", detail })
+    );
+
+    const result = await completeReconciliation("recon-1");
+
+    expect(mockPost).toHaveBeenCalledWith("/api/trust-reconciliations/recon-1/complete");
+    expect(result).toEqual({
+      success: false,
+      error: detail,
+      errorTitle: "Reconciliation does not balance",
+    });
+  });
+
+  it("omits the title when it is the message itself (a ProblemDetail without a detail)", async () => {
+    mockPost.mockRejectedValue(
+      new MockApiError(409, "Reconciliation already completed", {
+        title: "Reconciliation already completed",
+      })
+    );
+
+    expect(await completeReconciliation("recon-1")).toEqual({
+      success: false,
+      error: "Reconciliation already completed",
+    });
+  });
+
+  it("returns only the message for a non-API error", async () => {
+    mockPost.mockRejectedValue(new Error("fetch failed"));
+
+    expect(await completeReconciliation("recon-1")).toEqual({
+      success: false,
+      error: "fetch failed",
+    });
   });
 });

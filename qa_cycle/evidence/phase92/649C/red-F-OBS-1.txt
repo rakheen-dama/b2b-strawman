@@ -1,0 +1,9 @@
+F-OBS-1 red run (before the fix), worktree head 4e45c8994, 2026-11-18
+Command: (frontend) vitest run __tests__/trust-reconciliation.test.tsx -t "re-reads the statement lines"
+Test:    Trust Reconciliation > re-reads the statement lines and transactions when completion is refused
+Result:  1 failed | 43 skipped (44)
+Failure: AssertionError: expected "vi.fn()" to be called 2 times, but got 1 times
+         at expect(mockFetchBankStatement).toHaveBeenCalledTimes(statementReads + 1)
+Meaning: after a refused Complete, handleComplete recalculates the figures but never re-reads the
+         statement (fetchBankStatement) — the lines (badges, Unmatch button, "n / m lines resolved")
+         stay as the wizard last saw them.

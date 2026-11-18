@@ -222,9 +222,8 @@ class PortalTrustControllerIntegrationTest {
         "Matter B seed",
         "REF-B-0");
     // matterB: section 86(4) interest credited to the client (648D) — an investment-ledger row
-    // whose
-    // running balance is the invested balance; dated before the 2026-03-20 deposit, so that deposit
-    // stays the newest movement.
+    // whose running balance is the invested balance; dated before the 2026-03-20 deposit, so that
+    // deposit stays the newest movement.
     Instant interestAt = Instant.parse("2026-03-18T09:00:00Z");
     portalTrustRepo.upsertTransaction(
         UUID.randomUUID(),

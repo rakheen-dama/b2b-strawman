@@ -44,6 +44,9 @@ class GlobalV7PortalTrustInvestedBalanceTest {
   private static final String SCRATCH_GLOBAL_DB = "global_v7_portal_trust_invested_scratch";
   private static final String BALANCE_CUSTOMER = "7a000000-0000-0000-0000-000000000001";
   private static final String TXN_ID = "7a000000-0000-0000-0000-0000000000a1";
+  // Rows written after V7 with non-default values — a re-run must not reset them (PR #1802 review)
+  private static final String INVESTED_CUSTOMER = "7a000000-0000-0000-0000-000000000003";
+  private static final String INVESTMENT_TXN_ID = "7a000000-0000-0000-0000-0000000000a2";
 
   private final DataSource migrationDataSource;
   private DataSource scratch;
@@ -134,7 +137,40 @@ class GlobalV7PortalTrustInvestedBalanceTest {
                 .getResourceAsStream("/db/migration/global/V7__portal_trust_invested_balance.sql")
                 .readAllBytes(),
             StandardCharsets.UTF_8);
+    exec(
+        """
+        INSERT INTO portal.portal_trust_balance
+            (customer_id, matter_id, current_balance, invested_balance, last_transaction_at)
+        VALUES ('%s', '7a000000-0000-0000-0000-000000000004', 2500.00, 7595.00, now())
+        """
+            .formatted(INVESTED_CUSTOMER));
+    exec(
+        """
+        INSERT INTO portal.portal_trust_transaction
+            (id, customer_id, matter_id, transaction_type, ledger, amount, running_balance,
+             occurred_at, description, reference, transaction_date, recorded_at)
+        VALUES ('%s', '%s', '7a000000-0000-0000-0000-000000000004', 'INV_INTEREST',
+                'CLIENT_INVESTMENT', 95.00, 7595.00, now(), 'Section 86(4) investment interest',
+                'INT-V7', DATE '2026-10-02', now())
+        """
+            .formatted(INVESTMENT_TXN_ID, INVESTED_CUSTOMER));
+
     exec(v7);
+
+    // The body adds nothing over existing columns: populated values survive the re-run
+    assertThat(
+            single(
+                "SELECT invested_balance::text FROM portal.portal_trust_balance"
+                    + " WHERE customer_id = '"
+                    + INVESTED_CUSTOMER
+                    + "'"))
+        .isEqualTo("7595.00");
+    assertThat(
+            single(
+                "SELECT ledger FROM portal.portal_trust_transaction WHERE id = '"
+                    + INVESTMENT_TXN_ID
+                    + "'"))
+        .isEqualTo("CLIENT_INVESTMENT");
 
     assertThat(
             flyway().target(MigrationVersion.fromVersion("7")).load().migrate().migrationsExecuted)

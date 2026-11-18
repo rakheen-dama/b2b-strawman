@@ -107,4 +107,21 @@ describe("BalanceCard", () => {
       /7[ ,\u00A0\u202F]?595[.,]00/,
     );
   });
+
+  it("shows the general balance and no invested line when a response has no investedBalance (PR #1802 review)", () => {
+    // A pre-648D backend omits the field: the page passes it through as undefined
+    render(
+      <BalanceCard
+        matterName="Website Redesign"
+        currentBalance={2500}
+        investedBalance={undefined}
+        lastTransactionAt="2026-11-08T08:30:00Z"
+      />,
+    );
+
+    const headline = screen.getByLabelText("Current balance").textContent;
+    expect(headline).toMatch(/2[ ,\u00A0\u202F]?500[.,]00/);
+    expect(headline).not.toMatch(/NaN/);
+    expect(screen.queryByText(INVESTED_LABEL)).toBeNull();
+  });
 });

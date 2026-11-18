@@ -283,12 +283,13 @@ public class TrustLedgerPortalSyncService {
         continue;
       }
       UUID rowCustomerId = txn.getCustomerId();
+      Instant occurredAt = deriveOccurredAt(txn);
       BigDecimal running =
           balancesByCustomer
               .computeIfAbsent(rowCustomerId, id -> new Balances())
-              .apply(txn, ledger.get());
+              .apply(txn, ledger.get(), occurredAt);
       if (isVisibleRow(txn, ledger.get())) {
-        upsertRow(txn, rowCustomerId, matterId, ledger.get(), running);
+        upsertRow(txn, rowCustomerId, matterId, ledger.get(), running, occurredAt);
       }
     }
     balancesByCustomer.forEach(
@@ -303,8 +304,11 @@ public class TrustLedgerPortalSyncService {
    * Rebuilds the portal trust read-model for a tenant by writing a row per posted, visible trust
    * transaction (capped at {@link #BACKFILL_LIMIT_PER_MATTER} per matter) and the corresponding
    * per-matter balance snapshot — the same split by ledger as {@link #recomputeMatter} (648D).
-   * Intended to be called on module activation (via {@code POST /internal/portal-resync/*}) or when
-   * repairing drift.
+   *
+   * <p><b>No production caller.</b> Nothing in the application invokes this method — no route, job
+   * or listener (the {@code POST /internal/portal/resync/{orgId}} endpoint rebuilds projects,
+   * documents, tasks and the directory, not trust). Only tests call it today; it is not an operator
+   * repair procedure until a caller that binds the organisation scope is added.
    *
    * <p>Wipe-and-rewrite semantics: after upserting the fresh current-window projection for each
    * touched customer, the method deletes portal balance/transaction rows that fall outside the new
@@ -407,11 +411,12 @@ public class TrustLedgerPortalSyncService {
                 long visibleSeen = 0;
                 for (var txn : ordered) {
                   var ledger = projectedLedger(txn).orElseThrow();
-                  BigDecimal running = balances.apply(txn, ledger);
+                  Instant occurredAt = deriveOccurredAt(txn);
+                  BigDecimal running = balances.apply(txn, ledger, occurredAt);
                   if (!isVisibleRow(txn, ledger) || visibleSeen++ < olderThanWindow) {
                     continue;
                   }
-                  upsertRow(txn, rollup.customerId, rollup.matterId, ledger, running);
+                  upsertRow(txn, rollup.customerId, rollup.matterId, ledger, running, occurredAt);
                   retainedTxnIds.add(txn.getId());
                   written++;
                 }
@@ -489,9 +494,11 @@ public class TrustLedgerPortalSyncService {
     BigDecimal invested = BigDecimal.ZERO;
     Instant latest;
 
-    /** Moves {@code ledger} by the row's effect; returns that ledger's running balance. */
-    BigDecimal apply(TrustTransaction txn, TrustLedger ledger) {
-      Instant occurredAt = deriveOccurredAt(txn);
+    /**
+     * Moves {@code ledger} by the row's effect and {@code latest} to the row's {@code occurredAt}
+     * ({@link #deriveOccurredAt}); returns that ledger's running balance.
+     */
+    BigDecimal apply(TrustTransaction txn, TrustLedger ledger, Instant occurredAt) {
       if (latest == null || occurredAt.isAfter(latest)) {
         latest = occurredAt;
       }
@@ -532,7 +539,7 @@ public class TrustLedgerPortalSyncService {
             int byCreated = aCreated.compareTo(bCreated);
             // Same final tiebreak as findByProjectIdOrderByTransactionDateAsc and the portal
             // read order (G89-F39), so running balances read in display order.
-            return byCreated != 0 ? byCreated : a.getId().compareTo(b.getId());
+            return byCreated != 0 ? byCreated : compareInPostgresOrder(a.getId(), b.getId());
           });
       return List.copyOf(transactions);
     }
@@ -540,13 +547,28 @@ public class TrustLedgerPortalSyncService {
 
   // ── Pure helpers ──────────────────────────────────────────────────────
 
+  /**
+   * Orders two ids as PostgreSQL orders {@code uuid} values — by their 16 bytes, unsigned. {@link
+   * UUID#compareTo} compares the two halves as signed longs, so it disagrees whenever the top bit
+   * of a half differs (an id starting {@code 9…} sorts before one starting {@code 1…}). The
+   * backfill's tiebreak must match the database's, or two rows on the same date and recorded
+   * instant carry each other's running balance (PR #1802 review).
+   */
+  static int compareInPostgresOrder(UUID a, UUID b) {
+    int byHigh = Long.compareUnsigned(a.getMostSignificantBits(), b.getMostSignificantBits());
+    return byHigh != 0
+        ? byHigh
+        : Long.compareUnsigned(a.getLeastSignificantBits(), b.getLeastSignificantBits());
+  }
+
   /** Upserts one visible row under {@code customerId} with its own ledger's running balance. */
   private void upsertRow(
       TrustTransaction txn,
       UUID customerId,
       UUID matterId,
       TrustLedger ledger,
-      BigDecimal runningBalance) {
+      BigDecimal runningBalance,
+      Instant occurredAt) {
     portalTrustRepo.upsertTransaction(
         txn.getId(),
         customerId,
@@ -557,7 +579,7 @@ public class TrustLedgerPortalSyncService {
         runningBalance,
         txn.getTransactionDate(),
         recordedAt(txn),
-        deriveOccurredAt(txn),
+        occurredAt,
         portalDescription(txn),
         txn.getReference());
   }

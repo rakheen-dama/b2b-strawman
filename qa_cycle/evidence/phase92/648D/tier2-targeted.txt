@@ -13,3 +13,15 @@ Slice classes in it: TrustLedgerPortalSyncServiceIntegrationTest 17, PortalTrust
 Pin R4 (nonClientAndInterAccountRowsNeverReachThePortal) green before and after.
 
 Tier 3 (./mvnw clean verify / scripts/verify.sh) NOT run by the builder — owned by the orchestrator (BE-VERIFY, last on the final head).
+
+--- Re-run after the PR #1802 review fixes (CR-7 UUID tie-break, CR-3 Javadoc, CR-8 V7 re-run test, reviewer comment rejoin, occurredAt derived once per row) ---
+Date: 2026-11-18, working tree = review-fix commit content
+Command (from backend/): ./mvnw spotless:apply && ./mvnw compile test-compile -q (exit 0) &&
+  ./mvnw test -Dtest="TrustLedgerPortalSyncServiceIntegrationTest,PortalTrustControllerIntegrationTest,PortalTrustReadModelRepositoryTest,GlobalV7PortalTrustInvestedBalanceTest,PortalReadModelOrgScopingGuardTest,PortalTrustTransactionDateIntegrationTest,PortalTrustLongReferenceIntegrationTest" > /tmp/mvn-fix-648D.log 2>&1
+Result: Tests run: 41, Failures: 0, Errors: 0, Skipped: 0 — BUILD SUCCESS (exit 0)
+  TrustLedgerPortalSyncServiceIntegrationTest 18 (+1: backfillBreaksASameInstantTieInPostgresUuidOrder — red before the
+  fix in red-cr-7-backend-uuid-tiebreak.txt), PortalTrustControllerIntegrationTest 10, PortalTrustReadModelRepositoryTest 5,
+  GlobalV7PortalTrustInvestedBalanceTest 3 (re-run case now also pins populated invested_balance / CLIENT_INVESTMENT),
+  PortalReadModelOrgScopingGuardTest 2, PortalTrustTransactionDateIntegrationTest 2, PortalTrustLongReferenceIntegrationTest 1.
+"Portal trust sync failed" in the log: 0
+Tier 3 (full verify) NOT run by the fixer — owned by the orchestrator.

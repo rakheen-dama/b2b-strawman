@@ -28,16 +28,18 @@ export interface PortalTrustMatterSummary {
 /**
  * The client's total held in trust on a matter (Phase 92 648D, ADR-379): the general balance plus
  * what is invested for them under section 86(4) — invested money is still trust money, so a
- * placement does not move it. Rounded to the cent (the API sends two-decimal numbers).
+ * placement does not move it. Rounded to the cent (the API sends two-decimal numbers). A response
+ * without `investedBalance` (a pre-648D backend during a rollback, or a tab opened before a deploy)
+ * counts as nothing invested, so the total is the general balance — never NaN.
  */
-export function totalHeldInTrust(
-  balances: Pick<
-    PortalTrustMatterSummary,
-    "currentBalance" | "investedBalance"
-  >,
-): number {
+export function totalHeldInTrust(balances: {
+  currentBalance: number;
+  investedBalance?: number | null;
+}): number {
   return (
-    Math.round((balances.currentBalance + balances.investedBalance) * 100) / 100
+    Math.round(
+      (balances.currentBalance + (balances.investedBalance ?? 0)) * 100,
+    ) / 100
   );
 }
 

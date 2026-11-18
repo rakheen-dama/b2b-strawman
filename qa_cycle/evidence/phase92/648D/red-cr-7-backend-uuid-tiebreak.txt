@@ -1,0 +1,45 @@
+CR-7 red — backend, before the fix (PR head 07a88d040 + the new test), 2026-11-18 14:20
+Command (backend/): ./mvnw test -Dtest="TrustLedgerPortalSyncServiceIntegrationTest#backfillBreaksASameInstantTieInPostgresUuidOrder"
+Observed: the event path (PostgreSQL order) passes its assertions (line 594-597); the backfill's signed UUID.compareTo tie-break orders 9... before 1..., so the two rows swap running balances and assertBackfillReproduces fails.
+
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 13.65 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.customerbackend.service.TrustLedgerPortalSyncServiceIntegrationTest
+[ERROR] io.b2mash.b2b.b2bstrawman.customerbackend.service.TrustLedgerPortalSyncServiceIntegrationTest.backfillBreaksASameInstantTieInPostgresUuidOrder -- Time elapsed: 0.453 s <<< FAILURE!
+	at io.b2mash.b2b.b2bstrawman.customerbackend.service.TrustLedgerPortalSyncServiceIntegrationTest.backfillBreaksASameInstantTieInPostgresUuidOrder(TrustLedgerPortalSyncServiceIntegrationTest.java:600)
+[ERROR] Failures: 
+[ERROR]   TrustLedgerPortalSyncServiceIntegrationTest.backfillBreaksASameInstantTieInPostgresUuidOrder:600->assertBackfillReproduces:677 
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0
+
+Expecting actual:
+  ["97c65068-d391-428d-9d4d-992368b492a1|DEPOSIT|CLIENT|250.00|250.00|Same-instant deposit",
+    "17c65068-d391-428d-9d4d-992368b492a1|DEPOSIT|CLIENT|100.00|350.00|Same-instant deposit",
+    "balance|350.00|0.00|2026-03-02T09:00:00Z"]
+to contain exactly (and in same order):
+  ["97c65068-d391-428d-9d4d-992368b492a1|DEPOSIT|CLIENT|250.00|350.00|Same-instant deposit",
+    "17c65068-d391-428d-9d4d-992368b492a1|DEPOSIT|CLIENT|100.00|100.00|Same-instant deposit",
+    "balance|350.00|0.00|2026-03-02T09:00:00Z"]
+but some elements were not found:
+  ["97c65068-d391-428d-9d4d-992368b492a1|DEPOSIT|CLIENT|250.00|350.00|Same-instant deposit",
+    "17c65068-d391-428d-9d4d-992368b492a1|DEPOSIT|CLIENT|100.00|100.00|Same-instant deposit"]
+and others were not expected:
+Expecting actual:
+  ["97c65068-d391-428d-9d4d-992368b492a1|DEPOSIT|CLIENT|250.00|250.00|Same-instant deposit",
+    "17c65068-d391-428d-9d4d-992368b492a1|DEPOSIT|CLIENT|100.00|350.00|Same-instant deposit",
+    "balance|350.00|0.00|2026-03-02T09:00:00Z"]
+to contain exactly (and in same order):
+  ["97c65068-d391-428d-9d4d-992368b492a1|DEPOSIT|CLIENT|250.00|350.00|Same-instant deposit",
+    "17c65068-d391-428d-9d4d-992368b492a1|DEPOSIT|CLIENT|100.00|100.00|Same-instant deposit",
+    "balance|350.00|0.00|2026-03-02T09:00:00Z"]
+but some elements were not found:
+  ["97c65068-d391-428d-9d4d-992368b492a1|DEPOSIT|CLIENT|250.00|350.00|Same-instant deposit",
+    "17c65068-d391-428d-9d4d-992368b492a1|DEPOSIT|CLIENT|100.00|100.00|Same-instant deposit"]
+and others were not expected:
+and others were not expected:
+  ["97c65068-d391-428d-9d4d-992368b492a1|DEPOSIT|CLIENT|250.00|250.00|Same-instant deposit",
+    "17c65068-d391-428d-9d4d-992368b492a1|DEPOSIT|CLIENT|100.00|350.00|Same-instant deposit"]
+
+	at io.b2mash.b2b.b2bstrawman.customerbackend.service.TrustLedgerPortalSyncServiceIntegrationTest.assertBackfillReproduces(TrustLedgerPortalSyncServiceIntegrationTest.java:677)
+and others were not expected:
+  ["97c65068-d391-428d-9d4d-992368b492a1|DEPOSIT|CLIENT|250.00|250.00|Same-instant deposit",
+    "17c65068-d391-428d-9d4d-992368b492a1|DEPOSIT|CLIENT|100.00|350.00|Same-instant deposit"]
+
+[INFO] 

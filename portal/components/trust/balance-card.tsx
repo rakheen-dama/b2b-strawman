@@ -14,8 +14,11 @@ interface BalanceCardProps {
   matterName: string | null;
   /** General (client ledger) balance — what sits in the firm's trust account for the client. */
   currentBalance: number;
-  /** Section 86(4) invested balance (Phase 92 648D); the breakdown shows only when non-zero. */
-  investedBalance: number;
+  /**
+   * Section 86(4) invested balance (Phase 92 648D); the breakdown shows only when non-zero. Absent
+   * from a pre-648D backend's response — treated as nothing invested.
+   */
+  investedBalance?: number | null;
   lastTransactionAt: string;
   /** When present, the matter name/label wraps in a link to the matter detail page. */
   href?: string;
@@ -38,6 +41,7 @@ export function BalanceCard({
   currency = "ZAR",
 }: BalanceCardProps) {
   const label = matterName ?? "Matter";
+  const invested = investedBalance ?? 0;
   const title = (
     <span className="flex items-center gap-2 text-sm font-medium text-slate-600">
       <Scale className="size-4" aria-hidden="true" />
@@ -67,11 +71,11 @@ export function BalanceCard({
           aria-label="Current balance"
         >
           {formatCurrency(
-            totalHeldInTrust({ currentBalance, investedBalance }),
+            totalHeldInTrust({ currentBalance, investedBalance: invested }),
             currency,
           )}
         </p>
-        {investedBalance !== 0 && (
+        {invested !== 0 && (
           <dl className="space-y-1 text-sm">
             <div className="flex items-baseline justify-between gap-4">
               <dt className="text-slate-600">{GENERAL_LABEL}</dt>
@@ -82,7 +86,7 @@ export function BalanceCard({
             <div className="flex items-baseline justify-between gap-4">
               <dt className="text-slate-600">{INVESTED_LABEL}</dt>
               <dd className="font-mono text-slate-900 tabular-nums">
-                {formatCurrency(investedBalance, currency)}
+                {formatCurrency(invested, currency)}
               </dd>
             </div>
           </dl>

@@ -18,6 +18,7 @@ vi.mock("next/link", () => ({
 }));
 
 import { MatterSelector } from "@/components/trust/matter-selector";
+import type { PortalTrustMatterSummary } from "@/lib/api/trust";
 
 describe("MatterSelector", () => {
   afterEach(() => {
@@ -85,5 +86,21 @@ describe("MatterSelector", () => {
     const card = screen.getByRole("link");
     expect(card.textContent).toMatch(/10[ ,\u00A0\u202F]?095[.,]00/);
     expect(card.textContent).not.toMatch(/2[ ,\u00A0\u202F]?500[.,]00/);
+  });
+
+  it("falls back to the general balance when a response has no investedBalance — never NaN (PR #1802 review)", () => {
+    // A pre-648D backend (rollback, or a tab opened before a deploy) omits the field
+    const legacy = {
+      matterId: "ab12cd34-ef56-7890-abcd-ef0123456789",
+      matterName: "Website Redesign",
+      currentBalance: 1250,
+      lastTransactionAt: new Date().toISOString(),
+      lastSyncedAt: new Date().toISOString(),
+    } as unknown as PortalTrustMatterSummary;
+    render(<MatterSelector matters={[legacy]} />);
+
+    const card = screen.getByRole("link");
+    expect(card.textContent).toMatch(/1[ ,\u00A0\u202F]?250[.,]00/);
+    expect(card.textContent).not.toMatch(/NaN/);
   });
 });

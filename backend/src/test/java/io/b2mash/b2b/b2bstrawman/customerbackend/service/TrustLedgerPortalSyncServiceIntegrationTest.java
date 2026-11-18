@@ -570,6 +570,61 @@ class TrustLedgerPortalSyncServiceIntegrationTest {
         .isZero();
   }
 
+  /**
+   * Two rows on the same date recorded at the same instant are ordered by id alone. The backfill's
+   * in-memory sort must break that tie in PostgreSQL's (unsigned byte) UUID order — the order of
+   * {@code findByProjectIdOrderByTransactionDateAsc} and of the portal's read — or the two rows
+   * carry each other's running balance (PR #1802 review). The ids differ in the top bit, where a
+   * signed {@code UUID.compareTo} and PostgreSQL disagree.
+   */
+  @Test
+  void backfillBreaksASameInstantTieInPostgresUuidOrder() {
+    var funding = books.freshAccount(false);
+    var client = books.newClient("portal uuid tie-break");
+    var seed = UUID.randomUUID();
+    long lowBits = seed.getMostSignificantBits() & 0x0FFFFFFFFFFFFFFFL;
+    var first = new UUID(lowBits | 0x1000000000000000L, seed.getLeastSignificantBits());
+    var second = new UUID(lowBits | 0x9000000000000000L, seed.getLeastSignificantBits());
+    assertThat(second.compareTo(first)).as("signed compare puts 9… first").isNegative();
+    sameInstantDeposit(funding, client, first, "100.00");
+    sameInstantDeposit(funding, client, second, "250.00");
+
+    publishReconciliationCompletedEvent(funding);
+
+    var rows = portalTrustRepo.findTransactions(client.id(), client.matter(), null, null, 50, 0);
+    // PostgreSQL order: 1… then 9… — the latest row (shown first) carries the balance after both
+    assertThat(rows).extracting(t -> t.id()).containsExactly(second, first);
+    assertThat(rows.get(0).runningBalance()).isEqualByComparingTo("350.00");
+    assertThat(rows.get(1).runningBalance()).isEqualByComparingTo("100.00");
+
+    assertBackfillReproduces(client.id(), client.matter());
+  }
+
+  /** A posted DEPOSIT row with an explicit id, all on one date and one recorded instant. */
+  private void sameInstantDeposit(
+      UUID account, TrustBooksFixture.Client client, UUID id, String amount) {
+    var effect = TrustTransactionType.of("DEPOSIT").effectFor(new BigDecimal(amount));
+    jdbcTemplate.update(
+        """
+        INSERT INTO "%s".trust_transactions (id, trust_account_id, transaction_type, amount,
+            customer_id, project_id, reference, description, transaction_date, status,
+            recorded_by, created_at, ledger, cashbook_effect, ledger_effect, posted_at)
+        VALUES (?, ?, 'DEPOSIT', ?, ?, ?, ?, 'Same-instant deposit', DATE '2026-03-02',
+            'RECORDED', ?, TIMESTAMPTZ '2026-03-02 09:00:00+00', ?, ?, ?, now())
+        """
+            .formatted(tenantSchema),
+        id,
+        account,
+        new BigDecimal(amount),
+        client.id(),
+        client.matter(),
+        "TIE-" + id.toString().substring(0, 8),
+        memberId,
+        effect.ledger().name(),
+        effect.cashbookEffect(),
+        effect.ledgerEffect());
+  }
+
   /** A section 86(4) placement of {@code principal} for a fresh client, approved. */
   private Held s86_4Investment(String deposit, String principal) {
     var funding = books.freshAccount(false);

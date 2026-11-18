@@ -15,7 +15,7 @@ Columns: **id** · **source** (slice / found.md) · **decision taken** · **alte
 | id | source | decision taken | alternative | reversible? | status |
 |---|---|---|---|---|---|
 | F-6a | 648A found.md | Re-check s86(3) placement cover at **approval** (under the account lock), as well as at request — two pending placements can no longer jointly overdraw the cashbook. Bug fix. | check at request only (current) | yes | RULED — follow-up FU-1 |
-| F-6b | 648A F-6 / 649C N-1 | Cashbook-in-debit after a s86(3) placement: **pending Fable legal-adviser opinion**; proposed = warning flag on the integrity check, no block (R14 / ADR-380). | hard block on client-ledger debits | yes | PENDING LEGAL — see below |
+| F-6b | 648A F-6 / 649C N-1 | Cashbook-in-debit after a s86(3) placement — **combined rule** per the Fable legal opinion (`qa_cycle/evidence/phase92/legal/F-6-opinion.md`): (1) block approval of firm-initiated outflows from a trust banking account (payment, refund, fee transfer, s86(4)/s86(3) placement) unless the derived cashbook covers it, under an account lock — "withdraw from the s86(3) investment first"; (2) never block recording bank-confirmed entries (R14 / ADR-380 unchanged for records); (3) integrity flag `CASHBOOK_IN_DEBIT` prompting a Rule 54.14.8 check / 54.14.10 report. Open point: trust auditor / LPC to confirm the Rule 54.14.10 reading before the flag wording relies on it. | warning only; full block incl. recording | yes | RULED (founder sign-off 2026-11-18) — follow-up FU-9 (with FU-1) |
 | R-2 | 648F found.md | Reports showing trust figures require the trust-view capability, not only financial visibility. Pre-existing gap. | leave as is | yes | RULED — follow-up FU-2 |
 | R-1 | 648F found.md | A statement reads the general and invested balances in **one read-only, consistent transaction** (no double count of a concurrently approved placement). | accept the race | yes | RULED — follow-up FU-3 |
 | W1 | 649B found.md | The firm's client-ledger-statement report applies the "reversal reasons stay off client surfaces" rule. | reword the page | yes | RULED — follow-up FU-4 |
@@ -40,7 +40,7 @@ Columns: **id** · **source** (slice / found.md) · **decision taken** · **alte
 | FU-6 | F-646C-1, F-647C | Statement import / record-from-line: refuse duplicate same-end-date statements (unless replacing) and future-dated lines. |
 | FU-7 | O-1 | `legal-za` template pack: SoA label; version bump + reconcile entry + seeder reconcile test. |
 | FU-8 | F-17 | `backend/pom.xml` Surefire `-Xmx` raise (durable fix: cull context-cache keys); full verify + CI ×2 green. |
-| FU-9 | F-6b | Per the legal opinion (integrity flag `CASHBOOK_IN_DEBIT`, or a block). |
+| FU-9 | F-6a + F-6b | One PR with FU-1: approval-time cashbook cover check for all firm-initiated outflows under an account lock (lock order: transaction row → account → client anchor), `CASHBOOK_IN_DEBIT` integrity flag; recording paths untouched. Red tests first (two pending placements; payment after a s86(3) placement). |
 
 ## Decisions taken by slice agents (append below — newest last)
 

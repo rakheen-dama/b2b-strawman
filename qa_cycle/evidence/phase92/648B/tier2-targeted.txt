@@ -145,3 +145,28 @@
 4 verticals.legal.trustaccounting.transaction.TrustTransferTargetMatterIntegrationTest
 
 # Tier 3 (full ./mvnw verify / scripts/verify.sh) was NOT run by the fix agent — orchestrator-only.
+
+## Fix 2 — finding 10 reverted (orchestrator full verify @adf658abc: MatterScopedPublisherGuardTest.everyMatterScopedEmitSiteUsesTheHelper:97)
+# spotless:apply; compile test-compile -q → exit 0
+# git diff d249a768 -- trustaccounting/transaction/ → empty (TrustTransactionService + TrustPostingService byte-identical to d249a768)
+# -Dtest="MatterScopedPublisherGuardTest,TrustInvestmentInterestIntegrationTest,TrustInvestmentServiceIntegrationTest,TrustInvestmentControllerTest,StatementLinePostingIntegrationTest,*Reversal*,*Reverse*,*Contra*,AuditEventTypeRegistryTest,ActivityMessageFormatterTest" → exit 0, 18 classes, 410 <testcase>, 0 failures/errors
+  activity.ActivityMessageFormatterTest 243 tc, 0 fail/err
+  audit.AuditEventTypeRegistryTest 26 tc, 0 fail/err
+  audit.MatterScopedPublisherGuardTest 3 tc, 0 fail/err
+  datarequest.DataProtectionWireContractTest 1 tc, 0 fail/err
+  integration.ai.skill.contractreview.ContractReviewSkillTest 5 tc, 0 fail/err
+  integration.storage.StorageServiceContractTest 9 tc, 0 fail/err
+  mcp.McpToolContractTest 1 tc, 0 fail/err
+  project.WireVocabularyContractTest 2 tc, 0 fail/err
+  template.ContractPartyBindingIntegrationTest 4 tc, 0 fail/err
+  verticals.legal.trustaccounting.TrustReversalContraMigrationTest 10 tc, 0 fail/err
+  verticals.legal.trustaccounting.TrustWireContractTest 1 tc, 0 fail/err
+  verticals.legal.trustaccounting.investment.TrustInvestmentControllerTest 21 tc, 0 fail/err
+  verticals.legal.trustaccounting.investment.TrustInvestmentInterestIntegrationTest 10 tc, 0 fail/err
+  verticals.legal.trustaccounting.investment.TrustInvestmentServiceIntegrationTest 21 tc, 0 fail/err
+  verticals.legal.trustaccounting.investment.TrustInvestmentWithdrawReverseRaceIntegrationTest 2 tc, 0 fail/err
+  verticals.legal.trustaccounting.reconciliation.StatementLinePostingIntegrationTest 28 tc, 0 fail/err
+  verticals.legal.trustaccounting.transaction.TrustFeeTransferReversalCascadeTest 8 tc, 0 fail/err
+  verticals.legal.trustaccounting.transaction.TrustReversalEquationIntegrationTest 15 tc, 0 fail/err
+# -Dtest="io.b2mash.b2b.b2bstrawman.audit.**" (reports cleared first) → exit 0, 26 classes, 168 <testcase>, 0 failures/errors
+# Tier 3 (full ./mvnw verify / scripts/verify.sh) was NOT run by the fix agent — orchestrator-only.

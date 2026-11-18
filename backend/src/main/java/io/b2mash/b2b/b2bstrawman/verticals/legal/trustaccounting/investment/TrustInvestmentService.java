@@ -864,8 +864,22 @@ public class TrustInvestmentService implements InvestmentPlacementHooks {
               original);
       contras.add(contra);
       auditService.log(
-          TrustPostingService.reversedAuditEvent(
-              original, contra, INTEREST_REVERSAL_REASON, entry.getEntryDate()));
+          AuditEventBuilder.builder()
+              .eventType("trust_transaction.reversed")
+              .entityType("trust_transaction")
+              .entityId(contra.getId())
+              .details(
+                  AuditDetails.matterScoped(
+                      contra.getProjectId(),
+                      original.getCustomerId(),
+                      Map.of(
+                          "original_transaction_id", original.getId().toString(),
+                          "original_type", original.getTransactionType(),
+                          "amount", original.getAmount().toString(),
+                          "reversal_status", contra.getStatus(),
+                          "reason", INTEREST_REVERSAL_REASON,
+                          "reversal_date", entry.getEntryDate().toString())))
+              .build());
       if (contra.getCustomerId() != null) {
         publishRecorded(contra, "REVERSAL", memberId);
       }

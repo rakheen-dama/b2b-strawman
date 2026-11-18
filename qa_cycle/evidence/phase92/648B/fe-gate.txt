@@ -31,3 +31,13 @@ test 0 — vitest: Test Files  483 passed (483) / Tests  4515 passed | 2 skipped
 build 0 — ✓ Compiled successfully in 8.6s
 # +21 tests vs run 2: __tests__/trust/trust-interest.test.ts (new), __tests__/trust/interest-eligible-investments.test.tsx (new),
 # trust-investments-reports.test.tsx (+1: failed line lookup + Retry)
+
+## Run 4 — fix 2 (finding 10 reverted; interest dialog refreshes the unmatched-lines SWR cache after a record)
+# rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build — one sequential pass, nvm node v20.11.1, all green
+lint 0 — ✖ 78 problems (0 errors, 78 warnings) (none in a file touched by fix 2)
+typecheck 0
+format:check 0 — All matched files use Prettier code style!
+test 0 — vitest: Test Files  483 passed (483) / Tests  4516 passed | 2 skipped (4518)
+build 0 — ✓ Compiled successfully
+# +1 test vs run 3: trust-investments-reports.test.tsx "interest dialog drops the consumed statement line from its cache after a record"
+# (confirmed to FAIL with the dialog change stashed, PASS with it)

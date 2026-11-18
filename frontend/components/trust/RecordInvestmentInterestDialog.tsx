@@ -192,6 +192,9 @@ export function RecordInvestmentInterestDialog({
         setError(result.error ?? "Failed to record interest");
         return;
       }
+      // The line is consumed: drop it from the cache and refetch (while the key is still live), so
+      // a reopened dialog does not briefly offer it
+      void reloadLines((current) => current?.filter((l) => l.id !== payload.bankStatementLineId));
       onSuccess();
       router.refresh();
       setDialogOpen(false);

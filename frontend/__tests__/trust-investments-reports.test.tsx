@@ -582,6 +582,30 @@ describe("Trust Investments & Reports", () => {
     );
   });
 
+  it("interest dialog drops the consumed statement line from its cache after a record", async () => {
+    const user = userEvent.setup({ pointerEventsCheck: 0 });
+    mockFetchUnmatchedCreditLines.mockResolvedValueOnce([INTEREST_LINE]).mockResolvedValue([]);
+    mockRecordInvestmentInterest.mockResolvedValue({ success: true });
+    renderInterestDialog();
+
+    const dialog = screen.getByTestId("record-investment-interest-dialog");
+    const lineSelect = await within(dialog).findByLabelText("Statement line");
+    await within(dialog).findByRole("option", { name: /Line #3/ });
+    await user.selectOptions(lineSelect, "line-400");
+    await user.click(
+      within(dialog).getByRole("radio", {
+        name: "Gross — the Fund's 5% leaves in a separate debit",
+      })
+    );
+    await user.click(within(dialog).getByRole("button", { name: "Record interest" }));
+
+    await waitFor(() => expect(mockRecordInvestmentInterest).toHaveBeenCalled());
+    await waitFor(() =>
+      expect(within(dialog).queryByRole("option", { name: /Line #3/ })).toBeNull()
+    );
+    await waitFor(() => expect(mockFetchUnmatchedCreditLines).toHaveBeenCalledTimes(2));
+  });
+
   it("interest dialog records a bank advice net of the Fund's 5%: gross R100,00 → R5,00 / R95,00", async () => {
     const user = userEvent.setup({ pointerEventsCheck: 0 });
     mockFetchUnmatchedCreditLines.mockResolvedValue([]);

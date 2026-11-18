@@ -561,8 +561,20 @@ Read the three collection files. If any have actionable findings (not just the b
 actionable comments were generated" or "Review failed"), dispatch a fixer agent (same pattern as
 Step 4.3) to address them. This is a SEPARATE fix cycle from the superpowers fixes.
 
+**One CodeRabbit round (founder ruling 2026-11-18).** CodeRabbit's FIRST full review is the one
+that gates the slice: its actionable findings go into the same batched fixer as the superpowers
+findings (see the Batching rule in 4.4b). After that:
+- **Never re-trigger CodeRabbit** (`@coderabbitai review`, waiting out its hourly rate limit, etc.).
+- If it reviews later pushes on its own, triage those later findings ONCE: fix in-slice only
+  **Critical / security / tenant-isolation / data-corruption / wrong-money** findings; record every
+  other later-round finding in `$EV/<slice>/found.md` (or the slice's found file) as a deferred item
+  and post one PR reply listing them. A later round never adds another fix → re-review cycle for
+  polish, nitpicks, wording, test-strengthening or refactors.
+- Phase 92 evidence: 648B ran 5 CodeRabbit rounds / 21 findings; 648F's tail was two extra
+  fix + re-review loops driven by late CodeRabbit rounds — the single biggest time sink per slice.
+
 Record the outcome — this string MUST be pasted verbatim into the PR body in Step 4.5:
-- If `CR_STATE=present` and there are actionable findings → `## CodeRabbit: REVIEWED — N findings, addressed in fixer pass`
+- If `CR_STATE=present` and there are actionable findings → `## CodeRabbit: REVIEWED — N findings, addressed in fixer pass` (append `; later rounds: M deferred to found.md` when the one-round rule deferred any)
 - If `CR_STATE=present` and no actionable findings → `## CodeRabbit: REVIEWED — no actionable findings`
 - If `CR_STATE=missing` after all waits → `## CodeRabbit: DEFERRED — not arrived after full review cycle; superpowers reviews are the merge gate`
 
@@ -619,18 +631,55 @@ For EACH finding, report one of:
 - ⚠️ DEFERRED — {why this can't be fixed in this PR, e.g., requires architectural change}
 ```
 
-### 4.4 — Re-review after fix (max 2 cycles)
+### 4.4 — Re-review after fix: DELTA reviews, once, at the final head (max 2 fix cycles)
 
-After the fixer pushes, first refresh the diff file (`gh pr diff {PR_NUMBER} > /tmp/pr-{PR_NUMBER}.diff`),
-then re-dispatch Agent A (bug/quality) on it to confirm no regressions. Agent B's full re-review is
-needed only if Agent A flags an architectural regression, but both verdicts must still be re-bound to
-the final head before merge (Step 4.5): batch all fixes first, then dispatch a fresh A and B in
-parallel on the final SHA.
+**Founder ruling 2026-11-18.** Only the FIRST review (Step 4.1) is a full read of the PR. Every
+later review is a **delta review**: it reads only what changed since the last commit both
+reviewers approved (or last reviewed), plus those changed files in context. The merge-gate hook
+still needs two verdicts bound to the head, so dispatch BOTH delta reviewers — in parallel, so the
+wall-clock cost is one reviewer's.
 
-If Agent A returns Critical or High findings on the second pass, run ONE more fix cycle (max 2
-fix cycles total). If findings persist after 2 cycles, note them in the PR description and STOP
-(in auto-merge mode, exit non-zero so the wrapper script knows this slice failed).
+**Batch, then review once.** Do NOT re-review after every push. Land all fixes first — the
+superpowers fixer, the CodeRabbit round-1 fixes (batched into the same fixer when possible), and
+any fix the OBS / E2E gates force — then run ONE delta review round on the final head. A second
+delta round happens only if that round returns Critical/High (that is the 2nd and last fix cycle).
+If findings persist after 2 fix cycles, note them in the PR description and STOP (in auto-merge
+mode, exit non-zero so the wrapper script knows this slice failed).
 
+Delta review setup (orchestrator):
+```bash
+BASE={last-reviewed-sha}   # the SHA the previous verdicts are bound to
+HEAD=$(gh pr view {PR_NUMBER} --json headRefOid -q .headRefOid)
+git -C /Users/rakheendama/Projects/2026/worktree-epic-{ID} diff $BASE..$HEAD > /tmp/pr-{PR_NUMBER}-delta.diff
+git -C /Users/rakheendama/Projects/2026/worktree-epic-{ID} diff --stat $BASE..$HEAD
+```
+
+Dispatch Agent A and Agent B (same `subagent_type`s and lenses as 4.1) with this preamble in place
+of their Setup section:
+
+```
+You are the {BUG/QUALITY | ARCHITECTURE} DELTA reviewer for PR #{PR_NUMBER}, head {HEAD}.
+The PR was fully reviewed at {BASE}; those verdicts and findings are below. Review ONLY the delta.
+
+## Setup
+1. Read the delta: /tmp/pr-{PR_NUMBER}-delta.diff  (git diff {BASE}..{HEAD})
+2. Read every file the delta touches IN FULL (worktree /Users/rakheendama/Projects/2026/worktree-epic-{ID}),
+   so each change is judged in context, not as an isolated hunk.
+3. Prior findings + how each was resolved: {paste the merged finding list with FIXED / FALSE POSITIVE / DEFERRED}
+4. Conventions: backend/CLAUDE.md and/or frontend/CLAUDE.md for the areas touched.
+
+## What to check
+- Each prior Critical/High finding is actually resolved by the delta (not papered over).
+- The delta introduces no new Critical/High issue under your lens (same criteria as the full review).
+- ESCALATE: if the delta changes a public API / DTO wire shape, a migration or schema, a security /
+  tenant / capability boundary, or touches more than ~40% of the files in the original diff, say
+  `## Scope: FULL RE-REVIEW REQUIRED` and review the whole PR diff (/tmp/pr-{PR_NUMBER}.diff) instead.
+
+## Output format
+Same as the full review, with the verdict bound to the head: `## Verdict: APPROVE @{HEAD}`.
+```
+
+If a delta reviewer escalates, run that reviewer's full template (4.1) on the head instead.
 ### 4.4b — Collect and address CodeRabbit findings
 
 After all superpowers fix cycles are complete (Step 4.4), collect CodeRabbit findings per
@@ -639,11 +688,12 @@ Step 4.2b. If CodeRabbit has actionable findings, dispatch a fixer agent to addr
 commit from the superpowers fixes. The fixer runs Tier 1 + Tier 2 ONLY, then commits and pushes —
 it does NOT run the full verify (the orchestrator's Step 4.6 covers it).
 
-**Batching tip (saves a fix cycle + a CI run):** if the background CodeRabbit poll (Step 4.2a)
-has ALREADY reported `CR_STATE=present` by the time you reach Step 4.3, collect CR findings FIRST
-and feed them into the SAME fixer as the superpowers findings — one fixer pass, one commit, one
-CI re-trigger instead of two. Only fall back to a separate CR fixer cycle when CodeRabbit arrives
-after the superpowers fixer has already been dispatched.
+**Batching rule (default, saves a fix cycle + a re-review + a CI run):** before dispatching the
+Step 4.3 fixer, check the background CodeRabbit poll. If `CR_STATE=present`, collect CR round-1
+findings FIRST and feed them into the SAME fixer as the superpowers findings — one fixer pass, one
+commit. If CodeRabbit has not arrived yet, you may wait for the poll to finish (bounded — it ends
+at 10 min) rather than run two fixers. Only fall back to a separate CR fixer when CodeRabbit's
+first review arrives after the superpowers fixer was dispatched — and that is still its ONE round.
 
 ### 4.5 — Append review audit trail to PR body (REQUIRED before merge)
 
@@ -652,7 +702,7 @@ reviews actually ran. **Without this step, merge will be rejected.** Append a `#
 section to the PR body containing:
 - Agent A (bug/quality) **final** verdict block (after fix cycles) — must contain a verdict line **bound to the commit the reviewer read**: `## Verdict: APPROVE @<sha>` where `<sha>` is ≥7 hex chars of the PR head at review time. If the reviewer wrote a bare `## Verdict: APPROVE`, append ` @<sha>` yourself with the SHA you gave the reviewer. A `REQUEST_CHANGES` must be followed by a fresh review of the fixed commit and a new bound APPROVE — "Critical/High resolved" prose no longer satisfies the gate.
 - Agent B (architecture) **final** verdict block — same rule.
-- **Any push after the reviews invalidates them**: the hook compares the verdict SHA to the current head. Re-review the new head with a **fresh foreground reviewer dispatch** of BOTH Agent A and Agent B (same templates, in parallel): first regenerate `/tmp/pr-{PR_NUMBER}.diff` with `gh pr diff {PR_NUMBER}` (the templates read that file; a stale one lets a reviewer approve a commit it never saw), and paste the prior findings, the new SHA and `git diff <reviewed-sha>..<new-sha>` as the focus. Then re-record. Do not `SendMessage` the earlier reviewer: in auto-merge mode a resumed agent does not keep the session alive.
+- **Any push after the reviews invalidates them**: the hook compares the verdict SHA to the current head. Re-review the new head with a **fresh foreground DELTA review** (Step 4.4 template) of BOTH Agent A and Agent B, in parallel: regenerate `/tmp/pr-{PR_NUMBER}.diff` (`gh pr diff {PR_NUMBER}`) and `/tmp/pr-{PR_NUMBER}-delta.diff` (`git diff <reviewed-sha>..<new-sha>`) first — a stale file lets a reviewer approve a commit it never saw. Then re-record. Pushes that touch only `qa_cycle/` evidence or docs still move the head and still need the (trivially short) delta round — so land evidence before the final review round where possible. Do not `SendMessage` the earlier reviewer: in auto-merge mode a resumed agent does not keep the session alive.
 - The CodeRabbit status line from Step 4.2b (`## CodeRabbit: REVIEWED ...` or `## CodeRabbit: DEFERRED ...`).
 
 ```bash

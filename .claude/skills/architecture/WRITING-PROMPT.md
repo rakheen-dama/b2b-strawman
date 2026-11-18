@@ -12,6 +12,7 @@ The output document should be **600–1000 lines (40–55KB)**. Prioritize depth
 | API Surface | up to 200 lines | **Core** — endpoint tables, JSON shapes, query params |
 | Database Migrations | up to 150 lines | **Core** — full SQL, indexes, RLS policies |
 | Core Flows & Permissions | up to 150 lines | High — flows + inline permission rules |
+| Cross-cutting Decisions | up to 60 lines | **Core** — X1–X5 answered + Founder decisions; ruled before `/breakdown` |
 | Capability Slices | up to 100 lines | High — primary interface to `/breakdown` skill |
 | Sequence Diagrams | up to 80 lines | Supporting — 2–3 key flows |
 | Overview | up to 40 lines | Supporting — concise summary |
@@ -66,7 +67,14 @@ The document MUST include all of these, adapted to whatever the requirements ask
 - Backfill strategy if modifying existing tables
 - Note any prerequisite indexes from prior migrations
 
-### Section N.8 — Capability Slices
+### Section N.8 — Cross-cutting Decisions (MANDATORY)
+Answer the X1–X5 checklist (authorization of every read surface, read consistency, user-facing
+wording, fate of retired data, concurrency of state transitions) and end with the **Founder
+decisions** table, exactly as specified in `.claude/skills/architecture/SKILL.md` § "Section N.10 —
+Cross-cutting Decisions". Each item is RULED with a rationale or DEFERRED to a named slice with a
+proposed default — never left to the builder.
+
+### Section N.9 — Capability Slices
 
 This is the **primary downstream interface** — the `/breakdown` skill converts these into epics.
 
@@ -90,7 +98,7 @@ Then for each slice:
 - Include specific file paths and patterns to follow
 - Designed for the `/breakdown` skill to turn into full epics
 
-### Section N.9 — ADR Index
+### Section N.10 — ADR Index
 - Table linking to all ADRs (existing referenced + new)
 
 ## Writing Style Rules

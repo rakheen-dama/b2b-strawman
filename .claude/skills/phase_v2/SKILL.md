@@ -12,8 +12,8 @@ Run all remaining slices in a development phase **completely hands-off**. Each s
 The orchestration is done by `scripts/run-phase.sh`, a bash script that:
 
 1. Reads the phase task file (`tasks/phase{N}-*.md`)
-2. Extracts the ordered slice list from the Implementation Order / Slices tables (rows starting with `| **NNNX** |`)
-3. Skips slices already marked `**Done**`
+2. Takes the execution order from the task file's single `<!-- run-order: 645A 649A ... -->` line when present (every id must have a slice row; rows left out of the line are warned about and do not run). Without that line it falls back to slice-row order (rows starting with `| **NNNX** |`, in file order). The prose Implementation Order table is **never parsed** — a cross-epic order that lives only there runs wrong (Phase 92: 646A ran before 649A and halted the phase). The log and `--dry-run` print `Order source: ...`.
+3. Skips slices already marked `**Done**` (status always comes from the slice rows)
 4. For each remaining slice, invokes:
    ```
    claude -p "/epic_v2 {SLICE} auto-merge" --dangerously-skip-permissions --model opus
@@ -24,16 +24,25 @@ The orchestration is done by `scripts/run-phase.sh`, a bash script that:
 
 Each `claude` invocation gets a **fresh context window**. No cross-slice context accumulation; no epic-level prompt-overflow failures.
 
+## Pre-flight (before launching)
+
+Run all four; launch only when each passes. Phase 92 lost run time to each of these.
+
+1. **Order** — `./scripts/run-phase.sh {N} --dry-run` prints `Order source: run-order line`, no missing-slice warning, and the pending order matches the task file's Implementation Order table. A starting-slice argument applies to that same order.
+2. **No blocking question** — no open question marked `OPEN — blocks <ids>` names a pending slice (`grep -n 'OPEN — blocks' tasks/phase{N}-*.md`). Rule it, or record `DEFAULT-ACCEPTED`, first.
+3. **Rulings in the header** — every founder ruling a pending slice needs (product, legal, wording, authorization, data-retirement calls) is written in the task-file header, not only in chat or the architecture doc.
+4. **AC power** — `pmset -g batt` says `AC Power` (a closed lid on battery sleeps the Mac and kills the run, caffeinate notwithstanding).
+
 ## Usage
 
 ```bash
 # Run all remaining slices in phase 10
 ./scripts/run-phase.sh 10
 
-# Start from a specific slice (skips earlier ones even if not Done)
+# Start from a specific slice (skips slices earlier in the run order, even if not Done)
 ./scripts/run-phase.sh 10 84A
 
-# Start from the first slice of an epic (e.g., 84 → starts at 84A)
+# Start from the epic's first slice in the run order (e.g., 84 → usually 84A)
 ./scripts/run-phase.sh 10 84
 
 # Preview which slices will run (no execution)

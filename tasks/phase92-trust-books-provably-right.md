@@ -243,6 +243,8 @@ Cross-slice facts a builder must not rediscover: the six-term creditor definitio
 
 ## Implementation Order
 
+<!-- run-order: 645A 649A 646A 649B 646B 646E 646C 646D 647A 647C 647B 647D 648C 648A 648E 648B 648D 648F 649C 650A 650D 650B 650C 651C 651A 651E 651D 651B 652A 652B 652C 652D 652G 652E 652F -->
+
 **This repo runs slices sequentially: one PR open at a time, one BE-VERIFY at a time, one e2e stack at a time.** "May run in parallel" below means *no code dependency*, for an orchestrator that chooses to overlap a no-verify slice with a backend slice; it is never permission to overlap two verifies or a verify with an E2E-LEGAL run.
 
 | Stage | Slices (in order) | What must be green before each merge | Parallel? |

@@ -2,8 +2,10 @@
 #
 # run-phase.sh — Hands-off phase orchestration for DocTeams
 #
-# Iterates the phase's slice list in task-file order and invokes
-# `claude -p "/epic_v2 {SLICE} auto-merge"` for each pending slice.
+# Iterates the phase's slice list in build order and invokes
+# `claude -p "/epic_v2 {SLICE} auto-merge"` for each pending slice. Build order comes from the
+# task file's `<!-- run-order: 645A 649A ... -->` line when present, else from slice-row order
+# (see "Execution order source" below).
 # Each slice gets a fresh context window and produces its own PR.
 # Progress is tracked by the **Done** markers that /epic_v2 writes to the task file.
 #
@@ -102,12 +104,96 @@ extract_slices() {
 
 # ─── Build execution list ─────────────────────────────────────────────────────
 
-mapfile -t ALL_SLICES < <(extract_slices "$TASK_FILE")
+mapfile -t ROW_SLICES < <(extract_slices "$TASK_FILE")
 
-if [[ ${#ALL_SLICES[@]} -eq 0 ]]; then
+if [[ ${#ROW_SLICES[@]} -eq 0 ]]; then
   echo "ERROR: No slices found in $TASK_FILE"
   echo "Expected Implementation Order tables with rows like: | **81A** | ..."
   exit 1
+fi
+
+# ─── Execution order source ───────────────────────────────────────────────────
+#
+# A task file may carry exactly ONE machine-readable line listing every slice id in build order:
+#   <!-- run-order: 645A 649A 646A 649B ... -->
+# When present it IS the execution order. Phase 92 lesson (2026-11): slice rows live in per-epic
+# tables, so row order ran 646A before 649A and halted the phase — the prose Implementation Order
+# table is for humans and is never parsed. Without the line, slices run in slice-row order.
+# Done status always comes from the slice rows.
+
+mapfile -t RUN_ORDER_LINES < <(grep -nE '^[[:space:]]*<!--[[:space:]]*run-order:' "$TASK_FILE" || true)
+MISSING_FROM_ORDER=()
+
+if [[ ${#RUN_ORDER_LINES[@]} -gt 1 ]]; then
+  echo "ERROR: $TASK_FILE has ${#RUN_ORDER_LINES[@]} run-order lines (expected exactly one):"
+  printf "  line %s\n" "${RUN_ORDER_LINES[@]%%:*}"
+  exit 1
+elif [[ ${#RUN_ORDER_LINES[@]} -eq 1 ]]; then
+  RUN_ORDER_LINE_NO="${RUN_ORDER_LINES[0]%%:*}"
+  RUN_ORDER_TEXT="${RUN_ORDER_LINES[0]#*:}"
+  if [[ "$RUN_ORDER_TEXT" != *"-->"* ]]; then
+    echo "ERROR: run-order line ${TASK_FILE}:${RUN_ORDER_LINE_NO} is not closed with '-->'"
+    exit 1
+  fi
+  RUN_ORDER_IDS_TEXT=$(sed -E 's/^[[:space:]]*<!--[[:space:]]*run-order:(.*)-->.*$/\1/' <<<"$RUN_ORDER_TEXT")
+  read -r -a RUN_ORDER_IDS <<<"$RUN_ORDER_IDS_TEXT"
+  if [[ ${#RUN_ORDER_IDS[@]} -eq 0 ]]; then
+    echo "ERROR: run-order line ${TASK_FILE}:${RUN_ORDER_LINE_NO} lists no slice ids"
+    exit 1
+  fi
+
+  # Slice id → DONE|PENDING from the rows (DONE wins if an id has more than one row,
+  # matching the post-slice Done check, which greps any row of that id).
+  declare -A ROW_STATUS=()
+  for entry in "${ROW_SLICES[@]}"; do
+    slice="${entry%%:*}"
+    status="${entry#*:}"
+    if [[ "${ROW_STATUS[$slice]:-}" != "DONE" ]]; then
+      ROW_STATUS[$slice]="$status"
+    fi
+  done
+
+  declare -A LISTED=()
+  ALL_SLICES=()
+  ORDER_ERRORS=0
+  for slice in "${RUN_ORDER_IDS[@]}"; do
+    if [[ ! "$slice" =~ ^[0-9]+[A-Z]+$ ]]; then
+      echo "ERROR: run-order entry '$slice' is not a slice id (e.g. 450A)"
+      ORDER_ERRORS=$((ORDER_ERRORS + 1))
+      continue
+    fi
+    if [[ -n "${LISTED[$slice]:-}" ]]; then
+      echo "ERROR: run-order lists slice $slice more than once"
+      ORDER_ERRORS=$((ORDER_ERRORS + 1))
+      continue
+    fi
+    LISTED[$slice]=1
+    if [[ -z "${ROW_STATUS[$slice]:-}" ]]; then
+      echo "ERROR: run-order lists slice $slice but $TASK_FILE has no slice row | **${slice}** | ..."
+      ORDER_ERRORS=$((ORDER_ERRORS + 1))
+      continue
+    fi
+    ALL_SLICES+=("${slice}:${ROW_STATUS[$slice]}")
+  done
+  if [[ "$ORDER_ERRORS" -gt 0 ]]; then
+    echo "ERROR: ${ORDER_ERRORS} problem(s) in run-order line ${TASK_FILE}:${RUN_ORDER_LINE_NO} — fix it before running."
+    exit 1
+  fi
+
+  # Slice rows the run-order line leaves out never run — warn (listed once each, in row order).
+  declare -A WARNED=()
+  for entry in "${ROW_SLICES[@]}"; do
+    slice="${entry%%:*}"
+    if [[ -z "${LISTED[$slice]:-}" && -z "${WARNED[$slice]:-}" ]]; then
+      WARNED[$slice]=1
+      MISSING_FROM_ORDER+=("${slice} (${ROW_STATUS[$slice]})")
+    fi
+  done
+
+  ORDER_SOURCE="run-order line (${TASK_FILE}:${RUN_ORDER_LINE_NO}, ${#ALL_SLICES[@]} slices)"
+else
+  ALL_SLICES=("${ROW_SLICES[@]}")
+  ORDER_SOURCE="slice-row order (no <!-- run-order: ... --> line in ${TASK_FILE})"
 fi
 
 # Resolve START_FROM:
@@ -180,6 +266,10 @@ for entry in "${ALL_SLICES[@]}"; do
 done
 
 log "Phase ${PHASE} — ${TASK_FILE}"
+log "Order source: ${ORDER_SOURCE}"
+if [[ ${#MISSING_FROM_ORDER[@]} -gt 0 ]]; then
+  log "WARNING: ${#MISSING_FROM_ORDER[@]} slice row(s) missing from the run-order line will NOT run: ${MISSING_FROM_ORDER[*]}"
+fi
 log "Total slices: ${TOTAL_SLICES}, Done: ${DONE_SLICE_COUNT}, Remaining: ${#SLICES_TO_RUN[@]}"
 
 if [[ ${#SLICES_TO_RUN[@]} -eq 0 ]]; then
@@ -192,6 +282,7 @@ log "Execution order: ${SLICES_TO_RUN[*]}"
 if [[ "$DRY_RUN" == true ]]; then
   echo ""
   echo "=== DRY RUN ==="
+  echo "Order source: ${ORDER_SOURCE}"
   echo "Would execute ${#SLICES_TO_RUN[@]} slices:"
   for i in "${!SLICES_TO_RUN[@]}"; do
     echo "  $((i + 1)). Slice ${SLICES_TO_RUN[$i]}"

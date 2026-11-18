@@ -1,7 +1,7 @@
 {
-  "commit": "82cd19bec",
-  "command": "cd backend && ./mvnw spotless:check && bash scripts/verify.sh -q  (worktree-epic-650A, PR #1806 head 82cd19becb8e0eb1b1985300df5e7cdedc55f9f0)",
+  "commit": "662e71131",
+  "command": "cd backend && caffeinate -is ./mvnw clean verify -q",
   "exit": 0,
-  "ts": "2026-11-18T22:02:00Z",
-  "summary": "7361 tests / 0 failures / 0 errors / 26 skipped (counted from <testcase> in 857 surefire reports) — 25:43 min"
+  "ts": "2026-11-18T23:22:34Z",
+  "summary": "650D PR #1807 final head: 7364 testcases / 0 failures / 0 errors / 26 skipped (surefire <testcase> count) — 25:05 min"
 }

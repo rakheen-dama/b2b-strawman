@@ -1,7 +1,7 @@
 {
-  "commit": "82cd19bec",
-  "command": "cd frontend && rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (node 20.11.1)",
+  "commit": "8f9fb18e7",
+  "command": "cd frontend && pnpm install && pnpm run lint && pnpm run build && pnpm test && pnpm run format:check",
   "exit": 0,
-  "ts": "2026-11-18T22:02:00Z",
-  "summary": "PR #1806 (650A) @82cd19bec — vitest 483 files, 4575 passed / 2 skipped; lint (0 errors), typecheck, format:check, build green"
+  "ts": "2026-11-18T23:22:34Z",
+  "summary": "650D PR #1807 (frontend unchanged 8f9fb18e7..662e71131): lint 0 errors, build ok, vitest 484 files / 4581 passed / 2 skipped, format:check ok"
 }

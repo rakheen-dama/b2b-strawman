@@ -62,6 +62,11 @@ class TrustReconciliationServiceReconciliationTest {
   private String tenantSchema;
   private String customerId;
 
+  /**
+   * The owner's member id — 650A: a month-end completion locks a list whose locked_by is a member.
+   */
+  private UUID ownerMemberId;
+
   /** Counter to generate unique account numbers for isolated trust accounts. */
   private int isolatedAccountCounter = 0;
 
@@ -70,8 +75,15 @@ class TrustReconciliationServiceReconciliationTest {
     tenantSchema =
         provisioningService.provisionTenant(ORG_ID, "Trust Recon Calc Test Org", null).schemaName();
 
-    TestMemberHelper.syncMember(
-        mockMvc, ORG_ID, "user_rcalc_owner", "rcalc_owner@test.com", "Rcalc Owner", "owner");
+    ownerMemberId =
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_rcalc_owner",
+                "rcalc_owner@test.com",
+                "Rcalc Owner",
+                "owner"));
 
     // Enable the trust_accounting module
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -682,11 +694,13 @@ class TrustReconciliationServiceReconciliationTest {
 
     var completed =
         ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-            .where(RequestScopes.MEMBER_ID, UUID.randomUUID())
+            .where(RequestScopes.MEMBER_ID, ownerMemberId)
             .call(() -> reconciliationService.completeReconciliation(reconResponse.id()));
 
     assertThat(completed.status()).isEqualTo("COMPLETED");
-    assertThat(completed.completedBy()).isNotNull();
+    assertThat(completed.completedBy()).isEqualTo(ownerMemberId);
+    // 650A: the statement's last line is 20 March, the period end 31 March — March is locked
+    assertThat(completed.monthlyListId()).isNotNull();
     assertThat(completed.completedAt()).isNotNull();
     // 649C: the statement is reconciled and the (empty) flags are stored
     assertThat(completed.integrityFlags()).isEmpty();
@@ -722,7 +736,7 @@ class TrustReconciliationServiceReconciliationTest {
     assertThatThrownBy(
             () ->
                 ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-                    .where(RequestScopes.MEMBER_ID, UUID.randomUUID())
+                    .where(RequestScopes.MEMBER_ID, ownerMemberId)
                     .run(() -> reconciliationService.completeReconciliation(reconResponse.id())))
         .isInstanceOfSatisfying(
             InvalidStateException.class,

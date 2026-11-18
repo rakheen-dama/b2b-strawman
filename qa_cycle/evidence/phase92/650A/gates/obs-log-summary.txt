@@ -1,0 +1,18 @@
+# 650A OBS log summary (e2e stack built from dda2cd0e7)
+## OBS window 2026-11-18T21:02:06Z .. 2026-11-18T21:05:03Z (phases s b a c g)
+
+## backend (docker compose logs backend --since window start)
+{'INFO': 22, 'WARN': 1}
+   2026-11-18T21:03:34.107419003Z WARN MaximumAllowableTagsMeterFilter: Reached the maximum number of 'uri' tags for 'http.server.requests'.
+  -> 0 ERROR. The 1 WARN is Micrometer's once-per-container notice that http.server.requests reached its default 100 'uri' tag cap (O-OBS-1, ../found.md); it fired at 21:03:34Z in phase c on this fresh stack and appears once on every Phase 92 stack log (646C, 646D, 647A, 647B, 647C stack*-log-breakdown.txt). No request failed.
+
+## frontend container
+12 lines; 3 x '⨯ Error: The destination stream closed early.' digest 1054653889
+  -> all three at 21:02:11Z / 21:02:16Z, inside setup phase s (matters/client creation), none during b/a/c/g (the 650A screens). Reproduced afterwards: client-side navigation to a matter page followed by leaving it within ~50 ms logs the same digest (O-OBS-2, ../found.md). Out of slice.
+
+## browser console (all phases, result-*.json)
+  s: consoleErrors 0 []; pageErrors 0
+  b: consoleErrors 0 []; pageErrors 0
+  a: consoleErrors 0 []; pageErrors 0
+  c: consoleErrors 0 []; pageErrors 0
+  g: consoleErrors 1 ['MockAuthContextProvider: failed to fetch userinfo TypeError:']; pageErrors 0

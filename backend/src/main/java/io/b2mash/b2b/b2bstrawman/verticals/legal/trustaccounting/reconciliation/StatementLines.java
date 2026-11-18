@@ -36,10 +36,11 @@ public final class StatementLines {
    * An unmatch (a matched line's or a recorded line's) is refused once the line's statement is
    * {@code RECONCILED}: its reconciliation is complete, and unmatching would leave a line of a
    * completed reconciliation unresolved (649C, ruling D-14). Call on the statement row locked with
-   * {@code findByIdForUpdate}, after the line and any transaction (lock order line → transactions →
-   * statement), so a concurrent {@code completeReconciliation} — which locks the statement before
-   * it reads the gate inputs — is serialised against the unmatch; the refusal rolls back whatever
-   * the unmatch had already changed.
+   * {@code findByIdForUpdate}, after the line, so a concurrent {@code completeReconciliation} —
+   * which locks the statement before it reads the gate inputs — is serialised against the unmatch;
+   * the refusal rolls back whatever the unmatch had already changed. A recorded line's unmatch
+   * locks the statement before it reverses any row (650A F-1: a reversal posts under the account's
+   * posting lock, which completion's Rule 54.15 list takes after the statement).
    */
   public static void requireNotReconciled(BankStatement statement) {
     if ("RECONCILED".equals(statement.getStatus())) {

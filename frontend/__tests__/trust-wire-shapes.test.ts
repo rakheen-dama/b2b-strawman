@@ -14,12 +14,19 @@ import type {
   BankStatementResponse,
   ClientLedgerCard,
   CreateTrustAccountRequest,
+  CreditorLine,
+  CreditorLineKind,
+  CreditorMatterBalance,
   FirmIntegrityReport,
   FlagSubject,
   IntegrityFlag,
   InterestPresentation,
   InvestmentBasis,
   InvestmentInterest,
+  MonthlyList,
+  MonthlyListAdjustmentEntry,
+  MonthlyListAdjustments,
+  MonthlyListSummary,
   RecordFromLineRequest,
   RecordFromLineResponse,
   RecordInvestmentInterestRequest,
@@ -52,6 +59,14 @@ const componentNames = (components: { name: string }[]) => components.map((c) =>
 // Each TS string union as an exhaustive record: `satisfies Record<Union, true>` fails
 // `pnpm typecheck` on a missing or extra member, so the key list IS the union's member list.
 const TS_UNIONS: Record<keyof typeof enums, string[]> = {
+  // 650A: what a Rule 54.15 creditor line is a balance of
+  "CreditorLine.Kind": Object.keys({
+    CLIENT: true,
+    CLIENT_INVESTMENT: true,
+    FUND: true,
+    UNIDENTIFIED: true,
+    INTER_ACCOUNT: true,
+  } satisfies Record<CreditorLineKind, true>),
   // 648B: the interest entry's presentation and the record-from-statement classification
   InterestPresentation: Object.keys({
     GROSS: true,
@@ -115,6 +130,8 @@ const TS_UNIONS: Record<keyof typeof enums, string[]> = {
 describe("trust wire shapes match the backend contract (ADR-365)", () => {
   it("pins exactly the trust records", () => {
     expect(Object.keys(records).sort()).toEqual([
+      "AdjustmentEntry",
+      "AdjustmentsSinceLock",
       "AllocateRequest",
       "BankPosition",
       "BankStatementLineResponse",
@@ -122,12 +139,16 @@ describe("trust wire shapes match the backend contract (ADR-365)", () => {
       "ClientLedgerCardResponse",
       "CreateTrustAccountRequest",
       "CreditorBreakdown",
+      "CreditorLine",
       "FirmIntegrityReport",
       "FlagCount",
       "FlagSubject",
       "IntegrityFlag",
       "IntegritySummary",
       "InvestmentInterestResponse",
+      "MatterBalance",
+      "MonthlyListResponse",
+      "MonthlyListSummary",
       "PayToFundRequest",
       "PlaceInvestmentRequest",
       "RecordFromLineRequest",
@@ -232,11 +253,125 @@ describe("trust wire shapes match the backend contract (ADR-365)", () => {
       status: "DRAFT",
       completedBy: null,
       completedAt: null,
+      monthlyListId: null,
       notes: null,
       createdAt: "",
       updatedAt: "",
     };
     expect(Object.keys(literal)).toEqual(componentNames(records.TrustReconciliationResponse));
+  });
+
+  it("CreditorLine ↔ books.CreditorLine (650A)", () => {
+    const literal: Required<CreditorLine> = {
+      kind: "CLIENT",
+      clientId: null,
+      name: null,
+      matters: [],
+      balance: 0,
+      unidentifiedDepositId: null,
+      receivedDate: null,
+      bankDescription: null,
+      totalDeposits: null,
+      totalPayments: null,
+      totalFeeTransfers: null,
+      lastTransactionDate: null,
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(records.CreditorLine));
+  });
+
+  it("CreditorMatterBalance ↔ books.CreditorLine.MatterBalance (650A)", () => {
+    const literal: Required<CreditorMatterBalance> = { matterId: null, name: null, balance: 0 };
+    expect(Object.keys(literal)).toEqual(componentNames(records.MatterBalance));
+  });
+
+  it("MonthlyListSummary ↔ TrustMonthlyListService.MonthlyListSummary (650A)", () => {
+    const literal: Required<MonthlyListSummary> = {
+      id: "",
+      trustAccountId: "",
+      periodEnd: "",
+      reconciliationId: "",
+      adjustedBankBalance: 0,
+      cashbookBalance: 0,
+      creditorTotal: 0,
+      difference: 0,
+      lockedBy: "",
+      lockedByName: null,
+      lockedAt: "",
+      adjustmentCount: 0,
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(records.MonthlyListSummary));
+  });
+
+  it("MonthlyListAdjustmentEntry ↔ TrustMonthlyListService.AdjustmentEntry (650A)", () => {
+    const literal: Required<MonthlyListAdjustmentEntry> = {
+      transactionId: "",
+      transactionDate: "",
+      postedAt: "",
+      transactionType: "",
+      typeLabel: "",
+      ledger: "CLIENT",
+      clientId: null,
+      clientName: null,
+      reference: null,
+      description: null,
+      cashbookEffect: 0,
+      ledgerEffect: 0,
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(records.AdjustmentEntry));
+  });
+
+  it("MonthlyListAdjustments ↔ TrustMonthlyListService.AdjustmentsSinceLock (650A)", () => {
+    const literal: Required<MonthlyListAdjustments> = {
+      entries: [],
+      cashbook: 0,
+      clientLedgers: 0,
+      investmentCreditors: 0,
+      fundLedger: 0,
+      unidentifiedDeposits: 0,
+      interAccount: 0,
+      liveCreditorTotal: 0,
+      changeInCreditorTotal: 0,
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(records.AdjustmentsSinceLock));
+  });
+
+  it("MonthlyList ↔ TrustMonthlyListService.MonthlyListResponse (650A)", () => {
+    const literal: Required<MonthlyList> = {
+      id: "",
+      trustAccountId: "",
+      trustAccountName: null,
+      periodEnd: "",
+      reconciliationId: "",
+      bankBalance: 0,
+      outstandingDeposits: 0,
+      outstandingPayments: 0,
+      adjustedBankBalance: 0,
+      cashbookBalance: 0,
+      clientLedgerTotal: 0,
+      investmentCreditorTotal: 0,
+      fundLedgerBalance: 0,
+      unidentifiedDepositTotal: 0,
+      interAccountBalance: 0,
+      creditorTotal: 0,
+      difference: 0,
+      lines: [],
+      integrityFlags: [],
+      lockedBy: "",
+      lockedByName: null,
+      lockedAt: "",
+      adjustmentsSinceLock: {
+        entries: [],
+        cashbook: 0,
+        clientLedgers: 0,
+        investmentCreditors: 0,
+        fundLedger: 0,
+        unidentifiedDeposits: 0,
+        interAccount: 0,
+        liveCreditorTotal: 0,
+        changeInCreditorTotal: 0,
+      },
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(records.MonthlyListResponse));
   });
 
   it("TrustCreditorBreakdown ↔ TrustReconciliationService.CreditorBreakdown (646C)", () => {

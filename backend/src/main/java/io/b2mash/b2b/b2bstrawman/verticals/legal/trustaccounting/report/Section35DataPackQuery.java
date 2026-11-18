@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report;
 
 import io.b2mash.b2b.b2bstrawman.reporting.ReportQuery;
 import io.b2mash.b2b.b2bstrawman.reporting.ReportResult;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.CreditorLine;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.interest.InterestRun;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.interest.InterestRunRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationRepository;
@@ -91,7 +92,7 @@ public class Section35DataPackQuery implements ReportQuery {
     var cbParams =
         Map.<String, Object>of(
             "trust_account_id", trustAccountId, "asOfDate", financialYearEnd.toString());
-    var cbResult = clientBalancesQuery.executeAll(cbParams);
+    var cbResult = clientRowsOnly(clientBalancesQuery.executeAll(cbParams));
     addSection(
         allRows,
         sectionSummaries,
@@ -300,6 +301,23 @@ public class Section35DataPackQuery implements ReportQuery {
       sectionMeta.putAll(result.summary());
     }
     sectionSummaries.add(sectionMeta);
+  }
+
+  /**
+   * The pack (still v3 until 650C) lists clients only: since 650A {@code client-trust-balances} is
+   * the Rule 54.15 list and also returns the Fund line, open unidentified deposits and the section
+   * 86(3) line, which are not client balances. The section keeps its v3 summary keys ({@code
+   * totalTrustBalance}, {@code clientCount}, both over client rows), not the list's comparison.
+   */
+  private static ReportResult clientRowsOnly(ReportResult balances) {
+    var clientRows =
+        balances.rows().stream()
+            .filter(row -> CreditorLine.Kind.CLIENT.name().equals(row.get("kind")))
+            .toList();
+    var summary = new LinkedHashMap<String, Object>();
+    summary.put("totalTrustBalance", balances.summary().get("totalTrustBalance"));
+    summary.put("clientCount", balances.summary().get("clientCount"));
+    return new ReportResult(clientRows, summary);
   }
 
   /** A pack row's {@code label} and {@code amount}. */

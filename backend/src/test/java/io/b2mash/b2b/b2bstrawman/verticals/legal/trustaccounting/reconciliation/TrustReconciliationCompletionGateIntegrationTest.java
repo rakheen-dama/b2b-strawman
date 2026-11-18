@@ -532,6 +532,54 @@ class TrustReconciliationCompletionGateIntegrationTest {
             + ". 1 unidentified-deposit ledger row names no deposit.");
   }
 
+  // --- 650A: the monthly list lock ------------------------------------------------------------
+
+  /**
+   * Path 24, lock part (650A, ADR-382): completing to 31 March locks the account's Rule 54.15 list
+   * in the same transaction — the response carries its id and the completed audit names it;
+   * completing to 15 March on another account locks nothing and the audit has no list id.
+   */
+  @Test
+  void completion_atAMonthEnd_locksTheList_andAuditsItsId_midMonthDoesNot() {
+    var account = books.freshAccount(false);
+    var march = unknownCreditStatement(account, "glock-march.csv");
+    var recon = reconcile(account, MARCH_END, march.id());
+    recordLine(march.lines().get(1).id(), unidentified());
+    var completed = complete(recon.id());
+    assertThat(completed.monthlyListId()).isNotNull();
+    var row =
+        jdbc.queryForMap(
+            "SELECT id, reconciliation_id, period_end, creditor_total FROM \"%s\".trust_monthly_lists WHERE trust_account_id = ?"
+                .formatted(books.schema()),
+            account);
+    assertThat(row.get("id")).isEqualTo(completed.monthlyListId());
+    assertThat(row.get("reconciliation_id")).isEqualTo(recon.id());
+    assertThat(row.get("period_end").toString()).isEqualTo("2026-03-31");
+    assertThat((BigDecimal) row.get("creditor_total")).isEqualByComparingTo("2250.00");
+    assertThat(completedAuditDetails(recon.id()))
+        .contains("\"monthly_list_id\": \"" + completed.monthlyListId() + "\"");
+
+    var midMonthAccount = books.freshAccount(false);
+    var client = books.newClient("mid-month lock");
+    var depositId = books.deposit(midMonthAccount, client, "500.00");
+    var midMarch =
+        importStatement(
+            midMonthAccount, "glock-mid.csv", "01/03/2026,Deposit received,500.00,500.00,GL-MID");
+    match(midMarch, 0, depositId);
+    var midRecon = reconcile(midMonthAccount, LocalDate.of(2026, 3, 15), midMarch.id());
+    var midCompleted = complete(midRecon.id());
+    assertThat(midCompleted.status()).isEqualTo("COMPLETED");
+    assertThat(midCompleted.monthlyListId()).isNull();
+    assertThat(
+            jdbc.queryForObject(
+                "SELECT count(*) FROM \"%s\".trust_monthly_lists WHERE trust_account_id = ?"
+                    .formatted(books.schema()),
+                Long.class,
+                midMonthAccount))
+        .isZero();
+    assertThat(completedAuditDetails(midRecon.id())).doesNotContain("monthly_list_id");
+  }
+
   // --- CR-2 / D-14: complete and unmatch are serialised on the statement row ------------------
 
   /**
@@ -851,6 +899,17 @@ class TrustReconciliationCompletionGateIntegrationTest {
   }
 
   // --- helpers -----------------------------------------------------------------------------------
+
+  private String completedAuditDetails(UUID reconciliationId) {
+    return jdbc.queryForObject(
+        """
+        SELECT details::text FROM "%s".audit_events
+        WHERE entity_id = ? AND event_type = 'trust_reconciliation.completed'
+        """
+            .formatted(books.schema()),
+        String.class,
+        reconciliationId);
+  }
 
   /**
    * A deposit of R1 000 (matched to line 1) and an unknown credit "ACB CREDIT UNKNOWN" of R1 250

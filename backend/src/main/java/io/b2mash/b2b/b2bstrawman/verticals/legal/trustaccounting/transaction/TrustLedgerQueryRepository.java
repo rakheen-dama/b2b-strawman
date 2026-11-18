@@ -209,6 +209,44 @@ public interface TrustLedgerQueryRepository extends Repository<TrustTransaction,
       @Param("trustAccountId") UUID trustAccountId, @Param("asAt") LocalDate asAt);
 
   /**
+   * 650A (§16.3.10, the Rule 54.15 list): every client's general ({@code CLIENT}) balance per
+   * matter on the account as at {@code asAt} (required; a null {@code projectId} = the unmattered
+   * rows). Per client the rows sum exactly to its {@link #clientBalances} balance.
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          SELECT t.customer_id AS customerId, t.project_id AS projectId,
+                 COALESCE(SUM(t.ledger_effect), 0) AS balance
+            FROM trust_transactions t
+           WHERE t.trust_account_id = :trustAccountId AND t.ledger = 'CLIENT'
+             AND t.customer_id IS NOT NULL AND t.posted_at IS NOT NULL
+             AND t.transaction_date <= CAST(:asAt AS date)
+           GROUP BY t.customer_id, t.project_id""")
+  List<ClientMatterBalanceRow> clientMatterBalancesOnAccount(
+      @Param("trustAccountId") UUID trustAccountId, @Param("asAt") LocalDate asAt);
+
+  /**
+   * 650A (§16.3.10, the Rule 54.15 list): per client, the posted {@code CLIENT_INVESTMENT} effect
+   * on this account — the section 86(4) money it holds as an investment account — as at {@code
+   * asAt} (required). The rows sum to the account's {@code investmentCreditors} term.
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          SELECT t.customer_id AS customerId, COALESCE(SUM(t.ledger_effect), 0) AS balance,
+                 MAX(t.transaction_date) AS lastTransactionDate
+            FROM trust_transactions t
+           WHERE t.trust_account_id = :trustAccountId AND t.ledger = 'CLIENT_INVESTMENT'
+             AND t.customer_id IS NOT NULL AND t.posted_at IS NOT NULL
+             AND t.transaction_date <= CAST(:asAt AS date)
+           GROUP BY t.customer_id""")
+  List<ClientBalanceRow> investmentCreditorBalances(
+      @Param("trustAccountId") UUID trustAccountId, @Param("asAt") LocalDate asAt);
+
+  /**
    * The client-ledgers list page: balance descending (the UI's {@code sort=balance,desc} — T4),
    * paged in SQL. Callers pass a sort-free {@code PageRequest.of(page, size)}: the ORDER BY lives
    * here.

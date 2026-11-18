@@ -40,6 +40,7 @@ export const ENTITY_TYPE_LABELS: Readonly<Record<string, string>> = Object.freez
   trust_creditor_account: "Trust creditor account",
   trust_investment: "Trust investment",
   trust_reconciliation: "Trust reconciliation",
+  trust_monthly_list: "Monthly trust creditor list",
   bank_statement: "Bank statement",
   bank_statement_line: "Bank statement line",
   unidentified_deposit: "Unidentified deposit",

@@ -1,0 +1,11 @@
+{
+  "phase": "s",
+  "startedAt": "2026-11-18T21:02:07.169Z",
+  "apiWrites": [],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "checks": {
+    "s: matters + client created": true
+  },
+  "endedAt": "2026-11-18T21:02:16.439Z"
+}

@@ -48,6 +48,8 @@ export const SEGMENT_LABELS: Record<string, string> = {
   "other-creditors": "Other trust creditors",
   transactions: "Transactions",
   reconciliation: "Reconciliation",
+  // 650A: the locked Rule 54.15 lists (reconciliation/lists/[listId])
+  lists: "Monthly lists",
   interest: "Interest",
   investments: "Investments",
   invoices: "Fee notes",
@@ -87,6 +89,7 @@ export const PARENT_SEGMENT_FALLBACKS: Record<string, string> = {
   checklists: "Checklist template",
   "request-templates": "Request template",
   templates: "Template",
+  lists: "Monthly list",
 };
 
 /**
@@ -109,6 +112,8 @@ export const NON_ROUTABLE_PREFIXES: readonly string[] = [
   "settings/matters/checklists",
   "settings/matters/request-templates",
   "settings/matters/templates",
+  // 650A: a locked monthly list is opened from the reconciliation list; there is no list index
+  "trust-accounting/reconciliation/lists",
 ];
 
 function matchesRoutePattern(segments: string[], pattern: string): boolean {

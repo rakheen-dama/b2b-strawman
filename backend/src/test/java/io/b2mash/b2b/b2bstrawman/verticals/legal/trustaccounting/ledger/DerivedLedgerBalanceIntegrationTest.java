@@ -350,6 +350,7 @@ class DerivedLedgerBalanceIntegrationTest {
         reportRows.stream().filter(r -> anchorless.id().equals(r.get("customerId"))).toList();
     assertThat(reported).hasSize(1);
     assertThat((BigDecimal) reported.getFirst().get("balance")).isEqualByComparingTo(oracle);
-    assertThat(reportRows).hasSize(2);
+    // 650A: the Rule 54.15 list also carries the Fund line; the clients are the CLIENT rows
+    assertThat(reportRows).filteredOn(r -> "CLIENT".equals(r.get("kind"))).hasSize(2);
   }
 }

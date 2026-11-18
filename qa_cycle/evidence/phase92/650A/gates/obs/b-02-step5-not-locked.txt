@@ -1,0 +1,77 @@
+Skip to content
+Kazi
+E2E Test Organization
+Search...
+⌘K
+TODAY
+Home
+My work
+Diary
+MATTERS
+Matters
+New matter
+Conflict check
+Adverse parties
+AI reviews
+CLIENTS
+Clients
+FICA & compliance
+Data requests
+FEES
+TRUST
+FIRM
+Platform Admin
+Notifications
+AO
+
+Alice Owner
+
+alice@e2e-test.local
+
+Toggle menu
+E2E Test Organization
+Trust accounting
+Reconciliation
+New
+Search
+⌘K
+2 unread notifications
+2
+e2e-test-org
+AO
+Back to Reconciliation
+New Reconciliation
+
+Reconcile your trust account with a bank statement
+
+1
+Select Account
+2
+Upload Statement
+3
+Auto-Match
+4
+Review & Match
+5
+Complete
+Reconciliation Complete
+The reconciliation has been completed successfully
+
+Bank Balance
+
+R 10 000,00
+
+Cashbook Balance
+
+R 10 000,00
+
+Trust creditors
+
+R 10 000,00
+
+No monthly list was locked: 15 Oct 2026 is not the last day of a month.
+
+Done
+Command Palette
+
+Search pages and settings

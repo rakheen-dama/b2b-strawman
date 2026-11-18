@@ -270,6 +270,13 @@ public class AuditEventTypeRegistry {
                 "Section 86(4) interest entry reversed",
                 AuditSeverity.INFO,
                 AuditEventGroup.FINANCIAL),
+            // FINANCIAL — the Rule 54.15 monthly trust creditor list frozen when a month-end
+            // reconciliation completes (Phase 92 650A, ADR-382). Additive key (pin 81 → 82).
+            new AuditEventTypeMetadata(
+                "trust_monthly_list.locked",
+                "Monthly trust creditor list locked",
+                AuditSeverity.INFO,
+                AuditEventGroup.FINANCIAL),
             // DATA — data protection
             new AuditEventTypeMetadata(
                 "dataprotection.dsar.*",

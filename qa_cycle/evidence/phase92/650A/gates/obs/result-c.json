@@ -1,0 +1,461 @@
+{
+  "phase": "c",
+  "startedAt": "2026-11-18T21:03:25.999Z",
+  "apiWrites": [],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "checks": {
+    "c: tiles = API = SQL (adjusted, cashbook, creditors, difference)": true,
+    "c: creditor rows on screen = API lines (names, kinds, balances, matters)": true,
+    "c: API lines sum to creditor total": true,
+    "c: back-dated deposit recorded through the UI (28 Oct 2026, posted after the lock)": true,
+    "c: list row money columns, lines, flags, locked_at unchanged (SQL before = after = after a)": true,
+    "c: list page shows it under 'Entered after this list was locked'": true,
+    "c: 'now R 17 250,00, a change of R 750,00' = API": true,
+    "c: tiles unchanged (16 500 / 16 500 / 16 500 / 0)": true,
+    "c: card warning 'Entered after a monthly list was locked' with 'October 2026 list' link": true,
+    "c: card flag = API flag (warning, message)": true,
+    "c: card link lands on the list page": true,
+    "c/d: no raw enum / error on list page + card at 1280 and 1440": true,
+    "c/d: no clipped text on list page + card at 1280 and 1440": true
+  },
+  "d4": {
+    "client": "Acme Corp",
+    "matter": "Website Redesign",
+    "amount": 750,
+    "ref": "DEP/OBS650A/LXBGH/4",
+    "date": "2026-10-28",
+    "id": "6bf90502-c8d1-4f79-a386-c65ad1b04fab",
+    "status": "RECORDED",
+    "amountSql": 750,
+    "dateSql": "2026-10-28",
+    "postedAt": "2026-11-18 21:03:29.732078+00"
+  },
+  "apiList": {
+    "id": "2dd48bc2-e8f2-4561-b74f-528eb836153f",
+    "trustAccountId": "e9fd502f-1a2e-4379-bfd8-776de7cb5570",
+    "trustAccountName": "Mathebula & Partners Trust Account",
+    "periodEnd": "2026-10-31",
+    "reconciliationId": "1c134061-896f-4a95-8dd7-4d74875d00b8",
+    "bankBalance": 12500,
+    "outstandingDeposits": 4000,
+    "outstandingPayments": 0,
+    "adjustedBankBalance": 16500,
+    "cashbookBalance": 16500,
+    "clientLedgerTotal": 16500,
+    "investmentCreditorTotal": 0,
+    "fundLedgerBalance": 0,
+    "unidentifiedDepositTotal": 0,
+    "interAccountBalance": 0,
+    "creditorTotal": 16500,
+    "difference": 0,
+    "lines": [
+      {
+        "kind": "CLIENT",
+        "clientId": "942a16cb-bb7d-40e9-ad7d-eef31f20e3e9",
+        "name": "Acme Corp",
+        "matters": [
+          {
+            "matterId": "cddda80c-db68-4592-8dcb-e1a155bc7cc1",
+            "name": "OBS 650A Transfer LXBGH",
+            "balance": 2500
+          },
+          {
+            "matterId": "c12301fd-c1cb-4e71-8f40-4bc0f323faa9",
+            "name": "Website Redesign",
+            "balance": 10000
+          }
+        ],
+        "balance": 12500,
+        "unidentifiedDepositId": null,
+        "receivedDate": null,
+        "bankDescription": null,
+        "totalDeposits": 12500,
+        "totalPayments": 0,
+        "totalFeeTransfers": 0,
+        "lastTransactionDate": "2026-10-20"
+      },
+      {
+        "kind": "CLIENT",
+        "clientId": "379b98ee-e5a7-48c8-abc3-f41b5e67b3f2",
+        "name": "OBS 650A Holdings LXBGH",
+        "matters": [
+          {
+            "matterId": "593bdd5c-f3f2-4855-838c-2d079baecd4c",
+            "name": "OBS 650A Contract LXBGH",
+            "balance": 4000
+          }
+        ],
+        "balance": 4000,
+        "unidentifiedDepositId": null,
+        "receivedDate": null,
+        "bankDescription": null,
+        "totalDeposits": 4000,
+        "totalPayments": 0,
+        "totalFeeTransfers": 0,
+        "lastTransactionDate": "2026-10-22"
+      },
+      {
+        "kind": "FUND",
+        "clientId": null,
+        "name": "Legal Practitioners' Fidelity Fund — interest and charges",
+        "matters": [],
+        "balance": 0,
+        "unidentifiedDepositId": null,
+        "receivedDate": null,
+        "bankDescription": null,
+        "totalDeposits": null,
+        "totalPayments": null,
+        "totalFeeTransfers": null,
+        "lastTransactionDate": null
+      }
+    ],
+    "integrityFlags": [],
+    "lockedBy": "91032164-8cce-4469-8416-a1e20f52b023",
+    "lockedByName": "Alice Owner",
+    "lockedAt": "2026-11-18T21:03:04.622551Z",
+    "adjustmentsSinceLock": {
+      "entries": [
+        {
+          "transactionId": "6bf90502-c8d1-4f79-a386-c65ad1b04fab",
+          "transactionDate": "2026-10-28",
+          "postedAt": "2026-11-18T21:03:29.732078Z",
+          "transactionType": "DEPOSIT",
+          "typeLabel": "Deposit",
+          "ledger": "CLIENT",
+          "clientId": "942a16cb-bb7d-40e9-ad7d-eef31f20e3e9",
+          "clientName": "Acme Corp",
+          "reference": "DEP/OBS650A/LXBGH/4",
+          "description": null,
+          "cashbookEffect": 750,
+          "ledgerEffect": 750
+        }
+      ],
+      "cashbook": 750,
+      "clientLedgers": 750,
+      "investmentCreditors": 0,
+      "fundLedger": 0,
+      "unidentifiedDeposits": 0,
+      "interAccount": 0,
+      "liveCreditorTotal": 17250,
+      "changeInCreditorTotal": 750
+    }
+  },
+  "apiIntegrity": {
+    "asAt": "2026-11-18",
+    "balanced": true,
+    "cashbook": 17250,
+    "clientLedgers": 17250,
+    "investmentCreditors": 0,
+    "fundLedger": 0,
+    "unidentifiedDeposits": 0,
+    "otherNonClient": 0,
+    "interAccount": 0,
+    "creditorTotal": 17250,
+    "difference": 0,
+    "flags": [],
+    "accounts": [
+      {
+        "trustAccountId": "e9fd502f-1a2e-4379-bfd8-776de7cb5570",
+        "asAt": "2026-11-18",
+        "position": {
+          "trustAccountId": "e9fd502f-1a2e-4379-bfd8-776de7cb5570",
+          "asAt": "2026-11-18",
+          "cashbook": 17250,
+          "clientLedgers": 17250,
+          "investmentCreditors": 0,
+          "fundLedger": 0,
+          "unidentifiedDeposits": 0,
+          "otherNonClient": 0,
+          "interAccount": 0,
+          "creditorTotal": 17250,
+          "difference": 0
+        },
+        "bank": null,
+        "balanced": true,
+        "flags": [
+          {
+            "code": "BACKDATED_AFTER_LOCK",
+            "severity": "WARNING",
+            "message": "1 entry dated on or before 31 October 2026 was entered after the October 2026 list was locked.",
+            "amount": null,
+            "subjects": [
+              {
+                "kind": "MONTHLY_LIST",
+                "id": "2dd48bc2-e8f2-4561-b74f-528eb836153f",
+                "name": "October 2026 list",
+                "amount": 750
+              }
+            ]
+          }
+        ],
+        "lastCompletedReconciliationId": "1c134061-896f-4a95-8dd7-4d74875d00b8",
+        "lastReconciledThrough": "2026-10-31"
+      }
+    ]
+  },
+  "widths": {
+    "1280": {
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/reconciliation/lists/2dd48bc2-e8f2-4561-b74f-528eb836153f",
+      "title": "Trust creditors list — 31 Oct 2026",
+      "description": "Mathebula & Partners Trust Account · Locked 18 Nov 2026, 23:03 by Alice Owner · Rule 54.15",
+      "tiles": {
+        "Adjusted bank balance": {
+          "text": "Adjusted bank balance R 16 500,00",
+          "value": 16500
+        },
+        "Cashbook": {
+          "text": "Cashbook R 16 500,00",
+          "value": 16500
+        },
+        "Trust creditors": {
+          "text": "Trust creditors R 16 500,00",
+          "value": 16500
+        },
+        "Difference": {
+          "text": "Difference R 0,00",
+          "value": 0
+        }
+      },
+      "rows": [
+        {
+          "matter": false,
+          "cells": [
+            "Acme Corp",
+            "Client",
+            "R 12 500,00"
+          ],
+          "value": 12500
+        },
+        {
+          "matter": true,
+          "cells": [
+            "OBS 650A Transfer LXBGH",
+            "Matter",
+            "R 2 500,00"
+          ],
+          "value": 2500
+        },
+        {
+          "matter": true,
+          "cells": [
+            "Website Redesign",
+            "Matter",
+            "R 10 000,00"
+          ],
+          "value": 10000
+        },
+        {
+          "matter": false,
+          "cells": [
+            "OBS 650A Holdings LXBGH",
+            "Client",
+            "R 4 000,00"
+          ],
+          "value": 4000
+        },
+        {
+          "matter": true,
+          "cells": [
+            "OBS 650A Contract LXBGH",
+            "Matter",
+            "R 4 000,00"
+          ],
+          "value": 4000
+        },
+        {
+          "matter": false,
+          "cells": [
+            "Legal Practitioners' Fidelity Fund — interest and charges",
+            "Legal Practitioners' Fidelity Fund",
+            "R 0,00"
+          ],
+          "value": 0
+        }
+      ],
+      "total": "Total trust creditors R 16 500,00",
+      "flagsSection": 0,
+      "afterLock": "Entered after this list was locked Entries dated on or before 31 Oct 2026 and recorded after the list was locked. They are part of the books, not of this list. Date Entered Type Client Reference Cashbook 28 Oct 2026 18 Nov 2026, 23:03 Deposit Acme Corp DEP/OBS650A/LXBGH/4 R 750,00 Trust creditors as at 31 Oct 2026 are now R 17 250,00, a change of R 750,00 from the locked list.",
+      "afterLockRows": [
+        {
+          "testid": "after-lock-entry-6bf90502-c8d1-4f79-a386-c65ad1b04fab",
+          "cells": [
+            "28 Oct 2026",
+            "18 Nov 2026, 23:03",
+            "Deposit",
+            "Acme Corp",
+            "DEP/OBS650A/LXBGH/4",
+            "R 750,00"
+          ]
+        }
+      ],
+      "rawCodes": [],
+      "errorState": false,
+      "clip": {
+        "sel": "[data-testid=\"monthly-list-page\"]",
+        "root": [
+          280,
+          1256
+        ],
+        "vw": 1280,
+        "textElements": 53,
+        "bad": []
+      },
+      "cardClip": {
+        "sel": "[data-testid=\"trust-integrity-card\"]",
+        "root": [
+          280,
+          1256
+        ],
+        "vw": 1280,
+        "textElements": 8,
+        "bad": []
+      },
+      "cardText": "Trust integrity As at 18 Nov 2026, all trust accounts Books balance Warning Entered after a monthly list was locked 1 entry dated on or before 31 October 2026 was entered after the October 2026 list was locked. October 2026 list R 750,00",
+      "cardCodes": [],
+      "flag": [
+        {
+          "text": "Warning Entered after a monthly list was locked 1 entry dated on or before 31 October 2026 was entered after the October 2026 list was locked. October 2026 list R 750,00",
+          "links": [
+            {
+              "text": "October 2026 list",
+              "href": "/org/e2e-test-org/trust-accounting/reconciliation/lists/2dd48bc2-e8f2-4561-b74f-528eb836153f"
+            }
+          ]
+        }
+      ],
+      "cardLinkLanded": "http://localhost:3001/org/e2e-test-org/trust-accounting/reconciliation/lists/2dd48bc2-e8f2-4561-b74f-528eb836153f"
+    },
+    "1440": {
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/reconciliation/lists/2dd48bc2-e8f2-4561-b74f-528eb836153f",
+      "title": "Trust creditors list — 31 Oct 2026",
+      "description": "Mathebula & Partners Trust Account · Locked 18 Nov 2026, 23:03 by Alice Owner · Rule 54.15",
+      "tiles": {
+        "Adjusted bank balance": {
+          "text": "Adjusted bank balance R 16 500,00",
+          "value": 16500
+        },
+        "Cashbook": {
+          "text": "Cashbook R 16 500,00",
+          "value": 16500
+        },
+        "Trust creditors": {
+          "text": "Trust creditors R 16 500,00",
+          "value": 16500
+        },
+        "Difference": {
+          "text": "Difference R 0,00",
+          "value": 0
+        }
+      },
+      "rows": [
+        {
+          "matter": false,
+          "cells": [
+            "Acme Corp",
+            "Client",
+            "R 12 500,00"
+          ],
+          "value": 12500
+        },
+        {
+          "matter": true,
+          "cells": [
+            "OBS 650A Transfer LXBGH",
+            "Matter",
+            "R 2 500,00"
+          ],
+          "value": 2500
+        },
+        {
+          "matter": true,
+          "cells": [
+            "Website Redesign",
+            "Matter",
+            "R 10 000,00"
+          ],
+          "value": 10000
+        },
+        {
+          "matter": false,
+          "cells": [
+            "OBS 650A Holdings LXBGH",
+            "Client",
+            "R 4 000,00"
+          ],
+          "value": 4000
+        },
+        {
+          "matter": true,
+          "cells": [
+            "OBS 650A Contract LXBGH",
+            "Matter",
+            "R 4 000,00"
+          ],
+          "value": 4000
+        },
+        {
+          "matter": false,
+          "cells": [
+            "Legal Practitioners' Fidelity Fund — interest and charges",
+            "Legal Practitioners' Fidelity Fund",
+            "R 0,00"
+          ],
+          "value": 0
+        }
+      ],
+      "total": "Total trust creditors R 16 500,00",
+      "flagsSection": 0,
+      "afterLock": "Entered after this list was locked Entries dated on or before 31 Oct 2026 and recorded after the list was locked. They are part of the books, not of this list. Date Entered Type Client Reference Cashbook 28 Oct 2026 18 Nov 2026, 23:03 Deposit Acme Corp DEP/OBS650A/LXBGH/4 R 750,00 Trust creditors as at 31 Oct 2026 are now R 17 250,00, a change of R 750,00 from the locked list.",
+      "afterLockRows": [
+        {
+          "testid": "after-lock-entry-6bf90502-c8d1-4f79-a386-c65ad1b04fab",
+          "cells": [
+            "28 Oct 2026",
+            "18 Nov 2026, 23:03",
+            "Deposit",
+            "Acme Corp",
+            "DEP/OBS650A/LXBGH/4",
+            "R 750,00"
+          ]
+        }
+      ],
+      "rawCodes": [],
+      "errorState": false,
+      "clip": {
+        "sel": "[data-testid=\"monthly-list-page\"]",
+        "root": [
+          280,
+          1416
+        ],
+        "vw": 1440,
+        "textElements": 53,
+        "bad": []
+      },
+      "cardClip": {
+        "sel": "[data-testid=\"trust-integrity-card\"]",
+        "root": [
+          280,
+          1416
+        ],
+        "vw": 1440,
+        "textElements": 8,
+        "bad": []
+      },
+      "cardText": "Trust integrity As at 18 Nov 2026, all trust accounts Books balance Warning Entered after a monthly list was locked 1 entry dated on or before 31 October 2026 was entered after the October 2026 list was locked. October 2026 list R 750,00",
+      "cardCodes": [],
+      "flag": [
+        {
+          "text": "Warning Entered after a monthly list was locked 1 entry dated on or before 31 October 2026 was entered after the October 2026 list was locked. October 2026 list R 750,00",
+          "links": [
+            {
+              "text": "October 2026 list",
+              "href": "/org/e2e-test-org/trust-accounting/reconciliation/lists/2dd48bc2-e8f2-4561-b74f-528eb836153f"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "endedAt": "2026-11-18T21:03:38.027Z"
+}

@@ -5,6 +5,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.jayway.jsonpath.JsonPath;
+import com.zaxxer.hikari.HikariDataSource;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
@@ -24,9 +25,12 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRep
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountType;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedgerQueryRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordDepositRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.ReverseRequest;
 import jakarta.persistence.EntityManager;
 import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
@@ -38,6 +42,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.LockSupport;
 import java.util.function.Supplier;
+import javax.sql.DataSource;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -63,6 +68,13 @@ import org.springframework.transaction.support.TransactionTemplate;
  * the other operation on a second thread, waits until it is either blocked by the first's backend
  * (observed in {@code pg_stat_activity}, not a sleep) or finished, then commits the first. In both
  * orders the reversal is refused, the withdrawal succeeds, and the client is credited exactly once.
+ *
+ * <p>650A F-10 / F-11 (the global lock order, {@code TrustPostingService}): a placement request
+ * locks the client's anchor, then the trust account, then the investment account; a withdrawal and
+ * a client's posting must take the same locks in the same order, or the two deadlock (40P01). Each
+ * lock-order test holds the trust account row on a gate connection, lets the placement block on it,
+ * starts the other operation and lets it block too (behind the placement or the gate), then
+ * releases the gate: in the reverse order the two would each hold a lock the other waits for.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -92,6 +104,7 @@ class TrustInvestmentWithdrawReverseRaceIntegrationTest {
   @Autowired private Clock clock;
   @Autowired private JdbcTemplate jdbc;
   @Autowired private EntityManager entityManager;
+  @Autowired private DataSource dataSource;
 
   private String tenantSchema;
   private UUID ownerId;
@@ -196,6 +209,83 @@ class TrustInvestmentWithdrawReverseRaceIntegrationTest {
         .hasMessageContaining("Cannot reverse transaction")
         .hasMessageContaining(PLACEMENT_NOT_REVERSIBLE);
     assertCreditedOnce(placed);
+  }
+
+  /**
+   * 650A F-10: a placement from the trust account into the investment account and a withdrawal of
+   * another investment back the other way. Both take the trust account before the investment
+   * account — the withdrawal locks both before its first leg posts — so the withdrawal waits for
+   * the placement instead of holding the investment account the placement needs.
+   */
+  @Test
+  void lockOrder_placementAndWithdrawalOnTheSameAccounts_bothComplete_noDeadlock()
+      throws Exception {
+    Placed held = placeAndApprove("Lock Order Withdraw");
+    UUID client = newClient("Lock Order Place Client");
+    UUID matter = newMatter(client, "Lock Order Place Matter");
+    deposit(client, matter);
+
+    var outcome =
+        gatedOnTrustAccount(
+            () -> investmentService.placeInvestment(trustAccountId, placement(client, matter)),
+            () -> withdraw(held));
+
+    assertThat(outcome.secondBlocked()).as("both blocked before the gate opened").isTrue();
+    assertThat(outcome.first()).as("the placement").isNull();
+    assertThat(outcome.second()).as("the withdrawal").isNull();
+    assertCreditedOnce(held);
+    assertThat(clientBalance(client))
+        .as("the placement awaits approval")
+        .isEqualByComparingTo("5000.00");
+  }
+
+  /**
+   * 650A F-11: a section 86(4) placement and a deposit for the same client on the trust account.
+   * The placement takes the client's anchor before the account rows, as the deposit does (anchor,
+   * then the account's posting lock), so the deposit waits for the placement instead of holding the
+   * anchor the placement needs.
+   */
+  @Test
+  void lockOrder_placementAndAPostingForTheSameClient_bothComplete_noDeadlock() throws Exception {
+    UUID client = newClient("Lock Order Same Client");
+    UUID matter = newMatter(client, "Lock Order Same Matter");
+    deposit(client, matter);
+
+    var outcome =
+        gatedOnTrustAccount(
+            () -> investmentService.placeInvestment(trustAccountId, placement(client, matter)),
+            () ->
+                transactionService.recordDeposit(
+                    trustAccountId,
+                    new RecordDepositRequest(
+                        client,
+                        matter,
+                        new BigDecimal("100.00"),
+                        "TIWR-LO-DEP-" + (++counter),
+                        "Deposit",
+                        today)));
+
+    assertThat(outcome.secondBlocked()).as("both blocked before the gate opened").isTrue();
+    assertThat(outcome.first()).as("the placement").isNull();
+    assertThat(outcome.second()).as("the deposit").isNull();
+    assertThat(clientBalance(client))
+        .as("the deposit posted; the placement awaits approval")
+        .isEqualByComparingTo("5100.00");
+  }
+
+  private TrustInvestmentService.PlaceInvestmentRequest placement(UUID client, UUID matter) {
+    return new TrustInvestmentService.PlaceInvestmentRequest(
+        investmentAccountId,
+        client,
+        matter,
+        "Test Bank",
+        "TIWR-LO-" + (++counter),
+        new BigDecimal("1000.00"),
+        new BigDecimal("0.07"),
+        today.minusDays(4),
+        null,
+        null,
+        InvestmentBasis.CLIENT_INSTRUCTION);
   }
 
   private TrustInvestmentService.TrustInvestmentResponse withdraw(Placed placed) {
@@ -341,13 +431,106 @@ class TrustInvestmentWithdrawReverseRaceIntegrationTest {
         .isEqualByComparingTo("0");
   }
 
+  /** Each side's failure (null = succeeded); whether {@code second} was seen blocked. */
+  private record Gated(Throwable first, Throwable second, boolean secondBlocked) {}
+
+  /**
+   * Holds the trust account row {@code FOR NO KEY UPDATE} (the lock a placement request takes) on a
+   * gate connection outside the pool, starts {@code first} and waits until it is blocked by the
+   * gate, starts {@code second} and waits until it is blocked too (behind {@code first} or the
+   * gate) — observed in {@code pg_stat_activity}, not a sleep — then releases the gate. {@code
+   * first} is then first in line for the account row; a lock order that let {@code second} hold a
+   * lock {@code first} needs next would deadlock here (Postgres aborts one with 40P01). Returns
+   * each side's failure.
+   */
+  private Gated gatedOnTrustAccount(Supplier<?> first, Supplier<?> second) throws Exception {
+    var firstError = new AtomicReference<Throwable>();
+    var secondError = new AtomicReference<Throwable>();
+    var secondFinished = new AtomicBoolean(false);
+    Thread firstThread = null;
+    Thread secondThread = null;
+    boolean secondBlocked;
+    // Outside the pool (3 connections: the two operations and the pg_stat_activity polls)
+    var pool = dataSource.unwrap(HikariDataSource.class);
+    try (Connection gate =
+        DriverManager.getConnection(pool.getJdbcUrl(), pool.getUsername(), pool.getPassword())) {
+      gate.setAutoCommit(false);
+      int gatePid;
+      try (var st = gate.createStatement();
+          var rs = st.executeQuery("SELECT pg_backend_pid()")) {
+        rs.next();
+        gatePid = rs.getInt(1);
+      }
+      try (var ps =
+          gate.prepareStatement(
+              "SELECT id FROM \""
+                  + tenantSchema
+                  + "\".trust_accounts WHERE id = ? FOR NO KEY UPDATE")) {
+        ps.setObject(1, trustAccountId);
+        ps.executeQuery().close();
+      }
+      try {
+        firstThread = Thread.ofPlatform().start(() -> capture(first, firstError, null));
+        assertThat(awaitWaiters(1, gatePid, null)).as("the first blocked on the gate").isTrue();
+        secondThread =
+            Thread.ofPlatform().start(() -> capture(second, secondError, secondFinished));
+        secondBlocked = awaitWaiters(2, null, secondFinished);
+      } finally {
+        gate.rollback();
+      }
+    } finally {
+      if (firstThread != null) {
+        join(firstThread);
+      }
+      if (secondThread != null) {
+        join(secondThread);
+      }
+    }
+    return new Gated(firstError.get(), secondError.get(), secondBlocked);
+  }
+
+  private void capture(Supplier<?> action, AtomicReference<Throwable> error, AtomicBoolean done) {
+    try {
+      as(action);
+    } catch (Throwable t) {
+      error.set(t);
+    } finally {
+      if (done != null) {
+        done.set(true);
+      }
+    }
+  }
+
+  /**
+   * Waits (bounded, 30 s) until {@code count} backends are blocked on a trust account or client
+   * anchor query — by {@code holderPid} when given — (true) or {@code finished} is set (false).
+   */
+  private boolean awaitWaiters(int count, Integer holderPid, AtomicBoolean finished) {
+    long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(30);
+    while (System.nanoTime() < deadline) {
+      Long waiting =
+          jdbc.queryForObject(
+              "SELECT count(*) FROM pg_stat_activity WHERE cardinality(pg_blocking_pids(pid)) > 0"
+                  + " AND (CAST(? AS int) IS NULL OR CAST(? AS int) = ANY(pg_blocking_pids(pid)))"
+                  + " AND (query ILIKE '%trust_accounts%' OR query ILIKE '%client_ledger_cards%')",
+              Long.class, holderPid, holderPid);
+      if (waiting != null && waiting >= count) {
+        return true;
+      }
+      if (finished != null && finished.get()) {
+        return false;
+      }
+      LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(10)); // poll interval
+    }
+    throw new AssertionError(count + " operation(s) not blocked on a lock within 30 s");
+  }
+
   // --- fixtures ---
 
   private record Placed(UUID client, UUID matter, UUID investmentId, UUID placementId) {}
 
-  private Placed placeAndApprove(String name) throws Exception {
-    UUID client = newClient(name + " Client");
-    UUID matter = newMatter(client, name + " Matter");
+  /** R5 000 deposited for the client on the matter, five days ago. */
+  private void deposit(UUID client, UUID matter) throws Exception {
     mockMvc
         .perform(
             post("/api/trust-accounts/" + trustAccountId + "/transactions/deposit")
@@ -360,6 +543,12 @@ class TrustInvestmentWithdrawReverseRaceIntegrationTest {
                     """
                         .formatted(client, matter, ++counter, today.minusDays(5))))
         .andExpect(status().isCreated());
+  }
+
+  private Placed placeAndApprove(String name) throws Exception {
+    UUID client = newClient(name + " Client");
+    UUID matter = newMatter(client, name + " Matter");
+    deposit(client, matter);
     String placed =
         mockMvc
             .perform(

@@ -53,6 +53,13 @@ import org.springframework.stereotype.Component;
  *       without changing a single expectation except the pins it closes (task 646.9).
  * </ol>
  *
+ * <h2>Version 8 (650A) — entries back-dated into a locked month</h2>
+ *
+ * <p>{@link #assertServicesAgree} also asserts {@code BACKDATED_AFTER_LOCK} is raised exactly when
+ * the oracle's own SQL finds a posted row dated on or before a locked list's {@code period_end} and
+ * posted after its {@code locked_at}, for a list of the account with {@code period_end <= D}
+ * (ADR-382, §16.3.10).
+ *
  * <h2>Version 7 (649C) — the integrity check must not certify itself</h2>
  *
  * <p>{@link #assertServicesAgree} also runs {@code TrustIntegrityService.check} (no statement) and
@@ -703,6 +710,24 @@ public final class TrustBooksHarness {
         .assertThat(codes.contains(TrustIntegrityService.INVESTMENT_BALANCE_MISMATCH))
         .as("integrity INVESTMENT_BALANCE_MISMATCH raised ⇔ oracle EQ-5 fails")
         .isEqualTo(!eq5.errorsCollected().isEmpty());
+    var backdated =
+        jdbc.queryForObject(
+            """
+            SELECT count(*) FROM "%1$s".trust_monthly_lists m
+              JOIN "%1$s".trust_transactions t ON t.trust_account_id = m.trust_account_id
+             WHERE m.trust_account_id = ? AND m.period_end <= ?
+               AND t.posted_at IS NOT NULL
+               AND t.transaction_date <= m.period_end
+               AND t.posted_at > m.locked_at
+            """
+                .formatted(schema()),
+            Long.class,
+            trustAccountId,
+            asAt);
+    softly
+        .assertThat(codes.contains(TrustIntegrityService.BACKDATED_AFTER_LOCK))
+        .as("integrity BACKDATED_AFTER_LOCK raised ⇔ oracle finds %s back-dated rows", backdated)
+        .isEqualTo(backdated != null && backdated > 0);
   }
 
   /**

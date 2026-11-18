@@ -4,10 +4,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.TrustPositionResponse;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.CreditorLine;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.FlagSubject;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.IntegrityFlag;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustBooksService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustIntegrityService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustMonthlyListService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.UnidentifiedDepositService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService;
@@ -49,7 +51,9 @@ import tools.jackson.databind.json.JsonMapper;
  * gross, Fund share, presentation) and the investment response's interest totals (gross, Fund
  * share, net — replacing {@code interestEarned}); 649C the integrity report (one account and the
  * firm, its flags and their subjects, the position and bank terms it carries), the dashboard
- * position's integrity summary, and the reconciliation's integrity flags.
+ * position's integrity summary, and the reconciliation's integrity flags; 650A the monthly
+ * trust-creditor list (summary, one list with its creditor lines and the entries made after the
+ * lock) and the reconciliation's {@code monthlyListId}.
  *
  * <p>The actual is always written to {@code target/wire/trust-contract.actual.json}. Regenerate
  * ONLY deliberately with {@code -Dtrust.contract.update=true}; the PR that does so must say why in
@@ -95,7 +99,15 @@ class TrustWireContractTest {
           TrustBooksService.TrustPosition.class,
           TrustBooksService.BankPosition.class,
           TrustPositionResponse.IntegritySummary.class,
-          TrustPositionResponse.FlagCount.class);
+          TrustPositionResponse.FlagCount.class,
+          // 650A: the Rule 54.15 monthly list (summary, one list, its lines and the entries made
+          // after the lock); the reconciliation gains monthlyListId
+          TrustMonthlyListService.MonthlyListSummary.class,
+          TrustMonthlyListService.MonthlyListResponse.class,
+          TrustMonthlyListService.AdjustmentsSinceLock.class,
+          TrustMonthlyListService.AdjustmentEntry.class,
+          CreditorLine.class,
+          CreditorLine.MatterBalance.class);
 
   private static final String UPDATE_FLAG = "trust.contract.update";
   private static final Path SNAPSHOT = Path.of("src/test/resources/wire/trust-contract.json");

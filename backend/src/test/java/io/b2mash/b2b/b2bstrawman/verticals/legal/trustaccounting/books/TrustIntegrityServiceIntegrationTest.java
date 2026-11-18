@@ -764,6 +764,66 @@ class TrustIntegrityServiceIntegrationTest {
         .andExpect(status().isForbidden());
   }
 
+  // --- 650A: back-dated into a locked month
+  // -------------------------------------------------------
+
+  /**
+   * 650A (§16.3.10, ADR-382): a deposit dated 1 March entered after the March list was locked is a
+   * warning — the books stay balanced — with one subject per locked list (two back-dated rows into
+   * the same list are one subject); it is not raised as at a date before the list's period end.
+   */
+  @Test
+  void
+      backdatedAfterLock_isAWarning_oneSubjectPerList_neverBlocks_andOnlyForListsOnOrBeforeTheDate() {
+    var account = books.freshAccount(false);
+    var client = books.newClient("backdated");
+    var depositId = books.deposit(account, client, "1000.00");
+    var march =
+        importStatement(
+            account,
+            "tis-backdated-march.csv",
+            "01/03/2026,Deposit received,1000.00,1000.00,TIS-BD");
+    var listId = new UUID[1];
+    books.as(
+        memberId,
+        () -> {
+          reconciliationService.manualMatch(march.lines().getFirst().id(), depositId);
+          var created = reconciliationService.createReconciliation(account, MARCH_END, march.id());
+          reconciliationService.calculateReconciliation(created.id());
+          listId[0] = reconciliationService.completeReconciliation(created.id()).monthlyListId();
+        });
+    assertThat(listId[0]).isNotNull();
+    assertThat(codes(check(books, memberId, account, null, null)))
+        .doesNotContain(TrustIntegrityService.BACKDATED_AFTER_LOCK);
+
+    books.deposit(account, client, "250.00");
+    books.deposit(account, client, "100.00");
+
+    var report = check(books, memberId, account, null, null);
+    assertThat(report.balanced()).as("a warning never unbalances").isTrue();
+    var flag = only(report, TrustIntegrityService.BACKDATED_AFTER_LOCK);
+    assertThat(flag.severity()).isEqualTo(TrustIntegrityService.WARNING);
+    assertThat(flag.amount()).isNull();
+    assertThat(flag.message())
+        .isEqualTo(
+            "2 entries dated on or before 31 March 2026 were entered after the March 2026 list was"
+                + " locked.");
+    assertThat(flag.subjects())
+        .singleElement()
+        .satisfies(
+            s -> {
+              assertThat(s.kind()).isEqualTo(TrustIntegrityService.SUBJECT_MONTHLY_LIST);
+              assertThat(s.id()).isEqualTo(listId[0]);
+              assertThat(s.name()).isEqualTo("March 2026 list");
+              assertThat(s.amount()).isEqualByComparingTo("350.00");
+            });
+    assertThat(codes(check(books, memberId, account, MARCH_END.minusDays(1), null)))
+        .as("a list for a later month is not relevant to an earlier date")
+        .doesNotContain(TrustIntegrityService.BACKDATED_AFTER_LOCK);
+    books.assertServicesAgree(account);
+    books.assertServicesAgree(account, MARCH_END.minusDays(1));
+  }
+
   // --- open question #9 -------------------------------------------------------------------------
 
   /**

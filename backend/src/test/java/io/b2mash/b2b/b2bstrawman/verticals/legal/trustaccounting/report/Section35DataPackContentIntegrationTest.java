@@ -21,6 +21,7 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
@@ -184,6 +185,40 @@ class Section35DataPackContentIntegrationTest {
         .extracting(row -> String.valueOf(row.get("label")))
         .anySatisfy(label -> assertThat(label).contains("DEP-S35-001").contains(CLIENT))
         .anySatisfy(label -> assertThat(label).isEqualTo(CLIENT));
+  }
+
+  /**
+   * 650A review A1: since 650A {@code client-trust-balances} is the Rule 54.15 list (it also
+   * returns the Fidelity Fund line, open unidentified deposits and the section 86(3) line). The
+   * pack is still v3 until 650C, so its "Client Trust Balances" section lists clients only — here
+   * the one client's R37 019.15 (R38 019.15 deposited, R1 000 paid) and its total, with the v3
+   * section summary.
+   */
+  @Test
+  @SuppressWarnings("unchecked")
+  void clientTrustBalancesSection_listsClientsOnly_notTheFundLine() {
+    ReportResult result = execute();
+
+    var section =
+        result.rows().stream()
+            .filter(row -> "Client Trust Balances".equals(row.get("_section")))
+            .toList();
+    assertThat(section).extracting(row -> row.get("label")).containsExactly(CLIENT, "Total");
+    assertThat(section)
+        .allSatisfy(
+            row -> assertThat((BigDecimal) row.get("amount")).isEqualByComparingTo("37019.15"));
+    assertThat(section.getFirst().get("kind")).isEqualTo("CLIENT");
+
+    var meta =
+        ((List<Map<String, Object>>) result.summary().get("sections"))
+            .stream()
+                .filter(m -> "Client Trust Balances".equals(m.get("sectionName")))
+                .findFirst()
+                .orElseThrow();
+    assertThat(meta.get("rowCount")).isEqualTo(1);
+    assertThat(meta.get("clientCount")).isEqualTo(1);
+    assertThat((BigDecimal) meta.get("totalTrustBalance")).isEqualByComparingTo("37019.15");
+    assertThat(meta).doesNotContainKeys("creditorTotal", "fundTotal", "accounts");
   }
 
   @Test

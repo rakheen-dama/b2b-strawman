@@ -1,0 +1,314 @@
+{
+  "phase": "a",
+  "startedAt": "2026-11-18T21:02:51.698Z",
+  "apiWrites": [],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "checks": {
+    "a: tiles = API = SQL (adjusted, cashbook, creditors, difference)": true,
+    "a: creditor rows on screen = API lines (names, kinds, balances, matters)": true,
+    "a: API lines sum to creditor total": true,
+    "a: deposits D2, D3 recorded through the UI (20 + 22 Oct 2026)": true,
+    "a: step 5 'October 2026 list locked — R 16 500,00 agrees with the cashbook and the adjusted bank balance.'": true,
+    "a: one trust_monthly_lists row for (account, 2026-10-31)": true,
+    "a: list row = reconciliation row (adjusted, cashbook, creditors, difference, bank, outstanding deposits)": true,
+    "a: figures 12 500 bank + 4 000 outstanding = 16 500 = cashbook = creditors, difference 0": true,
+    "a: creditors — Acme Corp 12 500 (Website Redesign 10 000 + transfer 2 500), Holdings 4 000, Fund line at 0": true,
+    "a: title 'Trust creditors list — 31 Oct 2026'": true,
+    "a: subtitle account · Locked … by member · Rule 54.15": true,
+    "a: 'Nothing has been entered after this list was locked.'": true,
+    "a: no flags stored → no 'Flags at completion' section": true,
+    "a: audit trust_monthly_list.locked once, details carry period_end + creditor_total": true,
+    "a: reconciliation list 'List locked' badge for 31 Oct; '---' for 15 Oct": true,
+    "a: badge link lands on the list page": true,
+    "a: reconciliation API monthlyListId = the list": true,
+    "a: no raw enum / error on step 5 or list page": true
+  },
+  "complete": {
+    "before": {
+      "summary": "As at 31 Oct 2026 Bank and cashbook Bank balance R 12 500,00 + Outstanding deposits R 4 000,00 − Outstanding payments R 0,00 = Adjusted bank balance R 16 500,00 Cashbook R 16 500,00 Difference R 0,00 Cashbook and trust creditors Cashbook R 16 500,00 Trust creditors R 16 500,00 Difference R 0,00 Trust creditors Client ledgers R 16 500,00 Legal Practitioners' Fidelity Fund — interest and charges R 0,00 Unidentified deposits R 0,00 0 statement lines are neither matched, recorded nor excluded Excluded statement lines total R 0,00. An excluded line adjusts nothing: excluding a real bank movement leaves its amount as the difference between the bank and the cashbook. Reconciliation is balanced Complete Reconciliation",
+      "completeEnabled": true,
+      "progress": "Matching Progress\n1 / 1 lines resolved"
+    },
+    "step5": "Reconciliation Complete The reconciliation has been completed successfully Bank Balance R 12 500,00 Cashbook Balance R 16 500,00 Trust creditors R 16 500,00 October 2026 list locked — R 16 500,00 agrees with the cashbook and the adjusted bank balance. View the locked list Done"
+  },
+  "locked": "October 2026 list locked — R 16 500,00 agrees with the cashbook and the adjusted bank balance.",
+  "step5Codes": [],
+  "ui": {
+    "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/reconciliation/lists/2dd48bc2-e8f2-4561-b74f-528eb836153f",
+    "title": "Trust creditors list — 31 Oct 2026",
+    "description": "Mathebula & Partners Trust Account · Locked 18 Nov 2026, 23:03 by Alice Owner · Rule 54.15",
+    "tiles": {
+      "Adjusted bank balance": {
+        "text": "Adjusted bank balance R 16 500,00",
+        "value": 16500
+      },
+      "Cashbook": {
+        "text": "Cashbook R 16 500,00",
+        "value": 16500
+      },
+      "Trust creditors": {
+        "text": "Trust creditors R 16 500,00",
+        "value": 16500
+      },
+      "Difference": {
+        "text": "Difference R 0,00",
+        "value": 0
+      }
+    },
+    "rows": [
+      {
+        "matter": false,
+        "cells": [
+          "Acme Corp",
+          "Client",
+          "R 12 500,00"
+        ],
+        "value": 12500
+      },
+      {
+        "matter": true,
+        "cells": [
+          "OBS 650A Transfer LXBGH",
+          "Matter",
+          "R 2 500,00"
+        ],
+        "value": 2500
+      },
+      {
+        "matter": true,
+        "cells": [
+          "Website Redesign",
+          "Matter",
+          "R 10 000,00"
+        ],
+        "value": 10000
+      },
+      {
+        "matter": false,
+        "cells": [
+          "OBS 650A Holdings LXBGH",
+          "Client",
+          "R 4 000,00"
+        ],
+        "value": 4000
+      },
+      {
+        "matter": true,
+        "cells": [
+          "OBS 650A Contract LXBGH",
+          "Matter",
+          "R 4 000,00"
+        ],
+        "value": 4000
+      },
+      {
+        "matter": false,
+        "cells": [
+          "Legal Practitioners' Fidelity Fund — interest and charges",
+          "Legal Practitioners' Fidelity Fund",
+          "R 0,00"
+        ],
+        "value": 0
+      }
+    ],
+    "total": "Total trust creditors R 16 500,00",
+    "flagsSection": 0,
+    "afterLock": "Entered after this list was locked Entries dated on or before 31 Oct 2026 and recorded after the list was locked. They are part of the books, not of this list. Nothing has been entered after this list was locked.",
+    "afterLockRows": [],
+    "rawCodes": [],
+    "errorState": false
+  },
+  "apiList": {
+    "id": "2dd48bc2-e8f2-4561-b74f-528eb836153f",
+    "trustAccountId": "e9fd502f-1a2e-4379-bfd8-776de7cb5570",
+    "trustAccountName": "Mathebula & Partners Trust Account",
+    "periodEnd": "2026-10-31",
+    "reconciliationId": "1c134061-896f-4a95-8dd7-4d74875d00b8",
+    "bankBalance": 12500,
+    "outstandingDeposits": 4000,
+    "outstandingPayments": 0,
+    "adjustedBankBalance": 16500,
+    "cashbookBalance": 16500,
+    "clientLedgerTotal": 16500,
+    "investmentCreditorTotal": 0,
+    "fundLedgerBalance": 0,
+    "unidentifiedDepositTotal": 0,
+    "interAccountBalance": 0,
+    "creditorTotal": 16500,
+    "difference": 0,
+    "lines": [
+      {
+        "kind": "CLIENT",
+        "clientId": "942a16cb-bb7d-40e9-ad7d-eef31f20e3e9",
+        "name": "Acme Corp",
+        "matters": [
+          {
+            "matterId": "cddda80c-db68-4592-8dcb-e1a155bc7cc1",
+            "name": "OBS 650A Transfer LXBGH",
+            "balance": 2500
+          },
+          {
+            "matterId": "c12301fd-c1cb-4e71-8f40-4bc0f323faa9",
+            "name": "Website Redesign",
+            "balance": 10000
+          }
+        ],
+        "balance": 12500,
+        "unidentifiedDepositId": null,
+        "receivedDate": null,
+        "bankDescription": null,
+        "totalDeposits": 12500,
+        "totalPayments": 0,
+        "totalFeeTransfers": 0,
+        "lastTransactionDate": "2026-10-20"
+      },
+      {
+        "kind": "CLIENT",
+        "clientId": "379b98ee-e5a7-48c8-abc3-f41b5e67b3f2",
+        "name": "OBS 650A Holdings LXBGH",
+        "matters": [
+          {
+            "matterId": "593bdd5c-f3f2-4855-838c-2d079baecd4c",
+            "name": "OBS 650A Contract LXBGH",
+            "balance": 4000
+          }
+        ],
+        "balance": 4000,
+        "unidentifiedDepositId": null,
+        "receivedDate": null,
+        "bankDescription": null,
+        "totalDeposits": 4000,
+        "totalPayments": 0,
+        "totalFeeTransfers": 0,
+        "lastTransactionDate": "2026-10-22"
+      },
+      {
+        "kind": "FUND",
+        "clientId": null,
+        "name": "Legal Practitioners' Fidelity Fund — interest and charges",
+        "matters": [],
+        "balance": 0,
+        "unidentifiedDepositId": null,
+        "receivedDate": null,
+        "bankDescription": null,
+        "totalDeposits": null,
+        "totalPayments": null,
+        "totalFeeTransfers": null,
+        "lastTransactionDate": null
+      }
+    ],
+    "integrityFlags": [],
+    "lockedBy": "91032164-8cce-4469-8416-a1e20f52b023",
+    "lockedByName": "Alice Owner",
+    "lockedAt": "2026-11-18T21:03:04.622551Z",
+    "adjustmentsSinceLock": {
+      "entries": [],
+      "cashbook": 0,
+      "clientLedgers": 0,
+      "investmentCreditors": 0,
+      "fundLedger": 0,
+      "unidentifiedDeposits": 0,
+      "interAccount": 0,
+      "liveCreditorTotal": 16500,
+      "changeInCreditorTotal": 0
+    }
+  },
+  "apiSummaries": [
+    {
+      "id": "2dd48bc2-e8f2-4561-b74f-528eb836153f",
+      "trustAccountId": "e9fd502f-1a2e-4379-bfd8-776de7cb5570",
+      "periodEnd": "2026-10-31",
+      "reconciliationId": "1c134061-896f-4a95-8dd7-4d74875d00b8",
+      "adjustedBankBalance": 16500,
+      "cashbookBalance": 16500,
+      "creditorTotal": 16500,
+      "difference": 0,
+      "lockedBy": "91032164-8cce-4469-8416-a1e20f52b023",
+      "lockedByName": "Alice Owner",
+      "lockedAt": "2026-11-18T21:03:04.622551Z",
+      "adjustmentCount": 0
+    }
+  ],
+  "apiRecon": {
+    "id": "1c134061-896f-4a95-8dd7-4d74875d00b8",
+    "trustAccountId": "e9fd502f-1a2e-4379-bfd8-776de7cb5570",
+    "periodEnd": "2026-10-31",
+    "bankStatementId": "03ff92aa-63e4-4c4d-9b16-14c04809f8a3",
+    "bankBalance": 12500,
+    "outstandingDeposits": 4000,
+    "outstandingPayments": 0,
+    "adjustedBankBalance": 16500,
+    "cashbookBalance": 16500,
+    "clientLedgerTotal": 16500,
+    "creditorBreakdown": {
+      "clientLedgers": 16500,
+      "investmentCreditors": 0,
+      "fundInterestAndCharges": 0,
+      "unidentifiedDeposits": 0,
+      "otherNonClient": 0,
+      "interAccount": 0,
+      "total": 16500
+    },
+    "bankToCashbookDifference": 0,
+    "cashbookToCreditorsDifference": 0,
+    "difference": 0,
+    "excludedLinesTotal": 0,
+    "unresolvedLineCount": 0,
+    "isBalanced": true,
+    "integrityFlags": [],
+    "status": "COMPLETED",
+    "completedBy": "91032164-8cce-4469-8416-a1e20f52b023",
+    "completedAt": "2026-11-18T21:03:04.563567Z",
+    "monthlyListId": "2dd48bc2-e8f2-4561-b74f-528eb836153f",
+    "notes": null,
+    "createdAt": "2026-11-18T21:03:01.289386Z",
+    "updatedAt": "2026-11-18T21:03:04.581931Z"
+  },
+  "list": {
+    "headers": [
+      "Period",
+      "Bank Balance",
+      "Cashbook Balance",
+      "Client Ledger Total",
+      "Status",
+      "Completed",
+      "Monthly list"
+    ],
+    "cells": [
+      "31 Oct 2026",
+      "R 12 500,00",
+      "R 16 500,00",
+      "R 16 500,00",
+      "Balanced",
+      "18 Nov 2026",
+      "List locked"
+    ],
+    "monthlyListCell": "List locked",
+    "badge": 1
+  },
+  "listB": {
+    "headers": [
+      "Period",
+      "Bank Balance",
+      "Cashbook Balance",
+      "Client Ledger Total",
+      "Status",
+      "Completed",
+      "Monthly list"
+    ],
+    "cells": [
+      "15 Oct 2026",
+      "R 10 000,00",
+      "R 10 000,00",
+      "R 10 000,00",
+      "Balanced",
+      "18 Nov 2026",
+      "---"
+    ],
+    "monthlyListCell": "---",
+    "badge": 0
+  },
+  "fromListTitle": "Trust creditors list — 31 Oct 2026",
+  "endedAt": "2026-11-18T21:03:09.466Z"
+}

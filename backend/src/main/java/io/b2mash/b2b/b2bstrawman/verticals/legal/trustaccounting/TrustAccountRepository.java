@@ -18,4 +18,15 @@ public interface TrustAccountRepository extends JpaRepository<TrustAccount, UUID
   @Lock(LockModeType.PESSIMISTIC_WRITE)
   @Query("SELECT t FROM TrustAccount t WHERE t.id = :id")
   Optional<TrustAccount> findByIdForUpdate(@Param("id") UUID id);
+
+  /**
+   * The posting lock (650A, F-1): {@code SELECT … FOR SHARE} on the account row, taken by {@code
+   * TrustPostingService} immediately before it stamps a row's {@code posted_at}. Postings share it
+   * with each other; it conflicts with the {@link #findByIdForUpdate} lock the Rule 54.15 list
+   * takes before it reads the books, so a posting either commits before the list reads (and is in
+   * it) or stamps {@code posted_at} after the list's {@code locked_at} (and is shown against it).
+   */
+  @Lock(LockModeType.PESSIMISTIC_READ)
+  @Query("SELECT t FROM TrustAccount t WHERE t.id = :id")
+  Optional<TrustAccount> findByIdForShare(@Param("id") UUID id);
 }

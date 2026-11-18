@@ -1,0 +1,76 @@
+{
+  "run": "LXBGH",
+  "primary": "e9fd502f-1a2e-4379-bfd8-776de7cb5570",
+  "acme": {
+    "client": "Acme Corp",
+    "matter1": "Website Redesign",
+    "matter2": "OBS 650A Transfer LXBGH",
+    "matter2Id": "cddda80c-db68-4592-8dcb-e1a155bc7cc1"
+  },
+  "holdings": {
+    "client": "OBS 650A Holdings LXBGH",
+    "matter": "OBS 650A Contract LXBGH",
+    "clientId": "379b98ee-e5a7-48c8-abc3-f41b5e67b3f2",
+    "matterId": "593bdd5c-f3f2-4855-838c-2d079baecd4c"
+  },
+  "d1": {
+    "client": "Acme Corp",
+    "matter": "Website Redesign",
+    "amount": 10000,
+    "ref": "DEP/OBS650A/LXBGH/1",
+    "date": "2026-10-05",
+    "id": "9acf296c-70d8-4a4c-a467-eca4a1c880d1",
+    "status": "RECORDED",
+    "amountSql": 10000,
+    "dateSql": "2026-10-05",
+    "postedAt": "2026-11-18 21:02:23.538473+00"
+  },
+  "b": {
+    "statement": "7e66e732-e625-41d3-ba57-449fb22201b7",
+    "recon": "30306fc8-acda-4efd-88cb-d915b1603a96",
+    "autoMatch": "Auto-matched 1 lines 0 lines remaining for manual review"
+  },
+  "d2": {
+    "client": "Acme Corp",
+    "matter": "OBS 650A Transfer LXBGH",
+    "amount": 2500,
+    "ref": "DEP/OBS650A/LXBGH/2",
+    "date": "2026-10-20",
+    "id": "b5362f44-5bbb-4e62-a297-5b468cd67429",
+    "status": "RECORDED",
+    "amountSql": 2500,
+    "dateSql": "2026-10-20",
+    "postedAt": "2026-11-18 21:02:54.628329+00"
+  },
+  "d3": {
+    "client": "OBS 650A Holdings LXBGH",
+    "matter": "OBS 650A Contract LXBGH",
+    "amount": 4000,
+    "ref": "DEP/OBS650A/LXBGH/3",
+    "date": "2026-10-22",
+    "id": "defff617-ad34-45d5-a2cc-025d41d84519",
+    "status": "RECORDED",
+    "amountSql": 4000,
+    "dateSql": "2026-10-22",
+    "postedAt": "2026-11-18 21:02:58.478495+00"
+  },
+  "a": {
+    "statement": "03ff92aa-63e4-4c4d-9b16-14c04809f8a3",
+    "recon": "1c134061-896f-4a95-8dd7-4d74875d00b8",
+    "autoMatch": "Auto-matched 1 lines 0 lines remaining for manual review"
+  },
+  "listId": "2dd48bc2-e8f2-4561-b74f-528eb836153f",
+  "lockedBefore": "12500.00|4000.00|0.00|16500.00|16500.00|16500.00|0.00|0.00|0.00|0.00|16500.00|0.00|7c9678908ae643e071ebe3635eba8798|d751713988987e9331980363e24189ce|2026-11-18 21:03:04.622551+00",
+  "d4": {
+    "client": "Acme Corp",
+    "matter": "Website Redesign",
+    "amount": 750,
+    "ref": "DEP/OBS650A/LXBGH/4",
+    "date": "2026-10-28",
+    "id": "6bf90502-c8d1-4f79-a386-c65ad1b04fab",
+    "status": "RECORDED",
+    "amountSql": 750,
+    "dateSql": "2026-10-28",
+    "postedAt": "2026-11-18 21:03:29.732078+00"
+  }
+}

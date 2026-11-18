@@ -8,6 +8,7 @@ import type {
   MatchResultResponse,
   RecordFromLineRequest,
   RecordFromLineResponse,
+  MonthlyList,
 } from "@/lib/types";
 import type { RecordFromStatementFormData } from "@/lib/schemas/trust";
 
@@ -57,6 +58,12 @@ export async function fetchReconciliation(
   reconciliationId: string
 ): Promise<TrustReconciliationResponse> {
   return api.get<TrustReconciliationResponse>(`/api/trust-reconciliations/${reconciliationId}`);
+}
+
+// 650A (ADR-382): one locked Rule 54.15 monthly trust creditor list, with the entries made after
+// the lock. Read-only; a list is locked only by completing a month-end reconciliation.
+export async function fetchMonthlyList(listId: string): Promise<MonthlyList> {
+  return api.get<MonthlyList>(`/api/trust-monthly-lists/${listId}`);
 }
 
 // ── Bank statement actions ────────────────────────────────────────

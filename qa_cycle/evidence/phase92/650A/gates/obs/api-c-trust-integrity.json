@@ -1,0 +1,58 @@
+{
+  "method": "GET",
+  "url": "/api/trust-integrity",
+  "status": 200,
+  "body": {
+    "asAt": "2026-11-18",
+    "balanced": true,
+    "cashbook": 17250,
+    "clientLedgers": 17250,
+    "investmentCreditors": 0,
+    "fundLedger": 0,
+    "unidentifiedDeposits": 0,
+    "otherNonClient": 0,
+    "interAccount": 0,
+    "creditorTotal": 17250,
+    "difference": 0,
+    "flags": [],
+    "accounts": [
+      {
+        "trustAccountId": "e9fd502f-1a2e-4379-bfd8-776de7cb5570",
+        "asAt": "2026-11-18",
+        "position": {
+          "trustAccountId": "e9fd502f-1a2e-4379-bfd8-776de7cb5570",
+          "asAt": "2026-11-18",
+          "cashbook": 17250,
+          "clientLedgers": 17250,
+          "investmentCreditors": 0,
+          "fundLedger": 0,
+          "unidentifiedDeposits": 0,
+          "otherNonClient": 0,
+          "interAccount": 0,
+          "creditorTotal": 17250,
+          "difference": 0
+        },
+        "bank": null,
+        "balanced": true,
+        "flags": [
+          {
+            "code": "BACKDATED_AFTER_LOCK",
+            "severity": "WARNING",
+            "message": "1 entry dated on or before 31 October 2026 was entered after the October 2026 list was locked.",
+            "amount": null,
+            "subjects": [
+              {
+                "kind": "MONTHLY_LIST",
+                "id": "2dd48bc2-e8f2-4561-b74f-528eb836153f",
+                "name": "October 2026 list",
+                "amount": 750
+              }
+            ]
+          }
+        ],
+        "lastCompletedReconciliationId": "1c134061-896f-4a95-8dd7-4d74875d00b8",
+        "lastReconciledThrough": "2026-10-31"
+      }
+    ]
+  }
+}

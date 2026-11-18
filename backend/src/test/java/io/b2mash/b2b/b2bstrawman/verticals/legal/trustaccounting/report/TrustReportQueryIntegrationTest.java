@@ -1,12 +1,16 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.reporting.ReportResult;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
@@ -17,18 +21,23 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksFixture;
 import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness.Expected;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustIntegrityService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.interest.InterestService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.InterestPresentation;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.ReconciliationStatus;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliation;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService.BankStatementResponse;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -37,6 +46,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -69,6 +79,9 @@ class TrustReportQueryIntegrationTest {
   @Autowired private InvestmentRegisterQuery investmentRegisterQuery;
   @Autowired private InterestAllocationReportQuery interestAllocationQuery;
   @Autowired private Section35DataPackQuery section35DataPackQuery;
+  @Autowired private TrustPositionQuery trustPositionQuery;
+  @Autowired private TrustIntegrityService trustIntegrityService;
+  @Autowired private TrustReconciliationService trustReconciliationService;
 
   private String tenantSchema;
   private UUID trustAccountId;
@@ -338,8 +351,8 @@ class TrustReportQueryIntegrationTest {
 
           var result = clientBalancesQuery.executeAll(params);
 
-          // Should have 2 clients
-          assertThat(result.rows()).hasSize(2);
+          // Should have 2 clients (650A: the Rule 54.15 list also carries the Fund line)
+          assertThat(result.rows()).filteredOn(r -> "CLIENT".equals(r.get("kind"))).hasSize(2);
 
           var firstRow = result.rows().getFirst();
           assertThat(firstRow).containsKey("clientName");
@@ -354,6 +367,315 @@ class TrustReportQueryIntegrationTest {
           assertThat(result.summary()).containsKey("clientCount");
           assertThat((int) result.summary().get("clientCount")).isEqualTo(2);
         });
+  }
+
+  // ==========================================================================
+  // 650A -- Rule 54.15 list (client-trust-balances internals) and trust-position
+  // ==========================================================================
+
+  /**
+   * 650A (§16.8.1): for an account whose 31 March list is locked, the report prints the locked list
+   * — a deposit back-dated into March after the lock is not in the rows' balances — and the
+   * separate "entered after this list was locked" schedule carries it.
+   */
+  @Test
+  @SuppressWarnings("unchecked")
+  void clientTrustBalances_locked_printsTheLockedList_andTheAfterLockSchedule() {
+    var books = fixture.tenant(tenantSchema, ORG_ID, ownerMemberId);
+    UUID account = books.freshAccount(false);
+    var client = books.newClient("report locked");
+    var deposit = books.deposit(account, client, "1000.00");
+    var march =
+        importStatement(
+            books,
+            account,
+            "rq-locked-march.csv",
+            "01/03/2026,Deposit received,1000.00,1000.00,RQL");
+    var listId = new UUID[1];
+    books.as(
+        ownerMemberId,
+        () -> {
+          trustReconciliationService.manualMatch(march.lines().getFirst().id(), deposit);
+          var created =
+              trustReconciliationService.createReconciliation(
+                  account, LocalDate.of(2026, 3, 31), march.id());
+          trustReconciliationService.calculateReconciliation(created.id());
+          listId[0] =
+              trustReconciliationService.completeReconciliation(created.id()).monthlyListId();
+        });
+    var backdated = books.deposit(account, client, "250.00");
+
+    var result =
+        inTenant(
+            () ->
+                clientBalancesQuery.executeAll(
+                    Map.of("trust_account_id", account.toString(), "asOfDate", "2026-03-31")));
+
+    var person = onlyRow(result, r -> client.id().equals(r.get("customerId")));
+    assertThat((BigDecimal) person.get("balance"))
+        .as("the locked list, without the back-dated deposit")
+        .isEqualByComparingTo("1000.00");
+    assertThat((BigDecimal) person.get("totalDeposits"))
+        .as("the locked list's totals, not today's ledger (650A review C4)")
+        .isEqualByComparingTo("1000.00");
+    assertThat(person.get("lastTransactionDate")).isEqualTo("2026-03-01");
+    assertThat(person.get("kind")).isEqualTo("CLIENT");
+    assertThat(person.get("source")).isEqualTo("LOCKED");
+    assertThat((String) person.get("sourceNote"))
+        .startsWith("Locked ")
+        .endsWith(" by Report Owner");
+    var fund = onlyRow(result, r -> "FUND".equals(r.get("kind")));
+    assertThat((BigDecimal) fund.get("balance")).isEqualByComparingTo("0.00");
+    assertThat(fund.get("source")).isEqualTo("LOCKED");
+
+    var summary = result.summary();
+    assertThat(summary.get("fullyLocked")).isEqualTo(true);
+    assertThat((BigDecimal) summary.get("creditorTotal")).isEqualByComparingTo("1000.00");
+    assertThat((BigDecimal) summary.get("bankTotal")).isEqualByComparingTo("1000.00");
+    assertThat((BigDecimal) summary.get("difference")).isEqualByComparingTo("0.00");
+    assertThat(summary.get("trustCashNote")).isEqualTo("Trust cash is not recorded in Kazi");
+    var accounts = (List<Map<String, Object>>) summary.get("accounts");
+    assertThat(accounts)
+        .singleElement()
+        .satisfies(a -> assertThat(a.get("monthlyListId")).isEqualTo(listId[0]));
+    var afterLock = (List<Map<String, Object>>) summary.get("afterLock");
+    assertThat(afterLock)
+        .singleElement()
+        .satisfies(
+            e -> {
+              assertThat(e.get("transactionDate")).isEqualTo("2026-03-01");
+              assertThat(e.get("typeLabel")).isEqualTo("Deposit");
+              assertThat(e.get("clientName")).isEqualTo(client.name());
+              assertThat((BigDecimal) e.get("cashbookEffect")).isEqualByComparingTo("250.00");
+            });
+    assertThat((BigDecimal) summary.get("afterLockNet")).isEqualByComparingTo("250.00");
+    assertThat(books.statusOf(backdated)).isEqualTo("RECORDED");
+  }
+
+  /**
+   * 650A (§16.8.1): firm-wide (no account) and with no list for the date, every account's list is
+   * live; a person is one row across accounts with the general, invested and total balances; a Fund
+   * line per account (even at zero); each open unidentified deposit; section 86(3) placements are a
+   * note, not a creditor. Per account the comparison balances. A reconciliation completed before
+   * 650A (2025-06-30, written by the repository) has no list: the source stays live.
+   */
+  @Test
+  @SuppressWarnings("unchecked")
+  void
+      clientTrustBalances_live_firmWide_mergesGeneralAndInvested_andListsTheFundAndUnidentifiedLines() {
+    var books = fixture.tenant(tenantSchema, ORG_ID, ownerMemberId);
+    // The tenant is shared by the class: the firm-wide totals are checked as baseline + this
+    // scenario's accounts
+    var baseline = inTenant(() -> clientBalancesQuery.executeAll(Map.of())).summary();
+    UUID funding = books.freshAccount(false);
+    UUID investmentAccount = books.freshInvestmentAccount(InvestmentBasis.CLIENT_INSTRUCTION);
+    UUID firmInvestment = books.freshInvestmentAccount(InvestmentBasis.FIRM_DISCRETION);
+    var investor = books.newClient("report live investor");
+    books.deposit(funding, investor, "5000.00");
+    var placed = books.requestPlacement(funding, investmentAccount, investor, "2000.00");
+    books.approvePlacement(
+        funding,
+        Expected.cashbookAndClient("-2000.00"),
+        investmentAccount,
+        Expected.cashbookAndInvestment("2000.00"),
+        placed.depositTransactionId(),
+        approverMemberId);
+    var firmPlaced = books.requestPlacement(funding, firmInvestment, null, "500.00");
+    books.approvePlacement(
+        funding,
+        Expected.cashbookAndInterAccount("-500.00"),
+        firmInvestment,
+        Expected.cashbookAndInterAccount("500.00"),
+        firmPlaced.depositTransactionId(),
+        approverMemberId);
+    UUID other = books.freshAccount(false);
+    books.deposit(other, investor, "700.00");
+    books.unidentifiedDepositDirect(other, "125.00", LocalDate.of(2026, 3, 5));
+
+    var firm = inTenant(() -> clientBalancesQuery.executeAll(Map.of()));
+    var person = onlyRow(firm, r -> investor.id().equals(r.get("customerId")));
+    assertThat(person.get("kind")).isEqualTo("CLIENT");
+    assertThat((BigDecimal) person.get("generalBalance")).isEqualByComparingTo("3700.00");
+    assertThat((BigDecimal) person.get("investedBalance")).isEqualByComparingTo("2000.00");
+    assertThat((BigDecimal) person.get("totalBalance")).isEqualByComparingTo("5700.00");
+    assertThat((BigDecimal) person.get("balance")).isEqualByComparingTo("5700.00");
+    assertThat(person.get("trustAccountId")).as("merged across accounts").isNull();
+    assertThat(person.get("source")).isEqualTo("LIVE");
+    for (var account : List.of(funding, investmentAccount, firmInvestment, other)) {
+      var fund =
+          onlyRow(
+              firm, r -> "FUND".equals(r.get("kind")) && account.equals(r.get("trustAccountId")));
+      assertThat((BigDecimal) fund.get("balance")).isEqualByComparingTo("0.00");
+      assertThat(fund.get("sourceNote"))
+          .isEqualTo("Not locked — this account's reconciliation for the month is not complete");
+    }
+    var item =
+        onlyRow(
+            firm,
+            r -> "UNIDENTIFIED".equals(r.get("kind")) && other.equals(r.get("trustAccountId")));
+    assertThat((BigDecimal) item.get("balance")).isEqualByComparingTo("125.00");
+    assertThat(item.get("receivedDate")).isEqualTo("2026-03-05");
+    assertThat(firm.rows()).noneMatch(r -> "INTER_ACCOUNT".equals(r.get("kind")));
+    assertThat(firm.summary().get("fullyLocked")).isEqualTo(false);
+    assertThat(firm.summary()).containsKey("interAccountNote");
+    // Firm-wide comparison (650A review M3). Creditors: the investor R5 700 (general R3 000 on the
+    // funding account + R700 on the other, R2 000 invested) and the R125 item; the four Fund lines
+    // are nil and the section 86(3) placement nets out. Money side (no reconciliation has today's
+    // period end, so each account's cashbook): banking accounts R2 500 (funding: 5 000 − 2 000 −
+    // 500) + R825 (other: 700 + 125); investment accounts R2 000 + R500.
+    assertThat((BigDecimal) firm.summary().get("creditorTotal"))
+        .isEqualByComparingTo(
+            ((BigDecimal) baseline.get("creditorTotal")).add(new BigDecimal("5825.00")));
+    assertThat((BigDecimal) firm.summary().get("bankTotal"))
+        .isEqualByComparingTo(
+            ((BigDecimal) baseline.get("bankTotal")).add(new BigDecimal("3325.00")));
+    assertThat((BigDecimal) firm.summary().get("investmentAccountTotal"))
+        .isEqualByComparingTo(
+            ((BigDecimal) baseline.get("investmentAccountTotal")).add(new BigDecimal("2500.00")));
+    assertThat((BigDecimal) firm.summary().get("difference")).isEqualByComparingTo("0.00");
+    assertThat((List<Map<String, Object>>) firm.summary().get("accounts"))
+        .filteredOn(a -> funding.equals(a.get("trustAccountId")))
+        .singleElement()
+        .satisfies(a -> assertThat(a.get("source")).isEqualTo("LIVE"));
+
+    // One account: the section 86(3) line is listed and the comparison balances
+    var fundingOnly =
+        inTenant(() -> clientBalancesQuery.executeAll(Map.of("trust_account_id", funding)));
+    var placedLine = onlyRow(fundingOnly, r -> "INTER_ACCOUNT".equals(r.get("kind")));
+    assertThat((BigDecimal) placedLine.get("balance")).isEqualByComparingTo("-500.00");
+    assertThat(placedLine.get("clientName"))
+        .isEqualTo("Placed in section 86(3) investment accounts");
+    assertThat((BigDecimal) fundingOnly.summary().get("creditorTotal"))
+        .isEqualByComparingTo("2500.00");
+    assertThat((BigDecimal) fundingOnly.summary().get("difference")).isEqualByComparingTo("0.00");
+    var invested =
+        inTenant(
+            () -> clientBalancesQuery.executeAll(Map.of("trust_account_id", investmentAccount)));
+    assertThat(
+            (BigDecimal)
+                onlyRow(invested, r -> investor.id().equals(r.get("customerId")))
+                    .get("investedBalance"))
+        .isEqualByComparingTo("2000.00");
+    assertThat((BigDecimal) invested.summary().get("investmentAccountTotal"))
+        .isEqualByComparingTo("2000.00");
+    assertThat((BigDecimal) invested.summary().get("difference")).isEqualByComparingTo("0.00");
+
+    // No back-fill: the pre-650A completed reconciliation (2025-06-30) has no list
+    var legacy =
+        inTenant(
+            () ->
+                clientBalancesQuery.executeAll(
+                    Map.of("trust_account_id", trustAccountId, "asOfDate", "2025-06-30")));
+    assertThat((List<Map<String, Object>>) legacy.summary().get("accounts"))
+        .singleElement()
+        .satisfies(
+            a -> {
+              assertThat(a.get("source")).isEqualTo("LIVE");
+              assertThat(a.get("monthlyListId")).isNull();
+            });
+  }
+
+  /**
+   * 650A (§16.8.2): the trust position as at a date is {@code checkFirm(date)} per account — the
+   * cashbook, each creditor term and the difference — with the bank side only where a
+   * reconciliation has that period end; {@code asOfDate} is required.
+   */
+  @Test
+  @SuppressWarnings("unchecked")
+  void trustPosition_perAccountTermsAndFirmTotals_fromTheIntegrityCheck() {
+    var books = fixture.tenant(tenantSchema, ORG_ID, ownerMemberId);
+    UUID account = books.freshAccount(false);
+    books.deposit(account, books.newClient("report position"), "1500.00");
+    var date = LocalDate.of(2026, 3, 20);
+
+    var result =
+        inTenant(
+            () ->
+                trustPositionQuery.executeAll(
+                    Map.of("asOfDate", date.toString(), "trust_account_id", account.toString())));
+    var row = onlyRow(result, r -> account.equals(r.get("trustAccountId")));
+    var expected =
+        inTenant(
+            () ->
+                trustIntegrityService.checkFirm(date).accounts().stream()
+                    .filter(a -> a.trustAccountId().equals(account))
+                    .findFirst()
+                    .orElseThrow());
+    assertThat((BigDecimal) row.get("cashbook"))
+        .isEqualByComparingTo(expected.position().cashbook())
+        .isEqualByComparingTo("1500.00");
+    assertThat((BigDecimal) row.get("clientLedgers")).isEqualByComparingTo("1500.00");
+    assertThat((BigDecimal) row.get("fundLedger")).isEqualByComparingTo("0.00");
+    assertThat((BigDecimal) row.get("creditorTotal"))
+        .isEqualByComparingTo(expected.position().creditorTotal());
+    assertThat((BigDecimal) row.get("difference")).isEqualByComparingTo("0.00");
+    assertThat(row.get("bankBalance")).isNull();
+    assertThat(row.get("bankNote"))
+        .isEqualTo(
+            "No reconciliation has this period end — the cashbook is compared with trust creditors"
+                + " only");
+    assertThat(row.get("balanced")).isEqualTo(true);
+    assertThat((List<Map<String, Object>>) row.get("flags")).isEmpty();
+    assertThat(result.summary())
+        .containsKeys("cashbook", "creditorTotal", "interAccount", "balanced");
+
+    var firmWide = inTenant(() -> trustPositionQuery.executeAll(Map.of("asOfDate", date)));
+    assertThat(firmWide.rows()).anyMatch(r -> account.equals(r.get("trustAccountId")));
+
+    assertThatThrownBy(() -> inTenant(() -> trustPositionQuery.executeAll(Map.of())))
+        .isInstanceOfSatisfying(
+            InvalidStateException.class,
+            e -> {
+              assertThat(e.getBody().getStatus()).isEqualTo(400);
+              assertThat(e.getBody().getTitle()).isEqualTo("Missing required parameter");
+              assertThat(e.getBody().getDetail()).isEqualTo("Parameter 'asOfDate' is required");
+            });
+    var unknownAccount = UUID.randomUUID();
+    assertThatThrownBy(
+            () ->
+                inTenant(
+                    () ->
+                        trustPositionQuery.executeAll(
+                            Map.of("asOfDate", date, "trust_account_id", unknownAccount))))
+        .isInstanceOfSatisfying(
+            ResourceNotFoundException.class,
+            e -> {
+              assertThat(e.getBody().getStatus()).isEqualTo(404);
+              assertThat(e.getBody().getTitle()).isEqualTo("TrustAccount not found");
+              assertThat(e.getBody().getDetail())
+                  .isEqualTo("No trustaccount found with id " + unknownAccount);
+            });
+  }
+
+  private <T> T inTenant(Supplier<T> query) {
+    var result = new java.util.concurrent.atomic.AtomicReference<T>();
+    runInTenant(() -> result.set(query.get()));
+    return result.get();
+  }
+
+  private static Map<String, Object> onlyRow(
+      ReportResult result, java.util.function.Predicate<Map<String, Object>> matching) {
+    var rows = result.rows().stream().filter(matching).toList();
+    assertThat(rows).hasSize(1);
+    return rows.getFirst();
+  }
+
+  private BankStatementResponse importStatement(
+      TrustBooksFixture.Tenant books, UUID account, String fileName, String... lines) {
+    var csv =
+        """
+        FNB Trust Account Statement - Account 62700000000
+        Date,Description,Amount,Balance,Reference
+        %s
+        """
+            .formatted(String.join("\n", lines));
+    var file =
+        new MockMultipartFile("file", fileName, "text/csv", csv.getBytes(StandardCharsets.UTF_8));
+    var statement = new BankStatementResponse[1];
+    books.as(
+        ownerMemberId,
+        () -> statement[0] = trustReconciliationService.importBankStatement(account, file));
+    return statement[0];
   }
 
   // ==========================================================================

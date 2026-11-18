@@ -310,13 +310,13 @@ public class StatementLinePostingService {
    * still reset. {@link TrustReconciliationService#unmatch} routes only recorded lines here.
    *
    * <p>An {@code UNIDENTIFIED_DEPOSIT} line (647B): its item is locked after the line and before
-   * any transaction (lock order line → item → transactions → statement) and must be HELD with no
+   * any transaction (lock order line → item → statement → transactions) and must be HELD with no
    * pending resolution (else 400 "Undo the allocation first", nothing moves); the opening row's
    * contra carries the item, and the item becomes {@code REVERSED} on the line's date.
    *
    * <p>An {@code INVESTMENT_INTEREST} line (648B): the investment row, then its entry, are locked
-   * after the line and before any transaction (lock order line → investment → entry → transactions
-   * → statement); refused once the investment is withdrawn (nothing moves); the entry becomes
+   * after the line and before any transaction (lock order line → investment → entry → statement →
+   * transactions); refused once the investment is withdrawn (nothing moves); the entry becomes
    * {@code REVERSED} with its rows.
    */
   @Transactional
@@ -343,7 +343,18 @@ public class StatementLinePostingService {
       interest = investmentService.lockEntryForUnmatch(lineId);
     }
 
-    // 1. Reverse first: reverseForUnmatch finds the originals by their link to the line.
+    // 0c. The statement, before any row is reversed (650A F-1): completing its reconciliation
+    // locks the statement and then the account (the Rule 54.15 list), and a reversal posts under
+    // the account's posting lock — so the statement is taken first here too, or the two would
+    // deadlock. Refused once the statement is RECONCILED (D-14); nothing has moved yet.
+    var statement =
+        statementRepository
+            .findByIdForUpdate(line.getBankStatementId())
+            .orElseThrow(
+                () -> new ResourceNotFoundException("BankStatement", line.getBankStatementId()));
+    StatementLines.requireNotReconciled(statement);
+
+    // 1. Reverse: reverseForUnmatch finds the originals by their link to the line.
     var contras = transactionService.reverseForUnmatch(lineId);
 
     // 2. Unlink every row still pointing at the line (contras are built without a link).
@@ -357,13 +368,6 @@ public class StatementLinePostingService {
     line.setTrustTransactionId(null);
     line.setMatchConfidence(null);
     lineRepository.save(line);
-    var statement =
-        statementRepository
-            .findByIdForUpdate(line.getBankStatementId())
-            .orElseThrow(
-                () -> new ResourceNotFoundException("BankStatement", line.getBankStatementId()));
-    // Refused once the statement is RECONCILED (D-14); the refusal rolls back the reversals above.
-    StatementLines.requireNotReconciled(statement);
     statement.decrementMatched();
     statementRepository.save(statement);
 

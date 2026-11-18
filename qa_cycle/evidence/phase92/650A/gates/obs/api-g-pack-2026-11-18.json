@@ -1,0 +1,251 @@
+{
+  "method": "POST",
+  "url": "/api/report-definitions/section-35-data-pack/execute",
+  "status": 200,
+  "body": {
+    "reportName": "Section 35 Data Pack",
+    "parameters": {
+      "trust_account_id": "e9fd502f-1a2e-4379-bfd8-776de7cb5570",
+      "financial_year_end": "2026-11-18"
+    },
+    "generatedAt": "2026-11-18T21:04:56.028652430Z",
+    "columns": [
+      {
+        "key": "_section",
+        "label": "Section",
+        "type": "string",
+        "format": null
+      },
+      {
+        "key": "label",
+        "label": "Item",
+        "type": "string",
+        "format": null
+      },
+      {
+        "key": "amount",
+        "label": "Amount",
+        "type": "currency",
+        "format": "0.00"
+      }
+    ],
+    "rows": [
+      {
+        "date": "2026-10-05",
+        "reference": "DEP/OBS650A/LXBGH/1",
+        "type": "Deposit",
+        "clientName": "Acme Corp",
+        "credit": 10000,
+        "debit": 0,
+        "balance": 10000,
+        "_section": "Trust Receipts & Payments",
+        "label": "2026-10-05 · DEP/OBS650A/LXBGH/1 · Acme Corp (Deposit)",
+        "amount": 10000
+      },
+      {
+        "date": "2026-10-20",
+        "reference": "DEP/OBS650A/LXBGH/2",
+        "type": "Deposit",
+        "clientName": "Acme Corp",
+        "credit": 2500,
+        "debit": 0,
+        "balance": 12500,
+        "_section": "Trust Receipts & Payments",
+        "label": "2026-10-20 · DEP/OBS650A/LXBGH/2 · Acme Corp (Deposit)",
+        "amount": 2500
+      },
+      {
+        "date": "2026-10-22",
+        "reference": "DEP/OBS650A/LXBGH/3",
+        "type": "Deposit",
+        "clientName": "OBS 650A Holdings LXBGH",
+        "credit": 4000,
+        "debit": 0,
+        "balance": 16500,
+        "_section": "Trust Receipts & Payments",
+        "label": "2026-10-22 · DEP/OBS650A/LXBGH/3 · OBS 650A Holdings LXBGH (Deposit)",
+        "amount": 4000
+      },
+      {
+        "date": "2026-10-28",
+        "reference": "DEP/OBS650A/LXBGH/4",
+        "type": "Deposit",
+        "clientName": "Acme Corp",
+        "credit": 750,
+        "debit": 0,
+        "balance": 17250,
+        "_section": "Trust Receipts & Payments",
+        "label": "2026-10-28 · DEP/OBS650A/LXBGH/4 · Acme Corp (Deposit)",
+        "amount": 750
+      },
+      {
+        "_section": "Trust Receipts & Payments",
+        "label": "Total",
+        "amount": 17250,
+        "_total": true
+      },
+      {
+        "clientName": "Acme Corp",
+        "customerId": "942a16cb-bb7d-40e9-ad7d-eef31f20e3e9",
+        "balance": 13250,
+        "totalDeposits": 13250,
+        "totalPayments": 0,
+        "totalFeeTransfers": 0,
+        "totalInterestCredited": 0,
+        "lastTransactionDate": "2026-10-28",
+        "asOfDate": "2026-11-18",
+        "kind": "CLIENT",
+        "name": "Acme Corp",
+        "generalBalance": 13250,
+        "investedBalance": 0,
+        "totalBalance": 13250,
+        "matters": [
+          {
+            "matterId": "cddda80c-db68-4592-8dcb-e1a155bc7cc1",
+            "name": "OBS 650A Transfer LXBGH",
+            "balance": 2500
+          },
+          {
+            "matterId": "c12301fd-c1cb-4e71-8f40-4bc0f323faa9",
+            "name": "Website Redesign",
+            "balance": 10750
+          }
+        ],
+        "trustAccountId": "e9fd502f-1a2e-4379-bfd8-776de7cb5570",
+        "receivedDate": null,
+        "bankDescription": null,
+        "source": "LIVE",
+        "sourceNote": "Not locked — this account's reconciliation for the month is not complete",
+        "_section": "Client Trust Balances",
+        "label": "Acme Corp",
+        "amount": 13250
+      },
+      {
+        "clientName": "OBS 650A Holdings LXBGH",
+        "customerId": "379b98ee-e5a7-48c8-abc3-f41b5e67b3f2",
+        "balance": 4000,
+        "totalDeposits": 4000,
+        "totalPayments": 0,
+        "totalFeeTransfers": 0,
+        "totalInterestCredited": 0,
+        "lastTransactionDate": "2026-10-22",
+        "asOfDate": "2026-11-18",
+        "kind": "CLIENT",
+        "name": "OBS 650A Holdings LXBGH",
+        "generalBalance": 4000,
+        "investedBalance": 0,
+        "totalBalance": 4000,
+        "matters": [
+          {
+            "matterId": "593bdd5c-f3f2-4855-838c-2d079baecd4c",
+            "name": "OBS 650A Contract LXBGH",
+            "balance": 4000
+          }
+        ],
+        "trustAccountId": "e9fd502f-1a2e-4379-bfd8-776de7cb5570",
+        "receivedDate": null,
+        "bankDescription": null,
+        "source": "LIVE",
+        "sourceNote": "Not locked — this account's reconciliation for the month is not complete",
+        "_section": "Client Trust Balances",
+        "label": "OBS 650A Holdings LXBGH",
+        "amount": 4000
+      },
+      {
+        "_section": "Client Trust Balances",
+        "label": "Total",
+        "amount": 17250,
+        "_total": true
+      },
+      {
+        "section": "BANK",
+        "label": "Bank Balance per Statement",
+        "amount": 12500,
+        "_section": "Trust Reconciliation"
+      },
+      {
+        "section": "ADJUSTMENTS",
+        "label": "Add: Outstanding Deposits",
+        "amount": 4000,
+        "_section": "Trust Reconciliation"
+      },
+      {
+        "section": "ADJUSTMENTS",
+        "label": "Less: Outstanding Payments",
+        "amount": 0,
+        "_section": "Trust Reconciliation"
+      },
+      {
+        "section": "ADJUSTED",
+        "label": "Adjusted Bank Balance",
+        "amount": 16500,
+        "_section": "Trust Reconciliation"
+      },
+      {
+        "section": "COMPARISON",
+        "label": "Cashbook Balance",
+        "amount": 16500,
+        "_section": "Trust Reconciliation"
+      },
+      {
+        "section": "COMPARISON",
+        "label": "Client Ledger Total",
+        "amount": 16500,
+        "_section": "Trust Reconciliation"
+      }
+    ],
+    "summary": {
+      "sectionCount": 5,
+      "financialYearStart": "2025-11-19",
+      "financialYearEnd": "2026-11-18",
+      "sections": [
+        {
+          "sectionName": "Trust Receipts & Payments",
+          "rowCount": 4,
+          "totalReceipts": 17250,
+          "totalPayments": 0,
+          "netMovement": 17250,
+          "transactionCount": 4
+        },
+        {
+          "sectionName": "Client Trust Balances",
+          "rowCount": 2,
+          "totalTrustBalance": 17250,
+          "clientCount": 2
+        },
+        {
+          "sectionName": "Trust Reconciliation",
+          "rowCount": 6,
+          "periodEnd": "2026-10-31",
+          "bankBalance": 12500,
+          "cashbookBalance": 16500,
+          "clientLedgerTotal": 16500,
+          "outstandingDeposits": 4000,
+          "outstandingPayments": 0,
+          "adjustedBankBalance": 16500,
+          "isBalanced": true,
+          "status": "COMPLETED"
+        },
+        {
+          "sectionName": "Interest Allocation",
+          "note": "No posted interest runs found in financial year",
+          "rowCount": 0
+        },
+        {
+          "sectionName": "Client Ledger Statements",
+          "status": "AVAILABLE_INDIVIDUALLY",
+          "note": "Per-client ledger statements must be generated individually using the 'client-ledger-statement' report with customer_id parameter",
+          "reportSlug": "client-ledger-statement",
+          "rowCount": 0
+        }
+      ],
+      "totalTrustBalanceAtYearEnd": 17250
+    },
+    "pagination": {
+      "page": 0,
+      "size": 100,
+      "totalElements": 14,
+      "totalPages": 1
+    }
+  }
+}

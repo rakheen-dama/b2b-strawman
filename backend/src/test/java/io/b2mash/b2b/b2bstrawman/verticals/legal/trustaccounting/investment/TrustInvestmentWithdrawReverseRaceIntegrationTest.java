@@ -17,12 +17,15 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestTrustInvestmentAccountHelper;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccount;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountType;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedgerQueryRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.ReverseRequest;
+import jakarta.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDate;
@@ -31,7 +34,9 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.LockSupport;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -41,23 +46,23 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
 
 /**
- * PR #1757 security review (MEDIUM, race / TOCTOU): an investment withdrawal and a reversal of its
- * placement PAYMENT each check the other's effect (the withdrawal: placement APPROVED; the
- * reversal: investment not WITHDRAWN). Without a common lock both checks pass when the two run
- * together and the client is credited twice. Both paths now lock the placement PAYMENT row first,
- * then the investment row, and re-check under those locks.
+ * PR #1757 security review (MEDIUM, race / TOCTOU), 648A: an investment withdrawal and a reversal
+ * of its placement each check the other's effect. Both paths lock the placement row first (the
+ * withdrawal then locks the investment row), so they serialise. Since 648A the placement ({@code
+ * INV_PLACE}) is refused reversal on its type (registry {@code reversal = NONE}, replacing
+ * G89-F86's investment lookup) — under the placement row lock, which a reversal therefore waits for
+ * while a withdrawal holds it.
  *
  * <p>Each test holds one operation's transaction open (latch) after it has done its work, starts
- * the other operation on a second thread, gives it time to reach its checks, then commits the
- * first. Exactly one may succeed and the client must be credited once. Since G89-F86 (D40) the
- * placement of an investment is never reversed, so the reversal is the refused side in both orders;
- * the race now guards the withdrawal-first order, where the reversal must wait for the withdrawal's
- * locks and see the investment.
+ * the other operation on a second thread, waits until it is either blocked by the first's backend
+ * (observed in {@code pg_stat_activity}, not a sleep) or finished, then commits the first. In both
+ * orders the reversal is refused, the withdrawal succeeds, and the client is credited exactly once.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -69,6 +74,9 @@ class TrustInvestmentWithdrawReverseRaceIntegrationTest {
   private static final String ORG_ID = "org_trust_investment_withdraw_reverse_race";
   private static final String OWNER_SUB = "user_tiwr_owner";
   private static final String APPROVER_SUB = "user_tiwr_approver";
+  private static final String PLACEMENT_NOT_REVERSIBLE =
+      "This entry placed a trust investment. Withdraw the investment instead of reversing its"
+          + " placement.";
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
@@ -82,10 +90,13 @@ class TrustInvestmentWithdrawReverseRaceIntegrationTest {
   @Autowired private CustomerRepository customerRepository;
   @Autowired private ProjectRepository projectRepository;
   @Autowired private Clock clock;
+  @Autowired private JdbcTemplate jdbc;
+  @Autowired private EntityManager entityManager;
 
   private String tenantSchema;
   private UUID ownerId;
   private UUID trustAccountId;
+  private UUID investmentAccountId;
   private LocalDate today;
   private int counter = 0;
 
@@ -125,12 +136,18 @@ class TrustInvestmentWithdrawReverseRaceIntegrationTest {
                                   "PR #1757 race tests"))
                           .getId();
                     }));
+    investmentAccountId =
+        TestTrustInvestmentAccountHelper.openInvestmentAccount(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUB),
+            "Withdraw Reverse Race s86(4)",
+            "6200-000-TIWR-I",
+            InvestmentBasis.CLIENT_INSTRUCTION);
   }
 
   /**
-   * G89-F86 (D40) changed this case: a placement payment with an investment is never reversed, so
-   * the reversal attempted first is refused outright (and releases its placement lock at once); the
-   * withdrawal then succeeds. Still exactly one credit.
+   * The reversal attempted first is refused on the type at once (and releases its placement lock);
+   * the withdrawal then succeeds. Exactly one credit.
    */
   @Test
   void reversalAttemptFirst_thenWithdrawal_reversalRefused_withdrawalSucceeds_creditedOnce()
@@ -142,14 +159,13 @@ class TrustInvestmentWithdrawReverseRaceIntegrationTest {
             () ->
                 transactionService.reverseTransaction(
                     placed.placementId(), new ReverseRequest("Placed in error", null)),
-            () -> investmentService.withdrawInvestment(placed.investmentId()));
+            () -> withdraw(placed));
 
     assertThat(outcome.first())
-        .as("the reversal of a placement with an investment (D40)")
+        .as("the reversal of an investment's placement (648A: refused on the type)")
         .isInstanceOf(InvalidStateException.class)
         .hasMessageContaining("Cannot reverse transaction")
-        .hasMessageContaining(
-            "Withdraw the investment instead of reversing its placement payment.");
+        .hasMessageContaining(PLACEMENT_NOT_REVERSIBLE);
     assertThat(outcome.second()).as("the withdrawal").isNull();
     assertCreditedOnce(placed);
   }
@@ -160,34 +176,61 @@ class TrustInvestmentWithdrawReverseRaceIntegrationTest {
 
     var outcome =
         race(
-            () -> investmentService.withdrawInvestment(placed.investmentId()),
+            () -> withdraw(placed),
             () ->
                 transactionService.reverseTransaction(
                     placed.placementId(), new ReverseRequest("Placed in error", null)));
 
     assertThat(outcome.first()).as("the withdrawal (committed first)").isNull();
+    // The lock order is still exercised: the reversal waited for the placement row lock the
+    // withdrawal held (its refusal on the type is read under that lock), it did not run ahead
+    assertThat(outcome.secondBlockedOnFirst())
+        .as("the reversal blocked on a trust_transactions row lock the withdrawal held")
+        .isTrue();
+    assertThat(outcome.secondFinishedBeforeCommit())
+        .as("the reversal finished while the withdrawal still held the placement row lock")
+        .isFalse();
     assertThat(outcome.second())
-        .as("the reversal, checked after the withdrawal committed")
+        .as("the reversal, which waited for the placement row lock")
         .isInstanceOf(InvalidStateException.class)
         .hasMessageContaining("Cannot reverse transaction")
-        .hasMessageContaining("This payment placed a trust investment (WITHDRAWN).");
+        .hasMessageContaining(PLACEMENT_NOT_REVERSIBLE);
     assertCreditedOnce(placed);
+  }
+
+  private TrustInvestmentService.TrustInvestmentResponse withdraw(Placed placed) {
+    return investmentService.withdrawInvestment(
+        placed.investmentId(), new TrustInvestmentService.WithdrawInvestmentRequest(today));
   }
 
   // --- race harness ---
 
-  private record Outcome(Throwable first, Throwable second) {}
+  /**
+   * Each side's failure (null = succeeded); whether {@code second} was observed blocked by {@code
+   * first}'s backend on a trust_transactions query; and whether {@code second} had already finished
+   * when {@code first} was released to commit (false = it was blocked on a lock {@code first}
+   * held).
+   */
+  private record Outcome(
+      Throwable first,
+      Throwable second,
+      boolean secondBlockedOnFirst,
+      boolean secondFinishedBeforeCommit) {}
 
   /**
    * Runs {@code first} in a transaction that stays open after it returns, starts {@code second} on
-   * another thread, waits for it to reach its checks (it either blocks on a lock or, without one,
-   * runs ahead), then commits {@code first}. Returns each side's failure (null = succeeded).
+   * another thread, waits (bounded) until it is either blocked by {@code first}'s backend or
+   * finished, then commits {@code first}. If {@code first} failed its transaction is already rolled
+   * back and holds nothing, so there is nothing to wait for. Returns each side's failure (null =
+   * succeeded).
    */
   private Outcome race(Supplier<?> first, Supplier<?> second) throws Exception {
     var firstDone = new CountDownLatch(1);
     var releaseFirst = new CountDownLatch(1);
     var firstError = new AtomicReference<Throwable>();
     var secondError = new AtomicReference<Throwable>();
+    var secondFinished = new AtomicBoolean(false);
+    var firstBackendPid = new AtomicReference<Integer>();
 
     Thread firstThread =
         Thread.ofPlatform()
@@ -199,6 +242,12 @@ class TrustInvestmentWithdrawReverseRaceIntegrationTest {
                             transactionTemplate.execute(
                                 tx -> {
                                   first.get();
+                                  firstBackendPid.set(
+                                      ((Number)
+                                              entityManager
+                                                  .createNativeQuery("SELECT pg_backend_pid()")
+                                                  .getSingleResult())
+                                          .intValue());
                                   firstDone.countDown();
                                   await(releaseFirst);
                                   return null;
@@ -218,14 +267,55 @@ class TrustInvestmentWithdrawReverseRaceIntegrationTest {
                     as(second);
                   } catch (Throwable t) {
                     secondError.set(t);
+                  } finally {
+                    secondFinished.set(true);
                   }
                 });
-    // Give the second operation time to read and check (or block on a lock) before committing
-    Thread.sleep(1500);
-    releaseFirst.countDown();
-    firstThread.join(30_000);
-    secondThread.join(30_000);
-    return new Outcome(firstError.get(), secondError.get());
+    boolean secondBlockedOnFirst;
+    boolean secondFinishedBeforeCommit;
+    try {
+      secondBlockedOnFirst =
+          firstError.get() == null
+              && awaitBlockedOnTrustTransactionLockHeldByOrFinished(
+                  firstBackendPid.get(), secondFinished);
+      secondFinishedBeforeCommit = secondFinished.get();
+    } finally {
+      releaseFirst.countDown();
+      join(firstThread);
+      join(secondThread);
+    }
+    return new Outcome(
+        firstError.get(), secondError.get(), secondBlockedOnFirst, secondFinishedBeforeCommit);
+  }
+
+  /**
+   * Waits (bounded, 30 s) until a backend blocked by {@code holderPid} is running a
+   * trust_transactions query (true — the placement row lock is contested) or the waiter finishes
+   * without having been seen blocked (false). Fails if neither happens.
+   */
+  private boolean awaitBlockedOnTrustTransactionLockHeldByOrFinished(
+      int holderPid, AtomicBoolean waiterFinished) {
+    long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(30);
+    while (System.nanoTime() < deadline) {
+      Long blocked =
+          jdbc.queryForObject(
+              "SELECT count(*) FROM pg_stat_activity WHERE ? = ANY(pg_blocking_pids(pid))"
+                  + " AND query ILIKE '%trust_transactions%'",
+              Long.class, holderPid);
+      if (blocked != null && blocked > 0) {
+        return true;
+      }
+      if (waiterFinished.get()) {
+        return false;
+      }
+      LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(10)); // poll interval
+    }
+    throw new AssertionError("the second operation neither blocked nor finished within 30 s");
+  }
+
+  private static void join(Thread thread) throws InterruptedException {
+    thread.join(30_000);
+    assertThat(thread.isAlive()).as("thread finished within 30 s").isFalse();
   }
 
   private static void await(CountDownLatch latch) {
@@ -236,10 +326,19 @@ class TrustInvestmentWithdrawReverseRaceIntegrationTest {
     }
   }
 
-  /** R5 000 deposited, R1 000 placed and approved, then exactly one R1 000 credit back. */
+  /**
+   * R5 000 deposited, R1 000 placed and approved, then exactly one R1 000 credit back to the
+   * placement's matter, and the investment account emptied.
+   */
   private void assertCreditedOnce(Placed placed) {
     assertThat(clientBalance(placed.client())).isEqualByComparingTo("5000.00");
     assertThat(matterBalance(placed.matter())).isEqualByComparingTo("5000.00");
+    assertThat(
+            as(
+                () ->
+                    trustLedgerQueryRepository.investmentBalance(
+                        placed.investmentId(), investmentAccountId)))
+        .isEqualByComparingTo("0");
   }
 
   // --- fixtures ---
@@ -269,11 +368,17 @@ class TrustInvestmentWithdrawReverseRaceIntegrationTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
-                        {"clientId": "%s", "matterId": "%s", "institution": "Test Bank",
-                         "accountNumber": "TIWR-%d", "principal": 1000.00, "interestRate": 0.07,
-                         "depositDate": "%s", "investmentBasis": "FIRM_DISCRETION"}
+                        {"investmentAccountId": "%s", "clientId": "%s", "matterId": "%s",
+                         "institution": "Test Bank", "accountNumber": "TIWR-%d",
+                         "principal": 1000.00, "interestRate": 0.07, "depositDate": "%s",
+                         "investmentBasis": "CLIENT_INSTRUCTION"}
                         """
-                            .formatted(client, matter, ++counter, today.minusDays(4))))
+                            .formatted(
+                                investmentAccountId,
+                                client,
+                                matter,
+                                ++counter,
+                                today.minusDays(4))))
             .andExpect(status().isCreated())
             .andReturn()
             .getResponse()

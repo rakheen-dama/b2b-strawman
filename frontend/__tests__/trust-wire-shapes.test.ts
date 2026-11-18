@@ -22,8 +22,11 @@ import type {
   TrustTransaction,
   TrustTransactionDirection,
   PayToFundRequest,
+  PlaceInvestmentRequest,
+  TrustInvestment,
   TrustTransactionTypeInfo,
   UnidentifiedDeposit,
+  WithdrawInvestmentRequest,
 } from "@/lib/types/trust";
 
 const { records, enums } = contract;
@@ -89,14 +92,17 @@ describe("trust wire shapes match the backend contract (ADR-365)", () => {
       "CreateTrustAccountRequest",
       "CreditorBreakdown",
       "PayToFundRequest",
+      "PlaceInvestmentRequest",
       "RecordFromLineResponse",
       "TotalBalanceResponse",
       "TrustAccountResponse",
+      "TrustInvestmentResponse",
       "TrustPositionResponse",
       "TrustReconciliationResponse",
       "TrustTransactionResponse",
       "TrustTransactionTypeResponse",
       "UnidentifiedDepositResponse",
+      "WithdrawInvestmentRequest",
     ]);
   });
 
@@ -394,6 +400,59 @@ describe("trust wire shapes match the backend contract (ADR-365)", () => {
       investmentBasis: "FIRM_DISCRETION",
     };
     expect(Object.keys(literal)).toEqual(componentNames(records.CreateTrustAccountRequest));
+  });
+
+  it("TrustInvestment ↔ TrustInvestmentService.TrustInvestmentResponse (648A)", () => {
+    const literal: Required<TrustInvestment> = {
+      id: "",
+      trustAccountId: "",
+      investmentAccountId: "",
+      investmentAccountName: null,
+      clientId: null,
+      clientName: null,
+      matterId: null,
+      institution: "",
+      accountNumber: "",
+      principal: 0,
+      interestRate: 0,
+      depositDate: "",
+      maturityDate: null,
+      interestEarned: 0,
+      balance: 0,
+      status: "ACTIVE",
+      awaitingApproval: false,
+      withdrawalDate: null,
+      withdrawalAmount: null,
+      depositTransactionId: null,
+      withdrawalTransactionId: null,
+      notes: null,
+      investmentBasis: "FIRM_DISCRETION",
+      createdAt: "",
+      updatedAt: "",
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(records.TrustInvestmentResponse));
+  });
+
+  it("PlaceInvestmentRequest ↔ TrustInvestmentService.PlaceInvestmentRequest (648A)", () => {
+    const literal: Required<PlaceInvestmentRequest> = {
+      investmentAccountId: "",
+      clientId: null,
+      matterId: null,
+      institution: "",
+      accountNumber: "",
+      principal: 0,
+      interestRate: 0,
+      depositDate: "",
+      maturityDate: null,
+      notes: null,
+      investmentBasis: "FIRM_DISCRETION",
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(records.PlaceInvestmentRequest));
+  });
+
+  it("WithdrawInvestmentRequest ↔ TrustInvestmentService.WithdrawInvestmentRequest (648A)", () => {
+    const literal: Required<WithdrawInvestmentRequest> = { withdrawalDate: "" };
+    expect(Object.keys(literal)).toEqual(componentNames(records.WithdrawInvestmentRequest));
   });
 
   it("pins exactly the enums the trust records carry", () => {

@@ -12,6 +12,7 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestTrustInvestmentAccountHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountingConstants;
@@ -62,6 +63,8 @@ class InvestmentBasisInterestTest {
 
   private String tenantSchema;
   private UUID trustAccountId;
+  private UUID firmInvestmentAccountId;
+  private UUID clientInvestmentAccountId;
   private UUID ownerMemberId;
   private UUID adminMemberId;
   private String clientInstructionCustomerId;
@@ -132,6 +135,21 @@ class InvestmentBasisInterestTest {
             .andExpect(status().isCreated())
             .andReturn();
     trustAccountId = UUID.fromString(TestEntityHelper.extractId(accountResult));
+    // 648A: investments are held in INVESTMENT accounts of their basis
+    firmInvestmentAccountId =
+        TestTrustInvestmentAccountHelper.openInvestmentAccount(
+            mockMvc,
+            ownerJwt,
+            "Section 86(3) Investments",
+            "INV86-3-" + ORG_ID.hashCode(),
+            InvestmentBasis.FIRM_DISCRETION);
+    clientInvestmentAccountId =
+        TestTrustInvestmentAccountHelper.openInvestmentAccount(
+            mockMvc,
+            ownerJwt,
+            "Section 86(4) Investments",
+            "INV86-4-" + ORG_ID.hashCode(),
+            InvestmentBasis.CLIENT_INSTRUCTION);
 
     // Create LPFF rate: 7.5% annual, 75% LPFF share, effective 2025-12-01
     mockMvc
@@ -174,6 +192,7 @@ class InvestmentBasisInterestTest {
                 investmentService.placeInvestment(
                     trustAccountId,
                     new TrustInvestmentService.PlaceInvestmentRequest(
+                        clientInvestmentAccountId,
                         UUID.fromString(clientInstructionCustomerId),
                         trustMatterOf(clientInstructionCustomerId),
                         "Investec",
@@ -193,8 +212,9 @@ class InvestmentBasisInterestTest {
                 investmentService.placeInvestment(
                     trustAccountId,
                     new TrustInvestmentService.PlaceInvestmentRequest(
-                        UUID.fromString(firmDiscretionCustomerId),
-                        trustMatterOf(firmDiscretionCustomerId),
+                        firmInvestmentAccountId,
+                        null,
+                        null,
                         "ABSA",
                         "2220002222",
                         new BigDecimal("10000.00"),
@@ -212,6 +232,7 @@ class InvestmentBasisInterestTest {
                 investmentService.placeInvestment(
                     trustAccountId,
                     new TrustInvestmentService.PlaceInvestmentRequest(
+                        clientInvestmentAccountId,
                         UUID.fromString(mixedCustomerId),
                         trustMatterOf(mixedCustomerId),
                         "Nedbank",
@@ -230,8 +251,9 @@ class InvestmentBasisInterestTest {
                 investmentService.placeInvestment(
                     trustAccountId,
                     new TrustInvestmentService.PlaceInvestmentRequest(
-                        UUID.fromString(mixedCustomerId),
-                        trustMatterOf(mixedCustomerId),
+                        firmInvestmentAccountId,
+                        null,
+                        null,
                         "Standard Bank",
                         "4440004444",
                         new BigDecimal("5000.00"),

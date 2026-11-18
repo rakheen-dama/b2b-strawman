@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -16,7 +17,9 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestTrustInvestmentAccountHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -52,6 +55,8 @@ class TrustInvestmentControllerTest {
   private String tenantSchema;
   private String trustAccountId;
   private String customerId;
+  private String firmInvestmentAccountId;
+  private String clientInvestmentAccountId;
 
   @BeforeAll
   void setup() throws Exception {
@@ -144,6 +149,24 @@ class TrustInvestmentControllerTest {
                     """
                         .formatted(customerId, trustMatterOf(customerId))))
         .andExpect(status().isCreated());
+
+    // 648A: investments are held in INVESTMENT accounts of their basis
+    firmInvestmentAccountId =
+        TestTrustInvestmentAccountHelper.openInvestmentAccount(
+                mockMvc,
+                ownerJwt,
+                "Ctrl Section 86(3) Investments",
+                "62000000301",
+                InvestmentBasis.FIRM_DISCRETION)
+            .toString();
+    clientInvestmentAccountId =
+        TestTrustInvestmentAccountHelper.openInvestmentAccount(
+                mockMvc,
+                ownerJwt,
+                "Ctrl Section 86(4) Investments",
+                "62000000302",
+                InvestmentBasis.CLIENT_INSTRUCTION)
+            .toString();
   }
 
   // --- 446.8: Controller integration tests ---
@@ -158,6 +181,7 @@ class TrustInvestmentControllerTest {
                 .content(
                     """
                     {
+                      "investmentAccountId": "%s",
                       "clientId": "%s",
                       "matterId": "%s",
                       "institution": "ABSA Bank",
@@ -167,15 +191,21 @@ class TrustInvestmentControllerTest {
                       "depositDate": "2026-02-01",
                       "maturityDate": "2026-08-01",
                       "notes": "6-month fixed deposit",
-                      "investmentBasis": "FIRM_DISCRETION"
+                      "investmentBasis": "CLIENT_INSTRUCTION"
                     }
                     """
-                        .formatted(customerId, trustMatterOf(customerId))))
+                        .formatted(
+                            clientInvestmentAccountId, customerId, trustMatterOf(customerId))))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.status").value("ACTIVE"))
         .andExpect(jsonPath("$.principal").value(20000.00))
         .andExpect(jsonPath("$.institution").value("ABSA Bank"))
         .andExpect(jsonPath("$.clientName").value("Investment Ctrl Test Customer"))
+        .andExpect(jsonPath("$.clientId").value(customerId))
+        .andExpect(jsonPath("$.matterId").value(trustMatterOf(customerId).toString()))
+        .andExpect(jsonPath("$.investmentAccountId").value(clientInvestmentAccountId))
+        .andExpect(jsonPath("$.investmentAccountName").value("Ctrl Section 86(4) Investments"))
+        .andExpect(jsonPath("$.balance").value(0))
         .andExpect(jsonPath("$.id").isNotEmpty());
   }
 
@@ -193,8 +223,7 @@ class TrustInvestmentControllerTest {
                     .content(
                         """
                         {
-                          "clientId": "%s",
-                          "matterId": "%s",
+                          "investmentAccountId": "%s",
                           "institution": "Nedbank",
                           "accountNumber": "5551234567",
                           "principal": 10000.00,
@@ -204,7 +233,7 @@ class TrustInvestmentControllerTest {
                           "investmentBasis": "FIRM_DISCRETION"
                         }
                         """
-                            .formatted(customerId, trustMatterOf(customerId))))
+                            .formatted(firmInvestmentAccountId)))
             .andExpect(status().isCreated())
             .andReturn();
 
@@ -244,8 +273,7 @@ class TrustInvestmentControllerTest {
                 .content(
                     """
                     {
-                      "clientId": "%s",
-                      "matterId": "%s",
+                      "investmentAccountId": "%s",
                       "institution": "FNB",
                       "accountNumber": "1112223334",
                       "principal": 5000.00,
@@ -255,7 +283,7 @@ class TrustInvestmentControllerTest {
                       "investmentBasis": "FIRM_DISCRETION"
                     }
                     """
-                        .formatted(customerId, trustMatterOf(customerId), maturingDate)))
+                        .formatted(firmInvestmentAccountId, maturingDate)))
         .andExpect(status().isCreated());
 
     // Query maturing within 30 days
@@ -285,8 +313,7 @@ class TrustInvestmentControllerTest {
                     .content(
                         """
                         {
-                          "clientId": "%s",
-                          "matterId": "%s",
+                          "investmentAccountId": "%s",
                           "institution": "Standard Bank",
                           "accountNumber": "7778889990",
                           "principal": 3000.00,
@@ -295,7 +322,7 @@ class TrustInvestmentControllerTest {
                           "investmentBasis": "FIRM_DISCRETION"
                         }
                         """
-                            .formatted(customerId, trustMatterOf(customerId))))
+                            .formatted(firmInvestmentAccountId)))
             .andExpect(status().isCreated())
             .andReturn();
 
@@ -314,11 +341,16 @@ class TrustInvestmentControllerTest {
 
     // Withdraw
     mockMvc
-        .perform(post("/api/trust-investments/" + investmentId + "/withdraw").with(ownerJwt))
+        .perform(
+            post("/api/trust-investments/" + investmentId + "/withdraw")
+                .with(ownerJwt)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"withdrawalDate\": \"2026-03-01\"}"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("WITHDRAWN"))
-        .andExpect(jsonPath("$.withdrawalAmount").isNumber())
-        .andExpect(jsonPath("$.withdrawalDate").isNotEmpty());
+        .andExpect(jsonPath("$.withdrawalAmount").value(3000.00))
+        .andExpect(jsonPath("$.withdrawalDate").value("2026-03-01"))
+        .andExpect(jsonPath("$.balance").value(0));
   }
 
   @Test
@@ -331,8 +363,7 @@ class TrustInvestmentControllerTest {
                 .content(
                     """
                     {
-                      "clientId": "%s",
-                      "matterId": "%s",
+                      "investmentAccountId": "%s",
                       "institution": "Test Bank",
                       "accountNumber": "0001112223",
                       "principal": 1000.00,
@@ -341,7 +372,7 @@ class TrustInvestmentControllerTest {
                       "investmentBasis": "FIRM_DISCRETION"
                     }
                     """
-                        .formatted(customerId, trustMatterOf(customerId))))
+                        .formatted(firmInvestmentAccountId)))
         .andExpect(status().isForbidden());
   }
 
@@ -368,8 +399,7 @@ class TrustInvestmentControllerTest {
                     .content(
                         """
                         {
-                          "clientId": "%s",
-                          "matterId": "%s",
+                          "investmentAccountId": "%s",
                           "institution": "Capitec",
                           "accountNumber": "4445556667",
                           "principal": 2000.00,
@@ -378,7 +408,7 @@ class TrustInvestmentControllerTest {
                           "investmentBasis": "FIRM_DISCRETION"
                         }
                         """
-                            .formatted(customerId, trustMatterOf(customerId))))
+                            .formatted(firmInvestmentAccountId)))
             .andExpect(status().isCreated())
             .andReturn();
 
@@ -389,7 +419,9 @@ class TrustInvestmentControllerTest {
     mockMvc
         .perform(
             post("/api/trust-investments/" + investmentId + "/withdraw")
-                .with(TestJwtFactory.memberJwt(ORG_ID, "user_invest_ctrl_member")))
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_invest_ctrl_member"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"withdrawalDate\": \"2026-03-01\"}"))
         .andExpect(status().isForbidden());
   }
 
@@ -405,6 +437,7 @@ class TrustInvestmentControllerTest {
                 .content(
                     """
                     {
+                      "investmentAccountId": "%s",
                       "clientId": "%s",
                       "matterId": "%s",
                       "institution": "Investec",
@@ -416,7 +449,8 @@ class TrustInvestmentControllerTest {
                       "investmentBasis": "CLIENT_INSTRUCTION"
                     }
                     """
-                        .formatted(customerId, trustMatterOf(customerId))))
+                        .formatted(
+                            clientInvestmentAccountId, customerId, trustMatterOf(customerId))))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.investmentBasis").value("CLIENT_INSTRUCTION"))
         .andExpect(jsonPath("$.status").value("ACTIVE"));
@@ -432,8 +466,7 @@ class TrustInvestmentControllerTest {
                 .content(
                     """
                     {
-                      "clientId": "%s",
-                      "matterId": "%s",
+                      "investmentAccountId": "%s",
                       "institution": "Capitec Basis",
                       "accountNumber": "8880002222",
                       "principal": 4000.00,
@@ -442,7 +475,7 @@ class TrustInvestmentControllerTest {
                       "investmentBasis": "FIRM_DISCRETION"
                     }
                     """
-                        .formatted(customerId, trustMatterOf(customerId))))
+                        .formatted(firmInvestmentAccountId)))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.investmentBasis").value("FIRM_DISCRETION"));
   }
@@ -460,6 +493,7 @@ class TrustInvestmentControllerTest {
                     .content(
                         """
                         {
+                          "investmentAccountId": "%s",
                           "clientId": "%s",
                           "matterId": "%s",
                           "institution": "FNB Basis",
@@ -470,7 +504,8 @@ class TrustInvestmentControllerTest {
                           "investmentBasis": "CLIENT_INSTRUCTION"
                         }
                         """
-                            .formatted(customerId, trustMatterOf(customerId))))
+                            .formatted(
+                                clientInvestmentAccountId, customerId, trustMatterOf(customerId))))
             .andExpect(status().isCreated())
             .andReturn();
 
@@ -496,6 +531,7 @@ class TrustInvestmentControllerTest {
                 .content(
                     """
                     {
+                      "investmentAccountId": "%s",
                       "clientId": "%s",
                       "matterId": "%s",
                       "institution": "Filter Test Bank CI",
@@ -506,7 +542,8 @@ class TrustInvestmentControllerTest {
                       "investmentBasis": "CLIENT_INSTRUCTION"
                     }
                     """
-                        .formatted(customerId, trustMatterOf(customerId))))
+                        .formatted(
+                            clientInvestmentAccountId, customerId, trustMatterOf(customerId))))
         .andExpect(status().isCreated());
 
     // Also create a FIRM_DISCRETION investment so the filter has something to exclude
@@ -518,8 +555,7 @@ class TrustInvestmentControllerTest {
                 .content(
                     """
                     {
-                      "clientId": "%s",
-                      "matterId": "%s",
+                      "investmentAccountId": "%s",
                       "institution": "Filter Test Bank FD",
                       "accountNumber": "8880005555",
                       "principal": 2000.00,
@@ -528,7 +564,7 @@ class TrustInvestmentControllerTest {
                       "investmentBasis": "FIRM_DISCRETION"
                     }
                     """
-                        .formatted(customerId, trustMatterOf(customerId))))
+                        .formatted(firmInvestmentAccountId)))
         .andExpect(status().isCreated());
 
     // Filter by CLIENT_INSTRUCTION
@@ -562,6 +598,7 @@ class TrustInvestmentControllerTest {
                 .content(
                     """
                     {
+                      "investmentAccountId": "%s",
                       "clientId": "%s",
                       "matterId": "%s",
                       "institution": "No Basis Bank",
@@ -571,7 +608,8 @@ class TrustInvestmentControllerTest {
                       "depositDate": "2026-03-01"
                     }
                     """
-                        .formatted(customerId, trustMatterOf(customerId))))
+                        .formatted(
+                            clientInvestmentAccountId, customerId, trustMatterOf(customerId))))
         .andExpect(status().isBadRequest());
   }
 
@@ -585,6 +623,7 @@ class TrustInvestmentControllerTest {
                 .content(
                     """
                     {
+                      "investmentAccountId": "%s",
                       "clientId": "%s",
                       "matterId": "%s",
                       "institution": "Invalid Basis Bank",
@@ -595,8 +634,118 @@ class TrustInvestmentControllerTest {
                       "investmentBasis": "INVALID_VALUE"
                     }
                     """
-                        .formatted(customerId, trustMatterOf(customerId))))
+                        .formatted(
+                            clientInvestmentAccountId, customerId, trustMatterOf(customerId))))
         .andExpect(status().isBadRequest());
+  }
+
+  // --- 648A: section 86(3) names no client; the withdrawal takes only its date ---
+
+  @Test
+  void postInvestment_firmDiscretionNamingAClient_returns400() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/trust-accounts/" + trustAccountId + "/investments")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_invest_ctrl_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "investmentAccountId": "%s",
+                      "clientId": "%s",
+                      "institution": "Firm With Client Bank",
+                      "accountNumber": "9990003333",
+                      "principal": 1000.00,
+                      "interestRate": 0.0500,
+                      "depositDate": "2026-03-01",
+                      "investmentBasis": "FIRM_DISCRETION"
+                    }
+                    """
+                        .formatted(firmInvestmentAccountId, customerId)))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.title").value("Cannot place investment"))
+        .andExpect(
+            jsonPath("$.detail")
+                .value(
+                    "A section 86(3) investment is the firm's placement of surplus trust money and"
+                        + " names no client or matter."));
+  }
+
+  @Test
+  void postInvestment_withoutAnInvestmentAccount_returns400() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/trust-accounts/" + trustAccountId + "/investments")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_invest_ctrl_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "institution": "No Account Bank",
+                      "accountNumber": "9990004444",
+                      "principal": 1000.00,
+                      "interestRate": 0.0500,
+                      "depositDate": "2026-03-01",
+                      "investmentBasis": "FIRM_DISCRETION"
+                    }
+                    """))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.title").value("Validation failed"))
+        .andExpect(jsonPath("$.detail").value("1 field(s) have validation errors"))
+        .andExpect(jsonPath("$.fieldErrors[0].field").value("investmentAccountId"));
+  }
+
+  @Test
+  void postWithdraw_withoutADate_returns400() throws Exception {
+    var investResult =
+        mockMvc
+            .perform(
+                post("/api/trust-accounts/" + trustAccountId + "/investments")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_invest_ctrl_owner"))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "investmentAccountId": "%s",
+                          "institution": "No Date Bank",
+                          "accountNumber": "9990005555",
+                          "principal": 1000.00,
+                          "interestRate": 0.0500,
+                          "depositDate": "2026-03-01",
+                          "investmentBasis": "FIRM_DISCRETION"
+                        }
+                        """
+                            .formatted(firmInvestmentAccountId)))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.clientId").value(nullValue()))
+            .andExpect(jsonPath("$.clientName").value(nullValue()))
+            .andExpect(jsonPath("$.matterId").value(nullValue()))
+            .andReturn();
+    var investmentId =
+        JsonPath.read(investResult.getResponse().getContentAsString(), "$.id").toString();
+    // Approved first, so the request reaches the date's validation (a pending placement is
+    // refused on its own)
+    var placementId =
+        JsonPath.read(investResult.getResponse().getContentAsString(), "$.depositTransactionId")
+            .toString();
+    mockMvc
+        .perform(
+            post("/api/trust-transactions/" + placementId + "/approve")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_invest_ctrl_approver")))
+        .andExpect(status().isOk());
+
+    mockMvc
+        .perform(
+            post("/api/trust-investments/" + investmentId + "/withdraw")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_invest_ctrl_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{}"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.title").value("Validation failed"))
+        .andExpect(jsonPath("$.detail").value("1 field(s) have validation errors"))
+        .andExpect(jsonPath("$.fieldErrors[0].field").value("withdrawalDate"));
   }
 
   private final java.util.Map<String, UUID> trustMatters = new java.util.HashMap<>();

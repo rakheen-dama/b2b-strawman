@@ -1,0 +1,15 @@
+CodeRabbit cycle 3 #2 — red on head 3a467b67b (before the fix), 2026-11-18 03:24 SAST
+Test: TrustInvestmentServiceIntegrationTest#placement_principal_hasAtMostTwoDecimalPlaces — principal 100.005 accepted (no throwable)
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentServiceIntegrationTest.placement_principal_hasAtMostTwoDecimalPlaces -- Time elapsed: 0.690 s <<< FAILURE!
+java.lang.AssertionError: 
+
+Expecting code to raise a throwable.
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentServiceIntegrationTest.lambda$assertPlacementRefused$1(TrustInvestmentServiceIntegrationTest.java:1216)
+	at io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness.assertMoves(TrustBooksHarness.java:621)
+	at io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness.lambda$assertMoves$0(TrustBooksHarness.java:651)
+	at io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness.assertMoves(TrustBooksHarness.java:621)
+	at io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness.assertMoves(TrustBooksHarness.java:651)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentServiceIntegrationTest.lambda$assertPlacementRefused$0(TrustInvestmentServiceIntegrationTest.java:1210)
+	at java.base/jdk.internal.vm.ScopedValueContainer.runWithoutScope(ScopedValueContainer.java:112)
+	at java.base/jdk.internal.vm.ScopedValueContainer.run(ScopedValueContainer.java:98)
+	at java.base/java.lang.ScopedValue$Carrier.run(ScopedValue.java:466)

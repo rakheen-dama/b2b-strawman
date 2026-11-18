@@ -1,0 +1,13 @@
+# 648A red run #3 (open question #8) — 2026-11-18, base 8ca0441ba + V23 only (portal sync unchanged)
+# cd backend && ./mvnw test -Dtest='TrustLedgerPortalSyncServiceIntegrationTest#aClientInvestmentLedgerRowNeverReachesThePortalRunningBalance' -q
+[ERROR]   TrustLedgerPortalSyncServiceIntegrationTest.aClientInvestmentLedgerRowNeverReachesThePortalRunningBalance:305
+Expecting actual:
+  ["INV_INTEREST", "INV_PLACE", "DEPOSIT"]
+to contain exactly in any order:
+  ["DEPOSIT", "INV_PLACE"]
+but the following elements were unexpected:
+  ["INV_INTEREST"]
+# Cause: isPortalEligible checks only type.clientVisible(); INV_INTEREST is client-visible but sits on the
+#   CLIENT_INVESTMENT ledger, so a posted investment-ledger row reaches the client's general running balance.
+# Fix: isPortalEligible additionally requires txn.getLedger() == TrustLedger.CLIENT (648D replaces it with the split).
+# (Same run: TrustInvestmentAccountsMigrationTest 6/6 green once V23 exists.)

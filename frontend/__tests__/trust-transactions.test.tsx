@@ -48,8 +48,9 @@ vi.mock("@/app/(app)/org/[slug]/trust-accounting/transactions/actions", () => ({
 
 // ── Registry types (646E): the page reads labels, pills and reversal rules from
 // GET /api/trust-transaction-types — a subset of the real registry, real values.
-const { mockFetchTrustTransactionTypes } = vi.hoisted(() => ({
+const { mockFetchTrustTransactionTypes, mockFetchTrustAccounts } = vi.hoisted(() => ({
   mockFetchTrustTransactionTypes: vi.fn(),
+  mockFetchTrustAccounts: vi.fn(),
 }));
 
 function typeInfo(
@@ -95,26 +96,26 @@ const REGISTRY_TYPES = [
 // ── Mock parent trust actions ────────────────────────────────────
 vi.mock("@/app/(app)/org/[slug]/trust-accounting/actions", () => ({
   fetchTrustTransactionTypes: (...args: unknown[]) => mockFetchTrustTransactionTypes(...args),
-  fetchTrustAccounts: vi.fn().mockResolvedValue([
-    {
-      id: "acc-1",
-      accountName: "Main Trust",
-      bankName: "FNB",
-      branchCode: "250655",
-      accountNumber: "1234567890",
-      accountType: "GENERAL",
-      isPrimary: true,
-      requireDualApproval: false,
-      paymentApprovalThreshold: null,
-      status: "ACTIVE",
-      openedDate: "2025-01-01",
-      closedDate: null,
-      notes: null,
-      createdAt: "2025-01-01T00:00:00Z",
-      updatedAt: "2025-01-01T00:00:00Z",
-    },
-  ]),
+  fetchTrustAccounts: (...args: unknown[]) => mockFetchTrustAccounts(...args),
 }));
+
+const MAIN_TRUST_ACCOUNT = {
+  id: "acc-1",
+  accountName: "Main Trust",
+  bankName: "FNB",
+  branchCode: "250655",
+  accountNumber: "1234567890",
+  accountType: "GENERAL",
+  isPrimary: true,
+  requireDualApproval: false,
+  paymentApprovalThreshold: null,
+  status: "ACTIVE",
+  openedDate: "2025-01-01",
+  closedDate: null,
+  notes: null,
+  createdAt: "2025-01-01T00:00:00Z",
+  updatedAt: "2025-01-01T00:00:00Z",
+};
 
 // OBS-1001: dependent matter combobox calls fetchCustomerProjects via SWR.
 // Stub the server action so happy-dom never loads `server-only`.
@@ -234,6 +235,34 @@ describe("Trust Transactions", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockFetchTrustTransactionTypes.mockResolvedValue(REGISTRY_TYPES);
+    mockFetchTrustAccounts.mockResolvedValue([MAIN_TRUST_ACCOUNT]);
+  });
+
+  // 648A review (CodeRabbit): an investment account marked primary is never the page's account —
+  // placements are requested and approved on the banking account the money leaves
+  it("lists the trust banking account's transactions, never an investment account's", async () => {
+    mockFetchTrustAccounts.mockResolvedValue([
+      {
+        ...MAIN_TRUST_ACCOUNT,
+        id: "acc-investment",
+        accountName: "Call Account",
+        accountType: "INVESTMENT",
+        isPrimary: true,
+      },
+      { ...MAIN_TRUST_ACCOUNT, isPrimary: false },
+    ]);
+    mockFetchTransactions.mockResolvedValue({
+      content: [],
+      totalElements: 0,
+      totalPages: 0,
+      pageSize: 20,
+      pageNumber: 0,
+    });
+
+    await renderTransactionsPage();
+
+    expect(mockFetchTransactions).toHaveBeenCalledWith("acc-1", expect.anything());
+    expect(mockFetchTransactions).not.toHaveBeenCalledWith("acc-investment", expect.anything());
   });
 
   afterEach(() => {
@@ -329,6 +358,52 @@ describe("Trust Transactions", () => {
     // A deposit's description stays off this list.
     expect(screen.queryByTestId("transaction-description-tx-dep")).not.toBeInTheDocument();
     expect(screen.queryByText("Initial deposit")).not.toBeInTheDocument();
+  });
+
+  // Phase 92 648A: a pending investment placement sits in the approvals list with its registry
+  // label and where the money goes (the investment account).
+  it("shows a pending section 86(4) placement with its label, destination and Approve/Reject", async () => {
+    mockFetchTrustTransactionTypes.mockResolvedValue([
+      ...REGISTRY_TYPES,
+      {
+        ...typeInfo("INV_PLACE", "Placed in section 86(4) investment", "OUT", "NONE", "CLIENT"),
+        requiresApproval: true,
+      },
+    ]);
+    mockFetchTransactions.mockResolvedValue({
+      content: [
+        makeTx({
+          id: "tx-place",
+          transactionType: "INV_PLACE",
+          typeLabel: "Placed in section 86(4) investment",
+          direction: "OUT",
+          ledger: "CLIENT",
+          amount: 200000,
+          reference: "INV-1A2B3C4D",
+          description:
+            "Placed in section 86(4) investment at Investec (Section 86(4) Fixed Deposit)",
+          status: "AWAITING_APPROVAL",
+          approvedBy: null,
+          approvedAt: null,
+          postedAt: null,
+        }),
+      ],
+      totalElements: 1,
+      totalPages: 1,
+      pageSize: 20,
+      pageNumber: 0,
+    });
+
+    await renderTransactionsPage();
+
+    const row = screen.getByTestId("transaction-row-tx-place");
+    expect(within(row).getByText("Placed in section 86(4) investment")).toBeInTheDocument();
+    expect(within(row).getByTestId("transaction-description-tx-place")).toHaveTextContent(
+      "at Investec (Section 86(4) Fixed Deposit)"
+    );
+    expect(within(row).getByTestId("approve-button")).toBeInTheDocument();
+    expect(within(row).getByTestId("reject-button")).toBeInTheDocument();
+    expect(row).not.toHaveTextContent("INV_PLACE");
   });
 
   // 647D OBS h: at 1280 px the nowrap type badge of "Unidentified deposit paid to the Fund" widened

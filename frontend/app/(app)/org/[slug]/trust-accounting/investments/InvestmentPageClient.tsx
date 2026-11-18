@@ -6,22 +6,32 @@ import { Button } from "@b2mash/ui/button";
 import { PlaceInvestmentDialog } from "@/components/trust/PlaceInvestmentDialog";
 import { RecordInvestmentInterestDialog } from "@/components/trust/RecordInvestmentInterestDialog";
 import { WithdrawInvestmentDialog } from "@/components/trust/WithdrawInvestmentDialog";
+import type { TrustAccount } from "@/lib/types/trust";
 
 interface InvestmentPageClientProps {
+  /** The funding trust banking account. */
   accountId: string;
   variant: "place" | "actions";
+  /** The firm's investment accounts, for the Place Investment picker (648A). */
+  investmentAccounts?: TrustAccount[];
   investmentId?: string;
-  investmentPrincipal?: number;
-  investmentInterestEarned?: number;
+  /** What a withdrawal would return now (648A). */
+  investmentBalance?: number;
+  /** The investment's deposit date: a withdrawal cannot be dated earlier. */
+  investmentDepositDate?: string;
+  /** Interest is recorded on an ACTIVE investment only (a MATURED one can still be withdrawn). */
+  canRecordInterest?: boolean;
   currency?: string;
 }
 
 export function InvestmentPageClient({
   accountId,
   variant,
+  investmentAccounts,
   investmentId,
-  investmentPrincipal,
-  investmentInterestEarned,
+  investmentBalance,
+  investmentDepositDate,
+  canRecordInterest = true,
   currency,
 }: InvestmentPageClientProps) {
   const router = useRouter();
@@ -39,6 +49,7 @@ export function InvestmentPageClient({
         <Button onClick={() => setPlaceOpen(true)}>Place Investment</Button>
         <PlaceInvestmentDialog
           accountId={accountId}
+          investmentAccounts={investmentAccounts ?? []}
           open={placeOpen}
           onOpenChange={setPlaceOpen}
           onSuccess={handleSuccess}
@@ -48,10 +59,12 @@ export function InvestmentPageClient({
   }
 
   return (
-    <div className="flex gap-2">
-      <Button variant="outline" size="sm" onClick={() => setInterestOpen(true)}>
-        Record Interest
-      </Button>
+    <div className="flex flex-wrap gap-2">
+      {canRecordInterest && (
+        <Button variant="outline" size="sm" onClick={() => setInterestOpen(true)}>
+          Record Interest
+        </Button>
+      )}
       <Button variant="outline" size="sm" onClick={() => setWithdrawOpen(true)}>
         Withdraw
       </Button>
@@ -65,8 +78,8 @@ export function InvestmentPageClient({
           />
           <WithdrawInvestmentDialog
             investmentId={investmentId}
-            principal={investmentPrincipal ?? 0}
-            interestEarned={investmentInterestEarned ?? 0}
+            balance={investmentBalance ?? 0}
+            depositDate={investmentDepositDate ?? ""}
             currency={currency ?? "ZAR"}
             open={withdrawOpen}
             onOpenChange={setWithdrawOpen}

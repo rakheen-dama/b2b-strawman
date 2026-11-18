@@ -256,10 +256,12 @@ class AuditEventTypeRegistryTest {
     // payment_requested/paid_to_fund/payment_rejected/reopened and 6
     // trust_unident_alloc_out.* / trust_unident_fund_pay.* (first_approved, approved, rejected)
     // (Phase 92 647D) = 71.
+    // + 6 trust_inv_place.* / trust_firm_inv_place.* (first_approved, approved, rejected)
+    // (Phase 92 648A) = 77.
     // Default fallback is synthesised inside resolve() and must NOT appear in entries().
     // (Phase 86 slice 2 / Epic 596B removed the 5 deal.* SALES entries; Phase 86 slice 3 / Epic
     // 597B removed proposal.*; Phase 86 slice 7 / Epic 601 removed six ai.specialist.* entries.)
-    assertThat(registry.entries()).hasSize(71);
+    assertThat(registry.entries()).hasSize(77);
     assertThat(registry.entries())
         .extracting(AuditEventTypeMetadata::eventType)
         .doesNotContain("(default fallback)")
@@ -291,7 +293,13 @@ class AuditEventTypeRegistryTest {
             "trust_unident_alloc_out.rejected",
             "trust_unident_fund_pay.first_approved",
             "trust_unident_fund_pay.approved",
-            "trust_unident_fund_pay.rejected")
+            "trust_unident_fund_pay.rejected",
+            "trust_inv_place.first_approved",
+            "trust_inv_place.approved",
+            "trust_inv_place.rejected",
+            "trust_firm_inv_place.first_approved",
+            "trust_firm_inv_place.approved",
+            "trust_firm_inv_place.rejected")
         .doesNotContain(
             "ai.specialist.*",
             "ai.specialist.invoked",
@@ -323,8 +331,8 @@ class AuditEventTypeRegistryTest {
 
   @Test
   void entriesMatchingWithEmptyOrNullReturnsAll() {
-    assertThat(registry.entriesMatching(Set.of())).hasSize(71);
-    assertThat(registry.entriesMatching(null)).hasSize(71);
+    assertThat(registry.entriesMatching(Set.of())).hasSize(77);
+    assertThat(registry.entriesMatching(null)).hasSize(77);
   }
 
   @Test

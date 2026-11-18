@@ -10,8 +10,13 @@ import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness.Expected;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateTrustAccountRequest;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.PlaceInvestmentRequest;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.TrustInvestmentResponse;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.WithdrawInvestmentRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustPostingService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
@@ -75,6 +80,7 @@ public final class TrustBooksFixture {
   private final TrustPostingService postingService;
   private final CustomerRepository customerRepository;
   private final ProjectRepository projectRepository;
+  private final TrustInvestmentService investmentService;
 
   public TrustBooksFixture(
       TrustBooksHarness harness,
@@ -88,7 +94,8 @@ public final class TrustBooksFixture {
       TrustTransactionRepository transactionRepository,
       TrustPostingService postingService,
       CustomerRepository customerRepository,
-      ProjectRepository projectRepository) {
+      ProjectRepository projectRepository,
+      TrustInvestmentService investmentService) {
     this.harness = harness;
     this.transactionTemplate = transactionTemplate;
     this.jdbc = jdbc;
@@ -101,6 +108,7 @@ public final class TrustBooksFixture {
     this.postingService = postingService;
     this.customerRepository = customerRepository;
     this.projectRepository = projectRepository;
+    this.investmentService = investmentService;
   }
 
   /** Enables the {@code trust_accounting} module for the tenant (needed by the services). */
@@ -198,6 +206,35 @@ public final class TrustBooksFixture {
                               paymentApprovalThreshold,
                               LocalDate.of(2026, 1, 1),
                               "649A harness account"))
+                      .id());
+      return id[0];
+    }
+
+    /**
+     * A fresh INVESTMENT account holding money of {@code basis} — section 86(3) ({@code
+     * FIRM_DISCRETION}) or section 86(4) ({@code CLIENT_INSTRUCTION}) (648C, 648A).
+     */
+    public UUID freshInvestmentAccount(InvestmentBasis basis) {
+      var n = sequence.incrementAndGet();
+      var id = new UUID[1];
+      as(
+          memberId,
+          () ->
+              id[0] =
+                  trustAccountService
+                      .createTrustAccount(
+                          new CreateTrustAccountRequest(
+                              "Trust Books Investment " + n,
+                              "Investec",
+                              "580105",
+                              "TBI-" + n,
+                              "INVESTMENT",
+                              false,
+                              false,
+                              null,
+                              LocalDate.of(2026, 1, 1),
+                              "648A harness investment account",
+                              basis))
                       .id());
       return id[0];
     }
@@ -386,6 +423,94 @@ public final class TrustBooksFixture {
           .extracting(TrustTransactionResponse::transactionType)
           .containsExactly("TRANSFER_OUT", "TRANSFER_IN");
       return legs[0];
+    }
+
+    /**
+     * Path 17/18 (648A): the maker requests a placement of {@code principal} from {@code funding}
+     * into {@code investmentAccount} — for {@code client} on its matter (section 86(4)), or for no
+     * client (null — section 86(3)), dated {@link #POSTING_DATE}. The placement row awaits approval
+     * and nothing moves on either account.
+     */
+    public TrustInvestmentResponse requestPlacement(
+        UUID funding, UUID investmentAccount, Client client, String principal) {
+      var basis =
+          client == null ? InvestmentBasis.FIRM_DISCRETION : InvestmentBasis.CLIENT_INSTRUCTION;
+      var placed = new TrustInvestmentResponse[1];
+      as(
+          memberId,
+          () ->
+              harness.assertMoves(
+                  funding,
+                  Expected.none(),
+                  investmentAccount,
+                  Expected.none(),
+                  () ->
+                      placed[0] =
+                          investmentService.placeInvestment(
+                              funding,
+                              new PlaceInvestmentRequest(
+                                  investmentAccount,
+                                  client == null ? null : client.id(),
+                                  client == null ? null : client.matter(),
+                                  "Trust Books Bank",
+                                  reference("INVACC"),
+                                  new BigDecimal(principal),
+                                  new BigDecimal("0.0500"),
+                                  POSTING_DATE,
+                                  null,
+                                  null,
+                                  basis))));
+      assertThat(statusOf(placed[0].depositTransactionId())).isEqualTo("AWAITING_APPROVAL");
+      return placed[0];
+    }
+
+    /**
+     * {@code approver} approves a placement row; the funding and investment accounts move by
+     * exactly {@code onFunding} / {@code onInvestment}.
+     */
+    public void approvePlacement(
+        UUID funding,
+        Expected onFunding,
+        UUID investmentAccount,
+        Expected onInvestment,
+        UUID placementId,
+        UUID approver) {
+      as(
+          approver,
+          () ->
+              harness.assertMoves(
+                  funding,
+                  onFunding,
+                  investmentAccount,
+                  onInvestment,
+                  () -> transactionService.approveTransaction(placementId, approver)));
+    }
+
+    /**
+     * Path 18/19 (648A): the maker withdraws the investment on {@code withdrawalDate}; the funding
+     * and investment accounts move by exactly {@code onFunding} / {@code onInvestment}.
+     */
+    public TrustInvestmentResponse withdraw(
+        UUID funding,
+        Expected onFunding,
+        UUID investmentAccount,
+        Expected onInvestment,
+        UUID investmentId,
+        LocalDate withdrawalDate) {
+      var withdrawn = new TrustInvestmentResponse[1];
+      as(
+          memberId,
+          () ->
+              harness.assertMoves(
+                  funding,
+                  onFunding,
+                  investmentAccount,
+                  onInvestment,
+                  () ->
+                      withdrawn[0] =
+                          investmentService.withdrawInvestment(
+                              investmentId, new WithdrawInvestmentRequest(withdrawalDate))));
+      return withdrawn[0];
     }
 
     /** {@code approver} approves; the account moves by exactly {@code expected}. */
@@ -755,27 +880,45 @@ public final class TrustBooksFixture {
     }
 
     /**
-     * A {@code trust_investments} row on {@code account} for {@code client} (646C: rows of the
-     * {@code CLIENT_INVESTMENT} and {@code INTER_ACCOUNT} ledgers need an {@code investment_id}).
-     * {@code anchorTransactionId} satisfies the NOT NULL {@code deposit_transaction_id} FK.
+     * A {@code trust_investments} row funded from {@code fundingAccount} and held in {@code
+     * investmentAccount} (646C: rows of the {@code CLIENT_INVESTMENT} and {@code INTER_ACCOUNT}
+     * ledgers need an {@code investment_id}; 648A shape): for {@code client} on its matter (section
+     * 86(4)), or for no client (null — section 86(3)). Its placement row is not yet named — post
+     * the rows naming the investment, then {@link #linkPlacementDirect}, so EQ-5 ties them.
      */
-    public UUID investmentDirect(UUID account, Client client, UUID anchorTransactionId) {
+    public UUID investmentDirect(
+        UUID fundingAccount, UUID investmentAccount, Client client, String principal) {
       var id = UUID.randomUUID();
       jdbc.update(
           """
-          INSERT INTO "%s".trust_investments (id, trust_account_id, customer_id, institution,
-              account_number, principal, interest_rate, deposit_date, deposit_transaction_id,
-              investment_basis)
-          VALUES (?, ?, ?, 'Trust Books Bank', ?, 1000.00, 0.0500, ?, ?, 'FIRM_DISCRETION')
+          INSERT INTO "%s".trust_investments (id, trust_account_id, investment_account_id,
+              customer_id, project_id, institution, account_number, principal, interest_rate,
+              deposit_date, investment_basis)
+          VALUES (?, ?, ?, ?, ?, 'Trust Books Bank', ?, ?, 0.0500, ?, ?)
           """
               .formatted(schema),
           id,
-          account,
-          client.id(),
+          fundingAccount,
+          investmentAccount,
+          client == null ? null : client.id(),
+          client == null ? null : client.matter(),
           reference("INVACC"),
+          new BigDecimal(principal),
           POSTING_DATE,
-          anchorTransactionId);
+          client == null ? "FIRM_DISCRETION" : "CLIENT_INSTRUCTION");
       return id;
+    }
+
+    /**
+     * Names {@code placementRowId} as the investment's placement row ({@code
+     * deposit_transaction_id}): EQ-5 counts the principal from that row's posting date.
+     */
+    public void linkPlacementDirect(UUID investmentId, UUID placementRowId) {
+      jdbc.update(
+          "UPDATE \"%s\".trust_investments SET deposit_transaction_id = ? WHERE id = ?"
+              .formatted(schema),
+          placementRowId,
+          investmentId);
     }
 
     /**
@@ -955,6 +1098,15 @@ public final class TrustBooksFixture {
     public BigDecimal clientLedger(UUID account, Client client) {
       var balance = new BigDecimal[1];
       as(memberId, () -> balance[0] = harness.clientLedger(account, client.id()));
+      return balance[0];
+    }
+
+    /** {@link TrustBooksHarness#clientInvestmentLedger}, as the maker (648A). */
+    public BigDecimal clientInvestmentLedger(UUID investmentAccount, Client client) {
+      var balance = new BigDecimal[1];
+      as(
+          memberId,
+          () -> balance[0] = harness.clientInvestmentLedger(investmentAccount, client.id()));
       return balance[0];
     }
 

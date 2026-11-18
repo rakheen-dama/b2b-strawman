@@ -1,0 +1,48 @@
+
+ RUN  v4.1.5 /Users/rakheendama/Projects/2026/worktree-epic-648A/frontend
+
+ ❯ __tests__/trust-investment-basis.test.tsx (17 tests | 1 failed | 16 skipped) 57ms
+     × register fits the card: eight columns, secondary facts stacked, badges and actions wrap 56ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  __tests__/trust-investment-basis.test.tsx > Epic 455 / 648A — Investment Basis and investment accounts > register fits the card: eight columns, secondary facts stacked, badges and actions wrap
+AssertionError: expected [ 'Client', 'Basis', …(11) ] to deeply equal [ Array(8) ]
+
+- Expected
++ Received
+
+  [
+    "Client",
++   "Basis",
+    "Investment account",
+-   "Rate",
+-   "Term",
++   "Institution",
+    "Principal",
++   "Interest Rate",
++   "LPFF Rate",
++   "Deposit Date",
++   "Maturity Date",
++   "Interest Earned",
+    "Balance",
+    "Status",
+    "Actions",
+  ]
+
+ ❯ __tests__/trust-investment-basis.test.tsx:396:21
+    394|     const table = screen.getByTestId("investments-table");
+    395|     const headers = Array.from(table.querySelectorAll("thead th")).map…
+    396|     expect(headers).toEqual([
+       |                     ^
+    397|       "Client",
+    398|       "Investment account",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 16 skipped (17)
+   Start at  02:41:09
+   Duration  849ms (transform 198ms, setup 60ms, import 508ms, tests 57ms, environment 129ms)
+

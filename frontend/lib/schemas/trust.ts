@@ -242,26 +242,90 @@ export const addLpffRateSchema = z.object({
 
 export type AddLpffRateFormData = z.infer<typeof addLpffRateSchema>;
 
-export const placeInvestmentSchema = z.object({
-  customerId: z.string().uuid("Must be a valid client UUID"),
-  projectId: requiredMatter,
-  institution: z.string().min(1, "Institution is required").max(200),
-  accountNumber: z.string().min(1, "Account number is required").max(50),
-  principal: z.number().positive("Principal must be greater than zero"),
-  interestRate: z.number().min(0, "Rate must be non-negative").max(100, "Rate cannot exceed 100"),
-  depositDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD"),
-  maturityDate: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD")
-    .optional()
-    .or(z.literal("")),
-  notes: z.string().max(2000).optional().or(z.literal("")),
-  investmentBasis: z.enum(["FIRM_DISCRETION", "CLIENT_INSTRUCTION"], {
-    message: "Investment basis is required",
+const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD");
+
+/**
+ * 648A (ADR-379): an investment is placed into an investment account of its basis. A section
+ * 86(4) investment names the client and the matter whose money it is; a section 86(3) investment
+ * is the firm's surplus trust money and names neither (the backend refuses both mismatches).
+ */
+export const placeInvestmentSchema = z
+  .object({
+    investmentBasis: z.enum(["FIRM_DISCRETION", "CLIENT_INSTRUCTION"], {
+      message: "Investment basis is required",
+    }),
+    investmentAccountId: z
+      .string()
+      .min(1, "Choose the investment account")
+      .uuid("Choose the investment account"),
+    customerId: z.string().optional().or(z.literal("")),
+    projectId: z.string().optional().or(z.literal("")),
+    institution: z.string().min(1, "Institution is required").max(200),
+    accountNumber: z.string().min(1, "Account number is required").max(50),
+    principal: z.number().positive("Principal must be greater than zero"),
+    interestRate: z.number().min(0, "Rate must be non-negative").max(100, "Rate cannot exceed 100"),
+    // Never in the future — the server refuses it too, with the same sentence (648A, CodeRabbit
+    // cycle 3: a later-dated placement would escape the cover read as at today)
+    depositDate: isoDate.refine((d) => d <= todayInSA(), {
+      message: "The deposit date cannot be in the future.",
+    }),
+    maturityDate: isoDate.optional().or(z.literal("")),
+    notes: z.string().max(2000).optional().or(z.literal("")),
+  })
+  .superRefine((data, ctx) => {
+    const isUuid = (value: string) => z.string().uuid().safeParse(value).success;
+    if (data.investmentBasis === "CLIENT_INSTRUCTION") {
+      if (!data.customerId) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["customerId"],
+          message: "A client is required for a section 86(4) investment",
+        });
+      } else if (!isUuid(data.customerId)) {
+        ctx.addIssue({ code: "custom", path: ["customerId"], message: "Must be a valid client" });
+      }
+      if (!data.projectId) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["projectId"],
+          message: "A matter is required for client trust transactions",
+        });
+      } else if (!isUuid(data.projectId)) {
+        ctx.addIssue({ code: "custom", path: ["projectId"], message: "Must be a valid matter" });
+      }
+    } else {
+      if (data.customerId) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["customerId"],
+          message: "A section 86(3) investment names no client",
+        });
+      }
+      if (data.projectId) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["projectId"],
+          message: "A section 86(3) investment names no matter",
+        });
+      }
+    }
+  });
+
+export type PlaceInvestmentFormData = z.infer<typeof placeInvestmentSchema>;
+
+/**
+ * 648A: the whole investment returns on the date; the amount is derived, never typed. Never in
+ * the future — the server refuses it too, with the same sentence (review cycle 4). Not before the
+ * investment's deposit date either: that bound is per investment, so the dialog holds it (input
+ * `min` + a submit check with the server's sentence).
+ */
+export const withdrawInvestmentSchema = z.object({
+  withdrawalDate: isoDate.refine((d) => d <= todayInSA(), {
+    message: "The withdrawal date cannot be in the future.",
   }),
 });
 
-export type PlaceInvestmentFormData = z.infer<typeof placeInvestmentSchema>;
+export type WithdrawInvestmentFormData = z.infer<typeof withdrawInvestmentSchema>;
 
 export const recordInvestmentInterestSchema = z.object({
   amount: z.number().positive("Amount must be greater than zero"),

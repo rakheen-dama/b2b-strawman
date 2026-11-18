@@ -1,0 +1,13 @@
+648A review cycle 2 — red check for TrustInvestmentServiceIntegrationTest.twoSection86_3_approvalsAtOnce_secondWaitsOnTheFundingAccountLock_andIsRefused
+Mutation: TrustInvestmentService.onPlacementApproving with the funding account's findByIdForUpdate removed (cashbook re-check kept). Restored after the run.
+Command: ./mvnw test -Dtest='TrustInvestmentServiceIntegrationTest#twoSection86_3*+section86_3_cover*' -q  -> exit 1
+
+-------------------------------------------------------------------------------
+Test set: io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentServiceIntegrationTest
+-------------------------------------------------------------------------------
+Tests run: 2, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 11.90 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentServiceIntegrationTest
+io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentServiceIntegrationTest.twoSection86_3_approvalsAtOnce_secondWaitsOnTheFundingAccountLock_andIsRefused -- Time elapsed: 0.739 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+[the second approval finished without waiting for the funding account lock] 
+Expecting value to be false but was true
+(the sequential F-3 test stays green under this mutation: it does not exercise the lock — the concurrent test is the one that does)

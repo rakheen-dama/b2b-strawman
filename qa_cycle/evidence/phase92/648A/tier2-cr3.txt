@@ -1,0 +1,38 @@
+648A CodeRabbit cycle 3 — Tier 1 + Tier 2 (targeted; full verify owned by the orchestrator), 2026-11-18 03:29 SAST, base head 3a467b67b + this commit
+
+Tier 1: ./mvnw spotless:apply; ./mvnw compile test-compile -q -> exit 0
+
+Tier 2 backend: ./mvnw test -Dtest='TrustInvestment*,InvestmentClientLedgerReadSurfacesIntegrationTest,TrustPositionAsAtIntegrationTest,TrustReversalEquationIntegrationTest,TrustAccountingModuleRegistrationTest,TrustWireContractTest,InvestmentBasisInterestTest,InvestmentReportBasisIntegrationTest,TrustReportQueryIntegrationTest,io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.**' -q -> exit 0
+27 classes, 271 <testcase>, 0 failures, 0 errors, 0 skipped:
+  verticals.TrustAccountingModuleRegistrationTest 2
+  verticals.legal.trustaccounting.TrustInvestmentSchemaTest 2
+  verticals.legal.trustaccounting.TrustWireContractTest 1
+  verticals.legal.trustaccounting.books.TrustPositionAsAtIntegrationTest 9
+  verticals.legal.trustaccounting.interest.InvestmentBasisInterestTest 8
+  verticals.legal.trustaccounting.investment.TrustInvestmentAccountsMigrationTest 6
+  verticals.legal.trustaccounting.investment.TrustInvestmentControllerTest 16
+  verticals.legal.trustaccounting.investment.TrustInvestmentPlacementGuardIntegrationTest 6
+  verticals.legal.trustaccounting.investment.TrustInvestmentServiceIntegrationTest 20
+  verticals.legal.trustaccounting.investment.TrustInvestmentWithdrawReverseRaceIntegrationTest 2
+  verticals.legal.trustaccounting.ledger.InvestmentClientLedgerReadSurfacesIntegrationTest 1
+  verticals.legal.trustaccounting.report.InvestmentReportBasisIntegrationTest 8
+  verticals.legal.trustaccounting.report.TrustReportQueryIntegrationTest 8
+  verticals.legal.trustaccounting.transaction.TrustClientMatterRequiredIntegrationTest 12
+  verticals.legal.trustaccounting.transaction.TrustFeeTransferReversalCascadeTest 8
+  verticals.legal.trustaccounting.transaction.TrustMatterDebitGuardIntegrationTest 8
+  verticals.legal.trustaccounting.transaction.TrustPostingDateZoneIntegrationTest 5
+  verticals.legal.trustaccounting.transaction.TrustPostingRulesTest 2
+  verticals.legal.trustaccounting.transaction.TrustPostingServiceRecordWithPairTest 6
+  verticals.legal.trustaccounting.transaction.TrustReversalEquationIntegrationTest 15
+  verticals.legal.trustaccounting.transaction.TrustTransactionControllerTest 18
+  verticals.legal.trustaccounting.transaction.TrustTransactionServiceTest 48
+  verticals.legal.trustaccounting.transaction.TrustTransactionTypeControllerTest 4
+  verticals.legal.trustaccounting.transaction.TrustTransactionTypeLabelsTest 34
+  verticals.legal.trustaccounting.transaction.TrustTransactionTypeRegistryTest 17
+  verticals.legal.trustaccounting.transaction.TrustTransactionTypeSchemaTest 1
+  verticals.legal.trustaccounting.transaction.TrustTransferTargetMatterIntegrationTest 4
+
+New/changed tests green: placement_depositDate_cannotBeInTheFuture_eitherBasis, placement_principal_hasAtMostTwoDecimalPlaces, withdrawalInFlight_thenReversal_onlyTheWithdrawalSucceeds_creditedOnce (now asserts the reversal was observed blocked by the withdrawal's backend on a trust_transactions query via pg_stat_activity/pg_blocking_pids), reversalAttemptFirst_thenWithdrawal_...
+Red evidence: red-backend-cr3-future-placement.txt, red-backend-cr3-principal-scale.txt
+
+Frontend: pnpm run lint -> 0 errors (78 pre-existing warnings, none in changed files); pnpm run format:check -> clean; vitest run __tests__/trust-investment-basis.test.tsx __tests__/trust-investments-reports.test.tsx -> 2 files, 28 tests passed (full vitest owned by the orchestrator)

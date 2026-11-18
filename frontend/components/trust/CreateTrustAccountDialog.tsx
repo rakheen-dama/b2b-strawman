@@ -35,11 +35,22 @@ import {
 } from "@/components/ui/form";
 import { createTrustAccountSchema, type CreateTrustAccountFormData } from "@/lib/schemas/trust";
 import { createTrustAccount } from "@/app/(app)/org/[slug]/trust-accounting/actions";
+import type { InvestmentBasis, TrustAccount } from "@/lib/types/trust";
+
+/** 648A: the Place Investment dialog opens this one to add an investment account of its basis. */
+export interface InvestmentAccountPreset {
+  accountType: "INVESTMENT";
+  investmentBasis: InvestmentBasis;
+}
 
 interface CreateTrustAccountDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
+  /** Locks the type and basis selects to these values (and the account is not primary). */
+  preset?: InvestmentAccountPreset;
+  /** Called with the created account (648A: the Place Investment dialog selects it). */
+  onCreated?: (account: TrustAccount) => void;
 }
 
 function getTodayIso(): string {
@@ -48,16 +59,16 @@ function getTodayIso(): string {
   return local.toISOString().slice(0, 10);
 }
 
-function getDefaultValues(): CreateTrustAccountFormData {
+function getDefaultValues(preset?: InvestmentAccountPreset): CreateTrustAccountFormData {
   return {
     accountName: "",
     bankName: "",
     branchCode: "",
     accountNumber: "",
-    accountType: "GENERAL",
-    investmentBasis: undefined,
+    accountType: preset?.accountType ?? "GENERAL",
+    investmentBasis: preset?.investmentBasis,
     openedDate: getTodayIso(),
-    isPrimary: true,
+    isPrimary: preset === undefined,
     requireDualApproval: false,
     paymentApprovalThreshold: undefined,
     notes: "",
@@ -68,6 +79,8 @@ export function CreateTrustAccountDialog({
   open,
   onOpenChange,
   onSuccess,
+  preset,
+  onCreated,
 }: CreateTrustAccountDialogProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -75,14 +88,14 @@ export function CreateTrustAccountDialog({
 
   const form = useForm<CreateTrustAccountFormData>({
     resolver: zodResolver(createTrustAccountSchema),
-    defaultValues: getDefaultValues(),
+    defaultValues: getDefaultValues(preset),
   });
   const accountType = useWatch({ control: form.control, name: "accountType" });
 
   function handleOpenChange(next: boolean) {
     onOpenChange(next);
     if (!next) {
-      form.reset(getDefaultValues());
+      form.reset(getDefaultValues(preset));
       setError(null);
     }
   }
@@ -110,6 +123,7 @@ export function CreateTrustAccountDialog({
       });
 
       if (result.success) {
+        onCreated?.(result.account);
         onSuccess?.();
         handleOpenChange(false);
         router.refresh();
@@ -125,12 +139,16 @@ export function CreateTrustAccountDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent
+        className="max-h-[90vh] overflow-y-auto sm:max-w-lg"
+        data-testid="create-trust-account-dialog"
+      >
         <DialogHeader>
-          <DialogTitle>Add Trust Account</DialogTitle>
+          <DialogTitle>{preset ? "Add Investment Account" : "Add Trust Account"}</DialogTitle>
           <DialogDescription>
-            Register a new trust bank account for the firm. This account will be available for
-            receipts, payments, and reconciliation.
+            {preset
+              ? "Register the investment account the trust money will be placed in."
+              : "Register a new trust bank account for the firm. This account will be available for receipts, payments, and reconciliation."}
           </DialogDescription>
         </DialogHeader>
 
@@ -213,6 +231,7 @@ export function CreateTrustAccountDialog({
                         }
                       }}
                       value={field.value}
+                      disabled={preset !== undefined}
                     >
                       <FormControl>
                         <SelectTrigger data-testid="trust-account-type-select">
@@ -252,7 +271,11 @@ export function CreateTrustAccountDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Investment basis</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value ?? ""}>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value ?? ""}
+                      disabled={preset !== undefined}
+                    >
                       <FormControl>
                         <SelectTrigger data-testid="trust-account-basis-select" className="w-full">
                           <SelectValue placeholder="Select the basis" />

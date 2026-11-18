@@ -134,22 +134,41 @@ class TrustInvestmentSchemaTest {
             customerId,
             memberId);
 
+    // 648A (V23): an investment is held in an INVESTMENT account; a section 86(3) one names no
+    // client
+    String investmentAccountId =
+        jdbcTemplate.queryForObject(
+            "INSERT INTO "
+                + tenantSchema
+                + ".trust_accounts "
+                + "(id, account_name, bank_name, branch_code, account_number, "
+                + " account_type, is_primary, require_dual_approval, status, opened_date, "
+                + " investment_basis, created_at, updated_at) "
+                + "VALUES (gen_random_uuid(), 'Test Investment Account', 'Investec', '580105', "
+                + "        '71123456789', 'INVESTMENT', false, false, 'ACTIVE', CURRENT_DATE, "
+                + "        'FIRM_DISCRETION', now(), now()) "
+                + "RETURNING id::text",
+            String.class);
+    var insert =
+        "INSERT INTO "
+            + tenantSchema
+            + ".trust_investments "
+            + "(id, trust_account_id, investment_account_id, institution, account_number, "
+            + " principal, interest_rate, deposit_date, deposit_transaction_id, "
+            + " investment_basis, created_at, updated_at) "
+            + "VALUES (gen_random_uuid(), ?::uuid, ?::uuid, "
+            + "        'Test Bank', '1234567', 10000.00, 0.05, CURRENT_DATE, "
+            + "        ?::uuid, ?, now(), now())";
+
     // Attempt to insert a trust_investment with invalid investment_basis
     assertThatThrownBy(
             () ->
-                jdbcTemplate.update(
-                    "INSERT INTO "
-                        + tenantSchema
-                        + ".trust_investments "
-                        + "(id, trust_account_id, customer_id, institution, account_number, "
-                        + " principal, interest_rate, deposit_date, deposit_transaction_id, "
-                        + " investment_basis, created_at, updated_at) "
-                        + "VALUES (gen_random_uuid(), ?::uuid, ?::uuid, "
-                        + "        'Test Bank', '1234567', 10000.00, 0.05, CURRENT_DATE, "
-                        + "        ?::uuid, 'INVALID', now(), now())",
-                    trustAccountId,
-                    customerId,
-                    txnId))
+                jdbcTemplate.update(insert, trustAccountId, investmentAccountId, txnId, "INVALID"))
         .isInstanceOf(DataIntegrityViolationException.class);
+    // The same row with a valid basis is accepted — the basis was the only fault
+    assertThat(
+            jdbcTemplate.update(
+                insert, trustAccountId, investmentAccountId, txnId, "FIRM_DISCRETION"))
+        .isEqualTo(1);
   }
 }

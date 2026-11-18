@@ -6,6 +6,7 @@ import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
 import io.b2mash.b2b.b2bstrawman.template.VariableFormatter;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.StatementLineClassification;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionType;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionTypeLabels;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
@@ -788,6 +789,11 @@ public class ActivityMessageFormatter {
   private static String trustTypeNoun(String transactionType) {
     if (transactionType == null) {
       return "trust transaction";
+    }
+    String placement = TrustTransactionTypeLabels.placementNoun(transactionType);
+    if (placement != null) {
+      // 648A: "placed in section 86(4) investment" does not read as a noun either
+      return placement;
     }
     String code = transactionType.toUpperCase(Locale.ROOT);
     return switch (code) {

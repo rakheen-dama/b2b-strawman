@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen, waitFor, fireEvent, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 
 // -- Mock server-only -----------------------------------------------------
 vi.mock("server-only", () => ({}));
@@ -104,33 +105,83 @@ vi.mock("next/link", () => ({
 import InvestmentsPage from "@/app/(app)/org/[slug]/trust-accounting/investments/page";
 import TrustReportsPage from "@/app/(app)/org/[slug]/trust-accounting/reports/page";
 import { PlaceInvestmentDialog } from "@/components/trust/PlaceInvestmentDialog";
+import { WithdrawInvestmentDialog } from "@/components/trust/WithdrawInvestmentDialog";
+import type { InvestmentBasis, TrustAccount } from "@/lib/types/trust";
+import { todayInSA } from "@b2mash/shared/date";
 
 // -- Helpers --------------------------------------------------------------
+
+const FIRM_ACCOUNT = "f1f1f1f1-0000-4000-8000-000000000001";
+const CLIENT_ACCOUNT = "c4c4c4c4-0000-4000-8000-000000000004";
 
 function makeInvestment(overrides: Record<string, unknown> = {}) {
   return {
     id: "inv-1",
     trustAccountId: "acc-1",
+    investmentAccountId: CLIENT_ACCOUNT,
+    investmentAccountName: "Section 86(4) Fixed Deposit",
     clientId: "cust-1111-2222-3333-444444444444",
     clientName: "Acme Corp",
+    matterId: "mat-1",
     institution: "FNB Money Market",
     accountNumber: "INV-001",
     principal: 500000,
     interestRate: 0.075,
     depositDate: "2026-01-15",
     maturityDate: "2026-07-15",
-    interestEarned: 18750,
+    interestEarned: 0,
+    balance: 500000,
     status: "ACTIVE",
+    awaitingApproval: false,
     withdrawalDate: null,
     withdrawalAmount: null,
     depositTransactionId: "txn-1",
     withdrawalTransactionId: null,
     notes: null,
-    investmentBasis: "FIRM_DISCRETION",
+    investmentBasis: "CLIENT_INSTRUCTION",
     createdAt: "2026-01-15T09:00:00Z",
     updatedAt: "2026-03-31T09:00:00Z",
     ...overrides,
   };
+}
+
+function investmentAccount(id: string, name: string, basis: InvestmentBasis): TrustAccount {
+  return {
+    id,
+    accountName: name,
+    bankName: "Investec",
+    branchCode: "580105",
+    accountNumber: "7770001234",
+    accountType: "INVESTMENT",
+    investmentBasis: basis,
+    section: basis === "FIRM_DISCRETION" ? "S86_3" : "S86_4",
+    isPrimary: false,
+    requireDualApproval: false,
+    paymentApprovalThreshold: null,
+    status: "ACTIVE",
+    openedDate: "2025-01-01",
+    closedDate: null,
+    notes: null,
+    createdAt: "2025-01-01T00:00:00Z",
+    updatedAt: "2025-01-01T00:00:00Z",
+  };
+}
+
+const INVESTMENT_ACCOUNTS = [
+  investmentAccount(FIRM_ACCOUNT, "Section 86(3) Call Account", "FIRM_DISCRETION"),
+  investmentAccount(CLIENT_ACCOUNT, "Section 86(4) Fixed Deposit", "CLIENT_INSTRUCTION"),
+];
+
+function renderPlaceDialog() {
+  return render(
+    <PlaceInvestmentDialog
+      accountId="acc-1"
+      investmentAccounts={INVESTMENT_ACCOUNTS}
+      open={true}
+      onOpenChange={vi.fn()}
+      onSuccess={vi.fn()}
+    />
+  );
 }
 
 async function renderInvestmentsPage() {
@@ -202,54 +253,40 @@ describe("Trust Investments & Reports", () => {
     expect(within(row).queryByRole("button")).toBeNull();
   });
 
-  it("place investment dialog submits with valid data", async () => {
-    mockPlaceInvestment.mockResolvedValue({
-      success: true,
-      investment: makeInvestment(),
+  it("place investment dialog submits a section 86(4) placement with its account, client and matter", async () => {
+    const user = userEvent.setup();
+    mockPlaceInvestment.mockResolvedValue({ success: true, investment: makeInvestment() });
+    renderPlaceDialog();
+
+    await user.click(screen.getByLabelText("Section 86(4) — invested on a client's instruction"));
+    await user.click(screen.getByTestId("investment-account-select"));
+    await user.click(screen.getByRole("option", { name: /Section 86\(4\) Fixed Deposit/ }));
+
+    fireEvent.change(screen.getByPlaceholderText("Client UUID"), {
+      target: { value: "a1b2c3d4-e5f6-4890-abcd-ef1234567890" },
     });
-
-    render(
-      <PlaceInvestmentDialog
-        accountId="acc-1"
-        open={true}
-        onOpenChange={vi.fn()}
-        onSuccess={vi.fn()}
-      />
-    );
-
-    const clientInput = screen.getByPlaceholderText("Client UUID");
-    fireEvent.change(clientInput, {
-      target: { value: "a1b2c3d4-e5f6-7890-abcd-ef1234567890" },
-    });
-
     // G89-F28: the invested money's matter is required
-    const matterInput = screen.getByPlaceholderText("Matter UUID");
-    fireEvent.change(matterInput, {
+    fireEvent.change(screen.getByPlaceholderText("Matter UUID"), {
       target: { value: "b2c3d4e5-f6a7-4890-abcd-ef1234567890" },
     });
-
-    const institutionInput = screen.getByPlaceholderText("e.g. FNB Money Market");
-    fireEvent.change(institutionInput, {
+    fireEvent.change(screen.getByPlaceholderText("e.g. FNB Money Market"), {
       target: { value: "ABSA Fixed Deposit" },
     });
+    fireEvent.change(screen.getByPlaceholderText("Investment account number"), {
+      target: { value: "INV-999" },
+    });
+    fireEvent.change(screen.getByLabelText("Principal"), { target: { value: "100000" } });
+    fireEvent.change(screen.getByLabelText("Interest Rate %"), { target: { value: "8.5" } });
 
-    const accountInput = screen.getByPlaceholderText("Investment account number");
-    fireEvent.change(accountInput, { target: { value: "INV-999" } });
-
-    const principalInput = screen.getByLabelText("Principal");
-    fireEvent.change(principalInput, { target: { value: "100000" } });
-
-    const rateInput = screen.getByLabelText("Interest Rate %");
-    fireEvent.change(rateInput, { target: { value: "8.5" } });
-
-    const form = clientInput.closest("form")!;
-    fireEvent.submit(form);
+    fireEvent.submit(screen.getByPlaceholderText("Client UUID").closest("form")!);
 
     await waitFor(() => {
       expect(mockPlaceInvestment).toHaveBeenCalledWith(
         "acc-1",
         expect.objectContaining({
-          customerId: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+          investmentBasis: "CLIENT_INSTRUCTION",
+          investmentAccountId: CLIENT_ACCOUNT,
+          customerId: "a1b2c3d4-e5f6-4890-abcd-ef1234567890",
           projectId: "b2c3d4e5-f6a7-4890-abcd-ef1234567890",
           institution: "ABSA Fixed Deposit",
           accountNumber: "INV-999",
@@ -260,18 +297,57 @@ describe("Trust Investments & Reports", () => {
     });
   });
 
+  it("place investment dialog submits a section 86(3) placement with no client or matter", async () => {
+    const user = userEvent.setup();
+    mockPlaceInvestment.mockResolvedValue({ success: true, investment: makeInvestment() });
+    renderPlaceDialog();
+
+    await user.click(screen.getByTestId("investment-account-select"));
+    await user.click(screen.getByRole("option", { name: /Section 86\(3\) Call Account/ }));
+    fireEvent.change(screen.getByPlaceholderText("e.g. FNB Money Market"), {
+      target: { value: "Investec Call" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Investment account number"), {
+      target: { value: "FD-1" },
+    });
+    fireEvent.change(screen.getByLabelText("Principal"), { target: { value: "50000" } });
+    fireEvent.change(screen.getByLabelText("Interest Rate %"), { target: { value: "7" } });
+
+    fireEvent.submit(screen.getByPlaceholderText("Investment account number").closest("form")!);
+
+    await waitFor(() => expect(mockPlaceInvestment).toHaveBeenCalledTimes(1));
+    const [, data] = mockPlaceInvestment.mock.calls[0];
+    expect(data).toEqual(
+      expect.objectContaining({
+        investmentBasis: "FIRM_DISCRETION",
+        investmentAccountId: FIRM_ACCOUNT,
+      })
+    );
+    expect(data.customerId ?? "").toBe("");
+    expect(data.projectId ?? "").toBe("");
+  });
+
+  it("place investment dialog refuses a missing investment account", async () => {
+    renderPlaceDialog();
+
+    fireEvent.change(screen.getByPlaceholderText("e.g. FNB Money Market"), {
+      target: { value: "Investec Call" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Investment account number"), {
+      target: { value: "FD-1" },
+    });
+    fireEvent.change(screen.getByLabelText("Principal"), { target: { value: "50000" } });
+    fireEvent.submit(screen.getByPlaceholderText("Investment account number").closest("form")!);
+
+    expect(await screen.findByText("Choose the investment account")).toBeInTheDocument();
+    expect(mockPlaceInvestment).not.toHaveBeenCalled();
+  });
+
   // PR #1757 review: the dialog is taller than short viewports (the Day 60 e2e had to submit with
   // Enter because the button was off-screen), so its content scrolls like the repo's other tall
   // dialogs (edit-customer-dialog, create-project-dialog).
   it("place investment dialog scrolls at short viewport heights", () => {
-    render(
-      <PlaceInvestmentDialog
-        accountId="acc-1"
-        open={true}
-        onOpenChange={vi.fn()}
-        onSuccess={vi.fn()}
-      />
-    );
+    renderPlaceDialog();
 
     // DialogContent puts its className on the panel inside the positioned (test id) element
     const dialog = screen.getByTestId("place-investment-dialog");
@@ -281,26 +357,110 @@ describe("Trust Investments & Reports", () => {
     expect(panel.className).toContain("overflow-y-auto");
   });
 
-  it("place investment dialog refuses a missing matter with a field error (G89-F28)", async () => {
+  it("place investment dialog refuses a section 86(4) placement without a matter (G89-F28)", async () => {
+    const user = userEvent.setup();
+    renderPlaceDialog();
+
+    await user.click(screen.getByLabelText("Section 86(4) — invested on a client's instruction"));
+    await user.click(screen.getByTestId("investment-account-select"));
+    await user.click(screen.getByRole("option", { name: /Section 86\(4\) Fixed Deposit/ }));
+    fireEvent.change(screen.getByPlaceholderText("Client UUID"), {
+      target: { value: "a1b2c3d4-e5f6-4890-abcd-ef1234567890" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("e.g. FNB Money Market"), {
+      target: { value: "ABSA Fixed Deposit" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Investment account number"), {
+      target: { value: "INV-999" },
+    });
+    fireEvent.change(screen.getByLabelText("Principal"), { target: { value: "1000" } });
+    fireEvent.submit(screen.getByPlaceholderText("Client UUID").closest("form")!);
+
+    expect(
+      await screen.findByText("A matter is required for client trust transactions")
+    ).toBeInTheDocument();
+    expect(mockPlaceInvestment).not.toHaveBeenCalled();
+  });
+
+  // 648A: the whole investment returns; the dialog shows the amount and takes only the date
+  it("withdraw dialog shows the amount that will return and takes the date — nothing typed", async () => {
+    const user = userEvent.setup();
+    mockWithdrawInvestment.mockResolvedValue({ success: true, investment: makeInvestment() });
     render(
-      <PlaceInvestmentDialog
-        accountId="acc-1"
+      <WithdrawInvestmentDialog
+        investmentId="inv-1"
+        balance={201250}
+        depositDate="2026-01-15"
+        currency="ZAR"
         open={true}
         onOpenChange={vi.fn()}
         onSuccess={vi.fn()}
       />
     );
 
-    const clientInput = screen.getByPlaceholderText("Client UUID");
-    fireEvent.change(clientInput, {
-      target: { value: "a1b2c3d4-e5f6-7890-abcd-ef1234567890" },
-    });
-    fireEvent.submit(clientInput.closest("form")!);
+    const dialog = screen.getByTestId("withdraw-investment-dialog");
+    expect(within(dialog).getByTestId("withdrawal-amount").textContent).toMatch(
+      /201[\s\u00a0]250,00/
+    );
+    // the only input is the date
+    const date = within(dialog).getByLabelText("Withdrawal date") as HTMLInputElement;
+    expect(date.type).toBe("date");
+    expect(date.value).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(within(dialog).queryByRole("spinbutton")).toBeNull();
+    expect(within(dialog).queryAllByRole("textbox")).toHaveLength(0);
 
+    fireEvent.change(date, { target: { value: "2026-11-01" } });
+    await user.click(within(dialog).getByRole("button", { name: "Confirm Withdrawal" }));
+
+    await waitFor(() =>
+      expect(mockWithdrawInvestment).toHaveBeenCalledWith("inv-1", { withdrawalDate: "2026-11-01" })
+    );
+  });
+
+  // 648A review cycle 4: the date is held to the server's rules — never in the future, never
+  // before the deposit date — with the server's own sentences
+  it("withdraw dialog refuses a future date and a date before the deposit date", async () => {
+    const user = userEvent.setup();
+    render(
+      <WithdrawInvestmentDialog
+        investmentId="inv-1"
+        balance={201250}
+        depositDate="2026-01-15"
+        currency="ZAR"
+        open={true}
+        onOpenChange={vi.fn()}
+        onSuccess={vi.fn()}
+      />
+    );
+
+    const dialog = screen.getByTestId("withdraw-investment-dialog");
+    const date = within(dialog).getByLabelText("Withdrawal date") as HTMLInputElement;
+    expect(date.value).toBe(todayInSA());
+    expect(date.min).toBe("2026-01-15");
+    expect(date.max).toBe(todayInSA());
+
+    fireEvent.change(date, { target: { value: "2999-01-01" } });
+    fireEvent.submit(date.closest("form")!);
     expect(
-      await screen.findByText("A matter is required for client trust transactions")
+      await within(dialog).findByText("The withdrawal date cannot be in the future.")
     ).toBeInTheDocument();
-    expect(mockPlaceInvestment).not.toHaveBeenCalled();
+
+    fireEvent.change(date, { target: { value: "2026-01-14" } });
+    fireEvent.submit(date.closest("form")!);
+    expect(
+      await within(dialog).findByText(
+        "The withdrawal date cannot be before the investment's deposit date."
+      )
+    ).toBeInTheDocument();
+    expect(mockWithdrawInvestment).not.toHaveBeenCalled();
+
+    // the deposit date itself is allowed
+    mockWithdrawInvestment.mockResolvedValue({ success: true, investment: makeInvestment() });
+    fireEvent.change(date, { target: { value: "2026-01-15" } });
+    await user.click(within(dialog).getByRole("button", { name: "Confirm Withdrawal" }));
+    await waitFor(() =>
+      expect(mockWithdrawInvestment).toHaveBeenCalledWith("inv-1", { withdrawalDate: "2026-01-15" })
+    );
   });
 
   it("maturity alert highlights investments maturing within 30 days", async () => {

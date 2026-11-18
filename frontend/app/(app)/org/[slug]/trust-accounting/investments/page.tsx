@@ -7,7 +7,12 @@ import { fetchTrustAccounts } from "@/app/(app)/org/[slug]/trust-accounting/acti
 import { fetchInvestments } from "@/app/(app)/org/[slug]/trust-accounting/investments/actions";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import type { TrustInvestment, TrustInvestmentStatus, InvestmentBasis } from "@/lib/types/trust";
+import type {
+  InvestmentBasis,
+  TrustAccount,
+  TrustInvestment,
+  TrustInvestmentStatus,
+} from "@/lib/types/trust";
 import { InvestmentPageClient } from "./InvestmentPageClient";
 import { InvestmentBasisFilter } from "./InvestmentBasisFilter";
 import { daysBetween, todayInSA } from "@b2mash/shared/date";
@@ -22,15 +27,21 @@ const STATUS_BADGE_VARIANT: Record<TrustInvestmentStatus, "neutral" | "success" 
 };
 
 /**
- * Status text in the register. CANCELLED (G89-F87: the placement payment was rejected, nothing was
- * invested) reads "Cancelled"; the other statuses keep their existing text.
+ * Status text in the register (no raw enum on screen). CANCELLED: the placement was rejected, so
+ * nothing was invested (G89-F87).
  */
 const STATUS_LABEL: Record<TrustInvestmentStatus, string> = {
-  ACTIVE: "ACTIVE",
-  MATURED: "MATURED",
-  WITHDRAWN: "WITHDRAWN",
+  ACTIVE: "Active",
+  MATURED: "Matured",
+  WITHDRAWN: "Withdrawn",
   CANCELLED: "Cancelled",
 };
+
+/** The backend withdraws a held investment — ACTIVE or MATURED (648A). */
+const WITHDRAWABLE: ReadonlySet<TrustInvestmentStatus> = new Set(["ACTIVE", "MATURED"]);
+
+/** A section 86(3) investment is the firm's surplus trust money; it names no client. */
+const FIRM_CLIENT_LABEL = "Firm (section 86(3))";
 
 const BASIS_BADGE_VARIANT: Record<InvestmentBasis, "neutral" | "lead"> = {
   FIRM_DISCRETION: "neutral",
@@ -38,9 +49,16 @@ const BASIS_BADGE_VARIANT: Record<InvestmentBasis, "neutral" | "lead"> = {
 };
 
 const BASIS_LABEL: Record<InvestmentBasis, string> = {
-  FIRM_DISCRETION: "Firm",
-  CLIENT_INSTRUCTION: "Client Instruction",
+  FIRM_DISCRETION: "Section 86(3)",
+  CLIENT_INSTRUCTION: "Section 86(4)",
 };
+
+// -- Register cell classes (W-1: every cell may wrap; secondary facts stack under the first) --
+
+const HEAD = "pr-4 pb-3 text-left align-bottom font-medium text-slate-500 dark:text-slate-400";
+const CELL = "py-3 pr-4 align-top text-slate-950 dark:text-slate-50";
+const SUB = "block text-xs text-slate-500 dark:text-slate-400";
+const MONEY = "text-right font-mono tabular-nums";
 
 // -- Maturity helper ------------------------------------------------------
 
@@ -93,15 +111,20 @@ export default async function InvestmentsPage({
   const hasManageTrust =
     capData.isAdmin || capData.isOwner || capData.capabilities.includes("MANAGE_TRUST");
 
-  // Fetch primary trust account
+  // The funding (primary trust banking) account, and the investment accounts (648A)
   let accountId: string | null = null;
+  let investmentAccounts: TrustAccount[] = [];
   let accountFetchError = false;
   try {
     const accounts = await fetchTrustAccounts();
-    const primary = accounts.find((a) => a.isPrimary) ?? accounts[0];
+    const banking = accounts.filter((a) => a.accountType !== "INVESTMENT");
+    const primary = banking.find((a) => a.isPrimary) ?? banking[0];
     if (primary) {
       accountId = primary.id;
     }
+    investmentAccounts = accounts.filter(
+      (a) => a.accountType === "INVESTMENT" && a.status === "ACTIVE"
+    );
   } catch {
     accountFetchError = true;
   }
@@ -131,7 +154,12 @@ export default async function InvestmentsPage({
           </p>
         </div>
         {hasManageTrust && accountId && (
-          <InvestmentPageClient accountId={accountId} variant="place" currency={currency} />
+          <InvestmentPageClient
+            accountId={accountId}
+            variant="place"
+            investmentAccounts={investmentAccounts}
+            currency={currency}
+          />
         )}
       </div>
 
@@ -169,45 +197,22 @@ export default async function InvestmentsPage({
                 </p>
               </div>
             ) : (
+              // W-1 (648A gate): eight columns that fit the card at 1280 without a horizontal
+              // scroll — the basis sits under the client, the institution and account number under
+              // the investment account, the LPFF share under the rate, the maturity under the
+              // deposit date and the interest under the principal; text and Badges wrap.
               <div className="overflow-x-auto">
                 <table className="w-full text-sm" data-testid="investments-table">
                   <thead>
                     <tr className="border-b border-slate-200 dark:border-slate-700">
-                      <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
-                        Client
-                      </th>
-                      <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
-                        Basis
-                      </th>
-                      <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
-                        Institution
-                      </th>
-                      <th className="pr-4 pb-3 text-right font-medium text-slate-500 dark:text-slate-400">
-                        Principal
-                      </th>
-                      <th className="pr-4 pb-3 text-right font-medium text-slate-500 dark:text-slate-400">
-                        Interest Rate
-                      </th>
-                      <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
-                        LPFF Rate
-                      </th>
-                      <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
-                        Deposit Date
-                      </th>
-                      <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
-                        Maturity Date
-                      </th>
-                      <th className="pr-4 pb-3 text-right font-medium text-slate-500 dark:text-slate-400">
-                        Interest Earned
-                      </th>
-                      <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
-                        Status
-                      </th>
-                      {hasManageTrust && (
-                        <th className="pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
-                          Actions
-                        </th>
-                      )}
+                      <th className={HEAD}>Client</th>
+                      <th className={HEAD}>Investment account</th>
+                      <th className={HEAD}>Rate</th>
+                      <th className={HEAD}>Term</th>
+                      <th className={cn(HEAD, "text-right")}>Principal</th>
+                      <th className={cn(HEAD, "text-right")}>Balance</th>
+                      <th className={HEAD}>Status</th>
+                      {hasManageTrust && <th className={cn(HEAD, "pr-0")}>Actions</th>}
                     </tr>
                   </thead>
                   <tbody>
@@ -222,57 +227,76 @@ export default async function InvestmentsPage({
                           )}
                           data-testid={maturing ? "maturity-alert" : `investment-row-${inv.id}`}
                         >
-                          <td className="py-3 pr-4 text-slate-950 dark:text-slate-50">
-                            {inv.clientName}
-                          </td>
-                          <td className="py-3 pr-4">
-                            <Badge variant={BASIS_BADGE_VARIANT[inv.investmentBasis]}>
+                          <td className={CELL} data-testid="investment-client-cell">
+                            <span className="block">{inv.clientName ?? FIRM_CLIENT_LABEL}</span>
+                            <Badge
+                              variant={BASIS_BADGE_VARIANT[inv.investmentBasis]}
+                              className="mt-1 shrink whitespace-normal"
+                            >
                               {BASIS_LABEL[inv.investmentBasis]}
                             </Badge>
                           </td>
-                          <td className="py-3 pr-4 text-slate-950 dark:text-slate-50">
-                            {inv.institution}
+                          <td className={CELL} data-testid="investment-account-cell">
+                            <span className="block">{inv.investmentAccountName}</span>
+                            <span className={SUB}>{inv.institution}</span>
+                            <span className={SUB}>{inv.accountNumber}</span>
                           </td>
-                          <td className="py-3 pr-4 text-right font-mono text-slate-950 tabular-nums dark:text-slate-50">
-                            {formatCurrency(inv.principal, currency)}
+                          <td className={cn(CELL, "tabular-nums")}>
+                            <span className="block font-mono">
+                              {(Number(inv.interestRate) * 100).toFixed(2)}%
+                            </span>
+                            <span className={SUB}>
+                              LPFF share{" "}
+                              {inv.investmentBasis === "CLIENT_INSTRUCTION" ? (
+                                <span className="font-medium text-teal-600 dark:text-teal-400">
+                                  5% (statutory)
+                                </span>
+                              ) : (
+                                <span>Arrangement</span>
+                              )}
+                            </span>
                           </td>
-                          <td className="py-3 pr-4 text-right font-mono text-slate-950 tabular-nums dark:text-slate-50">
-                            {(Number(inv.interestRate) * 100).toFixed(2)}%
+                          <td className={CELL}>
+                            <span className="block">{formatLocalDate(inv.depositDate)}</span>
+                            <span className={SUB}>
+                              {inv.maturityDate
+                                ? `to ${formatLocalDate(inv.maturityDate)}`
+                                : "Call deposit"}
+                            </span>
                           </td>
-                          <td className="py-3 pr-4 text-slate-950 dark:text-slate-50">
-                            {inv.investmentBasis === "CLIENT_INSTRUCTION" ? (
-                              <span className="font-medium text-teal-600 dark:text-teal-400">
-                                5% (statutory)
-                              </span>
+                          <td className={cn(CELL, MONEY)}>
+                            <span className="block">{formatCurrency(inv.principal, currency)}</span>
+                            <span className={SUB}>
+                              Interest {formatCurrency(inv.interestEarned, currency)}
+                            </span>
+                          </td>
+                          <td className={cn(CELL, MONEY)}>
+                            {formatCurrency(inv.balance, currency)}
+                          </td>
+                          <td className={CELL}>
+                            {inv.awaitingApproval ? (
+                              <Badge variant="warning" className="shrink whitespace-normal">
+                                Awaiting approval
+                              </Badge>
                             ) : (
-                              <span className="text-slate-600 dark:text-slate-400">
-                                Arrangement
-                              </span>
+                              <Badge
+                                variant={STATUS_BADGE_VARIANT[inv.status]}
+                                className="shrink whitespace-normal"
+                              >
+                                {STATUS_LABEL[inv.status]}
+                              </Badge>
                             )}
                           </td>
-                          <td className="py-3 pr-4 text-slate-950 dark:text-slate-50">
-                            {formatLocalDate(inv.depositDate)}
-                          </td>
-                          <td className="py-3 pr-4 text-slate-950 dark:text-slate-50">
-                            {inv.maturityDate ? formatLocalDate(inv.maturityDate) : "Call deposit"}
-                          </td>
-                          <td className="py-3 pr-4 text-right font-mono text-slate-950 tabular-nums dark:text-slate-50">
-                            {formatCurrency(inv.interestEarned, currency)}
-                          </td>
-                          <td className="py-3 pr-4">
-                            <Badge variant={STATUS_BADGE_VARIANT[inv.status]}>
-                              {STATUS_LABEL[inv.status]}
-                            </Badge>
-                          </td>
                           {hasManageTrust && (
-                            <td className="py-3">
-                              {inv.status === "ACTIVE" && (
+                            <td className={cn(CELL, "pr-0")}>
+                              {WITHDRAWABLE.has(inv.status) && !inv.awaitingApproval && (
                                 <InvestmentPageClient
                                   accountId={accountId!}
                                   variant="actions"
                                   investmentId={inv.id}
-                                  investmentPrincipal={inv.principal}
-                                  investmentInterestEarned={inv.interestEarned}
+                                  investmentBalance={inv.balance}
+                                  investmentDepositDate={inv.depositDate}
+                                  canRecordInterest={inv.status === "ACTIVE"}
                                   currency={currency}
                                 />
                               )}

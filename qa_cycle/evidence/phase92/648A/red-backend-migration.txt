@@ -1,0 +1,9 @@
+# 648A red run #1 — 2026-11-18, base 8ca0441ba, no production change (no V23 yet)
+# cd backend && ./mvnw test -Dtest=TrustInvestmentAccountsMigrationTest -q
+[ERROR] Tests run: 1, Failures: 0, Errors: 1, Skipped: 0 <<< FAILURE! -- in ...investment.TrustInvestmentAccountsMigrationTest
+[ERROR]   TrustInvestmentAccountsMigrationTest.migrateScratchSchemaFromV22:145 » Flyway No migration with a target version 23 could be found. Ensure target is specified correctly and the migration exists.
+# Cause: trust_investments still has the pre-Phase-92 shape — no investment_account_id / project_id, customer_id and
+#        deposit_transaction_id NOT NULL, no chk_trust_invest_client_by_basis; legacy investments are not deleted.
+# Fix: V23__phase92_investment_accounts.sql (guarded DELETE, investment_account_id NOT NULL + FK, project_id + FK,
+#      nullable customer_id / deposit_transaction_id, chk_trust_invest_client_by_basis with the F-1 explicit
+#      `investment_basis IS NOT NULL`, idx_trust_invest_investment_account).

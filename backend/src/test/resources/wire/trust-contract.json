@@ -178,6 +178,40 @@
       "name" : "notes",
       "type" : "java.lang.String"
     } ],
+    "PlaceInvestmentRequest" : [ {
+      "name" : "investmentAccountId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "clientId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "matterId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "institution",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "accountNumber",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "principal",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "interestRate",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "depositDate",
+      "type" : "java.time.LocalDate"
+    }, {
+      "name" : "maturityDate",
+      "type" : "java.time.LocalDate"
+    }, {
+      "name" : "notes",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "investmentBasis",
+      "type" : "io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis"
+    } ],
     "RecordFromLineResponse" : [ {
       "name" : "line",
       "type" : "io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService$BankStatementLineResponse"
@@ -243,6 +277,82 @@
     }, {
       "name" : "notes",
       "type" : "java.lang.String"
+    }, {
+      "name" : "createdAt",
+      "type" : "java.time.Instant"
+    }, {
+      "name" : "updatedAt",
+      "type" : "java.time.Instant"
+    } ],
+    "TrustInvestmentResponse" : [ {
+      "name" : "id",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "trustAccountId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "investmentAccountId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "investmentAccountName",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "clientId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "clientName",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "matterId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "institution",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "accountNumber",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "principal",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "interestRate",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "depositDate",
+      "type" : "java.time.LocalDate"
+    }, {
+      "name" : "maturityDate",
+      "type" : "java.time.LocalDate"
+    }, {
+      "name" : "interestEarned",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "balance",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "status",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "awaitingApproval",
+      "type" : "boolean"
+    }, {
+      "name" : "withdrawalDate",
+      "type" : "java.time.LocalDate"
+    }, {
+      "name" : "withdrawalAmount",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "depositTransactionId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "withdrawalTransactionId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "notes",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "investmentBasis",
+      "type" : "io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis"
     }, {
       "name" : "createdAt",
       "type" : "java.time.Instant"
@@ -542,6 +652,10 @@
     }, {
       "name" : "notes",
       "type" : "java.lang.String"
+    } ],
+    "WithdrawInvestmentRequest" : [ {
+      "name" : "withdrawalDate",
+      "type" : "java.time.LocalDate"
     } ]
   }
 }

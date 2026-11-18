@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.PlaceInvestmentRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.TrustInvestmentResponse;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.WithdrawInvestmentRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotNull;
@@ -50,6 +51,7 @@ public class TrustInvestmentController {
     return ResponseEntity.ok(investmentService.getInvestment(investmentId));
   }
 
+  /** {@code accountId} is the funding trust banking account (648A). */
   @PostMapping("/api/trust-accounts/{accountId}/investments")
   @RequiresCapability("MANAGE_TRUST")
   public ResponseEntity<TrustInvestmentResponse> placeInvestment(
@@ -69,8 +71,8 @@ public class TrustInvestmentController {
   @PostMapping("/api/trust-investments/{investmentId}/withdraw")
   @RequiresCapability("MANAGE_TRUST")
   public ResponseEntity<TrustInvestmentResponse> withdrawInvestment(
-      @PathVariable UUID investmentId) {
-    return ResponseEntity.ok(investmentService.withdrawInvestment(investmentId));
+      @PathVariable UUID investmentId, @Valid @RequestBody WithdrawInvestmentRequest request) {
+    return ResponseEntity.ok(investmentService.withdrawInvestment(investmentId, request));
   }
 
   @GetMapping("/api/trust-accounts/{accountId}/investments/maturing")

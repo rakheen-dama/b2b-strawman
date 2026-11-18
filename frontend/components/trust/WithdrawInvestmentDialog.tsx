@@ -2,8 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { Button } from "@b2mash/ui/button";
+import { Input } from "@b2mash/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -12,23 +15,47 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { todayInSA } from "@b2mash/shared/date";
 import { formatCurrency } from "@/lib/format";
+import { withdrawInvestmentSchema, type WithdrawInvestmentFormData } from "@/lib/schemas/trust";
 import { withdrawInvestment } from "@/app/(app)/org/[slug]/trust-accounting/investments/actions";
 
 interface WithdrawInvestmentDialogProps {
   investmentId: string;
-  principal: number;
-  interestEarned: number;
+  /** What the withdrawal returns: the investment account's balance for this investment. */
+  balance: number;
+  /** The investment's deposit date (ISO): the earliest withdrawal date the server accepts. */
+  depositDate: string;
   currency: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
 }
 
+function getDefaultValues(): WithdrawInvestmentFormData {
+  return { withdrawalDate: todayInSA() };
+}
+
+/** The server's sentence for a withdrawal dated before the placement (648A review cycle 4). */
+const BEFORE_DEPOSIT_MESSAGE =
+  "The withdrawal date cannot be before the investment's deposit date.";
+
+/**
+ * 648A: the whole investment returns to the trust banking account it was placed from. The amount
+ * is derived (capital plus the interest recorded on it); only the date is entered.
+ */
 export function WithdrawInvestmentDialog({
   investmentId,
-  principal,
-  interestEarned,
+  balance,
+  depositDate,
   currency,
   open,
   onOpenChange,
@@ -38,19 +65,30 @@ export function WithdrawInvestmentDialog({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const form = useForm<WithdrawInvestmentFormData>({
+    resolver: zodResolver(withdrawInvestmentSchema),
+    defaultValues: getDefaultValues(),
+  });
+
   function handleOpenChange(newOpen: boolean) {
     onOpenChange(newOpen);
     if (!newOpen) {
+      form.reset(getDefaultValues());
       setError(null);
     }
   }
 
-  async function handleWithdraw() {
+  async function handleSubmit(data: WithdrawInvestmentFormData) {
     setError(null);
+    // ISO dates compare as strings; the server refuses this too, with the same sentence
+    if (data.withdrawalDate < depositDate) {
+      form.setError("withdrawalDate", { message: BEFORE_DEPOSIT_MESSAGE });
+      return;
+    }
     setIsSubmitting(true);
 
     try {
-      const result = await withdrawInvestment(investmentId);
+      const result = await withdrawInvestment(investmentId, data);
       if (result.success) {
         onSuccess();
         router.refresh();
@@ -65,63 +103,72 @@ export function WithdrawInvestmentDialog({
     }
   }
 
-  const totalWithdrawal = principal + interestEarned;
-
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-md" data-testid="withdraw-investment-dialog">
         <DialogHeader>
           <DialogTitle>Withdraw Investment</DialogTitle>
           <DialogDescription>
-            Confirm withdrawal of this investment back to the trust account.
+            The whole investment returns to the trust banking account it was placed from.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-3 rounded-lg border border-slate-200 p-4 dark:border-slate-700">
-          <div className="flex justify-between text-sm">
-            <span className="text-slate-600 dark:text-slate-400">Principal</span>
-            <span className="font-mono text-slate-950 tabular-nums dark:text-slate-50">
-              {formatCurrency(principal, currency)}
-            </span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-slate-600 dark:text-slate-400">Interest Earned</span>
-            <span className="font-mono text-slate-950 tabular-nums dark:text-slate-50">
-              {formatCurrency(interestEarned, currency)}
-            </span>
-          </div>
-          <div className="border-t border-slate-200 pt-2 dark:border-slate-700">
-            <div className="flex justify-between text-sm font-semibold">
-              <span className="text-slate-950 dark:text-slate-50">Total Withdrawal</span>
-              <span className="font-mono text-slate-950 tabular-nums dark:text-slate-50">
-                {formatCurrency(totalWithdrawal, currency)}
-              </span>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            <div className="rounded-lg border border-slate-200 p-4 dark:border-slate-700">
+              <div className="flex justify-between text-sm font-semibold">
+                <span className="text-slate-950 dark:text-slate-50">Returns to trust</span>
+                <span
+                  className="font-mono text-slate-950 tabular-nums dark:text-slate-50"
+                  data-testid="withdrawal-amount"
+                >
+                  {formatCurrency(balance, currency)}
+                </span>
+              </div>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                The capital and any section 86(4) interest posted to the books (section 86(3)
+                interest belongs to the Legal Practitioners&apos; Fidelity Fund).
+              </p>
             </div>
-          </div>
-        </div>
 
-        {error && <p className="text-destructive text-sm">{error}</p>}
+            <FormField
+              control={form.control}
+              name="withdrawalDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Withdrawal date</FormLabel>
+                  <FormControl>
+                    <Input type="date" min={depositDate} max={todayInSA()} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-        <DialogFooter>
-          <Button
-            type="button"
-            variant="plain"
-            onClick={() => handleOpenChange(false)}
-            disabled={isSubmitting}
-          >
-            Cancel
-          </Button>
-          <Button onClick={handleWithdraw} disabled={isSubmitting}>
-            {isSubmitting ? (
-              <>
-                <Loader2 className="mr-1.5 size-4 animate-spin" />
-                Withdrawing...
-              </>
-            ) : (
-              "Confirm Withdrawal"
-            )}
-          </Button>
-        </DialogFooter>
+            {error && <p className="text-destructive text-sm">{error}</p>}
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="plain"
+                onClick={() => handleOpenChange(false)}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-1.5 size-4 animate-spin" />
+                    Withdrawing...
+                  </>
+                ) : (
+                  "Confirm Withdrawal"
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );

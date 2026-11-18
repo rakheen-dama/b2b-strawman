@@ -1,0 +1,48 @@
+# 648A red frontend vitest — run BEFORE the component/action changes (types + schemas + contract JSON already updated)
+# command: NODE_OPTIONS="" pnpm exec vitest run __tests__/trust-investment-basis.test.tsx __tests__/trust-investments-reports.test.tsx __tests__/trust-wire-shapes.test.ts __tests__/legal/legal-wire-bodies.test.ts
+# date: 2026-11-17T22:33:03Z  base: 8ca0441ba
+
+     × placeInvestment omits the client and matter for a section 86(3) investment 4ms
+     × withdrawInvestment POSTs the withdrawal date and no amount 2ms
+     × Place Investment dialog asks for the basis in the Act's terms 69ms
+     × shows who the interest belongs to for each basis 25ms
+     × the investment account picker offers only the accounts of the chosen basis 23ms
+     × asks for the client and matter only for a section 86(4) investment 18ms
+     × "Add investment account" opens the account dialog preset to the basis and selects the new account 22ms
+     × register shows the investment account, the client or the firm, the balance and readable statuses 24ms
+     × a placement awaiting approval offers no withdrawal 16ms
+     × place investment dialog submits a section 86(4) placement with its account, client and matter 45ms
+     × place investment dialog submits a section 86(3) placement with no client or matter 24ms
+     × place investment dialog refuses a missing investment account 1054ms
+     × place investment dialog refuses a section 86(4) placement without a matter (G89-F28) 22ms
+     × withdraw dialog shows the amount that will return and takes the date — nothing typed 8ms
+ FAIL  __tests__/trust-investment-basis.test.tsx > Epic 455 / 648A — Investment Basis and investment accounts > Place Investment dialog asks for the basis in the Act's terms
+TestingLibraryElementError: Unable to find an element with the text: Investment basis. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+ FAIL  __tests__/trust-investment-basis.test.tsx > Epic 455 / 648A — Investment Basis and investment accounts > shows who the interest belongs to for each basis
+AssertionError: expected 'Interest follows your firm’s LPFF arr…' to contain 'Legal Practitioners'
+ FAIL  __tests__/trust-investment-basis.test.tsx > Epic 455 / 648A — Investment Basis and investment accounts > the investment account picker offers only the accounts of the chosen basis
+TestingLibraryElementError: Unable to find an element by: [data-testid="investment-account-select"]
+ FAIL  __tests__/trust-investment-basis.test.tsx > Epic 455 / 648A — Investment Basis and investment accounts > asks for the client and matter only for a section 86(4) investment
+Error: expect(element).not.toBeInTheDocument()
+ FAIL  __tests__/trust-investment-basis.test.tsx > Epic 455 / 648A — Investment Basis and investment accounts > "Add investment account" opens the account dialog preset to the basis and selects the new account
+TestingLibraryElementError: Unable to find a label with the text of: Section 86(4) — invested on a client's instruction
+ FAIL  __tests__/trust-investment-basis.test.tsx > Epic 455 / 648A — Investment Basis and investment accounts > register shows the investment account, the client or the firm, the balance and readable statuses
+TestingLibraryElementError: Unable to find an element with the text: Investment account. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+ FAIL  __tests__/trust-investment-basis.test.tsx > Epic 455 / 648A — Investment Basis and investment accounts > a placement awaiting approval offers no withdrawal
+TestingLibraryElementError: Unable to find an element with the text: Awaiting approval. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+ FAIL  __tests__/trust-investments-reports.test.tsx > Trust Investments & Reports > place investment dialog submits a section 86(4) placement with its account, client and matter
+TestingLibraryElementError: Unable to find a label with the text of: Section 86(4) — invested on a client's instruction
+ FAIL  __tests__/trust-investments-reports.test.tsx > Trust Investments & Reports > place investment dialog submits a section 86(3) placement with no client or matter
+TestingLibraryElementError: Unable to find an element by: [data-testid="investment-account-select"]
+ FAIL  __tests__/trust-investments-reports.test.tsx > Trust Investments & Reports > place investment dialog refuses a missing investment account
+TestingLibraryElementError: Unable to find an element with the text: Choose the investment account. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+ FAIL  __tests__/trust-investments-reports.test.tsx > Trust Investments & Reports > place investment dialog refuses a section 86(4) placement without a matter (G89-F28)
+TestingLibraryElementError: Unable to find a label with the text of: Section 86(4) — invested on a client's instruction
+ FAIL  __tests__/trust-investments-reports.test.tsx > Trust Investments & Reports > withdraw dialog shows the amount that will return and takes the date — nothing typed
+TestingLibraryElementError: Unable to find an element by: [data-testid="withdrawal-amount"]
+ FAIL  __tests__/legal/legal-wire-bodies.test.ts > legal wire bodies (Phase 87 S3 Batch 4) > placeInvestment omits the client and matter for a section 86(3) investment
+AssertionError: expected { …(11) } to not have property "clientId"
+ FAIL  __tests__/legal/legal-wire-bodies.test.ts > legal wire bodies (Phase 87 S3 Batch 4) > withdrawInvestment POSTs the withdrawal date and no amount
+AssertionError: expected "vi.fn()" to be called with arguments: [ …(2) ]
+ Test Files  3 failed | 1 passed (4)
+      Tests  14 failed | 64 passed (78)

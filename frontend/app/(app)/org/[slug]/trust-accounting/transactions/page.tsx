@@ -59,8 +59,17 @@ const STATUS_OPTIONS: TrustTransactionStatus[] = [
 
 // ── Page ──────────────────────────────────────────────────────────
 
-/** Unidentified-deposit resolutions (647D): their description names where the money goes. */
-const RESOLUTION_TYPES: ReadonlySet<string> = new Set(["UNIDENT_ALLOC_OUT", "UNIDENT_FUND_PAY"]);
+/**
+ * Rows whose description names where the money goes, so the approver can judge them: the
+ * unidentified-deposit resolutions (647D) and the investment placements (648A — "Placed in section
+ * 86(4) investment at … (account)").
+ */
+const DESCRIBED_TYPES: ReadonlySet<string> = new Set([
+  "UNIDENT_ALLOC_OUT",
+  "UNIDENT_FUND_PAY",
+  "INV_PLACE",
+  "FIRM_INV_PLACE",
+]);
 
 export default async function TransactionsPage({
   params,
@@ -122,7 +131,10 @@ export default async function TransactionsPage({
   let accountFetchError = false;
   try {
     const accounts = await fetchTrustAccounts();
-    const primary = accounts.find((a) => a.isPrimary) ?? accounts[0];
+    // A trust banking account, never an investment account (648A): placements are requested and
+    // approved on the account the money leaves — the same rule as the investments page
+    const banking = accounts.filter((a) => a.accountType !== "INVESTMENT");
+    const primary = banking.find((a) => a.isPrimary) ?? banking[0];
     if (primary) {
       accountId = primary.id;
     }
@@ -391,10 +403,11 @@ export default async function TransactionsPage({
                             >
                               {tx.typeLabel}
                             </Badge>
-                            {/* 647D: an unidentified deposit's allocation or payment to the Fund
-                                says where the money goes, so the approver can judge it (both
-                                are firm-only rows; no other row's description is shown here) */}
-                            {RESOLUTION_TYPES.has(tx.transactionType) && tx.description && (
+                            {/* 647D / 648A: an unidentified deposit's allocation or payment to
+                                the Fund, and an investment placement, say where the money goes
+                                so the approver can judge it (no other row's description is
+                                shown here) */}
+                            {DESCRIBED_TYPES.has(tx.transactionType) && tx.description && (
                               <span
                                 className="mt-1 block max-w-xs text-xs whitespace-normal text-slate-500 dark:text-slate-400"
                                 data-testid={`transaction-description-${tx.id}`}

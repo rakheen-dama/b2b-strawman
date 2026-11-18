@@ -334,8 +334,8 @@ class TrustTransactionTypeRegistryTest {
               Origin.FIRM,
               false,
               "trust_firm_inv_place",
-              "Placed in section 86(3) investment account",
-              "Placed in section 86(3) investment account"),
+              "Placed in section 86(3) investment",
+              "Placed in section 86(3) investment"),
           new Row(
               TrustTransactionType.FIRM_INV_RECEIVE,
               1,
@@ -436,6 +436,26 @@ class TrustTransactionTypeRegistryTest {
             t -> t.ledger() == TrustLedger.NON_CLIENT || t.ledger() == TrustLedger.INTER_ACCOUNT)
         .hasSize(12)
         .allSatisfy(t -> assertThat(t.clientVisible()).as("%s clientVisible", t).isFalse());
+  }
+
+  @Test
+  void investmentRows_areTheInvestmentLedgersAndTheClientLegsPairedWithThem() {
+    assertThat(TrustTransactionType.values())
+        .filteredOn(TrustTransactionType::isInvestmentRow)
+        .containsExactlyInAnyOrder(
+            TrustTransactionType.INV_PLACE,
+            TrustTransactionType.INV_RECEIVE,
+            TrustTransactionType.INV_INTEREST,
+            TrustTransactionType.INV_WITHDRAW,
+            TrustTransactionType.INV_RETURN,
+            TrustTransactionType.FIRM_INV_PLACE,
+            TrustTransactionType.FIRM_INV_RECEIVE,
+            TrustTransactionType.FIRM_INV_WITHDRAW,
+            TrustTransactionType.FIRM_INV_RETURN);
+    // Every one but the owner-reversed interest entry (648B) is final: withdrawn, never reversed
+    assertThat(TrustTransactionType.values())
+        .filteredOn(type -> type.isInvestmentRow() && type.reversal() != Reversal.NONE)
+        .containsExactly(TrustTransactionType.INV_INTEREST);
   }
 
   @Test

@@ -1,0 +1,16 @@
+# 648A gate W-1 — static headless measurement (APPROXIMATION, not the gate's clip probe)
+# No e2e stack. Markup: the real InvestmentsPage rendered by a throwaway vitest (old = HEAD aba6f46d5, new = this fix),
+# three rows (s86(3) firm R200 000 active; QuickCollect s86(4) awaiting approval, call deposit; Moroka s86(4) withdrawn).
+# CSS: this worktree's production build (.next/static/chunks/*.css, fonts served from .next/static/media), headless Chromium
+# (@playwright/test library). The register wrapper is pinned to the gate's measured clientWidth (926 @1280, 1086 @1440).
+# Calibration: old markup measures 1403 px here vs 1344 px on the gate's live stack (different rows) — the harness runs ~4% wide.
+# The orchestrator's clip probe on a fresh stack remains the authoritative re-measure.
+
+old@1280: wrapper 926 px, table scrollWidth 1403 px, horizontal scroll True, min-content 1403 px, badges/buttons clipped or outside wrapper: ['Active', 'Record Interest', 'Withdraw', 'Awaiting approval', 'Withdrawn']
+    columns: Client:99, Basis:118, Investment account:94, Institution:89, Principal:117, Interest Rate:67, LPFF Rate:100, Deposit Date:67, Maturity Date:71, Interest Earned:100, Balance:117, Status:140, Actions:224
+old@1440: wrapper 1086 px, table scrollWidth 1403 px, horizontal scroll True, min-content 1403 px, badges/buttons clipped or outside wrapper: ['Active', 'Record Interest', 'Withdraw', 'Awaiting approval', 'Withdrawn']
+    columns: Client:99, Basis:118, Investment account:94, Institution:89, Principal:117, Interest Rate:67, LPFF Rate:100, Deposit Date:67, Maturity Date:71, Interest Earned:100, Balance:117, Status:140, Actions:224
+new@1280: wrapper 926 px, table scrollWidth 926 px, horizontal scroll False, min-content 802 px, badges/buttons clipped or outside wrapper: none
+    columns: Client:129, Investment account:131, Rate:105, Term:67, Principal:124, Balance:117, Status:108, Actions:146
+new@1440: wrapper 1086 px, table scrollWidth 1086 px, horizontal scroll False, min-content 802 px, badges/buttons clipped or outside wrapper: none
+    columns: Client:168, Investment account:179, Rate:124, Term:78, Principal:133, Balance:117, Status:118, Actions:170

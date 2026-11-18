@@ -17,6 +17,7 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -25,6 +26,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -42,6 +44,7 @@ class TrustAccountingControllerTest {
   @Autowired private OrgSettingsRepository orgSettingsRepository;
   @Autowired private OrgSettingsService orgSettingsService;
   @Autowired private TransactionTemplate transactionTemplate;
+  @Autowired private JdbcTemplate jdbcTemplate;
 
   private String tenantSchema;
 
@@ -638,5 +641,78 @@ class TrustAccountingControllerTest {
         .andExpect(jsonPath("$", hasKey("investmentBasis")))
         .andExpect(jsonPath("$.investmentBasis").value(nullValue()))
         .andExpect(jsonPath("$.section").value("S86_2"));
+  }
+
+  // --- 648C found.md F-2 (closed in 648A): no basis change while the account holds investments ---
+
+  @Test
+  void putBasisChange_whileTheInvestmentAccountHoldsAnActiveInvestment_returns400()
+      throws Exception {
+    String fundingId = createAccount("F-2 Funding Account", "73000000001", "GENERAL", null);
+    String investmentId =
+        createAccount("F-2 Section 86(3) Account", "73000000002", "INVESTMENT", "FIRM_DISCRETION");
+    jdbcTemplate.update(
+        """
+        INSERT INTO "%s".trust_investments (trust_account_id, investment_account_id, institution,
+            account_number, principal, interest_rate, deposit_date, status, investment_basis)
+        VALUES (?, ?, 'Investec', 'F2-CTRL', 1000.00, 0.0500, DATE '2026-03-01', 'ACTIVE',
+            'FIRM_DISCRETION')
+        """
+            .formatted(tenantSchema),
+        UUID.fromString(fundingId),
+        UUID.fromString(investmentId));
+
+    mockMvc
+        .perform(
+            put("/api/trust-accounts/" + investmentId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_trust_ctrl_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    { "investmentBasis": "CLIENT_INSTRUCTION" }
+                    """))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.title").value("Cannot change investment basis"))
+        .andExpect(
+            jsonPath("$.detail")
+                .value(
+                    "This investment account holds investments; withdraw them before changing"
+                        + " its basis."));
+
+    mockMvc
+        .perform(
+            get("/api/trust-accounts/" + investmentId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_trust_ctrl_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.investmentBasis").value("FIRM_DISCRETION"))
+        .andExpect(jsonPath("$.section").value("S86_3"));
+  }
+
+  private String createAccount(String name, String number, String type, String basis)
+      throws Exception {
+    String basisField = basis == null ? "" : "\"investmentBasis\": \"" + basis + "\",";
+    var result =
+        mockMvc
+            .perform(
+                post("/api/trust-accounts")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_trust_ctrl_owner"))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "accountName": "%s",
+                          "bankName": "Investec",
+                          "branchCode": "580105",
+                          "accountNumber": "%s",
+                          "accountType": "%s",
+                          %s
+                          "isPrimary": false
+                        }
+                        """
+                            .formatted(name, number, type, basisField)))
+            .andExpect(status().isCreated())
+            .andReturn();
+    return JsonPath.read(result.getResponse().getContentAsString(), "$.id");
   }
 }

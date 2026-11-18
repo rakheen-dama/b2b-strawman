@@ -30,6 +30,23 @@ public final class TrustTransactionTypeLabels {
     return labelOf(transactionType, TrustTransactionType::label);
   }
 
+  /**
+   * The noun for an investment placement in prose — "approved the …", "Trust … requires approval" —
+   * because its registry label ("Placed in section 86(4) investment") is not a noun phrase (648A).
+   * The one copy, read by the activity feed and the trust approval notifications. Null for every
+   * other type: the caller keeps its own noun.
+   */
+  public static String placementNoun(String transactionType) {
+    if (transactionType == null) {
+      return null;
+    }
+    return switch (transactionType.toUpperCase(Locale.ROOT)) {
+      case "INV_PLACE" -> "placement in a section 86(4) investment";
+      case "FIRM_INV_PLACE" -> "placement in a section 86(3) investment account";
+      default -> null;
+    };
+  }
+
   private static String labelOf(
       String transactionType, Function<TrustTransactionType, String> registryLabel) {
     if (transactionType == null || transactionType.isBlank()) {

@@ -1,0 +1,31 @@
+# 648A red run #4 (harness paths 17, 18, 19; type refusal) — 2026-11-18, base 8ca0441ba + V23 only
+# (TrustInvestmentService / TrustTransactionService unchanged). Compile-level red, as the brief allows for the new API:
+# cd backend && ./mvnw test-compile -q
+testutil/TrustBooksFixture.java:[19,99] cannot find symbol
+testutil/TrustBooksFixture.java:[451,31] constructor PlaceInvestmentRequest in record io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.PlaceInvestmentRequest cannot be applied to given types;
+testutil/TrustBooksFixture.java:[512,49] cannot find symbol
+verticals/legal/trustaccounting/investment/TrustInvestmentServiceIntegrationTest.java:[142,26] cannot find symbol
+verticals/legal/trustaccounting/investment/TrustInvestmentServiceIntegrationTest.java:[144,26] cannot find symbol
+verticals/legal/trustaccounting/investment/TrustInvestmentServiceIntegrationTest.java:[156,22] cannot find symbol
+verticals/legal/trustaccounting/investment/TrustInvestmentServiceIntegrationTest.java:[157,22] cannot find symbol
+verticals/legal/trustaccounting/investment/TrustInvestmentServiceIntegrationTest.java:[159,22] cannot find symbol
+verticals/legal/trustaccounting/investment/TrustInvestmentServiceIntegrationTest.java:[19,99] cannot find symbol
+verticals/legal/trustaccounting/investment/TrustInvestmentServiceIntegrationTest.java:[197,32] cannot find symbol
+verticals/legal/trustaccounting/investment/TrustInvestmentServiceIntegrationTest.java:[278,22] cannot find symbol
+verticals/legal/trustaccounting/investment/TrustInvestmentServiceIntegrationTest.java:[300,32] cannot find symbol
+verticals/legal/trustaccounting/investment/TrustInvestmentServiceIntegrationTest.java:[329,25] cannot find symbol
+verticals/legal/trustaccounting/investment/TrustInvestmentServiceIntegrationTest.java:[361,32] cannot find symbol
+verticals/legal/trustaccounting/investment/TrustInvestmentServiceIntegrationTest.java:[505,9] constructor PlaceInvestmentRequest in record io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.PlaceInvestmentRequest cannot be applied to given types;
+verticals/legal/trustaccounting/investment/TrustInvestmentServiceIntegrationTest.java:[522,9] constructor PlaceInvestmentRequest in record io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.PlaceInvestmentRequest cannot be applied to given types;
+... (21 distinct errors; all in TrustBooksFixture + TrustInvestmentServiceIntegrationTest)
+# The symbols that do not exist on HEAD: TrustInvestmentService.WithdrawInvestmentRequest (line 19 import),
+#   PlaceInvestmentRequest(investmentAccountId, clientId, matterId, ...) (HEAD has no investment account),
+#   TrustInvestmentResponse.investmentAccountId()/matterId()/balance()/investmentAccountName(),
+#   TrustInvestment.getInvestmentAccountId()/getProjectId().
+# Cause: on HEAD a placement is ONE PAYMENT on the funding account (money leaves the books); no investment
+#   account, no INV_PLACE/INV_RECEIVE pair, client total drops by P; withdrawal is a DEPOSIT of principal +
+#   hand-typed interest dated today; reversal of a placement is refused only by an investment lookup on a PAYMENT
+#   (requireNotAPlacementPayment, "This payment placed a trust investment (...)").
+# Fix: §16.3.7 — placement INV_PLACE/FIRM_INV_PLACE on G awaiting approval, the receive leg posted WITH_PAIR on the
+#   investment account at approval (InvestmentPlacementHooks), withdrawal INV_WITHDRAW + INV_RETURN (or FIRM_*)
+#   both RECORDED for the investment's balance; reversal refused on the type (registry reversal = NONE).

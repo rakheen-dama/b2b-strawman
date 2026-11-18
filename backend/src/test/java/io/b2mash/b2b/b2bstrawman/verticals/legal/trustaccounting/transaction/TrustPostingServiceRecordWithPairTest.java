@@ -21,8 +21,9 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 /**
  * Phase 92 slice 647D (fix cycle 1): the guards of {@link TrustPostingService#recordWithPair} — a
- * WITH_PAIR row ({@code UNIDENT_ALLOC_IN}) posts only with its pair, and only once that pair is
- * posted and APPROVED. Each refusal saves nothing.
+ * WITH_PAIR row ({@code UNIDENT_ALLOC_IN}; 648A's {@code INV_RETURN}) posts only with its pair, and
+ * only once that pair is posted with the status its own type posts with (REQUIRED → APPROVED, NONE
+ * → RECORDED). Each refusal saves nothing.
  */
 class TrustPostingServiceRecordWithPairTest {
 
@@ -75,6 +76,41 @@ class TrustPostingServiceRecordWithPairTest {
         .isInstanceOf(IllegalStateException.class)
         .hasMessage("recordWithPair: pair " + reversed.getId() + " is not posted");
     verify(repository, never()).save(any());
+  }
+
+  /** 648A review: the pair's status must be the one its own type posts with. */
+  @Test
+  void aPairWhoseStatusIsNotItsTypesPostingStatus_isRefused() {
+    // A REQUIRED pair that is RECORDED never went through approval
+    var recordedRequired = postedPair("RECORDED");
+    assertThatThrownBy(() -> service.recordWithPair(draft("UNIDENT_ALLOC_IN"), recordedRequired))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage(
+            "recordWithPair: pair "
+                + recordedRequired.getId()
+                + " is RECORDED but its type UNIDENT_ALLOC_OUT posts with approval REQUIRED");
+
+    // A NONE pair (a withdrawal) cannot be APPROVED
+    var approvedNone = postedWithdrawal("APPROVED");
+    assertThatThrownBy(() -> service.recordWithPair(draft("INV_RETURN"), approvedNone))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage(
+            "recordWithPair: pair "
+                + approvedNone.getId()
+                + " is APPROVED but its type INV_WITHDRAW posts with approval NONE");
+    verify(repository, never()).save(any());
+  }
+
+  @Test
+  void aRecordedPairOfANoApprovalType_postsTheLegRecorded_withNoApprovers() {
+    var withdrawal = postedWithdrawal("RECORDED");
+
+    var leg = service.recordWithPair(draft("INV_RETURN"), withdrawal);
+
+    assertThat(leg.getStatus()).isEqualTo("RECORDED");
+    assertThat(leg.getApprovedBy()).isNull();
+    assertThat(leg.getPostedAt()).isEqualTo(NOW);
+    verify(repository).save(leg);
   }
 
   @Test
@@ -134,5 +170,26 @@ class TrustPostingServiceRecordWithPairTest {
     pair.applyPosting(
         TrustTransactionType.UNIDENT_ALLOC_OUT.effectFor(new BigDecimal("80.00")), NOW);
     return pair;
+  }
+
+  /** A posted {@code INV_WITHDRAW} (approval NONE — 648A's withdrawal leg) in {@code status}. */
+  private static TrustTransaction postedWithdrawal(String status) {
+    var withdrawal =
+        new TrustTransaction(
+            ACCOUNT,
+            "INV_WITHDRAW",
+            new BigDecimal("80.00"),
+            CLIENT,
+            MATTER,
+            null,
+            "INV-WD-TEST",
+            "Investment withdrawn",
+            DATE,
+            status,
+            MAKER);
+    ReflectionTestUtils.setField(withdrawal, "id", UUID.randomUUID());
+    withdrawal.applyPosting(
+        TrustTransactionType.INV_WITHDRAW.effectFor(new BigDecimal("80.00")), NOW);
+    return withdrawal;
   }
 }

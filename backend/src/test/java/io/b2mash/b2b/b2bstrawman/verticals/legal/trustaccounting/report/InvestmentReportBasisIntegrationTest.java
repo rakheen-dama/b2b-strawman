@@ -12,6 +12,7 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestTrustInvestmentAccountHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.interest.InterestService;
@@ -57,6 +58,8 @@ class InvestmentReportBasisIntegrationTest {
 
   private String tenantSchema;
   private UUID trustAccountId;
+  private UUID firmInvestmentAccountId;
+  private UUID clientInvestmentAccountId;
   private String customerId1;
   private String customerId2;
   private UUID ownerMemberId;
@@ -112,6 +115,21 @@ class InvestmentReportBasisIntegrationTest {
             .andExpect(status().isCreated())
             .andReturn();
     trustAccountId = UUID.fromString(TestEntityHelper.extractId(accountResult));
+    // 648A: investments are held in INVESTMENT accounts of their basis
+    firmInvestmentAccountId =
+        TestTrustInvestmentAccountHelper.openInvestmentAccount(
+            mockMvc,
+            ownerJwt,
+            "Section 86(3) Investments",
+            "INV86-3-" + ORG_ID.hashCode(),
+            InvestmentBasis.FIRM_DISCRETION);
+    clientInvestmentAccountId =
+        TestTrustInvestmentAccountHelper.openInvestmentAccount(
+            mockMvc,
+            ownerJwt,
+            "Section 86(4) Investments",
+            "INV86-4-" + ORG_ID.hashCode(),
+            InvestmentBasis.CLIENT_INSTRUCTION);
 
     // Create customers
     customerId1 =
@@ -165,8 +183,9 @@ class InvestmentReportBasisIntegrationTest {
                 investmentService.placeInvestment(
                     trustAccountId,
                     new TrustInvestmentService.PlaceInvestmentRequest(
-                        UUID.fromString(customerId1),
-                        trustMatterOf(customerId1),
+                        firmInvestmentAccountId,
+                        null,
+                        null,
                         "ABSA Bank",
                         "9012345678",
                         new BigDecimal("20000.00"),
@@ -184,6 +203,7 @@ class InvestmentReportBasisIntegrationTest {
                 investmentService.placeInvestment(
                     trustAccountId,
                     new TrustInvestmentService.PlaceInvestmentRequest(
+                        clientInvestmentAccountId,
                         UUID.fromString(customerId2),
                         trustMatterOf(customerId2),
                         "Nedbank",

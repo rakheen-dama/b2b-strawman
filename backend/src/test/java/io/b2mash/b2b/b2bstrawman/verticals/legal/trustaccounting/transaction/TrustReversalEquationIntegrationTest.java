@@ -10,9 +10,6 @@ import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness;
 import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness.Expected;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentRepository;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.PlaceInvestmentRequest;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterAll;
@@ -55,7 +52,6 @@ class TrustReversalEquationIntegrationTest {
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private TrustBooksFixture fixture;
-  @Autowired private TrustInvestmentService investmentService;
   @Autowired private TrustInvestmentRepository investmentRepository;
   @Autowired private TrustTransactionRepository transactionRepository;
 
@@ -402,54 +398,41 @@ class TrustReversalEquationIntegrationTest {
   }
 
   /**
-   * CodeRabbit on PR #1789: the unmatch path must refuse an investment's placement PAYMENT exactly
-   * as {@code reverseTransaction} does (G89-F86) — otherwise the payment is credited back and
-   * marked {@code REVERSED} while its investment stays ACTIVE with no money behind it (and can
-   * never be withdrawn). Nothing moves; the payment stays APPROVED and the investment ACTIVE.
+   * CodeRabbit on PR #1789, 648A: the unmatch path refuses an investment's placement exactly as
+   * {@code reverseTransaction} does — on the type ({@code INV_PLACE} has reversal {@code NONE}),
+   * with the same guidance — otherwise the placement would be credited back while its investment
+   * stays ACTIVE with the money on the investment account. Nothing moves on either account; the
+   * placement stays APPROVED and the investment ACTIVE.
    */
   @Test
-  void reverseForUnmatch_refusesAnInvestmentsPlacementPayment() {
+  void reverseForUnmatch_refusesAnInvestmentsPlacement() {
     var account = books.freshAccount(false);
+    var investmentAccount = books.freshInvestmentAccount(InvestmentBasis.CLIENT_INSTRUCTION);
     var client = books.newClient("Unmatch placement");
     books.deposit(account, client, "5000.00");
-    var investmentId = new UUID[1];
-    var placementId = new UUID[1];
-    books.as(
-        memberId,
-        () -> {
-          var placed =
-              investmentService.placeInvestment(
-                  account,
-                  new PlaceInvestmentRequest(
-                      client.id(),
-                      client.matter(),
-                      "Unmatch Bank",
-                      "UNMATCH-INV-1",
-                      new BigDecimal("1000.00"),
-                      new BigDecimal("0.07"),
-                      TrustBooksFixture.POSTING_DATE,
-                      null,
-                      null,
-                      InvestmentBasis.FIRM_DISCRETION));
-          investmentId[0] = placed.id();
-          placementId[0] = placed.depositTransactionId();
-        });
-    books.approve(account, placementId[0], approverId, Expected.cashbookAndClient("-1000.00"));
+    var placed = books.requestPlacement(account, investmentAccount, client, "1000.00");
+    var placementId = placed.depositTransactionId();
+    books.approvePlacement(
+        account,
+        Expected.cashbookAndClient("-1000.00"),
+        investmentAccount,
+        Expected.cashbookAndInvestment("1000.00"),
+        placementId,
+        approverId);
     var lineId =
-        books.bankLineFor(account, placementId[0], TrustBooksFixture.POSTING_DATE.plusDays(2));
+        books.bankLineFor(account, placementId, TrustBooksFixture.POSTING_DATE.plusDays(2));
 
     books.assertUnmatchRefused(
         account,
         lineId,
-        "Cannot reverse transaction",
-        "This payment placed a trust investment (ACTIVE). Withdraw the investment instead of"
-            + " reversing its placement payment.");
+        "Cannot unmatch statement line",
+        "This entry placed a trust investment. Withdraw the investment instead of reversing its"
+            + " placement.");
 
-    assertThat(books.statusOf(placementId[0])).as("placement payment").isEqualTo("APPROVED");
-    assertThat(books.reversedByOf(placementId[0])).as("placement reversedById").isNull();
+    assertThat(books.statusOf(placementId)).as("placement").isEqualTo("APPROVED");
+    assertThat(books.reversedByOf(placementId)).as("placement reversedById").isNull();
     assertThat(
-            books.read(
-                () -> investmentRepository.findById(investmentId[0]).orElseThrow().getStatus()))
+            books.read(() -> investmentRepository.findById(placed.id()).orElseThrow().getStatus()))
         .as("investment")
         .isEqualTo("ACTIVE");
   }

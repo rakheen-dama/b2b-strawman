@@ -12,7 +12,9 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestTrustInvestmentAccountHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.interest.InterestService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.ReconciliationStatus;
@@ -66,6 +68,8 @@ class TrustReportQueryIntegrationTest {
 
   private String tenantSchema;
   private UUID trustAccountId;
+  private UUID firmInvestmentAccountId;
+  private UUID clientInvestmentAccountId;
   private String customerId1;
   private String customerId2;
   private UUID ownerMemberId;
@@ -123,6 +127,21 @@ class TrustReportQueryIntegrationTest {
             .andExpect(status().isCreated())
             .andReturn();
     trustAccountId = UUID.fromString(TestEntityHelper.extractId(accountResult));
+    // 648A: investments are held in INVESTMENT accounts of their basis
+    firmInvestmentAccountId =
+        TestTrustInvestmentAccountHelper.openInvestmentAccount(
+            mockMvc,
+            ownerJwt,
+            "Section 86(3) Investments",
+            "INV86-3-" + ORG_ID.hashCode(),
+            InvestmentBasis.FIRM_DISCRETION);
+    clientInvestmentAccountId =
+        TestTrustInvestmentAccountHelper.openInvestmentAccount(
+            mockMvc,
+            ownerJwt,
+            "Section 86(4) Investments",
+            "INV86-4-" + ORG_ID.hashCode(),
+            InvestmentBasis.CLIENT_INSTRUCTION);
 
     // Create customers
     customerId1 =
@@ -180,8 +199,9 @@ class TrustReportQueryIntegrationTest {
                 investmentService.placeInvestment(
                     trustAccountId,
                     new TrustInvestmentService.PlaceInvestmentRequest(
-                        UUID.fromString(customerId1),
-                        trustMatterOf(customerId1),
+                        firmInvestmentAccountId,
+                        null,
+                        null,
                         "ABSA Bank",
                         "9012345678",
                         new BigDecimal("20000.00"),
@@ -189,8 +209,7 @@ class TrustReportQueryIntegrationTest {
                         LocalDate.of(2025, 5, 1),
                         LocalDate.of(2025, 11, 1),
                         "6-month fixed deposit for report test",
-                        io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis
-                            .FIRM_DISCRETION)));
+                        InvestmentBasis.FIRM_DISCRETION)));
 
     // Create a reconciliation directly via repository (API requires bank statement upload)
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)

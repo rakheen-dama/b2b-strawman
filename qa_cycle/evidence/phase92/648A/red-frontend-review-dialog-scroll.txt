@@ -1,0 +1,7 @@
+# 648A review cycle 1 — item 9 (E2E day-60 'Create Account' outside the viewport) red vitest, class removed
+# date: 2026-11-17T23:17:57Z
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  __tests__/trust-investment-basis.test.tsx > Epic 455 / 648A — Investment Basis and investment accounts > the account dialog's content scrolls within the viewport
+Expected the element to have class:
+Received:
+      Tests  1 failed | 15 skipped (16)

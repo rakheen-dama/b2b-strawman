@@ -10,6 +10,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.Integrity
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustBooksService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustIntegrityService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustMonthlyListService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.TrustInterestMemoService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.UnidentifiedDepositService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService;
@@ -53,7 +54,8 @@ import tools.jackson.databind.json.JsonMapper;
  * firm, its flags and their subjects, the position and bank terms it carries), the dashboard
  * position's integrity summary, and the reconciliation's integrity flags; 650A the monthly
  * trust-creditor list (summary, one list with its creditor lines and the entries made after the
- * lock) and the reconciliation's {@code monthlyListId}.
+ * lock) and the reconciliation's {@code monthlyListId}; 650B the at-source memo record and its save
+ * request.
  *
  * <p>The actual is always written to {@code target/wire/trust-contract.actual.json}. Regenerate
  * ONLY deliberately with {@code -Dtrust.contract.update=true}; the PR that does so must say why in
@@ -107,7 +109,10 @@ class TrustWireContractTest {
           TrustMonthlyListService.AdjustmentsSinceLock.class,
           TrustMonthlyListService.AdjustmentEntry.class,
           CreditorLine.class,
-          CreditorLine.MatterBalance.class);
+          CreditorLine.MatterBalance.class,
+          // 650B: the at-source memo record (GET/PUT …/interest-memos) and its save request
+          TrustInterestMemoService.InterestMemoResponse.class,
+          TrustInterestMemoService.SaveInterestMemoRequest.class);
 
   private static final String UPDATE_FLAG = "trust.contract.update";
   private static final Path SNAPSHOT = Path.of("src/test/resources/wire/trust-contract.json");

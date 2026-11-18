@@ -1037,3 +1037,37 @@ export interface UnidentifiedDepositPage {
   content: UnidentifiedDeposit[];
   page: { totalElements: number; totalPages: number; size: number; number: number };
 }
+
+// At-source memo records (Phase 92 650B, ADR-384) — GET/PUT /api/trust-accounts/{id}/interest-memos
+
+/**
+ * `TrustInterestMemoService.InterestMemoResponse` (650B, §16.3.13) — keys in the Java record's
+ * order (pinned by `__tests__/trust-wire-shapes.test.ts`, ADR-365). Rule 54.28 figures for
+ * interest and charges that never reached the trust account; no effect on any balance.
+ * `periodMonth` is the month's first day (yyyy-MM-dd); `recordedBy` the member who saved it last.
+ */
+export interface InterestMemo {
+  id: string;
+  trustAccountId: string;
+  periodMonth: string;
+  grossInterest: number;
+  grossCharges: number;
+  chargesVat: number;
+  sourceNote: string;
+  recordedBy: string;
+  recordedByName: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * `TrustInterestMemoService.SaveInterestMemoRequest` (650B) —
+ * `PUT /api/trust-accounts/{id}/interest-memos/{yyyy-MM}` body, keys in the Java record's order
+ * (pinned, ADR-365). The VAT is included in the gross charges.
+ */
+export interface SaveInterestMemoRequest {
+  grossInterest: number;
+  grossCharges: number;
+  chargesVat: number;
+  sourceNote: string;
+}

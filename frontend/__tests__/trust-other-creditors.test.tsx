@@ -1,10 +1,11 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { todayInSA } from "@b2mash/shared/date";
 import { formatCurrency } from "@/lib/format";
 import type {
   CreditorLedgerPage,
+  InterestMemo,
   TrustCreditorAccount,
   TrustTransaction,
   UnidentifiedDeposit,
@@ -37,12 +38,18 @@ const mockFetchCreditorLedgerRows = vi.fn();
 const mockFetchUnidentifiedDeposits = vi.fn();
 const mockAllocateUnidentifiedDeposit = vi.fn();
 const mockPayUnidentifiedDepositToFund = vi.fn();
+const mockFetchInterestMemos = vi.fn();
+const mockFetchLockedMonths = vi.fn();
+const mockSaveInterestMemo = vi.fn();
 vi.mock("@/app/(app)/org/[slug]/trust-accounting/other-creditors/actions", () => ({
   fetchCreditorAccounts: (...args: unknown[]) => mockFetchCreditorAccounts(...args),
   fetchCreditorLedgerRows: (...args: unknown[]) => mockFetchCreditorLedgerRows(...args),
   fetchUnidentifiedDeposits: (...args: unknown[]) => mockFetchUnidentifiedDeposits(...args),
   allocateUnidentifiedDeposit: (...args: unknown[]) => mockAllocateUnidentifiedDeposit(...args),
   payUnidentifiedDepositToFund: (...args: unknown[]) => mockPayUnidentifiedDepositToFund(...args),
+  fetchInterestMemos: (...args: unknown[]) => mockFetchInterestMemos(...args),
+  fetchLockedMonths: (...args: unknown[]) => mockFetchLockedMonths(...args),
+  saveInterestMemo: (...args: unknown[]) => mockSaveInterestMemo(...args),
 }));
 
 // ── Mock the client roster and the matter picker's fetch (647D) ───
@@ -196,6 +203,23 @@ function itemsPage(content: UnidentifiedDeposit[]): UnidentifiedDepositPage {
   };
 }
 
+function memo(overrides: Partial<InterestMemo> = {}): InterestMemo {
+  return {
+    id: "m-1",
+    trustAccountId: "acc-1",
+    periodMonth: "2026-10-01",
+    grossInterest: 1234.56,
+    grossCharges: 115,
+    chargesVat: 15,
+    sourceNote: "FNB advice LPFF-OCT",
+    recordedBy: "member-1",
+    recordedByName: "Alice Owner",
+    createdAt: "2026-11-02T08:00:00Z",
+    updatedAt: "2026-11-02T08:00:00Z",
+    ...overrides,
+  };
+}
+
 /** The client and matter of an allocation (UUIDs: the schema checks them). */
 const CLIENT = {
   id: "550e8400-e29b-41d4-a716-446655440000",
@@ -255,7 +279,7 @@ const WORKED_SET: TrustTransaction[] = [
   fundRow({ id: "tx-interest" }),
 ];
 
-async function renderPage(search: { page?: string; itemsPage?: string } = {}) {
+async function renderPage(search: { page?: string; itemsPage?: string; memoYear?: string } = {}) {
   const result = await OtherTrustCreditorsPage({
     params: Promise.resolve({ slug: "test-org" }),
     searchParams: Promise.resolve(search),
@@ -284,6 +308,8 @@ describe("Other trust creditors page", () => {
     mockFetchUnidentifiedDeposits.mockResolvedValue(itemsPage([]));
     mockListClients.mockResolvedValue([CLIENT]);
     mockFetchCustomerProjects.mockResolvedValue([MATTER]);
+    mockFetchInterestMemos.mockResolvedValue([]);
+    mockFetchLockedMonths.mockResolvedValue([]);
   });
 
   afterEach(() => cleanup());
@@ -865,5 +891,167 @@ describe("Other trust creditors page", () => {
     const table = screen.getByTestId("unidentified-deposits-table");
     expect(table).not.toHaveTextContent("AWAITING_APPROVAL");
     expect(table).not.toHaveTextContent("ALLOCATED");
+  });
+  // ── Interest and charges at source: memos (650B) ────────────────
+
+  it("lists the year's at-source memos with their figures, source and recorder, and marks a month whose list is locked", async () => {
+    const currentYear = Number(todayInSA().slice(0, 4));
+    mockFetchInterestMemos.mockResolvedValue([
+      memo({ id: "m-sep", periodMonth: "2026-09-01", sourceNote: "Fund statement SEP" }),
+      memo(),
+    ]);
+    mockFetchLockedMonths.mockResolvedValue(["2026-10"]);
+    await renderPage();
+
+    expect(mockFetchInterestMemos).toHaveBeenCalledWith("acc-1", currentYear);
+    expect(mockFetchLockedMonths).toHaveBeenCalledWith("acc-1");
+    const section = screen.getByTestId("interest-memos-section");
+    expect(section).toHaveTextContent("Interest and charges at source");
+    const rows = within(section).getAllByTestId("interest-memo-row");
+    expect(rows).toHaveLength(2);
+    expect(rows[0]).toHaveTextContent("September 2026");
+    expect(rows[0]).toHaveTextContent("Fund statement SEP");
+    expect(within(rows[0]).queryByTestId("interest-memo-locked")).not.toBeInTheDocument();
+    expect(rows[1]).toHaveTextContent("October 2026");
+    // formatCurrency emits a non-breaking space; compare the raw text, not the normalised one
+    expect(rows[1].textContent).toContain(formatCurrency(1234.56, "ZAR"));
+    expect(rows[1].textContent).toContain(formatCurrency(115, "ZAR"));
+    expect(rows[1].textContent).toContain(formatCurrency(15, "ZAR"));
+    expect(rows[1]).toHaveTextContent("FNB advice LPFF-OCT");
+    expect(rows[1]).toHaveTextContent("Alice Owner");
+    expect(within(rows[1]).getByTestId("interest-memo-locked")).toHaveTextContent("List locked");
+    // Next year is disabled at the current year; Previous year keeps the year in the link.
+    expect(within(section).getByTestId("interest-memos-next-year")).toBeDisabled();
+    expect(within(section).getByTestId("interest-memos-previous-year")).toHaveAttribute(
+      "href",
+      `/org/test-org/trust-accounting/other-creditors?page=0&memoYear=${currentYear - 1}`
+    );
+
+    // A failing memo fetch shows its own error; the balances and the Fund ledger still render.
+    cleanup();
+    mockFetchInterestMemos.mockRejectedValue(new Error("boom"));
+    await renderPage({ memoYear: "2025" });
+    expect(mockFetchInterestMemos).toHaveBeenLastCalledWith("acc-1", 2025);
+    expect(screen.getByTestId("interest-memos-error")).toHaveTextContent(
+      "Unable to load the memos"
+    );
+    expect(screen.getByTestId("creditor-FUND_INTEREST_AND_CHARGES")).toBeInTheDocument();
+    expect(screen.getByTestId("fund-ledger-section")).toBeInTheDocument();
+  });
+
+  it("offers Record memo and Correct with MANAGE_TRUST, and neither with VIEW_TRUST only", async () => {
+    mockFetchInterestMemos.mockResolvedValue([memo()]);
+    await renderPage();
+
+    // VIEW_TRUST only (the default member): the table, no actions.
+    expect(screen.getByTestId("interest-memo-row")).toBeInTheDocument();
+    expect(screen.queryByTestId("record-interest-memo-btn")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("correct-interest-memo-btn-m-1")).not.toBeInTheDocument();
+
+    cleanup();
+    mockFetchMyCapabilities.mockResolvedValue(MANAGER_CAPABILITIES);
+    await renderPage();
+
+    expect(screen.getByTestId("record-interest-memo-btn")).toHaveTextContent("Record memo");
+    const row = screen.getByTestId("interest-memo-row");
+    expect(within(row).getByTestId("correct-interest-memo-btn-m-1")).toHaveTextContent("Correct");
+  });
+
+  it("records a memo from the dialog: validates the VAT against the charges, saves, and shows the server's refusal", async () => {
+    const user = userEvent.setup();
+    mockFetchMyCapabilities.mockResolvedValue(MANAGER_CAPABILITIES);
+    mockFetchInterestMemos.mockResolvedValue([memo()]);
+    mockFetchLockedMonths.mockResolvedValue(["2026-10"]);
+    mockSaveInterestMemo.mockResolvedValue({
+      success: false,
+      error: "A memo can be saved for this month or an earlier one, not for December 2026.",
+    });
+    await renderPage();
+
+    await user.click(screen.getByTestId("record-interest-memo-btn"));
+    let dialog = await screen.findByTestId("interest-memo-dialog");
+    expect(dialog).toHaveTextContent("Record an interest and charges memo");
+    // The month defaults to the previous month in South Africa.
+    const [year, month] = todayInSA().split("-").map(Number);
+    const previous =
+      month === 1 ? `${year - 1}-12` : `${year}-${String(month - 1).padStart(2, "0")}`;
+    const monthInput = within(dialog).getByTestId("interest-memo-month");
+    expect(monthInput).toHaveValue(previous);
+    expect(monthInput).toHaveAttribute("type", "month");
+
+    // Choose September (no memo, not locked): no notes.
+    fireEvent.change(monthInput, { target: { value: "2026-09" } });
+    expect(within(dialog).queryByTestId("interest-memo-locked-note")).not.toBeInTheDocument();
+    expect(within(dialog).queryByTestId("interest-memo-replaces-note")).not.toBeInTheDocument();
+
+    const interest = within(dialog).getByTestId("interest-memo-gross-interest");
+    const charges = within(dialog).getByTestId("interest-memo-gross-charges");
+    const vat = within(dialog).getByTestId("interest-memo-vat");
+    await user.clear(interest);
+    await user.type(interest, "500.25");
+    await user.clear(charges);
+    await user.type(charges, "20");
+    await user.clear(vat);
+    await user.type(vat, "30");
+    await user.type(within(dialog).getByTestId("interest-memo-source"), "FNB advice SEP");
+    await user.click(within(dialog).getByTestId("interest-memo-submit"));
+
+    expect(
+      await within(dialog).findByText("The VAT cannot be more than the gross charges")
+    ).toBeInTheDocument();
+    expect(mockSaveInterestMemo).not.toHaveBeenCalled();
+
+    await user.clear(vat);
+    await user.type(vat, "2.61");
+    await user.click(within(dialog).getByTestId("interest-memo-submit"));
+
+    await waitFor(() =>
+      expect(mockSaveInterestMemo).toHaveBeenCalledWith("acc-1", {
+        month: "2026-09",
+        grossInterest: 500.25,
+        grossCharges: 20,
+        chargesVat: 2.61,
+        sourceNote: "FNB advice SEP",
+      })
+    );
+    expect(await within(dialog).findByRole("alert")).toHaveTextContent(
+      "A memo can be saved for this month or an earlier one, not for December 2026."
+    );
+    // A refusal keeps the dialog open.
+    expect(screen.getByTestId("interest-memo-dialog")).toBeInTheDocument();
+
+    // Choosing the locked October, which already has a memo: both notes, informational.
+    fireEvent.change(monthInput, { target: { value: "2026-10" } });
+    expect(within(dialog).getByTestId("interest-memo-locked-note")).toHaveAttribute(
+      "role",
+      "status"
+    );
+    expect(within(dialog).getByTestId("interest-memo-replaces-note")).toHaveTextContent(
+      "A memo for October 2026 is already saved"
+    );
+
+    // A success closes the dialog.
+    mockSaveInterestMemo.mockResolvedValue({ success: true });
+    await user.click(within(dialog).getByTestId("interest-memo-submit"));
+    await waitFor(() =>
+      expect(screen.queryByTestId("interest-memo-dialog")).not.toBeInTheDocument()
+    );
+
+    // Correct the locked October memo: the month is fixed, the figures prefilled, the note shown.
+    await user.click(screen.getByTestId("correct-interest-memo-btn-m-1"));
+    dialog = await screen.findByTestId("interest-memo-dialog");
+    expect(dialog).toHaveTextContent("Correct the memo for October 2026");
+    expect(within(dialog).getByTestId("interest-memo-month-fixed")).toHaveTextContent(
+      "October 2026"
+    );
+    expect(within(dialog).queryByTestId("interest-memo-month")).not.toBeInTheDocument();
+    expect(within(dialog).getByTestId("interest-memo-gross-interest")).toHaveValue(1234.56);
+    expect(within(dialog).getByTestId("interest-memo-gross-charges")).toHaveValue(115);
+    expect(within(dialog).getByTestId("interest-memo-vat")).toHaveValue(15);
+    expect(within(dialog).getByTestId("interest-memo-source")).toHaveValue("FNB advice LPFF-OCT");
+    const lockedNote = within(dialog).getByTestId("interest-memo-locked-note");
+    expect(lockedNote).toHaveAttribute("role", "status");
+    expect(lockedNote).toHaveTextContent("A memo is not part of the list");
+    expect(within(dialog).queryByTestId("interest-memo-replaces-note")).not.toBeInTheDocument();
   });
 });

@@ -20,6 +20,7 @@ import type {
   FirmIntegrityReport,
   FlagSubject,
   IntegrityFlag,
+  InterestMemo,
   InterestPresentation,
   InvestmentBasis,
   InvestmentInterest,
@@ -30,6 +31,7 @@ import type {
   RecordFromLineRequest,
   RecordFromLineResponse,
   RecordInvestmentInterestRequest,
+  SaveInterestMemoRequest,
   StatementLineClassification,
   TotalBalance,
   TrustAccount,
@@ -145,6 +147,7 @@ describe("trust wire shapes match the backend contract (ADR-365)", () => {
       "FlagSubject",
       "IntegrityFlag",
       "IntegritySummary",
+      "InterestMemoResponse",
       "InvestmentInterestResponse",
       "MatterBalance",
       "MonthlyListResponse",
@@ -154,6 +157,7 @@ describe("trust wire shapes match the backend contract (ADR-365)", () => {
       "RecordFromLineRequest",
       "RecordFromLineResponse",
       "RecordInvestmentInterestRequest",
+      "SaveInterestMemoRequest",
       "TotalBalanceResponse",
       "TrustAccountResponse",
       "TrustIntegrityReport",
@@ -791,6 +795,33 @@ describe("trust wire shapes match the backend contract (ADR-365)", () => {
       updatedAt: "",
     };
     expect(Object.keys(literal)).toEqual(componentNames(records.ClientLedgerCardResponse));
+  });
+
+  it("InterestMemo ↔ TrustInterestMemoService.InterestMemoResponse (650B)", () => {
+    const literal: Required<InterestMemo> = {
+      id: "",
+      trustAccountId: "",
+      periodMonth: "",
+      grossInterest: 0,
+      grossCharges: 0,
+      chargesVat: 0,
+      sourceNote: "",
+      recordedBy: "",
+      recordedByName: null,
+      createdAt: "",
+      updatedAt: "",
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(records.InterestMemoResponse));
+  });
+
+  it("SaveInterestMemoRequest ↔ TrustInterestMemoService.SaveInterestMemoRequest (650B)", () => {
+    const literal: Required<SaveInterestMemoRequest> = {
+      grossInterest: 0,
+      grossCharges: 0,
+      chargesVat: 0,
+      sourceNote: "",
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(records.SaveInterestMemoRequest));
   });
 
   it("pins exactly the enums the trust records carry", () => {

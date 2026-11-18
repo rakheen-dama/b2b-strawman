@@ -424,6 +424,40 @@
       "name" : "flags",
       "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.dashboard.dto.TrustPositionResponse$FlagCount>"
     } ],
+    "InterestMemoResponse" : [ {
+      "name" : "id",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "trustAccountId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "periodMonth",
+      "type" : "java.time.LocalDate"
+    }, {
+      "name" : "grossInterest",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "grossCharges",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "chargesVat",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "sourceNote",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "recordedBy",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "recordedByName",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "createdAt",
+      "type" : "java.time.Instant"
+    }, {
+      "name" : "updatedAt",
+      "type" : "java.time.Instant"
+    } ],
     "InvestmentInterestResponse" : [ {
       "name" : "id",
       "type" : "java.util.UUID"
@@ -675,6 +709,19 @@
     }, {
       "name" : "bankStatementLineId",
       "type" : "java.util.UUID"
+    } ],
+    "SaveInterestMemoRequest" : [ {
+      "name" : "grossInterest",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "grossCharges",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "chargesVat",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "sourceNote",
+      "type" : "java.lang.String"
     } ],
     "TotalBalanceResponse" : [ {
       "name" : "balance",

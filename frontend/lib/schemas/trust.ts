@@ -257,6 +257,47 @@ export const recordFromStatementSchemaFor = (chargeAmount: number) =>
     }
   });
 
+/**
+ * 650B (ADR-384): one month's at-source memo — the Rule 54.28 gross interest and gross charges
+ * (with the VAT included in them) that never reached the trust account, and where they came from.
+ * The month is yyyy-MM, never after the current month in South Africa; the server is the
+ * authority for every rule here.
+ */
+const memoAmount = (label: string) =>
+  z
+    .number({ message: `Enter the ${label} (0 if none)` })
+    .min(0, `The ${label} cannot be negative`)
+    .refine(hasAtMostTwoDecimals, `The ${label} has at most two decimal places`);
+
+export const saveInterestMemoSchema = z
+  .object({
+    month: z
+      .string()
+      .regex(/^\d{4}-(0[1-9]|1[0-2])$/, "Choose the month")
+      .refine((m) => m <= todayInSA().slice(0, 7), {
+        message: "A memo can be saved for this month or an earlier one",
+      }),
+    grossInterest: memoAmount("gross interest"),
+    grossCharges: memoAmount("gross charges"),
+    chargesVat: memoAmount("VAT"),
+    sourceNote: z
+      .string()
+      .trim()
+      .min(1, "Say where the figures come from")
+      .max(500, "At most 500 characters"),
+  })
+  .superRefine((data, ctx) => {
+    if (data.chargesVat > data.grossCharges) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["chargesVat"],
+        message: "The VAT cannot be more than the gross charges",
+      });
+    }
+  });
+
+export type SaveInterestMemoFormData = z.infer<typeof saveInterestMemoSchema>;
+
 export const createInterestRunSchema = z
   .object({
     periodStart: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD"),

@@ -5,12 +5,19 @@ import { api } from "@/lib/api";
 import type {
   AllocateUnidentifiedRequest,
   CreditorLedgerPage,
+  InterestMemo,
+  MonthlyListSummary,
   PayToFundRequest,
+  SaveInterestMemoRequest,
   TrustCreditorAccount,
   UnidentifiedDepositPage,
   UnidentifiedDepositStatus,
 } from "@/lib/types";
-import type { AllocateUnidentifiedFormData, PayToFundFormData } from "@/lib/schemas/trust";
+import type {
+  AllocateUnidentifiedFormData,
+  PayToFundFormData,
+  SaveInterestMemoFormData,
+} from "@/lib/schemas/trust";
 
 interface ActionResult {
   success: boolean;
@@ -103,6 +110,51 @@ export async function payUnidentifiedDepositToFund(
     return {
       success: false,
       error: error instanceof Error ? error.message : "Failed to request the payment to the Fund",
+    };
+  }
+}
+
+/** The trust account's at-source memos of `year`, oldest month first (650B, §16.4.2). A read. */
+export async function fetchInterestMemos(accountId: string, year: number): Promise<InterestMemo[]> {
+  return api.get<InterestMemo[]>(`/api/trust-accounts/${accountId}/interest-memos?year=${year}`);
+}
+
+/**
+ * The months (yyyy-MM) whose Rule 54.15 list is locked on the account (650A
+ * `GET …/monthly-lists`, a bare array). A read — only for the memo table's "List locked" marker.
+ */
+export async function fetchLockedMonths(accountId: string): Promise<string[]> {
+  const lists = await api.get<MonthlyListSummary[]>(
+    `/api/trust-accounts/${accountId}/monthly-lists`
+  );
+  return lists.map((l) => l.periodEnd.slice(0, 7));
+}
+
+/**
+ * Saves one month's at-source memo (650B, §16.3.13): creates it or replaces its figures. Moves no
+ * balance. A refusal (VAT above the charges, a future month, …) comes back as `error`.
+ */
+export async function saveInterestMemo(
+  accountId: string,
+  data: SaveInterestMemoFormData
+): Promise<ActionResult> {
+  const body: SaveInterestMemoRequest = {
+    grossInterest: data.grossInterest,
+    grossCharges: data.grossCharges,
+    chargesVat: data.chargesVat,
+    sourceNote: data.sourceNote.trim(),
+  };
+  try {
+    await api.put(
+      `/api/trust-accounts/${accountId}/interest-memos/${encodeURIComponent(data.month)}`,
+      body
+    );
+    revalidatePath("/", "layout");
+    return { success: true };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to save the memo",
     };
   }
 }

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { todayInSA } from "@b2mash/shared/date";
 import { ChevronLeft, ChevronRight, HandCoins, Inbox, Landmark } from "lucide-react";
 import { getOrgSettings } from "@/lib/api/settings";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
@@ -12,14 +13,19 @@ import { fetchTrustAccounts } from "@/app/(app)/org/[slug]/trust-accounting/acti
 import {
   fetchCreditorAccounts,
   fetchCreditorLedgerRows,
+  fetchInterestMemos,
+  fetchLockedMonths,
   fetchUnidentifiedDeposits,
 } from "@/app/(app)/org/[slug]/trust-accounting/other-creditors/actions";
 import { FundLedgerTable } from "@/components/trust/FundLedgerTable";
+import { InterestMemoDialog } from "@/components/trust/InterestMemoDialog";
+import { InterestMemosTable } from "@/components/trust/InterestMemosTable";
 import { UnidentifiedDepositsTable } from "@/components/trust/UnidentifiedDepositsTable";
 import type { TrustPickerCustomer } from "@/components/trust/TrustEntityPickers";
 import { formatCurrency } from "@/lib/format";
 import type {
   CreditorLedgerPage,
+  InterestMemo,
   TrustCreditorAccount,
   UnidentifiedDepositPage,
 } from "@/lib/types";
@@ -37,19 +43,28 @@ const UNIDENTIFIED_PAGE_SIZE = 25;
  * oldest first with their age and status (647B), paged by `?itemsPage=`. Each list has its own
  * fetch and error state, so one failing never hides the balances or the other list. With
  * MANAGE_TRUST a held item can be allocated to a client or paid to the Fund (647D; approval on the
- * transactions page), so the page also fetches the active client roster for the picker.
+ * transactions page), so the page also fetches the active client roster for the picker. From 650B
+ * (ADR-384) the page also shows the at-source memo records of a year (`?memoYear=`, default the
+ * current year in South Africa): the Rule 54.28 gross interest and charges the bank swept at source,
+ * which change no balance; MANAGE_TRUST records and corrects them. A month whose Rule 54.15 list is
+ * locked is marked (a memo is not part of the list and may still be saved).
  */
 export default async function OtherTrustCreditorsPage({
   params,
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ page?: string; itemsPage?: string }>;
+  searchParams: Promise<{ page?: string; itemsPage?: string; memoYear?: string }>;
 }) {
   const { slug } = await params;
   const search = await searchParams;
   const pageNumber = Math.max(0, Number.parseInt(search.page ?? "0", 10) || 0);
   const itemsPageNumber = Math.max(0, Number.parseInt(search.itemsPage ?? "0", 10) || 0);
+  const currentYear = Number(todayInSA().slice(0, 4));
+  const memoYear = Math.min(
+    currentYear,
+    Math.max(1900, Number.parseInt(search.memoYear ?? "", 10) || currentYear)
+  );
 
   // Module gating
   let settings;
@@ -127,6 +142,28 @@ export default async function OtherTrustCreditorsPage({
     }
   }
 
+  // The at-source memos of the year (650B): their own flag, like the other lists.
+  let memos: InterestMemo[] | null = null;
+  let memosError = false;
+  if (accountId && creditorAccounts) {
+    try {
+      memos = await fetchInterestMemos(accountId, memoYear);
+    } catch {
+      memosError = true;
+    }
+  }
+
+  // The months whose Rule 54.15 list is locked (650A), only for the memo table's marker.
+  // Non-fatal: no markers on a failure.
+  let lockedMonths: string[] = [];
+  if (accountId && memos) {
+    try {
+      lockedMonths = await fetchLockedMonths(accountId);
+    } catch {
+      lockedMonths = [];
+    }
+  }
+
   // The client roster for the allocation picker (647D): only for MANAGE_TRUST, trimmed to
   // {id, name, email} for the server → client boundary. Non-fatal: the picker shows its own empty
   // state.
@@ -141,13 +178,15 @@ export default async function OtherTrustCreditorsPage({
   }
 
   const currency = settings.defaultCurrency ?? "ZAR";
-  // Each list pages on its own parameter (`?page=` the Fund ledger, `?itemsPage=` the items) and
-  // keeps the other's place.
-  const listUrl = (page: number, itemsPage: number) =>
+  // Each list pages on its own parameter (`?page=` the Fund ledger, `?itemsPage=` the items,
+  // `?memoYear=` the memos) and keeps the others' place.
+  const listUrl = (page: number, itemsPage: number, year: number) =>
     `/org/${slug}/trust-accounting/other-creditors?page=${page}` +
-    (itemsPage > 0 ? `&itemsPage=${itemsPage}` : "");
-  const pageUrl = (page: number) => listUrl(page, itemsPageNumber);
-  const itemsPageUrl = (itemsPage: number) => listUrl(pageNumber, itemsPage);
+    (itemsPage > 0 ? `&itemsPage=${itemsPage}` : "") +
+    (year !== currentYear ? `&memoYear=${year}` : "");
+  const pageUrl = (page: number) => listUrl(page, itemsPageNumber, memoYear);
+  const itemsPageUrl = (itemsPage: number) => listUrl(pageNumber, itemsPage, memoYear);
+  const memoYearUrl = (year: number) => listUrl(pageNumber, itemsPageNumber, year);
 
   return (
     <div className="space-y-8" data-testid="other-creditors-page">
@@ -258,6 +297,89 @@ export default async function OtherTrustCreditorsPage({
                 />
                 <LedgerPager page={fundRows.page} hrefFor={pageUrl} />
               </>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* The at-source memo records of a year (650B) */}
+      {accountId && creditorAccounts && (
+        <Card data-testid="interest-memos-section">
+          <CardHeader>
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="space-y-1.5">
+                <CardTitle>Interest and charges at source</CardTitle>
+                <CardDescription>
+                  Gross interest and charges for {memoYear} that the bank swept to the Fund or
+                  showed only net. They are not in the cashbook, change no balance and are reported
+                  on the Rule 54.28 schedule.
+                </CardDescription>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Button asChild variant="outline" size="sm">
+                  <Link href={memoYearUrl(memoYear - 1)} data-testid="interest-memos-previous-year">
+                    <ChevronLeft className="mr-1 size-4" />
+                    Previous year
+                  </Link>
+                </Button>
+                {memoYear < currentYear ? (
+                  <Button asChild variant="outline" size="sm">
+                    <Link href={memoYearUrl(memoYear + 1)} data-testid="interest-memos-next-year">
+                      Next year
+                      <ChevronRight className="ml-1 size-4" />
+                    </Link>
+                  </Button>
+                ) : (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled
+                    data-testid="interest-memos-next-year"
+                  >
+                    Next year
+                    <ChevronRight className="ml-1 size-4" />
+                  </Button>
+                )}
+                {canManageTrust && memos && (
+                  <InterestMemoDialog
+                    trustAccountId={accountId}
+                    existing={memos}
+                    lockedMonths={lockedMonths}
+                    triggerLabel="Record memo"
+                    triggerVariant="default"
+                    triggerTestId="record-interest-memo-btn"
+                  />
+                )}
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {memosError && (
+              <p
+                role="alert"
+                className="text-sm text-slate-500 dark:text-slate-400"
+                data-testid="interest-memos-error"
+              >
+                Unable to load the memos. Please try again later.
+              </p>
+            )}
+            {memos && (
+              <InterestMemosTable
+                memos={memos}
+                currency={currency}
+                canManage={canManageTrust}
+                trustAccountId={accountId}
+                lockedMonths={lockedMonths}
+                empty={
+                  <p
+                    className="py-6 text-center text-sm text-slate-500 dark:text-slate-400"
+                    data-testid="interest-memos-empty"
+                  >
+                    No memos for {memoYear}. Record one when the bank swept interest or charges at
+                    source.
+                  </p>
+                }
+              />
             )}
           </CardContent>
         </Card>

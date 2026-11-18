@@ -1,0 +1,138 @@
+{
+  "phase": "b",
+  "startedAt": "2026-11-18T18:12:06.666Z",
+  "apiWrites": [
+    {
+      "why": "context 2: the wizard cannot reopen an existing reconciliation, so a second user can reach its line only through the firm API the wizard calls",
+      "method": "POST",
+      "url": "/api/bank-statement-lines/7cb9ca6d-1b4a-4e3c-9f49-d9ad98a51c38/unmatch",
+      "status": 200,
+      "body": null
+    },
+    {
+      "why": "re-resolve: context 1's wizard still shows line 1 as matched (stale), so the line cannot be selected or matched on screen; context 2 re-matches it through the firm API",
+      "method": "POST",
+      "url": "/api/bank-statement-lines/7cb9ca6d-1b4a-4e3c-9f49-d9ad98a51c38/match",
+      "status": 200,
+      "body": null
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "checks": {
+    "b: all four lines resolved → Complete enabled, balanced": true,
+    "b: one refusal banner": true,
+    "b: banner carries the G1 sentence and the G4 sentence": true,
+    "b: figures refreshed after refusal (D-9): not balanced, Complete disabled": true,
+    "b: refused attempt left no completed audit event": true,
+    "b: COMPLETED + RECONCILED + one completed event": true,
+    "b: completed event details carry creditor_total, difference, flags": true
+  },
+  "wizard": {
+    "statement": "e1012b68-9476-4654-86c6-d100746a84f3",
+    "recon": "a66fcfaf-fc38-4af3-a723-2891ade38680",
+    "autoMatch": "Auto-matched 2 lines 2 lines remaining for manual review",
+    "lines": [
+      {
+        "n": 1,
+        "id": "7cb9ca6d-1b4a-4e3c-9f49-d9ad98a51c38",
+        "s": "AUTO_MATCHED"
+      },
+      {
+        "n": 2,
+        "id": "4220ac3f-830f-4a52-b995-47c4744b546a",
+        "s": "AUTO_MATCHED"
+      },
+      {
+        "n": 3,
+        "id": "01adb031-763f-49be-b232-1ad810a551f2",
+        "s": "UNMATCHED"
+      },
+      {
+        "n": 4,
+        "id": "fdfe36eb-beda-4cee-a14d-08be68fd168d",
+        "s": "UNMATCHED"
+      }
+    ]
+  },
+  "afterAutoMatch": "b-01-review-after-auto-match.png",
+  "ready": {
+    "text": "As at 18 Nov 2026 Bank and cashbook Bank balance R 3 750,00 + Outstanding deposits R 295 000,00 − Outstanding payments R 238 500,00 = Adjusted bank balance R 60 250,00 Cashbook R 60 250,00 Difference R 0,00 Cashbook and trust creditors Cashbook R 60 250,00 Trust creditors R 60 250,00 Difference R 0,00 Trust creditors Client ledgers R 260 250,00 Legal Practitioners' Fidelity Fund — interest and charges R 0,00 Unidentified deposits R 0,00 Placed in section 86(3) investment accounts -R 200 000,00 0 statement lines are neither matched, recorded nor excluded Excluded statement lines total R 0,00. An excluded line adjusts nothing: excluding a real bank movement leaves its amount as the difference between the bank and the cashbook. Reconciliation is balanced Complete Reconciliation",
+    "completeEnabled": true
+  },
+  "readyShot": "b-02-all-resolved-complete-enabled.png",
+  "beforeComplete": {
+    "text": "As at 18 Nov 2026 Bank and cashbook Bank balance R 3 750,00 + Outstanding deposits R 295 000,00 − Outstanding payments R 238 500,00 = Adjusted bank balance R 60 250,00 Cashbook R 60 250,00 Difference R 0,00 Cashbook and trust creditors Cashbook R 60 250,00 Trust creditors R 60 250,00 Difference R 0,00 Trust creditors Client ledgers R 260 250,00 Legal Practitioners' Fidelity Fund — interest and charges R 0,00 Unidentified deposits R 0,00 Placed in section 86(3) investment accounts -R 200 000,00 0 statement lines are neither matched, recorded nor excluded Excluded statement lines total R 0,00. An excluded line adjusts nothing: excluding a real bank movement leaves its amount as the difference between the bank and the cashbook. Reconciliation is balanced Complete Reconciliation",
+    "completeEnabled": true
+  },
+  "refusal": {
+    "banners": 1,
+    "text": "Adjusted bank balance R65 250,00 differs from the cashbook R60 250,00 by R5 000,00 as at 18 November 2026. 1 statement line is neither matched, recorded nor excluded.",
+    "after": {
+      "text": "As at 18 Nov 2026 Bank and cashbook Bank balance R 3 750,00 + Outstanding deposits R 300 000,00 − Outstanding payments R 238 500,00 = Adjusted bank balance R 65 250,00 Cashbook R 60 250,00 Difference R 5 000,00 Cashbook and trust creditors Cashbook R 60 250,00 Trust creditors R 60 250,00 Difference R 0,00 Trust creditors Client ledgers R 260 250,00 Legal Practitioners' Fidelity Fund — interest and charges R 0,00 Unidentified deposits R 0,00 Placed in section 86(3) investment accounts -R 200 000,00 1 statement line is neither matched, recorded nor excluded Excluded statement lines total R 0,00. An excluded line adjusts nothing: excluding a real bank movement leaves its amount as the difference between the bank and the cashbook. Integrity check Blocking Bank and cashbook differ Adjusted bank balance R65 250,00 differs from the cashbook R60 250,00 by R5 000,00 as at 18 November 2026. Blocking Statement lines not yet resolved 1 statement line is neither matched, recorded nor excluded. Reconciliation is not balanced Complete Reconciliation",
+      "completeEnabled": false
+    },
+    "line1Shown": "#1 17 Nov 2026 EFT CREDIT SIPHO NDLOVU Ref: DEP/mwmfee7f0815 R 5 000,00 CR Auto-matched Unmatch",
+    "stillOnReview": true
+  },
+  "refusalShot": "b-03-refused-g1-g4.png",
+  "refusalClip": {
+    "sel": "[data-testid=\"reconciliation-error\"]",
+    "root": [
+      280,
+      1256
+    ],
+    "vw": 1280,
+    "textElements": 1,
+    "bad": []
+  },
+  "completedEventsAfterRefusal": 0,
+  "reResolve": {
+    "line1Shown": "#1 17 Nov 2026 EFT CREDIT SIPHO NDLOVU Ref: DEP/mwmfee7f0815 R 5 000,00 CR Auto-matched Unmatch",
+    "txListed": 0,
+    "matchButton": 0,
+    "via": "API match (context 2) + Back/Review Matches recalculation (context 1)"
+  },
+  "reResolveShot": "b-04-back-review-line-state.png",
+  "beforeSecondComplete": {
+    "text": "As at 18 Nov 2026 Bank and cashbook Bank balance R 3 750,00 + Outstanding deposits R 295 000,00 − Outstanding payments R 238 500,00 = Adjusted bank balance R 60 250,00 Cashbook R 60 250,00 Difference R 0,00 Cashbook and trust creditors Cashbook R 60 250,00 Trust creditors R 60 250,00 Difference R 0,00 Trust creditors Client ledgers R 260 250,00 Legal Practitioners' Fidelity Fund — interest and charges R 0,00 Unidentified deposits R 0,00 Placed in section 86(3) investment accounts -R 200 000,00 0 statement lines are neither matched, recorded nor excluded Excluded statement lines total R 0,00. An excluded line adjusts nothing: excluding a real bank movement leaves its amount as the difference between the bank and the cashbook. Reconciliation is balanced Complete Reconciliation",
+    "completeEnabled": true
+  },
+  "completeShot": "b-06-completed.png",
+  "completeText": "Reconciliation Complete The reconciliation has been completed successfully Bank Balance R 3 750,00 Cashbook Balance R 60 250,00 Trust creditors R 60 250,00 Done",
+  "reconApi": {
+    "id": "a66fcfaf-fc38-4af3-a723-2891ade38680",
+    "trustAccountId": "acfd45c9-68b9-4a59-9ba4-602f88e3d42f",
+    "periodEnd": "2026-11-18",
+    "bankStatementId": "e1012b68-9476-4654-86c6-d100746a84f3",
+    "bankBalance": 3750,
+    "outstandingDeposits": 295000,
+    "outstandingPayments": 238500,
+    "adjustedBankBalance": 60250,
+    "cashbookBalance": 60250,
+    "clientLedgerTotal": 260250,
+    "creditorBreakdown": {
+      "clientLedgers": 260250,
+      "investmentCreditors": 0,
+      "fundInterestAndCharges": 0,
+      "unidentifiedDeposits": 0,
+      "otherNonClient": 0,
+      "interAccount": -200000,
+      "total": 60250
+    },
+    "bankToCashbookDifference": 0,
+    "cashbookToCreditorsDifference": 0,
+    "difference": 0,
+    "excludedLinesTotal": 0,
+    "unresolvedLineCount": 0,
+    "isBalanced": true,
+    "integrityFlags": [],
+    "status": "COMPLETED",
+    "completedBy": "ccecc072-7a23-47bf-afa1-56a295feaa76",
+    "completedAt": "2026-11-18T18:12:20.961632Z",
+    "notes": null,
+    "createdAt": "2026-11-18T18:12:08.173413Z",
+    "updatedAt": "2026-11-18T18:12:20.964078Z"
+  },
+  "endedAt": "2026-11-18T18:12:21.877Z"
+}

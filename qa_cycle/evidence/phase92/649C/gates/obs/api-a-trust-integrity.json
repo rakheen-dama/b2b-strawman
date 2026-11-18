@@ -1,0 +1,87 @@
+{
+  "method": "GET",
+  "url": "/api/trust-integrity",
+  "status": 200,
+  "body": {
+    "asAt": "2026-11-18",
+    "balanced": true,
+    "cashbook": 290345,
+    "clientLedgers": 260250,
+    "investmentCreditors": 30095,
+    "fundLedger": 0,
+    "unidentifiedDeposits": 0,
+    "otherNonClient": 0,
+    "interAccount": 0,
+    "creditorTotal": 290345,
+    "difference": 0,
+    "flags": [],
+    "accounts": [
+      {
+        "trustAccountId": "9c6638d6-0800-40ff-92ee-2b941778f9d1",
+        "asAt": "2026-11-18",
+        "position": {
+          "trustAccountId": "9c6638d6-0800-40ff-92ee-2b941778f9d1",
+          "asAt": "2026-11-18",
+          "cashbook": 30095,
+          "clientLedgers": 0,
+          "investmentCreditors": 30095,
+          "fundLedger": 0,
+          "unidentifiedDeposits": 0,
+          "otherNonClient": 0,
+          "interAccount": 0,
+          "creditorTotal": 30095,
+          "difference": 0
+        },
+        "bank": null,
+        "balanced": true,
+        "flags": [],
+        "lastCompletedReconciliationId": null,
+        "lastReconciledThrough": null
+      },
+      {
+        "trustAccountId": "25ffe60b-4918-4622-a136-85d106d018ed",
+        "asAt": "2026-11-18",
+        "position": {
+          "trustAccountId": "25ffe60b-4918-4622-a136-85d106d018ed",
+          "asAt": "2026-11-18",
+          "cashbook": 200000,
+          "clientLedgers": 0,
+          "investmentCreditors": 0,
+          "fundLedger": 0,
+          "unidentifiedDeposits": 0,
+          "otherNonClient": 0,
+          "interAccount": 200000,
+          "creditorTotal": 200000,
+          "difference": 0
+        },
+        "bank": null,
+        "balanced": true,
+        "flags": [],
+        "lastCompletedReconciliationId": null,
+        "lastReconciledThrough": null
+      },
+      {
+        "trustAccountId": "36144df5-72ec-49f3-9bd7-ef497cb60946",
+        "asAt": "2026-11-18",
+        "position": {
+          "trustAccountId": "36144df5-72ec-49f3-9bd7-ef497cb60946",
+          "asAt": "2026-11-18",
+          "cashbook": 60250,
+          "clientLedgers": 260250,
+          "investmentCreditors": 0,
+          "fundLedger": 0,
+          "unidentifiedDeposits": 0,
+          "otherNonClient": 0,
+          "interAccount": -200000,
+          "creditorTotal": 60250,
+          "difference": 0
+        },
+        "bank": null,
+        "balanced": true,
+        "flags": [],
+        "lastCompletedReconciliationId": null,
+        "lastReconciledThrough": null
+      }
+    ]
+  }
+}

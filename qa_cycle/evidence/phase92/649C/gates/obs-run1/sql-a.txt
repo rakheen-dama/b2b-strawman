@@ -1,0 +1,20 @@
+-- 649C OBS phase a read-only SQL (schema tenant_7d218705360b) 2026-11-18T18:11:29.994Z
+
+== [a: EQ-2 terms per account + FIRM (rollup), as at 2026-11-18]
+select coalesce(t.trust_account_id::text,'FIRM') account, sum(t.cashbook_effect) cashbook,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='CLIENT'),0) client_ledgers,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='CLIENT_INVESTMENT'),0) investment_creditors,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT' and ca.account_type='FUND_INTEREST_AND_CHARGES'),0) fund_ledger,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT' and ca.account_type='UNIDENTIFIED_DEPOSITS'),0) unidentified,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT' and ca.account_type not in ('FUND_INTEREST_AND_CHARGES','UNIDENTIFIED_DEPOSITS')),0) other_non_client,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='INTER_ACCOUNT'),0) inter_account, sum(t.ledger_effect) creditor_total
+  from tenant_7d218705360b.trust_transactions t left join tenant_7d218705360b.trust_creditor_accounts ca on ca.id=t.creditor_account_id
+  where t.posted_at is not null and t.transaction_date <= date '2026-11-18' group by rollup(t.trust_account_id) order by 1
+               account                | cashbook  | client_ledgers | investment_creditors | fund_ledger | unidentified | other_non_client | inter_account | creditor_total 
+--------------------------------------+-----------+----------------+----------------------+-------------+--------------+------------------+---------------+----------------
+ 4e2bff45-c7de-4d57-8e4a-64dd3b060879 |  30095.00 |              0 |             30095.00 |           0 |            0 |                0 |             0 |       30095.00
+ FIRM                                 | 290345.00 |      260250.00 |             30095.00 |           0 |            0 |                0 |          0.00 |      290345.00
+ acfd45c9-68b9-4a59-9ba4-602f88e3d42f |  60250.00 |      260250.00 |                    0 |           0 |            0 |                0 |    -200000.00 |       60250.00
+ b2264e3f-ac19-4f56-a519-dabe8e91bae7 | 200000.00 |              0 |                    0 |           0 |            0 |                0 |     200000.00 |      200000.00
+(4 rows)
+

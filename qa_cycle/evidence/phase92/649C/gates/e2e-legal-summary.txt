@@ -1,0 +1,9 @@
+E2E-LEGAL — gate-grade run @c9f588287 (final code head; backend @4e45c8994 unchanged since) on a FRESH stack (e2e-down + e2e-up from the worktree), run start 2026-11-18T18:31:15Z, PLAYWRIGHT_BASE_URL=http://localhost:3001, node v20.11.1
+--- legal-lifecycle (exit 0)
+  109 passed (3.1m)
+--- legal-depth-ii (exit 0)
+  4 skipped
+  40 passed (1.9m)
+
+Earlier run @4e45c8994 (frontend image @131573b6d), fresh stack, start 2026-11-18T17:56:21Z: lifecycle 109 passed; depth-ii 40 passed / 4 skipped. Superseded by the run above because fix cycle 3 (F-OBS-1) changed the reconciliation wizard.
+Baseline (648F checkpoint): lifecycle 109/109, depth-ii 40 passed / 4 skipped.

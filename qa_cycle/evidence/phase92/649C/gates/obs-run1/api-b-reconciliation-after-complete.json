@@ -1,0 +1,39 @@
+{
+  "method": "GET",
+  "url": "/api/trust-reconciliations/a66fcfaf-fc38-4af3-a723-2891ade38680",
+  "status": 200,
+  "body": {
+    "id": "a66fcfaf-fc38-4af3-a723-2891ade38680",
+    "trustAccountId": "acfd45c9-68b9-4a59-9ba4-602f88e3d42f",
+    "periodEnd": "2026-11-18",
+    "bankStatementId": "e1012b68-9476-4654-86c6-d100746a84f3",
+    "bankBalance": 3750,
+    "outstandingDeposits": 295000,
+    "outstandingPayments": 238500,
+    "adjustedBankBalance": 60250,
+    "cashbookBalance": 60250,
+    "clientLedgerTotal": 260250,
+    "creditorBreakdown": {
+      "clientLedgers": 260250,
+      "investmentCreditors": 0,
+      "fundInterestAndCharges": 0,
+      "unidentifiedDeposits": 0,
+      "otherNonClient": 0,
+      "interAccount": -200000,
+      "total": 60250
+    },
+    "bankToCashbookDifference": 0,
+    "cashbookToCreditorsDifference": 0,
+    "difference": 0,
+    "excludedLinesTotal": 0,
+    "unresolvedLineCount": 0,
+    "isBalanced": true,
+    "integrityFlags": [],
+    "status": "COMPLETED",
+    "completedBy": "ccecc072-7a23-47bf-afa1-56a295feaa76",
+    "completedAt": "2026-11-18T18:12:20.961632Z",
+    "notes": null,
+    "createdAt": "2026-11-18T18:12:08.173413Z",
+    "updatedAt": "2026-11-18T18:12:20.964078Z"
+  }
+}

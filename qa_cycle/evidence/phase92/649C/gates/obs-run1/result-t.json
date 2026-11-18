@@ -1,0 +1,25 @@
+{
+  "phase": "t",
+  "startedAt": "2026-11-18T18:15:10.377Z",
+  "apiWrites": [
+    {
+      "why": "the wizard banner shows only the detail; the title is observable only on the API response (a refusal changes nothing)",
+      "method": "POST",
+      "url": "/api/trust-reconciliations/904abc59-a3b2-40f1-969a-14797d22eb94/complete",
+      "status": 400,
+      "body": {
+        "detail": "Adjusted bank balance R100,00 differs from the cashbook R1 415,00 by R1 315,00 as at 18 November 2026. 1 statement line is neither matched, recorded nor excluded.",
+        "instance": "/api/trust-reconciliations/904abc59-a3b2-40f1-969a-14797d22eb94/complete",
+        "status": 400,
+        "title": "Reconciliation does not balance"
+      }
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "checks": {
+    "t: one refusal, G1 title, G1 + G4 sentences": true,
+    "t: still DRAFT, no completed event": true
+  },
+  "endedAt": "2026-11-18T18:15:11.115Z"
+}

@@ -1,0 +1,30 @@
+{
+  "phase": "c",
+  "startedAt": "2026-11-18T18:12:44.181Z",
+  "apiWrites": [
+    {
+      "why": "D-14: no screen shows a completed reconciliation's lines (the wizard ends at step 5; the list has no Unmatch), so the unmatch is sent once through the firm API",
+      "method": "POST",
+      "url": "/api/bank-statement-lines/4220ac3f-830f-4a52-b995-47c4744b546a/unmatch",
+      "status": 400,
+      "body": {
+        "detail": "This statement's reconciliation is complete, so its lines cannot be unmatched.",
+        "instance": "/api/bank-statement-lines/4220ac3f-830f-4a52-b995-47c4744b546a/unmatch",
+        "status": 400,
+        "title": "Statement already reconciled"
+      }
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "checks": {
+    "c: no Unmatch on screen": true,
+    "c: refused 400 'Statement already reconciled'": true,
+    "c: line + matched_count unchanged": true
+  },
+  "listShot": "c-01-reconciliation-list.png",
+  "unmatchOffered": 0,
+  "before": "AUTO_MATCHED|9572cd36-90fe-4c76-8e07-88a2ff4f999b|2",
+  "after": "AUTO_MATCHED|9572cd36-90fe-4c76-8e07-88a2ff4f999b|2",
+  "endedAt": "2026-11-18T18:12:46.058Z"
+}

@@ -1,0 +1,74 @@
+-- 649C OBS phase b read-only SQL (schema tenant_7d218705360b) 2026-11-18T18:12:06.666Z
+
+== [b: reconciliation when every line is resolved]
+select r.id, r.status, r.period_end, r.bank_balance, r.outstanding_deposits, r.outstanding_payments, r.adjusted_bank_balance, r.cashbook_balance, r.client_ledger_total, r.creditor_total, r.difference, r.is_balanced, r.integrity_flags, r.completed_at, s.status statement_status, s.closing_balance, s.matched_count
+  from tenant_7d218705360b.trust_reconciliations r join tenant_7d218705360b.bank_statements s on s.id=r.bank_statement_id where r.id='a66fcfaf-fc38-4af3-a723-2891ade38680'
+                  id                  | status | period_end | bank_balance | outstanding_deposits | outstanding_payments | adjusted_bank_balance | cashbook_balance | client_ledger_total | creditor_total | difference | is_balanced | integrity_flags | completed_at | statement_status | closing_balance | matched_count 
+--------------------------------------+--------+------------+--------------+----------------------+----------------------+-----------------------+------------------+---------------------+----------------+------------+-------------+-----------------+--------------+------------------+-----------------+---------------
+ a66fcfaf-fc38-4af3-a723-2891ade38680 | DRAFT  | 2026-11-18 |      3750.00 |            295000.00 |            238500.00 |              60250.00 |         60250.00 |           260250.00 |       60250.00 |       0.00 | t           | []              |              | IMPORTED         |         3750.00 |             2
+(1 row)
+
+
+== [b: lines after context-2 unmatch]
+select line_number, match_status, trust_transaction_id from tenant_7d218705360b.bank_statement_lines where bank_statement_id='e1012b68-9476-4654-86c6-d100746a84f3' order by line_number
+ line_number | match_status |         trust_transaction_id         
+-------------+--------------+--------------------------------------
+           1 | UNMATCHED    | 
+           2 | AUTO_MATCHED | 9572cd36-90fe-4c76-8e07-88a2ff4f999b
+           3 | EXCLUDED     | 
+           4 | EXCLUDED     | 
+(4 rows)
+
+
+== [b: reconciliation after the refusal (wizard recalculated)]
+select r.id, r.status, r.period_end, r.bank_balance, r.outstanding_deposits, r.outstanding_payments, r.adjusted_bank_balance, r.cashbook_balance, r.client_ledger_total, r.creditor_total, r.difference, r.is_balanced, r.integrity_flags, r.completed_at, s.status statement_status, s.closing_balance, s.matched_count
+  from tenant_7d218705360b.trust_reconciliations r join tenant_7d218705360b.bank_statements s on s.id=r.bank_statement_id where r.id='a66fcfaf-fc38-4af3-a723-2891ade38680'
+                  id                  | status | period_end | bank_balance | outstanding_deposits | outstanding_payments | adjusted_bank_balance | cashbook_balance | client_ledger_total | creditor_total | difference | is_balanced |                                                                                                                                                                                                                                                   integrity_flags                                                                                                                                                                                                                                                    | completed_at | statement_status | closing_balance | matched_count 
+--------------------------------------+--------+------------+--------------+----------------------+----------------------+-----------------------+------------------+---------------------+----------------+------------+-------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------+------------------+-----------------+---------------
+ a66fcfaf-fc38-4af3-a723-2891ade38680 | DRAFT  | 2026-11-18 |      3750.00 |            300000.00 |            238500.00 |              65250.00 |         60250.00 |           260250.00 |       60250.00 |    5000.00 | f           | [{"code": "BANK_DIFFERENCE", "amount": 5000.00, "message": "Adjusted bank balance R65 250,00 differs from the cashbook R60 250,00 by R5 000,00 as at 18 November 2026.", "severity": "BLOCKING", "subjects": []}, {"code": "UNRESOLVED_STATEMENT_LINES", "amount": null, "message": "1 statement line is neither matched, recorded nor excluded.", "severity": "BLOCKING", "subjects": [{"id": "e1012b68-9476-4654-86c6-d100746a84f3", "kind": "BANK_STATEMENT", "name": "b-statement-FUOPG.csv", "amount": null}]}] |              | IMPORTED         |         3750.00 |             1
+(1 row)
+
+
+== [b: audit events of the reconciliation after the refusal]
+select event_type, details, occurred_at from tenant_7d218705360b.audit_events where entity_id='a66fcfaf-fc38-4af3-a723-2891ade38680' order by occurred_at
+           event_type            |                                                                                                                                details                                                                                                                                |          occurred_at          
+---------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------
+ trust_reconciliation.created    | {"actor_name": "Alice Owner", "period_end": "2026-11-18", "trust_account_id": "acfd45c9-68b9-4a59-9ba4-602f88e3d42f", "bank_statement_id": "e1012b68-9476-4654-86c6-d100746a84f3"}                                                                                    | 2026-11-18 18:12:08.184277+00
+ trust_reconciliation.calculated | {"actor_name": "Alice Owner", "difference": "0.00", "is_balanced": true, "bank_balance": "3750.00", "creditor_total": "60250.00", "cashbook_balance": "60250.00", "trust_account_id": "acfd45c9-68b9-4a59-9ba4-602f88e3d42f", "client_ledger_total": "260250.00"}     | 2026-11-18 18:12:08.225845+00
+ trust_reconciliation.calculated | {"actor_name": "Alice Owner", "difference": "0.00", "is_balanced": true, "bank_balance": "3750.00", "creditor_total": "60250.00", "cashbook_balance": "60250.00", "trust_account_id": "acfd45c9-68b9-4a59-9ba4-602f88e3d42f", "client_ledger_total": "260250.00"}     | 2026-11-18 18:12:09.360391+00
+ trust_reconciliation.calculated | {"actor_name": "Alice Owner", "difference": "0.00", "is_balanced": true, "bank_balance": "3750.00", "creditor_total": "60250.00", "cashbook_balance": "60250.00", "trust_account_id": "acfd45c9-68b9-4a59-9ba4-602f88e3d42f", "client_ledger_total": "260250.00"}     | 2026-11-18 18:12:10.907841+00
+ trust_reconciliation.calculated | {"actor_name": "Alice Owner", "difference": "5000.00", "is_balanced": false, "bank_balance": "3750.00", "creditor_total": "60250.00", "cashbook_balance": "60250.00", "trust_account_id": "acfd45c9-68b9-4a59-9ba4-602f88e3d42f", "client_ledger_total": "260250.00"} | 2026-11-18 18:12:13.496611+00
+(5 rows)
+
+
+== [b: reconciliation after completion]
+select r.id, r.status, r.period_end, r.bank_balance, r.outstanding_deposits, r.outstanding_payments, r.adjusted_bank_balance, r.cashbook_balance, r.client_ledger_total, r.creditor_total, r.difference, r.is_balanced, r.integrity_flags, r.completed_at, s.status statement_status, s.closing_balance, s.matched_count
+  from tenant_7d218705360b.trust_reconciliations r join tenant_7d218705360b.bank_statements s on s.id=r.bank_statement_id where r.id='a66fcfaf-fc38-4af3-a723-2891ade38680'
+                  id                  |  status   | period_end | bank_balance | outstanding_deposits | outstanding_payments | adjusted_bank_balance | cashbook_balance | client_ledger_total | creditor_total | difference | is_balanced | integrity_flags |         completed_at          | statement_status | closing_balance | matched_count 
+--------------------------------------+-----------+------------+--------------+----------------------+----------------------+-----------------------+------------------+---------------------+----------------+------------+-------------+-----------------+-------------------------------+------------------+-----------------+---------------
+ a66fcfaf-fc38-4af3-a723-2891ade38680 | COMPLETED | 2026-11-18 |      3750.00 |            295000.00 |            238500.00 |              60250.00 |         60250.00 |           260250.00 |       60250.00 |       0.00 | t           | []              | 2026-11-18 18:12:20.961632+00 | RECONCILED       |         3750.00 |             2
+(1 row)
+
+
+== [b: audit events of the reconciliation after completion]
+select event_type, details, occurred_at from tenant_7d218705360b.audit_events where entity_id='a66fcfaf-fc38-4af3-a723-2891ade38680' order by occurred_at
+           event_type            |                                                                                                                                        details                                                                                                                                        |          occurred_at          
+---------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------
+ trust_reconciliation.created    | {"actor_name": "Alice Owner", "period_end": "2026-11-18", "trust_account_id": "acfd45c9-68b9-4a59-9ba4-602f88e3d42f", "bank_statement_id": "e1012b68-9476-4654-86c6-d100746a84f3"}                                                                                                    | 2026-11-18 18:12:08.184277+00
+ trust_reconciliation.calculated | {"actor_name": "Alice Owner", "difference": "0.00", "is_balanced": true, "bank_balance": "3750.00", "creditor_total": "60250.00", "cashbook_balance": "60250.00", "trust_account_id": "acfd45c9-68b9-4a59-9ba4-602f88e3d42f", "client_ledger_total": "260250.00"}                     | 2026-11-18 18:12:08.225845+00
+ trust_reconciliation.calculated | {"actor_name": "Alice Owner", "difference": "0.00", "is_balanced": true, "bank_balance": "3750.00", "creditor_total": "60250.00", "cashbook_balance": "60250.00", "trust_account_id": "acfd45c9-68b9-4a59-9ba4-602f88e3d42f", "client_ledger_total": "260250.00"}                     | 2026-11-18 18:12:09.360391+00
+ trust_reconciliation.calculated | {"actor_name": "Alice Owner", "difference": "0.00", "is_balanced": true, "bank_balance": "3750.00", "creditor_total": "60250.00", "cashbook_balance": "60250.00", "trust_account_id": "acfd45c9-68b9-4a59-9ba4-602f88e3d42f", "client_ledger_total": "260250.00"}                     | 2026-11-18 18:12:10.907841+00
+ trust_reconciliation.calculated | {"actor_name": "Alice Owner", "difference": "5000.00", "is_balanced": false, "bank_balance": "3750.00", "creditor_total": "60250.00", "cashbook_balance": "60250.00", "trust_account_id": "acfd45c9-68b9-4a59-9ba4-602f88e3d42f", "client_ledger_total": "260250.00"}                 | 2026-11-18 18:12:13.496611+00
+ trust_reconciliation.calculated | {"actor_name": "Alice Owner", "difference": "5000.00", "is_balanced": false, "bank_balance": "3750.00", "creditor_total": "60250.00", "cashbook_balance": "60250.00", "trust_account_id": "acfd45c9-68b9-4a59-9ba4-602f88e3d42f", "client_ledger_total": "260250.00"}                 | 2026-11-18 18:12:16.527842+00
+ trust_reconciliation.calculated | {"actor_name": "Alice Owner", "difference": "0.00", "is_balanced": true, "bank_balance": "3750.00", "creditor_total": "60250.00", "cashbook_balance": "60250.00", "trust_account_id": "acfd45c9-68b9-4a59-9ba4-602f88e3d42f", "client_ledger_total": "260250.00"}                     | 2026-11-18 18:12:18.782394+00
+ trust_reconciliation.completed  | {"flags": [], "actor_name": "Alice Owner", "difference": "0.00", "period_end": "2026-11-18", "bank_balance": "3750.00", "creditor_total": "60250.00", "cashbook_balance": "60250.00", "trust_account_id": "acfd45c9-68b9-4a59-9ba4-602f88e3d42f", "client_ledger_total": "260250.00"} | 2026-11-18 18:12:20.962765+00
+(8 rows)
+
+
+== [b: statement after completion]
+select id, status, closing_balance, matched_count from tenant_7d218705360b.bank_statements where id='e1012b68-9476-4654-86c6-d100746a84f3'
+                  id                  |   status   | closing_balance | matched_count 
+--------------------------------------+------------+-----------------+---------------
+ e1012b68-9476-4654-86c6-d100746a84f3 | RECONCILED |         3750.00 |             2
+(1 row)
+

@@ -1,0 +1,6 @@
+# 649C OBS backend log, window 2026-11-18T18:02:43Z .. 2026-11-18T18:14:23Z (docker logs e2e-backend --since 18:02:43Z; counted with qa_cycle/evidence/phase92/647B/gates/logcount.sh)
+{'INFO': 38}
+
+# WARN/ERROR lines verbatim
+# extension 18:14:23Z .. 18:15:16Z (phase t): WARN/ERROR = 0, total lines = 3
+# e2e-frontend log lines in window: 0

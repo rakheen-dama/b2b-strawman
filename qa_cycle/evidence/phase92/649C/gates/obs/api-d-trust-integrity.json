@@ -1,0 +1,164 @@
+{
+  "method": "GET",
+  "url": "/api/trust-integrity",
+  "status": 200,
+  "body": {
+    "asAt": "2026-11-18",
+    "balanced": true,
+    "cashbook": 291760,
+    "clientLedgers": 260250,
+    "investmentCreditors": 30095,
+    "fundLedger": -85,
+    "unidentifiedDeposits": 1500,
+    "otherNonClient": 0,
+    "interAccount": 0,
+    "creditorTotal": 291760,
+    "difference": 0,
+    "flags": [],
+    "accounts": [
+      {
+        "trustAccountId": "9c6638d6-0800-40ff-92ee-2b941778f9d1",
+        "asAt": "2026-11-18",
+        "position": {
+          "trustAccountId": "9c6638d6-0800-40ff-92ee-2b941778f9d1",
+          "asAt": "2026-11-18",
+          "cashbook": 30095,
+          "clientLedgers": 0,
+          "investmentCreditors": 30095,
+          "fundLedger": 0,
+          "unidentifiedDeposits": 0,
+          "otherNonClient": 0,
+          "interAccount": 0,
+          "creditorTotal": 30095,
+          "difference": 0
+        },
+        "bank": null,
+        "balanced": true,
+        "flags": [],
+        "lastCompletedReconciliationId": null,
+        "lastReconciledThrough": null
+      },
+      {
+        "trustAccountId": "0f48a9b8-ab76-43d5-aa90-be21d0c82e55",
+        "asAt": "2026-11-18",
+        "position": {
+          "trustAccountId": "0f48a9b8-ab76-43d5-aa90-be21d0c82e55",
+          "asAt": "2026-11-18",
+          "cashbook": 1415,
+          "clientLedgers": 0,
+          "investmentCreditors": 0,
+          "fundLedger": -85,
+          "unidentifiedDeposits": 1500,
+          "otherNonClient": 0,
+          "interAccount": 0,
+          "creditorTotal": 1415,
+          "difference": 0
+        },
+        "bank": null,
+        "balanced": true,
+        "flags": [
+          {
+            "code": "UNRESOLVED_STATEMENT_LINES",
+            "severity": "WARNING",
+            "message": "1 statement line is neither matched, recorded nor excluded on a statement not yet reconciled.",
+            "amount": null,
+            "subjects": [
+              {
+                "kind": "BANK_STATEMENT",
+                "id": "2c28f2ad-a3f1-4fa3-a776-2d6c5975e3cb",
+                "name": "d-statement-GTQ2U.csv",
+                "amount": null
+              }
+            ]
+          },
+          {
+            "code": "FUND_LEDGER_IN_DEBIT",
+            "severity": "WARNING",
+            "message": "The Fund interest and charges ledger is R85,00 in debit.",
+            "amount": 85,
+            "subjects": [
+              {
+                "kind": "CREDITOR_ACCOUNT",
+                "id": "f5bd7561-8dcf-4339-aeaa-19cbf2681564",
+                "name": "Legal Practitioners' Fidelity Fund — interest and charges",
+                "amount": 85
+              }
+            ]
+          },
+          {
+            "code": "UNIDENTIFIED_OVER_ONE_YEAR",
+            "severity": "WARNING",
+            "message": "1 unidentified deposit of R1 500,00 has been held for more than a year.",
+            "amount": 1500,
+            "subjects": [
+              {
+                "kind": "UNIDENTIFIED_DEPOSIT",
+                "id": "17924838-f9e8-452f-9dac-857dc86c6694",
+                "name": "DEPOSIT UNKNOWN REMITTER",
+                "amount": 1500
+              }
+            ]
+          },
+          {
+            "code": "CHARGES_TO_REFUND",
+            "severity": "WARNING",
+            "message": "R85,00 of non-recoverable bank charges has been debited to trust and not yet refunded from the business account.",
+            "amount": 85,
+            "subjects": []
+          }
+        ],
+        "lastCompletedReconciliationId": null,
+        "lastReconciledThrough": null
+      },
+      {
+        "trustAccountId": "25ffe60b-4918-4622-a136-85d106d018ed",
+        "asAt": "2026-11-18",
+        "position": {
+          "trustAccountId": "25ffe60b-4918-4622-a136-85d106d018ed",
+          "asAt": "2026-11-18",
+          "cashbook": 200000,
+          "clientLedgers": 0,
+          "investmentCreditors": 0,
+          "fundLedger": 0,
+          "unidentifiedDeposits": 0,
+          "otherNonClient": 0,
+          "interAccount": 200000,
+          "creditorTotal": 200000,
+          "difference": 0
+        },
+        "bank": null,
+        "balanced": true,
+        "flags": [],
+        "lastCompletedReconciliationId": null,
+        "lastReconciledThrough": null
+      },
+      {
+        "trustAccountId": "36144df5-72ec-49f3-9bd7-ef497cb60946",
+        "asAt": "2026-11-18",
+        "position": {
+          "trustAccountId": "36144df5-72ec-49f3-9bd7-ef497cb60946",
+          "asAt": "2026-11-18",
+          "cashbook": 60250,
+          "clientLedgers": 260250,
+          "investmentCreditors": 0,
+          "fundLedger": 0,
+          "unidentifiedDeposits": 0,
+          "otherNonClient": 0,
+          "interAccount": -200000,
+          "creditorTotal": 60250,
+          "difference": 0
+        },
+        "bank": {
+          "bankBalance": 3750,
+          "outstandingDeposits": 295000,
+          "outstandingPayments": 238500,
+          "adjustedBankBalance": 60250
+        },
+        "balanced": true,
+        "flags": [],
+        "lastCompletedReconciliationId": "de691c66-a7b5-460c-a1bc-5f37c76a5514",
+        "lastReconciledThrough": "2026-11-18"
+      }
+    ]
+  }
+}

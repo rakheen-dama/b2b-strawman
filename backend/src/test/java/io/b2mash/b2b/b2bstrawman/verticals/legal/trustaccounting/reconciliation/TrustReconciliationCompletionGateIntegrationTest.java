@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.within;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
@@ -15,13 +16,20 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustInte
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.StatementLinePostingService.RecordFromLineRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService.BankStatementResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService.TrustReconciliationResponse;
+import jakarta.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.LockSupport;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -34,6 +42,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * Phase 92 slice 649C (task 649.11, architecture §16.3.4, §16.9.2 path 24 gate part, ADR-377): the
@@ -68,6 +77,8 @@ class TrustReconciliationCompletionGateIntegrationTest {
   @Autowired private StatementLinePostingService statementLinePostingService;
   @Autowired private BankStatementRepository bankStatementRepository;
   @Autowired private JdbcTemplate jdbc;
+  @Autowired private TransactionTemplate transactionTemplate;
+  @Autowired private EntityManager entityManager;
 
   private TrustBooksFixture.Tenant books;
   private UUID memberId;
@@ -608,6 +619,170 @@ class TrustReconciliationCompletionGateIntegrationTest {
     assertThat(statementStatus(march.id())).isEqualTo("RECONCILED");
     assertThat(getReconciliation(books, memberId, recon.id()).status()).isEqualTo("COMPLETED");
     books.assertServicesAgree(account, MARCH_END);
+  }
+
+  // --- concurrent complete (review fix cycle 2) ------------------------------------------------
+
+  /**
+   * A double-click: two completes of the same balanced reconciliation. The first (the owner)
+   * completes and holds its transaction open — the statement row locked, COMPLETED not yet
+   * committed — so the second (the approver) reads DRAFT and then blocks on the statement row lock
+   * (observed in {@code pg_stat_activity}, not a sleep). Once the first commits, the second
+   * re-reads the status under the lock and is refused exactly as a sequential second complete is:
+   * one completion, one {@code trust_reconciliation.completed} audit event, the winner's {@code
+   * completedBy} / {@code completedAt}.
+   */
+  @Test
+  void concurrentDoubleComplete_secondWaitsOnTheStatementLock_andIsRefused_completedOnce()
+      throws Exception {
+    var account = books.freshAccount(false);
+    var march = unknownCreditStatement(account, "gdc-march.csv");
+    var recon = reconcile(account, MARCH_END, march.id());
+    recordLine(march.lines().get(1).id(), unidentified());
+    assertThat(calculate(recon.id()).isBalanced()).isTrue();
+
+    var firstDone = new CountDownLatch(1);
+    var releaseFirst = new CountDownLatch(1);
+    var firstResult = new AtomicReference<TrustReconciliationResponse>();
+    var firstError = new AtomicReference<Throwable>();
+    var firstBackendPid = new AtomicReference<Integer>();
+    var secondResult = new AtomicReference<TrustReconciliationResponse>();
+    var secondError = new AtomicReference<Throwable>();
+    var secondFinished = new AtomicBoolean(false);
+
+    Thread firstThread =
+        Thread.ofPlatform()
+            .start(
+                () -> {
+                  try {
+                    books.as(
+                        memberId,
+                        () ->
+                            transactionTemplate.executeWithoutResult(
+                                tx -> {
+                                  firstResult.set(
+                                      reconciliationService.completeReconciliation(recon.id()));
+                                  firstBackendPid.set(
+                                      ((Number)
+                                              entityManager
+                                                  .createNativeQuery("SELECT pg_backend_pid()")
+                                                  .getSingleResult())
+                                          .intValue());
+                                  firstDone.countDown();
+                                  await(releaseFirst);
+                                }));
+                  } catch (Throwable t) {
+                    firstError.set(t);
+                    firstDone.countDown();
+                  }
+                });
+    assertThat(firstDone.await(30, TimeUnit.SECONDS)).isTrue();
+    assertThat(firstError.get()).as("the first complete").isNull();
+
+    Thread secondThread =
+        Thread.ofPlatform()
+            .start(
+                () -> {
+                  try {
+                    books.as(
+                        approverId,
+                        () ->
+                            secondResult.set(
+                                reconciliationService.completeReconciliation(recon.id())));
+                  } catch (Throwable t) {
+                    secondError.set(t);
+                  } finally {
+                    secondFinished.set(true);
+                  }
+                });
+    boolean secondBlockedOnFirst;
+    boolean secondFinishedBeforeCommit;
+    try {
+      secondBlockedOnFirst =
+          awaitBlockedOnStatementLockHeldByOrFinished(firstBackendPid.get(), secondFinished);
+      secondFinishedBeforeCommit = secondFinished.get();
+    } finally {
+      releaseFirst.countDown();
+      join(firstThread);
+      join(secondThread);
+    }
+
+    assertThat(firstError.get()).as("the first complete (committed)").isNull();
+    assertThat(secondBlockedOnFirst)
+        .as("the second complete blocked on the bank_statements row lock the first held")
+        .isTrue();
+    assertThat(secondFinishedBeforeCommit)
+        .as("the second complete finished while the first still held the statement lock")
+        .isFalse();
+    assertThat(secondResult.get()).as("the second complete succeeded").isNull();
+    assertThat(secondError.get())
+        .as("the second complete, refused as a sequential second complete is")
+        .isInstanceOfSatisfying(
+            InvalidStateException.class,
+            e -> {
+              assertThat(e.getBody().getStatus()).isEqualTo(400);
+              assertThat(e.getBody().getTitle()).isEqualTo("Invalid reconciliation state");
+              assertThat(e.getBody().getDetail()).isEqualTo("Reconciliation is already COMPLETED");
+            });
+
+    var winner = firstResult.get();
+    var stored = getReconciliation(books, memberId, recon.id());
+    assertThat(stored.status()).isEqualTo("COMPLETED");
+    assertThat(stored.completedBy()).as("the winner's completedBy").isEqualTo(memberId);
+    // the column holds microseconds; the second's overwrite would come well after the release
+    assertThat(stored.completedAt())
+        .as("the winner's completedAt")
+        .isCloseTo(winner.completedAt(), within(1, ChronoUnit.MICROS));
+    assertThat(statementStatus(march.id())).isEqualTo("RECONCILED");
+    assertThat(
+            jdbc.queryForObject(
+                """
+                SELECT count(*) FROM "%s".audit_events
+                WHERE entity_id = ? AND event_type = 'trust_reconciliation.completed'
+                """
+                    .formatted(books.schema()),
+                Long.class,
+                recon.id()))
+        .as("exactly one completed audit event for this reconciliation")
+        .isEqualTo(1L);
+  }
+
+  /**
+   * Waits (bounded, 30 s) until a backend blocked by {@code holderPid} is running a bank_statements
+   * query (true — the statement row lock is contested) or the waiter finishes without having been
+   * seen blocked (false). Fails if neither happens.
+   */
+  private boolean awaitBlockedOnStatementLockHeldByOrFinished(
+      int holderPid, AtomicBoolean waiterFinished) {
+    long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(30);
+    while (System.nanoTime() < deadline) {
+      Long blocked =
+          jdbc.queryForObject(
+              "SELECT count(*) FROM pg_stat_activity WHERE ? = ANY(pg_blocking_pids(pid))"
+                  + " AND query ILIKE '%bank_statements%'",
+              Long.class, holderPid);
+      if (blocked != null && blocked > 0) {
+        return true;
+      }
+      if (waiterFinished.get()) {
+        return false;
+      }
+      LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(10)); // poll interval
+    }
+    throw new AssertionError("the second complete neither blocked nor finished within 30 s");
+  }
+
+  private static void join(Thread thread) throws InterruptedException {
+    thread.join(30_000);
+    assertThat(thread.isAlive()).as("thread finished within 30 s").isFalse();
+  }
+
+  private static void await(CountDownLatch latch) {
+    try {
+      latch.await(30, TimeUnit.SECONDS);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+    }
   }
 
   // --- H-1a: complete recalculates first ---------------------------------------------------

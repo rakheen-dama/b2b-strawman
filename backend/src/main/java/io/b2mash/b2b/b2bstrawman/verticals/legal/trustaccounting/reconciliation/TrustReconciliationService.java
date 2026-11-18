@@ -842,6 +842,14 @@ public class TrustReconciliationService {
           bankStatementRepository
               .findByIdForUpdate(statementId)
               .orElseThrow(() -> new ResourceNotFoundException("BankStatement", statementId));
+      // A concurrent complete of the same reconciliation (a double-click) read DRAFT above too and
+      // waited here for the statement lock: re-read the status now that the winner has committed
+      // and refuse as a sequential second complete would — never complete it twice.
+      if (trustReconciliationRepository.findStatusById(reconciliationId).orElse(null)
+          != ReconciliationStatus.DRAFT) {
+        throw new InvalidStateException(
+            "Invalid reconciliation state", "Reconciliation is already COMPLETED");
+      }
     }
 
     var report = recalculate(reconciliation);

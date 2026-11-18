@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface TrustReconciliationRepository extends JpaRepository<TrustReconciliation, UUID> {
 
@@ -31,4 +33,12 @@ public interface TrustReconciliationRepository extends JpaRepository<TrustReconc
   Optional<TrustReconciliation>
       findFirstByTrustAccountIdAndStatusOrderByPeriodEndDescCompletedAtDesc(
           UUID trustAccountId, ReconciliationStatus status);
+
+  /**
+   * The reconciliation's status read from the database — a scalar query, so it bypasses the
+   * persistence context's (possibly stale) copy of the entity. {@code completeReconciliation}
+   * re-checks it under the statement row lock (649C review fix cycle 2).
+   */
+  @Query("SELECT r.status FROM TrustReconciliation r WHERE r.id = :id")
+  Optional<ReconciliationStatus> findStatusById(@Param("id") UUID id);
 }

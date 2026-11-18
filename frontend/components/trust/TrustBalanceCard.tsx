@@ -70,8 +70,9 @@ export function TrustBalanceCard({
   // Fetch only with the trust module on and VIEW_TRUST held (else the backend answers 403)
   const trustReadable = moduleEnabled && canViewTrust;
 
-  // Fetch trust accounts to find primary if not provided
-  const accountsCacheKey = trustReadable && !trustAccountId ? `trust-accounts-${slug}` : null;
+  // The accounts list (shared SWR key): it resolves the primary when no trustAccountId is passed,
+  // and always supplies the resolved account's lockedThrough (650D)
+  const accountsCacheKey = trustReadable ? `trust-accounts-${slug}` : null;
   const { data: accounts, isLoading: accountsLoading } = useSWR<TrustAccount[]>(
     accountsCacheKey,
     () => fetchTrustAccounts()
@@ -81,8 +82,9 @@ export function TrustBalanceCard({
     trustAccountId ??
     accounts?.find((a) => a.isPrimary && a.status === "ACTIVE")?.id ??
     accounts?.[0]?.id;
-  // 650D: the posting dialogs warn on a date on or before the account's latest locked list. A
-  // passed-in trustAccountId skips the accounts fetch, so there is nothing to read (null).
+  // 650D: the posting dialogs warn on a date on or before the resolved account's latest locked
+  // list — a passed-in trustAccountId included. A failed accounts fetch falls back to null (no
+  // warning; the warning never blocks a posting).
   const lockedThrough = accounts?.find((a) => a.id === resolvedAccountId)?.lockedThrough ?? null;
 
   // Fetch client ledger for this customer

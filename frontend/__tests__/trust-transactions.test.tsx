@@ -1298,4 +1298,41 @@ describe("Trust Transactions", () => {
     expect(mockRecordTransfer).not.toHaveBeenCalled();
     expect(mockRecordFeeTransfer).not.toHaveBeenCalled();
   });
+
+  // PR #1807 review: the page reads the account's lockedThrough and TransactionActions hands it to
+  // the dialogs — a hard-coded null at either mount site fails here.
+  it("the transactions page passes the account's lockedThrough into its posting dialogs (650D)", async () => {
+    const user = userEvent.setup();
+    mockFetchTrustAccounts.mockResolvedValue([
+      { ...MAIN_TRUST_ACCOUNT, lockedThrough: "2026-03-31" },
+    ]);
+    mockFetchTransactions.mockResolvedValue({
+      content: [],
+      totalElements: 0,
+      totalPages: 0,
+      pageSize: 20,
+      pageNumber: 0,
+    });
+
+    await renderTransactionsPage();
+
+    await user.click(screen.getByTestId("record-transaction-button"));
+    await user.click(await screen.findByRole("menuitem", { name: "Record Deposit" }));
+    const depositDate = await screen.findByLabelText("Transaction Date");
+    fireEvent.change(depositDate, { target: { value: "2026-04-01" } });
+    expect(screen.queryByTestId("locked-month-warning")).not.toBeInTheDocument();
+    fireEvent.change(depositDate, { target: { value: "2026-03-31" } });
+    expect(screen.getByTestId("locked-month-warning")).toHaveTextContent(LOCKED);
+    await user.keyboard("{Escape}");
+    await waitFor(() => expect(screen.queryByLabelText("Transaction Date")).toBeNull());
+
+    await user.click(screen.getByTestId("record-transaction-button"));
+    await user.click(await screen.findByRole("menuitem", { name: "Record Transfer" }));
+    fireEvent.change(await screen.findByLabelText("Transaction Date"), {
+      target: { value: "2026-03-15" },
+    });
+    expect(screen.getByTestId("locked-month-warning")).toHaveTextContent(LOCKED);
+    expect(mockRecordDeposit).not.toHaveBeenCalled();
+    expect(mockRecordTransfer).not.toHaveBeenCalled();
+  });
 });

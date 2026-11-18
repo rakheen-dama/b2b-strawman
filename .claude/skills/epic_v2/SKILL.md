@@ -61,6 +61,22 @@ Create high-level tasks for visibility:
 - "Review PR #{num}" — while reviewer checks
 - "Merge Epic {N}" — after review passes (or user approves)
 
+## Decision protocol — never wait for the founder (founder ruling 2026-11-18)
+
+Phase execution is autonomous. When a product, policy, wording, legal or scope question comes up:
+1. Apply a ruling from the phase's decisions log (`tasks/phase{N}-decisions.md`) or the task-file header if one covers it.
+2. Otherwise apply the documented default (task file Open questions, architecture doc, brief), else the most
+   conservative safe option (refuse rather than allow; flag rather than silently accept; keep scope narrow).
+3. Append one row to the decisions log's agent table (create the file from the Phase 92 layout if missing):
+   id · source · decision taken · alternative · reversible? · `DEFAULT`. Commit it with the slice's bookkeeping.
+4. Carry on. Never end a slice with "decision needed from you" as the outcome.
+
+**Hard stop (`STOP` row, slice not merged) only for:** irreversible loss of real-tenant data, a security hole the
+slice would ship, or a legal-compliance question with no safe default. Even then record it and finish whatever
+the question does not block. A defect or idea outside the slice's scope is never a stop: it goes to `found.md`
+and, if it needs a ruling, to the decisions log as `DEFAULT` or `STOP`. Final reports list new decisions-log rows
+under one heading ("Decisions logged") — not as questions.
+
 ## Step 0 — Validate (Orchestrator, Lightweight)
 
 1. Extract the epic number from the user's input.

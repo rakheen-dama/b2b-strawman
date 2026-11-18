@@ -33,6 +33,15 @@ Run all four; launch only when each passes. Phase 92 lost run time to each of th
 3. **Rulings in the header** — every founder ruling a pending slice needs (product, legal, wording, authorization, data-retirement calls) is written in the task-file header, not only in chat or the architecture doc.
 4. **AC power** — `pmset -g batt` says `AC Power` (a closed lid on battery sleeps the Mac and kills the run, caffeinate notwithstanding).
 
+## No founder questions during execution
+
+Once launched, a phase runs without the founder. Slices follow the decision protocol in
+`.claude/skills/epic_v2/SKILL.md` (apply a ruling or default, log it in `tasks/phase{N}-decisions.md`, carry on).
+The orchestrator does the same: it never queues questions mid-run. It surfaces the decisions log to the founder
+at stage checkpoints or phase end, and interrupts only for a `STOP` row (irreversible real-tenant data loss, a
+security hole, or a legal-compliance question with no safe default) or a run that cannot continue.
+Legal questions go to a Fable legal-adviser agent first; the founder signs off on its recommendation afterwards.
+
 ## Usage
 
 ```bash

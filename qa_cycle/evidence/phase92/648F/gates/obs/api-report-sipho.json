@@ -1,0 +1,103 @@
+{
+  "at": "2026-11-18T14:38:48.944Z",
+  "method": "POST",
+  "path": "/api/report-definitions/client-ledger-statement/execute",
+  "request": {
+    "parameters": {
+      "trust_account_id": "27564008-6ca0-4b6d-8147-7e253b574b31",
+      "customer_id": "c2b4ec99-9879-438f-a82e-7112c3b7e519",
+      "dateFrom": "2026-08-20",
+      "dateTo": "2026-11-18"
+    },
+    "page": 0,
+    "size": 50
+  },
+  "status": 200,
+  "body": {
+    "reportName": "Client Ledger Statement",
+    "parameters": {
+      "trust_account_id": "27564008-6ca0-4b6d-8147-7e253b574b31",
+      "customer_id": "c2b4ec99-9879-438f-a82e-7112c3b7e519",
+      "dateFrom": "2026-08-20",
+      "dateTo": "2026-11-18"
+    },
+    "generatedAt": "2026-11-18T14:38:48.940344958Z",
+    "columns": [
+      {
+        "key": "date",
+        "label": "Date",
+        "type": "date",
+        "format": null
+      },
+      {
+        "key": "reference",
+        "label": "Reference",
+        "type": "string",
+        "format": null
+      },
+      {
+        "key": "type",
+        "label": "Type",
+        "type": "string",
+        "format": null
+      },
+      {
+        "key": "description",
+        "label": "Description",
+        "type": "string",
+        "format": null
+      },
+      {
+        "key": "debit",
+        "label": "Debit",
+        "type": "currency",
+        "format": "0.00"
+      },
+      {
+        "key": "credit",
+        "label": "Credit",
+        "type": "currency",
+        "format": "0.00"
+      },
+      {
+        "key": "runningBalance",
+        "label": "Running Balance",
+        "type": "currency",
+        "format": "0.00"
+      }
+    ],
+    "rows": [
+      {
+        "date": "2026-11-18",
+        "reference": "DEP/mwm7opdc4989",
+        "type": "Deposit",
+        "description": "Client deposit — RAF claim disbursements",
+        "credit": 5000,
+        "debit": 0,
+        "runningBalance": 5000
+      },
+      {
+        "date": "2026-11-18",
+        "reference": "PAY/DEEDS/mwm7opdc4989",
+        "type": "Payment",
+        "description": "Deeds office search fee — Deeds Office Pretoria",
+        "credit": 0,
+        "debit": 1250,
+        "runningBalance": 3750
+      }
+    ],
+    "summary": {
+      "openingBalance": 0,
+      "closingBalance": 3750,
+      "totalDebits": 1250,
+      "totalCredits": 5000,
+      "transactionCount": 2
+    },
+    "pagination": {
+      "page": 0,
+      "size": 50,
+      "totalElements": 2,
+      "totalPages": 1
+    }
+  }
+}

@@ -1,0 +1,88 @@
+E2E Test Organization
+Statement of Account
+
+Reference: SOA-5a7e8a76-20261118
+
+Period: 20 August 2026 — 18 November 2026
+
+Generated: 18 November 2026
+
+To
+
+QuickCollect Services mwm7kpqkc14a
+
+12 Rivonia Road Sandton 2196 ZA
+
+Matter
+
+Matter: QC Debt Recovery #1 mwm7kpqkc14a
+
+Opened: 18 November 2026
+
+Professional Fees
+Date	Fee Earner	Description	Hours	Rate	Amount
+18 November 2026	Bob Admin	Verify claim documentation — first debtor batch	1	R1 200,00	R1 200,00
+
+Total fees (excl. VAT): R1 200,00
+
+VAT: R180,00
+
+Total fees (incl. VAT): R1 380,00
+
+Disbursements
+Date	Category	Description	Supplier	Amount	VAT
+
+Total disbursements: R0,00
+
+Trust Activity
+
+Opening balance: R0,00
+
+Deposits
+
+Date	Type	Reference	Description	Amount
+18 November 2026	Deposit	DEP/QC/mwm7kpqkc14a	QuickCollect Services — collections deposit	R45 000,00
+
+Payments
+
+Date	Type	Reference	Description	Amount
+18 November 2026	Placed in section 86(4) investment	INV-469DEF18	Placed in section 86(4) investment at Nedbank (Nedbank Section 86(4) Investments)	R30 000,00
+
+Closing balance: R15 000,00
+
+Section 86(4) investment
+
+Opening balance: R0,00
+
+Placed in section 86(4) investment: R30 000,00
+
+Section 86(4) investment interest
+
+Date	Gross interest	Fund share of section 86(4) interest (5%)	Net interest
+18 November 2026	R100,00	R5,00	R95,00
+
+Gross interest: R100,00
+
+Fund share of section 86(4) interest (5%): R5,00
+
+Net interest: R95,00
+
+Investment returned to trust: R0,00
+
+Invested on your instruction (section 86(4)): R30 095,00
+
+Summary
+
+Fees billed in period: R0,00
+
+Disbursements billed in period: R0,00
+
+Previous balance owing: R0,00
+
+Payments received: R0,00
+
+Closing balance owing: R0,00
+
+Trust balance held: R15 000,00
+
+Unbilled work in progress (not yet billed): R0,00

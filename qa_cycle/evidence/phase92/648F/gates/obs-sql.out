@@ -1,0 +1,113 @@
+-- 648F OBS read-only output, 2026-11-18T14:39:32Z, tenant tenant_7d218705360b
+select pack_id, pack_type, pack_version, item_count, installed_at from tenant_7d218705360b.pack_install where pack_id = 'legal-za';
+ pack_id  |     pack_type     | pack_version | item_count |         installed_at          
+----------+-------------------+--------------+------------+-------------------------------
+ legal-za | DOCUMENT_TEMPLATE | 16           |         18 | 2026-11-18 14:19:24.893215+00
+(1 row)
+
+select template_pack_status from tenant_7d218705360b.org_settings;
+                                                                                                                        template_pack_status                                                                                                                         
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ [{"packId": "common", "version": 4, "appliedAt": "2026-11-18T14:19:24.860965378Z"}, {"packId": "compliance-za", "version": 1, "appliedAt": "2026-11-18T14:19:24.882526294Z"}, {"packId": "legal-za", "version": 16, "appliedAt": "2026-11-18T14:19:24.934460044Z"}]
+(1 row)
+
+select pack_template_key, name, source, pack_id, source_pack_install_id, content_hash, created_at, updated_at,
+       position('Section 86(4) investment' in content::text) > 0 as has_invested_block,
+       position('Invested on your instruction (section 86(4))' in content::text) > 0 as has_invested_line,
+       position('Opening balance' in content::text) > 0 as has_opening_balance
+  from tenant_7d218705360b.document_templates where pack_template_key in ('client-trust-statement','statement-of-account') order by 1;
+   pack_template_key    |          name          |  source  | pack_id  |        source_pack_install_id        |                           content_hash                           |          created_at           |          updated_at           | has_invested_block | has_invested_line | has_opening_balance 
+------------------------+------------------------+----------+----------+--------------------------------------+------------------------------------------------------------------+-------------------------------+-------------------------------+--------------------+-------------------+---------------------
+ client-trust-statement | Client Trust Statement | PLATFORM | legal-za | 709e8948-30e1-4a8d-a3e5-266572da0480 | ffa8074c112a4dac5a3d82a1441a5a1ab70f051ed12ca6b548154ece1c456897 | 2026-11-18 14:19:24.900085+00 | 2026-11-18 14:19:24.900087+00 | t                  | t                 | t
+ statement-of-account   | Statement of Account   | PLATFORM | legal-za | 709e8948-30e1-4a8d-a3e5-266572da0480 | e26ad82f6e2a28a779f3e878be2fe7befb1291b8f1d80541f684d773154437aa | 2026-11-18 14:19:24.902817+00 | 2026-11-18 14:19:24.902818+00 | t                  | t                 | t
+(2 rows)
+
+select pack_template_key, md5(content::text) as md5_jsonb_text, length(content::text) from tenant_7d218705360b.document_templates where pack_template_key in ('client-trust-statement','statement-of-account') order by 1;
+   pack_template_key    |          md5_jsonb_text          | length 
+------------------------+----------------------------------+--------
+ client-trust-statement | e3aa68fd0e1b76dd01e0cee1ca5f8cc7 |   8589
+ statement-of-account   | 5c77b88f11822c15354b86d387be018c |  13292
+(2 rows)
+
+select t.transaction_date, t.transaction_type, t.amount, t.ledger, t.ledger_effect, t.cashbook_effect, a.account_type, a.account_name, t.status,
+       t.reference, (t.posted_at is not null) as posted, (t.reversal_of is not null) as is_reversal, (t.reversed_by_id is not null) as reversed
+  from tenant_7d218705360b.trust_transactions t join tenant_7d218705360b.trust_accounts a on a.id = t.trust_account_id
+ where t.customer_id = '2db7efe4-899b-4589-a1bf-dc483496e762' order by t.created_at;
+ transaction_date | transaction_type |  amount  |      ledger       | ledger_effect | cashbook_effect | account_type |            account_name            |  status  |      reference      | posted | is_reversal | reversed 
+------------------+------------------+----------+-------------------+---------------+-----------------+--------------+------------------------------------+----------+---------------------+--------+-------------+----------
+ 2026-11-18       | DEPOSIT          | 45000.00 | CLIENT            |      45000.00 |        45000.00 | GENERAL      | Mathebula & Partners Trust Account | RECORDED | DEP/QC/mwm7kpqkc14a | t      | f           | f
+ 2026-11-18       | INV_PLACE        | 30000.00 | CLIENT            |     -30000.00 |       -30000.00 | GENERAL      | Mathebula & Partners Trust Account | APPROVED | INV-469DEF18        | t      | f           | f
+ 2026-11-18       | INV_RECEIVE      | 30000.00 | CLIENT_INVESTMENT |      30000.00 |        30000.00 | INVESTMENT   | Nedbank Section 86(4) Investments  | APPROVED | INV-469DEF18        | t      | f           | f
+ 2026-11-18       | INV_INTEREST     |    95.00 | CLIENT_INVESTMENT |         95.00 |           95.00 | INVESTMENT   | Nedbank Section 86(4) Investments  | RECORDED | INV-INT-469DEF18-1  | t      | f           | f
+(4 rows)
+
+select id, investment_basis, institution, account_number, principal, deposit_date, status, withdrawal_amount, deposit_transaction_id, withdrawal_transaction_id
+  from tenant_7d218705360b.trust_investments where customer_id = '2db7efe4-899b-4589-a1bf-dc483496e762';
+                  id                  |  investment_basis  | institution | account_number  | principal | deposit_date | status | withdrawal_amount |        deposit_transaction_id        | withdrawal_transaction_id 
+--------------------------------------+--------------------+-------------+-----------------+-----------+--------------+--------+-------------------+--------------------------------------+---------------------------
+ 469def18-d138-4eae-8ae3-f4e43bad95e4 | CLIENT_INSTRUCTION | Nedbank     | CALL-1122334455 |  30000.00 | 2026-11-18   | ACTIVE |                   | 8ab1fcdc-74f2-4a9b-9e54-60a37333cbe3 | 
+(1 row)
+
+select ii.entry_date, ii.gross_amount, ii.fund_share_amount, ii.net_amount, ii.presentation, ii.status
+  from tenant_7d218705360b.trust_investment_interest ii join tenant_7d218705360b.trust_investments i on i.id = ii.investment_id where i.customer_id = '2db7efe4-899b-4589-a1bf-dc483496e762';
+ entry_date | gross_amount | fund_share_amount | net_amount | presentation | status 
+------------+--------------+-------------------+------------+--------------+--------
+ 2026-11-18 |       100.00 |              5.00 |      95.00 | NET          | POSTED
+(1 row)
+
+select
+  coalesce(sum(t.ledger_effect) filter (where t.ledger = 'CLIENT' and a.account_type = 'GENERAL'), 0) as general_balance,
+  coalesce(sum(t.amount) filter (where t.transaction_type = 'INV_PLACE'), 0)                           as capital_placed,
+  coalesce(sum(t.amount) filter (where t.transaction_type = 'INV_RETURN'), 0)                          as capital_returned,
+  coalesce(sum(t.amount) filter (where t.transaction_type = 'INV_INTEREST'), 0)                        as interest_net_rows,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger = 'CLIENT_INVESTMENT'), 0)                      as invested_balance,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger = 'CLIENT' and a.account_type = 'GENERAL'), 0)
+    + coalesce(sum(t.ledger_effect) filter (where t.ledger = 'CLIENT_INVESTMENT'), 0)                  as held_in_trust_total
+  from tenant_7d218705360b.trust_transactions t join tenant_7d218705360b.trust_accounts a on a.id = t.trust_account_id
+ where t.customer_id = '2db7efe4-899b-4589-a1bf-dc483496e762' and t.posted_at is not null;
+ general_balance | capital_placed | capital_returned | interest_net_rows | invested_balance | held_in_trust_total 
+-----------------+----------------+------------------+-------------------+------------------+---------------------
+        15000.00 |       30000.00 |                0 |             95.00 |         30095.00 |            45095.00
+(1 row)
+
+select sum(gross_amount) as interest_gross, sum(fund_share_amount) as fund_share, sum(net_amount) as interest_net,
+       round(sum(fund_share_amount) / nullif(sum(gross_amount), 0) * 100, 2) as fund_pct
+  from tenant_7d218705360b.trust_investment_interest ii join tenant_7d218705360b.trust_investments i on i.id = ii.investment_id where i.customer_id = '2db7efe4-899b-4589-a1bf-dc483496e762' and ii.status = 'POSTED';
+ interest_gross | fund_share | interest_net | fund_pct 
+----------------+------------+--------------+----------
+         100.00 |       5.00 |        95.00 |     5.00
+(1 row)
+
+select t.transaction_type, t.ledger, t.amount, t.customer_id from tenant_7d218705360b.trust_transactions t
+ where t.investment_id in (select id from tenant_7d218705360b.trust_investments where customer_id = '2db7efe4-899b-4589-a1bf-dc483496e762') and (t.customer_id is distinct from '2db7efe4-899b-4589-a1bf-dc483496e762' or t.ledger not in ('CLIENT','CLIENT_INVESTMENT'));
+ transaction_type | ledger | amount | customer_id 
+------------------+--------+--------+-------------
+(0 rows)
+
+select (select count(*) from tenant_7d218705360b.trust_investments where customer_id = 'c2b4ec99-9879-438f-a82e-7112c3b7e519') as investments,
+       (select count(*) from tenant_7d218705360b.trust_transactions where customer_id = 'c2b4ec99-9879-438f-a82e-7112c3b7e519' and ledger <> 'CLIENT') as non_general_rows,
+       (select coalesce(sum(ledger_effect), 0) from tenant_7d218705360b.trust_transactions where customer_id = 'c2b4ec99-9879-438f-a82e-7112c3b7e519' and ledger = 'CLIENT' and posted_at is not null) as general_balance;
+ investments | non_general_rows | general_balance 
+-------------+------------------+-----------------
+           0 |                0 |         3750.00
+(1 row)
+
+select g.id, t.pack_template_key, g.primary_entity_type, g.primary_entity_id, g.file_name, g.file_size, g.contains_trust_data, g.generated_at
+  from tenant_7d218705360b.generated_documents g join tenant_7d218705360b.document_templates t on t.id = g.template_id
+ where g.generated_at >= '2026-11-18T14:35:42Z' order by g.generated_at;
+                  id                  |   pack_template_key    | primary_entity_type |          primary_entity_id           |                                file_name                                 | file_size | contains_trust_data |         generated_at          
+--------------------------------------+------------------------+---------------------+--------------------------------------+--------------------------------------------------------------------------+-----------+---------------------+-------------------------------
+ c38f875d-c512-4bf1-a0df-a10e50908ac5 | client-trust-statement | CUSTOMER            | 2db7efe4-899b-4589-a1bf-dc483496e762 | client-trust-statement-quickcollect-services-mwm7kpqkc14a-2026-11-18.pdf |      3764 | t                   | 2026-11-18 14:35:46.517955+00
+ a439fc17-e793-4467-9ce0-2620abfd0f6b | statement-of-account   | PROJECT             | 5a7e8a76-b26a-42ea-9de1-ff005a20c63e | statement-of-account-qc-debt-recovery-1-mwm7kpqkc14a-2026-11-18.pdf      |      5120 | t                   | 2026-11-18 14:35:48.475392+00
+ f981c3c7-fa75-4421-b7a0-78aa78966523 | client-trust-statement | CUSTOMER            | c2b4ec99-9879-438f-a82e-7112c3b7e519 | client-trust-statement-sipho-ndlovu-mwm7opdc4989-2026-11-18.pdf          |      2634 | t                   | 2026-11-18 14:36:37.576728+00
+ 86ec1730-ad58-4ede-b202-4398f8c37778 | statement-of-account   | PROJECT             | 17b1ea6f-c6de-4748-90ae-69abcde76608 | statement-of-account-ndlovu-v-raf-depth-ii-mwm7opdc4989-2026-11-18.pdf   |      4624 | t                   | 2026-11-18 14:36:39.318187+00
+(4 rows)
+
+
+-- [f5] body sha256 (canonical JSON: sorted keys, compact, UTF-8 — ADR-356 / ContentHashUtil.hashOf) of the DB content vs the v16 pack file and pack.json reconcile 'to'
+-- pack.json version: 16
+client-trust-statement: db=sha256:91ee719f201464da758ec2552e58924fc8ef96f55717e6d5af18918809cd4f7e file=sha256:91ee719f201464da758ec2552e58924fc8ef96f55717e6d5af18918809cd4f7e db==file:True reconcile_to=['sha256:91ee719f201464da758ec2552e58924fc8ef96f55717e6d5af18918809cd4f7e'] match:True
+statement-of-account: db=sha256:b7966c98deb61c6f4db996cf536cbc8e62a5fdba93e4c61c2eed0ca626218743 file=sha256:b7966c98deb61c6f4db996cf536cbc8e62a5fdba93e4c61c2eed0ca626218743 db==file:True reconcile_to=['sha256:b7966c98deb61c6f4db996cf536cbc8e62a5fdba93e4c61c2eed0ca626218743'] match:True
+-- [f6] v15 bodies (test fixture src/test/resources/fixtures/template-packs/legal-za-v15) differ from the installed v16 bodies
+client-trust-statement: v15=sha256:142377414c7c3251612ee99b27b6df9d3bb91aae250554c7624b3d2ea22f2352 installed==v15:False v15 has 'Section 86(4) investment': False
+statement-of-account: v15=sha256:2d513fa18c853ba7a7c93a9786610f79e9dbf1b999bd6c652ead8e88fc67f384 installed==v15:False v15 has 'Section 86(4) investment': False

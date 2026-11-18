@@ -1,0 +1,87 @@
+# 648F OBS run log — stack built from 6bff38cd0 (fresh e2e-down/up), runs 2026-11-18T14:35:42Z .. 2026-11-18T14:41Z
+# node obs.cjs capture   → CTS + SoA for QuickCollect and Sipho via the firm UI (obs-result-capture.json)
+# node obs.cjs pdf a439fc17-e793-4467-9ce0-2620abfd0f6b 86ec1730-ad58-4ede-b202-4398f8c37778 → stored SoA PDFs (obs-result-pdf.json)
+# node obs.cjs report    → report API JSON + report screen (obs-result-report.json)
+# node obs.cjs ledger    → firm client-ledger pages (obs-result-ledger.json)
+# node obs.cjs check     → assertions (obs/obs-checks.json):
+PASS [a] CTS QC preview: "Section 86(4) investment" block
+PASS [a] CTS QC preview: Placed in section 86(4) investment: R30 000,00
+PASS [a] CTS QC preview: Gross interest: R100,00
+PASS [a] CTS QC preview: Fund share (5%): R5,00
+PASS [a] CTS QC preview: Net interest: R95,00
+PASS [a] CTS QC preview: Investment returned to trust: R0,00
+PASS [a] CTS QC preview: Current Balance heading
+PASS [a] CTS QC preview: In the firm's trust account: R15 000,00
+PASS [a] CTS QC preview: Invested on your instruction (section 86(4)): R30 095,00 (block + Current Balance = 2×)
+PASS [a] CTS QC preview: Held in trust: R45 095,00
+PASS [a] CTS QC preview: general closing balance R15 000,00
+PASS [b] CTS QC preview: no raw/abbreviated type labels (Inv place|Inv return|Inv receive|Inv interest|INV_|FIRM_INV|FEE_TRANSFER|INTEREST_LPFF|INTEREST_CREDIT)
+PASS [b] CTS QC preview: "Placed in section 86(4) investment" Type label
+PASS [b] CTS QC preview: "Deposit" Type label
+PASS [a] CTS QC preview: no reversal reasons
+PASS [a] CTS QC pdf: "Section 86(4) investment" block
+PASS [a] CTS QC pdf: Placed in section 86(4) investment: R30 000,00
+PASS [a] CTS QC pdf: Gross interest: R100,00
+PASS [a] CTS QC pdf: Fund share (5%): R5,00
+PASS [a] CTS QC pdf: Net interest: R95,00
+PASS [a] CTS QC pdf: Investment returned to trust: R0,00
+PASS [a] CTS QC pdf: Current Balance heading
+PASS [a] CTS QC pdf: In the firm's trust account: R15 000,00
+PASS [a] CTS QC pdf: Invested on your instruction (section 86(4)): R30 095,00 (block + Current Balance = 2×)
+PASS [a] CTS QC pdf: Held in trust: R45 095,00
+PASS [a] CTS QC pdf: general closing balance R15 000,00
+PASS [b] CTS QC pdf: no raw/abbreviated type labels (Inv place|Inv return|Inv receive|Inv interest|INV_|FIRM_INV|FEE_TRANSFER|INTEREST_LPFF|INTEREST_CREDIT)
+PASS [b] CTS QC pdf: "Placed in section 86(4) investment" Type label
+PASS [b] CTS QC pdf: "Deposit" Type label
+PASS [a] CTS QC pdf: no reversal reasons
+PASS [b] CTS QC preview: general table Type column = [Deposit, Placed in section 86(4) investment]
+PASS [a] CTS QC preview: no interest / Fund row in the general table
+PASS [c] SoA QC preview: Deposits + Payments tables both have a Type column (Date|Type|Reference|Description|Amount)
+PASS [c] SoA QC preview: Deposits row Type = Deposit
+PASS [c] SoA QC preview: Payments row Type = Placed in section 86(4) investment
+PASS [c] SoA QC preview: no interest / Fund row in Deposits/Payments
+PASS [c] SoA QC preview: "Section 86(4) investment" block
+PASS [c] SoA QC preview: block Opening balance: R0,00
+PASS [c] SoA QC preview: Placed: R30 000,00
+PASS [c] SoA QC preview: Gross R100,00 / Fund (5%) R5,00 / Net R95,00
+PASS [c] SoA QC preview: Returned R0,00
+PASS [c] SoA QC preview: closing Invested on your instruction: R30 095,00
+PASS [c] SoA QC preview: Trust Activity closing balance R15 000,00
+PASS [c] SoA QC preview: no raw type labels
+PASS [c] SoA QC preview: no reversal reasons
+PASS [c] SoA QC pdf(stored): "Section 86(4) investment" block
+PASS [c] SoA QC pdf(stored): block Opening balance: R0,00
+PASS [c] SoA QC pdf(stored): Placed: R30 000,00
+PASS [c] SoA QC pdf(stored): Gross R100,00 / Fund (5%) R5,00 / Net R95,00
+PASS [c] SoA QC pdf(stored): Returned R0,00
+PASS [c] SoA QC pdf(stored): closing Invested on your instruction: R30 095,00
+PASS [c] SoA QC pdf(stored): Trust Activity closing balance R15 000,00
+PASS [c] SoA QC pdf(stored): no raw type labels
+PASS [c] SoA QC pdf(stored): no reversal reasons
+PASS [d] Sipho CTS preview: no "Section 86(4) investment"
+PASS [d] Sipho CTS preview: no "Invested on your instruction"
+PASS [d] Sipho CTS preview: keeps "The current balance held in trust on your behalf is R3 750,00."
+PASS [d] Sipho CTS preview: no three-line split
+PASS [d] Sipho CTS preview: no raw type labels
+PASS [d] Sipho CTS pdf: no "Section 86(4) investment"
+PASS [d] Sipho CTS pdf: no "Invested on your instruction"
+PASS [d] Sipho CTS pdf: keeps "The current balance held in trust on your behalf is R3 750,00."
+PASS [d] Sipho CTS pdf: no three-line split
+PASS [d] Sipho CTS pdf: no raw type labels
+PASS [d] Sipho SoA preview: no "Section 86(4) investment"
+PASS [d] Sipho SoA preview: no "Invested on your instruction"
+PASS [d] Sipho SoA preview: Trust balance held R3 750,00
+PASS [d] Sipho SoA preview: no raw type labels
+PASS [d] Sipho SoA pdf(stored): no "Section 86(4) investment"
+PASS [d] Sipho SoA pdf(stored): no "Invested on your instruction"
+PASS [d] Sipho SoA pdf(stored): Trust balance held R3 750,00
+PASS [d] Sipho SoA pdf(stored): no raw type labels
+PASS [e] report QC: HTTP 200
+PASS [e] report QC: summary.invested keys exactly the 7 named, in order
+PASS [e] report QC: summary.invested values = 0 / 30000 / 100 / 5 / 95 / 0 / 30095
+PASS [e] report QC: general summary unchanged (opening 0, closing 15000, 2 rows)
+PASS [e] report Sipho: no summary.invested
+PASS [e] report screen QC: stat cards unchanged (no invested card, no [object Object])
+PASS [g] firm client ledger QC (648E): Plus R 30 095,00 invested — R 45 095,00 held in trust in total
+PASS [g] firm client ledger Sipho: no invested line
+80/80 passed

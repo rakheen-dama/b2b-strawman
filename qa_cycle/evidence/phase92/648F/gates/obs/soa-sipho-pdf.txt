@@ -1,0 +1,45 @@
+               E2E Test Organization
+               Statement of Account
+               Reference: SOA-17b1ea6f-20261118
+               Period: 20 August 2026 — 18 November 2026
+               Generated: 18 November 2026
+               To
+               Sipho Ndlovu mwm7opdc4989
+               12 Rivonia Road Sandton 2196 ZA
+               Matter
+               Matter: Ndlovu v RAF — Depth II mwm7opdc4989
+               Opened: 18 November 2026
+               Professional Fees
+                Date           Fee       Description                               Hours Rate              Amount
+                               Earner
+                18             Alice     Drafted and served letter of 
+                November       Owner     demand on the Road Accident               2         R2 500,00     R5 000,00
+                2026                     Fund (mwm7opdc4989)
+               Total fees (excl. VAT): R5 000,00
+               VAT: R750,00
+               Total fees (incl. VAT): R5 750,00
+               Disbursements
+                Date               Category          Description            Supplier              Amount        VAT
+              18 November       Deeds office    Deeds office          Deeds Office       R1 250,00    R0,00
+              2026              fees            search fee            Pretoria
+             Total disbursements: R1 250,00
+             Trust Activity
+             Opening balance: R0,00
+             Deposits
+              Date              Type      Reference           Description                        Amount
+              18 November       Deposit   DEP                 Client deposit — RAF claim         R5 000,00
+              2026                        /mwm7opdc4989       disbursements
+             Payments
+              Date            Type       Reference              Description                      Amount
+              18                         PAY/DEEDS              Deeds office search fee — 
+              November        Payment /mwm7opdc4989             Deeds Office Pretoria            R1 250,00
+              2026
+             Closing balance: R3 750,00
+             Summary
+             Fees billed in period: R0,00
+             Disbursements billed in period: R0,00
+             Previous balance owing: R0,00
+             Payments received: R0,00
+             Closing balance owing: R0,00
+             Trust balance held: R3 750,00
+             Unbilled work in progress (not yet billed): R6 250,00

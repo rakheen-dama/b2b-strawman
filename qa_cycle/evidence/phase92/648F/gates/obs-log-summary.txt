@@ -1,0 +1,82 @@
+# 648F OBS backend log summary (e2e-backend container, built from 6bff38cd0)
+## OBS window 2026-11-18T14:35:42Z .. 2026-11-18T14:41:02Z
+{'INFO': 26, 'WARN': 66}
+   8 WARN PDType1Font: Using fallback font LiberationSans for base font Helvetica
+   8 WARN PDType1Font: Using fallback font LiberationSans for base font ZapfDingbats
+   4 WARN PDType1Font: Using fallback font LiberationSans for base font Courier-BoldOblique
+   4 WARN PDType1Font: Using fallback font LiberationSans for base font Courier-Oblique
+   4 WARN PDType1Font: Using fallback font LiberationSans for base font Courier-Bold
+   4 WARN PDType1Font: Using fallback font LiberationSans for base font Courier
+   4 WARN PDType1Font: Using fallback font LiberationSans for base font Times-BoldItalic
+   4 WARN PDType1Font: Using fallback font LiberationSans for base font Times-Italic
+   4 WARN PDType1Font: Using fallback font LiberationSans for base font Times-Bold
+   4 WARN PDType1Font: Using fallback font LiberationSans for base font Times-Roman
+   4 WARN PDType1Font: Using fallback font LiberationSans for base font Helvetica-BoldOblique
+   4 WARN PDType1Font: Using fallback font LiberationSans for base font Helvetica-Oblique
+   4 WARN PDType1Font: Using fallback font LiberationSans for base font Helvetica-Bold
+   4 WARN PDType1Font: Using fallback font LiberationSans for base font Symbol
+   2 WARN NotificationService: No recipients found for DOCUMENT_GENERATED notification: entity=<uuid>
+
+## whole container life (startup + legal-lifecycle + legal-depth-ii + OBS)
+{'INFO': 475, 'WARN': 369}
+  42 WARN PDType1Font: Using fallback font LiberationSans for base font Helvetica
+  42 WARN PDType1Font: Using fallback font LiberationSans for base font ZapfDingbats
+  21 WARN PDType1Font: Using fallback font LiberationSans for base font Courier-BoldOblique
+  21 WARN PDType1Font: Using fallback font LiberationSans for base font Courier-Oblique
+  21 WARN PDType1Font: Using fallback font LiberationSans for base font Courier-Bold
+  21 WARN PDType1Font: Using fallback font LiberationSans for base font Courier
+  21 WARN PDType1Font: Using fallback font LiberationSans for base font Times-BoldItalic
+  21 WARN PDType1Font: Using fallback font LiberationSans for base font Times-Italic
+  21 WARN PDType1Font: Using fallback font LiberationSans for base font Times-Bold
+  21 WARN PDType1Font: Using fallback font LiberationSans for base font Times-Roman
+  21 WARN PDType1Font: Using fallback font LiberationSans for base font Helvetica-BoldOblique
+  21 WARN PDType1Font: Using fallback font LiberationSans for base font Helvetica-Oblique
+  21 WARN PDType1Font: Using fallback font LiberationSans for base font Helvetica-Bold
+  21 WARN PDType1Font: Using fallback font LiberationSans for base font Symbol
+  12 WARN NotificationService: No recipients found for DOCUMENT_GENERATED notification: entity=<uuid>
+   5 WARN GlobalExceptionHandler: Forbidden: path=/api/matters/<uuid>/time-summary/by-member, method=GET, reason=Per-member time breakdown is restricted to matter leads, org admins, an
+   4 WARN InvoiceCreationService: Draft invoice for customer <uuid> created without a tax number — send will be blocked until the customer profile is updated (warning code: tax_number_
+   1 WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker: Bean 'capabilityAuthorizationManager' of type [io.b2mash.b2b.b2bstrawman.orgrole.CapabilityAuthorizationManager] is not eligible for getting processed
+   1 WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker: Bean 'requiresCapabilityAdvisor' of type [org.springframework.security.authorization.method.AuthorizationManagerBeforeMethodInterceptor] is not eligib
+   1 WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker: Bean 'org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerAutoConfiguration' of type [org.springframework.ai.
+   1 WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker: Bean 'serverAnnotatedBeanRegistry' of type [org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerAutoConfigura
+   1 WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker: Bean 'stringOrNumberMigrationVersionConverter' of type [org.springframework.boot.flyway.autoconfigure.FlywayAutoConfiguration$StringOrNumberToMigratio
+   1 WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker: Bean 'spring.ai.mcp.server.annotation-scanner-org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerProperties'
+   1 WARN CglibAopProxy: Unable to proxy interface-implementing method [public final void org.springframework.web.filter.GenericFilterBean.init(jakarta.servlet.FilterConfig) t
+   1 WARN PdfConversionService: LibreOffice not found — PDF conversion will fall back to docx4j
+   1 WARN FileSystemFontProvider: 22 new fonts found, font cache will be re-built
+   1 WARN FileSystemFontProvider: Building on-disk font cache, this may take a while
+   1 WARN FileSystemFontProvider: Finished building on-disk font cache, found 22 fonts
+   1 WARN MaximumAllowableTagsMeterFilter: Reached the maximum number of 'uri' tags for 'http.server.requests'.
+
+## pack seeding / reconcile lines
+2026-11-18T14:19:13.873 INFO PackReconciliationRunner No tenant schemas found — skipping pack reconciliation
+2026-11-18T14:19:24.773 INFO FieldPackSeeder Applied field pack common-project v3 for tenant tenant_7d218705360b
+2026-11-18T14:19:24.779 INFO FieldPackSeeder Applied field pack common-task v2 for tenant tenant_7d218705360b
+2026-11-18T14:19:24.796 INFO FieldPackSeeder Applied field pack conveyancing-za-project v3 for tenant tenant_7d218705360b
+2026-11-18T14:19:24.803 INFO FieldPackSeeder Applied field pack legal-za-customer v2 for tenant tenant_7d218705360b
+2026-11-18T14:19:24.811 INFO FieldPackSeeder Applied field pack legal-za-project v3 for tenant tenant_7d218705360b
+2026-11-18T14:19:24.856 INFO TemplatePackInstaller Installed template pack common with 3 templates for tenant tenant_7d218705360b
+2026-11-18T14:19:24.862 INFO PackInstallService Internal install of pack common completed for tenant tenant_7d218705360b
+2026-11-18T14:19:24.879 INFO TemplatePackInstaller Installed template pack compliance-za with 1 templates for tenant tenant_7d218705360b
+2026-11-18T14:19:24.882 INFO PackInstallService Internal install of pack compliance-za completed for tenant tenant_7d218705360b
+2026-11-18T14:19:24.929 INFO TemplatePackInstaller Installed template pack legal-za with 18 templates for tenant tenant_7d218705360b
+2026-11-18T14:19:24.934 INFO PackInstallService Internal install of pack legal-za completed for tenant tenant_7d218705360b
+2026-11-18T14:19:25.018 INFO ClausePackSeeder Applied clause pack conveyancing-za-clauses v3 for tenant tenant_7d218705360b
+2026-11-18T14:19:25.070 INFO ClausePackSeeder Applied clause pack legal-za-clauses v3 for tenant tenant_7d218705360b
+2026-11-18T14:19:25.115 INFO ClausePackSeeder Applied clause pack standard-clauses v2 for tenant tenant_7d218705360b
+2026-11-18T14:19:25.127 INFO CompliancePackSeeder Applied compliance pack generic-onboarding v1.0.0 for tenant tenant_7d218705360b
+2026-11-18T14:19:25.129 INFO CompliancePackSeeder Applied compliance pack legal-za-individual-onboarding v1.0.0 for tenant tenant_7d218705360b
+2026-11-18T14:19:25.131 INFO CompliancePackSeeder Applied compliance pack legal-za-trust-onboarding v1.0.0 for tenant tenant_7d218705360b
+2026-11-18T14:19:25.133 INFO CompliancePackSeeder Applied compliance pack sa-fica-company v1.0.0 for tenant tenant_7d218705360b
+2026-11-18T14:19:25.152 INFO CompliancePackSeeder Applied compliance pack sa-fica-individual v1.0.0 for tenant tenant_7d218705360b
+2026-11-18T14:19:25.178 INFO StandardReportPackSeeder Applied report pack standard-reports v2 for tenant tenant_7d218705360b
+2026-11-18T14:19:25.199 INFO TrustReportPackSeeder Trust report pack seeded for tenant tenant_7d218705360b: 7 definitions
+2026-11-18T14:19:25.212 INFO RequestPackSeeder Applied request pack conveyancing-intake-za v1 for tenant tenant_7d218705360b
+2026-11-18T14:19:25.215 INFO RequestPackSeeder Applied request pack fica-onboarding-pack v1 for tenant tenant_7d218705360b
+2026-11-18T14:19:25.219 INFO RequestPackSeeder Applied request pack legal-za-liquidation-distribution v1 for tenant tenant_7d218705360b
+2026-11-18T14:19:25.249 INFO AutomationPackInstaller Installed automation pack automation-common with 6 rules for tenant tenant_7d218705360b
+2026-11-18T14:19:25.252 INFO PackInstallService Internal install of pack automation-common completed for tenant tenant_7d218705360b
+2026-11-18T14:19:25.271 INFO AutomationPackInstaller Installed automation pack automation-legal-za with 4 rules for tenant tenant_7d218705360b
+2026-11-18T14:19:25.274 INFO PackInstallService Internal install of pack automation-legal-za completed for tenant tenant_7d218705360b
+2026-11-18T14:19:25.291 INFO ProjectTemplatePackSeeder Applied project-template pack legal-za-project-templates v4 for tenant tenant_7d218705360b

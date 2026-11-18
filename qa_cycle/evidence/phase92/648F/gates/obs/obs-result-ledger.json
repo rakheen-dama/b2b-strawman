@@ -1,0 +1,27 @@
+{
+  "startedAt": "2026-11-18T14:38:58.352Z",
+  "phase": "ledger",
+  "today": "2026-11-18",
+  "period": {
+    "from": "2026-08-20",
+    "to": "2026-11-18"
+  },
+  "docs": {},
+  "report": {},
+  "ledger": {
+    "qc": {
+      "heading": "QuickCollect Services mwm7kpqkc14a",
+      "investedText": "Plus R 30 095,00 invested (section 86(4)) — R 45 095,00 held in trust in total"
+    },
+    "sipho": {
+      "heading": "Sipho Ndlovu mwm7opdc4989",
+      "investedText": null
+    }
+  },
+  "consoleErrors": [],
+  "pageErrors": [],
+  "notes": [
+    "mock-login → http://localhost:3001/org/e2e-test-org/dashboard"
+  ],
+  "finishedAt": "2026-11-18T14:39:03.250Z"
+}

@@ -1,0 +1,56 @@
+Skip to content
+E2E Test Organization
+Acme Corp
+Back to trust
+Held in trust
+
+R 21 595,00
+
+In the firm's trust account
+R 11 500,00
+Invested on your instruction (section 86(4))
+R 10 095,00
+
+As of 18 Nov 2026
+
+Website Redesign
+
+Transactions
+
+Section 86(4) investment interest (Nedbank)
+
+18 Nov 2026 · Section 86(4) investment interest
+
+R 95,00
+
+Invested bal R 10 095,00
+
+Placed in section 86(4) investment at Nedbank (OBS 648D s86(4) Investment Account)
+
+18 Nov 2026 · Placed in section 86(4) investment
+
+R 10 000,00
+
+Bal R 11 500,00
+
+OBS 648D funding deposit
+
+18 Nov 2026 · Deposit
+
+R 20 000,00
+
+Bal R 21 500,00
+
+Portal Day 21 deposit 3jdsh
+
+18 Nov 2026 · Deposit
+
+R 1 500,00
+
+Bal R 1 500,00
+
+Statements
+
+No statement documents yet
+
+Powered by Kazi

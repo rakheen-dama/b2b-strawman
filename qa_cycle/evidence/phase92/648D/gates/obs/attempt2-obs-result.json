@@ -1,0 +1,70 @@
+{
+  "startedAt": "2026-11-18T12:35:14.722Z",
+  "steps": {
+    "a": {
+      "created": false,
+      "row": "                  id                  |            account_name            | account_type |  investment_basis  | status \n--------------------------------------+------------------------------------+--------------+--------------------+--------\n d6bee85a-6e5f-4d79-9144-6f41a5ac0ae1 | OBS 648D s86(4) Investment Account | INVESTMENT   | CLIENT_INSTRUCTION | ACTIVE\n(1 row)\n\n"
+    },
+    "b": {
+      "created": false,
+      "row": "                  id                  | transaction_type |  status  |  amount  | ledger | ledger_effect | posted \n--------------------------------------+------------------+----------+----------+--------+---------------+--------\n dadb7dfa-5b35-4c5e-88a5-c5f17570de70 | DEPOSIT          | RECORDED | 20000.00 | CLIENT |      20000.00 | t\n(1 row)\n\n"
+    },
+    "c": {}
+  },
+  "portal": {
+    "p0": {
+      "apiSummary": {
+        "matters": [
+          {
+            "matterId": "350afd4f-466c-4274-98dc-1951763341f4",
+            "currentBalance": 21500,
+            "investedBalance": 0,
+            "lastTransactionAt": "2026-11-18T12:34:05.132195Z",
+            "lastSyncedAt": "2026-11-18T12:34:05.155805Z",
+            "matterName": "Website Redesign"
+          }
+        ]
+      },
+      "card": {
+        "headlineText": "R 21 500,00",
+        "headline": 21500,
+        "breakdown": [],
+        "cardText": "Held in trust R 21 500,00 As of 18 Nov 2026 Website Redesign"
+      },
+      "rows": [
+        {
+          "date": "18 Nov 2026",
+          "type": "Deposit",
+          "description": "OBS 648D funding deposit",
+          "amount": "R 20 000,00",
+          "balance": "R 21 500,00",
+          "investedQualifier": false
+        },
+        {
+          "date": "18 Nov 2026",
+          "type": "Deposit",
+          "description": "Portal Day 21 deposit 3jdsh",
+          "amount": "R 1 500,00",
+          "balance": "R 1 500,00",
+          "investedQualifier": false
+        }
+      ]
+    }
+  },
+  "checks": {},
+  "consoleErrors": [],
+  "pageErrors": [],
+  "notes": [
+    "portal session reused from 2026-11-18T12:34:05.736Z"
+  ],
+  "today": "2026-11-18",
+  "ids": {
+    "schema": "tenant_7d218705360b",
+    "general": "a8109bcc-841d-4518-9157-f7ab7604782d",
+    "acme": "8bcbf386-8786-4ec3-99ce-abb54178781b",
+    "matter": "350afd4f-466c-4274-98dc-1951763341f4",
+    "inv4": "d6bee85a-6e5f-4d79-9144-6f41a5ac0ae1",
+    "portalClientId": "8bcbf386-8786-4ec3-99ce-abb54178781b"
+  },
+  "error": "Error: POST /api/trust-accounts/a8109bcc-841d-4518-9157-f7ab7604782d/investments → 500 {\"detail\":\"An unexpected error occurred\",\"instance\":\"/api/trust-accounts/a8109bcc-841d-4518-9157-f7ab7604782d/investments\",\"status\":500,\"title\":\"Internal server error\"}\n    at firm (/Users/rakheendama/Projects/2026/worktree-epic-648D/qa_cycle/evidence/phase92/648D/gates/obs.cjs:81:20)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async /Users/rakheendama/Projects/2026/worktree-epic-648D/qa_cycle/evidence/phase92/648D/gates/obs.cjs:285:18"
+}

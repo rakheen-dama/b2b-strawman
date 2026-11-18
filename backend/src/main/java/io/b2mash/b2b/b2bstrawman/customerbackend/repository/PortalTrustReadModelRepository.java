@@ -34,19 +34,31 @@ public class PortalTrustReadModelRepository {
 
   // ── Balance upserts ───────────────────────────────────────────────────
 
+  /**
+   * Upserts the (client, matter) balance snapshot: {@code currentBalance} is the general ({@code
+   * CLIENT}) ledger, {@code investedBalance} the section 86(4) investment ({@code
+   * CLIENT_INVESTMENT}) ledger (Phase 92 648D).
+   */
   public void upsertBalance(
-      UUID customerId, UUID matterId, BigDecimal currentBalance, Instant lastTransactionAt) {
+      UUID customerId,
+      UUID matterId,
+      BigDecimal currentBalance,
+      BigDecimal investedBalance,
+      Instant lastTransactionAt) {
     jdbc.sql(
             """
             INSERT INTO portal.portal_trust_balance
-                (customer_id, matter_id, current_balance, last_transaction_at, last_synced_at)
-            VALUES (?, ?, ?, ?, now())
+                (customer_id, matter_id, current_balance, invested_balance, last_transaction_at,
+                 last_synced_at)
+            VALUES (?, ?, ?, ?, ?, now())
             ON CONFLICT (customer_id, matter_id)
             DO UPDATE SET current_balance = EXCLUDED.current_balance,
+                          invested_balance = EXCLUDED.invested_balance,
                           last_transaction_at = EXCLUDED.last_transaction_at,
                           last_synced_at = now()
             """)
-        .params(customerId, matterId, currentBalance, toTimestamp(lastTransactionAt))
+        .params(
+            customerId, matterId, currentBalance, investedBalance, toTimestamp(lastTransactionAt))
         .update();
   }
 
@@ -56,12 +68,15 @@ public class PortalTrustReadModelRepository {
    * Upserts one portal trust row. {@code transactionDate} is the firm transaction's SA business
    * date (what the client sees, G89-F39); {@code recordedAt} is the firm row's {@code created_at},
    * the ledger tiebreak after the date; {@code occurredAt} is the approval / recorded instant.
+   * {@code ledger} is the ledger the row moved ({@code CLIENT} / {@code CLIENT_INVESTMENT}, Phase
+   * 92 648D) and so the balance {@code runningBalance} runs.
    */
   public void upsertTransaction(
       UUID id,
       UUID customerId,
       UUID matterId,
       String transactionType,
+      String ledger,
       BigDecimal amount,
       BigDecimal runningBalance,
       LocalDate transactionDate,
@@ -72,14 +87,15 @@ public class PortalTrustReadModelRepository {
     jdbc.sql(
             """
             INSERT INTO portal.portal_trust_transaction
-                (id, customer_id, matter_id, transaction_type, amount, running_balance,
+                (id, customer_id, matter_id, transaction_type, ledger, amount, running_balance,
                  transaction_date, recorded_at, occurred_at, description, reference,
                  last_synced_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, now())
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, now())
             ON CONFLICT (id)
             DO UPDATE SET customer_id = EXCLUDED.customer_id,
                           matter_id = EXCLUDED.matter_id,
                           transaction_type = EXCLUDED.transaction_type,
+                          ledger = EXCLUDED.ledger,
                           amount = EXCLUDED.amount,
                           running_balance = EXCLUDED.running_balance,
                           transaction_date = EXCLUDED.transaction_date,
@@ -94,6 +110,7 @@ public class PortalTrustReadModelRepository {
             customerId,
             matterId,
             transactionType,
+            ledger,
             amount,
             runningBalance,
             transactionDate,
@@ -116,8 +133,8 @@ public class PortalTrustReadModelRepository {
   public List<PortalTrustBalanceView> findBalancesByCustomer(UUID customerId) {
     return jdbc.sql(
             """
-            SELECT b.customer_id, b.matter_id, b.current_balance, b.last_transaction_at,
-                   b.last_synced_at, p.name AS matter_name
+            SELECT b.customer_id, b.matter_id, b.current_balance, b.invested_balance,
+                   b.last_transaction_at, b.last_synced_at, p.name AS matter_name
             FROM portal.portal_trust_balance b
             LEFT JOIN portal.portal_projects p
                    ON p.id = b.matter_id AND p.customer_id = b.customer_id
@@ -132,8 +149,8 @@ public class PortalTrustReadModelRepository {
   public Optional<PortalTrustBalanceView> findBalance(UUID customerId, UUID matterId) {
     return jdbc.sql(
             """
-            SELECT b.customer_id, b.matter_id, b.current_balance, b.last_transaction_at,
-                   b.last_synced_at, p.name AS matter_name
+            SELECT b.customer_id, b.matter_id, b.current_balance, b.invested_balance,
+                   b.last_transaction_at, b.last_synced_at, p.name AS matter_name
             FROM portal.portal_trust_balance b
             LEFT JOIN portal.portal_projects p
                    ON p.id = b.matter_id AND p.customer_id = b.customer_id
@@ -159,9 +176,9 @@ public class PortalTrustReadModelRepository {
     // the range comparison).
     return jdbc.sql(
             """
-            SELECT id, customer_id, matter_id, transaction_type, amount, running_balance,
-                   transaction_date, recorded_at, occurred_at, description, reference,
-                   last_synced_at
+            SELECT id, customer_id, matter_id, transaction_type, ledger, amount,
+                   running_balance, transaction_date, recorded_at, occurred_at, description,
+                   reference, last_synced_at
             FROM portal.portal_trust_transaction
             WHERE customer_id = ?
               AND matter_id = ?
@@ -192,9 +209,9 @@ public class PortalTrustReadModelRepository {
       UUID customerId, int limit) {
     return jdbc.sql(
             """
-            SELECT id, customer_id, matter_id, transaction_type, amount, running_balance,
-                   transaction_date, recorded_at, occurred_at, description, reference,
-                   last_synced_at
+            SELECT id, customer_id, matter_id, transaction_type, ledger, amount,
+                   running_balance, transaction_date, recorded_at, occurred_at, description,
+                   reference, last_synced_at
             FROM portal.portal_trust_transaction
             WHERE customer_id = ?
             ORDER BY transaction_date DESC, recorded_at DESC, id DESC

@@ -1,0 +1,25 @@
+{
+  "at": "2026-11-18T12:35:17.492Z",
+  "user": "user_e2e_alice",
+  "method": "POST",
+  "path": "/api/trust-accounts/a8109bcc-841d-4518-9157-f7ab7604782d/investments",
+  "status": 500,
+  "request": {
+    "investmentAccountId": "d6bee85a-6e5f-4d79-9144-6f41a5ac0ae1",
+    "clientId": "8bcbf386-8786-4ec3-99ce-abb54178781b",
+    "matterId": "350afd4f-466c-4274-98dc-1951763341f4",
+    "institution": "Nedbank",
+    "accountNumber": "OBS648D-S864-INV",
+    "principal": 10000,
+    "interestRate": 7,
+    "depositDate": "2026-11-18",
+    "notes": "648D OBS s86(4) placement",
+    "investmentBasis": "CLIENT_INSTRUCTION"
+  },
+  "body": {
+    "detail": "An unexpected error occurred",
+    "instance": "/api/trust-accounts/a8109bcc-841d-4518-9157-f7ab7604782d/investments",
+    "status": 500,
+    "title": "Internal server error"
+  }
+}

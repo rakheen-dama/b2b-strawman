@@ -1,0 +1,178 @@
+-- 648D OBS read-only evidence output (tenant schema tenant_7d218705360b)
+
+== [context: trust accounts before] 2026-11-18T12:34:04.612Z
+select id, account_name, account_type, investment_basis, is_primary, require_dual_approval, status from tenant_7d218705360b.trust_accounts order by created_at
+                  id                  |            account_name            | account_type | investment_basis | is_primary | require_dual_approval | status 
+--------------------------------------+------------------------------------+--------------+------------------+------------+-----------------------+--------
+ a8109bcc-841d-4518-9157-f7ab7604782d | Mathebula & Partners Trust Account | GENERAL      |                  | t          | f                     | ACTIVE
+(1 row)
+
+
+== [context: portal read-model before] 2026-11-18T12:34:04.682Z
+select customer_id, matter_id, current_balance, invested_balance, last_transaction_at from portal.portal_trust_balance where customer_id='8bcbf386-8786-4ec3-99ce-abb54178781b'
+             customer_id              |              matter_id               | current_balance | invested_balance |      last_transaction_at      
+--------------------------------------+--------------------------------------+-----------------+------------------+-------------------------------
+ 8bcbf386-8786-4ec3-99ce-abb54178781b | 350afd4f-466c-4274-98dc-1951763341f4 |         1500.00 |             0.00 | 2026-11-18 12:27:28.492383+00
+(1 row)
+
+
+== [a: investment account] 2026-11-18T12:34:05.009Z
+select id, account_name, account_type, investment_basis, status from tenant_7d218705360b.trust_accounts where id='d6bee85a-6e5f-4d79-9144-6f41a5ac0ae1'
+                  id                  |            account_name            | account_type |  investment_basis  | status 
+--------------------------------------+------------------------------------+--------------+--------------------+--------
+ d6bee85a-6e5f-4d79-9144-6f41a5ac0ae1 | OBS 648D s86(4) Investment Account | INVESTMENT   | CLIENT_INSTRUCTION | ACTIVE
+(1 row)
+
+
+== [b: deposit] 2026-11-18T12:34:05.479Z
+select id, transaction_type, status, amount, ledger, ledger_effect, posted_at is not null posted from tenant_7d218705360b.trust_transactions where reference='OBS648D-DEP'
+                  id                  | transaction_type |  status  |  amount  | ledger | ledger_effect | posted 
+--------------------------------------+------------------+----------+----------+--------+---------------+--------
+ dadb7dfa-5b35-4c5e-88a5-c5f17570de70 | DEPOSIT          | RECORDED | 20000.00 | CLIENT |      20000.00 | t
+(1 row)
+
+
+== [context: trust accounts before] 2026-11-18T12:35:15.212Z
+select id, account_name, account_type, investment_basis, is_primary, require_dual_approval, status from tenant_7d218705360b.trust_accounts order by created_at
+                  id                  |            account_name            | account_type |  investment_basis  | is_primary | require_dual_approval | status 
+--------------------------------------+------------------------------------+--------------+--------------------+------------+-----------------------+--------
+ a8109bcc-841d-4518-9157-f7ab7604782d | Mathebula & Partners Trust Account | GENERAL      |                    | t          | f                     | ACTIVE
+ d6bee85a-6e5f-4d79-9144-6f41a5ac0ae1 | OBS 648D s86(4) Investment Account | INVESTMENT   | CLIENT_INSTRUCTION | f          | f                     | ACTIVE
+(2 rows)
+
+
+== [context: portal read-model before] 2026-11-18T12:35:15.291Z
+select customer_id, matter_id, current_balance, invested_balance, last_transaction_at from portal.portal_trust_balance where customer_id='8bcbf386-8786-4ec3-99ce-abb54178781b'
+             customer_id              |              matter_id               | current_balance | invested_balance |      last_transaction_at      
+--------------------------------------+--------------------------------------+-----------------+------------------+-------------------------------
+ 8bcbf386-8786-4ec3-99ce-abb54178781b | 350afd4f-466c-4274-98dc-1951763341f4 |        21500.00 |             0.00 | 2026-11-18 12:34:05.132195+00
+(1 row)
+
+
+== [a: investment account] 2026-11-18T12:35:15.428Z
+select id, account_name, account_type, investment_basis, status from tenant_7d218705360b.trust_accounts where id='d6bee85a-6e5f-4d79-9144-6f41a5ac0ae1'
+                  id                  |            account_name            | account_type |  investment_basis  | status 
+--------------------------------------+------------------------------------+--------------+--------------------+--------
+ d6bee85a-6e5f-4d79-9144-6f41a5ac0ae1 | OBS 648D s86(4) Investment Account | INVESTMENT   | CLIENT_INSTRUCTION | ACTIVE
+(1 row)
+
+
+== [b: deposit] 2026-11-18T12:35:15.567Z
+select id, transaction_type, status, amount, ledger, ledger_effect, posted_at is not null posted from tenant_7d218705360b.trust_transactions where reference='OBS648D-DEP'
+                  id                  | transaction_type |  status  |  amount  | ledger | ledger_effect | posted 
+--------------------------------------+------------------+----------+----------+--------+---------------+--------
+ dadb7dfa-5b35-4c5e-88a5-c5f17570de70 | DEPOSIT          | RECORDED | 20000.00 | CLIENT |      20000.00 | t
+(1 row)
+
+
+== [p0: portal balance before placement] 2026-11-18T12:35:17.369Z
+select current_balance, invested_balance from portal.portal_trust_balance where customer_id='8bcbf386-8786-4ec3-99ce-abb54178781b' and matter_id='350afd4f-466c-4274-98dc-1951763341f4'
+ current_balance | invested_balance 
+-----------------+------------------
+        21500.00 |             0.00
+(1 row)
+
+
+== [context: trust accounts before] 2026-11-18T12:35:35.045Z
+select id, account_name, account_type, investment_basis, is_primary, require_dual_approval, status from tenant_7d218705360b.trust_accounts order by created_at
+                  id                  |            account_name            | account_type |  investment_basis  | is_primary | require_dual_approval | status 
+--------------------------------------+------------------------------------+--------------+--------------------+------------+-----------------------+--------
+ a8109bcc-841d-4518-9157-f7ab7604782d | Mathebula & Partners Trust Account | GENERAL      |                    | t          | f                     | ACTIVE
+ d6bee85a-6e5f-4d79-9144-6f41a5ac0ae1 | OBS 648D s86(4) Investment Account | INVESTMENT   | CLIENT_INSTRUCTION | f          | f                     | ACTIVE
+(2 rows)
+
+
+== [context: portal read-model before] 2026-11-18T12:35:35.119Z
+select customer_id, matter_id, current_balance, invested_balance, last_transaction_at from portal.portal_trust_balance where customer_id='8bcbf386-8786-4ec3-99ce-abb54178781b'
+             customer_id              |              matter_id               | current_balance | invested_balance |      last_transaction_at      
+--------------------------------------+--------------------------------------+-----------------+------------------+-------------------------------
+ 8bcbf386-8786-4ec3-99ce-abb54178781b | 350afd4f-466c-4274-98dc-1951763341f4 |        21500.00 |             0.00 | 2026-11-18 12:34:05.132195+00
+(1 row)
+
+
+== [a: investment account] 2026-11-18T12:35:35.256Z
+select id, account_name, account_type, investment_basis, status from tenant_7d218705360b.trust_accounts where id='d6bee85a-6e5f-4d79-9144-6f41a5ac0ae1'
+                  id                  |            account_name            | account_type |  investment_basis  | status 
+--------------------------------------+------------------------------------+--------------+--------------------+--------
+ d6bee85a-6e5f-4d79-9144-6f41a5ac0ae1 | OBS 648D s86(4) Investment Account | INVESTMENT   | CLIENT_INSTRUCTION | ACTIVE
+(1 row)
+
+
+== [b: deposit] 2026-11-18T12:35:35.394Z
+select id, transaction_type, status, amount, ledger, ledger_effect, posted_at is not null posted from tenant_7d218705360b.trust_transactions where reference='OBS648D-DEP'
+                  id                  | transaction_type |  status  |  amount  | ledger | ledger_effect | posted 
+--------------------------------------+------------------+----------+----------+--------+---------------+--------
+ dadb7dfa-5b35-4c5e-88a5-c5f17570de70 | DEPOSIT          | RECORDED | 20000.00 | CLIENT |      20000.00 | t
+(1 row)
+
+
+== [p0: portal balance before placement] 2026-11-18T12:35:37.035Z
+select current_balance, invested_balance from portal.portal_trust_balance where customer_id='8bcbf386-8786-4ec3-99ce-abb54178781b' and matter_id='350afd4f-466c-4274-98dc-1951763341f4'
+ current_balance | invested_balance 
+-----------------+------------------
+        21500.00 |             0.00
+(1 row)
+
+
+== [c: placement rows (all ledgers) for the investment] 2026-11-18T12:35:37.473Z
+select t.transaction_type, t.status, t.amount, t.ledger, t.ledger_effect, t.cashbook_effect, t.posted_at is not null posted, t.trust_account_id, t.customer_id is not null has_customer, t.project_id is not null has_matter, t.recorded_by, t.approved_by from tenant_7d218705360b.trust_transactions t where t.investment_id='0c195b9d-4564-4201-b665-d242bfe4304b' or t.id='28cd8482-a811-4a7e-bfe2-c6abd392b39c' order by t.created_at
+ transaction_type |  status  |  amount  |      ledger       | ledger_effect | cashbook_effect | posted |           trust_account_id           | has_customer | has_matter |             recorded_by              |             approved_by              
+------------------+----------+----------+-------------------+---------------+-----------------+--------+--------------------------------------+--------------+------------+--------------------------------------+--------------------------------------
+ INV_PLACE        | APPROVED | 10000.00 | CLIENT            |     -10000.00 |       -10000.00 | t      | a8109bcc-841d-4518-9157-f7ab7604782d | t            | t          | 216c9873-729e-4cb4-83c8-436c7831120f | 35839dd4-9c74-465e-a82d-feaa5a62db63
+ INV_RECEIVE      | APPROVED | 10000.00 | CLIENT_INVESTMENT |      10000.00 |        10000.00 | t      | d6bee85a-6e5f-4d79-9144-6f41a5ac0ae1 | t            | t          | 216c9873-729e-4cb4-83c8-436c7831120f | 35839dd4-9c74-465e-a82d-feaa5a62db63
+(2 rows)
+
+
+== [p1: portal balance after placement] 2026-11-18T12:35:38.994Z
+select current_balance, invested_balance from portal.portal_trust_balance where customer_id='8bcbf386-8786-4ec3-99ce-abb54178781b' and matter_id='350afd4f-466c-4274-98dc-1951763341f4'
+ current_balance | invested_balance 
+-----------------+------------------
+        11500.00 |         10000.00
+(1 row)
+
+
+== [d: interest entry] 2026-11-18T12:35:39.181Z
+select entry_date, gross_amount, fund_share_amount, net_amount, presentation, status, net_transaction_id, fund_share_transaction_id from tenant_7d218705360b.trust_investment_interest where investment_id='0c195b9d-4564-4201-b665-d242bfe4304b'
+ entry_date | gross_amount | fund_share_amount | net_amount | presentation | status |          net_transaction_id          | fund_share_transaction_id 
+------------+--------------+-------------------+------------+--------------+--------+--------------------------------------+---------------------------
+ 2026-11-18 |       100.00 |              5.00 |      95.00 | NET          | POSTED | e783777a-62aa-4184-809d-5c1f56cf6994 | 
+(1 row)
+
+
+== [d: all trust rows for the investment after interest] 2026-11-18T12:35:39.249Z
+select t.transaction_type, t.status, t.amount, t.ledger, t.ledger_effect, t.cashbook_effect, t.customer_id is not null has_customer, t.project_id is not null has_matter, t.trust_account_id from tenant_7d218705360b.trust_transactions t where t.investment_id='0c195b9d-4564-4201-b665-d242bfe4304b' or t.id='28cd8482-a811-4a7e-bfe2-c6abd392b39c' order by t.created_at
+ transaction_type |  status  |  amount  |      ledger       | ledger_effect | cashbook_effect | has_customer | has_matter |           trust_account_id           
+------------------+----------+----------+-------------------+---------------+-----------------+--------------+------------+--------------------------------------
+ INV_PLACE        | APPROVED | 10000.00 | CLIENT            |     -10000.00 |       -10000.00 | t            | t          | a8109bcc-841d-4518-9157-f7ab7604782d
+ INV_RECEIVE      | APPROVED | 10000.00 | CLIENT_INVESTMENT |      10000.00 |        10000.00 | t            | t          | d6bee85a-6e5f-4d79-9144-6f41a5ac0ae1
+ INV_INTEREST     | RECORDED |    95.00 | CLIENT_INVESTMENT |         95.00 |           95.00 | t            | t          | d6bee85a-6e5f-4d79-9144-6f41a5ac0ae1
+(3 rows)
+
+
+== [p2: portal.portal_trust_balance] 2026-11-18T12:35:44.261Z
+select customer_id, matter_id, current_balance, invested_balance, last_transaction_at from portal.portal_trust_balance where customer_id='8bcbf386-8786-4ec3-99ce-abb54178781b'
+             customer_id              |              matter_id               | current_balance | invested_balance |      last_transaction_at      
+--------------------------------------+--------------------------------------+-----------------+------------------+-------------------------------
+ 8bcbf386-8786-4ec3-99ce-abb54178781b | 350afd4f-466c-4274-98dc-1951763341f4 |        11500.00 |         10095.00 | 2026-11-18 12:35:39.090521+00
+(1 row)
+
+
+== [p2: portal.portal_trust_transaction] 2026-11-18T12:35:44.326Z
+select transaction_type, ledger, amount, running_balance, transaction_date, description, reference from portal.portal_trust_transaction where customer_id='8bcbf386-8786-4ec3-99ce-abb54178781b' and matter_id='350afd4f-466c-4274-98dc-1951763341f4' order by occurred_at, id
+ transaction_type |      ledger       |  amount  | running_balance | transaction_date |                                    description                                     |     reference      
+------------------+-------------------+----------+-----------------+------------------+------------------------------------------------------------------------------------+--------------------
+ DEPOSIT          | CLIENT            |  1500.00 |         1500.00 | 2026-11-18       | Portal Day 21 deposit 3jdsh                                                        | E2E-PORTAL-3jdsh
+ DEPOSIT          | CLIENT            | 20000.00 |        21500.00 | 2026-11-18       | OBS 648D funding deposit                                                           | OBS648D-DEP
+ INV_PLACE        | CLIENT            | 10000.00 |        11500.00 | 2026-11-18       | Placed in section 86(4) investment at Nedbank (OBS 648D s86(4) Investment Account) | INV-0C195B9D
+ INV_INTEREST     | CLIENT_INVESTMENT |    95.00 |        10095.00 | 2026-11-18       | Section 86(4) investment interest (Nedbank)                                        | INV-INT-0C195B9D-1
+(4 rows)
+
+
+== [p2: tenant posted sums for Acme by ledger (firm truth)] 2026-11-18T12:35:44.398Z
+select ledger, sum(ledger_effect) from tenant_7d218705360b.trust_transactions where customer_id='8bcbf386-8786-4ec3-99ce-abb54178781b' and posted_at is not null group by ledger order by ledger
+      ledger       |   sum    
+-------------------+----------
+ CLIENT            | 11500.00
+ CLIENT_INVESTMENT | 10095.00
+(2 rows)
+

@@ -1,0 +1,17 @@
+{
+  "at": "2026-11-18T12:35:37.626Z",
+  "path": "/portal/trust/summary",
+  "status": 200,
+  "body": {
+    "matters": [
+      {
+        "matterId": "350afd4f-466c-4274-98dc-1951763341f4",
+        "currentBalance": 11500,
+        "investedBalance": 10000,
+        "lastTransactionAt": "2026-11-18T12:35:37.345487Z",
+        "lastSyncedAt": "2026-11-18T12:35:37.362857Z",
+        "matterName": "Website Redesign"
+      }
+    ]
+  }
+}

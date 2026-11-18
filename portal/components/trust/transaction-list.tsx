@@ -8,7 +8,6 @@ import {
   getMatterTransactions,
   type PortalTrustTransactionResponse,
 } from "@/lib/api/trust";
-import { labelFor, TRUST_TRANSACTION_TYPE_LABELS } from "@/lib/labels";
 
 interface TransactionListProps {
   matterId: string;
@@ -18,23 +17,25 @@ interface TransactionListProps {
   pageSize?: number;
 }
 
-/** The client-facing transaction type ("Fee transfer") — never the raw enum (G88-F31). */
-function typeLabel(txn: PortalTrustTransactionResponse): string {
-  return labelFor(TRUST_TRANSACTION_TYPE_LABELS, txn.transactionType);
-}
-
 /**
  * Renders a stable, human-friendly description for a transaction.
  * When the backend supplies a description, use it verbatim; otherwise
- * synthesise one from the type + reference so rows are never blank
- * (sanitisation-fallback safety).
+ * synthesise one from the backend's type label + reference so rows are never
+ * blank (sanitisation-fallback safety).
  */
 function describeTransaction(txn: PortalTrustTransactionResponse): string {
   if (txn.description && txn.description.trim().length > 0) {
     return txn.description;
   }
-  const humanType = typeLabel(txn);
-  return txn.reference ? `${humanType} — ${txn.reference}` : humanType;
+  return txn.reference ? `${txn.typeLabel} — ${txn.reference}` : txn.typeLabel;
+}
+
+/**
+ * A section 86(4) investment-ledger row (Phase 92 648D): its running balance is
+ * the invested balance, not the balance in the firm's trust account (OQ-1).
+ */
+function isInvestedRow(txn: PortalTrustTransactionResponse): boolean {
+  return txn.ledger === "CLIENT_INVESTMENT";
 }
 
 export function TransactionList({
@@ -132,7 +133,7 @@ export function TransactionList({
                   {describeTransaction(txn)}
                 </p>
                 <p className="mt-1 text-xs text-slate-500">
-                  {formatLocalDate(txn.transactionDate)} · {typeLabel(txn)}
+                  {formatLocalDate(txn.transactionDate)} · {txn.typeLabel}
                 </p>
               </div>
               <div className="text-right">
@@ -140,7 +141,8 @@ export function TransactionList({
                   {formatCurrency(txn.amount, currency)}
                 </p>
                 <p className="mt-1 font-mono text-xs text-slate-500 tabular-nums">
-                  Bal {formatCurrency(txn.runningBalance, currency)}
+                  {isInvestedRow(txn) ? "Invested bal" : "Bal"}{" "}
+                  {formatCurrency(txn.runningBalance, currency)}
                 </p>
               </div>
             </div>
@@ -179,7 +181,7 @@ export function TransactionList({
                 <td className="px-4 py-3 text-slate-700">
                   {formatLocalDate(txn.transactionDate)}
                 </td>
-                <td className="px-4 py-3 text-slate-700">{typeLabel(txn)}</td>
+                <td className="px-4 py-3 text-slate-700">{txn.typeLabel}</td>
                 <td className="px-4 py-3 text-slate-900">
                   {describeTransaction(txn)}
                 </td>
@@ -188,6 +190,11 @@ export function TransactionList({
                 </td>
                 <td className="px-4 py-3 text-right font-mono text-slate-700 tabular-nums">
                   {formatCurrency(txn.runningBalance, currency)}
+                  {isInvestedRow(txn) && (
+                    <span className="block font-sans text-xs text-slate-500">
+                      Invested
+                    </span>
+                  )}
                 </td>
               </tr>
             ))}

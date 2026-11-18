@@ -11,6 +11,7 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionTypeLabels;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +26,10 @@ import org.springframework.stereotype.Service;
 /**
  * Service backing the portal trust ledger endpoints. Encapsulates the module gate, the read-model
  * queries, and the response-record mapping — controllers stay thin per CLAUDE.md.
+ *
+ * <p>Phase 92 648D (§16.4.7): the read-model stores the type code; every row's client label ({@code
+ * typeLabel}) is resolved here from the type registry ({@link TrustTransactionTypeLabels#label}) —
+ * the label the trust-activity email and the statements use — so the portal holds no label map.
  */
 @Service
 public class PortalTrustLedgerService {
@@ -78,6 +83,7 @@ public class PortalTrustLedgerService {
                     new PortalTrustMatterSummary(
                         b.matterId(),
                         b.currentBalance(),
+                        b.investedBalance(),
                         b.lastTransactionAt(),
                         b.lastSyncedAt(),
                         b.matterName()))
@@ -106,6 +112,8 @@ public class PortalTrustLedgerService {
                     new PortalTrustTransactionResponse(
                         v.id(),
                         v.transactionType(),
+                        TrustTransactionTypeLabels.label(v.transactionType()),
+                        v.ledger(),
                         v.amount(),
                         v.runningBalance(),
                         v.transactionDate(),
@@ -143,6 +151,7 @@ public class PortalTrustLedgerService {
                 new PortalTrustMovementResponse(
                     t.id(),
                     t.transactionType(),
+                    TrustTransactionTypeLabels.label(t.transactionType()),
                     t.amount(),
                     DEFAULT_TRUST_CURRENCY,
                     t.transactionDate(),

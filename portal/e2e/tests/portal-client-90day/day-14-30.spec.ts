@@ -101,8 +101,23 @@ test.describe
       .getByRole("row")
       .filter({ hasText: DESCRIPTION });
     // Phase 89 633C (G88-F31): the Type cell (Date, Type, Description, …) reads the label.
-    await expect(row.getByRole("cell").nth(1)).toHaveText("Deposit");
-    await expect(row).not.toContainText("DEPOSIT");
+    // Phase 92 648D: that label is the backend's (typeLabel), not a portal map — the cell equals
+    // the API's typeLabel for this run's deposit. Rows accumulate per run on a shared stack: page
+    // at the backend's 200 cap and match by the run-unique reference.
+    const apiPage = await portalApiGet<{
+      content: {
+        reference: string;
+        typeLabel: string;
+        transactionType: string;
+      }[];
+    }>(`/portal/trust/matters/${matterId}/transactions?size=200`, jwt);
+    const apiRow = apiPage.content.find(
+      (t) => t.reference === `E2E-PORTAL-${RUN_ID}`,
+    );
+    expect(apiRow, "the run's deposit in the portal API").toBeTruthy();
+    expect(apiRow!.typeLabel).toBe("Deposit");
+    await expect(row.getByRole("cell").nth(1)).toHaveText(apiRow!.typeLabel);
+    await expect(row).not.toContainText(apiRow!.transactionType);
     await expect(row).toContainText(/1\s?500,00/);
 
     // /trust reaches the same matter: it redirects when the client has exactly one trust matter

@@ -1,0 +1,86 @@
+648D compile-red — the slice's new-API test asserts (R2 invested_balance / ledger accessors, R9 repository round-trip, controller seeds with invested + ledger) compiled against main's production sources @ 2b7be66d6 (backend/src/main stashed; ./mvnw test-compile -q → exit 1)
+Expected: these tests need the new upsertBalance(…, investedBalance, …) / upsertTransaction(…, ledger, …) signatures and the investedBalance()/ledger() record components.
+Error count: 82
+
+customerbackend/controller/PortalTrustControllerIntegrationTest.java:[138,20] method upsertBalance in class io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalTrustReadModelRepository cannot be applied to given types;
+customerbackend/controller/PortalTrustControllerIntegrationTest.java:[141,20] method upsertBalance in class io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalTrustReadModelRepository cannot be applied to given types;
+customerbackend/controller/PortalTrustControllerIntegrationTest.java:[143,20] method upsertBalance in class io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalTrustReadModelRepository cannot be applied to given types;
+customerbackend/controller/PortalTrustControllerIntegrationTest.java:[156,22] method upsertTransaction in class io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalTrustReadModelRepository cannot be applied to given types;
+customerbackend/controller/PortalTrustControllerIntegrationTest.java:[174,22] method upsertTransaction in class io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalTrustReadModelRepository cannot be applied to given types;
+customerbackend/controller/PortalTrustControllerIntegrationTest.java:[192,22] method upsertTransaction in class io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalTrustReadModelRepository cannot be applied to given types;
+customerbackend/controller/PortalTrustControllerIntegrationTest.java:[211,20] method upsertTransaction in class io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalTrustReadModelRepository cannot be applied to given types;
+customerbackend/controller/PortalTrustControllerIntegrationTest.java:[229,20] method upsertTransaction in class io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalTrustReadModelRepository cannot be applied to given types;
+customerbackend/controller/PortalTrustControllerIntegrationTest.java:[446,20] method upsertTransaction in class io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalTrustReadModelRepository cannot be applied to given types;
+customerbackend/repository/PortalTrustReadModelRepositoryTest.java:[41,14] method upsertBalance in class io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalTrustReadModelRepository cannot be applied to given types;
+customerbackend/repository/PortalTrustReadModelRepositoryTest.java:[62,14] method upsertBalance in class io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalTrustReadModelRepository cannot be applied to given types;
+customerbackend/repository/PortalTrustReadModelRepositoryTest.java:[84,14] method upsertBalance in class io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalTrustReadModelRepository cannot be applied to given types;
+customerbackend/repository/PortalTrustReadModelRepositoryTest.java:[101,14] method upsertBalance in class io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalTrustReadModelRepository cannot be applied to given types;
+customerbackend/repository/PortalTrustReadModelRepositoryTest.java:[116,14] method upsertBalance in class io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalTrustReadModelRepository cannot be applied to given types;
+customerbackend/repository/PortalTrustReadModelRepositoryTest.java:[128,27] cannot find symbol
+customerbackend/repository/PortalTrustReadModelRepositoryTest.java:[130,67] cannot find symbol
+customerbackend/repository/PortalTrustReadModelRepositoryTest.java:[133,70] cannot find symbol
+customerbackend/repository/PortalTrustReadModelRepositoryTest.java:[137,42] cannot find symbol
+customerbackend/repository/PortalTrustReadModelRepositoryTest.java:[141,14] method upsertBalance in class io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalTrustReadModelRepository cannot be applied to given types;
+customerbackend/repository/PortalTrustReadModelRepositoryTest.java:[144,67] cannot find symbol
+customerbackend/repository/PortalTrustReadModelRepositoryTest.java:[149,37] cannot find symbol
+customerbackend/repository/PortalTrustReadModelRepositoryTest.java:[160,14] method upsertTransaction in class io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalTrustReadModelRepository cannot be applied to given types;
+customerbackend/service/TrustLedgerPortalSyncServiceIntegrationTest.java:[355,37] cannot find symbol
+customerbackend/service/TrustLedgerPortalSyncServiceIntegrationTest.java:[362,27] cannot find symbol
+customerbackend/service/TrustLedgerPortalSyncServiceIntegrationTest.java:[368,23] cannot find symbol
+customerbackend/service/TrustLedgerPortalSyncServiceIntegrationTest.java:[433,27] cannot find symbol
+customerbackend/service/TrustLedgerPortalSyncServiceIntegrationTest.java:[438,27] cannot find symbol
+customerbackend/service/TrustLedgerPortalSyncServiceIntegrationTest.java:[443,23] cannot find symbol
+customerbackend/service/TrustLedgerPortalSyncServiceIntegrationTest.java:[445,23] cannot find symbol
+customerbackend/service/TrustLedgerPortalSyncServiceIntegrationTest.java:[464,25] cannot find symbol
+customerbackend/service/TrustLedgerPortalSyncServiceIntegrationTest.java:[465,25] cannot find symbol
+customerbackend/service/TrustLedgerPortalSyncServiceIntegrationTest.java:[498,22] cannot find symbol
+customerbackend/service/TrustLedgerPortalSyncServiceIntegrationTest.java:[505,27] cannot find symbol
+customerbackend/service/TrustLedgerPortalSyncServiceIntegrationTest.java:[515,23] cannot find symbol
+customerbackend/service/TrustLedgerPortalSyncServiceIntegrationTest.java:[516,23] cannot find symbol
+customerbackend/service/TrustLedgerPortalSyncServiceIntegrationTest.java:[550,23] cannot find symbol
+customerbackend/service/TrustLedgerPortalSyncServiceIntegrationTest.java:[634,26] cannot find symbol
+customerbackend/service/TrustLedgerPortalSyncServiceIntegrationTest.java:[645,20] cannot find symbol
+customerbackend/service/TrustLedgerPortalSyncServiceIntegrationTest.java:[647,12] incompatible types: java.util.ArrayList<java.lang.Object> cannot be converted to java.util.List<java.lang.String>
+customerbackend/service/TrustLedgerPortalSyncServiceIntegrationTest.java:[907,20] method upsertBalance in class io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalTrustReadModelRepository cannot be applied to given types;
+customerbackend/service/TrustLedgerPortalSyncServiceIntegrationTest.java:[913,20] method upsertTransaction in class io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalTrustReadModelRepository cannot be applied to given types;
+customerbackend/controller/PortalTrustControllerIntegrationTest.java:[138,20] method upsertBalance in class io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalTrustReadModelRepository cannot be applied to given types;
+customerbackend/controller/PortalTrustControllerIntegrationTest.java:[141,20] method upsertBalance in class io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalTrustReadModelRepository cannot be applied to given types;
+customerbackend/controller/PortalTrustControllerIntegrationTest.java:[143,20] method upsertBalance in class io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalTrustReadModelRepository cannot be applied to given types;
+customerbackend/controller/PortalTrustControllerIntegrationTest.java:[156,22] method upsertTransaction in class io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalTrustReadModelRepository cannot be applied to given types;
+customerbackend/controller/PortalTrustControllerIntegrationTest.java:[174,22] method upsertTransaction in class io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalTrustReadModelRepository cannot be applied to given types;
+customerbackend/controller/PortalTrustControllerIntegrationTest.java:[192,22] method upsertTransaction in class io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalTrustReadModelRepository cannot be applied to given types;
+customerbackend/controller/PortalTrustControllerIntegrationTest.java:[211,20] method upsertTransaction in class io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalTrustReadModelRepository cannot be applied to given types;
+customerbackend/controller/PortalTrustControllerIntegrationTest.java:[229,20] method upsertTransaction in class io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalTrustReadModelRepository cannot be applied to given types;
+customerbackend/controller/PortalTrustControllerIntegrationTest.java:[446,20] method upsertTransaction in class io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalTrustReadModelRepository cannot be applied to given types;
+customerbackend/repository/PortalTrustReadModelRepositoryTest.java:[41,14] method upsertBalance in class io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalTrustReadModelRepository cannot be applied to given types;
+customerbackend/repository/PortalTrustReadModelRepositoryTest.java:[62,14] method upsertBalance in class io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalTrustReadModelRepository cannot be applied to given types;
+customerbackend/repository/PortalTrustReadModelRepositoryTest.java:[84,14] method upsertBalance in class io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalTrustReadModelRepository cannot be applied to given types;
+customerbackend/repository/PortalTrustReadModelRepositoryTest.java:[101,14] method upsertBalance in class io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalTrustReadModelRepository cannot be applied to given types;
+customerbackend/repository/PortalTrustReadModelRepositoryTest.java:[116,14] method upsertBalance in class io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalTrustReadModelRepository cannot be applied to given types;
+customerbackend/repository/PortalTrustReadModelRepositoryTest.java:[128,27] cannot find symbol
+customerbackend/repository/PortalTrustReadModelRepositoryTest.java:[130,67] cannot find symbol
+customerbackend/repository/PortalTrustReadModelRepositoryTest.java:[133,70] cannot find symbol
+customerbackend/repository/PortalTrustReadModelRepositoryTest.java:[137,42] cannot find symbol
+customerbackend/repository/PortalTrustReadModelRepositoryTest.java:[141,14] method upsertBalance in class io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalTrustReadModelRepository cannot be applied to given types;
+customerbackend/repository/PortalTrustReadModelRepositoryTest.java:[144,67] cannot find symbol
+customerbackend/repository/PortalTrustReadModelRepositoryTest.java:[149,37] cannot find symbol
+customerbackend/repository/PortalTrustReadModelRepositoryTest.java:[160,14] method upsertTransaction in class io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalTrustReadModelRepository cannot be applied to given types;
+customerbackend/service/TrustLedgerPortalSyncServiceIntegrationTest.java:[355,37] cannot find symbol
+customerbackend/service/TrustLedgerPortalSyncServiceIntegrationTest.java:[362,27] cannot find symbol
+customerbackend/service/TrustLedgerPortalSyncServiceIntegrationTest.java:[368,23] cannot find symbol
+customerbackend/service/TrustLedgerPortalSyncServiceIntegrationTest.java:[433,27] cannot find symbol
+customerbackend/service/TrustLedgerPortalSyncServiceIntegrationTest.java:[438,27] cannot find symbol
+customerbackend/service/TrustLedgerPortalSyncServiceIntegrationTest.java:[443,23] cannot find symbol
+customerbackend/service/TrustLedgerPortalSyncServiceIntegrationTest.java:[445,23] cannot find symbol
+customerbackend/service/TrustLedgerPortalSyncServiceIntegrationTest.java:[464,25] cannot find symbol
+customerbackend/service/TrustLedgerPortalSyncServiceIntegrationTest.java:[465,25] cannot find symbol
+customerbackend/service/TrustLedgerPortalSyncServiceIntegrationTest.java:[498,22] cannot find symbol
+customerbackend/service/TrustLedgerPortalSyncServiceIntegrationTest.java:[505,27] cannot find symbol
+customerbackend/service/TrustLedgerPortalSyncServiceIntegrationTest.java:[515,23] cannot find symbol
+customerbackend/service/TrustLedgerPortalSyncServiceIntegrationTest.java:[516,23] cannot find symbol
+customerbackend/service/TrustLedgerPortalSyncServiceIntegrationTest.java:[550,23] cannot find symbol
+customerbackend/service/TrustLedgerPortalSyncServiceIntegrationTest.java:[634,26] cannot find symbol
+customerbackend/service/TrustLedgerPortalSyncServiceIntegrationTest.java:[645,20] cannot find symbol
+customerbackend/service/TrustLedgerPortalSyncServiceIntegrationTest.java:[647,12] incompatible types: java.util.ArrayList<java.lang.Object> cannot be converted to java.util.List<java.lang.String>
+customerbackend/service/TrustLedgerPortalSyncServiceIntegrationTest.java:[907,20] method upsertBalance in class io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalTrustReadModelRepository cannot be applied to given types;
+customerbackend/service/TrustLedgerPortalSyncServiceIntegrationTest.java:[913,20] method upsertTransaction in class io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalTrustReadModelRepository cannot be applied to given types;

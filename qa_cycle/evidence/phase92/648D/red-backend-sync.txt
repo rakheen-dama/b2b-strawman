@@ -1,0 +1,39 @@
+648D red run — sync service (R1, R5, R7, service-path invested case) on UNCHANGED production code @ 2b7be66d6
+Command: ./mvnw test -Dtest=TrustLedgerPortalSyncServiceIntegrationTest,PortalTrustControllerIntegrationTest,GlobalV7PortalTrustInvestedBalanceTest -q
+Class result: Tests run: 17, Failures: 4, Errors: 0 (nonClientAndInterAccountRowsNeverReachThePortal = pin, green on main as expected)
+
+FAILED: investmentInterestIsAVisibleRowAndTheInvestedLedgerStaysOffTheGeneralBalance
+
+Expecting actual:
+  ["INV_PLACE", "DEPOSIT"]
+to contain exactly in any order:
+  ["DEPOSIT", "INV_PLACE", "INV_INTEREST"]
+but could not find the following elements:
+  ["INV_INTEREST"]
+
+
+FAILED: internalTaggedDescriptionIsReplacedWithSynthesisedFallback
+
+expected: "Payment — TX-INT-42"
+ but was: "PAYMENT — TX-INT-42"
+
+FAILED: aReversedInterestShowsBothMovements
+
+Expecting actual:
+  ["INV_PLACE", "DEPOSIT"]
+to contain exactly in any order:
+  ["DEPOSIT", "INV_PLACE", "INV_INTEREST", "REVERSAL"]
+but could not find the following elements:
+  ["INV_INTEREST", "REVERSAL"]
+
+
+FAILED: investedBalanceFollowsASection864InvestmentThroughTheServices
+
+Expecting actual:
+  ["INV_PLACE", "DEPOSIT"]
+to contain exactly in any order:
+  ["DEPOSIT", "INV_PLACE", "INV_INTEREST"]
+but could not find the following elements:
+  ["INV_INTEREST"]
+
+

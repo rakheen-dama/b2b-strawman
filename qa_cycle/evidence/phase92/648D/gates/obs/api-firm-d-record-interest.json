@@ -1,0 +1,26 @@
+{
+  "at": "2026-11-18T12:35:39.110Z",
+  "user": "user_e2e_alice",
+  "method": "POST",
+  "path": "/api/trust-investments/0c195b9d-4564-4201-b665-d242bfe4304b/interest",
+  "status": 201,
+  "request": {
+    "entryDate": "2026-11-18",
+    "grossAmount": 100,
+    "presentation": "NET"
+  },
+  "body": {
+    "id": "337cbdb1-8434-44c3-8d14-8b989fcbe5e5",
+    "investmentId": "0c195b9d-4564-4201-b665-d242bfe4304b",
+    "entryDate": "2026-11-18",
+    "grossAmount": 100,
+    "fundShareAmount": 5,
+    "netAmount": 95,
+    "presentation": "NET",
+    "status": "POSTED",
+    "netTransactionId": "e783777a-62aa-4184-809d-5c1f56cf6994",
+    "fundShareTransactionId": null,
+    "bankStatementLineId": null,
+    "clientTaxReference": null
+  }
+}

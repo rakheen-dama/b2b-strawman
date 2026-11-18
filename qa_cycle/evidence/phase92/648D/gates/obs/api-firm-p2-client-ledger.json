@@ -1,0 +1,26 @@
+{
+  "at": "2026-11-18T12:35:44.640Z",
+  "user": "user_e2e_alice",
+  "method": "GET",
+  "path": "/api/trust-accounts/a8109bcc-841d-4518-9157-f7ab7604782d/client-ledgers/8bcbf386-8786-4ec3-99ce-abb54178781b",
+  "status": 200,
+  "body": {
+    "id": "bf52473d-0bbe-451c-a455-2d0fec618d7e",
+    "trustAccountId": "a8109bcc-841d-4518-9157-f7ab7604782d",
+    "clientId": "8bcbf386-8786-4ec3-99ce-abb54178781b",
+    "clientName": "Acme Corp",
+    "balance": 11500,
+    "totalDeposits": 21500,
+    "totalPayments": 0,
+    "totalFeeTransfers": 0,
+    "totalRefunds": 0,
+    "totalTransfersIn": 0,
+    "totalTransfersOut": 0,
+    "totalInvestmentPlacements": 10000,
+    "totalInvestmentReturns": 0,
+    "investedBalance": 10095,
+    "lastTransactionDate": "2026-11-18",
+    "createdAt": "2026-11-18T12:27:28.480939Z",
+    "updatedAt": "2026-11-18T12:27:28.480939Z"
+  }
+}

@@ -1,0 +1,1249 @@
+{
+  "startedAt": "2026-11-18T12:35:34.470Z",
+  "steps": {
+    "a": {
+      "created": false,
+      "row": "                  id                  |            account_name            | account_type |  investment_basis  | status \n--------------------------------------+------------------------------------+--------------+--------------------+--------\n d6bee85a-6e5f-4d79-9144-6f41a5ac0ae1 | OBS 648D s86(4) Investment Account | INVESTMENT   | CLIENT_INSTRUCTION | ACTIVE\n(1 row)\n\n"
+    },
+    "b": {
+      "created": false,
+      "row": "                  id                  | transaction_type |  status  |  amount  | ledger | ledger_effect | posted \n--------------------------------------+------------------+----------+----------+--------+---------------+--------\n dadb7dfa-5b35-4c5e-88a5-c5f17570de70 | DEPOSIT          | RECORDED | 20000.00 | CLIENT |      20000.00 | t\n(1 row)\n\n"
+    },
+    "c": {
+      "response": {
+        "id": "0c195b9d-4564-4201-b665-d242bfe4304b",
+        "trustAccountId": "a8109bcc-841d-4518-9157-f7ab7604782d",
+        "investmentAccountId": "d6bee85a-6e5f-4d79-9144-6f41a5ac0ae1",
+        "investmentAccountName": "OBS 648D s86(4) Investment Account",
+        "clientId": "8bcbf386-8786-4ec3-99ce-abb54178781b",
+        "clientName": "Acme Corp",
+        "matterId": "350afd4f-466c-4274-98dc-1951763341f4",
+        "institution": "Nedbank",
+        "accountNumber": "OBS648D-S864-INV",
+        "principal": 10000,
+        "interestRate": 0.07,
+        "depositDate": "2026-11-18",
+        "maturityDate": null,
+        "grossInterest": 0,
+        "fundShare": 0,
+        "netInterest": 0,
+        "balance": 0,
+        "status": "ACTIVE",
+        "awaitingApproval": true,
+        "withdrawalDate": null,
+        "withdrawalAmount": null,
+        "depositTransactionId": "28cd8482-a811-4a7e-bfe2-c6abd392b39c",
+        "withdrawalTransactionId": null,
+        "notes": "648D OBS s86(4) placement",
+        "investmentBasis": "CLIENT_INSTRUCTION",
+        "createdAt": "2026-11-18T12:35:37.096160676Z",
+        "updatedAt": "2026-11-18T12:35:37.115902551Z"
+      },
+      "placeTxStatusBefore": "AWAITING_APPROVAL",
+      "approve": {
+        "id": "28cd8482-a811-4a7e-bfe2-c6abd392b39c",
+        "trustAccountId": "a8109bcc-841d-4518-9157-f7ab7604782d",
+        "transactionType": "INV_PLACE",
+        "typeLabel": "Placed in section 86(4) investment",
+        "direction": "OUT",
+        "ledger": "CLIENT",
+        "amount": 10000,
+        "clientId": "8bcbf386-8786-4ec3-99ce-abb54178781b",
+        "matterId": "350afd4f-466c-4274-98dc-1951763341f4",
+        "creditorAccountId": null,
+        "investmentId": "0c195b9d-4564-4201-b665-d242bfe4304b",
+        "counterpartyClientId": null,
+        "invoiceId": null,
+        "reference": "INV-0C195B9D",
+        "description": "Placed in section 86(4) investment at Nedbank (OBS 648D s86(4) Investment Account)",
+        "transactionDate": "2026-11-18",
+        "status": "APPROVED",
+        "postedAt": "2026-11-18T12:35:37.345614260Z",
+        "approvedBy": "35839dd4-9c74-465e-a82d-feaa5a62db63",
+        "approvedAt": "2026-11-18T12:35:37.345486718Z",
+        "secondApprovedBy": null,
+        "secondApprovedAt": null,
+        "rejectedBy": null,
+        "rejectedAt": null,
+        "rejectionReason": null,
+        "reversalOf": null,
+        "reversedById": null,
+        "reversalPending": false,
+        "bankStatementLineId": null,
+        "recordedBy": "216c9873-729e-4cb4-83c8-436c7831120f",
+        "createdAt": "2026-11-18T12:35:37.099755Z",
+        "runningBalance": null,
+        "chargeRecoverable": null,
+        "chargeVatAmount": null
+      },
+      "rows": " transaction_type |  status  |  amount  |      ledger       | ledger_effect | cashbook_effect | posted |           trust_account_id           | has_customer | has_matter |             recorded_by              |             approved_by              \n------------------+----------+----------+-------------------+---------------+-----------------+--------+--------------------------------------+--------------+------------+--------------------------------------+--------------------------------------\n INV_PLACE        | APPROVED | 10000.00 | CLIENT            |     -10000.00 |       -10000.00 | t      | a8109bcc-841d-4518-9157-f7ab7604782d | t            | t          | 216c9873-729e-4cb4-83c8-436c7831120f | 35839dd4-9c74-465e-a82d-feaa5a62db63\n INV_RECEIVE      | APPROVED | 10000.00 | CLIENT_INVESTMENT |      10000.00 |        10000.00 | t      | d6bee85a-6e5f-4d79-9144-6f41a5ac0ae1 | t            | t          | 216c9873-729e-4cb4-83c8-436c7831120f | 35839dd4-9c74-465e-a82d-feaa5a62db63\n(2 rows)\n\n",
+      "approvedBy": "Bob Admin"
+    },
+    "d": {
+      "response": {
+        "id": "337cbdb1-8434-44c3-8d14-8b989fcbe5e5",
+        "investmentId": "0c195b9d-4564-4201-b665-d242bfe4304b",
+        "entryDate": "2026-11-18",
+        "grossAmount": 100,
+        "fundShareAmount": 5,
+        "netAmount": 95,
+        "presentation": "NET",
+        "status": "POSTED",
+        "netTransactionId": "e783777a-62aa-4184-809d-5c1f56cf6994",
+        "fundShareTransactionId": null,
+        "bankStatementLineId": null,
+        "clientTaxReference": null
+      },
+      "entries": " entry_date | gross_amount | fund_share_amount | net_amount | presentation | status |          net_transaction_id          | fund_share_transaction_id \n------------+--------------+-------------------+------------+--------------+--------+--------------------------------------+---------------------------\n 2026-11-18 |       100.00 |              5.00 |      95.00 | NET          | POSTED | e783777a-62aa-4184-809d-5c1f56cf6994 | \n(1 row)\n\n",
+      "rows": " transaction_type |  status  |  amount  |      ledger       | ledger_effect | cashbook_effect | has_customer | has_matter |           trust_account_id           \n------------------+----------+----------+-------------------+---------------+-----------------+--------------+------------+--------------------------------------\n INV_PLACE        | APPROVED | 10000.00 | CLIENT            |     -10000.00 |       -10000.00 | t            | t          | a8109bcc-841d-4518-9157-f7ab7604782d\n INV_RECEIVE      | APPROVED | 10000.00 | CLIENT_INVESTMENT |      10000.00 |        10000.00 | t            | t          | d6bee85a-6e5f-4d79-9144-6f41a5ac0ae1\n INV_INTEREST     | RECORDED |    95.00 | CLIENT_INVESTMENT |         95.00 |           95.00 | t            | t          | d6bee85a-6e5f-4d79-9144-6f41a5ac0ae1\n(3 rows)\n\n",
+      "portalInvested": "10095.00"
+    }
+  },
+  "portal": {
+    "p0": {
+      "apiSummary": {
+        "matters": [
+          {
+            "matterId": "350afd4f-466c-4274-98dc-1951763341f4",
+            "currentBalance": 21500,
+            "investedBalance": 0,
+            "lastTransactionAt": "2026-11-18T12:34:05.132195Z",
+            "lastSyncedAt": "2026-11-18T12:34:05.155805Z",
+            "matterName": "Website Redesign"
+          }
+        ]
+      },
+      "card": {
+        "headlineText": "R 21 500,00",
+        "headline": 21500,
+        "breakdown": [],
+        "cardText": "Held in trust R 21 500,00 As of 18 Nov 2026 Website Redesign"
+      },
+      "rows": [
+        {
+          "date": "18 Nov 2026",
+          "type": "Deposit",
+          "description": "OBS 648D funding deposit",
+          "amount": "R 20 000,00",
+          "balance": "R 21 500,00",
+          "investedQualifier": false
+        },
+        {
+          "date": "18 Nov 2026",
+          "type": "Deposit",
+          "description": "Portal Day 21 deposit 3jdsh",
+          "amount": "R 1 500,00",
+          "balance": "R 1 500,00",
+          "investedQualifier": false
+        }
+      ]
+    },
+    "p1": {
+      "apiSummary": {
+        "matters": [
+          {
+            "matterId": "350afd4f-466c-4274-98dc-1951763341f4",
+            "currentBalance": 11500,
+            "investedBalance": 10000,
+            "lastTransactionAt": "2026-11-18T12:35:37.345487Z",
+            "lastSyncedAt": "2026-11-18T12:35:37.362857Z",
+            "matterName": "Website Redesign"
+          }
+        ]
+      },
+      "card": {
+        "headlineText": "R 21 500,00",
+        "headline": 21500,
+        "breakdown": [
+          {
+            "label": "In the firm's trust account",
+            "text": "R 11 500,00",
+            "amount": 11500
+          },
+          {
+            "label": "Invested on your instruction (section 86(4))",
+            "text": "R 10 000,00",
+            "amount": 10000
+          }
+        ],
+        "cardText": "Held in trust R 21 500,00 In the firm's trust account R 11 500,00 Invested on your instruction (section 86(4)) R 10 000,00 As of 18 Nov 2026 Website Redesign"
+      },
+      "rows": [
+        {
+          "date": "18 Nov 2026",
+          "type": "Placed in section 86(4) investment",
+          "description": "Placed in section 86(4) investment at Nedbank (OBS 648D s86(4) Investment Account)",
+          "amount": "R 10 000,00",
+          "balance": "R 11 500,00",
+          "investedQualifier": false
+        },
+        {
+          "date": "18 Nov 2026",
+          "type": "Deposit",
+          "description": "OBS 648D funding deposit",
+          "amount": "R 20 000,00",
+          "balance": "R 21 500,00",
+          "investedQualifier": false
+        },
+        {
+          "date": "18 Nov 2026",
+          "type": "Deposit",
+          "description": "Portal Day 21 deposit 3jdsh",
+          "amount": "R 1 500,00",
+          "balance": "R 1 500,00",
+          "investedQualifier": false
+        }
+      ]
+    },
+    "p2": {
+      "apiSummary": {
+        "matters": [
+          {
+            "matterId": "350afd4f-466c-4274-98dc-1951763341f4",
+            "currentBalance": 11500,
+            "investedBalance": 10095,
+            "lastTransactionAt": "2026-11-18T12:35:39.090521Z",
+            "lastSyncedAt": "2026-11-18T12:35:39.104687Z",
+            "matterName": "Website Redesign"
+          }
+        ]
+      },
+      "card": {
+        "headlineText": "R 21 595,00",
+        "headline": 21595,
+        "breakdown": [
+          {
+            "label": "In the firm's trust account",
+            "text": "R 11 500,00",
+            "amount": 11500
+          },
+          {
+            "label": "Invested on your instruction (section 86(4))",
+            "text": "R 10 095,00",
+            "amount": 10095
+          }
+        ],
+        "cardText": "Held in trust R 21 595,00 In the firm's trust account R 11 500,00 Invested on your instruction (section 86(4)) R 10 095,00 As of 18 Nov 2026 Website Redesign"
+      },
+      "rows": [
+        {
+          "date": "18 Nov 2026",
+          "type": "Section 86(4) investment interest",
+          "description": "Section 86(4) investment interest (Nedbank)",
+          "amount": "R 95,00",
+          "balance": "R 10 095,00 Invested",
+          "investedQualifier": "Invested"
+        },
+        {
+          "date": "18 Nov 2026",
+          "type": "Placed in section 86(4) investment",
+          "description": "Placed in section 86(4) investment at Nedbank (OBS 648D s86(4) Investment Account)",
+          "amount": "R 10 000,00",
+          "balance": "R 11 500,00",
+          "investedQualifier": false
+        },
+        {
+          "date": "18 Nov 2026",
+          "type": "Deposit",
+          "description": "OBS 648D funding deposit",
+          "amount": "R 20 000,00",
+          "balance": "R 21 500,00",
+          "investedQualifier": false
+        },
+        {
+          "date": "18 Nov 2026",
+          "type": "Deposit",
+          "description": "Portal Day 21 deposit 3jdsh",
+          "amount": "R 1 500,00",
+          "balance": "R 1 500,00",
+          "investedQualifier": false
+        }
+      ],
+      "text1440": "Skip to content E2E Test Organization Acme Corp Portal Home Matters Trust statement Diary dates Fee notes Documents & requests Activity Profile Logout Back to trust Held in trust R 21 595,00 In the firm's trust account R 11 500,00 Invested on your instruction (section 86(4)) R 10 095,00 As of 18 Nov 2026 Website Redesign Transactions Date Type Description Amount Running balance 18 Nov 2026 Section 86(4) investment interest Section 86(4) investment interest (Nedbank) R 95,00 R 10 095,00 Invested 18 Nov 2026 Placed in section 86(4) investment Placed in section 86(4) investment at Nedbank (OBS 648D s86(4) Investment Account) R 10 000,00 R 11 500,00 18 Nov 2026 Deposit OBS 648D funding deposit R 20 000,00 R 21 500,00 18 Nov 2026 Deposit Portal Day 21 deposit 3jdsh R 1 500,00 R 1 500,00 Statements No statement documents yet Powered by Kazi",
+      "clip": {
+        "w1440": {
+          "vw": 1440,
+          "clipBy": "DIV.hidden overflow-x-auto rounded-lg border border-sl",
+          "clipLeft": 296,
+          "clipRight": 1384,
+          "tableScrollWidth": 1086,
+          "wrapperScrollWidth": 1086,
+          "wrapperClientWidth": 1086,
+          "docScrollWidth": 1440,
+          "header": [
+            {
+              "text": "Date",
+              "left": 297,
+              "right": 401,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "Type",
+              "left": 401,
+              "right": 626,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "Description",
+              "left": 626,
+              "right": 1121,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "Amount",
+              "left": 1121,
+              "right": 1245,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "Running balance",
+              "left": 1245,
+              "right": 1383,
+              "inside": true,
+              "truncated": false
+            }
+          ],
+          "rows": [
+            [
+              {
+                "text": "18 Nov 2026",
+                "left": 297,
+                "right": 401,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "Section 86(4) investment interest",
+                "left": 401,
+                "right": 626,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "Section 86(4) investment interest (Nedbank)",
+                "left": 626,
+                "right": 1121,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "R 95,00",
+                "left": 1121,
+                "right": 1245,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "R 10 095,00 Invested",
+                "left": 1245,
+                "right": 1383,
+                "inside": true,
+                "truncated": false
+              }
+            ],
+            [
+              {
+                "text": "18 Nov 2026",
+                "left": 297,
+                "right": 401,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "Placed in section 86(4) investment",
+                "left": 401,
+                "right": 626,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "Placed in section 86(4) investment at Nedbank (OBS 648D s86(4) Investment Account)",
+                "left": 626,
+                "right": 1121,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "R 10 000,00",
+                "left": 1121,
+                "right": 1245,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "R 11 500,00",
+                "left": 1245,
+                "right": 1383,
+                "inside": true,
+                "truncated": false
+              }
+            ],
+            [
+              {
+                "text": "18 Nov 2026",
+                "left": 297,
+                "right": 401,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "Deposit",
+                "left": 401,
+                "right": 626,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "OBS 648D funding deposit",
+                "left": 626,
+                "right": 1121,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "R 20 000,00",
+                "left": 1121,
+                "right": 1245,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "R 21 500,00",
+                "left": 1245,
+                "right": 1383,
+                "inside": true,
+                "truncated": false
+              }
+            ],
+            [
+              {
+                "text": "18 Nov 2026",
+                "left": 297,
+                "right": 401,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "Deposit",
+                "left": 401,
+                "right": 626,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "Portal Day 21 deposit 3jdsh",
+                "left": 626,
+                "right": 1121,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "R 1 500,00",
+                "left": 1121,
+                "right": 1245,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "R 1 500,00",
+                "left": 1245,
+                "right": 1383,
+                "inside": true,
+                "truncated": false
+              }
+            ]
+          ],
+          "qualifiers": [
+            {
+              "text": "Invested",
+              "left": 1261,
+              "right": 1367,
+              "inCell": true,
+              "inClip": true
+            }
+          ],
+          "cardKids": [
+            {
+              "text": "R 21 595,00",
+              "left": 321,
+              "right": 1359,
+              "inCard": true,
+              "truncated": false
+            },
+            {
+              "text": "In the firm's trust account",
+              "left": 321,
+              "right": 488,
+              "inCard": true,
+              "truncated": false
+            },
+            {
+              "text": "R 11 500,00",
+              "left": 1267,
+              "right": 1359,
+              "inCard": true,
+              "truncated": false
+            },
+            {
+              "text": "Invested on your instruction (section 86(4))",
+              "left": 321,
+              "right": 602,
+              "inCard": true,
+              "truncated": false
+            },
+            {
+              "text": "R 10 095,00",
+              "left": 1267,
+              "right": 1359,
+              "inCard": true,
+              "truncated": false
+            },
+            {
+              "text": "As of 18 Nov 2026",
+              "left": 321,
+              "right": 1359,
+              "inCard": true,
+              "truncated": false
+            },
+            {
+              "text": "Website Redesign",
+              "left": 321,
+              "right": 1359,
+              "inCard": true,
+              "truncated": false
+            }
+          ],
+          "allInside": true,
+          "noneTruncated": true,
+          "noHorizontalOverflow": true,
+          "qualifiersOk": true,
+          "cardOk": true
+        },
+        "w1280": {
+          "vw": 1280,
+          "clipBy": "DIV.hidden overflow-x-auto rounded-lg border border-sl",
+          "clipLeft": 272,
+          "clipRight": 1248,
+          "tableScrollWidth": 974,
+          "wrapperScrollWidth": 974,
+          "wrapperClientWidth": 974,
+          "docScrollWidth": 1280,
+          "header": [
+            {
+              "text": "Date",
+              "left": 273,
+              "right": 369,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "Type",
+              "left": 369,
+              "right": 570,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "Description",
+              "left": 570,
+              "right": 987,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "Amount",
+              "left": 987,
+              "right": 1112,
+              "inside": true,
+              "truncated": false
+            },
+            {
+              "text": "Running balance",
+              "left": 1112,
+              "right": 1247,
+              "inside": true,
+              "truncated": false
+            }
+          ],
+          "rows": [
+            [
+              {
+                "text": "18 Nov 2026",
+                "left": 273,
+                "right": 369,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "Section 86(4) investment interest",
+                "left": 369,
+                "right": 570,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "Section 86(4) investment interest (Nedbank)",
+                "left": 570,
+                "right": 987,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "R 95,00",
+                "left": 987,
+                "right": 1112,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "R 10 095,00 Invested",
+                "left": 1112,
+                "right": 1247,
+                "inside": true,
+                "truncated": false
+              }
+            ],
+            [
+              {
+                "text": "18 Nov 2026",
+                "left": 273,
+                "right": 369,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "Placed in section 86(4) investment",
+                "left": 369,
+                "right": 570,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "Placed in section 86(4) investment at Nedbank (OBS 648D s86(4) Investment Account)",
+                "left": 570,
+                "right": 987,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "R 10 000,00",
+                "left": 987,
+                "right": 1112,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "R 11 500,00",
+                "left": 1112,
+                "right": 1247,
+                "inside": true,
+                "truncated": false
+              }
+            ],
+            [
+              {
+                "text": "18 Nov 2026",
+                "left": 273,
+                "right": 369,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "Deposit",
+                "left": 369,
+                "right": 570,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "OBS 648D funding deposit",
+                "left": 570,
+                "right": 987,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "R 20 000,00",
+                "left": 987,
+                "right": 1112,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "R 21 500,00",
+                "left": 1112,
+                "right": 1247,
+                "inside": true,
+                "truncated": false
+              }
+            ],
+            [
+              {
+                "text": "18 Nov 2026",
+                "left": 273,
+                "right": 369,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "Deposit",
+                "left": 369,
+                "right": 570,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "Portal Day 21 deposit 3jdsh",
+                "left": 570,
+                "right": 987,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "R 1 500,00",
+                "left": 987,
+                "right": 1112,
+                "inside": true,
+                "truncated": false
+              },
+              {
+                "text": "R 1 500,00",
+                "left": 1112,
+                "right": 1247,
+                "inside": true,
+                "truncated": false
+              }
+            ]
+          ],
+          "qualifiers": [
+            {
+              "text": "Invested",
+              "left": 1128,
+              "right": 1231,
+              "inCell": true,
+              "inClip": true
+            }
+          ],
+          "cardKids": [
+            {
+              "text": "R 21 595,00",
+              "left": 297,
+              "right": 1223,
+              "inCard": true,
+              "truncated": false
+            },
+            {
+              "text": "In the firm's trust account",
+              "left": 297,
+              "right": 464,
+              "inCard": true,
+              "truncated": false
+            },
+            {
+              "text": "R 11 500,00",
+              "left": 1131,
+              "right": 1223,
+              "inCard": true,
+              "truncated": false
+            },
+            {
+              "text": "Invested on your instruction (section 86(4))",
+              "left": 297,
+              "right": 578,
+              "inCard": true,
+              "truncated": false
+            },
+            {
+              "text": "R 10 095,00",
+              "left": 1131,
+              "right": 1223,
+              "inCard": true,
+              "truncated": false
+            },
+            {
+              "text": "As of 18 Nov 2026",
+              "left": 297,
+              "right": 1223,
+              "inCard": true,
+              "truncated": false
+            },
+            {
+              "text": "Website Redesign",
+              "left": 297,
+              "right": 1223,
+              "inCard": true,
+              "truncated": false
+            }
+          ],
+          "allInside": true,
+          "noneTruncated": true,
+          "noHorizontalOverflow": true,
+          "qualifiersOk": true,
+          "cardOk": true
+        },
+        "w390": {
+          "vw": 390,
+          "docScrollWidth": 390,
+          "items": [
+            {
+              "left": 16,
+              "right": 374,
+              "insideViewport": true,
+              "kids": [
+                {
+                  "text": "Section 86(4) investment interest (Nedbank)",
+                  "left": 33,
+                  "right": 172,
+                  "ok": true,
+                  "truncated": false
+                },
+                {
+                  "text": "18 Nov 2026 · Section 86(4) investment interest",
+                  "left": 33,
+                  "right": 172,
+                  "ok": true,
+                  "truncated": false
+                },
+                {
+                  "text": "R 95,00",
+                  "left": 184,
+                  "right": 357,
+                  "ok": true,
+                  "truncated": false
+                },
+                {
+                  "text": "Invested bal R 10 095,00",
+                  "left": 184,
+                  "right": 357,
+                  "ok": true,
+                  "truncated": false
+                }
+              ]
+            },
+            {
+              "left": 16,
+              "right": 374,
+              "insideViewport": true,
+              "kids": [
+                {
+                  "text": "Placed in section 86(4) investment at Nedbank (OBS 648D s86(4) Investment Account)",
+                  "left": 33,
+                  "right": 237,
+                  "ok": true,
+                  "truncated": false
+                },
+                {
+                  "text": "18 Nov 2026 · Placed in section 86(4) investment",
+                  "left": 33,
+                  "right": 237,
+                  "ok": true,
+                  "truncated": false
+                },
+                {
+                  "text": "R 10 000,00",
+                  "left": 249,
+                  "right": 357,
+                  "ok": true,
+                  "truncated": false
+                },
+                {
+                  "text": "Bal R 11 500,00",
+                  "left": 249,
+                  "right": 357,
+                  "ok": true,
+                  "truncated": false
+                }
+              ]
+            },
+            {
+              "left": 16,
+              "right": 374,
+              "insideViewport": true,
+              "kids": [
+                {
+                  "text": "OBS 648D funding deposit",
+                  "left": 33,
+                  "right": 237,
+                  "ok": true,
+                  "truncated": false
+                },
+                {
+                  "text": "18 Nov 2026 · Deposit",
+                  "left": 33,
+                  "right": 237,
+                  "ok": true,
+                  "truncated": false
+                },
+                {
+                  "text": "R 20 000,00",
+                  "left": 249,
+                  "right": 357,
+                  "ok": true,
+                  "truncated": false
+                },
+                {
+                  "text": "Bal R 21 500,00",
+                  "left": 249,
+                  "right": 357,
+                  "ok": true,
+                  "truncated": false
+                }
+              ]
+            },
+            {
+              "left": 16,
+              "right": 374,
+              "insideViewport": true,
+              "kids": [
+                {
+                  "text": "Portal Day 21 deposit 3jdsh",
+                  "left": 33,
+                  "right": 244,
+                  "ok": true,
+                  "truncated": false
+                },
+                {
+                  "text": "18 Nov 2026 · Deposit",
+                  "left": 33,
+                  "right": 244,
+                  "ok": true,
+                  "truncated": false
+                },
+                {
+                  "text": "R 1 500,00",
+                  "left": 256,
+                  "right": 357,
+                  "ok": true,
+                  "truncated": false
+                },
+                {
+                  "text": "Bal R 1 500,00",
+                  "left": 256,
+                  "right": 357,
+                  "ok": true,
+                  "truncated": false
+                }
+              ]
+            }
+          ],
+          "cardKids": [
+            {
+              "text": "R 21 595,00",
+              "left": 41,
+              "right": 349,
+              "ok": true,
+              "truncated": false
+            },
+            {
+              "text": "In the firm's trust account",
+              "left": 41,
+              "right": 208,
+              "ok": true,
+              "truncated": false
+            },
+            {
+              "text": "R 11 500,00",
+              "left": 257,
+              "right": 349,
+              "ok": true,
+              "truncated": false
+            },
+            {
+              "text": "Invested on your instruction (section 86(4))",
+              "left": 41,
+              "right": 241,
+              "ok": true,
+              "truncated": false
+            },
+            {
+              "text": "R 10 095,00",
+              "left": 257,
+              "right": 349,
+              "ok": true,
+              "truncated": false
+            },
+            {
+              "text": "As of 18 Nov 2026",
+              "left": 41,
+              "right": 349,
+              "ok": true,
+              "truncated": false
+            },
+            {
+              "text": "Website Redesign",
+              "left": 41,
+              "right": 349,
+              "ok": true,
+              "truncated": false
+            }
+          ],
+          "ok": true
+        }
+      },
+      "text1280": "Skip to content E2E Test Organization Acme Corp Portal Home Matters Trust statement Diary dates Fee notes Documents & requests Activity Profile Logout Back to trust Held in trust R 21 595,00 In the firm's trust account R 11 500,00 Invested on your instruction (section 86(4)) R 10 095,00 As of 18 Nov 2026 Website Redesign Transactions Date Type Description Amount Running balance 18 Nov 2026 Section 86(4) investment interest Section 86(4) investment interest (Nedbank) R 95,00 R 10 095,00 Invested 18 Nov 2026 Placed in section 86(4) investment Placed in section 86(4) investment at Nedbank (OBS 648D s86(4) Investment Account) R 10 000,00 R 11 500,00 18 Nov 2026 Deposit OBS 648D funding deposit R 20 000,00 R 21 500,00 18 Nov 2026 Deposit Portal Day 21 deposit 3jdsh R 1 500,00 R 1 500,00 Statements No statement documents yet Powered by Kazi",
+      "text390": "Skip to content E2E Test Organization Acme Corp Back to trust Held in trust R 21 595,00 In the firm's trust account R 11 500,00 Invested on your instruction (section 86(4)) R 10 095,00 As of 18 Nov 2026 Website Redesign Transactions Section 86(4) investment interest (Nedbank) 18 Nov 2026 · Section 86(4) investment interest R 95,00 Invested bal R 10 095,00 Placed in section 86(4) investment at Nedbank (OBS 648D s86(4) Investment Account) 18 Nov 2026 · Placed in section 86(4) investment R 10 000,00 Bal R 11 500,00 OBS 648D funding deposit 18 Nov 2026 · Deposit R 20 000,00 Bal R 21 500,00 Portal Day 21 deposit 3jdsh 18 Nov 2026 · Deposit R 1 500,00 Bal R 1 500,00 Statements No statement documents yet Powered by Kazi",
+      "mobileItems": [
+        "Section 86(4) investment interest (Nedbank) 18 Nov 2026 · Section 86(4) investment interest R 95,00 Invested bal R 10 095,00",
+        "Placed in section 86(4) investment at Nedbank (OBS 648D s86(4) Investment Account) 18 Nov 2026 · Placed in section 86(4) investment R 10 000,00 Bal R 11 500,00",
+        "OBS 648D funding deposit 18 Nov 2026 · Deposit R 20 000,00 Bal R 21 500,00",
+        "Portal Day 21 deposit 3jdsh 18 Nov 2026 · Deposit R 1 500,00 Bal R 1 500,00"
+      ],
+      "trustIndex": {
+        "finalUrl": "http://localhost:3002/trust/350afd4f-466c-4274-98dc-1951763341f4",
+        "selectorRendered": false
+      },
+      "apiTransactions": {
+        "content": [
+          {
+            "id": "e783777a-62aa-4184-809d-5c1f56cf6994",
+            "transactionType": "INV_INTEREST",
+            "typeLabel": "Section 86(4) investment interest",
+            "ledger": "CLIENT_INVESTMENT",
+            "amount": 95,
+            "runningBalance": 10095,
+            "transactionDate": "2026-11-18",
+            "occurredAt": "2026-11-18T12:35:39.090521Z",
+            "description": "Section 86(4) investment interest (Nedbank)",
+            "reference": "INV-INT-0C195B9D-1"
+          },
+          {
+            "id": "28cd8482-a811-4a7e-bfe2-c6abd392b39c",
+            "transactionType": "INV_PLACE",
+            "typeLabel": "Placed in section 86(4) investment",
+            "ledger": "CLIENT",
+            "amount": 10000,
+            "runningBalance": 11500,
+            "transactionDate": "2026-11-18",
+            "occurredAt": "2026-11-18T12:35:37.345487Z",
+            "description": "Placed in section 86(4) investment at Nedbank (OBS 648D s86(4) Investment Account)",
+            "reference": "INV-0C195B9D"
+          },
+          {
+            "id": "dadb7dfa-5b35-4c5e-88a5-c5f17570de70",
+            "transactionType": "DEPOSIT",
+            "typeLabel": "Deposit",
+            "ledger": "CLIENT",
+            "amount": 20000,
+            "runningBalance": 21500,
+            "transactionDate": "2026-11-18",
+            "occurredAt": "2026-11-18T12:34:05.132195Z",
+            "description": "OBS 648D funding deposit",
+            "reference": "OBS648D-DEP"
+          },
+          {
+            "id": "dda5a6e1-db32-4006-b0ec-2d849e6f7999",
+            "transactionType": "DEPOSIT",
+            "typeLabel": "Deposit",
+            "ledger": "CLIENT",
+            "amount": 1500,
+            "runningBalance": 1500,
+            "transactionDate": "2026-11-18",
+            "occurredAt": "2026-11-18T12:27:28.492383Z",
+            "description": "Portal Day 21 deposit 3jdsh",
+            "reference": "E2E-PORTAL-3jdsh"
+          }
+        ],
+        "page": {
+          "size": 200,
+          "number": 0,
+          "totalElements": 4,
+          "totalPages": 1
+        }
+      },
+      "apiMovements": [
+        {
+          "id": "e783777a-62aa-4184-809d-5c1f56cf6994",
+          "type": "INV_INTEREST",
+          "typeLabel": "Section 86(4) investment interest",
+          "amount": 95,
+          "currency": "ZAR",
+          "transactionDate": "2026-11-18",
+          "occurredAt": "2026-11-18T12:35:39.090521Z",
+          "matterName": "Website Redesign",
+          "description": "Section 86(4) investment interest (Nedbank)"
+        },
+        {
+          "id": "28cd8482-a811-4a7e-bfe2-c6abd392b39c",
+          "type": "INV_PLACE",
+          "typeLabel": "Placed in section 86(4) investment",
+          "amount": 10000,
+          "currency": "ZAR",
+          "transactionDate": "2026-11-18",
+          "occurredAt": "2026-11-18T12:35:37.345487Z",
+          "matterName": "Website Redesign",
+          "description": "Placed in section 86(4) investment at Nedbank (OBS 648D s86(4) Investment Account)"
+        },
+        {
+          "id": "dadb7dfa-5b35-4c5e-88a5-c5f17570de70",
+          "type": "DEPOSIT",
+          "typeLabel": "Deposit",
+          "amount": 20000,
+          "currency": "ZAR",
+          "transactionDate": "2026-11-18",
+          "occurredAt": "2026-11-18T12:34:05.132195Z",
+          "matterName": "Website Redesign",
+          "description": "OBS 648D funding deposit"
+        },
+        {
+          "id": "dda5a6e1-db32-4006-b0ec-2d849e6f7999",
+          "type": "DEPOSIT",
+          "typeLabel": "Deposit",
+          "amount": 1500,
+          "currency": "ZAR",
+          "transactionDate": "2026-11-18",
+          "occurredAt": "2026-11-18T12:27:28.492383Z",
+          "matterName": "Website Redesign",
+          "description": "Portal Day 21 deposit 3jdsh"
+        }
+      ],
+      "firmLedger": {
+        "id": "bf52473d-0bbe-451c-a455-2d0fec618d7e",
+        "trustAccountId": "a8109bcc-841d-4518-9157-f7ab7604782d",
+        "clientId": "8bcbf386-8786-4ec3-99ce-abb54178781b",
+        "clientName": "Acme Corp",
+        "balance": 11500,
+        "totalDeposits": 21500,
+        "totalPayments": 0,
+        "totalFeeTransfers": 0,
+        "totalRefunds": 0,
+        "totalTransfersIn": 0,
+        "totalTransfersOut": 0,
+        "totalInvestmentPlacements": 10000,
+        "totalInvestmentReturns": 0,
+        "investedBalance": 10095,
+        "lastTransactionDate": "2026-11-18",
+        "createdAt": "2026-11-18T12:27:28.480939Z",
+        "updatedAt": "2026-11-18T12:27:28.480939Z"
+      },
+      "firmUi": {
+        "general": "=General balance R 11 500,00",
+        "invested": "+Invested (section 86(4)) R 10 095,00",
+        "held": "=Total held in trust R 21 595,00"
+      }
+    }
+  },
+  "checks": {
+    "a": {
+      "beforeNoBreakdown": true,
+      "totalUnchangedByPlacement": true,
+      "placementSplit": true,
+      "finalHeadlineIsGeneralPlusInvested": true,
+      "finalGeneral": true,
+      "finalInvested10095": true
+    },
+    "b": {
+      "exactlyOneInterestLine": true,
+      "interestTypedAndAmount": true,
+      "interestInvestedQualifier": true,
+      "noFundShareOrCapitalOrFundInterest": true,
+      "placementLabelled": true,
+      "generalRowsNoQualifier": true,
+      "everyTypeHuman": true,
+      "mobileInterest": true
+    },
+    "c": {
+      "na": true,
+      "reason": "Acme has exactly one trust matter (portal.portal_trust_balance has one row) → /trust auto-redirects to the matter (trust/page.tsx); MatterSelector not rendered",
+      "summaryHeadline": true
+    },
+    "d": {
+      "apiSummaryEqualsDb": true,
+      "uiEqualsApi": true,
+      "dbEqualsTenantLedgers": true,
+      "firmLedgerApiEqual": true,
+      "firmUiEqual": true,
+      "apiRowsMatchDb": true,
+      "apiInterestRow": true,
+      "dbLedgersOnlyClientOrInvestment": true,
+      "uiRowsEqualApiRows": true,
+      "movementsTypeLabel": true
+    },
+    "e": {
+      "w1440": true,
+      "w1280": true,
+      "w390": true
+    },
+    "g": {
+      "hits1440": [],
+      "hits1280": [],
+      "hits390": [],
+      "clean": true
+    }
+  },
+  "consoleErrors": [],
+  "pageErrors": [],
+  "notes": [
+    "portal session reused from 2026-11-18T12:34:05.736Z"
+  ],
+  "today": "2026-11-18",
+  "ids": {
+    "schema": "tenant_7d218705360b",
+    "general": "a8109bcc-841d-4518-9157-f7ab7604782d",
+    "acme": "8bcbf386-8786-4ec3-99ce-abb54178781b",
+    "matter": "350afd4f-466c-4274-98dc-1951763341f4",
+    "inv4": "d6bee85a-6e5f-4d79-9144-6f41a5ac0ae1",
+    "portalClientId": "8bcbf386-8786-4ec3-99ce-abb54178781b",
+    "investment": "0c195b9d-4564-4201-b665-d242bfe4304b",
+    "placeTx": "28cd8482-a811-4a7e-bfe2-c6abd392b39c"
+  },
+  "figures": {
+    "before": {
+      "headline": 21500,
+      "apiGeneral": 21500,
+      "apiInvested": 0,
+      "breakdown": []
+    },
+    "afterPlacement": {
+      "headline": 21500,
+      "apiGeneral": 11500,
+      "apiInvested": 10000,
+      "breakdown": [
+        {
+          "label": "In the firm's trust account",
+          "text": "R 11 500,00",
+          "amount": 11500
+        },
+        {
+          "label": "Invested on your instruction (section 86(4))",
+          "text": "R 10 000,00",
+          "amount": 10000
+        }
+      ]
+    },
+    "final": {
+      "headline": 21595,
+      "general": 11500,
+      "invested": 10095,
+      "apiGeneral": 11500,
+      "apiInvested": 10095,
+      "dbGeneral": "11500.00",
+      "dbInvested": "10095.00",
+      "tenantByLedger": {
+        "CLIENT": "11500.00",
+        "CLIENT_INVESTMENT": "10095.00"
+      },
+      "firmLedger": {
+        "balance": 11500,
+        "investedBalance": 10095
+      },
+      "firmUi": {
+        "general": "=General balance R 11 500,00",
+        "invested": "+Invested (section 86(4)) R 10 095,00",
+        "held": "=Total held in trust R 21 595,00"
+      }
+    }
+  },
+  "verdicts": {
+    "a": "PASS",
+    "b": "PASS",
+    "c": "N/A",
+    "d": "PASS",
+    "e": "PASS",
+    "g": "PASS"
+  },
+  "finishedAt": "2026-11-18T12:35:46.509Z"
+}

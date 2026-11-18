@@ -188,6 +188,7 @@ export default function TrustMatterDetailPage() {
         <BalanceCard
           matterName={summary.matterName}
           currentBalance={summary.currentBalance}
+          investedBalance={summary.investedBalance}
           lastTransactionAt={summary.lastTransactionAt}
         />
       ) : (

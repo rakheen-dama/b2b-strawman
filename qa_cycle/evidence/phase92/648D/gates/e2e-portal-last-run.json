@@ -1,0 +1,1349 @@
+{
+  "config": {
+    "configFile": "/Users/rakheendama/Projects/2026/worktree-epic-648D/portal/playwright.portal.config.ts",
+    "rootDir": "/Users/rakheendama/Projects/2026/worktree-epic-648D/portal",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": "/Users/rakheendama/Projects/2026/worktree-epic-648D/portal/e2e/helpers/global-setup.ts",
+    "globalTeardown": null,
+    "globalTimeout": 600000,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/rakheendama/Projects/2026/worktree-epic-648D/portal/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/Users/rakheendama/Projects/2026/worktree-epic-648D/portal/e2e/tests/responsive",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/Users/rakheendama/Projects/2026/worktree-epic-648D/portal/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "portal-client-90day",
+        "name": "portal-client-90day",
+        "testDir": "/Users/rakheendama/Projects/2026/worktree-epic-648D/portal/e2e/tests/portal-client-90day",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.59.1",
+    "workers": 1,
+    "webServer": {
+      "command": "NODE_OPTIONS= pnpm dev",
+      "url": "http://localhost:3002",
+      "reuseExistingServer": true,
+      "timeout": 120000,
+      "env": {
+        "NODE_OPTIONS": "",
+        "NEXT_PUBLIC_PORTAL_API_URL": "http://localhost:8081"
+      }
+    }
+  },
+  "suites": [
+    {
+      "title": "e2e/tests/responsive/portal-pages.spec.ts",
+      "file": "e2e/tests/responsive/portal-pages.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "portal @ sm (375x667)",
+          "file": "e2e/tests/responsive/portal-pages.spec.ts",
+          "line": 229,
+          "column": 8,
+          "specs": [
+            {
+              "title": "home-populated",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1006,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-18T12:27:12.072Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-69024fce2e7e298a7150",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 236,
+              "column": 11
+            },
+            {
+              "title": "trust-matter-list",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 679,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-18T12:27:13.396Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-4936be0782e882cc99c7",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 236,
+              "column": 11
+            },
+            {
+              "title": "deadlines-list",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 623,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-18T12:27:14.082Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-f56aaad8d3226f6e3e36",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 236,
+              "column": 11
+            },
+            {
+              "title": "invoices-list",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 655,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-18T12:27:14.719Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-4d13fd012bc7362cf286",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 236,
+              "column": 11
+            },
+            {
+              "title": "matters-list",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 613,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-18T12:27:15.382Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-572a83ed36366c5983ba",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 236,
+              "column": 11
+            },
+            {
+              "title": "settings-notifications",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 599,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-18T12:27:16.002Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-c167b3603998bd0f353b",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 236,
+              "column": 11
+            },
+            {
+              "title": "profile",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 561,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-18T12:27:16.607Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-624b5f3561ef33f116ff",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 236,
+              "column": 11
+            }
+          ]
+        },
+        {
+          "title": "portal @ md (768x1024)",
+          "file": "e2e/tests/responsive/portal-pages.spec.ts",
+          "line": 229,
+          "column": 8,
+          "specs": [
+            {
+              "title": "home-populated",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 516,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-18T12:27:17.174Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-2046750171c1ff0ff380",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 236,
+              "column": 11
+            },
+            {
+              "title": "trust-matter-list",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 464,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-18T12:27:17.697Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-494f5e2dc3adbfcf40b4",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 236,
+              "column": 11
+            },
+            {
+              "title": "deadlines-list",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 447,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-18T12:27:18.167Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-5118ad571d55c7926ed3",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 236,
+              "column": 11
+            },
+            {
+              "title": "invoices-list",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 353,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-18T12:27:18.620Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-6692354094a3d64ab941",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 236,
+              "column": 11
+            },
+            {
+              "title": "matters-list",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 391,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-18T12:27:18.979Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-ceae677b8db7d92190de",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 236,
+              "column": 11
+            },
+            {
+              "title": "settings-notifications",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 368,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-18T12:27:19.376Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-3bb12c520d2f43e05d1a",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 236,
+              "column": 11
+            },
+            {
+              "title": "profile",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 450,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-18T12:27:19.750Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-665a3cebfd44d7f9a880",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 236,
+              "column": 11
+            }
+          ]
+        },
+        {
+          "title": "portal @ lg (1280x800)",
+          "file": "e2e/tests/responsive/portal-pages.spec.ts",
+          "line": 229,
+          "column": 8,
+          "specs": [
+            {
+              "title": "home-populated",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 508,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-18T12:27:20.207Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-7af7d032d6ded37a9418",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 236,
+              "column": 11
+            },
+            {
+              "title": "trust-matter-list",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 483,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-18T12:27:20.724Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-3d9a3a11b4275fcaa839",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 236,
+              "column": 11
+            },
+            {
+              "title": "deadlines-list",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 460,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-18T12:27:21.218Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-74b50fa3b59c5f17ca3e",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 236,
+              "column": 11
+            },
+            {
+              "title": "invoices-list",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 453,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-18T12:27:21.686Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-abdac4ac70f742634ec0",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 236,
+              "column": 11
+            },
+            {
+              "title": "matters-list",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 431,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-18T12:27:22.145Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-bf66ec8a67bd18a742c5",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 236,
+              "column": 11
+            },
+            {
+              "title": "settings-notifications",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 454,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-18T12:27:22.582Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-6570b876bd1be628af8c",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 236,
+              "column": 11
+            },
+            {
+              "title": "profile",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 464,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-18T12:27:23.042Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5ba3edad708a9f4c8810-4c4b75307a1bfa6e10f7",
+              "file": "e2e/tests/responsive/portal-pages.spec.ts",
+              "line": 236,
+              "column": 11
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "e2e/tests/portal-client-90day/day-00-07.spec.ts",
+      "file": "e2e/tests/portal-client-90day/day-00-07.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Day 0–7 — Portal Client Lifecycle (Checkpoints 1–3)",
+          "file": "e2e/tests/portal-client-90day/day-00-07.spec.ts",
+          "line": 62,
+          "column": 4,
+          "specs": [
+            {
+              "title": "Day 0: Client lands on /home and sees the pending info requests and the sent fee note",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "portal-client-90day",
+                  "projectName": "portal-client-90day",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 645,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-18T12:27:23.928Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a9ebe777ee25b5deaf1c-c5176fc4f977e8fa7636",
+              "file": "e2e/tests/portal-client-90day/day-00-07.spec.ts",
+              "line": 118,
+              "column": 7
+            },
+            {
+              "title": "Day 0: Client opens the new info request from Home and sees its upload slot",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "portal-client-90day",
+                  "projectName": "portal-client-90day",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1754,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-18T12:27:25.020Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a9ebe777ee25b5deaf1c-d862cd15c2641b366737",
+              "file": "e2e/tests/portal-client-90day/day-00-07.spec.ts",
+              "line": 140,
+              "column": 7
+            },
+            {
+              "title": "Day 3: Client uploads the document and submits the info request",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "portal-client-90day",
+                  "projectName": "portal-client-90day",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1088,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-18T12:27:26.780Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a9ebe777ee25b5deaf1c-746679f3b7df512d8f06",
+              "file": "e2e/tests/portal-client-90day/day-00-07.spec.ts",
+              "line": 180,
+              "column": 7
+            },
+            {
+              "title": "Day 7: Diary dates page renders for the client (no portal-visible deadlines on the e2e tenant)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "portal-client-90day",
+                  "projectName": "portal-client-90day",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 483,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-18T12:27:27.875Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a9ebe777ee25b5deaf1c-18771cd6539d6a126e88",
+              "file": "e2e/tests/portal-client-90day/day-00-07.spec.ts",
+              "line": 220,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "e2e/tests/portal-client-90day/day-14-30.spec.ts",
+      "file": "e2e/tests/portal-client-90day/day-14-30.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Day 14–30 — Portal Client Lifecycle (Checkpoint 5)",
+          "file": "e2e/tests/portal-client-90day/day-14-30.spec.ts",
+          "line": 44,
+          "column": 4,
+          "specs": [
+            {
+              "title": "Day 21 [legal-za]: Client follows the trust-activity email to the balance and the new deposit",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "portal-client-90day",
+                  "projectName": "portal-client-90day",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1207,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-18T12:27:28.371Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "6b88c1efb4bfdc5cc891-e37abff57176380ce246",
+              "file": "e2e/tests/portal-client-90day/day-14-30.spec.ts",
+              "line": 77,
+              "column": 7
+            },
+            {
+              "title": "Day 30 [legal-za]: Client downloads the receipt for a part payment on a fee note",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "portal-client-90day",
+                  "projectName": "portal-client-90day",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1864,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-18T12:27:29.757Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "6b88c1efb4bfdc5cc891-9080aa10ae92ad8679f9",
+              "file": "e2e/tests/portal-client-90day/day-14-30.spec.ts",
+              "line": 164,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "e2e/tests/portal-client-90day/day-45-75.spec.ts",
+      "file": "e2e/tests/portal-client-90day/day-45-75.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Day 45–75 — Portal Client Lifecycle (Checkpoints 7–9)",
+          "file": "e2e/tests/portal-client-90day/day-45-75.spec.ts",
+          "line": 41,
+          "column": 4,
+          "specs": [
+            {
+              "title": "Day 45: Client opens the seeded SENT fee note",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "portal-client-90day",
+                  "projectName": "portal-client-90day",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 526,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-18T12:27:31.633Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a87551eb10aff44deb2d-08b212b9c9695f2572aa",
+              "file": "e2e/tests/portal-client-90day/day-45-75.spec.ts",
+              "line": 60,
+              "column": 7
+            },
+            {
+              "title": "Day 45: SENT fee note offers no online payment without a PSP",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "portal-client-90day",
+                  "projectName": "portal-client-90day",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 522,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-18T12:27:32.173Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a87551eb10aff44deb2d-1feb8914c91b83e720bc",
+              "file": "e2e/tests/portal-client-90day/day-45-75.spec.ts",
+              "line": 92,
+              "column": 7
+            },
+            {
+              "title": "Day 60 [legal-za]: Client downloads the Statement of Account from the matter page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "portal-client-90day",
+                  "projectName": "portal-client-90day",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1366,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-18T12:27:32.703Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a87551eb10aff44deb2d-66d393a18a01cc5b102d",
+              "file": "e2e/tests/portal-client-90day/day-45-75.spec.ts",
+              "line": 124,
+              "column": 7
+            },
+            {
+              "title": "Day 75 [legal-za]: Client sees the court date and the prescription on Diary dates, sanitised, until the firm removes them",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "portal-client-90day",
+                  "projectName": "portal-client-90day",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 955,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-18T12:27:34.077Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a87551eb10aff44deb2d-e5dc4acfa4ca13db3cd7",
+              "file": "e2e/tests/portal-client-90day/day-45-75.spec.ts",
+              "line": 181,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "e2e/tests/portal-client-90day/day-85-90.spec.ts",
+      "file": "e2e/tests/portal-client-90day/day-85-90.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Day 85–90 — Portal Client Lifecycle (Checkpoints 10–11)",
+          "file": "e2e/tests/portal-client-90day/day-85-90.spec.ts",
+          "line": 35,
+          "column": 4,
+          "specs": [
+            {
+              "title": "Day 85: Profile shows the client's contact details (read-only)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "portal-client-90day",
+                  "projectName": "portal-client-90day",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 478,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-18T12:27:35.042Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2c64dd8aa8de700ad757-9bf202a8f9d4aeaca0a1",
+              "file": "e2e/tests/portal-client-90day/day-85-90.spec.ts",
+              "line": 57,
+              "column": 7
+            },
+            {
+              "title": "Day 85: Notifications page shows the firm's bi-weekly digest cadence (read-only)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "portal-client-90day",
+                  "projectName": "portal-client-90day",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 460,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-18T12:27:35.531Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2c64dd8aa8de700ad757-ca5ab1ba739ea55bc380",
+              "file": "e2e/tests/portal-client-90day/day-85-90.spec.ts",
+              "line": 86,
+              "column": 7
+            },
+            {
+              "title": "Day 90: Activity trail shows this run's submit and download",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "portal-client-90day",
+                  "projectName": "portal-client-90day",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 513,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-18T12:27:35.996Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2c64dd8aa8de700ad757-89683e593beca0e69654",
+              "file": "e2e/tests/portal-client-90day/day-85-90.spec.ts",
+              "line": 110,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-18T12:27:06.889Z",
+    "duration": 29683.622,
+    "expected": 34,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

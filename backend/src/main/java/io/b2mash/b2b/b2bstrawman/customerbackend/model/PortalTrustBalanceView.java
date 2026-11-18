@@ -9,12 +9,15 @@ import java.util.UUID;
  * TrustLedgerPortalSyncService} from firm-side trust events. Per ADR-253, this is a plain record —
  * not a JPA entity — read via {@code JdbcClient} against the {@code portal.portal_trust_balance}
  * table. {@code matterName} is joined from the client's own {@code portal.portal_projects} row
- * (nullable — Phase 89 633B, G88-F31).
+ * (nullable — Phase 89 633B, G88-F31). {@code currentBalance} is the client's general ({@code
+ * CLIENT}) ledger on the matter; {@code investedBalance} what is held for the client in section
+ * 86(4) investments on it ({@code CLIENT_INVESTMENT}, Phase 92 648D) — zero when none.
  */
 public record PortalTrustBalanceView(
     UUID customerId,
     UUID matterId,
     BigDecimal currentBalance,
+    BigDecimal investedBalance,
     Instant lastTransactionAt,
     Instant lastSyncedAt,
     String matterName) {}

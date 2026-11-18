@@ -1,0 +1,29 @@
+648D OBS (f) — e2e-backend log, window 2026-11-18T12:33:44Z .. 2026-11-18T12:36:13Z (covers the backend restart at 12:33:41Z and the whole OBS run incl. the failed attempts)
+source: docker logs e2e-backend --since 2026-11-18T12:33:44Z (raw log not committed)
+
+== level counts + WARN/ERROR breakdown (logcount.sh):
+{'INFO': 87, 'WARN': 12, 'ERROR': 1}
+   2 WARN error: HHH000247: ErrorCode: 0, SQLState: 23514
+   2 WARN error: Batch entry 0 insert into trust_investments (account_number,created_at,customer_id,deposit_date,deposit_transaction_id,institution,interest_rate,inves
+   1 WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker: Bean 'capabilityAuthorizationManager' of type [io.b2mash.b2b.b2bstrawman.orgrole.CapabilityAuthorizationManager] is not eligible for getting processed
+   1 WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker: Bean 'requiresCapabilityAdvisor' of type [org.springframework.security.authorization.method.AuthorizationManagerBeforeMethodInterceptor] is not eligib
+   1 WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker: Bean 'org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerAutoConfiguration' of type [org.springframework.ai.
+   1 WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker: Bean 'serverAnnotatedBeanRegistry' of type [org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerAutoConfigura
+   1 WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker: Bean 'stringOrNumberMigrationVersionConverter' of type [org.springframework.boot.flyway.autoconfigure.FlywayAutoConfiguration$StringOrNumberToMigratio
+   1 WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker: Bean 'spring.ai.mcp.server.annotation-scanner-org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerProperties'
+   1 WARN CglibAopProxy: Unable to proxy interface-implementing method [public final void org.springframework.web.filter.GenericFilterBean.init(jakarta.servlet.FilterConfig) t
+   1 WARN PdfConversionService: LibreOffice not found — PDF conversion will fall back to docx4j
+   1 ERROR GlobalExceptionHandler: Unhandled exception
+
+== 'Portal trust sync failed' lines: 0
+== ERROR lines (level ERROR): 1
+== ERROR lines after the successful run start (>= 12:35:30Z):
+count: 0
+
+== the ERROR lines in the window (all):
+2026-11-18T12:35:17.472322917Z io.b2mash.b2b.b2bstrawman.exception.GlobalExceptionHandler Unhandled exception | org.springframework.dao.DataIntegrityViolationException | requestId fea8b09e-ab7a-4d35-a2ac-f58d6a300c04
+
+== whole container log (stack boot + E2E-PORTAL + OBS), for reference:
+'Portal trust sync failed' lines: 0
+ERROR-level lines: 1
+2026-11-18T12:35:17.472322917Z GlobalExceptionHandler Unhandled exception | org.springframework.dao.DataIntegrityViolationException

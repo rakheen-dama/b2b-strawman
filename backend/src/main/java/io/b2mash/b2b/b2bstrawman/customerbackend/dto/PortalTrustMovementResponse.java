@@ -21,10 +21,14 @@ import java.util.UUID;
  *
  * <p>{@code transactionDate} is the transaction's SA business date — the date the tile shows
  * (G89-F39); {@code occurredAt} is the approval / recorded instant.
+ *
+ * <p>{@code typeLabel} is the client label from the type registry (Phase 92 648D, §16.4.7); {@code
+ * type} stays as the code, for logic only.
  */
 public record PortalTrustMovementResponse(
     UUID id,
     String type,
+    String typeLabel,
     BigDecimal amount,
     String currency,
     LocalDate transactionDate,

@@ -1299,6 +1299,38 @@ class ActivityMessageFormatterTest {
             "bank_statement_line",
             d("classification", "UNIDENTIFIED_SOMETHING", "amount", "10"),
             "Alice recorded a statement line of R10,00"),
+        // --- section 86(4) investment interest (Phase 92 648B) ---
+        Arguments.of(
+            "bank_statement_line.recorded",
+            "bank_statement_line",
+            d("classification", "INVESTMENT_INTEREST", "amount", "400.00"),
+            "Alice recorded a statement line as section 86(4) investment interest of R400,00"),
+        Arguments.of(
+            "trust_inv_interest.recorded",
+            "trust_transaction",
+            d("amount", "380.00", "reference", "INT-OCT"),
+            "Alice recorded section 86(4) investment interest of R380,00 (INT-OCT)"),
+        Arguments.of(
+            "trust_fund_inv_share.recorded",
+            "trust_transaction",
+            d("amount", "20.00", "reference", "INT-OCT"),
+            "Alice recorded the Legal Practitioners' Fidelity Fund's 5% share of section 86(4)"
+                + " interest of R20,00 (INT-OCT)"),
+        Arguments.of(
+            "trust_investment.interest_recorded",
+            "trust_investment",
+            d("amount", "100.00", "net", "95.00", "presentation", "NET"),
+            "Alice recorded section 86(4) investment interest of R100,00 gross"),
+        Arguments.of(
+            "trust_investment.interest_recorded",
+            "trust_investment",
+            d(),
+            "Alice recorded section 86(4) investment interest"),
+        Arguments.of(
+            "trust_investment.interest_reversed",
+            "trust_investment",
+            d("amount", "100.00", "net", "95.00"),
+            "Alice reversed a section 86(4) interest entry of R100,00 gross"),
         // --- unidentified deposits (Phase 92 647B) ---
         Arguments.of(
             "bank_statement_line.recorded",
@@ -1932,6 +1964,10 @@ class ActivityMessageFormatterTest {
           new String[] {"trust_transaction.awaiting_approval", "trust_transaction"},
           new String[] {"trust_account.created", "trust_account"},
           new String[] {"trust_investment.placed", "trust_investment"},
+          new String[] {"trust_investment.interest_recorded", "trust_investment"},
+          new String[] {"trust_investment.interest_reversed", "trust_investment"},
+          new String[] {"trust_inv_interest.recorded", "trust_transaction"},
+          new String[] {"trust_fund_inv_share.recorded", "trust_transaction"},
           new String[] {"trust_reconciliation.completed", "trust_reconciliation"},
           new String[] {"expense.created", "expense"},
           new String[] {"expense.updated", "expense"},

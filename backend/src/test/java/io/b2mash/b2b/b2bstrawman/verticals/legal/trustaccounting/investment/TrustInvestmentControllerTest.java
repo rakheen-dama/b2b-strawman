@@ -209,16 +209,96 @@ class TrustInvestmentControllerTest {
         .andExpect(jsonPath("$.id").isNotEmpty());
   }
 
-  @Test
-  void putInterest_returnsUpdatedInvestment() throws Exception {
-    var ownerJwt = TestJwtFactory.ownerJwt(ORG_ID, "user_invest_ctrl_owner");
+  // --- 648B: section 86(4) interest entries (§16.4.5) ---
 
-    // Place an investment first
+  @Test
+  void postInterest_returns201WithTheEntry() throws Exception {
+    var investmentId = approvedClientInvestment("Interest Bank", "5550000001", "10000.00");
+
+    mockMvc
+        .perform(
+            post("/api/trust-investments/" + investmentId + "/interest")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_invest_ctrl_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"entryDate": "2026-03-01", "grossAmount": 100.00, "presentation": "NET"}
+                    """))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.id").isNotEmpty())
+        .andExpect(jsonPath("$.investmentId").value(investmentId))
+        .andExpect(jsonPath("$.entryDate").value("2026-03-01"))
+        .andExpect(jsonPath("$.grossAmount").value(100.00))
+        .andExpect(jsonPath("$.fundShareAmount").value(5.00))
+        .andExpect(jsonPath("$.netAmount").value(95.00))
+        .andExpect(jsonPath("$.presentation").value("NET"))
+        .andExpect(jsonPath("$.status").value("POSTED"))
+        .andExpect(jsonPath("$.netTransactionId").isNotEmpty())
+        .andExpect(jsonPath("$.fundShareTransactionId").value(nullValue()))
+        .andExpect(jsonPath("$.bankStatementLineId").value(nullValue()))
+        .andExpect(jsonPath("$.clientTaxReference").value(nullValue()));
+
+    // The investment's figures follow its entries; its balance carries the net interest
+    mockMvc
+        .perform(
+            get("/api/trust-investments/" + investmentId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_invest_ctrl_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.grossInterest").value(100.00))
+        .andExpect(jsonPath("$.fundShare").value(5.00))
+        .andExpect(jsonPath("$.netInterest").value(95.00))
+        .andExpect(jsonPath("$.balance").value(10095.00))
+        .andExpect(jsonPath("$.interestEarned").doesNotExist());
+  }
+
+  @Test
+  void getInterest_returnsTheEntries() throws Exception {
+    var investmentId = approvedClientInvestment("Interest List Bank", "5550000002", "5000.00");
+    postNetInterest(investmentId, "2026-03-01", "40.00");
+    postNetInterest(investmentId, "2026-03-02", "60.00");
+
+    mockMvc
+        .perform(
+            get("/api/trust-investments/" + investmentId + "/interest")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_invest_ctrl_member")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(2))
+        .andExpect(jsonPath("$[0].entryDate").value("2026-03-01"))
+        .andExpect(jsonPath("$[0].grossAmount").value(40.00))
+        .andExpect(jsonPath("$[0].fundShareAmount").value(2.00))
+        .andExpect(jsonPath("$[1].entryDate").value("2026-03-02"))
+        .andExpect(jsonPath("$[1].netAmount").value(57.00));
+  }
+
+  @Test
+  void reverseInterest_returns200Reversed() throws Exception {
+    var investmentId = approvedClientInvestment("Interest Undo Bank", "5550000003", "5000.00");
+    var interestId = postNetInterest(investmentId, "2026-03-01", "100.00");
+
+    mockMvc
+        .perform(
+            post("/api/trust-investment-interest/" + interestId + "/reverse")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_invest_ctrl_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id").value(interestId))
+        .andExpect(jsonPath("$.status").value("REVERSED"));
+
+    mockMvc
+        .perform(
+            get("/api/trust-investments/" + investmentId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_invest_ctrl_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.netInterest").value(0))
+        .andExpect(jsonPath("$.balance").value(5000.00));
+  }
+
+  @Test
+  void postInterest_onASection86_3Investment_returns400() throws Exception {
     var investResult =
         mockMvc
             .perform(
                 post("/api/trust-accounts/" + trustAccountId + "/investments")
-                    .with(ownerJwt)
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_invest_ctrl_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -236,26 +316,61 @@ class TrustInvestmentControllerTest {
                             .formatted(firmInvestmentAccountId)))
             .andExpect(status().isCreated())
             .andReturn();
-
     var investmentId =
         JsonPath.read(investResult.getResponse().getContentAsString(), "$.id").toString();
 
-    // Record interest
     mockMvc
         .perform(
-            put("/api/trust-investments/" + investmentId + "/interest")
-                .with(ownerJwt)
+            post("/api/trust-investments/" + investmentId + "/interest")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_invest_ctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {
-                      "amount": 175.00
-                    }
+                    {"entryDate": "2026-03-01", "grossAmount": 175.00, "presentation": "NET"}
                     """))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.interestEarned").value(175.00))
-        .andExpect(jsonPath("$.status").value("ACTIVE"))
-        .andExpect(jsonPath("$.id").value(investmentId));
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.title").value("Cannot record investment interest"))
+        .andExpect(
+            jsonPath("$.detail")
+                .value(
+                    "Interest on a section 86(3) investment belongs to the Legal Practitioners'"
+                        + " Fidelity Fund — record it from the investment account's statement as"
+                        + " interest received"));
+  }
+
+  @Test
+  void postInterest_memberRole_returns403() throws Exception {
+    var investmentId = approvedClientInvestment("Interest Member Bank", "5550000004", "1000.00");
+
+    mockMvc
+        .perform(
+            post("/api/trust-investments/" + investmentId + "/interest")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_invest_ctrl_member"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"entryDate": "2026-03-01", "grossAmount": 10.00, "presentation": "NET"}
+                    """))
+        .andExpect(status().isForbidden());
+    mockMvc
+        .perform(
+            post("/api/trust-investment-interest/" + UUID.randomUUID() + "/reverse")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_invest_ctrl_member")))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void putInterest_isGone() throws Exception {
+    var investmentId = approvedClientInvestment("Interest Put Bank", "5550000005", "1000.00");
+
+    mockMvc
+        .perform(
+            put("/api/trust-investments/" + investmentId + "/interest")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_invest_ctrl_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"amount\": 175.00}"))
+        .andExpect(status().isMethodNotAllowed());
   }
 
   @Test
@@ -746,6 +861,65 @@ class TrustInvestmentControllerTest {
         .andExpect(jsonPath("$.title").value("Validation failed"))
         .andExpect(jsonPath("$.detail").value("1 field(s) have validation errors"))
         .andExpect(jsonPath("$.fieldErrors[0].field").value("withdrawalDate"));
+  }
+
+  /** A section 86(4) investment placed from the trust account and approved; its id. */
+  private String approvedClientInvestment(
+      String institution, String accountNumber, String principal) throws Exception {
+    var investResult =
+        mockMvc
+            .perform(
+                post("/api/trust-accounts/" + trustAccountId + "/investments")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_invest_ctrl_owner"))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "investmentAccountId": "%s",
+                          "clientId": "%s",
+                          "matterId": "%s",
+                          "institution": "%s",
+                          "accountNumber": "%s",
+                          "principal": %s,
+                          "interestRate": 0.0500,
+                          "depositDate": "2026-02-01",
+                          "investmentBasis": "CLIENT_INSTRUCTION"
+                        }
+                        """
+                            .formatted(
+                                clientInvestmentAccountId,
+                                customerId,
+                                trustMatterOf(customerId),
+                                institution,
+                                accountNumber,
+                                principal)))
+            .andExpect(status().isCreated())
+            .andReturn();
+    var body = investResult.getResponse().getContentAsString();
+    mockMvc
+        .perform(
+            post("/api/trust-transactions/"
+                    + JsonPath.read(body, "$.depositTransactionId")
+                    + "/approve")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_invest_ctrl_approver")))
+        .andExpect(status().isOk());
+    return JsonPath.read(body, "$.id").toString();
+  }
+
+  /** Records a bank-advice NET entry of {@code gross} on {@code date}; the entry's id. */
+  private String postNetInterest(String investmentId, String date, String gross) throws Exception {
+    var result =
+        mockMvc
+            .perform(
+                post("/api/trust-investments/" + investmentId + "/interest")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_invest_ctrl_owner"))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        "{\"entryDate\": \"%s\", \"grossAmount\": %s, \"presentation\": \"NET\"}"
+                            .formatted(date, gross)))
+            .andExpect(status().isCreated())
+            .andReturn();
+    return JsonPath.read(result.getResponse().getContentAsString(), "$.id").toString();
   }
 
   private final java.util.Map<String, UUID> trustMatters = new java.util.HashMap<>();

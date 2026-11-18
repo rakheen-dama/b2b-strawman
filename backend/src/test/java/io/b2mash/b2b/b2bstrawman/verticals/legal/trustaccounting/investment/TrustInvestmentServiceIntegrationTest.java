@@ -423,6 +423,44 @@ class TrustInvestmentServiceIntegrationTest {
   }
 
   @Test
+  void withdrawal_isRefused_beforeTheLastInterestEntry() {
+    // 648B OQ-1 (a): a withdrawal dated before the investment's latest interest entry would return
+    // that interest before it was credited — refused, and nothing moves on either account.
+    var funding = books.freshAccount(false);
+    var investmentAccount = books.freshInvestmentAccount(InvestmentBasis.CLIENT_INSTRUCTION);
+    var client = books.newClient("withdrawal before interest");
+    books.deposit(funding, client, "3000.00");
+    var placed = books.requestPlacement(funding, investmentAccount, client, "2000.00");
+    books.approvePlacement(
+        funding,
+        Expected.cashbookAndClient("-2000.00"),
+        investmentAccount,
+        Expected.cashbookAndInvestment("2000.00"),
+        placed.depositTransactionId(),
+        approverId);
+    // An interest credit dated today
+    books.postLedgerRowDirect(
+        investmentAccount,
+        "INV_INTEREST",
+        "40.00",
+        books.today(),
+        client.id(),
+        client.matter(),
+        null,
+        placed.id());
+
+    assertWithdrawRefused(
+        funding,
+        investmentAccount,
+        placed.id(),
+        books.today().minusDays(1),
+        "The withdrawal date cannot be before the investment's last interest entry ("
+            + books.today()
+            + ").");
+    assertThat(investment(placed.id()).getStatus()).isEqualTo("ACTIVE");
+  }
+
+  @Test
   void withdrawal_isRefused_whileThePlacementAwaitsApproval_andOutsideItsDates() {
     var funding = books.freshAccount(false);
     var investmentAccount = books.freshInvestmentAccount(InvestmentBasis.CLIENT_INSTRUCTION);

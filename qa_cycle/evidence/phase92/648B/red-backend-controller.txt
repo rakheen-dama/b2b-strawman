@@ -1,0 +1,22 @@
+# 648B reproduce-first — red run on unchanged production code (main 00fb5029f, tests only changed)
+# Command: ./mvnw test -Dtest="TrustInvestmentInterestMigrationTest,TrustInvestmentServiceIntegrationTest#withdrawal_isRefused_beforeTheLastInterestEntry,StatementLinePostingIntegrationTest,TrustInvestmentControllerTest,AuditEventTypeRegistryTest,ActivityMessageFormatterTest"
+# Run: 2026-11-18 08:09 SAST
+
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentControllerTest.postInterest_returns201WithTheEntry -- Time elapsed: 0.055 s <<< FAILURE!
+java.lang.AssertionError: Status expected:<201> but was:<405>
+
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentControllerTest.getInterest_returnsTheEntries -- Time elapsed: 0.052 s <<< FAILURE!
+java.lang.AssertionError: Status expected:<201> but was:<405>
+
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentControllerTest.reverseInterest_returns200Reversed -- Time elapsed: 0.060 s <<< FAILURE!
+java.lang.AssertionError: Status expected:<201> but was:<405>
+
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentControllerTest.postInterest_onASection86_3Investment_returns400 -- Time elapsed: 0.034 s <<< FAILURE!
+java.lang.AssertionError: Status expected:<400> but was:<405>
+
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentControllerTest.postInterest_memberRole_returns403 -- Time elapsed: 0.059 s <<< FAILURE!
+java.lang.AssertionError: Status expected:<403> but was:<405>
+
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentControllerTest.putInterest_isGone -- Time elapsed: 0.069 s <<< FAILURE!
+java.lang.AssertionError: Status expected:<405> but was:<200>
+

@@ -1,0 +1,27 @@
+# 648B reproduce-first — red run on unchanged production code (main 00fb5029f, tests only changed)
+# Command: ./mvnw test -Dtest="TrustInvestmentInterestMigrationTest,TrustInvestmentServiceIntegrationTest#withdrawal_isRefused_beforeTheLastInterestEntry,StatementLinePostingIntegrationTest,TrustInvestmentControllerTest,AuditEventTypeRegistryTest,ActivityMessageFormatterTest"
+# Run: 2026-11-18 08:09 SAST
+
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.StatementLinePostingIntegrationTest.recordsInvestmentInterest_gross_fromACreditLine -- Time elapsed: 0.180 s <<< FAILURE!
+java.lang.AssertionError: Status expected:<201> but was:<400>
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.StatementLinePostingIntegrationTest.lambda$recordsInvestmentInterest_gross_fromACreditLine$0(StatementLinePostingIntegrationTest.java:649)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.StatementLinePostingIntegrationTest.lambda$moves$1(StatementLinePostingIntegrationTest.java:1179)
+	at io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness.assertMoves(TrustBooksHarness.java:621)
+
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.StatementLinePostingIntegrationTest.recordsInvestmentInterest_net_fromACreditLine -- Time elapsed: 0.087 s <<< FAILURE!
+java.lang.AssertionError: Status expected:<201> but was:<400>
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.StatementLinePostingIntegrationTest.lambda$recordsInvestmentInterest_net_fromACreditLine$0(StatementLinePostingIntegrationTest.java:732)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.StatementLinePostingIntegrationTest.lambda$moves$1(StatementLinePostingIntegrationTest.java:1179)
+	at io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness.assertMoves(TrustBooksHarness.java:621)
+
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.StatementLinePostingIntegrationTest.unmatch_ofAnInvestmentInterestLine_reversesTheEntry_andIsRefusedOnceWithdrawn -- Time elapsed: 0.098 s <<< FAILURE!
+java.lang.AssertionError: Status expected:<201> but was:<400>
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.StatementLinePostingIntegrationTest.lambda$recordInterestLine$0(StatementLinePostingIntegrationTest.java:1077)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.StatementLinePostingIntegrationTest.lambda$moves$1(StatementLinePostingIntegrationTest.java:1179)
+	at io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness.assertMoves(TrustBooksHarness.java:621)
+
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.StatementLinePostingIntegrationTest.investmentInterestOffASection86_4Account_andAZeroLine_areRefused -- Time elapsed: 0.088 s <<< FAILURE!
+java.lang.AssertionError: JSON path "$.title" expected:<Cannot record statement line> but was:<Malformed request body>
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.StatementLinePostingIntegrationTest.lambda$assertRecordRefused$0(StatementLinePostingIntegrationTest.java:1228)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.StatementLinePostingIntegrationTest.lambda$moves$1(StatementLinePostingIntegrationTest.java:1179)
+

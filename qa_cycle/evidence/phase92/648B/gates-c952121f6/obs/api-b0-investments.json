@@ -1,0 +1,73 @@
+{
+  "method": "GET",
+  "path": "/api/trust-accounts/395d2752-24d0-49d2-9c26-cf869e9fb897/investments?page=0&size=100",
+  "status": 200,
+  "body": {
+    "content": [
+      {
+        "id": "0e9c017b-fe4b-4b8c-9a6e-5515dd96e195",
+        "trustAccountId": "395d2752-24d0-49d2-9c26-cf869e9fb897",
+        "investmentAccountId": "ee31a6d8-e6c2-431a-be52-a4f4938dbaf2",
+        "investmentAccountName": "Nedbank Section 86(4) Investments",
+        "clientId": "11711136-75ce-49d7-8ff1-938eff68e831",
+        "clientName": "QuickCollect Services mwlye2u03095",
+        "matterId": "eab859ee-46ed-480d-a7c7-854b2aa4f8e2",
+        "institution": "Nedbank",
+        "accountNumber": "CALL-1122334455",
+        "principal": 30000,
+        "interestRate": 0.0725,
+        "depositDate": "2026-11-18",
+        "maturityDate": null,
+        "grossInterest": 100,
+        "fundShare": 5,
+        "netInterest": 95,
+        "balance": 30095,
+        "status": "ACTIVE",
+        "awaitingApproval": false,
+        "withdrawalDate": null,
+        "withdrawalAmount": null,
+        "depositTransactionId": "ab29d29d-cb50-4ae5-b3c4-73279ff267b5",
+        "withdrawalTransactionId": null,
+        "notes": "Call account on QuickCollect's written instruction",
+        "investmentBasis": "CLIENT_INSTRUCTION",
+        "createdAt": "2026-11-18T10:05:23.470224Z",
+        "updatedAt": "2026-11-18T10:05:23.475488Z"
+      },
+      {
+        "id": "22ea5f1b-5288-43bd-86d0-3a32419158a4",
+        "trustAccountId": "395d2752-24d0-49d2-9c26-cf869e9fb897",
+        "investmentAccountId": "339866d4-59f3-4e96-a1d8-1306ee5346f0",
+        "investmentAccountName": "Standard Bank Section 86(3) Investments",
+        "clientId": null,
+        "clientName": null,
+        "matterId": null,
+        "institution": "Standard Bank",
+        "accountNumber": "FD-0987654321",
+        "principal": 200000,
+        "interestRate": 0.085,
+        "depositDate": "2026-11-18",
+        "maturityDate": "2027-02-16",
+        "grossInterest": 0,
+        "fundShare": 0,
+        "netInterest": 0,
+        "balance": 200000,
+        "status": "ACTIVE",
+        "awaitingApproval": false,
+        "withdrawalDate": null,
+        "withdrawalAmount": null,
+        "depositTransactionId": "83c5522c-c59a-4284-afaf-908f86a4a78f",
+        "withdrawalTransactionId": null,
+        "notes": "90-day fixed deposit — the firm's surplus trust money",
+        "investmentBasis": "FIRM_DISCRETION",
+        "createdAt": "2026-11-18T10:05:20.450450Z",
+        "updatedAt": "2026-11-18T10:05:20.456947Z"
+      }
+    ],
+    "page": {
+      "size": 100,
+      "number": 0,
+      "totalElements": 2,
+      "totalPages": 1
+    }
+  }
+}

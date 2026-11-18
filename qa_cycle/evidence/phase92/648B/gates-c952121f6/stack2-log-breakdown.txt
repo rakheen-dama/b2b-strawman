@@ -1,0 +1,21 @@
+== depth-ii window
+{'INFO': 88, 'WARN': 153}
+  18 WARN PDType1Font: Using fallback font LiberationSans for base font Helvetica
+  18 WARN PDType1Font: Using fallback font LiberationSans for base font ZapfDingbats
+   9 WARN PDType1Font: Using fallback font LiberationSans for base font Courier-BoldOblique
+   9 WARN PDType1Font: Using fallback font LiberationSans for base font Courier-Oblique
+   9 WARN PDType1Font: Using fallback font LiberationSans for base font Courier-Bold
+   9 WARN PDType1Font: Using fallback font LiberationSans for base font Courier
+   9 WARN PDType1Font: Using fallback font LiberationSans for base font Times-BoldItalic
+   9 WARN PDType1Font: Using fallback font LiberationSans for base font Times-Italic
+   9 WARN PDType1Font: Using fallback font LiberationSans for base font Times-Bold
+   9 WARN PDType1Font: Using fallback font LiberationSans for base font Times-Roman
+   9 WARN PDType1Font: Using fallback font LiberationSans for base font Helvetica-BoldOblique
+   9 WARN PDType1Font: Using fallback font LiberationSans for base font Helvetica-Oblique
+   9 WARN PDType1Font: Using fallback font LiberationSans for base font Helvetica-Bold
+   9 WARN PDType1Font: Using fallback font LiberationSans for base font Symbol
+   8 WARN NotificationService: No recipients found for DOCUMENT_GENERATED notification: entity=<uuid>
+   1 WARN MaximumAllowableTagsMeterFilter: Reached the maximum number of 'uri' tags for 'http.server.requests'.
+== whole stack #2
+{'INFO': 275, 'WARN': 199}
+  22 WARN PDType1Font: Using fallback font LiberationSans for base font Helvetica

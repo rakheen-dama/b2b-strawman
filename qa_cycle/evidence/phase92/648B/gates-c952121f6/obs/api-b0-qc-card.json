@@ -1,0 +1,24 @@
+{
+  "method": "GET",
+  "path": "/api/trust-accounts/395d2752-24d0-49d2-9c26-cf869e9fb897/client-ledgers/11711136-75ce-49d7-8ff1-938eff68e831",
+  "status": 200,
+  "body": {
+    "id": "0e10c3a6-cd2e-4566-8ac8-a42346faa1d4",
+    "trustAccountId": "395d2752-24d0-49d2-9c26-cf869e9fb897",
+    "clientId": "11711136-75ce-49d7-8ff1-938eff68e831",
+    "clientName": "QuickCollect Services mwlye2u03095",
+    "balance": 15000,
+    "totalDeposits": 45000,
+    "totalPayments": 0,
+    "totalFeeTransfers": 0,
+    "totalRefunds": 0,
+    "totalTransfersIn": 0,
+    "totalTransfersOut": 0,
+    "totalInvestmentPlacements": 30000,
+    "totalInvestmentReturns": 0,
+    "investedBalance": 30095,
+    "lastTransactionDate": "2026-11-18",
+    "createdAt": "2026-11-18T10:04:30.911208Z",
+    "updatedAt": "2026-11-18T10:04:30.911208Z"
+  }
+}

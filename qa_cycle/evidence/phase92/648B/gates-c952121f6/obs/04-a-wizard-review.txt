@@ -1,0 +1,126 @@
+Skip to content
+Kazi
+E2E Test Organization
+Search...
+⌘K
+TODAY
+Home
+My work
+Diary
+MATTERS
+Matters
+New matter
+Conflict check
+Adverse parties
+AI reviews
+CLIENTS
+Clients
+FICA & compliance
+Data requests
+FEES
+TRUST
+FIRM
+Platform Admin
+Notifications
+AO
+
+Alice Owner
+
+alice@e2e-test.local
+
+Toggle menu
+E2E Test Organization
+Trust accounting
+Reconciliation
+New
+Search
+⌘K
+13 unread notifications
+13
+e2e-test-org
+AO
+Back to Reconciliation
+New Reconciliation
+
+Reconcile your trust account with a bank statement
+
+1
+Select Account
+2
+Upload Statement
+3
+Auto-Match
+4
+Review & Match
+5
+Complete
+Matching Progress
+0 / 2 lines resolved
+Bank Statement Lines
+#1
+18 Nov 2026
+
+Credit interest CALL-1122334455 OBS YICNA
+
+R 400,00 CR
+
+Unmatched
+#2
+18 Nov 2026
+
+Credit interest call account OBS YICNA second
+
+R 60,00 CR
+
+Unmatched
+Unmatched Trust Transactions
+
+INV-0E9C017B
+
+18 Nov 2026 · Investment capital received
+
+Investment capital received from the trust account (Nedbank)
+
+R 30 000,00
+
+As at 18 Nov 2026
+Bank and cashbook
+Bank balance
+R 30 555,00
++ Outstanding deposits
+R 30 095,00
+− Outstanding payments
+R 0,00
+= Adjusted bank balance
+R 60 650,00
+Cashbook
+R 30 095,00
+Difference
+R 30 555,00
+Cashbook and trust creditors
+Cashbook
+R 30 095,00
+Trust creditors
+R 30 095,00
+Difference
+R 0,00
+Trust creditors
+Client ledgers
+R 0,00
+Investment creditors (section 86(4))
+R 30 095,00
+Legal Practitioners' Fidelity Fund — interest and charges
+R 0,00
+Unidentified deposits
+R 0,00
+
+2 statement lines are neither matched nor excluded
+
+Excluded statement lines total R 0,00. An excluded line adjusts nothing: excluding a real bank movement leaves its amount as the difference between the bank and the cashbook.
+
+Reconciliation is not balanced
+Complete Reconciliation
+Back
+Command Palette
+
+Search pages and settings

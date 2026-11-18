@@ -1,0 +1,405 @@
+{
+  "run": "YICNA",
+  "today": "2026-11-18",
+  "ids": {
+    "funding": "395d2752-24d0-49d2-9c26-cf869e9fb897",
+    "qc": "11711136-75ce-49d7-8ff1-938eff68e831",
+    "qcName": "QuickCollect Services mwlye2u03095",
+    "moroka": "cb019e24-51da-4b2d-bdaf-612e3917f47b",
+    "morokaMatter": "e5129439-7f06-4f19-8301-adcc3cad4cbb",
+    "inv4": "ee31a6d8-e6c2-431a-be52-a4f4938dbaf2",
+    "inv4Name": "Nedbank Section 86(4) Investments",
+    "inv3": "339866d4-59f3-4e96-a1d8-1306ee5346f0",
+    "inv3Name": "Standard Bank Section 86(3) Investments",
+    "qcInv": "0e9c017b-fe4b-4b8c-9a6e-5515dd96e195",
+    "firmInv": "22ea5f1b-5288-43bd-86d0-3a32419158a4",
+    "activeS864": [
+      [
+        "0e9c017b-fe4b-4b8c-9a6e-5515dd96e195",
+        "CALL-1122334455",
+        "ACTIVE",
+        "QuickCollect Services mwlye2u03095"
+      ]
+    ],
+    "morokaInv": "99d9e32d-7d2c-443a-945f-6e49bb43d52c"
+  },
+  "b0": {
+    "pass": true,
+    "checks": {
+      "uiGross100": true,
+      "uiFund5": true,
+      "uiNet95": true,
+      "uiBalance30095": true,
+      "apiOneEntry": true,
+      "apiEntryNet": true,
+      "apiRegisterKeys": true,
+      "apiCardInvested30095": true,
+      "sqlOneEntry": true,
+      "sqlOneInvInterest95": true,
+      "sqlNoFundInvShare": true,
+      "sqlBalance30095": true,
+      "noRawEnum": true
+    },
+    "ui": {
+      "gross": 100,
+      "fund": 5,
+      "net": 95,
+      "balance": 30095
+    },
+    "api": {
+      "grossInterest": 100,
+      "fundShare": 5,
+      "netInterest": 95,
+      "balance": 30095,
+      "status": "ACTIVE",
+      "hasInterestEarnedKey": false
+    },
+    "card": {
+      "status": 200,
+      "balance": 15000,
+      "investedBalance": 30095
+    },
+    "sqlEntries": [
+      {
+        "id": "e3bb6d66-618a-4b31-83ca-b2c87ead5aa4",
+        "entryDate": "2026-11-18",
+        "gross": 100,
+        "fund": 5,
+        "net": 95,
+        "presentation": "NET",
+        "status": "POSTED",
+        "lineId": null,
+        "netTx": "423f5677-6fe1-415c-abd1-207c5e498abb",
+        "fundTx": null
+      }
+    ]
+  },
+  "a": {
+    "pass": false,
+    "checks": {
+      "importedTwoLines": true,
+      "importSuggestionInvestmentInterest": true,
+      "s864ChoicesOffered": true,
+      "suggestedPreselected": true,
+      "dialogGross400ReadOnly": true,
+      "dialogFund20": true,
+      "dialogClient380": true,
+      "badgeRecorded": true,
+      "sqlEntryGross": true,
+      "sqlNetRowInvInterest380": true,
+      "sqlFundRowFundInvShare20": true,
+      "sqlLineRecorded": true,
+      "apiTwoEntries": true,
+      "apiGrossEntry": true,
+      "apiRegisterSums": true,
+      "uiRegisterSums": true,
+      "sqlBalance30475": true,
+      "cardInvestedUp380": true,
+      "noRawEnum": false
+    },
+    "dialog": {
+      "labels": [
+        "Bank charge refunded from the business account",
+        "Section 86(4) investment interest"
+      ],
+      "gross": "400",
+      "fund": "R 20,00",
+      "client": "R 380,00",
+      "presentationLabels": [
+        "Gross — the Fund's 5% leaves in a separate debit",
+        "Net of the Fund's 5%"
+      ]
+    },
+    "badge": "Recorded: Section 86(4) investment interest",
+    "ui": {
+      "gross": 500,
+      "fund": 25,
+      "net": 475,
+      "balance": 30475
+    },
+    "api": {
+      "grossInterest": 500,
+      "fundShare": 25,
+      "netInterest": 475,
+      "balance": 30475,
+      "status": "ACTIVE",
+      "hasInterestEarnedKey": false
+    },
+    "card": {
+      "status": 200,
+      "balance": 15000,
+      "investedBalance": 30475
+    },
+    "sqlEntry": {
+      "id": "55c09221-e9fa-4576-9160-9fd1dc30ac90",
+      "entryDate": "2026-11-18",
+      "gross": 400,
+      "fund": 20,
+      "net": 380,
+      "presentation": "GROSS",
+      "status": "POSTED",
+      "lineId": "56d5095a-0e34-40d1-8a17-ffbaa518997e",
+      "netTx": "da78fdfe-7c41-4858-8881-bc1ac498e2a1",
+      "fundTx": "b3cc200b-b776-4d49-8139-c759ec73336f"
+    },
+    "netRow": {
+      "id": "da78fdfe-7c41-4858-8881-bc1ac498e2a1",
+      "type": "INV_INTEREST",
+      "amount": 380,
+      "ledger": "CLIENT_INVESTMENT",
+      "ledgerEffect": 380,
+      "cashbookEffect": 380,
+      "status": "RECORDED",
+      "posted": true,
+      "lineId": "56d5095a-0e34-40d1-8a17-ffbaa518997e"
+    },
+    "fundRow": {
+      "id": "b3cc200b-b776-4d49-8139-c759ec73336f",
+      "type": "FUND_INV_SHARE",
+      "amount": 20,
+      "ledger": "NON_CLIENT",
+      "ledgerEffect": 20,
+      "cashbookEffect": 20,
+      "status": "RECORDED",
+      "posted": true,
+      "lineId": "56d5095a-0e34-40d1-8a17-ffbaa518997e"
+    },
+    "line": [
+      "RECORDED",
+      "INVESTMENT_INTEREST",
+      "da78fdfe-7c41-4858-8881-bc1ac498e2a1"
+    ],
+    "statement": [
+      "2",
+      "1",
+      "IMPORTED"
+    ]
+  },
+  "b1": {
+    "pass": true,
+    "checks": {
+      "openNoLineNetOnly": true,
+      "openOffersOnlyTheUnmatched60Line": true,
+      "lineDatesAndEnablesGross": true,
+      "lineGrossShown60": true,
+      "backToAdviceResets": true,
+      "dialogShares": true,
+      "sqlEntry": true,
+      "sqlOneInvInterest": true,
+      "sqlNoFundInvShare": true,
+      "apiEntry": true,
+      "apiRegister": true,
+      "uiRegister": true,
+      "uiRegisterBeforeZeros": true,
+      "sqlBalance": true,
+      "cardInvested": true,
+      "line60StillUnmatched": true,
+      "noRawEnum": true
+    },
+    "dialog": {
+      "date": "2026-11-18",
+      "gross": "33.33",
+      "fund": "R 1,67",
+      "client": "R 31,66",
+      "netChecked": true
+    },
+    "ui": {
+      "gross": 33.33,
+      "fund": 1.67,
+      "net": 31.66,
+      "balance": 7531.66
+    },
+    "api": {
+      "grossInterest": 33.33,
+      "fundShare": 1.67,
+      "netInterest": 31.66,
+      "balance": 7531.66,
+      "status": "ACTIVE",
+      "hasInterestEarnedKey": false
+    },
+    "card": {
+      "status": 200,
+      "balance": 234000,
+      "investedBalance": 7531.66
+    },
+    "sqlEntries": [
+      {
+        "id": "9c8497e7-1ee7-4938-96cb-72696c2fc994",
+        "entryDate": "2026-11-18",
+        "gross": 33.33,
+        "fund": 1.67,
+        "net": 31.66,
+        "presentation": "NET",
+        "status": "POSTED",
+        "lineId": null,
+        "netTx": "be6eb7d9-286d-4313-affe-6f015dcab1e8",
+        "fundTx": null
+      }
+    ]
+  },
+  "c": {
+    "pass": true,
+    "checks": {
+      "registerNoRecordInterest": true,
+      "registerFundNote": true,
+      "registerNoInterestFigures": true,
+      "wizardNoS864Interest": true,
+      "wizardOffersFundInterest": true,
+      "noInvestmentPicker": true,
+      "lineUntouched": true,
+      "suggestionFundInterest": true,
+      "noRawEnum": true
+    },
+    "register": {
+      "hasRecordInterest": false,
+      "hasWithdraw": true,
+      "fundNote": "Interest is the Fund's — record it from the investment account's statement",
+      "hasGrossSubLine": false
+    },
+    "dialogLabels": [
+      "Interest received for the Legal Practitioners' Fidelity Fund",
+      "Bank charge refunded from the business account"
+    ],
+    "a864Labels": [
+      "Bank charge refunded from the business account",
+      "Section 86(4) investment interest"
+    ]
+  },
+  "d": {
+    "scans": 11,
+    "dirty": [
+      {
+        "label": "a-record-from-statement-dialog",
+        "chars": 737,
+        "hits": [
+          "/\\bGROSS\\b/"
+        ],
+        "clean": false
+      }
+    ],
+    "regexes": [
+      "/\\bGROSS\\b/",
+      "/\\bNET\\b/",
+      "/\\bINVESTMENT_INTEREST\\b/",
+      "/\\bINV_INTEREST\\b/",
+      "/\\bFUND_INV_SHARE\\b/",
+      "/\\bCLIENT_INSTRUCTION\\b/",
+      "/\\bFIRM_DISCRETION\\b/",
+      "/\\bPOSTED\\b/",
+      "/\\bREVERSED\\b/"
+    ]
+  },
+  "e": {
+    "a-record-from-statement-dialog": [
+      {
+        "w": 1280,
+        "ok": true,
+        "figuresOk": true,
+        "figures": 2,
+        "pageHScroll": false,
+        "wrapper": null,
+        "offenders": 0,
+        "truncated": 0
+      },
+      {
+        "w": 1440,
+        "ok": true,
+        "figuresOk": true,
+        "figures": 2,
+        "pageHScroll": false,
+        "wrapper": null,
+        "offenders": 0,
+        "truncated": 0
+      },
+      {
+        "w": 1920,
+        "ok": true,
+        "figuresOk": true,
+        "figures": 2,
+        "pageHScroll": false,
+        "wrapper": null,
+        "offenders": 0,
+        "truncated": 0
+      }
+    ],
+    "b1-record-interest-dialog": [
+      {
+        "w": 1280,
+        "ok": true,
+        "figuresOk": true,
+        "figures": 2,
+        "pageHScroll": false,
+        "wrapper": null,
+        "offenders": 0,
+        "truncated": 0
+      },
+      {
+        "w": 1440,
+        "ok": true,
+        "figuresOk": true,
+        "figures": 2,
+        "pageHScroll": false,
+        "wrapper": null,
+        "offenders": 0,
+        "truncated": 0
+      },
+      {
+        "w": 1920,
+        "ok": true,
+        "figuresOk": true,
+        "figures": 2,
+        "pageHScroll": false,
+        "wrapper": null,
+        "offenders": 0,
+        "truncated": 0
+      }
+    ],
+    "register-table": [
+      {
+        "w": 1280,
+        "ok": true,
+        "figuresOk": true,
+        "figures": 9,
+        "pageHScroll": false,
+        "wrapper": {
+          "scrollWidth": 926,
+          "clientWidth": 926,
+          "overflows": false
+        },
+        "offenders": 0,
+        "truncated": 0
+      },
+      {
+        "w": 1440,
+        "ok": true,
+        "figuresOk": true,
+        "figures": 9,
+        "pageHScroll": false,
+        "wrapper": {
+          "scrollWidth": 1086,
+          "clientWidth": 1086,
+          "overflows": false
+        },
+        "offenders": 0,
+        "truncated": 0
+      },
+      {
+        "w": 1920,
+        "ok": true,
+        "figuresOk": true,
+        "figures": 9,
+        "pageHScroll": false,
+        "wrapper": {
+          "scrollWidth": 1182,
+          "clientWidth": 1182,
+          "overflows": false
+        },
+        "offenders": 0,
+        "truncated": 0
+      }
+    ]
+  },
+  "consoleErrors": 0,
+  "pageErrors": 0,
+  "posts": 38
+}

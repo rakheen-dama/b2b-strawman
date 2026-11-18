@@ -1,0 +1,35 @@
+{
+  "method": "GET",
+  "path": "/api/trust-investments/0e9c017b-fe4b-4b8c-9a6e-5515dd96e195/interest",
+  "status": 200,
+  "body": [
+    {
+      "id": "e3bb6d66-618a-4b31-83ca-b2c87ead5aa4",
+      "investmentId": "0e9c017b-fe4b-4b8c-9a6e-5515dd96e195",
+      "entryDate": "2026-11-18",
+      "grossAmount": 100,
+      "fundShareAmount": 5,
+      "netAmount": 95,
+      "presentation": "NET",
+      "status": "POSTED",
+      "netTransactionId": "423f5677-6fe1-415c-abd1-207c5e498abb",
+      "fundShareTransactionId": null,
+      "bankStatementLineId": null,
+      "clientTaxReference": "9234567890"
+    },
+    {
+      "id": "55c09221-e9fa-4576-9160-9fd1dc30ac90",
+      "investmentId": "0e9c017b-fe4b-4b8c-9a6e-5515dd96e195",
+      "entryDate": "2026-11-18",
+      "grossAmount": 400,
+      "fundShareAmount": 20,
+      "netAmount": 380,
+      "presentation": "GROSS",
+      "status": "POSTED",
+      "netTransactionId": "da78fdfe-7c41-4858-8881-bc1ac498e2a1",
+      "fundShareTransactionId": "b3cc200b-b776-4d49-8139-c759ec73336f",
+      "bankStatementLineId": "56d5095a-0e34-40d1-8a17-ffbaa518997e",
+      "clientTaxReference": "9234567890"
+    }
+  ]
+}

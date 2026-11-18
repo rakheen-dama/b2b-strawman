@@ -1,0 +1,69 @@
+== worktree: /Users/rakheendama/Projects/2026/worktree-epic-648B @ c952121f61b7fed1e4211b401b65dc95c66c6ef4
+== build log source lines:
+Building from source at: /Users/rakheendama/Projects/2026/worktree-epic-648B
+  Tail logs:   docker compose -f /Users/rakheendama/Projects/2026/worktree-epic-648B/compose/docker-compose.e2e.yml logs -f backend frontend
+== jar entries (648B investment classes):
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/investment/TrustInvestmentInterest.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/investment/TrustInvestmentInterestRepository.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/investment/InterestPresentation.class
+== StatementLineClassification.class: INVESTMENT_INTEREST 1
+== TrustInvestmentService.class: FUND_INV_SHARE 1 ; INV_INTEREST 1 ; interest_recorded 1
+== TrustReconciliationService.class: INVESTMENT_INTEREST 1
+== jar migrations (latest tenant V*):
+db/migration/tenant/V22__phase92_investment_account_basis.sql
+db/migration/tenant/V23__phase92_investment_accounts.sql
+db/migration/tenant/V24__phase92_investment_interest.sql
+== frontend container: 648B strings in .next (server + static):
+-- 'Bank advice — no statement line':
+/app/frontend/.next/server/chunks/ssr/frontend_app_(app)_org_[slug]_trust-accounting_investments_0bq7hzb._.js
+/app/frontend/.next/static/chunks/0_mutqvo2izky.js
+-- 'How did the bank credit it?':
+/app/frontend/.next/server/chunks/ssr/1oju_app_(app)_org_[slug]_trust-accounting_reconciliation_new_page_tsx_0gjhtfk._.js
+/app/frontend/.next/server/chunks/ssr/frontend_app_(app)_org_[slug]_trust-accounting_investments_0bq7hzb._.js
+/app/frontend/.next/static/chunks/0_mutqvo2izky.js
+/app/frontend/.next/static/chunks/16g52599ebod2.js
+-- 'as the bank shows it':
+/app/frontend/.next/server/chunks/ssr/frontend_app_(app)_org_[slug]_trust-accounting_investments_0bq7hzb._.js
+/app/frontend/.next/static/chunks/0_mutqvo2izky.js
+-- 'interest-line-select':
+/app/frontend/.next/server/chunks/ssr/frontend_app_(app)_org_[slug]_trust-accounting_investments_0bq7hzb._.js
+/app/frontend/.next/static/chunks/0_mutqvo2izky.js
+-- 'Section 86(4) investment interest':
+/app/frontend/.next/server/chunks/ssr/frontend_lib_types_trust_ts_0cuiq_p._.js
+/app/frontend/.next/server/chunks/ssr/frontend_0cwc-d_._.js
+/app/frontend/.next/server/chunks/ssr/frontend_lib_1q18f8m._.js
+/app/frontend/.next/server/chunks/ssr/_0qu3st8._.js
+-- 'investment-interest-fund-note':
+/app/frontend/.next/server/chunks/ssr/_105qp0b._.js
+-- 'Net of the Fund':
+/app/frontend/.next/server/chunks/ssr/frontend_lib_types_trust_ts_0cuiq_p._.js
+/app/frontend/.next/server/chunks/ssr/frontend_0cwc-d_._.js
+/app/frontend/.next/server/chunks/ssr/frontend_lib_1q18f8m._.js
+/app/frontend/.next/server/chunks/ssr/_0qu3st8._.js
+-- 'Gross interest':
+/app/frontend/.next/server/chunks/ssr/_105qp0b._.js
+/app/frontend/.next/server/chunks/ssr/1oju_app_(app)_org_[slug]_trust-accounting_reconciliation_new_page_tsx_0gjhtfk._.js
+/app/frontend/.next/server/chunks/ssr/frontend_app_(app)_org_[slug]_trust-accounting_investments_0bq7hzb._.js
+/app/frontend/.next/static/chunks/0_mutqvo2izky.js
+-- 'interest-bank-advice-note':
+/app/frontend/.next/server/chunks/ssr/frontend_app_(app)_org_[slug]_trust-accounting_investments_0bq7hzb._.js
+/app/frontend/.next/static/chunks/0_mutqvo2izky.js
+== health: {"groups":["liveness","readiness"],"status":"UP"}  frontend :3001 HTTP 200
+== tenant schemas: tenant_7d218705360b
+ version |           description            | success |        installed_on        
+---------+----------------------------------+---------+----------------------------
+ 24      | phase92 investment interest      | t       | 2026-11-18 10:02:39.134763
+ 23      | phase92 investment accounts      | t       | 2026-11-18 10:02:39.120346
+ 22      | phase92 investment account basis | t       | 2026-11-18 10:02:39.114795
+(3 rows)
+
+ interest_earned_cols 
+----------------------
+                    0
+(1 row)
+
+ interest_table 
+----------------
+              1
+(1 row)
+

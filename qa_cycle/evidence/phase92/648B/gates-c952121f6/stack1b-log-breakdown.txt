@@ -1,0 +1,26 @@
+== stack #1b lifecycle run 2 window
+{'INFO': 140, 'WARN': 105}
+  12 WARN PDType1Font: Using fallback font LiberationSans for base font Helvetica
+  12 WARN PDType1Font: Using fallback font LiberationSans for base font ZapfDingbats
+   6 WARN PDType1Font: Using fallback font LiberationSans for base font Courier-BoldOblique
+   6 WARN PDType1Font: Using fallback font LiberationSans for base font Courier-Oblique
+   6 WARN PDType1Font: Using fallback font LiberationSans for base font Courier-Bold
+   6 WARN PDType1Font: Using fallback font LiberationSans for base font Courier
+   6 WARN PDType1Font: Using fallback font LiberationSans for base font Times-BoldItalic
+   6 WARN PDType1Font: Using fallback font LiberationSans for base font Times-Italic
+   6 WARN PDType1Font: Using fallback font LiberationSans for base font Times-Bold
+   6 WARN PDType1Font: Using fallback font LiberationSans for base font Times-Roman
+   6 WARN PDType1Font: Using fallback font LiberationSans for base font Helvetica-BoldOblique
+   6 WARN PDType1Font: Using fallback font LiberationSans for base font Helvetica-Oblique
+   6 WARN PDType1Font: Using fallback font LiberationSans for base font Helvetica-Bold
+   6 WARN PDType1Font: Using fallback font LiberationSans for base font Symbol
+   5 WARN GlobalExceptionHandler: Forbidden: path=/api/matters/<uuid>/time-summary/by-member, method=GET, reason=Per-member time breakdown is restricted to matter leads, org admins, an
+   2 WARN InvoiceCreationService: Draft invoice for customer <uuid> created without a tax number — send will be blocked until the customer profile is updated (warning code: tax_number_
+   1 WARN MaximumAllowableTagsMeterFilter: Reached the maximum number of 'uri' tags for 'http.server.requests'.
+   1 WARN NotificationService: No recipients found for DOCUMENT_GENERATED notification: entity=<uuid>
+== stack #1b OBS window 10:06:30-10:07:30
+{'INFO': 4}
+== whole stack #1b
+{'INFO': 336, 'WARN': 151}
+  16 WARN PDType1Font: Using fallback font LiberationSans for base font Helvetica
+  16 WARN PDType1Font: Using fallback font LiberationSans for base font ZapfDingbats

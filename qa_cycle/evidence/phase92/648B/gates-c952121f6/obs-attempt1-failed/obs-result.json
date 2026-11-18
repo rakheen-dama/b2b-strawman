@@ -1,0 +1,473 @@
+{
+  "steps": {
+    "b0": {
+      "reg": {
+        "label": "b0",
+        "depositNumber": "CALL-1122334455",
+        "text": "QuickCollect Services mwly53q3c3b5 Section 86(4) Nedbank Section 86(4) Investments Nedbank CALL-1122334455 7.25% LPFF share 5% (statutory) 18 Nov 2026 Call deposit R 30 000,00 Gross interest R 100,00 Fund 5% R 5,00 Net interest R 95,00 R 30 095,00 Active Record interest Withdraw",
+        "cells": [
+          "QuickCollect Services mwly53q3c3b5 Section 86(4)",
+          "Nedbank Section 86(4) Investments Nedbank CALL-1122334455",
+          "7.25% LPFF share 5% (statutory)",
+          "18 Nov 2026 Call deposit",
+          "R 30 000,00 Gross interest R 100,00 Fund 5% R 5,00 Net interest R 95,00",
+          "R 30 095,00",
+          "Active",
+          "Record interest Withdraw"
+        ],
+        "gross": 100,
+        "fund": 5,
+        "net": 95,
+        "balance": 30095,
+        "principal": 30000,
+        "hasRecordInterest": true,
+        "hasWithdraw": true,
+        "fundNote": null
+      },
+      "snap": {
+        "files": [
+          "01-register-b0-after-lifecycle-1440.png",
+          "01-register-b0-after-lifecycle-1280.png"
+        ],
+        "scan": {
+          "label": "register-b0-after-lifecycle",
+          "chars": 701,
+          "hits": [],
+          "clean": true
+        }
+      },
+      "firmRow": {
+        "label": "c-firm",
+        "depositNumber": "FD-0987654321",
+        "text": "Firm (section 86(3)) Section 86(3) Standard Bank Section 86(3) Investments Standard Bank FD-0987654321 8.50% LPFF share Arrangement 18 Nov 2026 to 16 Feb 2027 R 200 000,00 Interest is the Fund's — record it from the investment account's statement R 200 000,00 Active Withdraw",
+        "cells": [
+          "Firm (section 86(3)) Section 86(3)",
+          "Standard Bank Section 86(3) Investments Standard Bank FD-0987654321",
+          "8.50% LPFF share Arrangement",
+          "18 Nov 2026 to 16 Feb 2027",
+          "R 200 000,00 Interest is the Fund's — record it from the investment account's statement",
+          "R 200 000,00",
+          "Active",
+          "Withdraw"
+        ],
+        "gross": null,
+        "fund": null,
+        "net": null,
+        "balance": 200000,
+        "principal": 200000,
+        "hasRecordInterest": false,
+        "hasWithdraw": true,
+        "fundNote": "Interest is the Fund's — record it from the investment account's statement"
+      },
+      "apiEntries": {
+        "method": "GET",
+        "path": "/api/trust-investments/5fa45793-7f03-4b58-9748-eba48f2b7715/interest",
+        "status": 200,
+        "body": [
+          {
+            "id": "a9021d32-6967-4a2a-ae51-1fc6720341b4",
+            "investmentId": "5fa45793-7f03-4b58-9748-eba48f2b7715",
+            "entryDate": "2026-11-18",
+            "grossAmount": 100,
+            "fundShareAmount": 5,
+            "netAmount": 95,
+            "presentation": "NET",
+            "status": "POSTED",
+            "netTransactionId": "61e3c720-2aec-42cf-be8b-46b1a4f84227",
+            "fundShareTransactionId": null,
+            "bankStatementLineId": null,
+            "clientTaxReference": "9234567890"
+          }
+        ]
+      },
+      "apiInv": {
+        "status": 200,
+        "rows": [
+          {
+            "id": "5fa45793-7f03-4b58-9748-eba48f2b7715",
+            "trustAccountId": "8508dfff-920c-4f5e-a286-339969031a90",
+            "investmentAccountId": "3d8111ed-abb3-4616-a3b4-2acfa46692c8",
+            "investmentAccountName": "Nedbank Section 86(4) Investments",
+            "clientId": "65bd2435-b1dc-47f9-93ad-18f64016d29d",
+            "clientName": "QuickCollect Services mwly53q3c3b5",
+            "matterId": "68dadc0f-e698-408e-a376-ad62554b56af",
+            "institution": "Nedbank",
+            "accountNumber": "CALL-1122334455",
+            "principal": 30000,
+            "interestRate": 0.0725,
+            "depositDate": "2026-11-18",
+            "maturityDate": null,
+            "grossInterest": 100,
+            "fundShare": 5,
+            "netInterest": 95,
+            "balance": 30095,
+            "status": "ACTIVE",
+            "awaitingApproval": false,
+            "withdrawalDate": null,
+            "withdrawalAmount": null,
+            "depositTransactionId": "0bfac0a2-a67b-474d-8d64-6a4817c70c11",
+            "withdrawalTransactionId": null,
+            "notes": "Call account on QuickCollect's written instruction",
+            "investmentBasis": "CLIENT_INSTRUCTION",
+            "createdAt": "2026-11-18T09:58:25.269223Z",
+            "updatedAt": "2026-11-18T09:58:25.273975Z"
+          },
+          {
+            "id": "5f1e4451-2bd2-4f28-aa23-9504e15c8f1e",
+            "trustAccountId": "8508dfff-920c-4f5e-a286-339969031a90",
+            "investmentAccountId": "3fa756cb-da27-4876-92ba-75de6289a39a",
+            "investmentAccountName": "Standard Bank Section 86(3) Investments",
+            "clientId": null,
+            "clientName": null,
+            "matterId": null,
+            "institution": "Standard Bank",
+            "accountNumber": "FD-0987654321",
+            "principal": 200000,
+            "interestRate": 0.085,
+            "depositDate": "2026-11-18",
+            "maturityDate": "2027-02-16",
+            "grossInterest": 0,
+            "fundShare": 0,
+            "netInterest": 0,
+            "balance": 200000,
+            "status": "ACTIVE",
+            "awaitingApproval": false,
+            "withdrawalDate": null,
+            "withdrawalAmount": null,
+            "depositTransactionId": "8c43b93a-1305-4db7-90a0-837f1adb1e92",
+            "withdrawalTransactionId": null,
+            "notes": "90-day fixed deposit — the firm's surplus trust money",
+            "investmentBasis": "FIRM_DISCRETION",
+            "createdAt": "2026-11-18T09:58:22.188166Z",
+            "updatedAt": "2026-11-18T09:58:22.195474Z"
+          }
+        ]
+      },
+      "apiQc": {
+        "grossInterest": 100,
+        "fundShare": 5,
+        "netInterest": 95,
+        "balance": 30095,
+        "status": "ACTIVE",
+        "hasInterestEarnedKey": false
+      },
+      "apiCard": {
+        "status": 200,
+        "balance": 15000,
+        "investedBalance": 30095
+      },
+      "sql": {
+        "entries": [
+          {
+            "id": "a9021d32-6967-4a2a-ae51-1fc6720341b4",
+            "entryDate": "2026-11-18",
+            "gross": 100,
+            "fund": 5,
+            "net": 95,
+            "presentation": "NET",
+            "status": "POSTED",
+            "lineId": null,
+            "netTx": "61e3c720-2aec-42cf-be8b-46b1a4f84227",
+            "fundTx": null
+          }
+        ],
+        "rows": [
+          {
+            "id": "61e3c720-2aec-42cf-be8b-46b1a4f84227",
+            "type": "INV_INTEREST",
+            "amount": 95,
+            "ledger": "CLIENT_INVESTMENT",
+            "ledgerEffect": 95,
+            "cashbookEffect": 95,
+            "status": "RECORDED",
+            "posted": true,
+            "lineId": null
+          }
+        ],
+        "balance": 30095
+      },
+      "checks": {
+        "uiGross100": true,
+        "uiFund5": true,
+        "uiNet95": true,
+        "uiBalance30095": true,
+        "apiOneEntry": true,
+        "apiEntryNet": true,
+        "apiRegisterKeys": true,
+        "apiCardInvested30095": true,
+        "sqlOneEntry": true,
+        "sqlOneInvInterest95": true,
+        "sqlNoFundInvShare": true,
+        "sqlBalance30095": true,
+        "noRawEnum": true
+      }
+    },
+    "c": {
+      "register": {
+        "hasRecordInterest": false,
+        "hasWithdraw": true,
+        "fundNote": "Interest is the Fund's — record it from the investment account's statement",
+        "hasGrossSubLine": false
+      },
+      "apiFirm": {
+        "grossInterest": 0,
+        "fundShare": 0,
+        "netInterest": 0,
+        "balance": 200000,
+        "status": "ACTIVE",
+        "hasInterestEarnedKey": false
+      }
+    },
+    "a": {
+      "wizard": {
+        "accountId": "3d8111ed-abb3-4616-a3b4-2acfa46692c8",
+        "csv": "obs648b-YA6FQ-s864-statement.csv",
+        "files1": [
+          "02-a-wizard-step1-1440.png"
+        ],
+        "uploadResult": "Statement imported successfully Lines imported: 2 File: obs648b-YA6FQ-s864-statement.csv Period: 2026-11-18 to 2026-11-18 Format: CSV",
+        "files2": [
+          "03-a-wizard-uploaded-1440.png"
+        ],
+        "statementsBefore": 0,
+        "statementsAfter": 1,
+        "statementId": "5765dfc8-2248-400b-95a8-d9764d6b5897",
+        "autoMatch": "Auto-matched 0 lines 2 lines remaining for manual review",
+        "investmentsError": null,
+        "lines": [
+          {
+            "id": "53ea68b1-cc55-42df-a4c8-8a38e2d3349d",
+            "n": 1,
+            "date": "2026-11-18",
+            "amount": 400,
+            "matchStatus": "UNMATCHED",
+            "suggested": "INVESTMENT_INTEREST",
+            "classification": null
+          },
+          {
+            "id": "940a5bad-d7a2-4ac6-a0bf-d532d0dc0b70",
+            "n": 2,
+            "date": "2026-11-18",
+            "amount": 60,
+            "matchStatus": "UNMATCHED",
+            "suggested": "INVESTMENT_INTEREST",
+            "classification": null
+          }
+        ],
+        "files4": [
+          "04-a-wizard-review-1440.png",
+          "04-a-wizard-review-1280.png"
+        ],
+        "scanReview": {
+          "label": "a-wizard-review",
+          "chars": 1251,
+          "hits": [],
+          "clean": true
+        }
+      },
+      "line400": {
+        "id": "53ea68b1-cc55-42df-a4c8-8a38e2d3349d",
+        "n": 1,
+        "date": "2026-11-18",
+        "amount": 400,
+        "matchStatus": "UNMATCHED",
+        "suggested": "INVESTMENT_INTEREST",
+        "classification": null
+      },
+      "line60": {
+        "id": "940a5bad-d7a2-4ac6-a0bf-d532d0dc0b70",
+        "n": 2,
+        "date": "2026-11-18",
+        "amount": 60,
+        "matchStatus": "UNMATCHED",
+        "suggested": "INVESTMENT_INTEREST",
+        "classification": null
+      },
+      "before": {
+        "card": {
+          "status": 200,
+          "balance": 15000,
+          "investedBalance": 30095
+        },
+        "inv": {
+          "grossInterest": 100,
+          "fundShare": 5,
+          "netInterest": 95,
+          "balance": 30095,
+          "status": "ACTIVE",
+          "hasInterestEarnedKey": false
+        }
+      }
+    }
+  },
+  "consoleErrors": [],
+  "pageErrors": [],
+  "posts": [
+    {
+      "tab": "alice",
+      "at": "2026-11-18T10:00:17.165Z",
+      "url": "http://localhost:8090/token",
+      "nextAction": null
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T10:00:17.373Z",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "nextAction": "0088edf64350857ce7c8a275c733bdf0a750d7e0fa"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T10:00:17.424Z",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "nextAction": "0054b792f94151217e7f2512c3a4b2d72526b5095e"
+    },
+    {
+      "tab": "bob",
+      "at": "2026-11-18T10:00:18.190Z",
+      "url": "http://localhost:8090/token",
+      "nextAction": null
+    },
+    {
+      "tab": "bob",
+      "at": "2026-11-18T10:00:18.359Z",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "nextAction": "0088edf64350857ce7c8a275c733bdf0a750d7e0fa"
+    },
+    {
+      "tab": "bob",
+      "at": "2026-11-18T10:00:18.395Z",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "nextAction": "0054b792f94151217e7f2512c3a4b2d72526b5095e"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T10:00:20.203Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/investments",
+      "nextAction": "0088edf64350857ce7c8a275c733bdf0a750d7e0fa"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T10:00:22.426Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/investments",
+      "nextAction": "0088edf64350857ce7c8a275c733bdf0a750d7e0fa"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T10:00:23.665Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/reconciliation/new",
+      "nextAction": "0088edf64350857ce7c8a275c733bdf0a750d7e0fa"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T10:00:23.692Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/reconciliation/new",
+      "nextAction": "003ebe50a74213b8c62c1b3974c2e314cd20a21a32"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T10:00:23.758Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/reconciliation/new",
+      "nextAction": "40d7a3ae87c52f23adff527c352739693f04ed89f5"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T10:00:24.763Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/reconciliation/new",
+      "nextAction": "607dab93e5f4c92e4af87701522b62f487b2314512"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T10:00:25.908Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/reconciliation/new",
+      "nextAction": "400b7509259f034f7e2f7a32505128ba57581ca2c2"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T10:00:25.950Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/reconciliation/new",
+      "nextAction": "4052f4609d8750783ed06bfbd0dcdec619c92bfead"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T10:00:26.006Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/reconciliation/new",
+      "nextAction": "605caa8722035ac36eebe8e65db80c902f6b1be188"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T10:00:26.022Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/reconciliation/new",
+      "nextAction": "603327860e3017dca58f9027c2acc11f6203ae31bf"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T10:00:26.056Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/reconciliation/new",
+      "nextAction": "40dbdae9e6128fa55e0d0150df852fba07606dc6eb"
+    },
+    {
+      "tab": "bob",
+      "at": "2026-11-18T10:00:48.348Z",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "nextAction": "0088edf64350857ce7c8a275c733bdf0a750d7e0fa"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T10:00:53.665Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/reconciliation/new",
+      "nextAction": "0088edf64350857ce7c8a275c733bdf0a750d7e0fa"
+    }
+  ],
+  "notes": [],
+  "scans": [
+    {
+      "label": "register-b0-after-lifecycle",
+      "chars": 701,
+      "hits": [],
+      "clean": true
+    },
+    {
+      "label": "a-wizard-review",
+      "chars": 1251,
+      "hits": [],
+      "clean": true
+    }
+  ],
+  "clips": {},
+  "startedAt": "2026-11-18T10:00:16.406Z",
+  "run": "YA6FQ",
+  "today": "2026-11-18",
+  "rawRegexes": [
+    "/\\bGROSS\\b/",
+    "/\\bNET\\b/",
+    "/\\bINVESTMENT_INTEREST\\b/",
+    "/\\bINV_INTEREST\\b/",
+    "/\\bFUND_INV_SHARE\\b/",
+    "/\\bCLIENT_INSTRUCTION\\b/",
+    "/\\bFIRM_DISCRETION\\b/",
+    "/\\bPOSTED\\b/",
+    "/\\bREVERSED\\b/"
+  ],
+  "ids": {
+    "funding": "8508dfff-920c-4f5e-a286-339969031a90",
+    "qc": "65bd2435-b1dc-47f9-93ad-18f64016d29d",
+    "qcName": "QuickCollect Services mwly53q3c3b5",
+    "moroka": "1eca7b8f-4fc7-4269-be30-a52ecddf66a0",
+    "morokaMatter": "f7f8de68-4780-4a6e-adb2-81145e6d21e4",
+    "inv4": "3d8111ed-abb3-4616-a3b4-2acfa46692c8",
+    "inv4Name": "Nedbank Section 86(4) Investments",
+    "inv3": "3fa756cb-da27-4876-92ba-75de6289a39a",
+    "inv3Name": "Standard Bank Section 86(3) Investments",
+    "qcInv": "5fa45793-7f03-4b58-9748-eba48f2b7715",
+    "firmInv": "5f1e4451-2bd2-4f28-aa23-9504e15c8f1e",
+    "activeS864": [
+      [
+        "5fa45793-7f03-4b58-9748-eba48f2b7715",
+        "CALL-1122334455",
+        "ACTIVE",
+        "QuickCollect Services mwly53q3c3b5"
+      ]
+    ]
+  },
+  "error": "locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByTestId('record-btn-53ea68b1-cc55-42df-a4c8-8a38e2d3349d')\u001b[22m\n\n    at openRecordFromStatement (/Users/rakheendama/Projects/2026/worktree-epic-648B/qa_cycle/evidence/phase92/648B/gates-c952121f6/obs.cjs:308:47)\n    at /Users/rakheendama/Projects/2026/worktree-epic-648B/qa_cycle/evidence/phase92/648B/gates-c952121f6/obs.cjs:380:20"
+}

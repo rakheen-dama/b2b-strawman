@@ -1,0 +1,30 @@
+surefire-empty-check stack1 2026-11-18T09:52:45Z 0
+stack1-down-pre start 2026-11-18T09:52:45Z
+stack1-down-pre end 2026-11-18T09:52:45Z rc 0
+stack1-up start 2026-11-18T09:52:45Z
+stack1-up end 2026-11-18T09:54:22Z rc 0
+surefire-empty-check lc1 2026-11-18T09:56:16Z 0
+.lc1.start 2026-11-18T09:56:16Z
+.lc1.end 2026-11-18T09:59:21Z rc 0
+.obs.start 2026-11-18T10:00:16Z
+.obs.end 2026-11-18T10:00:58Z rc 1
+surefire-empty-check stack1b 2026-11-18T10:02:04Z 0
+stack1b-down-pre start 2026-11-18T10:02:04Z
+stack1b-down-pre end 2026-11-18T10:02:06Z rc 0
+stack1b-up start 2026-11-18T10:02:06Z
+stack1b-up end 2026-11-18T10:02:44Z rc 0
+surefire-empty-check lc2 2026-11-18T10:03:16Z 0
+.lc2.start 2026-11-18T10:03:16Z
+.lc2.end 2026-11-18T10:06:19Z rc 0
+.obs2.start 2026-11-18T10:06:37Z
+.obs2.end 2026-11-18T10:07:26Z rc 0
+surefire-empty-check stack2 2026-11-18T10:08:44Z 0
+stack2-down-pre start 2026-11-18T10:08:44Z
+stack2-down-pre end 2026-11-18T10:08:47Z rc 0
+stack2-up start 2026-11-18T10:08:47Z
+stack2-up end 2026-11-18T10:09:23Z rc 0
+surefire-empty-check dii 2026-11-18T10:09:56Z 0
+.depth-ii.start 2026-11-18T10:09:56Z
+.depth-ii.end 2026-11-18T10:11:55Z rc 0
+stack2-down start 2026-11-18T10:12:13Z
+stack2-down end 2026-11-18T10:12:15Z rc 0

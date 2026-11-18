@@ -1,0 +1,2 @@
+removed operator-typed note: 'OBS YICNA 648B GROSS from the statement line'
+hits: []

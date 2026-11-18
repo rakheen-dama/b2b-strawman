@@ -1,0 +1,3 @@
+?? .epic-rulings.md
+?? qa_cycle/evidence/phase92/648B/gates-736bc12e6/
+?? qa_cycle/evidence/phase92/648B/gates-c952121f6/

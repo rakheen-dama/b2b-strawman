@@ -1,0 +1,21 @@
+{
+  "method": "GET",
+  "path": "/api/trust-investments/5fa45793-7f03-4b58-9748-eba48f2b7715/interest",
+  "status": 200,
+  "body": [
+    {
+      "id": "a9021d32-6967-4a2a-ae51-1fc6720341b4",
+      "investmentId": "5fa45793-7f03-4b58-9748-eba48f2b7715",
+      "entryDate": "2026-11-18",
+      "grossAmount": 100,
+      "fundShareAmount": 5,
+      "netAmount": 95,
+      "presentation": "NET",
+      "status": "POSTED",
+      "netTransactionId": "61e3c720-2aec-42cf-be8b-46b1a4f84227",
+      "fundShareTransactionId": null,
+      "bankStatementLineId": null,
+      "clientTaxReference": "9234567890"
+    }
+  ]
+}

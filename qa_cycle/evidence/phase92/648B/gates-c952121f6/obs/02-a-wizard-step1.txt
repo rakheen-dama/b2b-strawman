@@ -1,0 +1,67 @@
+Skip to content
+Kazi
+E2E Test Organization
+Search...
+⌘K
+TODAY
+Home
+My work
+Diary
+MATTERS
+Matters
+New matter
+Conflict check
+Adverse parties
+AI reviews
+CLIENTS
+Clients
+FICA & compliance
+Data requests
+FEES
+TRUST
+FIRM
+Platform Admin
+Notifications
+AO
+
+Alice Owner
+
+alice@e2e-test.local
+
+Toggle menu
+E2E Test Organization
+Trust accounting
+Reconciliation
+New
+Search
+⌘K
+13 unread notifications
+13
+e2e-test-org
+AO
+Back to Reconciliation
+New Reconciliation
+
+Reconcile your trust account with a bank statement
+
+1
+Select Account
+2
+Upload Statement
+3
+Auto-Match
+4
+Review & Match
+5
+Complete
+Select Trust Account & Period
+Choose the trust account and the period end. The period end is the firm's choice and every figure is calculated as at that date; the bank statement must have no line after the period end.
+Trust Account
+Mathebula & Partners Trust Account (Standard Bank - 0123456789)
+Standard Bank Section 86(3) Investments (Standard Bank - 0863000001)
+Nedbank Section 86(4) Investments (Nedbank - 0864000001)
+Period End Date
+Next
+Command Palette
+
+Search pages and settings

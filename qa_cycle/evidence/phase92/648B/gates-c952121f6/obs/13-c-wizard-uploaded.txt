@@ -1,0 +1,70 @@
+Skip to content
+Kazi
+E2E Test Organization
+Search...
+⌘K
+TODAY
+Home
+My work
+Diary
+MATTERS
+Matters
+New matter
+Conflict check
+Adverse parties
+AI reviews
+CLIENTS
+Clients
+FICA & compliance
+Data requests
+FEES
+TRUST
+FIRM
+Platform Admin
+Notifications
+AO
+
+Alice Owner
+
+alice@e2e-test.local
+
+Toggle menu
+E2E Test Organization
+Trust accounting
+Reconciliation
+New
+Search
+⌘K
+15 unread notifications
+15
+e2e-test-org
+AO
+Back to Reconciliation
+New Reconciliation
+
+Reconcile your trust account with a bank statement
+
+1
+Select Account
+2
+Upload Statement
+3
+Auto-Match
+4
+Review & Match
+5
+Complete
+Upload Bank Statement
+Upload a CSV bank statement file to begin reconciliation
+Choose Different File
+obs648b-YICNA-s863-statement.csv
+Statement imported successfully
+Lines imported: 1
+File: obs648b-YICNA-s863-statement.csv
+Period: 2026-11-18 to 2026-11-18
+Format: CSV
+Back
+Next
+Command Palette
+
+Search pages and settings

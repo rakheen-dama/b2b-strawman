@@ -38,7 +38,7 @@ const { REGISTRY_TYPES } = vi.hoisted(() => {
         "NON_CLIENT"
       ),
       typeInfo("INV_INTEREST", "Section 86(4) investment interest", "CLIENT_INVESTMENT"),
-      typeInfo("FIRM_INV_PLACE", "Placed in section 86(3) investment account", "INTER_ACCOUNT"),
+      typeInfo("FIRM_INV_PLACE", "Placed in section 86(3) investment", "INTER_ACCOUNT"),
     ],
   };
 });

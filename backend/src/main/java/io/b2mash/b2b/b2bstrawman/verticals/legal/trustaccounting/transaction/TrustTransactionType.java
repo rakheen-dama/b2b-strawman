@@ -282,8 +282,8 @@ public enum TrustTransactionType {
       Origin.FIRM,
       false,
       "trust_firm_inv_place",
-      "Placed in section 86(3) investment account",
-      "Placed in section 86(3) investment account"),
+      "Placed in section 86(3) investment",
+      "Placed in section 86(3) investment"),
   FIRM_INV_RECEIVE(
       1,
       TrustLedger.INTER_ACCOUNT,

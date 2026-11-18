@@ -1,9 +1,9 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.CustomerTypeTotalRow;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionType;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
@@ -66,9 +66,8 @@ class LedgerTotalsTest {
   }
 
   @Test
-  void plus_nonClientLedgerTypesAreANoOp_andUnplacedClientLedgerTypesFailLoudly() {
-    // 646B (D4): the fifteen types that never sit on the CLIENT ledger leave the totals unchanged;
-    // the two CLIENT-ledger types first posted in 648A must be placed before they post.
+  void plus_nonClientLedgerTypesAreANoOp() {
+    // 646B (D4): the fifteen types that never sit on the CLIENT ledger leave the totals unchanged.
     var base = LedgerTotals.ZERO.plus("DEPOSIT", new BigDecimal("100"));
     for (var type :
         List.of(
@@ -89,13 +88,39 @@ class LedgerTotalsTest {
             "FIRM_INV_RETURN")) {
       assertThat(base.plus(type, new BigDecimal("999"))).as(type).isEqualTo(base);
     }
-    for (var type : List.of("INV_PLACE", "INV_RETURN")) {
-      assertThatThrownBy(() -> base.plus(type, new BigDecimal("1")))
-          .as(type)
-          .isInstanceOf(IllegalStateException.class)
-          .hasMessageContaining(type)
-          .hasMessageContaining("648A places it");
-    }
+  }
+
+  @Test
+  void plus_section86_4PlacementIsATransferOut_andItsReturnATransferIn() {
+    // 648A gate D-1: to the client's general ledger a section 86(4) placement is money transferred
+    // out to their investment and its return a transfer back in — the folding is sound only while
+    // the types share their ledger signs, so derivedBalance() still equals clientBalance.
+    assertThat(TrustTransactionType.INV_PLACE.ledgerSign())
+        .isEqualTo(TrustTransactionType.TRANSFER_OUT.ledgerSign());
+    assertThat(TrustTransactionType.INV_RETURN.ledgerSign())
+        .isEqualTo(TrustTransactionType.TRANSFER_IN.ledgerSign());
+
+    var placed =
+        LedgerTotals.ZERO
+            .plus("DEPOSIT", new BigDecimal("50000"))
+            .plus("INV_PLACE", new BigDecimal("30000"));
+    assertThat(placed.transfersOut()).isEqualByComparingTo("30000");
+    assertThat(placed.derivedBalance()).isEqualByComparingTo("20000");
+
+    var returned = placed.plus("INV_RETURN", new BigDecimal("30000"));
+    assertThat(returned.transfersIn()).isEqualByComparingTo("30000");
+    assertThat(returned.derivedBalance()).isEqualByComparingTo("50000");
+
+    // byCustomer folds the signed ledger_effect rows the same way
+    var folded =
+        LedgerTotals.byCustomer(
+            List.of(
+                row(CLIENT_A, "DEPOSIT", "50000.00"),
+                row(CLIENT_A, "INV_PLACE", "-30000.00"),
+                row(CLIENT_A, "INV_RETURN", "30000.00")));
+    assertThat(folded.get(CLIENT_A).transfersOut()).isEqualByComparingTo("30000.00");
+    assertThat(folded.get(CLIENT_A).transfersIn()).isEqualByComparingTo("30000.00");
+    assertThat(folded.get(CLIENT_A).derivedBalance()).isEqualByComparingTo("50000.00");
   }
 
   @Test

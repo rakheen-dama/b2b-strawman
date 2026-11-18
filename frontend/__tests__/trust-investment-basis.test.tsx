@@ -380,6 +380,67 @@ describe("Epic 455 / 648A — Investment Basis and investment accounts", () => {
     expect(table.textContent).not.toMatch(/ACTIVE|MATURED|FIRM_DISCRETION|CLIENT_INSTRUCTION/);
   });
 
+  // 648A gate W-1: the 13-column register was 1344 px wide, so at 1280 Balance, Status and
+  // Actions sat behind a horizontal scroll. Eight columns with the secondary facts stacked, and
+  // every Badge and the actions allowed to wrap, keep it inside the card.
+  it("register fits the card: eight columns, secondary facts stacked, badges and actions wrap", async () => {
+    mockFetchInvestments.mockResolvedValue([
+      makeInvestment({ id: "inv-held" }),
+      makeInvestment({ id: "inv-pending", balance: 0, awaitingApproval: true }),
+    ]);
+
+    await renderInvestmentsPage();
+
+    const table = screen.getByTestId("investments-table");
+    const headers = Array.from(table.querySelectorAll("thead th")).map((th) => th.textContent);
+    expect(headers).toEqual([
+      "Client",
+      "Investment account",
+      "Rate",
+      "Term",
+      "Principal",
+      "Balance",
+      "Status",
+      "Actions",
+    ]);
+
+    const held = screen.getByTestId("investment-row-inv-held");
+    expect(held.querySelectorAll("td")).toHaveLength(8);
+    // The basis under the client; the institution and account number under the investment account
+    const clientCell = within(held).getByTestId("investment-client-cell");
+    expect(within(clientCell).getByText("Firm (section 86(3))")).toBeInTheDocument();
+    expect(within(clientCell).getByText("Section 86(3)")).toBeInTheDocument();
+    const accountCell = within(held).getByTestId("investment-account-cell");
+    expect(within(accountCell).getByText("Section 86(3) Call Account")).toBeInTheDocument();
+    expect(within(accountCell).getByText("FNB Money Market")).toBeInTheDocument();
+    expect(within(accountCell).getByText("INV-001")).toBeInTheDocument();
+    // The LPFF share under the rate, the maturity under the deposit date, interest under principal
+    expect(held.textContent).toContain("7.50%");
+    expect(held.textContent).toContain("LPFF share Arrangement");
+    expect(held.textContent).toMatch(/to 15 Jul 2026/);
+    expect(held.textContent).toMatch(/Interest R[\s ]0,00/);
+
+    // Shared Badge is whitespace-nowrap shrink-0 by default: the register's Badges must wrap
+    for (const text of ["Section 86(3)", "Active"]) {
+      const badge = within(held).getByText(text);
+      expect(badge.className, text).toContain("whitespace-normal");
+      expect(badge.className, text).toContain("shrink");
+      expect(badge.className, text).not.toContain("whitespace-nowrap");
+    }
+    const pending = within(screen.getByTestId("investment-row-inv-pending")).getByText(
+      "Awaiting approval"
+    );
+    expect(pending.className).toContain("whitespace-normal");
+    expect(pending.className).not.toContain("whitespace-nowrap");
+
+    // The action buttons wrap rather than widen the column; no cell forbids wrapping
+    const withdraw = within(held).getByRole("button", { name: "Withdraw" });
+    expect(withdraw.parentElement?.className).toContain("flex-wrap");
+    for (const cell of Array.from(table.querySelectorAll("th, td"))) {
+      expect(cell.className).not.toContain("whitespace-nowrap");
+    }
+  });
+
   it("a placement awaiting approval offers no withdrawal", async () => {
     mockFetchInvestments.mockResolvedValue([
       makeInvestment({ id: "inv-pending", balance: 0, awaitingApproval: true }),

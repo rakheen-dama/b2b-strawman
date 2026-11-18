@@ -56,7 +56,7 @@ export function InvestmentPageClient({
   }
 
   return (
-    <div className="flex gap-2">
+    <div className="flex flex-wrap gap-2">
       {canRecordInterest && (
         <Button variant="outline" size="sm" onClick={() => setInterestOpen(true)}>
           Record Interest

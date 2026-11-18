@@ -70,7 +70,11 @@ public record LedgerTotals(
       case DEPOSIT, UNIDENT_ALLOC_IN ->
           new LedgerTotals(
               deposits.add(amount), transfersIn, payments, feeTransfers, refunds, transfersOut);
-      case TRANSFER_IN ->
+      // To the client's general ledger a section 86(4) placement is money transferred out to their
+      // investment, and its return a transfer back in (648A): INV_PLACE has TRANSFER_OUT's
+      // ledgerSign (−1) and INV_RETURN TRANSFER_IN's (+1), so derivedBalance() still equals
+      // clientBalance. 648E adds the separate "Invested (section 86(4))" figure.
+      case TRANSFER_IN, INV_RETURN ->
           new LedgerTotals(
               deposits, transfersIn.add(amount), payments, feeTransfers, refunds, transfersOut);
       case PAYMENT ->
@@ -82,7 +86,7 @@ public record LedgerTotals(
       case REFUND ->
           new LedgerTotals(
               deposits, transfersIn, payments, feeTransfers, refunds.add(amount), transfersOut);
-      case TRANSFER_OUT ->
+      case TRANSFER_OUT, INV_PLACE ->
           new LedgerTotals(
               deposits, transfersIn, payments, feeTransfers, refunds, transfersOut.add(amount));
       case REVERSAL -> this;
@@ -104,10 +108,6 @@ public record LedgerTotals(
           FIRM_INV_WITHDRAW,
           FIRM_INV_RETURN ->
           this;
-      // CLIENT-ledger types not posted before 648A: the slice that posts one places it here.
-      case INV_PLACE, INV_RETURN ->
-          throw new IllegalStateException(
-              transactionType + " has no client-ledger total yet (648A places it)");
     };
   }
 

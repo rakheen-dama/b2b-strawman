@@ -334,8 +334,8 @@ class TrustTransactionTypeRegistryTest {
               Origin.FIRM,
               false,
               "trust_firm_inv_place",
-              "Placed in section 86(3) investment account",
-              "Placed in section 86(3) investment account"),
+              "Placed in section 86(3) investment",
+              "Placed in section 86(3) investment"),
           new Row(
               TrustTransactionType.FIRM_INV_RECEIVE,
               1,

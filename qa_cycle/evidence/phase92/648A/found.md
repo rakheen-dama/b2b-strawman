@@ -1,19 +1,44 @@
-# 648A — found while building and in review (F-1/F-2 reported only; F-3/F-4/F-5 fixed in this slice; F-6 OPEN — founder ruling)
+# 648A — found while building, in review and by the gates (F-2 reported only; F-1 → D-1, F-3/F-4/F-5, D-1, W-1, L-1 fixed in this slice; F-6 OPEN — founder ruling; A-1..A-3 reported)
 
-## F-1 (hand-off to 648E, already planned): the client ledger card's totals do not count investment rows
+## F-1 → D-1 (found by the E2E/OBS gates, HIGH; fixed in 648A): an approved section 86(4) placement made every client-ledger read 500
 
-`ClientLedgerService.ClientLedgerCardResponse.balance` is `TrustLedgerQueryRepository.clientBalance`
-(every posted `CLIENT`-ledger row), but its totals come from `LedgerTotals` (deposits, transfers
-in/out, payments, fee transfers, refunds). `INV_PLACE` and `INV_RETURN` are `CLIENT`-ledger rows
-that no total names, so once a section 86(4) placement is approved the G89-F13 comment on the
-record ("deposits + transfers in - payments - fee transfers - refunds - transfers out == balance")
-no longer holds for that client: the balance falls by the principal and no total moves.
+Status: **fixed in 648A (gate fix)**. Orchestrator ruling: 648A places `INV_PLACE` / `INV_RETURN` in
+`LedgerTotals` (the brief's "LedgerTotals is 648E's file" was wrong — the code's own comment assigned
+the placement to "the slice that posts one").
 
-- Repro: place and approve a R30 000 s86(4) investment for QuickCollect (day-60 E2E does this). The card's
-  `balance` is R15 000; deposits R45 000 and every other total R0.
-- Owner: 648E (client-ledger card / `LedgerTotals` / "Invested (section 86(4))" figure). The brief
-  marks these files "do not touch" for 648A. No backend test pins the invariant for investment rows
-  today (Tier 2 is green), so nothing here goes red; 648E should add the test.
+**F-1 as first written was wrong.** It said the card would show `balance` R15 000 with deposits
+R45 000 and every other total R0 (mismatched totals). It never rendered: `LedgerTotals.plus` still
+had `case INV_PLACE, INV_RETURN -> throw new IllegalStateException("… has no client-ledger total yet
+(648A places it)")`, and `ClientLedgerService.totalsFor` → `LedgerTotals.byCustomer` folds every
+posted `CLIENT`-ledger row, so the first approved `INV_PLACE` made
+`GET /api/trust-accounts/{id}/client-ledgers/{clientId}` (that client) and
+`GET /api/trust-accounts/{id}/client-ledgers` (the list — **every** client of the firm) return 500.
+The gate runner reproduced it on two fresh stacks (`day-60-interest.spec.ts:458` failing at line 473;
+12 lifecycle tests never ran) and in OBS: "Unable to load client ledgers", "Something went wrong" on
+the client ledger page, "Unable to load trust account data" on the Trust overview (it reads the
+list), and the matter Trust tab dropped its client-balance line (`gates/found-obs.md` D-1). The same
+fold backs the MCP `get_trust_balance` client read and the Client Trust Balances report, so both
+failed the same way.
+
+- Reproduced first: `InvestmentClientLedgerReadSurfacesIntegrationTest` (new) approves an s86(4)
+  placement then reads, through MockMvc, the client-ledger card, the list (investor and a bystander
+  client), the client's history and statement, the account's total balance, the Trust overview's
+  reads (cashbook balance, pending approvals, recent transactions, dashboard trust position and
+  balance trend), the matter trust balance, the investment, and the Client Trust Balances report; then
+  withdraws and reads them all again. Red before the fix: card 500,
+  `IllegalStateException: INV_PLACE has no client-ledger total yet (648A places it)` —
+  `red-backend-gate-d1.txt`.
+- Fix (`LedgerTotals.plus`, the 647D precedent of `UNIDENT_ALLOC_IN` → deposits): `INV_PLACE` folds
+  into `transfersOut` and `INV_RETURN` into `transfersIn` — to the client's general ledger a section
+  86(4) placement is money transferred out to their investment, and its return a transfer back in.
+  Checked first: `INV_PLACE.ledgerSign() == TRANSFER_OUT.ledgerSign() == −1` and
+  `INV_RETURN.ledgerSign() == TRANSFER_IN.ledgerSign() == +1`, so `derivedBalance()` still equals
+  `TrustLedgerQueryRepository.clientBalance` (pinned in `LedgerTotalsTest`). No DTO change.
+- Green: every surface 200; after approval the investor's card reads balance R20 000 (R50 000 − P),
+  deposits R50 000, transfers out R30 000, reconciling; the matter total stays R50 000; after the
+  withdrawal balance R50 000, transfers out R30 000 and in R30 000, reconciling.
+- Still 648E's: the separate "Invested (section 86(4))" figure / `investedBalance` on the card and
+  MCP `investedMinorUnits` (until then the placement shows as a transfer out on the card).
 
 ## F-2 (pre-existing, unrelated): `trust-transactions.test.tsx` makes real HTTP calls to :8080
 
@@ -174,4 +199,60 @@ orchestrator's.
   before the deposit date — but once 648B posts interest rows a withdrawal dated before one would
   return it early. 648B must pick the policy (refuse a withdrawal dated before the investment's
   last posted entry, or withdraw the as-at balance).
+
+## W-1 (found by the OBS gate, MEDIUM; fixed in 648A): the investments register needed a horizontal scroll at 1280 and 1440
+
+Status: **fixed in 648A (gate fix)**. The 13-column register measured 1344 px in a 926 px (1280) /
+1086 px (1440) wrapper, so Balance, Status and Actions (Withdraw, "Awaiting approval") were off-screen
+in the initial view and "Withdrawn" was cut at the edge (`gates/found-obs.md` W-1). Now eight columns
+of existing primitives: the basis Badge under the client, institution and account number under the
+investment account, the LPFF share under the rate ("LPFF share 5% (statutory)" / "Arrangement"), the
+maturity ("to …" / "Call deposit") under the deposit date, the recorded interest under the principal;
+every Badge takes the call-site `shrink whitespace-normal`, cells are `align-top`, and the action
+buttons `flex-wrap`. Pinned by the vitest `trust-investment-basis.test.tsx` › "register fits the
+card: …" (red on the old markup: `red-frontend-gate-w1.txt`). No e2e stack was run; a static headless
+approximation (real markup from the page, this build's CSS, wrapper pinned to the gate's widths) is in
+`w1-static-measure.txt`: old 1403 px (live gate: 1344), new min-content 802 px — no horizontal scroll
+and nothing clipped at 926 / 1086. The orchestrator's clip probe is the authoritative re-measure.
+
+## L-1 (found by the OBS gate, LOW; fixed in 648A): the two placement type labels differed in form
+
+Status: **fixed in 648A (gate fix)**. Registry label / client label of `FIRM_INV_PLACE` was "Placed
+in section 86(3) investment account"; `INV_PLACE` is "Placed in section 86(4) investment". Now both
+read "Placed in section 86(x) investment", matching the other section 86(3) labels ("Section 86(3)
+investment capital received / withdrawn / returned to trust") and the placement descriptions
+("Placed in section 86(x) investment at <institution> (<account>)", which already agreed). Updated:
+`TrustTransactionTypeRegistryTest`, the `client-ledger-page.test.tsx` fixture. No E2E asserted the old
+label (`day-60` matches `/Placed in section 86\([34]\) investment at/` on the description).
+Not changed (report only): the architecture's registry table (§16.2, `FIRM_INV_PLACE` row) still says
+"… investment account" — doc owner 651B/next arch touch; the reconciliation term "Placed in section
+86(3) investment accounts" is the EQ-2 term name, not a type label, and stays.
+
+## Gate fix — read-path audit over `TrustTransactionType` (report only unless marked)
+
+Every switch / map over the type on a read path was checked for `INV_PLACE`, `INV_RETURN` and the
+other investment types: `LedgerTotals` (the only throw — D-1, fixed), `TrustTransactionDirection`,
+`TrustTransactionTypeLabels` (registry-driven, lenient), `ClientLedgerService` (history/statement use
+the row's `ledger_effect`), `ClientTrustStatementContext` / `StatementOfAccountContextBuilder` (classify
+by `ledgerEffect` sign, labels from the registry), `ClientLedgerStatementQuery` /
+`TrustReceiptsPaymentsQuery` (registry labels), `ClientTrustBalancesQuery` (folds `LedgerTotals` —
+fixed with D-1), dashboard trust position / trend (`TrustBooksService`), MCP `TrustTools` (card via
+`ClientLedgerService` — fixed with D-1; position via `TrustBooksService`), `ActivityMessageFormatter`
+(explicit nouns + registry fallback, never throws), `TrustLedgerPortalSyncService.isPortalEligible`
+(lenient `find`), frontend `DESCRIBED_TYPES` (type labels come from the backend). No other throw or
+500. Rendering findings:
+
+- **A-1 (portal, LOW — owner 648D):** `INV_PLACE` / `INV_RETURN` are client-visible `CLIENT`-ledger
+  rows, so they reach the portal read-model, but `portal/lib/labels.ts`'s
+  `TRUST_TRANSACTION_TYPE_LABELS` has no entry: `labelFor` falls back to `humaniseStatus` → "Inv place"
+  / "Inv return" in the portal transaction list. 648D deletes the map and renders the backend's
+  `typeLabel` ("Placed in section 86(4) investment" / "Investment returned to trust").
+- **A-2 (report, LOW — owner 648E, definition edits 650C):** the Client Trust Balances report row
+  shows deposits / payments / fee transfers only (no transfers columns — pre-existing), so after an
+  approved s86(4) placement its balance (P lower) is not explained by the printed totals; no error.
+- **A-3 (copy, LOW — owner 648E):** the activity feed and audit registry still say "placement in a
+  section 86(3) investment account" (`ActivityMessageFormatter.trustTypeNoun`,
+  `AuditEventTypeRegistry` `trust_firm_inv_place.*`) against "placement in a section 86(4)
+  investment" — the L-1 inconsistency in the noun form. Not changed here (L-1 is the registry labels;
+  the audit titles are pinned in `ActivityMessageFormatterTest`).
 

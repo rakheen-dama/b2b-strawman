@@ -70,6 +70,15 @@ import org.springframework.stereotype.Component;
  * (and of its payment to the Fund, 647D); {@link Expected#clientFromUnidentified} is the move of
  * its allocation to a client (647D).
  *
+ * <h2>Version 6 (648B) — EQ-5 nets reversed interest</h2>
+ *
+ * <p>EQ-5's interest term now includes the {@code REVERSAL} contras of {@code INV_INTEREST} rows
+ * (joined through {@code reversal_of}; the contra carries the investment and the {@code
+ * CLIENT_INVESTMENT} ledger, with the negated effect): a section 86(4) interest entry reversed from
+ * its own screen or by unmatching its statement line nets to nothing in both the investment's rows
+ * and its expected interest. Without it every reversed entry left EQ-5 reporting {@code balance =
+ * principal} against {@code principal + interest}.
+ *
  * <h2>Version 5 (648A) — EQ-5: each investment's rows tie to its record</h2>
  *
  * <p>{@link #assertBalancedAsAt}, {@link #assertFirmBalanced} and {@link #assertMoves} check EQ-5
@@ -77,9 +86,9 @@ import org.springframework.stereotype.Component;
  * {@code SUM(ledger_effect)} of the investment's posted rows on the account on the {@code
  * CLIENT_INVESTMENT} (section 86(4)) or {@code INTER_ACCOUNT} (section 86(3)) ledger, dated {@code
  * <= D}, equals the principal (once its placement row — {@code deposit_transaction_id} — is posted
- * and dated {@code <= D}) + its posted {@code INV_INTEREST} entries dated {@code <= D} − the
- * withdrawal amount (once {@code withdrawal_date <= D}); and a committed investment names its
- * placement row. {@link Expected#cashbookAndInvestment} and {@link
+ * and dated {@code <= D}) + its posted {@code INV_INTEREST} entries dated {@code <= D} (v6: net of
+ * their contras) − the withdrawal amount (once {@code withdrawal_date <= D}); and a committed
+ * investment names its placement row. {@link Expected#cashbookAndInvestment} and {@link
  * Expected#cashbookAndInterAccount} are the moves of a placement on the investment account (and,
  * negated, of a withdrawal); {@link #assertMoves(UUID, Expected, UUID, Expected, Runnable)} asserts
  * a two-account step.
@@ -246,8 +255,9 @@ public final class TrustBooksHarness {
       """;
 
   /**
-   * EQ-5 (648A): each investment held in the account with its record's terms and its rows' balance
-   * as at D. Binds D (placement), D (interest), D (balance), D (withdrawal), account.
+   * EQ-5 (648A; v6 648B nets reversed interest): each investment held in the account with its
+   * record's terms and its rows' balance as at D. Binds D (placement), D (interest), D (balance), D
+   * (withdrawal), account.
    */
   private static final String INVESTMENT_BALANCES_SQL =
       """
@@ -256,9 +266,10 @@ public final class TrustBooksHarness {
                         WHERE p.id = i.deposit_transaction_id AND p.posted_at IS NOT NULL
                           AND p.transaction_date <= ?), 0) AS placed,
              COALESCE((SELECT SUM(t.ledger_effect) FROM "%1$s".trust_transactions t
+                         LEFT JOIN "%1$s".trust_transactions o ON o.id = t.reversal_of
                         WHERE t.investment_id = i.id AND t.trust_account_id = i.investment_account_id
-                          AND t.transaction_type = 'INV_INTEREST' AND t.posted_at IS NOT NULL
-                          AND t.transaction_date <= ?), 0) AS interest,
+                          AND COALESCE(o.transaction_type, t.transaction_type) = 'INV_INTEREST'
+                          AND t.posted_at IS NOT NULL AND t.transaction_date <= ?), 0) AS interest,
              COALESCE((SELECT SUM(t.ledger_effect) FROM "%1$s".trust_transactions t
                         WHERE t.investment_id = i.id AND t.trust_account_id = i.investment_account_id
                           AND t.ledger IN ('CLIENT_INVESTMENT', 'INTER_ACCOUNT')

@@ -1,0 +1,9 @@
+# 648B R9 — harness F-1: the reversal case of path 20 with the UNCHANGED TrustBooksHarness (v5), after the service exists
+# Command: ./mvnw test -Dtest="TrustInvestmentInterestIntegrationTest#path20_reversal_ofABankAdviceEntry_isAContraDatedTheEntryDate"
+# Run: 2026-11-18 08:23 SAST
+
+[EQ-5 on trust account a84db3b8-38d0-4371-85bc-56bcfc6c8949 as at 2026-11-18, investment 0cd2cd30-321a-4064-825e-3b8466ba384c (ACTIVE, principal 2000.00) — rows 2000.00 vs placed 2000.00 + interest 95.00 − withdrawn 0] 
+[EQ-5 on trust account a84db3b8-38d0-4371-85bc-56bcfc6c8949 as at 2026-11-18, investment 0cd2cd30-321a-4064-825e-3b8466ba384c (ACTIVE, principal 2000.00) — rows 2000.00 vs placed 2000.00 + interest 95.00 − withdrawn 0] 
+[EQ-5 on trust account a84db3b8-38d0-4371-85bc-56bcfc6c8949 as at 2026-11-18, investment 0cd2cd30-321a-4064-825e-3b8466ba384c (ACTIVE, principal 2000.00) — rows 2000.00 vs placed 2000.00 + interest 95.00 − withdrawn 0] 
+
+[ERROR] Tests run: 2, Failures: 2, Errors: 0, Skipped: 0, Time elapsed: 13.18 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentInterestIntegrationTest

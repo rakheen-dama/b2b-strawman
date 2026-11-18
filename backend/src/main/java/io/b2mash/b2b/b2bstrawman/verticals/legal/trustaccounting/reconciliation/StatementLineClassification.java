@@ -6,17 +6,20 @@ import java.util.Optional;
 /**
  * What a statement line is recorded as (Phase 92, ADR-380, architecture §16.3.5). Each value names
  * the line sign it accepts and the trust transaction type it posts. 647B added {@code
- * UNIDENTIFIED_DEPOSIT} (it also opens an item — {@code UnidentifiedDepositService}); 648B adds
- * {@code INVESTMENT_INTEREST} (the DB CHECK {@code chk_bank_line_classification} already admits all
- * six — V20). {@code UNIDENTIFIED_DEPOSIT} is never suggested (V20 keeps it out of {@code
- * suggested_classification}).
+ * UNIDENTIFIED_DEPOSIT} (it also opens an item — {@code UnidentifiedDepositService}); 648B added
+ * {@code INVESTMENT_INTEREST} — section 86(4) interest, recorded against a named investment by
+ * {@code TrustInvestmentService} (it posts {@code INV_INTEREST}, and {@code FUND_INV_SHARE} for a
+ * gross credit; the DB CHECK {@code chk_bank_line_classification} admits all six — V20). {@code
+ * UNIDENTIFIED_DEPOSIT} is never suggested (V20 keeps it out of {@code suggested_classification});
+ * {@code INVESTMENT_INTEREST} is suggested at import for a section 86(4) account's interest credit.
  */
 public enum StatementLineClassification {
   FUND_INTEREST(1, TrustTransactionType.FUND_INTEREST),
   FUND_SWEEP(-1, TrustTransactionType.FUND_SWEEP),
   BANK_CHARGE(-1, TrustTransactionType.BANK_CHARGE),
   CHARGE_REFUND(1, TrustTransactionType.CHARGE_REFUND),
-  UNIDENTIFIED_DEPOSIT(1, TrustTransactionType.UNIDENTIFIED_DEPOSIT);
+  UNIDENTIFIED_DEPOSIT(1, TrustTransactionType.UNIDENTIFIED_DEPOSIT),
+  INVESTMENT_INTEREST(1, TrustTransactionType.INV_INTEREST);
 
   /** +1: recorded from a credit line; -1: from a debit line. */
   private final int lineSign;

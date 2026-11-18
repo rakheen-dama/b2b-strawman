@@ -17,6 +17,13 @@ class TrustAccountingConstantsTest {
   }
 
   @Test
+  void statutoryLpffShareToleranceIsOneCent() {
+    // 648B (OL-5 working assumption, ADR-379): a typed Fund share may differ by R0,01
+    assertThat(TrustAccountingConstants.STATUTORY_LPFF_SHARE_TOLERANCE)
+        .isEqualTo(new BigDecimal("0.01"));
+  }
+
+  @Test
   void investmentBasisEnumHasExactlyTwoValues() {
     assertThat(InvestmentBasis.values())
         .containsExactly(InvestmentBasis.FIRM_DISCRETION, InvestmentBasis.CLIENT_INSTRUCTION);

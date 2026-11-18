@@ -247,6 +247,29 @@ public class AuditEventTypeRegistry {
                 "Placement in a section 86(3) investment account rejected",
                 AuditSeverity.INFO,
                 AuditEventGroup.FINANCIAL),
+            // FINANCIAL — section 86(4) interest entries (Phase 92 648B, ADR-379): the two rows an
+            // entry posts and the entry's own record / reversal. Explicit labels — the synthesised
+            // ones read "Trust inv interest recorded". Additive keys (pin 77 → 81).
+            new AuditEventTypeMetadata(
+                "trust_inv_interest.recorded",
+                "Section 86(4) investment interest recorded",
+                AuditSeverity.INFO,
+                AuditEventGroup.FINANCIAL),
+            new AuditEventTypeMetadata(
+                "trust_fund_inv_share.recorded",
+                "Fidelity Fund share of section 86(4) interest recorded",
+                AuditSeverity.INFO,
+                AuditEventGroup.FINANCIAL),
+            new AuditEventTypeMetadata(
+                "trust_investment.interest_recorded",
+                "Section 86(4) interest entry recorded",
+                AuditSeverity.INFO,
+                AuditEventGroup.FINANCIAL),
+            new AuditEventTypeMetadata(
+                "trust_investment.interest_reversed",
+                "Section 86(4) interest entry reversed",
+                AuditSeverity.INFO,
+                AuditEventGroup.FINANCIAL),
             // DATA — data protection
             new AuditEventTypeMetadata(
                 "dataprotection.dsar.*",

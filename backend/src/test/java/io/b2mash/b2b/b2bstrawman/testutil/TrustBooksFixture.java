@@ -14,7 +14,9 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateTrustAccountRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.InvestmentInterestResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.PlaceInvestmentRequest;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.RecordInvestmentInterestRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.TrustInvestmentResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.WithdrawInvestmentRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustPostingService;
@@ -511,6 +513,52 @@ public final class TrustBooksFixture {
                           investmentService.withdrawInvestment(
                               investmentId, new WithdrawInvestmentRequest(withdrawalDate))));
       return withdrawn[0];
+    }
+
+    /**
+     * Path 20 (648B): the maker records a section 86(4) interest entry on the investment (a bank
+     * advice, or from the line {@code request} names); the investment account moves by exactly
+     * {@code expected}.
+     */
+    public InvestmentInterestResponse recordInterest(
+        UUID investmentAccount,
+        Expected expected,
+        UUID investmentId,
+        RecordInvestmentInterestRequest request) {
+      var recorded = new InvestmentInterestResponse[1];
+      as(
+          memberId,
+          () ->
+              harness.assertMoves(
+                  investmentAccount,
+                  expected,
+                  () -> recorded[0] = investmentService.recordInterest(investmentId, request)));
+      return recorded[0];
+    }
+
+    /**
+     * Path 20 (648B): the maker reverses an interest entry recorded from a bank advice; the
+     * investment account moves by exactly {@code expected}.
+     */
+    public InvestmentInterestResponse reverseInterest(
+        UUID investmentAccount, Expected expected, UUID interestId) {
+      var reversed = new InvestmentInterestResponse[1];
+      as(
+          memberId,
+          () ->
+              harness.assertMoves(
+                  investmentAccount,
+                  expected,
+                  () -> reversed[0] = investmentService.reverseInterest(interestId)));
+      return reversed[0];
+    }
+
+    /** Sets a client's tax number straight in the table (648B: the entry snapshots it). */
+    public void setTaxNumberDirect(Client client, String taxNumber) {
+      jdbc.update(
+          "UPDATE \"%s\".customers SET tax_number = ? WHERE id = ?".formatted(schema),
+          taxNumber,
+          client.id());
     }
 
     /** {@code approver} approves; the account moves by exactly {@code expected}. */

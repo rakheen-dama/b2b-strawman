@@ -40,7 +40,10 @@ import tools.jackson.databind.json.JsonMapper;
  * the two requests that resolve it (allocate, pay to the Fund); 648C the trust account response
  * (investment basis and derived section) and the create request; 648A the investment response
  * (investment account, matter, balance; nullable client) and its place and withdraw requests; 648E
- * the client-ledger card (general balance, invested balance, placement and return totals).
+ * the client-ledger card (general balance, invested balance, placement and return totals); 648B the
+ * section 86(4) interest entry, its record request, the record-from-statement request (investment,
+ * gross, Fund share, presentation) and the investment response's interest totals (gross, Fund
+ * share, net — replacing {@code interestEarned}).
  *
  * <p>The actual is always written to {@code target/wire/trust-contract.actual.json}. Regenerate
  * ONLY deliberately with {@code -Dtrust.contract.update=true}; the PR that does so must say why in
@@ -73,7 +76,11 @@ class TrustWireContractTest {
           TrustInvestmentService.PlaceInvestmentRequest.class,
           TrustInvestmentService.WithdrawInvestmentRequest.class,
           // 648E: the client-ledger card (general, invested, placement totals)
-          ClientLedgerService.ClientLedgerCardResponse.class);
+          ClientLedgerService.ClientLedgerCardResponse.class,
+          // 648B: section 86(4) interest entries and the record-from-statement request
+          TrustInvestmentService.RecordInvestmentInterestRequest.class,
+          TrustInvestmentService.InvestmentInterestResponse.class,
+          StatementLinePostingService.RecordFromLineRequest.class);
 
   private static final String UPDATE_FLAG = "trust.contract.update";
   private static final Path SNAPSHOT = Path.of("src/test/resources/wire/trust-contract.json");

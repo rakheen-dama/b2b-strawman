@@ -405,9 +405,9 @@ public class TrustTransaction {
   /**
    * A contra carries its original's ledger target (§16.3.11): creditor account, investment and
    * unidentified deposit (647B — a contra names its item, so EQ-4 derives "open as at a date" from
-   * the item's own rows). The client and matter are copied by the constructor in {@code newContra}.
-   * Charge detail is NOT copied — {@code chk_trust_txn_charge} requires it null on a REVERSAL.
-   * Package-private: {@link TrustPostingService} only.
+   * the item's own rows). The client and matter are copied by {@code
+   * TrustPostingService.contraDraft}. Charge detail is NOT copied — {@code chk_trust_txn_charge}
+   * requires it null on a REVERSAL. Package-private: {@link TrustPostingService} only.
    */
   void copyLedgerTargetFrom(TrustTransaction original) {
     this.creditorAccountId = original.creditorAccountId;

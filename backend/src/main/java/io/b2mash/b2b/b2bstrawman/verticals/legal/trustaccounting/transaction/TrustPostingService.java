@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
 import java.time.Clock;
+import java.time.LocalDate;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -222,8 +223,8 @@ public class TrustPostingService {
    * is untouched until {@link #postReversalOnApproval}. Any other rule is refused. The reversal's
    * date is the caller's ({@code reversalDate}). Either way the contra carries the original's
    * ledger target — creditor account, investment and unidentified deposit (647A, 646B found.md,
-   * 647B; the caller's {@code newContra} copies client and matter) — so a {@code NON_CLIENT} contra
-   * satisfies {@code chk_trust_txn_ledger_target}. Charge detail is not copied ({@code
+   * 647B; {@link #contraDraft} copies client and matter) — so a {@code NON_CLIENT} contra satisfies
+   * {@code chk_trust_txn_ledger_target}. Charge detail is not copied ({@code
    * chk_trust_txn_charge}).
    */
   @Transactional
@@ -250,6 +251,40 @@ public class TrustPostingService {
               "Cannot reverse transaction",
               "Transaction type " + original.getTransactionType() + " cannot be reversed");
     };
+  }
+
+  /**
+   * A {@code REVERSAL} draft for {@code original} (648B OQ-2: moved here from {@code
+   * TrustTransactionService} so every reversing caller — the generic and unmatch paths, and {@code
+   * TrustInvestmentService.reverseInterest} — builds the same shape without a bean cycle): the
+   * original's account, amount, client, matter and counterparty, reference {@code REV-} + the
+   * original's (truncated to the 200-character column), {@code reason} as its description, dated
+   * {@code reversalDate}, recorded by {@code memberId}; no status — {@link #postReversal} decides
+   * it from the original's reversal rule and copies the rest of the ledger target.
+   */
+  public static TrustTransaction contraDraft(
+      TrustTransaction original, String reason, LocalDate reversalDate, UUID memberId) {
+    return new TrustTransaction(
+        original.getTrustAccountId(),
+        "REVERSAL",
+        original.getAmount(),
+        original.getCustomerId(),
+        original.getProjectId(),
+        original.getCounterpartyCustomerId(),
+        reversalReference(original.getReference()),
+        reason,
+        reversalDate,
+        null, // status: decided by postReversal from the original's reversal rule
+        memberId);
+  }
+
+  /** {@code REV-} + the original reference, truncated to the 200-character column. */
+  private static String reversalReference(String originalReference) {
+    String ref = "REV-" + originalReference;
+    if (ref.length() > 200) {
+      ref = ref.substring(0, 200);
+    }
+    return ref;
   }
 
   /**

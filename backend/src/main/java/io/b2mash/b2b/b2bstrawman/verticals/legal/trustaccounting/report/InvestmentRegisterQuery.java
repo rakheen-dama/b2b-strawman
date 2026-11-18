@@ -7,6 +7,8 @@ import io.b2mash.b2b.b2bstrawman.reporting.ReportResult;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountingConstants;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestment;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentInterestRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentInterestRepository.InterestTotals;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.lpff.LpffRateRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.InvestmentBalanceRow;
@@ -40,16 +42,19 @@ public class InvestmentRegisterQuery implements ReportQuery {
   private final CustomerRepository customerRepository;
   private final LpffRateRepository lpffRateRepository;
   private final TrustLedgerQueryRepository ledgerQueries;
+  private final TrustInvestmentInterestRepository interestRepository;
 
   public InvestmentRegisterQuery(
       TrustInvestmentRepository investmentRepository,
       CustomerRepository customerRepository,
       LpffRateRepository lpffRateRepository,
-      TrustLedgerQueryRepository ledgerQueries) {
+      TrustLedgerQueryRepository ledgerQueries,
+      TrustInvestmentInterestRepository interestRepository) {
     this.investmentRepository = investmentRepository;
     this.customerRepository = customerRepository;
     this.lpffRateRepository = lpffRateRepository;
     this.ledgerQueries = ledgerQueries;
+    this.interestRepository = interestRepository;
   }
 
   @Override
@@ -156,6 +161,16 @@ public class InvestmentRegisterQuery implements ReportQuery {
                 .collect(
                     Collectors.toMap(
                         InvestmentBalanceRow::getInvestmentId, InvestmentBalanceRow::getBalance));
+    // 648B (OQ-8 a): interestEarned is the client's net interest — Σ net of the investment's POSTED
+    // entries (consistent with balance = principal + net interest); the report's columns are
+    // unchanged until 650B. One batch query.
+    Map<UUID, BigDecimal> netInterest =
+        investmentIds.isEmpty()
+            ? Map.of()
+            : interestRepository.sumPostedByInvestmentIds(investmentIds).stream()
+                .collect(
+                    Collectors.toMap(
+                        InterestTotals::getInvestmentId, InterestTotals::getNet, (a, b) -> a));
 
     return investments.stream()
         .map(
@@ -175,9 +190,7 @@ public class InvestmentRegisterQuery implements ReportQuery {
               row.put(
                   "maturityDate",
                   inv.getMaturityDate() != null ? inv.getMaturityDate().toString() : null);
-              row.put(
-                  "interestEarned",
-                  inv.getInterestEarned() != null ? inv.getInterestEarned() : BigDecimal.ZERO);
+              row.put("interestEarned", netInterest.getOrDefault(inv.getId(), BigDecimal.ZERO));
               row.put("status", inv.getStatus());
               row.put("investmentBasis", inv.getInvestmentBasis().name());
               row.put(

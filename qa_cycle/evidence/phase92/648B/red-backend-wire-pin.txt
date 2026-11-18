@@ -1,0 +1,44 @@
+# 648B R10 — TrustWireContractTest after the DTO change, before regeneration
+# Command: ./mvnw test -Dtest=TrustWireContractTest
+# Run: 2026-11-18 08:23 SAST
+
+ADR-365: a pinned trust wire record changed shape (the frontend mirrors it in lib/types/trust.ts).
+Inspect: diff -u src/test/resources/wire/trust-contract.json target/wire/trust-contract.actual.json
+If intended, rerun with -Dtrust.contract.update=true, update frontend/__tests__/trust-wire-shapes.test.ts and the TS type, and justify the change in the PR body.
+@@ line 379
+-       "name" : "interestEarned",
++       "name" : "grossInterest",
+@@ line 382
+-       "name" : "balance",
++       "name" : "fundShare",
+@@ line 385
+-       "name" : "status",
++       "name" : "netInterest",
+@@ line 386
+-       "type" : "java.lang.String"
++       "type" : "java.math.BigDecimal"
+@@ line 388
+-       "name" : "awaitingApproval",
++       "name" : "balance",
+@@ line 389
+-       "type" : "boolean"
++       "type" : "java.math.BigDecimal"
+@@ line 391
+-       "name" : "withdrawalDate",
++       "name" : "status",
+@@ line 392
+-       "type" : "java.time.LocalDate"
++       "type" : "java.lang.String"
+@@ line 394
+-       "name" : "withdrawalAmount",
++       "name" : "awaitingApproval",
+@@ line 395
+-       "type" : "java.math.BigDecimal"
++       "type" : "boolean"
+@@ line 397
+-       "name" : "depositTransactionId",
++       "name" : "withdrawalDate",
+@@ line 398
+-       "type" : "java.util.UUID"
++       "type" : "java.time.LocalDate"
+@@ line 400

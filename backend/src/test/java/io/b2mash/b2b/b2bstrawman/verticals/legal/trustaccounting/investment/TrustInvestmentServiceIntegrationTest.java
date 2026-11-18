@@ -17,6 +17,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountStatus;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.PlaceInvestmentRequest;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.RecordInvestmentInterestRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.TrustInvestmentResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.WithdrawInvestmentRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedger;
@@ -364,17 +365,18 @@ class TrustInvestmentServiceIntegrationTest {
         Expected.cashbookAndInvestment("2000.00"),
         placed.depositTransactionId(),
         approverId);
-    // A net interest entry on the investment (648B records these; written here so the withdrawal
-    // amount is shown to be the investment's balance, not its principal)
-    books.postLedgerRowDirect(
+    // A net interest entry on the investment (648B: a bank advice of R26,32 gross, the Fund's 5%
+    // R1,32 — so the withdrawal amount is shown to be the investment's balance, not its principal)
+    books.recordInterest(
         investmentAccount,
-        "INV_INTEREST",
-        "25.00",
-        TrustBooksFixture.POSTING_DATE,
-        client.id(),
-        client.matter(),
-        null,
-        placed.id());
+        Expected.cashbookAndInvestment("25.00"),
+        placed.id(),
+        new RecordInvestmentInterestRequest(
+            TrustBooksFixture.POSTING_DATE,
+            new BigDecimal("26.32"),
+            null,
+            InterestPresentation.NET,
+            null));
     assertThat(get(placed.id()).balance()).isEqualByComparingTo("2025.00");
 
     var withdrawalDate = books.today().minusDays(1);
@@ -438,16 +440,13 @@ class TrustInvestmentServiceIntegrationTest {
         Expected.cashbookAndInvestment("2000.00"),
         placed.depositTransactionId(),
         approverId);
-    // An interest credit dated today
-    books.postLedgerRowDirect(
+    // An interest entry dated today (a bank advice: R40,00 gross, R38,00 to the client)
+    books.recordInterest(
         investmentAccount,
-        "INV_INTEREST",
-        "40.00",
-        books.today(),
-        client.id(),
-        client.matter(),
-        null,
-        placed.id());
+        Expected.cashbookAndInvestment("38.00"),
+        placed.id(),
+        new RecordInvestmentInterestRequest(
+            books.today(), new BigDecimal("40.00"), null, InterestPresentation.NET, null));
 
     assertWithdrawRefused(
         funding,

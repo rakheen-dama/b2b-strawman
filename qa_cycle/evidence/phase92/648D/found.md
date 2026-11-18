@@ -69,6 +69,15 @@ only since 648A, on dev/e2e stacks that are reset; a fresh stack is correct. Sta
 investments, the repair is a tenant-scoped replay — `backfillForTenant` has no caller (F-2, F-3).
 **Owner:** whoever first ships to a persistent tenant DB with s86(4) investments (go-live checklist).
 
+## F-7 (648D OBS, pre-existing, outside the slice) — placement with a percentage `interestRate` returns HTTP 500, not 400
+
+During OBS setup the firm REST call `POST` placement with `interestRate: 7` (a percentage; the API expects a
+fraction, 0.07) returned **HTTP 500** instead of a validation error: the request field has no upper bound and
+the database CHECK rejects the value. The firm UI converts the percentage, so a user cannot reach it through
+the screen; the transaction rolled back. Evidence: `gates/obs/attempt2-api-firm-c-place-500-rate7.json`,
+`gates/README.md`. 648D touches no investment code. Fix: bean-validation bound on the request's rate
+(`@DecimalMax`) → 400 with the app's message. **Owner:** an investment-hardening follow-up (648A area; candidate 652).
+
 ## Carried, unchanged
 
 - 648A A-1 ("Inv place" / "Inv return" in the portal list) — **fixed by 648D** (`typeLabel` from the

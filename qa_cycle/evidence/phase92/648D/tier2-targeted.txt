@@ -1,0 +1,15 @@
+648D Tier 2 (targeted) — backend, working tree on base 2b7be66d6 + 648D changes (uncommitted at run time; same content as the PR head commit)
+Date: 2026-11-18
+Command (from backend/): ./mvnw test -Dtest="<24 classes below>" > /tmp/mvn-epic-648D-tier2.log 2>&1
+Classes (24): TrustLedgerPortalSyncServiceIntegrationTest, PortalTrustControllerIntegrationTest, PortalTrustReadModelRepositoryTest, GlobalV7PortalTrustInvestedBalanceTest, PortalTrustTransactionDateIntegrationTest, PortalTrustLongReferenceIntegrationTest, GlobalV3BackfillMarkersTest, BaselineSchemaParityTest, PortalReadModelOrgScopingGuardTest, TenantScopeBindingTest, ZoneAwareTimeArchTest, LayerDependencyRulesTest, PortalEmailNotificationChannelIntegrationTest, PortalDigestSchedulerIntegrationTest, PortalDigestInternalControllerIntegrationTest, DeadlineCopyRuleTest, TrustClientMatterRequiredIntegrationTest, TrustTransferTargetMatterIntegrationTest, TrustTransactionTypeRegistryTest, TrustTransactionTypeLabelsTest, TrustInvestmentServiceIntegrationTest, TrustInvestmentInterestIntegrationTest, MatterTypeSuffixMigrationTest, RequestScopesTest
+(every class exists; every test file importing a changed class or touching portal trust tables/endpoints is in the list — grep of src/test)
+
+Result: Tests run: 232, Failures: 0, Errors: 0, Skipped: 0
+BUILD SUCCESS
+Surefire <testcase> elements: 232, failures/errors: 0 (24 report files)
+"Portal trust sync failed" in the log: 0
+
+Slice classes in it: TrustLedgerPortalSyncServiceIntegrationTest 17, PortalTrustControllerIntegrationTest 10, PortalTrustReadModelRepositoryTest 5, GlobalV7PortalTrustInvestedBalanceTest 3.
+Pin R4 (nonClientAndInterAccountRowsNeverReachThePortal) green before and after.
+
+Tier 3 (./mvnw clean verify / scripts/verify.sh) NOT run by the builder — owned by the orchestrator (BE-VERIFY, last on the final head).

@@ -39,6 +39,7 @@ describe("MatterSelector", () => {
             matterId: "ab12cd34-ef56-7890-abcd-ef0123456789",
             matterName: "Website Redesign",
             currentBalance: 1250,
+            investedBalance: 0,
             lastTransactionAt: new Date().toISOString(),
             lastSyncedAt: new Date().toISOString(),
           },
@@ -46,6 +47,7 @@ describe("MatterSelector", () => {
             matterId: "99887766-5544-3322-1100-ffeeddccbbaa",
             matterName: null,
             currentBalance: 500,
+            investedBalance: 0,
             lastTransactionAt: new Date().toISOString(),
             lastSyncedAt: new Date().toISOString(),
           },
@@ -62,5 +64,26 @@ describe("MatterSelector", () => {
     const hrefs = links.map((l) => l.getAttribute("href"));
     expect(hrefs).toContain("/trust/ab12cd34-ef56-7890-abcd-ef0123456789");
     expect(hrefs).toContain("/trust/99887766-5544-3322-1100-ffeeddccbbaa");
+  });
+
+  it("prints the matter's total held in trust — general + invested — like the balance card (648D OQ-3)", () => {
+    render(
+      <MatterSelector
+        matters={[
+          {
+            matterId: "ab12cd34-ef56-7890-abcd-ef0123456789",
+            matterName: "Website Redesign",
+            currentBalance: 2500,
+            investedBalance: 7595,
+            lastTransactionAt: new Date().toISOString(),
+            lastSyncedAt: new Date().toISOString(),
+          },
+        ]}
+      />,
+    );
+
+    const card = screen.getByRole("link");
+    expect(card.textContent).toMatch(/10[ ,\u00A0\u202F]?095[.,]00/);
+    expect(card.textContent).not.toMatch(/2[ ,\u00A0\u202F]?500[.,]00/);
   });
 });

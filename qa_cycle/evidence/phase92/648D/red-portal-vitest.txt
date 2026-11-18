@@ -1,0 +1,22 @@
+648D red run — portal FULL vitest (pnpm test) on UNCHANGED portal production code @ 2b7be66d6, node v20.11.1
+Totals: Test Files 3 failed | 48 passed (51); Tests 6 failed | 284 passed (290)
+(R11 transaction-list, R12 balance-card, OQ-3 matter-selector; R13 no-raw-enum-copy guard green, allow-list unchanged)
+
+ FAIL  components/trust/__tests__/balance-card.test.tsx > BalanceCard > is titled 'Held in trust' and shows no invested line when nothing is invested (648D)
+TestingLibraryElementError: Unable to find an element with the text: Held in trust. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+ FAIL  components/trust/__tests__/balance-card.test.tsx > BalanceCard > shows general + invested as the headline, and both parts, when money is invested (648D OQ-2)
+TestingLibraryElementError: Unable to find an element with the text: Held in trust. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+ FAIL  components/trust/__tests__/matter-selector.test.tsx > MatterSelector > prints the matter's total held in trust — general + invested — like the balance card (648D OQ-3)
+AssertionError: expected 'Website RedesignR 2,500.00Last activi…' to match /10[ ,\u00A0\u202F]?095[.,]00/
+- Expected:
++ Received:
+ FAIL  components/trust/__tests__/transaction-list.test.tsx > TransactionList > renders the backend's label for section 86(4) rows, never the code (648D, 648A A-1)
+TestingLibraryElementError: Unable to find an element with the text: Section 86(4) investment interest. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+ FAIL  components/trust/__tests__/transaction-list.test.tsx > TransactionList > qualifies an investment row's running balance as the invested balance (648D OQ-1)
+AssertionError: expected 'R 7,595.00' to contain 'Invested'
+Expected: "Invested"
+Received: "R 7,595.00"
+ FAIL  components/trust/__tests__/transaction-list.test.tsx > TransactionList > synthesises a fallback description from the backend's label when the description is empty
+TestingLibraryElementError: Unable to find an element with the text: /Section 86\(4\) investment interest — INT-001/. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Main's rendered DOM for the INV_* rows (from the failure dumps): 'Inv interest' / 'Inv place' (humaniseStatus fallback of the deleted portal map, 648A A-1) — occurrences of 'Inv interest' in the log: 12

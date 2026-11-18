@@ -13,12 +13,19 @@ import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksFixture;
+import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness.Expected;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccount;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountType;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustDomainEvent;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTransactionApprovalEvent;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTransactionRecordedEvent;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.InterestPresentation;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.RecordInvestmentInterestRequest;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.ClientBalanceRow;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedgerQueryRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustPostingService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
@@ -28,17 +35,22 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.Tru
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionType;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -72,6 +84,12 @@ class TrustLedgerPortalSyncServiceIntegrationTest {
   @Autowired private PlatformTransactionManager transactionManager;
   @Autowired private TrustTransactionService trustTransactionService;
   @Autowired private JdbcTemplate jdbcTemplate;
+  @Autowired private TrustBooksFixture fixture;
+  @Autowired private TrustLedgerQueryRepository ledgerQueryRepository;
+
+  @Autowired
+  @Qualifier("portalJdbcClient")
+  private JdbcClient portalJdbc;
 
   private String tenantSchema;
   private UUID customerId;
@@ -79,6 +97,8 @@ class TrustLedgerPortalSyncServiceIntegrationTest {
   private UUID trustAccountId;
   private UUID memberId;
   private TransactionTemplate tenantTxTemplate;
+  private UUID approverId;
+  private TrustBooksFixture.Tenant books;
 
   @BeforeAll
   void setup() throws Exception {
@@ -86,6 +106,18 @@ class TrustLedgerPortalSyncServiceIntegrationTest {
     memberId = UUID.fromString(TestMemberHelper.syncOwner(mockMvc, ORG_ID, "portal_trust_sync"));
     tenantSchema = orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).get().getSchemaName();
     tenantTxTemplate = new TransactionTemplate(transactionManager);
+    // 648D: the investment cases run through the services (TrustBooksFixture); a placement is
+    // approved by someone other than its maker.
+    approverId =
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_portal_trust_sync_approver",
+                "portal_trust_sync_approver@test.com",
+                "Portal Sync Approver",
+                "admin"));
+    books = fixture.tenant(tenantSchema, ORG_ID, memberId);
 
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .where(RequestScopes.ORG_ID, ORG_ID)
@@ -142,7 +174,14 @@ class TrustLedgerPortalSyncServiceIntegrationTest {
         "UPDATE \"%s\".trust_transactions SET reversal_of = NULL, reversed_by_id = NULL"
             .formatted(tenantSchema));
     // 648A: an investment's rows name it (investment_id) and it names its placement row
-    // (deposit_transaction_id) — delete its rows first, then the investments.
+    // (deposit_transaction_id) — delete its rows first, then the investments. 648D: interest
+    // entries name the investment and their rows; an investment placed through the services names
+    // its placement and withdrawal rows.
+    jdbcTemplate.update("DELETE FROM \"%s\".trust_investment_interest".formatted(tenantSchema));
+    jdbcTemplate.update(
+        ("UPDATE \"%s\".trust_investments SET deposit_transaction_id = NULL,"
+                + " withdrawal_transaction_id = NULL")
+            .formatted(tenantSchema));
     jdbcTemplate.update(
         "DELETE FROM \"%s\".trust_transactions WHERE investment_id IS NOT NULL"
             .formatted(tenantSchema));
@@ -245,14 +284,15 @@ class TrustLedgerPortalSyncServiceIntegrationTest {
   }
 
   // ==========================================================================
-  // Phase 92 648A (open question #8): a client's investment-ledger rows
-  // (CLIENT_INVESTMENT) never reach the general running balance — 648D replaces
-  // this with the split projection. INV_PLACE / INV_RETURN are CLIENT-ledger
+  // Phase 92 648D (§16.6.3): rows split by ledger. CLIENT rows drive the general
+  // running balance as before; every CLIENT_INVESTMENT row drives the invested
+  // balance, and of those only INV_INTEREST is a visible row — INV_RECEIVE moves
+  // the invested balance without a line. INV_PLACE / INV_RETURN are CLIENT-ledger
   // rows and are projected as ordinary rows.
   // ==========================================================================
 
   @Test
-  void aClientInvestmentLedgerRowNeverReachesThePortalRunningBalance() {
+  void investmentInterestIsAVisibleRowAndTheInvestedLedgerStaysOffTheGeneralBalance() {
     UUID deposit =
         recordApprovedTransactionOnDate(
             "DEPOSIT",
@@ -293,22 +333,42 @@ class TrustLedgerPortalSyncServiceIntegrationTest {
             trustAccountId, "INV_PLACE", "200.00", investmentId, LocalDate.of(2026, 2, 2));
     investmentRow(
         investmentAccountId, "INV_RECEIVE", "200.00", investmentId, LocalDate.of(2026, 2, 2));
-    investmentRow(
-        investmentAccountId, "INV_INTEREST", "9.50", investmentId, LocalDate.of(2026, 2, 3));
+    var interest =
+        investmentRow(
+            investmentAccountId, "INV_INTEREST", "9.50", investmentId, LocalDate.of(2026, 2, 3));
     assertThat(TrustTransactionType.INV_INTEREST.clientVisible()).isTrue();
 
     publishRecordedEvent(deposit, "DEPOSIT", new BigDecimal("1000.00"));
 
     var transactions = portalTrustRepo.findTransactions(customerId, matterId, null, null, 50, 0);
+    // INV_RECEIVE is never a visible row; the interest credited to the client is
     assertThat(transactions)
         .extracting(t -> t.transactionType())
-        .containsExactlyInAnyOrder("DEPOSIT", "INV_PLACE");
+        .containsExactlyInAnyOrder("DEPOSIT", "INV_PLACE", "INV_INTEREST");
     assertThat(transactions)
         .filteredOn(t -> t.id().equals(placement))
         .singleElement()
         .satisfies(t -> assertThat(t.runningBalance()).isEqualByComparingTo("800.00"));
+    assertThat(transactions)
+        .filteredOn(t -> t.id().equals(placement))
+        .singleElement()
+        .satisfies(t -> assertThat(t.ledger()).isEqualTo("CLIENT"));
+    // OQ-1 (a): the interest line carries the invested running balance (200 + 9,50)
+    assertThat(transactions)
+        .filteredOn(t -> t.id().equals(interest))
+        .singleElement()
+        .satisfies(
+            t -> {
+              assertThat(t.ledger()).isEqualTo("CLIENT_INVESTMENT");
+              assertThat(t.runningBalance()).isEqualByComparingTo("209.50");
+            });
+    // The general balance is untouched by the investment ledger; the invested balance is it
     var balance = portalTrustRepo.findBalance(customerId, matterId).orElseThrow();
     assertThat(balance.currentBalance()).isEqualByComparingTo("800.00");
+    assertThat(balance.investedBalance()).isEqualByComparingTo("209.50");
+
+    // Both projection paths apply the same split
+    assertBackfillReproduces(customerId, matterId);
   }
 
   /** A posted investment row of {@code type} for the client and matter, written to the table. */
@@ -338,6 +398,253 @@ class TrustLedgerPortalSyncServiceIntegrationTest {
         effect.cashbookEffect(),
         effect.ledgerEffect());
     return id;
+  }
+
+  // ==========================================================================
+  // Phase 92 648D through the services (§16.6.3, R-11): a section 86(4)
+  // placement, its interest, its reversal and its withdrawal reach the portal
+  // through their own events. Only INV_INTEREST (and its contra, OQ-4) is a
+  // visible investment-ledger row; non-client and inter-account rows never
+  // reach the portal.
+  // ==========================================================================
+
+  @Test
+  void investedBalanceFollowsASection864InvestmentThroughTheServices() {
+    var held = s86_4Investment("10000.00", "7500.00");
+    var client = held.client();
+    var entry =
+        books.recordInterest(
+            held.investmentAccount(),
+            Expected.cashbookAndInvestment("95.00"),
+            held.investmentId(),
+            netInterest(books.today().minusDays(10), "100.00"));
+
+    var rows = portalTrustRepo.findTransactions(client.id(), client.matter(), null, null, 50, 0);
+    // INV_RECEIVE moves the invested balance without a line; the client's 95% is a line
+    assertThat(rows)
+        .extracting(t -> t.transactionType())
+        .containsExactlyInAnyOrder("DEPOSIT", "INV_PLACE", "INV_INTEREST");
+    var interestRow =
+        rows.stream()
+            .filter(t -> t.id().equals(entry.netTransactionId()))
+            .findFirst()
+            .orElseThrow();
+    assertThat(interestRow.transactionType()).isEqualTo("INV_INTEREST");
+    assertThat(interestRow.ledger()).isEqualTo("CLIENT_INVESTMENT");
+    assertThat(interestRow.amount()).isEqualByComparingTo("95.00");
+    assertThat(interestRow.runningBalance()).isEqualByComparingTo("7595.00");
+    assertThat(rows)
+        .filteredOn(t -> !"INV_INTEREST".equals(t.transactionType()))
+        .extracting(t -> t.ledger())
+        .containsOnly("CLIENT");
+    var balance = portalTrustRepo.findBalance(client.id(), client.matter()).orElseThrow();
+    // A placement moves money between the two balances; the client's total is unchanged
+    assertThat(balance.currentBalance()).isEqualByComparingTo("2500.00");
+    assertThat(balance.investedBalance()).isEqualByComparingTo("7595.00");
+    // The portal's invested balance is the firm's (648E investedBalancesByClient)
+    assertThat(balance.investedBalance()).isEqualByComparingTo(firmInvested(held));
+
+    // The withdrawal returns principal + net interest to the general ledger (INV_RETURN, a line);
+    // INV_WITHDRAW empties the invested balance without a line
+    books.withdraw(
+        held.funding(),
+        Expected.cashbookAndClient("7595.00"),
+        held.investmentAccount(),
+        Expected.cashbookAndInvestment("-7595.00"),
+        held.investmentId(),
+        books.today());
+
+    var afterWithdrawal =
+        portalTrustRepo.findTransactions(client.id(), client.matter(), null, null, 50, 0);
+    assertThat(afterWithdrawal)
+        .extracting(t -> t.transactionType())
+        .containsExactlyInAnyOrder("DEPOSIT", "INV_PLACE", "INV_INTEREST", "INV_RETURN");
+    var withdrawn = portalTrustRepo.findBalance(client.id(), client.matter()).orElseThrow();
+    assertThat(withdrawn.currentBalance()).isEqualByComparingTo("10095.00");
+    assertThat(withdrawn.investedBalance()).isEqualByComparingTo("0");
+    assertThat(withdrawn.investedBalance()).isEqualByComparingTo(firmInvested(held));
+
+    assertBackfillReproduces(client.id(), client.matter());
+  }
+
+  @Test
+  void aReversedInterestShowsBothMovements() {
+    var held = s86_4Investment("2000.00", "2000.00");
+    var client = held.client();
+    var entry =
+        books.recordInterest(
+            held.investmentAccount(),
+            Expected.cashbookAndInvestment("95.00"),
+            held.investmentId(),
+            netInterest(books.today().minusDays(10), "100.00"));
+    books.reverseInterest(
+        held.investmentAccount(), Expected.cashbookAndInvestment("-95.00"), entry.id());
+    var interestReference =
+        books.read(
+            () ->
+                trustTransactionRepository
+                    .findById(entry.netTransactionId())
+                    .orElseThrow()
+                    .getReference());
+
+    // OQ-4 (a): the reversed interest and its contra are both lines, as on the general ledger
+    var rows = portalTrustRepo.findTransactions(client.id(), client.matter(), null, null, 50, 0);
+    assertThat(rows)
+        .extracting(t -> t.transactionType())
+        .containsExactlyInAnyOrder("DEPOSIT", "INV_PLACE", "INV_INTEREST", "REVERSAL");
+    var contra =
+        rows.stream().filter(t -> "REVERSAL".equals(t.transactionType())).findFirst().orElseThrow();
+    assertThat(contra.amount()).isEqualByComparingTo("95.00");
+    assertThat(contra.ledger()).isEqualTo("CLIENT_INVESTMENT");
+    assertThat(contra.runningBalance()).isEqualByComparingTo("2000.00");
+    assertThat(rows)
+        .filteredOn(t -> "INV_INTEREST".equals(t.transactionType()))
+        .singleElement()
+        .satisfies(
+            t -> {
+              assertThat(t.ledger()).isEqualTo("CLIENT_INVESTMENT");
+              assertThat(t.runningBalance()).isEqualByComparingTo("2095.00");
+            });
+    // 649B privacy rule: never the firm's reversal reason on a client surface
+    assertThat(contra.description())
+        .doesNotContain("interest entry reversed")
+        .isEqualTo("Reversal — REV-" + interestReference);
+    var balance = portalTrustRepo.findBalance(client.id(), client.matter()).orElseThrow();
+    assertThat(balance.currentBalance()).isEqualByComparingTo("0.00");
+    // The invested balance is back to the principal, and still the firm's
+    assertThat(balance.investedBalance()).isEqualByComparingTo("2000.00");
+    assertThat(balance.investedBalance()).isEqualByComparingTo(firmInvested(held));
+
+    assertBackfillReproduces(client.id(), client.matter());
+  }
+
+  @Test
+  void nonClientAndInterAccountRowsNeverReachThePortal() {
+    var funding = books.freshAccount(false);
+    var client = books.newClient("portal non-client pin");
+    books.deposit(funding, client, "5000.00");
+    // The Fund's interest on the account (NON_CLIENT) and a section 86(3) placement
+    // (INTER_ACCOUNT on both accounts) — none names a client or a matter
+    // (chk_trust_txn_ledger_target)
+    var fundInterest =
+        books.postNonClientDirect(
+            funding, "FUND_INTEREST", "40.00", TrustBooksFixture.POSTING_DATE);
+    var firmAccount = books.freshInvestmentAccount(InvestmentBasis.FIRM_DISCRETION);
+    var placed = books.requestPlacement(funding, firmAccount, null, "1500.00");
+    books.approvePlacement(
+        funding,
+        Expected.cashbookAndInterAccount("-1500.00"),
+        firmAccount,
+        Expected.cashbookAndInterAccount("1500.00"),
+        placed.depositTransactionId(),
+        approverId);
+
+    // Both accounts fan out (every matter of the account re-projects)
+    publishReconciliationCompletedEvent(funding);
+    publishReconciliationCompletedEvent(firmAccount);
+
+    var rows = portalTrustRepo.findTransactions(client.id(), client.matter(), null, null, 50, 0);
+    assertThat(rows).extracting(t -> t.transactionType()).containsExactly("DEPOSIT");
+    var balance = portalTrustRepo.findBalance(client.id(), client.matter()).orElseThrow();
+    assertThat(balance.currentBalance()).isEqualByComparingTo("5000.00");
+    assertThat(balance.investedBalance()).isEqualByComparingTo("0");
+    var nonClientRowIds =
+        books.read(
+            () ->
+                trustTransactionRepository.findAll().stream()
+                    .filter(
+                        t ->
+                            t.getTrustAccountId().equals(funding)
+                                || t.getTrustAccountId().equals(firmAccount))
+                    .filter(t -> !"DEPOSIT".equals(t.getTransactionType()))
+                    .map(TrustTransaction::getId)
+                    .toList());
+    assertThat(nonClientRowIds).contains(fundInterest).hasSize(3);
+    assertThat(
+            portalJdbc
+                .sql("SELECT count(*) FROM portal.portal_trust_transaction WHERE id = ANY (?)")
+                .params((Object) nonClientRowIds.toArray(new UUID[0]))
+                .query(Long.class)
+                .single())
+        .as("no NON_CLIENT / INTER_ACCOUNT row reaches the portal")
+        .isZero();
+  }
+
+  /** A section 86(4) placement of {@code principal} for a fresh client, approved. */
+  private Held s86_4Investment(String deposit, String principal) {
+    var funding = books.freshAccount(false);
+    var investmentAccount = books.freshInvestmentAccount(InvestmentBasis.CLIENT_INSTRUCTION);
+    var client = books.newClient("portal s86(4)");
+    books.deposit(funding, client, deposit);
+    var placed = books.requestPlacement(funding, investmentAccount, client, principal);
+    books.approvePlacement(
+        funding,
+        Expected.cashbookAndClient("-" + principal),
+        investmentAccount,
+        Expected.cashbookAndInvestment(principal),
+        placed.depositTransactionId(),
+        approverId);
+    return new Held(funding, investmentAccount, client, placed.id());
+  }
+
+  private record Held(
+      UUID funding, UUID investmentAccount, TrustBooksFixture.Client client, UUID investmentId) {}
+
+  /** A bank-advice interest entry: NET only, the 5% computed (648B, OQ-4). */
+  private static RecordInvestmentInterestRequest netInterest(LocalDate date, String gross) {
+    return new RecordInvestmentInterestRequest(
+        date, new BigDecimal(gross), null, InterestPresentation.NET, null);
+  }
+
+  /** The firm's invested balance for the held client (648E), from its one funding account. */
+  private BigDecimal firmInvested(Held held) {
+    return books.read(
+        () ->
+            ledgerQueryRepository
+                .investedBalancesByClient(held.funding(), List.of(held.client().id()))
+                .stream()
+                .map(ClientBalanceRow::getBalance)
+                .findFirst()
+                .orElse(BigDecimal.ZERO));
+  }
+
+  /**
+   * The event-driven projection of the matter equals the backfill's (648D: both paths apply the
+   * same split): wipes the client's portal rows, backfills the tenant and compares every row and
+   * the balance snapshot.
+   */
+  private void assertBackfillReproduces(UUID client, UUID matter) {
+    var eventDriven = portalSnapshot(client, matter);
+    portalTrustRepo.deleteTransactionsByCustomer(client);
+    portalTrustRepo.deleteBalancesByCustomer(client);
+    ScopedValue.where(RequestScopes.ORG_ID, ORG_ID)
+        .call(() -> syncService.backfillForTenant(ORG_ID));
+    assertThat(portalSnapshot(client, matter)).containsExactlyElementsOf(eventDriven);
+  }
+
+  private List<String> portalSnapshot(UUID client, UUID matter) {
+    var snapshot =
+        portalTrustRepo.findTransactions(client, matter, null, null, 200, 0).stream()
+            .map(
+                t ->
+                    String.join(
+                        "|",
+                        t.id().toString(),
+                        t.transactionType(),
+                        t.ledger(),
+                        t.amount().toPlainString(),
+                        t.runningBalance().toPlainString(),
+                        t.description()))
+            .collect(Collectors.toCollection(ArrayList::new));
+    var balance = portalTrustRepo.findBalance(client, matter).orElseThrow();
+    snapshot.add(
+        String.join(
+            "|",
+            "balance",
+            balance.currentBalance().toPlainString(),
+            balance.investedBalance().toPlainString(),
+            String.valueOf(balance.lastTransactionAt())));
+    return snapshot;
   }
 
   // ==========================================================================
@@ -524,7 +831,8 @@ class TrustLedgerPortalSyncServiceIntegrationTest {
             .findFirst()
             .orElseThrow();
     assertThat(match.description()).doesNotContain("do not share");
-    assertThat(match.description()).isEqualTo("PAYMENT \u2014 TX-INT-42");
+    // 648D (OQ-5): the fallback names the type by its client label, never the raw code
+    assertThat(match.description()).isEqualTo("Payment \u2014 TX-INT-42");
   }
 
   // ==========================================================================
@@ -600,12 +908,14 @@ class TrustLedgerPortalSyncServiceIntegrationTest {
         customerId,
         staleMatterId,
         new BigDecimal("777.00"),
+        BigDecimal.ZERO,
         java.time.Instant.parse("2026-01-01T00:00:00Z"));
     portalTrustRepo.upsertTransaction(
         UUID.randomUUID(),
         customerId,
         staleMatterId,
         "DEPOSIT",
+        "CLIENT",
         new BigDecimal("777.00"),
         new BigDecimal("777.00"),
         java.time.Instant.parse("2026-01-01T00:00:00Z")
@@ -891,6 +1201,10 @@ class TrustLedgerPortalSyncServiceIntegrationTest {
   }
 
   private void publishReconciliationCompletedEvent() {
+    publishReconciliationCompletedEvent(trustAccountId);
+  }
+
+  private void publishReconciliationCompletedEvent(UUID accountId) {
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .where(RequestScopes.ORG_ID, ORG_ID)
         .where(RequestScopes.MEMBER_ID, memberId)
@@ -901,7 +1215,7 @@ class TrustLedgerPortalSyncServiceIntegrationTest {
                         eventPublisher.publishEvent(
                             TrustDomainEvent.ReconciliationCompleted.of(
                                 UUID.randomUUID(),
-                                trustAccountId,
+                                accountId,
                                 LocalDate.of(2026, 3, 31),
                                 memberId,
                                 tenantSchema,

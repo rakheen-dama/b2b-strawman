@@ -1,0 +1,10 @@
+648D PORTAL-GATE — portal/, node v20.11.1 (nvm), pnpm /opt/homebrew/bin/pnpm, NODE_OPTIONS=""
+Date: 2026-11-18, working tree = PR head content
+  lint          exit 0 (0 errors, 4 pre-existing warnings: <img> in accept/login pages, one unused disable directive — none in 648D files)
+  typecheck     exit 0 (next typegen && tsc --noEmit -p . — covers e2e/ incl. day-14-30.spec.ts)
+  format:check  exit 0
+  test (full)   exit 0 — Test Files  51 passed (51) ; Tests  290 passed (290)
+                (647D baseline 51 files / 285; +5 net new cases: transaction-list +2 (fallback case rewritten), balance-card +2, matter-selector +1)
+                __tests__/no-raw-enum-copy.test.ts green; __tests__/raw-enum-allow-list.json unchanged (git diff empty)
+  build         exit 0 (next build)
+E2E-PORTAL and OBS on :3002: NOT run by the builder — owned by the orchestrator.

@@ -1,0 +1,2 @@
+648D red run — GlobalV7PortalTrustInvestedBalanceTest (R10) on UNCHANGED production code @ 2b7be66d6
+[ERROR]   GlobalV7PortalTrustInvestedBalanceTest.migrateScratchGlobalFromV6:94 » Flyway No migration with a target version 7 could be found. Ensure target is specified correctly and the migration exists.

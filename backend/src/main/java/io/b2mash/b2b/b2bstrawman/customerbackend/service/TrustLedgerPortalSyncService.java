@@ -23,6 +23,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -50,6 +51,15 @@ import org.springframework.transaction.support.TransactionTemplate;
  *
  * <p>Raw firm-side descriptions pass through {@link PortalTrustDescriptionSanitiser} before
  * persistence — the portal schema only ever stores sanitised text (ADR-254).
+ *
+ * <p>Projection rules (Phase 92 648D, §16.6.3): a posted row with a client and a matter is
+ * projected by its ledger. {@code CLIENT} rows drive {@code running_balance} and {@code
+ * current_balance}; every {@code CLIENT_INVESTMENT} row drives {@code invested_balance}, and of
+ * those only the interest credited to the client ({@code INV_INTEREST}) and its {@code REVERSAL}
+ * contra are visible rows. {@code NON_CLIENT} and {@code INTER_ACCOUNT} rows — the Fund's interest
+ * and share, bank charges, unidentified deposits, section 86(3) placements — never reach the
+ * portal. The read-model stores the type code and the ledger; the client label is resolved on read
+ * ({@code PortalTrustLedgerService}).
  *
  * <p>{@link #backfillForTenant(String)} performs a full rebuild of the portal trust read-model for
  * a specific tenant. It follows the {@code PortalResyncService} pattern — resolves orgId → schema
@@ -240,15 +250,19 @@ public class TrustLedgerPortalSyncService {
   }
 
   /**
-   * Replays every portal-eligible trust transaction on {@code matterId} in chronological order,
-   * stamping each row with that transaction's own {@code customer_id} and a per-customer
-   * progressive {@code running_balance}. Each row moves the balance by its own posted {@code
-   * ledger_effect} (Phase 92, ADR-378) — the figure of {@code TrustLedgerQueryRepository} — and
-   * only types the registry marks client-visible are surfaced. A reversed original and its {@code
-   * REVERSAL} contra are both replayed, each with its own effect (649B).
+   * Replays every projected trust transaction on {@code matterId} in chronological order, stamping
+   * each row with that transaction's own {@code customer_id} and a per-customer progressive {@code
+   * running_balance} of the row's own ledger. Each row moves its ledger by its posted {@code
+   * ledger_effect} (Phase 92, ADR-378) — the figure of {@code TrustLedgerQueryRepository}. Rows are
+   * split by ledger (648D, §16.6.3, {@link #projectedLedger}): {@code CLIENT} rows move the general
+   * balance, {@code CLIENT_INVESTMENT} rows the invested balance, and only {@link #isVisibleRow}
+   * rows are written as lines — so an {@code INV_INTEREST} line carries the invested running
+   * balance (OQ-1). A reversed original and its {@code REVERSAL} contra are both replayed, each
+   * with its own effect (649B). Rows are upserted only: a row no longer projected is not deleted
+   * here (that is {@link #backfillForTenant}'s drift repair).
    *
-   * <p>Used by the event-driven fan-out (approval, recorded, interest, reconciliation) and
-   * internally by the backfill. Fetches the matter's transactions exactly once per call.
+   * <p>Used by the event-driven fan-out (approval, recorded, interest, reconciliation). Fetches the
+   * matter's transactions exactly once per call.
    *
    * <p><b>Why per-row customer attribution:</b> A trust transfer within the same matter writes two
    * rows (TRANSFER_OUT/source_customer, TRANSFER_IN/target_customer) sharing a single {@code
@@ -259,53 +273,38 @@ public class TrustLedgerPortalSyncService {
    */
   private void recomputeMatter(UUID matterId) {
     var history = trustTransactionRepository.findByProjectIdOrderByTransactionDateAsc(matterId);
-    Map<UUID, BigDecimal> runningByCustomer = new HashMap<>();
-    Map<UUID, Instant> latestByCustomer = new HashMap<>();
+    Map<UUID, Balances> balancesByCustomer = new LinkedHashMap<>();
     for (var txn : history) {
-      if (!PORTAL_STATUSES.contains(txn.getStatus())) {
+      if (!PORTAL_STATUSES.contains(txn.getStatus()) || !hasPortalScope(txn)) {
         continue;
       }
-      if (!isPortalEligible(txn)) {
+      var ledger = projectedLedger(txn);
+      if (ledger.isEmpty()) {
         continue;
       }
       UUID rowCustomerId = txn.getCustomerId();
-      if (rowCustomerId == null) {
-        continue; // hasPortalScope guard — shouldn't happen given the earlier filters
-      }
       BigDecimal running =
-          runningByCustomer.getOrDefault(rowCustomerId, BigDecimal.ZERO).add(signedAmount(txn));
-      runningByCustomer.put(rowCustomerId, running);
-      Instant occurredAt = deriveOccurredAt(txn);
-      Instant priorLatest = latestByCustomer.get(rowCustomerId);
-      if (priorLatest == null || occurredAt.isAfter(priorLatest)) {
-        latestByCustomer.put(rowCustomerId, occurredAt);
+          balancesByCustomer
+              .computeIfAbsent(rowCustomerId, id -> new Balances())
+              .apply(txn, ledger.get());
+      if (isVisibleRow(txn, ledger.get())) {
+        upsertRow(txn, rowCustomerId, matterId, ledger.get(), running);
       }
-      portalTrustRepo.upsertTransaction(
-          txn.getId(),
-          rowCustomerId,
-          matterId,
-          txn.getTransactionType(),
-          txn.getAmount(),
-          running,
-          txn.getTransactionDate(),
-          recordedAt(txn),
-          occurredAt,
-          portalDescription(txn),
-          txn.getReference());
     }
-    for (var entry : runningByCustomer.entrySet()) {
-      portalTrustRepo.upsertBalance(
-          entry.getKey(), matterId, entry.getValue(), latestByCustomer.get(entry.getKey()));
-    }
+    balancesByCustomer.forEach(
+        (customerId, balances) ->
+            portalTrustRepo.upsertBalance(
+                customerId, matterId, balances.general, balances.invested, balances.latest));
   }
 
   // ── Backfill ───────────────────────────────────────────────────────────
 
   /**
-   * Rebuilds the portal trust read-model for a tenant by writing a row per posted, client-visible
-   * trust transaction (capped at {@link #BACKFILL_LIMIT_PER_MATTER} per matter) and the
-   * corresponding per-matter balance snapshot. Intended to be called on module activation (via
-   * {@code POST /internal/portal-resync/*}) or when repairing drift.
+   * Rebuilds the portal trust read-model for a tenant by writing a row per posted, visible trust
+   * transaction (capped at {@link #BACKFILL_LIMIT_PER_MATTER} per matter) and the corresponding
+   * per-matter balance snapshot — the same split by ledger as {@link #recomputeMatter} (648D).
+   * Intended to be called on module activation (via {@code POST /internal/portal-resync/*}) or when
+   * repairing drift.
    *
    * <p>Wipe-and-rewrite semantics: after upserting the fresh current-window projection for each
    * touched customer, the method deletes portal balance/transaction rows that fall outside the new
@@ -360,14 +359,14 @@ public class TrustLedgerPortalSyncService {
         orgId,
         SYSTEM_ACTOR_ID,
         () -> {
-          // Load every trust transaction once, filter portal-eligible + portal-status inline
-          // and bucket by matter. (Previously this looped over the statuses with a findAll()
-          // call inside — O(2N) heap load + silent duplicates.)
+          // Load every trust transaction once, filter projected + portal-status inline and
+          // bucket by matter. (Previously this looped over the statuses with a findAll() call
+          // inside — O(2N) heap load + silent duplicates.)
           for (var txn : trustTransactionRepository.findAll()) {
             if (!PORTAL_STATUSES.contains(txn.getStatus())) {
               continue;
             }
-            if (!hasPortalScope(txn) || !isPortalEligible(txn)) {
+            if (!hasPortalScope(txn) || projectedLedger(txn).isEmpty()) {
               continue;
             }
             UUID matterId = txn.getProjectId();
@@ -395,42 +394,36 @@ public class TrustLedgerPortalSyncService {
               int written = 0;
               for (var rollup : rollups.values()) {
                 List<TrustTransaction> ordered = rollup.ascHistory();
-                BigDecimal running = BigDecimal.ZERO;
-                int take = Math.min(ordered.size(), BACKFILL_LIMIT_PER_MATTER);
-                // Skip the portion older than the retained window so the first-retained row's
-                // running balance reflects every older credit/debit.
-                for (int i = 0; i < ordered.size() - take; i++) {
-                  running = running.add(signedAmount(ordered.get(i)));
-                }
+                // The window counts visible rows only; every projected row still moves its
+                // ledger, so the first retained row's running balance reflects every older
+                // credit/debit (and an INV_RECEIVE outside the window still counts as invested).
+                long visible =
+                    ordered.stream()
+                        .filter(t -> isVisibleRow(t, projectedLedger(t).orElseThrow()))
+                        .count();
+                long olderThanWindow = Math.max(0, visible - BACKFILL_LIMIT_PER_MATTER);
+                var balances = new Balances();
                 Set<UUID> retainedTxnIds = new HashSet<>();
-                Instant latestOccurredAt = null;
-                for (int i = ordered.size() - take; i < ordered.size(); i++) {
-                  var txn = ordered.get(i);
-                  running = running.add(signedAmount(txn));
-                  Instant occurredAt = deriveOccurredAt(txn);
-                  if (latestOccurredAt == null || occurredAt.isAfter(latestOccurredAt)) {
-                    latestOccurredAt = occurredAt;
+                long visibleSeen = 0;
+                for (var txn : ordered) {
+                  var ledger = projectedLedger(txn).orElseThrow();
+                  BigDecimal running = balances.apply(txn, ledger);
+                  if (!isVisibleRow(txn, ledger) || visibleSeen++ < olderThanWindow) {
+                    continue;
                   }
-                  portalTrustRepo.upsertTransaction(
-                      txn.getId(),
-                      rollup.customerId,
-                      rollup.matterId,
-                      txn.getTransactionType(),
-                      txn.getAmount(),
-                      running,
-                      txn.getTransactionDate(),
-                      recordedAt(txn),
-                      occurredAt,
-                      portalDescription(txn),
-                      txn.getReference());
+                  upsertRow(txn, rollup.customerId, rollup.matterId, ledger, running);
                   retainedTxnIds.add(txn.getId());
                   written++;
                 }
-                // The final `running` value after walking every transaction is the matter's
-                // current balance — equivalent to the derived matter balance but computed
+                // The final balances after walking every transaction are the matter's current
+                // general and invested balances — equivalent to the derived balances but computed
                 // without an extra round-trip per matter.
                 portalTrustRepo.upsertBalance(
-                    rollup.customerId, rollup.matterId, running, latestOccurredAt);
+                    rollup.customerId,
+                    rollup.matterId,
+                    balances.general,
+                    balances.invested,
+                    balances.latest);
 
                 retainedMattersByCustomer
                     .computeIfAbsent(rollup.customerId, id -> new HashSet<>())
@@ -486,6 +479,31 @@ public class TrustLedgerPortalSyncService {
 
   public record BackfillResult(int mattersProjected, int transactionsProjected) {}
 
+  /**
+   * One client's running balances on a matter while a replay walks it (648D): the general ({@code
+   * CLIENT}) and invested ({@code CLIENT_INVESTMENT}) ledgers, and the latest occurrence over every
+   * row that moved either — the balance snapshot's {@code last_transaction_at}.
+   */
+  private static final class Balances {
+    BigDecimal general = BigDecimal.ZERO;
+    BigDecimal invested = BigDecimal.ZERO;
+    Instant latest;
+
+    /** Moves {@code ledger} by the row's effect; returns that ledger's running balance. */
+    BigDecimal apply(TrustTransaction txn, TrustLedger ledger) {
+      Instant occurredAt = deriveOccurredAt(txn);
+      if (latest == null || occurredAt.isAfter(latest)) {
+        latest = occurredAt;
+      }
+      if (ledger == TrustLedger.CLIENT_INVESTMENT) {
+        invested = invested.add(signedAmount(txn));
+        return invested;
+      }
+      general = general.add(signedAmount(txn));
+      return general;
+    }
+  }
+
   /** Accumulates trust transactions for a single matter while building a backfill view. */
   private static final class MatterRollup {
     final UUID matterId;
@@ -522,17 +540,40 @@ public class TrustLedgerPortalSyncService {
 
   // ── Pure helpers ──────────────────────────────────────────────────────
 
+  /** Upserts one visible row under {@code customerId} with its own ledger's running balance. */
+  private void upsertRow(
+      TrustTransaction txn,
+      UUID customerId,
+      UUID matterId,
+      TrustLedger ledger,
+      BigDecimal runningBalance) {
+    portalTrustRepo.upsertTransaction(
+        txn.getId(),
+        customerId,
+        matterId,
+        txn.getTransactionType(),
+        ledger.name(),
+        txn.getAmount(),
+        runningBalance,
+        txn.getTransactionDate(),
+        recordedAt(txn),
+        deriveOccurredAt(txn),
+        portalDescription(txn),
+        txn.getReference());
+  }
+
   /**
    * The description the portal stores for a row: the client-surface rule ({@link
    * TrustTransactionTypeLabels#clientDescription} — a {@code REVERSAL} row reads "{@code Reversal —
    * <reference>}", never the firm user's free-text reason, PR #1789 review) through the ADR-254
-   * sanitiser (140-char cap, {@code [internal]} strip, blank fallback).
+   * sanitiser (140-char cap, {@code [internal]} strip, blank fallback). The fallback names the type
+   * by its client label ("Payment — TX-1"), never the raw code (648D, OQ-5).
    */
   private String portalDescription(TrustTransaction txn) {
     return sanitiser.sanitise(
         TrustTransactionTypeLabels.clientDescription(
             txn.getTransactionType(), txn.getDescription(), txn.getReference()),
-        txn.getTransactionType(),
+        TrustTransactionTypeLabels.label(txn.getTransactionType()),
         txn.getReference());
   }
 
@@ -545,20 +586,44 @@ public class TrustLedgerPortalSyncService {
   }
 
   /**
-   * Only types the registry marks client-visible are surfaced ({@link
-   * TrustTransactionType#clientVisible()}); since 649B that includes REVERSAL, the contra entry of
-   * a reversed original. A null or unknown code is not surfaced (lenient lookup — the type CHECK
-   * admits no other code).
-   *
-   * <p>648A (open question #8): only {@code CLIENT}-ledger rows — a client's investment-ledger rows
-   * ({@code CLIENT_INVESTMENT}, on the investment account) never reach the general running balance.
-   * 648D replaces this with the split projection.
+   * The ledger a row is projected under, or empty when the row never reaches the portal (648D,
+   * §16.6.3): a client's general ledger ({@code CLIENT}) and its section 86(4) investment ledger
+   * ({@code CLIENT_INVESTMENT}). {@code NON_CLIENT} and {@code INTER_ACCOUNT} rows are not the
+   * client's business and never reach the portal (the database already refuses a client or a matter
+   * on them, {@code chk_trust_txn_ledger_target}; this is the stated rule, kept as defence in
+   * depth). A general-ledger row counts only when the registry marks its type client-visible
+   * ({@link TrustTransactionType#clientVisible()} — every {@code CLIENT} type is, REVERSAL included
+   * since 649B); a null or unknown code is not surfaced (lenient lookup — the type CHECK admits no
+   * other code). Every investment-ledger row counts, visible or not, so the invested balance equals
+   * the firm's.
    */
-  private static boolean isPortalEligible(TrustTransaction txn) {
-    return txn.getLedger() == TrustLedger.CLIENT
-        && TrustTransactionType.find(txn.getTransactionType())
-            .map(TrustTransactionType::clientVisible)
-            .orElse(false);
+  private static Optional<TrustLedger> projectedLedger(TrustTransaction txn) {
+    TrustLedger ledger = txn.getLedger();
+    if (ledger == TrustLedger.CLIENT) {
+      boolean clientVisible =
+          TrustTransactionType.find(txn.getTransactionType())
+              .map(TrustTransactionType::clientVisible)
+              .orElse(false);
+      return clientVisible ? Optional.of(ledger) : Optional.empty();
+    }
+    return ledger == TrustLedger.CLIENT_INVESTMENT ? Optional.of(ledger) : Optional.empty();
+  }
+
+  /**
+   * Whether a projected row is a line the client sees: every general-ledger row; on the investment
+   * ledger only the interest credited to the client ({@code INV_INTEREST}, "Section 86(4)
+   * investment interest") and — OQ-4 — its {@code REVERSAL} contra, so a reversed credit shows with
+   * the movement that undid it (649B). {@code INV_RECEIVE} / {@code INV_WITHDRAW} move the invested
+   * balance without a line: the placement and the return show on the general ledger as {@code
+   * INV_PLACE} / {@code INV_RETURN}.
+   */
+  private static boolean isVisibleRow(TrustTransaction txn, TrustLedger ledger) {
+    if (ledger == TrustLedger.CLIENT) {
+      return true;
+    }
+    return TrustTransactionType.find(txn.getTransactionType())
+        .filter(t -> t == TrustTransactionType.INV_INTEREST || t == TrustTransactionType.REVERSAL)
+        .isPresent();
   }
 
   /**

@@ -12,26 +12,52 @@ export interface PortalTrustMatterSummary {
   matterId: string;
   /** The client's portal matter name; null when the matter is not in the portal read model (633B). */
   matterName: string | null;
-  /** BigDecimal serialised as a number via Jackson. */
+  /**
+   * General (client ledger) balance — BigDecimal serialised as a number via Jackson. The client's
+   * total held in trust is `currentBalance + investedBalance` (a placement does not move it).
+   */
   currentBalance: number;
+  /** Held for the client in section 86(4) investments on this matter (Phase 92 648D); 0 when none. */
+  investedBalance: number;
   /** ISO 8601 instant. */
   lastTransactionAt: string;
   /** ISO 8601 instant. */
   lastSyncedAt: string;
 }
 
+/**
+ * The client's total held in trust on a matter (Phase 92 648D, ADR-379): the general balance plus
+ * what is invested for them under section 86(4) — invested money is still trust money, so a
+ * placement does not move it. Rounded to the cent (the API sends two-decimal numbers).
+ */
+export function totalHeldInTrust(
+  balances: Pick<
+    PortalTrustMatterSummary,
+    "currentBalance" | "investedBalance"
+  >,
+): number {
+  return (
+    Math.round((balances.currentBalance + balances.investedBalance) * 100) / 100
+  );
+}
+
 export interface PortalTrustSummaryResponse {
   matters: PortalTrustMatterSummary[];
 }
 
+/** The ledger a portal trust row moved (Phase 92 648D) — for logic only, never rendered. */
+export type PortalTrustLedger = "CLIENT" | "CLIENT_INVESTMENT";
+
 export interface PortalTrustTransactionResponse {
   id: string;
-  /**
-   * DEPOSIT | PAYMENT | REFUND | FEE_TRANSFER | INTEREST_CREDIT | INTEREST_LPFF | TRANSFER_IN |
-   * TRANSFER_OUT | REVERSAL (tenant chk_trust_txn_type) — label via lib/labels.ts, never rendered raw.
-   */
+  /** The type code (tenant chk_trust_txn_type) — for logic only, never rendered: render `typeLabel`. */
   transactionType: string;
+  /** The client-facing label from the backend type registry, e.g. "Section 86(4) investment interest". */
+  typeLabel: string;
+  /** The ledger the row moved: `runningBalance` is that ledger's balance (648D). */
+  ledger: PortalTrustLedger;
   amount: number;
+  /** Running balance of the row's own ledger — the invested balance on a CLIENT_INVESTMENT row. */
   runningBalance: number;
   /** "YYYY-MM-DD" SA business date of the transaction — the date to show (G89-F39). */
   transactionDate: string;

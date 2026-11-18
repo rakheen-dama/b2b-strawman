@@ -1,0 +1,4 @@
+648D red run — PortalTrustControllerIntegrationTest (R8) on UNCHANGED production code @ 2b7be66d6
+[ERROR]   PortalTrustControllerIntegrationTest.movements_returns_at_most_limit_rows_ordered_newest_first:386 No value at JSON path "$[0].typeLabel"
+[ERROR]   PortalTrustControllerIntegrationTest.transactions_carry_the_registry_label_and_the_ledger:330 No value at JSON path "$.content[0].typeLabel"
+[ERROR] Tests run: 10, Failures: 2, Errors: 0, Skipped: 0, Time elapsed: 25.63 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.customerbackend.controller.PortalTrustControllerIntegrationTest

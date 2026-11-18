@@ -135,12 +135,16 @@ class PortalTrustControllerIntegrationTest {
     Instant lastTxnA = Instant.parse("2026-03-15T10:00:00Z");
     Instant lastTxnB = Instant.parse("2026-03-20T12:00:00Z");
 
-    portalTrustRepo.upsertBalance(customerId, matterA, new BigDecimal("1500.00"), lastTxnA);
-    portalTrustRepo.upsertBalance(customerId, matterB, new BigDecimal("250.00"), lastTxnB);
+    portalTrustRepo.upsertBalance(
+        customerId, matterA, new BigDecimal("1500.00"), BigDecimal.ZERO, lastTxnA);
+    // matterB holds a section 86(4) investment for the client (648D)
+    portalTrustRepo.upsertBalance(
+        customerId, matterB, new BigDecimal("250.00"), new BigDecimal("750.00"), lastTxnB);
     portalTrustRepo.upsertBalance(
         otherCustomerId,
         otherCustomerMatter,
         new BigDecimal("9999.00"),
+        BigDecimal.ZERO,
         Instant.parse("2026-03-10T09:00:00Z"));
 
     // matterA: 15 transactions spanning three calendar months (Jan / Feb / Mar) for pagination +
@@ -154,6 +158,7 @@ class PortalTrustControllerIntegrationTest {
           customerId,
           matterA,
           "DEPOSIT",
+          "CLIENT",
           new BigDecimal("100.00"),
           new BigDecimal("100.00").multiply(BigDecimal.valueOf(i + 1L)),
           janStart
@@ -171,6 +176,7 @@ class PortalTrustControllerIntegrationTest {
           customerId,
           matterA,
           "DEPOSIT",
+          "CLIENT",
           new BigDecimal("100.00"),
           new BigDecimal("100.00").multiply(BigDecimal.valueOf(i + 6L)),
           febStart
@@ -188,6 +194,7 @@ class PortalTrustControllerIntegrationTest {
           customerId,
           matterA,
           "DEPOSIT",
+          "CLIENT",
           new BigDecimal("100.00"),
           new BigDecimal("100.00").multiply(BigDecimal.valueOf(i + 11L)),
           marStart
@@ -206,6 +213,7 @@ class PortalTrustControllerIntegrationTest {
         customerId,
         matterB,
         "DEPOSIT",
+        "CLIENT",
         new BigDecimal("250.00"),
         new BigDecimal("250.00"),
         lastTxnB.atZone(io.b2mash.b2b.b2bstrawman.config.KaziTime.ZONE).toLocalDate(),
@@ -213,6 +221,24 @@ class PortalTrustControllerIntegrationTest {
         lastTxnB,
         "Matter B seed",
         "REF-B-0");
+    // matterB: section 86(4) interest credited to the client (648D) — an investment-ledger row
+    // whose
+    // running balance is the invested balance; dated before the 2026-03-20 deposit, so that deposit
+    // stays the newest movement.
+    Instant interestAt = Instant.parse("2026-03-18T09:00:00Z");
+    portalTrustRepo.upsertTransaction(
+        UUID.randomUUID(),
+        customerId,
+        matterB,
+        "INV_INTEREST",
+        "CLIENT_INVESTMENT",
+        new BigDecimal("50.00"),
+        new BigDecimal("750.00"),
+        interestAt.atZone(io.b2mash.b2b.b2bstrawman.config.KaziTime.ZONE).toLocalDate(),
+        interestAt,
+        interestAt,
+        "Section 86(4) investment interest (Investec)",
+        "INT-B-0");
 
     // Default spy behaviour — trust module enabled. Individual tests override when needed.
     when(moduleGuard.isModuleEnabled(TRUST_MODULE)).thenReturn(true);
@@ -234,7 +260,14 @@ class PortalTrustControllerIntegrationTest {
         .andExpect(jsonPath("$.matters[?(@.matterId == '" + matterA + "')]").exists())
         .andExpect(jsonPath("$.matters[?(@.matterId == '" + matterB + "')]").exists())
         .andExpect(
-            jsonPath("$.matters[?(@.matterId == '" + otherCustomerMatter + "')]").doesNotExist());
+            jsonPath("$.matters[?(@.matterId == '" + otherCustomerMatter + "')]").doesNotExist())
+        // 648D (§16.4.7): the general and the invested balance, separately
+        .andExpect(
+            jsonPath("$.matters[?(@.matterId == '" + matterB + "')].currentBalance").value(250.0))
+        .andExpect(
+            jsonPath("$.matters[?(@.matterId == '" + matterB + "')].investedBalance").value(750.0))
+        .andExpect(
+            jsonPath("$.matters[?(@.matterId == '" + matterA + "')].investedBalance").value(0.0));
   }
 
   // ==========================================================================
@@ -312,6 +345,41 @@ class PortalTrustControllerIntegrationTest {
   }
 
   // ==========================================================================
+  // Scenario 4b (Phase 92 648D, §16.4.7) — each row carries the registry's client label
+  // (typeLabel) and the ledger it moved; the code stays for logic only.
+  // ==========================================================================
+
+  @Test
+  void transactions_carry_the_registry_label_and_the_ledger() throws Exception {
+    when(moduleGuard.isModuleEnabled(TRUST_MODULE)).thenReturn(true);
+
+    mockMvc
+        .perform(
+            get("/portal/trust/matters/{matterId}/transactions", matterA)
+                .param("size", "50")
+                .header("Authorization", "Bearer " + portalToken))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[0].transactionType").value("DEPOSIT"))
+        .andExpect(jsonPath("$.content[0].typeLabel").value("Deposit"))
+        .andExpect(jsonPath("$.content[0].ledger").value("CLIENT"));
+
+    // Section 86(4) interest appears as its own row, labelled by the registry
+    mockMvc
+        .perform(
+            get("/portal/trust/matters/{matterId}/transactions", matterB)
+                .header("Authorization", "Bearer " + portalToken))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content.length()").value(2))
+        .andExpect(jsonPath("$.content[0].reference").value("REF-B-0"))
+        .andExpect(jsonPath("$.content[0].typeLabel").value("Deposit"))
+        .andExpect(jsonPath("$.content[0].ledger").value("CLIENT"))
+        .andExpect(jsonPath("$.content[1].transactionType").value("INV_INTEREST"))
+        .andExpect(jsonPath("$.content[1].typeLabel").value("Section 86(4) investment interest"))
+        .andExpect(jsonPath("$.content[1].ledger").value("CLIENT_INVESTMENT"))
+        .andExpect(jsonPath("$.content[1].runningBalance").value(750.0));
+  }
+
+  // ==========================================================================
   // Scenario 5 (GAP-L-55) — unknown matter yields a "Matter not found" error so the portal
   // message matches sibling portal endpoints (628D: 404 titles use EntityNoun, ADR-357).
   // ==========================================================================
@@ -339,7 +407,7 @@ class PortalTrustControllerIntegrationTest {
   void movements_default_limit_caps_at_ten_rows() throws Exception {
     when(moduleGuard.isModuleEnabled(TRUST_MODULE)).thenReturn(true);
 
-    // 16 transactions exist for this customer (15 on matterA, 1 on matterB). Default limit = 10.
+    // 17 transactions exist for this customer (15 on matterA, 2 on matterB). Default limit = 10.
     mockMvc
         .perform(get("/portal/trust/movements").header("Authorization", "Bearer " + portalToken))
         .andExpect(status().isOk())
@@ -362,6 +430,8 @@ class PortalTrustControllerIntegrationTest {
         .andExpect(jsonPath("$[0].occurredAt").value("2026-03-20T12:00:00Z"))
         .andExpect(jsonPath("$[0].matterName").value("Matter B"))
         .andExpect(jsonPath("$[0].type").value("DEPOSIT"))
+        // 648D: the client label from the backend registry rides beside the code
+        .andExpect(jsonPath("$[0].typeLabel").value("Deposit"))
         .andExpect(jsonPath("$[0].currency").value("ZAR"))
         .andExpect(jsonPath("$[0].amount").value(250.00))
         .andExpect(jsonPath("$[0].description").value("Matter B seed"));
@@ -378,6 +448,7 @@ class PortalTrustControllerIntegrationTest {
         otherCustomerId,
         otherCustomerMatter,
         "DEPOSIT",
+        "CLIENT",
         new BigDecimal("9999.00"),
         new BigDecimal("9999.00"),
         Instant.parse("2030-01-01T00:00:00Z")
@@ -388,14 +459,17 @@ class PortalTrustControllerIntegrationTest {
         "Other-customer leak probe",
         "REF-LEAK");
 
-    // limit=50 covers every legitimate row (16) without saturating. Leaked row must be absent.
+    // limit=50 covers every legitimate row (17) without saturating. Leaked row must be absent.
     mockMvc
         .perform(
             get("/portal/trust/movements")
                 .param("limit", "50")
                 .header("Authorization", "Bearer " + portalToken))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.length()").value(16))
+        .andExpect(jsonPath("$.length()").value(17))
+        .andExpect(
+            jsonPath("$[?(@.type == 'INV_INTEREST')].typeLabel")
+                .value("Section 86(4) investment interest"))
         .andExpect(jsonPath("$[?(@.description == 'Other-customer leak probe')]").doesNotExist());
   }
 

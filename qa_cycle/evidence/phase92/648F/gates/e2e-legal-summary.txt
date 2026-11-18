@@ -1,0 +1,6 @@
+E2E-LEGAL @6bff38cd0 on fresh stack (e2e-down + e2e-up from worktree), 2026-11-18T14:30:31Z
+--- legal-lifecycle
+  109 passed (3.1m)
+--- legal-depth-ii
+  4 skipped
+  40 passed (1.9m)

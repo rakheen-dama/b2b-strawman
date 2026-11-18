@@ -7,6 +7,7 @@ import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustBooksService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentInterestRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService.CreditorBreakdown;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.ClientBalanceRow;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.ClientHistoryRow;
@@ -16,6 +17,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.Tru
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionDirection;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.TrustTransactionResponse;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionType;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionTypeLabels;
 import java.math.BigDecimal;
 import java.time.Clock;
@@ -48,6 +50,7 @@ public class ClientLedgerService {
   private final CustomerRepository customerRepository;
   private final VerticalModuleGuard moduleGuard;
   private final TrustBooksService trustBooksService;
+  private final TrustInvestmentInterestRepository interestRepository;
   private final Clock clock;
 
   public ClientLedgerService(
@@ -57,6 +60,7 @@ public class ClientLedgerService {
       CustomerRepository customerRepository,
       VerticalModuleGuard moduleGuard,
       TrustBooksService trustBooksService,
+      TrustInvestmentInterestRepository interestRepository,
       Clock clock) {
     this.ledgerCardRepository = ledgerCardRepository;
     this.transactionRepository = transactionRepository;
@@ -64,6 +68,7 @@ public class ClientLedgerService {
     this.customerRepository = customerRepository;
     this.moduleGuard = moduleGuard;
     this.trustBooksService = trustBooksService;
+    this.interestRepository = interestRepository;
     this.clock = clock;
   }
 
@@ -129,6 +134,56 @@ public class ClientLedgerService {
       // Phase 92 (ADR-378): the row's signed effect on the client ledger — the statement and the
       // Statement of Account classify lines by its sign, never by type name
       BigDecimal ledgerEffect) {}
+
+  /**
+   * 648F (§16.6.4, ADR-379 L7): a client's section 86(4) investments placed from one trust account,
+   * over a period — what the Statement of Account and the Client Trust Statement print in their
+   * "Section 86(4) investment" block and the client-ledger-statement report carries. Balances are
+   * the posted {@code CLIENT_INVESTMENT} ledger as at {@code startDate − 1} / {@code endDate}; the
+   * period's movements are the same rows by type (a reversal netted under the type it reverses);
+   * gross and the Fund's 5% come from the POSTED interest entries (A2: under NET only the entry
+   * holds them). Interest is only ever {@code INV_INTEREST} (E4). {@code openingBalance +
+   * capitalPlaced + interestNet − returnedToTrust = closingBalance}.
+   */
+  public record InvestedStatement(
+      BigDecimal openingBalance,
+      BigDecimal capitalPlaced,
+      BigDecimal interestGross,
+      BigDecimal interestFundShare,
+      BigDecimal interestNet,
+      // capital plus the net interest returned to the trust banking account (INV_WITHDRAW)
+      BigDecimal returnedToTrust,
+      BigDecimal closingBalance,
+      List<InvestedInterestLine> interestLines) {
+
+    public static final InvestedStatement NONE =
+        new InvestedStatement(
+            BigDecimal.ZERO,
+            BigDecimal.ZERO,
+            BigDecimal.ZERO,
+            BigDecimal.ZERO,
+            BigDecimal.ZERO,
+            BigDecimal.ZERO,
+            BigDecimal.ZERO,
+            List.of());
+
+    /** Nothing to print: nothing invested at either end and no movement in the period. */
+    public boolean isEmpty() {
+      return openingBalance.signum() == 0
+          && closingBalance.signum() == 0
+          && capitalPlaced.signum() == 0
+          && interestNet.signum() == 0
+          && returnedToTrust.signum() == 0
+          && interestLines.isEmpty();
+    }
+  }
+
+  /** One POSTED section 86(4) interest entry: the date credited, gross, the Fund's 5%, net. */
+  public record InvestedInterestLine(
+      LocalDate entryDate,
+      BigDecimal grossAmount,
+      BigDecimal fundShareAmount,
+      BigDecimal netAmount) {}
 
   // --- Service Methods ---
 
@@ -334,6 +389,118 @@ public class ClientLedgerService {
     BigDecimal closingBalance = lines.isEmpty() ? openingBalance : lines.getLast().runningBalance();
 
     return new LedgerStatementResponse(openingBalance, closingBalance, lines);
+  }
+
+  /**
+   * The client's section 86(4) investments placed from {@code fundingAccountId} over {@code
+   * startDate}..{@code endDate} ({@link InvestedStatement}); {@link InvestedStatement#isEmpty()}
+   * when there is nothing to print.
+   *
+   * <p>REPEATABLE READ (as {@link #getClientLedger}): the two balances, the per-type totals and the
+   * interest entries are four statements; one snapshot keeps an interest posting from landing in
+   * the totals but not the closing balance. Read-only, so Postgres cannot raise a serialization
+   * failure here. The isolation applies only where this call starts the transaction — inside a
+   * caller's transaction it reads on the caller's snapshot
+   * (qa_cycle/evidence/phase92/648F/found.md, R-1).
+   */
+  @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
+  public InvestedStatement getClientInvestedStatement(
+      UUID customerId, UUID fundingAccountId, LocalDate startDate, LocalDate endDate) {
+    moduleGuard.requireModule(MODULE_ID);
+    if (endDate.isBefore(startDate)) {
+      throw new InvalidStateException(
+          "Invalid ledger statement range", "endDate must be on or after startDate");
+    }
+    BigDecimal opening =
+        ledgerQueries.clientInvestedBalance(fundingAccountId, customerId, startDate.minusDays(1));
+    BigDecimal closing = ledgerQueries.clientInvestedBalance(fundingAccountId, customerId, endDate);
+
+    var movements = InvestedMovements.ZERO;
+    for (var row :
+        ledgerQueries.clientInvestedTotalsByType(
+            fundingAccountId, customerId, startDate, endDate)) {
+      // Lenient reader: a code the registry does not know never reaches a client document
+      var type = TrustTransactionType.find(row.getTransactionType());
+      if (type.isPresent()) {
+        movements = movements.plus(type.get(), row.getTotal());
+      }
+    }
+
+    var lines =
+        interestRepository
+            .findPostedForClientStatement(customerId, fundingAccountId, startDate, endDate)
+            .stream()
+            .map(
+                e ->
+                    new InvestedInterestLine(
+                        e.getEntryDate(),
+                        e.getGrossAmount(),
+                        e.getFundShareAmount(),
+                        e.getNetAmount()))
+            .toList();
+    BigDecimal gross =
+        lines.stream()
+            .map(InvestedInterestLine::grossAmount)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+    BigDecimal fundShare =
+        lines.stream()
+            .map(InvestedInterestLine::fundShareAmount)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+    return new InvestedStatement(
+        opening,
+        movements.placed(),
+        gross,
+        fundShare,
+        movements.interestNet(),
+        // INV_WITHDRAW effects are negative on the investment ledger
+        movements.withdrawn().negate(),
+        closing,
+        lines);
+  }
+
+  /**
+   * A period's signed {@code CLIENT_INVESTMENT} movements by type (648F) — the exhaustive switch
+   * mirrors {@link LedgerTotals#plus}, so a new type must be placed here before it compiles.
+   */
+  private record InvestedMovements(
+      BigDecimal placed, BigDecimal interestNet, BigDecimal withdrawn) {
+
+    static final InvestedMovements ZERO =
+        new InvestedMovements(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
+
+    InvestedMovements plus(TrustTransactionType type, BigDecimal total) {
+      return switch (type) {
+        case INV_RECEIVE -> new InvestedMovements(placed.add(total), interestNet, withdrawn);
+        case INV_INTEREST -> new InvestedMovements(placed, interestNet.add(total), withdrawn);
+        case INV_WITHDRAW -> new InvestedMovements(placed, interestNet, withdrawn.add(total));
+        // Never a group key here: clientInvestedTotalsByType groups a reversal under the type it
+        // reverses, and these types never sit on a client's s86(4) CLIENT_INVESTMENT ledger
+        case DEPOSIT,
+            PAYMENT,
+            FEE_TRANSFER,
+            REFUND,
+            TRANSFER_OUT,
+            TRANSFER_IN,
+            REVERSAL,
+            FUND_INTEREST,
+            FUND_SWEEP,
+            BANK_CHARGE,
+            CHARGE_REFUND,
+            UNIDENTIFIED_DEPOSIT,
+            UNIDENT_ALLOC_OUT,
+            UNIDENT_ALLOC_IN,
+            UNIDENT_FUND_PAY,
+            INV_PLACE,
+            FUND_INV_SHARE,
+            INV_RETURN,
+            FIRM_INV_PLACE,
+            FIRM_INV_RECEIVE,
+            FIRM_INV_WITHDRAW,
+            FIRM_INV_RETURN ->
+            this;
+      };
+    }
   }
 
   // --- Private Helpers ---

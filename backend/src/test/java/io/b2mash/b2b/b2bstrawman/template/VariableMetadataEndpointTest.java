@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.template;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
@@ -180,7 +181,8 @@ class VariableMetadataEndpointTest {
         .andExpect(jsonPath("$.loopSources[0].label").value("Fee note lines"))
         .andExpect(jsonPath("$.loopSources[0].fields.length()").value(4));
 
-    // CUSTOMER has projects, invoices, trust ledger lines (G89 D11) and tags loop sources
+    // CUSTOMER has projects, invoices, trust ledger lines (G89 D11), tags and the section 86(4)
+    // interest entries (648F) loop sources
     mockMvc
         .perform(
             get("/api/templates/variables")
@@ -188,14 +190,19 @@ class VariableMetadataEndpointTest {
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_vm_member"))
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.loopSources.length()").value(4))
+        .andExpect(jsonPath("$.loopSources.length()").value(5))
         .andExpect(jsonPath("$.loopSources[0].key").value("projects"))
         .andExpect(jsonPath("$.loopSources[1].key").value("invoices"))
         .andExpect(jsonPath("$.loopSources[1].label").value("Fee notes"))
         .andExpect(jsonPath("$.loopSources[1].fields.length()").value(7))
         .andExpect(jsonPath("$.loopSources[2].key").value("trust.lines"))
         .andExpect(jsonPath("$.loopSources[2].fields.length()").value(6))
-        .andExpect(jsonPath("$.loopSources[3].key").value("tags"));
+        .andExpect(jsonPath("$.loopSources[3].key").value("tags"))
+        .andExpect(jsonPath("$.loopSources[4].key").value("trust.invested.interest_entries"))
+        .andExpect(jsonPath("$.loopSources[4].fields.length()").value(4))
+        .andExpect(
+            jsonPath("$.loopSources[4].fields")
+                .value(contains("entryDate", "grossAmount", "fundShareAmount", "netAmount")));
   }
 
   @Test

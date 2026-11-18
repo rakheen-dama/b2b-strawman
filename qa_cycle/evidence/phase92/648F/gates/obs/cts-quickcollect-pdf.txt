@@ -1,0 +1,41 @@
+            E2E Test Organization
+            Client Trust Statement
+            Client: QuickCollect Services mwm7kpqkc14a
+            Statement Date: 18 November 2026
+            Trust Account: E2E Test Organization — Section 86(2) trust account
+            Transaction Summary
+            The following is a statement of all trust account transactions held on behalf of QuickCollect 
+            Services mwm7kpqkc14a, from the first transaction to the date of this statement.
+            Account: Mathebula & Partners Trust Account
+            Opening balance: R0,00
+             Date        Type         Reference        Description        Amount       Balance
+             18                       DEP/QC           QuickCollect 
+             November    Deposit      /mwm7kpqkc14a Services —            R45 000,00   R45 000,00
+             2026                                      collections deposit
+                                                       Placed in section 
+             18          Placed in                     86(4) investment 
+             November    section 86   INV-469DEF18     at Nedbank         R30 000,00   R15 000,00
+             2026        (4)                           (Nedbank 
+                         investment                    Section 86(4) 
+                                                       Investments)
+            Closing balance: R15 000,00
+            Section 86(4) investment
+            Placed in section 86(4) investment: R30 000,00
+            Section 86(4) investment interest
+             Date               Gross          Fund share of section 86(4) interest   Net 
+                                interest       (5%)                                   interest
+             18 November      R100,00        R5,00                                R95,00
+             2026
+           Gross interest: R100,00
+           Fund share of section 86(4) interest (5%): R5,00
+           Net interest: R95,00
+           Investment returned to trust: R0,00
+           Invested on your instruction (section 86(4)): R30 095,00
+           Current Balance
+           In the firm's trust account: R15 000,00
+           Invested on your instruction (section 86(4)): R30 095,00
+           Held in trust: R45 095,00
+           This statement is issued in terms of the Legal Practice Act 28 of 2014 and the rules of the Legal 
+           Practice Council.
+           Yours faithfully,
+           E2E Test Organization

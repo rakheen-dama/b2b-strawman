@@ -70,6 +70,27 @@ public interface TrustInvestmentInterestRepository
   List<InterestTotals> sumPostedByInvestmentIds(
       @Param("investmentIds") Collection<UUID> investmentIds);
 
+  /**
+   * 648F: the POSTED section 86(4) interest entries, dated {@code fromDate}..{@code toDate}, of
+   * {@code customerId}'s investments placed from {@code fundingAccountId}, oldest first — gross,
+   * the Fund's 5% and net for the client documents. A REVERSED entry is excluded (its two rows net
+   * to zero on the ledger; the contra is dated the entry date — {@code reverseInterest}).
+   */
+  @Query(
+      """
+      SELECT e FROM TrustInvestmentInterest e, TrustInvestment i
+       WHERE i.id = e.investmentId
+         AND i.customerId = :customerId AND i.trustAccountId = :fundingAccountId
+         AND e.status = 'POSTED'
+         AND e.entryDate >= :fromDate AND e.entryDate <= :toDate
+       ORDER BY e.entryDate ASC, e.createdAt ASC
+      """)
+  List<TrustInvestmentInterest> findPostedForClientStatement(
+      @Param("customerId") UUID customerId,
+      @Param("fundingAccountId") UUID fundingAccountId,
+      @Param("fromDate") LocalDate fromDate,
+      @Param("toDate") LocalDate toDate);
+
   /** The POSTED totals of one investment (projection). */
   interface InterestTotals {
     UUID getInvestmentId();

@@ -1,0 +1,315 @@
+{
+  "startedAt": "2026-11-18T14:35:42.913Z",
+  "phase": "capture",
+  "today": "2026-11-18",
+  "period": {
+    "from": "2026-08-20",
+    "to": "2026-11-18"
+  },
+  "docs": {
+    "cts-quickcollect": {
+      "who": "QuickCollect",
+      "customerId": "2db7efe4-899b-4589-a1bf-dc483496e762",
+      "clientHeading": "QuickCollect Services mwm7kpqkc14a",
+      "previewText": "E2E Test Organization\nClient Trust Statement\n\nClient: QuickCollect Services mwm7kpqkc14a\n\nStatement Date: 18 November 2026\n\nTrust Account: E2E Test Organization — Section 86(2) trust account\n\nTransaction Summary\n\nThe following is a statement of all trust account transactions held on behalf of QuickCollect Services mwm7kpqkc14a, from the first transaction to the date of this statement.\n\nAccount: Mathebula & Partners Trust Account\n\nOpening balance: R0,00\n\nDate\tType\tReference\tDescription\tAmount\tBalance\n18 November 2026\tDeposit\tDEP/QC/mwm7kpqkc14a\tQuickCollect Services — collections deposit\tR45 000,00\tR45 000,00\n18 November 2026\tPlaced in section 86(4) investment\tINV-469DEF18\tPlaced in section 86(4) investment at Nedbank (Nedbank Section 86(4) Investments)\tR30 000,00\tR15 000,00\n\nClosing balance: R15 000,00\n\nSection 86(4) investment\n\nPlaced in section 86(4) investment: R30 000,00\n\nSection 86(4) investment interest\n\nDate\tGross interest\tFund share of section 86(4) interest (5%)\tNet interest\n18 November 2026\tR100,00\tR5,00\tR95,00\n\nGross interest: R100,00\n\nFund share of section 86(4) interest (5%): R5,00\n\nNet interest: R95,00\n\nInvestment returned to trust: R0,00\n\nInvested on your instruction (section 86(4)): R30 095,00\n\nCurrent Balance\n\nIn the firm's trust account: R15 000,00\n\nInvested on your instruction (section 86(4)): R30 095,00\n\nHeld in trust: R45 095,00\n\nThis statement is issued in terms of the Legal Practice Act 28 of 2014 and the rules of the Legal Practice Council.\n\nYours faithfully,\n\nE2E Test Organization",
+      "previewTables": [
+        {
+          "heading": "Opening balance: R0,00",
+          "rows": [
+            [
+              "Date",
+              "Type",
+              "Reference",
+              "Description",
+              "Amount",
+              "Balance"
+            ],
+            [
+              "18 November 2026",
+              "Deposit",
+              "DEP/QC/mwm7kpqkc14a",
+              "QuickCollect Services — collections deposit",
+              "R45 000,00",
+              "R45 000,00"
+            ],
+            [
+              "18 November 2026",
+              "Placed in section 86(4) investment",
+              "INV-469DEF18",
+              "Placed in section 86(4) investment at Nedbank (Nedbank Section 86(4) Investments)",
+              "R30 000,00",
+              "R15 000,00"
+            ]
+          ]
+        },
+        {
+          "heading": "Section 86(4) investment interest",
+          "rows": [
+            [
+              "Date",
+              "Gross interest",
+              "Fund share of section 86(4) interest (5%)",
+              "Net interest"
+            ],
+            [
+              "18 November 2026",
+              "R100,00",
+              "R5,00",
+              "R95,00"
+            ]
+          ]
+        }
+      ],
+      "pdfFilename": "Client Trust Statement.pdf",
+      "pdfText": "            E2E Test Organization\r\n            Client Trust Statement\r\n            Client: QuickCollect Services mwm7kpqkc14a\r\n            Statement Date: 18 November 2026\r\n            Trust Account: E2E Test Organization — Section 86(2) trust account\r\n            Transaction Summary\r\n            The following is a statement of all trust account transactions held on behalf of QuickCollect \r\n            Services mwm7kpqkc14a, from the first transaction to the date of this statement.\r\n            Account: Mathebula & Partners Trust Account\r\n            Opening balance: R0,00\r\n             Date        Type         Reference        Description        Amount       Balance\r\n             18                       DEP/QC           QuickCollect \r\n             November    Deposit      /mwm7kpqkc14a Services —            R45 000,00   R45 000,00\r\n             2026                                      collections deposit\r\n                                                       Placed in section \r\n             18          Placed in                     86(4) investment \r\n             November    section 86   INV-469DEF18     at Nedbank         R30 000,00   R15 000,00\r\n             2026        (4)                           (Nedbank \r\n                         investment                    Section 86(4) \r\n                                                       Investments)\r\n            Closing balance: R15 000,00\r\n            Section 86(4) investment\r\n            Placed in section 86(4) investment: R30 000,00\r\n            Section 86(4) investment interest\r\n             Date               Gross          Fund share of section 86(4) interest   Net \r\n                                interest       (5%)                                   interest\r\n             18 November      R100,00        R5,00                                R95,00\r\n             2026\r\n           Gross interest: R100,00\r\n           Fund share of section 86(4) interest (5%): R5,00\r\n           Net interest: R95,00\r\n           Investment returned to trust: R0,00\r\n           Invested on your instruction (section 86(4)): R30 095,00\r\n           Current Balance\r\n           In the firm's trust account: R15 000,00\r\n           Invested on your instruction (section 86(4)): R30 095,00\r\n           Held in trust: R45 095,00\r\n           This statement is issued in terms of the Legal Practice Act 28 of 2014 and the rules of the Legal \r\n           Practice Council.\r\n           Yours faithfully,\r\n           E2E Test Organization\r\n"
+    },
+    "soa-quickcollect": {
+      "who": "QuickCollect",
+      "matterId": "5a7e8a76-b26a-42ea-9de1-ff005a20c63e",
+      "period": {
+        "from": "2026-08-20",
+        "to": "2026-11-18"
+      },
+      "matterHeading": "QC Debt Recovery #1 mwm7kpqkc14a",
+      "previewText": "E2E Test Organization\nStatement of Account\n\nReference: SOA-5a7e8a76-20261118\n\nPeriod: 20 August 2026 — 18 November 2026\n\nGenerated: 18 November 2026\n\nTo\n\nQuickCollect Services mwm7kpqkc14a\n\n12 Rivonia Road Sandton 2196 ZA\n\nMatter\n\nMatter: QC Debt Recovery #1 mwm7kpqkc14a\n\nOpened: 18 November 2026\n\nProfessional Fees\nDate\tFee Earner\tDescription\tHours\tRate\tAmount\n18 November 2026\tBob Admin\tVerify claim documentation — first debtor batch\t1\tR1 200,00\tR1 200,00\n\nTotal fees (excl. VAT): R1 200,00\n\nVAT: R180,00\n\nTotal fees (incl. VAT): R1 380,00\n\nDisbursements\nDate\tCategory\tDescription\tSupplier\tAmount\tVAT\n\nTotal disbursements: R0,00\n\nTrust Activity\n\nOpening balance: R0,00\n\nDeposits\n\nDate\tType\tReference\tDescription\tAmount\n18 November 2026\tDeposit\tDEP/QC/mwm7kpqkc14a\tQuickCollect Services — collections deposit\tR45 000,00\n\nPayments\n\nDate\tType\tReference\tDescription\tAmount\n18 November 2026\tPlaced in section 86(4) investment\tINV-469DEF18\tPlaced in section 86(4) investment at Nedbank (Nedbank Section 86(4) Investments)\tR30 000,00\n\nClosing balance: R15 000,00\n\nSection 86(4) investment\n\nOpening balance: R0,00\n\nPlaced in section 86(4) investment: R30 000,00\n\nSection 86(4) investment interest\n\nDate\tGross interest\tFund share of section 86(4) interest (5%)\tNet interest\n18 November 2026\tR100,00\tR5,00\tR95,00\n\nGross interest: R100,00\n\nFund share of section 86(4) interest (5%): R5,00\n\nNet interest: R95,00\n\nInvestment returned to trust: R0,00\n\nInvested on your instruction (section 86(4)): R30 095,00\n\nSummary\n\nFees billed in period: R0,00\n\nDisbursements billed in period: R0,00\n\nPrevious balance owing: R0,00\n\nPayments received: R0,00\n\nClosing balance owing: R0,00\n\nTrust balance held: R15 000,00\n\nUnbilled work in progress (not yet billed): R0,00",
+      "previewTables": [
+        {
+          "heading": "Professional Fees",
+          "rows": [
+            [
+              "Date",
+              "Fee Earner",
+              "Description",
+              "Hours",
+              "Rate",
+              "Amount"
+            ],
+            [
+              "18 November 2026",
+              "Bob Admin",
+              "Verify claim documentation — first debtor batch",
+              "1",
+              "R1 200,00",
+              "R1 200,00"
+            ]
+          ]
+        },
+        {
+          "heading": "Disbursements",
+          "rows": [
+            [
+              "Date",
+              "Category",
+              "Description",
+              "Supplier",
+              "Amount",
+              "VAT"
+            ]
+          ]
+        },
+        {
+          "heading": "Deposits",
+          "rows": [
+            [
+              "Date",
+              "Type",
+              "Reference",
+              "Description",
+              "Amount"
+            ],
+            [
+              "18 November 2026",
+              "Deposit",
+              "DEP/QC/mwm7kpqkc14a",
+              "QuickCollect Services — collections deposit",
+              "R45 000,00"
+            ]
+          ]
+        },
+        {
+          "heading": "Payments",
+          "rows": [
+            [
+              "Date",
+              "Type",
+              "Reference",
+              "Description",
+              "Amount"
+            ],
+            [
+              "18 November 2026",
+              "Placed in section 86(4) investment",
+              "INV-469DEF18",
+              "Placed in section 86(4) investment at Nedbank (Nedbank Section 86(4) Investments)",
+              "R30 000,00"
+            ]
+          ]
+        },
+        {
+          "heading": "Section 86(4) investment interest",
+          "rows": [
+            [
+              "Date",
+              "Gross interest",
+              "Fund share of section 86(4) interest (5%)",
+              "Net interest"
+            ],
+            [
+              "18 November 2026",
+              "R100,00",
+              "R5,00",
+              "R95,00"
+            ]
+          ]
+        }
+      ],
+      "pdfError": "TimeoutError: page.waitForEvent: Timeout 45000ms exceeded while waiting for event \"download\"\n=========================== logs ===========================\nwaiting for event \"download\"\n============================================================",
+      "dialogAlert": [
+        "Failed to download document."
+      ]
+    },
+    "cts-sipho": {
+      "who": "Sipho",
+      "customerId": "c2b4ec99-9879-438f-a82e-7112c3b7e519",
+      "clientHeading": "Sipho Ndlovu mwm7opdc4989",
+      "previewText": "E2E Test Organization\nClient Trust Statement\n\nClient: Sipho Ndlovu mwm7opdc4989\n\nStatement Date: 18 November 2026\n\nTrust Account: E2E Test Organization — Section 86(2) trust account\n\nTransaction Summary\n\nThe following is a statement of all trust account transactions held on behalf of Sipho Ndlovu mwm7opdc4989, from the first transaction to the date of this statement.\n\nAccount: Mathebula & Partners Trust Account\n\nOpening balance: R0,00\n\nDate\tType\tReference\tDescription\tAmount\tBalance\n18 November 2026\tDeposit\tDEP/mwm7opdc4989\tClient deposit — RAF claim disbursements\tR5 000,00\tR5 000,00\n18 November 2026\tPayment\tPAY/DEEDS/mwm7opdc4989\tDeeds office search fee — Deeds Office Pretoria\tR1 250,00\tR3 750,00\n\nClosing balance: R3 750,00\n\nCurrent Balance\n\nThe current balance held in trust on your behalf is R3 750,00.\n\nThis statement is issued in terms of the Legal Practice Act 28 of 2014 and the rules of the Legal Practice Council.\n\nYours faithfully,\n\nE2E Test Organization",
+      "previewTables": [
+        {
+          "heading": "Opening balance: R0,00",
+          "rows": [
+            [
+              "Date",
+              "Type",
+              "Reference",
+              "Description",
+              "Amount",
+              "Balance"
+            ],
+            [
+              "18 November 2026",
+              "Deposit",
+              "DEP/mwm7opdc4989",
+              "Client deposit — RAF claim disbursements",
+              "R5 000,00",
+              "R5 000,00"
+            ],
+            [
+              "18 November 2026",
+              "Payment",
+              "PAY/DEEDS/mwm7opdc4989",
+              "Deeds office search fee — Deeds Office Pretoria",
+              "R1 250,00",
+              "R3 750,00"
+            ]
+          ]
+        }
+      ],
+      "pdfFilename": "Client Trust Statement.pdf",
+      "pdfText": "           E2E Test Organization\r\n           Client Trust Statement\r\n           Client: Sipho Ndlovu mwm7opdc4989\r\n           Statement Date: 18 November 2026\r\n           Trust Account: E2E Test Organization — Section 86(2) trust account\r\n           Transaction Summary\r\n           The following is a statement of all trust account transactions held on behalf of Sipho Ndlovu \r\n           mwm7opdc4989, from the first transaction to the date of this statement.\r\n           Account: Mathebula & Partners Trust Account\r\n           Opening balance: R0,00\r\n            Date        Type     Reference       Description          Amount    Balance\r\n            18                   DEP             Client deposit — RAF \r\n            November    Deposit  /mwm7opdc4989   claim disbursements  R5 000,00 R5 000,00\r\n            2026\r\n            18                   PAY/DEEDS       Deeds office search \r\n            November    Payment /mwm7opdc4989    fee — Deeds Office   R1 250,00 R3 750,00\r\n            2026                                 Pretoria\r\n           Closing balance: R3 750,00\r\n           Current Balance\r\n           The current balance held in trust on your behalf is R3 750,00.\r\n           This statement is issued in terms of the Legal Practice Act 28 of 2014 and the rules of the Legal \r\n           Practice Council.\r\n           Yours faithfully,\r\n           E2E Test Organization\r\n"
+    },
+    "soa-sipho": {
+      "who": "Sipho",
+      "matterId": "17b1ea6f-c6de-4748-90ae-69abcde76608",
+      "period": {
+        "from": "2026-08-20",
+        "to": "2026-11-18"
+      },
+      "matterHeading": "Ndlovu v RAF — Depth II mwm7opdc4989",
+      "previewText": "E2E Test Organization\nStatement of Account\n\nReference: SOA-17b1ea6f-20261118\n\nPeriod: 20 August 2026 — 18 November 2026\n\nGenerated: 18 November 2026\n\nTo\n\nSipho Ndlovu mwm7opdc4989\n\n12 Rivonia Road Sandton 2196 ZA\n\nMatter\n\nMatter: Ndlovu v RAF — Depth II mwm7opdc4989\n\nOpened: 18 November 2026\n\nProfessional Fees\nDate\tFee Earner\tDescription\tHours\tRate\tAmount\n18 November 2026\tAlice Owner\tDrafted and served letter of demand on the Road Accident Fund (mwm7opdc4989)\t2\tR2 500,00\tR5 000,00\n\nTotal fees (excl. VAT): R5 000,00\n\nVAT: R750,00\n\nTotal fees (incl. VAT): R5 750,00\n\nDisbursements\nDate\tCategory\tDescription\tSupplier\tAmount\tVAT\n18 November 2026\tDeeds office fees\tDeeds office search fee\tDeeds Office Pretoria\tR1 250,00\tR0,00\n\nTotal disbursements: R1 250,00\n\nTrust Activity\n\nOpening balance: R0,00\n\nDeposits\n\nDate\tType\tReference\tDescription\tAmount\n18 November 2026\tDeposit\tDEP/mwm7opdc4989\tClient deposit — RAF claim disbursements\tR5 000,00\n\nPayments\n\nDate\tType\tReference\tDescription\tAmount\n18 November 2026\tPayment\tPAY/DEEDS/mwm7opdc4989\tDeeds office search fee — Deeds Office Pretoria\tR1 250,00\n\nClosing balance: R3 750,00\n\nSummary\n\nFees billed in period: R0,00\n\nDisbursements billed in period: R0,00\n\nPrevious balance owing: R0,00\n\nPayments received: R0,00\n\nClosing balance owing: R0,00\n\nTrust balance held: R3 750,00\n\nUnbilled work in progress (not yet billed): R6 250,00",
+      "previewTables": [
+        {
+          "heading": "Professional Fees",
+          "rows": [
+            [
+              "Date",
+              "Fee Earner",
+              "Description",
+              "Hours",
+              "Rate",
+              "Amount"
+            ],
+            [
+              "18 November 2026",
+              "Alice Owner",
+              "Drafted and served letter of demand on the Road Accident Fund (mwm7opdc4989)",
+              "2",
+              "R2 500,00",
+              "R5 000,00"
+            ]
+          ]
+        },
+        {
+          "heading": "Disbursements",
+          "rows": [
+            [
+              "Date",
+              "Category",
+              "Description",
+              "Supplier",
+              "Amount",
+              "VAT"
+            ],
+            [
+              "18 November 2026",
+              "Deeds office fees",
+              "Deeds office search fee",
+              "Deeds Office Pretoria",
+              "R1 250,00",
+              "R0,00"
+            ]
+          ]
+        },
+        {
+          "heading": "Deposits",
+          "rows": [
+            [
+              "Date",
+              "Type",
+              "Reference",
+              "Description",
+              "Amount"
+            ],
+            [
+              "18 November 2026",
+              "Deposit",
+              "DEP/mwm7opdc4989",
+              "Client deposit — RAF claim disbursements",
+              "R5 000,00"
+            ]
+          ]
+        },
+        {
+          "heading": "Payments",
+          "rows": [
+            [
+              "Date",
+              "Type",
+              "Reference",
+              "Description",
+              "Amount"
+            ],
+            [
+              "18 November 2026",
+              "Payment",
+              "PAY/DEEDS/mwm7opdc4989",
+              "Deeds office search fee — Deeds Office Pretoria",
+              "R1 250,00"
+            ]
+          ]
+        }
+      ],
+      "pdfError": "TimeoutError: page.waitForEvent: Timeout 45000ms exceeded while waiting for event \"download\"\n=========================== logs ===========================\nwaiting for event \"download\"\n============================================================",
+      "dialogAlert": [
+        "Failed to download document."
+      ]
+    }
+  },
+  "report": {},
+  "ledger": {},
+  "consoleErrors": [],
+  "pageErrors": [],
+  "notes": [
+    "mock-login → http://localhost:3001/org/e2e-test-org/dashboard"
+  ],
+  "finishedAt": "2026-11-18T14:37:25.938Z"
+}

@@ -1,0 +1,85 @@
+648F Tier 2 (targeted) — review-fix round (PR #1803 findings F1–F5), working tree on top of b0f32b169
+Command: cd backend && ./mvnw test -Dtest="<51 classes below>" -q   (exit 0)
+Classes: brief §14 list (51). Re-grep of importers of the classes changed in this round (ClientLedgerService, ClientLedgerStatementQuery, StatementOfAccountContextBuilder) and every test in their packages (verticals/legal/statement, trustaccounting/ledger, trustaccounting/report) — all already in the list.
+Tier 3 (full verify) NOT run — orchestrator-owned.
+
+  TerminologyRemnantScanTest  (6)
+  TrustLedgerPortalSyncServiceIntegrationTest  (18)
+  FieldPackSeederIntegrationTest  (8)
+  TrustBoundaryGuardUnitTest  (2)
+  ComplianceDataCollectorServiceTest  (6)
+  ConveyancingTemplatePackTest  (5)
+  LegalZaTemplateReconcileIntegrationTest  (34)
+  TemplatePackReconcileIntegrationTest  (5)
+  PackReconciliationRunnerTest  (6)
+  LegalPackSeederIntegrationTest  (4)
+  ClientTrustStatementContextIntegrationTest  (6)
+  ContainsTrustDataMigrationTest  (3)
+  CustomerContextBuilderTest  (13)
+  DocxFieldValidatorTest  (1)
+  GeneratedDocumentTrustAccessIntegrationTest  (12)
+  InvoiceContextBuilderTest  (12)
+  PdfRenderingServiceTest  (13)
+  TemplatePackJsonValidationTest  (8)
+  TemplatePackSeederReconcileTest  (13)
+  TiptapRendererConditionalLabelTest  (13)
+  TiptapRendererTest  (47)
+  VariableMetadataEndpointTest  (12)
+  VisualRegressionTest  (27)
+  TrustBalanceZeroGateTest  (6)
+  TrustAwareCollectionsAdvisorTest  (4)
+  StatementControllerIntegrationTest  (6)
+  StatementListIntegrationTest  (2)
+  StatementOfAccountClosingBalanceIntegrationTest  (6)
+  StatementOfAccountContextBuilderTest  (35)
+  StatementRenderingIntegrationTest  (4)
+  StatementServicePortalDocumentTest  (4)
+  StatementTrustVisibilityIntegrationTest  (6)
+  TrustWireContractTest  (1)
+  TrustPositionAsAtIntegrationTest  (9)
+  TrustInvestmentInterestIntegrationTest  (10)
+  TrustInvestmentPlacementGuardIntegrationTest  (6)
+  TrustInvestmentWithdrawReverseRaceIntegrationTest  (2)
+  ClientLedgerControllerTest  (12)
+  ClientLedgerRunningBalanceIntegrationTest  (6)
+  ClientLedgerTotalsIntegrationTest  (5)
+  DerivedLedgerBalanceIntegrationTest  (3)
+  InvestedBlockStatementsIntegrationTest  (8)
+  InvestmentClientLedgerReadSurfacesIntegrationTest  (1)
+  InvestmentStatementAccountSelectionIntegrationTest  (3)
+  LedgerTotalsTest  (7)
+  InvestmentReportBasisIntegrationTest  (9)
+  Section35DataPackContentIntegrationTest  (4)
+  TrustReportPackSeederIntegrationTest  (8)
+  TrustReportQueryIntegrationTest  (10)
+  TrustPostingDateZoneIntegrationTest  (5)
+  TrustTransactionServiceTest  (48)
+
+Result (counted from target/surefire-reports <testcase> elements):
+  classes:   51
+  testcases: 504
+  failures:  0
+  errors:    0
+  skipped:   0
+  failing classes: none
+
+## round-2 CodeRabbit (2026-11-18, test-only changes on top of 4e0f23781; no src/main change)
+Changed: LegalZaTemplateReconcileIntegrationTest (case (aa) renamed
+  cssEditedV15StatementOfAccount_getsTheV16BodyFromTheReconcileBlock_cssKept_notRepinned — asserts the stored
+  content_hash stays the v15 install pin and is not the re-pinned hash of the v16 body + css);
+  StatementOfAccountContextBuilderTest (investedBlock_absent_whenNothingWasInvestedOrMoved — invested lookup verified
+  times(1) right after build(), and still times(1) after computeSummary()).
+Command: ./mvnw test -Dtest="LegalZaTemplateReconcileIntegrationTest,StatementOfAccountContextBuilderTest,TemplatePackSeederReconcileTest" -q  → exit 0
+Result (counted from target/surefire-reports <testcase> elements):
+  LegalZaTemplateReconcileIntegrationTest  (34)
+  StatementOfAccountContextBuilderTest  (35)
+  TemplatePackSeederReconcileTest  (13)
+  classes:   3
+  testcases: 82
+  failures:  0
+  errors:    0
+  skipped:   0
+Negative control (not committed): with the (aa) assertion temporarily pointed at the re-pinned value
+  computeContentHash(v16 body, css), the case FAILED: expected "9156602a…2a3f" (what a re-pin would store) but was
+  "e863016e…2a73" (the v15 pin) — so the committed assertion would fail if reconcile re-pinned the CSS-edited row.
+Tier 3 (full ./mvnw verify) NOT run in this pass.

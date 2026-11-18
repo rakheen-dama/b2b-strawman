@@ -1,0 +1,15 @@
+Red run on unchanged production code (base 93cfed7398777c97fc866b6f71e3aaca722f3cf7, red tests only, before any production change).
+Command: cd backend && ./mvnw test -Dtest="InvestedBlockStatementsIntegrationTest,ClientTrustStatementContextIntegrationTest,TrustReportQueryIntegrationTest,TemplatePackSeederReconcileTest,LegalZaTemplateReconcileIntegrationTest,TemplatePackReconcileIntegrationTest,VariableMetadataEndpointTest" -q
+Summary: [ERROR] Tests run: 87, Failures: 41, Errors: 0, Skipped: 0
+
+[ERROR] io.b2mash.b2b.b2bstrawman.template.ClientTrustStatementContextIntegrationTest.investmentLines_printTheRegistryLabel_neverTheEnum -- Time elapsed: 0.364 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+
+Expecting actual:
+  ["Deposit", "Inv place", "Inv return"]
+to contain exactly (and in same order):
+  ["Deposit",
+    "Placed in section 86(4) investment",
+    "Investment returned to trust"]
+but some elements were not found:
+  ["Placed in section 86(4) investment", "Investment returned to trust"]

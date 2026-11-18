@@ -1,0 +1,55 @@
+E2E Test Organization
+Client Trust Statement
+
+Client: QuickCollect Services mwm7kpqkc14a
+
+Statement Date: 18 November 2026
+
+Trust Account: E2E Test Organization — Section 86(2) trust account
+
+Transaction Summary
+
+The following is a statement of all trust account transactions held on behalf of QuickCollect Services mwm7kpqkc14a, from the first transaction to the date of this statement.
+
+Account: Mathebula & Partners Trust Account
+
+Opening balance: R0,00
+
+Date	Type	Reference	Description	Amount	Balance
+18 November 2026	Deposit	DEP/QC/mwm7kpqkc14a	QuickCollect Services — collections deposit	R45 000,00	R45 000,00
+18 November 2026	Placed in section 86(4) investment	INV-469DEF18	Placed in section 86(4) investment at Nedbank (Nedbank Section 86(4) Investments)	R30 000,00	R15 000,00
+
+Closing balance: R15 000,00
+
+Section 86(4) investment
+
+Placed in section 86(4) investment: R30 000,00
+
+Section 86(4) investment interest
+
+Date	Gross interest	Fund share of section 86(4) interest (5%)	Net interest
+18 November 2026	R100,00	R5,00	R95,00
+
+Gross interest: R100,00
+
+Fund share of section 86(4) interest (5%): R5,00
+
+Net interest: R95,00
+
+Investment returned to trust: R0,00
+
+Invested on your instruction (section 86(4)): R30 095,00
+
+Current Balance
+
+In the firm's trust account: R15 000,00
+
+Invested on your instruction (section 86(4)): R30 095,00
+
+Held in trust: R45 095,00
+
+This statement is issued in terms of the Legal Practice Act 28 of 2014 and the rules of the Legal Practice Council.
+
+Yours faithfully,
+
+E2E Test Organization

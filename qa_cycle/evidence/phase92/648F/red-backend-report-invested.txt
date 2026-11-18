@@ -1,0 +1,13 @@
+Red run on unchanged production code (base 93cfed7398777c97fc866b6f71e3aaca722f3cf7, red tests only, before any production change).
+Command: cd backend && ./mvnw test -Dtest="InvestedBlockStatementsIntegrationTest,ClientTrustStatementContextIntegrationTest,TrustReportQueryIntegrationTest,TemplatePackSeederReconcileTest,LegalZaTemplateReconcileIntegrationTest,TemplatePackReconcileIntegrationTest,VariableMetadataEndpointTest" -q
+Summary: [ERROR] Tests run: 87, Failures: 41, Errors: 0, Skipped: 0
+
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report.TrustReportQueryIntegrationTest.clientLedgerStatement_investedBlock_forASection86_4Client -- Time elapsed: 0.136 s <<< FAILURE!
+java.lang.AssertionError: 
+
+Expecting actual:
+  {"closingBalance"=50285.00, "openingBalance"=0, "totalCredits"=80285.00, "totalDebits"=30000.00, "transactionCount"=3}
+to contain key:
+  "invested"
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report.TrustReportQueryIntegrationTest.lambda$clientLedgerStatement_investedBlock_forASection86_4Client$0(TrustReportQueryIntegrationTest.java:466)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report.TrustReportQueryIntegrationTest.lambda$runInTenant$1(TrustReportQueryIntegrationTest.java:286)

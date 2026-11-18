@@ -1,0 +1,664 @@
+{
+  "at": "2026-11-18T15:16:26.523Z",
+  "args": {
+    "expectSoaQcId": "a439fc17-e793-4467-9ce0-2620abfd0f6b",
+    "expectSoaSiphoId": "86ec1730-ad58-4ede-b202-4398f8c37778"
+  },
+  "total": 97,
+  "failed": 0,
+  "checks": [
+    {
+      "cp": "a",
+      "name": "capture record obs-result-capture.json present, no fatal error",
+      "ok": true
+    },
+    {
+      "cp": "c",
+      "name": "stored-PDF record obs-result-pdf.json present, no fatal error",
+      "ok": true
+    },
+    {
+      "cp": "a",
+      "name": "CTS QC preview: preview text bound to the capture record",
+      "ok": true
+    },
+    {
+      "cp": "a",
+      "name": "CTS QC pdf: PDF bound to that run's successful download of the expected document",
+      "ok": true
+    },
+    {
+      "cp": "a",
+      "name": "CTS QC preview: \"Section 86(4) investment\" block",
+      "ok": true
+    },
+    {
+      "cp": "a",
+      "name": "CTS QC preview: Placed in section 86(4) investment: R30 000,00",
+      "ok": true
+    },
+    {
+      "cp": "a",
+      "name": "CTS QC preview: Gross interest: R100,00",
+      "ok": true
+    },
+    {
+      "cp": "a",
+      "name": "CTS QC preview: Fund share (5%): R5,00",
+      "ok": true
+    },
+    {
+      "cp": "a",
+      "name": "CTS QC preview: Net interest: R95,00",
+      "ok": true
+    },
+    {
+      "cp": "a",
+      "name": "CTS QC preview: Investment returned to trust: R0,00",
+      "ok": true
+    },
+    {
+      "cp": "a",
+      "name": "CTS QC preview: Current Balance heading",
+      "ok": true
+    },
+    {
+      "cp": "a",
+      "name": "CTS QC preview: In the firm's trust account: R15 000,00",
+      "ok": true
+    },
+    {
+      "cp": "a",
+      "name": "CTS QC preview: Invested on your instruction (section 86(4)): R30 095,00 (block + Current Balance = 2×)",
+      "ok": true
+    },
+    {
+      "cp": "a",
+      "name": "CTS QC preview: Held in trust: R45 095,00",
+      "ok": true
+    },
+    {
+      "cp": "a",
+      "name": "CTS QC preview: general closing balance R15 000,00",
+      "ok": true
+    },
+    {
+      "cp": "b",
+      "name": "CTS QC preview: no raw/abbreviated type labels (Inv place|Inv return|Inv receive|Inv interest|INV_|FIRM_INV|FEE_TRANSFER|INTEREST_LPFF|INTEREST_CREDIT)",
+      "ok": true
+    },
+    {
+      "cp": "b",
+      "name": "CTS QC preview: \"Placed in section 86(4) investment\" text present (whole document — text presence, not the Type cell)",
+      "ok": true
+    },
+    {
+      "cp": "b",
+      "name": "CTS QC preview: \"Deposit\" text present (whole document — text presence, not the Type cell)",
+      "ok": true
+    },
+    {
+      "cp": "a",
+      "name": "CTS QC preview: no reversal reasons",
+      "ok": true
+    },
+    {
+      "cp": "a",
+      "name": "CTS QC pdf: \"Section 86(4) investment\" block",
+      "ok": true
+    },
+    {
+      "cp": "a",
+      "name": "CTS QC pdf: Placed in section 86(4) investment: R30 000,00",
+      "ok": true
+    },
+    {
+      "cp": "a",
+      "name": "CTS QC pdf: Gross interest: R100,00",
+      "ok": true
+    },
+    {
+      "cp": "a",
+      "name": "CTS QC pdf: Fund share (5%): R5,00",
+      "ok": true
+    },
+    {
+      "cp": "a",
+      "name": "CTS QC pdf: Net interest: R95,00",
+      "ok": true
+    },
+    {
+      "cp": "a",
+      "name": "CTS QC pdf: Investment returned to trust: R0,00",
+      "ok": true
+    },
+    {
+      "cp": "a",
+      "name": "CTS QC pdf: Current Balance heading",
+      "ok": true
+    },
+    {
+      "cp": "a",
+      "name": "CTS QC pdf: In the firm's trust account: R15 000,00",
+      "ok": true
+    },
+    {
+      "cp": "a",
+      "name": "CTS QC pdf: Invested on your instruction (section 86(4)): R30 095,00 (block + Current Balance = 2×)",
+      "ok": true
+    },
+    {
+      "cp": "a",
+      "name": "CTS QC pdf: Held in trust: R45 095,00",
+      "ok": true
+    },
+    {
+      "cp": "a",
+      "name": "CTS QC pdf: general closing balance R15 000,00",
+      "ok": true
+    },
+    {
+      "cp": "b",
+      "name": "CTS QC pdf: no raw/abbreviated type labels (Inv place|Inv return|Inv receive|Inv interest|INV_|FIRM_INV|FEE_TRANSFER|INTEREST_LPFF|INTEREST_CREDIT)",
+      "ok": true
+    },
+    {
+      "cp": "b",
+      "name": "CTS QC pdf: \"Placed in section 86(4) investment\" text present (whole document — text presence, not the Type cell)",
+      "ok": true
+    },
+    {
+      "cp": "b",
+      "name": "CTS QC pdf: \"Deposit\" text present (whole document — text presence, not the Type cell)",
+      "ok": true
+    },
+    {
+      "cp": "a",
+      "name": "CTS QC pdf: no reversal reasons",
+      "ok": true
+    },
+    {
+      "cp": "b",
+      "name": "CTS QC pdf: general table Type column (PDF text layout) = [Deposit, Placed in section 86(4) investment]",
+      "ok": true,
+      "detail": "Deposit Placed in section 86 (4) investment"
+    },
+    {
+      "cp": "b",
+      "name": "CTS QC preview: tables present in the capture record",
+      "ok": true
+    },
+    {
+      "cp": "b",
+      "name": "CTS QC preview: general table Type column = [Deposit, Placed in section 86(4) investment]",
+      "ok": true,
+      "detail": [
+        [
+          "Date",
+          "Type",
+          "Reference",
+          "Description",
+          "Amount",
+          "Balance"
+        ],
+        [
+          "18 November 2026",
+          "Deposit",
+          "DEP/QC/mwm7kpqkc14a",
+          "QuickCollect Services — collections deposit",
+          "R45 000,00",
+          "R45 000,00"
+        ],
+        [
+          "18 November 2026",
+          "Placed in section 86(4) investment",
+          "INV-469DEF18",
+          "Placed in section 86(4) investment at Nedbank (Nedbank Section 86(4) Investments)",
+          "R30 000,00",
+          "R15 000,00"
+        ]
+      ]
+    },
+    {
+      "cp": "a",
+      "name": "CTS QC preview: no interest / Fund row in the general table",
+      "ok": true
+    },
+    {
+      "cp": "c",
+      "name": "SoA QC preview: tables present in the capture record",
+      "ok": true
+    },
+    {
+      "cp": "c",
+      "name": "SoA QC preview: Deposits + Payments tables both have a Type column (Date|Type|Reference|Description|Amount)",
+      "ok": true,
+      "detail": [
+        [
+          "Date",
+          "Fee Earner",
+          "Description",
+          "Hours",
+          "Rate",
+          "Amount"
+        ],
+        [
+          "Date",
+          "Category",
+          "Description",
+          "Supplier",
+          "Amount",
+          "VAT"
+        ],
+        [
+          "Date",
+          "Type",
+          "Reference",
+          "Description",
+          "Amount"
+        ],
+        [
+          "Date",
+          "Type",
+          "Reference",
+          "Description",
+          "Amount"
+        ],
+        [
+          "Date",
+          "Gross interest",
+          "Fund share of section 86(4) interest (5%)",
+          "Net interest"
+        ]
+      ]
+    },
+    {
+      "cp": "c",
+      "name": "SoA QC preview: Deposits row Type = Deposit",
+      "ok": true,
+      "detail": [
+        [
+          "Date",
+          "Type",
+          "Reference",
+          "Description",
+          "Amount"
+        ],
+        [
+          "18 November 2026",
+          "Deposit",
+          "DEP/QC/mwm7kpqkc14a",
+          "QuickCollect Services — collections deposit",
+          "R45 000,00"
+        ]
+      ]
+    },
+    {
+      "cp": "c",
+      "name": "SoA QC preview: Payments row Type = Placed in section 86(4) investment",
+      "ok": true,
+      "detail": [
+        [
+          "Date",
+          "Type",
+          "Reference",
+          "Description",
+          "Amount"
+        ],
+        [
+          "18 November 2026",
+          "Placed in section 86(4) investment",
+          "INV-469DEF18",
+          "Placed in section 86(4) investment at Nedbank (Nedbank Section 86(4) Investments)",
+          "R30 000,00"
+        ]
+      ]
+    },
+    {
+      "cp": "c",
+      "name": "SoA QC preview: no interest / Fund row in Deposits/Payments",
+      "ok": true
+    },
+    {
+      "cp": "c",
+      "name": "SoA QC preview: preview text bound to the capture record",
+      "ok": true
+    },
+    {
+      "cp": "c",
+      "name": "SoA QC pdf(stored): PDF bound to that run's successful download of the expected document",
+      "ok": true
+    },
+    {
+      "cp": "c",
+      "name": "SoA QC preview: \"Section 86(4) investment\" block",
+      "ok": true
+    },
+    {
+      "cp": "c",
+      "name": "SoA QC preview: block Opening balance: R0,00",
+      "ok": true
+    },
+    {
+      "cp": "c",
+      "name": "SoA QC preview: Placed: R30 000,00",
+      "ok": true
+    },
+    {
+      "cp": "c",
+      "name": "SoA QC preview: Gross R100,00 / Fund (5%) R5,00 / Net R95,00",
+      "ok": true
+    },
+    {
+      "cp": "c",
+      "name": "SoA QC preview: Returned R0,00",
+      "ok": true
+    },
+    {
+      "cp": "c",
+      "name": "SoA QC preview: closing Invested on your instruction: R30 095,00",
+      "ok": true
+    },
+    {
+      "cp": "c",
+      "name": "SoA QC preview: Trust Activity closing balance R15 000,00",
+      "ok": true
+    },
+    {
+      "cp": "c",
+      "name": "SoA QC preview: no raw type labels",
+      "ok": true
+    },
+    {
+      "cp": "c",
+      "name": "SoA QC preview: no reversal reasons",
+      "ok": true
+    },
+    {
+      "cp": "c",
+      "name": "SoA QC pdf(stored): \"Section 86(4) investment\" block",
+      "ok": true
+    },
+    {
+      "cp": "c",
+      "name": "SoA QC pdf(stored): block Opening balance: R0,00",
+      "ok": true
+    },
+    {
+      "cp": "c",
+      "name": "SoA QC pdf(stored): Placed: R30 000,00",
+      "ok": true
+    },
+    {
+      "cp": "c",
+      "name": "SoA QC pdf(stored): Gross R100,00 / Fund (5%) R5,00 / Net R95,00",
+      "ok": true
+    },
+    {
+      "cp": "c",
+      "name": "SoA QC pdf(stored): Returned R0,00",
+      "ok": true
+    },
+    {
+      "cp": "c",
+      "name": "SoA QC pdf(stored): closing Invested on your instruction: R30 095,00",
+      "ok": true
+    },
+    {
+      "cp": "c",
+      "name": "SoA QC pdf(stored): Trust Activity closing balance R15 000,00",
+      "ok": true
+    },
+    {
+      "cp": "c",
+      "name": "SoA QC pdf(stored): no raw type labels",
+      "ok": true
+    },
+    {
+      "cp": "c",
+      "name": "SoA QC pdf(stored): no reversal reasons",
+      "ok": true
+    },
+    {
+      "cp": "d",
+      "name": "Sipho CTS preview: preview text bound to the capture record",
+      "ok": true
+    },
+    {
+      "cp": "d",
+      "name": "Sipho CTS pdf: PDF bound to that run's successful download of the expected document",
+      "ok": true
+    },
+    {
+      "cp": "d",
+      "name": "Sipho SoA preview: preview text bound to the capture record",
+      "ok": true
+    },
+    {
+      "cp": "d",
+      "name": "Sipho SoA pdf(stored): PDF bound to that run's successful download of the expected document",
+      "ok": true
+    },
+    {
+      "cp": "d",
+      "name": "Sipho CTS preview: no \"Section 86(4) investment\"",
+      "ok": true
+    },
+    {
+      "cp": "d",
+      "name": "Sipho CTS preview: no \"Invested on your instruction\"",
+      "ok": true
+    },
+    {
+      "cp": "d",
+      "name": "Sipho CTS preview: keeps \"The current balance held in trust on your behalf is R3 750,00.\"",
+      "ok": true
+    },
+    {
+      "cp": "d",
+      "name": "Sipho CTS preview: no three-line split",
+      "ok": true
+    },
+    {
+      "cp": "d",
+      "name": "Sipho CTS preview: no raw type labels",
+      "ok": true
+    },
+    {
+      "cp": "d",
+      "name": "Sipho CTS pdf: no \"Section 86(4) investment\"",
+      "ok": true
+    },
+    {
+      "cp": "d",
+      "name": "Sipho CTS pdf: no \"Invested on your instruction\"",
+      "ok": true
+    },
+    {
+      "cp": "d",
+      "name": "Sipho CTS pdf: keeps \"The current balance held in trust on your behalf is R3 750,00.\"",
+      "ok": true
+    },
+    {
+      "cp": "d",
+      "name": "Sipho CTS pdf: no three-line split",
+      "ok": true
+    },
+    {
+      "cp": "d",
+      "name": "Sipho CTS pdf: no raw type labels",
+      "ok": true
+    },
+    {
+      "cp": "d",
+      "name": "Sipho SoA preview: no \"Section 86(4) investment\"",
+      "ok": true
+    },
+    {
+      "cp": "d",
+      "name": "Sipho SoA preview: no \"Invested on your instruction\"",
+      "ok": true
+    },
+    {
+      "cp": "d",
+      "name": "Sipho SoA preview: Trust balance held R3 750,00",
+      "ok": true
+    },
+    {
+      "cp": "d",
+      "name": "Sipho SoA preview: no raw type labels",
+      "ok": true
+    },
+    {
+      "cp": "d",
+      "name": "Sipho SoA pdf(stored): no \"Section 86(4) investment\"",
+      "ok": true
+    },
+    {
+      "cp": "d",
+      "name": "Sipho SoA pdf(stored): no \"Invested on your instruction\"",
+      "ok": true
+    },
+    {
+      "cp": "d",
+      "name": "Sipho SoA pdf(stored): Trust balance held R3 750,00",
+      "ok": true
+    },
+    {
+      "cp": "d",
+      "name": "Sipho SoA pdf(stored): no raw type labels",
+      "ok": true
+    },
+    {
+      "cp": "e",
+      "name": "report QC: HTTP 200",
+      "ok": true,
+      "detail": 200
+    },
+    {
+      "cp": "e",
+      "name": "report QC: summary.invested present (an object)",
+      "ok": true,
+      "detail": {
+        "openingBalance": 0,
+        "closingBalance": 15000,
+        "totalDebits": 30000,
+        "totalCredits": 45000,
+        "transactionCount": 2,
+        "invested": {
+          "openingBalance": 0,
+          "capitalPlaced": 30000,
+          "interestGross": 100,
+          "interestFundShare": 5,
+          "interestNet": 95,
+          "returnedToTrust": 0,
+          "closingBalance": 30095
+        }
+      }
+    },
+    {
+      "cp": "e",
+      "name": "report QC: summary.invested keys exactly the 7 named, in order",
+      "ok": true,
+      "detail": {
+        "openingBalance": 0,
+        "capitalPlaced": 30000,
+        "interestGross": 100,
+        "interestFundShare": 5,
+        "interestNet": 95,
+        "returnedToTrust": 0,
+        "closingBalance": 30095
+      }
+    },
+    {
+      "cp": "e",
+      "name": "report QC: summary.invested values = 0 / 30000 / 100 / 5 / 95 / 0 / 30095",
+      "ok": true,
+      "detail": {
+        "openingBalance": 0,
+        "capitalPlaced": 30000,
+        "interestGross": 100,
+        "interestFundShare": 5,
+        "interestNet": 95,
+        "returnedToTrust": 0,
+        "closingBalance": 30095
+      }
+    },
+    {
+      "cp": "e",
+      "name": "report QC: general summary unchanged (opening 0, closing 15000, debits 30000, credits 45000, 2 rows)",
+      "ok": true,
+      "detail": {
+        "openingBalance": 0,
+        "closingBalance": 15000,
+        "totalDebits": 30000,
+        "totalCredits": 45000,
+        "transactionCount": 2,
+        "invested": {
+          "openingBalance": 0,
+          "capitalPlaced": 30000,
+          "interestGross": 100,
+          "interestFundShare": 5,
+          "interestNet": 95,
+          "returnedToTrust": 0,
+          "closingBalance": 30095
+        }
+      }
+    },
+    {
+      "cp": "e",
+      "name": "report Sipho: HTTP 200 with a summary and no summary.invested",
+      "ok": true,
+      "detail": {
+        "openingBalance": 0,
+        "closingBalance": 3750,
+        "totalDebits": 1250,
+        "totalCredits": 5000,
+        "transactionCount": 2
+      }
+    },
+    {
+      "cp": "e",
+      "name": "report screen QC: captured without a screen error",
+      "ok": true,
+      "detail": "no screenQc"
+    },
+    {
+      "cp": "e",
+      "name": "report screen QC: rendered — stat cards exactly Opening / Closing / Debits / Credits / Count (R 0,00 / R 15 000,00 / R 30 000,00 / R 45 000,00 / 2), table header after",
+      "ok": true,
+      "detail": {
+        "cardsText": "Opening Balance R 0,00 Closing Balance R 15 000,00 Total Debits R 30 000,00 Total Credits R 45 000,00 Transaction Count 2"
+      }
+    },
+    {
+      "cp": "e",
+      "name": "report screen QC: no invested card, no [object Object]",
+      "ok": true,
+      "detail": "Opening Balance R 0,00 Closing Balance R 15 000,00 Total Debits R 30 000,00 Total Credits R 45 000,00 Transaction Count 2"
+    },
+    {
+      "cp": "g",
+      "name": "ledger record obs-result-ledger.json present, no fatal error",
+      "ok": true
+    },
+    {
+      "cp": "g",
+      "name": "firm client ledger QC (648E): Plus R 30 095,00 invested — R 45 095,00 held in trust in total",
+      "ok": true,
+      "detail": {
+        "heading": "QuickCollect Services mwm7kpqkc14a",
+        "investedText": "Plus R 30 095,00 invested (section 86(4)) — R 45 095,00 held in trust in total"
+      }
+    },
+    {
+      "cp": "g",
+      "name": "firm client ledger Sipho: no invested line",
+      "ok": true,
+      "detail": {
+        "heading": "Sipho Ndlovu mwm7opdc4989",
+        "investedText": null
+      }
+    }
+  ]
+}

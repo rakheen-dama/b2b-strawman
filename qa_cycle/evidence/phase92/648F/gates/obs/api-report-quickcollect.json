@@ -1,0 +1,112 @@
+{
+  "at": "2026-11-18T14:38:48.926Z",
+  "method": "POST",
+  "path": "/api/report-definitions/client-ledger-statement/execute",
+  "request": {
+    "parameters": {
+      "trust_account_id": "27564008-6ca0-4b6d-8147-7e253b574b31",
+      "customer_id": "2db7efe4-899b-4589-a1bf-dc483496e762",
+      "dateFrom": "2026-08-20",
+      "dateTo": "2026-11-18"
+    },
+    "page": 0,
+    "size": 50
+  },
+  "status": 200,
+  "body": {
+    "reportName": "Client Ledger Statement",
+    "parameters": {
+      "trust_account_id": "27564008-6ca0-4b6d-8147-7e253b574b31",
+      "customer_id": "2db7efe4-899b-4589-a1bf-dc483496e762",
+      "dateFrom": "2026-08-20",
+      "dateTo": "2026-11-18"
+    },
+    "generatedAt": "2026-11-18T14:38:48.911629125Z",
+    "columns": [
+      {
+        "key": "date",
+        "label": "Date",
+        "type": "date",
+        "format": null
+      },
+      {
+        "key": "reference",
+        "label": "Reference",
+        "type": "string",
+        "format": null
+      },
+      {
+        "key": "type",
+        "label": "Type",
+        "type": "string",
+        "format": null
+      },
+      {
+        "key": "description",
+        "label": "Description",
+        "type": "string",
+        "format": null
+      },
+      {
+        "key": "debit",
+        "label": "Debit",
+        "type": "currency",
+        "format": "0.00"
+      },
+      {
+        "key": "credit",
+        "label": "Credit",
+        "type": "currency",
+        "format": "0.00"
+      },
+      {
+        "key": "runningBalance",
+        "label": "Running Balance",
+        "type": "currency",
+        "format": "0.00"
+      }
+    ],
+    "rows": [
+      {
+        "date": "2026-11-18",
+        "reference": "DEP/QC/mwm7kpqkc14a",
+        "type": "Deposit",
+        "description": "QuickCollect Services — collections deposit",
+        "credit": 45000,
+        "debit": 0,
+        "runningBalance": 45000
+      },
+      {
+        "date": "2026-11-18",
+        "reference": "INV-469DEF18",
+        "type": "Placed in section 86(4) investment",
+        "description": "Placed in section 86(4) investment at Nedbank (Nedbank Section 86(4) Investments)",
+        "credit": 0,
+        "debit": 30000,
+        "runningBalance": 15000
+      }
+    ],
+    "summary": {
+      "openingBalance": 0,
+      "closingBalance": 15000,
+      "totalDebits": 30000,
+      "totalCredits": 45000,
+      "transactionCount": 2,
+      "invested": {
+        "openingBalance": 0,
+        "capitalPlaced": 30000,
+        "interestGross": 100,
+        "interestFundShare": 5,
+        "interestNet": 95,
+        "returnedToTrust": 0,
+        "closingBalance": 30095
+      }
+    },
+    "pagination": {
+      "page": 0,
+      "size": 50,
+      "totalElements": 2,
+      "totalPages": 1
+    }
+  }
+}

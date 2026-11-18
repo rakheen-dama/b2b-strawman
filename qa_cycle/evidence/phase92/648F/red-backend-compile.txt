@@ -1,0 +1,33 @@
+Compile red on unchanged production code (base 93cfed7398777c97fc866b6f71e3aaca722f3cf7): StatementOfAccountContextBuilderTest stubs ClientLedgerService.getClientInvestedStatement / InvestedStatement / InvestedInterestLine, which do not exist yet.
+Command: cd backend && ./mvnw compile test-compile -q
+
+[ERROR] backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/statement/StatementOfAccountContextBuilderTest.java:[45,92] cannot find symbol
+  symbol:   class InvestedInterestLine
+  location: class io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService
+[ERROR] backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/statement/StatementOfAccountContextBuilderTest.java:[46,92] cannot find symbol
+  symbol:   class InvestedStatement
+  location: class io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService
+[ERROR] backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/statement/StatementOfAccountContextBuilderTest.java:[1447,24] cannot find symbol
+  symbol:   class InvestedStatement
+  location: class io.b2mash.b2b.b2bstrawman.verticals.legal.statement.StatementOfAccountContextBuilderTest
+[ERROR] backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/statement/StatementOfAccountContextBuilderTest.java:[1464,46] cannot find symbol
+  symbol:   class InvestedStatement
+  location: class io.b2mash.b2b.b2bstrawman.verticals.legal.statement.StatementOfAccountContextBuilderTest
+[ERROR] backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/statement/StatementOfAccountContextBuilderTest.java:[159,21] cannot find symbol
+  symbol:   variable InvestedStatement
+  location: class io.b2mash.b2b.b2bstrawman.verticals.legal.statement.StatementOfAccountContextBuilderTest
+[ERROR] backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/statement/StatementOfAccountContextBuilderTest.java:[158,34] cannot find symbol
+  symbol:   method getClientInvestedStatement(java.lang.Object,java.lang.Object,java.lang.Object,java.lang.Object)
+  location: variable clientLedgerService of type io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService
+[ERROR] backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/statement/StatementOfAccountContextBuilderTest.java:[1448,11] cannot find symbol
+  symbol:   class InvestedStatement
+  location: class io.b2mash.b2b.b2bstrawman.verticals.legal.statement.StatementOfAccountContextBuilderTest
+[ERROR] backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/statement/StatementOfAccountContextBuilderTest.java:[1457,19] cannot find symbol
+  symbol:   class InvestedInterestLine
+  location: class io.b2mash.b2b.b2bstrawman.verticals.legal.statement.StatementOfAccountContextBuilderTest
+[ERROR] backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/statement/StatementOfAccountContextBuilderTest.java:[1474,29] cannot find symbol
+  symbol:   method getClientInvestedStatement(java.util.UUID,java.util.UUID,java.time.LocalDate,java.time.LocalDate)
+  location: variable clientLedgerService of type io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService
+[ERROR] backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/statement/StatementOfAccountContextBuilderTest.java:[1531,13] cannot find symbol
+  symbol:   class InvestedStatement
+  location: class io.b2mash.b2b.b2bstrawman.verticals.legal.statement.StatementOfAccountContextBuilderTest

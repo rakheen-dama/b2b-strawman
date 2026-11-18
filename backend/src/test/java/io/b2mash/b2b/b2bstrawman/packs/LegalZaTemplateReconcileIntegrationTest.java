@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -53,7 +54,10 @@ import tools.jackson.databind.ObjectMapper;
  * bodies — only while pristine or still at the v12 body. Phase 89 v14 (G89-F57): a v13 tenant's
  * statement of account reaches the v14 summary labels on the same terms. Phase 89 v15 (G89 W2-c3):
  * a v14 tenant's statement of account reaches the trust Payments Type label column on the same
- * terms (a v13 tenant lands on the v15 head through the re-pointed v13 entry).
+ * terms (a v13 tenant lands on the v15 head through the re-pointed v13 entry). Phase 92 v16 (648F):
+ * a v15 tenant's statement of account and client trust statement reach the "Section 86(4)
+ * investment" bodies on the same terms (every older tenant lands on the v16 heads through the
+ * re-pointed entries).
  *
  * <p>A v7 (v8) tenant is simulated by writing each rewritten row's exact v7 (v8) body (test fixture
  * copied from git before the edit) with its install-time hash pinned (pristine), then rewinding
@@ -68,7 +72,7 @@ class LegalZaTemplateReconcileIntegrationTest {
 
   private static final String ORG_ID = "org_legal_za_template_reconcile_test";
   private static final String PACK_ID = "legal-za";
-  private static final String CURRENT_VERSION = "15";
+  private static final String CURRENT_VERSION = "16";
   private static final List<String> RECONCILED_KEYS =
       List.of(
           "engagement-letter-litigation",
@@ -127,6 +131,13 @@ class LegalZaTemplateReconcileIntegrationTest {
   private static final String V15_EDITED_KEY = "statement-of-account";
 
   /**
+   * The bodies re-edited in v16 (Phase 92 648F: the section 86(4) investment block on both client
+   * statements), from their v15 body.
+   */
+  private static final List<String> V16_EDITED_KEYS =
+      List.of("statement-of-account", "client-trust-statement");
+
+  /**
    * A legal-za template outside the reconcile block with no clause links: deleted to force a
    * create.
    */
@@ -148,6 +159,25 @@ class LegalZaTemplateReconcileIntegrationTest {
   void setup() {
     provisioningService.provisionTenant(ORG_ID, "Legal ZA Template Reconcile Test Org", "legal-za");
     schema = orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+  }
+
+  /**
+   * Shared cleanup, after each test's own assertions: a test that rewinds the install version and
+   * then fails before {@code internalInstall} advances it would leave the tenant at the old
+   * version, and every later rewind's compare-and-set would miss. Put the version back on the head,
+   * and the v16 statement bodies back on their shipped (pristine) body.
+   */
+  @AfterEach
+  void restoreInstallVersionAndV16Bodies() {
+    inTenantTx(
+        () -> {
+          String installed = installedVersion();
+          if (!CURRENT_VERSION.equals(installed)) {
+            packInstallRepository.compareAndSetVersion(PACK_ID, installed, CURRENT_VERSION);
+          }
+          return null;
+        });
+    V16_EDITED_KEYS.forEach(this::restorePristineShippedBody);
   }
 
   /** (a) Pristine v7 rows reach the shipped bodies, hashes re-pinned, nothing reads as edited. */
@@ -1100,6 +1130,159 @@ class LegalZaTemplateReconcileIntegrationTest {
     }
   }
 
+  /**
+   * (y) Phase 92 v16 (648F): a pristine v15 tenant's statement of account and client trust
+   * statement reach the v16 bodies (the "Section 86(4) investment" block) and stay pristine.
+   */
+  @Test
+  void pristineV15Tenant_reachesTheV16StatementBodies_andStaysPristine() {
+    simulateV15Tenant(rows -> {}, true);
+
+    packInstallService.internalInstall(PACK_ID, schema);
+
+    inTenantTx(
+        () -> {
+          for (String key : V16_EDITED_KEYS) {
+            var row = packRow(key);
+            assertThat(ContentHashUtil.hashOf(row.getContent()))
+                .as("%s carries the shipped v16 body", key)
+                .isEqualTo(ContentHashUtil.hashOf(shippedBody(key)));
+            assertThat(row.getContentHash())
+                .as("%s stays pristine", key)
+                .isEqualTo(
+                    templatePackInstaller.computeContentHash(row.getContent(), row.getCss()));
+            assertThat(row.getContent().toString())
+                .contains("trust.invested.closing_balance")
+                .contains("Section 86(4) investment");
+          }
+          assertThat(packRow("client-trust-statement").getContent().toString())
+              .contains("trust.invested.total_held");
+          assertThat(installedVersion()).isEqualTo(CURRENT_VERSION);
+          return null;
+        });
+  }
+
+  /**
+   * (z) A firm-edited v15 client trust statement keeps its body and is logged at INFO; the
+   * statement of account still moves.
+   */
+  @Test
+  void firmEditedV15ClientTrustStatement_survives_andIsLoggedAtInfo() {
+    Map<String, Object> edited =
+        withExtraParagraph(v15Body("client-trust-statement"), "Our own investment wording");
+    simulateV15Tenant(
+        rows -> {
+          var cts = rows.get("client-trust-statement");
+          cts.updateContent(cts.getName(), cts.getDescription(), edited, null);
+        },
+        true);
+    // body + version restored by restoreInstallVersionAndV16Bodies (also when this fails early)
+    var logs = captureSeederLogs(() -> packInstallService.internalInstall(PACK_ID, schema));
+
+    inTenantTx(
+        () -> {
+          assertThat(ContentHashUtil.hashOf(packRow("client-trust-statement").getContent()))
+              .isEqualTo(ContentHashUtil.hashOf(edited));
+          assertThat(ContentHashUtil.hashOf(packRow("statement-of-account").getContent()))
+              .isEqualTo(ContentHashUtil.hashOf(shippedBody("statement-of-account")));
+          assertThat(installedVersion()).isEqualTo(CURRENT_VERSION);
+          return null;
+        });
+    assertThat(logs)
+        .anyMatch(
+            m ->
+                m.startsWith("Reconcile skipped (edited)")
+                    && m.contains("'client-trust-statement' field content"));
+  }
+
+  /**
+   * (aa) A css-edited v15 statement of account is skipped by the refresh pass; the new v15 → v16
+   * {@code content} entry applies the body and keeps the css — and the row is not re-pinned (its
+   * stored {@code content_hash} stays the v15 install hash, so it still reads as tenant-edited).
+   */
+  @Test
+  void cssEditedV15StatementOfAccount_getsTheV16BodyFromTheReconcileBlock_cssKept_notRepinned() {
+    String css = "p { line-height: 1.6; }";
+    var pinned = new ArrayList<String>();
+    simulateV15Tenant(
+        rows -> {
+          var row = rows.get("statement-of-account");
+          row.updateContent(row.getName(), row.getDescription(), row.getContent(), css);
+          pinned.add(row.getContentHash()); // the v15 (body, null css) hash, stored with the edit
+        },
+        true);
+    // body + version restored by restoreInstallVersionAndV16Bodies (also when this fails early)
+    var logs = captureSeederLogs(() -> packInstallService.internalInstall(PACK_ID, schema));
+
+    inTenantTx(
+        () -> {
+          var row = packRow("statement-of-account");
+          assertThat(ContentHashUtil.hashOf(row.getContent()))
+              .isEqualTo(ContentHashUtil.hashOf(shippedBody("statement-of-account")));
+          assertThat(row.getCss()).isEqualTo(css);
+          assertThat(pinned.getFirst())
+              .as("the fixture pinned the v15 install hash")
+              .isEqualTo(
+                  templatePackInstaller.computeContentHash(v15Body("statement-of-account"), null));
+          assertThat(row.getContentHash())
+              .as("a tenant-edited row is never re-pinned")
+              .isEqualTo(pinned.getFirst())
+              .isNotEqualTo(
+                  templatePackInstaller.computeContentHash(row.getContent(), row.getCss()));
+          assertThat(installedVersion()).isEqualTo(CURRENT_VERSION);
+          return null;
+        });
+    assertThat(logs)
+        .anyMatch(
+            m ->
+                m.startsWith("Reconcile applied")
+                    && m.contains("'statement-of-account' field content"));
+  }
+
+  /**
+   * (bb) Equal version at v16: the gate stays closed — the v15 bodies stay, and nothing is written
+   * (each row's body hash, stored content_hash and updatedAt are unchanged).
+   */
+  @Test
+  void equalVersionV16_isANoOp_forTheV15StatementBodies() {
+    simulateV15Tenant(rows -> {}, false);
+    // bodies restored by restoreInstallVersionAndV16Bodies
+    Map<String, RowSnapshot> before = inTenantTx(this::v16RowSnapshots);
+
+    packInstallService.internalInstall(PACK_ID, schema);
+
+    inTenantTx(
+        () -> {
+          for (String key : V16_EDITED_KEYS) {
+            assertThat(ContentHashUtil.hashOf(packRow(key).getContent()))
+                .as("%s untouched at equal version", key)
+                .isEqualTo(ContentHashUtil.hashOf(v15Body(key)));
+          }
+          assertThat(v16RowSnapshots()).as("no row written at equal version").isEqualTo(before);
+          assertThat(installedVersion()).isEqualTo(CURRENT_VERSION);
+          return null;
+        });
+  }
+
+  /** What an equal-version run must not touch on a row. */
+  private record RowSnapshot(
+      UUID id, String bodyHash, String storedContentHash, java.time.Instant updatedAt) {}
+
+  private Map<String, RowSnapshot> v16RowSnapshots() {
+    var snapshots = new LinkedHashMap<String, RowSnapshot>();
+    for (String key : V16_EDITED_KEYS) {
+      var row = packRow(key);
+      snapshots.put(
+          key,
+          new RowSnapshot(
+              row.getId(),
+              ContentHashUtil.hashOf(row.getContent()),
+              row.getContentHash(),
+              row.getUpdatedAt()));
+    }
+    return snapshots;
+  }
+
   /** (e) Equal version: the gate stays closed and nothing is written. */
   @Test
   void equalVersion_isANoOp() {
@@ -1288,6 +1471,33 @@ class LegalZaTemplateReconcileIntegrationTest {
         });
   }
 
+  /**
+   * A v15 tenant: the statement of account and client trust statement carry their v15 body
+   * (pristine, fixtures copied before the v16 edit), every other rewritten row its shipped body;
+   * {@code firmEdits} applied, then (optionally) rewound 16 → 15.
+   */
+  private void simulateV15Tenant(
+      Consumer<Map<String, DocumentTemplate>> firmEdits, boolean rewind) {
+    inTenantTx(
+        () -> {
+          var rows = new LinkedHashMap<String, DocumentTemplate>();
+          for (String key : V16_EDITED_KEYS) {
+            rows.put(key, packRowWithPinnedBody(key, v15Body(key)));
+          }
+          for (String key : RECONCILED_KEYS) {
+            rows.computeIfAbsent(key, k -> packRowWithPinnedBody(k, shippedBody(k)));
+          }
+          firmEdits.accept(rows);
+          documentTemplateRepository.saveAll(rows.values());
+          if (rewind) {
+            assertThat(packInstallRepository.compareAndSetVersion(PACK_ID, CURRENT_VERSION, "15"))
+                .as("rewind %s %s -> 15", PACK_ID, CURRENT_VERSION)
+                .isEqualTo(1);
+          }
+          return null;
+        });
+  }
+
   private DocumentTemplate packRowWithPinnedBody(String key, Map<String, Object> body) {
     var row = packRow(key);
     row.updateContent(row.getName(), row.getDescription(), body, null);
@@ -1386,6 +1596,10 @@ class LegalZaTemplateReconcileIntegrationTest {
 
   private static Map<String, Object> v14Body(String key) {
     return readBody("fixtures/template-packs/legal-za-v14/" + key + ".json");
+  }
+
+  private static Map<String, Object> v15Body(String key) {
+    return readBody("fixtures/template-packs/legal-za-v15/" + key + ".json");
   }
 
   private static Map<String, Object> shippedBody(String key) {

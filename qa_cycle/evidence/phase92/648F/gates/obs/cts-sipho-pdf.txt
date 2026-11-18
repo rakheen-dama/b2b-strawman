@@ -1,0 +1,24 @@
+           E2E Test Organization
+           Client Trust Statement
+           Client: Sipho Ndlovu mwm7opdc4989
+           Statement Date: 18 November 2026
+           Trust Account: E2E Test Organization — Section 86(2) trust account
+           Transaction Summary
+           The following is a statement of all trust account transactions held on behalf of Sipho Ndlovu 
+           mwm7opdc4989, from the first transaction to the date of this statement.
+           Account: Mathebula & Partners Trust Account
+           Opening balance: R0,00
+            Date        Type     Reference       Description          Amount    Balance
+            18                   DEP             Client deposit — RAF 
+            November    Deposit  /mwm7opdc4989   claim disbursements  R5 000,00 R5 000,00
+            2026
+            18                   PAY/DEEDS       Deeds office search 
+            November    Payment /mwm7opdc4989    fee — Deeds Office   R1 250,00 R3 750,00
+            2026                                 Pretoria
+           Closing balance: R3 750,00
+           Current Balance
+           The current balance held in trust on your behalf is R3 750,00.
+           This statement is issued in terms of the Legal Practice Act 28 of 2014 and the rules of the Legal 
+           Practice Council.
+           Yours faithfully,
+           E2E Test Organization

@@ -1,0 +1,31 @@
+Red run on unchanged production code (base 93cfed7398777c97fc866b6f71e3aaca722f3cf7, red tests only, before any production change).
+Command: cd backend && ./mvnw test -Dtest="InvestedBlockStatementsIntegrationTest,ClientTrustStatementContextIntegrationTest,TrustReportQueryIntegrationTest,TemplatePackSeederReconcileTest,LegalZaTemplateReconcileIntegrationTest,TemplatePackReconcileIntegrationTest,VariableMetadataEndpointTest" -q
+Summary: [ERROR] Tests run: 87, Failures: 41, Errors: 0, Skipped: 0
+
+[ERROR] io.b2mash.b2b.b2bstrawman.template.TemplatePackSeederReconcileTest.shippedPack_reconcileBlock_takesEachPriorBodyToTheShippedBody -- Time elapsed: 0.004 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+
+expected: 16
+ but was: 15
+	at io.b2mash.b2b.b2bstrawman.template.TemplatePackSeederReconcileTest.shippedPack_reconcileBlock_takesEachPriorBodyToTheShippedBody(TemplatePackSeederReconcileTest.java:196)
+
+[ERROR] io.b2mash.b2b.b2bstrawman.packs.LegalZaTemplateReconcileIntegrationTest.pristineV15Tenant_reachesTheV16StatementBodies_andStaysPristine -- Time elapsed: 0.020 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+[rewind legal-za 16 -> 15] 
+expected: 1
+ but was: 0
+	at io.b2mash.b2b.b2bstrawman.packs.LegalZaTemplateReconcileIntegrationTest.lambda$simulateV15Tenant$0(LegalZaTemplateReconcileIntegrationTest.java:1446)
+	at io.b2mash.b2b.b2bstrawman.packs.LegalZaTemplateReconcileIntegrationTest.lambda$inTenantTx$1(LegalZaTemplateReconcileIntegrationTest.java:1521)
+
+LegalZaTemplateReconcileIntegrationTest: [ERROR] Tests run: 34, Failures: 30, Errors: 0, Skipped: 0, Time elapsed: 5.988 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.packs.LegalZaTemplateReconcileIntegrationTest
+(every test rewinding CURRENT_VERSION 16 -> n fails the same way: the shipped pack is still v15)
+
+[ERROR] io.b2mash.b2b.b2bstrawman.packs.TemplatePackReconcileIntegrationTest.reconcileRefreshesUnmodifiedLegalZaTemplateContent -- Time elapsed: 0.006 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+
+expected: 1
+ but was: 0
+	at io.b2mash.b2b.b2bstrawman.packs.TemplatePackReconcileIntegrationTest.lambda$reconcileRefreshesUnmodifiedLegalZaTemplateContent$1(TemplatePackReconcileIntegrationTest.java:440)
+
+[ERROR] io.b2mash.b2b.b2bstrawman.template.VariableMetadataEndpointTest.getVariables_loopSourcesFilteredByEntityType -- Time elapsed: 0.028 s <<< FAILURE!
+java.lang.AssertionError: JSON path "$.loopSources.length()" expected:<5> but was:<4>

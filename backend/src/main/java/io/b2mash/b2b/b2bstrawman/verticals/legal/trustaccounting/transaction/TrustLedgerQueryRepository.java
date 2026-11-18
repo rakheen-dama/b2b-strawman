@@ -303,6 +303,59 @@ public interface TrustLedgerQueryRepository extends Repository<TrustTransaction,
       @Param("customerIds") Collection<UUID> customerIds);
 
   /**
+   * 648F (§16.6.4, ADR-379 L7): what is held for one client in section 86(4) investments placed
+   * from {@code fundingAccountId}, as at {@code asAt} (null = every posted row) — {@link
+   * #investedBalancesByClient}'s predicate (the funding-account rule) for one client with the as-at
+   * bound. The client documents' invested balance at the statement date.
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          SELECT COALESCE(SUM(t.ledger_effect), 0) FROM trust_transactions t
+            JOIN trust_investments i ON i.id = t.investment_id
+           WHERE i.trust_account_id = :fundingAccountId
+             AND t.trust_account_id = i.investment_account_id
+             AND t.customer_id = :customerId
+             AND t.ledger = 'CLIENT_INVESTMENT' AND t.posted_at IS NOT NULL"""
+              + AS_AT)
+  BigDecimal clientInvestedBalance(
+      @Param("fundingAccountId") UUID fundingAccountId,
+      @Param("customerId") UUID customerId,
+      @Param("asAt") LocalDate asAt);
+
+  /**
+   * 648F: one client's posted {@code CLIENT_INVESTMENT} effect per transaction type, for section
+   * 86(4) investments placed from {@code fundingAccountId}, dated {@code fromDate}..{@code toDate}
+   * inclusive. A REVERSAL is grouped under the type it reverses (its contra carries the original's
+   * investment — {@code TrustTransaction.copyLedgerTargetFrom}), so a reversed interest entry nets
+   * to zero under INV_INTEREST, exactly as {@link #clientTotalsByType} nets client-ledger
+   * reversals.
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          SELECT t.customer_id AS customerId,
+                 COALESCE(o.transaction_type, t.transaction_type) AS transactionType,
+                 COALESCE(SUM(t.ledger_effect), 0) AS total
+            FROM trust_transactions t
+            JOIN trust_investments i ON i.id = t.investment_id
+            LEFT JOIN trust_transactions o ON o.id = t.reversal_of
+           WHERE i.trust_account_id = :fundingAccountId
+             AND t.trust_account_id = i.investment_account_id
+             AND t.customer_id = :customerId
+             AND t.ledger = 'CLIENT_INVESTMENT' AND t.posted_at IS NOT NULL
+             AND t.transaction_date >= CAST(:fromDate AS date)
+             AND t.transaction_date <= CAST(:toDate AS date)
+           GROUP BY t.customer_id, COALESCE(o.transaction_type, t.transaction_type)""")
+  List<CustomerTypeTotalRow> clientInvestedTotalsByType(
+      @Param("fundingAccountId") UUID fundingAccountId,
+      @Param("customerId") UUID customerId,
+      @Param("fromDate") LocalDate fromDate,
+      @Param("toDate") LocalDate toDate);
+
+  /**
    * The matters and clients lists: each client's general ({@code CLIENT} ledger) balance across
    * every trust account. Callers short-circuit an empty collection ({@code IN ()} is invalid SQL).
    */

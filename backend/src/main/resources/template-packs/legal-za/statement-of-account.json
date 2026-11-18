@@ -275,6 +275,7 @@
                 "dataSource": "trust.deposits",
                 "columns": [
                   { "header": "Date", "key": "transactionDate", "format": "date" },
+                  { "header": "Type", "key": "transactionTypeLabel" },
                   { "header": "Reference", "key": "reference" },
                   { "header": "Description", "key": "description" },
                   { "header": "Amount", "key": "amount", "format": "currency" }
@@ -311,6 +312,115 @@
           "content": [
             { "type": "text", "marks": [{ "type": "bold" }], "text": "Closing balance: " },
             { "type": "variable", "attrs": { "key": "trust.closing_balance" } }
+          ]
+        },
+        {
+          "type": "conditionalBlock",
+          "attrs": { "fieldKey": "trust.invested.closing_balance", "operator": "isNotEmpty" },
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                { "type": "text", "marks": [{ "type": "bold" }], "text": "Section 86(4) investment" }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                { "type": "text", "marks": [{ "type": "bold" }], "text": "Opening balance: " },
+                { "type": "variable", "attrs": { "key": "trust.invested.opening_balance" } }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "marks": [{ "type": "bold" }],
+                  "text": "Placed in section 86(4) investment: "
+                },
+                { "type": "variable", "attrs": { "key": "trust.invested.capital_placed" } }
+              ]
+            },
+            {
+              "type": "conditionalBlock",
+              "attrs": { "fieldKey": "trust.invested.interest_entries", "operator": "isNotEmpty" },
+              "content": [
+                {
+                  "type": "paragraph",
+                  "content": [
+                    {
+                      "type": "text",
+                      "marks": [{ "type": "bold" }],
+                      "text": "Section 86(4) investment interest"
+                    }
+                  ]
+                },
+                {
+                  "type": "loopTable",
+                  "attrs": {
+                    "dataSource": "trust.invested.interest_entries",
+                    "columns": [
+                      { "header": "Date", "key": "entryDate", "format": "date" },
+                      { "header": "Gross interest", "key": "grossAmount", "format": "currency" },
+                      {
+                        "header": "Fund share of section 86(4) interest (5%)",
+                        "key": "fundShareAmount",
+                        "format": "currency"
+                      },
+                      { "header": "Net interest", "key": "netAmount", "format": "currency" }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                { "type": "text", "marks": [{ "type": "bold" }], "text": "Gross interest: " },
+                { "type": "variable", "attrs": { "key": "trust.invested.interest_gross" } }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "marks": [{ "type": "bold" }],
+                  "text": "Fund share of section 86(4) interest (5%): "
+                },
+                { "type": "variable", "attrs": { "key": "trust.invested.interest_fund_share" } }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                { "type": "text", "marks": [{ "type": "bold" }], "text": "Net interest: " },
+                { "type": "variable", "attrs": { "key": "trust.invested.interest_net" } }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "marks": [{ "type": "bold" }],
+                  "text": "Investment returned to trust: "
+                },
+                { "type": "variable", "attrs": { "key": "trust.invested.returned_to_trust" } }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "marks": [{ "type": "bold" }],
+                  "text": "Invested on your instruction (section 86(4)): "
+                },
+                { "type": "variable", "attrs": { "key": "trust.invested.closing_balance" } }
+              ]
+            }
           ]
         }
       ]

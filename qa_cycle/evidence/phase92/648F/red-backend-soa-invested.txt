@@ -1,0 +1,30 @@
+Red run on unchanged production code (base 93cfed7398777c97fc866b6f71e3aaca722f3cf7, red tests only, before any production change).
+Command: cd backend && ./mvnw test -Dtest="InvestedBlockStatementsIntegrationTest,ClientTrustStatementContextIntegrationTest,TrustReportQueryIntegrationTest,TemplatePackSeederReconcileTest,LegalZaTemplateReconcileIntegrationTest,TemplatePackReconcileIntegrationTest,VariableMetadataEndpointTest" -q
+Summary: [ERROR] Tests run: 87, Failures: 41, Errors: 0, Skipped: 0
+
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.InvestedBlockStatementsIntegrationTest.statementOfAccount_march_investedBlock_placementAndNetInterest_reversedEntryExcluded -- Time elapsed: 0.014 s <<< FAILURE!
+java.lang.AssertionError: 
+
+Expecting actual:
+  {"closing_balance"=20000.00, "deposits"=[{"amount"=50000.00, "description"="Deposit", "id"="9670e4fc-6f5d-45dd-abb4-a9b56a51ba1d", "reference"="DEP-TB-9", "transactionDate"="2026-03-01", "transactionType"="DEPOSIT", "transactionTypeLabel"="Deposit"}], "opening_balance"=0, "payments"=[{"amount"=30000.00, "description"="Placed in section 86(4) investment at Trust Books Bank (Trust Books Investment
+to contain key:
+  "invested"
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.InvestedBlockStatementsIntegrationTest.statementOfAccount_march_investedBlock_placementAndNetInterest_reversedEntryExcluded(InvestedBlockStatementsIntegrationTest.java:198)
+
+
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.InvestedBlockStatementsIntegrationTest.statementOfAccount_april_investedBlock_openingInterestAndReturn -- Time elapsed: 0.013 s <<< FAILURE!
+java.lang.AssertionError: 
+
+Expecting actual:
+  {"closing_balance"=50285.00, "deposits"=[{"amount"=30285.00, "description"="Investment returned to trust from Trust Books Bank", "id"="1d3395b7-819c-4f45-9ffe-c93fc587cc24", "reference"="INV-WD-3C5DCE72", "transactionDate"="2026-04-20", "transactionType"="INV_RETURN", "transactionTypeLabel"="Investment returned to trust"}], "opening_balance"=20000.00, "payments"=[], "status"="available"}
+to contain key:
+  "invested"
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.InvestedBlockStatementsIntegrationTest.statementOfAccount_april_investedBlock_openingInterestAndReturn(InvestedBlockStatementsIntegrationTest.java:221)
+
+
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.InvestedBlockStatementsIntegrationTest.statementOfAccount_html_printsTheInvestedBlock_inZaCurrency -- Time elapsed: 2.013 s <<< FAILURE!
+to contain:
+  "Section 86(4) investment" 
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.InvestedBlockStatementsIntegrationTest.statementOfAccount_html_printsTheInvestedBlock_inZaCurrency(InvestedBlockStatementsIntegrationTest.java:244)
+--
+to contain key:

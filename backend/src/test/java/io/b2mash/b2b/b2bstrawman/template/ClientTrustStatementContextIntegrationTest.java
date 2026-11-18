@@ -17,6 +17,9 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksFixture;
+import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness.Expected;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateTrustAccountRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService;
@@ -77,6 +80,7 @@ class ClientTrustStatementContextIntegrationTest {
   @Autowired private TransactionTemplate transactionTemplate;
   @Autowired private OrgSettingsService orgSettingsService;
   @Autowired private OrgSettingsRepository orgSettingsRepository;
+  @Autowired private TrustBooksFixture fixture;
 
   private String schema;
   private UUID memberId;
@@ -308,6 +312,53 @@ class ClientTrustStatementContextIntegrationTest {
         .contains("REV-PAY-CTS-REV-001", "Payment to sheriff")
         .doesNotContain("wrong matter")
         .doesNotContain("internal mix-up");
+  }
+
+  /**
+   * Phase 92 648F (N-1 = 648E C-4): every line label on the Client Trust Statement comes from the
+   * registry ({@code TrustTransactionTypeLabels.label}), as on the Statement of Account and the
+   * portal — never the enum name sentence-cased ("Inv place" / "Inv return").
+   */
+  @Test
+  @SuppressWarnings("unchecked")
+  void investmentLines_printTheRegistryLabel_neverTheEnum() {
+    var books = fixture.tenant(schema, ORG_ID, memberId);
+    UUID funding = books.freshAccount(false);
+    UUID investmentAccount = books.freshInvestmentAccount(InvestmentBasis.CLIENT_INSTRUCTION);
+    var investor = books.newClient("CTS investor");
+    books.deposit(funding, investor, "50000.00");
+    var placed = books.requestPlacement(funding, investmentAccount, investor, "30000.00");
+    books.approvePlacement(
+        funding,
+        Expected.cashbookAndClient("-30000.00"),
+        investmentAccount,
+        Expected.cashbookAndInvestment("30000.00"),
+        placed.depositTransactionId(),
+        approverId);
+    books.withdraw(
+        funding,
+        Expected.cashbookAndClient("30000.00"),
+        investmentAccount,
+        Expected.cashbookAndInvestment("-30000.00"),
+        placed.id(),
+        LocalDate.of(2026, 4, 20));
+
+    Map<String, Object> context =
+        inTenantTx(() -> customerContextBuilder.buildContext(investor.id(), memberId));
+    var trust = (Map<String, Object>) context.get("trust");
+    assertThat((List<Map<String, Object>>) trust.get("lines"))
+        .extracting(l -> l.get("type"))
+        .containsExactly(
+            "Deposit", "Placed in section 86(4) investment", "Investment returned to trust");
+
+    String html =
+        inTenantTx(() -> pdfRenderingService.previewHtml(ctsTemplateId(), investor.id(), memberId));
+    assertThat(html)
+        .contains("Placed in section 86(4) investment", "Investment returned to trust")
+        .doesNotContain("Inv place")
+        .doesNotContain("Inv return")
+        .doesNotContain("INV_PLACE")
+        .doesNotContain("INV_RETURN");
   }
 
   private UUID ctsTemplateId() {

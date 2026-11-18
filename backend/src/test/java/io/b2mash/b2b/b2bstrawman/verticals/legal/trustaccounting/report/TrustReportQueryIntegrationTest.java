@@ -14,8 +14,11 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestTrustInvestmentAccountHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksFixture;
+import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness.Expected;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.interest.InterestService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.InterestPresentation;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.ReconciliationStatus;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliation;
@@ -56,6 +59,7 @@ class TrustReportQueryIntegrationTest {
   @Autowired private TrustReconciliationRepository reconciliationRepository;
   @Autowired private InterestService interestService;
   @Autowired private TrustInvestmentService investmentService;
+  @Autowired private TrustBooksFixture fixture;
 
   // Report queries under test
   @Autowired private TrustReceiptsPaymentsQuery receiptsPaymentsQuery;
@@ -73,6 +77,7 @@ class TrustReportQueryIntegrationTest {
   private String customerId1;
   private String customerId2;
   private UUID ownerMemberId;
+  private UUID approverMemberId;
   private UUID interestRunId;
   private UUID reconciliationId;
 
@@ -90,6 +95,16 @@ class TrustReportQueryIntegrationTest {
                 "report_owner@test.com",
                 "Report Owner",
                 "owner"));
+    // 648F: a section 86(4) placement is approved by a member other than its maker
+    approverMemberId =
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_report_approver",
+                "report_approver@test.com",
+                "Report Approver",
+                "admin"));
 
     // Enable the trust_accounting module
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -379,6 +394,108 @@ class TrustReportQueryIntegrationTest {
           var closingBalance = (BigDecimal) result.summary().get("closingBalance");
           assertThat(closingBalance).isGreaterThan(BigDecimal.ZERO);
         });
+  }
+
+  /**
+   * 648F (§16.8.5, task 648.13): for a client with a section 86(4) investment the report's summary
+   * carries an {@code invested} block — capital placed, the period's interest (gross, the Fund's
+   * 5%, net; a reversed entry nets out), capital returned and the invested balance at either end —
+   * on investments placed from the selected account (the funding-account rule). The rows, columns
+   * and general balances are unchanged; a client without investments has no {@code invested} key.
+   */
+  @Test
+  @SuppressWarnings("unchecked")
+  void clientLedgerStatement_investedBlock_forASection86_4Client() {
+    var books = fixture.tenant(tenantSchema, ORG_ID, ownerMemberId);
+    UUID funding = books.freshAccount(false);
+    UUID investmentAccount = books.freshInvestmentAccount(InvestmentBasis.CLIENT_INSTRUCTION);
+    var investor = books.newClient("report s86(4) investor");
+    books.deposit(funding, investor, "50000.00");
+    var placed = books.requestPlacement(funding, investmentAccount, investor, "30000.00");
+    books.approvePlacement(
+        funding,
+        Expected.cashbookAndClient("-30000.00"),
+        investmentAccount,
+        Expected.cashbookAndInvestment("30000.00"),
+        placed.depositTransactionId(),
+        approverMemberId);
+    books.recordInterest(
+        investmentAccount,
+        Expected.cashbookAndInvestment("95.00"),
+        placed.id(),
+        netInterest(LocalDate.of(2026, 3, 10), "100.00"));
+    var reversed =
+        books.recordInterest(
+            investmentAccount,
+            Expected.cashbookAndInvestment("47.50"),
+            placed.id(),
+            netInterest(LocalDate.of(2026, 3, 15), "50.00"));
+    books.reverseInterest(
+        investmentAccount, Expected.cashbookAndInvestment("-47.50"), reversed.id());
+    books.recordInterest(
+        investmentAccount,
+        Expected.cashbookAndInvestment("190.00"),
+        placed.id(),
+        netInterest(LocalDate.of(2026, 4, 10), "200.00"));
+    books.withdraw(
+        funding,
+        Expected.cashbookAndClient("30285.00"),
+        investmentAccount,
+        Expected.cashbookAndInvestment("-30285.00"),
+        placed.id(),
+        LocalDate.of(2026, 4, 20));
+
+    runInTenant(
+        () -> {
+          var params = new HashMap<String, Object>();
+          params.put("trust_account_id", funding);
+          params.put("customer_id", investor.id());
+          params.put("dateFrom", "2026-03-01");
+          params.put("dateTo", "2026-04-30");
+
+          var result = ledgerStatementQuery.executeAll(params);
+
+          // The general ledger is unchanged: deposit, placement out, return in
+          assertThat(result.rows())
+              .extracting(row -> row.get("type"))
+              .containsExactly(
+                  "Deposit", "Placed in section 86(4) investment", "Investment returned to trust");
+          assertThat((BigDecimal) result.summary().get("closingBalance"))
+              .isEqualByComparingTo("50285.00");
+
+          assertThat(result.summary()).containsKey("invested");
+          var invested = (Map<String, Object>) result.summary().get("invested");
+          assertThat((BigDecimal) invested.get("openingBalance")).isEqualByComparingTo("0");
+          assertThat((BigDecimal) invested.get("capitalPlaced")).isEqualByComparingTo("30000.00");
+          assertThat((BigDecimal) invested.get("interestGross")).isEqualByComparingTo("300.00");
+          assertThat((BigDecimal) invested.get("interestFundShare")).isEqualByComparingTo("15.00");
+          assertThat((BigDecimal) invested.get("interestNet")).isEqualByComparingTo("285.00");
+          assertThat((BigDecimal) invested.get("returnedToTrust")).isEqualByComparingTo("30285.00");
+          assertThat((BigDecimal) invested.get("closingBalance")).isEqualByComparingTo("0");
+
+          // March alone: still invested at the end of the range
+          params.put("dateTo", "2026-03-31");
+          var march =
+              (Map<String, Object>)
+                  ledgerStatementQuery.executeAll(params).summary().get("invested");
+          assertThat((BigDecimal) march.get("interestNet")).isEqualByComparingTo("95.00");
+          assertThat((BigDecimal) march.get("closingBalance")).isEqualByComparingTo("30095.00");
+
+          // A client without a section 86(4) investment has no invested block
+          var plain = new HashMap<String, Object>();
+          plain.put("trust_account_id", trustAccountId);
+          plain.put("customer_id", UUID.fromString(customerId1));
+          plain.put("dateFrom", "2025-04-01");
+          plain.put("dateTo", "2025-06-30");
+          assertThat(ledgerStatementQuery.executeAll(plain).summary())
+              .doesNotContainKey("invested");
+        });
+  }
+
+  private static TrustInvestmentService.RecordInvestmentInterestRequest netInterest(
+      LocalDate date, String gross) {
+    return new TrustInvestmentService.RecordInvestmentInterestRequest(
+        date, new BigDecimal(gross), null, InterestPresentation.NET, null);
   }
 
   // ==========================================================================

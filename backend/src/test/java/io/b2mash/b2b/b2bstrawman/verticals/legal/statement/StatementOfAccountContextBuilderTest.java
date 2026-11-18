@@ -42,6 +42,8 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRep
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountType;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustDataVisibility;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService.InvestedInterestLine;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService.InvestedStatement;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService.LedgerStatementLine;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService.LedgerStatementResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
@@ -151,6 +153,10 @@ class StatementOfAccountContextBuilderTest {
     lenient()
         .when(trustTransactionRepository.findDistinctTrustAccountIdsByCustomerId(any()))
         .thenReturn(List.of());
+    // 648F: no section 86(4) investment by default — the trust block carries no invested block.
+    lenient()
+        .when(clientLedgerService.getClientInvestedStatement(any(), any(), any(), any()))
+        .thenReturn(InvestedStatement.NONE);
   }
 
   @Test
@@ -1433,6 +1439,165 @@ class StatementOfAccountContextBuilderTest {
     // The date-inclusive as-of-date query must never be consulted for the SoA trust block —
     // it is the exact source of the double-count.
     verify(clientLedgerService, never()).getClientBalanceAsOfDate(any(), any(), any());
+  }
+
+  // ---------- 648F: the section 86(4) investment block ----------
+
+  /** The worked example's April: R30 095 invested at the start, R200 gross interest, returned. */
+  private static final InvestedStatement APRIL_INVESTED =
+      new InvestedStatement(
+          new BigDecimal("30095.00"),
+          BigDecimal.ZERO,
+          new BigDecimal("200.00"),
+          new BigDecimal("10.00"),
+          new BigDecimal("190.00"),
+          new BigDecimal("30285.00"),
+          BigDecimal.ZERO,
+          List.of(
+              new InvestedInterestLine(
+                  LocalDate.of(2026, 4, 10),
+                  new BigDecimal("200.00"),
+                  new BigDecimal("10.00"),
+                  new BigDecimal("190.00"))));
+
+  /** An April statement for a client whose investment was returned to trust on 20 April. */
+  private void stubInvestmentReturnedInApril(InvestedStatement invested) {
+    stubEmptyPeriod();
+    when(trustTransactionRepository.findDistinctTrustAccountIdsByCustomerId(customerId))
+        .thenReturn(List.of(trustAccountId));
+    var returned = ledgerLine("INV_RETURN", new BigDecimal("30285.00"), LocalDate.of(2026, 4, 20));
+    when(clientLedgerService.getClientLedgerStatement(
+            customerId, trustAccountId, periodStart, periodEnd))
+        .thenReturn(
+            new LedgerStatementResponse(
+                new BigDecimal("20000.00"), new BigDecimal("50285.00"), List.of(returned)));
+    when(clientLedgerService.getClientInvestedStatement(
+            customerId, trustAccountId, periodStart, periodEnd))
+        .thenReturn(invested);
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void investedBlock_mappedFromTheInvestedStatement_forThePeriod() {
+    stubInvestmentReturnedInApril(APRIL_INVESTED);
+
+    var context = builder.build(projectId, periodStart, periodEnd);
+
+    var trust = (Map<String, Object>) context.get("trust");
+    assertThat((BigDecimal) trust.get("closing_balance")).isEqualByComparingTo("50285.00");
+    var invested = (Map<String, Object>) trust.get("invested");
+    assertThat(invested)
+        .containsOnlyKeys(
+            "opening_balance",
+            "capital_placed",
+            "interest_gross",
+            "interest_fund_share",
+            "interest_net",
+            "returned_to_trust",
+            "closing_balance",
+            "total_held",
+            "interest_entries");
+    assertThat((BigDecimal) invested.get("opening_balance")).isEqualByComparingTo("30095.00");
+    assertThat((BigDecimal) invested.get("capital_placed")).isEqualByComparingTo("0");
+    assertThat((BigDecimal) invested.get("interest_gross")).isEqualByComparingTo("200.00");
+    assertThat((BigDecimal) invested.get("interest_fund_share")).isEqualByComparingTo("10.00");
+    assertThat((BigDecimal) invested.get("interest_net")).isEqualByComparingTo("190.00");
+    assertThat((BigDecimal) invested.get("returned_to_trust")).isEqualByComparingTo("30285.00");
+    assertThat((BigDecimal) invested.get("closing_balance")).isEqualByComparingTo("0");
+    // the general closing balance plus what is invested at the statement date
+    assertThat((BigDecimal) invested.get("total_held")).isEqualByComparingTo("50285.00");
+    var entries = (List<Map<String, Object>>) invested.get("interest_entries");
+    assertThat(entries).hasSize(1);
+    assertThat(entries.getFirst())
+        .containsEntry("entryDate", LocalDate.of(2026, 4, 10))
+        .containsKeys("grossAmount", "fundShareAmount", "netAmount");
+    // the invested block's standalone amounts print as ZA currency (LZKC-017)
+    assertThat(StatementOfAccountContextBuilder.formatHints())
+        .containsEntry("trust.invested.opening_balance", "currency")
+        .containsEntry("trust.invested.capital_placed", "currency")
+        .containsEntry("trust.invested.interest_gross", "currency")
+        .containsEntry("trust.invested.interest_fund_share", "currency")
+        .containsEntry("trust.invested.interest_net", "currency")
+        .containsEntry("trust.invested.returned_to_trust", "currency")
+        .containsEntry("trust.invested.closing_balance", "currency")
+        .containsEntry("trust.invested.total_held", "currency");
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void investedBlock_withoutInterestEntries_hasNoEntriesKey() {
+    // The renderer reads an empty list ("[]") as not empty: the key is left out instead
+    stubInvestmentReturnedInApril(
+        new InvestedStatement(
+            new BigDecimal("30000.00"),
+            BigDecimal.ZERO,
+            BigDecimal.ZERO,
+            BigDecimal.ZERO,
+            BigDecimal.ZERO,
+            new BigDecimal("30000.00"),
+            BigDecimal.ZERO,
+            List.of()));
+
+    var trust = (Map<String, Object>) builder.build(projectId, periodStart, periodEnd).get("trust");
+
+    var invested = (Map<String, Object>) trust.get("invested");
+    assertThat(invested).doesNotContainKey("interest_entries");
+    assertThat((BigDecimal) invested.get("returned_to_trust")).isEqualByComparingTo("30000.00");
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void investedBlock_absent_whenNothingWasInvestedOrMoved() {
+    stubInvestmentReturnedInApril(InvestedStatement.NONE);
+
+    var trust = (Map<String, Object>) builder.build(projectId, periodStart, periodEnd).get("trust");
+
+    assertThat(trust.get("status")).isEqualTo("available");
+    assertThat(trust).doesNotContainKey("invested");
+    // the persisted snapshot's trust figure is the general balance, unchanged (R-C)
+    assertThat(builder.computeSummary(projectId, periodStart, periodEnd).trustBalanceHeld())
+        .isEqualByComparingTo("50285.00");
+  }
+
+  @Test
+  void renderRoundtrip_realSoATemplate_printsTheInvestedBlock_andTheDepositsTypeColumn()
+      throws Exception {
+    stubInvestmentReturnedInApril(APRIL_INVESTED);
+
+    // No _locale in the context: the renderer formats in the ZA default (as production for ZAR)
+    var context = builder.build(projectId, periodStart, periodEnd);
+    var templateBytes =
+        getClass()
+            .getClassLoader()
+            .getResourceAsStream("template-packs/legal-za/statement-of-account.json")
+            .readAllBytes();
+    @SuppressWarnings("unchecked")
+    Map<String, Object> templateNode = objectMapper.readValue(templateBytes, Map.class);
+    var renderer =
+        new io.b2mash.b2b.b2bstrawman.template.TiptapRenderer(
+            new org.springframework.core.io.ByteArrayResource(
+                "body { font-size: 11pt; }".getBytes(java.nio.charset.StandardCharsets.UTF_8)));
+
+    String html =
+        renderer.render(
+            templateNode, context, Map.of(), null, StatementOfAccountContextBuilder.formatHints());
+
+    assertThat(html)
+        .contains("Section 86(4) investment")
+        .contains("Opening balance: ")
+        .contains("Placed in section 86(4) investment: ")
+        .contains("Fund share of section 86(4) interest (5%)")
+        .contains("Gross interest", "Net interest")
+        .contains("Investment returned to trust: ")
+        .contains("Invested on your instruction (section 86(4)): ")
+        .contains("R30&nbsp;095,00", "R30&nbsp;285,00", "R190,00", "R200,00", "R10,00")
+        .contains("10 April 2026")
+        .doesNotContain("30095.00")
+        .doesNotContain("30285.00")
+        .as("R-E: the Deposits Type column prints the registry's client label")
+        .contains("<td>Investment returned to trust</td>")
+        .doesNotContain("INV_RETURN")
+        .doesNotContain("Inv return");
   }
 
   private static BigDecimal sumAmounts(List<Map<String, Object>> rows) {

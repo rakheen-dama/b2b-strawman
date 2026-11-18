@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import useSWR from "swr";
 import { useForm, useWatch, type DefaultValues } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
@@ -73,6 +74,8 @@ const BEFORE_DEPOSIT_MESSAGE = "The entry date cannot be before the investment's
 
 const PRESENTATIONS: InterestPresentation[] = ["GROSS", "NET"];
 
+const NO_LINES: BankStatementLineResponse[] = [];
+
 const amountOrUndefined = (value: string) => (value === "" ? undefined : parseFloat(value));
 
 /**
@@ -96,7 +99,16 @@ export function RecordInvestmentInterestDialog({
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [lines, setLines] = useState<BankStatementLineResponse[]>([]);
+  // The account's unmatched credit lines, fetched while open (null key when closed)
+  const {
+    data: lines = NO_LINES,
+    error: linesError,
+    isLoading: loadingLines,
+    mutate: reloadLines,
+  } = useSWR<BankStatementLineResponse[]>(
+    open ? `unmatched-credit-lines-${investmentAccountId}` : null,
+    () => fetchUnmatchedCreditLines(investmentAccountId)
+  );
 
   const form = useForm<RecordInvestmentInterestFormData>({
     resolver: zodResolver(recordInvestmentInterestSchema),
@@ -109,21 +121,6 @@ export function RecordInvestmentInterestDialog({
   const line = lines.find((l) => l.id === lineId);
   // A GROSS line's amount is the gross: shown, not typed
   const grossFromLine = line !== undefined && presentation === "GROSS";
-
-  useEffect(() => {
-    if (!open) return;
-    let cancelled = false;
-    fetchUnmatchedCreditLines(investmentAccountId)
-      .then((result) => {
-        if (!cancelled) setLines(result);
-      })
-      .catch(() => {
-        if (!cancelled) setLines([]);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [open, investmentAccountId]);
 
   function handleOpenChange(newOpen: boolean) {
     // Escape / overlay / X while a record is in flight: stay open so its outcome is shown
@@ -243,8 +240,30 @@ export function RecordInvestmentInterestDialog({
                     </select>
                   </FormControl>
                   <FormDescription>
-                    An unmatched credit on the investment account&apos;s statement.
+                    {loadingLines
+                      ? "Loading the investment account's unmatched credits…"
+                      : "An unmatched credit on the investment account's statement."}
                   </FormDescription>
+                  {linesError && (
+                    <div
+                      role="alert"
+                      className="flex items-center justify-between gap-3 text-sm"
+                      data-testid="interest-lines-error"
+                    >
+                      <span className="text-destructive">
+                        The statement lines could not be loaded; a bank advice can still be
+                        recorded.
+                      </span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => void reloadLines()}
+                      >
+                        Retry
+                      </Button>
+                    </div>
+                  )}
                   <FormMessage />
                 </FormItem>
               )}

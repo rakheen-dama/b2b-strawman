@@ -1566,22 +1566,7 @@ public class TrustTransactionService {
     }
 
     auditService.log(
-        AuditEventBuilder.builder()
-            .eventType("trust_transaction.reversed")
-            .entityType("trust_transaction")
-            .entityId(savedReversal.getId())
-            .details(
-                AuditDetails.matterScoped(
-                    savedReversal.getProjectId(),
-                    original.getCustomerId(),
-                    Map.of(
-                        "original_transaction_id", original.getId().toString(),
-                        "original_type", original.getTransactionType(),
-                        "amount", original.getAmount().toString(),
-                        "reversal_status", savedReversal.getStatus(),
-                        "reason", reason,
-                        "reversal_date", reversalDate.toString())))
-            .build());
+        TrustPostingService.reversedAuditEvent(original, savedReversal, reason, reversalDate));
 
     return savedReversal;
   }

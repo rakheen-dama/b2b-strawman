@@ -1,9 +1,13 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction;
 
+import io.b2mash.b2b.b2bstrawman.audit.AuditDetails;
+import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
+import io.b2mash.b2b.b2bstrawman.audit.AuditEventRecord;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
 import java.time.Clock;
 import java.time.LocalDate;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -276,6 +280,33 @@ public class TrustPostingService {
         reversalDate,
         null, // status: decided by postReversal from the original's reversal rule
         memberId);
+  }
+
+  /**
+   * The {@code trust_transaction.reversed} audit event of a single contra ({@code contra} reversing
+   * {@code original}), scoped to the contra's matter and the original's client. Shared by {@code
+   * TrustTransactionService}'s generic reversal and {@code TrustInvestmentService.reverseInterest}
+   * so both write the same payload; the paired reversals (transfer, unidentified allocation) add a
+   * pair id and keep their own.
+   */
+  public static AuditEventRecord reversedAuditEvent(
+      TrustTransaction original, TrustTransaction contra, String reason, LocalDate reversalDate) {
+    return AuditEventBuilder.builder()
+        .eventType("trust_transaction.reversed")
+        .entityType("trust_transaction")
+        .entityId(contra.getId())
+        .details(
+            AuditDetails.matterScoped(
+                contra.getProjectId(),
+                original.getCustomerId(),
+                Map.of(
+                    "original_transaction_id", original.getId().toString(),
+                    "original_type", original.getTransactionType(),
+                    "amount", original.getAmount().toString(),
+                    "reversal_status", contra.getStatus(),
+                    "reason", reason,
+                    "reversal_date", reversalDate.toString())))
+        .build();
   }
 
   /** {@code REV-} + the original reference, truncated to the 200-character column. */

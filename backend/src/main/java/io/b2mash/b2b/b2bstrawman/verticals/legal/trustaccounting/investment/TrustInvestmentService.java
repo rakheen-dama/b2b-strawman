@@ -864,22 +864,8 @@ public class TrustInvestmentService implements InvestmentPlacementHooks {
               original);
       contras.add(contra);
       auditService.log(
-          AuditEventBuilder.builder()
-              .eventType("trust_transaction.reversed")
-              .entityType("trust_transaction")
-              .entityId(contra.getId())
-              .details(
-                  AuditDetails.matterScoped(
-                      contra.getProjectId(),
-                      original.getCustomerId(),
-                      Map.of(
-                          "original_transaction_id", original.getId().toString(),
-                          "original_type", original.getTransactionType(),
-                          "amount", original.getAmount().toString(),
-                          "reversal_status", contra.getStatus(),
-                          "reason", INTEREST_REVERSAL_REASON,
-                          "reversal_date", entry.getEntryDate().toString())))
-              .build());
+          TrustPostingService.reversedAuditEvent(
+              original, contra, INTEREST_REVERSAL_REASON, entry.getEntryDate()));
       if (contra.getCustomerId() != null) {
         publishRecorded(contra, "REVERSAL", memberId);
       }
@@ -1083,9 +1069,17 @@ public class TrustInvestmentService implements InvestmentPlacementHooks {
               + " net of the Fund's 5%.");
     }
 
-    // The rows (§16.3.5 rule 3 from a line; Kazi's reference for a bank advice)
+    // The rows (§16.3.5 rule 3 from a line; Kazi's reference for a bank advice — INV-INT-{hex}-{n},
+    // n the entry's ordinal on the investment, safe because every caller holds the investment's
+    // lock)
     var memberId = RequestScopes.requireMemberId();
-    var reference = line != null ? StatementLines.referenceFor(line) : "INV-INT-" + hex(investment);
+    var reference =
+        line != null
+            ? StatementLines.referenceFor(line)
+            : "INV-INT-"
+                + hex(investment)
+                + "-"
+                + (interestRepository.countByInvestmentId(investment.getId()) + 1);
     var description =
         line != null
             ? line.getDescription()

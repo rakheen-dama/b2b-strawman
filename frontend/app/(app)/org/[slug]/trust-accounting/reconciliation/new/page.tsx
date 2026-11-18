@@ -22,14 +22,13 @@ import {
 } from "@/app/(app)/org/[slug]/trust-accounting/reconciliation/actions";
 import { fetchTrustAccounts } from "@/app/(app)/org/[slug]/trust-accounting/actions";
 import { fetchTransactions } from "@/app/(app)/org/[slug]/trust-accounting/transactions/actions";
-import { fetchInvestments } from "@/app/(app)/org/[slug]/trust-accounting/investments/actions";
+import { useInterestEligibleInvestments } from "@/hooks/use-interest-eligible-investments";
 import { formatCurrency } from "@/lib/format";
 import { todayInSA } from "@b2mash/shared/date";
 import type {
   TrustAccount,
   BankStatementResponse,
   BankStatementLineResponse,
-  TrustInvestment,
   TrustTransaction,
   TrustReconciliationResponse,
 } from "@/lib/types";
@@ -110,33 +109,15 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
     setError(null);
   }, []);
 
-  // 648B: a section 86(4) account's interest is recorded against one of its investments — the
-  // ACTIVE ones whose placement is approved (keyed by account so a switch never shows stale ones)
+  // 648B: a section 86(4) account's interest is recorded against one of its investments (SWR,
+  // keyed by account; a failed lookup shows with a retry in the review step)
   const accountSection = accounts.find((a) => a.id === selectedAccountId)?.section;
-  const [s864Investments, setS864Investments] = useState<{
-    accountId: string;
-    investments: TrustInvestment[];
-  } | null>(null);
-  useEffect(() => {
-    if (accountSection !== "S86_4" || !selectedAccountId) return;
-    let cancelled = false;
-    fetchInvestments(selectedAccountId, "CLIENT_INSTRUCTION")
-      .then((list) => {
-        if (cancelled) return;
-        setS864Investments({
-          accountId: selectedAccountId,
-          investments: list.filter((inv) => inv.status === "ACTIVE" && !inv.awaitingApproval),
-        });
-      })
-      .catch(() => {
-        // The dialog then lists no investment; recording is refused until it loads
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [accountSection, selectedAccountId]);
-  const investments =
-    s864Investments?.accountId === selectedAccountId ? s864Investments.investments : [];
+  const {
+    investments,
+    isLoading: loadingInvestments,
+    error: investmentsError,
+    retry: retryInvestments,
+  } = useInterestEligibleInvestments(selectedAccountId, accountSection);
 
   // Load accounts
   useEffect(() => {
@@ -667,6 +648,25 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
       {/* Step 4: Review & Match */}
       {currentStep === 4 && (
         <div className="space-y-4">
+          {accountSection === "S86_4" && loadingInvestments && (
+            <p className="text-muted-foreground text-sm" data-testid="interest-investments-loading">
+              Loading the account&apos;s investments…
+            </p>
+          )}
+          {accountSection === "S86_4" && investmentsError && (
+            <div
+              role="alert"
+              className="flex items-center justify-between gap-3 text-sm"
+              data-testid="interest-investments-error"
+            >
+              <span className="text-destructive">
+                {investmentsError} Section 86(4) interest cannot be recorded until they load.
+              </span>
+              <Button type="button" variant="outline" size="sm" onClick={retryInvestments}>
+                Retry
+              </Button>
+            </div>
+          )}
           <ReconciliationSplitPane
             lines={lines}
             unmatchedTransactions={unmatchedTransactions}

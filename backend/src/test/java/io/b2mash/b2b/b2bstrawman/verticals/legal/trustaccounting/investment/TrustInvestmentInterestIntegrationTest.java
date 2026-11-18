@@ -224,9 +224,7 @@ class TrustInvestmentInterestIntegrationTest {
     var row = row(entry.netTransactionId());
     assertThat(row.getAmount()).isEqualByComparingTo("95.00");
     assertThat(row.getBankStatementLineId()).isNull();
-    assertThat(row.getReference())
-        .isEqualTo(
-            "INV-INT-" + held.investmentId().toString().substring(0, 8).toUpperCase(Locale.ROOT));
+    assertThat(row.getReference()).isEqualTo(adviceReference(held.investmentId(), 1));
     assertThat(row.getDescription())
         .isEqualTo("Section 86(4) investment interest (Trust Books Bank)");
     assertThat(get(held.investmentId()).balance()).isEqualByComparingTo("30095.00");
@@ -295,16 +293,27 @@ class TrustInvestmentInterestIntegrationTest {
 
     assertReverseRefused(
         held.investmentAccount(), entry.id(), "This interest entry has already been reversed.");
-    // The withdrawal after a reversal returns the principal only
+    // A later bank advice on the same investment has its own reference (the ordinal counts the
+    // reversed entry too), so the two entries' rows stay distinguishable
+    var second =
+        books.recordInterest(
+            held.investmentAccount(),
+            Expected.cashbookAndInvestment("19.00"),
+            held.investmentId(),
+            net(date, "20.00"));
+    assertThat(original.getReference()).isEqualTo(adviceReference(held.investmentId(), 1));
+    assertThat(row(second.netTransactionId()).getReference())
+        .isEqualTo(adviceReference(held.investmentId(), 2));
+    // The withdrawal after a reversal returns the principal and the unreversed entry's net only
     var withdrawn =
         books.withdraw(
             held.funding(),
-            Expected.cashbookAndClient("2000.00"),
+            Expected.cashbookAndClient("2019.00"),
             held.investmentAccount(),
-            Expected.cashbookAndInvestment("-2000.00"),
+            Expected.cashbookAndInvestment("-2019.00"),
             held.investmentId(),
             books.today());
-    assertThat(withdrawn.withdrawalAmount()).isEqualByComparingTo("2000.00");
+    assertThat(withdrawn.withdrawalAmount()).isEqualByComparingTo("2019.00");
   }
 
   @Test
@@ -567,13 +576,17 @@ class TrustInvestmentInterestIntegrationTest {
                                         books.today().minusDays(1))))
                         .isInstanceOfSatisfying(
                             InvalidStateException.class,
-                            e ->
-                                assertThat(e.getBody().getDetail())
-                                    .isEqualTo(
-                                        "The withdrawal date cannot be before the investment's"
-                                            + " last interest entry ("
-                                            + books.today()
-                                            + ")."))));
+                            e -> {
+                              assertThat(e.getBody().getStatus()).isEqualTo(400);
+                              assertThat(e.getBody().getTitle())
+                                  .isEqualTo("Cannot withdraw investment");
+                              assertThat(e.getBody().getDetail())
+                                  .isEqualTo(
+                                      "The withdrawal date cannot be before the investment's"
+                                          + " last interest entry ("
+                                          + books.today()
+                                          + ").");
+                            })));
 
     books.reverseInterest(
         held.investmentAccount(), Expected.cashbookAndInvestment("-38.00"), entry.id());
@@ -635,6 +648,11 @@ class TrustInvestmentInterestIntegrationTest {
                         lineId,
                         new RecordFromLineRequest(
                             classification, null, null, null, null, null, null, null))));
+  }
+
+  /** Kazi's reference for the {@code n}th interest entry on the investment from a bank advice. */
+  private static String adviceReference(UUID investmentId, int n) {
+    return "INV-INT-" + investmentId.toString().substring(0, 8).toUpperCase(Locale.ROOT) + "-" + n;
   }
 
   /** The interest entry is refused with 400 {@code title} / {@code detail}; nothing moves. */

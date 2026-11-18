@@ -20,6 +20,12 @@ public interface TrustInvestmentInterestRepository
   List<TrustInvestmentInterest> findByInvestmentIdOrderByEntryDateAscCreatedAtAsc(
       UUID investmentId);
 
+  /**
+   * The investment's entries, POSTED and REVERSED — a bank advice's reference ordinal (read under
+   * the investment's lock).
+   */
+  long countByInvestmentId(UUID investmentId);
+
   /** The entry's investment, read without loading the entry (lock order: investment first). */
   @Query("SELECT e.investmentId FROM TrustInvestmentInterest e WHERE e.id = :id")
   Optional<UUID> findInvestmentIdById(@Param("id") UUID id);

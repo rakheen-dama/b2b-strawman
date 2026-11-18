@@ -54,6 +54,9 @@ CREATE TABLE IF NOT EXISTS trust_investment_interest (
 );
 CREATE INDEX IF NOT EXISTS idx_invest_interest_investment
     ON trust_investment_interest (investment_id, entry_date);
+-- The unmatch hook reads a line's POSTED entry (findPostedIdByBankStatementLineId)
+CREATE INDEX IF NOT EXISTS idx_invest_interest_posted_line
+    ON trust_investment_interest (bank_statement_line_id) WHERE status = 'POSTED';
 
 -- The hand-typed running total goes (its CHECK chk_trust_invest_earned goes with the column)
 ALTER TABLE trust_investments DROP COLUMN IF EXISTS interest_earned;

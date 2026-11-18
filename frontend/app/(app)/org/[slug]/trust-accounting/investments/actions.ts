@@ -17,19 +17,44 @@ import type {
 
 // -- Investments ---------------------------------------------------------
 
+type InvestmentPage = {
+  content: TrustInvestment[];
+  page: { totalElements: number; totalPages: number; size: number; number: number };
+};
+
+function investmentsUrl(accountId: string, page: number, investmentBasis?: string): string {
+  let url = `/api/trust-accounts/${accountId}/investments?page=${page}&size=100&sort=depositDate,desc`;
+  if (investmentBasis) {
+    url += `&investmentBasis=${encodeURIComponent(investmentBasis)}`;
+  }
+  return url;
+}
+
 export async function fetchInvestments(
   accountId: string,
   investmentBasis?: string
 ): Promise<TrustInvestment[]> {
-  let url = `/api/trust-accounts/${accountId}/investments?size=100&sort=depositDate,desc`;
-  if (investmentBasis) {
-    url += `&investmentBasis=${encodeURIComponent(investmentBasis)}`;
-  }
-  const response = await api.get<{
-    content: TrustInvestment[];
-    page: { totalElements: number; totalPages: number; size: number; number: number };
-  }>(url);
+  const response = await api.get<InvestmentPage>(investmentsUrl(accountId, 0, investmentBasis));
   return response.content;
+}
+
+/**
+ * The funding account's section 86(4) investments that can take an interest entry (648B): ACTIVE,
+ * with an approved placement. Reads every page — the list endpoint has no status filter, so an
+ * eligible placement older than the newest 100 must not be missed.
+ */
+export async function fetchInterestEligibleInvestments(
+  accountId: string
+): Promise<TrustInvestment[]> {
+  const all: TrustInvestment[] = [];
+  for (let page = 0; ; page++) {
+    const response = await api.get<InvestmentPage>(
+      investmentsUrl(accountId, page, "CLIENT_INSTRUCTION")
+    );
+    all.push(...response.content);
+    if (page + 1 >= response.page.totalPages) break;
+  }
+  return all.filter((inv) => inv.status === "ACTIVE" && !inv.awaitingApproval);
 }
 
 /**
@@ -100,29 +125,6 @@ export async function recordInvestmentInterest(
     return { success: true, interest };
   } catch (err) {
     const message = err instanceof Error ? err.message : "Failed to record interest";
-    return { success: false, error: message };
-  }
-}
-
-/** The investment's interest entries, oldest first (POSTED and REVERSED). */
-export async function fetchInvestmentInterest(investmentId: string): Promise<InvestmentInterest[]> {
-  return api.get<InvestmentInterest[]>(`/api/trust-investments/${investmentId}/interest`);
-}
-
-/**
- * Reverses a bank-advice interest entry (OQ-12: API only — no button yet; one recorded from a
- * statement line is reversed by unmatching the line).
- */
-export async function reverseInvestmentInterest(
-  interestId: string
-): Promise<{ success: boolean; interest?: InvestmentInterest; error?: string }> {
-  try {
-    const interest = await api.post<InvestmentInterest>(
-      `/api/trust-investment-interest/${interestId}/reverse`
-    );
-    return { success: true, interest };
-  } catch (err) {
-    const message = err instanceof Error ? err.message : "Failed to reverse interest";
     return { success: false, error: message };
   }
 }

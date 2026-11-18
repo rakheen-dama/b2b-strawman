@@ -352,12 +352,18 @@ class TrustInvestmentControllerTest {
                     """
                     {"entryDate": "2026-03-01", "grossAmount": 10.00, "presentation": "NET"}
                     """))
-        .andExpect(status().isForbidden());
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.status").value(403))
+        .andExpect(jsonPath("$.title").value("Access denied"))
+        .andExpect(jsonPath("$.detail").value("Insufficient permissions for this operation"));
     mockMvc
         .perform(
             post("/api/trust-investment-interest/" + UUID.randomUUID() + "/reverse")
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_invest_ctrl_member")))
-        .andExpect(status().isForbidden());
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.status").value(403))
+        .andExpect(jsonPath("$.title").value("Access denied"))
+        .andExpect(jsonPath("$.detail").value("Insufficient permissions for this operation"));
   }
 
   @Test
@@ -370,7 +376,10 @@ class TrustInvestmentControllerTest {
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_invest_ctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"amount\": 175.00}"))
-        .andExpect(status().isMethodNotAllowed());
+        .andExpect(status().isMethodNotAllowed())
+        .andExpect(jsonPath("$.status").value(405))
+        .andExpect(jsonPath("$.title").value("Method Not Allowed"))
+        .andExpect(jsonPath("$.detail").value("Method 'PUT' is not supported."));
   }
 
   @Test

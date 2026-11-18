@@ -62,9 +62,10 @@ vi.mock("@/app/(app)/org/[slug]/trust-accounting/actions", () => ({
 }));
 
 // ── Mock investment actions (648B: the wizard lists a section 86(4) account's investments) ──
-const mockFetchInvestments = vi.fn();
+const mockFetchInterestEligibleInvestments = vi.fn();
 vi.mock("@/app/(app)/org/[slug]/trust-accounting/investments/actions", () => ({
-  fetchInvestments: (...args: unknown[]) => mockFetchInvestments(...args),
+  fetchInterestEligibleInvestments: (...args: unknown[]) =>
+    mockFetchInterestEligibleInvestments(...args),
 }));
 
 // ── Mock transaction actions ─────────────────────────────────────

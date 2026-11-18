@@ -153,6 +153,9 @@ class TrustInvestmentInterestMigrationTest {
         .containsExactly(IDS.get("%investment") + "|ACTIVE");
     assertThat(trustRows()).isEqualTo(trustRowsBefore).hasSize(4);
     assertThat(balances()).isEqualTo(balancesBefore);
+    // Empty by design, not a gap: no pre-648B main code path ever posted INV_INTEREST (only the
+    // enum, the LedgerTotals arm and the V18 CHECK list named it), so there is no legacy interest
+    // row to carry into an entry.
     assertThat(entriesAfterMigration).isEmpty();
   }
 
@@ -214,6 +217,12 @@ class TrustInvestmentInterestMigrationTest {
                 "SELECT indexdef FROM pg_indexes WHERE schemaname = '%s'"
                     + " AND indexname = 'idx_invest_interest_investment'"))
         .contains("(investment_id, entry_date)");
+    assertThat(
+            text(
+                "SELECT indexdef FROM pg_indexes WHERE schemaname = '%s'"
+                    + " AND indexname = 'idx_invest_interest_posted_line'"))
+        .contains("(bank_statement_line_id)")
+        .contains("WHERE ((status)::text = 'POSTED'::text)");
     // No ON DELETE CASCADE (house rule)
     assertThat(
             texts(

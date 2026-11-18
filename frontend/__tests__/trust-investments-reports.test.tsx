@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen, waitFor, fireEvent, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { SWRConfig } from "swr";
 
 // -- Mock server-only -----------------------------------------------------
 vi.mock("server-only", () => ({}));
@@ -510,16 +511,21 @@ describe("Trust Investments & Reports", () => {
   });
 
   function renderInterestDialog() {
+    // A fresh SWR cache per test: the lines are keyed by account, which every test shares
     return render(
-      <RecordInvestmentInterestDialog
-        investmentId="inv-1"
-        investmentAccountId={CLIENT_ACCOUNT}
-        depositDate="2026-01-15"
-        currency="ZAR"
-        open={true}
-        onOpenChange={vi.fn()}
-        onSuccess={vi.fn()}
-      />
+      <SWRConfig
+        value={{ provider: () => new Map(), dedupingInterval: 0, shouldRetryOnError: false }}
+      >
+        <RecordInvestmentInterestDialog
+          investmentId="inv-1"
+          investmentAccountId={CLIENT_ACCOUNT}
+          depositDate="2026-01-15"
+          currency="ZAR"
+          open={true}
+          onOpenChange={vi.fn()}
+          onSuccess={vi.fn()}
+        />
+      </SWRConfig>
     );
   }
 
@@ -608,6 +614,24 @@ describe("Trust Investments & Reports", () => {
         presentation: "NET",
       })
     );
+  });
+
+  it("interest dialog shows a failed statement-line lookup and retries it", async () => {
+    const user = userEvent.setup({ pointerEventsCheck: 0 });
+    mockFetchUnmatchedCreditLines
+      .mockRejectedValueOnce(new Error("network"))
+      .mockResolvedValue([INTEREST_LINE]);
+    renderInterestDialog();
+
+    const dialog = screen.getByTestId("record-investment-interest-dialog");
+    const alert = await within(dialog).findByTestId("interest-lines-error");
+    expect(alert).toHaveTextContent("The statement lines could not be loaded");
+    expect(within(dialog).queryByRole("option", { name: /Line #3/ })).toBeNull();
+
+    await user.click(within(alert).getByRole("button", { name: "Retry" }));
+    expect(await within(dialog).findByRole("option", { name: /Line #3/ })).toBeInTheDocument();
+    expect(within(dialog).queryByTestId("interest-lines-error")).toBeNull();
+    expect(mockFetchUnmatchedCreditLines).toHaveBeenCalledTimes(2);
   });
 
   it("interest dialog refuses a typed Fund share more than R0,01 from 5% of the gross", async () => {

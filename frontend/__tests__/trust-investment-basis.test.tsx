@@ -8,14 +8,16 @@ vi.mock("server-only", () => ({}));
 // -- Mock server actions for investments ----------------------------------
 const mockFetchInvestments = vi.fn();
 const mockPlaceInvestment = vi.fn();
-const mockRecordInterest = vi.fn();
+const mockRecordInvestmentInterest = vi.fn();
+const mockFetchUnmatchedCreditLines = vi.fn();
 const mockWithdrawInvestment = vi.fn();
 const mockFetchMaturing = vi.fn();
 
 vi.mock("@/app/(app)/org/[slug]/trust-accounting/investments/actions", () => ({
   fetchInvestments: (...args: unknown[]) => mockFetchInvestments(...args),
   placeInvestment: (...args: unknown[]) => mockPlaceInvestment(...args),
-  recordInterest: (...args: unknown[]) => mockRecordInterest(...args),
+  recordInvestmentInterest: (...args: unknown[]) => mockRecordInvestmentInterest(...args),
+  fetchUnmatchedCreditLines: (...args: unknown[]) => mockFetchUnmatchedCreditLines(...args),
   withdrawInvestment: (...args: unknown[]) => mockWithdrawInvestment(...args),
   fetchMaturing: (...args: unknown[]) => mockFetchMaturing(...args),
 }));
@@ -159,7 +161,9 @@ function makeInvestment(overrides: Record<string, unknown> = {}) {
     interestRate: 0.075,
     depositDate: "2026-01-15",
     maturityDate: "2026-07-15",
-    interestEarned: 0,
+    grossInterest: 0,
+    fundShare: 0,
+    netInterest: 0,
     balance: 500000,
     status: "ACTIVE",
     awaitingApproval: false,
@@ -415,11 +419,15 @@ describe("Epic 455 / 648A — Investment Basis and investment accounts", () => {
     expect(within(accountCell).getByText("Section 86(3) Call Account")).toBeInTheDocument();
     expect(within(accountCell).getByText("FNB Money Market")).toBeInTheDocument();
     expect(within(accountCell).getByText("INV-001")).toBeInTheDocument();
-    // The LPFF share under the rate, the maturity under the deposit date, interest under principal
+    // The LPFF share under the rate, the maturity under the deposit date; a section 86(3)
+    // investment's interest is the Fund's, so the principal cell says where it is recorded (648B)
     expect(held.textContent).toContain("7.50%");
     expect(held.textContent).toContain("LPFF share Arrangement");
     expect(held.textContent).toMatch(/to 15 Jul 2026/);
-    expect(held.textContent).toMatch(/Interest R[\s ]0,00/);
+    expect(within(held).getByTestId("investment-interest-fund-note")).toHaveTextContent(
+      "Interest is the Fund's — record it from the investment account's statement"
+    );
+    expect(held.textContent).not.toMatch(/Gross interest/);
 
     // Shared Badge is whitespace-nowrap shrink-0 by default: the register's Badges must wrap
     for (const text of ["Section 86(3)", "Active"]) {
@@ -470,14 +478,21 @@ describe("Epic 455 / 648A — Investment Basis and investment accounts", () => {
   // The backend withdraws an ACTIVE or MATURED investment; interest is recorded on ACTIVE only
   it("a matured investment can be withdrawn but takes no interest entry", async () => {
     mockFetchInvestments.mockResolvedValue([
-      makeInvestment({ id: "inv-matured", status: "MATURED" }),
+      makeInvestment({
+        id: "inv-matured",
+        status: "MATURED",
+        investmentBasis: "CLIENT_INSTRUCTION",
+        investmentAccountId: CLIENT_ACCOUNT,
+        clientId: "client-1",
+        clientName: "Client Instruction Co",
+      }),
     ]);
 
     await renderInvestmentsPage();
 
     const row = screen.getByTestId("investment-row-inv-matured");
     expect(within(row).getByRole("button", { name: "Withdraw" })).toBeInTheDocument();
-    expect(within(row).queryByRole("button", { name: "Record Interest" })).toBeNull();
+    expect(within(row).queryByRole("button", { name: "Record interest" })).toBeNull();
   });
 
   it("filter dropdown renders and investmentBasis flows to fetchInvestments", async () => {

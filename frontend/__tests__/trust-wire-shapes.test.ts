@@ -9,8 +9,13 @@ import type {
   BankStatementResponse,
   ClientLedgerCard,
   CreateTrustAccountRequest,
+  InterestPresentation,
   InvestmentBasis,
+  InvestmentInterest,
+  RecordFromLineRequest,
   RecordFromLineResponse,
+  RecordInvestmentInterestRequest,
+  StatementLineClassification,
   TotalBalance,
   TrustAccount,
   TrustAccountSection,
@@ -37,6 +42,19 @@ const componentNames = (components: { name: string }[]) => components.map((c) =>
 // Each TS string union as an exhaustive record: `satisfies Record<Union, true>` fails
 // `pnpm typecheck` on a missing or extra member, so the key list IS the union's member list.
 const TS_UNIONS: Record<keyof typeof enums, string[]> = {
+  // 648B: the interest entry's presentation and the record-from-statement classification
+  InterestPresentation: Object.keys({
+    GROSS: true,
+    NET: true,
+  } satisfies Record<InterestPresentation, true>),
+  StatementLineClassification: Object.keys({
+    FUND_INTEREST: true,
+    FUND_SWEEP: true,
+    BANK_CHARGE: true,
+    CHARGE_REFUND: true,
+    UNIDENTIFIED_DEPOSIT: true,
+    INVESTMENT_INTEREST: true,
+  } satisfies Record<StatementLineClassification, true>),
   // 648C: the trust account response's enums
   InvestmentBasis: Object.keys({
     FIRM_DISCRETION: true,
@@ -93,9 +111,12 @@ describe("trust wire shapes match the backend contract (ADR-365)", () => {
       "ClientLedgerCardResponse",
       "CreateTrustAccountRequest",
       "CreditorBreakdown",
+      "InvestmentInterestResponse",
       "PayToFundRequest",
       "PlaceInvestmentRequest",
+      "RecordFromLineRequest",
       "RecordFromLineResponse",
+      "RecordInvestmentInterestRequest",
       "TotalBalanceResponse",
       "TrustAccountResponse",
       "TrustInvestmentResponse",
@@ -419,7 +440,9 @@ describe("trust wire shapes match the backend contract (ADR-365)", () => {
       interestRate: 0,
       depositDate: "",
       maturityDate: null,
-      interestEarned: 0,
+      grossInterest: 0,
+      fundShare: 0,
+      netInterest: 0,
       balance: 0,
       status: "ACTIVE",
       awaitingApproval: false,
@@ -455,6 +478,49 @@ describe("trust wire shapes match the backend contract (ADR-365)", () => {
   it("WithdrawInvestmentRequest ↔ TrustInvestmentService.WithdrawInvestmentRequest (648A)", () => {
     const literal: Required<WithdrawInvestmentRequest> = { withdrawalDate: "" };
     expect(Object.keys(literal)).toEqual(componentNames(records.WithdrawInvestmentRequest));
+  });
+
+  it("InvestmentInterest ↔ TrustInvestmentService.InvestmentInterestResponse (648B)", () => {
+    const literal: Required<InvestmentInterest> = {
+      id: "",
+      investmentId: "",
+      entryDate: "",
+      grossAmount: 0,
+      fundShareAmount: 0,
+      netAmount: 0,
+      presentation: "NET",
+      status: "POSTED",
+      netTransactionId: "",
+      fundShareTransactionId: null,
+      bankStatementLineId: null,
+      clientTaxReference: null,
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(records.InvestmentInterestResponse));
+  });
+
+  it("RecordInvestmentInterestRequest ↔ TrustInvestmentService.RecordInvestmentInterestRequest (648B)", () => {
+    const literal: Required<RecordInvestmentInterestRequest> = {
+      entryDate: "",
+      grossAmount: 0,
+      fundShareAmount: null,
+      presentation: "GROSS",
+      bankStatementLineId: null,
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(records.RecordInvestmentInterestRequest));
+  });
+
+  it("RecordFromLineRequest ↔ StatementLinePostingService.RecordFromLineRequest (648B)", () => {
+    const literal: Required<RecordFromLineRequest> = {
+      classification: "INVESTMENT_INTEREST",
+      chargeRecoverable: null,
+      chargeVatAmount: null,
+      investmentId: null,
+      grossAmount: null,
+      fundShareAmount: null,
+      presentation: null,
+      notes: null,
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(records.RecordFromLineRequest));
   });
 
   it("ClientLedgerCard ↔ ClientLedgerService.ClientLedgerCardResponse (648E)", () => {

@@ -8,14 +8,16 @@ vi.mock("server-only", () => ({}));
 // -- Mock server actions for investments ----------------------------------
 const mockFetchInvestments = vi.fn();
 const mockPlaceInvestment = vi.fn();
-const mockRecordInterest = vi.fn();
+const mockRecordInvestmentInterest = vi.fn();
+const mockFetchUnmatchedCreditLines = vi.fn();
 const mockWithdrawInvestment = vi.fn();
 const mockFetchMaturing = vi.fn();
 
 vi.mock("@/app/(app)/org/[slug]/trust-accounting/investments/actions", () => ({
   fetchInvestments: (...args: unknown[]) => mockFetchInvestments(...args),
   placeInvestment: (...args: unknown[]) => mockPlaceInvestment(...args),
-  recordInterest: (...args: unknown[]) => mockRecordInterest(...args),
+  recordInvestmentInterest: (...args: unknown[]) => mockRecordInvestmentInterest(...args),
+  fetchUnmatchedCreditLines: (...args: unknown[]) => mockFetchUnmatchedCreditLines(...args),
   withdrawInvestment: (...args: unknown[]) => mockWithdrawInvestment(...args),
   fetchMaturing: (...args: unknown[]) => mockFetchMaturing(...args),
 }));
@@ -106,6 +108,7 @@ import InvestmentsPage from "@/app/(app)/org/[slug]/trust-accounting/investments
 import TrustReportsPage from "@/app/(app)/org/[slug]/trust-accounting/reports/page";
 import { PlaceInvestmentDialog } from "@/components/trust/PlaceInvestmentDialog";
 import { WithdrawInvestmentDialog } from "@/components/trust/WithdrawInvestmentDialog";
+import { RecordInvestmentInterestDialog } from "@/components/trust/RecordInvestmentInterestDialog";
 import type { InvestmentBasis, TrustAccount } from "@/lib/types/trust";
 import { todayInSA } from "@b2mash/shared/date";
 
@@ -129,7 +132,9 @@ function makeInvestment(overrides: Record<string, unknown> = {}) {
     interestRate: 0.075,
     depositDate: "2026-01-15",
     maturityDate: "2026-07-15",
-    interestEarned: 0,
+    grossInterest: 0,
+    fundShare: 0,
+    netInterest: 0,
     balance: 500000,
     status: "ACTIVE",
     awaitingApproval: false,
@@ -461,6 +466,165 @@ describe("Trust Investments & Reports", () => {
     await waitFor(() =>
       expect(mockWithdrawInvestment).toHaveBeenCalledWith("inv-1", { withdrawalDate: "2026-01-15" })
     );
+  });
+
+  // --- 648B: section 86(4) interest entries ------------------------------------------------
+
+  it("a section 86(3) investment offers no interest action and points to its account's statement", async () => {
+    mockFetchInvestments.mockResolvedValue([
+      makeInvestment({
+        id: "inv-s864",
+        clientName: "Client Instruction Co",
+        grossInterest: 400,
+        fundShare: 20,
+        netInterest: 380,
+        balance: 500380,
+      }),
+      makeInvestment({
+        id: "inv-s863",
+        clientId: null,
+        clientName: null,
+        matterId: null,
+        investmentAccountId: FIRM_ACCOUNT,
+        investmentAccountName: "Section 86(3) Call Account",
+        institution: "Investec Call",
+        investmentBasis: "FIRM_DISCRETION",
+      }),
+    ]);
+
+    await renderInvestmentsPage();
+
+    const s864 = screen.getByText("Client Instruction Co").closest("tr") as HTMLElement;
+    expect(within(s864).getByRole("button", { name: "Record interest" })).toBeInTheDocument();
+    expect(within(s864).getByText(/Gross interest/).textContent).toMatch(/400,00/);
+    expect(within(s864).getByText(/Fund 5%/).textContent).toMatch(/20,00/);
+    expect(within(s864).getByText(/Net interest/).textContent).toMatch(/380,00/);
+
+    const s863 = screen.getByText("Investec Call").closest("tr") as HTMLElement;
+    expect(within(s863).queryByRole("button", { name: "Record interest" })).toBeNull();
+    expect(within(s863).getByRole("button", { name: "Withdraw" })).toBeInTheDocument();
+    expect(within(s863).getByTestId("investment-interest-fund-note")).toHaveTextContent(
+      "Interest is the Fund's — record it from the investment account's statement"
+    );
+    expect(within(s863).queryByText(/Gross interest/)).toBeNull();
+  });
+
+  function renderInterestDialog() {
+    return render(
+      <RecordInvestmentInterestDialog
+        investmentId="inv-1"
+        investmentAccountId={CLIENT_ACCOUNT}
+        depositDate="2026-01-15"
+        currency="ZAR"
+        open={true}
+        onOpenChange={vi.fn()}
+        onSuccess={vi.fn()}
+      />
+    );
+  }
+
+  const INTEREST_LINE = {
+    id: "line-400",
+    lineNumber: 3,
+    transactionDate: "2026-10-31",
+    description: "Interest capitalised",
+    reference: "INT-OCT",
+    amount: 400,
+    runningBalance: null,
+    matchStatus: "UNMATCHED",
+    trustTransactionId: null,
+    matchConfidence: null,
+    classification: null,
+    classificationLabel: null,
+    suggestedClassification: "INVESTMENT_INTEREST",
+    createdTransactionIds: [],
+  };
+
+  it("interest dialog records a gross credit from its statement line: Fund R20,00, client R380,00", async () => {
+    const user = userEvent.setup({ pointerEventsCheck: 0 });
+    mockFetchUnmatchedCreditLines.mockResolvedValue([INTEREST_LINE]);
+    mockRecordInvestmentInterest.mockResolvedValue({ success: true });
+    renderInterestDialog();
+
+    const dialog = screen.getByTestId("record-investment-interest-dialog");
+    await waitFor(() => expect(mockFetchUnmatchedCreditLines).toHaveBeenCalledWith(CLIENT_ACCOUNT));
+    const lineSelect = await within(dialog).findByLabelText("Statement line");
+    await within(dialog).findByRole("option", { name: /Line #3/ });
+    await user.selectOptions(lineSelect, "line-400");
+    await user.click(
+      within(dialog).getByRole("radio", { name: "Gross — the Fund's 5% leaves in a separate debit" })
+    );
+
+    expect((within(dialog).getByLabelText("Date credited") as HTMLInputElement).value).toBe(
+      "2026-10-31"
+    );
+    expect((within(dialog).getByLabelText("Gross interest") as HTMLInputElement).value).toBe("400");
+    expect(within(dialog).getByTestId("interest-fund-share").textContent).toMatch(/20,00/);
+    expect(within(dialog).getByTestId("interest-client-share").textContent).toMatch(/380,00/);
+    expect(within(dialog).queryByText(/GROSS|NET|INVESTMENT_INTEREST/)).toBeNull();
+
+    await user.click(within(dialog).getByRole("button", { name: "Record interest" }));
+    await waitFor(() =>
+      expect(mockRecordInvestmentInterest).toHaveBeenCalledWith("inv-1", {
+        entryDate: "2026-10-31",
+        grossAmount: 400,
+        presentation: "GROSS",
+        bankStatementLineId: "line-400",
+      })
+    );
+  });
+
+  it("interest dialog records a bank advice net of the Fund's 5%: gross R100,00 → R5,00 / R95,00", async () => {
+    const user = userEvent.setup({ pointerEventsCheck: 0 });
+    mockFetchUnmatchedCreditLines.mockResolvedValue([]);
+    mockRecordInvestmentInterest.mockResolvedValue({ success: true });
+    renderInterestDialog();
+
+    const dialog = screen.getByTestId("record-investment-interest-dialog");
+    await waitFor(() => expect(mockFetchUnmatchedCreditLines).toHaveBeenCalled());
+    // No line: the presentation is fixed to net, with the reason
+    expect(
+      within(dialog).getByRole("radio", { name: "Gross — the Fund's 5% leaves in a separate debit" })
+    ).toBeDisabled();
+    expect(within(dialog).getByRole("radio", { name: "Net of the Fund's 5%" })).toBeChecked();
+    expect(within(dialog).getByTestId("interest-bank-advice-note")).toBeInTheDocument();
+
+    fireEvent.change(within(dialog).getByLabelText("Date credited"), {
+      target: { value: "2026-11-01" },
+    });
+    await user.type(within(dialog).getByLabelText("Gross interest"), "100");
+    expect(within(dialog).getByTestId("interest-fund-share").textContent).toMatch(/5,00/);
+    expect(within(dialog).getByTestId("interest-client-share").textContent).toMatch(/95,00/);
+
+    await user.click(within(dialog).getByRole("button", { name: "Record interest" }));
+    await waitFor(() =>
+      expect(mockRecordInvestmentInterest).toHaveBeenCalledWith("inv-1", {
+        entryDate: "2026-11-01",
+        grossAmount: 100,
+        presentation: "NET",
+      })
+    );
+  });
+
+  it("interest dialog refuses a typed Fund share more than R0,01 from 5% of the gross", async () => {
+    const user = userEvent.setup({ pointerEventsCheck: 0 });
+    mockFetchUnmatchedCreditLines.mockResolvedValue([INTEREST_LINE]);
+    renderInterestDialog();
+
+    const dialog = screen.getByTestId("record-investment-interest-dialog");
+    const lineSelect = await within(dialog).findByLabelText("Statement line");
+    await within(dialog).findByRole("option", { name: /Line #3/ });
+    await user.selectOptions(lineSelect, "line-400");
+    await user.click(
+      within(dialog).getByRole("radio", { name: "Gross — the Fund's 5% leaves in a separate debit" })
+    );
+    await user.type(within(dialog).getByLabelText("Fund's 5% as the bank shows it"), "21.50");
+    await user.click(within(dialog).getByRole("button", { name: "Record interest" }));
+
+    expect(
+      await within(dialog).findByText(/The Fund's share must be within R0,01 of 5% of the gross/)
+    ).toBeInTheDocument();
+    expect(mockRecordInvestmentInterest).not.toHaveBeenCalled();
   });
 
   it("maturity alert highlights investments maturing within 30 days", async () => {

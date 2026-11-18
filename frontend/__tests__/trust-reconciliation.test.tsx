@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import type React from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { act, cleanup, render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { act, cleanup, render, screen, fireEvent, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 // ── Mock server-only ─────────────────────────────────────────────
@@ -59,6 +59,12 @@ vi.mock("@/app/(app)/org/[slug]/trust-accounting/actions", () => ({
       updatedAt: "2025-01-01T00:00:00Z",
     },
   ]),
+}));
+
+// ── Mock investment actions (648B: the wizard lists a section 86(4) account's investments) ──
+const mockFetchInvestments = vi.fn();
+vi.mock("@/app/(app)/org/[slug]/trust-accounting/investments/actions", () => ({
+  fetchInvestments: (...args: unknown[]) => mockFetchInvestments(...args),
 }));
 
 // ── Mock transaction actions ─────────────────────────────────────
@@ -132,6 +138,8 @@ import { recordFromStatementSchemaFor } from "@/lib/schemas/trust";
 import { STATEMENT_LINE_CLASSIFICATIONS } from "@/lib/types";
 import type {
   BankStatementLineResponse,
+  TrustAccountSection,
+  TrustInvestment,
   TrustReconciliationResponse,
   TrustTransaction,
 } from "@/lib/types";
@@ -935,15 +943,58 @@ describe("Trust Reconciliation", () => {
     const FUND_INTEREST = "Interest received for the Legal Practitioners' Fidelity Fund";
     const CHARGE_REFUND = "Bank charge refunded from the business account";
     const FUND_SWEEP = "Interest paid to the Legal Practitioners' Fidelity Fund";
+    const INVESTMENT_INTEREST = "Section 86(4) investment interest";
+    const GROSS = "Gross — the Fund's 5% leaves in a separate debit";
+    const NET = "Net of the Fund's 5%";
+
+    function makeInvestment(overrides: Partial<TrustInvestment> = {}): TrustInvestment {
+      return {
+        id: "inv-1",
+        trustAccountId: "acc-1",
+        investmentAccountId: "acc-s864",
+        investmentAccountName: "Section 86(4) Investment Account",
+        clientId: "cust-1",
+        clientName: "Sipho Dlamini",
+        matterId: "matter-1",
+        institution: "Investec",
+        accountNumber: "INV-864",
+        principal: 30000,
+        interestRate: 0.065,
+        depositDate: "2026-09-01",
+        maturityDate: null,
+        grossInterest: 0,
+        fundShare: 0,
+        netInterest: 0,
+        balance: 30000,
+        status: "ACTIVE",
+        awaitingApproval: false,
+        withdrawalDate: null,
+        withdrawalAmount: null,
+        depositTransactionId: "txn-dep",
+        withdrawalTransactionId: null,
+        notes: null,
+        investmentBasis: "CLIENT_INSTRUCTION",
+        createdAt: "2026-09-01T09:00:00Z",
+        updatedAt: "2026-09-01T09:00:00Z",
+        ...overrides,
+      };
+    }
+
+    const classificationChoices = () =>
+      within(screen.getByTestId("classification-radio"))
+        .getAllByRole("radio")
+        .map((r) => r.getAttribute("value"));
 
     function renderPane(
       lines: BankStatementLineResponse[],
       handlers: Partial<
         Pick<React.ComponentProps<typeof ReconciliationSplitPane>, "onRecord" | "onUnmatch">
-      > = {}
+      > = {},
+      account: { accountSection?: TrustAccountSection; investments?: TrustInvestment[] } = {}
     ) {
       render(
         <ReconciliationSplitPane
+          {...account}
           lines={lines}
           unmatchedTransactions={[]}
           reconciliation={null}
@@ -964,14 +1015,138 @@ describe("Trust Reconciliation", () => {
       return screen.findByTestId("record-from-statement-dialog");
     }
 
-    it("pins the five classification labels to the registry's firm labels", () => {
+    it("pins the six classification labels to the registry's firm labels", () => {
       expect(STATEMENT_LINE_CLASSIFICATIONS.map((c) => [c.value, c.lineSign, c.label])).toEqual([
         ["FUND_INTEREST", 1, FUND_INTEREST],
         ["CHARGE_REFUND", 1, CHARGE_REFUND],
         ["UNIDENTIFIED_DEPOSIT", 1, "Unidentified deposit"],
+        ["INVESTMENT_INTEREST", 1, INVESTMENT_INTEREST],
         ["FUND_SWEEP", -1, FUND_SWEEP],
         ["BANK_CHARGE", -1, "Bank charge"],
       ]);
+    });
+
+    // 648B (OQ-10 iii): the choices follow the line's sign AND the account's section
+    it("on a section 86(4) account offers a credit investment interest and a charge refund, never Fund interest", async () => {
+      renderPane([makeBankLine({ id: "line-cr", amount: 400 })], {}, {
+        accountSection: "S86_4",
+        investments: [makeInvestment()],
+      });
+      await openRecordDialog("line-cr");
+
+      expect(classificationChoices()).toEqual(["CHARGE_REFUND", "INVESTMENT_INTEREST"]);
+      expect(screen.getByRole("radio", { name: INVESTMENT_INTEREST })).toBeInTheDocument();
+      expect(screen.queryByRole("radio", { name: FUND_INTEREST })).not.toBeInTheDocument();
+      expect(screen.queryByRole("radio", { name: "Unidentified deposit" })).not.toBeInTheDocument();
+    });
+
+    it("on a section 86(3) account offers a credit Fund interest and a charge refund, no unidentified deposit", async () => {
+      renderPane([makeBankLine({ id: "line-cr", amount: 400 })], {}, { accountSection: "S86_3" });
+      await openRecordDialog("line-cr");
+
+      expect(classificationChoices()).toEqual(["FUND_INTEREST", "CHARGE_REFUND"]);
+      cleanup();
+
+      // A debit line offers the Fund payment and a bank charge on every section
+      renderPane([makeBankLine({ id: "line-dr", amount: -20 })], {}, { accountSection: "S86_4" });
+      await openRecordDialog("line-dr");
+      expect(classificationChoices()).toEqual(["FUND_SWEEP", "BANK_CHARGE"]);
+    });
+
+    it("records a gross interest line against the investment: the line is the gross, Fund R20,00 / client R380,00", async () => {
+      const user = userEvent.setup({ pointerEventsCheck: 0 });
+      const onRecord = vi.fn().mockResolvedValue({ success: true });
+      renderPane([makeBankLine({ id: "line-cr", amount: 400 })], { onRecord }, {
+        accountSection: "S86_4",
+        investments: [makeInvestment()],
+      });
+      const dialog = await openRecordDialog("line-cr");
+
+      await user.click(screen.getByRole("radio", { name: INVESTMENT_INTEREST }));
+      const investment = within(dialog).getByLabelText("Investment");
+      expect(within(investment).getByRole("option", { name: /Sipho Dlamini/ })).toBeInTheDocument();
+      await user.selectOptions(investment, "inv-1");
+      await user.click(screen.getByRole("radio", { name: GROSS }));
+
+      const gross = within(dialog).getByLabelText("Gross interest") as HTMLInputElement;
+      expect(gross.value).toBe("400");
+      expect(gross.readOnly).toBe(true);
+      expect(within(dialog).getByTestId("interest-fund-share").textContent).toMatch(/20,00/);
+      expect(within(dialog).getByTestId("interest-client-share").textContent).toMatch(/380,00/);
+      expect(within(dialog).queryByText(/\bGROSS\b|\bNET\b|INVESTMENT_INTEREST/)).toBeNull();
+
+      await user.click(screen.getByTestId("record-submit"));
+      await waitFor(() => expect(onRecord).toHaveBeenCalledTimes(1));
+      expect(onRecord).toHaveBeenCalledWith(
+        "line-cr",
+        expect.objectContaining({
+          classification: "INVESTMENT_INTEREST",
+          investmentId: "inv-1",
+          presentation: "GROSS",
+        })
+      );
+    });
+
+    it("records a net interest line with the gross the bank advised: gross R100,00 → R5,00 / R95,00", async () => {
+      const user = userEvent.setup({ pointerEventsCheck: 0 });
+      const onRecord = vi.fn().mockResolvedValue({ success: true });
+      renderPane([makeBankLine({ id: "line-cr", amount: 95 })], { onRecord }, {
+        accountSection: "S86_4",
+        investments: [makeInvestment()],
+      });
+      const dialog = await openRecordDialog("line-cr");
+
+      await user.click(screen.getByRole("radio", { name: INVESTMENT_INTEREST }));
+      await user.selectOptions(within(dialog).getByLabelText("Investment"), "inv-1");
+      await user.click(screen.getByRole("radio", { name: NET }));
+      const gross = within(dialog).getByLabelText("Gross interest") as HTMLInputElement;
+      expect(gross.readOnly).toBe(false);
+      await user.type(gross, "100");
+      expect(within(dialog).getByTestId("interest-fund-share").textContent).toMatch(/5,00/);
+      expect(within(dialog).getByTestId("interest-client-share").textContent).toMatch(/95,00/);
+
+      await user.click(screen.getByTestId("record-submit"));
+      await waitFor(() => expect(onRecord).toHaveBeenCalledTimes(1));
+      expect(onRecord).toHaveBeenCalledWith(
+        "line-cr",
+        expect.objectContaining({
+          classification: "INVESTMENT_INTEREST",
+          investmentId: "inv-1",
+          presentation: "NET",
+          grossAmount: 100,
+        })
+      );
+    });
+
+    it("asks section 86(4) interest for the investment and the presentation before recording", async () => {
+      const user = userEvent.setup({ pointerEventsCheck: 0 });
+      const onRecord = vi.fn().mockResolvedValue({ success: true });
+      renderPane([makeBankLine({ id: "line-cr", amount: 95 })], { onRecord }, {
+        accountSection: "S86_4",
+        investments: [makeInvestment()],
+      });
+      await openRecordDialog("line-cr");
+
+      await user.click(screen.getByRole("radio", { name: INVESTMENT_INTEREST }));
+      await user.click(screen.getByTestId("record-submit"));
+
+      expect(await screen.findByText("Choose the investment")).toBeInTheDocument();
+      expect(
+        screen.getByText("Say whether the bank credited the gross or the net")
+      ).toBeInTheDocument();
+      expect(onRecord).not.toHaveBeenCalled();
+    });
+
+    it("pre-selects a section 86(4) interest suggestion on a section 86(4) account (647C, 648B)", async () => {
+      renderPane(
+        [makeBankLine({ id: "line-cr", amount: 400, suggestedClassification: "INVESTMENT_INTEREST" })],
+        {},
+        { accountSection: "S86_4", investments: [makeInvestment()] }
+      );
+      await openRecordDialog("line-cr");
+
+      expect(screen.getByRole("radio", { name: INVESTMENT_INTEREST })).toBeChecked();
+      expect(screen.getByTestId("classification-suggested-note")).toBeInTheDocument();
     });
 
     it("offers a credit line interest received, a charge refund and an unidentified deposit", async () => {

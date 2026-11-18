@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustBooksService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustIntegrityService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedger;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedgerEffect;
@@ -50,6 +51,16 @@ import org.springframework.stereotype.Component;
  *       and never read {@code client_ledger_cards} themselves: 646A replaces the internals below
  *       without changing a single expectation except the pins it closes (task 646.9).
  * </ol>
+ *
+ * <h2>Version 7 (649C) — the integrity check must not certify itself</h2>
+ *
+ * <p>{@link #assertServicesAgree} also runs {@code TrustIntegrityService.check} (no statement) and
+ * asserts its position equals the oracle term by term, and that each flag the oracle can judge is
+ * raised exactly when the oracle's own check fails: {@code BOOKS_OUT_OF_BALANCE} ⇔ EQ-2 fails,
+ * {@code FUND_LEDGER_IN_DEBIT} ⇔ the oracle's Fund ledger is below zero, {@code
+ * UNIDENTIFIED_ITEMS_MISMATCH} ⇔ the oracle's EQ-4 fails, {@code INVESTMENT_BALANCE_MISMATCH} ⇔ the
+ * oracle's EQ-5 fails (R-9, §16.3.9). The report's {@code balanced} is not asserted as a whole: a
+ * caller may hold an unbalanced reconciliation at that date ({@code BANK_DIFFERENCE}).
  *
  * <h2>Version 4 (647B) — EQ-4: unidentified deposits are itemised</h2>
  *
@@ -284,18 +295,21 @@ public final class TrustBooksHarness {
   private final TrustTransactionService trustTransactionService;
   private final ClientLedgerService clientLedgerService;
   private final TrustBooksService trustBooksService;
+  private final TrustIntegrityService trustIntegrityService;
 
   public TrustBooksHarness(
       JdbcTemplate jdbc,
       Clock clock,
       TrustTransactionService trustTransactionService,
       ClientLedgerService clientLedgerService,
-      TrustBooksService trustBooksService) {
+      TrustBooksService trustBooksService,
+      TrustIntegrityService trustIntegrityService) {
     this.jdbc = jdbc;
     this.clock = clock;
     this.trustTransactionService = trustTransactionService;
     this.clientLedgerService = clientLedgerService;
     this.trustBooksService = trustBooksService;
+    this.trustIntegrityService = trustIntegrityService;
   }
 
   /** Every term as at today. */
@@ -569,8 +583,9 @@ public final class TrustBooksHarness {
   /**
    * The production services return the oracle's figures as at {@code asAt}: {@code
    * TrustBooksService.position} at any date, term by term ({@code otherNonClient} must be zero —
-   * the oracle has no such term); and, when {@code asAt} is today, the two undated legacy reads
-   * ({@code getCashbookBalance}, {@code getTotalTrustBalance}).
+   * the oracle has no such term); {@code TrustIntegrityService.check} — its position term by term
+   * and each flag the oracle can judge (v7, 649C); and, when {@code asAt} is today, the two undated
+   * legacy reads ({@code getCashbookBalance}, {@code getTotalTrustBalance}).
    */
   public void assertServicesAgree(UUID trustAccountId, LocalDate asAt) {
     var s = snapshotAsAt(trustAccountId, asAt);
@@ -619,7 +634,71 @@ public final class TrustBooksHarness {
           .as("ClientLedgerService.getTotalTrustBalance vs oracle client ledgers")
           .isEqualByComparingTo(s.clientLedgers());
     }
+    assertIntegrityAgrees(softly, trustAccountId, asAt, s);
     softly.assertAll();
+  }
+
+  /**
+   * v7 (649C, R-9): {@code TrustIntegrityService.check} returns the oracle's figures, and raises
+   * each flag the oracle can judge exactly when the oracle's own check fails.
+   */
+  private void assertIntegrityAgrees(
+      SoftAssertions softly, UUID trustAccountId, LocalDate asAt, BooksSnapshot s) {
+    var report = trustIntegrityService.check(trustAccountId, asAt, null);
+    var r = report.position();
+    softly.assertThat(r.cashbook()).as("integrity.cashbook").isEqualByComparingTo(s.cashbook());
+    softly
+        .assertThat(r.clientLedgers())
+        .as("integrity.clientLedgers")
+        .isEqualByComparingTo(s.clientLedgers());
+    softly
+        .assertThat(r.investmentCreditors())
+        .as("integrity.investmentCreditors")
+        .isEqualByComparingTo(s.investmentCreditors());
+    softly
+        .assertThat(r.fundLedger())
+        .as("integrity.fundLedger")
+        .isEqualByComparingTo(s.fundLedger());
+    softly
+        .assertThat(r.unidentifiedDeposits())
+        .as("integrity.unidentifiedDeposits")
+        .isEqualByComparingTo(s.unidentified());
+    softly
+        .assertThat(r.interAccount())
+        .as("integrity.interAccount")
+        .isEqualByComparingTo(s.interAccount());
+    softly
+        .assertThat(r.creditorTotal())
+        .as("integrity.creditorTotal")
+        .isEqualByComparingTo(s.creditors());
+    softly
+        .assertThat(r.difference())
+        .as("integrity.difference")
+        .isEqualByComparingTo(s.difference());
+
+    var eq4 = new SoftAssertions();
+    assertItemised(eq4, trustAccountId, asAt, s.unidentified());
+    var eq5 = new SoftAssertions();
+    assertInvestmentsTied(eq5, trustAccountId, asAt);
+    var codes = report.flags().stream().map(TrustIntegrityService.IntegrityFlag::code).toList();
+    softly
+        .assertThat(codes.contains(TrustIntegrityService.BOOKS_OUT_OF_BALANCE))
+        .as(
+            "integrity BOOKS_OUT_OF_BALANCE raised ⇔ oracle EQ-2 fails (difference %s)",
+            s.difference())
+        .isEqualTo(s.difference().signum() != 0);
+    softly
+        .assertThat(codes.contains(TrustIntegrityService.FUND_LEDGER_IN_DEBIT))
+        .as("integrity FUND_LEDGER_IN_DEBIT raised ⇔ oracle Fund ledger %s < 0", s.fundLedger())
+        .isEqualTo(s.fundLedger().signum() < 0);
+    softly
+        .assertThat(codes.contains(TrustIntegrityService.UNIDENTIFIED_ITEMS_MISMATCH))
+        .as("integrity UNIDENTIFIED_ITEMS_MISMATCH raised ⇔ oracle EQ-4 fails")
+        .isEqualTo(!eq4.errorsCollected().isEmpty());
+    softly
+        .assertThat(codes.contains(TrustIntegrityService.INVESTMENT_BALANCE_MISMATCH))
+        .as("integrity INVESTMENT_BALANCE_MISMATCH raised ⇔ oracle EQ-5 fails")
+        .isEqualTo(!eq5.errorsCollected().isEmpty());
   }
 
   /**

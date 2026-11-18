@@ -389,6 +389,36 @@ class TrustPositionIntegrationTest {
     assertThat(decimal(body, "$.creditorBreakdown.total")).isEqualByComparingTo("10550.00");
   }
 
+  /**
+   * 649C (ruling D-3): the composite carries the account's integrity check as at today — {@code
+   * balanced} and each raised flag's code, severity and count. The creditor books raise nothing;
+   * the primary account's statement line, never matched, is a warning that leaves it balanced.
+   */
+  @Test
+  void positionCarriesTheIntegritySummary() throws Exception {
+    String creditors =
+        read(
+            TestJwtFactory.ownerJwt(CREDITORS_ORG_ID, CREDITORS_OWNER),
+            "/api/dashboard/trust-position?accountId=" + creditorsAccountId);
+    assertThat(JsonPath.<Boolean>read(creditors, "$.integrity.balanced")).isTrue();
+    assertThat(JsonPath.<List<Object>>read(creditors, "$.integrity.flags")).isEmpty();
+
+    String primary =
+        read(
+            TestJwtFactory.ownerJwt(ORG_ID, OWNER),
+            "/api/dashboard/trust-position?accountId=" + primaryAccountId);
+    assertThat(JsonPath.<Boolean>read(primary, "$.integrity.balanced")).isTrue();
+    assertThat(
+            JsonPath.<List<String>>read(
+                primary, "$.integrity.flags[?(@.code == 'UNRESOLVED_STATEMENT_LINES')].severity"))
+        .containsExactly("WARNING");
+    assertThat(
+            JsonPath.<List<Integer>>read(
+                primary, "$.integrity.flags[?(@.code == 'UNRESOLVED_STATEMENT_LINES')].count"))
+        .singleElement()
+        .satisfies(count -> assertThat(count).isPositive());
+  }
+
   /** 646D: {@code asAt} on the two balance endpoints (absent = today). */
   @Test
   void balanceEndpointsAnswerAsAtTheRequestedDate() throws Exception {

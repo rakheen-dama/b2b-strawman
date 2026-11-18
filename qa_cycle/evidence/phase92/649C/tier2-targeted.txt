@@ -1,0 +1,26 @@
+649C Stage A (backend) — Tier 2 targeted tests
+Date: 2026-11-18 (SAST), worktree epic-649C/trust-integrity-completion-gate, base c2fbf2a5f + uncommitted 649C backend changes
+Command (backend/):
+  ./mvnw test -Dtest="$CLASSES" -q        (nohup + done-marker; exit 0)
+  CLASSES = every *Test.java under verticals/legal/trustaccounting/** and dashboard/**, plus
+            CatalogueBatch2TrustBillingTest ClientTrustStatementContextIntegrationTest LegalDemoTrustBooksIntegrationTest
+            TrustLedgerPortalSyncServiceIntegrationTest TrustBalanceZeroGateTest TrustAwareCollectionsAdvisorTest
+            TrustBoundaryGuardUnitTest ComplianceDataCollectorServiceTest LayerDependencyRulesTest ZoneAwareTimeArchTest
+            TestConventionsTest  (brief §13.1 mechanical list; 92 classes — every class outside the two packages that
+            imports a changed class is in it: grep for TrustBooksFixture|TrustBooksHarness|TrustReconciliationService|
+            TrustPositionResponse|TrustReconciliationRepository|TrustLedgerQueryRepository|BankStatementLineRepository|
+            DashboardService found no other importer)
+Result: 92 report files, all written by this run
+  Tests run: 899, Failures: 0, Errors: 0, Skipped: 0   (<testcase> elements counted: 899)
+New classes in the run:
+  TrustIntegrityServiceIntegrationTest            14 tests, green
+  TrustReconciliationCompletionGateIntegrationTest  9 tests, green (incl. the 3 red-first cases of red-H1a.txt)
+Wire pin: TrustWireContractTest red before regeneration (drift), regenerated with -Dtrust.contract.update=true
+  (+164 lines: 8 new records), green without the flag.
+OQ #9 (TrustIntegrityServiceIntegrationTest.checkFirm_preparedStatements_growLinearly_forThreeAndTenAccounts):
+  accounts=1 prepared statements=12
+  accounts=3 prepared statements=30
+  accounts=10 prepared statements=93
+  => 3 + 9 per account (each account holding one deposit, no reconciliation at asAt; a reconciliation at asAt
+     adds its statement + outstanding reads: +2 per such account)
+Tier 3 (full ./mvnw verify) NOT run — orchestrator-owned.

@@ -25,6 +25,19 @@
       "name" : "notes",
       "type" : "java.lang.String"
     } ],
+    "BankPosition" : [ {
+      "name" : "bankBalance",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "outstandingDeposits",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "outstandingPayments",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "adjustedBankBalance",
+      "type" : "java.math.BigDecimal"
+    } ],
     "BankStatementLineResponse" : [ {
       "name" : "id",
       "type" : "java.util.UUID"
@@ -222,6 +235,92 @@
       "name" : "total",
       "type" : "java.math.BigDecimal"
     } ],
+    "FirmIntegrityReport" : [ {
+      "name" : "asAt",
+      "type" : "java.time.LocalDate"
+    }, {
+      "name" : "balanced",
+      "type" : "boolean"
+    }, {
+      "name" : "cashbook",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "clientLedgers",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "investmentCreditors",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "fundLedger",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "unidentifiedDeposits",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "otherNonClient",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "interAccount",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "creditorTotal",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "difference",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "flags",
+      "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustIntegrityService$IntegrityFlag>"
+    }, {
+      "name" : "accounts",
+      "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustIntegrityService$TrustIntegrityReport>"
+    } ],
+    "FlagCount" : [ {
+      "name" : "code",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "severity",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "count",
+      "type" : "int"
+    } ],
+    "FlagSubject" : [ {
+      "name" : "kind",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "id",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "name",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "amount",
+      "type" : "java.math.BigDecimal"
+    } ],
+    "IntegrityFlag" : [ {
+      "name" : "code",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "severity",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "message",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "amount",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "subjects",
+      "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustIntegrityService$FlagSubject>"
+    } ],
+    "IntegritySummary" : [ {
+      "name" : "balanced",
+      "type" : "boolean"
+    }, {
+      "name" : "flags",
+      "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.dashboard.dto.TrustPositionResponse$FlagCount>"
+    } ],
     "InvestmentInterestResponse" : [ {
       "name" : "id",
       "type" : "java.util.UUID"
@@ -416,6 +515,31 @@
       "name" : "updatedAt",
       "type" : "java.time.Instant"
     } ],
+    "TrustIntegrityReport" : [ {
+      "name" : "trustAccountId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "asAt",
+      "type" : "java.time.LocalDate"
+    }, {
+      "name" : "position",
+      "type" : "io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustBooksService$TrustPosition"
+    }, {
+      "name" : "bank",
+      "type" : "io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustBooksService$BankPosition"
+    }, {
+      "name" : "balanced",
+      "type" : "boolean"
+    }, {
+      "name" : "flags",
+      "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustIntegrityService$IntegrityFlag>"
+    }, {
+      "name" : "lastCompletedReconciliationId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "lastReconciledThrough",
+      "type" : "java.time.LocalDate"
+    } ],
     "TrustInvestmentResponse" : [ {
       "name" : "id",
       "type" : "java.util.UUID"
@@ -498,6 +622,40 @@
       "name" : "updatedAt",
       "type" : "java.time.Instant"
     } ],
+    "TrustPosition" : [ {
+      "name" : "trustAccountId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "asAt",
+      "type" : "java.time.LocalDate"
+    }, {
+      "name" : "cashbook",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "clientLedgers",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "investmentCreditors",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "fundLedger",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "unidentifiedDeposits",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "otherNonClient",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "interAccount",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "creditorTotal",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "difference",
+      "type" : "java.math.BigDecimal"
+    } ],
     "TrustPositionResponse" : [ {
       "name" : "trustAccountId",
       "type" : "java.util.UUID"
@@ -537,6 +695,9 @@
     }, {
       "name" : "accounts",
       "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.dashboard.dto.TrustPositionResponse$TrustAccountRef>"
+    }, {
+      "name" : "integrity",
+      "type" : "io.b2mash.b2b.b2bstrawman.dashboard.dto.TrustPositionResponse$IntegritySummary"
     } ],
     "TrustReconciliationResponse" : [ {
       "name" : "id",
@@ -589,6 +750,9 @@
     }, {
       "name" : "isBalanced",
       "type" : "boolean"
+    }, {
+      "name" : "integrityFlags",
+      "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustIntegrityService$IntegrityFlag>"
     }, {
       "name" : "status",
       "type" : "java.lang.String"

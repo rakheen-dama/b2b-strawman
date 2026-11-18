@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.TrustPositionResponse;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustBooksService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustIntegrityService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.UnidentifiedDepositService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService;
@@ -43,7 +45,9 @@ import tools.jackson.databind.json.JsonMapper;
  * the client-ledger card (general balance, invested balance, placement and return totals); 648B the
  * section 86(4) interest entry, its record request, the record-from-statement request (investment,
  * gross, Fund share, presentation) and the investment response's interest totals (gross, Fund
- * share, net — replacing {@code interestEarned}).
+ * share, net — replacing {@code interestEarned}); 649C the integrity report (one account and the
+ * firm, its flags and their subjects, the position and bank terms it carries), the dashboard
+ * position's integrity summary, and the reconciliation's integrity flags.
  *
  * <p>The actual is always written to {@code target/wire/trust-contract.actual.json}. Regenerate
  * ONLY deliberately with {@code -Dtrust.contract.update=true}; the PR that does so must say why in
@@ -80,7 +84,16 @@ class TrustWireContractTest {
           // 648B: section 86(4) interest entries and the record-from-statement request
           TrustInvestmentService.RecordInvestmentInterestRequest.class,
           TrustInvestmentService.InvestmentInterestResponse.class,
-          StatementLinePostingService.RecordFromLineRequest.class);
+          StatementLinePostingService.RecordFromLineRequest.class,
+          // 649C: the integrity check (§16.3.9) and the dashboard's integrity summary (D-3)
+          TrustIntegrityService.TrustIntegrityReport.class,
+          TrustIntegrityService.FirmIntegrityReport.class,
+          TrustIntegrityService.IntegrityFlag.class,
+          TrustIntegrityService.FlagSubject.class,
+          TrustBooksService.TrustPosition.class,
+          TrustBooksService.BankPosition.class,
+          TrustPositionResponse.IntegritySummary.class,
+          TrustPositionResponse.FlagCount.class);
 
   private static final String UPDATE_FLAG = "trust.contract.update";
   private static final Path SNAPSHOT = Path.of("src/test/resources/wire/trust-contract.json");

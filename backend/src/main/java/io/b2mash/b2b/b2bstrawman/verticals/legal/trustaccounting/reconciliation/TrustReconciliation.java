@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation;
 
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustIntegrityService.IntegrityFlag;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -13,7 +14,11 @@ import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "trust_reconciliations")
@@ -50,8 +55,7 @@ public class TrustReconciliation {
   @Column(name = "adjusted_bank_balance", nullable = false, precision = 15, scale = 2)
   private BigDecimal adjustedBankBalance;
 
-  // The creditor side as calculated as at period_end (646C, V19, §16.2.11). integrity_flags (V19)
-  // is mapped and first written by 649C.
+  // The creditor side as calculated as at period_end (646C, V19, §16.2.11).
   @Column(name = "investment_creditor_total", nullable = false, precision = 15, scale = 2)
   private BigDecimal investmentCreditorTotal;
 
@@ -74,6 +78,15 @@ public class TrustReconciliation {
 
   @Column(name = "is_balanced", nullable = false)
   private boolean isBalanced;
+
+  /**
+   * The integrity flags at the last calculation, blocking and warning (V19 column, written since
+   * 649C, §16.3.4 step 5): what the books showed when the reconciliation was last calculated or
+   * completed.
+   */
+  @JdbcTypeCode(SqlTypes.JSON)
+  @Column(name = "integrity_flags", nullable = false, columnDefinition = "jsonb")
+  private List<IntegrityFlag> integrityFlags = new ArrayList<>();
 
   @Enumerated(EnumType.STRING)
   @Column(name = "status", nullable = false, length = 20)
@@ -198,6 +211,14 @@ public class TrustReconciliation {
 
   public void setBalanced(boolean balanced) {
     this.isBalanced = balanced;
+  }
+
+  public List<IntegrityFlag> getIntegrityFlags() {
+    return integrityFlags;
+  }
+
+  public void setIntegrityFlags(List<IntegrityFlag> integrityFlags) {
+    this.integrityFlags = new ArrayList<>(integrityFlags);
   }
 
   public ReconciliationStatus getStatus() {

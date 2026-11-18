@@ -64,4 +64,23 @@ public interface BankStatementLineRepository extends JpaRepository<BankStatement
       WHERE l.bankStatementId = :statementId AND l.matchStatus = 'EXCLUDED'
       """)
   BigDecimal sumExcludedAmount(@Param("statementId") UUID statementId);
+
+  /**
+   * The account's imported statements not yet {@code RECONCILED} that hold {@code UNMATCHED} lines,
+   * with the count of such lines, oldest import first — {@code UNRESOLVED_STATEMENT_LINES} on the
+   * dashboard (649C, §16.3.9).
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          SELECT s.id AS statementId, s.file_name AS fileName, COUNT(l.id) AS unresolvedCount
+            FROM bank_statements s
+            JOIN bank_statement_lines l ON l.bank_statement_id = s.id
+           WHERE s.trust_account_id = :trustAccountId AND s.status <> 'RECONCILED'
+             AND l.match_status = 'UNMATCHED'
+           GROUP BY s.id, s.file_name, s.created_at
+           ORDER BY s.created_at, s.id""")
+  List<UnresolvedStatementRow> findUnresolvedInUnreconciledStatements(
+      @Param("trustAccountId") UUID trustAccountId);
 }

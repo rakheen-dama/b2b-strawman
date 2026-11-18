@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -15,4 +16,19 @@ public interface TrustReconciliationRepository extends JpaRepository<TrustReconc
    */
   Optional<TrustReconciliation> findFirstByTrustAccountIdOrderByPeriodEndDescCreatedAtDesc(
       UUID trustAccountId);
+
+  /**
+   * The latest reconciliation of the account with period end {@code periodEnd} — the integrity
+   * check's bank side when no statement is given (649C, §16.3.9).
+   */
+  Optional<TrustReconciliation> findFirstByTrustAccountIdAndPeriodEndOrderByCreatedAtDesc(
+      UUID trustAccountId, LocalDate periodEnd);
+
+  /**
+   * The account's last reconciliation of {@code status} by period end (completedAt breaks ties) —
+   * the integrity report's last completed reconciliation (649C).
+   */
+  Optional<TrustReconciliation>
+      findFirstByTrustAccountIdAndStatusOrderByPeriodEndDescCompletedAtDesc(
+          UUID trustAccountId, ReconciliationStatus status);
 }

@@ -1,0 +1,123 @@
+648F Tier 2 (targeted) — production + v16 pack, working tree on top of 6153d939b (red-tests commit)
+Command: cd backend && ./mvnw test -Dtest="<57 classes below>" -q   (exit 0)
+Classes: brief §14 list (51) + importers found by re-grep (InterestServiceIntegrationTest, LegalDemoTrustBooksIntegrationTest, TrustClientMatterRequiredIntegrationTest, TrustFeeTransferReversalCascadeTest, TrustMatterDebitGuardIntegrationTest, TrustTransferTargetMatterIntegrationTest)
+
+  InvestedBlockStatementsIntegrationTest
+  ClientTrustStatementContextIntegrationTest
+  StatementOfAccountContextBuilderTest
+  TrustReportQueryIntegrationTest
+  LegalZaTemplateReconcileIntegrationTest
+  TemplatePackSeederReconcileTest
+  TemplatePackReconcileIntegrationTest
+  VariableMetadataEndpointTest
+  CustomerContextBuilderTest
+  InvestmentStatementAccountSelectionIntegrationTest
+  StatementOfAccountClosingBalanceIntegrationTest
+  StatementRenderingIntegrationTest
+  StatementTrustVisibilityIntegrationTest
+  StatementControllerIntegrationTest
+  StatementListIntegrationTest
+  StatementServicePortalDocumentTest
+  DerivedLedgerBalanceIntegrationTest
+  ClientLedgerRunningBalanceIntegrationTest
+  ClientLedgerTotalsIntegrationTest
+  ClientLedgerControllerTest
+  InvestmentClientLedgerReadSurfacesIntegrationTest
+  LedgerTotalsTest
+  TrustWireContractTest
+  TrustPostingDateZoneIntegrationTest
+  TrustTransactionServiceTest
+  TrustPositionAsAtIntegrationTest
+  TrustLedgerPortalSyncServiceIntegrationTest
+  TrustInvestmentInterestIntegrationTest
+  TrustInvestmentPlacementGuardIntegrationTest
+  TrustInvestmentWithdrawReverseRaceIntegrationTest
+  InvestmentReportBasisIntegrationTest
+  Section35DataPackContentIntegrationTest
+  TrustReportPackSeederIntegrationTest
+  TemplatePackJsonValidationTest
+  TerminologyRemnantScanTest
+  TiptapRendererConditionalLabelTest
+  VisualRegressionTest
+  TiptapRendererTest
+  PdfRenderingServiceTest
+  DocxFieldValidatorTest
+  InvoiceContextBuilderTest
+  FieldPackSeederIntegrationTest
+  ConveyancingTemplatePackTest
+  LegalPackSeederIntegrationTest
+  PackReconciliationRunnerTest
+  GeneratedDocumentTrustAccessIntegrationTest
+  ContainsTrustDataMigrationTest
+  TrustBoundaryGuardUnitTest
+  ComplianceDataCollectorServiceTest
+  TrustBalanceZeroGateTest
+  TrustAwareCollectionsAdvisorTest
+  InterestServiceIntegrationTest
+  LegalDemoTrustBooksIntegrationTest
+  TrustClientMatterRequiredIntegrationTest
+  TrustFeeTransferReversalCascadeTest
+  TrustMatterDebitGuardIntegrationTest
+  TrustTransferTargetMatterIntegrationTest
+
+Result (counted from target/surefire-reports, <testcase> elements):
+Tests run: 551, Failures: 0, Errors: 0, Skipped: 0  (57 classes)
+  TerminologyRemnantScanTest: 6
+  TrustLedgerPortalSyncServiceIntegrationTest: 18
+  LegalDemoTrustBooksIntegrationTest: 3
+  FieldPackSeederIntegrationTest: 8
+  TrustBoundaryGuardUnitTest: 2
+  ComplianceDataCollectorServiceTest: 6
+  ConveyancingTemplatePackTest: 5
+  LegalZaTemplateReconcileIntegrationTest: 34
+  TemplatePackReconcileIntegrationTest: 5
+  PackReconciliationRunnerTest: 6
+  LegalPackSeederIntegrationTest: 4
+  ClientTrustStatementContextIntegrationTest: 6
+  ContainsTrustDataMigrationTest: 3
+  CustomerContextBuilderTest: 13
+  DocxFieldValidatorTest: 1
+  GeneratedDocumentTrustAccessIntegrationTest: 12
+  InvoiceContextBuilderTest: 12
+  PdfRenderingServiceTest: 13
+  TemplatePackJsonValidationTest: 8
+  TemplatePackSeederReconcileTest: 13
+  TiptapRendererConditionalLabelTest: 13
+  TiptapRendererTest: 47
+  VariableMetadataEndpointTest: 12
+  VisualRegressionTest: 27
+  TrustBalanceZeroGateTest: 6
+  TrustAwareCollectionsAdvisorTest: 4
+  StatementControllerIntegrationTest: 6
+  StatementListIntegrationTest: 2
+  StatementOfAccountClosingBalanceIntegrationTest: 6
+  StatementOfAccountContextBuilderTest: 35
+  StatementRenderingIntegrationTest: 4
+  StatementServicePortalDocumentTest: 4
+  StatementTrustVisibilityIntegrationTest: 6
+  TrustWireContractTest: 1
+  TrustPositionAsAtIntegrationTest: 9
+  InterestServiceIntegrationTest: 13
+  TrustInvestmentInterestIntegrationTest: 10
+  TrustInvestmentPlacementGuardIntegrationTest: 6
+  TrustInvestmentWithdrawReverseRaceIntegrationTest: 2
+  ClientLedgerControllerTest: 12
+  ClientLedgerRunningBalanceIntegrationTest: 6
+  ClientLedgerTotalsIntegrationTest: 5
+  DerivedLedgerBalanceIntegrationTest: 3
+  InvestedBlockStatementsIntegrationTest: 8
+  InvestmentClientLedgerReadSurfacesIntegrationTest: 1
+  InvestmentStatementAccountSelectionIntegrationTest: 3
+  LedgerTotalsTest: 7
+  InvestmentReportBasisIntegrationTest: 9
+  Section35DataPackContentIntegrationTest: 4
+  TrustReportPackSeederIntegrationTest: 8
+  TrustReportQueryIntegrationTest: 9
+  TrustClientMatterRequiredIntegrationTest: 12
+  TrustFeeTransferReversalCascadeTest: 8
+  TrustMatterDebitGuardIntegrationTest: 8
+  TrustPostingDateZoneIntegrationTest: 5
+  TrustTransactionServiceTest: 48
+  TrustTransferTargetMatterIntegrationTest: 4
+
+Tier 3 (full ./mvnw verify) NOT run by the builder — orchestrator-owned.

@@ -41,6 +41,7 @@ const BALANCED: TrustPositionResponse = {
   daysSinceReconciliation: 21,
   pendingApprovalCount: 2,
   accounts: [{ id: "ta1", accountName: "Trust account", isPrimary: true }],
+  integrity: { balanced: true, flags: [] },
 };
 
 describe("TrustPositionWidget", () => {

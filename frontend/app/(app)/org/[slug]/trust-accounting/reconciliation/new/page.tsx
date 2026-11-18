@@ -371,19 +371,29 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
     [reconciliation]
   );
 
-  // Handle complete
+  // Handle complete. The backend gate (G1–G4, 649C) recalculates and refuses once with every
+  // failed condition; a refusal rolls back, so the stored figures are not refreshed — recalculate
+  // to show the figures the gate saw, then show the refusal's sentences (ruling D-9).
   const handleComplete = useCallback(async () => {
     if (!reconciliation) return;
+    const generation = wizardGeneration.current;
     setIsCompleting(true);
     setError(null);
     try {
       const result = await completeReconciliation(reconciliation.id);
+      if (generation !== wizardGeneration.current) return;
       if (result.success) {
         setCurrentStep(5);
         setReconciliation(result.data ?? null);
-      } else {
-        setError(result.error ?? "Failed to complete reconciliation");
+        return;
       }
+      const refusal = result.error ?? "Failed to complete reconciliation";
+      const calcResult = await calculateReconciliation(reconciliation.id);
+      if (generation !== wizardGeneration.current) return;
+      if (calcResult.success && calcResult.data) {
+        setReconciliation(calcResult.data);
+      }
+      setError(refusal);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to complete reconciliation");
     } finally {

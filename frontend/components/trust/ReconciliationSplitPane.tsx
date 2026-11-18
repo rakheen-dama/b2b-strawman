@@ -16,6 +16,12 @@ import {
 } from "@/components/ui/alert-dialog";
 import { RecordFromStatementDialog } from "@/components/trust/RecordFromStatementDialog";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
+import {
+  hasBlockingFlag,
+  integrityFlagLabel,
+  integritySeverityLabel,
+  isBlockingFlag,
+} from "@/lib/trust-integrity";
 import type {
   BankStatementLineResponse,
   BankStatementLineMatchStatus,
@@ -572,6 +578,11 @@ function ReconciliationSummary({
   isCompleting: boolean;
 }) {
   const breakdown = reconciliation.creditorBreakdown;
+  const flags = reconciliation.integrityFlags ?? [];
+  const canComplete =
+    reconciliation.isBalanced &&
+    reconciliation.unresolvedLineCount === 0 &&
+    !hasBlockingFlag(flags);
   return (
     <Card data-testid="balance-summary">
       <CardHeader>
@@ -693,8 +704,8 @@ function ReconciliationSummary({
         <section className="space-y-1 border-t border-slate-200 pt-4 text-sm dark:border-slate-700">
           <p className="text-slate-700 dark:text-slate-300" data-testid="unresolved-line-count">
             {reconciliation.unresolvedLineCount === 1
-              ? "1 statement line is neither matched nor excluded"
-              : `${reconciliation.unresolvedLineCount} statement lines are neither matched nor excluded`}
+              ? "1 statement line is neither matched, recorded nor excluded"
+              : `${reconciliation.unresolvedLineCount} statement lines are neither matched, recorded nor excluded`}
           </p>
           <p className="text-slate-700 dark:text-slate-300" data-testid="excluded-lines-total">
             Excluded statement lines total{" "}
@@ -706,7 +717,40 @@ function ReconciliationSummary({
           </p>
         </section>
 
-        <div className="flex items-center justify-between border-t border-slate-200 pt-4 dark:border-slate-700">
+        {flags.length > 0 && (
+          <section
+            data-testid="reconciliation-integrity-flags"
+            className="border-t border-slate-200 pt-4 dark:border-slate-700"
+          >
+            <h3 className="text-sm font-medium text-slate-950 dark:text-slate-50">
+              Integrity check
+            </h3>
+            <ul className="mt-2 space-y-2">
+              {flags.map((flag, i) => (
+                <li
+                  key={`${flag.code}-${i}`}
+                  className="space-y-0.5 text-sm"
+                  data-testid={`reconciliation-flag-${flag.code}`}
+                >
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                    <Badge
+                      variant={isBlockingFlag(flag) ? "destructive" : "warning"}
+                      className="shrink whitespace-normal"
+                    >
+                      {integritySeverityLabel(flag.severity)}
+                    </Badge>
+                    <span className="min-w-0 font-medium break-words text-slate-950 dark:text-slate-50">
+                      {integrityFlagLabel(flag.code)}
+                    </span>
+                  </div>
+                  <p className="text-muted-foreground break-words">{flag.message}</p>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-4 dark:border-slate-700">
           <div className="flex items-center gap-2">
             {reconciliation.isBalanced ? (
               <>
@@ -724,12 +768,13 @@ function ReconciliationSummary({
               </>
             )}
           </div>
-          {/* 646C (ruling O4): Complete follows the backend's isBalanced check only. The
-                unresolved-line gate (G4) lands in 649C together with its backend enforcement. */}
+          {/* 649C (§16.6.1, ruling D-10): Complete is enabled only when the response says balanced
+                with no unresolved line and no blocking flag; the backend gate G1–G4 is the
+                authority and a refusal is shown by the wizard. */}
           <Button
             type="button"
             onClick={onComplete}
-            disabled={!reconciliation.isBalanced || isCompleting}
+            disabled={!canComplete || isCompleting}
             data-testid="complete-reconciliation-btn"
           >
             {isCompleting ? "Completing..." : "Complete Reconciliation"}

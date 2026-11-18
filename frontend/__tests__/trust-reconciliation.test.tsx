@@ -174,6 +174,7 @@ function makeRecon(overrides: Record<string, unknown> = {}) {
     excludedLinesTotal: 0,
     unresolvedLineCount: 0,
     isBalanced: true,
+    integrityFlags: [],
     status: "COMPLETED",
     completedBy: "member-1",
     completedAt: "2026-04-02T14:00:00Z",
@@ -525,16 +526,16 @@ describe("Trust Reconciliation", () => {
     expect(breakdown).not.toHaveTextContent("Other non-client trust creditors");
 
     expect(screen.getByTestId("unresolved-line-count")).toHaveTextContent(
-      "2 statement lines are neither matched nor excluded"
+      "2 statement lines are neither matched, recorded nor excluded"
     );
     expect(screen.getByTestId("excluded-lines-total").textContent).toContain(
       formatCurrency(-75, "ZAR")
     );
   });
 
-  // 646C R8 / ruling O4: unresolved lines are shown but do not gate Complete in
-  // 646C — the backend still completes on isBalanced alone (the gate is 649C).
-  it("keeps Complete enabled when balanced even with unresolved lines (gate lands in 649C)", () => {
+  // 649C (ruling D-10; flips the 646C "keeps Complete enabled…" case): an unresolved line fails
+  // gate G4, so Complete stays disabled even when the figures balance.
+  it("disables Complete while a statement line is unresolved", () => {
     render(
       <ReconciliationSplitPane
         lines={[]}
@@ -557,7 +558,78 @@ describe("Trust Reconciliation", () => {
     );
 
     expect(screen.getByTestId("unresolved-line-count")).toHaveTextContent(
-      "1 statement line is neither matched nor excluded"
+      "1 statement line is neither matched, recorded nor excluded"
+    );
+    expect(screen.getByTestId("complete-reconciliation-btn")).toBeDisabled();
+  });
+
+  // 649C (ruling D-10): a stored blocking flag disables Complete; a warning never does. Each flag
+  // reads by its label and sentence, never the raw code.
+  it("disables Complete when a blocking integrity flag is stored", () => {
+    const blocking = {
+      code: "UNIDENTIFIED_ITEMS_MISMATCH",
+      severity: "BLOCKING",
+      message: "2 unidentified-deposit ledger rows name no deposit.",
+      amount: null,
+      subjects: [],
+    };
+    const warning = {
+      code: "FUND_LEDGER_IN_DEBIT",
+      severity: "WARNING",
+      message: "The Fund interest and charges ledger is R57,50 in debit.",
+      amount: 57.5,
+      subjects: [],
+    };
+    const props = {
+      lines: [],
+      unmatchedTransactions: [],
+      currency: "ZAR",
+      onMatch: vi.fn(),
+      onExclude: vi.fn(),
+      onUnmatch: vi.fn(),
+      onRecord: vi.fn(),
+      onComplete: vi.fn(),
+      isCompleting: false,
+    };
+    const { rerender } = render(
+      <ReconciliationSplitPane
+        {...props}
+        reconciliation={
+          makeRecon({
+            status: "DRAFT",
+            isBalanced: true,
+            integrityFlags: [blocking, warning],
+          }) as unknown as TrustReconciliationResponse
+        }
+      />
+    );
+
+    expect(screen.getByTestId("complete-reconciliation-btn")).toBeDisabled();
+    const flag = within(screen.getByTestId("reconciliation-flag-UNIDENTIFIED_ITEMS_MISMATCH"));
+    expect(flag.getByText("Blocking")).toBeInTheDocument();
+    expect(
+      flag.getByText("Unidentified deposits do not agree with their ledger")
+    ).toBeInTheDocument();
+    expect(flag.getByText(blocking.message)).toBeInTheDocument();
+    expect(
+      within(screen.getByTestId("reconciliation-flag-FUND_LEDGER_IN_DEBIT")).getByText("Warning")
+    ).toBeInTheDocument();
+    expect(screen.getByTestId("reconciliation-integrity-flags")).not.toHaveTextContent(
+      /UNIDENTIFIED_ITEMS_MISMATCH|FUND_LEDGER_IN_DEBIT|BLOCKING|WARNING/
+    );
+
+    // A warning alone never blocks completion (ADR-377; ruling #5).
+    rerender(
+      <ReconciliationSplitPane
+        {...props}
+        reconciliation={
+          makeRecon({
+            status: "DRAFT",
+            isBalanced: true,
+            integrityFlags: [warning],
+          }) as unknown as TrustReconciliationResponse
+        }
+      />
     );
     expect(screen.getByTestId("complete-reconciliation-btn")).toBeEnabled();
   });
@@ -864,6 +936,93 @@ describe("Trust Reconciliation", () => {
     expect(mockCreateReconciliation).toHaveBeenCalledTimes(1);
     expect(mockCalculateReconciliation).toHaveBeenCalledTimes(2);
   });
+  // 649C (§16.5.3, ruling D-9): the gate refuses once with every failed condition; the refusal
+  // rolls back, so the wizard recalculates to show the figures the gate saw, then the sentences.
+  it("shows the refusal's sentences and refreshes the figures when completion is refused", async () => {
+    await driveToReviewWithAllLinesAutoMatched();
+    const refusal =
+      "Adjusted bank balance R2 250,00 differs from the cashbook R1 000,00 by R1 250,00 as at 31 March 2026. 1 statement line is neither matched, recorded nor excluded.";
+    mockCalculateReconciliation
+      .mockResolvedValueOnce({
+        success: true,
+        data: makeRecon({ status: "DRAFT", isBalanced: true, completedAt: null }),
+      })
+      .mockResolvedValueOnce({
+        success: true,
+        data: makeRecon({
+          status: "DRAFT",
+          completedAt: null,
+          isBalanced: false,
+          bankBalance: 2250,
+          outstandingDeposits: 0,
+          outstandingPayments: 0,
+          adjustedBankBalance: 2250,
+          cashbookBalance: 1000,
+          bankToCashbookDifference: 1250,
+          unresolvedLineCount: 1,
+          integrityFlags: [
+            {
+              code: "BANK_DIFFERENCE",
+              severity: "BLOCKING",
+              message:
+                "Adjusted bank balance R2 250,00 differs from the cashbook R1 000,00 by R1 250,00 as at 31 March 2026.",
+              amount: 1250,
+              subjects: [],
+            },
+            {
+              code: "UNRESOLVED_STATEMENT_LINES",
+              severity: "BLOCKING",
+              message: "1 statement line is neither matched, recorded nor excluded.",
+              amount: null,
+              subjects: [],
+            },
+          ],
+        }),
+      });
+    mockCompleteReconciliation.mockResolvedValue({ success: false, error: refusal });
+
+    fireEvent.click(screen.getByTestId("step-next-btn"));
+    expect(await screen.findByTestId("reconciliation-split-pane")).toBeInTheDocument();
+    expect(screen.getByTestId("complete-reconciliation-btn")).toBeEnabled();
+
+    fireEvent.click(screen.getByTestId("complete-reconciliation-btn"));
+
+    expect(await screen.findByTestId("reconciliation-error")).toHaveTextContent(refusal);
+    expect(mockCompleteReconciliation).toHaveBeenCalledWith("recon-1");
+    expect(mockCalculateReconciliation).toHaveBeenCalledTimes(2);
+    // The summary now shows the recalculated figures and the gate's flags.
+    expect(screen.getByTestId("bank-to-cashbook-difference").textContent).toBe(
+      formatCurrency(1250, "ZAR")
+    );
+    expect(screen.getByTestId("unresolved-line-count")).toHaveTextContent(
+      "1 statement line is neither matched, recorded nor excluded"
+    );
+    expect(screen.getByTestId("reconciliation-flag-BANK_DIFFERENCE")).toBeInTheDocument();
+    expect(screen.getByTestId("complete-reconciliation-btn")).toBeDisabled();
+    expect(screen.queryByTestId("step-complete")).not.toBeInTheDocument();
+  });
+
+  it("completes when balanced with no unresolved lines and no blocking flag", async () => {
+    await driveToReviewWithAllLinesAutoMatched();
+    mockCalculateReconciliation.mockResolvedValue({
+      success: true,
+      data: makeRecon({ status: "DRAFT", isBalanced: true, completedAt: null }),
+    });
+    mockCompleteReconciliation.mockResolvedValue({
+      success: true,
+      data: makeRecon({ status: "COMPLETED" }),
+    });
+
+    fireEvent.click(screen.getByTestId("step-next-btn"));
+    expect(await screen.findByTestId("reconciliation-split-pane")).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId("complete-reconciliation-btn"));
+
+    expect(await screen.findByTestId("step-complete")).toBeInTheDocument();
+    expect(mockCompleteReconciliation).toHaveBeenCalledWith("recon-1");
+    expect(mockCalculateReconciliation).toHaveBeenCalledTimes(1);
+    expect(screen.queryByTestId("reconciliation-error")).not.toBeInTheDocument();
+  });
+
   // Test 10: while the review step is being prepared (transactions, create,
   // calculate), Back and Review Matches are disabled, so a double-click cannot
   // create a second draft and a late completion cannot land after Back.

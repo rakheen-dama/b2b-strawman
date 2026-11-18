@@ -1,6 +1,10 @@
 // Dashboard API response types
 
-import type { TrustCreditorBreakdown } from "@/lib/types/trust";
+import type {
+  IntegrityFlagCode,
+  IntegritySeverity,
+  TrustCreditorBreakdown,
+} from "@/lib/types/trust";
 
 export interface TrendPoint {
   period: string;
@@ -198,6 +202,21 @@ export interface TrustPositionResponse {
   daysSinceReconciliation: number | null;
   pendingApprovalCount: number;
   accounts: TrustAccountRef[];
+  /** The account's integrity check as at today (649C, ruling D-3). */
+  integrity: TrustIntegritySummary;
+}
+
+/** Mirrors `TrustPositionResponse.FlagCount` — one raised flag and its number of subjects (≥ 1). */
+export interface TrustIntegrityFlagCount {
+  code: IntegrityFlagCode;
+  severity: IntegritySeverity;
+  count: number;
+}
+
+/** Mirrors `TrustPositionResponse.IntegritySummary`; `balanced` when no flag is BLOCKING. */
+export interface TrustIntegritySummary {
+  balanced: boolean;
+  flags: TrustIntegrityFlagCount[];
 }
 
 /** One month of GET /api/dashboard/trust-balance-trend (oldest → newest). */

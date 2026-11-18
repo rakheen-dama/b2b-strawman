@@ -157,6 +157,7 @@ const TRUST = {
   daysSinceReconciliation: null,
   pendingApprovalCount: 0,
   accounts: [{ id: "ta1", accountName: "Trust account", isPrimary: true }],
+  integrity: { balanced: true, flags: [] },
 };
 const FICA = { outstandingCount: 0, totalActiveClients: 3, clients: [], limit: 5 };
 const DEBTORS = { content: [], page: { totalElements: 0, totalPages: 0, size: 5, number: 0 } };

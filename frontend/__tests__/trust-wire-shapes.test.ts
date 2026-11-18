@@ -2,13 +2,21 @@ import { describe, it, expect } from "vitest";
 // ADR-365 / Phase 92 646E (WIRE-PIN): static, relative import — a missing or renamed JSON fails
 // typecheck and vitest. Path: __tests__ → frontend → repo root.
 import contract from "../../backend/src/test/resources/wire/trust-contract.json";
-import type { TrustPositionResponse } from "@/lib/dashboard-types";
+import type {
+  TrustIntegrityFlagCount,
+  TrustIntegritySummary,
+  TrustPositionResponse,
+} from "@/lib/dashboard-types";
 import type {
   AllocateUnidentifiedRequest,
+  BankPosition,
   BankStatementLineResponse,
   BankStatementResponse,
   ClientLedgerCard,
   CreateTrustAccountRequest,
+  FirmIntegrityReport,
+  FlagSubject,
+  IntegrityFlag,
   InterestPresentation,
   InvestmentBasis,
   InvestmentInterest,
@@ -22,7 +30,9 @@ import type {
   TrustAccountStatus,
   TrustAccountType,
   TrustCreditorBreakdown,
+  TrustIntegrityReport,
   TrustLedger,
+  TrustPosition,
   TrustReconciliationResponse,
   TrustReversalRule,
   TrustTransaction,
@@ -106,11 +116,17 @@ describe("trust wire shapes match the backend contract (ADR-365)", () => {
   it("pins exactly the trust records", () => {
     expect(Object.keys(records).sort()).toEqual([
       "AllocateRequest",
+      "BankPosition",
       "BankStatementLineResponse",
       "BankStatementResponse",
       "ClientLedgerCardResponse",
       "CreateTrustAccountRequest",
       "CreditorBreakdown",
+      "FirmIntegrityReport",
+      "FlagCount",
+      "FlagSubject",
+      "IntegrityFlag",
+      "IntegritySummary",
       "InvestmentInterestResponse",
       "PayToFundRequest",
       "PlaceInvestmentRequest",
@@ -119,7 +135,9 @@ describe("trust wire shapes match the backend contract (ADR-365)", () => {
       "RecordInvestmentInterestRequest",
       "TotalBalanceResponse",
       "TrustAccountResponse",
+      "TrustIntegrityReport",
       "TrustInvestmentResponse",
+      "TrustPosition",
       "TrustPositionResponse",
       "TrustReconciliationResponse",
       "TrustTransactionResponse",
@@ -210,6 +228,7 @@ describe("trust wire shapes match the backend contract (ADR-365)", () => {
       excludedLinesTotal: 0,
       unresolvedLineCount: 0,
       isBalanced: false,
+      integrityFlags: [],
       status: "DRAFT",
       completedBy: null,
       completedAt: null,
@@ -256,8 +275,100 @@ describe("trust wire shapes match the backend contract (ADR-365)", () => {
       daysSinceReconciliation: null,
       pendingApprovalCount: 0,
       accounts: [],
+      integrity: { balanced: true, flags: [] },
     };
     expect(Object.keys(literal)).toEqual(componentNames(records.TrustPositionResponse));
+  });
+
+  it("TrustIntegritySummary ↔ TrustPositionResponse.IntegritySummary (649C)", () => {
+    const literal: Required<TrustIntegritySummary> = { balanced: true, flags: [] };
+    expect(Object.keys(literal)).toEqual(componentNames(records.IntegritySummary));
+  });
+
+  it("TrustIntegrityFlagCount ↔ TrustPositionResponse.FlagCount (649C)", () => {
+    const literal: Required<TrustIntegrityFlagCount> = {
+      code: "FUND_LEDGER_IN_DEBIT",
+      severity: "WARNING",
+      count: 1,
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(records.FlagCount));
+  });
+
+  it("IntegrityFlag ↔ TrustIntegrityService.IntegrityFlag (649C)", () => {
+    const literal: Required<IntegrityFlag> = {
+      code: "BANK_DIFFERENCE",
+      severity: "BLOCKING",
+      message: "",
+      amount: null,
+      subjects: [],
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(records.IntegrityFlag));
+  });
+
+  it("FlagSubject ↔ TrustIntegrityService.FlagSubject (649C)", () => {
+    const literal: Required<FlagSubject> = { kind: "CLIENT", id: null, name: null, amount: null };
+    expect(Object.keys(literal)).toEqual(componentNames(records.FlagSubject));
+  });
+
+  const position: Required<TrustPosition> = {
+    trustAccountId: "",
+    asAt: "",
+    cashbook: 0,
+    clientLedgers: 0,
+    investmentCreditors: 0,
+    fundLedger: 0,
+    unidentifiedDeposits: 0,
+    otherNonClient: 0,
+    interAccount: 0,
+    creditorTotal: 0,
+    difference: 0,
+  };
+
+  it("TrustPosition ↔ TrustBooksService.TrustPosition (649C)", () => {
+    expect(Object.keys(position)).toEqual(componentNames(records.TrustPosition));
+  });
+
+  it("BankPosition ↔ TrustBooksService.BankPosition (649C)", () => {
+    const literal: Required<BankPosition> = {
+      bankBalance: 0,
+      outstandingDeposits: 0,
+      outstandingPayments: 0,
+      adjustedBankBalance: 0,
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(records.BankPosition));
+  });
+
+  it("TrustIntegrityReport ↔ TrustIntegrityService.TrustIntegrityReport (649C)", () => {
+    const literal: Required<TrustIntegrityReport> = {
+      trustAccountId: "",
+      asAt: "",
+      position,
+      bank: null,
+      balanced: true,
+      flags: [],
+      lastCompletedReconciliationId: null,
+      lastReconciledThrough: null,
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(records.TrustIntegrityReport));
+  });
+
+  it("FirmIntegrityReport ↔ TrustIntegrityService.FirmIntegrityReport (649C)", () => {
+    const literal: Required<FirmIntegrityReport> = {
+      asAt: "",
+      balanced: true,
+      cashbook: 0,
+      clientLedgers: 0,
+      investmentCreditors: 0,
+      fundLedger: 0,
+      unidentifiedDeposits: 0,
+      otherNonClient: 0,
+      interAccount: 0,
+      creditorTotal: 0,
+      difference: 0,
+      flags: [],
+      accounts: [],
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(records.FirmIntegrityReport));
   });
 
   it("TotalBalance ↔ ClientLedgerService.TotalBalanceResponse (646D)", () => {

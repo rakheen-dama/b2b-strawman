@@ -1,0 +1,29 @@
+CodeRabbit cycle 3 #1 — red on head 3a467b67b (before the fix), 2026-11-18 03:24 SAST
+Command: ./mvnw test -Dtest='TrustInvestmentServiceIntegrationTest#placement_depositDate_cannotBeInTheFuture_eitherBasis+repro_twoFutureDatedSection86_3_placements_bothApprove_againstOneCashbook+placement_principal_hasAtMostTwoDecimalPlaces'
+Repro: R5 000 deposited; two s86(3) placements of R3 000 dated today+10 both requested AND both approved (cover read as at today ignores neither); cashbook once the date arrives:
+REPRO: both approved = [APPROVED, APPROVED]; cashbook as at 2026-11-28 = -1000.00
+
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentServiceIntegrationTest.placement_depositDate_cannotBeInTheFuture_eitherBasis -- Time elapsed: 0.058 s <<< FAILURE!
+java.lang.AssertionError: 
+
+Expecting code to raise a throwable.
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentServiceIntegrationTest.lambda$assertPlacementRefused$1(TrustInvestmentServiceIntegrationTest.java:1216)
+	at io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness.assertMoves(TrustBooksHarness.java:621)
+	at io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness.lambda$assertMoves$0(TrustBooksHarness.java:651)
+	at io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness.assertMoves(TrustBooksHarness.java:621)
+	at io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness.assertMoves(TrustBooksHarness.java:651)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentServiceIntegrationTest.lambda$assertPlacementRefused$0(TrustInvestmentServiceIntegrationTest.java:1210)
+	at java.base/jdk.internal.vm.ScopedValueContainer.runWithoutScope(ScopedValueContainer.java:112)
+	at java.base/jdk.internal.vm.ScopedValueContainer.run(ScopedValueContainer.java:98)
+	at java.base/java.lang.ScopedValue$Carrier.run(ScopedValue.java:466)
+
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentServiceIntegrationTest.repro_twoFutureDatedSection86_3_placements_bothApprove_againstOneCashbook -- Time elapsed: 0.109 s <<< FAILURE!
+java.lang.AssertionError: 
+[the funding account's cashbook once the placements' date arrives] 
+Expecting actual:
+  -1000.00
+to be greater than or equal to:
+  0
+
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentServiceIntegrationTest.repro_twoFutureDatedSection86_3_placements_bothApprove_againstOneCashbook(TrustInvestmentServiceIntegrationTest.java:978)
+(the repro test was throwaway — removed after this run; the pinned regression test is placement_depositDate_cannotBeInTheFuture_eitherBasis)

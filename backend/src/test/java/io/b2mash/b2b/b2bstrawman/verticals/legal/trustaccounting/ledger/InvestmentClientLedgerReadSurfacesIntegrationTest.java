@@ -35,7 +35,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -112,7 +111,7 @@ class InvestmentClientLedgerReadSurfacesIntegrationTest {
         mockMvc
             .perform(
                 post("/api/trust-accounts")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUB))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -133,17 +132,24 @@ class InvestmentClientLedgerReadSurfacesIntegrationTest {
     investmentAccountId =
         TestTrustInvestmentAccountHelper.openInvestmentAccount(
                 mockMvc,
-                ownerJwt(),
+                TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUB),
                 "ICL Section 86(4) Investments",
                 "62000000701",
                 InvestmentBasis.CLIENT_INSTRUCTION)
             .toString();
 
     investor =
-        TestEntityHelper.createCustomer(mockMvc, ownerJwt(), "ICL Investor", "icl_inv@test.com");
+        TestEntityHelper.createCustomer(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUB),
+            "ICL Investor",
+            "icl_inv@test.com");
     bystander =
         TestEntityHelper.createCustomer(
-            mockMvc, ownerJwt(), "ICL Bystander", "icl_bystander@test.com");
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUB),
+            "ICL Bystander",
+            "icl_bystander@test.com");
     investorMatter = matterOf(investor);
     deposit(investor, investorMatter, "50000.00", "ICL-DEP-1");
     deposit(bystander, matterOf(bystander), "10000.00", "ICL-DEP-2");
@@ -157,7 +163,9 @@ class InvestmentClientLedgerReadSurfacesIntegrationTest {
     var placementId = (String) JsonPath.read(placed, "$.depositTransactionId");
 
     mockMvc
-        .perform(post("/api/trust-transactions/" + placementId + "/approve").with(approverJwt()))
+        .perform(
+            post("/api/trust-transactions/" + placementId + "/approve")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, APPROVER_SUB)))
         .andExpect(status().isOk());
 
     // INV_PLACE posted: the investor's general balance is P lower (R50 000 − R30 000); to their
@@ -173,7 +181,7 @@ class InvestmentClientLedgerReadSurfacesIntegrationTest {
     mockMvc
         .perform(
             post("/api/trust-investments/" + investmentId + "/withdraw")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUB))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"withdrawalDate\": \"%s\"}".formatted(today.minusDays(5))))
         .andExpect(status().isOk());
@@ -258,7 +266,7 @@ class InvestmentClientLedgerReadSurfacesIntegrationTest {
     return mockMvc
         .perform(
             post("/api/trust-accounts/" + fundingAccountId + "/investments")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUB))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -293,7 +301,7 @@ class InvestmentClientLedgerReadSurfacesIntegrationTest {
     mockMvc
         .perform(
             post("/api/trust-accounts/" + fundingAccountId + "/transactions/deposit")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUB))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -324,7 +332,7 @@ class InvestmentClientLedgerReadSurfacesIntegrationTest {
 
   private String getOk(String url) throws Exception {
     return mockMvc
-        .perform(get(url).with(ownerJwt()))
+        .perform(get(url).with(TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUB)))
         .andExpect(status().isOk())
         .andReturn()
         .getResponse()
@@ -374,13 +382,5 @@ class InvestmentClientLedgerReadSurfacesIntegrationTest {
         customerRepository,
         UUID.fromString(clientId),
         "ICL trust matter " + clientId);
-  }
-
-  private static JwtRequestPostProcessor ownerJwt() {
-    return TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUB);
-  }
-
-  private static JwtRequestPostProcessor approverJwt() {
-    return TestJwtFactory.ownerJwt(ORG_ID, APPROVER_SUB);
   }
 }

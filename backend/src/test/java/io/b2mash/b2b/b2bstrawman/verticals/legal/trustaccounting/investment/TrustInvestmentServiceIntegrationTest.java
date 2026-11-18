@@ -862,6 +862,86 @@ class TrustInvestmentServiceIntegrationTest {
         "The maturity date cannot be before the deposit date.");
   }
 
+  /**
+   * CodeRabbit cycle 3 (Major): a placement's row carries its deposit date, and both bases' cover
+   * (the matter cell, the cashbook) is read as at today — a future-dated placement would escape the
+   * cover of every row posted before its date arrives. A placement is never future-dated, either
+   * basis (the withdrawal and the fee transfer refuse a future date likewise).
+   */
+  @Test
+  void placement_depositDate_cannotBeInTheFuture_eitherBasis() {
+    var funding = books.freshAccount(false);
+    var firmAccount = books.freshInvestmentAccount(InvestmentBasis.FIRM_DISCRETION);
+    var clientAccount = books.freshInvestmentAccount(InvestmentBasis.CLIENT_INSTRUCTION);
+    var client = books.newClient("future deposit date");
+    books.deposit(funding, client, "5000.00");
+    var tomorrow = books.today().plusDays(1);
+
+    assertPlacementRefused(
+        funding,
+        firmAccount,
+        request(firmAccount, null, "3000.00", InvestmentBasis.FIRM_DISCRETION, tomorrow),
+        PLACE_TITLE,
+        "The deposit date cannot be in the future.");
+    assertPlacementRefused(
+        funding,
+        clientAccount,
+        request(clientAccount, client, "3000.00", InvestmentBasis.CLIENT_INSTRUCTION, tomorrow),
+        PLACE_TITLE,
+        "The deposit date cannot be in the future.");
+
+    // Today is not the future
+    books.as(
+        ownerId,
+        () ->
+            assertThat(
+                    investmentService
+                        .placeInvestment(
+                            funding,
+                            request(
+                                firmAccount,
+                                null,
+                                "3000.00",
+                                InvestmentBasis.FIRM_DISCRETION,
+                                books.today()))
+                        .depositDate())
+                .isEqualTo(books.today()));
+  }
+
+  /**
+   * CodeRabbit cycle 3 (Minor): amounts are stored at cents, so a sub-cent principal is refused
+   * with the payment path's rule ({@code validateAmount}) rather than rounded on save; trailing
+   * zeros are a whole number of cents and pass.
+   */
+  @Test
+  void placement_principal_hasAtMostTwoDecimalPlaces() {
+    var funding = books.freshAccount(false);
+    var firmAccount = books.freshInvestmentAccount(InvestmentBasis.FIRM_DISCRETION);
+    var client = books.newClient("principal scale");
+    books.deposit(funding, client, "1000.00");
+
+    assertPlacementRefused(
+        funding,
+        firmAccount,
+        request(firmAccount, null, "100.005", InvestmentBasis.FIRM_DISCRETION),
+        "Invalid amount",
+        "Amount must not have more than 2 decimal places");
+
+    for (var principal : List.of("100.00", "100.000")) {
+      books.as(
+          ownerId,
+          () ->
+              assertThat(
+                      investmentService
+                          .placeInvestment(
+                              funding,
+                              request(
+                                  firmAccount, null, principal, InvestmentBasis.FIRM_DISCRETION))
+                          .principal())
+                  .isEqualByComparingTo("100.00"));
+    }
+  }
+
   // --- review F-4: closing an account while an investment is held through it ----------------
 
   @Test
@@ -1015,6 +1095,15 @@ class TrustInvestmentServiceIntegrationTest {
 
   private PlaceInvestmentRequest request(
       UUID investmentAccount, Client client, String principal, InvestmentBasis basis) {
+    return request(investmentAccount, client, principal, basis, TrustBooksFixture.POSTING_DATE);
+  }
+
+  private PlaceInvestmentRequest request(
+      UUID investmentAccount,
+      Client client,
+      String principal,
+      InvestmentBasis basis,
+      LocalDate depositDate) {
     return new PlaceInvestmentRequest(
         investmentAccount,
         client == null ? null : client.id(),
@@ -1023,7 +1112,7 @@ class TrustInvestmentServiceIntegrationTest {
         "ACC-REFUSED",
         new BigDecimal(principal),
         new BigDecimal("0.0500"),
-        TrustBooksFixture.POSTING_DATE,
+        depositDate,
         null,
         null,
         basis);

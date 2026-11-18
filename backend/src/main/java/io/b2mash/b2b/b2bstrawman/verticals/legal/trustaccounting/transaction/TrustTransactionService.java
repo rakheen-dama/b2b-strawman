@@ -1894,12 +1894,12 @@ public class TrustTransactionService {
   }
 
   /**
-   * Every trust write path (deposit, transfer, payment, fee transfer, refund) runs this before any
-   * balance logic. Amounts are stored at cents ({@code numeric(15,2)}), so a sub-cent amount is
-   * refused rather than rounded on save or compared unrounded against a balance (PR #1752 review).
-   * Trailing zeros ({@code 250.500}) are a whole number of cents and pass.
+   * Every trust write path (deposit, transfer, payment, fee transfer, refund, investment placement)
+   * runs this before any balance logic. Amounts are stored at cents ({@code numeric(15,2)}), so a
+   * sub-cent amount is refused rather than rounded on save or compared unrounded against a balance
+   * (PR #1752 review). Trailing zeros ({@code 250.500}) are a whole number of cents and pass.
    */
-  private void validateAmount(BigDecimal amount) {
+  public static void validateAmount(BigDecimal amount) {
     if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
       throw new InvalidStateException(
           "Invalid amount", "Amount must be a positive value, got: " + amount);

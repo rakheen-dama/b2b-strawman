@@ -264,7 +264,11 @@ export const placeInvestmentSchema = z
     accountNumber: z.string().min(1, "Account number is required").max(50),
     principal: z.number().positive("Principal must be greater than zero"),
     interestRate: z.number().min(0, "Rate must be non-negative").max(100, "Rate cannot exceed 100"),
-    depositDate: isoDate,
+    // Never in the future — the server refuses it too, with the same sentence (648A, CodeRabbit
+    // cycle 3: a later-dated placement would escape the cover read as at today)
+    depositDate: isoDate.refine((d) => d <= todayInSA(), {
+      message: "The deposit date cannot be in the future.",
+    }),
     maturityDate: isoDate.optional().or(z.literal("")),
     notes: z.string().max(2000).optional().or(z.literal("")),
   })

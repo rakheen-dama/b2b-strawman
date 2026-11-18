@@ -199,6 +199,12 @@ public class TrustInvestmentService implements InvestmentPlacementHooks {
   public TrustInvestmentResponse placeInvestment(
       UUID fundingAccountId, PlaceInvestmentRequest request) {
     moduleGuard.requireModule(MODULE_ID);
+    TrustTransactionService.validateAmount(request.principal());
+    // Never future-dated (CodeRabbit cycle 3): the placement row carries the deposit date, and both
+    // bases' cover is read as at today, so a later-dated row would escape every cover check
+    if (request.depositDate().isAfter(LocalDate.now(clock))) {
+      throw new InvalidStateException(PLACE_TITLE, "The deposit date cannot be in the future.");
+    }
 
     // Locked (648A review F-3/F-4): serialises the section 86(3) cashbook read with a placement's
     // approval (which re-reads it under this lock) and the placement with the account's closing.

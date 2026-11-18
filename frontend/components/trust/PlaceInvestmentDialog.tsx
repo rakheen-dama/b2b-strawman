@@ -5,6 +5,7 @@ import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
+import { todayInSA } from "@b2mash/shared/date";
 import { Button } from "@b2mash/ui/button";
 import {
   Dialog,
@@ -61,8 +62,6 @@ interface PlaceInvestmentDialogProps {
 }
 
 function getDefaultValues(): PlaceInvestmentFormData {
-  const now = new Date();
-  const local = new Date(now.getTime() - now.getTimezoneOffset() * 60_000);
   return {
     investmentBasis: "FIRM_DISCRETION",
     investmentAccountId: "",
@@ -72,7 +71,7 @@ function getDefaultValues(): PlaceInvestmentFormData {
     accountNumber: "",
     principal: 0,
     interestRate: 0,
-    depositDate: local.toISOString().slice(0, 10),
+    depositDate: todayInSA(),
     maturityDate: "",
     notes: "",
   };
@@ -361,7 +360,7 @@ export function PlaceInvestmentDialog({
                 <FormItem>
                   <FormLabel>Deposit Date</FormLabel>
                   <FormControl>
-                    <Input type="date" {...field} />
+                    <Input type="date" max={todayInSA()} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

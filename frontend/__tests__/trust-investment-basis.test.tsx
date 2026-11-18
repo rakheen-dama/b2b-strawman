@@ -140,6 +140,7 @@ import { PlaceInvestmentDialog } from "@/components/trust/PlaceInvestmentDialog"
 import { InterestRunWizard } from "@/components/trust/InterestRunWizard";
 import { CreateTrustAccountDialog } from "@/components/trust/CreateTrustAccountDialog";
 import type { TrustAccount } from "@/lib/types/trust";
+import { todayInSA } from "@b2mash/shared/date";
 
 // -- Helpers --------------------------------------------------------------
 
@@ -713,5 +714,21 @@ describe("Epic 455 / 648A — Investment Basis and investment accounts", () => {
     expect(mockCreateTrustAccount).toHaveBeenCalledWith(
       expect.objectContaining({ accountType: "INVESTMENT", investmentBasis: "CLIENT_INSTRUCTION" })
     );
+  });
+
+  // 648A CodeRabbit cycle 3: a placement is never future-dated (the server refuses it too)
+  it("defaults the deposit date to today and refuses a future one", async () => {
+    renderPlaceDialog();
+
+    const dateInput = screen.getByLabelText("Deposit Date");
+    expect(dateInput).toHaveValue(todayInSA());
+    expect(dateInput).toHaveAttribute("max", todayInSA());
+
+    fireEvent.change(dateInput, { target: { value: "2999-01-01" } });
+    fireEvent.submit(dateInput.closest("form")!);
+    expect(
+      await screen.findByText("The deposit date cannot be in the future.")
+    ).toBeInTheDocument();
+    expect(mockPlaceInvestment).not.toHaveBeenCalled();
   });
 });

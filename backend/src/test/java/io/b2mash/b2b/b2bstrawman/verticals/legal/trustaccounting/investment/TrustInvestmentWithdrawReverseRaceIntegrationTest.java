@@ -25,6 +25,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountTyp
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedgerQueryRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.ReverseRequest;
+import jakarta.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDate;
@@ -35,6 +36,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.LockSupport;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -44,6 +46,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -57,9 +60,9 @@ import org.springframework.transaction.support.TransactionTemplate;
  * while a withdrawal holds it.
  *
  * <p>Each test holds one operation's transaction open (latch) after it has done its work, starts
- * the other operation on a second thread, gives it time to reach its checks, then commits the
- * first. In both orders the reversal is refused, the withdrawal succeeds, and the client is
- * credited exactly once.
+ * the other operation on a second thread, waits until it is either blocked by the first's backend
+ * (observed in {@code pg_stat_activity}, not a sleep) or finished, then commits the first. In both
+ * orders the reversal is refused, the withdrawal succeeds, and the client is credited exactly once.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -87,6 +90,8 @@ class TrustInvestmentWithdrawReverseRaceIntegrationTest {
   @Autowired private CustomerRepository customerRepository;
   @Autowired private ProjectRepository projectRepository;
   @Autowired private Clock clock;
+  @Autowired private JdbcTemplate jdbc;
+  @Autowired private EntityManager entityManager;
 
   private String tenantSchema;
   private UUID ownerId;
@@ -179,6 +184,9 @@ class TrustInvestmentWithdrawReverseRaceIntegrationTest {
     assertThat(outcome.first()).as("the withdrawal (committed first)").isNull();
     // The lock order is still exercised: the reversal waited for the placement row lock the
     // withdrawal held (its refusal on the type is read under that lock), it did not run ahead
+    assertThat(outcome.secondBlockedOnFirst())
+        .as("the reversal blocked on a trust_transactions row lock the withdrawal held")
+        .isTrue();
     assertThat(outcome.secondFinishedBeforeCommit())
         .as("the reversal finished while the withdrawal still held the placement row lock")
         .isFalse();
@@ -198,15 +206,23 @@ class TrustInvestmentWithdrawReverseRaceIntegrationTest {
   // --- race harness ---
 
   /**
-   * Each side's failure (null = succeeded), and whether {@code second} had already finished when
-   * {@code first} was released to commit (false = it was blocked on a lock {@code first} held).
+   * Each side's failure (null = succeeded); whether {@code second} was observed blocked by {@code
+   * first}'s backend on a trust_transactions query; and whether {@code second} had already finished
+   * when {@code first} was released to commit (false = it was blocked on a lock {@code first}
+   * held).
    */
-  private record Outcome(Throwable first, Throwable second, boolean secondFinishedBeforeCommit) {}
+  private record Outcome(
+      Throwable first,
+      Throwable second,
+      boolean secondBlockedOnFirst,
+      boolean secondFinishedBeforeCommit) {}
 
   /**
    * Runs {@code first} in a transaction that stays open after it returns, starts {@code second} on
-   * another thread, waits for it to reach its checks (it either blocks on a lock or, without one,
-   * runs ahead), then commits {@code first}. Returns each side's failure (null = succeeded).
+   * another thread, waits (bounded) until it is either blocked by {@code first}'s backend or
+   * finished, then commits {@code first}. If {@code first} failed its transaction is already rolled
+   * back and holds nothing, so there is nothing to wait for. Returns each side's failure (null =
+   * succeeded).
    */
   private Outcome race(Supplier<?> first, Supplier<?> second) throws Exception {
     var firstDone = new CountDownLatch(1);
@@ -214,6 +230,7 @@ class TrustInvestmentWithdrawReverseRaceIntegrationTest {
     var firstError = new AtomicReference<Throwable>();
     var secondError = new AtomicReference<Throwable>();
     var secondFinished = new AtomicBoolean(false);
+    var firstBackendPid = new AtomicReference<Integer>();
 
     Thread firstThread =
         Thread.ofPlatform()
@@ -225,6 +242,12 @@ class TrustInvestmentWithdrawReverseRaceIntegrationTest {
                             transactionTemplate.execute(
                                 tx -> {
                                   first.get();
+                                  firstBackendPid.set(
+                                      ((Number)
+                                              entityManager
+                                                  .createNativeQuery("SELECT pg_backend_pid()")
+                                                  .getSingleResult())
+                                          .intValue());
                                   firstDone.countDown();
                                   await(releaseFirst);
                                   return null;
@@ -248,13 +271,51 @@ class TrustInvestmentWithdrawReverseRaceIntegrationTest {
                     secondFinished.set(true);
                   }
                 });
-    // Give the second operation time to read and check (or block on a lock) before committing
-    Thread.sleep(1500);
-    boolean secondFinishedBeforeCommit = secondFinished.get();
-    releaseFirst.countDown();
-    firstThread.join(30_000);
-    secondThread.join(30_000);
-    return new Outcome(firstError.get(), secondError.get(), secondFinishedBeforeCommit);
+    boolean secondBlockedOnFirst;
+    boolean secondFinishedBeforeCommit;
+    try {
+      secondBlockedOnFirst =
+          firstError.get() == null
+              && awaitBlockedOnTrustTransactionLockHeldByOrFinished(
+                  firstBackendPid.get(), secondFinished);
+      secondFinishedBeforeCommit = secondFinished.get();
+    } finally {
+      releaseFirst.countDown();
+      join(firstThread);
+      join(secondThread);
+    }
+    return new Outcome(
+        firstError.get(), secondError.get(), secondBlockedOnFirst, secondFinishedBeforeCommit);
+  }
+
+  /**
+   * Waits (bounded, 30 s) until a backend blocked by {@code holderPid} is running a
+   * trust_transactions query (true — the placement row lock is contested) or the waiter finishes
+   * without having been seen blocked (false). Fails if neither happens.
+   */
+  private boolean awaitBlockedOnTrustTransactionLockHeldByOrFinished(
+      int holderPid, AtomicBoolean waiterFinished) {
+    long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(30);
+    while (System.nanoTime() < deadline) {
+      Long blocked =
+          jdbc.queryForObject(
+              "SELECT count(*) FROM pg_stat_activity WHERE ? = ANY(pg_blocking_pids(pid))"
+                  + " AND query ILIKE '%trust_transactions%'",
+              Long.class, holderPid);
+      if (blocked != null && blocked > 0) {
+        return true;
+      }
+      if (waiterFinished.get()) {
+        return false;
+      }
+      LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(10)); // poll interval
+    }
+    throw new AssertionError("the second operation neither blocked nor finished within 30 s");
+  }
+
+  private static void join(Thread thread) throws InterruptedException {
+    thread.join(30_000);
+    assertThat(thread.isAlive()).as("thread finished within 30 s").isFalse();
   }
 
   private static void await(CountDownLatch latch) {

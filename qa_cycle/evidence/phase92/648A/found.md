@@ -97,6 +97,13 @@ only"); it is flagged here and in the PR for a decision. Suggested follow-up: at
 Status: **OPEN — founder ruling required (sufficiency model, §16 line 628 / R14 / ADR-380)**.
 **Owner: 649C.** Orchestrator ruling (b): not changed in 648A; the current behaviour is pinned.
 
+**Not surfaced today:** in 648A a trust banking account whose cashbook goes negative this way is
+not surfaced to users anywhere — no warning, integrity flag, exception report or block marks it
+(no cashbook-in-debit check exists in the codebase; `CLIENT_LEDGER_IN_DEBIT` below is itself
+649C's). 649C's proposed integrity flag (option b) is the surface.
+CodeRabbit re-raised F-6 on head 3a467b67b (found.md:108, "resolve before merge"); disposition
+unchanged — founder ruling, owner 649C.
+
 A section 86(3) placement lowers the banking account's cashbook and leaves every client ledger as it
 was — the `INTER_ACCOUNT` ledger carries the offset. A client payment, refund or fee transfer is
 checked at record and again at approval (`TrustTransactionService.requireClientCovers`, under the

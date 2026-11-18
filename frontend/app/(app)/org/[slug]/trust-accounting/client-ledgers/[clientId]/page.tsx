@@ -160,7 +160,7 @@ export default async function ClientDetailPage({
   const totalPages = historyPage?.totalPages ?? 0;
   const currency = settings.defaultCurrency ?? "ZAR";
   // 648E: held for the client in section 86(4) investments placed from this account
-  const invested = ledgerCard.investedBalance || 0;
+  const invested = ledgerCard.investedBalance;
 
   // Build filter URL helper
   function filterUrl(overrides: Record<string, string | undefined>): string {

@@ -83,88 +83,16 @@ public record LedgerTotals(
     return switch (type.get()) {
       // An unidentified deposit identified and allocated to the client (647D) is, to the client,
       // their deposit received later: it adds to deposits (both types have ledgerSign +1).
-      case DEPOSIT, UNIDENT_ALLOC_IN ->
-          new LedgerTotals(
-              deposits.add(amount),
-              transfersIn,
-              payments,
-              feeTransfers,
-              refunds,
-              transfersOut,
-              investmentPlacements,
-              investmentReturns);
-      case TRANSFER_IN ->
-          new LedgerTotals(
-              deposits,
-              transfersIn.add(amount),
-              payments,
-              feeTransfers,
-              refunds,
-              transfersOut,
-              investmentPlacements,
-              investmentReturns);
-      case PAYMENT ->
-          new LedgerTotals(
-              deposits,
-              transfersIn,
-              payments.add(amount),
-              feeTransfers,
-              refunds,
-              transfersOut,
-              investmentPlacements,
-              investmentReturns);
-      case FEE_TRANSFER ->
-          new LedgerTotals(
-              deposits,
-              transfersIn,
-              payments,
-              feeTransfers.add(amount),
-              refunds,
-              transfersOut,
-              investmentPlacements,
-              investmentReturns);
-      case REFUND ->
-          new LedgerTotals(
-              deposits,
-              transfersIn,
-              payments,
-              feeTransfers,
-              refunds.add(amount),
-              transfersOut,
-              investmentPlacements,
-              investmentReturns);
-      case TRANSFER_OUT ->
-          new LedgerTotals(
-              deposits,
-              transfersIn,
-              payments,
-              feeTransfers,
-              refunds,
-              transfersOut.add(amount),
-              investmentPlacements,
-              investmentReturns);
+      case DEPOSIT, UNIDENT_ALLOC_IN -> withDeposits(deposits.add(amount));
+      case TRANSFER_IN -> withTransfersIn(transfersIn.add(amount));
+      case PAYMENT -> withPayments(payments.add(amount));
+      case FEE_TRANSFER -> withFeeTransfers(feeTransfers.add(amount));
+      case REFUND -> withRefunds(refunds.add(amount));
+      case TRANSFER_OUT -> withTransfersOut(transfersOut.add(amount));
       // 648E: money moved from the client's general balance to their section 86(4) investment
       // (approved INV_PLACE) and back (INV_RETURN) — the client's total in trust does not move.
-      case INV_PLACE ->
-          new LedgerTotals(
-              deposits,
-              transfersIn,
-              payments,
-              feeTransfers,
-              refunds,
-              transfersOut,
-              investmentPlacements.add(amount),
-              investmentReturns);
-      case INV_RETURN ->
-          new LedgerTotals(
-              deposits,
-              transfersIn,
-              payments,
-              feeTransfers,
-              refunds,
-              transfersOut,
-              investmentPlacements,
-              investmentReturns.add(amount));
+      case INV_PLACE -> withInvestmentPlacements(investmentPlacements.add(amount));
+      case INV_RETURN -> withInvestmentReturns(investmentReturns.add(amount));
       case REVERSAL -> this;
       // Never on the CLIENT ledger: clientTotalsByType filters ledger = 'CLIENT' (a reversal row
       // carries its original's ledger), so these cannot reach the totals.
@@ -185,6 +113,104 @@ public record LedgerTotals(
           FIRM_INV_RETURN ->
           this;
     };
+  }
+
+  // One component changed per helper, so no switch arm re-lists the eight positional arguments.
+
+  private LedgerTotals withDeposits(BigDecimal value) {
+    return new LedgerTotals(
+        value,
+        transfersIn,
+        payments,
+        feeTransfers,
+        refunds,
+        transfersOut,
+        investmentPlacements,
+        investmentReturns);
+  }
+
+  private LedgerTotals withTransfersIn(BigDecimal value) {
+    return new LedgerTotals(
+        deposits,
+        value,
+        payments,
+        feeTransfers,
+        refunds,
+        transfersOut,
+        investmentPlacements,
+        investmentReturns);
+  }
+
+  private LedgerTotals withPayments(BigDecimal value) {
+    return new LedgerTotals(
+        deposits,
+        transfersIn,
+        value,
+        feeTransfers,
+        refunds,
+        transfersOut,
+        investmentPlacements,
+        investmentReturns);
+  }
+
+  private LedgerTotals withFeeTransfers(BigDecimal value) {
+    return new LedgerTotals(
+        deposits,
+        transfersIn,
+        payments,
+        value,
+        refunds,
+        transfersOut,
+        investmentPlacements,
+        investmentReturns);
+  }
+
+  private LedgerTotals withRefunds(BigDecimal value) {
+    return new LedgerTotals(
+        deposits,
+        transfersIn,
+        payments,
+        feeTransfers,
+        value,
+        transfersOut,
+        investmentPlacements,
+        investmentReturns);
+  }
+
+  private LedgerTotals withTransfersOut(BigDecimal value) {
+    return new LedgerTotals(
+        deposits,
+        transfersIn,
+        payments,
+        feeTransfers,
+        refunds,
+        value,
+        investmentPlacements,
+        investmentReturns);
+  }
+
+  private LedgerTotals withInvestmentPlacements(BigDecimal value) {
+    return new LedgerTotals(
+        deposits,
+        transfersIn,
+        payments,
+        feeTransfers,
+        refunds,
+        transfersOut,
+        value,
+        investmentReturns);
+  }
+
+  private LedgerTotals withInvestmentReturns(BigDecimal value) {
+    return new LedgerTotals(
+        deposits,
+        transfersIn,
+        payments,
+        feeTransfers,
+        refunds,
+        transfersOut,
+        investmentPlacements,
+        value);
   }
 
   /**

@@ -1,0 +1,4 @@
+648E review-fix pass 1 — Tier 2 targeted (mvn test -q, 22 classes), counted from this run's surefire XML (<testcase> elements)
+Tests run: 210, Failures: 0, Errors: 0, Skipped: 0 (classes: 22)
+Classes: CatalogueBatch2TrustBillingTest, ClientLedgerControllerTest, ClientLedgerRunningBalanceIntegrationTest, ClientLedgerTotalsIntegrationTest, DerivedLedgerBalanceIntegrationTest, InvestmentClientLedgerReadSurfacesIntegrationTest, InvestmentReportBasisIntegrationTest, InvestmentStatementAccountSelectionIntegrationTest, LedgerTotalsTest, McpAuditEmissionTest, McpCapabilityGatingTest, McpModuleAndEnablementHardeningTest, McpToolContractTest, Section35DataPackContentIntegrationTest, TrustAccountingModuleRegistrationTest, TrustInvestmentServiceIntegrationTest, TrustPostingDateZoneIntegrationTest, TrustReportQueryIntegrationTest, TrustTransactionControllerTest, TrustTransactionServiceTest, TrustWireContractTest, UnidentifiedDepositIntegrationTest
+Maven exit: 0

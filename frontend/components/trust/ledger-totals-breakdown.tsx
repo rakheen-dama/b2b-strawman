@@ -80,13 +80,12 @@ export function LedgerTotalsBreakdown({
       hideWhenZero: true,
     },
   ];
-  // Older cards (and untyped fixtures) may not carry the 648E keys: treat absent as zero
-  const invested = ledger.investedBalance || 0;
+  const invested = ledger.investedBalance;
 
   return (
     <dl className={cn("space-y-1 text-sm", className)} data-testid="ledger-totals-breakdown">
       {rows
-        .filter((row) => !(row.hideWhenZero && !row.amount))
+        .filter((row) => !(row.hideWhenZero && row.amount === 0))
         .map((row) => (
           <div
             key={row.key}

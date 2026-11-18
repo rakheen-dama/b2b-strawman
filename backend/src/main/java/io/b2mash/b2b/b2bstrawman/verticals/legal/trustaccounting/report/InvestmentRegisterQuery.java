@@ -155,9 +155,7 @@ public class InvestmentRegisterQuery implements ReportQuery {
             : ledgerQueries.investmentBalances(investmentIds).stream()
                 .collect(
                     Collectors.toMap(
-                        InvestmentBalanceRow::getInvestmentId,
-                        InvestmentBalanceRow::getBalance,
-                        (a, b) -> a));
+                        InvestmentBalanceRow::getInvestmentId, InvestmentBalanceRow::getBalance));
 
     return investments.stream()
         .map(

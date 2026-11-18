@@ -34,6 +34,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -131,7 +132,10 @@ public class ClientLedgerService {
 
   // --- Service Methods ---
 
-  @Transactional(readOnly = true)
+  // REPEATABLE READ: the card's balance, totals and invested balance are separate statements; one
+  // snapshot keeps them from straddling a commit (an s86(4) placement posts INV_PLACE and
+  // INV_RECEIVE together). Read-only, so Postgres cannot raise a serialization failure here.
+  @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
   public ClientLedgerCardResponse getClientLedger(UUID customerId, UUID trustAccountId) {
     moduleGuard.requireModule(MODULE_ID);
 
@@ -188,7 +192,8 @@ public class ClientLedgerService {
    * UI sends {@code sort=balance,desc}, which the derived query applies itself — there is no stored
    * {@code balance} property to sort on).
    */
-  @Transactional(readOnly = true)
+  // One snapshot for the page, its totals and invested balances — see getClientLedger
+  @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
   public Page<ClientLedgerCardResponse> listClientLedgers(UUID trustAccountId, Pageable pageable) {
     moduleGuard.requireModule(MODULE_ID);
 

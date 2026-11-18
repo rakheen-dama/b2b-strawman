@@ -415,6 +415,10 @@ class TrustReportQueryIntegrationTest {
     assertThat((BigDecimal) person.get("balance"))
         .as("the locked list, without the back-dated deposit")
         .isEqualByComparingTo("1000.00");
+    assertThat((BigDecimal) person.get("totalDeposits"))
+        .as("the locked list's totals, not today's ledger (650A review C4)")
+        .isEqualByComparingTo("1000.00");
+    assertThat(person.get("lastTransactionDate")).isEqualTo("2026-03-01");
     assertThat(person.get("kind")).isEqualTo("CLIENT");
     assertThat(person.get("source")).isEqualTo("LOCKED");
     assertThat((String) person.get("sourceNote"))
@@ -460,6 +464,9 @@ class TrustReportQueryIntegrationTest {
   void
       clientTrustBalances_live_firmWide_mergesGeneralAndInvested_andListsTheFundAndUnidentifiedLines() {
     var books = fixture.tenant(tenantSchema, ORG_ID, ownerMemberId);
+    // The tenant is shared by the class: the firm-wide totals are checked as baseline + this
+    // scenario's accounts
+    var baseline = inTenant(() -> clientBalancesQuery.executeAll(Map.of())).summary();
     UUID funding = books.freshAccount(false);
     UUID investmentAccount = books.freshInvestmentAccount(InvestmentBasis.CLIENT_INSTRUCTION);
     UUID firmInvestment = books.freshInvestmentAccount(InvestmentBasis.FIRM_DISCRETION);
@@ -511,6 +518,21 @@ class TrustReportQueryIntegrationTest {
     assertThat(firm.rows()).noneMatch(r -> "INTER_ACCOUNT".equals(r.get("kind")));
     assertThat(firm.summary().get("fullyLocked")).isEqualTo(false);
     assertThat(firm.summary()).containsKey("interAccountNote");
+    // Firm-wide comparison (650A review M3). Creditors: the investor R5 700 (general R3 000 on the
+    // funding account + R700 on the other, R2 000 invested) and the R125 item; the four Fund lines
+    // are nil and the section 86(3) placement nets out. Money side (no reconciliation has today's
+    // period end, so each account's cashbook): banking accounts R2 500 (funding: 5 000 − 2 000 −
+    // 500) + R825 (other: 700 + 125); investment accounts R2 000 + R500.
+    assertThat((BigDecimal) firm.summary().get("creditorTotal"))
+        .isEqualByComparingTo(
+            ((BigDecimal) baseline.get("creditorTotal")).add(new BigDecimal("5825.00")));
+    assertThat((BigDecimal) firm.summary().get("bankTotal"))
+        .isEqualByComparingTo(
+            ((BigDecimal) baseline.get("bankTotal")).add(new BigDecimal("3325.00")));
+    assertThat((BigDecimal) firm.summary().get("investmentAccountTotal"))
+        .isEqualByComparingTo(
+            ((BigDecimal) baseline.get("investmentAccountTotal")).add(new BigDecimal("2500.00")));
+    assertThat((BigDecimal) firm.summary().get("difference")).isEqualByComparingTo("0.00");
     assertThat((List<Map<String, Object>>) firm.summary().get("accounts"))
         .filteredOn(a -> funding.equals(a.get("trustAccountId")))
         .singleElement()
@@ -603,14 +625,26 @@ class TrustReportQueryIntegrationTest {
     assertThatThrownBy(() -> inTenant(() -> trustPositionQuery.executeAll(Map.of())))
         .isInstanceOfSatisfying(
             InvalidStateException.class,
-            e -> assertThat(e.getBody().getTitle()).isEqualTo("Missing required parameter"));
+            e -> {
+              assertThat(e.getBody().getStatus()).isEqualTo(400);
+              assertThat(e.getBody().getTitle()).isEqualTo("Missing required parameter");
+              assertThat(e.getBody().getDetail()).isEqualTo("Parameter 'asOfDate' is required");
+            });
+    var unknownAccount = UUID.randomUUID();
     assertThatThrownBy(
             () ->
                 inTenant(
                     () ->
                         trustPositionQuery.executeAll(
-                            Map.of("asOfDate", date, "trust_account_id", UUID.randomUUID()))))
-        .isInstanceOf(ResourceNotFoundException.class);
+                            Map.of("asOfDate", date, "trust_account_id", unknownAccount))))
+        .isInstanceOfSatisfying(
+            ResourceNotFoundException.class,
+            e -> {
+              assertThat(e.getBody().getStatus()).isEqualTo(404);
+              assertThat(e.getBody().getTitle()).isEqualTo("TrustAccount not found");
+              assertThat(e.getBody().getDetail())
+                  .isEqualTo("No trustaccount found with id " + unknownAccount);
+            });
   }
 
   private <T> T inTenant(Supplier<T> query) {

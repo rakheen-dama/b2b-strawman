@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@b2ma
 import { PageHeader } from "@b2mash/ui/page-header";
 import { StatCard } from "@b2mash/ui/stat-card";
 import { ApiError } from "@/lib/api";
+import { rethrowOnExpiredSession } from "@/lib/auth/expiry-server";
 import { fetchMonthlyList } from "@/app/(app)/org/[slug]/trust-accounting/reconciliation/actions";
 import { formatCurrency, formatDateTime, formatLocalDate } from "@/lib/format";
 import { integrityFlagLabel, integritySeverityLabel } from "@/lib/trust-integrity";
@@ -33,6 +34,9 @@ export default async function MonthlyListPage({
   try {
     list = await fetchMonthlyList(listId);
   } catch (error) {
+    // A re-login redirect thrown deeper down propagates, and a 401 goes to the re-login flow;
+    // a 404 is the not-found page; anything else shows the load-error card below
+    await rethrowOnExpiredSession(error);
     if (error instanceof ApiError && error.status === 404) {
       notFound();
     }

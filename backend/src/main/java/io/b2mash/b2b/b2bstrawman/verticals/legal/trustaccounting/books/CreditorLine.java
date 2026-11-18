@@ -25,8 +25,15 @@ import java.util.UUID;
  * </ul>
  *
  * <p>{@code balance} is signed. The lines of one account sum to its creditor total. {@code
- * receivedDate} is an ISO date ({@code yyyy-MM-dd}): Hibernate's JSON mapper for the tenant {@code
- * jsonb} columns has no {@code java.time} support, so the frozen line carries the date as text.
+ * receivedDate} and {@code lastTransactionDate} are ISO dates ({@code yyyy-MM-dd}): Hibernate's
+ * JSON mapper for the tenant {@code jsonb} columns has no {@code java.time} support, so the frozen
+ * line carries the dates as text.
+ *
+ * <p>{@code totalDeposits}, {@code totalPayments}, {@code totalFeeTransfers} and {@code
+ * lastTransactionDate}: the client's posted {@code CLIENT}-ledger totals and last posted date on
+ * the account as at the list's date — carried once per client, on its {@code CLIENT} line (or, with
+ * none, its {@code CLIENT_INVESTMENT} line), null on every other line. Frozen with the list, so a
+ * locked list's report rows show the figures of the day, not today's ledger.
  */
 public record CreditorLine(
     Kind kind,
@@ -36,7 +43,11 @@ public record CreditorLine(
     BigDecimal balance,
     UUID unidentifiedDepositId,
     String receivedDate,
-    String bankDescription) {
+    String bankDescription,
+    BigDecimal totalDeposits,
+    BigDecimal totalPayments,
+    BigDecimal totalFeeTransfers,
+    String lastTransactionDate) {
 
   /** What a line is a balance of. */
   public enum Kind {

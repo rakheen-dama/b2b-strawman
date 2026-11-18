@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -21,6 +22,21 @@ public interface TrustMonthlyListRepository extends JpaRepository<TrustMonthlyLi
   /** The list a reconciliation locked, if any — a scalar read for the reconciliation response. */
   @Query("SELECT m.id FROM TrustMonthlyList m WHERE m.reconciliationId = :reconciliationId")
   Optional<UUID> findIdByReconciliationId(@Param("reconciliationId") UUID reconciliationId);
+
+  /** The lists a page of reconciliations locked (none for most) — one statement for the page. */
+  @Query(
+      "SELECT m.reconciliationId AS reconciliationId, m.id AS id FROM TrustMonthlyList m"
+          + " WHERE m.reconciliationId IN :reconciliationIds")
+  List<ReconciliationListId> findIdsByReconciliationIdIn(
+      @Param("reconciliationIds") Collection<UUID> reconciliationIds);
+
+  /** One row of {@link #findIdsByReconciliationIdIn}. */
+  interface ReconciliationListId {
+
+    UUID getReconciliationId();
+
+    UUID getId();
+  }
 
   /**
    * For each locked list of the account with {@code period_end} on or before {@code asAt}: the

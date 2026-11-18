@@ -25,11 +25,21 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService.BankStatementResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService.TrustReconciliationResponse;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordDepositRequest;
+import jakarta.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.LockSupport;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -44,6 +54,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * Phase 92 slice 650A (task 650.4, architecture §16.3.10, §16.9.2 paths 23 and 24 lock part,
@@ -80,6 +91,9 @@ class TrustMonthlyListIntegrationTest {
   @Autowired private TrustIntegrityService integrityService;
   @Autowired private BankStatementRepository bankStatementRepository;
   @Autowired private JdbcTemplate jdbc;
+  @Autowired private TrustTransactionService transactionService;
+  @Autowired private TransactionTemplate transactionTemplate;
+  @Autowired private EntityManager entityManager;
 
   private TrustBooksFixture.Tenant books;
   private UUID memberId;
@@ -206,13 +220,22 @@ class TrustMonthlyListIntegrationTest {
               assertThat(m.matterId()).isNull();
               assertThat(m.balance()).isEqualByComparingTo("300.00");
             });
+    // The client's posted totals and last posted date, frozen on its line (650A review C4)
+    assertThat(alphaLine.totalDeposits()).isEqualByComparingTo("1300.00");
+    assertThat(alphaLine.totalPayments()).isEqualByComparingTo("0.00");
+    assertThat(alphaLine.totalFeeTransfers()).isEqualByComparingTo("0.00");
+    assertThat(alphaLine.lastTransactionDate()).isEqualTo("2026-03-10");
     var betaLine = list.lines().get(1);
     assertThat(betaLine.clientId()).isEqualTo(beta.id());
     assertThat(betaLine.balance()).isEqualByComparingTo("600.00");
+    assertThat(betaLine.totalDeposits()).isEqualByComparingTo("600.00");
+    assertThat(betaLine.lastTransactionDate()).isEqualTo("2026-03-01");
     var fundLine = list.lines().get(2);
     assertThat(fundLine.name())
         .isEqualTo("Legal Practitioners' Fidelity Fund — interest and charges");
     assertThat(fundLine.balance()).isEqualByComparingTo("-57.50");
+    assertThat(fundLine.totalDeposits()).as("totals ride on client lines only").isNull();
+    assertThat(fundLine.lastTransactionDate()).isNull();
     var itemLine = list.lines().get(3);
     assertThat(itemLine.unidentifiedDepositId()).isNotNull();
     assertThat(itemLine.receivedDate()).isEqualTo("2026-03-02");
@@ -426,6 +449,15 @@ class TrustMonthlyListIntegrationTest {
         .contains(TrustIntegrityService.BACKDATED_AFTER_LOCK);
     assertThat(codes(check(account, MARCH_END.minusDays(1))))
         .doesNotContain(TrustIntegrityService.BACKDATED_AFTER_LOCK);
+    var summaries = new ArrayList<TrustMonthlyListService.MonthlyListSummary>();
+    books.as(memberId, () -> summaries.addAll(monthlyListService.list(account)));
+    assertThat(summaries)
+        .singleElement()
+        .satisfies(
+            summary -> {
+              assertThat(summary.id()).isEqualTo(listId);
+              assertThat(summary.adjustmentCount()).as("the back-dated deposit").isEqualTo(1);
+            });
     books.assertServicesAgree(account);
     books.assertServicesAgree(account, MARCH_END);
   }
@@ -561,20 +593,222 @@ class TrustMonthlyListIntegrationTest {
         .andExpect(jsonPath("$.status").value(404))
         .andExpect(jsonPath("$.title").value("TrustMonthlyList not found"))
         .andExpect(jsonPath("$.detail").value("No trustmonthlylist found with id " + unknown));
+    var unknownAccount = UUID.randomUUID();
     mockMvc
-        .perform(get("/api/trust-accounts/{id}/monthly-lists", UUID.randomUUID()).with(owner))
+        .perform(get("/api/trust-accounts/{id}/monthly-lists", unknownAccount).with(owner))
         .andExpect(status().isNotFound())
-        .andExpect(jsonPath("$.title").value("TrustAccount not found"));
+        .andExpect(jsonPath("$.status").value(404))
+        .andExpect(jsonPath("$.title").value("TrustAccount not found"))
+        .andExpect(jsonPath("$.detail").value("No trustaccount found with id " + unknownAccount));
 
     var noTrust = TestJwtFactory.memberJwt(ORG_ID, NO_TRUST);
     mockMvc
         .perform(get("/api/trust-accounts/{id}/monthly-lists", account).with(noTrust))
         .andExpect(status().isForbidden())
-        .andExpect(jsonPath("$.status").value(403));
+        .andExpect(jsonPath("$.status").value(403))
+        .andExpect(jsonPath("$.title").value("Access denied"))
+        .andExpect(jsonPath("$.detail").value("Insufficient permissions for this operation"));
     mockMvc
         .perform(get("/api/trust-monthly-lists/{id}", marchList).with(noTrust))
         .andExpect(status().isForbidden())
-        .andExpect(jsonPath("$.status").value(403));
+        .andExpect(jsonPath("$.status").value(403))
+        .andExpect(jsonPath("$.title").value("Access denied"))
+        .andExpect(jsonPath("$.detail").value("Insufficient permissions for this operation"));
+  }
+
+  // --- the lock and a concurrent posting (650A review C1 / found.md F-1) ------------------------
+
+  /**
+   * A deposit dated into March is posting (its transaction open) when March's reconciliation
+   * completes: the list's account lock waits for the deposit to commit — observed in {@code
+   * pg_stat_activity}, not a sleep — and then reads books the reconciliation did not see, so the
+   * completion is refused and rolled back. Without the lock the list would freeze without the
+   * deposit and its {@code posted_at} (before {@code locked_at}) would keep it off the after-lock
+   * schedule too.
+   */
+  @Test
+  void lockRace_aPostingInFlight_theLockWaitsForIt_andRefusesBooksTheReconciliationDidNotSee()
+      throws Exception {
+    var account = books.freshAccount(false);
+    var march = matchedMarchStatement(account, "tml-race-in-flight.csv");
+    var recon = reconcile(account, MARCH_END, march.id());
+    assertThat(recon.isBalanced()).isTrue();
+    var client = books.newClient("race in flight");
+
+    var outcome =
+        race(
+            () -> marchDeposit(account, client, "TML-RACE-1"),
+            () -> reconciliationService.completeReconciliation(recon.id()));
+
+    assertThat(outcome.secondBlockedOnFirst())
+        .as("the completion waited for the posting's account lock")
+        .isTrue();
+    assertThat(outcome.second())
+        .isInstanceOfSatisfying(
+            InvalidStateException.class,
+            e -> {
+              assertThat(e.getBody().getStatus()).isEqualTo(400);
+              assertThat(e.getBody().getTitle()).isEqualTo("Trust books changed during completion");
+              assertThat(e.getBody().getDetail())
+                  .isEqualTo(
+                      "An entry was posted while the reconciliation was being completed."
+                          + " Recalculate the reconciliation and complete it again.");
+            });
+    assertThat(getReconciliation(recon.id()).status()).as("rolled back").isEqualTo("DRAFT");
+    assertThat(
+            books.read(
+                () -> monthlyListRepository.findByTrustAccountIdOrderByPeriodEndDesc(account)))
+        .isEmpty();
+  }
+
+  /**
+   * The other order: the completion has locked March (its transaction open) when a deposit dated
+   * into March posts. The deposit waits for the completion to commit, so its {@code posted_at} is
+   * after {@code locked_at} and it is shown against the list.
+   */
+  @Test
+  void lockRace_aPostingWhileTheListLocks_waits_andIsShownAgainstTheList() throws Exception {
+    var account = books.freshAccount(false);
+    var march = matchedMarchStatement(account, "tml-race-after.csv");
+    var recon = reconcile(account, MARCH_END, march.id());
+    var client = books.newClient("race after lock");
+    var completed = new AtomicReference<TrustReconciliationResponse>();
+    var deposit = new AtomicReference<UUID>();
+
+    var outcome =
+        race(
+            () -> completed.set(reconciliationService.completeReconciliation(recon.id())),
+            () -> deposit.set(marchDeposit(account, client, "TML-RACE-2")));
+
+    assertThat(outcome.second()).as("the deposit").isNull();
+    assertThat(outcome.secondBlockedOnFirst())
+        .as("the deposit waited for the list's account lock")
+        .isTrue();
+    var list = getList(completed.get().monthlyListId());
+    assertThat(list.creditorTotal())
+        .as("frozen without the deposit")
+        .isEqualByComparingTo("1000.00");
+    assertThat(list.adjustmentsSinceLock().entries())
+        .singleElement()
+        .satisfies(
+            e -> {
+              assertThat(e.transactionId()).isEqualTo(deposit.get());
+              assertThat(e.postedAt()).isAfter(list.lockedAt());
+            });
+  }
+
+  private UUID marchDeposit(UUID account, TrustBooksFixture.Client client, String reference) {
+    return transactionService
+        .recordDeposit(
+            account,
+            new RecordDepositRequest(
+                client.id(),
+                client.matter(),
+                new BigDecimal("250.00"),
+                reference,
+                "Deposit",
+                LocalDate.of(2026, 3, 1)))
+        .id();
+  }
+
+  /** Each side's failure (null = succeeded) and whether {@code second} was seen blocked. */
+  private record RaceOutcome(Throwable second, boolean secondBlockedOnFirst) {}
+
+  /**
+   * Runs {@code first} in a transaction held open after it returns, starts {@code second} on
+   * another thread, waits (bounded) until {@code second} is blocked by {@code first}'s backend or
+   * has finished, then commits {@code first}. {@code first} must succeed.
+   */
+  private RaceOutcome race(Runnable first, Runnable second) throws Exception {
+    var firstDone = new CountDownLatch(1);
+    var releaseFirst = new CountDownLatch(1);
+    var firstError = new AtomicReference<Throwable>();
+    var secondError = new AtomicReference<Throwable>();
+    var secondFinished = new AtomicBoolean(false);
+    var firstPid = new AtomicInteger();
+    Thread firstThread =
+        Thread.ofPlatform()
+            .start(
+                () -> {
+                  try {
+                    books.as(
+                        memberId,
+                        () ->
+                            transactionTemplate.executeWithoutResult(
+                                tx -> {
+                                  first.run();
+                                  firstPid.set(
+                                      ((Number)
+                                              entityManager
+                                                  .createNativeQuery("SELECT pg_backend_pid()")
+                                                  .getSingleResult())
+                                          .intValue());
+                                  firstDone.countDown();
+                                  await(releaseFirst);
+                                }));
+                  } catch (Throwable t) {
+                    firstError.set(t);
+                    firstDone.countDown();
+                  }
+                });
+    assertThat(firstDone.await(30, TimeUnit.SECONDS)).isTrue();
+    assertThat(firstError.get()).as("the first operation").isNull();
+
+    Thread secondThread =
+        Thread.ofPlatform()
+            .start(
+                () -> {
+                  try {
+                    books.as(memberId, second);
+                  } catch (Throwable t) {
+                    secondError.set(t);
+                  } finally {
+                    secondFinished.set(true);
+                  }
+                });
+    boolean blocked;
+    try {
+      blocked = awaitBlockedByOrFinished(firstPid.get(), secondFinished);
+    } finally {
+      releaseFirst.countDown();
+      join(firstThread);
+      join(secondThread);
+    }
+    assertThat(firstError.get()).as("the first operation's commit").isNull();
+    return new RaceOutcome(secondError.get(), blocked);
+  }
+
+  /** True once a backend is blocked by {@code holderPid}; false if the waiter finished first. */
+  private boolean awaitBlockedByOrFinished(int holderPid, AtomicBoolean waiterFinished) {
+    long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(30);
+    while (System.nanoTime() < deadline) {
+      Long blocked =
+          jdbc.queryForObject(
+              "SELECT count(*) FROM pg_stat_activity WHERE ? = ANY(pg_blocking_pids(pid))",
+              Long.class,
+              holderPid);
+      if (blocked != null && blocked > 0) {
+        return true;
+      }
+      if (waiterFinished.get()) {
+        return false;
+      }
+      LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(10));
+    }
+    throw new AssertionError("the second operation neither blocked nor finished within 30 s");
+  }
+
+  private static void join(Thread thread) throws InterruptedException {
+    thread.join(30_000);
+    assertThat(thread.isAlive()).as("thread finished within 30 s").isFalse();
+  }
+
+  private static void await(CountDownLatch latch) {
+    try {
+      latch.await(30, TimeUnit.SECONDS);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+    }
   }
 
   // --- helpers ----------------------------------------------------------------------------------

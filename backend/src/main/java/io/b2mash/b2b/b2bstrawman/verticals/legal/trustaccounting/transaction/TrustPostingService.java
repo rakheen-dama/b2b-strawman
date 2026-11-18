@@ -1,8 +1,10 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction;
 
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
 import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -34,20 +36,28 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * <p>Every posting for a client runs under the client's lock anchor: callers take it with {@link
  * #lockClient} before reading a derived balance and posting (§16.2.3, T5).
+ *
+ * <p>Every {@code posted_at} is stamped under the account's posting lock ({@link #postedNow}, 650A
+ * F-1): a shared row lock on the trust account, held to commit, which the Rule 54.15 list's lock
+ * waits for — so no posting can be stamped before a list's {@code locked_at} and commit after the
+ * list has read the books.
  */
 @Service
 public class TrustPostingService {
 
   private final TrustTransactionRepository transactionRepository;
   private final ClientLedgerCardRepository ledgerCardRepository;
+  private final TrustAccountRepository trustAccountRepository;
   private final Clock clock;
 
   public TrustPostingService(
       TrustTransactionRepository transactionRepository,
       ClientLedgerCardRepository ledgerCardRepository,
+      TrustAccountRepository trustAccountRepository,
       Clock clock) {
     this.transactionRepository = transactionRepository;
     this.ledgerCardRepository = ledgerCardRepository;
+    this.trustAccountRepository = trustAccountRepository;
     this.clock = clock;
   }
 
@@ -79,7 +89,7 @@ public class TrustPostingService {
     var type = TrustTransactionType.of(draft.getTransactionType());
     require(type.approval() == TrustTransactionType.Approval.NONE, type, "record");
     draft.setStatus("RECORDED");
-    draft.applyPosting(type.effectFor(draft.getAmount()), clock.instant());
+    draft.applyPosting(type.effectFor(draft.getAmount()), postedNow(draft));
     return transactionRepository.save(draft);
   }
 
@@ -141,7 +151,7 @@ public class TrustPostingService {
       draft.setSecondApprovedBy(pair.getSecondApprovedBy());
       draft.setSecondApprovedAt(pair.getSecondApprovedAt());
     }
-    draft.applyPosting(type.effectFor(draft.getAmount()), clock.instant());
+    draft.applyPosting(type.effectFor(draft.getAmount()), postedNow(draft));
     return transactionRepository.save(draft);
   }
 
@@ -158,7 +168,7 @@ public class TrustPostingService {
     var type = TrustTransactionType.of(pending.getTransactionType());
     require(type.approval() == TrustTransactionType.Approval.REQUIRED, type, "postOnApproval");
     markApproved(pending, approverId);
-    pending.applyPosting(type.effectFor(pending.getAmount()), clock.instant());
+    pending.applyPosting(type.effectFor(pending.getAmount()), postedNow(pending));
     return transactionRepository.save(pending);
   }
 
@@ -174,7 +184,7 @@ public class TrustPostingService {
     requireAwaitingApproval(pending, "postReversalOnApproval");
     requireContraOf(pending, original);
     markApproved(pending, approverId);
-    pending.applyPosting(contraOf(original), clock.instant());
+    pending.applyPosting(contraOf(original), postedNow(pending));
     var saved = transactionRepository.save(pending);
     markReversed(original, saved);
     return saved;
@@ -236,7 +246,7 @@ public class TrustPostingService {
     return switch (rule) {
       case IMMEDIATE, PAIR, VIA_PAIR, OWNER -> {
         reversal.setStatus("RECORDED");
-        reversal.applyPosting(contraOf(original), clock.instant());
+        reversal.applyPosting(contraOf(original), postedNow(reversal));
         var saved = transactionRepository.save(reversal);
         markReversed(original, saved);
         yield saved;
@@ -296,6 +306,19 @@ public class TrustPostingService {
     return TrustTransactionType.of(original.getTransactionType())
         .effectFor(original.getAmount())
         .negated();
+  }
+
+  /**
+   * The {@code posted_at} of a row about to post, read under its account's posting lock (650A F-1):
+   * {@code FOR SHARE} on the trust account row, held until the posting's transaction ends. Postings
+   * share it; the Rule 54.15 list's {@code FOR UPDATE} on the same row waits for every posting in
+   * flight to commit before it reads the books, and a posting that starts while the list is locking
+   * waits for it — so its {@code posted_at} falls after the list's {@code locked_at}. Taken here,
+   * the one place {@code posted_at} is written, after the caller's own locks.
+   */
+  private Instant postedNow(TrustTransaction row) {
+    trustAccountRepository.findByIdForShare(row.getTrustAccountId());
+    return clock.instant();
   }
 
   /** The original stays posted with its effects; it is only marked as reversed by the contra. */

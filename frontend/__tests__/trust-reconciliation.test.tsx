@@ -98,6 +98,12 @@ vi.mock("@/lib/api/capabilities", () => ({
   }),
 }));
 
+// ── Mock the expired-session funnel (its own behaviour: lib/auth/__tests__/expiry-server.test.ts)
+const mockRethrowOnExpiredSession = vi.fn();
+vi.mock("@/lib/auth/expiry-server", () => ({
+  rethrowOnExpiredSession: (...args: unknown[]) => mockRethrowOnExpiredSession(...args),
+}));
+
 // ── Mock next/navigation ─────────────────────────────────────────
 const mockPush = vi.fn();
 vi.mock("next/navigation", () => ({
@@ -138,6 +144,7 @@ import MonthlyListPage from "@/app/(app)/org/[slug]/trust-accounting/reconciliat
 import { BankStatementUpload } from "@/components/trust/BankStatementUpload";
 import { ReconciliationSplitPane } from "@/components/trust/ReconciliationSplitPane";
 import { fetchTransactions } from "@/app/(app)/org/[slug]/trust-accounting/transactions/actions";
+import { ApiError } from "@/lib/api";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
 import { recordFromStatementSchemaFor } from "@/lib/schemas/trust";
 import { STATEMENT_LINE_CLASSIFICATIONS } from "@/lib/types";
@@ -223,6 +230,10 @@ function makeMonthlyList(overrides: Partial<MonthlyList> = {}): MonthlyList {
         unidentifiedDepositId: null,
         receivedDate: null,
         bankDescription: null,
+        totalDeposits: 103750,
+        totalPayments: 0,
+        totalFeeTransfers: 0,
+        lastTransactionDate: "2026-03-20",
       },
       {
         kind: "CLIENT_INVESTMENT",
@@ -233,6 +244,10 @@ function makeMonthlyList(overrides: Partial<MonthlyList> = {}): MonthlyList {
         unidentifiedDepositId: null,
         receivedDate: null,
         bankDescription: null,
+        totalDeposits: 0,
+        totalPayments: 0,
+        totalFeeTransfers: 0,
+        lastTransactionDate: null,
       },
       {
         kind: "FUND",
@@ -243,6 +258,10 @@ function makeMonthlyList(overrides: Partial<MonthlyList> = {}): MonthlyList {
         unidentifiedDepositId: null,
         receivedDate: null,
         bankDescription: null,
+        totalDeposits: null,
+        totalPayments: null,
+        totalFeeTransfers: null,
+        lastTransactionDate: null,
       },
       {
         kind: "UNIDENTIFIED",
@@ -253,6 +272,10 @@ function makeMonthlyList(overrides: Partial<MonthlyList> = {}): MonthlyList {
         unidentifiedDepositId: "item-1",
         receivedDate: "2026-03-22",
         bankDescription: "ACB CREDIT UNKNOWN",
+        totalDeposits: null,
+        totalPayments: null,
+        totalFeeTransfers: null,
+        lastTransactionDate: null,
       },
     ],
     integrityFlags: [],
@@ -1373,6 +1396,34 @@ describe("Trust Reconciliation", () => {
       expect(entry).toHaveTextContent("DEP-LATE");
       expect(entry).toHaveTextContent(zar(250));
       expect(afterLock).toHaveTextContent(zar(145250));
+    });
+
+    it("sends an expired session (401) to the re-login flow instead of the load-error card", async () => {
+      const expired = new ApiError(401, "Unauthorized");
+      mockFetchMonthlyList.mockRejectedValue(expired);
+      mockRethrowOnExpiredSession.mockImplementationOnce(async () => {
+        throw new Error("NEXT_REDIRECT");
+      });
+
+      await expect(
+        MonthlyListPage({ params: Promise.resolve({ slug: "acme", listId: "list-1" }) })
+      ).rejects.toThrow("NEXT_REDIRECT");
+      expect(mockRethrowOnExpiredSession).toHaveBeenCalledWith(expired);
+    });
+
+    it("shows the not-found page for an unknown list, and the load-error card for other failures", async () => {
+      mockFetchMonthlyList.mockRejectedValueOnce(new ApiError(404, "Not found"));
+      await expect(
+        MonthlyListPage({ params: Promise.resolve({ slug: "acme", listId: "missing" }) })
+      ).rejects.toThrow("NEXT_NOT_FOUND");
+
+      mockFetchMonthlyList.mockRejectedValueOnce(new ApiError(500, "Server error"));
+      render(
+        await MonthlyListPage({ params: Promise.resolve({ slug: "acme", listId: "list-1" }) })
+      );
+      expect(screen.getByTestId("monthly-list-error")).toHaveTextContent(
+        "Failed to load the monthly list. Please try again."
+      );
     });
 
     it("says nothing was entered after the lock when there are no such entries", async () => {

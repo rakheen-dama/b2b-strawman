@@ -8,6 +8,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
 import java.math.BigDecimal;
 import java.time.Clock;
@@ -44,7 +45,10 @@ class TrustPostingServiceRecordWithPairTest {
     when(repository.save(any(TrustTransaction.class))).thenAnswer(i -> i.getArgument(0));
     service =
         new TrustPostingService(
-            repository, mock(ClientLedgerCardRepository.class), Clock.fixed(NOW, ZoneOffset.UTC));
+            repository,
+            mock(ClientLedgerCardRepository.class),
+            mock(TrustAccountRepository.class),
+            Clock.fixed(NOW, ZoneOffset.UTC));
   }
 
   @Test

@@ -13,15 +13,11 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustMont
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustMonthlyListRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustMonthlyListService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustMonthlyListService.AdjustmentEntry;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.LedgerTotals;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.ClientBalanceRow;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedgerQueryRepository;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,7 +46,9 @@ import org.springframework.stereotype.Component;
  * per open unidentified deposit and, for one account, the section 86(3) line where non-zero.
  * Firm-wide, section 86(3) placements net to nil across accounts and are a note, not a creditor.
  * {@code balance} is what is held for the row: a person's general + invested balance (the general
- * balance on a trust banking account), a line's balance otherwise.
+ * balance on a trust banking account), a line's balance otherwise. A person's v3 totals ({@code
+ * totalDeposits}, {@code totalPayments}, {@code totalFeeTransfers}) and {@code lastTransactionDate}
+ * come from the lines too — frozen with a locked list, computed now for a live one.
  */
 @Component
 public class ClientTrustBalancesQuery implements ReportQuery {
@@ -62,7 +60,6 @@ public class ClientTrustBalancesQuery implements ReportQuery {
       "Section 86(3) placements net to nil across the trust accounts and are not listed as a"
           + " creditor.";
 
-  private final TrustLedgerQueryRepository ledgerQueries;
   private final TrustAccountRepository trustAccountRepository;
   private final TrustMonthlyListRepository monthlyListRepository;
   private final TrustMonthlyListService monthlyListService;
@@ -70,13 +67,11 @@ public class ClientTrustBalancesQuery implements ReportQuery {
   private final Clock clock;
 
   public ClientTrustBalancesQuery(
-      TrustLedgerQueryRepository ledgerQueries,
       TrustAccountRepository trustAccountRepository,
       TrustMonthlyListRepository monthlyListRepository,
       TrustMonthlyListService monthlyListService,
       MemberNameResolver memberNameResolver,
       Clock clock) {
-    this.ledgerQueries = ledgerQueries;
     this.trustAccountRepository = trustAccountRepository;
     this.monthlyListRepository = monthlyListRepository;
     this.monthlyListService = monthlyListService;
@@ -132,6 +127,10 @@ public class ClientTrustBalancesQuery implements ReportQuery {
     String name;
     BigDecimal general = BigDecimal.ZERO;
     BigDecimal invested = BigDecimal.ZERO;
+    BigDecimal deposits = BigDecimal.ZERO;
+    BigDecimal payments = BigDecimal.ZERO;
+    BigDecimal feeTransfers = BigDecimal.ZERO;
+    String lastTransactionDate;
     final List<Map<String, Object>> matters = new ArrayList<>();
     final List<AccountList> sources = new ArrayList<>();
 
@@ -179,6 +178,15 @@ public class ClientTrustBalancesQuery implements ReportQuery {
             } else {
               person.invested = person.invested.add(line.balance());
             }
+            person.deposits = plus(person.deposits, line.totalDeposits());
+            person.payments = plus(person.payments, line.totalPayments());
+            person.feeTransfers = plus(person.feeTransfers, line.totalFeeTransfers());
+            // ISO dates order as text
+            if (line.lastTransactionDate() != null
+                && (person.lastTransactionDate == null
+                    || line.lastTransactionDate().compareTo(person.lastTransactionDate) > 0)) {
+              person.lastTransactionDate = line.lastTransactionDate();
+            }
             if (!person.sources.contains(list)) {
               person.sources.add(list);
             }
@@ -195,7 +203,7 @@ public class ClientTrustBalancesQuery implements ReportQuery {
       }
     }
     var rows = new ArrayList<Map<String, Object>>();
-    rows.addAll(personRows(people, lists, asOf, firmWide));
+    rows.addAll(personRows(people, asOf, firmWide));
     others.sort(Comparator.comparing(r -> kindOrder((String) r.get("kind"))));
     rows.addAll(others);
 
@@ -232,43 +240,12 @@ public class ClientTrustBalancesQuery implements ReportQuery {
         List.of());
   }
 
-  private List<Map<String, Object>> personRows(
-      Map<UUID, Person> people, List<AccountList> lists, LocalDate asOf, boolean firmWide) {
-    if (people.isEmpty()) {
-      return List.of();
-    }
-    // The v3 columns: live per-client totals and last posted date as at the date, over the
-    // accounts in scope (one batch query per account)
-    var deposits = new HashMap<UUID, BigDecimal>();
-    var payments = new HashMap<UUID, BigDecimal>();
-    var feeTransfers = new HashMap<UUID, BigDecimal>();
-    var lastDates = new HashMap<UUID, LocalDate>();
-    for (var list : lists) {
-      UUID accountId = list.account().getId();
-      var clientIds =
-          people.values().stream()
-              .filter(p -> p.sources.contains(list))
-              .map(p -> p.clientId)
-              .toList();
-      if (clientIds.isEmpty()) {
-        continue;
-      }
-      Map<UUID, LedgerTotals> totals =
-          LedgerTotals.byCustomer(ledgerQueries.clientTotalsByType(accountId, clientIds, asOf));
-      totals.forEach(
-          (id, t) -> {
-            deposits.merge(id, t.deposits(), BigDecimal::add);
-            payments.merge(id, t.payments(), BigDecimal::add);
-            feeTransfers.merge(id, t.feeTransfers(), BigDecimal::add);
-          });
-      for (ClientBalanceRow row : ledgerQueries.clientBalances(accountId, asOf)) {
-        if (row.getLastTransactionDate() != null && clientIds.contains(row.getCustomerId())) {
-          lastDates.merge(
-              row.getCustomerId(), row.getLastTransactionDate(), (a, b) -> a.isAfter(b) ? a : b);
-        }
-      }
-    }
+  private static BigDecimal plus(BigDecimal total, BigDecimal amount) {
+    return amount != null ? total.add(amount) : total;
+  }
 
+  private static List<Map<String, Object>> personRows(
+      Map<UUID, Person> people, LocalDate asOf, boolean firmWide) {
     return people.values().stream()
         .sorted(
             Comparator.comparing(
@@ -282,13 +259,12 @@ public class ClientTrustBalancesQuery implements ReportQuery {
               row.put("clientName", p.name != null ? p.name : "Unknown client");
               row.put("customerId", p.clientId);
               row.put("balance", total);
-              row.put("totalDeposits", deposits.getOrDefault(p.clientId, BigDecimal.ZERO));
-              row.put("totalPayments", payments.getOrDefault(p.clientId, BigDecimal.ZERO));
-              row.put("totalFeeTransfers", feeTransfers.getOrDefault(p.clientId, BigDecimal.ZERO));
+              row.put("totalDeposits", p.deposits);
+              row.put("totalPayments", p.payments);
+              row.put("totalFeeTransfers", p.feeTransfers);
               // Column kept (§16.8.6, definition edits are 650C); no interest is posted any more
               row.put("totalInterestCredited", BigDecimal.ZERO);
-              var last = lastDates.get(p.clientId);
-              row.put("lastTransactionDate", last != null ? last.toString() : null);
+              row.put("lastTransactionDate", p.lastTransactionDate);
               row.put("asOfDate", asOf.toString());
               row.put("kind", CreditorLine.Kind.CLIENT.name());
               row.put("name", p.name);

@@ -325,6 +325,18 @@
     }, {
       "name" : "bankDescription",
       "type" : "java.lang.String"
+    }, {
+      "name" : "totalDeposits",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "totalPayments",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "totalFeeTransfers",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "lastTransactionDate",
+      "type" : "java.lang.String"
     } ],
     "FirmIntegrityReport" : [ {
       "name" : "asAt",

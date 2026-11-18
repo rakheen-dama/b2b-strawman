@@ -649,6 +649,14 @@ export interface CreditorLine {
   /** ISO date (`yyyy-MM-dd`), unidentified deposits only. */
   receivedDate: string | null;
   bankDescription: string | null;
+  /**
+   * The client's posted totals and last posted date (ISO) on the account as at the list's date,
+   * frozen with a locked list — on the client's first line only, null on every other line.
+   */
+  totalDeposits: number | null;
+  totalPayments: number | null;
+  totalFeeTransfers: number | null;
+  lastTransactionDate: string | null;
 }
 
 /** Mirrors `TrustMonthlyListService.MonthlyListSummary` — one locked list without its lines. */

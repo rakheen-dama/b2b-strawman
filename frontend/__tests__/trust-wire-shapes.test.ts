@@ -271,6 +271,10 @@ describe("trust wire shapes match the backend contract (ADR-365)", () => {
       unidentifiedDepositId: null,
       receivedDate: null,
       bankDescription: null,
+      totalDeposits: null,
+      totalPayments: null,
+      totalFeeTransfers: null,
+      lastTransactionDate: null,
     };
     expect(Object.keys(literal)).toEqual(componentNames(records.CreditorLine));
   });

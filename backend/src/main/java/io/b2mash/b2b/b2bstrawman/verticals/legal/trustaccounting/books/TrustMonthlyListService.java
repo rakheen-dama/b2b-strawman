@@ -19,6 +19,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustMont
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.TrustCreditorAccount;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.TrustCreditorAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.TrustCreditorAccountType;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.LedgerTotals;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.ReconciliationStatus;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliation;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.ClientBalanceRow;
@@ -44,6 +45,7 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -63,6 +65,10 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * <p>A posting back-dated into a locked month is never refused and never alters the list: it is
  * shown against it here, on the report and as the integrity flag {@code BACKDATED_AFTER_LOCK}.
+ *
+ * <p>The reads ({@link #list}, {@link #get}, {@link #adjustmentsSinceLock}, {@link #liveList}) run
+ * at {@code REPEATABLE_READ} when they start the transaction, so their several statements see one
+ * snapshot (648E convention). Joined to a caller's transaction they take its isolation (R-1).
  */
 @Service
 public class TrustMonthlyListService {
@@ -216,8 +222,14 @@ public class TrustMonthlyListService {
    * Freezes the account's Rule 54.15 list for the completed reconciliation's period end — the date
    * the firm chose, never the statement's last line date. Joins the completion transaction: a
    * refusal here rolls the completion back. Refuses a month already locked for the account (a
-   * second reconciliation to the same month end), and a list whose lines do not add up to the
-   * reconciled creditor total (an entry posted while the completion ran).
+   * second reconciliation to the same month end), and a list whose cashbook or any creditor term
+   * differs from the reconciled one (an entry posted while the completion ran).
+   *
+   * <p>First it takes the account row lock ({@code FOR UPDATE}, 650A F-1) that every posting's
+   * {@code FOR SHARE} conflicts with: the books are read only after every posting in flight has
+   * committed, and a posting that starts now waits for the completion to commit, so its {@code
+   * posted_at} is after {@code locked_at} — every row is either in the list or shown against it.
+   * Lock order: the statement (completion), then the account.
    */
   @Transactional
   public TrustMonthlyList lock(TrustReconciliation completed) {
@@ -227,6 +239,9 @@ public class TrustMonthlyListService {
       throw new IllegalStateException("lock() needs a COMPLETED reconciliation to a month end");
     }
     UUID accountId = completed.getTrustAccountId();
+    trustAccountRepository
+        .findByIdForUpdate(accountId)
+        .orElseThrow(() -> new ResourceNotFoundException("TrustAccount", accountId));
     var existing = repository.findByTrustAccountIdAndPeriodEnd(accountId, periodEnd);
     if (existing.isPresent()) {
       throw new InvalidStateException(
@@ -241,9 +256,7 @@ public class TrustMonthlyListService {
 
     var position = trustBooksService.position(accountId, periodEnd);
     var lines = buildLines(accountId, periodEnd, position);
-    var linesTotal =
-        lines.stream().map(CreditorLine::balance).reduce(BigDecimal.ZERO, BigDecimal::add);
-    if (linesTotal.compareTo(completed.getCreditorTotal()) != 0) {
+    if (!matchesReconciled(completed, position, lines)) {
       throw new InvalidStateException(
           "Trust books changed during completion",
           "An entry was posted while the reconciliation was being completed. Recalculate the"
@@ -270,8 +283,66 @@ public class TrustMonthlyListService {
     return list;
   }
 
-  /** The account's locked lists, newest first; 404 on an unknown account. */
+  /**
+   * True when the list about to be frozen is the reconciled one: the cashbook and creditor total
+   * read now equal the reconciliation's, and the lines of each kind sum to the matching reconciled
+   * term (clients' general balances, invested balances, the Fund ledger, open unidentified
+   * deposits, section 86(3) placements) and all of them to the creditor total. A posting that moved
+   * value between two terms — leaving the total unchanged — is caught too.
+   */
+  private static boolean matchesReconciled(
+      TrustReconciliation reconciled, TrustPosition position, List<CreditorLine> lines) {
+    return same(position.cashbook(), reconciled.getCashbookBalance())
+        && same(position.creditorTotal(), reconciled.getCreditorTotal())
+        && same(sum(lines, CreditorLine.Kind.CLIENT), reconciled.getClientLedgerTotal())
+        && same(
+            sum(lines, CreditorLine.Kind.CLIENT_INVESTMENT),
+            reconciled.getInvestmentCreditorTotal())
+        && same(sum(lines, CreditorLine.Kind.FUND), reconciled.getFundLedgerBalance())
+        && same(
+            sum(lines, CreditorLine.Kind.UNIDENTIFIED), reconciled.getUnidentifiedDepositTotal())
+        && same(sum(lines, CreditorLine.Kind.INTER_ACCOUNT), reconciled.getInterAccountBalance())
+        && same(sum(lines, null), reconciled.getCreditorTotal());
+  }
+
+  /** Σ balance of the lines of {@code kind} (null = every line). */
+  private static BigDecimal sum(List<CreditorLine> lines, CreditorLine.Kind kind) {
+    return lines.stream()
+        .filter(l -> kind == null || l.kind() == kind)
+        .map(CreditorLine::balance)
+        .reduce(BigDecimal.ZERO, BigDecimal::add);
+  }
+
+  private static boolean same(BigDecimal a, BigDecimal b) {
+    return a.compareTo(b) == 0;
+  }
+
+  /** The list {@code reconciliationId} locked when it completed, or null (650A, §16.4.4). */
   @Transactional(readOnly = true)
+  public UUID monthlyListIdFor(UUID reconciliationId) {
+    moduleGuard.requireModule(MODULE_ID);
+    return repository.findIdByReconciliationId(reconciliationId).orElse(null);
+  }
+
+  /**
+   * The list each of {@code reconciliationIds} locked, keyed by reconciliation id (absent = none) —
+   * one statement for a page of reconciliations.
+   */
+  @Transactional(readOnly = true)
+  public Map<UUID, UUID> monthlyListIdsFor(Collection<UUID> reconciliationIds) {
+    moduleGuard.requireModule(MODULE_ID);
+    if (reconciliationIds.isEmpty()) {
+      return Map.of();
+    }
+    return repository.findIdsByReconciliationIdIn(reconciliationIds).stream()
+        .collect(
+            Collectors.toMap(
+                TrustMonthlyListRepository.ReconciliationListId::getReconciliationId,
+                TrustMonthlyListRepository.ReconciliationListId::getId));
+  }
+
+  /** The account's locked lists, newest first; 404 on an unknown account. */
+  @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
   public List<MonthlyListSummary> list(UUID trustAccountId) {
     moduleGuard.requireModule(MODULE_ID);
     if (!trustAccountRepository.existsById(trustAccountId)) {
@@ -309,7 +380,7 @@ public class TrustMonthlyListService {
   }
 
   /** One locked list with the entries made after the lock; 404 on an unknown list. */
-  @Transactional(readOnly = true)
+  @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
   public MonthlyListResponse get(UUID monthlyListId) {
     moduleGuard.requireModule(MODULE_ID);
     var list =
@@ -352,7 +423,7 @@ public class TrustMonthlyListService {
    * net per term (live − locked). Used by {@link #get} and the Rule 54.15 report's after-lock
    * schedule.
    */
-  @Transactional(readOnly = true)
+  @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
   public AdjustmentsSinceLock adjustmentsSinceLock(TrustMonthlyList list) {
     moduleGuard.requireModule(MODULE_ID);
     var rows =
@@ -401,7 +472,7 @@ public class TrustMonthlyListService {
    * The account's list computed now as at {@code asAt} (null = today): the same lines a lock would
    * freeze, with the integrity check's position, bank side and flags. 404 on an unknown account.
    */
-  @Transactional(readOnly = true)
+  @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
   public CreditorList liveList(UUID trustAccountId, LocalDate asAt) {
     moduleGuard.requireModule(MODULE_ID);
     var report = integrityService.check(trustAccountId, asAt, null);
@@ -422,13 +493,11 @@ public class TrustMonthlyListService {
    * non-zero invested balance on this account, the Fund line (always), each open unidentified
    * deposit and the inter-account line where non-zero. They sum to {@code position.creditorTotal()}
    * while EQ-4 holds and nothing is on another non-client ledger ({@code otherNonClient} is always
-   * zero in this phase).
+   * zero in this phase). Each client's posted totals and last posted date ride on its first line.
    */
   private List<CreditorLine> buildLines(UUID accountId, LocalDate date, TrustPosition position) {
-    var general =
-        ledgerQueries.clientBalances(accountId, date).stream()
-            .filter(r -> r.getBalance().signum() != 0)
-            .toList();
+    var clientRows = ledgerQueries.clientBalances(accountId, date);
+    var general = clientRows.stream().filter(r -> r.getBalance().signum() != 0).toList();
     var invested =
         ledgerQueries.investmentCreditorBalances(accountId, date).stream()
             .filter(r -> r.getBalance().signum() != 0)
@@ -444,6 +513,16 @@ public class TrustMonthlyListService {
     general.forEach(r -> clientIds.add(r.getCustomerId()));
     invested.forEach(r -> clientIds.add(r.getCustomerId()));
     var clientNames = customerNames(clientIds);
+    Map<UUID, LedgerTotals> totals =
+        clientIds.isEmpty()
+            ? Map.of()
+            : LedgerTotals.byCustomer(ledgerQueries.clientTotalsByType(accountId, clientIds, date));
+    Map<UUID, LocalDate> lastDates = new LinkedHashMap<>();
+    clientRows.stream()
+        .filter(r -> r.getLastTransactionDate() != null)
+        .forEach(r -> lastDates.put(r.getCustomerId(), r.getLastTransactionDate()));
+    var generalIds =
+        general.stream().map(ClientBalanceRow::getCustomerId).collect(Collectors.toSet());
     var matterIds =
         mattersByClient.values().stream()
             .flatMap(List::stream)
@@ -482,15 +561,13 @@ public class TrustMonthlyListService {
                                       m.name() == null ? "" : m.name(),
                                   String.CASE_INSENSITIVE_ORDER))
                           .toList();
-                  return new CreditorLine(
+                  return clientLine(
                       CreditorLine.Kind.CLIENT,
-                      r.getCustomerId(),
-                      clientNames.get(r.getCustomerId()),
+                      r,
+                      clientNames,
                       matters,
-                      r.getBalance(),
-                      null,
-                      null,
-                      null);
+                      totals.getOrDefault(r.getCustomerId(), LedgerTotals.ZERO),
+                      lastDates.get(r.getCustomerId()));
                 })
             .sorted(byName)
             .toList());
@@ -499,15 +576,21 @@ public class TrustMonthlyListService {
         invested.stream()
             .map(
                 (ClientBalanceRow r) ->
-                    new CreditorLine(
-                        CreditorLine.Kind.CLIENT_INVESTMENT,
-                        r.getCustomerId(),
-                        clientNames.get(r.getCustomerId()),
-                        List.of(),
-                        r.getBalance(),
-                        null,
-                        null,
-                        null))
+                    generalIds.contains(r.getCustomerId())
+                        ? clientLine(
+                            CreditorLine.Kind.CLIENT_INVESTMENT,
+                            r,
+                            clientNames,
+                            List.of(),
+                            null,
+                            null)
+                        : clientLine(
+                            CreditorLine.Kind.CLIENT_INVESTMENT,
+                            r,
+                            clientNames,
+                            List.of(),
+                            totals.getOrDefault(r.getCustomerId(), LedgerTotals.ZERO),
+                            lastDates.get(r.getCustomerId())))
             .sorted(byName)
             .toList());
 
@@ -526,6 +609,10 @@ public class TrustMonthlyListService {
             position.fundLedger(),
             null,
             null,
+            null,
+            null,
+            null,
+            null,
             null));
 
     // Open as at the date (EQ-4): the item's own rows sum to its amount; oldest first
@@ -541,7 +628,11 @@ public class TrustMonthlyListService {
                     i.getAmount(),
                     i.getId(),
                     i.getReceivedDate().toString(),
-                    i.getBankDescription()))
+                    i.getBankDescription(),
+                    null,
+                    null,
+                    null,
+                    null))
         .forEach(lines::add);
 
     if (position.interAccount().signum() != 0) {
@@ -556,9 +647,39 @@ public class TrustMonthlyListService {
               position.interAccount(),
               null,
               null,
+              null,
+              null,
+              null,
+              null,
               null));
     }
     return List.copyOf(lines);
+  }
+
+  /**
+   * A client's line; {@code totals} and {@code lastDate} only on the client's first line (null
+   * totals = not the first line).
+   */
+  private static CreditorLine clientLine(
+      CreditorLine.Kind kind,
+      ClientBalanceRow row,
+      Map<UUID, String> clientNames,
+      List<CreditorLine.MatterBalance> matters,
+      LedgerTotals totals,
+      LocalDate lastDate) {
+    return new CreditorLine(
+        kind,
+        row.getCustomerId(),
+        clientNames.get(row.getCustomerId()),
+        matters,
+        row.getBalance(),
+        null,
+        null,
+        null,
+        totals != null ? totals.deposits() : null,
+        totals != null ? totals.payments() : null,
+        totals != null ? totals.feeTransfers() : null,
+        totals != null && lastDate != null ? lastDate.toString() : null);
   }
 
   private Map<UUID, String> customerNames(Collection<UUID> ids) {

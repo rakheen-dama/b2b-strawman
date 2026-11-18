@@ -16,7 +16,6 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksFixture;
 import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness.Expected;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustIntegrityService.FirmIntegrityReport;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustIntegrityService.IntegrityFlag;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustIntegrityService.TrustIntegrityReport;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.UnidentifiedDepositService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.UnidentifiedDepositService.AllocateRequest;
@@ -370,15 +369,23 @@ class TrustIntegrityServiceIntegrationTest {
   }
 
   /**
-   * EQ-1 is checked at a reconciliation's period end: the statement shows R1 000, the books R900.
-   * The day before, no reconciliation has that period end, so there is no bank side.
+   * EQ-1 is checked at a reconciliation's period end: the statement shows R1 000 (a R900 deposit
+   * matched, a R100 credit the books do not have), the books R900. The day before, no
+   * reconciliation has that period end, so there is no bank side. Recording the missing R100
+   * deposit and matching it to its line clears the flag as at the same period end (bank side
+   * present).
    */
   @Test
-  void bankDifference_raisedAtAReconciliationPeriodEnd() {
+  void bankDifference_raisedAtAReconciliationPeriodEnd_clearedByTheMissingDeposit() {
     var account = books.freshAccount(false);
-    var depositId = books.deposit(account, books.newClient("bank"), "900.00");
+    var client = books.newClient("bank");
+    var depositId = books.deposit(account, client, "900.00");
     var statement =
-        importStatement(account, "tis-bank.csv", "01/03/2026,Deposit received,900.00,1000.00,TB-1");
+        importStatement(
+            account,
+            "tis-bank.csv",
+            "01/03/2026,Deposit received,900.00,900.00,TB-1",
+            "02/03/2026,Deposit received,100.00,1000.00,TB-2");
     books.as(
         memberId,
         () -> {
@@ -406,6 +413,19 @@ class TrustIntegrityServiceIntegrationTest {
     var dayBefore = check(books, memberId, account, MARCH_END.minusDays(1), null);
     assertThat(dayBefore.bank()).isNull();
     assertThat(codes(dayBefore)).doesNotContain(TrustIntegrityService.BANK_DIFFERENCE);
+    books.assertServicesAgree(account, MARCH_END);
+
+    // Repair through the service API: record the missing deposit and match it to its line
+    var missingId = books.deposit(account, client, "100.00");
+    books.as(
+        memberId,
+        () -> reconciliationService.manualMatch(statement.lines().get(1).id(), missingId));
+    var repaired = check(books, memberId, account, MARCH_END, null);
+    assertThat(repaired.bank()).as("the reconciliation is still at this date").isNotNull();
+    assertThat(repaired.bank().adjustedBankBalance()).isEqualByComparingTo("1000.00");
+    assertThat(repaired.position().cashbook()).isEqualByComparingTo("1000.00");
+    assertThat(codes(repaired)).as("cleared as at the period end").isEmpty();
+    assertThat(repaired.balanced()).isTrue();
     books.assertServicesAgree(account, MARCH_END);
   }
 
@@ -473,6 +493,24 @@ class TrustIntegrityServiceIntegrationTest {
     assertThat(deposit[0]).as("a posting is never refused by a flag").isEqualTo("RECORDED");
     assertThat(codes(check(broken, brokenMemberId, account, null, null)))
         .contains(TrustIntegrityService.BOOKS_OUT_OF_BALANCE);
+
+    // Repair (the break was a direct write, so is the fix): the missing TRANSFER_OUT leg
+    broken.postLedgerRowDirect(
+        account,
+        "TRANSFER_OUT",
+        "50.00",
+        LocalDate.of(2026, 3, 5),
+        client.id(),
+        client.matter(),
+        null,
+        null);
+    var repaired = check(broken, brokenMemberId, account, null, null);
+    assertThat(codes(repaired)).doesNotContain(TrustIntegrityService.BOOKS_OUT_OF_BALANCE);
+    assertThat(repaired.position().cashbook())
+        .isEqualByComparingTo(repaired.position().creditorTotal());
+    assertThat(codes(check(broken, brokenMemberId, account, MARCH_END, null)))
+        .as("cleared as at the period end too")
+        .doesNotContain(TrustIntegrityService.BOOKS_OUT_OF_BALANCE);
   }
 
   /**
@@ -508,6 +546,14 @@ class TrustIntegrityServiceIntegrationTest {
     assertThat(codes(check(broken, brokenMemberId, account, LocalDate.of(2026, 3, 31), null)))
         .as("rule (d) applies as at today only")
         .doesNotContain(TrustIntegrityService.UNIDENTIFIED_ITEMS_MISMATCH);
+
+    // Repair (the break was a direct write, so is the fix): the item is held again
+    broken.setItemStatusDirect(itemId, "HELD");
+    var repaired = check(broken, brokenMemberId, account, null, null);
+    assertThat(codes(repaired))
+        .as("cleared")
+        .doesNotContain(TrustIntegrityService.UNIDENTIFIED_ITEMS_MISMATCH);
+    assertThat(repaired.balanced()).isTrue();
 
     var future = broken.freshAccount(false);
     broken.unidentifiedDepositDirect(future, "75.00", broken.today().plusDays(10));
@@ -547,16 +593,27 @@ class TrustIntegrityServiceIntegrationTest {
             });
     assertThat(flag.message()).contains(rand("200.00")).contains(rand("250.00"));
     assertThat(report.balanced()).isFalse();
+
+    // Repair (the break was a direct write, so is the fix): the record agrees with its rows again
+    broken.setInvestmentPrincipalDirect(investment, "200.00");
+    var repaired = check(broken, brokenMemberId, account, null, null);
+    assertThat(codes(repaired))
+        .as("cleared")
+        .doesNotContain(TrustIntegrityService.INVESTMENT_BALANCE_MISMATCH);
+    assertThat(repaired.balanced()).isTrue();
   }
 
   /**
-   * EQ-3: a section 86(3) receipt with no placement on another account balances its own account (no
-   * per-account flag) but not the firm — a firm-level blocking flag naming the account.
+   * EQ-3: a section 86(3) receipt with no placement on the funding account balances its own account
+   * (no per-account flag) but not the firm — a firm-level blocking flag naming the account. Posting
+   * the missing placement leg on the funding account clears it.
    */
   @Test
-  void interAccountNotZero_isFirmLevelOnly() {
+  void interAccountNotZero_isFirmLevelOnly_clearedByTheMissingPlacement() {
     var account = broken.freshAccount(false);
-    var investment = broken.investmentDirect(account, account, null, "300.00");
+    var funding = broken.freshAccount(false);
+    broken.deposit(funding, broken.newClient("funding"), "1000.00");
+    var investment = broken.investmentDirect(funding, account, null, "300.00");
     var row =
         broken.postLedgerRowDirect(
             account,
@@ -580,6 +637,28 @@ class TrustIntegrityServiceIntegrationTest {
             .orElseThrow();
     assertThat(flag.severity()).isEqualTo(TrustIntegrityService.BLOCKING);
     assertThat(flag.subjects()).extracting("id").contains(account);
+
+    // Repair (the break was a direct write, so is the fix): the placement leg on the funding
+    // account, naming the same investment — the inter-account terms net to zero firm-wide
+    broken.postLedgerRowDirect(
+        funding,
+        "FIRM_INV_PLACE",
+        "300.00",
+        LocalDate.of(2026, 3, 8),
+        null,
+        null,
+        null,
+        investment);
+    var repaired = checkFirm(broken, brokenMemberId);
+    assertThat(repaired.flags())
+        .as("no INTER_ACCOUNT_NOT_ZERO naming the account")
+        .filteredOn(f -> f.code().equals(TrustIntegrityService.INTER_ACCOUNT_NOT_ZERO))
+        .flatExtracting(IntegrityFlag::subjects)
+        .extracting(FlagSubject::id)
+        .doesNotContain(account);
+    assertThat(codes(check(broken, brokenMemberId, funding, null, null)))
+        .as("the funding account balances on its own")
+        .doesNotContain(TrustIntegrityService.BOOKS_OUT_OF_BALANCE);
   }
 
   // --- the firm report -------------------------------------------------------------------------
@@ -609,7 +688,13 @@ class TrustIntegrityServiceIntegrationTest {
     assertThat(firm.creditorTotal()).isEqualByComparingTo(position[0].creditorTotal());
     assertThat(firm.difference()).isEqualByComparingTo("0");
     assertThat(firm.flags()).isEmpty();
-    assertThat(firm.balanced()).as("the harness tenant has no blocking flag today").isTrue();
+    // balanced is scoped to what this test owns: its own account's report, and the firm flag's
+    // definition (no blocking flag firm-level or in any account) — never another test's state
+    assertThat(firm.balanced())
+        .as("firm balanced ⇔ no blocking flag firm-level or in any account")
+        .isEqualTo(
+            firm.flags().stream().noneMatch(TrustIntegrityService::isBlocking)
+                && firm.accounts().stream().allMatch(TrustIntegrityReport::balanced));
     assertThat(firm.accounts())
         .extracting(TrustIntegrityReport::trustAccountId)
         .containsExactlyElementsOf(
@@ -619,7 +704,11 @@ class TrustIntegrityServiceIntegrationTest {
     assertThat(firm.accounts())
         .filteredOn(r -> r.trustAccountId().equals(account))
         .singleElement()
-        .satisfies(r -> assertThat(r.position().cashbook()).isEqualByComparingTo("730.00"));
+        .satisfies(
+            r -> {
+              assertThat(r.position().cashbook()).isEqualByComparingTo("730.00");
+              assertThat(r.balanced()).as("this test's account has no blocking flag").isTrue();
+            });
     var otherCreditors =
         firm.fundLedger().add(firm.unidentifiedDeposits()).add(firm.otherNonClient());
     assertThat(firm.cashbook())
@@ -767,14 +856,14 @@ class TrustIntegrityServiceIntegrationTest {
                     null)));
   }
 
-  private BankStatementResponse importStatement(UUID account, String fileName, String line) {
+  private BankStatementResponse importStatement(UUID account, String fileName, String... lines) {
     var csv =
         """
         FNB Trust Account Statement - Account 62500000000
         Date,Description,Amount,Balance,Reference
         %s
         """
-            .formatted(line);
+            .formatted(String.join("\n", lines));
     var file =
         new MockMultipartFile("file", fileName, "text/csv", csv.getBytes(StandardCharsets.UTF_8));
     var statement = new BankStatementResponse[1];

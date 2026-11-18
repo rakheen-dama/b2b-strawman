@@ -320,22 +320,24 @@ export default async function TrustAccountingPage({
               />
             </div>
           </div>
+        </>
+      )}
 
-          {/* Firm-wide balance tiles and the integrity check (649C, ruling D-1): a second row, so
-              the frozen four-tile row above keeps its labels and sources. */}
-          <TrustIntegrityTiles
-            report={integrityData}
-            failed={integrityFailed}
-            currency={currency}
-          />
-          <TrustIntegrityCard
-            report={integrityData}
-            failed={integrityFailed}
-            accounts={accounts}
-            slug={slug}
-            currency={currency}
-          />
+      {/* Firm-wide balance tiles and the integrity check (649C, ruling D-1): a second row, so the
+          frozen four-tile row above keeps its labels and sources. Independent of the dashboard
+          read — the integrity check still shows when that read fails; with no trust account the
+          read is "absent" and both render nothing. */}
+      <TrustIntegrityTiles report={integrityData} failed={integrityFailed} currency={currency} />
+      <TrustIntegrityCard
+        report={integrityData}
+        failed={integrityFailed}
+        accounts={accounts}
+        slug={slug}
+        currency={currency}
+      />
 
+      {dashboardData && (
+        <>
           {/* Alerts Section */}
           {dashboardData.alerts.length > 0 && (
             <div className="space-y-2" data-testid="alerts-section">

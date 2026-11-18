@@ -401,7 +401,20 @@ class TrustPositionIntegrationTest {
             TestJwtFactory.ownerJwt(CREDITORS_ORG_ID, CREDITORS_OWNER),
             "/api/dashboard/trust-position?accountId=" + creditorsAccountId);
     assertThat(JsonPath.<Boolean>read(creditors, "$.integrity.balanced")).isTrue();
-    assertThat(JsonPath.<List<Object>>read(creditors, "$.integrity.flags")).isEmpty();
+    // Every flag the creditor books could raise is absent. UNIDENTIFIED_OVER_ONE_YEAR is left out:
+    // the unidentified deposit is dated 2026-04-10, so that warning fires as at 2027-04-11 onwards
+    // (the clock is real time) — correct behaviour, not something this test pins.
+    assertThat(JsonPath.<List<String>>read(creditors, "$.integrity.flags[*].code"))
+        .doesNotContain(
+            "BANK_DIFFERENCE",
+            "BOOKS_OUT_OF_BALANCE",
+            "INTER_ACCOUNT_NOT_ZERO",
+            "UNIDENTIFIED_ITEMS_MISMATCH",
+            "INVESTMENT_BALANCE_MISMATCH",
+            "UNRESOLVED_STATEMENT_LINES",
+            "FUND_LEDGER_IN_DEBIT",
+            "CLIENT_LEDGER_IN_DEBIT",
+            "CHARGES_TO_REFUND");
 
     String primary =
         read(

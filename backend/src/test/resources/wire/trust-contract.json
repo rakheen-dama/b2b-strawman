@@ -270,7 +270,7 @@
       "type" : "java.math.BigDecimal"
     }, {
       "name" : "flags",
-      "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustIntegrityService$IntegrityFlag>"
+      "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.IntegrityFlag>"
     }, {
       "name" : "accounts",
       "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustIntegrityService$TrustIntegrityReport>"
@@ -312,7 +312,7 @@
       "type" : "java.math.BigDecimal"
     }, {
       "name" : "subjects",
-      "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustIntegrityService$FlagSubject>"
+      "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.FlagSubject>"
     } ],
     "IntegritySummary" : [ {
       "name" : "balanced",
@@ -532,7 +532,7 @@
       "type" : "boolean"
     }, {
       "name" : "flags",
-      "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustIntegrityService$IntegrityFlag>"
+      "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.IntegrityFlag>"
     }, {
       "name" : "lastCompletedReconciliationId",
       "type" : "java.util.UUID"
@@ -752,7 +752,7 @@
       "type" : "boolean"
     }, {
       "name" : "integrityFlags",
-      "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustIntegrityService$IntegrityFlag>"
+      "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.IntegrityFlag>"
     }, {
       "name" : "status",
       "type" : "java.lang.String"

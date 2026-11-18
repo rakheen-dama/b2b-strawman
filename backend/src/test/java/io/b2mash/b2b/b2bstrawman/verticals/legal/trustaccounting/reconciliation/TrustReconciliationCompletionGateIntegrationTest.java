@@ -10,8 +10,8 @@ import io.b2mash.b2b.b2bstrawman.template.VariableFormatter;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksFixture;
 import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness.Expected;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.IntegrityFlag;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustIntegrityService;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustIntegrityService.IntegrityFlag;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.StatementLinePostingService.RecordFromLineRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService.BankStatementResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService.TrustReconciliationResponse;
@@ -20,6 +20,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -406,6 +407,209 @@ class TrustReconciliationCompletionGateIntegrationTest {
     books.assertServicesAgree(account, MARCH_END);
   }
 
+  /**
+   * G3 via EQ-5 (its own tenant): a section 86(4) investment whose record says R250 but whose rows
+   * total R200 — the placement is outstanding at the bank and in both the cashbook and the
+   * investment creditor, so EQ-1 and EQ-2 hold; the refusal names the investment and both figures.
+   */
+  @Test
+  void refusedOnG3_whenAnInvestmentDisagreesWithItsRecord() {
+    var account = broken.freshAccount(false);
+    var client = broken.newClient("G3 investment");
+    var depositId = broken.deposit(account, client, "1000.00");
+    var march =
+        importStatement(
+            broken,
+            brokenMemberId,
+            account,
+            "g3-inv-march.csv",
+            "01/03/2026,Deposit received,1000.00,1000.00,G3I-DEP");
+    match(broken, brokenMemberId, march, 0, depositId);
+    var investment = broken.investmentDirect(account, account, client, "200.00");
+    var placement =
+        broken.postLedgerRowDirect(
+            account,
+            "INV_RECEIVE",
+            "200.00",
+            LocalDate.of(2026, 3, 3),
+            client.id(),
+            client.matter(),
+            null,
+            investment);
+    broken.linkPlacementDirect(investment, placement);
+    broken.setInvestmentPrincipalDirect(investment, "250.00");
+    var recon = reconcile(broken, brokenMemberId, account, MARCH_END, march.id());
+    assertThat(recon.isBalanced()).as("EQ-1 and EQ-2 hold").isTrue();
+    assertThat(codes(recon.integrityFlags()))
+        .containsExactly(TrustIntegrityService.INVESTMENT_BALANCE_MISMATCH);
+    var name = recon.integrityFlags().getFirst().subjects().getFirst().name();
+
+    assertCompleteRefused(
+        broken,
+        brokenMemberId,
+        recon.id(),
+        "Trust ledgers do not agree with their records",
+        "Investment "
+            + name
+            + ": its ledger rows total "
+            + rand("200.00")
+            + " against "
+            + rand("250.00")
+            + " placed, credited and withdrawn as at 31 March 2026.");
+  }
+
+  /**
+   * G2 and G3 together (its own tenant): an unpaired client leg (EQ-2) and an unidentified-ledger
+   * row naming no item (EQ-4) — one refusal with G2's title and both sentences, G2's first.
+   */
+  @Test
+  void refusedOnG2AndG3_inOneResponse_titleOfG2_twoSentences() {
+    var account = broken.freshAccount(false);
+    var client = broken.newClient("G2 and G3");
+    var depositId = broken.deposit(account, client, "1000.00");
+    var march =
+        importStatement(
+            broken,
+            brokenMemberId,
+            account,
+            "g23-march.csv",
+            "01/03/2026,Deposit received,1000.00,1000.00,G23-DEP");
+    match(broken, brokenMemberId, march, 0, depositId);
+    broken.postLedgerRowDirect(
+        account,
+        "TRANSFER_IN",
+        "50.00",
+        LocalDate.of(2026, 3, 5),
+        client.id(),
+        client.matter(),
+        null,
+        null);
+    broken.postLedgerRowDirect(
+        account,
+        "FUND_INTEREST",
+        "40.00",
+        LocalDate.of(2026, 3, 6),
+        null,
+        null,
+        broken.creditorAccount(account, "UNIDENTIFIED_DEPOSITS"),
+        null);
+    var recon = reconcile(broken, brokenMemberId, account, MARCH_END, march.id());
+    assertThat(codes(recon.integrityFlags()))
+        .containsExactly(
+            TrustIntegrityService.BOOKS_OUT_OF_BALANCE,
+            TrustIntegrityService.UNIDENTIFIED_ITEMS_MISMATCH);
+
+    assertCompleteRefused(
+        broken,
+        brokenMemberId,
+        recon.id(),
+        "Trust books do not balance",
+        "As at 31 March 2026 the cashbook is "
+            + rand("1040.00")
+            + " and trust creditors total "
+            + rand("1090.00")
+            + " — a difference of "
+            + rand("50.00")
+            + ". Client ledgers "
+            + rand("1050.00")
+            + "; investment creditors "
+            + rand("0")
+            + "; Fund interest and charges "
+            + rand("0")
+            + "; unidentified deposits "
+            + rand("40.00")
+            + ". 1 unidentified-deposit ledger row names no deposit.");
+  }
+
+  // --- CR-2 / D-14: complete and unmatch are serialised on the statement row ------------------
+
+  /**
+   * Unmatch first, then complete: the statement row lock makes complete read the gate inputs after
+   * the unmatch — the now-unresolved line fails G4 (and the deposit, outstanding again, fails G1),
+   * so completion is refused.
+   */
+  @Test
+  void unmatchThenComplete_isRefused_theUnmatchedLineFailsG4() {
+    var account = books.freshAccount(false);
+    var client = books.newClient("unmatch first");
+    var depositId = books.deposit(account, client, "1000.00");
+    var march =
+        importStatement(
+            account, "gum-march.csv", "01/03/2026,Deposit received,1000.00,1000.00,GUM-DEP");
+    match(march, 0, depositId);
+    var recon = reconcile(account, MARCH_END, march.id());
+    assertThat(recon.isBalanced()).as("balanced at calculate").isTrue();
+    assertThat(recon.integrityFlags()).isEmpty();
+
+    unmatch(march.lines().getFirst().id());
+
+    assertCompleteRefused(
+        recon.id(),
+        "Reconciliation does not balance",
+        "Adjusted bank balance "
+            + rand("2000.00")
+            + " differs from the cashbook "
+            + rand("1000.00")
+            + " by "
+            + rand("1000.00")
+            + " as at 31 March 2026. 1 statement line is neither matched, recorded nor excluded.");
+  }
+
+  /**
+   * Complete first, then unmatch (D-14): both unmatch paths — a matched line and a line recorded
+   * from the statement (an unidentified deposit, whose unmatch reverses its rows) — are refused on
+   * the RECONCILED statement; nothing moves: the lines keep their state and links, no contra is
+   * posted, the item stays held, the statement stays RECONCILED and the reconciliation COMPLETED.
+   */
+  @Test
+  void completeThenUnmatch_isRefused_onTheReconciledStatement_lineUnchanged() {
+    var account = books.freshAccount(false);
+    var march = unknownCreditStatement(account, "gcu-march.csv");
+    var recon = reconcile(account, MARCH_END, march.id());
+    var matchedLine = march.lines().get(0).id();
+    var recordedLine = march.lines().get(1).id();
+    recordLine(recordedLine, unidentified());
+    calculate(recon.id());
+    var completed = complete(recon.id());
+    assertThat(completed.status()).isEqualTo("COMPLETED");
+    assertThat(statementStatus(march.id())).isEqualTo("RECONCILED");
+
+    for (var lineId : List.of(matchedLine, recordedLine)) {
+      var lineBefore = lineState(lineId);
+      long rowsBefore = transactionCount(account);
+      books.as(
+          memberId,
+          () ->
+              assertThatThrownBy(() -> reconciliationService.unmatch(lineId))
+                  .isInstanceOfSatisfying(
+                      InvalidStateException.class,
+                      e -> {
+                        assertThat(e.getBody().getStatus()).isEqualTo(400);
+                        assertThat(e.getBody().getTitle())
+                            .isEqualTo("Statement already reconciled");
+                        assertThat(e.getBody().getDetail())
+                            .isEqualTo(
+                                "This statement's reconciliation is complete, so its lines cannot"
+                                    + " be unmatched.");
+                      }));
+      assertThat(lineState(lineId)).as("line %s unchanged", lineId).isEqualTo(lineBefore);
+      assertThat(transactionCount(account)).as("no contra posted").isEqualTo(rowsBefore);
+    }
+    assertThat(lineState(matchedLine).get("match_status")).isEqualTo("MANUALLY_MATCHED");
+    assertThat(lineState(recordedLine).get("match_status")).isEqualTo("RECORDED");
+    assertThat(
+            jdbc.queryForObject(
+                "SELECT status FROM \"%s\".unidentified_deposits WHERE bank_statement_line_id = ?"
+                    .formatted(books.schema()),
+                String.class,
+                recordedLine))
+        .as("the unidentified deposit is still held")
+        .isEqualTo("HELD");
+    assertThat(statementStatus(march.id())).isEqualTo("RECONCILED");
+    assertThat(getReconciliation(books, memberId, recon.id()).status()).isEqualTo("COMPLETED");
+    books.assertServicesAgree(account, MARCH_END);
+  }
+
   // --- H-1a: complete recalculates first ---------------------------------------------------
 
   /**
@@ -507,8 +711,38 @@ class TrustReconciliationCompletionGateIntegrationTest {
   }
 
   private String statementStatus(UUID statementId) {
-    return books.read(
+    return statementStatus(books, statementId);
+  }
+
+  private String statementStatus(TrustBooksFixture.Tenant tenant, UUID statementId) {
+    return tenant.read(
         () -> bankStatementRepository.findById(statementId).orElseThrow().getStatus());
+  }
+
+  /** A statement line's {@code match_status} and {@code trust_transaction_id}, read straight. */
+  private Map<String, Object> lineState(UUID lineId) {
+    return jdbc.queryForMap(
+        """
+        SELECT l.match_status, l.trust_transaction_id, s.matched_count
+        FROM "%1$s".bank_statement_lines l
+        JOIN "%1$s".bank_statements s ON s.id = l.bank_statement_id
+        WHERE l.id = ?
+        """
+            .formatted(books.schema()),
+        lineId);
+  }
+
+  /** The account's trust transactions (a refused unmatch posts no contra). */
+  private long transactionCount(UUID account) {
+    return jdbc.queryForObject(
+        "SELECT count(*) FROM \"%s\".trust_transactions WHERE trust_account_id = ?"
+            .formatted(books.schema()),
+        Long.class,
+        account);
+  }
+
+  private void unmatch(UUID lineId) {
+    books.as(memberId, () -> reconciliationService.unmatch(lineId));
   }
 
   private static List<String> codes(List<IntegrityFlag> flags) {
@@ -590,7 +824,12 @@ class TrustReconciliationCompletionGateIntegrationTest {
     return completed[0];
   }
 
-  /** {@code completeReconciliation} is refused once: 400, {@code title}, {@code detail}. */
+  /**
+   * {@code completeReconciliation} is refused once: 400, {@code title}, {@code detail} — and the
+   * refusal rolled everything back: the reconciliation is still {@code DRAFT} with the stored
+   * figures and flags it had before (D-9: a refusal stores nothing), and its statement is not
+   * {@code RECONCILED}.
+   */
   private void assertCompleteRefused(UUID reconciliationId, String title, String detail) {
     assertCompleteRefused(books, memberId, reconciliationId, title, detail);
   }
@@ -601,6 +840,8 @@ class TrustReconciliationCompletionGateIntegrationTest {
       UUID reconciliationId,
       String title,
       String detail) {
+    var before = getReconciliation(tenant, member, reconciliationId);
+    var statementBefore = statementStatus(tenant, before.bankStatementId());
     tenant.as(
         member,
         () ->
@@ -612,5 +853,23 @@ class TrustReconciliationCompletionGateIntegrationTest {
                       assertThat(e.getBody().getTitle()).isEqualTo(title);
                       assertThat(e.getBody().getDetail()).isEqualTo(detail);
                     }));
+    var after = getReconciliation(tenant, member, reconciliationId);
+    assertThat(after.status()).as("still DRAFT after the refusal").isEqualTo("DRAFT");
+    assertThat(after.completedBy()).as("not completed by anyone").isNull();
+    assertThat(after.completedAt()).as("no completion time").isNull();
+    assertThat(after)
+        .as("stored figures and flags unchanged by the refused complete (rolled back)")
+        .isEqualTo(before);
+    assertThat(statementStatus(tenant, before.bankStatementId()))
+        .as("the statement is not RECONCILED after the refusal")
+        .isEqualTo(statementBefore)
+        .isNotEqualTo("RECONCILED");
+  }
+
+  private TrustReconciliationResponse getReconciliation(
+      TrustBooksFixture.Tenant tenant, UUID member, UUID reconciliationId) {
+    var recon = new TrustReconciliationResponse[1];
+    tenant.as(member, () -> recon[0] = reconciliationService.getReconciliation(reconciliationId));
+    return recon[0];
   }
 }

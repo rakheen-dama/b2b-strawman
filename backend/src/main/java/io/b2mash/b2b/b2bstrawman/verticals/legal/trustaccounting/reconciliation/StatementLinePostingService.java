@@ -362,6 +362,8 @@ public class StatementLinePostingService {
             .findByIdForUpdate(line.getBankStatementId())
             .orElseThrow(
                 () -> new ResourceNotFoundException("BankStatement", line.getBankStatementId()));
+    // Refused once the statement is RECONCILED (D-14); the refusal rolls back the reversals above.
+    StatementLines.requireNotReconciled(statement);
     statement.decrementMatched();
     statementRepository.save(statement);
 

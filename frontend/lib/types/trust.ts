@@ -492,7 +492,7 @@ export type FlagSubjectKind =
   | "BANK_STATEMENT"
   | "TRUST_ACCOUNT";
 
-/** Mirrors `TrustIntegrityService.FlagSubject`; `amount` is a positive magnitude or null. */
+/** Mirrors `books.FlagSubject`; `amount` is a positive magnitude or null. */
 export interface FlagSubject {
   kind: FlagSubjectKind;
   id: string | null;
@@ -501,7 +501,7 @@ export interface FlagSubject {
 }
 
 /**
- * Mirrors `TrustIntegrityService.IntegrityFlag`. `message` is a sentence for the firm (a blocking
+ * Mirrors `books.IntegrityFlag`. `message` is a sentence for the firm (a blocking
  * flag's message is the completion gate's sentence); `amount` is a positive magnitude or null.
  */
 export interface IntegrityFlag {

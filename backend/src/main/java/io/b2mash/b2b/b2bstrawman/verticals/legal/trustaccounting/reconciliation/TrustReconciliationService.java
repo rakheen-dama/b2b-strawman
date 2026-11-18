@@ -9,9 +9,9 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountSection;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.IntegrityFlag;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustBooksService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustIntegrityService;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustIntegrityService.IntegrityFlag;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustIntegrityService.TrustIntegrityReport;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.parser.AbsaCsvParser;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.parser.BankStatementParseException;
@@ -533,12 +533,14 @@ public class TrustReconciliationService {
               });
     }
 
-    // Decrement matched count (statement locked after the line)
+    // Decrement matched count (statement locked after the line); refused once the statement is
+    // RECONCILED (D-14) — the refusal rolls back the line and transaction changes above.
     var statement =
         bankStatementRepository
             .findByIdForUpdate(line.getBankStatementId())
             .orElseThrow(
                 () -> new ResourceNotFoundException("BankStatement", line.getBankStatementId()));
+    StatementLines.requireNotReconciled(statement);
     statement.decrementMatched();
     bankStatementRepository.save(statement);
 
@@ -828,6 +830,20 @@ public class TrustReconciliationService {
     moduleGuard.requireModule(MODULE_ID);
 
     var reconciliation = requireDraft(reconciliationId, "Reconciliation is already COMPLETED");
+
+    // The statement row is locked BEFORE the gate inputs are read: an unmatch of one of its lines
+    // locks the same row (after the line and transaction), so the two are serialised — either the
+    // unmatch commits first and G4 sees the unresolved line, or this completes first and the
+    // unmatch is refused on a RECONCILED statement (D-14).
+    UUID statementId = reconciliation.getBankStatementId();
+    BankStatement statement = null;
+    if (statementId != null) {
+      statement =
+          bankStatementRepository
+              .findByIdForUpdate(statementId)
+              .orElseThrow(() -> new ResourceNotFoundException("BankStatement", statementId));
+    }
+
     var report = recalculate(reconciliation);
     refuseUnlessComplete(report);
 
@@ -836,11 +852,7 @@ public class TrustReconciliationService {
     reconciliation.setCompletedAt(Instant.now());
     reconciliation = trustReconciliationRepository.save(reconciliation);
 
-    UUID statementId = reconciliation.getBankStatementId();
-    var statement =
-        bankStatementRepository
-            .findById(statementId)
-            .orElseThrow(() -> new ResourceNotFoundException("BankStatement", statementId));
+    // recalculate refuses a reconciliation with no statement, so the statement is locked here
     statement.setStatus("RECONCILED");
     bankStatementRepository.save(statement);
 
@@ -915,7 +927,8 @@ public class TrustReconciliationService {
     reconciliation.setInterAccountBalance(position.interAccount());
     reconciliation.setCreditorTotal(position.creditorTotal());
     reconciliation.setDifference(bank.adjustedBankBalance().subtract(position.creditorTotal()));
-    // EQ-1 and EQ-2 as at the period end
+    // is_balanced is deliberately EQ-1 ∧ EQ-2 as at the period end (the 646C definition: the two
+    // comparisons only); the completion gate decides on the integrity flags, not on this field.
     reconciliation.setBalanced(
         bank.adjustedBankBalance().compareTo(position.cashbook()) == 0
             && position.cashbook().compareTo(position.creditorTotal()) == 0);

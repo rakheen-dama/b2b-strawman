@@ -294,7 +294,7 @@ describe("trust wire shapes match the backend contract (ADR-365)", () => {
     expect(Object.keys(literal)).toEqual(componentNames(records.FlagCount));
   });
 
-  it("IntegrityFlag ↔ TrustIntegrityService.IntegrityFlag (649C)", () => {
+  it("IntegrityFlag ↔ books.IntegrityFlag (649C)", () => {
     const literal: Required<IntegrityFlag> = {
       code: "BANK_DIFFERENCE",
       severity: "BLOCKING",
@@ -305,7 +305,7 @@ describe("trust wire shapes match the backend contract (ADR-365)", () => {
     expect(Object.keys(literal)).toEqual(componentNames(records.IntegrityFlag));
   });
 
-  it("FlagSubject ↔ TrustIntegrityService.FlagSubject (649C)", () => {
+  it("FlagSubject ↔ books.FlagSubject (649C)", () => {
     const literal: Required<FlagSubject> = { kind: "CLIENT", id: null, name: null, amount: null };
     expect(Object.keys(literal)).toEqual(componentNames(records.FlagSubject));
   });

@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.TrustPositionResponse;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.FlagSubject;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.IntegrityFlag;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustBooksService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustIntegrityService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.UnidentifiedDepositService;
@@ -88,8 +90,8 @@ class TrustWireContractTest {
           // 649C: the integrity check (§16.3.9) and the dashboard's integrity summary (D-3)
           TrustIntegrityService.TrustIntegrityReport.class,
           TrustIntegrityService.FirmIntegrityReport.class,
-          TrustIntegrityService.IntegrityFlag.class,
-          TrustIntegrityService.FlagSubject.class,
+          IntegrityFlag.class,
+          FlagSubject.class,
           TrustBooksService.TrustPosition.class,
           TrustBooksService.BankPosition.class,
           TrustPositionResponse.IntegritySummary.class,

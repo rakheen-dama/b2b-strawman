@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.testutil;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.IntegrityFlag;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustBooksService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustIntegrityService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService;
@@ -74,7 +75,8 @@ import org.springframework.stereotype.Component;
  *   <li>each item's balance as at D ({@code SUM(ledger_effect)} of its own posted {@code
  *       NON_CLIENT} rows dated {@code <= D}) is 0 or its amount — an item is never part-open;
  *   <li>Σ amount of the items open as at D (balance = amount) equals the unidentified term;
- *   <li>as at today, an item is {@code HELD} exactly when it is open.
+ *   <li>as at today, an item is {@code HELD} exactly when it is open — skipped for an item received
+ *       after the date (its balance is 0 while it is HELD; the service's D-6 rule, 649C).
  * </ol>
  *
  * <p>{@link Expected#cashbookAndUnidentified} is the move of a deposit recorded as unidentified
@@ -245,12 +247,12 @@ public final class TrustBooksHarness {
       """;
 
   /**
-   * EQ-4 (b–d): each item of the account with its amount, status and its balance as at D from its
-   * own posted rows. Binds D, account.
+   * EQ-4 (b–d): each item of the account with its amount, status, received date and its balance as
+   * at D from its own posted rows. Binds D, account.
    */
   private static final String ITEM_BALANCES_SQL =
       """
-      SELECT d.id, d.amount, d.status,
+      SELECT d.id, d.amount, d.status, d.received_date,
              COALESCE((SELECT SUM(t.ledger_effect) FROM "%1$s".trust_transactions t
                         WHERE t.unidentified_deposit_id = d.id AND t.ledger = 'NON_CLIENT'
                           AND t.posted_at IS NOT NULL AND t.transaction_date <= ?), 0) AS balance
@@ -489,7 +491,9 @@ public final class TrustBooksHarness {
       if (open) {
         openTotal = openTotal.add(amount);
       }
-      if (today) {
+      // (d) only for an item received on or before the date (D-6, same rule as the service)
+      var receivedDate = ((java.sql.Date) item.get("received_date")).toLocalDate();
+      if (today && !receivedDate.isAfter(asAt)) {
         softly
             .assertThat("HELD".equals(item.get("status")))
             .as(what + " — HELD exactly when open as at today")
@@ -680,7 +684,7 @@ public final class TrustBooksHarness {
     assertItemised(eq4, trustAccountId, asAt, s.unidentified());
     var eq5 = new SoftAssertions();
     assertInvestmentsTied(eq5, trustAccountId, asAt);
-    var codes = report.flags().stream().map(TrustIntegrityService.IntegrityFlag::code).toList();
+    var codes = report.flags().stream().map(IntegrityFlag::code).toList();
     softly
         .assertThat(codes.contains(TrustIntegrityService.BOOKS_OUT_OF_BALANCE))
         .as(

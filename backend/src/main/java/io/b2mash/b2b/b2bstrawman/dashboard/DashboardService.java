@@ -83,6 +83,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -514,9 +515,12 @@ public class DashboardService {
    * /cashbook-balance} and {@code /total-balance}; its flags are the {@code integrity} summary,
    * 649C) and {@code /pending-approvals}, so module-guard and 404 semantics match the parts; only
    * the latest reconciliation is read from its repository. {@code difference = cashbook − every
-   * trust creditor} (EQ-2, §16.3.2, 646D). 404 when no trust account exists.
+   * trust creditor} (EQ-2, §16.3.2, 646D). 404 when no trust account exists. REPEATABLE_READ (as
+   * {@code ClientLedgerService.getClientLedger}, 648E): the position, the nested integrity check,
+   * the pending approvals and the latest reconciliation are read from one snapshot. Only the
+   * controller calls it (no enclosing transaction whose isolation would apply instead).
    */
-  @Transactional(readOnly = true)
+  @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
   public TrustPositionResponse getTrustPosition(UUID accountId) {
     moduleGuard.requireModule(TRUST_ACCOUNTING_MODULE);
     var accounts = trustAccountService.listTrustAccounts();

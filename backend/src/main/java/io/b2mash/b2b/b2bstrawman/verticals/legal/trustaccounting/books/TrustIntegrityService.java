@@ -108,24 +108,6 @@ public class TrustIntegrityService {
       DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.ENGLISH);
 
   /**
-   * One flag. {@code amount} is a positive magnitude, or null where no single figure applies;
-   * {@code message} is a sentence for the firm (never a raw code). For a blocking flag the message
-   * is the completion gate's sentence(s), so the card and the refusal say the same thing.
-   */
-  public record IntegrityFlag(
-      String code,
-      String severity,
-      String message,
-      BigDecimal amount,
-      List<FlagSubject> subjects) {}
-
-  /**
-   * What a flag is about: {@code kind} is one of the {@code SUBJECT_*} constants; {@code amount} is
-   * a positive magnitude or null.
-   */
-  public record FlagSubject(String kind, UUID id, String name, BigDecimal amount) {}
-
-  /**
    * One trust account as at {@code asAt}: the EQ-2 terms, the EQ-1 terms when a statement is given
    * or a reconciliation of the account has period end {@code asAt} (null otherwise), and the flags
    * — blocking first, each in the §16.3.9 table order.

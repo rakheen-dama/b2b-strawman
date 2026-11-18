@@ -1015,6 +1015,22 @@ describe("TrustAccountingPage — trust integrity (649C)", () => {
     expect(screen.getByTestId("summary-cards")).toBeInTheDocument();
   });
 
+  it("renders the card and the firm-wide tiles when the dashboard read fails but integrity loads", async () => {
+    setupDefaultMocks();
+    mockFetchDashboardData.mockRejectedValue(new Error("boom"));
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    await renderPage();
+
+    expect(
+      screen.getByText("Unable to load trust account data. Please try again later.")
+    ).toBeInTheDocument();
+    expect(screen.queryByTestId("summary-cards")).not.toBeInTheDocument();
+    const card = within(screen.getByTestId("trust-integrity-card"));
+    expect(card.getByTestId("integrity-books-balance")).toHaveTextContent("Books balance");
+    expect(screen.getByTestId("integrity-tiles")).toBeInTheDocument();
+    consoleError.mockRestore();
+  });
+
   it("renders neither the card nor the tiles when the integrity report is absent", async () => {
     setupDefaultMocks();
     mockFetchTrustIntegrity.mockResolvedValue({ state: "absent" });

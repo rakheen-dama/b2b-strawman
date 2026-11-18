@@ -24,3 +24,18 @@ OQ #9 (TrustIntegrityServiceIntegrationTest.checkFirm_preparedStatements_growLin
   => 3 + 9 per account (each account holding one deposit, no reconciliation at asAt; a reconciliation at asAt
      adds its statement + outstanding reads: +2 per such account)
 Tier 3 (full ./mvnw verify) NOT run — orchestrator-owned.
+
+--- Review fix cycle 1 (2026-11-18 SAST) ---
+Same command, same 92-class set (find trustaccounting/** + dashboard/** *Test.java, plus the 11 named classes;
+nohup + done-marker /tmp/tier2-649C.done, exit 0). Wire pin regenerated first with -Dtrust.contract.update=true
+(4 type strings: TrustIntegrityService$IntegrityFlag/$FlagSubject -> books.IntegrityFlag/books.FlagSubject;
+record keys unchanged), then green without the flag inside this run.
+Result: 92 report files, all written by this run (none stale)
+  <testcase> elements: 903, failures + errors: 0
+  TrustReconciliationCompletionGateIntegrationTest 13 tests (+4: G3 via EQ-5, G2+G3 aggregated,
+    unmatch-then-complete, complete-then-unmatch [D-14]); refusals now assert the rollback
+  TrustIntegrityServiceIntegrationTest 14 tests (repair + clear steps added to 5 flags; firm.balanced scoped)
+  D-14 red-first: red-D14.txt
+OQ #9 unchanged: accounts=1 -> 12, 3 -> 30, 10 -> 93 prepared statements (9 per account)
+Frontend: lint, typecheck, format:check OK; full vitest 483 files, 4 552 passed, 2 skipped (4 554); build OK.
+Tier 3 (full ./mvnw verify) NOT run — orchestrator-owned.

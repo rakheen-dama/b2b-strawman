@@ -1,0 +1,568 @@
+# 648B CodeRabbit pass 4 — red run against the dialog at c952121f6 (tests added, component unchanged)
+# vitest run __tests__/trust-investments-reports.test.tsx — exit 1
+
+
+ RUN  v4.1.5 /Users/rakheendama/Projects/2026/worktree-epic-648B/frontend
+
+ ❯ __tests__/trust-investments-reports.test.tsx (22 tests | 5 failed) 2398ms
+     × interest dialog records a gross credit from its statement line: Fund R20,00, client R380,00 65ms
+     × interest dialog opened after midnight defaults to that day, and a refetch keeps what the firm typed 1023ms
+     × interest dialog keeps a gone line's date and gross read-only, so its values survive the line's return 79ms
+     × interest dialog clears a line's before-deposit date error when the firm switches to bank advice 91ms
+     × interest dialog records a bank advice net of the Fund's 5%: gross R100,00 → R5,00 / R95,00 24ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  __tests__/trust-investments-reports.test.tsx > Trust Investments & Reports > interest dialog records a gross credit from its statement line: Fund R20,00, client R380,00
+TestingLibraryElementError: Unable to find an accessible element with the role "radiogroup" and name "How did the bank credit it?"
+
+Here are the accessible roles:
+
+  heading:
+
+  Name "Record interest":
+  <h2
+    class="text-lg leading-none font-semibold"
+    data-slot="dialog-title"
+    id="radix-_r_5k_"
+  />
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  <p
+    class="text-muted-foreground text-sm"
+    data-slot="dialog-description"
+    id="radix-_r_5l_"
+  />
+
+  Name "":
+  <p
+    class="text-muted-foreground text-sm"
+    data-slot="form-description"
+    id="_r_5h_"
+  />
+
+  Name "":
+  <p
+    class="text-muted-foreground text-sm"
+    data-slot="form-description"
+    id="_r_5r_-form-item-description"
+  />
+
+  Name "":
+  <p
+    class="text-muted-foreground text-sm"
+    data-slot="form-description"
+    id="_r_5s_-form-item-description"
+  />
+
+  --------------------------------------------------
+  combobox:
+
+  Name "Statement line":
+  <select
+    aria-describedby="_r_5h_"
+    class="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-500 dark:border-slate-700 dark:bg-input/30"
+    data-slot="form-control"
+    data-testid="interest-line-select"
+    id="_r_5m_-form-item"
+    name="bankStatementLineId"
+  />
+
+  --------------------------------------------------
+  option:
+
+  Name "Bank advice — no statement line":
+  <option
+    value=""
+  />
+
+  Name "Line #3, 31 Oct 2026 — R 400,00":
+  <option
+    value="line-400"
+  />
+
+  --------------------------------------------------
+  radiogroup:
+
+  Name "":
+  <div
+    aria-describedby="_r_5n_-form-item-description"
+    aria-invalid="false"
+    aria-required="false"
+    class="grid gap-3"
+    data-slot="form-control"
+    dir="ltr"
+    id="_r_5n_-form-item"
+    role="radiogroup"
+    style="outline-color: none; outline-style: none; outline-width: initial;"
+    tabindex="0"
+  />
+
+  --------------------------------------------------
+  radio:
+
+  Name "Gross — the Fund's 5% leaves in a separate debit":
+  <button
+    aria-checked="false"
+    class="border-input text-primary focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive aspect-square size-4 shrink-0 rounded-full border shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50"
+    data-radix-collection-item=""
+    data-slot="radio-group-item"
+    data-state="unchecked"
+    id="interest-presentation-GROSS"
+    role="radio"
+    tabindex="-1"
+    type="button"
+    value="GROSS"
+  />
+
+  Name "Net of the Fund's 5%":
+  <button
+    aria-checked="true"
+    class="border-input text-primary focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive aspect-square size-4 shrink-0 rounded-full border shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50"
+    data-radix-collection-item=""
+    data-slot="radio-group-item"
+    data-state="checked"
+    id="interest-presentation-NET"
+    role="radio"
+    tabindex="-1"
+    type="button"
+    value="NET"
+  />
+
+  --------------------------------------------------
+  spinbutton:
+
+  Name "Gross interest":
+  <input
+    aria-describedby="_r_5r_-form-item-description"
+    aria-invalid="false"
+    class="file:text-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 h-9 w-full min-w-0 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-base transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-slate-400 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm dark:border-slate-700 focus-visible:border-slate-400 focus-visible:ring-[3px] focus-visible:ring-slate-500/30 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive"
+    data-slot="form-control"
+    id="_r_5r_-form-item"
+    min="0.01"
+    name="grossAmount"
+    step="0.01"
+    type="number"
+    value=""
+  />
+
+  Name "Fund's 5% as the bank shows it":
+  <input
+    aria-describedby="_r_5s_-form-item-description"
+    aria-invalid="false"
+    class="file:text-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 h-9 w-full min-w-0 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-base transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-slate-400 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm dark:border-slate-700 focus-visible:border-slate-400 focus-visible:ring-[3px] focus-visible:ring-slate-500/30 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive"
+    data-slot="form-control"
+    id="_r_5s_-form-item"
+    min="0"
+    name="fundShareAmount"
+    step="0.01"
+    type="number"
+    value=""
+  />
+
+  --------------------------------------------------
+  button:
+
+  Name "Cancel":
+  <button
+    class="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive text-slate-700 hover:text-slate-950 p-0 dark:text-slate-400 dark:hover:text-slate-100 h-9 px-4 py-2 has-[>svg]:px-3"
+    data-size="default"
+    data-slot="button"
+    data-variant="plain"
+    type="button"
+  />
+
+  Name "Record interest":
+  <button
+    class="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive bg-primary text-primary-foreground hover:bg-primary/90 rounded-full h-9 px-4 py-2 has-[>svg]:px-3"
+    data-size="default"
+    data-slot="button"
+    data-variant="default"
+    type="submit"
+  />
+
+  Name "Close":
+  <button
+    class="ring-offset-background focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
+    data-slot="dialog-close"
+    type="button"
+  />
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+<div
+  aria-describedby="radix-_r_5l_"
+  aria-labelledby="radix-_r_5k_"
+  class="data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 fixed top-[50%] left-[50%] z-50 w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] duration-150 outline-none sm:max-w-lg"
+  data-slot="dialog-content"
+  data-state="open"
+  data-testid="record-investment-interest-dialog"
+  id="radix-_r_5j_"
+  role="dialog"
+  style="opacity: 0.05064298099618425; transform: scale(0.9525321490498092); pointer-events: auto;"
+  tabindex="-1"
+>
+  <div
+    class="bg-background grid gap-4 rounded-xl border p-6 shadow-lg sm:max-w-lg"
+  >
+    <div
+      class="flex flex-col gap-2 text-center sm:text-left"
+      data-slot="dialog-header"
+    >
+      <h2
+        class="text-lg leading-none font-semibold"
+        data-slot="dialog-title"
+        id="radix-_r_5k_"
+      >
+        Record interest
+      </h2>
+      <p
+        class="text-muted-foreground text-sm"
+        data-slot="dialog-description"
+        id="radix-_r_5l_"
+      >
+        Section 86(4) interest is the client's, less the Legal Practitioners' Fidelity Fund's 5%. The entry posts at once.
+      </p>
+    </div>
+    <form
+      class="space-y-4"
+      novalidate=""
+    >
+      <div
+        class="space-y-2"
+        data-slot="form-item"
+      >
+        <label
+          class="flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50"
+          data-slot="label"
+          for="_r_5m_-form-item"
+        >
+          Statement line
+        </label>
+        <select
+          aria-describedby="_r_5h_"
+          class="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-500 dark:border-slate-700 dark:bg-input/30"
+          data-slot="form-control"
+          data-testid="interest-line-select"
+          id="_r_5m_-form-item"
+          name="bankStatementLineId"
+        >
+          <option
+            value=""
+          >
+            Bank advice — no statement line
+          </option>
+          <option
+            value="line-400"
+          >
+            Line #3, 31 Oct 2026 — R 400,00
+          </option>
+        </select>
+        <p
+          class="text-muted-foreground text-sm"
+          data-slot="form-description"
+          id="_r_5h_"
+        >
+          An unmatched credit on the investment account's statement.
+        </p>
+      </div>
+      <div
+        class="space-y-2"
+        data-slot="form-item"
+      >
+        <label
+          class="flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50"
+          data-slot="label"
+          for="_r_5n_-form-item"
+        >
+          How did the bank credit it?
+        </label>
+        <div
+          aria-describedby="_r_5n_-form-item-description"
+          aria-invalid="false"
+          aria-required="false"
+          class="grid gap-3"
+          data-slot="form-control"
+          dir="ltr"
+          id="_r_5n_-form-item"
+          role="radiogroup"
+          style="outline-color: none; outline-style: none; outline-width: initial;"
+          tabindex="0"
+        >
+          <div
+            class="flex items-center gap-2"
+          >
+            <button
+              aria-checked="false"
+              class="border-input text-primary focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive aspect-square size-4 shrink-0 rounded-full border shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50"
+              data-radix-collection-item=""
+              data-slot="radio-group-item"
+              data-state="unchecked"
+              id="interest-presentation-GROSS"
+              role="radio"
+              tabindex="-1"
+              type="button"
+              value="GROSS"
+            />
+            <input
+              aria-hidden="true"
+              style="transform: translateX(-100%); position: absolute; pointer-events: none; opacity: 0; margin: 0px; width: 0px; height: 0px;"
+              tabindex="-1"
+              type="radio"
+              value="GROSS"
+            />
+            <label
+              class="flex items-center gap-2 text-sm leading-none select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50 font-normal"
+              data-slot="label"
+              for="interest-presentation-GROSS"
+            >
+              Gross — the Fund's 5% leaves in a separate debit
+            </label>
+          </div>...
+ ❯ Object.getElementError ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ __tests__/trust-investments-reports.test.tsx:577:22
+    575|     // The question names its radio group
+    576|     expect(
+    577|       within(dialog).getByRole("radiogroup", { name: "How did the bank…
+       |                      ^
+    578|     ).toBeInTheDocument();
+    579|     await user.click(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  __tests__/trust-investments-reports.test.tsx > Trust Investments & Reports > interest dialog opened after midnight defaults to that day, and a refetch keeps what the firm typed
+AssertionError: expected '2026-11-17' to be '2026-11-18' // Object.is equality
+
+Ignored nodes: comments, script, style
+<html>
+  <head />
+  <body
+    data-scroll-locked="1"
+    style="pointer-events: none;"
+  >
+    <span
+      aria-hidden="true"
+      data-aria-hidden="true"
+      data-radix-focus-guard=""
+      style="opacity: 0; position: fixed; pointer-events: none; outline-color: none; outline-style: none; outline-width: initial;"
+      tabindex="0"
+    />
+    <div
+      aria-hidden="true"
+      data-aria-hidden="true"
+    >
+      <button
+        type="button"
+      >
+        revalidate-lines
+      </button>
+    </div>
+    <div
+      aria-hidden="true"
+      class="data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-slate-950/30 backdrop-blur-[2px]"
+      data-aria-hidden="true"
+      data-slot="dialog-overlay"
+      data-state="open"
+      style="pointer-events: auto;"
+    />
+    <div
+      aria-describedby="radix-_r_75_"
+      aria-labelledby="radix-_r_74_"
+      class="data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 fixed top-[50%] left-[50%] z-50 w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] duration-150 outline-none sm:max-w-lg"
+      data-slot="dialog-content"
+      data-state="open"
+      data-testid="record-investment-interest-dialog"
+      id="radix-_r_73_"
+      role="dialog"
+      style="opacity: 1; transform: none; pointer-events: auto;"
+      tabindex="-1"
+    >
+      <div
+        class="bg-background grid gap-4 rounded-xl border p-6 shadow-lg sm:max-w-lg"
+      >
+        <div
+          class="flex flex-col gap-2 text-center sm:text-left"
+          data-slot="dialog-header"
+        >
+          <h2
+            class="text-lg leading-none font-semibold"
+            data-slot="dialog-title"
+            id="radix-_r_74_"
+          >
+            Record interest
+          </h2>
+          <p
+            class="text-muted-foreground text-sm"
+            data-slot="dialog-description"
+            id="radix-_r_75_"
+          >
+            Section 86(4) interest is the client's, less the Legal Practitioners' Fidelity Fund's 5%. The entry posts at once.
+          </p>
+        </div>
+        <form
+          class="space-y-4"
+          novalidate=""
+        >
+          <div
+            class="space-y-2"
+            data-slot="form-item"
+          >
+            <label
+              class="flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50"
+              data-slot="label"
+              for="_r_76_-form-item"
+            >
+              Statement line
+            </label>
+            <select
+              aria-describedby="_r_71_"
+              class="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-500 dark:border-slate-700 dark:bg-input/30"
+              data-slot="form-control"
+              data-testid="interest-line-select"
+              id="_r_76_-form-item"
+              name="bankStatementLineId"
+            >
+              <option
+                value=""
+              >
+                Bank advice — no statement line
+              </option>
+            </select>
+            <p
+              class="text-muted-foreground text-sm"
+              data-slot="form-description"
+              id="_r_71_"
+            >
+              An unmatched credit on the investment account's statement.
+            </p>
+          </div>
+          <div
+            class="space-y-2"
+            data-slot="form-item"
+          >
+            <label
+              class="flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50"
+              data-slot="label"
+              for="_r_77_-form-item"
+            >
+              How did the bank credit it?
+            </label>
+            <div
+              aria-describedby="_r_77_-form-item-description"
+              aria-invalid="false"
+              aria-required="false"
+              class="grid gap-3"
+              data-slot="form-control"
+              dir="ltr"
+              id="_r_77_-form-item"
+              role="radiogroup"
+              style="outline-color: none; outline-style: none; outline-width: initial;"
+              tabindex="0"
+            >
+              <div
+                class="flex items-center gap-2"
+              >
+                <button
+                  aria-checked="false"
+                  class="border-input text-primary focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive aspect-square size-4 shrink-0 rounded-full border shadow-xs transition-[color,box-shadow] outline-none...
+
+Expected: "2026-11-18"
+Received: "2026-11-17"
+
+ ❯ __tests__/trust-investments-reports.test.tsx:780:46
+    778|       const dialog = await screen.findByTestId("record-investment-inte…
+    779|       const date = within(dialog).getByLabelText("Date credited") as H…
+    780|       await waitFor(() => expect(date.value).toBe("2026-11-18"));
+       |                                              ^
+    781|
+    782|       // A refetch while open is not a reopen: the firm's entries stay
+ ❯ runWithExpensiveErrorDiagnosticsDisabled ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/config.js:47:12
+ ❯ checkCallback ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/wait-for.js:124:77
+ ❯ Timeout.checkRealTimersCallback ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/wait-for.js:118:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  __tests__/trust-investments-reports.test.tsx > Trust Investments & Reports > interest dialog keeps a gone line's date and gross read-only, so its values survive the line's return
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ __tests__/trust-investments-reports.test.tsx:826:27
+    824|     await within(dialog).findByTestId("interest-line-gone");
+    825|     // The selection is retained, so its line-derived values stay lock…
+    826|     expect(date.readOnly).toBe(true);
+       |                           ^
+    827|     expect(gross.readOnly).toBe(true);
+    828|     expect(date.value).toBe("2026-10-31");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  __tests__/trust-investments-reports.test.tsx > Trust Investments & Reports > interest dialog clears a line's before-deposit date error when the firm switches to bank advice
+AssertionError: expected <p data-slot="form-message" …(3)></p> to be null
+
+- Expected:
+null
+
++ Received:
+<p
+  class="text-destructive text-sm"
+  data-slot="form-message"
+  id="_r_82_-form-item-message"
+  role="alert"
+>
+  The entry date cannot be before the investment's deposit date.
+</p>
+
+ ❯ __tests__/trust-investments-reports.test.tsx:871:7
+    869|     expect(
+    870|       within(dialog).queryByText("The entry date cannot be before the …
+    871|     ).toBeNull();
+       |       ^
+    872|     expect(within(dialog).getByLabelText("Date credited")).not.toHaveA…
+    873|       "aria-invalid",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  __tests__/trust-investments-reports.test.tsx > Trust Investments & Reports > interest dialog records a bank advice net of the Fund's 5%: gross R100,00 → R5,00 / R95,00
+Error: expect(element).toBeRequired()
+
+Received element is not required:
+  <input
+  aria-describedby="_r_8e_-form-item-description"
+  aria-invalid="false"
+  class="file:text-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 h-9 w-full min-w-0 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-base transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-slate-400 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm dark:border-slate-700 focus-visible:border-slate-400 focus-visible:ring-[3px] focus-visible:ring-slate-500/30 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive"
+  data-slot="form-control"
+  id="_r_8e_-form-item"
+  max="2026-11-18"
+  min="2026-01-15"
+  name="entryDate"
+  type="date"
+  value="2026-11-18"
+/>
+ ❯ __tests__/trust-investments-reports.test.tsx:896:60
+    894|     expect(within(dialog).getByTestId("interest-bank-advice-note")).to…
+    895|     // A bank advice's date and gross are the firm's to enter, and say…
+    896|     expect(within(dialog).getByLabelText("Date credited")).toBeRequire…
+       |                                                            ^
+    897|     expect(within(dialog).getByLabelText("Gross interest")).toBeRequir…
+    898|     expect(within(dialog).getByLabelText("Fund's 5% as the bank shows …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  5 failed | 17 passed (22)
+   Start at  12:18:32
+   Duration  3.29s (transform 256ms, setup 61ms, import 611ms, tests 2.40s, environment 131ms)
+

@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import useSWR from "swr";
 import { useForm, useWatch, type DefaultValues } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -105,6 +105,7 @@ export function RecordInvestmentInterestDialog({
   const [error, setError] = useState<string | null>(null);
   const lineDescriptionId = useId();
   const lineGoneId = useId();
+  const presentationLabelId = useId();
   // The account's unmatched credit lines, fetched while open (null key when closed)
   const {
     data: lines = NO_LINES,
@@ -120,6 +121,11 @@ export function RecordInvestmentInterestDialog({
     resolver: zodResolver(recordInvestmentInterestSchema),
     defaultValues: getDefaultValues(),
   });
+  // RHF keeps the mount-time defaults: each opening starts from today's date, not the day the page
+  // loaded (a refetch while open is not an opening and keeps what the firm typed)
+  useEffect(() => {
+    if (open) form.reset(getDefaultValues());
+  }, [open, form]);
   const [lineId, presentation, grossAmount, fundShareAmount] = useWatch({
     control: form.control,
     name: ["bankStatementLineId", "presentation", "grossAmount", "fundShareAmount"],
@@ -128,8 +134,10 @@ export function RecordInvestmentInterestDialog({
   // A refetch dropped the picked line: the select keeps saying so, and nothing submits until the
   // firm picks another line or bank advice — never switched to a bank advice for them
   const lineGone = Boolean(lineId) && line === undefined;
-  // A GROSS line's amount is the gross: shown, not typed
-  const grossFromLine = line !== undefined && presentation === "GROSS";
+  // The line's date and a GROSS line's amount are shown, not typed — locked while the line stays
+  // selected, even when a refetch has dropped it, so they are still the line's if it returns
+  const dateFromLine = Boolean(lineId);
+  const grossFromLine = dateFromLine && presentation === "GROSS";
 
   function handleOpenChange(newOpen: boolean) {
     // Escape / overlay / X while a record is in flight: stay open so its outcome is shown
@@ -166,8 +174,12 @@ export function RecordInvestmentInterestDialog({
       fillGross(picked, form.getValues("presentation"));
     } else {
       // A line's date must not carry over to an advice: the firm enters the advice date (the
-      // schema requires it); with no line before, the default date stays
-      if (hadLine) form.setValue("entryDate", "");
+      // schema requires it); with no line before, the default date stays. The line date's error
+      // (e.g. before the deposit) goes with it; the next submit validates the advice date
+      if (hadLine) {
+        form.clearErrors("entryDate");
+        form.setValue("entryDate", "");
+      }
       // A bank advice is net of the Fund's 5% (OQ-4)
       form.setValue("presentation", "NET");
       form.resetField("grossAmount");
@@ -317,9 +329,11 @@ export function RecordInvestmentInterestDialog({
               name="presentation"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>How did the bank credit it?</FormLabel>
+                  <FormLabel id={presentationLabelId}>How did the bank credit it?</FormLabel>
                   <FormControl>
+                    {/* A label's htmlFor cannot name a radiogroup div: name it by the label's id */}
                     <RadioGroup
+                      aria-labelledby={presentationLabelId}
                       value={field.value ?? ""}
                       onValueChange={(v) => selectPresentation(v as InterestPresentation)}
                     >
@@ -359,7 +373,8 @@ export function RecordInvestmentInterestDialog({
                       type="date"
                       min={depositDate}
                       max={todayInSA()}
-                      readOnly={line !== undefined}
+                      readOnly={dateFromLine}
+                      aria-required={!dateFromLine || undefined}
                       {...field}
                     />
                   </FormControl>
@@ -380,6 +395,7 @@ export function RecordInvestmentInterestDialog({
                       step="0.01"
                       min="0.01"
                       readOnly={grossFromLine}
+                      aria-required={!grossFromLine || undefined}
                       name={field.name}
                       ref={field.ref}
                       onBlur={field.onBlur}

@@ -520,24 +520,28 @@ describe("Trust Investments & Reports", () => {
     );
   }
 
-  function renderInterestDialog() {
+  const swrProvider = () => new Map();
+
+  function interestDialogTree(open: boolean) {
     // A fresh SWR cache per test: the lines are keyed by account, which every test shares
-    return render(
-      <SWRConfig
-        value={{ provider: () => new Map(), dedupingInterval: 0, shouldRetryOnError: false }}
-      >
+    return (
+      <SWRConfig value={{ provider: swrProvider, dedupingInterval: 0, shouldRetryOnError: false }}>
         <RevalidateLines />
         <RecordInvestmentInterestDialog
           investmentId="inv-1"
           investmentAccountId={CLIENT_ACCOUNT}
           depositDate="2026-01-15"
           currency="ZAR"
-          open={true}
+          open={open}
           onOpenChange={vi.fn()}
           onSuccess={vi.fn()}
         />
       </SWRConfig>
     );
+  }
+
+  function renderInterestDialog() {
+    return render(interestDialogTree(true));
   }
 
   const INTEREST_LINE = {
@@ -568,6 +572,10 @@ describe("Trust Investments & Reports", () => {
     const lineSelect = await within(dialog).findByLabelText("Statement line");
     await within(dialog).findByRole("option", { name: /Line #3/ });
     await user.selectOptions(lineSelect, "line-400");
+    // The question names its radio group
+    expect(
+      within(dialog).getByRole("radiogroup", { name: "How did the bank credit it?" })
+    ).toBeInTheDocument();
     await user.click(
       within(dialog).getByRole("radio", {
         name: "Gross — the Fund's 5% leaves in a separate debit",
@@ -578,6 +586,9 @@ describe("Trust Investments & Reports", () => {
       "2026-10-31"
     );
     expect((within(dialog).getByLabelText("Gross interest") as HTMLInputElement).value).toBe("400");
+    // Shown from the line, not typed: not marked as fields the firm must fill
+    expect(within(dialog).getByLabelText("Date credited")).not.toBeRequired();
+    expect(within(dialog).getByLabelText("Gross interest")).not.toBeRequired();
     expect(within(dialog).getByTestId("interest-fund-share").textContent).toMatch(/20,00/);
     expect(within(dialog).getByTestId("interest-client-share").textContent).toMatch(/380,00/);
     expect(within(dialog).queryByText(/GROSS|NET|INVESTMENT_INTEREST/)).toBeNull();
@@ -753,6 +764,120 @@ describe("Trust Investments & Reports", () => {
     );
   });
 
+  it("interest dialog opened after midnight defaults to that day, and a refetch keeps what the firm typed", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    try {
+      // Mounted closed at 23:30 SAST on 17 November
+      vi.setSystemTime(new Date("2026-11-17T21:30:00Z"));
+      mockFetchUnmatchedCreditLines.mockResolvedValue([]);
+      const { rerender } = render(interestDialogTree(false));
+
+      // Opened at 00:30 SAST on 18 November: the default is that day, not the day it mounted
+      vi.setSystemTime(new Date("2026-11-17T22:30:00Z"));
+      rerender(interestDialogTree(true));
+      const dialog = await screen.findByTestId("record-investment-interest-dialog");
+      const date = within(dialog).getByLabelText("Date credited") as HTMLInputElement;
+      await waitFor(() => expect(date.value).toBe("2026-11-18"));
+
+      // A refetch while open is not a reopen: the firm's entries stay
+      fireEvent.change(date, { target: { value: "2026-11-02" } });
+      fireEvent.change(within(dialog).getByLabelText("Gross interest"), {
+        target: { value: "100" },
+      });
+      const fetches = mockFetchUnmatchedCreditLines.mock.calls.length;
+      fireEvent.click(screen.getByText("revalidate-lines"));
+      await waitFor(() =>
+        expect(mockFetchUnmatchedCreditLines.mock.calls.length).toBeGreaterThan(fetches)
+      );
+      expect(date.value).toBe("2026-11-02");
+      expect((within(dialog).getByLabelText("Gross interest") as HTMLInputElement).value).toBe(
+        "100"
+      );
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("interest dialog keeps a gone line's date and gross read-only, so its values survive the line's return", async () => {
+    const user = userEvent.setup({ pointerEventsCheck: 0 });
+    // Gone on the second fetch, back on the third
+    mockFetchUnmatchedCreditLines
+      .mockResolvedValueOnce([INTEREST_LINE])
+      .mockResolvedValueOnce([])
+      .mockResolvedValue([INTEREST_LINE]);
+    mockRecordInvestmentInterest.mockResolvedValue({ success: true });
+    renderInterestDialog();
+
+    const dialog = screen.getByTestId("record-investment-interest-dialog");
+    const lineSelect = await within(dialog).findByLabelText("Statement line");
+    await within(dialog).findByRole("option", { name: /Line #3/ });
+    await user.selectOptions(lineSelect, "line-400");
+    await user.click(
+      within(dialog).getByRole("radio", {
+        name: "Gross — the Fund's 5% leaves in a separate debit",
+      })
+    );
+    const date = within(dialog).getByLabelText("Date credited") as HTMLInputElement;
+    const gross = within(dialog).getByLabelText("Gross interest") as HTMLInputElement;
+
+    fireEvent.click(screen.getByText("revalidate-lines"));
+    await within(dialog).findByTestId("interest-line-gone");
+    // The selection is retained, so its line-derived values stay locked
+    expect(date.readOnly).toBe(true);
+    expect(gross.readOnly).toBe(true);
+    expect(date.value).toBe("2026-10-31");
+    expect(gross.value).toBe("400");
+
+    fireEvent.click(screen.getByText("revalidate-lines"));
+    await within(dialog).findByRole("option", { name: /Line #3/ });
+    expect(within(dialog).queryByTestId("interest-line-gone")).toBeNull();
+    expect(date.value).toBe("2026-10-31");
+    expect(gross.value).toBe("400");
+    await user.click(within(dialog).getByRole("button", { name: "Record interest" }));
+    await waitFor(() =>
+      expect(mockRecordInvestmentInterest).toHaveBeenCalledWith("inv-1", {
+        entryDate: "2026-10-31",
+        grossAmount: 400,
+        presentation: "GROSS",
+        bankStatementLineId: "line-400",
+      })
+    );
+  });
+
+  it("interest dialog clears a line's before-deposit date error when the firm switches to bank advice", async () => {
+    const user = userEvent.setup({ pointerEventsCheck: 0 });
+    const earlyLine = { ...INTEREST_LINE, id: "line-early", transactionDate: "2026-01-10" };
+    mockFetchUnmatchedCreditLines.mockResolvedValue([earlyLine]);
+    renderInterestDialog();
+
+    const dialog = screen.getByTestId("record-investment-interest-dialog");
+    const lineSelect = await within(dialog).findByLabelText("Statement line");
+    await within(dialog).findByRole("option", { name: /Line #3/ });
+    await user.selectOptions(lineSelect, "line-early");
+    await user.click(
+      within(dialog).getByRole("radio", {
+        name: "Gross — the Fund's 5% leaves in a separate debit",
+      })
+    );
+    await user.click(within(dialog).getByRole("button", { name: "Record interest" }));
+    expect(
+      await within(dialog).findByText(
+        "The entry date cannot be before the investment's deposit date."
+      )
+    ).toBeInTheDocument();
+
+    // The blanked advice date is not the line's: its error goes with it, until the next submit
+    await user.selectOptions(lineSelect, "");
+    expect(
+      within(dialog).queryByText("The entry date cannot be before the investment's deposit date.")
+    ).toBeNull();
+    expect(within(dialog).getByLabelText("Date credited")).not.toHaveAttribute(
+      "aria-invalid",
+      "true"
+    );
+    expect(mockRecordInvestmentInterest).not.toHaveBeenCalled();
+  });
+
   it("interest dialog records a bank advice net of the Fund's 5%: gross R100,00 → R5,00 / R95,00", async () => {
     const user = userEvent.setup({ pointerEventsCheck: 0 });
     mockFetchUnmatchedCreditLines.mockResolvedValue([]);
@@ -769,6 +894,10 @@ describe("Trust Investments & Reports", () => {
     ).toBeDisabled();
     expect(within(dialog).getByRole("radio", { name: "Net of the Fund's 5%" })).toBeChecked();
     expect(within(dialog).getByTestId("interest-bank-advice-note")).toBeInTheDocument();
+    // A bank advice's date and gross are the firm's to enter, and say so; the Fund share is optional
+    expect(within(dialog).getByLabelText("Date credited")).toBeRequired();
+    expect(within(dialog).getByLabelText("Gross interest")).toBeRequired();
+    expect(within(dialog).getByLabelText("Fund's 5% as the bank shows it")).not.toBeRequired();
 
     fireEvent.change(within(dialog).getByLabelText("Date credited"), {
       target: { value: "2026-11-01" },

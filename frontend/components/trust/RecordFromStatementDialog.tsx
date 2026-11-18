@@ -26,8 +26,17 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { InterestShares } from "@/components/trust/InterestShares";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
-import { STATEMENT_LINE_CLASSIFICATIONS, type BankStatementLineResponse } from "@/lib/types";
+import { nativeSelectClassName } from "@/lib/styles/native-select";
+import {
+  INTEREST_PRESENTATION_LABELS,
+  STATEMENT_LINE_CLASSIFICATIONS,
+  type BankStatementLineResponse,
+  type InterestPresentation,
+  type TrustAccountSection,
+  type TrustInvestment,
+} from "@/lib/types";
 import {
   recordFromStatementSchemaFor,
   type RecordFromStatementFormData,
@@ -37,6 +46,10 @@ interface RecordFromStatementDialogProps {
   /** An UNMATCHED line; its sign picks the classifications offered. */
   line: BankStatementLineResponse;
   currency: string;
+  /** The reconciled account's section: with the line's sign, picks the classifications offered. */
+  accountSection?: TrustAccountSection;
+  /** A section 86(4) account's ACTIVE investments: the one the interest is recorded against. */
+  investments?: TrustInvestment[];
   disabled?: boolean;
   /** Records the line; a refusal comes back as `error` and is shown in the dialog. */
   onRecord: (
@@ -52,12 +65,18 @@ interface RecordFromStatementDialogProps {
  * the line's sign; a bank charge also asks whether it is on the Fidelity Fund's recoverable list
  * (the firm's assertion — Kazi does not check it, ADR-381) and its VAT. The parser's suggestion
  * (647C) pre-selects a classification; the firm still confirms it. A credit can also be recorded
- * as an unidentified deposit (647B, ADR-376), held as an item until its owner is identified; the
- * dialog filters by sign only, so on an investment account the server's refusal is shown here.
+ * as an unidentified deposit (647B, ADR-376), held as an item until its owner is identified. The
+ * choices follow the line's sign and the account's section (648B, §16.6.1): on a section 86(4)
+ * investment account a credit is the investment's interest — the firm names the investment and
+ * how the bank credited it (GROSS: the line is the gross; NET: the line is the client's 95% and
+ * the firm types the gross the bank advised), and sees the Fund's 5% and the client's share. The
+ * server's refusals remain the authority and are shown here.
  */
 export function RecordFromStatementDialog({
   line,
   currency,
+  accountSection = "S86_2",
+  investments = [],
   disabled = false,
   onRecord,
 }: RecordFromStatementDialogProps) {
@@ -66,7 +85,9 @@ export function RecordFromStatementDialog({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const sign = line.amount >= 0 ? 1 : -1;
-  const choices = STATEMENT_LINE_CLASSIFICATIONS.filter((c) => c.lineSign === sign);
+  const choices = STATEMENT_LINE_CLASSIFICATIONS.filter(
+    (c) => c.lineSign === sign && c.sections.includes(accountSection)
+  );
   // 647C (§16.3.5): the parser's suggestion pre-selects the classification — only when it is one
   // the line's sign allows (a mismatched or not-yet-offered code pre-selects nothing). Never
   // submitted on its own: the firm still presses Record.
@@ -78,10 +99,18 @@ export function RecordFromStatementDialog({
       classification: suggested,
       chargeRecoverable: undefined,
       chargeVatAmount: undefined,
+      investmentId: "",
+      presentation: undefined,
+      grossAmount: undefined,
       notes: "",
     },
   });
-  const classification = useWatch({ control: form.control, name: "classification" });
+  const [classification, presentation, grossAmount] = useWatch({
+    control: form.control,
+    name: ["classification", "presentation", "grossAmount"],
+  });
+  // GROSS: the line is the gross (shown, never typed); NET: the gross the bank advised
+  const shownGross = presentation === "GROSS" ? Math.abs(line.amount) : grossAmount;
 
   function handleOpenChange(next: boolean) {
     // Escape / overlay / X while a record is in flight: stay open so its outcome (and any refusal)
@@ -187,6 +216,101 @@ export function RecordFromStatementDialog({
                   </FormItem>
                 )}
               />
+
+              {classification === "INVESTMENT_INTEREST" && (
+                <>
+                  <FormField
+                    control={form.control}
+                    name="investmentId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Investment</FormLabel>
+                        <FormControl>
+                          <select
+                            className={nativeSelectClassName}
+                            data-testid="interest-investment-select"
+                            {...field}
+                            value={field.value ?? ""}
+                          >
+                            <option value="">Select an investment</option>
+                            {investments.map((inv) => (
+                              <option key={inv.id} value={inv.id}>
+                                {`${inv.clientName ?? "—"} — ${inv.institution} ${inv.accountNumber}`}
+                              </option>
+                            ))}
+                          </select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="presentation"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>How did the bank credit it?</FormLabel>
+                        <FormControl>
+                          <RadioGroup
+                            value={field.value ?? ""}
+                            onValueChange={(v) => {
+                              field.onChange(v as InterestPresentation);
+                              form.resetField("grossAmount");
+                            }}
+                            data-testid="interest-presentation-radio"
+                          >
+                            {(["GROSS", "NET"] as const).map((value) => (
+                              <div key={value} className="flex items-center gap-2">
+                                <RadioGroupItem value={value} id={`presentation-${value}`} />
+                                <Label htmlFor={`presentation-${value}`} className="font-normal">
+                                  {INTEREST_PRESENTATION_LABELS[value]}
+                                </Label>
+                              </div>
+                            ))}
+                          </RadioGroup>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  {presentation && (
+                    <FormField
+                      control={form.control}
+                      name="grossAmount"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Gross interest</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              min="0.01"
+                              readOnly={presentation === "GROSS"}
+                              data-testid="interest-gross-input"
+                              name={field.name}
+                              ref={field.ref}
+                              onBlur={field.onBlur}
+                              value={shownGross ?? ""}
+                              onChange={(e) =>
+                                field.onChange(
+                                  e.target.value === "" ? undefined : parseFloat(e.target.value)
+                                )
+                              }
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            {presentation === "GROSS"
+                              ? "The line is the gross; the Fund's 5% leaves in a separate debit."
+                              : "The line is the client's 95%; enter the gross the bank advised."}
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+                  <InterestShares gross={shownGross} currency={currency} />
+                </>
+              )}
 
               {classification === "BANK_CHARGE" && (
                 <>

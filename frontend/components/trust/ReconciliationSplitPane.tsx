@@ -19,6 +19,8 @@ import { formatCurrency, formatLocalDate } from "@/lib/format";
 import type {
   BankStatementLineResponse,
   BankStatementLineMatchStatus,
+  TrustAccountSection,
+  TrustInvestment,
   TrustTransaction,
   TrustReconciliationResponse,
 } from "@/lib/types";
@@ -204,9 +206,15 @@ interface ReconciliationSplitPaneProps {
   ) => Promise<{ success: boolean; error?: string }>;
   onComplete: () => Promise<void>;
   isCompleting: boolean;
+  /** The reconciled account's section: picks the classifications offered (648B; default 86(2)). */
+  accountSection?: TrustAccountSection;
+  /** A section 86(4) account's interest-bearing investments (648B). */
+  investments?: TrustInvestment[];
 }
 
 export function ReconciliationSplitPane({
+  accountSection,
+  investments,
   lines,
   unmatchedTransactions,
   reconciliation,
@@ -446,6 +454,8 @@ export function ReconciliationSplitPane({
                         <RecordFromStatementDialog
                           line={line}
                           currency={currency}
+                          accountSection={accountSection}
+                          investments={investments}
                           disabled={isProcessing}
                           onRecord={handleRecord}
                         />

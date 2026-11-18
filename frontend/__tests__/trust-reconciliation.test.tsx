@@ -1028,10 +1028,14 @@ describe("Trust Reconciliation", () => {
 
     // 648B (OQ-10 iii): the choices follow the line's sign AND the account's section
     it("on a section 86(4) account offers a credit investment interest and a charge refund, never Fund interest", async () => {
-      renderPane([makeBankLine({ id: "line-cr", amount: 400 })], {}, {
-        accountSection: "S86_4",
-        investments: [makeInvestment()],
-      });
+      renderPane(
+        [makeBankLine({ id: "line-cr", amount: 400 })],
+        {},
+        {
+          accountSection: "S86_4",
+          investments: [makeInvestment()],
+        }
+      );
       await openRecordDialog("line-cr");
 
       expect(classificationChoices()).toEqual(["CHARGE_REFUND", "INVESTMENT_INTEREST"]);
@@ -1056,10 +1060,14 @@ describe("Trust Reconciliation", () => {
     it("records a gross interest line against the investment: the line is the gross, Fund R20,00 / client R380,00", async () => {
       const user = userEvent.setup({ pointerEventsCheck: 0 });
       const onRecord = vi.fn().mockResolvedValue({ success: true });
-      renderPane([makeBankLine({ id: "line-cr", amount: 400 })], { onRecord }, {
-        accountSection: "S86_4",
-        investments: [makeInvestment()],
-      });
+      renderPane(
+        [makeBankLine({ id: "line-cr", amount: 400 })],
+        { onRecord },
+        {
+          accountSection: "S86_4",
+          investments: [makeInvestment()],
+        }
+      );
       const dialog = await openRecordDialog("line-cr");
 
       await user.click(screen.getByRole("radio", { name: INVESTMENT_INTEREST }));
@@ -1090,10 +1098,14 @@ describe("Trust Reconciliation", () => {
     it("records a net interest line with the gross the bank advised: gross R100,00 → R5,00 / R95,00", async () => {
       const user = userEvent.setup({ pointerEventsCheck: 0 });
       const onRecord = vi.fn().mockResolvedValue({ success: true });
-      renderPane([makeBankLine({ id: "line-cr", amount: 95 })], { onRecord }, {
-        accountSection: "S86_4",
-        investments: [makeInvestment()],
-      });
+      renderPane(
+        [makeBankLine({ id: "line-cr", amount: 95 })],
+        { onRecord },
+        {
+          accountSection: "S86_4",
+          investments: [makeInvestment()],
+        }
+      );
       const dialog = await openRecordDialog("line-cr");
 
       await user.click(screen.getByRole("radio", { name: INVESTMENT_INTEREST }));
@@ -1121,10 +1133,14 @@ describe("Trust Reconciliation", () => {
     it("asks section 86(4) interest for the investment and the presentation before recording", async () => {
       const user = userEvent.setup({ pointerEventsCheck: 0 });
       const onRecord = vi.fn().mockResolvedValue({ success: true });
-      renderPane([makeBankLine({ id: "line-cr", amount: 95 })], { onRecord }, {
-        accountSection: "S86_4",
-        investments: [makeInvestment()],
-      });
+      renderPane(
+        [makeBankLine({ id: "line-cr", amount: 95 })],
+        { onRecord },
+        {
+          accountSection: "S86_4",
+          investments: [makeInvestment()],
+        }
+      );
       await openRecordDialog("line-cr");
 
       await user.click(screen.getByRole("radio", { name: INVESTMENT_INTEREST }));
@@ -1139,7 +1155,13 @@ describe("Trust Reconciliation", () => {
 
     it("pre-selects a section 86(4) interest suggestion on a section 86(4) account (647C, 648B)", async () => {
       renderPane(
-        [makeBankLine({ id: "line-cr", amount: 400, suggestedClassification: "INVESTMENT_INTEREST" })],
+        [
+          makeBankLine({
+            id: "line-cr",
+            amount: 400,
+            suggestedClassification: "INVESTMENT_INTEREST",
+          }),
+        ],
         {},
         { accountSection: "S86_4", investments: [makeInvestment()] }
       );

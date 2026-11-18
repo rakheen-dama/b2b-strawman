@@ -22,12 +22,14 @@ import {
 } from "@/app/(app)/org/[slug]/trust-accounting/reconciliation/actions";
 import { fetchTrustAccounts } from "@/app/(app)/org/[slug]/trust-accounting/actions";
 import { fetchTransactions } from "@/app/(app)/org/[slug]/trust-accounting/transactions/actions";
+import { fetchInvestments } from "@/app/(app)/org/[slug]/trust-accounting/investments/actions";
 import { formatCurrency } from "@/lib/format";
 import { todayInSA } from "@b2mash/shared/date";
 import type {
   TrustAccount,
   BankStatementResponse,
   BankStatementLineResponse,
+  TrustInvestment,
   TrustTransaction,
   TrustReconciliationResponse,
 } from "@/lib/types";
@@ -107,6 +109,34 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
     setUnmatchedTransactions([]);
     setError(null);
   }, []);
+
+  // 648B: a section 86(4) account's interest is recorded against one of its investments — the
+  // ACTIVE ones whose placement is approved (keyed by account so a switch never shows stale ones)
+  const accountSection = accounts.find((a) => a.id === selectedAccountId)?.section;
+  const [s864Investments, setS864Investments] = useState<{
+    accountId: string;
+    investments: TrustInvestment[];
+  } | null>(null);
+  useEffect(() => {
+    if (accountSection !== "S86_4" || !selectedAccountId) return;
+    let cancelled = false;
+    fetchInvestments(selectedAccountId, "CLIENT_INSTRUCTION")
+      .then((list) => {
+        if (cancelled) return;
+        setS864Investments({
+          accountId: selectedAccountId,
+          investments: list.filter((inv) => inv.status === "ACTIVE" && !inv.awaitingApproval),
+        });
+      })
+      .catch(() => {
+        // The dialog then lists no investment; recording is refused until it loads
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [accountSection, selectedAccountId]);
+  const investments =
+    s864Investments?.accountId === selectedAccountId ? s864Investments.investments : [];
 
   // Load accounts
   useEffect(() => {
@@ -648,6 +678,8 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
             onRecord={handleRecord}
             onComplete={handleComplete}
             isCompleting={isCompleting}
+            accountSection={accountSection}
+            investments={investments}
           />
           <div className="flex justify-start">
             <Button type="button" variant="outline" onClick={() => setCurrentStep(3)}>

@@ -1,0 +1,26 @@
+# 648B — found / carried (not fixed in this slice)
+
+Scope discipline: anything outside 648.8–648.10 or the rulings is listed here and reported back. None of it is coded in 648B.
+
+## Resolved here (hand-offs into 648B)
+
+| # | Source | Item | How it closed in 648B |
+|---|---|---|---|
+| R-1 | 648E C-8 / 648A review cycle 1 | `investmentBalance` has no as-at bound | OQ-1(a): a withdrawal dated before the investment's latest POSTED interest entry is refused ("The withdrawal date cannot be before the investment's last interest entry (…)."). The check runs under the investment row lock. `investmentBalance` stays undated, which is correct because no entry can be dated after the withdrawal and `recordInterest` refuses once the investment is WITHDRAWN. The optional FE `min` on the withdrawal date was not added; the server refusal is shown in the dialog. |
+| R-2 | 647A found D1 | FUND_INTEREST was never refused on a section 86(4) account | OQ-10(i): it is now refused with the §16.3.5 sentence and a pointer to "Section 86(4) investment interest". |
+| R-3 | 647C found #1 | The import-time FUND_INTEREST suggestion is wrong for an S86_4 account | OQ-10(ii): on a section 86(4) account the suggestion is stored as `INVESTMENT_INTEREST`. |
+| R-4 | §16.6.1 | The Record from statement dialog filtered by sign only | OQ-10(iii): it now filters by sign and by the account's section (`STATEMENT_LINE_CLASSIFICATIONS[].sections`). |
+
+## New findings (report only)
+
+| # | Where | Finding | Severity | Candidate fix / owner |
+|---|---|---|---|---|
+| F-1 | Investment register (`$FT/investments/page.tsx`) | **OQ-12 UI gap: an interest entry cannot be reversed from the UI.** `POST /api/trust-investment-interest/{id}/reverse` exists and is tested (controller and integration). The `reverseInvestmentInterest` server action is in place but nothing calls it. A bank-advice entry recorded in error can only be reversed through the API today. An entry recorded from a statement line is reversed by unmatching the line in the reconciliation wizard, which works in the UI. | MEDIUM (a firm cannot correct a typo'd bank advice without support) | Per-investment interest list with a "Reverse" action, which needs the entries list below. Natural owner: a trust UI slice (Phase 91) or a 648 follow-up, by the orchestrator's call. |
+| F-2 | Investment register | No per-entry view. The register shows Σ gross / Σ Fund 5% / Σ net of the POSTED entries only. `GET /api/trust-investments/{id}/interest` (and the `fetchInvestmentInterest` action) returns every entry with date, presentation, status and tax-reference snapshot, but no screen shows it. | LOW | Expandable row or investment detail page, together with F-1. |
+| F-3 | `fetchUnmatchedCreditLines` (`$FT/investments/actions.ts`) | The interest dialog's line picker lists the investment account's statements, then opens each statement with an unresolved line (the list endpoint returns no lines). That is one request plus one per open statement. Fine for an investment account's few statements, but it does not scale. | LOW | A server endpoint `GET /api/trust-accounts/{id}/bank-statement-lines?matchStatus=UNMATCHED&sign=CREDIT`. |
+| F-4 | `RecordFromStatementDialog` (INVESTMENT_INTEREST) | The wizard path does not offer a typed Fund share. The API accepts `fundShareAmount` (OL-5 tolerance) on `/record`. The interest dialog on the register does offer it. If a bank's 5% differs by R0,01 from Kazi's rounding on a NET line, the server refuses the wizard recording ("gross … less the Fund's 5% … is …") and the firm must record it from the register dialog with the line picked. | LOW | Add the optional "Fund's 5% as the bank shows it" field to the wizard's interest fields (reuse `InterestShares` and `fundShareWithinTolerance`). |
+| F-5 | `TrustInvestmentService.reverseInterest` | Judgment call, noted for review: an entry whose net row has been matched to a statement line (a bank advice later matched manually) is refused with "This interest is matched to a bank statement line. Unmatch the line before reversing it." The rulings do not cover this case. It mirrors OQ-3, where unmatching is the way to undo anything a line backs. | INFO | Confirm or overrule. |
+
+## Carried (unchanged, from 648E found.md)
+
+C-1 … C-7 and C-9 of `qa_cycle/evidence/phase92/648E/found.md` are untouched by 648B. C-6 now covers `INV_INTEREST` too: it posts with `Approval.NONE`, so an investment account's approval setting still governs nothing.

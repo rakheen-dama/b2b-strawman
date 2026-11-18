@@ -552,7 +552,9 @@ describe("Trust Investments & Reports", () => {
     await within(dialog).findByRole("option", { name: /Line #3/ });
     await user.selectOptions(lineSelect, "line-400");
     await user.click(
-      within(dialog).getByRole("radio", { name: "Gross — the Fund's 5% leaves in a separate debit" })
+      within(dialog).getByRole("radio", {
+        name: "Gross — the Fund's 5% leaves in a separate debit",
+      })
     );
 
     expect((within(dialog).getByLabelText("Date credited") as HTMLInputElement).value).toBe(
@@ -584,7 +586,9 @@ describe("Trust Investments & Reports", () => {
     await waitFor(() => expect(mockFetchUnmatchedCreditLines).toHaveBeenCalled());
     // No line: the presentation is fixed to net, with the reason
     expect(
-      within(dialog).getByRole("radio", { name: "Gross — the Fund's 5% leaves in a separate debit" })
+      within(dialog).getByRole("radio", {
+        name: "Gross — the Fund's 5% leaves in a separate debit",
+      })
     ).toBeDisabled();
     expect(within(dialog).getByRole("radio", { name: "Net of the Fund's 5%" })).toBeChecked();
     expect(within(dialog).getByTestId("interest-bank-advice-note")).toBeInTheDocument();
@@ -616,7 +620,9 @@ describe("Trust Investments & Reports", () => {
     await within(dialog).findByRole("option", { name: /Line #3/ });
     await user.selectOptions(lineSelect, "line-400");
     await user.click(
-      within(dialog).getByRole("radio", { name: "Gross — the Fund's 5% leaves in a separate debit" })
+      within(dialog).getByRole("radio", {
+        name: "Gross — the Fund's 5% leaves in a separate debit",
+      })
     );
     await user.type(within(dialog).getByLabelText("Fund's 5% as the bank shows it"), "21.50");
     await user.click(within(dialog).getByRole("button", { name: "Record interest" }));

@@ -306,44 +306,91 @@ export type BankStatementLineMatchStatus =
 
 /**
  * Mirrors backend `StatementLineClassification` (647A: the four Fund classifications; 647B: an
- * unidentified deposit — a credit whose owner is not yet known, held as an item).
+ * unidentified deposit — a credit whose owner is not yet known, held as an item; 648B: section
+ * 86(4) interest, recorded against a named investment).
  */
 export type StatementLineClassification =
   | "FUND_INTEREST"
   | "FUND_SWEEP"
   | "BANK_CHARGE"
   | "CHARGE_REFUND"
-  | "UNIDENTIFIED_DEPOSIT";
+  | "UNIDENTIFIED_DEPOSIT"
+  | "INVESTMENT_INTEREST";
 
 /**
  * The classifications the Record from statement dialog offers, with the line sign each accepts
- * (+1 credit, -1 debit) — mirrors the backend enum. The labels are the registry's firm labels
- * (`TrustTransactionType.label()`), byte-identical (pinned in `trust-reconciliation.test.tsx`). A
- * stored line's badge shows the server's `classificationLabel`, never this list.
+ * (+1 credit, -1 debit) and the account sections it is offered on — mirrors the backend enum. The
+ * labels are the registry's firm labels (`TrustTransactionType.label()`), byte-identical (pinned
+ * in `trust-reconciliation.test.tsx`). A stored line's badge shows the server's
+ * `classificationLabel`, never this list.
+ *
+ * Sections (648B, §16.6.1): a section 86(2) banking account's credit can be Fund interest, a
+ * charge refund or an unidentified deposit; a section 86(3) investment account's, Fund interest or
+ * a charge refund; a section 86(4) investment account's, investment interest (the client's, with
+ * the Fund's 5%) or a charge refund. Debits are the Fund payment or a bank charge everywhere. The
+ * server's refusals remain the authority.
  */
 export const STATEMENT_LINE_CLASSIFICATIONS: ReadonlyArray<{
   value: StatementLineClassification;
   lineSign: 1 | -1;
   label: string;
+  sections: ReadonlyArray<TrustAccountSection>;
 }> = [
   {
     value: "FUND_INTEREST",
     lineSign: 1,
     label: "Interest received for the Legal Practitioners' Fidelity Fund",
+    sections: ["S86_2", "S86_3"],
   },
   {
     value: "CHARGE_REFUND",
     lineSign: 1,
     label: "Bank charge refunded from the business account",
+    sections: ["S86_2", "S86_3", "S86_4"],
   },
-  { value: "UNIDENTIFIED_DEPOSIT", lineSign: 1, label: "Unidentified deposit" },
+  {
+    value: "UNIDENTIFIED_DEPOSIT",
+    lineSign: 1,
+    label: "Unidentified deposit",
+    sections: ["S86_2"],
+  },
+  {
+    value: "INVESTMENT_INTEREST",
+    lineSign: 1,
+    label: "Section 86(4) investment interest",
+    sections: ["S86_4"],
+  },
   {
     value: "FUND_SWEEP",
     lineSign: -1,
     label: "Interest paid to the Legal Practitioners' Fidelity Fund",
+    sections: ["S86_2", "S86_3", "S86_4"],
   },
-  { value: "BANK_CHARGE", lineSign: -1, label: "Bank charge" },
+  {
+    value: "BANK_CHARGE",
+    lineSign: -1,
+    label: "Bank charge",
+    sections: ["S86_2", "S86_3", "S86_4"],
+  },
 ];
+
+/**
+ * `StatementLinePostingService.RecordFromLineRequest` — keys in the Java record's order (pinned by
+ * `__tests__/trust-wire-shapes.test.ts`). The charge fields are a bank charge's only; the
+ * investment, gross, Fund share and presentation are section 86(4) interest's only (648B).
+ */
+export interface RecordFromLineRequest {
+  classification: StatementLineClassification;
+  chargeRecoverable?: boolean | null;
+  chargeVatAmount?: number | null;
+  investmentId?: string | null;
+  /** NET: the gross the bank advised (the line is the client's 95%); GROSS: omitted (the line). */
+  grossAmount?: number | null;
+  /** The Fund's 5% as the bank shows it — within R0,01 of 5% of the gross; omitted: computed. */
+  fundShareAmount?: number | null;
+  presentation?: InterestPresentation | null;
+  notes?: string | null;
+}
 
 /**
  * `TrustReconciliationService.BankStatementLineResponse` — keys in the Java record's order
@@ -508,7 +555,10 @@ export interface TrustInvestment {
   interestRate: number;
   depositDate: string;
   maturityDate: string | null;
-  interestEarned: number;
+  /** Σ of the POSTED interest entries (648B, section 86(4)): gross = Fund 5% + net. */
+  grossInterest: number;
+  fundShare: number;
+  netInterest: number;
   balance: number;
   status: TrustInvestmentStatus;
   /** True while the placement awaits approval — nothing has moved yet (648A, server-computed). */
@@ -544,6 +594,48 @@ export interface PlaceInvestmentRequest {
 /** `POST /api/trust-investments/{id}/withdraw` (648A): the amount is derived, never typed. */
 export interface WithdrawInvestmentRequest {
   withdrawalDate: string;
+}
+
+/**
+ * How the bank credited section 86(4) interest (648B, ADR-379 A2): GROSS — the whole interest
+ * reached the investment account and the Fund's 5% leaves in a separate debit; NET — the 5% went
+ * to the Fund at source and only the client's 95% reached the account.
+ */
+export type InterestPresentation = "GROSS" | "NET";
+
+/** Firm-side words for a presentation (never the raw code on screen). */
+export const INTEREST_PRESENTATION_LABELS: Record<InterestPresentation, string> = {
+  GROSS: "Gross — the Fund's 5% leaves in a separate debit",
+  NET: "Net of the Fund's 5%",
+};
+
+export type InvestmentInterestStatus = "POSTED" | "REVERSED";
+
+/** `TrustInvestmentService.InvestmentInterestResponse` (648B): one section 86(4) interest entry. */
+export interface InvestmentInterest {
+  id: string;
+  investmentId: string;
+  entryDate: string;
+  grossAmount: number;
+  fundShareAmount: number;
+  netAmount: number;
+  presentation: InterestPresentation;
+  status: InvestmentInterestStatus;
+  netTransactionId: string;
+  fundShareTransactionId: string | null;
+  bankStatementLineId: string | null;
+  clientTaxReference: string | null;
+}
+
+/** `POST /api/trust-investments/{id}/interest` (648B). */
+export interface RecordInvestmentInterestRequest {
+  entryDate: string;
+  grossAmount: number;
+  /** The Fund's 5% as the bank shows it — within R0,01 of 5% of the gross; omitted: computed. */
+  fundShareAmount?: number | null;
+  presentation: InterestPresentation;
+  /** The investment account's UNMATCHED credit line it was credited on; omitted: a bank advice. */
+  bankStatementLineId?: string | null;
 }
 
 // Interest run types

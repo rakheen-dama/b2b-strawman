@@ -54,3 +54,91 @@
 15 verticals.legal.trustaccounting.transaction.TrustReversalEquationIntegrationTest
 17 verticals.legal.trustaccounting.transaction.TrustTransactionTypeRegistryTest
 1 verticals.legal.trustaccounting.transaction.TrustTransactionTypeSchemaTest
+
+# ---- Tier 2 (b): trust package wildcard — ./mvnw test -Dtest='io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.**' -q
+# exit code: 0
+# surefire report classes: 80
+# <testcase> elements: 1102
+# <failure>/<error> elements: 0
+# <skipped> elements: 0
+
+243 activity.ActivityMessageFormatterTest
+26 audit.AuditEventTypeRegistryTest
+5 audit.AuditServiceFacetsIntegrationTest
+12 collections.CollectionsReadApiTest
+9 collections.CollectionsTriageServiceTest
+16 customer.ClientListRowIntegrationTest
+14 customerbackend.service.TrustLedgerPortalSyncServiceIntegrationTest
+19 dashboard.TrustBalanceTrendIntegrationTest
+11 dashboard.TrustPositionIntegrationTest
+3 demo.seed.LegalDemoTrustBooksIntegrationTest
+7 integration.accounting.sync.TrustBoundaryGuardTest
+13 mcp.tool.CatalogueBatch2TrustBillingTest
+12 project.MatterListRowIntegrationTest
+9 project.MatterTrustBalanceEndpointTest
+22 verticals.legal.disbursement.DisbursementServiceTest
+5 verticals.legal.trustaccounting.InvestmentAccountBasisMigrationTest
+7 verticals.legal.trustaccounting.StatementLineClassificationMigrationTest
+19 verticals.legal.trustaccounting.TrustAccountServiceTest
+3 verticals.legal.trustaccounting.TrustAccountingConstantsTest
+12 verticals.legal.trustaccounting.TrustAccountingControllerTest
+4 verticals.legal.trustaccounting.TrustAccountingSchemaTest
+5 verticals.legal.trustaccounting.TrustCoexistenceTest
+6 verticals.legal.trustaccounting.TrustDataVisibilityTest
+21 verticals.legal.trustaccounting.TrustEquationCharacterisationIntegrationTest
+2 verticals.legal.trustaccounting.TrustInvestmentSchemaTest
+9 verticals.legal.trustaccounting.TrustPostingCoreMigrationTest
+7 verticals.legal.trustaccounting.TrustReconBreakdownMigrationTest
+10 verticals.legal.trustaccounting.TrustReversalContraMigrationTest
+1 verticals.legal.trustaccounting.TrustWireContractTest
+9 verticals.legal.trustaccounting.UnidentifiedDepositsMigrationTest
+9 verticals.legal.trustaccounting.books.TrustPositionAsAtIntegrationTest
+31 verticals.legal.trustaccounting.creditor.TrustCreditorAccountIntegrationTest
+1 verticals.legal.trustaccounting.creditor.UnidentifiedDepositAgeUnitTest
+27 verticals.legal.trustaccounting.creditor.UnidentifiedDepositIntegrationTest
+11 verticals.legal.trustaccounting.event.TrustNotificationHandlerTest
+6 verticals.legal.trustaccounting.interest.InterestControllerTest
+7 verticals.legal.trustaccounting.interest.InterestMatterAllocationIntegrationTest
+4 verticals.legal.trustaccounting.interest.InterestPeriodGuardIntegrationTest
+3 verticals.legal.trustaccounting.interest.InterestPostingGuardIntegrationTest
+5 verticals.legal.trustaccounting.interest.InterestRunDeleteIntegrationTest
+13 verticals.legal.trustaccounting.interest.InterestServiceIntegrationTest
+8 verticals.legal.trustaccounting.interest.InvestmentBasisInterestTest
+6 verticals.legal.trustaccounting.investment.TrustInvestmentAccountsMigrationTest
+21 verticals.legal.trustaccounting.investment.TrustInvestmentControllerTest
+10 verticals.legal.trustaccounting.investment.TrustInvestmentInterestIntegrationTest
+5 verticals.legal.trustaccounting.investment.TrustInvestmentInterestMigrationTest
+6 verticals.legal.trustaccounting.investment.TrustInvestmentPlacementGuardIntegrationTest
+21 verticals.legal.trustaccounting.investment.TrustInvestmentServiceIntegrationTest
+2 verticals.legal.trustaccounting.investment.TrustInvestmentWithdrawReverseRaceIntegrationTest
+12 verticals.legal.trustaccounting.ledger.ClientLedgerControllerTest
+6 verticals.legal.trustaccounting.ledger.ClientLedgerRunningBalanceIntegrationTest
+5 verticals.legal.trustaccounting.ledger.ClientLedgerTotalsIntegrationTest
+3 verticals.legal.trustaccounting.ledger.DerivedLedgerBalanceIntegrationTest
+1 verticals.legal.trustaccounting.ledger.InvestmentClientLedgerReadSurfacesIntegrationTest
+3 verticals.legal.trustaccounting.ledger.InvestmentStatementAccountSelectionIntegrationTest
+7 verticals.legal.trustaccounting.ledger.LedgerTotalsTest
+2 verticals.legal.trustaccounting.reconciliation.BankStatementImportErrorIntegrationTest
+28 verticals.legal.trustaccounting.reconciliation.StatementLinePostingIntegrationTest
+10 verticals.legal.trustaccounting.reconciliation.TrustReconciliationControllerTest
+16 verticals.legal.trustaccounting.reconciliation.TrustReconciliationServiceMatchingTest
+17 verticals.legal.trustaccounting.reconciliation.TrustReconciliationServiceReconciliationTest
+44 verticals.legal.trustaccounting.reconciliation.parser.BankStatementParserTest
+9 verticals.legal.trustaccounting.report.InvestmentReportBasisIntegrationTest
+4 verticals.legal.trustaccounting.report.Section35DataPackContentIntegrationTest
+8 verticals.legal.trustaccounting.report.TrustReportPackSeederIntegrationTest
+8 verticals.legal.trustaccounting.report.TrustReportQueryIntegrationTest
+12 verticals.legal.trustaccounting.transaction.TrustClientMatterRequiredIntegrationTest
+8 verticals.legal.trustaccounting.transaction.TrustFeeTransferReversalCascadeTest
+8 verticals.legal.trustaccounting.transaction.TrustMatterDebitGuardIntegrationTest
+5 verticals.legal.trustaccounting.transaction.TrustPostingDateZoneIntegrationTest
+2 verticals.legal.trustaccounting.transaction.TrustPostingRulesTest
+6 verticals.legal.trustaccounting.transaction.TrustPostingServiceRecordWithPairTest
+15 verticals.legal.trustaccounting.transaction.TrustReversalEquationIntegrationTest
+18 verticals.legal.trustaccounting.transaction.TrustTransactionControllerTest
+48 verticals.legal.trustaccounting.transaction.TrustTransactionServiceTest
+4 verticals.legal.trustaccounting.transaction.TrustTransactionTypeControllerTest
+34 verticals.legal.trustaccounting.transaction.TrustTransactionTypeLabelsTest
+17 verticals.legal.trustaccounting.transaction.TrustTransactionTypeRegistryTest
+1 verticals.legal.trustaccounting.transaction.TrustTransactionTypeSchemaTest
+4 verticals.legal.trustaccounting.transaction.TrustTransferTargetMatterIntegrationTest

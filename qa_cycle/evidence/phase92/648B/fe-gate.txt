@@ -1,0 +1,23 @@
+# 648B frontend FULL gate — node v20.11.1, /opt/homebrew/bin/pnpm, NODE_OPTIONS="" (no /opt/homebrew/bin on PATH)
+# pnpm install --frozen-lockfile; rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build
+
+## Run 1
+lint 0
+typecheck 0
+format:check 1
+test 0
+build 0
+format:check run 1 flagged 2 test files (prettier only): __tests__/trust-investments-reports.test.tsx, __tests__/trust-reconciliation.test.tsx -> prettier --write
+vitest run 1: Tests  4494 passed | 2 skipped (4496)
+build run 1: ✓ Compiled successfully in 8.6s ✓ Generating static pages using 9 workers (14/14) in 273ms 
+
+## Run 2 (after the prettier fix; test files only changed, so build not re-run)
+format:check 0
+test 0
+lint 0
+lint:   249:25  warning  Unused eslint-disable directive (no problems were reported from 'react/no-danger')
+   98:7  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/set-state-in-effect')
+  100:7  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/set-state-in-effect')
+✖ 78 problems (0 errors, 78 warnings) — 0 errors; warnings pre-existing (the one in a 648B-touched file, investments/page.tsx:81 `_slug` unused, is on main unchanged)
+format:check: All matched files use Prettier code style!
+vitest: Test Files  481 passed (481) / Tests  4494 passed | 2 skipped (4496)

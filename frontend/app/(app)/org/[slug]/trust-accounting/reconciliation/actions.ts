@@ -6,6 +6,7 @@ import type {
   BankStatementResponse,
   TrustReconciliationResponse,
   MatchResultResponse,
+  RecordFromLineRequest,
   RecordFromLineResponse,
 } from "@/lib/types";
 import type { RecordFromStatementFormData } from "@/lib/schemas/trust";
@@ -198,15 +199,25 @@ export async function recordFromStatement(
   input: RecordFromStatementFormData
 ): Promise<{ success: boolean; data?: RecordFromLineResponse; error?: string }> {
   const notes = input.notes ? input.notes : null;
-  const body =
-    input.classification === "BANK_CHARGE"
-      ? {
-          classification: input.classification,
-          chargeRecoverable: input.chargeRecoverable,
-          chargeVatAmount: input.chargeVatAmount,
-          notes,
-        }
-      : { classification: input.classification, notes };
+  // Each classification sends only its own fields: the server refuses the others (648B)
+  let body: RecordFromLineRequest = { classification: input.classification, notes };
+  if (input.classification === "BANK_CHARGE") {
+    body = {
+      classification: input.classification,
+      chargeRecoverable: input.chargeRecoverable,
+      chargeVatAmount: input.chargeVatAmount,
+      notes,
+    };
+  } else if (input.classification === "INVESTMENT_INTEREST") {
+    body = {
+      classification: input.classification,
+      investmentId: input.investmentId,
+      presentation: input.presentation,
+      // GROSS: the line is the gross (the server takes it); NET: the gross the bank advised
+      ...(input.presentation === "NET" ? { grossAmount: input.grossAmount } : {}),
+      notes,
+    };
+  }
   try {
     const data = await api.post<RecordFromLineResponse>(
       `/api/bank-statement-lines/${lineId}/record`,

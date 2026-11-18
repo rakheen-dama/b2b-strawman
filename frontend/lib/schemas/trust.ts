@@ -313,9 +313,16 @@ export const placeInvestmentSchema = z
 
 export type PlaceInvestmentFormData = z.infer<typeof placeInvestmentSchema>;
 
-/** 648A: the whole investment returns on the date; the amount is derived, never typed. */
+/**
+ * 648A: the whole investment returns on the date; the amount is derived, never typed. Never in
+ * the future — the server refuses it too, with the same sentence (review cycle 4). Not before the
+ * investment's deposit date either: that bound is per investment, so the dialog holds it (input
+ * `min` + a submit check with the server's sentence).
+ */
 export const withdrawInvestmentSchema = z.object({
-  withdrawalDate: isoDate,
+  withdrawalDate: isoDate.refine((d) => d <= todayInSA(), {
+    message: "The withdrawal date cannot be in the future.",
+  }),
 });
 
 export type WithdrawInvestmentFormData = z.infer<typeof withdrawInvestmentSchema>;

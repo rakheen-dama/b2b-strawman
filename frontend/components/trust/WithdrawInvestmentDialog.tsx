@@ -32,6 +32,8 @@ interface WithdrawInvestmentDialogProps {
   investmentId: string;
   /** What the withdrawal returns: the investment account's balance for this investment. */
   balance: number;
+  /** The investment's deposit date (ISO): the earliest withdrawal date the server accepts. */
+  depositDate: string;
   currency: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -42,6 +44,10 @@ function getDefaultValues(): WithdrawInvestmentFormData {
   return { withdrawalDate: todayInSA() };
 }
 
+/** The server's sentence for a withdrawal dated before the placement (648A review cycle 4). */
+const BEFORE_DEPOSIT_MESSAGE =
+  "The withdrawal date cannot be before the investment's deposit date.";
+
 /**
  * 648A: the whole investment returns to the trust banking account it was placed from. The amount
  * is derived (capital plus the interest recorded on it); only the date is entered.
@@ -49,6 +55,7 @@ function getDefaultValues(): WithdrawInvestmentFormData {
 export function WithdrawInvestmentDialog({
   investmentId,
   balance,
+  depositDate,
   currency,
   open,
   onOpenChange,
@@ -73,6 +80,11 @@ export function WithdrawInvestmentDialog({
 
   async function handleSubmit(data: WithdrawInvestmentFormData) {
     setError(null);
+    // ISO dates compare as strings; the server refuses this too, with the same sentence
+    if (data.withdrawalDate < depositDate) {
+      form.setError("withdrawalDate", { message: BEFORE_DEPOSIT_MESSAGE });
+      return;
+    }
     setIsSubmitting(true);
 
     try {
@@ -126,7 +138,7 @@ export function WithdrawInvestmentDialog({
                 <FormItem>
                   <FormLabel>Withdrawal date</FormLabel>
                   <FormControl>
-                    <Input type="date" {...field} />
+                    <Input type="date" min={depositDate} max={todayInSA()} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

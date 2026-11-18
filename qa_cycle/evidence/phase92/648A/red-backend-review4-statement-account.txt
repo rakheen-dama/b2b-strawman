@@ -1,0 +1,30 @@
+# 648A review cycle 4 — High: statement account picks investment account (RED, before fix) @ b97db6278
+# mvn test -Dtest=InvestmentStatementAccountSelectionIntegrationTest
+[ERROR] Tests run: 3, Failures: 3, Errors: 0, Skipped: 0, Time elapsed: 68.33 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.InvestmentStatementAccountSelectionIntegrationTest
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.InvestmentStatementAccountSelectionIntegrationTest.accountCandidates_areTheClientLedgerAccountsOnly_notTheInvestmentAccount -- Time elapsed: 0.422 s <<< FAILURE!
+Expecting actual:
+  [0675682e-f3cc-439c-b7bd-afe7c7f67565, f8f6d057-a67f-4b7a-a260-6b1c63ecb19b]
+  [f8f6d057-a67f-4b7a-a260-6b1c63ecb19b]
+but some elements were not expected:
+  [0675682e-f3cc-439c-b7bd-afe7c7f67565]
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.InvestmentStatementAccountSelectionIntegrationTest.statementOfAccount_trustBlock_readsTheFundingAccount -- Time elapsed: 0.044 s <<< FAILURE!
+expected: 25000.00
+ but was: 0
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.InvestmentStatementAccountSelectionIntegrationTest.clientTrustStatement_readsTheFundingAccount -- Time elapsed: 0.013 s <<< FAILURE!
+expected: "ISA Second Trust Account"
+ but was: "ISA Section 86(4) Investments 0"
+Expecting actual:
+  [0675682e-f3cc-439c-b7bd-afe7c7f67565, f8f6d057-a67f-4b7a-a260-6b1c63ecb19b]
+  [f8f6d057-a67f-4b7a-a260-6b1c63ecb19b]
+but some elements were not expected:
+  [0675682e-f3cc-439c-b7bd-afe7c7f67565]
+expected: "ISA Second Trust Account"
+ but was: "ISA Section 86(4) Investments 0"
+expected: 25000.00
+ but was: 0
+[ERROR] Tests run: 3, Failures: 3, Errors: 0, Skipped: 0
+[INFO] BUILD FAILURE
+
+# GREEN after fix (AND t.ledger = TrustLedger.CLIENT in findDistinctTrustAccountIdsByCustomerId)
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 12.72 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.InvestmentStatementAccountSelectionIntegrationTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0

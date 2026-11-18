@@ -263,3 +263,37 @@ fixed with D-1), dashboard trust position / trend (`TrustBooksService`), MCP `Tr
   investment" — the L-1 inconsistency in the noun form. Not changed here (L-1 is the registry labels;
   the audit titles are pinned in `ActivityMessageFormatterTest`).
 
+
+## Review cycle 4
+
+- **HIGH (Reviewer A) — FIXED.** `TrustTransactionRepository.findDistinctTrustAccountIdsByCustomerId`
+  counted the s86(4) receive leg (`INV_RECEIVE`, investment account, `CLIENT_INVESTMENT` ledger) as
+  client activity, so both client statements (`StatementOfAccountContextBuilder.buildTrustBlock`,
+  `ClientTrustStatementContext.selectAccount`) could pick the investment account (R0, no lines) and
+  every s86(4) client logged the "2 trust accounts" warning. Its only callers are those two builders,
+  which read `findForStatement` (`ledger = CLIENT`), so the shared query now filters `ledger = CLIENT`.
+  Reproduced deterministically (`InvestmentStatementAccountSelectionIntegrationTest`: primary GENERAL
+  unused, funds on a non-primary GENERAL, investment account id sorting first) — 3/3 red → green,
+  `red-backend-review4-statement-account.txt`. Same-class sweep: no other "accounts with activity for
+  this customer" query (`DISTINCT trust_account_id` exists only here); per-customer queries are
+  account-scoped; the portal sync already admits `CLIENT` rows only; `findByCustomerId` (DSAR) wants
+  every row.
+- **M1 — FIXED.** Approval notifications (in-app + email) read the registry label ("Trust placed in
+  section 86(4) investment requires approval"). The placement nouns moved to one copy,
+  `TrustTransactionTypeLabels.placementNoun`, read by `ActivityMessageFormatter.trustTypeNoun` and
+  `TrustNotificationHandler.formatTransactionType`; `TrustNotificationHandlerTest` pins both types and
+  the awaiting-approval title/body.
+- **M2 — FIXED.** The withdrawal date is held to the server's rules: schema refines `<= todayInSA()`
+  ("The withdrawal date cannot be in the future."); the dialog takes the investment's `depositDate`
+  (page → `InvestmentPageClient` → dialog), sets `min`/`max`, and refuses an earlier date on submit
+  with the server's sentence. Vitest case in `trust-investments-reports.test.tsx` (red on the old code).
+- **M3 (Reviewer B) — FIXED.** The amount rule moved from `TrustTransactionService.validateAmount`
+  (public static) to `transaction.TrustAmounts.requireValid`; both services call it; same exception,
+  title and detail. `TrustInvestmentService` no longer imports `TrustTransactionService`.
+- **Hand-off (Reviewer B, report only — owner 648B/648D):** `TrustAccountService` now depends on
+  `TrustInvestmentRepository` (root ↔ investment mutual dependency; no ArchUnit rule against it).
+  Route further account-level investment guards through an investment-side query, not more
+  repository reach from the root.
+- **Hand-off (Reviewer B, report only — owner 648E):** `LedgerTotals` folds `INV_PLACE`/`INV_RETURN`
+  into transfersOut/transfersIn as an interim; 648E must *replace* that fold with the "Invested"
+  figure, not layer on top of it.

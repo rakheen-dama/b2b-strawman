@@ -295,6 +295,7 @@ export default async function InvestmentsPage({
                                   variant="actions"
                                   investmentId={inv.id}
                                   investmentBalance={inv.balance}
+                                  investmentDepositDate={inv.depositDate}
                                   canRecordInterest={inv.status === "ACTIVE"}
                                   currency={currency}
                                 />

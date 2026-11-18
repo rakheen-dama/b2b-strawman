@@ -17,6 +17,8 @@ interface InvestmentPageClientProps {
   investmentId?: string;
   /** What a withdrawal would return now (648A). */
   investmentBalance?: number;
+  /** The investment's deposit date: a withdrawal cannot be dated earlier. */
+  investmentDepositDate?: string;
   /** Interest is recorded on an ACTIVE investment only (a MATURED one can still be withdrawn). */
   canRecordInterest?: boolean;
   currency?: string;
@@ -28,6 +30,7 @@ export function InvestmentPageClient({
   investmentAccounts,
   investmentId,
   investmentBalance,
+  investmentDepositDate,
   canRecordInterest = true,
   currency,
 }: InvestmentPageClientProps) {
@@ -76,6 +79,7 @@ export function InvestmentPageClient({
           <WithdrawInvestmentDialog
             investmentId={investmentId}
             balance={investmentBalance ?? 0}
+            depositDate={investmentDepositDate ?? ""}
             currency={currency ?? "ZAR"}
             open={withdrawOpen}
             onOpenChange={setWithdrawOpen}

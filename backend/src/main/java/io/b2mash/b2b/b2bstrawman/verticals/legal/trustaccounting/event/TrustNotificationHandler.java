@@ -231,9 +231,15 @@ public class TrustNotificationHandler {
   /**
    * The type's firm label, decapitalised for the middle of a title (647D): "payment", "fee
    * transfer", "refund", "reversal" as before, and "unidentified deposit allocated" / "unidentified
-   * deposit paid to the Fund" instead of a raw code.
+   * deposit paid to the Fund" instead of a raw code. An investment placement reads its noun ({@link
+   * TrustTransactionTypeLabels#placementNoun}, 648A): "placement in a section 86(4) investment",
+   * not "placed in section 86(4) investment".
    */
   static String formatTransactionType(String transactionType) {
+    String placement = TrustTransactionTypeLabels.placementNoun(transactionType);
+    if (placement != null) {
+      return placement;
+    }
     String label = TrustTransactionTypeLabels.firmLabel(transactionType);
     if (label == null || label.isEmpty()) {
       return "transaction";

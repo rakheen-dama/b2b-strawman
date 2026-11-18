@@ -85,6 +85,59 @@ class TrustNotificationHandlerTest {
   }
 
   @Test
+  void investmentPlacements_readAsANoun_notTheRegistryLabel() {
+    // 648A review cycle 4: "Trust placed in section 86(4) investment requires approval" → a noun
+    assertThat(TrustNotificationHandler.formatTransactionType("INV_PLACE"))
+        .isEqualTo("placement in a section 86(4) investment");
+    assertThat(TrustNotificationHandler.formatTransactionType("FIRM_INV_PLACE"))
+        .isEqualTo("placement in a section 86(3) investment account");
+  }
+
+  @Test
+  void awaitingApprovalEvent_section86_4Placement_titleAndBodyReadThePlacementNoun() {
+    UUID placementId = UUID.randomUUID();
+    runInTenantWithCapabilities(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx ->
+                    eventPublisher.publishEvent(
+                        TrustTransactionApprovalEvent.awaitingApproval(
+                            placementId,
+                            UUID.randomUUID(),
+                            UUID.randomUUID(),
+                            "INV_PLACE",
+                            new BigDecimal("30000.00"),
+                            java.time.LocalDate.of(2026, 3, 1),
+                            UUID.randomUUID(),
+                            memberId,
+                            tenantSchema,
+                            ORG_ID))));
+
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var placementNotifications =
+                      notificationRepository.findAll().stream()
+                          .filter(n -> placementId.equals(n.getReferenceEntityId()))
+                          .toList();
+                  assertThat(placementNotifications).isNotEmpty();
+                  assertThat(placementNotifications)
+                      .allSatisfy(
+                          n -> {
+                            assertThat(n.getTitle())
+                                .isEqualTo(
+                                    "Trust placement in a section 86(4) investment requires"
+                                        + " approval");
+                            assertThat(n.getBody())
+                                .isEqualTo(
+                                    "A placement in a section 86(4) investment of R30000.00"
+                                        + " requires your approval.");
+                          });
+                }));
+  }
+
+  @Test
   void awaitingApprovalEvent_sendsNotificationsToApprovers() {
     // Publish an awaiting approval event inside a transaction so @TransactionalEventListener fires
     runInTenantWithCapabilities(

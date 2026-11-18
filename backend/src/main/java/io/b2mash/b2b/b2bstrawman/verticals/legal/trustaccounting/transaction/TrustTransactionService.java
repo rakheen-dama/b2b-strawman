@@ -359,7 +359,7 @@ public class TrustTransactionService {
 
   private TrustTransactionResponse postDeposit(UUID trustAccountId, RecordDepositRequest request) {
     moduleGuard.requireModule(MODULE_ID);
-    validateAmount(request.amount());
+    TrustAmounts.requireValid(request.amount());
     validateReference(request.reference());
 
     var account =
@@ -440,7 +440,7 @@ public class TrustTransactionService {
   public List<TrustTransactionResponse> recordTransfer(
       UUID trustAccountId, RecordTransferRequest request) {
     moduleGuard.requireModule(MODULE_ID);
-    validateAmount(request.amount());
+    TrustAmounts.requireValid(request.amount());
     validateReference(request.reference());
 
     var account =
@@ -601,7 +601,7 @@ public class TrustTransactionService {
   @Transactional
   public TrustTransactionResponse recordPayment(UUID trustAccountId, RecordPaymentRequest request) {
     moduleGuard.requireModule(MODULE_ID);
-    validateAmount(request.amount());
+    TrustAmounts.requireValid(request.amount());
     validateReference(request.reference());
 
     var account =
@@ -676,7 +676,7 @@ public class TrustTransactionService {
   public TrustTransactionResponse recordFeeTransfer(
       UUID trustAccountId, RecordFeeTransferRequest request) {
     moduleGuard.requireModule(MODULE_ID);
-    validateAmount(request.amount());
+    TrustAmounts.requireValid(request.amount());
     validateReference(request.reference());
     var transactionDate = resolveFeeTransferDate(request.transactionDate());
 
@@ -793,7 +793,7 @@ public class TrustTransactionService {
   @Transactional
   public TrustTransactionResponse recordRefund(UUID trustAccountId, RecordRefundRequest request) {
     moduleGuard.requireModule(MODULE_ID);
-    validateAmount(request.amount());
+    TrustAmounts.requireValid(request.amount());
     validateReference(request.reference());
 
     var account =
@@ -1891,23 +1891,6 @@ public class TrustTransactionService {
       ref = ref.substring(0, 200);
     }
     return ref;
-  }
-
-  /**
-   * Every trust write path (deposit, transfer, payment, fee transfer, refund, investment placement)
-   * runs this before any balance logic. Amounts are stored at cents ({@code numeric(15,2)}), so a
-   * sub-cent amount is refused rather than rounded on save or compared unrounded against a balance
-   * (PR #1752 review). Trailing zeros ({@code 250.500}) are a whole number of cents and pass.
-   */
-  public static void validateAmount(BigDecimal amount) {
-    if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
-      throw new InvalidStateException(
-          "Invalid amount", "Amount must be a positive value, got: " + amount);
-    }
-    if (amount.stripTrailingZeros().scale() > 2) {
-      throw new InvalidStateException(
-          "Invalid amount", "Amount must not have more than 2 decimal places");
-    }
   }
 
   private void validateReference(String reference) {

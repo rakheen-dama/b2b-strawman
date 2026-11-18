@@ -1,0 +1,79 @@
+# 648A review cycle 4 — Tier 1 + Tier 2 (base b97db6278 + review-4 changes), 2026-11-18 03:50 SAST
+
+## Tier 1
+spotless:apply ok; ./mvnw compile test-compile -q → exit 0 (/tmp/mvn-fix5-648A.log)
+
+## Tier 2 backend (./mvnw test -Dtest=<packages investment/transaction/ledger/event + statement pkg + builders/formatter/labels/notification tests + all ArchUnit classes>)
+exit: 0
+classes: 45
+testcases (<testcase> count): 649
+files with failures/errors: 0
+[INFO] Tests run: 649, Failures: 0, Errors: 0, Skipped: 0
+
+activity.ActivityMessageFormatterTest
+architecture.LayerDependencyRulesTest
+architecture.PortalLinkBuilderArchTest
+architecture.PortalReadModelOrgScopingGuardTest
+architecture.TenantScopeBindingTest
+architecture.TestConventionsTest
+architecture.ZoneAwareTimeArchTest
+customerbackend.service.DeadlineCopyRuleTest
+template.ClientTrustStatementContextIntegrationTest
+template.CustomerContextBuilderTest
+verticals.legal.statement.StatementControllerIntegrationTest
+verticals.legal.statement.StatementListIntegrationTest
+verticals.legal.statement.StatementOfAccountClosingBalanceIntegrationTest
+verticals.legal.statement.StatementOfAccountContextBuilderTest
+verticals.legal.statement.StatementRenderingIntegrationTest
+verticals.legal.statement.StatementServicePortalDocumentTest
+verticals.legal.statement.StatementTrustVisibilityIntegrationTest
+verticals.legal.trustaccounting.creditor.TrustCreditorAccountIntegrationTest
+verticals.legal.trustaccounting.event.TrustNotificationHandlerTest
+verticals.legal.trustaccounting.investment.TrustInvestmentAccountsMigrationTest
+verticals.legal.trustaccounting.investment.TrustInvestmentControllerTest
+verticals.legal.trustaccounting.investment.TrustInvestmentPlacementGuardIntegrationTest
+verticals.legal.trustaccounting.investment.TrustInvestmentServiceIntegrationTest
+verticals.legal.trustaccounting.investment.TrustInvestmentWithdrawReverseRaceIntegrationTest
+verticals.legal.trustaccounting.ledger.ClientLedgerControllerTest
+verticals.legal.trustaccounting.ledger.ClientLedgerRunningBalanceIntegrationTest
+verticals.legal.trustaccounting.ledger.ClientLedgerTotalsIntegrationTest
+verticals.legal.trustaccounting.ledger.DerivedLedgerBalanceIntegrationTest
+verticals.legal.trustaccounting.ledger.InvestmentClientLedgerReadSurfacesIntegrationTest
+verticals.legal.trustaccounting.ledger.InvestmentStatementAccountSelectionIntegrationTest
+verticals.legal.trustaccounting.ledger.LedgerTotalsTest
+verticals.legal.trustaccounting.transaction.TrustClientMatterRequiredIntegrationTest
+verticals.legal.trustaccounting.transaction.TrustFeeTransferReversalCascadeTest
+verticals.legal.trustaccounting.transaction.TrustMatterDebitGuardIntegrationTest
+verticals.legal.trustaccounting.transaction.TrustPostingDateZoneIntegrationTest
+verticals.legal.trustaccounting.transaction.TrustPostingRulesTest
+verticals.legal.trustaccounting.transaction.TrustPostingServiceRecordWithPairTest
+verticals.legal.trustaccounting.transaction.TrustReversalEquationIntegrationTest
+verticals.legal.trustaccounting.transaction.TrustTransactionControllerTest
+verticals.legal.trustaccounting.transaction.TrustTransactionServiceTest
+verticals.legal.trustaccounting.transaction.TrustTransactionTypeControllerTest
+verticals.legal.trustaccounting.transaction.TrustTransactionTypeLabelsTest
+verticals.legal.trustaccounting.transaction.TrustTransactionTypeRegistryTest
+verticals.legal.trustaccounting.transaction.TrustTransactionTypeSchemaTest
+verticals.legal.trustaccounting.transaction.TrustTransferTargetMatterIntegrationTest
+
+## High red→green: see red-backend-review4-statement-account.txt (3/3 red @ b97db6278, 3/3 green after fix)
+
+## Frontend (nvm node v20.11.1, NODE_OPTIONS="")
+pnpm run lint → exit 0 (0 errors; warnings pre-existing)
+pnpm run typecheck → exit 0
+pnpm run format:check → exit 0
+vitest (trust*, trust-investments-reports, trust-investment-basis, trust-reconciliation, legal-wire-bodies, breadcrumbs):
+
+ Test Files  23 passed (23)
+      Tests  331 passed (331)
+   Start at  03:50:02
+   Duration  4.42s (transform 3.19s, setup 2.03s, import 13.32s, tests 12.56s, environment 6.45s)
+
+M2 new case red on HEAD code:
+     × withdraw dialog refuses a future date and a date before the deposit date 52ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  __tests__/trust-investments-reports.test.tsx > Trust Investments & Reports > withdraw dialog refuses a future date and a date before the deposit date
+AssertionError: expected '' to be '2026-01-15' // Object.is equality
+- Expected
++ Received
+      Tests  1 failed | 10 skipped (11)

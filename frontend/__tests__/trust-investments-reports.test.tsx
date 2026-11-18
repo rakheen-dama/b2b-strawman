@@ -107,6 +107,7 @@ import TrustReportsPage from "@/app/(app)/org/[slug]/trust-accounting/reports/pa
 import { PlaceInvestmentDialog } from "@/components/trust/PlaceInvestmentDialog";
 import { WithdrawInvestmentDialog } from "@/components/trust/WithdrawInvestmentDialog";
 import type { InvestmentBasis, TrustAccount } from "@/lib/types/trust";
+import { todayInSA } from "@b2mash/shared/date";
 
 // -- Helpers --------------------------------------------------------------
 
@@ -389,6 +390,7 @@ describe("Trust Investments & Reports", () => {
       <WithdrawInvestmentDialog
         investmentId="inv-1"
         balance={201250}
+        depositDate="2026-01-15"
         currency="ZAR"
         open={true}
         onOpenChange={vi.fn()}
@@ -412,6 +414,52 @@ describe("Trust Investments & Reports", () => {
 
     await waitFor(() =>
       expect(mockWithdrawInvestment).toHaveBeenCalledWith("inv-1", { withdrawalDate: "2026-11-01" })
+    );
+  });
+
+  // 648A review cycle 4: the date is held to the server's rules — never in the future, never
+  // before the deposit date — with the server's own sentences
+  it("withdraw dialog refuses a future date and a date before the deposit date", async () => {
+    const user = userEvent.setup();
+    render(
+      <WithdrawInvestmentDialog
+        investmentId="inv-1"
+        balance={201250}
+        depositDate="2026-01-15"
+        currency="ZAR"
+        open={true}
+        onOpenChange={vi.fn()}
+        onSuccess={vi.fn()}
+      />
+    );
+
+    const dialog = screen.getByTestId("withdraw-investment-dialog");
+    const date = within(dialog).getByLabelText("Withdrawal date") as HTMLInputElement;
+    expect(date.value).toBe(todayInSA());
+    expect(date.min).toBe("2026-01-15");
+    expect(date.max).toBe(todayInSA());
+
+    fireEvent.change(date, { target: { value: "2999-01-01" } });
+    fireEvent.submit(date.closest("form")!);
+    expect(
+      await within(dialog).findByText("The withdrawal date cannot be in the future.")
+    ).toBeInTheDocument();
+
+    fireEvent.change(date, { target: { value: "2026-01-14" } });
+    fireEvent.submit(date.closest("form")!);
+    expect(
+      await within(dialog).findByText(
+        "The withdrawal date cannot be before the investment's deposit date."
+      )
+    ).toBeInTheDocument();
+    expect(mockWithdrawInvestment).not.toHaveBeenCalled();
+
+    // the deposit date itself is allowed
+    mockWithdrawInvestment.mockResolvedValue({ success: true, investment: makeInvestment() });
+    fireEvent.change(date, { target: { value: "2026-01-15" } });
+    await user.click(within(dialog).getByRole("button", { name: "Confirm Withdrawal" }));
+    await waitFor(() =>
+      expect(mockWithdrawInvestment).toHaveBeenCalledWith("inv-1", { withdrawalDate: "2026-01-15" })
     );
   });
 

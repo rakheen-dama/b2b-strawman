@@ -374,11 +374,15 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
       @Param("endDate") LocalDate endDate);
 
   /**
-   * Returns the distinct trust account ids on which a customer has any RECORDED/APPROVED activity.
-   * Used by the Statement of Account context builder to resolve the correct trust account for the
-   * SoA "Trust Activity" section even when the customer's deposits are not on the primary GENERAL
-   * account (GAP-L-94). Excludes REVERSAL because reversals do not by themselves indicate that the
-   * customer ever held funds on the account.
+   * Returns the distinct trust account ids on which a customer has any RECORDED/APPROVED client
+   * ledger activity. Used by the Statement of Account context builder to resolve the correct trust
+   * account for the SoA "Trust Activity" section even when the customer's deposits are not on the
+   * primary GENERAL account (GAP-L-94). Excludes REVERSAL because reversals do not by themselves
+   * indicate that the customer ever held funds on the account. Client ledger only — the same ledger
+   * {@link #findForStatement} reads: an approved section 86(4) placement's receive leg carries the
+   * customer's id on the investment account's {@code CLIENT_INVESTMENT} ledger, and counting it
+   * would let the builders select the investment account and print it with R0 and no lines (648A
+   * review cycle 4).
    */
   @Query(
       """
@@ -386,6 +390,7 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
       WHERE t.customerId = :customerId
         AND t.status IN ('RECORDED', 'APPROVED')
         AND t.transactionType <> 'REVERSAL'
+        AND t.ledger = io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedger.CLIENT
       ORDER BY t.trustAccountId ASC
       """)
   List<UUID> findDistinctTrustAccountIdsByCustomerId(@Param("customerId") UUID customerId);

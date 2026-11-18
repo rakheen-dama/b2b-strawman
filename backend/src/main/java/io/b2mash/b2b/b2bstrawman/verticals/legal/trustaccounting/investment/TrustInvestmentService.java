@@ -21,12 +21,12 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTran
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTransactionRecordedEvent;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.InvestmentBalanceRow;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.InvestmentPlacementHooks;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustAmounts;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustClientMatterRule;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedgerQueryRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustPostingService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -74,12 +74,12 @@ import org.springframework.transaction.annotation.Transactional;
  * deposit_transaction_id}. References are Kazi's: {@code INV-} and the first 8 hex digits of the
  * investment's id on the placement pair, {@code INV-WD-} and the same digits on the withdrawal
  * pair. Every posting goes through {@link TrustPostingService}; the transaction repository is read
- * and locked only. Implements {@link InvestmentPlacementHooks} (no dependency on {@link
- * TrustTransactionService}, so no bean cycle). Lock order: a placement request takes the funding
- * account, then the investment account (then the client's lock anchor); its approval, the placement
- * row, then the funding account (section 86(3)) or the client's lock anchor (section 86(4)), then
- * the investment row; a withdrawal, the placement row, then the investment row (then the client's
- * lock anchor).
+ * and locked only. Implements {@link InvestmentPlacementHooks} (no dependency on {@code
+ * TrustTransactionService}, so no bean cycle; its amount rule is {@link TrustAmounts}). Lock order:
+ * a placement request takes the funding account, then the investment account (then the client's
+ * lock anchor); its approval, the placement row, then the funding account (section 86(3)) or the
+ * client's lock anchor (section 86(4)), then the investment row; a withdrawal, the placement row,
+ * then the investment row (then the client's lock anchor).
  */
 @Service
 public class TrustInvestmentService implements InvestmentPlacementHooks {
@@ -199,7 +199,7 @@ public class TrustInvestmentService implements InvestmentPlacementHooks {
   public TrustInvestmentResponse placeInvestment(
       UUID fundingAccountId, PlaceInvestmentRequest request) {
     moduleGuard.requireModule(MODULE_ID);
-    TrustTransactionService.validateAmount(request.principal());
+    TrustAmounts.requireValid(request.principal());
     // Never future-dated (CodeRabbit cycle 3): the placement row carries the deposit date, and both
     // bases' cover is read as at today, so a later-dated row would escape every cover check
     if (request.depositDate().isAfter(LocalDate.now(clock))) {

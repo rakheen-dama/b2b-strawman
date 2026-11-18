@@ -910,8 +910,8 @@ class TrustInvestmentServiceIntegrationTest {
 
   /**
    * CodeRabbit cycle 3 (Minor): amounts are stored at cents, so a sub-cent principal is refused
-   * with the payment path's rule ({@code validateAmount}) rather than rounded on save; trailing
-   * zeros are a whole number of cents and pass.
+   * with the payment path's rule ({@code TrustAmounts.requireValid}) rather than rounded on save;
+   * trailing zeros are a whole number of cents and pass.
    */
   @Test
   void placement_principal_hasAtMostTwoDecimalPlaces() {

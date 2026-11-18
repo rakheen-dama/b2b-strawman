@@ -6,12 +6,12 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountTyp
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustDataVisibility;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionTypeLabels;
+import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -33,6 +33,10 @@ import org.springframework.stereotype.Component;
  * (GAP-L-94): the trust account(s) the client actually has activity on; with several, the primary
  * GENERAL account when the client is on it, else the first. Lines and balances come from {@link
  * ClientLedgerService#getClientLedgerStatement}, so opening + lines = closing by construction.
+ *
+ * <p>648F (§16.6.4, ADR-379 L7): a client with section 86(4) investments placed from that account
+ * also gets {@code invested} ({@link #investedBlock}) — the block the Statement of Account prints
+ * too — over all history to today.
  */
 @Component
 public class ClientTrustStatementContext {
@@ -67,11 +71,13 @@ public class ClientTrustStatementContext {
   /**
    * The client's {@code trust} block: {@code account_name}, {@code opening_balance}, {@code
    * closing_balance}, {@code statement_date} and {@code lines} (each {@code transactionDate},
-   * {@code type} — a readable label —, {@code transactionType}, {@code reference}, {@code
-   * description} — {@link TrustTransactionTypeLabels#clientDescription}, so a reversal never prints
-   * the firm's reason —, {@code amount}, {@code runningBalance}) and {@code status}; {@code status}
-   * "none" alone when the client has no trust activity; empty when the member may not see trust
-   * money ({@link TrustDataVisibility}).
+   * {@code type} — the registry's client label ({@link TrustTransactionTypeLabels#label}), never
+   * the enum —, {@code transactionType}, {@code reference}, {@code description} — {@link
+   * TrustTransactionTypeLabels#clientDescription}, so a reversal never prints the firm's reason —,
+   * {@code amount}, {@code runningBalance}), {@code status} and, for a client with a section 86(4)
+   * investment, {@code invested} ({@link #investedBlock}); {@code status} "none" alone when the
+   * client has no trust activity; empty when the member may not see trust money ({@link
+   * TrustDataVisibility}).
    */
   public Optional<Map<String, Object>> buildFor(UUID clientId) {
     if (!trustDataVisibility.visibleToCurrentMember()) {
@@ -90,7 +96,8 @@ public class ClientTrustStatementContext {
     for (var line : statement.transactions()) {
       var row = new LinkedHashMap<String, Object>();
       row.put("transactionDate", line.transactionDate());
-      row.put("type", typeLabel(line.transactionType()));
+      // N-1 (648E C-4): the registry's client label, as on the SoA and the portal
+      row.put("type", TrustTransactionTypeLabels.label(line.transactionType()));
       row.put("transactionType", line.transactionType());
       row.put("reference", line.reference());
       // A REVERSAL line reads "Reversal — <reference>", never the firm user's reason (PR #1789)
@@ -110,7 +117,48 @@ public class ClientTrustStatementContext {
     trust.put("opening_balance", statement.openingBalance());
     trust.put("closing_balance", statement.closingBalance());
     trust.put("lines", List.copyOf(lines));
+    var invested =
+        clientLedgerService.getClientInvestedStatement(
+            clientId, account.get().getId(), HISTORY_START, today);
+    if (!invested.isEmpty()) {
+      trust.put("invested", investedBlock(invested, statement.closingBalance()));
+    }
     return Optional.of(trust);
+  }
+
+  /**
+   * The {@code invested} block both client documents print under "Section 86(4) investment" (648F):
+   * snake_case keys bound by the legal-za v16 bodies and registered as currency in {@code
+   * VariableMetadataRegistry} (client trust statement) / {@code
+   * StatementOfAccountContextBuilder.FORMAT_HINTS} (statement of account). {@code interest_entries}
+   * is present only when non-empty: the renderer's {@code isNotEmpty} reads an empty list ("[]") as
+   * non-empty and would print an empty table. {@code total_held} is the client's general balance on
+   * the account plus what is invested — the portal's "Held in trust".
+   */
+  public static Map<String, Object> investedBlock(
+      ClientLedgerService.InvestedStatement invested, BigDecimal generalClosing) {
+    var block = new LinkedHashMap<String, Object>();
+    block.put("opening_balance", invested.openingBalance());
+    block.put("capital_placed", invested.capitalPlaced());
+    block.put("interest_gross", invested.interestGross());
+    block.put("interest_fund_share", invested.interestFundShare());
+    block.put("interest_net", invested.interestNet());
+    block.put("returned_to_trust", invested.returnedToTrust());
+    block.put("closing_balance", invested.closingBalance());
+    block.put("total_held", generalClosing.add(invested.closingBalance()));
+    if (!invested.interestLines().isEmpty()) {
+      var rows = new ArrayList<Map<String, Object>>();
+      for (var line : invested.interestLines()) {
+        var row = new LinkedHashMap<String, Object>();
+        row.put("entryDate", line.entryDate());
+        row.put("grossAmount", line.grossAmount());
+        row.put("fundShareAmount", line.fundShareAmount());
+        row.put("netAmount", line.netAmount());
+        rows.add(row);
+      }
+      block.put("interest_entries", List.copyOf(rows));
+    }
+    return block;
   }
 
   /** Mirrors {@code StatementOfAccountContextBuilder.buildTrustBlock}'s account selection. */
@@ -135,14 +183,5 @@ public class ClientTrustStatementContext {
           accountId);
     }
     return trustAccountRepository.findById(accountId);
-  }
-
-  /** {@code FEE_TRANSFER} → "Fee transfer": a client document never prints the enum. */
-  static String typeLabel(String transactionType) {
-    if (transactionType == null || transactionType.isBlank()) {
-      return "";
-    }
-    String words = transactionType.replace('_', ' ').toLowerCase(Locale.ROOT);
-    return Character.toUpperCase(words.charAt(0)) + words.substring(1);
   }
 }

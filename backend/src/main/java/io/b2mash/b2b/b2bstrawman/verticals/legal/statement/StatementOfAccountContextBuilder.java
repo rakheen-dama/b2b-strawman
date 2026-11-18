@@ -24,6 +24,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRep
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountType;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustDataVisibility;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientTrustStatementContext;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionTypeLabels;
 import java.math.BigDecimal;
@@ -84,6 +85,15 @@ public class StatementOfAccountContextBuilder {
           Map.entry("disbursements.total", "currency"),
           Map.entry("trust.opening_balance", "currency"),
           Map.entry("trust.closing_balance", "currency"),
+          // 648F: the "Section 86(4) investment" block (ClientTrustStatementContext.investedBlock)
+          Map.entry("trust.invested.opening_balance", "currency"),
+          Map.entry("trust.invested.capital_placed", "currency"),
+          Map.entry("trust.invested.interest_gross", "currency"),
+          Map.entry("trust.invested.interest_fund_share", "currency"),
+          Map.entry("trust.invested.interest_net", "currency"),
+          Map.entry("trust.invested.returned_to_trust", "currency"),
+          Map.entry("trust.invested.closing_balance", "currency"),
+          Map.entry("trust.invested.total_held", "currency"),
           Map.entry("summary.total_fees", "currency"),
           Map.entry("summary.total_disbursements", "currency"),
           Map.entry("summary.previous_balance_owing", "currency"),
@@ -191,19 +201,17 @@ public class StatementOfAccountContextBuilder {
         "disbursements",
         Map.of("entries", toMapList(agg.disbursementLines()), "total", agg.disbursementsTotal()));
 
-    context.put(
-        "trust",
-        Map.of(
-            "opening_balance",
-            agg.trust().openingBalance,
-            "deposits",
-            toMapList(agg.trust().deposits),
-            "payments",
-            toMapList(agg.trust().payments),
-            "closing_balance",
-            agg.trust().closingBalance,
-            "status",
-            agg.trust().withheld ? "withheld" : "available"));
+    var trust = new LinkedHashMap<String, Object>();
+    trust.put("opening_balance", agg.trust().openingBalance);
+    trust.put("deposits", toMapList(agg.trust().deposits));
+    trust.put("payments", toMapList(agg.trust().payments));
+    trust.put("closing_balance", agg.trust().closingBalance);
+    trust.put("status", agg.trust().withheld ? "withheld" : "available");
+    // 648F: the section 86(4) investment block, only for a client with something to print
+    if (agg.trust().invested != null) {
+      trust.put("invested", agg.trust().invested);
+    }
+    context.put("trust", trust);
 
     var summary = toSummaryMap(agg.summary());
     // G89-F16 / D9: shown, never counted in closing_balance_owing. Context key only — the template
@@ -590,7 +598,19 @@ public class StatementOfAccountContextBuilder {
         payments.add(dto);
       }
     }
-    return new TrustBlock(opening, deposits, payments, closing);
+    // 648F (§16.6.4, R-B): the client's section 86(4) investments placed from this account — the
+    // same per-client scope as the trust block above — opening as at periodStart − 1, closing as
+    // at periodEnd; interest only from INV_INTEREST
+    var invested =
+        clientLedgerService.getClientInvestedStatement(
+            customer.getId(), trustAccountId, periodStart, periodEnd);
+    return new TrustBlock(
+        opening,
+        deposits,
+        payments,
+        closing,
+        false,
+        invested.isEmpty() ? null : ClientTrustStatementContext.investedBlock(invested, closing));
   }
 
   private LinkedHashMap<String, Object> toSummaryMap(StatementSummary s) {
@@ -605,19 +625,24 @@ public class StatementOfAccountContextBuilder {
     return map;
   }
 
+  /**
+   * The trust section; {@code invested} is the "Section 86(4) investment" block (648F), null when
+   * there is nothing to print or the trust money is withheld.
+   */
   private record TrustBlock(
       BigDecimal openingBalance,
       List<TrustTxDto> deposits,
       List<TrustTxDto> payments,
       BigDecimal closingBalance,
-      boolean withheld) {
+      boolean withheld,
+      Map<String, Object> invested) {
 
     TrustBlock(
         BigDecimal openingBalance,
         List<TrustTxDto> deposits,
         List<TrustTxDto> payments,
         BigDecimal closingBalance) {
-      this(openingBalance, deposits, payments, closingBalance, false);
+      this(openingBalance, deposits, payments, closingBalance, false, null);
     }
 
     /** No trust activity to show (no client, no account): zero, and the section still prints. */
@@ -627,7 +652,7 @@ public class StatementOfAccountContextBuilder {
 
     /** The member may not see trust money: no lines, no amounts, the section is not printed. */
     static TrustBlock withheldBlock() {
-      return new TrustBlock(BigDecimal.ZERO, List.of(), List.of(), BigDecimal.ZERO, true);
+      return new TrustBlock(BigDecimal.ZERO, List.of(), List.of(), BigDecimal.ZERO, true, null);
     }
   }
 }

@@ -246,7 +246,28 @@ public class VariableMetadataRegistry {
                 new VariableInfo("trust.account_name", "Trust Account Name", "string"),
                 new VariableInfo("trust.statement_date", "Trust Statement Date", "date"),
                 new VariableInfo("trust.opening_balance", "Trust Opening Balance", "currency"),
-                new VariableInfo("trust.closing_balance", "Trust Balance Held", "currency"))));
+                new VariableInfo("trust.closing_balance", "Trust Balance Held", "currency"),
+                // 648F: the section 86(4) investment block (ClientTrustStatementContext
+                // .investedBlock); currency hints so the client trust statement prints ZA amounts
+                new VariableInfo(
+                    "trust.invested.capital_placed",
+                    "Placed in section 86(4) investment",
+                    "currency"),
+                new VariableInfo(
+                    "trust.invested.interest_gross", "Section 86(4) interest — gross", "currency"),
+                new VariableInfo(
+                    "trust.invested.interest_fund_share",
+                    "Fund share of section 86(4) interest (5%)",
+                    "currency"),
+                new VariableInfo(
+                    "trust.invested.interest_net", "Section 86(4) investment interest", "currency"),
+                new VariableInfo(
+                    "trust.invested.returned_to_trust", "Investment returned to trust", "currency"),
+                new VariableInfo(
+                    "trust.invested.closing_balance",
+                    "Invested on your instruction (section 86(4))",
+                    "currency"),
+                new VariableInfo("trust.invested.total_held", "Held in trust", "currency"))));
 
     staticGroupsByType.put(TemplateEntityType.CUSTOMER, List.copyOf(groups));
 
@@ -278,7 +299,14 @@ public class VariableMetadataRegistry {
                     "amount",
                     "runningBalance")),
             new LoopSource(
-                "tags", "Tags", List.of("PROJECT", "CUSTOMER"), List.of("name", "color"))));
+                "tags", "Tags", List.of("PROJECT", "CUSTOMER"), List.of("name", "color")),
+            // 648F (R-F): the client trust statement's section 86(4) interest table — appended
+            // last so the existing loop-source order is unchanged
+            new LoopSource(
+                "trust.invested.interest_entries",
+                "Section 86(4) interest entries",
+                List.of("CUSTOMER"),
+                List.of("entryDate", "grossAmount", "fundShareAmount", "netAmount"))));
   }
 
   private void registerInvoiceVariables() {

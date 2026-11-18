@@ -295,7 +295,9 @@ class InvestedBlockStatementsIntegrationTest {
         .contains("Placed in section 86(4) investment")
         .contains("Investment returned to trust")
         .contains("Fund share of section 86(4) interest (5%)")
-        .contains("In the firm's trust account:", "Held in trust:")
+        // the renderer HTML-escapes the apostrophe
+        .contains("In the firm&#39;s trust account:</strong> " + currency("50285.00"))
+        .contains("Held in trust:</strong> " + currency("50285.00"))
         .contains("Invested on your instruction (section 86(4)):")
         .contains(currency("30000.00"), currency("285.00"), currency("15.00"))
         .contains(currency("300.00"), currency("30285.00"), currency("50285.00"))

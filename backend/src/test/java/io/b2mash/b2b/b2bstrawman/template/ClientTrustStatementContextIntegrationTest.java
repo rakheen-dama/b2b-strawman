@@ -45,6 +45,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.web.util.HtmlUtils;
 
 /**
  * G89 632A / D11: the Client Trust Statement (legal-za, CUSTOMER) printed "[Transaction details to
@@ -346,15 +347,29 @@ class ClientTrustStatementContextIntegrationTest {
     Map<String, Object> context =
         inTenantTx(() -> customerContextBuilder.buildContext(investor.id(), memberId));
     var trust = (Map<String, Object>) context.get("trust");
-    assertThat((List<Map<String, Object>>) trust.get("lines"))
+    var lines = (List<Map<String, Object>>) trust.get("lines");
+    assertThat(lines)
         .extracting(l -> l.get("type"))
         .containsExactly(
             "Deposit", "Placed in section 86(4) investment", "Investment returned to trust");
 
     String html =
         inTenantTx(() -> pdfRenderingService.previewHtml(ctsTemplateId(), investor.id(), memberId));
+    // Each transaction row, found by its own reference, prints the registry label in its Type
+    // cell (the column just before Reference) — surrounding prose cannot satisfy this
+    for (var line : lines) {
+      String reference = String.valueOf(line.get("reference"));
+      assertThat(reference).isNotBlank();
+      assertThat(html)
+          .as("row %s", reference)
+          .contains(
+              "<td>"
+                  + HtmlUtils.htmlEscape(String.valueOf(line.get("type")))
+                  + "</td><td>"
+                  + HtmlUtils.htmlEscape(reference)
+                  + "</td>");
+    }
     assertThat(html)
-        .contains("Placed in section 86(4) investment", "Investment returned to trust")
         .doesNotContain("Inv place")
         .doesNotContain("Inv return")
         .doesNotContain("INV_PLACE")

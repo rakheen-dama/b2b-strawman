@@ -111,10 +111,14 @@ public class ClientLedgerStatementQuery implements ReportQuery {
       rows.add(row);
     }
 
-    // 648F: the client's section 86(4) investments placed from this account, for the range
+    // 648F: the client's section 86(4) investments placed from this account, for the range. An
+    // inverted range has no rows and no invested block, as before 648F (no upstream check rejects
+    // it; getClientInvestedStatement would throw)
     var invested =
-        clientLedgerService.getClientInvestedStatement(
-            customerId, trustAccountId, dateFrom, dateTo);
+        dateTo.isBefore(dateFrom)
+            ? InvestedStatement.NONE
+            : clientLedgerService.getClientInvestedStatement(
+                customerId, trustAccountId, dateFrom, dateTo);
 
     // Closing balance is the final running balance after all transactions
     return new QueryResult(rows, openingBalance, runningBalance, invested);

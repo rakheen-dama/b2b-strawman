@@ -186,7 +186,7 @@ public class StatementOfAccountContextBuilder {
     // fees, disbursements, trust, summary — all share the same queries + math, so compute
     // them once and reuse for both the rendered context (build) and the persisted snapshot
     // (computeSummary). Keeps the rendered totals from drifting from the snapshot on changes.
-    Aggregates agg = aggregate(customer, projectId, periodStart, periodEnd);
+    Aggregates agg = aggregate(customer, projectId, periodStart, periodEnd, true);
 
     context.put(
         "fees",
@@ -244,7 +244,8 @@ public class StatementOfAccountContextBuilder {
             ? customerRepository.findById(project.getCustomerId()).orElse(null)
             : null;
 
-    return aggregate(customer, projectId, periodStart, periodEnd).summary();
+    // The summary carries the general trust balance only (R-C): no invested read
+    return aggregate(customer, projectId, periodStart, periodEnd, false).summary();
   }
 
   // ---------- helpers ----------
@@ -283,7 +284,11 @@ public class StatementOfAccountContextBuilder {
       BigDecimal unbilledWip) {}
 
   private Aggregates aggregate(
-      Customer customer, UUID projectId, LocalDate periodStart, LocalDate periodEnd) {
+      Customer customer,
+      UUID projectId,
+      LocalDate periodStart,
+      LocalDate periodEnd,
+      boolean withInvested) {
     var feeLines = loadFeeLines(projectId, periodStart, periodEnd);
     BigDecimal totalHours = sumHours(feeLines);
     BigDecimal totalFeesExcl = sumAmounts(feeLines);
@@ -299,7 +304,7 @@ public class StatementOfAccountContextBuilder {
     var disbursementLines = disbursementService.listForStatement(projectId, periodStart, periodEnd);
     BigDecimal disbursementsTotal = sumDisbursements(disbursementLines);
 
-    TrustBlock trust = buildTrustBlock(customer, periodStart, periodEnd);
+    TrustBlock trust = buildTrustBlock(customer, periodStart, periodEnd, withInvested);
 
     // G89-F16 / D9: the summary is on a FEE-NOTE basis — the same issued notes the closure letter
     // reads (MatterFeeNoteTotals). The fee and disbursement tables above stay activity listings;
@@ -517,8 +522,12 @@ public class StatementOfAccountContextBuilder {
         .reduce(BigDecimal.ZERO, BigDecimal::add);
   }
 
+  /**
+   * The trust section; {@code withInvested} reads the section 86(4) block too — only the rendered
+   * context prints it ({@link #computeSummary} carries the general balance alone).
+   */
   private TrustBlock buildTrustBlock(
-      Customer customer, LocalDate periodStart, LocalDate periodEnd) {
+      Customer customer, LocalDate periodStart, LocalDate periodEnd, boolean withInvested) {
     if (customer == null) {
       return TrustBlock.empty();
     }
@@ -602,8 +611,10 @@ public class StatementOfAccountContextBuilder {
     // same per-client scope as the trust block above — opening as at periodStart − 1, closing as
     // at periodEnd; interest only from INV_INTEREST
     var invested =
-        clientLedgerService.getClientInvestedStatement(
-            customer.getId(), trustAccountId, periodStart, periodEnd);
+        withInvested
+            ? clientLedgerService.getClientInvestedStatement(
+                customer.getId(), trustAccountId, periodStart, periodEnd)
+            : ClientLedgerService.InvestedStatement.NONE;
     return new TrustBlock(
         opening,
         deposits,

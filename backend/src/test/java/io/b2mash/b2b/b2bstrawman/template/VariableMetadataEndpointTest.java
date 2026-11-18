@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.template;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
@@ -198,7 +199,10 @@ class VariableMetadataEndpointTest {
         .andExpect(jsonPath("$.loopSources[2].fields.length()").value(6))
         .andExpect(jsonPath("$.loopSources[3].key").value("tags"))
         .andExpect(jsonPath("$.loopSources[4].key").value("trust.invested.interest_entries"))
-        .andExpect(jsonPath("$.loopSources[4].fields.length()").value(4));
+        .andExpect(jsonPath("$.loopSources[4].fields.length()").value(4))
+        .andExpect(
+            jsonPath("$.loopSources[4].fields")
+                .value(contains("entryDate", "grossAmount", "fundShareAmount", "netAmount")));
   }
 
   @Test

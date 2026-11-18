@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -158,6 +159,25 @@ class LegalZaTemplateReconcileIntegrationTest {
   void setup() {
     provisioningService.provisionTenant(ORG_ID, "Legal ZA Template Reconcile Test Org", "legal-za");
     schema = orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+  }
+
+  /**
+   * Shared cleanup, after each test's own assertions: a test that rewinds the install version and
+   * then fails before {@code internalInstall} advances it would leave the tenant at the old
+   * version, and every later rewind's compare-and-set would miss. Put the version back on the head,
+   * and the v16 statement bodies back on their shipped (pristine) body.
+   */
+  @AfterEach
+  void restoreInstallVersionAndV16Bodies() {
+    inTenantTx(
+        () -> {
+          String installed = installedVersion();
+          if (!CURRENT_VERSION.equals(installed)) {
+            packInstallRepository.compareAndSetVersion(PACK_ID, installed, CURRENT_VERSION);
+          }
+          return null;
+        });
+    V16_EDITED_KEYS.forEach(this::restorePristineShippedBody);
   }
 
   /** (a) Pristine v7 rows reach the shipped bodies, hashes re-pinned, nothing reads as edited. */
@@ -1156,26 +1176,23 @@ class LegalZaTemplateReconcileIntegrationTest {
           cts.updateContent(cts.getName(), cts.getDescription(), edited, null);
         },
         true);
-    try {
-      var logs = captureSeederLogs(() -> packInstallService.internalInstall(PACK_ID, schema));
+    // body + version restored by restoreInstallVersionAndV16Bodies (also when this fails early)
+    var logs = captureSeederLogs(() -> packInstallService.internalInstall(PACK_ID, schema));
 
-      inTenantTx(
-          () -> {
-            assertThat(ContentHashUtil.hashOf(packRow("client-trust-statement").getContent()))
-                .isEqualTo(ContentHashUtil.hashOf(edited));
-            assertThat(ContentHashUtil.hashOf(packRow("statement-of-account").getContent()))
-                .isEqualTo(ContentHashUtil.hashOf(shippedBody("statement-of-account")));
-            assertThat(installedVersion()).isEqualTo(CURRENT_VERSION);
-            return null;
-          });
-      assertThat(logs)
-          .anyMatch(
-              m ->
-                  m.startsWith("Reconcile skipped (edited)")
-                      && m.contains("'client-trust-statement' field content"));
-    } finally {
-      restorePristineShippedBody("client-trust-statement");
-    }
+    inTenantTx(
+        () -> {
+          assertThat(ContentHashUtil.hashOf(packRow("client-trust-statement").getContent()))
+              .isEqualTo(ContentHashUtil.hashOf(edited));
+          assertThat(ContentHashUtil.hashOf(packRow("statement-of-account").getContent()))
+              .isEqualTo(ContentHashUtil.hashOf(shippedBody("statement-of-account")));
+          assertThat(installedVersion()).isEqualTo(CURRENT_VERSION);
+          return null;
+        });
+    assertThat(logs)
+        .anyMatch(
+            m ->
+                m.startsWith("Reconcile skipped (edited)")
+                    && m.contains("'client-trust-statement' field content"));
   }
 
   /**
@@ -1191,47 +1208,67 @@ class LegalZaTemplateReconcileIntegrationTest {
           row.updateContent(row.getName(), row.getDescription(), row.getContent(), css);
         },
         true);
-    try {
-      var logs = captureSeederLogs(() -> packInstallService.internalInstall(PACK_ID, schema));
+    // body + version restored by restoreInstallVersionAndV16Bodies (also when this fails early)
+    var logs = captureSeederLogs(() -> packInstallService.internalInstall(PACK_ID, schema));
 
-      inTenantTx(
-          () -> {
-            var row = packRow("statement-of-account");
-            assertThat(ContentHashUtil.hashOf(row.getContent()))
-                .isEqualTo(ContentHashUtil.hashOf(shippedBody("statement-of-account")));
-            assertThat(row.getCss()).isEqualTo(css);
-            return null;
-          });
-      assertThat(logs)
-          .anyMatch(
-              m ->
-                  m.startsWith("Reconcile applied")
-                      && m.contains("'statement-of-account' field content"));
-    } finally {
-      restorePristineShippedBody("statement-of-account");
-    }
+    inTenantTx(
+        () -> {
+          var row = packRow("statement-of-account");
+          assertThat(ContentHashUtil.hashOf(row.getContent()))
+              .isEqualTo(ContentHashUtil.hashOf(shippedBody("statement-of-account")));
+          assertThat(row.getCss()).isEqualTo(css);
+          assertThat(installedVersion()).isEqualTo(CURRENT_VERSION);
+          return null;
+        });
+    assertThat(logs)
+        .anyMatch(
+            m ->
+                m.startsWith("Reconcile applied")
+                    && m.contains("'statement-of-account' field content"));
   }
 
-  /** (bb) Equal version at v16: the gate stays closed — the v15 bodies stay. */
+  /**
+   * (bb) Equal version at v16: the gate stays closed — the v15 bodies stay, and nothing is written
+   * (each row's body hash, stored content_hash and updatedAt are unchanged).
+   */
   @Test
   void equalVersionV16_isANoOp_forTheV15StatementBodies() {
     simulateV15Tenant(rows -> {}, false);
-    try {
-      packInstallService.internalInstall(PACK_ID, schema);
+    // bodies restored by restoreInstallVersionAndV16Bodies
+    Map<String, RowSnapshot> before = inTenantTx(this::v16RowSnapshots);
 
-      inTenantTx(
-          () -> {
-            for (String key : V16_EDITED_KEYS) {
-              assertThat(ContentHashUtil.hashOf(packRow(key).getContent()))
-                  .as("%s untouched at equal version", key)
-                  .isEqualTo(ContentHashUtil.hashOf(v15Body(key)));
-            }
-            assertThat(installedVersion()).isEqualTo(CURRENT_VERSION);
-            return null;
-          });
-    } finally {
-      V16_EDITED_KEYS.forEach(this::restorePristineShippedBody);
+    packInstallService.internalInstall(PACK_ID, schema);
+
+    inTenantTx(
+        () -> {
+          for (String key : V16_EDITED_KEYS) {
+            assertThat(ContentHashUtil.hashOf(packRow(key).getContent()))
+                .as("%s untouched at equal version", key)
+                .isEqualTo(ContentHashUtil.hashOf(v15Body(key)));
+          }
+          assertThat(v16RowSnapshots()).as("no row written at equal version").isEqualTo(before);
+          assertThat(installedVersion()).isEqualTo(CURRENT_VERSION);
+          return null;
+        });
+  }
+
+  /** What an equal-version run must not touch on a row. */
+  private record RowSnapshot(
+      UUID id, String bodyHash, String storedContentHash, java.time.Instant updatedAt) {}
+
+  private Map<String, RowSnapshot> v16RowSnapshots() {
+    var snapshots = new LinkedHashMap<String, RowSnapshot>();
+    for (String key : V16_EDITED_KEYS) {
+      var row = packRow(key);
+      snapshots.put(
+          key,
+          new RowSnapshot(
+              row.getId(),
+              ContentHashUtil.hashOf(row.getContent()),
+              row.getContentHash(),
+              row.getUpdatedAt()));
     }
+    return snapshots;
   }
 
   /** (e) Equal version: the gate stays closed and nothing is written. */

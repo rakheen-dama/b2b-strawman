@@ -395,8 +395,15 @@ public class ClientLedgerService {
    * The client's section 86(4) investments placed from {@code fundingAccountId} over {@code
    * startDate}..{@code endDate} ({@link InvestedStatement}); {@link InvestedStatement#isEmpty()}
    * when there is nothing to print.
+   *
+   * <p>REPEATABLE READ (as {@link #getClientLedger}): the two balances, the per-type totals and the
+   * interest entries are four statements; one snapshot keeps an interest posting from landing in
+   * the totals but not the closing balance. Read-only, so Postgres cannot raise a serialization
+   * failure here. The isolation applies only where this call starts the transaction — inside a
+   * caller's transaction it reads on the caller's snapshot
+   * (qa_cycle/evidence/phase92/648F/found.md, R-1).
    */
-  @Transactional(readOnly = true)
+  @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
   public InvestedStatement getClientInvestedStatement(
       UUID customerId, UUID fundingAccountId, LocalDate startDate, LocalDate endDate) {
     moduleGuard.requireModule(MODULE_ID);

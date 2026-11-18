@@ -246,7 +246,14 @@ class InvestedBlockStatementsIntegrationTest {
         .contains("Fund share of section 86(4) interest (5%)")
         .contains("Gross interest", "Net interest")
         .contains("Invested on your instruction (section 86(4)): ")
-        .contains(currency("30095.00"), currency("95.00"), currency("100.00"), currency("5.00"))
+        // each label with its own amount, so swapped bindings fail
+        .contains("Opening balance: </strong>" + currency("0"))
+        .contains("Placed in section 86(4) investment: </strong>" + currency("30000.00"))
+        .contains("Gross interest: </strong>" + currency("100.00"))
+        .contains("Fund share of section 86(4) interest (5%): </strong>" + currency("5.00"))
+        .contains("Net interest: </strong>" + currency("95.00"))
+        .contains("Investment returned to trust: </strong>" + currency("0"))
+        .contains("Invested on your instruction (section 86(4)): </strong>" + currency("30095.00"))
         .contains("10 March 2026")
         .doesNotContain("15 March 2026")
         .doesNotContain("30095.00");
@@ -257,7 +264,13 @@ class InvestedBlockStatementsIntegrationTest {
         .contains("Section 86(4) investment")
         // R-E: the Deposits table's Type column prints the registry's client label
         .contains("<td>Investment returned to trust</td>")
-        .contains(currency("30285.00"), currency("190.00"), currency("30095.00"));
+        .contains("Opening balance: </strong>" + currency("30095.00"))
+        .contains("Placed in section 86(4) investment: </strong>" + currency("0"))
+        .contains("Gross interest: </strong>" + currency("200.00"))
+        .contains("Fund share of section 86(4) interest (5%): </strong>" + currency("10.00"))
+        .contains("Net interest: </strong>" + currency("190.00"))
+        .contains("Investment returned to trust: </strong>" + currency("30285.00"))
+        .contains("Invested on your instruction (section 86(4)): </strong>" + currency("0"));
     RAW_TYPES.forEach(raw -> assertThat(april).doesNotContain(raw));
   }
 
@@ -298,9 +311,13 @@ class InvestedBlockStatementsIntegrationTest {
         // the renderer HTML-escapes the apostrophe
         .contains("In the firm&#39;s trust account:</strong> " + currency("50285.00"))
         .contains("Held in trust:</strong> " + currency("50285.00"))
-        .contains("Invested on your instruction (section 86(4)):")
-        .contains(currency("30000.00"), currency("285.00"), currency("15.00"))
-        .contains(currency("300.00"), currency("30285.00"), currency("50285.00"))
+        .contains("Invested on your instruction (section 86(4)):</strong> " + currency("0"))
+        // each label with its own amount, so swapped bindings fail
+        .contains("Placed in section 86(4) investment:</strong> " + currency("30000.00"))
+        .contains("Gross interest:</strong> " + currency("300.00"))
+        .contains("Fund share of section 86(4) interest (5%):</strong> " + currency("15.00"))
+        .contains("Net interest:</strong> " + currency("285.00"))
+        .contains("Investment returned to trust:</strong> " + currency("30285.00"))
         .contains("10 March 2026", "10 April 2026")
         .doesNotContain("The current balance held in trust on your behalf is")
         .doesNotContain("30285.00");

@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -1557,6 +1558,8 @@ class StatementOfAccountContextBuilderTest {
     // the persisted snapshot's trust figure is the general balance, unchanged (R-C)
     assertThat(builder.computeSummary(projectId, periodStart, periodEnd).trustBalanceHeld())
         .isEqualByComparingTo("50285.00");
+    // the summary path never reads the invested block: build() read it once, computeSummary not
+    verify(clientLedgerService, times(1)).getClientInvestedStatement(any(), any(), any(), any());
   }
 
   @Test
@@ -1591,7 +1594,10 @@ class StatementOfAccountContextBuilderTest {
         .contains("Investment returned to trust: ")
         .contains("Invested on your instruction (section 86(4)): ")
         .contains("R30&nbsp;095,00", "R30&nbsp;285,00", "R190,00", "R200,00", "R10,00")
-        .contains("10 April 2026")
+        .as("the interest row: date, gross, Fund share, net in one table row")
+        .contains(
+            "<tr><td>10 April 2026</td><td class=\"num\">R200,00</td>"
+                + "<td class=\"num\">R10,00</td><td class=\"num\">R190,00</td></tr>")
         .doesNotContain("30095.00")
         .doesNotContain("30285.00")
         .as("R-E: the Deposits Type column prints the registry's client label")

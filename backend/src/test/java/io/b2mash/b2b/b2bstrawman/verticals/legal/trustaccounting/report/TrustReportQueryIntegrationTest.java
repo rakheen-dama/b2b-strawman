@@ -419,6 +419,9 @@ class TrustReportQueryIntegrationTest {
         Expected.cashbookAndInvestment("30000.00"),
         placed.depositTransactionId(),
         approverMemberId);
+    // Another general account holds a deposit for the same investor but funds no investment
+    UUID otherAccount = books.freshAccount(false);
+    books.deposit(otherAccount, investor, "1000.00");
     books.recordInterest(
         investmentAccount,
         Expected.cashbookAndInvestment("95.00"),
@@ -481,6 +484,20 @@ class TrustReportQueryIntegrationTest {
           assertThat((BigDecimal) march.get("interestNet")).isEqualByComparingTo("95.00");
           assertThat((BigDecimal) march.get("closingBalance")).isEqualByComparingTo("30095.00");
 
+          // Same investor and range on the other account: its deposit, no invested block (the
+          // funding-account rule — the investment was placed from `funding` only)
+          var other = new HashMap<String, Object>();
+          other.put("trust_account_id", otherAccount);
+          other.put("customer_id", investor.id());
+          other.put("dateFrom", "2026-03-01");
+          other.put("dateTo", "2026-04-30");
+          var otherResult = ledgerStatementQuery.executeAll(other);
+          assertThat(otherResult.rows()).hasSize(1);
+          assertThat(otherResult.rows().getFirst()).containsEntry("type", "Deposit");
+          assertThat((BigDecimal) otherResult.rows().getFirst().get("credit"))
+              .isEqualByComparingTo("1000.00");
+          assertThat(otherResult.summary()).doesNotContainKey("invested");
+
           // A client without a section 86(4) investment has no invested block
           var plain = new HashMap<String, Object>();
           plain.put("trust_account_id", trustAccountId);
@@ -489,6 +506,47 @@ class TrustReportQueryIntegrationTest {
           plain.put("dateTo", "2025-06-30");
           assertThat(ledgerStatementQuery.executeAll(plain).summary())
               .doesNotContainKey("invested");
+        });
+  }
+
+  /**
+   * 648F review F2: an inverted range ({@code dateTo} before {@code dateFrom}) is not rejected
+   * upstream; it returns no rows and, for an s86(4) client, no {@code invested} block — as before
+   * 648F, never the service's "Invalid ledger statement range".
+   */
+  @Test
+  void clientLedgerStatement_invertedRange_noRowsAndNoInvestedBlock() {
+    var books = fixture.tenant(tenantSchema, ORG_ID, ownerMemberId);
+    UUID funding = books.freshAccount(false);
+    UUID investmentAccount = books.freshInvestmentAccount(InvestmentBasis.CLIENT_INSTRUCTION);
+    var investor = books.newClient("report inverted-range investor");
+    books.deposit(funding, investor, "50000.00");
+    var placed = books.requestPlacement(funding, investmentAccount, investor, "30000.00");
+    books.approvePlacement(
+        funding,
+        Expected.cashbookAndClient("-30000.00"),
+        investmentAccount,
+        Expected.cashbookAndInvestment("30000.00"),
+        placed.depositTransactionId(),
+        approverMemberId);
+
+    runInTenant(
+        () -> {
+          var params = new HashMap<String, Object>();
+          params.put("trust_account_id", funding);
+          params.put("customer_id", investor.id());
+          params.put("dateFrom", "2026-04-30");
+          params.put("dateTo", "2026-03-01");
+
+          var result = ledgerStatementQuery.executeAll(params);
+
+          assertThat(result.rows()).isEmpty();
+          assertThat(result.summary())
+              .containsEntry("transactionCount", 0)
+              .doesNotContainKey("invested");
+          // the opening balance is the general balance as at dateFrom − 1, as before
+          assertThat((BigDecimal) result.summary().get("openingBalance"))
+              .isEqualByComparingTo("20000.00");
         });
   }
 

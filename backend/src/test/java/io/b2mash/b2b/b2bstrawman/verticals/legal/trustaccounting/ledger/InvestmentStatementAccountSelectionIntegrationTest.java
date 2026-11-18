@@ -34,6 +34,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -50,7 +51,8 @@ import org.springframework.transaction.support.TransactionTemplate;
  * <p>Setup that turns the coin flip into a guaranteed failure: a primary GENERAL account the
  * investor never uses, the investor's money on a non-primary GENERAL account {@code G}, and an
  * investment account {@code I} whose id sorts before {@code G}'s (Postgres orders uuid bytewise =
- * the canonical lowercase hex string).
+ * the canonical lowercase hex string). Both ids are fixed by construction ({@link #rekeyAccount}),
+ * so the order never depends on a random draw.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -64,6 +66,11 @@ class InvestmentStatementAccountSelectionIntegrationTest {
   private static final String APPROVER_SUB = "user_isa_approver";
   private static final Set<String> TRUST_READER =
       Set.of("VIEW_TRUST", "MANAGE_TRUST", "VIEW_LEGAL", "GENERATE_STATEMENT_OF_ACCOUNT");
+  // I sorts before G in Postgres's uuid order by construction (lowest and highest v4-shaped ids).
+  private static final UUID INVESTMENT_ACCOUNT_ID =
+      UUID.fromString("00000000-0000-4000-8000-000000000000");
+  private static final UUID FUNDING_ACCOUNT_ID =
+      UUID.fromString("ffffffff-ffff-4fff-bfff-ffffffffffff");
 
   @Autowired private MockMvc mockMvc;
   @Autowired private CustomerRepository customerRepository;
@@ -74,6 +81,7 @@ class InvestmentStatementAccountSelectionIntegrationTest {
   @Autowired private StatementOfAccountContextBuilder statementContextBuilder;
   @Autowired private ClientTrustStatementContext clientTrustStatementContext;
   @Autowired private Clock clock;
+  @Autowired private JdbcTemplate jdbcTemplate;
 
   private String tenantSchema;
   private UUID ownerId;
@@ -99,8 +107,20 @@ class InvestmentStatementAccountSelectionIntegrationTest {
     today = LocalDate.now(clock);
 
     openGeneralAccount("ISA Primary Trust Account", "62000000800", true);
-    fundingAccountId = openGeneralAccount("ISA Second Trust Account", "62000000801", false);
-    investmentAccountId = openInvestmentAccountSortingBefore(fundingAccountId);
+    fundingAccountId =
+        rekeyAccount(
+            openGeneralAccount("ISA Second Trust Account", "62000000801", false),
+            FUNDING_ACCOUNT_ID);
+    investmentAccountId =
+        rekeyAccount(
+            TestTrustInvestmentAccountHelper.openInvestmentAccount(
+                mockMvc,
+                TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUB),
+                "ISA Section 86(4) Investments",
+                "62000000900",
+                InvestmentBasis.CLIENT_INSTRUCTION),
+            INVESTMENT_ACCOUNT_ID);
+    assertThat(investmentAccountId.toString()).isLessThan(fundingAccountId.toString());
 
     investor =
         UUID.fromString(
@@ -200,23 +220,32 @@ class InvestmentStatementAccountSelectionIntegrationTest {
   }
 
   /**
-   * Opens section 86(4) investment accounts until one's id sorts before {@code other}'s in
-   * Postgres's uuid order (each try is a fair coin; 40 tries fail with probability 2⁻⁴⁰).
+   * Gives a freshly opened account (no trust rows yet) the id {@code to}: clones the row under the
+   * new id, moves the default creditor accounts opened with it, then deletes the original. Every
+   * step keeps the foreign keys valid; any other row already pointing at the account makes the
+   * delete fail loudly rather than leave a dangling fixture.
    */
-  private UUID openInvestmentAccountSortingBefore(UUID other) throws Exception {
-    for (int i = 0; i < 40; i++) {
-      var id =
-          TestTrustInvestmentAccountHelper.openInvestmentAccount(
-              mockMvc,
-              TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUB),
-              "ISA Section 86(4) Investments " + i,
-              "6200000090" + String.format("%02d", i),
-              InvestmentBasis.CLIENT_INSTRUCTION);
-      if (id.toString().compareTo(other.toString()) < 0) {
-        return id;
-      }
-    }
-    throw new AssertionError("no investment account id sorted before " + other);
+  private UUID rekeyAccount(UUID from, UUID to) {
+    jdbcTemplate.update(
+        """
+        INSERT INTO "%1$s".trust_accounts
+        SELECT (jsonb_populate_record(NULL::"%1$s".trust_accounts,
+                                      to_jsonb(a) || jsonb_build_object('id', ?::uuid))).*
+        FROM "%1$s".trust_accounts a WHERE a.id = ?
+        """
+            .formatted(tenantSchema),
+        to,
+        from);
+    jdbcTemplate.update(
+        "UPDATE \"%s\".trust_creditor_accounts SET trust_account_id = ? WHERE trust_account_id = ?"
+            .formatted(tenantSchema),
+        to,
+        from);
+    assertThat(
+            jdbcTemplate.update(
+                "DELETE FROM \"%s\".trust_accounts WHERE id = ?".formatted(tenantSchema), from))
+        .isEqualTo(1);
+    return to;
   }
 
   private void deposit(String amount) throws Exception {

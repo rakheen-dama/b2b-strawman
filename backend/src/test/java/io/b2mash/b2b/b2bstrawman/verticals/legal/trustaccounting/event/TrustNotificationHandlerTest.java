@@ -139,6 +139,9 @@ class TrustNotificationHandlerTest {
 
   @Test
   void awaitingApprovalEvent_sendsNotificationsToApprovers() {
+    // Scoped to this test's own transaction: sibling tests (e.g. the s86(4) placement) write the
+    // same TRUST_PAYMENT_AWAITING_APPROVAL type into this PER_CLASS tenant with non-payment titles.
+    UUID paymentId = UUID.randomUUID();
     // Publish an awaiting approval event inside a transaction so @TransactionalEventListener fires
     runInTenantWithCapabilities(
         () ->
@@ -146,7 +149,7 @@ class TrustNotificationHandlerTest {
                 tx -> {
                   var event =
                       TrustTransactionApprovalEvent.awaitingApproval(
-                          UUID.randomUUID(),
+                          paymentId,
                           UUID.randomUUID(),
                           UUID.randomUUID(),
                           "PAYMENT",
@@ -168,6 +171,7 @@ class TrustNotificationHandlerTest {
                   var trustNotifications =
                       notifications.stream()
                           .filter(n -> "TRUST_PAYMENT_AWAITING_APPROVAL".equals(n.getType()))
+                          .filter(n -> paymentId.equals(n.getReferenceEntityId()))
                           .toList();
                   assertThat(trustNotifications).isNotEmpty();
                   assertThat(trustNotifications)

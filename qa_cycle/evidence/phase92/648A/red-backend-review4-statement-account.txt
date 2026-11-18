@@ -28,3 +28,115 @@ expected: 25000.00
 # GREEN after fix (AND t.ledger = TrustLedger.CLIENT in findDistinctTrustAccountIdsByCustomerId)
 [INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 12.72 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.InvestmentStatementAccountSelectionIntegrationTest
 [INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
+
+# RED re-confirmed after deterministic fixture (CR cycle 5, 2026-11-18)
+# Fixture: retry loop removed; G re-keyed to ffffffff-ffff-4fff-bfff-ffffffffffff, I to 00000000-0000-4000-8000-000000000000
+# Pre-fix query restored locally (AND t.ledger = TrustLedger.CLIENT removed, not committed); 3 runs:
+red run 1 exit=1
+[ERROR] Tests run: 3, Failures: 3, Errors: 0, Skipped: 0, Time elapsed: 12.64 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.InvestmentStatementAccountSelectionIntegrationTest
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.InvestmentStatementAccountSelectionIntegrationTest.accountCandidates_areTheClientLedgerAccountsOnly_notTheInvestmentAccount -- Time elapsed: 0.315 s <<< FAILURE!
+Expecting actual:
+but some elements were not expected:
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.InvestmentStatementAccountSelectionIntegrationTest.statementOfAccount_trustBlock_readsTheFundingAccount -- Time elapsed: 0.039 s <<< FAILURE!
+expected: 25000.00
+ but was: 0
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.InvestmentStatementAccountSelectionIntegrationTest.clientTrustStatement_readsTheFundingAccount -- Time elapsed: 0.011 s <<< FAILURE!
+expected: "ISA Second Trust Account"
+ but was: "ISA Section 86(4) Investments"
+[ERROR]   InvestmentStatementAccountSelectionIntegrationTest.accountCandidates_areTheClientLedgerAccountsOnly_notTheInvestmentAccount:160 [the investment account carries the investor's investment ledger, not their trust ledger] 
+Expecting actual:
+but some elements were not expected:
+[ERROR]   InvestmentStatementAccountSelectionIntegrationTest.clientTrustStatement_readsTheFundingAccount:184 
+expected: "ISA Second Trust Account"
+ but was: "ISA Section 86(4) Investments"
+[ERROR]   InvestmentStatementAccountSelectionIntegrationTest.statementOfAccount_trustBlock_readsTheFundingAccount:173 
+expected: 25000.00
+ but was: 0
+[ERROR] Tests run: 3, Failures: 3, Errors: 0, Skipped: 0
+  testcases=3 failures=3 errors=0
+red run 2 exit=1
+[ERROR] Tests run: 3, Failures: 3, Errors: 0, Skipped: 0, Time elapsed: 12.31 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.InvestmentStatementAccountSelectionIntegrationTest
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.InvestmentStatementAccountSelectionIntegrationTest.accountCandidates_areTheClientLedgerAccountsOnly_notTheInvestmentAccount -- Time elapsed: 0.300 s <<< FAILURE!
+Expecting actual:
+but some elements were not expected:
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.InvestmentStatementAccountSelectionIntegrationTest.statementOfAccount_trustBlock_readsTheFundingAccount -- Time elapsed: 0.043 s <<< FAILURE!
+expected: 25000.00
+ but was: 0
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.InvestmentStatementAccountSelectionIntegrationTest.clientTrustStatement_readsTheFundingAccount -- Time elapsed: 0.014 s <<< FAILURE!
+expected: "ISA Second Trust Account"
+ but was: "ISA Section 86(4) Investments"
+[ERROR]   InvestmentStatementAccountSelectionIntegrationTest.accountCandidates_areTheClientLedgerAccountsOnly_notTheInvestmentAccount:160 [the investment account carries the investor's investment ledger, not their trust ledger] 
+Expecting actual:
+but some elements were not expected:
+[ERROR]   InvestmentStatementAccountSelectionIntegrationTest.clientTrustStatement_readsTheFundingAccount:184 
+expected: "ISA Second Trust Account"
+ but was: "ISA Section 86(4) Investments"
+[ERROR]   InvestmentStatementAccountSelectionIntegrationTest.statementOfAccount_trustBlock_readsTheFundingAccount:173 
+expected: 25000.00
+ but was: 0
+[ERROR] Tests run: 3, Failures: 3, Errors: 0, Skipped: 0
+  testcases=3 failures=3 errors=0
+red run 3 exit=1
+[ERROR] Tests run: 3, Failures: 3, Errors: 0, Skipped: 0, Time elapsed: 12.20 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.InvestmentStatementAccountSelectionIntegrationTest
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.InvestmentStatementAccountSelectionIntegrationTest.accountCandidates_areTheClientLedgerAccountsOnly_notTheInvestmentAccount -- Time elapsed: 0.303 s <<< FAILURE!
+Expecting actual:
+but some elements were not expected:
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.InvestmentStatementAccountSelectionIntegrationTest.statementOfAccount_trustBlock_readsTheFundingAccount -- Time elapsed: 0.036 s <<< FAILURE!
+expected: 25000.00
+ but was: 0
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.InvestmentStatementAccountSelectionIntegrationTest.clientTrustStatement_readsTheFundingAccount -- Time elapsed: 0.011 s <<< FAILURE!
+expected: "ISA Second Trust Account"
+ but was: "ISA Section 86(4) Investments"
+[ERROR]   InvestmentStatementAccountSelectionIntegrationTest.accountCandidates_areTheClientLedgerAccountsOnly_notTheInvestmentAccount:160 [the investment account carries the investor's investment ledger, not their trust ledger] 
+Expecting actual:
+but some elements were not expected:
+[ERROR]   InvestmentStatementAccountSelectionIntegrationTest.clientTrustStatement_readsTheFundingAccount:184 
+expected: "ISA Second Trust Account"
+ but was: "ISA Section 86(4) Investments"
+[ERROR]   InvestmentStatementAccountSelectionIntegrationTest.statementOfAccount_trustBlock_readsTheFundingAccount:173 
+expected: 25000.00
+ but was: 0
+[ERROR] Tests run: 3, Failures: 3, Errors: 0, Skipped: 0
+  testcases=3 failures=3 errors=0
+# run 1 detail:
+[ERROR] Tests run: 3, Failures: 3, Errors: 0, Skipped: 0, Time elapsed: 12.64 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.InvestmentStatementAccountSelectionIntegrationTest
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.InvestmentStatementAccountSelectionIntegrationTest.accountCandidates_areTheClientLedgerAccountsOnly_notTheInvestmentAccount -- Time elapsed: 0.315 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+[the investment account carries the investor's investment ledger, not their trust ledger] 
+Expecting actual:
+  [00000000-0000-4000-8000-000000000000, ffffffff-ffff-4fff-bfff-ffffffffffff]
+to contain exactly (and in same order):
+  [ffffffff-ffff-4fff-bfff-ffffffffffff]
+but some elements were not expected:
+  [00000000-0000-4000-8000-000000000000]
+
+
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.InvestmentStatementAccountSelectionIntegrationTest.statementOfAccount_trustBlock_readsTheFundingAccount -- Time elapsed: 0.039 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+
+expected: 25000.00
+ but was: 0
+
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.InvestmentStatementAccountSelectionIntegrationTest.clientTrustStatement_readsTheFundingAccount -- Time elapsed: 0.011 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+
+expected: "ISA Second Trust Account"
+ but was: "ISA Section 86(4) Investments"
+
+[ERROR] Failures: 
+[ERROR]   InvestmentStatementAccountSelectionIntegrationTest.accountCandidates_areTheClientLedgerAccountsOnly_notTheInvestmentAccount:160 [the investment account carries the investor's investment ledger, not their trust ledger] 
+Expecting actual:
+  [00000000-0000-4000-8000-000000000000, ffffffff-ffff-4fff-bfff-ffffffffffff]
+to contain exactly (and in same order):
+  [ffffffff-ffff-4fff-bfff-ffffffffffff]
+but some elements were not expected:
+  [00000000-0000-4000-8000-000000000000]
+
+[ERROR]   InvestmentStatementAccountSelectionIntegrationTest.clientTrustStatement_readsTheFundingAccount:184 
+expected: "ISA Second Trust Account"
+ but was: "ISA Section 86(4) Investments"
+[ERROR]   InvestmentStatementAccountSelectionIntegrationTest.statementOfAccount_trustBlock_readsTheFundingAccount:173 
+expected: 25000.00
+ but was: 0
+[ERROR] Tests run: 3, Failures: 3, Errors: 0, Skipped: 0
+# filter restored (git diff on TrustTransactionRepository.java empty); GREEN re-run recorded in tier2-review4.txt § CR cycle 5

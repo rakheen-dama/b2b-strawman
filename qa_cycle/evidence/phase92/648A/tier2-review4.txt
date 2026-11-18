@@ -77,3 +77,17 @@ AssertionError: expected '' to be '2026-01-15' // Object.is equality
 - Expected
 + Received
       Tests  1 failed | 10 skipped (11)
+
+## CR cycle 5 (2026-11-18) — test-only fixes, base 463e1c64a
+F1 TrustNotificationHandlerTest.awaitingApprovalEvent_sendsNotificationsToApprovers: filter now also scoped by getReferenceEntityId() == this test's transaction id.
+F2 InvestmentStatementAccountSelectionIntegrationTest: 40-try retry loop (P(fail)=1/41 per run) replaced by rekeyAccount — I=00000000-0000-4000-8000-000000000000 < G=ffffffff-ffff-4fff-bfff-ffffffffffff by construction (clone row, repoint default creditor accounts, delete original).
+Tier 1: spotless:apply + compile test-compile exit 0
+Tier 2 (3 stability runs, counts from surefire XML <testcase>):
+stability run 1 exit=0 | TrustNotificationHandlerTest testcases=11 failures=0 errors=0 | InvestmentStatementAccountSelectionIntegrationTest testcases=3 failures=0 errors=0
+stability run 2 exit=0 | TrustNotificationHandlerTest testcases=11 failures=0 errors=0 | InvestmentStatementAccountSelectionIntegrationTest testcases=3 failures=0 errors=0
+stability run 3 exit=0 | TrustNotificationHandlerTest testcases=11 failures=0 errors=0 | InvestmentStatementAccountSelectionIntegrationTest testcases=3 failures=0 errors=0
+F1 order proof (temporary @TestMethodOrder(OrderAnnotation): placement @Order(1), payment @Order(2); removed after):
+  with fix:    exit 0, testcases=11 failures=0 (surefire order: placement, payment, ...)
+  without new referenceEntityId filter: exit 1, testcases=11 failures=1 — awaitingApprovalEvent_sendsNotificationsToApprovers: 'Expecting all elements of: [2 notifications] to satisfy given requirements' (placement title lacks "payment")
+F2 red re-confirmation (ledger = CLIENT filter removed locally, not committed): 3/3 runs exit 1, testcases=3 failures=3 — see red-backend-review4-statement-account.txt § re-confirmed after deterministic fixture
+Main (production) code: unchanged (TrustTransactionRepository.java restored, git diff empty).

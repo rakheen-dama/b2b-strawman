@@ -18,6 +18,7 @@ import { Button } from "@b2mash/ui/button";
 import { PageHeader } from "@b2mash/ui/page-header";
 import { StatCard } from "@b2mash/ui/stat-card";
 import { AddTrustAccountButton } from "@/components/trust/AddTrustAccountButton";
+import { TrustIntegrityCard, TrustIntegrityTiles } from "@/components/trust/TrustIntegrityCard";
 import { TrustBalanceTrendChart } from "@/components/trust/trust-balance-trend-chart";
 import { TrustTransactionsTable } from "@/components/trust/trust-transactions-table";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
@@ -29,8 +30,14 @@ import {
   fetchDashboardData,
   fetchTrustPosition,
   fetchTrustBalanceTrend,
+  fetchTrustIntegrity,
 } from "./actions";
-import type { TrustAccount, TrustAlertSeverity, TrustDashboardData } from "@/lib/types";
+import type {
+  FirmIntegrityReport,
+  TrustAccount,
+  TrustAlertSeverity,
+  TrustDashboardData,
+} from "@/lib/types";
 
 // ── Helpers ────────────────────────────────────────────────────────
 
@@ -173,11 +180,13 @@ export default async function TrustAccountingPage({
   let dashboardData: TrustDashboardData | null = null;
   let position: WidgetResult<TrustPositionResponse> = { state: "absent" };
   let trend: WidgetResult<TrustBalanceTrendResponse> = { state: "absent" };
+  let integrity: WidgetResult<FirmIntegrityReport> = { state: "absent" };
   if (primary) {
     // The tiles' cashbook / ledger / pending / reconciliation figures come from trust-position
     // (the Home widget's read, 643A); Active Clients, alerts and recent transactions from the
-    // dashboard aggregation. The two settled reads never throw except to re-login (401).
-    [dashboardData, position, trend] = await Promise.all([
+    // dashboard aggregation; the firm-wide tiles and the integrity card from the integrity check
+    // (649C). The settled reads never throw except to re-login (401).
+    [dashboardData, position, trend, integrity] = await Promise.all([
       fetchDashboardData(primary.id).catch((dashboardErr: unknown) => {
         // Dashboard payload fetch failed, but the account list loaded. We still want the
         // header CTAs visible so users can reach Client Ledgers / Record Transaction,
@@ -188,8 +197,11 @@ export default async function TrustAccountingPage({
       }),
       fetchTrustPosition(primary.id),
       fetchTrustBalanceTrend(primary.id, 12),
+      fetchTrustIntegrity(),
     ]);
   }
+  const integrityData = integrity.state === "ok" ? integrity.data : null;
+  const integrityFailed = integrity.state === "error";
   const positionData = position.state === "ok" ? position.data : null;
   const pendingApprovals = positionData?.pendingApprovalCount ?? 0;
 
@@ -308,7 +320,24 @@ export default async function TrustAccountingPage({
               />
             </div>
           </div>
+        </>
+      )}
 
+      {/* Firm-wide balance tiles and the integrity check (649C, ruling D-1): a second row, so the
+          frozen four-tile row above keeps its labels and sources. Independent of the dashboard
+          read — the integrity check still shows when that read fails; with no trust account the
+          read is "absent" and both render nothing. */}
+      <TrustIntegrityTiles report={integrityData} failed={integrityFailed} currency={currency} />
+      <TrustIntegrityCard
+        report={integrityData}
+        failed={integrityFailed}
+        accounts={accounts}
+        slug={slug}
+        currency={currency}
+      />
+
+      {dashboardData && (
+        <>
           {/* Alerts Section */}
           {dashboardData.alerts.length > 0 && (
             <div className="space-y-2" data-testid="alerts-section">

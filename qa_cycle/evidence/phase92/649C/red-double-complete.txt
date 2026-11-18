@@ -1,0 +1,25 @@
+649C review fix cycle 2 — concurrent double-complete race (red reproduction)
+Date: 2026-11-18T17:53:30Z   Base head: 131573b6d
+
+Test: TrustReconciliationCompletionGateIntegrationTest
+      #concurrentDoubleComplete_secondWaitsOnTheStatementLock_andIsRefused_completedOnce
+Harness: thread 1 (owner) completes inside a TransactionTemplate held open by a CountDownLatch
+(statement row locked, COMPLETED uncommitted); thread 2 (approver) calls completeReconciliation in
+its own @Transactional, reads DRAFT, blocks on bank_statements FOR UPDATE — observed via
+pg_stat_activity / pg_blocking_pids(holder pid), not a sleep — then thread 1 is released to commit.
+Pattern copied from TrustInvestmentWithdrawReverseRaceIntegrationTest.
+
+RED (post-lock re-check removed from TrustReconciliationService.completeReconciliation): 3/3 runs FAIL
+  run 1: FAIL — "the second complete succeeded": expected null but was TrustReconciliationResponse[status=COMPLETED, completedAt=2026-11-18T17:50:55.408181Z ...]
+  run 2: FAIL — same (second complete returned COMPLETED, completedAt=2026-11-18T17:51:12.090573Z)
+  run 3: FAIL — same (second complete returned COMPLETED, completedAt=2026-11-18T17:51:28.670162Z)
+  In all three the preceding assertions PASSED: the second complete was observed blocked on the
+  bank_statements row lock held by the first's backend, and had not finished before the first
+  committed — i.e. the statement lock serialises the two, but the second then proceeded on its stale
+  DRAFT read, re-ran the gate, overwrote completedBy/completedAt and (per the code path) wrote a
+  second trust_reconciliation.completed audit event and a second RECONCILED save.
+
+GREEN (fix restored — findStatusById re-read under the lock, refuse "Invalid reconciliation state" /
+"Reconciliation is already COMPLETED"): 5/5 runs PASS (0.74 s each): second refused with the
+sequential-complete 400, exactly 1 completed audit event for the reconciliation id, completedBy /
+completedAt the winner's, statement RECONCILED.

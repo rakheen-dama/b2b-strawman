@@ -1,0 +1,150 @@
+{
+  "phase": "b",
+  "startedAt": "2026-11-18T18:38:51.950Z",
+  "apiWrites": [
+    {
+      "why": "context 2: the wizard cannot reopen an existing reconciliation, so a second user can reach its line only through the firm API the wizard calls",
+      "method": "POST",
+      "url": "/api/bank-statement-lines/1a20c233-d4ab-4bee-845b-280fb2d668f3/unmatch",
+      "status": 200,
+      "body": null
+    }
+  ],
+  "consoleErrors": [
+    {
+      "user": "user_e2e_alice",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "text": "MockAuthContextProvider: failed to fetch userinfo TypeError: Failed to fetch\n    at http://localhost:3001/_next/static/chunks/1kvf-7k8cibf1.js:1:1582\n    at iw (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:118706)\n    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:"
+    }
+  ],
+  "pageErrors": [],
+  "checks": {
+    "b: all four lines resolved → Complete enabled, 4 / 4": true,
+    "b: one refusal banner": true,
+    "b: banner heading is the title 'Reconciliation does not balance' (O-OBS-2)": true,
+    "b: banner carries the G1 sentence and the G4 sentence": true,
+    "b: figures refreshed after refusal (D-9): not balanced, Complete disabled": true,
+    "b: pane re-read after refusal (F-OBS-1): line Unmatched, no Unmatch button, 3 / 4, payment listed": true,
+    "b: the line offers its actions on screen (exclude, record, match)": true,
+    "b: re-resolved through the UI → 4 / 4, Complete enabled": true,
+    "b: refused attempt left no completed audit event": true,
+    "b: COMPLETED + RECONCILED + one completed event": true,
+    "b: completed event details carry creditor_total, difference, flags": true,
+    "b: no clipped text in the refusal banner": true
+  },
+  "wizard": {
+    "statement": "aa31ff23-5936-4d0d-9159-9bd2f6226767",
+    "recon": "de691c66-a7b5-460c-a1bc-5f37c76a5514",
+    "autoMatch": "Auto-matched 2 lines 2 lines remaining for manual review",
+    "lines": [
+      {
+        "n": 1,
+        "id": "8feda07b-219b-4e19-9a82-8384c3205e21",
+        "s": "AUTO_MATCHED"
+      },
+      {
+        "n": 2,
+        "id": "1a20c233-d4ab-4bee-845b-280fb2d668f3",
+        "s": "AUTO_MATCHED"
+      },
+      {
+        "n": 3,
+        "id": "aa185e79-4af7-4c16-b11a-41e4cb0f8f6a",
+        "s": "UNMATCHED"
+      },
+      {
+        "n": 4,
+        "id": "05fac862-72d4-43b8-97ec-4c4e7031aa8d",
+        "s": "UNMATCHED"
+      }
+    ]
+  },
+  "afterAutoMatch": "b-01-review-after-auto-match.png",
+  "ready": {
+    "text": "As at 18 Nov 2026 Bank and cashbook Bank balance R 3 750,00 + Outstanding deposits R 295 000,00 − Outstanding payments R 238 500,00 = Adjusted bank balance R 60 250,00 Cashbook R 60 250,00 Difference R 0,00 Cashbook and trust creditors Cashbook R 60 250,00 Trust creditors R 60 250,00 Difference R 0,00 Trust creditors Client ledgers R 260 250,00 Legal Practitioners' Fidelity Fund — interest and charges R 0,00 Unidentified deposits R 0,00 Placed in section 86(3) investment accounts -R 200 000,00 0 statement lines are neither matched, recorded nor excluded Excluded statement lines total R 0,00. An excluded line adjusts nothing: excluding a real bank movement leaves its amount as the difference between the bank and the cashbook. Reconciliation is balanced Complete Reconciliation",
+    "completeEnabled": true
+  },
+  "readyProgress": "Matching Progress\n4 / 4 lines resolved",
+  "readyShot": "b-02-all-resolved-complete-enabled.png",
+  "beforeComplete": {
+    "text": "As at 18 Nov 2026 Bank and cashbook Bank balance R 3 750,00 + Outstanding deposits R 295 000,00 − Outstanding payments R 238 500,00 = Adjusted bank balance R 60 250,00 Cashbook R 60 250,00 Difference R 0,00 Cashbook and trust creditors Cashbook R 60 250,00 Trust creditors R 60 250,00 Difference R 0,00 Trust creditors Client ledgers R 260 250,00 Legal Practitioners' Fidelity Fund — interest and charges R 0,00 Unidentified deposits R 0,00 Placed in section 86(3) investment accounts -R 200 000,00 0 statement lines are neither matched, recorded nor excluded Excluded statement lines total R 0,00. An excluded line adjusts nothing: excluding a real bank movement leaves its amount as the difference between the bank and the cashbook. Reconciliation is balanced Complete Reconciliation",
+    "completeEnabled": true
+  },
+  "refusal": {
+    "banners": 1,
+    "text": "Reconciliation does not balance\n\nAdjusted bank balance R59 000,00 differs from the cashbook R60 250,00 by R1 250,00 as at 18 November 2026. 1 statement line is neither matched, recorded nor excluded.",
+    "title": "Reconciliation does not balance",
+    "titleFirst": true,
+    "after": {
+      "text": "As at 18 Nov 2026 Bank and cashbook Bank balance R 3 750,00 + Outstanding deposits R 295 000,00 − Outstanding payments R 239 750,00 = Adjusted bank balance R 59 000,00 Cashbook R 60 250,00 Difference -R 1 250,00 Cashbook and trust creditors Cashbook R 60 250,00 Trust creditors R 60 250,00 Difference R 0,00 Trust creditors Client ledgers R 260 250,00 Legal Practitioners' Fidelity Fund — interest and charges R 0,00 Unidentified deposits R 0,00 Placed in section 86(3) investment accounts -R 200 000,00 1 statement line is neither matched, recorded nor excluded Excluded statement lines total R 0,00. An excluded line adjusts nothing: excluding a real bank movement leaves its amount as the difference between the bank and the cashbook. Integrity check Blocking Bank and cashbook differ Adjusted bank balance R59 000,00 differs from the cashbook R60 250,00 by R1 250,00 as at 18 November 2026. Blocking Statement lines not yet resolved 1 statement line is neither matched, recorded nor excluded. Reconciliation is not balanced Complete Reconciliation",
+      "completeEnabled": false
+    },
+    "progress": "Matching Progress\n3 / 4 lines resolved",
+    "lineShown": "#2 17 Nov 2026 EFT DEBIT DEEDS OFFICE Ref: PAY/DEEDS/mwmgnc8sec11 R 1 250,00 DR Unmatched",
+    "lineUnmatchBtn": 0,
+    "payTxListed": 1,
+    "depTxListed": 0,
+    "stillOnReview": true
+  },
+  "refusalShot": "b-03-refused-g1-g4.png",
+  "refusalClip": {
+    "sel": "[data-testid=\"reconciliation-error\"]",
+    "root": [
+      280,
+      1256
+    ],
+    "vw": 1280,
+    "textElements": 2,
+    "bad": []
+  },
+  "completedEventsAfterRefusal": 0,
+  "lineActions": {
+    "exclude": 1,
+    "record": 1,
+    "match": 1
+  },
+  "lineSelectedShot": "b-04-line-selected-actions.png",
+  "reResolveVia": "UI match (context 1)",
+  "beforeSecondComplete": {
+    "text": "As at 18 Nov 2026 Bank and cashbook Bank balance R 3 750,00 + Outstanding deposits R 295 000,00 − Outstanding payments R 238 500,00 = Adjusted bank balance R 60 250,00 Cashbook R 60 250,00 Difference R 0,00 Cashbook and trust creditors Cashbook R 60 250,00 Trust creditors R 60 250,00 Difference R 0,00 Trust creditors Client ledgers R 260 250,00 Legal Practitioners' Fidelity Fund — interest and charges R 0,00 Unidentified deposits R 0,00 Placed in section 86(3) investment accounts -R 200 000,00 0 statement lines are neither matched, recorded nor excluded Excluded statement lines total R 0,00. An excluded line adjusts nothing: excluding a real bank movement leaves its amount as the difference between the bank and the cashbook. Reconciliation is balanced Complete Reconciliation",
+    "completeEnabled": true,
+    "progress": "Matching Progress\n4 / 4 lines resolved"
+  },
+  "completeShot": "b-06-completed.png",
+  "completeText": "Reconciliation Complete The reconciliation has been completed successfully Bank Balance R 3 750,00 Cashbook Balance R 60 250,00 Trust creditors R 60 250,00 Done",
+  "reconApi": {
+    "id": "de691c66-a7b5-460c-a1bc-5f37c76a5514",
+    "trustAccountId": "36144df5-72ec-49f3-9bd7-ef497cb60946",
+    "periodEnd": "2026-11-18",
+    "bankStatementId": "aa31ff23-5936-4d0d-9159-9bd2f6226767",
+    "bankBalance": 3750,
+    "outstandingDeposits": 295000,
+    "outstandingPayments": 238500,
+    "adjustedBankBalance": 60250,
+    "cashbookBalance": 60250,
+    "clientLedgerTotal": 260250,
+    "creditorBreakdown": {
+      "clientLedgers": 260250,
+      "investmentCreditors": 0,
+      "fundInterestAndCharges": 0,
+      "unidentifiedDeposits": 0,
+      "otherNonClient": 0,
+      "interAccount": -200000,
+      "total": 60250
+    },
+    "bankToCashbookDifference": 0,
+    "cashbookToCreditorsDifference": 0,
+    "difference": 0,
+    "excludedLinesTotal": 0,
+    "unresolvedLineCount": 0,
+    "isBalanced": true,
+    "integrityFlags": [],
+    "status": "COMPLETED",
+    "completedBy": "22503ede-6162-4dfc-bd4d-0c7d67d1559d",
+    "completedAt": "2026-11-18T18:39:04.609885Z",
+    "notes": null,
+    "createdAt": "2026-11-18T18:38:53.559678Z",
+    "updatedAt": "2026-11-18T18:39:04.612242Z"
+  },
+  "endedAt": "2026-11-18T18:39:05.585Z"
+}

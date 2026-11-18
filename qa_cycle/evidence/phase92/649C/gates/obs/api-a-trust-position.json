@@ -1,0 +1,48 @@
+{
+  "method": "GET",
+  "url": "/api/dashboard/trust-position?accountId=36144df5-72ec-49f3-9bd7-ef497cb60946",
+  "status": 200,
+  "body": {
+    "trustAccountId": "36144df5-72ec-49f3-9bd7-ef497cb60946",
+    "accountName": "Mathebula & Partners Trust Account",
+    "bankName": "Standard Bank",
+    "cashbookBalance": 60250,
+    "clientLedgerTotal": 260250,
+    "creditorBreakdown": {
+      "clientLedgers": 260250,
+      "investmentCreditors": 0,
+      "fundInterestAndCharges": 0,
+      "unidentifiedDeposits": 0,
+      "otherNonClient": 0,
+      "interAccount": -200000,
+      "total": 60250
+    },
+    "difference": 0,
+    "lastReconciliationPeriodEnd": null,
+    "lastReconciliationStatus": null,
+    "lastReconciliationBalanced": null,
+    "daysSinceReconciliation": null,
+    "pendingApprovalCount": 1,
+    "accounts": [
+      {
+        "id": "36144df5-72ec-49f3-9bd7-ef497cb60946",
+        "accountName": "Mathebula & Partners Trust Account",
+        "isPrimary": true
+      },
+      {
+        "id": "25ffe60b-4918-4622-a136-85d106d018ed",
+        "accountName": "Standard Bank Section 86(3) Investments",
+        "isPrimary": false
+      },
+      {
+        "id": "9c6638d6-0800-40ff-92ee-2b941778f9d1",
+        "accountName": "Nedbank Section 86(4) Investments",
+        "isPrimary": false
+      }
+    ],
+    "integrity": {
+      "balanced": true,
+      "flags": []
+    }
+  }
+}

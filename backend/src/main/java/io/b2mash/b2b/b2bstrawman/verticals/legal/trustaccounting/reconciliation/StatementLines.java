@@ -32,6 +32,23 @@ public final class StatementLines {
     }
   }
 
+  /**
+   * An unmatch (a matched line's or a recorded line's) is refused once the line's statement is
+   * {@code RECONCILED}: its reconciliation is complete, and unmatching would leave a line of a
+   * completed reconciliation unresolved (649C, ruling D-14). Call on the statement row locked with
+   * {@code findByIdForUpdate}, after the line and any transaction (lock order line → transactions →
+   * statement), so a concurrent {@code completeReconciliation} — which locks the statement before
+   * it reads the gate inputs — is serialised against the unmatch; the refusal rolls back whatever
+   * the unmatch had already changed.
+   */
+  public static void requireNotReconciled(BankStatement statement) {
+    if ("RECONCILED".equals(statement.getStatus())) {
+      throw new InvalidStateException(
+          "Statement already reconciled",
+          "This statement's reconciliation is complete, so its lines cannot be unmatched.");
+    }
+  }
+
   /** Rule 2: the classification agrees with the line's sign; a zero line is never recorded. */
   public static void requireSignAgrees(
       StatementLineClassification classification, BigDecimal lineAmount) {

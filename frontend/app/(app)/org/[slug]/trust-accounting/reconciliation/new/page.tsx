@@ -41,6 +41,22 @@ const DEFAULT_CURRENCY = "ZAR";
 
 // ── Step Labels ───────────────────────────────────────────────────
 
+/**
+ * The banner's error: a plain message, or a refusal with its ProblemDetail title as the heading and
+ * its sentences beneath (a refused complete, O-OBS-2).
+ */
+type WizardError = string | { title: string; message: string };
+
+/** The account's APPROVED transactions not yet matched to a statement line (the right pane). */
+async function fetchUnmatchedTransactions(accountId: string): Promise<TrustTransaction[]> {
+  const txPage = await fetchTransactions(accountId, {
+    status: "APPROVED",
+    page: 0,
+    size: 1000, // TODO: implement proper pagination for large trust accounts
+  });
+  return txPage.content.filter((tx) => !tx.bankStatementLineId);
+}
+
 const STEP_LABELS = [
   "Select Account",
   "Upload Statement",
@@ -81,7 +97,7 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
 
   // Step 5: Complete
   const [isCompleting, setIsCompleting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<WizardError | null>(null);
 
   // ── Reset helpers ──────────────────────────────────────────────
   // Clear downstream state when an earlier wizard step changes so that
@@ -179,15 +195,7 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
     setStartingReview(true);
 
     try {
-      // Fetch unmatched transactions
-      const txPage = await fetchTransactions(selectedAccountId, {
-        status: "APPROVED",
-        page: 0,
-        size: 1000, // TODO: implement proper pagination for large trust accounts
-      });
-      // Filter to transactions without bankStatementLineId
-      const unmatched = txPage.content.filter((tx) => !tx.bankStatementLineId);
-      setUnmatchedTransactions(unmatched);
+      setUnmatchedTransactions(await fetchUnmatchedTransactions(selectedAccountId));
 
       // Create reconciliation if not already created
       let recon = reconciliation;
@@ -311,12 +319,7 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
           );
           // Refresh unmatched transactions
           if (selectedAccountId) {
-            const txPage = await fetchTransactions(selectedAccountId, {
-              status: "APPROVED",
-              page: 0,
-              size: 1000, // TODO: implement proper pagination for large trust accounts
-            });
-            setUnmatchedTransactions(txPage.content.filter((tx) => !tx.bankStatementLineId));
+            setUnmatchedTransactions(await fetchUnmatchedTransactions(selectedAccountId));
           }
           // Recalculate
           if (reconciliation) {
@@ -371,25 +374,53 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
     [reconciliation]
   );
 
-  // Handle complete
+  // Handle complete. The backend gate (G1–G4, 649C) recalculates and refuses once with every
+  // failed condition; a refusal rolls back, so the stored figures are not refreshed — recalculate
+  // to show the figures the gate saw, then show the refusal's title and sentences (ruling D-9).
+  // A refusal can follow another user's change (a line unmatched elsewhere, F-OBS-1), so the
+  // statement lines and the unmatched transactions are re-read too: the pane's progress count,
+  // badges and line actions then follow the database. A failed re-read keeps the refusal on screen
+  // and says the lines may be out of date.
   const handleComplete = useCallback(async () => {
-    if (!reconciliation) return;
+    if (!reconciliation || !statement || !selectedAccountId) return;
+    const generation = wizardGeneration.current;
     setIsCompleting(true);
     setError(null);
     try {
       const result = await completeReconciliation(reconciliation.id);
+      if (generation !== wizardGeneration.current) return;
       if (result.success) {
         setCurrentStep(5);
         setReconciliation(result.data ?? null);
-      } else {
-        setError(result.error ?? "Failed to complete reconciliation");
+        return;
       }
+      const [calcResult, refreshedStatement, refreshedTransactions] = await Promise.all([
+        calculateReconciliation(reconciliation.id),
+        fetchBankStatement(statement.id).catch(() => null),
+        fetchUnmatchedTransactions(selectedAccountId).catch(() => null),
+      ]);
+      if (generation !== wizardGeneration.current) return;
+      if (calcResult.success && calcResult.data) {
+        setReconciliation(calcResult.data);
+      }
+      if (refreshedStatement) {
+        setLines(refreshedStatement.lines);
+      }
+      if (refreshedTransactions) {
+        setUnmatchedTransactions(refreshedTransactions);
+      }
+      const refusal = result.error ?? "Failed to complete reconciliation";
+      const message =
+        refreshedStatement && refreshedTransactions
+          ? refusal
+          : `${refusal} The statement lines could not be refreshed and may be out of date.`;
+      setError(result.errorTitle ? { title: result.errorTitle, message } : message);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to complete reconciliation");
     } finally {
       setIsCompleting(false);
     }
-  }, [reconciliation]);
+  }, [reconciliation, statement, selectedAccountId]);
 
   return (
     <div className="space-y-8">
@@ -457,7 +488,16 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
           data-testid="reconciliation-error"
           className="rounded-md bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950 dark:text-red-300"
         >
-          {error}
+          {typeof error === "string" ? (
+            error
+          ) : (
+            <>
+              <p className="font-medium" data-testid="reconciliation-error-title">
+                {error.title}
+              </p>
+              <p className="mt-1">{error.message}</p>
+            </>
+          )}
         </div>
       )}
 

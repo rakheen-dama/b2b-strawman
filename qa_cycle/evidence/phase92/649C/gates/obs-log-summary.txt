@@ -1,0 +1,11 @@
+# 649C OBS run 2 (head c9f588287) backend log, window 2026-11-18T18:38:37Z .. 2026-11-18T18:39:44Z
+# (docker logs e2e-backend --since 2026-11-18T18:38:37Z --until 2026-11-18T18:39:44Z; counted with qa_cycle/evidence/phase92/647B/gates/logcount.sh)
+{'INFO': 3}
+
+# WARN/ERROR lines verbatim
+# (none)
+# The 3 INFO lines are infrastructure.jobqueue.DefaultJobEnqueuer (scheduling-2) at 18:38:53Z, 18:38:54Z, 18:39:24Z.
+# No non-JSON lines in the window (the openhtmltopdf lines end at 18:36:04Z, before the window, from the gate suites).
+# e2e-frontend log lines in window: 0
+# Browser console (all phases): only the known mock-auth "MockAuthContextProvider: failed to fetch userinfo" right after login (b, c, e); 0 page errors.
+# Run 1 (4e45c8994, 18:02:43Z..18:15:16Z): obs-run1/obs-log-summary-run1.txt — INFO 41, WARN/ERROR 0.

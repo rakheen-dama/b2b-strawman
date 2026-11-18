@@ -7,6 +7,7 @@ import type { WidgetResult } from "@/lib/dashboard-home";
 import type { TrustBalanceTrendResponse, TrustPositionResponse } from "@/lib/dashboard-types";
 import type {
   CreateTrustAccountRequest,
+  FirmIntegrityReport,
   MatterTrustBalance,
   TrustAccount,
   TrustTransaction,
@@ -150,5 +151,19 @@ export async function fetchTrustBalanceTrend(
     api.get<TrustBalanceTrendResponse>(
       `/api/dashboard/trust-balance-trend?accountId=${encodeURIComponent(accountId)}&months=${months}`
     )
+  );
+}
+
+/**
+ * The firm-wide trust integrity check (Phase 92 649C, §16.3.9): every trust account's equation and
+ * flags as at `asAt` (default today, server-side). 403/404 → absent; 401 → re-login; anything
+ * else → error. A read, not a mutation.
+ */
+export async function fetchTrustIntegrity(
+  asAt?: string
+): Promise<WidgetResult<FirmIntegrityReport>> {
+  const query = asAt ? `?asAt=${encodeURIComponent(asAt)}` : "";
+  return settle(true, "trust integrity", () =>
+    api.get<FirmIntegrityReport>(`/api/trust-integrity${query}`)
   );
 }

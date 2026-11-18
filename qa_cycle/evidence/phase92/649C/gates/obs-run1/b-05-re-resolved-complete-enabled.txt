@@ -1,0 +1,166 @@
+Skip to content
+Kazi
+E2E Test Organization
+Search...
+⌘K
+TODAY
+Home
+My work
+Diary
+MATTERS
+Matters
+New matter
+Conflict check
+Adverse parties
+AI reviews
+CLIENTS
+Clients
+FICA & compliance
+Data requests
+FEES
+TRUST
+FIRM
+Platform Admin
+Notifications
+AO
+
+Alice Owner
+
+alice@e2e-test.local
+
+Toggle menu
+E2E Test Organization
+Trust accounting
+Reconciliation
+New
+Search
+⌘K
+19 unread notifications
+19
+e2e-test-org
+AO
+Back to Reconciliation
+New Reconciliation
+
+Reconcile your trust account with a bank statement
+
+1
+Select Account
+2
+Upload Statement
+3
+Auto-Match
+4
+Review & Match
+5
+Complete
+Matching Progress
+4 / 4 lines resolved
+Bank Statement Lines
+#1
+17 Nov 2026
+
+EFT CREDIT SIPHO NDLOVU
+
+Ref: DEP/mwmfee7f0815
+
+R 5 000,00 CR
+
+Auto-matched
+Unmatch
+#2
+17 Nov 2026
+
+EFT DEBIT DEEDS OFFICE
+
+Ref: PAY/DEEDS/mwmfee7f0815
+
+R 1 250,00 DR
+
+Auto-matched
+Unmatch
+#3
+17 Nov 2026
+
+EFT CREDIT RETURNED ITEM
+
+Ref: RTN/OBS649C/FUOPG
+
+R 999,00 CR
+
+Excluded
+#4
+17 Nov 2026
+
+EFT CREDIT RETURNED ITEM REVERSAL
+
+Ref: RTN/OBS649C/FUOPG
+
+R 999,00 DR
+
+Excluded
+Unmatched Trust Transactions
+
+FEE/MOROKA/mwmfah5xb191
+
+18 Nov 2026 · Fee transfer
+
+R 8 500,00
+
+INV-ED9CBA3C
+
+18 Nov 2026 · Placed in section 86(3) investment
+
+Placed in section 86(3) investment at Standard Bank (Standard Bank Section 86(3) Investments)
+
+R 200 000,00
+
+INV-B75BC945
+
+18 Nov 2026 · Placed in section 86(4) investment
+
+Placed in section 86(4) investment at Nedbank (Nedbank Section 86(4) Investments)
+
+R 30 000,00
+
+As at 18 Nov 2026
+Bank and cashbook
+Bank balance
+R 3 750,00
++ Outstanding deposits
+R 295 000,00
+− Outstanding payments
+R 238 500,00
+= Adjusted bank balance
+R 60 250,00
+Cashbook
+R 60 250,00
+Difference
+R 0,00
+Cashbook and trust creditors
+Cashbook
+R 60 250,00
+Trust creditors
+R 60 250,00
+Difference
+R 0,00
+Trust creditors
+Client ledgers
+R 260 250,00
+Legal Practitioners' Fidelity Fund — interest and charges
+R 0,00
+Unidentified deposits
+R 0,00
+Placed in section 86(3) investment accounts
+-R 200 000,00
+
+0 statement lines are neither matched, recorded nor excluded
+
+Excluded statement lines total R 0,00. An excluded line adjusts nothing: excluding a real bank movement leaves its amount as the difference between the bank and the cashbook.
+
+Reconciliation is balanced
+Complete Reconciliation
+Back
+Command Palette
+
+Search pages and settings

@@ -1,0 +1,138 @@
+Skip to content
+Kazi
+E2E Test Organization
+Search...
+⌘K
+TODAY
+Home
+My work
+Diary
+MATTERS
+Matters
+New matter
+Conflict check
+Adverse parties
+AI reviews
+CLIENTS
+Clients
+FICA & compliance
+Data requests
+FEES
+TRUST
+FIRM
+Platform Admin
+Notifications
+AO
+
+Alice Owner
+
+alice@e2e-test.local
+
+Toggle menu
+E2E Test Organization
+Trust accounting
+Reconciliation
+New
+Search
+⌘K
+19 unread notifications
+19
+e2e-test-org
+AO
+Back to Reconciliation
+New Reconciliation
+
+Reconcile your trust account with a bank statement
+
+1
+Select Account
+2
+Upload Statement
+3
+Auto-Match
+4
+Review & Match
+5
+Complete
+Matching Progress
+0 / 1 lines resolved
+Bank Statement Lines
+#1
+17 Nov 2026
+
+EFT CREDIT OBS 649C
+
+Ref: E/OBS649C/FX89M
+
+R 100,00 CR
+
+Unmatched
+Unmatched Trust Transactions
+
+All transactions are matched
+
+As at 18 Nov 2026
+Bank and cashbook
+Bank balance
+R 100,00
++ Outstanding deposits
+R 0,00
+− Outstanding payments
+R 0,00
+= Adjusted bank balance
+R 100,00
+Cashbook
+R 1 415,00
+Difference
+-R 1 315,00
+Cashbook and trust creditors
+Cashbook
+R 1 415,00
+Trust creditors
+R 1 415,00
+Difference
+R 0,00
+Trust creditors
+Client ledgers
+R 0,00
+Legal Practitioners' Fidelity Fund — interest and charges
+-R 85,00
+Unidentified deposits
+R 1 500,00
+
+1 statement line is neither matched, recorded nor excluded
+
+Excluded statement lines total R 0,00. An excluded line adjusts nothing: excluding a real bank movement leaves its amount as the difference between the bank and the cashbook.
+
+Integrity check
+Blocking
+Bank and cashbook differ
+
+Adjusted bank balance R100,00 differs from the cashbook R1 415,00 by R1 315,00 as at 18 November 2026.
+
+Blocking
+Statement lines not yet resolved
+
+1 statement line is neither matched, recorded nor excluded.
+
+Warning
+Fund interest and charges ledger in debit
+
+The Fund interest and charges ledger is R85,00 in debit.
+
+Warning
+Unidentified deposit held over a year
+
+1 unidentified deposit of R1 500,00 has been held for more than a year.
+
+Warning
+Bank charges to refund from the business account
+
+R85,00 of non-recoverable bank charges has been debited to trust and not yet refunded from the business account.
+
+Reconciliation is not balanced
+Complete Reconciliation
+Back
+Command Palette
+
+Search pages and settings

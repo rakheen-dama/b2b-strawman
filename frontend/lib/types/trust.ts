@@ -464,6 +464,112 @@ export interface TrustCreditorBreakdown {
   total: number;
 }
 
+// Integrity check types (649C) — mirror backend `books.TrustIntegrityService` and
+// `books.TrustBooksService` records (key order = Java component order).
+
+/** The eleven flag codes of the integrity check (§16.3.9; `BACKDATED_AFTER_LOCK` arrives in 650A). */
+export type IntegrityFlagCode =
+  | "BANK_DIFFERENCE"
+  | "BOOKS_OUT_OF_BALANCE"
+  | "INTER_ACCOUNT_NOT_ZERO"
+  | "UNIDENTIFIED_ITEMS_MISMATCH"
+  | "INVESTMENT_BALANCE_MISMATCH"
+  | "UNRESOLVED_STATEMENT_LINES"
+  | "FUND_LEDGER_IN_DEBIT"
+  | "CLIENT_LEDGER_IN_DEBIT"
+  | "UNIDENTIFIED_OVER_ONE_YEAR"
+  | "CHARGES_TO_REFUND";
+
+/** A BLOCKING flag means the books are not provably right; a WARNING never blocks completion. */
+export type IntegritySeverity = "BLOCKING" | "WARNING";
+
+/** What a flag is about (`TrustIntegrityService.SUBJECT_*`). */
+export type FlagSubjectKind =
+  | "CLIENT"
+  | "CREDITOR_ACCOUNT"
+  | "UNIDENTIFIED_DEPOSIT"
+  | "INVESTMENT"
+  | "BANK_STATEMENT"
+  | "TRUST_ACCOUNT";
+
+/** Mirrors `books.FlagSubject`; `amount` is a positive magnitude or null. */
+export interface FlagSubject {
+  kind: FlagSubjectKind;
+  id: string | null;
+  name: string | null;
+  amount: number | null;
+}
+
+/**
+ * Mirrors `books.IntegrityFlag`. `message` is a sentence for the firm (a blocking
+ * flag's message is the completion gate's sentence); `amount` is a positive magnitude or null.
+ */
+export interface IntegrityFlag {
+  code: IntegrityFlagCode;
+  severity: IntegritySeverity;
+  message: string;
+  amount: number | null;
+  subjects: FlagSubject[];
+}
+
+/** Mirrors `TrustBooksService.TrustPosition` — the EQ-2 terms for one account as at `asAt`. */
+export interface TrustPosition {
+  trustAccountId: string;
+  asAt: string;
+  cashbook: number;
+  clientLedgers: number;
+  investmentCreditors: number;
+  fundLedger: number;
+  unidentifiedDeposits: number;
+  otherNonClient: number;
+  interAccount: number;
+  creditorTotal: number;
+  difference: number;
+}
+
+/** Mirrors `TrustBooksService.BankPosition` — the EQ-1 terms at a reconciliation's period end. */
+export interface BankPosition {
+  bankBalance: number;
+  outstandingDeposits: number;
+  outstandingPayments: number;
+  adjustedBankBalance: number;
+}
+
+/** Mirrors `TrustIntegrityService.TrustIntegrityReport` — one trust account as at `asAt`. */
+export interface TrustIntegrityReport {
+  trustAccountId: string;
+  asAt: string;
+  position: TrustPosition;
+  /** Null unless a reconciliation of the account has period end `asAt`. */
+  bank: BankPosition | null;
+  /** True when no flag is BLOCKING. */
+  balanced: boolean;
+  flags: IntegrityFlag[];
+  lastCompletedReconciliationId: string | null;
+  lastReconciledThrough: string | null;
+}
+
+/**
+ * Mirrors `TrustIntegrityService.FirmIntegrityReport` — `GET /api/trust-integrity`: every trust
+ * account, the firm totals of each term and the firm-level flags (`INTER_ACCOUNT_NOT_ZERO`).
+ */
+export interface FirmIntegrityReport {
+  asAt: string;
+  /** True when no flag is BLOCKING, firm-level or in any account. */
+  balanced: boolean;
+  cashbook: number;
+  clientLedgers: number;
+  investmentCreditors: number;
+  fundLedger: number;
+  unidentifiedDeposits: number;
+  otherNonClient: number;
+  interAccount: number;
+  creditorTotal: number;
+  difference: number;
+  flags: IntegrityFlag[];
+  accounts: TrustIntegrityReport[];
+}
+
 /**
  * Mirrors backend `TrustReconciliationService.TrustReconciliationResponse` (646C; key order =
  * Java component order). Every figure is as at `periodEnd`.
@@ -488,9 +594,11 @@ export interface TrustReconciliationResponse {
   difference: number;
   /** signed total of the statement's excluded lines (adjusts nothing) */
   excludedLinesTotal: number;
-  /** statement lines neither matched nor excluded */
+  /** statement lines neither matched, recorded nor excluded (gate G4) */
   unresolvedLineCount: number;
   isBalanced: boolean;
+  /** The integrity check's flags at the last calculation, blocking first (649C). */
+  integrityFlags: IntegrityFlag[];
   status: TrustReconciliationStatus;
   completedBy: string | null;
   completedAt: string | null;

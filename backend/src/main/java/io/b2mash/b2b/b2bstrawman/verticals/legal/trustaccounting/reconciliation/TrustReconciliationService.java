@@ -9,7 +9,10 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountSection;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.IntegrityFlag;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustBooksService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustIntegrityService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustIntegrityService.TrustIntegrityReport;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.parser.AbsaCsvParser;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.parser.BankStatementParseException;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.parser.BankStatementParser;
@@ -32,6 +35,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -58,7 +62,7 @@ public class TrustReconciliationService {
   private final TrustAccountRepository trustAccountRepository;
   private final TrustTransactionRepository trustTransactionRepository;
   private final TrustReconciliationRepository trustReconciliationRepository;
-  private final TrustBooksService trustBooksService;
+  private final TrustIntegrityService integrityService;
   private final TrustPostingService postingService;
   private final StorageService storageService;
   private final VerticalModuleGuard moduleGuard;
@@ -73,7 +77,7 @@ public class TrustReconciliationService {
       TrustAccountRepository trustAccountRepository,
       TrustTransactionRepository trustTransactionRepository,
       TrustReconciliationRepository trustReconciliationRepository,
-      TrustBooksService trustBooksService,
+      TrustIntegrityService integrityService,
       TrustPostingService postingService,
       StorageService storageService,
       VerticalModuleGuard moduleGuard,
@@ -85,7 +89,7 @@ public class TrustReconciliationService {
     this.trustAccountRepository = trustAccountRepository;
     this.trustTransactionRepository = trustTransactionRepository;
     this.trustReconciliationRepository = trustReconciliationRepository;
-    this.trustBooksService = trustBooksService;
+    this.integrityService = integrityService;
     this.postingService = postingService;
     this.storageService = storageService;
     this.moduleGuard = moduleGuard;
@@ -529,12 +533,14 @@ public class TrustReconciliationService {
               });
     }
 
-    // Decrement matched count (statement locked after the line)
+    // Decrement matched count (statement locked after the line); refused once the statement is
+    // RECONCILED (D-14) — the refusal rolls back the line and transaction changes above.
     var statement =
         bankStatementRepository
             .findByIdForUpdate(line.getBankStatementId())
             .orElseThrow(
                 () -> new ResourceNotFoundException("BankStatement", line.getBankStatementId()));
+    StatementLines.requireNotReconciled(statement);
     statement.decrementMatched();
     bankStatementRepository.save(statement);
 
@@ -611,11 +617,12 @@ public class TrustReconciliationService {
   }
 
   /**
-   * A reconciliation (§16.4.4; {@code integrityFlags} lands in 649C, {@code monthlyListId} in
-   * 650A). Every figure is as at {@code periodEnd}. {@code bankToCashbookDifference = adjusted bank
-   * − cashbook} (EQ-1), {@code cashbookToCreditorsDifference = cashbook − creditors} (EQ-2), {@code
-   * difference = adjusted bank − creditors}. {@code excludedLinesTotal} (signed) and {@code
-   * unresolvedLineCount} are read live from the statement's lines.
+   * A reconciliation (§16.4.4; {@code monthlyListId} lands in 650A). Every figure is as at {@code
+   * periodEnd}. {@code bankToCashbookDifference = adjusted bank − cashbook} (EQ-1), {@code
+   * cashbookToCreditorsDifference = cashbook − creditors} (EQ-2), {@code difference = adjusted bank
+   * − creditors}. {@code excludedLinesTotal} (signed) and {@code unresolvedLineCount} are read live
+   * from the statement's lines. {@code integrityFlags} are the flags of the last calculation (649C,
+   * §16.3.4 step 5): a blocking flag stops completion.
    */
   public record TrustReconciliationResponse(
       UUID id,
@@ -635,6 +642,7 @@ public class TrustReconciliationService {
       BigDecimal excludedLinesTotal,
       int unresolvedLineCount,
       boolean isBalanced,
+      List<IntegrityFlag> integrityFlags,
       String status,
       UUID completedBy,
       Instant completedAt,
@@ -709,8 +717,8 @@ public class TrustReconciliationService {
           "Bank statement does not belong to the specified trust account");
     }
     var periodEndText = periodEnd.format(PERIOD_END_FORMAT);
-    // The parsers set period_end to the last line's date; a statement with no lines falls back to
-    // it
+    // The parsers set period_end to the last line's date, so a statement with no lines uses its
+    // period_end as its last line.
     LocalDate lastLine =
         bankStatementLineRepository
             .findLastLineDate(statement.getId())
@@ -768,41 +776,152 @@ public class TrustReconciliationService {
     return toReconciliationResponse(reconciliation);
   }
 
+  /**
+   * Recalculates a DRAFT reconciliation as at its period end (§16.3.4 steps 1–5): the statement
+   * must still fit the period end; every term, {@code is_balanced} (EQ-1 and EQ-2) and the
+   * integrity flags are stored.
+   */
   @Transactional
   public TrustReconciliationResponse calculateReconciliation(UUID reconciliationId) {
     moduleGuard.requireModule(MODULE_ID);
 
     var reconciliation =
+        requireDraft(reconciliationId, "Cannot recalculate a COMPLETED reconciliation");
+    recalculate(reconciliation);
+    reconciliation = trustReconciliationRepository.save(reconciliation);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("trust_reconciliation.calculated")
+            .entityType("trust_reconciliation")
+            .entityId(reconciliation.getId())
+            .details(
+                Map.of(
+                    "trust_account_id",
+                    reconciliation.getTrustAccountId().toString(),
+                    "bank_balance",
+                    reconciliation.getBankBalance().toString(),
+                    "cashbook_balance",
+                    reconciliation.getCashbookBalance().toString(),
+                    "client_ledger_total",
+                    reconciliation.getClientLedgerTotal().toString(),
+                    "creditor_total",
+                    reconciliation.getCreditorTotal().toString(),
+                    "difference",
+                    reconciliation.getDifference().toString(),
+                    "is_balanced",
+                    reconciliation.isBalanced()))
+            .build());
+
+    return toReconciliationResponse(reconciliation);
+  }
+
+  /**
+   * Completes a DRAFT reconciliation — the gate G1–G4 (§16.3.4, ADR-377). It recalculates first and
+   * never trusts stored figures (a statement imported or a posting entered since the last calculate
+   * is caught here), then evaluates all four conditions and, if any fails, refuses once: the title
+   * of the first failing condition in the order G1 → G4 and one sentence per failing condition in
+   * the detail. Warning flags never block (a client or the Fund ledger in debit is flag-only —
+   * ruling #5, OL-7, decision 9). On success the reconciliation is {@code COMPLETED}, its statement
+   * {@code RECONCILED}, and the flags are stored.
+   */
+  @Transactional
+  public TrustReconciliationResponse completeReconciliation(UUID reconciliationId) {
+    moduleGuard.requireModule(MODULE_ID);
+
+    var reconciliation = requireDraft(reconciliationId, "Reconciliation is already COMPLETED");
+
+    // The statement row is locked BEFORE the gate inputs are read: an unmatch of one of its lines
+    // locks the same row (after the line and transaction), so the two are serialised — either the
+    // unmatch commits first and G4 sees the unresolved line, or this completes first and the
+    // unmatch is refused on a RECONCILED statement (D-14).
+    UUID statementId = reconciliation.getBankStatementId();
+    BankStatement statement = null;
+    if (statementId != null) {
+      statement =
+          bankStatementRepository
+              .findByIdForUpdate(statementId)
+              .orElseThrow(() -> new ResourceNotFoundException("BankStatement", statementId));
+      // A concurrent complete of the same reconciliation (a double-click) read DRAFT above too and
+      // waited here for the statement lock: re-read the status now that the winner has committed
+      // and refuse as a sequential second complete would — never complete it twice.
+      if (trustReconciliationRepository.findStatusById(reconciliationId).orElse(null)
+          != ReconciliationStatus.DRAFT) {
+        throw new InvalidStateException(
+            "Invalid reconciliation state", "Reconciliation is already COMPLETED");
+      }
+    }
+
+    var report = recalculate(reconciliation);
+    refuseUnlessComplete(report);
+
+    reconciliation.setStatus(ReconciliationStatus.COMPLETED);
+    reconciliation.setCompletedBy(RequestScopes.requireMemberId());
+    reconciliation.setCompletedAt(Instant.now());
+    reconciliation = trustReconciliationRepository.save(reconciliation);
+
+    // recalculate refuses a reconciliation with no statement, so the statement is locked here
+    statement.setStatus("RECONCILED");
+    bankStatementRepository.save(statement);
+
+    var details = new LinkedHashMap<String, Object>();
+    details.put("trust_account_id", reconciliation.getTrustAccountId().toString());
+    details.put("period_end", reconciliation.getPeriodEnd().toString());
+    details.put("bank_balance", reconciliation.getBankBalance().toString());
+    details.put("cashbook_balance", reconciliation.getCashbookBalance().toString());
+    details.put("client_ledger_total", reconciliation.getClientLedgerTotal().toString());
+    details.put("creditor_total", reconciliation.getCreditorTotal().toString());
+    details.put("difference", reconciliation.getDifference().toString());
+    details.put("flags", report.flags().stream().map(IntegrityFlag::code).toList());
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("trust_reconciliation.completed")
+            .entityType("trust_reconciliation")
+            .entityId(reconciliation.getId())
+            .details(details)
+            .build());
+
+    return toReconciliationResponse(reconciliation);
+  }
+
+  private TrustReconciliation requireDraft(UUID reconciliationId, String detailWhenCompleted) {
+    var reconciliation =
         trustReconciliationRepository
             .findById(reconciliationId)
             .orElseThrow(
                 () -> new ResourceNotFoundException("TrustReconciliation", reconciliationId));
-
     if (reconciliation.getStatus() != ReconciliationStatus.DRAFT) {
-      throw new InvalidStateException(
-          "Invalid reconciliation state", "Cannot recalculate a COMPLETED reconciliation");
+      throw new InvalidStateException("Invalid reconciliation state", detailWhenCompleted);
     }
+    return reconciliation;
+  }
 
+  /**
+   * §16.3.4 steps 1–5 on {@code reconciliation} (not saved): re-checks that the statement fits the
+   * period end (a statement imported since can break the period rules — the closing balance is the
+   * bank balance as at the period end only while the statement still fits it), then stores every
+   * term as at the period end from the integrity check (which reads them from {@link
+   * TrustBooksService}), {@code is_balanced} (EQ-1 and EQ-2) and the flags. Returns the report for
+   * the completion gate.
+   */
+  private TrustIntegrityReport recalculate(TrustReconciliation reconciliation) {
     UUID bankStatementId = reconciliation.getBankStatementId();
     if (bankStatementId == null) {
       throw new InvalidStateException(
           "Missing bank statement",
           "A bank statement must be linked to calculate the reconciliation");
     }
-
     UUID accountId = reconciliation.getTrustAccountId();
     LocalDate periodEnd = reconciliation.getPeriodEnd();
-    // A statement imported after the draft was created can break the period rules; the closing
-    // balance is the bank balance as at the period end only while the statement still fits it
     var statement =
         bankStatementRepository
             .findById(bankStatementId)
             .orElseThrow(() -> new ResourceNotFoundException("BankStatement", bankStatementId));
     requireStatementFitsPeriodEnd(accountId, statement, periodEnd);
 
-    // Every term as at the period end (§16.3.4 steps 1-4, ADR-377); integrity flags are 649C
-    var position = trustBooksService.position(accountId, periodEnd);
-    var bank = trustBooksService.bankPosition(accountId, bankStatementId, periodEnd);
+    var report = integrityService.check(accountId, periodEnd, bankStatementId);
+    var position = report.position();
+    var bank = report.bank();
 
     reconciliation.setBankBalance(bank.bankBalance());
     reconciliation.setOutstandingDeposits(bank.outstandingDeposits());
@@ -816,92 +935,62 @@ public class TrustReconciliationService {
     reconciliation.setInterAccountBalance(position.interAccount());
     reconciliation.setCreditorTotal(position.creditorTotal());
     reconciliation.setDifference(bank.adjustedBankBalance().subtract(position.creditorTotal()));
-    // EQ-1 and EQ-2 as at the period end
-    boolean isBalanced =
+    // is_balanced is deliberately EQ-1 ∧ EQ-2 as at the period end (the 646C definition: the two
+    // comparisons only); the completion gate decides on the integrity flags, not on this field.
+    reconciliation.setBalanced(
         bank.adjustedBankBalance().compareTo(position.cashbook()) == 0
-            && position.cashbook().compareTo(position.creditorTotal()) == 0;
-    reconciliation.setBalanced(isBalanced);
-
-    reconciliation = trustReconciliationRepository.save(reconciliation);
-
-    auditService.log(
-        AuditEventBuilder.builder()
-            .eventType("trust_reconciliation.calculated")
-            .entityType("trust_reconciliation")
-            .entityId(reconciliation.getId())
-            .details(
-                Map.of(
-                    "trust_account_id",
-                    accountId.toString(),
-                    "bank_balance",
-                    bank.bankBalance().toString(),
-                    "cashbook_balance",
-                    position.cashbook().toString(),
-                    "client_ledger_total",
-                    position.clientLedgers().toString(),
-                    "creditor_total",
-                    position.creditorTotal().toString(),
-                    "difference",
-                    reconciliation.getDifference().toString(),
-                    "is_balanced",
-                    isBalanced))
-            .build());
-
-    return toReconciliationResponse(reconciliation);
+            && position.cashbook().compareTo(position.creditorTotal()) == 0);
+    reconciliation.setIntegrityFlags(report.flags());
+    return report;
   }
 
-  @Transactional
-  public TrustReconciliationResponse completeReconciliation(UUID reconciliationId) {
-    moduleGuard.requireModule(MODULE_ID);
-
-    var reconciliation =
-        trustReconciliationRepository
-            .findById(reconciliationId)
-            .orElseThrow(
-                () -> new ResourceNotFoundException("TrustReconciliation", reconciliationId));
-
-    if (reconciliation.getStatus() != ReconciliationStatus.DRAFT) {
-      throw new InvalidStateException(
-          "Invalid reconciliation state", "Reconciliation is already COMPLETED");
+  /**
+   * The gate G1–G4 from the report's blocking flags (the gate and the dashboard card read the same
+   * check): G1 EQ-1 ({@code BANK_DIFFERENCE}), G2 EQ-2 ({@code BOOKS_OUT_OF_BALANCE}), G3 EQ-4 and
+   * EQ-5 ({@code UNIDENTIFIED_ITEMS_MISMATCH}, {@code INVESTMENT_BALANCE_MISMATCH}), G4 the
+   * statement's unresolved lines ({@code UNRESOLVED_STATEMENT_LINES}). Every condition is
+   * evaluated; one refusal carries them all.
+   */
+  private static void refuseUnlessComplete(TrustIntegrityReport report) {
+    String title = null;
+    var sentences = new ArrayList<String>();
+    for (var gate : GATES) {
+      var failing =
+          report.flags().stream()
+              .filter(TrustIntegrityService::isBlocking)
+              .filter(f -> gate.codes().contains(f.code()))
+              .toList();
+      if (failing.isEmpty()) {
+        continue;
+      }
+      if (title == null) {
+        title = gate.title();
+      }
+      failing.forEach(f -> sentences.add(f.message()));
     }
-
-    if (!reconciliation.isBalanced()) {
-      throw new InvalidStateException(
-          "Reconciliation not balanced",
-          "Cannot complete reconciliation: adjustedBankBalance=%s, cashbookBalance=%s, clientLedgerTotal=%s"
-              .formatted(
-                  reconciliation.getAdjustedBankBalance(),
-                  reconciliation.getCashbookBalance(),
-                  reconciliation.getClientLedgerTotal()));
+    if (title != null) {
+      throw new InvalidStateException(title, String.join(" ", sentences));
     }
-
-    reconciliation.setStatus(ReconciliationStatus.COMPLETED);
-    reconciliation.setCompletedBy(RequestScopes.requireMemberId());
-    reconciliation.setCompletedAt(Instant.now());
-
-    reconciliation = trustReconciliationRepository.save(reconciliation);
-
-    auditService.log(
-        AuditEventBuilder.builder()
-            .eventType("trust_reconciliation.completed")
-            .entityType("trust_reconciliation")
-            .entityId(reconciliation.getId())
-            .details(
-                Map.of(
-                    "trust_account_id",
-                    reconciliation.getTrustAccountId().toString(),
-                    "period_end",
-                    reconciliation.getPeriodEnd().toString(),
-                    "bank_balance",
-                    reconciliation.getBankBalance().toString(),
-                    "cashbook_balance",
-                    reconciliation.getCashbookBalance().toString(),
-                    "client_ledger_total",
-                    reconciliation.getClientLedgerTotal().toString()))
-            .build());
-
-    return toReconciliationResponse(reconciliation);
   }
+
+  /** One condition of the completion gate: its refusal title and the flags that fail it. */
+  private record Gate(String title, List<String> codes) {}
+
+  /** G1 → G4 in order (§16.3.4; G3 and G4 titles: ruling D-2). */
+  private static final List<Gate> GATES =
+      List.of(
+          new Gate(
+              "Reconciliation does not balance", List.of(TrustIntegrityService.BANK_DIFFERENCE)),
+          new Gate(
+              "Trust books do not balance", List.of(TrustIntegrityService.BOOKS_OUT_OF_BALANCE)),
+          new Gate(
+              "Trust ledgers do not agree with their records",
+              List.of(
+                  TrustIntegrityService.UNIDENTIFIED_ITEMS_MISMATCH,
+                  TrustIntegrityService.INVESTMENT_BALANCE_MISMATCH)),
+          new Gate(
+              "Statement lines are unresolved",
+              List.of(TrustIntegrityService.UNRESOLVED_STATEMENT_LINES)));
 
   private TrustReconciliationResponse toReconciliationResponse(TrustReconciliation recon) {
     var namedTerms =
@@ -949,6 +1038,7 @@ public class TrustReconciliationService {
         excludedLinesTotal,
         unresolvedLineCount,
         recon.isBalanced(),
+        List.copyOf(recon.getIntegrityFlags()),
         recon.getStatus().name(),
         recon.getCompletedBy(),
         recon.getCompletedAt(),

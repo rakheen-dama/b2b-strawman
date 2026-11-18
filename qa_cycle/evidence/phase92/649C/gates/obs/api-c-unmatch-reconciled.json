@@ -1,0 +1,11 @@
+{
+  "method": "POST",
+  "url": "/api/bank-statement-lines/1a20c233-d4ab-4bee-845b-280fb2d668f3/unmatch",
+  "status": 400,
+  "body": {
+    "detail": "This statement's reconciliation is complete, so its lines cannot be unmatched.",
+    "instance": "/api/bank-statement-lines/1a20c233-d4ab-4bee-845b-280fb2d668f3/unmatch",
+    "status": 400,
+    "title": "Statement already reconciled"
+  }
+}

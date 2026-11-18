@@ -1,0 +1,346 @@
+{
+  "phase": "d",
+  "startedAt": "2026-11-18T18:39:21.405Z",
+  "apiWrites": [],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "checks": {
+    "d: tiles = API = SQL": true,
+    "d: Cashbook = Client ledgers + Other + Invested (firm-wide, interAccount 0)": true,
+    "d: frozen four tiles (labels in order; Trust Balance + Pending Approvals = trust-position API)": true,
+    "d: no raw enum code on page": true,
+    "d: every API flag rendered once": true,
+    "d: card balanced state = API": true,
+    "d: no clipped text at 1280": true,
+    "d: no clipped text at 1440": true,
+    "d: FUND_LEDGER_IN_DEBIT on the card (human label, message, amount=API)": true,
+    "d: CHARGES_TO_REFUND on the card (human label, message, amount=API)": true,
+    "d: UNIDENTIFIED_OVER_ONE_YEAR on the card (human label, message, amount=API)": true,
+    "d: UNRESOLVED_STATEMENT_LINES on the card (human label, message, amount=API)": true,
+    "d: every link lands on a page without error": true
+  },
+  "primaryUnchecked": true,
+  "dialogShot": "d-01-create-account-dialog.png",
+  "wizard": {
+    "statement": "2c28f2ad-a3f1-4fa3-a776-2d6c5975e3cb",
+    "recon": "503b584c-75cd-487d-9cc2-ff8c911c592f",
+    "autoMatch": "Auto-matched 0 lines 3 lines remaining for manual review",
+    "lines": [
+      {
+        "n": 1,
+        "id": "4732ce1d-8d3b-4163-ab32-722644cf2c31",
+        "s": "UNMATCHED"
+      },
+      {
+        "n": 2,
+        "id": "6041e552-80ba-42fe-9035-b5eec25a9667",
+        "s": "UNMATCHED"
+      },
+      {
+        "n": 3,
+        "id": "f0c8cb4f-60b9-4509-8c57-3f95818566bd",
+        "s": "UNMATCHED"
+      }
+    ]
+  },
+  "wizardShot": "d-02-wizard-two-recorded-one-open.png",
+  "wizardFlags": "Integrity check Blocking Bank and cashbook differ Adjusted bank balance R1 665,00 differs from the cashbook R1 415,00 by R250,00 as at 31 October 2025. Blocking Statement lines not yet resolved 1 statement line is neither matched, recorded nor excluded. Warning Fund interest and charges ledger in debit The Fund interest and charges ledger is R85,00 in debit. Warning Bank charges to refund from the business account R85,00 of non-recoverable bank charges has been debited to trust and not yet refunded from the business account.",
+  "overview": {
+    "tag": "d",
+    "shot1280": "d-overview-1280.png",
+    "card1280": "d-card-1280.png",
+    "tiles1280": "d-tiles-1280.png",
+    "clip1280": [
+      {
+        "sel": "[data-testid=\"trust-integrity-card\"]",
+        "root": [
+          280,
+          1256
+        ],
+        "vw": 1280,
+        "textElements": 24,
+        "bad": []
+      },
+      {
+        "sel": "[data-testid=\"integrity-tiles\"]",
+        "root": [
+          280,
+          1256
+        ],
+        "vw": 1280,
+        "textElements": 12,
+        "bad": []
+      },
+      {
+        "sel": "[data-testid=\"summary-cards\"]",
+        "root": [
+          280,
+          1256
+        ],
+        "vw": 1280,
+        "textElements": 14,
+        "bad": []
+      }
+    ],
+    "rawCodes": [],
+    "frozenTiles": "Trust Balance R 60 250,00 Mathebula & Partners Trust Account cashbook balance Trust creditors R 60 250,00 (agrees with the cashbook) Active Clients 3 Clients with trust balances Pending Approvals 1 Transactions awaiting approval Needs attention Reconciliation Balanced Last reconciled 18 Nov 2026 · 0 days ago",
+    "tiles": {
+      "Cashbook": {
+        "text": "Cashbook R 291 760,00 All trust accounts",
+        "value": 291760
+      },
+      "Client ledgers": {
+        "text": "Client ledgers R 260 250,00 Money held for clients",
+        "value": 260250
+      },
+      "Other trust creditors": {
+        "text": "Other trust creditors R 1 415,00 Fund interest and charges, and unidentified deposits",
+        "value": 1415
+      },
+      "Invested": {
+        "text": "Invested R 30 095,00 Section 86(4) investments for clients",
+        "value": 30095
+      }
+    },
+    "cardText": "Trust integrity As at 18 Nov 2026, all trust accounts Books balance Warning OBS 649C Warnings GTQ2U: Statement lines not yet resolved 1 statement line is neither matched, recorded nor excluded on a statement not yet reconciled. d-statement-GTQ2U.csv Warning OBS 649C Warnings GTQ2U: Fund interest and charges ledger in debit R 85,00 The Fund interest and charges ledger is R85,00 in debit. Legal Practitioners' Fidelity Fund — interest and charges R 85,00 Warning OBS 649C Warnings GTQ2U: Unidentified deposit held over a year R 1 500,00 1 unidentified deposit of R1 500,00 has been held for more than a year. DEPOSIT UNKNOWN REMITTER R 1 500,00 Warning OBS 649C Warnings GTQ2U: Bank charges to refund from the business account R 85,00 R85,00 of non-recoverable bank charges has been debited to trust and not yet refunded from the business account. Other trust creditors",
+    "flagsUi": [
+      {
+        "testid": "integrity-flag-UNRESOLVED_STATEMENT_LINES",
+        "text": "Warning OBS 649C Warnings GTQ2U: Statement lines not yet resolved 1 statement line is neither matched, recorded nor excluded on a statement not yet reconciled. d-statement-GTQ2U.csv",
+        "links": [
+          {
+            "text": "d-statement-GTQ2U.csv",
+            "href": "/org/e2e-test-org/trust-accounting/reconciliation"
+          }
+        ]
+      },
+      {
+        "testid": "integrity-flag-FUND_LEDGER_IN_DEBIT",
+        "text": "Warning OBS 649C Warnings GTQ2U: Fund interest and charges ledger in debit R 85,00 The Fund interest and charges ledger is R85,00 in debit. Legal Practitioners' Fidelity Fund — interest and charges R 85,00",
+        "links": [
+          {
+            "text": "Legal Practitioners' Fidelity Fund — interest and charges",
+            "href": "/org/e2e-test-org/trust-accounting/other-creditors"
+          }
+        ]
+      },
+      {
+        "testid": "integrity-flag-UNIDENTIFIED_OVER_ONE_YEAR",
+        "text": "Warning OBS 649C Warnings GTQ2U: Unidentified deposit held over a year R 1 500,00 1 unidentified deposit of R1 500,00 has been held for more than a year. DEPOSIT UNKNOWN REMITTER R 1 500,00",
+        "links": [
+          {
+            "text": "DEPOSIT UNKNOWN REMITTER",
+            "href": "/org/e2e-test-org/trust-accounting/other-creditors"
+          }
+        ]
+      },
+      {
+        "testid": "integrity-flag-CHARGES_TO_REFUND",
+        "text": "Warning OBS 649C Warnings GTQ2U: Bank charges to refund from the business account R 85,00 R85,00 of non-recoverable bank charges has been debited to trust and not yet refunded from the business account. Other trust creditors",
+        "links": [
+          {
+            "text": "Other trust creditors",
+            "href": "/org/e2e-test-org/trust-accounting/other-creditors"
+          }
+        ]
+      }
+    ],
+    "position": {
+      "trustAccountId": "36144df5-72ec-49f3-9bd7-ef497cb60946",
+      "accountName": "Mathebula & Partners Trust Account",
+      "bankName": "Standard Bank",
+      "cashbookBalance": 60250,
+      "clientLedgerTotal": 260250,
+      "creditorBreakdown": {
+        "clientLedgers": 260250,
+        "investmentCreditors": 0,
+        "fundInterestAndCharges": 0,
+        "unidentifiedDeposits": 0,
+        "otherNonClient": 0,
+        "interAccount": -200000,
+        "total": 60250
+      },
+      "difference": 0,
+      "lastReconciliationPeriodEnd": "2026-11-18",
+      "lastReconciliationStatus": "COMPLETED",
+      "lastReconciliationBalanced": true,
+      "daysSinceReconciliation": 0,
+      "pendingApprovalCount": 1,
+      "accounts": [
+        {
+          "id": "36144df5-72ec-49f3-9bd7-ef497cb60946",
+          "accountName": "Mathebula & Partners Trust Account",
+          "isPrimary": true
+        },
+        {
+          "id": "25ffe60b-4918-4622-a136-85d106d018ed",
+          "accountName": "Standard Bank Section 86(3) Investments",
+          "isPrimary": false
+        },
+        {
+          "id": "9c6638d6-0800-40ff-92ee-2b941778f9d1",
+          "accountName": "Nedbank Section 86(4) Investments",
+          "isPrimary": false
+        },
+        {
+          "id": "0f48a9b8-ab76-43d5-aa90-be21d0c82e55",
+          "accountName": "OBS 649C Warnings GTQ2U",
+          "isPrimary": false
+        }
+      ],
+      "integrity": {
+        "balanced": true,
+        "flags": []
+      }
+    },
+    "figures": {
+      "sql": {
+        "cashbook": 291760,
+        "clientLedgers": 260250,
+        "investmentCreditors": 30095,
+        "fundLedger": -85,
+        "unidentified": 1500,
+        "otherNonClient": 0,
+        "interAccount": 0,
+        "creditorTotal": 291760
+      },
+      "api": {
+        "cashbook": 291760,
+        "clientLedgers": 260250,
+        "fundLedger": -85,
+        "unidentifiedDeposits": 1500,
+        "otherNonClient": 0,
+        "investmentCreditors": 30095,
+        "interAccount": 0,
+        "creditorTotal": 291760,
+        "difference": 0,
+        "balanced": true
+      }
+    },
+    "apiFlags": [
+      {
+        "account": "0f48a9b8-ab76-43d5-aa90-be21d0c82e55",
+        "code": "UNRESOLVED_STATEMENT_LINES",
+        "severity": "WARNING",
+        "message": "1 statement line is neither matched, recorded nor excluded on a statement not yet reconciled.",
+        "amount": null,
+        "subjects": [
+          {
+            "kind": "BANK_STATEMENT",
+            "id": "2c28f2ad-a3f1-4fa3-a776-2d6c5975e3cb",
+            "name": "d-statement-GTQ2U.csv",
+            "amount": null
+          }
+        ]
+      },
+      {
+        "account": "0f48a9b8-ab76-43d5-aa90-be21d0c82e55",
+        "code": "FUND_LEDGER_IN_DEBIT",
+        "severity": "WARNING",
+        "message": "The Fund interest and charges ledger is R85,00 in debit.",
+        "amount": 85,
+        "subjects": [
+          {
+            "kind": "CREDITOR_ACCOUNT",
+            "id": "f5bd7561-8dcf-4339-aeaa-19cbf2681564",
+            "name": "Legal Practitioners' Fidelity Fund — interest and charges",
+            "amount": 85
+          }
+        ]
+      },
+      {
+        "account": "0f48a9b8-ab76-43d5-aa90-be21d0c82e55",
+        "code": "UNIDENTIFIED_OVER_ONE_YEAR",
+        "severity": "WARNING",
+        "message": "1 unidentified deposit of R1 500,00 has been held for more than a year.",
+        "amount": 1500,
+        "subjects": [
+          {
+            "kind": "UNIDENTIFIED_DEPOSIT",
+            "id": "17924838-f9e8-452f-9dac-857dc86c6694",
+            "name": "DEPOSIT UNKNOWN REMITTER",
+            "amount": 1500
+          }
+        ]
+      },
+      {
+        "account": "0f48a9b8-ab76-43d5-aa90-be21d0c82e55",
+        "code": "CHARGES_TO_REFUND",
+        "severity": "WARNING",
+        "message": "R85,00 of non-recoverable bank charges has been debited to trust and not yet refunded from the business account.",
+        "amount": 85,
+        "subjects": []
+      }
+    ],
+    "shot1440": "d-overview-1440.png",
+    "card1440": "d-card-1440.png",
+    "tiles1440": "d-tiles-1440.png",
+    "clip1440": [
+      {
+        "sel": "[data-testid=\"trust-integrity-card\"]",
+        "root": [
+          280,
+          1416
+        ],
+        "vw": 1440,
+        "textElements": 24,
+        "bad": []
+      },
+      {
+        "sel": "[data-testid=\"integrity-tiles\"]",
+        "root": [
+          280,
+          1416
+        ],
+        "vw": 1440,
+        "textElements": 12,
+        "bad": []
+      },
+      {
+        "sel": "[data-testid=\"summary-cards\"]",
+        "root": [
+          280,
+          1416
+        ],
+        "vw": 1440,
+        "textElements": 14,
+        "bad": []
+      }
+    ]
+  },
+  "links": [
+    {
+      "flag": "integrity-flag-UNRESOLVED_STATEMENT_LINES",
+      "link": "d-statement-GTQ2U.csv",
+      "href": "/org/e2e-test-org/trust-accounting/reconciliation",
+      "landed": "http://localhost:3001/org/e2e-test-org/trust-accounting/reconciliation",
+      "h1": "Reconciliation",
+      "error": false
+    },
+    {
+      "flag": "integrity-flag-FUND_LEDGER_IN_DEBIT",
+      "link": "Legal Practitioners' Fidelity Fund — interest and charges",
+      "href": "/org/e2e-test-org/trust-accounting/other-creditors",
+      "landed": "http://localhost:3001/org/e2e-test-org/trust-accounting/other-creditors",
+      "h1": "Other trust creditors",
+      "error": false
+    },
+    {
+      "flag": "integrity-flag-UNIDENTIFIED_OVER_ONE_YEAR",
+      "link": "DEPOSIT UNKNOWN REMITTER",
+      "href": "/org/e2e-test-org/trust-accounting/other-creditors",
+      "landed": "http://localhost:3001/org/e2e-test-org/trust-accounting/other-creditors",
+      "h1": "Other trust creditors",
+      "error": false
+    },
+    {
+      "flag": "integrity-flag-CHARGES_TO_REFUND",
+      "link": "Other trust creditors",
+      "href": "/org/e2e-test-org/trust-accounting/other-creditors",
+      "landed": "http://localhost:3001/org/e2e-test-org/trust-accounting/other-creditors",
+      "h1": "Other trust creditors",
+      "error": false
+    }
+  ],
+  "endedAt": "2026-11-18T18:39:35.984Z"
+}

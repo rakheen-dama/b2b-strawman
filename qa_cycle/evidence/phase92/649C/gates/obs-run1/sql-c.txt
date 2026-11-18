@@ -1,0 +1,32 @@
+-- 649C OBS phase c read-only SQL (schema tenant_7d218705360b) 2026-11-18T18:12:44.181Z
+
+== [c: line 2 before the unmatch attempt]
+select id, line_number, match_status, trust_transaction_id from tenant_7d218705360b.bank_statement_lines where id='4220ac3f-830f-4a52-b995-47c4744b546a'
+                  id                  | line_number | match_status |         trust_transaction_id         
+--------------------------------------+-------------+--------------+--------------------------------------
+ 4220ac3f-830f-4a52-b995-47c4744b546a |           2 | AUTO_MATCHED | 9572cd36-90fe-4c76-8e07-88a2ff4f999b
+(1 row)
+
+
+== [c: line 2 after the refused unmatch]
+select id, line_number, match_status, trust_transaction_id from tenant_7d218705360b.bank_statement_lines where id='4220ac3f-830f-4a52-b995-47c4744b546a'
+                  id                  | line_number | match_status |         trust_transaction_id         
+--------------------------------------+-------------+--------------+--------------------------------------
+ 4220ac3f-830f-4a52-b995-47c4744b546a |           2 | AUTO_MATCHED | 9572cd36-90fe-4c76-8e07-88a2ff4f999b
+(1 row)
+
+
+== [c: audit events of line 2]
+select event_type, entity_id, occurred_at from tenant_7d218705360b.audit_events where entity_id='4220ac3f-830f-4a52-b995-47c4744b546a' order by occurred_at
+ event_type | entity_id | occurred_at 
+------------+-----------+-------------
+(0 rows)
+
+
+== [c: the matched transaction after the refused unmatch (link must survive the rollback)]
+select id, reference, bank_statement_line_id from tenant_7d218705360b.trust_transactions where id='9572cd36-90fe-4c76-8e07-88a2ff4f999b'
+                  id                  |       reference        |        bank_statement_line_id        
+--------------------------------------+------------------------+--------------------------------------
+ 9572cd36-90fe-4c76-8e07-88a2ff4f999b | PAY/DEEDS/mwmfee7f0815 | 4220ac3f-830f-4a52-b995-47c4744b546a
+(1 row)
+

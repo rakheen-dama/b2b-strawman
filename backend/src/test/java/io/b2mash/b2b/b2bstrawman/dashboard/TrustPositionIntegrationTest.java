@@ -389,6 +389,49 @@ class TrustPositionIntegrationTest {
     assertThat(decimal(body, "$.creditorBreakdown.total")).isEqualByComparingTo("10550.00");
   }
 
+  /**
+   * 649C (ruling D-3): the composite carries the account's integrity check as at today — {@code
+   * balanced} and each raised flag's code, severity and count. The creditor books raise nothing;
+   * the primary account's statement line, never matched, is a warning that leaves it balanced.
+   */
+  @Test
+  void positionCarriesTheIntegritySummary() throws Exception {
+    String creditors =
+        read(
+            TestJwtFactory.ownerJwt(CREDITORS_ORG_ID, CREDITORS_OWNER),
+            "/api/dashboard/trust-position?accountId=" + creditorsAccountId);
+    assertThat(JsonPath.<Boolean>read(creditors, "$.integrity.balanced")).isTrue();
+    // Every flag the creditor books could raise is absent. UNIDENTIFIED_OVER_ONE_YEAR is left out:
+    // the unidentified deposit is dated 2026-04-10, so that warning fires as at 2027-04-11 onwards
+    // (the clock is real time) — correct behaviour, not something this test pins.
+    assertThat(JsonPath.<List<String>>read(creditors, "$.integrity.flags[*].code"))
+        .doesNotContain(
+            "BANK_DIFFERENCE",
+            "BOOKS_OUT_OF_BALANCE",
+            "INTER_ACCOUNT_NOT_ZERO",
+            "UNIDENTIFIED_ITEMS_MISMATCH",
+            "INVESTMENT_BALANCE_MISMATCH",
+            "UNRESOLVED_STATEMENT_LINES",
+            "FUND_LEDGER_IN_DEBIT",
+            "CLIENT_LEDGER_IN_DEBIT",
+            "CHARGES_TO_REFUND");
+
+    String primary =
+        read(
+            TestJwtFactory.ownerJwt(ORG_ID, OWNER),
+            "/api/dashboard/trust-position?accountId=" + primaryAccountId);
+    assertThat(JsonPath.<Boolean>read(primary, "$.integrity.balanced")).isTrue();
+    assertThat(
+            JsonPath.<List<String>>read(
+                primary, "$.integrity.flags[?(@.code == 'UNRESOLVED_STATEMENT_LINES')].severity"))
+        .containsExactly("WARNING");
+    assertThat(
+            JsonPath.<List<Integer>>read(
+                primary, "$.integrity.flags[?(@.code == 'UNRESOLVED_STATEMENT_LINES')].count"))
+        .singleElement()
+        .satisfies(count -> assertThat(count).isPositive());
+  }
+
   /** 646D: {@code asAt} on the two balance endpoints (absent = today). */
   @Test
   void balanceEndpointsAnswerAsAtTheRequestedDate() throws Exception {

@@ -1,0 +1,53 @@
+{
+  "method": "GET",
+  "url": "/api/dashboard/trust-position?accountId=acfd45c9-68b9-4a59-9ba4-602f88e3d42f",
+  "status": 200,
+  "body": {
+    "trustAccountId": "acfd45c9-68b9-4a59-9ba4-602f88e3d42f",
+    "accountName": "Mathebula & Partners Trust Account",
+    "bankName": "Standard Bank",
+    "cashbookBalance": 60250,
+    "clientLedgerTotal": 260250,
+    "creditorBreakdown": {
+      "clientLedgers": 260250,
+      "investmentCreditors": 0,
+      "fundInterestAndCharges": 0,
+      "unidentifiedDeposits": 0,
+      "otherNonClient": 0,
+      "interAccount": -200000,
+      "total": 60250
+    },
+    "difference": 0,
+    "lastReconciliationPeriodEnd": "2026-11-18",
+    "lastReconciliationStatus": "COMPLETED",
+    "lastReconciliationBalanced": true,
+    "daysSinceReconciliation": 0,
+    "pendingApprovalCount": 1,
+    "accounts": [
+      {
+        "id": "acfd45c9-68b9-4a59-9ba4-602f88e3d42f",
+        "accountName": "Mathebula & Partners Trust Account",
+        "isPrimary": true
+      },
+      {
+        "id": "b2264e3f-ac19-4f56-a519-dabe8e91bae7",
+        "accountName": "Standard Bank Section 86(3) Investments",
+        "isPrimary": false
+      },
+      {
+        "id": "4e2bff45-c7de-4d57-8e4a-64dd3b060879",
+        "accountName": "Nedbank Section 86(4) Investments",
+        "isPrimary": false
+      },
+      {
+        "id": "64ca9738-6424-4c09-80ac-68fc6c5244a4",
+        "accountName": "OBS 649C Warnings FWA2V",
+        "isPrimary": false
+      }
+    ],
+    "integrity": {
+      "balanced": true,
+      "flags": []
+    }
+  }
+}

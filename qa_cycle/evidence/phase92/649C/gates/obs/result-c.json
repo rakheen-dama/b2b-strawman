@@ -1,0 +1,36 @@
+{
+  "phase": "c",
+  "startedAt": "2026-11-18T18:39:19.589Z",
+  "apiWrites": [
+    {
+      "why": "D-14: no screen shows a completed reconciliation's lines (the wizard ends at step 5; the list has no Unmatch), so the unmatch is sent once through the firm API",
+      "method": "POST",
+      "url": "/api/bank-statement-lines/1a20c233-d4ab-4bee-845b-280fb2d668f3/unmatch",
+      "status": 400,
+      "body": {
+        "detail": "This statement's reconciliation is complete, so its lines cannot be unmatched.",
+        "instance": "/api/bank-statement-lines/1a20c233-d4ab-4bee-845b-280fb2d668f3/unmatch",
+        "status": 400,
+        "title": "Statement already reconciled"
+      }
+    }
+  ],
+  "consoleErrors": [
+    {
+      "user": "user_e2e_alice",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "text": "MockAuthContextProvider: failed to fetch userinfo TypeError: Failed to fetch\n    at http://localhost:3001/_next/static/chunks/1kvf-7k8cibf1.js:1:1582\n    at iw (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:118706)\n    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:"
+    }
+  ],
+  "pageErrors": [],
+  "checks": {
+    "c: no Unmatch on screen": true,
+    "c: refused 400 'Statement already reconciled'": true,
+    "c: line + matched_count unchanged": true
+  },
+  "listShot": "c-01-reconciliation-list.png",
+  "unmatchOffered": 0,
+  "before": "MANUALLY_MATCHED|ea6b1624-a73e-4aed-ac8b-f6ebe7cf71fd|2",
+  "after": "MANUALLY_MATCHED|ea6b1624-a73e-4aed-ac8b-f6ebe7cf71fd|2",
+  "endedAt": "2026-11-18T18:39:21.158Z"
+}

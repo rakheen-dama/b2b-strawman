@@ -504,4 +504,102 @@ public interface TrustLedgerQueryRepository extends Repository<TrustTransaction,
            GROUP BY i.id""")
   List<InvestmentBalanceRow> investmentBalances(
       @Param("investmentIds") Collection<UUID> investmentIds);
+
+  // --- integrity check (649C, §16.3.9): what TrustBooksService does not already compute ----------
+
+  /**
+   * EQ-4 (a) as at {@code asAt} (649C): posted rows on the account's unidentified-deposits ledger,
+   * reversals included, that name no item. Zero when EQ-4 holds. {@code asAt} is required.
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          SELECT count(*) FROM trust_transactions t
+            JOIN trust_creditor_accounts ca ON ca.id = t.creditor_account_id
+           WHERE t.trust_account_id = :trustAccountId AND t.ledger = 'NON_CLIENT'
+             AND ca.account_type = 'UNIDENTIFIED_DEPOSITS' AND t.posted_at IS NOT NULL
+             AND t.transaction_date <= CAST(:asAt AS date) AND t.unidentified_deposit_id IS NULL""")
+  long unidentifiedRowsWithoutItem(
+      @Param("trustAccountId") UUID trustAccountId, @Param("asAt") LocalDate asAt);
+
+  /**
+   * EQ-4 (b–d) and {@code UNIDENTIFIED_OVER_ONE_YEAR} (649C): every unidentified deposit of the
+   * account with its balance as at {@code asAt} from its own posted {@code NON_CLIENT} rows, oldest
+   * first. Index: {@code idx_trust_txn_unidentified_deposit}. {@code asAt} is required.
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          SELECT d.id AS id, d.amount AS amount, d.status AS status,
+                 d.received_date AS receivedDate, d.bank_description AS bankDescription,
+                 COALESCE((SELECT SUM(t.ledger_effect) FROM trust_transactions t
+                            WHERE t.unidentified_deposit_id = d.id AND t.ledger = 'NON_CLIENT'
+                              AND t.posted_at IS NOT NULL
+                              AND t.transaction_date <= CAST(:asAt AS date)), 0) AS balance
+            FROM unidentified_deposits d
+           WHERE d.trust_account_id = :trustAccountId
+           ORDER BY d.received_date, d.created_at, d.id""")
+  List<UnidentifiedItemBalanceRow> unidentifiedItemBalances(
+      @Param("trustAccountId") UUID trustAccountId, @Param("asAt") LocalDate asAt);
+
+  /**
+   * EQ-5 (649C): each investment held in the account (its {@code investment_account_id}), with the
+   * record's side as at {@code asAt} — the principal once its placement row is posted, the net of
+   * its posted interest entries ({@code trust_investment_interest}, not the rows), the withdrawal
+   * once dated — and its posted rows' balance on the holding account. {@code asAt} is required.
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          SELECT i.id AS investmentId, i.institution AS institution,
+                 i.account_number AS accountNumber,
+                 CASE WHEN EXISTS (SELECT 1 FROM trust_transactions p
+                                    WHERE p.id = i.deposit_transaction_id
+                                      AND p.posted_at IS NOT NULL
+                                      AND p.transaction_date <= CAST(:asAt AS date))
+                      THEN i.principal ELSE 0 END AS placed,
+                 COALESCE((SELECT SUM(e.net_amount) FROM trust_investment_interest e
+                            WHERE e.investment_id = i.id AND e.status = 'POSTED'
+                              AND e.entry_date <= CAST(:asAt AS date)), 0) AS interest,
+                 CASE WHEN i.withdrawal_date <= CAST(:asAt AS date)
+                      THEN COALESCE(i.withdrawal_amount, 0) ELSE 0 END AS withdrawn,
+                 COALESCE((SELECT SUM(t.ledger_effect) FROM trust_transactions t
+                            WHERE t.investment_id = i.id
+                              AND t.trust_account_id = i.investment_account_id
+                              AND t.ledger IN ('CLIENT_INVESTMENT', 'INTER_ACCOUNT')
+                              AND t.posted_at IS NOT NULL
+                              AND t.transaction_date <= CAST(:asAt AS date)), 0) AS balance
+            FROM trust_investments i
+           WHERE i.investment_account_id = :trustAccountId
+           ORDER BY i.deposit_date, i.created_at, i.id""")
+  List<InvestmentTieRow> investmentTies(
+      @Param("trustAccountId") UUID trustAccountId, @Param("asAt") LocalDate asAt);
+
+  /**
+   * {@code CHARGES_TO_REFUND} (649C, E3, OL-3): non-recoverable {@code BANK_CHARGE} amounts and
+   * {@code CHARGE_REFUND} amounts posted on the account as at {@code asAt}; a row whose posted
+   * reversal is dated on or before {@code asAt} is excluded (as-at correct). The VAT of a
+   * recoverable charge is not counted (OL-3 working assumption). {@code asAt} is required.
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          SELECT COALESCE(SUM(t.amount) FILTER (WHERE t.transaction_type = 'BANK_CHARGE'
+                                                  AND t.charge_recoverable = false), 0)
+                   AS nonRecoverableCharges,
+                 COALESCE(SUM(t.amount) FILTER (WHERE t.transaction_type = 'CHARGE_REFUND'), 0)
+                   AS refunds
+            FROM trust_transactions t
+           WHERE t.trust_account_id = :trustAccountId AND t.posted_at IS NOT NULL
+             AND t.transaction_type IN ('BANK_CHARGE', 'CHARGE_REFUND')
+             AND t.transaction_date <= CAST(:asAt AS date)
+             AND NOT EXISTS (SELECT 1 FROM trust_transactions r
+                              WHERE r.reversal_of = t.id AND r.posted_at IS NOT NULL
+                                AND r.transaction_date <= CAST(:asAt AS date))""")
+  ChargesToRefundRow chargesToRefund(
+      @Param("trustAccountId") UUID trustAccountId, @Param("asAt") LocalDate asAt);
 }

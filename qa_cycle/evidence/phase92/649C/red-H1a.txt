@@ -1,0 +1,24 @@
+649C reproduce-before-fix (root CLAUDE.md §4; brief §15 H-1a, §12 preamble)
+Date: 2026-11-18T16:39:22Z
+Production code: UNCHANGED main HEAD c2fbf2a5fd0b7f2cd62f9b970c024c9117e5ecdd (only the new test class added, uncommitted)
+Command: cd backend && ./mvnw test -Dtest=TrustReconciliationCompletionGateIntegrationTest -q
+Result: Tests run: 3, Failures: 3, Errors: 0, Skipped: 0  (exit 1)
+
+1. complete_recalculates_aStatementImportedAfterCalculateIsRefused   [H-1a (1)]
+   Setup: statement A (deposit 1 000, matched) + approved payment 300; reconciliation as at 31 March
+   2026 calculated balanced; then statement gate-late-b.csv imported with a 25/03 line.
+   Expected: complete refused 400 "Statement does not fit the period end".
+   On main:  "Expecting code to raise a throwable."  -> completeReconciliation completed on the
+             stored is_balanced and never re-ran requireStatementFitsPeriodEnd.
+
+2. complete_recalculates_aReversalDatedInThePeriodPostedAfterCalculate   [H-1a (2)]
+   Setup: deposit 1 000 matched to a March line; reconciliation calculated balanced (cashbook 1 000);
+   then a reversal dated 10 March 2026 posted + approved after calculate.
+   Expected: completed reconciliation carries the recalculated figures (cashbook 0, o/s payments 1 000).
+   On main:  [cashbook recalculated at complete] expected: 0 but was: 1000.00
+             -> the stale stored figures were completed.
+
+3. refusedOnG4_whenAStatementLineIsUnmatched   [G4 missing on main, §12 preamble (b)]
+   Setup: balanced reconciliation (bank 1 000 = cashbook 1 000) with 2 UNMATCHED lines netting to 0.
+   Expected: complete refused 400 "Statement lines are unresolved".
+   On main:  "Expecting code to raise a throwable." -> completed with unresolved lines.

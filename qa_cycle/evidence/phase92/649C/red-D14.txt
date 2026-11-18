@@ -1,0 +1,11 @@
+649C review fix cycle 1 — D-14 red-first (CR-2)
+Date: 2026-11-18 19:37 SAST
+With StatementLines.requireNotReconciled disabled (if (false && ...)), ./mvnw test -Dtest=TrustReconciliationCompletionGateIntegrationTest:
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationCompletionGateIntegrationTest.completeThenUnmatch_isRefused_onTheReconciledStatement_lineUnchanged(TrustReconciliationCompletionGateIntegrationTest.java:580)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationCompletionGateIntegrationTest.lambda$completeThenUnmatch_isRefused_onTheReconciledStatement_lineUnchanged$0(TrustReconciliationCompletionGateIntegrationTest.java:583)
+Expecting code to raise a throwable.
+[ERROR]   TrustReconciliationCompletionGateIntegrationTest.completeThenUnmatch_isRefused_onTheReconciledStatement_lineUnchanged:580->lambda$completeThenUnmatch_isRefused_onTheReconciledStatement_lineUnchanged$0:583 
+[ERROR] Tests run: 13, Failures: 1, Errors: 0, Skipped: 0
+[ERROR] Tests run: 13, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 14.02 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationCompletionGateIntegrationTest
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationCompletionGateIntegrationTest.completeThenUnmatch_isRefused_onTheReconciledStatement_lineUnchanged -- Time elapsed: 0.113 s <<< FAILURE!
+Restored: the same class is green (13/13) with the refusal in place.

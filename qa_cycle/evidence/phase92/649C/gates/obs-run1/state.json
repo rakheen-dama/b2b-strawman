@@ -1,0 +1,78 @@
+{
+  "general": "acfd45c9-68b9-4a59-9ba4-602f88e3d42f",
+  "b": {
+    "statement": "e1012b68-9476-4654-86c6-d100746a84f3",
+    "recon": "a66fcfaf-fc38-4af3-a723-2891ade38680",
+    "autoMatch": "Auto-matched 2 lines 2 lines remaining for manual review",
+    "lines": [
+      {
+        "n": 1,
+        "id": "7cb9ca6d-1b4a-4e3c-9f49-d9ad98a51c38",
+        "s": "AUTO_MATCHED"
+      },
+      {
+        "n": 2,
+        "id": "4220ac3f-830f-4a52-b995-47c4744b546a",
+        "s": "AUTO_MATCHED"
+      },
+      {
+        "n": 3,
+        "id": "01adb031-763f-49be-b232-1ad810a551f2",
+        "s": "UNMATCHED"
+      },
+      {
+        "n": 4,
+        "id": "fdfe36eb-beda-4cee-a14d-08be68fd168d",
+        "s": "UNMATCHED"
+      }
+    ],
+    "csv": "b-statement-FUOPG.csv",
+    "depositTx": "7f013e03-3db8-4b4d-b1d8-c2d189dfbe8e",
+    "completedDetails": {
+      "flags": [],
+      "actor_name": "Alice Owner",
+      "difference": "0.00",
+      "period_end": "2026-11-18",
+      "bank_balance": "3750.00",
+      "creditor_total": "60250.00",
+      "cashbook_balance": "60250.00",
+      "trust_account_id": "acfd45c9-68b9-4a59-9ba4-602f88e3d42f",
+      "client_ledger_total": "260250.00"
+    }
+  },
+  "warnAccount": "64ca9738-6424-4c09-80ac-68fc6c5244a4",
+  "d": {
+    "statement": "ebe181e7-2a66-4a15-8220-ab9bf3028b69",
+    "recon": "7f91c2a6-38db-4511-b57d-2ebeddef7195",
+    "autoMatch": "Auto-matched 0 lines 3 lines remaining for manual review",
+    "lines": [
+      {
+        "n": 1,
+        "id": "1f191066-1e64-4133-933c-662c9b30da49",
+        "s": "UNMATCHED"
+      },
+      {
+        "n": 2,
+        "id": "98bf1eaf-3ddc-480d-9ab8-3b6e3968408e",
+        "s": "UNMATCHED"
+      },
+      {
+        "n": 3,
+        "id": "d1c5cc2f-0cb7-4bb1-b7fc-8f15098c19e4",
+        "s": "UNMATCHED"
+      }
+    ]
+  },
+  "e": {
+    "statement": "210873c0-f007-4f05-8184-2c1bcd4aae9c",
+    "recon": "904abc59-a3b2-40f1-969a-14797d22eb94",
+    "autoMatch": "Auto-matched 0 lines 1 lines remaining for manual review",
+    "lines": [
+      {
+        "n": 1,
+        "id": "58da266d-d95f-4f00-8dec-d80e9ad8ab63",
+        "s": "UNMATCHED"
+      }
+    ]
+  }
+}

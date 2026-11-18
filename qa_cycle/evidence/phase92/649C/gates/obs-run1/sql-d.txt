@@ -1,0 +1,46 @@
+-- 649C OBS phase d read-only SQL (schema tenant_7d218705360b) 2026-11-18T18:13:21.021Z
+
+== [d: the new account]
+select id, account_name, account_type, investment_basis, is_primary, opened_date from tenant_7d218705360b.trust_accounts where id='64ca9738-6424-4c09-80ac-68fc6c5244a4'
+                  id                  |      account_name       | account_type | investment_basis | is_primary | opened_date 
+--------------------------------------+-------------------------+--------------+------------------+------------+-------------
+ 64ca9738-6424-4c09-80ac-68fc6c5244a4 | OBS 649C Warnings FWA2V | GENERAL      |                  | f          | 2025-01-01
+(1 row)
+
+
+== [d: rows on the new account]
+select transaction_type, amount, transaction_date, ledger, ledger_effect, cashbook_effect, charge_recoverable, bank_statement_line_id from tenant_7d218705360b.trust_transactions where trust_account_id='64ca9738-6424-4c09-80ac-68fc6c5244a4' order by transaction_date
+   transaction_type   | amount  | transaction_date |   ledger   | ledger_effect | cashbook_effect | charge_recoverable |        bank_statement_line_id        
+----------------------+---------+------------------+------------+---------------+-----------------+--------------------+--------------------------------------
+ UNIDENTIFIED_DEPOSIT | 1500.00 | 2025-10-10       | NON_CLIENT |       1500.00 |         1500.00 |                    | 1f191066-1e64-4133-933c-662c9b30da49
+ BANK_CHARGE          |   85.00 | 2025-10-20       | NON_CLIENT |        -85.00 |          -85.00 | f                  | 98bf1eaf-3ddc-480d-9ab8-3b6e3968408e
+(2 rows)
+
+
+== [d: unidentified deposits on the new account]
+select id, received_date, amount, status from tenant_7d218705360b.unidentified_deposits where trust_account_id='64ca9738-6424-4c09-80ac-68fc6c5244a4'
+                  id                  | received_date | amount  | status 
+--------------------------------------+---------------+---------+--------
+ 88c4f987-4d60-418a-8e92-4596a3cc97e4 | 2025-10-10    | 1500.00 | HELD
+(1 row)
+
+
+== [d: EQ-2 terms per account + FIRM (rollup), as at 2026-11-18]
+select coalesce(t.trust_account_id::text,'FIRM') account, sum(t.cashbook_effect) cashbook,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='CLIENT'),0) client_ledgers,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='CLIENT_INVESTMENT'),0) investment_creditors,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT' and ca.account_type='FUND_INTEREST_AND_CHARGES'),0) fund_ledger,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT' and ca.account_type='UNIDENTIFIED_DEPOSITS'),0) unidentified,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT' and ca.account_type not in ('FUND_INTEREST_AND_CHARGES','UNIDENTIFIED_DEPOSITS')),0) other_non_client,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='INTER_ACCOUNT'),0) inter_account, sum(t.ledger_effect) creditor_total
+  from tenant_7d218705360b.trust_transactions t left join tenant_7d218705360b.trust_creditor_accounts ca on ca.id=t.creditor_account_id
+  where t.posted_at is not null and t.transaction_date <= date '2026-11-18' group by rollup(t.trust_account_id) order by 1
+               account                | cashbook  | client_ledgers | investment_creditors | fund_ledger | unidentified | other_non_client | inter_account | creditor_total 
+--------------------------------------+-----------+----------------+----------------------+-------------+--------------+------------------+---------------+----------------
+ 4e2bff45-c7de-4d57-8e4a-64dd3b060879 |  30095.00 |              0 |             30095.00 |           0 |            0 |                0 |             0 |       30095.00
+ 64ca9738-6424-4c09-80ac-68fc6c5244a4 |   1415.00 |              0 |                    0 |      -85.00 |      1500.00 |                0 |             0 |        1415.00
+ FIRM                                 | 291760.00 |      260250.00 |             30095.00 |      -85.00 |      1500.00 |                0 |          0.00 |      291760.00
+ acfd45c9-68b9-4a59-9ba4-602f88e3d42f |  60250.00 |      260250.00 |                    0 |           0 |            0 |                0 |    -200000.00 |       60250.00
+ b2264e3f-ac19-4f56-a519-dabe8e91bae7 | 200000.00 |              0 |                    0 |           0 |            0 |                0 |     200000.00 |      200000.00
+(5 rows)
+

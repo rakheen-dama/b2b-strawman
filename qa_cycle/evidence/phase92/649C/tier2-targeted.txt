@@ -1,0 +1,48 @@
+649C Stage A (backend) — Tier 2 targeted tests
+Date: 2026-11-18 (SAST), worktree epic-649C/trust-integrity-completion-gate, base c2fbf2a5f + uncommitted 649C backend changes
+Command (backend/):
+  ./mvnw test -Dtest="$CLASSES" -q        (nohup + done-marker; exit 0)
+  CLASSES = every *Test.java under verticals/legal/trustaccounting/** and dashboard/**, plus
+            CatalogueBatch2TrustBillingTest ClientTrustStatementContextIntegrationTest LegalDemoTrustBooksIntegrationTest
+            TrustLedgerPortalSyncServiceIntegrationTest TrustBalanceZeroGateTest TrustAwareCollectionsAdvisorTest
+            TrustBoundaryGuardUnitTest ComplianceDataCollectorServiceTest LayerDependencyRulesTest ZoneAwareTimeArchTest
+            TestConventionsTest  (brief §13.1 mechanical list; 92 classes — every class outside the two packages that
+            imports a changed class is in it: grep for TrustBooksFixture|TrustBooksHarness|TrustReconciliationService|
+            TrustPositionResponse|TrustReconciliationRepository|TrustLedgerQueryRepository|BankStatementLineRepository|
+            DashboardService found no other importer)
+Result: 92 report files, all written by this run
+  Tests run: 899, Failures: 0, Errors: 0, Skipped: 0   (<testcase> elements counted: 899)
+New classes in the run:
+  TrustIntegrityServiceIntegrationTest            14 tests, green
+  TrustReconciliationCompletionGateIntegrationTest  9 tests, green (incl. the 3 red-first cases of red-H1a.txt)
+Wire pin: TrustWireContractTest red before regeneration (drift), regenerated with -Dtrust.contract.update=true
+  (+164 lines: 8 new records), green without the flag.
+OQ #9 (TrustIntegrityServiceIntegrationTest.checkFirm_preparedStatements_growLinearly_forThreeAndTenAccounts):
+  accounts=1 prepared statements=12
+  accounts=3 prepared statements=30
+  accounts=10 prepared statements=93
+  => 3 + 9 per account (each account holding one deposit, no reconciliation at asAt; a reconciliation at asAt
+     adds its statement + outstanding reads: +2 per such account)
+Tier 3 (full ./mvnw verify) NOT run — orchestrator-owned.
+
+--- Review fix cycle 1 (2026-11-18 SAST) ---
+Same command, same 92-class set (find trustaccounting/** + dashboard/** *Test.java, plus the 11 named classes;
+nohup + done-marker /tmp/tier2-649C.done, exit 0). Wire pin regenerated first with -Dtrust.contract.update=true
+(4 type strings: TrustIntegrityService$IntegrityFlag/$FlagSubject -> books.IntegrityFlag/books.FlagSubject;
+record keys unchanged), then green without the flag inside this run.
+Result: 92 report files, all written by this run (none stale)
+  <testcase> elements: 903, failures + errors: 0
+  TrustReconciliationCompletionGateIntegrationTest 13 tests (+4: G3 via EQ-5, G2+G3 aggregated,
+    unmatch-then-complete, complete-then-unmatch [D-14]); refusals now assert the rollback
+  TrustIntegrityServiceIntegrationTest 14 tests (repair + clear steps added to 5 flags; firm.balanced scoped)
+  D-14 red-first: red-D14.txt
+OQ #9 unchanged: accounts=1 -> 12, 3 -> 30, 10 -> 93 prepared statements (9 per account)
+Frontend: lint, typecheck, format:check OK; full vitest 483 files, 4 552 passed, 2 skipped (4 554); build OK.
+Tier 3 (full ./mvnw verify) NOT run — orchestrator-owned.
+
+--- Review fix cycle 2 (double-complete race) — 2026-11-18T17:54:11Z, working tree on 131573b6d + fix ---
+Classes: TrustReconciliationCompletionGateIntegrationTest (14, incl. new concurrentDoubleComplete), TrustReconciliationServiceReconciliationTest (17),
+TrustReconciliationControllerTest (10), TrustIntegrityServiceIntegrationTest (14), TrustReconciliationServiceMatchingTest (16),
+StatementLinePostingIntegrationTest (28), BankStatementImportErrorIntegrationTest (2), parser.BankStatementParserTest (44)
+Totals: Tests run: 145, Failures: 0, Errors: 0, Skipped: 0 — BUILD SUCCESS (<testcase> count: 145, failures/errors: 0)
+Flake check: concurrentDoubleComplete run 5x under the fix — 5/5 PASS. Red: 3/3 FAIL with re-check removed (red-double-complete.txt).

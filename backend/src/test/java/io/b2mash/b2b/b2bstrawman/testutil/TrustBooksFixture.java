@@ -1078,6 +1078,47 @@ public final class TrustBooksFixture {
       return rowId;
     }
 
+    /**
+     * Sets an unidentified deposit's {@code status} (and {@code resolved_date}, as {@code
+     * chk_unidentified_deposit_resolved} needs) straight in the table (649C), leaving its rows
+     * alone — breaks EQ-4 (d) when the status no longer agrees with its balance. Not {@code
+     * ALLOCATED} (its CHECK needs the allocation's columns). Use only in a tenant that never runs
+     * {@code assertFirmBalanced}.
+     */
+    public void setItemStatusDirect(UUID unidentifiedDepositId, String status) {
+      jdbc.update(
+          """
+          UPDATE "%s".unidentified_deposits SET status = ?,
+              resolved_date = CASE WHEN ? = 'HELD' THEN NULL ELSE received_date END
+          WHERE id = ?
+          """
+              .formatted(schema),
+          status,
+          status,
+          unidentifiedDepositId);
+    }
+
+    /**
+     * Sets an investment's {@code principal} straight in the table (649C), leaving its rows alone —
+     * breaks EQ-5. Use only in a tenant that never runs {@code assertFirmBalanced}.
+     */
+    public void setInvestmentPrincipalDirect(UUID investmentId, String principal) {
+      jdbc.update(
+          "UPDATE \"%s\".trust_investments SET principal = ? WHERE id = ?".formatted(schema),
+          new BigDecimal(principal),
+          investmentId);
+    }
+
+    /**
+     * Marks a statement {@code RECONCILED} straight in the table (649C): the dashboard's
+     * unresolved-lines warning reads only statements not yet reconciled.
+     */
+    public void markStatementReconciledDirect(UUID statementId) {
+      jdbc.update(
+          "UPDATE \"%s\".bank_statements SET status = 'RECONCILED' WHERE id = ?".formatted(schema),
+          statementId);
+    }
+
     private UUID insertLedgerRow(
         UUID account,
         String type,

@@ -1,0 +1,26 @@
+-- 649C OBS phase c read-only SQL (schema tenant_7d218705360b) 2026-11-18T18:39:19.589Z
+
+== [c: line 2 before the unmatch attempt]
+select id, line_number, match_status, trust_transaction_id from tenant_7d218705360b.bank_statement_lines where id='1a20c233-d4ab-4bee-845b-280fb2d668f3'
+                  id                  | line_number |   match_status   |         trust_transaction_id         
+--------------------------------------+-------------+------------------+--------------------------------------
+ 1a20c233-d4ab-4bee-845b-280fb2d668f3 |           2 | MANUALLY_MATCHED | ea6b1624-a73e-4aed-ac8b-f6ebe7cf71fd
+(1 row)
+
+
+== [c: line 2 after the refused unmatch]
+select id, line_number, match_status, trust_transaction_id from tenant_7d218705360b.bank_statement_lines where id='1a20c233-d4ab-4bee-845b-280fb2d668f3'
+                  id                  | line_number |   match_status   |         trust_transaction_id         
+--------------------------------------+-------------+------------------+--------------------------------------
+ 1a20c233-d4ab-4bee-845b-280fb2d668f3 |           2 | MANUALLY_MATCHED | ea6b1624-a73e-4aed-ac8b-f6ebe7cf71fd
+(1 row)
+
+
+== [c: audit events of line 2]
+select event_type, entity_id, occurred_at from tenant_7d218705360b.audit_events where entity_id='1a20c233-d4ab-4bee-845b-280fb2d668f3' order by occurred_at
+              event_type              |              entity_id               |          occurred_at          
+--------------------------------------+--------------------------------------+-------------------------------
+ bank_statement_line.unmatched        | 1a20c233-d4ab-4bee-845b-280fb2d668f3 | 2026-11-18 18:38:58.608904+00
+ bank_statement_line.manually_matched | 1a20c233-d4ab-4bee-845b-280fb2d668f3 | 2026-11-18 18:39:02.49033+00
+(2 rows)
+

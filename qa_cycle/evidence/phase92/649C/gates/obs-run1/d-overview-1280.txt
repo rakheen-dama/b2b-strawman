@@ -1,0 +1,177 @@
+Skip to content
+Kazi
+E2E Test Organization
+Search...
+⌘K
+TODAY
+Home
+My work
+Diary
+MATTERS
+Matters
+New matter
+Conflict check
+Adverse parties
+AI reviews
+CLIENTS
+Clients
+FICA & compliance
+Data requests
+FEES
+TRUST
+FIRM
+Platform Admin
+Notifications
+AO
+
+Alice Owner
+
+alice@e2e-test.local
+
+Toggle menu
+E2E Test Organization
+Trust accounting
+Search
+⌘K
+19 unread notifications
+19
+e2e-test-org
+AO
+Trust Accounting
+
+LSSA-compliant trust account management for client funds
+
+Client Ledgers
+Record Transaction
+Trust Balance
+R 60 250,00
+
+Mathebula & Partners Trust Account cashbook balance
+
+Trust creditors R 60 250,00
+(agrees with the cashbook)
+
+Active Clients
+3
+Clients with trust balances
+Pending Approvals
+1
+Transactions awaiting approval
+Needs attention
+Reconciliation
+Balanced
+Last reconciled 18 Nov 2026 · 0 days ago
+Cashbook
+R 291 760,00
+All trust accounts
+Client ledgers
+R 260 250,00
+Money held for clients
+Other trust creditors
+R 1 415,00
+Fund interest and charges, and unidentified deposits
+Invested
+R 30 095,00
+Section 86(4) investments for clients
+Trust integrity
+As at 18 Nov 2026, all trust accounts
+
+Books balance
+
+Warning
+OBS 649C Warnings FWA2V: Statement lines not yet resolved
+
+1 statement line is neither matched, recorded nor excluded on a statement not yet reconciled.
+
+d-statement-FWA2V.csv
+Warning
+OBS 649C Warnings FWA2V: Fund interest and charges ledger in debit
+R 85,00
+
+The Fund interest and charges ledger is R85,00 in debit.
+
+Legal Practitioners' Fidelity Fund — interest and charges
+R 85,00
+Warning
+OBS 649C Warnings FWA2V: Unidentified deposit held over a year
+R 1 500,00
+
+1 unidentified deposit of R1 500,00 has been held for more than a year.
+
+DEPOSIT UNKNOWN REMITTER
+R 1 500,00
+Warning
+OBS 649C Warnings FWA2V: Bank charges to refund from the business account
+R 85,00
+
+R85,00 of non-recoverable bank charges has been debited to trust and not yet refunded from the business account.
+
+Other trust creditors
+1 transaction awaiting approval
+Trust balance trend
+Month-end balances as currently recorded (ZAR)
+Cashbook
+Trust creditors
+Dec 2025
+Jan 2026
+Feb 2026
+Mar 2026
+Apr 2026
+May 2026
+Jun 2026
+Jul 2026
+Aug 2026
+Sep 2026
+Oct 2026
+Nov 2026
+R 0
+R 20 k
+R 40 k
+R 60 k
+R 80 k
+
+Trust balance trend: Cashbook from R 0,00 in Dec 2025 to R 60 250,00 in Nov 2026 (to date), peak R 60 250,00 in Nov 2026 (to date); Trust creditors from R 0,00 in Dec 2025 to R 60 250,00 in Nov 2026 (to date), peak R 60 250,00 in Nov 2026 (to date).
+
+View as table
+Recent Transactions
+Last 10 transactions across all client ledgers
+View all
+Recent trust transactions
+DATE	REFERENCE	TYPE	AMOUNT	STATUS
+18 Nov 2026	
+DEP/MOROKA/mwmfah5xb191
+	Deposit	
+R 250 000,00	RECORDED
+18 Nov 2026	
+DEP/QC/mwmfah5xb191
+	Deposit	
+R 45 000,00	RECORDED
+18 Nov 2026	
+FEE/MOROKA/mwmfah5xb191
+	Fee transfer	
+R 8 500,00	APPROVED
+18 Nov 2026	
+INV-ED9CBA3C
+	Placed in section 86(3) investment	
+R 200 000,00	APPROVED
+18 Nov 2026	
+INV-B75BC945
+	Placed in section 86(4) investment	
+R 30 000,00	APPROVED
+18 Nov 2026	
+FEE/SIPHO/mwmfah5xb191
+	Fee transfer	
+R 500,00	AWAITING APPROVAL
+18 Nov 2026	
+PAY/DEEDS/mwmfee7f0815
+	Payment	
+R 1 250,00	APPROVED
+18 Nov 2026	
+DEP/mwmfee7f0815
+	Deposit	
+R 5 000,00	RECORDED
+Command Palette
+
+Search pages and settings
+
+R 0

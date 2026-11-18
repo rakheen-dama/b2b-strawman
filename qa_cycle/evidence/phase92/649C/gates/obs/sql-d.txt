@@ -1,0 +1,46 @@
+-- 649C OBS phase d read-only SQL (schema tenant_7d218705360b) 2026-11-18T18:39:21.405Z
+
+== [d: the new account]
+select id, account_name, account_type, investment_basis, is_primary, opened_date from tenant_7d218705360b.trust_accounts where id='0f48a9b8-ab76-43d5-aa90-be21d0c82e55'
+                  id                  |      account_name       | account_type | investment_basis | is_primary | opened_date 
+--------------------------------------+-------------------------+--------------+------------------+------------+-------------
+ 0f48a9b8-ab76-43d5-aa90-be21d0c82e55 | OBS 649C Warnings GTQ2U | GENERAL      |                  | f          | 2025-01-01
+(1 row)
+
+
+== [d: rows on the new account]
+select transaction_type, amount, transaction_date, ledger, ledger_effect, cashbook_effect, charge_recoverable, bank_statement_line_id from tenant_7d218705360b.trust_transactions where trust_account_id='0f48a9b8-ab76-43d5-aa90-be21d0c82e55' order by transaction_date
+   transaction_type   | amount  | transaction_date |   ledger   | ledger_effect | cashbook_effect | charge_recoverable |        bank_statement_line_id        
+----------------------+---------+------------------+------------+---------------+-----------------+--------------------+--------------------------------------
+ UNIDENTIFIED_DEPOSIT | 1500.00 | 2025-10-10       | NON_CLIENT |       1500.00 |         1500.00 |                    | 4732ce1d-8d3b-4163-ab32-722644cf2c31
+ BANK_CHARGE          |   85.00 | 2025-10-20       | NON_CLIENT |        -85.00 |          -85.00 | f                  | 6041e552-80ba-42fe-9035-b5eec25a9667
+(2 rows)
+
+
+== [d: unidentified deposits on the new account]
+select id, received_date, amount, status from tenant_7d218705360b.unidentified_deposits where trust_account_id='0f48a9b8-ab76-43d5-aa90-be21d0c82e55'
+                  id                  | received_date | amount  | status 
+--------------------------------------+---------------+---------+--------
+ 17924838-f9e8-452f-9dac-857dc86c6694 | 2025-10-10    | 1500.00 | HELD
+(1 row)
+
+
+== [d: EQ-2 terms per account + FIRM (rollup), as at 2026-11-18]
+select coalesce(t.trust_account_id::text,'FIRM') account, sum(t.cashbook_effect) cashbook,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='CLIENT'),0) client_ledgers,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='CLIENT_INVESTMENT'),0) investment_creditors,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT' and ca.account_type='FUND_INTEREST_AND_CHARGES'),0) fund_ledger,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT' and ca.account_type='UNIDENTIFIED_DEPOSITS'),0) unidentified,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT' and ca.account_type not in ('FUND_INTEREST_AND_CHARGES','UNIDENTIFIED_DEPOSITS')),0) other_non_client,
+  coalesce(sum(t.ledger_effect) filter (where t.ledger='INTER_ACCOUNT'),0) inter_account, sum(t.ledger_effect) creditor_total
+  from tenant_7d218705360b.trust_transactions t left join tenant_7d218705360b.trust_creditor_accounts ca on ca.id=t.creditor_account_id
+  where t.posted_at is not null and t.transaction_date <= date '2026-11-18' group by rollup(t.trust_account_id) order by 1
+               account                | cashbook  | client_ledgers | investment_creditors | fund_ledger | unidentified | other_non_client | inter_account | creditor_total 
+--------------------------------------+-----------+----------------+----------------------+-------------+--------------+------------------+---------------+----------------
+ 0f48a9b8-ab76-43d5-aa90-be21d0c82e55 |   1415.00 |              0 |                    0 |      -85.00 |      1500.00 |                0 |             0 |        1415.00
+ 25ffe60b-4918-4622-a136-85d106d018ed | 200000.00 |              0 |                    0 |           0 |            0 |                0 |     200000.00 |      200000.00
+ 36144df5-72ec-49f3-9bd7-ef497cb60946 |  60250.00 |      260250.00 |                    0 |           0 |            0 |                0 |    -200000.00 |       60250.00
+ 9c6638d6-0800-40ff-92ee-2b941778f9d1 |  30095.00 |              0 |             30095.00 |           0 |            0 |                0 |             0 |       30095.00
+ FIRM                                 | 291760.00 |      260250.00 |             30095.00 |      -85.00 |      1500.00 |                0 |          0.00 |      291760.00
+(5 rows)
+

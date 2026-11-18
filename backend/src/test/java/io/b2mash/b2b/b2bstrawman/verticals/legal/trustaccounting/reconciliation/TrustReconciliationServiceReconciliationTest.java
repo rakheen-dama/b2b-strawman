@@ -13,6 +13,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
+import io.b2mash.b2b.b2bstrawman.template.VariableFormatter;
 import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
@@ -54,6 +55,7 @@ class TrustReconciliationServiceReconciliationTest {
   @Autowired private TransactionTemplate transactionTemplate;
   @Autowired private TrustReconciliationService reconciliationService;
   @Autowired private TrustReconciliationRepository trustReconciliationRepository;
+  @Autowired private BankStatementRepository bankStatementRepository;
 
   @Autowired private Clock clock;
 
@@ -686,6 +688,19 @@ class TrustReconciliationServiceReconciliationTest {
     assertThat(completed.status()).isEqualTo("COMPLETED");
     assertThat(completed.completedBy()).isNotNull();
     assertThat(completed.completedAt()).isNotNull();
+    // 649C: the statement is reconciled and the (empty) flags are stored
+    assertThat(completed.integrityFlags()).isEmpty();
+    var statementStatus =
+        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+            .call(
+                () ->
+                    transactionTemplate.execute(
+                        tx ->
+                            bankStatementRepository
+                                .findById(UUID.fromString(statementId))
+                                .orElseThrow()
+                                .getStatus()));
+    assertThat(statementStatus).isEqualTo("RECONCILED");
   }
 
   @Test
@@ -699,17 +714,32 @@ class TrustReconciliationServiceReconciliationTest {
             Date,Description,Amount,Balance,Reference
             05/03/2026,Deposit received,1000.00,1000.00,NB-001
             """);
-    // A DRAFT reconciliation never calculated: is_balanced = false (default)
+    // A DRAFT never calculated: complete recalculates (649C) — bank R1 000 against an empty
+    // cashbook (G1) and the statement's one line unresolved (G4), refused once with both
     var reconResponse = create(accountId, LocalDate.of(2026, 3, 31), statementId);
+    var zar = VariableFormatter.resolveLocale("ZAR");
 
-    // Attempting to complete should fail
     assertThatThrownBy(
             () ->
                 ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
                     .where(RequestScopes.MEMBER_ID, UUID.randomUUID())
                     .run(() -> reconciliationService.completeReconciliation(reconResponse.id())))
-        .isInstanceOf(InvalidStateException.class)
-        .hasMessageContaining("not balanced");
+        .isInstanceOfSatisfying(
+            InvalidStateException.class,
+            e -> {
+              assertThat(e.getBody().getStatus()).isEqualTo(400);
+              assertThat(e.getBody().getTitle()).isEqualTo("Reconciliation does not balance");
+              assertThat(e.getBody().getDetail())
+                  .isEqualTo(
+                      "Adjusted bank balance "
+                          + VariableFormatter.formatCurrencyText(new BigDecimal("1000.00"), zar)
+                          + " differs from the cashbook "
+                          + VariableFormatter.formatCurrencyText(BigDecimal.ZERO, zar)
+                          + " by "
+                          + VariableFormatter.formatCurrencyText(new BigDecimal("1000.00"), zar)
+                          + " as at 31 March 2026. 1 statement line is neither matched, recorded"
+                          + " nor excluded.");
+            });
   }
 
   private final java.util.Map<String, UUID> trustMatters = new java.util.HashMap<>();

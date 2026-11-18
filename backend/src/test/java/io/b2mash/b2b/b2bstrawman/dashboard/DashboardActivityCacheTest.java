@@ -29,7 +29,7 @@ import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.DisbursementRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustBooksService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustIntegrityService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService;
@@ -78,7 +78,7 @@ class DashboardActivityCacheTest {
             mock(TrustAccountService.class),
             mock(TrustTransactionService.class),
             mock(TrustTransactionRepository.class),
-            mock(TrustBooksService.class),
+            mock(TrustIntegrityService.class),
             mock(TrustReconciliationRepository.class),
             mock(DisbursementRepository.class),
             activityService,

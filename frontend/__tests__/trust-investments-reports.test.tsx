@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen, waitFor, fireEvent, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { SWRConfig } from "swr";
+import { SWRConfig, useSWRConfig } from "swr";
 
 // -- Mock server-only -----------------------------------------------------
 vi.mock("server-only", () => ({}));
@@ -510,12 +510,23 @@ describe("Trust Investments & Reports", () => {
     expect(within(s863).queryByText(/Gross interest/)).toBeNull();
   });
 
+  /** Refetches the dialog's lines as SWR would on focus/reconnect (another user changed them). */
+  function RevalidateLines() {
+    const { mutate } = useSWRConfig();
+    return (
+      <button type="button" onClick={() => void mutate(`unmatched-credit-lines-${CLIENT_ACCOUNT}`)}>
+        revalidate-lines
+      </button>
+    );
+  }
+
   function renderInterestDialog() {
     // A fresh SWR cache per test: the lines are keyed by account, which every test shares
     return render(
       <SWRConfig
         value={{ provider: () => new Map(), dedupingInterval: 0, shouldRetryOnError: false }}
       >
+        <RevalidateLines />
         <RecordInvestmentInterestDialog
           investmentId="inv-1"
           investmentAccountId={CLIENT_ACCOUNT}
@@ -604,6 +615,64 @@ describe("Trust Investments & Reports", () => {
       expect(within(dialog).queryByRole("option", { name: /Line #3/ })).toBeNull()
     );
     await waitFor(() => expect(mockFetchUnmatchedCreditLines).toHaveBeenCalledTimes(2));
+  });
+
+  it("interest dialog blocks submit when the picked line disappears on a refetch — never a silent bank advice", async () => {
+    const user = userEvent.setup({ pointerEventsCheck: 0 });
+    // The second fetch: another user excluded the line
+    mockFetchUnmatchedCreditLines.mockResolvedValueOnce([INTEREST_LINE]).mockResolvedValue([]);
+    mockRecordInvestmentInterest.mockResolvedValue({ success: true });
+    renderInterestDialog();
+
+    const dialog = screen.getByTestId("record-investment-interest-dialog");
+    const lineSelect = (await within(dialog).findByLabelText(
+      "Statement line"
+    )) as HTMLSelectElement;
+    await within(dialog).findByRole("option", { name: /Line #3/ });
+    await user.selectOptions(lineSelect, "line-400");
+    await user.click(
+      within(dialog).getByRole("radio", {
+        name: "Gross — the Fund's 5% leaves in a separate debit",
+      })
+    );
+    expect(within(dialog).queryByTestId("interest-line-gone")).toBeNull();
+
+    // Outside the modal (aria-hidden while it is open): click it directly
+    fireEvent.click(screen.getByText("revalidate-lines"));
+    await waitFor(() =>
+      expect(within(dialog).queryByRole("option", { name: /Line #3/ })).toBeNull()
+    );
+
+    // The select still shows the lost line, not "Bank advice"; the firm is told and cannot submit
+    expect(lineSelect.value).toBe("line-400");
+    expect(lineSelect.selectedOptions[0].textContent).toBe("Selected line no longer available");
+    expect(within(dialog).getByTestId("interest-line-gone")).toHaveTextContent(
+      "The selected statement line is no longer available — choose another line or record a bank advice."
+    );
+    expect(within(dialog).queryByTestId("interest-bank-advice-note")).toBeNull();
+    const submit = within(dialog).getByRole("button", { name: "Record interest" });
+    expect(submit).toBeDisabled();
+    fireEvent.submit(submit.closest("form")!);
+    await new Promise((r) => setTimeout(r, 50));
+    expect(mockRecordInvestmentInterest).not.toHaveBeenCalled();
+
+    // An explicit choice of bank advice clears the state and records NET without a line
+    await user.selectOptions(lineSelect, "");
+    expect(within(dialog).queryByTestId("interest-line-gone")).toBeNull();
+    expect(within(dialog).getByTestId("interest-bank-advice-note")).toBeInTheDocument();
+    expect(
+      within(dialog).queryByRole("option", { name: "Selected line no longer available" })
+    ).toBeNull();
+    await user.clear(within(dialog).getByLabelText("Gross interest"));
+    await user.type(within(dialog).getByLabelText("Gross interest"), "100");
+    await user.click(within(dialog).getByRole("button", { name: "Record interest" }));
+    await waitFor(() =>
+      expect(mockRecordInvestmentInterest).toHaveBeenCalledWith(
+        "inv-1",
+        expect.objectContaining({ grossAmount: 100, presentation: "NET" })
+      )
+    );
+    expect(mockRecordInvestmentInterest.mock.calls[0][1]).not.toHaveProperty("bankStatementLineId");
   });
 
   it("interest dialog records a bank advice net of the Fund's 5%: gross R100,00 → R5,00 / R95,00", async () => {

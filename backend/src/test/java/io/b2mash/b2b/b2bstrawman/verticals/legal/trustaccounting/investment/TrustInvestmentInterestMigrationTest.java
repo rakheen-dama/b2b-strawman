@@ -221,8 +221,11 @@ class TrustInvestmentInterestMigrationTest {
             text(
                 "SELECT indexdef FROM pg_indexes WHERE schemaname = '%s'"
                     + " AND indexname = 'idx_invest_interest_posted_line'"))
+        // At most one POSTED entry per statement line; a REVERSED entry drops out of the index
+        .startsWith("CREATE UNIQUE INDEX idx_invest_interest_posted_line")
         .contains("(bank_statement_line_id)")
-        .contains("WHERE ((status)::text = 'POSTED'::text)");
+        .contains("((status)::text = 'POSTED'::text)")
+        .contains("(bank_statement_line_id IS NOT NULL)");
     // No ON DELETE CASCADE (house rule)
     assertThat(
             texts(

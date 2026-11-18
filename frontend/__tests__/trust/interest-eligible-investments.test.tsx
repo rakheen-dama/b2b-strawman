@@ -9,7 +9,11 @@ const { mockGet } = vi.hoisted(() => ({ mockGet: vi.fn() }));
 vi.mock("@/lib/api", () => ({ api: { get: (...args: unknown[]) => mockGet(...args) } }));
 
 import { fetchInterestEligibleInvestments } from "@/app/(app)/org/[slug]/trust-accounting/investments/actions";
-import { useInterestEligibleInvestments } from "@/hooks/use-interest-eligible-investments";
+import {
+  INVESTMENTS_NOT_LOADED,
+  INVESTMENTS_NOT_REFRESHED,
+  useInterestEligibleInvestments,
+} from "@/hooks/use-interest-eligible-investments";
 import type { TrustAccountSection, TrustInvestment } from "@/lib/types";
 
 function inv(id: string, overrides: Partial<TrustInvestment> = {}): TrustInvestment {
@@ -94,13 +98,29 @@ describe("useInterestEligibleInvestments (648B)", () => {
     const { result } = renderHook(() => useInterestEligibleInvestments("acc-864", "S86_4"), {
       wrapper,
     });
-    await waitFor(() =>
-      expect(result.current.error).toBe("The account's investments could not be loaded.")
-    );
+    // Nothing loaded: the message says recording is blocked (the pickers have no investment)
+    await waitFor(() => expect(result.current.error).toBe(INVESTMENTS_NOT_LOADED));
+    expect(INVESTMENTS_NOT_LOADED).toContain("cannot be recorded until they load");
     expect(result.current.investments).toEqual([]);
 
     act(() => result.current.retry());
     await waitFor(() => expect(result.current.investments.map((i) => i.id)).toEqual(["inv-1"]));
     expect(result.current.error).toBeNull();
+  });
+
+  it("a failed refresh after a load keeps the last list and does not claim recording is blocked", async () => {
+    mockGet
+      .mockResolvedValueOnce(page([inv("inv-1")], 0, 1))
+      .mockRejectedValueOnce(new Error("network"));
+    const { result } = renderHook(() => useInterestEligibleInvestments("acc-864", "S86_4"), {
+      wrapper,
+    });
+    await waitFor(() => expect(result.current.investments.map((i) => i.id)).toEqual(["inv-1"]));
+
+    act(() => result.current.retry());
+    await waitFor(() => expect(result.current.error).toBe(INVESTMENTS_NOT_REFRESHED));
+    expect(result.current.error).not.toContain("cannot be recorded");
+    // The pickers still offer the last loaded list, as the message says
+    expect(result.current.investments.map((i) => i.id)).toEqual(["inv-1"]);
   });
 });

@@ -69,6 +69,10 @@ function getDefaultValues(): DefaultValues<RecordInvestmentInterestFormData> {
   };
 }
 
+/** The picked line left the unmatched credits on a refetch (matched, excluded or recorded elsewhere). */
+const LINE_GONE_MESSAGE =
+  "The selected statement line is no longer available — choose another line or record a bank advice.";
+
 /** The server's sentence for an entry dated before the placement. */
 const BEFORE_DEPOSIT_MESSAGE = "The entry date cannot be before the investment's deposit date.";
 
@@ -119,6 +123,9 @@ export function RecordInvestmentInterestDialog({
     name: ["bankStatementLineId", "presentation", "grossAmount", "fundShareAmount"],
   });
   const line = lines.find((l) => l.id === lineId);
+  // A refetch dropped the picked line: the select keeps saying so, and nothing submits until the
+  // firm picks another line or bank advice — never switched to a bank advice for them
+  const lineGone = Boolean(lineId) && line === undefined;
   // A GROSS line's amount is the gross: shown, not typed
   const grossFromLine = line !== undefined && presentation === "GROSS";
 
@@ -166,6 +173,8 @@ export function RecordInvestmentInterestDialog({
 
   async function handleSubmit(data: RecordInvestmentInterestFormData) {
     setError(null);
+    // The submit button is disabled too; this guards any other submit path (the alert shows why)
+    if (lineGone) return;
     // ISO dates compare as strings; the server refuses this too, with the same sentence
     if (data.entryDate < depositDate) {
       form.setError("entryDate", { message: BEFORE_DEPOSIT_MESSAGE });
@@ -233,7 +242,14 @@ export function RecordInvestmentInterestDialog({
                       onBlur={field.onBlur}
                       value={field.value ?? ""}
                       onChange={(e) => selectLine(e.target.value)}
+                      aria-invalid={lineGone || undefined}
+                      data-testid="interest-line-select"
                     >
+                      {lineGone && (
+                        <option value={lineId} disabled>
+                          Selected line no longer available
+                        </option>
+                      )}
                       <option value="">Bank advice — no statement line</option>
                       {lines.map((l) => (
                         <option key={l.id} value={l.id}>
@@ -247,6 +263,15 @@ export function RecordInvestmentInterestDialog({
                       ? "Loading the investment account's unmatched credits…"
                       : "An unmatched credit on the investment account's statement."}
                   </FormDescription>
+                  {lineGone && (
+                    <p
+                      role="alert"
+                      className="text-destructive text-sm"
+                      data-testid="interest-line-gone"
+                    >
+                      {LINE_GONE_MESSAGE}
+                    </p>
+                  )}
                   {linesError && (
                     <div
                       role="alert"
@@ -297,7 +322,7 @@ export function RecordInvestmentInterestDialog({
                       ))}
                     </RadioGroup>
                   </FormControl>
-                  {!line && (
+                  {!line && !lineGone && (
                     <FormDescription data-testid="interest-bank-advice-note">
                       Without a statement line this is a bank advice: the Fund&apos;s 5% was paid at
                       source, so only the client&apos;s share reached the account.
@@ -405,7 +430,7 @@ export function RecordInvestmentInterestDialog({
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button type="submit" disabled={isSubmitting || lineGone}>
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-1.5 size-4 animate-spin" />

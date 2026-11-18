@@ -35,6 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
@@ -342,6 +343,35 @@ class TrustInvestmentInterestIntegrationTest {
     assertThat(list(held.investmentId()).getFirst().status()).isEqualTo("REVERSED");
     assertThat(lineStatus(line.lineId())).isEqualTo("UNMATCHED|NULL");
     assertThat(get(held.investmentId()).netInterest()).isEqualByComparingTo("0");
+
+    // The reversed entry drops out of the one-POSTED-per-line index: the line records again
+    var again =
+        books.recordInterest(
+            held.investmentAccount(),
+            Expected.cashbookAndInvestment("95.00"),
+            held.investmentId(),
+            new RecordInvestmentInterestRequest(
+                date, new BigDecimal("100.00"), null, InterestPresentation.NET, line.lineId()));
+    assertThat(again.bankStatementLineId()).isEqualTo(line.lineId());
+    assertThat(postedEntriesOnLine(line.lineId())).isEqualTo(1);
+
+    // A second POSTED entry on the same line is refused by the database itself — the backstop
+    // behind the service's match-status check, whatever path writes the row
+    assertThatThrownBy(
+            () ->
+                jdbc.update(
+                    ("INSERT INTO \"%s\".trust_investment_interest (investment_id, entry_date,"
+                            + " gross_amount, fund_share_amount, net_amount, presentation,"
+                            + " net_transaction_id, bank_statement_line_id, status, recorded_by)"
+                            + " SELECT investment_id, entry_date, gross_amount, fund_share_amount,"
+                            + " net_amount, presentation, net_transaction_id,"
+                            + " bank_statement_line_id, 'POSTED', recorded_by"
+                            + " FROM \"%s\".trust_investment_interest WHERE id = ?")
+                        .formatted(books.schema(), books.schema()),
+                    again.id()))
+        .isInstanceOf(DataIntegrityViolationException.class)
+        .hasMessageContaining("idx_invest_interest_posted_line");
+    assertThat(postedEntriesOnLine(line.lineId())).isEqualTo(1);
   }
 
   // --- path 21: section 86(3) interest is the Fund's ----------------------------------------
@@ -715,6 +745,14 @@ class TrustInvestmentInterestIntegrationTest {
   }
 
   /** {@code match_status|classification} of a line. */
+  private int postedEntriesOnLine(UUID lineId) {
+    return jdbc.queryForObject(
+        "SELECT count(*) FROM \"%s\".trust_investment_interest".formatted(books.schema())
+            + " WHERE bank_statement_line_id = ? AND status = 'POSTED'",
+        Integer.class,
+        lineId);
+  }
+
   private String lineStatus(UUID lineId) {
     return jdbc.queryForObject(
         "SELECT match_status || '|' || COALESCE(classification, 'NULL') FROM"

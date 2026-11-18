@@ -41,3 +41,16 @@ test 0 — vitest: Test Files  483 passed (483) / Tests  4516 passed | 2 skipped
 build 0 — ✓ Compiled successfully
 # +1 test vs run 3: trust-investments-reports.test.tsx "interest dialog drops the consumed statement line from its cache after a record"
 # (confirmed to FAIL with the dialog change stashed, PASS with it)
+
+## Run 5 — CodeRabbit pass 2 (D: investments banner stale-vs-blocked; E: picked line vanished on refetch)
+# rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build — one sequential pass, nvm node v20.11.1, NODE_OPTIONS="", all green
+lint 0 — ✖ 78 problems (0 errors, 78 warnings) (none in a file touched by pass 2)
+typecheck 0
+format:check 0 — All matched files use Prettier code style!
+test 0 — vitest: Test Files  483 passed (483) / Tests  4518 passed | 2 skipped (4520)
+build 0 — ✓ Compiled successfully in 11.8s
+# +2 tests vs run 4:
+#  trust-investments-reports.test.tsx "interest dialog blocks submit when the picked line disappears on a refetch — never a silent bank advice"
+#    (confirmed to FAIL with the dialog change reverted to HEAD: "expected '' to be 'line-400'", PASS with it)
+#  trust/interest-eligible-investments.test.tsx "a failed refresh after a load keeps the last list and does not claim recording is blocked"
+#  (the existing "surfaces a failed lookup and retries it" now asserts the blocking INVESTMENTS_NOT_LOADED message)

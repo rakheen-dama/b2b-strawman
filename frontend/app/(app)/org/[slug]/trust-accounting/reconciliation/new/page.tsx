@@ -659,9 +659,7 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
               className="flex items-center justify-between gap-3 text-sm"
               data-testid="interest-investments-error"
             >
-              <span className="text-destructive">
-                {investmentsError} Section 86(4) interest cannot be recorded until they load.
-              </span>
+              <span className="text-destructive">{investmentsError}</span>
               <Button type="button" variant="outline" size="sm" onClick={retryInvestments}>
                 Retry
               </Button>

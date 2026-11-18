@@ -170,3 +170,13 @@
   verticals.legal.trustaccounting.transaction.TrustReversalEquationIntegrationTest 15 tc, 0 fail/err
 # -Dtest="io.b2mash.b2b.b2bstrawman.audit.**" (reports cleared first) → exit 0, 26 classes, 168 <testcase>, 0 failures/errors
 # Tier 3 (full ./mvnw verify / scripts/verify.sh) was NOT run by the fix agent — orchestrator-only.
+
+## CodeRabbit pass 2 (A: one POSTED interest entry per line — UNIQUE partial index; C: investment list id tiebreaker)
+# spotless:apply 0; test-compile -q 0
+# RED check (V24 + TrustInvestmentRepository reverted to 3c6f0bd07, new tests kept): 3 failures — TrustInvestmentInterestIntegrationTest.path20_net_fromALine_reversesByUnmatch (second POSTED insert NOT refused), TrustInvestmentServiceIntegrationTest.list_pagesInATotalOrder_tiesOnDateAndCreationBrokenById (tie order not by id), TrustInvestmentInterestMigrationTest.theChecksForeignKeysAndIndexExist (index not UNIQUE); fixes restored
+# (1) -Dtest="TrustInvestmentInterestMigrationTest,TrustInvestmentInterestIntegrationTest,TrustInvestmentServiceIntegrationTest,TrustInvestmentControllerTest,StatementLinePostingIntegrationTest,InvestmentReportBasisIntegrationTest,TrustWireContractTest,MatterScopedPublisherGuardTest" (reports cleared) → exit 0, 8 classes, 99 <testcase>, 0 failures/errors
+# (2) -Dtest="io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.**" (reports cleared) → exit 0
+TOTAL 65 classes, 682 <testcase>, 0 failures/errors
+# (3) -Dtest="*Schema*,*Baseline*,*Migration*" -Dsurefire.failIfNoSpecifiedTests=false (reports cleared) → exit 0
+TOTAL 32 classes, 162 <testcase>, 0 failures/errors
+# Tier 3 (full ./mvnw verify / scripts/verify.sh) was NOT run by the fix agent — orchestrator-only.

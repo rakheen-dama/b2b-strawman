@@ -27,6 +27,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.Tru
 import jakarta.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -1281,6 +1282,41 @@ class TrustInvestmentServiceIntegrationTest {
                               assertThat(e.getBody().getTitle()).isEqualTo(WITHDRAW_TITLE);
                               assertThat(e.getBody().getDetail()).isEqualTo(detail);
                             })));
+  }
+
+  @Test
+  void list_pagesInATotalOrder_tiesOnDateAndCreationBrokenById() {
+    var funding = books.freshAccount(false);
+    var account = books.freshInvestmentAccount(InvestmentBasis.FIRM_DISCRETION);
+    var client = books.newClient("ties");
+    books.deposit(funding, client, "900.00");
+    var ids =
+        List.of(
+            books.requestPlacement(funding, account, null, "100.00").id(),
+            books.requestPlacement(funding, account, null, "200.00").id(),
+            books.requestPlacement(funding, account, null, "300.00").id());
+    // Every key before the id ties
+    jdbc.update(
+        ("UPDATE \"%s\".trust_investments SET deposit_date = DATE '2025-03-03',"
+                + " created_at = TIMESTAMPTZ '2025-03-03 10:00:00+00' WHERE trust_account_id = ?")
+            .formatted(books.schema()),
+        funding);
+
+    var paged = new ArrayList<UUID>();
+    for (int page = 0; page < ids.size(); page++) {
+      int p = page;
+      books.as(
+          ownerId,
+          () ->
+              paged.addAll(
+                  investmentService
+                      .listInvestments(funding, null, PageRequest.of(p, 1))
+                      .map(TrustInvestmentResponse::id)
+                      .getContent()));
+    }
+    // PostgreSQL orders uuids bytewise — the order of their lowercase text (not UUID.compareTo)
+    assertThat(paged.stream().map(UUID::toString).toList())
+        .containsExactlyElementsOf(ids.stream().map(UUID::toString).sorted().toList());
   }
 
   private List<TrustInvestmentResponse> list(UUID accountId, InvestmentBasis basis) {

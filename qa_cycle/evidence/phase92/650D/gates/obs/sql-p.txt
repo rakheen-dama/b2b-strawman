@@ -1,0 +1,27 @@
+-- 650D OBS phase p read-only SQL (schema tenant_7d218705360b) 2026-11-18T22:54:01.664Z
+
+== [p: the list before the back-dated postings]
+select id, period_end, bank_balance, outstanding_deposits, outstanding_payments, adjusted_bank_balance, cashbook_balance, client_ledger_total, investment_creditor_total, fund_ledger_balance, unidentified_deposit_total, inter_account_balance, creditor_total, difference, md5(lines::text) lines_md5, md5(integrity_flags::text) flags_md5, locked_at from tenant_7d218705360b.trust_monthly_lists where id='8949deff-2c10-48b5-bfb9-c4bd066c7678'
+                  id                  | period_end | bank_balance | outstanding_deposits | outstanding_payments | adjusted_bank_balance | cashbook_balance | client_ledger_total | investment_creditor_total | fund_ledger_balance | unidentified_deposit_total | inter_account_balance | creditor_total | difference |            lines_md5             |            flags_md5             |           locked_at           
+--------------------------------------+------------+--------------+----------------------+----------------------+-----------------------+------------------+---------------------+---------------------------+---------------------+----------------------------+-----------------------+----------------+------------+----------------------------------+----------------------------------+-------------------------------
+ 8949deff-2c10-48b5-bfb9-c4bd066c7678 | 2026-10-31 |     10000.00 |                 0.00 |                 0.00 |              10000.00 |         10000.00 |            10000.00 |                      0.00 |                0.00 |                       0.00 |                  0.00 |       10000.00 |       0.00 | bc66048af56571d6f56aebfa1d259990 | d751713988987e9331980363e24189ce | 2026-11-18 22:53:28.283293+00
+(1 row)
+
+
+== [p: the list after the back-dated postings]
+select id, period_end, bank_balance, outstanding_deposits, outstanding_payments, adjusted_bank_balance, cashbook_balance, client_ledger_total, investment_creditor_total, fund_ledger_balance, unidentified_deposit_total, inter_account_balance, creditor_total, difference, md5(lines::text) lines_md5, md5(integrity_flags::text) flags_md5, locked_at from tenant_7d218705360b.trust_monthly_lists where id='8949deff-2c10-48b5-bfb9-c4bd066c7678'
+                  id                  | period_end | bank_balance | outstanding_deposits | outstanding_payments | adjusted_bank_balance | cashbook_balance | client_ledger_total | investment_creditor_total | fund_ledger_balance | unidentified_deposit_total | inter_account_balance | creditor_total | difference |            lines_md5             |            flags_md5             |           locked_at           
+--------------------------------------+------------+--------------+----------------------+----------------------+-----------------------+------------------+---------------------+---------------------------+---------------------+----------------------------+-----------------------+----------------+------------+----------------------------------+----------------------------------+-------------------------------
+ 8949deff-2c10-48b5-bfb9-c4bd066c7678 | 2026-10-31 |     10000.00 |                 0.00 |                 0.00 |              10000.00 |         10000.00 |            10000.00 |                      0.00 |                0.00 |                       0.00 |                  0.00 |       10000.00 |       0.00 | bc66048af56571d6f56aebfa1d259990 | d751713988987e9331980363e24189ce | 2026-11-18 22:53:28.283293+00
+(1 row)
+
+
+== [p: postings vs the lock]
+select t.id, t.transaction_type, t.status, t.amount, t.transaction_date, t.reference, t.posted_at, l.locked_at, t.posted_at > l.locked_at posted_after_lock from tenant_7d218705360b.trust_transactions t, tenant_7d218705360b.trust_monthly_lists l where l.id='8949deff-2c10-48b5-bfb9-c4bd066c7678' and t.trust_account_id='826a94a2-ccb5-40ff-8bdb-c1be9e08c610' order by t.posted_at
+                  id                  | transaction_type |      status       |  amount  | transaction_date |       reference        |           posted_at           |           locked_at           | posted_after_lock 
+--------------------------------------+------------------+-------------------+----------+------------------+------------------------+-------------------------------+-------------------------------+-------------------
+ 3f742ffe-ffe6-4b50-be89-254fae84a2ce | DEPOSIT          | RECORDED          | 10000.00 | 2026-10-05       | DEP/OBS650D/PW7CK/1    | 2026-11-18 22:53:23.14839+00  | 2026-11-18 22:53:28.283293+00 | f
+ 5651152f-144c-4b99-a1ef-5a8c1edfa704 | DEPOSIT          | RECORDED          |   750.00 | 2026-10-28       | DEP/OBS650D/PW7CK/BACK | 2026-11-18 22:54:04.704657+00 | 2026-11-18 22:53:28.283293+00 | t
+ 0e6a712f-5d17-4a7e-b95b-a47bb55e45d7 | PAYMENT          | AWAITING_APPROVAL |   100.00 | 2026-10-29       | PAY/OBS650D/PW7CK/BACK |                               | 2026-11-18 22:53:28.283293+00 | 
+(3 rows)
+

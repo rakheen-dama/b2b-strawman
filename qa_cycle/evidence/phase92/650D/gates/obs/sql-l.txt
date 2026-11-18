@@ -1,0 +1,33 @@
+-- 650D OBS phase l read-only SQL (schema tenant_7d218705360b) 2026-11-18T22:53:13.651Z
+
+== [l: trust accounts]
+select id, account_name, account_type, is_primary from tenant_7d218705360b.trust_accounts
+                  id                  |            account_name            | account_type | is_primary 
+--------------------------------------+------------------------------------+--------------+------------
+ 826a94a2-ccb5-40ff-8bdb-c1be9e08c610 | Mathebula & Partners Trust Account | GENERAL      | t
+(1 row)
+
+
+== [l: empty before the run]
+select (select count(*) from tenant_7d218705360b.trust_transactions) postings, (select count(*) from tenant_7d218705360b.trust_monthly_lists) lists, (select count(*) from tenant_7d218705360b.trust_reconciliations) recons
+ postings | lists | recons 
+----------+-------+--------
+        0 |     0 |      0
+(1 row)
+
+
+== [l: lockedThrough per account (SQL)]
+select trust_account_id, max(period_end) locked_through, count(*) lists from tenant_7d218705360b.trust_monthly_lists group by 1
+           trust_account_id           | locked_through | lists 
+--------------------------------------+----------------+-------
+ 826a94a2-ccb5-40ff-8bdb-c1be9e08c610 | 2026-10-31     |     1
+(1 row)
+
+
+== [l: the locked list]
+select id, period_end, reconciliation_id, bank_balance, outstanding_deposits, outstanding_payments, adjusted_bank_balance, cashbook_balance, client_ledger_total, investment_creditor_total, fund_ledger_balance, unidentified_deposit_total, inter_account_balance, creditor_total, difference, locked_by, locked_at from tenant_7d218705360b.trust_monthly_lists
+                  id                  | period_end |          reconciliation_id           | bank_balance | outstanding_deposits | outstanding_payments | adjusted_bank_balance | cashbook_balance | client_ledger_total | investment_creditor_total | fund_ledger_balance | unidentified_deposit_total | inter_account_balance | creditor_total | difference |              locked_by               |           locked_at           
+--------------------------------------+------------+--------------------------------------+--------------+----------------------+----------------------+-----------------------+------------------+---------------------+---------------------------+---------------------+----------------------------+-----------------------+----------------+------------+--------------------------------------+-------------------------------
+ 8949deff-2c10-48b5-bfb9-c4bd066c7678 | 2026-10-31 | 5d770a4d-7e26-4b79-a7e4-6049e5d25cfc |     10000.00 |                 0.00 |                 0.00 |              10000.00 |         10000.00 |            10000.00 |                      0.00 |                0.00 |                       0.00 |                  0.00 |       10000.00 |       0.00 | e7d3e789-f390-4ea1-ad72-03eede4eff68 | 2026-11-18 22:53:28.283293+00
+(1 row)
+

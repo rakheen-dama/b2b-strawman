@@ -1,0 +1,557 @@
+{
+  "phase": "w",
+  "startedAt": "2026-11-18T22:53:36.427Z",
+  "consoleErrors": [],
+  "pageErrors": [],
+  "checks": {
+    "c: Record Deposit — 2026-10-28 shows the exact warning (role=status), submit enabled": true,
+    "c: Record Deposit — 2026-10-31 (boundary) shows it": true,
+    "c: Record Deposit — 2026-11-05 hides it, submit enabled": true,
+    "c: Record Deposit — default date shows no warning": true,
+    "c: Record Deposit — no raw enum codes in the dialog": true,
+    "f: Record Deposit — no clipped text, warning inside the dialog at 1280 and 1440": true,
+    "c: Record Payment — 2026-10-28 shows the exact warning (role=status), submit enabled": true,
+    "c: Record Payment — 2026-10-31 (boundary) shows it": true,
+    "c: Record Payment — 2026-11-05 hides it, submit enabled": true,
+    "c: Record Payment — default date shows no warning": true,
+    "c: Record Payment — no raw enum codes in the dialog": true,
+    "f: Record Payment — no clipped text, warning inside the dialog at 1280 and 1440": true,
+    "c: Record Transfer — 2026-10-28 shows the exact warning (role=status), submit enabled": true,
+    "c: Record Transfer — 2026-10-31 (boundary) shows it": true,
+    "c: Record Transfer — 2026-11-05 hides it, submit enabled": true,
+    "c: Record Transfer — default date shows no warning": true,
+    "c: Record Transfer — no raw enum codes in the dialog": true,
+    "f: Record Transfer — no clipped text, warning inside the dialog at 1280 and 1440": true,
+    "c: Record Fee Transfer — 2026-10-28 shows the exact warning (role=status), submit enabled": true,
+    "c: Record Fee Transfer — 2026-10-31 (boundary) shows it": true,
+    "c: Record Fee Transfer — 2026-11-05 hides it, submit enabled": true,
+    "c: Record Fee Transfer — default date shows no warning": true,
+    "c: Record Fee Transfer — no raw enum codes in the dialog": true,
+    "f: Record Fee Transfer — no clipped text, warning inside the dialog at 1280 and 1440": true,
+    "c: Record Refund — 2026-10-28 shows the exact warning (role=status), submit enabled": true,
+    "c: Record Refund — 2026-10-31 (boundary) shows it": true,
+    "c: Record Refund — 2026-11-05 hides it, submit enabled": true,
+    "c: Record Refund — default date shows no warning": true,
+    "c: Record Refund — no raw enum codes in the dialog": true,
+    "f: Record Refund — no clipped text, warning inside the dialog at 1280 and 1440": true,
+    "c: Record Fee Transfer — blank date (today) shows no warning": true,
+    "c: the warning keys on API lockedThrough 2026-10-31": true
+  },
+  "widths": {
+    "1280": {
+      "Record Deposit": {
+        "initial": {
+          "shown": 0,
+          "text": null,
+          "role": null,
+          "submitEnabled": true
+        },
+        "initialDate": "2026-11-19",
+        "2026-10-28": {
+          "shown": 1,
+          "text": "This date falls in a month whose list is locked. The entry will be recorded and shown as a later adjustment.",
+          "role": "status",
+          "submitEnabled": true
+        },
+        "2026-10-31": {
+          "shown": 1,
+          "text": "This date falls in a month whose list is locked. The entry will be recorded and shown as a later adjustment.",
+          "role": "status",
+          "submitEnabled": true
+        },
+        "2026-11-05": {
+          "shown": 0,
+          "text": null,
+          "role": null,
+          "submitEnabled": true
+        },
+        "codes": [],
+        "shot": "w-deposit-warning-1280.png",
+        "clip": {
+          "sel": "[role=\"dialog\"]",
+          "root": [
+            384,
+            896
+          ],
+          "vw": 1280,
+          "textElements": 13,
+          "bad": [],
+          "warning": {
+            "left": 409,
+            "right": 871,
+            "top": 708,
+            "bottom": 774,
+            "scrollW": 460,
+            "clientW": 460,
+            "scrollH": 64,
+            "clientH": 64
+          }
+        }
+      },
+      "Record Payment": {
+        "initial": {
+          "shown": 0,
+          "text": null,
+          "role": null,
+          "submitEnabled": true
+        },
+        "initialDate": "2026-11-19",
+        "2026-10-28": {
+          "shown": 1,
+          "text": "This date falls in a month whose list is locked. The entry will be recorded and shown as a later adjustment.",
+          "role": "status",
+          "submitEnabled": true
+        },
+        "2026-10-31": {
+          "shown": 1,
+          "text": "This date falls in a month whose list is locked. The entry will be recorded and shown as a later adjustment.",
+          "role": "status",
+          "submitEnabled": true
+        },
+        "2026-11-05": {
+          "shown": 0,
+          "text": null,
+          "role": null,
+          "submitEnabled": true
+        },
+        "codes": [],
+        "shot": "w-payment-warning-1280.png",
+        "clip": {
+          "sel": "[role=\"dialog\"]",
+          "root": [
+            384,
+            896
+          ],
+          "vw": 1280,
+          "textElements": 13,
+          "bad": [],
+          "warning": {
+            "left": 409,
+            "right": 871,
+            "top": 718,
+            "bottom": 784,
+            "scrollW": 460,
+            "clientW": 460,
+            "scrollH": 64,
+            "clientH": 64
+          }
+        }
+      },
+      "Record Transfer": {
+        "initial": {
+          "shown": 0,
+          "text": null,
+          "role": null,
+          "submitEnabled": true
+        },
+        "initialDate": "2026-11-19",
+        "2026-10-28": {
+          "shown": 1,
+          "text": "This date falls in a month whose list is locked. The entry will be recorded and shown as a later adjustment.",
+          "role": "status",
+          "submitEnabled": true
+        },
+        "2026-10-31": {
+          "shown": 1,
+          "text": "This date falls in a month whose list is locked. The entry will be recorded and shown as a later adjustment.",
+          "role": "status",
+          "submitEnabled": true
+        },
+        "2026-11-05": {
+          "shown": 0,
+          "text": null,
+          "role": null,
+          "submitEnabled": true
+        },
+        "codes": [],
+        "shot": "w-transfer-warning-1280.png",
+        "clip": {
+          "sel": "[role=\"dialog\"]",
+          "root": [
+            384,
+            896
+          ],
+          "vw": 1280,
+          "textElements": 13,
+          "bad": [],
+          "warning": {
+            "left": 409,
+            "right": 871,
+            "top": 782,
+            "bottom": 848,
+            "scrollW": 460,
+            "clientW": 460,
+            "scrollH": 64,
+            "clientH": 64
+          }
+        }
+      },
+      "Record Fee Transfer": {
+        "initial": {
+          "shown": 0,
+          "text": null,
+          "role": null,
+          "submitEnabled": true
+        },
+        "initialDate": "",
+        "2026-10-28": {
+          "shown": 1,
+          "text": "This date falls in a month whose list is locked. The entry will be recorded and shown as a later adjustment.",
+          "role": "status",
+          "submitEnabled": true
+        },
+        "2026-10-31": {
+          "shown": 1,
+          "text": "This date falls in a month whose list is locked. The entry will be recorded and shown as a later adjustment.",
+          "role": "status",
+          "submitEnabled": true
+        },
+        "2026-11-05": {
+          "shown": 0,
+          "text": null,
+          "role": null,
+          "submitEnabled": true
+        },
+        "codes": [],
+        "shot": "w-fee-transfer-warning-1280.png",
+        "clip": {
+          "sel": "[role=\"dialog\"]",
+          "root": [
+            384,
+            896
+          ],
+          "vw": 1280,
+          "textElements": 11,
+          "bad": [],
+          "warning": {
+            "left": 409,
+            "right": 871,
+            "top": 681,
+            "bottom": 747,
+            "scrollW": 460,
+            "clientW": 460,
+            "scrollH": 64,
+            "clientH": 64
+          }
+        }
+      },
+      "Record Refund": {
+        "initial": {
+          "shown": 0,
+          "text": null,
+          "role": null,
+          "submitEnabled": true
+        },
+        "initialDate": "2026-11-19",
+        "2026-10-28": {
+          "shown": 1,
+          "text": "This date falls in a month whose list is locked. The entry will be recorded and shown as a later adjustment.",
+          "role": "status",
+          "submitEnabled": true
+        },
+        "2026-10-31": {
+          "shown": 1,
+          "text": "This date falls in a month whose list is locked. The entry will be recorded and shown as a later adjustment.",
+          "role": "status",
+          "submitEnabled": true
+        },
+        "2026-11-05": {
+          "shown": 0,
+          "text": null,
+          "role": null,
+          "submitEnabled": true
+        },
+        "codes": [],
+        "shot": "w-refund-warning-1280.png",
+        "clip": {
+          "sel": "[role=\"dialog\"]",
+          "root": [
+            384,
+            896
+          ],
+          "vw": 1280,
+          "textElements": 13,
+          "bad": [],
+          "warning": {
+            "left": 409,
+            "right": 871,
+            "top": 708,
+            "bottom": 774,
+            "scrollW": 460,
+            "clientW": 460,
+            "scrollH": 64,
+            "clientH": 64
+          }
+        }
+      }
+    },
+    "1440": {
+      "Record Deposit": {
+        "initial": {
+          "shown": 0,
+          "text": null,
+          "role": null,
+          "submitEnabled": true
+        },
+        "initialDate": "2026-11-19",
+        "2026-10-28": {
+          "shown": 1,
+          "text": "This date falls in a month whose list is locked. The entry will be recorded and shown as a later adjustment.",
+          "role": "status",
+          "submitEnabled": true
+        },
+        "2026-10-31": {
+          "shown": 1,
+          "text": "This date falls in a month whose list is locked. The entry will be recorded and shown as a later adjustment.",
+          "role": "status",
+          "submitEnabled": true
+        },
+        "2026-11-05": {
+          "shown": 0,
+          "text": null,
+          "role": null,
+          "submitEnabled": true
+        },
+        "codes": [],
+        "shot": "w-deposit-warning-1440.png",
+        "clip": {
+          "sel": "[role=\"dialog\"]",
+          "root": [
+            464,
+            976
+          ],
+          "vw": 1440,
+          "textElements": 13,
+          "bad": [],
+          "warning": {
+            "left": 489,
+            "right": 951,
+            "top": 708,
+            "bottom": 774,
+            "scrollW": 460,
+            "clientW": 460,
+            "scrollH": 64,
+            "clientH": 64
+          }
+        }
+      },
+      "Record Payment": {
+        "initial": {
+          "shown": 0,
+          "text": null,
+          "role": null,
+          "submitEnabled": true
+        },
+        "initialDate": "2026-11-19",
+        "2026-10-28": {
+          "shown": 1,
+          "text": "This date falls in a month whose list is locked. The entry will be recorded and shown as a later adjustment.",
+          "role": "status",
+          "submitEnabled": true
+        },
+        "2026-10-31": {
+          "shown": 1,
+          "text": "This date falls in a month whose list is locked. The entry will be recorded and shown as a later adjustment.",
+          "role": "status",
+          "submitEnabled": true
+        },
+        "2026-11-05": {
+          "shown": 0,
+          "text": null,
+          "role": null,
+          "submitEnabled": true
+        },
+        "codes": [],
+        "shot": "w-payment-warning-1440.png",
+        "clip": {
+          "sel": "[role=\"dialog\"]",
+          "root": [
+            464,
+            976
+          ],
+          "vw": 1440,
+          "textElements": 13,
+          "bad": [],
+          "warning": {
+            "left": 489,
+            "right": 951,
+            "top": 718,
+            "bottom": 784,
+            "scrollW": 460,
+            "clientW": 460,
+            "scrollH": 64,
+            "clientH": 64
+          }
+        }
+      },
+      "Record Transfer": {
+        "initial": {
+          "shown": 0,
+          "text": null,
+          "role": null,
+          "submitEnabled": true
+        },
+        "initialDate": "2026-11-19",
+        "2026-10-28": {
+          "shown": 1,
+          "text": "This date falls in a month whose list is locked. The entry will be recorded and shown as a later adjustment.",
+          "role": "status",
+          "submitEnabled": true
+        },
+        "2026-10-31": {
+          "shown": 1,
+          "text": "This date falls in a month whose list is locked. The entry will be recorded and shown as a later adjustment.",
+          "role": "status",
+          "submitEnabled": true
+        },
+        "2026-11-05": {
+          "shown": 0,
+          "text": null,
+          "role": null,
+          "submitEnabled": true
+        },
+        "codes": [],
+        "shot": "w-transfer-warning-1440.png",
+        "clip": {
+          "sel": "[role=\"dialog\"]",
+          "root": [
+            464,
+            976
+          ],
+          "vw": 1440,
+          "textElements": 13,
+          "bad": [],
+          "warning": {
+            "left": 489,
+            "right": 951,
+            "top": 782,
+            "bottom": 848,
+            "scrollW": 460,
+            "clientW": 460,
+            "scrollH": 64,
+            "clientH": 64
+          }
+        }
+      },
+      "Record Fee Transfer": {
+        "initial": {
+          "shown": 0,
+          "text": null,
+          "role": null,
+          "submitEnabled": true
+        },
+        "initialDate": "",
+        "2026-10-28": {
+          "shown": 1,
+          "text": "This date falls in a month whose list is locked. The entry will be recorded and shown as a later adjustment.",
+          "role": "status",
+          "submitEnabled": true
+        },
+        "2026-10-31": {
+          "shown": 1,
+          "text": "This date falls in a month whose list is locked. The entry will be recorded and shown as a later adjustment.",
+          "role": "status",
+          "submitEnabled": true
+        },
+        "2026-11-05": {
+          "shown": 0,
+          "text": null,
+          "role": null,
+          "submitEnabled": true
+        },
+        "codes": [],
+        "shot": "w-fee-transfer-warning-1440.png",
+        "clip": {
+          "sel": "[role=\"dialog\"]",
+          "root": [
+            464,
+            976
+          ],
+          "vw": 1440,
+          "textElements": 11,
+          "bad": [],
+          "warning": {
+            "left": 489,
+            "right": 951,
+            "top": 681,
+            "bottom": 747,
+            "scrollW": 460,
+            "clientW": 460,
+            "scrollH": 64,
+            "clientH": 64
+          }
+        }
+      },
+      "Record Refund": {
+        "initial": {
+          "shown": 0,
+          "text": null,
+          "role": null,
+          "submitEnabled": true
+        },
+        "initialDate": "2026-11-19",
+        "2026-10-28": {
+          "shown": 1,
+          "text": "This date falls in a month whose list is locked. The entry will be recorded and shown as a later adjustment.",
+          "role": "status",
+          "submitEnabled": true
+        },
+        "2026-10-31": {
+          "shown": 1,
+          "text": "This date falls in a month whose list is locked. The entry will be recorded and shown as a later adjustment.",
+          "role": "status",
+          "submitEnabled": true
+        },
+        "2026-11-05": {
+          "shown": 0,
+          "text": null,
+          "role": null,
+          "submitEnabled": true
+        },
+        "codes": [],
+        "shot": "w-refund-warning-1440.png",
+        "clip": {
+          "sel": "[role=\"dialog\"]",
+          "root": [
+            464,
+            976
+          ],
+          "vw": 1440,
+          "textElements": 13,
+          "bad": [],
+          "warning": {
+            "left": 489,
+            "right": 951,
+            "top": 708,
+            "bottom": 774,
+            "scrollW": 460,
+            "clientW": 460,
+            "scrollH": 64,
+            "clientH": 64
+          }
+        }
+      }
+    }
+  },
+  "apiAccount": {
+    "id": "826a94a2-ccb5-40ff-8bdb-c1be9e08c610",
+    "accountName": "Mathebula & Partners Trust Account",
+    "bankName": "Standard Bank",
+    "branchCode": "051001",
+    "accountNumber": "0123456789",
+    "accountType": "GENERAL",
+    "investmentBasis": null,
+    "section": "S86_2",
+    "isPrimary": true,
+    "requireDualApproval": false,
+    "paymentApprovalThreshold": null,
+    "status": "ACTIVE",
+    "openedDate": "2026-11-19",
+    "closedDate": null,
+    "notes": null,
+    "createdAt": "2026-11-18T22:52:55.612240Z",
+    "updatedAt": "2026-11-18T22:52:55.612240Z",
+    "lockedThrough": "2026-10-31"
+  },
+  "endedAt": "2026-11-18T22:53:48.359Z"
+}

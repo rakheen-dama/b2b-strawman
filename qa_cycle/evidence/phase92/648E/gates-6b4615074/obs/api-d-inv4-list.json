@@ -1,0 +1,14 @@
+{
+  "method": "GET",
+  "path": "/api/trust-accounts/c2b63f39-5c05-4690-9a96-62fb2cd7e98d/client-ledgers?page=0&size=100",
+  "status": 200,
+  "body": {
+    "content": [],
+    "page": {
+      "size": 100,
+      "number": 0,
+      "totalElements": 0,
+      "totalPages": 0
+    }
+  }
+}

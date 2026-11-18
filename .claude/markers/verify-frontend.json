@@ -1,7 +1,7 @@
 {
-  "commit": "463e1c64a",
-  "command": "cd frontend && rm -rf .next && pnpm install --frozen-lockfile && pnpm run lint && pnpm run typecheck && pnpm run format:check && pnpm test && pnpm run build (nvm node v20.11.1, NODE_OPTIONS=\"\")",
+  "commit": "6b4615074",
+  "command": "cd frontend && rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (node 20.11.1)",
   "exit": 0,
-  "ts": "2026-11-18T02:10:00Z",
-  "summary": "PR #1799 (648A) @463e1c64a (frontend tree identical at b6afe8c69 — later commit is backend-test-only) — lint 0 errors (78 warnings), typecheck, format:check, build OK; vitest 481 files, 4473 passed / 2 skipped; Frontend CI pass @b6afe8c69"
+  "ts": "2026-11-18T04:52:52Z",
+  "summary": "PR #1800 (648E) @6b4615074 — vitest 481 files, 4479 passed / 2 skipped; lint, typecheck, format:check, build green"
 }

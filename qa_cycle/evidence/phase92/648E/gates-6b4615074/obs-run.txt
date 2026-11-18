@@ -1,0 +1,448 @@
+{
+  "run": "NKJHH",
+  "ids": {
+    "funding": "6f25bf5d-fcd5-4584-b947-d0edc8e8ea2e",
+    "fundingName": "Mathebula & Partners Trust Account",
+    "qc": "66f2d61f-5a07-407d-80bf-2d35804e9fe5",
+    "qcName": "QuickCollect Services mwlnfzycfde4",
+    "moroka": "79a8995d-de11-4e1b-a343-ced352868e20",
+    "morokaName": "Moroka Family Trust mwlnfzycfde4",
+    "morokaMatter": "ac0eb464-f20e-4fb4-be58-9e29b46f78d9",
+    "morokaMatterName": "Estate Late Peter Moroka mwlnfzycfde4",
+    "inv4": "c2b63f39-5c05-4690-9a96-62fb2cd7e98d",
+    "inv4Name": "Nedbank Section 86(4) Investments",
+    "inv3": "530946c1-be6c-4c4c-b3a1-24f4afb425f7"
+  },
+  "a": {
+    "pass": true,
+    "checks": {
+      "apiStatus200": true,
+      "apiGeneralEqSql": true,
+      "apiInvestedEqSql": true,
+      "apiPlacementsEqSql": true,
+      "apiReturnsEqSql": true,
+      "apiTransfersOutEqSql": true,
+      "apiDepositsEqSql": true,
+      "apiListRowEqCard": true,
+      "apiInvestedEqSumInvestmentBalances": true,
+      "apiIdentity": true,
+      "uiSummaryFigureEqApi": true,
+      "uiBalanceRowEqApi": true,
+      "uiBalanceLabel": true,
+      "uiInvestedRow": true,
+      "uiHeldRow": true,
+      "uiSummaryLine": true,
+      "uiPlacementsRow": true,
+      "uiReturnsRow": true,
+      "uiTransfersOutRow": true,
+      "tabBreakdownEqPage": true,
+      "noRawEnum": true
+    },
+    "observed": {
+      "general": 15000,
+      "invested": 30000,
+      "held": 45000,
+      "placements": 30000,
+      "returns": 0,
+      "transfersOut": 0,
+      "deposits": 45000,
+      "uiPlacements": "− less Placed in section 86(4) investments R 30 000,00",
+      "uiBalance": "=General balance R 15 000,00",
+      "uiInvested": "+Invested (section 86(4)) R 30 000,00",
+      "uiHeld": "=Total held in trust R 45 000,00",
+      "uiSummaryLine": "Plus R 30 000,00 invested (section 86(4)) — R 45 000,00 held in trust in total"
+    },
+    "matchesBriefFigures": true,
+    "transfersOutExcludesPlacement": true,
+    "f4": {
+      "headline": 15000,
+      "badges": [
+        "Funds Held"
+      ],
+      "heldOnBreakdown": 45000,
+      "note": "F-4: headline/badge read ledger.balance (general) — recorded, not judged"
+    }
+  },
+  "c": {
+    "pass": true,
+    "checks": {
+      "apiStatus200": true,
+      "apiGeneralEqSql": true,
+      "apiInvestedEqSql": true,
+      "apiPlacementsEqSql": true,
+      "apiReturnsEqSql": true,
+      "apiTransfersOutEqSql": true,
+      "apiDepositsEqSql": true,
+      "apiListRowEqCard": true,
+      "apiInvestedEqSumInvestmentBalances": true,
+      "apiIdentity": true,
+      "uiSummaryFigureEqApi": true,
+      "uiBalanceRowEqApi": true,
+      "uiBalanceLabel": true,
+      "uiInvestedRow": true,
+      "uiHeldRow": true,
+      "uiSummaryLine": true,
+      "uiPlacementsRow": true,
+      "uiReturnsRow": true,
+      "uiTransfersOutRow": true,
+      "tabBreakdownEqPage": true,
+      "noRawEnum": true
+    },
+    "specific": {
+      "investedZero": true,
+      "placementsZero": true,
+      "noInvestedRowsOnPage": true,
+      "noInvestedRowsOnTab": true,
+      "s863HasRows": true,
+      "s863NoClient": true
+    }
+  },
+  "d": {
+    "qc": {
+      "status": 200,
+      "balance": 0,
+      "investedBalance": 0
+    },
+    "moroka": {
+      "status": 200,
+      "balance": 0,
+      "investedBalance": 0
+    },
+    "listStatus": 200,
+    "listRows": []
+  },
+  "dChecks": {
+    "qcInvestedZero": true,
+    "morokaInvestedZero": true,
+    "listInvestedZero": true
+  },
+  "b": {
+    "checks": {
+      "pendingAwaiting": true,
+      "pendingNothingMoved": true,
+      "pendingPageUnchanged": true,
+      "approvedGeneralDown": true,
+      "approvedInvestedUp": true,
+      "approvedHeldUnchanged": true,
+      "approvedPlacements": true,
+      "approvedTransfersOutUnchanged": true,
+      "approvedQcUnchanged": true,
+      "withdrawnInvestedZero": true,
+      "withdrawnGeneralBack": true,
+      "withdrawnReturns": true,
+      "withdrawnRowsHidden": true,
+      "withdrawnReturnsShown": true,
+      "approvedPlacedText": true,
+      "approvedInvestedText": true,
+      "pendingAgree": true,
+      "approvedAgree": true,
+      "withdrawnAgree": true
+    },
+    "figures": {
+      "baseline": {
+        "general": 241500,
+        "invested": 0,
+        "held": 241500,
+        "placements": 0,
+        "returns": 0
+      },
+      "pending": {
+        "general": 241500,
+        "invested": 0,
+        "held": 241500,
+        "placements": 0,
+        "returns": 0
+      },
+      "approved": {
+        "general": 234000,
+        "invested": 7500,
+        "held": 241500,
+        "placements": 7500,
+        "returns": 0
+      },
+      "withdrawn": {
+        "general": 241500,
+        "invested": 0,
+        "held": 241500,
+        "placements": 7500,
+        "returns": 7500
+      }
+    },
+    "uiTexts": {
+      "approved": {
+        "placements": "− less Placed in section 86(4) investments R 7 500,00",
+        "balance": "=General balance R 234 000,00",
+        "invested": "+Invested (section 86(4)) R 7 500,00",
+        "held": "=Total held in trust R 241 500,00",
+        "summaryLine": "Plus R 7 500,00 invested (section 86(4)) — R 241 500,00 held in trust in total"
+      },
+      "withdrawn": {
+        "placements": "− less Placed in section 86(4) investments R 7 500,00",
+        "returns": "+Returned from section 86(4) investments R 7 500,00",
+        "balance": "=Balance R 241 500,00",
+        "invested": null,
+        "held": null,
+        "summaryLine": null
+      }
+    },
+    "pass": true
+  },
+  "f": {
+    "a": {
+      "headline": 15000,
+      "badges": [
+        "Funds Held"
+      ]
+    },
+    "bApproved": {
+      "headline": 234000,
+      "badges": [
+        "Funds Held"
+      ],
+      "held": 241500
+    }
+  },
+  "g": {
+    "scans": 10,
+    "dirty": []
+  },
+  "h": {
+    "a-client-summary-quickcollect-after-lifecycle": [
+      {
+        "w": 1280,
+        "ok": true,
+        "figuresOk": true,
+        "pageHScroll": false,
+        "offenders": 0,
+        "truncated": 0
+      },
+      {
+        "w": 1440,
+        "ok": true,
+        "figuresOk": true,
+        "pageHScroll": false,
+        "offenders": 0,
+        "truncated": 0
+      },
+      {
+        "w": 1920,
+        "ok": true,
+        "figuresOk": true,
+        "pageHScroll": false,
+        "offenders": 0,
+        "truncated": 0
+      }
+    ],
+    "a-breakdown-quickcollect-after-lifecycle": [
+      {
+        "w": 1280,
+        "ok": true,
+        "figuresOk": true,
+        "pageHScroll": false,
+        "offenders": 0,
+        "truncated": 0
+      },
+      {
+        "w": 1440,
+        "ok": true,
+        "figuresOk": true,
+        "pageHScroll": false,
+        "offenders": 0,
+        "truncated": 0
+      },
+      {
+        "w": 1920,
+        "ok": true,
+        "figuresOk": true,
+        "pageHScroll": false,
+        "offenders": 0,
+        "truncated": 0
+      }
+    ],
+    "a-trust-tab-card-quickcollect-after-lifecycle": [
+      {
+        "w": 1280,
+        "ok": true,
+        "figuresOk": true,
+        "pageHScroll": false,
+        "offenders": 0,
+        "truncated": 0
+      },
+      {
+        "w": 1440,
+        "ok": true,
+        "figuresOk": true,
+        "pageHScroll": false,
+        "offenders": 0,
+        "truncated": 0
+      },
+      {
+        "w": 1920,
+        "ok": true,
+        "figuresOk": true,
+        "pageHScroll": false,
+        "offenders": 0,
+        "truncated": 0
+      }
+    ],
+    "b4-client-summary-moroka-approved": [
+      {
+        "w": 1280,
+        "ok": true,
+        "figuresOk": true,
+        "pageHScroll": false,
+        "offenders": 0,
+        "truncated": 0
+      },
+      {
+        "w": 1440,
+        "ok": true,
+        "figuresOk": true,
+        "pageHScroll": false,
+        "offenders": 0,
+        "truncated": 0
+      },
+      {
+        "w": 1920,
+        "ok": true,
+        "figuresOk": true,
+        "pageHScroll": false,
+        "offenders": 0,
+        "truncated": 0
+      }
+    ],
+    "b4-breakdown-moroka-approved": [
+      {
+        "w": 1280,
+        "ok": true,
+        "figuresOk": true,
+        "pageHScroll": false,
+        "offenders": 0,
+        "truncated": 0
+      },
+      {
+        "w": 1440,
+        "ok": true,
+        "figuresOk": true,
+        "pageHScroll": false,
+        "offenders": 0,
+        "truncated": 0
+      },
+      {
+        "w": 1920,
+        "ok": true,
+        "figuresOk": true,
+        "pageHScroll": false,
+        "offenders": 0,
+        "truncated": 0
+      }
+    ],
+    "b4-trust-tab-card-moroka-approved": [
+      {
+        "w": 1280,
+        "ok": true,
+        "figuresOk": true,
+        "pageHScroll": false,
+        "offenders": 0,
+        "truncated": 0
+      },
+      {
+        "w": 1440,
+        "ok": true,
+        "figuresOk": true,
+        "pageHScroll": false,
+        "offenders": 0,
+        "truncated": 0
+      },
+      {
+        "w": 1920,
+        "ok": true,
+        "figuresOk": true,
+        "pageHScroll": false,
+        "offenders": 0,
+        "truncated": 0
+      }
+    ],
+    "b6-client-summary-moroka-withdrawn": [
+      {
+        "w": 1280,
+        "ok": true,
+        "figuresOk": true,
+        "pageHScroll": false,
+        "offenders": 0,
+        "truncated": 0
+      },
+      {
+        "w": 1440,
+        "ok": true,
+        "figuresOk": true,
+        "pageHScroll": false,
+        "offenders": 0,
+        "truncated": 0
+      },
+      {
+        "w": 1920,
+        "ok": true,
+        "figuresOk": true,
+        "pageHScroll": false,
+        "offenders": 0,
+        "truncated": 0
+      }
+    ],
+    "b6-breakdown-moroka-withdrawn": [
+      {
+        "w": 1280,
+        "ok": true,
+        "figuresOk": true,
+        "pageHScroll": false,
+        "offenders": 0,
+        "truncated": 0
+      },
+      {
+        "w": 1440,
+        "ok": true,
+        "figuresOk": true,
+        "pageHScroll": false,
+        "offenders": 0,
+        "truncated": 0
+      },
+      {
+        "w": 1920,
+        "ok": true,
+        "figuresOk": true,
+        "pageHScroll": false,
+        "offenders": 0,
+        "truncated": 0
+      }
+    ],
+    "b6-trust-tab-card-moroka-withdrawn": [
+      {
+        "w": 1280,
+        "ok": true,
+        "figuresOk": true,
+        "pageHScroll": false,
+        "offenders": 0,
+        "truncated": 0
+      },
+      {
+        "w": 1440,
+        "ok": true,
+        "figuresOk": true,
+        "pageHScroll": false,
+        "offenders": 0,
+        "truncated": 0
+      },
+      {
+        "w": 1920,
+        "ok": true,
+        "figuresOk": true,
+        "pageHScroll": false,
+        "offenders": 0,
+        "truncated": 0
+      }
+    ]
+  },
+  "consoleErrors": 0,
+  "pageErrors": 0,
+  "posts": 34
+}

@@ -1,0 +1,117 @@
+Skip to content
+Kazi
+E2E Test Organization
+Search...
+⌘K
+TODAY
+Home
+My work
+Diary
+MATTERS
+Matters
+New matter
+Conflict check
+Adverse parties
+AI reviews
+CLIENTS
+Clients
+FICA & compliance
+Data requests
+FEES
+TRUST
+FIRM
+Platform Admin
+Notifications
+AO
+
+Alice Owner
+
+alice@e2e-test.local
+
+Toggle menu
+E2E Test Organization
+Trust accounting
+Client ledgers
+Client ledger
+Search
+⌘K
+13 unread notifications
+13
+e2e-test-org
+AO
+Back to Client Ledgers
+QuickCollect Services mwlnfzycfde4
+
+Client ledger detail and transaction history
+
+Trust Balance
+
+R 15 000,00
+
+Plus R 30 000,00 invested (section 86(4)) — R 45 000,00 held in trust in total
+
+Ledger totals
+
+Deposits
+R 45 000,00
+−
+less
+Payments
+R 0,00
+−
+less
+Fee transfers
+R 0,00
+−
+less
+Refunds
+R 0,00
+−
+less
+Placed in section 86(4) investments
+R 30 000,00
+=General balance
+R 15 000,00
++Invested (section 86(4))
+R 30 000,00
+=Total held in trust
+R 45 000,00
+Generate Statement
+Select a date range and generate a PDF statement for this client
+From
+To
+Print Statement
+Status:
+All
+Recorded
+Awaiting Approval
+Approved
+Rejected
+Reversed
+Type:
+All
+Deposit
+Payment
+Fee transfer
+Refund
+Transfer out
+Transfer in
+Reversal
+Deposit identified and allocated
+Placed in section 86(4) investment
+Investment capital received
+Section 86(4) investment interest
+Investment withdrawn
+Investment returned to trust
+From
+To
+Transaction History
+2 transactions found
+Date	Reference	Type	Amount	Status	Running Balance
+18 Nov 2026	INV-26AD98D3	Placed in section 86(4) investment	
+R 30 000,00	APPROVED	R 15 000,00
+18 Nov 2026	DEP/QC/mwlnfzycfde4	Deposit	
+R 45 000,00	RECORDED	R 45 000,00
+Command Palette
+
+Search pages and settings

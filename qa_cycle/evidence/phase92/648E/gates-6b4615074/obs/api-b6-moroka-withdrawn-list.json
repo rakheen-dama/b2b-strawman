@@ -1,0 +1,53 @@
+{
+  "method": "GET",
+  "path": "/api/trust-accounts/6f25bf5d-fcd5-4584-b947-d0edc8e8ea2e/client-ledgers?page=0&size=100",
+  "status": 200,
+  "body": {
+    "content": [
+      {
+        "id": "9494099d-2564-4012-be91-f4f616ba4738",
+        "trustAccountId": "6f25bf5d-fcd5-4584-b947-d0edc8e8ea2e",
+        "clientId": "79a8995d-de11-4e1b-a343-ced352868e20",
+        "clientName": "Moroka Family Trust mwlnfzycfde4",
+        "balance": 241500,
+        "totalDeposits": 250000,
+        "totalPayments": 0,
+        "totalFeeTransfers": 8500,
+        "totalRefunds": 0,
+        "totalTransfersIn": 0,
+        "totalTransfersOut": 0,
+        "totalInvestmentPlacements": 7500,
+        "totalInvestmentReturns": 7500,
+        "investedBalance": 0,
+        "lastTransactionDate": "2026-11-18",
+        "createdAt": "2026-11-18T04:58:08.794352Z",
+        "updatedAt": "2026-11-18T04:58:08.794352Z"
+      },
+      {
+        "id": "6602d40c-2497-4ce7-ad5e-371b1bef0e75",
+        "trustAccountId": "6f25bf5d-fcd5-4584-b947-d0edc8e8ea2e",
+        "clientId": "66f2d61f-5a07-407d-80bf-2d35804e9fe5",
+        "clientName": "QuickCollect Services mwlnfzycfde4",
+        "balance": 15000,
+        "totalDeposits": 45000,
+        "totalPayments": 0,
+        "totalFeeTransfers": 0,
+        "totalRefunds": 0,
+        "totalTransfersIn": 0,
+        "totalTransfersOut": 0,
+        "totalInvestmentPlacements": 30000,
+        "totalInvestmentReturns": 0,
+        "investedBalance": 30000,
+        "lastTransactionDate": "2026-11-18",
+        "createdAt": "2026-11-18T04:58:12.419680Z",
+        "updatedAt": "2026-11-18T04:58:12.419680Z"
+      }
+    ],
+    "page": {
+      "size": 100,
+      "number": 0,
+      "totalElements": 2,
+      "totalPages": 1
+    }
+  }
+}

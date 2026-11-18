@@ -1,0 +1,1 @@
+Trust BalanceFunds HeldR 241 500,00DepositsR 250 000,00−less PaymentsR 0,00−less Fee transfersR 8 500,00−less RefundsR 0,00=BalanceR 241 500,00Last transaction: 2026/11/18Record DepositRecord PaymentFee Transfer

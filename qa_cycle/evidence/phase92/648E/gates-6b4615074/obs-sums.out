@@ -1,0 +1,231 @@
+-- 648E OBS read-only evidence output (schema tenant_7d218705360b) 2026-11-18T05:00:24.190Z
+
+== [context: trust accounts]
+select id, account_name, account_type, investment_basis, is_primary, status from tenant_7d218705360b.trust_accounts order by created_at
+                  id                  |              account_name               | account_type |  investment_basis  | is_primary | status 
+--------------------------------------+-----------------------------------------+--------------+--------------------+------------+--------
+ 6f25bf5d-fcd5-4584-b947-d0edc8e8ea2e | Mathebula & Partners Trust Account      | GENERAL      |                    | t          | ACTIVE
+ 530946c1-be6c-4c4c-b3a1-24f4afb425f7 | Standard Bank Section 86(3) Investments | INVESTMENT   | FIRM_DISCRETION    | f          | ACTIVE
+ c2b63f39-5c05-4690-9a96-62fb2cd7e98d | Nedbank Section 86(4) Investments       | INVESTMENT   | CLIENT_INSTRUCTION | f          | ACTIVE
+(3 rows)
+
+
+== [context: investments after the lifecycle]
+select i.id, i.account_number, i.investment_basis, i.status, i.principal, c.name client, fa.account_name funding, ia.account_name holding from tenant_7d218705360b.trust_investments i left join tenant_7d218705360b.customers c on c.id=i.customer_id join tenant_7d218705360b.trust_accounts fa on fa.id=i.trust_account_id join tenant_7d218705360b.trust_accounts ia on ia.id=i.investment_account_id order by i.created_at
+                  id                  | account_number  |  investment_basis  | status | principal |               client               |              funding               |                 holding                 
+--------------------------------------+-----------------+--------------------+--------+-----------+------------------------------------+------------------------------------+-----------------------------------------
+ edacbc62-68ce-4569-a9e3-b621318d3422 | FD-0987654321   | FIRM_DISCRETION    | ACTIVE | 200000.00 |                                    | Mathebula & Partners Trust Account | Standard Bank Section 86(3) Investments
+ 26ad98d3-fc1f-4f06-8d5b-be113b5f4d1b | CALL-1122334455 | CLIENT_INSTRUCTION | ACTIVE |  30000.00 | QuickCollect Services mwlnfzycfde4 | Mathebula & Partners Trust Account | Nedbank Section 86(4) Investments
+(2 rows)
+
+
+== [context: investment rows after the lifecycle]
+select i.account_number, t.transaction_type, t.status, t.ledger, a.account_name, coalesce(c.name,'<no client>') client, t.ledger_effect, t.cashbook_effect, t.posted_at is not null posted from tenant_7d218705360b.trust_transactions t join tenant_7d218705360b.trust_investments i on i.id=t.investment_id join tenant_7d218705360b.trust_accounts a on a.id=t.trust_account_id left join tenant_7d218705360b.customers c on c.id=t.customer_id order by t.created_at
+ account_number  | transaction_type |  status  |      ledger       |              account_name               |               client               | ledger_effect | cashbook_effect | posted 
+-----------------+------------------+----------+-------------------+-----------------------------------------+------------------------------------+---------------+-----------------+--------
+ FD-0987654321   | FIRM_INV_PLACE   | APPROVED | INTER_ACCOUNT     | Mathebula & Partners Trust Account      | <no client>                        |    -200000.00 |      -200000.00 | t
+ FD-0987654321   | FIRM_INV_RECEIVE | APPROVED | INTER_ACCOUNT     | Standard Bank Section 86(3) Investments | <no client>                        |     200000.00 |       200000.00 | t
+ CALL-1122334455 | INV_PLACE        | APPROVED | CLIENT            | Mathebula & Partners Trust Account      | QuickCollect Services mwlnfzycfde4 |     -30000.00 |       -30000.00 | t
+ CALL-1122334455 | INV_RECEIVE      | APPROVED | CLIENT_INVESTMENT | Nedbank Section 86(4) Investments       | QuickCollect Services mwlnfzycfde4 |      30000.00 |        30000.00 | t
+(4 rows)
+
+
+== [a quickcollect-after-lifecycle: general (CLIENT on the account)]
+select coalesce(sum(t.ledger_effect),0) general from tenant_7d218705360b.trust_transactions t where t.trust_account_id='6f25bf5d-fcd5-4584-b947-d0edc8e8ea2e' and t.customer_id='66f2d61f-5a07-407d-80bf-2d35804e9fe5' and t.ledger='CLIENT' and t.posted_at is not null
+ general  
+----------
+ 15000.00
+(1 row)
+
+
+== [a quickcollect-after-lifecycle: invested (CLIENT_INVESTMENT of s86(4) investments placed from the account)]
+select coalesce(sum(t.ledger_effect),0) invested from tenant_7d218705360b.trust_transactions t join tenant_7d218705360b.trust_investments i on i.id=t.investment_id where i.trust_account_id='6f25bf5d-fcd5-4584-b947-d0edc8e8ea2e' and t.trust_account_id=i.investment_account_id and t.customer_id='66f2d61f-5a07-407d-80bf-2d35804e9fe5' and t.ledger='CLIENT_INVESTMENT' and t.posted_at is not null
+ invested 
+----------
+ 30000.00
+(1 row)
+
+
+== [a quickcollect-after-lifecycle: CLIENT-ledger totals by type on the account (posted)]
+select t.transaction_type, count(*) n, sum(t.amount) amount, sum(t.ledger_effect) ledger_effect from tenant_7d218705360b.trust_transactions t where t.trust_account_id='6f25bf5d-fcd5-4584-b947-d0edc8e8ea2e' and t.customer_id='66f2d61f-5a07-407d-80bf-2d35804e9fe5' and t.ledger='CLIENT' and t.posted_at is not null group by 1 order by 1
+ transaction_type | n |  amount  | ledger_effect 
+------------------+---+----------+---------------
+ DEPOSIT          | 1 | 45000.00 |      45000.00
+ INV_PLACE        | 1 | 30000.00 |     -30000.00
+(2 rows)
+
+
+== [a quickcollect-after-lifecycle: the client's rows by account and ledger (posted)]
+select a.account_name, t.ledger, count(*) n, sum(t.ledger_effect) ledger_sum from tenant_7d218705360b.trust_transactions t join tenant_7d218705360b.trust_accounts a on a.id=t.trust_account_id where t.customer_id='66f2d61f-5a07-407d-80bf-2d35804e9fe5' and t.posted_at is not null group by 1,2 order by 1,2
+            account_name            |      ledger       | n | ledger_sum 
+------------------------------------+-------------------+---+------------
+ Mathebula & Partners Trust Account | CLIENT            | 2 |   15000.00
+ Nedbank Section 86(4) Investments  | CLIENT_INVESTMENT | 1 |   30000.00
+(2 rows)
+
+
+== [c moroka-baseline: general (CLIENT on the account)]
+select coalesce(sum(t.ledger_effect),0) general from tenant_7d218705360b.trust_transactions t where t.trust_account_id='6f25bf5d-fcd5-4584-b947-d0edc8e8ea2e' and t.customer_id='79a8995d-de11-4e1b-a343-ced352868e20' and t.ledger='CLIENT' and t.posted_at is not null
+  general  
+-----------
+ 241500.00
+(1 row)
+
+
+== [c moroka-baseline: invested (CLIENT_INVESTMENT of s86(4) investments placed from the account)]
+select coalesce(sum(t.ledger_effect),0) invested from tenant_7d218705360b.trust_transactions t join tenant_7d218705360b.trust_investments i on i.id=t.investment_id where i.trust_account_id='6f25bf5d-fcd5-4584-b947-d0edc8e8ea2e' and t.trust_account_id=i.investment_account_id and t.customer_id='79a8995d-de11-4e1b-a343-ced352868e20' and t.ledger='CLIENT_INVESTMENT' and t.posted_at is not null
+ invested 
+----------
+        0
+(1 row)
+
+
+== [c moroka-baseline: CLIENT-ledger totals by type on the account (posted)]
+select t.transaction_type, count(*) n, sum(t.amount) amount, sum(t.ledger_effect) ledger_effect from tenant_7d218705360b.trust_transactions t where t.trust_account_id='6f25bf5d-fcd5-4584-b947-d0edc8e8ea2e' and t.customer_id='79a8995d-de11-4e1b-a343-ced352868e20' and t.ledger='CLIENT' and t.posted_at is not null group by 1 order by 1
+ transaction_type | n |  amount   | ledger_effect 
+------------------+---+-----------+---------------
+ DEPOSIT          | 1 | 250000.00 |     250000.00
+ FEE_TRANSFER     | 1 |   8500.00 |      -8500.00
+(2 rows)
+
+
+== [c moroka-baseline: the client's rows by account and ledger (posted)]
+select a.account_name, t.ledger, count(*) n, sum(t.ledger_effect) ledger_sum from tenant_7d218705360b.trust_transactions t join tenant_7d218705360b.trust_accounts a on a.id=t.trust_account_id where t.customer_id='79a8995d-de11-4e1b-a343-ced352868e20' and t.posted_at is not null group by 1,2 order by 1,2
+            account_name            | ledger | n | ledger_sum 
+------------------------------------+--------+---+------------
+ Mathebula & Partners Trust Account | CLIENT | 2 |  241500.00
+(1 row)
+
+
+== [c: s86(3) investment rows (expect INTER_ACCOUNT, customer_id NULL)]
+select i.account_number, i.customer_id is null inv_customer_null, t.transaction_type, t.ledger, t.customer_id is null tx_customer_null, t.ledger_effect, t.posted_at is not null posted from tenant_7d218705360b.trust_transactions t join tenant_7d218705360b.trust_investments i on i.id=t.investment_id where i.investment_basis='FIRM_DISCRETION' order by t.created_at
+ account_number | inv_customer_null | transaction_type |    ledger     | tx_customer_null | ledger_effect | posted 
+----------------+-------------------+------------------+---------------+------------------+---------------+--------
+ FD-0987654321  | t                 | FIRM_INV_PLACE   | INTER_ACCOUNT | t                |    -200000.00 | t
+ FD-0987654321  | t                 | FIRM_INV_RECEIVE | INTER_ACCOUNT | t                |     200000.00 | t
+(2 rows)
+
+
+== [b2 moroka-pending: general (CLIENT on the account)]
+select coalesce(sum(t.ledger_effect),0) general from tenant_7d218705360b.trust_transactions t where t.trust_account_id='6f25bf5d-fcd5-4584-b947-d0edc8e8ea2e' and t.customer_id='79a8995d-de11-4e1b-a343-ced352868e20' and t.ledger='CLIENT' and t.posted_at is not null
+  general  
+-----------
+ 241500.00
+(1 row)
+
+
+== [b2 moroka-pending: invested (CLIENT_INVESTMENT of s86(4) investments placed from the account)]
+select coalesce(sum(t.ledger_effect),0) invested from tenant_7d218705360b.trust_transactions t join tenant_7d218705360b.trust_investments i on i.id=t.investment_id where i.trust_account_id='6f25bf5d-fcd5-4584-b947-d0edc8e8ea2e' and t.trust_account_id=i.investment_account_id and t.customer_id='79a8995d-de11-4e1b-a343-ced352868e20' and t.ledger='CLIENT_INVESTMENT' and t.posted_at is not null
+ invested 
+----------
+        0
+(1 row)
+
+
+== [b2 moroka-pending: CLIENT-ledger totals by type on the account (posted)]
+select t.transaction_type, count(*) n, sum(t.amount) amount, sum(t.ledger_effect) ledger_effect from tenant_7d218705360b.trust_transactions t where t.trust_account_id='6f25bf5d-fcd5-4584-b947-d0edc8e8ea2e' and t.customer_id='79a8995d-de11-4e1b-a343-ced352868e20' and t.ledger='CLIENT' and t.posted_at is not null group by 1 order by 1
+ transaction_type | n |  amount   | ledger_effect 
+------------------+---+-----------+---------------
+ DEPOSIT          | 1 | 250000.00 |     250000.00
+ FEE_TRANSFER     | 1 |   8500.00 |      -8500.00
+(2 rows)
+
+
+== [b2 moroka-pending: the client's rows by account and ledger (posted)]
+select a.account_name, t.ledger, count(*) n, sum(t.ledger_effect) ledger_sum from tenant_7d218705360b.trust_transactions t join tenant_7d218705360b.trust_accounts a on a.id=t.trust_account_id where t.customer_id='79a8995d-de11-4e1b-a343-ced352868e20' and t.posted_at is not null group by 1,2 order by 1,2
+            account_name            | ledger | n | ledger_sum 
+------------------------------------+--------+---+------------
+ Mathebula & Partners Trust Account | CLIENT | 2 |  241500.00
+(1 row)
+
+
+== [b: the placement's rows after approval]
+select t.transaction_type, t.status, t.ledger, a.account_name, t.ledger_effect, t.cashbook_effect, t.posted_at is not null posted from tenant_7d218705360b.trust_transactions t join tenant_7d218705360b.trust_accounts a on a.id=t.trust_account_id where t.investment_id='0bcba89d-70ae-42fd-b770-e9d4d720c168' order by t.created_at
+ transaction_type |  status  |      ledger       |            account_name            | ledger_effect | cashbook_effect | posted 
+------------------+----------+-------------------+------------------------------------+---------------+-----------------+--------
+ INV_PLACE        | APPROVED | CLIENT            | Mathebula & Partners Trust Account |      -7500.00 |        -7500.00 | t
+ INV_RECEIVE      | APPROVED | CLIENT_INVESTMENT | Nedbank Section 86(4) Investments  |       7500.00 |         7500.00 | t
+(2 rows)
+
+
+== [b4 moroka-approved: general (CLIENT on the account)]
+select coalesce(sum(t.ledger_effect),0) general from tenant_7d218705360b.trust_transactions t where t.trust_account_id='6f25bf5d-fcd5-4584-b947-d0edc8e8ea2e' and t.customer_id='79a8995d-de11-4e1b-a343-ced352868e20' and t.ledger='CLIENT' and t.posted_at is not null
+  general  
+-----------
+ 234000.00
+(1 row)
+
+
+== [b4 moroka-approved: invested (CLIENT_INVESTMENT of s86(4) investments placed from the account)]
+select coalesce(sum(t.ledger_effect),0) invested from tenant_7d218705360b.trust_transactions t join tenant_7d218705360b.trust_investments i on i.id=t.investment_id where i.trust_account_id='6f25bf5d-fcd5-4584-b947-d0edc8e8ea2e' and t.trust_account_id=i.investment_account_id and t.customer_id='79a8995d-de11-4e1b-a343-ced352868e20' and t.ledger='CLIENT_INVESTMENT' and t.posted_at is not null
+ invested 
+----------
+  7500.00
+(1 row)
+
+
+== [b4 moroka-approved: CLIENT-ledger totals by type on the account (posted)]
+select t.transaction_type, count(*) n, sum(t.amount) amount, sum(t.ledger_effect) ledger_effect from tenant_7d218705360b.trust_transactions t where t.trust_account_id='6f25bf5d-fcd5-4584-b947-d0edc8e8ea2e' and t.customer_id='79a8995d-de11-4e1b-a343-ced352868e20' and t.ledger='CLIENT' and t.posted_at is not null group by 1 order by 1
+ transaction_type | n |  amount   | ledger_effect 
+------------------+---+-----------+---------------
+ DEPOSIT          | 1 | 250000.00 |     250000.00
+ FEE_TRANSFER     | 1 |   8500.00 |      -8500.00
+ INV_PLACE        | 1 |   7500.00 |      -7500.00
+(3 rows)
+
+
+== [b4 moroka-approved: the client's rows by account and ledger (posted)]
+select a.account_name, t.ledger, count(*) n, sum(t.ledger_effect) ledger_sum from tenant_7d218705360b.trust_transactions t join tenant_7d218705360b.trust_accounts a on a.id=t.trust_account_id where t.customer_id='79a8995d-de11-4e1b-a343-ced352868e20' and t.posted_at is not null group by 1,2 order by 1,2
+            account_name            |      ledger       | n | ledger_sum 
+------------------------------------+-------------------+---+------------
+ Mathebula & Partners Trust Account | CLIENT            | 3 |  234000.00
+ Nedbank Section 86(4) Investments  | CLIENT_INVESTMENT | 1 |    7500.00
+(2 rows)
+
+
+== [b: the placement's rows after the withdrawal]
+select t.transaction_type, t.status, t.ledger, a.account_name, t.ledger_effect, t.cashbook_effect, t.posted_at is not null posted from tenant_7d218705360b.trust_transactions t join tenant_7d218705360b.trust_accounts a on a.id=t.trust_account_id where t.investment_id='0bcba89d-70ae-42fd-b770-e9d4d720c168' order by t.created_at
+ transaction_type |  status  |      ledger       |            account_name            | ledger_effect | cashbook_effect | posted 
+------------------+----------+-------------------+------------------------------------+---------------+-----------------+--------
+ INV_PLACE        | APPROVED | CLIENT            | Mathebula & Partners Trust Account |      -7500.00 |        -7500.00 | t
+ INV_RECEIVE      | APPROVED | CLIENT_INVESTMENT | Nedbank Section 86(4) Investments  |       7500.00 |         7500.00 | t
+ INV_WITHDRAW     | RECORDED | CLIENT_INVESTMENT | Nedbank Section 86(4) Investments  |      -7500.00 |        -7500.00 | t
+ INV_RETURN       | RECORDED | CLIENT            | Mathebula & Partners Trust Account |       7500.00 |         7500.00 | t
+(4 rows)
+
+
+== [b6 moroka-withdrawn: general (CLIENT on the account)]
+select coalesce(sum(t.ledger_effect),0) general from tenant_7d218705360b.trust_transactions t where t.trust_account_id='6f25bf5d-fcd5-4584-b947-d0edc8e8ea2e' and t.customer_id='79a8995d-de11-4e1b-a343-ced352868e20' and t.ledger='CLIENT' and t.posted_at is not null
+  general  
+-----------
+ 241500.00
+(1 row)
+
+
+== [b6 moroka-withdrawn: invested (CLIENT_INVESTMENT of s86(4) investments placed from the account)]
+select coalesce(sum(t.ledger_effect),0) invested from tenant_7d218705360b.trust_transactions t join tenant_7d218705360b.trust_investments i on i.id=t.investment_id where i.trust_account_id='6f25bf5d-fcd5-4584-b947-d0edc8e8ea2e' and t.trust_account_id=i.investment_account_id and t.customer_id='79a8995d-de11-4e1b-a343-ced352868e20' and t.ledger='CLIENT_INVESTMENT' and t.posted_at is not null
+ invested 
+----------
+     0.00
+(1 row)
+
+
+== [b6 moroka-withdrawn: CLIENT-ledger totals by type on the account (posted)]
+select t.transaction_type, count(*) n, sum(t.amount) amount, sum(t.ledger_effect) ledger_effect from tenant_7d218705360b.trust_transactions t where t.trust_account_id='6f25bf5d-fcd5-4584-b947-d0edc8e8ea2e' and t.customer_id='79a8995d-de11-4e1b-a343-ced352868e20' and t.ledger='CLIENT' and t.posted_at is not null group by 1 order by 1
+ transaction_type | n |  amount   | ledger_effect 
+------------------+---+-----------+---------------
+ DEPOSIT          | 1 | 250000.00 |     250000.00
+ FEE_TRANSFER     | 1 |   8500.00 |      -8500.00
+ INV_PLACE        | 1 |   7500.00 |      -7500.00
+ INV_RETURN       | 1 |   7500.00 |       7500.00
+(4 rows)
+
+
+== [b6 moroka-withdrawn: the client's rows by account and ledger (posted)]
+select a.account_name, t.ledger, count(*) n, sum(t.ledger_effect) ledger_sum from tenant_7d218705360b.trust_transactions t join tenant_7d218705360b.trust_accounts a on a.id=t.trust_account_id where t.customer_id='79a8995d-de11-4e1b-a343-ced352868e20' and t.posted_at is not null group by 1,2 order by 1,2
+            account_name            |      ledger       | n | ledger_sum 
+------------------------------------+-------------------+---+------------
+ Mathebula & Partners Trust Account | CLIENT            | 4 |  241500.00
+ Nedbank Section 86(4) Investments  | CLIENT_INVESTMENT | 2 |       0.00
+(2 rows)
+

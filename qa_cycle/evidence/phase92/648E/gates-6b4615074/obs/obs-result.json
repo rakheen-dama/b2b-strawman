@@ -1,0 +1,4280 @@
+{
+  "steps": {
+    "a": {
+      "label": "quickcollect-after-lifecycle",
+      "sql": {
+        "general": 15000,
+        "invested": 30000,
+        "held": 45000,
+        "byType": {
+          "DEPOSIT": {
+            "amount": 45000,
+            "effect": 45000
+          },
+          "INV_PLACE": {
+            "amount": 30000,
+            "effect": -30000
+          }
+        },
+        "deposits": 45000,
+        "transfersIn": 0,
+        "payments": 0,
+        "feeTransfers": 0,
+        "refunds": 0,
+        "transfersOut": 0,
+        "placements": 30000,
+        "returns": 0
+      },
+      "api": {
+        "status": 200,
+        "card": {
+          "balance": 15000,
+          "investedBalance": 30000,
+          "totalDeposits": 45000,
+          "totalPayments": 0,
+          "totalFeeTransfers": 0,
+          "totalRefunds": 0,
+          "totalTransfersIn": 0,
+          "totalTransfersOut": 0,
+          "totalInvestmentPlacements": 30000,
+          "totalInvestmentReturns": 0
+        },
+        "listStatus": 200,
+        "listRow": {
+          "balance": 15000,
+          "investedBalance": 30000,
+          "totalDeposits": 45000,
+          "totalPayments": 0,
+          "totalFeeTransfers": 0,
+          "totalRefunds": 0,
+          "totalTransfersIn": 0,
+          "totalTransfersOut": 0,
+          "totalInvestmentPlacements": 30000,
+          "totalInvestmentReturns": 0
+        },
+        "listRowPresent": true,
+        "investmentsStatus": 200,
+        "s864FromAccount": [
+          {
+            "id": "26ad98d3-fc1f-4f06-8d5b-be113b5f4d1b",
+            "status": "ACTIVE",
+            "balance": 30000
+          }
+        ],
+        "sumInvestmentBalances": 30000
+      },
+      "ui": {
+        "summaryText": "Trust Balance R 15 000,00 Plus R 30 000,00 invested (section 86(4)) — R 45 000,00 held in trust in total Ledger totals Deposits R 45 000,00 − less Payments R 0,00 − less Fee transfers R 0,00 − less Refunds R 0,00 − less Placed in section 86(4) investments R 30 000,00 =General balance R 15 000,00 +Invested (section 86(4)) R 30 000,00 =Total held in trust R 45 000,00",
+        "trustBalanceFigure": 15000,
+        "summaryInvested": "Plus R 30 000,00 invested (section 86(4)) — R 45 000,00 held in trust in total",
+        "summaryInvestedAmounts": [
+          30000,
+          45000
+        ],
+        "rows": {
+          "deposits": {
+            "text": "Deposits R 45 000,00",
+            "dt": "Deposits",
+            "dd": "R 45 000,00",
+            "amount": 45000
+          },
+          "transfers-in": null,
+          "investment-returns": null,
+          "payments": {
+            "text": "− less Payments R 0,00",
+            "dt": "− less Payments",
+            "dd": "R 0,00",
+            "amount": 0
+          },
+          "fee-transfers": {
+            "text": "− less Fee transfers R 0,00",
+            "dt": "− less Fee transfers",
+            "dd": "R 0,00",
+            "amount": 0
+          },
+          "refunds": {
+            "text": "− less Refunds R 0,00",
+            "dt": "− less Refunds",
+            "dd": "R 0,00",
+            "amount": 0
+          },
+          "transfers-out": null,
+          "investment-placements": {
+            "text": "− less Placed in section 86(4) investments R 30 000,00",
+            "dt": "− less Placed in section 86(4) investments",
+            "dd": "R 30 000,00",
+            "amount": 30000
+          },
+          "balance": {
+            "text": "=General balance R 15 000,00",
+            "dt": "=General balance",
+            "dd": "R 15 000,00",
+            "amount": 15000
+          },
+          "invested": {
+            "text": "+Invested (section 86(4)) R 30 000,00",
+            "dt": "+Invested (section 86(4))",
+            "dd": "R 30 000,00",
+            "amount": 30000
+          },
+          "held": {
+            "text": "=Total held in trust R 45 000,00",
+            "dt": "=Total held in trust",
+            "dd": "R 45 000,00",
+            "amount": 45000
+          }
+        },
+        "hasInvestedLabel": true,
+        "hasHeldLabel": true,
+        "files": [
+          "01-a-client-ledger-page-quickcollect-after-lifecycle-1440.png",
+          "01-a-client-ledger-page-quickcollect-after-lifecycle-1280.png"
+        ],
+        "scan": {
+          "label": "a-client-ledger-page-quickcollect-after-lifecycle",
+          "hits": [],
+          "clean": true
+        }
+      },
+      "tab": {
+        "cardText": "Trust Balance Funds Held R 15 000,00 Deposits R 45 000,00 − less Payments R 0,00 − less Fee transfers R 0,00 − less Refunds R 0,00 − less Placed in section 86(4) investments R 30 000,00 =General balance R 15 000,00 +Invested (section 86(4)) R 30 000,00 =Total held in trust R 45 000,00 Last transaction: 2026/11/18 Record Deposit Record Payment Fee Transfer",
+        "headline": 15000,
+        "badges": [
+          "Funds Held"
+        ],
+        "rows": {
+          "deposits": {
+            "text": "Deposits R 45 000,00",
+            "dt": "Deposits",
+            "dd": "R 45 000,00",
+            "amount": 45000
+          },
+          "transfers-in": null,
+          "investment-returns": null,
+          "payments": {
+            "text": "− less Payments R 0,00",
+            "dt": "− less Payments",
+            "dd": "R 0,00",
+            "amount": 0
+          },
+          "fee-transfers": {
+            "text": "− less Fee transfers R 0,00",
+            "dt": "− less Fee transfers",
+            "dd": "R 0,00",
+            "amount": 0
+          },
+          "refunds": {
+            "text": "− less Refunds R 0,00",
+            "dt": "− less Refunds",
+            "dd": "R 0,00",
+            "amount": 0
+          },
+          "transfers-out": null,
+          "investment-placements": {
+            "text": "− less Placed in section 86(4) investments R 30 000,00",
+            "dt": "− less Placed in section 86(4) investments",
+            "dd": "R 30 000,00",
+            "amount": 30000
+          },
+          "balance": {
+            "text": "=General balance R 15 000,00",
+            "dt": "=General balance",
+            "dd": "R 15 000,00",
+            "amount": 15000
+          },
+          "invested": {
+            "text": "+Invested (section 86(4)) R 30 000,00",
+            "dt": "+Invested (section 86(4))",
+            "dd": "R 30 000,00",
+            "amount": 30000
+          },
+          "held": {
+            "text": "=Total held in trust R 45 000,00",
+            "dt": "=Total held in trust",
+            "dd": "R 45 000,00",
+            "amount": 45000
+          }
+        },
+        "files": [
+          "02-a-client-trust-tab-quickcollect-after-lifecycle-1440.png",
+          "02-a-client-trust-tab-quickcollect-after-lifecycle-1280.png"
+        ],
+        "scan": {
+          "label": "a-client-trust-tab-quickcollect-after-lifecycle",
+          "hits": [],
+          "clean": true
+        }
+      },
+      "checks": {
+        "apiStatus200": true,
+        "apiGeneralEqSql": true,
+        "apiInvestedEqSql": true,
+        "apiPlacementsEqSql": true,
+        "apiReturnsEqSql": true,
+        "apiTransfersOutEqSql": true,
+        "apiDepositsEqSql": true,
+        "apiListRowEqCard": true,
+        "apiInvestedEqSumInvestmentBalances": true,
+        "apiIdentity": true,
+        "uiSummaryFigureEqApi": true,
+        "uiBalanceRowEqApi": true,
+        "uiBalanceLabel": true,
+        "uiInvestedRow": true,
+        "uiHeldRow": true,
+        "uiSummaryLine": true,
+        "uiPlacementsRow": true,
+        "uiReturnsRow": true,
+        "uiTransfersOutRow": true,
+        "tabBreakdownEqPage": true,
+        "noRawEnum": true
+      },
+      "pass": true,
+      "observed": {
+        "general": 15000,
+        "invested": 30000,
+        "held": 45000,
+        "placements": 30000,
+        "returns": 0,
+        "transfersOut": 0,
+        "deposits": 45000,
+        "uiPlacements": "− less Placed in section 86(4) investments R 30 000,00",
+        "uiBalance": "=General balance R 15 000,00",
+        "uiInvested": "+Invested (section 86(4)) R 30 000,00",
+        "uiHeld": "=Total held in trust R 45 000,00",
+        "uiSummaryLine": "Plus R 30 000,00 invested (section 86(4)) — R 45 000,00 held in trust in total"
+      },
+      "briefFigures": {
+        "general": 15000,
+        "invested": 30000,
+        "held": 45000,
+        "placements": 30000
+      },
+      "matchesBriefFigures": true,
+      "transfersOutExcludesPlacement": true,
+      "f4": {
+        "headline": 15000,
+        "badges": [
+          "Funds Held"
+        ],
+        "heldOnBreakdown": 45000,
+        "note": "F-4: headline/badge read ledger.balance (general) — recorded, not judged"
+      }
+    },
+    "c": {
+      "label": "moroka-baseline",
+      "sql": {
+        "general": 241500,
+        "invested": 0,
+        "held": 241500,
+        "byType": {
+          "DEPOSIT": {
+            "amount": 250000,
+            "effect": 250000
+          },
+          "FEE_TRANSFER": {
+            "amount": 8500,
+            "effect": -8500
+          }
+        },
+        "deposits": 250000,
+        "transfersIn": 0,
+        "payments": 0,
+        "feeTransfers": 8500,
+        "refunds": 0,
+        "transfersOut": 0,
+        "placements": 0,
+        "returns": 0
+      },
+      "api": {
+        "status": 200,
+        "card": {
+          "balance": 241500,
+          "investedBalance": 0,
+          "totalDeposits": 250000,
+          "totalPayments": 0,
+          "totalFeeTransfers": 8500,
+          "totalRefunds": 0,
+          "totalTransfersIn": 0,
+          "totalTransfersOut": 0,
+          "totalInvestmentPlacements": 0,
+          "totalInvestmentReturns": 0
+        },
+        "listStatus": 200,
+        "listRow": {
+          "balance": 241500,
+          "investedBalance": 0,
+          "totalDeposits": 250000,
+          "totalPayments": 0,
+          "totalFeeTransfers": 8500,
+          "totalRefunds": 0,
+          "totalTransfersIn": 0,
+          "totalTransfersOut": 0,
+          "totalInvestmentPlacements": 0,
+          "totalInvestmentReturns": 0
+        },
+        "listRowPresent": true,
+        "investmentsStatus": 200,
+        "s864FromAccount": [],
+        "sumInvestmentBalances": 0
+      },
+      "ui": {
+        "summaryText": "Trust Balance R 241 500,00 Ledger totals Deposits R 250 000,00 − less Payments R 0,00 − less Fee transfers R 8 500,00 − less Refunds R 0,00 =Balance R 241 500,00",
+        "trustBalanceFigure": 241500,
+        "summaryInvested": null,
+        "summaryInvestedAmounts": null,
+        "rows": {
+          "deposits": {
+            "text": "Deposits R 250 000,00",
+            "dt": "Deposits",
+            "dd": "R 250 000,00",
+            "amount": 250000
+          },
+          "transfers-in": null,
+          "investment-returns": null,
+          "payments": {
+            "text": "− less Payments R 0,00",
+            "dt": "− less Payments",
+            "dd": "R 0,00",
+            "amount": 0
+          },
+          "fee-transfers": {
+            "text": "− less Fee transfers R 8 500,00",
+            "dt": "− less Fee transfers",
+            "dd": "R 8 500,00",
+            "amount": 8500
+          },
+          "refunds": {
+            "text": "− less Refunds R 0,00",
+            "dt": "− less Refunds",
+            "dd": "R 0,00",
+            "amount": 0
+          },
+          "transfers-out": null,
+          "investment-placements": null,
+          "balance": {
+            "text": "=Balance R 241 500,00",
+            "dt": "=Balance",
+            "dd": "R 241 500,00",
+            "amount": 241500
+          },
+          "invested": null,
+          "held": null
+        },
+        "hasInvestedLabel": false,
+        "hasHeldLabel": false,
+        "files": [
+          "03-c-client-ledger-page-moroka-baseline-1440.png",
+          "03-c-client-ledger-page-moroka-baseline-1280.png"
+        ],
+        "scan": {
+          "label": "c-client-ledger-page-moroka-baseline",
+          "hits": [],
+          "clean": true
+        }
+      },
+      "tab": {
+        "cardText": "Trust Balance Funds Held R 241 500,00 Deposits R 250 000,00 − less Payments R 0,00 − less Fee transfers R 8 500,00 − less Refunds R 0,00 =Balance R 241 500,00 Last transaction: 2026/11/18 Record Deposit Record Payment Fee Transfer",
+        "headline": 241500,
+        "badges": [
+          "Funds Held"
+        ],
+        "rows": {
+          "deposits": {
+            "text": "Deposits R 250 000,00",
+            "dt": "Deposits",
+            "dd": "R 250 000,00",
+            "amount": 250000
+          },
+          "transfers-in": null,
+          "investment-returns": null,
+          "payments": {
+            "text": "− less Payments R 0,00",
+            "dt": "− less Payments",
+            "dd": "R 0,00",
+            "amount": 0
+          },
+          "fee-transfers": {
+            "text": "− less Fee transfers R 8 500,00",
+            "dt": "− less Fee transfers",
+            "dd": "R 8 500,00",
+            "amount": 8500
+          },
+          "refunds": {
+            "text": "− less Refunds R 0,00",
+            "dt": "− less Refunds",
+            "dd": "R 0,00",
+            "amount": 0
+          },
+          "transfers-out": null,
+          "investment-placements": null,
+          "balance": {
+            "text": "=Balance R 241 500,00",
+            "dt": "=Balance",
+            "dd": "R 241 500,00",
+            "amount": 241500
+          },
+          "invested": null,
+          "held": null
+        },
+        "files": [
+          "04-c-client-trust-tab-moroka-baseline-1440.png",
+          "04-c-client-trust-tab-moroka-baseline-1280.png"
+        ],
+        "scan": {
+          "label": "c-client-trust-tab-moroka-baseline",
+          "hits": [],
+          "clean": true
+        }
+      },
+      "checks": {
+        "apiStatus200": true,
+        "apiGeneralEqSql": true,
+        "apiInvestedEqSql": true,
+        "apiPlacementsEqSql": true,
+        "apiReturnsEqSql": true,
+        "apiTransfersOutEqSql": true,
+        "apiDepositsEqSql": true,
+        "apiListRowEqCard": true,
+        "apiInvestedEqSumInvestmentBalances": true,
+        "apiIdentity": true,
+        "uiSummaryFigureEqApi": true,
+        "uiBalanceRowEqApi": true,
+        "uiBalanceLabel": true,
+        "uiInvestedRow": true,
+        "uiHeldRow": true,
+        "uiSummaryLine": true,
+        "uiPlacementsRow": true,
+        "uiReturnsRow": true,
+        "uiTransfersOutRow": true,
+        "tabBreakdownEqPage": true,
+        "noRawEnum": true
+      },
+      "pass": true,
+      "s863Rows": [
+        [
+          "FIRM_INV_PLACE",
+          "INTER_ACCOUNT",
+          "<null>",
+          "t"
+        ],
+        [
+          "FIRM_INV_RECEIVE",
+          "INTER_ACCOUNT",
+          "<null>",
+          "t"
+        ]
+      ],
+      "specific": {
+        "investedZero": true,
+        "placementsZero": true,
+        "noInvestedRowsOnPage": true,
+        "noInvestedRowsOnTab": true,
+        "s863HasRows": true,
+        "s863NoClient": true
+      }
+    },
+    "d": {
+      "uiExposesInvestmentAccountLedgers": false,
+      "uiNote": "client-ledgers list and detail pages resolve accounts.find(a => a.isPrimary) ?? accounts[0] (page.tsx:117, list page.tsx:57); no account picker — API evidence only",
+      "qc": {
+        "method": "GET",
+        "path": "/api/trust-accounts/c2b63f39-5c05-4690-9a96-62fb2cd7e98d/client-ledgers/66f2d61f-5a07-407d-80bf-2d35804e9fe5",
+        "status": 200,
+        "body": {
+          "id": null,
+          "trustAccountId": "c2b63f39-5c05-4690-9a96-62fb2cd7e98d",
+          "clientId": "66f2d61f-5a07-407d-80bf-2d35804e9fe5",
+          "clientName": "QuickCollect Services mwlnfzycfde4",
+          "balance": 0,
+          "totalDeposits": 0,
+          "totalPayments": 0,
+          "totalFeeTransfers": 0,
+          "totalRefunds": 0,
+          "totalTransfersIn": 0,
+          "totalTransfersOut": 0,
+          "totalInvestmentPlacements": 0,
+          "totalInvestmentReturns": 0,
+          "investedBalance": 0,
+          "lastTransactionDate": null,
+          "createdAt": null,
+          "updatedAt": null
+        }
+      },
+      "moroka": {
+        "method": "GET",
+        "path": "/api/trust-accounts/c2b63f39-5c05-4690-9a96-62fb2cd7e98d/client-ledgers/79a8995d-de11-4e1b-a343-ced352868e20",
+        "status": 200,
+        "body": {
+          "id": null,
+          "trustAccountId": "c2b63f39-5c05-4690-9a96-62fb2cd7e98d",
+          "clientId": "79a8995d-de11-4e1b-a343-ced352868e20",
+          "clientName": "Moroka Family Trust mwlnfzycfde4",
+          "balance": 0,
+          "totalDeposits": 0,
+          "totalPayments": 0,
+          "totalFeeTransfers": 0,
+          "totalRefunds": 0,
+          "totalTransfersIn": 0,
+          "totalTransfersOut": 0,
+          "totalInvestmentPlacements": 0,
+          "totalInvestmentReturns": 0,
+          "investedBalance": 0,
+          "lastTransactionDate": null,
+          "createdAt": null,
+          "updatedAt": null
+        }
+      },
+      "list": {
+        "method": "GET",
+        "path": "/api/trust-accounts/c2b63f39-5c05-4690-9a96-62fb2cd7e98d/client-ledgers?page=0&size=100",
+        "status": 200,
+        "body": {
+          "content": [],
+          "page": {
+            "size": 100,
+            "number": 0,
+            "totalElements": 0,
+            "totalPages": 0
+          }
+        }
+      },
+      "summary": {
+        "qc": {
+          "status": 200,
+          "balance": 0,
+          "investedBalance": 0
+        },
+        "moroka": {
+          "status": 200,
+          "balance": 0,
+          "investedBalance": 0
+        },
+        "listStatus": 200,
+        "listRows": []
+      },
+      "sqlQcClientInvestmentOnInv4": 30000,
+      "checks": {
+        "qcInvestedZero": true,
+        "morokaInvestedZero": true,
+        "listInvestedZero": true
+      }
+    },
+    "b": {
+      "place": {
+        "client": "79a8995d-de11-4e1b-a343-ced352868e20",
+        "matter": "ac0eb464-f20e-4fb4-be58-9e29b46f78d9",
+        "accountName": "Nedbank Section 86(4) Investments",
+        "institution": "Nedbank",
+        "depositNumber": "OBS4E-NKJHH",
+        "principal": 7500,
+        "rate": 7,
+        "pickerOptions": [
+          "Nedbank Section 86(4) Investments (Nedbank 0864000001)"
+        ],
+        "pickerText": "Nedbank Section 86(4) Investments (Nedbank 0864000001)",
+        "filesFilled": [
+          "05-b1-place-dialog-filled-1440.png"
+        ],
+        "investmentsCountBefore": 2,
+        "investmentsCountAfter": 3,
+        "investmentDb": {
+          "id": "0bcba89d-70ae-42fd-b770-e9d4d720c168",
+          "depositTx": "84379de6-8012-411b-b51e-4d256fa075a3",
+          "basis": "CLIENT_INSTRUCTION",
+          "customerId": "79a8995d-de11-4e1b-a343-ced352868e20",
+          "projectId": "ac0eb464-f20e-4fb4-be58-9e29b46f78d9",
+          "investmentAccountId": "c2b63f39-5c05-4690-9a96-62fb2cd7e98d",
+          "fundingAccountId": "6f25bf5d-fcd5-4584-b947-d0edc8e8ea2e",
+          "status": "ACTIVE",
+          "principal": "7500.00"
+        }
+      },
+      "pendingTx": [
+        "INV_PLACE",
+        "AWAITING_APPROVAL",
+        "CLIENT",
+        "f",
+        "7500.00"
+      ],
+      "pending": {
+        "label": "moroka-pending",
+        "sql": {
+          "general": 241500,
+          "invested": 0,
+          "held": 241500,
+          "byType": {
+            "DEPOSIT": {
+              "amount": 250000,
+              "effect": 250000
+            },
+            "FEE_TRANSFER": {
+              "amount": 8500,
+              "effect": -8500
+            }
+          },
+          "deposits": 250000,
+          "transfersIn": 0,
+          "payments": 0,
+          "feeTransfers": 8500,
+          "refunds": 0,
+          "transfersOut": 0,
+          "placements": 0,
+          "returns": 0
+        },
+        "api": {
+          "status": 200,
+          "card": {
+            "balance": 241500,
+            "investedBalance": 0,
+            "totalDeposits": 250000,
+            "totalPayments": 0,
+            "totalFeeTransfers": 8500,
+            "totalRefunds": 0,
+            "totalTransfersIn": 0,
+            "totalTransfersOut": 0,
+            "totalInvestmentPlacements": 0,
+            "totalInvestmentReturns": 0
+          },
+          "listStatus": 200,
+          "listRow": {
+            "balance": 241500,
+            "investedBalance": 0,
+            "totalDeposits": 250000,
+            "totalPayments": 0,
+            "totalFeeTransfers": 8500,
+            "totalRefunds": 0,
+            "totalTransfersIn": 0,
+            "totalTransfersOut": 0,
+            "totalInvestmentPlacements": 0,
+            "totalInvestmentReturns": 0
+          },
+          "listRowPresent": true,
+          "investmentsStatus": 200,
+          "s864FromAccount": [
+            {
+              "id": "0bcba89d-70ae-42fd-b770-e9d4d720c168",
+              "status": "ACTIVE",
+              "balance": 0
+            }
+          ],
+          "sumInvestmentBalances": 0
+        },
+        "ui": {
+          "summaryText": "Trust Balance R 241 500,00 Ledger totals Deposits R 250 000,00 − less Payments R 0,00 − less Fee transfers R 8 500,00 − less Refunds R 0,00 =Balance R 241 500,00",
+          "trustBalanceFigure": 241500,
+          "summaryInvested": null,
+          "summaryInvestedAmounts": null,
+          "rows": {
+            "deposits": {
+              "text": "Deposits R 250 000,00",
+              "dt": "Deposits",
+              "dd": "R 250 000,00",
+              "amount": 250000
+            },
+            "transfers-in": null,
+            "investment-returns": null,
+            "payments": {
+              "text": "− less Payments R 0,00",
+              "dt": "− less Payments",
+              "dd": "R 0,00",
+              "amount": 0
+            },
+            "fee-transfers": {
+              "text": "− less Fee transfers R 8 500,00",
+              "dt": "− less Fee transfers",
+              "dd": "R 8 500,00",
+              "amount": 8500
+            },
+            "refunds": {
+              "text": "− less Refunds R 0,00",
+              "dt": "− less Refunds",
+              "dd": "R 0,00",
+              "amount": 0
+            },
+            "transfers-out": null,
+            "investment-placements": null,
+            "balance": {
+              "text": "=Balance R 241 500,00",
+              "dt": "=Balance",
+              "dd": "R 241 500,00",
+              "amount": 241500
+            },
+            "invested": null,
+            "held": null
+          },
+          "hasInvestedLabel": false,
+          "hasHeldLabel": false,
+          "files": [
+            "06-b2-client-ledger-page-moroka-pending-1440.png",
+            "06-b2-client-ledger-page-moroka-pending-1280.png"
+          ],
+          "scan": {
+            "label": "b2-client-ledger-page-moroka-pending",
+            "hits": [],
+            "clean": true
+          }
+        },
+        "tab": {
+          "cardText": "Trust Balance Funds Held R 241 500,00 Deposits R 250 000,00 − less Payments R 0,00 − less Fee transfers R 8 500,00 − less Refunds R 0,00 =Balance R 241 500,00 Last transaction: 2026/11/18 Record Deposit Record Payment Fee Transfer",
+          "headline": 241500,
+          "badges": [
+            "Funds Held"
+          ],
+          "rows": {
+            "deposits": {
+              "text": "Deposits R 250 000,00",
+              "dt": "Deposits",
+              "dd": "R 250 000,00",
+              "amount": 250000
+            },
+            "transfers-in": null,
+            "investment-returns": null,
+            "payments": {
+              "text": "− less Payments R 0,00",
+              "dt": "− less Payments",
+              "dd": "R 0,00",
+              "amount": 0
+            },
+            "fee-transfers": {
+              "text": "− less Fee transfers R 8 500,00",
+              "dt": "− less Fee transfers",
+              "dd": "R 8 500,00",
+              "amount": 8500
+            },
+            "refunds": {
+              "text": "− less Refunds R 0,00",
+              "dt": "− less Refunds",
+              "dd": "R 0,00",
+              "amount": 0
+            },
+            "transfers-out": null,
+            "investment-placements": null,
+            "balance": {
+              "text": "=Balance R 241 500,00",
+              "dt": "=Balance",
+              "dd": "R 241 500,00",
+              "amount": 241500
+            },
+            "invested": null,
+            "held": null
+          },
+          "files": [
+            "07-b2-client-trust-tab-moroka-pending-1440.png",
+            "07-b2-client-trust-tab-moroka-pending-1280.png"
+          ],
+          "scan": {
+            "label": "b2-client-trust-tab-moroka-pending",
+            "hits": [],
+            "clean": true
+          }
+        },
+        "checks": {
+          "apiStatus200": true,
+          "apiGeneralEqSql": true,
+          "apiInvestedEqSql": true,
+          "apiPlacementsEqSql": true,
+          "apiReturnsEqSql": true,
+          "apiTransfersOutEqSql": true,
+          "apiDepositsEqSql": true,
+          "apiListRowEqCard": true,
+          "apiInvestedEqSumInvestmentBalances": true,
+          "apiIdentity": true,
+          "uiSummaryFigureEqApi": true,
+          "uiBalanceRowEqApi": true,
+          "uiBalanceLabel": true,
+          "uiInvestedRow": true,
+          "uiHeldRow": true,
+          "uiSummaryLine": true,
+          "uiPlacementsRow": true,
+          "uiReturnsRow": true,
+          "uiTransfersOutRow": true,
+          "tabBreakdownEqPage": true,
+          "noRawEnum": true
+        },
+        "pass": true
+      },
+      "approve": {
+        "txId": "84379de6-8012-411b-b51e-4d256fa075a3",
+        "rowTextBefore": "18 Nov 2026 INV-0BCBA89D Placed in section 86(4) investment Placed in section 86(4) investment at Nedbank (Nedbank Section 86(4) Investments) R 7 500,00 AWAITING APPROVAL Approve Reject",
+        "files": [
+          "08-b3-transactions-awaiting-1440.png"
+        ],
+        "rowTextAfter": "18 Nov 2026 INV-0BCBA89D Placed in section 86(4) investment Placed in section 86(4) investment at Nedbank (Nedbank Section 86(4) Investments) R 7 500,00 APPROVED"
+      },
+      "approved": {
+        "label": "moroka-approved",
+        "sql": {
+          "general": 234000,
+          "invested": 7500,
+          "held": 241500,
+          "byType": {
+            "DEPOSIT": {
+              "amount": 250000,
+              "effect": 250000
+            },
+            "FEE_TRANSFER": {
+              "amount": 8500,
+              "effect": -8500
+            },
+            "INV_PLACE": {
+              "amount": 7500,
+              "effect": -7500
+            }
+          },
+          "deposits": 250000,
+          "transfersIn": 0,
+          "payments": 0,
+          "feeTransfers": 8500,
+          "refunds": 0,
+          "transfersOut": 0,
+          "placements": 7500,
+          "returns": 0
+        },
+        "api": {
+          "status": 200,
+          "card": {
+            "balance": 234000,
+            "investedBalance": 7500,
+            "totalDeposits": 250000,
+            "totalPayments": 0,
+            "totalFeeTransfers": 8500,
+            "totalRefunds": 0,
+            "totalTransfersIn": 0,
+            "totalTransfersOut": 0,
+            "totalInvestmentPlacements": 7500,
+            "totalInvestmentReturns": 0
+          },
+          "listStatus": 200,
+          "listRow": {
+            "balance": 234000,
+            "investedBalance": 7500,
+            "totalDeposits": 250000,
+            "totalPayments": 0,
+            "totalFeeTransfers": 8500,
+            "totalRefunds": 0,
+            "totalTransfersIn": 0,
+            "totalTransfersOut": 0,
+            "totalInvestmentPlacements": 7500,
+            "totalInvestmentReturns": 0
+          },
+          "listRowPresent": true,
+          "investmentsStatus": 200,
+          "s864FromAccount": [
+            {
+              "id": "0bcba89d-70ae-42fd-b770-e9d4d720c168",
+              "status": "ACTIVE",
+              "balance": 7500
+            }
+          ],
+          "sumInvestmentBalances": 7500
+        },
+        "ui": {
+          "summaryText": "Trust Balance R 234 000,00 Plus R 7 500,00 invested (section 86(4)) — R 241 500,00 held in trust in total Ledger totals Deposits R 250 000,00 − less Payments R 0,00 − less Fee transfers R 8 500,00 − less Refunds R 0,00 − less Placed in section 86(4) investments R 7 500,00 =General balance R 234 000,00 +Invested (section 86(4)) R 7 500,00 =Total held in trust R 241 500,00",
+          "trustBalanceFigure": 234000,
+          "summaryInvested": "Plus R 7 500,00 invested (section 86(4)) — R 241 500,00 held in trust in total",
+          "summaryInvestedAmounts": [
+            7500,
+            241500
+          ],
+          "rows": {
+            "deposits": {
+              "text": "Deposits R 250 000,00",
+              "dt": "Deposits",
+              "dd": "R 250 000,00",
+              "amount": 250000
+            },
+            "transfers-in": null,
+            "investment-returns": null,
+            "payments": {
+              "text": "− less Payments R 0,00",
+              "dt": "− less Payments",
+              "dd": "R 0,00",
+              "amount": 0
+            },
+            "fee-transfers": {
+              "text": "− less Fee transfers R 8 500,00",
+              "dt": "− less Fee transfers",
+              "dd": "R 8 500,00",
+              "amount": 8500
+            },
+            "refunds": {
+              "text": "− less Refunds R 0,00",
+              "dt": "− less Refunds",
+              "dd": "R 0,00",
+              "amount": 0
+            },
+            "transfers-out": null,
+            "investment-placements": {
+              "text": "− less Placed in section 86(4) investments R 7 500,00",
+              "dt": "− less Placed in section 86(4) investments",
+              "dd": "R 7 500,00",
+              "amount": 7500
+            },
+            "balance": {
+              "text": "=General balance R 234 000,00",
+              "dt": "=General balance",
+              "dd": "R 234 000,00",
+              "amount": 234000
+            },
+            "invested": {
+              "text": "+Invested (section 86(4)) R 7 500,00",
+              "dt": "+Invested (section 86(4))",
+              "dd": "R 7 500,00",
+              "amount": 7500
+            },
+            "held": {
+              "text": "=Total held in trust R 241 500,00",
+              "dt": "=Total held in trust",
+              "dd": "R 241 500,00",
+              "amount": 241500
+            }
+          },
+          "hasInvestedLabel": true,
+          "hasHeldLabel": true,
+          "files": [
+            "09-b4-client-ledger-page-moroka-approved-1440.png",
+            "09-b4-client-ledger-page-moroka-approved-1280.png"
+          ],
+          "scan": {
+            "label": "b4-client-ledger-page-moroka-approved",
+            "hits": [],
+            "clean": true
+          }
+        },
+        "tab": {
+          "cardText": "Trust Balance Funds Held R 234 000,00 Deposits R 250 000,00 − less Payments R 0,00 − less Fee transfers R 8 500,00 − less Refunds R 0,00 − less Placed in section 86(4) investments R 7 500,00 =General balance R 234 000,00 +Invested (section 86(4)) R 7 500,00 =Total held in trust R 241 500,00 Last transaction: 2026/11/18 Record Deposit Record Payment Fee Transfer",
+          "headline": 234000,
+          "badges": [
+            "Funds Held"
+          ],
+          "rows": {
+            "deposits": {
+              "text": "Deposits R 250 000,00",
+              "dt": "Deposits",
+              "dd": "R 250 000,00",
+              "amount": 250000
+            },
+            "transfers-in": null,
+            "investment-returns": null,
+            "payments": {
+              "text": "− less Payments R 0,00",
+              "dt": "− less Payments",
+              "dd": "R 0,00",
+              "amount": 0
+            },
+            "fee-transfers": {
+              "text": "− less Fee transfers R 8 500,00",
+              "dt": "− less Fee transfers",
+              "dd": "R 8 500,00",
+              "amount": 8500
+            },
+            "refunds": {
+              "text": "− less Refunds R 0,00",
+              "dt": "− less Refunds",
+              "dd": "R 0,00",
+              "amount": 0
+            },
+            "transfers-out": null,
+            "investment-placements": {
+              "text": "− less Placed in section 86(4) investments R 7 500,00",
+              "dt": "− less Placed in section 86(4) investments",
+              "dd": "R 7 500,00",
+              "amount": 7500
+            },
+            "balance": {
+              "text": "=General balance R 234 000,00",
+              "dt": "=General balance",
+              "dd": "R 234 000,00",
+              "amount": 234000
+            },
+            "invested": {
+              "text": "+Invested (section 86(4)) R 7 500,00",
+              "dt": "+Invested (section 86(4))",
+              "dd": "R 7 500,00",
+              "amount": 7500
+            },
+            "held": {
+              "text": "=Total held in trust R 241 500,00",
+              "dt": "=Total held in trust",
+              "dd": "R 241 500,00",
+              "amount": 241500
+            }
+          },
+          "files": [
+            "10-b4-client-trust-tab-moroka-approved-1440.png",
+            "10-b4-client-trust-tab-moroka-approved-1280.png"
+          ],
+          "scan": {
+            "label": "b4-client-trust-tab-moroka-approved",
+            "hits": [],
+            "clean": true
+          }
+        },
+        "checks": {
+          "apiStatus200": true,
+          "apiGeneralEqSql": true,
+          "apiInvestedEqSql": true,
+          "apiPlacementsEqSql": true,
+          "apiReturnsEqSql": true,
+          "apiTransfersOutEqSql": true,
+          "apiDepositsEqSql": true,
+          "apiListRowEqCard": true,
+          "apiInvestedEqSumInvestmentBalances": true,
+          "apiIdentity": true,
+          "uiSummaryFigureEqApi": true,
+          "uiBalanceRowEqApi": true,
+          "uiBalanceLabel": true,
+          "uiInvestedRow": true,
+          "uiHeldRow": true,
+          "uiSummaryLine": true,
+          "uiPlacementsRow": true,
+          "uiReturnsRow": true,
+          "uiTransfersOutRow": true,
+          "tabBreakdownEqPage": true,
+          "noRawEnum": true
+        },
+        "pass": true
+      },
+      "approvedQc": {
+        "balance": 15000,
+        "investedBalance": 30000,
+        "totalDeposits": 45000,
+        "totalPayments": 0,
+        "totalFeeTransfers": 0,
+        "totalRefunds": 0,
+        "totalTransfersIn": 0,
+        "totalTransfersOut": 0,
+        "totalInvestmentPlacements": 30000,
+        "totalInvestmentReturns": 0
+      },
+      "withdraw": {
+        "rowBefore": "Moroka Family Trust mwlnfzycfde4 Section 86(4) Nedbank Section 86(4) Investments Nedbank OBS4E-NKJHH 7.00% LPFF share 5% (statutory) 18 Nov 2026 Call deposit R 7 500,00 Interest R 0,00 R 7 500,00 Active Record Interest Withdraw",
+        "amountText": "R 7 500,00",
+        "txCountBefore": 10,
+        "txCountAfter": 12
+      },
+      "withdrawn": {
+        "label": "moroka-withdrawn",
+        "sql": {
+          "general": 241500,
+          "invested": 0,
+          "held": 241500,
+          "byType": {
+            "DEPOSIT": {
+              "amount": 250000,
+              "effect": 250000
+            },
+            "FEE_TRANSFER": {
+              "amount": 8500,
+              "effect": -8500
+            },
+            "INV_PLACE": {
+              "amount": 7500,
+              "effect": -7500
+            },
+            "INV_RETURN": {
+              "amount": 7500,
+              "effect": 7500
+            }
+          },
+          "deposits": 250000,
+          "transfersIn": 0,
+          "payments": 0,
+          "feeTransfers": 8500,
+          "refunds": 0,
+          "transfersOut": 0,
+          "placements": 7500,
+          "returns": 7500
+        },
+        "api": {
+          "status": 200,
+          "card": {
+            "balance": 241500,
+            "investedBalance": 0,
+            "totalDeposits": 250000,
+            "totalPayments": 0,
+            "totalFeeTransfers": 8500,
+            "totalRefunds": 0,
+            "totalTransfersIn": 0,
+            "totalTransfersOut": 0,
+            "totalInvestmentPlacements": 7500,
+            "totalInvestmentReturns": 7500
+          },
+          "listStatus": 200,
+          "listRow": {
+            "balance": 241500,
+            "investedBalance": 0,
+            "totalDeposits": 250000,
+            "totalPayments": 0,
+            "totalFeeTransfers": 8500,
+            "totalRefunds": 0,
+            "totalTransfersIn": 0,
+            "totalTransfersOut": 0,
+            "totalInvestmentPlacements": 7500,
+            "totalInvestmentReturns": 7500
+          },
+          "listRowPresent": true,
+          "investmentsStatus": 200,
+          "s864FromAccount": [
+            {
+              "id": "0bcba89d-70ae-42fd-b770-e9d4d720c168",
+              "status": "WITHDRAWN",
+              "balance": 0
+            }
+          ],
+          "sumInvestmentBalances": 0
+        },
+        "ui": {
+          "summaryText": "Trust Balance R 241 500,00 Ledger totals Deposits R 250 000,00 +Returned from section 86(4) investments R 7 500,00 − less Payments R 0,00 − less Fee transfers R 8 500,00 − less Refunds R 0,00 − less Placed in section 86(4) investments R 7 500,00 =Balance R 241 500,00",
+          "trustBalanceFigure": 241500,
+          "summaryInvested": null,
+          "summaryInvestedAmounts": null,
+          "rows": {
+            "deposits": {
+              "text": "Deposits R 250 000,00",
+              "dt": "Deposits",
+              "dd": "R 250 000,00",
+              "amount": 250000
+            },
+            "transfers-in": null,
+            "investment-returns": {
+              "text": "+Returned from section 86(4) investments R 7 500,00",
+              "dt": "+Returned from section 86(4) investments",
+              "dd": "R 7 500,00",
+              "amount": 7500
+            },
+            "payments": {
+              "text": "− less Payments R 0,00",
+              "dt": "− less Payments",
+              "dd": "R 0,00",
+              "amount": 0
+            },
+            "fee-transfers": {
+              "text": "− less Fee transfers R 8 500,00",
+              "dt": "− less Fee transfers",
+              "dd": "R 8 500,00",
+              "amount": 8500
+            },
+            "refunds": {
+              "text": "− less Refunds R 0,00",
+              "dt": "− less Refunds",
+              "dd": "R 0,00",
+              "amount": 0
+            },
+            "transfers-out": null,
+            "investment-placements": {
+              "text": "− less Placed in section 86(4) investments R 7 500,00",
+              "dt": "− less Placed in section 86(4) investments",
+              "dd": "R 7 500,00",
+              "amount": 7500
+            },
+            "balance": {
+              "text": "=Balance R 241 500,00",
+              "dt": "=Balance",
+              "dd": "R 241 500,00",
+              "amount": 241500
+            },
+            "invested": null,
+            "held": null
+          },
+          "hasInvestedLabel": false,
+          "hasHeldLabel": false,
+          "files": [
+            "11-b6-client-ledger-page-moroka-withdrawn-1440.png",
+            "11-b6-client-ledger-page-moroka-withdrawn-1280.png"
+          ],
+          "scan": {
+            "label": "b6-client-ledger-page-moroka-withdrawn",
+            "hits": [],
+            "clean": true
+          }
+        },
+        "tab": {
+          "cardText": "Trust Balance Funds Held R 241 500,00 Deposits R 250 000,00 +Returned from section 86(4) investments R 7 500,00 − less Payments R 0,00 − less Fee transfers R 8 500,00 − less Refunds R 0,00 − less Placed in section 86(4) investments R 7 500,00 =Balance R 241 500,00 Last transaction: 2026/11/18 Record Deposit Record Payment Fee Transfer",
+          "headline": 241500,
+          "badges": [
+            "Funds Held"
+          ],
+          "rows": {
+            "deposits": {
+              "text": "Deposits R 250 000,00",
+              "dt": "Deposits",
+              "dd": "R 250 000,00",
+              "amount": 250000
+            },
+            "transfers-in": null,
+            "investment-returns": {
+              "text": "+Returned from section 86(4) investments R 7 500,00",
+              "dt": "+Returned from section 86(4) investments",
+              "dd": "R 7 500,00",
+              "amount": 7500
+            },
+            "payments": {
+              "text": "− less Payments R 0,00",
+              "dt": "− less Payments",
+              "dd": "R 0,00",
+              "amount": 0
+            },
+            "fee-transfers": {
+              "text": "− less Fee transfers R 8 500,00",
+              "dt": "− less Fee transfers",
+              "dd": "R 8 500,00",
+              "amount": 8500
+            },
+            "refunds": {
+              "text": "− less Refunds R 0,00",
+              "dt": "− less Refunds",
+              "dd": "R 0,00",
+              "amount": 0
+            },
+            "transfers-out": null,
+            "investment-placements": {
+              "text": "− less Placed in section 86(4) investments R 7 500,00",
+              "dt": "− less Placed in section 86(4) investments",
+              "dd": "R 7 500,00",
+              "amount": 7500
+            },
+            "balance": {
+              "text": "=Balance R 241 500,00",
+              "dt": "=Balance",
+              "dd": "R 241 500,00",
+              "amount": 241500
+            },
+            "invested": null,
+            "held": null
+          },
+          "files": [
+            "12-b6-client-trust-tab-moroka-withdrawn-1440.png",
+            "12-b6-client-trust-tab-moroka-withdrawn-1280.png"
+          ],
+          "scan": {
+            "label": "b6-client-trust-tab-moroka-withdrawn",
+            "hits": [],
+            "clean": true
+          }
+        },
+        "checks": {
+          "apiStatus200": true,
+          "apiGeneralEqSql": true,
+          "apiInvestedEqSql": true,
+          "apiPlacementsEqSql": true,
+          "apiReturnsEqSql": true,
+          "apiTransfersOutEqSql": true,
+          "apiDepositsEqSql": true,
+          "apiListRowEqCard": true,
+          "apiInvestedEqSumInvestmentBalances": true,
+          "apiIdentity": true,
+          "uiSummaryFigureEqApi": true,
+          "uiBalanceRowEqApi": true,
+          "uiBalanceLabel": true,
+          "uiInvestedRow": true,
+          "uiHeldRow": true,
+          "uiSummaryLine": true,
+          "uiPlacementsRow": true,
+          "uiReturnsRow": true,
+          "uiTransfersOutRow": true,
+          "tabBreakdownEqPage": true,
+          "noRawEnum": true
+        },
+        "pass": true
+      },
+      "figures": {
+        "baseline": {
+          "general": 241500,
+          "invested": 0,
+          "held": 241500,
+          "placements": 0,
+          "returns": 0
+        },
+        "pending": {
+          "general": 241500,
+          "invested": 0,
+          "held": 241500,
+          "placements": 0,
+          "returns": 0
+        },
+        "approved": {
+          "general": 234000,
+          "invested": 7500,
+          "held": 241500,
+          "placements": 7500,
+          "returns": 0
+        },
+        "withdrawn": {
+          "general": 241500,
+          "invested": 0,
+          "held": 241500,
+          "placements": 7500,
+          "returns": 7500
+        }
+      },
+      "uiTexts": {
+        "approved": {
+          "placements": "− less Placed in section 86(4) investments R 7 500,00",
+          "balance": "=General balance R 234 000,00",
+          "invested": "+Invested (section 86(4)) R 7 500,00",
+          "held": "=Total held in trust R 241 500,00",
+          "summaryLine": "Plus R 7 500,00 invested (section 86(4)) — R 241 500,00 held in trust in total"
+        },
+        "withdrawn": {
+          "placements": "− less Placed in section 86(4) investments R 7 500,00",
+          "returns": "+Returned from section 86(4) investments R 7 500,00",
+          "balance": "=Balance R 241 500,00",
+          "invested": null,
+          "held": null,
+          "summaryLine": null
+        }
+      },
+      "checks": {
+        "pendingAwaiting": true,
+        "pendingNothingMoved": true,
+        "pendingPageUnchanged": true,
+        "approvedGeneralDown": true,
+        "approvedInvestedUp": true,
+        "approvedHeldUnchanged": true,
+        "approvedPlacements": true,
+        "approvedTransfersOutUnchanged": true,
+        "approvedQcUnchanged": true,
+        "withdrawnInvestedZero": true,
+        "withdrawnGeneralBack": true,
+        "withdrawnReturns": true,
+        "withdrawnRowsHidden": true,
+        "withdrawnReturnsShown": true,
+        "approvedPlacedText": true,
+        "approvedInvestedText": true,
+        "pendingAgree": true,
+        "approvedAgree": true,
+        "withdrawnAgree": true
+      }
+    }
+  },
+  "consoleErrors": [],
+  "pageErrors": [],
+  "posts": [
+    {
+      "tab": "alice",
+      "at": "2026-11-18T05:00:24.824Z",
+      "url": "http://localhost:8090/token",
+      "nextAction": null
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T05:00:25.048Z",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "nextAction": "001123e7c84a744655a9edb74d965576283538370b"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T05:00:25.093Z",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "nextAction": "004f994f3110c01345c0677e0d4fbae83862570ebb"
+    },
+    {
+      "tab": "bob",
+      "at": "2026-11-18T05:00:25.959Z",
+      "url": "http://localhost:8090/token",
+      "nextAction": null
+    },
+    {
+      "tab": "bob",
+      "at": "2026-11-18T05:00:26.130Z",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "nextAction": "001123e7c84a744655a9edb74d965576283538370b"
+    },
+    {
+      "tab": "bob",
+      "at": "2026-11-18T05:00:26.170Z",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "nextAction": "004f994f3110c01345c0677e0d4fbae83862570ebb"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T05:00:28.577Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/client-ledgers/66f2d61f-5a07-407d-80bf-2d35804e9fe5",
+      "nextAction": "001123e7c84a744655a9edb74d965576283538370b"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T05:00:36.668Z",
+      "url": "http://localhost:3001/org/e2e-test-org/clients/66f2d61f-5a07-407d-80bf-2d35804e9fe5?tab=trust",
+      "nextAction": "001123e7c84a744655a9edb74d965576283538370b"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T05:00:36.990Z",
+      "url": "http://localhost:3001/org/e2e-test-org/clients/66f2d61f-5a07-407d-80bf-2d35804e9fe5?tab=trust",
+      "nextAction": "003d679dcc31d693436d20fc68779f85c8f754a0eb"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T05:00:37.004Z",
+      "url": "http://localhost:3001/org/e2e-test-org/clients/66f2d61f-5a07-407d-80bf-2d35804e9fe5?tab=trust",
+      "nextAction": "60e6e11467156d81e77e8953bf215e912242bce72f"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T05:00:42.895Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/client-ledgers/79a8995d-de11-4e1b-a343-ced352868e20",
+      "nextAction": "001123e7c84a744655a9edb74d965576283538370b"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T05:00:46.112Z",
+      "url": "http://localhost:3001/org/e2e-test-org/clients/79a8995d-de11-4e1b-a343-ced352868e20?tab=trust",
+      "nextAction": "001123e7c84a744655a9edb74d965576283538370b"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T05:00:46.429Z",
+      "url": "http://localhost:3001/org/e2e-test-org/clients/79a8995d-de11-4e1b-a343-ced352868e20?tab=trust",
+      "nextAction": "003d679dcc31d693436d20fc68779f85c8f754a0eb"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T05:00:46.445Z",
+      "url": "http://localhost:3001/org/e2e-test-org/clients/79a8995d-de11-4e1b-a343-ced352868e20?tab=trust",
+      "nextAction": "60e6e11467156d81e77e8953bf215e912242bce72f"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T05:00:49.643Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/investments",
+      "nextAction": "001123e7c84a744655a9edb74d965576283538370b"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T05:00:52.427Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/investments",
+      "nextAction": "6031f96df84b06698eabaefd7bc86f78359a69b2a0"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T05:00:53.640Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/client-ledgers/79a8995d-de11-4e1b-a343-ced352868e20",
+      "nextAction": "001123e7c84a744655a9edb74d965576283538370b"
+    },
+    {
+      "tab": "bob",
+      "at": "2026-11-18T05:00:56.123Z",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "nextAction": "001123e7c84a744655a9edb74d965576283538370b"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T05:00:56.767Z",
+      "url": "http://localhost:3001/org/e2e-test-org/clients/79a8995d-de11-4e1b-a343-ced352868e20?tab=trust",
+      "nextAction": "001123e7c84a744655a9edb74d965576283538370b"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T05:00:57.091Z",
+      "url": "http://localhost:3001/org/e2e-test-org/clients/79a8995d-de11-4e1b-a343-ced352868e20?tab=trust",
+      "nextAction": "003d679dcc31d693436d20fc68779f85c8f754a0eb"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T05:00:57.105Z",
+      "url": "http://localhost:3001/org/e2e-test-org/clients/79a8995d-de11-4e1b-a343-ced352868e20?tab=trust",
+      "nextAction": "60e6e11467156d81e77e8953bf215e912242bce72f"
+    },
+    {
+      "tab": "bob",
+      "at": "2026-11-18T05:01:00.079Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/transactions",
+      "nextAction": "001123e7c84a744655a9edb74d965576283538370b"
+    },
+    {
+      "tab": "bob",
+      "at": "2026-11-18T05:01:01.166Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/transactions",
+      "nextAction": "40628c65f1fbab91733eb23ff4c573e1dd6d4535ef"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T05:01:02.135Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/client-ledgers/79a8995d-de11-4e1b-a343-ced352868e20",
+      "nextAction": "001123e7c84a744655a9edb74d965576283538370b"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T05:01:10.209Z",
+      "url": "http://localhost:3001/org/e2e-test-org/clients/79a8995d-de11-4e1b-a343-ced352868e20?tab=trust",
+      "nextAction": "001123e7c84a744655a9edb74d965576283538370b"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T05:01:10.527Z",
+      "url": "http://localhost:3001/org/e2e-test-org/clients/79a8995d-de11-4e1b-a343-ced352868e20?tab=trust",
+      "nextAction": "003d679dcc31d693436d20fc68779f85c8f754a0eb"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T05:01:10.541Z",
+      "url": "http://localhost:3001/org/e2e-test-org/clients/79a8995d-de11-4e1b-a343-ced352868e20?tab=trust",
+      "nextAction": "60e6e11467156d81e77e8953bf215e912242bce72f"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T05:01:15.963Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/investments",
+      "nextAction": "001123e7c84a744655a9edb74d965576283538370b"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T05:01:16.715Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/investments",
+      "nextAction": "60121aadada452ca49b0b1be8dbaf1539f38feed2b"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T05:01:17.787Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/client-ledgers/79a8995d-de11-4e1b-a343-ced352868e20",
+      "nextAction": "001123e7c84a744655a9edb74d965576283538370b"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T05:01:25.860Z",
+      "url": "http://localhost:3001/org/e2e-test-org/clients/79a8995d-de11-4e1b-a343-ced352868e20?tab=trust",
+      "nextAction": "001123e7c84a744655a9edb74d965576283538370b"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T05:01:26.183Z",
+      "url": "http://localhost:3001/org/e2e-test-org/clients/79a8995d-de11-4e1b-a343-ced352868e20?tab=trust",
+      "nextAction": "003d679dcc31d693436d20fc68779f85c8f754a0eb"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T05:01:26.202Z",
+      "url": "http://localhost:3001/org/e2e-test-org/clients/79a8995d-de11-4e1b-a343-ced352868e20?tab=trust",
+      "nextAction": "60e6e11467156d81e77e8953bf215e912242bce72f"
+    },
+    {
+      "tab": "bob",
+      "at": "2026-11-18T05:01:30.073Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/transactions",
+      "nextAction": "001123e7c84a744655a9edb74d965576283538370b"
+    }
+  ],
+  "notes": [],
+  "scans": [
+    {
+      "label": "a-client-ledger-page-quickcollect-after-lifecycle",
+      "hits": [],
+      "clean": true
+    },
+    {
+      "label": "a-client-trust-tab-quickcollect-after-lifecycle",
+      "hits": [],
+      "clean": true
+    },
+    {
+      "label": "c-client-ledger-page-moroka-baseline",
+      "hits": [],
+      "clean": true
+    },
+    {
+      "label": "c-client-trust-tab-moroka-baseline",
+      "hits": [],
+      "clean": true
+    },
+    {
+      "label": "b2-client-ledger-page-moroka-pending",
+      "hits": [],
+      "clean": true
+    },
+    {
+      "label": "b2-client-trust-tab-moroka-pending",
+      "hits": [],
+      "clean": true
+    },
+    {
+      "label": "b4-client-ledger-page-moroka-approved",
+      "hits": [],
+      "clean": true
+    },
+    {
+      "label": "b4-client-trust-tab-moroka-approved",
+      "hits": [],
+      "clean": true
+    },
+    {
+      "label": "b6-client-ledger-page-moroka-withdrawn",
+      "hits": [],
+      "clean": true
+    },
+    {
+      "label": "b6-client-trust-tab-moroka-withdrawn",
+      "hits": [],
+      "clean": true
+    }
+  ],
+  "clips": {
+    "a-client-summary-quickcollect-after-lifecycle": [
+      {
+        "width": 1280,
+        "ok": true,
+        "figuresOk": true,
+        "pageHorizontalScroll": false,
+        "root": {
+          "left": 280,
+          "right": 1256,
+          "top": 216,
+          "bottom": 516,
+          "clientWidth": 976,
+          "scrollWidth": 976,
+          "clientHeight": 300,
+          "scrollHeight": 300,
+          "overflowY": "visible"
+        },
+        "offenders": [],
+        "truncated": [],
+        "figures": [
+          {
+            "text": "R 15 000,00",
+            "left": 305,
+            "right": 570,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "Plus R 30 000,00 invested (section 86(4)) — R 45 000,00 held in trust in total",
+            "left": 305,
+            "right": 570,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 45 000,00",
+            "left": 1139,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1181,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1181,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1181,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 30 000,00",
+            "left": 1139,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 15 000,00",
+            "left": 1139,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 30 000,00",
+            "left": 1139,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 45 000,00",
+            "left": 1139,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          }
+        ]
+      },
+      {
+        "width": 1440,
+        "ok": true,
+        "figuresOk": true,
+        "pageHorizontalScroll": false,
+        "root": {
+          "left": 280,
+          "right": 1416,
+          "top": 216,
+          "bottom": 516,
+          "clientWidth": 1136,
+          "scrollWidth": 1136,
+          "clientHeight": 300,
+          "scrollHeight": 300,
+          "overflowY": "visible"
+        },
+        "offenders": [],
+        "truncated": [],
+        "figures": [
+          {
+            "text": "R 15 000,00",
+            "left": 305,
+            "right": 623,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "Plus R 30 000,00 invested (section 86(4)) — R 45 000,00 held in trust in total",
+            "left": 305,
+            "right": 623,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 45 000,00",
+            "left": 1299,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1341,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1341,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1341,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 30 000,00",
+            "left": 1299,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 15 000,00",
+            "left": 1299,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 30 000,00",
+            "left": 1299,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 45 000,00",
+            "left": 1299,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          }
+        ]
+      },
+      {
+        "width": 1920,
+        "ok": true,
+        "figuresOk": true,
+        "pageHorizontalScroll": false,
+        "root": {
+          "left": 472,
+          "right": 1704,
+          "top": 216,
+          "bottom": 516,
+          "clientWidth": 1232,
+          "scrollWidth": 1232,
+          "clientHeight": 300,
+          "scrollHeight": 300,
+          "overflowY": "visible"
+        },
+        "offenders": [],
+        "truncated": [],
+        "figures": [
+          {
+            "text": "R 15 000,00",
+            "left": 497,
+            "right": 847,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "Plus R 30 000,00 invested (section 86(4)) — R 45 000,00 held in trust in total",
+            "left": 497,
+            "right": 847,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 45 000,00",
+            "left": 1587,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1629,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1629,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1629,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 30 000,00",
+            "left": 1587,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 15 000,00",
+            "left": 1587,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 30 000,00",
+            "left": 1587,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 45 000,00",
+            "left": 1587,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          }
+        ]
+      }
+    ],
+    "a-breakdown-quickcollect-after-lifecycle": [
+      {
+        "width": 1280,
+        "ok": true,
+        "figuresOk": true,
+        "pageHorizontalScroll": false,
+        "root": {
+          "left": 636,
+          "right": 1231,
+          "top": 293,
+          "bottom": 491,
+          "clientWidth": 595,
+          "scrollWidth": 595,
+          "clientHeight": 198,
+          "scrollHeight": 198,
+          "overflowY": "visible"
+        },
+        "offenders": [],
+        "truncated": [],
+        "figures": [
+          {
+            "text": "R 45 000,00",
+            "left": 1139,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1181,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1181,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1181,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 30 000,00",
+            "left": 1139,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 15 000,00",
+            "left": 1139,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 30 000,00",
+            "left": 1139,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 45 000,00",
+            "left": 1139,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          }
+        ]
+      },
+      {
+        "width": 1440,
+        "ok": true,
+        "figuresOk": true,
+        "pageHorizontalScroll": false,
+        "root": {
+          "left": 689,
+          "right": 1391,
+          "top": 293,
+          "bottom": 491,
+          "clientWidth": 702,
+          "scrollWidth": 702,
+          "clientHeight": 198,
+          "scrollHeight": 198,
+          "overflowY": "visible"
+        },
+        "offenders": [],
+        "truncated": [],
+        "figures": [
+          {
+            "text": "R 45 000,00",
+            "left": 1299,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1341,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1341,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1341,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 30 000,00",
+            "left": 1299,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 15 000,00",
+            "left": 1299,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 30 000,00",
+            "left": 1299,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 45 000,00",
+            "left": 1299,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          }
+        ]
+      },
+      {
+        "width": 1920,
+        "ok": true,
+        "figuresOk": true,
+        "pageHorizontalScroll": false,
+        "root": {
+          "left": 913,
+          "right": 1679,
+          "top": 293,
+          "bottom": 491,
+          "clientWidth": 766,
+          "scrollWidth": 766,
+          "clientHeight": 198,
+          "scrollHeight": 198,
+          "overflowY": "visible"
+        },
+        "offenders": [],
+        "truncated": [],
+        "figures": [
+          {
+            "text": "R 45 000,00",
+            "left": 1587,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1629,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1629,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1629,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 30 000,00",
+            "left": 1587,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 15 000,00",
+            "left": 1587,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 30 000,00",
+            "left": 1587,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 45 000,00",
+            "left": 1587,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          }
+        ]
+      }
+    ],
+    "a-trust-tab-card-quickcollect-after-lifecycle": [
+      {
+        "width": 1280,
+        "ok": true,
+        "figuresOk": true,
+        "pageHorizontalScroll": false,
+        "root": {
+          "left": 280,
+          "right": 1256,
+          "top": 518,
+          "bottom": 961,
+          "clientWidth": 974,
+          "scrollWidth": 974,
+          "clientHeight": 441,
+          "scrollHeight": 441,
+          "overflowY": "visible"
+        },
+        "offenders": [],
+        "truncated": [],
+        "figures": [
+          {
+            "text": "R 15 000,00",
+            "left": 305,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 45 000,00",
+            "left": 1139,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1181,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1181,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1181,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 30 000,00",
+            "left": 1139,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 15 000,00",
+            "left": 1139,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 30 000,00",
+            "left": 1139,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 45 000,00",
+            "left": 1139,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          }
+        ]
+      },
+      {
+        "width": 1440,
+        "ok": true,
+        "figuresOk": true,
+        "pageHorizontalScroll": false,
+        "root": {
+          "left": 280,
+          "right": 1416,
+          "top": 502,
+          "bottom": 945,
+          "clientWidth": 1134,
+          "scrollWidth": 1134,
+          "clientHeight": 441,
+          "scrollHeight": 441,
+          "overflowY": "visible"
+        },
+        "offenders": [],
+        "truncated": [],
+        "figures": [
+          {
+            "text": "R 15 000,00",
+            "left": 305,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 45 000,00",
+            "left": 1299,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1341,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1341,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1341,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 30 000,00",
+            "left": 1299,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 15 000,00",
+            "left": 1299,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 30 000,00",
+            "left": 1299,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 45 000,00",
+            "left": 1299,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          }
+        ]
+      },
+      {
+        "width": 1920,
+        "ok": true,
+        "figuresOk": true,
+        "pageHorizontalScroll": false,
+        "root": {
+          "left": 472,
+          "right": 1704,
+          "top": 502,
+          "bottom": 945,
+          "clientWidth": 1230,
+          "scrollWidth": 1230,
+          "clientHeight": 441,
+          "scrollHeight": 441,
+          "overflowY": "visible"
+        },
+        "offenders": [],
+        "truncated": [],
+        "figures": [
+          {
+            "text": "R 15 000,00",
+            "left": 497,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 45 000,00",
+            "left": 1587,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1629,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1629,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1629,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 30 000,00",
+            "left": 1587,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 15 000,00",
+            "left": 1587,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 30 000,00",
+            "left": 1587,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 45 000,00",
+            "left": 1587,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          }
+        ]
+      }
+    ],
+    "b4-client-summary-moroka-approved": [
+      {
+        "width": 1280,
+        "ok": true,
+        "figuresOk": true,
+        "pageHorizontalScroll": false,
+        "root": {
+          "left": 280,
+          "right": 1256,
+          "top": 216,
+          "bottom": 516,
+          "clientWidth": 976,
+          "scrollWidth": 976,
+          "clientHeight": 300,
+          "scrollHeight": 300,
+          "overflowY": "visible"
+        },
+        "offenders": [],
+        "truncated": [],
+        "figures": [
+          {
+            "text": "R 234 000,00",
+            "left": 305,
+            "right": 570,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "Plus R 7 500,00 invested (section 86(4)) — R 241 500,00 held in trust in total",
+            "left": 305,
+            "right": 570,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 250 000,00",
+            "left": 1130,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1181,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 8 500,00",
+            "left": 1147,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1181,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 7 500,00",
+            "left": 1147,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 234 000,00",
+            "left": 1130,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 7 500,00",
+            "left": 1147,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 241 500,00",
+            "left": 1130,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          }
+        ]
+      },
+      {
+        "width": 1440,
+        "ok": true,
+        "figuresOk": true,
+        "pageHorizontalScroll": false,
+        "root": {
+          "left": 280,
+          "right": 1416,
+          "top": 216,
+          "bottom": 516,
+          "clientWidth": 1136,
+          "scrollWidth": 1136,
+          "clientHeight": 300,
+          "scrollHeight": 300,
+          "overflowY": "visible"
+        },
+        "offenders": [],
+        "truncated": [],
+        "figures": [
+          {
+            "text": "R 234 000,00",
+            "left": 305,
+            "right": 623,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "Plus R 7 500,00 invested (section 86(4)) — R 241 500,00 held in trust in total",
+            "left": 305,
+            "right": 623,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 250 000,00",
+            "left": 1290,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1341,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 8 500,00",
+            "left": 1307,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1341,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 7 500,00",
+            "left": 1307,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 234 000,00",
+            "left": 1290,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 7 500,00",
+            "left": 1307,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 241 500,00",
+            "left": 1290,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          }
+        ]
+      },
+      {
+        "width": 1920,
+        "ok": true,
+        "figuresOk": true,
+        "pageHorizontalScroll": false,
+        "root": {
+          "left": 472,
+          "right": 1704,
+          "top": 216,
+          "bottom": 516,
+          "clientWidth": 1232,
+          "scrollWidth": 1232,
+          "clientHeight": 300,
+          "scrollHeight": 300,
+          "overflowY": "visible"
+        },
+        "offenders": [],
+        "truncated": [],
+        "figures": [
+          {
+            "text": "R 234 000,00",
+            "left": 497,
+            "right": 847,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "Plus R 7 500,00 invested (section 86(4)) — R 241 500,00 held in trust in total",
+            "left": 497,
+            "right": 847,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 250 000,00",
+            "left": 1578,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1629,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 8 500,00",
+            "left": 1595,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1629,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 7 500,00",
+            "left": 1595,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 234 000,00",
+            "left": 1578,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 7 500,00",
+            "left": 1595,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 241 500,00",
+            "left": 1578,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          }
+        ]
+      }
+    ],
+    "b4-breakdown-moroka-approved": [
+      {
+        "width": 1280,
+        "ok": true,
+        "figuresOk": true,
+        "pageHorizontalScroll": false,
+        "root": {
+          "left": 636,
+          "right": 1231,
+          "top": 293,
+          "bottom": 491,
+          "clientWidth": 595,
+          "scrollWidth": 595,
+          "clientHeight": 198,
+          "scrollHeight": 198,
+          "overflowY": "visible"
+        },
+        "offenders": [],
+        "truncated": [],
+        "figures": [
+          {
+            "text": "R 250 000,00",
+            "left": 1130,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1181,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 8 500,00",
+            "left": 1147,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1181,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 7 500,00",
+            "left": 1147,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 234 000,00",
+            "left": 1130,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 7 500,00",
+            "left": 1147,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 241 500,00",
+            "left": 1130,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          }
+        ]
+      },
+      {
+        "width": 1440,
+        "ok": true,
+        "figuresOk": true,
+        "pageHorizontalScroll": false,
+        "root": {
+          "left": 689,
+          "right": 1391,
+          "top": 293,
+          "bottom": 491,
+          "clientWidth": 702,
+          "scrollWidth": 702,
+          "clientHeight": 198,
+          "scrollHeight": 198,
+          "overflowY": "visible"
+        },
+        "offenders": [],
+        "truncated": [],
+        "figures": [
+          {
+            "text": "R 250 000,00",
+            "left": 1290,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1341,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 8 500,00",
+            "left": 1307,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1341,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 7 500,00",
+            "left": 1307,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 234 000,00",
+            "left": 1290,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 7 500,00",
+            "left": 1307,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 241 500,00",
+            "left": 1290,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          }
+        ]
+      },
+      {
+        "width": 1920,
+        "ok": true,
+        "figuresOk": true,
+        "pageHorizontalScroll": false,
+        "root": {
+          "left": 913,
+          "right": 1679,
+          "top": 293,
+          "bottom": 491,
+          "clientWidth": 766,
+          "scrollWidth": 766,
+          "clientHeight": 198,
+          "scrollHeight": 198,
+          "overflowY": "visible"
+        },
+        "offenders": [],
+        "truncated": [],
+        "figures": [
+          {
+            "text": "R 250 000,00",
+            "left": 1578,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1629,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 8 500,00",
+            "left": 1595,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1629,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 7 500,00",
+            "left": 1595,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 234 000,00",
+            "left": 1578,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 7 500,00",
+            "left": 1595,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 241 500,00",
+            "left": 1578,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          }
+        ]
+      }
+    ],
+    "b4-trust-tab-card-moroka-approved": [
+      {
+        "width": 1280,
+        "ok": true,
+        "figuresOk": true,
+        "pageHorizontalScroll": false,
+        "root": {
+          "left": 280,
+          "right": 1256,
+          "top": 518,
+          "bottom": 961,
+          "clientWidth": 974,
+          "scrollWidth": 974,
+          "clientHeight": 441,
+          "scrollHeight": 441,
+          "overflowY": "visible"
+        },
+        "offenders": [],
+        "truncated": [],
+        "figures": [
+          {
+            "text": "R 234 000,00",
+            "left": 305,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 250 000,00",
+            "left": 1130,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1181,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 8 500,00",
+            "left": 1147,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1181,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 7 500,00",
+            "left": 1147,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 234 000,00",
+            "left": 1130,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 7 500,00",
+            "left": 1147,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 241 500,00",
+            "left": 1130,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          }
+        ]
+      },
+      {
+        "width": 1440,
+        "ok": true,
+        "figuresOk": true,
+        "pageHorizontalScroll": false,
+        "root": {
+          "left": 280,
+          "right": 1416,
+          "top": 502,
+          "bottom": 945,
+          "clientWidth": 1134,
+          "scrollWidth": 1134,
+          "clientHeight": 441,
+          "scrollHeight": 441,
+          "overflowY": "visible"
+        },
+        "offenders": [],
+        "truncated": [],
+        "figures": [
+          {
+            "text": "R 234 000,00",
+            "left": 305,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 250 000,00",
+            "left": 1290,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1341,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 8 500,00",
+            "left": 1307,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1341,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 7 500,00",
+            "left": 1307,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 234 000,00",
+            "left": 1290,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 7 500,00",
+            "left": 1307,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 241 500,00",
+            "left": 1290,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          }
+        ]
+      },
+      {
+        "width": 1920,
+        "ok": true,
+        "figuresOk": true,
+        "pageHorizontalScroll": false,
+        "root": {
+          "left": 472,
+          "right": 1704,
+          "top": 502,
+          "bottom": 945,
+          "clientWidth": 1230,
+          "scrollWidth": 1230,
+          "clientHeight": 441,
+          "scrollHeight": 441,
+          "overflowY": "visible"
+        },
+        "offenders": [],
+        "truncated": [],
+        "figures": [
+          {
+            "text": "R 234 000,00",
+            "left": 497,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 250 000,00",
+            "left": 1578,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1629,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 8 500,00",
+            "left": 1595,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1629,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 7 500,00",
+            "left": 1595,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 234 000,00",
+            "left": 1578,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 7 500,00",
+            "left": 1595,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 241 500,00",
+            "left": 1578,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          }
+        ]
+      }
+    ],
+    "b6-client-summary-moroka-withdrawn": [
+      {
+        "width": 1280,
+        "ok": true,
+        "figuresOk": true,
+        "pageHorizontalScroll": false,
+        "root": {
+          "left": 280,
+          "right": 1256,
+          "top": 216,
+          "bottom": 487,
+          "clientWidth": 976,
+          "scrollWidth": 976,
+          "clientHeight": 271,
+          "scrollHeight": 271,
+          "overflowY": "visible"
+        },
+        "offenders": [],
+        "truncated": [],
+        "figures": [
+          {
+            "text": "R 241 500,00",
+            "left": 305,
+            "right": 570,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 250 000,00",
+            "left": 1130,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 7 500,00",
+            "left": 1147,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1181,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 8 500,00",
+            "left": 1147,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1181,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 7 500,00",
+            "left": 1147,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 241 500,00",
+            "left": 1130,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          }
+        ]
+      },
+      {
+        "width": 1440,
+        "ok": true,
+        "figuresOk": true,
+        "pageHorizontalScroll": false,
+        "root": {
+          "left": 280,
+          "right": 1416,
+          "top": 216,
+          "bottom": 487,
+          "clientWidth": 1136,
+          "scrollWidth": 1136,
+          "clientHeight": 271,
+          "scrollHeight": 271,
+          "overflowY": "visible"
+        },
+        "offenders": [],
+        "truncated": [],
+        "figures": [
+          {
+            "text": "R 241 500,00",
+            "left": 305,
+            "right": 623,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 250 000,00",
+            "left": 1290,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 7 500,00",
+            "left": 1307,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1341,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 8 500,00",
+            "left": 1307,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1341,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 7 500,00",
+            "left": 1307,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 241 500,00",
+            "left": 1290,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          }
+        ]
+      },
+      {
+        "width": 1920,
+        "ok": true,
+        "figuresOk": true,
+        "pageHorizontalScroll": false,
+        "root": {
+          "left": 472,
+          "right": 1704,
+          "top": 216,
+          "bottom": 487,
+          "clientWidth": 1232,
+          "scrollWidth": 1232,
+          "clientHeight": 271,
+          "scrollHeight": 271,
+          "overflowY": "visible"
+        },
+        "offenders": [],
+        "truncated": [],
+        "figures": [
+          {
+            "text": "R 241 500,00",
+            "left": 497,
+            "right": 847,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 250 000,00",
+            "left": 1578,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 7 500,00",
+            "left": 1595,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1629,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 8 500,00",
+            "left": 1595,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1629,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 7 500,00",
+            "left": 1595,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 241 500,00",
+            "left": 1578,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          }
+        ]
+      }
+    ],
+    "b6-breakdown-moroka-withdrawn": [
+      {
+        "width": 1280,
+        "ok": true,
+        "figuresOk": true,
+        "pageHorizontalScroll": false,
+        "root": {
+          "left": 636,
+          "right": 1231,
+          "top": 293,
+          "bottom": 462,
+          "clientWidth": 595,
+          "scrollWidth": 595,
+          "clientHeight": 169,
+          "scrollHeight": 169,
+          "overflowY": "visible"
+        },
+        "offenders": [],
+        "truncated": [],
+        "figures": [
+          {
+            "text": "R 250 000,00",
+            "left": 1130,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 7 500,00",
+            "left": 1147,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1181,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 8 500,00",
+            "left": 1147,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1181,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 7 500,00",
+            "left": 1147,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 241 500,00",
+            "left": 1130,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          }
+        ]
+      },
+      {
+        "width": 1440,
+        "ok": true,
+        "figuresOk": true,
+        "pageHorizontalScroll": false,
+        "root": {
+          "left": 689,
+          "right": 1391,
+          "top": 293,
+          "bottom": 462,
+          "clientWidth": 702,
+          "scrollWidth": 702,
+          "clientHeight": 169,
+          "scrollHeight": 169,
+          "overflowY": "visible"
+        },
+        "offenders": [],
+        "truncated": [],
+        "figures": [
+          {
+            "text": "R 250 000,00",
+            "left": 1290,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 7 500,00",
+            "left": 1307,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1341,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 8 500,00",
+            "left": 1307,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1341,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 7 500,00",
+            "left": 1307,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 241 500,00",
+            "left": 1290,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          }
+        ]
+      },
+      {
+        "width": 1920,
+        "ok": true,
+        "figuresOk": true,
+        "pageHorizontalScroll": false,
+        "root": {
+          "left": 913,
+          "right": 1679,
+          "top": 293,
+          "bottom": 462,
+          "clientWidth": 766,
+          "scrollWidth": 766,
+          "clientHeight": 169,
+          "scrollHeight": 169,
+          "overflowY": "visible"
+        },
+        "offenders": [],
+        "truncated": [],
+        "figures": [
+          {
+            "text": "R 250 000,00",
+            "left": 1578,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 7 500,00",
+            "left": 1595,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1629,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 8 500,00",
+            "left": 1595,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1629,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 7 500,00",
+            "left": 1595,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 241 500,00",
+            "left": 1578,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          }
+        ]
+      }
+    ],
+    "b6-trust-tab-card-moroka-withdrawn": [
+      {
+        "width": 1280,
+        "ok": true,
+        "figuresOk": true,
+        "pageHorizontalScroll": false,
+        "root": {
+          "left": 280,
+          "right": 1256,
+          "top": 518,
+          "bottom": 932,
+          "clientWidth": 974,
+          "scrollWidth": 974,
+          "clientHeight": 412,
+          "scrollHeight": 412,
+          "overflowY": "visible"
+        },
+        "offenders": [],
+        "truncated": [],
+        "figures": [
+          {
+            "text": "R 241 500,00",
+            "left": 305,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 250 000,00",
+            "left": 1130,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 7 500,00",
+            "left": 1147,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1181,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 8 500,00",
+            "left": 1147,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1181,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 7 500,00",
+            "left": 1147,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 241 500,00",
+            "left": 1130,
+            "right": 1231,
+            "insideViewport": true,
+            "clipped": false
+          }
+        ]
+      },
+      {
+        "width": 1440,
+        "ok": true,
+        "figuresOk": true,
+        "pageHorizontalScroll": false,
+        "root": {
+          "left": 280,
+          "right": 1416,
+          "top": 502,
+          "bottom": 916,
+          "clientWidth": 1134,
+          "scrollWidth": 1134,
+          "clientHeight": 412,
+          "scrollHeight": 412,
+          "overflowY": "visible"
+        },
+        "offenders": [],
+        "truncated": [],
+        "figures": [
+          {
+            "text": "R 241 500,00",
+            "left": 305,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 250 000,00",
+            "left": 1290,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 7 500,00",
+            "left": 1307,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1341,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 8 500,00",
+            "left": 1307,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1341,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 7 500,00",
+            "left": 1307,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 241 500,00",
+            "left": 1290,
+            "right": 1391,
+            "insideViewport": true,
+            "clipped": false
+          }
+        ]
+      },
+      {
+        "width": 1920,
+        "ok": true,
+        "figuresOk": true,
+        "pageHorizontalScroll": false,
+        "root": {
+          "left": 472,
+          "right": 1704,
+          "top": 502,
+          "bottom": 916,
+          "clientWidth": 1230,
+          "scrollWidth": 1230,
+          "clientHeight": 412,
+          "scrollHeight": 412,
+          "overflowY": "visible"
+        },
+        "offenders": [],
+        "truncated": [],
+        "figures": [
+          {
+            "text": "R 241 500,00",
+            "left": 497,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 250 000,00",
+            "left": 1578,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 7 500,00",
+            "left": 1595,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1629,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 8 500,00",
+            "left": 1595,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 0,00",
+            "left": 1629,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 7 500,00",
+            "left": 1595,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          },
+          {
+            "text": "R 241 500,00",
+            "left": 1578,
+            "right": 1679,
+            "insideViewport": true,
+            "clipped": false
+          }
+        ]
+      }
+    ]
+  },
+  "startedAt": "2026-11-18T05:00:24.100Z",
+  "run": "NKJHH",
+  "ids": {
+    "funding": "6f25bf5d-fcd5-4584-b947-d0edc8e8ea2e",
+    "fundingName": "Mathebula & Partners Trust Account",
+    "qc": "66f2d61f-5a07-407d-80bf-2d35804e9fe5",
+    "qcName": "QuickCollect Services mwlnfzycfde4",
+    "moroka": "79a8995d-de11-4e1b-a343-ced352868e20",
+    "morokaName": "Moroka Family Trust mwlnfzycfde4",
+    "morokaMatter": "ac0eb464-f20e-4fb4-be58-9e29b46f78d9",
+    "morokaMatterName": "Estate Late Peter Moroka mwlnfzycfde4",
+    "inv4": "c2b63f39-5c05-4690-9a96-62fb2cd7e98d",
+    "inv4Name": "Nedbank Section 86(4) Investments",
+    "inv3": "530946c1-be6c-4c4c-b3a1-24f4afb425f7"
+  },
+  "finishedAt": "2026-11-18T05:01:31.370Z",
+  "summary": {
+    "run": "NKJHH",
+    "ids": {
+      "funding": "6f25bf5d-fcd5-4584-b947-d0edc8e8ea2e",
+      "fundingName": "Mathebula & Partners Trust Account",
+      "qc": "66f2d61f-5a07-407d-80bf-2d35804e9fe5",
+      "qcName": "QuickCollect Services mwlnfzycfde4",
+      "moroka": "79a8995d-de11-4e1b-a343-ced352868e20",
+      "morokaName": "Moroka Family Trust mwlnfzycfde4",
+      "morokaMatter": "ac0eb464-f20e-4fb4-be58-9e29b46f78d9",
+      "morokaMatterName": "Estate Late Peter Moroka mwlnfzycfde4",
+      "inv4": "c2b63f39-5c05-4690-9a96-62fb2cd7e98d",
+      "inv4Name": "Nedbank Section 86(4) Investments",
+      "inv3": "530946c1-be6c-4c4c-b3a1-24f4afb425f7"
+    },
+    "a": {
+      "pass": true,
+      "checks": {
+        "apiStatus200": true,
+        "apiGeneralEqSql": true,
+        "apiInvestedEqSql": true,
+        "apiPlacementsEqSql": true,
+        "apiReturnsEqSql": true,
+        "apiTransfersOutEqSql": true,
+        "apiDepositsEqSql": true,
+        "apiListRowEqCard": true,
+        "apiInvestedEqSumInvestmentBalances": true,
+        "apiIdentity": true,
+        "uiSummaryFigureEqApi": true,
+        "uiBalanceRowEqApi": true,
+        "uiBalanceLabel": true,
+        "uiInvestedRow": true,
+        "uiHeldRow": true,
+        "uiSummaryLine": true,
+        "uiPlacementsRow": true,
+        "uiReturnsRow": true,
+        "uiTransfersOutRow": true,
+        "tabBreakdownEqPage": true,
+        "noRawEnum": true
+      },
+      "observed": {
+        "general": 15000,
+        "invested": 30000,
+        "held": 45000,
+        "placements": 30000,
+        "returns": 0,
+        "transfersOut": 0,
+        "deposits": 45000,
+        "uiPlacements": "− less Placed in section 86(4) investments R 30 000,00",
+        "uiBalance": "=General balance R 15 000,00",
+        "uiInvested": "+Invested (section 86(4)) R 30 000,00",
+        "uiHeld": "=Total held in trust R 45 000,00",
+        "uiSummaryLine": "Plus R 30 000,00 invested (section 86(4)) — R 45 000,00 held in trust in total"
+      },
+      "matchesBriefFigures": true,
+      "transfersOutExcludesPlacement": true,
+      "f4": {
+        "headline": 15000,
+        "badges": [
+          "Funds Held"
+        ],
+        "heldOnBreakdown": 45000,
+        "note": "F-4: headline/badge read ledger.balance (general) — recorded, not judged"
+      }
+    },
+    "c": {
+      "pass": true,
+      "checks": {
+        "apiStatus200": true,
+        "apiGeneralEqSql": true,
+        "apiInvestedEqSql": true,
+        "apiPlacementsEqSql": true,
+        "apiReturnsEqSql": true,
+        "apiTransfersOutEqSql": true,
+        "apiDepositsEqSql": true,
+        "apiListRowEqCard": true,
+        "apiInvestedEqSumInvestmentBalances": true,
+        "apiIdentity": true,
+        "uiSummaryFigureEqApi": true,
+        "uiBalanceRowEqApi": true,
+        "uiBalanceLabel": true,
+        "uiInvestedRow": true,
+        "uiHeldRow": true,
+        "uiSummaryLine": true,
+        "uiPlacementsRow": true,
+        "uiReturnsRow": true,
+        "uiTransfersOutRow": true,
+        "tabBreakdownEqPage": true,
+        "noRawEnum": true
+      },
+      "specific": {
+        "investedZero": true,
+        "placementsZero": true,
+        "noInvestedRowsOnPage": true,
+        "noInvestedRowsOnTab": true,
+        "s863HasRows": true,
+        "s863NoClient": true
+      }
+    },
+    "d": {
+      "qc": {
+        "status": 200,
+        "balance": 0,
+        "investedBalance": 0
+      },
+      "moroka": {
+        "status": 200,
+        "balance": 0,
+        "investedBalance": 0
+      },
+      "listStatus": 200,
+      "listRows": []
+    },
+    "dChecks": {
+      "qcInvestedZero": true,
+      "morokaInvestedZero": true,
+      "listInvestedZero": true
+    },
+    "b": {
+      "checks": {
+        "pendingAwaiting": true,
+        "pendingNothingMoved": true,
+        "pendingPageUnchanged": true,
+        "approvedGeneralDown": true,
+        "approvedInvestedUp": true,
+        "approvedHeldUnchanged": true,
+        "approvedPlacements": true,
+        "approvedTransfersOutUnchanged": true,
+        "approvedQcUnchanged": true,
+        "withdrawnInvestedZero": true,
+        "withdrawnGeneralBack": true,
+        "withdrawnReturns": true,
+        "withdrawnRowsHidden": true,
+        "withdrawnReturnsShown": true,
+        "approvedPlacedText": true,
+        "approvedInvestedText": true,
+        "pendingAgree": true,
+        "approvedAgree": true,
+        "withdrawnAgree": true
+      },
+      "figures": {
+        "baseline": {
+          "general": 241500,
+          "invested": 0,
+          "held": 241500,
+          "placements": 0,
+          "returns": 0
+        },
+        "pending": {
+          "general": 241500,
+          "invested": 0,
+          "held": 241500,
+          "placements": 0,
+          "returns": 0
+        },
+        "approved": {
+          "general": 234000,
+          "invested": 7500,
+          "held": 241500,
+          "placements": 7500,
+          "returns": 0
+        },
+        "withdrawn": {
+          "general": 241500,
+          "invested": 0,
+          "held": 241500,
+          "placements": 7500,
+          "returns": 7500
+        }
+      },
+      "uiTexts": {
+        "approved": {
+          "placements": "− less Placed in section 86(4) investments R 7 500,00",
+          "balance": "=General balance R 234 000,00",
+          "invested": "+Invested (section 86(4)) R 7 500,00",
+          "held": "=Total held in trust R 241 500,00",
+          "summaryLine": "Plus R 7 500,00 invested (section 86(4)) — R 241 500,00 held in trust in total"
+        },
+        "withdrawn": {
+          "placements": "− less Placed in section 86(4) investments R 7 500,00",
+          "returns": "+Returned from section 86(4) investments R 7 500,00",
+          "balance": "=Balance R 241 500,00",
+          "invested": null,
+          "held": null,
+          "summaryLine": null
+        }
+      },
+      "pass": true
+    },
+    "f": {
+      "a": {
+        "headline": 15000,
+        "badges": [
+          "Funds Held"
+        ]
+      },
+      "bApproved": {
+        "headline": 234000,
+        "badges": [
+          "Funds Held"
+        ],
+        "held": 241500
+      }
+    },
+    "g": {
+      "scans": 10,
+      "dirty": []
+    },
+    "h": {
+      "a-client-summary-quickcollect-after-lifecycle": [
+        {
+          "w": 1280,
+          "ok": true,
+          "figuresOk": true,
+          "pageHScroll": false,
+          "offenders": 0,
+          "truncated": 0
+        },
+        {
+          "w": 1440,
+          "ok": true,
+          "figuresOk": true,
+          "pageHScroll": false,
+          "offenders": 0,
+          "truncated": 0
+        },
+        {
+          "w": 1920,
+          "ok": true,
+          "figuresOk": true,
+          "pageHScroll": false,
+          "offenders": 0,
+          "truncated": 0
+        }
+      ],
+      "a-breakdown-quickcollect-after-lifecycle": [
+        {
+          "w": 1280,
+          "ok": true,
+          "figuresOk": true,
+          "pageHScroll": false,
+          "offenders": 0,
+          "truncated": 0
+        },
+        {
+          "w": 1440,
+          "ok": true,
+          "figuresOk": true,
+          "pageHScroll": false,
+          "offenders": 0,
+          "truncated": 0
+        },
+        {
+          "w": 1920,
+          "ok": true,
+          "figuresOk": true,
+          "pageHScroll": false,
+          "offenders": 0,
+          "truncated": 0
+        }
+      ],
+      "a-trust-tab-card-quickcollect-after-lifecycle": [
+        {
+          "w": 1280,
+          "ok": true,
+          "figuresOk": true,
+          "pageHScroll": false,
+          "offenders": 0,
+          "truncated": 0
+        },
+        {
+          "w": 1440,
+          "ok": true,
+          "figuresOk": true,
+          "pageHScroll": false,
+          "offenders": 0,
+          "truncated": 0
+        },
+        {
+          "w": 1920,
+          "ok": true,
+          "figuresOk": true,
+          "pageHScroll": false,
+          "offenders": 0,
+          "truncated": 0
+        }
+      ],
+      "b4-client-summary-moroka-approved": [
+        {
+          "w": 1280,
+          "ok": true,
+          "figuresOk": true,
+          "pageHScroll": false,
+          "offenders": 0,
+          "truncated": 0
+        },
+        {
+          "w": 1440,
+          "ok": true,
+          "figuresOk": true,
+          "pageHScroll": false,
+          "offenders": 0,
+          "truncated": 0
+        },
+        {
+          "w": 1920,
+          "ok": true,
+          "figuresOk": true,
+          "pageHScroll": false,
+          "offenders": 0,
+          "truncated": 0
+        }
+      ],
+      "b4-breakdown-moroka-approved": [
+        {
+          "w": 1280,
+          "ok": true,
+          "figuresOk": true,
+          "pageHScroll": false,
+          "offenders": 0,
+          "truncated": 0
+        },
+        {
+          "w": 1440,
+          "ok": true,
+          "figuresOk": true,
+          "pageHScroll": false,
+          "offenders": 0,
+          "truncated": 0
+        },
+        {
+          "w": 1920,
+          "ok": true,
+          "figuresOk": true,
+          "pageHScroll": false,
+          "offenders": 0,
+          "truncated": 0
+        }
+      ],
+      "b4-trust-tab-card-moroka-approved": [
+        {
+          "w": 1280,
+          "ok": true,
+          "figuresOk": true,
+          "pageHScroll": false,
+          "offenders": 0,
+          "truncated": 0
+        },
+        {
+          "w": 1440,
+          "ok": true,
+          "figuresOk": true,
+          "pageHScroll": false,
+          "offenders": 0,
+          "truncated": 0
+        },
+        {
+          "w": 1920,
+          "ok": true,
+          "figuresOk": true,
+          "pageHScroll": false,
+          "offenders": 0,
+          "truncated": 0
+        }
+      ],
+      "b6-client-summary-moroka-withdrawn": [
+        {
+          "w": 1280,
+          "ok": true,
+          "figuresOk": true,
+          "pageHScroll": false,
+          "offenders": 0,
+          "truncated": 0
+        },
+        {
+          "w": 1440,
+          "ok": true,
+          "figuresOk": true,
+          "pageHScroll": false,
+          "offenders": 0,
+          "truncated": 0
+        },
+        {
+          "w": 1920,
+          "ok": true,
+          "figuresOk": true,
+          "pageHScroll": false,
+          "offenders": 0,
+          "truncated": 0
+        }
+      ],
+      "b6-breakdown-moroka-withdrawn": [
+        {
+          "w": 1280,
+          "ok": true,
+          "figuresOk": true,
+          "pageHScroll": false,
+          "offenders": 0,
+          "truncated": 0
+        },
+        {
+          "w": 1440,
+          "ok": true,
+          "figuresOk": true,
+          "pageHScroll": false,
+          "offenders": 0,
+          "truncated": 0
+        },
+        {
+          "w": 1920,
+          "ok": true,
+          "figuresOk": true,
+          "pageHScroll": false,
+          "offenders": 0,
+          "truncated": 0
+        }
+      ],
+      "b6-trust-tab-card-moroka-withdrawn": [
+        {
+          "w": 1280,
+          "ok": true,
+          "figuresOk": true,
+          "pageHScroll": false,
+          "offenders": 0,
+          "truncated": 0
+        },
+        {
+          "w": 1440,
+          "ok": true,
+          "figuresOk": true,
+          "pageHScroll": false,
+          "offenders": 0,
+          "truncated": 0
+        },
+        {
+          "w": 1920,
+          "ok": true,
+          "figuresOk": true,
+          "pageHScroll": false,
+          "offenders": 0,
+          "truncated": 0
+        }
+      ]
+    },
+    "consoleErrors": 0,
+    "pageErrors": 0,
+    "posts": 34
+  }
+}

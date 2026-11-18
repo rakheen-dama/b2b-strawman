@@ -28,3 +28,10 @@ Scope discipline (task file): out-of-row items are recorded here, reported and r
 ## Hand-off to 648B (forward note, no action needed in 648E)
 
 With OQ-1 Option B the card identity is `deposits + transfersIn + investmentReturns − payments − feeTransfers − refunds − transfersOut − investmentPlacements = balance (general)`. A net interest entry (`INV_INTEREST`, ledger `CLIENT_INVESTMENT`, with `investment_id`) lands in `investedBalance` through `TrustLedgerQueryRepository.investedBalancesByClient` with no 648E change, and on withdrawal the larger return lands in `totalInvestmentReturns` — the identity holds without a new card total.
+
+## From the PR #1800 re-review (Reviewer B, non-blocking Mediums — report only)
+
+| # | Finding | Owner |
+|---|---|---|
+| R-1 | `ClientLedgerService.getClientLedger` / `listClientLedgers` are the codebase's first non-default isolation (`@Transactional(readOnly = true, isolation = REPEATABLE_READ)` — one snapshot for general + invested + totals, CodeRabbit CR-1). `backend/CLAUDE.md` does not say whether this is the pattern or the exception; suggested line: "Read endpoints composing several aggregates use `@Transactional(readOnly = true, isolation = REPEATABLE_READ)`; the default stays READ_COMMITTED." | docs follow-up (any slice touching `backend/CLAUDE.md`) |
+| R-2 | Other multi-statement trust reads (646D read-side consumers: creditor ledger, reconciliation views) still compose aggregates across separate READ COMMITTED snapshots. Not a 648E regression; recorded so REPEATABLE_READ is not assumed to be the norm. | 649C / 650x owner to assess |

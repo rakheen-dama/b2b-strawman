@@ -1,0 +1,68 @@
+== worktree: /Users/rakheendama/Projects/2026/worktree-epic-648E @ 6b461507450e1b77686a9784ba03bc1d8e2595f4
+== build log source lines:
+Building from source at: /Users/rakheendama/Projects/2026/worktree-epic-648E
+  Tail logs:   docker compose -f /Users/rakheendama/Projects/2026/worktree-epic-648E/compose/docker-compose.e2e.yml logs -f backend frontend
+== jar entries (648E classes):
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/ledger/ClientLedgerService.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/ledger/LedgerTotals.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/ledger/ClientLedgerService$ClientLedgerCardResponse.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/transaction/ClientBalanceRow.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/transaction/TrustLedgerQueryRepository.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/report/InvestmentRegisterQuery.class
+== LedgerTotals.class: withInvestmentPlacements 1 ; investmentPlacements 2 ; investmentReturns 2
+== ClientLedgerService.class: investedBalance 2
+== ClientLedgerService$ClientLedgerCardResponse.class: investedBalance 2 ; totalInvestmentPlacements 2 ; totalInvestmentReturns 2
+== TrustLedgerQueryRepository.class: investedBalancesByClient 1
+== InvestmentRegisterQuery.class: investmentBalances 1
+== TrustTools.class: investedMinor 1
+== jar migrations (latest tenant V*):
+db/migration/tenant/V21__phase92_unidentified_deposits.sql
+db/migration/tenant/V22__phase92_investment_account_basis.sql
+db/migration/tenant/V23__phase92_investment_accounts.sql
+== frontend container: 648E strings in .next (server + static):
+-- 'Invested (section 86(4))':
+/app/frontend/.next/server/chunks/ssr/frontend_0j-4yar._.js
+/app/frontend/.next/server/chunks/ssr/_1a43n-y._.js
+/app/frontend/.next/server/chunks/ssr/_053wpg5._.js
+/app/frontend/.next/static/chunks/3bj93tsbrcba2.js
+-- 'Total held in trust':
+/app/frontend/.next/server/chunks/ssr/frontend_0j-4yar._.js
+/app/frontend/.next/server/chunks/ssr/_1a43n-y._.js
+/app/frontend/.next/server/chunks/ssr/_053wpg5._.js
+/app/frontend/.next/static/chunks/3bj93tsbrcba2.js
+-- 'Placed in section 86(4) investments':
+/app/frontend/.next/server/chunks/ssr/frontend_0j-4yar._.js
+/app/frontend/.next/server/chunks/ssr/_1a43n-y._.js
+/app/frontend/.next/server/chunks/ssr/_053wpg5._.js
+/app/frontend/.next/static/chunks/3bj93tsbrcba2.js
+-- 'Returned from section 86(4) investments':
+/app/frontend/.next/server/chunks/ssr/frontend_0j-4yar._.js
+/app/frontend/.next/server/chunks/ssr/_1a43n-y._.js
+/app/frontend/.next/server/chunks/ssr/_053wpg5._.js
+/app/frontend/.next/static/chunks/3bj93tsbrcba2.js
+-- 'client-summary-invested':
+/app/frontend/.next/server/chunks/ssr/frontend_0j-4yar._.js
+-- 'ledger-total-held':
+/app/frontend/.next/server/chunks/ssr/frontend_0j-4yar._.js
+/app/frontend/.next/server/chunks/ssr/_1a43n-y._.js
+/app/frontend/.next/server/chunks/ssr/_053wpg5._.js
+/app/frontend/.next/static/chunks/3bj93tsbrcba2.js
+-- 'General balance':
+/app/frontend/.next/server/chunks/ssr/frontend_0j-4yar._.js
+/app/frontend/.next/server/chunks/ssr/_1a43n-y._.js
+/app/frontend/.next/server/chunks/ssr/_053wpg5._.js
+/app/frontend/.next/static/chunks/3bj93tsbrcba2.js
+== health: {"groups":["liveness","readiness"],"status":"UP"}  frontend :3001 HTTP 200
+== tenant schemas: tenant_7d218705360b
+ version |           description            | success |        installed_on        
+---------+----------------------------------+---------+----------------------------
+ 23      | phase92 investment accounts      | t       | 2026-11-18 04:56:16.132365
+ 22      | phase92 investment account basis | t       | 2026-11-18 04:56:16.126677
+ 21      | phase92 unidentified deposits    | t       | 2026-11-18 04:56:16.1081
+(3 rows)
+
+            account_name            | account_type | investment_basis | is_primary 
+------------------------------------+--------------+------------------+------------
+ Mathebula & Partners Trust Account | GENERAL      |                  | t
+(1 row)
+

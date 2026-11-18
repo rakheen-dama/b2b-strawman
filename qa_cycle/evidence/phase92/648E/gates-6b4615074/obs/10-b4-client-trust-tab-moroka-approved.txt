@@ -1,0 +1,104 @@
+Skip to content
+Kazi
+E2E Test Organization
+Search...
+⌘K
+TODAY
+Home
+My work
+Diary
+MATTERS
+Matters
+New matter
+Conflict check
+Adverse parties
+AI reviews
+CLIENTS
+Clients
+FICA & compliance
+Data requests
+FEES
+TRUST
+FIRM
+Platform Admin
+Notifications
+AO
+
+Alice Owner
+
+alice@e2e-test.local
+
+Toggle menu
+E2E Test Organization
+Clients
+Moroka Family Trust mwlnfzycfde4
+Search
+⌘K
+15 unread notifications
+15
+e2e-test-org
+AO
+Back to Clients
+Moroka Family Trust mwlnfzycfde4
+Onboarding
+
+moroka.trust.mwlnfzycfde4@example.com
+
+Since 18 Nov 2026 · 1 matter
+
+Activate Client
+Generate Document
+More actions
+Open matters
+1
+Trust balance
+R 234 000,00
+Mathebula & Partners Trust Account
+Outstanding
+R 125,00
+0 overdue
+FICA
+In progress
+Details
+Overview
+Matters
+Fees
+· Trust
+FICA & compliance
+Activity
+Trust Balance
+Funds Held
+R 234 000,00
+Deposits
+R 250 000,00
+−
+less
+Payments
+R 0,00
+−
+less
+Fee transfers
+R 8 500,00
+−
+less
+Refunds
+R 0,00
+−
+less
+Placed in section 86(4) investments
+R 7 500,00
+=General balance
+R 234 000,00
++Invested (section 86(4))
+R 7 500,00
+=Total held in trust
+R 241 500,00
+
+Last transaction: 2026/11/18
+
+Record Deposit
+Record Payment
+Fee Transfer
+Command Palette
+
+Search pages and settings

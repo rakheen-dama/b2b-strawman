@@ -1,0 +1,24 @@
+{
+  "method": "GET",
+  "path": "/api/trust-accounts/c2b63f39-5c05-4690-9a96-62fb2cd7e98d/client-ledgers/66f2d61f-5a07-407d-80bf-2d35804e9fe5",
+  "status": 200,
+  "body": {
+    "id": null,
+    "trustAccountId": "c2b63f39-5c05-4690-9a96-62fb2cd7e98d",
+    "clientId": "66f2d61f-5a07-407d-80bf-2d35804e9fe5",
+    "clientName": "QuickCollect Services mwlnfzycfde4",
+    "balance": 0,
+    "totalDeposits": 0,
+    "totalPayments": 0,
+    "totalFeeTransfers": 0,
+    "totalRefunds": 0,
+    "totalTransfersIn": 0,
+    "totalTransfersOut": 0,
+    "totalInvestmentPlacements": 0,
+    "totalInvestmentReturns": 0,
+    "investedBalance": 0,
+    "lastTransactionDate": null,
+    "createdAt": null,
+    "updatedAt": null
+  }
+}

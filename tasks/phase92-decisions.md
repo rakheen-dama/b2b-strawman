@@ -40,9 +40,12 @@ Columns: **id** · **source** (slice / found.md) · **decision taken** · **alte
 | FU-6 | F-646C-1, F-647C | Statement import / record-from-line: refuse duplicate same-end-date statements (unless replacing) and future-dated lines. |
 | FU-7 | O-1 | `legal-za` template pack: SoA label; version bump + reconcile entry + seeder reconcile test. |
 | FU-8 | F-17 | `backend/pom.xml` Surefire `-Xmx` raise (durable fix: cull context-cache keys); full verify + CI ×2 green. |
+| FU-10 | F-13 | After-lock boundary: order by a database-side value (DB `now()` / commit sequence) instead of app-host `clock.instant()`; red test with a skewed clock. |
 | FU-9 | F-6a + F-6b | One PR with FU-1: approval-time cashbook cover check for all firm-initiated outflows under an account lock (lock order: transaction row → account → client anchor), `CASHBOOK_IN_DEBIT` integrity flag; recording paths untouched. Red tests first (two pending placements; payment after a s86(3) placement). |
 
 ## Decisions taken by slice agents (append below — newest last)
 
 | id | source | decision taken | alternative | reversible? | status |
 |---|---|---|---|---|---|
+| F-13 | 650A found.md (orchestrator, protocol) | After-lock section compares app-host clock times: **accepted for now** (all deployments are single-host; the ledger itself stays correct); **database-side ordering** scheduled as follow-up FU-10 — the conservative option, before any multi-host deployment. | accept permanently | yes | DEFAULT |
+| R-1 note | 650A found.md | Confirms FU-3's approach: report/document reads run inside a writing transaction, so snapshot isolation there has no effect — FU-3 must use a separate read-only `REQUIRES_NEW` sub-transaction. | — | yes | DEFAULT |

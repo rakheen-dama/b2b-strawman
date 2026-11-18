@@ -1,7 +1,7 @@
 {
-  "commit": "4bb0d595f",
-  "command": "cd backend && ./mvnw clean -q && bash scripts/verify.sh -q (full suite; preflight + caffeinate)",
+  "commit": "b6afe8c69",
+  "command": "cd backend && bash scripts/verify.sh -q (full suite; preflight + caffeinate; no positional goals, no -Dtest)",
   "exit": 0,
-  "ts": "2026-11-17T21:37:04Z",
-  "summary": "PR #1798 (648C) @4bb0d595f — 7205 testcases / 0 failures / 0 errors / 26 skipped (<testcase> count), 21:15–21:37 UTC; also green @ef8b6c19b (7205/26); Backend CI pass @4bb0d595f"
+  "ts": "2026-11-18T02:34:52Z",
+  "summary": "PR #1799 (648A) @b6afe8c69 — 7242 testcases / 0 failures / 0 errors / 26 skipped (<testcase> count), 02:15–02:35 UTC; Backend CI pass @b6afe8c69"
 }

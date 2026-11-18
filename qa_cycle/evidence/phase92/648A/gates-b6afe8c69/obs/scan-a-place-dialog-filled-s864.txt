@@ -1,0 +1,32 @@
+innerText:
+Place Investment
+
+Place trust money from this account into an investment account.
+
+Investment basis
+Section 86(3) — the firm invests surplus trust money
+Section 86(4) — invested on a client's instruction
+
+Interest paid to client, with 5% to the LPFF (Section 86(5)).
+
+Investment account
+OBS s86(4) Investments IOR6X (Nedbank 0864IOR6X)
+Nedbank Section 86(4) Investments (Nedbank 0864000001)
+OBS s86(4) Investments IOR6X (Nedbank 0864IOR6X)
+Add investment account
+Client ID
+Matter ID
+Institution
+Account Number
+Principal
+Interest Rate %
+Deposit Date
+Maturity Date (optional)
+Notes (optional)
+The bank must have an arrangement with the Legal Practitioners Fidelity Fund (Section 86(6)). Contact the LPFF to verify.
+Cancel
+Place Investment
+Close
+
+---- textContent:
+Place InvestmentPlace trust money from this account into an investment account.Investment basisSection 86(3) — the firm invests surplus trust moneySection 86(4) — invested on a client's instructionInterest paid to client, with 5% to the LPFF (Section 86(5)).Investment accountOBS s86(4) Investments IOR6X (Nedbank 0864IOR6X)Nedbank Section 86(4) Investments (Nedbank 0864000001)OBS s86(4) Investments IOR6X (Nedbank 0864IOR6X)Add investment accountClient IDMatter IDInstitutionAccount NumberPrincipalInterest Rate %Deposit DateMaturity Date (optional)Notes (optional)OBS IOR6X s864The bank must have an arrangement with the Legal Practitioners Fidelity Fund (Section 86(6)). Contact the LPFF to verify.CancelPlace InvestmentClose

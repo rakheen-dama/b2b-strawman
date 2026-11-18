@@ -1,0 +1,19 @@
+f re-check (H-2 method): case-sensitive SUBSTRING search on the textContent half of every scan file
+scan-a-place-dialog-filled-s864.txt: clean
+scan-a-place-dialog-s864.txt: clean
+scan-a-stacked-add-dialog-s864.txt: clean
+scan-a4-investments-page-s86-4-awaiting.txt: clean
+scan-a6-approvals-row.txt: ['AWAITING']
+scan-a6-transactions-page.txt: ['RECORDED', 'APPROVED', 'AWAITING']
+scan-a7-investments-page-s86-4-active.txt: clean
+scan-b-place-dialog-filled-s863.txt: clean
+scan-b-place-dialog-s863.txt: clean
+scan-b-stacked-add-dialog-s863.txt: clean
+scan-b4-investments-page-s86-3-awaiting.txt: clean
+scan-b6-approvals-row.txt: ['AWAITING']
+scan-b6-transactions-page.txt: ['RECORDED', 'APPROVED', 'AWAITING']
+scan-b7-investments-page-s86-3-active.txt: clean
+scan-c-withdraw-dialog.txt: clean
+scan-c2-investments-page-s86-4-withdrawn.txt: clean
+scan-e-settings-trust-accounts-card-KNOWN-F4.txt: ['ACTIVE']
+scan-g-investments-page-final.txt: clean

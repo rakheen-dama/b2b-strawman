@@ -1,0 +1,82 @@
+innerText:
+Transactions
+
+Trust account transaction history
+
+Record Transaction
+Status:
+All
+Recorded
+Awaiting Approval
+Approved
+Rejected
+Reversed
+Type:
+All
+Deposit
+Payment
+Fee transfer
+Refund
+Transfer out
+Transfer in
+Reversal
+Interest received for the Legal Practitioners' Fidelity Fund
+Interest paid to the Legal Practitioners' Fidelity Fund
+Bank charge
+Bank charge refunded from the business account
+Unidentified deposit
+Unidentified deposit allocated
+Deposit identified and allocated
+Unidentified deposit paid to the Fund
+Placed in section 86(4) investment
+Investment capital received
+Section 86(4) investment interest
+Fund share of section 86(4) interest (5%)
+Investment withdrawn
+Investment returned to trust
+Placed in section 86(3) investment
+Section 86(3) investment capital received
+Section 86(3) investment withdrawn
+Section 86(3) investment returned to trust
+From
+To
+Client ID
+Matter ID
+Transaction History
+8 transactions found
+Date	Reference	Type	Amount	Status	Actions
+18 Nov 2026	DEP/MOROKA/mwlij30u7ea7	Deposit	
+R 250 000,00	RECORDED	
+Reverse
+18 Nov 2026	DEP/QC/mwlij30u7ea7	Deposit	
+R 45 000,00	RECORDED	
+Reverse
+18 Nov 2026	FEE/MOROKA/mwlij30u7ea7	Fee transfer	
+R 8 500,00	APPROVED	
+Reverse
+18 Nov 2026	INV-651F639B	Placed in section 86(3) investment
+Placed in section 86(3) investment at Standard Bank (Standard Bank Section 86(3) Investments)
+	
+R 200 000,00	APPROVED	
+18 Nov 2026	INV-D1511397	Placed in section 86(4) investment
+Placed in section 86(4) investment at Nedbank (Nedbank Section 86(4) Investments)
+	
+R 30 000,00	APPROVED	
+18 Nov 2026	FEE/SIPHO/mwlij30u7ea7	Fee transfer	
+R 500,00	AWAITING APPROVAL	
+Approve
+Reject
+
+18 Nov 2026	INV-8C856A57	Placed in section 86(4) investment
+Placed in section 86(4) investment at Nedbank (OBS s86(4) Investments IOR6X)
+	
+R 7 500,00	APPROVED	
+18 Nov 2026	INV-DE4057BD	Placed in section 86(3) investment
+Placed in section 86(3) investment at Standard Bank (OBS s86(3) Investments IOR6X)
+	
+R 2 500,00	AWAITING APPROVAL	
+Approve
+Reject
+
+---- textContent:
+TransactionsTrust account transaction historyRecord TransactionStatus:AllRecordedAwaiting ApprovalApprovedRejectedReversedType:AllDepositPaymentFee transferRefundTransfer outTransfer inReversalInterest received for the Legal Practitioners' Fidelity FundInterest paid to the Legal Practitioners' Fidelity FundBank chargeBank charge refunded from the business accountUnidentified depositUnidentified deposit allocatedDeposit identified and allocatedUnidentified deposit paid to the FundPlaced in section 86(4) investmentInvestment capital receivedSection 86(4) investment interestFund share of section 86(4) interest (5%)Investment withdrawnInvestment returned to trustPlaced in section 86(3) investmentSection 86(3) investment capital receivedSection 86(3) investment withdrawnSection 86(3) investment returned to trustFromToClient IDMatter IDTransaction History8 transactions foundDateReferenceTypeAmountStatusActions18 Nov 2026DEP/MOROKA/mwlij30u7ea7DepositR 250 000,00RECORDEDReverse18 Nov 2026DEP/QC/mwlij30u7ea7DepositR 45 000,00RECORDEDReverse18 Nov 2026FEE/MOROKA/mwlij30u7ea7Fee transferR 8 500,00APPROVEDReverse18 Nov 2026INV-651F639BPlaced in section 86(3) investmentPlaced in section 86(3) investment at Standard Bank (Standard Bank Section 86(3) Investments)R 200 000,00APPROVED18 Nov 2026INV-D1511397Placed in section 86(4) investmentPlaced in section 86(4) investment at Nedbank (Nedbank Section 86(4) Investments)R 30 000,00APPROVED18 Nov 2026FEE/SIPHO/mwlij30u7ea7Fee transferR 500,00AWAITING APPROVALApproveReject18 Nov 2026INV-8C856A57Placed in section 86(4) investmentPlaced in section 86(4) investment at Nedbank (OBS s86(4) Investments IOR6X)R 7 500,00APPROVED18 Nov 2026INV-DE4057BDPlaced in section 86(3) investmentPlaced in section 86(3) investment at Standard Bank (OBS s86(3) Investments IOR6X)R 2 500,00AWAITING APPROVALApproveReject

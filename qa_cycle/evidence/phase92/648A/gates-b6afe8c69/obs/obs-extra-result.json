@@ -1,0 +1,134 @@
+{
+  "at": "2026-11-18T02:47:02.575Z",
+  "today": "2026-11-18",
+  "past": "2026-11-10",
+  "beforePast": "2026-11-08",
+  "consoleErrors": [],
+  "pageErrors": [],
+  "posts": [
+    {
+      "tab": "alice",
+      "at": "2026-11-18T02:47:03.243Z",
+      "url": "http://localhost:8090/token"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T02:47:03.460Z",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T02:47:03.516Z",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard"
+    },
+    {
+      "tab": "bob",
+      "at": "2026-11-18T02:47:04.330Z",
+      "url": "http://localhost:8090/token"
+    },
+    {
+      "tab": "bob",
+      "at": "2026-11-18T02:47:04.504Z",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard"
+    },
+    {
+      "tab": "bob",
+      "at": "2026-11-18T02:47:04.538Z",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T02:47:05.292Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/investments"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T02:47:06.208Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/investments"
+    },
+    {
+      "tab": "bob",
+      "at": "2026-11-18T02:47:06.901Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/transactions"
+    },
+    {
+      "tab": "bob",
+      "at": "2026-11-18T02:47:06.953Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/transactions"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T02:47:07.268Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/investments"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T02:47:11.035Z",
+      "url": "http://localhost:3001/org/e2e-test-org/clients/2a36f8ef-582a-4e44-b6bd-bf2844e32418"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T02:47:12.212Z",
+      "url": "http://localhost:3001/org/e2e-test-org/clients/2a36f8ef-582a-4e44-b6bd-bf2844e32418"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T02:47:12.406Z",
+      "url": "http://localhost:3001/org/e2e-test-org/clients/2a36f8ef-582a-4e44-b6bd-bf2844e32418"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T02:47:12.424Z",
+      "url": "http://localhost:3001/org/e2e-test-org/clients/2a36f8ef-582a-4e44-b6bd-bf2844e32418"
+    }
+  ],
+  "steps": {
+    "c2": {
+      "investment": {
+        "id": "089a106b-5b3b-4120-a59d-efc6ad88c1c3",
+        "depositTx": "a1a1d0d4-2844-428d-812f-b21bd3721899",
+        "depositDate": "2026-11-10"
+      },
+      "approvedRow": "FIRM_INV_PLACE|APPROVED|t",
+      "rowText": "Firm (section 86(3)) Section 86(3) OBS s86(3) Investments IOR6X Standard Bank OBSP3-IOR6X 6.00% LPFF share Arrangement 10 Nov 2026 Call deposit R 1 000,00 Interest R 0,00 R 1 000,00 Active Record Interest Withdraw",
+      "input": {
+        "name": "withdrawalDate",
+        "min": "2026-11-10",
+        "max": "2026-11-18",
+        "value": "2026-11-18"
+      },
+      "beforeDepositTry": {
+        "typed": "2026-11-08",
+        "validity": {
+          "rangeUnderflow": true,
+          "valid": false,
+          "validationMessage": "Value must be 2026/11/10 or later."
+        },
+        "dialogStillOpen": true,
+        "dialogText": "Withdraw Investment The whole investment returns to the trust banking account it was placed from. Returns to trust R 1 000,00 The capital and any section 86(4) interest posted to the books (section 86(3) interest belongs to the Legal Practitioners' Fidelity Fund). Withdrawal date Cancel Confirm Withdrawal Close",
+        "posts": [],
+        "txBefore": 16,
+        "txAfter": 16
+      },
+      "statusAfter": "ACTIVE",
+      "checks": {
+        "minIsDeposit": true,
+        "maxIsToday": true,
+        "minDiffersFromMax": true,
+        "beforeDepositRefused": true,
+        "stillActive": true
+      }
+    },
+    "k2": {
+      "text": "E2E Test Organization Client Trust Statement Client: Moroka Family Trust mwlij30u7ea7 Statement Date: 18 November 2026 Trust Account: E2E Test Organization — Section 86(2) trust account Transaction Summary The following is a statement of all trust account transactions held on behalf of Moroka Family Trust mwlij30u7ea7, from the first transaction to the date of this statement. Account: Mathebula & Partners Trust Account Opening balance: R0,00 Date Type Reference Description Amount Balance 18 November 2026 Deposit DEP/MOROKA/mwlij30u7ea7 Estate Late Peter Moroka — transfer from executor R250 000,00 R250 000,00 18 November 2026 Fee transfer FEE/MOROKA/mwlij30u7ea7 R8 500,00 R241 500,00 18 November 2026 Inv place INV-8C856A57 Placed in section 86(4) investment at Nedbank (OBS s86(4) Investments IOR6X) R7 500,00 R234 000,00 18 November 2026 Inv return INV-WD-8C856A57 Investment returned to trust from Nedbank R7 500,00 R241 500,00 Closing balance: R241 500,00 Current Balance The current balance held in trust on your behalf is R241 500,00. This statement is issued in terms of the Legal Practice Act 28 of 2014 and the rules of the Legal Practice Council. Yours faithfully, E2E Test Organization",
+      "accountLine": "Mathebula & Partners Trust Account",
+      "typeWords": [
+        "Deposit",
+        "Fee transfer",
+        "Inv place",
+        "Inv return"
+      ]
+    }
+  },
+  "finishedAt": "2026-11-18T02:47:12.925Z"
+}

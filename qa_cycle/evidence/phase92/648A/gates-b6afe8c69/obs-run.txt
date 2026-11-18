@@ -1,0 +1,295 @@
+{
+  "run": "IOR6X",
+  "a": {
+    "addDialogPreset": true,
+    "accountCreatedNotPrimary": true,
+    "pickerSelectsNew": true,
+    "pendingAwaiting": true,
+    "pendingNothingMoved": true,
+    "approverSeesDescription": true,
+    "approved": true,
+    "totalUnchanged": true,
+    "generalDown": true,
+    "investedUp": true,
+    "cashbooks": true,
+    "apiMatterTotalUnchanged": true,
+    "uiMatterTotalUnchanged": true,
+    "apiClientCardGeneral": true,
+    "uiClientGeneral": true,
+    "registerActive": true
+  },
+  "b": {
+    "clientFieldsHidden": true,
+    "addDialogPreset": true,
+    "accountCreatedNotPrimary": true,
+    "registerFirm": true,
+    "approverSeesDescription": true,
+    "noClientOnInvestment": true,
+    "rowsInterAccount": true,
+    "noClientLedgerMoved": true,
+    "cashbooks": true,
+    "registerActiveFirm": true
+  },
+  "c": {
+    "amountIsBalance": true,
+    "withdrawalDateMinIsDeposit": true,
+    "withdrawalDateMaxIsToday": true,
+    "onlyTheDate": true,
+    "bothRecorded": true,
+    "withdrawn": true,
+    "generalRestored": true,
+    "booksBalancedSql": true,
+    "booksBalancedApi": true,
+    "registerWithdrawn": true,
+    "uiClientGeneralRestored": true,
+    "apiClientCardRestored": true
+  },
+  "d": {
+    "uiNoReverse": true,
+    "refused4": true,
+    "refused3": true,
+    "nothingCreated": true
+  },
+  "e": {
+    "refused": true,
+    "unchanged": true
+  },
+  "i": {
+    "ui4MaxToday": true,
+    "ui3MaxToday": true,
+    "uiFutureRefused4": true,
+    "uiFutureRefused3": true,
+    "api4Refused400": true,
+    "api3Refused400": true,
+    "nothingCreated": true
+  },
+  "j": {
+    "dbTitle": true,
+    "dbBody": true,
+    "uiShowsPlacementNoun": true,
+    "uiNoPlacedIn": true
+  },
+  "k": {
+    "ctsNamesFunding": true,
+    "ctsNotInvestmentAccount": false,
+    "ctsClosingIsGeneral": true,
+    "soaGenerated": true
+  },
+  "gRegisterFit": [
+    {
+      "k": "a4-s86-4-awaiting",
+      "perWidth": [
+        {
+          "w": 1280,
+          "hScroll": false,
+          "status": true,
+          "buttons": true
+        },
+        {
+          "w": 1440,
+          "hScroll": false,
+          "status": true,
+          "buttons": true
+        }
+      ]
+    },
+    {
+      "k": "a7-s86-4-active",
+      "perWidth": [
+        {
+          "w": 1280,
+          "hScroll": false,
+          "status": true,
+          "buttons": true
+        },
+        {
+          "w": 1440,
+          "hScroll": false,
+          "status": true,
+          "buttons": true
+        }
+      ]
+    },
+    {
+      "k": "b4-s86-3-awaiting",
+      "perWidth": [
+        {
+          "w": 1280,
+          "hScroll": false,
+          "status": true,
+          "buttons": true
+        },
+        {
+          "w": 1440,
+          "hScroll": false,
+          "status": true,
+          "buttons": true
+        }
+      ]
+    },
+    {
+      "k": "b7-s86-3-active",
+      "perWidth": [
+        {
+          "w": 1280,
+          "hScroll": false,
+          "status": true,
+          "buttons": true
+        },
+        {
+          "w": 1440,
+          "hScroll": false,
+          "status": true,
+          "buttons": true
+        }
+      ]
+    },
+    {
+      "k": "c2-s86-4-withdrawn",
+      "perWidth": [
+        {
+          "w": 1280,
+          "hScroll": false,
+          "status": true,
+          "buttons": true
+        },
+        {
+          "w": 1440,
+          "hScroll": false,
+          "status": true,
+          "buttons": true
+        }
+      ]
+    },
+    {
+      "k": "final",
+      "perWidth": [
+        {
+          "w": 1280,
+          "hScroll": false,
+          "status": true,
+          "buttons": true
+        },
+        {
+          "w": 1440,
+          "hScroll": false,
+          "status": true,
+          "buttons": true
+        },
+        {
+          "w": 1920,
+          "hScroll": false,
+          "status": true,
+          "buttons": true
+        }
+      ]
+    }
+  ],
+  "aPass": true,
+  "bPass": true,
+  "cPass": true,
+  "dPass": true,
+  "ePass": true,
+  "fScans": [
+    {
+      "label": "a-place-dialog-s864",
+      "raw": [],
+      "cssUpper": []
+    },
+    {
+      "label": "a-stacked-add-dialog-s864",
+      "raw": [],
+      "cssUpper": []
+    },
+    {
+      "label": "a-place-dialog-filled-s864",
+      "raw": [],
+      "cssUpper": []
+    },
+    {
+      "label": "a4-investments-page-s86-4-awaiting",
+      "raw": [],
+      "cssUpper": []
+    },
+    {
+      "label": "a6-approvals-row",
+      "raw": [],
+      "cssUpper": []
+    },
+    {
+      "label": "a6-transactions-page",
+      "raw": [],
+      "cssUpper": [
+        "RECORDED",
+        "APPROVED"
+      ]
+    },
+    {
+      "label": "a7-investments-page-s86-4-active",
+      "raw": [],
+      "cssUpper": []
+    },
+    {
+      "label": "b-place-dialog-s863",
+      "raw": [],
+      "cssUpper": []
+    },
+    {
+      "label": "b-stacked-add-dialog-s863",
+      "raw": [],
+      "cssUpper": []
+    },
+    {
+      "label": "b-place-dialog-filled-s863",
+      "raw": [],
+      "cssUpper": []
+    },
+    {
+      "label": "b4-investments-page-s86-3-awaiting",
+      "raw": [],
+      "cssUpper": []
+    },
+    {
+      "label": "b6-approvals-row",
+      "raw": [],
+      "cssUpper": []
+    },
+    {
+      "label": "b6-transactions-page",
+      "raw": [],
+      "cssUpper": [
+        "RECORDED",
+        "APPROVED"
+      ]
+    },
+    {
+      "label": "b7-investments-page-s86-3-active",
+      "raw": [],
+      "cssUpper": []
+    },
+    {
+      "label": "c-withdraw-dialog",
+      "raw": [],
+      "cssUpper": []
+    },
+    {
+      "label": "c2-investments-page-s86-4-withdrawn",
+      "raw": [],
+      "cssUpper": []
+    },
+    {
+      "label": "e-settings-trust-accounts-card-KNOWN-F4",
+      "raw": [],
+      "cssUpper": [
+        "ACTIVE"
+      ]
+    },
+    {
+      "label": "g-investments-page-final",
+      "raw": [],
+      "cssUpper": []
+    }
+  ],
+  "consoleErrors": 0,
+  "pageErrors": 0
+}

@@ -1,0 +1,30 @@
+{
+  "label": "API EVIDENCE (probe; expected to be refused, creates nothing)",
+  "request": {
+    "method": "POST",
+    "url": "http://localhost:8081/api/trust-accounts/95355286-2146-4698-af42-8f56e5bdaa4e/investments",
+    "headers": {
+      "Authorization": "Bearer <alice mock-auth-token from the browser context>"
+    },
+    "body": {
+      "investmentAccountId": "2129de0c-9f4f-4304-9a81-8921bf65fde4",
+      "institution": "Standard Bank",
+      "accountNumber": "OBSF3-IOR6X",
+      "principal": 100,
+      "interestRate": 0.06,
+      "depositDate": "2026-11-19",
+      "notes": "OBS probe - expected refusal",
+      "investmentBasis": "FIRM_DISCRETION"
+    }
+  },
+  "response": {
+    "status": 400,
+    "contentType": "application/problem+json",
+    "body": {
+      "detail": "The deposit date cannot be in the future.",
+      "instance": "/api/trust-accounts/95355286-2146-4698-af42-8f56e5bdaa4e/investments",
+      "status": 400,
+      "title": "Cannot place investment"
+    }
+  }
+}

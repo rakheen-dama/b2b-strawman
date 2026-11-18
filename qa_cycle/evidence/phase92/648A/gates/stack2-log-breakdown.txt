@@ -1,0 +1,31 @@
+{'INFO': 321, 'WARN': 133, 'ERROR': 3}
+  14 WARN PDType1Font: Using fallback font LiberationSans for base font Helvetica
+  14 WARN PDType1Font: Using fallback font LiberationSans for base font ZapfDingbats
+   7 WARN PDType1Font: Using fallback font LiberationSans for base font Courier-BoldOblique
+   7 WARN PDType1Font: Using fallback font LiberationSans for base font Courier-Oblique
+   7 WARN PDType1Font: Using fallback font LiberationSans for base font Courier-Bold
+   7 WARN PDType1Font: Using fallback font LiberationSans for base font Courier
+   7 WARN PDType1Font: Using fallback font LiberationSans for base font Times-BoldItalic
+   7 WARN PDType1Font: Using fallback font LiberationSans for base font Times-Italic
+   7 WARN PDType1Font: Using fallback font LiberationSans for base font Times-Bold
+   7 WARN PDType1Font: Using fallback font LiberationSans for base font Times-Roman
+   7 WARN PDType1Font: Using fallback font LiberationSans for base font Helvetica-BoldOblique
+   7 WARN PDType1Font: Using fallback font LiberationSans for base font Helvetica-Oblique
+   7 WARN PDType1Font: Using fallback font LiberationSans for base font Helvetica-Bold
+   7 WARN PDType1Font: Using fallback font LiberationSans for base font Symbol
+   5 WARN GlobalExceptionHandler: Forbidden: path=/api/matters/<uuid>/time-summary/by-member, method=GET, reason=Per-member time breakdown is restricted to matter leads, org admins, an
+   3 WARN InvoiceCreationService: Draft invoice for customer <uuid> created without a tax number — send will be blocked until the customer profile is updated (warning code: tax_number_
+   3 ERROR GlobalExceptionHandler: Unhandled exception
+   1 WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker: Bean 'capabilityAuthorizationManager' of type [io.b2mash.b2b.b2bstrawman.orgrole.CapabilityAuthorizationManager] is not eligible for getting processed
+   1 WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker: Bean 'requiresCapabilityAdvisor' of type [org.springframework.security.authorization.method.AuthorizationManagerBeforeMethodInterceptor] is not eligib
+   1 WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker: Bean 'org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerAutoConfiguration' of type [org.springframework.ai.
+   1 WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker: Bean 'serverAnnotatedBeanRegistry' of type [org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerAutoConfigura
+   1 WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker: Bean 'stringOrNumberMigrationVersionConverter' of type [org.springframework.boot.flyway.autoconfigure.FlywayAutoConfiguration$StringOrNumberToMigratio
+   1 WARN PostProcessorRegistrationDelegate$BeanPostProcessorChecker: Bean 'spring.ai.mcp.server.annotation-scanner-org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerProperties'
+   1 WARN CglibAopProxy: Unable to proxy interface-implementing method [public final void org.springframework.web.filter.GenericFilterBean.init(jakarta.servlet.FilterConfig) t
+   1 WARN PdfConversionService: LibreOffice not found — PDF conversion will fall back to docx4j
+   1 WARN FileSystemFontProvider: 22 new fonts found, font cache will be re-built
+   1 WARN FileSystemFontProvider: Building on-disk font cache, this may take a while
+   1 WARN FileSystemFontProvider: Finished building on-disk font cache, found 22 fonts
+   1 WARN NotificationService: No recipients found for DOCUMENT_GENERATED notification: entity=<uuid>
+   1 WARN MaximumAllowableTagsMeterFilter: Reached the maximum number of 'uri' tags for 'http.server.requests'.

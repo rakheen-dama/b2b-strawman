@@ -1,0 +1,21 @@
+{
+  "method": "GET",
+  "path": "/api/trust-accounts/5b3e426d-d435-4ef7-b440-8375aa644439/client-ledgers/79b27393-d9c1-46c0-9a48-46c565a92e96",
+  "status": 200,
+  "body": {
+    "id": "d5937c5c-ff58-4472-bd66-9fdf663440ef",
+    "trustAccountId": "5b3e426d-d435-4ef7-b440-8375aa644439",
+    "clientId": "79b27393-d9c1-46c0-9a48-46c565a92e96",
+    "clientName": "Moroka Family Trust mwld55wr08f1",
+    "balance": 241500,
+    "totalDeposits": 250000,
+    "totalPayments": 0,
+    "totalFeeTransfers": 8500,
+    "totalRefunds": 0,
+    "totalTransfersIn": 0,
+    "totalTransfersOut": 0,
+    "lastTransactionDate": "2026-11-18",
+    "createdAt": "2026-11-18T00:09:42.322186Z",
+    "updatedAt": "2026-11-18T00:09:42.322186Z"
+  }
+}

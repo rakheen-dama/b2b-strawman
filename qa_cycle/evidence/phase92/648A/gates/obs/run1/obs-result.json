@@ -1,0 +1,1632 @@
+{
+  "steps": {
+    "baseline": {
+      "books": [
+        {
+          "id": "961dbcc7-6938-4576-82f3-515085095001",
+          "name": "Nedbank Section 86(4) Investments",
+          "cashbook": 30000,
+          "creditors": 30000,
+          "balanced": true
+        },
+        {
+          "id": "5b3e426d-d435-4ef7-b440-8375aa644439",
+          "name": "Mathebula & Partners Trust Account",
+          "cashbook": 56500,
+          "creditors": 56500,
+          "balanced": true
+        },
+        {
+          "id": "425fafa1-e6c4-48a7-9e40-b875772d9dd8",
+          "name": "Standard Bank Section 86(3) Investments",
+          "cashbook": 200000,
+          "creditors": 200000,
+          "balanced": true
+        }
+      ],
+      "client": {
+        "general": 241500,
+        "invested": 0,
+        "matterGeneral": 241500,
+        "matterTotal": 241500,
+        "total": 241500
+      },
+      "allClientGeneral": "26c0d42c-d849-41f8-a113-1f7d6b29c150=15000.00,79b27393-d9c1-46c0-9a48-46c565a92e96=241500.00",
+      "api": {
+        "clientLedgerCard": {
+          "status": 200,
+          "balance": 241500
+        },
+        "clientLedgersList": {
+          "status": 500
+        },
+        "matterTotal": 241500,
+        "matterTotalStatus": 200
+      },
+      "positions": {
+        "funding": {
+          "status": 200,
+          "cashbook": 56500,
+          "creditorsTotal": 56500,
+          "difference": 0,
+          "breakdown": {
+            "clientLedgers": 256500,
+            "investmentCreditors": 0,
+            "fundInterestAndCharges": 0,
+            "unidentifiedDeposits": 0,
+            "otherNonClient": 0,
+            "interAccount": -200000,
+            "total": 56500
+          }
+        }
+      },
+      "ui": {
+        "cardText": "Trust Balance Funds Held R 241 500,00 Moroka Family Trust mwld55wr08f1 — trust balance across all matters: R 241 500,00 Record Deposit Record Payment Fee Transfer",
+        "matterTotalText": "R 241 500,00",
+        "clientLineText": "Moroka Family Trust mwld55wr08f1 — trust balance across all matters: R 241 500,00",
+        "matterTotal": 241500,
+        "clientGeneral": 241500,
+        "files": [
+          "01-00-matter-trust-tab-baseline-1440.png",
+          "01-00-matter-trust-tab-baseline-1280.png"
+        ],
+        "clientLedgerPageText": "Back to Client Ledgers Moroka Family Trust mwld55wr08f1 Client ledger detail and transaction history Trust Balance R 241 500,00 Ledger totals Deposits R 250 000,00 − less Payments R 0,00 − less Fee transfers R 8 500,00 − less Refunds R 0,00 =Balance R 241 500,00 Generate Statement Select a date range and generate a PDF statement for this client From To Print Statement Status: All Recorded Awaiting Approval Approved Rejected Reversed Type: All Deposit Payment Fee transfer Refund Transfer out Transfer in Reversal Deposit identified and allocated Placed in section 86(4) investment Investment capi",
+        "filesLedger": [
+          "02-00-client-ledger-page-baseline-1440.png"
+        ]
+      }
+    },
+    "a": {
+      "basis": "s864",
+      "accountName": "OBS s86(4) Investments DE43H",
+      "bank": "Nedbank",
+      "accountNumber": "0864DE43H",
+      "institution": "Nedbank",
+      "depositNumber": "OBS4-DE43H",
+      "principal": 7500,
+      "rate": 7,
+      "client": {
+        "id": "79b27393-d9c1-46c0-9a48-46c565a92e96",
+        "matter": "eec33c75-dd13-40f8-9d22-2be53f964eab"
+      },
+      "helpText": "Interest paid to client, with 5% to the LPFF (Section 86(5)).",
+      "clientIdFieldCount": 1,
+      "matterIdFieldCount": 1,
+      "pickerOptionsBefore": [
+        "Nedbank Section 86(4) Investments (Nedbank 0864000001)"
+      ],
+      "filesPlaceEmpty": [
+        "03-a1-place-dialog-s864-1440.png",
+        "03-a1-place-dialog-s864-1280.png"
+      ],
+      "addDialog": {
+        "typeText": "Investment",
+        "typeDisabled": true,
+        "basisText": "Section 86(4) — invested on a client's instruction",
+        "basisDisabled": true,
+        "description": "Register the investment account the trust money will be placed in.",
+        "primaryCheckboxCount": 1,
+        "primaryChecked": "false"
+      },
+      "filesAdd": [
+        "04-a2-stacked-add-investment-account-s864-1440.png",
+        "04-a2-stacked-add-investment-account-s864-1280.png"
+      ],
+      "accountsCountBefore": 3,
+      "accountsCountAfter": 4,
+      "newAccountDb": [
+        "532e3e6a-c55f-4ff2-a307-44cc862908c1",
+        "INVESTMENT",
+        "CLIENT_INSTRUCTION",
+        "f",
+        "ACTIVE"
+      ],
+      "pickerTextAfterCreate": "OBS s86(4) Investments DE43H (Nedbank 0864DE43H)",
+      "filesPlaceFilled": [
+        "05-a3-place-dialog-filled-s864-1440.png",
+        "05-a3-place-dialog-filled-s864-1280.png"
+      ],
+      "investmentsCountBefore": 2,
+      "investmentsCountAfter": 3,
+      "investmentDb": {
+        "id": "a7e500d8-2124-453d-aa34-48ae9154f4d6",
+        "depositTx": "c0c9cafd-c09b-41f2-a502-75da08a017df",
+        "basis": "CLIENT_INSTRUCTION",
+        "customerId": "79b27393-d9c1-46c0-9a48-46c565a92e96",
+        "projectId": "eec33c75-dd13-40f8-9d22-2be53f964eab",
+        "investmentAccountId": "532e3e6a-c55f-4ff2-a307-44cc862908c1",
+        "fundingAccountId": "5b3e426d-d435-4ef7-b440-8375aa644439",
+        "status": "ACTIVE",
+        "principal": "7500.00"
+      },
+      "pendingTx": [
+        "INV_PLACE",
+        "AWAITING_APPROVAL",
+        "CLIENT",
+        "f",
+        "7500.00"
+      ],
+      "pendingInvApi": {
+        "id": "a7e500d8-2124-453d-aa34-48ae9154f4d6",
+        "trustAccountId": "5b3e426d-d435-4ef7-b440-8375aa644439",
+        "investmentAccountId": "532e3e6a-c55f-4ff2-a307-44cc862908c1",
+        "investmentAccountName": "OBS s86(4) Investments DE43H",
+        "clientId": "79b27393-d9c1-46c0-9a48-46c565a92e96",
+        "clientName": "Moroka Family Trust mwld55wr08f1",
+        "matterId": "eec33c75-dd13-40f8-9d22-2be53f964eab",
+        "institution": "Nedbank",
+        "accountNumber": "OBS4-DE43H",
+        "principal": 7500,
+        "interestRate": 0.07,
+        "depositDate": "2026-11-18",
+        "maturityDate": null,
+        "interestEarned": 0,
+        "balance": 0,
+        "status": "ACTIVE",
+        "awaitingApproval": true,
+        "withdrawalDate": null,
+        "withdrawalAmount": null,
+        "depositTransactionId": "c0c9cafd-c09b-41f2-a502-75da08a017df",
+        "withdrawalTransactionId": null,
+        "notes": "OBS DE43H s864",
+        "investmentBasis": "CLIENT_INSTRUCTION",
+        "createdAt": "2026-11-18T00:15:50.778519Z",
+        "updatedAt": "2026-11-18T00:15:50.782959Z"
+      },
+      "pendingRegister": {
+        "text": "Moroka Family Trust mwld55wr08f1 Section 86(4) OBS s86(4) Investments DE43H Nedbank OBS4-DE43H R 7 500,00 7.00% 5% (statutory) 18 Nov 2026 Call deposit R 0,00 R 0,00 Awaiting approval",
+        "withdrawButtons": 0,
+        "cells": [
+          "Moroka Family Trust mwld55wr08f1",
+          "Section 86(4)",
+          "OBS s86(4) Investments DE43H",
+          "Nedbank OBS4-DE43H",
+          "R 7 500,00",
+          "7.00%",
+          "5% (statutory)",
+          "18 Nov 2026",
+          "Call deposit",
+          "R 0,00",
+          "R 0,00",
+          "Awaiting approval",
+          ""
+        ],
+        "files": [
+          "06-a4-register-s86-4-awaiting-1440.png",
+          "06-a4-register-s86-4-awaiting-1280.png"
+        ]
+      },
+      "pendingClient": {
+        "general": 241500,
+        "invested": 0,
+        "matterGeneral": 241500,
+        "matterTotal": 241500,
+        "total": 241500
+      },
+      "pendingApi": {
+        "clientLedgerCard": {
+          "status": 200,
+          "balance": 241500
+        },
+        "clientLedgersList": {
+          "status": 500
+        },
+        "matterTotal": 241500,
+        "matterTotalStatus": 200
+      },
+      "pendingUi": {
+        "cardText": "Trust Balance Funds Held R 241 500,00 Moroka Family Trust mwld55wr08f1 — trust balance across all matters: R 241 500,00 Record Deposit Record Payment Fee Transfer",
+        "matterTotalText": "R 241 500,00",
+        "clientLineText": "Moroka Family Trust mwld55wr08f1 — trust balance across all matters: R 241 500,00",
+        "matterTotal": 241500,
+        "clientGeneral": 241500,
+        "files": [
+          "07-a5-matter-trust-tab-pending-1440.png",
+          "07-a5-matter-trust-tab-pending-1280.png"
+        ],
+        "clientLedgerPageText": "Back to Client Ledgers Moroka Family Trust mwld55wr08f1 Client ledger detail and transaction history Trust Balance R 241 500,00 Ledger totals Deposits R 250 000,00 − less Payments R 0,00 − less Fee transfers R 8 500,00 − less Refunds R 0,00 =Balance R 241 500,00 Generate Statement Select a date range and generate a PDF statement for this client From To Print Statement Status: All Recorded Awaiting Approval Approved Rejected Reversed Type: All Deposit Payment Fee transfer Refund Transfer out Transfer in Reversal Deposit identified and allocated Placed in section 86(4) investment Investment capi",
+        "filesLedger": [
+          "08-a5-client-ledger-page-pending-1440.png"
+        ]
+      },
+      "after": {
+        "client": {
+          "general": 234000,
+          "invested": 7500,
+          "matterGeneral": 234000,
+          "matterTotal": 241500,
+          "total": 241500
+        },
+        "books": [
+          {
+            "id": "961dbcc7-6938-4576-82f3-515085095001",
+            "name": "Nedbank Section 86(4) Investments",
+            "cashbook": 30000,
+            "creditors": 30000,
+            "balanced": true
+          },
+          {
+            "id": "532e3e6a-c55f-4ff2-a307-44cc862908c1",
+            "name": "OBS s86(4) Investments DE43H",
+            "cashbook": 7500,
+            "creditors": 7500,
+            "balanced": true
+          },
+          {
+            "id": "5b3e426d-d435-4ef7-b440-8375aa644439",
+            "name": "Mathebula & Partners Trust Account",
+            "cashbook": 49000,
+            "creditors": 49000,
+            "balanced": true
+          },
+          {
+            "id": "425fafa1-e6c4-48a7-9e40-b875772d9dd8",
+            "name": "Standard Bank Section 86(3) Investments",
+            "cashbook": 200000,
+            "creditors": 200000,
+            "balanced": true
+          }
+        ],
+        "api": {
+          "clientLedgerCard": {
+            "status": 500,
+            "title": "Internal server error"
+          },
+          "clientLedgersList": {
+            "status": 500
+          },
+          "matterTotal": 241500,
+          "matterTotalStatus": 200
+        },
+        "positions": {
+          "funding": {
+            "status": 200,
+            "cashbook": 49000,
+            "creditorsTotal": 49000,
+            "difference": 0,
+            "breakdown": {
+              "clientLedgers": 249000,
+              "investmentCreditors": 0,
+              "fundInterestAndCharges": 0,
+              "unidentifiedDeposits": 0,
+              "otherNonClient": 0,
+              "interAccount": -200000,
+              "total": 49000
+            }
+          },
+          "inv4": {
+            "status": 200,
+            "cashbook": 7500,
+            "creditorsTotal": 7500,
+            "difference": 0,
+            "breakdown": {
+              "clientLedgers": 0,
+              "investmentCreditors": 7500,
+              "fundInterestAndCharges": 0,
+              "unidentifiedDeposits": 0,
+              "otherNonClient": 0,
+              "interAccount": 0,
+              "total": 7500
+            }
+          }
+        },
+        "investmentApi": {
+          "id": "a7e500d8-2124-453d-aa34-48ae9154f4d6",
+          "trustAccountId": "5b3e426d-d435-4ef7-b440-8375aa644439",
+          "investmentAccountId": "532e3e6a-c55f-4ff2-a307-44cc862908c1",
+          "investmentAccountName": "OBS s86(4) Investments DE43H",
+          "clientId": "79b27393-d9c1-46c0-9a48-46c565a92e96",
+          "clientName": "Moroka Family Trust mwld55wr08f1",
+          "matterId": "eec33c75-dd13-40f8-9d22-2be53f964eab",
+          "institution": "Nedbank",
+          "accountNumber": "OBS4-DE43H",
+          "principal": 7500,
+          "interestRate": 0.07,
+          "depositDate": "2026-11-18",
+          "maturityDate": null,
+          "interestEarned": 0,
+          "balance": 7500,
+          "status": "ACTIVE",
+          "awaitingApproval": false,
+          "withdrawalDate": null,
+          "withdrawalAmount": null,
+          "depositTransactionId": "c0c9cafd-c09b-41f2-a502-75da08a017df",
+          "withdrawalTransactionId": null,
+          "notes": "OBS DE43H s864",
+          "investmentBasis": "CLIENT_INSTRUCTION",
+          "createdAt": "2026-11-18T00:15:50.778519Z",
+          "updatedAt": "2026-11-18T00:15:50.782959Z"
+        },
+        "register": {
+          "text": "Moroka Family Trust mwld55wr08f1 Section 86(4) OBS s86(4) Investments DE43H Nedbank OBS4-DE43H R 7 500,00 7.00% 5% (statutory) 18 Nov 2026 Call deposit R 0,00 R 7 500,00 Active Record Interest Withdraw",
+          "withdrawButtons": 1,
+          "cells": [
+            "Moroka Family Trust mwld55wr08f1",
+            "Section 86(4)",
+            "OBS s86(4) Investments DE43H",
+            "Nedbank OBS4-DE43H",
+            "R 7 500,00",
+            "7.00%",
+            "5% (statutory)",
+            "18 Nov 2026",
+            "Call deposit",
+            "R 0,00",
+            "R 7 500,00",
+            "Active",
+            "Record Interest Withdraw"
+          ],
+          "files": [
+            "11-a7-register-s86-4-active-1440.png",
+            "11-a7-register-s86-4-active-1280.png"
+          ]
+        },
+        "ui": {
+          "cardText": "Trust Balance Funds Held R 241 500,00",
+          "matterTotalText": "R 241 500,00",
+          "clientLineText": null,
+          "matterTotal": 241500,
+          "clientGeneral": null,
+          "files": [
+            "12-a8-matter-trust-tab-approved-1440.png",
+            "12-a8-matter-trust-tab-approved-1280.png"
+          ],
+          "clientLedgerPageText": "Something went wrong An unexpected error occurred while loading this page. Try refreshing, or go back and try again. Try again Refresh page Go back",
+          "filesLedger": [
+            "13-a8-client-ledger-page-approved-1440.png"
+          ]
+        }
+      },
+      "deltas": {
+        "clientTotal": 0,
+        "general": -7500,
+        "invested": 7500,
+        "matterGeneral": -7500,
+        "matterTotal": 0,
+        "cashbookFunding": -7500,
+        "cashbookInv4": 7500
+      },
+      "checks": {
+        "addDialogPreset": true,
+        "accountCreatedNotPrimary": true,
+        "pickerSelectsNew": true,
+        "pendingAwaiting": true,
+        "pendingNothingMoved": true,
+        "approverSeesDescription": true,
+        "approved": true,
+        "totalUnchanged": true,
+        "generalDown": true,
+        "investedUp": true,
+        "cashbooks": true,
+        "apiMatterTotalUnchanged": true,
+        "uiMatterTotalUnchanged": true,
+        "apiClientCardGeneral": false,
+        "uiClientGeneral": false,
+        "registerActive": true
+      }
+    },
+    "f": {
+      "scans": [
+        {
+          "label": "a-place-dialog-s864",
+          "rawInInnerText": [],
+          "rawInTextContent": [],
+          "cssUppercaseOnly": [],
+          "clean": true
+        },
+        {
+          "label": "a-stacked-add-dialog-s864",
+          "rawInInnerText": [],
+          "rawInTextContent": [],
+          "cssUppercaseOnly": [],
+          "clean": true
+        },
+        {
+          "label": "a-place-dialog-filled-s864",
+          "rawInInnerText": [],
+          "rawInTextContent": [],
+          "cssUppercaseOnly": [],
+          "clean": true
+        },
+        {
+          "label": "a4-investments-page-s86-4-awaiting",
+          "rawInInnerText": [],
+          "rawInTextContent": [],
+          "cssUppercaseOnly": [],
+          "clean": true
+        },
+        {
+          "label": "a6-approvals-row",
+          "rawInInnerText": [],
+          "rawInTextContent": [],
+          "cssUppercaseOnly": [],
+          "clean": true
+        },
+        {
+          "label": "a6-transactions-page",
+          "rawInInnerText": [
+            "RECORDED",
+            "APPROVED"
+          ],
+          "rawInTextContent": [],
+          "cssUppercaseOnly": [
+            "RECORDED",
+            "APPROVED"
+          ],
+          "clean": true
+        },
+        {
+          "label": "a7-investments-page-s86-4-active",
+          "rawInInnerText": [],
+          "rawInTextContent": [],
+          "cssUppercaseOnly": [],
+          "clean": true
+        },
+        {
+          "label": "b-place-dialog-s863",
+          "rawInInnerText": [],
+          "rawInTextContent": [],
+          "cssUppercaseOnly": [],
+          "clean": true
+        },
+        {
+          "label": "b-stacked-add-dialog-s863",
+          "rawInInnerText": [],
+          "rawInTextContent": [],
+          "cssUppercaseOnly": [],
+          "clean": true
+        },
+        {
+          "label": "b-place-dialog-filled-s863",
+          "rawInInnerText": [],
+          "rawInTextContent": [],
+          "cssUppercaseOnly": [],
+          "clean": true
+        },
+        {
+          "label": "b4-investments-page-s86-3-awaiting",
+          "rawInInnerText": [],
+          "rawInTextContent": [],
+          "cssUppercaseOnly": [],
+          "clean": true
+        },
+        {
+          "label": "b6-approvals-row",
+          "rawInInnerText": [],
+          "rawInTextContent": [],
+          "cssUppercaseOnly": [],
+          "clean": true
+        },
+        {
+          "label": "b6-transactions-page",
+          "rawInInnerText": [
+            "RECORDED",
+            "APPROVED"
+          ],
+          "rawInTextContent": [],
+          "cssUppercaseOnly": [
+            "RECORDED",
+            "APPROVED"
+          ],
+          "clean": true
+        },
+        {
+          "label": "b7-investments-page-s86-3-active",
+          "rawInInnerText": [],
+          "rawInTextContent": [],
+          "cssUppercaseOnly": [],
+          "clean": true
+        },
+        {
+          "label": "c-withdraw-dialog",
+          "rawInInnerText": [],
+          "rawInTextContent": [],
+          "cssUppercaseOnly": [],
+          "clean": true
+        }
+      ]
+    },
+    "g": {
+      "a-stacked-add-dialog-720": [
+        {
+          "rootSel": "[data-testid='create-trust-account-dialog']",
+          "vw": 1280,
+          "vh": 720,
+          "root": {
+            "left": 384,
+            "right": 896,
+            "top": 36,
+            "bottom": 684,
+            "clientWidth": 512,
+            "scrollWidth": 512,
+            "clientHeight": 648,
+            "scrollHeight": 648,
+            "overflowY": "visible"
+          },
+          "rootInsideViewport": true,
+          "offenders": [],
+          "truncated": [],
+          "noHorizontalOverflow": true,
+          "ok": true,
+          "width": 1280,
+          "extra": {
+            "dialogTop": 36,
+            "dialogBottom": 684,
+            "vh": 720,
+            "dialogClientHeight": 648,
+            "dialogScrollHeight": 648,
+            "overflowY": "visible",
+            "maxHeight": "none",
+            "buttonTopBefore": 853,
+            "buttonBottomBefore": 889,
+            "buttonInViewportBefore": false,
+            "buttonTopAfterScroll": 647,
+            "buttonBottomAfterScroll": 683,
+            "buttonInViewportAfterScroll": true,
+            "dialogScrollTop": 0
+          }
+        },
+        {
+          "rootSel": "[data-testid='create-trust-account-dialog']",
+          "vw": 1440,
+          "vh": 720,
+          "root": {
+            "left": 464,
+            "right": 976,
+            "top": 36,
+            "bottom": 684,
+            "clientWidth": 512,
+            "scrollWidth": 512,
+            "clientHeight": 648,
+            "scrollHeight": 648,
+            "overflowY": "visible"
+          },
+          "rootInsideViewport": true,
+          "offenders": [],
+          "truncated": [],
+          "noHorizontalOverflow": true,
+          "ok": true,
+          "width": 1440,
+          "extra": {
+            "dialogTop": 36,
+            "dialogBottom": 684,
+            "vh": 720,
+            "dialogClientHeight": 648,
+            "dialogScrollHeight": 648,
+            "overflowY": "visible",
+            "maxHeight": "none",
+            "buttonTopBefore": 647,
+            "buttonBottomBefore": 683,
+            "buttonInViewportBefore": true,
+            "buttonTopAfterScroll": 647,
+            "buttonBottomAfterScroll": 683,
+            "buttonInViewportAfterScroll": true,
+            "dialogScrollTop": 0
+          }
+        },
+        {
+          "rootSel": "[data-testid='create-trust-account-dialog']",
+          "vw": 1920,
+          "vh": 720,
+          "root": {
+            "left": 704,
+            "right": 1216,
+            "top": 36,
+            "bottom": 684,
+            "clientWidth": 512,
+            "scrollWidth": 512,
+            "clientHeight": 648,
+            "scrollHeight": 648,
+            "overflowY": "visible"
+          },
+          "rootInsideViewport": true,
+          "offenders": [],
+          "truncated": [],
+          "noHorizontalOverflow": true,
+          "ok": true,
+          "width": 1920,
+          "extra": {
+            "dialogTop": 36,
+            "dialogBottom": 684,
+            "vh": 720,
+            "dialogClientHeight": 648,
+            "dialogScrollHeight": 648,
+            "overflowY": "visible",
+            "maxHeight": "none",
+            "buttonTopBefore": 647,
+            "buttonBottomBefore": 683,
+            "buttonInViewportBefore": true,
+            "buttonTopAfterScroll": 647,
+            "buttonBottomAfterScroll": 683,
+            "buttonInViewportAfterScroll": true,
+            "dialogScrollTop": 0
+          }
+        }
+      ],
+      "a-place-dialog-filled": [
+        {
+          "rootSel": "[data-testid='place-investment-dialog']",
+          "vw": 1280,
+          "vh": 720,
+          "root": {
+            "left": 384,
+            "right": 896,
+            "top": 36,
+            "bottom": 684,
+            "clientWidth": 512,
+            "scrollWidth": 512,
+            "clientHeight": 648,
+            "scrollHeight": 648,
+            "overflowY": "visible"
+          },
+          "rootInsideViewport": true,
+          "offenders": [],
+          "truncated": [],
+          "noHorizontalOverflow": true,
+          "ok": true,
+          "width": 1280
+        },
+        {
+          "rootSel": "[data-testid='place-investment-dialog']",
+          "vw": 1440,
+          "vh": 720,
+          "root": {
+            "left": 464,
+            "right": 976,
+            "top": 36,
+            "bottom": 684,
+            "clientWidth": 512,
+            "scrollWidth": 512,
+            "clientHeight": 648,
+            "scrollHeight": 648,
+            "overflowY": "visible"
+          },
+          "rootInsideViewport": true,
+          "offenders": [],
+          "truncated": [],
+          "noHorizontalOverflow": true,
+          "ok": true,
+          "width": 1440
+        }
+      ],
+      "a6-approvals-row": [
+        {
+          "rootSel": "[data-testid='transaction-row-c0c9cafd-c09b-41f2-a502-75da08a017df']",
+          "vw": 1280,
+          "vh": 1100,
+          "root": {
+            "left": 305,
+            "right": 1231,
+            "top": 1137,
+            "bottom": 1267,
+            "clientWidth": 926,
+            "scrollWidth": 926,
+            "clientHeight": 131,
+            "scrollHeight": 131,
+            "overflowY": "visible"
+          },
+          "rootInsideViewport": false,
+          "offenders": [],
+          "truncated": [],
+          "noHorizontalOverflow": true,
+          "ok": true,
+          "width": 1280,
+          "extra": {
+            "tableScrollWidth": 926,
+            "wrapClientWidth": 926,
+            "tableOverflowsWrap": false,
+            "vw": 1280,
+            "description": {
+              "left": 579,
+              "right": 727,
+              "lines": 4,
+              "scrollWidth": 147,
+              "clientWidth": 147,
+              "insideRow": true
+            },
+            "actions": {
+              "left": 1040,
+              "right": 1231,
+              "insideViewport": true
+            }
+          }
+        },
+        {
+          "rootSel": "[data-testid='transaction-row-c0c9cafd-c09b-41f2-a502-75da08a017df']",
+          "vw": 1440,
+          "vh": 1100,
+          "root": {
+            "left": 305,
+            "right": 1391,
+            "top": 969,
+            "bottom": 1051,
+            "clientWidth": 1086,
+            "scrollWidth": 1086,
+            "clientHeight": 83,
+            "scrollHeight": 83,
+            "overflowY": "visible"
+          },
+          "rootInsideViewport": true,
+          "offenders": [],
+          "truncated": [],
+          "noHorizontalOverflow": true,
+          "ok": true,
+          "width": 1440,
+          "extra": {
+            "tableScrollWidth": 1086,
+            "wrapClientWidth": 1086,
+            "tableOverflowsWrap": false,
+            "vw": 1440,
+            "description": {
+              "left": 607,
+              "right": 887,
+              "lines": 2,
+              "scrollWidth": 280,
+              "clientWidth": 280,
+              "insideRow": true
+            },
+            "actions": {
+              "left": 1200,
+              "right": 1391,
+              "insideViewport": true
+            }
+          }
+        }
+      ],
+      "b-stacked-add-dialog-720": [
+        {
+          "rootSel": "[data-testid='create-trust-account-dialog']",
+          "vw": 1280,
+          "vh": 720,
+          "root": {
+            "left": 384,
+            "right": 896,
+            "top": 36,
+            "bottom": 684,
+            "clientWidth": 512,
+            "scrollWidth": 512,
+            "clientHeight": 648,
+            "scrollHeight": 648,
+            "overflowY": "visible"
+          },
+          "rootInsideViewport": true,
+          "offenders": [],
+          "truncated": [],
+          "noHorizontalOverflow": true,
+          "ok": true,
+          "width": 1280,
+          "extra": {
+            "dialogTop": 36,
+            "dialogBottom": 684,
+            "vh": 720,
+            "dialogClientHeight": 648,
+            "dialogScrollHeight": 648,
+            "overflowY": "visible",
+            "maxHeight": "none",
+            "buttonTopBefore": 853,
+            "buttonBottomBefore": 889,
+            "buttonInViewportBefore": false,
+            "buttonTopAfterScroll": 647,
+            "buttonBottomAfterScroll": 683,
+            "buttonInViewportAfterScroll": true,
+            "dialogScrollTop": 0
+          }
+        },
+        {
+          "rootSel": "[data-testid='create-trust-account-dialog']",
+          "vw": 1440,
+          "vh": 720,
+          "root": {
+            "left": 464,
+            "right": 976,
+            "top": 36,
+            "bottom": 684,
+            "clientWidth": 512,
+            "scrollWidth": 512,
+            "clientHeight": 648,
+            "scrollHeight": 648,
+            "overflowY": "visible"
+          },
+          "rootInsideViewport": true,
+          "offenders": [],
+          "truncated": [],
+          "noHorizontalOverflow": true,
+          "ok": true,
+          "width": 1440,
+          "extra": {
+            "dialogTop": 36,
+            "dialogBottom": 684,
+            "vh": 720,
+            "dialogClientHeight": 648,
+            "dialogScrollHeight": 648,
+            "overflowY": "visible",
+            "maxHeight": "none",
+            "buttonTopBefore": 647,
+            "buttonBottomBefore": 683,
+            "buttonInViewportBefore": true,
+            "buttonTopAfterScroll": 647,
+            "buttonBottomAfterScroll": 683,
+            "buttonInViewportAfterScroll": true,
+            "dialogScrollTop": 0
+          }
+        },
+        {
+          "rootSel": "[data-testid='create-trust-account-dialog']",
+          "vw": 1920,
+          "vh": 720,
+          "root": {
+            "left": 704,
+            "right": 1216,
+            "top": 36,
+            "bottom": 684,
+            "clientWidth": 512,
+            "scrollWidth": 512,
+            "clientHeight": 648,
+            "scrollHeight": 648,
+            "overflowY": "visible"
+          },
+          "rootInsideViewport": true,
+          "offenders": [],
+          "truncated": [],
+          "noHorizontalOverflow": true,
+          "ok": true,
+          "width": 1920,
+          "extra": {
+            "dialogTop": 36,
+            "dialogBottom": 684,
+            "vh": 720,
+            "dialogClientHeight": 648,
+            "dialogScrollHeight": 648,
+            "overflowY": "visible",
+            "maxHeight": "none",
+            "buttonTopBefore": 647,
+            "buttonBottomBefore": 683,
+            "buttonInViewportBefore": true,
+            "buttonTopAfterScroll": 647,
+            "buttonBottomAfterScroll": 683,
+            "buttonInViewportAfterScroll": true,
+            "dialogScrollTop": 0
+          }
+        }
+      ],
+      "b-place-dialog-filled": [
+        {
+          "rootSel": "[data-testid='place-investment-dialog']",
+          "vw": 1280,
+          "vh": 720,
+          "root": {
+            "left": 384,
+            "right": 896,
+            "top": 36,
+            "bottom": 684,
+            "clientWidth": 512,
+            "scrollWidth": 512,
+            "clientHeight": 648,
+            "scrollHeight": 648,
+            "overflowY": "visible"
+          },
+          "rootInsideViewport": true,
+          "offenders": [],
+          "truncated": [],
+          "noHorizontalOverflow": true,
+          "ok": true,
+          "width": 1280
+        },
+        {
+          "rootSel": "[data-testid='place-investment-dialog']",
+          "vw": 1440,
+          "vh": 720,
+          "root": {
+            "left": 464,
+            "right": 976,
+            "top": 36,
+            "bottom": 684,
+            "clientWidth": 512,
+            "scrollWidth": 512,
+            "clientHeight": 648,
+            "scrollHeight": 648,
+            "overflowY": "visible"
+          },
+          "rootInsideViewport": true,
+          "offenders": [],
+          "truncated": [],
+          "noHorizontalOverflow": true,
+          "ok": true,
+          "width": 1440
+        }
+      ],
+      "b6-approvals-row": [
+        {
+          "rootSel": "[data-testid='transaction-row-98f0976e-f8d1-4ce8-a299-acc79c9a32df']",
+          "vw": 1280,
+          "vh": 1100,
+          "root": {
+            "left": 305,
+            "right": 1231,
+            "top": 1185,
+            "bottom": 1331,
+            "clientWidth": 926,
+            "scrollWidth": 926,
+            "clientHeight": 147,
+            "scrollHeight": 147,
+            "overflowY": "visible"
+          },
+          "rootInsideViewport": false,
+          "offenders": [],
+          "truncated": [],
+          "noHorizontalOverflow": true,
+          "ok": true,
+          "width": 1280,
+          "extra": {
+            "tableScrollWidth": 926,
+            "wrapClientWidth": 926,
+            "tableOverflowsWrap": false,
+            "vw": 1280,
+            "description": {
+              "left": 579,
+              "right": 727,
+              "lines": 4,
+              "scrollWidth": 147,
+              "clientWidth": 147,
+              "insideRow": true
+            },
+            "actions": {
+              "left": 1040,
+              "right": 1231,
+              "insideViewport": true
+            }
+          }
+        },
+        {
+          "rootSel": "[data-testid='transaction-row-98f0976e-f8d1-4ce8-a299-acc79c9a32df']",
+          "vw": 1440,
+          "vh": 1100,
+          "root": {
+            "left": 305,
+            "right": 1391,
+            "top": 969,
+            "bottom": 1051,
+            "clientWidth": 1086,
+            "scrollWidth": 1086,
+            "clientHeight": 83,
+            "scrollHeight": 83,
+            "overflowY": "visible"
+          },
+          "rootInsideViewport": true,
+          "offenders": [],
+          "truncated": [],
+          "noHorizontalOverflow": true,
+          "ok": true,
+          "width": 1440,
+          "extra": {
+            "tableScrollWidth": 1086,
+            "wrapClientWidth": 1086,
+            "tableOverflowsWrap": false,
+            "vw": 1440,
+            "description": {
+              "left": 607,
+              "right": 887,
+              "lines": 2,
+              "scrollWidth": 280,
+              "clientWidth": 280,
+              "insideRow": true
+            },
+            "actions": {
+              "left": 1200,
+              "right": 1391,
+              "insideViewport": true
+            }
+          }
+        }
+      ],
+      "c-withdraw-dialog": [
+        {
+          "rootSel": "[data-testid='withdraw-investment-dialog']",
+          "vw": 1280,
+          "vh": 720,
+          "root": {
+            "left": 384,
+            "right": 896,
+            "top": 178,
+            "bottom": 542,
+            "clientWidth": 512,
+            "scrollWidth": 512,
+            "clientHeight": 364,
+            "scrollHeight": 364,
+            "overflowY": "visible"
+          },
+          "rootInsideViewport": true,
+          "offenders": [],
+          "truncated": [],
+          "noHorizontalOverflow": true,
+          "ok": true,
+          "width": 1280
+        },
+        {
+          "rootSel": "[data-testid='withdraw-investment-dialog']",
+          "vw": 1440,
+          "vh": 720,
+          "root": {
+            "left": 464,
+            "right": 976,
+            "top": 178,
+            "bottom": 542,
+            "clientWidth": 512,
+            "scrollWidth": 512,
+            "clientHeight": 364,
+            "scrollHeight": 364,
+            "overflowY": "visible"
+          },
+          "rootInsideViewport": true,
+          "offenders": [],
+          "truncated": [],
+          "noHorizontalOverflow": true,
+          "ok": true,
+          "width": 1440
+        }
+      ]
+    },
+    "a6": {
+      "txId": "c0c9cafd-c09b-41f2-a502-75da08a017df",
+      "rowTextBefore": "18 Nov 2026 INV-A7E500D8 Placed in section 86(4) investment Placed in section 86(4) investment at Nedbank (OBS s86(4) Investments DE43H) R 7 500,00 AWAITING APPROVAL Approve Reject",
+      "descriptionText": "Placed in section 86(4) investment at Nedbank (OBS s86(4) Investments DE43H)",
+      "approveButtons": 1,
+      "files": [
+        "09-a6-transactions-awaiting-1440.png",
+        "09-a6-transactions-awaiting-1280.png"
+      ],
+      "rowTextAfter": "18 Nov 2026 INV-A7E500D8 Placed in section 86(4) investment Placed in section 86(4) investment at Nedbank (OBS s86(4) Investments DE43H) R 7 500,00 APPROVED",
+      "filesAfter": [
+        "10-a6-transactions-approved-1440.png"
+      ],
+      "dbAfter": [
+        [
+          "INV_PLACE",
+          "APPROVED",
+          "CLIENT",
+          "5b3e426d-d435-4ef7-b440-8375aa644439",
+          "7500.00",
+          "-7500.00",
+          "-7500.00",
+          "t",
+          "79b27393-d9c1-46c0-9a48-46c565a92e96"
+        ],
+        [
+          "INV_RECEIVE",
+          "APPROVED",
+          "CLIENT_INVESTMENT",
+          "532e3e6a-c55f-4ff2-a307-44cc862908c1",
+          "7500.00",
+          "7500.00",
+          "7500.00",
+          "t",
+          "79b27393-d9c1-46c0-9a48-46c565a92e96"
+        ]
+      ]
+    },
+    "b": {
+      "basis": "s863",
+      "accountName": "OBS s86(3) Investments DE43H",
+      "bank": "Standard Bank",
+      "accountNumber": "0863DE43H",
+      "institution": "Standard Bank",
+      "depositNumber": "OBS3-DE43H",
+      "principal": 2500,
+      "rate": 6,
+      "helpText": "Interest on a section 86(3) investment belongs to the Legal Practitioners’ Fidelity Fund.",
+      "clientIdFieldCount": 0,
+      "matterIdFieldCount": 0,
+      "pickerOptionsBefore": [
+        "Standard Bank Section 86(3) Investments (Standard Bank 0863000001)"
+      ],
+      "filesPlaceEmpty": [
+        "14-b1-place-dialog-s863-1440.png",
+        "14-b1-place-dialog-s863-1280.png"
+      ],
+      "addDialog": {
+        "typeText": "Investment",
+        "typeDisabled": true,
+        "basisText": "Section 86(3) — the firm invests surplus trust money",
+        "basisDisabled": true,
+        "description": "Register the investment account the trust money will be placed in.",
+        "primaryCheckboxCount": 1,
+        "primaryChecked": "false"
+      },
+      "filesAdd": [
+        "15-b2-stacked-add-investment-account-s863-1440.png",
+        "15-b2-stacked-add-investment-account-s863-1280.png"
+      ],
+      "accountsCountBefore": 4,
+      "accountsCountAfter": 5,
+      "newAccountDb": [
+        "b344084f-6068-42d2-be73-ca0bffb5433b",
+        "INVESTMENT",
+        "FIRM_DISCRETION",
+        "f",
+        "ACTIVE"
+      ],
+      "pickerTextAfterCreate": "OBS s86(3) Investments DE43H (Standard Bank 0863DE43H)",
+      "filesPlaceFilled": [
+        "16-b3-place-dialog-filled-s863-1440.png",
+        "16-b3-place-dialog-filled-s863-1280.png"
+      ],
+      "investmentsCountBefore": 3,
+      "investmentsCountAfter": 4,
+      "investmentDb": {
+        "id": "e283da35-aef5-4259-88d7-cfd8b0d2f15f",
+        "depositTx": "98f0976e-f8d1-4ce8-a299-acc79c9a32df",
+        "basis": "FIRM_DISCRETION",
+        "customerId": "<null>",
+        "projectId": "<null>",
+        "investmentAccountId": "b344084f-6068-42d2-be73-ca0bffb5433b",
+        "fundingAccountId": "5b3e426d-d435-4ef7-b440-8375aa644439",
+        "status": "ACTIVE",
+        "principal": "2500.00"
+      },
+      "generalBefore": "26c0d42c-d849-41f8-a113-1f7d6b29c150=15000.00,79b27393-d9c1-46c0-9a48-46c565a92e96=234000.00",
+      "pendingRegister": {
+        "text": "Firm (section 86(3)) Section 86(3) OBS s86(3) Investments DE43H Standard Bank OBS3-DE43H R 2 500,00 6.00% Arrangement 18 Nov 2026 Call deposit R 0,00 R 0,00 Awaiting approval",
+        "withdrawButtons": 0,
+        "cells": [
+          "Firm (section 86(3))",
+          "Section 86(3)",
+          "OBS s86(3) Investments DE43H",
+          "Standard Bank OBS3-DE43H",
+          "R 2 500,00",
+          "6.00%",
+          "Arrangement",
+          "18 Nov 2026",
+          "Call deposit",
+          "R 0,00",
+          "R 0,00",
+          "Awaiting approval",
+          ""
+        ],
+        "files": [
+          "17-b4-register-s86-3-awaiting-1440.png",
+          "17-b4-register-s86-3-awaiting-1280.png"
+        ]
+      },
+      "after": {
+        "allClientGeneral": "26c0d42c-d849-41f8-a113-1f7d6b29c150=15000.00,79b27393-d9c1-46c0-9a48-46c565a92e96=234000.00",
+        "books": [
+          {
+            "id": "961dbcc7-6938-4576-82f3-515085095001",
+            "name": "Nedbank Section 86(4) Investments",
+            "cashbook": 30000,
+            "creditors": 30000,
+            "balanced": true
+          },
+          {
+            "id": "532e3e6a-c55f-4ff2-a307-44cc862908c1",
+            "name": "OBS s86(4) Investments DE43H",
+            "cashbook": 7500,
+            "creditors": 7500,
+            "balanced": true
+          },
+          {
+            "id": "5b3e426d-d435-4ef7-b440-8375aa644439",
+            "name": "Mathebula & Partners Trust Account",
+            "cashbook": 46500,
+            "creditors": 46500,
+            "balanced": true
+          },
+          {
+            "id": "425fafa1-e6c4-48a7-9e40-b875772d9dd8",
+            "name": "Standard Bank Section 86(3) Investments",
+            "cashbook": 200000,
+            "creditors": 200000,
+            "balanced": true
+          },
+          {
+            "id": "b344084f-6068-42d2-be73-ca0bffb5433b",
+            "name": "OBS s86(3) Investments DE43H",
+            "cashbook": 2500,
+            "creditors": 2500,
+            "balanced": true
+          }
+        ],
+        "positions": {
+          "funding": {
+            "status": 200,
+            "cashbook": 46500,
+            "creditorsTotal": 46500,
+            "difference": 0,
+            "breakdown": {
+              "clientLedgers": 249000,
+              "investmentCreditors": 0,
+              "fundInterestAndCharges": 0,
+              "unidentifiedDeposits": 0,
+              "otherNonClient": 0,
+              "interAccount": -202500,
+              "total": 46500
+            }
+          },
+          "inv4": {
+            "status": 200,
+            "cashbook": 7500,
+            "creditorsTotal": 7500,
+            "difference": 0,
+            "breakdown": {
+              "clientLedgers": 0,
+              "investmentCreditors": 7500,
+              "fundInterestAndCharges": 0,
+              "unidentifiedDeposits": 0,
+              "otherNonClient": 0,
+              "interAccount": 0,
+              "total": 7500
+            }
+          },
+          "inv3": {
+            "status": 200,
+            "cashbook": 2500,
+            "creditorsTotal": 2500,
+            "difference": 0,
+            "breakdown": {
+              "clientLedgers": 0,
+              "investmentCreditors": 0,
+              "fundInterestAndCharges": 0,
+              "unidentifiedDeposits": 0,
+              "otherNonClient": 0,
+              "interAccount": 2500,
+              "total": 2500
+            }
+          }
+        },
+        "investmentDb": [
+          "<null>",
+          "<null>",
+          "ACTIVE"
+        ],
+        "register": {
+          "text": "Firm (section 86(3)) Section 86(3) OBS s86(3) Investments DE43H Standard Bank OBS3-DE43H R 2 500,00 6.00% Arrangement 18 Nov 2026 Call deposit R 0,00 R 2 500,00 Active Record Interest Withdraw",
+          "withdrawButtons": 1,
+          "cells": [
+            "Firm (section 86(3))",
+            "Section 86(3)",
+            "OBS s86(3) Investments DE43H",
+            "Standard Bank OBS3-DE43H",
+            "R 2 500,00",
+            "6.00%",
+            "Arrangement",
+            "18 Nov 2026",
+            "Call deposit",
+            "R 0,00",
+            "R 2 500,00",
+            "Active",
+            "Record Interest Withdraw"
+          ],
+          "files": [
+            "20-b7-register-s86-3-active-1440.png",
+            "20-b7-register-s86-3-active-1280.png"
+          ]
+        }
+      },
+      "checks": {
+        "clientFieldsHidden": true,
+        "addDialogPreset": true,
+        "accountCreatedNotPrimary": true,
+        "registerFirm": true,
+        "approverSeesDescription": true,
+        "noClientOnInvestment": true,
+        "rowsInterAccount": true,
+        "noClientLedgerMoved": true,
+        "cashbooks": true,
+        "registerActiveFirm": true
+      }
+    },
+    "b6": {
+      "txId": "98f0976e-f8d1-4ce8-a299-acc79c9a32df",
+      "rowTextBefore": "18 Nov 2026 INV-E283DA35 Placed in section 86(3) investment account Placed in section 86(3) investment at Standard Bank (OBS s86(3) Investments DE43H) R 2 500,00 AWAITING APPROVAL Approve Reject",
+      "descriptionText": "Placed in section 86(3) investment at Standard Bank (OBS s86(3) Investments DE43H)",
+      "approveButtons": 1,
+      "files": [
+        "18-b6-transactions-awaiting-1440.png",
+        "18-b6-transactions-awaiting-1280.png"
+      ],
+      "rowTextAfter": "18 Nov 2026 INV-E283DA35 Placed in section 86(3) investment account Placed in section 86(3) investment at Standard Bank (OBS s86(3) Investments DE43H) R 2 500,00 APPROVED",
+      "filesAfter": [
+        "19-b6-transactions-approved-1440.png"
+      ],
+      "dbAfter": [
+        [
+          "FIRM_INV_PLACE",
+          "APPROVED",
+          "INTER_ACCOUNT",
+          "5b3e426d-d435-4ef7-b440-8375aa644439",
+          "2500.00",
+          "-2500.00",
+          "-2500.00",
+          "t",
+          "<null>"
+        ],
+        [
+          "FIRM_INV_RECEIVE",
+          "APPROVED",
+          "INTER_ACCOUNT",
+          "b344084f-6068-42d2-be73-ca0bffb5433b",
+          "2500.00",
+          "2500.00",
+          "2500.00",
+          "t",
+          "<null>"
+        ]
+      ]
+    },
+    "c": {
+      "amountText": "R 7 500,00",
+      "amount": 7500,
+      "dialogText": "Withdraw Investment The whole investment returns to the trust banking account it was placed from. Returns to trust R 7 500,00 The capital and any section 86(4) interest posted to the books (section 86(3) interest belongs to the Legal Practitioners' Fidelity Fund). Withdrawal date Cancel Confirm Withdrawal Close",
+      "inputs": [
+        {
+          "tag": "input",
+          "type": "date",
+          "name": "withdrawalDate",
+          "value": "2026-11-18",
+          "hidden": false
+        }
+      ],
+      "files": [
+        "21-c1-withdraw-dialog-1440.png",
+        "21-c1-withdraw-dialog-1280.png"
+      ],
+      "txCountBefore": 12,
+      "txCountAfter": 14
+    }
+  },
+  "consoleErrors": [
+    {
+      "tab": "alice",
+      "url": "http://localhost:3001/org/e2e-test-org/matters/eec33c75-dd13-40f8-9d22-2be53f964eab?tab=trust",
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    },
+    {
+      "tab": "alice",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/client-ledgers/79b27393-d9c1-46c0-9a48-46c565a92e96",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    }
+  ],
+  "pageErrors": [],
+  "posts": [
+    {
+      "tab": "alice",
+      "at": "2026-11-18T00:15:28.816Z",
+      "url": "http://localhost:8090/token",
+      "nextAction": null
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T00:15:29.009Z",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "nextAction": "0026a07d8ed2b1635231588296294b1ede31946ad1"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T00:15:29.050Z",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "nextAction": "001a1bdf1be008c0cfc4e1347d95d2d227e6084e78"
+    },
+    {
+      "tab": "bob",
+      "at": "2026-11-18T00:15:29.854Z",
+      "url": "http://localhost:8090/token",
+      "nextAction": null
+    },
+    {
+      "tab": "bob",
+      "at": "2026-11-18T00:15:30.023Z",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "nextAction": "0026a07d8ed2b1635231588296294b1ede31946ad1"
+    },
+    {
+      "tab": "bob",
+      "at": "2026-11-18T00:15:30.059Z",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "nextAction": "001a1bdf1be008c0cfc4e1347d95d2d227e6084e78"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T00:15:31.751Z",
+      "url": "http://localhost:3001/org/e2e-test-org/matters/eec33c75-dd13-40f8-9d22-2be53f964eab?tab=trust",
+      "nextAction": "0026a07d8ed2b1635231588296294b1ede31946ad1"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T00:15:32.076Z",
+      "url": "http://localhost:3001/org/e2e-test-org/matters/eec33c75-dd13-40f8-9d22-2be53f964eab?tab=trust",
+      "nextAction": "00082da5d366257397f928e84d6f3fb6cddb7b9682"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T00:15:32.094Z",
+      "url": "http://localhost:3001/org/e2e-test-org/matters/eec33c75-dd13-40f8-9d22-2be53f964eab?tab=trust",
+      "nextAction": "40d38be57aacd277dab3cfe70b142e0485adcfd0ff"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T00:15:32.112Z",
+      "url": "http://localhost:3001/org/e2e-test-org/matters/eec33c75-dd13-40f8-9d22-2be53f964eab?tab=trust",
+      "nextAction": "60710a00982cd1aba1b1c3278fbc380c08476dd8fe"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T00:15:35.315Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/client-ledgers/79b27393-d9c1-46c0-9a48-46c565a92e96",
+      "nextAction": "0026a07d8ed2b1635231588296294b1ede31946ad1"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T00:15:38.853Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/investments",
+      "nextAction": "0026a07d8ed2b1635231588296294b1ede31946ad1"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T00:15:46.138Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/investments",
+      "nextAction": "40923df270a9149b0b367cba6ca94e97aecf910866"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T00:15:50.762Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/investments",
+      "nextAction": "601fa80a45f9e90853e516e4ae7ebf6f337e6d8c1b"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T00:15:51.357Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/investments",
+      "nextAction": "0026a07d8ed2b1635231588296294b1ede31946ad1"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T00:15:53.397Z",
+      "url": "http://localhost:3001/org/e2e-test-org/matters/eec33c75-dd13-40f8-9d22-2be53f964eab?tab=trust",
+      "nextAction": "0026a07d8ed2b1635231588296294b1ede31946ad1"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T00:15:53.715Z",
+      "url": "http://localhost:3001/org/e2e-test-org/matters/eec33c75-dd13-40f8-9d22-2be53f964eab?tab=trust",
+      "nextAction": "00082da5d366257397f928e84d6f3fb6cddb7b9682"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T00:15:53.729Z",
+      "url": "http://localhost:3001/org/e2e-test-org/matters/eec33c75-dd13-40f8-9d22-2be53f964eab?tab=trust",
+      "nextAction": "40d38be57aacd277dab3cfe70b142e0485adcfd0ff"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T00:15:53.746Z",
+      "url": "http://localhost:3001/org/e2e-test-org/matters/eec33c75-dd13-40f8-9d22-2be53f964eab?tab=trust",
+      "nextAction": "60710a00982cd1aba1b1c3278fbc380c08476dd8fe"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T00:15:56.957Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/client-ledgers/79b27393-d9c1-46c0-9a48-46c565a92e96",
+      "nextAction": "0026a07d8ed2b1635231588296294b1ede31946ad1"
+    },
+    {
+      "tab": "bob",
+      "at": "2026-11-18T00:16:00.011Z",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "nextAction": "0026a07d8ed2b1635231588296294b1ede31946ad1"
+    },
+    {
+      "tab": "bob",
+      "at": "2026-11-18T00:16:00.528Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/transactions",
+      "nextAction": "0026a07d8ed2b1635231588296294b1ede31946ad1"
+    },
+    {
+      "tab": "bob",
+      "at": "2026-11-18T00:16:03.584Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/transactions",
+      "nextAction": "407d9c7de1851d2f349cd31449cca768b325c82352"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T00:16:05.527Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/investments",
+      "nextAction": "0026a07d8ed2b1635231588296294b1ede31946ad1"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T00:16:07.207Z",
+      "url": "http://localhost:3001/org/e2e-test-org/matters/eec33c75-dd13-40f8-9d22-2be53f964eab?tab=trust",
+      "nextAction": "0026a07d8ed2b1635231588296294b1ede31946ad1"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T00:16:07.525Z",
+      "url": "http://localhost:3001/org/e2e-test-org/matters/eec33c75-dd13-40f8-9d22-2be53f964eab?tab=trust",
+      "nextAction": "00082da5d366257397f928e84d6f3fb6cddb7b9682"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T00:16:07.545Z",
+      "url": "http://localhost:3001/org/e2e-test-org/matters/eec33c75-dd13-40f8-9d22-2be53f964eab?tab=trust",
+      "nextAction": "40d38be57aacd277dab3cfe70b142e0485adcfd0ff"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T00:16:07.560Z",
+      "url": "http://localhost:3001/org/e2e-test-org/matters/eec33c75-dd13-40f8-9d22-2be53f964eab?tab=trust",
+      "nextAction": "60710a00982cd1aba1b1c3278fbc380c08476dd8fe"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T00:16:10.721Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/client-ledgers/79b27393-d9c1-46c0-9a48-46c565a92e96",
+      "nextAction": "0026a07d8ed2b1635231588296294b1ede31946ad1"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T00:16:14.239Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/investments",
+      "nextAction": "0026a07d8ed2b1635231588296294b1ede31946ad1"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T00:16:21.151Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/investments",
+      "nextAction": "40923df270a9149b0b367cba6ca94e97aecf910866"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T00:16:25.814Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/investments",
+      "nextAction": "601fa80a45f9e90853e516e4ae7ebf6f337e6d8c1b"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T00:16:26.392Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/investments",
+      "nextAction": "0026a07d8ed2b1635231588296294b1ede31946ad1"
+    },
+    {
+      "tab": "bob",
+      "at": "2026-11-18T00:16:28.067Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/transactions",
+      "nextAction": "0026a07d8ed2b1635231588296294b1ede31946ad1"
+    },
+    {
+      "tab": "bob",
+      "at": "2026-11-18T00:16:31.055Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/transactions",
+      "nextAction": "407d9c7de1851d2f349cd31449cca768b325c82352"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T00:16:32.748Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/investments",
+      "nextAction": "0026a07d8ed2b1635231588296294b1ede31946ad1"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T00:16:34.443Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/investments",
+      "nextAction": "0026a07d8ed2b1635231588296294b1ede31946ad1"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T00:16:38.092Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/investments",
+      "nextAction": "60950c23d5b0d80cf4acf6dbd0af9733be1eb2569d"
+    }
+  ],
+  "notes": [],
+  "startedAt": "2026-11-18T00:15:28.060Z",
+  "run": "DE43H",
+  "ids": {
+    "funding": "5b3e426d-d435-4ef7-b440-8375aa644439",
+    "client": "79b27393-d9c1-46c0-9a48-46c565a92e96",
+    "matter": "eec33c75-dd13-40f8-9d22-2be53f964eab",
+    "clientName": "Moroka Family Trust mwld55wr08f1",
+    "matterName": "Estate Late Peter Moroka mwld55wr08f1",
+    "inv4Account": "532e3e6a-c55f-4ff2-a307-44cc862908c1",
+    "inv3Account": "b344084f-6068-42d2-be73-ca0bffb5433b"
+  },
+  "error": "Error: Command failed: docker exec e2e-postgres psql -U postgres -d app -X -At -F | -c select transaction_type, status, ledger, a.account_name, ledger_effect, cashbook_effect, posted_at is not null, transaction_date from tenant_7d218705360b.trust_transactions t join tenant_7d218705360b.trust_accounts a on a.id=t.trust_account_id where investment_id='a7e500d8-2124-453d-aa34-48ae9154f4d6' order by t.created_at\nERROR:  column reference \"status\" is ambiguous\nLINE 1: select transaction_type, status, ledger, a.account_name, led...\n                                 ^\n\n    at checkExecSyncError (node:child_process:890:11)\n    at execFileSync (node:child_process:926:15)\n    at psqlRaw (/Users/rakheendama/Projects/2026/worktree-epic-648A/qa_cycle/evidence/phase92/648A/gates/obs.cjs:29:18)\n    at psqlA (/Users/rakheendama/Projects/2026/worktree-epic-648A/qa_cycle/evidence/phase92/648A/gates/obs.cjs:34:22)\n    at val (/Users/rakheendama/Projects/2026/worktree-epic-648A/qa_cycle/evidence/phase92/648A/gates/obs.cjs:47:20)\n    at rowsA (/Users/rakheendama/Projects/2026/worktree-epic-648A/qa_cycle/evidence/phase92/648A/gates/obs.cjs:48:23)\n    at /Users/rakheendama/Projects/2026/worktree-epic-648A/qa_cycle/evidence/phase92/648A/gates/obs.cjs:446:12\n    at runNextTicks (node:internal/process/task_queues:60:5)\n    at process.processImmediate (node:internal/timers:449:9)"
+}

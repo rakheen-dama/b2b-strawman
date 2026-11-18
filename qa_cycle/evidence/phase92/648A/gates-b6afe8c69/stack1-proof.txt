@@ -1,0 +1,80 @@
+== worktree: /Users/rakheendama/Projects/2026/worktree-epic-648A @ b6afe8c691298693d0e9ffdeeb62e65588c520a8
+== build log source lines:
+Building from source at: /Users/rakheendama/Projects/2026/worktree-epic-648A
+  Tail logs:   docker compose -f /Users/rakheendama/Projects/2026/worktree-epic-648A/compose/docker-compose.e2e.yml logs -f backend frontend
+== jar entries (648A classes, incl. TrustAmounts new in 463e1c64a):
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/ledger/LedgerTotals.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/transaction/TrustTransactionService.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/transaction/InvestmentBalanceRow.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/transaction/InvestmentPlacementHooks.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/transaction/TrustAmounts.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/transaction/TrustTransactionTypeLabels.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/investment/TrustInvestmentService.class
+== TrustAmounts.class exists: 1 ; 'more than 2 decimal places': 1
+== TrustTransactionTypeLabels.class contains placementNoun: 1 ; 'placement in a section 86(4) investment': 1
+== TrustNotificationHandler.class references placementNoun: 1
+== LedgerTotals.class contains the old D-1 throw 'has no client-ledger total yet' (expect 0): 0
+== TrustInvestmentService.class contains 'The deposit date cannot be in the future.': 1 ; onPlacementApproving: 1 ; 'INV-WD-': 1
+== TrustTransactionService.class contains 'Withdraw the investment instead': 1
+== TrustTransactionRepository.class contains CLIENT ledger filter text 'ledger': 3
+== InvestmentRegisterQuery.class contains 'Firm (section 86(3))': 1
+== jar migrations (latest tenant V*):
+db/migration/tenant/V21__phase92_unidentified_deposits.sql
+db/migration/tenant/V22__phase92_investment_account_basis.sql
+db/migration/tenant/V23__phase92_investment_accounts.sql
+== V23 in jar contains chk_trust_invest_client_by_basis: 3
+== frontend container: 648A strings in .next (server + static):
+-- 'The withdrawal date cannot be before the investment's deposit date.':
+/app/frontend/.next/server/chunks/ssr/frontend_app_(app)_org_[slug]_trust-accounting_investments_0bq7hzb._.js
+/app/frontend/.next/static/chunks/3d_wqt_qgopgl.js
+-- 'The withdrawal date cannot be in the future.':
+/app/frontend/.next/server/chunks/ssr/_1v13adn._.js
+/app/frontend/.next/server/chunks/ssr/_20nd4mw._.js
+/app/frontend/.next/server/chunks/ssr/_18sjpww._.js
+/app/frontend/.next/server/chunks/ssr/frontend_lib_schemas_index_ts_0tntwfm._.js
+-- 'The deposit date cannot be in the future.':
+/app/frontend/.next/server/chunks/ssr/_1v13adn._.js
+/app/frontend/.next/server/chunks/ssr/_20nd4mw._.js
+/app/frontend/.next/server/chunks/ssr/_18sjpww._.js
+/app/frontend/.next/server/chunks/ssr/frontend_lib_schemas_index_ts_0tntwfm._.js
+-- 'investment-client-cell':
+/app/frontend/.next/server/chunks/ssr/_105qp0b._.js
+-- 'LPFF share':
+/app/frontend/.next/server/chunks/ssr/1oju_app_(app)_org_[slug]_trust-accounting_interest_InterestPageClient_tsx_1utxfx1._.js
+/app/frontend/.next/server/chunks/ssr/_105qp0b._.js
+/app/frontend/.next/static/chunks/3gpndq_cu4d1k.js
+-- 'Add investment account':
+/app/frontend/.next/server/chunks/ssr/frontend_app_(app)_org_[slug]_trust-accounting_investments_0bq7hzb._.js
+/app/frontend/.next/static/chunks/3d_wqt_qgopgl.js
+-- 'Firm (section 86(3))':
+/app/frontend/.next/server/chunks/ssr/_105qp0b._.js
+-- 'Returns to trust':
+/app/frontend/.next/server/chunks/ssr/frontend_app_(app)_org_[slug]_trust-accounting_investments_0bq7hzb._.js
+/app/frontend/.next/static/chunks/3d_wqt_qgopgl.js
+-- 'create-trust-account-dialog':
+/app/frontend/.next/server/chunks/ssr/_1v13adn._.js
+/app/frontend/.next/server/chunks/ssr/frontend_components_0utty1a._.js
+/app/frontend/.next/server/chunks/ssr/frontend_components_trust_0ero1wy._.js
+/app/frontend/.next/static/chunks/3419t0mbx8j7z.js
+== health: {"groups":["liveness","readiness"],"status":"UP"}  frontend :3001 HTTP 200
+== tenant schemas: tenant_7d218705360b
+ version |           description            | success |        installed_on        
+---------+----------------------------------+---------+----------------------------
+ 23      | phase92 investment accounts      | t       | 2026-11-18 02:37:51.821544
+ 22      | phase92 investment account basis | t       | 2026-11-18 02:37:51.815998
+ 21      | phase92 unidentified deposits    | t       | 2026-11-18 02:37:51.798739
+(3 rows)
+
+      column_name       | is_nullable 
+------------------------+-------------
+ customer_id            | YES
+ deposit_transaction_id | YES
+ investment_account_id  | NO
+ project_id             | YES
+(4 rows)
+
+            account_name            | account_type | investment_basis | is_primary 
+------------------------------------+--------------+------------------+------------
+ Mathebula & Partners Trust Account | GENERAL      |                  | t
+(1 row)
+

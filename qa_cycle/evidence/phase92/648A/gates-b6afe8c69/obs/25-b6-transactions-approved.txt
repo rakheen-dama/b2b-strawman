@@ -1,0 +1,120 @@
+Skip to content
+Kazi
+E2E Test Organization
+Search...
+⌘K
+TODAY
+Home
+My work
+Diary
+MATTERS
+Matters
+New matter
+Conflict check
+Adverse parties
+AI reviews
+CLIENTS
+Clients
+FICA & compliance
+Data requests
+FEES
+TRUST
+FIRM
+Notifications
+BA
+
+Bob Admin
+
+bob@e2e-test.local
+
+Toggle menu
+E2E Test Organization
+Trust accounting
+Transactions
+Search
+⌘K
+22 unread notifications
+22
+e2e-test-org
+BA
+Transactions
+
+Trust account transaction history
+
+Record Transaction
+Status:
+All
+Recorded
+Awaiting Approval
+Approved
+Rejected
+Reversed
+Type:
+All
+Deposit
+Payment
+Fee transfer
+Refund
+Transfer out
+Transfer in
+Reversal
+Interest received for the Legal Practitioners' Fidelity Fund
+Interest paid to the Legal Practitioners' Fidelity Fund
+Bank charge
+Bank charge refunded from the business account
+Unidentified deposit
+Unidentified deposit allocated
+Deposit identified and allocated
+Unidentified deposit paid to the Fund
+Placed in section 86(4) investment
+Investment capital received
+Section 86(4) investment interest
+Fund share of section 86(4) interest (5%)
+Investment withdrawn
+Investment returned to trust
+Placed in section 86(3) investment
+Section 86(3) investment capital received
+Section 86(3) investment withdrawn
+Section 86(3) investment returned to trust
+From
+To
+Client ID
+Matter ID
+Transaction History
+8 transactions found
+Date	Reference	Type	Amount	Status	Actions
+18 Nov 2026	DEP/MOROKA/mwlij30u7ea7	Deposit	
+R 250 000,00	RECORDED	
+Reverse
+18 Nov 2026	DEP/QC/mwlij30u7ea7	Deposit	
+R 45 000,00	RECORDED	
+Reverse
+18 Nov 2026	FEE/MOROKA/mwlij30u7ea7	Fee transfer	
+R 8 500,00	APPROVED	
+Reverse
+18 Nov 2026	INV-651F639B	Placed in section 86(3) investment
+Placed in section 86(3) investment at Standard Bank (Standard Bank Section 86(3) Investments)
+	
+R 200 000,00	APPROVED	
+18 Nov 2026	INV-D1511397	Placed in section 86(4) investment
+Placed in section 86(4) investment at Nedbank (Nedbank Section 86(4) Investments)
+	
+R 30 000,00	APPROVED	
+18 Nov 2026	FEE/SIPHO/mwlij30u7ea7	Fee transfer	
+R 500,00	AWAITING APPROVAL	
+Approve
+Reject
+
+18 Nov 2026	INV-8C856A57	Placed in section 86(4) investment
+Placed in section 86(4) investment at Nedbank (OBS s86(4) Investments IOR6X)
+	
+R 7 500,00	APPROVED	
+18 Nov 2026	INV-DE4057BD	Placed in section 86(3) investment
+Placed in section 86(3) investment at Standard Bank (OBS s86(3) Investments IOR6X)
+	
+R 2 500,00	APPROVED	
+Command Palette
+
+Search pages and settings
+
+Transaction approved

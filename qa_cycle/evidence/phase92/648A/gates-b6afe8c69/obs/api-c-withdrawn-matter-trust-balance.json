@@ -1,0 +1,10 @@
+{
+  "method": "GET",
+  "path": "/api/matters/d42ca953-d28f-4c5c-a9fc-f0f60ec1d7e2/trust-balance",
+  "status": 200,
+  "body": {
+    "matterId": "d42ca953-d28f-4c5c-a9fc-f0f60ec1d7e2",
+    "balance": 241500,
+    "currency": "ZAR"
+  }
+}

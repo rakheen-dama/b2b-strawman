@@ -1,0 +1,27 @@
+{
+  "c2": {
+    "minIsDeposit": true,
+    "maxIsToday": true,
+    "minDiffersFromMax": true,
+    "beforeDepositRefused": true,
+    "stillActive": true
+  },
+  "c2input": {
+    "name": "withdrawalDate",
+    "min": "2026-11-10",
+    "max": "2026-11-18",
+    "value": "2026-11-18"
+  },
+  "dep": "2026-11-10",
+  "k2": {
+    "accountLine": "Mathebula & Partners Trust Account",
+    "typeWords": [
+      "Deposit",
+      "Fee transfer",
+      "Inv place",
+      "Inv return"
+    ]
+  },
+  "consoleErrors": 0,
+  "pageErrors": 0
+}

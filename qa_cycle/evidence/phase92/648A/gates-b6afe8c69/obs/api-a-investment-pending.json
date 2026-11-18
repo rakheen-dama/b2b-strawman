@@ -1,0 +1,32 @@
+{
+  "method": "GET",
+  "path": "/api/trust-investments/8c856a57-222d-444f-a005-af4d084e8276",
+  "status": 200,
+  "body": {
+    "id": "8c856a57-222d-444f-a005-af4d084e8276",
+    "trustAccountId": "95355286-2146-4698-af42-8f56e5bdaa4e",
+    "investmentAccountId": "a433dbc5-5d76-4f4a-8d15-dafa9d7d09ba",
+    "investmentAccountName": "OBS s86(4) Investments IOR6X",
+    "clientId": "2a36f8ef-582a-4e44-b6bd-bf2844e32418",
+    "clientName": "Moroka Family Trust mwlij30u7ea7",
+    "matterId": "d42ca953-d28f-4c5c-a9fc-f0f60ec1d7e2",
+    "institution": "Nedbank",
+    "accountNumber": "OBS4-IOR6X",
+    "principal": 7500,
+    "interestRate": 0.07,
+    "depositDate": "2026-11-18",
+    "maturityDate": null,
+    "interestEarned": 0,
+    "balance": 0,
+    "status": "ACTIVE",
+    "awaitingApproval": true,
+    "withdrawalDate": null,
+    "withdrawalAmount": null,
+    "depositTransactionId": "74174f7f-6917-441c-bdaa-68fa3eb0491c",
+    "withdrawalTransactionId": null,
+    "notes": "OBS IOR6X s864",
+    "investmentBasis": "CLIENT_INSTRUCTION",
+    "createdAt": "2026-11-18T02:44:09.833134Z",
+    "updatedAt": "2026-11-18T02:44:09.838824Z"
+  }
+}

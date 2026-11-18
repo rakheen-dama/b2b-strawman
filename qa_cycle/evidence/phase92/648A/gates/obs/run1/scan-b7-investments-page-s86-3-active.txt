@@ -1,0 +1,36 @@
+innerText:
+Investments
+
+Trust investment register and maturity tracking
+
+Place Investment
+Investment Register
+4 investments found
+All
+Client	Basis	Investment account	Institution	Principal	Interest Rate	LPFF Rate	Deposit Date	Maturity Date	Interest Earned	Balance	Status	Actions
+Firm (section 86(3))	Section 86(3)	OBS s86(3) Investments DE43H	Standard Bank
+OBS3-DE43H
+	R 2 500,00	6.00%	Arrangement	18 Nov 2026	Call deposit	R 0,00	R 2 500,00	Active	
+Record Interest
+Withdraw
+
+Moroka Family Trust mwld55wr08f1	Section 86(4)	OBS s86(4) Investments DE43H	Nedbank
+OBS4-DE43H
+	R 7 500,00	7.00%	5% (statutory)	18 Nov 2026	Call deposit	R 0,00	R 7 500,00	Active	
+Record Interest
+Withdraw
+
+QuickCollect Services mwld55wr08f1	Section 86(4)	Nedbank Section 86(4) Investments	Nedbank
+CALL-1122334455
+	R 30 000,00	7.25%	5% (statutory)	18 Nov 2026	Call deposit	R 0,00	R 30 000,00	Active	
+Record Interest
+Withdraw
+
+Firm (section 86(3))	Section 86(3)	Standard Bank Section 86(3) Investments	Standard Bank
+FD-0987654321
+	R 200 000,00	8.50%	Arrangement	18 Nov 2026	16 Feb 2027	R 0,00	R 200 000,00	Active	
+Record Interest
+Withdraw
+
+---- textContent:
+InvestmentsTrust investment register and maturity trackingPlace InvestmentInvestment Register4 investments foundAllClientBasisInvestment accountInstitutionPrincipalInterest RateLPFF RateDeposit DateMaturity DateInterest EarnedBalanceStatusActionsFirm (section 86(3))Section 86(3)OBS s86(3) Investments DE43HStandard BankOBS3-DE43HR 2 500,006.00%Arrangement18 Nov 2026Call depositR 0,00R 2 500,00ActiveRecord InterestWithdrawMoroka Family Trust mwld55wr08f1Section 86(4)OBS s86(4) Investments DE43HNedbankOBS4-DE43HR 7 500,007.00%5% (statutory)18 Nov 2026Call depositR 0,00R 7 500,00ActiveRecord InterestWithdrawQuickCollect Services mwld55wr08f1Section 86(4)Nedbank Section 86(4) InvestmentsNedbankCALL-1122334455R 30 000,007.25%5% (statutory)18 Nov 2026Call depositR 0,00R 30 000,00ActiveRecord InterestWithdrawFirm (section 86(3))Section 86(3)Standard Bank Section 86(3) InvestmentsStandard BankFD-0987654321R 200 000,008.50%Arrangement18 Nov 202616 Feb 2027R 0,00R 200 000,00ActiveRecord InterestWithdraw

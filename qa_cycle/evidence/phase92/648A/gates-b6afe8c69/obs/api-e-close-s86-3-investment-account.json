@@ -1,0 +1,20 @@
+{
+  "label": "API EVIDENCE (probe; expected to be refused, creates nothing)",
+  "request": {
+    "method": "POST",
+    "url": "http://localhost:8081/api/trust-accounts/2129de0c-9f4f-4304-9a81-8921bf65fde4/close",
+    "headers": {
+      "Authorization": "Bearer <alice mock-auth-token from the browser context>"
+    }
+  },
+  "response": {
+    "status": 400,
+    "contentType": "application/problem+json",
+    "body": {
+      "detail": "An investment placed from or held in this account has not been withdrawn. Withdraw it before closing the account.",
+      "instance": "/api/trust-accounts/2129de0c-9f4f-4304-9a81-8921bf65fde4/close",
+      "status": 400,
+      "title": "Cannot close trust account"
+    }
+  }
+}

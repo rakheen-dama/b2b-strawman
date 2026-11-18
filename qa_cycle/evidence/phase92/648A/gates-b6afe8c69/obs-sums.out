@@ -1,0 +1,109 @@
+-- 648A OBS read-only evidence output (schema tenant_7d218705360b) 2026-11-18T02:43:42.724Z
+
+== [baseline: books per account (cashbook = sum cashbook_effect; creditors = sum ledger_effect by ledger; posted rows)]
+select a.account_name, a.account_type, coalesce(a.investment_basis,'-') basis, sum(t.cashbook_effect) cashbook, sum(t.ledger_effect) creditors, sum(t.ledger_effect) filter (where t.ledger='CLIENT') client, sum(t.ledger_effect) filter (where t.ledger='CLIENT_INVESTMENT') client_investment, sum(t.ledger_effect) filter (where t.ledger='INTER_ACCOUNT') inter_account, sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT') non_client from tenant_7d218705360b.trust_accounts a left join tenant_7d218705360b.trust_transactions t on t.trust_account_id=a.id and t.posted_at is not null group by 1,2,3 order by 2,1
+              account_name               | account_type |       basis        | cashbook  | creditors |  client   | client_investment | inter_account | non_client 
+-----------------------------------------+--------------+--------------------+-----------+-----------+-----------+-------------------+---------------+------------
+ Mathebula & Partners Trust Account      | GENERAL      | -                  |  56500.00 |  56500.00 | 256500.00 |                   |    -200000.00 |           
+ Nedbank Section 86(4) Investments       | INVESTMENT   | CLIENT_INSTRUCTION |  30000.00 |  30000.00 |           |          30000.00 |               |           
+ Standard Bank Section 86(3) Investments | INVESTMENT   | FIRM_DISCRETION    | 200000.00 | 200000.00 |           |                   |     200000.00 |           
+(3 rows)
+
+
+== [baseline: client figures by ledger and account]
+select a.account_name, t.ledger, sum(t.ledger_effect) ledger_sum, count(*) n from tenant_7d218705360b.trust_transactions t join tenant_7d218705360b.trust_accounts a on a.id=t.trust_account_id where t.customer_id='2a36f8ef-582a-4e44-b6bd-bf2844e32418' and t.posted_at is not null group by 1,2 order by 1,2
+            account_name            | ledger | ledger_sum | n 
+------------------------------------+--------+------------+---
+ Mathebula & Partners Trust Account | CLIENT |  241500.00 | 2
+(1 row)
+
+
+== [a: before approval: client figures by ledger and account]
+select a.account_name, t.ledger, sum(t.ledger_effect) ledger_sum, count(*) n from tenant_7d218705360b.trust_transactions t join tenant_7d218705360b.trust_accounts a on a.id=t.trust_account_id where t.customer_id='2a36f8ef-582a-4e44-b6bd-bf2844e32418' and t.posted_at is not null group by 1,2 order by 1,2
+            account_name            | ledger | ledger_sum | n 
+------------------------------------+--------+------------+---
+ Mathebula & Partners Trust Account | CLIENT |  241500.00 | 2
+(1 row)
+
+
+== [j1: notifications referencing the placement row]
+select n.type, n.title, n.body, n.reference_entity_type, n.is_read, n.created_at from tenant_7d218705360b.notifications n where n.reference_entity_id='74174f7f-6917-441c-bdaa-68fa3eb0491c' order by n.created_at
+              type               |                              title                              |                                    body                                    | reference_entity_type | is_read |          created_at           
+---------------------------------+-----------------------------------------------------------------+----------------------------------------------------------------------------+-----------------------+---------+-------------------------------
+ TRUST_PAYMENT_AWAITING_APPROVAL | Trust placement in a section 86(4) investment requires approval | A placement in a section 86(4) investment of R7500 requires your approval. | trust_transaction     | f       | 2026-11-18 02:44:09.847901+00
+ TRUST_PAYMENT_AWAITING_APPROVAL | Trust placement in a section 86(4) investment requires approval | A placement in a section 86(4) investment of R7500 requires your approval. | trust_transaction     | f       | 2026-11-18 02:44:09.848057+00
+(2 rows)
+
+
+== [a: after Bob approved: client figures by ledger and account]
+select a.account_name, t.ledger, sum(t.ledger_effect) ledger_sum, count(*) n from tenant_7d218705360b.trust_transactions t join tenant_7d218705360b.trust_accounts a on a.id=t.trust_account_id where t.customer_id='2a36f8ef-582a-4e44-b6bd-bf2844e32418' and t.posted_at is not null group by 1,2 order by 1,2
+            account_name            |      ledger       | ledger_sum | n 
+------------------------------------+-------------------+------------+---
+ Mathebula & Partners Trust Account | CLIENT            |  234000.00 | 3
+ OBS s86(4) Investments IOR6X       | CLIENT_INVESTMENT |    7500.00 | 1
+(2 rows)
+
+
+== [a: after approval: books per account (cashbook = sum cashbook_effect; creditors = sum ledger_effect by ledger; posted rows)]
+select a.account_name, a.account_type, coalesce(a.investment_basis,'-') basis, sum(t.cashbook_effect) cashbook, sum(t.ledger_effect) creditors, sum(t.ledger_effect) filter (where t.ledger='CLIENT') client, sum(t.ledger_effect) filter (where t.ledger='CLIENT_INVESTMENT') client_investment, sum(t.ledger_effect) filter (where t.ledger='INTER_ACCOUNT') inter_account, sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT') non_client from tenant_7d218705360b.trust_accounts a left join tenant_7d218705360b.trust_transactions t on t.trust_account_id=a.id and t.posted_at is not null group by 1,2,3 order by 2,1
+              account_name               | account_type |       basis        | cashbook  | creditors |  client   | client_investment | inter_account | non_client 
+-----------------------------------------+--------------+--------------------+-----------+-----------+-----------+-------------------+---------------+------------
+ Mathebula & Partners Trust Account      | GENERAL      | -                  |  49000.00 |  49000.00 | 249000.00 |                   |    -200000.00 |           
+ Nedbank Section 86(4) Investments       | INVESTMENT   | CLIENT_INSTRUCTION |  30000.00 |  30000.00 |           |          30000.00 |               |           
+ OBS s86(4) Investments IOR6X            | INVESTMENT   | CLIENT_INSTRUCTION |   7500.00 |   7500.00 |           |           7500.00 |               |           
+ Standard Bank Section 86(3) Investments | INVESTMENT   | FIRM_DISCRETION    | 200000.00 | 200000.00 |           |                   |     200000.00 |           
+(4 rows)
+
+
+== [b: after approval: books per account (cashbook = sum cashbook_effect; creditors = sum ledger_effect by ledger; posted rows)]
+select a.account_name, a.account_type, coalesce(a.investment_basis,'-') basis, sum(t.cashbook_effect) cashbook, sum(t.ledger_effect) creditors, sum(t.ledger_effect) filter (where t.ledger='CLIENT') client, sum(t.ledger_effect) filter (where t.ledger='CLIENT_INVESTMENT') client_investment, sum(t.ledger_effect) filter (where t.ledger='INTER_ACCOUNT') inter_account, sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT') non_client from tenant_7d218705360b.trust_accounts a left join tenant_7d218705360b.trust_transactions t on t.trust_account_id=a.id and t.posted_at is not null group by 1,2,3 order by 2,1
+              account_name               | account_type |       basis        | cashbook  | creditors |  client   | client_investment | inter_account | non_client 
+-----------------------------------------+--------------+--------------------+-----------+-----------+-----------+-------------------+---------------+------------
+ Mathebula & Partners Trust Account      | GENERAL      | -                  |  46500.00 |  46500.00 | 249000.00 |                   |    -202500.00 |           
+ Nedbank Section 86(4) Investments       | INVESTMENT   | CLIENT_INSTRUCTION |  30000.00 |  30000.00 |           |          30000.00 |               |           
+ OBS s86(3) Investments IOR6X            | INVESTMENT   | FIRM_DISCRETION    |   2500.00 |   2500.00 |           |                   |       2500.00 |           
+ OBS s86(4) Investments IOR6X            | INVESTMENT   | CLIENT_INSTRUCTION |   7500.00 |   7500.00 |           |           7500.00 |               |           
+ Standard Bank Section 86(3) Investments | INVESTMENT   | FIRM_DISCRETION    | 200000.00 | 200000.00 |           |                   |     200000.00 |           
+(5 rows)
+
+
+== [b: the s86(3) investment and its rows]
+select i.account_number, i.investment_basis, i.customer_id is null customer_id_is_null, i.project_id is null project_id_is_null, i.status, t.transaction_type, t.status tx_status, t.ledger, t.customer_id is null tx_customer_null, a.account_name, t.ledger_effect, t.cashbook_effect, t.posted_at is not null posted from tenant_7d218705360b.trust_investments i join tenant_7d218705360b.trust_transactions t on t.investment_id=i.id join tenant_7d218705360b.trust_accounts a on a.id=t.trust_account_id where i.id='de4057bd-3536-409f-a0f3-a376d21d578e' order by t.created_at
+ account_number | investment_basis | customer_id_is_null | project_id_is_null | status | transaction_type | tx_status |    ledger     | tx_customer_null |            account_name            | ledger_effect | cashbook_effect | posted 
+----------------+------------------+---------------------+--------------------+--------+------------------+-----------+---------------+------------------+------------------------------------+---------------+-----------------+--------
+ OBS3-IOR6X     | FIRM_DISCRETION  | t                   | t                  | ACTIVE | FIRM_INV_PLACE   | APPROVED  | INTER_ACCOUNT | t                | Mathebula & Partners Trust Account |      -2500.00 |        -2500.00 | t
+ OBS3-IOR6X     | FIRM_DISCRETION  | t                   | t                  | ACTIVE | FIRM_INV_RECEIVE | APPROVED  | INTER_ACCOUNT | t                | OBS s86(3) Investments IOR6X       |       2500.00 |         2500.00 | t
+(2 rows)
+
+
+== [c: the s86(4) investment's rows after the withdrawal]
+select t.transaction_type, t.status, t.ledger, a.account_name, t.ledger_effect, t.cashbook_effect, t.posted_at is not null posted, t.transaction_date, t.reference from tenant_7d218705360b.trust_transactions t join tenant_7d218705360b.trust_accounts a on a.id=t.trust_account_id where t.investment_id='8c856a57-222d-444f-a005-af4d084e8276' order by t.created_at
+ transaction_type |  status  |      ledger       |            account_name            | ledger_effect | cashbook_effect | posted | transaction_date |    reference    
+------------------+----------+-------------------+------------------------------------+---------------+-----------------+--------+------------------+-----------------
+ INV_PLACE        | APPROVED | CLIENT            | Mathebula & Partners Trust Account |      -7500.00 |        -7500.00 | t      | 2026-11-18       | INV-8C856A57
+ INV_RECEIVE      | APPROVED | CLIENT_INVESTMENT | OBS s86(4) Investments IOR6X       |       7500.00 |         7500.00 | t      | 2026-11-18       | INV-8C856A57
+ INV_WITHDRAW     | RECORDED | CLIENT_INVESTMENT | OBS s86(4) Investments IOR6X       |      -7500.00 |        -7500.00 | t      | 2026-11-18       | INV-WD-8C856A57
+ INV_RETURN       | RECORDED | CLIENT            | Mathebula & Partners Trust Account |       7500.00 |         7500.00 | t      | 2026-11-18       | INV-WD-8C856A57
+(4 rows)
+
+
+== [c: after the withdrawal: client figures by ledger and account]
+select a.account_name, t.ledger, sum(t.ledger_effect) ledger_sum, count(*) n from tenant_7d218705360b.trust_transactions t join tenant_7d218705360b.trust_accounts a on a.id=t.trust_account_id where t.customer_id='2a36f8ef-582a-4e44-b6bd-bf2844e32418' and t.posted_at is not null group by 1,2 order by 1,2
+            account_name            |      ledger       | ledger_sum | n 
+------------------------------------+-------------------+------------+---
+ Mathebula & Partners Trust Account | CLIENT            |  241500.00 | 4
+ OBS s86(4) Investments IOR6X       | CLIENT_INVESTMENT |       0.00 | 2
+(2 rows)
+
+
+== [c: after the withdrawal: books per account (cashbook = sum cashbook_effect; creditors = sum ledger_effect by ledger; posted rows)]
+select a.account_name, a.account_type, coalesce(a.investment_basis,'-') basis, sum(t.cashbook_effect) cashbook, sum(t.ledger_effect) creditors, sum(t.ledger_effect) filter (where t.ledger='CLIENT') client, sum(t.ledger_effect) filter (where t.ledger='CLIENT_INVESTMENT') client_investment, sum(t.ledger_effect) filter (where t.ledger='INTER_ACCOUNT') inter_account, sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT') non_client from tenant_7d218705360b.trust_accounts a left join tenant_7d218705360b.trust_transactions t on t.trust_account_id=a.id and t.posted_at is not null group by 1,2,3 order by 2,1
+              account_name               | account_type |       basis        | cashbook  | creditors |  client   | client_investment | inter_account | non_client 
+-----------------------------------------+--------------+--------------------+-----------+-----------+-----------+-------------------+---------------+------------
+ Mathebula & Partners Trust Account      | GENERAL      | -                  |  54000.00 |  54000.00 | 256500.00 |                   |    -202500.00 |           
+ Nedbank Section 86(4) Investments       | INVESTMENT   | CLIENT_INSTRUCTION |  30000.00 |  30000.00 |           |          30000.00 |               |           
+ OBS s86(3) Investments IOR6X            | INVESTMENT   | FIRM_DISCRETION    |   2500.00 |   2500.00 |           |                   |       2500.00 |           
+ OBS s86(4) Investments IOR6X            | INVESTMENT   | CLIENT_INSTRUCTION |      0.00 |      0.00 |           |              0.00 |               |           
+ Standard Bank Section 86(3) Investments | INVESTMENT   | FIRM_DISCRETION    | 200000.00 | 200000.00 |           |                   |     200000.00 |           
+(5 rows)
+

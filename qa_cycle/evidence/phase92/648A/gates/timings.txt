@@ -1,0 +1,24 @@
+stack0-down start 2026-11-18T00:06:27Z
+stack0-down rc 0 2026-11-18T00:06:27Z
+stack1-up start 2026-11-18T00:06:27Z
+stack1-up end 2026-11-18T00:08:19Z rc 0
+.lc.start 2026-11-18T00:08:27Z
+.lc.end 2026-11-18T00:11:31Z rc 1
+.obs.run1.start 2026-11-18T00:15:27Z
+.obs.run1.end 2026-11-18T00:16:47Z rc 1
+.obs.run1 rc 1 (harness: ambiguous SQL column after the UI withdrawal) — archived in obs/run1; continuation is read-only + API probes
+.obs.cont.start 2026-11-18T00:17:31Z
+.obs.cont.end 2026-11-18T00:18:01Z rc 0
+.probe.start 2026-11-18T00:19:16Z
+.probe.end 2026-11-18T00:19:36Z
+stack1-down rc 0 2026-11-18T00:20:06Z
+stack2-up start 2026-11-18T00:20:06Z
+stack2-up end 2026-11-18T00:20:43Z rc 0
+.lc2.start 2026-11-18T00:20:51Z
+.lc2.end 2026-11-18T00:23:51Z rc 1
+stack2-down rc 0 2026-11-18T00:24:10Z
+stack3-up start 2026-11-18T00:24:10Z
+stack3-up end 2026-11-18T00:24:45Z rc 0
+.d2.start 2026-11-18T00:24:52Z
+.d2.end 2026-11-18T00:26:52Z rc 0
+stack3-down rc 0 2026-11-18T00:27:06Z

@@ -1,0 +1,24 @@
+{
+  "label": "API EVIDENCE (probe; expected to be refused, creates nothing)",
+  "request": {
+    "method": "POST",
+    "url": "http://localhost:8081/api/trust-transactions/a80cd730-8e38-4f47-b079-7a022a7b45d7/reverse",
+    "headers": {
+      "Authorization": "Bearer <alice mock-auth-token from the browser context>"
+    },
+    "body": {
+      "reason": "OBS probe - expected refusal",
+      "reversalDate": "2026-11-18"
+    }
+  },
+  "response": {
+    "status": 400,
+    "contentType": "application/problem+json",
+    "body": {
+      "detail": "This entry placed a trust investment. Withdraw the investment instead of reversing its placement.",
+      "instance": "/api/trust-transactions/a80cd730-8e38-4f47-b079-7a022a7b45d7/reverse",
+      "status": 400,
+      "title": "Cannot reverse transaction"
+    }
+  }
+}

@@ -1,0 +1,144 @@
+{
+  "at": "2026-11-18T00:19:17.304Z",
+  "widths": [
+    {
+      "width": 1280,
+      "reach": {
+        "vw": 1280,
+        "vh": 720,
+        "container": {
+          "className": "bg-background grid gap-4 rounded-xl border p-6 shadow-lg max-h-[90vh] overflow-y-auto sm:max-w-lg",
+          "overflowY": "auto",
+          "maxHeight": "648px",
+          "top": 36,
+          "bottom": 684,
+          "left": 384,
+          "right": 896,
+          "clientHeight": 646,
+          "scrollHeight": 876,
+          "scrollable": true,
+          "insideViewport": true
+        },
+        "buttonBefore": {
+          "top": 853,
+          "bottom": 889,
+          "inViewport": false,
+          "insideContainerBox": false
+        },
+        "buttonAfterScroll": {
+          "scrollTop": 230,
+          "top": 623,
+          "bottom": 659,
+          "inViewport": true,
+          "insideContainerBox": true
+        },
+        "horizontal": {
+          "scrollWidth": 510,
+          "clientWidth": 510,
+          "overflow": false
+        }
+      },
+      "createAccountVisibleToPlaywright": true,
+      "ok": true
+    },
+    {
+      "width": 1440,
+      "reach": {
+        "vw": 1440,
+        "vh": 720,
+        "container": {
+          "className": "bg-background grid gap-4 rounded-xl border p-6 shadow-lg max-h-[90vh] overflow-y-auto sm:max-w-lg",
+          "overflowY": "auto",
+          "maxHeight": "648px",
+          "top": 36,
+          "bottom": 684,
+          "left": 464,
+          "right": 976,
+          "clientHeight": 646,
+          "scrollHeight": 876,
+          "scrollable": true,
+          "insideViewport": true
+        },
+        "buttonBefore": {
+          "top": 853,
+          "bottom": 889,
+          "inViewport": false,
+          "insideContainerBox": false
+        },
+        "buttonAfterScroll": {
+          "scrollTop": 230,
+          "top": 623,
+          "bottom": 659,
+          "inViewport": true,
+          "insideContainerBox": true
+        },
+        "horizontal": {
+          "scrollWidth": 510,
+          "clientWidth": 510,
+          "overflow": false
+        }
+      },
+      "createAccountVisibleToPlaywright": true,
+      "ok": true,
+      "clientLedgerPageText": "Something went wrong An unexpected error occurred while loading this page. Try refreshing, or go back and try again. Try again Refresh page Go back",
+      "clientLedgersListPageText": "Client Ledgers Trust account balances by client Non-zero balances only Search Unable to load client ledgers. Please try again later."
+    },
+    {
+      "width": 1920,
+      "reach": {
+        "vw": 1920,
+        "vh": 720,
+        "container": {
+          "className": "bg-background grid gap-4 rounded-xl border p-6 shadow-lg max-h-[90vh] overflow-y-auto sm:max-w-lg",
+          "overflowY": "auto",
+          "maxHeight": "648px",
+          "top": 36,
+          "bottom": 684,
+          "left": 704,
+          "right": 1216,
+          "clientHeight": 646,
+          "scrollHeight": 876,
+          "scrollable": true,
+          "insideViewport": true
+        },
+        "buttonBefore": {
+          "top": 853,
+          "bottom": 889,
+          "inViewport": false,
+          "insideContainerBox": false
+        },
+        "buttonAfterScroll": {
+          "scrollTop": 230,
+          "top": 623,
+          "bottom": 659,
+          "inViewport": true,
+          "insideContainerBox": true
+        },
+        "horizontal": {
+          "scrollWidth": 510,
+          "clientWidth": 510,
+          "overflow": false
+        }
+      },
+      "createAccountVisibleToPlaywright": true,
+      "ok": true
+    }
+  ],
+  "consoleErrors": [
+    {
+      "width": 1440,
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/client-ledgers/79b27393-d9c1-46c0-9a48-46c565a92e96",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    }
+  ],
+  "pageErrors": [],
+  "badResponses": [
+    {
+      "width": 1440,
+      "page": "http://localhost:3001/org/e2e-test-org/trust-accounting/investments",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/client-ledgers/79b27393-d9c1-46c0-9a48-46c565a92e96",
+      "status": 404
+    }
+  ],
+  "verdict": "PASS"
+}

@@ -1,0 +1,1216 @@
+{
+  "steps": {
+    "c": {
+      "fromRun1": {
+        "amountText": "R 7 500,00",
+        "amount": 7500,
+        "inputs": [
+          {
+            "tag": "input",
+            "type": "date",
+            "name": "withdrawalDate",
+            "value": "2026-11-18",
+            "hidden": false
+          }
+        ],
+        "dialogText": "Withdraw Investment The whole investment returns to the trust banking account it was placed from. Returns to trust R 7 500,00 The capital and any section 86(4) interest posted to the books (section 86(3) interest belongs to the Legal Practitioners' Fidelity Fund). Withdrawal date Cancel Confirm Withdrawal Close",
+        "files": [
+          "21-c1-withdraw-dialog-1440.png",
+          "21-c1-withdraw-dialog-1280.png"
+        ]
+      },
+      "amount": 7500,
+      "inputs": [
+        {
+          "tag": "input",
+          "type": "date",
+          "name": "withdrawalDate",
+          "value": "2026-11-18",
+          "hidden": false
+        }
+      ],
+      "gFromRun1": [
+        {
+          "rootSel": "[data-testid='withdraw-investment-dialog']",
+          "vw": 1280,
+          "vh": 720,
+          "root": {
+            "left": 384,
+            "right": 896,
+            "top": 178,
+            "bottom": 542,
+            "clientWidth": 512,
+            "scrollWidth": 512,
+            "clientHeight": 364,
+            "scrollHeight": 364,
+            "overflowY": "visible"
+          },
+          "rootInsideViewport": true,
+          "offenders": [],
+          "truncated": [],
+          "noHorizontalOverflow": true,
+          "ok": true,
+          "width": 1280
+        },
+        {
+          "rootSel": "[data-testid='withdraw-investment-dialog']",
+          "vw": 1440,
+          "vh": 720,
+          "root": {
+            "left": 464,
+            "right": 976,
+            "top": 178,
+            "bottom": 542,
+            "clientWidth": 512,
+            "scrollWidth": 512,
+            "clientHeight": 364,
+            "scrollHeight": 364,
+            "overflowY": "visible"
+          },
+          "rootInsideViewport": true,
+          "offenders": [],
+          "truncated": [],
+          "noHorizontalOverflow": true,
+          "ok": true,
+          "width": 1440
+        }
+      ],
+      "rows": [
+        [
+          "INV_PLACE",
+          "APPROVED",
+          "CLIENT",
+          "Mathebula & Partners Trust Account",
+          "-7500.00",
+          "-7500.00",
+          "t",
+          "2026-11-18"
+        ],
+        [
+          "INV_RECEIVE",
+          "APPROVED",
+          "CLIENT_INVESTMENT",
+          "OBS s86(4) Investments DE43H",
+          "7500.00",
+          "7500.00",
+          "t",
+          "2026-11-18"
+        ],
+        [
+          "INV_WITHDRAW",
+          "RECORDED",
+          "CLIENT_INVESTMENT",
+          "OBS s86(4) Investments DE43H",
+          "-7500.00",
+          "-7500.00",
+          "t",
+          "2026-11-18"
+        ],
+        [
+          "INV_RETURN",
+          "RECORDED",
+          "CLIENT",
+          "Mathebula & Partners Trust Account",
+          "7500.00",
+          "7500.00",
+          "t",
+          "2026-11-18"
+        ]
+      ],
+      "investmentDb": [
+        "WITHDRAWN",
+        "2026-11-18",
+        "7500.00"
+      ],
+      "client": {
+        "general": 241500,
+        "invested": 0,
+        "matterGeneral": 241500,
+        "matterTotal": 241500,
+        "total": 241500
+      },
+      "books": [
+        {
+          "id": "961dbcc7-6938-4576-82f3-515085095001",
+          "name": "Nedbank Section 86(4) Investments",
+          "cashbook": 30000,
+          "creditors": 30000,
+          "balanced": true
+        },
+        {
+          "id": "532e3e6a-c55f-4ff2-a307-44cc862908c1",
+          "name": "OBS s86(4) Investments DE43H",
+          "cashbook": 0,
+          "creditors": 0,
+          "balanced": true
+        },
+        {
+          "id": "5b3e426d-d435-4ef7-b440-8375aa644439",
+          "name": "Mathebula & Partners Trust Account",
+          "cashbook": 54000,
+          "creditors": 54000,
+          "balanced": true
+        },
+        {
+          "id": "425fafa1-e6c4-48a7-9e40-b875772d9dd8",
+          "name": "Standard Bank Section 86(3) Investments",
+          "cashbook": 200000,
+          "creditors": 200000,
+          "balanced": true
+        },
+        {
+          "id": "b344084f-6068-42d2-be73-ca0bffb5433b",
+          "name": "OBS s86(3) Investments DE43H",
+          "cashbook": 2500,
+          "creditors": 2500,
+          "balanced": true
+        }
+      ],
+      "positions": {
+        "funding": {
+          "status": 200,
+          "cashbook": 54000,
+          "creditorsTotal": 54000,
+          "difference": 0,
+          "breakdown": {
+            "clientLedgers": 256500,
+            "investmentCreditors": 0,
+            "fundInterestAndCharges": 0,
+            "unidentifiedDeposits": 0,
+            "otherNonClient": 0,
+            "interAccount": -202500,
+            "total": 54000
+          }
+        },
+        "inv4": {
+          "status": 200,
+          "cashbook": 0,
+          "creditorsTotal": 0,
+          "difference": 0,
+          "breakdown": {
+            "clientLedgers": 0,
+            "investmentCreditors": 0,
+            "fundInterestAndCharges": 0,
+            "unidentifiedDeposits": 0,
+            "otherNonClient": 0,
+            "interAccount": 0,
+            "total": 0
+          }
+        },
+        "inv3": {
+          "status": 200,
+          "cashbook": 2500,
+          "creditorsTotal": 2500,
+          "difference": 0,
+          "breakdown": {
+            "clientLedgers": 0,
+            "investmentCreditors": 0,
+            "fundInterestAndCharges": 0,
+            "unidentifiedDeposits": 0,
+            "otherNonClient": 0,
+            "interAccount": 2500,
+            "total": 2500
+          }
+        }
+      },
+      "api": {
+        "clientLedgerCard": {
+          "status": 500,
+          "title": "Internal server error"
+        },
+        "clientLedgersList": {
+          "status": 500
+        },
+        "matterTotal": 241500,
+        "matterTotalStatus": 200
+      },
+      "investmentApi": {
+        "id": "a7e500d8-2124-453d-aa34-48ae9154f4d6",
+        "trustAccountId": "5b3e426d-d435-4ef7-b440-8375aa644439",
+        "investmentAccountId": "532e3e6a-c55f-4ff2-a307-44cc862908c1",
+        "investmentAccountName": "OBS s86(4) Investments DE43H",
+        "clientId": "79b27393-d9c1-46c0-9a48-46c565a92e96",
+        "clientName": "Moroka Family Trust mwld55wr08f1",
+        "matterId": "eec33c75-dd13-40f8-9d22-2be53f964eab",
+        "institution": "Nedbank",
+        "accountNumber": "OBS4-DE43H",
+        "principal": 7500,
+        "interestRate": 0.07,
+        "depositDate": "2026-11-18",
+        "maturityDate": null,
+        "interestEarned": 0,
+        "balance": 0,
+        "status": "WITHDRAWN",
+        "awaitingApproval": false,
+        "withdrawalDate": "2026-11-18",
+        "withdrawalAmount": 7500,
+        "depositTransactionId": "c0c9cafd-c09b-41f2-a502-75da08a017df",
+        "withdrawalTransactionId": "bf764f3e-8eb3-4c53-b19f-b303e6102c8c",
+        "notes": "OBS DE43H s864",
+        "investmentBasis": "CLIENT_INSTRUCTION",
+        "createdAt": "2026-11-18T00:15:50.778519Z",
+        "updatedAt": "2026-11-18T00:16:38.116442Z"
+      },
+      "register": {
+        "text": "Moroka Family Trust mwld55wr08f1 Section 86(4) OBS s86(4) Investments DE43H Nedbank OBS4-DE43H R 7 500,00 7.00% 5% (statutory) 18 Nov 2026 Call deposit R 0,00 R 0,00 Withdrawn",
+        "withdrawButtons": 0,
+        "cells": [
+          "Moroka Family Trust mwld55wr08f1",
+          "Section 86(4)",
+          "OBS s86(4) Investments DE43H",
+          "Nedbank OBS4-DE43H",
+          "R 7 500,00",
+          "7.00%",
+          "5% (statutory)",
+          "18 Nov 2026",
+          "Call deposit",
+          "R 0,00",
+          "R 0,00",
+          "Withdrawn",
+          ""
+        ],
+        "files": [
+          "51-c2-register-s86-4-withdrawn-1440.png",
+          "51-c2-register-s86-4-withdrawn-1280.png"
+        ]
+      },
+      "ui": {
+        "cardText": "Trust Balance Funds Held R 241 500,00",
+        "matterTotalText": "R 241 500,00",
+        "clientLineText": null,
+        "matterTotal": 241500,
+        "clientGeneral": null,
+        "files": [
+          "52-c3-matter-trust-tab-withdrawn-1440.png",
+          "52-c3-matter-trust-tab-withdrawn-1280.png"
+        ],
+        "clientLedgerPageText": "Something went wrong An unexpected error occurred while loading this page. Try refreshing, or go back and try again. Try again Refresh page Go back",
+        "filesLedger": [
+          "53-c3-client-ledger-page-withdrawn-1440.png"
+        ]
+      },
+      "trustOverviewText": "Trust Accounting LSSA-compliant trust account management for client funds Client Ledgers Record Transaction Unable to load trust account data. Please try again later.",
+      "filesOverview": [
+        "54-c4-trust-accounting-overview-1440.png"
+      ],
+      "checks": {
+        "amountIsBalance": true,
+        "onlyTheDate": true,
+        "bothRecorded": true,
+        "withdrawn": true,
+        "generalRestored": true,
+        "booksBalancedSql": true,
+        "booksBalancedApi": true,
+        "registerWithdrawn": true,
+        "uiClientGeneralRestored": false,
+        "apiClientCardRestored": false
+      }
+    },
+    "f": {
+      "scans": [
+        {
+          "label": "c2-investments-page-s86-4-withdrawn",
+          "rawInInnerText": [],
+          "rawInTextContent": [],
+          "cssUppercaseOnly": [],
+          "clean": true
+        },
+        {
+          "label": "e-settings-trust-accounts-card-KNOWN-F4",
+          "rawInInnerText": [
+            "ACTIVE"
+          ],
+          "rawInTextContent": [],
+          "cssUppercaseOnly": [
+            "ACTIVE"
+          ],
+          "clean": true
+        },
+        {
+          "label": "g-investments-page-final",
+          "rawInInnerText": [],
+          "rawInTextContent": [],
+          "cssUppercaseOnly": [],
+          "clean": true
+        }
+      ]
+    },
+    "d": {
+      "ui": {
+        "inv4Place": {
+          "rowPresent": 1,
+          "reverseOffered": 0,
+          "reverseButtonsInRow": 0,
+          "rowText": "18 Nov 2026 INV-A7E500D8 Placed in section 86(4) investment Placed in section 86(4) investment at Nedbank (OBS s86(4) Investments DE43H) R 7 500,00 APPROVED"
+        },
+        "inv3Place": {
+          "rowPresent": 1,
+          "reverseOffered": 0,
+          "reverseButtonsInRow": 0,
+          "rowText": "18 Nov 2026 INV-E283DA35 Placed in section 86(3) investment account Placed in section 86(3) investment at Standard Bank (OBS s86(3) Investments DE43H) R 2 500,00 APPROVED"
+        }
+      },
+      "files": [
+        "55-d1-transactions-no-reverse-1440.png"
+      ],
+      "txCountBefore": 14,
+      "probe4": {
+        "label": "API EVIDENCE (probe; expected to be refused, creates nothing)",
+        "request": {
+          "method": "POST",
+          "url": "http://localhost:8081/api/trust-transactions/c0c9cafd-c09b-41f2-a502-75da08a017df/reverse",
+          "headers": {
+            "Authorization": "Bearer <alice mock-auth-token from the browser context>"
+          },
+          "body": {
+            "reason": "OBS probe - expected refusal",
+            "reversalDate": "2026-11-18"
+          }
+        },
+        "response": {
+          "status": 400,
+          "contentType": "application/problem+json",
+          "body": {
+            "detail": "This entry placed a trust investment. Withdraw the investment instead of reversing its placement.",
+            "instance": "/api/trust-transactions/c0c9cafd-c09b-41f2-a502-75da08a017df/reverse",
+            "status": 400,
+            "title": "Cannot reverse transaction"
+          }
+        }
+      },
+      "probe3": {
+        "label": "API EVIDENCE (probe; expected to be refused, creates nothing)",
+        "request": {
+          "method": "POST",
+          "url": "http://localhost:8081/api/trust-transactions/98f0976e-f8d1-4ce8-a299-acc79c9a32df/reverse",
+          "headers": {
+            "Authorization": "Bearer <alice mock-auth-token from the browser context>"
+          },
+          "body": {
+            "reason": "OBS probe - expected refusal",
+            "reversalDate": "2026-11-18"
+          }
+        },
+        "response": {
+          "status": 400,
+          "contentType": "application/problem+json",
+          "body": {
+            "detail": "This entry placed a trust investment. Withdraw the investment instead of reversing its placement.",
+            "instance": "/api/trust-transactions/98f0976e-f8d1-4ce8-a299-acc79c9a32df/reverse",
+            "status": 400,
+            "title": "Cannot reverse transaction"
+          }
+        }
+      },
+      "txCountAfter": 14,
+      "statusesAfter": [
+        [
+          "INV_PLACE",
+          "APPROVED",
+          "<null>"
+        ],
+        [
+          "FIRM_INV_PLACE",
+          "APPROVED",
+          "<null>"
+        ]
+      ],
+      "checks": {
+        "uiNoReverse": true,
+        "refused4": true,
+        "refused3": true,
+        "nothingCreated": true
+      }
+    },
+    "e": {
+      "closeControlsInUi": 0,
+      "files": [
+        "56-e1-settings-trust-accounts-1440.png"
+      ],
+      "settingsScan": {
+        "label": "e-settings-trust-accounts-card-KNOWN-F4",
+        "rawInInnerText": [
+          "ACTIVE"
+        ],
+        "rawInTextContent": [],
+        "cssUppercaseOnly": [
+          "ACTIVE"
+        ],
+        "clean": true
+      },
+      "before": [
+        "ACTIVE",
+        "<null>"
+      ],
+      "probe": {
+        "label": "API EVIDENCE (probe; expected to be refused, creates nothing)",
+        "request": {
+          "method": "POST",
+          "url": "http://localhost:8081/api/trust-accounts/b344084f-6068-42d2-be73-ca0bffb5433b/close",
+          "headers": {
+            "Authorization": "Bearer <alice mock-auth-token from the browser context>"
+          }
+        },
+        "response": {
+          "status": 400,
+          "contentType": "application/problem+json",
+          "body": {
+            "detail": "An investment placed from or held in this account has not been withdrawn. Withdraw it before closing the account.",
+            "instance": "/api/trust-accounts/b344084f-6068-42d2-be73-ca0bffb5433b/close",
+            "status": 400,
+            "title": "Cannot close trust account"
+          }
+        }
+      },
+      "after": [
+        "ACTIVE",
+        "<null>"
+      ],
+      "checks": {
+        "refused": true,
+        "unchanged": true
+      }
+    },
+    "g": {
+      "register-table": [
+        {
+          "rootSel": "[data-testid='investments-table']",
+          "vw": 1280,
+          "vh": 1100,
+          "root": {
+            "left": 305,
+            "right": 1649,
+            "top": 273,
+            "bottom": 737,
+            "clientWidth": 1344,
+            "scrollWidth": 1344,
+            "clientHeight": 464,
+            "scrollHeight": 464,
+            "overflowY": "visible"
+          },
+          "rootInsideViewport": false,
+          "offenders": [
+            {
+              "el": "thead \"Client Basis Investment account Institution Principal Intere\"",
+              "left": 305,
+              "right": 1649
+            },
+            {
+              "el": "tr \"Client Basis Investment account Institution Principal Intere\"",
+              "left": 305,
+              "right": 1649
+            },
+            {
+              "el": "th \"Balance\"",
+              "left": 1207,
+              "right": 1324
+            },
+            {
+              "el": "th \"Status\"",
+              "left": 1324,
+              "right": 1424
+            },
+            {
+              "el": "th \"Actions\"",
+              "left": 1424,
+              "right": 1649
+            },
+            {
+              "el": "tbody \"Firm (section 86(3)) Section 86(3) OBS s86(3) Investments DE\"",
+              "left": 305,
+              "right": 1649
+            },
+            {
+              "el": "tr[investment-row-e283da35-aef5-4259-88d7-cfd8b0d2f15f] \"Firm (section 86(3)) Section 86(3) OBS s86(3) Investments DE\"",
+              "left": 305,
+              "right": 1649
+            },
+            {
+              "el": "td \"R 2 500,00\"",
+              "left": 1207,
+              "right": 1324
+            },
+            {
+              "el": "td \"Active\"",
+              "left": 1324,
+              "right": 1424
+            },
+            {
+              "el": "span \"Active\"",
+              "left": 1324,
+              "right": 1382
+            },
+            {
+              "el": "td \"Record Interest Withdraw\"",
+              "left": 1424,
+              "right": 1649
+            },
+            {
+              "el": "div \"Record Interest Withdraw\"",
+              "left": 1424,
+              "right": 1649
+            },
+            {
+              "el": "button \"Record Interest\"",
+              "left": 1424,
+              "right": 1551
+            },
+            {
+              "el": "button \"Withdraw\"",
+              "left": 1559,
+              "right": 1649
+            },
+            {
+              "el": "tr[investment-row-a7e500d8-2124-453d-aa34-48ae9154f4d6] \"Moroka Family Trust mwld55wr08f1 Section 86(4) OBS s86(4) In\"",
+              "left": 305,
+              "right": 1649
+            },
+            {
+              "el": "td \"R 0,00\"",
+              "left": 1207,
+              "right": 1324
+            },
+            {
+              "el": "td \"Withdrawn\"",
+              "left": 1324,
+              "right": 1424
+            },
+            {
+              "el": "span \"Withdrawn\"",
+              "left": 1324,
+              "right": 1408
+            },
+            {
+              "el": "td \"\"",
+              "left": 1424,
+              "right": 1649
+            },
+            {
+              "el": "tr[investment-row-35baf3bf-994e-4b46-b730-04d57dd972d8] \"QuickCollect Services mwld55wr08f1 Section 86(4) Nedbank Sec\"",
+              "left": 305,
+              "right": 1649
+            },
+            {
+              "el": "td \"R 30 000,00\"",
+              "left": 1207,
+              "right": 1324
+            },
+            {
+              "el": "td \"Active\"",
+              "left": 1324,
+              "right": 1424
+            },
+            {
+              "el": "span \"Active\"",
+              "left": 1324,
+              "right": 1382
+            },
+            {
+              "el": "td \"Record Interest Withdraw\"",
+              "left": 1424,
+              "right": 1649
+            },
+            {
+              "el": "div \"Record Interest Withdraw\"",
+              "left": 1424,
+              "right": 1649
+            },
+            {
+              "el": "button \"Record Interest\"",
+              "left": 1424,
+              "right": 1551
+            },
+            {
+              "el": "button \"Withdraw\"",
+              "left": 1559,
+              "right": 1649
+            },
+            {
+              "el": "tr[investment-row-20e0ee74-f947-43ff-8620-20cbe5f52c53] \"Firm (section 86(3)) Section 86(3) Standard Bank Section 86(\"",
+              "left": 305,
+              "right": 1649
+            },
+            {
+              "el": "td \"R 200 000,00\"",
+              "left": 1207,
+              "right": 1324
+            },
+            {
+              "el": "td \"Active\"",
+              "left": 1324,
+              "right": 1424
+            },
+            {
+              "el": "span \"Active\"",
+              "left": 1324,
+              "right": 1382
+            },
+            {
+              "el": "td \"Record Interest Withdraw\"",
+              "left": 1424,
+              "right": 1649
+            },
+            {
+              "el": "div \"Record Interest Withdraw\"",
+              "left": 1424,
+              "right": 1649
+            },
+            {
+              "el": "button \"Record Interest\"",
+              "left": 1424,
+              "right": 1551
+            },
+            {
+              "el": "button \"Withdraw\"",
+              "left": 1559,
+              "right": 1649
+            }
+          ],
+          "truncated": [],
+          "noHorizontalOverflow": true,
+          "ok": false,
+          "width": 1280,
+          "extra": {
+            "tableScrollWidth": 1344,
+            "wrapClientWidth": 926,
+            "wrapOverflowX": "auto",
+            "horizontalScroll": true,
+            "cardRight": 1256,
+            "vw": 1280,
+            "cardInsideViewport": true,
+            "badges": [
+              {
+                "text": "Section 86(3)",
+                "scrollWidth": 100,
+                "clientWidth": 100,
+                "truncated": false,
+                "right": 519
+              },
+              {
+                "text": "Active",
+                "scrollWidth": 56,
+                "clientWidth": 56,
+                "truncated": false,
+                "right": 1382
+              },
+              {
+                "text": "Section 86(4)",
+                "scrollWidth": 100,
+                "clientWidth": 100,
+                "truncated": false,
+                "right": 519
+              },
+              {
+                "text": "Withdrawn",
+                "scrollWidth": 82,
+                "clientWidth": 82,
+                "truncated": false,
+                "right": 1408
+              },
+              {
+                "text": "Section 86(4)",
+                "scrollWidth": 100,
+                "clientWidth": 100,
+                "truncated": false,
+                "right": 519
+              },
+              {
+                "text": "Active",
+                "scrollWidth": 56,
+                "clientWidth": 56,
+                "truncated": false,
+                "right": 1382
+              },
+              {
+                "text": "Section 86(3)",
+                "scrollWidth": 100,
+                "clientWidth": 100,
+                "truncated": false,
+                "right": 519
+              },
+              {
+                "text": "Active",
+                "scrollWidth": 56,
+                "clientWidth": 56,
+                "truncated": false,
+                "right": 1382
+              }
+            ]
+          }
+        },
+        {
+          "rootSel": "[data-testid='investments-table']",
+          "vw": 1440,
+          "vh": 1100,
+          "root": {
+            "left": 305,
+            "right": 1649,
+            "top": 273,
+            "bottom": 737,
+            "clientWidth": 1344,
+            "scrollWidth": 1344,
+            "clientHeight": 464,
+            "scrollHeight": 464,
+            "overflowY": "visible"
+          },
+          "rootInsideViewport": false,
+          "offenders": [
+            {
+              "el": "thead \"Client Basis Investment account Institution Principal Intere\"",
+              "left": 305,
+              "right": 1649
+            },
+            {
+              "el": "tr \"Client Basis Investment account Institution Principal Intere\"",
+              "left": 305,
+              "right": 1649
+            },
+            {
+              "el": "th \"Actions\"",
+              "left": 1424,
+              "right": 1649
+            },
+            {
+              "el": "tbody \"Firm (section 86(3)) Section 86(3) OBS s86(3) Investments DE\"",
+              "left": 305,
+              "right": 1649
+            },
+            {
+              "el": "tr[investment-row-e283da35-aef5-4259-88d7-cfd8b0d2f15f] \"Firm (section 86(3)) Section 86(3) OBS s86(3) Investments DE\"",
+              "left": 305,
+              "right": 1649
+            },
+            {
+              "el": "td \"Record Interest Withdraw\"",
+              "left": 1424,
+              "right": 1649
+            },
+            {
+              "el": "div \"Record Interest Withdraw\"",
+              "left": 1424,
+              "right": 1649
+            },
+            {
+              "el": "button \"Record Interest\"",
+              "left": 1424,
+              "right": 1551
+            },
+            {
+              "el": "button \"Withdraw\"",
+              "left": 1559,
+              "right": 1649
+            },
+            {
+              "el": "tr[investment-row-a7e500d8-2124-453d-aa34-48ae9154f4d6] \"Moroka Family Trust mwld55wr08f1 Section 86(4) OBS s86(4) In\"",
+              "left": 305,
+              "right": 1649
+            },
+            {
+              "el": "td \"\"",
+              "left": 1424,
+              "right": 1649
+            },
+            {
+              "el": "tr[investment-row-35baf3bf-994e-4b46-b730-04d57dd972d8] \"QuickCollect Services mwld55wr08f1 Section 86(4) Nedbank Sec\"",
+              "left": 305,
+              "right": 1649
+            },
+            {
+              "el": "td \"Record Interest Withdraw\"",
+              "left": 1424,
+              "right": 1649
+            },
+            {
+              "el": "div \"Record Interest Withdraw\"",
+              "left": 1424,
+              "right": 1649
+            },
+            {
+              "el": "button \"Record Interest\"",
+              "left": 1424,
+              "right": 1551
+            },
+            {
+              "el": "button \"Withdraw\"",
+              "left": 1559,
+              "right": 1649
+            },
+            {
+              "el": "tr[investment-row-20e0ee74-f947-43ff-8620-20cbe5f52c53] \"Firm (section 86(3)) Section 86(3) Standard Bank Section 86(\"",
+              "left": 305,
+              "right": 1649
+            },
+            {
+              "el": "td \"Record Interest Withdraw\"",
+              "left": 1424,
+              "right": 1649
+            },
+            {
+              "el": "div \"Record Interest Withdraw\"",
+              "left": 1424,
+              "right": 1649
+            },
+            {
+              "el": "button \"Record Interest\"",
+              "left": 1424,
+              "right": 1551
+            },
+            {
+              "el": "button \"Withdraw\"",
+              "left": 1559,
+              "right": 1649
+            }
+          ],
+          "truncated": [],
+          "noHorizontalOverflow": true,
+          "ok": false,
+          "width": 1440,
+          "extra": {
+            "tableScrollWidth": 1344,
+            "wrapClientWidth": 1086,
+            "wrapOverflowX": "auto",
+            "horizontalScroll": true,
+            "cardRight": 1416,
+            "vw": 1440,
+            "cardInsideViewport": true,
+            "badges": [
+              {
+                "text": "Section 86(3)",
+                "scrollWidth": 100,
+                "clientWidth": 100,
+                "truncated": false,
+                "right": 519
+              },
+              {
+                "text": "Active",
+                "scrollWidth": 56,
+                "clientWidth": 56,
+                "truncated": false,
+                "right": 1382
+              },
+              {
+                "text": "Section 86(4)",
+                "scrollWidth": 100,
+                "clientWidth": 100,
+                "truncated": false,
+                "right": 519
+              },
+              {
+                "text": "Withdrawn",
+                "scrollWidth": 82,
+                "clientWidth": 82,
+                "truncated": false,
+                "right": 1408
+              },
+              {
+                "text": "Section 86(4)",
+                "scrollWidth": 100,
+                "clientWidth": 100,
+                "truncated": false,
+                "right": 519
+              },
+              {
+                "text": "Active",
+                "scrollWidth": 56,
+                "clientWidth": 56,
+                "truncated": false,
+                "right": 1382
+              },
+              {
+                "text": "Section 86(3)",
+                "scrollWidth": 100,
+                "clientWidth": 100,
+                "truncated": false,
+                "right": 519
+              },
+              {
+                "text": "Active",
+                "scrollWidth": 56,
+                "clientWidth": 56,
+                "truncated": false,
+                "right": 1382
+              }
+            ]
+          }
+        },
+        {
+          "rootSel": "[data-testid='investments-table']",
+          "vw": 1920,
+          "vh": 1100,
+          "root": {
+            "left": 497,
+            "right": 1841,
+            "top": 273,
+            "bottom": 737,
+            "clientWidth": 1344,
+            "scrollWidth": 1344,
+            "clientHeight": 464,
+            "scrollHeight": 464,
+            "overflowY": "visible"
+          },
+          "rootInsideViewport": true,
+          "offenders": [],
+          "truncated": [],
+          "noHorizontalOverflow": true,
+          "ok": true,
+          "width": 1920,
+          "extra": {
+            "tableScrollWidth": 1344,
+            "wrapClientWidth": 1182,
+            "wrapOverflowX": "auto",
+            "horizontalScroll": true,
+            "cardRight": 1704,
+            "vw": 1920,
+            "cardInsideViewport": true,
+            "badges": [
+              {
+                "text": "Section 86(3)",
+                "scrollWidth": 100,
+                "clientWidth": 100,
+                "truncated": false,
+                "right": 711
+              },
+              {
+                "text": "Active",
+                "scrollWidth": 56,
+                "clientWidth": 56,
+                "truncated": false,
+                "right": 1574
+              },
+              {
+                "text": "Section 86(4)",
+                "scrollWidth": 100,
+                "clientWidth": 100,
+                "truncated": false,
+                "right": 711
+              },
+              {
+                "text": "Withdrawn",
+                "scrollWidth": 82,
+                "clientWidth": 82,
+                "truncated": false,
+                "right": 1600
+              },
+              {
+                "text": "Section 86(4)",
+                "scrollWidth": 100,
+                "clientWidth": 100,
+                "truncated": false,
+                "right": 711
+              },
+              {
+                "text": "Active",
+                "scrollWidth": 56,
+                "clientWidth": 56,
+                "truncated": false,
+                "right": 1574
+              },
+              {
+                "text": "Section 86(3)",
+                "scrollWidth": 100,
+                "clientWidth": 100,
+                "truncated": false,
+                "right": 711
+              },
+              {
+                "text": "Active",
+                "scrollWidth": 56,
+                "clientWidth": 56,
+                "truncated": false,
+                "right": 1574
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "consoleErrors": [
+    {
+      "tab": "alice",
+      "url": "http://localhost:3001/org/e2e-test-org/matters/eec33c75-dd13-40f8-9d22-2be53f964eab?tab=trust",
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    },
+    {
+      "tab": "alice",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/client-ledgers/79b27393-d9c1-46c0-9a48-46c565a92e96",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    }
+  ],
+  "pageErrors": [],
+  "posts": [
+    {
+      "tab": "alice",
+      "at": "2026-11-18T00:17:32.203Z",
+      "url": "http://localhost:8090/token",
+      "nextAction": null
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T00:17:32.369Z",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "nextAction": "0026a07d8ed2b1635231588296294b1ede31946ad1"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T00:17:32.408Z",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "nextAction": "001a1bdf1be008c0cfc4e1347d95d2d227e6084e78"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T00:17:33.988Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/investments",
+      "nextAction": "0026a07d8ed2b1635231588296294b1ede31946ad1"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T00:17:35.653Z",
+      "url": "http://localhost:3001/org/e2e-test-org/matters/eec33c75-dd13-40f8-9d22-2be53f964eab?tab=trust",
+      "nextAction": "0026a07d8ed2b1635231588296294b1ede31946ad1"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T00:17:35.975Z",
+      "url": "http://localhost:3001/org/e2e-test-org/matters/eec33c75-dd13-40f8-9d22-2be53f964eab?tab=trust",
+      "nextAction": "00082da5d366257397f928e84d6f3fb6cddb7b9682"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T00:17:35.991Z",
+      "url": "http://localhost:3001/org/e2e-test-org/matters/eec33c75-dd13-40f8-9d22-2be53f964eab?tab=trust",
+      "nextAction": "40d38be57aacd277dab3cfe70b142e0485adcfd0ff"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T00:17:36.003Z",
+      "url": "http://localhost:3001/org/e2e-test-org/matters/eec33c75-dd13-40f8-9d22-2be53f964eab?tab=trust",
+      "nextAction": "60710a00982cd1aba1b1c3278fbc380c08476dd8fe"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T00:17:39.199Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/client-ledgers/79b27393-d9c1-46c0-9a48-46c565a92e96",
+      "nextAction": "0026a07d8ed2b1635231588296294b1ede31946ad1"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T00:17:42.655Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting",
+      "nextAction": "0026a07d8ed2b1635231588296294b1ede31946ad1"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T00:17:46.654Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/transactions",
+      "nextAction": "0026a07d8ed2b1635231588296294b1ede31946ad1"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T00:17:48.899Z",
+      "url": "http://localhost:3001/org/e2e-test-org/settings/fees?tab=trust-accounting",
+      "nextAction": "0026a07d8ed2b1635231588296294b1ede31946ad1"
+    },
+    {
+      "tab": "alice",
+      "at": "2026-11-18T00:17:51.010Z",
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/investments",
+      "nextAction": "0026a07d8ed2b1635231588296294b1ede31946ad1"
+    }
+  ],
+  "notes": [],
+  "startedAt": "2026-11-18T00:17:31.755Z",
+  "run": "DE43H",
+  "ids": {
+    "funding": "5b3e426d-d435-4ef7-b440-8375aa644439",
+    "client": "79b27393-d9c1-46c0-9a48-46c565a92e96",
+    "matter": "eec33c75-dd13-40f8-9d22-2be53f964eab",
+    "clientName": "Moroka Family Trust mwld55wr08f1",
+    "matterName": "Estate Late Peter Moroka mwld55wr08f1",
+    "inv4Account": "532e3e6a-c55f-4ff2-a307-44cc862908c1",
+    "inv3Account": "b344084f-6068-42d2-be73-ca0bffb5433b"
+  },
+  "continuationOf": "2026-11-18T00:15:28.060Z",
+  "finishedAt": "2026-11-18T00:17:54.082Z",
+  "summary": {
+    "run": "DE43H",
+    "a": {
+      "addDialogPreset": true,
+      "accountCreatedNotPrimary": true,
+      "pickerSelectsNew": true,
+      "pendingAwaiting": true,
+      "pendingNothingMoved": true,
+      "approverSeesDescription": true,
+      "approved": true,
+      "totalUnchanged": true,
+      "generalDown": true,
+      "investedUp": true,
+      "cashbooks": true,
+      "apiMatterTotalUnchanged": true,
+      "uiMatterTotalUnchanged": true,
+      "apiClientCardGeneral": false,
+      "uiClientGeneral": false,
+      "registerActive": true
+    },
+    "b": {
+      "clientFieldsHidden": true,
+      "addDialogPreset": true,
+      "accountCreatedNotPrimary": true,
+      "registerFirm": true,
+      "approverSeesDescription": true,
+      "noClientOnInvestment": true,
+      "rowsInterAccount": true,
+      "noClientLedgerMoved": true,
+      "cashbooks": true,
+      "registerActiveFirm": true
+    },
+    "c": {
+      "amountIsBalance": true,
+      "onlyTheDate": true,
+      "bothRecorded": true,
+      "withdrawn": true,
+      "generalRestored": true,
+      "booksBalancedSql": true,
+      "booksBalancedApi": true,
+      "registerWithdrawn": true,
+      "uiClientGeneralRestored": false,
+      "apiClientCardRestored": false
+    },
+    "d": {
+      "uiNoReverse": true,
+      "refused4": true,
+      "refused3": true,
+      "nothingCreated": true
+    },
+    "e": {
+      "refused": true,
+      "unchanged": true
+    },
+    "aPass": false,
+    "bPass": true,
+    "cPass": false,
+    "dPass": true,
+    "ePass": true,
+    "fScans": [
+      {
+        "label": "c2-investments-page-s86-4-withdrawn",
+        "raw": [],
+        "cssUpper": []
+      },
+      {
+        "label": "e-settings-trust-accounts-card-KNOWN-F4",
+        "raw": [],
+        "cssUpper": [
+          "ACTIVE"
+        ]
+      },
+      {
+        "label": "g-investments-page-final",
+        "raw": [],
+        "cssUpper": []
+      }
+    ],
+    "consoleErrors": 2,
+    "pageErrors": 0
+  }
+}

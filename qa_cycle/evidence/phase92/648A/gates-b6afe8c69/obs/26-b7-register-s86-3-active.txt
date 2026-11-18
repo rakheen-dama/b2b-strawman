@@ -1,0 +1,127 @@
+Skip to content
+Kazi
+E2E Test Organization
+Search...
+⌘K
+TODAY
+Home
+My work
+Diary
+MATTERS
+Matters
+New matter
+Conflict check
+Adverse parties
+AI reviews
+CLIENTS
+Clients
+FICA & compliance
+Data requests
+FEES
+TRUST
+FIRM
+Platform Admin
+Notifications
+AO
+
+Alice Owner
+
+alice@e2e-test.local
+
+Toggle menu
+E2E Test Organization
+Trust accounting
+Investments
+Search
+⌘K
+17 unread notifications
+17
+e2e-test-org
+AO
+Investments
+
+Trust investment register and maturity tracking
+
+Place Investment
+Investment Register
+4 investments found
+All
+Client	Investment account	Rate	Term	Principal	Balance	Status	Actions
+
+Firm (section 86(3))
+Section 86(3)	
+OBS s86(3) Investments IOR6X
+Standard Bank
+OBS3-IOR6X
+	
+6.00%
+LPFF share Arrangement
+	
+18 Nov 2026
+Call deposit
+	
+R 2 500,00
+Interest R 0,00
+	R 2 500,00	Active	
+Record Interest
+Withdraw
+
+
+Moroka Family Trust mwlij30u7ea7
+Section 86(4)	
+OBS s86(4) Investments IOR6X
+Nedbank
+OBS4-IOR6X
+	
+7.00%
+LPFF share 5% (statutory)
+	
+18 Nov 2026
+Call deposit
+	
+R 7 500,00
+Interest R 0,00
+	R 7 500,00	Active	
+Record Interest
+Withdraw
+
+
+QuickCollect Services mwlij30u7ea7
+Section 86(4)	
+Nedbank Section 86(4) Investments
+Nedbank
+CALL-1122334455
+	
+7.25%
+LPFF share 5% (statutory)
+	
+18 Nov 2026
+Call deposit
+	
+R 30 000,00
+Interest R 0,00
+	R 30 000,00	Active	
+Record Interest
+Withdraw
+
+
+Firm (section 86(3))
+Section 86(3)	
+Standard Bank Section 86(3) Investments
+Standard Bank
+FD-0987654321
+	
+8.50%
+LPFF share Arrangement
+	
+18 Nov 2026
+to 16 Feb 2027
+	
+R 200 000,00
+Interest R 0,00
+	R 200 000,00	Active	
+Record Interest
+Withdraw
+Command Palette
+
+Search pages and settings

@@ -1,0 +1,10 @@
+innerText:
+18 Nov 2026	INV-E283DA35	Placed in section 86(3) investment account
+Placed in section 86(3) investment at Standard Bank (OBS s86(3) Investments DE43H)
+	
+R 2 500,00	AWAITING APPROVAL	
+Approve
+Reject
+
+---- textContent:
+18 Nov 2026INV-E283DA35Placed in section 86(3) investment accountPlaced in section 86(3) investment at Standard Bank (OBS s86(3) Investments DE43H)R 2 500,00AWAITING APPROVALApproveReject

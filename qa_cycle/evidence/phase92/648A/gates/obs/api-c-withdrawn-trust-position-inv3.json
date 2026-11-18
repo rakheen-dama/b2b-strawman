@@ -1,0 +1,54 @@
+{
+  "method": "GET",
+  "path": "/api/dashboard/trust-position?accountId=b344084f-6068-42d2-be73-ca0bffb5433b",
+  "status": 200,
+  "body": {
+    "trustAccountId": "b344084f-6068-42d2-be73-ca0bffb5433b",
+    "accountName": "OBS s86(3) Investments DE43H",
+    "bankName": "Standard Bank",
+    "cashbookBalance": 2500,
+    "clientLedgerTotal": 0,
+    "creditorBreakdown": {
+      "clientLedgers": 0,
+      "investmentCreditors": 0,
+      "fundInterestAndCharges": 0,
+      "unidentifiedDeposits": 0,
+      "otherNonClient": 0,
+      "interAccount": 2500,
+      "total": 2500
+    },
+    "difference": 0,
+    "lastReconciliationPeriodEnd": null,
+    "lastReconciliationStatus": null,
+    "lastReconciliationBalanced": null,
+    "daysSinceReconciliation": null,
+    "pendingApprovalCount": 0,
+    "accounts": [
+      {
+        "id": "5b3e426d-d435-4ef7-b440-8375aa644439",
+        "accountName": "Mathebula & Partners Trust Account",
+        "isPrimary": true
+      },
+      {
+        "id": "425fafa1-e6c4-48a7-9e40-b875772d9dd8",
+        "accountName": "Standard Bank Section 86(3) Investments",
+        "isPrimary": false
+      },
+      {
+        "id": "961dbcc7-6938-4576-82f3-515085095001",
+        "accountName": "Nedbank Section 86(4) Investments",
+        "isPrimary": false
+      },
+      {
+        "id": "532e3e6a-c55f-4ff2-a307-44cc862908c1",
+        "accountName": "OBS s86(4) Investments DE43H",
+        "isPrimary": false
+      },
+      {
+        "id": "b344084f-6068-42d2-be73-ca0bffb5433b",
+        "accountName": "OBS s86(3) Investments DE43H",
+        "isPrimary": false
+      }
+    ]
+  }
+}

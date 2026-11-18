@@ -1,0 +1,72 @@
+== worktree: /Users/rakheendama/Projects/2026/worktree-epic-648A @ aba6f46d5fffa231fe77263b7d15e85ecda904b8
+== build log source lines:
+Building from source at: /Users/rakheendama/Projects/2026/worktree-epic-648A
+  Tail logs:   docker compose -f /Users/rakheendama/Projects/2026/worktree-epic-648A/compose/docker-compose.e2e.yml logs -f backend frontend
+== jar entries (648A-new classes):
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/transaction/TrustTransactionService.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/transaction/InvestmentBalanceRow.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/transaction/InvestmentPlacementHooks.class
+io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/investment/TrustInvestmentService.class
+== InvestmentPlacementHooks.class exists: 1 ; contains onPlacementApproving: 1
+== TrustInvestmentService.class contains onPlacementApproving: 1 ; 'INV-WD-': 1
+== TrustTransactionService.class contains 'Withdraw the investment instead': 1 ; onPlacementApproving: 1
+== InvestmentRegisterQuery.class contains 'Firm (section 86(3))': 1
+== jar migrations (latest tenant V*):
+db/migration/tenant/V21__phase92_unidentified_deposits.sql
+db/migration/tenant/V22__phase92_investment_account_basis.sql
+db/migration/tenant/V23__phase92_investment_accounts.sql
+== V23 in jar contains chk_trust_invest_client_by_basis: 3
+== frontend container: 648A strings in .next (excluding cache):
+-- 'Add investment account':
+/app/frontend/.next/server/chunks/ssr/frontend_app_(app)_org_[slug]_trust-accounting_investments_0bq7hzb._.js
+/app/frontend/.next/static/chunks/0y6m3uner27n0.js
+-- 'Add Investment Account':
+/app/frontend/.next/server/chunks/ssr/_1v13adn._.js
+/app/frontend/.next/server/chunks/ssr/frontend_components_0utty1a._.js
+/app/frontend/.next/server/chunks/ssr/frontend_components_trust_0ero1wy._.js
+/app/frontend/.next/static/chunks/0y6m3uner27n0.js
+-- 'Firm (section 86(3))':
+/app/frontend/.next/server/chunks/ssr/_105qp0b._.js
+-- 'Returns to trust':
+/app/frontend/.next/server/chunks/ssr/frontend_app_(app)_org_[slug]_trust-accounting_investments_0bq7hzb._.js
+/app/frontend/.next/static/chunks/0y6m3uner27n0.js
+-- 'Select the investment account':
+/app/frontend/.next/server/chunks/ssr/frontend_app_(app)_org_[slug]_trust-accounting_investments_0bq7hzb._.js
+/app/frontend/.next/static/chunks/0y6m3uner27n0.js
+-- 'Awaiting approval':
+/app/frontend/.next/server/chunks/ssr/frontend_lib_types_trust_ts_0cuiq_p._.js
+/app/frontend/.next/server/chunks/ssr/frontend_lib_1q18f8m._.js
+/app/frontend/.next/server/chunks/ssr/frontend_0c0sh2v._.js
+/app/frontend/.next/server/chunks/ssr/_0meck2x._.js
+-- 'create-trust-account-dialog':
+/app/frontend/.next/server/chunks/ssr/_1v13adn._.js
+/app/frontend/.next/server/chunks/ssr/frontend_components_0utty1a._.js
+/app/frontend/.next/server/chunks/ssr/frontend_components_trust_0ero1wy._.js
+/app/frontend/.next/static/chunks/0y6m3uner27n0.js
+== health: {"groups":["liveness","readiness"],"status":"UP"}  frontend :3001 HTTP 200
+== tenant schemas: tenant_7d218705360b
+ version |           description            | success |        installed_on        
+---------+----------------------------------+---------+----------------------------
+ 23      | phase92 investment accounts      | t       | 2026-11-18 00:20:38.336563
+ 22      | phase92 investment account basis | t       | 2026-11-18 00:20:38.331067
+ 21      | phase92 unidentified deposits    | t       | 2026-11-18 00:20:38.311913
+(3 rows)
+
+      column_name       | is_nullable 
+------------------------+-------------
+ customer_id            | YES
+ deposit_transaction_id | YES
+ investment_account_id  | NO
+ project_id             | YES
+(4 rows)
+
+             conname              |                                                                                                                               pg_get_constraintdef                                                                                                                               
+----------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ chk_trust_invest_client_by_basis | CHECK (((investment_basis IS NOT NULL) AND ((((investment_basis)::text = 'CLIENT_INSTRUCTION'::text) AND (customer_id IS NOT NULL) AND (project_id IS NOT NULL)) OR (((investment_basis)::text = 'FIRM_DISCRETION'::text) AND (customer_id IS NULL) AND (project_id IS NULL)))))
+(1 row)
+
+            account_name            | account_type | investment_basis | is_primary 
+------------------------------------+--------------+------------------+------------
+ Mathebula & Partners Trust Account | GENERAL      |                  | t
+(1 row)
+

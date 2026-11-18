@@ -1,0 +1,11 @@
+{
+  "method": "GET",
+  "path": "/api/trust-accounts/5b3e426d-d435-4ef7-b440-8375aa644439/client-ledgers/79b27393-d9c1-46c0-9a48-46c565a92e96",
+  "status": 500,
+  "body": {
+    "detail": "An unexpected error occurred",
+    "instance": "/api/trust-accounts/5b3e426d-d435-4ef7-b440-8375aa644439/client-ledgers/79b27393-d9c1-46c0-9a48-46c565a92e96",
+    "status": 500,
+    "title": "Internal server error"
+  }
+}

@@ -1,0 +1,58 @@
+innerText:
+Trust Accounts
+Manage your firm's trust bank accounts
+Add Account
+
+Mathebula & Partners Trust Account
+
+Primary
+ACTIVE
+
+Standard Bank · 051001 · 0123456789
+
+Section 86(2) trust banking account
+
+Standard Bank Section 86(3) Investments
+
+ACTIVE
+
+Standard Bank · 051001 · 0863000001
+
+Section 86(3) investment account
+
+Invested at the firm's discretion
+
+Nedbank Section 86(4) Investments
+
+ACTIVE
+
+Nedbank · 198765 · 0864000001
+
+Section 86(4) investment account
+
+Invested on a client's instruction
+
+OBS s86(4) Investments DE43H
+
+ACTIVE
+
+Nedbank · 051001 · 0864DE43H
+
+Section 86(4) investment account
+
+Invested on a client's instruction
+
+OBS s86(3) Investments DE43H
+
+ACTIVE
+
+Standard Bank · 051001 · 0863DE43H
+
+Section 86(3) investment account
+
+Invested at the firm's discretion
+
+The bank must have an arrangement with the Legal Practitioners Fidelity Fund (Section 86(6)). Contact the LPFF to verify.
+
+---- textContent:
+Trust AccountsManage your firm's trust bank accountsAdd AccountMathebula & Partners Trust AccountPrimaryACTIVEStandard Bank · 051001 · 0123456789Section 86(2) trust banking accountStandard Bank Section 86(3) InvestmentsACTIVEStandard Bank · 051001 · 0863000001Section 86(3) investment accountInvested at the firm's discretionNedbank Section 86(4) InvestmentsACTIVENedbank · 198765 · 0864000001Section 86(4) investment accountInvested on a client's instructionOBS s86(4) Investments DE43HACTIVENedbank · 051001 · 0864DE43HSection 86(4) investment accountInvested on a client's instructionOBS s86(3) Investments DE43HACTIVEStandard Bank · 051001 · 0863DE43HSection 86(3) investment accountInvested at the firm's discretionThe bank must have an arrangement with the Legal Practitioners Fidelity Fund (Section 86(6)). Contact the LPFF to verify.

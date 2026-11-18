@@ -1,0 +1,32 @@
+{
+  "label": "API EVIDENCE (probe; expected to be refused, creates nothing)",
+  "request": {
+    "method": "POST",
+    "url": "http://localhost:8081/api/trust-accounts/95355286-2146-4698-af42-8f56e5bdaa4e/investments",
+    "headers": {
+      "Authorization": "Bearer <alice mock-auth-token from the browser context>"
+    },
+    "body": {
+      "investmentAccountId": "a433dbc5-5d76-4f4a-8d15-dafa9d7d09ba",
+      "clientId": "2a36f8ef-582a-4e44-b6bd-bf2844e32418",
+      "matterId": "d42ca953-d28f-4c5c-a9fc-f0f60ec1d7e2",
+      "institution": "Nedbank",
+      "accountNumber": "OBSF4-IOR6X",
+      "principal": 100,
+      "interestRate": 0.07,
+      "depositDate": "2026-11-19",
+      "notes": "OBS probe - expected refusal",
+      "investmentBasis": "CLIENT_INSTRUCTION"
+    }
+  },
+  "response": {
+    "status": 400,
+    "contentType": "application/problem+json",
+    "body": {
+      "detail": "The deposit date cannot be in the future.",
+      "instance": "/api/trust-accounts/95355286-2146-4698-af42-8f56e5bdaa4e/investments",
+      "status": 400,
+      "title": "Cannot place investment"
+    }
+  }
+}

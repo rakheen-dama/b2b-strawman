@@ -1,0 +1,180 @@
+Skip to content
+Kazi
+E2E Test Organization
+Search...
+⌘K
+TODAY
+Home
+My work
+Diary
+MATTERS
+Matters
+New matter
+Conflict check
+Adverse parties
+AI reviews
+CLIENTS
+Clients
+FICA & compliance
+Data requests
+FEES
+TRUST
+FIRM
+Platform Admin
+Notifications
+AO
+
+Alice Owner
+
+alice@e2e-test.local
+
+Toggle menu
+E2E Test Organization
+Settings
+Fees & Trust
+Search
+⌘K
+17 unread notifications
+17
+e2e-test-org
+AO
+Firm
+Matters
+Documents
+Fees & Trust
+Rates
+Tax
+Time recording
+Fee runs
+Collections
+Trust accounting
+Connections
+Rates
+Tax
+Time recording
+Fee runs
+Collections
+Trust accounting
+Trust Accounting Settings
+
+Manage trust accounts, approval settings, LPFF rates, and reminder configuration.
+
+Trust Accounts
+Manage your firm's trust bank accounts
+Add Account
+
+Mathebula & Partners Trust Account
+
+Primary
+ACTIVE
+
+Standard Bank · 051001 · 0123456789
+
+Section 86(2) trust banking account
+
+Standard Bank Section 86(3) Investments
+
+ACTIVE
+
+Standard Bank · 051001 · 0863000001
+
+Section 86(3) investment account
+
+Invested at the firm's discretion
+
+Nedbank Section 86(4) Investments
+
+ACTIVE
+
+Nedbank · 198765 · 0864000001
+
+Section 86(4) investment account
+
+Invested on a client's instruction
+
+OBS s86(4) Investments DE43H
+
+ACTIVE
+
+Nedbank · 051001 · 0864DE43H
+
+Section 86(4) investment account
+
+Invested on a client's instruction
+
+OBS s86(3) Investments DE43H
+
+ACTIVE
+
+Standard Bank · 051001 · 0863DE43H
+
+Section 86(3) investment account
+
+Invested at the firm's discretion
+
+The bank must have an arrangement with the Legal Practitioners Fidelity Fund (Section 86(6)). Contact the LPFF to verify.
+Approval Settings
+Configure transaction approval requirements
+
+Mathebula & Partners Trust Account
+
+Single approval
+
+Single
+
+Standard Bank Section 86(3) Investments
+
+Single approval
+
+Single
+
+Nedbank Section 86(4) Investments
+
+Single approval
+
+Single
+
+OBS s86(4) Investments DE43H
+
+Single approval
+
+Single
+
+OBS s86(3) Investments DE43H
+
+Single approval
+
+Single
+LPFF Rates
+Law Practice Fidelity Fund interest rate configuration
+Effective From	Rate	LPFF Share	Notes
+2025/11/18	6.50%	50.00%	Scenario 0.63 test rate
+Reminder Settings
+Configure trust-related notification reminders
+
+Low Balance Alert
+
+Notify when a client's trust balance drops below a threshold
+
+Configured per account
+
+Reconciliation Due
+
+Remind to complete monthly bank reconciliation
+
+Monthly
+
+Investment Maturity
+
+Alert before fixed deposits mature
+
+7 days before
+
+Interest Run Due
+
+Remind to run monthly interest calculations
+
+Monthly
+Command Palette
+
+Search pages and settings

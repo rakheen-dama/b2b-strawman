@@ -1,0 +1,107 @@
+Skip to content
+Kazi
+E2E Test Organization
+Search...
+⌘K
+TODAY
+Home
+My work
+Diary
+MATTERS
+Matters
+New matter
+Conflict check
+Adverse parties
+AI reviews
+CLIENTS
+Clients
+FICA & compliance
+Data requests
+FEES
+TRUST
+FIRM
+Platform Admin
+Notifications
+AO
+
+Alice Owner
+
+alice@e2e-test.local
+
+Toggle menu
+E2E Test Organization
+Trust accounting
+Client ledgers
+Client ledger
+Search
+⌘K
+13 unread notifications
+13
+e2e-test-org
+AO
+Back to Client Ledgers
+Moroka Family Trust mwld55wr08f1
+
+Client ledger detail and transaction history
+
+Trust Balance
+
+R 241 500,00
+
+Ledger totals
+
+Deposits
+R 250 000,00
+−
+less
+Payments
+R 0,00
+−
+less
+Fee transfers
+R 8 500,00
+−
+less
+Refunds
+R 0,00
+=Balance
+R 241 500,00
+Generate Statement
+Select a date range and generate a PDF statement for this client
+From
+To
+Print Statement
+Status:
+All
+Recorded
+Awaiting Approval
+Approved
+Rejected
+Reversed
+Type:
+All
+Deposit
+Payment
+Fee transfer
+Refund
+Transfer out
+Transfer in
+Reversal
+Deposit identified and allocated
+Placed in section 86(4) investment
+Investment capital received
+Section 86(4) investment interest
+Investment withdrawn
+Investment returned to trust
+From
+To
+Transaction History
+2 transactions found
+Date	Reference	Type	Amount	Status	Running Balance
+18 Nov 2026	FEE/MOROKA/mwld55wr08f1	Fee transfer	
+R 8 500,00	APPROVED	R 241 500,00
+18 Nov 2026	DEP/MOROKA/mwld55wr08f1	Deposit	
+R 250 000,00	RECORDED	R 250 000,00
+Command Palette
+
+Search pages and settings

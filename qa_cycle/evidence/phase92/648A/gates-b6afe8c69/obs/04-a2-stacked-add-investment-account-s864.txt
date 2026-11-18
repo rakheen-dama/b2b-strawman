@@ -1,0 +1,151 @@
+Skip to content
+Kazi
+E2E Test Organization
+Search...
+⌘K
+TODAY
+Home
+My work
+Diary
+MATTERS
+Matters
+New matter
+Conflict check
+Adverse parties
+AI reviews
+CLIENTS
+Clients
+FICA & compliance
+Data requests
+FEES
+TRUST
+FIRM
+Platform Admin
+Notifications
+AO
+
+Alice Owner
+
+alice@e2e-test.local
+
+Toggle menu
+E2E Test Organization
+Trust accounting
+Investments
+Search
+⌘K
+13 unread notifications
+13
+e2e-test-org
+AO
+Investments
+
+Trust investment register and maturity tracking
+
+Place Investment
+Investment Register
+2 investments found
+All
+Client	Investment account	Rate	Term	Principal	Balance	Status	Actions
+
+QuickCollect Services mwlij30u7ea7
+Section 86(4)	
+Nedbank Section 86(4) Investments
+Nedbank
+CALL-1122334455
+	
+7.25%
+LPFF share 5% (statutory)
+	
+18 Nov 2026
+Call deposit
+	
+R 30 000,00
+Interest R 0,00
+	R 30 000,00	Active	
+Record Interest
+Withdraw
+
+
+Firm (section 86(3))
+Section 86(3)	
+Standard Bank Section 86(3) Investments
+Standard Bank
+FD-0987654321
+	
+8.50%
+LPFF share Arrangement
+	
+18 Nov 2026
+to 16 Feb 2027
+	
+R 200 000,00
+Interest R 0,00
+	R 200 000,00	Active	
+Record Interest
+Withdraw
+Command Palette
+
+Search pages and settings
+
+Place Investment
+
+Place trust money from this account into an investment account.
+
+Investment basis
+Section 86(3) — the firm invests surplus trust money
+Section 86(4) — invested on a client's instruction
+
+Interest paid to client, with 5% to the LPFF (Section 86(5)).
+
+Investment account
+Select the investment account
+Nedbank Section 86(4) Investments (Nedbank 0864000001)
+Add investment account
+Client ID
+Matter ID
+Institution
+Account Number
+Principal
+Interest Rate %
+Deposit Date
+Maturity Date (optional)
+Notes (optional)
+The bank must have an arrangement with the Legal Practitioners Fidelity Fund (Section 86(6)). Contact the LPFF to verify.
+Cancel
+Place Investment
+Close
+Add Investment Account
+
+Register the investment account the trust money will be placed in.
+
+Account Name
+Bank Name
+Branch Code
+Account Number
+Account Type
+Investment
+General
+Investment
+Section 86 Trust Account
+Opened Date
+Investment basis
+Section 86(4) — invested on a client's instruction
+Section 86(3) — the firm invests surplus trust money
+Section 86(4) — invested on a client's instruction
+
+Interest on a section 86(3) investment belongs to the Legal Practitioners' Fidelity Fund. On a section 86(4) investment the client receives 95% and the Fund 5%.
+
+Set as primary trust account
+
+The primary account is used by default for dashboards and reporting.
+
+Require dual approval
+
+When enabled, trust payments need two approvers before release.
+
+Payment Approval Threshold (ZAR)
+Notes (Optional)
+Cancel
+Create Account
+Close

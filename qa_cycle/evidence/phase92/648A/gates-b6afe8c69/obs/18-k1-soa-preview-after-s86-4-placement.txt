@@ -1,0 +1,103 @@
+Skip to content
+Kazi
+E2E Test Organization
+Search...
+⌘K
+TODAY
+Home
+My work
+Diary
+MATTERS
+Matters
+New matter
+Conflict check
+Adverse parties
+AI reviews
+CLIENTS
+Clients
+FICA & compliance
+Data requests
+FEES
+TRUST
+FIRM
+Platform Admin
+Notifications
+AO
+
+Alice Owner
+
+alice@e2e-test.local
+
+Toggle menu
+E2E Test Organization
+Matters
+Estate Late Peter Moroka mwlij30u7ea7
+Search
+⌘K
+15 unread notifications
+15
+e2e-test-org
+AO
+Back to Matters
+Generate Document
+Generate Statement of Account
+More actions
+Estate Late Peter Moroka mwlij30u7ea7
+Active
+ESTATES
+Moroka Family Trust mwlij30u7ea7·Alice Owner·Opened 18 Nov 2026
+Close Matter
+Complete Matter
+Unbilled WIP
+R 15 000,00
+6,0h · 1 entry
+Trust balance
+R 241 500,00
+Outstanding
+R 125,00
+0 overdue
+Next court date
+—
+Not available
+None scheduled
+Details
+Overview
+Work
+Fees
+· Statements of account
+Client
+Diary
+Activity
+Statements of Account
+Generate Statement of Account
+GENERATED	CLOSING BALANCE OWING	TRUST BALANCE HELD	ACTIONS
+18 Nov 2026	R 125,00	R 234 000,00	
+Download
+Command Palette
+
+Search pages and settings
+
+Statement generated
+Saved as internal draft — the client will not see it.
+Generate Statement of Account
+
+Generate a statement of account for Estate Late Peter Moroka mwlij30u7ea7. The PDF will be saved to this matter's documents.
+
+Period start
+Period end
+Share on the client portal
+
+The client can see this statement when they sign in to the portal.
+
+Email the client now
+
+Also shares it, and requests an email with a link to the client's portal contact.
+
+No email is sent if the client has no portal contact, or if they were already emailed about this kind of document on this matter in the last 5 minutes.
+
+Save as internal draft — the client will not see it.
+
+Close
+Download PDF
+Regenerate
+Close

@@ -297,3 +297,12 @@ fixed with D-1), dashboard trust position / trend (`TrustBooksService`), MCP `Tr
 - **Hand-off (Reviewer B, report only — owner 648E):** `LedgerTotals` folds `INV_PLACE`/`INV_RETURN`
   into transfersOut/transfersIn as an interim; 648E must *replace* that fold with the "Invested"
   figure, not layer on top of it.
+
+## Re-gate @b6afe8c69 (orchestrator, after merge) — handed forward
+
+Gates @b6afe8c69 all PASS (`gates-b6afe8c69/README.md`): lifecycle 107/107, depth-ii 40/4, OBS a–k. New findings from `gates-b6afe8c69/found-obs.md`, reported only:
+
+- **N-1 (MEDIUM) → 648F.** The Client Trust Statement (a client-sent document) prints the line types "Inv place" / "Inv return": `ClientTrustStatementContext.typeLabel` humanises the enum name instead of using the registry label. The Statement of Account prints "Placed in section 86(4) investment" correctly. Task 648.13 (648F) rewrites both builders with a separate "Section 86(4) investment" block; it must route every line label through the registry (`TrustTransactionTypeLabels`), and never through the enum name.
+- **O-1 (product confirmation) → 648E / 648F.** After an s86(4) placement the client-ledger page and both client documents show only the general balance (R234 000), with no mention of the R7 500 invested. 648E adds `investedBalance` to the firm client ledger. 648F adds the invested balance to both statements (task 648.13).
+- **N-2 (LOW).** The s86(3) approval notification still says "placement in a section 86(3) investment **account**", while L-1 removed "account" from the type label (`TrustTransactionTypeLabels.placementNoun`). No owner yet; fold it into the next slice that touches the labels.
+- **P-4 (pre-existing).** Trust notification bodies show unformatted amounts ("R7500").

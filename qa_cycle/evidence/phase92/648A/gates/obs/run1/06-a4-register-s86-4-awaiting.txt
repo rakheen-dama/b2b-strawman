@@ -1,0 +1,66 @@
+Skip to content
+Kazi
+E2E Test Organization
+Search...
+⌘K
+TODAY
+Home
+My work
+Diary
+MATTERS
+Matters
+New matter
+Conflict check
+Adverse parties
+AI reviews
+CLIENTS
+Clients
+FICA & compliance
+Data requests
+FEES
+TRUST
+FIRM
+Platform Admin
+Notifications
+AO
+
+Alice Owner
+
+alice@e2e-test.local
+
+Toggle menu
+E2E Test Organization
+Trust accounting
+Investments
+Search
+⌘K
+14 unread notifications
+14
+e2e-test-org
+AO
+Investments
+
+Trust investment register and maturity tracking
+
+Place Investment
+Investment Register
+3 investments found
+All
+Client	Basis	Investment account	Institution	Principal	Interest Rate	LPFF Rate	Deposit Date	Maturity Date	Interest Earned	Balance	Status	Actions
+Moroka Family Trust mwld55wr08f1	Section 86(4)	OBS s86(4) Investments DE43H	Nedbank
+OBS4-DE43H
+	R 7 500,00	7.00%	5% (statutory)	18 Nov 2026	Call deposit	R 0,00	R 0,00	Awaiting approval	
+QuickCollect Services mwld55wr08f1	Section 86(4)	Nedbank Section 86(4) Investments	Nedbank
+CALL-1122334455
+	R 30 000,00	7.25%	5% (statutory)	18 Nov 2026	Call deposit	R 0,00	R 30 000,00	Active	
+Record Interest
+Withdraw
+
+Firm (section 86(3))	Section 86(3)	Standard Bank Section 86(3) Investments	Standard Bank
+FD-0987654321
+	R 200 000,00	8.50%	Arrangement	18 Nov 2026	16 Feb 2027	R 0,00	R 200 000,00	Active	
+Record Interest
+Withdraw
+Command Palette
+
+Search pages and settings

@@ -1,0 +1,17 @@
+innerText:
+Withdraw Investment
+
+The whole investment returns to the trust banking account it was placed from.
+
+Returns to trust
+R 7 500,00
+
+The capital and any section 86(4) interest posted to the books (section 86(3) interest belongs to the Legal Practitioners' Fidelity Fund).
+
+Withdrawal date
+Cancel
+Confirm Withdrawal
+Close
+
+---- textContent:
+Withdraw InvestmentThe whole investment returns to the trust banking account it was placed from.Returns to trustR 7 500,00The capital and any section 86(4) interest posted to the books (section 86(3) interest belongs to the Legal Practitioners' Fidelity Fund).Withdrawal dateCancelConfirm WithdrawalClose

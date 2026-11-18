@@ -1,0 +1,2 @@
+8 ('java.lang.IllegalStateException', 'INV_PLACE has no client-ledger total yet (648A places it)', "['at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerController.getByCustomer(ClientLedgerController.java:39)']")
+8 ('java.lang.IllegalStateException', 'INV_PLACE has no client-ledger total yet (648A places it)', "['at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerController.listClientLedgers(ClientLedgerController.java:32)']")

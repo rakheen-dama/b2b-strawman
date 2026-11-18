@@ -1,0 +1,33 @@
+-- 648A OBS read-only evidence output (schema tenant_7d218705360b) 2026-11-18T00:17:31.837Z
+
+== [c: the s86(4) investment's rows after the withdrawal]
+select t.transaction_type, t.status, t.ledger, a.account_name, t.ledger_effect, t.cashbook_effect, t.posted_at is not null posted, t.transaction_date, t.reference from tenant_7d218705360b.trust_transactions t join tenant_7d218705360b.trust_accounts a on a.id=t.trust_account_id where t.investment_id='a7e500d8-2124-453d-aa34-48ae9154f4d6' order by t.created_at
+ transaction_type |  status  |      ledger       |            account_name            | ledger_effect | cashbook_effect | posted | transaction_date |    reference    
+------------------+----------+-------------------+------------------------------------+---------------+-----------------+--------+------------------+-----------------
+ INV_PLACE        | APPROVED | CLIENT            | Mathebula & Partners Trust Account |      -7500.00 |        -7500.00 | t      | 2026-11-18       | INV-A7E500D8
+ INV_RECEIVE      | APPROVED | CLIENT_INVESTMENT | OBS s86(4) Investments DE43H       |       7500.00 |         7500.00 | t      | 2026-11-18       | INV-A7E500D8
+ INV_WITHDRAW     | RECORDED | CLIENT_INVESTMENT | OBS s86(4) Investments DE43H       |      -7500.00 |        -7500.00 | t      | 2026-11-18       | INV-WD-A7E500D8
+ INV_RETURN       | RECORDED | CLIENT            | Mathebula & Partners Trust Account |       7500.00 |         7500.00 | t      | 2026-11-18       | INV-WD-A7E500D8
+(4 rows)
+
+
+== [c: after the withdrawal: client figures by ledger and account]
+select a.account_name, t.ledger, sum(t.ledger_effect) ledger_sum, count(*) n from tenant_7d218705360b.trust_transactions t join tenant_7d218705360b.trust_accounts a on a.id=t.trust_account_id where t.customer_id='79b27393-d9c1-46c0-9a48-46c565a92e96' and t.posted_at is not null group by 1,2 order by 1,2
+            account_name            |      ledger       | ledger_sum | n 
+------------------------------------+-------------------+------------+---
+ Mathebula & Partners Trust Account | CLIENT            |  241500.00 | 4
+ OBS s86(4) Investments DE43H       | CLIENT_INVESTMENT |       0.00 | 2
+(2 rows)
+
+
+== [c: after the withdrawal: books per account (cashbook = sum cashbook_effect; creditors = sum ledger_effect by ledger; posted rows)]
+select a.account_name, a.account_type, coalesce(a.investment_basis,'-') basis, sum(t.cashbook_effect) cashbook, sum(t.ledger_effect) creditors, sum(t.ledger_effect) filter (where t.ledger='CLIENT') client, sum(t.ledger_effect) filter (where t.ledger='CLIENT_INVESTMENT') client_investment, sum(t.ledger_effect) filter (where t.ledger='INTER_ACCOUNT') inter_account, sum(t.ledger_effect) filter (where t.ledger='NON_CLIENT') non_client from tenant_7d218705360b.trust_accounts a left join tenant_7d218705360b.trust_transactions t on t.trust_account_id=a.id and t.posted_at is not null group by 1,2,3 order by 2,1
+              account_name               | account_type |       basis        | cashbook  | creditors |  client   | client_investment | inter_account | non_client 
+-----------------------------------------+--------------+--------------------+-----------+-----------+-----------+-------------------+---------------+------------
+ Mathebula & Partners Trust Account      | GENERAL      | -                  |  54000.00 |  54000.00 | 256500.00 |                   |    -202500.00 |           
+ Nedbank Section 86(4) Investments       | INVESTMENT   | CLIENT_INSTRUCTION |  30000.00 |  30000.00 |           |          30000.00 |               |           
+ OBS s86(3) Investments DE43H            | INVESTMENT   | FIRM_DISCRETION    |   2500.00 |   2500.00 |           |                   |       2500.00 |           
+ OBS s86(4) Investments DE43H            | INVESTMENT   | CLIENT_INSTRUCTION |      0.00 |      0.00 |           |              0.00 |               |           
+ Standard Bank Section 86(3) Investments | INVESTMENT   | FIRM_DISCRETION    | 200000.00 | 200000.00 |           |                   |     200000.00 |           
+(5 rows)
+

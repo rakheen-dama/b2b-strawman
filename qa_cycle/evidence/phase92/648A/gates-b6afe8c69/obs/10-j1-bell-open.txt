@@ -1,0 +1,267 @@
+Skip to content
+Kazi
+E2E Test Organization
+Search...
+⌘K
+TODAY
+Home
+My work
+Diary
+MATTERS
+Matters
+New matter
+Conflict check
+Adverse parties
+AI reviews
+CLIENTS
+Clients
+FICA & compliance
+Data requests
+FEES
+TRUST
+FIRM
+Notifications
+BA
+
+Bob Admin
+
+bob@e2e-test.local
+
+Toggle menu
+E2E Test Organization
+Home
+Search
+⌘K
+21 unread notifications
+21
+Notifications
+Mark all read
+
+Trust placement in a section 86(4) investment requires approval
+
+just now
+
+You were added to matter "Team spec mwlimw5n0fd6"
+
+1 minute ago
+
+Trust fee transfer requires approval
+
+2 minutes ago
+
+Trust placement in a section 86(4) investment requires approval
+
+2 minutes ago
+
+Trust placement in a section 86(3) investment account requires approval
+
+2 minutes ago
+
+Fee Note INV-0004 for Apex Holdings mwlij30u7ea7 has been paid
+
+3 minutes ago
+
+Alice Owner generated document "payment-receipt-inv-0004-r1-2026-11-18.pdf"
+
+3 minutes ago
+
+Fee Note INV-0004 for Apex Holdings mwlij30u7ea7 has been sent
+
+3 minutes ago
+
+Alice Owner generated document "fee-note-inv-0004-2026-11-18.pdf"
+
+3 minutes ago
+
+Fee Note INV-0003 for Sipho Ndlovu mwlij30u7ea7 has been sent
+
+3 minutes ago
+
+View all notifications
+e2e-test-org
+BA
+Home
+
+What needs you today
+
+Last 30 days
+
+Active matters
+8
+Hours logged
+13,8h
+First week 0,0h, latest week 13,8h, peak 13,8h in week 6 of 6.
+Billable %
+100,0%
+Overdue tasks
+0
+Today's diary
+Open diary
+
+Nothing in the diary today
+
+Unbilled WIP
+Open unbilled work
+
+R 16 250,00
+
+6h 30m of unbilled time
+
+Alice Owner
+R 16 250,00
+
+Disbursements not yet billed
+R 0,00
+
+Debtors
+Open collections
+
+3
+
+clients owe fees
+
+Acme Corp
+R 8 625,00
+Not yet overdue
+Current R 8 625,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00
+Sipho Ndlovu mwlij30u7ea7
+R 5 482,63
+Not yet overdue
+Current R 5 482,63, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00
+Moroka Family Trust mwlij30u7ea7
+R 125,00
+Not yet overdue
+Current R 125,00, 30 days R 0,00, 60 days R 0,00, 90+ days R 0,00
+Current
+30 days
+60 days
+90+ days
+Trust position
+Open reconciliation
+
+R 0,00
+
+Balanced
+
+Mathebula & Partners Trust Account, Standard Bank
+
+Bank cashbook
+R 56 500,00
+Trust creditors
+R 56 500,00
+Last reconciliation
+Never reconciled
+Awaiting approval
+2
+
+Primary of 4 trust accounts
+
+FICA outstanding
+View all
+Open compliance
+
+3
+
+of 5 active clients without completed FICA
+
+Apex Holdings mwlij30u7ea7
+Not started
+0 days
+Moroka Family Trust mwlij30u7ea7
+In progress
+0 days
+QuickCollect Services mwlij30u7ea7
+Not started
+0 days
+Incomplete profiles
+Sensitive events
+Last 7 days
+NOTICE
+5
+WARNING
+0
+CRITICAL
+0
+No sensitive events in the last 7 days.
+
+View all →
+Recent Activity
+CM
+
+Carol Member removed a member from the matter team
+
+1 minute ago
+CM
+
+Carol Member added a member to the matter team
+
+1 minute ago
+BA
+
+Bob Admin made a team member the matter lead
+
+1 minute ago
+BA
+
+Bob Admin changed a matter team member's role to member
+
+1 minute ago
+AO
+
+Alice Owner added a member to the matter team
+
+2 minutes ago
+AO
+
+Alice Owner opened the matter from template "Litigation (Personal Injury / General)"
+
+2 minutes ago
+AO
+
+Alice Owner recorded a fee transfer of R500,00 from trust (FEE/SIPHO/mwlij30u7ea7)
+
+2 minutes ago
+AO
+
+Alice Owner generated document "engagement-letter-litigation-ndlovu-v-raf-mwlij30u7ea7-2026-11-18.pdf" from template "Engagement Letter — Litigation"
+
+2 minutes ago
+AO
+
+Alice Owner opened the matter from template "Commercial (Corporate & Contract)"
+
+2 minutes ago
+AO
+
+Alice Owner logged 6h on task "Prepare Liquidation & Distribution account"
+
+2 minutes ago
+AO
+
+Alice Owner completed task "Open estate bank account"
+
+2 minutes ago
+AO
+
+Alice Owner claimed task "Open estate bank account"
+
+2 minutes ago
+AO
+
+Alice Owner completed task "Advertise for creditors (Gazette + local newspaper)"
+
+2 minutes ago
+AO
+
+Alice Owner claimed task "Advertise for creditors (Gazette + local newspaper)"
+
+2 minutes ago
+AO
+
+Alice Owner linked adverse party "Pillay Holdings (Pty) Ltd" to the matter
+
+2 minutes ago
+View all activity →
+Command Palette
+
+Search pages and settings

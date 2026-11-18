@@ -1,0 +1,10 @@
+innerText:
+18 Nov 2026	INV-A7E500D8	Placed in section 86(4) investment
+Placed in section 86(4) investment at Nedbank (OBS s86(4) Investments DE43H)
+	
+R 7 500,00	AWAITING APPROVAL	
+Approve
+Reject
+
+---- textContent:
+18 Nov 2026INV-A7E500D8Placed in section 86(4) investmentPlaced in section 86(4) investment at Nedbank (OBS s86(4) Investments DE43H)R 7 500,00AWAITING APPROVALApproveReject

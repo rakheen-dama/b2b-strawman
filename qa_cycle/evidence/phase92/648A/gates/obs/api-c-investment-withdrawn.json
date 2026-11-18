@@ -1,0 +1,32 @@
+{
+  "method": "GET",
+  "path": "/api/trust-investments/a7e500d8-2124-453d-aa34-48ae9154f4d6",
+  "status": 200,
+  "body": {
+    "id": "a7e500d8-2124-453d-aa34-48ae9154f4d6",
+    "trustAccountId": "5b3e426d-d435-4ef7-b440-8375aa644439",
+    "investmentAccountId": "532e3e6a-c55f-4ff2-a307-44cc862908c1",
+    "investmentAccountName": "OBS s86(4) Investments DE43H",
+    "clientId": "79b27393-d9c1-46c0-9a48-46c565a92e96",
+    "clientName": "Moroka Family Trust mwld55wr08f1",
+    "matterId": "eec33c75-dd13-40f8-9d22-2be53f964eab",
+    "institution": "Nedbank",
+    "accountNumber": "OBS4-DE43H",
+    "principal": 7500,
+    "interestRate": 0.07,
+    "depositDate": "2026-11-18",
+    "maturityDate": null,
+    "interestEarned": 0,
+    "balance": 0,
+    "status": "WITHDRAWN",
+    "awaitingApproval": false,
+    "withdrawalDate": "2026-11-18",
+    "withdrawalAmount": 7500,
+    "depositTransactionId": "c0c9cafd-c09b-41f2-a502-75da08a017df",
+    "withdrawalTransactionId": "bf764f3e-8eb3-4c53-b19f-b303e6102c8c",
+    "notes": "OBS DE43H s864",
+    "investmentBasis": "CLIENT_INSTRUCTION",
+    "createdAt": "2026-11-18T00:15:50.778519Z",
+    "updatedAt": "2026-11-18T00:16:38.116442Z"
+  }
+}

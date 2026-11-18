@@ -1,0 +1,10 @@
+# 648E red run against unchanged production code @2a6de24b1 (tests written first; LedgerTotalsTest set aside so the suite compiles)
+# cmd: ./mvnw test -Dtest="ClientLedgerControllerTest,ClientLedgerTotalsIntegrationTest,InvestmentClientLedgerReadSurfacesIntegrationTest,CatalogueBatch2TrustBillingTest,InvestmentReportBasisIntegrationTest,TrustWireContractTest"
+
+[ERROR] Tests run: 12, Failures: 3, Errors: 0, Skipped: 0, Time elapsed: 1.182 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerControllerTest
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerControllerTest.getByCustomer_afterAnApprovedSection86_4Placement_showsGeneralInvestedAndPlacementTotals -- Time elapsed: 0.088 s <<< FAILURE!
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerControllerTest.getClientLedgers_listRowsCarryInvestedBalance_zeroForAClientWhoNeverInvested -- Time elapsed: 0.170 s <<< FAILURE!
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerControllerTest.getByCustomer_returnsEmptyZeroBalanceWhenNoLedgerCardExists -- Time elapsed: 0.026 s <<< FAILURE!
+[ERROR]   ClientLedgerControllerTest.getByCustomer_afterAnApprovedSection86_4Placement_showsGeneralInvestedAndPlacementTotals:254->money:581 [money value] 
+[ERROR]   ClientLedgerControllerTest.getByCustomer_returnsEmptyZeroBalanceWhenNoLedgerCardExists:236 No value at JSON path "$.investedBalance"
+[ERROR]   ClientLedgerControllerTest.getClientLedgers_listRowsCarryInvestedBalance_zeroForAClientWhoNeverInvested:301->money:581 [money value] 

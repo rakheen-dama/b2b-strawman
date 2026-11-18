@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
@@ -43,6 +44,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 class InvestmentReportBasisIntegrationTest {
 
   private static final String ORG_ID = "org_inv_report_basis_test";
+  private static final String APPROVER_SUB = "user_inv_basis_approver";
 
   @Autowired private MockMvc mockMvc;
   @Autowired private io.b2mash.b2b.b2bstrawman.project.ProjectRepository projectRepository;
@@ -78,6 +80,14 @@ class InvestmentReportBasisIntegrationTest {
                 "inv_basis_owner@test.com",
                 "Inv Basis Owner",
                 "owner"));
+    // 648E: single-approval mode refuses self-approval — a second owner approves placements
+    TestMemberHelper.syncMember(
+        mockMvc,
+        ORG_ID,
+        APPROVER_SUB,
+        "inv_basis_approver@test.com",
+        "Inv Basis Approver",
+        "owner");
 
     // Enable the trust_accounting module
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -464,6 +474,122 @@ class InvestmentReportBasisIntegrationTest {
                   .findFirst();
           assertThat(emptyRegister).isEmpty();
         });
+  }
+
+  // --- 648E: the register's balance is derived from posted rows ---
+
+  @Test
+  void
+      investmentRegister_rowBalance_isDerivedFromPostedRows_principalOnceApproved_zeroWhilePending()
+          throws Exception {
+    var ownerJwt = TestJwtFactory.ownerJwt(ORG_ID, "user_inv_basis_owner");
+    // A second banking account of its own, so the rows on trustAccountId are untouched
+    var accountResult =
+        mockMvc
+            .perform(
+                post("/api/trust-accounts")
+                    .with(ownerJwt)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "accountName": "Basis 648E Trust Account",
+                          "bankName": "Standard Bank",
+                          "branchCode": "051001",
+                          "accountNumber": "90100012346",
+                          "accountType": "GENERAL",
+                          "isPrimary": false,
+                          "requireDualApproval": false,
+                          "openedDate": "2025-04-01"
+                        }
+                        """))
+            .andExpect(status().isCreated())
+            .andReturn();
+    var f2 = UUID.fromString(TestEntityHelper.extractId(accountResult));
+    createDeposit(f2, customerId1, new BigDecimal("40000.00"), "DEP-BAS-648E", "2025-04-15");
+    var approved = placeClientInvestment(f2, "648E-APPROVED", "25000.00");
+    placeClientInvestment(f2, "648E-PENDING", "5000.00");
+    mockMvc
+        .perform(
+            post("/api/trust-transactions/" + approved.depositTransactionId() + "/approve")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, APPROVER_SUB)))
+        .andExpect(status().isOk());
+
+    runInTenant(
+        () -> {
+          var result = investmentRegisterQuery.executeAll(Map.of("trust_account_id", f2));
+          var approvedRow = registerRow(result.rows(), "648E-APPROVED");
+          assertThat((BigDecimal) approvedRow.get("balance")).isEqualByComparingTo("25000.00");
+          assertThat((BigDecimal) approvedRow.get("principal")).isEqualByComparingTo("25000.00");
+          var pendingRow = registerRow(result.rows(), "648E-PENDING");
+          assertThat((BigDecimal) pendingRow.get("balance")).isEqualByComparingTo("0");
+          assertThat((BigDecimal) pendingRow.get("principal")).isEqualByComparingTo("5000.00");
+          // The definition's columns are unchanged until 650C: the summary keys stay as they are
+          assertThat(result.summary().keySet())
+              .containsExactly(
+                  "totalPrincipal", "totalInterestEarned", "activeCount", "totalCount");
+        });
+
+    mockMvc
+        .perform(
+            post("/api/trust-investments/" + approved.id() + "/withdraw")
+                .with(ownerJwt)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"withdrawalDate\": \"2025-06-01\"}"))
+        .andExpect(status().isOk());
+
+    runInTenant(
+        () -> {
+          var result = investmentRegisterQuery.executeAll(Map.of("trust_account_id", f2));
+          var withdrawnRow = registerRow(result.rows(), "648E-APPROVED");
+          assertThat(withdrawnRow.get("status")).isEqualTo("WITHDRAWN");
+          assertThat((BigDecimal) withdrawnRow.get("balance")).isEqualByComparingTo("0");
+        });
+  }
+
+  private record Placed(String id, String depositTransactionId) {}
+
+  /** A section 86(4) placement for customer1 from {@code fundingAccountId}, awaiting approval. */
+  private Placed placeClientInvestment(
+      UUID fundingAccountId, String accountNumber, String principal) throws Exception {
+    var body =
+        mockMvc
+            .perform(
+                post("/api/trust-accounts/" + fundingAccountId + "/investments")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_basis_owner"))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "investmentAccountId": "%s",
+                          "clientId": "%s",
+                          "matterId": "%s",
+                          "institution": "Investec",
+                          "accountNumber": "%s",
+                          "principal": %s,
+                          "interestRate": 0.0650,
+                          "depositDate": "2025-05-01",
+                          "investmentBasis": "CLIENT_INSTRUCTION"
+                        }
+                        """
+                            .formatted(
+                                clientInvestmentAccountId,
+                                customerId1,
+                                trustMatterOf(customerId1),
+                                accountNumber,
+                                principal)))
+            .andExpect(status().isCreated())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    return new Placed(JsonPath.read(body, "$.id"), JsonPath.read(body, "$.depositTransactionId"));
+  }
+
+  private static Map<String, Object> registerRow(
+      List<Map<String, Object>> rows, String accountNumber) {
+    var matching = rows.stream().filter(r -> accountNumber.equals(r.get("accountNumber"))).toList();
+    assertThat(matching).as("register row " + accountNumber).hasSize(1);
+    return matching.getFirst();
   }
 
   private final java.util.Map<String, UUID> trustMatters = new java.util.HashMap<>();

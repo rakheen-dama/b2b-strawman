@@ -15,8 +15,12 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateTrustAccountRequest;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.PlaceInvestmentRequest;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.WithdrawInvestmentRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report.ClientTrustBalancesQuery;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordDepositRequest;
@@ -51,7 +55,11 @@ import org.springframework.transaction.support.TransactionTemplate;
  * counters were shown: refunds and transfers had no total at all, and a reversed payment stayed in
  * "Payments" (636B: R5 000 + R1,34 − R1 250 − R3 751,34 = 0 rendered as an unexplained R0,00).
  * Phase 92 (646A) removed the interest component: interest-credit postings no longer exist
- * (ADR-378), so the 636B case reconciles without the R1,34.
+ * (ADR-378), so the 636B case reconciles without the R1,34. Phase 92 (648E) adds a section 86(4)
+ * placement and its return as totals of their own, so the identity reads: Deposits + Transfers in +
+ * Returned from section 86(4) investments − Payments − Fee transfers − Refunds − Transfers out −
+ * Placed in section 86(4) investments = Balance (the general balance); the invested balance sits
+ * beside it.
  *
  * <p>Rows go through {@link TrustTransactionService}; approvals by a second member. Reads go
  * through the HTTP API (single ledger and the list). Each test seeds its own clients.
@@ -74,6 +82,7 @@ class ClientLedgerTotalsIntegrationTest {
   @Autowired private TransactionTemplate transactionTemplate;
   @Autowired private TrustAccountService trustAccountService;
   @Autowired private TrustTransactionService transactionService;
+  @Autowired private TrustInvestmentService investmentService;
   @Autowired private CustomerRepository customerRepository;
   @Autowired private Clock clock;
 
@@ -83,6 +92,7 @@ class ClientLedgerTotalsIntegrationTest {
   private UUID ownerId;
   private UUID approverId;
   private UUID trustAccountId;
+  private UUID investmentAccountId;
   private LocalDate today;
   private int counter = 0;
 
@@ -132,6 +142,25 @@ class ClientLedgerTotalsIntegrationTest {
                             null,
                             LocalDate.of(2025, 1, 1),
                             "G89-F13 totals test account"))
+                    .id());
+    investmentAccountId =
+        as(
+            ownerId,
+            () ->
+                trustAccountService
+                    .createTrustAccount(
+                        new CreateTrustAccountRequest(
+                            "Ledger Totals s86(4) Investments",
+                            "Investec",
+                            "580105",
+                            "6292000002",
+                            "INVESTMENT",
+                            false,
+                            false,
+                            null,
+                            LocalDate.of(2025, 1, 1),
+                            "648E",
+                            InvestmentBasis.CLIENT_INSTRUCTION))
                     .id());
   }
 
@@ -230,6 +259,60 @@ class ClientLedgerTotalsIntegrationTest {
     assertThat(money(current.get("totalPayments"))).isEqualByComparingTo("400.00");
   }
 
+  @Test
+  void section86_4Placement_andItsReturn_areTheirOwnTotals_andTheCardReconcilesToTheGeneralBalance()
+      throws Exception {
+    UUID client = newClient("Totals s86(4) Investor");
+    UUID matter = trustMatterOf(client);
+    deposit(client, matter, "50000.00", 30);
+    int n = ++counter;
+    var placed =
+        as(
+            ownerId,
+            () ->
+                investmentService.placeInvestment(
+                    trustAccountId,
+                    new PlaceInvestmentRequest(
+                        investmentAccountId,
+                        client,
+                        matter,
+                        "Investec",
+                        "CLT-FD-" + n,
+                        new BigDecimal("30000.00"),
+                        new BigDecimal("0.0650"),
+                        today.minusDays(20),
+                        null,
+                        null,
+                        InvestmentBasis.CLIENT_INSTRUCTION)));
+    approve(placed.depositTransactionId());
+
+    // Approved: placed, not transferred out; the invested figure sits beside the general balance
+    for (var ledger : List.of(ledger(client), listRow(client))) {
+      assertThat(money(ledger.get("balance"))).isEqualByComparingTo("20000.00");
+      assertThat(money(ledger.get("totalInvestmentPlacements"))).isEqualByComparingTo("30000.00");
+      assertThat(money(ledger.get("totalInvestmentReturns"))).isEqualByComparingTo("0.00");
+      assertThat(money(ledger.get("totalTransfersOut"))).isEqualByComparingTo("0.00");
+      assertThat(money(ledger.get("investedBalance"))).isEqualByComparingTo("30000.00");
+      assertReconciles(ledger);
+    }
+
+    as(
+        ownerId,
+        () ->
+            investmentService.withdrawInvestment(
+                placed.id(), new WithdrawInvestmentRequest(today.minusDays(5))));
+
+    // Withdrawn: returned, not transferred in; nothing is invested any more
+    for (var ledger : List.of(ledger(client), listRow(client))) {
+      assertThat(money(ledger.get("balance"))).isEqualByComparingTo("50000.00");
+      assertThat(money(ledger.get("totalInvestmentPlacements"))).isEqualByComparingTo("30000.00");
+      assertThat(money(ledger.get("totalInvestmentReturns"))).isEqualByComparingTo("30000.00");
+      assertThat(money(ledger.get("totalTransfersIn"))).isEqualByComparingTo("0.00");
+      assertThat(money(ledger.get("investedBalance"))).isEqualByComparingTo("0.00");
+      assertReconciles(ledger);
+    }
+  }
+
   // --- Helpers ---
 
   private Map<String, Object> reportRow(UUID client, LocalDate asOfDate) {
@@ -247,15 +330,20 @@ class ClientLedgerTotalsIntegrationTest {
     return rows.getFirst();
   }
 
-  /** Deposits + Transfers in − Payments − Fee transfers − Refunds − Transfers out. */
+  /**
+   * Deposits + Transfers in + Returned from section 86(4) investments − Payments − Fee transfers −
+   * Refunds − Transfers out − Placed in section 86(4) investments = Balance (general, 648E).
+   */
   private static void assertReconciles(Map<String, Object> ledger) {
     var derived =
         money(ledger.get("totalDeposits"))
             .add(money(ledger.get("totalTransfersIn")))
+            .add(money(ledger.get("totalInvestmentReturns")))
             .subtract(money(ledger.get("totalPayments")))
             .subtract(money(ledger.get("totalFeeTransfers")))
             .subtract(money(ledger.get("totalRefunds")))
-            .subtract(money(ledger.get("totalTransfersOut")));
+            .subtract(money(ledger.get("totalTransfersOut")))
+            .subtract(money(ledger.get("totalInvestmentPlacements")));
     assertThat(derived)
         .as("totals reconcile to the balance")
         .isEqualByComparingTo(money(ledger.get("balance")));

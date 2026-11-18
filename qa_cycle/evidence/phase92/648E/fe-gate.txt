@@ -1,0 +1,7 @@
+# 648E FE gate (builder run, nvm node v20.11.1, pnpm by absolute path, NODE_OPTIONS="")
+lint: exit 0 (0 errors; warnings pre-existing, none in 648E files)
+typecheck: exit 0
+format:check: exit 0 — All matched files use Prettier code style!
+test (full vitest): Test Files 481 passed (481) · Tests 4479 passed | 2 skipped (4481)
+build: exit 0
+Playwright E2E / OBS: NOT run by the builder (orchestrator-owned)

@@ -159,6 +159,8 @@ export default async function ClientDetailPage({
   const currentPage = historyPage?.pageNumber ?? 0;
   const totalPages = historyPage?.totalPages ?? 0;
   const currency = settings.defaultCurrency ?? "ZAR";
+  // 648E: held for the client in section 86(4) investments placed from this account
+  const invested = ledgerCard.investedBalance;
 
   // Build filter URL helper
   function filterUrl(overrides: Record<string, string | undefined>): string {
@@ -209,6 +211,17 @@ export default async function ClientDetailPage({
             <p className="mt-1 text-2xl font-bold text-slate-950 dark:text-slate-50">
               {formatCurrency(ledgerCard.balance, currency)}
             </p>
+            {/* 648E (ADR-379 L7): money invested for the client stays theirs — show it beside the
+                general balance with the unchanged total; the breakdown carries the figures */}
+            {invested !== 0 && (
+              <p
+                className="mt-1 text-sm text-slate-600 dark:text-slate-400"
+                data-testid="client-summary-invested"
+              >
+                Plus {formatCurrency(invested, currency)} invested (section 86(4)) —{" "}
+                {formatCurrency(ledgerCard.balance + invested, currency)} held in trust in total
+              </p>
+            )}
           </CardContent>
         </Card>
         <Card className="md:col-span-2">

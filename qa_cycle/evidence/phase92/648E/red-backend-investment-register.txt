@@ -1,0 +1,8 @@
+# 648E red run against unchanged production code @2a6de24b1 (tests written first; LedgerTotalsTest set aside so the suite compiles)
+# cmd: ./mvnw test -Dtest="ClientLedgerControllerTest,ClientLedgerTotalsIntegrationTest,InvestmentClientLedgerReadSurfacesIntegrationTest,CatalogueBatch2TrustBillingTest,InvestmentReportBasisIntegrationTest,TrustWireContractTest"
+
+[ERROR] Tests run: 9, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 0.854 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report.InvestmentReportBasisIntegrationTest
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report.InvestmentReportBasisIntegrationTest.investmentRegister_rowBalance_isDerivedFromPostedRows_principalOnceApproved_zeroWhilePending -- Time elapsed: 0.105 s <<< FAILURE!
+[ERROR]   InvestmentReportBasisIntegrationTest.investmentRegister_rowBalance_isDerivedFromPostedRows_principalOnceApproved_zeroWhilePending:518->runInTenant:265->lambda$runInTenant$0:265->lambda$runInTenant$1:265->lambda$investmentRegister_rowBalance_isDerivedFromPostedRows_principalOnceApproved_zeroWhilePending$0:522 
+Expecting actual not to be null
+(row.get("balance") is null — the register row has no balance key on main)

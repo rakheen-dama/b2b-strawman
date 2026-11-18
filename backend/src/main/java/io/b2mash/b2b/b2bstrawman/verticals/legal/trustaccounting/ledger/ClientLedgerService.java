@@ -34,6 +34,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -71,7 +72,10 @@ public class ClientLedgerService {
   /**
    * One client's ledger on one account. {@code balance}, the totals and {@code lastTransactionDate}
    * are derived from the posted rows (ADR-378); {@code id}, {@code createdAt} and {@code updatedAt}
-   * are the client's lock anchor's, null when it has none.
+   * are the client's lock anchor's, null when it has none. {@code balance} is the client's general
+   * balance; {@code investedBalance} (648E, ADR-379 L7) is what is held for the client in section
+   * 86(4) investments placed from this account — the client's total held in trust is {@code balance
+   * + investedBalance}, unchanged by a placement or its return.
    */
   public record ClientLedgerCardResponse(
       UUID id,
@@ -82,11 +86,16 @@ public class ClientLedgerService {
       BigDecimal totalDeposits,
       BigDecimal totalPayments,
       BigDecimal totalFeeTransfers,
-      // G89-F13: every total is derived from the posted ledger (LedgerTotals), so
-      // deposits + transfers in - payments - fee transfers - refunds - transfers out == balance
+      // G89-F13 / 648E: every total is derived from the posted ledger (LedgerTotals), so
+      // deposits + transfers in + investment returns - payments - fee transfers - refunds
+      // - transfers out - investment placements == balance (general);
+      // total held in trust = balance + investedBalance
       BigDecimal totalRefunds,
       BigDecimal totalTransfersIn,
       BigDecimal totalTransfersOut,
+      BigDecimal totalInvestmentPlacements,
+      BigDecimal totalInvestmentReturns,
+      BigDecimal investedBalance,
       LocalDate lastTransactionDate,
       Instant createdAt,
       Instant updatedAt) {}
@@ -123,7 +132,10 @@ public class ClientLedgerService {
 
   // --- Service Methods ---
 
-  @Transactional(readOnly = true)
+  // REPEATABLE READ: the card's balance, totals and invested balance are separate statements; one
+  // snapshot keeps them from straddling a commit (an s86(4) placement posts INV_PLACE and
+  // INV_RECEIVE together). Read-only, so Postgres cannot raise a serialization failure here.
+  @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
   public ClientLedgerCardResponse getClientLedger(UUID customerId, UUID trustAccountId) {
     moduleGuard.requireModule(MODULE_ID);
 
@@ -145,7 +157,8 @@ public class ClientLedgerService {
         customer.getName(),
         summary,
         anchor,
-        totalsFor(trustAccountId, List.of(customerId)).getOrDefault(customerId, LedgerTotals.ZERO));
+        totalsFor(trustAccountId, List.of(customerId)).getOrDefault(customerId, LedgerTotals.ZERO),
+        investedFor(trustAccountId, List.of(customerId)).getOrDefault(customerId, BigDecimal.ZERO));
   }
 
   /**
@@ -165,6 +178,9 @@ public class ClientLedgerService {
         BigDecimal.ZERO,
         BigDecimal.ZERO,
         BigDecimal.ZERO,
+        BigDecimal.ZERO, // totalInvestmentPlacements
+        BigDecimal.ZERO, // totalInvestmentReturns
+        BigDecimal.ZERO, // investedBalance
         null, // lastTransactionDate
         null, // createdAt
         null); // updatedAt
@@ -176,7 +192,8 @@ public class ClientLedgerService {
    * UI sends {@code sort=balance,desc}, which the derived query applies itself — there is no stored
    * {@code balance} property to sort on).
    */
-  @Transactional(readOnly = true)
+  // One snapshot for the page, its totals and invested balances — see getClientLedger
+  @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
   public Page<ClientLedgerCardResponse> listClientLedgers(UUID trustAccountId, Pageable pageable) {
     moduleGuard.requireModule(MODULE_ID);
 
@@ -199,6 +216,8 @@ public class ClientLedgerService {
             .collect(Collectors.toMap(ClientLedgerCard::getCustomerId, Function.identity()));
     // One batch query for the page's derived totals (G89-F13)
     Map<UUID, LedgerTotals> totals = totalsFor(trustAccountId, customerIds);
+    // ... and one for what the page's clients hold in section 86(4) investments (648E)
+    Map<UUID, BigDecimal> invested = investedFor(trustAccountId, customerIds);
 
     return page.map(
         row ->
@@ -208,7 +227,8 @@ public class ClientLedgerService {
                 customerNames.getOrDefault(row.getCustomerId(), "(deleted customer)"),
                 Optional.of(row),
                 Optional.ofNullable(anchors.get(row.getCustomerId())),
-                totals.getOrDefault(row.getCustomerId(), LedgerTotals.ZERO)));
+                totals.getOrDefault(row.getCustomerId(), LedgerTotals.ZERO),
+                invested.getOrDefault(row.getCustomerId(), BigDecimal.ZERO)));
   }
 
   /**
@@ -327,13 +347,26 @@ public class ClientLedgerService {
         ledgerQueries.clientTotalsByType(trustAccountId, customerIds, null));
   }
 
+  /**
+   * Per client, what is held in section 86(4) investments placed from the account (648E, the
+   * funding-account rule) — one query whatever the number of clients; absent client = zero.
+   */
+  private Map<UUID, BigDecimal> investedFor(UUID trustAccountId, Collection<UUID> customerIds) {
+    if (customerIds.isEmpty()) {
+      return Map.of();
+    }
+    return ledgerQueries.investedBalancesByClient(trustAccountId, customerIds).stream()
+        .collect(Collectors.toMap(ClientBalanceRow::getCustomerId, ClientBalanceRow::getBalance));
+  }
+
   private ClientLedgerCardResponse toResponse(
       UUID trustAccountId,
       UUID customerId,
       String customerName,
       Optional<ClientBalanceRow> summary,
       Optional<ClientLedgerCard> anchor,
-      LedgerTotals totals) {
+      LedgerTotals totals,
+      BigDecimal investedBalance) {
     return new ClientLedgerCardResponse(
         anchor.map(ClientLedgerCard::getId).orElse(null),
         trustAccountId,
@@ -346,6 +379,9 @@ public class ClientLedgerService {
         totals.refunds(),
         totals.transfersIn(),
         totals.transfersOut(),
+        totals.investmentPlacements(),
+        totals.investmentReturns(),
+        investedBalance,
         summary.map(ClientBalanceRow::getLastTransactionDate).orElse(null),
         anchor.map(ClientLedgerCard::getCreatedAt).orElse(null),
         anchor.map(ClientLedgerCard::getUpdatedAt).orElse(null));

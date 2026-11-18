@@ -1,0 +1,7 @@
+# 648E PIN (OQ-4) — list_trust_transactions already returns the client's section 86(4) rows on main @2a6de24b1 (no production change; green by design, not a defect)
+# test: CatalogueBatch2TrustBillingTest.listTrustTransactionsShowsTheClientsSection86_4InvestmentRows (same run as the red captures)
+
+<testcase name="listTrustTransactionsShowsTheClientsSection86_4InvestmentRows" classname="io.b2mash.b2b.b2bstrawman.mcp.tool.CatalogueBatch2TrustBillingTest" time="0.054"/>
+(self-closing <testcase/> = passed: no <failure>/<error> child)
+[ERROR] Tests run: 13, Failures: 2, Errors: 0, Skipped: 0, Time elapsed: 30.30 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.mcp.tool.CatalogueBatch2TrustBillingTest
+Failures in this class are the two invested-balance reds (getTrustBalanceWithViewTrustReturnsBalance, getTrustBalanceWithAClientCarriesTheirSection86_4InvestedBalance), not the pin.

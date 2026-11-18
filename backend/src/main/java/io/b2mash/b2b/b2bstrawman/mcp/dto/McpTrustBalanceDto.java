@@ -14,14 +14,17 @@ import java.util.UUID;
  * investedMinor} (section 86(4) investment creditors), {@code fundLedgerMinor} (Fund interest and
  * charges), {@code unidentifiedDepositsMinor}, {@code totalTrustCreditorsMinor} (every trust
  * creditor) and {@code cashbookMinor}; the books balance when the last two are equal. With a
- * client: that client's general balance in {@code balanceMinor}; the account-level fields are null.
- * Components are appended, never reordered — the consumer plugin reads the JSON keys.
+ * client: that client's general balance in {@code balanceMinor} and, in {@code investedMinor}, what
+ * is held for the client in section 86(4) investments placed from the account (648E — the client's
+ * total in trust is the sum); the other account-level fields are null. Components are appended,
+ * never reordered — the consumer plugin reads the JSON keys.
  *
  * @param trustAccountId the trust account the balance belongs to
  * @param customerId the client whose ledger card this is, or {@code null} for the account
  * @param balanceMinor client balance (with a client) or the client ledgers (without), minor units
  * @param currency 3-letter currency code (firm default)
- * @param investedMinor section 86(4) investment creditors (account only; null with a client)
+ * @param investedMinor with a client: the client's section 86(4) invested balance placed from the
+ *     account (648E); without: the account's section 86(4) investment creditors
  * @param fundLedgerMinor Fund interest and charges ledger (account only)
  * @param unidentifiedDepositsMinor unidentified deposits (account only)
  * @param totalTrustCreditorsMinor every trust creditor (account only)

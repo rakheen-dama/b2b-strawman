@@ -7,6 +7,7 @@ import type {
   AllocateUnidentifiedRequest,
   BankStatementLineResponse,
   BankStatementResponse,
+  ClientLedgerCard,
   CreateTrustAccountRequest,
   InvestmentBasis,
   RecordFromLineResponse,
@@ -89,6 +90,7 @@ describe("trust wire shapes match the backend contract (ADR-365)", () => {
       "AllocateRequest",
       "BankStatementLineResponse",
       "BankStatementResponse",
+      "ClientLedgerCardResponse",
       "CreateTrustAccountRequest",
       "CreditorBreakdown",
       "PayToFundRequest",
@@ -453,6 +455,29 @@ describe("trust wire shapes match the backend contract (ADR-365)", () => {
   it("WithdrawInvestmentRequest ↔ TrustInvestmentService.WithdrawInvestmentRequest (648A)", () => {
     const literal: Required<WithdrawInvestmentRequest> = { withdrawalDate: "" };
     expect(Object.keys(literal)).toEqual(componentNames(records.WithdrawInvestmentRequest));
+  });
+
+  it("ClientLedgerCard ↔ ClientLedgerService.ClientLedgerCardResponse (648E)", () => {
+    const literal: Required<ClientLedgerCard> = {
+      id: "",
+      trustAccountId: "",
+      clientId: "",
+      clientName: "",
+      balance: 0,
+      totalDeposits: 0,
+      totalPayments: 0,
+      totalFeeTransfers: 0,
+      totalRefunds: 0,
+      totalTransfersIn: 0,
+      totalTransfersOut: 0,
+      totalInvestmentPlacements: 0,
+      totalInvestmentReturns: 0,
+      investedBalance: 0,
+      lastTransactionDate: null,
+      createdAt: "",
+      updatedAt: "",
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(records.ClientLedgerCardResponse));
   });
 
   it("pins exactly the enums the trust records carry", () => {

@@ -1,0 +1,6 @@
+# 648E red run against unchanged production code @2a6de24b1 (tests written first; LedgerTotalsTest set aside so the suite compiles)
+# cmd: ./mvnw test -Dtest="ClientLedgerControllerTest,ClientLedgerTotalsIntegrationTest,InvestmentClientLedgerReadSurfacesIntegrationTest,CatalogueBatch2TrustBillingTest,InvestmentReportBasisIntegrationTest,TrustWireContractTest"
+
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 0.010 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustWireContractTest
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustWireContractTest.pinnedRecordShapesMatchCommittedSnapshot -- Time elapsed: 0.008 s <<< FAILURE!
+[ERROR]   TrustWireContractTest.pinnedRecordShapesMatchCommittedSnapshot:114 ADR-365: a pinned trust wire record changed shape (the frontend mirrors it in lib/types/trust.ts).

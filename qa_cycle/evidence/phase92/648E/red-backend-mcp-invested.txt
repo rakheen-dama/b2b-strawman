@@ -1,0 +1,8 @@
+# 648E red run against unchanged production code @2a6de24b1 (tests written first; LedgerTotalsTest set aside so the suite compiles)
+# cmd: ./mvnw test -Dtest="ClientLedgerControllerTest,ClientLedgerTotalsIntegrationTest,InvestmentClientLedgerReadSurfacesIntegrationTest,CatalogueBatch2TrustBillingTest,InvestmentReportBasisIntegrationTest,TrustWireContractTest"
+
+[ERROR] Tests run: 13, Failures: 2, Errors: 0, Skipped: 0, Time elapsed: 30.30 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.mcp.tool.CatalogueBatch2TrustBillingTest
+[ERROR] io.b2mash.b2b.b2bstrawman.mcp.tool.CatalogueBatch2TrustBillingTest.getTrustBalanceWithAClientCarriesTheirSection86_4InvestedBalance -- Time elapsed: 0.479 s <<< FAILURE!
+[ERROR] io.b2mash.b2b.b2bstrawman.mcp.tool.CatalogueBatch2TrustBillingTest.getTrustBalanceWithViewTrustReturnsBalance -- Time elapsed: 0.028 s <<< FAILURE!
+[ERROR]   CatalogueBatch2TrustBillingTest.getTrustBalanceWithAClientCarriesTheirSection86_4InvestedBalance:423 [payload {"trustAccountId":"4b8d1e25-6ffe-4c93-b0ca-6ccc40f42fb1","customerId":"9afff2cf-129c-4db2-a79d-5126afa838b0","balanceMinor":2000000,"currency":"USD","investedMinor":null,"fundLedgerMinor":null,"unidentifiedDepositsMinor":null,"totalTrustCreditorsMinor":null,"cashbookMinor":null,"asAt":null}] 
+[ERROR]   CatalogueBatch2TrustBillingTest.getTrustBalanceWithViewTrustReturnsBalance:399 [payload {"trustAccountId":"39e049dc-5ed3-4fc8-9c9c-e781a61bd47a","customerId":"318862df-100d-4222-8d9a-2a8e4ff2a836","balanceMinor":2500000,"currency":"USD","investedMinor":null,"fundLedgerMinor":null,"unidentifiedDepositsMinor":null,"totalTrustCreditorsMinor":null,"cashbookMinor":null,"asAt":null}] 

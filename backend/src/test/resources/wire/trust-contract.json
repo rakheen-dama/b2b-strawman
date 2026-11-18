@@ -112,6 +112,58 @@
       "name" : "lines",
       "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService$BankStatementLineResponse>"
     } ],
+    "ClientLedgerCardResponse" : [ {
+      "name" : "id",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "trustAccountId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "clientId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "clientName",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "balance",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "totalDeposits",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "totalPayments",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "totalFeeTransfers",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "totalRefunds",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "totalTransfersIn",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "totalTransfersOut",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "totalInvestmentPlacements",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "totalInvestmentReturns",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "investedBalance",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "lastTransactionDate",
+      "type" : "java.time.LocalDate"
+    }, {
+      "name" : "createdAt",
+      "type" : "java.time.Instant"
+    }, {
+      "name" : "updatedAt",
+      "type" : "java.time.Instant"
+    } ],
     "CreateTrustAccountRequest" : [ {
       "name" : "accountName",
       "type" : "java.lang.String"

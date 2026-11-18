@@ -276,6 +276,33 @@ public interface TrustLedgerQueryRepository extends Repository<TrustTransaction,
       @Param("asAt") LocalDate asAt);
 
   /**
+   * 648E (§16.2.8, ADR-379 L7): per client, what is held for them in section 86(4) investments
+   * placed <em>from</em> {@code fundingAccountId} — the posted {@code CLIENT_INVESTMENT} effect on
+   * the investment account holding each such investment (the {@link #investmentBalance} of every
+   * client investment funded from the account). With the client's card on the funding account it
+   * makes the client's total held in trust: general ({@code CLIENT}) + invested, unchanged by a
+   * placement. Nothing is placed from an investment account, so there it is empty. Undated, like
+   * {@link #clientSummary}. Callers short-circuit an empty collection ({@code IN ()} is invalid
+   * SQL).
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          SELECT t.customer_id AS customerId, COALESCE(SUM(t.ledger_effect), 0) AS balance,
+                 MAX(t.transaction_date) AS lastTransactionDate
+            FROM trust_transactions t
+            JOIN trust_investments i ON i.id = t.investment_id
+           WHERE i.trust_account_id = :fundingAccountId
+             AND t.trust_account_id = i.investment_account_id
+             AND t.customer_id IN (:customerIds)
+             AND t.ledger = 'CLIENT_INVESTMENT' AND t.posted_at IS NOT NULL
+           GROUP BY t.customer_id""")
+  List<ClientBalanceRow> investedBalancesByClient(
+      @Param("fundingAccountId") UUID fundingAccountId,
+      @Param("customerIds") Collection<UUID> customerIds);
+
+  /**
    * The matters and clients lists: each client's general ({@code CLIENT} ledger) balance across
    * every trust account. Callers short-circuit an empty collection ({@code IN ()} is invalid SQL).
    */

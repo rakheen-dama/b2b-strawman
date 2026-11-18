@@ -1,0 +1,16 @@
+# 648E frontend red run — new vitest cases against the unchanged component/page @2a6de24b1
+# cmd: pnpm exec vitest run __tests__/trust/ledger-totals-breakdown.test.tsx __tests__/trust-client-ledgers.test.tsx
+# The two 'no investment' cases (hides every investment row / detail page without investments) pass on main by design — they guard that nothing changes when nothing is invested.
+
+     × shows Invested (section 86(4)) and the total held beside the general balance 8ms
+     × after the withdrawal shows placed and returned, and no invested figure 3ms
+     × detail page shows the general balance, the section 86(4) invested figure and the unchanged total 12ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  __tests__/trust-client-ledgers.test.tsx > Client Ledgers > detail page shows the general balance, the section 86(4) invested figure and the unchanged total
+TestingLibraryElementError: Unable to find an element by: [data-testid="ledger-total-invested"]
+ FAIL  __tests__/trust/ledger-totals-breakdown.test.tsx > LedgerTotalsBreakdown — section 86(4) invested balance > shows Invested (section 86(4)) and the total held beside the general balance
+TestingLibraryElementError: Unable to find an element by: [data-testid="ledger-total-investment-placements"]
+ FAIL  __tests__/trust/ledger-totals-breakdown.test.tsx > LedgerTotalsBreakdown — section 86(4) invested balance > after the withdrawal shows placed and returned, and no invested figure
+TestingLibraryElementError: Unable to find an element by: [data-testid="ledger-total-investment-placements"]
+ Test Files  2 failed (2)
+      Tests  3 failed | 9 passed (12)

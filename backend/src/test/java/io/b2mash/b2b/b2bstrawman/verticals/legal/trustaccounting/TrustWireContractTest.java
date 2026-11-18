@@ -39,7 +39,8 @@ import tools.jackson.databind.json.JsonMapper;
  * statement, its line and the record-from-statement response; 647B the unidentified deposit; 647D
  * the two requests that resolve it (allocate, pay to the Fund); 648C the trust account response
  * (investment basis and derived section) and the create request; 648A the investment response
- * (investment account, matter, balance; nullable client) and its place and withdraw requests.
+ * (investment account, matter, balance; nullable client) and its place and withdraw requests; 648E
+ * the client-ledger card (general balance, invested balance, placement and return totals).
  *
  * <p>The actual is always written to {@code target/wire/trust-contract.actual.json}. Regenerate
  * ONLY deliberately with {@code -Dtrust.contract.update=true}; the PR that does so must say why in
@@ -70,7 +71,9 @@ class TrustWireContractTest {
           // 648A: an investment held in an investment account, and its place / withdraw requests
           TrustInvestmentService.TrustInvestmentResponse.class,
           TrustInvestmentService.PlaceInvestmentRequest.class,
-          TrustInvestmentService.WithdrawInvestmentRequest.class);
+          TrustInvestmentService.WithdrawInvestmentRequest.class,
+          // 648E: the client-ledger card (general, invested, placement totals)
+          ClientLedgerService.ClientLedgerCardResponse.class);
 
   private static final String UPDATE_FLAG = "trust.contract.update";
   private static final Path SNAPSHOT = Path.of("src/test/resources/wire/trust-contract.json");

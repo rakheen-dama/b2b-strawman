@@ -9,6 +9,8 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccounting
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestment;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.lpff.LpffRateRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.InvestmentBalanceRow;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedgerQueryRepository;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.LinkedHashMap;
@@ -21,7 +23,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
-/** Investment list with status, principal, interest earned for a trust account. */
+/**
+ * Investment list with status, principal, interest earned for a trust account. Each row's {@code
+ * balance} is derived from the posted rows ({@link TrustLedgerQueryRepository#investmentBalances},
+ * 648E): what the investment holds now — zero while its placement awaits approval and after the
+ * withdrawal. The report definition gains the column in 650C; until then the key is carried but not
+ * printed.
+ */
 @Component
 public class InvestmentRegisterQuery implements ReportQuery {
 
@@ -31,14 +39,17 @@ public class InvestmentRegisterQuery implements ReportQuery {
   private final TrustInvestmentRepository investmentRepository;
   private final CustomerRepository customerRepository;
   private final LpffRateRepository lpffRateRepository;
+  private final TrustLedgerQueryRepository ledgerQueries;
 
   public InvestmentRegisterQuery(
       TrustInvestmentRepository investmentRepository,
       CustomerRepository customerRepository,
-      LpffRateRepository lpffRateRepository) {
+      LpffRateRepository lpffRateRepository,
+      TrustLedgerQueryRepository ledgerQueries) {
     this.investmentRepository = investmentRepository;
     this.customerRepository = customerRepository;
     this.lpffRateRepository = lpffRateRepository;
+    this.ledgerQueries = ledgerQueries;
   }
 
   @Override
@@ -136,6 +147,18 @@ public class InvestmentRegisterQuery implements ReportQuery {
             : customerRepository.findByIdIn(customerIds).stream()
                 .collect(Collectors.toMap(c -> c.getId(), c -> c.getName()));
 
+    // Batch-load each investment's derived balance (648E; IN () is invalid SQL, so skip when empty)
+    var investmentIds = investments.stream().map(TrustInvestment::getId).toList();
+    Map<UUID, BigDecimal> balances =
+        investmentIds.isEmpty()
+            ? Map.of()
+            : ledgerQueries.investmentBalances(investmentIds).stream()
+                .collect(
+                    Collectors.toMap(
+                        InvestmentBalanceRow::getInvestmentId,
+                        InvestmentBalanceRow::getBalance,
+                        (a, b) -> a));
+
     return investments.stream()
         .map(
             inv -> {
@@ -148,6 +171,7 @@ public class InvestmentRegisterQuery implements ReportQuery {
               row.put("institution", inv.getInstitution());
               row.put("accountNumber", inv.getAccountNumber());
               row.put("principal", inv.getPrincipal());
+              row.put("balance", balances.getOrDefault(inv.getId(), BigDecimal.ZERO));
               row.put("interestRate", inv.getInterestRate());
               row.put("depositDate", inv.getDepositDate().toString());
               row.put(

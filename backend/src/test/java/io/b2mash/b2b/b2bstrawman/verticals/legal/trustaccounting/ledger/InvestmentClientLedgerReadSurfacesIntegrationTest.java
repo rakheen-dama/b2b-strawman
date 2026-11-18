@@ -43,10 +43,15 @@ import org.springframework.transaction.support.TransactionTemplate;
  * 648A gate D-1: once a section 86(4) placement is approved, its {@code INV_PLACE} row (and, after
  * the withdrawal, its {@code INV_RETURN} row) sits on the client's general ledger. Every firm read
  * surface that touches that client — and the client-ledgers list, which carries every client of the
- * account — must still answer 200, and the card's totals must still reconcile to the balance
- * (deposits + transfers in − payments − fee transfers − refunds − transfers out). Before the fix
- * {@code LedgerTotals.plus} threw for both types, so the card, the list (for every client) and the
- * Trust overview that reads the list returned 500.
+ * account — must still answer 200, and the card's totals must still reconcile to the balance.
+ * Before the fix {@code LedgerTotals.plus} threw for both types, so the card, the list (for every
+ * client) and the Trust overview that reads the list returned 500.
+ *
+ * <p>648E replaced 648A's interim fold (placement as a transfer out, return as a transfer in): the
+ * placement and its return are totals of their own and the card carries the client's invested
+ * balance beside the general one — deposits + transfers in + investment returns − payments − fee
+ * transfers − refunds − transfers out − investment placements = balance (general); balance +
+ * invested = the client's unchanged total (ADR-379 L7).
  *
  * <p>Everything goes through the HTTP API (placement, approval by a second member, withdrawal and
  * every read), except the Client Trust Balances report, which is read through its query bean as in
@@ -168,13 +173,18 @@ class InvestmentClientLedgerReadSurfacesIntegrationTest {
                 .with(TestJwtFactory.ownerJwt(ORG_ID, APPROVER_SUB)))
         .andExpect(status().isOk());
 
-    // INV_PLACE posted: the investor's general balance is P lower (R50 000 − R30 000); to their
-    // general ledger the placement is a transfer out to their investment
+    // INV_PLACE posted: the investor's general balance is P lower (R50 000 − R30 000), P is
+    // invested, and the total held in trust for them is unchanged (648E)
     var card = card(investor);
     assertThat(money(card.get("balance"))).isEqualByComparingTo("20000.00");
     assertThat(money(card.get("totalDeposits"))).isEqualByComparingTo("50000.00");
-    assertThat(money(card.get("totalTransfersOut"))).isEqualByComparingTo("30000.00");
+    assertThat(money(card.get("totalTransfersOut"))).isEqualByComparingTo("0.00");
     assertThat(money(card.get("totalTransfersIn"))).isEqualByComparingTo("0.00");
+    assertThat(money(card.get("totalInvestmentPlacements"))).isEqualByComparingTo("30000.00");
+    assertThat(money(card.get("totalInvestmentReturns"))).isEqualByComparingTo("0.00");
+    assertThat(money(card.get("investedBalance"))).isEqualByComparingTo("30000.00");
+    assertThat(money(card.get("balance")).add(money(card.get("investedBalance"))))
+        .isEqualByComparingTo("50000.00");
     assertReconciles(card);
     assertEveryReadSurfaceAnswers(investmentId, "20000.00", "30000.00");
 
@@ -186,11 +196,14 @@ class InvestmentClientLedgerReadSurfacesIntegrationTest {
                 .content("{\"withdrawalDate\": \"%s\"}".formatted(today.minusDays(5))))
         .andExpect(status().isOk());
 
-    // INV_RETURN posted: the balance is restored; the return is a transfer back in
+    // INV_RETURN posted: the general balance is restored and nothing is invested any more
     card = card(investor);
     assertThat(money(card.get("balance"))).isEqualByComparingTo("50000.00");
-    assertThat(money(card.get("totalTransfersOut"))).isEqualByComparingTo("30000.00");
-    assertThat(money(card.get("totalTransfersIn"))).isEqualByComparingTo("30000.00");
+    assertThat(money(card.get("totalTransfersOut"))).isEqualByComparingTo("0.00");
+    assertThat(money(card.get("totalTransfersIn"))).isEqualByComparingTo("0.00");
+    assertThat(money(card.get("totalInvestmentPlacements"))).isEqualByComparingTo("30000.00");
+    assertThat(money(card.get("totalInvestmentReturns"))).isEqualByComparingTo("30000.00");
+    assertThat(money(card.get("investedBalance"))).isEqualByComparingTo("0.00");
     assertReconciles(card);
     assertEveryReadSurfaceAnswers(investmentId, "50000.00", "0.00");
   }
@@ -207,9 +220,11 @@ class InvestmentClientLedgerReadSurfacesIntegrationTest {
     var list = getOk("/api/trust-accounts/" + fundingAccountId + "/client-ledgers?size=200");
     var investorRow = row(list, investor);
     assertThat(money(investorRow.get("balance"))).isEqualByComparingTo(investorGeneral);
+    assertThat(money(investorRow.get("investedBalance"))).isEqualByComparingTo(invested);
     assertReconciles(investorRow);
     var bystanderRow = row(list, bystander);
     assertThat(money(bystanderRow.get("balance"))).isEqualByComparingTo("10000.00");
+    assertThat(money(bystanderRow.get("investedBalance"))).isEqualByComparingTo("0.00");
     assertReconciles(bystanderRow);
 
     // History (newest first, server running balance) and statement
@@ -355,15 +370,20 @@ class InvestmentClientLedgerReadSurfacesIntegrationTest {
     return rows.getFirst();
   }
 
-  /** Deposits + Transfers in − Payments − Fee transfers − Refunds − Transfers out = Balance. */
+  /**
+   * Deposits + Transfers in + Investment returns − Payments − Fee transfers − Refunds − Transfers
+   * out − Investment placements = Balance (general, 648E).
+   */
   private static void assertReconciles(Map<String, Object> ledger) {
     var derived =
         money(ledger.get("totalDeposits"))
             .add(money(ledger.get("totalTransfersIn")))
+            .add(money(ledger.get("totalInvestmentReturns")))
             .subtract(money(ledger.get("totalPayments")))
             .subtract(money(ledger.get("totalFeeTransfers")))
             .subtract(money(ledger.get("totalRefunds")))
-            .subtract(money(ledger.get("totalTransfersOut")));
+            .subtract(money(ledger.get("totalTransfersOut")))
+            .subtract(money(ledger.get("totalInvestmentPlacements")));
     assertThat(derived)
         .as("totals reconcile to the balance")
         .isEqualByComparingTo(money(ledger.get("balance")));

@@ -1,0 +1,19 @@
+# 648E red run against unchanged production code @2a6de24b1 (tests written first; LedgerTotalsTest set aside so the suite compiles)
+# cmd: ./mvnw test -Dtest="ClientLedgerControllerTest,ClientLedgerTotalsIntegrationTest,InvestmentClientLedgerReadSurfacesIntegrationTest,CatalogueBatch2TrustBillingTest,InvestmentReportBasisIntegrationTest,TrustWireContractTest"
+
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 0.827 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.InvestmentClientLedgerReadSurfacesIntegrationTest
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.InvestmentClientLedgerReadSurfacesIntegrationTest.approvedSection86_4Placement_andItsWithdrawal_everyClientReadSurfaceAnswers_andReconciles -- Time elapsed: 0.058 s <<< FAILURE!
+[ERROR] Tests run: 5, Failures: 4, Errors: 0, Skipped: 0, Time elapsed: 0.742 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerTotalsIntegrationTest
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerTotalsIntegrationTest.transfers_inAndOut_reported -- Time elapsed: 0.047 s <<< FAILURE!
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerTotalsIntegrationTest.totals_reconcile_5000_minus_1250_minus_3750_equals_0 -- Time elapsed: 0.061 s <<< FAILURE!
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerTotalsIntegrationTest.reversedPayment_excludedFromTotalPayments -- Time elapsed: 0.057 s <<< FAILURE!
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerTotalsIntegrationTest.section86_4Placement_andItsReturn_areTheirOwnTotals_andTheCardReconcilesToTheGeneralBalance -- Time elapsed: 0.058 s <<< FAILURE!
+[ERROR]   ClientLedgerTotalsIntegrationTest.reversedPayment_excludedFromTotalPayments:208->assertReconciles:341->money:465 [money value] 
+[ERROR]   ClientLedgerTotalsIntegrationTest.section86_4Placement_andItsReturn_areTheirOwnTotals_andTheCardReconcilesToTheGeneralBalance:292->money:465 [money value] 
+[ERROR]   ClientLedgerTotalsIntegrationTest.totals_reconcile_5000_minus_1250_minus_3750_equals_0:184->assertReconciles:341->money:465 [money value] 
+[ERROR]   ClientLedgerTotalsIntegrationTest.transfers_inAndOut_reported:235->assertReconciles:341->money:465 [money value] 
+[ERROR]   InvestmentClientLedgerReadSurfacesIntegrationTest.approvedSection86_4Placement_andItsWithdrawal_everyClientReadSurfaceAnswers_andReconciles:181 
+
+## InvestmentClientLedgerReadSurfacesIntegrationTest:181 (totalTransfersOut after approval — the 648A interim fold)
+expected: 0.00
+ but was: 30000.0

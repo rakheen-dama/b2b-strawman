@@ -197,6 +197,24 @@ async function generalBalance(client: string): Promise<number> {
   return Number(card.balance);
 }
 
+/** The client's card on the trust banking account: general balance and what is invested from it (648E). */
+async function ledgerCard(client: string): Promise<{ balance: number; investedBalance: number }> {
+  const funding = await fundingAccountId();
+  const card = await apiOk<{ balance: number; investedBalance: number }>(
+    `/api/trust-accounts/${funding}/client-ledgers/${client}`
+  );
+  return { balance: Number(card.balance), investedBalance: Number(card.investedBalance) };
+}
+
+/**
+ * 30000 → "30 000,00" (the en-ZA figure randPattern matches). Built by hand: Node's ICU data for
+ * "en-ZA" differs by build (some print "30,000.00").
+ */
+function rand(n: number): string {
+  const [whole, cents] = n.toFixed(2).split(".");
+  return `${whole.replace(/\B(?=(\d{3})+(?!\d))/g, " ")},${cents}`;
+}
+
 /** The money held for the matter: its general balance plus what is invested for it. */
 async function matterTotal(matter: string): Promise<number> {
   const total = await apiOk<{ balance: number }>(`/api/matters/${matter}/trust-balance`);
@@ -464,6 +482,7 @@ test.describe.serial("Day 60 — Interest Run & Investments", () => {
     expect(investment.matterId).toBe(matterId("qc"));
     const totalBefore = await matterTotal(matterId("qc"));
     const generalBefore = await generalBalance(clientId("qc"));
+    const cardBefore = await ledgerCard(clientId("qc"));
 
     await approvePlacement(page, investment);
 
@@ -473,6 +492,26 @@ test.describe.serial("Day 60 — Interest Run & Investments", () => {
     expect(await generalBalance(clientId("qc"))).toBe(generalBefore - 30000);
     const placed = await investmentNumbered(S864_DEPOSIT);
     expect(Number(placed.balance)).toBe(30000);
+
+    // 648E: the client-ledger card carries the invested figure beside the general balance, and
+    // general + invested (the total held in trust) is what it was before the placement
+    const card = await ledgerCard(clientId("qc"));
+    expect(card.investedBalance).toBe(cardBefore.investedBalance + 30000);
+    expect(card.balance + card.investedBalance).toBe(
+      cardBefore.balance + cardBefore.investedBalance
+    );
+    await page.goto(`${BASE}/trust-accounting/client-ledgers/${clientId("qc")}`);
+    const summary = page.getByTestId("client-summary");
+    await expect(summary).toBeVisible({ timeout: 15_000 });
+    await expect(summary.getByTestId("ledger-total-invested")).toContainText(
+      randPattern(rand(card.investedBalance))
+    );
+    await expect(summary.getByTestId("ledger-total-held")).toContainText(
+      randPattern(rand(card.balance + card.investedBalance))
+    );
+    await expect(summary.getByTestId("ledger-total-balance")).toContainText(
+      randPattern(rand(card.balance))
+    );
 
     await openInvestments(page);
     const row = page.locator("main tbody tr").filter({ hasText: qcClient() });

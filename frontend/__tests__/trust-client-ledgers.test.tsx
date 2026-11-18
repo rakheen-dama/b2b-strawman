@@ -119,6 +119,9 @@ function makeLedgerCard(overrides: Record<string, unknown> = {}) {
     totalRefunds: 0,
     totalTransfersIn: 0,
     totalTransfersOut: 0,
+    totalInvestmentPlacements: 0,
+    totalInvestmentReturns: 0,
+    investedBalance: 0,
     lastTransactionDate: "2026-04-01",
     createdAt: "2025-01-01T00:00:00Z",
     updatedAt: "2026-04-01T00:00:00Z",
@@ -331,6 +334,57 @@ describe("Client Ledgers", () => {
     expect(screen.getByText("Running Balance")).toBeInTheDocument();
     // Print statement section
     expect(screen.getByTestId("print-statement")).toBeInTheDocument();
+  });
+
+  // 648E (ADR-379 L7): general, invested (section 86(4)) and the unchanged total
+  it("detail page shows the general balance, the section 86(4) invested figure and the unchanged total", async () => {
+    setupDefaultMocks();
+    mockFetchClientLedger.mockResolvedValue(
+      makeLedgerCard({
+        balance: 20000,
+        totalDeposits: 50000,
+        totalPayments: 0,
+        totalFeeTransfers: 0,
+        totalInvestmentPlacements: 30000,
+        investedBalance: 30000,
+      })
+    );
+    mockFetchClientHistory.mockResolvedValue({
+      content: [],
+      totalElements: 0,
+      totalPages: 0,
+      pageSize: 20,
+      pageNumber: 0,
+    });
+
+    await renderDetailPage();
+
+    const summary = within(screen.getByTestId("client-summary"));
+    expect(summary.getByText("Trust Balance")).toBeInTheDocument();
+    // dd text compared raw: toHaveTextContent collapses the formatter's non-breaking spaces
+    const figure = (testId: string) => summary.getByTestId(testId).querySelector("dd")?.textContent;
+    expect(figure("ledger-total-invested")).toBe(formatCurrency(30000, "ZAR"));
+    expect(figure("ledger-total-held")).toBe(formatCurrency(50000, "ZAR"));
+    expect(figure("ledger-total-balance")).toBe(formatCurrency(20000, "ZAR"));
+    expect(summary.getByTestId("client-summary-invested")).toBeInTheDocument();
+    expect(summary.queryByTestId("ledger-total-transfers-out")).toBeNull();
+  });
+
+  it("detail page without investments shows no invested figure", async () => {
+    setupDefaultMocks();
+    mockFetchClientLedger.mockResolvedValue(makeLedgerCard());
+    mockFetchClientHistory.mockResolvedValue({
+      content: [],
+      totalElements: 0,
+      totalPages: 0,
+      pageSize: 20,
+      pageNumber: 0,
+    });
+
+    await renderDetailPage();
+
+    expect(screen.queryByText("Invested (section 86(4))")).toBeNull();
+    expect(screen.queryByTestId("client-summary-invested")).toBeNull();
   });
 
   // Test 4: Print statement triggers report generation

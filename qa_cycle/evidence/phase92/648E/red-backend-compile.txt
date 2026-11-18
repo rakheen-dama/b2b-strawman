@@ -1,0 +1,15 @@
+# 648E red run — LedgerTotalsTest against main @2a6de24b1 (unit test; compile-red is the accepted red, 648C precedent)
+# cmd: ./mvnw compile test-compile -q
+  found:    java.math.BigDecimal,java.math.BigDecimal,java.math.BigDecimal,java.math.BigDecimal,java.math.BigDecimal,java.math.BigDecimal,java.math.BigDecimal,java.math.BigDecimal
+  required: java.math.BigDecimal,java.math.BigDecimal,java.math.BigDecimal,java.math.BigDecimal,java.math.BigDecimal,java.math.BigDecimal
+  symbol:   method investmentPlacements()
+  symbol:   method investmentReturns()
+[ERROR]   found:    java.math.BigDecimal,java.math.BigDecimal,java.math.BigDecimal,java.math.BigDecimal,java.math.BigDecimal,java.math.BigDecimal,java.math.BigDecimal,java.math.BigDecimal
+[ERROR]   required: java.math.BigDecimal,java.math.BigDecimal,java.math.BigDecimal,java.math.BigDecimal,java.math.BigDecimal,java.math.BigDecimal
+[ERROR]   symbol:   method investmentPlacements()
+[ERROR]   symbol:   method investmentReturns()
+[ERROR] /Users/rakheendama/Projects/2026/worktree-epic-648E/backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/ledger/LedgerTotalsTest.java:[107,22] cannot find symbol
+[ERROR] /Users/rakheendama/Projects/2026/worktree-epic-648E/backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/ledger/LedgerTotalsTest.java:[112,24] cannot find symbol
+[ERROR] /Users/rakheendama/Projects/2026/worktree-epic-648E/backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/ledger/LedgerTotalsTest.java:[123,36] cannot find symbol
+[ERROR] /Users/rakheendama/Projects/2026/worktree-epic-648E/backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/ledger/LedgerTotalsTest.java:[124,36] cannot find symbol
+[ERROR] /Users/rakheendama/Projects/2026/worktree-epic-648E/backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/ledger/LedgerTotalsTest.java:[38,9] constructor LedgerTotals in record io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.LedgerTotals cannot be applied to given types;

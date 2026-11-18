@@ -41,10 +41,12 @@ class LedgerTotalsTest {
             new BigDecimal("300"),
             new BigDecimal("150"),
             new BigDecimal("50"),
-            new BigDecimal("100"));
+            new BigDecimal("100"),
+            new BigDecimal("70"),
+            new BigDecimal("20"));
 
-    // 1000 + 200 − 300 − 150 − 50 − 100
-    assertThat(totals.derivedBalance()).isEqualByComparingTo("600");
+    // 1000 + 200 + 20 − 300 − 150 − 50 − 100 − 70 (placements 70, returns 20 — 648E)
+    assertThat(totals.derivedBalance()).isEqualByComparingTo("550");
   }
 
   @Test
@@ -91,24 +93,24 @@ class LedgerTotalsTest {
   }
 
   @Test
-  void plus_section86_4PlacementIsATransferOut_andItsReturnATransferIn() {
-    // 648A gate D-1: to the client's general ledger a section 86(4) placement is money transferred
-    // out to their investment and its return a transfer back in — the folding is sound only while
-    // the types share their ledger signs, so derivedBalance() still equals clientBalance.
-    assertThat(TrustTransactionType.INV_PLACE.ledgerSign())
-        .isEqualTo(TrustTransactionType.TRANSFER_OUT.ledgerSign());
-    assertThat(TrustTransactionType.INV_RETURN.ledgerSign())
-        .isEqualTo(TrustTransactionType.TRANSFER_IN.ledgerSign());
+  void plus_section86_4PlacementAndReturn_areTheirOwnTotals_notTransfers() {
+    // 648E (OQ-1 Option B): a section 86(4) placement and its return are their own totals — the
+    // 648A interim fold into transfers out / in is gone. The signs in derivedBalance() come from
+    // the registry, so derivedBalance() still equals clientBalance (the general balance).
+    assertThat(TrustTransactionType.INV_PLACE.ledgerSign()).isEqualTo(-1);
+    assertThat(TrustTransactionType.INV_RETURN.ledgerSign()).isEqualTo(1);
 
     var placed =
         LedgerTotals.ZERO
             .plus("DEPOSIT", new BigDecimal("50000"))
             .plus("INV_PLACE", new BigDecimal("30000"));
-    assertThat(placed.transfersOut()).isEqualByComparingTo("30000");
+    assertThat(placed.investmentPlacements()).isEqualByComparingTo("30000");
+    assertThat(placed.transfersOut()).isEqualByComparingTo("0");
     assertThat(placed.derivedBalance()).isEqualByComparingTo("20000");
 
     var returned = placed.plus("INV_RETURN", new BigDecimal("30000"));
-    assertThat(returned.transfersIn()).isEqualByComparingTo("30000");
+    assertThat(returned.investmentReturns()).isEqualByComparingTo("30000");
+    assertThat(returned.transfersIn()).isEqualByComparingTo("0");
     assertThat(returned.derivedBalance()).isEqualByComparingTo("50000");
 
     // byCustomer folds the signed ledger_effect rows the same way
@@ -118,8 +120,10 @@ class LedgerTotalsTest {
                 row(CLIENT_A, "DEPOSIT", "50000.00"),
                 row(CLIENT_A, "INV_PLACE", "-30000.00"),
                 row(CLIENT_A, "INV_RETURN", "30000.00")));
-    assertThat(folded.get(CLIENT_A).transfersOut()).isEqualByComparingTo("30000.00");
-    assertThat(folded.get(CLIENT_A).transfersIn()).isEqualByComparingTo("30000.00");
+    assertThat(folded.get(CLIENT_A).investmentPlacements()).isEqualByComparingTo("30000.00");
+    assertThat(folded.get(CLIENT_A).investmentReturns()).isEqualByComparingTo("30000.00");
+    assertThat(folded.get(CLIENT_A).transfersOut()).isEqualByComparingTo("0");
+    assertThat(folded.get(CLIENT_A).transfersIn()).isEqualByComparingTo("0");
     assertThat(folded.get(CLIENT_A).derivedBalance()).isEqualByComparingTo("50000.00");
   }
 

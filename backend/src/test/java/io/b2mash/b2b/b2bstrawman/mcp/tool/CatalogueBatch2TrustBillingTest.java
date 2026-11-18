@@ -21,8 +21,10 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestTrustInvestmentAccountHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksFixture;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis;
 import java.time.LocalDate;
 import java.util.Set;
 import java.util.UUID;
@@ -85,6 +87,10 @@ class CatalogueBatch2TrustBillingTest {
   private String invoiceClientId;
   private String invoiceId;
   private String matterId;
+  // 648E: a client with an approved section 86(4) placement, on accounts of their own
+  private String investFundingAccountId;
+  private String investmentAccountId;
+  private String investorId;
 
   @BeforeAll
   void setup() throws Exception {
@@ -175,6 +181,75 @@ class CatalogueBatch2TrustBillingTest {
         "UNIDENTIFIED_DEPOSIT",
         "300.00",
         LocalDate.of(2026, 3, 10));
+
+    // 648E: an investor on a second banking account — R50 000 deposited, R30 000 placed in a
+    // section 86(4) investment and approved by a second owner (single approval refuses self)
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_trust_approver", "approver@test.com", "Approver", "owner");
+    MvcResult fundingResult =
+        mockMvc
+            .perform(
+                post("/api/trust-accounts")
+                    .with(owner)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"accountName":"Investor Trust Account","bankName":"Test Bank","branchCode":"250655",
+                         "accountNumber":"62000000004","accountType":"GENERAL","isPrimary":false,
+                         "requireDualApproval":false,"openedDate":"2026-01-15"}"""))
+            .andExpect(status().isCreated())
+            .andReturn();
+    investFundingAccountId = TestEntityHelper.extractId(fundingResult);
+    investmentAccountId =
+        TestTrustInvestmentAccountHelper.openInvestmentAccount(
+                mockMvc,
+                owner,
+                "MCP s86(4) Investments",
+                "62000000005",
+                InvestmentBasis.CLIENT_INSTRUCTION)
+            .toString();
+    investorId = TestEntityHelper.createCustomer(mockMvc, owner, "Investor", "investor@test.com");
+    UUID investorMatter =
+        TestTrustMatterHelper.openClientMatter(
+            tenantSchema,
+            transactionTemplate,
+            projectRepository,
+            UUID.fromString(investorId),
+            "Investor Matter",
+            ownerMemberId);
+    mockMvc
+        .perform(
+            post("/api/trust-accounts/" + investFundingAccountId + "/transactions/deposit")
+                .with(owner)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"clientId":"%s","matterId":"%s","amount":50000.00,"reference":"DEP-INVESTOR",
+                     "description":"Investor deposit","transactionDate":"2026-03-01"}"""
+                        .formatted(investorId, investorMatter)))
+        .andExpect(status().isCreated());
+    MvcResult placed =
+        mockMvc
+            .perform(
+                post("/api/trust-accounts/" + investFundingAccountId + "/investments")
+                    .with(owner)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"investmentAccountId":"%s","clientId":"%s","matterId":"%s",
+                         "institution":"Investec","accountNumber":"MCP-FD-1","principal":30000.00,
+                         "interestRate":0.0650,"depositDate":"2026-03-05",
+                         "investmentBasis":"CLIENT_INSTRUCTION"}"""
+                            .formatted(investmentAccountId, investorId, investorMatter)))
+            .andExpect(status().isCreated())
+            .andReturn();
+    String placementId =
+        JsonPath.read(placed.getResponse().getContentAsString(), "$.depositTransactionId");
+    mockMvc
+        .perform(
+            post("/api/trust-transactions/" + placementId + "/approve")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_trust_approver")))
+        .andExpect(status().isOk());
 
     // Invoice for billing tools (invoiceClientId seeded above as an ACTIVE customer)
     matterId = TestEntityHelper.createProject(mockMvc, owner, "Billing Matter");
@@ -320,7 +395,100 @@ class CatalogueBatch2TrustBillingTest {
     JsonNode payload = resultPayload(result);
     assertThat(payload.has("balanceMinor")).isTrue();
     assertThat(payload.at("/balanceMinor").asLong()).isEqualTo(2_500_000L);
+    // 648E: with a client, investedMinor is that client's section 86(4) invested balance (none)
+    assertThat(payload.at("/investedMinor").isNumber()).as("payload %s", payload).isTrue();
+    assertThat(payload.at("/investedMinor").asLong()).isEqualTo(0L);
     assertThat(payload.at("/currency").asString()).isNotBlank();
+  }
+
+  /**
+   * 648E (§16.6.5, ADR-379 L7): with a client, balanceMinor is the general balance and
+   * investedMinor what is held for them in section 86(4) investments placed from the account;
+   * without a client, investedMinor stays the account's investment creditors.
+   */
+  @Test
+  void getTrustBalanceWithAClientCarriesTheirSection86_4InvestedBalance() throws Exception {
+    JwtRequestPostProcessor owner = TestJwtFactory.ownerJwt(ORG_ID, "user_owner");
+    String session = openSession(owner);
+
+    JsonNode withClient =
+        resultPayload(
+            callTool(
+                owner,
+                session,
+                "get_trust_balance",
+                "{\"trustAccountId\":\"%s\",\"customerId\":\"%s\"}"
+                    .formatted(investFundingAccountId, investorId)));
+    assertThat(withClient.at("/balanceMinor").asLong()).isEqualTo(2_000_000L);
+    assertThat(withClient.at("/investedMinor").isNumber()).as("payload %s", withClient).isTrue();
+    assertThat(withClient.at("/investedMinor").asLong()).isEqualTo(3_000_000L);
+
+    JsonNode fundingPosition =
+        resultPayload(
+            callTool(
+                owner,
+                session,
+                "get_trust_balance",
+                "{\"trustAccountId\":\"%s\"}".formatted(investFundingAccountId)));
+    assertThat(fundingPosition.at("/investedMinor").asLong()).isEqualTo(0L);
+
+    JsonNode investmentPosition =
+        resultPayload(
+            callTool(
+                owner,
+                session,
+                "get_trust_balance",
+                "{\"trustAccountId\":\"%s\"}".formatted(investmentAccountId)));
+    assertThat(investmentPosition.at("/investedMinor").asLong()).isEqualTo(3_000_000L);
+    assertThat(investmentPosition.at("/balanceMinor").asLong()).isEqualTo(0L);
+  }
+
+  /**
+   * 648E pin (OQ-4, green on main by design): the client history has no ledger filter, so the
+   * investor's section 86(4) rows already appear — the placement on the banking account and the
+   * capital received on the investment account.
+   */
+  @Test
+  void listTrustTransactionsShowsTheClientsSection86_4InvestmentRows() throws Exception {
+    JwtRequestPostProcessor owner = TestJwtFactory.ownerJwt(ORG_ID, "user_owner");
+    String session = openSession(owner);
+
+    JsonNode onFunding =
+        resultPayload(
+            callTool(
+                owner,
+                session,
+                "list_trust_transactions",
+                "{\"customerId\":\"%s\",\"trustAccountId\":\"%s\",\"page\":0,\"size\":50}"
+                    .formatted(investorId, investFundingAccountId)));
+    JsonNode placement = itemOfType(onFunding, "INV_PLACE");
+    assertThat(placement.at("/typeLabel").asString())
+        .isEqualTo("Placed in section 86(4) investment");
+    assertThat(placement.at("/direction").asString()).isEqualTo("OUT");
+    assertThat(placement.at("/ledger").asString()).isEqualTo("CLIENT");
+    assertThat(placement.at("/amountMinor").asLong()).isEqualTo(3_000_000L);
+
+    JsonNode onInvestment =
+        resultPayload(
+            callTool(
+                owner,
+                session,
+                "list_trust_transactions",
+                "{\"customerId\":\"%s\",\"trustAccountId\":\"%s\",\"page\":0,\"size\":50}"
+                    .formatted(investorId, investmentAccountId)));
+    JsonNode received = itemOfType(onInvestment, "INV_RECEIVE");
+    assertThat(received.at("/typeLabel").asString()).isEqualTo("Investment capital received");
+    assertThat(received.at("/direction").asString()).isEqualTo("IN");
+    assertThat(received.at("/ledger").asString()).isEqualTo("CLIENT_INVESTMENT");
+  }
+
+  private static JsonNode itemOfType(JsonNode page, String type) {
+    for (JsonNode item : page.at("/items")) {
+      if (type.equals(item.at("/type").asString())) {
+        return item;
+      }
+    }
+    throw new AssertionError("no " + type + " item in " + page);
   }
 
   /** 646D (§16.6.5): without a client the tool returns the account's trust position. */

@@ -222,14 +222,22 @@ export interface ClientLedgerCard {
   clientId: string;
   clientName: string;
   balance: number;
-  // G89-F13: every total is derived from the posted ledger, so
-  // deposits + transfers in − payments − fee transfers − refunds − transfers out = balance
+  // G89-F13 / 648E: every total is derived from the posted ledger, so
+  // deposits + transfers in + investment returns − payments − fee transfers − refunds
+  // − transfers out − investment placements = balance (general);
+  // balance + investedBalance = total held in trust
   totalDeposits: number;
   totalPayments: number;
   totalFeeTransfers: number;
   totalRefunds: number;
   totalTransfersIn: number;
   totalTransfersOut: number;
+  /** 648E: INV_PLACE — moved from the general balance to the client's section 86(4) investments */
+  totalInvestmentPlacements: number;
+  /** 648E: INV_RETURN — returned from section 86(4) investments to the general balance */
+  totalInvestmentReturns: number;
+  /** 648E: held for the client in section 86(4) investments placed from this account (ADR-379) */
+  investedBalance: number;
   lastTransactionDate: string | null;
   createdAt: string;
   updatedAt: string;

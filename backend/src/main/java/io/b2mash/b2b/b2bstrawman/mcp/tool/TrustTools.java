@@ -84,7 +84,9 @@ public class TrustTools {
       name = "get_trust_balance",
       description =
           "Get a trust balance for a trust account. With a customerId, returns that client's"
-              + " general trust balance on the account in balanceMinor. Without one, returns the"
+              + " general trust balance on the account in balanceMinor and, in investedMinor, what"
+              + " is held for the client in section 86(4) investments placed from that account —"
+              + " the client's total in trust is the sum. Without one, returns the"
               + " account's trust position as at today (asAt): balanceMinor is the total of the"
               + " client ledgers on the account, and beside it investedMinor (section 86(4)"
               + " investments held for clients), fundLedgerMinor (Fund interest and charges),"
@@ -123,7 +125,8 @@ public class TrustTools {
                       customerId,
                       minor(card.balance()),
                       currency,
-                      null,
+                      // 648E: the client's section 86(4) invested balance placed from the account
+                      minor(card.investedBalance()),
                       null,
                       null,
                       null,
@@ -173,7 +176,9 @@ public class TrustTools {
       description =
           "List a client's trust transactions on a trust account, newest first. Money is returned"
               + " as minor units plus a currency code. Paginated — page size capped at 50. Requires"
-              + " the VIEW_TRUST capability and the trust-accounting module.")
+              + " the VIEW_TRUST capability and the trust-accounting module. On a trust banking"
+              + " account this includes a section 86(4) placement and its return; on an investment"
+              + " account, the client's investment rows (ledger CLIENT_INVESTMENT).")
   public Object listTrustTransactions(
       @McpToolParam(description = "Client (customer) id.") UUID customerId,
       @McpToolParam(description = "Trust account id.") UUID trustAccountId,

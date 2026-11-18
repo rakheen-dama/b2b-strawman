@@ -228,6 +228,10 @@ class TrustInvestmentInterestIntegrationTest {
     assertThat(row.getReference()).isEqualTo(adviceReference(held.investmentId(), 1));
     assertThat(row.getDescription())
         .isEqualTo("Section 86(4) investment interest (Trust Books Bank)");
+    // The posted row's audit key is the registry's, as on the statement-line path
+    assertThat(audit("trust_transaction", row.getId(), "trust_inv_interest.recorded").getDetails())
+        .containsEntry("amount", "95.00")
+        .containsEntry("investment_id", held.investmentId().toString());
     assertThat(get(held.investmentId()).balance()).isEqualByComparingTo("30095.00");
     assertThat(list(held.investmentId()))
         .extracting(InvestmentInterestResponse::id)
@@ -762,18 +766,16 @@ class TrustInvestmentInterestIntegrationTest {
   }
 
   private AuditEvent audit(String eventType, UUID investmentId) {
+    return audit("trust_investment", investmentId, eventType);
+  }
+
+  private AuditEvent audit(String entityType, UUID entityId, String eventType) {
     var events =
         books.read(
             () ->
                 auditEventRepository
                     .findByFilter(
-                        "trust_investment",
-                        investmentId,
-                        null,
-                        eventType,
-                        null,
-                        null,
-                        PageRequest.of(0, 10))
+                        entityType, entityId, null, eventType, null, null, PageRequest.of(0, 10))
                     .getContent());
     assertThat(events).as(eventType).hasSize(1);
     return events.getFirst();

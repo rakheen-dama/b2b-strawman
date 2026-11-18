@@ -20,7 +20,9 @@ public interface TrustInvestmentRepository extends JpaRepository<TrustInvestment
    * The investments funded from, or held in, the account (648A: the register accepts either the
    * funding trust banking account or the investment account), optionally of one basis, newest
    * deposit first. The id is the final key so the order is total: two placements sharing a deposit
-   * date and creation instant cannot repeat on, or drop out of, consecutive pages (648B).
+   * date and creation instant cannot repeat on, or drop out of, consecutive pages while the result
+   * set is unchanged (648B). Offset paging does not hold across writes: a placement inserted ahead
+   * of the current offset between two requests shifts later pages by one row.
    */
   @Query(
       """

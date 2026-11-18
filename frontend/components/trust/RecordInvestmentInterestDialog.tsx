@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import useSWR from "swr";
 import { useForm, useWatch, type DefaultValues } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -103,6 +103,8 @@ export function RecordInvestmentInterestDialog({
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const lineDescriptionId = useId();
+  const lineGoneId = useId();
   // The account's unmatched credit lines, fetched while open (null key when closed)
   const {
     data: lines = NO_LINES,
@@ -154,12 +156,18 @@ export function RecordInvestmentInterestDialog({
 
   function selectLine(id: string) {
     const picked = lines.find((l) => l.id === id);
+    const hadLine = Boolean(form.getValues("bankStatementLineId"));
     form.setValue("bankStatementLineId", id);
+    // A Fund share typed for the previous source must not pass the R0,01 check against a new gross
+    form.resetField("fundShareAmount");
     if (picked) {
       // The entry is the line's: dated the line's date
       form.setValue("entryDate", picked.transactionDate, { shouldValidate: true });
       fillGross(picked, form.getValues("presentation"));
     } else {
+      // A line's date must not carry over to an advice: the firm enters the advice date (the
+      // schema requires it); with no line before, the default date stays
+      if (hadLine) form.setValue("entryDate", "");
       // A bank advice is net of the Fund's 5% (OQ-4)
       form.setValue("presentation", "NET");
       form.resetField("grossAmount");
@@ -243,6 +251,12 @@ export function RecordInvestmentInterestDialog({
                       value={field.value ?? ""}
                       onChange={(e) => selectLine(e.target.value)}
                       aria-invalid={lineGone || undefined}
+                      // The field has no schema error of its own; while the line is gone it carries
+                      // the recovery instruction beside its regular description
+                      aria-describedby={
+                        lineGone ? `${lineDescriptionId} ${lineGoneId}` : lineDescriptionId
+                      }
+                      aria-errormessage={lineGone ? lineGoneId : undefined}
                       data-testid="interest-line-select"
                     >
                       {lineGone && (
@@ -258,13 +272,14 @@ export function RecordInvestmentInterestDialog({
                       ))}
                     </select>
                   </FormControl>
-                  <FormDescription>
+                  <FormDescription id={lineDescriptionId}>
                     {loadingLines
                       ? "Loading the investment account's unmatched credits…"
                       : "An unmatched credit on the investment account's statement."}
                   </FormDescription>
                   {lineGone && (
                     <p
+                      id={lineGoneId}
                       role="alert"
                       className="text-destructive text-sm"
                       data-testid="interest-line-gone"

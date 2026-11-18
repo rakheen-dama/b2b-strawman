@@ -37,6 +37,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.Tru
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustPostingService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -1187,9 +1188,7 @@ public class TrustInvestmentService implements InvestmentPlacementHooks {
         auditService.log(
             AuditEventBuilder.builder()
                 .eventType(
-                    "FUND_INV_SHARE".equals(row.getTransactionType())
-                        ? "trust_fund_inv_share.recorded"
-                        : "trust_inv_interest.recorded")
+                    TrustTransactionType.of(row.getTransactionType()).auditKey() + ".recorded")
                 .entityType("trust_transaction")
                 .entityId(row.getId())
                 .details(StatementLines.rowDetails(row))

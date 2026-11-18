@@ -1,7 +1,7 @@
 {
-  "commit": "0915e8b0d",
-  "command": "cd portal && pnpm run lint && pnpm run typecheck && pnpm run format:check && pnpm test && pnpm run build (nvm node v20.11.1, NODE_OPTIONS=\"\")",
+  "commit": "7811f1f86",
+  "command": "cd portal && pnpm install && pnpm run lint && pnpm run typecheck && pnpm run format:check && pnpm test && pnpm run build (nvm node v20.11.1, NODE_OPTIONS=\"\")",
   "exit": 0,
-  "ts": "2026-11-17T19:28:27Z",
-  "summary": "PR #1797 (647D) @0915e8b0d — lint, typecheck, format:check, build OK; vitest 51 files, 285 passed. portal/ unchanged after 02fd16615."
+  "ts": "2026-11-18T13:00:58Z",
+  "summary": "PR #1802 (648D) @7811f1f86 — lint (0 errors, 4 pre-existing warnings), typecheck, format:check, build OK; vitest 51 files, 292 passed (baseline 285)."
 }

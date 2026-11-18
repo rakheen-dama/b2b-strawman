@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -26,6 +27,8 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustBook
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedger;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
+import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -40,6 +43,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -71,6 +76,7 @@ class StatementLinePostingIntegrationTest {
   private static final String ORG_ID = "org_statement_line_posting";
   private static final String OWNER = "user_slp_owner";
   private static final String MEMBER = "user_slp_member";
+  private static final String APPROVER = "user_slp_approver";
   private static final String RECORD_TITLE = "Cannot record statement line";
   private static final String FUND = "FUND_INTEREST_AND_CHARGES";
   private static final String FUND_INTEREST_LABEL =
@@ -86,9 +92,11 @@ class StatementLinePostingIntegrationTest {
   @Autowired private TrustBooksService booksService;
   @Autowired private TrustAccountService trustAccountService;
   @Autowired private AuditEventRepository auditEventRepository;
+  @Autowired private JdbcTemplate jdbc;
 
   private TrustBooksFixture.Tenant books;
   private UUID ownerId;
+  private UUID approverId;
 
   @BeforeAll
   void setup() throws Exception {
@@ -102,6 +110,11 @@ class StatementLinePostingIntegrationTest {
                 mockMvc, ORG_ID, OWNER, "slp_owner@test.com", "SLP Owner", "owner"));
     TestMemberHelper.syncMember(
         mockMvc, ORG_ID, MEMBER, "slp_member@test.com", "SLP Member", "member");
+    // 648B: approves section 86(4) placements (single-approval mode refuses self-approval)
+    approverId =
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, APPROVER, "slp_approver@test.com", "SLP Approver", "admin"));
     fixture.enableTrustModule(schema);
     books = fixture.tenant(schema, ORG_ID, ownerId);
   }
@@ -561,22 +574,20 @@ class StatementLinePostingIntegrationTest {
   }
 
   @Test
-  void aClassificationNotYetSupported_andAZeroLine_areRefused() throws Exception {
+  void investmentInterestOffASection86_4Account_andAZeroLine_areRefused() throws Exception {
+    // 648B: INVESTMENT_INTEREST is a real classification now — it is refused off the account that
+    // holds the investment (the "not yet supported" Jackson refusal of 647A is gone).
+    var held = s86_4Investment("1000.00");
     var account = books.freshAccount(false);
     var credit = books.unmatchedLine(account, pastDate(), "15.00", "UNKNOWN DEPOSIT");
     var zero = books.unmatchedLine(account, pastDate(), "0.00", "BALANCE B/F");
 
-    // 648B's classification is not in the enum yet: Jackson refuses it (the detail is not ours).
-    moves(
+    assertRecordRefused(
         account,
-        Expected.none(),
-        () ->
-            record(credit.lineId(), "{\"classification\":\"INVESTMENT_INTEREST\"}")
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.title").value("Malformed request body"))
-                .andExpect(
-                    jsonPath("$.detail").value("The request body could not be read or parsed")));
+        credit.lineId(),
+        interestJson(held.investmentId(), "NET", "15.80", null),
+        RECORD_TITLE,
+        "This statement line is not on the investment account that holds the investment.");
     // No classification at all (@NotNull).
     moves(
         account,
@@ -595,6 +606,211 @@ class StatementLinePostingIntegrationTest {
         RECORD_TITLE,
         "A zero-amount statement line cannot be recorded");
     assertThat(line(credit.lineId()).getMatchStatus()).isEqualTo("UNMATCHED");
+  }
+
+  // --- 648B: section 86(4) investment interest (§16.3.5, §16.3.8, ADR-379) -----------------
+
+  @Test
+  void fundInterest_onASection86_4InvestmentAccount_isRefused() throws Exception {
+    // 647A found.md D1 (owner 648B): the line is routed to the classification that knows the
+    // 95/5 split.
+    var held = s86_4Investment("1000.00");
+    var line = books.unmatchedLine(held.investmentAccount(), pastDate(), "50.00", "INT-S864");
+
+    assertRecordRefused(
+        held.investmentAccount(),
+        line.lineId(),
+        "{\"classification\":\"FUND_INTEREST\"}",
+        RECORD_TITLE,
+        "Interest on a section 86(4) investment is recorded against the investment — choose"
+            + " Section 86(4) investment interest");
+    assertThat(line(line.lineId()).getMatchStatus()).isEqualTo("UNMATCHED");
+  }
+
+  @Test
+  void recordsInvestmentInterest_gross_fromACreditLine() throws Exception {
+    var held = s86_4Investment("30000.00");
+    var date = pastDate();
+    var line = books.unmatchedLine(held.investmentAccount(), date, "400.00", "INT-GROSS");
+
+    var body = new String[1];
+    moves(
+        held.investmentAccount(),
+        new Expected(
+            new BigDecimal("400.00"),
+            BigDecimal.ZERO,
+            new BigDecimal("380.00"),
+            new BigDecimal("20.00"),
+            BigDecimal.ZERO,
+            BigDecimal.ZERO),
+        () ->
+            body[0] =
+                record(line.lineId(), interestJson(held.investmentId(), "GROSS", null, null))
+                    .andExpect(status().isCreated())
+                    .andExpect(jsonPath("$.line.matchStatus").value("RECORDED"))
+                    .andExpect(jsonPath("$.line.classification").value("INVESTMENT_INTEREST"))
+                    .andExpect(
+                        jsonPath("$.line.classificationLabel")
+                            .value("Section 86(4) investment interest"))
+                    .andExpect(jsonPath("$.transactions.length()").value(2))
+                    .andExpect(jsonPath("$.transactions[0].transactionType").value("INV_INTEREST"))
+                    .andExpect(jsonPath("$.transactions[0].amount").value(380.00))
+                    .andExpect(jsonPath("$.transactions[0].ledger").value("CLIENT_INVESTMENT"))
+                    .andExpect(
+                        jsonPath("$.transactions[1].transactionType").value("FUND_INV_SHARE"))
+                    .andExpect(jsonPath("$.transactions[1].amount").value(20.00))
+                    .andExpect(jsonPath("$.transactions[1].ledger").value("NON_CLIENT"))
+                    .andExpect(jsonPath("$.unidentifiedDepositId").isEmpty())
+                    .andExpect(jsonPath("$.investmentInterestId").isNotEmpty())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString());
+
+    var netId = UUID.fromString(JsonPath.read(body[0], "$.transactions[0].id"));
+    var fundId = UUID.fromString(JsonPath.read(body[0], "$.transactions[1].id"));
+    var interestId = UUID.fromString(JsonPath.read(body[0], "$.investmentInterestId"));
+    for (var row : List.of(row(netId), row(fundId))) {
+      assertThat(row.getBankStatementLineId()).isEqualTo(line.lineId());
+      assertThat(row.getInvestmentId()).isEqualTo(held.investmentId());
+      assertThat(row.getTransactionDate()).isEqualTo(date);
+      assertThat(row.getReference()).isEqualTo("INT-GROSS");
+      assertThat(row.getDescription()).isEqualTo("Trust books statement line 1");
+      assertThat(row.getStatus()).isEqualTo("RECORDED");
+    }
+    assertThat(row(netId).getCustomerId()).isEqualTo(held.client().id());
+    assertThat(row(netId).getProjectId()).isEqualTo(held.client().matter());
+    assertThat(row(fundId).getCreditorAccountId())
+        .isEqualTo(books.creditorAccount(held.investmentAccount(), FUND));
+    assertThat(entry(interestId))
+        .isEqualTo(
+            "%s|%s|400.00|20.00|380.00|GROSS|%s|%s|%s|POSTED"
+                .formatted(held.investmentId(), date, netId, fundId, line.lineId()));
+    var recorded = line(line.lineId());
+    assertThat(recorded.getTrustTransactionId()).isEqualTo(netId);
+    assertThat(recorded.getClassification()).isEqualTo("INVESTMENT_INTEREST");
+    assertThat(matchedCount(line)).isEqualTo(1);
+
+    // The later 5% debit leaves as an ordinary transfer to the Fund: the Fund ledger is back at 0.
+    var sweep = books.addLine(line.statementId(), 2, date, "-20.00", "LPFF-5");
+    moves(
+        held.investmentAccount(),
+        Expected.cashbookAndFund("-20.00"),
+        () -> record(sweep, "{\"classification\":\"FUND_SWEEP\"}").andExpect(status().isCreated()));
+    assertThat(snapshot(held.investmentAccount()).fundLedger()).isEqualByComparingTo("0");
+    assertThat(snapshot(held.investmentAccount()).investmentCreditors())
+        .isEqualByComparingTo("30380.00");
+
+    var lineAudit = audit("bank_statement_line", line.lineId(), "bank_statement_line.recorded");
+    assertThat(lineAudit.getDetails())
+        .containsEntry("classification", "INVESTMENT_INTEREST")
+        .containsEntry("amount", "400.00")
+        .containsEntry("transaction_ids", List.of(netId.toString(), fundId.toString()));
+    assertThat(audit("trust_transaction", netId, "trust_inv_interest.recorded").getDetails())
+        .containsEntry("amount", "380.00")
+        .containsEntry("investment_id", held.investmentId().toString())
+        .doesNotContainKey("creditor_account_id");
+    assertThat(audit("trust_transaction", fundId, "trust_fund_inv_share.recorded").getDetails())
+        .containsEntry("amount", "20.00")
+        .containsEntry(
+            "creditor_account_id",
+            books.creditorAccount(held.investmentAccount(), FUND).toString());
+  }
+
+  @Test
+  void recordsInvestmentInterest_net_fromACreditLine() throws Exception {
+    var held = s86_4Investment("30000.00");
+    var date = pastDate();
+    var line = books.unmatchedLine(held.investmentAccount(), date, "95.00", null);
+
+    var body = new String[1];
+    moves(
+        held.investmentAccount(),
+        Expected.cashbookAndInvestment("95.00"),
+        () ->
+            body[0] =
+                record(line.lineId(), interestJson(held.investmentId(), "NET", "100.00", null))
+                    .andExpect(status().isCreated())
+                    .andExpect(jsonPath("$.transactions.length()").value(1))
+                    .andExpect(jsonPath("$.transactions[0].transactionType").value("INV_INTEREST"))
+                    .andExpect(jsonPath("$.transactions[0].amount").value(95.00))
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString());
+
+    var netId = UUID.fromString(JsonPath.read(body[0], "$.transactions[0].id"));
+    var interestId = UUID.fromString(JsonPath.read(body[0], "$.investmentInterestId"));
+    assertThat(entry(interestId))
+        .isEqualTo(
+            "%s|%s|100.00|5.00|95.00|NET|%s|NULL|%s|POSTED"
+                .formatted(held.investmentId(), date, netId, line.lineId()));
+    assertThat(row(netId).getReference())
+        .isEqualTo("STMT-1-" + date.format(DateTimeFormatter.BASIC_ISO_DATE));
+
+    // A net line's amount is the client's 95%: a gross that does not net to it is refused
+    var other = books.addLine(line.statementId(), 2, date, "95.00", "INT-NET-2");
+    assertRecordRefused(
+        held.investmentAccount(),
+        other,
+        interestJson(held.investmentId(), "NET", "120.00", null),
+        RECORD_TITLE,
+        "The statement line is R95,00; gross R120,00 less the Fund's 5% (R6,00) is R114,00.");
+  }
+
+  @Test
+  void unmatch_ofAnInvestmentInterestLine_reversesTheEntry_andIsRefusedOnceWithdrawn()
+      throws Exception {
+    var held = s86_4Investment("2000.00");
+    var date = pastDate();
+    var line = books.unmatchedLine(held.investmentAccount(), date, "95.00", "INT-UNDO");
+    var interestId = recordInterestLine(held, line.lineId(), "95.00", "100.00");
+
+    moves(
+        held.investmentAccount(),
+        Expected.cashbookAndInvestment("-95.00"),
+        () -> unmatch(line.lineId()).andExpect(status().isOk()));
+    assertThat(entryStatus(interestId)).isEqualTo("REVERSED");
+    assertThat(line(line.lineId()).getMatchStatus()).isEqualTo("UNMATCHED");
+    assertThat(matchedCount(line)).isZero();
+    assertThat(
+            audit("trust_investment", held.investmentId(), "trust_investment.interest_reversed")
+                .getDetails())
+        .containsEntry("interest_id", interestId.toString())
+        .containsEntry("net", "95.00");
+
+    // Recorded again, then the investment is withdrawn with the interest: the line stays recorded
+    var again = recordInterestLine(held, line.lineId(), "95.00", "100.00");
+    books.withdraw(
+        held.funding(),
+        Expected.cashbookAndClient("2095.00"),
+        held.investmentAccount(),
+        Expected.cashbookAndInvestment("-2095.00"),
+        held.investmentId(),
+        books.today());
+    moves(
+        held.investmentAccount(),
+        Expected.none(),
+        () ->
+            unmatch(line.lineId())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.title").value("Cannot unmatch statement line"))
+                .andExpect(
+                    jsonPath("$.detail")
+                        .value(
+                            "The investment has been withdrawn with this interest; its interest"
+                                + " entries can no longer be reversed.")));
+    assertThat(entryStatus(again)).isEqualTo("POSTED");
+    assertThat(line(line.lineId()).getMatchStatus()).isEqualTo("RECORDED");
+  }
+
+  @Test
+  void import_suggestsInvestmentInterest_onASection86_4Account() throws Exception {
+    // 647C found.md #1 (owner 648B): the parser suggests FUND_INTEREST for an interest credit; the
+    // import maps it for a section 86(4) investment account, where the Fund classification is
+    // refused. A section 86(3) account keeps FUND_INTEREST.
+    var held = s86_4Investment("1000.00");
+    assertThat(importedSuggestions(held.investmentAccount()))
+        .containsExactly("INVESTMENT_INTEREST", "NULL");
+    assertThat(importedSuggestions(investmentAccount())).containsExactly("FUND_INTEREST", "NULL");
   }
 
   // --- 647B: an unidentified deposit on the shared endpoint ---------------------------------
@@ -813,6 +1029,111 @@ class StatementLinePostingIntegrationTest {
   }
 
   // --- helpers ----------------------------------------------------------------------------
+
+  /** A section 86(4) investment of {@code principal}, placed and approved (648A). */
+  private record Held(
+      UUID funding, UUID investmentAccount, TrustBooksFixture.Client client, UUID investmentId) {}
+
+  private Held s86_4Investment(String principal) {
+    var funding = books.freshAccount(false);
+    var investmentAccount = books.freshInvestmentAccount(InvestmentBasis.CLIENT_INSTRUCTION);
+    var client = books.newClient("s86(4) interest");
+    books.deposit(funding, client, principal);
+    var placed = books.requestPlacement(funding, investmentAccount, client, principal);
+    books.approvePlacement(
+        funding,
+        Expected.cashbookAndClient("-" + principal),
+        investmentAccount,
+        Expected.cashbookAndInvestment(principal),
+        placed.depositTransactionId(),
+        approverId);
+    return new Held(funding, investmentAccount, client, placed.id());
+  }
+
+  /** The record body for {@code INVESTMENT_INTEREST} (null fields are omitted). */
+  private static String interestJson(
+      UUID investmentId, String presentation, String gross, String fund) {
+    var json = new StringBuilder("{\"classification\":\"INVESTMENT_INTEREST\"");
+    json.append(",\"investmentId\":\"").append(investmentId).append('"');
+    json.append(",\"presentation\":\"").append(presentation).append('"');
+    if (gross != null) {
+      json.append(",\"grossAmount\":").append(gross);
+    }
+    if (fund != null) {
+      json.append(",\"fundShareAmount\":").append(fund);
+    }
+    return json.append('}').toString();
+  }
+
+  /** Records a NET interest line ({@code net} = the line), returning the entry id. */
+  private UUID recordInterestLine(Held held, UUID lineId, String net, String gross) {
+    var body = new String[1];
+    moves(
+        held.investmentAccount(),
+        Expected.cashbookAndInvestment(net),
+        () ->
+            body[0] =
+                record(lineId, interestJson(held.investmentId(), "NET", gross, null))
+                    .andExpect(status().isCreated())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString());
+    return UUID.fromString(JsonPath.read(body[0], "$.investmentInterestId"));
+  }
+
+  /** investment|date|gross|fund|net|presentation|net txn|fund txn|line|status of an entry. */
+  private String entry(UUID interestId) {
+    return jdbc.queryForObject(
+        """
+        SELECT investment_id || '|' || entry_date || '|' || gross_amount || '|'
+               || fund_share_amount || '|' || net_amount || '|' || presentation || '|'
+               || net_transaction_id || '|' || COALESCE(fund_share_transaction_id::text, 'NULL')
+               || '|' || COALESCE(bank_statement_line_id::text, 'NULL') || '|' || status
+          FROM "%s".trust_investment_interest WHERE id = ?
+        """
+            .formatted(books.schema()),
+        String.class,
+        interestId);
+  }
+
+  private String entryStatus(UUID interestId) {
+    return jdbc.queryForObject(
+        "SELECT status FROM \"%s\".trust_investment_interest WHERE id = ?"
+            .formatted(books.schema()),
+        String.class,
+        interestId);
+  }
+
+  /** Imports a two-line CSV on {@code account}; the lines' stored suggestions in line order. */
+  private List<String> importedSuggestions(UUID account) throws Exception {
+    var date = pastDate();
+    var day = date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+    var csv =
+        """
+        FNB Trust Account Statement - Account 71000000648
+        Date,Description,Amount,Balance,Reference
+        %1$s,Interest capitalised,95.00,95.00,INT-CAP
+        %1$s,Sundry credit,10.00,105.00,SUNDRY
+        """
+            .formatted(day);
+    var body =
+        mockMvc
+            .perform(
+                multipart("/api/trust-accounts/{accountId}/bank-statements", account)
+                    .file(
+                        new MockMultipartFile(
+                            "file",
+                            "interest-648b.csv",
+                            "text/csv",
+                            csv.getBytes(StandardCharsets.UTF_8)))
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER)))
+            .andExpect(status().isCreated())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    List<Object> suggestions = JsonPath.read(body, "$.lines[*].suggestedClassification");
+    return suggestions.stream().map(v -> v == null ? "NULL" : v.toString()).toList();
+  }
 
   /** A fresh non-primary INVESTMENT trust account (647B: unidentified deposits are refused). */
   private UUID investmentAccount() {

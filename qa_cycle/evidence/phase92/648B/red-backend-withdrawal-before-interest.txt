@@ -1,0 +1,12 @@
+# 648B reproduce-first — red run on unchanged production code (main 00fb5029f, tests only changed)
+# Command: ./mvnw test -Dtest="TrustInvestmentInterestMigrationTest,TrustInvestmentServiceIntegrationTest#withdrawal_isRefused_beforeTheLastInterestEntry,StatementLinePostingIntegrationTest,TrustInvestmentControllerTest,AuditEventTypeRegistryTest,ActivityMessageFormatterTest"
+# Run: 2026-11-18 08:09 SAST
+
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentServiceIntegrationTest.withdrawal_isRefused_beforeTheLastInterestEntry -- Time elapsed: 0.098 s <<< FAILURE!
+java.lang.AssertionError: 
+
+Expecting code to raise a throwable.
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentServiceIntegrationTest.lambda$assertWithdrawRefused$1(TrustInvestmentServiceIntegrationTest.java:1274)
+	at io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness.assertMoves(TrustBooksHarness.java:621)
+	at io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness.lambda$assertMoves$0(TrustBooksHarness.java:651)
+

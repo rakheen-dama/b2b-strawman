@@ -400,7 +400,14 @@ class TrustPositionAsAtIntegrationTest {
             statementLinePostingService.recordFromLine(
                 unidentifiedLine,
                 new RecordFromLineRequest(
-                    StatementLineClassification.UNIDENTIFIED_DEPOSIT, null, null, null)));
+                    StatementLineClassification.UNIDENTIFIED_DEPOSIT,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null)));
     assertPosition(account, MARCH_END, "2250.00", "1000.00", "200.00", "50.00", "300.00", "700.00");
     assertPosition(placing, MARCH_END, "300.00", "1000.00", "0", "0", "0", "-700.00");
 

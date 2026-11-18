@@ -519,6 +519,78 @@ test.describe.serial("Day 60 — Interest Run & Investments", () => {
     await expect(row.getByRole("button", { name: "Withdraw" })).toBeVisible();
   });
 
+  // ── Phase 92 648B (OQ-15): section 86(4) interest — a bank advice net of the Fund's 5% ──
+  test("Alice: Record section 86(4) interest — net of the Fund's 5% (bank advice, gross R100,00)", async ({
+    page,
+  }) => {
+    await loginAs(page, "alice");
+    const investment = await investmentNumbered(S864_DEPOSIT);
+    expect(Number(investment.balance)).toBe(30000);
+    const totalBefore = await matterTotal(matterId("qc"));
+
+    await openInvestments(page);
+    const row = page.locator("main tbody tr").filter({ hasText: qcClient() });
+    await row.getByRole("button", { name: "Record interest" }).click();
+    const dialog = page.getByTestId("record-investment-interest-dialog");
+    await expect(dialog.getByRole("heading", { name: "Record interest" })).toBeVisible();
+    // No statement line: a bank advice — the bank paid the Fund's 5% at source, so NET only
+    await expect(dialog.getByLabel("Statement line")).toHaveValue("");
+    await expect(
+      dialog.getByRole("radio", { name: "Gross — the Fund's 5% leaves in a separate debit" })
+    ).toBeDisabled();
+    await expect(dialog.getByRole("radio", { name: "Net of the Fund's 5%" })).toBeChecked();
+    await expect(dialog.getByTestId("interest-bank-advice-note")).toBeVisible();
+    await dialog.getByLabel("Gross interest").fill("100");
+    await expect(dialog.getByTestId("interest-fund-share")).toHaveText(randPattern("5,00"));
+    await expect(dialog.getByTestId("interest-client-share")).toHaveText(randPattern("95,00"));
+    await dialog.getByRole("button", { name: "Record interest" }).click();
+    await expect(dialog).toBeHidden({ timeout: 15_000 });
+
+    // The register: gross = Fund 5% + net; the investment now holds the client's 95%
+    const sub = (label: string, amount: string) =>
+      new RegExp(`${escapeRegExp(label)} R[\\s\\u00a0\\u202f]?${randPattern(amount).source}`);
+    await expect(row).toContainText(sub("Gross interest", "100,00"), { timeout: 15_000 });
+    await expect(row).toContainText(sub("Fund 5%", "5,00"));
+    await expect(row).toContainText(sub("Net interest", "95,00"));
+    await expect(row).toContainText(randPattern("30 095,00"));
+    await expect(row).not.toContainText(/\bNET\b|\bGROSS\b|INV_INTEREST/);
+
+    const entries = await apiOk<
+      {
+        presentation: string;
+        status: string;
+        grossAmount: number;
+        fundShareAmount: number;
+        netAmount: number;
+      }[]
+    >(`/api/trust-investments/${investment.id}/interest`);
+    expect(entries).toHaveLength(1);
+    expect(entries[0].presentation).toBe("NET");
+    expect(entries[0].status).toBe("POSTED");
+    expect(Number(entries[0].grossAmount)).toBe(100);
+    expect(Number(entries[0].fundShareAmount)).toBe(5);
+    expect(Number(entries[0].netAmount)).toBe(95);
+    expect(Number((await investmentNumbered(S864_DEPOSIT)).balance)).toBe(30095);
+    // The client's 95% is QuickCollect's money: the matter's total trust money rises by it
+    expect(await matterTotal(matterId("qc"))).toBe(totalBefore + 95);
+
+    await captureScreenshot(page, "day-60-investment-s864-interest-recorded");
+  });
+
+  test("Alice: the s86(3) row offers no Record interest action — its interest is the Fund's", async ({
+    page,
+  }) => {
+    await loginAs(page, "alice");
+    await openInvestments(page);
+    const firmRow = page.locator("main tbody tr").filter({ hasText: S863_DEPOSIT });
+    await expect(firmRow).toContainText("Active", { timeout: 15_000 });
+    await expect(firmRow.getByRole("button", { name: "Withdraw" })).toBeVisible();
+    await expect(firmRow.getByRole("button", { name: "Record interest" })).toHaveCount(0);
+    await expect(firmRow.getByTestId("investment-interest-fund-note")).toHaveText(
+      "Interest is the Fund's — record it from the investment account's statement"
+    );
+  });
+
   // ── 60.21-60.24: Second billing cycle fee notes ───────────────────
   test("Alice: Second billing cycle — log new Sipho time and generate its fee note", async ({
     page,

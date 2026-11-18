@@ -530,6 +530,26 @@ class InvestmentReportBasisIntegrationTest {
                   "totalPrincipal", "totalInterestEarned", "activeCount", "totalCount");
         });
 
+    // 648B (OQ-8 a): interestEarned is Σ net of the POSTED entries; a reversed entry drops out
+    recordNetInterest(approved.id(), "2025-05-01", "100.00");
+    var reversed = recordNetInterest(approved.id(), "2025-05-02", "40.00");
+    mockMvc
+        .perform(
+            post("/api/trust-investment-interest/" + reversed + "/reverse")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_basis_owner")))
+        .andExpect(status().isOk());
+    runInTenant(
+        () -> {
+          var result = investmentRegisterQuery.executeAll(Map.of("trust_account_id", f2));
+          var approvedRow = registerRow(result.rows(), "648E-APPROVED");
+          assertThat((BigDecimal) approvedRow.get("interestEarned")).isEqualByComparingTo("95.00");
+          assertThat((BigDecimal) approvedRow.get("balance")).isEqualByComparingTo("25095.00");
+          assertThat((BigDecimal) registerRow(result.rows(), "648E-PENDING").get("interestEarned"))
+              .isEqualByComparingTo("0");
+          assertThat((BigDecimal) result.summary().get("totalInterestEarned"))
+              .isEqualByComparingTo("95.00");
+        });
+
     mockMvc
         .perform(
             post("/api/trust-investments/" + approved.id() + "/withdraw")
@@ -548,6 +568,25 @@ class InvestmentReportBasisIntegrationTest {
   }
 
   private record Placed(String id, String depositTransactionId) {}
+
+  /** A bank-advice NET interest entry of {@code gross} on {@code date} (648B); its id. */
+  private String recordNetInterest(String investmentId, String date, String gross)
+      throws Exception {
+    var body =
+        mockMvc
+            .perform(
+                post("/api/trust-investments/" + investmentId + "/interest")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_basis_owner"))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        "{\"entryDate\": \"%s\", \"grossAmount\": %s, \"presentation\": \"NET\"}"
+                            .formatted(date, gross)))
+            .andExpect(status().isCreated())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    return com.jayway.jsonpath.JsonPath.read(body, "$.id").toString();
+  }
 
   /** A section 86(4) placement for customer1 from {@code fundingAccountId}, awaiting approval. */
   private Placed placeClientInvestment(

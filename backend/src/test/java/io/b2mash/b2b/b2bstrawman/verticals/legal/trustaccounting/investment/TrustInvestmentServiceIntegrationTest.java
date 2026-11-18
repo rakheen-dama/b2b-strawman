@@ -17,6 +17,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountStatus;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.PlaceInvestmentRequest;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.RecordInvestmentInterestRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.TrustInvestmentResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.WithdrawInvestmentRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedger;
@@ -26,6 +27,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.Tru
 import jakarta.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -364,17 +366,18 @@ class TrustInvestmentServiceIntegrationTest {
         Expected.cashbookAndInvestment("2000.00"),
         placed.depositTransactionId(),
         approverId);
-    // A net interest entry on the investment (648B records these; written here so the withdrawal
-    // amount is shown to be the investment's balance, not its principal)
-    books.postLedgerRowDirect(
+    // A net interest entry on the investment (648B: a bank advice of R26,32 gross, the Fund's 5%
+    // R1,32 — so the withdrawal amount is shown to be the investment's balance, not its principal)
+    books.recordInterest(
         investmentAccount,
-        "INV_INTEREST",
-        "25.00",
-        TrustBooksFixture.POSTING_DATE,
-        client.id(),
-        client.matter(),
-        null,
-        placed.id());
+        Expected.cashbookAndInvestment("25.00"),
+        placed.id(),
+        new RecordInvestmentInterestRequest(
+            TrustBooksFixture.POSTING_DATE,
+            new BigDecimal("26.32"),
+            null,
+            InterestPresentation.NET,
+            null));
     assertThat(get(placed.id()).balance()).isEqualByComparingTo("2025.00");
 
     var withdrawalDate = books.today().minusDays(1);
@@ -420,6 +423,41 @@ class TrustInvestmentServiceIntegrationTest {
         placed.id(),
         withdrawalDate,
         "Only an active investment can be withdrawn.");
+  }
+
+  @Test
+  void withdrawal_isRefused_beforeTheLastInterestEntry() {
+    // 648B OQ-1 (a): a withdrawal dated before the investment's latest interest entry would return
+    // that interest before it was credited — refused, and nothing moves on either account.
+    var funding = books.freshAccount(false);
+    var investmentAccount = books.freshInvestmentAccount(InvestmentBasis.CLIENT_INSTRUCTION);
+    var client = books.newClient("withdrawal before interest");
+    books.deposit(funding, client, "3000.00");
+    var placed = books.requestPlacement(funding, investmentAccount, client, "2000.00");
+    books.approvePlacement(
+        funding,
+        Expected.cashbookAndClient("-2000.00"),
+        investmentAccount,
+        Expected.cashbookAndInvestment("2000.00"),
+        placed.depositTransactionId(),
+        approverId);
+    // An interest entry dated today (a bank advice: R40,00 gross, R38,00 to the client)
+    books.recordInterest(
+        investmentAccount,
+        Expected.cashbookAndInvestment("38.00"),
+        placed.id(),
+        new RecordInvestmentInterestRequest(
+            books.today(), new BigDecimal("40.00"), null, InterestPresentation.NET, null));
+
+    assertWithdrawRefused(
+        funding,
+        investmentAccount,
+        placed.id(),
+        books.today().minusDays(1),
+        "The withdrawal date cannot be before the investment's last interest entry ("
+            + books.today()
+            + ").");
+    assertThat(investment(placed.id()).getStatus()).isEqualTo("ACTIVE");
   }
 
   @Test
@@ -1244,6 +1282,41 @@ class TrustInvestmentServiceIntegrationTest {
                               assertThat(e.getBody().getTitle()).isEqualTo(WITHDRAW_TITLE);
                               assertThat(e.getBody().getDetail()).isEqualTo(detail);
                             })));
+  }
+
+  @Test
+  void list_pagesInATotalOrder_tiesOnDateAndCreationBrokenById() {
+    var funding = books.freshAccount(false);
+    var account = books.freshInvestmentAccount(InvestmentBasis.FIRM_DISCRETION);
+    var client = books.newClient("ties");
+    books.deposit(funding, client, "900.00");
+    var ids =
+        List.of(
+            books.requestPlacement(funding, account, null, "100.00").id(),
+            books.requestPlacement(funding, account, null, "200.00").id(),
+            books.requestPlacement(funding, account, null, "300.00").id());
+    // Every key before the id ties
+    jdbc.update(
+        ("UPDATE \"%s\".trust_investments SET deposit_date = DATE '2025-03-03',"
+                + " created_at = TIMESTAMPTZ '2025-03-03 10:00:00+00' WHERE trust_account_id = ?")
+            .formatted(books.schema()),
+        funding);
+
+    var paged = new ArrayList<UUID>();
+    for (int page = 0; page < ids.size(); page++) {
+      int p = page;
+      books.as(
+          ownerId,
+          () ->
+              paged.addAll(
+                  investmentService
+                      .listInvestments(funding, null, PageRequest.of(p, 1))
+                      .map(TrustInvestmentResponse::id)
+                      .getContent()));
+    }
+    // PostgreSQL orders uuids bytewise — the order of their lowercase text (not UUID.compareTo)
+    assertThat(paged.stream().map(UUID::toString).toList())
+        .containsExactlyElementsOf(ids.stream().map(UUID::toString).sorted().toList());
   }
 
   private List<TrustInvestmentResponse> list(UUID accountId, InvestmentBasis basis) {

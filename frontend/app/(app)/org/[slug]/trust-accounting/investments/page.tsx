@@ -266,9 +266,26 @@ export default async function InvestmentsPage({
                           </td>
                           <td className={cn(CELL, MONEY)}>
                             <span className="block">{formatCurrency(inv.principal, currency)}</span>
-                            <span className={SUB}>
-                              Interest {formatCurrency(inv.interestEarned, currency)}
-                            </span>
+                            {inv.investmentBasis === "CLIENT_INSTRUCTION" ? (
+                              // 648B (OQ-9): Σ of the posted interest entries, gross = Fund + net
+                              <>
+                                <span className={SUB}>
+                                  Gross interest {formatCurrency(inv.grossInterest, currency)}
+                                </span>
+                                <span className={SUB}>
+                                  Fund 5% {formatCurrency(inv.fundShare, currency)}
+                                </span>
+                                <span className={SUB}>
+                                  Net interest {formatCurrency(inv.netInterest, currency)}
+                                </span>
+                              </>
+                            ) : (
+                              // Section 86(3): the interest is the Fund's, never the investment's
+                              <span className={SUB} data-testid="investment-interest-fund-note">
+                                Interest is the Fund&apos;s — record it from the investment
+                                account&apos;s statement
+                              </span>
+                            )}
                           </td>
                           <td className={cn(CELL, MONEY)}>
                             {formatCurrency(inv.balance, currency)}
@@ -296,7 +313,11 @@ export default async function InvestmentsPage({
                                   investmentId={inv.id}
                                   investmentBalance={inv.balance}
                                   investmentDepositDate={inv.depositDate}
-                                  canRecordInterest={inv.status === "ACTIVE"}
+                                  investmentAccountId={inv.investmentAccountId}
+                                  canRecordInterest={
+                                    inv.investmentBasis === "CLIENT_INSTRUCTION" &&
+                                    inv.status === "ACTIVE"
+                                  }
                                   currency={currency}
                                 />
                               )}

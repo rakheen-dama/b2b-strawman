@@ -1,0 +1,14 @@
+# 648B reproduce-first — red run on unchanged production code (main 00fb5029f, tests only changed)
+# Command: ./mvnw test -Dtest="TrustInvestmentInterestMigrationTest,TrustInvestmentServiceIntegrationTest#withdrawal_isRefused_beforeTheLastInterestEntry,StatementLinePostingIntegrationTest,TrustInvestmentControllerTest,AuditEventTypeRegistryTest,ActivityMessageFormatterTest"
+# Run: 2026-11-18 08:09 SAST
+
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.StatementLinePostingIntegrationTest.import_suggestsInvestmentInterest_onASection86_4Account -- Time elapsed: 0.098 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+
+Expecting actual:
+  ["FUND_INTEREST", "NULL"]
+to contain exactly (and in same order):
+  ["INVESTMENT_INTEREST", "NULL"]
+but some elements were not found:
+  ["INVESTMENT_INTEREST"]
+

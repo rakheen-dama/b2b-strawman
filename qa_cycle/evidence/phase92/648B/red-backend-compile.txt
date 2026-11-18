@@ -1,0 +1,84 @@
+# 648B R6 — compile-red: TrustInvestmentInterestIntegrationTest + TrustBooksFixture interest steps against unchanged production code (main 8a6b6667d + red-test commit)
+# Command: ./mvnw compile test-compile -q   (exit 1)
+# Run: 2026-11-18 08:12 SAST
+
+[ERROR] testutil/TrustBooksFixture.java:[17,99] cannot find symbol
+[ERROR] testutil/TrustBooksFixture.java:[19,99] cannot find symbol
+[ERROR] testutil/TrustBooksFixture.java:[527,9] cannot find symbol
+[ERROR] testutil/TrustBooksFixture.java:[523,12] cannot find symbol
+[ERROR] testutil/TrustBooksFixture.java:[543,12] cannot find symbol
+[ERROR] verticals/legal/trustaccounting/investment/TrustInvestmentInterestIntegrationTest.java:[17,99] cannot find symbol
+[ERROR] verticals/legal/trustaccounting/investment/TrustInvestmentInterestIntegrationTest.java:[18,99] cannot find symbol
+[ERROR] verticals/legal/trustaccounting/investment/TrustInvestmentInterestIntegrationTest.java:[617,18] cannot find symbol
+[ERROR] verticals/legal/trustaccounting/investment/TrustInvestmentInterestIntegrationTest.java:[642,18] cannot find symbol
+[ERROR] verticals/legal/trustaccounting/investment/TrustInvestmentInterestIntegrationTest.java:[688,16] cannot find symbol
+[ERROR] testutil/TrustBooksFixture.java:[528,26] cannot find symbol
+[ERROR] testutil/TrustBooksFixture.java:[545,26] cannot find symbol
+[ERROR] testutil/TrustBooksFixture.java:[552,56] cannot find symbol
+[ERROR] verticals/legal/trustaccounting/investment/TrustInvestmentInterestIntegrationTest.java:[146,17] cannot find symbol
+[ERROR] verticals/legal/trustaccounting/investment/TrustInvestmentInterestIntegrationTest.java:[147,55] cannot find symbol
+[ERROR] verticals/legal/trustaccounting/investment/TrustInvestmentInterestIntegrationTest.java:[176,40] cannot find symbol
+[ERROR] verticals/legal/trustaccounting/investment/TrustInvestmentInterestIntegrationTest.java:[177,40] cannot find symbol
+[ERROR] verticals/legal/trustaccounting/investment/TrustInvestmentInterestIntegrationTest.java:[178,40] cannot find symbol
+[ERROR] verticals/legal/trustaccounting/investment/TrustInvestmentInterestIntegrationTest.java:[234,21] cannot find symbol
+[ERROR] verticals/legal/trustaccounting/investment/TrustInvestmentInterestIntegrationTest.java:[247,25] cannot find symbol
+[ERROR] verticals/legal/trustaccounting/investment/TrustInvestmentInterestIntegrationTest.java:[288,40] cannot find symbol
+[ERROR] verticals/legal/trustaccounting/investment/TrustInvestmentInterestIntegrationTest.java:[321,17] cannot find symbol
+[ERROR] verticals/legal/trustaccounting/investment/TrustInvestmentInterestIntegrationTest.java:[322,55] cannot find symbol
+[ERROR] verticals/legal/trustaccounting/investment/TrustInvestmentInterestIntegrationTest.java:[335,40] cannot find symbol
+[ERROR] verticals/legal/trustaccounting/investment/TrustInvestmentInterestIntegrationTest.java:[371,32] cannot find symbol
+[ERROR] verticals/legal/trustaccounting/investment/TrustInvestmentInterestIntegrationTest.java:[404,17] cannot find symbol
+[ERROR] verticals/legal/trustaccounting/investment/TrustInvestmentInterestIntegrationTest.java:[408,17] cannot find symbol
+[ERROR] verticals/legal/trustaccounting/investment/TrustInvestmentInterestIntegrationTest.java:[415,13] cannot find symbol
+[ERROR] verticals/legal/trustaccounting/investment/TrustInvestmentInterestIntegrationTest.java:[416,69] cannot find symbol
+[ERROR] verticals/legal/trustaccounting/investment/TrustInvestmentInterestIntegrationTest.java:[421,13] cannot find symbol
+[ERROR] verticals/legal/trustaccounting/investment/TrustInvestmentInterestIntegrationTest.java:[425,13] cannot find symbol
+[ERROR] verticals/legal/trustaccounting/investment/TrustInvestmentInterestIntegrationTest.java:[469,13] cannot find symbol
+[ERROR] verticals/legal/trustaccounting/investment/TrustInvestmentInterestIntegrationTest.java:[470,51] cannot find symbol
+[ERROR] verticals/legal/trustaccounting/investment/TrustInvestmentInterestIntegrationTest.java:[490,13] cannot find symbol
+[ERROR] verticals/legal/trustaccounting/investment/TrustInvestmentInterestIntegrationTest.java:[494,13] cannot find symbol
+[ERROR] verticals/legal/trustaccounting/investment/TrustInvestmentInterestIntegrationTest.java:[500,13] cannot find symbol
+[ERROR] verticals/legal/trustaccounting/investment/TrustInvestmentInterestIntegrationTest.java:[501,51] cannot find symbol
+[ERROR] verticals/legal/trustaccounting/investment/TrustInvestmentInterestIntegrationTest.java:[508,13] cannot find symbol
+[ERROR] verticals/legal/trustaccounting/investment/TrustInvestmentInterestIntegrationTest.java:[509,51] cannot find symbol
+[ERROR] verticals/legal/trustaccounting/investment/TrustInvestmentInterestIntegrationTest.java:[516,13] cannot find symbol
+[ERROR] verticals/legal/trustaccounting/investment/TrustInvestmentInterestIntegrationTest.java:[517,49] cannot find symbol
+[ERROR] verticals/legal/trustaccounting/investment/TrustInvestmentInterestIntegrationTest.java:[618,16] cannot find symbol
+[ERROR] verticals/legal/trustaccounting/investment/TrustInvestmentInterestIntegrationTest.java:[619,44] cannot find symbol
+[ERROR] verticals/legal/trustaccounting/investment/TrustInvestmentInterestIntegrationTest.java:[636,25] constructor RecordFromLineRequest in record io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.StatementLinePostingService.RecordFromLineRequest cannot be applied to given types;
+[ERROR] verticals/legal/trustaccounting/investment/TrustInvestmentInterestIntegrationTest.java:[672,63] cannot find symbol
+[ERROR] verticals/legal/trustaccounting/investment/TrustInvestmentInterestIntegrationTest.java:[690,10] cannot find symbol
+[ERROR] verticals/legal/trustaccounting/investment/TrustInvestmentInterestIntegrationTest.java:[691,59] cannot find symbol
+[ERROR] testutil/TrustBooksFixture.java:[17,99] cannot find symbol
+[ERROR]   symbol:   class InvestmentInterestResponse
+[ERROR] testutil/TrustBooksFixture.java:[19,99] cannot find symbol
+[ERROR]   symbol:   class RecordInvestmentInterestRequest
+[ERROR] testutil/TrustBooksFixture.java:[527,9] cannot find symbol
+[ERROR]   symbol:   class RecordInvestmentInterestRequest
+[ERROR] testutil/TrustBooksFixture.java:[523,12] cannot find symbol
+[ERROR]   symbol:   class InvestmentInterestResponse
+[ERROR] testutil/TrustBooksFixture.java:[543,12] cannot find symbol
+[ERROR]   symbol:   class InvestmentInterestResponse
+[ERROR] verticals/legal/trustaccounting/investment/TrustInvestmentInterestIntegrationTest.java:[17,99] cannot find symbol
+[ERROR]   symbol:   class InvestmentInterestResponse
+[ERROR] verticals/legal/trustaccounting/investment/TrustInvestmentInterestIntegrationTest.java:[18,99] cannot find symbol
+
+Total compiler errors: 94
+  16 [ERROR]   symbol:   class RecordInvestmentInterestRequest
+  16   symbol:   class RecordInvestmentInterestRequest
+  11 [ERROR]   symbol:   variable InterestPresentation
+  11   symbol:   variable InterestPresentation
+   8 [ERROR]   symbol:   class InvestmentInterestResponse
+   8   symbol:   class InvestmentInterestResponse
+   5 [ERROR]   symbol:   method netInterest()
+   5   symbol:   method netInterest()
+   2 [ERROR]   symbol:   method reverseInterest(java.util.UUID)
+   2   symbol:   method reverseInterest(java.util.UUID)
+   1 [ERROR]   symbol:   variable InvestmentInterestResponse
+   1 [ERROR]   symbol:   method listInterest(java.util.UUID)
+   1 [ERROR]   symbol:   method grossInterest()
+   1 [ERROR]   symbol:   method fundShare()
+   1   symbol:   variable InvestmentInterestResponse
+   1   symbol:   method listInterest(java.util.UUID)
+   1   symbol:   method grossInterest()
+   1   symbol:   method fundShare()

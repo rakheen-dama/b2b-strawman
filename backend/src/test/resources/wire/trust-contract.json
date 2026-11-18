@@ -1,6 +1,8 @@
 {
   "enums" : {
+    "InterestPresentation" : [ "GROSS", "NET" ],
     "InvestmentBasis" : [ "FIRM_DISCRETION", "CLIENT_INSTRUCTION" ],
+    "StatementLineClassification" : [ "FUND_INTEREST", "FUND_SWEEP", "BANK_CHARGE", "CHARGE_REFUND", "UNIDENTIFIED_DEPOSIT", "INVESTMENT_INTEREST" ],
     "TrustAccountSection" : [ "S86_2", "S86_3", "S86_4" ],
     "TrustAccountStatus" : [ "ACTIVE", "CLOSED" ],
     "TrustAccountType" : [ "GENERAL", "INVESTMENT", "SECTION_86" ],
@@ -220,6 +222,43 @@
       "name" : "total",
       "type" : "java.math.BigDecimal"
     } ],
+    "InvestmentInterestResponse" : [ {
+      "name" : "id",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "investmentId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "entryDate",
+      "type" : "java.time.LocalDate"
+    }, {
+      "name" : "grossAmount",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "fundShareAmount",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "netAmount",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "presentation",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "status",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "netTransactionId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "fundShareTransactionId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "bankStatementLineId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "clientTaxReference",
+      "type" : "java.lang.String"
+    } ],
     "PayToFundRequest" : [ {
       "name" : "reference",
       "type" : "java.lang.String"
@@ -264,6 +303,31 @@
       "name" : "investmentBasis",
       "type" : "io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis"
     } ],
+    "RecordFromLineRequest" : [ {
+      "name" : "classification",
+      "type" : "io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.StatementLineClassification"
+    }, {
+      "name" : "chargeRecoverable",
+      "type" : "java.lang.Boolean"
+    }, {
+      "name" : "chargeVatAmount",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "investmentId",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "grossAmount",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "fundShareAmount",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "presentation",
+      "type" : "io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.InterestPresentation"
+    }, {
+      "name" : "notes",
+      "type" : "java.lang.String"
+    } ],
     "RecordFromLineResponse" : [ {
       "name" : "line",
       "type" : "io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService$BankStatementLineResponse"
@@ -275,6 +339,22 @@
       "type" : "java.util.UUID"
     }, {
       "name" : "investmentInterestId",
+      "type" : "java.util.UUID"
+    } ],
+    "RecordInvestmentInterestRequest" : [ {
+      "name" : "entryDate",
+      "type" : "java.time.LocalDate"
+    }, {
+      "name" : "grossAmount",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "fundShareAmount",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "presentation",
+      "type" : "io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.InterestPresentation"
+    }, {
+      "name" : "bankStatementLineId",
       "type" : "java.util.UUID"
     } ],
     "TotalBalanceResponse" : [ {
@@ -376,7 +456,13 @@
       "name" : "maturityDate",
       "type" : "java.time.LocalDate"
     }, {
-      "name" : "interestEarned",
+      "name" : "grossInterest",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "fundShare",
+      "type" : "java.math.BigDecimal"
+    }, {
+      "name" : "netInterest",
       "type" : "java.math.BigDecimal"
     }, {
       "name" : "balance",

@@ -61,9 +61,6 @@ public class TrustInvestment {
   @Column(name = "maturity_date")
   private LocalDate maturityDate;
 
-  @Column(name = "interest_earned", nullable = false, precision = 15, scale = 2)
-  private BigDecimal interestEarned;
-
   @Column(name = "status", nullable = false, length = 20)
   private String status;
 
@@ -121,7 +118,6 @@ public class TrustInvestment {
     this.interestRate = interestRate;
     this.depositDate = depositDate;
     this.maturityDate = maturityDate;
-    this.interestEarned = BigDecimal.ZERO;
     this.status = "ACTIVE";
     this.notes = notes;
     this.investmentBasis = investmentBasis;
@@ -185,10 +181,6 @@ public class TrustInvestment {
     return maturityDate;
   }
 
-  public BigDecimal getInterestEarned() {
-    return interestEarned;
-  }
-
   public String getStatus() {
     return status;
   }
@@ -230,10 +222,6 @@ public class TrustInvestment {
   /** Set once, inside the placing transaction, after the placement row is saved (§16.3.7). */
   public void setDepositTransactionId(UUID depositTransactionId) {
     this.depositTransactionId = depositTransactionId;
-  }
-
-  public void setInterestEarned(BigDecimal interestEarned) {
-    this.interestEarned = interestEarned;
   }
 
   public void setStatus(String status) {

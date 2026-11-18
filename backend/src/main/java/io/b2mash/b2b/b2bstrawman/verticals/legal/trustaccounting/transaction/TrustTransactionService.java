@@ -1392,7 +1392,10 @@ public class TrustTransactionService {
    * 648A: an investment's row that is never reversed — registry-derived ({@link
    * TrustTransactionType#isInvestmentRow()} with {@code reversal = NONE}): the placement, receipt,
    * withdrawal and return legs of both bases. An investment row the registry lets its owner reverse
-   * ({@code INV_INTEREST}, {@code OWNER} — 648B, from its investment) keeps the owner refusal.
+   * ({@code INV_INTEREST}, and {@code FUND_INV_SHARE}, both {@code OWNER}) keeps the owner refusal:
+   * 648B reverses them through their interest entry ({@code
+   * TrustInvestmentService.reverseInterest}) or by unmatching the statement line they were recorded
+   * from.
    */
   private static boolean isFinalInvestmentRow(TrustTransactionType type) {
     return type.isInvestmentRow() && type.reversal() == TrustTransactionType.Reversal.NONE;
@@ -1492,7 +1495,7 @@ public class TrustTransactionService {
         TrustTransactionType.of(original.getTransactionType()).reversal()
             != TrustTransactionType.Reversal.NEEDS_APPROVAL;
 
-    var reversal = newContra(original, reason, reversalDate, memberId);
+    var reversal = TrustPostingService.contraDraft(original, reason, reversalDate, memberId);
 
     // A contra that posts now moves the client's balance: serialise with its other postings first
     if (postsNow && original.getCustomerId() != null) {
@@ -1656,13 +1659,15 @@ public class TrustTransactionService {
     // Contra for the TRANSFER_OUT (credits the source back); the TRANSFER_OUT is marked REVERSED
     // and keeps its own effect
     var savedOutReversal =
-        postingService.postReversal(newContra(original, reason, reversalDate, memberId), original);
+        postingService.postReversal(
+            TrustPostingService.contraDraft(original, reason, reversalDate, memberId), original);
 
     // Contra for the TRANSFER_IN (debits the target); the TRANSFER_IN is marked REVERSED and keeps
     // its own effect. Same reference as the OUT contra (the pair shares one).
     var savedInReversal =
         postingService.postReversal(
-            newContra(pairedTransferIn, reason, reversalDate, memberId), pairedTransferIn);
+            TrustPostingService.contraDraft(pairedTransferIn, reason, reversalDate, memberId),
+            pairedTransferIn);
 
     // One recorded event per contra leg (as recordTransfer — GAP-L-52): both matters re-project.
     publishContraRecorded(savedOutReversal, memberId);
@@ -1747,9 +1752,11 @@ public class TrustTransactionService {
     // Both contras post at once (PAIR / VIA_PAIR) and carry the item's id (postReversal copies the
     // ledger target), so EQ-4 reads the item as allocated until the reversal date.
     var outContra =
-        postingService.postReversal(newContra(original, reason, reversalDate, memberId), original);
+        postingService.postReversal(
+            TrustPostingService.contraDraft(original, reason, reversalDate, memberId), original);
     var inContra =
-        postingService.postReversal(newContra(credit, reason, reversalDate, memberId), credit);
+        postingService.postReversal(
+            TrustPostingService.contraDraft(credit, reason, reversalDate, memberId), credit);
     // NON_CLIENT: the portal sync skips it (no client). CLIENT: the client's matter re-projects.
     publishContraRecorded(outContra, memberId);
     publishContraRecorded(inContra, memberId);
@@ -1774,24 +1781,6 @@ public class TrustTransactionService {
             .build());
 
     return toResponse(outContra);
-  }
-
-  /** A {@code REVERSAL} draft for {@code original}: its ledger target, its amount, its own date. */
-  private static TrustTransaction newContra(
-      TrustTransaction original, String reason, LocalDate reversalDate, UUID memberId) {
-    return new TrustTransaction(
-        original.getTrustAccountId(),
-        "REVERSAL",
-        original.getAmount(),
-        original.getCustomerId(),
-        original.getProjectId(),
-        original.getCounterpartyCustomerId(),
-        // Build reversal reference, truncating to 200-char column limit
-        buildReversalReference(original.getReference()),
-        reason,
-        reversalDate,
-        null, // status: decided by postReversal from the original's reversal rule
-        memberId);
   }
 
   /**
@@ -1880,17 +1869,6 @@ public class TrustTransactionService {
   /** A rand amount for a refusal message, in the house en-ZA format ("R10 055,21"; G89-F40). */
   private static String rand(BigDecimal amount) {
     return VariableFormatter.formatCurrencyText(amount, TRUST_LOCALE);
-  }
-
-  /**
-   * Builds a reversal reference from the original reference, truncating to 200-char column limit.
-   */
-  private static String buildReversalReference(String originalReference) {
-    String ref = "REV-" + originalReference;
-    if (ref.length() > 200) {
-      ref = ref.substring(0, 200);
-    }
-    return ref;
   }
 
   private void validateReference(String reference) {

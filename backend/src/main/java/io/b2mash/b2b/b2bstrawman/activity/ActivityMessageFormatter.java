@@ -369,6 +369,19 @@ public class ActivityMessageFormatter {
               .formatted(actorName, ofMoney(details, "amount"));
       case "unidentified_deposit.reopened" ->
           "%s reopened an unidentified deposit%s".formatted(actorName, ofMoney(details, "amount"));
+      // Section 86(4) investment interest (Phase 92 648B, ADR-379): the rows and the entry
+      case "trust_inv_interest.recorded" ->
+          formatTrustRecorded(actorName, "section 86(4) investment interest", details);
+      case "trust_fund_inv_share.recorded" ->
+          formatTrustRecorded(
+              actorName,
+              "the Legal Practitioners' Fidelity Fund's 5% share of section 86(4) interest",
+              details);
+      case "trust_investment.interest_recorded" ->
+          "%s recorded section 86(4) investment interest%s"
+              .formatted(actorName, grossMoney(details));
+      case "trust_investment.interest_reversed" ->
+          "%s reversed a section 86(4) interest entry%s".formatted(actorName, grossMoney(details));
       case "bank_statement_line.recorded" ->
           "%s recorded a statement line%s%s"
               .formatted(
@@ -829,6 +842,7 @@ public class ActivityMessageFormatter {
                   case BANK_CHARGE -> "a bank charge";
                   case CHARGE_REFUND -> "a bank charge refund";
                   case UNIDENTIFIED_DEPOSIT -> "an unidentified deposit";
+                  case INVESTMENT_INTEREST -> "section 86(4) investment interest";
                 })
         .orElse(null);
   }
@@ -952,6 +966,15 @@ public class ActivityMessageFormatter {
   /** {@code " of R…"} for a ZAR amount (trust, disbursement, payment details carry no currency). */
   private static String ofMoney(Map<String, Object> details, String amountKey) {
     return prefixed(" of ", money(details, amountKey, null));
+  }
+
+  /**
+   * " of R100,00 gross" for an interest entry (648B) — read from {@code amount}, the key the trust
+   * redaction hides from a viewer without VIEW_TRUST; empty when absent.
+   */
+  private static String grossMoney(Map<String, Object> details) {
+    var amount = money(details, "amount", null);
+    return amount == null ? "" : " of " + amount + " gross";
   }
 
   /**

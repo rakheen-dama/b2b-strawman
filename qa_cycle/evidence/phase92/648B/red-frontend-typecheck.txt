@@ -1,0 +1,18 @@
+# 648B reproduce-first — frontend typecheck on unchanged production code (tests only changed)
+# node v20.11.1; pnpm typecheck
+
+> frontend@0.1.0 typecheck /Users/rakheendama/Projects/2026/worktree-epic-648B/frontend
+> next typegen && tsc --noEmit -p .
+
+Generating route types...
+✓ Types generated successfully
+__tests__/trust-investments-reports.test.tsx(516,9): error TS2322: Type '{ investmentId: string; investmentAccountId: string; depositDate: string; currency: string; open: true; onOpenChange: Mock<Procedure>; onSuccess: Mock<Procedure>; }' is not assignable to type 'IntrinsicAttributes & RecordInvestmentInterestDialogProps'.
+  Property 'investmentAccountId' does not exist on type 'IntrinsicAttributes & RecordInvestmentInterestDialogProps'.
+__tests__/trust-reconciliation.test.tsx(965,9): error TS2353: Object literal may only specify known properties, and 'grossInterest' does not exist in type 'TrustInvestment'.
+__tests__/trust-wire-shapes.test.ts(12,3): error TS2305: Module '"@/lib/types/trust"' has no exported member 'InterestPresentation'.
+__tests__/trust-wire-shapes.test.ts(14,3): error TS2305: Module '"@/lib/types/trust"' has no exported member 'InvestmentInterest'.
+__tests__/trust-wire-shapes.test.ts(15,3): error TS2305: Module '"@/lib/types/trust"' has no exported member 'RecordFromLineRequest'.
+__tests__/trust-wire-shapes.test.ts(17,3): error TS2305: Module '"@/lib/types/trust"' has no exported member 'RecordInvestmentInterestRequest'.
+__tests__/trust-wire-shapes.test.ts(56,5): error TS2353: Object literal may only specify known properties, and 'INVESTMENT_INTEREST' does not exist in type 'Record<StatementLineClassification, true>'.
+__tests__/trust-wire-shapes.test.ts(443,7): error TS2353: Object literal may only specify known properties, and 'grossInterest' does not exist in type 'Required<TrustInvestment>'.
+ ELIFECYCLE  Command failed with exit code 2.

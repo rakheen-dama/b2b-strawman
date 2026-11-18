@@ -8,6 +8,7 @@ import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountSection;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustBooksService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.parser.AbsaCsvParser;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.parser.BankStatementParseException;
@@ -172,9 +173,14 @@ public class TrustReconciliationService {
   public BankStatementResponse importBankStatement(UUID accountId, MultipartFile file) {
     moduleGuard.requireModule(MODULE_ID);
 
-    trustAccountRepository
-        .findById(accountId)
-        .orElseThrow(() -> new ResourceNotFoundException("TrustAccount", accountId));
+    var account =
+        trustAccountRepository
+            .findById(accountId)
+            .orElseThrow(() -> new ResourceNotFoundException("TrustAccount", accountId));
+    // 647C found.md #1 (648B): on a section 86(4) investment account interest is the client's —
+    // the parser (which does not know the account) suggests FUND_INTEREST; it is stored as
+    // INVESTMENT_INTEREST, the classification that account accepts.
+    boolean section864 = account.getSection() == TrustAccountSection.S86_4;
 
     String tenantSchema = RequestScopes.requireTenantId();
     UUID memberId = RequestScopes.requireMemberId();
@@ -253,8 +259,12 @@ public class TrustReconciliationService {
               parsedLine.amount(),
               parsedLine.runningBalance());
       // 647C (§16.3.5): the parser's suggestion, stored at import; never acted on by the system.
-      if (parsedLine.suggestedClassification() != null) {
-        line.setSuggestedClassification(parsedLine.suggestedClassification().name());
+      var suggested = parsedLine.suggestedClassification();
+      if (section864 && suggested == StatementLineClassification.FUND_INTEREST) {
+        suggested = StatementLineClassification.INVESTMENT_INTEREST;
+      }
+      if (suggested != null) {
+        line.setSuggestedClassification(suggested.name());
       }
       savedLines.add(bankStatementLineRepository.save(line));
     }

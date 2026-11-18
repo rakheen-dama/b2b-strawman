@@ -232,10 +232,12 @@ public abstract class CsvBankStatementParser implements BankStatementParser {
    * </ul>
    *
    * <p>{@code UNIDENTIFIED_DEPOSIT} is never suggested: the absence of a match is not evidence of
-   * an unknown owner. {@code INVESTMENT_INTEREST} (a section 86(4) account) is not suggested before
-   * 648B. A zero amount, or no keyword, suggests nothing. Weak by design — a substring match, so
-   * "Sheriff fees payment" suggests a bank charge; auto-match runs first and clears the suggestion
-   * of every line it matches, and the firm always confirms.
+   * an unknown owner. {@code INVESTMENT_INTEREST} is never suggested here (the parser does not know
+   * the account): {@code TrustReconciliationService.importBankStatement} maps an interest credit's
+   * {@code FUND_INTEREST} to it for a section 86(4) investment account (648B). A zero amount, or no
+   * keyword, suggests nothing. Weak by design — a substring match, so "Sheriff fees payment"
+   * suggests a bank charge; auto-match runs first and clears the suggestion of every line it
+   * matches, and the firm always confirms.
    *
    * @return the suggestion, or null
    */

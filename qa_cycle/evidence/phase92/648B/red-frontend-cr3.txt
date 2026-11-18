@@ -1,0 +1,68 @@
+# 648B CodeRabbit pass 3 — red run 1 (dialog at 752de1e5d, before any fix): findings 2 (typed Fund share survives line->line) and 3 (line-gone alert has no id / not referenced)
+     × interest dialog blocks submit when the picked line disappears on a refetch — never a silent bank advice 86ms
+     × interest dialog clears a line's date and a typed Fund share when the source changes 114ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  __tests__/trust-investments-reports.test.tsx > Trust Investments & Reports > interest dialog blocks submit when the picked line disappears on a refetch — never a silent bank advice
+AssertionError: expected '' not to be '' // Object.is equality
+ ❯ __tests__/trust-investments-reports.test.tsx:658:25
+    656|       "An unmatched credit on the investment account's statement."
+    657|     );
+    658|     expect(gone.id).not.toBe("");
+       |                         ^
+    659|     expect(lineSelect).toHaveAttribute("aria-invalid", "true");
+    660|     expect(lineSelect).toHaveAttribute("aria-errormessage", gone.id);
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+ FAIL  __tests__/trust-investments-reports.test.tsx > Trust Investments & Reports > interest dialog clears a line's date and a typed Fund share when the source changes
+AssertionError: expected '20.01' to be '' // Object.is equality
+- Expected
++ Received
++ 20.01
+ ❯ __tests__/trust-investments-reports.test.tsx:730:29
+    728|     await user.selectOptions(lineSelect, "line-600");
+    729|     expect(date.value).toBe("2026-11-05");
+    730|     expect(fundShare.value).toBe("");
+       |                             ^
+    731|
+    732|     // Line → bank advice: neither the line's date nor a typed Fund sh…
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+--
+      Tests  2 failed | 5 passed | 12 skipped (19)
+   Start at  11:17:04
+   Duration  1.87s (transform 277ms, setup 102ms, import 777ms, tests 680ms, environment 204ms)
+
+# red run 2 (findings 2 and 3 fixed, finding 1 not yet): the line's date carries over to the bank advice
+     × interest dialog blocks submit when the picked line disappears on a refetch — never a silent bank advice 158ms
+     × interest dialog clears a line's date and a typed Fund share when the source changes 146ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  __tests__/trust-investments-reports.test.tsx > Trust Investments & Reports > interest dialog blocks submit when the picked line disappears on a refetch — never a silent bank advice
+AssertionError: expected '2026-10-31' to be '' // Object.is equality
+- Expected
++ Received
++ 2026-10-31
+ ❯ __tests__/trust-investments-reports.test.tsx:682:24
+    680|     // The lost line's date does not carry over to the advice: the fir…
+    681|     const date = within(dialog).getByLabelText("Date credited") as HTM…
+    682|     expect(date.value).toBe("");
+       |                        ^
+    683|     expect(date.readOnly).toBe(false);
+    684|     fireEvent.change(date, { target: { value: "2026-11-02" } });
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+ FAIL  __tests__/trust-investments-reports.test.tsx > Trust Investments & Reports > interest dialog clears a line's date and a typed Fund share when the source changes
+AssertionError: expected '2026-11-05' to be '' // Object.is equality
+- Expected
++ Received
++ 2026-11-05
+ ❯ __tests__/trust-investments-reports.test.tsx:735:24
+    733|     await user.type(fundShare, "30.01");
+    734|     await user.selectOptions(lineSelect, "");
+    735|     expect(date.value).toBe("");
+       |                        ^
+    736|     expect(fundShare.value).toBe("");
+    737|     expect((within(dialog).getByLabelText("Gross interest") as HTMLInp…
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+--
+      Tests  2 failed | 5 passed | 12 skipped (19)
+   Start at  11:17:22
+   Duration  1.65s (transform 247ms, setup 62ms, import 577ms, tests 768ms, environment 141ms)
+
+# green run (fix applied): Tests 19 passed (19)

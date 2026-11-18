@@ -169,7 +169,14 @@ const hasAtMostTwoDecimals = (value: number) =>
 export const recordFromStatementSchema = z
   .object({
     classification: z.enum(
-      ["FUND_INTEREST", "FUND_SWEEP", "BANK_CHARGE", "CHARGE_REFUND", "UNIDENTIFIED_DEPOSIT"],
+      [
+        "FUND_INTEREST",
+        "FUND_SWEEP",
+        "BANK_CHARGE",
+        "CHARGE_REFUND",
+        "UNIDENTIFIED_DEPOSIT",
+        "INVESTMENT_INTEREST",
+      ],
       { message: "Choose what this line is" }
     ),
     chargeRecoverable: z.boolean().optional(),
@@ -178,9 +185,41 @@ export const recordFromStatementSchema = z
       .min(0, "VAT cannot be negative")
       .refine(hasAtMostTwoDecimals, "VAT has at most two decimal places")
       .optional(),
+    // 648B: section 86(4) interest only — the investment, how the bank credited it, and (NET) the
+    // gross the bank advised; a GROSS line's amount is the gross
+    investmentId: z.string().optional(),
+    presentation: z.enum(["GROSS", "NET"]).optional(),
+    grossAmount: z
+      .number()
+      .positive("The gross interest must be more than R0,00")
+      .refine(hasAtMostTwoDecimals, "The gross interest has at most two decimal places")
+      .optional(),
     notes: z.string().max(2000).optional().or(z.literal("")),
   })
   .superRefine((data, ctx) => {
+    if (data.classification === "INVESTMENT_INTEREST") {
+      if (!data.investmentId) {
+        ctx.addIssue({ code: "custom", path: ["investmentId"], message: "Choose the investment" });
+      }
+      if (data.presentation === undefined) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["presentation"],
+          message: "Say whether the bank credited the gross or the net",
+        });
+      }
+      if (
+        data.presentation === "NET" &&
+        (data.grossAmount === undefined || Number.isNaN(data.grossAmount))
+      ) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["grossAmount"],
+          message: "Enter the gross interest the bank advised",
+        });
+      }
+      return;
+    }
     if (data.classification !== "BANK_CHARGE") {
       return;
     }
@@ -327,8 +366,30 @@ export const withdrawInvestmentSchema = z.object({
 
 export type WithdrawInvestmentFormData = z.infer<typeof withdrawInvestmentSchema>;
 
+/**
+ * 648B (ADR-379): one section 86(4) interest entry — the date the bank credited it, the gross, how
+ * it was credited (GROSS: the Fund's 5% leaves in a separate debit; NET: the 5% went at source),
+ * optionally the Fund's share as the bank shows it (within R0,01 of 5%, checked in the dialog
+ * against the gross) and the investment account's statement line it was credited on. Per
+ * investment bounds (not before the deposit date) are held in the dialog, like the withdrawal.
+ */
 export const recordInvestmentInterestSchema = z.object({
-  amount: z.number().positive("Amount must be greater than zero"),
+  entryDate: isoDate.refine((d) => d <= todayInSA(), {
+    message: "The entry date cannot be in the future.",
+  }),
+  grossAmount: z
+    .number({ message: "Enter the gross interest" })
+    .positive("The gross interest must be more than R0,00")
+    .refine(hasAtMostTwoDecimals, "The gross interest has at most two decimal places"),
+  presentation: z.enum(["GROSS", "NET"], {
+    message: "Say whether the bank credited the gross or the net",
+  }),
+  fundShareAmount: z
+    .number()
+    .min(0, "The Fund's share must be zero or more, in rand and cents.")
+    .refine(hasAtMostTwoDecimals, "The Fund's share must be zero or more, in rand and cents.")
+    .optional(),
+  bankStatementLineId: z.string().optional().or(z.literal("")),
 });
 
 export type RecordInvestmentInterestFormData = z.infer<typeof recordInvestmentInterestSchema>;

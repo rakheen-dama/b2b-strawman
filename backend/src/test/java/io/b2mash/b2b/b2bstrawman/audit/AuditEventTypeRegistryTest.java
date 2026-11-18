@@ -47,6 +47,26 @@ class AuditEventTypeRegistryTest {
   }
 
   @Test
+  void investmentInterestKeys_haveTheirLabels() {
+    // Phase 92 648B (OQ-16): explicit entries — the synthesised labels would read "Trust inv
+    // interest recorded" / "Trust investment interest_recorded".
+    var row = registry.resolve("trust_inv_interest.recorded");
+    assertThat(row.label()).isEqualTo("Section 86(4) investment interest recorded");
+    assertThat(row.severity()).isEqualTo(AuditSeverity.INFO);
+    assertThat(row.group()).isEqualTo(AuditEventGroup.FINANCIAL);
+    var share = registry.resolve("trust_fund_inv_share.recorded");
+    assertThat(share.label()).isEqualTo("Fidelity Fund share of section 86(4) interest recorded");
+    assertThat(share.group()).isEqualTo(AuditEventGroup.FINANCIAL);
+    var recorded = registry.resolve("trust_investment.interest_recorded");
+    assertThat(recorded.label()).isEqualTo("Section 86(4) interest entry recorded");
+    assertThat(recorded.severity()).isEqualTo(AuditSeverity.INFO);
+    assertThat(recorded.group()).isEqualTo(AuditEventGroup.FINANCIAL);
+    var reversed = registry.resolve("trust_investment.interest_reversed");
+    assertThat(reversed.label()).isEqualTo("Section 86(4) interest entry reversed");
+    assertThat(reversed.group()).isEqualTo(AuditEventGroup.FINANCIAL);
+  }
+
+  @Test
   void unidentifiedDepositKeys_haveTheirLabels() {
     // Phase 92 647B: explicit entries (as 647A D5) — the row recorded from the statement, and the
     // item it opens and its reversal when the line is unmatched.
@@ -258,10 +278,12 @@ class AuditEventTypeRegistryTest {
     // (Phase 92 647D) = 71.
     // + 6 trust_inv_place.* / trust_firm_inv_place.* (first_approved, approved, rejected)
     // (Phase 92 648A) = 77.
+    // + 4 trust_inv_interest.recorded, trust_fund_inv_share.recorded,
+    // trust_investment.interest_recorded / .interest_reversed (Phase 92 648B) = 81.
     // Default fallback is synthesised inside resolve() and must NOT appear in entries().
     // (Phase 86 slice 2 / Epic 596B removed the 5 deal.* SALES entries; Phase 86 slice 3 / Epic
     // 597B removed proposal.*; Phase 86 slice 7 / Epic 601 removed six ai.specialist.* entries.)
-    assertThat(registry.entries()).hasSize(77);
+    assertThat(registry.entries()).hasSize(81);
     assertThat(registry.entries())
         .extracting(AuditEventTypeMetadata::eventType)
         .doesNotContain("(default fallback)")
@@ -331,8 +353,8 @@ class AuditEventTypeRegistryTest {
 
   @Test
   void entriesMatchingWithEmptyOrNullReturnsAll() {
-    assertThat(registry.entriesMatching(Set.of())).hasSize(77);
-    assertThat(registry.entriesMatching(null)).hasSize(77);
+    assertThat(registry.entriesMatching(Set.of())).hasSize(81);
+    assertThat(registry.entriesMatching(null)).hasSize(81);
   }
 
   @Test

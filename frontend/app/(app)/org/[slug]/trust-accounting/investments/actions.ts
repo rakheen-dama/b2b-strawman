@@ -1,24 +1,60 @@
 "use server";
 
 import { api } from "@/lib/api";
-import type { PlaceInvestmentRequest, TrustInvestment } from "@/lib/types/trust";
-import type { PlaceInvestmentFormData, WithdrawInvestmentFormData } from "@/lib/schemas/trust";
+import type {
+  BankStatementLineResponse,
+  BankStatementResponse,
+  InvestmentInterest,
+  PlaceInvestmentRequest,
+  RecordInvestmentInterestRequest,
+  TrustInvestment,
+} from "@/lib/types/trust";
+import type {
+  PlaceInvestmentFormData,
+  RecordInvestmentInterestFormData,
+  WithdrawInvestmentFormData,
+} from "@/lib/schemas/trust";
 
 // -- Investments ---------------------------------------------------------
+
+type InvestmentPage = {
+  content: TrustInvestment[];
+  page: { totalElements: number; totalPages: number; size: number; number: number };
+};
+
+function investmentsUrl(accountId: string, page: number, investmentBasis?: string): string {
+  let url = `/api/trust-accounts/${accountId}/investments?page=${page}&size=100&sort=depositDate,desc`;
+  if (investmentBasis) {
+    url += `&investmentBasis=${encodeURIComponent(investmentBasis)}`;
+  }
+  return url;
+}
 
 export async function fetchInvestments(
   accountId: string,
   investmentBasis?: string
 ): Promise<TrustInvestment[]> {
-  let url = `/api/trust-accounts/${accountId}/investments?size=100&sort=depositDate,desc`;
-  if (investmentBasis) {
-    url += `&investmentBasis=${encodeURIComponent(investmentBasis)}`;
-  }
-  const response = await api.get<{
-    content: TrustInvestment[];
-    page: { totalElements: number; totalPages: number; size: number; number: number };
-  }>(url);
+  const response = await api.get<InvestmentPage>(investmentsUrl(accountId, 0, investmentBasis));
   return response.content;
+}
+
+/**
+ * The funding account's section 86(4) investments that can take an interest entry (648B): ACTIVE,
+ * with an approved placement. Reads every page — the list endpoint has no status filter, so an
+ * eligible placement older than the newest 100 must not be missed.
+ */
+export async function fetchInterestEligibleInvestments(
+  accountId: string
+): Promise<TrustInvestment[]> {
+  const all: TrustInvestment[] = [];
+  for (let page = 0; ; page++) {
+    const response = await api.get<InvestmentPage>(
+      investmentsUrl(accountId, page, "CLIENT_INSTRUCTION")
+    );
+    all.push(...response.content);
+    if (page + 1 >= response.page.totalPages) break;
+  }
+  return all.filter((inv) => inv.status === "ACTIVE" && !inv.awaitingApproval);
 }
 
 /**
@@ -59,20 +95,58 @@ export async function placeInvestment(
   }
 }
 
-export async function recordInterest(
+// -- Section 86(4) interest entries (648B, ADR-379) ------------------------
+
+/**
+ * Records one interest entry on a section 86(4) investment: the gross, the Fund's 5% and the
+ * client's 95%. From a statement line (the investment account's UNMATCHED credit) or a bank advice
+ * (no line — NET only, OQ-4). The server is the authority for every rule.
+ */
+export async function recordInvestmentInterest(
   investmentId: string,
-  amount: number
-): Promise<{ success: boolean; investment?: TrustInvestment; error?: string }> {
+  data: RecordInvestmentInterestFormData
+): Promise<{ success: boolean; interest?: InvestmentInterest; error?: string }> {
   try {
-    const investment = await api.put<TrustInvestment>(
+    const payload: RecordInvestmentInterestRequest = {
+      entryDate: data.entryDate,
+      grossAmount: data.grossAmount,
+      presentation: data.presentation,
+    };
+    if (data.fundShareAmount !== undefined) {
+      payload.fundShareAmount = data.fundShareAmount;
+    }
+    if (data.bankStatementLineId) {
+      payload.bankStatementLineId = data.bankStatementLineId;
+    }
+    const interest = await api.post<InvestmentInterest>(
       `/api/trust-investments/${investmentId}/interest`,
-      { amount }
+      payload
     );
-    return { success: true, investment };
+    return { success: true, interest };
   } catch (err) {
     const message = err instanceof Error ? err.message : "Failed to record interest";
     return { success: false, error: message };
   }
+}
+
+/**
+ * The investment account's UNMATCHED credit lines, newest first — the lines an interest entry can
+ * be recorded from (OQ-11). Only statements with an unresolved line are opened.
+ */
+export async function fetchUnmatchedCreditLines(
+  investmentAccountId: string
+): Promise<BankStatementLineResponse[]> {
+  const statements = await api.get<BankStatementResponse[]>(
+    `/api/trust-accounts/${investmentAccountId}/bank-statements`
+  );
+  const open = statements.filter((s) => s.matchedCount < s.lineCount);
+  const details = await Promise.all(
+    open.map((s) => api.get<BankStatementResponse>(`/api/bank-statements/${s.id}`))
+  );
+  return details
+    .flatMap((s) => s.lines)
+    .filter((line) => line.matchStatus === "UNMATCHED" && line.amount > 0)
+    .sort((a, b) => b.transactionDate.localeCompare(a.transactionDate));
 }
 
 /** The whole investment returns on the date (648A); the amount is derived, never typed. */

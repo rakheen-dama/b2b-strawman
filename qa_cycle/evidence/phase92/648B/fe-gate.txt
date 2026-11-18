@@ -1,0 +1,56 @@
+# 648B frontend FULL gate — node v20.11.1, /opt/homebrew/bin/pnpm, NODE_OPTIONS="" (no /opt/homebrew/bin on PATH)
+# pnpm install --frozen-lockfile; rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build
+
+## Run 1
+lint 0
+typecheck 0
+format:check 1
+test 0
+build 0
+format:check run 1 flagged 2 test files (prettier only): __tests__/trust-investments-reports.test.tsx, __tests__/trust-reconciliation.test.tsx -> prettier --write
+vitest run 1: Tests  4494 passed | 2 skipped (4496)
+build run 1: ✓ Compiled successfully in 8.6s ✓ Generating static pages using 9 workers (14/14) in 273ms 
+
+## Run 2 (after the prettier fix; test files only changed, so build not re-run)
+format:check 0
+test 0
+lint 0
+lint:   249:25  warning  Unused eslint-disable directive (no problems were reported from 'react/no-danger')
+   98:7  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/set-state-in-effect')
+  100:7  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/set-state-in-effect')
+✖ 78 problems (0 errors, 78 warnings) — 0 errors; warnings pre-existing (the one in a 648B-touched file, investments/page.tsx:81 `_slug` unused, is on main unchanged)
+format:check: All matched files use Prettier code style!
+vitest: Test Files  481 passed (481) / Tests  4494 passed | 2 skipped (4496)
+
+## Run 3 — review fix pass (SWR lookups, paginated eligible-investments action, removed uncalled actions, new tests)
+# rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build — one sequential pass, all green
+lint 0 — ✖ 78 problems (0 errors, 78 warnings) (none in a file touched by the fix pass)
+typecheck 0
+format:check 0 — All matched files use Prettier code style!
+test 0 — vitest: Test Files  483 passed (483) / Tests  4515 passed | 2 skipped (4517)
+build 0 — ✓ Compiled successfully in 8.6s
+# +21 tests vs run 2: __tests__/trust/trust-interest.test.ts (new), __tests__/trust/interest-eligible-investments.test.tsx (new),
+# trust-investments-reports.test.tsx (+1: failed line lookup + Retry)
+
+## Run 4 — fix 2 (finding 10 reverted; interest dialog refreshes the unmatched-lines SWR cache after a record)
+# rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build — one sequential pass, nvm node v20.11.1, all green
+lint 0 — ✖ 78 problems (0 errors, 78 warnings) (none in a file touched by fix 2)
+typecheck 0
+format:check 0 — All matched files use Prettier code style!
+test 0 — vitest: Test Files  483 passed (483) / Tests  4516 passed | 2 skipped (4518)
+build 0 — ✓ Compiled successfully
+# +1 test vs run 3: trust-investments-reports.test.tsx "interest dialog drops the consumed statement line from its cache after a record"
+# (confirmed to FAIL with the dialog change stashed, PASS with it)
+
+## Run 5 — CodeRabbit pass 2 (D: investments banner stale-vs-blocked; E: picked line vanished on refetch)
+# rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build — one sequential pass, nvm node v20.11.1, NODE_OPTIONS="", all green
+lint 0 — ✖ 78 problems (0 errors, 78 warnings) (none in a file touched by pass 2)
+typecheck 0
+format:check 0 — All matched files use Prettier code style!
+test 0 — vitest: Test Files  483 passed (483) / Tests  4518 passed | 2 skipped (4520)
+build 0 — ✓ Compiled successfully in 11.8s
+# +2 tests vs run 4:
+#  trust-investments-reports.test.tsx "interest dialog blocks submit when the picked line disappears on a refetch — never a silent bank advice"
+#    (confirmed to FAIL with the dialog change reverted to HEAD: "expected '' to be 'line-400'", PASS with it)
+#  trust/interest-eligible-investments.test.tsx "a failed refresh after a load keeps the last list and does not claim recording is blocked"
+#  (the existing "surfaces a failed lookup and retries it" now asserts the blocking INVESTMENTS_NOT_LOADED message)

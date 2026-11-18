@@ -22,6 +22,7 @@ import {
 } from "@/app/(app)/org/[slug]/trust-accounting/reconciliation/actions";
 import { fetchTrustAccounts } from "@/app/(app)/org/[slug]/trust-accounting/actions";
 import { fetchTransactions } from "@/app/(app)/org/[slug]/trust-accounting/transactions/actions";
+import { useInterestEligibleInvestments } from "@/hooks/use-interest-eligible-investments";
 import { formatCurrency } from "@/lib/format";
 import { todayInSA } from "@b2mash/shared/date";
 import type {
@@ -107,6 +108,16 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
     setUnmatchedTransactions([]);
     setError(null);
   }, []);
+
+  // 648B: a section 86(4) account's interest is recorded against one of its investments (SWR,
+  // keyed by account; a failed lookup shows with a retry in the review step)
+  const accountSection = accounts.find((a) => a.id === selectedAccountId)?.section;
+  const {
+    investments,
+    isLoading: loadingInvestments,
+    error: investmentsError,
+    retry: retryInvestments,
+  } = useInterestEligibleInvestments(selectedAccountId, accountSection);
 
   // Load accounts
   useEffect(() => {
@@ -637,6 +648,23 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
       {/* Step 4: Review & Match */}
       {currentStep === 4 && (
         <div className="space-y-4">
+          {accountSection === "S86_4" && loadingInvestments && (
+            <p className="text-muted-foreground text-sm" data-testid="interest-investments-loading">
+              Loading the account&apos;s investments…
+            </p>
+          )}
+          {accountSection === "S86_4" && investmentsError && (
+            <div
+              role="alert"
+              className="flex items-center justify-between gap-3 text-sm"
+              data-testid="interest-investments-error"
+            >
+              <span className="text-destructive">{investmentsError}</span>
+              <Button type="button" variant="outline" size="sm" onClick={retryInvestments}>
+                Retry
+              </Button>
+            </div>
+          )}
           <ReconciliationSplitPane
             lines={lines}
             unmatchedTransactions={unmatchedTransactions}
@@ -648,6 +676,8 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
             onRecord={handleRecord}
             onComplete={handleComplete}
             isCompleting={isCompleting}
+            accountSection={accountSection}
+            investments={investments}
           />
           <div className="flex justify-start">
             <Button type="button" variant="outline" onClick={() => setCurrentStep(3)}>

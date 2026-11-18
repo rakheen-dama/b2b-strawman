@@ -19,7 +19,12 @@ interface InvestmentPageClientProps {
   investmentBalance?: number;
   /** The investment's deposit date: a withdrawal cannot be dated earlier. */
   investmentDepositDate?: string;
-  /** Interest is recorded on an ACTIVE investment only (a MATURED one can still be withdrawn). */
+  /** The investment account that holds it (its statement lines can carry the interest, 648B). */
+  investmentAccountId?: string;
+  /**
+   * Interest is recorded on an ACTIVE section 86(4) investment only (648B: a section 86(3)
+   * investment's interest is the Fund's; a MATURED one can still be withdrawn).
+   */
   canRecordInterest?: boolean;
   currency?: string;
 }
@@ -31,7 +36,8 @@ export function InvestmentPageClient({
   investmentId,
   investmentBalance,
   investmentDepositDate,
-  canRecordInterest = true,
+  investmentAccountId,
+  canRecordInterest = false,
   currency,
 }: InvestmentPageClientProps) {
   const router = useRouter();
@@ -58,11 +64,13 @@ export function InvestmentPageClient({
     );
   }
 
+  const showInterest = canRecordInterest && investmentAccountId !== undefined;
+
   return (
     <div className="flex flex-wrap gap-2">
-      {canRecordInterest && (
+      {showInterest && (
         <Button variant="outline" size="sm" onClick={() => setInterestOpen(true)}>
-          Record Interest
+          Record interest
         </Button>
       )}
       <Button variant="outline" size="sm" onClick={() => setWithdrawOpen(true)}>
@@ -70,12 +78,17 @@ export function InvestmentPageClient({
       </Button>
       {investmentId && (
         <>
-          <RecordInvestmentInterestDialog
-            investmentId={investmentId}
-            open={interestOpen}
-            onOpenChange={setInterestOpen}
-            onSuccess={handleSuccess}
-          />
+          {showInterest && (
+            <RecordInvestmentInterestDialog
+              investmentId={investmentId}
+              investmentAccountId={investmentAccountId!}
+              depositDate={investmentDepositDate ?? ""}
+              currency={currency ?? "ZAR"}
+              open={interestOpen}
+              onOpenChange={setInterestOpen}
+              onSuccess={handleSuccess}
+            />
+          )}
           <WithdrawInvestmentDialog
             investmentId={investmentId}
             balance={investmentBalance ?? 0}

@@ -1,0 +1,10 @@
+# 648B reproduce-first — red run on unchanged production code (main 00fb5029f, tests only changed)
+# Command: ./mvnw test -Dtest="TrustInvestmentInterestMigrationTest,TrustInvestmentServiceIntegrationTest#withdrawal_isRefused_beforeTheLastInterestEntry,StatementLinePostingIntegrationTest,TrustInvestmentControllerTest,AuditEventTypeRegistryTest,ActivityMessageFormatterTest"
+# Run: 2026-11-18 08:09 SAST
+
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.StatementLinePostingIntegrationTest.fundInterest_onASection86_4InvestmentAccount_isRefused -- Time elapsed: 0.086 s <<< FAILURE!
+java.lang.AssertionError: Status expected:<400> but was:<201>
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.StatementLinePostingIntegrationTest.lambda$assertRecordRefused$0(StatementLinePostingIntegrationTest.java:1226)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.StatementLinePostingIntegrationTest.lambda$moves$1(StatementLinePostingIntegrationTest.java:1179)
+	at io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness.assertMoves(TrustBooksHarness.java:621)
+

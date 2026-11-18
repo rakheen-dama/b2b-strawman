@@ -17,8 +17,18 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccount;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountStatus;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountType;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountingConstants;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.TrustCreditorAccountRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.TrustCreditorAccountType;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTransactionApprovalEvent;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTransactionRecordedEvent;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentInterestRepository.InterestTotals;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.BankStatement;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.BankStatementLine;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.BankStatementLineRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.BankStatementRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.StatementLineClassification;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.StatementLines;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.InvestmentBalanceRow;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.InvestmentPlacementHooks;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustAmounts;
@@ -27,14 +37,17 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.Tru
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustPostingService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -80,6 +93,18 @@ import org.springframework.transaction.annotation.Transactional;
  * lock anchor); its approval, the placement row, then the funding account (section 86(3)) or the
  * client's lock anchor (section 86(4)), then the investment row; a withdrawal, the placement row,
  * then the investment row (then the client's lock anchor).
+ *
+ * <p>648B — section 86(4) interest entries ({@link TrustInvestmentInterest}, §16.3.8): {@link
+ * #recordInterest} from a bank advice, or from a statement line (here and through {@code
+ * StatementLinePostingService}, which delegates its {@code INVESTMENT_INTEREST} classification to
+ * {@link #recordInterestFromLine} — a one-way dependency; the line rules are the static {@link
+ * StatementLines}). Lock orders: a bank-advice entry, the investment row; from a line, the line,
+ * then the investment row, then the statement; {@link #reverseInterest}, the investment row, then
+ * the entry, then its rows (no client anchor: a debit of credited interest cannot take the
+ * investment ledger below its principal); an {@code INVESTMENT_INTEREST} line's unmatch, the line,
+ * then the investment row, then the entry ({@link #lockEntryForUnmatch}), then its rows and the
+ * client's anchor on the investment account, then the statement. The contra drafts come from {@link
+ * TrustPostingService#contraDraft} (no {@code TrustTransactionService} dependency).
  */
 @Service
 public class TrustInvestmentService implements InvestmentPlacementHooks {
@@ -87,6 +112,13 @@ public class TrustInvestmentService implements InvestmentPlacementHooks {
   private static final String MODULE_ID = "trust_accounting";
   private static final String PLACE_TITLE = "Cannot place investment";
   private static final String WITHDRAW_TITLE = "Cannot withdraw investment";
+  private static final String INTEREST_TITLE = "Cannot record investment interest";
+  private static final String REVERSE_INTEREST_TITLE = "Cannot reverse investment interest";
+  private static final String UNMATCH_TITLE = "Cannot unmatch statement line";
+  private static final String INTEREST_REVERSAL_REASON = "Section 86(4) interest entry reversed";
+  private static final String WITHDRAWN_WITH_INTEREST =
+      "The investment has been withdrawn with this interest; its interest entries can no longer be"
+          + " reversed.";
   private static final String ACTIVE = "ACTIVE";
   private static final String MATURED = "MATURED";
   private static final Set<String> HELD = Set.of(ACTIVE, MATURED);
@@ -105,6 +137,10 @@ public class TrustInvestmentService implements InvestmentPlacementHooks {
   private final AuditService auditService;
   private final ApplicationEventPublisher eventPublisher;
   private final Clock clock;
+  private final TrustInvestmentInterestRepository interestRepository;
+  private final BankStatementLineRepository lineRepository;
+  private final BankStatementRepository statementRepository;
+  private final TrustCreditorAccountRepository creditorAccountRepository;
 
   public TrustInvestmentService(
       TrustInvestmentRepository investmentRepository,
@@ -117,7 +153,11 @@ public class TrustInvestmentService implements InvestmentPlacementHooks {
       VerticalModuleGuard moduleGuard,
       AuditService auditService,
       ApplicationEventPublisher eventPublisher,
-      Clock clock) {
+      Clock clock,
+      TrustInvestmentInterestRepository interestRepository,
+      BankStatementLineRepository lineRepository,
+      BankStatementRepository statementRepository,
+      TrustCreditorAccountRepository creditorAccountRepository) {
     this.investmentRepository = investmentRepository;
     this.trustAccountRepository = trustAccountRepository;
     this.customerRepository = customerRepository;
@@ -129,6 +169,10 @@ public class TrustInvestmentService implements InvestmentPlacementHooks {
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
     this.clock = clock;
+    this.interestRepository = interestRepository;
+    this.lineRepository = lineRepository;
+    this.statementRepository = statementRepository;
+    this.creditorAccountRepository = creditorAccountRepository;
   }
 
   // --- DTO Records ---
@@ -156,10 +200,67 @@ public class TrustInvestmentService implements InvestmentPlacementHooks {
   public record WithdrawInvestmentRequest(@NotNull LocalDate withdrawalDate) {}
 
   /**
+   * A section 86(4) interest entry (648B, §16.3.8): {@code grossAmount} and {@code fundShareAmount}
+   * are required only as noted — {@code fundShareAmount} null means the 5% is computed (half-up to
+   * the cent); a typed share must be within R0,01 of it (OL-5). {@code bankStatementLineId} names
+   * the investment account's statement line the credit is recorded from (its date and amount must
+   * agree); null for a bank advice, which is {@code NET} only (OQ-4).
+   */
+  public record RecordInvestmentInterestRequest(
+      @NotNull LocalDate entryDate,
+      @NotNull BigDecimal grossAmount,
+      BigDecimal fundShareAmount,
+      @NotNull InterestPresentation presentation,
+      UUID bankStatementLineId) {}
+
+  /** One interest entry: gross, the Fund's 5% and the client's 95% (A2, A3). */
+  public record InvestmentInterestResponse(
+      UUID id,
+      UUID investmentId,
+      LocalDate entryDate,
+      BigDecimal grossAmount,
+      BigDecimal fundShareAmount,
+      BigDecimal netAmount,
+      String presentation,
+      String status,
+      UUID netTransactionId,
+      UUID fundShareTransactionId,
+      UUID bankStatementLineId,
+      String clientTaxReference) {
+
+    static InvestmentInterestResponse of(TrustInvestmentInterest entry) {
+      return new InvestmentInterestResponse(
+          entry.getId(),
+          entry.getInvestmentId(),
+          entry.getEntryDate(),
+          entry.getGrossAmount(),
+          entry.getFundShareAmount(),
+          entry.getNetAmount(),
+          entry.getPresentation().name(),
+          entry.getStatus(),
+          entry.getNetTransactionId(),
+          entry.getFundShareTransactionId(),
+          entry.getBankStatementLineId(),
+          entry.getClientTaxReference());
+    }
+  }
+
+  /**
+   * What {@link #recordInterestFromLine} recorded: the line (now {@code RECORDED}), the rows it
+   * created ({@code INV_INTEREST} first) and the entry's id — mapped by {@code
+   * StatementLinePostingService} into its record response.
+   */
+  public record RecordedFromLine(
+      BankStatementLine line, List<TrustTransaction> rows, UUID investmentInterestId) {}
+
+  /**
    * An investment. {@code trustAccountId} is the funding account; {@code clientId}, {@code
    * clientName} and {@code matterId} are null for section 86(3); {@code balance} is what a
    * withdrawal would return now (zero until the placement is approved and after the withdrawal);
    * {@code awaitingApproval} is true while the placement row awaits approval (nothing has moved).
+   * {@code grossInterest}, {@code fundShare} and {@code netInterest} (648B, replacing the typed
+   * {@code interestEarned}) sum the investment's POSTED interest entries — zero for section 86(3),
+   * whose interest is the Fund's.
    */
   public record TrustInvestmentResponse(
       UUID id,
@@ -175,7 +276,9 @@ public class TrustInvestmentService implements InvestmentPlacementHooks {
       BigDecimal interestRate,
       LocalDate depositDate,
       LocalDate maturityDate,
-      BigDecimal interestEarned,
+      BigDecimal grossInterest,
+      BigDecimal fundShare,
+      BigDecimal netInterest,
       BigDecimal balance,
       String status,
       boolean awaitingApproval,
@@ -489,6 +592,17 @@ public class TrustInvestmentService implements InvestmentPlacementHooks {
       throw new InvalidStateException(
           WITHDRAW_TITLE, "The withdrawal date cannot be in the future.");
     }
+    // 648B OQ-1 (a): the balance withdrawn is undated, so no posted interest entry may be dated
+    // after the withdrawal — read under the investment's lock (recordInterest takes the same lock
+    // and refuses once the investment is withdrawn)
+    var lastEntry = interestRepository.findLatestPostedEntryDate(investment.getId());
+    if (lastEntry.isPresent() && date.isBefore(lastEntry.get())) {
+      throw new InvalidStateException(
+          WITHDRAW_TITLE,
+          "The withdrawal date cannot be before the investment's last interest entry ("
+              + lastEntry.get()
+              + ").");
+    }
     // 648A review F-4: both legs post, so both accounts must be open (closing either is refused
     // while the investment is held; this covers an account closed before that guard)
     for (var accountId :
@@ -585,48 +699,584 @@ public class TrustInvestmentService implements InvestmentPlacementHooks {
     return toResponse(investment);
   }
 
-  // --- Interest (until 648B) ---
+  // --- Interest (648B, §16.3.8) ---
 
+  /**
+   * Records a section 86(4) interest entry on the investment (§16.3.8): from a bank advice ({@code
+   * NET} only — OQ-4), or from the investment account's statement line {@code request} names (its
+   * date and amount must agree). The investment must be {@code ACTIVE}, {@code CLIENT_INSTRUCTION}
+   * and its placement approved; {@code FIRM_DISCRETION} is refused (its interest is the Fund's).
+   * {@code NET} posts {@code INV_INTEREST} for the client's 95%; {@code GROSS} also posts {@code
+   * FUND_INV_SHARE} for the 5% on the account's Fund ledger. No approval: the bank credited it.
+   */
   @Transactional
-  public TrustInvestmentResponse recordInterestEarned(UUID investmentId, BigDecimal amount) {
+  public InvestmentInterestResponse recordInterest(
+      UUID investmentId, RecordInvestmentInterestRequest request) {
     moduleGuard.requireModule(MODULE_ID);
+    BankStatementLine line = null;
+    BankStatement statement = null;
+    if (request.bankStatementLineId() != null) {
+      line = lockUnmatchedLine(request.bankStatementLineId());
+    }
+    var investment = lockInvestment(investmentId);
+    if (line != null) {
+      statement = lockStatement(line);
+    }
+    var recorded =
+        record(
+            investment,
+            line,
+            statement,
+            request.entryDate(),
+            request.grossAmount(),
+            request.fundShareAmount(),
+            request.presentation(),
+            null);
+    return InvestmentInterestResponse.of(recorded);
+  }
 
+  /**
+   * Records the {@code UNMATCHED} statement line {@code lineId} as section 86(4) interest on {@code
+   * investmentId} — {@code StatementLinePostingService}'s {@code INVESTMENT_INTEREST}
+   * classification (§16.3.5): the entry is dated the line's date; for {@code GROSS} the gross is
+   * the line ({@code grossAmount} may be omitted), for {@code NET} the gross is required and its
+   * net must be the line. Lock order: the line, the investment row, the statement.
+   */
+  @Transactional
+  public RecordedFromLine recordInterestFromLine(
+      UUID lineId,
+      UUID investmentId,
+      BigDecimal grossAmount,
+      BigDecimal fundShareAmount,
+      InterestPresentation presentation,
+      String notes) {
+    moduleGuard.requireModule(MODULE_ID);
+    var line = lockUnmatchedLine(lineId);
+    var investment = lockInvestment(investmentId);
+    var statement = lockStatement(line);
+    var recorded =
+        record(
+            investment,
+            line,
+            statement,
+            line.getTransactionDate(),
+            grossAmount,
+            fundShareAmount,
+            presentation,
+            notes);
+    var rows = new ArrayList<TrustTransaction>();
+    rows.add(transactionRepository.findById(recorded.getNetTransactionId()).orElseThrow());
+    if (recorded.getFundShareTransactionId() != null) {
+      rows.add(transactionRepository.findById(recorded.getFundShareTransactionId()).orElseThrow());
+    }
+    return new RecordedFromLine(line, rows, recorded.getId());
+  }
+
+  /** The investment's interest entries, oldest first (bare list). */
+  @Transactional(readOnly = true)
+  public List<InvestmentInterestResponse> listInterest(UUID investmentId) {
+    moduleGuard.requireModule(MODULE_ID);
     var investment =
         investmentRepository
             .findById(investmentId)
             .orElseThrow(() -> new ResourceNotFoundException("TrustInvestment", investmentId));
-
-    // Verify caller has access to the associated trust account
-    var trustAccountId = investment.getTrustAccountId();
     trustAccountRepository
-        .findById(trustAccountId)
-        .orElseThrow(() -> new ResourceNotFoundException("TrustAccount", trustAccountId));
+        .findById(investment.getTrustAccountId())
+        .orElseThrow(
+            () -> new ResourceNotFoundException("TrustAccount", investment.getTrustAccountId()));
+    return interestRepository
+        .findByInvestmentIdOrderByEntryDateAscCreatedAtAsc(investmentId)
+        .stream()
+        .map(InvestmentInterestResponse::of)
+        .toList();
+  }
 
+  /**
+   * Reverses a bank-advice interest entry (§16.3.8): each of its rows by a contra dated the entry's
+   * date (so the pair leaves no trace in any as-at balance), and the entry becomes {@code
+   * REVERSED}. Refused for an entry recorded from a statement line (unmatch the line — OQ-3) or
+   * whose row has since been matched to one, and once the investment is withdrawn. Lock order: the
+   * investment row, the entry, its rows; no client anchor (OQ-17).
+   */
+  @Transactional
+  public InvestmentInterestResponse reverseInterest(UUID interestId) {
+    moduleGuard.requireModule(MODULE_ID);
+    var investmentId =
+        interestRepository
+            .findInvestmentIdById(interestId)
+            .orElseThrow(
+                () -> new ResourceNotFoundException("TrustInvestmentInterest", interestId));
+    var investment = lockInvestment(investmentId);
+    var entry =
+        interestRepository
+            .findByIdForUpdate(interestId)
+            .orElseThrow(
+                () -> new ResourceNotFoundException("TrustInvestmentInterest", interestId));
+    if (!entry.isPosted()) {
+      throw new InvalidStateException(
+          REVERSE_INTEREST_TITLE, "This interest entry has already been reversed.");
+    }
+    if (entry.getBankStatementLineId() != null) {
+      throw new InvalidStateException(
+          REVERSE_INTEREST_TITLE,
+          "This interest was recorded from a bank statement line. Unmatch the line to reverse it.");
+    }
+    if (!HELD.contains(investment.getStatus())) {
+      throw new InvalidStateException(REVERSE_INTEREST_TITLE, WITHDRAWN_WITH_INTEREST);
+    }
+    var account =
+        trustAccountRepository
+            .findById(investment.getInvestmentAccountId())
+            .orElseThrow(
+                () ->
+                    new ResourceNotFoundException(
+                        "TrustAccount", investment.getInvestmentAccountId()));
+    if (account.getStatus() == TrustAccountStatus.CLOSED) {
+      throw new InvalidStateException(REVERSE_INTEREST_TITLE, "Trust account is closed");
+    }
+
+    // Lock and check every row before the first contra, so a refusal leaves nothing half-reversed
+    var originals = new ArrayList<TrustTransaction>();
+    for (var rowId : entryRowIds(entry)) {
+      var row =
+          transactionRepository
+              .findByIdForUpdate(rowId)
+              .orElseThrow(() -> new ResourceNotFoundException("TrustTransaction", rowId));
+      if (row.getBankStatementLineId() != null) {
+        throw new InvalidStateException(
+            REVERSE_INTEREST_TITLE,
+            "This interest is matched to a bank statement line. Unmatch the line before reversing"
+                + " it.");
+      }
+      if (!"RECORDED".equals(row.getStatus()) || row.getReversedById() != null) {
+        throw new InvalidStateException(
+            REVERSE_INTEREST_TITLE, "This interest entry has already been reversed.");
+      }
+      originals.add(row);
+    }
+
+    var memberId = RequestScopes.requireMemberId();
+    var contras = new ArrayList<TrustTransaction>();
+    for (var original : originals) {
+      var contra =
+          postingService.postReversal(
+              TrustPostingService.contraDraft(
+                  original, INTEREST_REVERSAL_REASON, entry.getEntryDate(), memberId),
+              original);
+      contras.add(contra);
+      auditService.log(
+          AuditEventBuilder.builder()
+              .eventType("trust_transaction.reversed")
+              .entityType("trust_transaction")
+              .entityId(contra.getId())
+              .details(
+                  AuditDetails.matterScoped(
+                      contra.getProjectId(),
+                      original.getCustomerId(),
+                      Map.of(
+                          "original_transaction_id", original.getId().toString(),
+                          "original_type", original.getTransactionType(),
+                          "amount", original.getAmount().toString(),
+                          "reversal_status", contra.getStatus(),
+                          "reason", INTEREST_REVERSAL_REASON,
+                          "reversal_date", entry.getEntryDate().toString())))
+              .build());
+      if (contra.getCustomerId() != null) {
+        publishRecorded(contra, "REVERSAL", memberId);
+      }
+    }
+    entry.markReversed();
+    entry = interestRepository.save(entry);
+    auditInterestReversed(investment, entry, contras);
+    return InvestmentInterestResponse.of(entry);
+  }
+
+  /**
+   * The unmatch of an {@code INVESTMENT_INTEREST} line, before its rows are reversed ({@code
+   * StatementLinePostingService.unmatch}, the caller holding the line's lock): locks the investment
+   * row, then the line's POSTED entry, and refuses once the investment is withdrawn — its interest
+   * left with it, so a contra would take the investment ledger below zero.
+   */
+  @Transactional(propagation = Propagation.MANDATORY)
+  public TrustInvestmentInterest lockEntryForUnmatch(UUID bankStatementLineId) {
+    moduleGuard.requireModule(MODULE_ID);
+    var interestId =
+        interestRepository
+            .findPostedIdByBankStatementLineId(bankStatementLineId)
+            .orElseThrow(
+                () ->
+                    new IllegalStateException(
+                        "Statement line "
+                            + bankStatementLineId
+                            + " is recorded as section 86(4) interest but has no posted entry"));
+    var investmentId = interestRepository.findInvestmentIdById(interestId).orElseThrow();
+    var investment = lockInvestment(investmentId);
+    var entry = interestRepository.findByIdForUpdate(interestId).orElseThrow();
+    if (!entry.isPosted()) {
+      throw new IllegalStateException("Interest entry " + interestId + " is no longer posted");
+    }
+    if (!HELD.contains(investment.getStatus())) {
+      throw new InvalidStateException(UNMATCH_TITLE, WITHDRAWN_WITH_INTEREST);
+    }
+    return entry;
+  }
+
+  /** The unmatch reversed the entry's rows ({@code contras}): the entry becomes REVERSED. */
+  @Transactional(propagation = Propagation.MANDATORY)
+  public void markReversedByUnmatch(TrustInvestmentInterest entry, List<TrustTransaction> contras) {
+    var investment =
+        investmentRepository
+            .findById(entry.getInvestmentId())
+            .orElseThrow(
+                () -> new ResourceNotFoundException("TrustInvestment", entry.getInvestmentId()));
+    entry.markReversed();
+    var saved = interestRepository.save(entry);
+    auditInterestReversed(investment, saved, contras);
+  }
+
+  /**
+   * The one recording path. {@code line}/{@code statement} are locked (or both null for a bank
+   * advice); {@code gross} may be null only for {@code GROSS} from a line (it is then the line).
+   * Every check runs before the first write, so a refusal moves nothing.
+   */
+  private TrustInvestmentInterest record(
+      TrustInvestment investment,
+      BankStatementLine line,
+      BankStatement statement,
+      LocalDate entryDate,
+      BigDecimal grossAmount,
+      BigDecimal fundShareAmount,
+      InterestPresentation presentation,
+      String notes) {
+    // The investment (§16.3.8, OQ-7)
+    if (investment.getInvestmentBasis() != InvestmentBasis.CLIENT_INSTRUCTION) {
+      throw new InvalidStateException(
+          INTEREST_TITLE,
+          "Interest on a section 86(3) investment belongs to the Legal Practitioners' Fidelity Fund"
+              + " — record it from the investment account's statement as interest received");
+    }
     if (!ACTIVE.equals(investment.getStatus())) {
       throw new InvalidStateException(
-          "Invalid investment state", "Investment must be ACTIVE to record interest earned");
+          INTEREST_TITLE, "Interest is recorded on an active section 86(4) investment only.");
     }
-
-    if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+    var placement =
+        transactionRepository
+            .findById(investment.getDepositTransactionId())
+            .orElseThrow(
+                () ->
+                    new ResourceNotFoundException(
+                        "TrustTransaction", investment.getDepositTransactionId()));
+    if (!"APPROVED".equals(placement.getStatus()) || placement.getPostedAt() == null) {
       throw new InvalidStateException(
-          "Invalid amount", "Interest amount must be greater than zero");
+          INTEREST_TITLE,
+          "The investment's placement must be approved before interest is recorded (the placement"
+              + " is "
+              + placement.getStatus().toLowerCase(Locale.ROOT).replace('_', ' ')
+              + ").");
+    }
+    var accountId = investment.getInvestmentAccountId();
+
+    // The line (§16.3.5 rules 1–3; OQ-6)
+    var lineAmount = line == null ? null : line.getAmount().abs();
+    if (line != null) {
+      if (!accountId.equals(statement.getTrustAccountId())) {
+        throw new InvalidStateException(
+            StatementLines.RECORD_TITLE,
+            "This statement line is not on the investment account that holds the investment.");
+      }
+      StatementLines.requireSignAgrees(
+          StatementLineClassification.INVESTMENT_INTEREST, line.getAmount());
+      if (!line.getTransactionDate().equals(entryDate)) {
+        throw new InvalidStateException(
+            StatementLines.RECORD_TITLE,
+            "The entry date is the statement line's date (" + line.getTransactionDate() + ").");
+      }
+    }
+    var account =
+        trustAccountRepository
+            .findById(accountId)
+            .orElseThrow(() -> new ResourceNotFoundException("TrustAccount", accountId));
+    if (account.getStatus() != TrustAccountStatus.ACTIVE) {
+      throw new InvalidStateException(
+          INTEREST_TITLE, "The investment account must be active to record interest on it.");
+    }
+    if (entryDate.isBefore(investment.getDepositDate())) {
+      throw new InvalidStateException(
+          INTEREST_TITLE, "The entry date cannot be before the investment's deposit date.");
+    }
+    if (entryDate.isAfter(LocalDate.now(clock))) {
+      throw new InvalidStateException(INTEREST_TITLE, "The entry date cannot be in the future.");
     }
 
-    investment.setInterestEarned(investment.getInterestEarned().add(amount));
-    investment = investmentRepository.save(investment);
+    // The amounts: 5% half-up, a typed share within the tolerance (OL-5, OQ-7, OQ-18)
+    var gross = grossAmount;
+    if (gross == null && line != null && presentation == InterestPresentation.GROSS) {
+      gross = lineAmount;
+    }
+    if (gross == null) {
+      throw new InvalidStateException(
+          INTEREST_TITLE,
+          "A net interest credit needs the gross interest the bank advised (the statement line is"
+              + " the client's 95%).");
+    }
+    TrustAmounts.requireValid(gross);
+    gross = gross.setScale(2, RoundingMode.UNNECESSARY);
+    if (presentation == InterestPresentation.GROSS && line == null) {
+      throw new InvalidStateException(
+          INTEREST_TITLE,
+          "A gross interest credit is recorded from the investment account's statement line (the"
+              + " Fund's 5% leaves in a separate debit).");
+    }
+    var computed =
+        gross
+            .multiply(TrustAccountingConstants.STATUTORY_LPFF_SHARE_PERCENT)
+            .setScale(2, RoundingMode.HALF_UP);
+    var fund = computed;
+    if (fundShareAmount != null) {
+      if (fundShareAmount.signum() < 0 || fundShareAmount.stripTrailingZeros().scale() > 2) {
+        throw new InvalidStateException(
+            INTEREST_TITLE, "The Fund's share must be zero or more, in rand and cents.");
+      }
+      if (fundShareAmount
+              .subtract(computed)
+              .abs()
+              .compareTo(TrustAccountingConstants.STATUTORY_LPFF_SHARE_TOLERANCE)
+          > 0) {
+        throw new InvalidStateException(
+            INTEREST_TITLE,
+            "The Fund's share must be within R0,01 of 5% of the gross interest ("
+                + rand(computed)
+                + ").");
+      }
+      fund = fundShareAmount.setScale(2, RoundingMode.UNNECESSARY);
+    }
+    var net = gross.subtract(fund);
+    if (net.signum() <= 0) {
+      throw new InvalidStateException(
+          INTEREST_TITLE, "The client's share of the interest must be more than R0,00.");
+    }
+    if (line != null) {
+      if (presentation == InterestPresentation.GROSS && gross.compareTo(lineAmount) != 0) {
+        throw new InvalidStateException(
+            StatementLines.RECORD_TITLE,
+            "The statement line is "
+                + rand(lineAmount)
+                + "; a gross presentation records the line's whole amount as gross.");
+      }
+      if (presentation == InterestPresentation.NET && net.compareTo(lineAmount) != 0) {
+        throw new InvalidStateException(
+            StatementLines.RECORD_TITLE,
+            "The statement line is "
+                + rand(lineAmount)
+                + "; gross "
+                + rand(gross)
+                + " less the Fund's 5% ("
+                + rand(fund)
+                + ") is "
+                + rand(net)
+                + ".");
+      }
+    }
+    if (presentation == InterestPresentation.GROSS && fund.signum() == 0) {
+      throw new InvalidStateException(
+          INTEREST_TITLE,
+          "A gross interest credit this small has no Fund share to record separately; record it as"
+              + " net of the Fund's 5%.");
+    }
 
-    auditService.log(
-        AuditEventBuilder.builder()
-            .eventType("trust_investment.interest_recorded")
-            .entityType("trust_investment")
-            .entityId(investment.getId())
-            .details(
-                Map.of(
-                    "amount", amount.toString(),
-                    "total_interest_earned", investment.getInterestEarned().toString()))
-            .build());
+    // The rows (§16.3.5 rule 3 from a line; Kazi's reference for a bank advice — INV-INT-{hex}-{n},
+    // n the entry's ordinal on the investment, safe because every caller holds the investment's
+    // lock)
+    var memberId = RequestScopes.requireMemberId();
+    var reference =
+        line != null
+            ? StatementLines.referenceFor(line)
+            : "INV-INT-"
+                + hex(investment)
+                + "-"
+                + (interestRepository.countByInvestmentId(investment.getId()) + 1);
+    var description =
+        line != null
+            ? line.getDescription()
+            : "Section 86(4) investment interest (" + investment.getInstitution() + ")";
+    var netDraft =
+        new TrustTransaction(
+            accountId,
+            "INV_INTEREST",
+            net,
+            investment.getCustomerId(),
+            investment.getProjectId(),
+            null,
+            reference,
+            description,
+            entryDate,
+            "RECORDED",
+            memberId);
+    netDraft.setInvestmentId(investment.getId());
+    netDraft.setBankStatementLineId(line == null ? null : line.getId());
+    var netRow = postingService.record(netDraft);
+    var rows = new ArrayList<TrustTransaction>(List.of(netRow));
+    TrustTransaction fundRow = null;
+    if (presentation == InterestPresentation.GROSS) {
+      var fundLedger =
+          creditorAccountRepository
+              .findByTrustAccountIdAndAccountType(
+                  accountId, TrustCreditorAccountType.FUND_INTEREST_AND_CHARGES)
+              .orElseThrow(
+                  () ->
+                      new IllegalStateException(
+                          "Trust account "
+                              + accountId
+                              + " has no FUND_INTEREST_AND_CHARGES account"));
+      var fundDraft =
+          new TrustTransaction(
+              accountId,
+              "FUND_INV_SHARE",
+              fund,
+              null,
+              null,
+              null,
+              reference,
+              description,
+              entryDate,
+              "RECORDED",
+              memberId);
+      fundDraft.setCreditorAccountId(fundLedger.getId());
+      fundDraft.setInvestmentId(investment.getId());
+      fundDraft.setBankStatementLineId(line == null ? null : line.getId());
+      fundRow = postingService.record(fundDraft);
+      rows.add(fundRow);
+    }
 
-    return toResponse(investment);
+    // The entry, with the client's tax reference where held (a snapshot — A3)
+    var taxReference =
+        customerRepository
+            .findById(investment.getCustomerId())
+            .map(Customer::getTaxNumber)
+            .filter(t -> !t.isBlank())
+            .orElse(null);
+    var entry =
+        interestRepository.save(
+            new TrustInvestmentInterest(
+                investment.getId(),
+                entryDate,
+                gross,
+                fund,
+                net,
+                presentation,
+                netRow.getId(),
+                fundRow == null ? null : fundRow.getId(),
+                line == null ? null : line.getId(),
+                taxReference,
+                memberId));
+
+    // The line (rule 4) and the audit trail
+    if (line != null) {
+      StatementLines.markRecorded(
+          line, statement, StatementLineClassification.INVESTMENT_INTEREST, netRow);
+      lineRepository.save(line);
+      statementRepository.save(statement);
+      StatementLines.auditRecorded(
+          auditService,
+          line,
+          StatementLineClassification.INVESTMENT_INTEREST,
+          lineAmount,
+          rows,
+          notes);
+    } else {
+      for (var row : rows) {
+        auditService.log(
+            AuditEventBuilder.builder()
+                .eventType(
+                    TrustTransactionType.of(row.getTransactionType()).auditKey() + ".recorded")
+                .entityType("trust_transaction")
+                .entityId(row.getId())
+                .details(StatementLines.rowDetails(row))
+                .build());
+      }
+    }
+    var details = baseDetails(investment);
+    details.put("amount", gross.toPlainString());
+    details.put("gross", gross.toPlainString());
+    details.put("fund_share", fund.toPlainString());
+    details.put("net", net.toPlainString());
+    details.put("presentation", presentation.name());
+    details.put("entry_date", entryDate.toString());
+    details.put("interest_id", entry.getId().toString());
+    details.put("net_transaction_id", netRow.getId().toString());
+    if (line != null) {
+      details.put("bank_statement_line_id", line.getId().toString());
+    }
+    audit("trust_investment.interest_recorded", investment, details);
+
+    // The client's investment-ledger row (portal sync admits CLIENT rows only until 648D)
+    publishRecorded(netRow, netRow.getTransactionType(), memberId);
+    return entry;
+  }
+
+  private void auditInterestReversed(
+      TrustInvestment investment, TrustInvestmentInterest entry, List<TrustTransaction> contras) {
+    var details = baseDetails(investment);
+    details.put("amount", entry.getGrossAmount().toPlainString());
+    details.put("gross", entry.getGrossAmount().toPlainString());
+    details.put("fund_share", entry.getFundShareAmount().toPlainString());
+    details.put("net", entry.getNetAmount().toPlainString());
+    details.put("presentation", entry.getPresentation().name());
+    details.put("interest_id", entry.getId().toString());
+    details.put(
+        "reversed_transaction_ids",
+        contras.stream().map(contra -> contra.getReversalOf().toString()).toList());
+    if (entry.getBankStatementLineId() != null) {
+      details.put("bank_statement_line_id", entry.getBankStatementLineId().toString());
+    }
+    audit("trust_investment.interest_reversed", investment, details);
+  }
+
+  /** The entry's rows in order: the net row, then the Fund share (GROSS only). */
+  private static List<UUID> entryRowIds(TrustInvestmentInterest entry) {
+    return entry.getFundShareTransactionId() == null
+        ? List.of(entry.getNetTransactionId())
+        : List.of(entry.getNetTransactionId(), entry.getFundShareTransactionId());
+  }
+
+  private TrustInvestment lockInvestment(UUID investmentId) {
+    return investmentRepository
+        .findByIdForUpdate(investmentId)
+        .orElseThrow(() -> new ResourceNotFoundException("TrustInvestment", investmentId));
+  }
+
+  /** Locks the line (rule 1 — first in every interest lock order) and checks it is UNMATCHED. */
+  private BankStatementLine lockUnmatchedLine(UUID lineId) {
+    var line =
+        lineRepository
+            .findByIdForUpdate(lineId)
+            .orElseThrow(() -> new ResourceNotFoundException("BankStatementLine", lineId));
+    StatementLines.requireUnmatched(line);
+    return line;
+  }
+
+  /** Locks the line's statement (it serialises the matched_count update). */
+  private BankStatement lockStatement(BankStatementLine line) {
+    return statementRepository
+        .findByIdForUpdate(line.getBankStatementId())
+        .orElseThrow(
+            () -> new ResourceNotFoundException("BankStatement", line.getBankStatementId()));
+  }
+
+  /** A client row posted: the portal read-model re-projects (CLIENT rows only until 648D). */
+  private void publishRecorded(TrustTransaction row, String type, UUID memberId) {
+    eventPublisher.publishEvent(
+        TrustTransactionRecordedEvent.recorded(
+            row.getId(),
+            row.getTrustAccountId(),
+            row.getProjectId(),
+            type,
+            row.getAmount(),
+            row.getTransactionDate(),
+            row.getCustomerId(),
+            memberId,
+            RequestScopes.getTenantIdOrNull(),
+            RequestScopes.getOrgIdOrNull()));
   }
 
   // --- Reads ---
@@ -759,9 +1409,9 @@ public class TrustInvestmentService implements InvestmentPlacementHooks {
   }
 
   /**
-   * Batch-loaded names, balances and placement statuses for a page: four queries at most, never one
-   * per row. A section 86(3) investment has no client ({@code clientName} null); a deleted client
-   * reads "(deleted customer)".
+   * Batch-loaded names, balances, interest totals and placement statuses for a page: five queries
+   * at most, never one per row. A section 86(3) investment has no client ({@code clientName} null);
+   * a deleted client reads "(deleted customer)".
    */
   private List<TrustInvestmentResponse> toResponses(List<TrustInvestment> investments) {
     if (investments.isEmpty()) {
@@ -793,6 +1443,14 @@ public class TrustInvestmentService implements InvestmentPlacementHooks {
                 .filter(t -> "AWAITING_APPROVAL".equals(t.getStatus()))
                 .map(TrustTransaction::getId)
                 .collect(Collectors.toSet());
+    // 648B: the POSTED interest entries' totals, one query for the page
+    Map<UUID, InterestTotals> interest =
+        interestRepository
+            .sumPostedByInvestmentIds(ids(investments, TrustInvestment::getId))
+            .stream()
+            .collect(
+                Collectors.toMap(
+                    InterestTotals::getInvestmentId, Function.identity(), (a, b) -> a));
     Map<UUID, BigDecimal> balances =
         ledgerQueries.investmentBalances(ids(investments, TrustInvestment::getId)).stream()
             .collect(
@@ -819,7 +1477,9 @@ public class TrustInvestmentService implements InvestmentPlacementHooks {
                     inv.getInterestRate(),
                     inv.getDepositDate(),
                     inv.getMaturityDate(),
-                    inv.getInterestEarned(),
+                    totalOr0(interest.get(inv.getId()), InterestTotals::getGross),
+                    totalOr0(interest.get(inv.getId()), InterestTotals::getFundShare),
+                    totalOr0(interest.get(inv.getId()), InterestTotals::getNet),
                     balances.getOrDefault(inv.getId(), BigDecimal.ZERO),
                     inv.getStatus(),
                     inv.getDepositTransactionId() != null
@@ -833,6 +1493,11 @@ public class TrustInvestmentService implements InvestmentPlacementHooks {
                     inv.getCreatedAt(),
                     inv.getUpdatedAt()))
         .toList();
+  }
+
+  private static BigDecimal totalOr0(
+      InterestTotals totals, Function<InterestTotals, BigDecimal> field) {
+    return totals == null || field.apply(totals) == null ? BigDecimal.ZERO : field.apply(totals);
   }
 
   private static Collection<UUID> ids(

@@ -1,0 +1,28 @@
+# 648B reproduce-first — full vitest (pnpm test, never narrowed) on unchanged production code
+# node v20.11.1
+ FAIL  __tests__/trust-investment-basis.test.tsx > Epic 455 / 648A — Investment Basis and investment accounts > register fits the card: eight columns, secondary facts stacked, badges and actions wrap
+TestingLibraryElementError: Unable to find an element by: [data-testid="investment-interest-fund-note"]
+ FAIL  __tests__/trust-investments-reports.test.tsx > Trust Investments & Reports > a section 86(3) investment offers no interest action and points to its account's statement
+TestingLibraryElementError: Unable to find an accessible element with the role "button" and name "Record interest"
+ FAIL  __tests__/trust-investments-reports.test.tsx > Trust Investments & Reports > interest dialog records a gross credit from its statement line: Fund R20,00, client R380,00
+AssertionError: expected "vi.fn()" to be called with arguments: [ Array(1) ]
+ FAIL  __tests__/trust-investments-reports.test.tsx > Trust Investments & Reports > interest dialog records a bank advice net of the Fund's 5%: gross R100,00 → R5,00 / R95,00
+AssertionError: expected "vi.fn()" to be called at least once
+ FAIL  __tests__/trust-investments-reports.test.tsx > Trust Investments & Reports > interest dialog refuses a typed Fund share more than R0,01 from 5% of the gross
+TestingLibraryElementError: Unable to find a label with the text of: Statement line
+ FAIL  __tests__/trust-reconciliation.test.tsx > Trust Reconciliation > record from statement (647A) > pins the six classification labels to the registry's firm labels
+AssertionError: expected [ [ 'FUND_INTEREST', 1, …(1) ], …(4) ] to deeply equal [ [ 'FUND_INTEREST', 1, …(1) ], …(5) ]
+ FAIL  __tests__/trust-reconciliation.test.tsx > Trust Reconciliation > record from statement (647A) > on a section 86(4) account offers a credit investment interest and a charge refund, never Fund interest
+AssertionError: expected [ 'FUND_INTEREST', …(2) ] to deeply equal [ 'CHARGE_REFUND', …(1) ]
+ FAIL  __tests__/trust-reconciliation.test.tsx > Trust Reconciliation > record from statement (647A) > on a section 86(3) account offers a credit Fund interest and a charge refund, no unidentified deposit
+AssertionError: expected [ 'FUND_INTEREST', …(2) ] to deeply equal [ 'FUND_INTEREST', 'CHARGE_REFUND' ]
+ FAIL  __tests__/trust-reconciliation.test.tsx > Trust Reconciliation > record from statement (647A) > records a gross interest line against the investment: the line is the gross, Fund R20,00 / client R380,00
+TestingLibraryElementError: Unable to find an accessible element with the role "radio" and name "Section 86(4) investment interest"
+ FAIL  __tests__/trust-reconciliation.test.tsx > Trust Reconciliation > record from statement (647A) > records a net interest line with the gross the bank advised: gross R100,00 → R5,00 / R95,00
+TestingLibraryElementError: Unable to find an accessible element with the role "radio" and name "Section 86(4) investment interest"
+ FAIL  __tests__/trust-reconciliation.test.tsx > Trust Reconciliation > record from statement (647A) > asks section 86(4) interest for the investment and the presentation before recording
+TestingLibraryElementError: Unable to find an accessible element with the role "radio" and name "Section 86(4) investment interest"
+ FAIL  __tests__/trust-reconciliation.test.tsx > Trust Reconciliation > record from statement (647A) > pre-selects a section 86(4) interest suggestion on a section 86(4) account (647C, 648B)
+TestingLibraryElementError: Unable to find an accessible element with the role "radio" and name "Section 86(4) investment interest"
+ Test Files  3 failed | 478 passed (481)
+      Tests  12 failed | 4482 passed | 2 skipped (4496)

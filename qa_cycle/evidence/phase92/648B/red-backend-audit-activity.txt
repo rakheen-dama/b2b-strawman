@@ -1,0 +1,61 @@
+# 648B reproduce-first — red run on unchanged production code (main 00fb5029f, tests only changed)
+# Command: ./mvnw test -Dtest="TrustInvestmentInterestMigrationTest,TrustInvestmentServiceIntegrationTest#withdrawal_isRefused_beforeTheLastInterestEntry,StatementLinePostingIntegrationTest,TrustInvestmentControllerTest,AuditEventTypeRegistryTest,ActivityMessageFormatterTest"
+# Run: 2026-11-18 08:09 SAST
+
+[ERROR] io.b2mash.b2b.b2bstrawman.audit.AuditEventTypeRegistryTest.entriesReturnsFullCatalogueExcludingDefaultFallback -- Time elapsed: 0.009 s <<< FAILURE!
+java.lang.AssertionError: 
+
+Expected size: 81 but was: 77 in:
+[AuditEventTypeMetadata[eventType=security.login.failure, label=Login Failed, severity=WARNING, group=SECURITY],
+
+[ERROR] io.b2mash.b2b.b2bstrawman.audit.AuditEventTypeRegistryTest.entriesMatchingWithEmptyOrNullReturnsAll -- Time elapsed: 0 s <<< FAILURE!
+java.lang.AssertionError: 
+
+Expected size: 81 but was: 77 in:
+[AuditEventTypeMetadata[eventType=security.login.failure, label=Login Failed, severity=WARNING, group=SECURITY],
+
+[ERROR] io.b2mash.b2b.b2bstrawman.audit.AuditEventTypeRegistryTest.investmentInterestKeys_haveTheirLabels -- Time elapsed: 0 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+
+expected: "Section 86(4) investment interest recorded"
+ but was: "Trust inv interest recorded"
+	at io.b2mash.b2b.b2bstrawman.audit.AuditEventTypeRegistryTest.investmentInterestKeys_haveTheirLabels(AuditEventTypeRegistryTest.java:54)
+
+
+[ERROR] io.b2mash.b2b.b2bstrawman.activity.ActivityMessageFormatterTest.legalTemplateRendersSentence(String, String, Map, String)[77] -- Time elapsed: 0.008 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+
+expected: "Alice recorded a statement line as section 86(4) investment interest of R400,00"
+ but was: "Alice recorded a statement line of R400,00"
+
+[ERROR] io.b2mash.b2b.b2bstrawman.activity.ActivityMessageFormatterTest.legalTemplateRendersSentence(String, String, Map, String)[78] -- Time elapsed: 0.001 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+
+expected: "Alice recorded section 86(4) investment interest of R380,00 (INT-OCT)"
+ but was: "Alice recorded a trust transaction"
+
+[ERROR] io.b2mash.b2b.b2bstrawman.activity.ActivityMessageFormatterTest.legalTemplateRendersSentence(String, String, Map, String)[79] -- Time elapsed: 0 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+
+expected: "Alice recorded the Legal Practitioners' Fidelity Fund's 5% share of section 86(4) interest of R20,00 (INT-OCT)"
+ but was: "Alice recorded a trust transaction"
+
+[ERROR] io.b2mash.b2b.b2bstrawman.activity.ActivityMessageFormatterTest.legalTemplateRendersSentence(String, String, Map, String)[80] -- Time elapsed: 0 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+
+expected: "Alice recorded section 86(4) investment interest of R100,00 gross"
+ but was: "Alice updated a trust investment"
+
+[ERROR] io.b2mash.b2b.b2bstrawman.activity.ActivityMessageFormatterTest.legalTemplateRendersSentence(String, String, Map, String)[81] -- Time elapsed: 0 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+
+expected: "Alice recorded section 86(4) investment interest"
+ but was: "Alice updated a trust investment"
+
+[ERROR] io.b2mash.b2b.b2bstrawman.activity.ActivityMessageFormatterTest.legalTemplateRendersSentence(String, String, Map, String)[82] -- Time elapsed: 0 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+
+expected: "Alice reversed a section 86(4) interest entry of R100,00 gross"
+ but was: "Alice updated a trust investment"
+
+[ERROR] Tests run: 320, Failures: 22, Errors: 1, Skipped: 0

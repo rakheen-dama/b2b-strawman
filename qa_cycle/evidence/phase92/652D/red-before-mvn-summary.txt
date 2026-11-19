@@ -1,0 +1,9 @@
+[ERROR] Tests run: 8, Failures: 3, Errors: 0, Skipped: 0, Time elapsed: 30.98 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.statement.StatementBuilderClosedPrimaryAccountIntegrationTest
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.statement.StatementBuilderClosedPrimaryAccountIntegrationTest.b_primaryClosed_clientTrustStatement_readsTheAccountHoldingTheMoney -- Time elapsed: 0.319 s <<< FAILURE!
+expected: "CPA Replacement Trust Account"
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.statement.StatementBuilderClosedPrimaryAccountIntegrationTest.b_primaryClosed_bothDocumentsRender_withTheMoneyHeld -- Time elapsed: 0.061 s <<< FAILURE!
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.statement.StatementBuilderClosedPrimaryAccountIntegrationTest.b_primaryClosed_statementOfAccount_readsTheAccountHoldingTheMoney -- Time elapsed: 0.023 s <<< FAILURE!
+expected: 10000.00
+expected: "CPA Replacement Trust Account"
+expected: 10000.00
+[ERROR] Tests run: 8, Failures: 3, Errors: 0, Skipped: 0

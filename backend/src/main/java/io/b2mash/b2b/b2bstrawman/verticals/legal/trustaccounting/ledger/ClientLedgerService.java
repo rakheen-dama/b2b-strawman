@@ -329,6 +329,19 @@ public class ClientLedgerService {
   }
 
   /**
+   * What is held for the client in section 86(4) investments placed from {@code fundingAccountId},
+   * as at {@code asAt} ({@code TrustLedgerQueryRepository.clientInvestedBalance}; never null — the
+   * query COALESCEs to zero). With {@link #getClientBalanceAsOfDate} it makes the client's money
+   * held on the account: a placement moves it from the general to the invested balance (652D D-2).
+   */
+  @Transactional(readOnly = true)
+  public BigDecimal getClientInvestedBalanceAsOfDate(
+      UUID customerId, UUID fundingAccountId, LocalDate asAt) {
+    moduleGuard.requireModule(MODULE_ID);
+    return ledgerQueries.clientInvestedBalance(fundingAccountId, customerId, asAt);
+  }
+
+  /**
    * Client ledgers and every trust creditor as at {@code asAt} (null = today, {@code
    * LocalDate.now(clock)}) — 646D. 404 for an unknown account ({@link TrustBooksService#position}).
    */

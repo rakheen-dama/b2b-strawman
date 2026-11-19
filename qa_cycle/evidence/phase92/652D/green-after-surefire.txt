@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: io.b2mash.b2b.b2bstrawman.verticals.legal.statement.StatementBuilderClosedPrimaryAccountIntegrationTest
+-------------------------------------------------------------------------------
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.613 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.statement.StatementBuilderClosedPrimaryAccountIntegrationTest

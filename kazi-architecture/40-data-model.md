@@ -67,7 +67,7 @@ The hub of the domain. Rows in `customers` (`A1-backend-map.md:154`) carry `life
 `checklist_templates` (`A1-backend-map.md:304`) carries `customerType`, `source`, `packId`, `autoInstantiate`. Auto-creates `ChecklistInstance` (`A1-backend-map.md:305`) per matching customer; instance carries `templateId`, `customerId`, `status`, `startedAt`, `completedAt`.
 
 <a id="anchor-trustaccount"></a>**`TrustAccount`** — `trust-accounting` *(legal-vertical only)* (`30-modules/trust-accounting.md`)
-Lives under `verticals/legal/trustaccounting/`. Companion entities: `TrustTransaction`, client ledgers, LPFF interest runs, Section 86 investments. FK to matter (`Project`) and customer. Module-gated at every service entry. Hard-guarded against accounting-sync export (ADR-276). See `60-verticals/legal-za.md`.
+Lives under `verticals/legal/trustaccounting/`. A trust account is a firm bank account (`trust_accounts` has no client or matter column); its `TrustTransaction` rows carry the client (`customer_id`), the matter (`project_id`) and the posting effects every balance is summed from (ADR-378). Companion entities: client ledgers (derived; `client_ledger_cards` is only the per-client lock anchor), non-client trust creditor accounts (the Fund interest-and-charges ledger, unidentified deposits), Section 86 investments and their interest entries, reconciliations and the Rule 54.15 monthly lists (Phase 92, tenant V16–V28). Module-gated at every service entry. Hard-guarded against accounting-sync export (ADR-276). See `30-modules/trust-accounting.md` and `60-verticals/legal-za.md`.
 
 <a id="anchor-portalcontact"></a>**`PortalContact`** — `customer-portal` (`30-modules/customer-portal.md`)
 `portal_contacts` (`A1-backend-map.md:264`) carries `customerId`, `email`, `displayName`, `role`, `status`. Authenticated via `MagicLinkToken` (`A1-backend-map.md:265`) with `tokenHash`, `expiresAt`, `usedAt`. Hourly cleanup job. Note UI naming divergence — see § 10.
@@ -99,7 +99,7 @@ erDiagram
     CUSTOMER ||--o{ INFORMATION_REQUEST : "requested-from"
     CUSTOMER ||--o{ CHECKLIST_INSTANCE : "compliance-for"
     CUSTOMER ||--o{ PORTAL_CONTACT : "has"
-    CUSTOMER ||--o{ TRUST_ACCOUNT : "legal-only"
+    CUSTOMER ||--o{ TRUST_TRANSACTION : "client-ledger (legal-only)"
     PROJECT ||--o{ TASK : "contains"
     PROJECT ||--o{ EXPENSE : "incurs"
     PROJECT ||--o{ PROJECT_MEMBER : "staffed-by"
@@ -119,8 +119,8 @@ erDiagram
     INFORMATION_REQUEST }o--|| REQUEST_TEMPLATE : "from"
     INFORMATION_REQUEST ||--o{ REQUEST_ITEM : "has"
     CHECKLIST_INSTANCE }o--|| CHECKLIST_TEMPLATE : "from"
-    TRUST_ACCOUNT }o--|| PROJECT : "matter"
-    TRUST_ACCOUNT ||--o{ TRUST_TRANSACTION : "ledger"
+    PROJECT ||--o{ TRUST_TRANSACTION : "matter"
+    TRUST_ACCOUNT ||--o{ TRUST_TRANSACTION : "cashbook"
     PROJECT_MEMBER }o--|| MEMBER : "links"
     MEMBER }o--|| ORG_ROLE : "has-role"
     CUSTOMER {
@@ -155,8 +155,17 @@ erDiagram
     }
     TRUST_ACCOUNT {
         uuid id
+        string account_type
+        string investment_basis
+    }
+    TRUST_TRANSACTION {
+        uuid id
+        uuid trust_account_id
         uuid customer_id
-        uuid matter_project_id
+        uuid project_id
+        string ledger
+        decimal cashbook_effect
+        decimal ledger_effect
     }
 ```
 
@@ -223,7 +232,7 @@ A fifth weakly-polymorphic shape: `GeneratedDocument(primaryEntityType, primaryE
 Per `60-verticals/legal-za.md` and `20-cross-cutting/multi-vertical.md`, **legal-vertical adds entities but does not modify core entities.** The legal-only tables live under `verticals/legal/` packages:
 
 - `TariffSchedule` + `TariffItem` (`A1-backend-map.md:364-365`) — court-tariff pricing.
-- `TrustAccount`, `TrustTransaction`, client ledgers, LPFF interest runs, Section 86 investments — `verticals/legal/trustaccounting/`.
+- `TrustAccount`, `TrustTransaction`, client ledgers (derived), trust creditor accounts, unidentified deposits, interest memos, Section 86 investments and their interest entries, reconciliations, monthly lists — `verticals/legal/trustaccounting/`.
 
 Universal core tables (`Customer`, `Project`, `Invoice`, etc.) carry **no legal-specific columns**. Vertical-specific behaviour is enforced by:
 

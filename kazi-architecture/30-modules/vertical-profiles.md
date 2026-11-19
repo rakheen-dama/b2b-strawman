@@ -220,7 +220,7 @@ Profile JSON files (the seed data this module loads):
 **Concrete failure modes** when a tenant is moved `legal-za → consulting-generic`:
 
 - `trust_accounting` remains in `enabledModules` (because `consulting-generic.enabledModules` is `[]`, nothing gets *removed*). The trust-accounting service entry points still pass their `requireModule(...)` checks. UI is hidden by nav-tree filters that key off `verticalProfile`, but the API is reachable.
-- Trust account rows, client-ledger rows, LPFF interest runs, Section 86 investment records — all remain in the tenant schema. The `verticals/legal/trustaccounting/*` tables exist in every schema regardless of profile (per ADR-191), so the data is queryable.
+- Trust account rows, trust transactions (from which client and non-client ledger balances are derived), Section 86 investment records, monthly lists — all remain in the tenant schema. The `verticals/legal/trustaccounting/*` tables exist in every schema regardless of profile (per ADR-191), so the data is queryable.
 - Legal document templates (`legal-za` template pack) remain installed. Conveyancing clauses remain. FICA checklist templates remain. The `pack_install` table still has rows for them.
 - Terminology namespace switches (`en-ZA-legal` → null/default), so the UI says "Customers" and "Projects" again — but matters that were created with `Project.matter_*` legal-only column data still carry that data.
 

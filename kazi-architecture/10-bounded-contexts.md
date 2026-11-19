@@ -28,7 +28,7 @@ DOMAIN CORE
 MONEY
 ├── invoicing                       Invoice, lines, payments, tax, batch (BillingRun)
 ├── retainers                       agreements, periods, consumption, rollover
-└── trust-accounting   [vertical]   GENERAL/INVESTMENT/SECTION_86, dual-approval, LPFF
+└── trust-accounting   [vertical]   GENERAL/INVESTMENT/SECTION_86, dual-approval, trust equation
 
 OPERATIONS
 ├── audit                           append-only event log + DSAR data-protection ops
@@ -203,13 +203,13 @@ VERTICAL OVERLAYS  (thin pointers; detail in 60-verticals/)
 
 ### trust-accounting  *(legal vertical)*
 
-- **Purpose:** Legal-only third-party trust money: GENERAL/INVESTMENT/SECTION_86 accounts, dual approval, LPFF interest runs, reconciliation.
-- **Owns:** `TrustAccount`, `TrustTransaction`, client ledgers, LPFF interest runs, Section 86 investments (entities under `verticals/legal/trustaccounting/`); REST `/api/trust/*`. Frontend `/trust-accounting/*` (6 sub-routes), `/settings/trust-accounting`.
+- **Purpose:** Legal-only trust money: section 86(2) trust banking accounts and section 86(3)/86(4) investment accounts, dual approval, a cashbook that mirrors the bank statement (interest recorded from statement lines, never calculated), derived client and non-client creditor balances, monthly reconciliation with the Rule 54.15 list lock (Phase 92).
+- **Owns:** `TrustAccount`, `TrustTransaction` (+ the `TrustTransactionType` registry), client ledgers (derived), `TrustCreditorAccount`, `UnidentifiedDeposit`, `TrustInterestMemo`, `TrustInvestment` + `TrustInvestmentInterest`, `TrustReconciliation`, `TrustMonthlyList` (entities under `verticals/legal/trustaccounting/`); REST `/api/trust-accounts/*`, `/api/trust-transactions/*`, `/api/trust-transaction-types`, `/api/bank-statements/*`, `/api/bank-statement-lines/*`, `/api/trust-reconciliations/*`, `/api/trust-investments/*`, `/api/trust-investment-interest/*`, `/api/trust-creditor-accounts/*`, `/api/unidentified-deposits/*`, `/api/trust-integrity`, `/api/trust-monthly-lists/*`. Frontend `/trust-accounting/*` (overview + 6 sub-routes), Settings › Trust accounting tab.
 - **Depends on:** `invoicing` (trust-flagged invoices), `customer-lifecycle`, `documents-templates` (statements), `audit` (heavy use), `identity-access` (`MANAGE_TRUST`/`APPROVE_TRUST_PAYMENT`/`VIEW_TRUST` capabilities).
 - **Depended on by:** `customer-portal` (per-matter ledger), `accounting-sync` (TrustBoundaryGuard cross-checks).
-- **Cross-cutting touchpoints:** Module-guarded at every service entry (`TrustAccountService.java:26`). Hard guard `TrustBoundaryGuard` blocks trust-flagged invoices from being pushed to Xero (ADR-276) — fail-closed; no LLM, no human bypass.
+- **Cross-cutting touchpoints:** Module-guarded at every service entry (twelve service classes, e.g. `TrustAccountService.java:35`). Hard guard `TrustBoundaryGuard` blocks trust-flagged invoices from being pushed to Xero (ADR-276) — fail-closed; no LLM, no human bypass.
 - **Vertical relevance:** Vertical-specific (legal-za only). Nine-layer module enforcement (A6 §4).
-- **Active ADRs:** ADR-276 (trust hard-guard), Section 86 advisory.
+- **Active ADRs:** ADR-375..384 (Phase 92 trust books), ADR-230..233 (230/231 amended by ADR-378), ADR-276 (trust hard-guard).
 - **Module page:** `30-modules/trust-accounting.md`. See also `60-verticals/legal-za.md`.
 
 ### audit

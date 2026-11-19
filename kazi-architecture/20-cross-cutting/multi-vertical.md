@@ -111,13 +111,19 @@ ADRs: **ADR-076** (module-identity-contract), **ADR-091** (feature-flag-scope), 
 A6 §4 documents trust accounting as the canonical multi-layered verticalisation example. Trust money is a Legal Practice Act §86 statutory obligation in South Africa — a violation is a criminal/regulatory event, not a bug. The system therefore stacks **nine** fail-closed gates so that *any* single layer being passed through still leaves eight more to refuse. Quoting A6 §238–246 with anchors:
 
 1. **Profile registry** — `legal-za.json` is the **only** profile whose `enabledModules` array contains `"trust_accounting"`. Every other profile leaves the slug absent (`→ backend/src/main/resources/vertical-profiles/legal-za.json`; A6 §237).
-2. **Backend service gates** — every trust service self-checks via `verticalModuleGuard.requireModule("trust_accounting")` at the top of every public method (A6 §238). Six entry-point classes:
-   - `→ verticals/legal/trustaccounting/TrustAccountService.java:26`
-   - `→ verticals/legal/trustaccounting/transaction/TrustTransactionService.java:45`
-   - `→ verticals/legal/trustaccounting/reconciliation/TrustReconciliationService.java:43`
-   - `→ verticals/legal/trustaccounting/ledger/ClientLedgerService.java:28`
-   - `→ verticals/legal/trustaccounting/interest/InterestService.java:41`
-   - `→ verticals/legal/trustaccounting/investment/TrustInvestmentService.java:36`
+2. **Backend service gates** — every trust service self-checks via `verticalModuleGuard.requireModule("trust_accounting")` at the top of every public method (A6 §238). Twelve service classes (Phase 92 added the `books/`, `creditor/` and statement-line services; 651A removed `InterestService`):
+   - `→ verticals/legal/trustaccounting/TrustAccountService.java:35`
+   - `→ verticals/legal/trustaccounting/transaction/TrustTransactionService.java:58`
+   - `→ verticals/legal/trustaccounting/reconciliation/TrustReconciliationService.java:55`
+   - `→ verticals/legal/trustaccounting/reconciliation/StatementLinePostingService.java:63`
+   - `→ verticals/legal/trustaccounting/ledger/ClientLedgerService.java:45`
+   - `→ verticals/legal/trustaccounting/investment/TrustInvestmentService.java:115`
+   - `→ verticals/legal/trustaccounting/creditor/TrustCreditorLedgerService.java:34`
+   - `→ verticals/legal/trustaccounting/creditor/UnidentifiedDepositService.java:70`
+   - `→ verticals/legal/trustaccounting/creditor/TrustInterestMemoService.java:46`
+   - `→ verticals/legal/trustaccounting/books/TrustBooksService.java:40`
+   - `→ verticals/legal/trustaccounting/books/TrustIntegrityService.java:59`
+   - `→ verticals/legal/trustaccounting/books/TrustMonthlyListService.java:76`
 3. **Backend invoice export hard guard (ADR-276)** — independent of the module gate, `TrustBoundaryGuard.evaluate(invoice)` runs **inside** the Phase 71 `AccountingSyncService` before any push to Xero. Three refusal conditions (`→ architecture/phase71-xero-accounting-integration.md:793-795`): invoice flagged trust, any line item from a trust account, customer has active trust balances. Fail-closed on DB error (line 799). On refusal, sync entry `state=BLOCKED_TRUST_BOUNDARY`, audit event `integration.xero.push_blocked_trust` (line 296). "Deterministic Java code -- no LLM, no AI, no human bypass" (line 785).
 4. **Frontend nav gate** — `frontend/lib/nav-items.ts` declares the trust nav group with `requiredModule: "trust_accounting"`; `filterNavItems()` hides it on non-legal tenants (A6 §240).
 5. **Frontend page server gate** — `frontend/app/(app)/org/[slug]/trust-accounting/page.tsx` calls `isModuleEnabledServer("trust_accounting")` and short-circuits with a placeholder if disabled (A6 §241).
@@ -140,7 +146,7 @@ Cross-link table — for each vertical, which modules and concerns are touched. 
 
 | Module | Touchpoint |
 |---|---|
-| [`trust-accounting.md`](../30-modules/trust-accounting.md) | **Vertical-only** module. Six service-level guards; nine-layer defence. Section 86 investments, LPFF interest runs, client ledgers. |
+| [`trust-accounting.md`](../30-modules/trust-accounting.md) | **Vertical-only** module. Twelve service-level guards; nine-layer defence. Client and non-client trust creditors, Section 86 investments on the books, statement-driven Fund interest (Phase 92). |
 | [`customer-lifecycle.md`](../30-modules/customer-lifecycle.md) | FICA fields auto-applied via field pack; FICA checklist via compliance pack. |
 | [`checklists.md`](../30-modules/checklists.md) | Legal compliance pack (FICA + LSSA). |
 | [`expenses.md`](../30-modules/expenses.md) | `LegalDisbursement` sibling entity (ADR-247) — keeps trust commingling out of universal expenses. UI label "Disbursement". |
@@ -194,7 +200,7 @@ Switching a tenant `legal-za → consulting-generic` via `PATCH /api/settings/ve
 - Switches `terminologyNamespace`. UI renders "Customer" again (the data still says Matter under the hood). ✓
 - *Reconciler runs*: `consulting-generic.enabledModules` is `[]`, so **no modules are added and none are removed**. `trust_accounting` remains in `enabledModules`.
 - `TrustAccountService.requireModule("trust_accounting")` therefore still **passes**. The API is reachable from any caller that knows the path.
-- `trust_accounts` table rows remain. `trust_transactions` rows remain. `client_ledger_card` rows remain. `interest_run` / `interest_allocation` / `trust_investment` rows remain (the tables exist in every schema per ADR-191).
+- `trust_accounts` table rows remain. `trust_transactions` rows remain. `client_ledger_cards` rows remain. `trust_creditor_accounts` / `unidentified_deposits` / `trust_investments` / `trust_monthly_lists` rows remain (the tables exist in every schema per ADR-191).
 - Legal document templates (`legal-za` template pack) remain installed. Conveyancing clauses remain. FICA `field_definition` rows remain. `ChecklistInstance` rows remain.
 - `pack_install` table still has rows for every legal pack.
 

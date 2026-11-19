@@ -107,7 +107,7 @@ Nine module slugs are seeded into `OrgSettings.enabledModules` by the reconciler
 
 | Slug | Category | What it lights up |
 |---|---|---|
-| `trust_accounting` | VERTICAL | Whole `verticals/legal/trustaccounting/` package (six service classes, nine-layer defence, ADR-276 export guard). Cross-link [`trust-accounting.md`](../30-modules/trust-accounting.md). |
+| `trust_accounting` | VERTICAL | Whole `verticals/legal/trustaccounting/` package (twelve module-gated service classes, nine-layer defence, ADR-276 export guard; trust books rebuilt in Phase 92 — ADR-375..384). Cross-link [`trust-accounting.md`](../30-modules/trust-accounting.md). |
 | `lssa_tariff` | VERTICAL | `TariffService` + `TariffSchedule`/`TariffItem` (`tariff/TariffService.java:23` MODULE_ID). |
 | `court_calendar` | VERTICAL | `CourtCalendarService` (`courtcalendar/CourtCalendarService.java:31`) + `PrescriptionTrackerService` (`courtcalendar/PrescriptionTrackerService.java:28` — same `court_calendar` slug). |
 | `conflict_check` | VERTICAL | `ConflictCheckService` (`conflictcheck/ConflictCheckService.java:29`) + `AdversePartyService` (`conflictcheck/AdversePartyService.java:30`). |
@@ -147,13 +147,13 @@ All packages under `backend/src/main/java/io/b2mash/b2b/b2bstrawman/verticals/le
 
 The full entity inventory lives in [`trust-accounting.md`](../30-modules/trust-accounting.md) §2 (don't duplicate). Headlines:
 
-- `TrustAccount`, `TrustAccountType` (`GENERAL`/`INVESTMENT`/`SECTION_86`), `TrustAccountStatus`.
-- `TrustTransaction` + 10 transaction-type variants (DEPOSIT, PAYMENT, TRANSFER, FEE_TRANSFER, REFUND, REVERSAL, INTEREST_ALLOCATION, LPFF_PAYOUT, INVESTMENT_PLACEMENT, DISBURSEMENT_PAYMENT).
-- `BankStatement` + `BankStatementLine` + `TrustReconciliation` (sub-package `reconciliation/`).
-- `ClientLedgerCard` (sub-package `ledger/`).
-- `LpffRate` (sub-package `lpff/`) — effective-dated LPFF interest rate per trust account.
-- `InterestRun` + `InterestAllocation` (sub-package `interest/`).
-- `TrustInvestment` + `InvestmentBasis` (sub-package `investment/`) — Section 86 mandates.
+- `TrustAccount`, `TrustAccountType` (`GENERAL`/`INVESTMENT`/`SECTION_86`), the derived `TrustAccountSection` (section 86(2)/(3)/(4)), `TrustAccountStatus`, `InvestmentBasis`.
+- `TrustTransaction` with per-row posting effects, and the `TrustTransactionType` registry — 25 types, the single source of every type's effects, approval and reversal rules and labels; only `TrustPostingService` writes a posting (sub-package `transaction/`; ADR-378).
+- `BankStatement` + `BankStatementLine` (match status and classification) + `TrustReconciliation`; record-from-statement in `StatementLinePostingService` (sub-package `reconciliation/`; ADR-380).
+- `ClientLedgerCard` — the per-client lock anchor; it stores no balance (sub-package `ledger/`).
+- `TrustCreditorAccount` (the Fund interest-and-charges ledger and the unidentified-deposits ledger), `UnidentifiedDeposit`, `TrustInterestMemo` (sub-package `creditor/`; ADR-376, ADR-384).
+- `TrustInvestment` + `TrustInvestmentInterest` (sub-package `investment/`) — section 86(3) and 86(4) investments on the books, with per-entry section 86(4) interest (ADR-379).
+- `TrustBooksService` (the trust equation as at a date), `TrustIntegrityService`, `TrustMonthlyList` (sub-package `books/`; ADR-377, ADR-382).
 
 ### 6b. `verticals/legal/tariff/` — LSSA tariffs
 
@@ -178,7 +178,7 @@ The full entity inventory lives in [`trust-accounting.md`](../30-modules/trust-a
 
 - `LegalDisbursement` `→ verticals/legal/disbursement/LegalDisbursement.java` — **sibling** of generic `Expense` per ADR-247 (not a subtype). Pass-through VAT, no markup, pre-bill approval.
 - `DisbursementCategory` (SHERIFF_FEES, COUNSEL_FEES, SEARCH_FEES, DEEDS_OFFICE_FEES, COURT_FEES, ADVOCATE_FEES, EXPERT_WITNESS, TRAVEL, OTHER), `VatTreatment` (STANDARD_15, ZERO_RATED_PASS_THROUGH, EXEMPT), `DisbursementApprovalStatus`, `DisbursementBillingStatus`.
-- `DisbursementPaymentSource` `→ verticals/legal/disbursement/DisbursementPaymentSource.java` — sibling-port pattern (ADR-279): `OFFICE_ACCOUNT | TRUST_ACCOUNT`. When `TRUST_ACCOUNT`, `DisbursementService` creates a linked `TrustTransaction(DISBURSEMENT_PAYMENT)`.
+- `DisbursementPaymentSource` `→ verticals/legal/disbursement/DisbursementPaymentSource.java` — sibling-port pattern (ADR-279): `OFFICE_ACCOUNT | TRUST_ACCOUNT`. When `TRUST_ACCOUNT`, `DisbursementService.validateTrustLink` (`DisbursementService.java:662`) requires a link to an existing `APPROVED` trust `PAYMENT` on the same matter; the disbursement module never writes a trust transaction.
 - `DisbursementService` (`DisbursementService.java:60`, MODULE_ID `disbursements`).
 
 Cross-link [`expenses.md`](../30-modules/expenses.md) for the sibling-entity rationale.
@@ -205,13 +205,15 @@ Cross-link [`expenses.md`](../30-modules/expenses.md) for the sibling-entity rat
 - **Discovery:** `_discovery/A6-cross-cutting.md` § Multi-vertical mechanism (§§237–247 — the nine-layer trust defence).
 - **Phase docs:**
   - `architecture/phase55-legal-foundations.md` — court calendar, conflict check, LSSA tariff foundation.
-  - `architecture/phase60-trust-accounting.md` — trust ledger, dual approval, reconciliation, interest, Section 86.
+  - `architecture/phase60-trust-accounting.md` — trust ledger, dual approval, reconciliation, interest, Section 86 (its calculated-interest and stored-balance parts are superseded by Phase 92).
   - `architecture/phase64-legal-vertical-qa.md` — terminology fix, 4 matter templates (RAF / PI / Estate / General), 90-day law-firm lifecycle audit (5 code fixes L-22/L-29/L-37/L-61/L-64).
   - `architecture/phase67-legal-depth-ii.md` — `LegalDisbursement`, `MatterClosureLog`, Statement of Account, conveyancing pack.
   - `architecture/phase71-xero-accounting-integration.md` §11.6 — `TrustBoundaryGuard` hard guard (ADR-276).
+  - `architecture/phase92-trust-books-provably-right.md` — trust books provably right: interest recorded from the bank statement, posting core and type registry, derived balances, non-client trust creditors, investments on the books, integrity check and completion gate, Rule 54.15 list lock, Rule 54.28 schedule, report pack v4; the calculated interest run removed.
 - **Active ADR clusters** (full list in [`90-adr-index.md`](../90-adr-index.md), legal/trust topics):
   - **ADR-T-series foundations** — court calendar, conflict, tariff structure (Phase 55 cluster).
-  - **ADR-230..235** — trust accounting core: double-entry ledger, negative-balance prevention, configurable dual authorisation, bank-rec matching, daily-balance interest method, statutory-vs-configurable LPFF share.
+  - **ADR-230..233** — trust accounting core: double-entry ledger and negative-balance prevention (both amended by ADR-378: balances derived from posting effects, the ledger card a lock anchor), configurable dual authorisation, bank-rec matching. ADR-234 and ADR-235 (calculated daily-balance interest, configurable LPFF share) are superseded by ADR-375.
+  - **ADR-375..384** — Phase 92 trust books: statement-driven interest (375), non-client trust creditor ledger (376), the trust equation and where it is enforced (377), derived balances and the type registry (378), investments on the books (379), statement-line classification and posting (380), bank charges and the Fund ledger in debit (381), monthly trust creditor list locking (382), retired interest-run data dropped (383), memo records for at-source sweeps (384).
   - **ADR-238** — entity-type varchar vs enum (cross-cuts).
   - **ADR-247** — legal-disbursement-sibling-entity.
   - **ADR-248** — matter-closure-distinct-state-with-gates.
@@ -225,7 +227,7 @@ Cross-link [`expenses.md`](../30-modules/expenses.md) for the sibling-entity rat
 This vertical *is* the nine-layer defence — every layer below is here because the **Legal Practice Council audits these books** and a violation is a criminal/regulatory event, not a bug. Quoting [`multi-vertical.md`](../20-cross-cutting/multi-vertical.md) §3 with the legal-vertical anchors:
 
 1. **Profile registry** — `legal-za.json:5` is the **only** profile whose `enabledModules` array contains `"trust_accounting"`. Every other profile leaves the slug absent.
-2. **Backend service gates** — six trust services, every public method calling `verticalModuleGuard.requireModule("trust_accounting")`: `TrustAccountService.java:26`, `TrustTransactionService.java:45`, `TrustReconciliationService.java:43`, `ClientLedgerService.java:28`, `interest/InterestService.java:41`, `investment/TrustInvestmentService.java:36`.
+2. **Backend service gates** — twelve trust services, every public method calling `verticalModuleGuard.requireModule("trust_accounting")`: `TrustAccountService.java:35`, `transaction/TrustTransactionService.java:58`, `reconciliation/TrustReconciliationService.java:55`, `reconciliation/StatementLinePostingService.java:63`, `ledger/ClientLedgerService.java:45`, `investment/TrustInvestmentService.java:115`, `creditor/TrustCreditorLedgerService.java:34`, `creditor/UnidentifiedDepositService.java:70`, `creditor/TrustInterestMemoService.java:46`, `books/TrustBooksService.java:40`, `books/TrustIntegrityService.java:59`, `books/TrustMonthlyListService.java:76`.
 3. **Backend invoice export hard guard** — `TrustBoundaryGuard.evaluate(invoice)` runs **inside** `AccountingSyncService` before any Xero push (ADR-276; Phase 71 lines 793–795). Three refusal conditions: trust-flagged invoice, line item from a trust account, customer with active trust balances. **Fail-closed on DB error** (Phase 71 line 799). On refusal, sync entry `state=BLOCKED_TRUST_BOUNDARY`, audit event `integration.xero.push_blocked_trust`. *"No bypass, no override, no configuration. Fails closed."* (ADR-276:51.) **The single most load-bearing layer for the regulatory boundary.**
 4. **Frontend nav gate** — `frontend/lib/nav-items.ts` declares trust nav with `requiredModule: "trust_accounting"`; `filterNavItems()` hides on non-legal tenants.
 5. **Frontend page server gate** — `frontend/app/(app)/org/[slug]/trust-accounting/page.tsx` calls `isModuleEnabledServer("trust_accounting")` and short-circuits.
@@ -250,8 +252,8 @@ The line is drawn at the **integration boundary**, not the domain boundary — t
 
 - Sets `OrgSettings.verticalProfile = "consulting-generic"` and switches `terminologyNamespace`. ✓
 - Reconciler runs against the new profile's `enabledModules: []` → **no modules added, none removed**. Every legal slug (`trust_accounting`, `lssa_tariff`, `court_calendar`, `conflict_check`, `disbursements`, `matter_closure`, `retainer_agreements`, `deadlines`, …) **remains** in `enabledModules`.
-- All six trust service guards still pass. `AdversePartyService`, `CourtCalendarService`, `TariffService`, `DisbursementService` all still pass.
-- Trust accounts, transactions, client-ledger cards, LPFF rates, interest runs, Section 86 investments, FICA `field_definition` rows, conflict-check rows, tariff schedules, legal disbursements, matter-closure logs — all remain in the schema (per ADR-191 tables exist in every schema regardless of profile).
+- All twelve trust service guards still pass. `AdversePartyService`, `CourtCalendarService`, `TariffService`, `DisbursementService` all still pass.
+- Trust accounts, transactions, client-ledger cards, trust creditor accounts, unidentified deposits, Section 86 investments and their interest entries, monthly lists, FICA `field_definition` rows, conflict-check rows, tariff schedules, legal disbursements, matter-closure logs — all remain in the schema (per ADR-191 tables exist in every schema regardless of profile).
 - Legal document templates, conveyancing clauses, FICA checklist templates remain installed; `pack_install` rows persist.
 - UI hides everything (nav gate, page gate, `<ModuleGate>`) — **but the data is intact and the API is still reachable** to any caller that knows the path.
 
@@ -268,9 +270,17 @@ Operational stance today: **(c)**. The system is **one-way safe** (consulting �
 
 `TrustAccount.requireDualApproval` (boolean) and `paymentApprovalThreshold` (BigDecimal) live per-account (ADR-232). `APPROVE_TRUST_PAYMENT` is the second-leg capability. Open precedence question: if `requireDualApproval=false` but `paymentApprovalThreshold=10000`, does a 9 999.99 payment require dual approval? Code path (`TrustTransactionService`) evaluates threshold-or-flag; the precedence is not explicitly documented and there is no ADR clarification. Recommend an ADR. Cross-link [`trust-accounting.md`](../30-modules/trust-accounting.md) §10.3.
 
-### 9.3 LPFF rate updates mid-period
+### 9.3 Open legal points the trust books proceed on
 
-`LpffRate` rows are effective-dated per trust account. Lookup is `findFirstByTrustAccountIdAndEffectiveFromLessThanEqualOrderByEffectiveFromDesc` (`TrustAccountService.java:324`). What happens when a regulator-mandated rate change lands mid-interest-period? The **daily-balance method** (ADR-234) means each day reads the rate effective on that day, so a mid-period change is mathematically well-defined. **Open:** there is no audit warning when a rate change is committed retroactively (effective_from earlier than the most recent posted `InterestRun` end-date) — silently invalidates a posted run's calculation basis. Should be a pre-write check that refuses retro-effective rates if any non-DRAFT `InterestRun` overlaps.
+Phase 92 built the trust books on six assumptions (A1–A6) and nine open legal points (OL-1..OL-9). Each has a working assumption chosen so that a different answer changes configuration, copy or a query, not the data model (`architecture/phase92-trust-books-provably-right.md` §16.14.1–§16.14.2). The points a firm meets first:
+- A `SECTION_86` account reports as a section 86(2) trust banking account (OL-1, `TrustAccountSection.of`).
+- VAT on a recoverable bank charge is captured and reported but not added to the "to refund" flag (OL-3).
+- When an unidentified deposit may be paid to the Fund is not enforced (OL-4). Kazi shows the item's age and flags items older than a year.
+- The Fund's 5 % of section 86(4) interest is rounded half-up, with a R0,01 tolerance (OL-5).
+- A client ledger in debit is flagged, not blocked (OL-7, founder ruling #5).
+- A Fund ledger in debit is allowed and flagged (A1, ADR-381).
+
+Each point is for a practising attorney or trust auditor to confirm. The Phase 92 closure report records their status.
 
 ### 9.4 LSSA tariff snapshots: snapshot-at-quote vs live
 

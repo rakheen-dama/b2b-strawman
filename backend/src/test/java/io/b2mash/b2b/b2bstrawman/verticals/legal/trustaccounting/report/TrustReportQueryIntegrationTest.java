@@ -931,15 +931,15 @@ class TrustReportQueryIntegrationTest {
                   "Adjustments | Less: outstanding payments",
                   "Adjustments | Adjusted bank balance",
                   "Comparison with the cashbook | Cashbook balance",
-                  "Comparison with the cashbook | Difference (adjusted bank − cashbook)",
+                  "Comparison with the cashbook | Difference (adjusted bank – cashbook)",
                   "Trust creditors | Client ledgers",
                   "Trust creditors | Section 86(4) investment creditors",
                   "Trust creditors | Legal Practitioners' Fidelity Fund — interest and charges",
                   "Trust creditors | Unidentified deposits",
                   "Trust creditors | Section 86(3) placements (inter-account)",
                   "Trust creditors | Trust creditors total",
-                  "Comparison with trust creditors | Difference (adjusted bank − trust creditors)",
-                  "Comparison with trust creditors | Difference (cashbook − trust creditors)");
+                  "Comparison with trust creditors | Difference (adjusted bank – trust creditors)",
+                  "Comparison with trust creditors | Difference (cashbook – trust creditors)");
           var recon = reconciliationRepository.findById(reconciliationId).orElseThrow();
           var amounts =
               result.rows().stream()
@@ -950,9 +950,9 @@ class TrustReportQueryIntegrationTest {
               .isEqualByComparingTo(recon.getCreditorTotal());
           assertThat(amounts.get("Client ledgers"))
               .isEqualByComparingTo(recon.getClientLedgerTotal());
-          assertThat(amounts.get("Difference (adjusted bank − trust creditors)"))
+          assertThat(amounts.get("Difference (adjusted bank – trust creditors)"))
               .isEqualByComparingTo(recon.getDifference());
-          assertThat(amounts.get("Difference (adjusted bank − cashbook)"))
+          assertThat(amounts.get("Difference (adjusted bank – cashbook)"))
               .isEqualByComparingTo(
                   recon.getAdjustedBankBalance().subtract(recon.getCashbookBalance()));
           assertThat(result.rows())
@@ -966,6 +966,41 @@ class TrustReportQueryIntegrationTest {
           assertThat(result.summary()).containsKey("cashbookBalance");
           assertThat(result.summary()).containsKey("isBalanced");
           assertThat((boolean) result.summary().get("isBalanced")).isTrue();
+        });
+  }
+
+  /**
+   * F-650C-OBS-2: the PDF falls back to the standard fonts (WinAnsi), which have no U+2212 minus —
+   * it printed "#". Every label is WinAnsi-safe and the PDF prints the comparisons as written.
+   */
+  @Test
+  void trustReconciliationPdf_printsTheComparisonLabelsWithoutAReplacementGlyph() {
+    runInTenant(
+        () -> {
+          var params = new HashMap<String, Object>();
+          params.put("trust_account_id", trustAccountId);
+          params.put("reconciliation_id", reconciliationId);
+          var result = reconciliationReportQuery.executeAll(params);
+          var winAnsi = java.nio.charset.Charset.forName("windows-1252").newEncoder();
+          assertThat(result.rows())
+              .extracting(r -> (String) r.get("label"))
+              .allSatisfy(label -> assertThat(winAnsi.canEncode(label)).as(label).isTrue());
+
+          byte[] pdf =
+              renderingService.renderPdf(
+                  TrustReportPackSeeder.shipped("trust-reconciliation"), result, params);
+          String text;
+          try (var doc = org.apache.pdfbox.Loader.loadPDF(pdf)) {
+            text = new org.apache.pdfbox.text.PDFTextStripper().getText(doc);
+          } catch (java.io.IOException e) {
+            throw new java.io.UncheckedIOException(e);
+          }
+          assertThat(text)
+              .contains(
+                  "Difference (adjusted bank – cashbook)",
+                  "Difference (adjusted bank – trust creditors)",
+                  "Difference (cashbook – trust creditors)")
+              .doesNotContain("#");
         });
   }
 

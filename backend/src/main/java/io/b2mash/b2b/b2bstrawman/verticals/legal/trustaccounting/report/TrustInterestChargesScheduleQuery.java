@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.data.domain.Pageable;
@@ -37,10 +38,10 @@ import org.springframework.stereotype.Component;
  *
  * <p>Parameters: {@code dateFrom} and {@code dateTo} (required, snapped to the first and last day
  * of their months, {@code dateTo} not before {@code dateFrom}; at most {@value #MAX_MONTHS} months)
- * and {@code trust_account_id} (optional; omitted = every trust account of the firm open at some
- * time in the period — not closed before it, not opened after it). One block per account, headed by
- * its section (86(2), 86(3) or 86(4)) — each account has its own Fund ledger and no figure is set
- * off across accounts (OL-9) — and one row per month.
+ * and {@code trust_account_id} (optional; omitted = every trust account of the firm in use at some
+ * time in the period — not closed before it, and opened by its end or holding a posting on or
+ * before it). One block per account, headed by its section (86(2), 86(3) or 86(4)) — each account
+ * has its own Fund ledger and no figure is set off across accounts (OL-9) — and one row per month.
  *
  * <p>The Fund ledger brought forward and carried forward are read from the ledger, never computed,
  * so a month whose movements do not explain the change shows {@code identityHolds = false}. For a
@@ -157,11 +158,18 @@ public class TrustInterestChargesScheduleQuery implements ReportQuery {
                   .findById(accountId)
                   .orElseThrow(() -> new ResourceNotFoundException("TrustAccount", accountId)));
     } else {
-      // Every account open at some time in the period: not closed before it, not opened after it
+      // Every account in use at some time in the period: not closed before it, and opened by its
+      // end or holding a posting on or before it (a posting may predate the opened date; an
+      // account never yet opened and empty stays out — F-650C-OBS-3)
+      var withPostings = Set.copyOf(reportQueries.accountsWithPostingsOnOrBefore(to));
       accounts =
           trustAccountRepository.findAll().stream()
               .filter(a -> a.getClosedDate() == null || !a.getClosedDate().isBefore(from))
-              .filter(a -> a.getOpenedDate() == null || !a.getOpenedDate().isAfter(to))
+              .filter(
+                  a ->
+                      a.getOpenedDate() == null
+                          || !a.getOpenedDate().isAfter(to)
+                          || withPostings.contains(a.getId()))
               .toList();
     }
 
@@ -172,8 +180,12 @@ public class TrustInterestChargesScheduleQuery implements ReportQuery {
     summary.put("periodFrom", from.toString());
     summary.put("periodTo", to.toString());
     summary.put("accountCount", blocks.size());
+    // No block, no identity to claim: null ("—"), never a vacuous "Yes" (F-650C-OBS-3)
     summary.put(
-        "identityHolds", rows.stream().allMatch(r -> Boolean.TRUE.equals(r.get("identityHolds"))));
+        "identityHolds",
+        blocks.isEmpty()
+            ? null
+            : rows.stream().allMatch(r -> Boolean.TRUE.equals(r.get("identityHolds"))));
     summary.put("scopeNote", TrustReportWords.TRUST_ASSETS_NOTE);
     summary.put(
         "blocks",

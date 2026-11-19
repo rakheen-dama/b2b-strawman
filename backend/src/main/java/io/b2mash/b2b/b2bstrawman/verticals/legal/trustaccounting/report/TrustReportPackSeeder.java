@@ -885,6 +885,14 @@ public class TrustReportPackSeeder {
             .formatted(title, TrustReportWords.TRUST_ASSETS_NOTE);
   }
 
+  /**
+   * The head of a wide report (trust position, the Rule 54.28 schedule): the page turns landscape
+   * so every column is on it — on portrait A4 the last columns were cut off (F-650C-OBS-1).
+   */
+  private static String wideHead(String title) {
+    return head(title).replace("</style>", "    @page { size: A4 landscape; }\n    </style>");
+  }
+
   private static final String FOOT =
       """
           <div class="footer"><div class="footer-right" th:text="'Generated ' + ${generatedAt}"></div></div>
@@ -996,7 +1004,7 @@ public class TrustReportPackSeeder {
           + FOOT;
 
   private static final String TRUST_POSITION_TEMPLATE =
-      head("Trust Position as at a Date")
+      wideHead("Trust Position as at a Date")
           + """
               <div class="param-summary">
                   <strong>As at:</strong> <span th:text="${parameters.asOfDate}"></span>
@@ -1156,7 +1164,7 @@ public class TrustReportPackSeeder {
           + FOOT;
 
   private static final String TRUST_INTEREST_CHARGES_SCHEDULE_TEMPLATE =
-      head("Interest and Charges Schedule (Rule 54.28)")
+      wideHead("Interest and Charges Schedule (Rule 54.28)")
           + """
               <div class="param-summary">
                   <strong>Period:</strong> <span th:text="${summary['periodFrom']}"></span> to <span th:text="${summary['periodTo']}"></span>

@@ -3,7 +3,7 @@ import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ReportResults } from "@/components/reports/report-results";
 import type { ReportExecutionResponse } from "@/lib/api/reports";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, formatLocalDate } from "@/lib/format";
 
 vi.mock("server-only", () => ({}));
 
@@ -196,6 +196,33 @@ describe("ReportResults", () => {
     // counts are not money
     expect(screen.getByText("3")).toBeInTheDocument();
     expect(screen.getByText("4")).toBeInTheDocument();
+  });
+
+  // F-650C-OBS-4 / OBS-5: summary dates read as dates, the after-lock net as money
+  it("formats ISO date summary values as dates and the after-lock net as currency", () => {
+    render(
+      <ReportResults
+        response={makeResponse({
+          summary: {
+            periodFrom: "2026-08-01",
+            asOfDate: "2026-09-30",
+            afterLockNet: 0,
+            source: "Locked 2026-11-19 by Alice",
+          },
+        })}
+        isLoading={false}
+        onPageChange={vi.fn()}
+      />
+    );
+
+    expect(screen.getByText(formatLocalDate("2026-08-01"))).toBeInTheDocument();
+    expect(screen.getByText(formatLocalDate("2026-09-30"))).toBeInTheDocument();
+    expect(screen.queryByText("2026-08-01")).not.toBeInTheDocument();
+    expect(screen.queryByText("2026-09-30")).not.toBeInTheDocument();
+    expect(screen.getByText(money(0))).toBeInTheDocument();
+    expect(screen.queryByText("0")).not.toBeInTheDocument();
+    // only a whole value that is an ISO date is reformatted
+    expect(screen.getByText("Locked 2026-11-19 by Alice")).toBeInTheDocument();
   });
 
   it("shows pagination as 'Page 1 of 2' for totalPages=2", () => {

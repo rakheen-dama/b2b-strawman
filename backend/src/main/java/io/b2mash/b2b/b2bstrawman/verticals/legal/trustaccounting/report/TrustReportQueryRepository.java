@@ -20,6 +20,20 @@ import org.springframework.data.repository.query.Param;
 public interface TrustReportQueryRepository extends Repository<TrustTransaction, UUID> {
 
   /**
+   * The trust accounts with a posted row dated on or before {@code asAt} — the firm-wide Rule 54.28
+   * schedule includes such an account even when its opened date is later (F-650C-OBS-3).
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          SELECT DISTINCT t.trust_account_id
+            FROM trust_transactions t
+           WHERE t.posted_at IS NOT NULL
+             AND t.transaction_date <= CAST(:asAt AS date)""")
+  List<UUID> accountsWithPostingsOnOrBefore(@Param("asAt") LocalDate asAt);
+
+  /**
    * One (month, type, recoverable) group of a Fund ledger's posted rows. A {@code REVERSAL} contra
    * is grouped under its original's type (and, for a bank charge, its original's recoverable flag
    * and VAT, negated) so a pair in one month nets to zero (D-8).

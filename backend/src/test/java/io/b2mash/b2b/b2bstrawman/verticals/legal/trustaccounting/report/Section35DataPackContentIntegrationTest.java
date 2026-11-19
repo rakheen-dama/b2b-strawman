@@ -264,12 +264,12 @@ class Section35DataPackContentIntegrationTest {
     assertThat(sectionRows(result, Section35DataPackQuery.SWEEPS_SECTION))
         .extracting(row -> row.get("label") + " " + row.get("amount"))
         .containsExactly(
-            "2025-09-30 · statement.csv · line 1 · " + matchedSweepReference + " -40.00",
+            "30 September 2025 · statement.csv · line 1 · " + matchedSweepReference + " -40.00",
             "Total -40.00");
     assertThat(sectionRows(result, Section35DataPackQuery.UNMATCHED_SWEEPS_SECTION))
         .extracting(row -> row.get("label") + " " + row.get("amount"))
         .containsExactly(
-            "2025-10-31 · " + unmatchedSweepReference + " — no statement line -25.00",
+            "31 October 2025 · " + unmatchedSweepReference + " — no statement line -25.00",
             "Total -25.00");
   }
 
@@ -361,6 +361,41 @@ class Section35DataPackContentIntegrationTest {
         .satisfies(a -> assertThat(a).isEqualByComparingTo("-100.00"));
     assertThat(scheduleByLabel(result).get(name + " — paid to the Fund"))
         .isEqualByComparingTo("100.00");
+  }
+
+  /**
+   * F-650C-OBS-4: the item labels 650C added print their dates in words — an unidentified deposit's
+   * received date in part (2) and the sweep dates in the sweep parts — never an ISO date.
+   */
+  @Test
+  void newItemLabels_printTheirDatesInWords() {
+    var books = fixture.tenant(tenantSchema, ORG_ID, memberId);
+    var account = books.freshAccount(false);
+    books.postNonClientDirect(account, "UNIDENTIFIED_DEPOSIT", "150.00", LocalDate.of(2026, 2, 12));
+    books.postNonClientDirect(account, "FUND_INTEREST", "10.00", LocalDate.of(2026, 3, 1));
+    books.postNonClientDirect(account, "FUND_SWEEP", "10.00", LocalDate.of(2026, 3, 30));
+
+    var result =
+        runInTenantReturning(
+            () ->
+                reportExecutionService.executeForExport(
+                    SLUG, Map.of("trust_account_id", account, "financial_year_end", "2026-03-31")));
+
+    assertThat(sectionRows(result, Section35DataPackQuery.CREDITORS_SECTION))
+        .extracting(r -> (String) r.get("label"))
+        .anySatisfy(label -> assertThat(label).endsWith(" · received 12 February 2026"));
+    assertThat(sectionRows(result, Section35DataPackQuery.UNMATCHED_SWEEPS_SECTION))
+        .extracting(r -> (String) r.get("label"))
+        .anySatisfy(label -> assertThat(label).startsWith("30 March 2026"));
+    for (var section :
+        List.of(
+            Section35DataPackQuery.CREDITORS_SECTION,
+            Section35DataPackQuery.SWEEPS_SECTION,
+            Section35DataPackQuery.UNMATCHED_SWEEPS_SECTION)) {
+      assertThat(sectionRows(result, section))
+          .extracting(r -> (String) r.get("label"))
+          .noneMatch(label -> label.matches(".*\\d{4}-\\d{2}-\\d{2}.*"));
+    }
   }
 
   @Test

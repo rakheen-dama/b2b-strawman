@@ -463,7 +463,7 @@ public class Section35DataPackQuery implements ReportQuery {
   private static Line sweepLine(Map<String, Object> row) {
     String label =
         Stream.of(
-                text(row, "date"),
+                dateWords(row, "date"),
                 text(row, "fileName"),
                 "line " + text(row, "lineNumber"),
                 text(row, "reference"))
@@ -475,7 +475,7 @@ public class Section35DataPackQuery implements ReportQuery {
   /** {@code date · reference — no statement line} → the amount paid out (negative). */
   private static Line unmatchedSweepLine(Map<String, Object> row) {
     String label =
-        Stream.of(text(row, "date"), text(row, "reference"))
+        Stream.of(dateWords(row, "date"), text(row, "reference"))
                 .filter(part -> !part.isBlank())
                 .collect(Collectors.joining(" · "))
             + " — no statement line";
@@ -598,9 +598,22 @@ public class Section35DataPackQuery implements ReportQuery {
     String label = text(row, "clientName");
     if (CreditorLine.Kind.UNIDENTIFIED.name().equals(row.get("kind"))
         && row.get("receivedDate") != null) {
-      label = label + " · received " + text(row, "receivedDate");
+      label = label + " · received " + dateWords(row, "receivedDate");
     }
     return line(label, money(row, "balance"));
+  }
+
+  /**
+   * A date of a pack item label in words ("12 August 2026"; F-650C-OBS-4), from a {@link LocalDate}
+   * or its ISO text; "" when absent.
+   */
+  private static String dateWords(Map<String, Object> row, String key) {
+    Object value = row.get(key);
+    if (value == null) {
+      return "";
+    }
+    return IntegrityMessages.date(
+        value instanceof LocalDate date ? date : LocalDate.parse(value.toString()));
   }
 
   private static String text(Map<String, Object> row, String key) {

@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.reporting.ReportRenderingService;
 import io.b2mash.b2b.b2bstrawman.reporting.ReportResult;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksFixture;
@@ -29,14 +30,20 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.Inte
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.RecordInvestmentInterestRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedgerQueryRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Pattern;
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.text.PDFTextStripper;
+import org.apache.pdfbox.text.TextPosition;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -80,6 +87,7 @@ class TrustScheduleAndAgeAnalysisIntegrationTest {
   @Autowired private UnidentifiedDepositService depositService;
   @Autowired private TrustTransactionRepository transactionRepository;
   @Autowired private JdbcTemplate jdbc;
+  @Autowired private ReportRenderingService renderingService;
 
   private TrustBooksFixture.Tenant books;
   private UUID ownerId;
@@ -631,7 +639,184 @@ class TrustScheduleAndAgeAnalysisIntegrationTest {
         .satisfies(r -> assertThat(r.get("position")).isEqualTo("Open"));
   }
 
+  // --- firm-wide eligibility (F-650C-OBS-3) ----------------------------------------------------
+
+  /**
+   * F-650C-OBS-3: an account whose postings are dated before its opened date is still in the
+   * firm-wide schedule of the months it has rows in — the opened-date filter (CR-3) leaves out only
+   * an account with nothing on or before the period end.
+   */
+  @Test
+  void schedule_firmWide_includesAnAccountOpenedAfterThePeriodWithPostingsInIt() {
+    var account = books.freshAccount(false); // opened 1 January 2026
+    books.postNonClientDirect(account, "FUND_INTEREST", "25.00", LocalDate.of(2025, 9, 10));
+    var firmWide = schedule(Map.of("dateFrom", "2025-09-01", "dateTo", "2025-10-31"));
+    assertThat(blockAccountIds(firmWide)).contains(account);
+    var named =
+        schedule(
+            Map.of("trust_account_id", account, "dateFrom", "2025-09-01", "dateTo", "2025-10-31"));
+    var firmWideRows =
+        firmWide.rows().stream().filter(r -> account.equals(r.get("trustAccountId"))).toList();
+    assertThat(firmWideRows).isEqualTo(named.rows());
+  }
+
+  /** F-650C-OBS-3: a firm-wide schedule with no block claims no identity ("—", not "Yes"). */
+  @Test
+  void schedule_firmWide_noBlocks_claimsNoIdentity() {
+    var empty = schedule(Map.of("dateFrom", "2019-01-01", "dateTo", "2019-02-28"));
+    assertThat(empty.summary().get("accountCount")).isEqualTo(0);
+    assertThat(empty.summary()).containsKey("identityHolds");
+    assertThat(empty.summary().get("identityHolds")).isNull();
+  }
+
+  // --- the PDF prints every column (F-650C-OBS-1) ------------------------------------------------
+
+  /**
+   * F-650C-OBS-1: the schedule's 16 columns fit the page — every glyph inside the page, the last
+   * headers (Charges refunded, Paid to the Fund, Fund ledger c/f, Check) and the check in words on
+   * every month row and on the Period row.
+   */
+  @Test
+  void schedulePdf_everyColumnAndThePeriodRowAreOnThePage() {
+    var account = books.freshAccount(false);
+    books.postNonClientDirect(account, "FUND_INTEREST", "1234567.89", LocalDate.of(2026, 3, 10));
+    books.postNonClientDirect(account, "BANK_CHARGE", "12345.67", LocalDate.of(2026, 3, 20));
+    books.postNonClientDirect(account, "CHARGE_REFUND", "12345.67", LocalDate.of(2026, 3, 25));
+    books.postNonClientDirect(account, "FUND_SWEEP", "1000000.00", LocalDate.of(2026, 4, 28));
+    memo(account, LocalDate.of(2026, 3, 1), "123456.78", "12345.67", "1610.30");
+    var params =
+        Map.<String, Object>of(
+            "trust_account_id", account, "dateFrom", "2026-03-01", "dateTo", "2026-04-30");
+    var result = schedule(params);
+    assertThat(result.rows()).hasSize(2);
+
+    var text = pdfTextOnThePage("trust-interest-charges-schedule", result, params);
+
+    assertThat(text).contains("REFUNDED", "C/F", "CHECK", "Period");
+    assertThat(text.split("Balanced", -1).length - 1)
+        .as("the check on both month rows and on the Period row")
+        .isEqualTo(3);
+  }
+
+  /**
+   * F-650C-OBS-1: the trust position's twelve columns fit with the values the OBS run printed (a
+   * long account and section name, every ledger in the rand thousands, the bank note) — the
+   * Integrity column was cut to "IN" / "No fla…".
+   */
+  @Test
+  void trustPositionPdf_theIntegrityColumnIsOnThePage() {
+    var row = new HashMap<String, Object>();
+    row.put("accountName", "Mathebula & Partners Trust Account");
+    row.put("sectionLabel", "Section 86(2) trust banking account");
+    var summary = new HashMap<String, Object>();
+    for (var key :
+        List.of(
+            "cashbook",
+            "clientLedgers",
+            "investmentCreditors",
+            "fundLedger",
+            "unidentifiedDeposits",
+            "interAccount",
+            "creditorTotal",
+            "difference",
+            "adjustedBankBalance")) {
+      row.put(key, new BigDecimal("1234567.89"));
+      summary.put(key, new BigDecimal("1234567.89"));
+    }
+    row.put("integrity", TrustPositionQuery.NO_FLAGS);
+    row.put("bankNote", TrustPositionQuery.NO_BANK_NOTE);
+    summary.put("firmFlags", List.of());
+
+    var text =
+        pdfTextOnThePage(
+            "trust-position",
+            new ReportResult(List.of(row), summary),
+            Map.of("asOfDate", "2026-09-30"));
+
+    assertThat(text).contains("INTEGRITY");
+    for (var word :
+        (TrustPositionQuery.NO_FLAGS + " " + TrustPositionQuery.NO_BANK_NOTE).split(" ")) {
+      assertThat(text).contains(word);
+    }
+  }
+
+  /**
+   * F-650C-OBS-1 (the other wide template): the investment register's eleven columns fit with long
+   * values in every cell.
+   */
+  @Test
+  void investmentRegisterPdf_everyColumnIsOnThePage() {
+    var row = new HashMap<String, Object>();
+    row.put("clientName", "Mathebula Family Investment Trust (Pty) Ltd");
+    row.put("institution", "Standard Bank of South Africa Limited");
+    row.put("accountNumber", "0012345678901234");
+    row.put("investmentAccountName", "Mathebula & Partners Section 86(4) Investment Account");
+    row.put("basisLabel", "Section 86(4)");
+    row.put("principal", new BigDecimal("12345678.90"));
+    row.put("balance", new BigDecimal("12456789.01"));
+    row.put("grossInterest", new BigDecimal("1234567.89"));
+    row.put("fundShare", new BigDecimal("61728.39"));
+    row.put("interestEarned", new BigDecimal("1172839.50"));
+    row.put("statusLabel", "Withdrawn");
+    var summary = new HashMap<String, Object>();
+    summary.put("totalPrincipal", new BigDecimal("12345678.90"));
+    summary.put("totalBalance", new BigDecimal("12456789.01"));
+    summary.put("totalGrossInterest", new BigDecimal("1234567.89"));
+    summary.put("totalFundShare", new BigDecimal("61728.39"));
+    summary.put("totalInterestEarned", new BigDecimal("1172839.50"));
+
+    var text =
+        pdfTextOnThePage("investment-register", new ReportResult(List.of(row), summary), Map.of());
+
+    assertThat(text).contains("STATUS", "Withdrawn");
+  }
+
   // --- helpers ----------------------------------------------------------------------------------
+
+  /**
+   * Renders the shipped template of {@code slug} to PDF and returns its text, whitespace folded to
+   * single spaces, after asserting that nothing is cut at the right: every glyph ends inside the
+   * content box, whose right edge is where the right-aligned "Generated: …" header line ends (a
+   * table wider than the page is clipped there, or past the page edge where its text is dropped).
+   */
+  private String pdfTextOnThePage(String slug, ReportResult result, Map<String, Object> params) {
+    var definition = TrustReportPackSeeder.shipped(slug);
+    byte[] pdf =
+        books.read(() -> renderingService.renderPdf(definition, result, new HashMap<>(params)));
+    var glyphs = new ArrayList<TextPosition>();
+    var contentRight = new float[] {0f};
+    try (var doc = Loader.loadPDF(pdf)) {
+      var stripper =
+          new PDFTextStripper() {
+            @Override
+            protected void processTextPosition(TextPosition glyph) {
+              glyphs.add(glyph);
+              super.processTextPosition(glyph);
+            }
+
+            @Override
+            protected void writeString(String chunk, List<TextPosition> positions)
+                throws IOException {
+              if (chunk.startsWith("Generated: ") && !positions.isEmpty()) {
+                var last = positions.getLast();
+                contentRight[0] =
+                    Math.max(contentRight[0], last.getXDirAdj() + last.getWidthDirAdj());
+              }
+              super.writeString(chunk, positions);
+            }
+          };
+      var text = stripper.getText(doc).replaceAll("\\s+", " ");
+      assertThat(contentRight[0]).as("the header's right edge in %s", slug).isPositive();
+      assertThat(glyphs)
+          .as("glyphs past the content box of %s", slug)
+          .filteredOn(g -> g.getXDirAdj() + g.getWidthDirAdj() > contentRight[0] + 1f)
+          .extracting(TextPosition::getUnicode)
+          .isEmpty();
+      return text;
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+  }
 
   @SuppressWarnings("unchecked")
   private static List<Object> blockAccountIds(ReportResult result) {

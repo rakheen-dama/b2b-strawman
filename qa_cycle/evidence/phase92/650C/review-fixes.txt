@@ -34,3 +34,34 @@ GREEN (after the fixes):
 - Tier 2: 29 classes (builder's list + DashboardWithoutCapacityTest, ReportControllerTest) -> 267 <testcase>, 0 failures, 0 errors.
 - Frontend: lint 0 errors, typecheck 0, format:check 0, full vitest 485 files / 4593 passed, 2 skipped.
 - Tier 3 (./mvnw clean verify) NOT run — orchestrator-owned.
+
+--- OBS-gate fixes (2026-11-19) — red on HEAD 48fb285fe, green after the fix ---
+RED:
+- OBS-1 TrustScheduleAndAgeAnalysisIntegrationTest.schedulePdf_everyColumnAndThePeriodRowAreOnThePage
+        "[glyphs past the content box of trust-interest-charges-schedule] Expecting empty but was: [O, ), R, 1, ...]"
+        and text "could not find: [REFUNDED, C/F, CHECK]" (portrait A4 dropped the last 4 columns)
+- OBS-1 TrustScheduleAndAgeAnalysisIntegrationTest.trustPositionPdf_theIntegrityColumnIsOnThePage
+        "[glyphs past the content box of trust-position] Expecting empty but was: [I, N, T, E, G, R, I, T, Y, ..., N, o, i, n, t, e, g, r, i, t, y, ...]"
+        (the Integrity column clipped at the right margin)
+- OBS-1 guard TrustScheduleAndAgeAnalysisIntegrationTest.investmentRegisterPdf_everyColumnIsOnThePage — passed before and after
+        (11 compact columns with long values fit portrait; template unchanged). One-off (uncommitted) render of R&P, Rule 54.15 list,
+        ledger statement and age analysis with long values: all inside the content box; reconciliation / Section 35 have 2–3 columns.
+- OBS-2 TrustReportQueryIntegrationTest.trustReconciliationPdf_printsTheComparisonLabelsWithoutAReplacementGlyph
+        "[Difference (adjusted bank − cashbook)] Expecting value to be true but was false" (U+2212 not WinAnsi/cp1252-encodable)
+- OBS-3 TrustScheduleAndAgeAnalysisIntegrationTest.schedule_firmWide_includesAnAccountOpenedAfterThePeriodWithPostingsInIt
+        "Expecting ListN: [] to contain: [cea28b0d-…]" (account opened 2026-01-01, posting 2025-09-10, firm-wide Sep–Oct 2025)
+- OBS-3 TrustScheduleAndAgeAnalysisIntegrationTest.schedule_firmWide_noBlocks_claimsNoIdentity
+        "expected: null but was: true" (Identity Holds "Yes" over zero blocks)
+- OBS-4 Section35DataPackContentIntegrationTest.newItemLabels_printTheirDatesInWords
+        "Trust books statement line 1 · received 2026-02-12" to end with " · received 12 February 2026"
+- OBS-4 Section35DataPackContentIntegrationTest.fundSweeps_carryTheirStatementLine_andUnmatchedSweepsAreListedApart (updated)
+        "2025-09-30 · statement.csv · line 1 · FUN-TB-1 -40.00" vs "30 September 2025 · statement.csv · line 1 · …"
+- OBS-4/5 frontend __tests__/report-results.test.tsx "formats ISO date summary values as dates and the after-lock net as currency"
+        RED "Unable to find an element with the text: 01 Aug 2026"
+GREEN:
+- the 8 backend tests above green; Tier 2: 25 classes (the slice set) -> 228 <testcase>, 0 failures, 0 errors, 0 skipped.
+- Frontend: lint 0 errors (78 pre-existing warnings, none in changed files), typecheck 0, format:check 0,
+  full vitest 485 files / 4594 passed, 2 skipped.
+- RECONCILE / head hashes unchanged: only trust-position and trust-interest-charges-schedule templates changed, both new in v4
+  (membership adds; absent from TrustReportsV3). TrustReportsV3 untouched.
+- Tier 3 (./mvnw clean verify) NOT run — orchestrator-owned.

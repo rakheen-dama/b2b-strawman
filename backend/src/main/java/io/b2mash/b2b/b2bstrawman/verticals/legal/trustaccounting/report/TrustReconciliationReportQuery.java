@@ -95,7 +95,7 @@ public class TrustReconciliationReportQuery implements ReportQuery {
     rows.add(
         row(
             CASHBOOK_COMPARISON,
-            "Difference (adjusted bank − cashbook)",
+            "Difference (adjusted bank – cashbook)",
             recon.getAdjustedBankBalance().subtract(recon.getCashbookBalance())));
     rows.add(row(CREDITORS, "Client ledgers", recon.getClientLedgerTotal()));
     rows.add(
@@ -116,12 +116,12 @@ public class TrustReconciliationReportQuery implements ReportQuery {
     rows.add(
         row(
             CREDITOR_COMPARISON,
-            "Difference (adjusted bank − trust creditors)",
+            "Difference (adjusted bank – trust creditors)",
             recon.getDifference()));
     rows.add(
         row(
             CREDITOR_COMPARISON,
-            "Difference (cashbook − trust creditors)",
+            "Difference (cashbook – trust creditors)",
             recon.getCashbookBalance().subtract(recon.getCreditorTotal())));
     return List.copyOf(rows);
   }

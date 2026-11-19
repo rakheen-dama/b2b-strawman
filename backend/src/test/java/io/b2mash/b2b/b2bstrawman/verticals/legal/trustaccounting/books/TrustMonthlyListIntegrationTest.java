@@ -13,6 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
@@ -322,38 +323,47 @@ class TrustMonthlyListIntegrationTest {
   // --- uniqueness -----------------------------------------------------------------------------
 
   /**
-   * D-4: a second reconciliation of the account to a locked month end is refused when it completes
-   * ("Month already locked") and the whole completion rolls back — still DRAFT, one list.
+   * D-4, since 652C (§16.3.12): one reconciliation per account and period end — a second one to a
+   * locked month end is refused when it is created (409), so it can never reach completion; the
+   * lock's own guard ("Month already locked") stays as defence in depth. Still one reconciliation,
+   * COMPLETED, and one list.
    */
   @Test
-  void uniqueness_aSecondReconciliationToALockedMonthEnd_isRefused_andRolledBack() {
+  void uniqueness_aSecondReconciliationToALockedMonthEnd_isRefusedAtCreate() {
     var account = books.freshAccount(false);
     var march = matchedMarchStatement(account, "tml-unique-march.csv");
     var first = complete(reconcile(account, MARCH_END, march.id()).id());
     assertThat(first.monthlyListId()).isNotNull();
 
-    var second = reconcile(account, MARCH_END, march.id());
-    assertThat(second.isBalanced()).isTrue();
     books.as(
         memberId,
         () ->
-            assertThatThrownBy(() -> reconciliationService.completeReconciliation(second.id()))
+            assertThatThrownBy(
+                    () ->
+                        reconciliationService.createReconciliation(account, MARCH_END, march.id()))
                 .isInstanceOfSatisfying(
-                    InvalidStateException.class,
+                    ResourceConflictException.class,
                     e -> {
-                      assertThat(e.getBody().getStatus()).isEqualTo(400);
-                      assertThat(e.getBody().getTitle()).isEqualTo("Month already locked");
+                      assertThat(e.getBody().getStatus()).isEqualTo(409);
+                      assertThat(e.getBody().getTitle())
+                          .isEqualTo("This period is already reconciled");
                       assertThat(e.getBody().getDetail())
-                          .startsWith(
-                              "The list for 31 March 2026 on this trust account was locked on ")
-                          .endsWith(
-                              ". A second reconciliation to the same month end cannot be"
-                                  + " completed.");
+                          .isEqualTo(
+                              "This trust account was reconciled to 31 March 2026. A completed"
+                                  + " reconciliation cannot be changed; choose a later period"
+                                  + " end.");
                     }));
-    var after = getReconciliation(second.id());
-    assertThat(after.status()).as("rolled back: still DRAFT").isEqualTo("DRAFT");
-    assertThat(after.completedBy()).isNull();
-    assertThat(after.monthlyListId()).isNull();
+    var after = getReconciliation(first.id());
+    assertThat(after.status()).as("the first is still COMPLETED").isEqualTo("COMPLETED");
+    assertThat(after.monthlyListId()).isEqualTo(first.monthlyListId());
+    assertThat(
+            jdbc.queryForObject(
+                "SELECT count(*) FROM \"%s\".trust_reconciliations WHERE trust_account_id = ?"
+                    .formatted(books.schema()),
+                Long.class,
+                account))
+        .as("one reconciliation for the account")
+        .isEqualTo(1L);
     assertThat(
             books.read(
                 () -> monthlyListRepository.findByTrustAccountIdOrderByPeriodEndDesc(account)))

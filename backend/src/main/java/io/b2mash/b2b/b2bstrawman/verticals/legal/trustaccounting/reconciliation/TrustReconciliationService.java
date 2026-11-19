@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
@@ -44,6 +45,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.hibernate.exception.ConstraintViolationException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -58,6 +61,9 @@ public class TrustReconciliationService {
   /** How a period end is written in a refusal ("31 March 2026"). */
   private static final DateTimeFormatter PERIOD_END_FORMAT =
       DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.ENGLISH);
+
+  /** The unique index behind one reconciliation per account and period end (V29, §16.7.11). */
+  private static final String ACCOUNT_PERIOD_UNIQUE = "uq_trust_recon_account_period";
 
   private final BankStatementRepository bankStatementRepository;
   private final BankStatementLineRepository bankStatementLineRepository;
@@ -664,12 +670,15 @@ public class TrustReconciliationService {
   // --- Reconciliation Methods ---
 
   /**
-   * Starts a reconciliation of {@code accountId} as at {@code periodEnd} — the firm's choice, never
-   * derived from the statement (§16.3.4, ADR-377). The statement is required and must fit the
-   * period end, so that its closing balance is the bank balance as at {@code periodEnd}: it belongs
-   * to the account, has no line after {@code periodEnd}, no other imported statement of the account
-   * has a line between its last line and {@code periodEnd}, and {@code periodEnd} is not in the
-   * future. The first failing rule refuses (400).
+   * Starts — or continues — the reconciliation of {@code accountId} as at {@code periodEnd} (the
+   * firm's choice, never derived from the statement — §16.3.4, ADR-377). One reconciliation per
+   * account and period end (652C, §16.3.12): an existing DRAFT is returned, re-pointed to {@code
+   * bankStatementId} and recalculated; an existing COMPLETED one refuses (409). The statement is
+   * required and must fit the period end, so that its closing balance is the bank balance as at
+   * {@code periodEnd}: it belongs to the account, has no line after {@code periodEnd}, no other
+   * imported statement of the account has a line between its last line and {@code periodEnd}, and
+   * {@code periodEnd} is not in the future. The first failing rule refuses (400). A new draft is
+   * not calculated here (the wizard calculates next); a returned draft is.
    */
   @Transactional
   public TrustReconciliationResponse createReconciliation(
@@ -685,14 +694,41 @@ public class TrustReconciliationService {
           "Missing bank statement",
           "Import the bank statement for this period before starting the reconciliation.");
     }
+    // First read of the row, locked: a fresh status and statement, serialised with other creates
+    // for the same draft; a create waiting on a completion sees it COMPLETED (652C D-3).
+    var existing =
+        trustReconciliationRepository.findByTrustAccountIdAndPeriodEndForUpdate(
+            accountId, periodEnd);
+    if (existing.isPresent() && existing.get().getStatus() != ReconciliationStatus.DRAFT) {
+      throw alreadyReconciled(periodEnd);
+    }
+
     var statement =
         bankStatementRepository
             .findById(bankStatementId)
             .orElseThrow(() -> new ResourceNotFoundException("BankStatement", bankStatementId));
     requireStatementFitsPeriodEnd(accountId, statement, periodEnd);
 
-    var reconciliation = new TrustReconciliation(accountId, periodEnd, bankStatementId);
-    reconciliation = trustReconciliationRepository.save(reconciliation);
+    if (existing.isPresent()) {
+      return continueDraft(existing.get(), bankStatementId);
+    }
+
+    TrustReconciliation reconciliation;
+    try {
+      reconciliation =
+          trustReconciliationRepository.saveAndFlush(
+              new TrustReconciliation(accountId, periodEnd, bankStatementId));
+    } catch (DataIntegrityViolationException e) {
+      if (!violates(e, ACCOUNT_PERIOD_UNIQUE)) {
+        throw e;
+      }
+      // Another create for the same account and period end committed first (652C D-3)
+      throw new ResourceConflictException(
+          "Reconciliation started at the same time",
+          "Another member started the reconciliation of this trust account to "
+              + periodEnd.format(PERIOD_END_FORMAT)
+              + " at the same time. Choose Review Matches again to continue it.");
+    }
 
     auditService.log(
         AuditEventBuilder.builder()
@@ -710,6 +746,57 @@ public class TrustReconciliationService {
             .build());
 
     return toReconciliationResponse(reconciliation, null);
+  }
+
+  /**
+   * The DRAFT of the account and period end, re-pointed to {@code bankStatementId} (a re-upload, or
+   * the wizard asking again after a reset — §16.3.12) and recalculated as at its period end.
+   * Matches and exclusions belong to the statements' lines and are not touched (652C D-5). A
+   * changed statement is audited; asking again with the same statement is not.
+   */
+  private TrustReconciliationResponse continueDraft(
+      TrustReconciliation draft, UUID bankStatementId) {
+    UUID previous = draft.getBankStatementId();
+    draft.setBankStatementId(bankStatementId);
+    recalculate(draft);
+    draft = trustReconciliationRepository.save(draft);
+
+    if (!bankStatementId.equals(previous)) {
+      var details = new LinkedHashMap<String, Object>();
+      details.put("trust_account_id", draft.getTrustAccountId().toString());
+      details.put("period_end", draft.getPeriodEnd().toString());
+      if (previous != null) {
+        details.put("previous_bank_statement_id", previous.toString());
+      }
+      details.put("bank_statement_id", bankStatementId.toString());
+      auditService.log(
+          AuditEventBuilder.builder()
+              .eventType("trust_reconciliation.statement_changed")
+              .entityType("trust_reconciliation")
+              .entityId(draft.getId())
+              .details(details)
+              .build());
+    }
+    return toReconciliationResponse(draft, null);
+  }
+
+  /** 409: the account is already reconciled to {@code periodEnd} (§16.3.12). */
+  private static ResourceConflictException alreadyReconciled(LocalDate periodEnd) {
+    return new ResourceConflictException(
+        "This period is already reconciled",
+        "This trust account was reconciled to "
+            + periodEnd.format(PERIOD_END_FORMAT)
+            + ". A completed reconciliation cannot be changed; choose a later period end.");
+  }
+
+  private static boolean violates(DataIntegrityViolationException e, String constraint) {
+    for (Throwable t = e; t != null; t = t.getCause()) {
+      if (t instanceof ConstraintViolationException violation
+          && constraint.equalsIgnoreCase(violation.getConstraintName())) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**

@@ -44,3 +44,20 @@
 **Observations:** F-OBS-1 (LOW, 650B) is the cramped Source column at 1280. O-OBS-1 is the run-1 harness false positive. O-OBS-2 is that no server refusal is reachable from the UI. Details are in `../found.md`.
 
 **Stack state left behind (the stack is UP).** The primary account holds D1 (R 10 000,00, 5 Oct 2026, RECORDED). It has one COMPLETED reconciliation to 31 Oct 2026 and one locked October 2026 list, with `lockedThrough` = 2026-10-31. Two memos exist: September 2026 (R 1 300,10 / R 230,00 / R 30,00) and October 2026 (R 50,00 / R 20,00 / R 2,61). There are 4 `trust_interest_memo.saved` audit events.
+
+## Re-probe after fix c0c3a69df (F-OBS-1 + CI timestamp precision)
+
+Run 2 above stays the record for a–i. This re-probe covers checkpoint h only, plus one read of the memo timestamps.
+
+- **Stack.** The same stack, still holding the run-2 data (D1, the locked October 2026 list, the September and October memos). Only backend and frontend were rebuilt from `c0c3a69df` with `e2e-rebuild.sh backend frontend`, 00:46:55Z – 00:48:35Z (~1 min 40 s; images created 00:48:07Z / 00:48:18Z). Nothing was wiped and no memo was saved again.
+- **Window: 2026-11-19T00:49:56Z – 00:50:35Z.** `OBS_SUFFIX=-reprobe node obs.cjs h` ran, then the timestamp GET. Harness change: `OBS_SUFFIX` sets the artefact names so run 2's `h-*` files are kept, and h now has a Source wrapping check per width (each word piece, split at spaces and after hyphens, sits on one line; cell width ≥ the widest word).
+- **h verdict: PASS, 10/10 checks.**
+  - Source cell width at 1280: **61 px → 220 px**; widest word 63 / 66 px; 2 lines per note; **0 mid-word breaks**. "re-issued" breaks only after its hyphen.
+  - Source cell width at 1440: **170 px → 262 px**; 0 mid-word breaks.
+  - The money headers now wrap onto two lines ("GROSS INTEREST / (AT SOURCE)").
+  - The "List locked" badge sits on one line at 1280.
+  - Clip probe at both widths: table 29 text elements, 0 bad. Record dialog 11, 0 bad (397–883 px at 1280, 477–963 px at 1440, bottom 844). Correct dialog 12, 0 bad (bottom 811).
+  - Raw-code scan of the table, both dialogs and `main`: 0 hits at both widths.
+  - Evidence: `obs/h-reprobe-table-{1280,1440}.png`, `obs/h-reprobe-dialog-record-{1280,1440}.png`, `obs/h-reprobe-dialog-correct-{1280,1440}.png`, `obs/result-h-reprobe.json` (`widths.*.sourceCells`).
+- **Timestamps.** `GET …/interest-memos?year=2026` → 200 with both memos, `createdAt` and `updatedAt` present at microsecond precision (e.g. September `2026-11-19T00:34:42.763733Z` / `00:34:48.214251Z`). They equal the `trust_interest_memos` row values (`obs/api-h-reprobe-memos-2026.json`). These rows were stored before the fix. The Linux nanosecond case itself is pinned by `TrustInterestMemoIntegrationTest` (`assertStorePrecision`), and CI is where it can go red.
+- **Logs in the window.** Backend: 1 line, an INFO scheduler fan-out; 0 WARN, 0 ERROR, 0 exceptions. Frontend container: 0 lines. Browser: 0 console errors and 0 page errors. Backend startup after the rebuild, before the window: 0 ERROR, 8 WARN (the known startup set). The `obs/*-reprobe.log` files are gitignored.

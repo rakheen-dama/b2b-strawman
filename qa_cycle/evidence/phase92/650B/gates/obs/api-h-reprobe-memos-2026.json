@@ -1,0 +1,19 @@
+{
+  "method": "GET",
+  "url": "/api/trust-accounts/69d5a309-dfd5-4955-aff5-c8d11d6c78df/interest-memos?year=2026",
+  "status": 200,
+  "memos": [
+    {
+      "id": "8c238ca0-63ef-40b7-a4ed-122df2d9dde9",
+      "periodMonth": "2026-09-01",
+      "createdAt": "2026-11-19T00:34:42.763733Z",
+      "updatedAt": "2026-11-19T00:34:48.214251Z"
+    },
+    {
+      "id": "7232025f-e460-46e5-afa7-39a3b80487bf",
+      "periodMonth": "2026-10-01",
+      "createdAt": "2026-11-19T00:34:54.054607Z",
+      "updatedAt": "2026-11-19T00:34:56.042096Z"
+    }
+  ]
+}

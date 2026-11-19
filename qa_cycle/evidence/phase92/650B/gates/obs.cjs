@@ -3,7 +3,7 @@
 // Every state change goes through the firm UI (deposit, statement, wizard, memo dialog). psql is
 // read-only (SELECT); API calls are reads (GET). Phases share obs/state.json; run in the order
 // a b c d e f g h. Data: the seeded primary GENERAL account (the only one the page and wizard use).
-// Usage: node obs.cjs a|b|c|d|e|f|g|h
+// Usage: node obs.cjs a|b|c|d|e|f|g|h   (OBS_SUFFIX=-x names the phase's artefacts <phase>-x…, e.g. a re-probe)
 const fs = require("fs");
 const path = require("path");
 const { execFileSync } = require("child_process");
@@ -15,10 +15,11 @@ const PAGE = `${BASE}/trust-accounting/other-creditors`;
 const OUT = path.join(__dirname, "obs");
 fs.mkdirSync(OUT, { recursive: true });
 const PHASE = process.argv[2];
+const TAG = PHASE + (process.env.OBS_SUFFIX || "");
 const STATE = path.join(OUT, "state.json");
 const state = fs.existsSync(STATE) ? JSON.parse(fs.readFileSync(STATE, "utf8")) : {};
 const R = { phase: PHASE, startedAt: new Date().toISOString(), consoleErrors: [], pageErrors: [], checks: {} };
-const saveAll = () => { fs.writeFileSync(STATE, JSON.stringify(state, null, 2)); fs.writeFileSync(path.join(OUT, `result-${PHASE}.json`), JSON.stringify(R, null, 2)); };
+const saveAll = () => { fs.writeFileSync(STATE, JSON.stringify(state, null, 2)); fs.writeFileSync(path.join(OUT, `result-${TAG}.json`), JSON.stringify(R, null, 2)); };
 const RUN = state.run || (state.run = Date.now().toString(36).slice(-5).toUpperCase());
 const M = "2026-10-31";
 const LOCKED_NOTE = "This month's trust creditor list is locked. A memo is not part of the list: saving it changes no balance and no locked list.";
@@ -33,7 +34,7 @@ const OCT2 = { grossInterest: "50.00", grossCharges: "20.00", chargesVat: "2.61"
 // ── read-only SQL ──
 const psql = (args) => execFileSync("docker", ["exec", "e2e-postgres", "psql", "-U", "postgres", "-d", "app", ...args], { encoding: "utf8" });
 const SCHEMA = psql(["-XAt", "-c", "select schema_name from information_schema.schemata where schema_name like 'tenant_%' order by 1 limit 1"]).trim();
-const SQL_OUT = path.join(OUT, `sql-${PHASE}.txt`);
+const SQL_OUT = path.join(OUT, `sql-${TAG}.txt`);
 fs.writeFileSync(SQL_OUT, `-- 650B OBS phase ${PHASE} read-only SQL (schema ${SCHEMA}) ${R.startedAt}\n`);
 const ro = (sql) => { const s = sql.replace(/\bT\./g, `${SCHEMA}.`); if (!/^\s*(select|with)\b/i.test(s)) throw new Error("read-only SQL only"); return s; };
 const q = (sql, label) => { const s = ro(sql); const out = psql(["-X", "-v", "ON_ERROR_STOP=1", "-c", s]); fs.appendFileSync(SQL_OUT, `\n== [${label}]\n${s}\n${out}`); return out; };
@@ -69,7 +70,7 @@ async function api(ctx, url, save) {
 }
 async function snap(p, name, el) {
   await p.waitForTimeout(400);
-  const f = path.join(OUT, `${PHASE}-${name}.png`);
+  const f = path.join(OUT, `${TAG}-${name}.png`);
   if (el) await el.screenshot({ path: f }); else await p.screenshot({ path: f, fullPage: true });
   return path.basename(f);
 }
@@ -505,7 +506,25 @@ const phases = {
           if (new Set([...range.getClientRects()].map((r) => Math.round(r.top))).size > 1) broken.push(word);
           at += word.length + 1;
         }
-        return { width: Math.round(el.getBoundingClientRect().width), brokenWords: broken };
+        // Mid-word breaks: a word piece (split at spaces and after hyphens) spanning two lines.
+        const midWord = [], probe = document.createElement("span");
+        probe.style.cssText = "position:absolute;visibility:hidden;white-space:nowrap";
+        el.appendChild(probe);
+        let longest = 0;
+        at = 0;
+        for (const piece of node.textContent.split(/(?<=-)|(?= )/)) {
+          const start = at + (piece.startsWith(" ") ? 1 : 0), word = piece.trim();
+          at += piece.length;
+          if (!word) continue;
+          probe.textContent = word;
+          longest = Math.max(longest, probe.getBoundingClientRect().width);
+          const range = document.createRange();
+          range.setStart(node, start); range.setEnd(node, start + word.length);
+          if (new Set([...range.getClientRects()].map((r) => Math.round(r.top))).size > 1) midWord.push(word);
+        }
+        probe.remove();
+        const lines = new Set([...(() => { const r = document.createRange(); r.selectNodeContents(node); return r.getClientRects(); })()].map((r) => Math.round(r.top))).size;
+        return { width: Math.round(el.getBoundingClientRect().width), longestWordPx: Math.ceil(longest), lines, brokenWords: broken, midWordBreaks: midWord };
       }));
       const rec = await openDialog(p, "record-interest-memo-btn");
       await rec.getByTestId("interest-memo-replaces-note").waitFor({ timeout: 15_000 }).catch(() => {});
@@ -525,6 +544,7 @@ const phases = {
       R.checks[`h: ${w} — record dialog (locked + replaces notes on): no clipped text, inside the viewport`] = ok(o.record) && !!o.record.state.lockedNote && !!o.record.state.replacesNote;
       R.checks[`h: ${w} — correct dialog (locked note on): no clipped text, inside the viewport`] = ok(o.correct) && !!o.correct.state.lockedNote;
       R.checks[`h: ${w} — no raw codes / ISO dates / raw decimals in the table or either dialog`] = [o.table, o.record, o.correct].every((x) => x.codes.length === 0);
+      R.checks[`h: ${w} — Source cells break at word boundaries only (0 mid-word breaks; width ≥ longest word)`] = o.sourceCells.length > 0 && o.sourceCells.every((c) => c.midWordBreaks.length === 0 && c.width >= c.longestWordPx);
     }
   },
 };

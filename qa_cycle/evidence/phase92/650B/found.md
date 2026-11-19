@@ -1,10 +1,10 @@
 # 650B found — OBS gate
 
 The slice's behaviour matched the acceptance criteria on every check (a–i), including save, correct, the
-locked month and no balance moves. There is one readability finding in the new memo table. It is not
-fixed here.
+locked month and no balance moves. There is one readability finding in the new memo table, F-OBS-1. It was
+fixed in `c0c3a69df`.
 
-- **F-OBS-1 — LOW (cosmetic, 650B) — the memo table's Source column is squeezed at 1280 px and breaks words
+- **F-OBS-1 — LOW (cosmetic, 650B) — FIXED in `c0c3a69df` — the memo table's Source column is squeezed at 1280 px and breaks words
   mid-word.** At a 1280 px viewport, the Source cell of "Interest and charges at source" is **61 px wide**.
   The `[overflow-wrap:anywhere]` cell class then splits ordinary words across lines: "correcte|d" and
   "statemen|t". The probe measured these breaks (`gates/obs/result-h.json` → `widths.1280.sourceCells[*].brokenWords`
@@ -18,6 +18,9 @@ fixed here.
   creditors at 1280 × 1000 (`gates/obs/h-table-1280.png` vs `gates/obs/h-table-1440.png`).
   Possible fix directions (product/orchestrator call): shorter or wrapping money headers, or a `min-w`
   on the Source column.
+  **Fix (`c0c3a69df`):** the money headers wrap; Source uses `break-words` instead of `[overflow-wrap:anywhere]` and has
+  `min-w-40`. Re-probe (`gates/README.md` "Re-probe after fix c0c3a69df"): Source is 220 px at 1280 and 262 px at
+  1440, with 0 mid-word breaks and 0 clipping.
 
 Observations (pre-existing or harness, outside the slice; reported, not fixed here):
 

@@ -1,0 +1,27 @@
+-- 650B OBS phase a read-only SQL (schema tenant_7d218705360b) 2026-11-19T00:34:22.763Z
+
+== [a: trust accounts]
+select id, account_name, account_type, is_primary from tenant_7d218705360b.trust_accounts
+                  id                  |            account_name            | account_type | is_primary 
+--------------------------------------+------------------------------------+--------------+------------
+ 69d5a309-dfd5-4955-aff5-c8d11d6c78df | Mathebula & Partners Trust Account | GENERAL      | t
+(1 row)
+
+
+== [a: members]
+select id, name, email from tenant_7d218705360b.members order by email
+                  id                  |     name     |        email         
+--------------------------------------+--------------+----------------------
+ adbbe09b-d4d0-4fd5-949f-14881be35858 | Alice Owner  | alice@e2e-test.local
+ b421d282-1721-4a46-8d4a-2cf17da50bc0 | Bob Admin    | bob@e2e-test.local
+ 6d1f08c4-a65e-4892-b8a2-449246dc3e0d | Carol Member | carol@e2e-test.local
+(3 rows)
+
+
+== [a: empty before the run]
+select (select count(*) from tenant_7d218705360b.trust_interest_memos) memos, (select count(*) from tenant_7d218705360b.trust_transactions) postings, (select count(*) from tenant_7d218705360b.trust_monthly_lists) lists, (select count(*) from tenant_7d218705360b.audit_events where event_type='trust_interest_memo.saved') memo_audits
+ memos | postings | lists | memo_audits 
+-------+----------+-------+-------------
+     0 |        0 |     0 |           0
+(1 row)
+

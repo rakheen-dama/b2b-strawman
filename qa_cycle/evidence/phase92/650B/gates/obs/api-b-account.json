@@ -1,0 +1,25 @@
+{
+  "method": "GET",
+  "url": "/api/trust-accounts/69d5a309-dfd5-4955-aff5-c8d11d6c78df",
+  "status": 200,
+  "body": {
+    "id": "69d5a309-dfd5-4955-aff5-c8d11d6c78df",
+    "accountName": "Mathebula & Partners Trust Account",
+    "bankName": "Standard Bank",
+    "branchCode": "051001",
+    "accountNumber": "0123456789",
+    "accountType": "GENERAL",
+    "investmentBasis": null,
+    "section": "S86_2",
+    "isPrimary": true,
+    "requireDualApproval": false,
+    "paymentApprovalThreshold": null,
+    "status": "ACTIVE",
+    "openedDate": "2026-11-19",
+    "closedDate": null,
+    "notes": null,
+    "createdAt": "2026-11-19T00:33:45.323380Z",
+    "updatedAt": "2026-11-19T00:33:45.323380Z",
+    "lockedThrough": "2026-10-31"
+  }
+}

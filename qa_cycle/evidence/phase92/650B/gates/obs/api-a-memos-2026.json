@@ -1,0 +1,6 @@
+{
+  "method": "GET",
+  "url": "/api/trust-accounts/69d5a309-dfd5-4955-aff5-c8d11d6c78df/interest-memos?year=2026",
+  "status": 200,
+  "body": []
+}

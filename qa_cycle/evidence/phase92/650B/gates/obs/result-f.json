@@ -1,0 +1,48 @@
+{
+  "phase": "f",
+  "startedAt": "2026-11-19T00:35:05.296Z",
+  "consoleErrors": [],
+  "pageErrors": [],
+  "checks": {
+    "f: SQL — postings, ledgers, accounts, creditors, items, reconciliations, lists, statements identical to S1": true,
+    "f: API — every balance term (account, cashbook, total + breakdown, ledgers, creditors, items, integrity, firm integrity, lists) identical to S1": true,
+    "f: integrity flag codes identical to S1": true,
+    "f: the snapshot had data (one posting, one list)": true
+  },
+  "diffSql": [],
+  "diffApi": [],
+  "diffFlags": [],
+  "S1": {
+    "sql": {
+      "transactionsByTypeStatus": "DEPOSIT/RECORDED n=1 sum=10000.00",
+      "trust_transactions": "1 rows md5=54fa655fd598eaa642b65b343271c910",
+      "client_ledger_cards": "1 rows md5=5c4adf9b25cd248d165c0165e9695fc9",
+      "trust_accounts": "1 rows md5=a0594aecb5d78864302c8d624bd547de",
+      "trust_creditor_accounts": "2 rows md5=01ed1e68a8c23e7826d04b9b05e16ae8",
+      "unidentified_deposits": "0 rows md5=-",
+      "trust_reconciliations": "1 rows md5=52bdf9040dffff336254021c062e8732",
+      "trust_monthly_lists": "1 rows md5=fa39374bfdee258844dc0e22057746c7",
+      "bank_statements": "1 rows md5=fea6e67e3fd6d9b63848e887452292f6",
+      "bank_statement_lines": "1 rows md5=60ca02f7193ce5e8e976b29fbf950984",
+      "trust_investments": "0 rows md5=-"
+    },
+    "flagCodes": []
+  },
+  "S2": {
+    "sql": {
+      "transactionsByTypeStatus": "DEPOSIT/RECORDED n=1 sum=10000.00",
+      "trust_transactions": "1 rows md5=54fa655fd598eaa642b65b343271c910",
+      "client_ledger_cards": "1 rows md5=5c4adf9b25cd248d165c0165e9695fc9",
+      "trust_accounts": "1 rows md5=a0594aecb5d78864302c8d624bd547de",
+      "trust_creditor_accounts": "2 rows md5=01ed1e68a8c23e7826d04b9b05e16ae8",
+      "unidentified_deposits": "0 rows md5=-",
+      "trust_reconciliations": "1 rows md5=52bdf9040dffff336254021c062e8732",
+      "trust_monthly_lists": "1 rows md5=fa39374bfdee258844dc0e22057746c7",
+      "bank_statements": "1 rows md5=fea6e67e3fd6d9b63848e887452292f6",
+      "bank_statement_lines": "1 rows md5=60ca02f7193ce5e8e976b29fbf950984",
+      "trust_investments": "0 rows md5=-"
+    },
+    "flagCodes": []
+  },
+  "endedAt": "2026-11-19T00:35:09.334Z"
+}

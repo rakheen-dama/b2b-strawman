@@ -281,10 +281,11 @@ class AuditEventTypeRegistryTest {
     // + 4 trust_inv_interest.recorded, trust_fund_inv_share.recorded,
     // trust_investment.interest_recorded / .interest_reversed (Phase 92 648B) = 81.
     // + 1 trust_monthly_list.locked (Phase 92 650A) = 82.
+    // + 1 trust_interest_memo.saved (Phase 92 650B) = 83.
     // Default fallback is synthesised inside resolve() and must NOT appear in entries().
     // (Phase 86 slice 2 / Epic 596B removed the 5 deal.* SALES entries; Phase 86 slice 3 / Epic
     // 597B removed proposal.*; Phase 86 slice 7 / Epic 601 removed six ai.specialist.* entries.)
-    assertThat(registry.entries()).hasSize(82);
+    assertThat(registry.entries()).hasSize(83);
     assertThat(registry.entries())
         .extracting(AuditEventTypeMetadata::eventType)
         .doesNotContain("(default fallback)")
@@ -354,8 +355,8 @@ class AuditEventTypeRegistryTest {
 
   @Test
   void entriesMatchingWithEmptyOrNullReturnsAll() {
-    assertThat(registry.entriesMatching(Set.of())).hasSize(82);
-    assertThat(registry.entriesMatching(null)).hasSize(82);
+    assertThat(registry.entriesMatching(Set.of())).hasSize(83);
+    assertThat(registry.entriesMatching(null)).hasSize(83);
   }
 
   @Test

@@ -1,0 +1,18 @@
+{
+  "method": "GET",
+  "url": "/api/me/capabilities",
+  "status": 200,
+  "body": {
+    "capabilities": [
+      "AI_EXECUTE",
+      "GENERATE_STATEMENT_OF_ACCOUNT",
+      "VIEW_LEGAL",
+      "MANAGE_DISBURSEMENTS",
+      "VIEW_TRUST"
+    ],
+    "role": "Member",
+    "isAdmin": false,
+    "isOwner": false,
+    "memberId": "6d1f08c4-a65e-4892-b8a2-449246dc3e0d"
+  }
+}

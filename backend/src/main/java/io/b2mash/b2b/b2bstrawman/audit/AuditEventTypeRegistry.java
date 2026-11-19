@@ -277,6 +277,13 @@ public class AuditEventTypeRegistry {
                 "Monthly trust creditor list locked",
                 AuditSeverity.INFO,
                 AuditEventGroup.FINANCIAL),
+            // FINANCIAL — a Rule 54.28 memo of interest and charges that never reached the trust
+            // account, saved or corrected (Phase 92 650B, ADR-384). Additive key (pin 82 → 83).
+            new AuditEventTypeMetadata(
+                "trust_interest_memo.saved",
+                "Interest and charges memo saved",
+                AuditSeverity.INFO,
+                AuditEventGroup.FINANCIAL),
             // DATA — data protection
             new AuditEventTypeMetadata(
                 "dataprotection.dsar.*",

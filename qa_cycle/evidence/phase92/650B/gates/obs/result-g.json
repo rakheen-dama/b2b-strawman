@@ -1,0 +1,156 @@
+{
+  "phase": "g",
+  "startedAt": "2026-11-19T00:35:09.889Z",
+  "consoleErrors": [],
+  "pageErrors": [],
+  "checks": {
+    "g: VAT > charges refused inline ('The VAT cannot be more than the gross charges'), dialog stays open": true,
+    "g: December 2026 refused inline ('A memo can be saved for this month or an earlier one'), max = 2026-11": true,
+    "g: in flight — fieldset + every field, Cancel and Submit disabled, 'Saving...'; Escape keeps it open": true,
+    "g: aborted save → inline error, fields re-enabled, dialog open": true,
+    "g: ?memoYear=2025 → empty state for 2025": true,
+    "g: cross-year — Record on the 2025 page for October 2026 shows the 'replaces' notice (+ locked note)": true,
+    "g: cross-year — August 2026 (no memo) → no replaces note": true,
+    "g: Carol has VIEW_TRUST, not MANAGE_TRUST; sees the 2 memos, no Record, no Correct": true,
+    "g: nothing persisted by the probes (memo rows + updated_at, audit count unchanged)": true
+  },
+  "vat": {
+    "title": "Record an interest and charges memo",
+    "lockedNote": null,
+    "lockedNoteRole": null,
+    "replacesNote": null,
+    "replaceUnknown": null,
+    "postingWarning": 0,
+    "monthInput": "2026-08",
+    "monthFixed": null,
+    "grossInterest": "10.00",
+    "grossCharges": "10.00",
+    "chargesVat": "20.00",
+    "sourceNote": "OBS 650B TIAB0 refusal probe",
+    "messages": [
+      "The VAT cannot be more than the gross charges"
+    ],
+    "open": true
+  },
+  "future": {
+    "title": "Record an interest and charges memo",
+    "lockedNote": null,
+    "lockedNoteRole": null,
+    "replacesNote": null,
+    "replaceUnknown": null,
+    "postingWarning": 0,
+    "monthInput": "2026-12",
+    "monthFixed": null,
+    "grossInterest": "10.00",
+    "grossCharges": "10.00",
+    "chargesVat": "1.00",
+    "sourceNote": "OBS 650B TIAB0 refusal probe",
+    "messages": [
+      "A memo can be saved for this month or an earlier one"
+    ],
+    "open": true,
+    "max": "2026-11"
+  },
+  "heldRequests": [
+    "http://localhost:3001/org/e2e-test-org/trust-accounting/other-creditors"
+  ],
+  "inFlight": {
+    "fieldsetDisabled": true,
+    "controlsDisabled": [
+      true,
+      true,
+      true,
+      true,
+      true
+    ],
+    "submitDisabled": true,
+    "submitText": "Saving...",
+    "cancelDisabled": true,
+    "openAfterEscape": true
+  },
+  "afterAbort": {
+    "title": "Record an interest and charges memo",
+    "lockedNote": null,
+    "lockedNoteRole": null,
+    "replacesNote": null,
+    "replaceUnknown": null,
+    "postingWarning": 0,
+    "monthInput": "2026-08",
+    "monthFixed": null,
+    "grossInterest": "10.00",
+    "grossCharges": "10.00",
+    "chargesVat": "1.00",
+    "sourceNote": "OBS 650B TIAB0 in-flight probe (aborted)",
+    "messages": [
+      "An unexpected error occurred"
+    ],
+    "fieldsetDisabled": false
+  },
+  "inducedConsoleErrors": [
+    {
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/other-creditors",
+      "text": "Failed to load resource: net::ERR_FAILED"
+    }
+  ],
+  "empty2025": "No memos for 2025. Record one when the bank swept interest or charges at source.",
+  "crossYear": {
+    "title": "Record an interest and charges memo",
+    "lockedNote": "This month's trust creditor list is locked. A memo is not part of the list: saving it changes no balance and no locked list.",
+    "lockedNoteRole": "status",
+    "replacesNote": "A memo for October 2026 is already saved. Saving replaces its figures; the previous figures stay in the audit trail.",
+    "replaceUnknown": null,
+    "postingWarning": 0,
+    "monthInput": "2026-10",
+    "monthFixed": null,
+    "grossInterest": "0",
+    "grossCharges": "0",
+    "chargesVat": "0",
+    "sourceNote": "",
+    "messages": []
+  },
+  "crossYearAugust": {
+    "title": "Record an interest and charges memo",
+    "lockedNote": null,
+    "lockedNoteRole": null,
+    "replacesNote": null,
+    "replaceUnknown": null,
+    "postingWarning": 0,
+    "monthInput": "2026-08",
+    "monthFixed": null,
+    "grossInterest": "0",
+    "grossCharges": "0",
+    "chargesVat": "0",
+    "sourceNote": "",
+    "messages": []
+  },
+  "carol": {
+    "viewTrust": true,
+    "manageTrust": false,
+    "role": "Member",
+    "rows": [
+      {
+        "month": "September 2026",
+        "correct": false,
+        "cells": 6
+      },
+      {
+        "month": "October 2026 List locked",
+        "correct": false,
+        "cells": 6
+      }
+    ],
+    "record": 0,
+    "correct": 0,
+    "apiStatus": 200,
+    "apiCount": 2
+  },
+  "before": {
+    "memos": "8c238ca0-63ef-40b7-a4ed-122df2d9dde9:2026-11-19 00:34:48.214251+00,7232025f-e460-46e5-afa7-39a3b80487bf:2026-11-19 00:34:56.042096+00",
+    "audits": 4
+  },
+  "after": {
+    "memos": "8c238ca0-63ef-40b7-a4ed-122df2d9dde9:2026-11-19 00:34:48.214251+00,7232025f-e460-46e5-afa7-39a3b80487bf:2026-11-19 00:34:56.042096+00",
+    "audits": 4
+  },
+  "endedAt": "2026-11-19T00:35:24.712Z"
+}

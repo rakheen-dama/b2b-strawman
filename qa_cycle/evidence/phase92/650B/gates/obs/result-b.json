@@ -1,0 +1,22 @@
+{
+  "phase": "b",
+  "startedAt": "2026-11-19T00:34:29.168Z",
+  "consoleErrors": [],
+  "pageErrors": [],
+  "checks": {
+    "b: deposit R 10 000,00 dated 5 Oct 2026 recorded through the UI": true,
+    "b: step 5 'October 2026 list locked — R 10 000,00 agrees …'": true,
+    "b: lockedThrough = 2026-10-31": true,
+    "b: locked list row captured": true
+  },
+  "locked": "October 2026 list locked — R 10 000,00 agrees with the cashbook and the adjusted bank balance.",
+  "d1": [
+    "a066788e-6a51-4b53-bfc9-332b8b1045fc",
+    "RECORDED",
+    "10000.00",
+    "2026-10-05"
+  ],
+  "listFingerprint": "10000.00|0.00|0.00|10000.00|10000.00|10000.00|0.00|0.00|0.00|0.00|10000.00|0.00|00eadf2f030a705f2f30dd330cce3073|d751713988987e9331980363e24189ce|2026-11-19 00:34:35.982972+00",
+  "flagCodes": [],
+  "endedAt": "2026-11-19T00:34:38.881Z"
+}

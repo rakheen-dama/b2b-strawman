@@ -1,0 +1,292 @@
+{
+  "tag": "S1-after-lock",
+  "at": "2026-11-19T00:34:37.897Z",
+  "sql": {
+    "transactionsByTypeStatus": "DEPOSIT/RECORDED n=1 sum=10000.00",
+    "trust_transactions": "1 rows md5=54fa655fd598eaa642b65b343271c910",
+    "client_ledger_cards": "1 rows md5=5c4adf9b25cd248d165c0165e9695fc9",
+    "trust_accounts": "1 rows md5=a0594aecb5d78864302c8d624bd547de",
+    "trust_creditor_accounts": "2 rows md5=01ed1e68a8c23e7826d04b9b05e16ae8",
+    "unidentified_deposits": "0 rows md5=-",
+    "trust_reconciliations": "1 rows md5=52bdf9040dffff336254021c062e8732",
+    "trust_monthly_lists": "1 rows md5=fa39374bfdee258844dc0e22057746c7",
+    "bank_statements": "1 rows md5=fea6e67e3fd6d9b63848e887452292f6",
+    "bank_statement_lines": "1 rows md5=60ca02f7193ce5e8e976b29fbf950984",
+    "trust_investments": "0 rows md5=-"
+  },
+  "api": {
+    "account": {
+      "status": 200,
+      "body": {
+        "id": "69d5a309-dfd5-4955-aff5-c8d11d6c78df",
+        "accountName": "Mathebula & Partners Trust Account",
+        "bankName": "Standard Bank",
+        "branchCode": "051001",
+        "accountNumber": "0123456789",
+        "accountType": "GENERAL",
+        "investmentBasis": null,
+        "section": "S86_2",
+        "isPrimary": true,
+        "requireDualApproval": false,
+        "paymentApprovalThreshold": null,
+        "status": "ACTIVE",
+        "openedDate": "2026-11-19",
+        "closedDate": null,
+        "notes": null,
+        "createdAt": "2026-11-19T00:33:45.323380Z",
+        "updatedAt": "2026-11-19T00:33:45.323380Z",
+        "lockedThrough": "2026-10-31"
+      }
+    },
+    "accounts": {
+      "status": 200,
+      "body": [
+        {
+          "id": "69d5a309-dfd5-4955-aff5-c8d11d6c78df",
+          "accountName": "Mathebula & Partners Trust Account",
+          "bankName": "Standard Bank",
+          "branchCode": "051001",
+          "accountNumber": "0123456789",
+          "accountType": "GENERAL",
+          "investmentBasis": null,
+          "section": "S86_2",
+          "isPrimary": true,
+          "requireDualApproval": false,
+          "paymentApprovalThreshold": null,
+          "status": "ACTIVE",
+          "openedDate": "2026-11-19",
+          "closedDate": null,
+          "notes": null,
+          "createdAt": "2026-11-19T00:33:45.323380Z",
+          "updatedAt": "2026-11-19T00:33:45.323380Z",
+          "lockedThrough": "2026-10-31"
+        }
+      ]
+    },
+    "cashbook": {
+      "status": 200,
+      "body": {
+        "balance": 10000
+      }
+    },
+    "cashbookOct": {
+      "status": 200,
+      "body": {
+        "balance": 10000
+      }
+    },
+    "total": {
+      "status": 200,
+      "body": {
+        "balance": 10000,
+        "creditorBreakdown": {
+          "clientLedgers": 10000,
+          "investmentCreditors": 0,
+          "fundInterestAndCharges": 0,
+          "unidentifiedDeposits": 0,
+          "otherNonClient": 0,
+          "interAccount": 0,
+          "total": 10000
+        }
+      }
+    },
+    "totalOct": {
+      "status": 200,
+      "body": {
+        "balance": 10000,
+        "creditorBreakdown": {
+          "clientLedgers": 10000,
+          "investmentCreditors": 0,
+          "fundInterestAndCharges": 0,
+          "unidentifiedDeposits": 0,
+          "otherNonClient": 0,
+          "interAccount": 0,
+          "total": 10000
+        }
+      }
+    },
+    "clientLedgers": {
+      "status": 200,
+      "body": {
+        "content": [
+          {
+            "id": "7c73a3c7-625d-432d-9b97-88895408c804",
+            "trustAccountId": "69d5a309-dfd5-4955-aff5-c8d11d6c78df",
+            "clientId": "667cd43c-c513-4a07-b964-6609ff09e8be",
+            "clientName": "Acme Corp",
+            "balance": 10000,
+            "totalDeposits": 10000,
+            "totalPayments": 0,
+            "totalFeeTransfers": 0,
+            "totalRefunds": 0,
+            "totalTransfersIn": 0,
+            "totalTransfersOut": 0,
+            "totalInvestmentPlacements": 0,
+            "totalInvestmentReturns": 0,
+            "investedBalance": 0,
+            "lastTransactionDate": "2026-10-05",
+            "createdAt": "2026-11-19T00:34:31.487347Z",
+            "updatedAt": "2026-11-19T00:34:31.487347Z"
+          }
+        ],
+        "page": {
+          "size": 20,
+          "number": 0,
+          "totalElements": 1,
+          "totalPages": 1
+        }
+      }
+    },
+    "creditorAccounts": {
+      "status": 200,
+      "body": [
+        {
+          "id": "049f43a1-9ec0-45f1-9b35-6064d72ba1a0",
+          "trustAccountId": "69d5a309-dfd5-4955-aff5-c8d11d6c78df",
+          "accountType": "FUND_INTEREST_AND_CHARGES",
+          "name": "Legal Practitioners' Fidelity Fund — interest and charges",
+          "balance": 0,
+          "inDebit": false,
+          "asAt": "2026-11-19"
+        },
+        {
+          "id": "9dfd3e07-4cc7-4419-9551-60b9cc906e19",
+          "trustAccountId": "69d5a309-dfd5-4955-aff5-c8d11d6c78df",
+          "accountType": "UNIDENTIFIED_DEPOSITS",
+          "name": "Unidentified deposits",
+          "balance": 0,
+          "inDebit": false,
+          "asAt": "2026-11-19"
+        }
+      ]
+    },
+    "unidentified": {
+      "status": 200,
+      "body": {
+        "content": [],
+        "page": {
+          "size": 20,
+          "number": 0,
+          "totalElements": 0,
+          "totalPages": 0
+        }
+      }
+    },
+    "integrity": {
+      "status": 200,
+      "body": {
+        "trustAccountId": "69d5a309-dfd5-4955-aff5-c8d11d6c78df",
+        "asAt": "2026-11-19",
+        "position": {
+          "trustAccountId": "69d5a309-dfd5-4955-aff5-c8d11d6c78df",
+          "asAt": "2026-11-19",
+          "cashbook": 10000,
+          "clientLedgers": 10000,
+          "investmentCreditors": 0,
+          "fundLedger": 0,
+          "unidentifiedDeposits": 0,
+          "otherNonClient": 0,
+          "interAccount": 0,
+          "creditorTotal": 10000,
+          "difference": 0
+        },
+        "bank": null,
+        "balanced": true,
+        "flags": [],
+        "lastCompletedReconciliationId": "55d7d63c-383c-4839-9e91-97b1e40c397e",
+        "lastReconciledThrough": "2026-10-31"
+      }
+    },
+    "integrityOct": {
+      "status": 200,
+      "body": {
+        "trustAccountId": "69d5a309-dfd5-4955-aff5-c8d11d6c78df",
+        "asAt": "2026-10-31",
+        "position": {
+          "trustAccountId": "69d5a309-dfd5-4955-aff5-c8d11d6c78df",
+          "asAt": "2026-10-31",
+          "cashbook": 10000,
+          "clientLedgers": 10000,
+          "investmentCreditors": 0,
+          "fundLedger": 0,
+          "unidentifiedDeposits": 0,
+          "otherNonClient": 0,
+          "interAccount": 0,
+          "creditorTotal": 10000,
+          "difference": 0
+        },
+        "bank": {
+          "bankBalance": 10000,
+          "outstandingDeposits": 0,
+          "outstandingPayments": 0,
+          "adjustedBankBalance": 10000
+        },
+        "balanced": true,
+        "flags": [],
+        "lastCompletedReconciliationId": "55d7d63c-383c-4839-9e91-97b1e40c397e",
+        "lastReconciledThrough": "2026-10-31"
+      }
+    },
+    "firmIntegrity": {
+      "status": 200,
+      "body": {
+        "asAt": "2026-11-19",
+        "balanced": true,
+        "cashbook": 10000,
+        "clientLedgers": 10000,
+        "investmentCreditors": 0,
+        "fundLedger": 0,
+        "unidentifiedDeposits": 0,
+        "otherNonClient": 0,
+        "interAccount": 0,
+        "creditorTotal": 10000,
+        "difference": 0,
+        "flags": [],
+        "accounts": [
+          {
+            "trustAccountId": "69d5a309-dfd5-4955-aff5-c8d11d6c78df",
+            "asAt": "2026-11-19",
+            "position": {
+              "trustAccountId": "69d5a309-dfd5-4955-aff5-c8d11d6c78df",
+              "asAt": "2026-11-19",
+              "cashbook": 10000,
+              "clientLedgers": 10000,
+              "investmentCreditors": 0,
+              "fundLedger": 0,
+              "unidentifiedDeposits": 0,
+              "otherNonClient": 0,
+              "interAccount": 0,
+              "creditorTotal": 10000,
+              "difference": 0
+            },
+            "bank": null,
+            "balanced": true,
+            "flags": [],
+            "lastCompletedReconciliationId": "55d7d63c-383c-4839-9e91-97b1e40c397e",
+            "lastReconciledThrough": "2026-10-31"
+          }
+        ]
+      }
+    },
+    "monthlyLists": {
+      "status": 200,
+      "body": [
+        {
+          "id": "9ea69bcc-7518-48a4-8b0f-06feba3075bd",
+          "trustAccountId": "69d5a309-dfd5-4955-aff5-c8d11d6c78df",
+          "periodEnd": "2026-10-31",
+          "reconciliationId": "55d7d63c-383c-4839-9e91-97b1e40c397e",
+          "adjustedBankBalance": 10000,
+          "cashbookBalance": 10000,
+          "creditorTotal": 10000,
+          "difference": 0,
+          "lockedBy": "adbbe09b-d4d0-4fd5-949f-14881be35858",
+          "lockedByName": "Alice Owner",
+          "lockedAt": "2026-11-19T00:34:35.982972Z",
+          "adjustmentCount": 0
+        }
+      ]
+    }
+  },
+  "flagCodes": []
+}

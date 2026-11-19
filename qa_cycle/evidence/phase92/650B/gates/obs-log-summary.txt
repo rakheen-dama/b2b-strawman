@@ -1,0 +1,28 @@
+650B OBS — log summary
+Stack: fresh e2e mock-auth stack built from worktree head 19e80aa0cff2d814f0c84fd4e689e9d9758da9a9
+OBS window (run 2, of record): 2026-11-19T00:34:22Z – 2026-11-19T00:35:35Z (SAST 2026-11-19 02:34:22 – 02:35:35)
+Phases in order: a (00:34:22–00:34:29Z), b (00:34:29–00:34:39Z), c (00:34:39–00:34:45Z), d (00:34:45–00:34:50Z),
+  e (00:34:50–00:35:04Z), f (00:35:05–00:35:09Z), g (00:35:09–00:35:25Z), h (00:35:25–00:35:35Z)
+
+Backend container (docker logs e2e-backend --since/--until the window; obs/backend.log, gitignored):
+  4 lines: 4 INFO, 0 WARN, 0 ERROR, 0 exception/stack-trace lines.
+  INFO = 3 x DefaultJobEnqueuer fanOutToAllTenants (scheduler: automation_poll_triggers, accounting_sync_drain x2),
+  1 x PortalEmailService "Portal notification sent template=portal-trust-activity" (the RECORDED deposit D1 in b).
+  No log line for any memo save: the four saves (c, d, e x2) and the reads logged nothing at WARN/ERROR.
+  Outside the window (container startup + seed, before 00:34:22Z): 46 WARN, 0 ERROR — the same startup set as
+  650D (BeanPostProcessor eligibility, CglibAopProxy, LibreOffice not found, seed invoice tax_number_missing,
+  PDFBox fallback fonts). None is a request failure; none involves trust accounting.
+
+Frontend container (docker logs e2e-frontend over the window; obs/frontend.log, gitignored):
+  0 lines over the window. Whole container log: 5 startup lines, no error/warn.
+
+Browser (Playwright listeners, result-<phase>.json): 0 console errors, 0 page errors in every phase (a–h).
+  Induced, excluded from the count and kept separately in result-g.json "inducedConsoleErrors": 1 x
+  "Failed to load resource: net::ERR_FAILED" — the harness itself aborted the held save request in g (the
+  in-flight probe), so the save never reached the server. This is the probe's own abort, not a product error.
+
+Run 1 (dry run, same images, 2026-11-19T00:30:35Z–00:32:17Z, artefacts discarded): 0 console / 0 page errors in the
+  browser (its container logs were not collected), but a harness false positive (the test's own source note "IA-2026-09" matched the ISO-date raw-code regex)
+  failed c/e/h. The data was changed, the stack was wiped (e2e-down/up) and run 2 is the result of record.
+
+Verdict: 0 ERROR, 0 WARN, 0 exceptions in the OBS window; 0 console / 0 page errors (1 harness-induced abort, excluded).

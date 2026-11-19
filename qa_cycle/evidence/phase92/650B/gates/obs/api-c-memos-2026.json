@@ -1,0 +1,20 @@
+{
+  "method": "GET",
+  "url": "/api/trust-accounts/69d5a309-dfd5-4955-aff5-c8d11d6c78df/interest-memos?year=2026",
+  "status": 200,
+  "body": [
+    {
+      "id": "8c238ca0-63ef-40b7-a4ed-122df2d9dde9",
+      "trustAccountId": "69d5a309-dfd5-4955-aff5-c8d11d6c78df",
+      "periodMonth": "2026-09-01",
+      "grossInterest": 1234.56,
+      "grossCharges": 115,
+      "chargesVat": 15,
+      "sourceNote": "FNB interest advice IA/SEP26 (OBS 650B TIAB0)",
+      "recordedBy": "adbbe09b-d4d0-4fd5-949f-14881be35858",
+      "recordedByName": "Alice Owner",
+      "createdAt": "2026-11-19T00:34:42.763733Z",
+      "updatedAt": "2026-11-19T00:34:42.763733Z"
+    }
+  ]
+}

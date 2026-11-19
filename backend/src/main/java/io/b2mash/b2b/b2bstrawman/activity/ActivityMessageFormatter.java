@@ -1140,6 +1140,7 @@ public class ActivityMessageFormatter {
             Map.entry("trust_investment", "a trust investment"),
             Map.entry("trust_reconciliation", "a trust reconciliation"),
             Map.entry("trust_monthly_list", "a monthly trust creditor list"),
+            Map.entry("trust_interest_memo", "an interest and charges memo"),
             Map.entry("unidentified_deposit", "an unidentified deposit"),
             Map.entry("org_settings", "the firm settings"),
             Map.entry("collection_activity", "a collection reminder"));

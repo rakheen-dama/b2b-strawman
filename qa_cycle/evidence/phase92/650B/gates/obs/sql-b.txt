@@ -1,0 +1,17 @@
+-- 650B OBS phase b read-only SQL (schema tenant_7d218705360b) 2026-11-19T00:34:29.168Z
+
+== [b: the locked October 2026 list (fingerprint)]
+select id, period_end, bank_balance, outstanding_deposits, outstanding_payments, adjusted_bank_balance, cashbook_balance, client_ledger_total, investment_creditor_total, fund_ledger_balance, unidentified_deposit_total, inter_account_balance, creditor_total, difference, md5(lines::text) lines_md5, md5(integrity_flags::text) flags_md5, locked_at from tenant_7d218705360b.trust_monthly_lists where id='9ea69bcc-7518-48a4-8b0f-06feba3075bd'
+                  id                  | period_end | bank_balance | outstanding_deposits | outstanding_payments | adjusted_bank_balance | cashbook_balance | client_ledger_total | investment_creditor_total | fund_ledger_balance | unidentified_deposit_total | inter_account_balance | creditor_total | difference |            lines_md5             |            flags_md5             |           locked_at           
+--------------------------------------+------------+--------------+----------------------+----------------------+-----------------------+------------------+---------------------+---------------------------+---------------------+----------------------------+-----------------------+----------------+------------+----------------------------------+----------------------------------+-------------------------------
+ 9ea69bcc-7518-48a4-8b0f-06feba3075bd | 2026-10-31 |     10000.00 |                 0.00 |                 0.00 |              10000.00 |         10000.00 |            10000.00 |                      0.00 |                0.00 |                       0.00 |                  0.00 |       10000.00 |       0.00 | 00eadf2f030a705f2f30dd330cce3073 | d751713988987e9331980363e24189ce | 2026-11-19 00:34:35.982972+00
+(1 row)
+
+
+== [b: postings]
+select id, transaction_type, status, amount, transaction_date, reference from tenant_7d218705360b.trust_transactions
+                  id                  | transaction_type |  status  |  amount  | transaction_date |      reference      
+--------------------------------------+------------------+----------+----------+------------------+---------------------
+ a066788e-6a51-4b53-bfc9-332b8b1045fc | DEPOSIT          | RECORDED | 10000.00 | 2026-10-05       | DEP/OBS650B/TIAB0/1
+(1 row)
+

@@ -1,0 +1,16 @@
+-- 650C OBS h/i read-only SQL 2026-11-19T03:32:58Z
+   event_type    | fmt | count 
+-----------------+-----+-------
+ REPORT_EXPORTED | csv |    15
+(1 row)
+
+    pack_id    | pack_version |         installed_at          
+---------------+--------------+-------------------------------
+ trust-reports | 4            | 2026-11-19 03:16:16.803969+00
+(1 row)
+
+ count 
+-------
+     9
+(1 row)
+

@@ -1,0 +1,17 @@
+{
+  "method": "GET",
+  "url": "/api/trust-accounts/b4770f0a-c1dd-4d7b-9bcf-48e66559e291/total-balance?asAt=2026-10-01",
+  "status": 200,
+  "body": {
+    "balance": 10000,
+    "creditorBreakdown": {
+      "clientLedgers": 10000,
+      "investmentCreditors": 0,
+      "fundInterestAndCharges": 41.45,
+      "unidentifiedDeposits": 1550,
+      "otherNonClient": 0,
+      "interAccount": 0,
+      "total": 11591.45
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "phase": "s",
+  "fatal": null,
+  "checks": {
+    "s: schedule runs (account given): no error, a row per month (Aug, Sep 2026)": true,
+    "s: every row headed by the account and its section words": true,
+    "s: August row: b/f R 0,00, interest R 30,00, c/f R 30,00, Check 'Balanced'": true,
+    "s: September row b/f = August c/f": true,
+    "s: September row shown: b/f 30,00 · interest 123,45 · charges 57,50 rec + 12,00 non-rec (VAT 9,07) · refunds 57,50 · paid to Fund 100,00 · c/f 41,45 · Check 'Balanced'": true,
+    "s: identity by hand on screen figures holds for both rows (b/f + interest − charges + refunds − sweeps = c/f)": true,
+    "s: September screen figures = SQL sums of the posted rows by type": true,
+    "s: c/f = SQL Fund-ledger balance at each month end": true,
+    "s: c/f = API total-balance creditorBreakdown Fund line at each month end": true,
+    "s: memo in its own columns (Sep: interest R 200,00, charges R 15,00, VAT R 1,96; Aug: R 0,00) and outside the identity": true,
+    "s: s86(4)-only columns blank on a section 86(2) block": true,
+    "s: no raw code / raw decimal in the summary cards": true,
+    "s: no raw ISO date in the summary cards (Period From / Period To)": true,
+    "s: no raw code in the table": true,
+    "s: scope sentence on screen (summary card), in the PDF and in the preview": true,
+    "s: CSV and PDF exported through the buttons": true,
+    "s: CSV carries every column incl. Charges Refunded / Paid to the Fund / c/f / Check, both rows 'Balanced'": true,
+    "s: PDF shows every schedule column (no column cut at the page edge)": true,
+    "s: inverted range (30 Sep → 1 Aug) refused with a readable message, no table": true,
+    "s: inverted range inside one month (20 Sep → 5 Sep) refused (D-33)": true
+  },
+  "consoleErrors": 0,
+  "pageErrors": 0
+}

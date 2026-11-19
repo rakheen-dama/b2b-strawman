@@ -1,0 +1,61 @@
+{
+  "phase": "s2",
+  "startedAt": "2026-11-19T03:34:47.059Z",
+  "consoleErrors": [
+    {
+      "user": "user_e2e_alice",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "text": "MockAuthContextProvider: failed to fetch userinfo TypeError: Failed to fetch\n    at http://localhost:3001/_next/static/chunks/1kvf-7k8cibf1.js:1:1582\n    at iw (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:118706)\n    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:"
+    }
+  ],
+  "pageErrors": [],
+  "checks": {
+    "s2: 1440: table scrolls horizontally; after scrolling, the last column 'Check' is inside the viewport": true,
+    "s2: 1440: month labels do not break mid-word": false,
+    "s2: 1280: table scrolls horizontally; after scrolling, the last column 'Check' is inside the viewport": true,
+    "s2: 1280: month labels do not break mid-word": false
+  },
+  "widths": {
+    "1280": {
+      "scrollWidth": 2696,
+      "clientWidth": 926,
+      "overflowX": "auto",
+      "lastHeader": "Check",
+      "lastHeaderLeft": 1170.09375,
+      "lastHeaderRight": 1230.90625,
+      "vw": 1280,
+      "monthCells": [
+        {
+          "text": "August 2026",
+          "lines": 2
+        },
+        {
+          "text": "September 2026",
+          "lines": 3
+        }
+      ],
+      "shot": "s2-1280-table-scrolled-right.png"
+    },
+    "1440": {
+      "scrollWidth": 2696,
+      "clientWidth": 1086,
+      "overflowX": "auto",
+      "lastHeader": "Check",
+      "lastHeaderLeft": 1330.09375,
+      "lastHeaderRight": 1390.90625,
+      "vw": 1440,
+      "monthCells": [
+        {
+          "text": "August 2026",
+          "lines": 2
+        },
+        {
+          "text": "September 2026",
+          "lines": 3
+        }
+      ],
+      "shot": "s2-1440-table-scrolled-right.png"
+    }
+  },
+  "endedAt": "2026-11-19T03:34:54.310Z"
+}

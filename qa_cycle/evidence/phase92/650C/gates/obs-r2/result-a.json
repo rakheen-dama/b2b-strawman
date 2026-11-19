@@ -1,0 +1,82 @@
+{
+  "phase": "a",
+  "startedAt": "2026-11-19T04:01:44.559Z",
+  "consoleErrors": [],
+  "pageErrors": [],
+  "checks": {
+    "a: Trust › Reports shows exactly nine cards": true,
+    "a: the nine card slugs = the nine of §16.4.6": true,
+    "a: no interest-allocation card": true,
+    "a: card names are words (Rule 54.28 schedule, age analysis, trust position, 'Trust Creditors List (Rule 54.15)')": true,
+    "a: every card links to /reports/{slug}": true,
+    "a: no raw code on the reports page": true,
+    "a: DB report_definitions TRUST = the nine, no interest-allocation": true,
+    "a: pack_install trust-reports pack_version = 4": true,
+    "a: org_settings report_pack_status trust-reports version 4": true,
+    "a: GET /api/report-definitions TRUST category = the nine": true,
+    "a: every template body carries the scope sentence": true
+  },
+  "cards": [
+    {
+      "testid": "report-card-trust-receipts-payments",
+      "title": "Trust Receipts & Payments",
+      "description": "Chronological journal of all trust receipts and payments for a date range.",
+      "href": "/org/e2e-test-org/reports/trust-receipts-payments"
+    },
+    {
+      "testid": "report-card-client-trust-balances",
+      "title": "Trust Creditors List (Rule 54.15)",
+      "description": "Every person and non-client creditor for whom trust money is held, as at a date — the locked monthly list where one exists.",
+      "href": "/org/e2e-test-org/reports/client-trust-balances"
+    },
+    {
+      "testid": "report-card-trust-position",
+      "title": "Trust Position as at a Date",
+      "description": "The cashbook against every trust creditor as at any date, per account and firm-wide, with the integrity flags.",
+      "href": "/org/e2e-test-org/reports/trust-position"
+    },
+    {
+      "testid": "report-card-client-ledger-statement",
+      "title": "Client Ledger Statement",
+      "description": "Per-client transaction history with running balance.",
+      "href": "/org/e2e-test-org/reports/client-ledger-statement"
+    },
+    {
+      "testid": "report-card-trust-reconciliation",
+      "title": "Trust Reconciliation",
+      "description": "Bank, cashbook and trust creditors compared at the reconciliation's period end, with the stored creditor breakdown.",
+      "href": "/org/e2e-test-org/reports/trust-reconciliation"
+    },
+    {
+      "testid": "report-card-investment-register",
+      "title": "Investment Register",
+      "description": "Every trust investment on the books: account, basis, principal, balance and interest — gross, the Fund's 5% and net.",
+      "href": "/org/e2e-test-org/reports/investment-register"
+    },
+    {
+      "testid": "report-card-trust-interest-charges-schedule",
+      "title": "Interest and Charges Schedule (Rule 54.28)",
+      "description": "Rule 54.28: interest earned and charges levied per trust account and month, the Fund ledger brought forward and carried forward; memo figures shown separately.",
+      "href": "/org/e2e-test-org/reports/trust-interest-charges-schedule"
+    },
+    {
+      "testid": "report-card-unidentified-deposits-age-analysis",
+      "title": "Unidentified Deposits Age Analysis",
+      "description": "Unidentified deposits open as at a date by age band, and those allocated or paid to the Fund in the twelve months to it.",
+      "href": "/org/e2e-test-org/reports/unidentified-deposits-age-analysis"
+    },
+    {
+      "testid": "report-card-section-35-data-pack",
+      "title": "Section 35 Data Pack",
+      "description": "Composite report combining all trust sub-reports for Section 35 compliance.",
+      "href": "/org/e2e-test-org/reports/section-35-data-pack"
+    }
+  ],
+  "shot": "a-01-trust-reports-page.png",
+  "pageScan": {
+    "codes": [],
+    "iso": [],
+    "rawDecimals": []
+  },
+  "endedAt": "2026-11-19T04:01:49.089Z"
+}

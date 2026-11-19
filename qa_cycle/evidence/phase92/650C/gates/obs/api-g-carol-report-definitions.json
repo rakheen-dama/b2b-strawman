@@ -1,0 +1,11 @@
+{
+  "method": "GET",
+  "url": "/api/report-definitions",
+  "status": 403,
+  "body": {
+    "detail": "Insufficient permissions for this operation",
+    "instance": "/api/report-definitions",
+    "status": 403,
+    "title": "Access denied"
+  }
+}

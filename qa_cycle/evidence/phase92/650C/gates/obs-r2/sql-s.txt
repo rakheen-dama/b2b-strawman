@@ -1,0 +1,46 @@
+-- 650C OBS phase s read-only SQL (schema tenant_7d218705360b) 2026-11-19T04:02:32.798Z
+
+== [s: Fund-ledger rows August 2026 by type]
+select t.transaction_type, count(*) n, sum(t.ledger_effect) ledger_effect, sum(t.amount) amount,
+  sum(t.amount) filter (where t.charge_recoverable) recoverable, sum(t.amount) filter (where t.charge_recoverable is false) non_recoverable, sum(t.charge_vat_amount) vat
+  from tenant_7d218705360b.trust_transactions t join tenant_7d218705360b.trust_creditor_accounts ca on ca.id=t.creditor_account_id
+  where t.trust_account_id='b4770f0a-c1dd-4d7b-9bcf-48e66559e291' and ca.account_type='FUND_INTEREST_AND_CHARGES' and t.posted_at is not null and t.transaction_date between '2026-08-01' and '2026-08-31'
+  group by t.transaction_type order by 1
+ transaction_type | n | ledger_effect | amount | recoverable | non_recoverable | vat 
+------------------+---+---------------+--------+-------------+-----------------+-----
+ FUND_INTEREST    | 1 |         30.00 |  30.00 |             |                 |    
+(1 row)
+
+
+== [s: Fund-ledger rows September 2026 by type]
+select t.transaction_type, count(*) n, sum(t.ledger_effect) ledger_effect, sum(t.amount) amount,
+  sum(t.amount) filter (where t.charge_recoverable) recoverable, sum(t.amount) filter (where t.charge_recoverable is false) non_recoverable, sum(t.charge_vat_amount) vat
+  from tenant_7d218705360b.trust_transactions t join tenant_7d218705360b.trust_creditor_accounts ca on ca.id=t.creditor_account_id
+  where t.trust_account_id='b4770f0a-c1dd-4d7b-9bcf-48e66559e291' and ca.account_type='FUND_INTEREST_AND_CHARGES' and t.posted_at is not null and t.transaction_date between '2026-09-01' and '2026-09-30'
+  group by t.transaction_type order by 1
+ transaction_type | n | ledger_effect | amount | recoverable | non_recoverable | vat  
+------------------+---+---------------+--------+-------------+-----------------+------
+ BANK_CHARGE      | 2 |        -69.50 |  69.50 |       57.50 |           12.00 | 9.07
+ CHARGE_REFUND    | 1 |         57.50 |  57.50 |             |                 |     
+ FUND_INTEREST    | 1 |        123.45 | 123.45 |             |                 |     
+ FUND_SWEEP       | 1 |       -100.00 | 100.00 |             |                 |     
+(4 rows)
+
+
+== [s: Fund ledger at month ends]
+select '2026-07-31' as_of, 0 fund union all select '2026-08-31', 30.00 union all select '2026-09-30', 41.45
+   as_of    | fund  
+------------+-------
+ 2026-07-31 |     0
+ 2026-08-31 | 30.00
+ 2026-09-30 | 41.45
+(3 rows)
+
+
+== [s: memos]
+select period_month, gross_interest, gross_charges, charges_vat from tenant_7d218705360b.trust_interest_memos
+ period_month | gross_interest | gross_charges | charges_vat 
+--------------+----------------+---------------+-------------
+ 2026-09-01   |         200.00 |         15.00 |        1.96
+(1 row)
+

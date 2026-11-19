@@ -1,0 +1,85 @@
+{
+  "phase": "b",
+  "startedAt": "2026-11-19T03:24:46.814Z",
+  "consoleErrors": [],
+  "pageErrors": [],
+  "checks": {
+    "b: deposit R 10 000,00 dated 3 Aug 2026 recorded through the UI": true,
+    "b: every unmatched line recorded from its statement line (9 dialogs closed, no refusal)": true,
+    "b: reconciliation to 30 Sep 2026 completed (step 5)": true,
+    "b: memo for September 2026 saved": true,
+    "b: UNK3 allocated (Bob approved) dated 15 Oct 2026": true,
+    "b: postings on the account (deposit + 9 lines + allocation pair)": true,
+    "b: Fund ledger 31 Aug = 30.00, 30 Sep = 41.45 (SQL)": true
+  },
+  "d1": [
+    "479d4e67-815e-4e9f-b011-2b432f0cadfb",
+    "RECORDED",
+    "10000.00",
+    "2026-08-03"
+  ],
+  "upload": "Statement imported successfullyLines imported: 10File: b-statement-ZL6X0.csvPeriod: 2026-08-03 to 2026-09-30Format: CSV",
+  "autoMatch": "Auto-matched 1 lines9 lines remaining for manual review",
+  "recorded": [
+    {
+      "n": 2,
+      "as": "UNIDENTIFIED_DEPOSIT",
+      "closed": true,
+      "err": null
+    },
+    {
+      "n": 3,
+      "as": "FUND_INTEREST",
+      "closed": true,
+      "err": null
+    },
+    {
+      "n": 4,
+      "as": "BANK_CHARGE",
+      "closed": true,
+      "err": null
+    },
+    {
+      "n": 5,
+      "as": "BANK_CHARGE",
+      "closed": true,
+      "err": null
+    },
+    {
+      "n": 6,
+      "as": "CHARGE_REFUND",
+      "closed": true,
+      "err": null
+    },
+    {
+      "n": 7,
+      "as": "UNIDENTIFIED_DEPOSIT",
+      "closed": true,
+      "err": null
+    },
+    {
+      "n": 8,
+      "as": "UNIDENTIFIED_DEPOSIT",
+      "closed": true,
+      "err": null
+    },
+    {
+      "n": 9,
+      "as": "FUND_INTEREST",
+      "closed": true,
+      "err": null
+    },
+    {
+      "n": 10,
+      "as": "FUND_SWEEP",
+      "closed": true,
+      "err": null
+    }
+  ],
+  "summaryBeforeComplete": "As at 30 Sept 2026Bank and cashbookBank balanceR 11 591,45+ Outstanding depositsR 0,00− Outstanding paymentsR 0,00= Adjusted bank balanceR 11 591,45CashbookR 11 591,45DifferenceR 0,00Cashbook and trust creditorsCashbookR 11 591,45Trust creditorsR 11 591,45DifferenceR 0,00Trust creditorsClient ledgersR 10 000,00Legal Practitioners' Fidelity Fund — interest and chargesR 41,45Unidentified depositsR 1 550,000 statement lines are neither matched, recorded nor excludedExcluded statement lines total R 0,00. An excluded line adjusts nothing: excluding a real bank movement leaves its amount as the difference between the bank and the cashbook.Reconciliation is balancedComplete Reconciliation",
+  "step5": "Reconciliation CompleteThe reconciliation has been completed successfullyBank BalanceR 11 591,45Cashbook BalanceR 11 591,45Trust creditorsR 11 591,45September 2026 list locked — R 11 591,45 agrees with the cashbook and the adjusted bank balance.View the locked listDone",
+  "memoSaved": true,
+  "allocRequested": true,
+  "unk3": "ALLOCATED|2026-10-15",
+  "endedAt": "2026-11-19T03:25:26.025Z"
+}

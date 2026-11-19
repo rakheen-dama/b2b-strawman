@@ -1,0 +1,7 @@
+# Unidentified Deposits Age Analysis
+# Generated: 2026-11-19T03:30:49.027800922Z
+# Parameters: asOfDate=2026-11-19, trust_account_id=bf0be9fc-023d-414e-96fc-6f7c1d6076da
+Trust Account,Received,Bank Description,Amount,Age (days),Age Band,Position
+Mathebula & Partners Trust Account,2026-09-25,Eft credit no reference,750.00,55,31–90 days,Open
+Mathebula & Partners Trust Account,2026-08-12,Eft credit unknown remitter,600.00,99,91–180 days,Open
+Mathebula & Partners Trust Account,2026-09-26,Eft credit estate payer,200.00,,Resolved,Allocated to Acme Corp on 15 October 2026

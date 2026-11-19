@@ -1,0 +1,20 @@
+{
+  "phase": "e",
+  "fatal": null,
+  "checks": {
+    "e: pack runs for FYE 30 Sep 2026: 7 sections, FY 1 Oct 2025 – 30 Sep 2026": true,
+    "e: (1) receipts & payments: 10 rows of the year + Total R 11 591,45": true,
+    "e: (2) 'Trust creditors (Rule 54.15)': Acme R 10 000,00, the Fund R 41,45, three unidentified lines, Total R 11 591,45; locked note": true,
+    "e: (3) the 30 Sep 2026 reconciliation with its stored breakdown (both comparisons)": true,
+    "e: (5) Rule 54.28 year totals: b/f 0,00 · interest 153,45 · memo 200,00 · charges 69,50 (rec 57,50, VAT 9,07) · memo charges 15,00 (VAT 1,96) · refunded 57,50 · paid 100,00 · c/f 41,45": true,
+    "e: (5) year identity on the shown totals: b/f + interest − charges + refunds − paid = c/f; c/f = SQL Fund ledger at 30 Sep 2026": true,
+    "e: (6) the Fund sweep with its statement file name and line number (b-statement-….csv · line 10), -R 100,00": true,
+    "e: (6) 'Fund sweeps with no statement line' present: 'None in the financial year'": true,
+    "e: (7) ledger statements part present": true,
+    "e: no raw code on screen, in the PDF or the preview": true,
+    "e: scope sentence on screen, in the PDF and the preview": true,
+    "e: FYE 28 Feb 2027 (live list): runs; creditors part 'Not locked' note; Acme R 10 200,00 and two unidentified lines after the 15 Oct allocation": true
+  },
+  "consoleErrors": 0,
+  "pageErrors": 0
+}

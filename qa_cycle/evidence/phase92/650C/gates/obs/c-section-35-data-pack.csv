@@ -1,0 +1,48 @@
+# Section 35 Data Pack
+# Generated: 2026-11-19T03:28:28.499315844Z
+# Parameters: trust_account_id=bf0be9fc-023d-414e-96fc-6f7c1d6076da, financial_year_end=2026-09-30
+Section,Item,Amount
+Trust Receipts & Payments,2026-08-03 · DEP/OBS650C/ZL6X0/1 · Acme Corp (Deposit),10000.00
+Trust Receipts & Payments,2026-08-12 · UNK1/OBS650C/ZL6X0 · - (Unidentified deposit) — Unidentified deposits,600.00
+Trust Receipts & Payments,2026-08-31 · INT/AUG/ZL6X0 · - (Interest received for the Legal Practitioners' Fidelity Fund) — Legal Practitioners' Fidelity Fund — interest and charges,30.00
+Trust Receipts & Payments,2026-09-08 · SVC/SEP/ZL6X0 · - (Bank charge) — Legal Practitioners' Fidelity Fund — interest and charges,-57.50
+Trust Receipts & Payments,2026-09-15 · CHF/SEP/ZL6X0 · - (Bank charge) — Legal Practitioners' Fidelity Fund — interest and charges,-12.00
+Trust Receipts & Payments,2026-09-20 · RFD/SEP/ZL6X0 · - (Bank charge refunded from the business account) — Legal Practitioners' Fidelity Fund — interest and charges,57.50
+Trust Receipts & Payments,2026-09-25 · UNK2/OBS650C/ZL6X0 · - (Unidentified deposit) — Unidentified deposits,750.00
+Trust Receipts & Payments,2026-09-26 · UNK3/OBS650C/ZL6X0 · - (Unidentified deposit) — Unidentified deposits,200.00
+Trust Receipts & Payments,2026-09-30 · INT/SEP/ZL6X0 · - (Interest received for the Legal Practitioners' Fidelity Fund) — Legal Practitioners' Fidelity Fund — interest and charges,123.45
+Trust Receipts & Payments,2026-09-30 · LPFF/SEP/ZL6X0 · - (Interest paid to the Legal Practitioners' Fidelity Fund) — Legal Practitioners' Fidelity Fund — interest and charges,-100.00
+Trust Receipts & Payments,Total,11591.45
+Trust creditors (Rule 54.15),Acme Corp,10000.00
+Trust creditors (Rule 54.15),Legal Practitioners' Fidelity Fund — interest and charges,41.45
+Trust creditors (Rule 54.15),Eft credit unknown remitter · received 2026-08-12,600.00
+Trust creditors (Rule 54.15),Eft credit no reference · received 2026-09-25,750.00
+Trust creditors (Rule 54.15),Eft credit estate payer · received 2026-09-26,200.00
+Trust creditors (Rule 54.15),Total,11591.45
+Trust Reconciliation,Bank balance per statement,11591.45
+Trust Reconciliation,Add: outstanding deposits,0.00
+Trust Reconciliation,Less: outstanding payments,0.00
+Trust Reconciliation,Adjusted bank balance,11591.45
+Trust Reconciliation,Cashbook balance,11591.45
+Trust Reconciliation,Difference (adjusted bank − cashbook),0.00
+Trust Reconciliation,Client ledgers,10000.00
+Trust Reconciliation,Section 86(4) investment creditors,0.00
+Trust Reconciliation,Legal Practitioners' Fidelity Fund — interest and charges,41.45
+Trust Reconciliation,Unidentified deposits,1550.00
+Trust Reconciliation,Section 86(3) placements (inter-account),0.00
+Trust Reconciliation,Trust creditors total,11591.45
+Trust Reconciliation,Difference (adjusted bank − trust creditors),0.00
+Trust Reconciliation,Difference (cashbook − trust creditors),0.00
+Interest and charges schedule (Rule 54.28),Mathebula & Partners Trust Account — Fund ledger brought forward,0.00
+Interest and charges schedule (Rule 54.28),Mathebula & Partners Trust Account — gross interest earned (in the cashbook),153.45
+Interest and charges schedule (Rule 54.28),"Mathebula & Partners Trust Account — gross interest earned (at source, memo)",200.00
+Interest and charges schedule (Rule 54.28),Mathebula & Partners Trust Account — gross charges levied (in the cashbook),69.50
+Interest and charges schedule (Rule 54.28),Mathebula & Partners Trust Account — of which recoverable from the business account,57.50
+Interest and charges schedule (Rule 54.28),Mathebula & Partners Trust Account — of which VAT,9.07
+Interest and charges schedule (Rule 54.28),"Mathebula & Partners Trust Account — gross charges levied (at source, memo)",15.00
+Interest and charges schedule (Rule 54.28),Mathebula & Partners Trust Account — VAT in charges at source (memo),1.96
+Interest and charges schedule (Rule 54.28),Mathebula & Partners Trust Account — charges refunded,57.50
+Interest and charges schedule (Rule 54.28),Mathebula & Partners Trust Account — paid to the Fund,100.00
+Interest and charges schedule (Rule 54.28),Mathebula & Partners Trust Account — Fund ledger carried forward,41.45
+Fund sweeps and their statement lines (Rule 54.14.16),2026-09-30 · b-statement-ZL6X0.csv · line 10 · LPFF/SEP/ZL6X0,-100.00
+Fund sweeps and their statement lines (Rule 54.14.16),Total,-100.00

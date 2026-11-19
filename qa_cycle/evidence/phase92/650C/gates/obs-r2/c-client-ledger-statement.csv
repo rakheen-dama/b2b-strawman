@@ -1,0 +1,6 @@
+# Client Ledger Statement
+# Generated: 2026-11-19T04:03:02.502508554Z
+# Parameters: trust_account_id=b4770f0a-c1dd-4d7b-9bcf-48e66559e291, customer_id=34447c6a-8652-458b-95c0-8a39c803b083, dateFrom=2026-08-01, dateTo=2026-11-19
+Date,Reference,Type,Description,Debit,Credit,Running Balance
+2026-08-03,DEP/OBS650C/0WYGG/1,Deposit,,0.00,10000.00,10000.00
+2026-10-15,UID-39C88562,Deposit identified and allocated,Deposit received 26 September 2026 — Eft credit estate payer,0.00,200.00,10200.00

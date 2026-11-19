@@ -1,0 +1,6 @@
+# Interest and Charges Schedule (Rule 54.28)
+# Generated: 2026-11-19T04:03:12.354643836Z
+# Parameters: dateFrom=2026-08-01, dateTo=2026-09-30, trust_account_id=b4770f0a-c1dd-4d7b-9bcf-48e66559e291
+Trust Account,Section,Month,Fund Ledger b/f,Gross Interest (Cashbook),"Gross Interest (At Source, Memo)",Client's Share (s86(4)),Fund 5% Credited,Fund 5% Paid at Source,Charges Recoverable,Charges Non-recoverable,VAT in Charges,"Charges (At Source, Memo)",VAT (Memo),Charges Refunded,Paid to the Fund,Fund Ledger c/f,Check
+Mathebula & Partners Trust Account,Section 86(2) trust banking account,August 2026,0.00,30.00,0.00,,,,0.00,0.00,0.00,0.00,0.00,0.00,0.00,30.00,Balanced
+Mathebula & Partners Trust Account,Section 86(2) trust banking account,September 2026,30.00,123.45,200.00,,,,57.50,12.00,9.07,15.00,1.96,57.50,100.00,41.45,Balanced

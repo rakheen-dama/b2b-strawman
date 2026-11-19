@@ -1,0 +1,23 @@
+-- 650C OBS phase d read-only SQL (schema tenant_7d218705360b) 2026-11-19T03:30:45.077Z
+
+== [d: items and ages]
+select received_date, bank_description, amount, status, resolved_date, ('2026-11-19'::date - received_date) age_today, ('2026-10-01'::date - received_date) age_oct1 from tenant_7d218705360b.unidentified_deposits order by received_date
+ received_date |      bank_description       | amount |  status   | resolved_date | age_today | age_oct1 
+---------------+-----------------------------+--------+-----------+---------------+-----------+----------
+ 2026-08-12    | Eft credit unknown remitter | 600.00 | HELD      |               |        99 |       50
+ 2026-09-25    | Eft credit no reference     | 750.00 | HELD      |               |        55 |        6
+ 2026-09-26    | Eft credit estate payer     | 200.00 | ALLOCATED | 2026-10-15    |        54 |        5
+(3 rows)
+
+
+== [d: rows of each item]
+select t.transaction_date, t.transaction_type, t.status, t.ledger_effect, u.bank_description from tenant_7d218705360b.trust_transactions t join tenant_7d218705360b.unidentified_deposits u on u.id=t.unidentified_deposit_id order by t.transaction_date
+ transaction_date |   transaction_type   |  status  | ledger_effect |      bank_description       
+------------------+----------------------+----------+---------------+-----------------------------
+ 2026-08-12       | UNIDENTIFIED_DEPOSIT | RECORDED |        600.00 | Eft credit unknown remitter
+ 2026-09-25       | UNIDENTIFIED_DEPOSIT | RECORDED |        750.00 | Eft credit no reference
+ 2026-09-26       | UNIDENTIFIED_DEPOSIT | RECORDED |        200.00 | Eft credit estate payer
+ 2026-10-15       | UNIDENT_ALLOC_OUT    | APPROVED |       -200.00 | Eft credit estate payer
+ 2026-10-15       | UNIDENT_ALLOC_IN     | APPROVED |        200.00 | Eft credit estate payer
+(5 rows)
+

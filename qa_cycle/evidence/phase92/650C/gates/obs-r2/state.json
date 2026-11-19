@@ -1,0 +1,62 @@
+{
+  "run": "0WYGG",
+  "primary": "b4770f0a-c1dd-4d7b-9bcf-48e66559e291",
+  "alice": "7c6fb242-865c-498d-ad36-75e5aa248cb1",
+  "statementFile": "b-statement-0WYGG.csv",
+  "statement": "c6da02c2-7fe7-4d59-8d2e-e87caf06429b",
+  "lines": [
+    {
+      "n": 1,
+      "id": "14616831-f3f6-41db-be93-c63f4d1001dd",
+      "s": "AUTO_MATCHED"
+    },
+    {
+      "n": 2,
+      "id": "5551c4ab-1a0e-4774-9568-0e24bd7171e5",
+      "s": "UNMATCHED"
+    },
+    {
+      "n": 3,
+      "id": "4e17bc5b-7507-4bdf-b1d9-0bcf0c47d99a",
+      "s": "UNMATCHED"
+    },
+    {
+      "n": 4,
+      "id": "4c258b7a-e995-4a17-8de5-ae5a725c3ccd",
+      "s": "UNMATCHED"
+    },
+    {
+      "n": 5,
+      "id": "0fafafbe-de18-4ab3-8f76-1bf24218d327",
+      "s": "UNMATCHED"
+    },
+    {
+      "n": 6,
+      "id": "f952b58c-1578-451e-8307-9f1cd7a909b0",
+      "s": "UNMATCHED"
+    },
+    {
+      "n": 7,
+      "id": "4499987b-6873-4b3e-b65d-f2b4d641c8f3",
+      "s": "UNMATCHED"
+    },
+    {
+      "n": 8,
+      "id": "2c20eaab-c25f-4ee0-8063-e7866bd5f671",
+      "s": "UNMATCHED"
+    },
+    {
+      "n": 9,
+      "id": "48bc3572-266a-441c-98ba-7489fc7cb73c",
+      "s": "UNMATCHED"
+    },
+    {
+      "n": 10,
+      "id": "360c3c1c-6cbf-4e9d-9d2b-5f5bcf294c4f",
+      "s": "UNMATCHED"
+    }
+  ],
+  "recon": "44c18f3f-890f-43ed-9879-56093fa52957",
+  "unk3": "39c88562-44aa-4137-94a5-0edc6e268e66",
+  "allocOut": "eecc90b8-d5aa-47c0-a4b0-f2dca30ad185"
+}

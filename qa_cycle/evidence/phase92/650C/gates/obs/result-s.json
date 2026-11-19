@@ -1,0 +1,666 @@
+{
+  "phase": "s",
+  "startedAt": "2026-11-19T03:27:38.455Z",
+  "consoleErrors": [],
+  "pageErrors": [],
+  "checks": {
+    "s: schedule runs (account given): no error, a row per month (Aug, Sep 2026)": true,
+    "s: every row headed by the account and its section words": true,
+    "s: August row: b/f R 0,00, interest R 30,00, c/f R 30,00, Check 'Balanced'": true,
+    "s: September row b/f = August c/f": true,
+    "s: September row shown: b/f 30,00 · interest 123,45 · charges 57,50 rec + 12,00 non-rec (VAT 9,07) · refunds 57,50 · paid to Fund 100,00 · c/f 41,45 · Check 'Balanced'": true,
+    "s: identity by hand on screen figures holds for both rows (b/f + interest − charges + refunds − sweeps = c/f)": true,
+    "s: September screen figures = SQL sums of the posted rows by type": true,
+    "s: c/f = SQL Fund-ledger balance at each month end": true,
+    "s: c/f = API total-balance creditorBreakdown Fund line at each month end": true,
+    "s: memo in its own columns (Sep: interest R 200,00, charges R 15,00, VAT R 1,96; Aug: R 0,00) and outside the identity": true,
+    "s: s86(4)-only columns blank on a section 86(2) block": true,
+    "s: no raw code / raw decimal in the summary cards": true,
+    "s: no raw ISO date in the summary cards (Period From / Period To)": false,
+    "s: no raw code in the table": true,
+    "s: scope sentence on screen (summary card), in the PDF and in the preview": true,
+    "s: CSV and PDF exported through the buttons": true,
+    "s: CSV carries every column incl. Charges Refunded / Paid to the Fund / c/f / Check, both rows 'Balanced'": true,
+    "s: PDF shows every schedule column (no column cut at the page edge)": false,
+    "s: inverted range (30 Sep → 1 Aug) refused with a readable message, no table": true,
+    "s: inverted range inside one month (20 Sep → 5 Sep) refused (D-33)": true
+  },
+  "account": {
+    "slug": "trust-interest-charges-schedule",
+    "params": {
+      "dateFrom": "2026-08-01",
+      "dateTo": "2026-09-30",
+      "trust_account_id": {
+        "pick": "/Mathebula & Partners Trust Account/"
+      }
+    },
+    "title": "Interest and Charges Schedule (Rule 54.28)",
+    "description": "Rule 54.28: interest earned and charges levied per trust account and month, the Fund ledger brought forward and carried forward; memo figures shown separately.",
+    "paramLabels": [
+      "From Month*",
+      "To Month*",
+      "Trust Account"
+    ],
+    "result": {
+      "cards": [
+        {
+          "label": "Period From",
+          "value": "2026-08-01"
+        },
+        {
+          "label": "Period To",
+          "value": "2026-09-30"
+        },
+        {
+          "label": "Account Count",
+          "value": "1"
+        },
+        {
+          "label": "Identity Holds",
+          "value": "Yes"
+        },
+        {
+          "label": "Scope Note",
+          "value": "Trust cash, estates and other trust assets are not recorded in Kazi and are not included in this comparison."
+        }
+      ],
+      "headers": [
+        "Trust Account",
+        "Section",
+        "Month",
+        "Fund Ledger b/f",
+        "Gross Interest (Cashbook)",
+        "Gross Interest (At Source, Memo)",
+        "Client's Share (s86(4))",
+        "Fund 5% Credited",
+        "Fund 5% Paid at Source",
+        "Charges Recoverable",
+        "Charges Non-recoverable",
+        "VAT in Charges",
+        "Charges (At Source, Memo)",
+        "VAT (Memo)",
+        "Charges Refunded",
+        "Paid to the Fund",
+        "Fund Ledger c/f",
+        "Check"
+      ],
+      "rows": [
+        [
+          "Mathebula & Partners Trust Account",
+          "Section 86(2) trust banking account",
+          "August 2026",
+          "R 0,00",
+          "R 30,00",
+          "R 0,00",
+          "—",
+          "—",
+          "—",
+          "R 0,00",
+          "R 0,00",
+          "R 0,00",
+          "R 0,00",
+          "R 0,00",
+          "R 0,00",
+          "R 0,00",
+          "R 30,00",
+          "Balanced"
+        ],
+        [
+          "Mathebula & Partners Trust Account",
+          "Section 86(2) trust banking account",
+          "September 2026",
+          "R 30,00",
+          "R 123,45",
+          "R 200,00",
+          "—",
+          "—",
+          "—",
+          "R 57,50",
+          "R 12,00",
+          "R 9,07",
+          "R 15,00",
+          "R 1,96",
+          "R 57,50",
+          "R 100,00",
+          "R 41,45",
+          "Balanced"
+        ]
+      ],
+      "noData": false,
+      "error": null,
+      "pager": "Page 1 of 1",
+      "toasts": [],
+      "formErrors": []
+    },
+    "shot": "s-report-trust-interest-charges-schedule.png",
+    "cardScan": {
+      "codes": [],
+      "iso": [
+        "2026-08-01",
+        "2026-09-30"
+      ],
+      "rawDecimals": []
+    },
+    "tableCodeHits": [],
+    "tableIsoHits": [],
+    "tableRawDecimalHits": [],
+    "csv": {
+      "ok": true,
+      "file": "s-trust-interest-charges-schedule.csv",
+      "suggested": "trust-interest-charges-schedule-report.csv",
+      "bytes": 837,
+      "lines": 6,
+      "header": "# Interest and Charges Schedule (Rule 54.28)",
+      "codeHits": []
+    },
+    "pdf": {
+      "ok": true,
+      "file": "s-trust-interest-charges-schedule.pdf",
+      "suggested": "trust-interest-charges-schedule-report.pdf",
+      "bytes": 3655,
+      "magic": "%PDF-",
+      "textChars": 963,
+      "extractOk": true,
+      "scopeNote": true,
+      "scan": {
+        "codes": [
+          "GROSS",
+          "CLIENT"
+        ],
+        "iso": [
+          "2026-08-01",
+          "2026-09-30"
+        ],
+        "rawDecimals": []
+      },
+      "codes": [],
+      "missingColumns": [
+        "Charges Refunded",
+        "Paid to the Fund",
+        "Fund Ledger c/f",
+        "Check"
+      ],
+      "page1": "s-trust-interest-charges-schedule.pdf-page1.png"
+    },
+    "afterExport": {
+      "cards": [
+        {
+          "label": "Period From",
+          "value": "2026-08-01"
+        },
+        {
+          "label": "Period To",
+          "value": "2026-09-30"
+        },
+        {
+          "label": "Account Count",
+          "value": "1"
+        },
+        {
+          "label": "Identity Holds",
+          "value": "Yes"
+        },
+        {
+          "label": "Scope Note",
+          "value": "Trust cash, estates and other trust assets are not recorded in Kazi and are not included in this comparison."
+        }
+      ],
+      "headers": [
+        "Trust Account",
+        "Section",
+        "Month",
+        "Fund Ledger b/f",
+        "Gross Interest (Cashbook)",
+        "Gross Interest (At Source, Memo)",
+        "Client's Share (s86(4))",
+        "Fund 5% Credited",
+        "Fund 5% Paid at Source",
+        "Charges Recoverable",
+        "Charges Non-recoverable",
+        "VAT in Charges",
+        "Charges (At Source, Memo)",
+        "VAT (Memo)",
+        "Charges Refunded",
+        "Paid to the Fund",
+        "Fund Ledger c/f",
+        "Check"
+      ],
+      "rows": [
+        [
+          "Mathebula & Partners Trust Account",
+          "Section 86(2) trust banking account",
+          "August 2026",
+          "R 0,00",
+          "R 30,00",
+          "R 0,00",
+          "—",
+          "—",
+          "—",
+          "R 0,00",
+          "R 0,00",
+          "R 0,00",
+          "R 0,00",
+          "R 0,00",
+          "R 0,00",
+          "R 0,00",
+          "R 30,00",
+          "Balanced"
+        ],
+        [
+          "Mathebula & Partners Trust Account",
+          "Section 86(2) trust banking account",
+          "September 2026",
+          "R 30,00",
+          "R 123,45",
+          "R 200,00",
+          "—",
+          "—",
+          "—",
+          "R 57,50",
+          "R 12,00",
+          "R 9,07",
+          "R 15,00",
+          "R 1,96",
+          "R 57,50",
+          "R 100,00",
+          "R 41,45",
+          "Balanced"
+        ]
+      ],
+      "noData": false,
+      "error": null,
+      "pager": "Page 1 of 1",
+      "toasts": [],
+      "formErrors": []
+    }
+  },
+  "rowsShown": [
+    {
+      "Trust Account": "Mathebula & Partners Trust Account",
+      "Section": "Section 86(2) trust banking account",
+      "Month": "August 2026",
+      "Fund Ledger b/f": "R 0,00",
+      "Gross Interest (Cashbook)": "R 30,00",
+      "Gross Interest (At Source, Memo)": "R 0,00",
+      "Client's Share (s86(4))": "—",
+      "Fund 5% Credited": "—",
+      "Fund 5% Paid at Source": "—",
+      "Charges Recoverable": "R 0,00",
+      "Charges Non-recoverable": "R 0,00",
+      "VAT in Charges": "R 0,00",
+      "Charges (At Source, Memo)": "R 0,00",
+      "VAT (Memo)": "R 0,00",
+      "Charges Refunded": "R 0,00",
+      "Paid to the Fund": "R 0,00",
+      "Fund Ledger c/f": "R 30,00",
+      "Check": "Balanced"
+    },
+    {
+      "Trust Account": "Mathebula & Partners Trust Account",
+      "Section": "Section 86(2) trust banking account",
+      "Month": "September 2026",
+      "Fund Ledger b/f": "R 30,00",
+      "Gross Interest (Cashbook)": "R 123,45",
+      "Gross Interest (At Source, Memo)": "R 200,00",
+      "Client's Share (s86(4))": "—",
+      "Fund 5% Credited": "—",
+      "Fund 5% Paid at Source": "—",
+      "Charges Recoverable": "R 57,50",
+      "Charges Non-recoverable": "R 12,00",
+      "VAT in Charges": "R 9,07",
+      "Charges (At Source, Memo)": "R 15,00",
+      "VAT (Memo)": "R 1,96",
+      "Charges Refunded": "R 57,50",
+      "Paid to the Fund": "R 100,00",
+      "Fund Ledger c/f": "R 41,45",
+      "Check": "Balanced"
+    }
+  ],
+  "identity": {
+    "aug": {
+      "bf": 0,
+      "gi": 30,
+      "charges": 0,
+      "rf": 0,
+      "sw": 0,
+      "cf": 30,
+      "lhs": 30,
+      "holds": true,
+      "text": "0.00 + 30.00 − 0.00 + 0.00 − 0.00 = 30.00 vs c/f 30.00"
+    },
+    "sep": {
+      "bf": 30,
+      "gi": 123.45,
+      "charges": 69.5,
+      "rf": 57.5,
+      "sw": 100,
+      "cf": 41.45,
+      "lhs": 41.45,
+      "holds": true,
+      "text": "30.00 + 123.45 − 69.50 + 57.50 − 100.00 = 41.45 vs c/f 41.45"
+    }
+  },
+  "fundAcct": "b65f5a13-34bd-4c7a-afd0-3ffad2f94c53",
+  "apiFund": {
+    "sep": {
+      "clientLedgers": 10000,
+      "investmentCreditors": 0,
+      "fundInterestAndCharges": 41.45,
+      "unidentifiedDeposits": 1550,
+      "otherNonClient": 0,
+      "interAccount": 0,
+      "total": 11591.45
+    },
+    "aug": {
+      "clientLedgers": 10000,
+      "investmentCreditors": 0,
+      "fundInterestAndCharges": 30,
+      "unidentifiedDeposits": 600,
+      "otherNonClient": 0,
+      "interAccount": 0,
+      "total": 10630
+    }
+  },
+  "apiFundSep": 41.45,
+  "apiFundAug": 30,
+  "preview": {
+    "status": 200,
+    "chars": 1159,
+    "scopeNote": true,
+    "scan": {
+      "codes": [],
+      "iso": [
+        "2026-08-01",
+        "2026-09-30"
+      ],
+      "rawDecimals": []
+    }
+  },
+  "firmWide": {
+    "slug": "trust-interest-charges-schedule",
+    "params": {
+      "dateFrom": "2026-08-01",
+      "dateTo": "2026-09-30"
+    },
+    "title": "Interest and Charges Schedule (Rule 54.28)",
+    "description": "Rule 54.28: interest earned and charges levied per trust account and month, the Fund ledger brought forward and carried forward; memo figures shown separately.",
+    "paramLabels": [
+      "From Month*",
+      "To Month*",
+      "Trust Account"
+    ],
+    "result": {
+      "cards": [
+        {
+          "label": "Period From",
+          "value": "2026-08-01"
+        },
+        {
+          "label": "Period To",
+          "value": "2026-09-30"
+        },
+        {
+          "label": "Account Count",
+          "value": "0"
+        },
+        {
+          "label": "Identity Holds",
+          "value": "Yes"
+        },
+        {
+          "label": "Scope Note",
+          "value": "Trust cash, estates and other trust assets are not recorded in Kazi and are not included in this comparison."
+        }
+      ],
+      "headers": [],
+      "rows": [],
+      "noData": true,
+      "error": null,
+      "pager": null,
+      "toasts": [],
+      "formErrors": []
+    },
+    "shot": "s-firmwide-report-trust-interest-charges-schedule.png",
+    "cardScan": {
+      "codes": [],
+      "iso": [
+        "2026-08-01",
+        "2026-09-30"
+      ],
+      "rawDecimals": []
+    },
+    "tableCodeHits": [],
+    "tableIsoHits": [],
+    "tableRawDecimalHits": []
+  },
+  "firmWideToNov": {
+    "slug": "trust-interest-charges-schedule",
+    "params": {
+      "dateFrom": "2026-08-01",
+      "dateTo": "2026-11-30"
+    },
+    "title": "Interest and Charges Schedule (Rule 54.28)",
+    "description": "Rule 54.28: interest earned and charges levied per trust account and month, the Fund ledger brought forward and carried forward; memo figures shown separately.",
+    "paramLabels": [
+      "From Month*",
+      "To Month*",
+      "Trust Account"
+    ],
+    "result": {
+      "cards": [
+        {
+          "label": "Period From",
+          "value": "2026-08-01"
+        },
+        {
+          "label": "Period To",
+          "value": "2026-11-30"
+        },
+        {
+          "label": "Account Count",
+          "value": "1"
+        },
+        {
+          "label": "Identity Holds",
+          "value": "Yes"
+        },
+        {
+          "label": "Scope Note",
+          "value": "Trust cash, estates and other trust assets are not recorded in Kazi and are not included in this comparison."
+        }
+      ],
+      "headers": [
+        "Trust Account",
+        "Section",
+        "Month",
+        "Fund Ledger b/f",
+        "Gross Interest (Cashbook)",
+        "Gross Interest (At Source, Memo)",
+        "Client's Share (s86(4))",
+        "Fund 5% Credited",
+        "Fund 5% Paid at Source",
+        "Charges Recoverable",
+        "Charges Non-recoverable",
+        "VAT in Charges",
+        "Charges (At Source, Memo)",
+        "VAT (Memo)",
+        "Charges Refunded",
+        "Paid to the Fund",
+        "Fund Ledger c/f",
+        "Check"
+      ],
+      "rows": [
+        [
+          "Mathebula & Partners Trust Account",
+          "Section 86(2) trust banking account",
+          "August 2026",
+          "R 0,00",
+          "R 30,00",
+          "R 0,00",
+          "—",
+          "—",
+          "—",
+          "R 0,00",
+          "R 0,00",
+          "R 0,00",
+          "R 0,00",
+          "R 0,00",
+          "R 0,00",
+          "R 0,00",
+          "R 30,00",
+          "Balanced"
+        ],
+        [
+          "Mathebula & Partners Trust Account",
+          "Section 86(2) trust banking account",
+          "September 2026",
+          "R 30,00",
+          "R 123,45",
+          "R 200,00",
+          "—",
+          "—",
+          "—",
+          "R 57,50",
+          "R 12,00",
+          "R 9,07",
+          "R 15,00",
+          "R 1,96",
+          "R 57,50",
+          "R 100,00",
+          "R 41,45",
+          "Balanced"
+        ],
+        [
+          "Mathebula & Partners Trust Account",
+          "Section 86(2) trust banking account",
+          "October 2026",
+          "R 41,45",
+          "R 0,00",
+          "R 0,00",
+          "—",
+          "—",
+          "—",
+          "R 0,00",
+          "R 0,00",
+          "R 0,00",
+          "R 0,00",
+          "R 0,00",
+          "R 0,00",
+          "R 0,00",
+          "R 41,45",
+          "Balanced"
+        ],
+        [
+          "Mathebula & Partners Trust Account",
+          "Section 86(2) trust banking account",
+          "November 2026",
+          "R 41,45",
+          "R 0,00",
+          "R 0,00",
+          "—",
+          "—",
+          "—",
+          "R 0,00",
+          "R 0,00",
+          "R 0,00",
+          "R 0,00",
+          "R 0,00",
+          "R 0,00",
+          "R 0,00",
+          "R 41,45",
+          "Balanced"
+        ]
+      ],
+      "noData": false,
+      "error": null,
+      "pager": "Page 1 of 1",
+      "toasts": [],
+      "formErrors": []
+    },
+    "shot": "s-firmwide-to-nov-report-trust-interest-charges-schedule.png",
+    "cardScan": {
+      "codes": [],
+      "iso": [
+        "2026-08-01",
+        "2026-11-30"
+      ],
+      "rawDecimals": []
+    },
+    "tableCodeHits": [],
+    "tableIsoHits": [],
+    "tableRawDecimalHits": []
+  },
+  "inverted": {
+    "slug": "trust-interest-charges-schedule",
+    "params": {
+      "dateFrom": "2026-09-30",
+      "dateTo": "2026-08-01",
+      "trust_account_id": {
+        "pick": "/Mathebula & Partners Trust Account/"
+      }
+    },
+    "title": "Interest and Charges Schedule (Rule 54.28)",
+    "description": "Rule 54.28: interest earned and charges levied per trust account and month, the Fund ledger brought forward and carried forward; memo figures shown separately.",
+    "paramLabels": [
+      "From Month*",
+      "To Month*",
+      "Trust Account"
+    ],
+    "result": {
+      "cards": [],
+      "headers": [],
+      "rows": [],
+      "noData": false,
+      "error": "Parameter 'dateTo' is before 'dateFrom'",
+      "pager": null,
+      "toasts": [],
+      "formErrors": []
+    },
+    "shot": "s-inverted-report-trust-interest-charges-schedule.png",
+    "cardScan": {
+      "codes": [],
+      "iso": [],
+      "rawDecimals": []
+    },
+    "tableCodeHits": [],
+    "tableIsoHits": [],
+    "tableRawDecimalHits": []
+  },
+  "invertedInMonth": {
+    "slug": "trust-interest-charges-schedule",
+    "params": {
+      "dateFrom": "2026-09-20",
+      "dateTo": "2026-09-05",
+      "trust_account_id": {
+        "pick": "/Mathebula & Partners Trust Account/"
+      }
+    },
+    "title": "Interest and Charges Schedule (Rule 54.28)",
+    "description": "Rule 54.28: interest earned and charges levied per trust account and month, the Fund ledger brought forward and carried forward; memo figures shown separately.",
+    "paramLabels": [
+      "From Month*",
+      "To Month*",
+      "Trust Account"
+    ],
+    "result": {
+      "cards": [],
+      "headers": [],
+      "rows": [],
+      "noData": false,
+      "error": "Parameter 'dateTo' is before 'dateFrom'",
+      "pager": null,
+      "toasts": [],
+      "formErrors": []
+    },
+    "shot": "s-inverted-in-month-report-trust-interest-charges-schedule.png",
+    "cardScan": {
+      "codes": [],
+      "iso": [],
+      "rawDecimals": []
+    },
+    "tableCodeHits": [],
+    "tableIsoHits": [],
+    "tableRawDecimalHits": []
+  },
+  "endedAt": "2026-11-19T03:27:55.037Z"
+}

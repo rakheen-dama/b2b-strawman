@@ -1,0 +1,70 @@
+650C OBS — log summary (raw logs are gitignored: gates/obs/backend-window.log, gates/obs/frontend-window.log, gates/obs/backend-full.log)
+
+Stack: e2e mock-auth, fresh, built from worktree-epic-650C @ 48fb285fe (backend image 05:12 SAST, frontend 04:59 SAST).
+Backend container started 2026-11-19T03:15:54Z; tenant tenant_7d218705360b provisioned 03:16:16Z.
+OBS window: 2026-11-19T03:24:35Z – 2026-11-19T03:35:11Z (05:24–05:35 SAST); scripted phases ran 03:24:36Z–03:31:44Z (a b s c d e f g) and 03:34:47Z–03:34:54Z (s2 probe).
+
+Backend, OBS window (324 lines):
+  ERROR: 0
+  Exceptions / stack traces: 0 (the 2 "exception" grep hits are the logger name GlobalExceptionHandler)
+  WARN 242:
+    240 x org.apache.pdfbox PDType1Font "Using fallback font LiberationSans for base font {Helvetica, Helvetica-Bold, …, Symbol, ZapfDingbats}"
+        — 16 lines per PDF render; 15 PDF renders in the window = the 15 UI Export PDF clicks (s x2, c x9, d x2, e x1, f x1). The renderer's standard-14 font fallback in the
+        container, emitted on every PDF export of every report; not specific to 650C.
+    2 x GlobalExceptionHandler "Access denied … reason=insufficient_role" — induced by OBS g (Carol, no FINANCIAL_VISIBILITY):
+        GET /api/report-definitions/trust-interest-charges-schedule (03:31:10Z) and GET /api/report-definitions (03:31:43Z, the API probe).
+  INFO (JSON) + openhtmltopdf plain INFO lines: scheduler fan-out, one portal trust-activity e-mail (the D1 deposit), renderer timings.
+  No line for any report execution failure.
+
+Backend, whole container log (boot → end of window, 578 lines): ERROR 0, WARN 288 (the 242 above + startup WARNs before the window).
+Boot, trust report pack (check i):
+  03:16:16.801Z StandardReportPackSeeder "Applied report pack standard-reports v2 for tenant tenant_7d218705360b"
+  03:16:16.824Z TrustReportPackSeeder   "Trust report pack seeded for tenant tenant_7d218705360b: 9 definitions"
+  No reconcile / membership line: the tenant was created at v4 (pack_install trust-reports pack_version 4, installed_at 03:16:16.803969Z;
+  org_settings.report_pack_status trust-reports version 4). The 3 → 4 reconcile path is not observable on a fresh stack.
+
+Frontend container, OBS window (12 lines): one server-side ApiError 403 "Insufficient permissions for this operation" (digest 2368363784)
+  for /api/report-definitions/trust-interest-charges-schedule — Carol's direct visit to the report URL (OBS g). Nothing else.
+
+Browser (Playwright): page errors 0 in all phases. Console errors:
+  e, f, s2: 1 each — "MockAuthContextProvider: failed to fetch userinfo TypeError: Failed to fetch" on /dashboard right after mock login
+        (known mock-auth noise right after sign-in; not a report page).
+  g:    1 — "Minified React error #441" on /reports/trust-interest-charges-schedule as Carol (the error page; see README g).
+  a, b, s, c, d: 0.
+
+Audit plane (read-only SQL, gates/obs/sql-h-i.txt): REPORT_EXPORTED csv = 15 (one per UI CSV export), REPORT_EXPORTED pdf = 0
+  after 15 UI PDF exports, REPORT_GENERATED = 0 after 25 UI runs (21 executed, 4 refused inverted ranges) — the browser-path observation of the pre-existing F-650C-1.
+
+==== Re-probe run 2 @733b8352f (raw logs gitignored: gates/obs-r2/backend-window.log, gates/obs-r2/frontend-window.log, gates/obs-r2/backend-full.log)
+
+Stack: fresh e2e mock-auth stack built from worktree-epic-650C @ 733b8352f (backend image 03:57:03Z, frontend image 03:57:29Z).
+Backend container started 03:57:39Z; tenant tenant_7d218705360b provisioned 03:58:27Z.
+Fix presence: checked in the backend jar (TrustReportQueryRepository.accountsWithPostingsOnOrBefore; en dash in TrustReconciliationReportQuery).
+
+Run-2 window: 2026-11-19T04:01:39Z – 2026-11-19T04:05:25Z (06:01–06:05 SAST).
+Phases: a 04:01:44Z · b 04:01:49Z · s 04:02:32Z · c 04:02:49Z · d 04:03:37Z · e 04:03:46Z · f 04:03:54Z · r (attempt 1) 04:04:07Z · r (record) 04:04:40Z–04:04:51Z.
+
+Backend, run-2 window (316 lines; first line 04:01:51Z, last line 04:05:07Z):
+  ERROR: 0
+  Exceptions / stack traces: 0
+  WARN: 256, all org.apache.pdfbox PDType1Font "Using fallback font LiberationSans for base font …".
+    That is 16 per PDF render × 16 renders: s 1, c 9, d 2, e 1, f 1, and r 2 (the firm-wide schedule, once per r run).
+    No other WARN in the window.
+Backend, whole container log (boot → end of window, 571 lines): ERROR 0.
+  The only "Exception" text is a boot WARN at 03:57:57Z: CglibAopProxy "Unable to proxy … GenericFilterBean.init … throws ServletException" (a method signature, not a thrown exception).
+  The 14 non-font WARNs are all at boot or in seeding (03:57–03:58Z): bean post-processor notices, LibreOffice not found, the font cache build, the seed-data invoice tax-number notice, and DOCUMENT_GENERATED with no recipients.
+Boot, trust report pack (03:58:27Z):
+  "Applied report pack standard-reports v2 for tenant tenant_7d218705360b"
+  "Trust report pack seeded for tenant tenant_7d218705360b: 9 definitions"
+  pack_install trust-reports pack_version 4 (installed_at 03:58:27.109Z).
+
+Frontend container, run-2 window: 0 lines.
+
+Browser (Playwright): page errors 0 in every phase (a b s c d e f r, plus r attempt 1).
+  Console errors: one only, in f — "MockAuthContextProvider: failed to fetch userinfo TypeError: Failed to fetch" on /dashboard right after mock login. This is known mock-auth noise.
+
+Audit plane (read-only SQL, gates/obs-r2/sql-h.txt):
+  REPORT_EXPORTED csv = 16, one per UI CSV export.
+  REPORT_EXPORTED pdf = 0 after 16 UI PDF exports.
+  REPORT_GENERATED = 0.
+  This is the pre-existing F-650C-1, unchanged.

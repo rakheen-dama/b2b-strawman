@@ -1,0 +1,108 @@
+-- 650C OBS phase b read-only SQL (schema tenant_7d218705360b) 2026-11-19T04:01:49.417Z
+
+== [b: statement lines]
+select line_number, transaction_date, description, reference, amount, match_status from tenant_7d218705360b.bank_statement_lines where bank_statement_id='c6da02c2-7fe7-4d59-8d2e-e87caf06429b' order by line_number
+ line_number | transaction_date |           description            |      reference      |  amount  | match_status 
+-------------+------------------+----------------------------------+---------------------+----------+--------------
+           1 | 2026-08-03       | Eft credit Acme                  | DEP/OBS650C/0WYGG/1 | 10000.00 | AUTO_MATCHED
+           2 | 2026-08-12       | Eft credit unknown remitter      | UNK1/OBS650C/0WYGG  |   600.00 | RECORDED
+           3 | 2026-08-31       | Credit interest August           | INT/AUG/0WYGG       |    30.00 | RECORDED
+           4 | 2026-09-08       | Monthly service fee              | SVC/SEP/0WYGG       |   -57.50 | RECORDED
+           5 | 2026-09-15       | Cash handling fee                | CHF/SEP/0WYGG       |   -12.00 | RECORDED
+           6 | 2026-09-20       | Fee refund from business account | RFD/SEP/0WYGG       |    57.50 | RECORDED
+           7 | 2026-09-25       | Eft credit no reference          | UNK2/OBS650C/0WYGG  |   750.00 | RECORDED
+           8 | 2026-09-26       | Eft credit estate payer          | UNK3/OBS650C/0WYGG  |   200.00 | RECORDED
+           9 | 2026-09-30       | Credit interest September        | INT/SEP/0WYGG       |   123.45 | RECORDED
+          10 | 2026-09-30       | Lpff transfer                    | LPFF/SEP/0WYGG      |  -100.00 | RECORDED
+(10 rows)
+
+
+== [b: postings]
+select t.transaction_date, t.transaction_type, t.status, t.amount, t.ledger, t.ledger_effect, t.cashbook_effect, t.charge_recoverable, t.charge_vat_amount, ca.account_type creditor, t.reference from tenant_7d218705360b.trust_transactions t left join tenant_7d218705360b.trust_creditor_accounts ca on ca.id=t.creditor_account_id where t.trust_account_id='b4770f0a-c1dd-4d7b-9bcf-48e66559e291' order by t.transaction_date, t.created_at
+ transaction_date |   transaction_type   |  status  |  amount  |   ledger   | ledger_effect | cashbook_effect | charge_recoverable | charge_vat_amount |         creditor          |      reference      
+------------------+----------------------+----------+----------+------------+---------------+-----------------+--------------------+-------------------+---------------------------+---------------------
+ 2026-08-03       | DEPOSIT              | RECORDED | 10000.00 | CLIENT     |      10000.00 |        10000.00 |                    |                   |                           | DEP/OBS650C/0WYGG/1
+ 2026-08-12       | UNIDENTIFIED_DEPOSIT | RECORDED |   600.00 | NON_CLIENT |        600.00 |          600.00 |                    |                   | UNIDENTIFIED_DEPOSITS     | UNK1/OBS650C/0WYGG
+ 2026-08-31       | FUND_INTEREST        | RECORDED |    30.00 | NON_CLIENT |         30.00 |           30.00 |                    |                   | FUND_INTEREST_AND_CHARGES | INT/AUG/0WYGG
+ 2026-09-08       | BANK_CHARGE          | RECORDED |    57.50 | NON_CLIENT |        -57.50 |          -57.50 | t                  |              7.50 | FUND_INTEREST_AND_CHARGES | SVC/SEP/0WYGG
+ 2026-09-15       | BANK_CHARGE          | RECORDED |    12.00 | NON_CLIENT |        -12.00 |          -12.00 | f                  |              1.57 | FUND_INTEREST_AND_CHARGES | CHF/SEP/0WYGG
+ 2026-09-20       | CHARGE_REFUND        | RECORDED |    57.50 | NON_CLIENT |         57.50 |           57.50 |                    |                   | FUND_INTEREST_AND_CHARGES | RFD/SEP/0WYGG
+ 2026-09-25       | UNIDENTIFIED_DEPOSIT | RECORDED |   750.00 | NON_CLIENT |        750.00 |          750.00 |                    |                   | UNIDENTIFIED_DEPOSITS     | UNK2/OBS650C/0WYGG
+ 2026-09-26       | UNIDENTIFIED_DEPOSIT | RECORDED |   200.00 | NON_CLIENT |        200.00 |          200.00 |                    |                   | UNIDENTIFIED_DEPOSITS     | UNK3/OBS650C/0WYGG
+ 2026-09-30       | FUND_INTEREST        | RECORDED |   123.45 | NON_CLIENT |        123.45 |          123.45 |                    |                   | FUND_INTEREST_AND_CHARGES | INT/SEP/0WYGG
+ 2026-09-30       | FUND_SWEEP           | RECORDED |   100.00 | NON_CLIENT |       -100.00 |         -100.00 |                    |                   | FUND_INTEREST_AND_CHARGES | LPFF/SEP/0WYGG
+ 2026-10-15       | UNIDENT_ALLOC_OUT    | APPROVED |   200.00 | NON_CLIENT |       -200.00 |            0.00 |                    |                   | UNIDENTIFIED_DEPOSITS     | UID-39C88562
+ 2026-10-15       | UNIDENT_ALLOC_IN     | APPROVED |   200.00 | CLIENT     |        200.00 |            0.00 |                    |                   |                           | UID-39C88562
+(12 rows)
+
+
+== [b: Fund-ledger rows, August 2026, by type]
+select t.transaction_type, count(*) n, sum(t.ledger_effect) ledger_effect, sum(t.amount) amount,
+  sum(t.amount) filter (where t.charge_recoverable) recoverable, sum(t.amount) filter (where t.charge_recoverable is false) non_recoverable, sum(t.charge_vat_amount) vat
+  from tenant_7d218705360b.trust_transactions t join tenant_7d218705360b.trust_creditor_accounts ca on ca.id=t.creditor_account_id
+  where t.trust_account_id='b4770f0a-c1dd-4d7b-9bcf-48e66559e291' and ca.account_type='FUND_INTEREST_AND_CHARGES' and t.posted_at is not null and t.transaction_date between '2026-08-01' and '2026-08-31'
+  group by t.transaction_type order by 1
+ transaction_type | n | ledger_effect | amount | recoverable | non_recoverable | vat 
+------------------+---+---------------+--------+-------------+-----------------+-----
+ FUND_INTEREST    | 1 |         30.00 |  30.00 |             |                 |    
+(1 row)
+
+
+== [b: Fund-ledger rows, September 2026, by type]
+select t.transaction_type, count(*) n, sum(t.ledger_effect) ledger_effect, sum(t.amount) amount,
+  sum(t.amount) filter (where t.charge_recoverable) recoverable, sum(t.amount) filter (where t.charge_recoverable is false) non_recoverable, sum(t.charge_vat_amount) vat
+  from tenant_7d218705360b.trust_transactions t join tenant_7d218705360b.trust_creditor_accounts ca on ca.id=t.creditor_account_id
+  where t.trust_account_id='b4770f0a-c1dd-4d7b-9bcf-48e66559e291' and ca.account_type='FUND_INTEREST_AND_CHARGES' and t.posted_at is not null and t.transaction_date between '2026-09-01' and '2026-09-30'
+  group by t.transaction_type order by 1
+ transaction_type | n | ledger_effect | amount | recoverable | non_recoverable | vat  
+------------------+---+---------------+--------+-------------+-----------------+------
+ BANK_CHARGE      | 2 |        -69.50 |  69.50 |       57.50 |           12.00 | 9.07
+ CHARGE_REFUND    | 1 |         57.50 |  57.50 |             |                 |     
+ FUND_INTEREST    | 1 |        123.45 | 123.45 |             |                 |     
+ FUND_SWEEP       | 1 |       -100.00 | 100.00 |             |                 |     
+(4 rows)
+
+
+== [b: Fund ledger balance at month ends]
+select '2026-07-31' as_of, 0 fund union all select '2026-08-31', 30.00 union all select '2026-09-30', 41.45
+   as_of    | fund  
+------------+-------
+ 2026-07-31 |     0
+ 2026-08-31 | 30.00
+ 2026-09-30 | 41.45
+(3 rows)
+
+
+== [b: the reconciliation]
+select id, status, period_end, bank_balance, adjusted_bank_balance, cashbook_balance, client_ledger_total, creditor_total, difference, is_balanced from tenant_7d218705360b.trust_reconciliations where id='44c18f3f-890f-43ed-9879-56093fa52957'
+                  id                  |  status   | period_end | bank_balance | adjusted_bank_balance | cashbook_balance | client_ledger_total | creditor_total | difference | is_balanced 
+--------------------------------------+-----------+------------+--------------+-----------------------+------------------+---------------------+----------------+------------+-------------
+ 44c18f3f-890f-43ed-9879-56093fa52957 | COMPLETED | 2026-09-30 |     11591.45 |              11591.45 |         11591.45 |            10000.00 |       11591.45 |       0.00 | t
+(1 row)
+
+
+== [b: monthly lists]
+select id, period_end, creditor_total, fund_ledger_balance, unidentified_deposit_total, locked_at from tenant_7d218705360b.trust_monthly_lists
+                  id                  | period_end | creditor_total | fund_ledger_balance | unidentified_deposit_total |           locked_at           
+--------------------------------------+------------+----------------+---------------------+----------------------------+-------------------------------
+ fbb94385-07a6-4852-9eec-41865b16862e | 2026-09-30 |       11591.45 |               41.45 |                    1550.00 | 2026-11-19 04:02:14.987927+00
+(1 row)
+
+
+== [b: memos]
+select period_month, gross_interest, gross_charges, charges_vat, source_note from tenant_7d218705360b.trust_interest_memos
+ period_month | gross_interest | gross_charges | charges_vat |                   source_note                   
+--------------+----------------+---------------+-------------+-------------------------------------------------
+ 2026-09-01   |         200.00 |         15.00 |        1.96 | Bank advice IA/SEP26 at source (OBS 650C 0WYGG)
+(1 row)
+
+
+== [b: unidentified deposits]
+select received_date, bank_description, bank_reference, amount, status, resolved_date, allocated_customer_id from tenant_7d218705360b.unidentified_deposits order by received_date
+ received_date |      bank_description       |   bank_reference   | amount |  status   | resolved_date |        allocated_customer_id         
+---------------+-----------------------------+--------------------+--------+-----------+---------------+--------------------------------------
+ 2026-08-12    | Eft credit unknown remitter | UNK1/OBS650C/0WYGG | 600.00 | HELD      |               | 
+ 2026-09-25    | Eft credit no reference     | UNK2/OBS650C/0WYGG | 750.00 | HELD      |               | 
+ 2026-09-26    | Eft credit estate payer     | UNK3/OBS650C/0WYGG | 200.00 | ALLOCATED | 2026-10-15    | 34447c6a-8652-458b-95c0-8a39c803b083
+(3 rows)
+

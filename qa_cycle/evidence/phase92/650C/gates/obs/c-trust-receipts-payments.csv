@@ -1,0 +1,16 @@
+# Trust Receipts & Payments
+# Generated: 2026-11-19T03:28:02.148381262Z
+# Parameters: trust_account_id=bf0be9fc-023d-414e-96fc-6f7c1d6076da, dateFrom=2026-08-01, dateTo=2026-11-19
+Date,Reference,Type,Ledger,Client,Credit,Debit,Balance
+2026-08-03,DEP/OBS650C/ZL6X0/1,Deposit,Client,Acme Corp,10000.00,0.00,10000.00
+2026-08-12,UNK1/OBS650C/ZL6X0,Unidentified deposit,Unidentified deposits,'-,600.00,0.00,10600.00
+2026-08-31,INT/AUG/ZL6X0,Interest received for the Legal Practitioners' Fidelity Fund,Legal Practitioners' Fidelity Fund — interest and charges,'-,30.00,0.00,10630.00
+2026-09-08,SVC/SEP/ZL6X0,Bank charge,Legal Practitioners' Fidelity Fund — interest and charges,'-,0.00,57.50,10572.50
+2026-09-15,CHF/SEP/ZL6X0,Bank charge,Legal Practitioners' Fidelity Fund — interest and charges,'-,0.00,12.00,10560.50
+2026-09-20,RFD/SEP/ZL6X0,Bank charge refunded from the business account,Legal Practitioners' Fidelity Fund — interest and charges,'-,57.50,0.00,10618.00
+2026-09-25,UNK2/OBS650C/ZL6X0,Unidentified deposit,Unidentified deposits,'-,750.00,0.00,11368.00
+2026-09-26,UNK3/OBS650C/ZL6X0,Unidentified deposit,Unidentified deposits,'-,200.00,0.00,11568.00
+2026-09-30,INT/SEP/ZL6X0,Interest received for the Legal Practitioners' Fidelity Fund,Legal Practitioners' Fidelity Fund — interest and charges,'-,123.45,0.00,11691.45
+2026-09-30,LPFF/SEP/ZL6X0,Interest paid to the Legal Practitioners' Fidelity Fund,Legal Practitioners' Fidelity Fund — interest and charges,'-,0.00,100.00,11591.45
+2026-10-15,UID-8B997191,Unidentified deposit allocated,Unidentified deposits,'-,0.00,0.00,11591.45
+2026-10-15,UID-8B997191,Deposit identified and allocated,Client,Acme Corp,0.00,0.00,11591.45

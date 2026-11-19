@@ -1,0 +1,19 @@
+{
+  "phase": "a",
+  "fatal": null,
+  "checks": {
+    "a: Trust › Reports shows exactly nine cards": true,
+    "a: the nine card slugs = the nine of §16.4.6": true,
+    "a: no interest-allocation card": true,
+    "a: card names are words (Rule 54.28 schedule, age analysis, trust position, 'Trust Creditors List (Rule 54.15)')": true,
+    "a: every card links to /reports/{slug}": true,
+    "a: no raw code on the reports page": true,
+    "a: DB report_definitions TRUST = the nine, no interest-allocation": true,
+    "a: pack_install trust-reports pack_version = 4": true,
+    "a: org_settings report_pack_status trust-reports version 4": true,
+    "a: GET /api/report-definitions TRUST category = the nine": true,
+    "a: every template body carries the scope sentence": true
+  },
+  "consoleErrors": 0,
+  "pageErrors": 0
+}

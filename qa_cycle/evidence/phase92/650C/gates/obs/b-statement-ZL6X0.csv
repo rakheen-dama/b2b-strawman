@@ -1,0 +1,12 @@
+Standard Bank Trust Account - OBS 650C ZL6X0
+Date,Description,Reference,Amount,Balance
+2026-08-03,Eft credit Acme,DEP/OBS650C/ZL6X0/1,10000.00,10000.00
+2026-08-12,Eft credit unknown remitter,UNK1/OBS650C/ZL6X0,600.00,10600.00
+2026-08-31,Credit interest August,INT/AUG/ZL6X0,30.00,10630.00
+2026-09-08,Monthly service fee,SVC/SEP/ZL6X0,-57.50,10572.50
+2026-09-15,Cash handling fee,CHF/SEP/ZL6X0,-12.00,10560.50
+2026-09-20,Fee refund from business account,RFD/SEP/ZL6X0,57.50,10618.00
+2026-09-25,Eft credit no reference,UNK2/OBS650C/ZL6X0,750.00,11368.00
+2026-09-26,Eft credit estate payer,UNK3/OBS650C/ZL6X0,200.00,11568.00
+2026-09-30,Credit interest September,INT/SEP/ZL6X0,123.45,11691.45
+2026-09-30,Lpff transfer,LPFF/SEP/ZL6X0,-100.00,11591.45

@@ -1,0 +1,15 @@
+{
+  "phase": "b",
+  "fatal": null,
+  "checks": {
+    "b: deposit R 10 000,00 dated 3 Aug 2026 recorded through the UI": true,
+    "b: every unmatched line recorded from its statement line (9 dialogs closed, no refusal)": true,
+    "b: reconciliation to 30 Sep 2026 completed (step 5)": true,
+    "b: memo for September 2026 saved": true,
+    "b: UNK3 allocated (Bob approved) dated 15 Oct 2026": true,
+    "b: postings on the account (deposit + 9 lines + allocation pair)": true,
+    "b: Fund ledger 31 Aug = 30.00, 30 Sep = 41.45 (SQL)": true
+  },
+  "consoleErrors": 0,
+  "pageErrors": 0
+}

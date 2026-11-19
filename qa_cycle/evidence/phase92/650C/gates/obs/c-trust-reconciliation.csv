@@ -1,0 +1,18 @@
+# Trust Reconciliation
+# Generated: 2026-11-19T03:28:15.399695962Z
+# Parameters: trust_account_id=bf0be9fc-023d-414e-96fc-6f7c1d6076da
+Section,Item,Amount
+Bank,Bank balance per statement,11591.45
+Adjustments,Add: outstanding deposits,0.00
+Adjustments,Less: outstanding payments,0.00
+Adjustments,Adjusted bank balance,11591.45
+Comparison with the cashbook,Cashbook balance,11591.45
+Comparison with the cashbook,Difference (adjusted bank − cashbook),0.00
+Trust creditors,Client ledgers,10000.00
+Trust creditors,Section 86(4) investment creditors,0.00
+Trust creditors,Legal Practitioners' Fidelity Fund — interest and charges,41.45
+Trust creditors,Unidentified deposits,1550.00
+Trust creditors,Section 86(3) placements (inter-account),0.00
+Trust creditors,Trust creditors total,11591.45
+Comparison with trust creditors,Difference (adjusted bank − trust creditors),0.00
+Comparison with trust creditors,Difference (cashbook − trust creditors),0.00

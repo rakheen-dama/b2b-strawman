@@ -1,0 +1,17 @@
+-- 650C OBS phase r read-only SQL (schema tenant_7d218705360b) 2026-11-19T04:04:40.124Z
+
+== [r: trust accounts (opened_date after the recorded months)]
+select id, account_name, account_type, is_primary, opened_date, closed_date from tenant_7d218705360b.trust_accounts
+                  id                  |            account_name            | account_type | is_primary | opened_date | closed_date 
+--------------------------------------+------------------------------------+--------------+------------+-------------+-------------
+ b4770f0a-c1dd-4d7b-9bcf-48e66559e291 | Mathebula & Partners Trust Account | GENERAL      | t          | 2026-11-19  | 
+(1 row)
+
+
+== [r: postings on the primary account]
+select min(transaction_date) first_posting, max(transaction_date) last_posting, count(*) postings from tenant_7d218705360b.trust_transactions where trust_account_id='b4770f0a-c1dd-4d7b-9bcf-48e66559e291' and posted_at is not null
+ first_posting | last_posting | postings 
+---------------+--------------+----------
+ 2026-08-03    | 2026-10-15   |       12
+(1 row)
+

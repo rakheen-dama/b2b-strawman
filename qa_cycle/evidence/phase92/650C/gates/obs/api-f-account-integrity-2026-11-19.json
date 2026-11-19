@@ -1,0 +1,27 @@
+{
+  "method": "GET",
+  "url": "/api/trust-accounts/bf0be9fc-023d-414e-96fc-6f7c1d6076da/integrity?asAt=2026-11-19",
+  "status": 200,
+  "body": {
+    "trustAccountId": "bf0be9fc-023d-414e-96fc-6f7c1d6076da",
+    "asAt": "2026-11-19",
+    "position": {
+      "trustAccountId": "bf0be9fc-023d-414e-96fc-6f7c1d6076da",
+      "asAt": "2026-11-19",
+      "cashbook": 11591.45,
+      "clientLedgers": 10200,
+      "investmentCreditors": 0,
+      "fundLedger": 41.45,
+      "unidentifiedDeposits": 1350,
+      "otherNonClient": 0,
+      "interAccount": 0,
+      "creditorTotal": 11591.45,
+      "difference": 0
+    },
+    "bank": null,
+    "balanced": true,
+    "flags": [],
+    "lastCompletedReconciliationId": "c2f89f74-4dc1-4d43-afec-6e557dae00c7",
+    "lastReconciledThrough": "2026-09-30"
+  }
+}

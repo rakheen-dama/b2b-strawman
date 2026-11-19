@@ -1,0 +1,12 @@
+Standard Bank Trust Account - OBS 650C 0WYGG
+Date,Description,Reference,Amount,Balance
+2026-08-03,Eft credit Acme,DEP/OBS650C/0WYGG/1,10000.00,10000.00
+2026-08-12,Eft credit unknown remitter,UNK1/OBS650C/0WYGG,600.00,10600.00
+2026-08-31,Credit interest August,INT/AUG/0WYGG,30.00,10630.00
+2026-09-08,Monthly service fee,SVC/SEP/0WYGG,-57.50,10572.50
+2026-09-15,Cash handling fee,CHF/SEP/0WYGG,-12.00,10560.50
+2026-09-20,Fee refund from business account,RFD/SEP/0WYGG,57.50,10618.00
+2026-09-25,Eft credit no reference,UNK2/OBS650C/0WYGG,750.00,11368.00
+2026-09-26,Eft credit estate payer,UNK3/OBS650C/0WYGG,200.00,11568.00
+2026-09-30,Credit interest September,INT/SEP/0WYGG,123.45,11691.45
+2026-09-30,Lpff transfer,LPFF/SEP/0WYGG,-100.00,11591.45

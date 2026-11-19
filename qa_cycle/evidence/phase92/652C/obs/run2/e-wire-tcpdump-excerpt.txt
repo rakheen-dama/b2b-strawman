@@ -1,0 +1,112 @@
+# tcpdump sidecar (alpine:3 + tcpdump, --net container:e2e-backend, tcp port 8080) during e (tab A stale Complete, then Back → Review Matches); calculate/complete exchanges only; Authorization/Cookie redacted
+14:23:21.504394 eth0  In  IP e2e-frontend.docteams-e2e_e2e-network.47730 > 8acd176b6871.8080: Flags [P.], seq 3030572104:3030573206, ack 755750544, win 706, options [nop,nop,TS val 3804755015 ecr 1428547550], length 1102: HTTP: POST /api/trust-reconciliations/258446a3-3f94-4d43-b4a4-dfef85d45295/complete HTTP/1.1
+E.....@.@.
+7.........r.....H-.......\......
+...GU%..POST /api/trust-reconciliations/258446a3-3f94-4d43-b4a4-dfef85d45295/complete HTTP/1.1
+host: backend:8080
+connection: keep-alive
+Content-Type: application/json
+Authorization: <redacted>
+accept: */*
+accept-language: *
+sec-fetch-mode: cors
+user-agent: node
+accept-encoding: gzip, deflate
+content-length: 66
+
+{"expectedBankStatementId":"b41e11a7-b300-44e4-b8f4-95c526170c24"}
+14:23:21.576329 eth0  Out IP 8acd176b6871.8080 > e2e-frontend.docteams-e2e_e2e-network.47730: Flags [P.], seq 1:777, ack 1102, win 584, options [nop,nop,TS val 1428550789 ecr 3804755015], length 776: HTTP: HTTP/1.1 409 
+E..<].@.@..............r-..........H[f.....
+U%.....GHTTP/1.1 409 
+Vary: Origin
+Vary: Access-Control-Request-Method
+Vary: Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 0
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/problem+json
+Transfer-Encoding: chunked
+Date: Thu, 19 Nov 2026 14:23:21 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+154
+{"detail":"Since you opened it, this reconciliation was continued with another bank statement. Reload the reconciliation and review the statement it now uses before you continue.","instance":"/api/trust-reconciliations/258446a3-3f94-4d43-b4a4-dfef85d45295/complete","status":409,"title":"This reconciliation now uses a different statement"}
+
+14:23:21.589534 eth0  In  IP e2e-frontend.docteams-e2e_e2e-network.47730 > 8acd176b6871.8080: Flags [P.], seq 1102:2205, ack 782, win 706, options [nop,nop,TS val 3804755100 ecr 1428550789], length 1103: HTTP: POST /api/trust-reconciliations/258446a3-3f94-4d43-b4a4-dfef85d45295/calculate HTTP/1.1
+E....	@.@.
+4.........r......-.......\......
+....U%..POST /api/trust-reconciliations/258446a3-3f94-4d43-b4a4-dfef85d45295/calculate HTTP/1.1
+host: backend:8080
+connection: keep-alive
+Content-Type: application/json
+Authorization: <redacted>
+accept: */*
+accept-language: *
+sec-fetch-mode: cors
+user-agent: node
+accept-encoding: gzip, deflate
+content-length: 66
+
+{"expectedBankStatementId":"b41e11a7-b300-44e4-b8f4-95c526170c24"}
+14:23:21.612678 eth0  Out IP 8acd176b6871.8080 > e2e-frontend.docteams-e2e_e2e-network.47730: Flags [P.], seq 782:1559, ack 2205, win 584, options [nop,nop,TS val 1428550826 ecr 3804755100], length 777: HTTP: HTTP/1.1 409 
+E..=].@.@..............r-..........H[g.....
+U%......HTTP/1.1 409 
+Vary: Origin
+Vary: Access-Control-Request-Method
+Vary: Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 0
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/problem+json
+Transfer-Encoding: chunked
+Date: Thu, 19 Nov 2026 14:23:21 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+155
+{"detail":"Since you opened it, this reconciliation was continued with another bank statement. Reload the reconciliation and review the statement it now uses before you continue.","instance":"/api/trust-reconciliations/258446a3-3f94-4d43-b4a4-dfef85d45295/calculate","status":409,"title":"This reconciliation now uses a different statement"}
+
+14:23:23.844964 eth0  In  IP e2e-frontend.docteams-e2e_e2e-network.47730 > 8acd176b6871.8080: Flags [P.], seq 7497:8600, ack 9093, win 706, options [nop,nop,TS val 3804757356 ecr 1428553050], length 1103: HTTP: POST /api/trust-reconciliations/258446a3-3f94-4d43-b4a4-dfef85d45295/calculate HTTP/1.1
+E.....@.@.
+(.........r......-.......\......
+...lU%.ZPOST /api/trust-reconciliations/258446a3-3f94-4d43-b4a4-dfef85d45295/calculate HTTP/1.1
+host: backend:8080
+connection: keep-alive
+Content-Type: application/json
+Authorization: <redacted>
+accept: */*
+accept-language: *
+sec-fetch-mode: cors
+user-agent: node
+accept-encoding: gzip, deflate
+content-length: 66
+
+{"expectedBankStatementId":"b41e11a7-b300-44e4-b8f4-95c526170c24"}
+14:23:23.857665 eth0  Out IP 8acd176b6871.8080 > e2e-frontend.docteams-e2e_e2e-network.47730: Flags [P.], seq 9093:9870, ack 8600, win 580, options [nop,nop,TS val 1428553070 ecr 3804757356], length 777: HTTP: HTTP/1.1 409 
+E..=].@.@..............r-..........D[g.....
+U%.n...lHTTP/1.1 409 
+Vary: Origin
+Vary: Access-Control-Request-Method
+Vary: Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 0
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/problem+json
+Transfer-Encoding: chunked
+Date: Thu, 19 Nov 2026 14:23:23 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+155
+{"detail":"Since you opened it, this reconciliation was continued with another bank statement. Reload the reconciliation and review the statement it now uses before you continue.","instance":"/api/trust-reconciliations/258446a3-3f94-4d43-b4a4-dfef85d45295/calculate","status":409,"title":"This reconciliation now uses a different statement"}
+

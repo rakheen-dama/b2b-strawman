@@ -1,0 +1,36 @@
+Thu Nov 19 15:57:23 SAST 2026
+(end of OBS — after obs.cjs run1 + run2 + obs-refusal.cjs)
+== select trust_account_id, period_end, count(*) from tenant_7d218705360b.trust_reconciliations group by 1,2 having count(*)>1
+ trust_account_id | period_end | count 
+------------------+------------+-------
+(0 rows)
+
+== select r.id, r.period_end, r.status, r.completed_at, r.updated_at, r.bank_statement_id, s.file_name from tenant_7d218705360b.trust_reconciliations r left join tenant_7d218705360b.bank_statements s on s.id=r.bank_statement_id order by r.period_end
+                  id                  | period_end |  status   |         completed_at          |          updated_at           |          bank_statement_id           |     file_name     
+--------------------------------------+------------+-----------+-------------------------------+-------------------------------+--------------------------------------+-------------------
+ 9136e7fc-3f9a-4dee-8d84-3f420833110e | 2026-11-05 | DRAFT     |                               | 2026-11-19 12:00:34.861342+00 | d59233b0-c23e-4383-9bae-5f3b0cf3a8d4 | s1-HZV1Q.csv
+ 7b8337b4-3216-4173-8d67-1ea38ac06130 | 2026-11-09 | DRAFT     |                               | 2026-11-19 12:00:37.857692+00 | b3da27fa-798a-47f4-aa5b-920300a23f7a | s2-HZV1Q.csv
+ 818a7bac-afaf-4153-8d0c-58dc4abd4453 | 2026-11-13 | DRAFT     |                               | 2026-11-19 11:28:04.932667+00 | 4eaa7f78-5dd1-4cfd-965b-f68db3443edd | s1-GUR32.csv
+ 93325cd7-31ea-47c5-b824-5974299b3ed2 | 2026-11-14 | DRAFT     |                               | 2026-11-19 13:19:19.327619+00 | 56c40efa-c5a9-4f57-9d22-c65db1efc652 | s4-KTQTW.csv
+ 3d168e26-dee1-4137-8865-40782c8a60b7 | 2026-11-15 | DRAFT     |                               | 2026-11-19 13:19:14.201961+00 | 5c2848dc-1da0-490c-a9be-19e7001e19d7 | s1-KTQTW.csv
+ cd7b2e57-7d6c-46fa-9279-377cca53cd1b | 2026-11-16 | DRAFT     |                               | 2026-11-19 13:54:37.979988+00 | e15c7d2e-2fbe-4c33-81b6-a9e2a8394ad9 | a1-M362I.csv
+ 292c85cd-c453-4b36-846c-72c1375a18d0 | 2026-11-17 | DRAFT     |                               | 2026-11-19 13:54:43.078774+00 | 547bc54e-e275-443d-acdd-494c258ec6a4 | b2-M362I.csv
+ 4a34b829-96e4-4ef5-a9fc-fdfad1e01621 | 2026-11-18 | COMPLETED | 2026-11-19 13:55:44.225752+00 | 2026-11-19 13:55:44.251309+00 | f09ea647-483d-419d-b8f8-2bb89773e316 | c2-try1-M4OG6.csv
+ 258446a3-3f94-4d43-b4a4-dfef85d45295 | 2026-11-19 | DRAFT     |                               | 2026-11-19 12:56:46.416259+00 | 020df165-0614-40bc-a46f-de758baf28c6 | obs-K0NIA.csv
+(9 rows)
+
+== select occurred_at, event_type, entity_id, details->>'period_end' pe, details->>'previous_bank_statement_id' prev, details->>'bank_statement_id' stmt from tenant_7d218705360b.audit_events where event_type in ('trust_reconciliation.created','trust_reconciliation.statement_changed','trust_reconciliation.completed') and occurred_at > '2026-11-19 13:52' order by occurred_at
+          occurred_at          |               event_type               |              entity_id               |     pe     |                 prev                 |                 stmt                 
+-------------------------------+----------------------------------------+--------------------------------------+------------+--------------------------------------+--------------------------------------
+ 2026-11-19 13:54:30.066127+00 | trust_reconciliation.created           | cd7b2e57-7d6c-46fa-9279-377cca53cd1b | 2026-11-16 |                                      | 42af8abd-9ba1-41a6-a09c-e8013f8896c4
+ 2026-11-19 13:54:35.360469+00 | trust_reconciliation.statement_changed | cd7b2e57-7d6c-46fa-9279-377cca53cd1b | 2026-11-16 | 42af8abd-9ba1-41a6-a09c-e8013f8896c4 | 81891f24-ff84-4062-a74f-5f43298e45f1
+ 2026-11-19 13:54:37.977848+00 | trust_reconciliation.statement_changed | cd7b2e57-7d6c-46fa-9279-377cca53cd1b | 2026-11-16 | 81891f24-ff84-4062-a74f-5f43298e45f1 | e15c7d2e-2fbe-4c33-81b6-a9e2a8394ad9
+ 2026-11-19 13:54:40.925512+00 | trust_reconciliation.created           | 292c85cd-c453-4b36-846c-72c1375a18d0 | 2026-11-17 |                                      | cd2f3b05-a9f5-4b85-bac0-30be4997196d
+ 2026-11-19 13:54:43.076772+00 | trust_reconciliation.statement_changed | 292c85cd-c453-4b36-846c-72c1375a18d0 | 2026-11-17 | cd2f3b05-a9f5-4b85-bac0-30be4997196d | 547bc54e-e275-443d-acdd-494c258ec6a4
+ 2026-11-19 13:54:45.899154+00 | trust_reconciliation.created           | 4a34b829-96e4-4ef5-a9fc-fdfad1e01621 | 2026-11-18 |                                      | 62af0c0a-58df-4596-ad23-ff970dc73ed3
+ 2026-11-19 13:54:47.608919+00 | trust_reconciliation.statement_changed | 4a34b829-96e4-4ef5-a9fc-fdfad1e01621 | 2026-11-18 | 62af0c0a-58df-4596-ad23-ff970dc73ed3 | 574d41db-d502-490a-8abb-623ebc455c8a
+ 2026-11-19 13:55:39.3501+00   | trust_reconciliation.statement_changed | 4a34b829-96e4-4ef5-a9fc-fdfad1e01621 | 2026-11-18 | 574d41db-d502-490a-8abb-623ebc455c8a | 3bfca330-f723-43d2-9390-e2c0160378fe
+ 2026-11-19 13:55:41.146134+00 | trust_reconciliation.statement_changed | 4a34b829-96e4-4ef5-a9fc-fdfad1e01621 | 2026-11-18 | 3bfca330-f723-43d2-9390-e2c0160378fe | f09ea647-483d-419d-b8f8-2bb89773e316
+ 2026-11-19 13:55:44.232356+00 | trust_reconciliation.completed         | 4a34b829-96e4-4ef5-a9fc-fdfad1e01621 | 2026-11-18 |                                      | 
+(10 rows)
+

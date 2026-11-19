@@ -1,0 +1,45 @@
+Thu Nov 19 15:52:21 SAST 2026
+(after rebuild from head 93c8af2d5, before any browser run)
+== select trust_account_id, period_end, count(*) from tenant_7d218705360b.trust_reconciliations group by 1,2 having count(*)>1 order by 2
+ trust_account_id | period_end | count 
+------------------+------------+-------
+(0 rows)
+
+== select r.id, r.trust_account_id, r.period_end, r.status, r.completed_at, r.updated_at, r.created_at, r.bank_statement_id, s.file_name from tenant_7d218705360b.trust_reconciliations r left join tenant_7d218705360b.bank_statements s on s.id=r.bank_statement_id order by r.trust_account_id, r.period_end, r.updated_at
+                  id                  |           trust_account_id           | period_end | status | completed_at |          updated_at           |          created_at           |          bank_statement_id           |   file_name   
+--------------------------------------+--------------------------------------+------------+--------+--------------+-------------------------------+-------------------------------+--------------------------------------+---------------
+ 9136e7fc-3f9a-4dee-8d84-3f420833110e | 5149d2be-b51f-4a7f-b375-f2a851a4a028 | 2026-11-05 | DRAFT  |              | 2026-11-19 12:00:34.861342+00 | 2026-11-19 11:59:56.710452+00 | d59233b0-c23e-4383-9bae-5f3b0cf3a8d4 | s1-HZV1Q.csv
+ 7b8337b4-3216-4173-8d67-1ea38ac06130 | 5149d2be-b51f-4a7f-b375-f2a851a4a028 | 2026-11-09 | DRAFT  |              | 2026-11-19 12:00:37.857692+00 | 2026-11-19 12:00:37.810028+00 | b3da27fa-798a-47f4-aa5b-920300a23f7a | s2-HZV1Q.csv
+ 818a7bac-afaf-4153-8d0c-58dc4abd4453 | 5149d2be-b51f-4a7f-b375-f2a851a4a028 | 2026-11-13 | DRAFT  |              | 2026-11-19 11:28:04.932667+00 | 2026-11-19 11:27:57.494163+00 | 4eaa7f78-5dd1-4cfd-965b-f68db3443edd | s1-GUR32.csv
+ 93325cd7-31ea-47c5-b824-5974299b3ed2 | 5149d2be-b51f-4a7f-b375-f2a851a4a028 | 2026-11-14 | DRAFT  |              | 2026-11-19 13:19:19.327619+00 | 2026-11-19 13:19:19.288585+00 | 56c40efa-c5a9-4f57-9d22-c65db1efc652 | s4-KTQTW.csv
+ 3d168e26-dee1-4137-8865-40782c8a60b7 | 5149d2be-b51f-4a7f-b375-f2a851a4a028 | 2026-11-15 | DRAFT  |              | 2026-11-19 13:19:14.201961+00 | 2026-11-19 13:19:14.159261+00 | 5c2848dc-1da0-490c-a9be-19e7001e19d7 | s1-KTQTW.csv
+ 258446a3-3f94-4d43-b4a4-dfef85d45295 | 5149d2be-b51f-4a7f-b375-f2a851a4a028 | 2026-11-19 | DRAFT  |              | 2026-11-19 12:56:46.416259+00 | 2026-11-19 12:56:42.723851+00 | 020df165-0614-40bc-a46f-de758baf28c6 | obs-K0NIA.csv
+(6 rows)
+
+== select installed_rank, version, description, script, installed_on, execution_time, success from tenant_7d218705360b.flyway_schema_history order by installed_rank desc limit 2
+ installed_rank | version |        description         |               script                |        installed_on        | execution_time | success 
+----------------+---------+----------------------------+-------------------------------------+----------------------------+----------------+---------
+             29 | 29      | phase92 trust recon unique | V29__phase92_trust_recon_unique.sql | 2026-11-19 13:51:10.002598 |             14 | t
+             28 | 28      | phase92 drop lpff rates    | V28__phase92_drop_lpff_rates.sql    | 2026-11-19 11:21:21.550441 |              3 | t
+(2 rows)
+
+== select indexname, indexdef from pg_indexes where schemaname='tenant_7d218705360b' and tablename='trust_reconciliations' order by 1
+           indexname            |                                                                 indexdef                                                                  
+--------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------
+ idx_trust_recon_account_period | CREATE INDEX idx_trust_recon_account_period ON tenant_7d218705360b.trust_reconciliations USING btree (trust_account_id, period_end DESC)
+ trust_reconciliations_pkey     | CREATE UNIQUE INDEX trust_reconciliations_pkey ON tenant_7d218705360b.trust_reconciliations USING btree (id)
+ uq_trust_recon_account_period  | CREATE UNIQUE INDEX uq_trust_recon_account_period ON tenant_7d218705360b.trust_reconciliations USING btree (trust_account_id, period_end)
+(3 rows)
+
+== select count(*) as monthly_lists from tenant_7d218705360b.trust_monthly_lists
+ monthly_lists 
+---------------
+             0
+(1 row)
+
+== select count(*) as audit_rows_for_deleted_recons from tenant_7d218705360b.audit_events where entity_id in ('f42ce541-ebb5-4612-a12d-462483a33780','6b45b608-f2a3-4968-812f-04c563f43bc8','19614671-acc3-46e4-8158-8876f1caaf22','74203dcb-e2cb-4588-ac56-91140f2b048e','22476a5c-966e-4635-9b93-724d98dd732b')
+ audit_rows_for_deleted_recons 
+-------------------------------
+                            13
+(1 row)
+

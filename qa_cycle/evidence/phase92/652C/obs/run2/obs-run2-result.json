@@ -1,0 +1,637 @@
+{
+  "run": "N423A",
+  "pe": "2026-11-19",
+  "start": "2026-11-19T14:23:07.414Z",
+  "g": {
+    "G1": {
+      "statement": "15acfe1b-d925-4060-ad78-e957c7091926",
+      "rowsForPe": [
+        "258446a3-3f94-4d43-b4a4-dfef85d45295|DRAFT|15acfe1b-d925-4060-ad78-e957c7091926|sa0-N423A.csv|2026-11-19 14:23:11.14366+00"
+      ],
+      "figures": {
+        "bank": 1.11,
+        "od": 20655.48,
+        "op": 2500,
+        "adj": 18156.59,
+        "cb": 15911.34,
+        "cr": 15911.34,
+        "diff": 2245.25,
+        "balanced": false,
+        "status": "DRAFT",
+        "statement": "15acfe1b-d925-4060-ad78-e957c7091926",
+        "updatedAt": "2026-11-19 14:23:11.14366+00"
+      },
+      "actions": [
+        "tabA:fetchUnreadCount:200",
+        "tabA:fetchTrustAccounts:200",
+        "tabA:uploadBankStatement:200",
+        "tabA:autoMatch:200",
+        "tabA:fetchBankStatement:200",
+        "tabA:fetchTransactions:200",
+        "tabA:fetchTransactions:200",
+        "tabA:createReconciliation:200",
+        "tabA:calculateReconciliation:200"
+      ]
+    },
+    "attempts": [
+      {
+        "csv": "sa-try1-N423A.csv",
+        "needed": -2244.14,
+        "statement": "b41e11a7-b300-44e4-b8f4-95c526170c24",
+        "rowsForPe": [
+          "258446a3-3f94-4d43-b4a4-dfef85d45295|DRAFT|b41e11a7-b300-44e4-b8f4-95c526170c24|sa-try1-N423A.csv|2026-11-19 14:23:13.601976+00"
+        ],
+        "figures": {
+          "bank": -2244.14,
+          "od": 20655.48,
+          "op": 2500,
+          "adj": 15911.34,
+          "cb": 15911.34,
+          "cr": 15911.34,
+          "diff": 0,
+          "balanced": true,
+          "status": "DRAFT",
+          "statement": "b41e11a7-b300-44e4-b8f4-95c526170c24",
+          "updatedAt": "2026-11-19 14:23:13.601976+00"
+        },
+        "actions": [
+          "tabA:uploadBankStatement:200",
+          "tabA:autoMatch:200",
+          "tabA:fetchBankStatement:200",
+          "tabA:fetchTransactions:200",
+          "tabA:fetchTransactions:200",
+          "tabA:createReconciliation:200",
+          "tabA:calculateReconciliation:200"
+        ]
+      }
+    ],
+    "excludedInA": 1,
+    "tabAReady": {
+      "figures": {
+        "bank": -2244.14,
+        "od": 20655.48,
+        "op": 2500,
+        "adj": 15911.34,
+        "cb": 15911.34,
+        "cr": 15911.34,
+        "diff": 0,
+        "balanced": true,
+        "status": "DRAFT",
+        "statement": "b41e11a7-b300-44e4-b8f4-95c526170c24",
+        "updatedAt": "2026-11-19 14:23:15.199811+00"
+      },
+      "where": {
+        "step3AutoMatch": false,
+        "step4SplitPane": true,
+        "step5Complete": false,
+        "completeBtnEnabled": true
+      },
+      "actions": [
+        "tabA:excludeLine:200",
+        "tabA:calculateReconciliation:200"
+      ]
+    }
+  },
+  "e": {
+    "tabBReview": {
+      "statement": "5303d065-acaf-4a0e-bfe5-5879b06a67a7",
+      "rowsForPe": [
+        "258446a3-3f94-4d43-b4a4-dfef85d45295|DRAFT|5303d065-acaf-4a0e-bfe5-5879b06a67a7|sb-N423A.csv|2026-11-19 14:23:18.311858+00"
+      ],
+      "figures": {
+        "bank": -2244.14,
+        "od": 20655.48,
+        "op": 2500,
+        "adj": 15911.34,
+        "cb": 15911.34,
+        "cr": 15911.34,
+        "diff": 0,
+        "balanced": true,
+        "status": "DRAFT",
+        "statement": "5303d065-acaf-4a0e-bfe5-5879b06a67a7",
+        "updatedAt": "2026-11-19 14:23:18.311858+00"
+      },
+      "actions": [
+        "tabB:fetchUnreadCount:200",
+        "tabB:fetchTrustAccounts:200",
+        "tabB:uploadBankStatement:200",
+        "tabB:autoMatch:200",
+        "tabB:fetchBankStatement:200",
+        "tabB:fetchTransactions:200",
+        "tabB:fetchTransactions:200",
+        "tabB:createReconciliation:200",
+        "tabB:calculateReconciliation:200"
+      ],
+      "audit": [
+        "2026-11-19 14:23:11.134556+00|trust_reconciliation.statement_changed|020df165-0614-40bc-a46f-de758baf28c6|15acfe1b-d925-4060-ad78-e957c7091926",
+        "2026-11-19 14:23:11.27388+00|trust_reconciliation.calculated||",
+        "2026-11-19 14:23:13.599281+00|trust_reconciliation.statement_changed|15acfe1b-d925-4060-ad78-e957c7091926|b41e11a7-b300-44e4-b8f4-95c526170c24",
+        "2026-11-19 14:23:13.666091+00|trust_reconciliation.calculated||",
+        "2026-11-19 14:23:15.196099+00|trust_reconciliation.calculated||",
+        "2026-11-19 14:23:18.308881+00|trust_reconciliation.statement_changed|b41e11a7-b300-44e4-b8f4-95c526170c24|5303d065-acaf-4a0e-bfe5-5879b06a67a7",
+        "2026-11-19 14:23:18.368876+00|trust_reconciliation.calculated||"
+      ]
+    },
+    "before": {
+      "at": "2026-11-19T14:23:19.672Z",
+      "D": {
+        "bank": -2244.14,
+        "od": 20655.48,
+        "op": 2500,
+        "adj": 15911.34,
+        "cb": 15911.34,
+        "cr": 15911.34,
+        "diff": 0,
+        "balanced": true,
+        "status": "DRAFT",
+        "statement": "5303d065-acaf-4a0e-bfe5-5879b06a67a7",
+        "updatedAt": "2026-11-19 14:23:18.311858+00"
+      },
+      "rowsForPe": [
+        "258446a3-3f94-4d43-b4a4-dfef85d45295|DRAFT|5303d065-acaf-4a0e-bfe5-5879b06a67a7|sb-N423A.csv|2026-11-19 14:23:18.311858+00"
+      ],
+      "statements": [
+        "b41e11a7-b300-44e4-b8f4-95c526170c24|sa-try1-N423A.csv|IMPORTED",
+        "5303d065-acaf-4a0e-bfe5-5879b06a67a7|sb-N423A.csv|IMPORTED"
+      ],
+      "monthlyLists": 0,
+      "reconciledStatements": 1
+    },
+    "sidecarStartedAt": "2026-11-19T14:23:21.457Z",
+    "tabABeforeClick": {
+      "step3AutoMatch": false,
+      "step4SplitPane": true,
+      "step5Complete": false,
+      "completeBtnEnabled": true
+    },
+    "completeRefusal": {
+      "banner": {
+        "title": "This reconciliation now uses a different statement",
+        "text": "This reconciliation now uses a different statement Since you opened it, this reconciliation was continued with another bank statement. Reload the reconciliation and review the statement it now uses before you continue."
+      },
+      "where": {
+        "step3AutoMatch": false,
+        "step4SplitPane": true,
+        "step5Complete": false,
+        "completeBtnEnabled": true
+      },
+      "actions": [
+        "tabA:completeReconciliation:200",
+        "tabA:calculateReconciliation:200",
+        "tabA:fetchBankStatement:200",
+        "tabA:fetchTransactions:200",
+        "tabA:fetchTransactions:200"
+      ],
+      "db": {
+        "at": "2026-11-19T14:23:23.283Z",
+        "D": {
+          "bank": -2244.14,
+          "od": 20655.48,
+          "op": 2500,
+          "adj": 15911.34,
+          "cb": 15911.34,
+          "cr": 15911.34,
+          "diff": 0,
+          "balanced": true,
+          "status": "DRAFT",
+          "statement": "5303d065-acaf-4a0e-bfe5-5879b06a67a7",
+          "updatedAt": "2026-11-19 14:23:18.311858+00"
+        },
+        "rowsForPe": [
+          "258446a3-3f94-4d43-b4a4-dfef85d45295|DRAFT|5303d065-acaf-4a0e-bfe5-5879b06a67a7|sb-N423A.csv|2026-11-19 14:23:18.311858+00"
+        ],
+        "statements": [
+          "b41e11a7-b300-44e4-b8f4-95c526170c24|sa-try1-N423A.csv|IMPORTED",
+          "5303d065-acaf-4a0e-bfe5-5879b06a67a7|sb-N423A.csv|IMPORTED"
+        ],
+        "monthlyLists": 0,
+        "reconciledStatements": 1
+      }
+    },
+    "calculateRefusal": {
+      "banner": {
+        "title": "This reconciliation now uses a different statement",
+        "text": "This reconciliation now uses a different statement Since you opened it, this reconciliation was continued with another bank statement. Reload the reconciliation and review the statement it now uses before you continue."
+      },
+      "where": {
+        "step3AutoMatch": true,
+        "step4SplitPane": false,
+        "step5Complete": false,
+        "completeBtnEnabled": null
+      },
+      "actions": [
+        "tabA:fetchTransactions:200",
+        "tabA:fetchTransactions:200",
+        "tabA:calculateReconciliation:200"
+      ],
+      "db": {
+        "at": "2026-11-19T14:23:25.376Z",
+        "D": {
+          "bank": -2244.14,
+          "od": 20655.48,
+          "op": 2500,
+          "adj": 15911.34,
+          "cb": 15911.34,
+          "cr": 15911.34,
+          "diff": 0,
+          "balanced": true,
+          "status": "DRAFT",
+          "statement": "5303d065-acaf-4a0e-bfe5-5879b06a67a7",
+          "updatedAt": "2026-11-19 14:23:18.311858+00"
+        },
+        "rowsForPe": [
+          "258446a3-3f94-4d43-b4a4-dfef85d45295|DRAFT|5303d065-acaf-4a0e-bfe5-5879b06a67a7|sb-N423A.csv|2026-11-19 14:23:18.311858+00"
+        ],
+        "statements": [
+          "b41e11a7-b300-44e4-b8f4-95c526170c24|sa-try1-N423A.csv|IMPORTED",
+          "5303d065-acaf-4a0e-bfe5-5879b06a67a7|sb-N423A.csv|IMPORTED"
+        ],
+        "monthlyLists": 0,
+        "reconciledStatements": 1
+      }
+    },
+    "auditDuringStale": []
+  },
+  "f": {
+    "excludedInB": 1,
+    "ready": {
+      "figures": {
+        "bank": -2244.14,
+        "od": 20655.48,
+        "op": 2500,
+        "adj": 15911.34,
+        "cb": 15911.34,
+        "cr": 15911.34,
+        "diff": 0,
+        "balanced": true,
+        "status": "DRAFT",
+        "statement": "5303d065-acaf-4a0e-bfe5-5879b06a67a7",
+        "updatedAt": "2026-11-19 14:23:27.324369+00"
+      },
+      "where": {
+        "step3AutoMatch": false,
+        "step4SplitPane": true,
+        "step5Complete": false,
+        "completeBtnEnabled": true
+      },
+      "actions": [
+        "tabB:excludeLine:200",
+        "tabB:calculateReconciliation:200"
+      ]
+    },
+    "completed": {
+      "step5": "Reconciliation Complete The reconciliation has been completed successfully Bank Balance -R 2 244,14 Cashbook Balance R 15 911,34 Trust creditors R 15 911,34 No monthly list was locked: 19 Nov 2026 is not the last day of a month. Done",
+      "actions": [
+        "tabB:completeReconciliation:200"
+      ],
+      "db": {
+        "at": "2026-11-19T14:23:29.995Z",
+        "D": {
+          "bank": -2244.14,
+          "od": 20655.48,
+          "op": 2500,
+          "adj": 15911.34,
+          "cb": 15911.34,
+          "cr": 15911.34,
+          "diff": 0,
+          "balanced": true,
+          "status": "COMPLETED",
+          "statement": "5303d065-acaf-4a0e-bfe5-5879b06a67a7",
+          "updatedAt": "2026-11-19 14:23:29.099337+00"
+        },
+        "rowsForPe": [
+          "258446a3-3f94-4d43-b4a4-dfef85d45295|COMPLETED|5303d065-acaf-4a0e-bfe5-5879b06a67a7|sb-N423A.csv|2026-11-19 14:23:29.099337+00"
+        ],
+        "statements": [
+          "b41e11a7-b300-44e4-b8f4-95c526170c24|sa-try1-N423A.csv|IMPORTED",
+          "5303d065-acaf-4a0e-bfe5-5879b06a67a7|sb-N423A.csv|RECONCILED"
+        ],
+        "monthlyLists": 0,
+        "reconciledStatements": 2
+      }
+    }
+  },
+  "pageErrors": [],
+  "consoleErrors": [],
+  "actionCalls": [
+    {
+      "tag": "tabA",
+      "name": "fetchUnreadCount",
+      "id": "00f174bbfd6cf8c6c79bca91c9658d847b00bc37d5",
+      "t": "2026-11-19T14:23:09.514Z",
+      "status": 200
+    },
+    {
+      "tag": "tabA",
+      "name": "fetchUnreadCount",
+      "id": "00f174bbfd6cf8c6c79bca91c9658d847b00bc37d5",
+      "t": "2026-11-19T14:23:09.937Z",
+      "status": 200
+    },
+    {
+      "tag": "tabA",
+      "name": "fetchTrustAccounts",
+      "id": "007d93bd9fbd098d87de2d1d5d508b47542b514da2",
+      "t": "2026-11-19T14:23:09.987Z",
+      "status": 200
+    },
+    {
+      "tag": "tabA",
+      "name": "uploadBankStatement",
+      "id": "600ab5d62adc0b0ed47cc480b9e7d5ed46b4ce675a",
+      "t": "2026-11-19T14:23:10.184Z",
+      "status": 200
+    },
+    {
+      "tag": "tabA",
+      "name": "autoMatch",
+      "id": "40017a8abc620e7bdb69e1f32838788f6ff8b080ea",
+      "t": "2026-11-19T14:23:10.695Z",
+      "status": 200
+    },
+    {
+      "tag": "tabA",
+      "name": "fetchBankStatement",
+      "id": "4073a0edee1850955800786786871373993d573eda",
+      "t": "2026-11-19T14:23:10.779Z",
+      "status": 200
+    },
+    {
+      "tag": "tabA",
+      "name": "fetchTransactions",
+      "id": "609e25ab22edb8ed91a7113107974ec69f74d62d0f",
+      "t": "2026-11-19T14:23:10.895Z",
+      "status": 200
+    },
+    {
+      "tag": "tabA",
+      "name": "fetchTransactions",
+      "id": "609e25ab22edb8ed91a7113107974ec69f74d62d0f",
+      "t": "2026-11-19T14:23:10.948Z",
+      "status": 200
+    },
+    {
+      "tag": "tabA",
+      "name": "createReconciliation",
+      "id": "60d58d272b98e7d2e8515ed19455a83df6071b97dc",
+      "t": "2026-11-19T14:23:10.976Z",
+      "status": 200
+    },
+    {
+      "tag": "tabA",
+      "name": "calculateReconciliation",
+      "id": "6023a2e01844f9ed537d20f14b38af50ca8c88942c",
+      "t": "2026-11-19T14:23:11.210Z",
+      "status": 200
+    },
+    {
+      "tag": "tabA",
+      "name": "uploadBankStatement",
+      "id": "600ab5d62adc0b0ed47cc480b9e7d5ed46b4ce675a",
+      "t": "2026-11-19T14:23:12.887Z",
+      "status": 200
+    },
+    {
+      "tag": "tabA",
+      "name": "autoMatch",
+      "id": "40017a8abc620e7bdb69e1f32838788f6ff8b080ea",
+      "t": "2026-11-19T14:23:13.299Z",
+      "status": 200
+    },
+    {
+      "tag": "tabA",
+      "name": "fetchBankStatement",
+      "id": "4073a0edee1850955800786786871373993d573eda",
+      "t": "2026-11-19T14:23:13.366Z",
+      "status": 200
+    },
+    {
+      "tag": "tabA",
+      "name": "fetchTransactions",
+      "id": "609e25ab22edb8ed91a7113107974ec69f74d62d0f",
+      "t": "2026-11-19T14:23:13.489Z",
+      "status": 200
+    },
+    {
+      "tag": "tabA",
+      "name": "fetchTransactions",
+      "id": "609e25ab22edb8ed91a7113107974ec69f74d62d0f",
+      "t": "2026-11-19T14:23:13.522Z",
+      "status": 200
+    },
+    {
+      "tag": "tabA",
+      "name": "createReconciliation",
+      "id": "60d58d272b98e7d2e8515ed19455a83df6071b97dc",
+      "t": "2026-11-19T14:23:13.552Z",
+      "status": 200
+    },
+    {
+      "tag": "tabA",
+      "name": "calculateReconciliation",
+      "id": "6023a2e01844f9ed537d20f14b38af50ca8c88942c",
+      "t": "2026-11-19T14:23:13.614Z",
+      "status": 200
+    },
+    {
+      "tag": "tabA",
+      "name": "excludeLine",
+      "id": "60355fe76771ea749d44106011e587341fc37e70f9",
+      "t": "2026-11-19T14:23:15.104Z",
+      "status": 200
+    },
+    {
+      "tag": "tabA",
+      "name": "calculateReconciliation",
+      "id": "6023a2e01844f9ed537d20f14b38af50ca8c88942c",
+      "t": "2026-11-19T14:23:15.147Z",
+      "status": 200
+    },
+    {
+      "tag": "tabB",
+      "name": "fetchUnreadCount",
+      "id": "00f174bbfd6cf8c6c79bca91c9658d847b00bc37d5",
+      "t": "2026-11-19T14:23:17.061Z",
+      "status": 200
+    },
+    {
+      "tag": "tabB",
+      "name": "fetchTrustAccounts",
+      "id": "007d93bd9fbd098d87de2d1d5d508b47542b514da2",
+      "t": "2026-11-19T14:23:17.132Z",
+      "status": 200
+    },
+    {
+      "tag": "tabB",
+      "name": "uploadBankStatement",
+      "id": "600ab5d62adc0b0ed47cc480b9e7d5ed46b4ce675a",
+      "t": "2026-11-19T14:23:17.333Z",
+      "status": 200
+    },
+    {
+      "tag": "tabB",
+      "name": "autoMatch",
+      "id": "40017a8abc620e7bdb69e1f32838788f6ff8b080ea",
+      "t": "2026-11-19T14:23:17.862Z",
+      "status": 200
+    },
+    {
+      "tag": "tabB",
+      "name": "fetchBankStatement",
+      "id": "4073a0edee1850955800786786871373993d573eda",
+      "t": "2026-11-19T14:23:18.068Z",
+      "status": 200
+    },
+    {
+      "tag": "tabB",
+      "name": "fetchTransactions",
+      "id": "609e25ab22edb8ed91a7113107974ec69f74d62d0f",
+      "t": "2026-11-19T14:23:18.161Z",
+      "status": 200
+    },
+    {
+      "tag": "tabB",
+      "name": "fetchTransactions",
+      "id": "609e25ab22edb8ed91a7113107974ec69f74d62d0f",
+      "t": "2026-11-19T14:23:18.201Z",
+      "status": 200
+    },
+    {
+      "tag": "tabB",
+      "name": "createReconciliation",
+      "id": "60d58d272b98e7d2e8515ed19455a83df6071b97dc",
+      "t": "2026-11-19T14:23:18.243Z",
+      "status": 200
+    },
+    {
+      "tag": "tabB",
+      "name": "calculateReconciliation",
+      "id": "6023a2e01844f9ed537d20f14b38af50ca8c88942c",
+      "t": "2026-11-19T14:23:18.327Z",
+      "status": 200
+    },
+    {
+      "tag": "tabA",
+      "name": "completeReconciliation",
+      "id": "601d2377dcb90967e4942ef290778e6624ad195b47",
+      "t": "2026-11-19T14:23:21.491Z",
+      "status": 200
+    },
+    {
+      "tag": "tabA",
+      "name": "calculateReconciliation",
+      "id": "6023a2e01844f9ed537d20f14b38af50ca8c88942c",
+      "t": "2026-11-19T14:23:21.584Z",
+      "status": 200
+    },
+    {
+      "tag": "tabA",
+      "name": "fetchBankStatement",
+      "id": "4073a0edee1850955800786786871373993d573eda",
+      "t": "2026-11-19T14:23:21.618Z",
+      "status": 200
+    },
+    {
+      "tag": "tabA",
+      "name": "fetchTransactions",
+      "id": "609e25ab22edb8ed91a7113107974ec69f74d62d0f",
+      "t": "2026-11-19T14:23:21.640Z",
+      "status": 200
+    },
+    {
+      "tag": "tabA",
+      "name": "fetchTransactions",
+      "id": "609e25ab22edb8ed91a7113107974ec69f74d62d0f",
+      "t": "2026-11-19T14:23:21.668Z",
+      "status": 200
+    },
+    {
+      "tag": "tabA",
+      "name": "fetchTransactions",
+      "id": "609e25ab22edb8ed91a7113107974ec69f74d62d0f",
+      "t": "2026-11-19T14:23:23.794Z",
+      "status": 200
+    },
+    {
+      "tag": "tabA",
+      "name": "fetchTransactions",
+      "id": "609e25ab22edb8ed91a7113107974ec69f74d62d0f",
+      "t": "2026-11-19T14:23:23.819Z",
+      "status": 200
+    },
+    {
+      "tag": "tabA",
+      "name": "calculateReconciliation",
+      "id": "6023a2e01844f9ed537d20f14b38af50ca8c88942c",
+      "t": "2026-11-19T14:23:23.841Z",
+      "status": 200
+    },
+    {
+      "tag": "tabB",
+      "name": "excludeLine",
+      "id": "60355fe76771ea749d44106011e587341fc37e70f9",
+      "t": "2026-11-19T14:23:27.211Z",
+      "status": 200
+    },
+    {
+      "tag": "tabB",
+      "name": "calculateReconciliation",
+      "id": "6023a2e01844f9ed537d20f14b38af50ca8c88942c",
+      "t": "2026-11-19T14:23:27.263Z",
+      "status": 200
+    },
+    {
+      "tag": "tabB",
+      "name": "completeReconciliation",
+      "id": "601d2377dcb90967e4942ef290778e6624ad195b47",
+      "t": "2026-11-19T14:23:29.010Z",
+      "status": 200
+    },
+    {
+      "tag": "tabA",
+      "name": "fetchUnreadCount",
+      "id": "00f174bbfd6cf8c6c79bca91c9658d847b00bc37d5",
+      "t": "2026-11-19T14:23:30.720Z",
+      "status": 200
+    }
+  ],
+  "schema": "tenant_7d218705360b",
+  "accountId": "5149d2be-b51f-4a7f-b375-f2a851a4a028",
+  "before": {
+    "rowsForPe": [
+      "258446a3-3f94-4d43-b4a4-dfef85d45295|DRAFT|020df165-0614-40bc-a46f-de758baf28c6|obs-K0NIA.csv|2026-11-19 12:56:46.416259+00"
+    ],
+    "monthlyLists": 0,
+    "reconciledStatements": 1,
+    "duplicates": []
+  },
+  "D": "258446a3-3f94-4d43-b4a4-dfef85d45295",
+  "needed": -2244.14,
+  "SA": "b41e11a7-b300-44e4-b8f4-95c526170c24",
+  "SB": "5303d065-acaf-4a0e-bfe5-5879b06a67a7",
+  "auditAll": [
+    "2026-11-19 14:23:11.134556+00|trust_reconciliation.statement_changed|020df165-0614-40bc-a46f-de758baf28c6|15acfe1b-d925-4060-ad78-e957c7091926",
+    "2026-11-19 14:23:11.27388+00|trust_reconciliation.calculated||",
+    "2026-11-19 14:23:13.599281+00|trust_reconciliation.statement_changed|15acfe1b-d925-4060-ad78-e957c7091926|b41e11a7-b300-44e4-b8f4-95c526170c24",
+    "2026-11-19 14:23:13.666091+00|trust_reconciliation.calculated||",
+    "2026-11-19 14:23:15.196099+00|trust_reconciliation.calculated||",
+    "2026-11-19 14:23:18.308881+00|trust_reconciliation.statement_changed|b41e11a7-b300-44e4-b8f4-95c526170c24|5303d065-acaf-4a0e-bfe5-5879b06a67a7",
+    "2026-11-19 14:23:18.368876+00|trust_reconciliation.calculated||",
+    "2026-11-19 14:23:27.321925+00|trust_reconciliation.calculated||",
+    "2026-11-19 14:23:29.091307+00|trust_reconciliation.completed||"
+  ],
+  "after": {
+    "rowsForPe": [
+      "258446a3-3f94-4d43-b4a4-dfef85d45295|COMPLETED|5303d065-acaf-4a0e-bfe5-5879b06a67a7|sb-N423A.csv|2026-11-19 14:23:29.099337+00"
+    ],
+    "monthlyLists": 0,
+    "reconciledStatements": 2,
+    "duplicates": [],
+    "statements": [
+      "15acfe1b-d925-4060-ad78-e957c7091926|sa0-N423A.csv|IMPORTED",
+      "b41e11a7-b300-44e4-b8f4-95c526170c24|sa-try1-N423A.csv|IMPORTED",
+      "5303d065-acaf-4a0e-bfe5-5879b06a67a7|sb-N423A.csv|RECONCILED"
+    ]
+  },
+  "end": "2026-11-19T14:23:31.728Z"
+}

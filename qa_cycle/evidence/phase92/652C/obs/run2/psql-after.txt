@@ -1,0 +1,45 @@
+# psql AFTER run 2 (2026-11-19T14:23:56Z), read-only
+                  id                  | period_end |  status   |          bank_statement_id           |     file_name     | stmt_status | bank_balance | outstanding_deposits | outstanding_payments | adjusted_bank_balance | cashbook_balance | creditor_total | difference | is_balanced |         completed_at          |          updated_at           
+--------------------------------------+------------+-----------+--------------------------------------+-------------------+-------------+--------------+----------------------+----------------------+-----------------------+------------------+----------------+------------+-------------+-------------------------------+-------------------------------
+ 258446a3-3f94-4d43-b4a4-dfef85d45295 | 2026-11-19 | COMPLETED | 5303d065-acaf-4a0e-bfe5-5879b06a67a7 | sb-N423A.csv      | RECONCILED  |     -2244.14 |             20655.48 |              2500.00 |              15911.34 |         15911.34 |       15911.34 |       0.00 | t           | 2026-11-19 14:23:29.08913+00  | 2026-11-19 14:23:29.099337+00
+ 4a34b829-96e4-4ef5-a9fc-fdfad1e01621 | 2026-11-18 | COMPLETED | f09ea647-483d-419d-b8f8-2bb89773e316 | c2-try1-M4OG6.csv | RECONCILED  |     -2550.00 |             15961.34 |              1250.00 |              12161.34 |         12161.34 |       12161.34 |       0.00 | t           | 2026-11-19 13:55:44.225752+00 | 2026-11-19 13:55:44.251309+00
+(2 rows)
+
+ trust_account_id | period_end | count 
+------------------+------------+-------
+(0 rows)
+
+ monthly_lists 
+---------------
+             0
+(1 row)
+
+                  id                  |     file_name     |   status   | closing_balance | transaction_date |  amount  | match_status 
+--------------------------------------+-------------------+------------+-----------------+------------------+----------+--------------
+ 15acfe1b-d925-4060-ad78-e957c7091926 | sa0-N423A.csv     | IMPORTED   |            1.11 | 2026-11-19       |     1.11 | UNMATCHED
+ b41e11a7-b300-44e4-b8f4-95c526170c24 | sa-try1-N423A.csv | IMPORTED   |        -2244.14 | 2026-11-19       | -2244.14 | EXCLUDED
+ 5303d065-acaf-4a0e-bfe5-5879b06a67a7 | sb-N423A.csv      | RECONCILED |        -2244.14 | 2026-11-19       | -2244.14 | EXCLUDED
+(3 rows)
+
+   status   | count 
+------------+-------
+ RECONCILED |     2
+ IMPORTED   |    27
+(2 rows)
+
+          occurred_at          |               event_type               |                 prev                 |                 new                  
+-------------------------------+----------------------------------------+--------------------------------------+--------------------------------------
+ 2026-11-19 12:56:42.724426+00 | trust_reconciliation.created           |                                      | 020df165-0614-40bc-a46f-de758baf28c6
+ 2026-11-19 12:56:42.756096+00 | trust_reconciliation.calculated        |                                      | 
+ 2026-11-19 12:56:46.412613+00 | trust_reconciliation.calculated        |                                      | 
+ 2026-11-19 14:23:11.134556+00 | trust_reconciliation.statement_changed | 020df165-0614-40bc-a46f-de758baf28c6 | 15acfe1b-d925-4060-ad78-e957c7091926
+ 2026-11-19 14:23:11.27388+00  | trust_reconciliation.calculated        |                                      | 
+ 2026-11-19 14:23:13.599281+00 | trust_reconciliation.statement_changed | 15acfe1b-d925-4060-ad78-e957c7091926 | b41e11a7-b300-44e4-b8f4-95c526170c24
+ 2026-11-19 14:23:13.666091+00 | trust_reconciliation.calculated        |                                      | 
+ 2026-11-19 14:23:15.196099+00 | trust_reconciliation.calculated        |                                      | 
+ 2026-11-19 14:23:18.308881+00 | trust_reconciliation.statement_changed | b41e11a7-b300-44e4-b8f4-95c526170c24 | 5303d065-acaf-4a0e-bfe5-5879b06a67a7
+ 2026-11-19 14:23:18.368876+00 | trust_reconciliation.calculated        |                                      | 
+ 2026-11-19 14:23:27.321925+00 | trust_reconciliation.calculated        |                                      | 
+ 2026-11-19 14:23:29.091307+00 | trust_reconciliation.completed         |                                      | 
+(12 rows)
+

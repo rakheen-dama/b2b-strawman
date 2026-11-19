@@ -1,0 +1,39 @@
+# tcpdump sidecar (alpine:3 + tcpdump, --net container:e2e-backend, port 8080) during obs-refusal.cjs; only the createReconciliation exchange kept; Authorization/Cookie redacted
+13:57:02.516751 eth0  In  IP e2e-frontend.docteams-e2e_e2e-network.47702 > 137a68aa0241.8080: Flags [P.], seq 12327:13446, ack 11404, win 646, options [nop,nop,TS val 3803175942 ecr 1426971631], length 1119: HTTP: POST /api/trust-accounts/5149d2be-b51f-4a7f-b375-f2a851a4a028/reconciliations HTTP/1.1
+E.....@.@.?..........V......o..u....\......
+....U...POST /api/trust-accounts/5149d2be-b51f-4a7f-b375-f2a851a4a028/reconciliations HTTP/1.1
+host: backend:8080
+connection: keep-alive
+Content-Type: application/json
+Authorization: Bearer <redacted>
+accept: */*
+accept-language: *
+sec-fetch-mode: cors
+user-agent: node
+accept-encoding: gzip, deflate
+content-length: 83
+
+{"periodEnd":"2026-11-18","bankStatementId":"0f687ed5-523a-4a80-b120-0252168c846a"}
+13:57:02.536260 eth0  Out IP 137a68aa0241.8080 > e2e-frontend.docteams-e2e_e2e-network.47702: Flags [P.], seq 11404:12123, ack 13446, win 588, options [nop,nop,TS val 1426971664 ecr 3803175942], length 719: HTTP: HTTP/1.1 409 
+E.....@.@..>...........Vo..u.......L[-.....
+U.......HTTP/1.1 409 
+Vary: Origin
+Vary: Access-Control-Request-Method
+Vary: Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 0
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/problem+json
+Transfer-Encoding: chunked
+Date: Thu, 19 Nov 2026 13:57:02 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+11b
+{"detail":"This trust account was reconciled to 18 November 2026. A completed reconciliation cannot be changed; choose a later period end.","instance":"/api/trust-accounts/5149d2be-b51f-4a7f-b375-f2a851a4a028/reconciliations","status":409,"title":"This period is already reconciled"}
+
+13:57:02.537699 eth0  Out IP 137a68aa0241.8080 > e2e-frontend.docteams-e2e_e2e-network.47702: Flags [P.], seq 12123:12128, ack 13446, win 588, options [nop,nop,TS val 1426971665 ecr 3803175942], length 5: HTTP
+E..9..@.@..............Vo.!D.......LXc.....

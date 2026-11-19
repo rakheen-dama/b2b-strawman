@@ -1,0 +1,34 @@
+# psql BEFORE run 2 (2026-11-19T14:23:03Z), read-only
+                  id                  | period_end |  status   |          bank_statement_id           |     file_name     | stmt_status |          updated_at           
+--------------------------------------+------------+-----------+--------------------------------------+-------------------+-------------+-------------------------------
+ 258446a3-3f94-4d43-b4a4-dfef85d45295 | 2026-11-19 | DRAFT     | 020df165-0614-40bc-a46f-de758baf28c6 | obs-K0NIA.csv     | IMPORTED    | 2026-11-19 12:56:46.416259+00
+ 4a34b829-96e4-4ef5-a9fc-fdfad1e01621 | 2026-11-18 | COMPLETED | f09ea647-483d-419d-b8f8-2bb89773e316 | c2-try1-M4OG6.csv | RECONCILED  | 2026-11-19 13:55:44.251309+00
+ 292c85cd-c453-4b36-846c-72c1375a18d0 | 2026-11-17 | DRAFT     | 547bc54e-e275-443d-acdd-494c258ec6a4 | b2-M362I.csv      | IMPORTED    | 2026-11-19 13:54:43.078774+00
+ cd7b2e57-7d6c-46fa-9279-377cca53cd1b | 2026-11-16 | DRAFT     | e15c7d2e-2fbe-4c33-81b6-a9e2a8394ad9 | a1-M362I.csv      | IMPORTED    | 2026-11-19 13:54:37.979988+00
+ 3d168e26-dee1-4137-8865-40782c8a60b7 | 2026-11-15 | DRAFT     | 5c2848dc-1da0-490c-a9be-19e7001e19d7 | s1-KTQTW.csv      | IMPORTED    | 2026-11-19 13:19:14.201961+00
+ 93325cd7-31ea-47c5-b824-5974299b3ed2 | 2026-11-14 | DRAFT     | 56c40efa-c5a9-4f57-9d22-c65db1efc652 | s4-KTQTW.csv      | IMPORTED    | 2026-11-19 13:19:19.327619+00
+ 818a7bac-afaf-4153-8d0c-58dc4abd4453 | 2026-11-13 | DRAFT     | 4eaa7f78-5dd1-4cfd-965b-f68db3443edd | s1-GUR32.csv      | IMPORTED    | 2026-11-19 11:28:04.932667+00
+ 7b8337b4-3216-4173-8d67-1ea38ac06130 | 2026-11-09 | DRAFT     | b3da27fa-798a-47f4-aa5b-920300a23f7a | s2-HZV1Q.csv      | IMPORTED    | 2026-11-19 12:00:37.857692+00
+ 9136e7fc-3f9a-4dee-8d84-3f420833110e | 2026-11-05 | DRAFT     | d59233b0-c23e-4383-9bae-5f3b0cf3a8d4 | s1-HZV1Q.csv      | IMPORTED    | 2026-11-19 12:00:34.861342+00
+(9 rows)
+
+ trust_account_id | period_end | count 
+------------------+------------+-------
+(0 rows)
+
+ monthly_lists 
+---------------
+             0
+(1 row)
+
+   status   | count 
+------------+-------
+ RECONCILED |     1
+ IMPORTED   |    25
+(2 rows)
+
+ audit_for_d 
+-------------
+           3
+(1 row)
+

@@ -1,0 +1,27 @@
+# Phase 92 exit month — read-only psql check (2026-11-19T21:24:55Z)
+# container e2e-postgres, month end 2026-10-31
+## schema
+tenant_7d218705360b
+## cashbook-vs-ledgers
+# account|sum(cashbook_effect)|sum(ledger_effect)|difference|posted rows — posted rows dated <= 2026-10-31
+Mathebula & Partners Trust Account|101630.00|101630.00|0.00|24
+Section 86(4) investment — Khumalo|20095.00|20095.00|0.00|2
+Section 86(4) investment — Ndlovu|0.00|0.00|0.00|5
+## ledger-split
+# account|client|client_investment|fund|unidentified|inter_account
+Mathebula & Partners Trust Account|100380.00|0.00|0.00|1250.00|0.00
+Section 86(4) investment — Khumalo|0.00|20095.00|0.00|0.00|0.00
+Section 86(4) investment — Ndlovu|0.00|0.00|0.00|0.00|0.00
+## monthly-lists
+# account|period_end|bank|outstanding_deposits|outstanding_payments|adjusted_bank|cashbook|client_ledgers|investment_creditors|fund|unidentified|inter_account|creditor_total|difference
+Mathebula & Partners Trust Account|2026-10-31|103130.00|0.00|1500.00|101630.00|101630.00|100380.00|0.00|0.00|1250.00|0.00|101630.00|0.00
+Section 86(4) investment — Khumalo|2026-10-31|20095.00|0.00|0.00|20095.00|20095.00|0.00|20095.00|0.00|0.00|0.00|20095.00|0.00
+Section 86(4) investment — Ndlovu|2026-10-31|0.00|0.00|0.00|0.00|0.00|0.00|0.00|0.00|0.00|0.00|0.00|0.00
+## interest-entries
+# account|entry_date|gross|fund_share|net|presentation|status|fund_row
+Section 86(4) investment — Ndlovu|2026-10-29|400.00|20.00|380.00|GROSS|POSTED|t
+Section 86(4) investment — Khumalo|2026-10-31|100.00|5.00|95.00|NET|POSTED|f
+## portal-trust-balances
+# client|current_balance|invested_balance
+Khumalo Holdings|31000.00|20095.00
+Ndlovu Family Trust|69380.00|0.00

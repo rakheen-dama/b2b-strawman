@@ -7,6 +7,14 @@ if (authMode !== "mock") {
   );
 }
 
+/**
+ * The Phase 92 exit month (652E, ruling D-12): its own project, not part of the default
+ * lifecycle run. It posts back-dated entries on the seeded primary trust account and is single-shot
+ * per stack, so it runs alone on a fresh stack: `pnpm test:e2e:exit-month` (= `--project exit-month`).
+ * `pnpm test:e2e:legal-lifecycle` runs `--project chromium`, which ignores it.
+ */
+const EXIT_MONTH_SPEC = "**/trust-balanced-month.spec.ts";
+
 export default defineConfig({
   testDir: "./tests/legal-lifecycle",
   snapshotPathTemplate: "{testDir}/../../screenshots/legal-lifecycle/{arg}{ext}",
@@ -33,6 +41,15 @@ export default defineConfig({
   projects: [
     {
       name: "chromium",
+      testIgnore: EXIT_MONTH_SPEC,
+      use: {
+        ...devices["Desktop Chrome"],
+        deviceScaleFactor: 2,
+      },
+    },
+    {
+      name: "exit-month",
+      testMatch: EXIT_MONTH_SPEC,
       use: {
         ...devices["Desktop Chrome"],
         deviceScaleFactor: 2,

@@ -1277,8 +1277,9 @@ describe("Trust Reconciliation", () => {
     expect(await screen.findByTestId("reconciliation-error")).toBeInTheDocument();
     expect(mockFetchBankStatement).toHaveBeenCalledTimes(statementReads + 1);
     expect(mockFetchBankStatement).toHaveBeenLastCalledWith("stmt-1");
-    // One re-read of the unmatched transactions is two fetches: RECORDED and APPROVED (652B).
-    expect(vi.mocked(fetchTransactions)).toHaveBeenCalledTimes(transactionReads + 2);
+    // One re-read of the unmatched transactions is three fetches: RECORDED, APPROVED (652B) and
+    // REVERSED (652H).
+    expect(vi.mocked(fetchTransactions)).toHaveBeenCalledTimes(transactionReads + 3);
     expect(await screen.findByText("0 / 1 lines resolved")).toBeInTheDocument();
     const line = screen.getByTestId("bank-line-line-1");
     expect(within(line).getByText("Unmatched")).toBeInTheDocument();
@@ -2777,7 +2778,8 @@ describe("Trust Reconciliation", () => {
   // fee transfer or refund after approval). The backend matches either (R9); the list endpoint takes
   // one status, so the wizard reads both. A row already linked to a statement line is not offered,
   // nor is a transfer leg or unidentified-deposit allocation: it moves no bank money, so the
-  // backend's sign check refuses to match it (652B D-2).
+  // backend's sign check refuses to match it (652B D-2). 652H: REVERSED is read too — a reversed
+  // original is still posted — except a reversed row recorded from a statement line (D-1).
   describe("the manual-match pane offers recorded and approved transactions (652B)", () => {
     function pageOf(content: TrustTransaction[]) {
       return {
@@ -3004,6 +3006,79 @@ describe("Trust Reconciliation", () => {
       expect(screen.getByTestId("match-btn-tx-rec")).toBeInTheDocument();
       expect(screen.queryByTestId("match-btn-tx-transfer-in")).not.toBeInTheDocument();
       expect(screen.queryByTestId("match-btn-tx-transfer-out")).not.toBeInTheDocument();
+    });
+
+    // 652H: a reversed original is still posted (its effect stands; its contra cancels it), so it
+    // is offered like any posted row — the bank line that shows it must be matchable. Its contra
+    // (APPROVED, a credit contra) is offered too.
+    it("offers an unlinked reversed original beside its contra (652H)", async () => {
+      const reversedDeposit = makeTx({
+        id: "tx-reversed",
+        status: "REVERSED",
+        approvedBy: null,
+        approvedAt: null,
+        reference: "DEP/652H/REV",
+        amount: 15000,
+        reversedById: "tx-contra",
+      });
+      const contra = makeTx({
+        id: "tx-contra",
+        transactionType: "REVERSAL",
+        typeLabel: "Reversal",
+        direction: "OUT",
+        status: "APPROVED",
+        reference: "REV-DEP/652H/REV",
+        amount: 15000,
+        reversalOf: "tx-reversed",
+        transactionDate: "2026-03-03",
+      });
+      transactionsByStatus({ REVERSED: [reversedDeposit], APPROVED: [contra] });
+      await driveToReview();
+
+      expect(vi.mocked(fetchTransactions)).toHaveBeenCalledWith(
+        "acc-1",
+        expect.objectContaining({ status: "REVERSED" })
+      );
+      expect(screen.getByTestId("transaction-tx-reversed")).toBeInTheDocument();
+      expect(screen.getByTestId("transaction-tx-contra")).toBeInTheDocument();
+      // The reversed deposit is a candidate for the R15 000 deposit line and can be matched.
+      fireEvent.click(screen.getByTestId("bank-line-line-1"));
+      expect(screen.getByTestId("match-btn-tx-reversed")).toBeInTheDocument();
+    });
+
+    // 652H D-1 (R-1): a reversed row of a type only ever recorded from a statement line (here an
+    // unidentified deposit, unrecorded by unmatching its line) was born of that line; the backend
+    // refuses to match it again, so the pane does not offer it.
+    it("does not offer a reversed row that was recorded from a statement line (652H)", async () => {
+      transactionsByStatus({
+        REVERSED: [
+          makeTx({
+            id: "tx-reversed",
+            status: "REVERSED",
+            approvedBy: null,
+            approvedAt: null,
+            amount: 15000,
+            reversedById: "tx-contra",
+          }),
+          makeTx({
+            id: "tx-unrecorded",
+            transactionType: "UNIDENTIFIED_DEPOSIT",
+            typeLabel: "Unidentified deposit",
+            status: "REVERSED",
+            approvedBy: null,
+            approvedAt: null,
+            amount: 15000,
+            reversedById: "tx-unrecorded-contra",
+          }),
+        ],
+      });
+      await driveToReview();
+
+      expect(screen.getByTestId("transaction-tx-reversed")).toBeInTheDocument();
+      expect(screen.queryByTestId("transaction-tx-unrecorded")).not.toBeInTheDocument();
+      fireEvent.click(screen.getByTestId("bank-line-line-1"));
+      expect(screen.getByTestId("match-btn-tx-reversed")).toBeInTheDocument();
+      expect(screen.queryByTestId("match-btn-tx-unrecorded")).not.toBeInTheDocument();
     });
 
     it("lists the merged recorded and approved transactions newest first", async () => {

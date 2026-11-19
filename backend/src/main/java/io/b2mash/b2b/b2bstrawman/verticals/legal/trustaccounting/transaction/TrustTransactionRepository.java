@@ -313,15 +313,19 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
       @Param("today") LocalDate today);
 
   /**
-   * Finds unmatched candidate transactions for bank reconciliation auto-matching. Candidates are
-   * RECORDED or APPROVED transactions that have not yet been matched to a bank statement line,
-   * within the specified date range.
+   * Finds unmatched candidate transactions for bank reconciliation auto-matching: posted rows
+   * ({@code posted_at} set — RECORDED, APPROVED or REVERSED, {@code chk_trust_txn_posting}) not yet
+   * matched to a bank statement line, within the specified date range. A REVERSED original is still
+   * posted with its own cashbook effect (649B), so it matches the bank line that shows it like any
+   * other posted row (652H); an unposted row (AWAITING_APPROVAL, REJECTED) never does. The caller
+   * drops a REVERSED row recorded from a statement line ({@link
+   * TrustTransactionType#recordedOnlyFromStatementLine}).
    */
   @Query(
       """
       SELECT t FROM TrustTransaction t
       WHERE t.trustAccountId = :trustAccountId
-        AND t.status IN ('RECORDED', 'APPROVED')
+        AND t.postedAt IS NOT NULL
         AND t.bankStatementLineId IS NULL
         AND t.transactionDate >= :startDate
         AND t.transactionDate <= :endDate

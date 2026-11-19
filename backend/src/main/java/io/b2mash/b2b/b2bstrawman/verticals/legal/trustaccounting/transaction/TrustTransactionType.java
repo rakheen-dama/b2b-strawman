@@ -490,6 +490,19 @@ public enum TrustTransactionType {
     return origin;
   }
 
+  /**
+   * A row of the type is only ever created from a bank statement line, linked to it at birth
+   * (652H): the five {@link Origin#BANK} types ({@code StatementLinePostingService.recordFromLine})
+   * and {@link #FUND_INV_SHARE} (posted only for a {@code GROSS} interest entry, which is always
+   * recorded from the investment account's statement line — {@code TrustInvestmentService}). Once
+   * such a row is reversed and unlinked (its line unmatched), it is never matched to a bank line
+   * again: it must not re-match the line it was recorded from (R-1). {@link #INV_INTEREST} is not
+   * one — a bank advice records it with no line. The frontend's manual-match pane mirrors this set.
+   */
+  public boolean recordedOnlyFromStatementLine() {
+    return origin == Origin.BANK || this == FUND_INV_SHARE;
+  }
+
   public boolean clientVisible() {
     return clientVisible;
   }

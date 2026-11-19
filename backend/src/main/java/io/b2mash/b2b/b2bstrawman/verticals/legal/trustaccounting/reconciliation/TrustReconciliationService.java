@@ -28,6 +28,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustPostingService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionType;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -349,7 +350,8 @@ public class TrustReconciliationService {
             .findById(statementId)
             .orElseThrow(() -> new ResourceNotFoundException("BankStatement", statementId));
 
-    // Build candidate pool: APPROVED/RECORDED transactions, unmatched, within date range
+    // Build candidate pool: posted transactions (RECORDED, APPROVED or REVERSED), unmatched,
+    // within date range (652H)
     LocalDate startDate = statement.getPeriodStart().minusDays(7);
     LocalDate endDate = statement.getPeriodEnd().plusDays(7);
     // Wrap in ArrayList so removeIf() doesn't mutate the JPA-managed result list
@@ -357,6 +359,7 @@ public class TrustReconciliationService {
         new java.util.ArrayList<>(
             trustTransactionRepository.findUnmatchedCandidates(
                 statement.getTrustAccountId(), startDate, endDate));
+    candidatePool.removeIf(TrustReconciliationService::isUnrecordedStatementRow);
 
     // Get all UNMATCHED lines for this statement (deterministic order for reproducible matching)
     List<BankStatementLine> unmatchedLines =
@@ -450,10 +453,19 @@ public class TrustReconciliationService {
           "Invalid match state", "Transaction is already matched to a bank statement line");
     }
 
-    if (!"APPROVED".equals(transaction.getStatus())
-        && !"RECORDED".equals(transaction.getStatus())) {
+    // A posted row can be matched — RECORDED, APPROVED or REVERSED (a reversed original keeps its
+    // cashbook effect and still shows on the bank statement, 652H). Matching never changes its
+    // status (linkBankLine).
+    if (transaction.getPostedAt() == null) {
       throw new InvalidStateException(
-          "Invalid match state", "Transaction must be APPROVED or RECORDED to match");
+          "Invalid match state",
+          "Transaction must be posted (recorded, approved or reversed) to match");
+    }
+    if (isUnrecordedStatementRow(transaction)) {
+      throw new InvalidStateException(
+          "Invalid match state",
+          "This entry was recorded from a statement line and has since been reversed, so it cannot"
+              + " be matched to a bank line. Record the line again instead.");
     }
 
     // Verify the line and transaction belong to the same trust account (statement locked after
@@ -1201,6 +1213,20 @@ public class TrustReconciliationService {
   }
 
   // --- Auto-Match Strategy Helpers ---
+
+  /**
+   * 652H D-1 (R-1): a REVERSED row of a type only ever recorded from a statement line ({@link
+   * TrustTransactionType#recordedOnlyFromStatementLine}). It was born linked to its line and is
+   * unlinked only once its line is unmatched (the row reversed by {@code reverseForUnmatch}, or
+   * reversed generically first); it must never match a bank line again — least of all the line it
+   * was recorded from. Neither auto-match nor manual match offers it.
+   */
+  private static boolean isUnrecordedStatementRow(TrustTransaction transaction) {
+    return "REVERSED".equals(transaction.getStatus())
+        && TrustTransactionType.find(transaction.getTransactionType())
+            .map(TrustTransactionType::recordedOnlyFromStatementLine)
+            .orElse(false);
+  }
 
   /**
    * A bank line matches a posted row moving the cashbook the same way (ADR-378, §16.2.1): a credit

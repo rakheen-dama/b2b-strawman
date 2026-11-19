@@ -1,0 +1,45 @@
+652H — Tier 2 green (builder; Tier 3 / full verify NOT run — owned by the orchestrator)
+==========================================================================================
+Base: origin/main 16c40fa37. Machine: macOS, node v20.11.1 (nvm), embedded Postgres (zonky).
+Counts are <testcase> elements per surefire XML (ground truth), failures+errors per class.
+
+BACKEND Tier 1: ./mvnw spotless:apply; ./mvnw compile test-compile -q → exit 0
+
+BACKEND Tier 2 — Batch A (reconciliation package; the changed service's auto/manual-match users)  exit 0
+  ReversedOriginalMatchIntegrationTest               8  0   (NEW — 6 brief methods + 2 R-1 guards)
+  TrustReconciliationServiceMatchingTest            16  0
+  TrustReconciliationServiceReconciliationTest      17  0
+  TrustReconciliationCompletionGateIntegrationTest  15  0
+  TrustReconciliationDraftIntegrationTest           10  0
+  TrustReconciliationControllerTest                 10  0
+  StatementLinePostingIntegrationTest               28  0
+  BankStatementImportErrorIntegrationTest            2  0
+  BankStatementParserTest                           60  0
+  total                                            166  0
+
+BACKEND Tier 2 — Batch B (books / integrity / list / report / memo users of auto/manual match; posting core,
+ArchUnit, reversal; the registry — TrustTransactionType changed)  exit 0
+  TrustIntegrityServiceIntegrationTest              15  0
+  TrustPositionAsAtIntegrationTest                   9  0
+  TrustMonthlyListIntegrationTest                    9  0
+  TrustInterestMemoIntegrationTest                   8  0
+  TrustReportQueryIntegrationTest                   14  0
+  TrustWireContractTest                              1  0
+  TrustReversalEquationIntegrationTest              15  0
+  TrustPostingRulesTest (ArchUnit)                   2  0
+  TrustPostingServiceRecordWithPairTest              6  0
+  TrustTransactionServiceTest                       48  0
+  TrustEquationCharacterisationIntegrationTest      21  0
+  TrustTransactionTypeRegistryTest                  18  0   (+1: recordedOnlyFromStatementLine pin)
+  TrustTransactionTypeSchemaTest                     1  0
+  total                                            167  0
+
+FRONTEND (from frontend/, NODE_OPTIONS="" /opt/homebrew/bin/pnpm, node v20.11.1)
+  install        exit 0
+  lint           exit 0  (0 errors; 77 warnings, none in the two changed files)
+  build          exit 0
+  test (full)    exit 0  Test Files 482 passed (482) · Tests 4590 passed | 2 skipped (4592)
+  format:check   exit 0  "All matched files use Prettier code style!"
+
+Not run by the builder (orchestrator-owned): bash scripts/verify.sh (full BE verify), E2E-LEGAL, MARKERS, REVIEW.
+OBS: none in 652H (ruling D-3) — observed in 652E steps 9–11.

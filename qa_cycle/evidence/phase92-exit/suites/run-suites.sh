@@ -1,5 +1,16 @@
 #!/bin/bash
 # 652F exit suites — each suite on its own fresh e2e stack, built from the worktree (= main b08a8916a).
+#
+# EVIDENCE OF WHAT RAN, NOT A REUSABLE GATE. The logic below is left exactly as it ran.
+# Known gaps (CodeRabbit round 1, PR #1822):
+#   - a suite is not gated on setup failure: fresh_stack returns e2e-up's rc but no caller checks it, and the
+#     health wait gives up silently after 60 tries, so the suite runs anyway;
+#   - suite failures do not reach the script's exit code or ALL.done: each rc is only logged to runner.txt,
+#     and ALL.done is touched unconditionally.
+# For this run the orchestrator checked each stage by hand from runs/runner.txt: every "e2e-up rc=0" and
+# every suite "rc=0", with each suite's count read from its own log (runs/A-exit-month.txt ... E-portal.txt).
+# Any reuse must first add those gates (stop on a failed e2e-up or health wait; fail the script and skip
+# ALL.done when any suite rc != 0).
 set -u
 export PATH="/Users/rakheendama/.nvm/versions/node/v20.11.1/bin:/Applications/Docker.app/Contents/Resources/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin"
 export NODE_OPTIONS="" SHELL=/bin/bash

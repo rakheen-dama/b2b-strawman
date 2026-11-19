@@ -1,6 +1,6 @@
 # Phase 92 — Trust Books That Are Provably Right: Statement-Driven Interest, Non-Client Trust Creditors, Investments On The Books
 
-**Status: COMPLETE — all 36 slices merged (35 slice PRs #1786–#1821, excluding process PR #1805, plus the 652F exit PR). Exit verdict: FAIL (item 3: 18 open HIGH/MEDIUM trust defects, carried to the backlog. 10 have a follow-up FU-n; for the other 8, new FU-17+ items are proposed).** Breakdown written 2026-11-16. The per-slice history is in the Epic Overview and the slice tables. The verdict, the defect list and the follow-up register are in [§ Closure report](#closure-report) (C.1, C.8).
+**Status: COMPLETE — all 36 slices merged (35 slice PRs #1786–#1821, excluding process PR #1805, plus the 652F exit PR #1822). Exit verdict: FAIL. Item 3 is not met: 18 open HIGH/MEDIUM trust defects by source severity (the headline number, by the register's rule that source severity wins), or 21 open (5 HIGH) under the register's rubric applied throughout, which is where follow-up triage should start; carried to the backlog. 10 of the 18 have a follow-up FU-n; for the other 8, new FU-17+ items are proposed. Item 2 is partly met: two path sub-cases are not asserted as the path states.** The post-merge bookkeeping commit marks 652F **Done (PR #1822)** and Epic 652 Done in four places: the 652F slice detail row, the Implementation Order row, the Epic Overview and the `TASKS.md` Epic 652 row. Breakdown written 2026-11-16. The per-slice history is in the Epic Overview and the slice tables. The verdict, the defect list and the follow-up register are in [§ Closure report](#closure-report) (C.1, C.8).
 
 **Baseline (645.1, recorded on `main` `251100d54`, 2026-11-16 — full statement in [`qa_cycle/evidence/phase92/baseline/README.md`](../qa_cycle/evidence/phase92/baseline/README.md)):** BE-VERIFY **6 871** `<testcase>` / 0 failures / 26 skipped · FE-GATE vitest **4 357 passed / 2 skipped** · PORTAL-GATE vitest **284 passed** · E2E-LEGAL (fresh stack each, `PLAYWRIGHT_BASE_URL=http://localhost:3001`) lifecycle **105 / 105**, depth-ii **40 passed / 4 skipped** · demo-tenant `cashbook − stored card total` **DEFERRED** on the stack (demo provisioning needs Keycloak Admin, unavailable on the mock-auth stack) — **measured in 649A (PR #1787) by `TrustEquationCharacterisationIntegrationTest` path 11 on a seeded test tenant: cashbook R27 000,00, stored cards R0,00, difference R27 000,00**, pinned `_pinsKnownDefect` for 646A. After 645A: BE 6 865 (−6: 9 deleted, 3 added), FE 4 363 / 2, portal 284, lifecycle 105 / 105, depth-ii 40 / 4. After 649A: BE 6 890 (+25: 21 characterisation + 4 reversal-equation; tests only). After 646A (PR #1788, verified @3285515df): BE 6 917 (+28 new, −1 deleted), FE 4 363 / 2, lifecycle 105 / 105, depth-ii 40 / 4; on a lifecycle stack the UI balances equal the derived sums (EQ-2 difference 0,00); seeded demo books proven in-test by `LegalDemoTrustBooksIntegrationTest` (browser OBS DEFERRED — Keycloak Admin); evidence `qa_cycle/evidence/phase92/646A/`. Phase 92 is a **trust-correctness phase** and runs before Phase 91 (founder decision 1). It replaces how every trust balance is computed: each posted trust transaction carries its own effect, one Java registry decides those effects, every balance is a sum over those rows as at a date, the cashbook mirrors the bank statement (interest, Fund sweeps, bank charges and unidentified deposits are recorded from statement lines the firm classifies, never calculated), trust money held for a non-client has a ledger, invested money stays on the books, and one equation is enforced at four levels (row CHECK, test harness, visible integrity check, reconciliation gate) — never as a block on day-to-day posting. The calculated interest run is removed outright. Exit bar: one balanced month observed in the browser on a fresh stack with every figure worked out in advance (§16.9.6).
 
@@ -748,17 +748,17 @@ Merge-conflict hotspots (serial order removes them; a rebase re-greps): `TrustTr
 
 ### C.1 Exit verdict
 
-**FAIL — exit bar not met (item 3).** Items (1), (2) and (4) are met. Item (3) is not: 18 trust defects at HIGH or MEDIUM are open. Every Phase 92 slice is merged. The phase is complete as a build, but it does not pass its exit bar.
+**FAIL — exit bar not met.** Item (3) is not met: 18 trust defects at HIGH or MEDIUM are open by source severity, and 21 (5 HIGH) under the register's rubric applied throughout. Item (2) is partly met: every path has a test and all 69 rows are green, but two sub-cases are not asserted as the path states. Items (1) and (4) are met. Every Phase 92 slice is merged. The phase is complete as a build, but it does not pass its exit bar.
 
 | # | Exit-bar item (652.34) | Status | Evidence |
 |---|---|---|---|
 | 1 | The month observed end to end (652.17–652.31) | **Met.** Observed in 652E on three fresh stacks, 16 / 16 with 0 retries on each, every §16.9.6 figure asserted literally: run 6 (`main` `66dabd9c1` + the test-only review fixes; the committed evidence) and the orchestrator's two independent re-runs (`b08a8916a` commit message). Re-run in 652F on its own fresh stack from `main` `b08a8916a`: **16 / 16 passed, 0 failed, 0 retries** (1.5 min; stack A; `suites/runs/A-exit-month.txt`; read-only psql re-check `suites/runs/A-exit-month-psql-output.txt`: G 101 630,00 / I-B 20 095,00 / I-A 0,00, difference 0,00 on each) | `$X/README.md`, `$X/run.txt`, `$X/playwright-report.tar.gz`, `$X/screenshots/`, `$X/psql-output.txt`; 652F: `$X/suites/README.md` row "E2E exit month" |
-| 2 | The harness green across every posting path (652.33) | **Met.** 24 / 24 §16.9.2 paths have a test; 69 / 69 (class, method) rows PASS in the exit BE-VERIFY (7 420 testcases, exit 0). No `_pinsKnownDefect` test method remains. The literal grep finds 2 Javadoc lines that only mention the name. Partial readings, none of them a missing path: path 11's "flagged" is asserted as a −R3 000,00 balance, not as an integrity flag; a recoverable `BANK_CHARGE` is never unmatched (path 12); path 13's flag is asserted through direct writes; the path 24 refusals are not `assertMoves` cases | `$X/harness.md`, `$X/suites/runs/harness-check.txt` |
-| 3 | **0 open HIGH or MEDIUM trust defects** | **Not met: 18 open** (3 HIGH, 15 MEDIUM; table below). There are also 3 unreproduced hypotheses that would be HIGH or MEDIUM if reproduced; they are not counted | `$X/defect-register.md` (223 rows, from 31 `$EV/*/found*.md` + `$X/found.md` + the decisions log + §16.14.4) |
+| 2 | The harness green across every posting path (652.33) | **Partly met.** All 24 §16.9.2 paths have a test, and the 69 / 69 (class, method) rows are green in the exit BE-VERIFY (7 420 testcases, exit 0). Two sub-cases are not asserted as the path states: path 12, a recoverable `BANK_CHARGE` unmatch, has no test (the unmatch path does not branch on `chargeRecoverable`); path 11, "one client flagged in debit", is asserted as a −R3 000,00 balance, not as an integrity flag (candidate FU-27, C.8). Paths 13 and 24 are tested by a different mechanism (path 13's flag through direct writes; the path 24 refusals outside `assertMoves`). That is a difference of method, not a gap. No `_pinsKnownDefect` test method remains; the literal grep finds 2 Javadoc lines that only mention the name (652F D-5) | `$X/harness.md`, `$X/suites/runs/harness-check.txt` |
+| 3 | **0 open HIGH or MEDIUM trust defects** | **Not met: 18 open** by source severity (3 HIGH, 15 MEDIUM; table below). Under the register's rubric applied throughout: **21 open (5 HIGH, 16 MEDIUM)**. The headline stays 18 by the register's rule that source severity wins; follow-up triage should start from 21. There are also 3 unreproduced hypotheses that would be HIGH or MEDIUM if reproduced; they are not counted | `$X/defect-register.md` (224 rows, from 31 `$EV/*/found*.md` + `$X/found.md` + the decisions log + §16.14.4) |
 | 4 | Assumptions A1–A6 and open legal points OL-1..OL-9 carried with status | **Met** (C.1.2). Carrying them is the requirement; none was confirmed by a trust auditor or tax adviser in the phase | `$X/registers.md` |
 | — | The suites on fresh stacks (652.32; founder decision 8) | **Met: all five suites green, each on its own fresh stack, every count at or above its baseline** (exit month 16 / 16; lifecycle 105 / 105; depth-ii 40 / 4; default 168 / 0 / 12 vs 165 / 0 / 14; portal 34 / 0 / 0). The suites are not a second failing item. | `$X/suites/README.md` |
 
-The suites row is met, so item (3) is the only failing item.
+The suites row is met, so item (3) is the only item not met; item (2) is partly met.
 
 **Counting rule for item 3.** A row is open unless it is FIXED (the fix is on `main`, checked in the code), DECLINED or STRUCK. **A row assigned to a follow-up after the phase (`OPEN → FU-n`) is still open.** The founder's 2026-11-18 ruling ("the rulings … are follow-up PRs after the phase") schedules these fixes. It defers them; it does not close them. Severity is the source's own where it states one; otherwise the register's rubric assigns it (`$X/defect-register.md` § Rules applied).
 
@@ -785,13 +785,15 @@ The suites row is met, so item (3) is the only failing item.
 | 17 | 648D F-4 | MED | `recomputeMatter` writes the portal rows and the balance in separate autocommit statements | none |
 | 18 | 648D F-5 | MED | Two concurrent portal replays of one matter can write the older balance last | none |
 
-Ten of the 18 have a follow-up; eight have none. **The 3 unreproduced hypotheses** are not counted. If they were, the total would be 21:
+Ten of the 18 have a follow-up; eight have none. **Two counts: 18 open by source severity (3 HIGH, 15 MEDIUM); 21 open (5 HIGH, 16 MEDIUM) under the register's rubric applied throughout.** The headline stays 18, by the register's rule that source severity wins. Follow-up triage should start from 21 (the four rows are in the last paragraph of this section).
+
+**The 3 unreproduced hypotheses** are not counted in either number. Added to the 18, they would give 21 by source severity:
 
 - 647C #2 / 649B F2 (HIGH if reproduced): the client-ledger `/history` running balance across a reversed pair. The mechanism is on `main` at `TrustTransactionRepository.java:108-109`. No follow-up.
 - HF-7 (MEDIUM): a contra auto-matched to an unrelated line. Owned by FU-16.
 - 646C O-2 (MEDIUM): links left by auto-match on a refused statement. No follow-up.
 
-**Source severity kept where the rubric reads higher.** CF-3a would rise to HIGH. F-650C-2, 648E F-4 and F-652E-3 would add 3 to the open total (24 with the hypotheses). See note 4 of the register.
+**Source severity kept where the rubric reads higher (the 18 → 21 difference).** Under the rubric, CF-3a (open, unassigned) rises from MEDIUM to HIGH, and F-650C-2 (open → FU-13) rises from LOW to HIGH; 648E F-4 and F-652E-3 (both open, unassigned) rise from LOW to MEDIUM. That gives 21 open: 5 HIGH (the 3 above, CF-3a, F-650C-2) and 16 MEDIUM (15 − CF-3a + 648E F-4 + F-652E-3); 24 with the hypotheses. See note 4 of the register.
 
 #### C.1.2 Assumptions and open legal points (item 4)
 
@@ -826,7 +828,7 @@ Each e2e suite ran on its own fresh stack built from `main` `b08a8916a`. Command
 | E2E-DEFAULT (`KGOSI_EMAIL` set) | not in 645.1; last clean run 165 / 0 / 14 skipped without `KGOSI_EMAIL` (Phase 90 and Phase 89 exits) | **168 passed / 0 failed / 12 skipped / 0 did not run** (1.2 min; stack D; `KGOSI_EMAIL` set, so the 2 isolation tests run instead of skipping; `suites/runs/D-default.txt`) |
 | E2E-PORTAL | not in 645.1; 34 / 0 / 0 (648D) | **34 passed / 0 failed / 0 skipped** (27.9 s; stack E; `suites/runs/E-portal.txt`) |
 
-- **F-652F-1.** FE-GATE vitest run 1 overlapped the BE-VERIFY and gave 1 failed / 4 590 passed. The failure was a 5 s timeout in the Phase 90 `dark-mode-contrast-guard.test.ts:213` (LOW, test-only). Run 2, on an idle machine, is the gate number. See `$X/found.md`.
+- **F-652F-1.** FE-GATE vitest run 1 overlapped the BE-VERIFY and gave 1 failed / 4 590 passed. The failure was a 5 s timeout in the Phase 90 `dark-mode-contrast-guard.test.ts:213` (LOW, test-only; register row F-652F-1). Run 2, on an idle machine, is the gate number. See `$X/found.md`.
 - **Markers.** 36 PRs were checked (35 slice PRs, plus process PR #1805) with `scripts/check-verify-markers.sh --committed-only`. All 36 exit 0. All six conditional slices were reproduced red on `main` and built; there is no `STRUCK.md`. One caveat: on **652C #1817** the backend marker is at `19157ccb0`. The head `c92ddc0e4` changed one test method after it, so the full verify was local on the parent commit and only CI ran on the head (`$X/markers.md`).
 
 ### C.3 Hypothesis outcomes
@@ -869,7 +871,7 @@ All 15 landed on their task-file guide number. The architecture's §16.7 file nu
 | tenant V28 | `tenant/V28__phase92_drop_lpff_rates.sql` | 651E #1812 |
 | tenant V29 (conditional) | `tenant/V29__phase92_trust_recon_unique.sql` | 652C #1817 |
 
-**Next free: tenant V30, global V8** (checked with `ls`; `backend/db/BASELINE.md` §5 is updated in the post-merge bookkeeping commit — 652F D-4).
+**Next free: tenant V30, global V8** (checked with `ls`). These are the correct numbers, recorded here and in `TASKS.md`. `backend/db/BASELINE.md` §5 still says tenant V16 / global V7 and is **left unchanged by 652F**: the next PR that touches `backend/` corrects it, under that PR's own backend verify. Phase 90 644B set the precedent (652F D-4; candidate FU-26 in C.8).
 
 ### C.5 Pack bumps
 
@@ -925,7 +927,7 @@ The per-slice backend totals are in `$X/audit-facts.md` §4.
 |---|---|
 | `TrustDomainEvent.ReconciliationCompleted` never published; its two listeners are dead | open |
 | `InvestmentMaturing`, `PaymentAwaitingApproval` / `PaymentApproved` / `PaymentRejected` never published | open |
-| Nothing sets an investment `MATURED` | open (declined in the register: out of scope, §16.14.3) |
+| Nothing sets an investment `MATURED` | declined (out of scope, §16.14.3) |
 | `TRUST_RECONCILIATION_OVERDUE`, `TRUST_APPROVAL_AGING` catalogued, never created | open |
 | The demo seeder's main account is `SECTION_86`; the dashboard looks for a primary `GENERAL` | statement-builder half addressed by 652D #1818; dashboard half open (`DashboardService.java:624`) |
 | The closure-gate `matterBalance` is not account-scoped | kept by design |
@@ -985,12 +987,14 @@ FU-1..FU-16 come from `tasks/phase92-decisions.md` § Follow-up PRs. "Defects" n
 | FU-23 | 648D F-4, F-5 (MED) | Portal read-model recompute: one transaction, ordered per matter |
 | FU-24 | 647C #2 / 649B F2 (hypothesis, HIGH if reproduced) | Reproduce first: the client-ledger `/history` running balance across a reversed pair |
 | FU-25 | 646C O-2 (hypothesis, MED) | Reproduce first: links left by auto-match on a statement that `createReconciliation` refuses |
+| FU-26 | Process, not trust (652F D-4) | Merge-gate classification: let `backend/db/*.md` (and any other docs under a code area) count as docs-only in `.claude/hooks/pre-pr-merge-gate.sh:191`, `scripts/check-verify-markers.sh:121` and `.claude/markers/README.md:17`. Today any `backend/` path demands a backend verify marker on the PR head, which conflicts with task 652.35 calling the exit PR "docs-only" while naming `backend/db/BASELINE.md` |
+| FU-27 | Harness item (2) sub-cases (652F D-5) | One test-gap item: a test that unmatches a recoverable `BANK_CHARGE` through `assertMoves` (path 12), and a test that asserts the integrity flag on the seeded demo books' client in debit, not only its −R3 000,00 balance (path 11) |
 
-The text of existing follow-ups would also change: FU-1 marked as delivered by #1799; FU-3 naming the 650A report read and the 652D account choice; FU-6 naming the step-4 leftover statement. The 111 unassigned LOW rows stay in the register; F-652E-8 (a vitest timeout) is one of them. Three LOW items are not in the register: F-652F-1 (a vitest timeout, test-only, appended to `$X/found.md` after the register was compiled), the 2 Javadoc lines that still say `_pinsKnownDefect` (`$X/harness.md`), and the 652C #1817 marker caveat (C.2).
+The text of existing follow-ups would also change: FU-1 marked as delivered by #1799; FU-3 naming the 650A report read and the 652D account choice; FU-6 naming the step-4 leftover statement. The 104 unassigned LOW rows stay in the register; F-652E-8 and F-652F-1 (two vitest timeouts) are among them. Two LOW items are not in the register: the 2 Javadoc lines that still say `_pinsKnownDefect` (`$X/harness.md`), and the 652C #1817 marker caveat (C.2).
 
 ### C.9 Correction procedure for a posted calculated interest run
 
-The text is in [`$X/registers.md` § 3](../qa_cycle/evidence/phase92-exit/registers.md). It is ≤ 40 lines, so it is repeated in full here:
+The text is in [`$X/registers.md` § 3](../qa_cycle/evidence/phase92-exit/registers.md). It is ≤ 45 lines, so it is repeated in full here (the two copies are identical):
 
 
 > **Not legal advice.** A working procedure for the firm's attorney to adapt. Under the legal-basis rule (founder
@@ -1012,25 +1016,31 @@ the bank credited it.
    credited postings: client credits (`INTEREST_CREDIT`), Fund entries (`INTEREST_LPFF`), dates, amounts, clients,
    matters. List every later entry that relied on them, such as a payment or fee transfer drawn from credited "interest",
    and every statement or portal view that showed them.
-2. **Remove the credits.** On a migrated Kazi schema, V16 has already deleted them. Where they still stand as ordinary
-   entries (re-keyed, or in a schema not yet migrated), reverse each with a contra reversal dated in the open period.
-   Never date one into a locked month: 650A flags that as `BACKDATED_AFTER_LOCK`. Give the reason "Calculated interest,
-   no bank evidence (s86(5))".
+2. **Remove the credits.** Precondition: the schema has the Phase 92 reversal model (V17, 649B). A schema not yet
+   migrated is migrated first; its V16 then deletes every `INTEREST_CREDIT` / `INTEREST_LPFF` posting, so those need no
+   entry. Where calculated interest still stands on the migrated schema as an ordinary entry (re-keyed under another
+   type), reverse each with a contra reversal dated in the open period, reason "Calculated interest, no bank evidence
+   (s86(5))". Never date one into a locked or already-reported month. Do not rely on 650A's `BACKDATED_AFTER_LOCK` flag
+   to catch that: it sees only months locked in Kazi after migration.
 3. **Record what the bank did.** For each s86(2) / s86(3) account, record the statement's interest line as Fund interest
    and the sweep line as the Fund sweep, using Record from statement. For each s86(4) investment, record each bank credit
    from the investment account's statement or bank advice: gross, Fund 5 %, net.
-4. **Money already paid out.** If a client was paid, or a fee transferred, out of credited interest, that client's ledger
-   is now in debit (`CLIENT_LEDGER_IN_DEBIT`). The money left the bank, so do not reverse it. The firm makes good the
-   shortfall from its business account, recorded as a deposit with a clear reference. The attorney decides whether a
-   Rule 54.14.10 / 54.14.11 report to the Council is due.
+4. **Money already paid out.** A payment or fee transfer drawn from credited interest does not by itself create a
+   shortfall. Check each affected client's ledger after step 2's removals (V16's deletions included). Only where it is
+   negative (`CLIENT_LEDGER_IN_DEBIT`) does the firm make good, and only that negative amount: a deposit from its
+   business account with a clear reference. The money left the bank, so do not reverse the payment. The attorney decides
+   whether a Rule 54.14.10 / 54.14.11 report to the Council is due.
 5. **Client records.** Regenerate the affected statements of account and client trust statements. Tell each affected
    client in writing that the earlier figures included interest that was not theirs. On a persistent database the portal
-   may still show old interest rows: no production path deletes them (`$X/defect-register.md` 646A obs-3, 648D F-2).
-   Engineering must replay the portal first.
+   may still show old interest rows, and replaying the portal does not remove them: `recomputeMatter` only upserts
+   (`$X/defect-register.md` 646A obs-3, 648D F-2). Engineering removes or rebuilds those rows in a controlled way under
+   a follow-up; until then they are an accepted residual, named as such to the client and the auditor.
 6. **Reconcile and lock.** Reconcile the open month (the full equation; completion gate G1–G4). Confirm that every
    integrity flag is explained. Lock the Rule 54.15 list. A locked month cannot be reopened or unlocked (out of scope),
-   so corrections are new postings in the open period, visible to the auditor in the after-lock schedule. Keep the
-   working papers for the Section 35 report.
+   so corrections are new postings dated in the open period. The after-lock schedule shows only postings dated on or
+   before the locked period end, so it does not show them. Direct the auditor to the open period's ledger and
+   reconciliation (the month in which the corrections are dated) and to the audit trail. Keep the working papers for
+   the Section 35 report.
 
 ### C.10 Evidence paths
 
@@ -1048,3 +1058,5 @@ the bank credited it.
 | 645.1 baseline | `qa_cycle/evidence/phase92/baseline/README.md` |
 | Decisions, rulings, follow-ups | `tasks/phase92-decisions.md` |
 | F-6 legal opinion | `qa_cycle/evidence/phase92/legal/F-6-opinion.md` |
+
+**Post-merge bookkeeping.** This PR (#1822) does not mark itself Done. The bookkeeping commit after it merges marks 652F **Done (PR #1822)** and Epic 652 **Done** in four places: the 652F slice detail row, the Implementation Order row, the Epic Overview (this file), and the Epic 652 row in `TASKS.md`. It does not touch `backend/db/BASELINE.md` (652F D-4; C.4).

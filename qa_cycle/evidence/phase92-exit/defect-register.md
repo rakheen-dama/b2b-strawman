@@ -37,14 +37,14 @@ merged into that row; the few never carried are in table N.
 
 ## Summary
 
-223 rows (sections A–H from the found.md files, the decisions log and §16.14.4; section N from the nested gate files).
+224 rows (sections A–H from the found.md files, the decisions log and §16.14.4; section N from the nested gate files).
 
 | Severity | FIXED | OPEN → FU-n | OPEN — unassigned | DECLINED | STRUCK | HYPOTHESIS | Total |
 |---|---|---|---|---|---|---|---|
 | HIGH | 14 | 3 | 0 | 0 | 0 | 1 | 18 |
 | MEDIUM | 28 | 7 | 8 | 0 | 0 | 2 | 45 |
-| LOW | 22 | 11 | 103 | 18 | 1 | 5 | 160 |
-| **Total** | 64 | 21 | 111 | 18 | 1 | 8 | 223 |
+| LOW | 22 | 11 | 104 | 18 | 1 | 5 | 161 |
+| **Total** | 64 | 21 | 112 | 18 | 1 | 8 | 224 |
 
 All 18 open HIGH and MEDIUM rows concern trust. No non-trust row is open at HIGH or MEDIUM.
 
@@ -54,13 +54,17 @@ line (→ FU-6), CF-3a (unassigned), CF-3b (unassigned), 648B F-1 (unassigned), 
 (unassigned), 648D F-5 (unassigned), 648F R-1 (→ FU-3), 649B S2 (→ FU-5), 649B W1 (→ FU-4), F-650C-1 (→ FU-12),
 F-652C-1 (→ FU-6).
 
-On exit-bar item (3), **FAIL**: the bar is 0 and the register holds 18. Ten of the 18 are already scheduled as
+**Under the rubric applied throughout: 21 open (5 HIGH, 16 MEDIUM).** CF-3a (MEDIUM → HIGH) and F-650C-2 (LOW → HIGH,
+→ FU-13) rise to HIGH; 648E F-4 and F-652E-3 (LOW → MEDIUM, both unassigned) rise to MEDIUM (note 4). The headline number
+stays 18, by the source-severity rule above; follow-up triage should start from 21.
+
+On exit-bar item (3), **FAIL**: the bar is 0 and the register holds 18 (21 under the rubric). Ten of the 18 are already scheduled as
 follow-ups by the founder ruling of 2026-11-18. That ruling defers them; it does not close them.
 
 **Unreproduced trust hypotheses that would be HIGH or MEDIUM if reproduced: 3. They are not counted above.** 647C #2 /
 649B F2 (HIGH: the client-ledger history running balance), HF-7 (MEDIUM: a contra auto-matched to an unrelated line),
 646C O-2 (MEDIUM: links left by auto-match on a refused statement). The mechanism of the first two is visible in the code
-on `main` (cited in their rows). If the verdict counts them, the total is 21.
+on `main` (cited in their rows). If the verdict counts them, the total is 21 by source severity (24 under the rubric).
 
 **Notes for the closure report**
 
@@ -77,7 +81,7 @@ on `main` (cited in their rows). If the verdict counts them, the total is 21.
 4. **Source severity kept where the rubric reads higher:** CF-3a MEDIUM (src; rubric HIGH, corrupted reconciliation state),
    F-650C-2 LOW (src; rubric HIGH, a Section 35 figure), 648E F-4 LOW (src; rubric MEDIUM), F-652E-3 LOW (src; rubric
    MEDIUM). Raising CF-3a would move one open row from MEDIUM to HIGH; raising the other three would add 3 to the open
-   total (21, or 24 with the hypotheses).
+   total: 21 (5 HIGH, 16 MEDIUM), or 24 with the hypotheses. All four rows are trust rows and open.
 5. **Placed LOW because the precondition is API-only today:** 652D (i) (two open GENERAL accounts for one client; rubric
    HIGH), F-652D-O3 (rubric MEDIUM), 652D (iii), §16.14.4 #9. They become real once a UI can close an account or post to a
    non-primary GENERAL account.
@@ -327,6 +331,7 @@ on `main` (cited in their rows). If the verdict counts them, the total is 21.
 | F-652E-6 | `$X/found.md` | Dashboard "Trust balance trend" chart rendered as an empty box in the evidence screenshot | No | LOW (src) | HYPOTHESIS — unverified |
 | F-652E-7 | `$X/found.md` | Transient duplicate `#param-dateFrom` input on a report page load (seen once) | No | LOW (src) | HYPOTHESIS — unverified (not reproduced in 12 probe loads) |
 | F-652E-8 | `$X/found.md` | Vitest timing flake in `trust-balance-trend-chart.test.tsx` | No | LOW (src) | OPEN — unassigned |
+| F-652F-1 | `$X/found.md` | Vitest timeout in `dark-mode-contrast-guard.test.ts` D-3 case under a concurrent Maven verify | No | LOW (src) | OPEN — unassigned |
 
 ## H. Decisions log and architecture §16.14.4 (not in a found.md)
 

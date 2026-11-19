@@ -66,22 +66,28 @@ the bank credited it.
    credited postings: client credits (`INTEREST_CREDIT`), Fund entries (`INTEREST_LPFF`), dates, amounts, clients,
    matters. List every later entry that relied on them, such as a payment or fee transfer drawn from credited "interest",
    and every statement or portal view that showed them.
-2. **Remove the credits.** On a migrated Kazi schema, V16 has already deleted them. Where they still stand as ordinary
-   entries (re-keyed, or in a schema not yet migrated), reverse each with a contra reversal dated in the open period.
-   Never date one into a locked month: 650A flags that as `BACKDATED_AFTER_LOCK`. Give the reason "Calculated interest,
-   no bank evidence (s86(5))".
+2. **Remove the credits.** Precondition: the schema has the Phase 92 reversal model (V17, 649B). A schema not yet
+   migrated is migrated first; its V16 then deletes every `INTEREST_CREDIT` / `INTEREST_LPFF` posting, so those need no
+   entry. Where calculated interest still stands on the migrated schema as an ordinary entry (re-keyed under another
+   type), reverse each with a contra reversal dated in the open period, reason "Calculated interest, no bank evidence
+   (s86(5))". Never date one into a locked or already-reported month. Do not rely on 650A's `BACKDATED_AFTER_LOCK` flag
+   to catch that: it sees only months locked in Kazi after migration.
 3. **Record what the bank did.** For each s86(2) / s86(3) account, record the statement's interest line as Fund interest
    and the sweep line as the Fund sweep, using Record from statement. For each s86(4) investment, record each bank credit
    from the investment account's statement or bank advice: gross, Fund 5 %, net.
-4. **Money already paid out.** If a client was paid, or a fee transferred, out of credited interest, that client's ledger
-   is now in debit (`CLIENT_LEDGER_IN_DEBIT`). The money left the bank, so do not reverse it. The firm makes good the
-   shortfall from its business account, recorded as a deposit with a clear reference. The attorney decides whether a
-   Rule 54.14.10 / 54.14.11 report to the Council is due.
+4. **Money already paid out.** A payment or fee transfer drawn from credited interest does not by itself create a
+   shortfall. Check each affected client's ledger after step 2's removals (V16's deletions included). Only where it is
+   negative (`CLIENT_LEDGER_IN_DEBIT`) does the firm make good, and only that negative amount: a deposit from its
+   business account with a clear reference. The money left the bank, so do not reverse the payment. The attorney decides
+   whether a Rule 54.14.10 / 54.14.11 report to the Council is due.
 5. **Client records.** Regenerate the affected statements of account and client trust statements. Tell each affected
    client in writing that the earlier figures included interest that was not theirs. On a persistent database the portal
-   may still show old interest rows: no production path deletes them (`defect-register.md` 646A obs-3, 648D F-2).
-   Engineering must replay the portal first.
+   may still show old interest rows, and replaying the portal does not remove them: `recomputeMatter` only upserts
+   (`$X/defect-register.md` 646A obs-3, 648D F-2). Engineering removes or rebuilds those rows in a controlled way under
+   a follow-up; until then they are an accepted residual, named as such to the client and the auditor.
 6. **Reconcile and lock.** Reconcile the open month (the full equation; completion gate G1–G4). Confirm that every
    integrity flag is explained. Lock the Rule 54.15 list. A locked month cannot be reopened or unlocked (out of scope),
-   so corrections are new postings in the open period, visible to the auditor in the after-lock schedule. Keep the
-   working papers for the Section 35 report.
+   so corrections are new postings dated in the open period. The after-lock schedule shows only postings dated on or
+   before the locked period end, so it does not show them. Direct the auditor to the open period's ledger and
+   reconciliation (the month in which the corrections are dated) and to the audit trail. Keep the working papers for
+   the Section 35 report.

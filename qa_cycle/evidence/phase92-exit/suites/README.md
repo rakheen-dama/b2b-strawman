@@ -28,6 +28,16 @@
 
 The E2E log paths are where the runner's output goes once it is copied into this folder. On the run host the runner writes it to `/tmp/652F/suites/<same name>`, with `runner.txt` as the timeline.
 
+## The runner script is evidence, not a gate
+
+[`run-suites.sh`](run-suites.sh) is kept exactly as it ran; its logic is not changed after the run, because it is the
+record of what actually ran. It has two gaps (CodeRabbit round 1, PR #1822): it did not gate a suite on setup failure
+(`e2e-up`'s return code is logged but not checked, and the health wait gives up silently), and it did not propagate suite failures to its exit
+code or to `ALL.done` (each suite's rc is only logged, and `ALL.done` is written unconditionally). For this run the
+orchestrator checked each stage by hand from `runs/runner.txt`: every `e2e-up rc=0`, and every suite `rc=0`, with each
+suite's count read from its own log (`runs/A-exit-month.txt` … `runs/E-portal.txt`, the counts in the table above). Any
+reuse of the script must add those gates first. The same note is a comment block at the top of the script.
+
 ## Fresh stacks
 
 - **One suite per stack.** Before each of A–E: `bash compose/scripts/e2e-down.sh && bash compose/scripts/e2e-up.sh` from the worktree. `e2e-down` wipes the volumes; `e2e-reseed.sh` does not wipe, so it was not used. The stack is built from the worktree's source, which is the `main` `b08a8916a` product tree. The runner then waits until `:8081/actuator/health` and `:3001/` answer.

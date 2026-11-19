@@ -1,9 +1,0 @@
-# Trust Creditors List (Rule 54.15)
-# Generated: 2026-11-19T04:02:55.959693634Z
-# Parameters: asOfDate=2026-09-30
-Trust Creditor,General Balance,Invested (s86(4)),Total,Received,Bank Description,Source
-Acme Corp,10000.00,0.00,10000.00,,,Locked 19 November 2026 by Alice Owner
-Legal Practitioners' Fidelity Fund — interest and charges,0.00,0.00,41.45,,,Locked 19 November 2026 by Alice Owner
-Eft credit unknown remitter,0.00,0.00,600.00,2026-08-12,Eft credit unknown remitter,Locked 19 November 2026 by Alice Owner
-Eft credit no reference,0.00,0.00,750.00,2026-09-25,Eft credit no reference,Locked 19 November 2026 by Alice Owner
-Eft credit estate payer,0.00,0.00,200.00,2026-09-26,Eft credit estate payer,Locked 19 November 2026 by Alice Owner

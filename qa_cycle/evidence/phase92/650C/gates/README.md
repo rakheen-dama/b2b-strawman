@@ -145,3 +145,7 @@ Cashbook R 11 591,45; Fund R 41,45; unidentified R 1 350,00; Acme R 10 200,00. T
 - The run-1 "Not exercised" list still applies.
 
 **Stack state left behind (UP).** It is the same shape as at the end of run 1, with run tag `0WYGG`. Cashbook R 11 591,45; Fund R 41,45; unidentified R 1 350,00; Acme R 10 200,00; one COMPLETED reconciliation to 30 Sep 2026 with the September list locked; the September memo; UNK3 ALLOCATED on 15 Oct 2026. Wipe the stack before E2E-LEGAL.
+
+---
+
+**Archive note (orchestrator, 2026-11-19, before merge).** To keep PR #1809 under GitHub's 300-file diff limit (the merge-gate hook classifies a PR through `gh pr diff --name-only`, which returns HTTP 406 above 300 files), the raw report exports cited above — every `*.pdf`, `*.pdf.txt`, `*-preview*.txt`, `*.html`, `*.csv` (except the `b-statement-*.csv` inputs) and `*.out` file — are packed unchanged into `obs/raw-exports.tar.gz` (66 files) and `obs-r2/raw-exports.tar.gz` (78 files). Paths cited as `obs/<file>` / `obs-r2/<file>` resolve inside those archives (`tar -xzf raw-exports.tar.gz <file>`). Screenshots, page renders (PNG), `api-*.json`, `sql-*.txt` and `result-*.json` remain loose.

@@ -4,3 +4,4 @@ testcases: 7420
 files with <failure|<error: 0
 skipped: 26
 report files: 858
+spotless:check (run before the verify, same tree): exit 0

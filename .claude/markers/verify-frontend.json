@@ -1,7 +1,7 @@
 {
-  "commit": "733b8352f7b3cde138ec21a6e4a677c181486937",
+  "commit": "ebb1b0eb861bf4e4bb15e1f5421e22ba8211d8e3",
   "command": "cd frontend && rm -rf .next && pnpm run lint && pnpm typecheck && pnpm run format:check && pnpm test && pnpm run build",
   "exit": 0,
-  "ts": "2026-11-19T04:42:12Z",
-  "summary": "650C PR #1809 (frontend unchanged 733b8352f..dcd3eb277, evidence only): lint 0 errors / 78 warnings (baseline), typecheck ok, format:check ok, vitest 485 files / 4594 passed / 2 skipped, build ok; CI Frontend pass @dcd3eb277"
+  "ts": "2026-11-19T06:06:42Z",
+  "summary": "651C PR #1810 (frontend unchanged ebb1b0eb8..af76914fb, evidence only): lint 0 errors / 77 warnings, typecheck ok, format:check ok, vitest 482 files / 4563 passed / 2 skipped, build ok (node v20.11.1, orchestrator re-run); CI Frontend pass @ebb1b0eb8"
 }

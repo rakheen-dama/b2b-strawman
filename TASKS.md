@@ -739,7 +739,7 @@
 | 648 | Investments On the Books — Investment Accounts, Placement and Withdrawal, Interest Per Investment, Client-Facing Surfaces (E4) | Backend + Frontend + Portal + template pack | 646D; 647A for 648B | XL | 648C, 648A, 648E, 648B, 648D, 648F (6 verifies) || 648C **Done** (PR #1798); 648A **Done** (PR #1799); 648E **Done** (PR #1800); 648B **Done** (PR #1801); 648D **Done** (PR #1802); 648F **Done** (PR #1803) — **Epic 648 Done** |
 | 649 | Invariant Harness, Reversal Correctness, Integrity Check and Completion Gate (E5) | Backend tests; Backend + Frontend | 645A for 649A; 646A for 649B; 647D + 648B for 649C | L | 649A, 649B, 649C (3 verifies) | 649A **Done** (PR #1787); 649B **Done** (PR #1789); 649C **Done** (PR #1804) — **Epic 649 Done** |
 | 650 | Rule 54.15 Monthly List and Lock, Rule 54.28 Schedule, Memo Records, Report Pack v4 (E6) | Backend + Frontend (together) | 649C | L | 650A, 650D, 650B, 650C (4 verifies) || 650A **Done** (PR #1806) · 650D **Done** (PR #1807) · 650B **Done** (PR #1808) · 650C **Done** (PR #1809) · **Done** |
-| 651 | Remove the Calculated Interest Run — Screens, Engine, Rates, Docs, Scenario Amendments (E7) | Frontend; Backend; Docs | 650C | L | 651C, 651A, 651E, 651D, 651B (2 verifies) | |
+| 651 | Remove the Calculated Interest Run — Screens, Engine, Rates, Docs, Scenario Amendments (E7) | Frontend; Backend; Docs | 650C | L | 651C, 651A, 651E, 651D, 651B (2 verifies) | 651C **Done** (PR #1810) |
 | 652 | Wizard and Import Defects (reproduce first) and the Exit Gate — the Balanced Month (E8) | Frontend; Backend; e2e; QA / Docs | per slice; 652E after every code slice; 652F last | L | 652A, 652B, 652C, 652D, 652G (all CONDITIONAL), 652E, 652F (0 verifies + up to 3) | |
 
 

@@ -35,3 +35,21 @@ Observations (pre-existing or harness, outside the slice; reported, not fixed he
   "A memo can be saved for this month or an earlier one, not for …") therefore never reach the dialog in
   normal use. They are covered by `TrustInterestMemoIntegrationTest`. The dialog's inline error path was
   observed with an aborted request instead ("An unexpected error occurred", g).
+
+Found outside OBS (orchestrator, from Backend CI on `fb900e5e3`):
+
+- **F-CI-1 — fixed in `c0c3a69df` (650B): the memo response returned a timestamp more precise than the stored one.**
+  On Linux, `Instant.now()` has nanosecond precision, but `timestamptz` stores microseconds. So the first
+  save's response carried `…20.386551655Z`, while the stored value (and the correction's response) was
+  `…20.386552Z`. macOS clocks tick in microseconds, so the local targeted run passed. The fix truncates to
+  `ChronoUnit.MICROS` in `@PrePersist` and `@PreUpdate`, following `PortalNotificationPreference`, and the test now
+  pins store precision.
+- **O-CI-1 — the same pattern elsewhere; reported here, not changed in 650B.** Other entities stamp an
+  untruncated `Instant.now()` or `clock.instant()` and return it from the save response:
+  - Phase 92: `creditor/UnidentifiedDeposit`, `creditor/TrustCreditorAccount`, `investment/TrustInvestmentInterest`,
+    and `books/TrustMonthlyList.lockedAt` (`TrustMonthlyListService` `clock.instant()`).
+  - Older trust entities: `TrustAccount`, `BankStatement`, `BankStatementLine`, `TrustReconciliation`, `TrustTransaction`,
+    `ClientLedgerCard`, `InterestRun`, `InterestAllocation`, `InterestAllocationLine`, `TrustInvestment`.
+
+  No test compares them, so nothing fails today. A client that compares a save response with a later read
+  would see a mismatch. Follow-up candidate: one shared micros-truncating clock/stamp helper (→ decisions log).

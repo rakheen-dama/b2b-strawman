@@ -22,6 +22,7 @@ import {
   fetchLockedMonths,
   saveInterestMemo,
 } from "@/app/(app)/org/[slug]/trust-accounting/other-creditors/actions";
+import { saveInterestMemoSchema } from "@/lib/schemas/trust";
 
 /**
  * Phase 92 650B (ADR-384): the memo server actions call the pinned endpoints — the PUT carries
@@ -85,5 +86,24 @@ describe("interest and charges memo actions (650B)", () => {
     ]);
     expect(await fetchLockedMonths("acc-1")).toEqual(["2026-10", "2026-02"]);
     expect(mockGet).toHaveBeenLastCalledWith("/api/trust-accounts/acc-1/monthly-lists");
+  });
+});
+
+describe("saveInterestMemoSchema month bounds (650B)", () => {
+  const values = (month: string) => ({
+    month,
+    grossInterest: 1,
+    grossCharges: 0,
+    chargesVat: 0,
+    sourceNote: "FNB advice",
+  });
+
+  it("refuses a month before January 1900 (the list reads years from 1900), and takes January 1900", () => {
+    const early = saveInterestMemoSchema.safeParse(values("1899-12"));
+    expect(early.success).toBe(false);
+    expect(early.error?.issues.map((i) => i.message)).toContain(
+      "A memo can be saved for January 1900 or a later month"
+    );
+    expect(saveInterestMemoSchema.safeParse(values("1900-01")).success).toBe(true);
   });
 });

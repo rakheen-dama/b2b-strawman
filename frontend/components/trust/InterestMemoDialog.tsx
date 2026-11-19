@@ -25,7 +25,10 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { saveInterestMemo } from "@/app/(app)/org/[slug]/trust-accounting/other-creditors/actions";
+import {
+  fetchInterestMemos,
+  saveInterestMemo,
+} from "@/app/(app)/org/[slug]/trust-accounting/other-creditors/actions";
 import { saveInterestMemoSchema, type SaveInterestMemoFormData } from "@/lib/schemas/trust";
 import type { InterestMemo } from "@/lib/types";
 
@@ -39,6 +42,11 @@ interface InterestMemoDialogProps {
   memo?: InterestMemo;
   /** The shown year's memos — record mode says so when the chosen month already has one. */
   existing: InterestMemo[];
+  /**
+   * The year `existing` belongs to. Record mode loads the memos of any other chosen year itself
+   * (`fetchInterestMemos`, cached per year while the dialog is open); without it, every year loads.
+   */
+  existingYear?: number;
   /** Months (yyyy-MM) whose Rule 54.15 list is locked (650A). */
   lockedMonths: string[];
   triggerLabel: ReactNode;
@@ -54,6 +62,19 @@ export function monthLabel(yyyyMm: string): string {
     month: "long",
     year: "numeric",
   });
+}
+
+/** A memo month (yyyy-MM) is from January 1900 (the list reads years from 1900). */
+const EARLIEST_MONTH = "1900-01";
+
+/**
+ * Record mode: the memos of each other year chosen since the dialog opened ("loading" while in
+ * flight, "error" when they could not be loaded), tagged with the opening they belong to so a
+ * response from an earlier opening is dropped.
+ */
+interface OtherYears {
+  opening: number;
+  years: Record<number, InterestMemo[] | "loading" | "error">;
 }
 
 /** The month before today's month in South Africa (yyyy-MM). */
@@ -100,6 +121,7 @@ export function InterestMemoDialog({
   trustAccountId,
   memo,
   existing,
+  existingYear,
   lockedMonths,
   triggerLabel,
   triggerVariant = "outline",
@@ -110,6 +132,8 @@ export function InterestMemoDialog({
   const [isSubmitting, setIsSubmitting] = useState(false);
   // Radix only tracks a DialogTrigger, so the owned button restores focus itself on close.
   const triggerRef = useRef<HTMLButtonElement>(null);
+  // Record mode: the memos of the other years chosen since the dialog opened (D-21).
+  const [otherYears, setOtherYears] = useState<OtherYears>({ opening: 0, years: {} });
 
   const form = useForm<SaveInterestMemoFormData>({
     resolver: zodResolver(saveInterestMemoSchema),
@@ -118,7 +142,29 @@ export function InterestMemoDialog({
   // useWatch, not form.watch (React Compiler: 650D D-12).
   const month = useWatch({ control: form.control, name: "month" });
   const locked = Boolean(month) && lockedMonths.includes(month);
-  const replaces = !memo && existing.some((m) => m.periodMonth.slice(0, 7) === month);
+  const monthYear = Number(month?.slice(0, 4));
+  const yearMemos = monthYear === existingYear ? existing : otherYears.years[monthYear];
+  const replaces =
+    !memo && Array.isArray(yearMemos) && yearMemos.some((m) => m.periodMonth.slice(0, 7) === month);
+  const replaceUnknown = !memo && yearMemos === "error";
+
+  /**
+   * Record mode: loads the memos of `yyyyMm`'s year when it is not the shown year — once per
+   * opening; a failed load is retried when the year is chosen again.
+   */
+  function loadYearOf(yyyyMm: string, state: OtherYears = otherYears) {
+    if (memo || !/^\d{4}-(0[1-9]|1[0-2])$/.test(yyyyMm) || yyyyMm < EARLIEST_MONTH) return;
+    const year = Number(yyyyMm.slice(0, 4));
+    const cached = state.years[year];
+    if (year === existingYear || (cached !== undefined && cached !== "error")) return;
+    const { opening } = state;
+    const settle = (value: InterestMemo[] | "loading" | "error") =>
+      setOtherYears((prev) =>
+        prev.opening === opening ? { opening, years: { ...prev.years, [year]: value } } : prev
+      );
+    settle("loading");
+    fetchInterestMemos(trustAccountId, year).then(settle, () => settle("error"));
+  }
 
   function handleOpenChange(next: boolean) {
     // Escape / overlay / X while a request is in flight: stay open so its outcome is shown.
@@ -131,7 +177,12 @@ export function InterestMemoDialog({
     if (next) {
       // Fresh values on every open (the previous month as of the opening; the memo's latest figures).
       setError(null);
-      form.reset(defaults(memo));
+      const values = defaults(memo);
+      form.reset(values);
+      // Other years' memos may have changed since the last opening: load them afresh.
+      const fresh: OtherYears = { opening: otherYears.opening + 1, years: {} };
+      setOtherYears(fresh);
+      loadYearOf(values.month, fresh);
     }
   }
 
@@ -191,25 +242,115 @@ export function InterestMemoDialog({
 
           <Form {...form}>
             <form noValidate onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-              {memo ? (
-                <div className="space-y-1">
-                  <p className="text-sm font-medium">Month</p>
-                  <p className="text-sm" data-testid="interest-memo-month-fixed">
-                    {monthLabel(memo.periodMonth)}
+              {/* Every field is read-only while the save is in flight; a refusal re-enables them. */}
+              <fieldset
+                disabled={isSubmitting}
+                className="space-y-4"
+                data-testid="interest-memo-fields"
+              >
+                {memo ? (
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium">Month</p>
+                    <p className="text-sm" data-testid="interest-memo-month-fixed">
+                      {monthLabel(memo.periodMonth)}
+                    </p>
+                  </div>
+                ) : (
+                  <FormField
+                    control={form.control}
+                    name="month"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Month</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="month"
+                            min={EARLIEST_MONTH}
+                            max={todayInSA().slice(0, 7)}
+                            data-testid="interest-memo-month"
+                            {...field}
+                            onChange={(e) => {
+                              field.onChange(e);
+                              loadYearOf(e.target.value);
+                            }}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+
+                {locked && (
+                  // Informational, not a warning: role="status" (the Alert primitive defaults to "alert").
+                  <Alert role="status" data-testid="interest-memo-locked-note">
+                    <Info />
+                    <AlertDescription>{LOCKED_MONTH_MEMO_NOTE}</AlertDescription>
+                  </Alert>
+                )}
+                {replaces && (
+                  <p
+                    role="status"
+                    className="text-sm text-slate-500 dark:text-slate-400"
+                    data-testid="interest-memo-replaces-note"
+                  >
+                    A memo for {monthLabel(month)} is already saved. Saving replaces its figures;
+                    the previous figures stay in the audit trail.
                   </p>
-                </div>
-              ) : (
+                )}
+                {replaceUnknown && (
+                  <p
+                    role="status"
+                    className="text-sm text-slate-500 dark:text-slate-400"
+                    data-testid="interest-memo-replaces-unknown-note"
+                  >
+                    Could not check whether a memo for {monthLabel(month)} is already saved. If one
+                    is, saving replaces its figures; the previous figures stay in the audit trail.
+                  </p>
+                )}
+
+                {AMOUNT_FIELDS.map((amount) => (
+                  <FormField
+                    key={amount.name}
+                    control={form.control}
+                    name={amount.name}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{amount.label}</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            data-testid={amount.testId}
+                            name={field.name}
+                            ref={field.ref}
+                            onBlur={field.onBlur}
+                            value={field.value ?? ""}
+                            onChange={(e) =>
+                              field.onChange(
+                                e.target.value === "" ? undefined : parseFloat(e.target.value)
+                              )
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                ))}
+
                 <FormField
                   control={form.control}
-                  name="month"
+                  name="sourceNote"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Month</FormLabel>
+                      <FormLabel>Where the figures come from</FormLabel>
                       <FormControl>
-                        <Input
-                          type="month"
-                          max={todayInSA().slice(0, 7)}
-                          data-testid="interest-memo-month"
+                        <Textarea
+                          maxLength={500}
+                          placeholder="e.g. the bank's interest advice reference or the Fund statement"
+                          data-testid="interest-memo-source"
                           {...field}
                         />
                       </FormControl>
@@ -217,75 +358,7 @@ export function InterestMemoDialog({
                     </FormItem>
                   )}
                 />
-              )}
-
-              {locked && (
-                // Informational, not a warning: role="status" (the Alert primitive defaults to "alert").
-                <Alert role="status" data-testid="interest-memo-locked-note">
-                  <Info />
-                  <AlertDescription>{LOCKED_MONTH_MEMO_NOTE}</AlertDescription>
-                </Alert>
-              )}
-              {replaces && (
-                <p
-                  role="status"
-                  className="text-sm text-slate-500 dark:text-slate-400"
-                  data-testid="interest-memo-replaces-note"
-                >
-                  A memo for {monthLabel(month)} is already saved. Saving replaces its figures; the
-                  previous figures stay in the audit trail.
-                </p>
-              )}
-
-              {AMOUNT_FIELDS.map((amount) => (
-                <FormField
-                  key={amount.name}
-                  control={form.control}
-                  name={amount.name}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{amount.label}</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          data-testid={amount.testId}
-                          name={field.name}
-                          ref={field.ref}
-                          onBlur={field.onBlur}
-                          value={field.value ?? ""}
-                          onChange={(e) =>
-                            field.onChange(
-                              e.target.value === "" ? undefined : parseFloat(e.target.value)
-                            )
-                          }
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              ))}
-
-              <FormField
-                control={form.control}
-                name="sourceNote"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Where the figures come from</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        maxLength={500}
-                        placeholder="e.g. the bank's interest advice reference or the Fund statement"
-                        data-testid="interest-memo-source"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              </fieldset>
 
               {error && (
                 <p role="alert" className="text-sm text-red-600 dark:text-red-400">

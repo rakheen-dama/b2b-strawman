@@ -344,6 +344,7 @@ export default async function OtherTrustCreditorsPage({
                   <InterestMemoDialog
                     trustAccountId={accountId}
                     existing={memos}
+                    existingYear={memoYear}
                     lockedMonths={lockedMonths}
                     triggerLabel="Record memo"
                     triggerVariant="default"

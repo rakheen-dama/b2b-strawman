@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,6 +45,13 @@ public class TrustInterestMemoService {
 
   private static final String MODULE_ID = "trust_accounting";
   private static final String SAVE_TITLE = "Cannot save memo";
+
+  /** The earliest month a memo may be saved for — the first month {@link #list} can return. */
+  private static final YearMonth EARLIEST_MONTH = YearMonth.of(1900, 1);
+
+  /** The one-memo-per-account-and-month constraint ({@code V26}). */
+  private static final String ACCOUNT_MONTH_UNIQUE = "uq_trust_interest_memo_account_month";
+
   private static final DateTimeFormatter MONTH =
       DateTimeFormatter.ofPattern("MMMM yyyy", Locale.ENGLISH);
 
@@ -103,8 +111,9 @@ public class TrustInterestMemoService {
 
   /**
    * Saves the account's memo for {@code month}: creates it, or replaces the figures of the one
-   * already saved. Refuses a month after the current one and a VAT above the gross charges; never
-   * refuses a locked month (ADR-384).
+   * already saved. Refuses a month after the current one, a month before January 1900 (the list
+   * reads years from 1900) and a VAT above the gross charges; never refuses a locked month
+   * (ADR-384).
    */
   @Transactional
   public InterestMemoResponse save(
@@ -117,6 +126,15 @@ public class TrustInterestMemoService {
       throw new InvalidStateException(
           SAVE_TITLE,
           "A memo can be saved for this month or an earlier one, not for "
+              + month.format(MONTH)
+              + ".");
+    }
+    if (month.isBefore(EARLIEST_MONTH)) {
+      throw new InvalidStateException(
+          SAVE_TITLE,
+          "A memo can be saved for "
+              + EARLIEST_MONTH.format(MONTH)
+              + " or a later month, not for "
               + month.format(MONTH)
               + ".");
     }
@@ -161,7 +179,10 @@ public class TrustInterestMemoService {
                     sourceNote,
                     memberId));
       } catch (DataIntegrityViolationException e) {
-        // Another save for the same account and month committed first (uq_trust_interest_memo_*)
+        if (!violates(e, ACCOUNT_MONTH_UNIQUE)) {
+          throw e;
+        }
+        // Another save for the same account and month committed first
         throw new ResourceConflictException(
             "Memo saved at the same time",
             "Another member saved the memo for "
@@ -201,6 +222,17 @@ public class TrustInterestMemoService {
         memberNameResolver.resolveNames(
             memos.stream().map(TrustInterestMemo::getRecordedBy).collect(Collectors.toSet()));
     return memos.stream().map(m -> toResponse(m, names.get(m.getRecordedBy()))).toList();
+  }
+
+  /** Whether {@code e} was raised by the database constraint named {@code constraint}. */
+  private static boolean violates(DataIntegrityViolationException e, String constraint) {
+    for (Throwable t = e; t != null; t = t.getCause()) {
+      if (t instanceof ConstraintViolationException violation
+          && constraint.equalsIgnoreCase(violation.getConstraintName())) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private static BigDecimal money(BigDecimal value) {

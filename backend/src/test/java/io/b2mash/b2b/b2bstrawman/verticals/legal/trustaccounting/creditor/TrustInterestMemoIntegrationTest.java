@@ -8,9 +8,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.jayway.jsonpath.JsonPath;
+import com.zaxxer.hikari.HikariDataSource;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEvent;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
@@ -20,10 +22,14 @@ import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness.Expected;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.IntegrityFlag;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustIntegrityService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustIntegrityService.TrustIntegrityReport;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.TrustInterestMemoService.SaveInterestMemoRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService.BankStatementResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService.TrustReconciliationResponse;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -31,6 +37,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.LockSupport;
+import javax.sql.DataSource;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -39,6 +50,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -100,6 +112,8 @@ class TrustInterestMemoIntegrationTest {
   @Autowired private AuditEventRepository auditEventRepository;
   @Autowired private JdbcTemplate jdbc;
   @Autowired private Clock clock;
+  @Autowired private TrustInterestMemoService memoService;
+  @Autowired private DataSource dataSource;
 
   private TrustBooksFixture.Tenant books;
   private UUID ownerId;
@@ -406,15 +420,20 @@ class TrustInterestMemoIntegrationTest {
   void refusals_areProblemDetails_andSaveNothing() throws Exception {
     var account = books.freshAccount(false);
 
-    validation(putMemo(account, "2026-01", body("-0.01", "0.00", "0.00", "Negative")));
-    validation(putMemo(account, "2026-01", body("1.00", "10.005", "0.00", "Three places")));
-    validation(putMemo(account, "2026-01", body("1.00", "0.00", "0.00", "   ")));
-    validation(putMemo(account, "2026-01", body("1.00", "0.00", "0.00", "x".repeat(501))));
+    validation(
+        putMemo(account, "2026-01", body("-0.01", "0.00", "0.00", "Negative")), "grossInterest");
+    validation(
+        putMemo(account, "2026-01", body("1.00", "10.005", "0.00", "Three places")),
+        "grossCharges");
+    validation(putMemo(account, "2026-01", body("1.00", "0.00", "0.00", "   ")), "sourceNote");
+    validation(
+        putMemo(account, "2026-01", body("1.00", "0.00", "0.00", "x".repeat(501))), "sourceNote");
     validation(
         putMemo(
             account,
             "2026-01",
-            "{\"grossCharges\":0.00,\"chargesVat\":0.00,\"sourceNote\":\"No interest\"}"));
+            "{\"grossCharges\":0.00,\"chargesVat\":0.00,\"sourceNote\":\"No interest\"}"),
+        "grossInterest");
     refused(
         putMemo(account, "2026-01", body("1.00", "10.00", "20.00", "VAT above")),
         "Cannot save memo",
@@ -426,10 +445,15 @@ class TrustInterestMemoIntegrationTest {
         "A memo can be saved for this month or an earlier one, not for "
             + next.format(DateTimeFormatter.ofPattern("MMMM yyyy", Locale.ENGLISH))
             + ".");
-    putMemo(account, "2026-13", body("1.00", "0.00", "0.00", "Malformed"))
-        .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.status").value(400))
-        .andExpect(jsonPath("$.title").value("Invalid parameter value"));
+    // Before January 1900: the list reads years from 1900, so such a memo could never be listed
+    refused(
+        putMemo(account, "1899-12", body("1.00", "0.00", "0.00", "Too early")),
+        "Cannot save memo",
+        "A memo can be saved for January 1900 or a later month, not for December 1899.");
+    refused(
+        putMemo(account, "2026-13", body("1.00", "0.00", "0.00", "Malformed")),
+        "Invalid parameter value",
+        "Parameter 'month' should be of type YearMonth");
     refused(
         mockMvc.perform(get(memosUrl(account) + "?year=1800").with(owner())),
         "Invalid year",
@@ -439,13 +463,118 @@ class TrustInterestMemoIntegrationTest {
     assertThat(memosOf(account, 2026, 1, 12)).isEmpty();
     assertThat(memosOf(account, next.getYear(), next.getMonthValue(), next.getMonthValue()))
         .isEmpty();
+    assertThat(memosOf(account, 1899, 12, 12)).isEmpty();
 
     // The boundary: the VAT equal to the charges, and the current month, are accepted
     var current = YearMonth.now(clock);
     var boundary =
         memoId(putMemo(account, current.toString(), body("0.00", "10.00", "10.00", "Boundary")));
+    var earliest = memoId(putMemo(account, "1900-01", body("1.00", "0.00", "0.00", "Earliest")));
+    mockMvc
+        .perform(get(memosUrl(account) + "?year=1900").with(owner()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(1))
+        .andExpect(jsonPath("$[0].id").value(earliest.toString()));
     assertThat(audits(boundary)).hasSize(1);
-    assertThat(auditCountForAccount(account)).isEqualTo(1);
+    assertThat(auditCountForAccount(account)).isEqualTo(2);
+  }
+
+  // --- the first-insert conflict (A-M1) ----------------------------------------------------------
+
+  /**
+   * Two first saves for the same account and month: a gate connection inserts the row and holds its
+   * transaction open; the service save does not see it (no memo yet), inserts, and blocks on the
+   * unique index — observed in {@code pg_stat_activity}, not a sleep — until the gate commits. The
+   * loser gets the 409, and the winner's figures stand.
+   */
+  @Test
+  void aFirstSaveRacingAnotherForTheSameMonth_isTheConflict_andTheWinnerStands() throws Exception {
+    var account = books.freshAccount(false);
+    var month = YearMonth.of(2026, 2);
+    var error = new AtomicReference<Throwable>();
+    var finished = new AtomicBoolean(false);
+    Thread saver;
+    var pool = dataSource.unwrap(HikariDataSource.class);
+    try (Connection gate =
+        DriverManager.getConnection(pool.getJdbcUrl(), pool.getUsername(), pool.getPassword())) {
+      gate.setAutoCommit(false);
+      int gatePid;
+      try (var st = gate.createStatement();
+          var rs = st.executeQuery("SELECT pg_backend_pid()")) {
+        rs.next();
+        gatePid = rs.getInt(1);
+      }
+      try (var ps =
+          gate.prepareStatement(
+              "INSERT INTO \""
+                  + books.schema()
+                  + "\".trust_interest_memos (trust_account_id, period_month, gross_interest,"
+                  + " source_note, recorded_by) VALUES (?, ?, 7.00, 'Winner', ?)")) {
+        ps.setObject(1, account);
+        ps.setObject(2, month.atDay(1));
+        ps.setObject(3, adminId);
+        ps.executeUpdate();
+      }
+      saver =
+          Thread.ofPlatform()
+              .start(
+                  () -> {
+                    try {
+                      books.as(ownerId, () -> memoService.save(account, month, request("Loser")));
+                    } catch (Throwable t) {
+                      error.set(t);
+                    } finally {
+                      finished.set(true);
+                    }
+                  });
+      try {
+        assertThat(awaitMemoInsertBlockedBy(gatePid, finished))
+            .as("the save blocked on the gate's uncommitted row")
+            .isTrue();
+      } finally {
+        gate.commit();
+      }
+    }
+    saver.join(30_000);
+    assertThat(saver.isAlive()).as("the save finished within 30 s").isFalse();
+
+    assertThat(error.get()).isInstanceOf(ResourceConflictException.class);
+    var problem = ((ResourceConflictException) error.get()).getBody();
+    assertThat(problem.getStatus()).isEqualTo(409);
+    assertThat(problem.getTitle()).isEqualTo("Memo saved at the same time");
+    assertThat(problem.getDetail())
+        .isEqualTo(
+            "Another member saved the memo for February 2026 on this trust account at the same"
+                + " time. Reload the page and try again.");
+    assertThat(memosOf(account, 2026, 2, 2))
+        .singleElement()
+        .satisfies(
+            m -> {
+              assertThat(m.getSourceNote()).isEqualTo("Winner");
+              assertThat(m.getGrossInterest()).isEqualByComparingTo("7.00");
+            });
+    assertThat(auditCountForAccount(account)).isZero();
+  }
+
+  /** Any other integrity failure on the first insert is not the concurrent-save conflict. */
+  @Test
+  void anotherIntegrityFailureOnTheFirstInsert_isNotMappedToTheConflict() {
+    var account = books.freshAccount(false);
+    var unknownMember = UUID.randomUUID(); // recorded_by references members(id)
+    var error = new AtomicReference<Throwable>();
+    books.as(
+        unknownMember,
+        () -> {
+          try {
+            memoService.save(account, YearMonth.of(2026, 1), request("No such member"));
+          } catch (Throwable t) {
+            error.set(t);
+          }
+        });
+    assertThat(error.get())
+        .isInstanceOf(DataIntegrityViolationException.class)
+        .hasMessageContaining("trust_interest_memos_recorded_by_fkey");
+    assertThat(memosOf(account, 2026, 1, 1)).isEmpty();
   }
 
   // --- helpers ----------------------------------------------------------------------------------
@@ -626,6 +755,11 @@ class TrustInterestMemoIntegrationTest {
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.status").value(403))
         .andExpect(jsonPath("$.title").value("Module not enabled"))
+        .andExpect(
+            jsonPath("$.detail")
+                .value(
+                    "This feature is not enabled for your organization. "
+                        + "An admin can enable it in Settings → Features."))
         .andExpect(jsonPath("$.moduleId").value("trust_accounting"));
   }
 
@@ -637,11 +771,43 @@ class TrustInterestMemoIntegrationTest {
         .andExpect(jsonPath("$.detail").value("No trustaccount found with id " + account));
   }
 
-  private static void validation(ResultActions result) throws Exception {
+  /** Bean validation refused exactly one field, {@code field}. */
+  private static void validation(ResultActions result, String field) throws Exception {
     result
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.status").value(400))
-        .andExpect(jsonPath("$.title").value("Validation failed"));
+        .andExpect(jsonPath("$.title").value("Validation failed"))
+        .andExpect(jsonPath("$.detail").value("1 field(s) have validation errors"))
+        .andExpect(jsonPath("$.fieldErrors.length()").value(1))
+        .andExpect(jsonPath("$.fieldErrors[0].field").value(field));
+  }
+
+  private static SaveInterestMemoRequest request(String sourceNote) {
+    return new SaveInterestMemoRequest(
+        new BigDecimal("1.00"), BigDecimal.ZERO, BigDecimal.ZERO, sourceNote);
+  }
+
+  /**
+   * Waits (bounded, 30 s) until a backend blocked by {@code holderPid} runs a trust_interest_memos
+   * statement (true) or the saver finishes without having been seen blocked (false).
+   */
+  private boolean awaitMemoInsertBlockedBy(int holderPid, AtomicBoolean finished) {
+    long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(30);
+    while (System.nanoTime() < deadline) {
+      Long blocked =
+          jdbc.queryForObject(
+              "SELECT count(*) FROM pg_stat_activity WHERE ? = ANY(pg_blocking_pids(pid))"
+                  + " AND query ILIKE '%trust_interest_memos%'",
+              Long.class, holderPid);
+      if (blocked != null && blocked > 0) {
+        return true;
+      }
+      if (finished.get()) {
+        return false;
+      }
+      LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(10)); // poll interval
+    }
+    throw new AssertionError("the save neither blocked nor finished within 30 s");
   }
 
   private static void refused(ResultActions result, String title, String detail) throws Exception {

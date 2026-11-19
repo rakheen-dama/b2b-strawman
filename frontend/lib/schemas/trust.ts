@@ -260,8 +260,8 @@ export const recordFromStatementSchemaFor = (chargeAmount: number) =>
 /**
  * 650B (ADR-384): one month's at-source memo — the Rule 54.28 gross interest and gross charges
  * (with the VAT included in them) that never reached the trust account, and where they came from.
- * The month is yyyy-MM, never after the current month in South Africa; the server is the
- * authority for every rule here.
+ * The month is yyyy-MM, from January 1900 (the list reads years from 1900) and never after the
+ * current month in South Africa; the server is the authority for every rule here.
  */
 const memoAmount = (label: string) =>
   z
@@ -274,6 +274,9 @@ export const saveInterestMemoSchema = z
     month: z
       .string()
       .regex(/^\d{4}-(0[1-9]|1[0-2])$/, "Choose the month")
+      .refine((m) => m >= "1900-01", {
+        message: "A memo can be saved for January 1900 or a later month",
+      })
       .refine((m) => m <= todayInSA().slice(0, 7), {
         message: "A memo can be saved for this month or an earlier one",
       }),

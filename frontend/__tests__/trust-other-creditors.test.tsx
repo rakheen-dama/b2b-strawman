@@ -1054,4 +1054,81 @@ describe("Other trust creditors page", () => {
     expect(lockedNote).toHaveTextContent("A memo is not part of the list");
     expect(within(dialog).queryByTestId("interest-memo-replaces-note")).not.toBeInTheDocument();
   });
+
+  it("says a month of another year already has a memo, loading that year once, and says so when it cannot check (D-21)", async () => {
+    const user = userEvent.setup();
+    const currentYear = Number(todayInSA().slice(0, 4));
+    const lastYear = currentYear - 1;
+    const failingYear = currentYear - 2;
+    mockFetchMyCapabilities.mockResolvedValue(MANAGER_CAPABILITIES);
+    mockFetchInterestMemos.mockImplementation(async (_account: string, year: number) => {
+      if (year === lastYear) return [memo({ id: "m-old", periodMonth: `${lastYear}-03-01` })];
+      if (year === failingYear) throw new Error("boom");
+      return [];
+    });
+    await renderPage();
+    const callsFor = (year: number) =>
+      mockFetchInterestMemos.mock.calls.filter(([, y]) => y === year).length;
+
+    await user.click(screen.getByTestId("record-interest-memo-btn"));
+    const dialog = await screen.findByTestId("interest-memo-dialog");
+    const monthInput = within(dialog).getByTestId("interest-memo-month");
+    expect(monthInput).toHaveAttribute("min", "1900-01");
+
+    // March of last year has a memo: the dialog loads last year's memos and says so.
+    fireEvent.change(monthInput, { target: { value: `${lastYear}-03` } });
+    expect(await within(dialog).findByTestId("interest-memo-replaces-note")).toHaveTextContent(
+      `A memo for March ${lastYear} is already saved`
+    );
+    expect(mockFetchInterestMemos).toHaveBeenCalledWith("acc-1", lastYear);
+
+    // April of last year has none: no note, and the year is not loaded again.
+    fireEvent.change(monthInput, { target: { value: `${lastYear}-04` } });
+    expect(within(dialog).queryByTestId("interest-memo-replaces-note")).not.toBeInTheDocument();
+    fireEvent.change(monthInput, { target: { value: `${lastYear}-03` } });
+    expect(within(dialog).getByTestId("interest-memo-replaces-note")).toBeInTheDocument();
+    expect(callsFor(lastYear)).toBe(1);
+
+    // A year whose memos cannot be loaded: a neutral note instead of silence.
+    fireEvent.change(monthInput, { target: { value: `${failingYear}-06` } });
+    expect(
+      await within(dialog).findByTestId("interest-memo-replaces-unknown-note")
+    ).toHaveTextContent(`Could not check whether a memo for June ${failingYear} is already saved`);
+    expect(within(dialog).queryByTestId("interest-memo-replaces-note")).not.toBeInTheDocument();
+  });
+
+  it("disables every field while the save is in flight, and re-enables them with the values kept on a refusal", async () => {
+    const user = userEvent.setup();
+    mockFetchMyCapabilities.mockResolvedValue(MANAGER_CAPABILITIES);
+    let settle: (result: { success: boolean; error?: string }) => void = () => {};
+    mockSaveInterestMemo.mockImplementation(() => new Promise((resolve) => (settle = resolve)));
+    await renderPage();
+
+    await user.click(screen.getByTestId("record-interest-memo-btn"));
+    const dialog = await screen.findByTestId("interest-memo-dialog");
+    const fields = [
+      "interest-memo-month",
+      "interest-memo-gross-interest",
+      "interest-memo-gross-charges",
+      "interest-memo-vat",
+      "interest-memo-source",
+    ].map((id) => within(dialog).getByTestId(id));
+    const interest = within(dialog).getByTestId("interest-memo-gross-interest");
+    await user.clear(interest);
+    await user.type(interest, "12.34");
+    await user.type(within(dialog).getByTestId("interest-memo-source"), "FNB advice");
+    await user.click(within(dialog).getByTestId("interest-memo-submit"));
+
+    await waitFor(() => expect(mockSaveInterestMemo).toHaveBeenCalled());
+    for (const field of fields) expect(field).toBeDisabled();
+
+    settle({
+      success: false,
+      error: "The VAT cannot be more than the gross charges it is included in.",
+    });
+    expect(await within(dialog).findByRole("alert")).toHaveTextContent("The VAT cannot be more");
+    for (const field of fields) expect(field).toBeEnabled();
+    expect(interest).toHaveValue(12.34);
+    expect(within(dialog).getByTestId("interest-memo-source")).toHaveValue("FNB advice");
+  });
 });

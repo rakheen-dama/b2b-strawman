@@ -27,9 +27,10 @@ import org.springframework.stereotype.Component;
 
 /**
  * The Rule 54.15 trust creditors list (Phase 92 650A, architecture §16.8.1, ADR-382) — the {@code
- * client-trust-balances} slug, evolved rather than paralleled. Query internals only: the report
- * definition (columns, name, parameters) is edited in 650C, so every v3 column is still on every
- * row.
+ * client-trust-balances} slug, evolved rather than paralleled. The v4 report definition (650C)
+ * shows {@code clientName}, {@code generalBalance}, {@code investedBalance}, {@code balance},
+ * {@code receivedDate}, {@code bankDescription} and {@code sourceNote}; every v3 key is still on
+ * every row (callers and tests read them), and no code ({@code kind}, {@code source}) is a column.
  *
  * <p>Parameters: {@code trust_account_id} (optional — omitted means firm-wide, every trust account
  * of the firm) and {@code asOfDate} (optional, today when absent; a month end to obtain locked
@@ -56,6 +57,13 @@ public class ClientTrustBalancesQuery implements ReportQuery {
   static final String LIVE_NOTE =
       "Not locked — this account's reconciliation for the month is not complete";
   static final String TRUST_CASH_NOTE = "Trust cash is not recorded in Kazi";
+
+  // Summary keys another query reads (Section35DataPackQuery, B-M3): one definition, both sides
+  static final String ACCOUNTS = "accounts";
+  static final String SOURCE_NOTE = "sourceNote";
+  static final String AFTER_LOCK = "afterLock";
+  static final String AFTER_LOCK_NET = "afterLockNet";
+  static final String PERIOD_END = "periodEnd";
   static final String INTER_ACCOUNT_NOTE =
       "Section 86(3) placements net to nil across the trust accounts and are not listed as a"
           + " creditor.";
@@ -372,7 +380,7 @@ public class ClientTrustBalancesQuery implements ReportQuery {
       a.put("accountName", account.getAccountName());
       a.put("accountType", account.getAccountType().name());
       a.put("source", list.source());
-      a.put("sourceNote", list.sourceNote());
+      a.put(SOURCE_NOTE, list.sourceNote());
       a.put("monthlyListId", list.locked() != null ? list.locked().getId() : null);
       a.put("bankKnown", list.bankKnown());
       a.put("moneySide", list.moneySide());
@@ -381,7 +389,7 @@ public class ClientTrustBalancesQuery implements ReportQuery {
         var e = new LinkedHashMap<String, Object>();
         e.put("trustAccountId", account.getId());
         e.put("accountName", account.getAccountName());
-        e.put("periodEnd", list.locked().getPeriodEnd().toString());
+        e.put(PERIOD_END, list.locked().getPeriodEnd().toString());
         e.put("transactionDate", entry.transactionDate().toString());
         e.put("reference", entry.reference());
         e.put("typeLabel", entry.typeLabel());
@@ -403,11 +411,12 @@ public class ClientTrustBalancesQuery implements ReportQuery {
     summary.put("bankTotal", bankTotal);
     summary.put("investmentAccountTotal", investmentAccountTotal);
     summary.put("trustCashNote", TRUST_CASH_NOTE);
+    summary.put("scopeNote", TrustReportWords.TRUST_ASSETS_NOTE);
     summary.put("difference", creditorTotal.subtract(bankTotal).subtract(investmentAccountTotal));
     summary.put("fullyLocked", lists.stream().allMatch(l -> l.locked() != null));
-    summary.put("accounts", List.copyOf(accounts));
-    summary.put("afterLock", List.copyOf(afterLock));
-    summary.put("afterLockNet", afterLockNet);
+    summary.put(ACCOUNTS, List.copyOf(accounts));
+    summary.put(AFTER_LOCK, List.copyOf(afterLock));
+    summary.put(AFTER_LOCK_NET, afterLockNet);
     if (firmWide && interAccountOmitted) {
       summary.put("interAccountNote", INTER_ACCOUNT_NOTE);
     }

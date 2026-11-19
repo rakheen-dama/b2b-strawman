@@ -3,8 +3,11 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.reporting.ReportQuery;
 import io.b2mash.b2b.b2bstrawman.reporting.ReportResult;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.TrustCreditorAccountType;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliation;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationRepository;
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,11 +15,22 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 /**
- * Three-way reconciliation report: bank balance vs cashbook balance vs client ledger total. If
- * reconciliation_id is provided, uses that specific reconciliation; otherwise uses the latest.
+ * The reconciliation report: bank, cashbook and trust creditors compared at the reconciliation's
+ * period end. If reconciliation_id is provided, uses that specific reconciliation; otherwise uses
+ * the latest.
+ *
+ * <p>v4 (Phase 92 650C, §16.8.5): prints both comparisons — adjusted bank against the cashbook
+ * (EQ-1) and against trust creditors — and the creditor breakdown exactly as stored on the
+ * reconciliation (V19). Section values and the summary status are words (D-20).
  */
 @Component
 public class TrustReconciliationReportQuery implements ReportQuery {
+
+  static final String BANK = "Bank";
+  static final String ADJUSTMENTS = "Adjustments";
+  static final String CASHBOOK_COMPARISON = "Comparison with the cashbook";
+  static final String CREDITORS = "Trust creditors";
+  static final String CREDITOR_COMPARISON = "Comparison with trust creditors";
 
   private final TrustReconciliationRepository reconciliationRepository;
 
@@ -50,7 +64,13 @@ public class TrustReconciliationReportQuery implements ReportQuery {
       var allRecons =
           reconciliationRepository.findByTrustAccountIdOrderByPeriodEndDesc(trustAccountId);
       if (allRecons.isEmpty()) {
-        return new ReportResult(List.of(), Map.of("message", "No reconciliations found"));
+        return new ReportResult(
+            List.of(),
+            Map.of(
+                "message",
+                "No reconciliations found",
+                "scopeNote",
+                TrustReportWords.TRUST_ASSETS_NOTE));
       }
       recon = allRecons.getFirst();
     }
@@ -60,44 +80,58 @@ public class TrustReconciliationReportQuery implements ReportQuery {
     return new ReportResult(rows, summary);
   }
 
+  /**
+   * v4 (650C, §16.8.5, D-20): both comparisons and the creditor breakdown as stored on the
+   * reconciliation, in words — never a section code. Stored values only.
+   */
   private List<Map<String, Object>> buildRows(TrustReconciliation recon) {
-    // Row 1: Bank balance section
-    var bankRow = new LinkedHashMap<String, Object>();
-    bankRow.put("section", "BANK");
-    bankRow.put("label", "Bank Balance per Statement");
-    bankRow.put("amount", recon.getBankBalance());
+    var rows = new ArrayList<Map<String, Object>>();
+    rows.add(row(BANK, "Bank balance per statement", recon.getBankBalance()));
+    rows.add(row(ADJUSTMENTS, "Add: outstanding deposits", recon.getOutstandingDeposits()));
+    rows.add(
+        row(ADJUSTMENTS, "Less: outstanding payments", recon.getOutstandingPayments().negate()));
+    rows.add(row(ADJUSTMENTS, "Adjusted bank balance", recon.getAdjustedBankBalance()));
+    rows.add(row(CASHBOOK_COMPARISON, "Cashbook balance", recon.getCashbookBalance()));
+    rows.add(
+        row(
+            CASHBOOK_COMPARISON,
+            "Difference (adjusted bank – cashbook)",
+            recon.getAdjustedBankBalance().subtract(recon.getCashbookBalance())));
+    rows.add(row(CREDITORS, "Client ledgers", recon.getClientLedgerTotal()));
+    rows.add(
+        row(CREDITORS, "Section 86(4) investment creditors", recon.getInvestmentCreditorTotal()));
+    rows.add(
+        row(
+            CREDITORS,
+            TrustCreditorAccountType.FUND_INTEREST_AND_CHARGES.defaultName(),
+            recon.getFundLedgerBalance()));
+    rows.add(
+        row(
+            CREDITORS,
+            TrustCreditorAccountType.UNIDENTIFIED_DEPOSITS.defaultName(),
+            recon.getUnidentifiedDepositTotal()));
+    rows.add(
+        row(CREDITORS, "Section 86(3) placements (inter-account)", recon.getInterAccountBalance()));
+    rows.add(row(CREDITORS, "Trust creditors total", recon.getCreditorTotal()));
+    rows.add(
+        row(
+            CREDITOR_COMPARISON,
+            "Difference (adjusted bank – trust creditors)",
+            recon.getDifference()));
+    rows.add(
+        row(
+            CREDITOR_COMPARISON,
+            "Difference (cashbook – trust creditors)",
+            recon.getCashbookBalance().subtract(recon.getCreditorTotal())));
+    return List.copyOf(rows);
+  }
 
-    // Row 2: Outstanding deposits
-    var outDepRow = new LinkedHashMap<String, Object>();
-    outDepRow.put("section", "ADJUSTMENTS");
-    outDepRow.put("label", "Add: Outstanding Deposits");
-    outDepRow.put("amount", recon.getOutstandingDeposits());
-
-    // Row 3: Outstanding payments
-    var outPayRow = new LinkedHashMap<String, Object>();
-    outPayRow.put("section", "ADJUSTMENTS");
-    outPayRow.put("label", "Less: Outstanding Payments");
-    outPayRow.put("amount", recon.getOutstandingPayments().negate());
-
-    // Row 4: Adjusted bank balance
-    var adjRow = new LinkedHashMap<String, Object>();
-    adjRow.put("section", "ADJUSTED");
-    adjRow.put("label", "Adjusted Bank Balance");
-    adjRow.put("amount", recon.getAdjustedBankBalance());
-
-    // Row 5: Cashbook balance
-    var cashRow = new LinkedHashMap<String, Object>();
-    cashRow.put("section", "COMPARISON");
-    cashRow.put("label", "Cashbook Balance");
-    cashRow.put("amount", recon.getCashbookBalance());
-
-    // Row 6: Client ledger total
-    var ledgerRow = new LinkedHashMap<String, Object>();
-    ledgerRow.put("section", "COMPARISON");
-    ledgerRow.put("label", "Client Ledger Total");
-    ledgerRow.put("amount", recon.getClientLedgerTotal());
-
-    return List.of(bankRow, outDepRow, outPayRow, adjRow, cashRow, ledgerRow);
+  private static Map<String, Object> row(String section, String label, BigDecimal amount) {
+    var row = new LinkedHashMap<String, Object>();
+    row.put("section", section);
+    row.put("label", label);
+    row.put("amount", amount);
+    return row;
   }
 
   private Map<String, Object> buildSummary(TrustReconciliation recon) {
@@ -109,8 +143,15 @@ public class TrustReconciliationReportQuery implements ReportQuery {
     summary.put("outstandingDeposits", recon.getOutstandingDeposits());
     summary.put("outstandingPayments", recon.getOutstandingPayments());
     summary.put("adjustedBankBalance", recon.getAdjustedBankBalance());
+    summary.put("investmentCreditorTotal", recon.getInvestmentCreditorTotal());
+    summary.put("fundLedgerBalance", recon.getFundLedgerBalance());
+    summary.put("unidentifiedDepositTotal", recon.getUnidentifiedDepositTotal());
+    summary.put("interAccountBalance", recon.getInterAccountBalance());
+    summary.put("creditorTotal", recon.getCreditorTotal());
+    summary.put("difference", recon.getDifference());
     summary.put("isBalanced", recon.isBalanced());
-    summary.put("status", recon.getStatus().name());
+    summary.put("status", TrustReportWords.reconciliationStatusLabel(recon.getStatus()));
+    summary.put("scopeNote", TrustReportWords.TRUST_ASSETS_NOTE);
     return summary;
   }
 }

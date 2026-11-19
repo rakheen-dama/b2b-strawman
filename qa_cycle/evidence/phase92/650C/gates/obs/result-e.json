@@ -1,0 +1,1251 @@
+{
+  "phase": "e",
+  "startedAt": "2026-11-19T03:30:53.506Z",
+  "consoleErrors": [
+    {
+      "user": "user_e2e_alice",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "text": "MockAuthContextProvider: failed to fetch userinfo TypeError: Failed to fetch\n    at http://localhost:3001/_next/static/chunks/1kvf-7k8cibf1.js:1:1582\n    at iw (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:118706)\n    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:"
+    }
+  ],
+  "pageErrors": [],
+  "checks": {
+    "e: pack runs for FYE 30 Sep 2026: 7 sections, FY 1 Oct 2025 – 30 Sep 2026": true,
+    "e: (1) receipts & payments: 10 rows of the year + Total R 11 591,45": true,
+    "e: (2) 'Trust creditors (Rule 54.15)': Acme R 10 000,00, the Fund R 41,45, three unidentified lines, Total R 11 591,45; locked note": true,
+    "e: (3) the 30 Sep 2026 reconciliation with its stored breakdown (both comparisons)": true,
+    "e: (5) Rule 54.28 year totals: b/f 0,00 · interest 153,45 · memo 200,00 · charges 69,50 (rec 57,50, VAT 9,07) · memo charges 15,00 (VAT 1,96) · refunded 57,50 · paid 100,00 · c/f 41,45": true,
+    "e: (5) year identity on the shown totals: b/f + interest − charges + refunds − paid = c/f; c/f = SQL Fund ledger at 30 Sep 2026": true,
+    "e: (6) the Fund sweep with its statement file name and line number (b-statement-….csv · line 10), -R 100,00": true,
+    "e: (6) 'Fund sweeps with no statement line' present: 'None in the financial year'": true,
+    "e: (7) ledger statements part present": true,
+    "e: no raw code on screen, in the PDF or the preview": true,
+    "e: scope sentence on screen, in the PDF and the preview": true,
+    "e: FYE 28 Feb 2027 (live list): runs; creditors part 'Not locked' note; Acme R 10 200,00 and two unidentified lines after the 15 Oct allocation": true
+  },
+  "fy": {
+    "slug": "section-35-data-pack",
+    "params": {
+      "trust_account_id": {
+        "pick": "/Mathebula & Partners Trust Account/"
+      },
+      "financial_year_end": "2026-09-30"
+    },
+    "title": "Section 35 Data Pack",
+    "description": "Composite report combining all trust sub-reports for Section 35 compliance.",
+    "paramLabels": [
+      "Trust Account*",
+      "Financial Year End*"
+    ],
+    "result": {
+      "cards": [
+        {
+          "label": "Section Count",
+          "value": "7"
+        },
+        {
+          "label": "Financial Year Start",
+          "value": "2025-10-01"
+        },
+        {
+          "label": "Financial Year End",
+          "value": "2026-09-30"
+        },
+        {
+          "label": "Total Trust Balance At Year End",
+          "value": "R 10 000,00"
+        },
+        {
+          "label": "Scope Note",
+          "value": "Trust cash, estates and other trust assets are not recorded in Kazi and are not included in this comparison."
+        }
+      ],
+      "headers": [
+        "Section",
+        "Item",
+        "Amount"
+      ],
+      "rows": [
+        [
+          "Trust Receipts & Payments",
+          "2026-08-03 · DEP/OBS650C/ZL6X0/1 · Acme Corp (Deposit)",
+          "R 10 000,00"
+        ],
+        [
+          "Trust Receipts & Payments",
+          "2026-08-12 · UNK1/OBS650C/ZL6X0 · - (Unidentified deposit) — Unidentified deposits",
+          "R 600,00"
+        ],
+        [
+          "Trust Receipts & Payments",
+          "2026-08-31 · INT/AUG/ZL6X0 · - (Interest received for the Legal Practitioners' Fidelity Fund) — Legal Practitioners' Fidelity Fund — interest and charges",
+          "R 30,00"
+        ],
+        [
+          "Trust Receipts & Payments",
+          "2026-09-08 · SVC/SEP/ZL6X0 · - (Bank charge) — Legal Practitioners' Fidelity Fund — interest and charges",
+          "-R 57,50"
+        ],
+        [
+          "Trust Receipts & Payments",
+          "2026-09-15 · CHF/SEP/ZL6X0 · - (Bank charge) — Legal Practitioners' Fidelity Fund — interest and charges",
+          "-R 12,00"
+        ],
+        [
+          "Trust Receipts & Payments",
+          "2026-09-20 · RFD/SEP/ZL6X0 · - (Bank charge refunded from the business account) — Legal Practitioners' Fidelity Fund — interest and charges",
+          "R 57,50"
+        ],
+        [
+          "Trust Receipts & Payments",
+          "2026-09-25 · UNK2/OBS650C/ZL6X0 · - (Unidentified deposit) — Unidentified deposits",
+          "R 750,00"
+        ],
+        [
+          "Trust Receipts & Payments",
+          "2026-09-26 · UNK3/OBS650C/ZL6X0 · - (Unidentified deposit) — Unidentified deposits",
+          "R 200,00"
+        ],
+        [
+          "Trust Receipts & Payments",
+          "2026-09-30 · INT/SEP/ZL6X0 · - (Interest received for the Legal Practitioners' Fidelity Fund) — Legal Practitioners' Fidelity Fund — interest and charges",
+          "R 123,45"
+        ],
+        [
+          "Trust Receipts & Payments",
+          "2026-09-30 · LPFF/SEP/ZL6X0 · - (Interest paid to the Legal Practitioners' Fidelity Fund) — Legal Practitioners' Fidelity Fund — interest and charges",
+          "-R 100,00"
+        ],
+        [
+          "Trust Receipts & Payments",
+          "Total",
+          "R 11 591,45"
+        ],
+        [
+          "Trust creditors (Rule 54.15)",
+          "Acme Corp",
+          "R 10 000,00"
+        ],
+        [
+          "Trust creditors (Rule 54.15)",
+          "Legal Practitioners' Fidelity Fund — interest and charges",
+          "R 41,45"
+        ],
+        [
+          "Trust creditors (Rule 54.15)",
+          "Eft credit unknown remitter · received 2026-08-12",
+          "R 600,00"
+        ],
+        [
+          "Trust creditors (Rule 54.15)",
+          "Eft credit no reference · received 2026-09-25",
+          "R 750,00"
+        ],
+        [
+          "Trust creditors (Rule 54.15)",
+          "Eft credit estate payer · received 2026-09-26",
+          "R 200,00"
+        ],
+        [
+          "Trust creditors (Rule 54.15)",
+          "Total",
+          "R 11 591,45"
+        ],
+        [
+          "Trust Reconciliation",
+          "Bank balance per statement",
+          "R 11 591,45"
+        ],
+        [
+          "Trust Reconciliation",
+          "Add: outstanding deposits",
+          "R 0,00"
+        ],
+        [
+          "Trust Reconciliation",
+          "Less: outstanding payments",
+          "R 0,00"
+        ],
+        [
+          "Trust Reconciliation",
+          "Adjusted bank balance",
+          "R 11 591,45"
+        ],
+        [
+          "Trust Reconciliation",
+          "Cashbook balance",
+          "R 11 591,45"
+        ],
+        [
+          "Trust Reconciliation",
+          "Difference (adjusted bank − cashbook)",
+          "R 0,00"
+        ],
+        [
+          "Trust Reconciliation",
+          "Client ledgers",
+          "R 10 000,00"
+        ],
+        [
+          "Trust Reconciliation",
+          "Section 86(4) investment creditors",
+          "R 0,00"
+        ],
+        [
+          "Trust Reconciliation",
+          "Legal Practitioners' Fidelity Fund — interest and charges",
+          "R 41,45"
+        ],
+        [
+          "Trust Reconciliation",
+          "Unidentified deposits",
+          "R 1 550,00"
+        ],
+        [
+          "Trust Reconciliation",
+          "Section 86(3) placements (inter-account)",
+          "R 0,00"
+        ],
+        [
+          "Trust Reconciliation",
+          "Trust creditors total",
+          "R 11 591,45"
+        ],
+        [
+          "Trust Reconciliation",
+          "Difference (adjusted bank − trust creditors)",
+          "R 0,00"
+        ],
+        [
+          "Trust Reconciliation",
+          "Difference (cashbook − trust creditors)",
+          "R 0,00"
+        ],
+        [
+          "Interest and charges schedule (Rule 54.28)",
+          "Mathebula & Partners Trust Account — Fund ledger brought forward",
+          "R 0,00"
+        ],
+        [
+          "Interest and charges schedule (Rule 54.28)",
+          "Mathebula & Partners Trust Account — gross interest earned (in the cashbook)",
+          "R 153,45"
+        ],
+        [
+          "Interest and charges schedule (Rule 54.28)",
+          "Mathebula & Partners Trust Account — gross interest earned (at source, memo)",
+          "R 200,00"
+        ],
+        [
+          "Interest and charges schedule (Rule 54.28)",
+          "Mathebula & Partners Trust Account — gross charges levied (in the cashbook)",
+          "R 69,50"
+        ],
+        [
+          "Interest and charges schedule (Rule 54.28)",
+          "Mathebula & Partners Trust Account — of which recoverable from the business account",
+          "R 57,50"
+        ],
+        [
+          "Interest and charges schedule (Rule 54.28)",
+          "Mathebula & Partners Trust Account — of which VAT",
+          "R 9,07"
+        ],
+        [
+          "Interest and charges schedule (Rule 54.28)",
+          "Mathebula & Partners Trust Account — gross charges levied (at source, memo)",
+          "R 15,00"
+        ],
+        [
+          "Interest and charges schedule (Rule 54.28)",
+          "Mathebula & Partners Trust Account — VAT in charges at source (memo)",
+          "R 1,96"
+        ],
+        [
+          "Interest and charges schedule (Rule 54.28)",
+          "Mathebula & Partners Trust Account — charges refunded",
+          "R 57,50"
+        ],
+        [
+          "Interest and charges schedule (Rule 54.28)",
+          "Mathebula & Partners Trust Account — paid to the Fund",
+          "R 100,00"
+        ],
+        [
+          "Interest and charges schedule (Rule 54.28)",
+          "Mathebula & Partners Trust Account — Fund ledger carried forward",
+          "R 41,45"
+        ],
+        [
+          "Fund sweeps and their statement lines (Rule 54.14.16)",
+          "2026-09-30 · b-statement-ZL6X0.csv · line 10 · LPFF/SEP/ZL6X0",
+          "-R 100,00"
+        ],
+        [
+          "Fund sweeps and their statement lines (Rule 54.14.16)",
+          "Total",
+          "-R 100,00"
+        ]
+      ],
+      "noData": false,
+      "error": null,
+      "pager": "Page 1 of 1",
+      "toasts": [],
+      "formErrors": []
+    },
+    "shot": "e-fye-2026-09-30-report-section-35-data-pack.png",
+    "cardScan": {
+      "codes": [],
+      "iso": [
+        "2025-10-01",
+        "2026-09-30"
+      ],
+      "rawDecimals": []
+    },
+    "tableCodeHits": [],
+    "tableIsoHits": [
+      "2026-08-03",
+      "2026-08-12",
+      "2026-08-31",
+      "2026-09-08",
+      "2026-09-15",
+      "2026-09-20",
+      "2026-09-25",
+      "2026-09-26",
+      "2026-09-30"
+    ],
+    "tableRawDecimalHits": [],
+    "csv": {
+      "ok": true,
+      "file": "e-fye-2026-09-30-section-35-data-pack.csv",
+      "suggested": "section-35-data-pack-report.csv",
+      "bytes": 4498,
+      "lines": 48,
+      "header": "# Section 35 Data Pack",
+      "codeHits": []
+    },
+    "pdf": {
+      "ok": true,
+      "file": "e-fye-2026-09-30-section-35-data-pack.pdf",
+      "suggested": "section-35-data-pack-report.pdf",
+      "bytes": 7800,
+      "magic": "%PDF-",
+      "textChars": 3821,
+      "extractOk": true,
+      "scopeNote": true,
+      "scan": {
+        "codes": [],
+        "iso": [
+          "2025-10-01",
+          "2026-09-30",
+          "2026-08-03",
+          "2026-08-12",
+          "2026-08-31",
+          "2026-09-08",
+          "2026-09-15",
+          "2026-09-20",
+          "2026-09-25",
+          "2026-09-26"
+        ],
+        "rawDecimals": []
+      },
+      "codes": [],
+      "missingColumns": [],
+      "page1": "e-fye-2026-09-30-section-35-data-pack.pdf-page1.png"
+    },
+    "afterExport": {
+      "cards": [
+        {
+          "label": "Section Count",
+          "value": "7"
+        },
+        {
+          "label": "Financial Year Start",
+          "value": "2025-10-01"
+        },
+        {
+          "label": "Financial Year End",
+          "value": "2026-09-30"
+        },
+        {
+          "label": "Total Trust Balance At Year End",
+          "value": "R 10 000,00"
+        },
+        {
+          "label": "Scope Note",
+          "value": "Trust cash, estates and other trust assets are not recorded in Kazi and are not included in this comparison."
+        }
+      ],
+      "headers": [
+        "Section",
+        "Item",
+        "Amount"
+      ],
+      "rows": [
+        [
+          "Trust Receipts & Payments",
+          "2026-08-03 · DEP/OBS650C/ZL6X0/1 · Acme Corp (Deposit)",
+          "R 10 000,00"
+        ],
+        [
+          "Trust Receipts & Payments",
+          "2026-08-12 · UNK1/OBS650C/ZL6X0 · - (Unidentified deposit) — Unidentified deposits",
+          "R 600,00"
+        ],
+        [
+          "Trust Receipts & Payments",
+          "2026-08-31 · INT/AUG/ZL6X0 · - (Interest received for the Legal Practitioners' Fidelity Fund) — Legal Practitioners' Fidelity Fund — interest and charges",
+          "R 30,00"
+        ],
+        [
+          "Trust Receipts & Payments",
+          "2026-09-08 · SVC/SEP/ZL6X0 · - (Bank charge) — Legal Practitioners' Fidelity Fund — interest and charges",
+          "-R 57,50"
+        ],
+        [
+          "Trust Receipts & Payments",
+          "2026-09-15 · CHF/SEP/ZL6X0 · - (Bank charge) — Legal Practitioners' Fidelity Fund — interest and charges",
+          "-R 12,00"
+        ],
+        [
+          "Trust Receipts & Payments",
+          "2026-09-20 · RFD/SEP/ZL6X0 · - (Bank charge refunded from the business account) — Legal Practitioners' Fidelity Fund — interest and charges",
+          "R 57,50"
+        ],
+        [
+          "Trust Receipts & Payments",
+          "2026-09-25 · UNK2/OBS650C/ZL6X0 · - (Unidentified deposit) — Unidentified deposits",
+          "R 750,00"
+        ],
+        [
+          "Trust Receipts & Payments",
+          "2026-09-26 · UNK3/OBS650C/ZL6X0 · - (Unidentified deposit) — Unidentified deposits",
+          "R 200,00"
+        ],
+        [
+          "Trust Receipts & Payments",
+          "2026-09-30 · INT/SEP/ZL6X0 · - (Interest received for the Legal Practitioners' Fidelity Fund) — Legal Practitioners' Fidelity Fund — interest and charges",
+          "R 123,45"
+        ],
+        [
+          "Trust Receipts & Payments",
+          "2026-09-30 · LPFF/SEP/ZL6X0 · - (Interest paid to the Legal Practitioners' Fidelity Fund) — Legal Practitioners' Fidelity Fund — interest and charges",
+          "-R 100,00"
+        ],
+        [
+          "Trust Receipts & Payments",
+          "Total",
+          "R 11 591,45"
+        ],
+        [
+          "Trust creditors (Rule 54.15)",
+          "Acme Corp",
+          "R 10 000,00"
+        ],
+        [
+          "Trust creditors (Rule 54.15)",
+          "Legal Practitioners' Fidelity Fund — interest and charges",
+          "R 41,45"
+        ],
+        [
+          "Trust creditors (Rule 54.15)",
+          "Eft credit unknown remitter · received 2026-08-12",
+          "R 600,00"
+        ],
+        [
+          "Trust creditors (Rule 54.15)",
+          "Eft credit no reference · received 2026-09-25",
+          "R 750,00"
+        ],
+        [
+          "Trust creditors (Rule 54.15)",
+          "Eft credit estate payer · received 2026-09-26",
+          "R 200,00"
+        ],
+        [
+          "Trust creditors (Rule 54.15)",
+          "Total",
+          "R 11 591,45"
+        ],
+        [
+          "Trust Reconciliation",
+          "Bank balance per statement",
+          "R 11 591,45"
+        ],
+        [
+          "Trust Reconciliation",
+          "Add: outstanding deposits",
+          "R 0,00"
+        ],
+        [
+          "Trust Reconciliation",
+          "Less: outstanding payments",
+          "R 0,00"
+        ],
+        [
+          "Trust Reconciliation",
+          "Adjusted bank balance",
+          "R 11 591,45"
+        ],
+        [
+          "Trust Reconciliation",
+          "Cashbook balance",
+          "R 11 591,45"
+        ],
+        [
+          "Trust Reconciliation",
+          "Difference (adjusted bank − cashbook)",
+          "R 0,00"
+        ],
+        [
+          "Trust Reconciliation",
+          "Client ledgers",
+          "R 10 000,00"
+        ],
+        [
+          "Trust Reconciliation",
+          "Section 86(4) investment creditors",
+          "R 0,00"
+        ],
+        [
+          "Trust Reconciliation",
+          "Legal Practitioners' Fidelity Fund — interest and charges",
+          "R 41,45"
+        ],
+        [
+          "Trust Reconciliation",
+          "Unidentified deposits",
+          "R 1 550,00"
+        ],
+        [
+          "Trust Reconciliation",
+          "Section 86(3) placements (inter-account)",
+          "R 0,00"
+        ],
+        [
+          "Trust Reconciliation",
+          "Trust creditors total",
+          "R 11 591,45"
+        ],
+        [
+          "Trust Reconciliation",
+          "Difference (adjusted bank − trust creditors)",
+          "R 0,00"
+        ],
+        [
+          "Trust Reconciliation",
+          "Difference (cashbook − trust creditors)",
+          "R 0,00"
+        ],
+        [
+          "Interest and charges schedule (Rule 54.28)",
+          "Mathebula & Partners Trust Account — Fund ledger brought forward",
+          "R 0,00"
+        ],
+        [
+          "Interest and charges schedule (Rule 54.28)",
+          "Mathebula & Partners Trust Account — gross interest earned (in the cashbook)",
+          "R 153,45"
+        ],
+        [
+          "Interest and charges schedule (Rule 54.28)",
+          "Mathebula & Partners Trust Account — gross interest earned (at source, memo)",
+          "R 200,00"
+        ],
+        [
+          "Interest and charges schedule (Rule 54.28)",
+          "Mathebula & Partners Trust Account — gross charges levied (in the cashbook)",
+          "R 69,50"
+        ],
+        [
+          "Interest and charges schedule (Rule 54.28)",
+          "Mathebula & Partners Trust Account — of which recoverable from the business account",
+          "R 57,50"
+        ],
+        [
+          "Interest and charges schedule (Rule 54.28)",
+          "Mathebula & Partners Trust Account — of which VAT",
+          "R 9,07"
+        ],
+        [
+          "Interest and charges schedule (Rule 54.28)",
+          "Mathebula & Partners Trust Account — gross charges levied (at source, memo)",
+          "R 15,00"
+        ],
+        [
+          "Interest and charges schedule (Rule 54.28)",
+          "Mathebula & Partners Trust Account — VAT in charges at source (memo)",
+          "R 1,96"
+        ],
+        [
+          "Interest and charges schedule (Rule 54.28)",
+          "Mathebula & Partners Trust Account — charges refunded",
+          "R 57,50"
+        ],
+        [
+          "Interest and charges schedule (Rule 54.28)",
+          "Mathebula & Partners Trust Account — paid to the Fund",
+          "R 100,00"
+        ],
+        [
+          "Interest and charges schedule (Rule 54.28)",
+          "Mathebula & Partners Trust Account — Fund ledger carried forward",
+          "R 41,45"
+        ],
+        [
+          "Fund sweeps and their statement lines (Rule 54.14.16)",
+          "2026-09-30 · b-statement-ZL6X0.csv · line 10 · LPFF/SEP/ZL6X0",
+          "-R 100,00"
+        ],
+        [
+          "Fund sweeps and their statement lines (Rule 54.14.16)",
+          "Total",
+          "-R 100,00"
+        ]
+      ],
+      "noData": false,
+      "error": null,
+      "pager": "Page 1 of 1",
+      "toasts": [],
+      "formErrors": []
+    }
+  },
+  "allRows": [
+    {
+      "section": "Trust Receipts & Payments",
+      "item": "2026-08-03 · DEP/OBS650C/ZL6X0/1 · Acme Corp (Deposit)",
+      "amount": "R 10 000,00"
+    },
+    {
+      "section": "Trust Receipts & Payments",
+      "item": "2026-08-12 · UNK1/OBS650C/ZL6X0 · - (Unidentified deposit) — Unidentified deposits",
+      "amount": "R 600,00"
+    },
+    {
+      "section": "Trust Receipts & Payments",
+      "item": "2026-08-31 · INT/AUG/ZL6X0 · - (Interest received for the Legal Practitioners' Fidelity Fund) — Legal Practitioners' Fidelity Fund — interest and charges",
+      "amount": "R 30,00"
+    },
+    {
+      "section": "Trust Receipts & Payments",
+      "item": "2026-09-08 · SVC/SEP/ZL6X0 · - (Bank charge) — Legal Practitioners' Fidelity Fund — interest and charges",
+      "amount": "-R 57,50"
+    },
+    {
+      "section": "Trust Receipts & Payments",
+      "item": "2026-09-15 · CHF/SEP/ZL6X0 · - (Bank charge) — Legal Practitioners' Fidelity Fund — interest and charges",
+      "amount": "-R 12,00"
+    },
+    {
+      "section": "Trust Receipts & Payments",
+      "item": "2026-09-20 · RFD/SEP/ZL6X0 · - (Bank charge refunded from the business account) — Legal Practitioners' Fidelity Fund — interest and charges",
+      "amount": "R 57,50"
+    },
+    {
+      "section": "Trust Receipts & Payments",
+      "item": "2026-09-25 · UNK2/OBS650C/ZL6X0 · - (Unidentified deposit) — Unidentified deposits",
+      "amount": "R 750,00"
+    },
+    {
+      "section": "Trust Receipts & Payments",
+      "item": "2026-09-26 · UNK3/OBS650C/ZL6X0 · - (Unidentified deposit) — Unidentified deposits",
+      "amount": "R 200,00"
+    },
+    {
+      "section": "Trust Receipts & Payments",
+      "item": "2026-09-30 · INT/SEP/ZL6X0 · - (Interest received for the Legal Practitioners' Fidelity Fund) — Legal Practitioners' Fidelity Fund — interest and charges",
+      "amount": "R 123,45"
+    },
+    {
+      "section": "Trust Receipts & Payments",
+      "item": "2026-09-30 · LPFF/SEP/ZL6X0 · - (Interest paid to the Legal Practitioners' Fidelity Fund) — Legal Practitioners' Fidelity Fund — interest and charges",
+      "amount": "-R 100,00"
+    },
+    {
+      "section": "Trust Receipts & Payments",
+      "item": "Total",
+      "amount": "R 11 591,45"
+    },
+    {
+      "section": "Trust creditors (Rule 54.15)",
+      "item": "Acme Corp",
+      "amount": "R 10 000,00"
+    },
+    {
+      "section": "Trust creditors (Rule 54.15)",
+      "item": "Legal Practitioners' Fidelity Fund — interest and charges",
+      "amount": "R 41,45"
+    },
+    {
+      "section": "Trust creditors (Rule 54.15)",
+      "item": "Eft credit unknown remitter · received 2026-08-12",
+      "amount": "R 600,00"
+    },
+    {
+      "section": "Trust creditors (Rule 54.15)",
+      "item": "Eft credit no reference · received 2026-09-25",
+      "amount": "R 750,00"
+    },
+    {
+      "section": "Trust creditors (Rule 54.15)",
+      "item": "Eft credit estate payer · received 2026-09-26",
+      "amount": "R 200,00"
+    },
+    {
+      "section": "Trust creditors (Rule 54.15)",
+      "item": "Total",
+      "amount": "R 11 591,45"
+    },
+    {
+      "section": "Trust Reconciliation",
+      "item": "Bank balance per statement",
+      "amount": "R 11 591,45"
+    },
+    {
+      "section": "Trust Reconciliation",
+      "item": "Add: outstanding deposits",
+      "amount": "R 0,00"
+    },
+    {
+      "section": "Trust Reconciliation",
+      "item": "Less: outstanding payments",
+      "amount": "R 0,00"
+    },
+    {
+      "section": "Trust Reconciliation",
+      "item": "Adjusted bank balance",
+      "amount": "R 11 591,45"
+    },
+    {
+      "section": "Trust Reconciliation",
+      "item": "Cashbook balance",
+      "amount": "R 11 591,45"
+    },
+    {
+      "section": "Trust Reconciliation",
+      "item": "Difference (adjusted bank − cashbook)",
+      "amount": "R 0,00"
+    },
+    {
+      "section": "Trust Reconciliation",
+      "item": "Client ledgers",
+      "amount": "R 10 000,00"
+    },
+    {
+      "section": "Trust Reconciliation",
+      "item": "Section 86(4) investment creditors",
+      "amount": "R 0,00"
+    },
+    {
+      "section": "Trust Reconciliation",
+      "item": "Legal Practitioners' Fidelity Fund — interest and charges",
+      "amount": "R 41,45"
+    },
+    {
+      "section": "Trust Reconciliation",
+      "item": "Unidentified deposits",
+      "amount": "R 1 550,00"
+    },
+    {
+      "section": "Trust Reconciliation",
+      "item": "Section 86(3) placements (inter-account)",
+      "amount": "R 0,00"
+    },
+    {
+      "section": "Trust Reconciliation",
+      "item": "Trust creditors total",
+      "amount": "R 11 591,45"
+    },
+    {
+      "section": "Trust Reconciliation",
+      "item": "Difference (adjusted bank − trust creditors)",
+      "amount": "R 0,00"
+    },
+    {
+      "section": "Trust Reconciliation",
+      "item": "Difference (cashbook − trust creditors)",
+      "amount": "R 0,00"
+    },
+    {
+      "section": "Interest and charges schedule (Rule 54.28)",
+      "item": "Mathebula & Partners Trust Account — Fund ledger brought forward",
+      "amount": "R 0,00"
+    },
+    {
+      "section": "Interest and charges schedule (Rule 54.28)",
+      "item": "Mathebula & Partners Trust Account — gross interest earned (in the cashbook)",
+      "amount": "R 153,45"
+    },
+    {
+      "section": "Interest and charges schedule (Rule 54.28)",
+      "item": "Mathebula & Partners Trust Account — gross interest earned (at source, memo)",
+      "amount": "R 200,00"
+    },
+    {
+      "section": "Interest and charges schedule (Rule 54.28)",
+      "item": "Mathebula & Partners Trust Account — gross charges levied (in the cashbook)",
+      "amount": "R 69,50"
+    },
+    {
+      "section": "Interest and charges schedule (Rule 54.28)",
+      "item": "Mathebula & Partners Trust Account — of which recoverable from the business account",
+      "amount": "R 57,50"
+    },
+    {
+      "section": "Interest and charges schedule (Rule 54.28)",
+      "item": "Mathebula & Partners Trust Account — of which VAT",
+      "amount": "R 9,07"
+    },
+    {
+      "section": "Interest and charges schedule (Rule 54.28)",
+      "item": "Mathebula & Partners Trust Account — gross charges levied (at source, memo)",
+      "amount": "R 15,00"
+    },
+    {
+      "section": "Interest and charges schedule (Rule 54.28)",
+      "item": "Mathebula & Partners Trust Account — VAT in charges at source (memo)",
+      "amount": "R 1,96"
+    },
+    {
+      "section": "Interest and charges schedule (Rule 54.28)",
+      "item": "Mathebula & Partners Trust Account — charges refunded",
+      "amount": "R 57,50"
+    },
+    {
+      "section": "Interest and charges schedule (Rule 54.28)",
+      "item": "Mathebula & Partners Trust Account — paid to the Fund",
+      "amount": "R 100,00"
+    },
+    {
+      "section": "Interest and charges schedule (Rule 54.28)",
+      "item": "Mathebula & Partners Trust Account — Fund ledger carried forward",
+      "amount": "R 41,45"
+    },
+    {
+      "section": "Fund sweeps and their statement lines (Rule 54.14.16)",
+      "item": "2026-09-30 · b-statement-ZL6X0.csv · line 10 · LPFF/SEP/ZL6X0",
+      "amount": "-R 100,00"
+    },
+    {
+      "section": "Fund sweeps and their statement lines (Rule 54.14.16)",
+      "item": "Total",
+      "amount": "-R 100,00"
+    }
+  ],
+  "preview": {
+    "status": 200,
+    "chars": 3841,
+    "scopeNote": true,
+    "scan": {
+      "codes": [],
+      "iso": [
+        "2025-10-01",
+        "2026-09-30",
+        "2026-08-03",
+        "2026-08-12",
+        "2026-08-31",
+        "2026-09-08",
+        "2026-09-15",
+        "2026-09-20",
+        "2026-09-25",
+        "2026-09-26"
+      ],
+      "rawDecimals": []
+    }
+  },
+  "schedule": [
+    {
+      "section": "Interest and charges schedule (Rule 54.28)",
+      "item": "Mathebula & Partners Trust Account — Fund ledger brought forward",
+      "amount": "R 0,00"
+    },
+    {
+      "section": "Interest and charges schedule (Rule 54.28)",
+      "item": "Mathebula & Partners Trust Account — gross interest earned (in the cashbook)",
+      "amount": "R 153,45"
+    },
+    {
+      "section": "Interest and charges schedule (Rule 54.28)",
+      "item": "Mathebula & Partners Trust Account — gross interest earned (at source, memo)",
+      "amount": "R 200,00"
+    },
+    {
+      "section": "Interest and charges schedule (Rule 54.28)",
+      "item": "Mathebula & Partners Trust Account — gross charges levied (in the cashbook)",
+      "amount": "R 69,50"
+    },
+    {
+      "section": "Interest and charges schedule (Rule 54.28)",
+      "item": "Mathebula & Partners Trust Account — of which recoverable from the business account",
+      "amount": "R 57,50"
+    },
+    {
+      "section": "Interest and charges schedule (Rule 54.28)",
+      "item": "Mathebula & Partners Trust Account — of which VAT",
+      "amount": "R 9,07"
+    },
+    {
+      "section": "Interest and charges schedule (Rule 54.28)",
+      "item": "Mathebula & Partners Trust Account — gross charges levied (at source, memo)",
+      "amount": "R 15,00"
+    },
+    {
+      "section": "Interest and charges schedule (Rule 54.28)",
+      "item": "Mathebula & Partners Trust Account — VAT in charges at source (memo)",
+      "amount": "R 1,96"
+    },
+    {
+      "section": "Interest and charges schedule (Rule 54.28)",
+      "item": "Mathebula & Partners Trust Account — charges refunded",
+      "amount": "R 57,50"
+    },
+    {
+      "section": "Interest and charges schedule (Rule 54.28)",
+      "item": "Mathebula & Partners Trust Account — paid to the Fund",
+      "amount": "R 100,00"
+    },
+    {
+      "section": "Interest and charges schedule (Rule 54.28)",
+      "item": "Mathebula & Partners Trust Account — Fund ledger carried forward",
+      "amount": "R 41,45"
+    }
+  ],
+  "yearIdentity": {
+    "bf": 0,
+    "gi": 153.45,
+    "ch": 69.5,
+    "rf": 57.5,
+    "sw": 100,
+    "cf": 41.45,
+    "lhs": 41.45
+  },
+  "sweepRow": {
+    "section": "Fund sweeps and their statement lines (Rule 54.14.16)",
+    "item": "2026-09-30 · b-statement-ZL6X0.csv · line 10 · LPFF/SEP/ZL6X0",
+    "amount": "-R 100,00"
+  },
+  "fyLive": {
+    "slug": "section-35-data-pack",
+    "params": {
+      "trust_account_id": {
+        "pick": "/Mathebula & Partners Trust Account/"
+      },
+      "financial_year_end": "2027-02-28"
+    },
+    "title": "Section 35 Data Pack",
+    "description": "Composite report combining all trust sub-reports for Section 35 compliance.",
+    "paramLabels": [
+      "Trust Account*",
+      "Financial Year End*"
+    ],
+    "result": {
+      "cards": [
+        {
+          "label": "Section Count",
+          "value": "7"
+        },
+        {
+          "label": "Financial Year Start",
+          "value": "2026-03-01"
+        },
+        {
+          "label": "Financial Year End",
+          "value": "2027-02-28"
+        },
+        {
+          "label": "Total Trust Balance At Year End",
+          "value": "R 10 200,00"
+        },
+        {
+          "label": "Scope Note",
+          "value": "Trust cash, estates and other trust assets are not recorded in Kazi and are not included in this comparison."
+        }
+      ],
+      "headers": [
+        "Section",
+        "Item",
+        "Amount"
+      ],
+      "rows": [
+        [
+          "Trust Receipts & Payments",
+          "2026-08-03 · DEP/OBS650C/ZL6X0/1 · Acme Corp (Deposit)",
+          "R 10 000,00"
+        ],
+        [
+          "Trust Receipts & Payments",
+          "2026-08-12 · UNK1/OBS650C/ZL6X0 · - (Unidentified deposit) — Unidentified deposits",
+          "R 600,00"
+        ],
+        [
+          "Trust Receipts & Payments",
+          "2026-08-31 · INT/AUG/ZL6X0 · - (Interest received for the Legal Practitioners' Fidelity Fund) — Legal Practitioners' Fidelity Fund — interest and charges",
+          "R 30,00"
+        ],
+        [
+          "Trust Receipts & Payments",
+          "2026-09-08 · SVC/SEP/ZL6X0 · - (Bank charge) — Legal Practitioners' Fidelity Fund — interest and charges",
+          "-R 57,50"
+        ],
+        [
+          "Trust Receipts & Payments",
+          "2026-09-15 · CHF/SEP/ZL6X0 · - (Bank charge) — Legal Practitioners' Fidelity Fund — interest and charges",
+          "-R 12,00"
+        ],
+        [
+          "Trust Receipts & Payments",
+          "2026-09-20 · RFD/SEP/ZL6X0 · - (Bank charge refunded from the business account) — Legal Practitioners' Fidelity Fund — interest and charges",
+          "R 57,50"
+        ],
+        [
+          "Trust Receipts & Payments",
+          "2026-09-25 · UNK2/OBS650C/ZL6X0 · - (Unidentified deposit) — Unidentified deposits",
+          "R 750,00"
+        ],
+        [
+          "Trust Receipts & Payments",
+          "2026-09-26 · UNK3/OBS650C/ZL6X0 · - (Unidentified deposit) — Unidentified deposits",
+          "R 200,00"
+        ],
+        [
+          "Trust Receipts & Payments",
+          "2026-09-30 · INT/SEP/ZL6X0 · - (Interest received for the Legal Practitioners' Fidelity Fund) — Legal Practitioners' Fidelity Fund — interest and charges",
+          "R 123,45"
+        ],
+        [
+          "Trust Receipts & Payments",
+          "2026-09-30 · LPFF/SEP/ZL6X0 · - (Interest paid to the Legal Practitioners' Fidelity Fund) — Legal Practitioners' Fidelity Fund — interest and charges",
+          "-R 100,00"
+        ],
+        [
+          "Trust Receipts & Payments",
+          "2026-10-15 · UID-8B997191 · - (Unidentified deposit allocated) — Unidentified deposits",
+          "R 0,00"
+        ],
+        [
+          "Trust Receipts & Payments",
+          "2026-10-15 · UID-8B997191 · Acme Corp (Deposit identified and allocated)",
+          "R 0,00"
+        ],
+        [
+          "Trust Receipts & Payments",
+          "Total",
+          "R 11 591,45"
+        ],
+        [
+          "Trust creditors (Rule 54.15)",
+          "Acme Corp",
+          "R 10 200,00"
+        ],
+        [
+          "Trust creditors (Rule 54.15)",
+          "Legal Practitioners' Fidelity Fund — interest and charges",
+          "R 41,45"
+        ],
+        [
+          "Trust creditors (Rule 54.15)",
+          "Eft credit unknown remitter · received 2026-08-12",
+          "R 600,00"
+        ],
+        [
+          "Trust creditors (Rule 54.15)",
+          "Eft credit no reference · received 2026-09-25",
+          "R 750,00"
+        ],
+        [
+          "Trust creditors (Rule 54.15)",
+          "Total",
+          "R 11 591,45"
+        ],
+        [
+          "Trust Reconciliation",
+          "Bank balance per statement",
+          "R 11 591,45"
+        ],
+        [
+          "Trust Reconciliation",
+          "Add: outstanding deposits",
+          "R 0,00"
+        ],
+        [
+          "Trust Reconciliation",
+          "Less: outstanding payments",
+          "R 0,00"
+        ],
+        [
+          "Trust Reconciliation",
+          "Adjusted bank balance",
+          "R 11 591,45"
+        ],
+        [
+          "Trust Reconciliation",
+          "Cashbook balance",
+          "R 11 591,45"
+        ],
+        [
+          "Trust Reconciliation",
+          "Difference (adjusted bank − cashbook)",
+          "R 0,00"
+        ],
+        [
+          "Trust Reconciliation",
+          "Client ledgers",
+          "R 10 000,00"
+        ],
+        [
+          "Trust Reconciliation",
+          "Section 86(4) investment creditors",
+          "R 0,00"
+        ],
+        [
+          "Trust Reconciliation",
+          "Legal Practitioners' Fidelity Fund — interest and charges",
+          "R 41,45"
+        ],
+        [
+          "Trust Reconciliation",
+          "Unidentified deposits",
+          "R 1 550,00"
+        ],
+        [
+          "Trust Reconciliation",
+          "Section 86(3) placements (inter-account)",
+          "R 0,00"
+        ],
+        [
+          "Trust Reconciliation",
+          "Trust creditors total",
+          "R 11 591,45"
+        ],
+        [
+          "Trust Reconciliation",
+          "Difference (adjusted bank − trust creditors)",
+          "R 0,00"
+        ],
+        [
+          "Trust Reconciliation",
+          "Difference (cashbook − trust creditors)",
+          "R 0,00"
+        ],
+        [
+          "Interest and charges schedule (Rule 54.28)",
+          "Mathebula & Partners Trust Account — Fund ledger brought forward",
+          "R 0,00"
+        ],
+        [
+          "Interest and charges schedule (Rule 54.28)",
+          "Mathebula & Partners Trust Account — gross interest earned (in the cashbook)",
+          "R 153,45"
+        ],
+        [
+          "Interest and charges schedule (Rule 54.28)",
+          "Mathebula & Partners Trust Account — gross interest earned (at source, memo)",
+          "R 200,00"
+        ],
+        [
+          "Interest and charges schedule (Rule 54.28)",
+          "Mathebula & Partners Trust Account — gross charges levied (in the cashbook)",
+          "R 69,50"
+        ],
+        [
+          "Interest and charges schedule (Rule 54.28)",
+          "Mathebula & Partners Trust Account — of which recoverable from the business account",
+          "R 57,50"
+        ],
+        [
+          "Interest and charges schedule (Rule 54.28)",
+          "Mathebula & Partners Trust Account — of which VAT",
+          "R 9,07"
+        ],
+        [
+          "Interest and charges schedule (Rule 54.28)",
+          "Mathebula & Partners Trust Account — gross charges levied (at source, memo)",
+          "R 15,00"
+        ],
+        [
+          "Interest and charges schedule (Rule 54.28)",
+          "Mathebula & Partners Trust Account — VAT in charges at source (memo)",
+          "R 1,96"
+        ],
+        [
+          "Interest and charges schedule (Rule 54.28)",
+          "Mathebula & Partners Trust Account — charges refunded",
+          "R 57,50"
+        ],
+        [
+          "Interest and charges schedule (Rule 54.28)",
+          "Mathebula & Partners Trust Account — paid to the Fund",
+          "R 100,00"
+        ],
+        [
+          "Interest and charges schedule (Rule 54.28)",
+          "Mathebula & Partners Trust Account — Fund ledger carried forward",
+          "R 41,45"
+        ],
+        [
+          "Fund sweeps and their statement lines (Rule 54.14.16)",
+          "2026-09-30 · b-statement-ZL6X0.csv · line 10 · LPFF/SEP/ZL6X0",
+          "-R 100,00"
+        ],
+        [
+          "Fund sweeps and their statement lines (Rule 54.14.16)",
+          "Total",
+          "-R 100,00"
+        ]
+      ],
+      "noData": false,
+      "error": null,
+      "pager": "Page 1 of 1",
+      "toasts": [],
+      "formErrors": []
+    },
+    "shot": "e-fye-2027-02-28-report-section-35-data-pack.png",
+    "cardScan": {
+      "codes": [],
+      "iso": [
+        "2026-03-01",
+        "2027-02-28"
+      ],
+      "rawDecimals": []
+    },
+    "tableCodeHits": [],
+    "tableIsoHits": [
+      "2026-08-03",
+      "2026-08-12",
+      "2026-08-31",
+      "2026-09-08",
+      "2026-09-15",
+      "2026-09-20",
+      "2026-09-25",
+      "2026-09-26",
+      "2026-09-30",
+      "2026-10-15"
+    ],
+    "tableRawDecimalHits": []
+  },
+  "previewLive": {
+    "status": 200,
+    "chars": 3993,
+    "scopeNote": true,
+    "scan": {
+      "codes": [],
+      "iso": [
+        "2026-03-01",
+        "2027-02-28",
+        "2026-08-03",
+        "2026-08-12",
+        "2026-08-31",
+        "2026-09-08",
+        "2026-09-15",
+        "2026-09-20",
+        "2026-09-25",
+        "2026-09-26",
+        "2026-09-30",
+        "2026-10-15"
+      ],
+      "rawDecimals": []
+    }
+  },
+  "investmentsPartShown": false,
+  "endedAt": "2026-11-19T03:31:00.976Z"
+}

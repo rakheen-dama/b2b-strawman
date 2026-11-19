@@ -1,0 +1,307 @@
+{
+  "phase": "f",
+  "startedAt": "2026-11-19T04:03:54.009Z",
+  "consoleErrors": [
+    {
+      "user": "user_e2e_alice",
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "text": "MockAuthContextProvider: failed to fetch userinfo TypeError: Failed to fetch\n    at http://localhost:3001/_next/static/chunks/1kvf-7k8cibf1.js:1:1582\n    at iw (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:118706)\n    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:"
+    }
+  ],
+  "pageErrors": [],
+  "checks": {
+    "f: 2026-09-30: report runs, one account row": true,
+    "f: 2026-09-30: every firm-wide card = GET /api/trust-integrity?asAt (formatted as currency)": true,
+    "f: 2026-09-30: Balanced card 'Yes' = API balanced": true,
+    "f: 2026-09-30: summary money values as currency (no raw decimal / code)": true,
+    "f: 2026-09-30: row Section in words, Integrity in words": true,
+    "f: 2026-11-19: report runs, one account row": true,
+    "f: 2026-11-19: every firm-wide card = GET /api/trust-integrity?asAt (formatted as currency)": true,
+    "f: 2026-11-19: Balanced card 'Yes' = API balanced": true,
+    "f: 2026-11-19: summary money values as currency (no raw decimal / code)": true,
+    "f: 2026-11-19: row Section in words, Integrity in words": true,
+    "f: 30 Sep 2026 (a reconciliation has this period end): Adjusted Bank Balance R 11 591,45 shown, no bank note": true,
+    "f: 19 Nov 2026 (no reconciliation ends then): bank note 'No reconciliation has this period end…'": true,
+    "f: 19 Nov 2026: Fund R 41,45, unidentified R 1 350,00, client ledgers R 10 200,00": true
+  },
+  "runs": {
+    "2026-09-30": {
+      "cmp": {
+        "cashbook": {
+          "card": "R 11 591,45",
+          "api": 11591.45,
+          "equal": true
+        },
+        "clientLedgers": {
+          "card": "R 10 000,00",
+          "api": 10000,
+          "equal": true
+        },
+        "investmentCreditors": {
+          "card": "R 0,00",
+          "api": 0,
+          "equal": true
+        },
+        "fundLedger": {
+          "card": "R 41,45",
+          "api": 41.45,
+          "equal": true
+        },
+        "unidentifiedDeposits": {
+          "card": "R 1 550,00",
+          "api": 1550,
+          "equal": true
+        },
+        "otherNonClient": {
+          "card": "R 0,00",
+          "api": 0,
+          "equal": true
+        },
+        "interAccount": {
+          "card": "R 0,00",
+          "api": 0,
+          "equal": true
+        },
+        "creditorTotal": {
+          "card": "R 11 591,45",
+          "api": 11591.45,
+          "equal": true
+        },
+        "difference": {
+          "card": "R 0,00",
+          "api": 0,
+          "equal": true
+        }
+      },
+      "row": {
+        "Trust Account": "Mathebula & Partners Trust Account",
+        "Section": "Section 86(2) trust banking account",
+        "Cashbook": "R 11 591,45",
+        "Client Ledgers": "R 10 000,00",
+        "Section 86(4) Investments": "R 0,00",
+        "Fidelity Fund Interest & Charges": "R 41,45",
+        "Unidentified Deposits": "R 1 550,00",
+        "Section 86(3) Placements": "R 0,00",
+        "Trust Creditors": "R 11 591,45",
+        "Difference": "R 0,00",
+        "Adjusted Bank Balance": "R 11 591,45",
+        "Bank Comparison": "—",
+        "Integrity": "No integrity flags"
+      },
+      "apiKeys": [
+        "asAt",
+        "balanced",
+        "cashbook",
+        "clientLedgers",
+        "investmentCreditors",
+        "fundLedger",
+        "unidentifiedDeposits",
+        "otherNonClient",
+        "interAccount",
+        "creditorTotal",
+        "difference",
+        "flags",
+        "accounts"
+      ],
+      "cards": [
+        {
+          "label": "As Of Date",
+          "value": "30 Sept 2026"
+        },
+        {
+          "label": "Cashbook",
+          "value": "R 11 591,45"
+        },
+        {
+          "label": "Client Ledgers",
+          "value": "R 10 000,00"
+        },
+        {
+          "label": "Investment Creditors",
+          "value": "R 0,00"
+        },
+        {
+          "label": "Fund Ledger",
+          "value": "R 41,45"
+        },
+        {
+          "label": "Unidentified Deposits",
+          "value": "R 1 550,00"
+        },
+        {
+          "label": "Other Non Client",
+          "value": "R 0,00"
+        },
+        {
+          "label": "Inter Account",
+          "value": "R 0,00"
+        },
+        {
+          "label": "Creditor Total",
+          "value": "R 11 591,45"
+        },
+        {
+          "label": "Difference",
+          "value": "R 0,00"
+        },
+        {
+          "label": "Balanced",
+          "value": "Yes"
+        },
+        {
+          "label": "Account Count",
+          "value": "1"
+        },
+        {
+          "label": "Scope Note",
+          "value": "Trust cash, estates and other trust assets are not recorded in Kazi and are not included in this comparison."
+        }
+      ],
+      "balancedCard": "Yes",
+      "apiBalanced": true,
+      "acctBank": {
+        "bankBalance": 11591.45,
+        "outstandingDeposits": 0,
+        "outstandingPayments": 0,
+        "adjustedBankBalance": 11591.45
+      }
+    },
+    "2026-11-19": {
+      "cmp": {
+        "cashbook": {
+          "card": "R 11 591,45",
+          "api": 11591.45,
+          "equal": true
+        },
+        "clientLedgers": {
+          "card": "R 10 200,00",
+          "api": 10200,
+          "equal": true
+        },
+        "investmentCreditors": {
+          "card": "R 0,00",
+          "api": 0,
+          "equal": true
+        },
+        "fundLedger": {
+          "card": "R 41,45",
+          "api": 41.45,
+          "equal": true
+        },
+        "unidentifiedDeposits": {
+          "card": "R 1 350,00",
+          "api": 1350,
+          "equal": true
+        },
+        "otherNonClient": {
+          "card": "R 0,00",
+          "api": 0,
+          "equal": true
+        },
+        "interAccount": {
+          "card": "R 0,00",
+          "api": 0,
+          "equal": true
+        },
+        "creditorTotal": {
+          "card": "R 11 591,45",
+          "api": 11591.45,
+          "equal": true
+        },
+        "difference": {
+          "card": "R 0,00",
+          "api": 0,
+          "equal": true
+        }
+      },
+      "row": {
+        "Trust Account": "Mathebula & Partners Trust Account",
+        "Section": "Section 86(2) trust banking account",
+        "Cashbook": "R 11 591,45",
+        "Client Ledgers": "R 10 200,00",
+        "Section 86(4) Investments": "R 0,00",
+        "Fidelity Fund Interest & Charges": "R 41,45",
+        "Unidentified Deposits": "R 1 350,00",
+        "Section 86(3) Placements": "R 0,00",
+        "Trust Creditors": "R 11 591,45",
+        "Difference": "R 0,00",
+        "Adjusted Bank Balance": "—",
+        "Bank Comparison": "No reconciliation has this period end — the cashbook is compared with trust creditors only",
+        "Integrity": "No integrity flags"
+      },
+      "apiKeys": [
+        "asAt",
+        "balanced",
+        "cashbook",
+        "clientLedgers",
+        "investmentCreditors",
+        "fundLedger",
+        "unidentifiedDeposits",
+        "otherNonClient",
+        "interAccount",
+        "creditorTotal",
+        "difference",
+        "flags",
+        "accounts"
+      ],
+      "cards": [
+        {
+          "label": "As Of Date",
+          "value": "19 Nov 2026"
+        },
+        {
+          "label": "Cashbook",
+          "value": "R 11 591,45"
+        },
+        {
+          "label": "Client Ledgers",
+          "value": "R 10 200,00"
+        },
+        {
+          "label": "Investment Creditors",
+          "value": "R 0,00"
+        },
+        {
+          "label": "Fund Ledger",
+          "value": "R 41,45"
+        },
+        {
+          "label": "Unidentified Deposits",
+          "value": "R 1 350,00"
+        },
+        {
+          "label": "Other Non Client",
+          "value": "R 0,00"
+        },
+        {
+          "label": "Inter Account",
+          "value": "R 0,00"
+        },
+        {
+          "label": "Creditor Total",
+          "value": "R 11 591,45"
+        },
+        {
+          "label": "Difference",
+          "value": "R 0,00"
+        },
+        {
+          "label": "Balanced",
+          "value": "Yes"
+        },
+        {
+          "label": "Account Count",
+          "value": "1"
+        },
+        {
+          "label": "Scope Note",
+          "value": "Trust cash, estates and other trust assets are not recorded in Kazi and are not included in this comparison."
+        }
+      ],
+      "balancedCard": "Yes",
+      "apiBalanced": true,
+      "acctBank": null
+    }
+  },
+  "endedAt": "2026-11-19T04:04:00.411Z"
+}

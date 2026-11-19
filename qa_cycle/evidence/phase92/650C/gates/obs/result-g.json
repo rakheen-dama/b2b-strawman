@@ -1,0 +1,48 @@
+{
+  "phase": "g",
+  "startedAt": "2026-11-19T03:31:07.881Z",
+  "consoleErrors": [
+    {
+      "user": "user_e2e_carol",
+      "url": "http://localhost:3001/org/e2e-test-org/reports/trust-interest-charges-schedule",
+      "text": "Error: Minified React error #441; visit https://react.dev/errors/441 for the full message or use the non-minified dev environment for full errors and additional helpful warnings."
+    }
+  ],
+  "pageErrors": [],
+  "checks": {
+    "g: Carol's capabilities read (GET /api/me/capabilities 200)": true,
+    "g: page behaviour matches the capability rules (VIEW_TRUST gates the page; FINANCIAL_VISIBILITY gates the cards)": true,
+    "g: GET /api/report-definitions status agrees with FINANCIAL_VISIBILITY": true
+  },
+  "caps": {
+    "capabilities": [
+      "AI_EXECUTE",
+      "GENERATE_STATEMENT_OF_ACCOUNT",
+      "VIEW_LEGAL",
+      "MANAGE_DISBURSEMENTS",
+      "VIEW_TRUST"
+    ],
+    "role": "Member",
+    "isAdmin": false,
+    "isOwner": false,
+    "memberId": "0a16887e-f6bb-4795-b4d8-54d23c13bde9"
+  },
+  "page": {
+    "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/reports",
+    "h1": "Trust Reports",
+    "cards": 0,
+    "fvRequired": 1,
+    "notFound": true
+  },
+  "pageShot": "g-01-carol-trust-reports.png",
+  "direct": {
+    "url": "http://localhost:3001/org/e2e-test-org/reports/trust-interest-charges-schedule",
+    "h1": "",
+    "body": "Something went wrongAn unexpected error occurred while loading this page. Try refreshing, or go back and try again.Try againRefresh pageGo back"
+  },
+  "directShot": "g-02-carol-schedule-url.png",
+  "defsStatus": 403,
+  "hasViewTrust": true,
+  "hasFinancialVisibility": false,
+  "endedAt": "2026-11-19T03:31:43.535Z"
+}

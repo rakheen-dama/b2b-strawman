@@ -5,6 +5,8 @@ import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.reporting.ReportQuery;
 import io.b2mash.b2b.b2bstrawman.reporting.ReportResult;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccount;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountingConstants;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestment;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentInterestRepository;
@@ -29,8 +31,12 @@ import org.springframework.stereotype.Component;
  * Investment list with status, principal, interest earned for a trust account. Each row's {@code
  * balance} is derived from the posted rows ({@link TrustLedgerQueryRepository#investmentBalances},
  * 648E): what the investment holds now — zero while its placement awaits approval and after the
- * withdrawal. The report definition gains the column in 650C; until then the key is carried but not
- * printed.
+ * withdrawal.
+ *
+ * <p>v4 (Phase 92 650C, §16.8.5, D-19): per investment the holding account, the basis and status in
+ * words, principal, balance and interest — gross, the Fund's 5% and net ({@code interestEarned}).
+ * The raw {@code status} / {@code investmentBasis} / {@code applicableLpffRate} keys stay on the
+ * rows for callers (D-17) but are no longer columns of the definition.
  */
 @Component
 public class InvestmentRegisterQuery implements ReportQuery {
@@ -38,23 +44,31 @@ public class InvestmentRegisterQuery implements ReportQuery {
   /** The client column of a section 86(3) investment — the firm's own placement (648A). */
   static final String FIRM_CLIENT_LABEL = "Firm (section 86(3))";
 
+  // Row keys another query reads (Section35DataPackQuery, B-M3): one definition, both sides
+  static final String INVESTMENT_ID = "investmentId";
+  static final String INVESTMENT_ACCOUNT_ID = "investmentAccountId";
+  static final String INVESTMENT_BASIS = "investmentBasis";
+
   private final TrustInvestmentRepository investmentRepository;
   private final CustomerRepository customerRepository;
   private final LpffRateRepository lpffRateRepository;
   private final TrustLedgerQueryRepository ledgerQueries;
   private final TrustInvestmentInterestRepository interestRepository;
+  private final TrustAccountRepository trustAccountRepository;
 
   public InvestmentRegisterQuery(
       TrustInvestmentRepository investmentRepository,
       CustomerRepository customerRepository,
       LpffRateRepository lpffRateRepository,
       TrustLedgerQueryRepository ledgerQueries,
-      TrustInvestmentInterestRepository interestRepository) {
+      TrustInvestmentInterestRepository interestRepository,
+      TrustAccountRepository trustAccountRepository) {
     this.investmentRepository = investmentRepository;
     this.customerRepository = customerRepository;
     this.lpffRateRepository = lpffRateRepository;
     this.ledgerQueries = ledgerQueries;
     this.interestRepository = interestRepository;
+    this.trustAccountRepository = trustAccountRepository;
   }
 
   @Override
@@ -162,20 +176,31 @@ public class InvestmentRegisterQuery implements ReportQuery {
                     Collectors.toMap(
                         InvestmentBalanceRow::getInvestmentId, InvestmentBalanceRow::getBalance));
     // 648B (OQ-8 a): interestEarned is the client's net interest — Σ net of the investment's POSTED
-    // entries (consistent with balance = principal + net interest); the report's columns are
-    // unchanged until 650B. One batch query.
-    Map<UUID, BigDecimal> netInterest =
+    // entries (consistent with balance = principal + net interest); v4 (650C) adds the gross and
+    // the Fund's 5% from the same totals. One batch query.
+    Map<UUID, InterestTotals> interestTotals =
         investmentIds.isEmpty()
             ? Map.of()
             : interestRepository.sumPostedByInvestmentIds(investmentIds).stream()
-                .collect(
-                    Collectors.toMap(
-                        InterestTotals::getInvestmentId, InterestTotals::getNet, (a, b) -> a));
+                .collect(Collectors.toMap(InterestTotals::getInvestmentId, t -> t, (a, b) -> a));
+    // The holding account of each investment, by name (v4 "Investment Account" column)
+    var holdingIds =
+        investments.stream()
+            .map(TrustInvestment::getInvestmentAccountId)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toSet());
+    Map<UUID, String> holdingNames =
+        holdingIds.isEmpty()
+            ? Map.of()
+            : trustAccountRepository.findAllById(holdingIds).stream()
+                .collect(Collectors.toMap(TrustAccount::getId, TrustAccount::getAccountName));
 
     return investments.stream()
         .map(
             inv -> {
               var row = new LinkedHashMap<String, Object>();
+              row.put(INVESTMENT_ID, inv.getId());
+              row.put(INVESTMENT_ACCOUNT_ID, inv.getInvestmentAccountId());
               row.put(
                   "clientName",
                   inv.getCustomerId() == null
@@ -190,9 +215,19 @@ public class InvestmentRegisterQuery implements ReportQuery {
               row.put(
                   "maturityDate",
                   inv.getMaturityDate() != null ? inv.getMaturityDate().toString() : null);
-              row.put("interestEarned", netInterest.getOrDefault(inv.getId(), BigDecimal.ZERO));
+              var totals = interestTotals.get(inv.getId());
+              row.put("interestEarned", amountOrZero(totals != null ? totals.getNet() : null));
+              row.put("grossInterest", amountOrZero(totals != null ? totals.getGross() : null));
+              row.put("fundShare", amountOrZero(totals != null ? totals.getFundShare() : null));
+              row.put(
+                  "investmentAccountName",
+                  inv.getInvestmentAccountId() != null
+                      ? holdingNames.get(inv.getInvestmentAccountId())
+                      : null);
               row.put("status", inv.getStatus());
-              row.put("investmentBasis", inv.getInvestmentBasis().name());
+              row.put("statusLabel", TrustReportWords.investmentStatusLabel(inv.getStatus()));
+              row.put(INVESTMENT_BASIS, inv.getInvestmentBasis().name());
+              row.put("basisLabel", TrustReportWords.basisLabel(inv.getInvestmentBasis()));
               row.put(
                   "applicableLpffRate",
                   inv.getInvestmentBasis() == InvestmentBasis.FIRM_DISCRETION
@@ -203,14 +238,24 @@ public class InvestmentRegisterQuery implements ReportQuery {
         .toList();
   }
 
+  private static BigDecimal amountOrZero(BigDecimal amount) {
+    return amount != null ? amount : BigDecimal.ZERO;
+  }
+
   private Map<String, Object> computeSummary(List<Map<String, Object>> rows) {
     var summary = new LinkedHashMap<String, Object>();
     BigDecimal totalPrincipal = BigDecimal.ZERO;
+    BigDecimal totalBalance = BigDecimal.ZERO;
+    BigDecimal totalGrossInterest = BigDecimal.ZERO;
+    BigDecimal totalFundShare = BigDecimal.ZERO;
     BigDecimal totalInterestEarned = BigDecimal.ZERO;
     int activeCount = 0;
 
     for (var row : rows) {
       totalPrincipal = totalPrincipal.add((BigDecimal) row.get("principal"));
+      totalBalance = totalBalance.add((BigDecimal) row.get("balance"));
+      totalGrossInterest = totalGrossInterest.add((BigDecimal) row.get("grossInterest"));
+      totalFundShare = totalFundShare.add((BigDecimal) row.get("fundShare"));
       totalInterestEarned = totalInterestEarned.add((BigDecimal) row.get("interestEarned"));
       if ("ACTIVE".equals(row.get("status"))) {
         activeCount++;
@@ -218,9 +263,13 @@ public class InvestmentRegisterQuery implements ReportQuery {
     }
 
     summary.put("totalPrincipal", totalPrincipal);
+    summary.put("totalBalance", totalBalance);
+    summary.put("totalGrossInterest", totalGrossInterest);
+    summary.put("totalFundShare", totalFundShare);
     summary.put("totalInterestEarned", totalInterestEarned);
     summary.put("activeCount", activeCount);
     summary.put("totalCount", rows.size());
+    summary.put("scopeNote", TrustReportWords.TRUST_ASSETS_NOTE);
     return summary;
   }
 }

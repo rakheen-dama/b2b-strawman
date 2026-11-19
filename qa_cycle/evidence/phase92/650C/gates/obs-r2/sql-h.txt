@@ -1,0 +1,11 @@
+-- 650C OBS run 2 phase h read-only SQL (schema tenant_7d218705360b) 2026-11-19T04:05:47Z
+   event_type    | format | count 
+-----------------+--------+-------
+ REPORT_EXPORTED | csv    |    16
+(1 row)
+
+    pack_id    | pack_version |         installed_at          
+---------------+--------------+-------------------------------
+ trust-reports | 4            | 2026-11-19 03:58:27.109059+00
+(1 row)
+

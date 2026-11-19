@@ -20,8 +20,8 @@ import org.springframework.stereotype.Component;
  * <p>648F (§16.8.5): for a client with section 86(4) investments placed from the account, {@code
  * summary.invested} carries the period's invested block ({@link
  * ClientLedgerService#getClientInvestedStatement}: opening / closing invested balance, capital
- * placed, interest gross / Fund's 5% / net, returned to trust). The report body prints it from the
- * trust-reports v4 definition (650C); the rows and columns are unchanged.
+ * placed, interest gross / Fund's 5% / net, returned to trust). The trust-reports v4 template
+ * (650C) prints it; the rows and columns are unchanged.
  */
 @Component
 public class ClientLedgerStatementQuery implements ReportQuery {
@@ -139,6 +139,7 @@ public class ClientLedgerStatementQuery implements ReportQuery {
     summary.put("totalDebits", totalDebits);
     summary.put("totalCredits", totalCredits);
     summary.put("transactionCount", queryResult.rows.size());
+    summary.put("scopeNote", TrustReportWords.TRUST_ASSETS_NOTE);
     // A nested map: the firm report screen shows flat summary values only (R-A, 650C prints it)
     if (!queryResult.invested().isEmpty()) {
       var inv = queryResult.invested();

@@ -1,0 +1,93 @@
+{
+  "method": "GET",
+  "url": "/api/report-definitions",
+  "status": 200,
+  "body": {
+    "categories": [
+      {
+        "category": "FINANCIAL",
+        "label": "Financial",
+        "reports": [
+          {
+            "slug": "invoice-aging",
+            "name": "Fee Note Aging Report",
+            "description": "Outstanding fee notes grouped by age bucket."
+          }
+        ]
+      },
+      {
+        "category": "PROJECT",
+        "label": "Matter",
+        "reports": [
+          {
+            "slug": "project-profitability",
+            "name": "Matter Profitability Report",
+            "description": "Revenue vs. cost per matter for a date range."
+          }
+        ]
+      },
+      {
+        "category": "TIME_ATTENDANCE",
+        "label": "Time & Attendance",
+        "reports": [
+          {
+            "slug": "timesheet",
+            "name": "Timesheet Report",
+            "description": "Time entries grouped by member, matter, or date for a given period."
+          }
+        ]
+      },
+      {
+        "category": "TRUST",
+        "label": "TRUST",
+        "reports": [
+          {
+            "slug": "trust-receipts-payments",
+            "name": "Trust Receipts & Payments",
+            "description": "Chronological journal of all trust receipts and payments for a date range."
+          },
+          {
+            "slug": "client-trust-balances",
+            "name": "Trust Creditors List (Rule 54.15)",
+            "description": "Every person and non-client creditor for whom trust money is held, as at a date — the locked monthly list where one exists."
+          },
+          {
+            "slug": "trust-position",
+            "name": "Trust Position as at a Date",
+            "description": "The cashbook against every trust creditor as at any date, per account and firm-wide, with the integrity flags."
+          },
+          {
+            "slug": "client-ledger-statement",
+            "name": "Client Ledger Statement",
+            "description": "Per-client transaction history with running balance."
+          },
+          {
+            "slug": "trust-reconciliation",
+            "name": "Trust Reconciliation",
+            "description": "Bank, cashbook and trust creditors compared at the reconciliation's period end, with the stored creditor breakdown."
+          },
+          {
+            "slug": "investment-register",
+            "name": "Investment Register",
+            "description": "Every trust investment on the books: account, basis, principal, balance and interest — gross, the Fund's 5% and net."
+          },
+          {
+            "slug": "trust-interest-charges-schedule",
+            "name": "Interest and Charges Schedule (Rule 54.28)",
+            "description": "Rule 54.28: interest earned and charges levied per trust account and month, the Fund ledger brought forward and carried forward; memo figures shown separately."
+          },
+          {
+            "slug": "unidentified-deposits-age-analysis",
+            "name": "Unidentified Deposits Age Analysis",
+            "description": "Unidentified deposits open as at a date by age band, and those allocated or paid to the Fund in the twelve months to it."
+          },
+          {
+            "slug": "section-35-data-pack",
+            "name": "Section 35 Data Pack",
+            "description": "Composite report combining all trust sub-reports for Section 35 compliance."
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -18,6 +18,8 @@ import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -27,8 +29,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
 @SpringBootTest
@@ -42,6 +47,7 @@ class ReportExecutionServiceTest {
   private static final String ORG_ID = "org_res_test";
 
   @Autowired private ReportExecutionService reportExecutionService;
+  @Autowired private ReportExportService reportExportService;
   @Autowired private AuditEventRepository auditEventRepository;
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
@@ -182,6 +188,50 @@ class ReportExecutionServiceTest {
 
               assertThat(response.pagination().page()).isEqualTo(0);
               assertThat(response.pagination().size()).isEqualTo(1);
+            });
+  }
+
+  /**
+   * CR-4 (650C): every entry point that runs a report query opens a read-only REPEATABLE_READ
+   * transaction, so a report's several statements read one snapshot (an isolation on the query bean
+   * or on {@code ReportExecutionService} would be ignored — the transaction is already open).
+   */
+  @Test
+  void reportEntryPoints_readOneSnapshot_readOnlyRepeatableRead() throws Exception {
+    var entryPoints =
+        List.of(
+            ReportExportService.class.getMethod("execute", String.class, Map.class, Pageable.class),
+            ReportExportService.class.getMethod("renderPreviewHtml", String.class, Map.class),
+            ReportExportService.class.getMethod("exportAsPdf", String.class, Map.class),
+            ReportExportService.class.getMethod("exportAsCsv", String.class, Map.class));
+    for (var method : entryPoints) {
+      var tx = method.getAnnotation(Transactional.class);
+      assertThat(tx).as(method.getName()).isNotNull();
+      assertThat(tx.readOnly()).as("%s readOnly", method.getName()).isTrue();
+      assertThat(tx.isolation())
+          .as("%s isolation", method.getName())
+          .isEqualTo(Isolation.REPEATABLE_READ);
+    }
+  }
+
+  /** CR-4: a report runs through the REPEATABLE_READ entry point end to end. */
+  @Test
+  void executeThroughTheEntryPoint_runsAtRepeatableRead() {
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, memberId)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () -> {
+              var params = new HashMap<String, Object>();
+              params.put("dateFrom", "2025-03-01");
+              params.put("dateTo", "2025-03-31");
+              params.put("groupBy", "member");
+
+              var response =
+                  reportExportService.execute("timesheet", params, PageRequest.of(0, 10));
+
+              assertThat(response.rows()).isNotEmpty();
             });
   }
 }

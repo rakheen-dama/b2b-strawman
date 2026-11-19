@@ -997,89 +997,81 @@ describe("Trust Investments & Reports", () => {
     expect(alertRow.className).toContain("bg-amber-50");
   });
 
-  it("reports page lists all 7 trust report types", async () => {
+  it("reports page lists the nine trust report types (pack v4)", async () => {
+    const reports = [
+      {
+        slug: "trust-receipts-payments",
+        name: "Trust Receipts & Payments",
+        description: "Chronological journal of all trust receipts and payments for a date range.",
+      },
+      {
+        slug: "client-trust-balances",
+        name: "Trust Creditors List (Rule 54.15)",
+        description:
+          "Every person and non-client creditor for whom trust money is held, as at a date — the locked monthly list where one exists.",
+      },
+      {
+        slug: "trust-position",
+        name: "Trust Position as at a Date",
+        description:
+          "The cashbook against every trust creditor as at any date, per account and firm-wide, with the integrity flags.",
+      },
+      {
+        slug: "client-ledger-statement",
+        name: "Client Ledger Statement",
+        description: "Per-client transaction history with running balance.",
+      },
+      {
+        slug: "trust-reconciliation",
+        name: "Trust Reconciliation",
+        description:
+          "Bank, cashbook and trust creditors compared at the reconciliation's period end, with the stored creditor breakdown.",
+      },
+      {
+        slug: "investment-register",
+        name: "Investment Register",
+        description:
+          "Every trust investment on the books: account, basis, principal, balance and interest — gross, the Fund's 5% and net.",
+      },
+      {
+        slug: "trust-interest-charges-schedule",
+        name: "Interest and Charges Schedule (Rule 54.28)",
+        description:
+          "Rule 54.28: interest earned and charges levied per trust account and month, the Fund ledger brought forward and carried forward; memo figures shown separately.",
+      },
+      {
+        slug: "unidentified-deposits-age-analysis",
+        name: "Unidentified Deposits Age Analysis",
+        description:
+          "Unidentified deposits open as at a date by age band, and those allocated or paid to the Fund in the twelve months to it.",
+      },
+      {
+        slug: "section-35-data-pack",
+        name: "Section 35 Data Pack",
+        description: "Composite report combining all trust sub-reports for Section 35 compliance.",
+      },
+    ];
     mockGetReportDefinitions.mockResolvedValue({
-      categories: [
-        {
-          category: "TRUST",
-          label: "Trust Reports",
-          reports: [
-            {
-              slug: "trust-receipts-payments",
-              name: "Trust Receipts & Payments",
-              description:
-                "Chronological journal of all trust receipts and payments for a date range",
-            },
-            {
-              slug: "client-trust-balances",
-              name: "Client Trust Balances",
-              description: "Point-in-time balances per client for a trust account",
-            },
-            {
-              slug: "client-ledger-statement",
-              name: "Client Ledger Statement",
-              description: "Per-client transaction history with running balance",
-            },
-            {
-              slug: "trust-reconciliation",
-              name: "Trust Reconciliation",
-              description: "Three-way reconciliation: bank vs cashbook vs client ledger",
-            },
-            {
-              slug: "investment-register",
-              name: "Investment Register",
-              description:
-                "List of all trust investments with status, principal, and interest earned",
-            },
-            {
-              slug: "interest-allocation",
-              name: "Interest Allocation",
-              description: "Per-client interest allocation breakdown for a specific interest run",
-            },
-            {
-              slug: "section-35-data-pack",
-              name: "Section 35 Data Pack",
-              description:
-                "Composite report combining all trust sub-reports for Section 35 compliance",
-            },
-          ],
-        },
-      ],
+      categories: [{ category: "TRUST", label: "Trust Reports", reports }],
     });
 
     await renderReportsPage();
 
     expect(screen.getByTestId("trust-reports-page")).toBeInTheDocument();
 
-    // Verify all 7 report cards
-    const expectedSlugs = [
-      "trust-receipts-payments",
-      "client-trust-balances",
-      "client-ledger-statement",
-      "trust-reconciliation",
-      "investment-register",
-      "interest-allocation",
-      "section-35-data-pack",
-    ];
-
-    for (const slug of expectedSlugs) {
-      expect(screen.getByTestId(`report-card-${slug}`)).toBeInTheDocument();
+    // Verify all nine report cards, and no retired interest-allocation card
+    for (const report of reports) {
+      expect(screen.getByTestId(`report-card-${report.slug}`)).toBeInTheDocument();
+      expect(screen.getByText(report.name)).toBeInTheDocument();
     }
-
-    // Verify report names are visible
-    expect(screen.getByText("Trust Receipts & Payments")).toBeInTheDocument();
-    expect(screen.getByText("Client Trust Balances")).toBeInTheDocument();
-    expect(screen.getByText("Client Ledger Statement")).toBeInTheDocument();
-    expect(screen.getByText("Investment Register")).toBeInTheDocument();
-    expect(screen.getByText("Interest Allocation")).toBeInTheDocument();
-    expect(screen.getByText("Trust Reconciliation")).toBeInTheDocument();
-    expect(screen.getByText("Section 35 Data Pack")).toBeInTheDocument();
+    expect(screen.queryByTestId("report-card-interest-allocation")).not.toBeInTheDocument();
+    expect(screen.queryByText("Interest Allocation")).not.toBeInTheDocument();
 
     // Verify links point to existing report runner
     const links = screen.getAllByRole("link");
     const reportLinks = links.filter((l) =>
       l.getAttribute("href")?.startsWith("/org/acme/reports/")
     );
-    expect(reportLinks).toHaveLength(7);
+    expect(reportLinks).toHaveLength(9);
   });
 });

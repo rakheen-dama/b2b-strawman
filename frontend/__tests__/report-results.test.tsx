@@ -3,7 +3,7 @@ import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ReportResults } from "@/components/reports/report-results";
 import type { ReportExecutionResponse } from "@/lib/api/reports";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, formatLocalDate } from "@/lib/format";
 
 vi.mock("server-only", () => ({}));
 
@@ -152,6 +152,77 @@ describe("ReportResults", () => {
     expect(item.className).toContain("whitespace-normal");
     expect(item.className).toContain("wrap-anywhere");
     expect(screen.getAllByText(yearEnd)[1].closest("td")!.className).not.toContain("wrap-anywhere");
+  });
+
+  // 650C (A-M2): the trust position and reconciliation summaries name their money by ledger, and
+  // carry booleans — money prints as currency, booleans as words, counts stay counts.
+  it("formats trust position money keys as currency and booleans as Yes / No", () => {
+    render(
+      <ReportResults
+        response={makeResponse({
+          columns: [{ key: "accountName", label: "Trust Account", type: "string" }],
+          rows: [{ accountName: "Main trust" }],
+          summary: {
+            cashbook: 1111.11,
+            clientLedgers: 1222.22,
+            investmentCreditors: 1333.33,
+            fundLedger: -1444.44,
+            unidentifiedDeposits: 1555.55,
+            interAccount: 1666.66,
+            otherNonClient: 1777.77,
+            difference: 1888.88,
+            investmentAccountTotal: 1999.99,
+            balanced: true,
+            isBalanced: false,
+            accountCount: 3,
+            openItems: 4,
+          },
+        })}
+        isLoading={false}
+        onPageChange={vi.fn()}
+      />
+    );
+
+    for (const amount of [
+      1111.11, 1222.22, 1333.33, -1444.44, 1555.55, 1666.66, 1777.77, 1888.88, 1999.99,
+    ]) {
+      expect(screen.getByText(money(amount))).toBeInTheDocument();
+    }
+    expect(screen.queryByText("1111.11")).not.toBeInTheDocument();
+    expect(screen.getByText("Yes")).toBeInTheDocument();
+    expect(screen.getByText("No")).toBeInTheDocument();
+    expect(screen.queryByText("true")).not.toBeInTheDocument();
+    expect(screen.queryByText("false")).not.toBeInTheDocument();
+    // counts are not money
+    expect(screen.getByText("3")).toBeInTheDocument();
+    expect(screen.getByText("4")).toBeInTheDocument();
+  });
+
+  // F-650C-OBS-4 / OBS-5: summary dates read as dates, the after-lock net as money
+  it("formats ISO date summary values as dates and the after-lock net as currency", () => {
+    render(
+      <ReportResults
+        response={makeResponse({
+          summary: {
+            periodFrom: "2026-08-01",
+            asOfDate: "2026-09-30",
+            afterLockNet: 0,
+            source: "Locked 2026-11-19 by Alice",
+          },
+        })}
+        isLoading={false}
+        onPageChange={vi.fn()}
+      />
+    );
+
+    expect(screen.getByText(formatLocalDate("2026-08-01"))).toBeInTheDocument();
+    expect(screen.getByText(formatLocalDate("2026-09-30"))).toBeInTheDocument();
+    expect(screen.queryByText("2026-08-01")).not.toBeInTheDocument();
+    expect(screen.queryByText("2026-09-30")).not.toBeInTheDocument();
+    expect(screen.getByText(money(0))).toBeInTheDocument();
+    expect(screen.queryByText("0")).not.toBeInTheDocument();
+    // only a whole value that is an ISO date is reformatted
+    expect(screen.getByText("Locked 2026-11-19 by Alice")).toBeInTheDocument();
   });
 
   it("shows pagination as 'Page 1 of 2' for totalPages=2", () => {

@@ -1,0 +1,537 @@
+{
+  "phase": "d",
+  "startedAt": "2026-11-19T04:03:37.406Z",
+  "consoleErrors": [],
+  "pageErrors": [],
+  "checks": {
+    "d: as at 19 Nov 2026: R 750,00 received 25 Sep (55 days) in '31–90 days', Open": true,
+    "d: as at 19 Nov 2026: R 600,00 received 12 Aug (99 days) in '91–180 days', Open": true,
+    "d: as at 19 Nov 2026: R 200,00 allocated 15 Oct listed as resolved 'Allocated to Acme Corp on 15 October 2026'": true,
+    "d: as at 19 Nov 2026: band cards 31–90 R 750,00 · 91–180 R 600,00 · others R 0,00; Open Total R 1 350,00": true,
+    "d: Σ open (19 Nov) = API unidentified creditor today = SQL": true,
+    "d: as at 1 Oct 2026 (before the allocation): all three open by their own rows (EQ-4) — 50 d '31–90', 6 d and 5 d '0–30'; no resolved row": true,
+    "d: as at 1 Oct: Open Total R 1 550,00 = API total-balance?asAt=2026-10-01 unidentified": true,
+    "d: no raw code in either run (cards + table)": true
+  },
+  "now": {
+    "slug": "unidentified-deposits-age-analysis",
+    "params": {
+      "asOfDate": "2026-11-19",
+      "trust_account_id": {
+        "pick": "/Mathebula & Partners Trust Account/"
+      }
+    },
+    "title": "Unidentified Deposits Age Analysis",
+    "description": "Unidentified deposits open as at a date by age band, and those allocated or paid to the Fund in the twelve months to it.",
+    "paramLabels": [
+      "As at Date*",
+      "Trust Account"
+    ],
+    "result": {
+      "cards": [
+        {
+          "label": "As Of Date",
+          "value": "19 Nov 2026"
+        },
+        {
+          "label": "Open Total",
+          "value": "R 1 350,00"
+        },
+        {
+          "label": "Up To One Month Total",
+          "value": "R 0,00"
+        },
+        {
+          "label": "One To Three Months Total",
+          "value": "R 750,00"
+        },
+        {
+          "label": "Three To Six Months Total",
+          "value": "R 600,00"
+        },
+        {
+          "label": "Six To Twelve Months Total",
+          "value": "R 0,00"
+        },
+        {
+          "label": "Over One Year Total",
+          "value": "R 0,00"
+        },
+        {
+          "label": "Open Items",
+          "value": "2"
+        },
+        {
+          "label": "Resolved Items",
+          "value": "1"
+        },
+        {
+          "label": "Scope Note",
+          "value": "Trust cash, estates and other trust assets are not recorded in Kazi and are not included in this comparison."
+        }
+      ],
+      "headers": [
+        "Trust Account",
+        "Received",
+        "Bank Description",
+        "Amount",
+        "Age (days)",
+        "Age Band",
+        "Position"
+      ],
+      "rows": [
+        [
+          "Mathebula & Partners Trust Account",
+          "2026-09-25",
+          "Eft credit no reference",
+          "R 750,00",
+          "55",
+          "31–90 days",
+          "Open"
+        ],
+        [
+          "Mathebula & Partners Trust Account",
+          "2026-08-12",
+          "Eft credit unknown remitter",
+          "R 600,00",
+          "99",
+          "91–180 days",
+          "Open"
+        ],
+        [
+          "Mathebula & Partners Trust Account",
+          "2026-09-26",
+          "Eft credit estate payer",
+          "R 200,00",
+          "—",
+          "Resolved",
+          "Allocated to Acme Corp on 15 October 2026"
+        ]
+      ],
+      "noData": false,
+      "error": null,
+      "pager": "Page 1 of 1",
+      "toasts": [],
+      "formErrors": []
+    },
+    "shot": "d-asof-2026-11-19-report-unidentified-deposits-age-analysis.png",
+    "cardScan": {
+      "codes": [],
+      "iso": [],
+      "rawDecimals": []
+    },
+    "tableCodeHits": [],
+    "tableIsoHits": [
+      "2026-09-25",
+      "2026-08-12",
+      "2026-09-26"
+    ],
+    "tableRawDecimalHits": [],
+    "csv": {
+      "ok": true,
+      "file": "d-asof-2026-11-19-unidentified-deposits-age-analysis.csv",
+      "suggested": "unidentified-deposits-age-analysis-report.csv",
+      "bytes": 576,
+      "lines": 7,
+      "header": "# Unidentified Deposits Age Analysis",
+      "codeHits": []
+    },
+    "pdf": {
+      "ok": true,
+      "file": "d-asof-2026-11-19-unidentified-deposits-age-analysis.pdf",
+      "suggested": "unidentified-deposits-age-analysis-report.pdf",
+      "bytes": 3300,
+      "magic": "%PDF-",
+      "textChars": 772,
+      "extractOk": true,
+      "scopeNote": true,
+      "scan": {
+        "codes": [],
+        "iso": [
+          "2026-11-19"
+        ],
+        "rawDecimals": []
+      },
+      "codes": [],
+      "missingColumns": [],
+      "page1": "d-asof-2026-11-19-unidentified-deposits-age-analysis.pdf-page1.png"
+    },
+    "afterExport": {
+      "cards": [
+        {
+          "label": "As Of Date",
+          "value": "19 Nov 2026"
+        },
+        {
+          "label": "Open Total",
+          "value": "R 1 350,00"
+        },
+        {
+          "label": "Up To One Month Total",
+          "value": "R 0,00"
+        },
+        {
+          "label": "One To Three Months Total",
+          "value": "R 750,00"
+        },
+        {
+          "label": "Three To Six Months Total",
+          "value": "R 600,00"
+        },
+        {
+          "label": "Six To Twelve Months Total",
+          "value": "R 0,00"
+        },
+        {
+          "label": "Over One Year Total",
+          "value": "R 0,00"
+        },
+        {
+          "label": "Open Items",
+          "value": "2"
+        },
+        {
+          "label": "Resolved Items",
+          "value": "1"
+        },
+        {
+          "label": "Scope Note",
+          "value": "Trust cash, estates and other trust assets are not recorded in Kazi and are not included in this comparison."
+        }
+      ],
+      "headers": [
+        "Trust Account",
+        "Received",
+        "Bank Description",
+        "Amount",
+        "Age (days)",
+        "Age Band",
+        "Position"
+      ],
+      "rows": [
+        [
+          "Mathebula & Partners Trust Account",
+          "2026-09-25",
+          "Eft credit no reference",
+          "R 750,00",
+          "55",
+          "31–90 days",
+          "Open"
+        ],
+        [
+          "Mathebula & Partners Trust Account",
+          "2026-08-12",
+          "Eft credit unknown remitter",
+          "R 600,00",
+          "99",
+          "91–180 days",
+          "Open"
+        ],
+        [
+          "Mathebula & Partners Trust Account",
+          "2026-09-26",
+          "Eft credit estate payer",
+          "R 200,00",
+          "—",
+          "Resolved",
+          "Allocated to Acme Corp on 15 October 2026"
+        ]
+      ],
+      "noData": false,
+      "error": null,
+      "pager": "Page 1 of 1",
+      "toasts": [],
+      "formErrors": []
+    }
+  },
+  "oct1": {
+    "slug": "unidentified-deposits-age-analysis",
+    "params": {
+      "asOfDate": "2026-10-01",
+      "trust_account_id": {
+        "pick": "/Mathebula & Partners Trust Account/"
+      }
+    },
+    "title": "Unidentified Deposits Age Analysis",
+    "description": "Unidentified deposits open as at a date by age band, and those allocated or paid to the Fund in the twelve months to it.",
+    "paramLabels": [
+      "As at Date*",
+      "Trust Account"
+    ],
+    "result": {
+      "cards": [
+        {
+          "label": "As Of Date",
+          "value": "01 Oct 2026"
+        },
+        {
+          "label": "Open Total",
+          "value": "R 1 550,00"
+        },
+        {
+          "label": "Up To One Month Total",
+          "value": "R 950,00"
+        },
+        {
+          "label": "One To Three Months Total",
+          "value": "R 600,00"
+        },
+        {
+          "label": "Three To Six Months Total",
+          "value": "R 0,00"
+        },
+        {
+          "label": "Six To Twelve Months Total",
+          "value": "R 0,00"
+        },
+        {
+          "label": "Over One Year Total",
+          "value": "R 0,00"
+        },
+        {
+          "label": "Open Items",
+          "value": "3"
+        },
+        {
+          "label": "Resolved Items",
+          "value": "0"
+        },
+        {
+          "label": "Scope Note",
+          "value": "Trust cash, estates and other trust assets are not recorded in Kazi and are not included in this comparison."
+        }
+      ],
+      "headers": [
+        "Trust Account",
+        "Received",
+        "Bank Description",
+        "Amount",
+        "Age (days)",
+        "Age Band",
+        "Position"
+      ],
+      "rows": [
+        [
+          "Mathebula & Partners Trust Account",
+          "2026-09-25",
+          "Eft credit no reference",
+          "R 750,00",
+          "6",
+          "0–30 days",
+          "Open"
+        ],
+        [
+          "Mathebula & Partners Trust Account",
+          "2026-09-26",
+          "Eft credit estate payer",
+          "R 200,00",
+          "5",
+          "0–30 days",
+          "Open"
+        ],
+        [
+          "Mathebula & Partners Trust Account",
+          "2026-08-12",
+          "Eft credit unknown remitter",
+          "R 600,00",
+          "50",
+          "31–90 days",
+          "Open"
+        ]
+      ],
+      "noData": false,
+      "error": null,
+      "pager": "Page 1 of 1",
+      "toasts": [],
+      "formErrors": []
+    },
+    "shot": "d-asof-2026-10-01-report-unidentified-deposits-age-analysis.png",
+    "cardScan": {
+      "codes": [],
+      "iso": [],
+      "rawDecimals": []
+    },
+    "tableCodeHits": [],
+    "tableIsoHits": [
+      "2026-09-25",
+      "2026-09-26",
+      "2026-08-12"
+    ],
+    "tableRawDecimalHits": [],
+    "csv": {
+      "ok": true,
+      "file": "d-asof-2026-10-01-unidentified-deposits-age-analysis.csv",
+      "suggested": "unidentified-deposits-age-analysis-report.csv",
+      "bytes": 540,
+      "lines": 7,
+      "header": "# Unidentified Deposits Age Analysis",
+      "codeHits": []
+    },
+    "pdf": {
+      "ok": true,
+      "file": "d-asof-2026-10-01-unidentified-deposits-age-analysis.pdf",
+      "suggested": "unidentified-deposits-age-analysis-report.pdf",
+      "bytes": 3237,
+      "magic": "%PDF-",
+      "textChars": 733,
+      "extractOk": true,
+      "scopeNote": true,
+      "scan": {
+        "codes": [],
+        "iso": [
+          "2026-10-01"
+        ],
+        "rawDecimals": []
+      },
+      "codes": [],
+      "missingColumns": [],
+      "page1": "d-asof-2026-10-01-unidentified-deposits-age-analysis.pdf-page1.png"
+    },
+    "afterExport": {
+      "cards": [
+        {
+          "label": "As Of Date",
+          "value": "01 Oct 2026"
+        },
+        {
+          "label": "Open Total",
+          "value": "R 1 550,00"
+        },
+        {
+          "label": "Up To One Month Total",
+          "value": "R 950,00"
+        },
+        {
+          "label": "One To Three Months Total",
+          "value": "R 600,00"
+        },
+        {
+          "label": "Three To Six Months Total",
+          "value": "R 0,00"
+        },
+        {
+          "label": "Six To Twelve Months Total",
+          "value": "R 0,00"
+        },
+        {
+          "label": "Over One Year Total",
+          "value": "R 0,00"
+        },
+        {
+          "label": "Open Items",
+          "value": "3"
+        },
+        {
+          "label": "Resolved Items",
+          "value": "0"
+        },
+        {
+          "label": "Scope Note",
+          "value": "Trust cash, estates and other trust assets are not recorded in Kazi and are not included in this comparison."
+        }
+      ],
+      "headers": [
+        "Trust Account",
+        "Received",
+        "Bank Description",
+        "Amount",
+        "Age (days)",
+        "Age Band",
+        "Position"
+      ],
+      "rows": [
+        [
+          "Mathebula & Partners Trust Account",
+          "2026-09-25",
+          "Eft credit no reference",
+          "R 750,00",
+          "6",
+          "0–30 days",
+          "Open"
+        ],
+        [
+          "Mathebula & Partners Trust Account",
+          "2026-09-26",
+          "Eft credit estate payer",
+          "R 200,00",
+          "5",
+          "0–30 days",
+          "Open"
+        ],
+        [
+          "Mathebula & Partners Trust Account",
+          "2026-08-12",
+          "Eft credit unknown remitter",
+          "R 600,00",
+          "50",
+          "31–90 days",
+          "Open"
+        ]
+      ],
+      "noData": false,
+      "error": null,
+      "pager": "Page 1 of 1",
+      "toasts": [],
+      "formErrors": []
+    }
+  },
+  "rowsNow": [
+    {
+      "Trust Account": "Mathebula & Partners Trust Account",
+      "Received": "2026-09-25",
+      "Bank Description": "Eft credit no reference",
+      "Amount": "R 750,00",
+      "Age (days)": "55",
+      "Age Band": "31–90 days",
+      "Position": "Open"
+    },
+    {
+      "Trust Account": "Mathebula & Partners Trust Account",
+      "Received": "2026-08-12",
+      "Bank Description": "Eft credit unknown remitter",
+      "Amount": "R 600,00",
+      "Age (days)": "99",
+      "Age Band": "91–180 days",
+      "Position": "Open"
+    },
+    {
+      "Trust Account": "Mathebula & Partners Trust Account",
+      "Received": "2026-09-26",
+      "Bank Description": "Eft credit estate payer",
+      "Amount": "R 200,00",
+      "Age (days)": "—",
+      "Age Band": "Resolved",
+      "Position": "Allocated to Acme Corp on 15 October 2026"
+    }
+  ],
+  "rowsOct": [
+    {
+      "Trust Account": "Mathebula & Partners Trust Account",
+      "Received": "2026-09-25",
+      "Bank Description": "Eft credit no reference",
+      "Amount": "R 750,00",
+      "Age (days)": "6",
+      "Age Band": "0–30 days",
+      "Position": "Open"
+    },
+    {
+      "Trust Account": "Mathebula & Partners Trust Account",
+      "Received": "2026-09-26",
+      "Bank Description": "Eft credit estate payer",
+      "Amount": "R 200,00",
+      "Age (days)": "5",
+      "Age Band": "0–30 days",
+      "Position": "Open"
+    },
+    {
+      "Trust Account": "Mathebula & Partners Trust Account",
+      "Received": "2026-08-12",
+      "Bank Description": "Eft credit unknown remitter",
+      "Amount": "R 600,00",
+      "Age (days)": "50",
+      "Age Band": "31–90 days",
+      "Position": "Open"
+    }
+  ],
+  "endedAt": "2026-11-19T04:03:45.712Z"
+}

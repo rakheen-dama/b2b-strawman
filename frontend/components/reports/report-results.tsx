@@ -13,7 +13,7 @@ import {
 import { Button } from "@b2mash/ui/button";
 import { Skeleton } from "@b2mash/ui/skeleton";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, formatLocalDate } from "@/lib/format";
 import type { ReportExecutionResponse, ColumnDefinition } from "@/lib/api/reports";
 
 interface ReportResultsProps {
@@ -46,14 +46,25 @@ function formatCellValue(value: unknown, column: ColumnDefinition): string {
 }
 
 // Summary values carry no column type, so money is recognised by its key (G89-F18): balances,
-// totals, receipts, shares… — but never counts, hours, days or rates.
+// totals, receipts, shares… and the trust position's ledgers (cashbook, client ledgers, the
+// creditor and deposit lines, the difference — 650C) — but never counts, hours, days or rates.
+// A key ending in "Net" (afterLockNet) is a net amount too (F-650C-OBS-5).
 const MONEY_SUMMARY_KEY =
-  /(amount|balance|total|receipts|payments|movement|principal|interest|share|fees|revenue|cost|billed|outstanding|owing)/i;
-const NON_MONEY_SUMMARY_KEY = /(count|hours|days|minutes|rate|percent)/i;
+  /(amount|balance|total|receipts|payments|movement|principal|interest|share|fees|revenue|cost|billed|outstanding|owing|cashbook|ledger|creditor|deposit|interaccount|nonclient|difference|net$)/i;
+// A whole value that is an ISO date ("2026-09-30": period ends, as-at dates) reads as a date
+// (F-650C-OBS-4); a sentence that merely contains one is left alone.
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+// "count" but not the "count" inside "account" (interAccount, investmentAccountTotal are money;
+// accountCount still ends in a count)
+const NON_MONEY_SUMMARY_KEY = /((?<!ac)count|hours|days|minutes|rate|percent)/i;
 
 function formatSummaryValue(key: string, value: unknown): string {
   if (value == null) {
     return "—";
+  }
+  // A check result (balanced, identityHolds…) reads as a word, never "true" / "false"
+  if (typeof value === "boolean") {
+    return value ? "Yes" : "No";
   }
   if (
     typeof value === "number" &&
@@ -61,6 +72,9 @@ function formatSummaryValue(key: string, value: unknown): string {
     !NON_MONEY_SUMMARY_KEY.test(key)
   ) {
     return formatCurrency(value);
+  }
+  if (typeof value === "string" && ISO_DATE.test(value)) {
+    return formatLocalDate(value) || value;
   }
   return String(value);
 }

@@ -1,0 +1,24 @@
+-- 650C OBS phase e read-only SQL (schema tenant_7d218705360b) 2026-11-19T04:03:46.098Z
+
+== [e: Fund-ledger rows in the financial year by type]
+select t.transaction_type, count(*) n, sum(t.ledger_effect) ledger_effect, sum(t.amount) amount,
+  sum(t.amount) filter (where t.charge_recoverable) recoverable, sum(t.amount) filter (where t.charge_recoverable is false) non_recoverable, sum(t.charge_vat_amount) vat
+  from tenant_7d218705360b.trust_transactions t join tenant_7d218705360b.trust_creditor_accounts ca on ca.id=t.creditor_account_id
+  where t.trust_account_id='b4770f0a-c1dd-4d7b-9bcf-48e66559e291' and ca.account_type='FUND_INTEREST_AND_CHARGES' and t.posted_at is not null and t.transaction_date between '2025-10-01' and '2026-09-30'
+  group by t.transaction_type order by 1
+ transaction_type | n | ledger_effect | amount | recoverable | non_recoverable | vat  
+------------------+---+---------------+--------+-------------+-----------------+------
+ BANK_CHARGE      | 2 |        -69.50 |  69.50 |       57.50 |           12.00 | 9.07
+ CHARGE_REFUND    | 1 |         57.50 |  57.50 |             |                 |     
+ FUND_INTEREST    | 2 |        153.45 | 153.45 |             |                 |     
+ FUND_SWEEP       | 1 |       -100.00 | 100.00 |             |                 |     
+(4 rows)
+
+
+== [e: Fund sweeps with their statement line]
+select t.transaction_date, t.reference, t.amount, s.file_name, l.line_number from tenant_7d218705360b.trust_transactions t join tenant_7d218705360b.bank_statement_lines l on l.id=t.bank_statement_line_id join tenant_7d218705360b.bank_statements s on s.id=l.bank_statement_id where t.transaction_type='FUND_SWEEP'
+ transaction_date |   reference    | amount |       file_name       | line_number 
+------------------+----------------+--------+-----------------------+-------------
+ 2026-09-30       | LPFF/SEP/0WYGG | 100.00 | b-statement-0WYGG.csv |          10
+(1 row)
+

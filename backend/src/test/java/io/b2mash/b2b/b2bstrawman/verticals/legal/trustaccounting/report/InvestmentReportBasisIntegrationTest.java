@@ -186,44 +186,56 @@ class InvestmentReportBasisIntegrationTest {
         .call(() -> interestService.calculateInterest(runResponse.id()));
 
     // Place a FIRM_DISCRETION investment for customer1
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .where(RequestScopes.MEMBER_ID, ownerMemberId)
-        .call(
-            () ->
-                investmentService.placeInvestment(
-                    trustAccountId,
-                    new TrustInvestmentService.PlaceInvestmentRequest(
-                        firmInvestmentAccountId,
-                        null,
-                        null,
-                        "ABSA Bank",
-                        "9012345678",
-                        new BigDecimal("20000.00"),
-                        new BigDecimal("0.0650"),
-                        LocalDate.of(2025, 5, 1),
-                        LocalDate.of(2025, 11, 1),
-                        "Firm discretion fixed deposit",
-                        InvestmentBasis.FIRM_DISCRETION)));
+    var firmPlaced =
+        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+            .where(RequestScopes.MEMBER_ID, ownerMemberId)
+            .call(
+                () ->
+                    investmentService.placeInvestment(
+                        trustAccountId,
+                        new TrustInvestmentService.PlaceInvestmentRequest(
+                            firmInvestmentAccountId,
+                            null,
+                            null,
+                            "ABSA Bank",
+                            "9012345678",
+                            new BigDecimal("20000.00"),
+                            new BigDecimal("0.0650"),
+                            LocalDate.of(2025, 5, 1),
+                            LocalDate.of(2025, 11, 1),
+                            "Firm discretion fixed deposit",
+                            InvestmentBasis.FIRM_DISCRETION)));
 
     // Place a CLIENT_INSTRUCTION investment for customer2
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .where(RequestScopes.MEMBER_ID, ownerMemberId)
-        .call(
-            () ->
-                investmentService.placeInvestment(
-                    trustAccountId,
-                    new TrustInvestmentService.PlaceInvestmentRequest(
-                        clientInvestmentAccountId,
-                        UUID.fromString(customerId2),
-                        trustMatterOf(customerId2),
-                        "Nedbank",
-                        "1122334455",
-                        new BigDecimal("15000.00"),
-                        new BigDecimal("0.0500"),
-                        LocalDate.of(2025, 5, 15),
-                        LocalDate.of(2025, 11, 15),
-                        "Client instruction fixed deposit",
-                        InvestmentBasis.CLIENT_INSTRUCTION)));
+    var clientPlaced =
+        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+            .where(RequestScopes.MEMBER_ID, ownerMemberId)
+            .call(
+                () ->
+                    investmentService.placeInvestment(
+                        trustAccountId,
+                        new TrustInvestmentService.PlaceInvestmentRequest(
+                            clientInvestmentAccountId,
+                            UUID.fromString(customerId2),
+                            trustMatterOf(customerId2),
+                            "Nedbank",
+                            "1122334455",
+                            new BigDecimal("15000.00"),
+                            new BigDecimal("0.0500"),
+                            LocalDate.of(2025, 5, 15),
+                            LocalDate.of(2025, 11, 15),
+                            "Client instruction fixed deposit",
+                            InvestmentBasis.CLIENT_INSTRUCTION)));
+
+    // 650C (D-14): the Section 35 pack lists the investments on the books at the year end, so
+    // both placements are approved (posted) by a member other than their maker
+    for (var placed : List.of(firmPlaced, clientPlaced)) {
+      mockMvc
+          .perform(
+              post("/api/trust-transactions/" + placed.depositTransactionId() + "/approve")
+                  .with(TestJwtFactory.ownerJwt(ORG_ID, APPROVER_SUB)))
+          .andExpect(status().isOk());
+    }
   }
 
   // --- Helper Methods ---
@@ -405,6 +417,11 @@ class InvestmentReportBasisIntegrationTest {
                   .toList();
           assertThat(firmRows).hasSize(1);
           assertThat(firmRows.getFirst().get("applicableLpffRate")).isEqualTo("75%");
+          // 650C (D-14): the amount is the investment's balance on the books at the year end
+          assertThat((BigDecimal) firmRows.getFirst().get("amount"))
+              .isEqualByComparingTo("20000.00");
+          assertThat((String) firmRows.getFirst().get("label"))
+              .isEqualTo("Firm (section 86(3)) · ABSA Bank 9012345678");
         });
   }
 
@@ -524,10 +541,19 @@ class InvestmentReportBasisIntegrationTest {
           var pendingRow = registerRow(result.rows(), "648E-PENDING");
           assertThat((BigDecimal) pendingRow.get("balance")).isEqualByComparingTo("0");
           assertThat((BigDecimal) pendingRow.get("principal")).isEqualByComparingTo("5000.00");
-          // The definition's columns are unchanged until 650C: the summary keys stay as they are
+          // v4 (650C, D-19): the register's summary carries balance and interest totals
           assertThat(result.summary().keySet())
               .containsExactly(
-                  "totalPrincipal", "totalInterestEarned", "activeCount", "totalCount");
+                  "totalPrincipal",
+                  "totalBalance",
+                  "totalGrossInterest",
+                  "totalFundShare",
+                  "totalInterestEarned",
+                  "activeCount",
+                  "totalCount",
+                  "scopeNote");
+          assertThat((BigDecimal) result.summary().get("totalBalance"))
+              .isEqualByComparingTo("25000.00");
         });
 
     // 648B (OQ-8 a): interestEarned is Σ net of the POSTED entries; a reversed entry drops out
@@ -548,6 +574,18 @@ class InvestmentReportBasisIntegrationTest {
               .isEqualByComparingTo("0");
           assertThat((BigDecimal) result.summary().get("totalInterestEarned"))
               .isEqualByComparingTo("95.00");
+          // v4 (650C, D-19): gross, the Fund's 5% and net; basis, status and holding account in
+          // words (the raw keys stay for callers, D-17)
+          assertThat((BigDecimal) approvedRow.get("grossInterest")).isEqualByComparingTo("100.00");
+          assertThat((BigDecimal) approvedRow.get("fundShare")).isEqualByComparingTo("5.00");
+          assertThat(approvedRow.get("basisLabel")).isEqualTo("Section 86(4)");
+          assertThat(approvedRow.get("statusLabel")).isEqualTo("Active");
+          assertThat(approvedRow.get("investmentAccountName"))
+              .isEqualTo("Section 86(4) Investments");
+          assertThat((BigDecimal) result.summary().get("totalGrossInterest"))
+              .isEqualByComparingTo("100.00");
+          assertThat((BigDecimal) result.summary().get("totalFundShare"))
+              .isEqualByComparingTo("5.00");
         });
 
     mockMvc
@@ -563,6 +601,7 @@ class InvestmentReportBasisIntegrationTest {
           var result = investmentRegisterQuery.executeAll(Map.of("trust_account_id", f2));
           var withdrawnRow = registerRow(result.rows(), "648E-APPROVED");
           assertThat(withdrawnRow.get("status")).isEqualTo("WITHDRAWN");
+          assertThat(withdrawnRow.get("statusLabel")).isEqualTo("Withdrawn");
           assertThat((BigDecimal) withdrawnRow.get("balance")).isEqualByComparingTo("0");
         });
   }

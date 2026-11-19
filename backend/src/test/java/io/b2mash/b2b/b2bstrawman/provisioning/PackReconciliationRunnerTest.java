@@ -240,7 +240,7 @@ class PackReconciliationRunnerTest {
                   assertThat(packInstallRepository.findByPackId("trust-reports")).isEmpty();
                 }));
 
-    String seededLine = "Trust report pack seeded for tenant " + schema + ": 7 definitions";
+    String seededLine = "Trust report pack seeded for tenant " + schema + ": 9 definitions";
     assertThat(
             captureTrustSeederLogs(
                 () -> reconciliationRunner.reconcilePacksForTenant(schema, orgId)))
@@ -258,15 +258,18 @@ class PackReconciliationRunnerTest {
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
-                  assertThat(trustDefinitionSlugs()).hasSize(7).contains("section-35-data-pack");
-                  // G89-F48: the trust-reports pack ships at v3.
+                  assertThat(trustDefinitionSlugs())
+                      .hasSize(9)
+                      .contains("section-35-data-pack")
+                      .doesNotContain("interest-allocation");
+                  // Phase 92 650C: the trust-reports pack ships at v4.
                   assertThat(trustReportsStatus())
                       .singleElement()
                       .satisfies(
-                          e -> assertThat(((Number) e.get("version")).intValue()).isEqualTo(3));
+                          e -> assertThat(((Number) e.get("version")).intValue()).isEqualTo(4));
                   var row = packInstallRepository.findByPackId("trust-reports").orElseThrow();
                   assertThat(row.getPackType()).isEqualTo(PackType.REPORT);
-                  assertThat(row.getPackVersion()).isEqualTo("3");
+                  assertThat(row.getPackVersion()).isEqualTo("4");
                 }));
   }
 

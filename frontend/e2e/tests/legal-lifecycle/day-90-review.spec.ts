@@ -30,6 +30,7 @@ import {
   morokaMatter,
   qcClient,
   qcMatter,
+  randPattern,
   recordedValue,
   siphoClient,
   siphoMatter,
@@ -52,6 +53,21 @@ const runMatters = () => [
 ];
 const pendingTransferRef = () => `FEE/SIPHO/${currentLifecycleRun()}`;
 const ENGAGEMENT_LETTER = "Engagement Letter — Litigation";
+/** Phase 92 650C: the trust-reports pack v4 — nine reports; interest-allocation is retired. */
+const TRUST_REPORT_SLUGS = [
+  "trust-receipts-payments",
+  "client-trust-balances",
+  "trust-position",
+  "client-ledger-statement",
+  "trust-reconciliation",
+  "investment-register",
+  "trust-interest-charges-schedule",
+  "unidentified-deposits-age-analysis",
+  "section-35-data-pack",
+];
+/** A raw type / status code ("FUND_SWEEP", "CLIENT_INSTRUCTION") — never on a report (F-15). */
+const RAW_CODE = /\b[A-Z]{2,}_[A-Z_]{2,}\b/;
+const FUND_LINE = "Legal Practitioners' Fidelity Fund — interest and charges";
 const FEE_NOTES: LifecycleValueKey[] = [
   "siphoFeeNote",
   "apexFeeNote",
@@ -113,6 +129,19 @@ test.describe.serial("Day 90 — Quarter Review", () => {
     await captureScreenshot(page, "day-90-portfolio-review-loaded");
   });
 
+  // ── 90.8: the trust reports page (Phase 92 650C — pack v4, nine reports) ──
+  test("Alice: Trust reports page lists the nine reports", async ({ page }) => {
+    await loginAs(page, "alice");
+    await page.goto(`${BASE}/trust-accounting/reports`);
+    await expect(page.getByTestId("trust-reports-page")).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator('[data-testid^="report-card-"]')).toHaveCount(9);
+    for (const slug of TRUST_REPORT_SLUGS) {
+      await expect(page.getByTestId(`report-card-${slug}`), slug).toBeVisible();
+    }
+    await expect(page.getByTestId("report-card-interest-allocation")).toHaveCount(0);
+    await captureScreenshot(page, "day-90-trust-reports-nine-cards");
+  });
+
   // ── 90.8-90.11: Section 35 Data Pack ──────────────────────────────
   test("Alice: Generate Section 35 Data Pack report", async ({ page }) => {
     await loginAs(page, "alice");
@@ -138,6 +167,30 @@ test.describe.serial("Day 90 — Quarter Review", () => {
     await expect(results.getByRole("columnheader", { name: "Amount", exact: true })).toBeVisible();
     await expect(results.getByRole("row").nth(1)).toBeVisible();
 
+    // 90.10 (authorised direction, §16.12.1 table B): the pack's v4 parts — receipts and payments,
+    // the Rule 54.15 trust creditors incl. the Fund line, the investments on the books by section,
+    // and the Rule 54.28 interest and charges schedule in place of interest allocations
+    for (const section of [
+      "Trust Receipts & Payments",
+      "Trust creditors (Rule 54.15)",
+      "Section 86(3) Investments (Firm Discretion)",
+      "Section 86(4) Investments (Client Instruction)",
+      "Interest and charges schedule (Rule 54.28)",
+    ]) {
+      await expect(
+        results.getByRole("cell", { name: section, exact: true }).first(),
+        section
+      ).toBeVisible();
+    }
+    const creditors = results.getByRole("row").filter({ hasText: "Trust creditors (Rule 54.15)" });
+    for (const name of [lifecycleClientName("moroka"), qcClient(), FUND_LINE]) {
+      await expect(creditors.filter({ hasText: name }).first(), name).toBeVisible();
+    }
+    await expect(
+      results.getByRole("cell", { name: "Interest Allocation", exact: true })
+    ).toHaveCount(0);
+    await expect(results).not.toContainText(RAW_CODE);
+
     // Screenshot: Section 35 report
     await captureScreenshot(page, "day-90-section-35-generated");
     await captureScreenshot(page, "section-35-report", { curated: true });
@@ -155,15 +208,55 @@ test.describe.serial("Day 90 — Quarter Review", () => {
     }
   });
 
+  // 90.13 / 90.15 (authorised direction, §16.12.1 table B): the Investment Register report shows
+  // section 86(3) and 86(4) investments with their balances and interest — gross, the Fund's 5%
+  // and net (no LPFF rate column)
   test("Alice: Trust reports — Investment Register with s86 basis", async ({ page }) => {
     await loginAs(page, "alice");
-    await page.goto(`${BASE}/trust-accounting/investments`);
-    await expect(page.getByTestId("investments-page")).toBeVisible({ timeout: 15_000 });
-    await expect(page.getByTestId("investment-basis-filter")).toBeVisible();
-    const rows = page.locator("main tbody tr");
+    await page.goto(`${BASE}/trust-accounting/reports`);
+    await expect(page.getByTestId("trust-reports-page")).toBeVisible({ timeout: 15_000 });
+    await clickThrough(
+      page.getByTestId("report-card-investment-register"),
+      page.getByRole("heading", { level: 1, name: /Investment Register/ })
+    );
+    await page.getByRole("combobox", { name: /Trust Account/ }).click();
+    await page.getByRole("option", { name: new RegExp(TRUST_ACCOUNT.name) }).click();
+    await page.getByRole("button", { name: "Run Report" }).click();
+    await expect(page.getByRole("button", { name: "Export CSV" })).toBeEnabled({
+      timeout: 15_000,
+    });
+    const results = page.getByRole("table");
+    for (const header of [
+      "Investment Account",
+      "Basis",
+      "Principal",
+      "Balance",
+      "Gross Interest",
+      "Fund 5%",
+      "Net Interest",
+      "Status",
+    ]) {
+      await expect(
+        results.getByRole("columnheader", { name: header, exact: true }),
+        header
+      ).toBeVisible();
+    }
+    await expect(results.getByRole("columnheader", { name: "LPFF Rate", exact: true })).toHaveCount(
+      0
+    );
+    const rows = results.getByRole("row");
     // Phase 92 648A: the section 86(3) deposit names no client (found by its account number)
-    await expect(rows.filter({ hasText: "FD-0987654321" })).toContainText("Firm (section 86(3))");
-    await expect(rows.filter({ hasText: qcClient() })).toContainText("Section 86(4)");
+    const firm = rows.filter({ hasText: "FD-0987654321" });
+    await expect(firm).toContainText("Firm (section 86(3))");
+    await expect(firm).toContainText("Section 86(3)");
+    // Day 60: R100 gross (bank advice, NET) on QuickCollect's R30 000 call account — the Fund's 5%
+    // R5, net R95, balance R30 095
+    const qc = rows.filter({ hasText: qcClient() });
+    await expect(qc).toContainText("Section 86(4)");
+    for (const amount of ["100,00", "5,00", "95,00", "30 095,00"]) {
+      await expect(qc, amount).toContainText(randPattern(amount));
+    }
+    await expect(results).not.toContainText(RAW_CODE);
 
     // Screenshot: investment register
     await captureScreenshot(page, "day-90-investment-register-loaded");

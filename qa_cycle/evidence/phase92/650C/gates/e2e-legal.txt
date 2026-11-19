@@ -1,0 +1,13 @@
+650C E2E-LEGAL (stage-7 checkpoint) — fresh stack per suite (e2e-down.sh + e2e-up.sh from this worktree), PLAYWRIGHT_BASE_URL=http://localhost:3001, flags without `--`.
+
+Run 1 @2a854afa7 (lifecycle) / @48fb285fe (depth-ii; delta = Javadoc comment only), 2026-11-19 SAST:
+  legal-lifecycle : 110 passed (3.2m)  — incl. day-90-review.spec.ts (nine report cards, Section 35, register, R&P)
+  legal-depth-ii  : 40 passed, 4 skipped (1.9m)
+
+Run 2 (result of record) @733b8352f — after the OBS-gate fixes, 2026-11-19 SAST:
+  legal-lifecycle : 110 passed (3.1m)  — incl. day-90-review.spec.ts
+  legal-depth-ii  : 40 passed, 4 skipped (1.9m)
+
+Baseline (645.1 / 649C): lifecycle 109/109 (650C day-90 edits: +1), depth-ii 40/4. Both at or above baseline.
+Artefacts (documentation/screenshots/legal-vertical, frontend/test-results) restored after each run.
+FE-GATE @733b8352f: lint 0 / typecheck 0 / format:check 0 / vitest 485 files 4594 passed 2 skipped / build 0.

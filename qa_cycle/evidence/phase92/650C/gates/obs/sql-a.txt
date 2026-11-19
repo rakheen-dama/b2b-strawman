@@ -1,0 +1,69 @@
+-- 650C OBS phase a read-only SQL (schema tenant_7d218705360b) 2026-11-19T03:24:36.035Z
+
+== [a: trust accounts]
+select id, account_name, account_type, is_primary, opened_date, closed_date from tenant_7d218705360b.trust_accounts
+                  id                  |            account_name            | account_type | is_primary | opened_date | closed_date 
+--------------------------------------+------------------------------------+--------------+------------+-------------+-------------
+ bf0be9fc-023d-414e-96fc-6f7c1d6076da | Mathebula & Partners Trust Account | GENERAL      | t          | 2026-11-19  | 
+(1 row)
+
+
+== [a: TRUST report definitions]
+select slug, name, category, sort_order, is_system, length(template_body) template_chars, position('Trust cash, estates and other trust assets are not recorded in Kazi and are not included in this comparison.' in template_body) > 0 template_has_scope_note from tenant_7d218705360b.report_definitions where category='TRUST' order by sort_order
+                slug                |                    name                    | category | sort_order | is_system | template_chars | template_has_scope_note 
+------------------------------------+--------------------------------------------+----------+------------+-----------+----------------+-------------------------
+ trust-receipts-payments            | Trust Receipts & Payments                  | TRUST    |         10 | t         |           4737 | t
+ client-trust-balances              | Trust Creditors List (Rule 54.15)          | TRUST    |         20 | t         |           6712 | t
+ trust-position                     | Trust Position as at a Date                | TRUST    |         25 | t         |           8335 | t
+ client-ledger-statement            | Client Ledger Statement                    | TRUST    |         30 | t         |           6191 | t
+ trust-reconciliation               | Trust Reconciliation                       | TRUST    |         40 | t         |           3308 | t
+ investment-register                | Investment Register                        | TRUST    |         50 | t         |           5827 | t
+ trust-interest-charges-schedule    | Interest and Charges Schedule (Rule 54.28) | TRUST    |         60 | t         |          11413 | t
+ unidentified-deposits-age-analysis | Unidentified Deposits Age Analysis         | TRUST    |         65 | t         |           5328 | t
+ section-35-data-pack               | Section 35 Data Pack                       | TRUST    |         70 | t         |           3731 | t
+(9 rows)
+
+
+== [a: no interest-allocation row]
+select count(*) interest_allocation_rows from tenant_7d218705360b.report_definitions where slug='interest-allocation'
+ interest_allocation_rows 
+--------------------------
+                        0
+(1 row)
+
+
+== [a: pack_install ledger rows]
+select pack_id, pack_type, pack_version, installed_at from tenant_7d218705360b.pack_install where pack_id in ('trust-reports','standard-reports')
+     pack_id      | pack_type | pack_version |         installed_at          
+------------------+-----------+--------------+-------------------------------
+ standard-reports | REPORT    | 2            | 2026-11-19 03:16:16.783338+00
+ trust-reports    | REPORT    | 4            | 2026-11-19 03:16:16.803969+00
+(2 rows)
+
+
+== [a: org_settings.report_pack_status]
+select jsonb_pretty(report_pack_status) from tenant_7d218705360b.org_settings
+                     jsonb_pretty                      
+-------------------------------------------------------
+ [                                                    +
+     {                                                +
+         "packId": "standard-reports",                +
+         "version": 2,                                +
+         "appliedAt": "2026-11-19T03:16:16.798832546Z"+
+     },                                               +
+     {                                                +
+         "packId": "trust-reports",                   +
+         "version": 4,                                +
+         "appliedAt": "2026-11-19T03:16:16.821920796Z"+
+     }                                                +
+ ]
+(1 row)
+
+
+== [a: empty books before the run]
+select count(*) postings, (select count(*) from tenant_7d218705360b.bank_statements) statements, (select count(*) from tenant_7d218705360b.trust_reconciliations) recons from tenant_7d218705360b.trust_transactions
+ postings | statements | recons 
+----------+------------+--------
+        0 |          0 |      0
+(1 row)
+

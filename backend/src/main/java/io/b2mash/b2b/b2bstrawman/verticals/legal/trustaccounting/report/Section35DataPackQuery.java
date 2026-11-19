@@ -2,18 +2,25 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report;
 
 import io.b2mash.b2b.b2bstrawman.reporting.ReportQuery;
 import io.b2mash.b2b.b2bstrawman.reporting.ReportResult;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccount;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountSection;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.CreditorLine;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.interest.InterestRun;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.interest.InterestRunRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.IntegrityMessages;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.InvestmentTieRow;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedgerQueryRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -21,38 +28,70 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 /**
- * Composite report combining all 6 sub-reports for a financial year: the annual trust account audit
- * / reporting pack under the Legal Practice Act 28 of 2014 and the LPC Rules (rule 54). The
- * "Section 35" name is historical — section 35 of the repealed Attorneys Act 53 of 1979 — and is
- * kept as the report's identity. Derives financial_year_start as financial_year_end - 1 year + 1
- * day.
+ * Composite report for a financial year: the annual trust account audit / reporting pack under the
+ * Legal Practice Act 28 of 2014 and the LPC Rules (rule 54). The "Section 35" name is historical —
+ * section 35 of the repealed Attorneys Act 53 of 1979 — and is kept as the report's identity.
+ * Derives financial_year_start as financial_year_end - 1 year + 1 day.
+ *
+ * <p>v4 (Phase 92 650C, architecture §16.8.5), seven parts: (1) receipts and payments; (2) the Rule
+ * 54.15 trust creditors list as at the year end — clients (general + invested), the Fund line and
+ * each open unidentified deposit, the locked list's figures at a locked month end; (3) the latest
+ * reconciliation on or before the year end with its stored breakdown; (4) the investments on the
+ * books at the year end, by section; (5) the Rule 54.28 interest-and-charges schedule for the year,
+ * one block per account (the pack's account and the investment accounts holding its investments);
+ * (6) each Fund sweep with its statement file name and line number (Rule 54.14.16 evidence), and
+ * the sweeps with no statement line; (7) client ledger statements, available individually.
  */
 @Component
 public class Section35DataPackQuery implements ReportQuery {
+
+  static final String RECEIPTS_PAYMENTS_SECTION = "Trust Receipts & Payments";
+  static final String CREDITORS_SECTION = "Trust creditors (Rule 54.15)";
+  static final String RECONCILIATION_SECTION = "Trust Reconciliation";
+  static final String S86_3_SECTION = "Section 86(3) Investments (Firm Discretion)";
+  static final String S86_4_SECTION = "Section 86(4) Investments (Client Instruction)";
+  static final String SCHEDULE_SECTION = "Interest and charges schedule (Rule 54.28)";
+  static final String SWEEPS_SECTION = "Fund sweeps and their statement lines (Rule 54.14.16)";
+  static final String UNMATCHED_SWEEPS_SECTION = "Fund sweeps with no statement line";
+  static final String LEDGER_STATEMENTS_SECTION = "Client Ledger Statements";
+
+  static final String NONE_IN_YEAR = "None in the financial year";
+  static final String SCHEDULE_NOTE =
+      "Year totals per trust account. Monthly figures: run the Interest and charges schedule (Rule"
+          + " 54.28) report for the year.";
+
+  /** The register row key part (4) adds: the investment's balance as at the year end (D-14). */
+  private static final String YEAR_END_BALANCE = "yearEndBalance";
 
   private final TrustReceiptsPaymentsQuery receiptsPaymentsQuery;
   private final ClientTrustBalancesQuery clientBalancesQuery;
   private final TrustReconciliationReportQuery reconciliationQuery;
   private final InvestmentRegisterQuery investmentRegisterQuery;
-  private final InterestAllocationReportQuery interestAllocationQuery;
-  private final InterestRunRepository interestRunRepository;
+  private final TrustInterestChargesScheduleQuery scheduleQuery;
   private final TrustReconciliationRepository reconciliationRepository;
+  private final TrustReportQueryRepository reportQueries;
+  private final TrustLedgerQueryRepository ledgerQueries;
+  private final TrustAccountRepository trustAccountRepository;
 
   public Section35DataPackQuery(
       TrustReceiptsPaymentsQuery receiptsPaymentsQuery,
       ClientTrustBalancesQuery clientBalancesQuery,
       TrustReconciliationReportQuery reconciliationQuery,
       InvestmentRegisterQuery investmentRegisterQuery,
-      InterestAllocationReportQuery interestAllocationQuery,
-      InterestRunRepository interestRunRepository,
-      TrustReconciliationRepository reconciliationRepository) {
+      TrustInterestChargesScheduleQuery scheduleQuery,
+      TrustReconciliationRepository reconciliationRepository,
+      TrustReportQueryRepository reportQueries,
+      TrustLedgerQueryRepository ledgerQueries,
+      TrustAccountRepository trustAccountRepository) {
     this.receiptsPaymentsQuery = receiptsPaymentsQuery;
     this.clientBalancesQuery = clientBalancesQuery;
     this.reconciliationQuery = reconciliationQuery;
     this.investmentRegisterQuery = investmentRegisterQuery;
-    this.interestAllocationQuery = interestAllocationQuery;
-    this.interestRunRepository = interestRunRepository;
+    this.scheduleQuery = scheduleQuery;
     this.reconciliationRepository = reconciliationRepository;
+    this.reportQueries = reportQueries;
+    this.ledgerQueries = ledgerQueries;
+    this.trustAccountRepository = trustAccountRepository;
   }
 
   @Override
@@ -74,7 +113,7 @@ public class Section35DataPackQuery implements ReportQuery {
     var allRows = new ArrayList<Map<String, Object>>();
     var sectionSummaries = new ArrayList<Map<String, Object>>();
 
-    // Section 1: Trust Receipts & Payments
+    // (1) Trust Receipts & Payments
     var rpParams =
         Map.<String, Object>of(
             "trust_account_id", trustAccountId,
@@ -84,62 +123,64 @@ public class Section35DataPackQuery implements ReportQuery {
     addSection(
         allRows,
         sectionSummaries,
-        "Trust Receipts & Payments",
+        RECEIPTS_PAYMENTS_SECTION,
         rpResult,
         Section35DataPackQuery::receiptPaymentLine);
 
-    // Section 2: Client Trust Balances (as of year-end)
+    // (2) Trust creditors (Rule 54.15) as at the year end — every line of the list (D-1)
     var cbParams =
         Map.<String, Object>of(
             "trust_account_id", trustAccountId, "asOfDate", financialYearEnd.toString());
-    var cbResult = clientRowsOnly(clientBalancesQuery.executeAll(cbParams));
+    var cbResult = creditorsSection(clientBalancesQuery.executeAll(cbParams));
     addSection(
         allRows,
         sectionSummaries,
-        "Client Trust Balances",
+        CREDITORS_SECTION,
         cbResult,
-        row -> line(text(row, "clientName"), money(row, "balance")));
+        Section35DataPackQuery::creditorLine);
 
-    // Section 3: Trust Reconciliation (latest on or before year-end)
+    // (3) Trust Reconciliation (latest on or before year-end)
     assembleReconciliationSection(trustAccountId, financialYearEnd, allRows, sectionSummaries);
 
-    // Section 4a: Section 86(3) Investments (Firm Discretion)
-    var irFirmParams = new HashMap<String, Object>();
-    irFirmParams.put("trust_account_id", trustAccountId);
-    irFirmParams.put("investmentBasis", "FIRM_DISCRETION");
-    var irFirmResult = investmentRegisterQuery.executeAll(irFirmParams);
-    if (!irFirmResult.rows().isEmpty()) {
+    // (4) Investments on the books at the year end, by section (D-14)
+    var investments = investmentsOnTheBooks(trustAccountId, financialYearEnd);
+    var firmInvestments =
+        investments.stream().filter(r -> isBasis(r, InvestmentBasis.FIRM_DISCRETION)).toList();
+    var clientInvestments =
+        investments.stream().filter(r -> isBasis(r, InvestmentBasis.CLIENT_INSTRUCTION)).toList();
+    if (!firmInvestments.isEmpty()) {
       addSection(
           allRows,
           sectionSummaries,
-          "Section 86(3) Investments (Firm Discretion)",
-          irFirmResult,
+          S86_3_SECTION,
+          new ReportResult(firmInvestments, investmentSummary(firmInvestments)),
           Section35DataPackQuery::investmentLine);
     }
-
-    // Section 4b: Section 86(4) Investments (Client Instruction)
-    var irClientParams = new HashMap<String, Object>();
-    irClientParams.put("trust_account_id", trustAccountId);
-    irClientParams.put("investmentBasis", "CLIENT_INSTRUCTION");
-    var irClientResult = investmentRegisterQuery.executeAll(irClientParams);
-    if (!irClientResult.rows().isEmpty()) {
+    if (!clientInvestments.isEmpty()) {
       addSection(
           allRows,
           sectionSummaries,
-          "Section 86(4) Investments (Client Instruction)",
-          irClientResult,
+          S86_4_SECTION,
+          new ReportResult(clientInvestments, investmentSummary(clientInvestments)),
           Section35DataPackQuery::investmentLine);
     }
 
-    // Section 5: Interest Allocation (every posted run within the year)
-    assembleInterestAllocationSection(
-        trustAccountId, financialYearStart, financialYearEnd, allRows, sectionSummaries);
+    // (5) The Rule 54.28 schedule for the year: the pack's account and the investment accounts
+    // holding the investments of part (4) (D-11) — over the exact financial year (partial months
+    // at its ends, CR-1), so it agrees with parts (1) and (6)
+    var scheduleAccounts = scheduleAccounts(trustAccountId, investments);
+    assembleScheduleSection(
+        scheduleAccounts, financialYearStart, financialYearEnd, allRows, sectionSummaries);
 
-    // Section 6: Client Ledger Statements are per-client reports that cannot be included
+    // (6) Each Fund sweep with its statement line (Rule 54.14.16), and sweeps with no line (D-13)
+    assembleSweepSections(
+        scheduleAccounts, financialYearStart, financialYearEnd, allRows, sectionSummaries);
+
+    // (7) Client Ledger Statements are per-client reports that cannot be included
     // in a composite pack without a customer_id. They are available individually via the
     // client-ledger-statement report slug with trust_account_id + customer_id parameters.
     var ledgerMeta = new LinkedHashMap<String, Object>();
-    ledgerMeta.put("sectionName", "Client Ledger Statements");
+    ledgerMeta.put("sectionName", LEDGER_STATEMENTS_SECTION);
     ledgerMeta.put("status", "AVAILABLE_INDIVIDUALLY");
     ledgerMeta.put(
         "note",
@@ -155,17 +196,294 @@ public class Section35DataPackQuery implements ReportQuery {
     summary.put("financialYearStart", financialYearStart.toString());
     summary.put("financialYearEnd", financialYearEnd.toString());
     summary.put("sections", sectionSummaries);
-
-    // Get total trust balance at year end from client balances section
     if (cbResult.summary().containsKey("totalTrustBalance")) {
       summary.put("totalTrustBalanceAtYearEnd", cbResult.summary().get("totalTrustBalance"));
     }
+    summary.put("scopeNote", TrustReportWords.TRUST_ASSETS_NOTE);
 
     return new ReportResult(allRows, summary);
   }
 
+  /**
+   * Part (2): every line of the Rule 54.15 list, with the list's comparison keys and the v3 keys
+   * ({@code totalTrustBalance}, {@code clientCount}); the note states the list's basis (D-2).
+   */
+  private static ReportResult creditorsSection(ReportResult list) {
+    var s = list.summary();
+    var summary = new LinkedHashMap<String, Object>();
+    for (var key :
+        List.of(
+            "totalTrustBalance",
+            "clientCount",
+            "creditorTotal",
+            "investedTotal",
+            "fundTotal",
+            "unidentifiedTotal",
+            "bankTotal",
+            "investmentAccountTotal",
+            "difference",
+            "fullyLocked")) {
+      summary.put(key, s.get(key));
+    }
+    boolean locked = Boolean.TRUE.equals(s.get("fullyLocked"));
+    summary.put("source", locked ? "Locked" : "Not locked");
+    summary.put("note", creditorsNote(s, locked));
+    return new ReportResult(list.rows(), summary);
+  }
+
+  @SuppressWarnings("unchecked")
+  private static String creditorsNote(Map<String, Object> s, boolean locked) {
+    var accounts =
+        (List<Map<String, Object>>) s.getOrDefault(ClientTrustBalancesQuery.ACCOUNTS, List.of());
+    var firstNote =
+        accounts.isEmpty() ? null : accounts.getFirst().get(ClientTrustBalancesQuery.SOURCE_NOTE);
+    String sourceNote =
+        firstNote == null ? ClientTrustBalancesQuery.LIVE_NOTE : firstNote.toString();
+    if (!locked) {
+      return sourceNote;
+    }
+    var afterLock =
+        (List<Map<String, Object>>) s.getOrDefault(ClientTrustBalancesQuery.AFTER_LOCK, List.of());
+    if (afterLock.isEmpty()) {
+      return sourceNote + ".";
+    }
+    var periodEnd = afterLock.getFirst().get(ClientTrustBalancesQuery.PERIOD_END);
+    var net =
+        s.get(ClientTrustBalancesQuery.AFTER_LOCK_NET) instanceof BigDecimal b
+            ? b
+            : BigDecimal.ZERO;
+    return "%s. %d %s dated on or before %s %s made after the lock (net %s): they are in Trust Receipts & Payments, not in this list."
+        .formatted(
+            sourceNote,
+            afterLock.size(),
+            afterLock.size() == 1 ? "entry" : "entries",
+            periodEnd != null ? IntegrityMessages.date(LocalDate.parse(periodEnd.toString())) : "",
+            afterLock.size() == 1 ? "was" : "were",
+            IntegrityMessages.rand(net));
+  }
+
+  /**
+   * The register's investments of the account, each with its balance as at the year end from its
+   * posted rows on the holding account ({@code investmentTies}); an investment not yet placed at
+   * the year end (nothing placed, nil balance) is not on the books and is left out (D-14).
+   */
+  private List<Map<String, Object>> investmentsOnTheBooks(UUID trustAccountId, LocalDate yearEnd) {
+    var params = new HashMap<String, Object>();
+    params.put("trust_account_id", trustAccountId);
+    var register = investmentRegisterQuery.executeAll(params).rows();
+    var ties = new HashMap<UUID, InvestmentTieRow>();
+    register.stream()
+        .map(r -> (UUID) r.get(InvestmentRegisterQuery.INVESTMENT_ACCOUNT_ID))
+        .filter(Objects::nonNull)
+        .distinct()
+        .forEach(
+            holding ->
+                ledgerQueries
+                    .investmentTies(holding, yearEnd)
+                    .forEach(t -> ties.put(t.getInvestmentId(), t)));
+    var rows = new ArrayList<Map<String, Object>>();
+    for (var r : register) {
+      var tie = ties.get((UUID) r.get(InvestmentRegisterQuery.INVESTMENT_ID));
+      var placed = tie != null && tie.getPlaced() != null ? tie.getPlaced() : BigDecimal.ZERO;
+      var balance = tie != null && tie.getBalance() != null ? tie.getBalance() : BigDecimal.ZERO;
+      if (placed.signum() == 0 && balance.signum() == 0) {
+        continue;
+      }
+      var row = new LinkedHashMap<String, Object>(r);
+      row.put(YEAR_END_BALANCE, balance);
+      rows.add(row);
+    }
+    return rows;
+  }
+
+  private static boolean isBasis(Map<String, Object> row, InvestmentBasis basis) {
+    return basis.name().equals(row.get(InvestmentRegisterQuery.INVESTMENT_BASIS));
+  }
+
+  private static Map<String, Object> investmentSummary(List<Map<String, Object>> rows) {
+    var summary = new LinkedHashMap<String, Object>();
+    summary.put(
+        "totalBalance",
+        rows.stream()
+            .map(r -> money(r, YEAR_END_BALANCE))
+            .reduce(BigDecimal.ZERO, BigDecimal::add));
+    summary.put("investmentCount", rows.size());
+    return summary;
+  }
+
+  /** The pack's account, then each other account holding one of its investments (D-11). */
+  private List<TrustAccount> scheduleAccounts(
+      UUID trustAccountId, List<Map<String, Object>> investments) {
+    var ids = new LinkedHashSet<UUID>();
+    ids.add(trustAccountId);
+    investments.stream()
+        .map(r -> (UUID) r.get(InvestmentRegisterQuery.INVESTMENT_ACCOUNT_ID))
+        .filter(Objects::nonNull)
+        .forEach(ids::add);
+    return trustAccountRepository.findAllById(ids);
+  }
+
+  private void assembleScheduleSection(
+      List<TrustAccount> accounts,
+      LocalDate yearStart,
+      LocalDate yearEnd,
+      List<Map<String, Object>> allRows,
+      List<Map<String, Object>> sectionSummaries) {
+    var blocks = scheduleQuery.blocks(accounts, yearStart, yearEnd);
+    var rows = new ArrayList<Map<String, Object>>();
+    var blockSummaries = new ArrayList<Map<String, Object>>();
+    for (var block : blocks) {
+      var account = block.account();
+      var t = block.totals();
+      String name = account.getAccountName();
+      boolean s864 = account.getSection() == TrustAccountSection.S86_4;
+      rows.add(
+          scheduleLine(account, name + " — Fund ledger brought forward", t, "fundBroughtForward"));
+      rows.add(
+          scheduleLine(
+              account,
+              name + " — gross interest earned (in the cashbook)",
+              t,
+              "grossInterestCashbook"));
+      rows.add(
+          scheduleLine(
+              account,
+              name + " — gross interest earned (at source, memo)",
+              t,
+              "grossInterestMemo"));
+      if (s864) {
+        rows.add(
+            scheduleLine(account, name + " — client's share (section 86(4))", t, "clientShare"));
+        rows.add(
+            scheduleLine(
+                account, name + " — Fund's 5% credited to the account", t, "fundShareCredited"));
+        rows.add(
+            scheduleLine(
+                account, name + " — Fund's 5% paid at source", t, "fundSharePaidAtSource"));
+      }
+      var charges = money(t, "chargesRecoverable").add(money(t, "chargesNonRecoverable"));
+      rows.add(scheduleRow(account, name + " — gross charges levied (in the cashbook)", charges));
+      rows.add(
+          scheduleLine(
+              account,
+              name + " — of which recoverable from the business account",
+              t,
+              "chargesRecoverable"));
+      rows.add(scheduleLine(account, name + " — of which VAT", t, "chargesVat"));
+      rows.add(
+          scheduleLine(
+              account, name + " — gross charges levied (at source, memo)", t, "chargesMemo"));
+      rows.add(
+          scheduleLine(account, name + " — VAT in charges at source (memo)", t, "chargesMemoVat"));
+      rows.add(scheduleLine(account, name + " — charges refunded", t, "chargesRefunded"));
+      rows.add(scheduleLine(account, name + " — paid to the Fund", t, "paidToFund"));
+      rows.add(
+          scheduleLine(account, name + " — Fund ledger carried forward", t, "fundCarriedForward"));
+
+      var b = new LinkedHashMap<String, Object>();
+      b.put("trustAccountId", account.getId());
+      b.put("accountName", name);
+      b.put("sectionLabel", TrustReportWords.sectionLabel(account.getSection()));
+      b.putAll(t);
+      b.put("months", block.rows());
+      blockSummaries.add(b);
+    }
+    var summary = new LinkedHashMap<String, Object>();
+    summary.put("note", SCHEDULE_NOTE);
+    summary.put("accountCount", blocks.size());
+    summary.put("blocks", List.copyOf(blockSummaries));
+    // A schedule is not additive (b/f, movements, c/f): no Total row
+    addSection(allRows, sectionSummaries, SCHEDULE_SECTION, new ReportResult(rows, summary), null);
+  }
+
+  private static Map<String, Object> scheduleLine(
+      TrustAccount account, String label, Map<String, Object> totals, String key) {
+    return scheduleRow(account, label, money(totals, key));
+  }
+
+  private static Map<String, Object> scheduleRow(
+      TrustAccount account, String label, BigDecimal amount) {
+    var row = new LinkedHashMap<String, Object>();
+    row.put("trustAccountId", account.getId());
+    row.put("label", label);
+    row.put("amount", amount);
+    return row;
+  }
+
+  private void assembleSweepSections(
+      List<TrustAccount> accounts,
+      LocalDate yearStart,
+      LocalDate yearEnd,
+      List<Map<String, Object>> allRows,
+      List<Map<String, Object>> sectionSummaries) {
+    var ids = accounts.stream().map(TrustAccount::getId).toList();
+    var sweeps =
+        ids.isEmpty()
+            ? List.<TrustReportQueryRepository.FundSweepRow>of()
+            : reportQueries.fundSweeps(ids, yearStart, yearEnd);
+    var matched = new ArrayList<Map<String, Object>>();
+    var unmatched = new ArrayList<Map<String, Object>>();
+    for (var sweep : sweeps) {
+      var row = new LinkedHashMap<String, Object>();
+      row.put("transactionId", sweep.getTransactionId());
+      row.put("trustAccountId", sweep.getTrustAccountId());
+      row.put("date", sweep.getTransactionDate().toString());
+      row.put("reference", sweep.getReference());
+      row.put("sweepAmount", sweep.getAmount());
+      row.put("fileName", sweep.getFileName());
+      row.put("lineNumber", sweep.getLineNumber());
+      row.put("lineDate", sweep.getLineDate() != null ? sweep.getLineDate().toString() : null);
+      (sweep.getLineNumber() != null ? matched : unmatched).add(row);
+    }
+    addSweepSection(
+        allRows, sectionSummaries, SWEEPS_SECTION, matched, Section35DataPackQuery::sweepLine);
+    addSweepSection(
+        allRows,
+        sectionSummaries,
+        UNMATCHED_SWEEPS_SECTION,
+        unmatched,
+        Section35DataPackQuery::unmatchedSweepLine);
+  }
+
+  private void addSweepSection(
+      List<Map<String, Object>> allRows,
+      List<Map<String, Object>> sectionSummaries,
+      String sectionName,
+      List<Map<String, Object>> rows,
+      Function<Map<String, Object>, Line> projector) {
+    var summary = new LinkedHashMap<String, Object>();
+    summary.put("sweepCount", rows.size());
+    if (rows.isEmpty()) {
+      summary.put("note", NONE_IN_YEAR);
+    }
+    addSection(allRows, sectionSummaries, sectionName, new ReportResult(rows, summary), projector);
+  }
+
+  /** {@code date · file · line n · reference} → the amount paid out (negative). */
+  private static Line sweepLine(Map<String, Object> row) {
+    String label =
+        Stream.of(
+                dateWords(row, "date"),
+                text(row, "fileName"),
+                "line " + text(row, "lineNumber"),
+                text(row, "reference"))
+            .filter(part -> !part.isBlank())
+            .collect(Collectors.joining(" · "));
+    return line(label, money(row, "sweepAmount").negate());
+  }
+
+  /** {@code date · reference — no statement line} → the amount paid out (negative). */
+  private static Line unmatchedSweepLine(Map<String, Object> row) {
+    String label =
+        Stream.of(dateWords(row, "date"), text(row, "reference"))
+                .filter(part -> !part.isBlank())
+                .collect(Collectors.joining(" · "))
+            + " — no statement line";
+    return line(label, money(row, "sweepAmount").negate());
+  }
+
   private void assembleReconciliationSection(
-      java.util.UUID trustAccountId,
+      UUID trustAccountId,
       LocalDate financialYearEnd,
       List<Map<String, Object>> allRows,
       List<Map<String, Object>> sectionSummaries) {
@@ -178,7 +496,7 @@ public class Section35DataPackQuery implements ReportQuery {
 
     if (yearEndRecon.isEmpty()) {
       var meta = new LinkedHashMap<String, Object>();
-      meta.put("sectionName", "Trust Reconciliation");
+      meta.put("sectionName", RECONCILIATION_SECTION);
       meta.put("note", "No reconciliation found on or before financial year end");
       meta.put("rowCount", 0);
       sectionSummaries.add(meta);
@@ -192,70 +510,7 @@ public class Section35DataPackQuery implements ReportQuery {
     var reconResult = reconciliationQuery.executeAll(trParams);
     // Reconciliation rows already carry label + amount, and they are a computation (bank ->
     // adjusted -> comparison), not an additive list: no Total row.
-    addSection(allRows, sectionSummaries, "Trust Reconciliation", reconResult, null);
-  }
-
-  private void assembleInterestAllocationSection(
-      java.util.UUID trustAccountId,
-      LocalDate yearStart,
-      LocalDate yearEnd,
-      List<Map<String, Object>> allRows,
-      List<Map<String, Object>> sectionSummaries) {
-
-    // G89-F50 (D14): every POSTED run whose period ends in the financial year, oldest first — one
-    // row per client per run, one section total. Unposted (DRAFT / APPROVED) runs are not trust
-    // money yet and are left out.
-    var runs =
-        interestRunRepository.findByTrustAccountIdOrderByPeriodEndDesc(trustAccountId).stream()
-            .filter(r -> "POSTED".equals(r.getStatus()))
-            .filter(
-                r -> !r.getPeriodEnd().isBefore(yearStart) && !r.getPeriodEnd().isAfter(yearEnd))
-            .sorted(Comparator.comparing(InterestRun::getPeriodEnd))
-            .toList();
-
-    if (runs.isEmpty()) {
-      var meta = new LinkedHashMap<String, Object>();
-      meta.put("sectionName", "Interest Allocation");
-      meta.put("note", "No posted interest runs found in financial year");
-      meta.put("rowCount", 0);
-      sectionSummaries.add(meta);
-      return;
-    }
-
-    var rows = new ArrayList<Map<String, Object>>();
-    BigDecimal totalInterest = BigDecimal.ZERO;
-    BigDecimal totalLpffShare = BigDecimal.ZERO;
-    BigDecimal totalClientShare = BigDecimal.ZERO;
-    for (var run : runs) {
-      var iaParams = new HashMap<String, Object>();
-      iaParams.put("trust_account_id", trustAccountId);
-      iaParams.put("interest_run_id", run.getId());
-      var iaResult = interestAllocationQuery.executeAll(iaParams);
-      String period = run.getPeriodStart() + " – " + run.getPeriodEnd();
-      for (var row : iaResult.rows()) {
-        var runRow = new LinkedHashMap<String, Object>(row);
-        runRow.put("interestRunId", run.getId());
-        runRow.put("period", period);
-        rows.add(runRow);
-      }
-      totalInterest = totalInterest.add(money(iaResult.summary(), "totalInterest"));
-      totalLpffShare = totalLpffShare.add(money(iaResult.summary(), "totalLpffShare"));
-      totalClientShare = totalClientShare.add(money(iaResult.summary(), "totalClientShare"));
-    }
-
-    var summary = new LinkedHashMap<String, Object>();
-    summary.put("totalInterest", totalInterest);
-    summary.put("totalLpffShare", totalLpffShare);
-    summary.put("totalClientShare", totalClientShare);
-    summary.put("allocationCount", rows.size());
-    summary.put("runCount", runs.size());
-    addSection(
-        allRows,
-        sectionSummaries,
-        "Interest Allocation",
-        new ReportResult(rows, summary),
-        row ->
-            line(text(row, "clientName") + " · " + text(row, "period"), money(row, "clientShare")));
+    addSection(allRows, sectionSummaries, RECONCILIATION_SECTION, reconResult, null);
   }
 
   /**
@@ -303,23 +558,6 @@ public class Section35DataPackQuery implements ReportQuery {
     sectionSummaries.add(sectionMeta);
   }
 
-  /**
-   * The pack (still v3 until 650C) lists clients only: since 650A {@code client-trust-balances} is
-   * the Rule 54.15 list and also returns the Fund line, open unidentified deposits and the section
-   * 86(3) line, which are not client balances. The section keeps its v3 summary keys ({@code
-   * totalTrustBalance}, {@code clientCount}, both over client rows), not the list's comparison.
-   */
-  private static ReportResult clientRowsOnly(ReportResult balances) {
-    var clientRows =
-        balances.rows().stream()
-            .filter(row -> CreditorLine.Kind.CLIENT.name().equals(row.get("kind")))
-            .toList();
-    var summary = new LinkedHashMap<String, Object>();
-    summary.put("totalTrustBalance", balances.summary().get("totalTrustBalance"));
-    summary.put("clientCount", balances.summary().get("clientCount"));
-    return new ReportResult(clientRows, summary);
-  }
-
   /** A pack row's {@code label} and {@code amount}. */
   private record Line(String label, BigDecimal amount) {}
 
@@ -327,25 +565,55 @@ public class Section35DataPackQuery implements ReportQuery {
     return new Line(label, amount);
   }
 
-  /** {@code date · reference · client (type)} → credit − debit (receipts positive). */
+  /**
+   * {@code date · reference · client (type)}, plus " — {heading}" for a row not on a client ledger
+   * → credit − debit (receipts positive).
+   */
   private static Line receiptPaymentLine(Map<String, Object> row) {
     String type = text(row, "type");
+    String heading = text(row, "ledgerHeading");
     String label =
         Stream.of(text(row, "date"), text(row, "reference"), text(row, "clientName"))
                 .filter(part -> !part.isBlank())
                 .collect(Collectors.joining(" · "))
-            + (type.isBlank() ? "" : " (" + type + ")");
+            + (type.isBlank() ? "" : " (" + type + ")")
+            + (heading.isBlank() || TrustReportWords.CLIENT_HEADING.equals(heading)
+                ? ""
+                : " — " + heading);
     return line(label, money(row, "credit").subtract(money(row, "debit")));
   }
 
-  /** {@code client · institution account} → principal. */
+  /** {@code client · institution account} → the balance as at the year end (D-14). */
   private static Line investmentLine(Map<String, Object> row) {
     String placement = (text(row, "institution") + " " + text(row, "accountNumber")).trim();
     String label =
         Stream.of(text(row, "clientName"), placement)
             .filter(part -> !part.isBlank())
             .collect(Collectors.joining(" · "));
-    return line(label, money(row, "principal"));
+    return line(label, money(row, YEAR_END_BALANCE));
+  }
+
+  /** A creditor line: the person or creditor, an unidentified deposit with its received date. */
+  private static Line creditorLine(Map<String, Object> row) {
+    String label = text(row, "clientName");
+    if (CreditorLine.Kind.UNIDENTIFIED.name().equals(row.get("kind"))
+        && row.get("receivedDate") != null) {
+      label = label + " · received " + dateWords(row, "receivedDate");
+    }
+    return line(label, money(row, "balance"));
+  }
+
+  /**
+   * A date of a pack item label in words ("12 August 2026"; F-650C-OBS-4), from a {@link LocalDate}
+   * or its ISO text; "" when absent.
+   */
+  private static String dateWords(Map<String, Object> row, String key) {
+    Object value = row.get(key);
+    if (value == null) {
+      return "";
+    }
+    return IntegrityMessages.date(
+        value instanceof LocalDate date ? date : LocalDate.parse(value.toString()));
   }
 
   private static String text(Map<String, Object> row, String key) {

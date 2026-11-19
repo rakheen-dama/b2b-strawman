@@ -1,0 +1,603 @@
+{
+  "phase": "r",
+  "startedAt": "2026-11-19T04:04:07.407Z",
+  "consoleErrors": [],
+  "pageErrors": [],
+  "checks": {
+    "r OBS-3: firm-wide schedule Aug–Sep 2026 runs, Account Count ≥ 1": true,
+    "r OBS-3: firm-wide rows include the primary account's August and September rows (Balanced)": true,
+    "r OBS-3: firm-wide month figures = the account-given run's figures": true,
+    "r OBS-3: firm-wide Identity Holds 'Yes' with blocks present": true,
+    "r OBS-3: firm-wide range before any posting (Jan–Feb 2026): no rows, Account Count 0, Identity Holds '—' (not 'Yes')": true,
+    "r OBS-1: schedule + trust-position PDFs are landscape A4": true,
+    "r OBS-1: every required column / value is in the wide PDFs' text (Refunded, Paid to the Fund, c/f, Check, Balanced; Integrity, flags note, bank note)": true,
+    "r OBS-1: account schedule PDF: both month Check cells 'Balanced' in the text": true,
+    "r OBS-1: the other seven report PDFs are A4 (portrait) and rendered": true,
+    "r OBS-2: reconciliation + Section 35 PDFs print the three comparison labels with '–'": true,
+    "r OBS-2: no '#' inside any 'Difference (…)' label; no '#' anywhere in those PDFs": true,
+    "r OBS-4: summary-card dates are words (dd Mon yyyy), not ISO": false,
+    "r OBS-4: Section 35 part (2) 'received …' labels dated in words (12 August 2026, 25 / 26 September 2026)": true,
+    "r OBS-4: Section 35 part (6) sweep label starts '30 September 2026 · <file> · line 10'": true,
+    "r OBS-4: Section 35 PDF carries the same worded dates": true,
+    "r OBS-5: Rule 54.15 list 'After Lock Net' = 'R 0,00'": true
+  },
+  "firmWide": {
+    "slug": "trust-interest-charges-schedule",
+    "params": {
+      "dateFrom": "2026-08-01",
+      "dateTo": "2026-09-30"
+    },
+    "title": "Interest and Charges Schedule (Rule 54.28)",
+    "description": "Rule 54.28: interest earned and charges levied per trust account and month, the Fund ledger brought forward and carried forward; memo figures shown separately.",
+    "paramLabels": [
+      "From Month*",
+      "To Month*",
+      "Trust Account"
+    ],
+    "result": {
+      "cards": [
+        {
+          "label": "Period From",
+          "value": "01 Aug 2026"
+        },
+        {
+          "label": "Period To",
+          "value": "30 Sept 2026"
+        },
+        {
+          "label": "Account Count",
+          "value": "1"
+        },
+        {
+          "label": "Identity Holds",
+          "value": "Yes"
+        },
+        {
+          "label": "Scope Note",
+          "value": "Trust cash, estates and other trust assets are not recorded in Kazi and are not included in this comparison."
+        }
+      ],
+      "headers": [
+        "Trust Account",
+        "Section",
+        "Month",
+        "Fund Ledger b/f",
+        "Gross Interest (Cashbook)",
+        "Gross Interest (At Source, Memo)",
+        "Client's Share (s86(4))",
+        "Fund 5% Credited",
+        "Fund 5% Paid at Source",
+        "Charges Recoverable",
+        "Charges Non-recoverable",
+        "VAT in Charges",
+        "Charges (At Source, Memo)",
+        "VAT (Memo)",
+        "Charges Refunded",
+        "Paid to the Fund",
+        "Fund Ledger c/f",
+        "Check"
+      ],
+      "rows": [
+        [
+          "Mathebula & Partners Trust Account",
+          "Section 86(2) trust banking account",
+          "August 2026",
+          "R 0,00",
+          "R 30,00",
+          "R 0,00",
+          "—",
+          "—",
+          "—",
+          "R 0,00",
+          "R 0,00",
+          "R 0,00",
+          "R 0,00",
+          "R 0,00",
+          "R 0,00",
+          "R 0,00",
+          "R 30,00",
+          "Balanced"
+        ],
+        [
+          "Mathebula & Partners Trust Account",
+          "Section 86(2) trust banking account",
+          "September 2026",
+          "R 30,00",
+          "R 123,45",
+          "R 200,00",
+          "—",
+          "—",
+          "—",
+          "R 57,50",
+          "R 12,00",
+          "R 9,07",
+          "R 15,00",
+          "R 1,96",
+          "R 57,50",
+          "R 100,00",
+          "R 41,45",
+          "Balanced"
+        ]
+      ],
+      "noData": false,
+      "error": null,
+      "pager": "Page 1 of 1",
+      "toasts": [],
+      "formErrors": []
+    },
+    "shot": "r-firmwide-report-trust-interest-charges-schedule.png",
+    "cardScan": {
+      "codes": [],
+      "iso": [],
+      "rawDecimals": []
+    },
+    "tableCodeHits": [],
+    "tableIsoHits": [],
+    "tableRawDecimalHits": [],
+    "csv": {
+      "ok": true,
+      "file": "r-firmwide-trust-interest-charges-schedule.csv",
+      "suggested": "trust-interest-charges-schedule-report.csv",
+      "bytes": 782,
+      "lines": 6,
+      "header": "# Interest and Charges Schedule (Rule 54.28)",
+      "codeHits": []
+    },
+    "pdf": {
+      "ok": true,
+      "file": "r-firmwide-trust-interest-charges-schedule.pdf",
+      "suggested": "trust-interest-charges-schedule-report.pdf",
+      "bytes": 4079,
+      "magic": "%PDF-",
+      "textChars": 1119,
+      "extractOk": true,
+      "scopeNote": true,
+      "scan": {
+        "codes": [
+          "GROSS",
+          "CLIENT"
+        ],
+        "iso": [
+          "2026-08-01",
+          "2026-09-30"
+        ],
+        "rawDecimals": []
+      },
+      "codes": [],
+      "missingColumns": [],
+      "page1": "r-firmwide-trust-interest-charges-schedule.pdf-page1.png"
+    },
+    "afterExport": {
+      "cards": [
+        {
+          "label": "Period From",
+          "value": "01 Aug 2026"
+        },
+        {
+          "label": "Period To",
+          "value": "30 Sept 2026"
+        },
+        {
+          "label": "Account Count",
+          "value": "1"
+        },
+        {
+          "label": "Identity Holds",
+          "value": "Yes"
+        },
+        {
+          "label": "Scope Note",
+          "value": "Trust cash, estates and other trust assets are not recorded in Kazi and are not included in this comparison."
+        }
+      ],
+      "headers": [
+        "Trust Account",
+        "Section",
+        "Month",
+        "Fund Ledger b/f",
+        "Gross Interest (Cashbook)",
+        "Gross Interest (At Source, Memo)",
+        "Client's Share (s86(4))",
+        "Fund 5% Credited",
+        "Fund 5% Paid at Source",
+        "Charges Recoverable",
+        "Charges Non-recoverable",
+        "VAT in Charges",
+        "Charges (At Source, Memo)",
+        "VAT (Memo)",
+        "Charges Refunded",
+        "Paid to the Fund",
+        "Fund Ledger c/f",
+        "Check"
+      ],
+      "rows": [
+        [
+          "Mathebula & Partners Trust Account",
+          "Section 86(2) trust banking account",
+          "August 2026",
+          "R 0,00",
+          "R 30,00",
+          "R 0,00",
+          "—",
+          "—",
+          "—",
+          "R 0,00",
+          "R 0,00",
+          "R 0,00",
+          "R 0,00",
+          "R 0,00",
+          "R 0,00",
+          "R 0,00",
+          "R 30,00",
+          "Balanced"
+        ],
+        [
+          "Mathebula & Partners Trust Account",
+          "Section 86(2) trust banking account",
+          "September 2026",
+          "R 30,00",
+          "R 123,45",
+          "R 200,00",
+          "—",
+          "—",
+          "—",
+          "R 57,50",
+          "R 12,00",
+          "R 9,07",
+          "R 15,00",
+          "R 1,96",
+          "R 57,50",
+          "R 100,00",
+          "R 41,45",
+          "Balanced"
+        ]
+      ],
+      "noData": false,
+      "error": null,
+      "pager": "Page 1 of 1",
+      "toasts": [],
+      "formErrors": []
+    }
+  },
+  "firmWideRows": [
+    {
+      "Trust Account": "Mathebula & Partners Trust Account",
+      "Section": "Section 86(2) trust banking account",
+      "Month": "August 2026",
+      "Fund Ledger b/f": "R 0,00",
+      "Gross Interest (Cashbook)": "R 30,00",
+      "Gross Interest (At Source, Memo)": "R 0,00",
+      "Client's Share (s86(4))": "—",
+      "Fund 5% Credited": "—",
+      "Fund 5% Paid at Source": "—",
+      "Charges Recoverable": "R 0,00",
+      "Charges Non-recoverable": "R 0,00",
+      "VAT in Charges": "R 0,00",
+      "Charges (At Source, Memo)": "R 0,00",
+      "VAT (Memo)": "R 0,00",
+      "Charges Refunded": "R 0,00",
+      "Paid to the Fund": "R 0,00",
+      "Fund Ledger c/f": "R 30,00",
+      "Check": "Balanced"
+    },
+    {
+      "Trust Account": "Mathebula & Partners Trust Account",
+      "Section": "Section 86(2) trust banking account",
+      "Month": "September 2026",
+      "Fund Ledger b/f": "R 30,00",
+      "Gross Interest (Cashbook)": "R 123,45",
+      "Gross Interest (At Source, Memo)": "R 200,00",
+      "Client's Share (s86(4))": "—",
+      "Fund 5% Credited": "—",
+      "Fund 5% Paid at Source": "—",
+      "Charges Recoverable": "R 57,50",
+      "Charges Non-recoverable": "R 12,00",
+      "VAT in Charges": "R 9,07",
+      "Charges (At Source, Memo)": "R 15,00",
+      "VAT (Memo)": "R 1,96",
+      "Charges Refunded": "R 57,50",
+      "Paid to the Fund": "R 100,00",
+      "Fund Ledger c/f": "R 41,45",
+      "Check": "Balanced"
+    }
+  ],
+  "firmWideBeforePostings": {
+    "slug": "trust-interest-charges-schedule",
+    "params": {
+      "dateFrom": "2026-01-01",
+      "dateTo": "2026-02-28"
+    },
+    "title": "Interest and Charges Schedule (Rule 54.28)",
+    "description": "Rule 54.28: interest earned and charges levied per trust account and month, the Fund ledger brought forward and carried forward; memo figures shown separately.",
+    "paramLabels": [
+      "From Month*",
+      "To Month*",
+      "Trust Account"
+    ],
+    "result": {
+      "cards": [
+        {
+          "label": "Period From",
+          "value": "01 Jan 2026"
+        },
+        {
+          "label": "Period To",
+          "value": "28 Feb 2026"
+        },
+        {
+          "label": "Account Count",
+          "value": "0"
+        },
+        {
+          "label": "Identity Holds",
+          "value": "—"
+        },
+        {
+          "label": "Scope Note",
+          "value": "Trust cash, estates and other trust assets are not recorded in Kazi and are not included in this comparison."
+        }
+      ],
+      "headers": [],
+      "rows": [],
+      "noData": true,
+      "error": null,
+      "pager": null,
+      "toasts": [],
+      "formErrors": []
+    },
+    "shot": "r-firmwide-before-postings-report-trust-interest-charges-schedule.png",
+    "cardScan": {
+      "codes": [],
+      "iso": [],
+      "rawDecimals": []
+    },
+    "tableCodeHits": [],
+    "tableIsoHits": [],
+    "tableRawDecimalHits": []
+  },
+  "firmWideBeforePostingsRowsSql": "0",
+  "widePdfs": [
+    {
+      "pdf": "c-trust-interest-charges-schedule.pdf",
+      "size": {
+        "w": 841.875,
+        "h": 595.275,
+        "landscape": true,
+        "a4": true
+      },
+      "pages": 1,
+      "missing": [],
+      "hi": "c-trust-interest-charges-schedule.pdf-page1-hi.png"
+    },
+    {
+      "pdf": "s-trust-interest-charges-schedule.pdf",
+      "size": {
+        "w": 841.875,
+        "h": 595.275,
+        "landscape": true,
+        "a4": true
+      },
+      "pages": 1,
+      "missing": [],
+      "hi": "s-trust-interest-charges-schedule.pdf-page1-hi.png"
+    },
+    {
+      "pdf": "r-firmwide-trust-interest-charges-schedule.pdf",
+      "size": {
+        "w": 841.875,
+        "h": 595.275,
+        "landscape": true,
+        "a4": true
+      },
+      "pages": 1,
+      "missing": [],
+      "hi": "r-firmwide-trust-interest-charges-schedule.pdf-page1-hi.png"
+    },
+    {
+      "pdf": "c-trust-position.pdf",
+      "size": {
+        "w": 841.875,
+        "h": 595.275,
+        "landscape": true,
+        "a4": true
+      },
+      "pages": 1,
+      "missing": [],
+      "hi": "c-trust-position.pdf-page1-hi.png"
+    },
+    {
+      "pdf": "f-2026-11-19-trust-position.pdf",
+      "size": {
+        "w": 841.875,
+        "h": 595.275,
+        "landscape": true,
+        "a4": true
+      },
+      "pages": 1,
+      "missing": [],
+      "hi": "f-2026-11-19-trust-position.pdf-page1-hi.png"
+    }
+  ],
+  "schedulePdfBalancedCount": 3,
+  "otherPdfs": [
+    {
+      "slug": "trust-receipts-payments",
+      "pdf": "c-trust-receipts-payments.pdf",
+      "size": {
+        "w": 595.275,
+        "h": 841.875,
+        "landscape": false,
+        "a4": true
+      },
+      "pages": 2,
+      "missingColumns": [],
+      "hi": "c-trust-receipts-payments.pdf-page1-hi.png"
+    },
+    {
+      "slug": "client-trust-balances",
+      "pdf": "c-client-trust-balances.pdf",
+      "size": {
+        "w": 595.275,
+        "h": 841.875,
+        "landscape": false,
+        "a4": true
+      },
+      "pages": 1,
+      "missingColumns": [
+        "General Balance",
+        "Source"
+      ],
+      "hi": "c-client-trust-balances.pdf-page1-hi.png"
+    },
+    {
+      "slug": "client-ledger-statement",
+      "pdf": "c-client-ledger-statement.pdf",
+      "size": {
+        "w": 595.275,
+        "h": 841.875,
+        "landscape": false,
+        "a4": true
+      },
+      "pages": 1,
+      "missingColumns": [
+        "Running Balance"
+      ],
+      "hi": "c-client-ledger-statement.pdf-page1-hi.png"
+    },
+    {
+      "slug": "trust-reconciliation",
+      "pdf": "c-trust-reconciliation.pdf",
+      "size": {
+        "w": 595.275,
+        "h": 841.875,
+        "landscape": false,
+        "a4": true
+      },
+      "pages": 1,
+      "missingColumns": [],
+      "hi": "c-trust-reconciliation.pdf-page1-hi.png"
+    },
+    {
+      "slug": "investment-register",
+      "pdf": "c-investment-register.pdf",
+      "size": {
+        "w": 595.275,
+        "h": 841.875,
+        "landscape": false,
+        "a4": true
+      },
+      "pages": 1,
+      "missingColumns": [],
+      "hi": "c-investment-register.pdf-page1-hi.png"
+    },
+    {
+      "slug": "unidentified-deposits-age-analysis",
+      "pdf": "c-unidentified-deposits-age-analysis.pdf",
+      "size": {
+        "w": 595.275,
+        "h": 841.875,
+        "landscape": false,
+        "a4": true
+      },
+      "pages": 1,
+      "missingColumns": [],
+      "hi": "c-unidentified-deposits-age-analysis.pdf-page1-hi.png"
+    },
+    {
+      "slug": "section-35-data-pack",
+      "pdf": "c-section-35-data-pack.pdf",
+      "size": {
+        "w": 595.275,
+        "h": 841.875,
+        "landscape": false,
+        "a4": true
+      },
+      "pages": 3,
+      "missingColumns": [],
+      "hi": "c-section-35-data-pack.pdf-page1-hi.png"
+    },
+    {
+      "pdf": "d-asof-2026-11-19-unidentified-deposits-age-analysis.pdf",
+      "size": {
+        "w": 595.275,
+        "h": 841.875,
+        "landscape": false,
+        "a4": true
+      },
+      "pages": 1,
+      "hi": "d-asof-2026-11-19-unidentified-deposits-age-analysis.pdf-page1-hi.png"
+    },
+    {
+      "pdf": "e-fye-2026-09-30-section-35-data-pack.pdf",
+      "size": {
+        "w": 595.275,
+        "h": 841.875,
+        "landscape": false,
+        "a4": true
+      },
+      "pages": 3,
+      "hi": "e-fye-2026-09-30-section-35-data-pack.pdf-page1-hi.png"
+    }
+  ],
+  "dashes": [
+    {
+      "file": "c-trust-reconciliation.pdf.txt",
+      "labelsPresent": [
+        "Difference (adjusted bank – cashbook)",
+        "Difference (adjusted bank – trust creditors)",
+        "Difference (cashbook – trust creditors)"
+      ],
+      "hashCount": 0,
+      "hashDifference": [],
+      "minusSign": 0
+    },
+    {
+      "file": "c-section-35-data-pack.pdf.txt",
+      "labelsPresent": [
+        "Difference (adjusted bank – cashbook)",
+        "Difference (adjusted bank – trust creditors)",
+        "Difference (cashbook – trust creditors)"
+      ],
+      "hashCount": 0,
+      "hashDifference": [],
+      "minusSign": 0
+    },
+    {
+      "file": "e-fye-2026-09-30-section-35-data-pack.pdf.txt",
+      "labelsPresent": [
+        "Difference (adjusted bank – cashbook)",
+        "Difference (adjusted bank – trust creditors)",
+        "Difference (cashbook – trust creditors)"
+      ],
+      "hashCount": 0,
+      "hashDifference": [],
+      "minusSign": 0
+    }
+  ],
+  "dateCards": {
+    "trust-position As Of Date": "30 Sept 2026",
+    "schedule Period From": "01 Aug 2026",
+    "schedule Period To": "30 Sept 2026",
+    "age analysis As Of Date": "19 Nov 2026",
+    "reconciliation Period End": "30 Sept 2026",
+    "Section 35 Financial Year Start": "01 Oct 2025",
+    "Section 35 Financial Year End": "30 Sept 2026",
+    "firm-wide schedule Period From": "01 Aug 2026",
+    "firm-wide schedule Period To": "30 Sept 2026"
+  },
+  "s35Received": [
+    "Eft credit unknown remitter · received 12 August 2026",
+    "Eft credit no reference · received 25 September 2026",
+    "Eft credit estate payer · received 26 September 2026"
+  ],
+  "s35Sweeps": [
+    "30 September 2026 · b-statement-0WYGG.csv · line 10 · LPFF/SEP/0WYGG | -R 100,00",
+    "Total | -R 100,00"
+  ],
+  "s35PdfDates": {
+    "received12Aug": true,
+    "sweep30Sep": true
+  },
+  "afterLockNet": "R 0,00",
+  "endedAt": "2026-11-19T04:04:19.424Z"
+}

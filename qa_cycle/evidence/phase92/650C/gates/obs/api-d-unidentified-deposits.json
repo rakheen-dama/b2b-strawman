@@ -1,0 +1,75 @@
+{
+  "method": "GET",
+  "url": "/api/trust-accounts/bf0be9fc-023d-414e-96fc-6f7c1d6076da/unidentified-deposits",
+  "status": 200,
+  "body": {
+    "content": [
+      {
+        "id": "d6bbd656-879d-4c1c-a9b4-4c716fefbabb",
+        "trustAccountId": "bf0be9fc-023d-414e-96fc-6f7c1d6076da",
+        "receivedDate": "2026-08-12",
+        "bankDescription": "Eft credit unknown remitter",
+        "bankReference": "UNK1/OBS650C/ZL6X0",
+        "amount": 600,
+        "status": "HELD",
+        "ageDays": 99,
+        "olderThanOneYear": false,
+        "allocatedClientId": null,
+        "allocatedClientName": null,
+        "allocatedMatterId": null,
+        "allocatedMatterName": null,
+        "resolutionTransactionId": null,
+        "resolutionStatus": null,
+        "resolvedDate": null,
+        "bankStatementLineId": "6af88c09-9aff-4f80-982b-770977670a08",
+        "notes": "OBS 650C ZL6X0 line 2"
+      },
+      {
+        "id": "4f612638-6fe6-4fad-95cd-a2099ae0293a",
+        "trustAccountId": "bf0be9fc-023d-414e-96fc-6f7c1d6076da",
+        "receivedDate": "2026-09-25",
+        "bankDescription": "Eft credit no reference",
+        "bankReference": "UNK2/OBS650C/ZL6X0",
+        "amount": 750,
+        "status": "HELD",
+        "ageDays": 55,
+        "olderThanOneYear": false,
+        "allocatedClientId": null,
+        "allocatedClientName": null,
+        "allocatedMatterId": null,
+        "allocatedMatterName": null,
+        "resolutionTransactionId": null,
+        "resolutionStatus": null,
+        "resolvedDate": null,
+        "bankStatementLineId": "27143753-8d77-486b-a27d-e4a2de3d63df",
+        "notes": "OBS 650C ZL6X0 line 7"
+      },
+      {
+        "id": "8b997191-48ac-4389-b424-78efba649013",
+        "trustAccountId": "bf0be9fc-023d-414e-96fc-6f7c1d6076da",
+        "receivedDate": "2026-09-26",
+        "bankDescription": "Eft credit estate payer",
+        "bankReference": "UNK3/OBS650C/ZL6X0",
+        "amount": 200,
+        "status": "ALLOCATED",
+        "ageDays": 54,
+        "olderThanOneYear": false,
+        "allocatedClientId": "908ca010-9fb1-47e1-9695-2467f1e84bc0",
+        "allocatedClientName": "Acme Corp",
+        "allocatedMatterId": "78bc2d12-e96e-4332-97e1-d9112216bd7f",
+        "allocatedMatterName": "Website Redesign",
+        "resolutionTransactionId": "ef2d82ec-e9ee-4b20-b9b0-bf866963cd2a",
+        "resolutionStatus": "APPROVED",
+        "resolvedDate": "2026-10-15",
+        "bankStatementLineId": "fcd197bb-6da2-47fe-a56c-250531e9a686",
+        "notes": "OBS 650C ZL6X0 line 8"
+      }
+    ],
+    "page": {
+      "size": 20,
+      "number": 0,
+      "totalElements": 3,
+      "totalPages": 1
+    }
+  }
+}

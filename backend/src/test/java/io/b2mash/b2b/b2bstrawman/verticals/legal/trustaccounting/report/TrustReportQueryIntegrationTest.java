@@ -60,6 +60,10 @@ class TrustReportQueryIntegrationTest {
 
   private static final String ORG_ID = "org_trust_report_test";
 
+  /** A raw type / status code ("FUND_SWEEP", "CLIENT_INSTRUCTION") — never on a report (F-15). */
+  private static final java.util.regex.Pattern RAW_CODE =
+      java.util.regex.Pattern.compile(".*\\b[A-Z]{2,}_[A-Z_]{2,}\\b.*");
+
   @Autowired private MockMvc mockMvc;
   @Autowired private io.b2mash.b2b.b2bstrawman.project.ProjectRepository projectRepository;
   @Autowired private TenantProvisioningService provisioningService;
@@ -77,11 +81,12 @@ class TrustReportQueryIntegrationTest {
   @Autowired private ClientLedgerStatementQuery ledgerStatementQuery;
   @Autowired private TrustReconciliationReportQuery reconciliationReportQuery;
   @Autowired private InvestmentRegisterQuery investmentRegisterQuery;
-  @Autowired private InterestAllocationReportQuery interestAllocationQuery;
   @Autowired private Section35DataPackQuery section35DataPackQuery;
   @Autowired private TrustPositionQuery trustPositionQuery;
   @Autowired private TrustIntegrityService trustIntegrityService;
   @Autowired private TrustReconciliationService trustReconciliationService;
+  @Autowired private List<io.b2mash.b2b.b2bstrawman.reporting.ReportQuery> reportQueries;
+  @Autowired private io.b2mash.b2b.b2bstrawman.reporting.ReportRenderingService renderingService;
 
   private String tenantSchema;
   private UUID trustAccountId;
@@ -334,6 +339,27 @@ class TrustReportQueryIntegrationTest {
 
           var totalReceipts = (BigDecimal) result.summary().get("totalReceipts");
           assertThat(totalReceipts).isGreaterThan(BigDecimal.ZERO);
+
+          // v4 (650C, D-15): receipt / payment and the running balance by cashbook effect; each
+          // row under its ledger heading, in words; per-heading totals in the summary
+          BigDecimal running = BigDecimal.ZERO;
+          for (var row : result.rows()) {
+            running =
+                running.add((BigDecimal) row.get("credit")).subtract((BigDecimal) row.get("debit"));
+            assertThat((BigDecimal) row.get("balance")).isEqualByComparingTo(running);
+            assertThat((String) row.get("ledgerHeading")).doesNotMatch(RAW_CODE);
+          }
+          assertThat(result.rows().getFirst()).containsEntry("ledgerHeading", "Client");
+          @SuppressWarnings("unchecked")
+          var headings = (List<Map<String, Object>>) result.summary().get("headings");
+          assertThat(headings).extracting(h -> h.get("heading")).contains("Client");
+          assertThat(
+                  headings.stream()
+                      .map(h -> (BigDecimal) h.get("receipts"))
+                      .reduce(BigDecimal.ZERO, BigDecimal::add))
+              .isEqualByComparingTo(totalReceipts);
+          assertThat(result.summary().get("scopeNote"))
+              .isEqualTo(TrustReportWords.TRUST_ASSETS_NOTE);
         });
   }
 
@@ -594,6 +620,10 @@ class TrustReportQueryIntegrationTest {
                 trustPositionQuery.executeAll(
                     Map.of("asOfDate", date.toString(), "trust_account_id", account.toString())));
     var row = onlyRow(result, r -> account.equals(r.get("trustAccountId")));
+    // 650C (D-20): the section and the integrity flags in words for the report columns
+    assertThat(row.get("sectionLabel")).isEqualTo("Section 86(2) trust banking account");
+    assertThat((String) row.get("integrity")).isNotBlank().doesNotMatch(RAW_CODE);
+    assertThat(result.summary().get("scopeNote")).isEqualTo(TrustReportWords.TRUST_ASSETS_NOTE);
     var expected =
         inTenant(
             () ->
@@ -892,21 +922,85 @@ class TrustReportQueryIntegrationTest {
 
           var result = reconciliationReportQuery.executeAll(params);
 
-          // Should have 6 rows (bank, outstanding deposits, outstanding payments, adjusted,
-          // cashbook, client ledger)
-          assertThat(result.rows()).hasSize(6);
-
-          // Verify section structure
-          assertThat(result.rows().get(0).get("section")).isEqualTo("BANK");
-          assertThat(result.rows().get(1).get("section")).isEqualTo("ADJUSTMENTS");
-          assertThat(result.rows().get(3).get("section")).isEqualTo("ADJUSTED");
-          assertThat(result.rows().get(4).get("section")).isEqualTo("COMPARISON");
+          // v4 (650C, D-20): both comparisons and the stored creditor breakdown, in words
+          assertThat(result.rows())
+              .extracting(r -> r.get("section") + " | " + r.get("label"))
+              .containsExactly(
+                  "Bank | Bank balance per statement",
+                  "Adjustments | Add: outstanding deposits",
+                  "Adjustments | Less: outstanding payments",
+                  "Adjustments | Adjusted bank balance",
+                  "Comparison with the cashbook | Cashbook balance",
+                  "Comparison with the cashbook | Difference (adjusted bank – cashbook)",
+                  "Trust creditors | Client ledgers",
+                  "Trust creditors | Section 86(4) investment creditors",
+                  "Trust creditors | Legal Practitioners' Fidelity Fund — interest and charges",
+                  "Trust creditors | Unidentified deposits",
+                  "Trust creditors | Section 86(3) placements (inter-account)",
+                  "Trust creditors | Trust creditors total",
+                  "Comparison with trust creditors | Difference (adjusted bank – trust creditors)",
+                  "Comparison with trust creditors | Difference (cashbook – trust creditors)");
+          var recon = reconciliationRepository.findById(reconciliationId).orElseThrow();
+          var amounts =
+              result.rows().stream()
+                  .collect(
+                      java.util.stream.Collectors.toMap(
+                          r -> (String) r.get("label"), r -> (BigDecimal) r.get("amount")));
+          assertThat(amounts.get("Trust creditors total"))
+              .isEqualByComparingTo(recon.getCreditorTotal());
+          assertThat(amounts.get("Client ledgers"))
+              .isEqualByComparingTo(recon.getClientLedgerTotal());
+          assertThat(amounts.get("Difference (adjusted bank – trust creditors)"))
+              .isEqualByComparingTo(recon.getDifference());
+          assertThat(amounts.get("Difference (adjusted bank – cashbook)"))
+              .isEqualByComparingTo(
+                  recon.getAdjustedBankBalance().subtract(recon.getCashbookBalance()));
+          assertThat(result.rows())
+              .allSatisfy(r -> assertThat((String) r.get("section")).doesNotMatch(RAW_CODE));
+          assertThat(result.summary().get("status")).isEqualTo("Completed");
+          assertThat(result.summary().get("scopeNote"))
+              .isEqualTo(TrustReportWords.TRUST_ASSETS_NOTE);
 
           // Verify summary
           assertThat(result.summary()).containsKey("bankBalance");
           assertThat(result.summary()).containsKey("cashbookBalance");
           assertThat(result.summary()).containsKey("isBalanced");
           assertThat((boolean) result.summary().get("isBalanced")).isTrue();
+        });
+  }
+
+  /**
+   * F-650C-OBS-2: the PDF falls back to the standard fonts (WinAnsi), which have no U+2212 minus —
+   * it printed "#". Every label is WinAnsi-safe and the PDF prints the comparisons as written.
+   */
+  @Test
+  void trustReconciliationPdf_printsTheComparisonLabelsWithoutAReplacementGlyph() {
+    runInTenant(
+        () -> {
+          var params = new HashMap<String, Object>();
+          params.put("trust_account_id", trustAccountId);
+          params.put("reconciliation_id", reconciliationId);
+          var result = reconciliationReportQuery.executeAll(params);
+          var winAnsi = java.nio.charset.Charset.forName("windows-1252").newEncoder();
+          assertThat(result.rows())
+              .extracting(r -> (String) r.get("label"))
+              .allSatisfy(label -> assertThat(winAnsi.canEncode(label)).as(label).isTrue());
+
+          byte[] pdf =
+              renderingService.renderPdf(
+                  TrustReportPackSeeder.shipped("trust-reconciliation"), result, params);
+          String text;
+          try (var doc = org.apache.pdfbox.Loader.loadPDF(pdf)) {
+            text = new org.apache.pdfbox.text.PDFTextStripper().getText(doc);
+          } catch (java.io.IOException e) {
+            throw new java.io.UncheckedIOException(e);
+          }
+          assertThat(text)
+              .contains(
+                  "Difference (adjusted bank – cashbook)",
+                  "Difference (adjusted bank – trust creditors)",
+                  "Difference (cashbook – trust creditors)")
+              .doesNotContain("#");
         });
   }
 
@@ -942,41 +1036,6 @@ class TrustReportQueryIntegrationTest {
           var totalPrincipal = (BigDecimal) result.summary().get("totalPrincipal");
           assertThat(totalPrincipal).isEqualByComparingTo(new BigDecimal("20000.00"));
           assertThat((int) result.summary().get("activeCount")).isEqualTo(1);
-        });
-  }
-
-  // ==========================================================================
-  // 447.4 -- Interest Allocation Report Test
-  // ==========================================================================
-
-  @Test
-  void interestAllocation_returnsPerClientBreakdown() {
-    runInTenant(
-        () -> {
-          var params = new HashMap<String, Object>();
-          params.put("trust_account_id", trustAccountId);
-          params.put("interest_run_id", interestRunId);
-
-          var result = interestAllocationQuery.executeAll(params);
-
-          // Should have allocations for 2 clients
-          assertThat(result.rows()).hasSize(2);
-
-          var firstRow = result.rows().getFirst();
-          assertThat(firstRow).containsKey("clientName");
-          assertThat(firstRow).containsKey("averageDailyBalance");
-          assertThat(firstRow).containsKey("daysInPeriod");
-          assertThat(firstRow).containsKey("grossInterest");
-          assertThat(firstRow).containsKey("lpffShare");
-          assertThat(firstRow).containsKey("clientShare");
-
-          // Verify summary
-          assertThat(result.summary()).containsKey("totalInterest");
-          assertThat(result.summary()).containsKey("totalLpffShare");
-          assertThat(result.summary()).containsKey("totalClientShare");
-
-          var totalInterest = (BigDecimal) result.summary().get("totalInterest");
-          assertThat(totalInterest).isGreaterThan(BigDecimal.ZERO);
         });
   }
 
@@ -1033,9 +1092,18 @@ class TrustReportQueryIntegrationTest {
           // Verify section names
           var sectionNames = sections.stream().map(s -> (String) s.get("sectionName")).toList();
           assertThat(sectionNames).contains("Trust Receipts & Payments");
-          assertThat(sectionNames).contains("Client Trust Balances");
+          assertThat(sectionNames).contains("Trust creditors (Rule 54.15)");
+          assertThat(sectionNames).doesNotContain("Client Trust Balances", "Interest Allocation");
+          assertThat(sectionNames)
+              .contains(
+                  "Interest and charges schedule (Rule 54.28)",
+                  "Fund sweeps and their statement lines (Rule 54.14.16)",
+                  "Fund sweeps with no statement line",
+                  "Client Ledger Statements");
           assertThat(sectionNames).contains("Trust Reconciliation");
-          assertThat(sectionNames).contains("Section 86(3) Investments (Firm Discretion)");
+          // 650C (D-14): investments on the books at the year end — the section 86(3) placement
+          // still awaits approval (never posted), so it is not on the books and has no section
+          assertThat(sectionNames).doesNotContain("Section 86(3) Investments (Firm Discretion)");
 
           // Verify rows have section markers
           var rowSections =
@@ -1046,6 +1114,71 @@ class TrustReportQueryIntegrationTest {
           assertThat(result.summary().get("financialYearStart")).isEqualTo("2025-04-01");
           assertThat(result.summary().get("financialYearEnd")).isEqualTo("2026-03-31");
         });
+  }
+
+  /**
+   * 650C (§16.8, D-18, F-15): every one of the nine v4 report templates renders on real figures — a
+   * null number would 500 the PDF export — prints the scope note in its header and never a raw type
+   * or status code; every slug has its query bean and the retired one has none.
+   */
+  @Test
+  void everyV4Template_rendersWithTheScopeNote_andNoRawCode() {
+    var params = new java.util.LinkedHashMap<String, Map<String, Object>>();
+    params.put(
+        "trust-receipts-payments",
+        Map.of(
+            "trust_account_id", trustAccountId, "dateFrom", "2025-04-01", "dateTo", "2025-06-30"));
+    params.put(
+        "client-trust-balances",
+        Map.of("trust_account_id", trustAccountId, "asOfDate", "2025-06-30"));
+    params.put("trust-position", Map.of("asOfDate", "2025-06-30"));
+    params.put(
+        "client-ledger-statement",
+        Map.of(
+            "trust_account_id",
+            trustAccountId,
+            "customer_id",
+            customerId1,
+            "dateFrom",
+            "2025-04-01",
+            "dateTo",
+            "2025-06-30"));
+    params.put(
+        "trust-reconciliation",
+        Map.of("trust_account_id", trustAccountId, "reconciliation_id", reconciliationId));
+    params.put("investment-register", Map.of("trust_account_id", trustAccountId));
+    params.put(
+        "trust-interest-charges-schedule",
+        Map.of(
+            "trust_account_id", trustAccountId, "dateFrom", "2025-04-01", "dateTo", "2025-06-30"));
+    params.put("unidentified-deposits-age-analysis", Map.of("asOfDate", "2025-06-30"));
+    params.put(
+        "section-35-data-pack",
+        Map.of("trust_account_id", trustAccountId, "financial_year_end", "2026-03-31"));
+    assertThat(params.keySet()).containsExactlyElementsOf(TrustReportPackSeeder.SLUGS);
+    var bySlug =
+        reportQueries.stream()
+            .collect(
+                java.util.stream.Collectors.toMap(
+                    io.b2mash.b2b.b2bstrawman.reporting.ReportQuery::getSlug, q -> q));
+    assertThat(bySlug).doesNotContainKey("interest-allocation");
+
+    runInTenant(
+        () ->
+            params.forEach(
+                (slug, p) -> {
+                  assertThat(bySlug).as(slug).containsKey(slug);
+                  var result = bySlug.get(slug).executeAll(new HashMap<>(p));
+                  assertThat(result.summary().get("scopeNote"))
+                      .as(slug)
+                      .isEqualTo(TrustReportWords.TRUST_ASSETS_NOTE);
+                  var html =
+                      renderingService.renderHtml(TrustReportPackSeeder.shipped(slug), result, p);
+                  var text =
+                      html.replaceAll("(?s)<style>.*?</style>", " ").replaceAll("<[^>]+>", " ");
+                  assertThat(text).as(slug).contains(TrustReportWords.TRUST_ASSETS_NOTE);
+                  assertThat(text).as(slug).doesNotMatch("(?s).*\\b[A-Z]{2,}_[A-Z_]{2,}\\b.*");
+                }));
   }
 
   private final java.util.Map<String, UUID> trustMatters = new java.util.HashMap<>();

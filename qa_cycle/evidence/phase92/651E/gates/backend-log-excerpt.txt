@@ -1,12 +1,16 @@
-e2e-backend log (stdout+stderr), captured after legal-lifecycle + OBS on the slice-head stack
-lines:      528
+e2e-backend log (stdout+stderr) of the gate stack (V28 applied 2026-11-19 08:03:09 UTC), captured after legal-lifecycle + OBS; source /tmp/651E-backend.log
+lines: 528
 ERROR-level JSON lines: 0
 WARN-level JSON lines: 167
-lpff mentions: 1
---- startup / migration ---
-  35 Migrating schema \
-   1 Started BackendApplication in 11.182 seconds (process running for 11.594)
---- distinct WARN messages ---
+lpff mentions (case-insensitive): 1
+
+--- every lpff line (message) ---
+Migrating schema \"tenant_7d218705360b\" to version \"28 - phase92 drop lpff rates\"
+
+--- startup ---
+Started BackendApplication in 11.182 seconds (process running for 11.594)
+
+--- ALL distinct WARN messages (count, first 170 chars; UUIDs normalised) ---
   18 Using fallback font LiberationSans for base font ZapfDingbats
   18 Using fallback font LiberationSans for base font Helvetica
    9 Using fallback font LiberationSans for base font Times-Roman
@@ -19,3 +23,20 @@ lpff mentions: 1
    9 Using fallback font LiberationSans for base font Helvetica-Bold
    9 Using fallback font LiberationSans for base font Courier-Oblique
    9 Using fallback font LiberationSans for base font Courier-BoldOblique
+   9 Using fallback font LiberationSans for base font Courier-Bold
+   9 Using fallback font LiberationSans for base font Courier
+   5 Forbidden: path=/api/matters/<uuid>/time-summary/by-member, method=GET, reason=Per-member time breakdown is restricted to matter leads, org 
+   4 Draft invoice for customer <uuid> created without a tax number — send will be blocked until the customer profile is updated (warning code: t
+   2 No recipients found for DOCUMENT_GENERATED notification: entity=<uuid>
+   1 Unable to proxy interface-implementing method [public final void org.springframework.web.filter.GenericFilterBean.init(jakarta.servlet.FilterConfig) throws jakarta.servle
+   1 Reached the maximum number of 'uri' tags for 'http.server.requests'.
+   1 LibreOffice not found — PDF conversion will fall back to docx4j
+   1 Finished building on-disk font cache, found 22 fonts
+   1 Building on-disk font cache, this may take a while
+   1 Bean 'stringOrNumberMigrationVersionConverter' of type [org.springframework.boot.flyway.autoconfigure.FlywayAutoConfiguration$StringOrNumberToMigrationVersionConverter] i
+   1 Bean 'spring.ai.mcp.server.annotation-scanner-org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerProperties' of type [org.spring
+   1 Bean 'serverAnnotatedBeanRegistry' of type [org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerAutoConfiguration$ServerMcpAnnota
+   1 Bean 'requiresCapabilityAdvisor' of type [org.springframework.security.authorization.method.AuthorizationManagerBeforeMethodInterceptor] is not eligible for getting proce
+   1 Bean 'org.springframework.ai.mcp.server.common.autoconfigure.annotations.McpServerAnnotationScannerAutoConfiguration' of type [org.springframework.ai.mcp.server.common.au
+   1 Bean 'capabilityAuthorizationManager' of type [io.b2mash.b2b.b2bstrawman.orgrole.CapabilityAuthorizationManager] is not eligible for getting processed by all BeanPostProc
+   1 22 new fonts found, font cache will be re-built

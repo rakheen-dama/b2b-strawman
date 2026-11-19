@@ -6,7 +6,7 @@ Line numbers are on the 652A branch head unless marked "main".
 
 ## CF-1 — no `wizardGeneration` guard in `handleMatch` / `handleExclude` / `handleUnmatch`
 
-**Status: ABSORBED in 652A (D-6), commit SHA_D6.** Each handler now captures the generation before
+**Status: ABSORBED in 652A (D-6), commit 0d9ec379e.** Each handler now captures the generation before
 the action and drops every post-await write once it has moved. Red→green: the four
 `drops a … recalculation after a … that lands after the wizard was reset` cases
 (`red-before-d6.txt`, `green-after.txt` › D-6). The helper fold (reviewer B) was not done: the
@@ -46,7 +46,7 @@ unmatch branch now diverges (CF-5), so one shared helper would not be clearly si
 
 ## CF-5 — `handleUnmatch` re-reads the unmatched transactions before recalculating, with no catch
 
-**Status: ABSORBED in 652A (D-6), commit SHA_D6.** The re-read and the recalculation run side by
+**Status: ABSORBED in 652A (D-6), commit 0d9ec379e.** The re-read and the recalculation run side by
 side (`Promise.all`, re-read `.catch(() => null)`): a failed re-read no longer skips the
 recalculation, the stale marker follows only the recalculation, and the banner adds "The unmatched
 transactions could not be refreshed and may be out of date." Red→green: `still recalculates after

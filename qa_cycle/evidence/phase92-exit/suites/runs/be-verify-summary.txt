@@ -1,0 +1,6 @@
+BE-VERIFY on main b08a8916a: bash scripts/verify.sh -q  (exit 0, 2241 s)
+exit=0 secs=2241
+testcases: 7420
+files with <failure|<error: 0
+skipped: 26
+report files: 858

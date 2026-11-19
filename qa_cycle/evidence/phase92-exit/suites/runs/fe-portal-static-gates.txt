@@ -1,0 +1,40 @@
+== fe-lint
+
+✖ 77 problems (0 errors, 77 warnings)
+  0 errors and 3 warnings potentially fixable with the `--fix` option.
+
+== fe-typecheck
+> next typegen && tsc --noEmit -p .
+
+Generating route types...
+✓ Types generated successfully
+== fe-format:check
+> prettier --check .
+
+Checking formatting...
+All matched files use Prettier code style!
+== fe-build
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+== portal-lint
+
+✖ 4 problems (0 errors, 4 warnings)
+  0 errors and 1 warning potentially fixable with the `--fix` option.
+
+== portal-typecheck
+> next typegen && tsc --noEmit -p .
+
+Generating route types...
+✓ Types generated successfully
+== portal-format:check
+> prettier --check .
+
+Checking formatting...
+All matched files use Prettier code style!
+== portal-build
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

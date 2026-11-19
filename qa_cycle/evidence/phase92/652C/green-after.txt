@@ -1,0 +1,41 @@
+652C — Tier-2 targeted backend tests (GREEN after fix)
+Date: 2026-11-19T13:46:31Z  Branch: epic-652C/recon-draft-get-or-create
+
+Command (backend/): ./mvnw test -Dtest="<brief §5.4 list, 29 classes>"
+
+Tests run: 243, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.293 s -- in io.b2mash.b2b.b2bstrawman.activity.ActivityMessageFormatterTest
+Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 13.66 s -- in io.b2mash.b2b.b2bstrawman.provisioning.BaselineSchemaParityTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.259 s -- in io.b2mash.b2b.b2bstrawman.dashboard.DashboardActivityCacheTest
+Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.696 s -- in io.b2mash.b2b.b2bstrawman.dashboard.TrustPositionIntegrationTest
+Tests run: 26, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.021 s -- in io.b2mash.b2b.b2bstrawman.audit.AuditEventTypeRegistryTest
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.031 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationControllerTest
+Tests run: 44, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.065 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.parser.BankStatementParserTest
+Tests run: 17, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.548 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationServiceReconciliationTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.559 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.BankStatementImportErrorIntegrationTest
+Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.964 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationDraftIntegrationTest
+Tests run: 28, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.307 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.StatementLinePostingIntegrationTest
+Tests run: 16, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.123 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationServiceMatchingTest
+Tests run: 15, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.414 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationCompletionGateIntegrationTest
+Tests run: 48, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.677 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionServiceTest
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.917 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.DerivedLedgerBalanceIntegrationTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.584 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustReconUniqueMigrationTest
+Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.437 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustReconBreakdownMigrationTest
+Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.523 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.TrustInterestMemoIntegrationTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.467 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.TrustInterestMemosMigrationTest
+Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.459 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustMonthlyListIntegrationTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.516 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustMonthlyListsMigrationTest
+Tests run: 15, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.269 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustIntegrityServiceIntegrationTest
+Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.682 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustPositionAsAtIntegrationTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.564 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountingSchemaTest
+Tests run: 14, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.964 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report.TrustReportQueryIntegrationTest
+Tests run: 18, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.233 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountServiceTest
+Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.744 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InterestRunRemovalTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.009 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustWireContractTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.160 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustCoexistenceTest
+
+[INFO] Tests run: 593, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+
+<testcase> count: 593  failures/errors: 0
+
+Tier 3 (full verify) NOT run by the builder — owned by the orchestrator + Backend CI.

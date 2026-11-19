@@ -1,0 +1,6 @@
+652C FE-GATE (frontend/, node v20.11.1)
+lint: exit 0 — 77 problems (0 errors, 77 warnings; none in the files 652C touches)
+typecheck: exit 0
+format:check: exit 0 — All matched files use Prettier code style!
+test (full vitest): exit 0 — Test Files 482 passed (482) / Tests 4584 passed | 2 skipped (4586)
+build: exit 0 — ✓ Compiled successfully in 9.4s

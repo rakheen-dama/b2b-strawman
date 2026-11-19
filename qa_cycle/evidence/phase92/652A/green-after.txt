@@ -35,3 +35,25 @@ Full vitest (from frontend/): NODE_OPTIONS="" /opt/homebrew/bin/pnpm test -> exi
 lint: exit 0 (0 errors; 77 pre-existing warnings, none in the 3 changed files)
 typecheck: exit 0
 format:check: exit 0 ("All matched files use Prettier code style!")
+
+---- Review fix round (PR #1815, reviewer A Medium: record + rejected calculate) — 2026-11-19 ----
+
+New case (652A describe, next to the rejected-shape match case):
+  > reports a recalculation request that fails to arrive after a record like a refused one
+  Record succeeds, then calculate REJECTS (TypeError "Failed to fetch") -> expects the banner
+  "The line was recorded but the balances could not be recalculated: Failed to fetch", the stale
+  marker, the dialog closed without "An unexpected error occurred", and no process
+  'unhandledRejection'.
+
+Green on head (head page.tsx + ReconciliationSplitPane.tsx), from frontend/, nvm node v20.11.1:
+  NODE_OPTIONS="" /opt/homebrew/bin/pnpm exec vitest run __tests__/trust-reconciliation.test.tsx
+  Exit 0 — Test Files 1 passed (1), Tests 60 passed (60)
+
+Red on main (main's page.tsx copied over via
+  git show origin/main:"frontend/app/(app)/org/[slug]/trust-accounting/reconciliation/new/page.tsx",
+  head's ReconciliationSplitPane.tsx, same test file; restored with git checkout -- <path>,
+  git status afterwards showed only the test file modified):
+  Exit 1 — Tests 7 failed | 53 passed (60). The new case fails with
+  "Unable to find an element by: [data-testid="reconciliation-error"]" (on main handleRecord has no
+  .catch on calculate, so the rejection escapes to the dialog's own catch and no banner is shown).
+  The other 6 failures are the 6 red->green cases listed above.

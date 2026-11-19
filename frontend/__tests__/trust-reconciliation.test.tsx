@@ -2427,6 +2427,60 @@ describe("Trust Reconciliation", () => {
       expectFiguresMarkedStale();
     });
 
+    it("reports a recalculation request that fails to arrive after a record like a refused one", async () => {
+      const user = userEvent.setup({ pointerEventsCheck: 0 });
+      const unhandled = vi.fn();
+      process.on("unhandledRejection", unhandled);
+      try {
+        mockRecordFromStatement.mockResolvedValue({
+          success: true,
+          data: {
+            line: {
+              ...makeBankLine({ id: "line-1" }),
+              matchStatus: "RECORDED",
+              classification: "FUND_INTEREST",
+              classificationLabel: "Interest received for the Legal Practitioners' Fidelity Fund",
+              trustTransactionId: "tx-new",
+              createdTransactionIds: ["tx-new"],
+            },
+            transactions: [],
+            unidentifiedDepositId: null,
+            investmentInterestId: null,
+          },
+        });
+        await driveToReviewThenRefuseRecalculation();
+        mockCalculateReconciliation.mockReset();
+        mockCalculateReconciliation.mockRejectedValueOnce(new TypeError("Failed to fetch"));
+
+        fireEvent.click(screen.getByTestId("bank-line-line-1"));
+        fireEvent.click(screen.getByTestId("record-btn-line-1"));
+        await screen.findByTestId("record-from-statement-dialog");
+        await user.click(
+          screen.getByRole("radio", {
+            name: "Interest received for the Legal Practitioners' Fidelity Fund",
+          })
+        );
+        await user.click(screen.getByTestId("record-submit"));
+
+        expect(await screen.findByTestId("reconciliation-error")).toHaveTextContent(
+          "The line was recorded but the balances could not be recalculated: Failed to fetch"
+        );
+        expectFiguresMarkedStale();
+        expect(mockRecordFromStatement).toHaveBeenCalledWith(
+          "line-1",
+          expect.objectContaining({ classification: "FUND_INTEREST" })
+        );
+        // The rejection is handled in the page: the record stands and the dialog closes cleanly.
+        await waitFor(() =>
+          expect(screen.queryByTestId("record-from-statement-dialog")).not.toBeInTheDocument()
+        );
+        expect(screen.queryByText("An unexpected error occurred")).not.toBeInTheDocument();
+        expect(unhandled).not.toHaveBeenCalled();
+      } finally {
+        process.off("unhandledRejection", unhandled);
+      }
+    });
+
     it("reports a refused recalculation after an unmatch and marks the figures stale", async () => {
       mockUnmatch.mockResolvedValue({ success: true });
       await driveToReviewThenRefuseRecalculation();

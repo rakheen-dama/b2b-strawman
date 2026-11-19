@@ -24,10 +24,14 @@ import org.springframework.transaction.annotation.Transactional;
  * snapshot keeps a commit landing between them from making a report disagree with itself — the
  * {@code TrustIntegrityService} / {@code TrustMonthlyListService} precedent (648E R-2). An
  * isolation on {@code ReportExecutionService} or a query bean would be ignored: the transaction is
- * already open. Safe here where the 649C ruling declined it on write paths: these transactions only
- * read, apart from {@code execute}/{@code exportAsPdf}'s plain audit-event INSERT, and in
- * PostgreSQL neither a read nor a plain INSERT can fail with a serialization error (40001) at
- * {@code REPEATABLE_READ} — only UPDATE / DELETE / row locks of concurrently changed rows can.
+ * already open. Safe here where the 649C ruling declined it on write paths: these transactions do
+ * no writes, and in PostgreSQL a read-only transaction cannot fail with a serialization error
+ * (40001) at {@code REPEATABLE_READ}.
+ *
+ * <p>Known pre-existing defect (650C found.md F-650C-1, not changed here): the audit event that
+ * {@code execute} and {@code exportAsPdf} log joins this read-only transaction, whose Hibernate
+ * flush mode is MANUAL, so the {@code REPORT_GENERATED} / {@code REPORT_EXPORTED} rows are never
+ * flushed. CSV export audits outside the transaction and is recorded.
  */
 @Service
 public class ReportExportService {

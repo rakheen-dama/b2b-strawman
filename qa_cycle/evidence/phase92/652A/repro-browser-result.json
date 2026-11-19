@@ -1,0 +1,94 @@
+{
+  "run": "G1WLU",
+  "today": "2026-11-19",
+  "periodEnd": "2026-11-16",
+  "steps": {
+    "review": {
+      "banner": null,
+      "staleMarker": 0,
+      "line": "#2 15 Nov 2026 Deeds office Ref: DEEDS/652A/G1WLU R 1 250,00 DR Unmatched",
+      "progress": "Matching Progress 0 / 2 lines resolved",
+      "summary": "As at 16 Nov 2026 Bank and cashbook Bank balance -R 550,00 + Outstanding deposits R 0,00 − Outstanding payments R 0,00 = Adjusted bank balance -R 550,00 Cashbook R 0,00 Difference -R 550,00 Cashbook and trust creditors Cashbook R 0,00 Trust creditors R 0,00 Difference R 0,00 Trust creditors Client ledgers R 0,00 Legal Practitioners' Fidelity Fund — interest and charges R 0,00 Unidentified deposits",
+      "dbLine": "UNMATCHED|",
+      "dbRecon": "-550.00|0.00|-550.00|f|2026-11-19 11:05:31.594309+00",
+      "shot": "repro-browser-0-review.png"
+    },
+    "importS2": "Statement imported successfully Lines imported: 1 File: s2-G1WLU.csv Period: 2026-11-16 to 2026-11-16 Format: CSV",
+    "match": {
+      "banner": null,
+      "staleMarker": 0,
+      "line": "#2 15 Nov 2026 Deeds office Ref: DEEDS/652A/G1WLU R 1 250,00 DR Matched Unmatch",
+      "progress": "Matching Progress 1 / 2 lines resolved",
+      "summary": "As at 16 Nov 2026 Bank and cashbook Bank balance -R 550,00 + Outstanding deposits R 0,00 − Outstanding payments R 0,00 = Adjusted bank balance -R 550,00 Cashbook R 0,00 Difference -R 550,00 Cashbook and trust creditors Cashbook R 0,00 Trust creditors R 0,00 Difference R 0,00 Trust creditors Client ledgers R 0,00 Legal Practitioners' Fidelity Fund — interest and charges R 0,00 Unidentified deposits",
+      "dbLine": "MANUALLY_MATCHED|ffab4a93-b881-4e83-890f-da762282d932",
+      "dbRecon": "-550.00|0.00|-550.00|f|2026-11-19 11:05:31.594309+00",
+      "shot": "repro-browser-match.png"
+    },
+    "exclude": {
+      "banner": null,
+      "staleMarker": 0,
+      "line": "#1 14 Nov 2026 Unknown credit Ref: UNK/652A/G1WLU R 700,00 CR Excluded",
+      "progress": "Matching Progress 2 / 2 lines resolved",
+      "summary": "As at 16 Nov 2026 Bank and cashbook Bank balance -R 550,00 + Outstanding deposits R 0,00 − Outstanding payments R 0,00 = Adjusted bank balance -R 550,00 Cashbook R 0,00 Difference -R 550,00 Cashbook and trust creditors Cashbook R 0,00 Trust creditors R 0,00 Difference R 0,00 Trust creditors Client ledgers R 0,00 Legal Practitioners' Fidelity Fund — interest and charges R 0,00 Unidentified deposits",
+      "dbLine": "EXCLUDED|",
+      "dbRecon": "-550.00|0.00|-550.00|f|2026-11-19 11:05:31.594309+00",
+      "shot": "repro-browser-exclude.png"
+    },
+    "unmatch": {
+      "banner": null,
+      "staleMarker": 0,
+      "line": "#2 15 Nov 2026 Deeds office Ref: DEEDS/652A/G1WLU R 1 250,00 DR Unmatched",
+      "progress": "Matching Progress 1 / 2 lines resolved",
+      "summary": "As at 16 Nov 2026 Bank and cashbook Bank balance -R 550,00 + Outstanding deposits R 0,00 − Outstanding payments R 0,00 = Adjusted bank balance -R 550,00 Cashbook R 0,00 Difference -R 550,00 Cashbook and trust creditors Cashbook R 0,00 Trust creditors R 0,00 Difference R 0,00 Trust creditors Client ledgers R 0,00 Legal Practitioners' Fidelity Fund — interest and charges R 0,00 Unidentified deposits",
+      "dbLine": "UNMATCHED|",
+      "dbRecon": "-550.00|0.00|-550.00|f|2026-11-19 11:05:31.594309+00",
+      "shot": "repro-browser-unmatch.png"
+    },
+    "matchCalcAborted": {
+      "aborted": {
+        "nextAction": "40dda10e62c1f90f9dd5120518fd7665c7f13bebd5",
+        "body": "[\"5f57d266-7e13-436c-bc23-d80b6c6c40a5\"]"
+      },
+      "banner": "Failed to fetch",
+      "staleMarker": 0,
+      "line": "#2 15 Nov 2026 Deeds office Ref: DEEDS/652A/G1WLU R 1 250,00 DR Matched Unmatch",
+      "progress": "Matching Progress 2 / 2 lines resolved",
+      "summary": "As at 16 Nov 2026 Bank and cashbook Bank balance -R 550,00 + Outstanding deposits R 0,00 − Outstanding payments R 0,00 = Adjusted bank balance -R 550,00 Cashbook R 0,00 Difference -R 550,00 Cashbook and trust creditors Cashbook R 0,00 Trust creditors R 0,00 Difference R 0,00 Trust creditors Client ledgers R 0,00 Legal Practitioners' Fidelity Fund — interest and charges R 0,00 Unidentified deposits",
+      "dbLine": "MANUALLY_MATCHED|ffab4a93-b881-4e83-890f-da762282d932",
+      "dbRecon": "-550.00|0.00|-550.00|f|2026-11-19 11:05:31.594309+00",
+      "shot": "repro-browser-match-calc-aborted.png"
+    }
+  },
+  "calculateResponses": [
+    {
+      "status": 200,
+      "result": "{\"success\":false,\"error\":\"Statement s2-G1WLU.csv has movements between this statement's last line and 16 November 2026. Reconcile against the statement that covers the period end.\"}"
+    },
+    {
+      "status": 200,
+      "result": "{\"success\":false,\"error\":\"Statement s2-G1WLU.csv has movements between this statement's last line and 16 November 2026. Reconcile against the statement that covers the period end.\"}"
+    },
+    {
+      "status": 200,
+      "result": "<no body: Error: response.text: Protocol error (Network.getResponseBody): No data found for resource with given identifier>"
+    }
+  ],
+  "pageErrors": [],
+  "consoleErrors": [
+    "Failed to load resource: net::ERR_FAILED"
+  ],
+  "schema": "tenant_7d218705360b",
+  "accountId": "626ab749-106b-4592-bc6f-7b39c8e02140",
+  "paymentId": "ffab4a93-b881-4e83-890f-da762282d932",
+  "amount": 1250,
+  "setupUnmatch": {
+    "line": "6fbdca4a-0476-4628-a58f-b80aedf4f085",
+    "status": 200
+  },
+  "statementId": "ea39b715-8129-4368-8758-fb42282cd187",
+  "reconId": "5f57d266-7e13-436c-bc23-d80b6c6c40a5",
+  "lineIds": {
+    "1": "bb1c2f01-b3ec-4348-a589-6e6eba6d3945",
+    "2": "36919ab0-e817-4d5b-b9ff-a02f90ae0899"
+  }
+}

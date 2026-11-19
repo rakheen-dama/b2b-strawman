@@ -212,6 +212,8 @@ interface ReconciliationSplitPaneProps {
   ) => Promise<{ success: boolean; error?: string }>;
   onComplete: () => Promise<void>;
   isCompleting: boolean;
+  /** A saved change could not be recalculated: the summary's figures are from before it (652A). */
+  figuresStale?: boolean;
   /** The reconciled account's section: picks the classifications offered (648B; default 86(2)). */
   accountSection?: TrustAccountSection;
   /** A section 86(4) account's interest-bearing investments (648B). */
@@ -231,6 +233,7 @@ export function ReconciliationSplitPane({
   onRecord,
   onComplete,
   isCompleting,
+  figuresStale = false,
 }: ReconciliationSplitPaneProps) {
   const [selectedLineId, setSelectedLineId] = useState<string | null>(null);
   const [actionInProgress, setActionInProgress] = useState<string | null>(null);
@@ -559,6 +562,7 @@ export function ReconciliationSplitPane({
           currency={currency}
           onComplete={onComplete}
           isCompleting={isCompleting}
+          figuresStale={figuresStale}
         />
       )}
     </div>
@@ -571,11 +575,13 @@ function ReconciliationSummary({
   currency,
   onComplete,
   isCompleting,
+  figuresStale,
 }: {
   reconciliation: TrustReconciliationResponse;
   currency: string;
   onComplete: () => Promise<void>;
   isCompleting: boolean;
+  figuresStale: boolean;
 }) {
   const breakdown = reconciliation.creditorBreakdown;
   const flags = reconciliation.integrityFlags ?? [];
@@ -591,6 +597,15 @@ function ReconciliationSummary({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
+        {figuresStale && (
+          <p
+            role="status"
+            className="text-sm text-amber-700 dark:text-amber-300"
+            data-testid="reconciliation-figures-stale"
+          >
+            These figures are out of date: they were calculated before your last change.
+          </p>
+        )}
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <section data-testid="comparison-bank-cashbook">
             <h3 className="text-sm font-medium text-slate-950 dark:text-slate-50">

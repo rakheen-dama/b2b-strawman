@@ -1,0 +1,37 @@
+652A — task 652.1 red run (reproduce-first), 2026-11-19
+
+main SHA (worktree HEAD = origin/main): 1d7686586856d6b5bc870bf41d0ed684b6fd067c
+Production code: UNMODIFIED (frontend/app/(app)/org/[slug]/trust-accounting/reconciliation/new/page.tsx as on main)
+Test file:       frontend/__tests__/trust-reconciliation.test.tsx (+3 cases, describe
+                 "a failed recalculation after a saved change (652A)")
+Command (from frontend/, nvm node v20.11.1):
+  NODE_OPTIONS="" /opt/homebrew/bin/pnpm exec vitest run __tests__/trust-reconciliation.test.tsx
+Exit code: 1
+
+Result:
+  Test Files  1 failed (1)
+       Tests  3 failed | 54 passed (57)
+
+Failing tests (all three fail at the banner assertion, line numbers in the test file):
+  x Trust Reconciliation > a failed recalculation after a saved change (652A)
+      > reports a refused recalculation after a match and marks the figures stale      (:2382)
+  x ... > reports a refused recalculation after an exclude and marks the figures stale (:2401)
+  x ... > reports a refused recalculation after an unmatch and marks the figures stale (:2418)
+
+Assertion message (identical for all three):
+  TestingLibraryElementError: Unable to find an element by: [data-testid="reconciliation-error"]
+
+Set-up of each case: step 4 reached with a successful first calculate; the action
+(manualMatch / excludeLine / unmatch) resolves { success: true }; the next
+calculateReconciliation resolves { success: false, error: "<period-rule refusal>" }.
+
+What the failing DOM shows (vitest run with DEBUG_PRINT_LIMIT=200000, -t "652A"):
+  match   : line-1 badge "Matched"   — no reconciliation-error banner, summary unchanged, no stale marker
+  exclude : line-1 badge "Excluded"  — no banner, summary unchanged, no stale marker
+  unmatch : line-2 badge "Unmatched" — no banner, summary unchanged, no stale marker
+i.e. the change is saved and shown, the refused recalculation is swallowed, and the
+"As at" summary keeps the figures from before the change with nothing saying so.
+
+Cause (page.tsx on main): handleMatch :267-272, handleExclude :294-299, handleUnmatch :336-341
+each do `if (calcResult.success && calcResult.data) setReconciliation(...)` with no else.
+handleRecord :373-381 (647A) has the else branch (banner) but no stale marking.

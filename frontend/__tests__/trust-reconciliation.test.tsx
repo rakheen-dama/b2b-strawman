@@ -2165,8 +2165,11 @@ describe("Trust Reconciliation", () => {
       await user.click(screen.getByTestId("record-submit"));
 
       expect(await screen.findByTestId("reconciliation-error")).toHaveTextContent(
-        "The line was recorded but the reconciliation could not be recalculated: boom"
+        "The line was recorded but the balances could not be recalculated: boom"
       );
+      expect(
+        within(screen.getByTestId("balance-summary")).getByTestId("reconciliation-figures-stale")
+      ).toBeInTheDocument();
       expect(mockRecordFromStatement).toHaveBeenCalledWith(
         "line-1",
         expect.objectContaining({ classification: "FUND_INTEREST" })
@@ -2276,6 +2279,193 @@ describe("Trust Reconciliation", () => {
 
       expect(screen.getByTestId("step-select")).toBeInTheDocument();
       expect(screen.queryByTestId("reconciliation-error")).not.toBeInTheDocument();
+    });
+  });
+
+  // 652A (E8 wizard defect 1): a match, exclude or unmatch is saved, then the recalculation is
+  // refused (since 646C calculate re-checks the period rules). The change stands, so the wizard
+  // says the balances were not recalculated and marks the summary's figures as out of date.
+  describe("a failed recalculation after a saved change (652A)", () => {
+    const REFUSAL =
+      "This statement has lines dated after 31 March 2026. Choose a later period end, or import a statement that ends on or before it.";
+
+    // Step 4 with line-1 unmatched (a R15 000 deposit, candidate tx-1) and line-2 auto-matched;
+    // the first calculation succeeds, the next one (after the action under test) is refused.
+    async function driveToReviewThenRefuseRecalculation() {
+      const statement = {
+        id: "stmt-1",
+        trustAccountId: "acc-1",
+        periodStart: "2026-03-01",
+        periodEnd: "2026-03-31",
+        openingBalance: 0,
+        closingBalance: 12500,
+        fileName: "march-2026.csv",
+        format: "CSV",
+        lineCount: 2,
+        matchedCount: 1,
+        status: "IMPORTED",
+        importedBy: "member-1",
+        createdAt: "2026-04-01T00:00:00Z",
+        updatedAt: "2026-04-01T00:00:00Z",
+        lines: [
+          makeBankLine({ id: "line-1" }),
+          makeBankLine({
+            id: "line-2",
+            lineNumber: 2,
+            reference: "PAY/2026/002",
+            amount: -2500,
+            matchStatus: "AUTO_MATCHED",
+            trustTransactionId: "tx-2",
+          }),
+        ],
+      };
+      const draft = makeRecon({
+        status: "DRAFT",
+        isBalanced: false,
+        completedAt: null,
+        completedBy: null,
+        unresolvedLineCount: 1,
+      });
+      mockUploadBankStatement.mockResolvedValue({ success: true, data: statement });
+      mockAutoMatch.mockResolvedValue({
+        success: true,
+        data: { totalLines: 2, autoMatched: 1, alreadyMatched: 0, unmatched: 1 },
+      });
+      mockFetchBankStatement.mockResolvedValue(statement);
+      mockCreateReconciliation.mockResolvedValue({ success: true, data: draft });
+      mockCalculateReconciliation
+        .mockResolvedValueOnce({ success: true, data: draft })
+        .mockResolvedValueOnce({ success: false, error: REFUSAL });
+      vi.mocked(fetchTransactions).mockResolvedValueOnce({
+        content: [makeTx({ id: "tx-1" })],
+        totalElements: 1,
+        totalPages: 1,
+        pageSize: 1000,
+        pageNumber: 0,
+      });
+
+      await act(async () => {
+        render(
+          <Suspense fallback={null}>
+            <NewReconciliationPage params={Promise.resolve({ slug: "acme" })} />
+          </Suspense>
+        );
+      });
+      await waitFor(() => expect(screen.getByTestId("account-select")).toHaveValue("acc-1"));
+      fireEvent.change(screen.getByTestId("period-end-input"), {
+        target: { value: "2026-03-31" },
+      });
+      fireEvent.click(screen.getByTestId("step-next-btn"));
+      fireEvent.change(await screen.findByTestId("file-input"), {
+        target: { files: [new File(["csv"], "march-2026.csv", { type: "text/csv" })] },
+      });
+      await waitFor(() => expect(screen.getByTestId("step-next-btn")).toBeEnabled());
+      fireEvent.click(screen.getByTestId("step-next-btn"));
+      fireEvent.click(await screen.findByTestId("auto-match-btn"));
+      expect(await screen.findByText("Auto-matched 1 lines")).toBeInTheDocument();
+      fireEvent.click(screen.getByTestId("step-next-btn"));
+      expect(await screen.findByTestId("reconciliation-split-pane")).toBeInTheDocument();
+      expect(screen.queryByTestId("reconciliation-error")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("reconciliation-figures-stale")).not.toBeInTheDocument();
+    }
+
+    function expectFiguresMarkedStale() {
+      expect(
+        within(screen.getByTestId("balance-summary")).getByTestId("reconciliation-figures-stale")
+      ).toBeInTheDocument();
+    }
+
+    it("reports a refused recalculation after a match and marks the figures stale", async () => {
+      mockManualMatch.mockResolvedValue({ success: true });
+      await driveToReviewThenRefuseRecalculation();
+
+      fireEvent.click(screen.getByTestId("bank-line-line-1"));
+      fireEvent.click(await screen.findByTestId("match-btn-tx-1"));
+
+      expect(await screen.findByTestId("reconciliation-error")).toHaveTextContent(
+        `The match was saved but the balances could not be recalculated: ${REFUSAL}`
+      );
+      expect(mockManualMatch).toHaveBeenCalledWith("line-1", "tx-1");
+      expect(mockCalculateReconciliation).toHaveBeenCalledTimes(2);
+      expectFiguresMarkedStale();
+      // The match itself stands.
+      expect(
+        within(screen.getByTestId("bank-line-line-1")).getByText("Matched")
+      ).toBeInTheDocument();
+    });
+
+    it("reports a refused recalculation after an exclude and marks the figures stale", async () => {
+      mockExcludeLine.mockResolvedValue({ success: true });
+      await driveToReviewThenRefuseRecalculation();
+
+      fireEvent.click(screen.getByTestId("bank-line-line-1"));
+      fireEvent.click(await screen.findByTestId("exclude-btn-line-1"));
+
+      expect(await screen.findByTestId("reconciliation-error")).toHaveTextContent(
+        `The line was excluded but the balances could not be recalculated: ${REFUSAL}`
+      );
+      expect(mockExcludeLine).toHaveBeenCalledWith("line-1", "Non-trust item");
+      expect(mockCalculateReconciliation).toHaveBeenCalledTimes(2);
+      expectFiguresMarkedStale();
+      expect(
+        within(screen.getByTestId("bank-line-line-1")).getByText("Excluded")
+      ).toBeInTheDocument();
+    });
+
+    it("reports a recalculation request that fails to arrive like a refused one", async () => {
+      mockManualMatch.mockResolvedValue({ success: true });
+      await driveToReviewThenRefuseRecalculation();
+      mockCalculateReconciliation.mockReset();
+      mockCalculateReconciliation.mockRejectedValueOnce(new TypeError("Failed to fetch"));
+
+      fireEvent.click(screen.getByTestId("bank-line-line-1"));
+      fireEvent.click(await screen.findByTestId("match-btn-tx-1"));
+
+      expect(await screen.findByTestId("reconciliation-error")).toHaveTextContent(
+        "The match was saved but the balances could not be recalculated: Failed to fetch"
+      );
+      expectFiguresMarkedStale();
+    });
+
+    it("reports a refused recalculation after an unmatch and marks the figures stale", async () => {
+      mockUnmatch.mockResolvedValue({ success: true });
+      await driveToReviewThenRefuseRecalculation();
+
+      fireEvent.click(screen.getByTestId("unmatch-btn-line-2"));
+
+      expect(await screen.findByTestId("reconciliation-error")).toHaveTextContent(
+        `The line was unmatched but the balances could not be recalculated: ${REFUSAL}`
+      );
+      expect(mockUnmatch).toHaveBeenCalledWith("line-2");
+      expect(mockCalculateReconciliation).toHaveBeenCalledTimes(2);
+      expectFiguresMarkedStale();
+      expect(
+        within(screen.getByTestId("bank-line-line-2")).getByText("Unmatched")
+      ).toBeInTheDocument();
+    });
+
+    it("clears the out-of-date marking once a later recalculation succeeds", async () => {
+      mockManualMatch.mockResolvedValue({ success: true });
+      mockUnmatch.mockResolvedValue({ success: true });
+      await driveToReviewThenRefuseRecalculation();
+      mockCalculateReconciliation.mockResolvedValueOnce({
+        success: true,
+        data: makeRecon({ status: "DRAFT", isBalanced: false, completedAt: null }),
+      });
+
+      fireEvent.click(screen.getByTestId("bank-line-line-1"));
+      fireEvent.click(await screen.findByTestId("match-btn-tx-1"));
+      expect(await screen.findByTestId("reconciliation-error")).toBeInTheDocument();
+      expectFiguresMarkedStale();
+
+      fireEvent.click(screen.getByTestId("unmatch-btn-line-2"));
+
+      await waitFor(() =>
+        expect(screen.queryByTestId("reconciliation-figures-stale")).not.toBeInTheDocument()
+      );
+      expect(mockCalculateReconciliation).toHaveBeenCalledTimes(3);
+      expect(screen.queryByTestId("reconciliation-error")).not.toBeInTheDocument();
+      expect(screen.getByTestId("balance-summary")).toBeInTheDocument();
     });
   });
 });

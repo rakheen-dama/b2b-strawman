@@ -1,0 +1,37 @@
+652A — task 652.3 green run (after the fix), 2026-11-19
+
+Branch: epic-652A/wizard-failed-recalc-banner, base origin/main 1d7686586856d6b5bc870bf41d0ed684b6fd067c
+(the fix is the commit that adds this file; see `git log -1 -- qa_cycle/evidence/phase92/652A/green-after.txt`)
+Production code: page.tsx (reconciliation/new) + components/trust/ReconciliationSplitPane.tsx
+Test file:       frontend/__tests__/trust-reconciliation.test.tsx
+Command (from frontend/, nvm node v20.11.1):
+  NODE_OPTIONS="" /opt/homebrew/bin/pnpm exec vitest run __tests__/trust-reconciliation.test.tsx --reporter=verbose
+Exit code: 0
+
+Result:
+  Test Files  1 passed (1)
+       Tests  59 passed (59)
+
+Red -> green (6 cases; red = same test file against UNMODIFIED production code, i.e. main's
+page.tsx + ReconciliationSplitPane.tsx; that run: exit 1, Tests 6 failed | 53 passed (59)):
+  ✓ Trust Reconciliation > a failed recalculation after a saved change (652A)
+      > reports a refused recalculation after a match and marks the figures stale        (scout red, red-before.txt)
+      > reports a refused recalculation after an exclude and marks the figures stale     (scout red, red-before.txt)
+      > reports a refused recalculation after an unmatch and marks the figures stale     (scout red, red-before.txt)
+      > reports a recalculation request that fails to arrive like a refused one          (D-4, rejected shape; red on main: banner "Failed to fetch")
+      > clears the out-of-date marking once a later recalculation succeeds               (D-3 marker clear; red on main: no banner)
+  ✓ Trust Reconciliation > record from statement (647A)
+      > reports a failed recalculation after a line is recorded                          (D-2 wording "…the balances could not…" + stale marker; red on main: old wording)
+
+Note on the reset-path clear (resetFromStep2 / resetFromStep3 call setFiguresStale(false)):
+not independently observable in the UI, because the summary only renders with a reconciliation,
+a reset nulls it, and the only way back to step 4 (handleStartReview) clears the marker on its
+successful calculate. The reset clear is defence in depth; the successful-recalculation clear is
+the test above.
+
+Full vitest (from frontend/): NODE_OPTIONS="" /opt/homebrew/bin/pnpm test -> exit 0
+  Test Files  482 passed (482)
+       Tests  4568 passed | 2 skipped (4570)
+lint: exit 0 (0 errors; 77 pre-existing warnings, none in the 3 changed files)
+typecheck: exit 0
+format:check: exit 0 ("All matched files use Prettier code style!")

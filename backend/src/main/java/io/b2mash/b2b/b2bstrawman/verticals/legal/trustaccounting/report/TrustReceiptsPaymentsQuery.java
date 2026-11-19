@@ -3,31 +3,45 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.reporting.ReportQuery;
 import io.b2mash.b2b.b2bstrawman.reporting.ReportResult;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.TrustCreditorAccount;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.TrustCreditorAccountRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.TrustCreditorAccountType;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionTypeLabels;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 /**
- * Chronological journal of all trust receipts and payments for a date range. Uses the
- * findForStatement query (which requires a customer ID) per-client and merges results, or queries
- * all transactions for the trust account in the date range.
+ * Chronological journal of all trust receipts and payments of a trust account for a date range —
+ * the cashbook order, every posted row that is not a reversal or reversed.
+ *
+ * <p>v4 (Phase 92 650C, §16.8.5, D-15): receipt or payment and the running balance come from the
+ * row's {@code cashbook_effect} (a cashbook-neutral row — a transfer between clients, an
+ * unidentified allocation — shows 0 / 0); the type is the registry's firm label; each row carries
+ * the ledger heading it sits under ("Client", "Section 86(4) investment", "Section 86(3)
+ * investment", the Fund, "Unidentified deposits") and the summary totals each heading.
  */
 @Component
 public class TrustReceiptsPaymentsQuery implements ReportQuery {
 
   private final TrustTransactionRepository transactionRepository;
   private final CustomerRepository customerRepository;
+  private final TrustCreditorAccountRepository creditorAccountRepository;
 
   public TrustReceiptsPaymentsQuery(
-      TrustTransactionRepository transactionRepository, CustomerRepository customerRepository) {
+      TrustTransactionRepository transactionRepository,
+      CustomerRepository customerRepository,
+      TrustCreditorAccountRepository creditorAccountRepository) {
     this.transactionRepository = transactionRepository;
     this.customerRepository = customerRepository;
+    this.creditorAccountRepository = creditorAccountRepository;
   }
 
   @Override
@@ -74,6 +88,11 @@ public class TrustReceiptsPaymentsQuery implements ReportQuery {
     var customerNames =
         customerRepository.findByIdIn(customerIds).stream()
             .collect(Collectors.toMap(c -> c.getId(), c -> c.getName()));
+    Map<UUID, TrustCreditorAccountType> creditorTypes =
+        creditorAccountRepository.findByTrustAccountId(trustAccountId).stream()
+            .collect(
+                Collectors.toMap(
+                    TrustCreditorAccount::getId, TrustCreditorAccount::getAccountType));
 
     // Build rows sorted by date ascending
     var sorted =
@@ -87,7 +106,7 @@ public class TrustReceiptsPaymentsQuery implements ReportQuery {
             .toList();
 
     BigDecimal runningBalance = BigDecimal.ZERO;
-    var rows = new java.util.ArrayList<Map<String, Object>>();
+    var rows = new ArrayList<Map<String, Object>>();
     for (var tx : sorted) {
       var row = new LinkedHashMap<String, Object>();
       row.put("date", tx.getTransactionDate().toString());
@@ -97,18 +116,30 @@ public class TrustReceiptsPaymentsQuery implements ReportQuery {
           "clientName",
           tx.getCustomerId() != null ? customerNames.getOrDefault(tx.getCustomerId(), "-") : "-");
 
-      // Receipt or payment by the row's own client-ledger effect (ADR-378). Not cashbook_effect:
-      // transfers between clients would fall out of both columns and change the report.
-      boolean isCredit = tx.getLedgerEffect().signum() > 0;
-      if (isCredit) {
-        row.put("credit", tx.getAmount());
+      row.put(
+          "ledgerHeading",
+          TrustReportWords.ledgerHeading(
+              tx.getTransactionType(),
+              tx.getLedger(),
+              tx.getCreditorAccountId() != null
+                  ? creditorTypes.get(tx.getCreditorAccountId())
+                  : null));
+
+      // v4 (650C, D-15): receipt or payment by the row's own cashbook effect (ADR-378) — the
+      // cashbook journal. A cashbook-neutral row (a transfer between clients, an unidentified
+      // allocation) moves neither column and stays listed under its heading.
+      var effect = tx.getCashbookEffect();
+      if (effect.signum() > 0) {
+        row.put("credit", effect);
         row.put("debit", BigDecimal.ZERO);
-        runningBalance = runningBalance.add(tx.getAmount());
+      } else if (effect.signum() < 0) {
+        row.put("credit", BigDecimal.ZERO);
+        row.put("debit", effect.negate());
       } else {
         row.put("credit", BigDecimal.ZERO);
-        row.put("debit", tx.getAmount());
-        runningBalance = runningBalance.subtract(tx.getAmount());
+        row.put("debit", BigDecimal.ZERO);
       }
+      runningBalance = runningBalance.add(effect);
       row.put("balance", runningBalance);
       rows.add(row);
     }
@@ -129,6 +160,28 @@ public class TrustReceiptsPaymentsQuery implements ReportQuery {
     summary.put("totalPayments", totalPayments);
     summary.put("netMovement", totalReceipts.subtract(totalPayments));
     summary.put("transactionCount", rows.size());
+
+    // Per-heading totals (a nested list: the report screen shows flat values only)
+    var byHeading = new LinkedHashMap<String, BigDecimal[]>();
+    for (var row : rows) {
+      var totals =
+          byHeading.computeIfAbsent(
+              (String) row.get("ledgerHeading"),
+              h -> new BigDecimal[] {BigDecimal.ZERO, BigDecimal.ZERO});
+      totals[0] = totals[0].add((BigDecimal) row.get("credit"));
+      totals[1] = totals[1].add((BigDecimal) row.get("debit"));
+    }
+    var headings = new ArrayList<Map<String, Object>>();
+    byHeading.forEach(
+        (heading, totals) -> {
+          var h = new LinkedHashMap<String, Object>();
+          h.put("heading", heading);
+          h.put("receipts", totals[0]);
+          h.put("payments", totals[1]);
+          headings.add(h);
+        });
+    summary.put("headings", List.copyOf(headings));
+    summary.put("scopeNote", TrustReportWords.TRUST_ASSETS_NOTE);
     return summary;
   }
 }

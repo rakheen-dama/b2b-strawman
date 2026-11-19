@@ -1,0 +1,484 @@
+package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.reporting.ReportResult;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksFixture;
+import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness.Expected;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustBooksService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.UnidentifiedDepositService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.UnidentifiedDepositService.PayToFundRequest;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.InterestPresentation;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.RecordInvestmentInterestRequest;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedgerQueryRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.regex.Pattern;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.context.annotation.Import;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+
+/**
+ * Phase 92 650C: the two new trust reports on real postings — the Rule 54.28 interest-and-charges
+ * schedule (§16.8.3: one block per account headed by its section, one row per month, the identity
+ * on every row, memo figures outside it, a reversal excluded with its contra) and the unidentified
+ * deposits age analysis (§16.8.4: open as at the date by the items' own rows, five bands, the items
+ * resolved in the twelve months to the date, Σ open = {@code unidentified(A, D)}).
+ */
+@SpringBootTest
+@AutoConfigureMockMvc
+@Import(TestcontainersConfiguration.class)
+@ActiveProfiles("test")
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+class TrustScheduleAndAgeAnalysisIntegrationTest {
+
+  private static final String ORG_ID = "org_trust_schedule_age_test";
+  private static final String OWNER = "user_schedule_owner";
+  private static final String APPROVER = "user_schedule_approver";
+  private static final String FUND = "FUND_INTEREST_AND_CHARGES";
+  private static final Pattern RAW_CODE = Pattern.compile(".*\\b[A-Z]{2,}_[A-Z_]{2,}\\b.*");
+
+  @Autowired private MockMvc mockMvc;
+  @Autowired private TenantProvisioningService provisioningService;
+  @Autowired private TrustBooksFixture fixture;
+  @Autowired private TrustInterestChargesScheduleQuery scheduleQuery;
+  @Autowired private UnidentifiedDepositsAgeQuery ageQuery;
+  @Autowired private TrustLedgerQueryRepository ledgerQueries;
+  @Autowired private TrustBooksService booksService;
+  @Autowired private UnidentifiedDepositService depositService;
+  @Autowired private TrustTransactionRepository transactionRepository;
+  @Autowired private JdbcTemplate jdbc;
+
+  private TrustBooksFixture.Tenant books;
+  private UUID ownerId;
+  private UUID approverId;
+
+  @BeforeAll
+  void setup() throws Exception {
+    var schema =
+        provisioningService.provisionTenant(ORG_ID, "Trust Schedule Age Org", null).schemaName();
+    ownerId =
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, OWNER, "schedule_owner@test.com", "Schedule Owner", "owner"));
+    approverId =
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                APPROVER,
+                "schedule_approver@test.com",
+                "Schedule Approver",
+                "admin"));
+    fixture.enableTrustModule(schema);
+    books = fixture.tenant(schema, ORG_ID, ownerId);
+  }
+
+  // --- the Rule 54.28 schedule ------------------------------------------------------------------
+
+  /**
+   * A section 86(2) block over three months: interest, a recoverable and a non-recoverable charge
+   * (with VAT), a refund, a sweep, a reversal in another month than its original (D-8) and a pair
+   * reversed in one month (nets to nil); a memo for May sits in its own columns. The identity holds
+   * on every row; c/f is the Fund ledger balance at month end and the next month's b/f.
+   */
+  @Test
+  void schedule_s86_2_identityHoldsPerMonth_memoSeparate_reversalsWithTheirContra() {
+    var account = books.freshAccount(false);
+    var fund = books.creditorAccount(account, FUND);
+    books.postNonClientDirect(account, "FUND_INTEREST", "100.00", LocalDate.of(2026, 4, 10));
+    var recoverable =
+        books.postNonClientDirect(account, "BANK_CHARGE", "15.00", LocalDate.of(2026, 4, 20));
+    var nonRecoverable =
+        books.postNonClientDirect(account, "BANK_CHARGE", "23.00", LocalDate.of(2026, 4, 25));
+    jdbc.update(
+        "UPDATE \"%s\".trust_transactions SET charge_recoverable = false, charge_vat_amount = 3.00"
+                .formatted(books.schema())
+            + " WHERE id = ?",
+        nonRecoverable);
+    books.postNonClientDirect(account, "CHARGE_REFUND", "15.00", LocalDate.of(2026, 5, 5));
+    books.postNonClientDirect(account, "FUND_SWEEP", "100.00", LocalDate.of(2026, 5, 28));
+    books.postNonClientDirect(account, "FUND_INTEREST", "50.00", LocalDate.of(2026, 6, 15));
+    var inError =
+        books.postNonClientDirect(account, "FUND_INTEREST", "30.00", LocalDate.of(2026, 6, 2));
+    books.reverse(account, inError, Expected.cashbookAndFund("-30.00"), LocalDate.of(2026, 6, 3));
+    // The April recoverable charge reversed in June: April keeps it, June carries the contra
+    books.reverse(
+        account, recoverable, Expected.cashbookAndFund("15.00"), LocalDate.of(2026, 6, 20));
+    memo(account, LocalDate.of(2026, 5, 1), "40.00", "5.00", "0.65");
+
+    var result =
+        schedule(
+            Map.of("trust_account_id", account, "dateFrom", "2026-04-15", "dateTo", "2026-06-03"));
+
+    assertThat(result.summary().get("periodFrom")).isEqualTo("2026-04-01");
+    assertThat(result.summary().get("periodTo")).isEqualTo("2026-06-30");
+    assertThat(result.summary().get("identityHolds")).isEqualTo(true);
+    assertThat(result.summary().get("scopeNote")).isEqualTo(TrustReportWords.TRUST_ASSETS_NOTE);
+    var rows = result.rows();
+    assertThat(rows)
+        .extracting(r -> r.get("month"))
+        .containsExactly("April 2026", "May 2026", "June 2026");
+    assertThat(rows)
+        .allSatisfy(
+            r ->
+                assertThat(r.get("sectionLabel")).isEqualTo("Section 86(2) trust banking account"));
+
+    var april = rows.get(0);
+    assertMoney(april, "fundBroughtForward", "0.00");
+    assertMoney(april, "grossInterestCashbook", "100.00");
+    assertMoney(april, "chargesRecoverable", "15.00");
+    assertMoney(april, "chargesNonRecoverable", "23.00");
+    assertMoney(april, "chargesVat", "3.00");
+    assertMoney(april, "fundCarriedForward", "62.00");
+    assertThat(april.get("clientShare")).isNull();
+    assertThat(april.get("fundShareCredited")).isNull();
+
+    var may = rows.get(1);
+    assertMoney(may, "fundBroughtForward", "62.00");
+    assertMoney(may, "chargesRefunded", "15.00");
+    assertMoney(may, "paidToFund", "100.00");
+    assertMoney(may, "grossInterestMemo", "40.00");
+    assertMoney(may, "chargesMemo", "5.00");
+    assertMoney(may, "chargesMemoVat", "0.65");
+    // The memo never reaches the ledger: a Fund ledger may be in debit (founder decision 9)
+    assertMoney(may, "fundCarriedForward", "-23.00");
+
+    var june = rows.get(2);
+    assertMoney(june, "fundBroughtForward", "-23.00");
+    assertMoney(june, "grossInterestCashbook", "50.00");
+    assertMoney(june, "chargesRecoverable", "-15.00");
+    assertMoney(june, "fundCarriedForward", "42.00");
+
+    for (int i = 0; i < rows.size(); i++) {
+      var r = rows.get(i);
+      assertIdentity(r, false);
+      var monthEnd = LocalDate.parse((String) r.get("monthStart")).plusMonths(1).minusDays(1);
+      assertThat((BigDecimal) r.get("fundCarriedForward"))
+          .isEqualByComparingTo(
+              books.read(() -> ledgerQueries.creditorAccountBalance(fund, monthEnd)));
+      if (i > 0) {
+        assertThat((BigDecimal) r.get("fundBroughtForward"))
+            .isEqualByComparingTo((BigDecimal) rows.get(i - 1).get("fundCarriedForward"));
+      }
+      assertThat(r.values())
+          .filteredOn(v -> v instanceof String)
+          .allSatisfy(v -> assertThat((String) v).doesNotMatch(RAW_CODE));
+    }
+
+    @SuppressWarnings("unchecked")
+    var block = ((List<Map<String, Object>>) result.summary().get("blocks")).getFirst();
+    assertMoney(block, "fundBroughtForward", "0.00");
+    assertMoney(block, "grossInterestCashbook", "150.00");
+    assertMoney(block, "grossInterestMemo", "40.00");
+    assertMoney(block, "paidToFund", "100.00");
+    assertMoney(block, "fundCarriedForward", "42.00");
+  }
+
+  /**
+   * A section 86(4) block: the 5% credited to the account (GROSS, a FUND_INV_SHARE row) is the
+   * identity's interest term; the 5% paid at source (NET) and the client's 95% never touch the Fund
+   * ledger and stay outside it.
+   */
+  @Test
+  void schedule_s86_4_identityUsesTheFundShareCredited_paidAtSourceOutside() {
+    var funding = books.freshAccount(false);
+    var investmentAccount = books.freshInvestmentAccount(InvestmentBasis.CLIENT_INSTRUCTION);
+    var client = books.newClient("Schedule s86(4)");
+    books.deposit(funding, client, "30000.00");
+    var placed = books.requestPlacement(funding, investmentAccount, client, "30000.00");
+    books.approvePlacement(
+        funding,
+        Expected.cashbookAndClient("-30000.00"),
+        investmentAccount,
+        Expected.cashbookAndInvestment("30000.00"),
+        placed.depositTransactionId(),
+        approverId);
+    var mayDate = LocalDate.of(2026, 5, 10);
+    var line = books.unmatchedLine(investmentAccount, mayDate, "400.00", "INT-MAY");
+    books.recordInterest(
+        investmentAccount,
+        new Expected(
+            new BigDecimal("400.00"),
+            BigDecimal.ZERO,
+            new BigDecimal("380.00"),
+            new BigDecimal("20.00"),
+            BigDecimal.ZERO,
+            BigDecimal.ZERO),
+        placed.id(),
+        new RecordInvestmentInterestRequest(
+            mayDate, new BigDecimal("400.00"), null, InterestPresentation.GROSS, line.lineId()));
+    books.recordInterest(
+        investmentAccount,
+        new Expected(
+            new BigDecimal("95.00"),
+            BigDecimal.ZERO,
+            new BigDecimal("95.00"),
+            BigDecimal.ZERO,
+            BigDecimal.ZERO,
+            BigDecimal.ZERO),
+        placed.id(),
+        new RecordInvestmentInterestRequest(
+            LocalDate.of(2026, 6, 10),
+            new BigDecimal("100.00"),
+            null,
+            InterestPresentation.NET,
+            null));
+    books.postNonClientDirect(investmentAccount, "FUND_SWEEP", "20.00", LocalDate.of(2026, 6, 30));
+
+    var rows =
+        schedule(
+                Map.of(
+                    "trust_account_id",
+                    investmentAccount,
+                    "dateFrom",
+                    "2026-05-01",
+                    "dateTo",
+                    "2026-06-30"))
+            .rows();
+
+    assertThat(rows).hasSize(2);
+    assertThat(rows)
+        .allSatisfy(
+            r -> assertThat(r.get("sectionLabel")).isEqualTo("Section 86(4) investment account"));
+    var may = rows.get(0);
+    assertMoney(may, "grossInterestCashbook", "400.00");
+    assertMoney(may, "clientShare", "380.00");
+    assertMoney(may, "fundShareCredited", "20.00");
+    assertMoney(may, "fundSharePaidAtSource", "0.00");
+    assertMoney(may, "fundCarriedForward", "20.00");
+    var june = rows.get(1);
+    assertMoney(june, "grossInterestCashbook", "100.00");
+    assertMoney(june, "clientShare", "95.00");
+    assertMoney(june, "fundShareCredited", "0.00");
+    assertMoney(june, "fundSharePaidAtSource", "5.00");
+    assertMoney(june, "paidToFund", "20.00");
+    assertMoney(june, "fundCarriedForward", "0.00");
+    rows.forEach(r -> assertIdentity(r, true));
+
+    // Firm-wide: one block per account, ordered by section (86(2) before 86(4)), no set-off
+    var firm = schedule(Map.of("dateFrom", "2026-05-01", "dateTo", "2026-06-30"));
+    @SuppressWarnings("unchecked")
+    var blocks = (List<Map<String, Object>>) firm.summary().get("blocks");
+    var sections = blocks.stream().map(b -> (String) b.get("sectionLabel")).toList();
+    assertThat(sections).isSortedAccordingTo(java.util.Comparator.comparing(this::sectionOrder));
+    assertThat(blocks)
+        .extracting(b -> b.get("trustAccountId"))
+        .contains(funding, investmentAccount);
+    assertThat(firm.rows()).hasSize(blocks.size() * 2);
+  }
+
+  /** D-10: month boundaries are snapped; an inverted range or one past 36 months is refused. */
+  @Test
+  void schedule_parameters_invertedOrTooLongRangeIsRefused() {
+    var account = books.freshAccount(false);
+    assertThatThrownBy(
+            () ->
+                schedule(
+                    Map.of(
+                        "trust_account_id",
+                        account,
+                        "dateFrom",
+                        "2026-05-01",
+                        "dateTo",
+                        "2026-04-30")))
+        .isInstanceOf(InvalidStateException.class);
+    assertThatThrownBy(
+            () ->
+                schedule(
+                    Map.of(
+                        "trust_account_id",
+                        account,
+                        "dateFrom",
+                        "2023-01-01",
+                        "dateTo",
+                        "2026-01-31")))
+        .isInstanceOf(InvalidStateException.class);
+    assertThat(
+            schedule(
+                    Map.of(
+                        "trust_account_id",
+                        account,
+                        "dateFrom",
+                        "2023-02-01",
+                        "dateTo",
+                        "2026-01-31"))
+                .rows())
+        .hasSize(36);
+  }
+
+  // --- the unidentified deposits age analysis --------------------------------------------------
+
+  /**
+   * Open items in their bands (0–30, 31–90, over one year), an item paid to the Fund in the year
+   * listed as resolved, Σ open = the position's unidentified deposits as at the date.
+   */
+  @Test
+  void ageAnalysis_bandsOpenItems_listsResolved_andTiesToTheBooks() {
+    var account = books.freshAccount(false);
+    var today = books.today();
+    books.unidentifiedDepositDirect(account, "500.00", today.minusDays(10));
+    books.unidentifiedDepositDirect(account, "600.00", today.minusDays(60));
+    books.unidentifiedDepositDirect(account, "700.00", today.minusDays(400));
+    var paidRow = books.unidentifiedDepositDirect(account, "800.00", today.minusDays(100));
+    var itemId =
+        books.read(
+            () -> transactionRepository.findById(paidRow).orElseThrow().getUnidentifiedDepositId());
+    var pending = new UUID[1];
+    books.as(
+        ownerId,
+        () ->
+            pending[0] =
+                depositService
+                    .payToFund(itemId, new PayToFundRequest("LPFF-AGE", today.minusDays(50), null))
+                    .resolutionTransactionId());
+    books.approve(account, pending[0], approverId, Expected.cashbookAndUnidentified("-800.00"));
+
+    var result = age(Map.of("trust_account_id", account, "asOfDate", today.toString()));
+
+    var open = result.rows().stream().filter(r -> "Open".equals(r.get("position"))).toList();
+    assertThat(open)
+        .extracting(r -> r.get("band") + " " + r.get("amount"))
+        .containsExactly("0–30 days 500.00", "31–90 days 600.00", "Over one year 700.00");
+    assertThat(open).extracting(r -> r.get("ageDays")).containsExactly(10L, 60L, 400L);
+    var resolved = result.rows().stream().filter(r -> "Resolved".equals(r.get("band"))).toList();
+    assertThat(resolved)
+        .singleElement()
+        .satisfies(
+            r -> {
+              assertThat((BigDecimal) r.get("amount")).isEqualByComparingTo("800.00");
+              assertThat((String) r.get("position")).startsWith("Paid to the Fund on ");
+              assertThat(r.get("ageDays")).isNull();
+            });
+    assertMoney(result.summary(), "openTotal", "1800.00");
+    assertMoney(result.summary(), "upToOneMonthTotal", "500.00");
+    assertMoney(result.summary(), "oneToThreeMonthsTotal", "600.00");
+    assertMoney(result.summary(), "threeToSixMonthsTotal", "0.00");
+    assertMoney(result.summary(), "overOneYearTotal", "700.00");
+    assertThat(result.summary().get("openItems")).isEqualTo(3);
+    assertThat(result.summary().get("resolvedItems")).isEqualTo(1);
+    var position = books.read(() -> booksService.position(account, today));
+    assertThat((BigDecimal) result.summary().get("openTotal"))
+        .isEqualByComparingTo(position.unidentifiedDeposits());
+    assertThat(result.rows())
+        .allSatisfy(
+            r ->
+                r.values().stream()
+                    .filter(v -> v instanceof String)
+                    .forEach(v -> assertThat((String) v).doesNotMatch(RAW_CODE)));
+
+    // As at a date before the paid item was paid: it was open then (by its own rows)
+    var earlier = today.minusDays(70);
+    var then = age(Map.of("trust_account_id", account, "asOfDate", earlier.toString()));
+    assertThat(then.rows())
+        .filteredOn(r -> "Open".equals(r.get("position")))
+        .extracting(r -> r.get("amount"))
+        .containsExactlyInAnyOrder(new BigDecimal("700.00"), new BigDecimal("800.00"));
+    assertThat((BigDecimal) then.summary().get("openTotal"))
+        .isEqualByComparingTo(
+            books.read(() -> booksService.position(account, earlier)).unidentifiedDeposits());
+  }
+
+  /** EQ-4: an item is open by its own rows, never by its status. */
+  @Test
+  void ageAnalysis_openByRows_notByStatus() {
+    var account = books.freshAccount(false);
+    var today = books.today();
+    var row = books.unidentifiedDepositDirect(account, "250.00", today.minusDays(5));
+    var itemId =
+        books.read(
+            () -> transactionRepository.findById(row).orElseThrow().getUnidentifiedDepositId());
+    // The status says resolved; the rows say held — the report follows the rows
+    books.setItemStatusDirect(itemId, "PAID_TO_FUND");
+
+    var result = age(Map.of("trust_account_id", account, "asOfDate", today.toString()));
+    assertThat(result.rows())
+        .singleElement()
+        .satisfies(
+            r -> {
+              assertThat(r.get("position")).isEqualTo("Open");
+              assertThat(r.get("band")).isEqualTo("0–30 days");
+            });
+    // Before it was received it was not open
+    var before =
+        age(Map.of("trust_account_id", account, "asOfDate", today.minusDays(6).toString()));
+    assertThat(before.rows()).isEmpty();
+    assertMoney(before.summary(), "openTotal", "0.00");
+  }
+
+  // --- helpers ----------------------------------------------------------------------------------
+
+  private ReportResult schedule(Map<String, Object> params) {
+    return books.read(() -> scheduleQuery.executeAll(new HashMap<>(params)));
+  }
+
+  private ReportResult age(Map<String, Object> params) {
+    return books.read(() -> ageQuery.executeAll(new HashMap<>(params)));
+  }
+
+  private void memo(UUID account, LocalDate month, String interest, String charges, String vat) {
+    jdbc.update(
+        """
+        INSERT INTO "%s".trust_interest_memos (id, trust_account_id, period_month, gross_interest,
+            gross_charges, charges_vat, source_note, recorded_by)
+        VALUES (?, ?, ?, ?, ?, ?, 'IA/MAY26 bank advice', ?)
+        """
+            .formatted(books.schema()),
+        UUID.randomUUID(),
+        account,
+        month,
+        new BigDecimal(interest),
+        new BigDecimal(charges),
+        new BigDecimal(vat),
+        ownerId);
+  }
+
+  /**
+   * §16.8.3: b/f + interest term − charges in the cashbook + refunds − paid to the Fund = c/f; the
+   * interest term is the Fund's 5% credited for a section 86(4) block, gross interest otherwise.
+   */
+  private static void assertIdentity(Map<String, Object> r, boolean s864) {
+    var interest = s864 ? m(r, "fundShareCredited") : m(r, "grossInterestCashbook");
+    var computed =
+        m(r, "fundBroughtForward")
+            .add(interest)
+            .subtract(m(r, "chargesRecoverable"))
+            .subtract(m(r, "chargesNonRecoverable"))
+            .add(m(r, "chargesRefunded"))
+            .subtract(m(r, "paidToFund"));
+    assertThat(computed)
+        .as("identity of %s", r.get("month"))
+        .isEqualByComparingTo(m(r, "fundCarriedForward"));
+    assertThat(r.get("identityHolds")).isEqualTo(true);
+  }
+
+  private int sectionOrder(String label) {
+    return label.contains("86(2)") ? 0 : label.contains("86(3)") ? 1 : 2;
+  }
+
+  private static BigDecimal m(Map<String, Object> r, String key) {
+    return (BigDecimal) r.get(key);
+  }
+
+  private static void assertMoney(Map<String, Object> r, String key, String expected) {
+    assertThat((BigDecimal) r.get(key)).as(key).isEqualByComparingTo(expected);
+  }
+}

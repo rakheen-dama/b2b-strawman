@@ -47,13 +47,16 @@ import TrustReportsPage from "@/app/(app)/org/[slug]/trust-accounting/reports/pa
 const EMPTY_STATE_COPY =
   "Trust reports need financial visibility. Ask an owner or admin to grant it.";
 
+// Phase 92 650C: the trust-reports pack v4 ships nine reports; interest-allocation is retired
 const TRUST_SLUGS = [
   "trust-receipts-payments",
   "client-trust-balances",
+  "trust-position",
   "client-ledger-statement",
   "trust-reconciliation",
   "investment-register",
-  "interest-allocation",
+  "trust-interest-charges-schedule",
+  "unidentified-deposits-age-analysis",
   "section-35-data-pack",
 ];
 
@@ -92,7 +95,7 @@ describe("Trust reports page — capability gates (630A, §14.6.6)", () => {
 
   afterEach(() => cleanup());
 
-  it("VIEW_TRUST + FINANCIAL_VISIBILITY lists the seven trust report cards", async () => {
+  it("VIEW_TRUST + FINANCIAL_VISIBILITY lists the nine trust report cards", async () => {
     mockFetchMyCapabilities.mockResolvedValue(caps(["VIEW_TRUST", "FINANCIAL_VISIBILITY"]));
 
     await renderPage();
@@ -101,6 +104,8 @@ describe("Trust reports page — capability gates (630A, §14.6.6)", () => {
     for (const slug of TRUST_SLUGS) {
       expect(screen.getByTestId(`report-card-${slug}`)).toBeInTheDocument();
     }
+    expect(screen.getAllByTestId(/^report-card-/)).toHaveLength(9);
+    expect(screen.queryByTestId("report-card-interest-allocation")).not.toBeInTheDocument();
     expect(screen.getByTestId("report-card-section-35-data-pack").closest("a")).toHaveAttribute(
       "href",
       "/org/acme/reports/section-35-data-pack"

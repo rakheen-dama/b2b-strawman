@@ -27,9 +27,10 @@ import org.springframework.stereotype.Component;
 
 /**
  * The Rule 54.15 trust creditors list (Phase 92 650A, architecture §16.8.1, ADR-382) — the {@code
- * client-trust-balances} slug, evolved rather than paralleled. Query internals only: the report
- * definition (columns, name, parameters) is edited in 650C, so every v3 column is still on every
- * row.
+ * client-trust-balances} slug, evolved rather than paralleled. The v4 report definition (650C)
+ * shows {@code clientName}, {@code generalBalance}, {@code investedBalance}, {@code balance},
+ * {@code receivedDate}, {@code bankDescription} and {@code sourceNote}; every v3 key is still on
+ * every row (callers and tests read them), and no code ({@code kind}, {@code source}) is a column.
  *
  * <p>Parameters: {@code trust_account_id} (optional — omitted means firm-wide, every trust account
  * of the firm) and {@code asOfDate} (optional, today when absent; a month end to obtain locked
@@ -403,6 +404,7 @@ public class ClientTrustBalancesQuery implements ReportQuery {
     summary.put("bankTotal", bankTotal);
     summary.put("investmentAccountTotal", investmentAccountTotal);
     summary.put("trustCashNote", TRUST_CASH_NOTE);
+    summary.put("scopeNote", TrustReportWords.TRUST_ASSETS_NOTE);
     summary.put("difference", creditorTotal.subtract(bankTotal).subtract(investmentAccountTotal));
     summary.put("fullyLocked", lists.stream().allMatch(l -> l.locked() != null));
     summary.put("accounts", List.copyOf(accounts));

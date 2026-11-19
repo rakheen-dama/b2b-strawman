@@ -18,11 +18,14 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksFixture;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -70,10 +73,18 @@ class Section35DataPackContentIntegrationTest {
   @Autowired private ReportDefinitionRepository reportDefinitionRepository;
   @Autowired private ReportExecutionService reportExecutionService;
   @Autowired private ReportRenderingService reportRenderingService;
+  @Autowired private TrustBooksFixture fixture;
+  @Autowired private TrustTransactionRepository transactionRepository;
+
+  private static final String FUND_LINE =
+      "Legal Practitioners' Fidelity Fund — interest and charges";
+  private static final String ACCOUNT = "S35 Content Trust Account";
 
   private String tenantSchema;
   private UUID memberId;
   private Map<String, Object> params;
+  private String matchedSweepReference;
+  private String unmatchedSweepReference;
 
   @BeforeAll
   void setup() throws Exception {
@@ -166,6 +177,20 @@ class Section35DataPackContentIntegrationTest {
                 .with(TestJwtFactory.adminJwt(ORG_ID, APPROVER)))
         .andExpect(status().isOk());
 
+    // 650C: two Fund sweeps in the year — one recorded from an imported statement line (Rule
+    // 54.14.16 evidence: file name + line number), one with no statement line
+    var books = fixture.tenant(tenantSchema, ORG_ID, memberId);
+    var matched =
+        books.postNonClientDirect(trustAccountId, "FUND_SWEEP", "40.00", LocalDate.of(2025, 9, 30));
+    books.bankLineFor(trustAccountId, matched, LocalDate.of(2025, 9, 30));
+    var unmatched =
+        books.postNonClientDirect(
+            trustAccountId, "FUND_SWEEP", "25.00", LocalDate.of(2025, 10, 31));
+    matchedSweepReference =
+        books.read(() -> transactionRepository.findById(matched).orElseThrow().getReference());
+    unmatchedSweepReference =
+        books.read(() -> transactionRepository.findById(unmatched).orElseThrow().getReference());
+
     params = Map.of("trust_account_id", trustAccountId, "financial_year_end", "2026-03-31");
   }
 
@@ -188,37 +213,86 @@ class Section35DataPackContentIntegrationTest {
   }
 
   /**
-   * 650A review A1: since 650A {@code client-trust-balances} is the Rule 54.15 list (it also
-   * returns the Fidelity Fund line, open unidentified deposits and the section 86(3) line). The
-   * pack is still v3 until 650C, so its "Client Trust Balances" section lists clients only — here
-   * the one client's R37 019.15 (R38 019.15 deposited, R1 000 paid) and its total, with the v3
-   * section summary.
+   * 650C (D-1, F-4): part (2) is the Rule 54.15 list as at the year end — the client (general +
+   * invested), the Fund line (here in debit after the two sweeps) and their total, with the list's
+   * comparison keys and the v3 keys; the note states the list's basis (not locked).
    */
   @Test
   @SuppressWarnings("unchecked")
-  void clientTrustBalancesSection_listsClientsOnly_notTheFundLine() {
+  void trustCreditorsSection_isTheRule54_15List_withTheFundLine() {
     ReportResult result = execute();
 
     var section =
         result.rows().stream()
-            .filter(row -> "Client Trust Balances".equals(row.get("_section")))
+            .filter(row -> Section35DataPackQuery.CREDITORS_SECTION.equals(row.get("_section")))
             .toList();
-    assertThat(section).extracting(row -> row.get("label")).containsExactly(CLIENT, "Total");
     assertThat(section)
-        .allSatisfy(
-            row -> assertThat((BigDecimal) row.get("amount")).isEqualByComparingTo("37019.15"));
-    assertThat(section.getFirst().get("kind")).isEqualTo("CLIENT");
+        .extracting(row -> row.get("label") + " " + row.get("amount"))
+        .containsExactly(CLIENT + " 37019.15", FUND_LINE + " -65.00", "Total 36954.15");
+    assertThat(result.rows()).noneMatch(row -> "Client Trust Balances".equals(row.get("_section")));
 
     var meta =
         ((List<Map<String, Object>>) result.summary().get("sections"))
             .stream()
-                .filter(m -> "Client Trust Balances".equals(m.get("sectionName")))
+                .filter(m -> Section35DataPackQuery.CREDITORS_SECTION.equals(m.get("sectionName")))
                 .findFirst()
                 .orElseThrow();
-    assertThat(meta.get("rowCount")).isEqualTo(1);
+    assertThat(meta.get("rowCount")).isEqualTo(2);
     assertThat(meta.get("clientCount")).isEqualTo(1);
     assertThat((BigDecimal) meta.get("totalTrustBalance")).isEqualByComparingTo("37019.15");
-    assertThat(meta).doesNotContainKeys("creditorTotal", "fundTotal", "accounts");
+    assertThat((BigDecimal) meta.get("creditorTotal")).isEqualByComparingTo("36954.15");
+    assertThat((BigDecimal) meta.get("fundTotal")).isEqualByComparingTo("-65.00");
+    assertThat(meta.get("fullyLocked")).isEqualTo(false);
+    assertThat(meta.get("source")).isEqualTo("Not locked");
+    assertThat(meta.get("note")).isEqualTo(ClientTrustBalancesQuery.LIVE_NOTE);
+    assertThat(meta).doesNotContainKeys("accounts", "afterLock");
+    assertThat((BigDecimal) result.summary().get("totalTrustBalanceAtYearEnd"))
+        .isEqualByComparingTo("37019.15");
+  }
+
+  /**
+   * 650C (§16.8.5 (6), D-13): each Fund sweep of the year with its statement file name and line
+   * number (Rule 54.14.16 evidence), and the sweeps with no statement line in their own section.
+   */
+  @Test
+  void fundSweeps_carryTheirStatementLine_andUnmatchedSweepsAreListedApart() {
+    ReportResult result = execute();
+
+    assertThat(sectionRows(result, Section35DataPackQuery.SWEEPS_SECTION))
+        .extracting(row -> row.get("label") + " " + row.get("amount"))
+        .containsExactly(
+            "2025-09-30 · statement.csv · line 1 · " + matchedSweepReference + " -40.00",
+            "Total -40.00");
+    assertThat(sectionRows(result, Section35DataPackQuery.UNMATCHED_SWEEPS_SECTION))
+        .extracting(row -> row.get("label") + " " + row.get("amount"))
+        .containsExactly(
+            "2025-10-31 · " + unmatchedSweepReference + " — no statement line -25.00",
+            "Total -25.00");
+  }
+
+  /**
+   * 650C (§16.8.5 (5), D-12): the Rule 54.28 schedule for the year replaces interest allocation —
+   * year totals per account, projector-less (no Total row), the Fund ledger b/f + movements = c/f.
+   */
+  @Test
+  void schedulePart_replacesInterestAllocation_withYearTotalsPerAccount() {
+    ReportResult result = execute();
+
+    var schedule = sectionRows(result, Section35DataPackQuery.SCHEDULE_SECTION);
+    var byLabel =
+        schedule.stream()
+            .collect(
+                java.util.stream.Collectors.toMap(
+                    r -> (String) r.get("label"), r -> (BigDecimal) r.get("amount")));
+    assertThat(byLabel.get(ACCOUNT + " — Fund ledger brought forward")).isEqualByComparingTo("0");
+    assertThat(byLabel.get(ACCOUNT + " — paid to the Fund")).isEqualByComparingTo("65.00");
+    assertThat(byLabel.get(ACCOUNT + " — Fund ledger carried forward"))
+        .isEqualByComparingTo("-65.00");
+    assertThat(schedule).noneMatch(r -> "Total".equals(r.get("label")));
+    assertThat(result.rows()).noneMatch(r -> "Interest Allocation".equals(r.get("_section")));
+    assertThat(result.rows())
+        .extracting(r -> (String) r.get("_section"))
+        .allSatisfy(section -> assertThat(section).doesNotMatch(".*\\b[A-Z]{2,}_[A-Z_]{2,}\\b.*"));
   }
 
   @Test
@@ -234,6 +308,9 @@ class Section35DataPackContentIntegrationTest {
         .as("the PDF template prints each section's rows, not just its row count")
         .contains("DEP-S35-001")
         .contains(CLIENT)
+        .contains(TrustReportWords.TRUST_ASSETS_NOTE.replace("'", "&#39;"))
+        .contains("statement.csv · line 1")
+        .contains(Section35DataPackQuery.SCHEDULE_SECTION)
         .containsPattern("38[\\s,.\\u00a0]?019[.,]15")
         .doesNotContain("Rows:");
   }
@@ -285,6 +362,10 @@ class Section35DataPackContentIntegrationTest {
   }
 
   // ---------- helpers ----------
+
+  private static List<Map<String, Object>> sectionRows(ReportResult result, String section) {
+    return result.rows().stream().filter(row -> section.equals(row.get("_section"))).toList();
+  }
 
   private ReportResult execute() {
     return runInTenantReturning(() -> reportExecutionService.executeForExport(SLUG, params));

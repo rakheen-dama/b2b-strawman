@@ -17,9 +17,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 /**
- * The as-at trust position (Phase 92 650A, architecture §16.8.2) — slug {@code trust-position}.
- * Query only: the report definition lands in 650C (a query bean without a definition is never
- * reached by the reporting endpoints).
+ * The as-at trust position (Phase 92 650A, architecture §16.8.2) — slug {@code trust-position}. The
+ * report definition is shipped by the trust-reports pack v4 (650C).
  *
  * <p>Parameters: {@code asOfDate} (required, any date — the auditor's second test date) and {@code
  * trust_account_id} (optional; omitted = firm-wide). Per account: the cashbook and each creditor
@@ -32,6 +31,8 @@ public class TrustPositionQuery implements ReportQuery {
 
   static final String NO_BANK_NOTE =
       "No reconciliation has this period end — the cashbook is compared with trust creditors only";
+
+  static final String NO_FLAGS = "No integrity flags";
 
   private final TrustIntegrityService trustIntegrityService;
   private final TrustAccountRepository trustAccountRepository;
@@ -95,6 +96,7 @@ public class TrustPositionQuery implements ReportQuery {
     summary.put("balanced", firm.balanced());
     summary.put("firmFlags", flags(firm.flags()));
     summary.put("accountCount", rows.size());
+    summary.put("scopeNote", TrustReportWords.TRUST_ASSETS_NOTE);
     return new ReportResult(rows, summary);
   }
 
@@ -104,6 +106,10 @@ public class TrustPositionQuery implements ReportQuery {
     row.put("trustAccountId", report.trustAccountId());
     row.put("accountName", account != null ? account.getAccountName() : null);
     row.put("accountType", account != null ? account.getAccountType().name() : null);
+    // 650C (D-20): the section in words for the report columns; the raw type stays for callers
+    row.put(
+        "sectionLabel",
+        account != null ? TrustReportWords.sectionLabel(account.getSection()) : null);
     row.put("cashbook", p.cashbook());
     row.put("clientLedgers", p.clientLedgers());
     row.put("investmentCreditors", p.investmentCreditors());
@@ -119,7 +125,16 @@ public class TrustPositionQuery implements ReportQuery {
     row.put("bankNote", report.bank() != null ? null : NO_BANK_NOTE);
     row.put("balanced", report.balanced());
     row.put("flags", flags(report.flags()));
+    row.put("integrity", integrity(report.flags()));
     return row;
+  }
+
+  /** The flags of one account as one sentence for the "Integrity" column (650C, D-20). */
+  static String integrity(List<IntegrityFlag> flags) {
+    if (flags.isEmpty()) {
+      return NO_FLAGS;
+    }
+    return flags.stream().map(IntegrityFlag::message).collect(Collectors.joining(" · "));
   }
 
   /** The flags as sentences with their severity — never the raw code (no label map here). */

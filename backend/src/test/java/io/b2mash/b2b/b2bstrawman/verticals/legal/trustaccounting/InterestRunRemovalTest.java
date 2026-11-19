@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.startsWith;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -211,7 +212,10 @@ class InterestRunRemovalTest {
           .perform(request.with(TestJwtFactory.ownerJwt(ORG_ID, OWNER)))
           .andExpect(status().isNotFound())
           .andExpect(jsonPath("$.status").value(404))
-          .andExpect(jsonPath("$.title").value("Not Found"));
+          .andExpect(jsonPath("$.title").value("Not Found"))
+          // "No static resource …" = no handler mapping matched — not a business 404 from a live
+          // route
+          .andExpect(jsonPath("$.detail").value(startsWith("No static resource ")));
     }
   }
 

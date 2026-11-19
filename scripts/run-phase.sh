@@ -94,7 +94,9 @@ extract_slices() {
   local task_file="$1"
   grep -E '^\| \*\*[0-9]+[A-Z]+\*\*' "$task_file" | while IFS= read -r line; do
     slice=$(echo "$line" | sed -E 's/^\| \*\*([0-9]+[A-Z]+)\*\*.*/\1/')
-    if echo "$line" | grep -q '\*\*Done\*\*'; then
+    # A conditional slice whose hypothesis did not reproduce is marked STRUCK (hypothesis protocol) —
+    # it is complete, not failed, so it counts as Done (Phase 92 stage 9).
+    if echo "$line" | grep -qE '\*\*Done\*\*|STRUCK'; then
       echo "${slice}:DONE"
     else
       echo "${slice}:PENDING"
@@ -366,7 +368,7 @@ for i in "${!SLICES_TO_RUN[@]}"; do
   # line that mentions the slice id — dependency/unblock columns on a sibling
   # Done row caused false positives (e.g. 511B's Done row lists 512A as a
   # downstream-unblock, falsely marking 512A done before it ever ran).
-  if grep -E "^\| \*\*${slice}\*\*.*\*\*Done\*\*" "$TASK_FILE" >/dev/null; then
+  if grep -E "^\| \*\*${slice}\*\*.*(\*\*Done\*\*|STRUCK)" "$TASK_FILE" >/dev/null; then
     log "Slice ${slice} completed successfully (${SLICE_MINUTES}m)"
   else
     # 137 means a timeout only when the cap was actually reached (timeout -k escalated to SIGKILL);

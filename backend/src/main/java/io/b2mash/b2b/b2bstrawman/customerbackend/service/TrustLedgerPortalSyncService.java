@@ -43,10 +43,9 @@ import org.springframework.transaction.support.TransactionTemplate;
  * <ul>
  *   <li>{@link TrustTransactionApprovalEvent} with eventType "trust_transaction.approved" — upserts
  *       one transaction + recomputes the matter balance.
- *   <li>{@link TrustDomainEvent.InterestPosted} — fans out across every matter in the posting
- *       account (all trust transactions posted in the run share a trust account).
- *   <li>{@link TrustDomainEvent.ReconciliationCompleted} — same fan-out strategy; the
- *       reconciliation may have adjusted many matters' running balances.
+ *   <li>{@link TrustTransactionRecordedEvent} — the same, for rows posted when recorded.
+ *   <li>{@link TrustDomainEvent.ReconciliationCompleted} — fans out across every matter in the
+ *       account; the reconciliation may have adjusted many matters' running balances.
  * </ul>
  *
  * <p>Raw firm-side descriptions pass through {@link PortalTrustDescriptionSanitiser} before
@@ -171,26 +170,6 @@ public class TrustLedgerPortalSyncService {
   }
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-  public void onInterestPosted(TrustDomainEvent.InterestPosted event) {
-    RequestScopes.runForTenant(
-        event.tenantId(),
-        event.orgId(),
-        () -> {
-          try {
-            syncForTrustAccount(event.trustAccountId());
-          } catch (Exception e) {
-            log.error(
-                "Portal trust sync failed for event=interest_posted tenant={} interestRun={}"
-                    + " account={}",
-                event.tenantId(),
-                event.interestRunId(),
-                event.trustAccountId(),
-                e);
-          }
-        });
-  }
-
-  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onReconciliationCompleted(TrustDomainEvent.ReconciliationCompleted event) {
     RequestScopes.runForTenant(
         event.tenantId(),
@@ -230,8 +209,7 @@ public class TrustLedgerPortalSyncService {
 
   /**
    * Recomputes the portal read-model for every matter that has at least one posted trust
-   * transaction in the given account. Used by the interest-posted and reconciliation-completed
-   * fan-out handlers.
+   * transaction in the given account. Used by the reconciliation-completed fan-out handler.
    */
   private void syncForTrustAccount(UUID trustAccountId) {
     Set<UUID> seenMatters = new HashSet<>();

@@ -1,0 +1,18 @@
+       schema        | runs | allocs | lines |              lpff              | idx_trust_txn_project 
+---------------------+------+--------+-------+--------------------------------+-----------------------
+ tenant_7d218705360b |      |        |       | tenant_7d218705360b.lpff_rates |                     1
+(1 row)
+
+ version |         description          | success |        installed_on        
+---------+------------------------------+---------+----------------------------
+ 27      | phase92 drop interest run    | t       | 2026-11-19 06:48:49.551636
+ 26      | phase92 trust interest memos | t       | 2026-11-19 06:48:49.533702
+ 25      | phase92 trust monthly lists  | t       | 2026-11-19 06:48:49.516756
+ 24      | phase92 investment interest  | t       | 2026-11-19 06:48:49.43434
+(4 rows)
+
+ interest_run_audit_rows 
+-------------------------
+                       0
+(1 row)
+

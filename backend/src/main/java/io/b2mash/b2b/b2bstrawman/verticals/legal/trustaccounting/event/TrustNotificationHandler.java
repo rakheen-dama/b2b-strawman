@@ -19,7 +19,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
  * Runs AFTER_COMMIT in a new transaction to ensure notifications are only created for committed
  * changes and notification failures do not affect the domain transaction.
  *
- * <p>Handles 6 notification flows:
+ * <p>Handles 5 notification flows:
  *
  * <ul>
  *   <li>Transaction awaiting approval -> notify admins/owners
@@ -27,7 +27,6 @@ import org.springframework.transaction.event.TransactionalEventListener;
  *   <li>Transaction rejected -> notify recorder
  *   <li>Reconciliation completed -> notify admins/owners
  *   <li>Investment maturing -> notify admins/owners
- *   <li>Interest posted -> notify admins/owners
  * </ul>
  */
 @Component
@@ -100,23 +99,6 @@ public class TrustNotificationHandler {
             log.warn(
                 "Failed to create notifications for investment.maturing investment={}",
                 event.investmentId(),
-                e);
-          }
-        });
-  }
-
-  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-  public void onInterestPosted(TrustDomainEvent.InterestPosted event) {
-    RequestScopes.runForTenant(
-        event.tenantId(),
-        event.orgId(),
-        () -> {
-          try {
-            handleInterestPosted(event);
-          } catch (Exception e) {
-            log.warn(
-                "Failed to create notifications for interest.posted interestRun={}",
-                event.interestRunId(),
                 e);
           }
         });
@@ -204,26 +186,6 @@ public class TrustNotificationHandler {
                 + ".",
             "trust_investment",
             event.investmentId());
-
-    dispatchAll(notifications);
-  }
-
-  private void handleInterestPosted(TrustDomainEvent.InterestPosted event) {
-    var notifications =
-        notificationService.notifyAdminsAndOwners(
-            "TRUST_INTEREST_POSTED",
-            "Interest run posted",
-            "Interest run for "
-                + event.periodStart()
-                + " to "
-                + event.periodEnd()
-                + " posted. Total interest: R"
-                + event.totalInterest()
-                + ", client share: R"
-                + event.totalClientShare()
-                + ".",
-            "trust_interest_run",
-            event.interestRunId());
 
     dispatchAll(notifications);
   }

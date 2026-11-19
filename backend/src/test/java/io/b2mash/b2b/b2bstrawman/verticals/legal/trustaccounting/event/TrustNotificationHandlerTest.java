@@ -369,46 +369,6 @@ class TrustNotificationHandlerTest {
   }
 
   @Test
-  void interestPostedEvent_notifiesAdminsAndOwners() {
-    runInTenantWithCapabilities(
-        () ->
-            transactionTemplate.executeWithoutResult(
-                tx -> {
-                  var event =
-                      TrustDomainEvent.InterestPosted.of(
-                          UUID.randomUUID(),
-                          UUID.randomUUID(),
-                          LocalDate.of(2026, 1, 1),
-                          LocalDate.of(2026, 3, 31),
-                          new BigDecimal("5000.00"),
-                          new BigDecimal("4250.00"),
-                          memberId,
-                          tenantSchema,
-                          ORG_ID);
-                  eventPublisher.publishEvent(event);
-                }));
-
-    runInTenant(
-        () ->
-            transactionTemplate.executeWithoutResult(
-                tx -> {
-                  var notifications = notificationRepository.findAll();
-                  var interestNotifications =
-                      notifications.stream()
-                          .filter(n -> "TRUST_INTEREST_POSTED".equals(n.getType()))
-                          .toList();
-                  assertThat(interestNotifications).isNotEmpty();
-                  assertThat(interestNotifications)
-                      .allSatisfy(
-                          n -> {
-                            assertThat(n.getTitle()).contains("Interest run posted");
-                            assertThat(n.getBody()).contains("R5000.00");
-                            assertThat(n.getBody()).contains("R4250.00");
-                          });
-                }));
-  }
-
-  @Test
   void automationRules_presentInLegalZaPack() {
     runInTenant(
         () ->

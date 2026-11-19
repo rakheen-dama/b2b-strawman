@@ -213,45 +213,4 @@ public sealed interface TrustDomainEvent {
           Instant.now());
     }
   }
-
-  /**
-   * Published when an interest run is posted (status = POSTED). Triggers notification to
-   * admins/owners with the total interest and client share amounts.
-   */
-  record InterestPosted(
-      UUID interestRunId,
-      UUID trustAccountId,
-      LocalDate periodStart,
-      LocalDate periodEnd,
-      BigDecimal totalInterest,
-      BigDecimal totalClientShare,
-      UUID approvedBy,
-      String tenantId,
-      String orgId,
-      Instant occurredAt)
-      implements TrustDomainEvent {
-
-    public static InterestPosted of(
-        UUID interestRunId,
-        UUID trustAccountId,
-        LocalDate periodStart,
-        LocalDate periodEnd,
-        BigDecimal totalInterest,
-        BigDecimal totalClientShare,
-        UUID approvedBy,
-        String tenantId,
-        String orgId) {
-      return new InterestPosted(
-          interestRunId,
-          trustAccountId,
-          periodStart,
-          periodEnd,
-          totalInterest,
-          totalClientShare,
-          approvedBy,
-          tenantId,
-          orgId,
-          Instant.now());
-    }
-  }
 }

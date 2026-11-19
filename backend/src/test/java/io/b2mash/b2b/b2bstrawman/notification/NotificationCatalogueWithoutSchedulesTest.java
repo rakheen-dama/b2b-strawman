@@ -59,7 +59,6 @@ class NotificationCatalogueWithoutSchedulesTest {
           "TRUST_INVESTMENT_MATURING",
           "TRUST_APPROVAL_AGING",
           "TRUST_RECONCILIATION_COMPLETED",
-          "TRUST_INTEREST_POSTED",
           "MATTER_CLOSED",
           "MATTER_REOPENED",
           "TIME_REMINDER",

@@ -72,8 +72,6 @@ class TrustCoexistenceTest {
           "bank_statements",
           "bank_statement_lines",
           "trust_reconciliations",
-          "interest_runs",
-          "interest_allocations",
           "trust_investments");
 
   @Autowired private MockMvc mockMvc;

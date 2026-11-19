@@ -1,0 +1,184 @@
+{
+  "startedAt": "2026-11-19T06:49:29.429Z",
+  "consoleErrors": [
+    {
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/interest",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    }
+  ],
+  "pageErrors": [],
+  "items": {
+    "b": {
+      "accountId": "ab5cf725-506a-4d1f-8291-66a98e50de95",
+      "accountCount": 1,
+      "kept": [
+        {
+          "method": "GET",
+          "url": "/api/trust-accounts",
+          "status": 200,
+          "body": "[{\"id\":\"ab5cf725-506a-4d1f-8291-66a98e50de95\",\"accountName\":\"Mathebula & Partners Trust Account\",\"bankName\":\"Standard Bank\",\"branchCode\":\"051001\",\"accountNumber\":\"0123456789\",\"accountType\":\"GENERAL\",\""
+        },
+        {
+          "method": "GET",
+          "url": "/api/trust-accounts/ab5cf725-506a-4d1f-8291-66a98e50de95",
+          "status": 200,
+          "body": "{\"id\":\"ab5cf725-506a-4d1f-8291-66a98e50de95\",\"accountName\":\"Mathebula & Partners Trust Account\",\"bankName\":\"Standard Bank\",\"branchCode\":\"051001\",\"accountNumber\":\"0123456789\",\"accountType\":\"GENERAL\",\"i"
+        },
+        {
+          "method": "GET",
+          "url": "/api/trust-accounts/ab5cf725-506a-4d1f-8291-66a98e50de95/lpff-rates",
+          "status": 200,
+          "body": "[]"
+        },
+        {
+          "method": "GET",
+          "url": "/api/trust-integrity",
+          "status": 200,
+          "body": "{\"asAt\":\"2026-11-19\",\"balanced\":true,\"cashbook\":0,\"clientLedgers\":0,\"investmentCreditors\":0,\"fundLedger\":0,\"unidentifiedDeposits\":0,\"otherNonClient\":0,\"interAccount\":0,\"creditorTotal\":0,\"difference\":0"
+        }
+      ],
+      "pass": true
+    },
+    "a": {
+      "retired": [
+        {
+          "method": "GET",
+          "url": "/api/trust-accounts/ab5cf725-506a-4d1f-8291-66a98e50de95/interest-runs",
+          "status": 404,
+          "title": "Not Found",
+          "body": "{\"detail\":\"No static resource api/trust-accounts/ab5cf725-506a-4d1f-8291-66a98e50de95/interest-runs.\",\"instance\":\"/api/trust-accounts/ab5cf725-506a-4d1f-8291-66a98e50de95/interest-runs\",\"status\":404,\""
+        },
+        {
+          "method": "POST",
+          "url": "/api/trust-accounts/ab5cf725-506a-4d1f-8291-66a98e50de95/interest-runs",
+          "status": 404,
+          "title": "Not Found",
+          "body": "{\"detail\":\"No static resource api/trust-accounts/ab5cf725-506a-4d1f-8291-66a98e50de95/interest-runs.\",\"instance\":\"/api/trust-accounts/ab5cf725-506a-4d1f-8291-66a98e50de95/interest-runs\",\"status\":404,\""
+        },
+        {
+          "method": "GET",
+          "url": "/api/interest-runs/00000000-0000-0000-0000-000000000651",
+          "status": 404,
+          "title": "Not Found",
+          "body": "{\"detail\":\"No static resource api/interest-runs/00000000-0000-0000-0000-000000000651.\",\"instance\":\"/api/interest-runs/00000000-0000-0000-0000-000000000651\",\"status\":404,\"title\":\"Not Found\"}"
+        },
+        {
+          "method": "DELETE",
+          "url": "/api/interest-runs/00000000-0000-0000-0000-000000000651",
+          "status": 404,
+          "title": "Not Found",
+          "body": "{\"detail\":\"No static resource api/interest-runs/00000000-0000-0000-0000-000000000651.\",\"instance\":\"/api/interest-runs/00000000-0000-0000-0000-000000000651\",\"status\":404,\"title\":\"Not Found\"}"
+        },
+        {
+          "method": "POST",
+          "url": "/api/interest-runs/00000000-0000-0000-0000-000000000651/calculate",
+          "status": 404,
+          "title": "Not Found",
+          "body": "{\"detail\":\"No static resource api/interest-runs/00000000-0000-0000-0000-000000000651/calculate.\",\"instance\":\"/api/interest-runs/00000000-0000-0000-0000-000000000651/calculate\",\"status\":404,\"title\":\"No"
+        },
+        {
+          "method": "POST",
+          "url": "/api/interest-runs/00000000-0000-0000-0000-000000000651/approve",
+          "status": 404,
+          "title": "Not Found",
+          "body": "{\"detail\":\"No static resource api/interest-runs/00000000-0000-0000-0000-000000000651/approve.\",\"instance\":\"/api/interest-runs/00000000-0000-0000-0000-000000000651/approve\",\"status\":404,\"title\":\"Not Fo"
+        },
+        {
+          "method": "POST",
+          "url": "/api/interest-runs/00000000-0000-0000-0000-000000000651/post",
+          "status": 404,
+          "title": "Not Found",
+          "body": "{\"detail\":\"No static resource api/interest-runs/00000000-0000-0000-0000-000000000651/post.\",\"instance\":\"/api/interest-runs/00000000-0000-0000-0000-000000000651/post\",\"status\":404,\"title\":\"Not Found\"}"
+        }
+      ],
+      "pass": true
+    },
+    "c": {
+      "status": 200,
+      "typeCount": 44,
+      "hasInterestPosted": false,
+      "hasReconCompleted": true,
+      "pass": true
+    },
+    "d": {
+      "pages": [
+        {
+          "name": "d1-trust-accounting",
+          "url": "http://localhost:3001/org/e2e-test-org/trust-accounting",
+          "status": 200,
+          "errorPage": false,
+          "notFound": false,
+          "interestRunCopy": false,
+          "newPageErrors": 0
+        },
+        {
+          "name": "d2-transactions",
+          "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/transactions",
+          "status": 200,
+          "errorPage": false,
+          "notFound": false,
+          "interestRunCopy": false,
+          "newPageErrors": 0
+        },
+        {
+          "name": "d3-client-ledgers",
+          "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/client-ledgers",
+          "status": 200,
+          "errorPage": false,
+          "notFound": false,
+          "interestRunCopy": false,
+          "newPageErrors": 0
+        },
+        {
+          "name": "d4-reconciliation",
+          "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/reconciliation",
+          "status": 200,
+          "errorPage": false,
+          "notFound": false,
+          "interestRunCopy": false,
+          "newPageErrors": 0
+        },
+        {
+          "name": "d5-investments",
+          "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/investments",
+          "status": 200,
+          "errorPage": false,
+          "notFound": false,
+          "interestRunCopy": false,
+          "newPageErrors": 0
+        },
+        {
+          "name": "d6-other-creditors",
+          "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/other-creditors",
+          "status": 200,
+          "errorPage": false,
+          "notFound": false,
+          "interestRunCopy": false,
+          "newPageErrors": 0
+        },
+        {
+          "name": "d7-notification-settings",
+          "url": "http://localhost:3001/org/e2e-test-org/settings/connections?tab=notifications",
+          "status": 200,
+          "errorPage": false,
+          "notFound": false,
+          "interestRunCopy": false,
+          "newPageErrors": 0
+        },
+        {
+          "name": "d8-retired-interest-route",
+          "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/interest",
+          "status": 404,
+          "errorPage": false,
+          "notFound": true,
+          "interestRunCopy": false,
+          "newPageErrors": 0
+        }
+      ],
+      "pass": true
+    }
+  },
+  "consoleErrorsAfterLoginSettle": 0,
+  "finishedAt": "2026-11-19T06:49:53.912Z",
+  "pass": true
+}

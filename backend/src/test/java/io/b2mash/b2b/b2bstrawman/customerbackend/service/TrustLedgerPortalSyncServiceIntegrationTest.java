@@ -839,36 +839,6 @@ class TrustLedgerPortalSyncServiceIntegrationTest {
   }
 
   // ==========================================================================
-  // Event listener: interest posted (fan-out)
-  // ==========================================================================
-
-  /**
-   * The interest-posted listener re-projects every matter of the account (it lives until 651A).
-   * Phase 92 (646A) removed the {@code INTEREST_CREDIT} type, so the fan-out is shown with a {@code
-   * DEPOSIT} that no per-transaction event projected.
-   */
-  @Test
-  void interestPostedEventReprojectsTheAccount() {
-    UUID txnId =
-        recordApprovedTransaction(
-            "DEPOSIT", new BigDecimal("25.00"), "INT-SYNC-1", "Q1 interest fan-out");
-    assertThat(portalTrustRepo.findTransactions(customerId, matterId, null, null, 50, 0))
-        .noneMatch(t -> t.id().equals(txnId));
-
-    publishInterestPostedEvent();
-
-    var transactions = portalTrustRepo.findTransactions(customerId, matterId, null, null, 50, 0);
-    assertThat(transactions)
-        .anyMatch(
-            t ->
-                t.id().equals(txnId)
-                    && "DEPOSIT".equals(t.transactionType())
-                    && t.amount().compareTo(new BigDecimal("25.00")) == 0);
-    var balance = portalTrustRepo.findBalance(customerId, matterId).orElseThrow();
-    assertThat(balance.currentBalance()).isEqualByComparingTo("25.00");
-  }
-
-  // ==========================================================================
   // Sanitiser: internal-tagged description falls back to synthesised value
   // ==========================================================================
 
@@ -1229,27 +1199,6 @@ class TrustLedgerPortalSyncServiceIntegrationTest {
                                 amount,
                                 LocalDate.of(2026, 4, 5),
                                 customerId,
-                                memberId,
-                                tenantSchema,
-                                ORG_ID))));
-  }
-
-  private void publishInterestPostedEvent() {
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .where(RequestScopes.ORG_ID, ORG_ID)
-        .where(RequestScopes.MEMBER_ID, memberId)
-        .run(
-            () ->
-                tenantTxTemplate.executeWithoutResult(
-                    status ->
-                        eventPublisher.publishEvent(
-                            TrustDomainEvent.InterestPosted.of(
-                                UUID.randomUUID(),
-                                trustAccountId,
-                                LocalDate.of(2026, 1, 1),
-                                LocalDate.of(2026, 3, 31),
-                                new BigDecimal("25.00"),
-                                new BigDecimal("25.00"),
                                 memberId,
                                 tenantSchema,
                                 ORG_ID))));

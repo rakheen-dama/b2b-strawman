@@ -22,6 +22,8 @@
 
 > **Phase 90 rows added 2026-11-13 (644B):** ADR-367..374 (Active, new cluster "Frontend design system" + Reporting & dashboards) and ADR-286 (superseded by ADR-373 for the matter and client detail pages; future entity pages follow ADR-373, `ADR-373:75`; ADR-286's sidebar was never implemented, `ADR-373:14`). Section 15 (`architecture/phase90-ui-modernization.md`, not edited after the phase) has known errata, e.g. its theme first-paint text is superseded by ADR-374; the list is backlog item B-11 in `tasks/phase90-ui-modernization.md` § Closure report C.6 (b). ADR-280..366 other than ADR-286 are still not indexed, so **the counts above were not re-tallied** and describe the 2026-05-10 snapshot only.
 
+> **Phase 92 rows added 2026-11-19 (651D):** ADR-375..384 (Active, Legal vertical cluster — trust books provably right). ADR-234, ADR-235, ADR-362 and ADR-366 moved to Superseded (by ADR-375); ADR-230 and ADR-231 marked amended by ADR-378. Those status lines were already written in the ADR files themselves when ADR-375..384 were accepted (2026-11-16, `architecture/phase92-trust-books-provably-right.md` §16.15), so these rows agree with the files and need no carve-out. ADR-280..366 other than ADR-286, ADR-362 and ADR-366 are still not indexed; **the counts above were not re-tallied**.
+
 ADR numbering starts at 010; the 001–009 range is intentionally unused.
 
 ---
@@ -388,24 +390,32 @@ Canonical: **ADR-185** (terminology) + **ADR-240** (packs) + **ADR-181/189** (pr
 
 ### Legal vertical (trust, tariffs, conflict, etc.)
 
-Canonical trust: **ADR-230..235**. Canonical legal entities: **ADR-247..250**. Hard guard: **ADR-276**.
+Canonical trust: **ADR-375..384** (Phase 92 — statement-driven interest, non-client creditors, the trust equation, derived balances, investments on the books, monthly list lock) on **ADR-230..233** (230 and 231 amended by ADR-378). Canonical legal entities: **ADR-247..250**. Hard guard: **ADR-276**.
 
 | ADR | Title | Note |
 |---|---|---|
 | ADR-209 | court-date-vs-deadline-architecture | |
 | ADR-210 | conflict-search-strategy | |
 | ADR-211 | tariff-rate-integration-approach | |
-| ADR-230 | double-entry-trust-ledger | |
-| ADR-231 | negative-balance-prevention | |
-| ADR-232 | configurable-dual-authorization | |
-| ADR-233 | bank-reconciliation-matching | |
-| ADR-234 | interest-daily-balance-method | Amended by ADR-366 (client share split across matters; one INTEREST_CREDIT per matter) |
-| ADR-235 | statutory-vs-configurable-lpff-share | |
+| ADR-230 | double-entry-trust-ledger | Amended by ADR-378 (cached balances replaced by balances derived from per-row posting effects; status line "Accepted (amended by ADR-378)") |
+| ADR-231 | negative-balance-prevention | Amended by ADR-378 (the per-client row lock stays — `client_ledger_cards` is the lock anchor; the stored-balance CHECK is replaced by a derived sufficiency check under the lock) |
+| ADR-232 | configurable-dual-authorization | Applied by ADR-380 to every approval-required registry type |
+| ADR-233 | bank-reconciliation-matching | Extended by ADR-380 (record from statement; `RECORDED` lines) |
 | ADR-247 | legal-disbursement-sibling-entity | |
 | ADR-248 | matter-closure-distinct-state-with-gates | Extends ADR-111 for legal |
 | ADR-249 | retention-clock-starts-on-closure | |
 | ADR-250 | statement-of-account-template-and-context | |
 | ADR-276 | trust-accounting-hard-guard-export | Phase 71 |
+| ADR-375 | statement-driven-trust-interest | Phase 92. Status line: "Accepted (supersedes ADR-234, ADR-235, ADR-362 and ADR-366)". Interest recorded from the bank statement, never calculated; the Fund's 5 % of section 86(4) interest is a constant |
+| ADR-376 | non-client-trust-creditor-ledger | Phase 92. `trust_creditor_accounts` (Fund interest-and-charges, unidentified deposits); itemised `unidentified_deposits` |
+| ADR-377 | trust-equation-and-where-it-is-enforced | Phase 92. EQ-1..EQ-5 as at a date; row CHECK, test harness, integrity check, completion gate — never a block on posting |
+| ADR-378 | ledger-balances-derived-from-posting-effects | Phase 92. Status line: "Accepted (amends ADR-230 and ADR-231)". `TrustTransactionType` registry; effects on the row written by `TrustPostingService`; contra reversals |
+| ADR-379 | investment-accounting-on-the-books | Phase 92. `INVESTMENT` trust accounts with a basis; paired placement and withdrawal; per-entry section 86(4) interest (gross / 5 % / net) |
+| ADR-380 | statement-line-classification-and-posting | Phase 92. Status line: "Accepted (extends ADR-233; applies ADR-232)". Record from statement; bank-originated types unapproved; unmatch reverses |
+| ADR-381 | bank-charges-and-fund-ledger-debit | Phase 92. Charges debit the Fund ledger with a recoverable flag and VAT; a Fund ledger in debit is allowed and flagged |
+| ADR-382 | monthly-trust-creditor-list-locking | Phase 92. Rule 54.15 list frozen when a month-end reconciliation completes; back-dated postings recorded and flagged against it |
+| ADR-383 | retired-interest-run-data-is-dropped | Phase 92. `interest_runs`, `interest_allocations`, `interest_allocation_lines` (tenant V27) and `lpff_rates` (V28) dropped; `INTEREST_CREDIT` / `INTEREST_LPFF` rows deleted (V16); no archive |
+| ADR-384 | memo-records-for-at-source-sweeps | Phase 92. `trust_interest_memos` carry Rule 54.28 figures that never reach the trust account |
 
 ### Operational (scheduler, reapers, observability, infra)
 
@@ -445,7 +455,11 @@ Canonical trust: **ADR-230..235**. Canonical legal entities: **ADR-247..250**. H
 | ADR-063 | compliance-packs-bundled-seed-data | ADR-240 | Unified pack catalog supersedes earlier seed bundling (in spirit) |
 | ADR-106 | template-clause-placeholder-strategy | ADR-123 | Replaced by Tiptap clauseBlock as source-of-truth |
 | ADR-182 | terminology-override-mechanism | ADR-185 | Body: explicit `Status: Superseded by ADR-185` |
+| ADR-234 | interest-daily-balance-method | ADR-375 | Status line "Superseded by ADR-375" (set at ADR-375's acceptance, 2026-11-16). Interest on section 86(2) and 86(3) money vests wholly in the Fund (s86(5)(a)); Kazi records interest from the bank statement and calculates none. The calculated run was removed in Phase 92 (651C #1810 screens, 651A #1811 engine and tables — tenant V27). Nothing survives. |
+| ADR-235 | statutory-vs-configurable-lpff-share | ADR-375 | Status line "Superseded by ADR-375". The configurable share and `lpff_rates` were removed (651E #1812, tenant V28). Survives: the constant `TrustAccountingConstants.STATUTORY_LPFF_SHARE_PERCENT`, now cited from ADR-379. |
 | ADR-286 | sidebar-layout-entity-detail | ADR-373 | Superseded by ADR-373 for the matter and client detail pages (ADR-373's Status line); future entity pages follow ADR-373 (`ADR-373:75`: "Any future entity page follows this ADR"). ADR-286's 280px sidebar was never implemented (`ADR-373:14`: "HEAD does not render one"). Its own file still reads `**Status**: Accepted` and is not edited (`adr/` is append-only, root `README.md:100`); per the 2026-11-13 carve-out in the preamble, this row governs (Phase 90 644B) |
+| ADR-362 | interest-run-draft-approval-surface | ADR-375 | Status line "Superseded by ADR-375". The run's draft and approval surface went with the run (651C #1810, 651A #1811). Survives: `MyCapabilitiesResponse.memberId` (other consumers). |
+| ADR-366 | interest-credits-allocated-to-matters | ADR-375 | Status line "Superseded by ADR-375". `INTEREST_CREDIT` rows were deleted by tenant V16 (646A #1788) and the allocation tables dropped by V27 (651A #1811). Survives: `idx_trust_txn_project` and the matter-cell queries (the matter debit guard uses them). |
 
 ---
 

@@ -64,7 +64,7 @@ Notable absences from this controller:
 | Settings → General → Vertical Profile section | `frontend/app/[org]/[slug]/settings/general/page.tsx` (`VerticalProfileSection` component) | Profile dropdown + change confirmation. Calls `PATCH /api/settings/vertical-profile`. |
 | Settings → Features | `frontend/app/[org]/[slug]/settings/features/page.tsx` | Card-based toggles for **horizontal** modules only (vertical modules are not shown — they're profile-driven). See phase62 §"Module categories". |
 | `OrgProfileProvider` | `frontend/lib/org-profile.tsx:27` | React context carrying `verticalProfile`, `enabledModules`, `terminologyNamespace`. Built once per request from `GET /api/settings`. |
-| `<ModuleGate moduleId="trust_accounting">` | `frontend/components/module-gate.tsx:11` | Conditionally renders children when the module is in `enabledModules`. Layer #6 of the nine-layer trust defence. |
+| `<ModuleGate module="...">` | `frontend/components/module-gate.tsx:11` | Conditionally renders children when the module is in `enabledModules` (used e.g. for `disbursements`). The trust pages do not use it: they check `getOrgSettings().enabledModules` server-side (nine-layer trust defence, layer #5). |
 | `TerminologyProvider` + `t("invoices")` | `frontend/lib/terminology.tsx:24` + `frontend/lib/terminology-map.ts` | Reads `terminologyNamespace` from `OrgProfileProvider`; renders e.g. "Fee Notes" instead of "Invoices" under `en-ZA-legal`. |
 
 The portal has its own equivalents (`portal/hooks/use-portal-context.ts` — `tenantProfile` is the portal-side projection of `verticalProfile`).
@@ -127,7 +127,7 @@ public TrustTransaction record(...) {
 }
 ```
 
-The duplication (`TrustReconciliationService:43`, `TrustTransactionService:45`, `ClientLedgerService:28`, etc.) is intentional — each is reachable independently, so each one fail-closes (A6 §4). This is **layer #2 of the nine-layer trust defence** (see [`20-cross-cutting/multi-vertical.md`](../20-cross-cutting/multi-vertical.md) for the full layer list).
+The duplication (`TrustReconciliationService:55`, `TrustTransactionService:58`, `ClientLedgerService:45`, etc. — twelve trust services) is intentional — each is reachable independently, so each one fail-closes (A6 §4). This is **layer #2 of the nine-layer trust defence** (see [`20-cross-cutting/multi-vertical.md`](../20-cross-cutting/multi-vertical.md) for the full layer list).
 
 ### 6.4 Reconciliation seeder
 
@@ -205,7 +205,7 @@ Profile JSON files (the seed data this module loads):
 ## 9. Key flows
 
 - **Pack install + vertical onboarding** — [`50-flows/pack-install-and-vertical-onboarding.md`](../50-flows/pack-install-and-vertical-onboarding.md). Covers the five-step provisioning sequence, the seeder pipeline, and post-hoc profile change.
-- **The nine-layer trust defence flow** — lives in [`20-cross-cutting/multi-vertical.md`](../20-cross-cutting/multi-vertical.md) §"Trust accounting nine-layer defense". Not duplicated here. Layers #1 (profile registry), #2 (backend service gate), #5 (`<ModuleGate>` component), #6 (page-level server gate), #8 (portal nav gate), #9 (portal page redirect) all read state owned/projected by this module.
+- **The nine-layer trust defence flow** — lives in [`20-cross-cutting/multi-vertical.md`](../20-cross-cutting/multi-vertical.md) §3 "The worked example: trust accounting defended at nine layers". Not duplicated here. Layers #1 (profile registry), #2 (backend service gate), #5 (page-level server gate), #7 (portal nav gate), #8 (portal page redirect) all read state owned/projected by this module.
 
 ---
 
@@ -220,7 +220,7 @@ Profile JSON files (the seed data this module loads):
 **Concrete failure modes** when a tenant is moved `legal-za → consulting-generic`:
 
 - `trust_accounting` remains in `enabledModules` (because `consulting-generic.enabledModules` is `[]`, nothing gets *removed*). The trust-accounting service entry points still pass their `requireModule(...)` checks. UI is hidden by nav-tree filters that key off `verticalProfile`, but the API is reachable.
-- Trust account rows, client-ledger rows, LPFF interest runs, Section 86 investment records — all remain in the tenant schema. The `verticals/legal/trustaccounting/*` tables exist in every schema regardless of profile (per ADR-191), so the data is queryable.
+- Trust account rows, trust transactions (from which client and non-client ledger balances are derived), Section 86 investment records, monthly lists — all remain in the tenant schema. The `verticals/legal/trustaccounting/*` tables exist in every schema regardless of profile (per ADR-191), so the data is queryable.
 - Legal document templates (`legal-za` template pack) remain installed. Conveyancing clauses remain. FICA checklist templates remain. The `pack_install` table still has rows for them.
 - Terminology namespace switches (`en-ZA-legal` → null/default), so the UI says "Customers" and "Projects" again — but matters that were created with `Project.matter_*` legal-only column data still carry that data.
 

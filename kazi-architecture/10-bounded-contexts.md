@@ -28,7 +28,7 @@ DOMAIN CORE
 MONEY
 ├── invoicing                       Invoice, lines, payments, tax, batch (BillingRun)
 ├── retainers                       agreements, periods, consumption, rollover
-└── trust-accounting   [vertical]   GENERAL/INVESTMENT/SECTION_86, dual-approval, LPFF
+└── trust-accounting   [vertical]   GENERAL/INVESTMENT/SECTION_86, dual-approval, trust equation
 
 OPERATIONS
 ├── audit                           append-only event log + DSAR data-protection ops
@@ -203,13 +203,13 @@ VERTICAL OVERLAYS  (thin pointers; detail in 60-verticals/)
 
 ### trust-accounting  *(legal vertical)*
 
-- **Purpose:** Legal-only third-party trust money: GENERAL/INVESTMENT/SECTION_86 accounts, dual approval, LPFF interest runs, reconciliation.
-- **Owns:** `TrustAccount`, `TrustTransaction`, client ledgers, LPFF interest runs, Section 86 investments (entities under `verticals/legal/trustaccounting/`); REST `/api/trust/*`. Frontend `/trust-accounting/*` (6 sub-routes), `/settings/trust-accounting`.
+- **Purpose:** Legal-only trust money: section 86(2) trust banking accounts and section 86(3)/86(4) investment accounts, dual approval, a cashbook that mirrors the bank statement (interest recorded from statement lines, never calculated), derived client and non-client creditor balances, monthly reconciliation with the Rule 54.15 list lock (Phase 92).
+- **Owns:** `TrustAccount`, `TrustTransaction` (+ the `TrustTransactionType` registry), client ledgers (derived), `TrustCreditorAccount`, `UnidentifiedDeposit`, `TrustInterestMemo`, `TrustInvestment` + `TrustInvestmentInterest`, `TrustReconciliation`, `TrustMonthlyList` (entities under `verticals/legal/trustaccounting/`); REST `/api/trust-accounts/*`, `/api/trust-transactions/*`, `/api/trust-transaction-types`, `/api/bank-statements/*`, `/api/bank-statement-lines/*`, `/api/trust-reconciliations/*`, `/api/trust-investments/*`, `/api/trust-investment-interest/*`, `/api/trust-creditor-accounts/*`, `/api/unidentified-deposits/*`, `/api/trust-integrity`, `/api/trust-monthly-lists/*`. Frontend `/trust-accounting/*` (overview + 6 sub-routes), Settings › Trust accounting tab.
 - **Depends on:** `invoicing` (trust-flagged invoices), `customer-lifecycle`, `documents-templates` (statements), `audit` (heavy use), `identity-access` (`MANAGE_TRUST`/`APPROVE_TRUST_PAYMENT`/`VIEW_TRUST` capabilities).
 - **Depended on by:** `customer-portal` (per-matter ledger), `accounting-sync` (TrustBoundaryGuard cross-checks).
-- **Cross-cutting touchpoints:** Module-guarded at every service entry (`TrustAccountService.java:26`). Hard guard `TrustBoundaryGuard` blocks trust-flagged invoices from being pushed to Xero (ADR-276) — fail-closed; no LLM, no human bypass.
+- **Cross-cutting touchpoints:** Module-guarded at every service entry (twelve service classes, e.g. `TrustAccountService.java:35`). Hard guard `TrustBoundaryGuard` blocks trust-flagged invoices from being pushed to Xero (ADR-276) — fail-closed; no LLM, no human bypass.
 - **Vertical relevance:** Vertical-specific (legal-za only). Nine-layer module enforcement (A6 §4).
-- **Active ADRs:** ADR-276 (trust hard-guard), Section 86 advisory.
+- **Active ADRs:** ADR-375..384 (Phase 92 trust books), ADR-230..233 (230/231 amended by ADR-378), ADR-276 (trust hard-guard).
 - **Module page:** `30-modules/trust-accounting.md`. See also `60-verticals/legal-za.md`.
 
 ### audit
@@ -487,7 +487,7 @@ Kazi's vertical strategy is **fork-the-template, not fork-the-codebase**. One JA
 
 **Three kinds of contexts under verticalisation.** *Terminology-overlaid* contexts are universally present but read different labels: customers, projects, tasks, invoices, expenses, retainers, proposals — these have a single backend table everywhere, but the frontend's `TerminologyProvider` (seeded from `terminologyNamespace`) renders "Customer" or "Client" or "Matter" or "Engagement" depending on the profile. *Conditionally-present* contexts are gated by enabledModules: court-calendar, conflict-check, tariffs, deadlines, retainers, resource-planning, bulk-billing, automation-builder. Their backend services self-defend at every public method via `verticalModuleGuard.requireModule(slug)`. *Vertical-specific* contexts only exist in the legal codebase: trust-accounting (with its nine-layer enforcement), tariffs, prescription tracking. They live under `verticals/legal/`.
 
-**The trust-accounting nine-layer defense** is the canonical illustration: profile registry (`legal-za.json` is the only one with `"trust_accounting"` in enabledModules) → backend service guards on every method → invoice-export hard-guard `TrustBoundaryGuard` → frontend nav-item gate → frontend page-level server gate → frontend `<ModuleGate>` component → frontend capability gate (`VIEW_TRUST`/`MANAGE_TRUST`/`APPROVE_TRUST_PAYMENT`) → portal nav gate (profile + module) → portal page redirect. The load-bearing layers are #2 (backend service gate) and #3 (the export hard-guard, which is fail-closed Java code with no LLM/human bypass per ADR-276).
+**The trust-accounting nine-layer defense** is the canonical illustration: profile registry (`legal-za.json` is the only one with `"trust_accounting"` in enabledModules) → backend service guards on every controller-reached method → invoice-export hard-guard `TrustBoundaryGuard` → frontend nav-item gate (`requiredModule` + `requiredCapability`) → frontend page-level server gate (`getOrgSettings().enabledModules`) → frontend capability gate (`VIEW_TRUST` checked server-side; owners and admins hold `VIEW_TRUST`/`MANAGE_TRUST`/`APPROVE_TRUST_PAYMENT` by default) → portal nav gate (module only; the profile key was dropped in 617A) → portal page redirect → portal data endpoints (404 when the module is off). See `20-cross-cutting/multi-vertical.md` §3 for the anchored list. The load-bearing layers are #2 (backend service gate) and #3 (the export hard-guard, which is fail-closed Java code with no LLM/human bypass per ADR-276).
 
 **Known fragility.** `VerticalProfileReconciliationSeeder.reconcile(...)` only *adds* modules; switching a tenant from `legal-za` back to `consulting-generic` does not uninstall legal packs nor disable trust-accounting services — orphaned legal templates and trust accounts remain visible (but module-gated, so unreachable from UI). Profile change is therefore one-way-safe but not reversible-clean. Tracked as a documented gap in A6 §4.
 

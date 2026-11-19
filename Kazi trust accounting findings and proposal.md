@@ -2,6 +2,96 @@
 
 Nov 16, 2026 · @Rakheen Dama
 
+## Status (2026-11-19, Phase 92 after slice 651E)
+
+The interest run is gone, and the trust books now work as Proposed model describes, with the differences listed under "Model as built" below. Everything after this section is the 2026-11-16 record that started Phase 92. It is not edited: its file paths, line numbers and "What Kazi does today" describe code that has since been removed.
+
+- **Current design:** [`kazi-architecture/30-modules/trust-accounting.md`](kazi-architecture/30-modules/trust-accounting.md).
+- **Full design:** [`architecture/phase92-trust-books-provably-right.md`](architecture/phase92-trust-books-provably-right.md) and ADR-375 to ADR-384.
+- **Rulings taken during the build:** [`tasks/phase92-decisions.md`](tasks/phase92-decisions.md).
+- **Still to come in Phase 92:**
+  - 651B: the scenario amendments.
+  - 652A to 652D and 652G: wizard and import defects, each built only if its failing test reproduces.
+  - 652E: one balanced month observed in the browser on a fresh stack.
+  - 652F: the closure report.
+
+**Decisions asked for in the Summary**
+
+| # | Decision | Outcome |
+| --- | --- | --- |
+| 1 | Disable interest-run posting now | Done, and then removed. Posting and approval were refused from 2026-11-16 (645A, PR #1786). The run was then removed in three PRs: the screens and LPFF-rate settings (651C, PR #1810); the engine, its endpoints and its three tables (651A, PR #1811); the rate table and its endpoints (651E, PR #1812). Nothing is kept as an estimate (founder decision 6). |
+| 2 | Approve the statement-driven model | Approved 2026-11-16 and built as Phase 92 (ADR-375 to ADR-384). |
+| 3 | Send the open questions to an attorney or trust auditor | Not sent before design. The legal basis is the Fable legal advisor's research plus Perplexity, signed off by the founder (decision 4). The open points are carried as assumptions A1 to A6 and open legal points OL-1 to OL-9, each with a working assumption the build proceeds on (architecture §16.14). See "Open questions" below. |
+| 4 | Remediate posted interest runs | Not needed: no real tenant had posted a run (decision 5). Migration V16 (646A, PR #1788) deleted every interest credit and Fund-share posting, and their reversals. V27 and V28 (651A, 651E) dropped the run's tables and the rates (ADR-383). A written correction procedure for any future case is due in the Phase 92 closure report (652F). |
+
+**Discrepancy register**
+
+| # | Status | How it was closed |
+| --- | --- | --- |
+| D1 | Closed | The run that credited clients is removed (645A, 651C, 651A). Interest on a general or firm-initiative account is recorded only as money held for the Fund (`FUND_INTEREST`, 647A, PR #1794). Clients earn interest only on their own s86(4) investments. |
+| D2 | Closed | Interest is recorded from the bank statement line the firm classifies, dated the line's date; nothing is calculated (647A, PR #1794; ADR-375, ADR-380). Interest swept before it reaches the account is kept as a monthly memo for Rule 54.28 (650B, PR #1808; ADR-384). |
+| D3 | Closed | No share is configurable. The LPFF-rate table and settings are gone (651C, 651E). The Fund's 5% of s86(4) interest is the code constant `STATUTORY_LPFF_SHARE_PERCENT` (ADR-379). |
+| D4 | Closed | s86(4) interest is recorded per investment, from what the bank credited: gross, the Fund's 5% and the client's 95% (648B, PR #1801). A client's general balance is never touched by it. |
+| D5 | Closed | Each trust account has a Fund interest-and-charges ledger (646B, PR #1790). Interest received and the sweep to the Fund post into and out of it (647A). |
+| D6 | Closed | The three-way test became the trust equation as at a date (646C, PR #1792): cashbook = client ledgers + client investment creditors + Fund ledger + unidentified deposits + other non-client creditors + inter-account term. A reconciliation cannot complete while it fails (649C, PR #1804). Completing a month freezes the Rule 54.15 list with the Fund as its own creditor line (650A, PR #1806). |
+| D7 | Closed | The interest credit postings are deleted (V16), and the type no longer exists. Statements of account, the client trust statement and the portal show a client only interest on their own s86(4) investments (648D, PR #1802; 648F, PR #1803). |
+| D8 | Closed | The sweep is recorded from the bank's own statement line, linked to it (`FUND_SWEEP`, 647A). The Section 35 pack lists each sweep with its statement line (650C, PR #1809). |
+| D9 | Closed | An investment account carries its basis, and its section (s86(2), (3) or (4)) is derived from type and basis (648C, PR #1798). Fund interest cannot be recorded on an s86(4) account. |
+| D10 | Closed | A bank charge is recorded from its line against the Fund ledger, with a recoverable flag and VAT. A refund from the business account is recorded the same way (647A; ADR-381). Non-recoverable charges not yet refunded raise a warning (649C). Open point OL-3 (VAT on recoverable charges) stands. |
+| D11 | Closed | ADR-375 supersedes ADR-234, ADR-235, ADR-362 and ADR-366. ADR-378 amends ADR-230 and ADR-231. Status lines were set 2026-11-16, and the index was updated in 651D. |
+| D12 | Closed | Investments stay on the books in their own trust accounts (648A, PR #1799). The hand-typed running interest total is dropped and replaced by per-credit entries (648B). Withdrawal returns capital plus net interest. There is no overlap with a run, because the run no longer exists. |
+
+**Other trust findings this cycle**
+
+| Finding | Status now |
+| --- | --- |
+| Cashbook R 25,52 below client ledgers after an interest run | Closed. The postings were deleted by V16 (646A), and the run was removed. On a lifecycle stack the screen balances equal the derived sums, with a difference of 0,00 (646A evidence). |
+| Match, exclude and unmatch ignore a failed recalculation | Open. Slice 652A, built only if its test reproduces the defect. |
+| Re-upload or a period change leaves a draft orphaned | Open. Slice 652C, conditional. Related ruling F-646C-1: a second statement with the same end date is refused unless it replaces the first. |
+| The manual-match pane lists only APPROVED transactions | Open. Slice 652B, conditional. Frontend only: the backend already accepts recorded transactions. |
+| The two statement builders' closed-primary-account bug | Open. Slice 652D, conditional. |
+| A genuinely balanced reconciliation proven in the browser | Open until 652E: one month, three accounts, every figure worked out in advance, observed on a fresh stack. |
+
+**Open questions**
+
+| Question | Where it stands |
+| --- | --- |
+| How banks show s86(2) interest and the sweep | Not answered, but the design needs no answer. Kazi records each line as the statement shows it (ADR-380). Interest swept at source is kept as a memo (ADR-384). s86(4) interest may arrive gross or net (assumption A2). |
+| The Fund as its own creditor line | Built as the "Legal Practitioners' Fidelity Fund — interest and charges" line on the reconciliation and on the Rule 54.15 list. Auditor acceptance is not confirmed. Assumption A4 is one Fund ledger per trust account, carrying both interest and charges. |
+| Recoverable bank charges | Built as above (D10). Open: OL-3 (VAT on recoverable charges) and OL-9 (no set-off of charges across accounts). |
+| s86(4) timing and IT3(b) | Each bank credit is an entry when it is recorded. Gross, 5% and net figures and the client's tax reference are kept, not filed (assumption A3). The rounding of the 5% is open point OL-5. |
+| Remediation of posted runs | Not needed (decision 5, above). |
+| Whether Rule 54.14.16.5 survived the 2023 amendment | Carried as assumption A6. It affects copy only. |
+| The IRBA s86(5) letter and the 2018 LPFF notice | Still unread. |
+
+**Model as built: differences from Proposed model**
+
+- **Type names.** `LPFF_INTEREST_RECEIVED` and `LPFF_INTEREST_PAID` became `FUND_INTEREST` and `FUND_SWEEP`, because type names are limited to 20 characters. s86(4) interest posts as `INV_INTEREST` on the client's investment ledger. When the bank credits gross, the Fund's 5% posts as `FUND_INV_SHARE`. `INTEREST_CREDIT` and `INTEREST_LPFF` are retired. There are 25 transaction types in all.
+- **Fund ledger in debit.** "The LPFF ledger balance is never negative" was not adopted. A Fund ledger in debit is recorded as the bank shows it and flagged, never blocked (founder decision 9, ADR-381).
+- **Enforcement.** The invariant is checked, not enforced on posting. It is held at four points: a row constraint, a test harness, the integrity check on the trust dashboard, and the gate on completing a reconciliation. The trust equation and its integrity checks never block recording a transaction (decision 7, ADR-377). Other rules still refuse a posting, separately, such as the client sufficiency check and the date rules that refuse a future-dated fee transfer, reversal or investment entry.
+- **Unidentified deposits.** Money whose owner is unknown has its own creditor ledger, itemised per bank credit. Each item is later allocated to a client and matter, or paid to the Fund, both with approval (ADR-376).
+- **Investments.** Invested money stays on the books in an investment trust account (ADR-379).
+- **Balances and reversals.** Client ledger balances are no longer stored. Every balance is a sum over posted entries as at a date. A reversal is a contra entry on its own date, so history is never rewritten (ADR-378).
+
+**Follow-ups ruled for after the phase** (one fix per PR; full text in [`tasks/phase92-decisions.md`](tasks/phase92-decisions.md))
+
+| ID | Follow-up |
+| --- | --- |
+| FU-1, FU-9 | At approval, check that the cashbook covers every firm-initiated outflow, under an account lock. Flag a cashbook in debit. |
+| FU-2 | Gate reports that show trust figures on the trust-view capability. |
+| FU-3 | Statements read general and invested balances in one consistent read. |
+| FU-4 | The firm's client-ledger-statement report keeps reversal reasons off client surfaces. |
+| FU-5 | A back-dated deposit reversal checks the balance as at its own date as well as today. |
+| FU-6 | Refuse duplicate same-end-date statements and statement lines dated after today. |
+| FU-7 | Relabel the Statement of Account line "Trust balance held in the firm's trust account". |
+| FU-8 | Raise the backend CI test heap. |
+| FU-10 | Order "after the lock" by database time. |
+| FU-11 | Fix the lock order when allocating an unidentified deposit. |
+| FU-12 | Report-generated and report-exported audit rows are lost. |
+| FU-13 | The receipts and payments report as-at reversal rule. |
+| FU-14 | Postings dated before a trust account's opened date. |
+| FU-15 | The merge-gate hook fails on PRs with more than 300 files. |
+
 ## Summary
 
 Kazi's trust interest run is wrong in law. It credits clients with interest that belongs to the Legal Practitioners Fidelity Fund (LPFF), and the trust three-way reconciliation cannot balance after any interest run. The Fable legal advisor recommends treating interest-run posting as a release blocker for design partners.

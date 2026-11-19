@@ -2,7 +2,8 @@
 
 Not absorbed under `tasks/phase92-decisions.md` › 652A D-1 (one fix per PR, root CLAUDE.md §7; precedent 650D / 650A F-12),
 except CF-1 and CF-5, absorbed by 652A D-6 (CodeRabbit round 1 on PR #1815).
-Line numbers are on the 652A branch head unless marked "main".
+Line numbers are on the 652A branch head 7c9d1e8b0 unless marked "main" or "pre-D-6" (the code as it stood
+at 959e323dc, before D-6 moved it; kept for the CF-1 / CF-5 history).
 
 ## CF-1 — no `wizardGeneration` guard in `handleMatch` / `handleExclude` / `handleUnmatch`
 
@@ -12,20 +13,19 @@ the action and drops every post-await write once it has moved. Red→green: the 
 (`red-before-d6.txt`, `green-after.txt` › D-6). The helper fold (reviewer B) was not done: the
 unmatch branch now diverges (CF-5), so one shared helper would not be clearly simpler.
 
-- Source: `qa_cycle/evidence/phase92/647A/found.md:91-98`; code `frontend/app/(app)/org/[slug]/trust-accounting/reconciliation/new/page.tsx:286-296` (match), `:319-329` (exclude), `:367-377` (unmatch).
-- Defect: each handler awaits `calculateReconciliation(reconciliation.id)` and then calls `setReconciliation(...)` / now also `setFiguresStale(...)` / `setError(...)` with no generation check, so a Back-and-reset while the recalculation is in flight restores the old reconciliation (or its banner / stale marker) into the new wizard. `handleRecord` (647A) has the guard (`:407-410`).
-- Not absorbed: D-1 (re-assigned out of 652A by the orchestrator scope ruling).
+- Source: `qa_cycle/evidence/phase92/647A/found.md:91-98`; code `frontend/app/(app)/org/[slug]/trust-accounting/reconciliation/new/page.tsx` — pre-D-6 `:286-296` (match), `:319-329` (exclude), `:367-377` (unmatch); at head the handlers are `:265-309`, `:311-345`, `:347-405`, guards at `:271/:291`, `:317/:327`, `:353/:379`.
+- Defect: each handler awaits `calculateReconciliation(reconciliation.id)` and then calls `setReconciliation(...)` / now also `setFiguresStale(...)` / `setError(...)` with no generation check, so a Back-and-reset while the recalculation is in flight restores the old reconciliation (or its banner / stale marker) into the new wizard. `handleRecord` (647A) has the guard (pre-D-6 `:407-410`; head `:413`, `:424`).
+- ~~Not absorbed: D-1~~ — superseded by D-6 (absorbed).
 - Added by the PR #1815 review (reviewer B): 652A's new failure branches make the race wider. A
   Back-and-reset during a recalculation can now also restore a stale banner and out-of-date marker
   into the new wizard, not only the old reconciliation. This strengthens the case for the guard.
-  When CF-1 is fixed, fold the four copies of the success/failure branch (match `:289-295`,
-  exclude `:322-328`, unmatch `:370-376`, record `:411-417`) into one helper that takes the
-  generation and the action's verb (reviewer B Medium).
-- Suggested owner: orchestrator / follow-up slice.
+  Reviewer B suggested folding the four success/failure branches into one helper when CF-1 is
+  fixed; superseded by D-6 (not folded — see Status above).
+- Owner: 652A (done).
 
 ## CF-2 — step-4 "Unmatched Trust Transactions" lists transactions dated after the period end
 
-- Source: `qa_cycle/evidence/phase92/647A/gates/found-obs.md:9-13` (O-2, "Suggested owner: 652A"); code `page.tsx:52` (`fetchUnmatchedTransactions`, no date bound), called at `:226` (`handleStartReview`), `:363` (`handleUnmatch`), `:447` (`handleComplete`).
+- Source: `qa_cycle/evidence/phase92/647A/gates/found-obs.md:9-13` (O-2, "Suggested owner: 652A"); code `page.tsx:52` (`fetchUnmatchedTransactions`, no date bound), called at `:226` (`handleStartReview`), `:373` (`handleUnmatch`), `:464` (`handleComplete`).
 - Defect: APPROVED unlinked transactions dated after the period end are offered for matching. Seen again by the 652A scout: the R1 250 payment dated 19 Nov was offered against a 16 Nov period end (`repro-browser.md`). Server-side figures are unaffected (calculated as at the period end).
 - Not absorbed: D-1.
 - Suggested owner: 652B re-spec (652B already edits `fetchUnmatchedTransactions` for RECORDED + APPROVED) or a follow-up.
@@ -39,7 +39,7 @@ unmatch branch now diverges (CF-5), so one shared helper would not be clearly si
 
 ## CF-4 — `handleComplete`'s refusal path ignores a failed recalculation
 
-- Source: `page.tsx:450-453` (main `:414-416`): `if (calcResult.success && calcResult.data) setReconciliation(...)` with no `else`; also the `calculateReconciliation` call inside its `Promise.all` (`:444-448`) has no `.catch`, so a rejected request goes to the outer catch.
+- Source: `page.tsx:467-470` (main `:414-416`): `if (calcResult.success && calcResult.data) setReconciliation(...)` with no `else`; also the `calculateReconciliation` call inside its `Promise.all` (`:461-465`) has no `.catch`, so a rejected request goes to the outer catch.
 - Defect: after a Complete refusal, if the refreshing recalculation also fails, the refusal banner is shown but the summary's figures are not marked stale. 652A only clears the marker there on success.
 - Not absorbed: D-1 (scout observation).
 - Suggested owner: follow-up.
@@ -53,14 +53,27 @@ transactions could not be refreshed and may be out of date." Red→green: `still
 an unmatch when the transactions cannot be re-read`, `marks the figures stale after an unmatch when
 neither the re-read nor the recalculation works`.
 
-- Source: PR #1815 review (reviewer A Medium); code `page.tsx:361-364` (main `:331-334`):
+- Source: PR #1815 review (reviewer A Medium); code pre-D-6 `page.tsx:361-364` (main `:331-334`; head: `Promise.all` at `:370-378`):
   `setUnmatchedTransactions(await fetchUnmatchedTransactions(selectedAccountId))` runs after the saved
-  unmatch and before the recalculation (`:366-377`), with no catch of its own.
-- Defect: if that read rejects, the outer catch (`:381-383`) shows a bare "Failed to fetch". No
+  unmatch and before the recalculation (pre-D-6 `:366-377`), with no catch of its own.
+- Defect: if that read rejects, the outer catch (pre-D-6 `:381-383`) shows a bare "Failed to fetch". No
   recalculation runs and the out-of-date marker is not set, so the summary can show stale figures
   as current after a saved unmatch.
-- Pre-existing on main (same order, no catch). Not absorbed: D-1 (one fix per PR).
-- Suggested owner: follow-up, with CF-1 (same handler family).
+- Pre-existing on main (same order, no catch). ~~Not absorbed: D-1~~ — superseded by D-6 (absorbed).
+- Owner: 652A (done).
+
+## CF-6 — the three handlers' `catch` blocks are not generation-guarded
+
+- Source: PR #1815 delta review at 7c9d1e8b0 (reviewer A Medium; reviewer B note). Code `page.tsx:303-305`
+  (match), `:339-341` (exclude), `:398-400` (unmatch): `setError(err.message …)` runs without the
+  `wizardGeneration` check.
+- Defect: only a rejected ACTION (`manualMatch` / `excludeLine` / `unmatch` itself — the calculate and
+  re-read rejections are caught in place) reaches these blocks. If it rejects after a Back-and-reset,
+  the new wizard shows the old wizard's "Failed to fetch" banner. Figures and the reconciliation are not
+  affected. `handleComplete`'s catch (`:483`) has the same gap (consistent with existing code).
+- Not absorbed: banner-only, network-rejection-only path; one-line fix per handler. Orchestrator ruling
+  652A D-7.
+- Suggested owner: follow-up, with CF-4 (same file).
 
 ## Observations (no action in 652A)
 

@@ -210,6 +210,31 @@ class BankStatementParserTest {
     assertThat(result.lines().getLast().description()).isEqualTo("Another Valid");
   }
 
+  // --- Zero-amount balance rows (Phase 92 / 652G, §16.9.3) ---
+
+  /**
+   * A bank export's "Opening Balance" row (amount 0,00, running balance = the opening balance) is
+   * not a movement: imported as a line it can be neither matched nor recorded, and gate G4 would
+   * hold the reconciliation on it. The statement's opening and closing balance still come from the
+   * running-balance column.
+   */
+  @Test
+  void zeroAmountBalanceRows_areNotImportedAsLines() throws IOException {
+    var result = standardBankParser.parse(fixtureStream("standard-bank-sample.csv"));
+
+    assertThat(result.lines())
+        .noneMatch(
+            line ->
+                line.description().equalsIgnoreCase("Opening Balance")
+                    && line.amount().signum() == 0);
+    assertThat(result.lines()).hasSize(10);
+    assertThat(result.lines().getFirst().description()).isEqualTo("Deposit - Van der Merwe Matter");
+    assertThat(result.openingBalance()).isEqualByComparingTo(new BigDecimal("200000.00"));
+    assertThat(result.closingBalance()).isEqualByComparingTo(new BigDecimal("282500.00"));
+    assertThat(result.periodStart()).isEqualTo(LocalDate.of(2026, 3, 1));
+    assertThat(result.periodEnd()).isEqualTo(LocalDate.of(2026, 3, 31));
+  }
+
   // --- Parser suggestions (Phase 92 / 647C, §16.3.5 keyword table, ADR-380) ---
 
   private static final StatementLineClassification FUND_INTEREST =

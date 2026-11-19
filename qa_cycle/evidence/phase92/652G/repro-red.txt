@@ -1,0 +1,69 @@
+652G reproduce-first run — RED (hypothesis reproduced)
+Date: 2026-11-19 18:55 SAST
+main SHA: 1621e4cfe (worktree branch epic-652G/zero-amount-balance-rows, production code unchanged)
+Command (backend/): ./mvnw spotless:apply && ./mvnw test -Dtest="BankStatementParserTest" -q
+Exit code: 1
+
+=== Test source (backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/reconciliation/parser/BankStatementParserTest.java, lines 213-237) ===
+  // --- Zero-amount balance rows (Phase 92 / 652G, §16.9.3) ---
+
+  /**
+   * A bank export's "Opening Balance" row (amount 0,00, running balance = the opening balance) is
+   * not a movement: imported as a line it can be neither matched nor recorded, and gate G4 would
+   * hold the reconciliation on it. The statement's opening and closing balance still come from the
+   * running-balance column.
+   */
+  @Test
+  void zeroAmountBalanceRows_areNotImportedAsLines() throws IOException {
+    var result = standardBankParser.parse(fixtureStream("standard-bank-sample.csv"));
+
+    assertThat(result.lines())
+        .noneMatch(
+            line ->
+                line.description().equalsIgnoreCase("Opening Balance")
+                    && line.amount().signum() == 0);
+    assertThat(result.lines()).hasSize(10);
+    assertThat(result.lines().getFirst().description()).isEqualTo("Deposit - Van der Merwe Matter");
+    assertThat(result.openingBalance()).isEqualByComparingTo(new BigDecimal("200000.00"));
+    assertThat(result.closingBalance()).isEqualByComparingTo(new BigDecimal("282500.00"));
+    assertThat(result.periodStart()).isEqualTo(LocalDate.of(2026, 3, 1));
+    assertThat(result.periodEnd()).isEqualTo(LocalDate.of(2026, 3, 31));
+  }
+
+
+=== Fixture backend/src/test/resources/fixtures/trust/standard-bank-sample.csv ===
+     1	Standard Bank Trust Account - Acc 012345678
+     2	Date,Description,Reference,Amount,Balance
+     3	2026-03-01,Opening Balance,,0.00,200000.00
+     4	2026-03-04,Deposit - Van der Merwe Matter,VDM-2026-001,35000.00,235000.00
+     5	2026-03-07,Sheriff fees payment,SHF-2026-088,-6200.00,228800.00
+     6	2026-03-11,Transfer from Advocate Moosa,ADV-MO-100,15000.00,243800.00
+     7	2026-03-14,Municipal rates payment,MUN-RATES-22,-4800.00,239000.00
+     8	2026-03-19,Client deposit - Botha Trust,BT-DEP-003,52000.00,291000.00
+     9	2026-03-23,Disbursement - expert witness,DIS-EXP-007,-8500.00,282500.00
+    10	2026-03-28,Interest credit,INT-2026-03,218.45,282718.45
+    11	2026-03-31,Monthly service fee,SVC-MAR-26,-125.00,282593.45
+    12	2026-03-31,LPFF interest sweep,LPFF-2026-03,-218.45,282375.00
+    13	2026-03-31,Service fee refund,SVC-REF-26,125.00,282500.00
+
+=== Relevant output (/tmp/mvn-epic-652G-repro.log) ===
+[ERROR] Tests run: 45, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 0.179 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.parser.BankStatementParserTest
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.parser.BankStatementParserTest.zeroAmountBalanceRows_areNotImportedAsLines -- Time elapsed: 0.011 s <<< FAILURE!
+[ERROR] Failures: 
+[ERROR] Tests run: 45, Failures: 1, Errors: 0, Skipped: 0
+java.lang.AssertionError: 
+
+Expecting no elements of:
+  [ParsedStatementLine[date=2026-03-01, description=Opening Balance, reference=null, amount=0.00, runningBalance=200000.00, suggestedClassification=null],
+    ParsedStatementLine[date=2026-03-04, description=Deposit - Van der Merwe Matter, reference=VDM-2026-001, amount=35000.00, runningBalance=235000.00, suggestedClassification=null],
+    ParsedStatementLine[date=2026-03-07, description=Sheriff fees payment, reference=SHF-2026-088, amount=-6200.00, runningBalance=228800.00, suggestedClassification=BANK_CHARGE],
+    ParsedStatementLine[date=2026-03-11, description=Transfer from Advocate Moosa, reference=ADV-MO-100, amount=15000.00, runningBalance=243800.00, suggestedClassification=null],
+    ParsedStatementLine[date=2026-03-14, description=Municipal rates payment, reference=MUN-RATES-22, amount=-4800.00, runningBalance=239000.00, suggestedClassification=null],
+    ParsedStatementLine[date=2026-03-19, description=Client deposit - Botha Trust, reference=BT-DEP-003, amount=52000.00, runningBalance=291000.00, suggestedClassification=null],
+    ParsedStatementLine[date=2026-03-23, description=Disbursement - expert witness, reference=DIS-EXP-007, amount=-8500.00, runningBalance=282500.00, suggestedClassification=null],
+    ParsedStatementLine[date=2026-03-28, description=Interest credit, reference=INT-2026-03, amount=218.45, runningBalance=282718.45, suggestedClassification=FUND_INTEREST],
+    ParsedStatementLine[date=2026-03-31, description=Monthly service fee, reference=SVC-MAR-26, amount=-125.00, runningBalance=282593.45, suggestedClassification=BANK_CHARGE],
+    ParsedStatementLine[date=2026-03-31, description=LPFF interest sweep, reference=LPFF-2026-03, amount=-218.45, runningBalance=282375.00, suggestedClassification=FUND_SWEEP],
+    ParsedStatementLine[date=2026-03-31, description=Service fee refund, reference=SVC-REF-26, amount=125.00, runningBalance=282500.00, suggestedClassification=CHARGE_REFUND]]
+
+Result: RED. 44/45 other tests green; the only failure is the new test. The Opening Balance row (2026-03-01, amount 0.00, running balance 200000.00) is parsed as line[0] — CsvBankStatementParser.parseLine (lines 184-217 on main) accepts it.

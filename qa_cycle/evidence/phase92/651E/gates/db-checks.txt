@@ -1,0 +1,17 @@
+       schema        | lpff_rates | interest_runs | investments 
+---------------------+------------+---------------+-------------
+ tenant_7d218705360b |            |               |           2
+(1 row)
+
+ version |         description          | success |        installed_on        
+---------+------------------------------+---------+----------------------------
+ 28      | phase92 drop lpff rates      | t       | 2026-11-19 08:03:09.090176
+ 27      | phase92 drop interest run    | t       | 2026-11-19 08:03:09.076895
+ 26      | phase92 trust interest memos | t       | 2026-11-19 08:03:09.06683
+(3 rows)
+
+ lpff_rate_audit_rows 
+----------------------
+                    0
+(1 row)
+

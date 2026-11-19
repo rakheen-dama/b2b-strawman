@@ -1,0 +1,217 @@
+{
+  "startedAt": "2026-11-19T08:06:56.137Z",
+  "consoleErrors": [],
+  "pageErrors": [],
+  "items": {
+    "b": {
+      "accountId": "b4b324a8-590d-4921-89d5-45ef9b5fc858",
+      "accountCount": 3,
+      "accounts": [
+        {
+          "id": "b4b324a8-590d-4921-89d5-45ef9b5fc858",
+          "name": "Mathebula & Partners Trust Account",
+          "type": "GENERAL"
+        },
+        {
+          "id": "81546230-5094-4430-86d8-a845c13c4d60",
+          "name": "Standard Bank Section 86(3) Investments",
+          "type": "INVESTMENT"
+        },
+        {
+          "id": "220443df-20a3-46d3-b246-0a4dd0c6f78f",
+          "name": "Nedbank Section 86(4) Investments",
+          "type": "INVESTMENT"
+        }
+      ],
+      "kept": [
+        {
+          "method": "GET",
+          "url": "/api/trust-accounts",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "url": "/api/trust-accounts/b4b324a8-590d-4921-89d5-45ef9b5fc858",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "url": "/api/trust-integrity",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "url": "/api/report-definitions/investment-register",
+          "status": 200
+        }
+      ],
+      "pass": true
+    },
+    "a": {
+      "removed": [
+        {
+          "method": "GET",
+          "url": "/api/trust-accounts/b4b324a8-590d-4921-89d5-45ef9b5fc858/lpff-rates",
+          "status": 404,
+          "title": "Not Found",
+          "detail": "No static resource api/trust-accounts/b4b324a8-590d-4921-89d5-45ef9b5fc858/lpff-rates."
+        },
+        {
+          "method": "POST",
+          "url": "/api/trust-accounts/b4b324a8-590d-4921-89d5-45ef9b5fc858/lpff-rates",
+          "status": 404,
+          "title": "Not Found",
+          "detail": "No static resource api/trust-accounts/b4b324a8-590d-4921-89d5-45ef9b5fc858/lpff-rates."
+        }
+      ],
+      "pass": true
+    },
+    "c": {
+      "registers": [
+        {
+          "accountId": "b4b324a8-590d-4921-89d5-45ef9b5fc858",
+          "status": 200,
+          "rowCount": 2,
+          "rowsWithKey": 0,
+          "sampleKeys": [
+            "accountNumber",
+            "balance",
+            "basisLabel",
+            "clientName",
+            "depositDate",
+            "fundShare",
+            "grossInterest",
+            "institution",
+            "interestEarned",
+            "interestRate",
+            "investmentAccountId",
+            "investmentAccountName",
+            "investmentBasis",
+            "investmentId",
+            "maturityDate",
+            "principal",
+            "status",
+            "statusLabel"
+          ]
+        },
+        {
+          "accountId": "81546230-5094-4430-86d8-a845c13c4d60",
+          "status": 200,
+          "rowCount": 1,
+          "rowsWithKey": 0,
+          "sampleKeys": [
+            "accountNumber",
+            "balance",
+            "basisLabel",
+            "clientName",
+            "depositDate",
+            "fundShare",
+            "grossInterest",
+            "institution",
+            "interestEarned",
+            "interestRate",
+            "investmentAccountId",
+            "investmentAccountName",
+            "investmentBasis",
+            "investmentId",
+            "maturityDate",
+            "principal",
+            "status",
+            "statusLabel"
+          ]
+        },
+        {
+          "accountId": "220443df-20a3-46d3-b246-0a4dd0c6f78f",
+          "status": 200,
+          "rowCount": 1,
+          "rowsWithKey": 0,
+          "sampleKeys": [
+            "accountNumber",
+            "balance",
+            "basisLabel",
+            "clientName",
+            "depositDate",
+            "fundShare",
+            "grossInterest",
+            "institution",
+            "interestEarned",
+            "interestRate",
+            "investmentAccountId",
+            "investmentAccountName",
+            "investmentBasis",
+            "investmentId",
+            "maturityDate",
+            "principal",
+            "status",
+            "statusLabel"
+          ]
+        }
+      ],
+      "totalRows": 4,
+      "preview": {
+        "status": 200,
+        "lpffRateHeader": false,
+        "applicableKey": false
+      },
+      "pdf": {
+        "status": 200,
+        "bytes": 2741,
+        "magic": "%PDF"
+      },
+      "pass": true
+    },
+    "d": {
+      "pages": [
+        {
+          "name": "d1-trust-accounting",
+          "url": "http://localhost:3001/org/e2e-test-org/trust-accounting",
+          "status": 200,
+          "errorPage": false,
+          "notFound": false,
+          "lpffRateCopy": false,
+          "newPageErrors": 0
+        },
+        {
+          "name": "d2-investments",
+          "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/investments",
+          "status": 200,
+          "errorPage": false,
+          "notFound": false,
+          "lpffRateCopy": false,
+          "newPageErrors": 0
+        },
+        {
+          "name": "d3-other-creditors",
+          "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/other-creditors",
+          "status": 200,
+          "errorPage": false,
+          "notFound": false,
+          "lpffRateCopy": false,
+          "newPageErrors": 0
+        },
+        {
+          "name": "d4-reports",
+          "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/reports",
+          "status": 200,
+          "errorPage": false,
+          "notFound": false,
+          "lpffRateCopy": false,
+          "newPageErrors": 0
+        },
+        {
+          "name": "d5-settings-trust-tab",
+          "url": "http://localhost:3001/org/e2e-test-org/settings/fees?tab=trust-accounting",
+          "status": 200,
+          "errorPage": false,
+          "notFound": false,
+          "lpffRateCopy": false,
+          "newPageErrors": 0
+        }
+      ],
+      "pass": true
+    }
+  },
+  "consoleErrorsAfterLoginSettle": 0,
+  "finishedAt": "2026-11-19T08:07:11.985Z",
+  "pass": true
+}

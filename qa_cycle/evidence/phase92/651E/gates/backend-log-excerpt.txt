@@ -1,0 +1,21 @@
+e2e-backend log (stdout+stderr), captured after legal-lifecycle + OBS on the slice-head stack
+lines:      528
+ERROR-level JSON lines: 0
+WARN-level JSON lines: 167
+lpff mentions: 1
+--- startup / migration ---
+  35 Migrating schema \
+   1 Started BackendApplication in 11.182 seconds (process running for 11.594)
+--- distinct WARN messages ---
+  18 Using fallback font LiberationSans for base font ZapfDingbats
+  18 Using fallback font LiberationSans for base font Helvetica
+   9 Using fallback font LiberationSans for base font Times-Roman
+   9 Using fallback font LiberationSans for base font Times-Italic
+   9 Using fallback font LiberationSans for base font Times-BoldItalic
+   9 Using fallback font LiberationSans for base font Times-Bold
+   9 Using fallback font LiberationSans for base font Symbol
+   9 Using fallback font LiberationSans for base font Helvetica-Oblique
+   9 Using fallback font LiberationSans for base font Helvetica-BoldOblique
+   9 Using fallback font LiberationSans for base font Helvetica-Bold
+   9 Using fallback font LiberationSans for base font Courier-Oblique
+   9 Using fallback font LiberationSans for base font Courier-BoldOblique

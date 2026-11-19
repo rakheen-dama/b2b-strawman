@@ -205,7 +205,7 @@ Profile JSON files (the seed data this module loads):
 ## 9. Key flows
 
 - **Pack install + vertical onboarding** — [`50-flows/pack-install-and-vertical-onboarding.md`](../50-flows/pack-install-and-vertical-onboarding.md). Covers the five-step provisioning sequence, the seeder pipeline, and post-hoc profile change.
-- **The nine-layer trust defence flow** — lives in [`20-cross-cutting/multi-vertical.md`](../20-cross-cutting/multi-vertical.md) §"Trust accounting nine-layer defense". Not duplicated here. Layers #1 (profile registry), #2 (backend service gate), #5 (`<ModuleGate>` component), #6 (page-level server gate), #8 (portal nav gate), #9 (portal page redirect) all read state owned/projected by this module.
+- **The nine-layer trust defence flow** — lives in [`20-cross-cutting/multi-vertical.md`](../20-cross-cutting/multi-vertical.md) §3 "The worked example: trust accounting defended at nine layers". Not duplicated here. Layers #1 (profile registry), #2 (backend service gate), #5 (page-level server gate), #7 (portal nav gate), #8 (portal page redirect) all read state owned/projected by this module.
 
 ---
 

@@ -95,7 +95,7 @@ Both categories live in the **same** `OrgSettings.enabledModules` JSONB list. Th
 
 1. **Nav gates** — `frontend/lib/nav-items.ts:32` declares `requiredModule` per entry; `filterNavItems()` removes inapplicable entries.
 2. **Page-level server gate** — `frontend/lib/api/settings.ts:21` exposes `isModuleEnabledServer(slug)`; pages call this in their RSC body and short-circuit with a "feature off" placeholder.
-3. **Component gate** — `<ModuleGate moduleId="...">` (`frontend/components/module-gate.tsx:11`) reads from `OrgProfileProvider` (`frontend/lib/org-profile.tsx:27`).
+3. **Component gate** — `<ModuleGate module="...">` (`frontend/components/module-gate.tsx:11`) reads from `OrgProfileProvider` (`frontend/lib/org-profile.tsx:27`).
 
 **Portal mirror** (separate JS bundle, separate auth filter chain):
 - `portal/lib/nav-items.ts` declares `modules: [...]` per entry (trust at `:37`). The `profiles: [...]` key was dropped when Kazi became legal-only (617A, #1639).

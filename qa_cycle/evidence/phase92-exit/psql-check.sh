@@ -6,8 +6,8 @@
 # Called by the last step of frontend/e2e/tests/legal-lifecycle/trust-balanced-month.spec.ts (or by
 # hand). SELECT only, every statement inside a read-only transaction (PGOPTIONS
 # default_transaction_read_only=on) — QA never writes SQL. Prints machine-readable sections
-# ("## <name>" then '|'-separated rows) and writes the same text to psql-output.txt next to this
-# script (override with PSQL_OUTPUT=<file>).
+# ("## <name>" then '|'-separated rows) and writes the same text to PSQL_OUTPUT=<file> (the spec
+# passes its run's evidence dir; by hand the default is psql-output.txt next to this script).
 #
 # The three accounts of the exit month (ruling 652E D-1: G is the seeded primary account).
 set -euo pipefail

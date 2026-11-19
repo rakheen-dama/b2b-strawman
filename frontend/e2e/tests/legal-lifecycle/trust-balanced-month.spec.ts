@@ -21,8 +21,9 @@
  *             pnpm test:e2e:exit-month
  *
  * Single-shot per stack: a completed reconciliation for the month refuses a second one (652C).
- * Evidence (screenshots, the CSVs as generated, the refused complete, psql) goes to
- * qa_cycle/evidence/phase92-exit/ (README.md there).
+ * Evidence (screenshots, the CSVs as generated, the refused complete, psql) goes to one per-run
+ * directory: EXIT_MONTH_EVIDENCE_DIR, default <os tmpdir>/exit-month-<timestamp>/ (outside the
+ * repo). qa_cycle/evidence/phase92-exit/ holds the copy of the chosen run (README.md there).
  */
 import { test, expect, type BrowserContext, type Locator, type Page } from "@playwright/test";
 import {
@@ -56,9 +57,11 @@ import {
   csvFile,
   dbCents,
   ddFor,
+  evidenceDir,
   evidenceShot,
   exactText,
   exitMonth,
+  type ExitMonth,
   firmSession,
   idFromTestId,
   investmentKhumaloCsv,
@@ -78,8 +81,8 @@ import {
   writeEvidence,
 } from "../../helpers/trust-balanced-month";
 
-// ── The month (OQ #12: once, at load) ────────────────────────────────────────────────────────
-const M = exitMonth();
+// ── The month (OQ #12: once per run, in beforeAll — before any write; refuses near midnight) ──
+let M: ExitMonth;
 
 // ── Set-up names (§16.9.6; D-1 for G) ────────────────────────────────────────────────────────
 const G = "Mathebula & Partners Trust Account"; // compose/seed/lib/trust.sh — primary GENERAL
@@ -734,8 +737,12 @@ async function bankBalanceText(page: Page): Promise<string> {
 
 // ── The month ────────────────────────────────────────────────────────────────────────────────
 
-test.describe.serial(`Phase 92 exit — one balanced month (§16.9.6), ${M.monthName}`, () => {
+test.describe.serial("Phase 92 exit — one balanced month (§16.9.6)", () => {
   test.beforeAll(async ({ browser }, testInfo) => {
+    // OQ #12: the previous calendar month by the SA business date, fixed here for the whole run
+    // (exitMonth() refuses to start within 30 minutes of SA midnight at a month end)
+    M = exitMonth();
+    console.log(`exit month: ${M.monthName}; evidence: ${evidenceDir()}`);
     aliceCtx = await firmSession(browser, testInfo, "alice");
     bobCtx = await firmSession(browser, testInfo, "bob");
     alice = await aliceCtx.newPage();
@@ -1088,7 +1095,12 @@ test.describe.serial(`Phase 92 exit — one balanced month (§16.9.6), ${M.month
     const withdraw = alice.getByTestId("withdraw-investment-dialog");
     await expect(withdraw).toBeVisible();
     await expect(withdraw.getByTestId("withdrawal-amount")).toContainText(randIn(FIG.iAWithdrawal));
+    // …and takes no amount: its one input is the withdrawal date (no amount field of any type)
+    await expect(withdraw.getByLabel(/amount/i)).toHaveCount(0);
     await expect(withdraw.getByRole("spinbutton")).toHaveCount(0);
+    await expect(withdraw.locator("textarea, select, [contenteditable='true']")).toHaveCount(0);
+    await expect(withdraw.locator("input")).toHaveCount(1);
+    await expect(withdraw.locator("input")).toHaveAttribute("type", "date");
     await withdraw.getByLabel("Withdrawal date", { exact: true }).fill(M.d(30));
     await withdraw.getByRole("button", { name: "Confirm Withdrawal" }).click();
     await expect(withdraw).toBeHidden({ timeout: 30_000 });
@@ -1286,11 +1298,14 @@ test.describe.serial(`Phase 92 exit — one balanced month (§16.9.6), ${M.month
           `as at ${escapeRegExp(M.words(31))}\\. 1 statement line is neither matched, recorded nor excluded\\.$`
       )
     );
-    // Nothing completed: the draft is still open
-    const after = await apiOk<{ id: string; status: string }[]>(
+    // Nothing completed: the same reconciliation is still a DRAFT on the same statement
+    const after = await apiOk<{ id: string; bankStatementId: string; status: string }[]>(
       `/api/trust-accounts/${need("gId")}/reconciliations`
     );
-    expect(after.find((r) => r.id === draft[0].id)?.status).not.toBe("COMPLETED");
+    const stillDraft = after.filter((r) => r.id === draft[0].id);
+    expect(stillDraft, "the refused reconciliation still exists").toHaveLength(1);
+    expect(stillDraft[0].status).toBe("DRAFT");
+    expect(stillDraft[0].bankStatementId).toBe(draft[0].bankStatementId);
 
     // Step 11 (#18): the seventh line as an unidentified deposit — both comparisons agree
     await recordLine(wizard, "ACB CREDIT UNKNOWN", {
@@ -1652,7 +1667,7 @@ test.describe.serial(`Phase 92 exit — one balanced month (§16.9.6), ${M.month
     const fundLines = rows.filter(
       (r) => r["Trust Creditor"] === "Legal Practitioners' Fidelity Fund — interest and charges"
     );
-    expect(fundLines.length, "the Fund line(s)").toBeGreaterThan(0);
+    expect(fundLines, "one Fund line per account (G, I-A, I-B)").toHaveLength(3);
     for (const fund of fundLines) expect(fund["Total"]).toMatch(randExact(FIG.list.fund));
     const acb = reportRow(rows, { "Trust Creditor": "ACB CREDIT UNKNOWN" });
     expect(acb["Received"]).toBe(M.d(22));
@@ -1751,10 +1766,11 @@ test.describe.serial(`Phase 92 exit — one balanced month (§16.9.6), ${M.month
     };
     const amount = (rows: Record<string, string>[], section: string, item: string) =>
       reportRow(rows, { Section: section, Item: item })["Amount"];
+    // The Item is "{date} · {file} · line {n} · {reference}" (Section35DataPackQuery.sweepLine):
+    // the file and line must be whole " · " segments, so "line 3" never matches "line 30"
     const sweep = (rows: Record<string, string>[], file: string, line: string) => {
-      const hits = rows.filter(
-        (r) => r["Section"] === SWEEPS && r["Item"].includes(`${file} · line ${line}`)
-      );
+      const segment = new RegExp(`(?:^| · )${escapeRegExp(`${file} · line ${line}`)}(?: · |$)`);
+      const hits = rows.filter((r) => r["Section"] === SWEEPS && segment.test(r["Item"]));
       expect(hits, `the Fund sweep on ${file} line ${line}`).toHaveLength(1);
       return hits[0]["Amount"];
     };

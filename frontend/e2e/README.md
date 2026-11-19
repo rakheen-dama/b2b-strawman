@@ -73,6 +73,12 @@ pnpm test:e2e e2e/tests/invoices/
 
 The legal suites run under their own configs: `pnpm test:e2e:legal-lifecycle`, `pnpm test:e2e:legal-depth-ii`.
 
+`pnpm test:e2e:exit-month` (`--project exit-month` of the legal-lifecycle config) is the Phase 92 exit
+month: a separate single-shot project that is not part of `pnpm test:e2e:legal-lifecycle`. It needs its own
+fresh stack (`compose/scripts/e2e-down.sh && e2e-up.sh`) plus the portal dev server against the e2e backend,
+and writes its evidence to `EXIT_MONTH_EVIDENCE_DIR` (default `<os tmpdir>/exit-month-<timestamp>/`)
+— see `qa_cycle/evidence/phase92-exit/README.md`.
+
 ## 4. Stop the Stack
 
 ```bash
@@ -133,8 +139,9 @@ pnpm test:e2e:legal-lifecycle
 # Run against the Dockerized E2E stack
 PLAYWRIGHT_BASE_URL=http://localhost:3001 pnpm test:e2e:legal-lifecycle
 
-# List tests without executing (no E2E stack needed)
-npx playwright test --config e2e/playwright.legal-lifecycle.config.ts --list
+# List tests without executing (no E2E stack needed); --project chromium = the lifecycle suite
+# without the exit month (`--project exit-month`)
+npx playwright test --config e2e/playwright.legal-lifecycle.config.ts --project chromium --list
 ```
 
 ### Screenshot Helper

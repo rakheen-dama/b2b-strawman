@@ -10,9 +10,16 @@
  * - money matchers: one normaliser for every ZAR rendering the run meets — the firm UI and portal
  *   (`formatCurrency`, en-ZA: "R 1 250,00" with NBSP / narrow-NBSP grouping, "-R 172,50"), the
  *   StatCard minus ("−R 172,50") and the backend sentences (Java en-ZA: "R1 250,00").
+ *   `randExact` / `randIn` exist beside `legal-lifecycle.ts` `randPattern` because that one covers
+ *   neither U+202F grouping, the "−" minus sign, the backend's space-less "R1 250,00" nor a
+ *   whole-amount boundary ("R 1 250,00" must not match inside "R 11 250,00").
  * - firm sessions (one browser context per user, so a wizard can stay open across tests), the
  *   portal login (copied from `portal/e2e/helpers/auth.ts`, which a frontend spec cannot import),
  *   report-runner readers and the step-21 database check.
+ * - evidence: every generated artefact (CSVs, screenshots, the refused complete, psql output) goes
+ *   to ONE per-run directory — `EXIT_MONTH_EVIDENCE_DIR`, default `<os tmpdir>/exit-month-<timestamp>/`
+ *   — never into the committed
+ *   `qa_cycle/evidence/phase92-exit/`, which is filled by copying from the chosen run (README there).
  */
 import {
   expect,
@@ -24,12 +31,31 @@ import {
 } from "@playwright/test";
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { getApiToken } from "../fixtures/auth";
 import { escapeRegExp } from "./legal-depth-ii";
 
-/** Evidence for the exit month (652.31). */
-export const EVIDENCE_DIR = path.resolve(__dirname, "../../../qa_cycle/evidence/phase92-exit");
+/** The committed evidence dir: only `psql-check.sh` is read from it (nothing is written there). */
+const COMMITTED_EVIDENCE_DIR = path.resolve(__dirname, "../../../qa_cycle/evidence/phase92-exit");
+
+let runEvidenceDir: string | undefined;
+
+/**
+ * This run's evidence directory (652.31): `EXIT_MONTH_EVIDENCE_DIR`, else
+ * `<os tmpdir>/exit-month-<timestamp>/` (outside the repo; not under Playwright's `test-results/`,
+ * which the next run wipes). Fixed on first use.
+ */
+export function evidenceDir(): string {
+  if (!runEvidenceDir) {
+    const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+    runEvidenceDir = process.env.EXIT_MONTH_EVIDENCE_DIR
+      ? path.resolve(process.env.EXIT_MONTH_EVIDENCE_DIR)
+      : path.join(os.tmpdir(), `exit-month-${stamp}`);
+    fs.mkdirSync(runEvidenceDir, { recursive: true });
+  }
+  return runEvidenceDir;
+}
 
 // ── The exit month (OQ #12) ──────────────────────────────────────────────────────────────────
 
@@ -169,25 +195,87 @@ export function investmentKhumaloCsv(m: ExitMonth, r: Pick<GeneratedRefs, "invB"
   ]);
 }
 
-/** What `setInputFiles` takes; also writes the file, as generated, to the evidence dir. */
+/** What `setInputFiles` takes; also writes the file, as generated, to the run's evidence dir. */
 export function csvFile(name: string, text: string) {
-  fs.mkdirSync(path.join(EVIDENCE_DIR, "csv"), { recursive: true });
-  fs.writeFileSync(path.join(EVIDENCE_DIR, "csv", name), text);
+  fs.mkdirSync(path.join(evidenceDir(), "csv"), { recursive: true });
+  fs.writeFileSync(path.join(evidenceDir(), "csv", name), text);
   return { name, mimeType: "text/csv", buffer: Buffer.from(text, "utf8") };
 }
 
-/** Writes a text artefact (e.g. the refused complete's response) to the evidence dir. */
+/** Writes a text artefact (e.g. the refused complete's response) to the run's evidence dir. */
 export function writeEvidence(name: string, text: string): void {
-  fs.mkdirSync(EVIDENCE_DIR, { recursive: true });
-  fs.writeFileSync(path.join(EVIDENCE_DIR, name), text);
+  fs.writeFileSync(path.join(evidenceDir(), name), text);
 }
 
-/** A full-page screenshot into `qa_cycle/evidence/phase92-exit/screenshots/`. */
+/** The widest a capture may widen the viewport to (CSS px). */
+const MAX_CAPTURE_WIDTH = 4_000;
+
+/** Marks the elements whose inline `max-width` a capture lifted, to restore them afterwards. */
+const LIFTED = "data-evidence-max-width";
+
+/**
+ * How far the widest horizontally scrolling element overflows (CSS px). With `lift`, every
+ * ancestor of an overflowing scroller loses its `max-width` cap (the page's centred content
+ * column), so a wider viewport widens the scroller too.
+ */
+function horizontalOverflow(page: Page, lift: boolean): Promise<number> {
+  return page.evaluate(
+    ([lift, attr]) => {
+      let overflow = 0;
+      for (const el of Array.from(document.querySelectorAll<HTMLElement>("body *"))) {
+        const x = getComputedStyle(el).overflowX;
+        if (x !== "auto" && x !== "scroll") continue;
+        const over = el.scrollWidth - el.clientWidth;
+        if (over <= 1) continue;
+        overflow = Math.max(overflow, over);
+        for (let a = el.parentElement; lift && a && a !== document.body; a = a.parentElement) {
+          if (getComputedStyle(a).maxWidth === "none" || a.hasAttribute(attr)) continue;
+          a.setAttribute(attr, a.style.maxWidth);
+          a.style.maxWidth = "none";
+        }
+      }
+      return overflow;
+    },
+    [lift, LIFTED] as const
+  );
+}
+
+/**
+ * A full-page screenshot into the run's `screenshots/`, showing every figure on the page. The
+ * report tables scroll sideways inside their card, so while anything overflows horizontally the
+ * content column's `max-width` is lifted and the viewport widened (both restored afterwards); the
+ * page is scrolled to the top (instantly) so the sticky header and the sidebar sit at the top of
+ * the capture instead of over the content.
+ */
 export async function evidenceShot(page: Page, name: string): Promise<void> {
-  await page.screenshot({
-    path: path.join(EVIDENCE_DIR, "screenshots", `${name}.png`),
-    fullPage: true,
-  });
+  const original = page.viewportSize();
+  try {
+    for (let i = 0; original && i < 6; i++) {
+      const overflow = await horizontalOverflow(page, true);
+      const width = page.viewportSize()!.width;
+      if (overflow <= 1 || width >= MAX_CAPTURE_WIDTH) break;
+      await page.setViewportSize({
+        width: Math.min(width + overflow + 32, MAX_CAPTURE_WIDTH),
+        height: original.height,
+      });
+    }
+    // "instant": a plain scrollTo animates under the app's smooth scrolling, and the capture
+    // would catch the page mid-scroll (the sticky header and sidebar painted over the content)
+    await page.evaluate(() => window.scrollTo({ top: 0, left: 0, behavior: "instant" }));
+    await page.waitForFunction(() => window.scrollY === 0 && window.scrollX === 0);
+    await page.screenshot({
+      path: path.join(evidenceDir(), "screenshots", `${name}.png`),
+      fullPage: true,
+    });
+  } finally {
+    await page.evaluate((attr) => {
+      for (const el of Array.from(document.querySelectorAll<HTMLElement>(`[${attr}]`))) {
+        el.style.maxWidth = el.getAttribute(attr) ?? "";
+        el.removeAttribute(attr);
+      }
+    }, LIFTED);
+    if (original) await page.setViewportSize(original);
+  }
 }
 
 // ── Money ────────────────────────────────────────────────────────────────────────────────────
@@ -394,9 +482,13 @@ export async function runReport(
   const run = page.getByRole("button", { name: "Run Report" });
   await expect(run).toBeVisible({ timeout: 30_000 });
   for (const [name, value] of Object.entries(params.dates)) {
+    // A pure wait: once (run 4, step 17) the freshly loaded page briefly held two `#param-…`
+    // inputs (not reproduced since; found.md F-652E-7) — wait for the one form before filling
+    await expect(page.locator(`#param-${name}`)).toHaveCount(1, { timeout: 15_000 });
     await page.locator(`#param-${name}`).fill(value);
   }
   if (params.trustAccount) {
+    await expect(page.locator("#param-trust_account_id")).toHaveCount(1, { timeout: 15_000 });
     await page.locator("#param-trust_account_id").click();
     await page
       .getByRole("option", { name: new RegExp(escapeRegExp(params.trustAccount)) })
@@ -484,15 +576,17 @@ export interface MonthlyListRow {
 
 /**
  * Runs `qa_cycle/evidence/phase92-exit/psql-check.sh <month end>` (SELECT only, in a read-only
- * transaction; it writes `psql-output.txt`) and parses its machine-readable sections.
+ * transaction; it writes `psql-output.txt` into the run's evidence dir via `PSQL_OUTPUT`) and
+ * parses its machine-readable sections.
  */
 export function runPsqlCheck(monthEnd: string): {
   effects: AccountEffects[];
   lists: MonthlyListRow[];
 } {
-  const out = execFileSync("bash", [path.join(EVIDENCE_DIR, "psql-check.sh"), monthEnd], {
+  const out = execFileSync("bash", [path.join(COMMITTED_EVIDENCE_DIR, "psql-check.sh"), monthEnd], {
     encoding: "utf8",
     timeout: 120_000,
+    env: { ...process.env, PSQL_OUTPUT: path.join(evidenceDir(), "psql-output.txt") },
   });
   const section = (name: string) => {
     const start = out.indexOf(`## ${name}\n`);

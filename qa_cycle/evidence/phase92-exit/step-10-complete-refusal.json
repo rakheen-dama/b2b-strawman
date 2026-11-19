@@ -2,7 +2,7 @@
   "status": 400,
   "data": {
     "detail": "Adjusted bank balance R101 630,00 differs from the cashbook R100 380,00 by R1 250,00 as at 31 October 2026. 1 statement line is neither matched, recorded nor excluded.",
-    "instance": "/api/trust-reconciliations/3b85601d-c92a-4600-af02-9495a3cee194/complete",
+    "instance": "/api/trust-reconciliations/7f3b9440-3534-4bed-ae5c-9194a1ae9e75/complete",
     "status": 400,
     "title": "Reconciliation does not balance"
   }

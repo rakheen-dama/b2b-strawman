@@ -23,11 +23,11 @@ files it edits plus OBS. No backend verify (frontend-only; task file "No backend
 Tree restored after the runs: the curated lifecycle PNGs were copied to `lifecycle-artifacts/` and
 `documentation/screenshots/legal-vertical` cleaned. `git status` afterwards is the same as `lifecycle-tree-pre.txt`.
 
-## OBS — `obs.cjs` (headless Chromium, Alice/owner via `/mock-login`, 1440 px), result `obs/obs-result.json`
+## OBS — `obs.cjs` (final run after the delta-review fix: item a reads visible links with the zone open; item d's `hasInterestRunDue` check was swallowed by a comment in run 1 and is now enforced) (headless Chromium, Alice/owner via `/mock-login`, 1440 px), result `obs/obs-result.json`
 
 | Item | Result | Observed | Screenshot |
 |---|---|---|---|
-| a. Sidebar Trust zone | **PASS** | Trust zone expanded: Overview, Transactions, Client ledgers, Other trust creditors, Reconciliation, Investments, Trust reports (7). `getByRole("link", {name: "Interest", exact: true})` count 0 | `obs/a-sidebar.png` |
+| a. Sidebar Trust zone | **PASS** | The Trust header was clicked until `aria-expanded="true"` and "Trust reports" became visible. The **visible** Trust links are exactly Overview, Transactions, Client ledgers, Other trust creditors, Reconciliation, Investments and Trust reports (7), read with `isVisible()` per anchor. `getByRole("link", {name: "Interest", exact: true})` count is 0 with the zone open. The screenshot is an element capture of the nav at a 1 600 px viewport. The rail scrolls at 1 000 px, and a fullPage capture re-renders the zones collapsed (run 1's screenshot showed Trust collapsed; delta review A, PR #1810) | `obs/a-sidebar.png` |
 | b. Command palette | **PASS** | "Interest" offers only fuzzy matches (Diary, Settings › …), no Interest page. "Other trust" → "Other trust creditors"; "Investments" → "Investments" | `obs/b-palette-interest.png` |
 | c. Removed route | **PASS** | `GET /org/e2e-test-org/trust-accounting/interest` → **404**, Next default "This page could not be found" | `obs/c-interest-route.png` |
 | d. Settings → Fees & Trust → Trust accounting | **PASS** | `[data-testid=lpff-rates-section]` count 0. No "LPFF rate", "Add rate", "Interest run" or "Interest Run Due" text. The description reads "Manage trust accounts, approval settings, and reminder configuration." The Trust Accounts, Approval Settings and Reminder Settings cards render (Low Balance Alert, Reconciliation Due, Investment Maturity). The Section 86(6) advisory "Contact the LPFF to verify" (648C `Section866Advisory`) is an expected KEEP (D-3) | `obs/d-settings-trust-tab.png` |

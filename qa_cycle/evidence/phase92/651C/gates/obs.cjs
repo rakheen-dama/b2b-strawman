@@ -29,11 +29,19 @@ const shot = (p, n) => p.screenshot({ path: path.join(OUT, `${n}.png`), fullPage
   const nav = p.getByRole("navigation", { name: "Main navigation" });
   const header = nav.getByRole("button", { name: "Trust", exact: true });
   for (let i = 0; i < 20 && (await header.getAttribute("aria-expanded")) !== "true"; i++) { await header.click().catch(() => {}); await p.waitForTimeout(500); }
-  const trustLinks = (await nav.locator('a[href*="/trust-accounting"]').allTextContents()).map((t) => t.trim());
+  // Wait until the zone is open AND its links are visible (a click before hydration is dropped; a second click collapses).
+  await nav.getByRole("link", { name: "Trust reports", exact: true }).waitFor({ state: "visible", timeout: 15_000 });
+  const trustAnchors = nav.locator('a[href*="/trust-accounting"]');
+  const trustLinks = [];
+  for (const a of await trustAnchors.all()) if (await a.isVisible()) trustLinks.push((await a.innerText()).trim());
+  const zoneExpanded = await header.getAttribute("aria-expanded");
   const interestCount = await p.getByRole("link", { name: "Interest", exact: true }).count();
-  await shot(p, "a-sidebar");
-  R.items.a = { trustLinks, interestLinkCount: interestCount,
-    pass: interestCount === 0 && trustLinks.length === 7 && !trustLinks.some((t) => /^Interest$/.test(t)) };
+  // Element screenshot of the nav (a fullPage capture resizes the viewport and re-renders the collapsible zones)
+  await p.setViewportSize({ width: 1440, height: 1600 }); await p.waitForTimeout(500); // the rail scrolls at 1000 px
+  await nav.screenshot({ path: path.join(OUT, "a-sidebar.png") });
+  await p.setViewportSize({ width: 1440, height: 1000 });
+  R.items.a = { zoneExpanded, visibleTrustLinks: trustLinks, interestLinkCount: interestCount,
+    pass: zoneExpanded === "true" && interestCount === 0 && trustLinks.length === 7 && !trustLinks.some((t) => /^Interest$/.test(t)) };
 
   // b. Command palette
   await p.keyboard.press("Meta+k"); await p.waitForTimeout(600);
@@ -69,7 +77,9 @@ const shot = (p, n) => p.screenshot({ path: path.join(OUT, `${n}.png`), fullPage
   const lpffSection = await p.locator("[data-testid=lpff-rates-section]").count();
   await shot(p, "d-settings-trust-tab");
   R.items.d = { lpffSection, hasLpffRateCopy: /LPFF rate|Add rate|Interest run/i.test(dText),
-    keptS866Advisory: /Contact the LPFF to verify/.test(dText), // Section866Advisory (648C) — acceptance-grep KEEP (D-3) hasInterestRunDue: /Interest Run Due/i.test(dText),
+    // Section866Advisory (648C) — acceptance-grep KEEP (D-3)
+    keptS866Advisory: /Contact the LPFF to verify/.test(dText),
+    hasInterestRunDue: /Interest Run Due/i.test(dText),
     descriptionPresent: dText.includes("Manage trust accounts, approval settings, and reminder configuration."),
     cards: ["Trust Accounts", "Approval Settings", "Reminder Settings"].map((c) => [c, new RegExp(c, "i").test(dText)]),
     textExcerpt: dText.slice(0, 1500) };

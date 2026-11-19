@@ -1,5 +1,5 @@
 {
-  "startedAt": "2026-11-19T05:58:40.688Z",
+  "startedAt": "2026-11-19T06:04:59.688Z",
   "consoleErrors": [
     {
       "url": "http://localhost:3001/org/e2e-test-org/dashboard",
@@ -13,7 +13,8 @@
   "pageErrors": [],
   "items": {
     "a": {
-      "trustLinks": [
+      "zoneExpanded": "true",
+      "visibleTrustLinks": [
         "Overview",
         "Transactions",
         "Client ledgers",
@@ -58,6 +59,7 @@
       "lpffSection": 0,
       "hasLpffRateCopy": false,
       "keptS866Advisory": true,
+      "hasInterestRunDue": false,
       "descriptionPresent": true,
       "cards": [
         [
@@ -105,5 +107,5 @@
     }
   },
   "consoleErrorsAfterLoginSettle": 1,
-  "finishedAt": "2026-11-19T05:59:02.665Z"
+  "finishedAt": "2026-11-19T06:05:21.884Z"
 }

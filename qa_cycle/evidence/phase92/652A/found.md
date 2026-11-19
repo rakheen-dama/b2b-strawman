@@ -74,3 +74,13 @@ neither the re-read nor the recalculation works`.
   `bank_statement_lines` row (read-only SELECT, `obs/README.md`). It may be a stored suggestion
   rather than a link. Not investigated in 652A; it predates this slice (652A changes no matching
   code). Needs a reproduction before anyone treats it as a defect.
+- **O-3 (652A OBS run 2, cosmetic).** When both the re-read and the recalculation fail after an
+  unmatch, the banner joins the two messages with a single space. A server error without a full
+  stop reads "…could not be recalculated: Failed to fetch The unmatched transactions could not be
+  refreshed…" (`obs-run2/obs-r3-4-both-failed.png`). Refused-recalculation errors end in a full stop,
+  so it reads correctly there. Not changed in 652A: it only shows when both requests fail at the
+  network level. Candidate for the Phase 91 wording pass.
+- **O-4 (652A OBS run 2, harness limit).** Next.js runs server actions one at a time, so in the
+  browser a held calculate also holds the new statement's upload. The r2 success case therefore
+  cannot show that the guard stops the old reconciliation being restored. The vitest
+  `drops a $outcome recalculation …` case pins that; the refused case (banner/stale guard) is observed.

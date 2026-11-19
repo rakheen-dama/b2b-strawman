@@ -1,0 +1,42 @@
+651E acceptance greps (worktree, after production change; base 5dc665e2e + uncommitted slice changes)
+
+$ grep -rni lpff backend/src/main/java
+backend/src/main/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/TrustAccountingConstants.java:11: * half-up to the cent on the gross, a typed share within {@link #STATUTORY_LPFF_SHARE_TOLERANCE}
+backend/src/main/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/TrustAccountingConstants.java:20:   * The statutory LPFF (Legal Practitioners Fidelity Fund) share percentage for client-instructed
+backend/src/main/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/TrustAccountingConstants.java:26:  public static final BigDecimal STATUTORY_LPFF_SHARE_PERCENT = new BigDecimal("0.05");
+backend/src/main/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/TrustAccountingConstants.java:33:  public static final BigDecimal STATUTORY_LPFF_SHARE_TOLERANCE = new BigDecimal("0.01");
+backend/src/main/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/reconciliation/parser/CsvBankStatementParser.java:226:   *   <li>debit + {@code LPFF} or {@code FIDELITY} → {@code FUND_SWEEP}
+backend/src/main/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/reconciliation/parser/CsvBankStatementParser.java:231:   *   <li>credit + {@code INTEREST}, not {@code LPFF}/{@code FIDELITY} → {@code FUND_INTEREST}
+backend/src/main/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/reconciliation/parser/CsvBankStatementParser.java:250:    boolean fund = containsAny(text, "LPFF", "FIDELITY");
+backend/src/main/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/investment/TrustInvestmentService.java:1051:            .multiply(TrustAccountingConstants.STATUTORY_LPFF_SHARE_PERCENT)
+backend/src/main/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/investment/TrustInvestmentService.java:1062:              .compareTo(TrustAccountingConstants.STATUTORY_LPFF_SHARE_TOLERANCE)
+
+$ grep -rli lpff backend/src/main/resources
+backend/src/main/resources/db/migration/tenant/V16__phase92_trust_posting_core.sql
+backend/src/main/resources/db/migration/tenant/V1__baseline.sql
+backend/src/main/resources/db/migration/tenant/V24__phase92_investment_interest.sql
+backend/src/main/resources/db/migration/tenant/V27__phase92_drop_interest_run.sql
+backend/src/main/resources/db/migration/tenant/V28__phase92_drop_lpff_rates.sql
+
+$ grep -rnE "LpffRate|lpff-rates|lpffRateRepository|applicableLpffRate" backend/src/main ; echo "main exit=$?"
+main exit=1
+
+$ grep -rliE "LpffRate|lpff-rates|lpff_rates|applicableLpffRate" backend/src/test
+backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/InterestRunRemovalTest.java
+backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/TrustAccountingSchemaTest.java
+backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/TrustPostingCoreMigrationTest.java
+backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/report/InvestmentReportBasisIntegrationTest.java
+backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/report/TrustReportsV3.java
+backend/src/test/resources/schema/tenant-baseline.snapshot
+
+Justification of every remaining hit (651E D-5):
+- src/main/java (9 lines, 3 files):
+  TrustAccountingConstants (4) — STATUTORY_LPFF_SHARE_PERCENT / _TOLERANCE + Javadoc; the task says the constant stays.
+  CsvBankStatementParser (3)   — the "LPFF"/"FIDELITY" bank-statement keyword -> FUND_SWEEP / FUND_INTEREST hint (Fund-labelled statement copy).
+  TrustInvestmentService (2)   — uses of the constant (s86(4) Fund 5% share check).
+  Zero hits in TrustAccountService, TrustAccountingController, InvestmentRegisterQuery.
+- src/main/resources: V1 (immutable baseline), V16, V24, V27 (applied history, closed) and the new V28 only.
+- src/main identifier grep (LpffRate|lpff-rates|lpffRateRepository|applicableLpffRate): no match (exit 1).
+- src/test: InterestRunRemovalTest / TrustAccountingSchemaTest / InvestmentReportBasisIntegrationTest are the absence
+  assertions; TrustPostingCoreMigrationTest is pinned V15->V16; TrustReportsV3 is the frozen v3 fixture (651A D-10);
+  tenant-baseline.snapshot is pinned to V1 (BaselineSchemaParityTest).

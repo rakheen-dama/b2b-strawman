@@ -66,7 +66,6 @@ class TrustCoexistenceTest {
   private static final List<String> TRUST_TABLES =
       List.of(
           "trust_accounts",
-          "lpff_rates",
           "trust_transactions",
           "client_ledger_cards",
           "bank_statements",

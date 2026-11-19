@@ -1,0 +1,18 @@
+-- Phase 92 / 651E (ADR-383; architecture §16.3.14, §16.7.10 — the statement V27 left for this
+-- slice): the LPFF-rate table goes with the calculated interest run it configured. It is DROPPED,
+-- not kept read-only: no real tenant ever posted a run (founder decision 5), nothing calculates
+-- trust interest any more (founder decision 6; interest is recorded from the bank statement,
+-- ADR-375), and the Fund's 5% share of section 86(4) interest is the code constant
+-- TrustAccountingConstants.STATUTORY_LPFF_SHARE_PERCENT (ADR-379), not a rate row. Any rows on a
+-- walked dev schema go with the table, by design (ADR-383); dev and e2e stacks are reset.
+--
+-- No CASCADE. Nothing references lpff_rates after V27: its only inbound foreign keys were
+-- interest_runs.lpff_rate_id and interest_allocations.lpff_rate_id, and V27 dropped both tables.
+-- Were an unexpected reference ever present, this DROP fails loudly instead of cascading.
+-- Dropping the table drops its own index (idx_lpff_rates_account_date), constraints
+-- (lpff_rates_pkey, uq_lpff_rate_account_date, chk_lpff_rate_percent, chk_lpff_share_percent) and
+-- its outbound foreign key to trust_accounts. Audit history keeps its lpff_rate events (audit
+-- rows are never rewritten).
+--
+-- Idempotent: DROP TABLE IF EXISTS (no catalog lookup, so no current_schema() guard is needed).
+DROP TABLE IF EXISTS lpff_rates;

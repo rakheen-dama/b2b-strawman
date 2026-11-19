@@ -54,7 +54,6 @@ class TrustAccountingSchemaTest {
     List<String> expectedTables =
         List.of(
             "trust_accounts",
-            "lpff_rates", // dropped in 651E
             "trust_transactions",
             "client_ledger_cards",
             "bank_statements",
@@ -81,12 +80,14 @@ class TrustAccountingSchemaTest {
   }
 
   /**
-   * Phase 92 / 651A (ADR-383, tenant V27): the calculated interest run's three tables are dropped.
+   * Phase 92 / 651A (tenant V27) and 651E (tenant V28), ADR-383: the calculated interest run's
+   * three tables and the LPFF-rate table it read are dropped.
    */
   @Test
-  void theInterestRunTablesDoNotExist() {
+  void theInterestRunAndLpffRateTablesDoNotExist() {
     for (String table :
-        List.of("interest_allocation_lines", "interest_allocations", "interest_runs")) {
+        List.of(
+            "interest_allocation_lines", "interest_allocations", "interest_runs", "lpff_rates")) {
       assertThat(
               jdbcTemplate.queryForObject(
                   "SELECT to_regclass(?)::text", String.class, tenantSchema + "." + table))

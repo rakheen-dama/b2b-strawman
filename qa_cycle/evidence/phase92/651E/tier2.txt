@@ -1,0 +1,38 @@
+651E Tier 1 + Tier 2 (builder; Tier 3 full verify NOT run — orchestrator-owned)
+
+Tier 1: ./mvnw clean compile test-compile -q  -> COMPILE OK (clean run once; deletion slice)
+Spotless: ./mvnw spotless:apply -> clean
+
+Tier 2: ./mvnw test -Dtest="<48 classes>" -q   (exit 0)
+Summed from target/surefire-reports/TEST-*.xml:
+  suites=48 tests=416 failures=0 errors=0 skipped=0 testcase_elements=416
+  (equivalent "Tests run: 416, Failures: 0, Errors: 0, Skipped: 0"; -q prints no summary on green)
+
+InterestRunRemovalTest: 9 cases, all pass —
+  theThreeRunTablesDoNotExist_theMatterIndexStays, theLpffRateTableAndItsEntityAreGone,
+  theRunRoutesAreUnmapped, theLpffRateRoutesAreUnmapped, theEngineItsEventAndItsNotificationTypeAreGone,
+  aSchemaHoldingRunsMigratesToV27_theRunTablesGo_theRateStays, runningTheMigrationBodyTwice_isANoOp,
+  aSchemaHoldingRatesMigratesToV28_theRateTableGoes_theAccountStays, runningTheV28BodyTwice_isANoOp
+InvestmentReportBasisIntegrationTest: 9 cases, all pass (5 rewritten on basisLabel + doesNotContainKey("applicableLpffRate"))
+
+Classes (48):
+InterestRunRemovalTest, TrustAccountingSchemaTest, TrustAccountServiceTest, TrustAccountingControllerTest,
+TrustCoexistenceTest, TrustReportQueryIntegrationTest, InvestmentReportBasisIntegrationTest,
+Section35DataPackContentIntegrationTest, TrustInvestmentPlacementGuardIntegrationTest,
+TrustInvestmentServiceIntegrationTest, TrustReportPackSeederIntegrationTest,
+ClientLedgerRunningBalanceIntegrationTest, ClientLedgerTotalsIntegrationTest,
+ClientTrustStatementContextIntegrationTest, DashboardActivityCacheTest,
+FicaVerificationTrustAccessIntegrationTest, GeneratedDocumentTrustAccessIntegrationTest,
+LegalDemoTrustBooksIntegrationTest, StatementLinePostingIntegrationTest,
+StatementTrustVisibilityIntegrationTest, TrustFeeTransferReversalCascadeTest,
+TrustMatterDebitGuardIntegrationTest, TrustPostingDateZoneIntegrationTest, TrustTransactionServiceTest,
+TrustWireContractTest, TrustEquationCharacterisationIntegrationTest, TrustReversalEquationIntegrationTest,
+DerivedLedgerBalanceIntegrationTest, TrustIntegrityServiceIntegrationTest, TrustInvestmentSchemaTest,
+TrustPostingCoreMigrationTest, TrustInterestMemosMigrationTest, TrustMonthlyListsMigrationTest,
+TrustInvestmentInterestMigrationTest, TrustInvestmentAccountsMigrationTest,
+InvestmentAccountBasisMigrationTest, StatementLineClassificationMigrationTest,
+UnidentifiedDepositsMigrationTest, TrustReconBreakdownMigrationTest, TrustReversalContraMigrationTest,
+ContainsTrustDataMigrationTest, BaselineSchemaParityTest, McpReadOnlyRegistryTest,
+EntityTypeLiteralStabilityTest, LayerDependencyRulesTest, ZoneAwareTimeArchTest,
+TerminologyRemnantScanTest, TenantScopeBindingTest
+All 48 produced a surefire report (none skipped as "no tests matched").

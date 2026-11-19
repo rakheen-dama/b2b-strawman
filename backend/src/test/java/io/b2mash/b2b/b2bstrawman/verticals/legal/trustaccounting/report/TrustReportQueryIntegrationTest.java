@@ -190,23 +190,6 @@ class TrustReportQueryIntegrationTest {
     createDeposit(
         trustAccountId, customerId1, new BigDecimal("25000.00"), "DEP-RPT-003", "2025-06-01");
 
-    // Create LPFF rate
-    mockMvc
-        .perform(
-            post("/api/trust-accounts/" + trustAccountId + "/lpff-rates")
-                .with(ownerJwt)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {
-                      "effectiveFrom": "2025-04-01",
-                      "ratePercent": 0.0750,
-                      "lpffSharePercent": 0.7500,
-                      "notes": "Report test rate"
-                    }
-                    """))
-        .andExpect(status().isCreated());
-
     // Place an investment for customer1
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .where(RequestScopes.MEMBER_ID, ownerMemberId)

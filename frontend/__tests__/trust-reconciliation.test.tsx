@@ -1178,7 +1178,8 @@ describe("Trust Reconciliation", () => {
     expect(await screen.findByTestId("reconciliation-error")).toBeInTheDocument();
     expect(mockFetchBankStatement).toHaveBeenCalledTimes(statementReads + 1);
     expect(mockFetchBankStatement).toHaveBeenLastCalledWith("stmt-1");
-    expect(vi.mocked(fetchTransactions)).toHaveBeenCalledTimes(transactionReads + 1);
+    // One re-read of the unmatched transactions is two fetches: RECORDED and APPROVED (652B).
+    expect(vi.mocked(fetchTransactions)).toHaveBeenCalledTimes(transactionReads + 2);
     expect(await screen.findByText("0 / 1 lines resolved")).toBeInTheDocument();
     const line = screen.getByTestId("bank-line-line-1");
     expect(within(line).getByText("Unmatched")).toBeInTheDocument();
@@ -2630,6 +2631,222 @@ describe("Trust Reconciliation", () => {
       );
       expect(mockCalculateReconciliation).toHaveBeenCalledTimes(2);
       expectFiguresMarkedStale();
+    });
+  });
+
+  // 652B (E8 wizard defect 3): the manual-match pane lists the account's posted, unlinked
+  // transactions — RECORDED (every deposit, transfer and fee transfer lands RECORDED) and APPROVED
+  // (a payment or refund after approval). The backend matches either (R9); the list endpoint takes
+  // one status, so the wizard reads both. A row already linked to a statement line is not offered.
+  describe("the manual-match pane offers recorded and approved transactions (652B)", () => {
+    function pageOf(content: TrustTransaction[]) {
+      return {
+        content,
+        totalElements: content.length,
+        totalPages: content.length > 0 ? 1 : 0,
+        pageSize: 1000,
+        pageNumber: 0,
+      };
+    }
+
+    /** fetchTransactions answers by the `status` it is asked for (any other status: empty). */
+    function transactionsByStatus(byStatus: Partial<Record<string, TrustTransaction[]>>) {
+      vi.mocked(fetchTransactions).mockImplementation(async (_accountId, params = {}) =>
+        pageOf(byStatus[params.status ?? ""] ?? [])
+      );
+    }
+
+    const recordedDeposit = makeTx({
+      id: "tx-rec",
+      status: "RECORDED",
+      approvedBy: null,
+      approvedAt: null,
+      reference: "DEP/652B/REC",
+      amount: 15000,
+    });
+    const linkedRecordedDeposit = makeTx({
+      id: "tx-linked",
+      status: "RECORDED",
+      approvedBy: null,
+      approvedAt: null,
+      reference: "DEP/652B/LINKED",
+      bankStatementLineId: "line-other",
+    });
+    const approvedPayment = makeTx({
+      id: "tx-app",
+      transactionType: "PAYMENT",
+      typeLabel: "Payment",
+      direction: "OUT",
+      status: "APPROVED",
+      reference: "PAY/652B/APP",
+      amount: 1250,
+    });
+
+    afterEach(() => {
+      // Back to the module default (an empty page) for the tests that follow.
+      vi.mocked(fetchTransactions).mockResolvedValue(pageOf([]));
+    });
+
+    // Step 4 with line-1 unmatched (a R15 000 deposit) and line-2 auto-matched to tx-2 (a R2 500
+    // recorded deposit); every calculation succeeds.
+    async function driveToReview() {
+      const statement = {
+        id: "stmt-1",
+        trustAccountId: "acc-1",
+        periodStart: "2026-03-01",
+        periodEnd: "2026-03-31",
+        openingBalance: 0,
+        closingBalance: 17500,
+        fileName: "march-2026.csv",
+        format: "CSV",
+        lineCount: 2,
+        matchedCount: 1,
+        status: "IMPORTED",
+        importedBy: "member-1",
+        createdAt: "2026-04-01T00:00:00Z",
+        updatedAt: "2026-04-01T00:00:00Z",
+        lines: [
+          makeBankLine({ id: "line-1" }),
+          makeBankLine({
+            id: "line-2",
+            lineNumber: 2,
+            reference: "DEP/652B/002",
+            amount: 2500,
+            matchStatus: "AUTO_MATCHED",
+            trustTransactionId: "tx-2",
+          }),
+        ],
+      };
+      const draft = makeRecon({
+        status: "DRAFT",
+        isBalanced: false,
+        completedAt: null,
+        completedBy: null,
+        unresolvedLineCount: 1,
+      });
+      mockUploadBankStatement.mockResolvedValue({ success: true, data: statement });
+      mockAutoMatch.mockResolvedValue({
+        success: true,
+        data: { totalLines: 2, autoMatched: 1, alreadyMatched: 0, unmatched: 1 },
+      });
+      mockFetchBankStatement.mockResolvedValue(statement);
+      mockCreateReconciliation.mockResolvedValue({ success: true, data: draft });
+      mockCalculateReconciliation.mockResolvedValue({ success: true, data: draft });
+
+      await act(async () => {
+        render(
+          <Suspense fallback={null}>
+            <NewReconciliationPage params={Promise.resolve({ slug: "acme" })} />
+          </Suspense>
+        );
+      });
+      await waitFor(() => expect(screen.getByTestId("account-select")).toHaveValue("acc-1"));
+      fireEvent.change(screen.getByTestId("period-end-input"), {
+        target: { value: "2026-03-31" },
+      });
+      fireEvent.click(screen.getByTestId("step-next-btn"));
+      fireEvent.change(await screen.findByTestId("file-input"), {
+        target: { files: [new File(["csv"], "march-2026.csv", { type: "text/csv" })] },
+      });
+      await waitFor(() => expect(screen.getByTestId("step-next-btn")).toBeEnabled());
+      fireEvent.click(screen.getByTestId("step-next-btn"));
+      fireEvent.click(await screen.findByTestId("auto-match-btn"));
+      expect(await screen.findByText("Auto-matched 1 lines")).toBeInTheDocument();
+      fireEvent.click(screen.getByTestId("step-next-btn"));
+      expect(await screen.findByTestId("reconciliation-split-pane")).toBeInTheDocument();
+    }
+
+    it("offers an unlinked recorded deposit beside an approved payment when the review opens", async () => {
+      transactionsByStatus({
+        RECORDED: [recordedDeposit, linkedRecordedDeposit],
+        APPROVED: [approvedPayment],
+      });
+      await driveToReview();
+
+      expect(screen.getByTestId("transaction-tx-rec")).toBeInTheDocument();
+      expect(screen.getByTestId("transaction-tx-app")).toBeInTheDocument();
+      expect(screen.queryByTestId("transaction-tx-linked")).not.toBeInTheDocument();
+      expect(vi.mocked(fetchTransactions)).toHaveBeenCalledWith(
+        "acc-1",
+        expect.objectContaining({ status: "RECORDED" })
+      );
+      expect(vi.mocked(fetchTransactions)).toHaveBeenCalledWith(
+        "acc-1",
+        expect.objectContaining({ status: "APPROVED" })
+      );
+      // The recorded deposit is a candidate for the R15 000 line and can be matched.
+      fireEvent.click(screen.getByTestId("bank-line-line-1"));
+      expect(screen.getByTestId("match-btn-tx-rec")).toBeInTheDocument();
+    });
+
+    it("offers a recorded deposit freed by an unmatch when the transactions are re-read", async () => {
+      transactionsByStatus({ APPROVED: [approvedPayment] });
+      mockUnmatch.mockResolvedValue({ success: true });
+      await driveToReview();
+      expect(screen.queryByTestId("transaction-tx-2")).not.toBeInTheDocument();
+
+      // Unmatching line-2 frees tx-2, a recorded deposit.
+      transactionsByStatus({
+        RECORDED: [makeTx({ id: "tx-2", status: "RECORDED", amount: 2500 })],
+        APPROVED: [approvedPayment],
+      });
+      fireEvent.click(screen.getByTestId("unmatch-btn-line-2"));
+
+      expect(await screen.findByTestId("transaction-tx-2")).toBeInTheDocument();
+      expect(screen.getByTestId("transaction-tx-app")).toBeInTheDocument();
+      expect(screen.queryByTestId("reconciliation-error")).not.toBeInTheDocument();
+    });
+
+    it("offers a recorded deposit in the re-read after a refused completion", async () => {
+      transactionsByStatus({ APPROVED: [approvedPayment] });
+      await driveToReviewWithAllLinesAutoMatched();
+      mockCalculateReconciliation.mockResolvedValue({
+        success: true,
+        data: makeRecon({ status: "DRAFT", isBalanced: true, completedAt: null }),
+      });
+      mockCompleteReconciliation.mockResolvedValue({
+        success: false,
+        error: "1 statement line is neither matched, recorded nor excluded.",
+      });
+      fireEvent.click(screen.getByTestId("step-next-btn"));
+      expect(await screen.findByTestId("reconciliation-split-pane")).toBeInTheDocument();
+
+      // Another user unmatched line-1: tx-1, a recorded deposit, is free again.
+      mockFetchBankStatement.mockResolvedValue({
+        id: "stmt-1",
+        lines: [makeBankLine({ id: "line-1", matchStatus: "UNMATCHED", trustTransactionId: null })],
+      });
+      transactionsByStatus({
+        RECORDED: [makeTx({ id: "tx-1", status: "RECORDED" })],
+        APPROVED: [approvedPayment],
+      });
+      fireEvent.click(screen.getByTestId("complete-reconciliation-btn"));
+
+      expect(await screen.findByTestId("reconciliation-error")).toHaveTextContent(
+        "1 statement line is neither matched, recorded nor excluded."
+      );
+      expect(await screen.findByTestId("transaction-tx-1")).toBeInTheDocument();
+      expect(screen.getByTestId("transaction-tx-app")).toBeInTheDocument();
+    });
+
+    it("lists the merged recorded and approved transactions newest first", async () => {
+      transactionsByStatus({
+        RECORDED: [makeTx({ id: "tx-rec-old", status: "RECORDED", transactionDate: "2026-03-02" })],
+        APPROVED: [
+          makeTx({ id: "tx-app-new", status: "APPROVED", transactionDate: "2026-03-20" }),
+          makeTx({ id: "tx-app-mid", status: "APPROVED", transactionDate: "2026-03-10" }),
+        ],
+      });
+      await driveToReview();
+
+      const listed = screen
+        .getAllByTestId(/^transaction-tx-/)
+        .map((row) => row.getAttribute("data-testid"));
+      expect(listed).toEqual([
+        "transaction-tx-app-new",
+        "transaction-tx-app-mid",
+        "transaction-tx-rec-old",
+      ]);
     });
   });
 });

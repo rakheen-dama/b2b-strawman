@@ -48,14 +48,28 @@ const DEFAULT_CURRENCY = "ZAR";
  */
 type WizardError = string | { title: string; message: string };
 
-/** The account's APPROVED transactions not yet matched to a statement line (the right pane). */
+/** Statuses a statement line can be matched to: posted rows (R9; TrustReconciliationService.manualMatch). */
+const MATCHABLE_STATUSES = ["RECORDED", "APPROVED"] as const;
+
+/**
+ * The account's posted transactions (RECORDED and APPROVED) not yet matched to a statement line
+ * (the right pane), newest first. The list endpoint takes one status, so each is read on its own
+ * (652B); if either read fails the whole read fails, so the pane is never silently half-empty.
+ */
 async function fetchUnmatchedTransactions(accountId: string): Promise<TrustTransaction[]> {
-  const txPage = await fetchTransactions(accountId, {
-    status: "APPROVED",
-    page: 0,
-    size: 1000, // TODO: implement proper pagination for large trust accounts
-  });
-  return txPage.content.filter((tx) => !tx.bankStatementLineId);
+  const pages = await Promise.all(
+    MATCHABLE_STATUSES.map((status) =>
+      fetchTransactions(accountId, {
+        status,
+        page: 0,
+        size: 1000, // TODO: implement proper pagination for large trust accounts
+      })
+    )
+  );
+  return pages
+    .flatMap((txPage) => txPage.content)
+    .filter((tx) => !tx.bankStatementLineId)
+    .sort((a, b) => b.transactionDate.localeCompare(a.transactionDate));
 }
 
 /**

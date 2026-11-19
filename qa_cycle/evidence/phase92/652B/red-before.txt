@@ -1,0 +1,903 @@
+main SHA: 6f55d5e2fbe9d538cb5dc0a791fbe74e60e09712 (docs(trust): PR #1815 merged as acf07bc33 — 652A Done (reproduced red, built; stage 9))
+page.tsx unchanged vs main: yes
+command: cd frontend && NODE_OPTIONS="" /opt/homebrew/bin/pnpm exec vitest run __tests__/trust-reconciliation.test.tsx  (node v20.11.1)
+exit: 1
+-----
+
+ RUN  v4.1.5 /Users/rakheendama/Projects/2026/worktree-epic-652B/frontend
+
+ ❯ __tests__/trust-reconciliation.test.tsx (69 tests | 3 failed) 4525ms
+       × offers an unlinked recorded deposit beside an approved payment when the review opens 34ms
+       × offers a recorded deposit freed by an unmatch when the transactions are re-read 1028ms
+       × offers a recorded deposit in the re-read after a refused completion 1062ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  __tests__/trust-reconciliation.test.tsx > Trust Reconciliation > the manual-match pane offers recorded and approved transactions (652B) > offers an unlinked recorded deposit beside an approved payment when the review opens
+TestingLibraryElementError: Unable to find an element by: [data-testid="transaction-tx-rec"]
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-8"[39m
+    [36m>[39m
+      [36m<button[39m
+        [33mclass[39m=[32m"inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"[39m
+        [33mtype[39m=[32m"button"[39m
+      [36m>[39m
+        [36m<svg[39m
+          [33maria-hidden[39m=[32m"true"[39m
+          [33mclass[39m=[32m"lucide lucide-arrow-left size-4"[39m
+          [33mfill[39m=[32m"none"[39m
+          [33mheight[39m=[32m"24"[39m
+          [33mstroke[39m=[32m"currentColor"[39m
+          [33mstroke-linecap[39m=[32m"round"[39m
+          [33mstroke-linejoin[39m=[32m"round"[39m
+          [33mstroke-width[39m=[32m"2"[39m
+          [33mviewBox[39m=[32m"0 0 24 24"[39m
+          [33mwidth[39m=[32m"24"[39m
+          [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+        [36m>[39m
+          [36m<path[39m
+            [33md[39m=[32m"m12 19-7-7 7-7"[39m
+          [36m/>[39m
+          [36m<path[39m
+            [33md[39m=[32m"M19 12H5"[39m
+          [36m/>[39m
+        [36m</svg>[39m
+        [0mBack to Reconciliation[0m
+      [36m</button>[39m
+      [36m<div>[39m
+        [36m<h1[39m
+          [33mclass[39m=[32m"font-display text-3xl text-slate-950 dark:text-slate-50"[39m
+        [36m>[39m
+          [0mNew Reconciliation[0m
+        [36m</h1>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-1 text-sm text-slate-600 dark:text-slate-400"[39m
+        [36m>[39m
+          [0mReconcile your trust account with a bank statement[0m
+        [36m</p>[39m
+      [36m</div>[39m
+      [36m<nav[39m
+        [33maria-label[39m=[32m"Wizard steps"[39m
+      [36m>[39m
+        [36m<ol[39m
+          [33mclass[39m=[32m"flex items-center gap-2"[39m
+          [33mdata-testid[39m=[32m"step-indicator"[39m
+        [36m>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center gap-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex size-8 items-center justify-center rounded-full text-sm font-medium bg-teal-100 text-teal-700 dark:bg-teal-950 dark:text-teal-300"[39m
+            [36m>[39m
+              [0m1[0m
+            [36m</div>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"hidden text-sm sm:inline text-slate-500 dark:text-slate-400"[39m
+            [36m>[39m
+              [0mSelect Account[0m
+            [36m</span>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"mx-2 h-px w-8 bg-slate-200 dark:bg-slate-700"[39m
+            [36m/>[39m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center gap-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex size-8 items-center justify-center rounded-full text-sm font-medium bg-teal-100 text-teal-700 dark:bg-teal-950 dark:text-teal-300"[39m
+            [36m>[39m
+              [0m2[0m
+            [36m</div>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"hidden text-sm sm:inline text-slate-500 dark:text-slate-400"[39m
+            [36m>[39m
+              [0mUpload Statement[0m
+            [36m</span>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"mx-2 h-px w-8 bg-slate-200 dark:bg-slate-700"[39m
+            [36m/>[39m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center gap-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex size-8 items-center justify-center rounded-full text-sm font-medium bg-teal-100 text-teal-700 dark:bg-teal-950 dark:text-teal-300"[39m
+            [36m>[39m
+              [0m3[0m
+            [36m</div>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"hidden text-sm sm:inline text-slate-500 dark:text-slate-400"[39m
+            [36m>[39m
+              [0mAuto-Match[0m
+            [36m</span>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"mx-2 h-px w-8 bg-slate-200 dark:bg-slate-700"[39m
+            [36m/>[39m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center gap-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex size-8 items-center justify-center rounded-full text-sm font-medium bg-teal-600 text-white"[39m
+            [36m>[39m
+              [0m4[0m
+            [36m</div>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"hidden text-sm sm:inline font-medium text-slate-950 dark:text-slate-50"[39m
+            [36m>[39m
+              [0mReview & Match[0m
+            [36m</span>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"mx-2 h-px w-8 bg-slate-200 dark:bg-slate-700"[39m
+            [36m/>[39m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center gap-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex size-8 items-center justify-center rounded-full text-sm font-medium bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"[39m
+            [36m>[39m
+              [0m5[0m
+            [36m</div>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"hidden text-sm sm:inline text-slate-500 dark:text-slate-400"[39m
+            [36m>[39m
+              [0mComplete[0m
+            [36m</span>[39m
+          [36m</li>[39m
+        [36m</ol>[39m
+      [36m</nav>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"space-y-4"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"space-y-6"[39m
+          [33mdata-testid[39m=[32m"reconciliation-split-pane"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mdata-testid[39m=[32m"match-progress"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"mb-1 flex items-center justify-between text-sm"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"text-slate-600 dark:text-slate-400"[39m
+              [36m>[39m
+                [0mMatching Progress[0m
+              [36m</span>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"font-medium text-slate-950 dark:text-slate-50"[39m
+              [36m>[39m
+                [0m1[0m
+                [0m / [0m
+                [0m2[0m
+                [0m lines resolved[0m
+              [36m</span>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"h-full rounded-full b...
+ ❯ Object.getElementError ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ __tests__/trust-reconciliation.test.tsx:2765:21
+    2763|       await driveToReview();
+    2764|
+    2765|       expect(screen.getByTestId("transaction-tx-rec")).toBeInTheDocume…
+       |                     ^
+    2766|       expect(screen.getByTestId("transaction-tx-app")).toBeInTheDocume…
+    2767|       expect(screen.queryByTestId("transaction-tx-linked")).not.toBeIn…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  __tests__/trust-reconciliation.test.tsx > Trust Reconciliation > the manual-match pane offers recorded and approved transactions (652B) > offers a recorded deposit freed by an unmatch when the transactions are re-read
+TestingLibraryElementError: Unable to find an element by: [data-testid="transaction-tx-2"]
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-8"[39m
+    [36m>[39m
+      [36m<button[39m
+        [33mclass[39m=[32m"inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"[39m
+        [33mtype[39m=[32m"button"[39m
+      [36m>[39m
+        [36m<svg[39m
+          [33maria-hidden[39m=[32m"true"[39m
+          [33mclass[39m=[32m"lucide lucide-arrow-left size-4"[39m
+          [33mfill[39m=[32m"none"[39m
+          [33mheight[39m=[32m"24"[39m
+          [33mstroke[39m=[32m"currentColor"[39m
+          [33mstroke-linecap[39m=[32m"round"[39m
+          [33mstroke-linejoin[39m=[32m"round"[39m
+          [33mstroke-width[39m=[32m"2"[39m
+          [33mviewBox[39m=[32m"0 0 24 24"[39m
+          [33mwidth[39m=[32m"24"[39m
+          [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+        [36m>[39m
+          [36m<path[39m
+            [33md[39m=[32m"m12 19-7-7 7-7"[39m
+          [36m/>[39m
+          [36m<path[39m
+            [33md[39m=[32m"M19 12H5"[39m
+          [36m/>[39m
+        [36m</svg>[39m
+        [0mBack to Reconciliation[0m
+      [36m</button>[39m
+      [36m<div>[39m
+        [36m<h1[39m
+          [33mclass[39m=[32m"font-display text-3xl text-slate-950 dark:text-slate-50"[39m
+        [36m>[39m
+          [0mNew Reconciliation[0m
+        [36m</h1>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-1 text-sm text-slate-600 dark:text-slate-400"[39m
+        [36m>[39m
+          [0mReconcile your trust account with a bank statement[0m
+        [36m</p>[39m
+      [36m</div>[39m
+      [36m<nav[39m
+        [33maria-label[39m=[32m"Wizard steps"[39m
+      [36m>[39m
+        [36m<ol[39m
+          [33mclass[39m=[32m"flex items-center gap-2"[39m
+          [33mdata-testid[39m=[32m"step-indicator"[39m
+        [36m>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center gap-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex size-8 items-center justify-center rounded-full text-sm font-medium bg-teal-100 text-teal-700 dark:bg-teal-950 dark:text-teal-300"[39m
+            [36m>[39m
+              [0m1[0m
+            [36m</div>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"hidden text-sm sm:inline text-slate-500 dark:text-slate-400"[39m
+            [36m>[39m
+              [0mSelect Account[0m
+            [36m</span>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"mx-2 h-px w-8 bg-slate-200 dark:bg-slate-700"[39m
+            [36m/>[39m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center gap-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex size-8 items-center justify-center rounded-full text-sm font-medium bg-teal-100 text-teal-700 dark:bg-teal-950 dark:text-teal-300"[39m
+            [36m>[39m
+              [0m2[0m
+            [36m</div>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"hidden text-sm sm:inline text-slate-500 dark:text-slate-400"[39m
+            [36m>[39m
+              [0mUpload Statement[0m
+            [36m</span>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"mx-2 h-px w-8 bg-slate-200 dark:bg-slate-700"[39m
+            [36m/>[39m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center gap-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex size-8 items-center justify-center rounded-full text-sm font-medium bg-teal-100 text-teal-700 dark:bg-teal-950 dark:text-teal-300"[39m
+            [36m>[39m
+              [0m3[0m
+            [36m</div>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"hidden text-sm sm:inline text-slate-500 dark:text-slate-400"[39m
+            [36m>[39m
+              [0mAuto-Match[0m
+            [36m</span>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"mx-2 h-px w-8 bg-slate-200 dark:bg-slate-700"[39m
+            [36m/>[39m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center gap-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex size-8 items-center justify-center rounded-full text-sm font-medium bg-teal-600 text-white"[39m
+            [36m>[39m
+              [0m4[0m
+            [36m</div>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"hidden text-sm sm:inline font-medium text-slate-950 dark:text-slate-50"[39m
+            [36m>[39m
+              [0mReview & Match[0m
+            [36m</span>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"mx-2 h-px w-8 bg-slate-200 dark:bg-slate-700"[39m
+            [36m/>[39m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center gap-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex size-8 items-center justify-center rounded-full text-sm font-medium bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"[39m
+            [36m>[39m
+              [0m5[0m
+            [36m</div>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"hidden text-sm sm:inline text-slate-500 dark:text-slate-400"[39m
+            [36m>[39m
+              [0mComplete[0m
+            [36m</span>[39m
+          [36m</li>[39m
+        [36m</ol>[39m
+      [36m</nav>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"space-y-4"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"space-y-6"[39m
+          [33mdata-testid[39m=[32m"reconciliation-split-pane"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mdata-testid[39m=[32m"match-progress"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"mb-1 flex items-center justify-between text-sm"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"text-slate-600 dark:text-slate-400"[39m
+              [36m>[39m
+                [0mMatching Progress[0m
+              [36m</span>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"font-medium text-slate-950 dark:text-slate-50"[39m
+              [36m>[39m
+                [0m0[0m
+                [0m / [0m
+                [0m2[0m
+                [0m lines resolved[0m
+              [36m</span>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"h-full rounded-full b...
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-8"[39m
+    [36m>[39m
+      [36m<button[39m
+        [33mclass[39m=[32m"inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"[39m
+        [33mtype[39m=[32m"button"[39m
+      [36m>[39m
+        [36m<svg[39m
+          [33maria-hidden[39m=[32m"true"[39m
+          [33mclass[39m=[32m"lucide lucide-arrow-left size-4"[39m
+          [33mfill[39m=[32m"none"[39m
+          [33mheight[39m=[32m"24"[39m
+          [33mstroke[39m=[32m"currentColor"[39m
+          [33mstroke-linecap[39m=[32m"round"[39m
+          [33mstroke-linejoin[39m=[32m"round"[39m
+          [33mstroke-width[39m=[32m"2"[39m
+          [33mviewBox[39m=[32m"0 0 24 24"[39m
+          [33mwidth[39m=[32m"24"[39m
+          [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+        [36m>[39m
+          [36m<path[39m
+            [33md[39m=[32m"m12 19-7-7 7-7"[39m
+          [36m/>[39m
+          [36m<path[39m
+            [33md[39m=[32m"M19 12H5"[39m
+          [36m/>[39m
+        [36m</svg>[39m
+        [0mBack to Reconciliation[0m
+      [36m</button>[39m
+      [36m<div>[39m
+        [36m<h1[39m
+          [33mclass[39m=[32m"font-display text-3xl text-slate-950 dark:text-slate-50"[39m
+        [36m>[39m
+          [0mNew Reconciliation[0m
+        [36m</h1>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-1 text-sm text-slate-600 dark:text-slate-400"[39m
+        [36m>[39m
+          [0mReconcile your trust account with a bank statement[0m
+        [36m</p>[39m
+      [36m</div>[39m
+      [36m<nav[39m
+        [33maria-label[39m=[32m"Wizard steps"[39m
+      [36m>[39m
+        [36m<ol[39m
+          [33mclass[39m=[32m"flex items-center gap-2"[39m
+          [33mdata-testid[39m=[32m"step-indicator"[39m
+        [36m>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center gap-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex size-8 items-center justify-center rounded-full text-sm font-medium bg-teal-100 text-teal-700 dark:bg-teal-950 dark:text-teal-300"[39m
+            [36m>[39m
+              [0m1[0m
+            [36m</div>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"hidden text-sm sm:inline text-slate-500 dark:text-slate-400"[39m
+            [36m>[39m
+              [0mSelect Account[0m
+            [36m</span>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"mx-2 h-px w-8 bg-slate-200 dark:bg-slate-700"[39m
+            [36m/>[39m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center gap-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex size-8 items-center justify-center rounded-full text-sm font-medium bg-teal-100 text-teal-700 dark:bg-teal-950 dark:text-teal-300"[39m
+            [36m>[39m
+              [0m2[0m
+            [36m</div>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"hidden text-sm sm:inline text-slate-500 dark:text-slate-400"[39m
+            [36m>[39m
+              [0mUpload Statement[0m
+            [36m</span>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"mx-2 h-px w-8 bg-slate-200 dark:bg-slate-700"[39m
+            [36m/>[39m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center gap-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex size-8 items-center justify-center rounded-full text-sm font-medium bg-teal-100 text-teal-700 dark:bg-teal-950 dark:text-teal-300"[39m
+            [36m>[39m
+              [0m3[0m
+            [36m</div>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"hidden text-sm sm:inline text-slate-500 dark:text-slate-400"[39m
+            [36m>[39m
+              [0mAuto-Match[0m
+            [36m</span>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"mx-2 h-px w-8 bg-slate-200 dark:bg-slate-700"[39m
+            [36m/>[39m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center gap-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex size-8 items-center justify-center rounded-full text-sm font-medium bg-teal-600 text-white"[39m
+            [36m>[39m
+              [0m4[0m
+            [36m</div>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"hidden text-sm sm:inline font-medium text-slate-950 dark:text-slate-50"[39m
+            [36m>[39m
+              [0mReview & Match[0m
+            [36m</span>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"mx-2 h-px w-8 bg-slate-200 dark:bg-slate-700"[39m
+            [36m/>[39m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center gap-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex size-8 items-center justify-center rounded-full text-sm font-medium bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"[39m
+            [36m>[39m
+              [0m5[0m
+            [36m</div>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"hidden text-sm sm:inline text-slate-500 dark:text-slate-400"[39m
+            [36m>[39m
+              [0mComplete[0m
+            [36m</span>[39m
+          [36m</li>[39m
+        [36m</ol>[39m
+      [36m</nav>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"space-y-4"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"space-y-6"[39m
+          [33mdata-testid[39m=[32m"reconciliation-split-pane"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mdata-testid[39m=[32m"match-progress"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"mb-1 flex items-center justify-between text-sm"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"text-slate-600 dark:text-slate-400"[39m
+              [36m>[39m
+                [0mMatching Progress[0m
+              [36m</span>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"font-medium text-slate-950 dark:text-slate-50"[39m
+              [36m>[39m
+                [0m0[0m
+                [0m / [0m
+                [0m2[0m
+                [0m lines resolved[0m
+              [36m</span>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"h-full rounded-full b...
+ ❯ waitForWrapper ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ __tests__/trust-reconciliation.test.tsx:2794:27
+    2792|       fireEvent.click(screen.getByTestId("unmatch-btn-line-2"));
+    2793|
+    2794|       expect(await screen.findByTestId("transaction-tx-2")).toBeInTheD…
+       |                           ^
+    2795|       expect(screen.getByTestId("transaction-tx-app")).toBeInTheDocume…
+    2796|       expect(screen.queryByTestId("reconciliation-error")).not.toBeInT…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  __tests__/trust-reconciliation.test.tsx > Trust Reconciliation > the manual-match pane offers recorded and approved transactions (652B) > offers a recorded deposit in the re-read after a refused completion
+TestingLibraryElementError: Unable to find an element by: [data-testid="transaction-tx-1"]
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-8"[39m
+    [36m>[39m
+      [36m<button[39m
+        [33mclass[39m=[32m"inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"[39m
+        [33mtype[39m=[32m"button"[39m
+      [36m>[39m
+        [36m<svg[39m
+          [33maria-hidden[39m=[32m"true"[39m
+          [33mclass[39m=[32m"lucide lucide-arrow-left size-4"[39m
+          [33mfill[39m=[32m"none"[39m
+          [33mheight[39m=[32m"24"[39m
+          [33mstroke[39m=[32m"currentColor"[39m
+          [33mstroke-linecap[39m=[32m"round"[39m
+          [33mstroke-linejoin[39m=[32m"round"[39m
+          [33mstroke-width[39m=[32m"2"[39m
+          [33mviewBox[39m=[32m"0 0 24 24"[39m
+          [33mwidth[39m=[32m"24"[39m
+          [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+        [36m>[39m
+          [36m<path[39m
+            [33md[39m=[32m"m12 19-7-7 7-7"[39m
+          [36m/>[39m
+          [36m<path[39m
+            [33md[39m=[32m"M19 12H5"[39m
+          [36m/>[39m
+        [36m</svg>[39m
+        [0mBack to Reconciliation[0m
+      [36m</button>[39m
+      [36m<div>[39m
+        [36m<h1[39m
+          [33mclass[39m=[32m"font-display text-3xl text-slate-950 dark:text-slate-50"[39m
+        [36m>[39m
+          [0mNew Reconciliation[0m
+        [36m</h1>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-1 text-sm text-slate-600 dark:text-slate-400"[39m
+        [36m>[39m
+          [0mReconcile your trust account with a bank statement[0m
+        [36m</p>[39m
+      [36m</div>[39m
+      [36m<nav[39m
+        [33maria-label[39m=[32m"Wizard steps"[39m
+      [36m>[39m
+        [36m<ol[39m
+          [33mclass[39m=[32m"flex items-center gap-2"[39m
+          [33mdata-testid[39m=[32m"step-indicator"[39m
+        [36m>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center gap-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex size-8 items-center justify-center rounded-full text-sm font-medium bg-teal-100 text-teal-700 dark:bg-teal-950 dark:text-teal-300"[39m
+            [36m>[39m
+              [0m1[0m
+            [36m</div>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"hidden text-sm sm:inline text-slate-500 dark:text-slate-400"[39m
+            [36m>[39m
+              [0mSelect Account[0m
+            [36m</span>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"mx-2 h-px w-8 bg-slate-200 dark:bg-slate-700"[39m
+            [36m/>[39m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center gap-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex size-8 items-center justify-center rounded-full text-sm font-medium bg-teal-100 text-teal-700 dark:bg-teal-950 dark:text-teal-300"[39m
+            [36m>[39m
+              [0m2[0m
+            [36m</div>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"hidden text-sm sm:inline text-slate-500 dark:text-slate-400"[39m
+            [36m>[39m
+              [0mUpload Statement[0m
+            [36m</span>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"mx-2 h-px w-8 bg-slate-200 dark:bg-slate-700"[39m
+            [36m/>[39m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center gap-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex size-8 items-center justify-center rounded-full text-sm font-medium bg-teal-100 text-teal-700 dark:bg-teal-950 dark:text-teal-300"[39m
+            [36m>[39m
+              [0m3[0m
+            [36m</div>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"hidden text-sm sm:inline text-slate-500 dark:text-slate-400"[39m
+            [36m>[39m
+              [0mAuto-Match[0m
+            [36m</span>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"mx-2 h-px w-8 bg-slate-200 dark:bg-slate-700"[39m
+            [36m/>[39m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center gap-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex size-8 items-center justify-center rounded-full text-sm font-medium bg-teal-600 text-white"[39m
+            [36m>[39m
+              [0m4[0m
+            [36m</div>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"hidden text-sm sm:inline font-medium text-slate-950 dark:text-slate-50"[39m
+            [36m>[39m
+              [0mReview & Match[0m
+            [36m</span>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"mx-2 h-px w-8 bg-slate-200 dark:bg-slate-700"[39m
+            [36m/>[39m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center gap-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex size-8 items-center justify-center rounded-full text-sm font-medium bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"[39m
+            [36m>[39m
+              [0m5[0m
+            [36m</div>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"hidden text-sm sm:inline text-slate-500 dark:text-slate-400"[39m
+            [36m>[39m
+              [0mComplete[0m
+            [36m</span>[39m
+          [36m</li>[39m
+        [36m</ol>[39m
+      [36m</nav>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"rounded-md bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950 dark:text-red-300"[39m
+        [33mdata-testid[39m=[32m"reconciliation-error"[39m
+      [36m>[39m
+        [0m1 statement line is neither matched, recorded nor excluded.[0m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"space-y-4"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"space-y-6"[39m
+          [33mdata-testid[39m=[32m"reconciliation-split-pane"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mdata-testid[39m=[32m"match-progress"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"mb-1 flex items-center justify-between text-sm"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"text-slate-600 dark:text-slate-400"[39m
+              [36m>[39m
+                [0mMatching Progress[0m
+              [36m</span>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"font-medium text-slate-950 dark:text-slate-50"[39m
+              [36m>[39m
+                [0m0[0m
+                [0m / [0m
+                [0m1[0m
+                [0m lines re...
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-8"[39m
+    [36m>[39m
+      [36m<button[39m
+        [33mclass[39m=[32m"inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"[39m
+        [33mtype[39m=[32m"button"[39m
+      [36m>[39m
+        [36m<svg[39m
+          [33maria-hidden[39m=[32m"true"[39m
+          [33mclass[39m=[32m"lucide lucide-arrow-left size-4"[39m
+          [33mfill[39m=[32m"none"[39m
+          [33mheight[39m=[32m"24"[39m
+          [33mstroke[39m=[32m"currentColor"[39m
+          [33mstroke-linecap[39m=[32m"round"[39m
+          [33mstroke-linejoin[39m=[32m"round"[39m
+          [33mstroke-width[39m=[32m"2"[39m
+          [33mviewBox[39m=[32m"0 0 24 24"[39m
+          [33mwidth[39m=[32m"24"[39m
+          [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+        [36m>[39m
+          [36m<path[39m
+            [33md[39m=[32m"m12 19-7-7 7-7"[39m
+          [36m/>[39m
+          [36m<path[39m
+            [33md[39m=[32m"M19 12H5"[39m
+          [36m/>[39m
+        [36m</svg>[39m
+        [0mBack to Reconciliation[0m
+      [36m</button>[39m
+      [36m<div>[39m
+        [36m<h1[39m
+          [33mclass[39m=[32m"font-display text-3xl text-slate-950 dark:text-slate-50"[39m
+        [36m>[39m
+          [0mNew Reconciliation[0m
+        [36m</h1>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-1 text-sm text-slate-600 dark:text-slate-400"[39m
+        [36m>[39m
+          [0mReconcile your trust account with a bank statement[0m
+        [36m</p>[39m
+      [36m</div>[39m
+      [36m<nav[39m
+        [33maria-label[39m=[32m"Wizard steps"[39m
+      [36m>[39m
+        [36m<ol[39m
+          [33mclass[39m=[32m"flex items-center gap-2"[39m
+          [33mdata-testid[39m=[32m"step-indicator"[39m
+        [36m>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center gap-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex size-8 items-center justify-center rounded-full text-sm font-medium bg-teal-100 text-teal-700 dark:bg-teal-950 dark:text-teal-300"[39m
+            [36m>[39m
+              [0m1[0m
+            [36m</div>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"hidden text-sm sm:inline text-slate-500 dark:text-slate-400"[39m
+            [36m>[39m
+              [0mSelect Account[0m
+            [36m</span>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"mx-2 h-px w-8 bg-slate-200 dark:bg-slate-700"[39m
+            [36m/>[39m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center gap-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex size-8 items-center justify-center rounded-full text-sm font-medium bg-teal-100 text-teal-700 dark:bg-teal-950 dark:text-teal-300"[39m
+            [36m>[39m
+              [0m2[0m
+            [36m</div>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"hidden text-sm sm:inline text-slate-500 dark:text-slate-400"[39m
+            [36m>[39m
+              [0mUpload Statement[0m
+            [36m</span>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"mx-2 h-px w-8 bg-slate-200 dark:bg-slate-700"[39m
+            [36m/>[39m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center gap-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex size-8 items-center justify-center rounded-full text-sm font-medium bg-teal-100 text-teal-700 dark:bg-teal-950 dark:text-teal-300"[39m
+            [36m>[39m
+              [0m3[0m
+            [36m</div>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"hidden text-sm sm:inline text-slate-500 dark:text-slate-400"[39m
+            [36m>[39m
+              [0mAuto-Match[0m
+            [36m</span>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"mx-2 h-px w-8 bg-slate-200 dark:bg-slate-700"[39m
+            [36m/>[39m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center gap-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex size-8 items-center justify-center rounded-full text-sm font-medium bg-teal-600 text-white"[39m
+            [36m>[39m
+              [0m4[0m
+            [36m</div>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"hidden text-sm sm:inline font-medium text-slate-950 dark:text-slate-50"[39m
+            [36m>[39m
+              [0mReview & Match[0m
+            [36m</span>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"mx-2 h-px w-8 bg-slate-200 dark:bg-slate-700"[39m
+            [36m/>[39m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center gap-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex size-8 items-center justify-center rounded-full text-sm font-medium bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"[39m
+            [36m>[39m
+              [0m5[0m
+            [36m</div>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"hidden text-sm sm:inline text-slate-500 dark:text-slate-400"[39m
+            [36m>[39m
+              [0mComplete[0m
+            [36m</span>[39m
+          [36m</li>[39m
+        [36m</ol>[39m
+      [36m</nav>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"rounded-md bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950 dark:text-red-300"[39m
+        [33mdata-testid[39m=[32m"reconciliation-error"[39m
+      [36m>[39m
+        [0m1 statement line is neither matched, recorded nor excluded.[0m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"space-y-4"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"space-y-6"[39m
+          [33mdata-testid[39m=[32m"reconciliation-split-pane"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mdata-testid[39m=[32m"match-progress"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"mb-1 flex items-center justify-between text-sm"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"text-slate-600 dark:text-slate-400"[39m
+              [36m>[39m
+                [0mMatching Progress[0m
+              [36m</span>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"font-medium text-slate-950 dark:text-slate-50"[39m
+              [36m>[39m
+                [0m0[0m
+                [0m / [0m
+                [0m1[0m
+                [0m lines re...
+ ❯ waitForWrapper ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ __tests__/trust-reconciliation.test.tsx:2827:27
+    2825|         "1 statement line is neither matched, recorded nor excluded."
+    2826|       );
+    2827|       expect(await screen.findByTestId("transaction-tx-1")).toBeInTheD…
+       |                           ^
+    2828|       expect(screen.getByTestId("transaction-tx-app")).toBeInTheDocume…
+    2829|     });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 66 passed (69)
+   Start at  14:24:12
+   Duration  6.12s (transform 443ms, setup 93ms, import 902ms, tests 4.52s, environment 164ms)
+

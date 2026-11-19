@@ -1,0 +1,13 @@
+base 6f55d5e2fbe9d538cb5dc0a791fbe74e60e09712 (main) + the 652B change, committed as the slice head; blobs: page.tsx 526064bbfd32b329360621f4ac74c2633f697c14, trust-reconciliation.test.tsx b5bb54b34b57cccbd970116e4579c7116db75fb4
+node v20.11.1 · 2026-11-19T12:32:56Z
+command: pnpm exec vitest run __tests__/trust-reconciliation.test.tsx (exit 0)
+
+
+ RUN  v4.1.5 /Users/rakheendama/Projects/2026/worktree-epic-652B/frontend
+
+
+ Test Files  1 passed (1)
+      Tests  70 passed (70)
+   Start at  14:30:01
+   Duration  3.64s (transform 439ms, setup 84ms, import 873ms, tests 2.43s, environment 152ms)
+

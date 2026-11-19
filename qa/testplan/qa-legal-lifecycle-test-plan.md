@@ -39,7 +39,7 @@ Actor: **Alice** (Owner)
 - [ ] **0.18** Navigate to **Settings > Templates** (`/settings/templates`) → verify 4 matter templates listed: "Litigation (Personal Injury / General)", "Deceased Estate Administration", "Collections (Debt Recovery)", "Commercial (Corporate & Contract)"
 - [ ] **0.19** Navigate to **Settings > Trust Accounts** (or equivalent trust config page)
 - [ ] **0.20** Create trust account: Name = **"Mathebula & Partners Trust Account"**, Type = **GENERAL**, Bank = **Standard Bank**
-- [ ] **0.21** Set LPFF rate: **6.5%** (test rate)
+- [ ] **0.21** _(Removed.)_ No LPFF rate is set (Phase 92 decision 6 / E4 — §16.12.1, authorised 2026-11-16: the former step "Set LPFF rate: 6.5% (test rate)" is removed — LPFF rates are deleted with the calculated interest run (E7, 651C #1810 / 651E #1812))
 - [ ] **0.22** Navigate to **Settings > Modules** → verify court_calendar, conflict_check, lssa_tariff, trust_accounting all enabled
 - [ ] **0.23** 📸 **Screenshot**: Dashboard with legal nav, trust account card, "Matters" label visible
 
@@ -336,11 +336,11 @@ Actor: **Alice** (billing)
 
 - [ ] **45.1** Navigate to **Trust Accounting → Reconciliation**
 - [ ] **45.2** Select trust account: "Mathebula & Partners Trust Account"
-- [ ] **45.3** Upload bank statement CSV (Standard Bank format with matching transactions: R250,000 Moroka deposit, R45,000 QuickCollect deposit, R8,500 fee transfer)
+- [ ] **45.3** Upload bank statement CSV (Standard Bank format with matching transactions: R250,000 Moroka deposit, R45,000 QuickCollect deposit, R8,500 fee transfer); the statement also carries an interest line, a Fund sweep and a bank charge (Phase 92 decision 6 / E4 — §16.12.1, authorised 2026-11-16: E3 — interest, the Fund sweep and bank charges come from the bank statement; the wizard's step 2 is a CSV upload ("Choose CSV File"), `BankStatementUpload.tsx:90`, `reconciliation/new/page.tsx`)
 - [ ] **45.4** Verify **auto-matching**: deposits matched by amount + reference
-- [ ] **45.5** Verify any unmatched items can be manually matched or excluded
-- [ ] **45.6** Verify **3-way reconciliation**: bank balance = cashbook balance = client ledger total
-- [ ] **45.7** Mark reconciliation **complete**
+- [ ] **45.5** Verify any unmatched items can be manually matched, **recorded from the statement** (interest received for the Fund, Fund sweep, bank charge) or excluded (Phase 92 decision 6 / E4 — §16.12.1, authorised 2026-11-16: E3 — each unmatched line has **Record from statement** beside Exclude; the dialog asks "What is this line?" with "Interest received for the Legal Practitioners' Fidelity Fund", "Interest paid to the Legal Practitioners' Fidelity Fund" (the Fund sweep) and "Bank charge", `RecordFromStatementDialog.tsx:158,164,182`, `lib/types/trust.ts:332-367`)
+- [ ] **45.6** Verify adjusted bank balance = cashbook = **trust creditors** (client ledgers + Fund interest and charges + unidentified deposits), as at the statement's end date (Phase 92 decision 6 / E4 — §16.12.1, authorised 2026-11-16: E2, R1 — the review shows two comparisons, "Bank and cashbook" (… = Adjusted bank balance, Cashbook, Difference) and "Cashbook and trust creditors", with the "Trust creditors" breakdown (Client ledgers; Legal Practitioners' Fidelity Fund — interest and charges; Unidentified deposits), `ReconciliationSplitPane.tsx:595-700`)
+- [ ] **45.7** **Complete** — refused while any line is unresolved or the books do not balance; a month-end reconciliation locks that month's list (Phase 92 decision 6 / E4 — §16.12.1, authorised 2026-11-16: E5, E6 — **Complete Reconciliation** is enabled only when balanced with no unresolved line and no blocking integrity flag, and the server refuses otherwise (gate G1–G4), `ReconciliationSplitPane.tsx:582-585,772-781`, `TrustReconciliationService.java:978-1004`; a period end on a month's last day locks that month's Rule 54.15 list (`<Month Year> list locked`, "View the locked list"), `TrustReconciliationService.java:888-891`, `reconciliation/new/page.tsx:777-795`)
 - [ ] **45.8** 📸 **Screenshot**: Reconciliation split-pane with auto-matched transactions, 3-way balance totals
 
 ### Prescription tracking — Actor: Bob
@@ -370,7 +370,7 @@ Actor: **Alice** (billing)
 - [ ] **45.22** Check utilization breakdown for Alice, Bob, Carol
 
 **Day 45 Checkpoints**:
-- [ ] Bank reconciliation balanced (3-way)
+- [ ] Bank reconciliation balanced against all trust creditors; integrity check shows no blocking flag (Phase 92 decision 6 / E4 — §16.12.1, authorised 2026-11-16: E5 — "Reconciliation is balanced" and no blocking flag under "Integrity check", `ReconciliationSplitPane.tsx:720-745,755-760`)
 - [ ] Prescription tracking functional (3-year personal injury)
 - [ ] Court date lifecycle: SCHEDULED → POSTPONED → new SCHEDULED
 - [ ] Payment recorded, fee note status = PAID
@@ -381,34 +381,29 @@ Actor: **Alice** (billing)
 
 ## Day 60 — Interest Run & Second Billing
 
-### Interest calculation — Actor: Alice
+### Interest and the Fund sweep from the bank statement — Actor: Alice
 
-- [ ] **60.1** Navigate to **Trust Accounting → Interest**
-- [ ] **60.2** Click **New Interest Run**
-- [ ] **60.3** Select period: last 30 days, Account = "Mathebula & Partners Trust Account"
-- [ ] **60.4** Click **Calculate** → verify daily-balance method applied
-- [ ] **60.5** Verify interest calculated for Moroka (higher balance = more interest) and QuickCollect
-- [ ] **60.6** Verify **LPFF split** calculated at configured rate (6.5%)
-- [ ] **60.7** Click **Approve** → then **Post**
-- [ ] **60.8** Verify **INTEREST_CREDIT** transactions posted to client ledgers
-- [ ] **60.9** Verify **INTEREST_LPFF** transaction posted (LPFF portion)
-- [ ] **60.10** 📸 **Screenshot**: Interest run wizard showing calculation breakdown, LPFF split percentages
+> Steps 60.1–60.10 (the calculated interest run: New Interest Run, daily-balance calculation, LPFF split at 6.5%, approve and post, `INTEREST_CREDIT` / `INTEREST_LPFF`) were removed as a block and replaced by 60.1–60.3; ids 60.4–60.10 are retired (Phase 92 decision 6 / E4 — §16.12.1, authorised 2026-11-16: decision 6, L1, E3, E7 — Kazi calculates no trust interest; interest is recorded from the bank statement).
+
+- [ ] **60.1** Verify no Interest page exists: the **Trust** zone has no **Interest** item and `/trust-accounting/interest` is not found (Phase 92 decision 6 / E4 — §16.12.1, authorised 2026-11-16: E7 — the page, wizard and nav item were removed in 651C #1810, `frontend/lib/nav-items.ts:225-285`, `day-00-firm-setup.spec.ts:279`)
+- [ ] **60.2** On the next reconciliation (**Trust › Reconciliation**), record the bank's interest line as interest received for the Fund and the sweep as a Fund sweep — **Record from statement** on each line (Phase 92 decision 6 / E4 — §16.12.1, authorised 2026-11-16: E3 — the classifications are "Interest received for the Legal Practitioners' Fidelity Fund" and "Interest paid to the Legal Practitioners' Fidelity Fund", `lib/types/trust.ts:332-361`, `RecordFromStatementDialog.tsx:158,164`)
+- [ ] **60.3** Verify no client receives interest on general trust money (Phase 92 decision 6 / E4 — §16.12.1, authorised 2026-11-16: decision 6, L1 — interest on general trust money is the Fund's; it lands on the Fund's interest-and-charges ledger (**Trust › Other trust creditors**), never on a client ledger)
 
 ### Trust investment — Actor: Alice
 
 - [ ] **60.11** Navigate to **Trust Accounting → Investments**
 - [ ] **60.12** Click **Place Investment**
-- [ ] **60.13** Fill: Client = Moroka Family Trust, Principal = **R200,000**, Institution = "Standard Bank Fixed Deposit", Rate = 8.5%, Term = 90 days, Deposit Date = today
-- [ ] **60.14** Select investment basis: **§86(3) Firm Discretion** (firm-initiated investment)
+- [ ] **60.13** Fill: **no client** — Principal = **R200,000** of the firm's surplus trust money, Institution = "Standard Bank Fixed Deposit", Interest Rate % = 8.5, Deposit Date = today, Maturity Date = 90 days on (Phase 92 decision 6 / E4 — §16.12.1, authorised 2026-11-16: E4 — a section 86(3) placement names no client; the dialog hides Client ID and Matter ID for that basis, `PlaceInvestmentDialog.tsx:173-190,260-276,290-375`, `day-60-investments.spec.ts:250-272`)
+- [ ] **60.14** Select investment basis **Section 86(3) — the firm invests surplus trust money** and the firm's section 86(3) investment account (**Add investment account** if it has none): the firm places the R200,000 into a section 86(3) investment account (Phase 92 decision 6 / E4 — §16.12.1, authorised 2026-11-16: E4 — `PlaceInvestmentDialog.tsx:181-184,210-245`; the account dialog opens as "Add Investment Account" preset to the basis, `day-60-investments.spec.ts:83-110`)
 - [ ] **60.15** Save → verify investment appears in register as ACTIVE
-- [ ] **60.16** Verify trust balance reduced (R200,000 moved to investment)
+- [ ] **60.16** After approving the placement on **Trust › Transactions** (**Approve** on its AWAITING APPROVAL row, by an approver other than Alice — e.g. Bob), verify **no client's trust balance changed**; the trust position shows R200,000 in a section 86(3) investment account and the firm-wide equation still holds (Phase 92 decision 6 / E4 — §16.12.1, authorised 2026-11-16: E4, L7 — a placement stays "Awaiting approval" and moves no money until approved; the row's **Approve** button, `transactions/page.tsx:457-466`, `approval-badge.tsx:87-103`; the recorder cannot be the sole approver ("Self-approval not allowed"), `TrustTransactionService.java:915-923`; the investment row then reads "Active" and "Firm (section 86(3))", `investments/page.tsx:44,231`; the "Trust Position as at a Date" report has a "Section 86(3) Placements" column, `TrustReportPackSeeder.java:616-639`; **Trust › Overview** → "Trust integrity" shows "Books balance", `TrustIntegrityCard.tsx:216-226`; `day-60-investments.spec.ts:223-239,286-303`)
 - [ ] **60.17** 📸 **Screenshot**: Investment placement dialog with §86(3) selection
 
 ### Test §86(4) path
 
-- [ ] **60.18** Place second investment: Client = QuickCollect, Principal = **R30,000**, Institution = "Nedbank Call Account", Rate = 7.0%, Term = 60 days
-- [ ] **60.19** Select investment basis: **§86(4) Client Instruction** (client-instructed)
-- [ ] **60.20** Verify investment register distinguishes §86(3) and §86(4) investments
+- [ ] **60.18** Place second investment (**Place Investment**): first select investment basis **Section 86(4) — invested on a client's instruction** (client-instructed), then choose the firm's §86(4) investment account under **Investment account** (**Add investment account** if it has none): the R30,000 is placed into a §86(4) investment account (Phase 92 decision 6 / E4 — §16.12.1, authorised 2026-11-16: E4 — the basis comes first: the dialog opens on section 86(3), `PlaceInvestmentDialog.tsx:66`, the picker lists only accounts of the chosen basis, `:100-105`, "Add investment account" opens preset to it, `:238-247,434`, and changing the basis clears the account, client and matter, `:116-122`; radio label `:187-190`; order as in `day-60-investments.spec.ts:134-141`)
+- [ ] **60.19** Fill: **Client ID** = QuickCollect's client id (UUID), **Matter ID** = its matter's id (UUID), Principal = **R30,000**, Institution = "Nedbank Call Account", Interest Rate % = 7.0, Maturity Date = 60 days on → **Place Investment**; after approving the placement on **Trust › Transactions** (**Approve** on its AWAITING APPROVAL row, by an approver other than Alice — e.g. Bob), verify QuickCollect's general balance falls by R30,000 and its invested balance rises by R30,000 — **total unchanged** (Phase 92 decision 6 / E4 — §16.12.1, authorised 2026-11-16: E4 — Client ID and Matter ID appear only for section 86(4), `PlaceInvestmentDialog.tsx:253-283`, and take raw UUIDs (placeholder "Client UUID", `:262`; otherwise "Must be a valid client" / "Must be a valid matter", `placeInvestmentSchema`, `lib/schemas/trust.ts:344,353`); the dialog has no Term field, so "Term = 60 days" is the optional maturity date, `:375`; the placement moves no money until approved, `approval-badge.tsx:87-103`, `TrustTransactionService.java:915-923`; the client ledger then shows "General balance", "Invested (section 86(4))" and "Total held in trust", `ledger-totals-breakdown.tsx:106-146`, `day-60-investments.spec.ts:306-377`)
+- [ ] **60.20** Verify investment register distinguishes §86(3) and §86(4) investments, with their balance and interest (Phase 92 decision 6 / E4 — §16.12.1, authorised 2026-11-16: E4 — the Investment Register shows a Balance column and, under the principal, gross interest / Fund 5% / net interest for a section 86(4) row, or "Interest is the Fund's — record it from the investment account's statement" for a section 86(3) row, `investments/page.tsx:206-300`)
 
 ### Second billing cycle
 
@@ -426,10 +421,8 @@ Actor: **Alice** (billing)
 - [ ] **60.29** 📸 **Screenshot**: Profitability report showing margins across 4 clients
 
 **Day 60 Checkpoints**:
-- [ ] Interest run completed with LPFF split correctly calculated
-- [ ] INTEREST_CREDIT + INTEREST_LPFF transactions posted to ledgers
-- [ ] Investment placed under §86(3) (firm discretion) — LPFF rate from config
-- [ ] Investment placed under §86(4) (client instruction) — statutory 5% rate
+- [ ] §86(3) interest is recorded for the Fund from the investment account's statement (Phase 92 decision 6 / E4 — §16.12.1, authorised 2026-11-16: E4, E7 — replaces the interest-run, INTEREST_CREDIT / INTEREST_LPFF and "LPFF rate from config" checkpoints; on a section 86(3) account a credit line is recorded as "Interest received for the Legal Practitioners' Fidelity Fund", `lib/types/trust.ts:332-337`)
+- [ ] §86(4) interest is recorded per investment: gross, Fund 5%, client 95% (Phase 92 decision 6 / E4 — §16.12.1, authorised 2026-11-16: E4 — **Record interest** on the investment row shows the Fund's 5% and the client's share, `RecordInvestmentInterestDialog.tsx:241`, `InterestShares.tsx:21-28`, `day-60-investments.spec.ts:380-430`)
 - [ ] Investment register shows both with correct basis column
 - [ ] Second billing cycle completed (3 more fee notes)
 - [ ] Trust fee transfer for Moroka reduces ledger balance
@@ -513,16 +506,18 @@ Actor: **Alice** (full review)
   - [ ] Trust account summary (account name, bank, type)
   - [ ] All client ledger balances (Moroka, QuickCollect)
   - [ ] Reconciliation status (last reconciliation date, balanced = yes/no)
-  - [ ] Interest allocations (with LPFF split details)
+  - [ ] Interest and charges schedule (Rule 54.28) (Phase 92 decision 6 / E4 — §16.12.1, authorised 2026-11-16: E6 — replaces "Interest allocations (with LPFF split details)"; the pack's part "Interest and charges schedule (Rule 54.28)", `Section35DataPackQuery.java:53`)
+  - [ ] Trust creditors including the Fund and unidentified deposits (Phase 92 decision 6 / E4 — §16.12.1, authorised 2026-11-16: E6 — part "Trust creditors (Rule 54.15)", with the line "Legal Practitioners' Fidelity Fund — interest and charges", `Section35DataPackQuery.java:49`, `day-90-review.spec.ts:170-186`)
+  - [ ] Fund sweeps with their statement lines (Phase 92 decision 6 / E4 — §16.12.1, authorised 2026-11-16: E6 — part "Fund sweeps and their statement lines (Rule 54.14.16)", plus "Fund sweeps with no statement line", `Section35DataPackQuery.java:54-55`)
   - [ ] Investment register (with §86(3)/(4) basis column)
 - [ ] **90.11** 📸 **Screenshot**: Section 35 report generation / preview
 
 ### Trust reports
 
 - [ ] **90.12** Generate **Client Trust Balances** report → verify all clients with trust funds listed
-- [ ] **90.13** Generate **Investment Register** → verify §86(3) and §86(4) investments shown separately with applicable rates
+- [ ] **90.13** Generate **Investment Register** → verify §86(3) and §86(4) investments shown separately with balances and interest (gross, Fund 5%, net) (Phase 92 decision 6 / E4 — §16.12.1, authorised 2026-11-16: E4, E7 — the report's columns include Balance, Gross Interest, Fund 5% and Net Interest, with no LPFF rate column, `TrustReportPackSeeder.java:734-745`, `day-90-review.spec.ts:226-246`)
 - [ ] **90.14** Generate **Trust Receipts & Payments** → verify complete transaction history
-- [ ] **90.15** 📸 **Screenshot**: Investment register with §86 basis column
+- [ ] **90.15** 📸 **Screenshot**: Investment register with §86 basis column, balances and interest (gross, Fund 5%, net) (Phase 92 decision 6 / E4 — §16.12.1, authorised 2026-11-16: E4, E7 — as 90.13)
 
 ### Profitability
 
@@ -571,7 +566,7 @@ Actor: **Alice** (full review)
 - [ ] 4 clients, all ACTIVE, FICA complete
 - [ ] 9 matters with mixed statuses and types (litigation, commercial, estates, collections)
 - [ ] 7+ fee notes (DRAFT, SENT, PAID)
-- [ ] Trust account with: deposits, fee transfers, reconciliation, interest run, 2 investments (§86(3) + §86(4))
+- [ ] Trust account with: deposits, fee transfers, reconciliation, interest and sweep recorded from the statement, 2 investments on the books (§86(3) + §86(4)) (Phase 92 decision 6 / E4 — §16.12.1, authorised 2026-11-16: E7 — the calculated interest run is removed)
 - [ ] Court calendar with dates (SCHEDULED, POSTPONED, HEARD)
 - [ ] Conflict checks logged (clear + adverse party match results)
 - [ ] Prescription tracking functional (3-year personal injury)

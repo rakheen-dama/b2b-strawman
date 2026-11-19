@@ -17,6 +17,7 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksFixture;
 import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksFixture.Client;
 import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness.Expected;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateTrustAccountRequest;
@@ -58,6 +59,10 @@ import org.springframework.transaction.support.TransactionTemplate;
  *       it was paid out, {@code P} was closed, and R10 000 was deposited on a replacement account
  *       {@code R}: both documents must print {@code R} and R10 000,00 — the account that holds the
  *       client's money — not the closed primary with R0,00.
+ *   <li><b>(d)</b> (review D-2) client D's money was on {@code P} too and was paid out before the
+ *       close; R8 000 was then deposited on {@code R} and placed in full in a section 86(4)
+ *       investment, so client D's <i>general</i> balance is R0 on both {@code P} and {@code R}:
+ *       both documents must still print {@code R}, whose invested block holds the R8 000.
  *   <li><b>(c) observation only</b> (§16.14.4: the demo seeder's main account is a primary {@code
  *       SECTION_86} account while the builders look for a primary {@code GENERAL}): client C's only
  *       account is a primary {@code SECTION_86} account holding R7 000. Recorded, not part of the
@@ -111,9 +116,11 @@ class StatementBuilderClosedPrimaryAccountIntegrationTest {
   private UUID closedPrimaryAccount;
   private UUID replacementAccount;
   private UUID section86MainAccount;
+  private UUID investmentAccount;
   private Client clientA;
   private Client clientB;
   private Client clientC;
+  private Client clientD;
 
   @BeforeAll
   void setup() throws Exception {
@@ -157,9 +164,24 @@ class StatementBuilderClosedPrimaryAccountIntegrationTest {
     clientB = books.newClient("closed primary account");
     books.deposit(closedPrimaryAccount, clientB, "10000.00");
     payOut(closedPrimaryAccount, clientB, "10000.00");
+    // (d) client D: also on P and paid out before the close (a closed account takes no postings)
+    clientD = books.newClient("closed primary, money invested");
+    books.deposit(closedPrimaryAccount, clientD, "8000.00");
+    payOut(closedPrimaryAccount, clientD, "8000.00");
     close(closedPrimaryAccount);
     replacementAccount = openAccount(REPLACEMENT_ACCOUNT, "62000065203", "GENERAL", false);
     books.deposit(replacementAccount, clientB, "10000.00");
+    // (d) client D: R8 000 on R, all of it placed in a section 86(4) investment from R
+    books.deposit(replacementAccount, clientD, "8000.00");
+    investmentAccount = books.freshInvestmentAccount(InvestmentBasis.CLIENT_INSTRUCTION);
+    var placed = books.requestPlacement(replacementAccount, investmentAccount, clientD, "8000.00");
+    books.approvePlacement(
+        replacementAccount,
+        Expected.cashbookAndClient("-8000.00"),
+        investmentAccount,
+        Expected.cashbookAndInvestment("8000.00"),
+        placed.depositTransactionId(),
+        approverId);
 
     // (c) client C: the demo seeder's shape — the main account is a primary SECTION_86 account
     section86MainAccount = openAccount(SECTION_86_MAIN_ACCOUNT, "62000065204", "SECTION_86", true);
@@ -192,6 +214,12 @@ class StatementBuilderClosedPrimaryAccountIntegrationTest {
     assertThat(books.clientLedger(closedPrimaryAccount, clientB)).isEqualByComparingTo("0");
     assertThat(books.clientLedger(replacementAccount, clientB)).isEqualByComparingTo("10000.00");
     assertThat(books.clientLedger(section86MainAccount, clientC)).isEqualByComparingTo("7000.00");
+    assertThat(books.clientLedger(closedPrimaryAccount, clientD)).isEqualByComparingTo("0");
+    assertThat(books.clientLedger(replacementAccount, clientD))
+        .as("client D's general balance on R: all of it is invested")
+        .isEqualByComparingTo("0");
+    assertThat(books.clientInvestmentLedger(investmentAccount, clientD))
+        .isEqualByComparingTo("8000.00");
   }
 
   // --- (a) the client's only trust account is closed ----------------------------------------
@@ -290,6 +318,46 @@ class StatementBuilderClosedPrimaryAccountIntegrationTest {
     assertThat(ctsHtml(clientB))
         .contains(REPLACEMENT_ACCOUNT)
         .doesNotContain(CLOSED_PRIMARY_ACCOUNT);
+  }
+
+  // --- (d) review D-2: the primary is closed, the client's money on R is all invested -------
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void d_primaryClosed_moneyAllInvested_statementOfAccount_readsTheFundingAccount() {
+    var trust = (Map<String, Object>) soaContext(clientD).get("trust");
+
+    assertThat(trust.get("status")).isEqualTo("available");
+    assertThat(trust)
+        .as(
+            "SoA invested block: client D's R8 000 is invested from the replacement account; the"
+                + " closed primary funded no investment")
+        .containsKey("invested");
+    var invested = (Map<String, Object>) trust.get("invested");
+    assertThat(amount(invested.get("capital_placed"))).isEqualByComparingTo("8000.00");
+    assertThat(amount(invested.get("closing_balance"))).isEqualByComparingTo("8000.00");
+    assertThat(amount(invested.get("total_held"))).isEqualByComparingTo("8000.00");
+    assertThat(amount(trust.get("closing_balance"))).isEqualByComparingTo("0");
+    assertThat((List<Map<String, Object>>) trust.get("payments"))
+        .as("the closed primary's payment is not on the account holding client D's money")
+        .extracting(row -> row.get("transactionType"))
+        .doesNotContain("PAYMENT");
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void d_primaryClosed_moneyAllInvested_clientTrustStatement_readsTheFundingAccount() {
+    var block = inTenant(() -> clientTrustStatementContext.buildFor(clientD.id())).orElseThrow();
+
+    assertThat(block.get("status")).isEqualTo("available");
+    assertThat(block.get("account_name"))
+        .as("Client Trust Statement account: the open account client D's money is invested from")
+        .isEqualTo(REPLACEMENT_ACCOUNT);
+    assertThat(block).containsKey("invested");
+    var invested = (Map<String, Object>) block.get("invested");
+    assertThat(amount(invested.get("closing_balance"))).isEqualByComparingTo("8000.00");
+    assertThat(amount(invested.get("total_held"))).isEqualByComparingTo("8000.00");
+    assertThat(amount(block.get("closing_balance"))).isEqualByComparingTo("0");
   }
 
   // --- (c) observation: the main account is a primary SECTION_86 account (§16.14.4) ---------

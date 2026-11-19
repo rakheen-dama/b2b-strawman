@@ -544,10 +544,11 @@ public class StatementOfAccountContextBuilder {
     // primary GENERAL flag was not set). Section 86 / LPC compliance breaks if the SoA's
     // Trust Activity section is empty for a customer with active funds.
     //
-    // 652D (D-1): with several such accounts, print the one holding the customer's money as at
-    // periodEnd — a closed primary GENERAL holds nothing after its close and must not hide the
-    // money on its replacement — tie-broken by the primary GENERAL, else the first id. A sole
-    // account is used as-is. The rule lives in ClientTrustStatementContext.statementAccountId,
+    // 652D (D-1/D-2): with several such accounts, print the one holding the customer's money
+    // (general plus section 86(4) invested) as at periodEnd — a closed primary GENERAL holds
+    // nothing after its close and must not hide the money on its replacement — tie-broken by the
+    // primary GENERAL, else the first id. A sole account is used as-is. The rule lives in
+    // ClientTrustStatementContext.statementAccountId,
     // shared with the Client Trust Statement. Logging is intentional: a customer with activity on
     // several trust accounts is an unusual operational shape worth surfacing.
     List<UUID> customerTrustAccountIds =

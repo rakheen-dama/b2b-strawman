@@ -1,0 +1,26 @@
+# 652D review D-2 — red run of the new case (d) against the D-1 helper (head f6aa411d2, before the D-2 production change)
+# Command: ./mvnw test -Dtest=StatementBuilderClosedPrimaryAccountIntegrationTest -q  (EXIT=1)
+# Source: backend/target/surefire-reports/...StatementBuilderClosedPrimaryAccountIntegrationTest.txt (frames below the test frame trimmed)
+
+-------------------------------------------------------------------------------
+Test set: io.b2mash.b2b.b2bstrawman.verticals.legal.statement.StatementBuilderClosedPrimaryAccountIntegrationTest
+-------------------------------------------------------------------------------
+Tests run: 10, Failures: 2, Errors: 0, Skipped: 0, Time elapsed: 29.67 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.statement.StatementBuilderClosedPrimaryAccountIntegrationTest
+io.b2mash.b2b.b2bstrawman.verticals.legal.statement.StatementBuilderClosedPrimaryAccountIntegrationTest.d_primaryClosed_moneyAllInvested_clientTrustStatement_readsTheFundingAccount -- Time elapsed: 0.519 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+[Client Trust Statement account: the open account client D's money is invested from] 
+expected: "CPA Replacement Trust Account"
+ but was: "CPA Closed Primary Trust Account"
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.statement.StatementBuilderClosedPrimaryAccountIntegrationTest.d_primaryClosed_moneyAllInvested_clientTrustStatement_readsTheFundingAccount(StatementBuilderClosedPrimaryAccountIntegrationTest.java:355)
+
+io.b2mash.b2b.b2bstrawman.verticals.legal.statement.StatementBuilderClosedPrimaryAccountIntegrationTest.d_primaryClosed_moneyAllInvested_statementOfAccount_readsTheFundingAccount -- Time elapsed: 0.036 s <<< FAILURE!
+java.lang.AssertionError: 
+[SoA invested block: client D's R8 000 is invested from the replacement account; the closed primary funded no investment] 
+Expecting actual:
+  {"closing_balance"=0.00, "deposits"=[{"amount"=8000.00, "description"="Deposit", "id"="be24c130-8d75-46c0-8107-a4c250dff25a", "reference"="DEP-TB-8", "transactionDate"="2026-03-01", "transactionType"="DEPOSIT", "transactionTypeLabel"="Deposit"}], "opening_balance"=0, "payments"=[{"amount"=8000.00, "description"="Payment", "id"="f000060d-a826-401c-abb2-c2eaa935cebf", "reference"="PAY-TB-9", "transactionDate"="2026-03-01", "transactionType"="PAYMENT", "transactionTypeLabel"="Payment"}], "status"="available"}
+to contain key:
+  "invested"
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.statement.StatementBuilderClosedPrimaryAccountIntegrationTest.d_primaryClosed_moneyAllInvested_statementOfAccount_readsTheFundingAccount(StatementBuilderClosedPrimaryAccountIntegrationTest.java:335)
+
+
+Passed: the 8 pre-existing tests (fixture control incl. client D's ledgers: general R0 on P and R, invested R8 000), a_*, b_*, c_*.

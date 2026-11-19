@@ -31,9 +31,10 @@ import org.springframework.stereotype.Component;
  *
  * <p>The account is chosen by {@link #statementAccountId}, the one rule the Statement of Account
  * uses too (GAP-L-94, 652D): of the trust account(s) the client actually has activity on, the one
- * holding the client's money as at today; a sole account is used as-is, so a client whose only
- * account is closed still gets its history. Lines and balances come from {@link
- * ClientLedgerService#getClientLedgerStatement}, so opening + lines = closing by construction.
+ * holding the client's money (general plus section 86(4) invested) as at today; a sole account is
+ * used as-is, so a client whose only account is closed still gets its history. Lines and balances
+ * come from {@link ClientLedgerService#getClientLedgerStatement}, so opening + lines = closing by
+ * construction.
  *
  * <p>648F (§16.6.4, ADR-379 L7): a client with section 86(4) investments placed from that account
  * also gets {@code invested} ({@link #investedBlock}) — the block the Statement of Account prints
@@ -163,14 +164,16 @@ public class ClientTrustStatementContext {
   }
 
   /**
-   * The account a client document prints (GAP-L-94, 652D D-1): of the accounts the client has
-   * client-ledger activity on ({@code candidates}, in id order), those holding a non-zero general
-   * balance for the client as at {@code asAt} (all of them when none does); among those the primary
-   * GENERAL account, else the first id. A closed account holds nothing after its close
-   * (TrustAccountService close guard), so it is never chosen over an account that holds the
-   * client's money; a sole account is used as-is. Balances are read only when there are several
-   * candidates. Shared by this context (as at today) and {@code
-   * StatementOfAccountContextBuilder.buildTrustBlock} (as at the period end).
+   * The account a client document prints (GAP-L-94, 652D D-1/D-2): of the accounts the client has
+   * client-ledger activity on ({@code candidates}, in id order), those holding money for the client
+   * as at {@code asAt} — general balance plus what is invested under section 86(4) from the
+   * account, non-zero (D-2: a placement takes the money off the general ledger, so money that is
+   * all invested still counts) — or all of them when none does; among those the primary GENERAL
+   * account, else the first id. A closed account holds nothing after its close (TrustAccountService
+   * close guard), so it is never chosen over an account that holds the client's money; a sole
+   * account is used as-is. Balances are read only when there are several candidates. Shared by this
+   * context (as at today) and {@code StatementOfAccountContextBuilder.buildTrustBlock} (as at the
+   * period end).
    */
   public static Optional<UUID> statementAccountId(
       UUID clientId,
@@ -185,9 +188,7 @@ public class ClientTrustStatementContext {
       return Optional.of(candidates.getFirst());
     }
     List<UUID> holding =
-        candidates.stream()
-            .filter(id -> ledger.getClientBalanceAsOfDate(clientId, id, asAt).signum() != 0)
-            .toList();
+        candidates.stream().filter(id -> heldOn(clientId, id, asAt, ledger).signum() != 0).toList();
     List<UUID> pool = holding.isEmpty() ? candidates : holding;
     return Optional.of(
         accounts
@@ -195,6 +196,14 @@ public class ClientTrustStatementContext {
             .map(TrustAccount::getId)
             .filter(pool::contains)
             .orElse(pool.getFirst()));
+  }
+
+  /** The client's general balance on the account plus what is invested from it, as at asAt. */
+  private static BigDecimal heldOn(
+      UUID clientId, UUID accountId, LocalDate asAt, ClientLedgerService ledger) {
+    return ledger
+        .getClientBalanceAsOfDate(clientId, accountId, asAt)
+        .add(ledger.getClientInvestedBalanceAsOfDate(clientId, accountId, asAt));
   }
 
   private Optional<TrustAccount> selectAccount(UUID clientId, LocalDate today) {

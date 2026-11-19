@@ -34,14 +34,27 @@ One shared rule: `ClientTrustStatementContext.statementAccountId(clientId, candi
 
 The document date is `periodEnd` for the SoA and today (`LocalDate.now(clock)`) for the CTS. A closed account holds R0 after its close (the close guard), so it is never chosen over an account that holds the client's money. A historical SoA for a period before the move still prints the old account.
 
+## Review fix: orchestrator DEFAULT ruling 652D D-2 (invested money counts)
+Review finding (PR #1818): step 2 of D-1 read only the general client ledger. `INV_PLACE` has a −1 effect on that ledger, so a client whose money on the replacement account is entirely invested under s86(4) has general R0 there, the same as on the closed primary. The filter kept nothing, the tie-break chose the closed primary, and the invested block was read against it: the invested money disappeared from both documents.
+
+D-2: "holds money" = general balance **plus** the client's s86(4) invested balance from that account, as at the document date, non-zero. New `ClientLedgerService.getClientInvestedBalanceAsOfDate` (module-guarded, wraps `TrustLedgerQueryRepository.clientInvestedBalance`), used by `ClientTrustStatementContext.statementAccountId` on the multi-candidate path only.
+
+Reproduction: case (d) in the same IT. Client D is paid out of P before the close, then R8 000 is deposited on R and placed in full in a s86(4) investment from R. Red against the D-1 helper (`red-d2-surefire.txt`, `Tests run: 10, Failures: 2`):
+- CTS: `expected: "CPA Replacement Trust Account" but was: "CPA Closed Primary Trust Account"` (:355)
+- SoA: the trust block (P's DEPOSIT/PAYMENT, closing 0.00) did not contain key `"invested"` (:335)
+
+Green after D-2: `Tests run: 10, Failures: 0`. Unit case `buildTrustBlock_multiAccountCustomer_accountWhoseMoneyIsAllInvestedWinsOverClosedPrimary` added to `StatementOfAccountContextBuilderTest`.
+
 ## Green after the fix
 File: `green-after-surefire.txt`.
 
+After D-1: `Tests run: 8, Failures: 0`. After D-2 (current file):
+
 ```
-Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.128 s -- in ...StatementBuilderClosedPrimaryAccountIntegrationTest
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0 -- in ...StatementBuilderClosedPrimaryAccountIntegrationTest
 ```
 
-Tier 2 targeted run: the `verticals.legal.statement` and `verticals.legal.trustaccounting.ledger` packages, plus `ClientTrustStatementContextIntegrationTest` and `CustomerContextBuilderTest`. 18 classes, 137 tests, 0 failures, 0 errors. The full `./mvnw verify` belongs to the orchestrator and Backend CI.
+Tier 2 targeted run after D-2: the `verticals.legal.statement` and `verticals.legal.trustaccounting.ledger` packages, `ClientTrustStatementContextIntegrationTest`, `CustomerContextBuilderTest`, and every other test class referencing `ClientLedgerService` (`TrustPostingDateZoneIntegrationTest`, `TrustTransactionServiceTest`, `TrustWireContractTest`). 21 classes, 194 tests, 0 failures, 0 errors. (After D-1: 18 classes, 137 tests, 0 failures.) The full `./mvnw verify` belongs to the orchestrator and Backend CI.
 
 ## Case (c) observation, §16.14.4: does not bite
 The demo seeder's main account is a primary **SECTION_86** account. A client on that one account takes the single-candidate path, so both documents print it correctly (case (c) is green both before and after the fix). The primary-GENERAL lookup only runs for multi-account clients, and only as the tie-break. The dashboard half of §16.14.4 (`DashboardService.java:614`) is outside 652D and is not changed.

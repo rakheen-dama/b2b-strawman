@@ -163,6 +163,10 @@ class StatementOfAccountContextBuilderTest {
     lenient()
         .when(clientLedgerService.getClientBalanceAsOfDate(any(), any(), any()))
         .thenReturn(BigDecimal.ZERO);
+    // 652D D-2: money invested under section 86(4) counts too — none by default.
+    lenient()
+        .when(clientLedgerService.getClientInvestedBalanceAsOfDate(any(), any(), any()))
+        .thenReturn(BigDecimal.ZERO);
   }
 
   @Test
@@ -1400,6 +1404,49 @@ class StatementOfAccountContextBuilderTest {
         .isEqualByComparingTo(new BigDecimal("10000.00"));
     verify(clientLedgerService)
         .getClientLedgerStatement(customerId, replacementAccountId, periodStart, periodEnd);
+    verify(clientLedgerService, never())
+        .getClientLedgerStatement(customerId, trustAccountId, periodStart, periodEnd);
+  }
+
+  @Test
+  void buildTrustBlock_multiAccountCustomer_accountWhoseMoneyIsAllInvestedWinsOverClosedPrimary() {
+    // 652D D-2: the closed primary GENERAL holds R0 for the customer at periodEnd; on the second
+    // account the customer's general balance is R0 too, because all R8 000 was placed in a
+    // section 86(4) investment from it. The money is on the second account: the SoA prints it
+    // (and its invested block), not the closed primary.
+    UUID fundingAccountId = UUID.randomUUID();
+    var project = projectWithCustomer("All-Invested", customerId);
+    when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer("Client")));
+    when(timeEntryRepository.findByFilters(eq(projectId), eq(null), eq(periodStart), eq(periodEnd)))
+        .thenReturn(List.of());
+    when(disbursementService.listForStatement(projectId, periodStart, periodEnd))
+        .thenReturn(List.of());
+    when(invoiceRepository.findByProjectId(projectId)).thenReturn(List.of());
+
+    when(trustTransactionRepository.findDistinctTrustAccountIdsByCustomerId(customerId))
+        .thenReturn(List.of(trustAccountId, fundingAccountId));
+    when(trustAccountRepository.findByAccountTypeAndPrimaryTrue(TrustAccountType.GENERAL))
+        .thenReturn(Optional.of(trustAccountWithId(trustAccountId)));
+    when(clientLedgerService.getClientInvestedBalanceAsOfDate(
+            customerId, fundingAccountId, periodEnd))
+        .thenReturn(new BigDecimal("8000.00"));
+    when(clientLedgerService.getClientLedgerStatement(
+            customerId, fundingAccountId, periodStart, periodEnd))
+        .thenReturn(
+            new LedgerStatementResponse(
+                BigDecimal.ZERO,
+                BigDecimal.ZERO,
+                List.of(
+                    ledgerLine("DEPOSIT", new BigDecimal("8000.00")),
+                    ledgerLine("INV_PLACE", new BigDecimal("8000.00")))));
+
+    builder.build(projectId, periodStart, periodEnd);
+
+    verify(clientLedgerService)
+        .getClientLedgerStatement(customerId, fundingAccountId, periodStart, periodEnd);
+    verify(clientLedgerService)
+        .getClientInvestedStatement(customerId, fundingAccountId, periodStart, periodEnd);
     verify(clientLedgerService, never())
         .getClientLedgerStatement(customerId, trustAccountId, periodStart, periodEnd);
   }

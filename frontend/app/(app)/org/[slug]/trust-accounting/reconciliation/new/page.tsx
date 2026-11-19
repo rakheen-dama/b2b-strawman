@@ -165,6 +165,8 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
   // ── Reset helpers ──────────────────────────────────────────────
   // Clear downstream state when an earlier wizard step changes so that
   // stale data from a previous account/period/statement is never shown.
+  // Dropping `reconciliation` loses nothing: create is get-or-create (652C, §16.3.12) — the next
+  // Review Matches gets the same draft back, re-pointed to the statement now uploaded.
 
   // Bumped by every reset: an async result started before a reset belongs to the old wizard and
   // is dropped (647A; the match, exclude and unmatch handlers too since 652A D-6).
@@ -273,7 +275,8 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
           recon = reconResult.data;
           setReconciliation(recon);
         } else {
-          setError(reconResult.error ?? "Failed to create reconciliation");
+          const message = reconResult.error ?? "Failed to create reconciliation";
+          setError(reconResult.errorTitle ? { title: reconResult.errorTitle, message } : message);
           return;
         }
       }

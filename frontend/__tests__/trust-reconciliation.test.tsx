@@ -1063,6 +1063,105 @@ describe("Trust Reconciliation", () => {
     expect(mockCreateReconciliation).toHaveBeenCalledTimes(1);
     expect(mockCalculateReconciliation).toHaveBeenCalledTimes(2);
   });
+
+  // 652C (§16.3.12): a re-upload resets the wizard and drops its handle to the draft; the next
+  // Review Matches asks for the reconciliation again with the new statement, and the backend's
+  // get-or-create returns the same draft re-pointed to it — no orphan handling in the wizard.
+  it("after a re-upload, Review Matches asks for the reconciliation again and continues the same draft (652C)", async () => {
+    await driveToReviewWithAllLinesAutoMatched();
+    mockCalculateReconciliation.mockResolvedValue({
+      success: true,
+      data: makeRecon({ status: "DRAFT", isBalanced: true, completedAt: null, completedBy: null }),
+    });
+    fireEvent.click(screen.getByTestId("step-next-btn"));
+    expect(await screen.findByTestId("reconciliation-split-pane")).toBeInTheDocument();
+
+    // Back to step 2 and upload the corrected statement
+    fireEvent.click(screen.getByRole("button", { name: "Back", hidden: true }));
+    fireEvent.click(await screen.findByTestId("auto-match-back-btn"));
+    const line2 = makeBankLine({ id: "line-2" });
+    mockUploadBankStatement.mockResolvedValueOnce({
+      success: true,
+      data: {
+        id: "stmt-2",
+        trustAccountId: "acc-1",
+        periodStart: "2026-03-01",
+        periodEnd: "2026-03-31",
+        openingBalance: 0,
+        closingBalance: 15000,
+        fileName: "march-2026-corrected.csv",
+        format: "CSV",
+        lineCount: 1,
+        matchedCount: 0,
+        status: "IMPORTED",
+        importedBy: "member-1",
+        createdAt: "2026-04-02T00:00:00Z",
+        updatedAt: "2026-04-02T00:00:00Z",
+        lines: [line2],
+      },
+    });
+    mockFetchBankStatement.mockResolvedValue({
+      id: "stmt-2",
+      lines: [{ ...line2, matchStatus: "AUTO_MATCHED", trustTransactionId: "tx-1" }],
+    });
+    mockCreateReconciliation.mockResolvedValueOnce({
+      success: true,
+      data: makeRecon({
+        id: "recon-1",
+        bankStatementId: "stmt-2",
+        status: "DRAFT",
+        isBalanced: true,
+        completedAt: null,
+        completedBy: null,
+      }),
+    });
+    fireEvent.change(await screen.findByTestId("file-input"), {
+      target: { files: [new File(["csv"], "march-2026-corrected.csv", { type: "text/csv" })] },
+    });
+    await waitFor(() => expect(mockUploadBankStatement).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(screen.getByTestId("step-next-btn")).toBeEnabled());
+    fireEvent.click(screen.getByTestId("step-next-btn"));
+    fireEvent.click(await screen.findByTestId("auto-match-btn"));
+    expect(await screen.findByText("Auto-matched 1 lines")).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId("step-next-btn"));
+
+    expect(await screen.findByTestId("reconciliation-split-pane")).toBeInTheDocument();
+    expect(mockCreateReconciliation).toHaveBeenCalledTimes(2);
+    expect(mockCreateReconciliation).toHaveBeenNthCalledWith(1, "acc-1", {
+      periodEnd: "2026-03-31",
+      bankStatementId: "stmt-1",
+    });
+    expect(mockCreateReconciliation).toHaveBeenNthCalledWith(2, "acc-1", {
+      periodEnd: "2026-03-31",
+      bankStatementId: "stmt-2",
+    });
+    expect(mockCalculateReconciliation).toHaveBeenLastCalledWith("recon-1");
+    expect(screen.queryByTestId("reconciliation-error")).not.toBeInTheDocument();
+  });
+
+  // 652C: a period already reconciled is refused at create (409); the banner heads the refusal
+  // with its title and the wizard stays on the auto-match step without calculating.
+  it("shows the refusal when the period is already reconciled and stays on the auto-match step (652C)", async () => {
+    await driveToReviewWithAllLinesAutoMatched();
+    const detail =
+      "This trust account was reconciled to 31 March 2026. A completed reconciliation cannot be changed; choose a later period end.";
+    mockCreateReconciliation.mockResolvedValueOnce({
+      success: false,
+      error: detail,
+      errorTitle: "This period is already reconciled",
+    });
+
+    fireEvent.click(screen.getByTestId("step-next-btn"));
+
+    const banner = await screen.findByTestId("reconciliation-error");
+    expect(within(banner).getByTestId("reconciliation-error-title")).toHaveTextContent(
+      /^This period is already reconciled$/
+    );
+    expect(within(banner).getByText(detail)).toBeInTheDocument();
+    expect(screen.getByTestId("step-auto-match")).toBeInTheDocument();
+    expect(screen.queryByTestId("reconciliation-split-pane")).not.toBeInTheDocument();
+    expect(mockCalculateReconciliation).not.toHaveBeenCalled();
+  });
   // 649C (§16.5.3, ruling D-9): the gate refuses once with every failed condition; the refusal
   // rolls back, so the wizard recalculates to show the figures the gate saw, then the sentences.
   it("shows the refusal's sentences and refreshes the figures when completion is refused", async () => {

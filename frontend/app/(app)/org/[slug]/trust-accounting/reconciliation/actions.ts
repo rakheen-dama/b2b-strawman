@@ -242,6 +242,10 @@ export async function recordFromStatement(
 
 // ── Reconciliation lifecycle actions ──────────────────────────────
 
+// 652C: create is get-or-create (an existing draft for the account and period end is returned,
+// re-pointed to the statement). A refused create (409 "This period is already reconciled", or the
+// period rules' 400s) carries its ProblemDetail title as well as its detail, so the wizard banner
+// can head it. `errorTitle` is set only when it adds to `error`.
 export async function createReconciliation(
   accountId: string,
   data: { periodEnd: string; bankStatementId: string }
@@ -249,6 +253,7 @@ export async function createReconciliation(
   success: boolean;
   data?: TrustReconciliationResponse;
   error?: string;
+  errorTitle?: string;
 }> {
   try {
     const result = await api.post<TrustReconciliationResponse>(
@@ -258,9 +263,12 @@ export async function createReconciliation(
     revalidatePath("/", "layout");
     return { success: true, data: result };
   } catch (error) {
+    const title = error instanceof ApiError ? error.detail?.title : undefined;
+    const message = error instanceof Error ? error.message : "Failed to create reconciliation";
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to create reconciliation",
+      error: message,
+      ...(title && title !== message ? { errorTitle: title } : {}),
     };
   }
 }

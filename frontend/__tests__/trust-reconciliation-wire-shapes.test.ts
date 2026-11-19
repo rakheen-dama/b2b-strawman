@@ -35,6 +35,7 @@ vi.mock("@/lib/api", () => ({
 
 import {
   completeReconciliation,
+  createReconciliation,
   fetchBankStatements,
   fetchReconciliations,
 } from "@/app/(app)/org/[slug]/trust-accounting/reconciliation/actions";
@@ -135,5 +136,45 @@ describe("completeReconciliation refusal (O-OBS-2)", () => {
       success: false,
       error: "fetch failed",
     });
+  });
+});
+
+// 652C: create is get-or-create; a create for a period already reconciled is refused (409) with
+// the title "This period is already reconciled" and a one-sentence detail — the action returns both.
+describe("createReconciliation refusal (652C)", () => {
+  // Braces: a beforeEach that returns a function runs it as teardown (it would call mockPost).
+  beforeEach(() => {
+    mockPost.mockReset();
+  });
+
+  it("returns the ProblemDetail title alongside the detail", async () => {
+    const detail =
+      "This trust account was reconciled to 31 March 2026. A completed reconciliation cannot be changed; choose a later period end.";
+    mockPost.mockRejectedValue(
+      new MockApiError(409, detail, { title: "This period is already reconciled", detail })
+    );
+
+    const result = await createReconciliation("acc-1", {
+      periodEnd: "2026-03-31",
+      bankStatementId: "stmt-1",
+    });
+
+    expect(mockPost).toHaveBeenCalledWith("/api/trust-accounts/acc-1/reconciliations", {
+      periodEnd: "2026-03-31",
+      bankStatementId: "stmt-1",
+    });
+    expect(result).toEqual({
+      success: false,
+      error: detail,
+      errorTitle: "This period is already reconciled",
+    });
+  });
+
+  it("returns only the message for a non-API error", async () => {
+    mockPost.mockRejectedValue(new Error("fetch failed"));
+
+    expect(
+      await createReconciliation("acc-1", { periodEnd: "2026-03-31", bankStatementId: "stmt-1" })
+    ).toEqual({ success: false, error: "fetch failed" });
   });
 });

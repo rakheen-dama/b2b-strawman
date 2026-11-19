@@ -1,0 +1,7 @@
+FE-GATE (orchestrator), worktree-epic-652A frontend, head b31a2b9f1, 2026-11-19 ~11:24-11:30Z
+rm -rf .next; pnpm lint / typecheck / format:check / test / build (pnpm by absolute path, node 20)
+lint=0 (0 errors; pre-existing warnings only)
+typecheck=0
+format=0
+test=0  Test Files 482 passed (482) | Tests 4569 passed | 2 skipped (4571)
+build=0

@@ -1,0 +1,299 @@
+{
+  "run": "GUR32",
+  "startedAt": "2026-11-19T11:27:55.560Z",
+  "periodEnd": "2026-11-13",
+  "steps": {
+    "review": {
+      "at": "2026-11-19T11:27:59.928Z",
+      "banner": null,
+      "stale": null,
+      "line": "#2 11 Nov 2026 Deeds office Ref: DEEDS/652A/GUR32 R 1 250,00 DR Unmatched",
+      "progress": "Matching Progress 0 / 4 lines resolved",
+      "unresolved": "4 statement lines are neither matched, recorded nor excluded",
+      "excluded": "Excluded statement lines total R 0,00. An excluded line adjusts nothing: excluding a real bank movement leaves its amount as the difference between the bank and the cashbook.",
+      "bankCashbook": "Bank and cashbook Bank balance -R 275,00 + Outstanding deposits R 5 000,00 − Outstanding payments R 1 250,00 = Adjusted bank balance R 3 475,00 Cashbook R 3 750,00 Difference -R 275,00",
+      "dbLine": "UNMATCHED|82ae7ae5-0dc7-4e81-b0ba-85cfc250c926|",
+      "dbRecon": "-275.00|3750.00|5000.00|1250.00|-275.00|2026-11-19 11:27:57.541495+00",
+      "shot": "obs-0-review.png"
+    },
+    "e_matchAborted": {
+      "aborted": {
+        "at": "2026-11-19T11:28:00.301Z",
+        "nextAction": "40f437829b3026b2f4dc027955ae254da23564007b",
+        "body": "[\"818a7bac-afaf-4153-8d0c-58dc4abd4453\"]"
+      },
+      "pageErrorsSoFar": 0,
+      "at": "2026-11-19T11:28:02.262Z",
+      "banner": "The match was saved but the balances could not be recalculated: Failed to fetch",
+      "stale": "These figures are out of date: they were calculated before your last change.",
+      "line": "#2 11 Nov 2026 Deeds office Ref: DEEDS/652A/GUR32 R 1 250,00 DR Matched Unmatch",
+      "progress": "Matching Progress 1 / 4 lines resolved",
+      "unresolved": "4 statement lines are neither matched, recorded nor excluded",
+      "excluded": "Excluded statement lines total R 0,00. An excluded line adjusts nothing: excluding a real bank movement leaves its amount as the difference between the bank and the cashbook.",
+      "bankCashbook": "Bank and cashbook Bank balance -R 275,00 + Outstanding deposits R 5 000,00 − Outstanding payments R 1 250,00 = Adjusted bank balance R 3 475,00 Cashbook R 3 750,00 Difference -R 275,00",
+      "dbLine": "MANUALLY_MATCHED|82ae7ae5-0dc7-4e81-b0ba-85cfc250c926|",
+      "dbRecon": "-275.00|3750.00|5000.00|1250.00|-275.00|2026-11-19 11:27:57.541495+00",
+      "shot": "obs-e-match-aborted.png"
+    },
+    "f_excludeSucceeds": {
+      "at": "2026-11-19T11:28:04.573Z",
+      "banner": null,
+      "stale": null,
+      "line": "#4 12 Nov 2026 Second unknown credit Ref: UNK2/652A/GUR32 R 300,00 CR Excluded",
+      "progress": "Matching Progress 2 / 4 lines resolved",
+      "unresolved": "2 statement lines are neither matched, recorded nor excluded",
+      "excluded": "Excluded statement lines total R 300,00. An excluded line adjusts nothing: excluding a real bank movement leaves its amount as the difference between the bank and the cashbook.",
+      "bankCashbook": "Bank and cashbook Bank balance -R 275,00 + Outstanding deposits R 5 000,00 − Outstanding payments R 0,00 = Adjusted bank balance R 4 725,00 Cashbook R 3 750,00 Difference R 975,00",
+      "dbLine": "EXCLUDED||",
+      "dbRecon": "-275.00|3750.00|5000.00|0.00|975.00|2026-11-19 11:28:02.644895+00",
+      "shot": "obs-f-cleared.png"
+    },
+    "f_unmatchSucceeds": {
+      "at": "2026-11-19T11:28:06.825Z",
+      "banner": null,
+      "stale": null,
+      "line": "#2 11 Nov 2026 Deeds office Ref: DEEDS/652A/GUR32 R 1 250,00 DR Unmatched",
+      "progress": "Matching Progress 1 / 4 lines resolved",
+      "unresolved": "3 statement lines are neither matched, recorded nor excluded",
+      "excluded": "Excluded statement lines total R 300,00. An excluded line adjusts nothing: excluding a real bank movement leaves its amount as the difference between the bank and the cashbook.",
+      "bankCashbook": "Bank and cashbook Bank balance -R 275,00 + Outstanding deposits R 5 000,00 − Outstanding payments R 1 250,00 = Adjusted bank balance R 3 475,00 Cashbook R 3 750,00 Difference -R 275,00",
+      "dbLine": "UNMATCHED||",
+      "dbRecon": "-275.00|3750.00|5000.00|1250.00|-275.00|2026-11-19 11:28:04.932667+00",
+      "shot": "obs-f-unmatch-ok.png"
+    },
+    "importS2": "Statement imported successfully Lines imported: 1 File: s2-GUR32.csv Period: 2026-11-13 to 2026-11-13 Format: CSV",
+    "a_match": {
+      "at": "2026-11-19T11:28:09.577Z",
+      "banner": "The match was saved but the balances could not be recalculated: Statement s2-GUR32.csv has movements between this statement's last line and 13 November 2026. Reconcile against the statement that covers the period end.",
+      "stale": "These figures are out of date: they were calculated before your last change.",
+      "line": "#2 11 Nov 2026 Deeds office Ref: DEEDS/652A/GUR32 R 1 250,00 DR Matched Unmatch",
+      "progress": "Matching Progress 2 / 4 lines resolved",
+      "unresolved": "3 statement lines are neither matched, recorded nor excluded",
+      "excluded": "Excluded statement lines total R 300,00. An excluded line adjusts nothing: excluding a real bank movement leaves its amount as the difference between the bank and the cashbook.",
+      "bankCashbook": "Bank and cashbook Bank balance -R 275,00 + Outstanding deposits R 5 000,00 − Outstanding payments R 1 250,00 = Adjusted bank balance R 3 475,00 Cashbook R 3 750,00 Difference -R 275,00",
+      "dbLine": "MANUALLY_MATCHED|82ae7ae5-0dc7-4e81-b0ba-85cfc250c926|",
+      "dbRecon": "-275.00|3750.00|5000.00|1250.00|-275.00|2026-11-19 11:28:04.932667+00",
+      "shot": "obs-a-match.png"
+    },
+    "b_exclude": {
+      "at": "2026-11-19T11:28:11.884Z",
+      "banner": "The line was excluded but the balances could not be recalculated: Statement s2-GUR32.csv has movements between this statement's last line and 13 November 2026. Reconcile against the statement that covers the period end.",
+      "stale": "These figures are out of date: they were calculated before your last change.",
+      "line": "#1 10 Nov 2026 Unknown credit Ref: UNK/652A/GUR32 R 700,00 CR Excluded",
+      "progress": "Matching Progress 3 / 4 lines resolved",
+      "unresolved": "3 statement lines are neither matched, recorded nor excluded",
+      "excluded": "Excluded statement lines total R 300,00. An excluded line adjusts nothing: excluding a real bank movement leaves its amount as the difference between the bank and the cashbook.",
+      "bankCashbook": "Bank and cashbook Bank balance -R 275,00 + Outstanding deposits R 5 000,00 − Outstanding payments R 1 250,00 = Adjusted bank balance R 3 475,00 Cashbook R 3 750,00 Difference -R 275,00",
+      "dbLine": "EXCLUDED||",
+      "dbRecon": "-275.00|3750.00|5000.00|1250.00|-275.00|2026-11-19 11:28:04.932667+00",
+      "shot": "obs-b-exclude.png"
+    },
+    "c_unmatch": {
+      "at": "2026-11-19T11:28:14.159Z",
+      "banner": "The line was unmatched but the balances could not be recalculated: Statement s2-GUR32.csv has movements between this statement's last line and 13 November 2026. Reconcile against the statement that covers the period end.",
+      "stale": "These figures are out of date: they were calculated before your last change.",
+      "line": "#2 11 Nov 2026 Deeds office Ref: DEEDS/652A/GUR32 R 1 250,00 DR Unmatched",
+      "progress": "Matching Progress 2 / 4 lines resolved",
+      "unresolved": "3 statement lines are neither matched, recorded nor excluded",
+      "excluded": "Excluded statement lines total R 300,00. An excluded line adjusts nothing: excluding a real bank movement leaves its amount as the difference between the bank and the cashbook.",
+      "bankCashbook": "Bank and cashbook Bank balance -R 275,00 + Outstanding deposits R 5 000,00 − Outstanding payments R 1 250,00 = Adjusted bank balance R 3 475,00 Cashbook R 3 750,00 Difference -R 275,00",
+      "dbLine": "UNMATCHED||",
+      "dbRecon": "-275.00|3750.00|5000.00|1250.00|-275.00|2026-11-19 11:28:04.932667+00",
+      "shot": "obs-c-unmatch.png"
+    },
+    "d_record": {
+      "at": "2026-11-19T11:28:17.234Z",
+      "banner": "The line was recorded but the balances could not be recalculated: Statement s2-GUR32.csv has movements between this statement's last line and 13 November 2026. Reconcile against the statement that covers the period end.",
+      "stale": "These figures are out of date: they were calculated before your last change.",
+      "line": "#3 12 Nov 2026 Bank charges Ref: CHG/652A/GUR32 R 25,00 DR Recorded: Bank charge Unmatch",
+      "progress": "Matching Progress 3 / 4 lines resolved",
+      "unresolved": "3 statement lines are neither matched, recorded nor excluded",
+      "excluded": "Excluded statement lines total R 300,00. An excluded line adjusts nothing: excluding a real bank movement leaves its amount as the difference between the bank and the cashbook.",
+      "bankCashbook": "Bank and cashbook Bank balance -R 275,00 + Outstanding deposits R 5 000,00 − Outstanding payments R 1 250,00 = Adjusted bank balance R 3 475,00 Cashbook R 3 750,00 Difference -R 275,00",
+      "dbLine": "RECORDED|67313cd6-5b39-47a2-bfa5-bb026f4750cc|BANK_CHARGE",
+      "dbRecon": "-275.00|3750.00|5000.00|1250.00|-275.00|2026-11-19 11:28:04.932667+00",
+      "shot": "obs-d-record.png",
+      "dbCreated": "BANK_CHARGE|25.00|RECORDED|2026-11-12|NON_CLIENT|f"
+    },
+    "g_layout": {
+      "1280": {
+        "pageHorizontalOverflow": false,
+        "viewportWidth": 1280,
+        "banner": {
+          "rect": {
+            "left": 280,
+            "right": 1256,
+            "top": -89,
+            "bottom": -25,
+            "width": 976,
+            "height": 64
+          },
+          "container": {
+            "left": 0,
+            "right": 1280
+          },
+          "insideContainer": true,
+          "ownOverflow": false,
+          "clippedBy": [],
+          "text": "The line was recorded but the balances could not be recalculated: Statement s2-GUR32.csv has movements between this statement's last line and 13 November 2026. Reconcile against the statement that covers the period end."
+        },
+        "stale": {
+          "rect": {
+            "left": 305,
+            "right": 1231,
+            "top": 674,
+            "bottom": 694,
+            "width": 926,
+            "height": 20
+          },
+          "container": {
+            "left": 280,
+            "right": 1256
+          },
+          "insideContainer": true,
+          "ownOverflow": false,
+          "clippedBy": [],
+          "text": "These figures are out of date: they were calculated before your last change."
+        },
+        "card": {
+          "rect": {
+            "left": 280,
+            "right": 1256,
+            "top": 593,
+            "bottom": 1400,
+            "width": 976,
+            "height": 807
+          },
+          "container": {
+            "left": 0,
+            "right": 1280
+          },
+          "insideContainer": true,
+          "ownOverflow": false,
+          "clippedBy": [],
+          "text": "As at 13 Nov 2026\n\nThese figures are out of date: they were calculated before your last change.\n\nBank and cashbook\nBank balance\n-R 275,00\n+ Outstanding deposits\nR 5 000,00\n− Outstanding payments\nR 1 250,00\n= Adjusted bank balance\nR 3 475,00\nCashbook\nR 3 750,00\nDifference\n-R 275,00\nCashbook and trust creditors\nCashbook\nR 3 750,00\nTrust creditors\nR 3 750,00\nDifference\nR 0,00\nTrust creditors\nClient ledgers\nR 3 750,00\nLegal Practitioners' Fidelity Fund — interest and charges\nR 0,00\nUnidentified deposits\nR 0,00\n\n3 statement lines are neither matched, recorded nor excluded\n\nExcluded statement lines total R 300,00. An excluded line adjusts nothing: excluding a real bank movement leaves its amount as the difference between the bank and the cashbook.\n\nIntegrity check\nBlocking\nBank and cashbook differ\n\nAdjusted bank balance R3 475,00 differs from the cashbook R3 750,00 by R275,00 as at 13 November 2026.\n\nBlocking\nStatement lines not yet resolved\n\n3 statement lines are neither matched, recorded nor excluded.\n\nReconciliation is not balanced\nComplete Reconciliation"
+        }
+      },
+      "1440": {
+        "pageHorizontalOverflow": false,
+        "viewportWidth": 1440,
+        "banner": {
+          "rect": {
+            "left": 280,
+            "right": 1416,
+            "top": -89,
+            "bottom": -25,
+            "width": 1136,
+            "height": 64
+          },
+          "container": {
+            "left": 0,
+            "right": 1440
+          },
+          "insideContainer": true,
+          "ownOverflow": false,
+          "clippedBy": [],
+          "text": "The line was recorded but the balances could not be recalculated: Statement s2-GUR32.csv has movements between this statement's last line and 13 November 2026. Reconcile against the statement that covers the period end."
+        },
+        "stale": {
+          "rect": {
+            "left": 305,
+            "right": 1391,
+            "top": 674,
+            "bottom": 694,
+            "width": 1086,
+            "height": 20
+          },
+          "container": {
+            "left": 280,
+            "right": 1416
+          },
+          "insideContainer": true,
+          "ownOverflow": false,
+          "clippedBy": [],
+          "text": "These figures are out of date: they were calculated before your last change."
+        },
+        "card": {
+          "rect": {
+            "left": 280,
+            "right": 1416,
+            "top": 593,
+            "bottom": 1400,
+            "width": 1136,
+            "height": 807
+          },
+          "container": {
+            "left": 0,
+            "right": 1440
+          },
+          "insideContainer": true,
+          "ownOverflow": false,
+          "clippedBy": [],
+          "text": "As at 13 Nov 2026\n\nThese figures are out of date: they were calculated before your last change.\n\nBank and cashbook\nBank balance\n-R 275,00\n+ Outstanding deposits\nR 5 000,00\n− Outstanding payments\nR 1 250,00\n= Adjusted bank balance\nR 3 475,00\nCashbook\nR 3 750,00\nDifference\n-R 275,00\nCashbook and trust creditors\nCashbook\nR 3 750,00\nTrust creditors\nR 3 750,00\nDifference\nR 0,00\nTrust creditors\nClient ledgers\nR 3 750,00\nLegal Practitioners' Fidelity Fund — interest and charges\nR 0,00\nUnidentified deposits\nR 0,00\n\n3 statement lines are neither matched, recorded nor excluded\n\nExcluded statement lines total R 300,00. An excluded line adjusts nothing: excluding a real bank movement leaves its amount as the difference between the bank and the cashbook.\n\nIntegrity check\nBlocking\nBank and cashbook differ\n\nAdjusted bank balance R3 475,00 differs from the cashbook R3 750,00 by R275,00 as at 13 November 2026.\n\nBlocking\nStatement lines not yet resolved\n\n3 statement lines are neither matched, recorded nor excluded.\n\nReconciliation is not balanced\nComplete Reconciliation"
+        }
+      }
+    }
+  },
+  "calculateResponses": [
+    {
+      "at": "2026-11-19T11:28:02.659Z",
+      "nextAction": "40f437829b3026b2f4dc027955ae254da23564007b",
+      "status": 200,
+      "result": "{\"success\":true,\"data\":{\"id\":\"818a7bac-afaf-4153-8d0c-58dc4abd4453\",\"trustAccountId\":\"5149d2be-b51f-4a7f-b375-f2a851a4a028\",\"periodEnd\":\"2026-11-13\",\"bankStatementId\":\"4eaa7f78-5dd1-4cfd-965b-f68db3443edd\",\"bankBalance\":-275,\"outstandingDeposits\":5000,\"outstandingPayments\":0,\"adjustedBankBalance\":4725,\"cashbookBalance\":3750,\"clientLedgerTotal\":3750,\"creditorBreakdown\":{\"clientLedgers\":3750,\"investmentCreditors\":0,\"fundInterestAndCharges\":0,\"unidentifiedDeposits\":0,\"otherNonClient\":0,\"interAccount\":0,\"total\":3750},\"bankToCashbookDifference\":975,\"cashbookToCreditorsDifference\":0,\"difference\":975,\"excludedLinesTotal\":300,\"unresolvedLineCount\":2,\"isBalanced\":false,\"integrityFlags\":[{\"code\":\"BANK_DIFFERENCE\",\"severity\":\"BLOCKING\",\"message\":\"Adjusted bank balance R4Â 725,00 differs from the cashbook R3Â 750,00 by R975,00 as at 13 November 2026.\",\"amount\":975,\"subjects\":[]},{\"code\":\"UNRESOLVED_STATEMENT_LINES\",\"severity\":\"BLOCKING\",\"message\":\"2 statement lines are neither matched, recorded nor excluded.\",\"amount\":null,\"subjects\":[{\"kind\":\"BANK_STATEMENT\",\"id\":\"4eaa7f78-5dd1-4cfd-965b-f68db3443edd\",\"name\":\"s1-GUR32.csv\",\"amount\":null}]}],\"status\":\"DRAFT\",\"completedBy\":null,\"completedAt\":null,\"monthlyListId\":null,\"notes\":null,\"createdAt\":\"2026-11-19T11:27:57.494163Z\",\"updatedAt\":\"2026-11-19T11:28:02.643766968Z\"}}"
+    },
+    {
+      "at": "2026-11-19T11:28:04.946Z",
+      "nextAction": "40f437829b3026b2f4dc027955ae254da23564007b",
+      "status": 200,
+      "result": "{\"success\":true,\"data\":{\"id\":\"818a7bac-afaf-4153-8d0c-58dc4abd4453\",\"trustAccountId\":\"5149d2be-b51f-4a7f-b375-f2a851a4a028\",\"periodEnd\":\"2026-11-13\",\"bankStatementId\":\"4eaa7f78-5dd1-4cfd-965b-f68db3443edd\",\"bankBalance\":-275,\"outstandingDeposits\":5000,\"outstandingPayments\":1250,\"adjustedBankBalance\":3475,\"cashbookBalance\":3750,\"clientLedgerTotal\":3750,\"creditorBreakdown\":{\"clientLedgers\":3750,\"investmentCreditors\":0,\"fundInterestAndCharges\":0,\"unidentifiedDeposits\":0,\"otherNonClient\":0,\"interAccount\":0,\"total\":3750},\"bankToCashbookDifference\":-275,\"cashbookToCreditorsDifference\":0,\"difference\":-275,\"excludedLinesTotal\":300,\"unresolvedLineCount\":3,\"isBalanced\":false,\"integrityFlags\":[{\"code\":\"BANK_DIFFERENCE\",\"severity\":\"BLOCKING\",\"message\":\"Adjusted bank balance R3Â 475,00 differs from the cashbook R3Â 750,00 by R275,00 as at 13 November 2026.\",\"amount\":275,\"subjects\":[]},{\"code\":\"UNRESOLVED_STATEMENT_LINES\",\"severity\":\"BLOCKING\",\"message\":\"3 statement lines are neither matched, recorded nor excluded.\",\"amount\":null,\"subjects\":[{\"kind\":\"BANK_STATEMENT\",\"id\":\"4eaa7f78-5dd1-4cfd-965b-f68db3443edd\",\"name\":\"s1-GUR32.csv\",\"amount\":null}]}],\"status\":\"DRAFT\",\"completedBy\":null,\"completedAt\":null,\"monthlyListId\":null,\"notes\":null,\"createdAt\":\"2026-11-19T11:27:57.494163Z\",\"updatedAt\":\"2026-11-19T11:28:04.932267469Z\"}}"
+    },
+    {
+      "at": "2026-11-19T11:28:07.632Z",
+      "nextAction": "40f437829b3026b2f4dc027955ae254da23564007b",
+      "status": 200,
+      "result": "<no body: Error: response.text: Protocol error (Network.getResponseBody): No data found for resource with given identifier>"
+    },
+    {
+      "at": "2026-11-19T11:28:09.999Z",
+      "nextAction": "40f437829b3026b2f4dc027955ae254da23564007b",
+      "status": 200,
+      "result": "{\"success\":false,\"error\":\"Statement s2-GUR32.csv has movements between this statement's last line and 13 November 2026. Reconcile against the statement that covers the period end.\"}"
+    },
+    {
+      "at": "2026-11-19T11:28:12.275Z",
+      "nextAction": "40f437829b3026b2f4dc027955ae254da23564007b",
+      "status": 200,
+      "result": "<no body: Error: response.text: Protocol error (Network.getResponseBody): No data found for resource with given identifier>"
+    },
+    {
+      "at": "2026-11-19T11:28:15.233Z",
+      "nextAction": "40f437829b3026b2f4dc027955ae254da23564007b",
+      "status": 200,
+      "result": "{\"success\":false,\"error\":\"Statement s2-GUR32.csv has movements between this statement's last line and 13 November 2026. Reconcile against the statement that covers the period end.\"}"
+    }
+  ],
+  "pageErrors": [],
+  "consoleErrors": [
+    {
+      "at": "2026-11-19T11:28:00.304Z",
+      "text": "Failed to load resource: net::ERR_FAILED"
+    }
+  ],
+  "setup": {
+    "accountId": "5149d2be-b51f-4a7f-b375-f2a851a4a028",
+    "clientId": "27e9a835-addc-4e39-b42b-421ba489c5eb",
+    "matterId": "74cee341-38ff-4d33-9e4a-cbde3863306e",
+    "depositId": "54e194f5-8c37-46e3-8a12-c9907c56a1cf",
+    "paymentId": "82ae7ae5-0dc7-4e81-b0ba-85cfc250c926",
+    "paymentStatus": "APPROVED"
+  },
+  "statementId": "4eaa7f78-5dd1-4cfd-965b-f68db3443edd",
+  "reconId": "818a7bac-afaf-4153-8d0c-58dc4abd4453",
+  "lineIds": {
+    "1": "bfc16cf0-57d0-4ab3-89f7-275c85875757",
+    "2": "75c2dfda-27ee-4318-bb0e-cffd14c49f70",
+    "3": "61cedd90-0715-4889-97f5-329c85edae53",
+    "4": "40e4f9c8-45b3-45df-85d6-0b51d639e052"
+  },
+  "finishedAt": "2026-11-19T11:28:19.366Z"
+}

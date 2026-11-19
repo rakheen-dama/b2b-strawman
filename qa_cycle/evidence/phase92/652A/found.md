@@ -55,3 +55,8 @@ Line numbers are on the 652A branch head unless marked "main".
   is mounted with its text already in it. Screen readers do not reliably announce a live region
   that is inserted together with its content, so the announcement may be missed. The line also has
   no icon; only amber text marks it. Candidate for Phase 91 a11y/design.
+- **O-2 (652A OBS, hypothesis, unverified).** After auto-match on the OBS stack, the payments line
+  in statement S1 was still `UNMATCHED` in the wizard but already carried the payment's id on the
+  `bank_statement_lines` row (read-only SELECT, `obs/README.md`). It may be a stored suggestion
+  rather than a link. Not investigated in 652A; it predates this slice (652A changes no matching
+  code). Needs a reproduction before anyone treats it as a defect.

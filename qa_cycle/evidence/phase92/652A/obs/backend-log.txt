@@ -1,0 +1,38 @@
+# 652A OBS (h) — backend log + paired audit trail, run GUR32 (2026-11-19 11:27:55Z–11:28:19Z)
+# Source: docker compose -f compose/docker-compose.e2e.yml logs backend, filtered to 11:27:50Z–11:28:25Z (every line in the window, as-is).
+
+{"@timestamp":"2026-11-19T11:27:55.902603381Z","log":{"level":"INFO","logger":"io.b2mash.b2b.b2bstrawman.portal.PortalEmailService"},"process":{"pid":1,"thread":{"name":"tomcat-handler-240"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"Portal notification sent template=portal-trust-activity contact=9524ee1d-65f6-4cc5-b068-71da41d740e3 to=contact@acme.example.com","tenantId":"tenant_7d218705360b","userId":"user_e2e_alice","requestId":"a0a4baef-3452-4db7-94fc-69ed99638590","memberId":"c1a80c72-d4d8-4712-89a8-cf9a11e41d0a","ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-19T11:27:55.987635506Z","log":{"level":"INFO","logger":"io.b2mash.b2b.b2bstrawman.portal.PortalEmailService"},"process":{"pid":1,"thread":{"name":"tomcat-handler-242"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"Portal notification sent template=portal-trust-activity contact=9524ee1d-65f6-4cc5-b068-71da41d740e3 to=contact@acme.example.com","tenantId":"tenant_7d218705360b","userId":"user_e2e_bob","requestId":"272400bc-3470-4974-9b1f-8e19248f6f59","memberId":"6f78a994-df10-4dc1-95ee-244e0a685bb4","ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-19T11:28:11.539974472Z","log":{"level":"INFO","logger":"io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.DefaultJobEnqueuer"},"process":{"pid":1,"thread":{"name":"scheduling-2"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"fanOutToAllTenants: type=automation_poll_triggers, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0","ecs":{"version":"8.11"}}
+{"@timestamp":"2026-11-19T11:28:11.695729639Z","log":{"level":"INFO","logger":"io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.DefaultJobEnqueuer"},"process":{"pid":1,"thread":{"name":"scheduling-2"}},"service":{"name":"backend","version":"0.0.1-SNAPSHOT","node":{}},"message":"fanOutToAllTenants: type=accounting_sync_drain, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0","ecs":{"version":"8.11"}}
+
+# The backend logs no line for a refused calculate (a handled InvalidStateException refusal; nothing is logged for it) and the e2e log has no access log,
+# so the refusals are paired with the tenant audit trail (read-only SELECT) below. A successful calculate writes trust_reconciliation.calculated;
+# a refused one rolls back and writes nothing.
+# SQL: select occurred_at, event_type, entity_type, entity_id from tenant_7d218705360b.audit_events where occurred_at between '2026-11-19 11:27:50+00' and '2026-11-19 11:28:25+00' order by occurred_at
+
+2026-11-19 11:27:55.841123+00 | trust_deposit.recorded | trust_transaction | 54e194f5-8c37-46e3-8a12-c9907c56a1cf
+2026-11-19 11:27:55.92355+00 | trust_payment.recorded | trust_transaction | 82ae7ae5-0dc7-4e81-b0ba-85cfc250c926
+2026-11-19 11:27:55.953093+00 | trust_payment.approved | trust_transaction | 82ae7ae5-0dc7-4e81-b0ba-85cfc250c926
+2026-11-19 11:27:57.272876+00 | bank_statement.imported | bank_statement | 4eaa7f78-5dd1-4cfd-965b-f68db3443edd
+2026-11-19 11:27:57.372345+00 | bank_statement.auto_matched | bank_statement | 4eaa7f78-5dd1-4cfd-965b-f68db3443edd
+2026-11-19 11:27:57.495076+00 | trust_reconciliation.created | trust_reconciliation | 818a7bac-afaf-4153-8d0c-58dc4abd4453
+2026-11-19 11:27:57.539533+00 | trust_reconciliation.calculated | trust_reconciliation | 818a7bac-afaf-4153-8d0c-58dc4abd4453
+2026-11-19 11:28:00.285821+00 | bank_statement_line.manually_matched | bank_statement_line | 75c2dfda-27ee-4318-bb0e-cffd14c49f70
+2026-11-19 11:28:02.585365+00 | bank_statement_line.excluded | bank_statement_line | 40e4f9c8-45b3-45df-85d6-0b51d639e052
+2026-11-19 11:28:02.638428+00 | trust_reconciliation.calculated | trust_reconciliation | 818a7bac-afaf-4153-8d0c-58dc4abd4453
+2026-11-19 11:28:04.844875+00 | bank_statement_line.unmatched | bank_statement_line | 75c2dfda-27ee-4318-bb0e-cffd14c49f70
+2026-11-19 11:28:04.931084+00 | trust_reconciliation.calculated | trust_reconciliation | 818a7bac-afaf-4153-8d0c-58dc4abd4453
+2026-11-19 11:28:07.49922+00 | bank_statement.imported | bank_statement | f99d7440-afb7-4216-a1e3-2f8213ad0117
+2026-11-19 11:28:07.590184+00 | bank_statement_line.manually_matched | bank_statement_line | 75c2dfda-27ee-4318-bb0e-cffd14c49f70
+2026-11-19 11:28:09.899224+00 | bank_statement_line.excluded | bank_statement_line | bfc16cf0-57d0-4ab3-89f7-275c85875757
+2026-11-19 11:28:12.186614+00 | bank_statement_line.unmatched | bank_statement_line | 75c2dfda-27ee-4318-bb0e-cffd14c49f70
+2026-11-19 11:28:15.180888+00 | bank_statement_line.recorded | bank_statement_line | 61cedd90-0715-4889-97f5-329c85edae53
+2026-11-19 11:28:15.181481+00 | trust_bank_charge.recorded | trust_transaction | 67313cd6-5b39-47a2-bfa5-bb026f4750cc
+
+# Lines: #1 bfc16cf0 Unknown credit, #2 75c2dfda Deeds office, #3 61cedd90 Bank charges, #4 40e4f9c8 Second unknown credit. Reconciliation 818a7bac. S2 = f99d7440.
+# Reading: 11:28:00 match (e, calculate aborted in the browser) -> no calculated event; 11:28:02 exclude (f) -> calculated; 11:28:04 unmatch -> calculated;
+# 11:28:07 S2 imported; then match (a), exclude (b), unmatch (c), record (d) -> each saved, NO calculated event after any of them (all four refused).
+
+# Stored reconciliation after the run (unchanged since the 11:28:04.93 calculate):
+-275.00 | 3750.00 | 5000.00 | 1250.00 | -275.00 | 2026-11-19 11:28:04.932667+00

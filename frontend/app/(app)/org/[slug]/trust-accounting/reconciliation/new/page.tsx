@@ -50,10 +50,15 @@ const DEFAULT_CURRENCY = "ZAR";
  */
 type WizardError = string | { title: string; message: string };
 
-/** Statuses a statement line can be matched to: posted rows (R9; TrustReconciliationService.manualMatch). */
+/**
+ * Statuses a statement line can be matched to: posted rows (R9; TrustReconciliationService.manualMatch).
+ * A reversed original is still posted — its effect stands and its contra cancels it — so the bank
+ * line that shows it must be matchable (652H).
+ */
 const MATCHABLE_STATUSES = [
   "RECORDED",
   "APPROVED",
+  "REVERSED",
 ] as const satisfies readonly TrustTransactionStatus[];
 
 /**
@@ -70,10 +75,26 @@ const NO_BANK_MOVEMENT_TYPES = [
 ] as const satisfies readonly TrustTransactionType[];
 
 /**
- * The account's posted transactions (RECORDED and APPROVED) not yet matched to a statement line
- * (the right pane), newest first, without types that move no bank money. The list endpoint takes
- * one status, so each is read on its own (652B); if either read fails the whole read fails, so the
- * pane is never silently half-empty.
+ * Types a row of which is only ever recorded from a statement line, linked to it at birth — the
+ * mirror of the backend registry's `recordedOnlyFromStatementLine` (652H D-1). Such a row, once
+ * REVERSED, was unrecorded from its line (the line unmatched); the backend refuses to match it to a
+ * bank line again (R-1), so the pane does not offer it. Its unreversed rows are always linked.
+ */
+const STATEMENT_ONLY_TYPES = [
+  "FUND_INTEREST",
+  "FUND_SWEEP",
+  "BANK_CHARGE",
+  "CHARGE_REFUND",
+  "UNIDENTIFIED_DEPOSIT",
+  "FUND_INV_SHARE",
+] as const satisfies readonly TrustTransactionType[];
+
+/**
+ * The account's posted transactions (RECORDED, APPROVED and REVERSED) not yet matched to a statement
+ * line (the right pane), newest first, without types that move no bank money and without a reversed
+ * row recorded from a statement line. The list endpoint takes one status, so each is read on its
+ * own (652B, 652H); if any read fails the whole read fails, so the pane is never silently partly
+ * empty.
  */
 async function fetchUnmatchedTransactions(accountId: string): Promise<TrustTransaction[]> {
   const pages = await Promise.all(
@@ -90,7 +111,11 @@ async function fetchUnmatchedTransactions(accountId: string): Promise<TrustTrans
     .filter(
       (tx) =>
         !tx.bankStatementLineId &&
-        !(NO_BANK_MOVEMENT_TYPES as readonly string[]).includes(tx.transactionType)
+        !(NO_BANK_MOVEMENT_TYPES as readonly string[]).includes(tx.transactionType) &&
+        !(
+          tx.status === "REVERSED" &&
+          (STATEMENT_ONLY_TYPES as readonly string[]).includes(tx.transactionType)
+        )
     )
     .sort((a, b) => b.transactionDate.localeCompare(a.transactionDate));
 }

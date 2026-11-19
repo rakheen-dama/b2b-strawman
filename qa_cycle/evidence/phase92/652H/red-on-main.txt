@@ -1,0 +1,45 @@
+652H — reproduce-first red run (task 652.36)
+=============================================
+main SHA: 16c40fa37 (origin/main; branch epic-652H/reversed-original-matchable before any production change)
+Date: 2026-11-19. Production code UNCHANGED; only the new test class and the two new vitest cases added.
+
+BACKEND — ./mvnw test -Dtest="ReversedOriginalMatchIntegrationTest" -q   (exit=1)
+-------------------------------------------------------------------------------
+Tests run: 8, Failures: 4, Errors: 2, Skipped: 0
+
+RED (reproduce — the defect):
+  autoMatch_matchesAReversedDepositToItsOwnBankLine_andTheMonthBalances
+    FAILURE :124->assertLineMatchedTo:434  [line 0 status]  expected: "AUTO_MATCHED"  but was: "UNMATCHED"
+  autoMatch_matchesAReversedPaymentToItsOwnBankLine_andTheMonthBalances
+    FAILURE :169->assertLineMatchedTo:434  [line 1 status]  expected: "AUTO_MATCHED"  but was: "UNMATCHED"
+  manualMatch_acceptsAReversedOriginal_andKeepsItReversed
+    ERROR   :201->match  InvalidStateException 400, title='Invalid match state',
+            detail='Transaction must be APPROVED or RECORDED to match'
+  unmatch_ofALineMatchedToAReversedOriginal_onlyClearsTheLink
+    ERROR   :232->match (set-up)  InvalidStateException 400, title='Invalid match state',
+            detail='Transaction must be APPROVED or RECORDED to match'
+
+RED by wording only (guards — not reproduce evidence):
+  manualMatch_stillRefusesARowAwaitingApproval
+    expected: "Transaction must be posted (recorded, approved or reversed) to match"
+     but was: "Transaction must be APPROVED or RECORDED to match"
+  manualMatch_refusesAnUnrecordedStatementRow   (R-1 guard, ruling D-1)
+    expected: "This entry was recorded from a statement line and has since been reversed, so it cannot be
+               matched to a bank line. Record the line again instead."
+     but was: "Transaction must be APPROVED or RECORDED to match"
+
+GREEN on main (guards, as expected):
+  pendingCreditContra_leavesTheOriginalRecorded_andIsNeverACandidate
+  autoMatch_doesNotOfferAnUnrecordedStatementRowToItsFormerLine   (R-1 guard, ruling D-1 — pins that the fix does not open R-1)
+
+FRONTEND — vitest run __tests__/trust-reconciliation.test.tsx -t "652H"   (node v20.11.1; exit=1; filtered for the red run only)
+-------------------------------------------------------------------------------
+Tests  2 failed | 74 skipped (76)
+  × offers an unlinked reversed original beside its contra (652H)
+    AssertionError: expected "vi.fn()" to be called with arguments: [ 'acc-1', ObjectContaining{ status: "REVERSED" } ]
+    (MATCHABLE_STATUSES = ["RECORDED","APPROVED"] — REVERSED is never fetched)
+  × does not offer a reversed row that was recorded from a statement line (652H)
+    TestingLibraryElementError: Unable to find an element by: [data-testid="transaction-tx-reversed"]
+    (same cause: the positive half of the guard — the reversed DEPOSIT is offered — fails on main)
+
+Verdict: REPRODUCED (both sides) — proceed to 652.38 (fix).

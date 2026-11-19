@@ -1,0 +1,100 @@
+652H — Tier 2 green (builder; Tier 3 / full verify NOT run — owned by the orchestrator)
+==========================================================================================
+Base: origin/main 16c40fa37. Machine: macOS, node v20.11.1 (nvm), embedded Postgres (zonky).
+Counts are <testcase> elements per surefire XML (ground truth), failures+errors per class.
+
+BACKEND Tier 1: ./mvnw spotless:apply; ./mvnw compile test-compile -q → exit 0
+
+BACKEND Tier 2 — Batch A (reconciliation package; the changed service's auto/manual-match users)  exit 0
+  ReversedOriginalMatchIntegrationTest              11  0   (NEW — 6 brief methods + 2 R-1 guards + 3 D-4 re-enter)
+  TrustReconciliationServiceMatchingTest            16  0
+  TrustReconciliationServiceReconciliationTest      17  0
+  TrustReconciliationCompletionGateIntegrationTest  15  0
+  TrustReconciliationDraftIntegrationTest           10  0
+  TrustReconciliationControllerTest                 10  0
+  StatementLinePostingIntegrationTest               28  0
+  BankStatementImportErrorIntegrationTest            2  0
+  BankStatementParserTest                           60  0
+  total                                            169  0
+
+BACKEND Tier 2 — Batch B (books / integrity / list / report / memo users of auto/manual match; posting core,
+ArchUnit, reversal; the registry — TrustTransactionType changed)  exit 0
+  TrustIntegrityServiceIntegrationTest              15  0
+  TrustPositionAsAtIntegrationTest                   9  0
+  TrustMonthlyListIntegrationTest                    9  0
+  TrustInterestMemoIntegrationTest                   8  0
+  TrustReportQueryIntegrationTest                   14  0
+  TrustWireContractTest                              1  0
+  TrustReversalEquationIntegrationTest              15  0
+  TrustPostingRulesTest (ArchUnit)                   2  0
+  TrustPostingServiceRecordWithPairTest              6  0
+  TrustTransactionServiceTest                       48  0
+  TrustEquationCharacterisationIntegrationTest      21  0
+  TrustTransactionTypeRegistryTest                  18  0   (+1: recordedOnlyFromStatementLine pin)
+  TrustTransactionTypeSchemaTest                     1  0
+  total                                            167  0
+
+FRONTEND (from frontend/, NODE_OPTIONS="" /opt/homebrew/bin/pnpm, node v20.11.1)
+  install        exit 0
+  lint           exit 0  (0 errors; 77 warnings, none in the two changed files)
+  build          exit 0
+  test (full)    exit 0  Test Files 482 passed (482) · Tests 4591 passed | 2 skipped (4593)
+  format:check   exit 0  "All matched files use Prettier code style!"
+
+Not run by the builder (orchestrator-owned): bash scripts/verify.sh (full BE verify), E2E-LEGAL, MARKERS, REVIEW.
+OBS: none in 652H (ruling D-3) — observed in 652E steps 9–11.
+
+--------------------------------------------------------------------------------------------------
+Review-fix round (PR #1820 review findings; ruling D-4) — re-run on the fix commit
+  BE Tier 1: spotless:apply; compile test-compile -q → exit 0
+  BE Tier 2 Batch A → exit 0, 169 <testcase>, 0 failures/errors (ReversedOriginalMatchIntegrationTest 11:
+       +3 D-4 methods, red first — red-reenter.txt). Wall 30 s.
+  BE Tier 2 Batch B → exit 0, 167 <testcase>, 0 failures/errors (13 classes, unchanged counts). Wall 42 s.
+  The two exit-month methods (#7/#8, #9/#10 — the reversed original is the only candidate of its tier)
+  stay green under D-4.
+  Temporary probe (reviewer's literal "new reference, line carries the OLD reference" case), after the
+  fix: line AUTO_MATCHED to R (the reversed original) — D-4 does not cover it (tier 1's sole candidate);
+  logged as F-652H-3 for a ruling; probe removed before commit.
+  FE (node v20.11.1): lint exit 0 (0 errors, 77 warnings, none in changed files) · build exit 0 ·
+       test exit 0 — Test Files 482 passed · Tests 4591 passed | 2 skipped (4593) (+1: "marks a reversed
+       original 'Reversed' and leaves an approved row unmarked (652H)", red without the badge:
+       "Unable to find an element by: [data-testid=\"reversed-badge-tx-reversed\"]") ·
+       format:check exit 0.
+
+--------------------------------------------------------------------------------------------------
+Fix cycle 2 (F-652H-3; ruling D-5) — re-run on the fix-2 commit
+  Change: preferLive (D-4, per tier) REPLACED by one per-line helper withoutShadowedReversedOriginals
+    (TrustReconciliationService): per bank line, a REVERSED original is dropped from the sign-filtered
+    candidates whenever a live (non-REVERSED) candidate of the same amount and cashbook sign is in the
+    pool. It subsumes D-4 (every tier's set is same-amount + sign-compatible, so any live row a tier
+    would have preferred already removes R) — the four tier methods are byte-identical to main again.
+  BE Tier 1: spotless:apply; compile test-compile -q → exit 0
+  BE Tier 2 Batch A → exit 0, 170 <testcase>, 0 failures/errors (ReversedOriginalMatchIntegrationTest 12:
+       +1 D-5 method autoMatch_reEnteredDepositUnderANewReference_lineCarriesTheOldReference_
+       doesNotMatchTheReversedRow, red first — red-reenter.txt). Wall 30 s. Other 8 classes unchanged.
+  BE Tier 2 Batch B → exit 0, 167 <testcase>, 0 failures/errors (13 classes, unchanged counts). Wall 43 s.
+  Stay-green checks: the exit-month methods (#7/#8, #9/#10 — the reversed original is the only
+  same-amount, same-sign candidate), the three D-4 reverse-then-re-enter methods and the two R-1
+  statement-only guards are all green.
+  The F-652H-3 case now: R DEP-77 1 Mar (reversed), G DEP-77-C 4 Mar, line 1 Mar ref DEP-77 → R not a
+  candidate; tiers 1/2 find nothing, tier 3 suggests G at 0.60 (line UNMATCHED, as main would for the
+  live rows); confirming G by hand → MANUALLY_MATCHED, nothing outstanding, balanced at R1 000.
+  FE: not touched in fix cycle 2 (not re-run).
+
+--------------------------------------------------------------------------------------------------
+Fix cycle 3 (delta reviewer A Medium, cases (1)/(2); ruling D-6) — re-run on the fix-3 commit
+  Change: D-5's per-line withoutShadowedReversedOriginals REPLACED by withAutoMatchableReversedOriginalsOnly
+    (TrustReconciliationService), applied ONCE to the run's initial pool: a REVERSED original stays only
+    when it is not statement-only (D-1, absorbed) and the initial pool holds no live row of its amount
+    and cashbook sign. Per line, tier 1 sees the sign-filtered pool (live + those kept REVERSED
+    originals); tiers 2–4 see live rows only. The four tier methods are byte-identical to main; with no
+    REVERSED rows in the pool the run is identical to main.
+  BE Tier 1: spotless:apply; compile test-compile -q → exit 0
+  BE Tier 2 Batch A (9 classes) → exit 0, 172 <testcase>, 0 failures/errors (ReversedOriginalMatchIntegrationTest
+       14: +2 D-6 methods, red first — red-reenter.txt "cycle 3 (D-6)"). Wall 27 s. Other 8 classes unchanged.
+  BE Tier 2 Batch B (13 classes) → exit 0, 167 <testcase>, 0 failures/errors (unchanged counts). Wall 37 s.
+  Stay-green: the exit-month methods (#7/#8, #9/#10) already carry the original's own reference on the
+  bank line (referenceOf(depositId) / referenceOf(paymentId), as §16.9.6's CSV) → tier 1, unshadowed;
+  the unmatch-then-auto-match method likewise. No test's line reference was changed. The three D-4
+  methods, the D-5 old-reference method and the two R-1 guards are green unchanged.
+  FE: not touched in fix cycle 3 (not re-run).

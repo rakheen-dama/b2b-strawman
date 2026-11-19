@@ -429,6 +429,24 @@ class TrustTransactionTypeRegistryTest {
     assertThat(bankTypes).allSatisfy(t -> assertThat(t.approval()).isEqualTo(Approval.NONE));
   }
 
+  /**
+   * 652H D-1: the types a row of which is only ever created from a statement line — the bank-origin
+   * five and the Fund's share of gross section 86(4) interest; never INV_INTEREST (a bank advice
+   * records it with no line) nor any firm-origin type. The wizard's pane mirrors this list.
+   */
+  @Test
+  void recordedOnlyFromStatementLine_isTheBankOriginTypesAndTheFundInterestShare() {
+    assertThat(TrustTransactionType.values())
+        .filteredOn(TrustTransactionType::recordedOnlyFromStatementLine)
+        .containsExactlyInAnyOrder(
+            TrustTransactionType.FUND_INTEREST,
+            TrustTransactionType.FUND_SWEEP,
+            TrustTransactionType.BANK_CHARGE,
+            TrustTransactionType.CHARGE_REFUND,
+            TrustTransactionType.UNIDENTIFIED_DEPOSIT,
+            TrustTransactionType.FUND_INV_SHARE);
+  }
+
   @Test
   void nonClientAndInterAccountTypes_areNeverClientVisible() {
     assertThat(TrustTransactionType.values())

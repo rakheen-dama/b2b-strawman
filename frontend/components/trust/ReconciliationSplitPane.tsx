@@ -22,13 +22,14 @@ import {
   integritySeverityLabel,
   isBlockingFlag,
 } from "@/lib/trust-integrity";
-import type {
-  BankStatementLineResponse,
-  BankStatementLineMatchStatus,
-  TrustAccountSection,
-  TrustInvestment,
-  TrustTransaction,
-  TrustReconciliationResponse,
+import {
+  TRUST_TRANSACTION_STATUS_LABELS,
+  type BankStatementLineResponse,
+  type BankStatementLineMatchStatus,
+  type TrustAccountSection,
+  type TrustInvestment,
+  type TrustTransaction,
+  type TrustReconciliationResponse,
 } from "@/lib/types";
 import type { RecordFromStatementFormData } from "@/lib/schemas/trust";
 
@@ -517,9 +518,22 @@ export function ReconciliationSplitPane({
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium text-slate-950 dark:text-slate-50">
-                          {tx.reference}
-                        </p>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="text-sm font-medium text-slate-950 dark:text-slate-50">
+                            {tx.reference}
+                          </p>
+                          {/* 652H D-4: a reversed original can still be matched by hand (it shows
+                              on the bank), but it must never be mistaken for its live re-entry. */}
+                          {tx.status === "REVERSED" && (
+                            <Badge
+                              variant="warning"
+                              className="shrink whitespace-normal"
+                              data-testid={`reversed-badge-${tx.id}`}
+                            >
+                              {TRUST_TRANSACTION_STATUS_LABELS.REVERSED}
+                            </Badge>
+                          )}
+                        </div>
                         <p className="text-xs text-slate-500 dark:text-slate-400">
                           {formatLocalDate(tx.transactionDate)} &middot; {tx.typeLabel}
                         </p>

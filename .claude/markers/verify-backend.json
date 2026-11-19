@@ -1,7 +1,7 @@
 {
-  "commit": "66f4a7e3cd1cdb8bee51c1428822baae2628484c",
-  "command": "cd backend && ./mvnw spotless:apply -q && ./mvnw clean -q && bash scripts/verify.sh -q",
+  "commit": "3e85d3307d8f5510b531cdcc96b7427163e27420",
+  "command": "cd backend && caffeinate -is ./mvnw clean verify -q",
   "exit": 0,
-  "ts": "2026-11-19T07:25:28Z",
-  "summary": "651A PR #1811 final head 66f4a7e3c: 7362 testcases / 0 failures / 0 errors / 26 skipped (surefire <testcase> count; -42 vs 650C = -48 deleted interest-run tests +6); CI Backend pass @66f4a7e3c (29m28s)"
+  "ts": "2026-11-19T08:37:00Z",
+  "summary": "651E PR #1812: 7361 testcases / 0 failures / 0 errors / 26 skipped (surefire+failsafe <testcase> count; -1 vs 651A 7362: LPFF-rate cases deleted, removal/V28 cases added). Run started at 3e85d3307; PR head 540a6e5f7 adds qa_cycle/ evidence only (backend/ identical from 3c5cebcd0 through 540a6e5f7)."
 }

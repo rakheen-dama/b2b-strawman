@@ -9,8 +9,8 @@
 This is the money lifecycle of funds held in trust:
 1. A client pays into the firm's trust banking account, and the firm records the deposit on the client's ledger for a matter.
 2. The bank statement is imported. Each line is matched to a posting, recorded from the statement, or excluded.
-3. Money leaves trust only through firm-initiated outflows under the maker-checker rule (ADR-232): fees to the business account (`FEE_TRANSFER`), payments (`PAYMENT`, which a trust-paid disbursement links to), refunds and investment placements.
-4. Interest on the account and the Fund's sweep of it are recorded as they appear on the statement, on the account's Fund ledger. Kazi calculates nothing.
+3. Firm-initiated outflows need the maker-checker rule (ADR-232): fees to the business account (`FEE_TRANSFER`), payments (`PAYMENT`, which a trust-paid disbursement links to), refunds, investment placements and an unidentified deposit paid to the Fund. Bank-originated debits (bank charges and the Fund's sweep) are recorded from the statement without approval, because the bank has already moved the money (step 4).
+4. Interest on the account and the Fund's sweep of it are recorded as they appear on the statement, on the account's Fund ledger. Kazi calculates no interest and no sweep. The one figure it can compute is the Fund's 5 % of a section 86(4) interest credit: when the firm does not enter it, it is computed from the gross (`TrustInvestmentService`, ADR-379).
 5. The month's reconciliation completes only when the trust equation holds, and completing a month end freezes the Rule 54.15 list.
 
 The boundary with the firm's general ledger is enforced by a fail-closed `TrustBoundaryGuard` (ADR-276) at the integration push, **not** when a trust fee note is created.
@@ -34,7 +34,7 @@ The load-bearing properties are auditability and provable balance. Every step wr
 - **LegalDisbursement + DisbursementPaymentSource** — sibling-aggregate (ADR-247) with `OFFICE_ACCOUNT | TRUST_ACCOUNT` source `→ verticals/legal/disbursement/DisbursementPaymentSource.java:14`
 - **Integration ports** — `PaymentGateway` (PSP, foundational always-on), `AccountingProvider` + `AccountingPaymentSource` (sibling port, ADR-279) — see [`30-modules/integration-ports.md`](../30-modules/integration-ports.md)
 - **TrustBoundaryGuard** — fail-closed export gate (ADR-276) `→ backend/.../integration/accounting/sync/TrustBoundaryGuard.java`
-- **Members** — bookkeeper (`MANAGE_TRUST`, initiator), approver (`APPROVE_TRUST_PAYMENT` — the approving member, `OWNER_ONLY` by default)
+- **Members** — bookkeeper (`MANAGE_TRUST`, initiator), approver (`APPROVE_TRUST_PAYMENT`). Owners and admins hold both by default (neither is in `Capability.OWNER_ONLY`); any other role needs an explicit grant.
 
 ## 3. Step-by-step sequence {#steps}
 
@@ -106,7 +106,7 @@ sequenceDiagram
 - **Fund ledger in debit.** A sweep or charge can take the Fund ledger below zero before the matching credit is recorded. It is recorded as the bank shows it and flagged `FUND_LEDGER_IN_DEBIT`; it never blocks (founder decision 9, ADR-381).
 - **Approval never lands.** `TrustTransaction.status=AWAITING_APPROVAL` until `approve` or `reject`; the row has no effect meanwhile. Aging surfaces via the `AGING_APPROVAL` `TrustAlert`. There is no automatic timeout.
 - **Insufficient client balance.** Approval of a client outflow re-checks the derived balance under the client's lock anchor and refuses ("Insufficient trust balance"). Nothing posts. A client ledger that goes into debit by another path (e.g. a reversed deposit) is flagged `CLIENT_LEDGER_IN_DEBIT`, not blocked (OL-7).
-- **Reversal.** `POST /api/trust-transactions/{id}/reverse` writes a contra `REVERSAL` row that carries the negated effects on its own date (optional `reversalDate`). The original keeps its effects and is marked `REVERSED`, so a balance as at an earlier date never changes (ADR-378). Whether a reversal needs approval is the type's registry rule. Unmatching a `RECORDED` line reverses what it created.
+- **Reversal.** `POST /api/trust-transactions/{id}/reverse` writes a contra `REVERSAL` row that carries the negated effects on its own date (optional `reversalDate`). The original keeps its effects and is marked `REVERSED`, so a balance as at any date before the contra's date never changes; balances on or after that date do (ADR-378). The contra cannot be dated before the original or in the future. Whether a reversal needs approval is the type's registry rule. Unmatching a `RECORDED` line reverses what it created.
 - **Back-dated posting into a locked month.** It is recorded normally and never changes the frozen Rule 54.15 list. It is shown against the list and flagged `BACKDATED_AFTER_LOCK` (ADR-382). The posting dialogs warn first (650D).
 - **Profile-switch orphan.** Switching tenant from `legal-za` to `consulting-generic` does not uninstall trust tables ([`30-modules/trust-accounting.md`](../30-modules/trust-accounting.md) §10.1). Open question: trapdoor vs guided uninstall.
 

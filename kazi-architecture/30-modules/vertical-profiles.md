@@ -64,7 +64,7 @@ Notable absences from this controller:
 | Settings → General → Vertical Profile section | `frontend/app/[org]/[slug]/settings/general/page.tsx` (`VerticalProfileSection` component) | Profile dropdown + change confirmation. Calls `PATCH /api/settings/vertical-profile`. |
 | Settings → Features | `frontend/app/[org]/[slug]/settings/features/page.tsx` | Card-based toggles for **horizontal** modules only (vertical modules are not shown — they're profile-driven). See phase62 §"Module categories". |
 | `OrgProfileProvider` | `frontend/lib/org-profile.tsx:27` | React context carrying `verticalProfile`, `enabledModules`, `terminologyNamespace`. Built once per request from `GET /api/settings`. |
-| `<ModuleGate moduleId="trust_accounting">` | `frontend/components/module-gate.tsx:11` | Conditionally renders children when the module is in `enabledModules`. Layer #6 of the nine-layer trust defence. |
+| `<ModuleGate module="...">` | `frontend/components/module-gate.tsx:11` | Conditionally renders children when the module is in `enabledModules` (used e.g. for `disbursements`). The trust pages do not use it: they check `getOrgSettings().enabledModules` server-side (nine-layer trust defence, layer #5). |
 | `TerminologyProvider` + `t("invoices")` | `frontend/lib/terminology.tsx:24` + `frontend/lib/terminology-map.ts` | Reads `terminologyNamespace` from `OrgProfileProvider`; renders e.g. "Fee Notes" instead of "Invoices" under `en-ZA-legal`. |
 
 The portal has its own equivalents (`portal/hooks/use-portal-context.ts` — `tenantProfile` is the portal-side projection of `verticalProfile`).
@@ -127,7 +127,7 @@ public TrustTransaction record(...) {
 }
 ```
 
-The duplication (`TrustReconciliationService:43`, `TrustTransactionService:45`, `ClientLedgerService:28`, etc.) is intentional — each is reachable independently, so each one fail-closes (A6 §4). This is **layer #2 of the nine-layer trust defence** (see [`20-cross-cutting/multi-vertical.md`](../20-cross-cutting/multi-vertical.md) for the full layer list).
+The duplication (`TrustReconciliationService:55`, `TrustTransactionService:58`, `ClientLedgerService:45`, etc. — twelve trust services) is intentional — each is reachable independently, so each one fail-closes (A6 §4). This is **layer #2 of the nine-layer trust defence** (see [`20-cross-cutting/multi-vertical.md`](../20-cross-cutting/multi-vertical.md) for the full layer list).
 
 ### 6.4 Reconciliation seeder
 

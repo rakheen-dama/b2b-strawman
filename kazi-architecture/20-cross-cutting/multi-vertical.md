@@ -98,9 +98,9 @@ Both categories live in the **same** `OrgSettings.enabledModules` JSONB list. Th
 3. **Component gate** — `<ModuleGate moduleId="...">` (`frontend/components/module-gate.tsx:11`) reads from `OrgProfileProvider` (`frontend/lib/org-profile.tsx:27`).
 
 **Portal mirror** (separate JS bundle, separate auth filter chain):
-- `portal/lib/nav-items.ts:43` declares both `profiles: [...]` and `modules: [...]` per entry.
+- `portal/lib/nav-items.ts` declares `modules: [...]` per entry (trust at `:37`). The `profiles: [...]` key was dropped when Kazi became legal-only (617A, #1639).
 - Portal pages do client-side `ctx.enabledModules` checks and `router.replace("/home")` on miss.
-- Portal data services check the slug too — e.g. `customerbackend/service/PortalTrustLedgerService.java:31` returns **404** (not 403) so the module's existence is hidden from the portal.
+- Portal data services check the slug too — e.g. `customerbackend/service/PortalTrustLedgerService.java:37` returns **404** (not 403) so the module's existence is hidden from the portal.
 
 ADRs: **ADR-076** (module-identity-contract), **ADR-091** (feature-flag-scope), **ADR-190** (module-guard-granularity), **ADR-191** (schema-uniformity-module-tables — module tables exist in every schema regardless of profile, no conditional DDL), **ADR-212** (module-capability-mapping — modules and capabilities stack, see §3 layer 6), **ADR-239** (horizontal-vs-vertical-module-gating), **ADR-246** (profile-gated-dashboard-widgets).
 
@@ -111,7 +111,7 @@ ADRs: **ADR-076** (module-identity-contract), **ADR-091** (feature-flag-scope), 
 A6 §4 documents trust accounting as the canonical multi-layered verticalisation example. Trust money is a Legal Practice Act §86 statutory obligation in South Africa — a violation is a criminal/regulatory event, not a bug. The system therefore stacks **nine** fail-closed gates so that *any* single layer being passed through still leaves eight more to refuse. Quoting A6 §238–246 with anchors:
 
 1. **Profile registry** — `legal-za.json` is the **only** profile whose `enabledModules` array contains `"trust_accounting"`. Every other profile leaves the slug absent (`→ backend/src/main/resources/vertical-profiles/legal-za.json`; A6 §237).
-2. **Backend service gates** — every trust service self-checks via `verticalModuleGuard.requireModule("trust_accounting")` at the top of every public method (A6 §238). Twelve service classes (Phase 92 added the `books/`, `creditor/` and statement-line services; 651A removed `InterestService`):
+2. **Backend service gates** — every trust service self-checks via `verticalModuleGuard.requireModule("trust_accounting")` at the top of each method a controller reaches (A6 §238). By design a few public methods carry no guard: helpers joined to a guarded caller's transaction (`TrustCreditorLedgerService.openDefaultAccounts`, also called by the demo seeder; `TrustInvestmentService.markReversedByUnmatch`), and `TrustAccountService.matterBalance`, which answers zero instead of 403 when the module is off. Twelve service classes (Phase 92 added the `books/`, `creditor/` and statement-line services; 651A removed `InterestService`):
    - `→ verticals/legal/trustaccounting/TrustAccountService.java:35`
    - `→ verticals/legal/trustaccounting/transaction/TrustTransactionService.java:58`
    - `→ verticals/legal/trustaccounting/reconciliation/TrustReconciliationService.java:55`
@@ -126,11 +126,11 @@ A6 §4 documents trust accounting as the canonical multi-layered verticalisation
    - `→ verticals/legal/trustaccounting/books/TrustMonthlyListService.java:76`
 3. **Backend invoice export hard guard (ADR-276)** — independent of the module gate, `TrustBoundaryGuard.evaluate(invoice)` runs **inside** the Phase 71 `AccountingSyncService` before any push to Xero. Three refusal conditions (`→ architecture/phase71-xero-accounting-integration.md:793-795`): invoice flagged trust, any line item from a trust account, customer has active trust balances. Fail-closed on DB error (line 799). On refusal, sync entry `state=BLOCKED_TRUST_BOUNDARY`, audit event `integration.xero.push_blocked_trust` (line 296). "Deterministic Java code -- no LLM, no AI, no human bypass" (line 785).
 4. **Frontend nav gate** — `frontend/lib/nav-items.ts` declares the trust nav group with `requiredModule: "trust_accounting"`; `filterNavItems()` hides it on non-legal tenants (A6 §240).
-5. **Frontend page server gate** — `frontend/app/(app)/org/[slug]/trust-accounting/page.tsx` calls `isModuleEnabledServer("trust_accounting")` and short-circuits with a placeholder if disabled (A6 §241).
-6. **Frontend capability gate** — orthogonal to the module gate. Three module-exclusive capabilities (`→ backend/src/main/java/io/b2mash/b2b/b2bstrawman/orgrole/Capability.java:7`): `VIEW_TRUST`, `MANAGE_TRUST`, `APPROVE_TRUST_PAYMENT` (last is `OWNER_ONLY`). Pages wrapped in `<RequiresCapability cap="VIEW_TRUST">` (A6 §242).
-7. **Portal nav gate** — `portal/lib/nav-items.ts:43` declares trust nav with **both** `profiles: ["legal-za"]` AND `modules: ["trust_accounting"]` (A6 §243).
+5. **Frontend page server gate** — each trust page reads `enabledModules` from `getOrgSettings()`; the overview (`frontend/app/(app)/org/[slug]/trust-accounting/page.tsx:157`) renders a placeholder if the module is off, and every sub-page calls `notFound()` (A6 §241 named `isModuleEnabledServer`, which these pages do not use).
+6. **Frontend capability gate** — orthogonal to the module gate. Three module-exclusive capabilities (`→ backend/src/main/java/io/b2mash/b2b/b2bstrawman/orgrole/Capability.java:7`): `VIEW_TRUST`, `MANAGE_TRUST`, `APPROVE_TRUST_PAYMENT`. None is in `Capability.OWNER_ONLY`, so owners and admins hold all three by default; other roles need an explicit grant. The trust sub-pages check `VIEW_TRUST` server-side and call `notFound()` without it, and the nav items carry `requiredCapability: "VIEW_TRUST"`; there is no `<RequiresCapability>` wrapper (A6 §242).
+7. **Portal nav gate** — `portal/lib/nav-items.ts:37` declares trust nav with `modules: ["trust_accounting"]` only (A6 §243 also named `profiles: ["legal-za"]`; that key was dropped in 617A, #1639, when Kazi became legal-only).
 8. **Portal page redirect** — `portal/app/(authenticated)/trust/page.tsx` checks `ctx.enabledModules` and `router.replace("/home")` if the module is off (A6 §244).
-9. **Portal data endpoints** — `customerbackend/service/PortalTrustLedgerService.java:31` checks `MODULE_ID = "trust_accounting"` and returns **404** (not 403) — the module's *existence* is hidden from portal callers (A6 §245).
+9. **Portal data endpoints** — `customerbackend/service/PortalTrustLedgerService.java:37` checks `MODULE_ID = "trust_accounting"` and returns **404** (not 403) — the module's *existence* is hidden from portal callers (A6 §245).
 
 A6 §247 verdict, quoted: *"Nine layers. Most are belt-and-braces UX defenses; the load-bearing ones are #2 (backend service gate) and #3 (the export guard). The gateway, notably, has zero awareness of trust-accounting — it transparently proxies whatever the backend chooses to expose."*
 

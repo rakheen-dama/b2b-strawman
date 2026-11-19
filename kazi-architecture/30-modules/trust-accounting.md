@@ -4,7 +4,7 @@
 
 > **Updated for Phase 92 (2026-11, slice 651D).** This page describes `main` after PRs #1786–#1812. Trust interest is recorded from the bank statement and never calculated. Every balance is derived from per-row posting effects. Money held for non-clients, and money invested, stays on the books. One equation is checked at four levels. The calculated interest run and the LPFF-rate table were removed (ADR-375, ADR-383). Design record: [`architecture/phase92-trust-books-provably-right.md`](../../architecture/phase92-trust-books-provably-right.md) and ADR-375..384.
 
-This is the only **vertical-specific** bounded context in Kazi (all others are universal-with-overlay or conditionally-present). The whole package lives under `backend/src/main/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/`. It is conditionally present at runtime — when `OrgSettings.verticalProfile != "legal-za"` or `enabledModules` lacks `"trust_accounting"`, every entry point self-refuses with `ModuleNotEnabledException` (HTTP 403). On a non-legal tenant the schema may not even contain the trust tables.
+This is the only **vertical-specific** bounded context in Kazi (all others are universal-with-overlay or conditionally-present). The whole package lives under `backend/src/main/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/`. It is conditionally present at runtime — when `OrgSettings.enabledModules` lacks `"trust_accounting"` (only the `legal-za` profile adds it), every entry point self-refuses with `ModuleNotEnabledException` (HTTP 403; `verticals/VerticalModuleGuard.java:23` checks the module list, not the profile). The trust tables exist in every tenant schema all the same (tenant `V1__baseline.sql:605` onward, ADR-191); with the module off they stay empty.
 
 ---
 
@@ -54,13 +54,13 @@ The other parts of the equation:
 - **EQ-4:** each unidentified deposit agrees with its ledger rows.
 - **EQ-5:** each investment agrees with its ledger rows.
 
-Every term is a `SUM` of `cashbook_effect` or `ledger_effect` over rows with `posted_at IS NOT NULL`, dated on or before `D`. The equation is checked at four levels:
-1. the row CHECK `chk_trust_txn_posting` (V16, tightened in V17);
+The cashbook and every creditor term is a `SUM` of `cashbook_effect` or `ledger_effect` over rows with `posted_at IS NOT NULL`, dated on or before `D`. EQ-1's bank side is not a posting sum: it is the statement's closing balance plus outstanding deposits less outstanding payments (`TrustBooksService.bankPosition`). The equation is checked at four levels:
+1. the row CHECK `chk_trust_txn_posting` (V16, tightened in V17). It validates one row at a time — a posted row moves its ledger by exactly its amount and the cashbook by the same amount or by zero — so it supports EQ-2 but cannot see a missing paired row (a `TRANSFER_OUT` moves no cash and needs its `TRANSFER_IN` for EQ-2 to balance);
 2. the test harness `backend/src/test/java/io/b2mash/b2b/b2bstrawman/testutil/TrustBooksHarness.java`;
 3. the integrity check `books/TrustIntegrityService.java:57`;
 4. the reconciliation completion gate.
 
-It never blocks recording a transaction (founder decision 7).
+The equation and its integrity flags never block recording a transaction (founder decision 7). Postings are refused only by other rules, such as the client sufficiency check under the lock (ADR-231) and the date rules (a fee transfer or a reversal cannot be dated in the future).
 
 ---
 
@@ -176,7 +176,7 @@ The read model is kept by `customerbackend/service/TrustLedgerPortalSyncService.
 | `trust-accounting/reports/page.tsx` | Trust report catalogue (pack `trust-reports` v4) |
 | `settings/fees/_tabs/trust-accounting.tsx` | Settings → Trust accounting tab: trust accounts (including `INVESTMENT` accounts and their basis), approval settings, reminder settings |
 
-Each page gates on the server (A6 §4 layers 5–6): it reads `enabledModules` from `getOrgSettings()` and renders a "Module Not Available" placeholder when `trust_accounting` is off (e.g. `trust-accounting/page.tsx:157`), and the sub-pages also check `VIEW_TRUST` (owners and admins pass; e.g. `transactions/page.tsx:108`, `reconciliation/layout.tsx:20-27`). Nav is the "Trust" group in `frontend/lib/nav-items.ts:226`: Overview, Transactions, Client ledgers, Other trust creditors, Reconciliation, Investments, Trust reports, each with `requiredModule: "trust_accounting"` and `requiredCapability: "VIEW_TRUST"`. Posting dialogs show `LockedMonthWarning` (`frontend/components/trust/locked-month-warning.tsx`) when the chosen date falls in a month whose list is locked (650D).
+Each page gates on the server (A6 §4 layers 5–6): it reads `enabledModules` from `getOrgSettings()`. When `trust_accounting` is off, the overview renders a "Module Not Available" placeholder (`trust-accounting/page.tsx:157`) and every sub-page calls `notFound()` (e.g. `transactions/page.tsx:101-102`; `reconciliation/layout.tsx:20-21` covers the reconciliation routes). The sub-pages also check `VIEW_TRUST` server-side and call `notFound()` without it; owners and admins pass (e.g. `transactions/page.tsx:106-109`, `reconciliation/layout.tsx:26-29`). Nav is the "Trust" group in `frontend/lib/nav-items.ts:226`: Overview, Transactions, Client ledgers, Other trust creditors, Reconciliation, Investments, Trust reports, each with `requiredModule: "trust_accounting"` and `requiredCapability: "VIEW_TRUST"`. Posting dialogs show `LockedMonthWarning` (`frontend/components/trust/locked-month-warning.tsx`) when the chosen date falls in a month whose list is locked (650D).
 
 Domain types live in `frontend/lib/types/trust.ts`. `TrustAccount` is at `:28`. `TrustTransactionType` is a plain `string` at `:79`: there is no local list or label map, and labels arrive from the API. Other types: `TrustLedger`, `TrustAccountSection`, `IntegrityFlagCode`, `MonthlyList`, `TrustCreditorAccount`, `UnidentifiedDeposit`, `InvestmentInterest` and `InterestMemo`. Components live under `frontend/components/trust/`; they include the dialogs above, `TrustBalanceCard`, `TrustIntegrityCard` and the `Section866Advisory` callout.
 
@@ -199,7 +199,7 @@ Trust events are **not** part of the central sealed `DomainEvent` hierarchy (`ba
 
 **Published** (via `ApplicationEventPublisher`):
 - `event/TrustTransactionRecordedEvent.java:25` (`recorded(...)`) fires when a row is first persisted. Publishers: `TrustTransactionService`, `TrustInvestmentService` and `UnidentifiedDepositService`.
-- `event/TrustTransactionApprovalEvent.java:17` (`awaitingApproval` / `approved` / `rejected`) fires on the approval lifecycle. Publishers: `TrustTransactionService` and `TrustInvestmentService`.
+- `event/TrustTransactionApprovalEvent.java:17` (`awaitingApproval` / `approved` / `rejected`) fires on the approval lifecycle. Publishers: `TrustTransactionService` (all three), and `TrustInvestmentService` and `UnidentifiedDepositService` (`awaitingApproval`, for a placement and for an allocation or payment to the Fund; `creditor/UnidentifiedDepositService.java:674`).
 
 **Subscribers** (all `@TransactionalEventListener(phase = AFTER_COMMIT)`):
 - `event/TrustNotificationHandler.java:50` creates the `TRUST_PAYMENT_*` notifications.
@@ -225,7 +225,7 @@ No main class publishes any of them, so their listeners are dormant: `TrustNotif
 A6 §4 documents trust accounting as the canonical **nine-layer** verticalisation example. Quoting A6, the layers are:
 
 1. **Profile registry** — `legal-za.json` is the only profile whose `enabledModules` array contains `"trust_accounting"` (A6 §237).
-2. **Backend service gates** — every trust service self-checks via `verticalModuleGuard.requireModule("trust_accounting")` (A6 §238). Twelve service classes hold `MODULE_ID = "trust_accounting"` (Phase 92 added the `books/`, `creditor/` and statement-line services; 651A removed `InterestService`):
+2. **Backend service gates** — every trust service self-checks via `verticalModuleGuard.requireModule("trust_accounting")` in each method a controller reaches (A6 §238). By design a few public methods carry no guard: helpers joined to a guarded caller's transaction (`creditor/TrustCreditorLedgerService.java:130` `openDefaultAccounts`, also called by the demo seeder; `investment/TrustInvestmentService.java:945` `markReversedByUnmatch`), and `TrustAccountService.java:162` `matterBalance`, which answers zero instead of 403 when the module is off. Twelve service classes hold `MODULE_ID = "trust_accounting"` (Phase 92 added the `books/`, `creditor/` and statement-line services; 651A removed `InterestService`):
    - `TrustAccountService.java:35`
    - `transaction/TrustTransactionService.java:58`
    - `reconciliation/TrustReconciliationService.java:55`
@@ -242,8 +242,8 @@ A6 §4 documents trust accounting as the canonical **nine-layer** verticalisatio
    `transaction/TrustPostingService.java:70`, the only writer of trust transactions (ArchUnit `TrustPostingRulesTest`), holds no gate of its own; only gated services call it.
 3. **Backend invoice export hard guard** — `TrustBoundaryGuard` blocks any trust-related invoice from being pushed to Xero (A6 §239; ADR-276; Phase 71 §11.6).
 4. **Frontend nav gate** — `frontend/lib/nav-items.ts` declares the trust nav group with `requiredModule: "trust_accounting"` (A6 §240).
-5. **Frontend page server gate** — `frontend/app/(app)/org/[slug]/trust-accounting/page.tsx:157` reads `enabledModules` from `getOrgSettings()` and returns a placeholder if disabled (A6 §241).
-6. **Frontend capability gate** — `VIEW_TRUST / MANAGE_TRUST / APPROVE_TRUST_PAYMENT` capabilities (`backend/.../orgrole/Capability.java:19-23`); the sub-pages check `VIEW_TRUST` server-side and the nav items carry `requiredCapability: "VIEW_TRUST"` (A6 §242).
+5. **Frontend page server gate** — each trust page reads `enabledModules` from `getOrgSettings()`; the overview returns a placeholder if the module is off (`frontend/app/(app)/org/[slug]/trust-accounting/page.tsx:157`) and every sub-page calls `notFound()` (see §4). There is no `<ModuleGate>` or `isModuleEnabledServer` on these pages (A6 §241 described them; the code no longer uses them here).
+6. **Frontend capability gate** — `VIEW_TRUST / MANAGE_TRUST / APPROVE_TRUST_PAYMENT` capabilities (`backend/.../orgrole/Capability.java:19-23`); the sub-pages check `VIEW_TRUST` server-side (owners and admins pass) and the nav items carry `requiredCapability: "VIEW_TRUST"`; there is no `<RequiresCapability>` wrapper (A6 §242). Owners and admins hold all three capabilities by default; other roles need an explicit grant.
 7. **Portal nav gate** — `portal/lib/nav-items.ts:37` declares trust nav with `modules: ["trust_accounting"]` (A6 §243; the `profiles: ["legal-za"]` key was dropped in 617A, #1639, when Kazi became legal-only).
 8. **Portal page redirect** — `portal/app/(authenticated)/trust/page.tsx` checks `ctx.enabledModules` and `router.replace("/home")` if off (A6 §244).
 9. **Portal data endpoints** — `customerbackend/service/PortalTrustLedgerService.java:37` checks `MODULE_ID = "trust_accounting"` and returns **404** (not 403) — module existence hidden from the portal (A6 §245).
@@ -264,7 +264,7 @@ The guard runs **inside** `AccountingSyncService`, not on the public `/api/invoi
 
 ### Capabilities
 
-`Capability.java:7` is the capability enum. Three values are exclusive to this module: `VIEW_TRUST`, `MANAGE_TRUST`, `APPROVE_TRUST_PAYMENT` (A6 §112, glossary). `APPROVE_TRUST_PAYMENT` is the second leg of dual approval and is `OWNER_ONLY`-gated (admin does not inherit by default). Phase 92 added no capability: the integrity check and monthly lists read under `VIEW_TRUST`, and record-from-statement, allocations and placements post under `MANAGE_TRUST` with approval under `APPROVE_TRUST_PAYMENT`.
+`Capability.java:7` is the capability enum. Three values are exclusive to this module: `VIEW_TRUST`, `MANAGE_TRUST`, `APPROVE_TRUST_PAYMENT` (A6 §112, glossary). `APPROVE_TRUST_PAYMENT` is the second leg of dual approval. None of the three is in `Capability.OWNER_ONLY` (`Capability.java:67-71`), so owners and admins hold all three by default (`OrgRoleService.java:68-74`); any other role needs an explicit grant. Phase 92 added no capability: the integrity check and monthly lists read under `VIEW_TRUST`, and record-from-statement, allocations and placements post under `MANAGE_TRUST` with approval under `APPROVE_TRUST_PAYMENT`.
 
 ### Audit posture
 
@@ -288,7 +288,7 @@ Section 86 of the Legal Practice Act describes three kinds of trust money, and e
 | Section 86(3): surplus trust money the firm invests on its own initiative | `INVESTMENT` with basis `FIRM_DISCRETION` | The Fund, wholly (s86(5)(a)) |
 | Section 86(4): money invested on a client's instruction | `INVESTMENT` with basis `CLIENT_INSTRUCTION` | The client, less the Fund's 5 % (s86(5)(b)) |
 
-Kazi stores no interest rate and calculates no interest (ADR-375):
+Kazi keeps no Fund or bank interest-rate table and calculates no interest (ADR-375). An investment placement records the rate it was placed at (`investment/TrustInvestment.java:56`, `interest_rate`) for the investment register; nothing calculates from it.
 
 - **Fund interest, sweeps and bank charges.** These are recorded from statement lines on the account's Fund interest-and-charges ledger, as `FUND_INTEREST`, `FUND_SWEEP`, `BANK_CHARGE` and `CHARGE_REFUND` (ADR-380, ADR-381). Where the bank sweeps at source, the firm records a memo for Rule 54.28 instead (ADR-384).
 - **Section 86(4) interest.** Each bank credit is recorded per investment as gross, the Fund's 5 % and net.
@@ -392,3 +392,7 @@ The portal layer hardens download URLs to `https:` only (A3 §269) but provides 
 - No `TrustDomainEvent` is published (see §5).
 - Nothing sets an investment `MATURED`.
 - A `CLOSED` trust account refuses postings, including recording a late statement line from that account.
+
+---
+
+**See also:** [`60-verticals/legal-za.md`](../60-verticals/legal-za.md) (Section 86 / Fund context), [`20-cross-cutting/multi-vertical.md`](../20-cross-cutting/multi-vertical.md) (nine-layer mechanism), [`30-modules/invoicing.md`](./invoicing.md) (trust-flagged invoice + Xero hard guard), [`30-modules/expenses.md`](./expenses.md) (legal-disbursement sibling), [`50-flows/payment-receipt-to-trust-allocation.md`](../50-flows/payment-receipt-to-trust-allocation.md), [`50-flows/matter-to-cash.md`](../50-flows/matter-to-cash.md), [`adr/ADR-276`](../../adr/ADR-276-trust-accounting-hard-guard-export.md), [`adr/ADR-375`](../../adr/ADR-375-statement-driven-trust-interest.md), [`adr/ADR-376`](../../adr/ADR-376-non-client-trust-creditor-ledger.md), [`adr/ADR-377`](../../adr/ADR-377-trust-equation-and-where-it-is-enforced.md), [`adr/ADR-378`](../../adr/ADR-378-ledger-balances-derived-from-posting-effects.md), [`adr/ADR-379`](../../adr/ADR-379-investment-accounting-on-the-books.md), [`adr/ADR-380`](../../adr/ADR-380-statement-line-classification-and-posting.md), [`adr/ADR-381`](../../adr/ADR-381-bank-charges-and-fund-ledger-debit.md), [`adr/ADR-382`](../../adr/ADR-382-monthly-trust-creditor-list-locking.md), [`adr/ADR-383`](../../adr/ADR-383-retired-interest-run-data-is-dropped.md), [`adr/ADR-384`](../../adr/ADR-384-memo-records-for-at-source-sweeps.md), [`architecture/phase92-trust-books-provably-right.md`](../../architecture/phase92-trust-books-provably-right.md), `architecture/phase60-trust-accounting.md`, `architecture/phase71-xero-accounting-integration.md` §11.6.

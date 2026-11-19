@@ -57,3 +57,27 @@ Red on main (main's page.tsx copied over via
   "Unable to find an element by: [data-testid="reconciliation-error"]" (on main handleRecord has no
   .catch on calculate, so the rejection escapes to the dialog's own catch and no banner is shown).
   The other 6 failures are the 6 red->green cases listed above.
+
+---- D-6 round (CodeRabbit round 1 on PR #1815: CF-1 reset guard, CF-5 unmatch re-read) — 2026-11-19 ----
+
+Red first, on head efd8420e6 with only the 6 new test cases added (page.tsx unmodified):
+  NODE_OPTIONS="" /opt/homebrew/bin/pnpm exec vitest run __tests__/trust-reconciliation.test.tsx
+  Exit 1 — Tests 6 failed | 60 passed (66). Trimmed run: red-before-d6.txt.
+  - drops a 'refused' recalculation after a 'match' / 'exclude' / 'unmatch' that lands after the
+    wizard was reset: the old wizard's banner "The … but the balances could not be recalculated: …"
+    shows on step 3 of the new wizard
+  - drops a 'successful' recalculation after a 'match' …: createReconciliation called 1 time, not 2
+    (the old reconciliation was restored, so Review reused it)
+  - still recalculates after an unmatch when the transactions cannot be re-read: banner was the bare
+    "Failed to fetch" (calculate never ran)
+  - marks the figures stale after an unmatch when neither the re-read nor the recalculation works:
+    banner was the bare "Failed to fetch"
+
+Green after the fix (page.tsx only), from frontend/, nvm node v20.11.1:
+  NODE_OPTIONS="" /opt/homebrew/bin/pnpm exec vitest run __tests__/trust-reconciliation.test.tsx
+  Exit 0 — Test Files 1 passed (1), Tests 66 passed (66)
+  NODE_OPTIONS="" /opt/homebrew/bin/pnpm test
+  Exit 0 — Test Files 482 passed (482), Tests 4575 passed | 2 skipped (4577)
+  lint: exit 0 (0 errors; 77 pre-existing warnings, none in the changed files)
+  typecheck: exit 0
+  format:check: exit 0

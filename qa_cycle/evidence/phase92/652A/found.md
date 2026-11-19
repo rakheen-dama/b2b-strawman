@@ -1,9 +1,16 @@
 # 652A — found items (carried forward, not fixed)
 
-Not absorbed under `tasks/phase92-decisions.md` › 652A D-1 (one fix per PR, root CLAUDE.md §7; precedent 650D / 650A F-12).
+Not absorbed under `tasks/phase92-decisions.md` › 652A D-1 (one fix per PR, root CLAUDE.md §7; precedent 650D / 650A F-12),
+except CF-1 and CF-5, absorbed by 652A D-6 (CodeRabbit round 1 on PR #1815).
 Line numbers are on the 652A branch head unless marked "main".
 
 ## CF-1 — no `wizardGeneration` guard in `handleMatch` / `handleExclude` / `handleUnmatch`
+
+**Status: ABSORBED in 652A (D-6), commit SHA_D6.** Each handler now captures the generation before
+the action and drops every post-await write once it has moved. Red→green: the four
+`drops a … recalculation after a … that lands after the wizard was reset` cases
+(`red-before-d6.txt`, `green-after.txt` › D-6). The helper fold (reviewer B) was not done: the
+unmatch branch now diverges (CF-5), so one shared helper would not be clearly simpler.
 
 - Source: `qa_cycle/evidence/phase92/647A/found.md:91-98`; code `frontend/app/(app)/org/[slug]/trust-accounting/reconciliation/new/page.tsx:286-296` (match), `:319-329` (exclude), `:367-377` (unmatch).
 - Defect: each handler awaits `calculateReconciliation(reconciliation.id)` and then calls `setReconciliation(...)` / now also `setFiguresStale(...)` / `setError(...)` with no generation check, so a Back-and-reset while the recalculation is in flight restores the old reconciliation (or its banner / stale marker) into the new wizard. `handleRecord` (647A) has the guard (`:407-410`).
@@ -38,6 +45,13 @@ Line numbers are on the 652A branch head unless marked "main".
 - Suggested owner: follow-up.
 
 ## CF-5 — `handleUnmatch` re-reads the unmatched transactions before recalculating, with no catch
+
+**Status: ABSORBED in 652A (D-6), commit SHA_D6.** The re-read and the recalculation run side by
+side (`Promise.all`, re-read `.catch(() => null)`): a failed re-read no longer skips the
+recalculation, the stale marker follows only the recalculation, and the banner adds "The unmatched
+transactions could not be refreshed and may be out of date." Red→green: `still recalculates after
+an unmatch when the transactions cannot be re-read`, `marks the figures stale after an unmatch when
+neither the re-read nor the recalculation works`.
 
 - Source: PR #1815 review (reviewer A Medium); code `page.tsx:361-364` (main `:331-334`):
   `setUnmatchedTransactions(await fetchUnmatchedTransactions(selectedAccountId))` runs after the saved

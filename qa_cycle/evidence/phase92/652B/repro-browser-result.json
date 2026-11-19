@@ -1,0 +1,36 @@
+{
+  "run": "IXVHO",
+  "today": "2026-11-19",
+  "periodEnd": "2026-11-19",
+  "depositDate": "2026-11-17",
+  "amount": 655.48,
+  "depositRef": "DEP/652B/IXVHO",
+  "steps": {
+    "depositRow": "17 Nov 2026 DEP/652B/IXVHO Deposit R 655,48 RECORDED Reverse",
+    "depositDb": "dbe61796-cca9-478a-9c9a-d3e6eef05b9c|RECORDED|655.48|2026-11-17|",
+    "autoMatch": "Auto-matched 0 lines 1 lines remaining for manual review",
+    "lineDb": "UNMATCHED|dbe61796-cca9-478a-9c9a-d3e6eef05b9c",
+    "review": {
+      "paneListed": [
+        "cef85e96-df3f-48af-b1b6-f0aa3a76fe22|PAYMENT|APPROVED|1250.00|PAY/652A/GT8HE",
+        "82ae7ae5-0dc7-4e81-b0ba-85cfc250c926|PAYMENT|APPROVED|1250.00|PAY/652A/GUR32"
+      ],
+      "depositListed": false,
+      "matchButtonForDeposit": 0,
+      "lineText": "#1 19 Nov 2026 Deposit Acme Corp Ref: BANK/652B/IXVHO R 655,48 CR Unmatched Record from statement Exclude",
+      "dbUnlinkedPosted": [
+        "APPROVED|PAYMENT|2",
+        "RECORDED|DEPOSIT|5"
+      ]
+    }
+  },
+  "pageErrors": [],
+  "consoleErrors": [],
+  "schema": "tenant_7d218705360b",
+  "accountId": "5149d2be-b51f-4a7f-b375-f2a851a4a028",
+  "client": "Acme Corp",
+  "matter": "Website Redesign",
+  "depositId": "dbe61796-cca9-478a-9c9a-d3e6eef05b9c",
+  "statementId": "dea26a7e-6db7-46d0-87a9-8ec120876f71",
+  "lineId": "18b01f83-97c3-4576-a12e-008b3b5174f1"
+}

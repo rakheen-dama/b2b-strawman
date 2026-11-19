@@ -1,0 +1,9 @@
+base f29a629ce (slice head) + the review-fix change (652B D-2, A-M1, B-M1); blobs: page.tsx b90239e70206802bc09749fe45974546338ebea7, trust-reconciliation.test.tsx a494e53eeb0f53007105b46e706204d3c4273ede
+node v20.11.1 · 2026-11-19T12:51:17Z
+command: pnpm exec vitest run __tests__/trust-reconciliation.test.tsx (exit 0)
+
+ RUN  v4.1.5 /Users/rakheendama/Projects/2026/worktree-epic-652B/frontend
+ Test Files  1 passed (1)
+      Tests  71 passed (71)
+   Start at  14:48:25
+   Duration  3.66s (transform 436ms, setup 87ms, import 862ms, tests 2.47s, environment 150ms)

@@ -1,0 +1,187 @@
+{
+  "run": "K0NIA",
+  "today": "2026-11-19",
+  "amounts": {
+    "deposit": 305.86,
+    "transfer": 407.48
+  },
+  "depositRef": "DEP/652B-OBS/K0NIA",
+  "transferRef": "TRF/652B-OBS/K0NIA",
+  "clientB": "OBS652B Client K0NIA",
+  "matterB": "OBS652B Matter K0NIA",
+  "steps": {
+    "depositRow": "17 Nov 2026 DEP/652B-OBS/K0NIA Deposit R 305,86 RECORDED Reverse",
+    "depositDb": "1e030559-6d17-49ad-a994-44bf1c42dd59|DEPOSIT|RECORDED|305.86|2026-11-17|NULL",
+    "clientB": "f2352f59-639f-4ba4-918e-8531935a85c9|OBS652B Client K0NIA|ONBOARDING",
+    "matterB": "4036236e-6fd1-4299-bf03-63a2c61b53c2|OBS652B Matter K0NIA|f2352f59-639f-4ba4-918e-8531935a85c9",
+    "transferRows": [
+      "18 Nov 2026 TRF/652B-OBS/K0NIA Transfer out R 407,48 RECORDED Reverse",
+      "18 Nov 2026 TRF/652B-OBS/K0NIA Transfer in R 407,48 RECORDED "
+    ],
+    "transferDb": [
+      "0333393d-a55e-4ef3-ab00-76f0684ecb29|TRANSFER_IN|RECORDED|407.48|2026-11-18|NULL",
+      "e9022b9d-818f-4613-a6a9-991fd9e02fe9|TRANSFER_OUT|RECORDED|407.48|2026-11-18|NULL"
+    ],
+    "autoMatch": "Auto-matched 0 lines 4 lines remaining for manual review",
+    "linesAfterAutoMatch": [
+      "71d1e6d1-ddaf-450b-ba40-b535cb88fd43|305.86|BANK/652B-OBS/K0NIA/D|UNMATCHED|1e030559-6d17-49ad-a994-44bf1c42dd59",
+      "72a1ca01-3d63-49aa-8d19-0e9a54060bc9|-1250.00|BANK/652B-OBS/K0NIA/P|UNMATCHED|cef85e96-df3f-48af-b1b6-f0aa3a76fe22",
+      "0a863ed0-95eb-4734-a262-73b831876a5b|407.48|BANK/652B-OBS/K0NIA/TI|UNMATCHED|NULL",
+      "7207e3ca-52be-4d52-8a62-bd4bd99c79ec|-407.48|BANK/652B-OBS/K0NIA/TO|UNMATCHED|NULL"
+    ],
+    "paneListed": [
+      "b2c7abfa-8602-4adc-8dc3-9dbde2f00093|DEPOSIT|RECORDED|5000.00|DEP/652A/GT8HE",
+      "cef85e96-df3f-48af-b1b6-f0aa3a76fe22|PAYMENT|APPROVED|1250.00|PAY/652A/GT8HE",
+      "1e030559-6d17-49ad-a994-44bf1c42dd59|DEPOSIT|RECORDED|305.86|DEP/652B-OBS/K0NIA",
+      "dbe61796-cca9-478a-9c9a-d3e6eef05b9c|DEPOSIT|RECORDED|655.48|DEP/652B/IXVHO",
+      "54e194f5-8c37-46e3-8a12-c9907c56a1cf|DEPOSIT|RECORDED|5000.00|DEP/652A/GUR32",
+      "82ae7ae5-0dc7-4e81-b0ba-85cfc250c926|PAYMENT|APPROVED|1250.00|PAY/652A/GUR32",
+      "29f9c956-7248-40c8-ba2d-75f8c335e56b|DEPOSIT|RECORDED|5000.00|DEP/R2/HZV1Q",
+      "9825c1d4-d688-4902-b80e-493b2cb0f169|DEPOSIT|RECORDED|5000.00|DEP/R1/HZV1Q"
+    ],
+    "dbUnlinkedPosted": [
+      "DEPOSIT|RECORDED|6",
+      "PAYMENT|APPROVED|2",
+      "TRANSFER_IN|RECORDED|1",
+      "TRANSFER_OUT|RECORDED|1"
+    ]
+  },
+  "checks": {
+    "c": {
+      "transferLegsListed": [],
+      "matchBtnsForTransferLegs_onCreditLine": 0,
+      "matchBtnsAny_onCreditLine": 0,
+      "matchBtnsForTransferLegs_onDebitLine": 0,
+      "matchBtnsAny_onDebitLine": 0,
+      "pass": true
+    },
+    "d": {
+      "approvedListed": [
+        "cef85e96-df3f-48af-b1b6-f0aa3a76fe22|PAYMENT|APPROVED|1250.00|PAY/652A/GT8HE",
+        "82ae7ae5-0dc7-4e81-b0ba-85cfc250c926|PAYMENT|APPROVED|1250.00|PAY/652A/GUR32"
+      ],
+      "matchBtnsOn1250Line": [
+        "cef85e96-df3f-48af-b1b6-f0aa3a76fe22|PAYMENT|APPROVED|1250.00|PAY/652A/GT8HE",
+        "82ae7ae5-0dc7-4e81-b0ba-85cfc250c926|PAYMENT|APPROVED|1250.00|PAY/652A/GUR32"
+      ],
+      "pass": true
+    },
+    "a": {
+      "depositListed": true,
+      "depositRowText": "DEP/652B-OBS/K0NIA 17 Nov 2026 · Deposit 652B OBS K0NIA R 305,86 Match",
+      "matchBtnForDeposit": 1,
+      "lineText": "#2 19 Nov 2026 Deposit Acme Corp Ref: BANK/652B-OBS/K0NIA/D R 305,86 CR Unmatched Record from statement Exclude",
+      "pass": true
+    },
+    "b": {
+      "depositStillListed": false,
+      "lineText": "#2 19 Nov 2026 Deposit Acme Corp Ref: BANK/652B-OBS/K0NIA/D R 305,86 CR Matched Unmatch",
+      "matchProgress": "Matching Progress 1 / 4 lines resolved",
+      "errorBanner": 0,
+      "staleBanner": 0,
+      "dbTransaction": "1e030559-6d17-49ad-a994-44bf1c42dd59|RECORDED|71d1e6d1-ddaf-450b-ba40-b535cb88fd43",
+      "dbLine": "71d1e6d1-ddaf-450b-ba40-b535cb88fd43|MANUALLY_MATCHED|1e030559-6d17-49ad-a994-44bf1c42dd59|1.00",
+      "pass": true
+    }
+  },
+  "pageErrors": [],
+  "consoleErrors": [],
+  "queries": [
+    {
+      "q": "select id from tenant_7d218705360b.trust_accounts where is_primary order by created_at limit 1",
+      "out": "5149d2be-b51f-4a7f-b375-f2a851a4a028"
+    },
+    {
+      "q": "select c.id, c.name, p.id, p.name from tenant_7d218705360b.customers c join tenant_7d218705360b.projects p on p.customer_id=c.id where c.name='Acme Corp' order by p.created_at limit 1",
+      "out": "27e9a835-addc-4e39-b42b-421ba489c5eb|Acme Corp|74cee341-38ff-4d33-9e4a-cbde3863306e|Website Redesign"
+    },
+    {
+      "q": "select id from tenant_7d218705360b.trust_transactions where reference='DEP/652B-OBS/K0NIA'",
+      "out": ""
+    },
+    {
+      "q": "select id, transaction_type, status, amount, transaction_date, coalesce(bank_statement_line_id::text,'NULL') from tenant_7d218705360b.trust_transactions where reference='DEP/652B-OBS/K0NIA'",
+      "out": "1e030559-6d17-49ad-a994-44bf1c42dd59|DEPOSIT|RECORDED|305.86|2026-11-17|NULL"
+    },
+    {
+      "q": "select id from tenant_7d218705360b.customers where name='OBS652B Client K0NIA'",
+      "out": ""
+    },
+    {
+      "q": "select id from tenant_7d218705360b.customers where name='OBS652B Client K0NIA'",
+      "out": "f2352f59-639f-4ba4-918e-8531935a85c9"
+    },
+    {
+      "q": "select lifecycle_status from tenant_7d218705360b.customers where id='f2352f59-639f-4ba4-918e-8531935a85c9'",
+      "out": "PROSPECT"
+    },
+    {
+      "q": "select id from tenant_7d218705360b.projects where name='OBS652B Matter K0NIA'",
+      "out": ""
+    },
+    {
+      "q": "select id from tenant_7d218705360b.projects where name='OBS652B Matter K0NIA'",
+      "out": "4036236e-6fd1-4299-bf03-63a2c61b53c2"
+    },
+    {
+      "q": "select id, name, lifecycle_status from tenant_7d218705360b.customers where id='f2352f59-639f-4ba4-918e-8531935a85c9'",
+      "out": "f2352f59-639f-4ba4-918e-8531935a85c9|OBS652B Client K0NIA|ONBOARDING"
+    },
+    {
+      "q": "select id, name, customer_id from tenant_7d218705360b.projects where id='4036236e-6fd1-4299-bf03-63a2c61b53c2'",
+      "out": "4036236e-6fd1-4299-bf03-63a2c61b53c2|OBS652B Matter K0NIA|f2352f59-639f-4ba4-918e-8531935a85c9"
+    },
+    {
+      "q": "select id from tenant_7d218705360b.trust_transactions where reference='TRF/652B-OBS/K0NIA' limit 1",
+      "out": ""
+    },
+    {
+      "q": "select id, transaction_type, status, amount, transaction_date, coalesce(bank_statement_line_id::text,'NULL') from tenant_7d218705360b.trust_transactions where reference='TRF/652B-OBS/K0NIA' order by transaction_type",
+      "out": "0333393d-a55e-4ef3-ab00-76f0684ecb29|TRANSFER_IN|RECORDED|407.48|2026-11-18|NULL\ne9022b9d-818f-4613-a6a9-991fd9e02fe9|TRANSFER_OUT|RECORDED|407.48|2026-11-18|NULL"
+    },
+    {
+      "q": "select id from tenant_7d218705360b.bank_statements where file_name='obs-K0NIA.csv'",
+      "out": "020df165-0614-40bc-a46f-de758baf28c6"
+    },
+    {
+      "q": "select id, amount, reference, match_status, coalesce(trust_transaction_id::text,'NULL') from tenant_7d218705360b.bank_statement_lines where bank_statement_id='020df165-0614-40bc-a46f-de758baf28c6' order by reference",
+      "out": "71d1e6d1-ddaf-450b-ba40-b535cb88fd43|305.86|BANK/652B-OBS/K0NIA/D|UNMATCHED|1e030559-6d17-49ad-a994-44bf1c42dd59\n72a1ca01-3d63-49aa-8d19-0e9a54060bc9|-1250.00|BANK/652B-OBS/K0NIA/P|UNMATCHED|cef85e96-df3f-48af-b1b6-f0aa3a76fe22\n0a863ed0-95eb-4734-a262-73b831876a5b|407.48|BANK/652B-OBS/K0NIA/TI|UNMATCHED|NULL\n7207e3ca-52be-4d52-8a62-bd4bd99c79ec|-407.48|BANK/652B-OBS/K0NIA/TO|UNMATCHED|NULL"
+    },
+    {
+      "q": "select id, transaction_type, status, amount, reference from tenant_7d218705360b.trust_transactions where id in ('b2c7abfa-8602-4adc-8dc3-9dbde2f00093','cef85e96-df3f-48af-b1b6-f0aa3a76fe22','dbe61796-cca9-478a-9c9a-d3e6eef05b9c','1e030559-6d17-49ad-a994-44bf1c42dd59','54e194f5-8c37-46e3-8a12-c9907c56a1cf','82ae7ae5-0dc7-4e81-b0ba-85cfc250c926','29f9c956-7248-40c8-ba2d-75f8c335e56b','9825c1d4-d688-4902-b80e-493b2cb0f169') order by transaction_date desc",
+      "out": "b2c7abfa-8602-4adc-8dc3-9dbde2f00093|DEPOSIT|RECORDED|5000.00|DEP/652A/GT8HE\ncef85e96-df3f-48af-b1b6-f0aa3a76fe22|PAYMENT|APPROVED|1250.00|PAY/652A/GT8HE\n1e030559-6d17-49ad-a994-44bf1c42dd59|DEPOSIT|RECORDED|305.86|DEP/652B-OBS/K0NIA\ndbe61796-cca9-478a-9c9a-d3e6eef05b9c|DEPOSIT|RECORDED|655.48|DEP/652B/IXVHO\n54e194f5-8c37-46e3-8a12-c9907c56a1cf|DEPOSIT|RECORDED|5000.00|DEP/652A/GUR32\n82ae7ae5-0dc7-4e81-b0ba-85cfc250c926|PAYMENT|APPROVED|1250.00|PAY/652A/GUR32\n29f9c956-7248-40c8-ba2d-75f8c335e56b|DEPOSIT|RECORDED|5000.00|DEP/R2/HZV1Q\n9825c1d4-d688-4902-b80e-493b2cb0f169|DEPOSIT|RECORDED|5000.00|DEP/R1/HZV1Q"
+    },
+    {
+      "q": "select transaction_type, status, count(*) from tenant_7d218705360b.trust_transactions where trust_account_id='5149d2be-b51f-4a7f-b375-f2a851a4a028' and bank_statement_line_id is null and status in ('RECORDED','APPROVED') group by 1,2 order by 1,2",
+      "out": "DEPOSIT|RECORDED|6\nPAYMENT|APPROVED|2\nTRANSFER_IN|RECORDED|1\nTRANSFER_OUT|RECORDED|1"
+    },
+    {
+      "q": "select id, transaction_type, status, amount, reference from tenant_7d218705360b.trust_transactions where id in ('cef85e96-df3f-48af-b1b6-f0aa3a76fe22','82ae7ae5-0dc7-4e81-b0ba-85cfc250c926')",
+      "out": "cef85e96-df3f-48af-b1b6-f0aa3a76fe22|PAYMENT|APPROVED|1250.00|PAY/652A/GT8HE\n82ae7ae5-0dc7-4e81-b0ba-85cfc250c926|PAYMENT|APPROVED|1250.00|PAY/652A/GUR32"
+    },
+    {
+      "q": "select id, status, coalesce(bank_statement_line_id::text,'NULL') from tenant_7d218705360b.trust_transactions where id='1e030559-6d17-49ad-a994-44bf1c42dd59'",
+      "out": "1e030559-6d17-49ad-a994-44bf1c42dd59|RECORDED|71d1e6d1-ddaf-450b-ba40-b535cb88fd43"
+    },
+    {
+      "q": "select id, match_status, coalesce(trust_transaction_id::text,'NULL'), match_confidence from tenant_7d218705360b.bank_statement_lines where id='71d1e6d1-ddaf-450b-ba40-b535cb88fd43'",
+      "out": "71d1e6d1-ddaf-450b-ba40-b535cb88fd43|MANUALLY_MATCHED|1e030559-6d17-49ad-a994-44bf1c42dd59|1.00"
+    }
+  ],
+  "schema": "tenant_7d218705360b",
+  "accountId": "5149d2be-b51f-4a7f-b375-f2a851a4a028",
+  "clientA": "Acme Corp",
+  "matterA": "Website Redesign",
+  "depositId": "1e030559-6d17-49ad-a994-44bf1c42dd59",
+  "transferIds": [
+    "0333393d-a55e-4ef3-ab00-76f0684ecb29",
+    "e9022b9d-818f-4613-a6a9-991fd9e02fe9"
+  ],
+  "statementId": "020df165-0614-40bc-a46f-de758baf28c6",
+  "lineIds": {
+    "lineD": "71d1e6d1-ddaf-450b-ba40-b535cb88fd43",
+    "lineP": "72a1ca01-3d63-49aa-8d19-0e9a54060bc9",
+    "lineTI": "0a863ed0-95eb-4734-a262-73b831876a5b",
+    "lineTO": "7207e3ca-52be-4d52-8a62-bd4bd99c79ec"
+  }
+}

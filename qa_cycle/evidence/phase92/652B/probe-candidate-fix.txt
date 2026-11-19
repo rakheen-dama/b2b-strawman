@@ -1,0 +1,28 @@
+PROBE ONLY (scout): candidate fix applied temporarily to page.tsx, then reverted with git checkout. Shows the 652B cases go green and which existing test the fix disturbs.
+-----
+
+ RUN  v4.1.5 /Users/rakheendama/Projects/2026/worktree-epic-652B/frontend
+
+ ❯ __tests__/trust-reconciliation.test.tsx (69 tests | 1 failed) 2417ms
+     × re-reads the statement lines and transactions when completion is refused 53ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  __tests__/trust-reconciliation.test.tsx > Trust Reconciliation > re-reads the statement lines and transactions when completion is refused
+AssertionError: expected "vi.fn()" to be called 3 times, but got 4 times
+ ❯ __tests__/trust-reconciliation.test.tsx:1181:42
+    1179|     expect(mockFetchBankStatement).toHaveBeenCalledTimes(statementRead…
+    1180|     expect(mockFetchBankStatement).toHaveBeenLastCalledWith("stmt-1");
+    1181|     expect(vi.mocked(fetchTransactions)).toHaveBeenCalledTimes(transac…
+       |                                          ^
+    1182|     expect(await screen.findByText("0 / 1 lines resolved")).toBeInTheD…
+    1183|     const line = screen.getByTestId("bank-line-line-1");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 68 passed (69)
+   Start at  14:24:39
+   Duration  3.71s (transform 482ms, setup 87ms, import 952ms, tests 2.42s, environment 153ms)
+

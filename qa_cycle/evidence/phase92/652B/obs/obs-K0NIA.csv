@@ -1,0 +1,6 @@
+Standard Bank Trust Account - 652B OBS K0NIA
+Date,Description,Reference,Amount,Balance
+2026-11-17,Payment out,BANK/652B-OBS/K0NIA/P,-1250.00,-1250.00
+2026-11-19,Deposit Acme Corp,BANK/652B-OBS/K0NIA/D,305.86,-944.14
+2026-11-19,Transfer credit,BANK/652B-OBS/K0NIA/TI,407.48,-536.66
+2026-11-19,Transfer debit,BANK/652B-OBS/K0NIA/TO,-407.48,-944.14

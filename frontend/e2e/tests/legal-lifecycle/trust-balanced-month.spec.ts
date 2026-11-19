@@ -657,6 +657,10 @@ async function recordLine(
     `Recorded: ${CLASSIFICATION_LABEL[o.classification]}`,
     { timeout: 30_000 }
   );
+  // The badge shows before the wizard's recalculation returns; the pane clears its selection
+  // only then (ReconciliationSplitPane handleRecord), so a click on the next line before that
+  // would be undone. The line's Unmatch button is disabled until the record has settled.
+  await expect(page.getByTestId(`unmatch-btn-${lineId}`)).toBeEnabled({ timeout: 30_000 });
   return lineNumber;
 }
 
@@ -1329,8 +1333,9 @@ test.describe.serial(`Phase 92 exit — one balanced month (§16.9.6), ${M.month
     await expect(items).toHaveCount(2);
     const cashItem = items.filter({ hasText: "CASH DEPOSIT BRANCH 0045" });
     const acbItem = items.filter({ hasText: "ACB CREDIT UNKNOWN" });
-    await expect(cashItem).toContainText(randIn(FIG.unidentifiedHeld[0]));
-    await expect(acbItem).toContainText(randIn(FIG.unidentifiedHeld[1]));
+    // The Amount cell (3rd column): the row's text runs the cells together ("…0045R 7 500,00…")
+    await expect(cashItem.locator("td").nth(2)).toHaveText(randExact(FIG.unidentifiedHeld[0]));
+    await expect(acbItem.locator("td").nth(2)).toHaveText(randExact(FIG.unidentifiedHeld[1]));
     await expect(cashItem.getByTestId("unidentified-deposit-status")).toHaveText("Held");
     await expect(acbItem.getByTestId("unidentified-deposit-status")).toHaveText("Held");
 

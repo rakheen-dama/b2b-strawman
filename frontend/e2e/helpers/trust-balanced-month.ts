@@ -499,7 +499,10 @@ export function runPsqlCheck(monthEnd: string): {
     if (start < 0) throw new Error(`psql-check.sh printed no "## ${name}" section:\n${out}`);
     const body = out.slice(start).split("\n").slice(1);
     const end = body.findIndex((l) => l.startsWith("## "));
-    return (end < 0 ? body : body.slice(0, end)).filter((l) => l.trim() !== "");
+    // "# …" lines are the section's column legend, not rows
+    return (end < 0 ? body : body.slice(0, end)).filter(
+      (l) => l.trim() !== "" && !l.startsWith("#")
+    );
   };
   const effects = section("cashbook-vs-ledgers").map((l) => {
     const [account, cashbook, ledgers, diff, postedRows] = l.split("|");

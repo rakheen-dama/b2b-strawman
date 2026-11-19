@@ -10,11 +10,24 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Orchestrates report export (PDF, CSV) by coordinating definition lookup, execution, rendering,
  * and audit logging. Keeps the controller as a thin HTTP adapter.
+ *
+ * <p>The four entry points that run a report query ({@link #execute}, {@link #renderPreviewHtml},
+ * {@link #exportAsPdf}, {@link #exportAsCsv}) open the transaction the query joins, read-only at
+ * {@code REPEATABLE_READ} (Phase 92 650C, CR-4): a report reads in several statements (the trust
+ * schedule's movements, then its ledger balances; the Section 35 pack's seven parts), and one
+ * snapshot keeps a commit landing between them from making a report disagree with itself — the
+ * {@code TrustIntegrityService} / {@code TrustMonthlyListService} precedent (648E R-2). An
+ * isolation on {@code ReportExecutionService} or a query bean would be ignored: the transaction is
+ * already open. Safe here where the 649C ruling declined it on write paths: these transactions only
+ * read, apart from {@code execute}/{@code exportAsPdf}'s plain audit-event INSERT, and in
+ * PostgreSQL neither a read nor a plain INSERT can fail with a serialization error (40001) at
+ * {@code REPEATABLE_READ} — only UPDATE / DELETE / row locks of concurrently changed rows can.
  */
 @Service
 public class ReportExportService {
@@ -90,20 +103,20 @@ public class ReportExportService {
   }
 
   /** Execute a report query with pagination. */
-  @Transactional(readOnly = true)
+  @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
   public ReportExecutionResponse execute(
       String slug, Map<String, Object> parameters, Pageable pageable) {
     return reportExecutionService.execute(slug, parameters, pageable);
   }
 
   /** Render an HTML preview for a report. */
-  @Transactional(readOnly = true)
+  @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
   public String renderPreviewHtml(String slug, Map<String, Object> parameters) {
     return reportRenderingService.renderPreviewHtml(slug, parameters);
   }
 
   /** Export report as PDF: fetch definition, execute query, render PDF, log audit event. */
-  @Transactional(readOnly = true)
+  @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
   public PdfExportResult exportAsPdf(String slug, Map<String, Object> parameters) {
     var definition =
         reportDefinitionRepository
@@ -138,7 +151,7 @@ public class ReportExportService {
    * Export report as CSV: fetch definition, execute query, write CSV to output stream, log audit
    * event.
    */
-  @Transactional(readOnly = true)
+  @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
   public CsvExportResult exportAsCsv(String slug, Map<String, Object> parameters) {
     var definition =
         reportDefinitionRepository

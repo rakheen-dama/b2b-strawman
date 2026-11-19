@@ -2,9 +2,11 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report;
 
 import io.b2mash.b2b.b2bstrawman.reporting.ReportQuery;
 import io.b2mash.b2b.b2bstrawman.reporting.ReportResult;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccount;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountSection;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.CreditorLine;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.IntegrityMessages;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.InvestmentTieRow;
@@ -143,13 +145,9 @@ public class Section35DataPackQuery implements ReportQuery {
     // (4) Investments on the books at the year end, by section (D-14)
     var investments = investmentsOnTheBooks(trustAccountId, financialYearEnd);
     var firmInvestments =
-        investments.stream()
-            .filter(r -> "FIRM_DISCRETION".equals(r.get("investmentBasis")))
-            .toList();
+        investments.stream().filter(r -> isBasis(r, InvestmentBasis.FIRM_DISCRETION)).toList();
     var clientInvestments =
-        investments.stream()
-            .filter(r -> "CLIENT_INSTRUCTION".equals(r.get("investmentBasis")))
-            .toList();
+        investments.stream().filter(r -> isBasis(r, InvestmentBasis.CLIENT_INSTRUCTION)).toList();
     if (!firmInvestments.isEmpty()) {
       addSection(
           allRows,
@@ -168,7 +166,8 @@ public class Section35DataPackQuery implements ReportQuery {
     }
 
     // (5) The Rule 54.28 schedule for the year: the pack's account and the investment accounts
-    // holding the investments of part (4) (D-11)
+    // holding the investments of part (4) (D-11) — over the exact financial year (partial months
+    // at its ends, CR-1), so it agrees with parts (1) and (6)
     var scheduleAccounts = scheduleAccounts(trustAccountId, investments);
     assembleScheduleSection(
         scheduleAccounts, financialYearStart, financialYearEnd, allRows, sectionSummaries);
@@ -234,20 +233,25 @@ public class Section35DataPackQuery implements ReportQuery {
 
   @SuppressWarnings("unchecked")
   private static String creditorsNote(Map<String, Object> s, boolean locked) {
-    var accounts = (List<Map<String, Object>>) s.getOrDefault("accounts", List.of());
+    var accounts =
+        (List<Map<String, Object>>) s.getOrDefault(ClientTrustBalancesQuery.ACCOUNTS, List.of());
+    var firstNote =
+        accounts.isEmpty() ? null : accounts.getFirst().get(ClientTrustBalancesQuery.SOURCE_NOTE);
     String sourceNote =
-        accounts.isEmpty() || accounts.getFirst().get("sourceNote") == null
-            ? ClientTrustBalancesQuery.LIVE_NOTE
-            : accounts.getFirst().get("sourceNote").toString();
+        firstNote == null ? ClientTrustBalancesQuery.LIVE_NOTE : firstNote.toString();
     if (!locked) {
       return sourceNote;
     }
-    var afterLock = (List<Map<String, Object>>) s.getOrDefault("afterLock", List.of());
+    var afterLock =
+        (List<Map<String, Object>>) s.getOrDefault(ClientTrustBalancesQuery.AFTER_LOCK, List.of());
     if (afterLock.isEmpty()) {
       return sourceNote + ".";
     }
-    var periodEnd = afterLock.getFirst().get("periodEnd");
-    var net = s.get("afterLockNet") instanceof BigDecimal b ? b : BigDecimal.ZERO;
+    var periodEnd = afterLock.getFirst().get(ClientTrustBalancesQuery.PERIOD_END);
+    var net =
+        s.get(ClientTrustBalancesQuery.AFTER_LOCK_NET) instanceof BigDecimal b
+            ? b
+            : BigDecimal.ZERO;
     return "%s. %d %s dated on or before %s %s made after the lock (net %s): they are in Trust Receipts & Payments, not in this list."
         .formatted(
             sourceNote,
@@ -269,7 +273,7 @@ public class Section35DataPackQuery implements ReportQuery {
     var register = investmentRegisterQuery.executeAll(params).rows();
     var ties = new HashMap<UUID, InvestmentTieRow>();
     register.stream()
-        .map(r -> (UUID) r.get("investmentAccountId"))
+        .map(r -> (UUID) r.get(InvestmentRegisterQuery.INVESTMENT_ACCOUNT_ID))
         .filter(Objects::nonNull)
         .distinct()
         .forEach(
@@ -279,7 +283,7 @@ public class Section35DataPackQuery implements ReportQuery {
                     .forEach(t -> ties.put(t.getInvestmentId(), t)));
     var rows = new ArrayList<Map<String, Object>>();
     for (var r : register) {
-      var tie = ties.get((UUID) r.get("investmentId"));
+      var tie = ties.get((UUID) r.get(InvestmentRegisterQuery.INVESTMENT_ID));
       var placed = tie != null && tie.getPlaced() != null ? tie.getPlaced() : BigDecimal.ZERO;
       var balance = tie != null && tie.getBalance() != null ? tie.getBalance() : BigDecimal.ZERO;
       if (placed.signum() == 0 && balance.signum() == 0) {
@@ -290,6 +294,10 @@ public class Section35DataPackQuery implements ReportQuery {
       rows.add(row);
     }
     return rows;
+  }
+
+  private static boolean isBasis(Map<String, Object> row, InvestmentBasis basis) {
+    return basis.name().equals(row.get(InvestmentRegisterQuery.INVESTMENT_BASIS));
   }
 
   private static Map<String, Object> investmentSummary(List<Map<String, Object>> rows) {
@@ -309,7 +317,7 @@ public class Section35DataPackQuery implements ReportQuery {
     var ids = new LinkedHashSet<UUID>();
     ids.add(trustAccountId);
     investments.stream()
-        .map(r -> (UUID) r.get("investmentAccountId"))
+        .map(r -> (UUID) r.get(InvestmentRegisterQuery.INVESTMENT_ACCOUNT_ID))
         .filter(Objects::nonNull)
         .forEach(ids::add);
     return trustAccountRepository.findAllById(ids);
@@ -588,7 +596,8 @@ public class Section35DataPackQuery implements ReportQuery {
   /** A creditor line: the person or creditor, an unidentified deposit with its received date. */
   private static Line creditorLine(Map<String, Object> row) {
     String label = text(row, "clientName");
-    if ("UNIDENTIFIED".equals(row.get("kind")) && row.get("receivedDate") != null) {
+    if (CreditorLine.Kind.UNIDENTIFIED.name().equals(row.get("kind"))
+        && row.get("receivedDate") != null) {
       label = label + " · received " + text(row, "receivedDate");
     }
     return line(label, money(row, "balance"));

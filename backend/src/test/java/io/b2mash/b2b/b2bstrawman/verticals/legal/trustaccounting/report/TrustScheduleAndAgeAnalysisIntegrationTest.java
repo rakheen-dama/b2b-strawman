@@ -11,8 +11,19 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksFixture;
 import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness.Expected;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccount;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountSection;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.IntegrityFlag;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.IntegrityMessages;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustBooksService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustIntegrityService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.TrustCreditorAccount;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.TrustCreditorAccountRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.TrustCreditorAccountType;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.TrustInterestMemoRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.UnidentifiedDepositService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.UnidentifiedDepositService.AllocateRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.UnidentifiedDepositService.PayToFundRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.InterestPresentation;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.RecordInvestmentInterestRequest;
@@ -23,11 +34,13 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -63,6 +76,7 @@ class TrustScheduleAndAgeAnalysisIntegrationTest {
   @Autowired private UnidentifiedDepositsAgeQuery ageQuery;
   @Autowired private TrustLedgerQueryRepository ledgerQueries;
   @Autowired private TrustBooksService booksService;
+  @Autowired private TrustIntegrityService integrityService;
   @Autowired private UnidentifiedDepositService depositService;
   @Autowired private TrustTransactionRepository transactionRepository;
   @Autowired private JdbcTemplate jdbc;
@@ -325,6 +339,118 @@ class TrustScheduleAndAgeAnalysisIntegrationTest {
         .hasSize(36);
   }
 
+  /** CR-2: the dates are compared before they are snapped — an inverted range in one month. */
+  @Test
+  void schedule_invertedRangeWithinOneMonth_isRefused() {
+    var account = books.freshAccount(false);
+    assertThatThrownBy(
+            () ->
+                schedule(
+                    Map.of(
+                        "trust_account_id",
+                        account,
+                        "dateFrom",
+                        "2026-05-20",
+                        "dateTo",
+                        "2026-05-10")))
+        .isInstanceOf(InvalidStateException.class);
+  }
+
+  /**
+   * CR-3: firm-wide, an account opened after the period is not in it; one opened inside the period
+   * (here on the period's last month's first day) is.
+   */
+  @Test
+  void schedule_firmWide_leavesOutAnAccountOpenedAfterThePeriod() {
+    var account = books.freshAccount(false); // opened 1 January 2026
+    var before = schedule(Map.of("dateFrom", "2025-11-01", "dateTo", "2025-12-31"));
+    assertThat(blockAccountIds(before)).doesNotContain(account);
+    var spanning = schedule(Map.of("dateFrom", "2025-12-01", "dateTo", "2026-01-31"));
+    assertThat(blockAccountIds(spanning)).contains(account);
+  }
+
+  /**
+   * B-H1: a Fund ledger group of a type the schedule does not recognise (a registry type that never
+   * moves a Fund ledger, or an unknown code) is never dropped silently: its amount is reported as
+   * unexplained and the month does not balance — even when the stray rows net to nil.
+   */
+  @Test
+  void schedule_unrecognisedFundLedgerType_isReportedAndBreaksTheIdentity() {
+    var accountId = UUID.randomUUID();
+    var fundId = UUID.randomUUID();
+    var account = Mockito.mock(TrustAccount.class);
+    Mockito.when(account.getId()).thenReturn(accountId);
+    Mockito.when(account.getAccountName()).thenReturn("Stray Type Account");
+    Mockito.when(account.getSection()).thenReturn(TrustAccountSection.S86_2);
+    var fund = Mockito.mock(TrustCreditorAccount.class);
+    Mockito.when(fund.getId()).thenReturn(fundId);
+    var accounts = Mockito.mock(TrustAccountRepository.class);
+    Mockito.when(accounts.findById(accountId)).thenReturn(Optional.of(account));
+    var creditors = Mockito.mock(TrustCreditorAccountRepository.class);
+    Mockito.when(
+            creditors.findByTrustAccountIdAndAccountType(
+                accountId, TrustCreditorAccountType.FUND_INTEREST_AND_CHARGES))
+        .thenReturn(Optional.of(fund));
+    var ledger = Mockito.mock(TrustLedgerQueryRepository.class);
+    Mockito.when(ledger.creditorAccountBalance(fundId, LocalDate.of(2026, 3, 31)))
+        .thenReturn(BigDecimal.ZERO);
+    Mockito.when(ledger.creditorAccountBalance(fundId, LocalDate.of(2026, 4, 30)))
+        .thenReturn(new BigDecimal("10.00"));
+    Mockito.when(ledger.creditorAccountBalance(fundId, LocalDate.of(2026, 5, 31)))
+        .thenReturn(new BigDecimal("10.00"));
+    var reports = Mockito.mock(TrustReportQueryRepository.class);
+    Mockito.when(
+            reports.fundLedgerByMonth(fundId, LocalDate.of(2026, 4, 1), LocalDate.of(2026, 5, 31)))
+        .thenReturn(
+            List.of(
+                fundGroup(LocalDate.of(2026, 4, 1), "NO_SUCH_TYPE", "10.00"),
+                fundGroup(LocalDate.of(2026, 5, 1), "FIRM_INV_RECEIVE", "0.00")));
+    var memos = Mockito.mock(TrustInterestMemoRepository.class);
+    var query = new TrustInterestChargesScheduleQuery(accounts, creditors, ledger, reports, memos);
+
+    var result =
+        query.executeAll(
+            new HashMap<>(
+                Map.of(
+                    "trust_account_id",
+                    accountId,
+                    "dateFrom",
+                    "2026-04-01",
+                    "dateTo",
+                    "2026-05-31")));
+
+    var april = result.rows().get(0);
+    var may = result.rows().get(1);
+    assertMoney(april, "unexplainedMovement", "10.00");
+    assertThat(april.get("identityHolds")).isEqualTo(false);
+    assertThat(april.get("check")).isEqualTo(TrustInterestChargesScheduleQuery.CHECK_UNEXPLAINED);
+    // Nets to nil, still not silently accepted
+    assertMoney(may, "unexplainedMovement", "0.00");
+    assertThat(may.get("identityHolds")).isEqualTo(false);
+    assertThat(result.summary().get("identityHolds")).isEqualTo(false);
+  }
+
+  /** CR-6: each row and each block's period total carry the identity check in words. */
+  @Test
+  void schedule_checkInWords_perRowAndPerBlock() {
+    var account = books.freshAccount(false);
+    books.postNonClientDirect(account, "FUND_INTEREST", "12.00", LocalDate.of(2026, 7, 10));
+    var result =
+        schedule(
+            Map.of("trust_account_id", account, "dateFrom", "2026-07-01", "dateTo", "2026-08-31"));
+    assertThat(result.rows())
+        .extracting(r -> r.get("check"))
+        .containsOnly(TrustInterestChargesScheduleQuery.CHECK_BALANCED);
+    @SuppressWarnings("unchecked")
+    var blocks = (List<Map<String, Object>>) result.summary().get("blocks");
+    assertThat(blocks)
+        .singleElement()
+        .satisfies(
+            b ->
+                assertThat(b.get("check"))
+                    .isEqualTo(TrustInterestChargesScheduleQuery.CHECK_BALANCED));
+  }
+
   // --- the unidentified deposits age analysis --------------------------------------------------
 
   /**
@@ -424,7 +550,124 @@ class TrustScheduleAndAgeAnalysisIntegrationTest {
     assertMoney(before.summary(), "openTotal", "0.00");
   }
 
+  /**
+   * A-M1: the over-one-year band is L9's predicate (received before the date less one year), so the
+   * report and the integrity flag agree across 29 February: received 1 June 2023, as at 1 June 2024
+   * (366 days) is not over one year; received 31 May 2023 is.
+   */
+  @Test
+  void ageAnalysis_overOneYear_isL9sPredicate_acrossALeapDay() {
+    var account = books.freshAccount(false);
+    books.unidentifiedDepositDirect(account, "300.00", LocalDate.of(2023, 6, 1));
+    books.unidentifiedDepositDirect(account, "400.00", LocalDate.of(2023, 5, 31));
+    var asAt = LocalDate.of(2024, 6, 1);
+
+    var result = age(Map.of("trust_account_id", account, "asOfDate", asAt.toString()));
+
+    assertThat(result.rows())
+        .extracting(r -> r.get("band") + " " + r.get("amount") + " " + r.get("ageDays"))
+        .containsExactly("181–365 days 300.00 366", "Over one year 400.00 367");
+    assertMoney(result.summary(), "overOneYearTotal", "400.00");
+    var flags = new IntegrityFlag[1];
+    books.as(
+        ownerId,
+        () ->
+            flags[0] =
+                integrityService.check(account, asAt, null).flags().stream()
+                    .filter(f -> TrustIntegrityService.UNIDENTIFIED_OVER_ONE_YEAR.equals(f.code()))
+                    .findFirst()
+                    .orElseThrow());
+    assertThat(flags[0].amount())
+        .isEqualByComparingTo((BigDecimal) result.summary().get("overOneYearTotal"));
+  }
+
+  /**
+   * CR-8: an allocation reversed after the date still reads as resolved as at the date — from the
+   * posted rows, not the item's current state (the reversal reset it to HELD and cleared its
+   * resolution) — and as at today the item is open again.
+   */
+  @Test
+  void ageAnalysis_allocationReversedAfterTheDate_isResolvedAsAtTheDate() {
+    var account = books.freshAccount(false);
+    var today = books.today();
+    var row = books.unidentifiedDepositDirect(account, "300.00", today.minusDays(60));
+    var itemId =
+        books.read(
+            () -> transactionRepository.findById(row).orElseThrow().getUnidentifiedDepositId());
+    var client = books.newClient("age analysis owner found");
+    var allocatedOn = today.minusDays(40);
+    var requested = new UUID[1];
+    books.as(
+        ownerId,
+        () ->
+            requested[0] =
+                depositService
+                    .allocate(
+                        itemId,
+                        new AllocateRequest(client.id(), client.matter(), allocatedOn, null))
+                    .resolutionTransactionId());
+    books.approve(account, requested[0], approverId, Expected.clientFromUnidentified("+300.00"));
+    books.reverse(
+        account, requested[0], Expected.clientFromUnidentified("-300.00"), today.minusDays(20));
+
+    var then = age(Map.of("trust_account_id", account, "asOfDate", today.minusDays(30).toString()));
+    assertThat(then.rows())
+        .singleElement()
+        .satisfies(
+            r -> {
+              assertThat(r.get("band")).isEqualTo("Resolved");
+              assertThat(r.get("position"))
+                  .isEqualTo(
+                      "Allocated to "
+                          + client.name()
+                          + " on "
+                          + IntegrityMessages.date(allocatedOn));
+            });
+    assertThat(then.summary().get("resolvedItems")).isEqualTo(1);
+
+    var now = age(Map.of("trust_account_id", account, "asOfDate", today.toString()));
+    assertThat(now.rows())
+        .singleElement()
+        .satisfies(r -> assertThat(r.get("position")).isEqualTo("Open"));
+  }
+
   // --- helpers ----------------------------------------------------------------------------------
+
+  @SuppressWarnings("unchecked")
+  private static List<Object> blockAccountIds(ReportResult result) {
+    return ((List<Map<String, Object>>) result.summary().get("blocks"))
+        .stream().map(b -> b.get("trustAccountId")).toList();
+  }
+
+  private static TrustReportQueryRepository.FundLedgerMonthRow fundGroup(
+      LocalDate month, String type, String effect) {
+    return new TrustReportQueryRepository.FundLedgerMonthRow() {
+      @Override
+      public LocalDate getPeriodMonth() {
+        return month;
+      }
+
+      @Override
+      public String getTxType() {
+        return type;
+      }
+
+      @Override
+      public Boolean getRecoverable() {
+        return null;
+      }
+
+      @Override
+      public BigDecimal getLedgerEffect() {
+        return new BigDecimal(effect);
+      }
+
+      @Override
+      public BigDecimal getVat() {
+        return BigDecimal.ZERO;
+      }
+    };
+  }
 
   private ReportResult schedule(Map<String, Object> params) {
     return books.read(() -> scheduleQuery.executeAll(new HashMap<>(params)));

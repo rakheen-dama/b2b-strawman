@@ -774,7 +774,8 @@ public class TrustReportPackSeeder {
             moneyCol("chargesMemoVat", "VAT (Memo)"),
             moneyCol("chargesRefunded", "Charges Refunded"),
             moneyCol("paidToFund", "Paid to the Fund"),
-            moneyCol("fundCarriedForward", "Fund Ledger c/f")),
+            moneyCol("fundCarriedForward", "Fund Ledger c/f"),
+            col("check", "Check", "string")),
         TRUST_INTEREST_CHARGES_SCHEDULE_TEMPLATE,
         "Rule 54.28: interest earned and charges levied per trust account and month, the Fund"
             + " ledger brought forward and carried forward; memo figures shown separately.",
@@ -1036,6 +1037,15 @@ public class TrustReportPackSeeder {
           + """
                   <td></td><td></td></tr></tfoot>
               </table>
+              <div th:if="${not #lists.isEmpty(summary['firmFlags'])}">
+                  <h2>Firm-wide integrity</h2>
+                  <table class="data">
+                      <thead><tr><th>Severity</th><th>Finding</th></tr></thead>
+                      <tbody>
+                          <tr th:each="f : ${summary['firmFlags']}"><td th:text="${f['severity']}"></td><td th:text="${f['message']}"></td></tr>
+                      </tbody>
+                  </table>
+              </div>
           """
           + FOOT;
 
@@ -1155,7 +1165,7 @@ public class TrustReportPackSeeder {
               <div th:each="block : ${summary['blocks']}">
                   <h2 th:text="${block['accountName'] + ' — ' + block['sectionLabel']}">Account</h2>
                   <table class="data compact">
-                      <thead><tr><th>Month</th><th class="text-right">Fund ledger b/f</th><th class="text-right">Gross interest (cashbook)</th><th class="text-right">Gross interest (at source, memo)</th><th class="text-right">Client's share (s86(4))</th><th class="text-right">Fund 5% credited</th><th class="text-right">Fund 5% paid at source</th><th class="text-right">Charges recoverable</th><th class="text-right">Charges non-recoverable</th><th class="text-right">VAT in charges</th><th class="text-right">Charges (at source, memo)</th><th class="text-right">VAT (memo)</th><th class="text-right">Charges refunded</th><th class="text-right">Paid to the Fund</th><th class="text-right">Fund ledger c/f</th></tr></thead>
+                      <thead><tr><th>Month</th><th class="text-right">Fund ledger b/f</th><th class="text-right">Gross interest (cashbook)</th><th class="text-right">Gross interest (at source, memo)</th><th class="text-right">Client's share (s86(4))</th><th class="text-right">Fund 5% credited</th><th class="text-right">Fund 5% paid at source</th><th class="text-right">Charges recoverable</th><th class="text-right">Charges non-recoverable</th><th class="text-right">VAT in charges</th><th class="text-right">Charges (at source, memo)</th><th class="text-right">VAT (memo)</th><th class="text-right">Charges refunded</th><th class="text-right">Paid to the Fund</th><th class="text-right">Fund ledger c/f</th><th>Check</th></tr></thead>
                       <tbody>
                           <tr th:each="row : ${rows}" th:if="${row['trustAccountId'] == block['trustAccountId']}">
                               <td th:text="${row['month']}"></td>
@@ -1177,6 +1187,7 @@ public class TrustReportPackSeeder {
               "paidToFund",
               "fundCarriedForward")
           + """
+                              <td th:text="${row['check']}"></td>
                           </tr>
                       </tbody>
                       <tfoot><tr><td>Period</td>
@@ -1198,6 +1209,7 @@ public class TrustReportPackSeeder {
               "paidToFund",
               "fundCarriedForward")
           + """
+                      <td th:text="${block['check']}"></td>
                       </tr></tfoot>
                   </table>
               </div>

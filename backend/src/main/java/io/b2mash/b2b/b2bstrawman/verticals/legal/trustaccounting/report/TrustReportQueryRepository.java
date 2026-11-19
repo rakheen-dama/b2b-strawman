@@ -106,8 +106,9 @@ public interface TrustReportQueryRepository extends Repository<TrustTransaction,
       @Param("toDate") LocalDate toDate);
 
   /**
-   * A posted, unreversed {@code FUND_SWEEP} row with its statement line (null when none) — Rule
-   * 54.14.16 evidence for the Section 35 pack.
+   * A posted {@code FUND_SWEEP} row not reversed as at {@code toDate} (a contra dated after it
+   * leaves the sweep in the period), with its statement line (null when none) — Rule 54.14.16
+   * evidence for the Section 35 pack.
    */
   interface FundSweepRow {
     UUID getTransactionId();
@@ -144,7 +145,8 @@ public interface TrustReportQueryRepository extends Repository<TrustTransaction,
            WHERE t.trust_account_id IN (:accountIds) AND t.transaction_type = 'FUND_SWEEP'
              AND t.posted_at IS NOT NULL
              AND NOT EXISTS (SELECT 1 FROM trust_transactions r
-                              WHERE r.reversal_of = t.id AND r.posted_at IS NOT NULL)
+                              WHERE r.reversal_of = t.id AND r.posted_at IS NOT NULL
+                                AND r.transaction_date <= CAST(:toDate AS date))
              AND t.transaction_date >= CAST(:fromDate AS date)
              AND t.transaction_date <= CAST(:toDate AS date)
            ORDER BY t.transaction_date, t.created_at, t.id""")
@@ -152,4 +154,52 @@ public interface TrustReportQueryRepository extends Repository<TrustTransaction,
       @Param("accountIds") Collection<UUID> accountIds,
       @Param("fromDate") LocalDate fromDate,
       @Param("toDate") LocalDate toDate);
+
+  /**
+   * The resolution of an unidentified deposit in effect as at {@code asAt}, from its posted rows
+   * (CR-8): its {@code UNIDENT_ALLOC_OUT} or {@code UNIDENT_FUND_PAY} dated on or before the date
+   * with no contra dated on or before it, and for an allocation the client of its {@code
+   * UNIDENT_ALLOC_IN} leg (same item, likewise unreversed as at the date). Never the item's current
+   * status: a reversal after the date reopens the item (HELD, resolution cleared) but the item was
+   * resolved as at the date.
+   */
+  interface UnidentifiedResolutionRow {
+    UUID getUnidentifiedDepositId();
+
+    /** UNIDENT_ALLOC_OUT | UNIDENT_FUND_PAY (never printed). */
+    String getTxType();
+
+    LocalDate getResolvedDate();
+
+    /** The allocated client; null for a payment to the Fund. */
+    UUID getCustomerId();
+  }
+
+  /** {@code depositIds} must not be empty ({@code IN ()} is invalid SQL). */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          SELECT t.unidentified_deposit_id AS unidentifiedDepositId,
+                 t.transaction_type AS txType, t.transaction_date AS resolvedDate,
+                 (SELECT c.customer_id FROM trust_transactions c
+                   WHERE c.unidentified_deposit_id = t.unidentified_deposit_id
+                     AND c.transaction_type = 'UNIDENT_ALLOC_IN' AND c.posted_at IS NOT NULL
+                     AND c.transaction_date <= CAST(:asAt AS date)
+                     AND NOT EXISTS (SELECT 1 FROM trust_transactions cr
+                                      WHERE cr.reversal_of = c.id AND cr.posted_at IS NOT NULL
+                                        AND cr.transaction_date <= CAST(:asAt AS date))
+                   ORDER BY c.transaction_date DESC, c.created_at DESC, c.id DESC
+                   LIMIT 1) AS customerId
+            FROM trust_transactions t
+           WHERE t.unidentified_deposit_id IN (:depositIds)
+             AND t.transaction_type IN ('UNIDENT_ALLOC_OUT', 'UNIDENT_FUND_PAY')
+             AND t.posted_at IS NOT NULL
+             AND t.transaction_date <= CAST(:asAt AS date)
+             AND NOT EXISTS (SELECT 1 FROM trust_transactions r
+                              WHERE r.reversal_of = t.id AND r.posted_at IS NOT NULL
+                                AND r.transaction_date <= CAST(:asAt AS date))
+           ORDER BY t.transaction_date, t.created_at, t.id""")
+  List<UnidentifiedResolutionRow> unidentifiedResolutions(
+      @Param("depositIds") Collection<UUID> depositIds, @Param("asAt") LocalDate asAt);
 }

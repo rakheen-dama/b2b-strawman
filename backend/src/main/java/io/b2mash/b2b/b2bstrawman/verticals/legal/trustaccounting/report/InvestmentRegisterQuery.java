@@ -44,6 +44,11 @@ public class InvestmentRegisterQuery implements ReportQuery {
   /** The client column of a section 86(3) investment — the firm's own placement (648A). */
   static final String FIRM_CLIENT_LABEL = "Firm (section 86(3))";
 
+  // Row keys another query reads (Section35DataPackQuery, B-M3): one definition, both sides
+  static final String INVESTMENT_ID = "investmentId";
+  static final String INVESTMENT_ACCOUNT_ID = "investmentAccountId";
+  static final String INVESTMENT_BASIS = "investmentBasis";
+
   private final TrustInvestmentRepository investmentRepository;
   private final CustomerRepository customerRepository;
   private final LpffRateRepository lpffRateRepository;
@@ -194,8 +199,8 @@ public class InvestmentRegisterQuery implements ReportQuery {
         .map(
             inv -> {
               var row = new LinkedHashMap<String, Object>();
-              row.put("investmentId", inv.getId());
-              row.put("investmentAccountId", inv.getInvestmentAccountId());
+              row.put(INVESTMENT_ID, inv.getId());
+              row.put(INVESTMENT_ACCOUNT_ID, inv.getInvestmentAccountId());
               row.put(
                   "clientName",
                   inv.getCustomerId() == null
@@ -221,7 +226,7 @@ public class InvestmentRegisterQuery implements ReportQuery {
                       : null);
               row.put("status", inv.getStatus());
               row.put("statusLabel", TrustReportWords.investmentStatusLabel(inv.getStatus()));
-              row.put("investmentBasis", inv.getInvestmentBasis().name());
+              row.put(INVESTMENT_BASIS, inv.getInvestmentBasis().name());
               row.put("basisLabel", TrustReportWords.basisLabel(inv.getInvestmentBasis()));
               row.put(
                   "applicableLpffRate",

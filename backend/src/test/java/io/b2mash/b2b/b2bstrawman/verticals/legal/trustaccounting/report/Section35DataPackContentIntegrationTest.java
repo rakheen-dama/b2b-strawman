@@ -19,6 +19,8 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksFixture;
+import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness.Expected;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -75,6 +77,7 @@ class Section35DataPackContentIntegrationTest {
   @Autowired private ReportRenderingService reportRenderingService;
   @Autowired private TrustBooksFixture fixture;
   @Autowired private TrustTransactionRepository transactionRepository;
+  @Autowired private TrustAccountRepository trustAccountRepository;
 
   private static final String FUND_LINE =
       "Legal Practitioners' Fidelity Fund — interest and charges";
@@ -295,6 +298,71 @@ class Section35DataPackContentIntegrationTest {
         .allSatisfy(section -> assertThat(section).doesNotMatch(".*\\b[A-Z]{2,}_[A-Z_]{2,}\\b.*"));
   }
 
+  /**
+   * CR-1: the year's schedule uses the exact financial-year dates (partial months at the ends), so
+   * with a year end of 15 March a sweep of 20 March is in none of the pack's parts — the schedule's
+   * "paid to the Fund" equals the year's sweeps listed in the pack, and its c/f is the Fund ledger
+   * as at the year end.
+   */
+  @Test
+  void schedulePart_midMonthYearEnd_usesTheExactYear_agreeingWithTheSweepEvidence() {
+    var books = fixture.tenant(tenantSchema, ORG_ID, memberId);
+    var account = books.freshAccount(false);
+    books.postNonClientDirect(account, "FUND_INTEREST", "100.00", LocalDate.of(2026, 3, 5));
+    books.postNonClientDirect(account, "FUND_SWEEP", "30.00", LocalDate.of(2026, 3, 10));
+    books.postNonClientDirect(account, "FUND_SWEEP", "50.00", LocalDate.of(2026, 3, 20));
+    var name = books.read(() -> trustAccountName(account));
+
+    var result =
+        runInTenantReturning(
+            () ->
+                reportExecutionService.executeForExport(
+                    SLUG, Map.of("trust_account_id", account, "financial_year_end", "2026-03-15")));
+
+    var byLabel = scheduleByLabel(result);
+    assertThat(byLabel.get(name + " — gross interest earned (in the cashbook)"))
+        .isEqualByComparingTo("100.00");
+    assertThat(byLabel.get(name + " — paid to the Fund")).isEqualByComparingTo("30.00");
+    assertThat(byLabel.get(name + " — Fund ledger carried forward")).isEqualByComparingTo("70.00");
+    assertThat(sectionRows(result, Section35DataPackQuery.UNMATCHED_SWEEPS_SECTION))
+        .filteredOn(r -> !"Total".equals(r.get("label")))
+        .extracting(r -> (BigDecimal) r.get("amount"))
+        .singleElement()
+        .satisfies(a -> assertThat(a).isEqualByComparingTo("-30.00"));
+  }
+
+  /**
+   * CR-7: a sweep reversed after the year end was not reversed at the year end — it is in the
+   * pack's sweep evidence (a same-day-or-earlier reversal still removes it).
+   */
+  @Test
+  void sweepEvidence_sweepReversedAfterTheYearEnd_isListedAsAtTheYearEnd() {
+    var books = fixture.tenant(tenantSchema, ORG_ID, memberId);
+    var account = books.freshAccount(false);
+    books.postNonClientDirect(account, "FUND_INTEREST", "100.00", LocalDate.of(2026, 3, 1));
+    var sweep =
+        books.postNonClientDirect(account, "FUND_SWEEP", "100.00", LocalDate.of(2026, 3, 30));
+    var inYear =
+        books.postNonClientDirect(account, "FUND_SWEEP", "7.00", LocalDate.of(2026, 3, 25));
+    books.reverse(account, sweep, Expected.cashbookAndFund("100.00"), LocalDate.of(2026, 4, 2));
+    books.reverse(account, inYear, Expected.cashbookAndFund("7.00"), LocalDate.of(2026, 3, 26));
+    var name = books.read(() -> trustAccountName(account));
+
+    var result =
+        runInTenantReturning(
+            () ->
+                reportExecutionService.executeForExport(
+                    SLUG, Map.of("trust_account_id", account, "financial_year_end", "2026-03-31")));
+
+    assertThat(sectionRows(result, Section35DataPackQuery.UNMATCHED_SWEEPS_SECTION))
+        .filteredOn(r -> !"Total".equals(r.get("label")))
+        .extracting(r -> (BigDecimal) r.get("amount"))
+        .singleElement()
+        .satisfies(a -> assertThat(a).isEqualByComparingTo("-100.00"));
+    assertThat(scheduleByLabel(result).get(name + " — paid to the Fund"))
+        .isEqualByComparingTo("100.00");
+  }
+
   @Test
   void pdf_containsRowLabels_notOnlyCounts() {
     String html =
@@ -362,6 +430,17 @@ class Section35DataPackContentIntegrationTest {
   }
 
   // ---------- helpers ----------
+
+  private static Map<String, BigDecimal> scheduleByLabel(ReportResult result) {
+    return sectionRows(result, Section35DataPackQuery.SCHEDULE_SECTION).stream()
+        .collect(
+            java.util.stream.Collectors.toMap(
+                r -> (String) r.get("label"), r -> (BigDecimal) r.get("amount")));
+  }
+
+  private String trustAccountName(UUID account) {
+    return trustAccountRepository.findById(account).orElseThrow().getAccountName();
+  }
 
   private static List<Map<String, Object>> sectionRows(ReportResult result, String section) {
     return result.rows().stream().filter(row -> section.equals(row.get("_section"))).toList();

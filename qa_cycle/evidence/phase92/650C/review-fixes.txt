@@ -1,0 +1,36 @@
+650C review fixes (PR #1809) — red -> green record
+Base head 8f42b5c0f. Tests written first, run against the unfixed code
+(./mvnw test -Dtest='TrustScheduleAndAgeAnalysisIntegrationTest,Section35DataPackContentIntegrationTest,TrustReportPackSeederIntegrationTest' -> Tests run: 31, Failures: 8).
+
+RED (before the fix):
+- CR-1  Section35DataPackContentIntegrationTest.schedulePart_midMonthYearEnd_usesTheExactYear_agreeingWithTheSweepEvidence
+        "expected: 30.00 but was: 80.00"  (schedule "paid to the Fund" read the 20 March sweep past a 15 March year end)
+- CR-7  Section35DataPackContentIntegrationTest.sweepEvidence_sweepReversedAfterTheYearEnd_isListedAsAtTheYearEnd
+        "Expected size: 1 but was: 0 in: []"  (sweep of 30 March reversed 2 April missing from a 31 March pack)
+- CR-3  TrustScheduleAndAgeAnalysisIntegrationTest.schedule_firmWide_leavesOutAnAccountOpenedAfterThePeriod
+        "Expecting [<id>] not to contain [<id>]"  (account opened 2026-01-01 in a Nov-Dec 2025 firm-wide schedule)
+- CR-2  TrustScheduleAndAgeAnalysisIntegrationTest.schedule_invertedRangeWithinOneMonth_isRefused
+        "Expecting code to raise a throwable."  (dateFrom 2026-05-20 / dateTo 2026-05-10 accepted)
+- CR-6  TrustScheduleAndAgeAnalysisIntegrationTest.schedule_checkInWords_perRowAndPerBlock
+        "Expecting ArrayList: [null, null] to contain only: [\"Balanced\"]"  (no readable check column)
+- CR-8  TrustScheduleAndAgeAnalysisIntegrationTest.ageAnalysis_allocationReversedAfterTheDate_isResolvedAsAtTheDate
+        "Expected size: 1 but was: 0 in: []"  (allocated, then reversed after the date: in neither open nor resolved)
+- A-M1  TrustScheduleAndAgeAnalysisIntegrationTest.ageAnalysis_overOneYear_isL9sPredicate_acrossALeapDay
+        "[\"Over one year 400.00 367\", \"Over one year 300.00 366\"] ... not found: [\"181–365 days 300.00 366\"]"
+        (received 2023-06-01 as at 2024-06-01: report said over one year, L9 did not)
+- B-H1  TrustScheduleAndAgeAnalysisIntegrationTest.schedule_unrecognisedFundLedgerType_isReportedAndBreaksTheIdentity
+        "[unexplainedMovement] Expecting actual not to be null"  (unrecognised Fund-ledger type silently dropped)
+- CR-9  test-only (collision row made genuinely non-system); passed before and after (no production change).
+- CR-4  ReportExecutionServiceTest.reportEntryPoints_readOneSnapshot_readOnlyRepeatableRead (pin), run against the HEAD
+        ReportExportService: "[execute isolation] expected: REPEATABLE_READ but was: DEFAULT".
+        Side finding while writing it: on HEAD an execute through ReportExportService (readOnly tx) never records its
+        REPORT_GENERATED audit event (count before 3, after 3) — pre-existing, unrelated to isolation; not fixed here (found.md).
+- A-M2  frontend __tests__/report-results.test.tsx "formats trust position money keys as currency and booleans as Yes / No":
+        RED "Unable to find an element with the text: R 1 111,11"; first fix attempt still RED on interAccount
+        ("R 1 666,66" — "interAccount" contains "count"), fixed with a (?<!ac)count look-behind.
+
+GREEN (after the fixes):
+- the same 8 backend tests + CR-4 pin + CR-9 green in Tier 2.
+- Tier 2: 29 classes (builder's list + DashboardWithoutCapacityTest, ReportControllerTest) -> 267 <testcase>, 0 failures, 0 errors.
+- Frontend: lint 0 errors, typecheck 0, format:check 0, full vitest 485 files / 4593 passed, 2 skipped.
+- Tier 3 (./mvnw clean verify) NOT run — orchestrator-owned.

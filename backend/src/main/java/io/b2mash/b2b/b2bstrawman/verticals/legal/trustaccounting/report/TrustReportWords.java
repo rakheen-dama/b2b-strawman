@@ -87,11 +87,9 @@ final class TrustReportWords {
   }
 
   private static boolean isInvestmentType(String transactionType) {
-    try {
-      return TrustTransactionType.valueOf(transactionType).isInvestmentRow();
-    } catch (IllegalArgumentException | NullPointerException e) {
-      return false;
-    }
+    return TrustTransactionType.find(transactionType)
+        .map(TrustTransactionType::isInvestmentRow)
+        .orElse(false);
   }
 
   private static String sentenceCase(String code) {

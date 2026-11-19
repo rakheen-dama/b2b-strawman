@@ -46,14 +46,21 @@ function formatCellValue(value: unknown, column: ColumnDefinition): string {
 }
 
 // Summary values carry no column type, so money is recognised by its key (G89-F18): balances,
-// totals, receipts, shares… — but never counts, hours, days or rates.
+// totals, receipts, shares… and the trust position's ledgers (cashbook, client ledgers, the
+// creditor and deposit lines, the difference — 650C) — but never counts, hours, days or rates.
 const MONEY_SUMMARY_KEY =
-  /(amount|balance|total|receipts|payments|movement|principal|interest|share|fees|revenue|cost|billed|outstanding|owing)/i;
-const NON_MONEY_SUMMARY_KEY = /(count|hours|days|minutes|rate|percent)/i;
+  /(amount|balance|total|receipts|payments|movement|principal|interest|share|fees|revenue|cost|billed|outstanding|owing|cashbook|ledger|creditor|deposit|interaccount|nonclient|difference)/i;
+// "count" but not the "count" inside "account" (interAccount, investmentAccountTotal are money;
+// accountCount still ends in a count)
+const NON_MONEY_SUMMARY_KEY = /((?<!ac)count|hours|days|minutes|rate|percent)/i;
 
 function formatSummaryValue(key: string, value: unknown): string {
   if (value == null) {
     return "—";
+  }
+  // A check result (balanced, identityHolds…) reads as a word, never "true" / "false"
+  if (typeof value === "boolean") {
+    return value ? "Yes" : "No";
   }
   if (
     typeof value === "number" &&

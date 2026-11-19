@@ -426,10 +426,22 @@ class TrustReportPackSeederIntegrationTest {
           retired.updateTemplate("<html>firm edit of interest allocation</html>");
           retired.rename("Our interest allocation");
           reportDefinitionRepository.save(retired);
-          // A row already owning a new slug (as if the firm created it) is left alone
+          // A row already owning a new slug, created by the firm (not a system row), is left alone
           var position = TrustReportPackSeeder.shipped("trust-position");
           position.rename("Our trust position");
           reportDefinitionRepository.save(position);
+          return null;
+        });
+    // No entity path creates a non-system report definition (is_system is fixed true by the
+    // constructor), so the firm's row is made non-system in the table
+    jdbcTemplate.update(
+        "UPDATE \"%s\".report_definitions SET is_system = false WHERE slug = 'trust-position'"
+            .formatted(legalSchema));
+    in(
+        legalSchema,
+        LEGAL_ORG_ID,
+        () -> {
+          assertThat(report("trust-position").isSystem()).as("precondition: firm-owned").isFalse();
           return null;
         });
 
@@ -446,7 +458,9 @@ class TrustReportPackSeederIntegrationTest {
               .isEqualTo(
                   TrustReportPackSeeder.shipped("trust-receipts-payments").getColumnDefinitions());
           assertThat(reportDefinitionRepository.findBySlug(RETIRED_SLUG)).isEmpty();
-          assertThat(report("trust-position").getName()).isEqualTo("Our trust position");
+          var firmPosition = report("trust-position");
+          assertThat(firmPosition.getName()).isEqualTo("Our trust position");
+          assertThat(firmPosition.isSystem()).as("still the firm's row").isFalse();
           for (String slug : List.of("client-trust-balances", "investment-register")) {
             assertEqualsShipped(report(slug), slug);
           }
@@ -461,6 +475,9 @@ class TrustReportPackSeederIntegrationTest {
           reportDefinitionRepository.save(position);
           return null;
         });
+    jdbcTemplate.update(
+        "UPDATE \"%s\".report_definitions SET is_system = true WHERE slug = 'trust-position'"
+            .formatted(legalSchema));
   }
 
   // --- helpers ---

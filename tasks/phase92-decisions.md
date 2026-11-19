@@ -47,6 +47,7 @@ Columns: **id** · **source** (slice / found.md) · **decision taken** · **alte
 | FU-13 | 650C F-650C-2 | Receipts & payments as-at reversal rule: `findForReceiptsPayments` drops any row now `REVERSED` regardless of the contra's date; apply the CR-7 rule (`contra.transaction_date <= :toDate`) so Section 35 part (1) agrees with parts (5)/(6). Red test with a sweep reversed after the year end. |
 | FU-14 | 650C F-650C-OBS-3 (data half) | Postings dated before a trust account's `opened_date` are accepted (seen on the e2e stack). Decide refuse vs flag (conservative proposal: an integrity flag, no refusal — mirrors ruling #5 flag-not-block); 650C only made the firm-wide schedule include such accounts. |
 | FU-15 | 650C merge | `.claude/hooks/pre-pr-merge-gate.sh:180` classifies a PR with `gh pr diff --name-only`, which GitHub refuses (HTTP 406) above 300 files, so the gate fails closed. Fall back to `gh api repos/…/pulls/N/files --paginate`. Meanwhile OBS harnesses should archive raw exports (650C packed 144 into `raw-exports.tar.gz`). |
+| FU-16 | 652H M-1, F-652H-2, HF-7 (647A found.md §1) | Auto-match pair rules: (a) count already-linked live same-amount same-sign rows as shadows of a REVERSED original (M-1); (b) a REVERSAL contra is not a candidate for an unrelated line (HF-7); (c) expose the statement-only type set on the type-registry wire so the wizard pane stops hard-coding it (F-652H-2, with F-652B-1/5). Red tests first; re-check §16.9.6 #7–#10. |
 
 ## Decisions taken by slice agents (append below — newest last)
 

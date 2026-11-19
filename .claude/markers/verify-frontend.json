@@ -1,7 +1,7 @@
 {
-  "commit": "c92ddc0e4197566ed7ff6f25368fed3f5731331a",
-  "command": "cd frontend && rm -rf .next && NODE_OPTIONS='' pnpm install && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (node v20.11.1)",
+  "commit": "d9f42136e",
+  "command": "cd frontend && pnpm install && pnpm run lint && pnpm run build && pnpm test && pnpm run format:check (nvm node 20.11.1)",
   "exit": 0,
-  "ts": "2026-11-19T15:26:24Z",
-  "summary": "652C PR #1817 (orchestrator run on final head): lint 0 errors, typecheck/format clean, vitest 482 files 4588 passed / 2 skipped, build OK. CI Frontend PASS on c92ddc0e4."
+  "ts": "2026-11-19T20:06:42Z",
+  "summary": "lint 0 errors (77 pre-existing warnings), build OK, vitest 482 files 4591 passed / 2 skipped, format:check clean — PR #1820 (652H) head d9f42136e2b3"
 }

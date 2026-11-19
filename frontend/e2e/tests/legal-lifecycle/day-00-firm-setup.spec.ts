@@ -3,10 +3,10 @@
  *
  * Alice (Owner) configures the firm for the legal-za vertical profile: currency ZAR, brand colour,
  * billing and cost rates for the three members, the seeded VAT rate, the legal custom fields and
- * matter templates, the trust account and its LPFF rate, and the legal modules in the navigation.
+ * matter templates, the trust account, and the legal modules in the navigation.
  *
  * The first test starts the lifecycle run (helpers/legal-lifecycle.ts): every later day names its
- * records from that run id. Firm-level setup asserts-or-creates (rates, trust account, LPFF rate),
+ * records from that run id. Firm-level setup asserts-or-creates (rates, trust account),
  * so Day 0 also passes on a reused stack.
  *
  * Phase 88 628E: rewritten strict — every step is real or asserted (no `isVisible().catch` guards).
@@ -38,8 +38,7 @@ const MEMBERS = [
 
 /**
  * Rates take effect a year back, so time entries the later days back-date (and any billing period
- * they pick) are rated. The LPFF rate uses the same date: an interest run needs a rate effective on
- * or before its period start (InterestService).
+ * they pick) are rated.
  */
 const EFFECTIVE_FROM = isoDate(-365);
 
@@ -258,47 +257,6 @@ test.describe.serial("Day 0 — Firm Setup", () => {
     });
   });
 
-  // ── 0.21 (scenario 0.63): LPFF rate 6.5% ─────────────────────────
-  test("Alice: LPFF rate 6.5% — added on Trust › Interest, listed on the trust settings tab", async ({
-    page,
-  }) => {
-    test.setTimeout(60_000);
-    await loginAs(page, "alice");
-    await page.goto(`${BASE}/trust-accounting/interest`);
-    await expect(page.getByRole("heading", { level: 1, name: "Interest" })).toBeVisible({
-      timeout: 15_000,
-    });
-    const section = page.getByTestId("lpff-rates-section");
-    const empty = section.getByTestId("empty-rates");
-    const table = section.getByTestId("lpff-rates-table");
-    await expect(empty.or(table)).toBeVisible({ timeout: 15_000 });
-    // A reused stack already holds this run's-equivalent rate (6.50% from EFFECTIVE_FROM); add it
-    // only when it is absent — two rates with the same effective date are not a scenario step.
-    const existing = table.getByRole("row").filter({ hasText: "6.50%" });
-    if ((await existing.count()) === 0) {
-      await section.getByRole("button", { name: "Add Rate" }).click();
-      const dialog = page.getByTestId("lpff-rate-dialog");
-      await expect(dialog).toBeVisible();
-      await dialog.getByLabel("Effective From").fill(EFFECTIVE_FROM);
-      await dialog.getByLabel("Rate %").fill("6.5");
-      // The scenario gives no LPFF share; 50% is a stated test value.
-      await dialog.getByLabel("LPFF Share %").fill("50");
-      await dialog.getByLabel(/Notes/).fill("Scenario 0.63 test rate");
-      await dialog.getByRole("button", { name: "Add Rate" }).click();
-      await expect(dialog).toBeHidden({ timeout: 15_000 });
-    }
-    await expect(table.getByRole("row").filter({ hasText: "6.50%" }).first()).toBeVisible({
-      timeout: 15_000,
-    });
-
-    // The read-only LPFF card on Settings › Fees & Trust › Trust accounting shows the same rate
-    await page.goto(`${BASE}/settings/fees?tab=trust-accounting`);
-    const settingsRates = page.getByTestId("lpff-rates-section");
-    await expect(settingsRates.getByRole("row").filter({ hasText: "6.50%" }).first()).toBeVisible({
-      timeout: 15_000,
-    });
-  });
-
   // ── 0.22: Legal modules in the navigation ────────────────────────
   test("Alice: Legal modules enabled (trust, court, conflict, tariff)", async ({ page }) => {
     await loginAs(page, "alice");
@@ -315,9 +273,10 @@ test.describe.serial("Day 0 — Firm Setup", () => {
     await nav.getByRole("button", { name: "Fees" }).click();
     await expect(nav.getByRole("link", { name: "Tariffs", exact: true })).toBeVisible();
     await nav.getByRole("button", { name: "Trust" }).click();
-    for (const label of ["Overview", "Transactions", "Client ledgers", "Interest"]) {
+    for (const label of ["Overview", "Transactions", "Client ledgers", "Investments"]) {
       await expect(nav.getByRole("link", { name: label, exact: true })).toBeVisible();
     }
+    await expect(nav.getByRole("link", { name: "Interest", exact: true })).toHaveCount(0);
   });
 
   // ── 0.23: Screenshot — Home with legal nav ───────────────────────

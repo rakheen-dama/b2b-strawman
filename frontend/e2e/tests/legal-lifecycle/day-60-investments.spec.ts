@@ -1,18 +1,16 @@
 /**
- * Day 60 — Interest Run & Investments
+ * Day 60 — Investments
  *
- * Interest run on the trust account: create the run for the last 30 days and calculate the
- * per-client allocations at the Day 0 LPFF rate (6.5%, 50% LPFF share). A calculated run is never
- * approved or posted (Phase 92 645A, section 86(5)): neither Bob nor Alice is offered an Approve or
- * Post action, and the API refuses both with the section 86(5) message. Investments (Phase 92 648A,
- * ADR-379 — the authorised direction of 60.12–60.20): each is placed from the trust banking account
- * into an investment account of its basis and Bob approves the placement — a R200,000 Standard Bank
- * fixed deposit of the firm's surplus trust money (s86(3), names no client) and QuickCollect's
- * R30,000 Nedbank call account on its instruction (s86(4); the client's total is unchanged). Second
- * billing cycle (new Sipho time → fee note), timesheet report and profitability report.
+ * The calculated interest run is gone (Phase 92 651C, founder decision 6; scenario 60.1–60.10 is
+ * amended in 651B). Investments (Phase 92 648A, ADR-379 — the authorised direction of 60.12–60.20):
+ * each is placed from the trust banking account into an investment account of its basis and Bob
+ * approves the placement — a R200,000 Standard Bank fixed deposit of the firm's surplus trust money
+ * (s86(3), names no client) and QuickCollect's R30,000 Nedbank call account on its instruction
+ * (s86(4); the client's total is unchanged). Second billing cycle (new Sipho time → fee note),
+ * timesheet report and profitability report.
  *
  * Records come from the lifecycle run (helpers/legal-lifecycle.ts): Days 0–45 must have run on the
- * same stack (trust account + LPFF rate, deposits, Moroka's fee transfer, rated time).
+ * same stack (trust account, deposits, Moroka's fee transfer, rated time).
  *
  * Phase 88 628E: rewritten strict — every step is real or asserted (no `isVisible().catch` guards).
  *
@@ -22,7 +20,7 @@
 import { test, expect, type Page } from "@playwright/test";
 import { loginAs } from "../../fixtures/auth";
 import { captureScreenshot } from "../../helpers/screenshot";
-import { apiOk, apiStatus } from "../../helpers/api";
+import { apiOk } from "../../helpers/api";
 import {
   BASE,
   clickThrough,
@@ -240,147 +238,7 @@ async function approvePlacement(page: Page, investment: InvestmentWire): Promise
   await expect(row).not.toContainText("AWAITING");
 }
 
-test.describe.serial("Day 60 — Interest Run & Investments", () => {
-  // ── 60.1-60.10: Interest run with LPFF split ─────────────────────
-  test("Alice: Navigate to Trust Interest page", async ({ page }) => {
-    await loginAs(page, "alice");
-    await page.goto(`${BASE}/trust-accounting/interest`);
-    await expect(page.getByTestId("interest-page")).toBeVisible({ timeout: 15_000 });
-    await expect(page.getByRole("heading", { level: 1, name: "Interest" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "New Interest Run" })).toBeVisible();
-    // Day 0's LPFF rate is in force
-    await expect(page.getByTestId("lpff-rates-table")).toContainText("6.50%");
-  });
-
-  test("Alice: Interest run — create for the last 30 days and calculate allocations at the 6.5% LPFF rate", async ({
-    page,
-  }) => {
-    await loginAs(page, "alice");
-    await page.goto(`${BASE}/trust-accounting/interest`);
-    await page.getByRole("button", { name: "New Interest Run" }).click();
-    const wizard = page.getByTestId("interest-run-wizard");
-    await expect(wizard).toContainText("Step 1 of 2");
-    const periodStart = isoDate(-30);
-    const periodEnd = isoDate();
-    await wizard.getByLabel("Period Start").fill(periodStart);
-    await wizard.getByLabel("Period End").fill(periodEnd);
-    await wizard.getByRole("button", { name: "Create Run" }).click();
-
-    await expect(wizard).toContainText("Step 2 of 2", { timeout: 15_000 });
-    await expect(wizard).toContainText(`Period: ${periodStart} to ${periodEnd}`);
-    await wizard.getByRole("button", { name: "Calculate Interest" }).click();
-
-    // One allocation per client with a trust balance in the period (31 days, both funded today):
-    // Moroka R241,500 and QuickCollect R45,000 for one day at 6.5% p.a. (actual/365), split with
-    // the LPFF under the firm's arrangement
-    const allocations = wizard.getByTestId("allocations-table");
-    await expect(allocations).toBeVisible({ timeout: 15_000 });
-    for (const header of ["Avg Daily Balance", "Gross Interest", "LPFF Share", "Client Share"]) {
-      await expect(allocations.getByRole("columnheader", { name: header })).toBeVisible();
-    }
-    await expect(
-      allocations.getByRole("columnheader", { name: "Client", exact: true })
-    ).toBeVisible();
-    for (const [key, name, avgDaily, gross] of [
-      ["moroka", morokaClient(), "7 790,32", "43,01"],
-      ["qc", qcClient(), "1 451,61", "8,01"],
-    ] as const) {
-      // G89-F10: the row names the client (never its UUID) and the LPFF arrangement share (50%)
-      const row = allocations.getByRole("row").filter({ hasText: name });
-      await expect(row, `${key} allocation`).toHaveCount(1);
-      await expect(row).not.toContainText(clientId(key));
-      await expect(row).toContainText(randPattern(avgDaily));
-      await expect(row.getByRole("cell").nth(2)).toContainText(randPattern(gross));
-      await expect(row).toContainText("LPFF arrangement rate 50.00%");
-    }
-
-    // Phase 92 645A (§16.3.1): the wizard ends at the calculation — no Review / Approve / Post step
-    await expect(wizard).toContainText("Step 2 of 2");
-    await expect(wizard.getByRole("button", { name: /approve|post|review/i })).toHaveCount(0);
-
-    // Screenshot: interest run with LPFF split
-    await captureScreenshot(page, "day-60-interest-lpff-calculated");
-    await captureScreenshot(page, "interest-run-lpff-split", { curated: true });
-
-    await page.keyboard.press("Escape");
-    await expect(wizard).toBeHidden();
-
-    // The calculated run persists as a Draft (G88-F39): it can be reviewed or deleted, never approved
-    await page.reload();
-    const run = page.getByTestId("interest-runs-table").locator('[data-testid^="run-row-"]');
-    await expect(run).toHaveCount(1, { timeout: 15_000 });
-    await expect(run.getByTestId("run-status")).toHaveText("Draft");
-    await expect(run.getByRole("button", { name: "Review", exact: true })).toBeVisible();
-    await expect(run.getByRole("button", { name: /approve|post/i })).toHaveCount(0);
-    await expect(run.getByRole("button", { name: "Delete draft" })).toBeVisible();
-  });
-
-  // ── 60.6-60.10 (Phase 92 645A, §16.3.1): a calculated run is never approved or posted ──
-  const NOT_POSTED_TITLE = "Interest runs are not posted";
-  const NOT_POSTED_DETAIL =
-    "Interest on trust money vests in the Legal Practitioners' Fidelity Fund (section 86(5) of the Legal Practice Act). Kazi no longer posts calculated interest. Record interest from the bank statement instead.";
-  const POSTING_NOTICE =
-    "Calculated interest is not posted. Interest on trust money vests in the Legal Practitioners' Fidelity Fund (section 86(5) of the Legal Practice Act). Record interest from the bank statement when you reconcile.";
-
-  /** The one interest-run row on the page, its id, and the page-level assertions both roles share. */
-  async function openDraftRun(page: Page) {
-    await page.goto(`${BASE}/trust-accounting/interest`);
-    await expect(page.getByTestId("interest-posting-notice")).toHaveText(POSTING_NOTICE, {
-      timeout: 15_000,
-    });
-    const run = page.getByTestId("interest-runs-table").locator('[data-testid^="run-row-"]');
-    await expect(run).toHaveCount(1, { timeout: 15_000 });
-    await expect(run.getByTestId("run-status")).toHaveText("Draft");
-    // Nothing on the page approves or posts (scoped to the page body, not the app shell; the regex
-    // covers Approve, Approve Run, Review & approve, Post and Post to Ledger)
-    await expect(
-      page.getByTestId("interest-page").getByRole("button", { name: /approve|post/i })
-    ).toHaveCount(0);
-    const testId = await run.getAttribute("data-testid");
-    expect(testId, "run row test id").toMatch(/^run-row-/);
-    return { run, runId: testId!.replace(/^run-row-/, "") };
-  }
-
-  test("Bob: no Approve action is offered on Alice's run, and the API refuses to approve it", async ({
-    page,
-  }) => {
-    await loginAs(page, "bob");
-    const { run, runId } = await openDraftRun(page);
-    await expect(run.getByRole("button", { name: "Review", exact: true })).toBeVisible();
-
-    const refused = await apiStatus<{ title: string; detail: string }>(
-      `/api/interest-runs/${runId}/approve`,
-      { method: "POST" },
-      "bob"
-    );
-    expect(refused.status).toBe(400);
-    expect(refused.data.title).toBe(NOT_POSTED_TITLE);
-    expect(refused.data.detail).toBe(NOT_POSTED_DETAIL);
-
-    await page.reload();
-    await expect(run.getByTestId("run-status")).toHaveText("Draft", { timeout: 15_000 });
-  });
-
-  test("Alice: no Post action is offered, and the API refuses to post the run", async ({
-    page,
-  }) => {
-    await loginAs(page, "alice");
-    const { run, runId } = await openDraftRun(page);
-
-    const refused = await apiStatus<{ title: string; detail: string }>(
-      `/api/interest-runs/${runId}/post`,
-      { method: "POST" },
-      "alice"
-    );
-    expect(refused.status).toBe(400);
-    expect(refused.data.title).toBe(NOT_POSTED_TITLE);
-    expect(refused.data.detail).toBe(NOT_POSTED_DETAIL);
-
-    await page.reload();
-    await expect(run.getByTestId("run-status")).toHaveText("Draft", { timeout: 15_000 });
-    await expect(run.getByTestId("run-posted-at")).toHaveText("—");
-  });
-
+test.describe.serial("Day 60 — Investments", () => {
   // ── 60.11-60.17: Investment — R200,000 Fixed Deposit (s86(3), the firm's surplus) ───
   test("Alice: Navigate to Investment Register", async ({ page }) => {
     await loginAs(page, "alice");

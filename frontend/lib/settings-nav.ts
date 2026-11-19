@@ -266,7 +266,7 @@ const FAMILIES = [
       {
         id: "trust-accounting",
         label: "Trust accounting",
-        description: "Manage trust accounts, approval settings, and LPFF rates",
+        description: "Manage trust accounts and approval settings",
         adminOnly: true,
         requiredModule: "trust_accounting",
       },

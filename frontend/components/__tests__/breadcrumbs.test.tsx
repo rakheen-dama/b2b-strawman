@@ -317,7 +317,6 @@ describe("Breadcrumbs", () => {
       ["/org/acme/trust-accounting/transactions", "Transactions"],
       ["/org/acme/trust-accounting/reconciliation", "Reconciliation"],
       ["/org/acme/trust-accounting/reconciliation/new", "New"],
-      ["/org/acme/trust-accounting/interest", "Interest"],
       ["/org/acme/trust-accounting/investments", "Investments"],
       [`/org/acme/settings/matters/checklists/${ID}`, "Checklist template"],
       [`/org/acme/settings/matters/request-templates/${ID}`, "Request template"],

@@ -82,7 +82,7 @@ const regulations: Regulation[] = [
     features: [
       "Separate trust and business accounts",
       "Multi-level payment approval workflow",
-      "Interest calculation with LPFF rates",
+      "Trust interest recorded from the bank statement",
       "Client ledger reconciliation and reports",
     ],
   },

@@ -1,0 +1,111 @@
+{
+  "startedAt": "2026-11-19T06:04:59.688Z",
+  "consoleErrors": [
+    {
+      "url": "http://localhost:3001/org/e2e-test-org/dashboard",
+      "text": "MockAuthContextProvider: failed to fetch userinfo TypeError: Failed to fetch\n    at http://localhost:3001/_next/static/chunks/1kvf-7k8cibf1.js:1:1582\n    at iw (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:118706)\n    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:"
+    },
+    {
+      "url": "http://localhost:3001/org/e2e-test-org/trust-accounting/interest",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    }
+  ],
+  "pageErrors": [],
+  "items": {
+    "a": {
+      "zoneExpanded": "true",
+      "visibleTrustLinks": [
+        "Overview",
+        "Transactions",
+        "Client ledgers",
+        "Other trust creditors",
+        "Reconciliation",
+        "Investments",
+        "Trust reports"
+      ],
+      "interestLinkCount": 0,
+      "pass": true
+    },
+    "b": {
+      "dialogOpen": true,
+      "interestOpts": [
+        "Diary",
+        "Settings › Matters › Request settings",
+        "Settings › Matters › Request templates",
+        "Settings › Matters › Templates",
+        "Settings › Matters › Tags",
+        "Settings › Matters › Checklists",
+        "Settings › Connections › Integrations",
+        "Settings › Fees & Trust › Rates",
+        "Settings › Matters › Custom fields",
+        "Settings › Firm › Data requests",
+        "Settings › Matters › Naming",
+        "Settings › Fees & Trust › Fee runs"
+      ],
+      "otherOpts": [
+        "Other trust creditors"
+      ],
+      "invOpts": [
+        "Investments"
+      ],
+      "pass": true
+    },
+    "c": {
+      "status": 404,
+      "notFoundText": true,
+      "pass": true
+    },
+    "d": {
+      "lpffSection": 0,
+      "hasLpffRateCopy": false,
+      "keptS866Advisory": true,
+      "hasInterestRunDue": false,
+      "descriptionPresent": true,
+      "cards": [
+        [
+          "Trust Accounts",
+          true
+        ],
+        [
+          "Approval Settings",
+          true
+        ],
+        [
+          "Reminder Settings",
+          true
+        ]
+      ],
+      "textExcerpt": "Firm\nMatters\nDocuments\nFees & Trust\nRates\nTax\nTime recording\nFee runs\nCollections\nTrust accounting\nConnections\nRates\nTax\nTime recording\nFee runs\nCollections\nTrust accounting\nTrust Accounting Settings\n\nManage trust accounts, approval settings, and reminder configuration.\n\nTrust Accounts\nManage your firm's trust bank accounts\nAdd Account\n\nMathebula & Partners Trust Account\n\nPrimary\nACTIVE\n\nStandard Bank · 051001 · 0123456789\n\nSection 86(2) trust banking account\n\nStandard Bank Section 86(3) Investments\n\nACTIVE\n\nStandard Bank · 051001 · 0863000001\n\nSection 86(3) investment account\n\nInvested at the firm's discretion\n\nNedbank Section 86(4) Investments\n\nACTIVE\n\nNedbank · 198765 · 0864000001\n\nSection 86(4) investment account\n\nInvested on a client's instruction\n\nThe bank must have an arrangement with the Legal Practitioners Fidelity Fund (Section 86(6)). Contact the LPFF to verify.\nApproval Settings\nConfigure transaction approval requirements\n\nMathebula & Partners Trust Account\n\nSingle approval\n\nSingle\n\nStandard Bank Section 86(3) Investments\n\nSingle approval\n\nSingle\n\nNedbank Section 86(4) Investments\n\nSingle approval\n\nSingle\nReminder Settings\nConfigure trust-related notification reminders\n\nLow Balance Alert\n\nNotify when a client's trust balance drops below a threshold\n\nConfigured per account\n\nReconciliation Due\n\nRemind to complete monthly bank reconciliation\n\nMonthly\n\nInvestment Maturity\n\nAlert before fixed deposits mature\n\n7 days before",
+      "pass": true
+    },
+    "e": {
+      "railDescription": false,
+      "settingsIndex": false,
+      "pass": "N/A"
+    },
+    "f": {
+      "investments": {
+        "status": 200,
+        "h1": "Investments",
+        "errorBoundary": false,
+        "pass": true
+      },
+      "other-creditors": {
+        "status": 200,
+        "h1": "Other trust creditors",
+        "errorBoundary": false,
+        "fundCopy": false,
+        "pass": true
+      },
+      "reconciliation": {
+        "status": 200,
+        "h1": "Reconciliation",
+        "errorBoundary": false,
+        "pass": true
+      },
+      "pass": true
+    }
+  },
+  "consoleErrorsAfterLoginSettle": 1,
+  "finishedAt": "2026-11-19T06:05:21.884Z"
+}

@@ -1,0 +1,22 @@
+install rc=0
+up legal-lifecycle rc=0
+suite legal-lifecycle rc=0
+  ✓  100 [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:455:7 › Day 90 — Role-Based Access › Bob: Has admin access to trust accounting (549ms)
+  ✓  101 [chromium] › e2e/tests/legal-lifecycle/day-90-review.spec.ts:472:7 › Day 90 — Role-Based Access › Alice: Has full owner access to all areas (1.2s)
+  ✓  102 [chromium] › e2e/tests/legal-lifecycle/matter-team.spec.ts:56:7 › Matter team — Team tab (add, transfer, remove) › Alice: template matter auto-adds her as lead; she adds Carol (2.7s)
+  ✓  103 [chromium] › e2e/tests/legal-lifecycle/matter-team.spec.ts:87:7 › Matter team — Team tab (add, transfer, remove) › Carol (Member): sees the matter and its team, but no management controls (1.4s)
+  ✓  104 [chromium] › e2e/tests/legal-lifecycle/matter-team.spec.ts:98:7 › Matter team — Team tab (add, transfer, remove) › Bob (Admin, not on the matter): transfers the lead to Carol (3.4s)
+  ✓  105 [chromium] › e2e/tests/legal-lifecycle/matter-team.spec.ts:126:7 › Matter team — Team tab (add, transfer, remove) › Carol (now lead): adds Bob, then removes him (3.3s)
+
+  105 passed (3.1m)
+up legal-depth-ii rc=0
+suite legal-depth-ii rc=0
+  ✓  40 [chromium] › e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts:361:7 › Day 75-85 — Matter Closure (Phase 67) › Alice (Thandi): Override close with justification ≥20 chars (1.8s)
+  ✓  41 [chromium] › e2e/tests/legal-depth-ii/day-75-85-closure.spec.ts:393:7 › Day 75-85 — Matter Closure (Phase 67) › Alice: Verify override audit event captures override_used=true + justification (3.2s)
+  -  42 [chromium] › e2e/tests/legal-depth-ii/null-prefetch-probe.spec.ts:74:9 › Next null-prefetch blank-segment probe (opt-in) › Matters list -> matter (projects/[id]): 120 fresh-session clicks render the destination
+  -  43 [chromium] › e2e/tests/legal-depth-ii/null-prefetch-probe.spec.ts:74:9 › Next null-prefetch blank-segment probe (opt-in) › Reports -> report detail (reports/[reportSlug]): 120 fresh-session clicks render the destination
+  -  44 [chromium] › e2e/tests/legal-depth-ii/null-prefetch-probe.spec.ts:74:9 › Next null-prefetch blank-segment probe (opt-in) › Sidebar /projects -> /dashboard: 120 fresh-session clicks render the destination
+
+  4 skipped
+  40 passed (2.0m)
+DONE

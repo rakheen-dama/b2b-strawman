@@ -1,7 +1,7 @@
 {
-  "commit": "5c2f17f640bb06338836ba620e0a52a60935e593",
-  "command": "cd backend && ./mvnw spotless:check && bash scripts/verify.sh -q (caffeinate -is ./mvnw verify)",
+  "commit": "58bc3b791",
+  "command": "cd backend && ./mvnw spotless:apply && ./mvnw clean && bash scripts/verify.sh -q",
   "exit": 0,
-  "ts": "2026-11-19T16:24:10Z",
-  "summary": "652D PR #1818: 7389 testcases / 0 failures / 0 errors / 26 skipped (surefire <testcase> count; +13 vs 652C baseline 7376: StatementBuilderClosedPrimaryAccountIntegrationTest 10 + 3 StatementOfAccountContextBuilderTest cases). Run on 5c2f17f64 (final head)."
+  "ts": "2026-11-19T17:49:48Z",
+  "summary": "7405 testcases / 0 failures / 0 errors / 26 skipped (counted <testcase>) — 27:45 min — PR #1819 (652G) head 58bc3b7919f2"
 }

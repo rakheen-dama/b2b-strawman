@@ -11,7 +11,7 @@ import java.util.List;
  * @param periodEnd the statement period end date
  * @param openingBalance the opening balance
  * @param closingBalance the closing balance
- * @param lines the parsed transaction lines
+ * @param lines the movement lines (a zero-amount balance row is not a line, 652G)
  */
 public record ParsedStatement(
     LocalDate periodStart,

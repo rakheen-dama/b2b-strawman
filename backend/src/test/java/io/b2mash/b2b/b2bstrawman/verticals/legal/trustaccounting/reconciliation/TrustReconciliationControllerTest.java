@@ -166,10 +166,10 @@ class TrustReconciliationControllerTest {
         .andExpect(jsonPath("$.trustAccountId").value(trustAccountId))
         .andExpect(jsonPath("$.format").value("CSV"))
         .andExpect(jsonPath("$.status").value("IMPORTED"))
-        .andExpect(jsonPath("$.lineCount").value(3))
+        .andExpect(jsonPath("$.lineCount").value(2))
         .andExpect(jsonPath("$.matchedCount").value(0))
         .andExpect(jsonPath("$.fileName").value("fnb-march-2026.csv"))
-        .andExpect(jsonPath("$.lines.length()").value(3))
+        .andExpect(jsonPath("$.lines.length()").value(2))
         .andExpect(jsonPath("$.lines[0].matchStatus").value("UNMATCHED"));
   }
 
@@ -392,10 +392,10 @@ class TrustReconciliationControllerTest {
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_recon_owner")))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.format").value("CSV"))
-        .andExpect(jsonPath("$.lineCount").value(3))
-        .andExpect(jsonPath("$.lines.length()").value(3))
-        .andExpect(jsonPath("$.lines[0].description").value("Opening Balance"))
-        .andExpect(jsonPath("$.lines[1].description").value("Client deposit - Matter A"));
+        .andExpect(jsonPath("$.lineCount").value(2))
+        .andExpect(jsonPath("$.lines.length()").value(2))
+        .andExpect(jsonPath("$.lines[0].description").value("Client deposit - Matter A"))
+        .andExpect(jsonPath("$.lines[1].description").value("Payment to third party"));
   }
 
   // --- Task 444.11: Reconciliation Controller Tests ---

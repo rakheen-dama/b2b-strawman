@@ -871,7 +871,7 @@ All 15 landed on their task-file guide number. The architecture's §16.7 file nu
 | tenant V28 | `tenant/V28__phase92_drop_lpff_rates.sql` | 651E #1812 |
 | tenant V29 (conditional) | `tenant/V29__phase92_trust_recon_unique.sql` | 652C #1817 |
 
-**Next free: tenant V30, global V8** (checked with `ls`). These are the correct numbers, recorded here and in `TASKS.md`. `backend/db/BASELINE.md` §5 still says tenant V16 / global V7 and is **left unchanged by 652F**: the next PR that touches `backend/` corrects it, under that PR's own backend verify. Phase 90 644B set the precedent (652F D-4; candidate FU-26 in C.8).
+**Next free: tenant V30, global V8** (checked with `ls`). These are the correct numbers, recorded here and in `TASKS.md`. `backend/db/BASELINE.md` §5 still says tenant V16 / global V7 and is **left unchanged by 652F**: the next PR that touches `backend/` corrects it, under that PR's own backend verify. (652F D-4; candidate FU-26 in C.8.)
 
 ### C.5 Pack bumps
 
@@ -1012,7 +1012,7 @@ did: `FUND_INTEREST` / `FUND_SWEEP` from statement lines (647A, PR #1794) and pe
 client is entitled to any of it. Only s86(4) interest is the client's, less 5 % to the Fund under s86(5)(b), and only as
 the bank credited it.
 
-1. **Identify.** From the audit trail (`interest_run` events) and any export taken before migration, list each run's
+1. **Identify.** From the audit trail (`interest_run` events) and a full ledger export taken **before** migrating (V16 deletes the `INTEREST_*` postings), list each run's
    credited postings: client credits (`INTEREST_CREDIT`), Fund entries (`INTEREST_LPFF`), dates, amounts, clients,
    matters. List every later entry that relied on them, such as a payment or fee transfer drawn from credited "interest",
    and every statement or portal view that showed them.
@@ -1034,7 +1034,7 @@ the bank credited it.
    client in writing that the earlier figures included interest that was not theirs. On a persistent database the portal
    may still show old interest rows, and replaying the portal does not remove them: `recomputeMatter` only upserts
    (`$X/defect-register.md` 646A obs-3, 648D F-2). Engineering removes or rebuilds those rows in a controlled way under
-   a follow-up; until then they are an accepted residual, named as such to the client and the auditor.
+   a follow-up raised when the case arises (none exists today); until then they are an accepted residual, named as such to the client and the auditor.
 6. **Reconcile and lock.** Reconcile the open month (the full equation; completion gate G1–G4). Confirm that every
    integrity flag is explained. Lock the Rule 54.15 list. A locked month cannot be reopened or unlocked (out of scope),
    so corrections are new postings dated in the open period. The after-lock schedule shows only postings dated on or

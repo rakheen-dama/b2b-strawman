@@ -1,0 +1,206 @@
+{
+  "phase": "h",
+  "startedAt": "2026-11-19T00:35:25.082Z",
+  "consoleErrors": [],
+  "pageErrors": [],
+  "checks": {
+    "h: 1280 — memo table: no clipped text, inside the card and the viewport": true,
+    "h: 1280 — record dialog (locked + replaces notes on): no clipped text, inside the viewport": true,
+    "h: 1280 — correct dialog (locked note on): no clipped text, inside the viewport": true,
+    "h: 1280 — no raw codes / ISO dates / raw decimals in the table or either dialog": true,
+    "h: 1440 — memo table: no clipped text, inside the card and the viewport": true,
+    "h: 1440 — record dialog (locked + replaces notes on): no clipped text, inside the viewport": true,
+    "h: 1440 — correct dialog (locked note on): no clipped text, inside the viewport": true,
+    "h: 1440 — no raw codes / ISO dates / raw decimals in the table or either dialog": true
+  },
+  "widths": {
+    "1280": {
+      "table": {
+        "clip": {
+          "sel": "[data-testid=\"interest-memos-section\"]",
+          "root": [
+            280,
+            1256,
+            546,
+            1151.5
+          ],
+          "vw": 1280,
+          "textElements": 29,
+          "bad": []
+        },
+        "codes": [],
+        "shot": "h-table-1280.png"
+      },
+      "pageCodes": [],
+      "sourceCells": [
+        {
+          "width": 61,
+          "brokenWords": [
+            "corrected"
+          ]
+        },
+        {
+          "width": 61,
+          "brokenWords": [
+            "statement",
+            "re-issued"
+          ]
+        }
+      ],
+      "record": {
+        "state": {
+          "title": "Record an interest and charges memo",
+          "lockedNote": "This month's trust creditor list is locked. A memo is not part of the list: saving it changes no balance and no locked list.",
+          "lockedNoteRole": "status",
+          "replacesNote": "A memo for October 2026 is already saved. Saving replaces its figures; the previous figures stay in the audit trail.",
+          "replaceUnknown": null,
+          "postingWarning": 0,
+          "monthInput": "2026-10",
+          "monthFixed": null,
+          "grossInterest": "0",
+          "grossCharges": "0",
+          "chargesVat": "0",
+          "sourceNote": "",
+          "messages": []
+        },
+        "clip": {
+          "sel": "[data-testid=\"interest-memo-dialog\"]",
+          "root": [
+            396.7306213378906,
+            883.2694091796875,
+            156.00189208984375,
+            843.9981079101562
+          ],
+          "vw": 1280,
+          "textElements": 11,
+          "bad": []
+        },
+        "codes": [],
+        "shot": "h-dialog-record-1280.png"
+      },
+      "correct": {
+        "state": {
+          "title": "Correct the memo for October 2026",
+          "lockedNote": "This month's trust creditor list is locked. A memo is not part of the list: saving it changes no balance and no locked list.",
+          "lockedNoteRole": "status",
+          "replacesNote": null,
+          "replaceUnknown": null,
+          "postingWarning": 0,
+          "monthInput": null,
+          "monthFixed": "October 2026",
+          "grossInterest": "50",
+          "grossCharges": "20",
+          "chargesVat": "2.61",
+          "sourceNote": "Fund statement October 2026 re-issued (OBS 650B TIAB0)",
+          "messages": []
+        },
+        "clip": {
+          "sel": "[data-testid=\"interest-memo-dialog\"]",
+          "root": [
+            396.76507568359375,
+            883.2349853515625,
+            189.30535888671875,
+            810.6946411132812
+          ],
+          "vw": 1280,
+          "textElements": 12,
+          "bad": []
+        },
+        "codes": [],
+        "shot": "h-dialog-correct-1280.png"
+      }
+    },
+    "1440": {
+      "table": {
+        "clip": {
+          "sel": "[data-testid=\"interest-memos-section\"]",
+          "root": [
+            280,
+            1416,
+            546,
+            955.5
+          ],
+          "vw": 1440,
+          "textElements": 29,
+          "bad": []
+        },
+        "codes": [],
+        "shot": "h-table-1440.png"
+      },
+      "pageCodes": [],
+      "sourceCells": [
+        {
+          "width": 170,
+          "brokenWords": []
+        },
+        {
+          "width": 170,
+          "brokenWords": []
+        }
+      ],
+      "record": {
+        "state": {
+          "title": "Record an interest and charges memo",
+          "lockedNote": "This month's trust creditor list is locked. A memo is not part of the list: saving it changes no balance and no locked list.",
+          "lockedNoteRole": "status",
+          "replacesNote": "A memo for October 2026 is already saved. Saving replaces its figures; the previous figures stay in the audit trail.",
+          "replaceUnknown": null,
+          "postingWarning": 0,
+          "monthInput": "2026-10",
+          "monthFixed": null,
+          "grossInterest": "0",
+          "grossCharges": "0",
+          "chargesVat": "0",
+          "sourceNote": "",
+          "messages": []
+        },
+        "clip": {
+          "sel": "[data-testid=\"interest-memo-dialog\"]",
+          "root": [
+            476.7215881347656,
+            963.2784423828125,
+            155.9891357421875,
+            844.0108642578125
+          ],
+          "vw": 1440,
+          "textElements": 11,
+          "bad": []
+        },
+        "codes": [],
+        "shot": "h-dialog-record-1440.png"
+      },
+      "correct": {
+        "state": {
+          "title": "Correct the memo for October 2026",
+          "lockedNote": "This month's trust creditor list is locked. A memo is not part of the list: saving it changes no balance and no locked list.",
+          "lockedNoteRole": "status",
+          "replacesNote": null,
+          "replaceUnknown": null,
+          "postingWarning": 0,
+          "monthInput": null,
+          "monthFixed": "October 2026",
+          "grossInterest": "50",
+          "grossCharges": "20",
+          "chargesVat": "2.61",
+          "sourceNote": "Fund statement October 2026 re-issued (OBS 650B TIAB0)",
+          "messages": []
+        },
+        "clip": {
+          "sel": "[data-testid=\"interest-memo-dialog\"]",
+          "root": [
+            476.796630859375,
+            963.203369140625,
+            189.34567260742188,
+            810.6542663574219
+          ],
+          "vw": 1440,
+          "textElements": 12,
+          "bad": []
+        },
+        "codes": [],
+        "shot": "h-dialog-correct-1440.png"
+      }
+    }
+  },
+  "endedAt": "2026-11-19T00:35:34.558Z"
+}

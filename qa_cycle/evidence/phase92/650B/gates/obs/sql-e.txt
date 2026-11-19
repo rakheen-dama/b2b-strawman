@@ -1,0 +1,69 @@
+-- 650B OBS phase e read-only SQL (schema tenant_7d218705360b) 2026-11-19T00:34:50.567Z
+
+== [e: trust_interest_memos]
+select * from tenant_7d218705360b.trust_interest_memos order by period_month
+                  id                  |           trust_account_id           | period_month | gross_interest | gross_charges | charges_vat |                       source_note                       |             recorded_by              |          created_at           |          updated_at           
+--------------------------------------+--------------------------------------+--------------+----------------+---------------+-------------+---------------------------------------------------------+--------------------------------------+-------------------------------+-------------------------------
+ 8c238ca0-63ef-40b7-a4ed-122df2d9dde9 | 69d5a309-dfd5-4955-aff5-c8d11d6c78df | 2026-09-01   |        1300.10 |        230.00 |       30.00 | FNB interest advice IA/SEP26 corrected (OBS 650B TIAB0) | adbbe09b-d4d0-4fd5-949f-14881be35858 | 2026-11-19 00:34:42.763733+00 | 2026-11-19 00:34:48.214251+00
+ 7232025f-e460-46e5-afa7-39a3b80487bf | 69d5a309-dfd5-4955-aff5-c8d11d6c78df | 2026-10-01   |          50.00 |         20.00 |        2.61 | Fund statement October 2026 re-issued (OBS 650B TIAB0)  | adbbe09b-d4d0-4fd5-949f-14881be35858 | 2026-11-19 00:34:54.054607+00 | 2026-11-19 00:34:56.042096+00
+(2 rows)
+
+
+== [e: audit trust_interest_memo.saved]
+select event_type, entity_type, entity_id, actor_id, jsonb_pretty(details) details, occurred_at from tenant_7d218705360b.audit_events where event_type='trust_interest_memo.saved' order by occurred_at
+        event_type         |     entity_type     |              entity_id               |               actor_id               |                                    details                                    |          occurred_at          
+---------------------------+---------------------+--------------------------------------+--------------------------------------+-------------------------------------------------------------------------------+-------------------------------
+ trust_interest_memo.saved | trust_interest_memo | 8c238ca0-63ef-40b7-a4ed-122df2d9dde9 | adbbe09b-d4d0-4fd5-949f-14881be35858 | {                                                                            +| 2026-11-19 00:34:42.766316+00
+                           |                     |                                      |                                      |     "actor_name": "Alice Owner",                                             +| 
+                           |                     |                                      |                                      |     "charges_vat": "15.00",                                                  +| 
+                           |                     |                                      |                                      |     "source_note": "FNB interest advice IA/SEP26 (OBS 650B TIAB0)",          +| 
+                           |                     |                                      |                                      |     "period_month": "2026-09",                                               +| 
+                           |                     |                                      |                                      |     "gross_charges": "115.00",                                               +| 
+                           |                     |                                      |                                      |     "gross_interest": "1234.56",                                             +| 
+                           |                     |                                      |                                      |     "trust_account_id": "69d5a309-dfd5-4955-aff5-c8d11d6c78df"               +| 
+                           |                     |                                      |                                      | }                                                                             | 
+ trust_interest_memo.saved | trust_interest_memo | 8c238ca0-63ef-40b7-a4ed-122df2d9dde9 | adbbe09b-d4d0-4fd5-949f-14881be35858 | {                                                                            +| 2026-11-19 00:34:48.217389+00
+                           |                     |                                      |                                      |     "actor_name": "Alice Owner",                                             +| 
+                           |                     |                                      |                                      |     "charges_vat": "30.00",                                                  +| 
+                           |                     |                                      |                                      |     "source_note": "FNB interest advice IA/SEP26 corrected (OBS 650B TIAB0)",+| 
+                           |                     |                                      |                                      |     "period_month": "2026-09",                                               +| 
+                           |                     |                                      |                                      |     "gross_charges": "230.00",                                               +| 
+                           |                     |                                      |                                      |     "gross_interest": "1300.10",                                             +| 
+                           |                     |                                      |                                      |     "trust_account_id": "69d5a309-dfd5-4955-aff5-c8d11d6c78df",              +| 
+                           |                     |                                      |                                      |     "previous_charges_vat": "15.00",                                         +| 
+                           |                     |                                      |                                      |     "previous_source_note": "FNB interest advice IA/SEP26 (OBS 650B TIAB0)", +| 
+                           |                     |                                      |                                      |     "previous_gross_charges": "115.00",                                      +| 
+                           |                     |                                      |                                      |     "previous_gross_interest": "1234.56"                                     +| 
+                           |                     |                                      |                                      | }                                                                             | 
+ trust_interest_memo.saved | trust_interest_memo | 7232025f-e460-46e5-afa7-39a3b80487bf | adbbe09b-d4d0-4fd5-949f-14881be35858 | {                                                                            +| 2026-11-19 00:34:54.058827+00
+                           |                     |                                      |                                      |     "actor_name": "Alice Owner",                                             +| 
+                           |                     |                                      |                                      |     "charges_vat": "1.63",                                                   +| 
+                           |                     |                                      |                                      |     "source_note": "Fund statement October 2026 (OBS 650B TIAB0)",           +| 
+                           |                     |                                      |                                      |     "period_month": "2026-10",                                               +| 
+                           |                     |                                      |                                      |     "gross_charges": "12.50",                                                +| 
+                           |                     |                                      |                                      |     "gross_interest": "45.67",                                               +| 
+                           |                     |                                      |                                      |     "trust_account_id": "69d5a309-dfd5-4955-aff5-c8d11d6c78df"               +| 
+                           |                     |                                      |                                      | }                                                                             | 
+ trust_interest_memo.saved | trust_interest_memo | 7232025f-e460-46e5-afa7-39a3b80487bf | adbbe09b-d4d0-4fd5-949f-14881be35858 | {                                                                            +| 2026-11-19 00:34:56.043884+00
+                           |                     |                                      |                                      |     "actor_name": "Alice Owner",                                             +| 
+                           |                     |                                      |                                      |     "charges_vat": "2.61",                                                   +| 
+                           |                     |                                      |                                      |     "source_note": "Fund statement October 2026 re-issued (OBS 650B TIAB0)", +| 
+                           |                     |                                      |                                      |     "period_month": "2026-10",                                               +| 
+                           |                     |                                      |                                      |     "gross_charges": "20.00",                                                +| 
+                           |                     |                                      |                                      |     "gross_interest": "50.00",                                               +| 
+                           |                     |                                      |                                      |     "trust_account_id": "69d5a309-dfd5-4955-aff5-c8d11d6c78df",              +| 
+                           |                     |                                      |                                      |     "previous_charges_vat": "1.63",                                          +| 
+                           |                     |                                      |                                      |     "previous_source_note": "Fund statement October 2026 (OBS 650B TIAB0)",  +| 
+                           |                     |                                      |                                      |     "previous_gross_charges": "12.50",                                       +| 
+                           |                     |                                      |                                      |     "previous_gross_interest": "45.67"                                       +| 
+                           |                     |                                      |                                      | }                                                                             | 
+(4 rows)
+
+
+== [e: the locked list after the memos]
+select id, period_end, bank_balance, outstanding_deposits, outstanding_payments, adjusted_bank_balance, cashbook_balance, client_ledger_total, investment_creditor_total, fund_ledger_balance, unidentified_deposit_total, inter_account_balance, creditor_total, difference, md5(lines::text) lines_md5, md5(integrity_flags::text) flags_md5, integrity_flags, locked_at from tenant_7d218705360b.trust_monthly_lists where id='9ea69bcc-7518-48a4-8b0f-06feba3075bd'
+                  id                  | period_end | bank_balance | outstanding_deposits | outstanding_payments | adjusted_bank_balance | cashbook_balance | client_ledger_total | investment_creditor_total | fund_ledger_balance | unidentified_deposit_total | inter_account_balance | creditor_total | difference |            lines_md5             |            flags_md5             | integrity_flags |           locked_at           
+--------------------------------------+------------+--------------+----------------------+----------------------+-----------------------+------------------+---------------------+---------------------------+---------------------+----------------------------+-----------------------+----------------+------------+----------------------------------+----------------------------------+-----------------+-------------------------------
+ 9ea69bcc-7518-48a4-8b0f-06feba3075bd | 2026-10-31 |     10000.00 |                 0.00 |                 0.00 |              10000.00 |         10000.00 |            10000.00 |                      0.00 |                0.00 |                       0.00 |                  0.00 |       10000.00 |       0.00 | 00eadf2f030a705f2f30dd330cce3073 | d751713988987e9331980363e24189ce | []              | 2026-11-19 00:34:35.982972+00
+(1 row)
+

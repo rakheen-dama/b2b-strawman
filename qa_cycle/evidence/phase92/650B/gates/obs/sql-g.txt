@@ -1,0 +1,10 @@
+-- 650B OBS phase g read-only SQL (schema tenant_7d218705360b) 2026-11-19T00:35:09.889Z
+
+== [g: memos unchanged by the probes]
+select id, period_month, gross_interest, gross_charges, charges_vat, updated_at from tenant_7d218705360b.trust_interest_memos order by period_month
+                  id                  | period_month | gross_interest | gross_charges | charges_vat |          updated_at           
+--------------------------------------+--------------+----------------+---------------+-------------+-------------------------------
+ 8c238ca0-63ef-40b7-a4ed-122df2d9dde9 | 2026-09-01   |        1300.10 |        230.00 |       30.00 | 2026-11-19 00:34:48.214251+00
+ 7232025f-e460-46e5-afa7-39a3b80487bf | 2026-10-01   |          50.00 |         20.00 |        2.61 | 2026-11-19 00:34:56.042096+00
+(2 rows)
+

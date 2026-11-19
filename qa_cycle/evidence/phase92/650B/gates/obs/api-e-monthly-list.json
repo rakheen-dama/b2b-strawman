@@ -1,0 +1,75 @@
+{
+  "method": "GET",
+  "url": "/api/trust-monthly-lists/9ea69bcc-7518-48a4-8b0f-06feba3075bd",
+  "status": 200,
+  "body": {
+    "id": "9ea69bcc-7518-48a4-8b0f-06feba3075bd",
+    "trustAccountId": "69d5a309-dfd5-4955-aff5-c8d11d6c78df",
+    "trustAccountName": "Mathebula & Partners Trust Account",
+    "periodEnd": "2026-10-31",
+    "reconciliationId": "55d7d63c-383c-4839-9e91-97b1e40c397e",
+    "bankBalance": 10000,
+    "outstandingDeposits": 0,
+    "outstandingPayments": 0,
+    "adjustedBankBalance": 10000,
+    "cashbookBalance": 10000,
+    "clientLedgerTotal": 10000,
+    "investmentCreditorTotal": 0,
+    "fundLedgerBalance": 0,
+    "unidentifiedDepositTotal": 0,
+    "interAccountBalance": 0,
+    "creditorTotal": 10000,
+    "difference": 0,
+    "lines": [
+      {
+        "kind": "CLIENT",
+        "clientId": "667cd43c-c513-4a07-b964-6609ff09e8be",
+        "name": "Acme Corp",
+        "matters": [
+          {
+            "matterId": "1ef781c1-656f-4bd6-bbae-ccec9b43fc62",
+            "name": "Website Redesign",
+            "balance": 10000
+          }
+        ],
+        "balance": 10000,
+        "unidentifiedDepositId": null,
+        "receivedDate": null,
+        "bankDescription": null,
+        "totalDeposits": 10000,
+        "totalPayments": 0,
+        "totalFeeTransfers": 0,
+        "lastTransactionDate": "2026-10-05"
+      },
+      {
+        "kind": "FUND",
+        "clientId": null,
+        "name": "Legal Practitioners' Fidelity Fund — interest and charges",
+        "matters": [],
+        "balance": 0,
+        "unidentifiedDepositId": null,
+        "receivedDate": null,
+        "bankDescription": null,
+        "totalDeposits": null,
+        "totalPayments": null,
+        "totalFeeTransfers": null,
+        "lastTransactionDate": null
+      }
+    ],
+    "integrityFlags": [],
+    "lockedBy": "adbbe09b-d4d0-4fd5-949f-14881be35858",
+    "lockedByName": "Alice Owner",
+    "lockedAt": "2026-11-19T00:34:35.982972Z",
+    "adjustmentsSinceLock": {
+      "entries": [],
+      "cashbook": 0,
+      "clientLedgers": 0,
+      "investmentCreditors": 0,
+      "fundLedger": 0,
+      "unidentifiedDeposits": 0,
+      "interAccount": 0,
+      "liveCreditorTotal": 10000,
+      "changeInCreditorTotal": 0
+    }
+  }
+}

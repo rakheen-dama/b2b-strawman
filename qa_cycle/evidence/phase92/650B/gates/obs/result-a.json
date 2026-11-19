@@ -1,0 +1,18 @@
+{
+  "phase": "a",
+  "startedAt": "2026-11-19T00:34:22.763Z",
+  "consoleErrors": [],
+  "pageErrors": [],
+  "checks": {
+    "a: memo card shows the empty state for 2026": true,
+    "a: Alice (owner) sees Record memo; Next year disabled at the current year": true,
+    "a: GET interest-memos?year=2026 → 200 []": true,
+    "a: GET interest-memos (default year) → 200 []": true,
+    "a: SQL trust_interest_memos count = 0": true
+  },
+  "empty": "No memos for 2026. Record one when the bank swept interest or charges at source.",
+  "title": "Interest and charges at source",
+  "recordButtons": 1,
+  "nextYearDisabled": true,
+  "endedAt": "2026-11-19T00:34:28.877Z"
+}

@@ -1,0 +1,80 @@
+{
+  "phase": "c",
+  "startedAt": "2026-11-19T00:34:39.172Z",
+  "consoleErrors": [],
+  "pageErrors": [],
+  "checks": {
+    "c: dialog opens on the previous SA month (2026-10), title 'Record an interest and charges memo'": true,
+    "c: September 2026 chosen → no locked note, no replaces note, no 650D posting warning": true,
+    "c: one table row: September 2026 · R 1 234,56 · R 115,00 · R 15,00 · source · Alice Owner": true,
+    "c: no raw codes / ISO dates / raw decimals in the memo card": true,
+    "c: API = the figures, recordedBy = Alice": true,
+    "c: SQL row = the figures, recorded_by = Alice's member id": true,
+    "c: one audit trust_interest_memo.saved (entity trust_interest_memo, id = memo id, actor Alice), no previous_* keys": true
+  },
+  "opened": {
+    "title": "Record an interest and charges memo",
+    "lockedNote": "This month's trust creditor list is locked. A memo is not part of the list: saving it changes no balance and no locked list.",
+    "lockedNoteRole": "status",
+    "replacesNote": null,
+    "replaceUnknown": null,
+    "postingWarning": 0,
+    "monthInput": "2026-10",
+    "monthFixed": null,
+    "grossInterest": "0",
+    "grossCharges": "0",
+    "chargesVat": "0",
+    "sourceNote": "",
+    "messages": []
+  },
+  "filled": {
+    "title": "Record an interest and charges memo",
+    "lockedNote": null,
+    "lockedNoteRole": null,
+    "replacesNote": null,
+    "replaceUnknown": null,
+    "postingWarning": 0,
+    "monthInput": "2026-09",
+    "monthFixed": null,
+    "grossInterest": "1234.56",
+    "grossCharges": "115.00",
+    "chargesVat": "15.00",
+    "sourceNote": "FNB interest advice IA/SEP26 (OBS 650B TIAB0)",
+    "messages": []
+  },
+  "rows": [
+    {
+      "cells": [
+        "September 2026",
+        "R 1 234,56",
+        "R 115,00",
+        "R 15,00",
+        "FNB interest advice IA/SEP26 (OBS 650B TIAB0)",
+        "Alice Owner 19 Nov 2026",
+        "Correct"
+      ],
+      "locked": false,
+      "correct": true
+    }
+  ],
+  "codes": [],
+  "audits": [
+    {
+      "id": "d8eb41af-a525-42d5-b102-c19466828491",
+      "entityType": "trust_interest_memo",
+      "entityId": "8c238ca0-63ef-40b7-a4ed-122df2d9dde9",
+      "actorId": "adbbe09b-d4d0-4fd5-949f-14881be35858",
+      "details": {
+        "actor_name": "Alice Owner",
+        "charges_vat": "15.00",
+        "source_note": "FNB interest advice IA/SEP26 (OBS 650B TIAB0)",
+        "period_month": "2026-09",
+        "gross_charges": "115.00",
+        "gross_interest": "1234.56",
+        "trust_account_id": "69d5a309-dfd5-4955-aff5-c8d11d6c78df"
+      },
+      "occurredAt": "2026-11-19T00:34:42.766316+00:00"
+    }
+  ],
+  "endedAt": "2026-11-19T00:34:44.798Z"
+}

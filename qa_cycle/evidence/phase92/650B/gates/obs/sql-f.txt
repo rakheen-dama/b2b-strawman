@@ -1,0 +1,17 @@
+-- 650B OBS phase f read-only SQL (schema tenant_7d218705360b) 2026-11-19T00:35:05.296Z
+
+== [f: postings by type/status after the memos]
+select transaction_type, status, count(*), sum(amount) from tenant_7d218705360b.trust_transactions group by 1, 2 order by 1, 2
+ transaction_type |  status  | count |   sum    
+------------------+----------+-------+----------
+ DEPOSIT          | RECORDED |     1 | 10000.00
+(1 row)
+
+
+== [f: memos]
+select count(*) memos from tenant_7d218705360b.trust_interest_memos
+ memos 
+-------
+     2
+(1 row)
+

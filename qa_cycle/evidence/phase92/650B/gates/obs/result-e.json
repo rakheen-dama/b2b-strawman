@@ -1,0 +1,196 @@
+{
+  "phase": "e",
+  "startedAt": "2026-11-19T00:34:50.567Z",
+  "consoleErrors": [],
+  "pageErrors": [],
+  "checks": {
+    "e: record mode, October 2026 → the locked-month memo note (role=status), no 650D posting warning": true,
+    "e: the save for the locked month is not refused (dialog closed, SQL row = figures)": true,
+    "e: correct mode for October 2026 → the same note, prefilled, month fixed": true,
+    "e: corrected (same id), row marked 'List locked', oldest month first": true,
+    "e: API = UI = SQL for October": true,
+    "e: audit — 4 rows; October save without previous_*, correction with previous_* = OCT1": true,
+    "e: locked list row byte-identical to b (12 money columns, md5 lines/flags, locked_at)": true,
+    "e: GET monthly list → adjustmentsSinceLock has no entries": true,
+    "e: no BACKDATED_AFTER_LOCK flag (list API, list row)": true,
+    "e: list page shows no 'entered after the lock' entry": true,
+    "e: lockedThrough still 2026-10-31": true,
+    "e: no raw codes in the memo card": true
+  },
+  "record": {
+    "title": "Record an interest and charges memo",
+    "lockedNote": "This month's trust creditor list is locked. A memo is not part of the list: saving it changes no balance and no locked list.",
+    "lockedNoteRole": "status",
+    "replacesNote": null,
+    "replaceUnknown": null,
+    "postingWarning": 0,
+    "monthInput": "2026-10",
+    "monthFixed": null,
+    "grossInterest": "45.67",
+    "grossCharges": "12.50",
+    "chargesVat": "1.63",
+    "sourceNote": "Fund statement October 2026 (OBS 650B TIAB0)",
+    "messages": []
+  },
+  "rowsAfterSave": [
+    {
+      "cells": [
+        "September 2026",
+        "R 1 300,10",
+        "R 230,00",
+        "R 30,00",
+        "FNB interest advice IA/SEP26 corrected (OBS 650B TIAB0)",
+        "Alice Owner 19 Nov 2026",
+        "Correct"
+      ],
+      "locked": false,
+      "correct": true
+    },
+    {
+      "cells": [
+        "October 2026 List locked",
+        "R 45,67",
+        "R 12,50",
+        "R 1,63",
+        "Fund statement October 2026 (OBS 650B TIAB0)",
+        "Alice Owner 19 Nov 2026",
+        "Correct"
+      ],
+      "locked": true,
+      "correct": true
+    }
+  ],
+  "correct": {
+    "title": "Correct the memo for October 2026",
+    "lockedNote": "This month's trust creditor list is locked. A memo is not part of the list: saving it changes no balance and no locked list.",
+    "lockedNoteRole": "status",
+    "replacesNote": null,
+    "replaceUnknown": null,
+    "postingWarning": 0,
+    "monthInput": null,
+    "monthFixed": "October 2026",
+    "grossInterest": "45.67",
+    "grossCharges": "12.5",
+    "chargesVat": "1.63",
+    "sourceNote": "Fund statement October 2026 (OBS 650B TIAB0)",
+    "messages": []
+  },
+  "rows": [
+    {
+      "cells": [
+        "September 2026",
+        "R 1 300,10",
+        "R 230,00",
+        "R 30,00",
+        "FNB interest advice IA/SEP26 corrected (OBS 650B TIAB0)",
+        "Alice Owner 19 Nov 2026",
+        "Correct"
+      ],
+      "locked": false,
+      "correct": true
+    },
+    {
+      "cells": [
+        "October 2026 List locked",
+        "R 50,00",
+        "R 20,00",
+        "R 2,61",
+        "Fund statement October 2026 re-issued (OBS 650B TIAB0)",
+        "Alice Owner 19 Nov 2026",
+        "Correct"
+      ],
+      "locked": true,
+      "correct": true
+    }
+  ],
+  "codes": [],
+  "listFingerprint": "10000.00|0.00|0.00|10000.00|10000.00|10000.00|0.00|0.00|0.00|0.00|10000.00|0.00|00eadf2f030a705f2f30dd330cce3073|d751713988987e9331980363e24189ce|2026-11-19 00:34:35.982972+00",
+  "afterLockSection": "Entered after this list was locked Entries dated on or before 31 Oct 2026 and recorded after the list was locked. They are part of the books, not of this list. Nothing has been entered after this list was locked.",
+  "afterLockRows": 0,
+  "audits": [
+    {
+      "id": "d8eb41af-a525-42d5-b102-c19466828491",
+      "entityType": "trust_interest_memo",
+      "entityId": "8c238ca0-63ef-40b7-a4ed-122df2d9dde9",
+      "actorId": "adbbe09b-d4d0-4fd5-949f-14881be35858",
+      "details": {
+        "actor_name": "Alice Owner",
+        "charges_vat": "15.00",
+        "source_note": "FNB interest advice IA/SEP26 (OBS 650B TIAB0)",
+        "period_month": "2026-09",
+        "gross_charges": "115.00",
+        "gross_interest": "1234.56",
+        "trust_account_id": "69d5a309-dfd5-4955-aff5-c8d11d6c78df"
+      },
+      "occurredAt": "2026-11-19T00:34:42.766316+00:00"
+    },
+    {
+      "id": "7bdbab05-02bd-4b6a-b7c2-b2d6b3a64f45",
+      "entityType": "trust_interest_memo",
+      "entityId": "8c238ca0-63ef-40b7-a4ed-122df2d9dde9",
+      "actorId": "adbbe09b-d4d0-4fd5-949f-14881be35858",
+      "details": {
+        "actor_name": "Alice Owner",
+        "charges_vat": "30.00",
+        "source_note": "FNB interest advice IA/SEP26 corrected (OBS 650B TIAB0)",
+        "period_month": "2026-09",
+        "gross_charges": "230.00",
+        "gross_interest": "1300.10",
+        "trust_account_id": "69d5a309-dfd5-4955-aff5-c8d11d6c78df",
+        "previous_charges_vat": "15.00",
+        "previous_source_note": "FNB interest advice IA/SEP26 (OBS 650B TIAB0)",
+        "previous_gross_charges": "115.00",
+        "previous_gross_interest": "1234.56"
+      },
+      "occurredAt": "2026-11-19T00:34:48.217389+00:00"
+    },
+    {
+      "id": "d3a9caae-fc0b-4271-be91-366bab8f81b6",
+      "entityType": "trust_interest_memo",
+      "entityId": "7232025f-e460-46e5-afa7-39a3b80487bf",
+      "actorId": "adbbe09b-d4d0-4fd5-949f-14881be35858",
+      "details": {
+        "actor_name": "Alice Owner",
+        "charges_vat": "1.63",
+        "source_note": "Fund statement October 2026 (OBS 650B TIAB0)",
+        "period_month": "2026-10",
+        "gross_charges": "12.50",
+        "gross_interest": "45.67",
+        "trust_account_id": "69d5a309-dfd5-4955-aff5-c8d11d6c78df"
+      },
+      "occurredAt": "2026-11-19T00:34:54.058827+00:00"
+    },
+    {
+      "id": "01004b6b-96ff-4a6e-8a65-d920be8daf7e",
+      "entityType": "trust_interest_memo",
+      "entityId": "7232025f-e460-46e5-afa7-39a3b80487bf",
+      "actorId": "adbbe09b-d4d0-4fd5-949f-14881be35858",
+      "details": {
+        "actor_name": "Alice Owner",
+        "charges_vat": "2.61",
+        "source_note": "Fund statement October 2026 re-issued (OBS 650B TIAB0)",
+        "period_month": "2026-10",
+        "gross_charges": "20.00",
+        "gross_interest": "50.00",
+        "trust_account_id": "69d5a309-dfd5-4955-aff5-c8d11d6c78df",
+        "previous_charges_vat": "1.63",
+        "previous_source_note": "Fund statement October 2026 (OBS 650B TIAB0)",
+        "previous_gross_charges": "12.50",
+        "previous_gross_interest": "45.67"
+      },
+      "occurredAt": "2026-11-19T00:34:56.043884+00:00"
+    }
+  ],
+  "adjustments": {
+    "entries": [],
+    "cashbook": 0,
+    "clientLedgers": 0,
+    "investmentCreditors": 0,
+    "fundLedger": 0,
+    "unidentifiedDeposits": 0,
+    "interAccount": 0,
+    "liveCreditorTotal": 10000,
+    "changeInCreditorTotal": 0
+  },
+  "endedAt": "2026-11-19T00:35:04.259Z"
+}

@@ -1,0 +1,25 @@
+-- 650B OBS phase c read-only SQL (schema tenant_7d218705360b) 2026-11-19T00:34:39.172Z
+
+== [c: trust_interest_memos]
+select * from tenant_7d218705360b.trust_interest_memos order by period_month
+                  id                  |           trust_account_id           | period_month | gross_interest | gross_charges | charges_vat |                  source_note                  |             recorded_by              |          created_at           |          updated_at           
+--------------------------------------+--------------------------------------+--------------+----------------+---------------+-------------+-----------------------------------------------+--------------------------------------+-------------------------------+-------------------------------
+ 8c238ca0-63ef-40b7-a4ed-122df2d9dde9 | 69d5a309-dfd5-4955-aff5-c8d11d6c78df | 2026-09-01   |        1234.56 |        115.00 |       15.00 | FNB interest advice IA/SEP26 (OBS 650B TIAB0) | adbbe09b-d4d0-4fd5-949f-14881be35858 | 2026-11-19 00:34:42.763733+00 | 2026-11-19 00:34:42.763733+00
+(1 row)
+
+
+== [c: audit trust_interest_memo.saved]
+select event_type, entity_type, entity_id, actor_id, jsonb_pretty(details) details, occurred_at from tenant_7d218705360b.audit_events where event_type='trust_interest_memo.saved' order by occurred_at
+        event_type         |     entity_type     |              entity_id               |               actor_id               |                               details                               |          occurred_at          
+---------------------------+---------------------+--------------------------------------+--------------------------------------+---------------------------------------------------------------------+-------------------------------
+ trust_interest_memo.saved | trust_interest_memo | 8c238ca0-63ef-40b7-a4ed-122df2d9dde9 | adbbe09b-d4d0-4fd5-949f-14881be35858 | {                                                                  +| 2026-11-19 00:34:42.766316+00
+                           |                     |                                      |                                      |     "actor_name": "Alice Owner",                                   +| 
+                           |                     |                                      |                                      |     "charges_vat": "15.00",                                        +| 
+                           |                     |                                      |                                      |     "source_note": "FNB interest advice IA/SEP26 (OBS 650B TIAB0)",+| 
+                           |                     |                                      |                                      |     "period_month": "2026-09",                                     +| 
+                           |                     |                                      |                                      |     "gross_charges": "115.00",                                     +| 
+                           |                     |                                      |                                      |     "gross_interest": "1234.56",                                   +| 
+                           |                     |                                      |                                      |     "trust_account_id": "69d5a309-dfd5-4955-aff5-c8d11d6c78df"     +| 
+                           |                     |                                      |                                      | }                                                                   | 
+(1 row)
+

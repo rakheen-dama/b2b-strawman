@@ -1,0 +1,104 @@
+{
+  "phase": "d",
+  "startedAt": "2026-11-19T00:34:45.089Z",
+  "consoleErrors": [],
+  "pageErrors": [],
+  "checks": {
+    "d: Correct mode — title, month fixed as text (no month input), fields prefilled": true,
+    "d: still one row, showing the corrected figures": true,
+    "d: API one memo, same id, corrected figures": true,
+    "d: SQL one row (same id), corrected figures, updated_at advanced, created_at kept": true,
+    "d: second audit row carries previous_* = the first figures": true
+  },
+  "opened": {
+    "title": "Correct the memo for September 2026",
+    "lockedNote": null,
+    "lockedNoteRole": null,
+    "replacesNote": null,
+    "replaceUnknown": null,
+    "postingWarning": 0,
+    "monthInput": null,
+    "monthFixed": "September 2026",
+    "grossInterest": "1234.56",
+    "grossCharges": "115",
+    "chargesVat": "15",
+    "sourceNote": "FNB interest advice IA/SEP26 (OBS 650B TIAB0)",
+    "messages": []
+  },
+  "rows": [
+    {
+      "cells": [
+        "September 2026",
+        "R 1 300,10",
+        "R 230,00",
+        "R 30,00",
+        "FNB interest advice IA/SEP26 corrected (OBS 650B TIAB0)",
+        "Alice Owner 19 Nov 2026",
+        "Correct"
+      ],
+      "locked": false,
+      "correct": true
+    }
+  ],
+  "audits": [
+    {
+      "id": "d8eb41af-a525-42d5-b102-c19466828491",
+      "entityType": "trust_interest_memo",
+      "entityId": "8c238ca0-63ef-40b7-a4ed-122df2d9dde9",
+      "actorId": "adbbe09b-d4d0-4fd5-949f-14881be35858",
+      "details": {
+        "actor_name": "Alice Owner",
+        "charges_vat": "15.00",
+        "source_note": "FNB interest advice IA/SEP26 (OBS 650B TIAB0)",
+        "period_month": "2026-09",
+        "gross_charges": "115.00",
+        "gross_interest": "1234.56",
+        "trust_account_id": "69d5a309-dfd5-4955-aff5-c8d11d6c78df"
+      },
+      "occurredAt": "2026-11-19T00:34:42.766316+00:00"
+    },
+    {
+      "id": "7bdbab05-02bd-4b6a-b7c2-b2d6b3a64f45",
+      "entityType": "trust_interest_memo",
+      "entityId": "8c238ca0-63ef-40b7-a4ed-122df2d9dde9",
+      "actorId": "adbbe09b-d4d0-4fd5-949f-14881be35858",
+      "details": {
+        "actor_name": "Alice Owner",
+        "charges_vat": "30.00",
+        "source_note": "FNB interest advice IA/SEP26 corrected (OBS 650B TIAB0)",
+        "period_month": "2026-09",
+        "gross_charges": "230.00",
+        "gross_interest": "1300.10",
+        "trust_account_id": "69d5a309-dfd5-4955-aff5-c8d11d6c78df",
+        "previous_charges_vat": "15.00",
+        "previous_source_note": "FNB interest advice IA/SEP26 (OBS 650B TIAB0)",
+        "previous_gross_charges": "115.00",
+        "previous_gross_interest": "1234.56"
+      },
+      "occurredAt": "2026-11-19T00:34:48.217389+00:00"
+    }
+  ],
+  "sqlBefore": [
+    "8c238ca0-63ef-40b7-a4ed-122df2d9dde9",
+    "2026-09-01",
+    "1234.56",
+    "115.00",
+    "15.00",
+    "FNB interest advice IA/SEP26 (OBS 650B TIAB0)",
+    "adbbe09b-d4d0-4fd5-949f-14881be35858",
+    "2026-11-19 00:34:42.763733+00",
+    "2026-11-19 00:34:42.763733+00"
+  ],
+  "sqlAfter": [
+    "8c238ca0-63ef-40b7-a4ed-122df2d9dde9",
+    "2026-09-01",
+    "1300.10",
+    "230.00",
+    "30.00",
+    "FNB interest advice IA/SEP26 corrected (OBS 650B TIAB0)",
+    "adbbe09b-d4d0-4fd5-949f-14881be35858",
+    "2026-11-19 00:34:42.763733+00",
+    "2026-11-19 00:34:48.214251+00"
+  ],
+  "endedAt": "2026-11-19T00:34:50.278Z"
+}

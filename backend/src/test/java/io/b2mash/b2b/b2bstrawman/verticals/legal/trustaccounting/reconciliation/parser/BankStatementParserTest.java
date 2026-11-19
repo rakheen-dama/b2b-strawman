@@ -16,6 +16,7 @@ import java.util.Objects;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class BankStatementParserTest {
 
@@ -72,24 +73,21 @@ class BankStatementParserTest {
 
     assertThat(result.periodStart()).isEqualTo(LocalDate.of(2026, 3, 1));
     assertThat(result.periodEnd()).isEqualTo(LocalDate.of(2026, 3, 31));
-    assertThat(result.lines()).hasSize(12);
+    assertThat(result.lines()).hasSize(11);
 
-    // Verify first data line (opening balance line)
-    var firstLine = result.lines().getFirst();
-    assertThat(firstLine.date()).isEqualTo(LocalDate.of(2026, 3, 1));
-    assertThat(firstLine.description()).isEqualTo("Opening Balance");
-    assertThat(firstLine.amount()).isEqualByComparingTo(BigDecimal.ZERO);
-    assertThat(firstLine.runningBalance()).isEqualByComparingTo(new BigDecimal("150000.00"));
+    // The zero-amount "Opening Balance" row is not a line (652G); it still gives the opening
+    // balance
+    assertThat(result.openingBalance()).isEqualByComparingTo(new BigDecimal("150000.00"));
 
     // Verify a credit line
-    var depositLine = result.lines().get(1);
+    var depositLine = result.lines().get(0);
     assertThat(depositLine.date()).isEqualTo(LocalDate.of(2026, 3, 3));
     assertThat(depositLine.description()).isEqualTo("Deposit from Smith & Associates");
     assertThat(depositLine.amount()).isEqualByComparingTo(new BigDecimal("25000.00"));
     assertThat(depositLine.reference()).isEqualTo("REF-SM-001");
 
     // Verify a debit line
-    var paymentLine = result.lines().get(2);
+    var paymentLine = result.lines().get(1);
     assertThat(paymentLine.amount()).isEqualByComparingTo(new BigDecimal("-8500.00"));
   }
 
@@ -99,10 +97,10 @@ class BankStatementParserTest {
 
     assertThat(result.periodStart()).isEqualTo(LocalDate.of(2026, 3, 1));
     assertThat(result.periodEnd()).isEqualTo(LocalDate.of(2026, 3, 31));
-    assertThat(result.lines()).hasSize(11);
+    assertThat(result.lines()).hasSize(10);
 
     // Verify yyyy-MM-dd date parsing
-    var depositLine = result.lines().get(1);
+    var depositLine = result.lines().get(0);
     assertThat(depositLine.date()).isEqualTo(LocalDate.of(2026, 3, 4));
     assertThat(depositLine.description()).isEqualTo("Deposit - Van der Merwe Matter");
     assertThat(depositLine.reference()).isEqualTo("VDM-2026-001");
@@ -115,15 +113,15 @@ class BankStatementParserTest {
 
     assertThat(result.periodStart()).isEqualTo(LocalDate.of(2026, 3, 1));
     assertThat(result.periodEnd()).isEqualTo(LocalDate.of(2026, 3, 31));
-    assertThat(result.lines()).hasSize(11);
+    assertThat(result.lines()).hasSize(10);
 
     // Verify "dd MMM yyyy" date parsing
-    var depositLine = result.lines().get(1);
+    var depositLine = result.lines().get(0);
     assertThat(depositLine.date()).isEqualTo(LocalDate.of(2026, 3, 5));
     assertThat(depositLine.description()).isEqualTo("Deposit - Govender Matter");
 
     // Verify quoted field with comma is handled correctly
-    var courierLine = result.lines().get(6);
+    var courierLine = result.lines().get(5);
     assertThat(courierLine.description()).isEqualTo("Disbursement, courier fees");
     assertThat(courierLine.amount()).isEqualByComparingTo(new BigDecimal("-450.00"));
   }
@@ -134,24 +132,21 @@ class BankStatementParserTest {
 
     assertThat(result.periodStart()).isEqualTo(LocalDate.of(2026, 3, 1));
     assertThat(result.periodEnd()).isEqualTo(LocalDate.of(2026, 3, 31));
-    assertThat(result.lines()).hasSize(11);
+    assertThat(result.lines()).hasSize(10);
 
-    // Verify first data line (opening balance)
-    var firstLine = result.lines().getFirst();
-    assertThat(firstLine.date()).isEqualTo(LocalDate.of(2026, 3, 1));
-    assertThat(firstLine.description()).isEqualTo("Opening Balance");
-    assertThat(firstLine.amount()).isEqualByComparingTo(BigDecimal.ZERO);
-    assertThat(firstLine.runningBalance()).isEqualByComparingTo(new BigDecimal("95000.00"));
+    // The zero-amount "Opening Balance" row is not a line (652G); it still gives the opening
+    // balance
+    assertThat(result.openingBalance()).isEqualByComparingTo(new BigDecimal("95000.00"));
 
     // Verify a credit line
-    var depositLine = result.lines().get(1);
+    var depositLine = result.lines().get(0);
     assertThat(depositLine.date()).isEqualTo(LocalDate.of(2026, 3, 4));
     assertThat(depositLine.description()).isEqualTo("Deposit from Willemse Inc");
     assertThat(depositLine.reference()).isEqualTo("WIL-DEP-001");
     assertThat(depositLine.amount()).isEqualByComparingTo(new BigDecimal("18000.00"));
 
     // Verify a debit line
-    var sheriffLine = result.lines().get(2);
+    var sheriffLine = result.lines().get(1);
     assertThat(sheriffLine.amount()).isEqualByComparingTo(new BigDecimal("-4200.00"));
     assertThat(sheriffLine.reference()).isEqualTo("SHF-789");
   }
@@ -162,10 +157,10 @@ class BankStatementParserTest {
 
     assertThat(result.periodStart()).isEqualTo(LocalDate.of(2026, 3, 1));
     assertThat(result.periodEnd()).isEqualTo(LocalDate.of(2026, 3, 31));
-    assertThat(result.lines()).hasSize(9);
+    assertThat(result.lines()).hasSize(8);
 
     // Verify the generic parser detects dd/MM/yyyy format
-    var transferLine = result.lines().get(3);
+    var transferLine = result.lines().get(2);
     assertThat(transferLine.date()).isEqualTo(LocalDate.of(2026, 3, 16));
     assertThat(transferLine.description()).isEqualTo("Transfer received");
     assertThat(transferLine.amount()).isEqualByComparingTo(new BigDecimal("28000.00"));
@@ -233,6 +228,92 @@ class BankStatementParserTest {
     assertThat(result.closingBalance()).isEqualByComparingTo(new BigDecimal("282500.00"));
     assertThat(result.periodStart()).isEqualTo(LocalDate.of(2026, 3, 1));
     assertThat(result.periodEnd()).isEqualTo(LocalDate.of(2026, 3, 31));
+  }
+
+  /**
+   * Every marker kind (opening / closing / brought-forward / carried-forward), any case, runs of
+   * whitespace collapsed: the zero-amount row is not a line, and still gives the period and the
+   * opening / closing balance.
+   */
+  @ParameterizedTest(name = "{0}")
+  @ValueSource(
+      strings = {
+        "Opening Balance",
+        "OPENING BALANCE",
+        "Closing Balance",
+        "Balance Brought Forward",
+        "Brought Forward",
+        "BALANCE B/F",
+        "Bal b/f",
+        "B/F",
+        "Balance Carried Forward",
+        "Carried Forward",
+        "BALANCE C/F",
+        "c/f",
+        "Opening  Balance",
+      })
+  void zeroAmountBalanceMarkerRows_areNotLines(String marker) throws IOException {
+    String csv =
+        """
+        Date,Description,Amount,Balance
+        01/03/2026,%1$s,0.00,1000.00
+        02/03/2026,Client deposit,500.00,1500.00
+        31/03/2026,%1$s,0.00,1500.00
+        """
+            .formatted(marker);
+    var result =
+        genericParser.parse(new ByteArrayInputStream(csv.getBytes(StandardCharsets.UTF_8)));
+
+    assertThat(result.lines())
+        .extracting(ParsedStatementLine::description)
+        .containsExactly("Client deposit");
+    assertThat(result.openingBalance()).isEqualByComparingTo(new BigDecimal("1000.00"));
+    assertThat(result.closingBalance()).isEqualByComparingTo(new BigDecimal("1500.00"));
+    assertThat(result.periodStart()).isEqualTo(LocalDate.of(2026, 3, 1));
+    assertThat(result.periodEnd()).isEqualTo(LocalDate.of(2026, 3, 31));
+  }
+
+  /**
+   * Skip only when both hold: a non-zero row with a marker description is money that moved (or an
+   * export the firm must see), and a zero-amount row whose description merely contains a marker
+   * word, or none, is still a line.
+   */
+  @Test
+  void zeroAmountNonMarkerRow_andNonZeroMarkerRow_areStillLines() throws IOException {
+    String csv =
+        """
+        Date,Description,Amount,Balance
+        01/03/2026,Opening Balance,100.00,100.00
+        05/03/2026,Interest,0.00,100.00
+        06/03/2026,Balance enquiry,0.00,100.00
+        """;
+    var result =
+        genericParser.parse(new ByteArrayInputStream(csv.getBytes(StandardCharsets.UTF_8)));
+
+    assertThat(result.lines())
+        .extracting(ParsedStatementLine::description)
+        .containsExactly("Opening Balance", "Interest", "Balance enquiry");
+  }
+
+  /**
+   * A dormant month — only a balance row — imports as a statement with no lines, not as "all
+   * malformed": the period still comes from the balance row ({@code period_start} is NOT NULL).
+   */
+  @Test
+  void balanceRowOnlyStatement_hasNoLinesAndKeepsPeriodAndBalances() throws IOException {
+    String csv =
+        """
+        Date,Description,Amount,Balance
+        01/03/2026,Opening Balance,0.00,250.00
+        """;
+    var result =
+        genericParser.parse(new ByteArrayInputStream(csv.getBytes(StandardCharsets.UTF_8)));
+
+    assertThat(result.lines()).isEmpty();
+    assertThat(result.openingBalance()).isEqualByComparingTo(new BigDecimal("250.00"));
+    assertThat(result.closingBalance()).isEqualByComparingTo(new BigDecimal("250.00"));
+    assertThat(result.periodStart()).isEqualTo(LocalDate.of(2026, 3, 1));
+    assertThat(result.periodEnd()).isEqualTo(LocalDate.of(2026, 3, 1));
   }
 
   // --- Parser suggestions (Phase 92 / 647C, §16.3.5 keyword table, ADR-380) ---
@@ -305,7 +386,6 @@ class BankStatementParserTest {
             null,
             null,
             null,
-            null,
             FUND_INTEREST,
             BANK_CHARGE,
             null,
@@ -315,10 +395,9 @@ class BankStatementParserTest {
 
   @Test
   void standardBankFixture_suggestionsPerLine() throws IOException {
-    // index 2 "Sheriff fees payment" → BANK_CHARGE: a false positive by design ("FEE" substring)
+    // index 1 "Sheriff fees payment" → BANK_CHARGE: a false positive by design ("FEE" substring)
     assertThat(suggestions(standardBankParser, "standard-bank-sample.csv"))
         .containsExactly(
-            null,
             null,
             BANK_CHARGE,
             null,
@@ -333,10 +412,9 @@ class BankStatementParserTest {
 
   @Test
   void nedbankFixture_suggestionsPerLine() throws IOException {
-    // index 6 "Disbursement, courier fees" → BANK_CHARGE: a false positive by design
+    // index 5 "Disbursement, courier fees" → BANK_CHARGE: a false positive by design
     assertThat(suggestions(nedbankParser, "nedbank-sample.csv"))
         .containsExactly(
-            null,
             null,
             null,
             null,
@@ -351,10 +429,9 @@ class BankStatementParserTest {
 
   @Test
   void absaFixture_suggestionsPerLine() throws IOException {
-    // index 6 "Advocate consultation fee" → BANK_CHARGE: a false positive by design
+    // index 5 "Advocate consultation fee" → BANK_CHARGE: a false positive by design
     assertThat(suggestions(absaParser, "absa-sample.csv"))
         .containsExactly(
-            null,
             null,
             null,
             null,
@@ -371,7 +448,7 @@ class BankStatementParserTest {
   void genericFixture_suggestionsPerLine() throws IOException {
     assertThat(suggestions(genericParser, "generic-sample.csv"))
         .containsExactly(
-            null, null, null, null, null, FUND_INTEREST, BANK_CHARGE, FUND_SWEEP, CHARGE_REFUND);
+            null, null, null, null, FUND_INTEREST, BANK_CHARGE, FUND_SWEEP, CHARGE_REFUND);
   }
 
   /**

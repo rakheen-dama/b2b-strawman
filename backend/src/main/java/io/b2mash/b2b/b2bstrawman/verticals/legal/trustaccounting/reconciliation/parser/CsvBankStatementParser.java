@@ -13,6 +13,7 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,6 +25,31 @@ import org.slf4j.LoggerFactory;
 public abstract class CsvBankStatementParser implements BankStatementParser {
 
   private static final Logger log = LoggerFactory.getLogger(CsvBankStatementParser.class);
+
+  /**
+   * The balance markers (Phase 92 / 652G, architecture §16.9.3): the whole description of a bank
+   * export's opening / closing / brought-forward / carried-forward balance row, normalised (single
+   * spaces, upper case). A row whose amount is zero and whose description is one of these is not a
+   * movement — imported as a line it could be neither matched nor recorded, and gate G4 would hold
+   * the reconciliation on it — so it is not a line. Exact match on the whole description, not a
+   * substring: a zero "Balance enquiry fee" reversal is still a line. The generic vocabulary only —
+   * how each bank words these rows is not published (L4), so bank-specific markers would be
+   * guesses.
+   */
+  private static final Set<String> BALANCE_MARKERS =
+      Set.of(
+          "OPENING BALANCE",
+          "CLOSING BALANCE",
+          "BALANCE BROUGHT FORWARD",
+          "BROUGHT FORWARD",
+          "BALANCE B/F",
+          "BAL B/F",
+          "B/F",
+          "BALANCE CARRIED FORWARD",
+          "CARRIED FORWARD",
+          "BALANCE C/F",
+          "BAL C/F",
+          "C/F");
 
   /** Typed record for statement-level metadata extracted from header lines. */
   protected record StatementMetadata(
@@ -120,7 +146,7 @@ public abstract class CsvBankStatementParser implements BankStatementParser {
     var openingBalance = metadata.openingBalance();
     var closingBalance = metadata.closingBalance();
 
-    List<ParsedStatementLine> parsedLines = new ArrayList<>();
+    List<ParsedStatementLine> rows = new ArrayList<>();
     int malformedCount = 0;
 
     for (String line : dataLines) {
@@ -131,7 +157,7 @@ public abstract class CsvBankStatementParser implements BankStatementParser {
       try {
         var parsedLine = parseLine(columns);
         if (parsedLine != null) {
-          parsedLines.add(parsedLine);
+          rows.add(parsedLine);
         } else {
           malformedCount++;
         }
@@ -141,33 +167,26 @@ public abstract class CsvBankStatementParser implements BankStatementParser {
       }
     }
 
-    if (parsedLines.isEmpty() && malformedCount > 0) {
+    if (rows.isEmpty() && malformedCount > 0) {
       throw new BankStatementParseException(
           "All " + malformedCount + " data lines were malformed; no valid transactions parsed");
     }
 
     // Derive period from data if not extracted from metadata
-    if (!parsedLines.isEmpty()) {
+    if (!rows.isEmpty()) {
       if (periodStart == null) {
         periodStart =
-            parsedLines.stream()
-                .map(ParsedStatementLine::date)
-                .min(LocalDate::compareTo)
-                .orElse(null);
+            rows.stream().map(ParsedStatementLine::date).min(LocalDate::compareTo).orElse(null);
       }
       if (periodEnd == null) {
         periodEnd =
-            parsedLines.stream()
-                .map(ParsedStatementLine::date)
-                .max(LocalDate::compareTo)
-                .orElse(null);
+            rows.stream().map(ParsedStatementLine::date).max(LocalDate::compareTo).orElse(null);
       }
-      if (openingBalance == null && parsedLines.getFirst().runningBalance() != null) {
-        openingBalance =
-            parsedLines.getFirst().runningBalance().subtract(parsedLines.getFirst().amount());
+      if (openingBalance == null && rows.getFirst().runningBalance() != null) {
+        openingBalance = rows.getFirst().runningBalance().subtract(rows.getFirst().amount());
       }
-      if (closingBalance == null && parsedLines.getLast().runningBalance() != null) {
-        closingBalance = parsedLines.getLast().runningBalance();
+      if (closingBalance == null && rows.getLast().runningBalance() != null) {
+        closingBalance = rows.getLast().runningBalance();
       }
     }
 
@@ -178,7 +197,17 @@ public abstract class CsvBankStatementParser implements BankStatementParser {
       closingBalance = BigDecimal.ZERO;
     }
 
-    return new ParsedStatement(periodStart, periodEnd, openingBalance, closingBalance, parsedLines);
+    // 652G (§16.9.3): a zero-amount balance row gives the period and the opening / closing balance
+    // above (its running balance), but it is not a movement, so it is not a line.
+    var lines = rows.stream().filter(row -> !isBalanceRow(row)).toList();
+    return new ParsedStatement(periodStart, periodEnd, openingBalance, closingBalance, lines);
+  }
+
+  /** A zero-amount row whose whole normalised description is a {@link #BALANCE_MARKERS} entry. */
+  private static boolean isBalanceRow(ParsedStatementLine row) {
+    return row.amount().signum() == 0
+        && BALANCE_MARKERS.contains(
+            row.description().replaceAll("\\s+", " ").toUpperCase(Locale.ROOT));
   }
 
   private ParsedStatementLine parseLine(String[] columns) {

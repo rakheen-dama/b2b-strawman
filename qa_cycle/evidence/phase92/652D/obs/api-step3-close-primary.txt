@@ -1,0 +1,5 @@
+=== THE ONE NECESSARY API STEP (2026-11-19T16:29:33Z) ===
+Reason: no UI action closes a trust account (no frontend call to /api/trust-accounts/{id}/close; grep of frontend/lib, app, components for trust close returns nothing).
+POST http://localhost:8081/api/trust-accounts/a76945ed-7901-4959-88bc-75dd493872d4/close  (Bearer = mock-IDP JWT for user_e2e_alice, owner — same mechanism as compose/seed/lib/common.sh get_jwt)
+{"id":"a76945ed-7901-4959-88bc-75dd493872d4","accountName":"Mathebula & Partners Trust Account","bankName":"Standard Bank","branchCode":"051001","accountNumber":"0123456789","accountType":"GENERAL","investmentBasis":null,"section":"S86_2","isPrimary":true,"requireDualApproval":false,"paymentApprovalThreshold":null,"status":"CLOSED","openedDate":"2026-11-19","closedDate":"2026-11-19","notes":null,"createdAt":"2026-11-19T16:26:53.943809Z","updatedAt":"2026-11-19T16:29:33.533717175Z","lockedThrough":null}
+HTTP 200

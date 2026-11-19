@@ -1,0 +1,53 @@
+### 2026-11-19T16:31:51Z read-only psql, schema tenant_7d218705360b
+                  id                  |            account_name            | account_type | status | is_primary | closed_date 
+--------------------------------------+------------------------------------+--------------+--------+------------+-------------
+ a76945ed-7901-4959-88bc-75dd493872d4 | Mathebula & Partners Trust Account | GENERAL      | CLOSED | t          | 2026-11-19
+ 9d2ea361-5f80-4383-b1ce-d010311e7a66 | OBS 652D Replacement Trust Account | GENERAL      | ACTIVE | f          | 
+(2 rows)
+
+                    Table "tenant_7d218705360b.client_ledger_cards"
+      Column      |           Type           | Collation | Nullable |      Default      
+------------------+--------------------------+-----------+----------+-------------------
+ id               | uuid                     |           | not null | gen_random_uuid()
+ trust_account_id | uuid                     |           | not null | 
+ customer_id      | uuid                     |           | not null | 
+ created_at       | timestamp with time zone |           | not null | now()
+ updated_at       | timestamp with time zone |           | not null | now()
+Indexes:
+    "client_ledger_cards_pkey" PRIMARY KEY, btree (id)
+    "uq_client_ledger_account_customer" UNIQUE CONSTRAINT, btree (trust_account_id, customer_id)
+Foreign-key constraints:
+    "client_ledger_cards_customer_id_fkey" FOREIGN KEY (customer_id) REFERENCES tenant_7d218705360b.customers(id)
+    "client_ledger_cards_trust_account_id_fkey" FOREIGN KEY (trust_account_id) REFERENCES tenant_7d218705360b.trust_accounts(id)
+
+            account_name            |  reference   | transaction_type |  amount  |  status  | transaction_date 
+------------------------------------+--------------+------------------+----------+----------+------------------
+ Mathebula & Partners Trust Account | OBS652D-DEP1 | DEPOSIT          | 10000.00 | RECORDED | 2026-11-19
+ Mathebula & Partners Trust Account | OBS652D-PAY1 | PAYMENT          | 10000.00 | APPROVED | 2026-11-19
+ OBS 652D Replacement Trust Account | OBS652D-DEP2 | DEPOSIT          | 10000.00 | RECORDED | 2026-11-19
+(3 rows)
+
+            account_name            | status | is_primary | client_b_ledger_balance 
+------------------------------------+--------+------------+-------------------------
+ Mathebula & Partners Trust Account | CLOSED | t          |                    0.00
+ OBS 652D Replacement Trust Account | ACTIVE | f          |                10000.00
+(2 rows)
+
+ERROR:  relation "tenant_7d218705360b.statements" does not exist
+LINE 1: ...ance_held, closing_balance_owing, created_at from tenant_7d2...
+                                                             ^
+ERROR:  column "created_at" does not exist
+LINE 1: select id, file_name, created_at from tenant_7d218705360b.ge...
+                              ^
+                  id                  | primary_entity_type |                        file_name                        |         generated_at          | contains_trust_data |                                                                                                                                                                                      snap                                                                                                                                                                                       
+--------------------------------------+---------------------+---------------------------------------------------------+-------------------------------+---------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ afb99cef-cbc6-43b5-bef4-dba3b41996b2 | INVOICE             | fee-note-inv-0001-2026-11-19.pdf                        | 2026-11-19 16:26:56.35871+00  | f                   | {"entity_id": "17986c24-4eeb-43ba-8fe5-d2840bc4a796", "entity_type": "INVOICE", "template_name": "Fee Note"}
+ 52895142-4914-437b-ab55-6b5dda59b306 | PROJECT             | statement-of-account-website-redesign-2026-11-19.pdf    | 2026-11-19 16:26:57.658005+00 | t                   | {"summary": {"total_fees": "8625.00", "payments_received": "0.00", "trust_balance_held": "0", "total_disbursements": "0", "closing_balance_owing": "8625.00", "previous_balance_owing": "0"}, "entity_id": "6d7e7c52-02df-4aa7-8be3-926cb7f00579", "period_end": "2026-11-19", "entity_type": "PROJECT", "period_start": "2026-01-01", "template_name": "Statement of Account"}
+ da20dc15-e776-46f8-a957-a729a0ad1494 | PROJECT             | statement-of-account-obs-652d-matter-b-2026-11-19.pdf   | 2026-11-19 16:30:56.525065+00 | t                   | {"summary": {"total_fees": "0", "payments_received": "0", "trust_balance_held": "10000.00", "total_disbursements": "0", "closing_balance_owing": "0", "previous_balance_owing": "0"}, "entity_id": "101d14ed-2c0a-4d51-866c-aeef618722ef", "period_end": "2026-11-19", "entity_type": "PROJECT", "period_start": "2026-11-01", "template_name": "Statement of Account"}
+ 47bf63ef-19d2-4ddd-a9a9-50bd916d1e70 | CUSTOMER            | client-trust-statement-obs-652d-client-b-2026-11-19.pdf | 2026-11-19 16:31:35.473875+00 | t                   | {"entity_id": "b2ca88fa-f1ba-4547-b009-8818a81ba734", "entity_type": "CUSTOMER", "template_name": "Client Trust Statement"}
+(4 rows)
+
+[]|[]
+["0"]|[]
+["10000.00"]|[]
+[]|[]

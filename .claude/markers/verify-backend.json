@@ -1,7 +1,7 @@
 {
-  "commit": "19157ccb0d2823fbd4096c42f8d0e7163b8b5b60",
-  "command": "cd backend && ./mvnw spotless:check && bash scripts/verify.sh (caffeinate -is ./mvnw verify)",
+  "commit": "5c2f17f640bb06338836ba620e0a52a60935e593",
+  "command": "cd backend && ./mvnw spotless:check && bash scripts/verify.sh -q (caffeinate -is ./mvnw verify)",
   "exit": 0,
-  "ts": "2026-11-19T15:26:24Z",
-  "summary": "652C PR #1817: 7376 testcases / 0 failures / 0 errors / 26 skipped (surefire <testcase> count; +15 vs 652B baseline 7361: Draft IT + V29 migration test). Run 14:25-14:53Z on 19157ccb0. Final head c92ddc0e4 changes one test method only (stored-vs-stored completedAt compare; CI ns-precision fix); Backend CI on c92ddc0e4 PASS (run 44549020854, 26m36s)."
+  "ts": "2026-11-19T16:24:10Z",
+  "summary": "652D PR #1818: 7389 testcases / 0 failures / 0 errors / 26 skipped (surefire <testcase> count; +13 vs 652C baseline 7376: StatementBuilderClosedPrimaryAccountIntegrationTest 10 + 3 StatementOfAccountContextBuilderTest cases). Run on 5c2f17f64 (final head)."
 }

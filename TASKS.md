@@ -740,7 +740,7 @@
 | 649 | Invariant Harness, Reversal Correctness, Integrity Check and Completion Gate (E5) | Backend tests; Backend + Frontend | 645A for 649A; 646A for 649B; 647D + 648B for 649C | L | 649A, 649B, 649C (3 verifies) | 649A **Done** (PR #1787); 649B **Done** (PR #1789); 649C **Done** (PR #1804) — **Epic 649 Done** |
 | 650 | Rule 54.15 Monthly List and Lock, Rule 54.28 Schedule, Memo Records, Report Pack v4 (E6) | Backend + Frontend (together) | 649C | L | 650A, 650D, 650B, 650C (4 verifies) || 650A **Done** (PR #1806) · 650D **Done** (PR #1807) · 650B **Done** (PR #1808) · 650C **Done** (PR #1809) · **Done** |
 | 651 | Remove the Calculated Interest Run — Screens, Engine, Rates, Docs, Scenario Amendments (E7) | Frontend; Backend; Docs | 650C | L | 651C, 651A, 651E, 651D, 651B (2 verifies) | 651C **Done** (PR #1810) · 651A **Done** (PR #1811) · 651E **Done** (PR #1812) · 651D **Done** (PR #1813) · 651B **Done** (PR #1814) · **Done** |
-| 652 | Wizard and Import Defects (reproduce first) and the Exit Gate — the Balanced Month (E8) | Frontend; Backend; e2e; QA / Docs | per slice; 652E after every code slice; 652F last | L | 652A, 652B, 652C, 652D, 652G (all CONDITIONAL), 652E, 652F (0 verifies + up to 3) | 652A **Done** (PR #1815) · 652B **Done** (PR #1816) · 652C **Done** (PR #1817) |
+| 652 | Wizard and Import Defects (reproduce first) and the Exit Gate — the Balanced Month (E8) | Frontend; Backend; e2e; QA / Docs | per slice; 652E after every code slice; 652F last | L | 652A, 652B, 652C, 652D, 652G (all CONDITIONAL), 652E, 652F (0 verifies + up to 3) | 652A **Done** (PR #1815) · 652B **Done** (PR #1816) · 652C **Done** (PR #1817) · 652D **Done** (PR #1818) |
 
 
 ---

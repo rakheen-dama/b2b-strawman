@@ -33,3 +33,10 @@ So a closed primary stays primary for good, and no other account can become prim
 
 ## (v) §16.14.4 dashboard half — not examined, not changed
 `DashboardService.java:614` (the SECTION_86-as-main shape) is a dashboard concern. Case (c) of the reproduction shows that the statement builders are not affected (see README). 652D does not touch the dashboard.
+
+## Added after review and OBS (orchestrator, post-merge bookkeeping)
+
+- **F-652D-CR1 (CodeRabbit round 1, Minor; decision D-3).** The account choice reads the general and invested balances in separate transactions. Neither document builder reads from one snapshot today: `StatementOfAccountContextBuilder.build` is `@Transactional(readOnly = true)` (READ COMMITTED, `:161`), and inner REPEATABLE_READ methods join it. Follow-up: set one snapshot policy at both builders' entry points. The race needs an investment return approved while a document is being generated. The worst case is the pre-652D choice, and regenerating the document fixes it.
+- **F-652D-O1 (OBS).** The trust-accounts settings list hides CLOSED accounts, so the UI never shows the closed primary. Evidence came from psql and the API response instead.
+- **F-652D-O2 (OBS, low).** `template/CustomerContextBuilder.java:158` rebuilds the CTS trust context on every customer-context build: 3× per CTS save and 3× per preview. The output is correct; the ledger reads are repeated for nothing.
+- **F-652D-O3 (OBS, existed before 652D).** The CTS header line "Trust Account: E2E Test Organization — Section 86(2) trust account" is a firm-level label. It does not follow the account the statement selects, so with a replacement account the header and the "Account:" line name different accounts (`obs/652d-04-cts-preview.png`). This needs a product call (template wording), and 652D does not change it.

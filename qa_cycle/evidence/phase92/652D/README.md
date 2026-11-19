@@ -60,7 +60,15 @@ Tier 2 targeted run after D-2: the `verticals.legal.statement` and `verticals.le
 The demo seeder's main account is a primary **SECTION_86** account. A client on that one account takes the single-candidate path, so both documents print it correctly (case (c) is green both before and after the fix). The primary-GENERAL lookup only runs for multi-account clients, and only as the tie-break. The dashboard half of §16.14.4 (`DashboardService.java:614`) is outside 652D and is not changed.
 
 ## OBS
-**Pending (orchestrator).** The plan is in the brief §7: render both documents on the :3001 stack for the closed-primary fixture.
+**PASS** (orchestrator-run, 2026-11-19 16:26–16:32Z). Fresh mock-auth stack built from head `5c2f17f64`. Details are in `obs/obs.md`; screenshots and psql output are in `obs/`.
+
+What the fixture did: the primary GENERAL account received a deposit of R10 000 and a payment of R10 000, so it ended at R0. It was then closed with the one REST call (no UI can close an account), and it is still `is_primary=t`. A non-primary replacement account then received a R10 000 deposit.
+- **SoA, 1–19 Nov:** Trust Activity on the replacement account, closing balance R10 000,00, trust balance held R10 000,00. The stored snapshot has `trust_balance_held = 10000.00`.
+- **CTS:** "Account: OBS 652D Replacement Trust Account", closing balance R10 000,00.
+- **Backend log:** "has activity on 2 trust accounts; using 9d2ea361…".
+- **psql:** primary 0.00, replacement 10000.00.
+
+Backend verify: 7 389 testcases, 0 failures, 0 errors, 26 skipped @5c2f17f64. CI Backend passed @5c2f17f64.
 
 ## Out of scope
-See `found.md`, items (i)–(v). Each is reported, not fixed in 652D.
+See `found.md`, items (i)–(v) and F-652D-CR1, F-652D-O1..O3. Each is reported, not fixed in 652D.

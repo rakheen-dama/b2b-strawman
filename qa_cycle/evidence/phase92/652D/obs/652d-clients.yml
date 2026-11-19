@@ -1,0 +1,199 @@
+- generic [active] [ref=f2e1]:
+  - link "Skip to content" [ref=f2e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=f2e3]:
+    - generic [ref=f2e6]:
+      - generic [ref=f2e7]:
+        - generic [ref=f2e8]: Kazi
+        - generic [ref=f2e10]: E2E Test Organization
+        - list [ref=f2e13]:
+          - listitem [ref=f2e14]:
+            - button "Search, Command K" [ref=f2e15]:
+              - generic [ref=f2e19]: Search...
+              - generic [ref=f2e20]: ⌘K
+      - navigation "Main navigation" [ref=f2e22]:
+        - generic [ref=f2e24]:
+          - button "Today" [expanded] [ref=f2e25]
+          - list [ref=f2e30]:
+            - listitem [ref=f2e31]:
+              - link "Home" [ref=f2e32] [cursor=pointer]:
+                - /url: /org/e2e-test-org/dashboard
+            - listitem [ref=f2e37]:
+              - link "My work" [ref=f2e38] [cursor=pointer]:
+                - /url: /org/e2e-test-org/my-work
+            - listitem [ref=f2e43]:
+              - link "Diary" [ref=f2e44] [cursor=pointer]:
+                - /url: /org/e2e-test-org/diary
+        - generic [ref=f2e49]:
+          - button "Matters" [expanded] [ref=f2e50]
+          - list [ref=f2e55]:
+            - listitem [ref=f2e56]:
+              - link "Matters" [ref=f2e57] [cursor=pointer]:
+                - /url: /org/e2e-test-org/matters
+            - listitem [ref=f2e63]:
+              - link "New matter" [ref=f2e64] [cursor=pointer]:
+                - /url: /org/e2e-test-org/matters/new
+            - listitem [ref=f2e67]:
+              - link "Conflict check" [ref=f2e68] [cursor=pointer]:
+                - /url: /org/e2e-test-org/conflict-check
+            - listitem [ref=f2e74]:
+              - link "Adverse parties" [ref=f2e75] [cursor=pointer]:
+                - /url: /org/e2e-test-org/legal/adverse-parties
+            - listitem [ref=f2e82]:
+              - link "AI reviews" [ref=f2e83] [cursor=pointer]:
+                - /url: /org/e2e-test-org/ai/reviews
+        - generic [ref=f2e89]:
+          - button "Clients" [expanded] [ref=f2e90]
+          - list [ref=f2e95]:
+            - listitem [ref=f2e96]:
+              - link "Clients" [ref=f2e97] [cursor=pointer]:
+                - /url: /org/e2e-test-org/clients
+            - listitem [ref=f2e103]:
+              - link "FICA & compliance" [ref=f2e104] [cursor=pointer]:
+                - /url: /org/e2e-test-org/compliance
+            - listitem [ref=f2e109]:
+              - link "Data requests" [ref=f2e110] [cursor=pointer]:
+                - /url: /org/e2e-test-org/compliance/requests
+        - button "Fees" [ref=f2e117]
+        - button "Trust" [ref=f2e122]
+        - button "Firm" [ref=f2e127]
+      - generic [ref=f2e130]:
+        - list [ref=f2e131]:
+          - listitem [ref=f2e132]:
+            - link "Platform Admin" [ref=f2e133] [cursor=pointer]:
+              - /url: /platform-admin/access-requests
+        - list [ref=f2e137]:
+          - listitem [ref=f2e138]:
+            - link "Notifications" [ref=f2e139] [cursor=pointer]:
+              - /url: /org/e2e-test-org/notifications
+        - generic [ref=f2e144]:
+          - generic [ref=f2e145]: AO
+          - generic [ref=f2e146]:
+            - paragraph [ref=f2e147]: Alice Owner
+            - paragraph [ref=f2e148]: alice@e2e-test.local
+    - generic [ref=f2e149]:
+      - banner [ref=f2e150]:
+        - button "Toggle menu" [ref=f2e151]
+        - navigation "Breadcrumb" [ref=f2e153]:
+          - link "E2E Test Organization" [ref=f2e154] [cursor=pointer]:
+            - /url: /org/e2e-test-org/dashboard
+          - generic "Clients" [ref=f2e158]
+        - generic [ref=f2e159]:
+          - button "Search, Command K" [ref=f2e160]:
+            - generic [ref=f2e164]: Search
+            - generic [aria-hidden]: ⌘K
+          - button "Notifications" [ref=f2e166]:
+            - generic [ref=f2e167]: 1 unread notifications
+            - generic [aria-hidden] [ref=f2e168]: "1"
+          - generic [ref=f2e169]: e2e-test-org
+          - button "AO" [ref=f2e172]
+      - main [ref=f2e173]:
+        - generic [ref=f2e275]:
+          - generic [ref=f2e277]:
+            - generic [ref=f2e278]:
+              - heading "Clients" [level=1] [ref=f2e279]
+              - paragraph [ref=f2e280]: 1 client
+            - button "New Client" [ref=f2e283]
+          - generic [ref=f2e284]:
+            - generic [ref=f2e285]:
+              - generic [ref=f2e287]:
+                - generic [ref=f2e288]:
+                  - 'button "Help: Saved views" [ref=f2e293] [cursor=pointer]'
+                  - tablist [ref=f2e298]:
+                    - tab "All clients" [selected] [ref=f2e299]
+                    - tab "Active" [ref=f2e300]
+                    - tab "FICA outstanding" [ref=f2e301]
+                    - tab "With trust balance" [ref=f2e302]
+                - button "Save View" [ref=f2e303]
+              - generic [ref=f2e304]:
+                - search "Search clients" [ref=f2e305]:
+                  - textbox "Search clients…" [ref=f2e310]
+                - generic [ref=f2e311]:
+                  - group "Lifecycle" [ref=f2e312]:
+                    - link "All" [ref=f2e313] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/clients
+                    - link "Prospect" [ref=f2e314] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/clients?lifecycleStatus=PROSPECT
+                    - link "Onboarding" [ref=f2e315] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/clients?lifecycleStatus=ONBOARDING
+                    - link "Active" [ref=f2e316] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/clients?lifecycleStatus=ACTIVE
+                    - link "Dormant" [ref=f2e317] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/clients?lifecycleStatus=DORMANT
+                    - link "Offboarding" [ref=f2e318] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/clients?lifecycleStatus=OFFBOARDING
+                    - link "Offboarded" [ref=f2e319] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/clients?lifecycleStatus=OFFBOARDED
+                  - link "Show incomplete" [ref=f2e321] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/clients?showIncomplete=true
+                - generic [ref=f2e322]:
+                  - button "Columns" [ref=f2e323]
+                  - button "Export CSV" [ref=f2e324]
+            - table "Clients — All clients" [ref=f2e327]:
+              - caption [ref=f2e328]: Clients — All clients
+              - rowgroup [ref=f2e329]:
+                - row [ref=f2e330]:
+                  - columnheader "Client" [ref=f2e331]:
+                    - link "Client" [ref=f2e332] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/clients?sortBy=name&sortDir=desc
+                  - columnheader "Lifecycle" [ref=f2e335]:
+                    - link "Lifecycle" [ref=f2e336] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/clients?sortBy=lifecycleStatus&sortDir=asc
+                  - columnheader "FICA" [ref=f2e340]:
+                    - link "FICA" [ref=f2e341] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/clients?sortBy=ficaStatus&sortDir=asc
+                  - columnheader "Open matters" [ref=f2e345]:
+                    - link "Open matters" [ref=f2e346] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/clients?sortBy=openMatterCount&sortDir=asc
+                      - generic [ref=f2e347]:
+                        - generic [ref=f2e348]: Open
+                        - generic [ref=f2e349]: matters
+                  - columnheader "Outstanding fee notes" [ref=f2e353]:
+                    - link "Outstanding fee notes" [ref=f2e354] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/clients?sortBy=outstanding&sortDir=asc
+                      - generic [ref=f2e355]:
+                        - generic [ref=f2e356]: Outstanding
+                        - generic [ref=f2e357]: fee notes
+                  - columnheader "Trust balance" [ref=f2e361]:
+                    - link "Trust balance" [ref=f2e362] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/clients?sortBy=trustBalance&sortDir=asc
+                      - generic [ref=f2e363]:
+                        - generic [ref=f2e364]: Trust
+                        - generic [ref=f2e365]: balance
+                  - columnheader "Completeness" [ref=f2e369]:
+                    - link "Completeness" [ref=f2e370] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/clients?sortBy=completeness&sortDir=asc
+                  - columnheader "Created" [ref=f2e374]:
+                    - link "Created" [ref=f2e375] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/clients?sortBy=createdAt&sortDir=asc
+                  - columnheader "Contact" [ref=f2e379]
+                  - columnheader "Actions" [ref=f2e380]
+              - rowgroup [ref=f2e382]:
+                - row [ref=f2e383] [cursor=pointer]:
+                  - cell "Acme Corp Individual" [ref=f2e384]:
+                    - generic [ref=f2e385]:
+                      - link "Acme Corp" [ref=f2e386]:
+                        - /url: /org/e2e-test-org/clients/6a3298f1-15ae-4a6e-a55d-da87ef0563dd
+                      - generic [ref=f2e387]: Individual
+                  - cell "Active" [ref=f2e389]
+                  - cell "Done 19 Nov 2026" [ref=f2e391]:
+                    - generic [ref=f2e392]:
+                      - generic [ref=f2e393]: Done
+                      - generic [ref=f2e394]: 19 Nov 2026
+                  - cell "1" [ref=f2e395]
+                  - cell "R 8 625,00 · 1" [ref=f2e396]
+                  - cell "R 0,00" [ref=f2e397]
+                  - cell "N/A" [ref=f2e398]
+                  - cell "19 Nov 2026" [ref=f2e400]
+                  - cell "contact@acme.example.com +1-555-0100" [ref=f2e401]:
+                    - generic [ref=f2e402]:
+                      - generic "contact@acme.example.com" [ref=f2e403]
+                      - generic "+1-555-0100" [ref=f2e404]
+                  - cell [ref=f2e405]:
+                    - button "Client actions" [ref=f2e406]
+            - paragraph [ref=f2e408]: Showing 1 client
+  - generic [ref=f2e271]:
+    - heading "Command Palette" [level=2] [ref=f2e272]
+    - paragraph [ref=f2e273]: Search pages and settings
+  - region "Notifications alt+T"
+  - alert [ref=f2e274]

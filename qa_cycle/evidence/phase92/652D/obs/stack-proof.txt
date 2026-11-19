@@ -1,0 +1,9 @@
+head: 5c2f17f640bb06338836ba620e0a52a60935e593
+build log: Building from source at line:
+Building from source at: /Users/rakheendama/Projects/2026/worktree-epic-652D
+e2e-backend created: 2026-11-19T16:26:13.373950388Z image=sha256:d229a15f8f38de004eccd9b57190add73cf2812bc375f97aa0e4e39e5297a922
+e2e-frontend created: 2026-11-19T16:26:13.439469304Z image=sha256:4510c7750a007d1cada2a6f40530dcf678406f5bbd5fb28f2378e43c320d07d8
+e2e-postgres created: 2026-11-19T16:26:13.070533304Z image=sha256:35726244c51a57338a5a5a5ad8a7e2b18f4ecb8dccd51224cab33ac2ea6a5df0
+image d229a15f8f38 created 2026-11-19 18:25:55 +0200 SAST
+backend jar classes for StatementOfAccount builder:
+-rw-r--r-- 1 spring spring 4869074 Nov 19 16:25 /app/app.jar

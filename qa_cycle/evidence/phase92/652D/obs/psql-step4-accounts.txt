@@ -1,0 +1,6 @@
+                  id                  |            account_name            | account_type | status | is_primary | opened_date | closed_date 
+--------------------------------------+------------------------------------+--------------+--------+------------+-------------+-------------
+ a76945ed-7901-4959-88bc-75dd493872d4 | Mathebula & Partners Trust Account | GENERAL      | CLOSED | t          | 2026-11-19  | 2026-11-19
+ 9d2ea361-5f80-4383-b1ce-d010311e7a66 | OBS 652D Replacement Trust Account | GENERAL      | ACTIVE | f          | 2026-11-19  | 
+(2 rows)
+

@@ -47,8 +47,9 @@ import org.springframework.test.web.servlet.MockMvc;
  * ({@code TrustTransactionType.recordedOnlyFromStatementLine()}) was born linked to its line and
  * has since been unrecorded from it — it is never matched again, by auto-match or by hand.
  *
- * <p>And (652H D-4): at every auto-match tier a REVERSED original yields to live rows among that
- * tier's candidates, so a reverse-then-re-enter matches the bank line to the re-entered row.
+ * <p>And (652H D-4, widened by D-5): for each bank line a REVERSED original is a candidate only
+ * when no live row of its amount and sign is in the pool, so a reverse-then-re-enter never matches
+ * the bank line to the reversed row, whatever reference the line carries.
  *
  * <p>One harness tenant, a fresh account per test; the class ends with {@code assertFirmBalanced}.
  */
@@ -385,7 +386,7 @@ class ReversedOriginalMatchIntegrationTest {
     assertThat(bankLineOf(chargeId)).isNull();
   }
 
-  // --- 652H D-4: a REVERSED original yields to live rows (reverse-then-re-enter) ----------------
+  // --- 652H D-4/D-5: a REVERSED original yields to live rows (reverse-then-re-enter) ------------
 
   /**
    * Reverse-then-re-enter, same reference, different dates (652H D-4): a deposit R of R1 000 on 1
@@ -455,6 +456,46 @@ class ReversedOriginalMatchIntegrationTest {
     var result = autoMatch(march);
 
     assertMatchedToTheLiveRow(march, result, reEntered);
+    var recon = reconcile(account, MARCH_END, march.id());
+    assertBalancedWithNothingOutstanding(recon, "1000.00");
+    books.assertServicesAgree(account, MARCH_END);
+  }
+
+  /**
+   * Reverse-then-re-enter under a new reference, the bank line carrying the OLD reference (652H
+   * D-5, F-652H-3): R ref DEP-77 on 1 March, reversed 2 March by C, G re-entered on 4 March under
+   * DEP-77-C; the bank shows one +1 000 line on 1 March, ref DEP-77. A live candidate of R's amount
+   * and sign (G) is in the pool, so R is no candidate for the line at any tier. The line then
+   * resolves among live rows exactly as on main: tier 1 (DEP-77) finds none, tier 2 (1 March) none,
+   * tier 3 (within 3 days) finds G alone — suggested at 0.60, the line stays UNMATCHED. Confirming
+   * the suggestion by hand matches G and the month balances. RED before D-5: tier 1 finds R alone
+   * and AUTO_MATCHES the reversed row, leaving C and G outstanding.
+   */
+  @Test
+  void
+      autoMatch_reEnteredDepositUnderANewReference_lineCarriesTheOldReference_doesNotMatchTheReversedRow() {
+    var account = books.freshAccount(false);
+    var reEntered =
+        reverseAndReEnter(
+            account, "DEP-77", "DEP-77-C", LocalDate.of(2026, 3, 1), LocalDate.of(2026, 3, 4));
+    var march =
+        importStatement(
+            account, "h-reenter-old-ref.csv", "01/03/2026,Deposit received,1000.00,1000.00,DEP-77");
+
+    var result = autoMatch(march);
+
+    var state = lineState(march.lines().getFirst().id());
+    assertThat(state.get("match_status")).as("line status (tier 3 only)").isEqualTo("UNMATCHED");
+    assertThat(state.get("trust_transaction_id")).as("suggested row").isEqualTo(reEntered.live());
+    assertThat((BigDecimal) state.get("match_confidence")).isEqualByComparingTo("0.60");
+    assertThat(result.autoMatched()).as("nothing auto-matched").isZero();
+    assertThat(bankLineOf(reEntered.reversed())).as("reversed R unlinked").isNull();
+    assertThat(bankLineOf(reEntered.contra())).as("contra C unlinked").isNull();
+    assertThat(bankLineOf(reEntered.live())).as("G not yet linked").isNull();
+
+    match(march, 0, reEntered.live());
+    assertLineMatchedTo(march, 0, reEntered.live(), "MANUALLY_MATCHED");
+    assertStillReversedBy(reEntered.reversed(), reEntered.contra());
     var recon = reconcile(account, MARCH_END, march.id());
     assertBalancedWithNothingOutstanding(recon, "1000.00");
     books.assertServicesAgree(account, MARCH_END);
@@ -590,13 +631,11 @@ class ReversedOriginalMatchIntegrationTest {
         () -> transactionRepository.findById(transactionId).orElseThrow().getBankStatementLineId());
   }
 
-  /**
-   * A statement line's {@code match_status}, {@code trust_transaction_id} and the statement count.
-   */
+  /** A statement line's status, row, confidence and the statement count. */
   private Map<String, Object> lineState(UUID lineId) {
     return jdbc.queryForMap(
         """
-        SELECT l.match_status, l.trust_transaction_id, s.matched_count
+        SELECT l.match_status, l.trust_transaction_id, l.match_confidence, s.matched_count
         FROM "%1$s".bank_statement_lines l
         JOIN "%1$s".bank_statements s ON s.id = l.bank_statement_id
         WHERE l.id = ?

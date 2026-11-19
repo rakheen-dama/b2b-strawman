@@ -371,9 +371,10 @@ public class TrustReconciliationService {
     int alreadyMatched = statement.getMatchedCount();
 
     for (BankStatementLine line : unmatchedLines) {
-      // Filter candidates by sign compatibility
+      // Filter candidates by sign compatibility; a REVERSED original yields to live rows (D-5)
       List<TrustTransaction> signFilteredCandidates =
-          candidatePool.stream().filter(c -> isSignCompatible(line, c)).toList();
+          withoutShadowedReversedOriginals(
+              candidatePool.stream().filter(c -> isSignCompatible(line, c)).toList());
 
       if (signFilteredCandidates.isEmpty()) {
         continue;
@@ -1229,17 +1230,30 @@ public class TrustReconciliationService {
   }
 
   /**
-   * 652H D-4: a REVERSED original yields to live rows. Of the candidates a tier finds for a line,
-   * the REVERSED originals are dropped whenever at least one live (non-REVERSED) row is among them,
-   * so a reversed original is chosen only when it is a tier's sole kind of candidate — the exit
-   * month's #7/#9, whose line shows nothing else (§16.9.6). Without it a reverse-then-re-enter (R
-   * reversed by its contra C, the corrected G re-entered) could match the line to R, or leave it
-   * ambiguous, and keep C and G outstanding forever. Contras ({@code REVERSAL} rows) are live rows
-   * here: the rule is about reversed originals only (HF-7 untouched). Applied by every tier.
+   * 652H D-5: for a bank line, a REVERSED original is a candidate only when no live (non-REVERSED)
+   * candidate of its amount and sign (cashbook direction) is in the pool; otherwise it is dropped
+   * before any tier runs, and the line resolves among live rows exactly as it would if the reversed
+   * original were not matchable at all. So it still matches its own line when it is the only row of
+   * that amount and sign — the exit month's #7/#9 (§16.9.6) — but never takes a line from a
+   * reverse-then-re-enter's corrected row G, whatever reference the line carries (F-652H-3: an
+   * old-reference line would otherwise find R alone at tier 1 and leave C and G outstanding
+   * forever). Contras ({@code REVERSAL} rows) are live rows here: the rule is about reversed
+   * originals only (HF-7 untouched). Manual match is unaffected.
    */
-  private static List<TrustTransaction> preferLive(List<TrustTransaction> tierMatches) {
-    var live = tierMatches.stream().filter(c -> !"REVERSED".equals(c.getStatus())).toList();
-    return live.isEmpty() ? tierMatches : live;
+  private static List<TrustTransaction> withoutShadowedReversedOriginals(
+      List<TrustTransaction> candidates) {
+    return candidates.stream()
+        .filter(
+            c ->
+                !"REVERSED".equals(c.getStatus())
+                    || candidates.stream()
+                        .noneMatch(
+                            live ->
+                                !"REVERSED".equals(live.getStatus())
+                                    && live.getAmount().compareTo(c.getAmount()) == 0
+                                    && live.getCashbookEffect().signum()
+                                        == c.getCashbookEffect().signum()))
+        .toList();
   }
 
   /**
@@ -1261,14 +1275,13 @@ public class TrustReconciliationService {
     }
 
     List<TrustTransaction> refMatches =
-        preferLive(
-            candidates.stream()
-                .filter(
-                    c ->
-                        c.getReference() != null
-                            && c.getReference().equalsIgnoreCase(line.getReference())
-                            && c.getAmount().compareTo(line.getAmount().abs()) == 0)
-                .toList());
+        candidates.stream()
+            .filter(
+                c ->
+                    c.getReference() != null
+                        && c.getReference().equalsIgnoreCase(line.getReference())
+                        && c.getAmount().compareTo(line.getAmount().abs()) == 0)
+            .toList();
 
     if (refMatches.size() == 1) {
       applyAutoMatch(line, refMatches.getFirst(), new BigDecimal("1.00"), statement);
@@ -1282,13 +1295,12 @@ public class TrustReconciliationService {
     BigDecimal lineAmount = line.getAmount().abs();
 
     List<TrustTransaction> matches =
-        preferLive(
-            candidates.stream()
-                .filter(
-                    c ->
-                        c.getAmount().compareTo(lineAmount) == 0
-                            && c.getTransactionDate().equals(line.getTransactionDate()))
-                .toList());
+        candidates.stream()
+            .filter(
+                c ->
+                    c.getAmount().compareTo(lineAmount) == 0
+                        && c.getTransactionDate().equals(line.getTransactionDate()))
+            .toList();
 
     if (matches.size() == 1) {
       applyAutoMatch(line, matches.getFirst(), AUTO_MATCH_THRESHOLD, statement);
@@ -1303,16 +1315,15 @@ public class TrustReconciliationService {
     LocalDate lineDate = line.getTransactionDate();
 
     List<TrustTransaction> matches =
-        preferLive(
-            candidates.stream()
-                .filter(
-                    c -> {
-                      if (c.getAmount().compareTo(lineAmount) != 0) return false;
-                      long daysDiff =
-                          Math.abs(lineDate.toEpochDay() - c.getTransactionDate().toEpochDay());
-                      return daysDiff <= 3;
-                    })
-                .toList());
+        candidates.stream()
+            .filter(
+                c -> {
+                  if (c.getAmount().compareTo(lineAmount) != 0) return false;
+                  long daysDiff =
+                      Math.abs(lineDate.toEpochDay() - c.getTransactionDate().toEpochDay());
+                  return daysDiff <= 3;
+                })
+            .toList();
 
     if (matches.size() == 1) {
       // Below auto-match threshold -- set confidence and suggest the transaction, but remain
@@ -1329,8 +1340,7 @@ public class TrustReconciliationService {
     BigDecimal lineAmount = line.getAmount().abs();
 
     List<TrustTransaction> matches =
-        preferLive(
-            candidates.stream().filter(c -> c.getAmount().compareTo(lineAmount) == 0).toList());
+        candidates.stream().filter(c -> c.getAmount().compareTo(lineAmount) == 0).toList();
 
     if (!matches.isEmpty()) {
       line.setMatchConfidence(new BigDecimal("0.40"));

@@ -60,3 +60,23 @@ Review-fix round (PR #1820 review findings; ruling D-4) — re-run on the fix co
        original 'Reversed' and leaves an approved row unmarked (652H)", red without the badge:
        "Unable to find an element by: [data-testid=\"reversed-badge-tx-reversed\"]") ·
        format:check exit 0.
+
+--------------------------------------------------------------------------------------------------
+Fix cycle 2 (F-652H-3; ruling D-5) — re-run on the fix-2 commit
+  Change: preferLive (D-4, per tier) REPLACED by one per-line helper withoutShadowedReversedOriginals
+    (TrustReconciliationService): per bank line, a REVERSED original is dropped from the sign-filtered
+    candidates whenever a live (non-REVERSED) candidate of the same amount and cashbook sign is in the
+    pool. It subsumes D-4 (every tier's set is same-amount + sign-compatible, so any live row a tier
+    would have preferred already removes R) — the four tier methods are byte-identical to main again.
+  BE Tier 1: spotless:apply; compile test-compile -q → exit 0
+  BE Tier 2 Batch A → exit 0, 170 <testcase>, 0 failures/errors (ReversedOriginalMatchIntegrationTest 12:
+       +1 D-5 method autoMatch_reEnteredDepositUnderANewReference_lineCarriesTheOldReference_
+       doesNotMatchTheReversedRow, red first — red-reenter.txt). Wall 30 s. Other 8 classes unchanged.
+  BE Tier 2 Batch B → exit 0, 167 <testcase>, 0 failures/errors (13 classes, unchanged counts). Wall 43 s.
+  Stay-green checks: the exit-month methods (#7/#8, #9/#10 — the reversed original is the only
+  same-amount, same-sign candidate), the three D-4 reverse-then-re-enter methods and the two R-1
+  statement-only guards are all green.
+  The F-652H-3 case now: R DEP-77 1 Mar (reversed), G DEP-77-C 4 Mar, line 1 Mar ref DEP-77 → R not a
+  candidate; tiers 1/2 find nothing, tier 3 suggests G at 0.60 (line UNMATCHED, as main would for the
+  live rows); confirming G by hand → MANUALLY_MATCHED, nothing outstanding, balanced at R1 000.
+  FE: not touched in fix cycle 2 (not re-run).

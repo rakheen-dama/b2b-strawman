@@ -31,3 +31,17 @@ TEMPORARY PROBE (not committed) — the reviewer's literal "new reference" case:
    → tier 1 finds R alone (G's reference differs). See the after-fix probe result in green.txt:
      D-4 as ruled (yield only when a tier's set holds a live row) does NOT change this case,
      because R is the sole tier-1 candidate. Logged as F-652H-3 in found.md for a ruling.
+
+--------------------------------------------------------------------------------------------------
+652H D-5 — reproduce red (fix cycle 2; F-652H-3, the reviewer's literal "line carries the OLD reference")
+Head: 49d98cb64 (production code unchanged; only the new test method added, plus match_confidence in the
+test's lineState query). Command (from backend/):
+  ./mvnw test -Dtest="ReversedOriginalMatchIntegrationTest" -q > /tmp/mvn-fix2-652H-red.log 2>&1   → exit 1
+Surefire XML: 12 <testcase> (11 existing green + 1 new), 1 failure, 0 errors.
+
+FAILING (red against 49d98cb64):
+4. autoMatch_reEnteredDepositUnderANewReference_lineCarriesTheOldReference_doesNotMatchTheReversedRow
+   R 1 Mar ref DEP-77 (reversed 2 Mar by C), G 4 Mar ref DEP-77-C, line 1 Mar ref DEP-77.
+   [line status (tier 3 only)] expected: "UNMATCHED" but was: "AUTO_MATCHED"
+   → tier 1 (reference + amount) finds R alone (G's reference differs); D-4's preferLive cannot drop
+     it (no live row in tier 1's set), so the line AUTO_MATCHES the reversed R and C, G stay outstanding.

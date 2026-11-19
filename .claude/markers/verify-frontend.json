@@ -1,7 +1,7 @@
 {
-  "commit": "d9f42136e",
-  "command": "cd frontend && pnpm install && pnpm run lint && pnpm run build && pnpm test && pnpm run format:check (nvm node 20.11.1)",
+  "commit": "13109ea70",
+  "command": "cd frontend && pnpm install && pnpm run lint && pnpm run typecheck && pnpm run format:check && pnpm run build && pnpm test (nvm node 20.11.1)",
   "exit": 0,
-  "ts": "2026-11-19T20:06:42Z",
-  "summary": "lint 0 errors (77 pre-existing warnings), build OK, vitest 482 files 4591 passed / 2 skipped, format:check clean — PR #1820 (652H) head d9f42136e2b3"
+  "ts": "2026-11-19T21:41:46Z",
+  "summary": "lint 0 errors (77 pre-existing warnings), typecheck OK, format:check clean, build OK, vitest 482 files 4591 passed / 2 skipped (run 2; run 1 hit pre-existing trend-chart timing flake F-652E-8) — PR #1821 (652E) head 13109ea70baf"
 }

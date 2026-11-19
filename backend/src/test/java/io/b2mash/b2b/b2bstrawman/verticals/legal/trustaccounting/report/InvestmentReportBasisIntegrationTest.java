@@ -16,7 +16,6 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestTrustInvestmentAccountHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.interest.InterestService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -52,7 +51,6 @@ class InvestmentReportBasisIntegrationTest {
   @Autowired private OrgSettingsRepository orgSettingsRepository;
   @Autowired private OrgSettingsService orgSettingsService;
   @Autowired private TransactionTemplate transactionTemplate;
-  @Autowired private InterestService interestService;
   @Autowired private TrustInvestmentService investmentService;
 
   @Autowired private InvestmentRegisterQuery investmentRegisterQuery;
@@ -171,19 +169,6 @@ class InvestmentReportBasisIntegrationTest {
                     }
                     """))
         .andExpect(status().isCreated());
-
-    // Create an interest run for a quarter
-    var runResponse =
-        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-            .where(RequestScopes.MEMBER_ID, ownerMemberId)
-            .call(
-                () ->
-                    interestService.createInterestRun(
-                        trustAccountId, LocalDate.of(2025, 4, 1), LocalDate.of(2025, 6, 30)));
-
-    // Calculate interest
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .call(() -> interestService.calculateInterest(runResponse.id()));
 
     // Place a FIRM_DISCRETION investment for customer1
     var firmPlaced =

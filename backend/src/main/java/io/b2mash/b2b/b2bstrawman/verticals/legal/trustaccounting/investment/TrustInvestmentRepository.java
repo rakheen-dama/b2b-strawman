@@ -69,8 +69,6 @@ public interface TrustInvestmentRepository extends JpaRepository<TrustInvestment
   boolean existsByFundingOrInvestmentAccountAndStatusIn(
       @Param("accountId") UUID accountId, @Param("statuses") Collection<String> statuses);
 
-  List<TrustInvestment> findByTrustAccountIdAndCustomerId(UUID trustAccountId, UUID customerId);
-
   List<TrustInvestment> findByStatusAndMaturityDateBetween(
       String status, LocalDate maturityStart, LocalDate maturityEnd);
 

@@ -220,7 +220,7 @@ class CapabilityEndpointTest {
         .andExpect(jsonPath("$.role").value("Project Manager"));
   }
 
-  // 630B (G88-F39): the caller's members.id, so the interest-run table can hide self-approval.
+  // 630B (G88-F39): the caller's members.id is part of the capabilities response.
   @Test
   void getMyCapabilities_returnsCallerMemberId() throws Exception {
     mockMvc

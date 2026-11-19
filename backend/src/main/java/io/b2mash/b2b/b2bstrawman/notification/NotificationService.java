@@ -206,7 +206,6 @@ public class NotificationService {
           "TRUST_INVESTMENT_MATURING",
           "TRUST_APPROVAL_AGING",
           "TRUST_RECONCILIATION_COMPLETED",
-          "TRUST_INTEREST_POSTED",
           "MATTER_CLOSED",
           "MATTER_REOPENED",
           // COLLECTIONS — Phase 83 (Epic 588B). Registration only; emission lands in 589A

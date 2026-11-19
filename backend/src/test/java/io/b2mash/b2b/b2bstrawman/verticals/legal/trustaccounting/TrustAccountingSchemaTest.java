@@ -50,18 +50,16 @@ class TrustAccountingSchemaTest {
   }
 
   @Test
-  void createsAllTenTables() throws Exception {
+  void createsTheTrustTables() throws Exception {
     List<String> expectedTables =
         List.of(
             "trust_accounts",
-            "lpff_rates",
+            "lpff_rates", // dropped in 651E
             "trust_transactions",
             "client_ledger_cards",
             "bank_statements",
             "bank_statement_lines",
             "trust_reconciliations",
-            "interest_runs",
-            "interest_allocations",
             "trust_investments");
 
     try (Connection conn = dataSource.getConnection()) {
@@ -79,6 +77,21 @@ class TrustAccountingSchemaTest {
               .isEqualTo(1);
         }
       }
+    }
+  }
+
+  /**
+   * Phase 92 / 651A (ADR-383, tenant V27): the calculated interest run's three tables are dropped.
+   */
+  @Test
+  void theInterestRunTablesDoNotExist() {
+    for (String table :
+        List.of("interest_allocation_lines", "interest_allocations", "interest_runs")) {
+      assertThat(
+              jdbcTemplate.queryForObject(
+                  "SELECT to_regclass(?)::text", String.class, tenantSchema + "." + table))
+          .as(table)
+          .isNull();
     }
   }
 

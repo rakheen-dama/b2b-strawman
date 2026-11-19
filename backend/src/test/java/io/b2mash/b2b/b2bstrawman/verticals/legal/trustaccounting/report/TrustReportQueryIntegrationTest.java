@@ -22,7 +22,6 @@ import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksFixture;
 import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness.Expected;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustIntegrityService;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.interest.InterestService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.InterestPresentation;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.ReconciliationStatus;
@@ -71,7 +70,6 @@ class TrustReportQueryIntegrationTest {
   @Autowired private OrgSettingsService orgSettingsService;
   @Autowired private TransactionTemplate transactionTemplate;
   @Autowired private TrustReconciliationRepository reconciliationRepository;
-  @Autowired private InterestService interestService;
   @Autowired private TrustInvestmentService investmentService;
   @Autowired private TrustBooksFixture fixture;
 
@@ -96,7 +94,6 @@ class TrustReportQueryIntegrationTest {
   private String customerId2;
   private UUID ownerMemberId;
   private UUID approverMemberId;
-  private UUID interestRunId;
   private UUID reconciliationId;
 
   @BeforeAll
@@ -209,20 +206,6 @@ class TrustReportQueryIntegrationTest {
                     }
                     """))
         .andExpect(status().isCreated());
-
-    // Create an interest run for a quarter
-    var runResponse =
-        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-            .where(RequestScopes.MEMBER_ID, ownerMemberId)
-            .call(
-                () ->
-                    interestService.createInterestRun(
-                        trustAccountId, LocalDate.of(2025, 4, 1), LocalDate.of(2025, 6, 30)));
-    interestRunId = runResponse.id();
-
-    // Calculate interest
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .call(() -> interestService.calculateInterest(interestRunId));
 
     // Place an investment for customer1
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)

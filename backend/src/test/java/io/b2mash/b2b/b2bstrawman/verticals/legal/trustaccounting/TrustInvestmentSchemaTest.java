@@ -60,9 +60,7 @@ class TrustInvestmentSchemaTest {
             new String[] {"checklist_instance_items", "verification_reference"},
             new String[] {"checklist_instance_items", "verification_status"},
             new String[] {"checklist_instance_items", "verified_at"},
-            new String[] {"checklist_instance_items", "verification_metadata"},
-            new String[] {"interest_allocations", "lpff_rate_id"},
-            new String[] {"interest_allocations", "statutory_rate_applied"});
+            new String[] {"checklist_instance_items", "verification_metadata"});
 
     try (Connection conn = dataSource.getConnection()) {
       for (String[] tableCol : expectedColumns) {

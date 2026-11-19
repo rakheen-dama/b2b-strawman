@@ -1,0 +1,19 @@
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  __tests__/dark-mode-contrast-guard.test.ts > dark-mode contrast guard (Phase 90 debt D-3, D-4, D-5) > D-3: every native select/textarea with a border carries the Input dark fill
+ Test Files  1 failed | 481 passed (482)
+      Tests  1 failed | 4590 passed | 2 skipped (4593)
+   Duration  215.84s (transform 61.47s, setup 108.76s, import 619.89s, tests 604.39s, environment 403.17s)
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  __tests__/dark-mode-contrast-guard.test.ts > dark-mode contrast guard (Phase 90 debt D-3, D-4, D-5) > D-3: every native select/textarea with a border carries the Input dark fill
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ __tests__/dark-mode-contrast-guard.test.ts:213:3
+    211|   });
+    212|
+    213|   it("D-3: every native select/textarea with a border carries the Inpu…
+       |   ^
+    214|     const fields = nativeFields();
+    215|     expect(fields.length, "the scan finds the app's native fields").to…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯

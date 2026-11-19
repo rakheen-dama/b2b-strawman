@@ -1,0 +1,22 @@
+[22:33:22Z] A-exit-month: e2e-down
+[22:33:23Z] A-exit-month: e2e-up
+[22:35:04Z] A-exit-month: e2e-up rc=0
+[22:35:22Z] A: portal :3002 up
+[22:36:51Z] A: exit-month rc=0
+[22:36:53Z] B-lifecycle: e2e-down
+[22:36:56Z] B-lifecycle: e2e-up
+[22:37:33Z] B-lifecycle: e2e-up rc=0
+[22:40:41Z] B: lifecycle rc=0
+[22:40:41Z] C-depth-ii: e2e-down
+[22:40:44Z] C-depth-ii: e2e-up
+[22:41:21Z] C-depth-ii: e2e-up rc=0
+[22:43:17Z] C: depth-ii rc=0
+[22:43:17Z] D-default: e2e-down
+[22:43:19Z] D-default: e2e-up
+[22:43:55Z] D-default: e2e-up rc=0
+[22:45:08Z] D: default rc=0
+[22:45:10Z] E-portal: e2e-down
+[22:45:12Z] E-portal: e2e-up
+[22:45:49Z] E-portal: e2e-up rc=0
+[22:46:18Z] E: portal rc=0
+[22:46:20Z] ALL DONE

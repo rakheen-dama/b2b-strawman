@@ -1034,7 +1034,7 @@ describe("Trust Reconciliation", () => {
     fireEvent.click(screen.getByTestId("step-next-btn"));
 
     expect(await screen.findByTestId("reconciliation-split-pane")).toBeInTheDocument();
-    expect(mockCalculateReconciliation).toHaveBeenCalledWith("recon-1");
+    expect(mockCalculateReconciliation).toHaveBeenCalledWith("recon-1", "stmt-1");
     expect(screen.getByText("1 / 1 lines resolved")).toBeInTheDocument();
     expect(screen.getByTestId("complete-reconciliation-btn")).toBeEnabled();
   });
@@ -1135,7 +1135,7 @@ describe("Trust Reconciliation", () => {
       periodEnd: "2026-03-31",
       bankStatementId: "stmt-2",
     });
-    expect(mockCalculateReconciliation).toHaveBeenLastCalledWith("recon-1");
+    expect(mockCalculateReconciliation).toHaveBeenLastCalledWith("recon-1", "stmt-2");
     expect(screen.queryByTestId("reconciliation-error")).not.toBeInTheDocument();
   });
 
@@ -1214,7 +1214,7 @@ describe("Trust Reconciliation", () => {
     fireEvent.click(screen.getByTestId("complete-reconciliation-btn"));
 
     expect(await screen.findByTestId("reconciliation-error")).toHaveTextContent(refusal);
-    expect(mockCompleteReconciliation).toHaveBeenCalledWith("recon-1");
+    expect(mockCompleteReconciliation).toHaveBeenCalledWith("recon-1", "stmt-1");
     expect(mockCalculateReconciliation).toHaveBeenCalledTimes(2);
     // The summary now shows the recalculated figures and the gate's flags.
     expect(screen.getByTestId("bank-to-cashbook-difference").textContent).toBe(
@@ -1340,6 +1340,43 @@ describe("Trust Reconciliation", () => {
     expect(banner.firstElementChild).toBe(title);
   });
 
+  // 652C CodeRabbit round 1: complete names the statement this wizard reviewed; a draft re-pointed
+  // since by a continuation in another tab is refused 409 — the banner heads it and the wizard
+  // stays on the review step (no completion step).
+  it("sends the reviewed statement with complete and keeps the review step on a stale-statement 409 (652C)", async () => {
+    await driveToReviewWithAllLinesAutoMatched();
+    const detail =
+      "Since you opened it, this reconciliation was continued with another bank statement. Reload the reconciliation and review the statement it now uses before you continue.";
+    mockCalculateReconciliation.mockResolvedValueOnce({
+      success: true,
+      data: makeRecon({ status: "DRAFT", isBalanced: true, completedAt: null }),
+    });
+    mockCalculateReconciliation.mockResolvedValue({
+      success: false,
+      error: detail,
+      errorTitle: "This reconciliation now uses a different statement",
+    });
+    mockCompleteReconciliation.mockResolvedValue({
+      success: false,
+      error: detail,
+      errorTitle: "This reconciliation now uses a different statement",
+    });
+
+    fireEvent.click(screen.getByTestId("step-next-btn"));
+    expect(await screen.findByTestId("reconciliation-split-pane")).toBeInTheDocument();
+    expect(mockCalculateReconciliation).toHaveBeenCalledWith("recon-1", "stmt-1");
+    fireEvent.click(screen.getByTestId("complete-reconciliation-btn"));
+
+    const banner = await screen.findByTestId("reconciliation-error");
+    expect(mockCompleteReconciliation).toHaveBeenCalledWith("recon-1", "stmt-1");
+    expect(within(banner).getByTestId("reconciliation-error-title")).toHaveTextContent(
+      /^This reconciliation now uses a different statement$/
+    );
+    expect(within(banner).getByText(detail)).toBeInTheDocument();
+    expect(screen.queryByTestId("step-complete")).not.toBeInTheDocument();
+    expect(screen.getByTestId("reconciliation-split-pane")).toBeInTheDocument();
+  });
+
   // A banner error without a title (every other wizard error) stays a plain message.
   it("shows a refusal without a title as a plain message", async () => {
     await driveToReviewWithAllLinesAutoMatched();
@@ -1374,7 +1411,7 @@ describe("Trust Reconciliation", () => {
     fireEvent.click(screen.getByTestId("complete-reconciliation-btn"));
 
     expect(await screen.findByTestId("step-complete")).toBeInTheDocument();
-    expect(mockCompleteReconciliation).toHaveBeenCalledWith("recon-1");
+    expect(mockCompleteReconciliation).toHaveBeenCalledWith("recon-1", "stmt-1");
     expect(mockCalculateReconciliation).toHaveBeenCalledTimes(1);
     expect(screen.queryByTestId("reconciliation-error")).not.toBeInTheDocument();
   });
@@ -1566,7 +1603,9 @@ describe("Trust Reconciliation", () => {
     );
 
     fireEvent.click(screen.getByTestId("step-next-btn"));
-    await waitFor(() => expect(mockCalculateReconciliation).toHaveBeenCalledWith("recon-1"));
+    await waitFor(() =>
+      expect(mockCalculateReconciliation).toHaveBeenCalledWith("recon-1", "stmt-1")
+    );
     expect(screen.getByTestId("auto-match-back-btn")).toBeDisabled();
     expect(screen.getByTestId("step-next-btn")).toBeDisabled();
     fireEvent.click(screen.getByTestId("step-next-btn"));
@@ -2711,7 +2750,7 @@ describe("Trust Reconciliation", () => {
       expect(await screen.findByTestId("reconciliation-error")).toHaveTextContent(
         "The line was unmatched. The unmatched transactions could not be refreshed and may be out of date."
       );
-      expect(mockCalculateReconciliation).toHaveBeenCalledWith("recon-1");
+      expect(mockCalculateReconciliation).toHaveBeenCalledWith("recon-1", "stmt-1");
       expect(screen.queryByTestId("reconciliation-figures-stale")).not.toBeInTheDocument();
       expect(
         within(screen.getByTestId("bank-line-line-2")).getByText("Unmatched")

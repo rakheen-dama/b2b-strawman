@@ -51,10 +51,14 @@ public interface TrustReconciliationRepository extends JpaRepository<TrustReconc
       @Param("trustAccountId") UUID trustAccountId, @Param("periodEnd") LocalDate periodEnd);
 
   /**
-   * The reconciliation's status read from the database — a scalar query, so it bypasses the
-   * persistence context's (possibly stale) copy of the entity. {@code completeReconciliation}
-   * re-checks it under the statement row lock (649C review fix cycle 2).
+   * The reconciliation row, locked (PESSIMISTIC_WRITE). Every writer of a reconciliation — create's
+   * continuation (by account and period end, above), calculate and complete — takes this row lock
+   * as its FIRST lock and its first read of the row (a later locking read does not refresh an
+   * already-loaded entity), so a re-point and a calculate or complete of the same draft are
+   * serialised and none saves over the other's statement (652C CodeRabbit round 1). Lock order:
+   * reconciliation → bank statement → trust account (D-13).
    */
-  @Query("SELECT r.status FROM TrustReconciliation r WHERE r.id = :id")
-  Optional<ReconciliationStatus> findStatusById(@Param("id") UUID id);
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @Query("SELECT r FROM TrustReconciliation r WHERE r.id = :id")
+  Optional<TrustReconciliation> findByIdForUpdate(@Param("id") UUID id);
 }

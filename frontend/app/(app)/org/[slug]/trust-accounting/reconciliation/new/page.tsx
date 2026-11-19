@@ -284,12 +284,15 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
       // A new reconciliation starts with every balance at zero; calculate it so the
       // review step opens on real balances (and Complete is enabled if auto-match
       // already resolved every line). On failure stay here; a retry recalculates.
-      const calcResult = await calculateReconciliation(recon.id);
+      // Every calculate and complete names the statement this wizard reviewed (652C): a draft
+      // re-pointed since by a continuation in another tab is refused (409), never calculated.
+      const calcResult = await calculateReconciliation(recon.id, statement.id);
       if (calcResult.success && calcResult.data) {
         setReconciliation(calcResult.data);
         setFiguresStale(false);
       } else {
-        setError(calcResult.error ?? "Failed to calculate reconciliation");
+        const message = calcResult.error ?? "Failed to calculate reconciliation";
+        setError(calcResult.errorTitle ? { title: calcResult.errorTitle, message } : message);
         return;
       }
 
@@ -324,8 +327,8 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
           );
           setUnmatchedTransactions((prev) => prev.filter((tx) => tx.id !== transactionId));
           // Recalculate reconciliation
-          if (reconciliation) {
-            const calcResult = await calculateReconciliation(reconciliation.id).catch(
+          if (reconciliation && statement) {
+            const calcResult = await calculateReconciliation(reconciliation.id, statement.id).catch(
               calculateRejected
             );
             if (generation !== wizardGeneration.current) return;
@@ -344,7 +347,7 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
         setError(err instanceof Error ? err.message : "Failed to match line");
       }
     },
-    [reconciliation]
+    [reconciliation, statement]
   );
 
   // Handle exclude
@@ -360,8 +363,8 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
             prev.map((l) => (l.id === lineId ? { ...l, matchStatus: "EXCLUDED" as const } : l))
           );
           // Recalculate reconciliation
-          if (reconciliation) {
-            const calcResult = await calculateReconciliation(reconciliation.id).catch(
+          if (reconciliation && statement) {
+            const calcResult = await calculateReconciliation(reconciliation.id, statement.id).catch(
               calculateRejected
             );
             if (generation !== wizardGeneration.current) return;
@@ -380,7 +383,7 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
         setError(err instanceof Error ? err.message : "Failed to exclude line");
       }
     },
-    [reconciliation]
+    [reconciliation, statement]
   );
 
   // Handle unmatch
@@ -412,8 +415,8 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
             selectedAccountId
               ? fetchUnmatchedTransactions(selectedAccountId).catch(() => null)
               : undefined,
-            reconciliation
-              ? calculateReconciliation(reconciliation.id).catch(calculateRejected)
+            reconciliation && statement
+              ? calculateReconciliation(reconciliation.id, statement.id).catch(calculateRejected)
               : null,
           ]);
           if (generation !== wizardGeneration.current) return;
@@ -439,7 +442,7 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
         setError(err instanceof Error ? err.message : "Failed to unmatch line");
       }
     },
-    [selectedAccountId, reconciliation]
+    [selectedAccountId, reconciliation, statement]
   );
 
   // Handle record from statement (647A). A refusal is returned to the dialog (shown there, the
@@ -457,8 +460,8 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
       }
       const updated = result.data.line;
       setLines((prev) => prev.map((l) => (l.id === lineId ? updated : l)));
-      if (reconciliation) {
-        const calcResult = await calculateReconciliation(reconciliation.id).catch(
+      if (reconciliation && statement) {
+        const calcResult = await calculateReconciliation(reconciliation.id, statement.id).catch(
           calculateRejected
         );
         if (generation !== wizardGeneration.current) {
@@ -475,7 +478,7 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
       }
       return { success: true };
     },
-    [reconciliation]
+    [reconciliation, statement]
   );
 
   // Handle complete. The backend gate (G1–G4, 649C) recalculates and refuses once with every
@@ -491,7 +494,9 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
     setIsCompleting(true);
     setError(null);
     try {
-      const result = await completeReconciliation(reconciliation.id);
+      // A 409 (the draft now uses another statement — 652C) is a refusal like the gate's: the banner
+      // shows its title and detail, and the wizard stays on this step.
+      const result = await completeReconciliation(reconciliation.id, statement.id);
       if (generation !== wizardGeneration.current) return;
       if (result.success) {
         setCurrentStep(5);
@@ -499,7 +504,7 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
         return;
       }
       const [calcResult, refreshedStatement, refreshedTransactions] = await Promise.all([
-        calculateReconciliation(reconciliation.id),
+        calculateReconciliation(reconciliation.id, statement.id),
         fetchBankStatement(statement.id).catch(() => null),
         fetchUnmatchedTransactions(selectedAccountId).catch(() => null),
       ]);

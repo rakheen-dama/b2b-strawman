@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.LockSupport;
+import java.util.function.BiFunction;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -36,6 +37,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.support.TransactionTemplate;
 
 /**
@@ -184,7 +186,7 @@ class TrustReconciliationDraftIntegrationTest {
             account, "draft-done.csv", "01/03/2026,Deposit received,1000.00,1000.00,TRD-DONE");
     match(march, 0, deposit);
     var draft = createAndCalculate(account, MARCH_END, march.id());
-    var completed = complete(draft.id());
+    var completed = complete(draft.id(), march.id());
     assertThat(completed.status()).isEqualTo("COMPLETED");
     assertThat(completed.monthlyListId()).isNotNull();
 
@@ -346,7 +348,7 @@ class TrustReconciliationDraftIntegrationTest {
     boolean secondBlockedOnFirst;
     try {
       secondBlockedOnFirst =
-          awaitBlockedOnInsertHeldByOrFinished(firstBackendPid.get(), secondFinished);
+          awaitBlockedOnReconciliationsHeldByOrFinished(firstBackendPid.get(), secondFinished);
     } finally {
       releaseFirst.countDown();
       join(firstThread);
@@ -378,6 +380,320 @@ class TrustReconciliationDraftIntegrationTest {
     assertThat(create(account, MARCH_END, march.id()).id()).isEqualTo(firstResult.get().id());
   }
 
+  // --- a stale statement after a continuation (CodeRabbit round 1) ------------------------------
+
+  private static final String STALE_TITLE = "This reconciliation now uses a different statement";
+  private static final String STALE_DETAIL =
+      "Since you opened it, this reconciliation was continued with another bank statement."
+          + " Reload the reconciliation and review the statement it now uses before you continue.";
+
+  /**
+   * Finding 2: a wizard in another tab still holds statement A after a continuation re-pointed the
+   * draft to B (balanced, completable). Its complete names A — refused 409 (service and HTTP), and
+   * nothing changes: still DRAFT on B, neither statement RECONCILED, no monthly list, no completed
+   * audit. A body without the statement is a 400. Completing with B — the statement the draft uses
+   * — succeeds as before.
+   */
+  @Test
+  void completeNamingAStatementTheDraftNoLongerUses_is409_andChangesNothing() throws Exception {
+    var account = books.freshAccount(false);
+    var client = books.newClient("stale complete");
+    var deposit = books.deposit(account, client, "1000.00");
+    var a =
+        importStatement(
+            account, "draft-stale-a.csv", "01/03/2026,Deposit received,1000.00,1000.00,TRD-SA");
+    var draft = createAndCalculate(account, MARCH_END, a.id());
+    var b =
+        importStatement(
+            account, "draft-stale-b.csv", "01/03/2026,Deposit received,1000.00,1000.00,TRD-SA");
+    match(b, 0, deposit);
+    var repointed = create(account, MARCH_END, b.id()); // the other tab's continuation
+    assertThat(repointed.id()).isEqualTo(draft.id());
+    assertThat(repointed.isBalanced()).as("B is completable").isTrue();
+    var before = getReconciliation(draft.id());
+
+    books.as(
+        memberId,
+        () ->
+            assertThatThrownBy(
+                    () -> reconciliationService.completeReconciliation(draft.id(), a.id()))
+                .isInstanceOfSatisfying(
+                    ResourceConflictException.class,
+                    TrustReconciliationDraftIntegrationTest::assertStaleStatement));
+    postWithExpectedStatement("complete", draft.id(), a.id())
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.title").value(STALE_TITLE))
+        .andExpect(jsonPath("$.detail").value(STALE_DETAIL));
+    mockMvc
+        .perform(
+            post("/api/trust-reconciliations/{id}/complete", draft.id())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_trd_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{}"))
+        .andExpect(status().isBadRequest());
+
+    var after = getReconciliation(draft.id());
+    assertThat(after.status()).isEqualTo("DRAFT");
+    assertThat(after.bankStatementId()).as("still B").isEqualTo(b.id());
+    assertThat(after.updatedAt()).as("not saved").isEqualTo(before.updatedAt());
+    assertThat(statementStatus(a.id())).isNotEqualTo("RECONCILED");
+    assertThat(statementStatus(b.id())).isNotEqualTo("RECONCILED");
+    assertThat(monthlyLists(account)).as("no list locked").isZero();
+    assertThat(auditCount(draft.id(), "trust_reconciliation.completed")).isZero();
+
+    var completed = complete(draft.id(), b.id());
+    assertThat(completed.status()).isEqualTo("COMPLETED");
+    assertThat(completed.bankStatementId()).isEqualTo(b.id());
+    assertThat(completed.monthlyListId()).isNotNull();
+    assertThat(statementStatus(b.id())).isEqualTo("RECONCILED");
+    assertThat(statementStatus(a.id())).isNotEqualTo("RECONCILED");
+  }
+
+  /**
+   * Finding 2: a stale calculate naming A after the draft was re-pointed to B is refused 409
+   * (service and HTTP); the stored figures are B's, unsaved, and no calculation is audited.
+   * Calculating with B succeeds as before.
+   */
+  @Test
+  void calculateNamingAStatementTheDraftNoLongerUses_is409_andTheDraftIsUnchanged()
+      throws Exception {
+    var account = books.freshAccount(false);
+    var client = books.newClient("stale calculate");
+    books.deposit(account, client, "1000.00");
+    var a =
+        importStatement(
+            account, "draft-stalec-a.csv", "01/03/2026,Deposit received,1000.00,1000.00,TRD-SC");
+    var draft = createAndCalculate(account, MARCH_END, a.id());
+    var b =
+        importStatement(
+            account,
+            "draft-stalec-b.csv",
+            "01/03/2026,Deposit received,1000.00,1000.00,TRD-SC",
+            "02/03/2026,Bank charge,-10.00,990.00,TRD-SCB");
+    create(account, MARCH_END, b.id());
+    var before = getReconciliation(draft.id());
+    long calculatedBefore = auditCount(draft.id(), "trust_reconciliation.calculated");
+
+    books.as(
+        memberId,
+        () ->
+            assertThatThrownBy(
+                    () -> reconciliationService.calculateReconciliation(draft.id(), a.id()))
+                .isInstanceOfSatisfying(
+                    ResourceConflictException.class,
+                    TrustReconciliationDraftIntegrationTest::assertStaleStatement));
+    postWithExpectedStatement("calculate", draft.id(), a.id())
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.title").value(STALE_TITLE));
+
+    var after = getReconciliation(draft.id());
+    assertThat(after.bankStatementId()).isEqualTo(b.id());
+    assertThat(after.bankBalance()).as("B's figures").isEqualByComparingTo("990.00");
+    assertThat(after.updatedAt()).as("not saved").isEqualTo(before.updatedAt());
+    assertThat(auditCount(draft.id(), "trust_reconciliation.calculated"))
+        .isEqualTo(calculatedBefore);
+
+    var calculated = new TrustReconciliationResponse[1];
+    books.as(
+        memberId,
+        () -> calculated[0] = reconciliationService.calculateReconciliation(draft.id(), b.id()));
+    assertThat(calculated[0].bankBalance()).isEqualByComparingTo("990.00");
+    assertThat(auditCount(draft.id(), "trust_reconciliation.calculated"))
+        .isEqualTo(calculatedBefore + 1);
+  }
+
+  /**
+   * Finding 1: a continuation re-pointing the draft from A to B holds its transaction open (the
+   * reconciliation row locked, B not committed) when a complete naming A arrives — A is balanced,
+   * so before the fix the complete read A unlocked, completed it and then saved A back over B. Now
+   * the complete's first read is the row lock: it blocks (observed in pg_stat_activity, not a
+   * sleep), reads B once the continuation commits, and is refused 409. The draft keeps B, nothing
+   * is completed, no statement is RECONCILED, no list is locked.
+   */
+  @Test
+  void completeDuringAContinuation_waitsOnTheRowLock_thenRefusesTheStaleStatement()
+      throws Exception {
+    var race =
+        staleCallDuringContinuation(
+            "race-complete",
+            (draftId, statementId) ->
+                reconciliationService.completeReconciliation(draftId, statementId));
+
+    assertThat(race.blocked())
+        .as("the complete blocked on the continuation's reconciliation row lock")
+        .isTrue();
+    assertThat(race.finishedWhileHeld()).as("finished only after the release").isFalse();
+    assertThat(race.error())
+        .as("the stale complete")
+        .isInstanceOfSatisfying(
+            ResourceConflictException.class,
+            TrustReconciliationDraftIntegrationTest::assertStaleStatement);
+    var after = getReconciliation(race.draftId());
+    assertThat(after.status()).isEqualTo("DRAFT");
+    assertThat(after.bankStatementId()).as("the continuation's statement").isEqualTo(race.b());
+    assertThat(statementStatus(race.a())).isNotEqualTo("RECONCILED");
+    assertThat(statementStatus(race.b())).isNotEqualTo("RECONCILED");
+    assertThat(monthlyLists(race.account())).isZero();
+    assertThat(auditCount(race.draftId(), "trust_reconciliation.completed")).isZero();
+  }
+
+  /** Finding 1, calculate: the same race — the calculate waits, reads B, and is refused 409. */
+  @Test
+  void calculateDuringAContinuation_waitsOnTheRowLock_thenRefusesTheStaleStatement()
+      throws Exception {
+    var race =
+        staleCallDuringContinuation(
+            "race-calculate",
+            (draftId, statementId) ->
+                reconciliationService.calculateReconciliation(draftId, statementId));
+
+    assertThat(race.blocked())
+        .as("the calculate blocked on the continuation's reconciliation row lock")
+        .isTrue();
+    assertThat(race.finishedWhileHeld()).as("finished only after the release").isFalse();
+    assertThat(race.error())
+        .as("the stale calculate")
+        .isInstanceOfSatisfying(
+            ResourceConflictException.class,
+            TrustReconciliationDraftIntegrationTest::assertStaleStatement);
+    var after = getReconciliation(race.draftId());
+    assertThat(after.bankStatementId()).as("the continuation's statement").isEqualTo(race.b());
+    assertThat(after.bankBalance()).as("B's figures, not A's").isEqualByComparingTo("990.00");
+  }
+
+  /** The outcome of {@link #staleCallDuringContinuation}. */
+  private record ContinuationRace(
+      UUID account,
+      UUID draftId,
+      UUID a,
+      UUID b,
+      boolean blocked,
+      boolean finishedWhileHeld,
+      Throwable error) {}
+
+  /**
+   * A draft on statement A (matched, balanced); a continuation re-points it to B (two lines, bank
+   * R990 — its last line on A's last line date, so A still fits the period end and only the lock
+   * stands between the stale call and A) inside a transaction held open; meanwhile {@code
+   * staleCall(draft, A)} runs on another thread. Returns whether the stale call blocked on the
+   * continuation, whether it finished before the release, and what it threw.
+   */
+  private ContinuationRace staleCallDuringContinuation(
+      String label, BiFunction<UUID, UUID, TrustReconciliationResponse> staleCall)
+      throws Exception {
+    var account = books.freshAccount(false);
+    var client = books.newClient(label);
+    var deposit = books.deposit(account, client, "1000.00");
+    var a =
+        importStatement(
+            account, label + "-a.csv", "01/03/2026,Deposit received,1000.00,1000.00,TRD-RA");
+    match(a, 0, deposit);
+    var draft = createAndCalculate(account, MARCH_END, a.id());
+    assertThat(draft.isBalanced()).as("A is completable").isTrue();
+    var b =
+        importStatement(
+            account,
+            label + "-b.csv",
+            "01/03/2026,Deposit received,1000.00,1000.00,TRD-RA",
+            "01/03/2026,Bank charge,-10.00,990.00,TRD-RB");
+
+    var continuationDone = new CountDownLatch(1);
+    var releaseContinuation = new CountDownLatch(1);
+    var continuationError = new AtomicReference<Throwable>();
+    var continuationPid = new AtomicReference<Integer>();
+    var staleError = new AtomicReference<Throwable>();
+    var staleFinished = new AtomicBoolean(false);
+
+    Thread continuation =
+        Thread.ofPlatform()
+            .start(
+                () -> {
+                  try {
+                    books.as(
+                        memberId,
+                        () ->
+                            transactionTemplate.executeWithoutResult(
+                                tx -> {
+                                  reconciliationService.createReconciliation(
+                                      account, MARCH_END, b.id());
+                                  continuationPid.set(
+                                      ((Number)
+                                              entityManager
+                                                  .createNativeQuery("SELECT pg_backend_pid()")
+                                                  .getSingleResult())
+                                          .intValue());
+                                  continuationDone.countDown();
+                                  await(releaseContinuation);
+                                }));
+                  } catch (Throwable t) {
+                    continuationError.set(t);
+                    continuationDone.countDown();
+                  }
+                });
+    assertThat(continuationDone.await(30, TimeUnit.SECONDS)).isTrue();
+    assertThat(continuationError.get()).as("the continuation").isNull();
+
+    Thread stale =
+        Thread.ofPlatform()
+            .start(
+                () -> {
+                  try {
+                    books.as(memberId, () -> staleCall.apply(draft.id(), a.id()));
+                  } catch (Throwable t) {
+                    staleError.set(t);
+                  } finally {
+                    staleFinished.set(true);
+                  }
+                });
+    boolean blocked;
+    boolean finishedWhileHeld;
+    try {
+      blocked = awaitBlockedOnReconciliationsHeldByOrFinished(continuationPid.get(), staleFinished);
+      finishedWhileHeld = staleFinished.get();
+    } finally {
+      releaseContinuation.countDown();
+      join(continuation);
+      join(stale);
+    }
+    assertThat(continuationError.get()).as("the continuation (committed)").isNull();
+    return new ContinuationRace(
+        account, draft.id(), a.id(), b.id(), blocked, finishedWhileHeld, staleError.get());
+  }
+
+  private static void assertStaleStatement(ResourceConflictException e) {
+    assertThat(e.getBody().getStatus()).isEqualTo(409);
+    assertThat(e.getBody().getTitle()).isEqualTo(STALE_TITLE);
+    assertThat(e.getBody().getDetail()).isEqualTo(STALE_DETAIL);
+  }
+
+  private ResultActions postWithExpectedStatement(
+      String action, UUID reconciliationId, UUID expectedStatementId) throws Exception {
+    return mockMvc.perform(
+        post("/api/trust-reconciliations/{id}/" + action, reconciliationId)
+            .with(TestJwtFactory.ownerJwt(ORG_ID, "user_trd_owner"))
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(
+                """
+                {"expectedBankStatementId": "%s"}
+                """
+                    .formatted(expectedStatementId)));
+  }
+
+  private String statementStatus(UUID statementId) {
+    return jdbc.queryForObject(
+        "SELECT status FROM \"%s\".bank_statements WHERE id = ?".formatted(books.schema()),
+        String.class,
+        statementId);
+  }
+
+  private long monthlyLists(UUID account) {
+    return jdbc.queryForObject(
+        "SELECT count(*) FROM \"%s\".trust_monthly_lists WHERE trust_account_id = ?"
+            .formatted(books.schema()),
+        Long.class,
+        account);
+  }
+
   // --- helpers -----------------------------------------------------------------------------------
 
   /** The wizard's create alone (no calculate). */
@@ -390,10 +706,14 @@ class TrustReconciliationDraftIntegrationTest {
     return recon[0];
   }
 
-  private TrustReconciliationResponse complete(UUID reconciliationId) {
+  private TrustReconciliationResponse complete(UUID reconciliationId, UUID expectedStatementId) {
     var recon = new TrustReconciliationResponse[1];
     books.as(
-        memberId, () -> recon[0] = reconciliationService.completeReconciliation(reconciliationId));
+        memberId,
+        () ->
+            recon[0] =
+                reconciliationService.completeReconciliation(
+                    reconciliationId, expectedStatementId));
     return recon[0];
   }
 
@@ -438,10 +758,11 @@ class TrustReconciliationDraftIntegrationTest {
 
   /**
    * Waits (bounded, 30 s) until a backend blocked by {@code holderPid} is running a
-   * trust_reconciliations statement (true — the insert waits on the unique index) or the waiter
-   * finishes without having been seen blocked (false). Fails if neither happens.
+   * trust_reconciliations statement (true — an insert waits on the unique index, or a locking read
+   * on the row lock) or the waiter finishes without having been seen blocked (false). Fails if
+   * neither happens.
    */
-  private boolean awaitBlockedOnInsertHeldByOrFinished(
+  private boolean awaitBlockedOnReconciliationsHeldByOrFinished(
       int holderPid, AtomicBoolean waiterFinished) {
     long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(30);
     while (System.nanoTime() < deadline) {
@@ -458,7 +779,7 @@ class TrustReconciliationDraftIntegrationTest {
       }
       LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(10)); // poll interval
     }
-    throw new AssertionError("the second create neither blocked nor finished within 30 s");
+    throw new AssertionError("the waiter neither blocked nor finished within 30 s");
   }
 
   private static void join(Thread thread) throws InterruptedException {
@@ -508,7 +829,9 @@ class TrustReconciliationDraftIntegrationTest {
         memberId,
         () -> {
           var created = reconciliationService.createReconciliation(account, periodEnd, statementId);
-          recon[0] = reconciliationService.calculateReconciliation(created.id());
+          recon[0] =
+              reconciliationService.calculateReconciliation(
+                  created.id(), created.bankStatementId());
         });
     return recon[0];
   }

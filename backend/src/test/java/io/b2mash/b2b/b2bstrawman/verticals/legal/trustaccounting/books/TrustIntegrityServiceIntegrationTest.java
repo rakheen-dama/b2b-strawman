@@ -789,8 +789,11 @@ class TrustIntegrityServiceIntegrationTest {
         () -> {
           reconciliationService.manualMatch(march.lines().getFirst().id(), depositId);
           var created = reconciliationService.createReconciliation(account, MARCH_END, march.id());
-          reconciliationService.calculateReconciliation(created.id());
-          listId[0] = reconciliationService.completeReconciliation(created.id()).monthlyListId();
+          reconciliationService.calculateReconciliation(created.id(), created.bankStatementId());
+          listId[0] =
+              reconciliationService
+                  .completeReconciliation(created.id(), created.bankStatementId())
+                  .monthlyListId();
         });
     assertThat(listId[0]).isNotNull();
     assertThat(codes(check(books, memberId, account, null, null)))

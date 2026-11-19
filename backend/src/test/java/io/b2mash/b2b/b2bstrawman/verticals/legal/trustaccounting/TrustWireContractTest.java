@@ -55,7 +55,7 @@ import tools.jackson.databind.json.JsonMapper;
  * position's integrity summary, and the reconciliation's integrity flags; 650A the monthly
  * trust-creditor list (summary, one list with its creditor lines and the entries made after the
  * lock) and the reconciliation's {@code monthlyListId}; 650B the at-source memo record and its save
- * request.
+ * request; 652C the body of calculate and complete (the statement the wizard reviewed).
  *
  * <p>The actual is always written to {@code target/wire/trust-contract.actual.json}. Regenerate
  * ONLY deliberately with {@code -Dtrust.contract.update=true}; the PR that does so must say why in
@@ -112,7 +112,9 @@ class TrustWireContractTest {
           CreditorLine.MatterBalance.class,
           // 650B: the at-source memo record (GET/PUT …/interest-memos) and its save request
           TrustInterestMemoService.InterestMemoResponse.class,
-          TrustInterestMemoService.SaveInterestMemoRequest.class);
+          TrustInterestMemoService.SaveInterestMemoRequest.class,
+          // 652C: the body of calculate and complete — the statement the wizard reviewed
+          TrustReconciliationService.ExpectedStatementRequest.class);
 
   private static final String UPDATE_FLAG = "trust.contract.update";
   private static final Path SNAPSHOT = Path.of("src/test/resources/wire/trust-contract.json");

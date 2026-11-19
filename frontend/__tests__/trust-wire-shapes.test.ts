@@ -17,6 +17,7 @@ import type {
   CreditorLine,
   CreditorLineKind,
   CreditorMatterBalance,
+  ExpectedStatementRequest,
   FirmIntegrityReport,
   FlagSubject,
   IntegrityFlag,
@@ -142,6 +143,7 @@ describe("trust wire shapes match the backend contract (ADR-365)", () => {
       "CreateTrustAccountRequest",
       "CreditorBreakdown",
       "CreditorLine",
+      "ExpectedStatementRequest",
       "FirmIntegrityReport",
       "FlagCount",
       "FlagSubject",
@@ -822,6 +824,13 @@ describe("trust wire shapes match the backend contract (ADR-365)", () => {
       sourceNote: "",
     };
     expect(Object.keys(literal)).toEqual(componentNames(records.SaveInterestMemoRequest));
+  });
+
+  it("ExpectedStatementRequest ↔ TrustReconciliationService.ExpectedStatementRequest (652C)", () => {
+    const literal: Required<ExpectedStatementRequest> = {
+      expectedBankStatementId: "",
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(records.ExpectedStatementRequest));
   });
 
   it("pins exactly the enums the trust records carry", () => {

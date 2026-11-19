@@ -168,7 +168,7 @@ class TrustMonthlyListIntegrationTest {
 
     var recon = reconcile(account, MARCH_END, march.id());
     assertThat(recon.isBalanced()).isTrue();
-    var completed = complete(recon.id());
+    var completed = complete(recon);
     assertThat(completed.monthlyListId()).isNotNull();
 
     var list = getList(completed.monthlyListId());
@@ -309,7 +309,7 @@ class TrustMonthlyListIntegrationTest {
             "30/03/2026,Deposit received,100.00,500.00,TML-30B");
     match(march, 0, first);
     match(march, 1, second);
-    var completed = complete(reconcile(account, MARCH_END, march.id()).id());
+    var completed = complete(reconcile(account, MARCH_END, march.id()));
 
     var row = books.read(() -> monthlyListRepository.findById(completed.monthlyListId()));
     assertThat(row).isPresent();
@@ -332,7 +332,7 @@ class TrustMonthlyListIntegrationTest {
   void uniqueness_aSecondReconciliationToALockedMonthEnd_isRefusedAtCreate() {
     var account = books.freshAccount(false);
     var march = matchedMarchStatement(account, "tml-unique-march.csv");
-    var first = complete(reconcile(account, MARCH_END, march.id()).id());
+    var first = complete(reconcile(account, MARCH_END, march.id()));
     assertThat(first.monthlyListId()).isNotNull();
 
     books.as(
@@ -386,7 +386,7 @@ class TrustMonthlyListIntegrationTest {
     var account = books.freshAccount(false);
     var client = books.newClient("backdated");
     var march = matchedMarchStatement(account, "tml-p23-march.csv", client);
-    var completed = complete(reconcile(account, MARCH_END, march.id()).id());
+    var completed = complete(reconcile(account, MARCH_END, march.id()));
     var listId = completed.monthlyListId();
     var before = getList(listId);
     var lockedCashbook = before.cashbookBalance();
@@ -500,7 +500,9 @@ class TrustMonthlyListIntegrationTest {
                 midMonthAccount,
                 Expected.none(),
                 () ->
-                    midCompleted[0] = reconciliationService.completeReconciliation(midRecon.id())));
+                    midCompleted[0] =
+                        reconciliationService.completeReconciliation(
+                            midRecon.id(), midRecon.bankStatementId())));
     assertThat(midCompleted[0].status()).isEqualTo("COMPLETED");
     assertThat(midCompleted[0].monthlyListId()).as("a mid-month end locks nothing").isNull();
     assertThat(
@@ -521,7 +523,9 @@ class TrustMonthlyListIntegrationTest {
                 monthEndAccount,
                 Expected.none(),
                 () ->
-                    endCompleted[0] = reconciliationService.completeReconciliation(endRecon.id())));
+                    endCompleted[0] =
+                        reconciliationService.completeReconciliation(
+                            endRecon.id(), endRecon.bankStatementId())));
     var lists =
         books.read(
             () -> monthlyListRepository.findByTrustAccountIdOrderByPeriodEndDesc(monthEndAccount));
@@ -562,15 +566,13 @@ class TrustMonthlyListIntegrationTest {
         importStatement(
             account, "tml-ep-feb.csv", "10/02/2026,Deposit received,100.00,100.00,TML-EPF");
     match(febStatement, 0, february);
-    var febList =
-        complete(reconcile(account, FEBRUARY_END, febStatement.id()).id()).monthlyListId();
+    var febList = complete(reconcile(account, FEBRUARY_END, febStatement.id())).monthlyListId();
     var march = books.deposit(account, client, "900.00");
     var marchStatement =
         importStatement(
             account, "tml-ep-march.csv", "01/03/2026,Deposit received,900.00,1000.00,TML-EPM");
     match(marchStatement, 0, march);
-    var marchList =
-        complete(reconcile(account, MARCH_END, marchStatement.id()).id()).monthlyListId();
+    var marchList = complete(reconcile(account, MARCH_END, marchStatement.id())).monthlyListId();
 
     var owner = TestJwtFactory.ownerJwt(ORG_ID, OWNER);
     mockMvc
@@ -648,7 +650,7 @@ class TrustMonthlyListIntegrationTest {
         .andExpect(jsonPath("$.lockedThrough").value(nullValue()));
 
     var midStatement = matchedMarchStatement(midMonth, "tml-lt-mid.csv");
-    complete(reconcile(midMonth, LocalDate.of(2026, 3, 15), midStatement.id()).id());
+    complete(reconcile(midMonth, LocalDate.of(2026, 3, 15), midStatement.id()));
     mockMvc
         .perform(get("/api/trust-accounts/{id}", midMonth).with(owner))
         .andExpect(status().isOk())
@@ -670,13 +672,13 @@ class TrustMonthlyListIntegrationTest {
         importStatement(
             account, "tml-lt-feb.csv", "10/02/2026,Deposit received,100.00,100.00,TML-LTF");
     match(febStatement, 0, february);
-    complete(reconcile(account, FEBRUARY_END, febStatement.id()).id());
+    complete(reconcile(account, FEBRUARY_END, febStatement.id()));
     var march = books.deposit(account, client, "900.00");
     var marchStatement =
         importStatement(
             account, "tml-lt-march.csv", "01/03/2026,Deposit received,900.00,1000.00,TML-LTM");
     match(marchStatement, 0, march);
-    complete(reconcile(account, MARCH_END, marchStatement.id()).id());
+    complete(reconcile(account, MARCH_END, marchStatement.id()));
 
     mockMvc
         .perform(get("/api/trust-accounts/{id}", account).with(owner))
@@ -719,7 +721,8 @@ class TrustMonthlyListIntegrationTest {
     var outcome =
         race(
             () -> marchDeposit(account, client, "TML-RACE-1"),
-            () -> reconciliationService.completeReconciliation(recon.id()));
+            () ->
+                reconciliationService.completeReconciliation(recon.id(), recon.bankStatementId()));
 
     assertThat(outcome.secondBlockedOnFirst())
         .as("the completion waited for the posting's account lock")
@@ -758,7 +761,10 @@ class TrustMonthlyListIntegrationTest {
 
     var outcome =
         race(
-            () -> completed.set(reconciliationService.completeReconciliation(recon.id())),
+            () ->
+                completed.set(
+                    reconciliationService.completeReconciliation(
+                        recon.id(), recon.bankStatementId())),
             () -> deposit.set(marchDeposit(account, client, "TML-RACE-2")));
 
     assertThat(outcome.second()).as("the deposit").isNull();
@@ -964,16 +970,20 @@ class TrustMonthlyListIntegrationTest {
         memberId,
         () -> {
           var created = reconciliationService.createReconciliation(account, periodEnd, statementId);
-          recon[0] = reconciliationService.calculateReconciliation(created.id());
+          recon[0] =
+              reconciliationService.calculateReconciliation(
+                  created.id(), created.bankStatementId());
         });
     return recon[0];
   }
 
-  private TrustReconciliationResponse complete(UUID reconciliationId) {
+  private TrustReconciliationResponse complete(TrustReconciliationResponse draft) {
     var completed = new TrustReconciliationResponse[1];
     books.as(
         memberId,
-        () -> completed[0] = reconciliationService.completeReconciliation(reconciliationId));
+        () ->
+            completed[0] =
+                reconciliationService.completeReconciliation(draft.id(), draft.bankStatementId()));
     return completed[0];
   }
 

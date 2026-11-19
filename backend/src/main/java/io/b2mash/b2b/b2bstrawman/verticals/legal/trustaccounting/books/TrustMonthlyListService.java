@@ -222,14 +222,16 @@ public class TrustMonthlyListService {
    * Freezes the account's Rule 54.15 list for the completed reconciliation's period end — the date
    * the firm chose, never the statement's last line date. Joins the completion transaction: a
    * refusal here rolls the completion back. Refuses a month already locked for the account (a
-   * second reconciliation to the same month end), and a list whose cashbook or any creditor term
-   * differs from the reconciled one (an entry posted while the completion ran).
+   * second reconciliation to the same month end — defence in depth since 652C: such a second
+   * reconciliation is refused at create with 409 "This period is already reconciled", D-8), and a
+   * list whose cashbook or any creditor term differs from the reconciled one (an entry posted while
+   * the completion ran).
    *
    * <p>First it takes the account row lock ({@code FOR UPDATE}, 650A F-1) that every posting's
    * {@code FOR SHARE} conflicts with: the books are read only after every posting in flight has
    * committed, and a posting that starts now waits for the completion to commit, so its {@code
    * posted_at} is after {@code locked_at} — every row is either in the list or shown against it.
-   * Lock order: the statement (completion), then the account.
+   * Lock order: the reconciliation and the statement (completion), then the account (652C D-13).
    */
   @Transactional
   public TrustMonthlyList lock(TrustReconciliation completed) {

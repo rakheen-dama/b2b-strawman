@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { api, API_BASE, ApiError, getAuthFetchOptions } from "@/lib/api";
 import type {
   BankStatementResponse,
+  ExpectedStatementRequest,
   TrustReconciliationResponse,
   MatchResultResponse,
   RecordFromLineRequest,
@@ -273,20 +274,32 @@ export async function createReconciliation(
   }
 }
 
-export async function calculateReconciliation(reconciliationId: string): Promise<{
+// 652C: calculate and complete send the statement the wizard reviewed. A draft re-pointed to
+// another statement since (a continuation in another tab) is refused 409 "This reconciliation now
+// uses a different statement" — nothing is calculated or completed.
+export async function calculateReconciliation(
+  reconciliationId: string,
+  expectedBankStatementId: string
+): Promise<{
   success: boolean;
   data?: TrustReconciliationResponse;
   error?: string;
+  errorTitle?: string;
 }> {
   try {
+    const body: ExpectedStatementRequest = { expectedBankStatementId };
     const result = await api.post<TrustReconciliationResponse>(
-      `/api/trust-reconciliations/${reconciliationId}/calculate`
+      `/api/trust-reconciliations/${reconciliationId}/calculate`,
+      body
     );
     return { success: true, data: result };
   } catch (error) {
+    const title = error instanceof ApiError ? error.detail?.title : undefined;
+    const message = error instanceof Error ? error.message : "Failed to calculate reconciliation";
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to calculate reconciliation",
+      error: message,
+      ...(title && title !== message ? { errorTitle: title } : {}),
     };
   }
 }
@@ -294,15 +307,20 @@ export async function calculateReconciliation(reconciliationId: string): Promise
 // A refusal carries its ProblemDetail title as well as its detail (O-OBS-2): the gate (649C) puts
 // the refused condition in the title ("Reconciliation does not balance") and its sentences in the
 // detail. `errorTitle` is set only when it adds to `error` (the client falls back to the title).
-export async function completeReconciliation(reconciliationId: string): Promise<{
+export async function completeReconciliation(
+  reconciliationId: string,
+  expectedBankStatementId: string
+): Promise<{
   success: boolean;
   data?: TrustReconciliationResponse;
   error?: string;
   errorTitle?: string;
 }> {
   try {
+    const body: ExpectedStatementRequest = { expectedBankStatementId };
     const result = await api.post<TrustReconciliationResponse>(
-      `/api/trust-reconciliations/${reconciliationId}/complete`
+      `/api/trust-reconciliations/${reconciliationId}/complete`,
+      body
     );
     revalidatePath("/", "layout");
     return { success: true, data: result };

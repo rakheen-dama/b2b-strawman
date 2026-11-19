@@ -338,6 +338,10 @@
       "name" : "lastTransactionDate",
       "type" : "java.lang.String"
     } ],
+    "ExpectedStatementRequest" : [ {
+      "name" : "expectedBankStatementId",
+      "type" : "java.util.UUID"
+    } ],
     "FirmIntegrityReport" : [ {
       "name" : "asAt",
       "type" : "java.time.LocalDate"

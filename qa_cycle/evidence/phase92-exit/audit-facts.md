@@ -43,7 +43,7 @@ All 15 landed on their **guide number** from the task file's Migrations paragrap
 | tenant V29 (conditional) | V26 `phase92_trust_recon_unique` (652C) | `$MIG/tenant/V29__phase92_trust_recon_unique.sql` | 652C #1817 `ca2ece798` |
 
 - **Next free: tenant V30, global V8.** The highest files present are `tenant/V29__…` and `global/V7__…`. There is no global V8.
-- `backend/db/BASELINE.md:70` still says "tenant **V16**, global **V7**", so it is stale. 652.35 updates it.
+- `backend/db/BASELINE.md:70` still says "tenant **V16**, global **V7**", so it is stale. 652F leaves it unchanged: the next PR that touches `backend/` corrects it under its own backend verify (652F D-4). The correct numbers are recorded in `TASKS.md` and the closure report C.4.
 - Neither `V1__baseline.sql` changed in the phase: `git diff 512b1a6c5^ HEAD -- '*/V1__baseline.sql'` is empty, and no PR's file list includes it.
 
 ## 3. Pack bumps

@@ -189,6 +189,9 @@ class TrustReconciliationDraftIntegrationTest {
     var completed = complete(draft.id(), march.id());
     assertThat(completed.status()).isEqualTo("COMPLETED");
     assertThat(completed.monthlyListId()).isNotNull();
+    // Snapshot the stored row: the service response carries the clock's full precision (ns on
+    // Linux), the database keeps microseconds — compare stored with stored.
+    var before = getReconciliation(draft.id());
 
     books.as(
         memberId,
@@ -225,7 +228,7 @@ class TrustReconciliationDraftIntegrationTest {
     assertThat(reconciliationRows(account, MARCH_END)).isEqualTo(1L);
     var after = getReconciliation(draft.id());
     assertThat(after.status()).isEqualTo("COMPLETED");
-    assertThat(after.completedAt()).isEqualTo(completed.completedAt());
+    assertThat(after.completedAt()).isNotNull().isEqualTo(before.completedAt());
     assertThat(after.monthlyListId()).isEqualTo(completed.monthlyListId());
     assertThat(
             jdbc.queryForObject(

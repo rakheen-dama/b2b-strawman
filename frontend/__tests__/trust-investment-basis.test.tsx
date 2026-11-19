@@ -22,17 +22,6 @@ vi.mock("@/app/(app)/org/[slug]/trust-accounting/investments/actions", () => ({
   fetchMaturing: (...args: unknown[]) => mockFetchMaturing(...args),
 }));
 
-// -- Mock interest run actions for wizard ---------------------------------
-const mockCreateInterestRun = vi.fn();
-const mockCalculateInterest = vi.fn();
-const mockFetchInterestRunDetail = vi.fn();
-
-vi.mock("@/app/(app)/org/[slug]/trust-accounting/interest/actions", () => ({
-  createInterestRun: (...args: unknown[]) => mockCreateInterestRun(...args),
-  calculateInterest: (...args: unknown[]) => mockCalculateInterest(...args),
-  fetchInterestRunDetail: (...args: unknown[]) => mockFetchInterestRunDetail(...args),
-}));
-
 // -- Mock parent trust actions --------------------------------------------
 const mockCreateTrustAccount = vi.fn();
 
@@ -139,7 +128,6 @@ vi.mock("next/link", () => ({
 // -- Imports after mocks --------------------------------------------------
 import InvestmentsPage from "@/app/(app)/org/[slug]/trust-accounting/investments/page";
 import { PlaceInvestmentDialog } from "@/components/trust/PlaceInvestmentDialog";
-import { InterestRunWizard } from "@/components/trust/InterestRunWizard";
 import { CreateTrustAccountDialog } from "@/components/trust/CreateTrustAccountDialog";
 import type { TrustAccount } from "@/lib/types/trust";
 import { todayInSA } from "@b2mash/shared/date";
@@ -503,163 +491,6 @@ describe("Epic 455 / 648A — Investment Basis and investment accounts", () => {
     expect(screen.getByTestId("investment-basis-filter")).toBeInTheDocument();
     // the funding (primary banking) account, never an investment account
     expect(mockFetchInvestments).toHaveBeenCalledWith("acc-1", "CLIENT_INSTRUCTION");
-  });
-
-  // Test 7: Interest allocation shows "5% (statutory)" for 86(4) allocations
-  it('interest allocation shows "5% (statutory)" for statutory rate allocations', () => {
-    const run = {
-      id: "run-1",
-      trustAccountId: "acc-1",
-      periodStart: "2026-01-01",
-      periodEnd: "2026-03-31",
-      lpffRateId: "rate-1",
-      totalInterest: 5000,
-      totalLpffShare: 2500,
-      totalClientShare: 2500,
-      status: "DRAFT",
-      createdBy: null,
-      approvedBy: null,
-      postedAt: null,
-      createdAt: "2026-04-01T09:00:00Z",
-      updatedAt: "2026-04-01T09:00:00Z",
-    };
-
-    // Render the wizard at step 2 with allocations that include statutory
-    // We need to render the component, create an interest run, then calculate
-    // But since the wizard is stateful, we'll test the rendered table directly
-    // by simulating the state after calculation
-
-    // Instead, render the wizard, trigger create, then calculate
-    // For simplicity, let's just render with allocations in a controlled manner
-    // We'll mock the state by rendering at step 2
-
-    // The simplest approach: render the wizard open, mock create + calculate
-    mockCreateInterestRun.mockResolvedValue({
-      success: true,
-      run,
-    });
-    mockCalculateInterest.mockResolvedValue({
-      success: true,
-      run: { ...run, totalInterest: 5000 },
-    });
-    mockFetchInterestRunDetail.mockResolvedValue({
-      run,
-      allocations: [
-        {
-          id: "alloc-1",
-          interestRunId: "run-1",
-          clientId: "cust-1111-2222-3333-444444444444",
-          averageDailyBalance: 100000,
-          daysInPeriod: 90,
-          grossInterest: 2500,
-          lpffShare: 125,
-          clientShare: 2375,
-          trustTransactionId: null,
-          lpffRateId: null,
-          statutoryRateApplied: true,
-          createdAt: "2026-04-01T09:00:00Z",
-        },
-      ],
-    });
-
-    render(
-      <InterestRunWizard accountId="acc-1" open={true} onOpenChange={vi.fn()} currency="ZAR" />
-    );
-
-    // Fill period dates and submit step 1
-    const startInput = screen.getByLabelText("Period Start");
-    fireEvent.change(startInput, { target: { value: "2026-01-01" } });
-    const endInput = screen.getByLabelText("Period End");
-    fireEvent.change(endInput, { target: { value: "2026-03-31" } });
-
-    const createBtn = screen.getByText("Create Run");
-    fireEvent.click(createBtn);
-
-    // Wait for step 2 then click calculate
-    return screen.findByText("Calculate Interest").then(async (calcBtn) => {
-      fireEvent.click(calcBtn);
-
-      // Wait for allocations table to render
-      const statutoryCell = await screen.findByText("5% (statutory)");
-      expect(statutoryCell).toBeInTheDocument();
-
-      // Verify footnote
-      expect(screen.getByTestId("statutory-footnote")).toBeInTheDocument();
-      expect(
-        screen.getByText(/Section 86\(5\): client-instructed investments/)
-      ).toBeInTheDocument();
-    });
-  });
-
-  // Test 8: Interest allocation shows the LPFF arrangement rate for 86(3) allocations (G89-F10)
-  it("interest allocation shows the LPFF arrangement rate for non-statutory rate allocations", () => {
-    const run = {
-      id: "run-2",
-      trustAccountId: "acc-1",
-      periodStart: "2026-01-01",
-      periodEnd: "2026-03-31",
-      lpffRateId: "rate-1",
-      totalInterest: 5000,
-      totalLpffShare: 2500,
-      totalClientShare: 2500,
-      status: "DRAFT",
-      createdBy: null,
-      approvedBy: null,
-      postedAt: null,
-      createdAt: "2026-04-01T09:00:00Z",
-      updatedAt: "2026-04-01T09:00:00Z",
-    };
-
-    mockCreateInterestRun.mockResolvedValue({
-      success: true,
-      run,
-    });
-    mockCalculateInterest.mockResolvedValue({
-      success: true,
-      run: { ...run, totalInterest: 5000 },
-    });
-    mockFetchInterestRunDetail.mockResolvedValue({
-      run,
-      allocations: [
-        {
-          id: "alloc-2",
-          interestRunId: "run-2",
-          clientId: "cust-2222-3333-4444-555555555555",
-          clientName: "Arrangement Client",
-          averageDailyBalance: 200000,
-          daysInPeriod: 90,
-          grossInterest: 5000,
-          lpffShare: 2500,
-          clientShare: 2500,
-          trustTransactionId: null,
-          lpffRateId: "rate-1",
-          statutoryRateApplied: false,
-          lpffSharePercent: 0.5,
-          createdAt: "2026-04-01T09:00:00Z",
-        },
-      ],
-    });
-
-    render(
-      <InterestRunWizard accountId="acc-1" open={true} onOpenChange={vi.fn()} currency="ZAR" />
-    );
-
-    // Fill period dates and submit step 1
-    const startInput = screen.getByLabelText("Period Start");
-    fireEvent.change(startInput, { target: { value: "2026-01-01" } });
-    const endInput = screen.getByLabelText("Period End");
-    fireEvent.change(endInput, { target: { value: "2026-03-31" } });
-
-    const createBtn = screen.getByText("Create Run");
-    fireEvent.click(createBtn);
-
-    return screen.findByText("Calculate Interest").then(async (calcBtn) => {
-      fireEvent.click(calcBtn);
-
-      const arrangementCell = await screen.findByText("LPFF arrangement rate 50.00%");
-      expect(arrangementCell).toBeInTheDocument();
-      expect(screen.getByText("Arrangement Client")).toBeInTheDocument();
-    });
   });
 
   // 648A (E2E day 60): stacked over Place Investment on a 720-px viewport the account form (with

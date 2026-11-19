@@ -1,7 +1,6 @@
-import { Scale, Shield, Landmark, Bell } from "lucide-react";
+import { Scale, Shield, Bell } from "lucide-react";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { fetchTrustAccounts } from "@/app/(app)/org/[slug]/trust-accounting/actions";
-import { fetchLpffRates } from "@/app/(app)/org/[slug]/trust-accounting/interest/actions";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@b2mash/ui/card";
 import { Badge } from "@b2mash/ui/badge";
 import { Section866Advisory } from "@/components/trust/Section866Advisory";
@@ -10,7 +9,6 @@ import {
   INVESTMENT_BASIS_ACCOUNT_LABELS,
   TRUST_ACCOUNT_SECTION_LABELS,
   type TrustAccount,
-  type LpffRate,
 } from "@/lib/types/trust";
 
 /**
@@ -43,19 +41,6 @@ export async function renderTrustAccountingTab() {
     // Non-fatal: show empty state
   }
 
-  // Fetch LPFF rates for the primary account
-  const primaryAccount =
-    trustAccounts.find((a) => a.isPrimary && a.status === "ACTIVE") ?? trustAccounts[0] ?? null;
-
-  let lpffRates: LpffRate[] = [];
-  if (primaryAccount) {
-    try {
-      lpffRates = await fetchLpffRates(primaryAccount.id);
-    } catch {
-      // Non-fatal: show empty state
-    }
-  }
-
   return (
     <div className="space-y-8" data-testid="trust-settings-page">
       <div>
@@ -63,7 +48,7 @@ export async function renderTrustAccountingTab() {
           Trust Accounting Settings
         </h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Manage trust accounts, approval settings, LPFF rates, and reminder configuration.
+          Manage trust accounts, approval settings, and reminder configuration.
         </p>
       </div>
 
@@ -177,74 +162,6 @@ export async function renderTrustAccountingTab() {
         </CardContent>
       </Card>
 
-      {/* LPFF Rate Management Section */}
-      <Card data-testid="lpff-rates-section">
-        <CardHeader>
-          <div className="flex items-center gap-3">
-            <Landmark className="size-5 text-slate-400" />
-            <div>
-              <CardTitle>LPFF Rates</CardTitle>
-              <CardDescription>
-                Law Practice Fidelity Fund interest rate configuration
-              </CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {!primaryAccount ? (
-            <p className="text-muted-foreground text-sm">
-              Add a trust account to manage LPFF rates.
-            </p>
-          ) : lpffRates.length === 0 ? (
-            <p className="text-muted-foreground text-sm">
-              No LPFF rates configured. Add a rate to start calculating interest distributions.
-            </p>
-          ) : (
-            <div className="overflow-hidden rounded-lg border border-slate-200 dark:border-slate-800">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900">
-                    <th className="px-4 py-2 text-left font-medium text-slate-600 dark:text-slate-400">
-                      Effective From
-                    </th>
-                    <th className="px-4 py-2 text-left font-medium text-slate-600 dark:text-slate-400">
-                      Rate
-                    </th>
-                    <th className="px-4 py-2 text-left font-medium text-slate-600 dark:text-slate-400">
-                      LPFF Share
-                    </th>
-                    <th className="px-4 py-2 text-left font-medium text-slate-600 dark:text-slate-400">
-                      Notes
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {lpffRates.map((rate) => (
-                    <tr
-                      key={rate.id}
-                      className="border-b border-slate-200 last:border-0 dark:border-slate-800"
-                    >
-                      <td className="px-4 py-2 text-slate-900 dark:text-slate-100">
-                        {new Date(rate.effectiveFrom).toLocaleDateString("en-ZA")}
-                      </td>
-                      <td className="px-4 py-2 text-slate-900 dark:text-slate-100">
-                        {(rate.ratePercent * 100).toFixed(2)}%
-                      </td>
-                      <td className="px-4 py-2 text-slate-900 dark:text-slate-100">
-                        {(rate.lpffSharePercent * 100).toFixed(2)}%
-                      </td>
-                      <td className="px-4 py-2 text-slate-500 dark:text-slate-400">
-                        {rate.notes ?? "—"}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
       {/* Reminder Settings Section */}
       <Card data-testid="reminder-settings-section">
         <CardHeader>
@@ -286,15 +203,6 @@ export async function renderTrustAccountingTab() {
                 </p>
               </div>
               <Badge variant="neutral">7 days before</Badge>
-            </div>
-            <div className="flex items-center justify-between rounded-lg border border-slate-200 p-4 dark:border-slate-800">
-              <div>
-                <p className="font-medium text-slate-900 dark:text-slate-100">Interest Run Due</p>
-                <p className="text-slate-500 dark:text-slate-400">
-                  Remind to run monthly interest calculations
-                </p>
-              </div>
-              <Badge variant="neutral">Monthly</Badge>
             </div>
           </div>
         </CardContent>

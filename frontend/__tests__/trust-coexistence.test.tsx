@@ -129,9 +129,9 @@ describe("Trust coexistence -- nav visibility", () => {
       (item) => item.requiredModule === TRUST_MODULE
     );
 
-    // Sanity: there should be 8 trust nav items in the nav definition (646B added "Other trust
-    // creditors"; back to 7 when "Interest" leaves in 651C)
-    expect(trustNavItems.length).toBe(8);
+    // Sanity: there should be 7 trust nav items in the nav definition (646B added "Other trust
+    // creditors"; 651C removed "Interest")
+    expect(trustNavItems.length).toBe(7);
 
     const { unmount } = render(
       withTrustEnabled(
@@ -145,7 +145,7 @@ describe("Trust coexistence -- nav visibility", () => {
       )
     );
 
-    // All 8 trust nav items should be visible
+    // All 7 trust nav items should be visible
     for (const item of trustNavItems) {
       expect(screen.getByTestId(`trust-nav-${item.label}`)).toBeInTheDocument();
     }

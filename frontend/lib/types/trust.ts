@@ -69,18 +69,6 @@ export interface CreateTrustAccountRequest {
   investmentBasis?: InvestmentBasis;
 }
 
-// LPFF rate types
-
-export interface LpffRate {
-  id: string;
-  trustAccountId: string;
-  effectiveFrom: string;
-  ratePercent: number;
-  lpffSharePercent: number;
-  notes: string | null;
-  createdAt: string;
-}
-
 // Trust transaction types
 
 /**
@@ -877,70 +865,6 @@ export interface RecordInvestmentInterestRequest {
   presentation: InterestPresentation;
   /** The investment account's UNMATCHED credit line it was credited on; omitted: a bank advice. */
   bankStatementLineId?: string | null;
-}
-
-// Interest run types
-
-export type InterestRunStatus = "DRAFT" | "APPROVED" | "POSTED";
-
-/** Firm-side status words (ADR-362: never the raw enum). */
-export const INTEREST_RUN_STATUS_LABELS: Record<InterestRunStatus, string> = {
-  DRAFT: "Draft",
-  APPROVED: "Approved",
-  POSTED: "Posted",
-};
-
-export interface InterestRun {
-  id: string;
-  trustAccountId: string;
-  periodStart: string;
-  periodEnd: string;
-  lpffRateId: string;
-  totalInterest: number;
-  totalLpffShare: number;
-  totalClientShare: number;
-  status: InterestRunStatus;
-  createdBy: string | null;
-  approvedBy: string | null;
-  postedAt: string | null;
-  createdAt: string;
-  updatedAt: string;
-  /** Count of interest_allocations — 0 = never calculated (or calculated with nothing to allocate). */
-  allocationCount: number;
-}
-
-export interface InterestAllocation {
-  id: string;
-  interestRunId: string;
-  clientId: string;
-  /** Null only when the client record is gone — the wizard then shows a short id (G89-F10). */
-  clientName: string | null;
-  averageDailyBalance: number;
-  daysInPeriod: number;
-  grossInterest: number;
-  lpffShare: number;
-  clientShare: number;
-  trustTransactionId: string | null;
-  lpffRateId: string | null;
-  statutoryRateApplied: boolean;
-  /** LPFF share fraction applied to this allocation (0.05 statutory, else the run's LPFF rate). */
-  lpffSharePercent: number | null;
-  createdAt: string;
-  /**
-   * The client share split across matters (ADR-366); empty for a run calculated before the split.
-   * Not rendered by the interest-run wizard, which shows one row per client.
-   */
-  lines?: InterestAllocationLine[];
-}
-
-/** One matter's share of a client's interest allocation; `matterId` null = no matter. */
-export interface InterestAllocationLine {
-  id: string;
-  matterId: string | null;
-  matterName: string | null;
-  balanceDays: number;
-  clientShare: number;
-  trustTransactionId: string | null;
 }
 
 // Non-client trust creditors (Phase 92 646B, ADR-376) — GET /api/trust-accounts/{id}/creditor-accounts

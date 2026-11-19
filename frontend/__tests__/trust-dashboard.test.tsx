@@ -663,8 +663,8 @@ describe("TrustAccountingPage", () => {
       (item) => item.requiredModule === "trust_accounting"
     );
 
-    // Trust zone — 8 items (646B added "Other trust creditors"; 651C removes "Interest")
-    expect(trustItems.length).toBe(8);
+    // Trust zone — 7 items (646B added "Other trust creditors"; 651C removed "Interest")
+    expect(trustItems.length).toBe(7);
 
     // All trust items should require VIEW_TRUST capability
     for (const item of trustItems) {
@@ -678,7 +678,7 @@ describe("TrustAccountingPage", () => {
     expect(labels).toContain("Client ledgers");
     expect(labels).toContain("Other trust creditors");
     expect(labels).toContain("Reconciliation");
-    expect(labels).toContain("Interest");
+    expect(labels).not.toContain("Interest");
     expect(labels).toContain("Investments");
     expect(labels).toContain("Trust reports");
   });

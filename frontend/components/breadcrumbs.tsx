@@ -50,7 +50,6 @@ export const SEGMENT_LABELS: Record<string, string> = {
   reconciliation: "Reconciliation",
   // 650A: the locked Rule 54.15 lists (reconciliation/lists/[listId])
   lists: "Monthly lists",
-  interest: "Interest",
   investments: "Investments",
   invoices: "Fee notes",
   "billing-runs": "Fee runs",

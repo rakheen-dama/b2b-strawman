@@ -102,9 +102,6 @@ vi.mock("@/lib/api/capabilities", () => ({
     .fn()
     .mockResolvedValue({ capabilities: [], role: "owner", isAdmin: false, isOwner: true }),
 }));
-vi.mock("@/app/(app)/org/[slug]/trust-accounting/interest/actions", () => ({
-  fetchLpffRates: vi.fn().mockResolvedValue([]),
-}));
 
 vi.mock("@/app/(app)/org/[slug]/trust-accounting/client-ledgers/actions", () => ({
   fetchClientLedger: vi.fn().mockResolvedValue(null),
@@ -339,6 +336,7 @@ describe("Trust settings page", () => {
     ]);
 
     render(await renderTrustAccountingTab());
+    expect(screen.queryByTestId("lpff-rates-section")).toBeNull();
 
     const card = within(screen.getByTestId("trust-accounts-section"));
     expect(card.getAllByText("Section 86(2) trust banking account")).toHaveLength(2);
@@ -569,14 +567,14 @@ describe("TrustBalanceCard", () => {
 });
 
 describe("Sidebar nav items", () => {
-  it("has 8 trust items in the trust zone with correct module and capability", () => {
+  it("has 7 trust items in the trust zone with correct module and capability", () => {
     const trustZone = NAV_GROUPS.find((g) => g.id === "trust");
     expect(trustZone).toBeDefined();
 
     const trustItems = trustZone!.items.filter(
       (item) => item.requiredModule === "trust_accounting"
     );
-    expect(trustItems).toHaveLength(8);
+    expect(trustItems).toHaveLength(7);
 
     const expectedLabels = [
       "Overview",
@@ -584,7 +582,6 @@ describe("Sidebar nav items", () => {
       "Client ledgers",
       "Other trust creditors",
       "Reconciliation",
-      "Interest",
       "Investments",
       "Trust reports",
     ];

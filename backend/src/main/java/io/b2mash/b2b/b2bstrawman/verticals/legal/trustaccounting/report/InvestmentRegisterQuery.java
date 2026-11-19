@@ -7,16 +7,13 @@ import io.b2mash.b2b.b2bstrawman.reporting.ReportResult;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccount;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountingConstants;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestment;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentInterestRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentInterestRepository.InterestTotals;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentRepository;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.lpff.LpffRateRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.InvestmentBalanceRow;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedgerQueryRepository;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,8 +32,9 @@ import org.springframework.stereotype.Component;
  *
  * <p>v4 (Phase 92 650C, §16.8.5, D-19): per investment the holding account, the basis and status in
  * words, principal, balance and interest — gross, the Fund's 5% and net ({@code interestEarned}).
- * The raw {@code status} / {@code investmentBasis} / {@code applicableLpffRate} keys stay on the
- * rows for callers (D-17) but are no longer columns of the definition.
+ * The raw {@code status} / {@code investmentBasis} keys stay on the rows for callers (D-17) but are
+ * no longer columns of the definition. The retired per-account rate key left the rows with the rate
+ * table it read (651E, ADR-383): the Fund's statutory share is {@code fundShare}.
  */
 @Component
 public class InvestmentRegisterQuery implements ReportQuery {
@@ -51,7 +49,6 @@ public class InvestmentRegisterQuery implements ReportQuery {
 
   private final TrustInvestmentRepository investmentRepository;
   private final CustomerRepository customerRepository;
-  private final LpffRateRepository lpffRateRepository;
   private final TrustLedgerQueryRepository ledgerQueries;
   private final TrustInvestmentInterestRepository interestRepository;
   private final TrustAccountRepository trustAccountRepository;
@@ -59,13 +56,11 @@ public class InvestmentRegisterQuery implements ReportQuery {
   public InvestmentRegisterQuery(
       TrustInvestmentRepository investmentRepository,
       CustomerRepository customerRepository,
-      LpffRateRepository lpffRateRepository,
       TrustLedgerQueryRepository ledgerQueries,
       TrustInvestmentInterestRepository interestRepository,
       TrustAccountRepository trustAccountRepository) {
     this.investmentRepository = investmentRepository;
     this.customerRepository = customerRepository;
-    this.lpffRateRepository = lpffRateRepository;
     this.ledgerQueries = ledgerQueries;
     this.interestRepository = interestRepository;
     this.trustAccountRepository = trustAccountRepository;
@@ -135,24 +130,6 @@ public class InvestmentRegisterQuery implements ReportQuery {
       investments =
           investments.stream().filter(inv -> !"CANCELLED".equals(inv.getStatus())).toList();
     }
-
-    // Look up the latest general LPFF rate for the trust account
-    var latestRates =
-        lpffRateRepository.findByTrustAccountIdOrderByEffectiveFromDesc(trustAccountId);
-    String generalRateDisplay =
-        latestRates.isEmpty()
-            ? "N/A"
-            : latestRates
-                    .getFirst()
-                    .getLpffSharePercent()
-                    .multiply(new BigDecimal("100"))
-                    .setScale(0, RoundingMode.HALF_UP)
-                + "%";
-    String statutoryRateDisplay =
-        TrustAccountingConstants.STATUTORY_LPFF_SHARE_PERCENT
-                .multiply(new BigDecimal("100"))
-                .setScale(0, RoundingMode.HALF_UP)
-            + "% (statutory)";
 
     // Batch-load customer names (a section 86(3) investment names no client — 648A)
     var customerIds =
@@ -228,11 +205,6 @@ public class InvestmentRegisterQuery implements ReportQuery {
               row.put("statusLabel", TrustReportWords.investmentStatusLabel(inv.getStatus()));
               row.put(INVESTMENT_BASIS, inv.getInvestmentBasis().name());
               row.put("basisLabel", TrustReportWords.basisLabel(inv.getInvestmentBasis()));
-              row.put(
-                  "applicableLpffRate",
-                  inv.getInvestmentBasis() == InvestmentBasis.FIRM_DISCRETION
-                      ? generalRateDisplay
-                      : statutoryRateDisplay);
               return (Map<String, Object>) row;
             })
         .toList();

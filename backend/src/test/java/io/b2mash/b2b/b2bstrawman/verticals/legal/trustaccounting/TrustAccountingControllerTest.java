@@ -260,51 +260,6 @@ class TrustAccountingControllerTest {
         .andExpect(jsonPath("$.closedDate").isNotEmpty());
   }
 
-  @Test
-  void postLpffRate_returns201WithRateDetail() throws Exception {
-    // Create an account
-    var result =
-        mockMvc
-            .perform(
-                post("/api/trust-accounts")
-                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_trust_ctrl_owner"))
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "accountName": "LPFF Rate Test Account",
-                          "bankName": "Investec",
-                          "branchCode": "580105",
-                          "accountNumber": "88000000001",
-                          "isPrimary": false
-                        }
-                        """))
-            .andExpect(status().isCreated())
-            .andReturn();
-
-    String id = JsonPath.read(result.getResponse().getContentAsString(), "$.id");
-
-    mockMvc
-        .perform(
-            post("/api/trust-accounts/" + id + "/lpff-rates")
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_trust_ctrl_owner"))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {
-                      "effectiveFrom": "2026-04-01",
-                      "ratePercent": 0.0725,
-                      "lpffSharePercent": 0.0150,
-                      "notes": "Q2 2026 rate"
-                    }
-                    """))
-        .andExpect(status().isCreated())
-        .andExpect(jsonPath("$.trustAccountId").value(id))
-        .andExpect(jsonPath("$.effectiveFrom").value("2026-04-01"))
-        .andExpect(jsonPath("$.notes").value("Q2 2026 rate"))
-        .andExpect(jsonPath("$.id").isNotEmpty());
-  }
-
   // --- Task 439.12: Authorization test ---
 
   @Test
@@ -325,60 +280,6 @@ class TrustAccountingControllerTest {
                     }
                     """))
         .andExpect(status().isForbidden());
-  }
-
-  @Test
-  void getLpffRates_returnsCreatedRate() throws Exception {
-    // Create an account
-    var accountResult =
-        mockMvc
-            .perform(
-                post("/api/trust-accounts")
-                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_trust_ctrl_owner"))
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "accountName": "LPFF List Test Account",
-                          "bankName": "FNB",
-                          "branchCode": "250655",
-                          "accountNumber": "77000000001",
-                          "isPrimary": false
-                        }
-                        """))
-            .andExpect(status().isCreated())
-            .andReturn();
-
-    String accountId = JsonPath.read(accountResult.getResponse().getContentAsString(), "$.id");
-
-    // Create an LPFF rate
-    mockMvc
-        .perform(
-            post("/api/trust-accounts/" + accountId + "/lpff-rates")
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_trust_ctrl_owner"))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {
-                      "effectiveFrom": "2026-07-01",
-                      "ratePercent": 0.0800,
-                      "lpffSharePercent": 0.0175,
-                      "notes": "Q3 2026 rate"
-                    }
-                    """))
-        .andExpect(status().isCreated());
-
-    // GET the rates and verify the created rate is returned
-    mockMvc
-        .perform(
-            get("/api/trust-accounts/" + accountId + "/lpff-rates")
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_trust_ctrl_owner")))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$").isArray())
-        .andExpect(jsonPath("$.length()").value(org.hamcrest.Matchers.greaterThanOrEqualTo(1)))
-        .andExpect(jsonPath("$[0].trustAccountId").value(accountId))
-        .andExpect(jsonPath("$[0].effectiveFrom").value("2026-07-01"))
-        .andExpect(jsonPath("$[0].notes").value("Q3 2026 rate"));
   }
 
   @Test

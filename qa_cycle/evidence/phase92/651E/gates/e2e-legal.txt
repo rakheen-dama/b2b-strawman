@@ -1,0 +1,9 @@
+651E E2E-LEGAL (stage-8 checkpoint) — fresh stack per suite (e2e-down.sh + e2e-up.sh from the 651E worktree), PLAYWRIGHT_BASE_URL=http://localhost:3001, flags without `--`.
+
+Run @3c5cebcd0 (PR #1812 head; tenant migrated V1–V28, V28 "phase92 drop lpff rates" success=t), 2026-11-19 SAST:
+  legal-lifecycle : 105 passed (3.0m)
+  legal-depth-ii  : 40 passed, 4 skipped (2.0m)
+
+Baseline after 651C (interest-run specs removed, day-60 renamed day-60-investments): lifecycle 105/105, depth-ii 40/4. Both at baseline.
+Artefacts (documentation/screenshots/legal-vertical) restored after each run.
+Note: the first e2e-up failed (e2e-postgres initdb "No space left on device" in the Docker VM); unused Docker build cache was pruned to 5 GB (`docker builder prune --keep-storage 5GB`) and the stack rebuilt fresh. No other container or volume was touched.

@@ -1,9 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting;
 
 import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateLpffRateRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateTrustAccountRequest;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.LpffRateResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.TrustAccountResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.UpdateTrustAccountRequest;
 import jakarta.validation.Valid;
@@ -61,19 +59,5 @@ public class TrustAccountingController {
   @RequiresCapability("MANAGE_TRUST")
   public ResponseEntity<TrustAccountResponse> close(@PathVariable UUID id) {
     return ResponseEntity.ok(trustAccountService.closeTrustAccount(id));
-  }
-
-  @GetMapping("/{id}/lpff-rates")
-  @RequiresCapability("VIEW_TRUST")
-  public ResponseEntity<List<LpffRateResponse>> listLpffRates(@PathVariable UUID id) {
-    return ResponseEntity.ok(trustAccountService.listLpffRates(id));
-  }
-
-  @PostMapping("/{id}/lpff-rates")
-  @RequiresCapability("MANAGE_TRUST")
-  public ResponseEntity<LpffRateResponse> addLpffRate(
-      @PathVariable UUID id, @Valid @RequestBody CreateLpffRateRequest request) {
-    return ResponseEntity.status(HttpStatus.CREATED)
-        .body(trustAccountService.addLpffRate(id, request));
   }
 }

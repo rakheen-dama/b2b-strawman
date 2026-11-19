@@ -13,11 +13,8 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustMont
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.TrustCreditorLedgerService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.dto.MatterTrustBalanceResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentRepository;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.lpff.LpffRate;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.lpff.LpffRateRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedgerQueryRepository;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
@@ -38,7 +35,6 @@ public class TrustAccountService {
   private static final String MODULE_ID = "trust_accounting";
 
   private final TrustAccountRepository trustAccountRepository;
-  private final LpffRateRepository lpffRateRepository;
   private final VerticalModuleGuard moduleGuard;
   private final AuditService auditService;
   private final Clock clock;
@@ -51,7 +47,6 @@ public class TrustAccountService {
 
   public TrustAccountService(
       TrustAccountRepository trustAccountRepository,
-      LpffRateRepository lpffRateRepository,
       VerticalModuleGuard moduleGuard,
       AuditService auditService,
       Clock clock,
@@ -62,7 +57,6 @@ public class TrustAccountService {
       TrustInvestmentRepository investmentRepository,
       TrustMonthlyListRepository monthlyListRepository) {
     this.trustAccountRepository = trustAccountRepository;
-    this.lpffRateRepository = lpffRateRepository;
     this.moduleGuard = moduleGuard;
     this.auditService = auditService;
     this.clock = clock;
@@ -151,21 +145,6 @@ public class TrustAccountService {
       // 650D (§16.3.10, ADR-382): the latest period end of the account's locked Rule 54.15 lists;
       // null when none. Posting dialogs warn (never refuse) on a date on or before it.
       LocalDate lockedThrough) {}
-
-  public record CreateLpffRateRequest(
-      @NotNull LocalDate effectiveFrom,
-      @NotNull BigDecimal ratePercent,
-      @NotNull BigDecimal lpffSharePercent,
-      String notes) {}
-
-  public record LpffRateResponse(
-      UUID id,
-      UUID trustAccountId,
-      LocalDate effectiveFrom,
-      BigDecimal ratePercent,
-      BigDecimal lpffSharePercent,
-      String notes,
-      Instant createdAt) {}
 
   // --- Service Methods ---
 
@@ -425,69 +404,6 @@ public class TrustAccountService {
         .map(this::toResponse);
   }
 
-  @Transactional
-  public LpffRateResponse addLpffRate(UUID accountId, CreateLpffRateRequest request) {
-    moduleGuard.requireModule(MODULE_ID);
-
-    trustAccountRepository
-        .findById(accountId)
-        .orElseThrow(() -> new ResourceNotFoundException("TrustAccount", accountId));
-
-    var rate =
-        new LpffRate(
-            accountId,
-            request.effectiveFrom(),
-            request.ratePercent(),
-            request.lpffSharePercent(),
-            request.notes());
-
-    var saved = lpffRateRepository.save(rate);
-
-    auditService.log(
-        AuditEventBuilder.builder()
-            .eventType("lpff_rate.created")
-            .entityType("lpff_rate")
-            .entityId(saved.getId())
-            .details(
-                Map.of(
-                    "trust_account_id", accountId.toString(),
-                    "effective_from", saved.getEffectiveFrom().toString(),
-                    "rate_percent", saved.getRatePercent().toString(),
-                    "lpff_share_percent", saved.getLpffSharePercent().toString()))
-            .build());
-
-    return toLpffResponse(saved);
-  }
-
-  @Transactional(readOnly = true)
-  public List<LpffRateResponse> listLpffRates(UUID accountId) {
-    moduleGuard.requireModule(MODULE_ID);
-
-    return lpffRateRepository.findByTrustAccountIdOrderByEffectiveFromDesc(accountId).stream()
-        .map(this::toLpffResponse)
-        .toList();
-  }
-
-  @Transactional(readOnly = true)
-  public LpffRateResponse getCurrentLpffRate(UUID accountId, LocalDate asOfDate) {
-    moduleGuard.requireModule(MODULE_ID);
-
-    var rate =
-        lpffRateRepository
-            .findFirstByTrustAccountIdAndEffectiveFromLessThanEqualOrderByEffectiveFromDesc(
-                accountId, asOfDate)
-            .orElseThrow(
-                () ->
-                    new InvalidStateException(
-                        "No LPFF rate configured",
-                        "No effective LPFF rate found for account "
-                            + accountId
-                            + " as of "
-                            + asOfDate));
-
-    return toLpffResponse(rate);
-  }
-
   // --- Private Helpers ---
 
   /**
@@ -551,16 +467,5 @@ public class TrustAccountService {
         entity.getCreatedAt(),
         entity.getUpdatedAt(),
         lockedThrough);
-  }
-
-  private LpffRateResponse toLpffResponse(LpffRate entity) {
-    return new LpffRateResponse(
-        entity.getId(),
-        entity.getTrustAccountId(),
-        entity.getEffectiveFrom(),
-        entity.getRatePercent(),
-        entity.getLpffSharePercent(),
-        entity.getNotes(),
-        entity.getCreatedAt());
   }
 }

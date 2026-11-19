@@ -13,7 +13,6 @@ import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateLpffRateRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateTrustAccountRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.TrustAccountResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.UpdateTrustAccountRequest;
@@ -367,69 +366,6 @@ class TrustAccountServiceTest {
   }
 
   @Test
-  void addLpffRate_andResolveEffectiveRate() {
-    runInTenant(
-        () ->
-            transactionTemplate.executeWithoutResult(
-                tx -> {
-                  var createRequest =
-                      new CreateTrustAccountRequest(
-                          "LPFF Test Account",
-                          "LPFF Bank",
-                          "777777",
-                          "0000000007",
-                          "INVESTMENT",
-                          false,
-                          false,
-                          null,
-                          LocalDate.of(2026, 1, 1),
-                          null,
-                          InvestmentBasis.FIRM_DISCRETION);
-
-                  var account = trustAccountService.createTrustAccount(createRequest);
-
-                  // Add an older rate
-                  trustAccountService.addLpffRate(
-                      account.id(),
-                      new CreateLpffRateRequest(
-                          LocalDate.of(2026, 1, 1),
-                          new BigDecimal("0.0500"),
-                          new BigDecimal("0.2500"),
-                          "Initial rate"));
-
-                  // Add a newer rate
-                  trustAccountService.addLpffRate(
-                      account.id(),
-                      new CreateLpffRateRequest(
-                          LocalDate.of(2026, 3, 1),
-                          new BigDecimal("0.0600"),
-                          new BigDecimal("0.3000"),
-                          "Updated rate"));
-
-                  // As of Feb 2026, should get the January rate
-                  var febRate =
-                      trustAccountService.getCurrentLpffRate(
-                          account.id(), LocalDate.of(2026, 2, 15));
-                  assertThat(febRate.ratePercent()).isEqualByComparingTo(new BigDecimal("0.0500"));
-                  assertThat(febRate.lpffSharePercent())
-                      .isEqualByComparingTo(new BigDecimal("0.2500"));
-
-                  // As of April 2026, should get the March rate
-                  var aprRate =
-                      trustAccountService.getCurrentLpffRate(
-                          account.id(), LocalDate.of(2026, 4, 1));
-                  assertThat(aprRate.ratePercent()).isEqualByComparingTo(new BigDecimal("0.0600"));
-                  assertThat(aprRate.lpffSharePercent())
-                      .isEqualByComparingTo(new BigDecimal("0.3000"));
-
-                  // List rates should return both, newest first
-                  var allRates = trustAccountService.listLpffRates(account.id());
-                  assertThat(allRates).hasSize(2);
-                  assertThat(allRates.get(0).effectiveFrom()).isEqualTo(LocalDate.of(2026, 3, 1));
-                }));
-  }
-
-  @Test
   void moduleGuard_throwsWhenTrustAccountingNotEnabled() {
     // Provision a separate tenant without trust_accounting enabled
     String noModuleOrg = "org_trust_no_module";
@@ -469,113 +405,6 @@ class TrustAccountServiceTest {
                   .isInstanceOf(
                       io.b2mash.b2b.b2bstrawman.exception.ModuleNotEnabledException.class);
             });
-  }
-
-  @Test
-  void getCurrentLpffRate_withNoRates_throwsError() {
-    UUID[] accountId = new UUID[1];
-    runInTenant(
-        () ->
-            transactionTemplate.executeWithoutResult(
-                tx -> {
-                  var createRequest =
-                      new CreateTrustAccountRequest(
-                          "No Rates Account",
-                          "No Rates Bank",
-                          "888888",
-                          "0000000008",
-                          "INVESTMENT",
-                          false,
-                          false,
-                          null,
-                          LocalDate.of(2026, 1, 1),
-                          null,
-                          InvestmentBasis.FIRM_DISCRETION);
-
-                  var account = trustAccountService.createTrustAccount(createRequest);
-                  accountId[0] = account.id();
-                }));
-
-    // Assert outside transaction to avoid rollback-only marking
-    runInTenant(
-        () ->
-            assertThatThrownBy(
-                    () ->
-                        trustAccountService.getCurrentLpffRate(
-                            accountId[0], LocalDate.of(2026, 6, 1)))
-                .hasMessageContaining("No LPFF rate configured"));
-  }
-
-  @Test
-  void getCurrentLpffRate_returnsMostRecentBeforeDate() {
-    UUID[] accountId = new UUID[1];
-    runInTenant(
-        () ->
-            transactionTemplate.executeWithoutResult(
-                tx -> {
-                  var createRequest =
-                      new CreateTrustAccountRequest(
-                          "Rate Resolution Account",
-                          "Rate Bank",
-                          "999999",
-                          "0000000009",
-                          "INVESTMENT",
-                          false,
-                          false,
-                          null,
-                          LocalDate.of(2026, 1, 1),
-                          null,
-                          InvestmentBasis.FIRM_DISCRETION);
-
-                  var account = trustAccountService.createTrustAccount(createRequest);
-                  accountId[0] = account.id();
-
-                  // Add three rates
-                  trustAccountService.addLpffRate(
-                      account.id(),
-                      new CreateLpffRateRequest(
-                          LocalDate.of(2026, 1, 1),
-                          new BigDecimal("0.0400"),
-                          new BigDecimal("0.2000"),
-                          "Q1 rate"));
-
-                  trustAccountService.addLpffRate(
-                      account.id(),
-                      new CreateLpffRateRequest(
-                          LocalDate.of(2026, 4, 1),
-                          new BigDecimal("0.0500"),
-                          new BigDecimal("0.2500"),
-                          "Q2 rate"));
-
-                  trustAccountService.addLpffRate(
-                      account.id(),
-                      new CreateLpffRateRequest(
-                          LocalDate.of(2026, 7, 1),
-                          new BigDecimal("0.0600"),
-                          new BigDecimal("0.3000"),
-                          "Q3 rate"));
-
-                  // Query for a date in Q2 — should get Q2 rate
-                  var q2Rate =
-                      trustAccountService.getCurrentLpffRate(
-                          account.id(), LocalDate.of(2026, 5, 15));
-                  assertThat(q2Rate.ratePercent()).isEqualByComparingTo(new BigDecimal("0.0500"));
-
-                  // Query for exact Q3 start — should get Q3 rate
-                  var q3Rate =
-                      trustAccountService.getCurrentLpffRate(
-                          account.id(), LocalDate.of(2026, 7, 1));
-                  assertThat(q3Rate.ratePercent()).isEqualByComparingTo(new BigDecimal("0.0600"));
-                }));
-
-    // Assert exception outside transaction to avoid rollback-only marking
-    runInTenant(
-        () ->
-            assertThatThrownBy(
-                    () ->
-                        trustAccountService.getCurrentLpffRate(
-                            accountId[0], LocalDate.of(2025, 12, 31)))
-                .hasMessageContaining("No LPFF rate configured"));
   }
 
   // --- 648C: an investment account carries its basis (ADR-379) ---

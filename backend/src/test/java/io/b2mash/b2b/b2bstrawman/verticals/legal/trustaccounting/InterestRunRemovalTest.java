@@ -55,13 +55,15 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.transaction.support.TransactionTemplate;
 
 /**
- * Phase 92 slice 651A (task 651.5; architecture §16.3.14, §16.7.10, §16.9.4; ADR-375, ADR-383): the
- * calculated interest run is removed. On a provisioned tenant the run's three tables do not exist
- * (lpff_rates stays until 651E; idx_trust_txn_project is kept), the seven run routes are unmapped
- * (404 — not the 645A 400, not 403), and the engine package, its event and its notification type
- * are gone. A scratch schema migrated to V26 and seeded with a DRAFT and an APPROVED run
- * (allocations and matter lines) migrates to V27 cleanly, and the V27 body is a no-op when run
- * twice (§16.7.1).
+ * Phase 92 slices 651A and 651E (tasks 651.5, 651.6; architecture §16.3.14, §16.7.10, §16.9.4;
+ * ADR-375, ADR-383): the calculated interest run and the LPFF-rate table it read are removed. On a
+ * provisioned tenant the run's three tables and {@code lpff_rates} do not exist
+ * (idx_trust_txn_project is kept), the seven run routes and the two rate routes are unmapped (404 —
+ * not the 645A 400, not 403), and the engine package, the rate entity, the run's event and its
+ * notification type are gone. A scratch schema migrated to V26 and seeded with a DRAFT and an
+ * APPROVED run (allocations and matter lines) migrates to V27 cleanly; a second scratch schema at
+ * V27 holding two LPFF rates migrates to V28 cleanly; each body is a no-op when run twice
+ * (§16.7.1).
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -76,15 +78,23 @@ class InterestRunRemovalTest {
   private static final List<String> RUN_TABLES =
       List.of("interest_allocation_lines", "interest_allocations", "interest_runs");
 
-  /** The drop migration (pinned, not "latest"). */
+  /** The run-table drop migration (pinned, not "latest"). */
   private static final String DROP_VERSION = "27";
 
   private static final String MIGRATION_FILE =
       "db/migration/tenant/V27__phase92_drop_interest_run.sql";
 
-  // Never provisioned or mapped — only names the scratch schema.
+  /** The rate-table drop migration (651E; pinned, not "latest"). */
+  private static final String LPFF_DROP_VERSION = "28";
+
+  private static final String LPFF_MIGRATION_FILE =
+      "db/migration/tenant/V28__phase92_drop_lpff_rates.sql";
+
+  // Never provisioned or mapped — they only name the scratch schemas.
   private static final String SCRATCH_SCHEMA =
       SchemaNameGenerator.generateSchemaName("org_interest_run_removal_scratch");
+  private static final String LPFF_SCRATCH_SCHEMA =
+      SchemaNameGenerator.generateSchemaName("org_lpff_rates_removal_scratch");
 
   /** Placeholders — none is a prefix of another. */
   private static final Map<String, String> IDS = new LinkedHashMap<>();
@@ -101,6 +111,9 @@ class InterestRunRemovalTest {
     IDS.put("%allocApproved", "00000000-0000-0000-0000-0000000000f4");
     IDS.put("%lineDraft", "00000000-0000-0000-0000-0000000000f5");
     IDS.put("%lineApproved", "00000000-0000-0000-0000-0000000000f6");
+    IDS.put("%fundAccount", "00000000-0000-0000-0000-0000000000d1");
+    IDS.put("%oldRate", "00000000-0000-0000-0000-0000000000d2");
+    IDS.put("%newRate", "00000000-0000-0000-0000-0000000000d3");
   }
 
   @Autowired private MockMvc mockMvc;
@@ -122,7 +135,7 @@ class InterestRunRemovalTest {
 
   @BeforeAll
   void setup() throws Exception {
-    // --- provisioned tenant (migrated to latest, so V27 has run) ---
+    // --- provisioned tenant (migrated to latest, so V27 and V28 have run) ---
     tenantSchema =
         provisioningService.provisionTenant(ORG_ID, "Interest Run Removal Org", null).schemaName();
     TestMemberHelper.syncMember(mockMvc, ORG_ID, OWNER, "irr_owner@test.com", "IRR Owner", "owner");
@@ -135,7 +148,7 @@ class InterestRunRemovalTest {
                       settings.setEnabledModules(List.of("trust_accounting"));
                       orgSettingsRepository.save(settings);
                     }));
-    // A real account: were the list route still mapped it would answer 200 here, so a 404
+    // A real account: were the list routes still mapped they would answer 200 here, so a 404
     // proves the route is gone rather than the account missing.
     var accountResult =
         mockMvc
@@ -160,27 +173,43 @@ class InterestRunRemovalTest {
             .andReturn();
     trustAccountId = UUID.fromString(TestEntityHelper.extractId(accountResult));
 
-    // --- scratch schema: V26 with runs on it, then V27 (the walked-dev-schema case) ---
+    // --- scratch schema 1: V26 with runs on it, then V27 (the walked-dev-schema case, 651A) ---
     exec("DROP SCHEMA IF EXISTS \"%s\" CASCADE");
     exec("CREATE SCHEMA \"%s\"");
-    tenantFlyway().target(MigrationVersion.fromVersion("26")).load().migrate();
+    tenantFlyway(SCRATCH_SCHEMA).target(MigrationVersion.fromVersion("26")).load().migrate();
     seedRuns();
-    tenantFlyway().target(MigrationVersion.fromVersion(DROP_VERSION)).load().migrate();
+    tenantFlyway(SCRATCH_SCHEMA)
+        .target(MigrationVersion.fromVersion(DROP_VERSION))
+        .load()
+        .migrate();
+
+    // --- scratch schema 2: V27 with LPFF rates on it, then V28 (651E) ---
+    exec(LPFF_SCRATCH_SCHEMA, "DROP SCHEMA IF EXISTS \"%s\" CASCADE");
+    exec(LPFF_SCRATCH_SCHEMA, "CREATE SCHEMA \"%s\"");
+    tenantFlyway(LPFF_SCRATCH_SCHEMA)
+        .target(MigrationVersion.fromVersion(DROP_VERSION))
+        .load()
+        .migrate();
+    seedRates();
+    tenantFlyway(LPFF_SCRATCH_SCHEMA)
+        .target(MigrationVersion.fromVersion(LPFF_DROP_VERSION))
+        .load()
+        .migrate();
   }
 
   @AfterAll
   void dropScratch() throws Exception {
     exec("DROP SCHEMA IF EXISTS \"%s\" CASCADE");
+    exec(LPFF_SCRATCH_SCHEMA, "DROP SCHEMA IF EXISTS \"%s\" CASCADE");
   }
 
   // --- provisioned tenant ---
 
   @Test
-  void theThreeRunTablesDoNotExist_lpffRatesAndTheMatterIndexStay() {
+  void theThreeRunTablesDoNotExist_theMatterIndexStays() {
     for (String table : RUN_TABLES) {
       assertThat(regclass(tenantSchema + "." + table)).as(table).isNull();
     }
-    assertThat(regclass(tenantSchema + ".lpff_rates")).as("lpff_rates (651E)").isNotNull();
     assertThat(
             jdbcTemplate.queryForObject(
                 "SELECT count(*) FROM pg_indexes WHERE schemaname = ?"
@@ -191,12 +220,27 @@ class InterestRunRemovalTest {
   }
 
   @Test
+  void theLpffRateTableAndItsEntityAreGone() {
+    assertThat(regclass(tenantSchema + ".lpff_rates")).as("lpff_rates (651E)").isNull();
+    // Non-vacuous: the schema is the provisioned one and its trust tables are there.
+    assertThat(regclass(tenantSchema + ".trust_accounts")).as("trust_accounts").isNotNull();
+    for (String name : List.of("lpff.LpffRate", "lpff.LpffRateRepository")) {
+      assertThatThrownBy(
+              () ->
+                  Class.forName(
+                      "io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting." + name))
+          .as(name)
+          .isInstanceOf(ClassNotFoundException.class);
+    }
+  }
+
+  @Test
   void theRunRoutesAreUnmapped() throws Exception {
     // Were InterestController's seven mappings (§16.4.9). Unmapped → 404, not 400 / 403.
     UUID runId = UUID.randomUUID();
     String account = "/api/trust-accounts/" + trustAccountId + "/interest-runs";
     String run = "/api/interest-runs/" + runId;
-    List<MockHttpServletRequestBuilder> requests =
+    assertUnmapped(
         List.of(
             get(account),
             post(account)
@@ -206,17 +250,27 @@ class InterestRunRemovalTest {
             delete(run),
             post(run + "/calculate"),
             post(run + "/approve"),
-            post(run + "/post"));
-    for (var request : requests) {
-      mockMvc
-          .perform(request.with(TestJwtFactory.ownerJwt(ORG_ID, OWNER)))
-          .andExpect(status().isNotFound())
-          .andExpect(jsonPath("$.status").value(404))
-          .andExpect(jsonPath("$.title").value("Not Found"))
-          // "No static resource …" = no handler mapping matched — not a business 404 from a live
-          // route
-          .andExpect(jsonPath("$.detail").value(startsWith("No static resource ")));
-    }
+            post(run + "/post")));
+  }
+
+  @Test
+  void theLpffRateRoutesAreUnmapped() throws Exception {
+    // Were TrustAccountingController's two rate mappings (§16.4.9). Unmapped → 404, not 400 / 403.
+    String rates = "/api/trust-accounts/" + trustAccountId + "/lpff-rates";
+    assertUnmapped(
+        List.of(
+            get(rates),
+            post(rates)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    "{\"effectiveFrom\":\"2025-04-01\",\"ratePercent\":0.0750,"
+                        + "\"lpffSharePercent\":0.7500}")));
+    // Non-vacuous: the account itself still answers.
+    mockMvc
+        .perform(
+            get("/api/trust-accounts/" + trustAccountId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER)))
+        .andExpect(status().isOk());
   }
 
   @Test
@@ -256,7 +310,7 @@ class InterestRunRemovalTest {
             jsonPath("$.preferences[*].notificationType", not(hasItem("TRUST_INTEREST_POSTED"))));
   }
 
-  // --- scratch schema (V26 with runs → V27) ---
+  // --- scratch schema 1 (V26 with runs → V27) ---
 
   @Test
   void aSchemaHoldingRunsMigratesToV27_theRunTablesGo_theRateStays() throws Exception {
@@ -281,29 +335,70 @@ class InterestRunRemovalTest {
 
   @Test
   void runningTheMigrationBodyTwice_isANoOp() throws Exception {
-    var before = tables();
-    var body =
-        new String(
-            new ClassPathResource(MIGRATION_FILE).getInputStream().readAllBytes(),
-            StandardCharsets.UTF_8);
-    try (Connection c = migrationDataSource.getConnection()) {
-      c.setAutoCommit(false);
-      try (Statement s = c.createStatement()) {
-        // SET LOCAL: the search_path reverts at commit, so the pooled connection is unaffected.
-        s.execute("SET LOCAL search_path TO \"" + SCRATCH_SCHEMA + "\"");
-        s.execute(body);
-        c.commit();
-      } catch (SQLException e) {
-        c.rollback();
-        throw e;
-      } finally {
-        c.setAutoCommit(true);
-      }
-    }
-    assertThat(tables()).isEqualTo(before).contains("lpff_rates", "trust_transactions");
+    var before = tables(SCRATCH_SCHEMA);
+    runBody(SCRATCH_SCHEMA, MIGRATION_FILE);
+    assertThat(tables(SCRATCH_SCHEMA))
+        .isEqualTo(before)
+        .contains("lpff_rates", "trust_transactions");
+  }
+
+  // --- scratch schema 2 (V27 with LPFF rates → V28) ---
+
+  @Test
+  void aSchemaHoldingRatesMigratesToV28_theRateTableGoes_theAccountStays() throws Exception {
+    assertThat(
+            text(
+                LPFF_SCRATCH_SCHEMA,
+                "SELECT COALESCE(to_regclass('\"%s\".lpff_rates')::text, 'NULL')"))
+        .isEqualTo("NULL");
+    assertThat(
+            text(
+                LPFF_SCRATCH_SCHEMA,
+                "SELECT count(*) FROM pg_indexes WHERE schemaname = '%s'"
+                    + " AND indexname = 'idx_lpff_rates_account_date'"))
+        .isEqualTo("0");
+    // The rates' parent row is untouched (no cascade, nothing else deleted)
+    assertThat(
+            text(
+                LPFF_SCRATCH_SCHEMA,
+                "SELECT count(*) FROM \"%s\".trust_accounts WHERE id = '%fundAccount'"))
+        .isEqualTo("1");
+    assertThat(
+            text(
+                LPFF_SCRATCH_SCHEMA,
+                "SELECT success::text FROM \"%s\".flyway_schema_history WHERE version = '"
+                    + LPFF_DROP_VERSION
+                    + "'"))
+        .isEqualTo("true");
+  }
+
+  @Test
+  void runningTheV28BodyTwice_isANoOp() throws Exception {
+    var before = tables(LPFF_SCRATCH_SCHEMA);
+    runBody(LPFF_SCRATCH_SCHEMA, LPFF_MIGRATION_FILE);
+    assertThat(tables(LPFF_SCRATCH_SCHEMA))
+        .isEqualTo(before)
+        .contains("trust_accounts")
+        .doesNotContain("lpff_rates");
   }
 
   // --- helpers ---
+
+  /**
+   * Each request, as an owner, answers "no handler mapped": 404, not a business 404 / 400 / 403.
+   */
+  private void assertUnmapped(List<MockHttpServletRequestBuilder> requests) throws Exception {
+    for (var request : requests) {
+      mockMvc
+          .perform(request.with(TestJwtFactory.ownerJwt(ORG_ID, OWNER)))
+          .andExpect(status().isNotFound())
+          .andExpect(jsonPath("$.status").value(404))
+          .andExpect(jsonPath("$.title").value("Not Found"))
+          // "No static resource …" = no handler mapping matched — not a business 404 from a live
+          // route
+          .andExpect(jsonPath("$.detail").value(startsWith("No static resource ")));
+    }
+  }
 
   /** A V26 schema with a DRAFT and an APPROVED run, each with an allocation and a matter line. */
   private void seedRuns() throws Exception {
@@ -343,9 +438,58 @@ class InterestRunRemovalTest {
     assertThat(text("SELECT count(*) FROM \"%s\".interest_allocation_lines")).isEqualTo("2");
   }
 
-  /** The scratch schema's tables — what a second run of the body must leave untouched. */
-  private List<String> tables() throws Exception {
+  /**
+   * A V27 schema (runs already gone) with two LPFF rates on a trust account. Non-vacuous: the rows
+   * are there, and no foreign key points at lpff_rates any more — V28 needs no CASCADE.
+   */
+  private void seedRates() throws Exception {
+    exec(
+        LPFF_SCRATCH_SCHEMA,
+        """
+        INSERT INTO "%s".trust_accounts
+          (id, account_name, bank_name, branch_code, account_number, account_type, is_primary,
+           require_dual_approval, status, opened_date, investment_basis)
+        VALUES ('%fundAccount', 'Trust', 'FNB', '250655', '62000000028', 'GENERAL', true, false,
+                'ACTIVE', DATE '2025-01-01', NULL);
+        INSERT INTO "%s".lpff_rates (id, trust_account_id, effective_from, rate_percent,
+                                     lpff_share_percent, notes)
+        VALUES ('%oldRate', '%fundAccount', DATE '2025-01-01', 0.0500, 0.7500, 'Initial rate'),
+               ('%newRate', '%fundAccount', DATE '2025-03-01', 0.0600, 0.7500, NULL);
+        """);
+    assertThat(text(LPFF_SCRATCH_SCHEMA, "SELECT count(*) FROM \"%s\".lpff_rates")).isEqualTo("2");
+    assertThat(
+            text(
+                LPFF_SCRATCH_SCHEMA,
+                "SELECT count(*) FROM pg_constraint"
+                    + " WHERE confrelid = to_regclass('\"%s\".lpff_rates')"))
+        .isEqualTo("0");
+  }
+
+  /** Runs a migration file's body once more inside {@code schema} (search_path is SET LOCAL). */
+  private void runBody(String schema, String file) throws Exception {
+    var body =
+        new String(
+            new ClassPathResource(file).getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+    try (Connection c = migrationDataSource.getConnection()) {
+      c.setAutoCommit(false);
+      try (Statement s = c.createStatement()) {
+        // SET LOCAL: the search_path reverts at commit, so the pooled connection is unaffected.
+        s.execute("SET LOCAL search_path TO \"" + schema + "\"");
+        s.execute(body);
+        c.commit();
+      } catch (SQLException e) {
+        c.rollback();
+        throw e;
+      } finally {
+        c.setAutoCommit(true);
+      }
+    }
+  }
+
+  /** A scratch schema's tables — what a second run of a body must leave untouched. */
+  private List<String> tables(String schema) throws Exception {
     return texts(
+        schema,
         "SELECT table_name FROM information_schema.tables WHERE table_schema = '%s' ORDER BY 1");
   }
 
@@ -354,17 +498,23 @@ class InterestRunRemovalTest {
   }
 
   private String text(String sql) throws Exception {
-    var rows = texts(sql);
+    return text(SCRATCH_SCHEMA, sql);
+  }
+
+  private String text(String schema, String sql) throws Exception {
+    var rows = texts(schema, sql);
     assertThat(rows).as("one row from %s", sql).hasSize(1);
     return rows.getFirst();
   }
 
-  /** Every row of {@code sql}, its columns joined with {@code |} (NULL as "NULL"). */
-  private List<String> texts(String sql) throws Exception {
+  /**
+   * Every row of {@code sql} in {@code schema}, its columns joined with {@code |} (NULL as "NULL").
+   */
+  private List<String> texts(String schema, String sql) throws Exception {
     var rows = new ArrayList<String>();
     try (Connection c = migrationDataSource.getConnection();
         Statement s = c.createStatement();
-        ResultSet rs = s.executeQuery(resolve(sql))) {
+        ResultSet rs = s.executeQuery(resolve(sql, schema))) {
       int columns = rs.getMetaData().getColumnCount();
       while (rs.next()) {
         var values = new ArrayList<String>();
@@ -379,27 +529,31 @@ class InterestRunRemovalTest {
   }
 
   private void exec(String sql) throws Exception {
+    exec(SCRATCH_SCHEMA, sql);
+  }
+
+  private void exec(String schema, String sql) throws Exception {
     try (Connection c = migrationDataSource.getConnection();
         Statement s = c.createStatement()) {
-      s.execute(resolve(sql));
+      s.execute(resolve(sql, schema));
     }
   }
 
-  /** Replaces the id placeholders, then {@code %s} with the scratch schema. */
-  private static String resolve(String sql) {
+  /** Replaces the id placeholders, then {@code %s} with {@code schema}. */
+  private static String resolve(String sql, String schema) {
     var resolved = sql;
     for (var entry : IDS.entrySet()) {
       resolved = resolved.replace(entry.getKey(), entry.getValue());
     }
-    return resolved.replace("%s", SCRATCH_SCHEMA);
+    return resolved.replace("%s", schema);
   }
 
-  private FluentConfiguration tenantFlyway() {
+  private FluentConfiguration tenantFlyway(String schema) {
     // Same locations/config as TenantProvisioningService.runTenantMigrations.
     return Flyway.configure()
         .dataSource(migrationDataSource)
         .locations("classpath:db/migration/tenant")
-        .schemas(SCRATCH_SCHEMA)
+        .schemas(schema)
         .baselineOnMigrate(false);
   }
 }

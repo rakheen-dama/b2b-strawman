@@ -6,7 +6,7 @@ Counts are <testcase> elements per surefire XML (ground truth), failures+errors 
 BACKEND Tier 1: ./mvnw spotless:apply; ./mvnw compile test-compile -q → exit 0
 
 BACKEND Tier 2 — Batch A (reconciliation package; the changed service's auto/manual-match users)  exit 0
-  ReversedOriginalMatchIntegrationTest               8  0   (NEW — 6 brief methods + 2 R-1 guards)
+  ReversedOriginalMatchIntegrationTest              11  0   (NEW — 6 brief methods + 2 R-1 guards + 3 D-4 re-enter)
   TrustReconciliationServiceMatchingTest            16  0
   TrustReconciliationServiceReconciliationTest      17  0
   TrustReconciliationCompletionGateIntegrationTest  15  0
@@ -15,7 +15,7 @@ BACKEND Tier 2 — Batch A (reconciliation package; the changed service's auto/m
   StatementLinePostingIntegrationTest               28  0
   BankStatementImportErrorIntegrationTest            2  0
   BankStatementParserTest                           60  0
-  total                                            166  0
+  total                                            169  0
 
 BACKEND Tier 2 — Batch B (books / integrity / list / report / memo users of auto/manual match; posting core,
 ArchUnit, reversal; the registry — TrustTransactionType changed)  exit 0
@@ -38,8 +38,25 @@ FRONTEND (from frontend/, NODE_OPTIONS="" /opt/homebrew/bin/pnpm, node v20.11.1)
   install        exit 0
   lint           exit 0  (0 errors; 77 warnings, none in the two changed files)
   build          exit 0
-  test (full)    exit 0  Test Files 482 passed (482) · Tests 4590 passed | 2 skipped (4592)
+  test (full)    exit 0  Test Files 482 passed (482) · Tests 4591 passed | 2 skipped (4593)
   format:check   exit 0  "All matched files use Prettier code style!"
 
 Not run by the builder (orchestrator-owned): bash scripts/verify.sh (full BE verify), E2E-LEGAL, MARKERS, REVIEW.
 OBS: none in 652H (ruling D-3) — observed in 652E steps 9–11.
+
+--------------------------------------------------------------------------------------------------
+Review-fix round (PR #1820 review findings; ruling D-4) — re-run on the fix commit
+  BE Tier 1: spotless:apply; compile test-compile -q → exit 0
+  BE Tier 2 Batch A → exit 0, 169 <testcase>, 0 failures/errors (ReversedOriginalMatchIntegrationTest 11:
+       +3 D-4 methods, red first — red-reenter.txt). Wall 30 s.
+  BE Tier 2 Batch B → exit 0, 167 <testcase>, 0 failures/errors (13 classes, unchanged counts). Wall 42 s.
+  The two exit-month methods (#7/#8, #9/#10 — the reversed original is the only candidate of its tier)
+  stay green under D-4.
+  Temporary probe (reviewer's literal "new reference, line carries the OLD reference" case), after the
+  fix: line AUTO_MATCHED to R (the reversed original) — D-4 does not cover it (tier 1's sole candidate);
+  logged as F-652H-3 for a ruling; probe removed before commit.
+  FE (node v20.11.1): lint exit 0 (0 errors, 77 warnings, none in changed files) · build exit 0 ·
+       test exit 0 — Test Files 482 passed · Tests 4591 passed | 2 skipped (4593) (+1: "marks a reversed
+       original 'Reversed' and leaves an approved row unmarked (652H)", red without the badge:
+       "Unable to find an element by: [data-testid=\"reversed-badge-tx-reversed\"]") ·
+       format:check exit 0.

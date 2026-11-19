@@ -15,6 +15,8 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService.MatchResult;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService.TrustReconciliationResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordDepositRequest;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
@@ -45,6 +47,9 @@ import org.springframework.test.web.servlet.MockMvc;
  * ({@code TrustTransactionType.recordedOnlyFromStatementLine()}) was born linked to its line and
  * has since been unrecorded from it — it is never matched again, by auto-match or by hand.
  *
+ * <p>And (652H D-4): at every auto-match tier a REVERSED original yields to live rows among that
+ * tier's candidates, so a reverse-then-re-enter matches the bank line to the re-entered row.
+ *
  * <p>One harness tenant, a fresh account per test; the class ends with {@code assertFirmBalanced}.
  */
 @SpringBootTest
@@ -65,6 +70,7 @@ class ReversedOriginalMatchIntegrationTest {
   @Autowired private TrustReconciliationService reconciliationService;
   @Autowired private StatementLinePostingService statementLinePostingService;
   @Autowired private TrustTransactionRepository transactionRepository;
+  @Autowired private TrustTransactionService transactionService;
   @Autowired private JdbcTemplate jdbc;
 
   private TrustBooksFixture.Tenant books;
@@ -379,7 +385,145 @@ class ReversedOriginalMatchIntegrationTest {
     assertThat(bankLineOf(chargeId)).isNull();
   }
 
+  // --- 652H D-4: a REVERSED original yields to live rows (reverse-then-re-enter) ----------------
+
+  /**
+   * Reverse-then-re-enter, same reference, different dates (652H D-4): a deposit R of R1 000 on 1
+   * March posted to the wrong client is reversed on 2 March (contra C) and re-entered as G on 4
+   * March to the right client with the same reference. The bank shows one +1 000 line on 1 March.
+   * Tier 1 finds R and G — R yields to the live G, so the line matches G; R and C stay unlinked and
+   * cancel: nothing outstanding, adjusted bank = cashbook = R1 000. RED before D-4: tier 1 is
+   * ambiguous and tier 2 (exact date) finds only R, so the line matches the reversed row.
+   */
+  @Test
+  void autoMatch_reEnteredDepositWithTheSameReference_matchesTheLiveRow_notTheReversedOne() {
+    var account = books.freshAccount(false);
+    var reEntered =
+        reverseAndReEnter(account, "H-RE-77", LocalDate.of(2026, 3, 1), LocalDate.of(2026, 3, 4));
+    var march =
+        importStatement(
+            account, "h-reenter-ref.csv", "01/03/2026,Deposit received,1000.00,1000.00,H-RE-77");
+
+    var result = autoMatch(march);
+
+    assertMatchedToTheLiveRow(march, result, reEntered);
+    var recon = reconcile(account, MARCH_END, march.id());
+    assertBalancedWithNothingOutstanding(recon, "1000.00");
+    books.as(memberId, () -> harness.assertBankAgrees(account, march.id(), MARCH_END));
+    assertThat(complete(recon).status()).as("G1–G4 pass").isEqualTo("COMPLETED");
+    books.assertServicesAgree(account, MARCH_END);
+  }
+
+  /**
+   * Reverse-then-re-enter, same reference AND same date (652H D-4): R and G are identical but for
+   * status, so every tier finds both — R yields at each, the line matches G and is not left
+   * ambiguous. RED before D-4: every tier is ambiguous and the line stays UNMATCHED.
+   */
+  @Test
+  void autoMatch_reEnteredDepositWithTheSameReferenceAndDate_matchesTheLiveRow_notAmbiguous() {
+    var account = books.freshAccount(false);
+    var reEntered =
+        reverseAndReEnter(account, "H-RE-88", LocalDate.of(2026, 3, 1), LocalDate.of(2026, 3, 1));
+    var march =
+        importStatement(
+            account, "h-reenter-same.csv", "01/03/2026,Deposit received,1000.00,1000.00,H-RE-88");
+
+    var result = autoMatch(march);
+
+    assertMatchedToTheLiveRow(march, result, reEntered);
+    var recon = reconcile(account, MARCH_END, march.id());
+    assertBalancedWithNothingOutstanding(recon, "1000.00");
+    books.assertServicesAgree(account, MARCH_END);
+  }
+
+  /**
+   * Reverse-then-re-enter under a new reference (652H D-4): G gets its own reference, and the bank
+   * line carries the bank's own reference (neither row's), so tier 1 finds nothing and tier 2
+   * (amount + exact date) finds R and G — R yields, the line matches G. RED before D-4: tier 2 and
+   * 3 are ambiguous and the line stays UNMATCHED.
+   */
+  @Test
+  void autoMatch_reEnteredDepositUnderANewReference_matchesTheLiveRow_notTheReversedOne() {
+    var account = books.freshAccount(false);
+    var reEntered =
+        reverseAndReEnter(
+            account, "H-RE-99", "H-RE-99-C", LocalDate.of(2026, 3, 1), LocalDate.of(2026, 3, 1));
+    var march =
+        importStatement(
+            account, "h-reenter-new.csv", "01/03/2026,Cash deposit,1000.00,1000.00,BANK-CD-0301");
+
+    var result = autoMatch(march);
+
+    assertMatchedToTheLiveRow(march, result, reEntered);
+    var recon = reconcile(account, MARCH_END, march.id());
+    assertBalancedWithNothingOutstanding(recon, "1000.00");
+    books.assertServicesAgree(account, MARCH_END);
+  }
+
   // --- helpers -----------------------------------------------------------------------------------
+
+  /** The original R, its approved contra C, and the corrected deposit G re-entered after it. */
+  private record ReEntered(UUID reversed, UUID contra, UUID live) {}
+
+  private ReEntered reverseAndReEnter(
+      UUID account, String reference, LocalDate originalDate, LocalDate reEnteredDate) {
+    return reverseAndReEnter(account, reference, reference, originalDate, reEnteredDate);
+  }
+
+  /**
+   * A R1 000 deposit to the wrong client on {@code originalDate}, reversed on 2 March (approved by
+   * the second member — DEPOSIT: NEEDS_APPROVAL), then re-entered to the right client on {@code
+   * reEnteredDate} under {@code reEnteredReference}.
+   */
+  private ReEntered reverseAndReEnter(
+      UUID account,
+      String originalReference,
+      String reEnteredReference,
+      LocalDate originalDate,
+      LocalDate reEnteredDate) {
+    var wrongClient = books.newClient("re-enter wrong client");
+    var rightClient = books.newClient("re-enter right client");
+    var originalId = depositOn(account, wrongClient, originalReference, originalDate);
+    var contra = books.reverse(account, originalId, Expected.none(), LocalDate.of(2026, 3, 2));
+    books.approve(account, contra.id(), approverId, Expected.cashbookAndClient("-1000.00"));
+    assertThat(books.statusOf(originalId)).as("reversed before matching").isEqualTo("REVERSED");
+    var liveId = depositOn(account, rightClient, reEnteredReference, reEnteredDate);
+    return new ReEntered(originalId, contra.id(), liveId);
+  }
+
+  /** A R1 000 deposit (posts RECORDED) with its own reference and date. */
+  private UUID depositOn(
+      UUID account, TrustBooksFixture.Client client, String reference, LocalDate date) {
+    var id = new UUID[1];
+    books.as(
+        memberId,
+        () ->
+            id[0] =
+                transactionService
+                    .recordDeposit(
+                        account,
+                        new RecordDepositRequest(
+                            client.id(),
+                            client.matter(),
+                            new BigDecimal("1000.00"),
+                            reference,
+                            "Deposit",
+                            date))
+                    .id());
+    assertThat(books.statusOf(id[0])).isEqualTo("RECORDED");
+    return id[0];
+  }
+
+  /** The single line matched the live G; the reversed R and its contra C stay unlinked. */
+  private void assertMatchedToTheLiveRow(
+      BankStatementResponse statement, MatchResult result, ReEntered reEntered) {
+    assertLineMatchedTo(statement, 0, reEntered.live(), "AUTO_MATCHED");
+    assertThat(result.autoMatched()).as("the line auto-matched").isEqualTo(1);
+    assertThat(result.unmatched()).as("no line left").isZero();
+    assertThat(bankLineOf(reEntered.reversed())).as("reversed R unlinked").isNull();
+    assertThat(bankLineOf(reEntered.contra())).as("contra C unlinked").isNull();
+    assertStillReversedBy(reEntered.reversed(), reEntered.contra());
+  }
 
   /** Records the debit line as a (non-recoverable) bank charge; returns the row it created. */
   private UUID recordCharge(UUID lineId) {

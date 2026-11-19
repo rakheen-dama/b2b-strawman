@@ -1,0 +1,33 @@
+652H D-4 — reproduce red (review finding: reviewer A HIGH, reverse-then-re-enter)
+==================================================================================
+Head: 2ba9289d2 (production code unchanged; only the three new test methods added to
+ReversedOriginalMatchIntegrationTest). Command (from backend/):
+  ./mvnw test -Dtest="ReversedOriginalMatchIntegrationTest" -q > /tmp/mvn-fix-652H-red.log 2>&1   → exit 1
+Surefire XML: 12 <testcase> (8 existing green + 3 new + 1 temporary probe), 4 failures, 0 errors.
+
+Scenario (all three): deposit R of R1 000 to the wrong client, reversed 2 March by contra C (DEPOSIT:
+NEEDS_APPROVAL, approved by a second member), corrected deposit G of R1 000 re-entered to the right
+client. The bank shows one +1 000 line.
+
+FAILING (red against 2ba9289d2):
+1. autoMatch_reEnteredDepositWithTheSameReference_matchesTheLiveRow_notTheReversedOne
+   R 1 Mar ref H-RE-77, G 4 Mar ref H-RE-77, line 1 Mar ref H-RE-77.
+   [line 0 row] expected: 9ed2f12c-c10f-40ff-adc2-e45caae94745 (G)
+                but was:  202a450e-0e5b-431d-88fc-564057c4e69a (R)
+   → tier 1 ambiguous {R,G}; tier 2 (exact date) finds only R and AUTO_MATCHES the reversed row.
+2. autoMatch_reEnteredDepositWithTheSameReferenceAndDate_matchesTheLiveRow_notAmbiguous
+   R 1 Mar ref H-RE-88, G 1 Mar ref H-RE-88, line 1 Mar ref H-RE-88.
+   [line 0 status] expected: "AUTO_MATCHED" but was: "UNMATCHED"
+   → every tier ambiguous {R,G}; regression vs main (where only G was a candidate).
+3. autoMatch_reEnteredDepositUnderANewReference_matchesTheLiveRow_notTheReversedOne
+   R 1 Mar ref H-RE-99, G 1 Mar ref H-RE-99-C, line 1 Mar bank ref BANK-CD-0301.
+   [line 0 status] expected: "AUTO_MATCHED" but was: "UNMATCHED"
+   → tier 1 none; tiers 2/3 ambiguous {R,G}.
+
+TEMPORARY PROBE (not committed) — the reviewer's literal "new reference" case:
+   probeTemp_literalReviewerCase3_lineCarriesTheOldReference
+   R 1 Mar ref H-RE-55, G 4 Mar ref H-RE-55-C, line 1 Mar ref H-RE-55 (the OLD reference).
+   [PROBE line status=AUTO_MATCHED] expected G a5841749-… but was R 4c9abd51-…
+   → tier 1 finds R alone (G's reference differs). See the after-fix probe result in green.txt:
+     D-4 as ruled (yield only when a tier's set holds a live row) does NOT change this case,
+     because R is the sole tier-1 candidate. Logged as F-652H-3 in found.md for a ruling.

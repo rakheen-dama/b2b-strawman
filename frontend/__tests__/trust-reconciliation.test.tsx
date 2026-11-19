@@ -514,6 +514,38 @@ describe("Trust Reconciliation", () => {
     expect(screen.getByText("1 / 2 lines resolved")).toBeInTheDocument();
   });
 
+  // 652H D-4: a reversed original and its live re-entry must not look identical in the pane.
+  it("marks a reversed original 'Reversed' and leaves an approved row unmarked (652H)", () => {
+    const lines = [makeBankLine({ id: "line-1", matchStatus: "UNMATCHED", amount: 1000 })];
+    const transactions = [
+      makeTx({ id: "tx-reversed", amount: 1000, reference: "DEP-77", status: "REVERSED" }),
+      makeTx({ id: "tx-live", amount: 1000, reference: "DEP-77", status: "APPROVED" }),
+    ];
+
+    render(
+      <ReconciliationSplitPane
+        lines={lines}
+        unmatchedTransactions={transactions}
+        reconciliation={makeRecon({ isBalanced: false }) as unknown as TrustReconciliationResponse}
+        currency="ZAR"
+        onMatch={vi.fn()}
+        onExclude={vi.fn()}
+        onUnmatch={vi.fn()}
+        onRecord={vi.fn()}
+        onComplete={vi.fn()}
+        isCompleting={false}
+      />
+    );
+
+    const reversedRow = screen.getByTestId("transaction-tx-reversed");
+    expect(within(reversedRow).getByTestId("reversed-badge-tx-reversed")).toHaveTextContent(
+      "Reversed"
+    );
+    const liveRow = screen.getByTestId("transaction-tx-live");
+    expect(within(liveRow).queryByText("Reversed", { exact: true })).not.toBeInTheDocument();
+    expect(screen.queryByTestId("reversed-badge-tx-live")).not.toBeInTheDocument();
+  });
+
   // Test 4: Manual match links items
   it("shows match button for candidate transactions when bank line selected", async () => {
     const mockOnMatch = vi.fn();

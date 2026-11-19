@@ -1,7 +1,7 @@
 {
-  "commit": "c0c3a69df",
-  "command": "cd frontend && pnpm install && pnpm run lint && pnpm run build && pnpm test && pnpm run format:check",
+  "commit": "733b8352f7b3cde138ec21a6e4a677c181486937",
+  "command": "cd frontend && rm -rf .next && pnpm run lint && pnpm typecheck && pnpm run format:check && pnpm test && pnpm run build",
   "exit": 0,
-  "ts": "2026-11-19T00:48:00Z",
-  "summary": "650B PR #1808 (frontend unchanged c0c3a69df..ae82e5b6e): lint 0 errors / 78 warnings (baseline), build ok, vitest 485 files / 4592 passed / 2 skipped, format:check ok; CI Frontend pass @ae82e5b6e"
+  "ts": "2026-11-19T04:42:12Z",
+  "summary": "650C PR #1809 (frontend unchanged 733b8352f..dcd3eb277, evidence only): lint 0 errors / 78 warnings (baseline), typecheck ok, format:check ok, vitest 485 files / 4594 passed / 2 skipped, build ok; CI Frontend pass @dcd3eb277"
 }

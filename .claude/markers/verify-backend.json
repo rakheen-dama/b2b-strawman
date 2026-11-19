@@ -1,7 +1,7 @@
 {
-  "commit": "dcd3eb2774ad2b90fac940f2bd790808947a7c22",
-  "command": "cd backend && caffeinate -is ./mvnw clean verify -q",
+  "commit": "66f4a7e3cd1cdb8bee51c1428822baae2628484c",
+  "command": "cd backend && ./mvnw spotless:apply -q && ./mvnw clean -q && bash scripts/verify.sh -q",
   "exit": 0,
-  "ts": "2026-11-19T04:42:12Z",
-  "summary": "650C PR #1809 final head dcd3eb277: 7404 testcases / 0 failures / 0 errors / 26 skipped (surefire <testcase> count; FULL BUILD SUCCESS 06:41 SAST); CI Backend pass @dcd3eb277"
+  "ts": "2026-11-19T07:25:28Z",
+  "summary": "651A PR #1811 final head 66f4a7e3c: 7362 testcases / 0 failures / 0 errors / 26 skipped (surefire <testcase> count; -42 vs 650C = -48 deleted interest-run tests +6); CI Backend pass @66f4a7e3c (29m28s)"
 }

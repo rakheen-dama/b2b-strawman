@@ -2635,9 +2635,11 @@ describe("Trust Reconciliation", () => {
   });
 
   // 652B (E8 wizard defect 3): the manual-match pane lists the account's posted, unlinked
-  // transactions — RECORDED (every deposit, transfer and fee transfer lands RECORDED) and APPROVED
-  // (a payment or refund after approval). The backend matches either (R9); the list endpoint takes
-  // one status, so the wizard reads both. A row already linked to a statement line is not offered.
+  // transactions — RECORDED (every deposit and transfer leg lands RECORDED) and APPROVED (a payment,
+  // fee transfer or refund after approval). The backend matches either (R9); the list endpoint takes
+  // one status, so the wizard reads both. A row already linked to a statement line is not offered,
+  // nor is a transfer leg or unidentified-deposit allocation: it moves no bank money, so the
+  // backend's sign check refuses to match it (652B D-2).
   describe("the manual-match pane offers recorded and approved transactions (652B)", () => {
     function pageOf(content: TrustTransaction[]) {
       return {
@@ -2827,6 +2829,43 @@ describe("Trust Reconciliation", () => {
       );
       expect(await screen.findByTestId("transaction-tx-1")).toBeInTheDocument();
       expect(screen.getByTestId("transaction-tx-app")).toBeInTheDocument();
+    });
+
+    it("does not offer recorded transfer legs, which move no bank money", async () => {
+      transactionsByStatus({
+        RECORDED: [
+          recordedDeposit,
+          makeTx({
+            id: "tx-transfer-in",
+            transactionType: "TRANSFER_IN",
+            typeLabel: "Transfer in",
+            status: "RECORDED",
+            approvedBy: null,
+            approvedAt: null,
+            amount: 15000,
+          }),
+          makeTx({
+            id: "tx-transfer-out",
+            transactionType: "TRANSFER_OUT",
+            typeLabel: "Transfer out",
+            direction: "OUT",
+            status: "RECORDED",
+            approvedBy: null,
+            approvedAt: null,
+            amount: 15000,
+          }),
+        ],
+      });
+      await driveToReview();
+
+      expect(screen.getByTestId("transaction-tx-rec")).toBeInTheDocument();
+      expect(screen.queryByTestId("transaction-tx-transfer-in")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("transaction-tx-transfer-out")).not.toBeInTheDocument();
+      // Selecting the R15 000 line offers only the deposit, not the same-amount transfer legs.
+      fireEvent.click(screen.getByTestId("bank-line-line-1"));
+      expect(screen.getByTestId("match-btn-tx-rec")).toBeInTheDocument();
+      expect(screen.queryByTestId("match-btn-tx-transfer-in")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("match-btn-tx-transfer-out")).not.toBeInTheDocument();
     });
 
     it("lists the merged recorded and approved transactions newest first", async () => {

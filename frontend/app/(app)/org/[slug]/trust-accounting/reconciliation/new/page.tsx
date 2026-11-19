@@ -31,6 +31,8 @@ import type {
   BankStatementResponse,
   BankStatementLineResponse,
   TrustTransaction,
+  TrustTransactionStatus,
+  TrustTransactionType,
   TrustReconciliationResponse,
 } from "@/lib/types";
 import type { RecordFromStatementFormData } from "@/lib/schemas/trust";
@@ -49,12 +51,29 @@ const DEFAULT_CURRENCY = "ZAR";
 type WizardError = string | { title: string; message: string };
 
 /** Statuses a statement line can be matched to: posted rows (R9; TrustReconciliationService.manualMatch). */
-const MATCHABLE_STATUSES = ["RECORDED", "APPROVED"] as const;
+const MATCHABLE_STATUSES = [
+  "RECORDED",
+  "APPROVED",
+] as const satisfies readonly TrustTransactionStatus[];
+
+/**
+ * Types with no bank movement (registry `cashbookSign` 0): internal transfer legs and allocations
+ * of an unidentified deposit. The backend's sign check refuses to match them to any statement line,
+ * so they are never offered (652B D-2). REVERSAL is kept: its cash effect is its original's, so it
+ * can be a real bank movement (a reversal of a transfer is still offered — F-652B-1).
+ */
+const NO_BANK_MOVEMENT_TYPES = [
+  "TRANSFER_OUT",
+  "TRANSFER_IN",
+  "UNIDENT_ALLOC_OUT",
+  "UNIDENT_ALLOC_IN",
+] as const satisfies readonly TrustTransactionType[];
 
 /**
  * The account's posted transactions (RECORDED and APPROVED) not yet matched to a statement line
- * (the right pane), newest first. The list endpoint takes one status, so each is read on its own
- * (652B); if either read fails the whole read fails, so the pane is never silently half-empty.
+ * (the right pane), newest first, without types that move no bank money. The list endpoint takes
+ * one status, so each is read on its own (652B); if either read fails the whole read fails, so the
+ * pane is never silently half-empty.
  */
 async function fetchUnmatchedTransactions(accountId: string): Promise<TrustTransaction[]> {
   const pages = await Promise.all(
@@ -68,7 +87,11 @@ async function fetchUnmatchedTransactions(accountId: string): Promise<TrustTrans
   );
   return pages
     .flatMap((txPage) => txPage.content)
-    .filter((tx) => !tx.bankStatementLineId)
+    .filter(
+      (tx) =>
+        !tx.bankStatementLineId &&
+        !(NO_BANK_MOVEMENT_TYPES as readonly string[]).includes(tx.transactionType)
+    )
     .sort((a, b) => b.transactionDate.localeCompare(a.transactionDate));
 }
 

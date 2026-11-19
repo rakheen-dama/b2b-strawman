@@ -1,0 +1,40 @@
+# 652A D-6 red run (CodeRabbit round 1 / CF-1 + CF-5), before the fix
+# branch head: efd8420e682672b8c75e6480f39bd9e6e3422432 (page.tsx unmodified; new tests only)
+# cmd (from frontend/): NODE_OPTIONS="" /opt/homebrew/bin/pnpm exec vitest run __tests__/trust-reconciliation.test.tsx
+# exit: 1
+
+       × drops a 'refused' recalculation after a 'match' that lands after the wizard was reset 68ms
+       × drops a 'refused' recalculation after a 'exclude' that lands after the wizard was reset 77ms
+       × drops a 'refused' recalculation after a 'unmatch' that lands after the wizard was reset 74ms
+       × drops a 'successful' recalculation after a 'match' that lands after the wizard was reset 89ms
+       × still recalculates after an unmatch when the transactions cannot be re-read 42ms
+       × marks the figures stale after an unmatch when neither the re-read nor the recalculation works 42ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  __tests__/trust-reconciliation.test.tsx > Trust Reconciliation > a failed recalculation after a saved change (652A) > drops a 'refused' recalculation after a 'match' that lands after the wizard was reset
+Error: expect(element).not.toBeInTheDocument()
+expected document not to contain element, found <div
+  The match was saved but the balances could not be recalculated: This statement has lines dated after 31 March 2026. Choose a later period end, or import a statement that ends on or before it.
+ FAIL  __tests__/trust-reconciliation.test.tsx > Trust Reconciliation > a failed recalculation after a saved change (652A) > drops a 'refused' recalculation after a 'exclude' that lands after the wizard was reset
+Error: expect(element).not.toBeInTheDocument()
+expected document not to contain element, found <div
+  The line was excluded but the balances could not be recalculated: This statement has lines dated after 31 March 2026. Choose a later period end, or import a statement that ends on or before it.
+ FAIL  __tests__/trust-reconciliation.test.tsx > Trust Reconciliation > a failed recalculation after a saved change (652A) > drops a 'refused' recalculation after a 'unmatch' that lands after the wizard was reset
+Error: expect(element).not.toBeInTheDocument()
+expected document not to contain element, found <div
+  The line was unmatched but the balances could not be recalculated: This statement has lines dated after 31 March 2026. Choose a later period end, or import a statement that ends on or before it.
+ FAIL  __tests__/trust-reconciliation.test.tsx > Trust Reconciliation > a failed recalculation after a saved change (652A) > drops a 'successful' recalculation after a 'match' that lands after the wizard was reset
+AssertionError: expected "vi.fn()" to be called 2 times, but got 1 times
+ FAIL  __tests__/trust-reconciliation.test.tsx > Trust Reconciliation > a failed recalculation after a saved change (652A) > still recalculates after an unmatch when the transactions cannot be re-read
+Error: expect(element).toHaveTextContent()
+Expected element to have text content:
+  The line was unmatched. The unmatched transactions could not be refreshed and may be out of date.
+Received:
+  Failed to fetch
+ FAIL  __tests__/trust-reconciliation.test.tsx > Trust Reconciliation > a failed recalculation after a saved change (652A) > marks the figures stale after an unmatch when neither the re-read nor the recalculation works
+Error: expect(element).toHaveTextContent()
+Expected element to have text content:
+  The line was unmatched but the balances could not be recalculated: This statement has lines dated after 31 March 2026. Choose a later period end, or import a statement that ends on or before it. The unmatched transactions could not be refreshed and may be out of date.
+Received:
+  Failed to fetch
+ Test Files  1 failed (1)
+      Tests  6 failed | 60 passed (66)

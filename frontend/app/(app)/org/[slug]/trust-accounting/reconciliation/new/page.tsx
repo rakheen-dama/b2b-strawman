@@ -58,6 +58,19 @@ async function fetchUnmatchedTransactions(accountId: string): Promise<TrustTrans
   return txPage.content.filter((tx) => !tx.bankStatementLineId);
 }
 
+/**
+ * The banner after a saved change whose recalculation failed (652A): the change stands, the
+ * summary's figures do not follow it. One wording for match, exclude, unmatch and record.
+ */
+function recalculationFailed(saved: string, error: string | undefined): string {
+  return `${saved} but the balances could not be recalculated: ${error ?? "unknown error"}`;
+}
+
+/** A rejected calculate request (network failure) is reported like a refused one. */
+function calculateRejected(err: unknown): { success: false; error?: string } {
+  return { success: false, error: err instanceof Error ? err.message : undefined };
+}
+
 /** "2026-03-31" → "March 2026" (the month a list locks for). */
 function monthYear(yyyyMmDd: string): string {
   const [year, month] = yyyyMmDd.split("-").map(Number);
@@ -105,6 +118,8 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
   const [lines, setLines] = useState<BankStatementLineResponse[]>([]);
   const [unmatchedTransactions, setUnmatchedTransactions] = useState<TrustTransaction[]>([]);
   const [reconciliation, setReconciliation] = useState<TrustReconciliationResponse | null>(null);
+  // Set when a saved change could not be recalculated: the summary shows figures from before it.
+  const [figuresStale, setFiguresStale] = useState(false);
 
   // Step 5: Complete
   const [isCompleting, setIsCompleting] = useState(false);
@@ -115,7 +130,7 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
   // stale data from a previous account/period/statement is never shown.
 
   // Bumped by every reset: an async result started before a reset belongs to the old wizard and
-  // is dropped (handleRecord's recalculation, 647A).
+  // is dropped (647A; the match, exclude and unmatch handlers too since 652A D-6).
   const wizardGeneration = useRef(0);
 
   const resetFromStep2 = useCallback(() => {
@@ -125,6 +140,7 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
     setAutoMatchResult(null);
     setReconciliation(null);
     setUnmatchedTransactions([]);
+    setFiguresStale(false);
     setError(null);
   }, []);
 
@@ -133,6 +149,7 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
     setAutoMatchResult(null);
     setReconciliation(null);
     setUnmatchedTransactions([]);
+    setFiguresStale(false);
     setError(null);
   }, []);
 
@@ -230,6 +247,7 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
       const calcResult = await calculateReconciliation(recon.id);
       if (calcResult.success && calcResult.data) {
         setReconciliation(calcResult.data);
+        setFiguresStale(false);
       } else {
         setError(calcResult.error ?? "Failed to calculate reconciliation");
         return;
@@ -247,8 +265,10 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
   const handleMatch = useCallback(
     async (lineId: string, transactionId: string) => {
       setError(null);
+      const generation = wizardGeneration.current;
       try {
         const result = await manualMatch(lineId, transactionId);
+        if (generation !== wizardGeneration.current) return;
         if (result.success) {
           // Update local state
           setLines((prev) =>
@@ -265,9 +285,16 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
           setUnmatchedTransactions((prev) => prev.filter((tx) => tx.id !== transactionId));
           // Recalculate reconciliation
           if (reconciliation) {
-            const calcResult = await calculateReconciliation(reconciliation.id);
+            const calcResult = await calculateReconciliation(reconciliation.id).catch(
+              calculateRejected
+            );
+            if (generation !== wizardGeneration.current) return;
             if (calcResult.success && calcResult.data) {
               setReconciliation(calcResult.data);
+              setFiguresStale(false);
+            } else {
+              setFiguresStale(true);
+              setError(recalculationFailed("The match was saved", calcResult.error));
             }
           }
         } else {
@@ -284,17 +311,26 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
   const handleExclude = useCallback(
     async (lineId: string) => {
       setError(null);
+      const generation = wizardGeneration.current;
       try {
         const result = await excludeLine(lineId, "Non-trust item");
+        if (generation !== wizardGeneration.current) return;
         if (result.success) {
           setLines((prev) =>
             prev.map((l) => (l.id === lineId ? { ...l, matchStatus: "EXCLUDED" as const } : l))
           );
           // Recalculate reconciliation
           if (reconciliation) {
-            const calcResult = await calculateReconciliation(reconciliation.id);
+            const calcResult = await calculateReconciliation(reconciliation.id).catch(
+              calculateRejected
+            );
+            if (generation !== wizardGeneration.current) return;
             if (calcResult.success && calcResult.data) {
               setReconciliation(calcResult.data);
+              setFiguresStale(false);
+            } else {
+              setFiguresStale(true);
+              setError(recalculationFailed("The line was excluded", calcResult.error));
             }
           }
         } else {
@@ -311,8 +347,10 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
   const handleUnmatch = useCallback(
     async (lineId: string) => {
       setError(null);
+      const generation = wizardGeneration.current;
       try {
         const result = await unmatch(lineId);
+        if (generation !== wizardGeneration.current) return;
         if (result.success) {
           setLines((prev) =>
             prev.map((l) =>
@@ -328,16 +366,31 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
                 : l
             )
           );
-          // Refresh unmatched transactions
-          if (selectedAccountId) {
-            setUnmatchedTransactions(await fetchUnmatchedTransactions(selectedAccountId));
-          }
-          // Recalculate
-          if (reconciliation) {
-            const calcResult = await calculateReconciliation(reconciliation.id);
-            if (calcResult.success && calcResult.data) {
+          // The unmatch is saved: re-read the unmatched transactions and recalculate, each on its
+          // own, so a failed re-read never skips the recalculation (652A D-6, CF-5).
+          const [refreshed, calcResult] = await Promise.all([
+            selectedAccountId
+              ? fetchUnmatchedTransactions(selectedAccountId).catch(() => null)
+              : undefined,
+            reconciliation
+              ? calculateReconciliation(reconciliation.id).catch(calculateRejected)
+              : null,
+          ]);
+          if (generation !== wizardGeneration.current) return;
+          if (refreshed) setUnmatchedTransactions(refreshed);
+          const listNote =
+            refreshed === null
+              ? " The unmatched transactions could not be refreshed and may be out of date."
+              : "";
+          if (calcResult && !(calcResult.success && calcResult.data)) {
+            setFiguresStale(true);
+            setError(recalculationFailed("The line was unmatched", calcResult.error) + listNote);
+          } else {
+            if (calcResult?.data) {
               setReconciliation(calcResult.data);
+              setFiguresStale(false);
             }
+            if (listNote) setError(`The line was unmatched.${listNote}`);
           }
         } else {
           setError(result.error ?? "Failed to unmatch line");
@@ -365,19 +418,19 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
       const updated = result.data.line;
       setLines((prev) => prev.map((l) => (l.id === lineId ? updated : l)));
       if (reconciliation) {
-        const calcResult = await calculateReconciliation(reconciliation.id);
+        const calcResult = await calculateReconciliation(reconciliation.id).catch(
+          calculateRejected
+        );
         if (generation !== wizardGeneration.current) {
           // The wizard was reset while recalculating: this result is the old reconciliation's.
           return { success: true };
         }
         if (calcResult.success && calcResult.data) {
           setReconciliation(calcResult.data);
+          setFiguresStale(false);
         } else {
-          setError(
-            `The line was recorded but the reconciliation could not be recalculated: ${
-              calcResult.error ?? "unknown error"
-            }`
-          );
+          setFiguresStale(true);
+          setError(recalculationFailed("The line was recorded", calcResult.error));
         }
       }
       return { success: true };
@@ -413,6 +466,7 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
       if (generation !== wizardGeneration.current) return;
       if (calcResult.success && calcResult.data) {
         setReconciliation(calcResult.data);
+        setFiguresStale(false);
       }
       if (refreshedStatement) {
         setLines(refreshedStatement.lines);
@@ -727,6 +781,7 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
             onRecord={handleRecord}
             onComplete={handleComplete}
             isCompleting={isCompleting}
+            figuresStale={figuresStale}
             accountSection={accountSection}
             investments={investments}
           />

@@ -1,0 +1,1147 @@
+{
+  "run": "HZV1Q",
+  "startedAt": "2026-11-19T11:59:53.591Z",
+  "P1": "2026-11-05",
+  "P2": "2026-11-09",
+  "P3": "2026-11-08",
+  "steps": {
+    "review": {
+      "at": "2026-11-19T11:59:59.127Z",
+      "banner": null,
+      "stale": null,
+      "line": "#2 03 Nov 2026 Deeds office Ref: DEEDS/R1/HZV1Q R 1 250,00 DR Unmatched",
+      "progress": "Matching Progress 0 / 4 lines resolved",
+      "unresolved": "4 statement lines are neither matched, recorded nor excluded",
+      "excluded": "Excluded statement lines total R 0,00. An excluded line adjusts nothing: excluding a real bank movement leaves its amount as the difference between the bank and the cashbook.",
+      "bankCashbook": "Bank and cashbook Bank balance -R 275,00 + Outstanding deposits R 5 000,00 − Outstanding payments R 1 250,00 = Adjusted bank balance R 3 475,00 Cashbook R 3 750,00 Difference -R 275,00",
+      "stepSelectVisible": false,
+      "periodEndInput": null,
+      "dbLine": "UNMATCHED|783fe6ce-ccb2-4861-b181-67c75f0e89b6",
+      "dbRecon": "-275.00|3750.00|5000.00|1250.00|-275.00|2026-11-19 11:59:56.761804+00",
+      "shot": "obs-0-review.png"
+    },
+    "r1e_matchAborted": {
+      "aborted": {
+        "at": "2026-11-19T11:59:59.470Z",
+        "nextAction": "4071e31169d650f2141f255860cc5367c32aceea9c",
+        "body": "[\"9136e7fc-3f9a-4dee-8d84-3f420833110e\"]"
+      },
+      "pageErrorsSoFar": 0,
+      "at": "2026-11-19T12:00:01.540Z",
+      "banner": "The match was saved but the balances could not be recalculated: Failed to fetch",
+      "stale": "These figures are out of date: they were calculated before your last change.",
+      "line": "#2 03 Nov 2026 Deeds office Ref: DEEDS/R1/HZV1Q R 1 250,00 DR Matched Unmatch",
+      "progress": "Matching Progress 1 / 4 lines resolved",
+      "unresolved": "4 statement lines are neither matched, recorded nor excluded",
+      "excluded": "Excluded statement lines total R 0,00. An excluded line adjusts nothing: excluding a real bank movement leaves its amount as the difference between the bank and the cashbook.",
+      "bankCashbook": "Bank and cashbook Bank balance -R 275,00 + Outstanding deposits R 5 000,00 − Outstanding payments R 1 250,00 = Adjusted bank balance R 3 475,00 Cashbook R 3 750,00 Difference -R 275,00",
+      "stepSelectVisible": false,
+      "periodEndInput": null,
+      "dbLine": "MANUALLY_MATCHED|783fe6ce-ccb2-4861-b181-67c75f0e89b6",
+      "dbRecon": "-275.00|3750.00|5000.00|1250.00|-275.00|2026-11-19 11:59:56.761804+00",
+      "shot": "obs-r1e-match-aborted.png"
+    },
+    "r1f_excludeSucceeds": {
+      "at": "2026-11-19T12:00:03.828Z",
+      "banner": null,
+      "stale": null,
+      "line": "#4 04 Nov 2026 Second unknown credit Ref: UNK2/R1/HZV1Q R 300,00 CR Excluded",
+      "progress": "Matching Progress 2 / 4 lines resolved",
+      "unresolved": "2 statement lines are neither matched, recorded nor excluded",
+      "excluded": "Excluded statement lines total R 300,00. An excluded line adjusts nothing: excluding a real bank movement leaves its amount as the difference between the bank and the cashbook.",
+      "bankCashbook": "Bank and cashbook Bank balance -R 275,00 + Outstanding deposits R 5 000,00 − Outstanding payments R 0,00 = Adjusted bank balance R 4 725,00 Cashbook R 3 750,00 Difference R 975,00",
+      "stepSelectVisible": false,
+      "periodEndInput": null,
+      "dbLine": "EXCLUDED|",
+      "dbRecon": "-275.00|3750.00|5000.00|0.00|975.00|2026-11-19 12:00:01.894349+00",
+      "shot": "obs-r1f-cleared.png"
+    },
+    "r1f_unmatchSucceeds": {
+      "at": "2026-11-19T12:00:06.086Z",
+      "banner": null,
+      "stale": null,
+      "line": "#2 03 Nov 2026 Deeds office Ref: DEEDS/R1/HZV1Q R 1 250,00 DR Unmatched",
+      "progress": "Matching Progress 1 / 4 lines resolved",
+      "unresolved": "3 statement lines are neither matched, recorded nor excluded",
+      "excluded": "Excluded statement lines total R 300,00. An excluded line adjusts nothing: excluding a real bank movement leaves its amount as the difference between the bank and the cashbook.",
+      "bankCashbook": "Bank and cashbook Bank balance -R 275,00 + Outstanding deposits R 5 000,00 − Outstanding payments R 1 250,00 = Adjusted bank balance R 3 475,00 Cashbook R 3 750,00 Difference -R 275,00",
+      "stepSelectVisible": false,
+      "periodEndInput": null,
+      "dbLine": "UNMATCHED|",
+      "dbRecon": "-275.00|3750.00|5000.00|1250.00|-275.00|2026-11-19 12:00:04.158249+00",
+      "shot": "obs-r1f-unmatch-ok.png",
+      "pay1InPane": true
+    },
+    "r3_matchedFirst": {
+      "at": "2026-11-19T12:00:08.399Z",
+      "banner": null,
+      "stale": null,
+      "line": "#2 03 Nov 2026 Deeds office Ref: DEEDS/R1/HZV1Q R 1 250,00 DR Matched Unmatch",
+      "progress": "Matching Progress 2 / 4 lines resolved",
+      "unresolved": "2 statement lines are neither matched, recorded nor excluded",
+      "excluded": "Excluded statement lines total R 300,00. An excluded line adjusts nothing: excluding a real bank movement leaves its amount as the difference between the bank and the cashbook.",
+      "bankCashbook": "Bank and cashbook Bank balance -R 275,00 + Outstanding deposits R 5 000,00 − Outstanding payments R 0,00 = Adjusted bank balance R 4 725,00 Cashbook R 3 750,00 Difference R 975,00",
+      "stepSelectVisible": false,
+      "periodEndInput": null,
+      "dbLine": "MANUALLY_MATCHED|783fe6ce-ccb2-4861-b181-67c75f0e89b6",
+      "dbRecon": "-275.00|3750.00|5000.00|0.00|975.00|2026-11-19 12:00:06.469139+00",
+      "shot": "obs-r3-0-matched.png"
+    },
+    "r3_rereadFailed": {
+      "aborted": {
+        "at": "2026-11-19T12:00:08.698Z",
+        "nextAction": "60dd39b05eedcfe089cc6f361679f68ad5e093a6f0",
+        "body": "[\"5149d2be-b51f-4a7f-b375-f2a851a4a028\",{\"status\":\"APPROVED\",\"page\":0,\"size\":1000}]"
+      },
+      "at": "2026-11-19T12:00:11.773Z",
+      "banner": "The line was unmatched. The unmatched transactions could not be refreshed and may be out of date.",
+      "stale": null,
+      "line": "#2 03 Nov 2026 Deeds office Ref: DEEDS/R1/HZV1Q R 1 250,00 DR Unmatched",
+      "progress": "Matching Progress 1 / 4 lines resolved",
+      "unresolved": "3 statement lines are neither matched, recorded nor excluded",
+      "excluded": "Excluded statement lines total R 300,00. An excluded line adjusts nothing: excluding a real bank movement leaves its amount as the difference between the bank and the cashbook.",
+      "bankCashbook": "Bank and cashbook Bank balance -R 275,00 + Outstanding deposits R 5 000,00 − Outstanding payments R 1 250,00 = Adjusted bank balance R 3 475,00 Cashbook R 3 750,00 Difference -R 275,00",
+      "stepSelectVisible": false,
+      "periodEndInput": null,
+      "dbLine": "UNMATCHED|",
+      "dbRecon": "-275.00|3750.00|5000.00|1250.00|-275.00|2026-11-19 12:00:08.728981+00",
+      "shot": "obs-r3-1-reread-failed.png",
+      "calculateResponsesSince": [
+        {
+          "at": "2026-11-19T12:00:08.738Z",
+          "status": 200,
+          "result": "<no body: Error: response.text: Protocol error (Network.getResponseBody): No data found for resource with given identifier>"
+        }
+      ],
+      "pay1InPane": false
+    },
+    "r4_single1280": {
+      "pageHorizontalOverflow": false,
+      "viewportWidth": 1280,
+      "banner": {
+        "rect": {
+          "left": 280,
+          "right": 1256,
+          "top": 15,
+          "bottom": 59,
+          "width": 976,
+          "height": 44
+        },
+        "container": {
+          "left": 0,
+          "right": 1280
+        },
+        "insideContainer": true,
+        "ownOverflow": false,
+        "clippedBy": [],
+        "lineHeightPx": 20,
+        "text": "The line was unmatched. The unmatched transactions could not be refreshed and may be out of date."
+      },
+      "stale": null
+    },
+    "r3_refreshed": {
+      "at": "2026-11-19T12:00:15.098Z",
+      "banner": null,
+      "stale": null,
+      "line": "#2 03 Nov 2026 Deeds office Ref: DEEDS/R1/HZV1Q R 1 250,00 DR Unmatched",
+      "progress": "Matching Progress 1 / 4 lines resolved",
+      "unresolved": "3 statement lines are neither matched, recorded nor excluded",
+      "excluded": "Excluded statement lines total R 300,00. An excluded line adjusts nothing: excluding a real bank movement leaves its amount as the difference between the bank and the cashbook.",
+      "bankCashbook": "Bank and cashbook Bank balance -R 275,00 + Outstanding deposits R 5 000,00 − Outstanding payments R 1 250,00 = Adjusted bank balance R 3 475,00 Cashbook R 3 750,00 Difference -R 275,00",
+      "stepSelectVisible": false,
+      "periodEndInput": null,
+      "dbLine": "UNMATCHED|",
+      "dbRecon": "-275.00|3750.00|5000.00|1250.00|-275.00|2026-11-19 12:00:08.728981+00",
+      "shot": "obs-r3-2-refreshed.png",
+      "pay1InPane": true
+    },
+    "r3_matchedAgain": {
+      "at": "2026-11-19T12:00:17.430Z",
+      "banner": null,
+      "stale": null,
+      "line": "#2 03 Nov 2026 Deeds office Ref: DEEDS/R1/HZV1Q R 1 250,00 DR Matched Unmatch",
+      "progress": "Matching Progress 2 / 4 lines resolved",
+      "unresolved": "2 statement lines are neither matched, recorded nor excluded",
+      "excluded": "Excluded statement lines total R 300,00. An excluded line adjusts nothing: excluding a real bank movement leaves its amount as the difference between the bank and the cashbook.",
+      "bankCashbook": "Bank and cashbook Bank balance -R 275,00 + Outstanding deposits R 5 000,00 − Outstanding payments R 0,00 = Adjusted bank balance R 4 725,00 Cashbook R 3 750,00 Difference R 975,00",
+      "stepSelectVisible": false,
+      "periodEndInput": null,
+      "dbLine": "MANUALLY_MATCHED|783fe6ce-ccb2-4861-b181-67c75f0e89b6",
+      "dbRecon": "-275.00|3750.00|5000.00|0.00|975.00|2026-11-19 12:00:15.501303+00",
+      "shot": "obs-r3-3-matched-again.png"
+    },
+    "r3_bothFailed": {
+      "aborted": [
+        {
+          "at": "2026-11-19T12:00:17.730Z",
+          "nextAction": "60dd39b05eedcfe089cc6f361679f68ad5e093a6f0",
+          "body": "[\"5149d2be-b51f-4a7f-b375-f2a851a4a028\",{\"status\":\"APPROVED\",\"page\":0,\"size\":1000}]"
+        },
+        {
+          "at": "2026-11-19T12:00:17.732Z",
+          "nextAction": "4071e31169d650f2141f255860cc5367c32aceea9c",
+          "body": "[\"9136e7fc-3f9a-4dee-8d84-3f420833110e\"]"
+        }
+      ],
+      "at": "2026-11-19T12:00:20.805Z",
+      "banner": "The line was unmatched but the balances could not be recalculated: Failed to fetch The unmatched transactions could not be refreshed and may be out of date.",
+      "stale": "These figures are out of date: they were calculated before your last change.",
+      "line": "#2 03 Nov 2026 Deeds office Ref: DEEDS/R1/HZV1Q R 1 250,00 DR Unmatched",
+      "progress": "Matching Progress 1 / 4 lines resolved",
+      "unresolved": "2 statement lines are neither matched, recorded nor excluded",
+      "excluded": "Excluded statement lines total R 300,00. An excluded line adjusts nothing: excluding a real bank movement leaves its amount as the difference between the bank and the cashbook.",
+      "bankCashbook": "Bank and cashbook Bank balance -R 275,00 + Outstanding deposits R 5 000,00 − Outstanding payments R 0,00 = Adjusted bank balance R 4 725,00 Cashbook R 3 750,00 Difference R 975,00",
+      "stepSelectVisible": false,
+      "periodEndInput": null,
+      "dbLine": "UNMATCHED|",
+      "dbRecon": "-275.00|3750.00|5000.00|0.00|975.00|2026-11-19 12:00:15.501303+00",
+      "shot": "obs-r3-4-both-failed.png"
+    },
+    "r4_both1280": {
+      "pageHorizontalOverflow": false,
+      "viewportWidth": 1280,
+      "banner": {
+        "rect": {
+          "left": 280,
+          "right": 1256,
+          "top": -49,
+          "bottom": 15,
+          "width": 976,
+          "height": 64
+        },
+        "container": {
+          "left": 0,
+          "right": 1280
+        },
+        "insideContainer": true,
+        "ownOverflow": false,
+        "clippedBy": [],
+        "lineHeightPx": 20,
+        "text": "The line was unmatched but the balances could not be recalculated: Failed to fetch The unmatched transactions could not be refreshed and may be out of date."
+      },
+      "stale": {
+        "rect": {
+          "left": 305,
+          "right": 1231,
+          "top": 674,
+          "bottom": 694,
+          "width": 926,
+          "height": 20
+        },
+        "container": {
+          "left": 280,
+          "right": 1256
+        },
+        "insideContainer": true,
+        "ownOverflow": false,
+        "clippedBy": [],
+        "lineHeightPx": 20,
+        "text": "These figures are out of date: they were calculated before your last change."
+      }
+    },
+    "r3_cleared": {
+      "at": "2026-11-19T12:00:24.088Z",
+      "banner": null,
+      "stale": null,
+      "line": "#2 03 Nov 2026 Deeds office Ref: DEEDS/R1/HZV1Q R 1 250,00 DR Unmatched",
+      "progress": "Matching Progress 1 / 4 lines resolved",
+      "unresolved": "3 statement lines are neither matched, recorded nor excluded",
+      "excluded": "Excluded statement lines total R 300,00. An excluded line adjusts nothing: excluding a real bank movement leaves its amount as the difference between the bank and the cashbook.",
+      "bankCashbook": "Bank and cashbook Bank balance -R 275,00 + Outstanding deposits R 5 000,00 − Outstanding payments R 1 250,00 = Adjusted bank balance R 3 475,00 Cashbook R 3 750,00 Difference -R 275,00",
+      "stepSelectVisible": false,
+      "periodEndInput": null,
+      "dbLine": "UNMATCHED|",
+      "dbRecon": "-275.00|3750.00|5000.00|1250.00|-275.00|2026-11-19 12:00:22.067067+00",
+      "shot": "obs-r3-5-cleared.png"
+    },
+    "r2s_heldInReview": {
+      "at": "2026-11-19T12:00:25.101Z",
+      "banner": null,
+      "stale": null,
+      "line": "#2 03 Nov 2026 Deeds office Ref: DEEDS/R1/HZV1Q R 1 250,00 DR Matched Unmatch",
+      "progress": "Matching Progress 2 / 4 lines resolved",
+      "unresolved": "3 statement lines are neither matched, recorded nor excluded",
+      "excluded": "Excluded statement lines total R 300,00. An excluded line adjusts nothing: excluding a real bank movement leaves its amount as the difference between the bank and the cashbook.",
+      "bankCashbook": "Bank and cashbook Bank balance -R 275,00 + Outstanding deposits R 5 000,00 − Outstanding payments R 1 250,00 = Adjusted bank balance R 3 475,00 Cashbook R 3 750,00 Difference -R 275,00",
+      "stepSelectVisible": false,
+      "periodEndInput": null,
+      "dbLine": "MANUALLY_MATCHED|783fe6ce-ccb2-4861-b181-67c75f0e89b6",
+      "dbRecon": "-275.00|3750.00|5000.00|1250.00|-275.00|2026-11-19 12:00:22.067067+00",
+      "shot": "obs-r2s-0-held-in-review.png"
+    },
+    "r2s_afterReset": {
+      "at": "2026-11-19T12:00:26.220Z",
+      "banner": null,
+      "stale": null,
+      "line": null,
+      "progress": null,
+      "unresolved": null,
+      "excluded": null,
+      "bankCashbook": null,
+      "stepSelectVisible": true,
+      "periodEndInput": "2026-11-09",
+      "dbLine": null,
+      "dbRecon": "-275.00|3750.00|5000.00|1250.00|-275.00|2026-11-19 12:00:22.067067+00",
+      "shot": "obs-r2s-1-reset-before-release.png"
+    },
+    "r2s_uploadDuringHold": {
+      "uploadedDuringHold": false,
+      "actionsSinceHold": [
+        "FAILED:60ea14674e92ca882cccb1d2ece2cc2895d8ac1b09"
+      ]
+    },
+    "r2s_beforeRelease": {
+      "at": "2026-11-19T12:00:34.680Z",
+      "banner": null,
+      "stale": null,
+      "line": null,
+      "progress": null,
+      "unresolved": null,
+      "excluded": null,
+      "bankCashbook": null,
+      "stepSelectVisible": false,
+      "periodEndInput": null,
+      "dbLine": null,
+      "dbRecon": "-275.00|3750.00|5000.00|1250.00|-275.00|2026-11-19 12:00:22.067067+00",
+      "shot": "obs-r2s-2-before-release.png"
+    },
+    "r2s_afterRelease": {
+      "releasedAt": "2026-11-19T12:00:34.827Z",
+      "responseStatus": 200,
+      "r1Before": "-275.00|3750.00|5000.00|1250.00|-275.00|2026-11-19 12:00:22.067067+00",
+      "at": "2026-11-19T12:00:37.447Z",
+      "banner": null,
+      "stale": null,
+      "line": null,
+      "progress": null,
+      "unresolved": null,
+      "excluded": null,
+      "bankCashbook": null,
+      "stepSelectVisible": false,
+      "periodEndInput": null,
+      "dbLine": null,
+      "dbRecon": "-275.00|3750.00|5000.00|0.00|975.00|2026-11-19 12:00:34.861342+00",
+      "shot": "obs-r2s-3-after-release.png",
+      "r1CalculatedEvents": "1"
+    },
+    "r2s_newReview": {
+      "at": "2026-11-19T12:00:40.218Z",
+      "banner": null,
+      "stale": null,
+      "line": "#2 07 Nov 2026 Deeds office Ref: DEEDS/R2/HZV1Q R 1 250,00 DR Unmatched",
+      "progress": "Matching Progress 0 / 4 lines resolved",
+      "unresolved": "4 statement lines are neither matched, recorded nor excluded",
+      "excluded": "Excluded statement lines total R 0,00. An excluded line adjusts nothing: excluding a real bank movement leaves its amount as the difference between the bank and the cashbook.",
+      "bankCashbook": "Bank and cashbook Bank balance -R 275,00 + Outstanding deposits R 10 000,00 − Outstanding payments R 1 250,00 = Adjusted bank balance R 8 475,00 Cashbook R 7 500,00 Difference R 975,00",
+      "stepSelectVisible": false,
+      "periodEndInput": null,
+      "dbLine": "UNMATCHED|7f364f6d-71de-49f0-9910-994ecea7d250",
+      "dbRecon": "-275.00|7500.00|10000.00|1250.00|975.00|2026-11-19 12:00:37.857692+00",
+      "shot": "obs-r2s-4-new-review.png",
+      "r1Now": "-275.00|3750.00|5000.00|0.00|975.00|2026-11-19 12:00:34.861342+00"
+    },
+    "importS3": "Statement imported successfully Lines imported: 1 File: s3-HZV1Q.csv Period: 2026-11-09 to 2026-11-09 Format: CSV",
+    "r1a_match": {
+      "at": "2026-11-19T12:00:43.046Z",
+      "banner": "The match was saved but the balances could not be recalculated: Statement s3-HZV1Q.csv has movements between this statement's last line and 9 November 2026. Reconcile against the statement that covers the period end.",
+      "stale": "These figures are out of date: they were calculated before your last change.",
+      "line": "#2 07 Nov 2026 Deeds office Ref: DEEDS/R2/HZV1Q R 1 250,00 DR Matched Unmatch",
+      "progress": "Matching Progress 1 / 4 lines resolved",
+      "unresolved": "4 statement lines are neither matched, recorded nor excluded",
+      "excluded": "Excluded statement lines total R 0,00. An excluded line adjusts nothing: excluding a real bank movement leaves its amount as the difference between the bank and the cashbook.",
+      "bankCashbook": "Bank and cashbook Bank balance -R 275,00 + Outstanding deposits R 10 000,00 − Outstanding payments R 1 250,00 = Adjusted bank balance R 8 475,00 Cashbook R 7 500,00 Difference R 975,00",
+      "stepSelectVisible": false,
+      "periodEndInput": null,
+      "dbLine": "MANUALLY_MATCHED|7f364f6d-71de-49f0-9910-994ecea7d250",
+      "dbRecon": "-275.00|7500.00|10000.00|1250.00|975.00|2026-11-19 12:00:37.857692+00",
+      "shot": "obs-r1a-match.png"
+    },
+    "r1b_exclude": {
+      "at": "2026-11-19T12:00:45.345Z",
+      "banner": "The line was excluded but the balances could not be recalculated: Statement s3-HZV1Q.csv has movements between this statement's last line and 9 November 2026. Reconcile against the statement that covers the period end.",
+      "stale": "These figures are out of date: they were calculated before your last change.",
+      "line": "#1 06 Nov 2026 Unknown credit Ref: UNK/R2/HZV1Q R 700,00 CR Excluded",
+      "progress": "Matching Progress 2 / 4 lines resolved",
+      "unresolved": "4 statement lines are neither matched, recorded nor excluded",
+      "excluded": "Excluded statement lines total R 0,00. An excluded line adjusts nothing: excluding a real bank movement leaves its amount as the difference between the bank and the cashbook.",
+      "bankCashbook": "Bank and cashbook Bank balance -R 275,00 + Outstanding deposits R 10 000,00 − Outstanding payments R 1 250,00 = Adjusted bank balance R 8 475,00 Cashbook R 7 500,00 Difference R 975,00",
+      "stepSelectVisible": false,
+      "periodEndInput": null,
+      "dbLine": "EXCLUDED|",
+      "dbRecon": "-275.00|7500.00|10000.00|1250.00|975.00|2026-11-19 12:00:37.857692+00",
+      "shot": "obs-r1b-exclude.png"
+    },
+    "r1c_unmatch": {
+      "at": "2026-11-19T12:00:47.646Z",
+      "banner": "The line was unmatched but the balances could not be recalculated: Statement s3-HZV1Q.csv has movements between this statement's last line and 9 November 2026. Reconcile against the statement that covers the period end.",
+      "stale": "These figures are out of date: they were calculated before your last change.",
+      "line": "#2 07 Nov 2026 Deeds office Ref: DEEDS/R2/HZV1Q R 1 250,00 DR Unmatched",
+      "progress": "Matching Progress 1 / 4 lines resolved",
+      "unresolved": "4 statement lines are neither matched, recorded nor excluded",
+      "excluded": "Excluded statement lines total R 0,00. An excluded line adjusts nothing: excluding a real bank movement leaves its amount as the difference between the bank and the cashbook.",
+      "bankCashbook": "Bank and cashbook Bank balance -R 275,00 + Outstanding deposits R 10 000,00 − Outstanding payments R 1 250,00 = Adjusted bank balance R 8 475,00 Cashbook R 7 500,00 Difference R 975,00",
+      "stepSelectVisible": false,
+      "periodEndInput": null,
+      "dbLine": "UNMATCHED|",
+      "dbRecon": "-275.00|7500.00|10000.00|1250.00|975.00|2026-11-19 12:00:37.857692+00",
+      "shot": "obs-r1c-unmatch.png"
+    },
+    "r2f_heldInReview": {
+      "at": "2026-11-19T12:00:48.641Z",
+      "banner": null,
+      "stale": "These figures are out of date: they were calculated before your last change.",
+      "line": "#2 07 Nov 2026 Deeds office Ref: DEEDS/R2/HZV1Q R 1 250,00 DR Matched Unmatch",
+      "progress": "Matching Progress 2 / 4 lines resolved",
+      "unresolved": "4 statement lines are neither matched, recorded nor excluded",
+      "excluded": "Excluded statement lines total R 0,00. An excluded line adjusts nothing: excluding a real bank movement leaves its amount as the difference between the bank and the cashbook.",
+      "bankCashbook": "Bank and cashbook Bank balance -R 275,00 + Outstanding deposits R 10 000,00 − Outstanding payments R 1 250,00 = Adjusted bank balance R 8 475,00 Cashbook R 7 500,00 Difference R 975,00",
+      "stepSelectVisible": false,
+      "periodEndInput": null,
+      "dbLine": "MANUALLY_MATCHED|7f364f6d-71de-49f0-9910-994ecea7d250",
+      "dbRecon": "-275.00|7500.00|10000.00|1250.00|975.00|2026-11-19 12:00:37.857692+00",
+      "shot": "obs-r2f-0-held-in-review.png"
+    },
+    "r2f_beforeRelease": {
+      "at": "2026-11-19T12:00:49.765Z",
+      "banner": null,
+      "stale": null,
+      "line": null,
+      "progress": null,
+      "unresolved": null,
+      "excluded": null,
+      "bankCashbook": null,
+      "stepSelectVisible": true,
+      "periodEndInput": "2026-11-08",
+      "dbLine": null,
+      "dbRecon": "-275.00|7500.00|10000.00|1250.00|975.00|2026-11-19 12:00:37.857692+00",
+      "shot": "obs-r2f-1-reset-before-release.png"
+    },
+    "r2f_afterRelease": {
+      "releasedAt": "2026-11-19T12:00:49.876Z",
+      "responseStatus": 200,
+      "r2Before": "-275.00|7500.00|10000.00|1250.00|975.00|2026-11-19 12:00:37.857692+00",
+      "at": "2026-11-19T12:00:52.401Z",
+      "banner": null,
+      "stale": null,
+      "line": null,
+      "progress": null,
+      "unresolved": null,
+      "excluded": null,
+      "bankCashbook": null,
+      "stepSelectVisible": true,
+      "periodEndInput": "2026-11-08",
+      "dbLine": null,
+      "dbRecon": "-275.00|7500.00|10000.00|1250.00|975.00|2026-11-19 12:00:37.857692+00",
+      "shot": "obs-r2f-2-after-release.png",
+      "releasedResponse": [
+        {
+          "at": "2026-11-19T12:00:49.900Z",
+          "status": 200,
+          "result": "<no body: Error: response.text: Protocol error (Network.getResponseBody): No data found for resource with given identifier>"
+        }
+      ]
+    },
+    "r2f_step2": {
+      "at": "2026-11-19T12:00:53.589Z",
+      "banner": null,
+      "stale": null,
+      "line": null,
+      "progress": null,
+      "unresolved": null,
+      "excluded": null,
+      "bankCashbook": null,
+      "stepSelectVisible": false,
+      "periodEndInput": null,
+      "dbLine": null,
+      "dbRecon": null,
+      "shot": "obs-r2f-3-step2.png"
+    }
+  },
+  "actions": [
+    {
+      "at": "2026-11-19T11:59:55.775Z",
+      "nextAction": "00e39626508ed68d73861e60c8c46817c04ba67b67",
+      "kind": "other",
+      "body": "[]"
+    },
+    {
+      "at": "2026-11-19T11:59:55.920Z",
+      "nextAction": "00d9c56c9a2e1e72cfa645aa1f9421b245c5b0e865",
+      "kind": "other",
+      "body": "[]"
+    },
+    {
+      "at": "2026-11-19T11:59:55.933Z",
+      "nextAction": "00e39626508ed68d73861e60c8c46817c04ba67b67",
+      "kind": "FAILED",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "at": "2026-11-19T11:59:55.933Z",
+      "nextAction": "00d9c56c9a2e1e72cfa645aa1f9421b245c5b0e865",
+      "kind": "FAILED",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "at": "2026-11-19T11:59:56.042Z",
+      "nextAction": "00e39626508ed68d73861e60c8c46817c04ba67b67",
+      "kind": "other",
+      "body": "[]"
+    },
+    {
+      "at": "2026-11-19T11:59:56.086Z",
+      "nextAction": "00a376661d62c7d8579d88baf5f3a95ceac234fa59",
+      "kind": "other",
+      "body": "[]"
+    },
+    {
+      "at": "2026-11-19T11:59:56.105Z",
+      "nextAction": "00e39626508ed68d73861e60c8c46817c04ba67b67",
+      "kind": "FAILED",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "at": "2026-11-19T11:59:56.165Z",
+      "nextAction": "00a376661d62c7d8579d88baf5f3a95ceac234fa59",
+      "kind": "FAILED",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "at": "2026-11-19T11:59:56.284Z",
+      "nextAction": "603dc338761f7fe1b0a329a7eae239b20d2f67adca",
+      "kind": "other",
+      "body": "------WebKitFormBoundary7Bz5NCBnnn7ytOUv\r\nContent-Disposition: form-data; name=\"1\"; filename=\"s1-HZV1Q.csv\"\r\nContent-Type: text/csv\r\n\r\n\r\n------WebKitFormBoundar"
+    },
+    {
+      "at": "2026-11-19T11:59:56.410Z",
+      "nextAction": "603dc338761f7fe1b0a329a7eae239b20d2f67adca",
+      "kind": "FAILED",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "at": "2026-11-19T11:59:56.566Z",
+      "nextAction": "40ab147710e7d1a3ff31575b4e6c4584f318fbbec8",
+      "kind": "other",
+      "body": "[\"d59233b0-c23e-4383-9bae-5f3b0cf3a8d4\"]"
+    },
+    {
+      "at": "2026-11-19T11:59:56.599Z",
+      "nextAction": "40ef3035a408a1f4a46407a41896ae0bfde72c0e76",
+      "kind": "other",
+      "body": "[\"d59233b0-c23e-4383-9bae-5f3b0cf3a8d4\"]"
+    },
+    {
+      "at": "2026-11-19T11:59:56.610Z",
+      "nextAction": "40ab147710e7d1a3ff31575b4e6c4584f318fbbec8",
+      "kind": "FAILED",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "at": "2026-11-19T11:59:56.617Z",
+      "nextAction": "40ef3035a408a1f4a46407a41896ae0bfde72c0e76",
+      "kind": "FAILED",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "at": "2026-11-19T11:59:56.665Z",
+      "nextAction": "60dd39b05eedcfe089cc6f361679f68ad5e093a6f0",
+      "kind": "reread",
+      "body": "[\"5149d2be-b51f-4a7f-b375-f2a851a4a028\",{\"status\":\"APPROVED\",\"page\":0,\"size\":1000}]"
+    },
+    {
+      "at": "2026-11-19T11:59:56.687Z",
+      "nextAction": "60dd39b05eedcfe089cc6f361679f68ad5e093a6f0",
+      "kind": "FAILED",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "at": "2026-11-19T11:59:56.687Z",
+      "nextAction": "60c0da5e4063ccdd66f6c6ce179c134da7618a3888",
+      "kind": "other",
+      "body": "[\"5149d2be-b51f-4a7f-b375-f2a851a4a028\",{\"periodEnd\":\"2026-11-05\",\"bankStatementId\":\"d59233b0-c23e-4383-9bae-5f3b0cf3a8d4\"}]"
+    },
+    {
+      "at": "2026-11-19T11:59:56.725Z",
+      "nextAction": "4071e31169d650f2141f255860cc5367c32aceea9c",
+      "kind": "calculate",
+      "body": "[\"9136e7fc-3f9a-4dee-8d84-3f420833110e\"]"
+    },
+    {
+      "at": "2026-11-19T11:59:56.741Z",
+      "nextAction": "60c0da5e4063ccdd66f6c6ce179c134da7618a3888",
+      "kind": "FAILED",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "at": "2026-11-19T11:59:56.775Z",
+      "nextAction": "4071e31169d650f2141f255860cc5367c32aceea9c",
+      "kind": "FAILED",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "at": "2026-11-19T11:59:59.436Z",
+      "nextAction": "60ea14674e92ca882cccb1d2ece2cc2895d8ac1b09",
+      "kind": "other",
+      "body": "[\"afba18d5-d1cf-4a80-b5c4-6a568cb15891\",\"783fe6ce-ccb2-4861-b181-67c75f0e89b6\"]"
+    },
+    {
+      "at": "2026-11-19T11:59:59.470Z",
+      "nextAction": "4071e31169d650f2141f255860cc5367c32aceea9c",
+      "kind": "calculate",
+      "body": "[\"9136e7fc-3f9a-4dee-8d84-3f420833110e\"]"
+    },
+    {
+      "at": "2026-11-19T11:59:59.473Z",
+      "nextAction": "4071e31169d650f2141f255860cc5367c32aceea9c",
+      "kind": "FAILED",
+      "error": "net::ERR_FAILED"
+    },
+    {
+      "at": "2026-11-19T11:59:59.486Z",
+      "nextAction": "60ea14674e92ca882cccb1d2ece2cc2895d8ac1b09",
+      "kind": "FAILED",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "at": "2026-11-19T12:00:01.826Z",
+      "nextAction": "600b97cf2ccf778a5c5b6c75694fe852a555500df2",
+      "kind": "other",
+      "body": "[\"0d971096-84b2-4c22-aa8f-62a4dbef1c7f\",\"Non-trust item\"]"
+    },
+    {
+      "at": "2026-11-19T12:00:01.861Z",
+      "nextAction": "4071e31169d650f2141f255860cc5367c32aceea9c",
+      "kind": "calculate",
+      "body": "[\"9136e7fc-3f9a-4dee-8d84-3f420833110e\"]"
+    },
+    {
+      "at": "2026-11-19T12:00:01.874Z",
+      "nextAction": "600b97cf2ccf778a5c5b6c75694fe852a555500df2",
+      "kind": "FAILED",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "at": "2026-11-19T12:00:01.901Z",
+      "nextAction": "4071e31169d650f2141f255860cc5367c32aceea9c",
+      "kind": "FAILED",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "at": "2026-11-19T12:00:04.084Z",
+      "nextAction": "4043b3959ae7dbeb1ccf6d35c2d214f8b816b54805",
+      "kind": "other",
+      "body": "[\"afba18d5-d1cf-4a80-b5c4-6a568cb15891\"]"
+    },
+    {
+      "at": "2026-11-19T12:00:04.111Z",
+      "nextAction": "60dd39b05eedcfe089cc6f361679f68ad5e093a6f0",
+      "kind": "reread",
+      "body": "[\"5149d2be-b51f-4a7f-b375-f2a851a4a028\",{\"status\":\"APPROVED\",\"page\":0,\"size\":1000}]"
+    },
+    {
+      "at": "2026-11-19T12:00:04.125Z",
+      "nextAction": "4043b3959ae7dbeb1ccf6d35c2d214f8b816b54805",
+      "kind": "FAILED",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "at": "2026-11-19T12:00:04.133Z",
+      "nextAction": "60dd39b05eedcfe089cc6f361679f68ad5e093a6f0",
+      "kind": "FAILED",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "at": "2026-11-19T12:00:04.134Z",
+      "nextAction": "4071e31169d650f2141f255860cc5367c32aceea9c",
+      "kind": "calculate",
+      "body": "[\"9136e7fc-3f9a-4dee-8d84-3f420833110e\"]"
+    },
+    {
+      "at": "2026-11-19T12:00:04.166Z",
+      "nextAction": "4071e31169d650f2141f255860cc5367c32aceea9c",
+      "kind": "FAILED",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "at": "2026-11-19T12:00:06.397Z",
+      "nextAction": "60ea14674e92ca882cccb1d2ece2cc2895d8ac1b09",
+      "kind": "other",
+      "body": "[\"afba18d5-d1cf-4a80-b5c4-6a568cb15891\",\"783fe6ce-ccb2-4861-b181-67c75f0e89b6\"]"
+    },
+    {
+      "at": "2026-11-19T12:00:06.436Z",
+      "nextAction": "4071e31169d650f2141f255860cc5367c32aceea9c",
+      "kind": "calculate",
+      "body": "[\"9136e7fc-3f9a-4dee-8d84-3f420833110e\"]"
+    },
+    {
+      "at": "2026-11-19T12:00:06.448Z",
+      "nextAction": "60ea14674e92ca882cccb1d2ece2cc2895d8ac1b09",
+      "kind": "FAILED",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "at": "2026-11-19T12:00:06.476Z",
+      "nextAction": "4071e31169d650f2141f255860cc5367c32aceea9c",
+      "kind": "FAILED",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "at": "2026-11-19T12:00:08.671Z",
+      "nextAction": "4043b3959ae7dbeb1ccf6d35c2d214f8b816b54805",
+      "kind": "other",
+      "body": "[\"afba18d5-d1cf-4a80-b5c4-6a568cb15891\"]"
+    },
+    {
+      "at": "2026-11-19T12:00:08.698Z",
+      "nextAction": "60dd39b05eedcfe089cc6f361679f68ad5e093a6f0",
+      "kind": "reread",
+      "body": "[\"5149d2be-b51f-4a7f-b375-f2a851a4a028\",{\"status\":\"APPROVED\",\"page\":0,\"size\":1000}]"
+    },
+    {
+      "at": "2026-11-19T12:00:08.702Z",
+      "nextAction": "60dd39b05eedcfe089cc6f361679f68ad5e093a6f0",
+      "kind": "FAILED",
+      "error": "net::ERR_FAILED"
+    },
+    {
+      "at": "2026-11-19T12:00:08.702Z",
+      "nextAction": "4071e31169d650f2141f255860cc5367c32aceea9c",
+      "kind": "calculate",
+      "body": "[\"9136e7fc-3f9a-4dee-8d84-3f420833110e\"]"
+    },
+    {
+      "at": "2026-11-19T12:00:08.712Z",
+      "nextAction": "4043b3959ae7dbeb1ccf6d35c2d214f8b816b54805",
+      "kind": "FAILED",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "at": "2026-11-19T12:00:08.736Z",
+      "nextAction": "4071e31169d650f2141f255860cc5367c32aceea9c",
+      "kind": "FAILED",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "at": "2026-11-19T12:00:13.020Z",
+      "nextAction": "60dd39b05eedcfe089cc6f361679f68ad5e093a6f0",
+      "kind": "reread",
+      "body": "[\"5149d2be-b51f-4a7f-b375-f2a851a4a028\",{\"status\":\"APPROVED\",\"page\":0,\"size\":1000}]"
+    },
+    {
+      "at": "2026-11-19T12:00:13.053Z",
+      "nextAction": "60dd39b05eedcfe089cc6f361679f68ad5e093a6f0",
+      "kind": "FAILED",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "at": "2026-11-19T12:00:13.053Z",
+      "nextAction": "4071e31169d650f2141f255860cc5367c32aceea9c",
+      "kind": "calculate",
+      "body": "[\"9136e7fc-3f9a-4dee-8d84-3f420833110e\"]"
+    },
+    {
+      "at": "2026-11-19T12:00:13.090Z",
+      "nextAction": "4071e31169d650f2141f255860cc5367c32aceea9c",
+      "kind": "FAILED",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "at": "2026-11-19T12:00:15.427Z",
+      "nextAction": "60ea14674e92ca882cccb1d2ece2cc2895d8ac1b09",
+      "kind": "other",
+      "body": "[\"afba18d5-d1cf-4a80-b5c4-6a568cb15891\",\"783fe6ce-ccb2-4861-b181-67c75f0e89b6\"]"
+    },
+    {
+      "at": "2026-11-19T12:00:15.467Z",
+      "nextAction": "4071e31169d650f2141f255860cc5367c32aceea9c",
+      "kind": "calculate",
+      "body": "[\"9136e7fc-3f9a-4dee-8d84-3f420833110e\"]"
+    },
+    {
+      "at": "2026-11-19T12:00:15.482Z",
+      "nextAction": "60ea14674e92ca882cccb1d2ece2cc2895d8ac1b09",
+      "kind": "FAILED",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "at": "2026-11-19T12:00:15.509Z",
+      "nextAction": "4071e31169d650f2141f255860cc5367c32aceea9c",
+      "kind": "FAILED",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "at": "2026-11-19T12:00:17.701Z",
+      "nextAction": "4043b3959ae7dbeb1ccf6d35c2d214f8b816b54805",
+      "kind": "other",
+      "body": "[\"afba18d5-d1cf-4a80-b5c4-6a568cb15891\"]"
+    },
+    {
+      "at": "2026-11-19T12:00:17.730Z",
+      "nextAction": "60dd39b05eedcfe089cc6f361679f68ad5e093a6f0",
+      "kind": "reread",
+      "body": "[\"5149d2be-b51f-4a7f-b375-f2a851a4a028\",{\"status\":\"APPROVED\",\"page\":0,\"size\":1000}]"
+    },
+    {
+      "at": "2026-11-19T12:00:17.732Z",
+      "nextAction": "60dd39b05eedcfe089cc6f361679f68ad5e093a6f0",
+      "kind": "FAILED",
+      "error": "net::ERR_FAILED"
+    },
+    {
+      "at": "2026-11-19T12:00:17.732Z",
+      "nextAction": "4071e31169d650f2141f255860cc5367c32aceea9c",
+      "kind": "calculate",
+      "body": "[\"9136e7fc-3f9a-4dee-8d84-3f420833110e\"]"
+    },
+    {
+      "at": "2026-11-19T12:00:17.733Z",
+      "nextAction": "4071e31169d650f2141f255860cc5367c32aceea9c",
+      "kind": "FAILED",
+      "error": "net::ERR_FAILED"
+    },
+    {
+      "at": "2026-11-19T12:00:17.752Z",
+      "nextAction": "4043b3959ae7dbeb1ccf6d35c2d214f8b816b54805",
+      "kind": "FAILED",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "at": "2026-11-19T12:00:22.011Z",
+      "nextAction": "60dd39b05eedcfe089cc6f361679f68ad5e093a6f0",
+      "kind": "reread",
+      "body": "[\"5149d2be-b51f-4a7f-b375-f2a851a4a028\",{\"status\":\"APPROVED\",\"page\":0,\"size\":1000}]"
+    },
+    {
+      "at": "2026-11-19T12:00:22.039Z",
+      "nextAction": "4071e31169d650f2141f255860cc5367c32aceea9c",
+      "kind": "calculate",
+      "body": "[\"9136e7fc-3f9a-4dee-8d84-3f420833110e\"]"
+    },
+    {
+      "at": "2026-11-19T12:00:24.424Z",
+      "nextAction": "60ea14674e92ca882cccb1d2ece2cc2895d8ac1b09",
+      "kind": "other",
+      "body": "[\"afba18d5-d1cf-4a80-b5c4-6a568cb15891\",\"783fe6ce-ccb2-4861-b181-67c75f0e89b6\"]"
+    },
+    {
+      "at": "2026-11-19T12:00:24.456Z",
+      "nextAction": "4071e31169d650f2141f255860cc5367c32aceea9c",
+      "kind": "calculate",
+      "body": "[\"9136e7fc-3f9a-4dee-8d84-3f420833110e\"]"
+    },
+    {
+      "at": "2026-11-19T12:00:24.465Z",
+      "nextAction": "60ea14674e92ca882cccb1d2ece2cc2895d8ac1b09",
+      "kind": "FAILED",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "at": "2026-11-19T12:00:34.869Z",
+      "nextAction": "4071e31169d650f2141f255860cc5367c32aceea9c",
+      "kind": "FAILED",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "at": "2026-11-19T12:00:34.869Z",
+      "nextAction": "00e39626508ed68d73861e60c8c46817c04ba67b67",
+      "kind": "other",
+      "body": "[]"
+    },
+    {
+      "at": "2026-11-19T12:00:34.884Z",
+      "nextAction": "603dc338761f7fe1b0a329a7eae239b20d2f67adca",
+      "kind": "other",
+      "body": "------WebKitFormBoundaryR4PHrMNjlQmsB45b\r\nContent-Disposition: form-data; name=\"1\"; filename=\"s2-HZV1Q.csv\"\r\nContent-Type: text/csv\r\n\r\n\r\n------WebKitFormBoundar"
+    },
+    {
+      "at": "2026-11-19T12:00:35.021Z",
+      "nextAction": "603dc338761f7fe1b0a329a7eae239b20d2f67adca",
+      "kind": "FAILED",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "at": "2026-11-19T12:00:37.683Z",
+      "nextAction": "40ab147710e7d1a3ff31575b4e6c4584f318fbbec8",
+      "kind": "other",
+      "body": "[\"b3da27fa-798a-47f4-aa5b-920300a23f7a\"]"
+    },
+    {
+      "at": "2026-11-19T12:00:37.732Z",
+      "nextAction": "40ef3035a408a1f4a46407a41896ae0bfde72c0e76",
+      "kind": "other",
+      "body": "[\"b3da27fa-798a-47f4-aa5b-920300a23f7a\"]"
+    },
+    {
+      "at": "2026-11-19T12:00:37.746Z",
+      "nextAction": "40ab147710e7d1a3ff31575b4e6c4584f318fbbec8",
+      "kind": "FAILED",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "at": "2026-11-19T12:00:37.753Z",
+      "nextAction": "40ef3035a408a1f4a46407a41896ae0bfde72c0e76",
+      "kind": "FAILED",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "at": "2026-11-19T12:00:37.773Z",
+      "nextAction": "60dd39b05eedcfe089cc6f361679f68ad5e093a6f0",
+      "kind": "reread",
+      "body": "[\"5149d2be-b51f-4a7f-b375-f2a851a4a028\",{\"status\":\"APPROVED\",\"page\":0,\"size\":1000}]"
+    },
+    {
+      "at": "2026-11-19T12:00:37.795Z",
+      "nextAction": "60c0da5e4063ccdd66f6c6ce179c134da7618a3888",
+      "kind": "other",
+      "body": "[\"5149d2be-b51f-4a7f-b375-f2a851a4a028\",{\"periodEnd\":\"2026-11-09\",\"bankStatementId\":\"b3da27fa-798a-47f4-aa5b-920300a23f7a\"}]"
+    },
+    {
+      "at": "2026-11-19T12:00:37.796Z",
+      "nextAction": "60dd39b05eedcfe089cc6f361679f68ad5e093a6f0",
+      "kind": "FAILED",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "at": "2026-11-19T12:00:37.827Z",
+      "nextAction": "4071e31169d650f2141f255860cc5367c32aceea9c",
+      "kind": "calculate",
+      "body": "[\"7b8337b4-3216-4173-8d67-1ea38ac06130\"]"
+    },
+    {
+      "at": "2026-11-19T12:00:37.842Z",
+      "nextAction": "60c0da5e4063ccdd66f6c6ce179c134da7618a3888",
+      "kind": "FAILED",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "at": "2026-11-19T12:00:37.864Z",
+      "nextAction": "4071e31169d650f2141f255860cc5367c32aceea9c",
+      "kind": "FAILED",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "at": "2026-11-19T12:00:41.045Z",
+      "nextAction": "60ea14674e92ca882cccb1d2ece2cc2895d8ac1b09",
+      "kind": "other",
+      "body": "[\"715fe65e-feae-4d6b-996f-0584fd756779\",\"7f364f6d-71de-49f0-9910-994ecea7d250\"]"
+    },
+    {
+      "at": "2026-11-19T12:00:41.090Z",
+      "nextAction": "4071e31169d650f2141f255860cc5367c32aceea9c",
+      "kind": "calculate",
+      "body": "[\"7b8337b4-3216-4173-8d67-1ea38ac06130\"]"
+    },
+    {
+      "at": "2026-11-19T12:00:41.098Z",
+      "nextAction": "60ea14674e92ca882cccb1d2ece2cc2895d8ac1b09",
+      "kind": "FAILED",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "at": "2026-11-19T12:00:41.120Z",
+      "nextAction": "4071e31169d650f2141f255860cc5367c32aceea9c",
+      "kind": "FAILED",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "at": "2026-11-19T12:00:43.343Z",
+      "nextAction": "600b97cf2ccf778a5c5b6c75694fe852a555500df2",
+      "kind": "other",
+      "body": "[\"88e9f6d4-487d-4542-a7fe-0ce8a6dbdb3a\",\"Non-trust item\"]"
+    },
+    {
+      "at": "2026-11-19T12:00:43.396Z",
+      "nextAction": "4071e31169d650f2141f255860cc5367c32aceea9c",
+      "kind": "calculate",
+      "body": "[\"7b8337b4-3216-4173-8d67-1ea38ac06130\"]"
+    },
+    {
+      "at": "2026-11-19T12:00:43.407Z",
+      "nextAction": "600b97cf2ccf778a5c5b6c75694fe852a555500df2",
+      "kind": "FAILED",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "at": "2026-11-19T12:00:45.644Z",
+      "nextAction": "4043b3959ae7dbeb1ccf6d35c2d214f8b816b54805",
+      "kind": "other",
+      "body": "[\"715fe65e-feae-4d6b-996f-0584fd756779\"]"
+    },
+    {
+      "at": "2026-11-19T12:00:45.677Z",
+      "nextAction": "60dd39b05eedcfe089cc6f361679f68ad5e093a6f0",
+      "kind": "reread",
+      "body": "[\"5149d2be-b51f-4a7f-b375-f2a851a4a028\",{\"status\":\"APPROVED\",\"page\":0,\"size\":1000}]"
+    },
+    {
+      "at": "2026-11-19T12:00:45.689Z",
+      "nextAction": "4043b3959ae7dbeb1ccf6d35c2d214f8b816b54805",
+      "kind": "FAILED",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "at": "2026-11-19T12:00:45.702Z",
+      "nextAction": "4071e31169d650f2141f255860cc5367c32aceea9c",
+      "kind": "calculate",
+      "body": "[\"7b8337b4-3216-4173-8d67-1ea38ac06130\"]"
+    },
+    {
+      "at": "2026-11-19T12:00:45.720Z",
+      "nextAction": "4071e31169d650f2141f255860cc5367c32aceea9c",
+      "kind": "FAILED",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "at": "2026-11-19T12:00:47.964Z",
+      "nextAction": "60ea14674e92ca882cccb1d2ece2cc2895d8ac1b09",
+      "kind": "other",
+      "body": "[\"715fe65e-feae-4d6b-996f-0584fd756779\",\"7f364f6d-71de-49f0-9910-994ecea7d250\"]"
+    },
+    {
+      "at": "2026-11-19T12:00:47.995Z",
+      "nextAction": "4071e31169d650f2141f255860cc5367c32aceea9c",
+      "kind": "calculate",
+      "body": "[\"7b8337b4-3216-4173-8d67-1ea38ac06130\"]"
+    },
+    {
+      "at": "2026-11-19T12:00:48.004Z",
+      "nextAction": "60ea14674e92ca882cccb1d2ece2cc2895d8ac1b09",
+      "kind": "FAILED",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "at": "2026-11-19T12:00:49.899Z",
+      "nextAction": "4071e31169d650f2141f255860cc5367c32aceea9c",
+      "kind": "FAILED",
+      "error": "net::ERR_ABORTED"
+    }
+  ],
+  "calculateResponses": [
+    {
+      "at": "2026-11-19T12:00:01.903Z",
+      "status": 200,
+      "result": "<no body: Error: response.text: Protocol error (Network.getResponseBody): No data found for resource with given identifier>"
+    },
+    {
+      "at": "2026-11-19T12:00:04.168Z",
+      "status": 200,
+      "result": "<no body: Error: response.text: Protocol error (Network.getResponseBody): No data found for resource with given identifier>"
+    },
+    {
+      "at": "2026-11-19T12:00:06.477Z",
+      "status": 200,
+      "result": "<no body: Error: response.text: Protocol error (Network.getResponseBody): No data found for resource with given identifier>"
+    },
+    {
+      "at": "2026-11-19T12:00:08.738Z",
+      "status": 200,
+      "result": "<no body: Error: response.text: Protocol error (Network.getResponseBody): No data found for resource with given identifier>"
+    },
+    {
+      "at": "2026-11-19T12:00:13.092Z",
+      "status": 200,
+      "result": "<no body: Error: response.text: Protocol error (Network.getResponseBody): No data found for resource with given identifier>"
+    },
+    {
+      "at": "2026-11-19T12:00:15.515Z",
+      "status": 200,
+      "result": "<no body: Error: response.text: Protocol error (Network.getResponseBody): No data found for resource with given identifier>"
+    },
+    {
+      "at": "2026-11-19T12:00:22.075Z",
+      "status": 200,
+      "result": "{\"success\":true,\"data\":{\"id\":\"9136e7fc-3f9a-4dee-8d84-3f420833110e\",\"trustAccountId\":\"5149d2be-b51f-4a7f-b375-f2a851a4a028\",\"periodEnd\":\"2026-11-05\",\"bankStatementId\":\"d59233b0-c23e-4383-9bae-5f3b0cf3a8d4\",\"bankBalance\":-275,\"outstandingDeposits\":5000,\"outstandingPayments\":1250,\"adjustedBankBalance\":3475,\"cashbookBalance\":3750,\"clientLedgerTotal\":3750,\"creditorBreakdown\":{\"clientLedgers\":3750,\"inv"
+    },
+    {
+      "at": "2026-11-19T12:00:34.870Z",
+      "status": 200,
+      "result": "<no body: Error: response.text: Protocol error (Network.getResponseBody): No data found for resource with given identifier>"
+    },
+    {
+      "at": "2026-11-19T12:00:37.866Z",
+      "status": 200,
+      "result": "<no body: Error: response.text: Protocol error (Network.getResponseBody): No data found for resource with given identifier>"
+    },
+    {
+      "at": "2026-11-19T12:00:41.125Z",
+      "status": 200,
+      "result": "<no body: Error: response.text: Protocol error (Network.getResponseBody): No data found for resource with given identifier>"
+    },
+    {
+      "at": "2026-11-19T12:00:43.422Z",
+      "status": 200,
+      "result": "{\"success\":false,\"error\":\"Statement s3-HZV1Q.csv has movements between this statement's last line and 9 November 2026. Reconcile against the statement that covers the period end.\"}"
+    },
+    {
+      "at": "2026-11-19T12:00:45.721Z",
+      "status": 200,
+      "result": "<no body: Error: response.text: Protocol error (Network.getResponseBody): No data found for resource with given identifier>"
+    },
+    {
+      "at": "2026-11-19T12:00:49.900Z",
+      "status": 200,
+      "result": "<no body: Error: response.text: Protocol error (Network.getResponseBody): No data found for resource with given identifier>"
+    }
+  ],
+  "pageErrors": [],
+  "consoleErrors": [
+    {
+      "at": "2026-11-19T11:59:59.473Z",
+      "text": "Failed to load resource: net::ERR_FAILED"
+    },
+    {
+      "at": "2026-11-19T12:00:08.702Z",
+      "text": "Failed to load resource: net::ERR_FAILED"
+    },
+    {
+      "at": "2026-11-19T12:00:17.732Z",
+      "text": "Failed to load resource: net::ERR_FAILED"
+    },
+    {
+      "at": "2026-11-19T12:00:17.733Z",
+      "text": "Failed to load resource: net::ERR_FAILED"
+    }
+  ],
+  "setup": {
+    "accountId": "5149d2be-b51f-4a7f-b375-f2a851a4a028",
+    "clientId": "27e9a835-addc-4e39-b42b-421ba489c5eb",
+    "matterId": "74cee341-38ff-4d33-9e4a-cbde3863306e",
+    "m1": {
+      "depositId": "9825c1d4-d688-4902-b80e-493b2cb0f169",
+      "paymentId": "783fe6ce-ccb2-4861-b181-67c75f0e89b6",
+      "paymentStatus": "APPROVED"
+    },
+    "m2": {
+      "depositId": "29f9c956-7248-40c8-ba2d-75f8c335e56b",
+      "paymentId": "7f364f6d-71de-49f0-9910-994ecea7d250",
+      "paymentStatus": "APPROVED"
+    }
+  },
+  "R1": {
+    "stmt": "d59233b0-c23e-4383-9bae-5f3b0cf3a8d4",
+    "reconId": "9136e7fc-3f9a-4dee-8d84-3f420833110e",
+    "L": {
+      "1": "afa0b57b-be8d-4eee-bd20-1d743d47545a",
+      "2": "afba18d5-d1cf-4a80-b5c4-6a568cb15891",
+      "3": "b6f5912d-3215-47cb-9f49-2dfd1289166a",
+      "4": "0d971096-84b2-4c22-aa8f-62a4dbef1c7f"
+    },
+    "reconsBefore": "2"
+  },
+  "learned": {
+    "calcAction": "4071e31169d650f2141f255860cc5367c32aceea9c",
+    "rereadAction": "60dd39b05eedcfe089cc6f361679f68ad5e093a6f0"
+  },
+  "R2": {
+    "stmt": "b3da27fa-798a-47f4-aa5b-920300a23f7a",
+    "reconId": "7b8337b4-3216-4173-8d67-1ea38ac06130",
+    "L": {
+      "1": "88e9f6d4-487d-4542-a7fe-0ce8a6dbdb3a",
+      "2": "715fe65e-feae-4d6b-996f-0584fd756779",
+      "3": "14307373-ceb5-4fa5-832e-e6169dadf468",
+      "4": "5f770a3a-3ee9-41a7-a702-aa5dd2bcddbd"
+    }
+  },
+  "finishedAt": "2026-11-19T12:00:53.640Z"
+}

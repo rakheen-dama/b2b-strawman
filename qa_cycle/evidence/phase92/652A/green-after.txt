@@ -1,0 +1,83 @@
+652A — task 652.3 green run (after the fix), 2026-11-19
+
+Branch: epic-652A/wizard-failed-recalc-banner, base origin/main 1d7686586856d6b5bc870bf41d0ed684b6fd067c
+(the fix is the commit that adds this file; see `git log -1 -- qa_cycle/evidence/phase92/652A/green-after.txt`)
+Production code: page.tsx (reconciliation/new) + components/trust/ReconciliationSplitPane.tsx
+Test file:       frontend/__tests__/trust-reconciliation.test.tsx
+Command (from frontend/, nvm node v20.11.1):
+  NODE_OPTIONS="" /opt/homebrew/bin/pnpm exec vitest run __tests__/trust-reconciliation.test.tsx --reporter=verbose
+Exit code: 0
+
+Result:
+  Test Files  1 passed (1)
+       Tests  59 passed (59)
+
+Red -> green (6 cases; red = same test file against UNMODIFIED production code, i.e. main's
+page.tsx + ReconciliationSplitPane.tsx; that run: exit 1, Tests 6 failed | 53 passed (59)):
+  ✓ Trust Reconciliation > a failed recalculation after a saved change (652A)
+      > reports a refused recalculation after a match and marks the figures stale        (scout red, red-before.txt)
+      > reports a refused recalculation after an exclude and marks the figures stale     (scout red, red-before.txt)
+      > reports a refused recalculation after an unmatch and marks the figures stale     (scout red, red-before.txt)
+      > reports a recalculation request that fails to arrive like a refused one          (D-4, rejected shape; red on main: banner "Failed to fetch")
+      > clears the out-of-date marking once a later recalculation succeeds               (D-3 marker clear; red on main: no banner)
+  ✓ Trust Reconciliation > record from statement (647A)
+      > reports a failed recalculation after a line is recorded                          (D-2 wording "…the balances could not…" + stale marker; red on main: old wording)
+
+Note on the reset-path clear (resetFromStep2 / resetFromStep3 call setFiguresStale(false)):
+not independently observable in the UI, because the summary only renders with a reconciliation,
+a reset nulls it, and the only way back to step 4 (handleStartReview) clears the marker on its
+successful calculate. The reset clear is defence in depth; the successful-recalculation clear is
+the test above.
+
+Full vitest (from frontend/): NODE_OPTIONS="" /opt/homebrew/bin/pnpm test -> exit 0
+  Test Files  482 passed (482)
+       Tests  4568 passed | 2 skipped (4570)
+lint: exit 0 (0 errors; 77 pre-existing warnings, none in the 3 changed files)
+typecheck: exit 0
+format:check: exit 0 ("All matched files use Prettier code style!")
+
+---- Review fix round (PR #1815, reviewer A Medium: record + rejected calculate) — 2026-11-19 ----
+
+New case (652A describe, next to the rejected-shape match case):
+  > reports a recalculation request that fails to arrive after a record like a refused one
+  Record succeeds, then calculate REJECTS (TypeError "Failed to fetch") -> expects the banner
+  "The line was recorded but the balances could not be recalculated: Failed to fetch", the stale
+  marker, the dialog closed without "An unexpected error occurred", and no process
+  'unhandledRejection'.
+
+Green on head (head page.tsx + ReconciliationSplitPane.tsx), from frontend/, nvm node v20.11.1:
+  NODE_OPTIONS="" /opt/homebrew/bin/pnpm exec vitest run __tests__/trust-reconciliation.test.tsx
+  Exit 0 — Test Files 1 passed (1), Tests 60 passed (60)
+
+Red on main (main's page.tsx copied over via
+  git show origin/main:"frontend/app/(app)/org/[slug]/trust-accounting/reconciliation/new/page.tsx",
+  head's ReconciliationSplitPane.tsx, same test file; restored with git checkout -- <path>,
+  git status afterwards showed only the test file modified):
+  Exit 1 — Tests 7 failed | 53 passed (60). The new case fails with
+  "Unable to find an element by: [data-testid="reconciliation-error"]" (on main handleRecord has no
+  .catch on calculate, so the rejection escapes to the dialog's own catch and no banner is shown).
+  The other 6 failures are the 6 red->green cases listed above.
+
+---- D-6 round (CodeRabbit round 1 on PR #1815: CF-1 reset guard, CF-5 unmatch re-read) — 2026-11-19 ----
+
+Red first, on head efd8420e6 with only the 6 new test cases added (page.tsx unmodified):
+  NODE_OPTIONS="" /opt/homebrew/bin/pnpm exec vitest run __tests__/trust-reconciliation.test.tsx
+  Exit 1 — Tests 6 failed | 60 passed (66). Trimmed run: red-before-d6.txt.
+  - drops a 'refused' recalculation after a 'match' / 'exclude' / 'unmatch' that lands after the
+    wizard was reset: the old wizard's banner "The … but the balances could not be recalculated: …"
+    shows on step 3 of the new wizard
+  - drops a 'successful' recalculation after a 'match' …: createReconciliation called 1 time, not 2
+    (the old reconciliation was restored, so Review reused it)
+  - still recalculates after an unmatch when the transactions cannot be re-read: banner was the bare
+    "Failed to fetch" (calculate never ran)
+  - marks the figures stale after an unmatch when neither the re-read nor the recalculation works:
+    banner was the bare "Failed to fetch"
+
+Green after the fix (page.tsx only), from frontend/, nvm node v20.11.1:
+  NODE_OPTIONS="" /opt/homebrew/bin/pnpm exec vitest run __tests__/trust-reconciliation.test.tsx
+  Exit 0 — Test Files 1 passed (1), Tests 66 passed (66)
+  NODE_OPTIONS="" /opt/homebrew/bin/pnpm test
+  Exit 0 — Test Files 482 passed (482), Tests 4575 passed | 2 skipped (4577)
+  lint: exit 0 (0 errors; 77 pre-existing warnings, none in the changed files)
+  typecheck: exit 0
+  format:check: exit 0

@@ -1,7 +1,7 @@
 {
-  "commit": "662e71131",
-  "command": "cd backend && caffeinate -is ./mvnw clean verify -q",
+  "commit": "ae82e5b6e",
+  "command": "cd backend && ./mvnw clean -q && bash scripts/verify.sh -q",
   "exit": 0,
-  "ts": "2026-11-18T23:22:34Z",
-  "summary": "650D PR #1807 final head: 7364 testcases / 0 failures / 0 errors / 26 skipped (surefire <testcase> count) — 25:05 min"
+  "ts": "2026-11-19T01:17:47Z",
+  "summary": "650B PR #1808 final head: 7377 testcases / 0 failures / 0 errors / 26 skipped (surefire+failsafe <testcase> count)"
 }

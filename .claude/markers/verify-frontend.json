@@ -1,7 +1,7 @@
 {
-  "commit": "8f9fb18e7",
+  "commit": "c0c3a69df",
   "command": "cd frontend && pnpm install && pnpm run lint && pnpm run build && pnpm test && pnpm run format:check",
   "exit": 0,
-  "ts": "2026-11-18T23:22:34Z",
-  "summary": "650D PR #1807 (frontend unchanged 8f9fb18e7..662e71131): lint 0 errors, build ok, vitest 484 files / 4581 passed / 2 skipped, format:check ok"
+  "ts": "2026-11-19T00:48:00Z",
+  "summary": "650B PR #1808 (frontend unchanged c0c3a69df..ae82e5b6e): lint 0 errors / 78 warnings (baseline), build ok, vitest 485 files / 4592 passed / 2 skipped, format:check ok; CI Frontend pass @ae82e5b6e"
 }

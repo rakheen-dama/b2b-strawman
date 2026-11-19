@@ -153,23 +153,6 @@ class InvestmentReportBasisIntegrationTest {
     createDeposit(
         trustAccountId, customerId2, new BigDecimal("50000.00"), "DEP-BAS-002", "2025-04-20");
 
-    // Create LPFF rate (75% LPFF share)
-    mockMvc
-        .perform(
-            post("/api/trust-accounts/" + trustAccountId + "/lpff-rates")
-                .with(ownerJwt)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {
-                      "effectiveFrom": "2025-04-01",
-                      "ratePercent": 0.0750,
-                      "lpffSharePercent": 0.7500,
-                      "notes": "Basis test rate"
-                    }
-                    """))
-        .andExpect(status().isCreated());
-
     // Place a FIRM_DISCRETION investment for customer1
     var firmPlaced =
         ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -265,7 +248,7 @@ class InvestmentReportBasisIntegrationTest {
   // --- Task 454.4: Investment Register Report Tests ---
 
   @Test
-  void investmentRegister_firmDiscretionOnly_showsGeneralRate() {
+  void investmentRegister_firmDiscretionOnly_labelsSection86_3_withNoRateKey() {
     runInTenant(
         () -> {
           var params = new HashMap<String, Object>();
@@ -277,13 +260,15 @@ class InvestmentReportBasisIntegrationTest {
           assertThat(result.rows()).hasSize(1);
           var row = result.rows().getFirst();
           assertThat(row.get("investmentBasis")).isEqualTo("FIRM_DISCRETION");
-          assertThat(row.get("applicableLpffRate")).isEqualTo("75%");
+          assertThat(row.get("basisLabel")).isEqualTo("Section 86(3)");
+          // 651E (ADR-383): the per-account rate key left the rows with lpff_rates
+          assertThat(row).doesNotContainKey("applicableLpffRate");
           assertThat(row.get("institution")).isEqualTo("ABSA Bank");
         });
   }
 
   @Test
-  void investmentRegister_clientInstructionOnly_showsStatutoryRate() {
+  void investmentRegister_clientInstructionOnly_labelsSection86_4_withNoRateKey() {
     runInTenant(
         () -> {
           var params = new HashMap<String, Object>();
@@ -295,13 +280,15 @@ class InvestmentReportBasisIntegrationTest {
           assertThat(result.rows()).hasSize(1);
           var row = result.rows().getFirst();
           assertThat(row.get("investmentBasis")).isEqualTo("CLIENT_INSTRUCTION");
-          assertThat(row.get("applicableLpffRate")).isEqualTo("5% (statutory)");
+          assertThat(row.get("basisLabel")).isEqualTo("Section 86(4)");
+          // 651E (ADR-383): the per-account rate key left the rows with lpff_rates
+          assertThat(row).doesNotContainKey("applicableLpffRate");
           assertThat(row.get("institution")).isEqualTo("Nedbank");
         });
   }
 
   @Test
-  void investmentRegister_mixedBasis_showsCorrectRatesPerRow() {
+  void investmentRegister_mixedBasis_labelsEachRowsSection() {
     runInTenant(
         () -> {
           var params = new HashMap<String, Object>();
@@ -316,14 +303,17 @@ class InvestmentReportBasisIntegrationTest {
                   .filter(r -> "FIRM_DISCRETION".equals(r.get("investmentBasis")))
                   .findFirst()
                   .orElseThrow();
-          assertThat(firmRow.get("applicableLpffRate")).isEqualTo("75%");
+          assertThat(firmRow.get("basisLabel")).isEqualTo("Section 86(3)");
 
           var clientRow =
               result.rows().stream()
                   .filter(r -> "CLIENT_INSTRUCTION".equals(r.get("investmentBasis")))
                   .findFirst()
                   .orElseThrow();
-          assertThat(clientRow.get("applicableLpffRate")).isEqualTo("5% (statutory)");
+          assertThat(clientRow.get("basisLabel")).isEqualTo("Section 86(4)");
+          // 651E (ADR-383): the per-account rate key left the rows with lpff_rates
+          assertThat(result.rows())
+              .allSatisfy(r -> assertThat(r).doesNotContainKey("applicableLpffRate"));
         });
   }
 
@@ -383,7 +373,7 @@ class InvestmentReportBasisIntegrationTest {
 
   @Test
   @SuppressWarnings("unchecked")
-  void section35DataPack_firmDiscretionSection_showsGeneralRate() {
+  void section35DataPack_firmDiscretionSection_showsTheYearEndBalance() {
     runInTenant(
         () -> {
           var params = new HashMap<String, Object>();
@@ -401,7 +391,9 @@ class InvestmentReportBasisIntegrationTest {
                   .filter(r -> r.get("_total") == null)
                   .toList();
           assertThat(firmRows).hasSize(1);
-          assertThat(firmRows.getFirst().get("applicableLpffRate")).isEqualTo("75%");
+          // 651E (ADR-383): the per-account rate key left the rows with lpff_rates
+          assertThat(firmRows.getFirst()).doesNotContainKey("applicableLpffRate");
+          assertThat(firmRows.getFirst().get("basisLabel")).isEqualTo("Section 86(3)");
           // 650C (D-14): the amount is the investment's balance on the books at the year end
           assertThat((BigDecimal) firmRows.getFirst().get("amount"))
               .isEqualByComparingTo("20000.00");
@@ -412,7 +404,7 @@ class InvestmentReportBasisIntegrationTest {
 
   @Test
   @SuppressWarnings("unchecked")
-  void section35DataPack_clientInstructionSection_showsStatutoryRate() {
+  void section35DataPack_clientInstructionSection_holdsTheClientInvestment() {
     runInTenant(
         () -> {
           var params = new HashMap<String, Object>();
@@ -432,7 +424,9 @@ class InvestmentReportBasisIntegrationTest {
                   .filter(r -> r.get("_total") == null)
                   .toList();
           assertThat(clientRows).hasSize(1);
-          assertThat(clientRows.getFirst().get("applicableLpffRate")).isEqualTo("5% (statutory)");
+          // 651E (ADR-383): the per-account rate key left the rows with lpff_rates
+          assertThat(clientRows.getFirst()).doesNotContainKey("applicableLpffRate");
+          assertThat(clientRows.getFirst().get("basisLabel")).isEqualTo("Section 86(4)");
         });
   }
 

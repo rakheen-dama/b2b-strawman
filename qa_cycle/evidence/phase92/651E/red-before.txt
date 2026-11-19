@@ -1,0 +1,29 @@
+651E red-before — test edits only, production code unmodified (main @ 2e7ce9374)
+Classes: InterestRunRemovalTest (new 9-case shape), InvestmentReportBasisIntegrationTest (5 rewritten + /lpff-rates setup removed)
+Tier 1 (./mvnw clean compile test-compile): COMPILE OK
+
+=== Run (a): as committed (V28 migration absent) ===
+./mvnw test -Dtest="InterestRunRemovalTest,InvestmentReportBasisIntegrationTest" -q
+[ERROR] Tests run: 9, Failures: 5, Errors: 0, Skipped: 0 -- in ...report.InvestmentReportBasisIntegrationTest
+[ERROR] Tests run: 1, Failures: 0, Errors: 1, Skipped: 0 -- in ...InterestRunRemovalTest
+[ERROR] Tests run: 10, Failures: 5, Errors: 1, Skipped: 0
+  InterestRunRemovalTest.setup » Flyway No migration with a target version 28 could be found.
+      Ensure target is specified correctly and the migration exists.   (every case errors in @BeforeAll)
+  InvestmentReportBasisIntegrationTest failures (all: Expecting actual {...} not to contain key "applicableLpffRate"):
+    investmentRegister_firmDiscretionOnly_labelsSection86_3_withNoRateKey   (row had applicableLpffRate="N/A")
+    investmentRegister_clientInstructionOnly_labelsSection86_4_withNoRateKey (row had applicableLpffRate="5% (statutory)")
+    investmentRegister_mixedBasis_labelsEachRowsSection                      (both rows carry the key)
+    section35DataPack_firmDiscretionSection_showsTheYearEndBalance           (Section 35 row had "N/A")
+    section35DataPack_clientInstructionSection_holdsTheClientInvestment      (Section 35 row had "5% (statutory)")
+  (basisLabel "Section 86(3)" / "Section 86(4)" assertions passed on main — the key is the only delta.)
+
+=== Run (b): temporary, uncommitted variant LPFF_DROP_VERSION = "27" (reverted after the run) ===
+./mvnw test -Dtest="InterestRunRemovalTest" -q
+[ERROR] Tests run: 9, Failures: 3, Errors: 1, Skipped: 0 -- in ...InterestRunRemovalTest
+  theLpffRateTableAndItsEntityAreGone            FAIL  [lpff_rates (651E)] expected: null but was: "tenant_53912d32ce4f.lpff_rates"
+  theLpffRateRoutesAreUnmapped                   FAIL  Status expected:<404> but was:<200>   (GET /lpff-rates still mapped)
+  aSchemaHoldingRatesMigratesToV28_theRateTableGoes_theAccountStays
+                                                 FAIL  expected: "NULL" but was: "tenant_d3d9a4a04816.lpff_rates"
+  runningTheV28BodyTwice_isANoOp                 ERROR FileNotFound class path resource
+                                                       [db/migration/tenant/V28__phase92_drop_lpff_rates.sql] does not exist
+  The 5 651A cases (run tables absent, run routes 404, engine gone, V26->V27 scratch, V27 body twice) PASS.

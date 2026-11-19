@@ -45,3 +45,22 @@ FAILING (red against 49d98cb64):
    [line status (tier 3 only)] expected: "UNMATCHED" but was: "AUTO_MATCHED"
    → tier 1 (reference + amount) finds R alone (G's reference differs); D-4's preferLive cannot drop
      it (no live row in tier 1's set), so the line AUTO_MATCHES the reversed R and C, G stay outstanding.
+
+--------------------------------------------------------------------------------------------------
+cycle 3 (D-6) — reproduce red (delta reviewer A Medium, cases (1) and (2); orchestrator ruling D-6)
+Head: 908c9277f (production code unchanged; only the two new test methods added). Command (from backend/):
+  ./mvnw test -Dtest="ReversedOriginalMatchIntegrationTest" -q > /tmp/mvn-fix3-652H-red.log 2>&1   → exit 1
+Surefire XML: 14 <testcase> (12 existing green + 2 new), 2 failures, 0 errors.
+
+FAILING (red against 908c9277f):
+5. autoMatch_doesNotLetAReversedOriginalAbsorbAnUnrelatedLineByAmountAndDate
+   R 1 Mar ref H-ERR-11 recorded in error, reversed 2 Mar by C; one unbooked +1 000 line 1 Mar ref
+   BANK-UNREL-0301 (unrelated).
+   [line status] expected: "UNMATCHED" but was: "AUTO_MATCHED"
+   → no live +1 000 row, so D-5 keeps R; tier 1 none, tier 2 (amount + exact date) finds R alone and
+     AUTO_MATCHES the unrelated receipt to the reversed R (C then sits as an outstanding payment).
+6. autoMatch_reversedOriginalStaysShadowedAfterTheLiveRowIsConsumed
+   R 1 Mar ref DEP-77 (reversed 2 Mar), G re-entered 1 Mar ref DEP-77; two +1 000 lines 1 Mar ref DEP-77.
+   [second line status] expected: "UNMATCHED" but was: "AUTO_MATCHED"
+   → line 1 takes G (D-5 drops R while G is in the pool); G leaves the shrinking pool, so for line 2
+     D-5 no longer sees a live row and R matches it at tier 1.

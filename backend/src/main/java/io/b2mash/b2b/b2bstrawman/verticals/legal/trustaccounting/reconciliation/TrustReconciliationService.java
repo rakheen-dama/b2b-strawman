@@ -351,15 +351,13 @@ public class TrustReconciliationService {
             .orElseThrow(() -> new ResourceNotFoundException("BankStatement", statementId));
 
     // Build candidate pool: posted transactions (RECORDED, APPROVED or REVERSED), unmatched,
-    // within date range (652H)
+    // within date range; only the REVERSED originals auto-match may link stay in it (652H D-6)
     LocalDate startDate = statement.getPeriodStart().minusDays(7);
     LocalDate endDate = statement.getPeriodEnd().plusDays(7);
-    // Wrap in ArrayList so removeIf() doesn't mutate the JPA-managed result list
     List<TrustTransaction> candidatePool =
-        new java.util.ArrayList<>(
+        withAutoMatchableReversedOriginalsOnly(
             trustTransactionRepository.findUnmatchedCandidates(
                 statement.getTrustAccountId(), startDate, endDate));
-    candidatePool.removeIf(TrustReconciliationService::isReversedStatementOnlyRow);
 
     // Get all UNMATCHED lines for this statement (deterministic order for reproducible matching)
     List<BankStatementLine> unmatchedLines =
@@ -371,10 +369,9 @@ public class TrustReconciliationService {
     int alreadyMatched = statement.getMatchedCount();
 
     for (BankStatementLine line : unmatchedLines) {
-      // Filter candidates by sign compatibility; a REVERSED original yields to live rows (D-5)
+      // Filter candidates by sign compatibility
       List<TrustTransaction> signFilteredCandidates =
-          withoutShadowedReversedOriginals(
-              candidatePool.stream().filter(c -> isSignCompatible(line, c)).toList());
+          candidatePool.stream().filter(c -> isSignCompatible(line, c)).toList();
 
       if (signFilteredCandidates.isEmpty()) {
         continue;
@@ -388,18 +385,22 @@ public class TrustReconciliationService {
         continue;
       }
 
-      if (tryAmountExactDateMatch(line, signFilteredCandidates, statement)) {
+      // A REVERSED original matches only by its own reference (tier 1), never by amount/date (D-6)
+      List<TrustTransaction> liveCandidates =
+          signFilteredCandidates.stream().filter(c -> !isReversed(c)).toList();
+
+      if (tryAmountExactDateMatch(line, liveCandidates, statement)) {
         autoMatched++;
         candidatePool.removeIf(c -> c.getId().equals(line.getTrustTransactionId()));
         continue;
       }
 
-      if (tryAmountCloseDateMatch(line, signFilteredCandidates)) {
+      if (tryAmountCloseDateMatch(line, liveCandidates)) {
         // Confidence 0.60 -- below threshold, remains UNMATCHED
         continue;
       }
 
-      tryAmountOnlyMatch(line, signFilteredCandidates);
+      tryAmountOnlyMatch(line, liveCandidates);
     }
 
     // Persist updated matchedCount
@@ -1223,37 +1224,44 @@ public class TrustReconciliationService {
    * was recorded from. Neither auto-match nor manual match offers it.
    */
   private static boolean isReversedStatementOnlyRow(TrustTransaction transaction) {
-    return "REVERSED".equals(transaction.getStatus())
+    return isReversed(transaction)
         && TrustTransactionType.find(transaction.getTransactionType())
             .map(TrustTransactionType::recordedOnlyFromStatementLine)
             .orElse(false);
   }
 
+  private static boolean isReversed(TrustTransaction transaction) {
+    return "REVERSED".equals(transaction.getStatus());
+  }
+
   /**
-   * 652H D-5: for a bank line, a REVERSED original is a candidate only when no live (non-REVERSED)
-   * candidate of its amount and sign (cashbook direction) is in the pool; otherwise it is dropped
-   * before any tier runs, and the line resolves among live rows exactly as it would if the reversed
-   * original were not matchable at all. So it still matches its own line when it is the only row of
-   * that amount and sign — the exit month's #7/#9 (§16.9.6) — but never takes a line from a
-   * reverse-then-re-enter's corrected row G, whatever reference the line carries (F-652H-3: an
-   * old-reference line would otherwise find R alone at tier 1 and leave C and G outstanding
-   * forever). Contras ({@code REVERSAL} rows) are live rows here: the rule is about reversed
-   * originals only (HF-7 untouched). Manual match is unaffected.
+   * 652H D-1/D-6: the auto-match pool — every unmatched posted row, except the REVERSED originals
+   * auto-match may not link. Computed once per run, against the initial pool (before any line
+   * consumes a row), and returned mutable so the run can shrink it. A REVERSED original stays only
+   * when it is not a statement-only row (D-1) and the initial pool holds no live (non-REVERSED) row
+   * of its amount and sign (cashbook direction) — so a row that once shadowed it keeps doing so
+   * after an earlier line takes it. A kept REVERSED original is then offered at tier 1 only (its
+   * own reference), never at the amount/date tiers ({@link #autoMatchStatement}): it matches its
+   * own line — the exit month's #7/#9 (§16.9.6) — but never absorbs an unrelated line of its
+   * amount, nor takes a line from a reverse-then-re-enter's corrected row. Anything else is left
+   * for a human (manual match still accepts it). Contras ({@code REVERSAL} rows) are live rows
+   * here: the rule is about reversed originals only (HF-7 untouched).
    */
-  private static List<TrustTransaction> withoutShadowedReversedOriginals(
-      List<TrustTransaction> candidates) {
-    return candidates.stream()
+  private static List<TrustTransaction> withAutoMatchableReversedOriginalsOnly(
+      List<TrustTransaction> unmatched) {
+    return unmatched.stream()
         .filter(
             c ->
-                !"REVERSED".equals(c.getStatus())
-                    || candidates.stream()
-                        .noneMatch(
-                            live ->
-                                !"REVERSED".equals(live.getStatus())
-                                    && live.getAmount().compareTo(c.getAmount()) == 0
-                                    && live.getCashbookEffect().signum()
-                                        == c.getCashbookEffect().signum()))
-        .toList();
+                !isReversed(c)
+                    || (!isReversedStatementOnlyRow(c)
+                        && unmatched.stream()
+                            .noneMatch(
+                                live ->
+                                    !isReversed(live)
+                                        && live.getAmount().compareTo(c.getAmount()) == 0
+                                        && live.getCashbookEffect().signum()
+                                            == c.getCashbookEffect().signum())))
+        .collect(Collectors.toCollection(ArrayList::new));
   }
 
   /**

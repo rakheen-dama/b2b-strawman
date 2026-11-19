@@ -80,3 +80,21 @@ Fix cycle 2 (F-652H-3; ruling D-5) — re-run on the fix-2 commit
   candidate; tiers 1/2 find nothing, tier 3 suggests G at 0.60 (line UNMATCHED, as main would for the
   live rows); confirming G by hand → MANUALLY_MATCHED, nothing outstanding, balanced at R1 000.
   FE: not touched in fix cycle 2 (not re-run).
+
+--------------------------------------------------------------------------------------------------
+Fix cycle 3 (delta reviewer A Medium, cases (1)/(2); ruling D-6) — re-run on the fix-3 commit
+  Change: D-5's per-line withoutShadowedReversedOriginals REPLACED by withAutoMatchableReversedOriginalsOnly
+    (TrustReconciliationService), applied ONCE to the run's initial pool: a REVERSED original stays only
+    when it is not statement-only (D-1, absorbed) and the initial pool holds no live row of its amount
+    and cashbook sign. Per line, tier 1 sees the sign-filtered pool (live + those kept REVERSED
+    originals); tiers 2–4 see live rows only. The four tier methods are byte-identical to main; with no
+    REVERSED rows in the pool the run is identical to main.
+  BE Tier 1: spotless:apply; compile test-compile -q → exit 0
+  BE Tier 2 Batch A (9 classes) → exit 0, 172 <testcase>, 0 failures/errors (ReversedOriginalMatchIntegrationTest
+       14: +2 D-6 methods, red first — red-reenter.txt "cycle 3 (D-6)"). Wall 27 s. Other 8 classes unchanged.
+  BE Tier 2 Batch B (13 classes) → exit 0, 167 <testcase>, 0 failures/errors (unchanged counts). Wall 37 s.
+  Stay-green: the exit-month methods (#7/#8, #9/#10) already carry the original's own reference on the
+  bank line (referenceOf(depositId) / referenceOf(paymentId), as §16.9.6's CSV) → tier 1, unshadowed;
+  the unmatch-then-auto-match method likewise. No test's line reference was changed. The three D-4
+  methods, the D-5 old-reference method and the two R-1 guards are green unchanged.
+  FE: not touched in fix cycle 3 (not re-run).

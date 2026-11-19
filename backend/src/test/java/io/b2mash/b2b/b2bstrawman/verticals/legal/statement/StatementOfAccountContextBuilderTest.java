@@ -158,6 +158,11 @@ class StatementOfAccountContextBuilderTest {
     lenient()
         .when(clientLedgerService.getClientInvestedStatement(any(), any(), any(), any()))
         .thenReturn(InvestedStatement.NONE);
+    // 652D: a multi-account customer's account is chosen by where the money is at periodEnd. By
+    // default no account holds anything, so the primary-GENERAL-else-first tie-break decides.
+    lenient()
+        .when(clientLedgerService.getClientBalanceAsOfDate(any(), any(), any()))
+        .thenReturn(BigDecimal.ZERO);
   }
 
   @Test
@@ -1356,6 +1361,88 @@ class StatementOfAccountContextBuilderTest {
         .getClientLedgerStatement(customerId, firstAccountId, periodStart, periodEnd);
     verify(clientLedgerService, never())
         .getClientLedgerStatement(customerId, primaryGeneralId, periodStart, periodEnd);
+  }
+
+  @Test
+  void buildTrustBlock_multiAccountCustomer_accountHoldingTheBalanceAtPeriodEndWinsOverPrimary() {
+    // 652D: the primary GENERAL was closed after the customer's money moved off it — it holds R0
+    // for them at periodEnd while a second account holds R10 000. The SoA prints the account
+    // holding the money, not the closed primary.
+    UUID replacementAccountId = UUID.randomUUID();
+    var project = projectWithCustomer("Closed-Primary", customerId);
+    when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer("Client")));
+    when(timeEntryRepository.findByFilters(eq(projectId), eq(null), eq(periodStart), eq(periodEnd)))
+        .thenReturn(List.of());
+    when(disbursementService.listForStatement(projectId, periodStart, periodEnd))
+        .thenReturn(List.of());
+    when(invoiceRepository.findByProjectId(projectId)).thenReturn(List.of());
+
+    when(trustTransactionRepository.findDistinctTrustAccountIdsByCustomerId(customerId))
+        .thenReturn(List.of(trustAccountId, replacementAccountId));
+    when(trustAccountRepository.findByAccountTypeAndPrimaryTrue(TrustAccountType.GENERAL))
+        .thenReturn(Optional.of(trustAccountWithId(trustAccountId)));
+    when(clientLedgerService.getClientBalanceAsOfDate(customerId, replacementAccountId, periodEnd))
+        .thenReturn(new BigDecimal("10000.00"));
+    when(clientLedgerService.getClientLedgerStatement(
+            customerId, replacementAccountId, periodStart, periodEnd))
+        .thenReturn(
+            new LedgerStatementResponse(
+                BigDecimal.ZERO,
+                new BigDecimal("10000.00"),
+                List.of(ledgerLine("DEPOSIT", new BigDecimal("10000.00")))));
+
+    var context = builder.build(projectId, periodStart, periodEnd);
+
+    @SuppressWarnings("unchecked")
+    Map<String, Object> trust = (Map<String, Object>) context.get("trust");
+    assertThat((BigDecimal) trust.get("closing_balance"))
+        .isEqualByComparingTo(new BigDecimal("10000.00"));
+    verify(clientLedgerService)
+        .getClientLedgerStatement(customerId, replacementAccountId, periodStart, periodEnd);
+    verify(clientLedgerService, never())
+        .getClientLedgerStatement(customerId, trustAccountId, periodStart, periodEnd);
+  }
+
+  @Test
+  void buildTrustBlock_multiAccountCustomer_historicalPeriodPicksTheAccountThatHeldTheMoneyThen() {
+    // 652D: for a period before the money moved, the old account (here the primary) held it at
+    // periodEnd and the replacement held nothing yet — the SoA prints the old account.
+    UUID replacementAccountId = UUID.randomUUID();
+    var project = projectWithCustomer("Before-The-Move", customerId);
+    when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer("Client")));
+    when(timeEntryRepository.findByFilters(eq(projectId), eq(null), eq(periodStart), eq(periodEnd)))
+        .thenReturn(List.of());
+    when(disbursementService.listForStatement(projectId, periodStart, periodEnd))
+        .thenReturn(List.of());
+    when(invoiceRepository.findByProjectId(projectId)).thenReturn(List.of());
+
+    when(trustTransactionRepository.findDistinctTrustAccountIdsByCustomerId(customerId))
+        .thenReturn(List.of(replacementAccountId, trustAccountId));
+    when(trustAccountRepository.findByAccountTypeAndPrimaryTrue(TrustAccountType.GENERAL))
+        .thenReturn(Optional.empty());
+    when(clientLedgerService.getClientBalanceAsOfDate(customerId, trustAccountId, periodEnd))
+        .thenReturn(new BigDecimal("4000.00"));
+    when(clientLedgerService.getClientLedgerStatement(
+            customerId, trustAccountId, periodStart, periodEnd))
+        .thenReturn(
+            new LedgerStatementResponse(
+                BigDecimal.ZERO,
+                new BigDecimal("4000.00"),
+                List.of(ledgerLine("DEPOSIT", new BigDecimal("4000.00")))));
+
+    var context = builder.build(projectId, periodStart, periodEnd);
+
+    @SuppressWarnings("unchecked")
+    Map<String, Object> trust = (Map<String, Object>) context.get("trust");
+    assertThat((BigDecimal) trust.get("closing_balance"))
+        .isEqualByComparingTo(new BigDecimal("4000.00"));
+    // Not the first id (the replacement, R0 at this periodEnd): the account holding the money.
+    verify(clientLedgerService)
+        .getClientLedgerStatement(customerId, trustAccountId, periodStart, periodEnd);
+    verify(clientLedgerService, never())
+        .getClientLedgerStatement(customerId, replacementAccountId, periodStart, periodEnd);
   }
 
   // ---------- LZKC-030: opening balance must exclude period-start-day transactions ----------

@@ -29,9 +29,10 @@ import org.springframework.stereotype.Component;
  * lacks {@code VIEW_TRUST} (security review, PR #1749; the generic generate endpoint does not
  * require it). The template prints "Trust details are not available." then.
  *
- * <p>The account is chosen exactly as {@code StatementOfAccountContextBuilder.buildTrustBlock} does
- * (GAP-L-94): the trust account(s) the client actually has activity on; with several, the primary
- * GENERAL account when the client is on it, else the first. Lines and balances come from {@link
+ * <p>The account is chosen by {@link #statementAccountId}, the one rule the Statement of Account
+ * uses too (GAP-L-94, 652D): of the trust account(s) the client actually has activity on, the one
+ * holding the client's money as at today; a sole account is used as-is, so a client whose only
+ * account is closed still gets its history. Lines and balances come from {@link
  * ClientLedgerService#getClientLedgerStatement}, so opening + lines = closing by construction.
  *
  * <p>648F (§16.6.4, ADR-379 L7): a client with section 86(4) investments placed from that account
@@ -83,11 +84,11 @@ public class ClientTrustStatementContext {
     if (!trustDataVisibility.visibleToCurrentMember()) {
       return Optional.empty();
     }
-    Optional<TrustAccount> account = selectAccount(clientId);
+    LocalDate today = LocalDate.now(clock);
+    Optional<TrustAccount> account = selectAccount(clientId, today);
     if (account.isEmpty()) {
       return Optional.of(Map.of("status", STATUS_NONE));
     }
-    LocalDate today = LocalDate.now(clock);
     var statement =
         clientLedgerService.getClientLedgerStatement(
             clientId, account.get().getId(), HISTORY_START, today);
@@ -161,27 +162,57 @@ public class ClientTrustStatementContext {
     return block;
   }
 
-  /** Mirrors {@code StatementOfAccountContextBuilder.buildTrustBlock}'s account selection. */
-  private Optional<TrustAccount> selectAccount(UUID clientId) {
-    List<UUID> accountIds =
-        trustTransactionRepository.findDistinctTrustAccountIdsByCustomerId(clientId);
-    if (accountIds.isEmpty()) {
+  /**
+   * The account a client document prints (GAP-L-94, 652D D-1): of the accounts the client has
+   * client-ledger activity on ({@code candidates}, in id order), those holding a non-zero general
+   * balance for the client as at {@code asAt} (all of them when none does); among those the primary
+   * GENERAL account, else the first id. A closed account holds nothing after its close
+   * (TrustAccountService close guard), so it is never chosen over an account that holds the
+   * client's money; a sole account is used as-is. Balances are read only when there are several
+   * candidates. Shared by this context (as at today) and {@code
+   * StatementOfAccountContextBuilder.buildTrustBlock} (as at the period end).
+   */
+  public static Optional<UUID> statementAccountId(
+      UUID clientId,
+      List<UUID> candidates,
+      LocalDate asAt,
+      ClientLedgerService ledger,
+      TrustAccountRepository accounts) {
+    if (candidates.isEmpty()) {
       return Optional.empty();
     }
-    UUID accountId = accountIds.getFirst();
+    if (candidates.size() == 1) {
+      return Optional.of(candidates.getFirst());
+    }
+    List<UUID> holding =
+        candidates.stream()
+            .filter(id -> ledger.getClientBalanceAsOfDate(clientId, id, asAt).signum() != 0)
+            .toList();
+    List<UUID> pool = holding.isEmpty() ? candidates : holding;
+    return Optional.of(
+        accounts
+            .findByAccountTypeAndPrimaryTrue(TrustAccountType.GENERAL)
+            .map(TrustAccount::getId)
+            .filter(pool::contains)
+            .orElse(pool.getFirst()));
+  }
+
+  private Optional<TrustAccount> selectAccount(UUID clientId, LocalDate today) {
+    List<UUID> accountIds =
+        trustTransactionRepository.findDistinctTrustAccountIdsByCustomerId(clientId);
+    Optional<UUID> accountId =
+        statementAccountId(
+            clientId, accountIds, today, clientLedgerService, trustAccountRepository);
+    if (accountId.isEmpty()) {
+      return Optional.empty();
+    }
     if (accountIds.size() > 1) {
-      accountId =
-          trustAccountRepository
-              .findByAccountTypeAndPrimaryTrue(TrustAccountType.GENERAL)
-              .map(TrustAccount::getId)
-              .filter(accountIds::contains)
-              .orElse(accountIds.getFirst());
       log.warn(
           "Client {} has activity on {} trust accounts; using {} for the client trust statement",
           clientId,
           accountIds.size(),
-          accountId);
+          accountId.get());
     }
-    return trustAccountRepository.findById(accountId);
+    return trustAccountRepository.findById(accountId.get());
   }
 }

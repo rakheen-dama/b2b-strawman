@@ -19,9 +19,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.dto.DisbursementSt
 import io.b2mash.b2b.b2bstrawman.verticals.legal.statement.dto.FeeLineDto;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.statement.dto.StatementSummary;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.statement.dto.TrustTxDto;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccount;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountType;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustDataVisibility;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientTrustStatementContext;
@@ -545,30 +543,32 @@ public class StatementOfAccountContextBuilder {
     // happened to live on a different account (multi-account tenants, or a tenant where the
     // primary GENERAL flag was not set). Section 86 / LPC compliance breaks if the SoA's
     // Trust Activity section is empty for a customer with active funds.
+    //
+    // 652D (D-1): with several such accounts, print the one holding the customer's money as at
+    // periodEnd — a closed primary GENERAL holds nothing after its close and must not hide the
+    // money on its replacement — tie-broken by the primary GENERAL, else the first id. A sole
+    // account is used as-is. The rule lives in ClientTrustStatementContext.statementAccountId,
+    // shared with the Client Trust Statement. Logging is intentional: a customer with activity on
+    // several trust accounts is an unusual operational shape worth surfacing.
     List<UUID> customerTrustAccountIds =
         trustTransactionRepository.findDistinctTrustAccountIdsByCustomerId(customer.getId());
-    UUID trustAccountId;
-    if (customerTrustAccountIds.isEmpty()) {
+    var selected =
+        ClientTrustStatementContext.statementAccountId(
+            customer.getId(),
+            customerTrustAccountIds,
+            periodEnd,
+            clientLedgerService,
+            trustAccountRepository);
+    if (selected.isEmpty()) {
       return TrustBlock.empty();
-    } else if (customerTrustAccountIds.size() == 1) {
-      trustAccountId = customerTrustAccountIds.get(0);
-    } else {
-      // Multi-account customer (unusual for ZA Section 86 firms — usually GENERAL only). Prefer
-      // the primary GENERAL trust account when the customer has activity on it; otherwise fall
-      // back to the first account id returned. Logging is intentional: a tenant with multiple
-      // active trust accounts per customer is an unusual operational shape worth surfacing.
-      UUID preferred =
-          trustAccountRepository
-              .findByAccountTypeAndPrimaryTrue(TrustAccountType.GENERAL)
-              .map(TrustAccount::getId)
-              .filter(customerTrustAccountIds::contains)
-              .orElse(customerTrustAccountIds.get(0));
+    }
+    UUID trustAccountId = selected.get();
+    if (customerTrustAccountIds.size() > 1) {
       log.warn(
           "Customer {} has activity on {} trust accounts; using {} for SoA Trust Activity section",
           customer.getId(),
           customerTrustAccountIds.size(),
-          preferred);
-      trustAccountId = preferred;
+          trustAccountId);
     }
     // LZKC-030: take BOTH balances from the ledger statement itself — it computes its opening
     // as of periodStart.minusDays(1) and its closing as opening + itemised lines, so

@@ -1,7 +1,7 @@
 {
-  "commit": "7a21eb55a66d2a1ef97fcde68ebea81b7a30840c",
-  "command": "cd frontend && rm -rf .next && pnpm install && pnpm run lint && pnpm typecheck && pnpm run format:check && pnpm test && pnpm run build",
+  "commit": "c92ddc0e4197566ed7ff6f25368fed3f5731331a",
+  "command": "cd frontend && rm -rf .next && NODE_OPTIONS='' pnpm install && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (node v20.11.1)",
   "exit": 0,
-  "ts": "2026-11-19T13:13:08Z",
-  "summary": "652B PR #1816 FE-GATE on the final head 7a21eb55a (orchestrator run, node v20.11.1): lint 0 errors / 77 warnings, typecheck ok, format:check ok, vitest 482 files / 4580 passed / 2 skipped, build ok"
+  "ts": "2026-11-19T15:26:24Z",
+  "summary": "652C PR #1817 (orchestrator run on final head): lint 0 errors, typecheck/format clean, vitest 482 files 4588 passed / 2 skipped, build OK. CI Frontend PASS on c92ddc0e4."
 }

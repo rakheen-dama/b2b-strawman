@@ -1,7 +1,7 @@
 {
-  "commit": "3e85d3307d8f5510b531cdcc96b7427163e27420",
-  "command": "cd backend && caffeinate -is ./mvnw clean verify -q",
+  "commit": "19157ccb0d2823fbd4096c42f8d0e7163b8b5b60",
+  "command": "cd backend && ./mvnw spotless:check && bash scripts/verify.sh (caffeinate -is ./mvnw verify)",
   "exit": 0,
-  "ts": "2026-11-19T08:37:00Z",
-  "summary": "651E PR #1812: 7361 testcases / 0 failures / 0 errors / 26 skipped (surefire+failsafe <testcase> count; -1 vs 651A 7362: LPFF-rate cases deleted, removal/V28 cases added). Run started at 3e85d3307; PR head 540a6e5f7 adds qa_cycle/ evidence only (backend/ identical from 3c5cebcd0 through 540a6e5f7)."
+  "ts": "2026-11-19T15:26:24Z",
+  "summary": "652C PR #1817: 7376 testcases / 0 failures / 0 errors / 26 skipped (surefire <testcase> count; +15 vs 652B baseline 7361: Draft IT + V29 migration test). Run 14:25-14:53Z on 19157ccb0. Final head c92ddc0e4 changes one test method only (stored-vs-stored completedAt compare; CI ns-precision fix); Backend CI on c92ddc0e4 PASS (run 44549020854, 26m36s)."
 }

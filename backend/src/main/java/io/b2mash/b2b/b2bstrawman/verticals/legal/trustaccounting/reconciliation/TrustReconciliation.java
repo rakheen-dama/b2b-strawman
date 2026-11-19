@@ -157,6 +157,11 @@ public class TrustReconciliation {
     return bankStatementId;
   }
 
+  /** Re-points a DRAFT to the statement the wizard now reconciles against (652C, §16.3.12). */
+  public void setBankStatementId(UUID bankStatementId) {
+    this.bankStatementId = bankStatementId;
+  }
+
   public BigDecimal getBankBalance() {
     return bankBalance;
   }

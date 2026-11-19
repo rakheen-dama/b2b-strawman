@@ -34,7 +34,9 @@ vi.mock("@/lib/api", () => ({
 }));
 
 import {
+  calculateReconciliation,
   completeReconciliation,
+  createReconciliation,
   fetchBankStatements,
   fetchReconciliations,
 } from "@/app/(app)/org/[slug]/trust-accounting/reconciliation/actions";
@@ -105,9 +107,11 @@ describe("completeReconciliation refusal (O-OBS-2)", () => {
       new MockApiError(400, detail, { title: "Reconciliation does not balance", detail })
     );
 
-    const result = await completeReconciliation("recon-1");
+    const result = await completeReconciliation("recon-1", "stmt-1");
 
-    expect(mockPost).toHaveBeenCalledWith("/api/trust-reconciliations/recon-1/complete");
+    expect(mockPost).toHaveBeenCalledWith("/api/trust-reconciliations/recon-1/complete", {
+      expectedBankStatementId: "stmt-1",
+    });
     expect(result).toEqual({
       success: false,
       error: detail,
@@ -122,7 +126,7 @@ describe("completeReconciliation refusal (O-OBS-2)", () => {
       })
     );
 
-    expect(await completeReconciliation("recon-1")).toEqual({
+    expect(await completeReconciliation("recon-1", "stmt-1")).toEqual({
       success: false,
       error: "Reconciliation already completed",
     });
@@ -131,9 +135,87 @@ describe("completeReconciliation refusal (O-OBS-2)", () => {
   it("returns only the message for a non-API error", async () => {
     mockPost.mockRejectedValue(new Error("fetch failed"));
 
-    expect(await completeReconciliation("recon-1")).toEqual({
+    expect(await completeReconciliation("recon-1", "stmt-1")).toEqual({
       success: false,
       error: "fetch failed",
+    });
+  });
+});
+
+// 652C: create is get-or-create; a create for a period already reconciled is refused (409) with
+// the title "This period is already reconciled" and a one-sentence detail — the action returns both.
+describe("createReconciliation refusal (652C)", () => {
+  // Braces: a beforeEach that returns a function runs it as teardown (it would call mockPost).
+  beforeEach(() => {
+    mockPost.mockReset();
+  });
+
+  it("returns the ProblemDetail title alongside the detail", async () => {
+    const detail =
+      "This trust account was reconciled to 31 March 2026. A completed reconciliation cannot be changed; choose a later period end.";
+    mockPost.mockRejectedValue(
+      new MockApiError(409, detail, { title: "This period is already reconciled", detail })
+    );
+
+    const result = await createReconciliation("acc-1", {
+      periodEnd: "2026-03-31",
+      bankStatementId: "stmt-1",
+    });
+
+    expect(mockPost).toHaveBeenCalledWith("/api/trust-accounts/acc-1/reconciliations", {
+      periodEnd: "2026-03-31",
+      bankStatementId: "stmt-1",
+    });
+    expect(result).toEqual({
+      success: false,
+      error: detail,
+      errorTitle: "This period is already reconciled",
+    });
+  });
+
+  it("returns only the message for a non-API error", async () => {
+    mockPost.mockRejectedValue(new Error("fetch failed"));
+
+    expect(
+      await createReconciliation("acc-1", { periodEnd: "2026-03-31", bankStatementId: "stmt-1" })
+    ).toEqual({ success: false, error: "fetch failed" });
+  });
+});
+
+// 652C CodeRabbit round 1: calculate and complete send the statement the wizard reviewed
+// (ExpectedStatementRequest, pinned in trust-wire-shapes.test.ts); a draft re-pointed since is
+// refused 409 "This reconciliation now uses a different statement" — title and detail returned.
+describe("calculateReconciliation sends the reviewed statement (652C)", () => {
+  // Braces: a beforeEach that returns a function runs it as teardown (it would call mockPost).
+  beforeEach(() => {
+    mockPost.mockReset();
+  });
+
+  it("posts the expected statement id as the body", async () => {
+    mockPost.mockResolvedValue(rec("recon-1"));
+
+    const result = await calculateReconciliation("recon-1", "stmt-1");
+
+    expect(mockPost).toHaveBeenCalledWith("/api/trust-reconciliations/recon-1/calculate", {
+      expectedBankStatementId: "stmt-1",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("returns the stale-statement refusal's title alongside its detail", async () => {
+    const detail =
+      "Since you opened it, this reconciliation was continued with another bank statement. Reload the reconciliation and review the statement it now uses before you continue.";
+    mockPost.mockRejectedValue(
+      new MockApiError(409, detail, {
+        title: "This reconciliation now uses a different statement",
+        detail,
+      })
+    );
+
+    expect(await calculateReconciliation("recon-1", "stmt-1")).toEqual({
+      success: false,
+      error: detail,
+      errorTitle: "This reconciliation now uses a different statement",
     });
   });
 });

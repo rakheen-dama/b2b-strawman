@@ -1,0 +1,32 @@
+# frontend container chunk grep (Thu Nov 19 15:51:44 SAST 2026)
+/app/frontend/.next/server/chunks/ssr/frontend_1jm-1gk._.js: errorTitle x2
+/app/frontend/.next/server/chunks/ssr/frontend_07uhjd7._.js: errorTitle x2
+/app/frontend/.next/server/chunks/ssr/frontend_1sssev1._.js: errorTitle x2
+/app/frontend/.next/server/chunks/ssr/1oju_app_(app)_org_[slug]_trust-accounting_reconciliation_new_page_tsx_0gjhtfk._.js: errorTitle x4
+/app/frontend/.next/static/chunks/30d89qof0d-jy.js: errorTitle x4
+
+reconciliation-error-title:
+/app/frontend/.next/static/chunks/30d89qof0d-jy.js
+
+server action errorTitle snippet:
+l?.title:void 0,b=c instanceof Error?c.message:"Failed to create reconciliation";return{success:!1,error:b,...a&&a!==b?{errorTitle:a}:{}}}}async function q(a){try{let b=await d.api.post(`/api
+.title:void 0,b=c instanceof Error?c.message:"Failed to complete reconciliation";return{success:!1,error:b,...a&&a!==b?{errorTitle:a}:{}}}}(0,a.i(409054).ensureServerEntryExports)([e,f,g,h,i,
+l?.title:void 0,b=c instanceof Error?c.message:"Failed to create reconciliation";return{success:!1,error:b,...a&&a!==b?{errorTitle:a}:{}}}}async function q(a){try{let b=await d.api.post(`/api
+
+# backend container: class strings
+app.jar
+lib
+/app/app.jar
+/app/lib/aspectjweaver-1.9.25.1.jar
+/app/lib/tomcat-embed-el-11.0.15.jar
+
+# backend app.jar (copied from e2e-backend)
+strings in TrustReconciliationService.class:
+    58558  11-19-2026 15:50   io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/reconciliation/TrustReconciliationService.class
+     2759  11-19-2026 15:50   db/migration/tenant/V29__phase92_trust_recon_unique.sql
+strings in TrustReconciliationService.class:
+uq_trust_recon_account_period
+&trust_reconciliation.statement_changed
+!This period is already reconciled
+V29 sql diff vs worktree source:
+IDENTICAL

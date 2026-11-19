@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
@@ -42,8 +43,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.hibernate.exception.ConstraintViolationException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -58,6 +62,9 @@ public class TrustReconciliationService {
   /** How a period end is written in a refusal ("31 March 2026"). */
   private static final DateTimeFormatter PERIOD_END_FORMAT =
       DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.ENGLISH);
+
+  /** The unique index behind one reconciliation per account and period end (V29, §16.7.11). */
+  private static final String ACCOUNT_PERIOD_UNIQUE = "uq_trust_recon_account_period";
 
   private final BankStatementRepository bankStatementRepository;
   private final BankStatementLineRepository bankStatementLineRepository;
@@ -661,15 +668,27 @@ public class TrustReconciliationService {
       @jakarta.validation.constraints.NotNull LocalDate periodEnd,
       @jakarta.validation.constraints.NotNull UUID bankStatementId) {}
 
+  /**
+   * The body of calculate and complete: the statement the caller reviewed. A continuation can
+   * re-point the draft to another statement (652C), so the service refuses (409) when the draft no
+   * longer uses this one — a stale wizard never calculates or completes a statement it did not
+   * review.
+   */
+  public record ExpectedStatementRequest(
+      @jakarta.validation.constraints.NotNull UUID expectedBankStatementId) {}
+
   // --- Reconciliation Methods ---
 
   /**
-   * Starts a reconciliation of {@code accountId} as at {@code periodEnd} — the firm's choice, never
-   * derived from the statement (§16.3.4, ADR-377). The statement is required and must fit the
-   * period end, so that its closing balance is the bank balance as at {@code periodEnd}: it belongs
-   * to the account, has no line after {@code periodEnd}, no other imported statement of the account
-   * has a line between its last line and {@code periodEnd}, and {@code periodEnd} is not in the
-   * future. The first failing rule refuses (400).
+   * Starts — or continues — the reconciliation of {@code accountId} as at {@code periodEnd} (the
+   * firm's choice, never derived from the statement — §16.3.4, ADR-377). One reconciliation per
+   * account and period end (652C, §16.3.12): an existing DRAFT is returned, re-pointed to {@code
+   * bankStatementId} and recalculated; an existing COMPLETED one refuses (409). The statement is
+   * required and must fit the period end, so that its closing balance is the bank balance as at
+   * {@code periodEnd}: it belongs to the account, has no line after {@code periodEnd}, no other
+   * imported statement of the account has a line between its last line and {@code periodEnd}, and
+   * {@code periodEnd} is not in the future. The first failing rule refuses (400). A new draft is
+   * not calculated here (the wizard calculates next); a returned draft is.
    */
   @Transactional
   public TrustReconciliationResponse createReconciliation(
@@ -685,14 +704,42 @@ public class TrustReconciliationService {
           "Missing bank statement",
           "Import the bank statement for this period before starting the reconciliation.");
     }
+    // First read of the row, locked: a fresh status and statement, serialised with other creates
+    // for the same draft and with calculate/complete; a create waiting on a completion sees it
+    // COMPLETED (652C D-3). The reconciliation row is every writer's first lock (D-13).
+    var existing =
+        trustReconciliationRepository.findByTrustAccountIdAndPeriodEndForUpdate(
+            accountId, periodEnd);
+    if (existing.isPresent() && existing.get().getStatus() != ReconciliationStatus.DRAFT) {
+      throw alreadyReconciled(periodEnd);
+    }
+
     var statement =
         bankStatementRepository
             .findById(bankStatementId)
             .orElseThrow(() -> new ResourceNotFoundException("BankStatement", bankStatementId));
     requireStatementFitsPeriodEnd(accountId, statement, periodEnd);
 
-    var reconciliation = new TrustReconciliation(accountId, periodEnd, bankStatementId);
-    reconciliation = trustReconciliationRepository.save(reconciliation);
+    if (existing.isPresent()) {
+      return continueDraft(existing.get(), bankStatementId);
+    }
+
+    TrustReconciliation reconciliation;
+    try {
+      reconciliation =
+          trustReconciliationRepository.saveAndFlush(
+              new TrustReconciliation(accountId, periodEnd, bankStatementId));
+    } catch (DataIntegrityViolationException e) {
+      if (!violates(e, ACCOUNT_PERIOD_UNIQUE)) {
+        throw e;
+      }
+      // Another create for the same account and period end committed first (652C D-3)
+      throw new ResourceConflictException(
+          "Reconciliation started at the same time",
+          "Another member started the reconciliation of this trust account to "
+              + periodEnd.format(PERIOD_END_FORMAT)
+              + " at the same time. Choose Review Matches again to continue it.");
+    }
 
     auditService.log(
         AuditEventBuilder.builder()
@@ -710,6 +757,57 @@ public class TrustReconciliationService {
             .build());
 
     return toReconciliationResponse(reconciliation, null);
+  }
+
+  /**
+   * The DRAFT of the account and period end, re-pointed to {@code bankStatementId} (a re-upload, or
+   * the wizard asking again after a reset — §16.3.12) and recalculated as at its period end.
+   * Matches and exclusions belong to the statements' lines and are not touched (652C D-5). A
+   * changed statement is audited; asking again with the same statement is not.
+   */
+  private TrustReconciliationResponse continueDraft(
+      TrustReconciliation draft, UUID bankStatementId) {
+    UUID previous = draft.getBankStatementId();
+    draft.setBankStatementId(bankStatementId);
+    recalculate(draft);
+    draft = trustReconciliationRepository.save(draft);
+
+    if (!bankStatementId.equals(previous)) {
+      var details = new LinkedHashMap<String, Object>();
+      details.put("trust_account_id", draft.getTrustAccountId().toString());
+      details.put("period_end", draft.getPeriodEnd().toString());
+      if (previous != null) {
+        details.put("previous_bank_statement_id", previous.toString());
+      }
+      details.put("bank_statement_id", bankStatementId.toString());
+      auditService.log(
+          AuditEventBuilder.builder()
+              .eventType("trust_reconciliation.statement_changed")
+              .entityType("trust_reconciliation")
+              .entityId(draft.getId())
+              .details(details)
+              .build());
+    }
+    return toReconciliationResponse(draft, null);
+  }
+
+  /** 409: the account is already reconciled to {@code periodEnd} (§16.3.12). */
+  private static ResourceConflictException alreadyReconciled(LocalDate periodEnd) {
+    return new ResourceConflictException(
+        "This period is already reconciled",
+        "This trust account was reconciled to "
+            + periodEnd.format(PERIOD_END_FORMAT)
+            + ". A completed reconciliation cannot be changed; choose a later period end.");
+  }
+
+  private static boolean violates(DataIntegrityViolationException e, String constraint) {
+    for (Throwable t = e; t != null; t = t.getCause()) {
+      if (t instanceof ConstraintViolationException violation
+          && constraint.equalsIgnoreCase(violation.getConstraintName())) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
@@ -797,14 +895,19 @@ public class TrustReconciliationService {
   /**
    * Recalculates a DRAFT reconciliation as at its period end (§16.3.4 steps 1–5): the statement
    * must still fit the period end; every term, {@code is_balanced} (EQ-1 and EQ-2) and the
-   * integrity flags are stored.
+   * integrity flags are stored. {@code expectedBankStatementId} is the statement the caller
+   * reviewed; a draft re-pointed since refuses (409) and is left unchanged.
    */
   @Transactional
-  public TrustReconciliationResponse calculateReconciliation(UUID reconciliationId) {
+  public TrustReconciliationResponse calculateReconciliation(
+      UUID reconciliationId, UUID expectedBankStatementId) {
     moduleGuard.requireModule(MODULE_ID);
 
     var reconciliation =
-        requireDraft(reconciliationId, "Cannot recalculate a COMPLETED reconciliation");
+        requireDraft(
+            reconciliationId,
+            expectedBankStatementId,
+            "Cannot recalculate a COMPLETED reconciliation");
     recalculate(reconciliation);
     reconciliation = trustReconciliationRepository.save(reconciliation);
 
@@ -844,18 +947,29 @@ public class TrustReconciliationService {
    * {@code RECONCILED}, the flags are stored and, when the period end is the last day of a calendar
    * month, the account's Rule 54.15 list is locked in the same transaction (650A, ADR-382) — the
    * month the firm chose, never the statement's last line date. A refusal by the lock (the month
-   * already locked) rolls the completion back.
+   * already locked) rolls the completion back — defence in depth only: since 652C a second
+   * reconciliation to the same period end is refused at create (409 "This period is already
+   * reconciled"), so the lock's refusal is not reached through this service. {@code
+   * expectedBankStatementId} is the statement the caller reviewed; a draft re-pointed since refuses
+   * (409) and nothing changes — no statement is marked reconciled, no list is locked.
    */
   @Transactional
-  public TrustReconciliationResponse completeReconciliation(UUID reconciliationId) {
+  public TrustReconciliationResponse completeReconciliation(
+      UUID reconciliationId, UUID expectedBankStatementId) {
     moduleGuard.requireModule(MODULE_ID);
 
-    var reconciliation = requireDraft(reconciliationId, "Reconciliation is already COMPLETED");
+    // Locks the reconciliation row first (requireDraft): a double-click's second complete waits
+    // here and then reads COMPLETED; a concurrent re-point either commits first (and is seen
+    // here) or waits for this completion and is refused as already reconciled.
+    var reconciliation =
+        requireDraft(
+            reconciliationId, expectedBankStatementId, "Reconciliation is already COMPLETED");
 
     // The statement row is locked BEFORE the gate inputs are read: an unmatch of one of its lines
     // locks the same row (after the line and transaction), so the two are serialised — either the
     // unmatch commits first and G4 sees the unresolved line, or this completes first and the
-    // unmatch is refused on a RECONCILED statement (D-14).
+    // unmatch is refused on a RECONCILED statement (D-14). Lock order: reconciliation → statement
+    // → trust account (the monthly list's lock below) — 652C D-13.
     UUID statementId = reconciliation.getBankStatementId();
     BankStatement statement = null;
     if (statementId != null) {
@@ -863,14 +977,6 @@ public class TrustReconciliationService {
           bankStatementRepository
               .findByIdForUpdate(statementId)
               .orElseThrow(() -> new ResourceNotFoundException("BankStatement", statementId));
-      // A concurrent complete of the same reconciliation (a double-click) read DRAFT above too and
-      // waited here for the statement lock: re-read the status now that the winner has committed
-      // and refuse as a sequential second complete would — never complete it twice.
-      if (trustReconciliationRepository.findStatusById(reconciliationId).orElse(null)
-          != ReconciliationStatus.DRAFT) {
-        throw new InvalidStateException(
-            "Invalid reconciliation state", "Reconciliation is already COMPLETED");
-      }
     }
 
     var report = recalculate(reconciliation);
@@ -915,14 +1021,27 @@ public class TrustReconciliationService {
         reconciliation, monthlyList != null ? monthlyList.getId() : null);
   }
 
-  private TrustReconciliation requireDraft(UUID reconciliationId, String detailWhenCompleted) {
+  /**
+   * The DRAFT, row-locked by the first read of it in the transaction (so it is fresh), still on the
+   * statement the caller reviewed. Not found 404; not a draft 400; re-pointed to another statement
+   * since the caller read it (a continuation in another tab, 652C) 409 — nothing is changed.
+   */
+  private TrustReconciliation requireDraft(
+      UUID reconciliationId, UUID expectedBankStatementId, String detailWhenCompleted) {
     var reconciliation =
         trustReconciliationRepository
-            .findById(reconciliationId)
+            .findByIdForUpdate(reconciliationId)
             .orElseThrow(
                 () -> new ResourceNotFoundException("TrustReconciliation", reconciliationId));
     if (reconciliation.getStatus() != ReconciliationStatus.DRAFT) {
       throw new InvalidStateException("Invalid reconciliation state", detailWhenCompleted);
+    }
+    if (!Objects.equals(expectedBankStatementId, reconciliation.getBankStatementId())) {
+      throw new ResourceConflictException(
+          "This reconciliation now uses a different statement",
+          "Since you opened it, this reconciliation was continued with another bank statement."
+              + " Reload the reconciliation and review the statement it now uses before you"
+              + " continue.");
     }
     return reconciliation;
   }

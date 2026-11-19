@@ -1062,9 +1062,11 @@ Why H-d needs a ruling before 647A: unmatching a recorded statement line (E3) re
 - **Maker-checker:** unchanged for existing types (credits need approval, debits do not). Bank-originated types reverse immediately.
 - **Audit:** `trust_transaction.reversed` (details add `reversal_date`), `trust_reversal.approved` / `.rejected` → `trust_transaction`.
 
-### 16.3.12 One reconciliation per account and period end (E8, slice 652C — only if the defect reproduces)
+### 16.3.12 One reconciliation per account and period end (E8, slice 652C — only if the defect reproduces; reproduced 2026-11-19)
 
 Hypothesis (inventory §4.4): re-uploading a statement, or going back in the wizard, discards the wizard's handle to the `DRAFT` and a second `createReconciliation` writes another. Reproduction: `TrustReconciliationDraftIntegrationTest.secondCreateForSameAccountAndPeriod_returnsTheDraft` — two creates for one account and period end; expected red: two rows. Intended behaviour: `createReconciliation` is get-or-create — an existing `DRAFT` for `(account, period_end)` is returned with its `bank_statement_id` re-pointed to the new statement and recalculated; an existing `COMPLETED` one refuses with 409 "This period is already reconciled". A unique index backs it (§16.7.11). The wizard then needs no orphan handling: after any reset it asks again and gets the same draft.
+
+> **Amendment (652C, 2026-11-19).** The defect reproduced (red on `main` 30ad1643b — two rows; `qa_cycle/evidence/phase92/652C/red-before.txt`) and was built in PR #1817 (V29, §16.7.11). CodeRabbit round 1 added: calculate and complete take a body `{"expectedBankStatementId"}` (`ExpectedStatementRequest`, required — every caller is the wizard) naming the statement the caller reviewed; a draft re-pointed to another statement since (a continuation in another tab) refuses **409 "This reconciliation now uses a different statement"** and is left unchanged — no statement marked `RECONCILED`, no list locked. Calculate and complete lock the reconciliation row first (`findByIdForUpdate`); lock order for every writer: reconciliation → bank statement → trust account (tasks/phase92-decisions.md 652C D-13..D-15).
 
 ### 16.3.13 Memo records for at-source sweeps (slice 650B; [ADR-384](../adr/ADR-384-memo-records-for-at-source-sweeps.md))
 
@@ -1196,8 +1198,8 @@ Section 86(4) interest credited gross, from a line of +400,00:
 | Method | Path | Description | Capability | R/W | Slice |
 |---|---|---|---|---|---|
 | POST | `/api/trust-accounts/{accountId}/reconciliations` | Changed request: `periodEnd` required as today (the firm's choice) and `bankStatementId` now required; the statement may end before `periodEnd` but may hold no line after it (§16.3.4). From 652C: get-or-create | MANAGE_TRUST | W | 646B, 652C |
-| POST | `/api/trust-reconciliations/{id}/calculate` | Changed response (below); every term as at the period end | MANAGE_TRUST | W | 646B |
-| POST | `/api/trust-reconciliations/{id}/complete` | Changed: the gate G1–G4 (§16.3.4); locks the monthly list at a month end | MANAGE_TRUST | W | 649C, 650A |
+| POST | `/api/trust-reconciliations/{id}/calculate` | Changed response (below); every term as at the period end. From 652C: body `{"expectedBankStatementId"}` required; 409 when the draft now uses another statement (§16.3.12 amendment) | MANAGE_TRUST | W | 646B, 652C |
+| POST | `/api/trust-reconciliations/{id}/complete` | Changed: the gate G1–G4 (§16.3.4); locks the monthly list at a month end. From 652C: body `{"expectedBankStatementId"}` required; 409 when the draft now uses another statement (§16.3.12 amendment) | MANAGE_TRUST | W | 649C, 650A, 652C |
 | GET | `/api/trust-reconciliations/{id}`, `/api/trust-accounts/{accountId}/reconciliations` | Changed response | VIEW_TRUST | R | 646B |
 | GET | `/api/trust-accounts/{accountId}/integrity?asAt=` | **New.** `TrustIntegrityReport` for one account (default as at today) | VIEW_TRUST | R | 649C |
 | GET | `/api/trust-integrity?asAt=` | **New.** Firm-wide report: every account, EQ-3, firm totals | VIEW_TRUST | R | 649C |
@@ -2106,6 +2108,8 @@ CREATE UNIQUE INDEX IF NOT EXISTS uq_trust_recon_account_period
 
 The existing `idx_trust_recon_account_period (trust_account_id, period_end DESC)` becomes redundant for equality lookups but still serves "latest first"; it is left. A row referenced by a monthly list is never deleted (a locked list's reconciliation is, by construction, the completed one).
 
+> **Amendment (652C, 2026-11-19).** Shipped as tenant **V29** `V29__phase92_trust_recon_unique.sql` (V26 was taken). The pairwise `DELETE` above was refined to one `row_number()` ranking per (account, period end): the row a monthly list references first, then `COMPLETED` over `DRAFT`, then the latest `completed_at`, `updated_at`, `id`; every other row is deleted unless a list references it. An older unreferenced `COMPLETED` duplicate is therefore deleted too (dev data only, R12). See tasks/phase92-decisions.md 652C D-1 / D-2.
+
 ### 16.7.12 Pack reconciles (no SQL)
 
 Trust report pack 3 → 4 with a membership step (§16.8.6, slice 650B). `legal-za` template pack 15 → 16 for the two statement bodies (§16.6.4, slice 648B). No capability rows are inserted: the phase adds no capability (§16.11).
@@ -2260,7 +2264,7 @@ The four reversal hypotheses and their tests are specified in §16.3.11 (R8). Th
 | Item | Test | If it does not reproduce |
 |---|---|---|
 | Zero-amount balance rows import as statement lines (new, found in review) | `BankStatementParserTest.zeroAmountBalanceRows_areNotImportedAsLines`, on the existing `fixtures/trust/standard-bank-sample.csv` (its line 3 is `2026-03-01,Opening Balance,,0.00,200000.00`): `parseLine` (`CsvBankStatementParser.java:182-213`) accepts it, so expect red — a 0,00 line that can be neither matched nor recorded and that gate G4 would hold a reconciliation on. Intended behaviour: the shared parser skips a row whose amount is zero and whose description is an opening / closing / brought-forward / carried-forward balance marker, and still takes the opening and closing balance from the running-balance column | struck with the evidence; slice 652G is not built, and the exit CSVs need no change (no such line is imported either way) |
-| Orphaned draft (E8) | `TrustReconciliationDraftIntegrationTest.secondCreateForSameAccountAndPeriod_returnsTheDraft` (§16.3.12) | struck with the evidence; slice 652C and V26 are not built |
+| Orphaned draft (E8) | `TrustReconciliationDraftIntegrationTest.secondCreateForSameAccountAndPeriod_returnsTheDraft` (§16.3.12) | struck with the evidence; slice 652C and V26 are not built — *amended 2026-11-19: reproduced red, built in PR #1817 as V29* |
 | Silent recalculation failure (E8) | vitest in `trust-reconciliation.test.tsx`: `calculateReconciliation` rejects after a successful match; expect an error banner | struck |
 | Manual-match pane lists only `APPROVED` (E8; frontend-only, R9) | vitest: a `RECORDED` unlinked deposit is offered in the pane | struck |
 | Closed-primary-account in the two statement builders (E8) | `StatementBuilderClosedPrimaryAccountIntegrationTest` (§16.6.4) | struck; 652D is not built |

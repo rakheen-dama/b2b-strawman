@@ -995,3 +995,13 @@ export interface SaveInterestMemoRequest {
   chargesVat: number;
   sourceNote: string;
 }
+
+/**
+ * `TrustReconciliationService.ExpectedStatementRequest` (652C) — the body of
+ * `POST /api/trust-reconciliations/{id}/calculate` and `…/complete`: the statement the wizard
+ * reviewed (pinned, ADR-365). A draft re-pointed to another statement since (a continuation in
+ * another tab) refuses 409 "This reconciliation now uses a different statement".
+ */
+export interface ExpectedStatementRequest {
+  expectedBankStatementId: string;
+}

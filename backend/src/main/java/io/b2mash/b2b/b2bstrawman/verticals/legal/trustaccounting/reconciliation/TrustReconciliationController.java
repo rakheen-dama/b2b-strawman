@@ -5,6 +5,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.StatementLinePostingService.RecordFromLineResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService.BankStatementResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService.CreateReconciliationRequest;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService.ExpectedStatementRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService.MatchResult;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService.TrustReconciliationResponse;
 import jakarta.validation.Valid;
@@ -128,15 +129,19 @@ public class TrustReconciliationController {
   @PostMapping("/api/trust-reconciliations/{reconciliationId}/calculate")
   @RequiresCapability("MANAGE_TRUST")
   public ResponseEntity<TrustReconciliationResponse> calculateReconciliation(
-      @PathVariable UUID reconciliationId) {
-    return ResponseEntity.ok(trustReconciliationService.calculateReconciliation(reconciliationId));
+      @PathVariable UUID reconciliationId, @Valid @RequestBody ExpectedStatementRequest request) {
+    return ResponseEntity.ok(
+        trustReconciliationService.calculateReconciliation(
+            reconciliationId, request.expectedBankStatementId()));
   }
 
   @PostMapping("/api/trust-reconciliations/{reconciliationId}/complete")
   @RequiresCapability("MANAGE_TRUST")
   public ResponseEntity<TrustReconciliationResponse> completeReconciliation(
-      @PathVariable UUID reconciliationId) {
-    return ResponseEntity.ok(trustReconciliationService.completeReconciliation(reconciliationId));
+      @PathVariable UUID reconciliationId, @Valid @RequestBody ExpectedStatementRequest request) {
+    return ResponseEntity.ok(
+        trustReconciliationService.completeReconciliation(
+            reconciliationId, request.expectedBankStatementId()));
   }
 
   // --- Request Records ---

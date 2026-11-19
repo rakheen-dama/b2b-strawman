@@ -346,7 +346,7 @@ class TrustInterestMemoIntegrationTest {
   void aLockedMonth_takesAMemo_andTheLockedListDoesNotChange() throws Exception {
     var account = books.freshAccount(false);
     var march = matchedMarchStatement(account, "tim-locked-march.csv");
-    var listId = complete(reconcile(account, MARCH_END, march.id()).id()).monthlyListId();
+    var listId = complete(reconcile(account, MARCH_END, march.id())).monthlyListId();
     assertThat(listId).as("completing to 31 March locks March").isNotNull();
     var listBefore = listFingerprint(listId);
     accountLockedThrough(account, "2026-03-31");
@@ -754,16 +754,20 @@ class TrustInterestMemoIntegrationTest {
         ownerId,
         () -> {
           var created = reconciliationService.createReconciliation(account, periodEnd, statementId);
-          recon[0] = reconciliationService.calculateReconciliation(created.id());
+          recon[0] =
+              reconciliationService.calculateReconciliation(
+                  created.id(), created.bankStatementId());
         });
     return recon[0];
   }
 
-  private TrustReconciliationResponse complete(UUID reconciliationId) {
+  private TrustReconciliationResponse complete(TrustReconciliationResponse draft) {
     var completed = new TrustReconciliationResponse[1];
     books.as(
         ownerId,
-        () -> completed[0] = reconciliationService.completeReconciliation(reconciliationId));
+        () ->
+            completed[0] =
+                reconciliationService.completeReconciliation(draft.id(), draft.bankStatementId()));
     return completed[0];
   }
 

@@ -1,0 +1,88 @@
+652C — Tier-2 targeted backend tests (GREEN after fix)
+Date: 2026-11-19T13:46:31Z  Branch: epic-652C/recon-draft-get-or-create
+
+Command (backend/): ./mvnw test -Dtest="<brief §5.4 list, 29 classes>"
+
+Tests run: 243, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.293 s -- in io.b2mash.b2b.b2bstrawman.activity.ActivityMessageFormatterTest
+Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 13.66 s -- in io.b2mash.b2b.b2bstrawman.provisioning.BaselineSchemaParityTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.259 s -- in io.b2mash.b2b.b2bstrawman.dashboard.DashboardActivityCacheTest
+Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.696 s -- in io.b2mash.b2b.b2bstrawman.dashboard.TrustPositionIntegrationTest
+Tests run: 26, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.021 s -- in io.b2mash.b2b.b2bstrawman.audit.AuditEventTypeRegistryTest
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.031 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationControllerTest
+Tests run: 44, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.065 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.parser.BankStatementParserTest
+Tests run: 17, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.548 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationServiceReconciliationTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.559 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.BankStatementImportErrorIntegrationTest
+Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.964 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationDraftIntegrationTest
+Tests run: 28, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.307 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.StatementLinePostingIntegrationTest
+Tests run: 16, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.123 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationServiceMatchingTest
+Tests run: 15, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.414 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationCompletionGateIntegrationTest
+Tests run: 48, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.677 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionServiceTest
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.917 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.DerivedLedgerBalanceIntegrationTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.584 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustReconUniqueMigrationTest
+Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.437 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustReconBreakdownMigrationTest
+Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.523 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.TrustInterestMemoIntegrationTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.467 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.TrustInterestMemosMigrationTest
+Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.459 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustMonthlyListIntegrationTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.516 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustMonthlyListsMigrationTest
+Tests run: 15, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.269 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustIntegrityServiceIntegrationTest
+Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.682 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustPositionAsAtIntegrationTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.564 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountingSchemaTest
+Tests run: 14, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.964 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report.TrustReportQueryIntegrationTest
+Tests run: 18, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.233 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountServiceTest
+Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.744 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InterestRunRemovalTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.009 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustWireContractTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.160 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustCoexistenceTest
+
+[INFO] Tests run: 593, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+
+<testcase> count: 593  failures/errors: 0
+
+Tier 3 (full verify) NOT run by the builder — owned by the orchestrator + Backend CI.
+
+=== after CodeRabbit fix (round 1) — 2026-11-19 ===
+Change: calculate/complete lock the reconciliation row first (findByIdForUpdate; lock order reconciliation -> statement -> account, D-13)
+and take a required ExpectedStatementRequest{expectedBankStatementId}; a stale statement -> 409 'This reconciliation now uses a different statement' (D-14/D-15).
+
+-- Red without the row lock (requireDraft temporarily back on findById; new race tests, then restored) --
+RED-DEBUG complete error=null blocked=true after=5bed77b8-844d-4505-b078-e9f16b3bc2c2 status=COMPLETED a=5bed77b8-844d-4505-b078-e9f16b3bc2c2 b=c4f34d6f-e985-40cd-addf-e316183b203f aStatus=RECONCILED lists=1
+RED-DEBUG calculate error=null blocked=false after=19ab4c79-17ee-473b-bd67-abc628995a04 bank=990.00 a=0efd3f1c-f4f8-4f92-8f12-40af8369dcd0 b=19ab4c79-17ee-473b-bd67-abc628995a04
+[ERROR]   TrustReconciliationDraftIntegrationTest.calculateDuringAContinuation_waitsOnTheRowLock_thenRefusesTheStaleStatement:554 [the calculate blocked on the continuation's reconciliation row lock] 
+[ERROR]   TrustReconciliationDraftIntegrationTest.completeDuringAContinuation_waitsOnTheRowLock_thenRefusesTheStaleStatement:529 [the stale complete] 
+(complete race: the stale complete waited on the UPDATE, then wrote statement A back over B: status COMPLETED, A RECONCILED, a list locked — the CodeRabbit hazard, observed)
+(calculate race: without the lock the stale calculate read A unblocked and computed figures equal to the stored ones, so Hibernate issued no UPDATE — no overwrite in this data, but it calculated a statement the draft no longer used; with the fix it waits and is refused 409)
+
+-- Tier 1: ./mvnw compile test-compile -q -> exit 0
+-- Tier 2: the 29-class §5.4 list (includes every class calling calculate/complete) -> exit 0
+  ActivityMessageFormatterTest: 243
+  AuditEventTypeRegistryTest: 26
+  DashboardActivityCacheTest: 2
+  TrustPositionIntegrationTest: 12
+  BaselineSchemaParityTest: 6
+  InterestRunRemovalTest: 9
+  TrustAccountServiceTest: 18
+  TrustAccountingSchemaTest: 5
+  TrustCoexistenceTest: 5
+  TrustReconBreakdownMigrationTest: 7
+  TrustReconUniqueMigrationTest: 5
+  TrustWireContractTest: 1
+  TrustIntegrityServiceIntegrationTest: 15
+  TrustMonthlyListIntegrationTest: 9
+  TrustMonthlyListsMigrationTest: 5
+  TrustPositionAsAtIntegrationTest: 9
+  TrustInterestMemoIntegrationTest: 8
+  TrustInterestMemosMigrationTest: 5
+  DerivedLedgerBalanceIntegrationTest: 3
+  BankStatementImportErrorIntegrationTest: 2
+  StatementLinePostingIntegrationTest: 28
+  TrustReconciliationCompletionGateIntegrationTest: 15
+  TrustReconciliationControllerTest: 10
+  TrustReconciliationDraftIntegrationTest: 10
+  TrustReconciliationServiceMatchingTest: 16
+  TrustReconciliationServiceReconciliationTest: 17
+  BankStatementParserTest: 44
+  TrustReportQueryIntegrationTest: 14
+  TrustTransactionServiceTest: 48
+<testcase> count: 597  failures/errors: 0  classes: 29
+
+Tier 3 (full verify) NOT run by the fixer — owned by the orchestrator + Backend CI.

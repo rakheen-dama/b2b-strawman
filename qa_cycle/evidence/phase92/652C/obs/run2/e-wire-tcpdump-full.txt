@@ -1,0 +1,482 @@
+tcpdump: WARNING: any: That device doesn't support promiscuous mode
+(Promiscuous mode not supported on the "any" device)
+tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
+listening on any, link-type LINUX_SLL2 (Linux cooked v2), snapshot length 262144 bytes
+14:23:21.504394 eth0  In  IP e2e-frontend.docteams-e2e_e2e-network.47730 > 8acd176b6871.8080: Flags [P.], seq 3030572104:3030573206, ack 755750544, win 706, options [nop,nop,TS val 3804755015 ecr 1428547550], length 1102: HTTP: POST /api/trust-reconciliations/258446a3-3f94-4d43-b4a4-dfef85d45295/complete HTTP/1.1
+E.....@.@.
+7.........r.....H-.......\......
+...GU%..POST /api/trust-reconciliations/258446a3-3f94-4d43-b4a4-dfef85d45295/complete HTTP/1.1
+host: backend:8080
+connection: keep-alive
+Content-Type: application/json
+Authorization: <redacted>
+accept: */*
+accept-language: *
+sec-fetch-mode: cors
+user-agent: node
+accept-encoding: gzip, deflate
+content-length: 66
+
+{"expectedBankStatementId":"b41e11a7-b300-44e4-b8f4-95c526170c24"}
+14:23:21.544911 eth0  Out IP 8acd176b6871.8080 > e2e-frontend.docteams-e2e_e2e-network.47730: Flags [.], ack 1102, win 584, options [nop,nop,TS val 1428550758 ecr 3804755015], length 0
+E..4].@.@..............r-..........HX^.....
+U%.f...G
+14:23:21.576329 eth0  Out IP 8acd176b6871.8080 > e2e-frontend.docteams-e2e_e2e-network.47730: Flags [P.], seq 1:777, ack 1102, win 584, options [nop,nop,TS val 1428550789 ecr 3804755015], length 776: HTTP: HTTP/1.1 409 
+E..<].@.@..............r-..........H[f.....
+U%.....GHTTP/1.1 409 
+Vary: Origin
+Vary: Access-Control-Request-Method
+Vary: Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 0
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/problem+json
+Transfer-Encoding: chunked
+Date: Thu, 19 Nov 2026 14:23:21 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+154
+{"detail":"Since you opened it, this reconciliation was continued with another bank statement. Reload the reconciliation and review the statement it now uses before you continue.","instance":"/api/trust-reconciliations/258446a3-3f94-4d43-b4a4-dfef85d45295/complete","status":409,"title":"This reconciliation now uses a different statement"}
+
+14:23:21.578629 eth0  Out IP 8acd176b6871.8080 > e2e-frontend.docteams-e2e_e2e-network.47730: Flags [P.], seq 777:782, ack 1102, win 584, options [nop,nop,TS val 1428550791 ecr 3804755015], length 5: HTTP
+E..9].@.@..............r-..........HXc.....
+U%.....G0
+
+
+14:23:21.578720 eth0  In  IP e2e-frontend.docteams-e2e_e2e-network.47730 > 8acd176b6871.8080: Flags [.], ack 782, win 706, options [nop,nop,TS val 3804755090 ecr 1428550789], length 0
+E..4..@.@............r......-.......X^.....
+....U%..
+14:23:21.589534 eth0  In  IP e2e-frontend.docteams-e2e_e2e-network.47730 > 8acd176b6871.8080: Flags [P.], seq 1102:2205, ack 782, win 706, options [nop,nop,TS val 3804755100 ecr 1428550789], length 1103: HTTP: POST /api/trust-reconciliations/258446a3-3f94-4d43-b4a4-dfef85d45295/calculate HTTP/1.1
+E....	@.@.
+4.........r......-.......\......
+....U%..POST /api/trust-reconciliations/258446a3-3f94-4d43-b4a4-dfef85d45295/calculate HTTP/1.1
+host: backend:8080
+connection: keep-alive
+Content-Type: application/json
+Authorization: <redacted>
+accept: */*
+accept-language: *
+sec-fetch-mode: cors
+user-agent: node
+accept-encoding: gzip, deflate
+content-length: 66
+
+{"expectedBankStatementId":"b41e11a7-b300-44e4-b8f4-95c526170c24"}
+14:23:21.589551 eth0  Out IP 8acd176b6871.8080 > e2e-frontend.docteams-e2e_e2e-network.47730: Flags [.], ack 2205, win 576, options [nop,nop,TS val 1428550802 ecr 3804755100], length 0
+E..4].@.@..............r-..........@X^.....
+U%......
+14:23:21.612678 eth0  Out IP 8acd176b6871.8080 > e2e-frontend.docteams-e2e_e2e-network.47730: Flags [P.], seq 782:1559, ack 2205, win 584, options [nop,nop,TS val 1428550826 ecr 3804755100], length 777: HTTP: HTTP/1.1 409 
+E..=].@.@..............r-..........H[g.....
+U%......HTTP/1.1 409 
+Vary: Origin
+Vary: Access-Control-Request-Method
+Vary: Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 0
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/problem+json
+Transfer-Encoding: chunked
+Date: Thu, 19 Nov 2026 14:23:21 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+155
+{"detail":"Since you opened it, this reconciliation was continued with another bank statement. Reload the reconciliation and review the statement it now uses before you continue.","instance":"/api/trust-reconciliations/258446a3-3f94-4d43-b4a4-dfef85d45295/calculate","status":409,"title":"This reconciliation now uses a different statement"}
+
+14:23:21.613283 eth0  Out IP 8acd176b6871.8080 > e2e-frontend.docteams-e2e_e2e-network.47730: Flags [P.], seq 1559:1564, ack 2205, win 584, options [nop,nop,TS val 1428550826 ecr 3804755100], length 5: HTTP
+E..9].@.@..............r-..........HXc.....
+U%......0
+
+
+14:23:21.613827 eth0  In  IP e2e-frontend.docteams-e2e_e2e-network.47730 > 8acd176b6871.8080: Flags [.], ack 1564, win 706, options [nop,nop,TS val 3804755125 ecr 1428550826], length 0
+E..4.
+@.@............r......-.......X^.....
+....U%..
+14:23:21.622608 eth0  In  IP e2e-frontend.docteams-e2e_e2e-network.47730 > 8acd176b6871.8080: Flags [P.], seq 2205:3205, ack 1564, win 706, options [nop,nop,TS val 3804755133 ecr 1428550826], length 1000: HTTP: GET /api/bank-statements/b41e11a7-b300-44e4-b8f4-95c526170c24 HTTP/1.1
+E.....@.@.
+..........r......-.......\F.....
+....U%..GET /api/bank-statements/b41e11a7-b300-44e4-b8f4-95c526170c24 HTTP/1.1
+host: backend:8080
+connection: keep-alive
+Content-Type: application/json
+Authorization: <redacted>
+accept: */*
+accept-language: *
+sec-fetch-mode: cors
+user-agent: node
+accept-encoding: gzip, deflate
+
+
+14:23:21.635416 eth0  Out IP 8acd176b6871.8080 > e2e-frontend.docteams-e2e_e2e-network.47730: Flags [P.], seq 1564:2497, ack 3205, win 584, options [nop,nop,TS val 1428550848 ecr 3804755133], length 933: HTTP: HTTP/1.1 200 
+E...].@.@..D...........r-..........H\......
+U%......HTTP/1.1 200 
+Vary: origin,access-control-request-method,access-control-request-headers,accept-encoding
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 0
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Encoding: gzip
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Thu, 19 Nov 2026 14:23:21 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+a
+..........
+1d0
+.R]o. ..+..!..c;o...J]:-.4m..5\2K...O.......k..=r>..sx&.&kRI..CF..1*%JZ.F."U.X..)!......Q..l..}).....*..J.L.!K.....$0.G..]..c...I0...S^...V.$.+......UH.l........T.).\....<.%b.........f...x.i.......xlj.e..Y.9....z..3>@.|T.}......EK}.....>E\q.....R.Tf\....*S..(.f.=.!D....'.."Ys.(.gE.#*...Oe?z....X.&.3F.T.	.R..r.+......D....]*t......B..]|.c...r...#.JE9k+/fS..!..sh....y.......v9i.
+.c.oe....5.U._.../.......wz.....k..R...z.e.U....V0.q...
+.W.w.3.XBy.9v.n.......?.....
+
+14:23:21.635997 eth0  Out IP 8acd176b6871.8080 > e2e-frontend.docteams-e2e_e2e-network.47730: Flags [P.], seq 2497:2517, ack 3205, win 584, options [nop,nop,TS val 1428550849 ecr 3804755133], length 20: HTTP
+E..H].@.@..............r-..P.......HXr.....
+U%......a
+..w...G...
+0
+
+
+14:23:21.636605 eth0  In  IP e2e-frontend.docteams-e2e_e2e-network.47730 > 8acd176b6871.8080: Flags [.], ack 2517, win 706, options [nop,nop,TS val 3804755147 ecr 1428550848], length 0
+E..4..@.@............r......-..d....X^.....
+....U%..
+14:23:21.644333 eth0  In  IP e2e-frontend.docteams-e2e_e2e-network.47730 > 8acd176b6871.8080: Flags [P.], seq 3205:4278, ack 2517, win 706, options [nop,nop,TS val 3804755155 ecr 1428550848], length 1073: HTTP: GET /api/trust-accounts/5149d2be-b51f-4a7f-b375-f2a851a4a028/transactions?status=RECORDED&page=0&size=1000&sort=transactionDate%2Cdesc HTTP/1.1
+E..e..@.@.
+N.........r......-..d....\......
+....U%..GET /api/trust-accounts/5149d2be-b51f-4a7f-b375-f2a851a4a028/transactions?status=RECORDED&page=0&size=1000&sort=transactionDate%2Cdesc HTTP/1.1
+host: backend:8080
+connection: keep-alive
+Content-Type: application/json
+Authorization: <redacted>
+accept: */*
+accept-language: *
+sec-fetch-mode: cors
+user-agent: node
+accept-encoding: gzip, deflate
+
+
+14:23:21.664224 eth0  Out IP 8acd176b6871.8080 > e2e-frontend.docteams-e2e_e2e-network.47730: Flags [P.], seq 2517:4426, ack 4278, win 584, options [nop,nop,TS val 1428550877 ecr 3804755155], length 1909: HTTP: HTTP/1.1 200 
+E...].@.@.}r...........r-..d.......H_......
+U%......HTTP/1.1 200 
+Vary: origin,access-control-request-method,access-control-request-headers,accept-encoding
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 0
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Encoding: gzip
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Thu, 19 Nov 2026 14:23:21 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+a
+..........
+200
+...N.I.._..5m.|...N@. k.h..*.Cu..f..C.l.w....1,..AJ...5.......n.*..........q*.E....=..r"}...(.K!...R'.....fu/..UY.4......$(.q..$..H..*.......r.c=............OF.34...&.....q..4.`....S4L ..
+.;|y28m...&...0....E..a..7......S. .	.."9.^Z...|...k..#...B2"l..$....I.......pD. ..i....j2./.......n..@u.....up...q./.
+2TP.ev......#{<h...X./.	i.......u..2|.....rM.#...Y....Z........m8....o....r.....QZ.m.}yYM?@..\...4....`M..-.../.........l.....g..W..P...,..4/[O.....i\./..Of._._.s...f.^...+..UZ.TD.-...$.%.0N,....y.@.D.....
+200
+YD.h....,1....."/K./_..!~2...d..._..e..?./y..K..@...H....:..a".pJ.Vy..N_.;<....6..cB...np{.z.......[.r...b._.\f.6v...)...e...#qA'....f..kV.U0......Z.f.Ciw..t..(K-......HqU.V...N....%ZS.r4:.F.Z.v.g&..	..Tnq.h.5..(..%b.E.4..k..s,'..gp.r;..N......0..;j.....W...A.-j%5.i...-2..g....?
+."...a.`N(.at.W....5..	
+...zz..K..s].W.]......Baa.!.F...	....,:jZ.g*...D.R.sAF.....,......a>....|\..V......1...\h :'.{..]!S./.<j.]D.-1....s1..7O../..r.:..ekf.&1..Kc=q.y..h.LUp.G=2k.~&.....?8.......V..........+.....a(.O.~+..Y....+.*.
+192
+j.+1C..(..I<;....).v%.E\1....".......3...Bt.W.O....a...?I...+..V
+...*.ks.m....,....".$0'."6
+DZ. .c..aO...,...._....P......p?.M..Nj.8.~.K.U..c....`"&MT.M..9..."!`.Y.Ec..........`n.i.w..v...)I=.cl.Y...%.0E.....5Jp....A=...*.Z..].V...e<.*M......;...Q..W(h...'.........7...WY,........V..dGP..#..!.v.E.UU.R.,W.%I.....(....8.x.43...v.UdY{..oC.R..zB....,Z..}...l.....b6...3...yu..>..zZ..`2...y.4..M..e.?......
+
+14:23:21.664379 eth0  In  IP e2e-frontend.docteams-e2e_e2e-network.47730 > 8acd176b6871.8080: Flags [.], ack 4426, win 706, options [nop,nop,TS val 3804755175 ecr 1428550877], length 0
+E..4..@.@..~.........r......-.......X^.....
+....U%..
+14:23:21.664870 eth0  Out IP 8acd176b6871.8080 > e2e-frontend.docteams-e2e_e2e-network.47730: Flags [P.], seq 4426:4446, ack 4278, win 584, options [nop,nop,TS val 1428550878 ecr 3804755175], length 20: HTTP
+E..H].@.@..............r-..........HXr.....
+U%......a
+....,..%..
+0
+
+
+14:23:21.673798 eth0  In  IP e2e-frontend.docteams-e2e_e2e-network.47730 > 8acd176b6871.8080: Flags [P.], seq 4278:5351, ack 4446, win 706, options [nop,nop,TS val 3804755185 ecr 1428550878], length 1073: HTTP: GET /api/trust-accounts/5149d2be-b51f-4a7f-b375-f2a851a4a028/transactions?status=APPROVED&page=0&size=1000&sort=transactionDate%2Cdesc HTTP/1.1
+E..e..@.@.
+L.........r......-.......\......
+....U%..GET /api/trust-accounts/5149d2be-b51f-4a7f-b375-f2a851a4a028/transactions?status=APPROVED&page=0&size=1000&sort=transactionDate%2Cdesc HTTP/1.1
+host: backend:8080
+connection: keep-alive
+Content-Type: application/json
+Authorization: <redacted>
+accept: */*
+accept-language: *
+sec-fetch-mode: cors
+user-agent: node
+accept-encoding: gzip, deflate
+
+
+14:23:21.689814 eth0  Out IP 8acd176b6871.8080 > e2e-frontend.docteams-e2e_e2e-network.47730: Flags [P.], seq 4446:5785, ack 5351, win 584, options [nop,nop,TS val 1428550903 ecr 3804755185], length 1339: HTTP: HTTP/1.1 200 
+E..o].@.@..............r-....../...H]......
+U%......HTTP/1.1 200 
+Vary: origin,access-control-request-method,access-control-request-headers,accept-encoding
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 0
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Encoding: gzip
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Thu, 19 Nov 2026 14:23:21 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+a
+..........
+200
+...o.6....B.f..o..i..@.di.`..p$..6E6$.@.....8.S`..%.6....w....9..M\...S3...iS3o"e......L9.,@0,sD..d...5....E..u?..q..O"...J...'.fY...
+.p.8.G.S....VT.O.?|{..Y]+.#..U+^]..fMj.........Q...\.>zw.....f.B.=.gM.Z..&,ytR3L)2E...D`J@@.|..J.K.&.6.VE"..I...$).'.,.D..).....J...vT..]7k.....%..6.4.p..^..w..l#.a.(.@}...o.X..s...V=h.C..*R.^.......lG.78.........<N8..b].......)..r.(-...g.sa.J.)..........D....;[....*..N...DL(E...!...G.;+eM?R....... ..5..P.......|.S.8%..fw.O4.......lw'n.N.Om...3v#........T5?j.....C.J....V...c.
+15f
+.`.t#..#.)H.o[	......U.a......p........:-w..b.>[8.i.%..of[..@.H...mA...< s:.XP.^......?.J..Y._...k.....?....`.ya....p...u..Q.$f!.S>s.=..E......._..S....9|.......	w..G..s.......p.........X...&.	.>..B...k.r..X[w.i.............."...(/....P....VgN.....k..x.....@...x...... ....s@pI...b.x."*fP...h......2m....O.'..8]7c.[..^......W~N.	..n#@.&.....r	77......
+
+14:23:21.691043 eth0  Out IP 8acd176b6871.8080 > e2e-frontend.docteams-e2e_e2e-network.47730: Flags [P.], seq 5785:5805, ack 5351, win 584, options [nop,nop,TS val 1428550904 ecr 3804755185], length 20: HTTP
+E..H].@.@..............r-..(.../...HXr.....
+U%......a
+...i..H...
+0
+
+
+14:23:21.692045 eth0  In  IP e2e-frontend.docteams-e2e_e2e-network.47730 > 8acd176b6871.8080: Flags [.], ack 5805, win 706, options [nop,nop,TS val 3804755203 ecr 1428550903], length 0
+E..4..@.@..|.........r...../-..<....X^.....
+....U%..
+14:23:22.460526 lo    In  IP6 localhost.43484 > localhost.8080: Flags [S], seq 1784238668, win 65476, options [mss 65476,sackOK,TS val 3548502539 ecr 0,nop,wscale 7], length 0
+`
+...(.@....................................jYRL.........0.........
+............
+14:23:22.460542 lo    In  IP6 localhost.8080 > localhost.43484: Flags [S.], seq 4132226294, ack 1784238669, win 65464, options [mss 65476,sackOK,TS val 3548502539 ecr 3548502539,nop,wscale 7], length 0
+`
+...(.@.....................................L..jYRM.....0.........
+............
+14:23:22.460555 lo    In  IP6 localhost.43484 > localhost.8080: Flags [.], ack 1, win 512, options [nop,nop,TS val 3548502539 ecr 3548502539], length 0
+`
+... .@....................................jYRM.L.......(.....
+........
+14:23:22.460616 lo    In  IP6 localhost.43484 > localhost.8080: Flags [P.], seq 1:106, ack 1, win 512, options [nop,nop,TS val 3548502539 ecr 3548502539], length 105: HTTP: GET /actuator/health HTTP/1.1
+`
+.....@....................................jYRM.L.............
+........GET /actuator/health HTTP/1.1
+Host: localhost:8080
+User-Agent: Wget
+Accept: */*
+Connection: close
+
+
+14:23:22.460635 lo    In  IP6 localhost.8080 > localhost.43484: Flags [.], ack 106, win 511, options [nop,nop,TS val 3548502539 ecr 3548502539], length 0
+`
+... .@.....................................L..jYR......(.....
+........
+14:23:22.487006 lo    In  IP6 localhost.8080 > localhost.43484: Flags [P.], seq 1:476, ack 106, win 512, options [nop,nop,TS val 3548502566 ecr 3548502539], length 475: HTTP: HTTP/1.1 200 
+`
+.....@.....................................L..jYR............
+...&....HTTP/1.1 200 
+Vary: Origin
+Vary: Access-Control-Request-Method
+Vary: Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 0
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/vnd.spring-boot.actuator.v3+json
+Transfer-Encoding: chunked
+Date: Thu, 19 Nov 2026 14:23:22 GMT
+Connection: close
+
+31
+{"groups":["liveness","readiness"],"status":"UP"}
+
+14:23:22.487019 lo    In  IP6 localhost.43484 > localhost.8080: Flags [.], ack 476, win 509, options [nop,nop,TS val 3548502566 ecr 3548502566], length 0
+`
+... .@....................................jYR..L.......(.....
+...&...&
+14:23:22.487314 lo    In  IP6 localhost.8080 > localhost.43484: Flags [P.], seq 476:481, ack 106, win 512, options [nop,nop,TS val 3548502566 ecr 3548502566], length 5: HTTP
+`
+...%.@.....................................L..jYR......-.....
+...&...&0
+
+
+14:23:22.487322 lo    In  IP6 localhost.43484 > localhost.8080: Flags [.], ack 481, win 509, options [nop,nop,TS val 3548502566 ecr 3548502566], length 0
+`
+... .@....................................jYR..L.......(.....
+...&...&
+14:23:22.487383 lo    In  IP6 localhost.43484 > localhost.8080: Flags [F.], seq 106, ack 481, win 512, options [nop,nop,TS val 3548502566 ecr 3548502566], length 0
+`
+... .@....................................jYR..L.......(.....
+...&...&
+14:23:22.487455 lo    In  IP6 localhost.8080 > localhost.43484: Flags [F.], seq 481, ack 107, win 512, options [nop,nop,TS val 3548502566 ecr 3548502566], length 0
+`
+... .@.....................................L..jYR......(.....
+...&...&
+14:23:22.487464 lo    In  IP6 localhost.43484 > localhost.8080: Flags [.], ack 482, win 512, options [nop,nop,TS val 3548502566 ecr 3548502566], length 0
+`
+... .@....................................jYR..L.......(.....
+...&...&
+14:23:23.798626 eth0  In  IP e2e-frontend.docteams-e2e_e2e-network.47730 > 8acd176b6871.8080: Flags [P.], seq 5351:6424, ack 5805, win 706, options [nop,nop,TS val 3804757309 ecr 1428550903], length 1073: HTTP: GET /api/trust-accounts/5149d2be-b51f-4a7f-b375-f2a851a4a028/transactions?status=RECORDED&page=0&size=1000&sort=transactionDate%2Cdesc HTTP/1.1
+E..e..@.@.
+J.........r...../-..<....\......
+...=U%..GET /api/trust-accounts/5149d2be-b51f-4a7f-b375-f2a851a4a028/transactions?status=RECORDED&page=0&size=1000&sort=transactionDate%2Cdesc HTTP/1.1
+host: backend:8080
+connection: keep-alive
+Content-Type: application/json
+Authorization: <redacted>
+accept: */*
+accept-language: *
+sec-fetch-mode: cors
+user-agent: node
+accept-encoding: gzip, deflate
+
+
+14:23:23.814935 eth0  Out IP 8acd176b6871.8080 > e2e-frontend.docteams-e2e_e2e-network.47730: Flags [P.], seq 5805:7714, ack 6424, win 584, options [nop,nop,TS val 1428553028 ecr 3804757309], length 1909: HTTP: HTTP/1.1 200 
+E...].@.@.}m...........r-..<...`...H_......
+U%.D...=HTTP/1.1 200 
+Vary: origin,access-control-request-method,access-control-request-headers,accept-encoding
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 0
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Encoding: gzip
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Thu, 19 Nov 2026 14:23:23 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+a
+..........
+200
+...N.I.._..5m.|...N@. k.h..*.Cu..f..C.l.w....1,..AJ...5.......n.*..........q*.E....=..r"}...(.K!...R'.....fu/..UY.4......$(.q..$..H..*.......r.c=............OF.34...&.....q..4.`....S4L ..
+.;|y28m...&...0....E..a..7......S. .	.."9.^Z...|...k..#...B2"l..$....I.......pD. ..i....j2./.......n..@u.....up...q./.
+2TP.ev......#{<h...X./.	i.......u..2|.....rM.#...Y....Z........m8....o....r.....QZ.m.}yYM?@..\...4....`M..-.../.........l.....g..W..P...,..4/[O.....i\./..Of._._.s...f.^...+..UZ.TD.-...$.%.0N,....y.@.D.....
+200
+YD.h....,1....."/K./_..!~2...d..._..e..?./y..K..@...H....:..a".pJ.Vy..N_.;<....6..cB...np{.z.......[.r...b._.\f.6v...)...e...#qA'....f..kV.U0......Z.f.Ciw..t..(K-......HqU.V...N....%ZS.r4:.F.Z.v.g&..	..Tnq.h.5..(..%b.E.4..k..s,'..gp.r;..N......0..;j.....W...A.-j%5.i...-2..g....?
+."...a.`N(.at.W....5..	
+...zz..K..s].W.]......Baa.!.F...	....,:jZ.g*...D.R.sAF.....,......a>....|\..V......1...\h :'.{..]!S./.<j.]D.-1....s1..7O../..r.:..ekf.&1..Kc=q.y..h.LUp.G=2k.~&.....?8.......V..........+.....a(.O.~+..Y....+.*.
+192
+j.+1C..(..I<;....).v%.E\1....".......3...Bt.W.O....a...?I...+..V
+...*.ks.m....,....".$0'."6
+DZ. .c..aO...,...._....P......p?.M..Nj.8.~.K.U..c....`"&MT.M..9..."!`.Y.Ec..........`n.i.w..v...)I=.cl.Y...%.0E.....5Jp....A=...*.Z..].V...e<.*M......;...Q..W(h...'.........7...WY,........V..dGP..#..!.v.E.UU.R.,W.%I.....(....8.x.43...v.UdY{..oC.R..zB....,Z..}...l.....b6...3...yu..>..zZ..`2...y.4..M..e.?......
+
+14:23:23.815029 eth0  In  IP e2e-frontend.docteams-e2e_e2e-network.47730 > 8acd176b6871.8080: Flags [.], ack 7714, win 706, options [nop,nop,TS val 3804757326 ecr 1428553028], length 0
+E..4..@.@..z.........r.....`-.......X^.....
+...NU%.D
+14:23:23.815407 eth0  Out IP 8acd176b6871.8080 > e2e-frontend.docteams-e2e_e2e-network.47730: Flags [P.], seq 7714:7734, ack 6424, win 584, options [nop,nop,TS val 1428553028 ecr 3804757326], length 20: HTTP
+E..H].@.@..............r-......`...HXr.....
+U%.D...Na
+....,..%..
+0
+
+
+14:23:23.824287 eth0  In  IP e2e-frontend.docteams-e2e_e2e-network.47730 > 8acd176b6871.8080: Flags [P.], seq 6424:7497, ack 7734, win 706, options [nop,nop,TS val 3804757335 ecr 1428553028], length 1073: HTTP: GET /api/trust-accounts/5149d2be-b51f-4a7f-b375-f2a851a4a028/transactions?status=APPROVED&page=0&size=1000&sort=transactionDate%2Cdesc HTTP/1.1
+E..e..@.@.
+H.........r.....`-.......\......
+...WU%.DGET /api/trust-accounts/5149d2be-b51f-4a7f-b375-f2a851a4a028/transactions?status=APPROVED&page=0&size=1000&sort=transactionDate%2Cdesc HTTP/1.1
+host: backend:8080
+connection: keep-alive
+Content-Type: application/json
+Authorization: <redacted>
+accept: */*
+accept-language: *
+sec-fetch-mode: cors
+user-agent: node
+accept-encoding: gzip, deflate
+
+
+14:23:23.837516 eth0  Out IP 8acd176b6871.8080 > e2e-frontend.docteams-e2e_e2e-network.47730: Flags [P.], seq 7734:9073, ack 7497, win 584, options [nop,nop,TS val 1428553050 ecr 3804757335], length 1339: HTTP: HTTP/1.1 200 
+E..o].@.@..............r-..........H]......
+U%.Z...WHTTP/1.1 200 
+Vary: origin,access-control-request-method,access-control-request-headers,accept-encoding
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 0
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Encoding: gzip
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Thu, 19 Nov 2026 14:23:23 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+a
+..........
+200
+...o.6....B.f..o..i..@.di.`..p$..6E6$.@.....8.S`..%.6....w....9..M\...S3...iS3o"e......L9.,@0,sD..d...5....E..u?..q..O"...J...'.fY...
+.p.8.G.S....VT.O.?|{..Y]+.#..U+^]..fMj.........Q...\.>zw.....f.B.=.gM.Z..&,ytR3L)2E...D`J@@.|..J.K.&.6.VE"..I...$).'.,.D..).....J...vT..]7k.....%..6.4.p..^..w..l#.a.(.@}...o.X..s...V=h.C..*R.^.......lG.78.........<N8..b].......)..r.(-...g.sa.J.)..........D....;[....*..N...DL(E...!...G.;+eM?R....... ..5..P.......|.S.8%..fw.O4.......lw'n.N.Om...3v#........T5?j.....C.J....V...c.
+15f
+.`.t#..#.)H.o[	......U.a......p........:-w..b.>[8.i.%..of[..@.H...mA...< s:.XP.^......?.J..Y._...k.....?....`.ya....p...u..Q.$f!.S>s.=..E......._..S....9|.......	w..G..s.......p.........X...&.	.>..B...k.r..X[w.i.............."...(/....P....VgN.....k..x.....@...x...... ....s@pI...b.x."*fP...h......2m....O.'..8]7c.[..^......W~N.	..n#@.&.....r	77......
+
+14:23:23.837924 eth0  Out IP 8acd176b6871.8080 > e2e-frontend.docteams-e2e_e2e-network.47730: Flags [P.], seq 9073:9093, ack 7497, win 584, options [nop,nop,TS val 1428553051 ecr 3804757335], length 20: HTTP
+E..H].@.@..............r-..........HXr.....
+U%.[...Wa
+...i..H...
+0
+
+
+14:23:23.838598 eth0  In  IP e2e-frontend.docteams-e2e_e2e-network.47730 > 8acd176b6871.8080: Flags [.], ack 9093, win 706, options [nop,nop,TS val 3804757349 ecr 1428553050], length 0
+E..4..@.@..x.........r......-.......X^.....
+...eU%.Z
+14:23:23.844964 eth0  In  IP e2e-frontend.docteams-e2e_e2e-network.47730 > 8acd176b6871.8080: Flags [P.], seq 7497:8600, ack 9093, win 706, options [nop,nop,TS val 3804757356 ecr 1428553050], length 1103: HTTP: POST /api/trust-reconciliations/258446a3-3f94-4d43-b4a4-dfef85d45295/calculate HTTP/1.1
+E.....@.@.
+(.........r......-.......\......
+...lU%.ZPOST /api/trust-reconciliations/258446a3-3f94-4d43-b4a4-dfef85d45295/calculate HTTP/1.1
+host: backend:8080
+connection: keep-alive
+Content-Type: application/json
+Authorization: <redacted>
+accept: */*
+accept-language: *
+sec-fetch-mode: cors
+user-agent: node
+accept-encoding: gzip, deflate
+content-length: 66
+
+{"expectedBankStatementId":"b41e11a7-b300-44e4-b8f4-95c526170c24"}
+14:23:23.857665 eth0  Out IP 8acd176b6871.8080 > e2e-frontend.docteams-e2e_e2e-network.47730: Flags [P.], seq 9093:9870, ack 8600, win 580, options [nop,nop,TS val 1428553070 ecr 3804757356], length 777: HTTP: HTTP/1.1 409 
+E..=].@.@..............r-..........D[g.....
+U%.n...lHTTP/1.1 409 
+Vary: Origin
+Vary: Access-Control-Request-Method
+Vary: Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 0
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Type: application/problem+json
+Transfer-Encoding: chunked
+Date: Thu, 19 Nov 2026 14:23:23 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+155
+{"detail":"Since you opened it, this reconciliation was continued with another bank statement. Reload the reconciliation and review the statement it now uses before you continue.","instance":"/api/trust-reconciliations/258446a3-3f94-4d43-b4a4-dfef85d45295/calculate","status":409,"title":"This reconciliation now uses a different statement"}
+
+14:23:23.858036 eth0  Out IP 8acd176b6871.8080 > e2e-frontend.docteams-e2e_e2e-network.47730: Flags [P.], seq 9870:9875, ack 8600, win 580, options [nop,nop,TS val 1428553071 ecr 3804757356], length 5: HTTP
+E..9].@.@..............r-..........DXc.....
+U%.o...l0
+
+
+14:23:23.858408 eth0  In  IP e2e-frontend.docteams-e2e_e2e-network.47730 > 8acd176b6871.8080: Flags [.], ack 9875, win 706, options [nop,nop,TS val 3804757369 ecr 1428553070], length 0
+E..4..@.@..v.........r......-.."....X^.....
+...yU%.n

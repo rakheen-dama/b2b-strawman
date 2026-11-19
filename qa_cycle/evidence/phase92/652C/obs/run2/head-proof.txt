@@ -1,0 +1,24 @@
+== head: bc4684518cd5cffae4d5eb19b5538d556ae8c6d5  at 2026-11-19T14:20:38Z
+== frontend: files in /app/frontend/.next containing expectedBankStatementId
+/app/frontend/.next/server/chunks/ssr/frontend_1jm-1gk._.js
+/app/frontend/.next/server/chunks/ssr/frontend_07uhjd7._.js
+/app/frontend/.next/server/chunks/ssr/frontend_1sssev1._.js
+== frontend: snippets
+c function q(a,b){try{let c=await d.api.post(`/api/trust-reconciliations/${a}/calculate`,{expectedBankStatementId:b});return{success:!0,data:c}}catch(c){let a=c instanceof d
+nc function r(a,b){try{let e=await d.api.post(`/api/trust-reconciliations/${a}/complete`,{expectedBankStatementId:b});return(0,c.revalidatePath)("/","layout"),{success:!0,da
+c function q(a,b){try{let c=await d.api.post(`/api/trust-reconciliations/${a}/calculate`,{expectedBankStatementId:b});return{success:!0,data:c}}catch(c){let a=c instanceof d
+nc function r(a,b){try{let e=await d.api.post(`/api/trust-reconciliations/${a}/complete`,{expectedBankStatementId:b});return(0,c.revalidatePath)("/","layout"),{success:!0,da
+== backend: locate jar
+-rw-r--r-- 1 spring spring 4868649 Nov 19 14:19 /app/app.jar
+== backend app.jar (copied out of e2e-backend), 9d26379df612fb84530aebb431bd7c9d35becf205481bd527b352c0196ba6dc6  app.jar
+== io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/reconciliation/TrustReconciliationService.class
+2This reconciliation now uses a different statement
+ExpectedStatementRequest
+expectedBankStatementId
+|io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/reconciliation/TrustReconciliationService$ExpectedStatementRequest
+== io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/reconciliation/TrustReconciliationRepository.class
+findByIdForUpdate
+== controller
+<(Ljava/util/UUID;Lio/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/reconciliation/TrustReconciliationService$ExpectedStatementRequest;)Lorg/springframework/http/ResponseEntity<Lio/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/reconciliation/TrustReconciliationService$TrustReconciliationResponse;>;
+ExpectedStatementRequest
+|io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/reconciliation/TrustReconciliationService$ExpectedStatementRequest

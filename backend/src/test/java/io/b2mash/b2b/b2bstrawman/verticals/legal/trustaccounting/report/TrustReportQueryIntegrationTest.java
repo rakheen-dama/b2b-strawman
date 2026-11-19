@@ -391,9 +391,12 @@ class TrustReportQueryIntegrationTest {
           var created =
               trustReconciliationService.createReconciliation(
                   account, LocalDate.of(2026, 3, 31), march.id());
-          trustReconciliationService.calculateReconciliation(created.id());
+          trustReconciliationService.calculateReconciliation(
+              created.id(), created.bankStatementId());
           listId[0] =
-              trustReconciliationService.completeReconciliation(created.id()).monthlyListId();
+              trustReconciliationService
+                  .completeReconciliation(created.id(), created.bankStatementId())
+                  .monthlyListId();
         });
     var backdated = books.deposit(account, client, "250.00");
 

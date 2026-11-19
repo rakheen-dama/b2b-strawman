@@ -1,0 +1,423 @@
+{
+  "run": "M4OG6",
+  "start": "2026-11-19T13:55:36.774Z",
+  "pe": {
+    "a": "2026-11-16",
+    "b": "2026-11-17",
+    "c": "2026-11-18"
+  },
+  "a": {},
+  "b": {},
+  "c": {
+    "C1": {
+      "db": [
+        "4a34b829-96e4-4ef5-a9fc-fdfad1e01621|DRAFT|3bfca330-f723-43d2-9390-e2c0160378fe|c1-M4OG6.csv|2026-11-19 13:55:39.352437+00"
+      ],
+      "actions": [
+        "fetchUnreadCount:200",
+        "fetchTrustAccounts:200",
+        "uploadBankStatement:200",
+        "autoMatch:200",
+        "fetchBankStatement:200",
+        "fetchTransactions:200",
+        "fetchTransactions:200",
+        "createReconciliation:200",
+        "calculateReconciliation:200"
+      ],
+      "figures": {
+        "bank": 301.11,
+        "od": 15961.34,
+        "op": 1250,
+        "adj": 15012.45,
+        "cb": 12161.34,
+        "cr": 12161.34,
+        "diff": 2851.11,
+        "balanced": false,
+        "status": "DRAFT"
+      }
+    },
+    "attempts": [
+      {
+        "csv": "c2-try1-M4OG6.csv",
+        "needed": -2550,
+        "statement": "f09ea647-483d-419d-b8f8-2bb89773e316",
+        "db": [
+          "4a34b829-96e4-4ef5-a9fc-fdfad1e01621|DRAFT|f09ea647-483d-419d-b8f8-2bb89773e316|c2-try1-M4OG6.csv|2026-11-19 13:55:41.149055+00"
+        ],
+        "figures": {
+          "bank": -2550,
+          "od": 15961.34,
+          "op": 1250,
+          "adj": 12161.34,
+          "cb": 12161.34,
+          "cr": 12161.34,
+          "diff": 0,
+          "balanced": true,
+          "status": "DRAFT"
+        },
+        "actions": [
+          "uploadBankStatement:200",
+          "autoMatch:200",
+          "fetchBankStatement:200",
+          "fetchTransactions:200",
+          "fetchTransactions:200",
+          "createReconciliation:200",
+          "calculateReconciliation:200"
+        ]
+      }
+    ],
+    "excluded": 1,
+    "afterExclude": {
+      "figures": {
+        "bank": -2550,
+        "od": 15961.34,
+        "op": 1250,
+        "adj": 12161.34,
+        "cb": 12161.34,
+        "cr": 12161.34,
+        "diff": 0,
+        "balanced": true,
+        "status": "DRAFT"
+      },
+      "actions": [
+        "excludeLine:200",
+        "calculateReconciliation:200"
+      ],
+      "completeEnabled": true
+    },
+    "completed": {
+      "step5": "Reconciliation Complete The reconciliation has been completed successfully Bank Balance -R 2 550,00 Cashbook Balance R 12 161,34 Trust creditors R 12 161,34 No monthly list was locked: 18 Nov 2026 is not the last day of a month. Done",
+      "db": [
+        "4a34b829-96e4-4ef5-a9fc-fdfad1e01621|COMPLETED|f09ea647-483d-419d-b8f8-2bb89773e316|c2-try1-M4OG6.csv|2026-11-19 13:55:44.251309+00"
+      ],
+      "figures": {
+        "bank": -2550,
+        "od": 15961.34,
+        "op": 1250,
+        "adj": 12161.34,
+        "cb": 12161.34,
+        "cr": 12161.34,
+        "diff": 0,
+        "balanced": true,
+        "status": "COMPLETED"
+      },
+      "actions": [
+        "completeReconciliation:200"
+      ]
+    },
+    "refusal": {
+      "at": "2026-11-19T13:55:45.177Z",
+      "title": "This period is already reconciled",
+      "banner": "This period is already reconciled This trust account was reconciled to 18 November 2026. A completed reconciliation cannot be changed; choose a later period end.",
+      "stillOnStep3": true,
+      "splitPaneShown": false,
+      "countBefore": 1,
+      "db": [
+        "4a34b829-96e4-4ef5-a9fc-fdfad1e01621|COMPLETED|f09ea647-483d-419d-b8f8-2bb89773e316|c2-try1-M4OG6.csv|2026-11-19 13:55:44.251309+00"
+      ],
+      "actions": [
+        "fetchUnreadCount:200",
+        "fetchTrustAccounts:200",
+        "uploadBankStatement:200",
+        "autoMatch:200",
+        "fetchBankStatement:200",
+        "fetchTransactions:200",
+        "fetchTransactions:200",
+        "createReconciliation:200"
+      ],
+      "c3Statement": "6939ea73-7e6e-47af-96a6-1d23abbbf8ae"
+    },
+    "list": {
+      "pe": "2026-11-18",
+      "dbIds": [
+        "4a34b829-96e4-4ef5-a9fc-fdfad1e01621"
+      ],
+      "rowsWithDateText": 1,
+      "rowTexts": [
+        "18 Nov 2026 -R 2 550,00 R 12 161,34 R 12 211,34 Balanced 19 Nov 2026 ---"
+      ],
+      "dbIdsShownAsRows": 1,
+      "totalRows": 9,
+      "shot": "obs-run2-c-list.png"
+    }
+  },
+  "d": {
+    "audit": [
+      "2026-11-19 13:54:30.066127+00|trust_reconciliation.created|cd7b2e57-7d6c-46fa-9279-377cca53cd1b|2026-11-16||42af8abd-9ba1-41a6-a09c-e8013f8896c4",
+      "2026-11-19 13:54:35.360469+00|trust_reconciliation.statement_changed|cd7b2e57-7d6c-46fa-9279-377cca53cd1b|2026-11-16|42af8abd-9ba1-41a6-a09c-e8013f8896c4|81891f24-ff84-4062-a74f-5f43298e45f1",
+      "2026-11-19 13:54:37.977848+00|trust_reconciliation.statement_changed|cd7b2e57-7d6c-46fa-9279-377cca53cd1b|2026-11-16|81891f24-ff84-4062-a74f-5f43298e45f1|e15c7d2e-2fbe-4c33-81b6-a9e2a8394ad9",
+      "2026-11-19 13:54:40.925512+00|trust_reconciliation.created|292c85cd-c453-4b36-846c-72c1375a18d0|2026-11-17||cd2f3b05-a9f5-4b85-bac0-30be4997196d",
+      "2026-11-19 13:54:43.076772+00|trust_reconciliation.statement_changed|292c85cd-c453-4b36-846c-72c1375a18d0|2026-11-17|cd2f3b05-a9f5-4b85-bac0-30be4997196d|547bc54e-e275-443d-acdd-494c258ec6a4",
+      "2026-11-19 13:54:45.899154+00|trust_reconciliation.created|4a34b829-96e4-4ef5-a9fc-fdfad1e01621|2026-11-18||62af0c0a-58df-4596-ad23-ff970dc73ed3",
+      "2026-11-19 13:54:47.608919+00|trust_reconciliation.statement_changed|4a34b829-96e4-4ef5-a9fc-fdfad1e01621|2026-11-18|62af0c0a-58df-4596-ad23-ff970dc73ed3|574d41db-d502-490a-8abb-623ebc455c8a",
+      "2026-11-19 13:55:39.3501+00|trust_reconciliation.statement_changed|4a34b829-96e4-4ef5-a9fc-fdfad1e01621|2026-11-18|574d41db-d502-490a-8abb-623ebc455c8a|3bfca330-f723-43d2-9390-e2c0160378fe",
+      "2026-11-19 13:55:41.146134+00|trust_reconciliation.statement_changed|4a34b829-96e4-4ef5-a9fc-fdfad1e01621|2026-11-18|3bfca330-f723-43d2-9390-e2c0160378fe|f09ea647-483d-419d-b8f8-2bb89773e316",
+      "2026-11-19 13:55:44.232356+00|trust_reconciliation.completed|4a34b829-96e4-4ef5-a9fc-fdfad1e01621|2026-11-18||"
+    ],
+    "auditCompleted": [
+      "2026-11-19 13:54:30.066127+00|trust_reconciliation.created|cd7b2e57-7d6c-46fa-9279-377cca53cd1b",
+      "2026-11-19 13:54:30.210347+00|trust_reconciliation.calculated|cd7b2e57-7d6c-46fa-9279-377cca53cd1b",
+      "2026-11-19 13:54:32.731871+00|trust_reconciliation.calculated|cd7b2e57-7d6c-46fa-9279-377cca53cd1b",
+      "2026-11-19 13:54:35.360469+00|trust_reconciliation.statement_changed|cd7b2e57-7d6c-46fa-9279-377cca53cd1b",
+      "2026-11-19 13:54:35.413061+00|trust_reconciliation.calculated|cd7b2e57-7d6c-46fa-9279-377cca53cd1b",
+      "2026-11-19 13:54:37.977848+00|trust_reconciliation.statement_changed|cd7b2e57-7d6c-46fa-9279-377cca53cd1b",
+      "2026-11-19 13:54:38.03019+00|trust_reconciliation.calculated|cd7b2e57-7d6c-46fa-9279-377cca53cd1b",
+      "2026-11-19 13:54:40.925512+00|trust_reconciliation.created|292c85cd-c453-4b36-846c-72c1375a18d0",
+      "2026-11-19 13:54:40.978484+00|trust_reconciliation.calculated|292c85cd-c453-4b36-846c-72c1375a18d0",
+      "2026-11-19 13:54:43.076772+00|trust_reconciliation.statement_changed|292c85cd-c453-4b36-846c-72c1375a18d0",
+      "2026-11-19 13:54:43.126595+00|trust_reconciliation.calculated|292c85cd-c453-4b36-846c-72c1375a18d0",
+      "2026-11-19 13:54:45.899154+00|trust_reconciliation.created|4a34b829-96e4-4ef5-a9fc-fdfad1e01621",
+      "2026-11-19 13:54:45.939539+00|trust_reconciliation.calculated|4a34b829-96e4-4ef5-a9fc-fdfad1e01621",
+      "2026-11-19 13:54:47.608919+00|trust_reconciliation.statement_changed|4a34b829-96e4-4ef5-a9fc-fdfad1e01621",
+      "2026-11-19 13:54:47.647322+00|trust_reconciliation.calculated|4a34b829-96e4-4ef5-a9fc-fdfad1e01621",
+      "2026-11-19 13:55:39.3501+00|trust_reconciliation.statement_changed|4a34b829-96e4-4ef5-a9fc-fdfad1e01621",
+      "2026-11-19 13:55:39.409791+00|trust_reconciliation.calculated|4a34b829-96e4-4ef5-a9fc-fdfad1e01621",
+      "2026-11-19 13:55:41.146134+00|trust_reconciliation.statement_changed|4a34b829-96e4-4ef5-a9fc-fdfad1e01621",
+      "2026-11-19 13:55:41.19572+00|trust_reconciliation.calculated|4a34b829-96e4-4ef5-a9fc-fdfad1e01621",
+      "2026-11-19 13:55:42.4871+00|trust_reconciliation.calculated|4a34b829-96e4-4ef5-a9fc-fdfad1e01621",
+      "2026-11-19 13:55:44.232356+00|trust_reconciliation.completed|4a34b829-96e4-4ef5-a9fc-fdfad1e01621"
+    ]
+  },
+  "pageErrors": [],
+  "consoleErrors": [],
+  "actionCalls": [
+    {
+      "tag": "wizard",
+      "name": "fetchUnreadCount",
+      "id": "0060777ec5b2cc44d18372adbe9f9edb2e974ad814",
+      "t": "2026-11-19T13:55:38.191Z",
+      "status": 200
+    },
+    {
+      "tag": "wizard",
+      "name": "fetchOnboardingProgress",
+      "id": "00bf20979e8ffec9f0ffa1299157d53a829cba5307",
+      "t": "2026-11-19T13:55:38.261Z",
+      "status": 200
+    },
+    {
+      "tag": "wizard",
+      "name": "fetchUnreadCount",
+      "id": "0060777ec5b2cc44d18372adbe9f9edb2e974ad814",
+      "t": "2026-11-19T13:55:38.471Z",
+      "status": 200
+    },
+    {
+      "tag": "wizard",
+      "name": "fetchTrustAccounts",
+      "id": "00e4833a393c1b13ae033e0da1b35e3ea446370d23",
+      "t": "2026-11-19T13:55:38.516Z",
+      "status": 200
+    },
+    {
+      "tag": "wizard",
+      "name": "uploadBankStatement",
+      "id": "6012e74d6b4e9870c148b0ba8093ab96ec2415f9a3",
+      "t": "2026-11-19T13:55:38.620Z",
+      "status": 200
+    },
+    {
+      "tag": "wizard",
+      "name": "autoMatch",
+      "id": "40fbd6f07535b18b43107b9a5db2fb9e98a6928c63",
+      "t": "2026-11-19T13:55:39.040Z",
+      "status": 200
+    },
+    {
+      "tag": "wizard",
+      "name": "fetchBankStatement",
+      "id": "4015bf59e829fc3a23dfcf8705390f962d9339808f",
+      "t": "2026-11-19T13:55:39.121Z",
+      "status": 200
+    },
+    {
+      "tag": "wizard",
+      "name": "fetchTransactions",
+      "id": "6034688a5105d44a908907610d5b654a8049947d4a",
+      "t": "2026-11-19T13:55:39.241Z",
+      "status": 200
+    },
+    {
+      "tag": "wizard",
+      "name": "fetchTransactions",
+      "id": "6034688a5105d44a908907610d5b654a8049947d4a",
+      "t": "2026-11-19T13:55:39.273Z",
+      "status": 200
+    },
+    {
+      "tag": "wizard",
+      "name": "createReconciliation",
+      "id": "603a3444c79502881b83c5aaf25de3d27456715e99",
+      "t": "2026-11-19T13:55:39.299Z",
+      "status": 200
+    },
+    {
+      "tag": "wizard",
+      "name": "calculateReconciliation",
+      "id": "40abea2cb42046d998be2259b47866bc883a421981",
+      "t": "2026-11-19T13:55:39.369Z",
+      "status": 200
+    },
+    {
+      "tag": "wizard",
+      "name": "uploadBankStatement",
+      "id": "6012e74d6b4e9870c148b0ba8093ab96ec2415f9a3",
+      "t": "2026-11-19T13:55:40.444Z",
+      "status": 200
+    },
+    {
+      "tag": "wizard",
+      "name": "autoMatch",
+      "id": "40fbd6f07535b18b43107b9a5db2fb9e98a6928c63",
+      "t": "2026-11-19T13:55:40.860Z",
+      "status": 200
+    },
+    {
+      "tag": "wizard",
+      "name": "fetchBankStatement",
+      "id": "4015bf59e829fc3a23dfcf8705390f962d9339808f",
+      "t": "2026-11-19T13:55:40.913Z",
+      "status": 200
+    },
+    {
+      "tag": "wizard",
+      "name": "fetchTransactions",
+      "id": "6034688a5105d44a908907610d5b654a8049947d4a",
+      "t": "2026-11-19T13:55:41.060Z",
+      "status": 200
+    },
+    {
+      "tag": "wizard",
+      "name": "fetchTransactions",
+      "id": "6034688a5105d44a908907610d5b654a8049947d4a",
+      "t": "2026-11-19T13:55:41.088Z",
+      "status": 200
+    },
+    {
+      "tag": "wizard",
+      "name": "createReconciliation",
+      "id": "603a3444c79502881b83c5aaf25de3d27456715e99",
+      "t": "2026-11-19T13:55:41.106Z",
+      "status": 200
+    },
+    {
+      "tag": "wizard",
+      "name": "calculateReconciliation",
+      "id": "40abea2cb42046d998be2259b47866bc883a421981",
+      "t": "2026-11-19T13:55:41.163Z",
+      "status": 200
+    },
+    {
+      "tag": "wizard",
+      "name": "excludeLine",
+      "id": "605d8073335cb2059e73643599577d4d3c5128c235",
+      "t": "2026-11-19T13:55:42.405Z",
+      "status": 200
+    },
+    {
+      "tag": "wizard",
+      "name": "calculateReconciliation",
+      "id": "40abea2cb42046d998be2259b47866bc883a421981",
+      "t": "2026-11-19T13:55:42.456Z",
+      "status": 200
+    },
+    {
+      "tag": "wizard",
+      "name": "completeReconciliation",
+      "id": "400f545e6f13e0a35db3ec7c00af270ef4799542bc",
+      "t": "2026-11-19T13:55:44.187Z",
+      "status": 200
+    },
+    {
+      "tag": "wizard",
+      "name": "fetchUnreadCount",
+      "id": "0060777ec5b2cc44d18372adbe9f9edb2e974ad814",
+      "t": "2026-11-19T13:55:45.255Z",
+      "status": 200
+    },
+    {
+      "tag": "wizard",
+      "name": "fetchTrustAccounts",
+      "id": "00e4833a393c1b13ae033e0da1b35e3ea446370d23",
+      "t": "2026-11-19T13:55:45.282Z",
+      "status": 200
+    },
+    {
+      "tag": "wizard",
+      "name": "uploadBankStatement",
+      "id": "6012e74d6b4e9870c148b0ba8093ab96ec2415f9a3",
+      "t": "2026-11-19T13:55:45.375Z",
+      "status": 200
+    },
+    {
+      "tag": "wizard",
+      "name": "autoMatch",
+      "id": "40fbd6f07535b18b43107b9a5db2fb9e98a6928c63",
+      "t": "2026-11-19T13:55:45.799Z",
+      "status": 200
+    },
+    {
+      "tag": "wizard",
+      "name": "fetchBankStatement",
+      "id": "4015bf59e829fc3a23dfcf8705390f962d9339808f",
+      "t": "2026-11-19T13:55:45.847Z",
+      "status": 200
+    },
+    {
+      "tag": "wizard",
+      "name": "fetchTransactions",
+      "id": "6034688a5105d44a908907610d5b654a8049947d4a",
+      "t": "2026-11-19T13:55:45.896Z",
+      "status": 200
+    },
+    {
+      "tag": "wizard",
+      "name": "fetchTransactions",
+      "id": "6034688a5105d44a908907610d5b654a8049947d4a",
+      "t": "2026-11-19T13:55:45.917Z",
+      "status": 200
+    },
+    {
+      "tag": "wizard",
+      "name": "createReconciliation",
+      "id": "603a3444c79502881b83c5aaf25de3d27456715e99",
+      "t": "2026-11-19T13:55:45.946Z",
+      "status": 200
+    },
+    {
+      "tag": "list",
+      "name": "fetchUnreadCount",
+      "id": "0060777ec5b2cc44d18372adbe9f9edb2e974ad814",
+      "t": "2026-11-19T13:55:47.307Z",
+      "status": 200
+    }
+  ],
+  "schema": "tenant_7d218705360b",
+  "accountId": "5149d2be-b51f-4a7f-b375-f2a851a4a028",
+  "before": {
+    "duplicates": [],
+    "forOurPeriods": [
+      "292c85cd-c453-4b36-846c-72c1375a18d0|2026-11-17|DRAFT",
+      "cd7b2e57-7d6c-46fa-9279-377cca53cd1b|2026-11-16|DRAFT",
+      "4a34b829-96e4-4ef5-a9fc-fdfad1e01621|2026-11-18|DRAFT"
+    ],
+    "cDraft": [
+      "4a34b829-96e4-4ef5-a9fc-fdfad1e01621|DRAFT|574d41db-d502-490a-8abb-623ebc455c8a|c2-try1-M362I.csv|2026-11-19 13:54:47.610901+00"
+    ]
+  },
+  "phases": "cd",
+  "after": {
+    "duplicates": [],
+    "forOurPeriods": [
+      "cd7b2e57-7d6c-46fa-9279-377cca53cd1b|2026-11-16|DRAFT|e15c7d2e-2fbe-4c33-81b6-a9e2a8394ad9",
+      "292c85cd-c453-4b36-846c-72c1375a18d0|2026-11-17|DRAFT|547bc54e-e275-443d-acdd-494c258ec6a4",
+      "4a34b829-96e4-4ef5-a9fc-fdfad1e01621|2026-11-18|COMPLETED|f09ea647-483d-419d-b8f8-2bb89773e316"
+    ],
+    "statements": [
+      "3bfca330-f723-43d2-9390-e2c0160378fe|c1-M4OG6.csv|2026-11-19 13:55:38.658711+00",
+      "f09ea647-483d-419d-b8f8-2bb89773e316|c2-try1-M4OG6.csv|2026-11-19 13:55:40.479336+00",
+      "6939ea73-7e6e-47af-96a6-1d23abbbf8ae|c3-M4OG6.csv|2026-11-19 13:55:45.41011+00"
+    ]
+  },
+  "end": "2026-11-19T13:55:48.316Z"
+}

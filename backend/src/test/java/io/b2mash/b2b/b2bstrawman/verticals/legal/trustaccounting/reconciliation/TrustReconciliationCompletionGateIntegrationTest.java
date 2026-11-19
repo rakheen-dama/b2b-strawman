@@ -317,11 +317,11 @@ class TrustReconciliationCompletionGateIntegrationTest {
     var march = unknownCreditStatement(account, "gpass-march.csv");
     var recon = reconcile(account, MARCH_END, march.id());
     recordLine(march.lines().get(1).id(), unidentified());
-    var recalculated = calculate(recon.id());
+    var recalculated = calculate(recon);
     assertThat(recalculated.isBalanced()).isTrue();
     assertThat(recalculated.unresolvedLineCount()).isZero();
 
-    var completed = complete(recon.id());
+    var completed = complete(recon);
     assertThat(completed.status()).isEqualTo("COMPLETED");
     assertThat(completed.completedBy()).isEqualTo(memberId);
     assertThat(completed.cashbookBalance()).isEqualByComparingTo("2250.00");
@@ -390,7 +390,7 @@ class TrustReconciliationCompletionGateIntegrationTest {
     var recon = reconcile(account, MARCH_END, march.id());
     assertThat(recon.isBalanced()).isTrue();
 
-    var completed = complete(recon.id());
+    var completed = complete(recon);
     assertThat(completed.status()).isEqualTo("COMPLETED");
     assertThat(codes(completed.integrityFlags()))
         .containsExactly(
@@ -545,7 +545,7 @@ class TrustReconciliationCompletionGateIntegrationTest {
     var march = unknownCreditStatement(account, "glock-march.csv");
     var recon = reconcile(account, MARCH_END, march.id());
     recordLine(march.lines().get(1).id(), unidentified());
-    var completed = complete(recon.id());
+    var completed = complete(recon);
     assertThat(completed.monthlyListId()).isNotNull();
     var row =
         jdbc.queryForMap(
@@ -567,7 +567,7 @@ class TrustReconciliationCompletionGateIntegrationTest {
             midMonthAccount, "glock-mid.csv", "01/03/2026,Deposit received,500.00,500.00,GL-MID");
     match(midMarch, 0, depositId);
     var midRecon = reconcile(midMonthAccount, LocalDate.of(2026, 3, 15), midMarch.id());
-    var midCompleted = complete(midRecon.id());
+    var midCompleted = complete(midRecon);
     assertThat(midCompleted.status()).isEqualTo("COMPLETED");
     assertThat(midCompleted.monthlyListId()).isNull();
     assertThat(
@@ -628,8 +628,8 @@ class TrustReconciliationCompletionGateIntegrationTest {
     var matchedLine = march.lines().get(0).id();
     var recordedLine = march.lines().get(1).id();
     recordLine(recordedLine, unidentified());
-    calculate(recon.id());
-    var completed = complete(recon.id());
+    calculate(recon);
+    var completed = complete(recon);
     assertThat(completed.status()).isEqualTo("COMPLETED");
     assertThat(statementStatus(march.id())).isEqualTo("RECONCILED");
 
@@ -673,21 +673,22 @@ class TrustReconciliationCompletionGateIntegrationTest {
 
   /**
    * A double-click: two completes of the same balanced reconciliation. The first (the owner)
-   * completes and holds its transaction open — the statement row locked, COMPLETED not yet
-   * committed — so the second (the approver) reads DRAFT and then blocks on the statement row lock
-   * (observed in {@code pg_stat_activity}, not a sleep). Once the first commits, the second
-   * re-reads the status under the lock and is refused exactly as a sequential second complete is:
-   * one completion, one {@code trust_reconciliation.completed} audit event, the winner's {@code
-   * completedBy} / {@code completedAt}.
+   * completes and holds its transaction open — the reconciliation row locked, COMPLETED not yet
+   * committed — so the second (the approver) blocks on its first read of the reconciliation, the
+   * row lock (observed in {@code pg_stat_activity}, not a sleep; since 652C every writer locks the
+   * reconciliation row first, D-13). Once the first commits, the second reads COMPLETED and is
+   * refused exactly as a sequential second complete is: one completion, one {@code
+   * trust_reconciliation.completed} audit event, the winner's {@code completedBy} / {@code
+   * completedAt}.
    */
   @Test
-  void concurrentDoubleComplete_secondWaitsOnTheStatementLock_andIsRefused_completedOnce()
+  void concurrentDoubleComplete_secondWaitsOnTheReconciliationLock_andIsRefused_completedOnce()
       throws Exception {
     var account = books.freshAccount(false);
     var march = unknownCreditStatement(account, "gdc-march.csv");
     var recon = reconcile(account, MARCH_END, march.id());
     recordLine(march.lines().get(1).id(), unidentified());
-    assertThat(calculate(recon.id()).isBalanced()).isTrue();
+    assertThat(calculate(recon).isBalanced()).isTrue();
 
     var firstDone = new CountDownLatch(1);
     var releaseFirst = new CountDownLatch(1);
@@ -709,7 +710,8 @@ class TrustReconciliationCompletionGateIntegrationTest {
                             transactionTemplate.executeWithoutResult(
                                 tx -> {
                                   firstResult.set(
-                                      reconciliationService.completeReconciliation(recon.id()));
+                                      reconciliationService.completeReconciliation(
+                                          recon.id(), recon.bankStatementId()));
                                   firstBackendPid.set(
                                       ((Number)
                                               entityManager
@@ -736,7 +738,8 @@ class TrustReconciliationCompletionGateIntegrationTest {
                         approverId,
                         () ->
                             secondResult.set(
-                                reconciliationService.completeReconciliation(recon.id())));
+                                reconciliationService.completeReconciliation(
+                                    recon.id(), recon.bankStatementId())));
                   } catch (Throwable t) {
                     secondError.set(t);
                   } finally {
@@ -747,7 +750,7 @@ class TrustReconciliationCompletionGateIntegrationTest {
     boolean secondFinishedBeforeCommit;
     try {
       secondBlockedOnFirst =
-          awaitBlockedOnStatementLockHeldByOrFinished(firstBackendPid.get(), secondFinished);
+          awaitBlockedOnReconciliationLockHeldByOrFinished(firstBackendPid.get(), secondFinished);
       secondFinishedBeforeCommit = secondFinished.get();
     } finally {
       releaseFirst.countDown();
@@ -757,10 +760,10 @@ class TrustReconciliationCompletionGateIntegrationTest {
 
     assertThat(firstError.get()).as("the first complete (committed)").isNull();
     assertThat(secondBlockedOnFirst)
-        .as("the second complete blocked on the bank_statements row lock the first held")
+        .as("the second complete blocked on the trust_reconciliations row lock the first held")
         .isTrue();
     assertThat(secondFinishedBeforeCommit)
-        .as("the second complete finished while the first still held the statement lock")
+        .as("the second complete finished while the first still held the reconciliation lock")
         .isFalse();
     assertThat(secondResult.get()).as("the second complete succeeded").isNull();
     assertThat(secondError.get())
@@ -796,18 +799,18 @@ class TrustReconciliationCompletionGateIntegrationTest {
   }
 
   /**
-   * Waits (bounded, 30 s) until a backend blocked by {@code holderPid} is running a bank_statements
-   * query (true — the statement row lock is contested) or the waiter finishes without having been
-   * seen blocked (false). Fails if neither happens.
+   * Waits (bounded, 30 s) until a backend blocked by {@code holderPid} is running a
+   * trust_reconciliations query (true — the reconciliation row lock is contested) or the waiter
+   * finishes without having been seen blocked (false). Fails if neither happens.
    */
-  private boolean awaitBlockedOnStatementLockHeldByOrFinished(
+  private boolean awaitBlockedOnReconciliationLockHeldByOrFinished(
       int holderPid, AtomicBoolean waiterFinished) {
     long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(30);
     while (System.nanoTime() < deadline) {
       Long blocked =
           jdbc.queryForObject(
               "SELECT count(*) FROM pg_stat_activity WHERE ? = ANY(pg_blocking_pids(pid))"
-                  + " AND query ILIKE '%bank_statements%'",
+                  + " AND query ILIKE '%trust_reconciliations%'",
               Long.class, holderPid);
       if (blocked != null && blocked > 0) {
         return true;
@@ -885,7 +888,7 @@ class TrustReconciliationCompletionGateIntegrationTest {
     var contra = books.reverse(account, depositId, Expected.none(), LocalDate.of(2026, 3, 10));
     books.approve(account, contra.id(), approverId, Expected.cashbookAndClient("-1000.00"));
 
-    var completed = complete(recon.id());
+    var completed = complete(recon);
     assertThat(completed.status()).isEqualTo("COMPLETED");
     assertThat(completed.cashbookBalance())
         .as("cashbook recalculated at complete")
@@ -937,10 +940,14 @@ class TrustReconciliationCompletionGateIntegrationTest {
     books.as(memberId, () -> statementLinePostingService.recordFromLine(lineId, request));
   }
 
-  private TrustReconciliationResponse calculate(UUID reconciliationId) {
+  /** Calculates the draft against the statement it uses (the statement the test reviewed). */
+  private TrustReconciliationResponse calculate(TrustReconciliationResponse draft) {
     var recon = new TrustReconciliationResponse[1];
     books.as(
-        memberId, () -> recon[0] = reconciliationService.calculateReconciliation(reconciliationId));
+        memberId,
+        () ->
+            recon[0] =
+                reconciliationService.calculateReconciliation(draft.id(), draft.bankStatementId()));
     return recon[0];
   }
 
@@ -1045,16 +1052,20 @@ class TrustReconciliationCompletionGateIntegrationTest {
         member,
         () -> {
           var created = reconciliationService.createReconciliation(account, periodEnd, statementId);
-          recon[0] = reconciliationService.calculateReconciliation(created.id());
+          recon[0] =
+              reconciliationService.calculateReconciliation(
+                  created.id(), created.bankStatementId());
         });
     return recon[0];
   }
 
-  private TrustReconciliationResponse complete(UUID reconciliationId) {
+  private TrustReconciliationResponse complete(TrustReconciliationResponse draft) {
     var completed = new TrustReconciliationResponse[1];
     books.as(
         memberId,
-        () -> completed[0] = reconciliationService.completeReconciliation(reconciliationId));
+        () ->
+            completed[0] =
+                reconciliationService.completeReconciliation(draft.id(), draft.bankStatementId()));
     return completed[0];
   }
 
@@ -1079,7 +1090,10 @@ class TrustReconciliationCompletionGateIntegrationTest {
     tenant.as(
         member,
         () ->
-            assertThatThrownBy(() -> reconciliationService.completeReconciliation(reconciliationId))
+            assertThatThrownBy(
+                    () ->
+                        reconciliationService.completeReconciliation(
+                            reconciliationId, before.bankStatementId()))
                 .isInstanceOfSatisfying(
                     InvalidStateException.class,
                     e -> {

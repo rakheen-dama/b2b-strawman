@@ -1,10 +1,12 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation;
 
+import jakarta.persistence.LockModeType;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -13,8 +15,8 @@ public interface TrustReconciliationRepository extends JpaRepository<TrustReconc
   List<TrustReconciliation> findByTrustAccountIdOrderByPeriodEndDesc(UUID trustAccountId);
 
   /**
-   * Latest reconciliation for an account by {@code period_end} (createdAt breaks ties — a DRAFT and
-   * a COMPLETED can share a period end). Used by the dashboard trust position (Phase 87, 614A).
+   * Latest reconciliation for an account by {@code period_end} (one reconciliation per period end
+   * since V29). Used by the dashboard trust position (Phase 87, 614A).
    */
   Optional<TrustReconciliation> findFirstByTrustAccountIdOrderByPeriodEndDescCreatedAtDesc(
       UUID trustAccountId);
@@ -35,10 +37,28 @@ public interface TrustReconciliationRepository extends JpaRepository<TrustReconc
           UUID trustAccountId, ReconciliationStatus status);
 
   /**
-   * The reconciliation's status read from the database — a scalar query, so it bypasses the
-   * persistence context's (possibly stale) copy of the entity. {@code completeReconciliation}
-   * re-checks it under the statement row lock (649C review fix cycle 2).
+   * The account's reconciliation to {@code periodEnd} (at most one — uq_trust_recon_account_period,
+   * V29), row-locked (PESSIMISTIC_WRITE). Must be the first read of the row in the transaction, so
+   * the entity is fresh (a later locking read does not refresh an already-loaded row):
+   * createReconciliation (652C) serialises two creates for one draft, and a create waiting on a
+   * completion sees it COMPLETED.
    */
-  @Query("SELECT r.status FROM TrustReconciliation r WHERE r.id = :id")
-  Optional<ReconciliationStatus> findStatusById(@Param("id") UUID id);
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @Query(
+      "SELECT r FROM TrustReconciliation r"
+          + " WHERE r.trustAccountId = :trustAccountId AND r.periodEnd = :periodEnd")
+  Optional<TrustReconciliation> findByTrustAccountIdAndPeriodEndForUpdate(
+      @Param("trustAccountId") UUID trustAccountId, @Param("periodEnd") LocalDate periodEnd);
+
+  /**
+   * The reconciliation row, locked (PESSIMISTIC_WRITE). Every writer of a reconciliation — create's
+   * continuation (by account and period end, above), calculate and complete — takes this row lock
+   * as its FIRST lock and its first read of the row (a later locking read does not refresh an
+   * already-loaded entity), so a re-point and a calculate or complete of the same draft are
+   * serialised and none saves over the other's statement (652C CodeRabbit round 1). Lock order:
+   * reconciliation → bank statement → trust account (D-13).
+   */
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @Query("SELECT r FROM TrustReconciliation r WHERE r.id = :id")
+  Optional<TrustReconciliation> findByIdForUpdate(@Param("id") UUID id);
 }

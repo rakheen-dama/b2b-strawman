@@ -1,0 +1,34 @@
+652C — reproduce-before-fix (task 652.7, architecture §16.3.12): RED on main
+
+main SHA: 30ad1643b945226e474274c974740b46f28416a2  (docs(trust): PR #1816 merged as e64de4dc9 — 652B Done (reproduced red, built; stage 9))
+Worktree: /Users/rakheendama/Projects/2026/worktree-epic-652C (branch epic-652C/recon-draft-get-or-create)
+Production code changed: none (git diff on backend/src/main is empty)
+Date: 2026-11-19T13:21:13Z
+
+Test source: backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/reconciliation/TrustReconciliationDraftIntegrationTest.java
+Test method: secondCreateForSameAccountAndPeriod_returnsTheDraft
+  Wizard sequence through the production service: importBankStatement -> autoMatchStatement ->
+  createReconciliation -> calculateReconciliation, then (after a wizard reset drops the handle)
+  createReconciliation -> calculateReconciliation again, same account, same period end 2026-03-31.
+
+Command (from backend/):
+  ./mvnw spotless:apply -q; ./mvnw test -Dtest=TrustReconciliationDraftIntegrationTest -q > /tmp/mvn-652C-red.log 2>&1; echo $?
+  exit=1
+
+Surefire summary (/tmp/mvn-652C-red.log):
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 24.90 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationDraftIntegrationTest
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationDraftIntegrationTest.secondCreateForSameAccountAndPeriod_returnsTheDraft -- Time elapsed: 0.742 s <<< FAILURE!
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationDraftIntegrationTest.secondCreateForSameAccountAndPeriod_returnsTheDraft(TrustReconciliationDraftIntegrationTest.java:86)
+[ERROR]   TrustReconciliationDraftIntegrationTest.secondCreateForSameAccountAndPeriod_returnsTheDraft:86 [one reconciliation row for (account, period end)] 
+
+Failure (target/surefire-reports/TEST-...TrustReconciliationDraftIntegrationTest.xml):
+    <failure message="[one reconciliation row for (account, period end)]  expected: 1L  but was: 2L" type="org.opentest4j.AssertionFailedError"><![CDATA[org.opentest4j.AssertionFailedError: 
+[one reconciliation row for (account, period end)] 
+expected: 1L
+ but was: 2L
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationDraftIntegrationTest.secondCreateForSameAccountAndPeriod_returnsTheDraft(TrustReconciliationDraftIntegrationTest.java:86)
+]]></failure>
+
+Verdict: REPRODUCED. Two trust_reconciliations rows exist for one (trust_account_id, period_end):
+createReconciliation always inserts (TrustReconciliationService.createReconciliation, new TrustReconciliation(...) + save).
+652C is built (task 652.9).

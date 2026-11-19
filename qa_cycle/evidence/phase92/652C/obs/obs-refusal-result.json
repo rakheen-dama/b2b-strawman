@@ -1,0 +1,67 @@
+{
+  "run": "M6GXJ",
+  "pe": "2026-11-18",
+  "actions": [
+    {
+      "name": "fetchUnreadCount",
+      "status": 200,
+      "t": "2026-11-19T13:57:01.774Z"
+    },
+    {
+      "name": "fetchOnboardingProgress",
+      "status": 200,
+      "t": "2026-11-19T13:57:01.898Z"
+    },
+    {
+      "name": "fetchUnreadCount",
+      "status": 200,
+      "t": "2026-11-19T13:57:02.126Z"
+    },
+    {
+      "name": "fetchTrustAccounts",
+      "status": 200,
+      "t": "2026-11-19T13:57:02.171Z"
+    },
+    {
+      "name": "uploadBankStatement",
+      "status": 200,
+      "t": "2026-11-19T13:57:02.299Z"
+    },
+    {
+      "name": "autoMatch",
+      "status": 200,
+      "t": "2026-11-19T13:57:02.378Z"
+    },
+    {
+      "name": "fetchBankStatement",
+      "status": 200,
+      "t": "2026-11-19T13:57:02.399Z"
+    },
+    {
+      "name": "fetchTransactions",
+      "status": 200,
+      "t": "2026-11-19T13:57:02.480Z"
+    },
+    {
+      "name": "fetchTransactions",
+      "status": 200,
+      "t": "2026-11-19T13:57:02.507Z"
+    },
+    {
+      "name": "createReconciliation",
+      "status": 200,
+      "t": "2026-11-19T13:57:02.540Z",
+      "body": ""
+    }
+  ],
+  "pageErrors": [],
+  "consoleErrors": [],
+  "dbBefore": "4a34b829-96e4-4ef5-a9fc-fdfad1e01621|COMPLETED|f09ea647-483d-419d-b8f8-2bb89773e316|2026-11-19 13:55:44.225752+00|2026-11-19 13:55:44.251309+00",
+  "reviewClickedAt": "2026-11-19T13:57:02.428Z",
+  "title": "This period is already reconciled",
+  "banner": "This period is already reconciled This trust account was reconciled to 18 November 2026. A completed reconciliation cannot be changed; choose a later period end.",
+  "onStep3": true,
+  "dbAfter": "4a34b829-96e4-4ef5-a9fc-fdfad1e01621|COMPLETED|f09ea647-483d-419d-b8f8-2bb89773e316|2026-11-19 13:55:44.225752+00|2026-11-19 13:55:44.251309+00",
+  "countAfter": "1",
+  "auditSince": ""
+}

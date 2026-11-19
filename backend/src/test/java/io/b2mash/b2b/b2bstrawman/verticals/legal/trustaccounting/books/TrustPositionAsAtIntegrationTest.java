@@ -499,7 +499,10 @@ class TrustPositionAsAtIntegrationTest {
     books.as(
         memberId,
         () ->
-            assertThatThrownBy(() -> reconciliationService.calculateReconciliation(created[0].id()))
+            assertThatThrownBy(
+                    () ->
+                        reconciliationService.calculateReconciliation(
+                            created[0].id(), created[0].bankStatementId()))
                 .isInstanceOfSatisfying(
                     InvalidStateException.class,
                     e -> {
@@ -609,7 +612,9 @@ class TrustPositionAsAtIntegrationTest {
         memberId,
         () -> {
           var created = reconciliationService.createReconciliation(account, periodEnd, statementId);
-          recon[0] = reconciliationService.calculateReconciliation(created.id());
+          recon[0] =
+              reconciliationService.calculateReconciliation(
+                  created.id(), created.bankStatementId());
         });
     return recon[0];
   }

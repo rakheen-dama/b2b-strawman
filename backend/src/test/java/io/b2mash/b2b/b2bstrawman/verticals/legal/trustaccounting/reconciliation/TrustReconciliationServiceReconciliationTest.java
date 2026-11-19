@@ -194,9 +194,13 @@ class TrustReconciliationServiceReconciliationTest {
                     statementId == null ? null : UUID.fromString(statementId)));
   }
 
-  private TrustReconciliationService.TrustReconciliationResponse calculate(UUID reconciliationId) {
+  /** Calculates the draft against the statement it was created with (the reviewed statement). */
+  private TrustReconciliationService.TrustReconciliationResponse calculate(
+      TrustReconciliationService.TrustReconciliationResponse recon) {
     return ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .call(() -> reconciliationService.calculateReconciliation(reconciliationId));
+        .call(
+            () ->
+                reconciliationService.calculateReconciliation(recon.id(), recon.bankStatementId()));
   }
 
   private void autoMatch(String statementId) {
@@ -243,7 +247,7 @@ class TrustReconciliationServiceReconciliationTest {
 
     // Create a reconciliation and calculate
     var reconResponse = create(accountId, LocalDate.of(2026, 3, 31), statementId);
-    var calculated = calculate(reconResponse.id());
+    var calculated = calculate(reconResponse);
 
     assertThat(calculated.bankBalance()).isEqualByComparingTo(new BigDecimal("50000.00"));
     assertThat(calculated.cashbookBalance()).isNotNull();
@@ -276,7 +280,7 @@ class TrustReconciliationServiceReconciliationTest {
     autoMatch(statementId);
 
     var reconResponse = create(isolatedAccountId, LocalDate.of(2026, 3, 31), statementId);
-    var calculated = calculate(reconResponse.id());
+    var calculated = calculate(reconResponse);
 
     // All three values must agree for isBalanced to be true:
     // adjustedBankBalance == cashbookBalance == clientLedgerTotal
@@ -346,7 +350,7 @@ class TrustReconciliationServiceReconciliationTest {
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .run(() -> reconciliationService.excludeLine(chargeLine.id(), "bank charge test"));
 
-    var calculated = calculate(create(accountId, LocalDate.of(2026, 3, 31), statementId).id());
+    var calculated = calculate(create(accountId, LocalDate.of(2026, 3, 31), statementId));
 
     assertThat(calculated.bankBalance()).isEqualByComparingTo("25085.00");
     assertThat(calculated.cashbookBalance()).isEqualByComparingTo("25000.00");
@@ -376,7 +380,7 @@ class TrustReconciliationServiceReconciliationTest {
             """);
 
     var reconResponse = create(accountId, LocalDate.of(2026, 3, 31), statementId);
-    var calculated = calculate(reconResponse.id());
+    var calculated = calculate(reconResponse);
 
     // Bank 80 000 + outstanding deposit 10 000 = 90 000 against a cashbook of 10 000
     assertThat(calculated.outstandingDeposits()).isEqualByComparingTo("10000.00");
@@ -402,7 +406,7 @@ class TrustReconciliationServiceReconciliationTest {
             """);
 
     var reconResponse = create(accountId, LocalDate.of(2026, 3, 31), statementId);
-    var calculated = calculate(reconResponse.id());
+    var calculated = calculate(reconResponse);
 
     // The unmatched DEP-OUT-001 (15000) is the only outstanding deposit
     assertThat(calculated.outstandingDeposits()).isEqualByComparingTo(new BigDecimal("15000.00"));
@@ -649,7 +653,7 @@ class TrustReconciliationServiceReconciliationTest {
     createDepositForAccount(accountId, "DEP-R5-002", "4000.00", "2026-04-05");
 
     var reconResponse = create(accountId, LocalDate.of(2026, 3, 31), statementId);
-    var calculated = calculate(reconResponse.id());
+    var calculated = calculate(reconResponse);
 
     assertThat(calculated.bankBalance()).as("bank").isEqualByComparingTo("25000.00");
     assertThat(calculated.outstandingDeposits()).as("outstanding").isEqualByComparingTo("0.00");
@@ -686,7 +690,7 @@ class TrustReconciliationServiceReconciliationTest {
     autoMatch(statementId);
 
     var reconResponse = create(isolatedAccountId, LocalDate.of(2026, 3, 31), statementId);
-    var calculated = calculate(reconResponse.id());
+    var calculated = calculate(reconResponse);
 
     assertThat(calculated.isBalanced())
         .as("Reconciliation must be balanced before completing — check test data setup")
@@ -695,7 +699,10 @@ class TrustReconciliationServiceReconciliationTest {
     var completed =
         ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
             .where(RequestScopes.MEMBER_ID, ownerMemberId)
-            .call(() -> reconciliationService.completeReconciliation(reconResponse.id()));
+            .call(
+                () ->
+                    reconciliationService.completeReconciliation(
+                        reconResponse.id(), reconResponse.bankStatementId()));
 
     assertThat(completed.status()).isEqualTo("COMPLETED");
     assertThat(completed.completedBy()).isEqualTo(ownerMemberId);
@@ -737,7 +744,10 @@ class TrustReconciliationServiceReconciliationTest {
             () ->
                 ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
                     .where(RequestScopes.MEMBER_ID, ownerMemberId)
-                    .run(() -> reconciliationService.completeReconciliation(reconResponse.id())))
+                    .run(
+                        () ->
+                            reconciliationService.completeReconciliation(
+                                reconResponse.id(), reconResponse.bankStatementId())))
         .isInstanceOfSatisfying(
             InvalidStateException.class,
             e -> {

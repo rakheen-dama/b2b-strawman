@@ -550,7 +550,13 @@ class TrustReconciliationControllerTest {
         mockMvc
             .perform(
                 post("/api/trust-reconciliations/{reconciliationId}/calculate", reconciliationId)
-                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_recon_owner")))
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_recon_owner"))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"expectedBankStatementId": "%s"}
+                        """
+                            .formatted(statementId)))
             .andExpect(status().isOk())
             .andReturn();
 
@@ -565,7 +571,13 @@ class TrustReconciliationControllerTest {
     mockMvc
         .perform(
             post("/api/trust-reconciliations/{reconciliationId}/complete", reconciliationId)
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_recon_owner")))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_recon_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"expectedBankStatementId": "%s"}
+                    """
+                        .formatted(statementId)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("COMPLETED"))
         .andExpect(jsonPath("$.completedBy").isNotEmpty())

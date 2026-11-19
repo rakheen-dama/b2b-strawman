@@ -1,0 +1,119 @@
+{
+  "run": "KTQTW",
+  "periodEndA": "2026-11-15",
+  "periodEndB": "2026-11-14",
+  "db": {
+    "before": {
+      "duplicatesAnyPeriod": [
+        "5149d2be-b51f-4a7f-b375-f2a851a4a028|2026-11-19|DRAFT|3"
+      ],
+      "forPeA": [],
+      "forPeB": []
+    },
+    "afterA1": [
+      "6b45b608-f2a3-4968-812f-04c563f43bc8|DRAFT"
+    ],
+    "afterA2": [
+      "6b45b608-f2a3-4968-812f-04c563f43bc8|DRAFT"
+    ],
+    "afterA3": [
+      "6b45b608-f2a3-4968-812f-04c563f43bc8|DRAFT",
+      "19614671-acc3-46e4-8158-8876f1caaf22|DRAFT"
+    ],
+    "afterA4": [
+      "6b45b608-f2a3-4968-812f-04c563f43bc8|DRAFT",
+      "19614671-acc3-46e4-8158-8876f1caaf22|DRAFT",
+      "3d168e26-dee1-4137-8865-40782c8a60b7|DRAFT"
+    ],
+    "afterB1": [],
+    "afterB2": [
+      "f42ce541-ebb5-4612-a12d-462483a33780|DRAFT"
+    ],
+    "afterB3": [
+      "f42ce541-ebb5-4612-a12d-462483a33780|DRAFT",
+      "93325cd7-31ea-47c5-b824-5974299b3ed2|DRAFT"
+    ],
+    "after": {
+      "duplicatesAnyPeriod": [
+        "5149d2be-b51f-4a7f-b375-f2a851a4a028|2026-11-14|DRAFT|2",
+        "5149d2be-b51f-4a7f-b375-f2a851a4a028|2026-11-15|DRAFT|3",
+        "5149d2be-b51f-4a7f-b375-f2a851a4a028|2026-11-19|DRAFT|3"
+      ],
+      "forPeA": [
+        "6b45b608-f2a3-4968-812f-04c563f43bc8|DRAFT|s1-KTQTW.csv|2026-11-19 13:19:09.446681+00",
+        "19614671-acc3-46e4-8158-8876f1caaf22|DRAFT|s2-KTQTW.csv|2026-11-19 13:19:12.303808+00",
+        "3d168e26-dee1-4137-8865-40782c8a60b7|DRAFT|s1-KTQTW.csv|2026-11-19 13:19:14.159261+00"
+      ],
+      "forPeB": [
+        "f42ce541-ebb5-4612-a12d-462483a33780|DRAFT|s3-KTQTW.csv|2026-11-19 13:19:17.473848+00",
+        "93325cd7-31ea-47c5-b824-5974299b3ed2|DRAFT|s4-KTQTW.csv|2026-11-19 13:19:19.288585+00"
+      ]
+    },
+    "auditCreated": [
+      "2026-11-19 13:19:09.448174+00|6b45b608-f2a3-4968-812f-04c563f43bc8|2026-11-15|6cac6d05-381e-4471-bef8-33e5711c0ace",
+      "2026-11-19 13:19:12.304887+00|19614671-acc3-46e4-8158-8876f1caaf22|2026-11-15|67cb4f09-ef40-4de9-af9e-88276077b390",
+      "2026-11-19 13:19:14.159966+00|3d168e26-dee1-4137-8865-40782c8a60b7|2026-11-15|5c2848dc-1da0-490c-a9be-19e7001e19d7",
+      "2026-11-19 13:19:17.474376+00|f42ce541-ebb5-4612-a12d-462483a33780|2026-11-14|a2b64ac5-489e-4e7a-8ea0-f895670797bf",
+      "2026-11-19 13:19:19.289116+00|93325cd7-31ea-47c5-b824-5974299b3ed2|2026-11-14|56c40efa-c5a9-4f57-9d22-c65db1efc652"
+    ],
+    "statements": [
+      "6cac6d05-381e-4471-bef8-33e5711c0ace|s1-KTQTW.csv|2026-11-19 13:19:08.89941+00",
+      "67cb4f09-ef40-4de9-af9e-88276077b390|s2-KTQTW.csv|2026-11-19 13:19:11.65407+00",
+      "5c2848dc-1da0-490c-a9be-19e7001e19d7|s1-KTQTW.csv|2026-11-19 13:19:13.502235+00",
+      "c5530b4d-7a37-4c13-bf55-53447f1af8d0|s3-KTQTW.csv|2026-11-19 13:19:16.18727+00",
+      "a2b64ac5-489e-4e7a-8ea0-f895670797bf|s3-KTQTW.csv|2026-11-19 13:19:16.841879+00",
+      "56c40efa-c5a9-4f57-9d22-c65db1efc652|s4-KTQTW.csv|2026-11-19 13:19:18.769172+00"
+    ]
+  },
+  "list": {
+    "pathA": {
+      "periodEnd": "2026-11-15",
+      "dbIds": 3,
+      "rowsOnListPage": 3,
+      "rows": [
+        {
+          "id": "6b45b608-f2a3-4968-812f-04c563f43bc8",
+          "text": "15 Nov 2026 R 659,16 R 11 225,00 R 11 250,00 Unbalanced --- ---"
+        },
+        {
+          "id": "19614671-acc3-46e4-8158-8876f1caaf22",
+          "text": "15 Nov 2026 R 660,16 R 11 225,00 R 11 250,00 Unbalanced --- ---"
+        },
+        {
+          "id": "3d168e26-dee1-4137-8865-40782c8a60b7",
+          "text": "15 Nov 2026 R 659,16 R 11 225,00 R 11 250,00 Unbalanced --- ---"
+        }
+      ],
+      "totalRowsOnPage": 9
+    },
+    "pathB": {
+      "periodEnd": "2026-11-14",
+      "dbIds": 2,
+      "rowsOnListPage": 2,
+      "rows": [
+        {
+          "id": "f42ce541-ebb5-4612-a12d-462483a33780",
+          "text": "14 Nov 2026 R 661,16 R 11 225,00 R 11 250,00 Unbalanced --- ---"
+        },
+        {
+          "id": "93325cd7-31ea-47c5-b824-5974299b3ed2",
+          "text": "14 Nov 2026 R 662,16 R 11 225,00 R 11 250,00 Unbalanced --- ---"
+        }
+      ],
+      "totalRowsOnPage": 11
+    }
+  },
+  "steps": [
+    "A1 select account + period end 2026-11-15, upload s1-KTQTW.csv, auto-match, Review Matches",
+    "A2 (control) step 4 Back → step 3 → Review Matches again (same statement)",
+    "A3 step 4 Back → step 3 Back → step 2, upload corrected s2-KTQTW.csv, auto-match, Review Matches",
+    "A4 step 4 Back → 3 → 2, upload s1-KTQTW.csv again (same file), auto-match, Review Matches",
+    "B1 new wizard, period end 2026-11-14, upload s3-KTQTW.csv, abandon at step 2",
+    "B2 reopen New reconciliation, same account + 2026-11-14, upload s3-KTQTW.csv again, auto-match, Review Matches; abandon at step 4",
+    "B3 reopen New reconciliation, same account + 2026-11-14, upload s4-KTQTW.csv, auto-match, Review Matches"
+  ],
+  "pageErrors": [],
+  "consoleErrors": [],
+  "schema": "tenant_7d218705360b",
+  "accountId": "5149d2be-b51f-4a7f-b375-f2a851a4a028"
+}

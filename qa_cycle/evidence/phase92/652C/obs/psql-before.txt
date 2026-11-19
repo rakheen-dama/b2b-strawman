@@ -1,0 +1,64 @@
+Thu Nov 19 15:49:19 SAST 2026
+== select external_org_id, schema_name from public.org_schema_mapping
+ external_org_id |     schema_name     
+-----------------+---------------------
+ e2e-test-org    | tenant_7d218705360b
+(1 row)
+
+== select trust_account_id, period_end, status, count(*) from tenant_7d218705360b.trust_reconciliations group by 1,2,3 having count(*)>1 order by 2
+           trust_account_id           | period_end | status | count 
+--------------------------------------+------------+--------+-------
+ 5149d2be-b51f-4a7f-b375-f2a851a4a028 | 2026-11-14 | DRAFT  |     2
+ 5149d2be-b51f-4a7f-b375-f2a851a4a028 | 2026-11-15 | DRAFT  |     3
+ 5149d2be-b51f-4a7f-b375-f2a851a4a028 | 2026-11-19 | DRAFT  |     3
+(3 rows)
+
+== select trust_account_id, period_end, count(*) from tenant_7d218705360b.trust_reconciliations group by 1,2 having count(*)>1 order by 2
+           trust_account_id           | period_end | count 
+--------------------------------------+------------+-------
+ 5149d2be-b51f-4a7f-b375-f2a851a4a028 | 2026-11-14 |     2
+ 5149d2be-b51f-4a7f-b375-f2a851a4a028 | 2026-11-15 |     3
+ 5149d2be-b51f-4a7f-b375-f2a851a4a028 | 2026-11-19 |     3
+(3 rows)
+
+== select r.id, r.trust_account_id, r.period_end, r.status, r.completed_at, r.updated_at, r.created_at, r.bank_statement_id, s.file_name, exists(select 1 from tenant_7d218705360b.trust_monthly_lists m where m.reconciliation_id=r.id) as listed from tenant_7d218705360b.trust_reconciliations r left join tenant_7d218705360b.bank_statements s on s.id=r.bank_statement_id order by r.trust_account_id, r.period_end, r.updated_at
+                  id                  |           trust_account_id           | period_end | status | completed_at |          updated_at           |          created_at           |          bank_statement_id           |   file_name   | listed 
+--------------------------------------+--------------------------------------+------------+--------+--------------+-------------------------------+-------------------------------+--------------------------------------+---------------+--------
+ 9136e7fc-3f9a-4dee-8d84-3f420833110e | 5149d2be-b51f-4a7f-b375-f2a851a4a028 | 2026-11-05 | DRAFT  |              | 2026-11-19 12:00:34.861342+00 | 2026-11-19 11:59:56.710452+00 | d59233b0-c23e-4383-9bae-5f3b0cf3a8d4 | s1-HZV1Q.csv  | f
+ 7b8337b4-3216-4173-8d67-1ea38ac06130 | 5149d2be-b51f-4a7f-b375-f2a851a4a028 | 2026-11-09 | DRAFT  |              | 2026-11-19 12:00:37.857692+00 | 2026-11-19 12:00:37.810028+00 | b3da27fa-798a-47f4-aa5b-920300a23f7a | s2-HZV1Q.csv  | f
+ 818a7bac-afaf-4153-8d0c-58dc4abd4453 | 5149d2be-b51f-4a7f-b375-f2a851a4a028 | 2026-11-13 | DRAFT  |              | 2026-11-19 11:28:04.932667+00 | 2026-11-19 11:27:57.494163+00 | 4eaa7f78-5dd1-4cfd-965b-f68db3443edd | s1-GUR32.csv  | f
+ f42ce541-ebb5-4612-a12d-462483a33780 | 5149d2be-b51f-4a7f-b375-f2a851a4a028 | 2026-11-14 | DRAFT  |              | 2026-11-19 13:19:17.507502+00 | 2026-11-19 13:19:17.473848+00 | a2b64ac5-489e-4e7a-8ea0-f895670797bf | s3-KTQTW.csv  | f
+ 93325cd7-31ea-47c5-b824-5974299b3ed2 | 5149d2be-b51f-4a7f-b375-f2a851a4a028 | 2026-11-14 | DRAFT  |              | 2026-11-19 13:19:19.327619+00 | 2026-11-19 13:19:19.288585+00 | 56c40efa-c5a9-4f57-9d22-c65db1efc652 | s4-KTQTW.csv  | f
+ 6b45b608-f2a3-4968-812f-04c563f43bc8 | 5149d2be-b51f-4a7f-b375-f2a851a4a028 | 2026-11-15 | DRAFT  |              | 2026-11-19 13:19:09.50236+00  | 2026-11-19 13:19:09.446681+00 | 6cac6d05-381e-4471-bef8-33e5711c0ace | s1-KTQTW.csv  | f
+ 19614671-acc3-46e4-8158-8876f1caaf22 | 5149d2be-b51f-4a7f-b375-f2a851a4a028 | 2026-11-15 | DRAFT  |              | 2026-11-19 13:19:12.374777+00 | 2026-11-19 13:19:12.303808+00 | 67cb4f09-ef40-4de9-af9e-88276077b390 | s2-KTQTW.csv  | f
+ 3d168e26-dee1-4137-8865-40782c8a60b7 | 5149d2be-b51f-4a7f-b375-f2a851a4a028 | 2026-11-15 | DRAFT  |              | 2026-11-19 13:19:14.201961+00 | 2026-11-19 13:19:14.159261+00 | 5c2848dc-1da0-490c-a9be-19e7001e19d7 | s1-KTQTW.csv  | f
+ 74203dcb-e2cb-4588-ac56-91140f2b048e | 5149d2be-b51f-4a7f-b375-f2a851a4a028 | 2026-11-19 | DRAFT  |              | 2026-11-19 11:26:55.281289+00 | 2026-11-19 11:26:47.66552+00  | 7df9718e-66d4-4bfe-8275-7d5630a2cf00 | s1-GT8HE.csv  | f
+ 22476a5c-966e-4635-9b93-724d98dd732b | 5149d2be-b51f-4a7f-b375-f2a851a4a028 | 2026-11-19 | DRAFT  |              | 2026-11-19 12:26:25.139307+00 | 2026-11-19 12:26:25.097315+00 | dea26a7e-6db7-46d0-87a9-8ec120876f71 | s1-IXVHO.csv  | f
+ 258446a3-3f94-4d43-b4a4-dfef85d45295 | 5149d2be-b51f-4a7f-b375-f2a851a4a028 | 2026-11-19 | DRAFT  |              | 2026-11-19 12:56:46.416259+00 | 2026-11-19 12:56:42.723851+00 | 020df165-0614-40bc-a46f-de758baf28c6 | obs-K0NIA.csv | f
+(11 rows)
+
+== select max(version::int) as max_version, count(*) from tenant_7d218705360b.flyway_schema_history where success
+ max_version | count 
+-------------+-------
+          28 |    28
+(1 row)
+
+== select installed_rank, version, description, installed_on, success from tenant_7d218705360b.flyway_schema_history order by installed_rank desc limit 3
+ installed_rank | version |         description          |        installed_on        | success 
+----------------+---------+------------------------------+----------------------------+---------
+             28 | 28      | phase92 drop lpff rates      | 2026-11-19 11:21:21.550441 | t
+             27 | 27      | phase92 drop interest run    | 2026-11-19 11:21:21.53743  | t
+             26 | 26      | phase92 trust interest memos | 2026-11-19 11:21:21.52663  | t
+(3 rows)
+
+== select indexname, indexdef from pg_indexes where schemaname='tenant_7d218705360b' and tablename='trust_reconciliations'
+           indexname            |                                                                 indexdef                                                                 
+--------------------------------+------------------------------------------------------------------------------------------------------------------------------------------
+ trust_reconciliations_pkey     | CREATE UNIQUE INDEX trust_reconciliations_pkey ON tenant_7d218705360b.trust_reconciliations USING btree (id)
+ idx_trust_recon_account_period | CREATE INDEX idx_trust_recon_account_period ON tenant_7d218705360b.trust_reconciliations USING btree (trust_account_id, period_end DESC)
+(2 rows)
+
+== select id, name, is_primary from tenant_7d218705360b.trust_accounts
+ERROR:  column "name" does not exist
+LINE 1: select id, name, is_primary from tenant_7d218705360b.trust_a...
+                   ^

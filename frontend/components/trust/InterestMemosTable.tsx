@@ -23,6 +23,9 @@ interface InterestMemosTableProps {
 
 const getMemoId = (memo: InterestMemo) => memo.id;
 
+/** The long money headers wrap so they do not squeeze the free-text Source column (F-OBS-1). */
+const MONEY_HEADER_CLASS = "whitespace-normal";
+
 /**
  * The trust account's at-source memo records of one year (Phase 92 650B, ADR-384) on `DataTable`:
  * per month the Rule 54.28 gross interest, gross charges and the VAT in them that never reached the
@@ -65,24 +68,34 @@ export function InterestMemosTable({
         },
         {
           id: "grossInterest",
-          meta: { label: "Gross interest (at source)", align: "end" },
+          meta: {
+            label: "Gross interest (at source)",
+            align: "end",
+            headerClassName: MONEY_HEADER_CLASS,
+          },
           cell: ({ row }) => <MoneyCell amount={row.original.grossInterest} currency={currency} />,
         },
         {
           id: "grossCharges",
-          meta: { label: "Gross charges (at source)", align: "end" },
+          meta: {
+            label: "Gross charges (at source)",
+            align: "end",
+            headerClassName: MONEY_HEADER_CLASS,
+          },
           cell: ({ row }) => <MoneyCell amount={row.original.grossCharges} currency={currency} />,
         },
         {
           id: "chargesVat",
-          meta: { label: "VAT in the charges", align: "end" },
+          meta: { label: "VAT in the charges", align: "end", headerClassName: MONEY_HEADER_CLASS },
           cell: ({ row }) => <MoneyCell amount={row.original.chargesVat} currency={currency} />,
         },
         {
           id: "source",
-          meta: { label: "Source", cellClassName: "whitespace-normal [overflow-wrap:anywhere]" },
+          // Wraps at word boundaries only: the min width keeps a column of ordinary words; a single
+          // token longer than max-w-xs still breaks (break-words) rather than widening the table.
+          meta: { label: "Source", cellClassName: "whitespace-normal break-words" },
           cell: ({ row }) => (
-            <span className="block max-w-xs" data-testid="interest-memo-source-note">
+            <span className="block max-w-xs min-w-40" data-testid="interest-memo-source-note">
               {row.original.sourceNote}
             </span>
           ),

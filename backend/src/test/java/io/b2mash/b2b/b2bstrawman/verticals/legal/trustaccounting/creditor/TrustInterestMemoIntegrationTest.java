@@ -31,9 +31,11 @@ import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -58,6 +60,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 
 /**
@@ -178,21 +181,27 @@ class TrustInterestMemoIntegrationTest {
             .andReturn();
     var memoId = UUID.fromString(JsonPath.read(created.getResponse().getContentAsString(), "$.id"));
     String createdAt = JsonPath.read(created.getResponse().getContentAsString(), "$.createdAt");
+    assertStorePrecision(created);
 
-    putMemo(
-            account,
-            "2026-02",
-            """
+    var corrected =
+        putMemo(
+                account,
+                "2026-02",
+                """
             {"grossInterest":1300.00,"grossCharges":230.00,"chargesVat":30.00,\
             "sourceNote":"  FNB advice LPFF-FEB (corrected)  "}""")
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.id").value(memoId.toString()))
-        .andExpect(jsonPath("$.periodMonth").value("2026-02-01"))
-        .andExpect(jsonPath("$.grossInterest").value(1300.0))
-        .andExpect(jsonPath("$.grossCharges").value(230.0))
-        .andExpect(jsonPath("$.chargesVat").value(30.0))
-        .andExpect(jsonPath("$.sourceNote").value("FNB advice LPFF-FEB (corrected)"))
-        .andExpect(jsonPath("$.createdAt").value(createdAt));
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id").value(memoId.toString()))
+            .andExpect(jsonPath("$.periodMonth").value("2026-02-01"))
+            .andExpect(jsonPath("$.grossInterest").value(1300.0))
+            .andExpect(jsonPath("$.grossCharges").value(230.0))
+            .andExpect(jsonPath("$.chargesVat").value(30.0))
+            .andExpect(jsonPath("$.sourceNote").value("FNB advice LPFF-FEB (corrected)"))
+            .andExpect(jsonPath("$.createdAt").value(createdAt))
+            .andReturn();
+    assertStorePrecision(corrected);
+    String correctedUpdatedAt =
+        JsonPath.read(corrected.getResponse().getContentAsString(), "$.updatedAt");
 
     var rows = memosOf(account, 2026, 2, 2);
     assertThat(rows)
@@ -203,6 +212,9 @@ class TrustInterestMemoIntegrationTest {
               assertThat(m.getGrossInterest()).isEqualByComparingTo("1300.00");
               assertThat(m.getRecordedBy()).isEqualTo(ownerId);
               assertThat(m.getUpdatedAt()).isAfterOrEqualTo(m.getCreatedAt());
+              // The responses returned exactly what is stored (microsecond timestamptz).
+              assertThat(m.getCreatedAt()).isEqualTo(Instant.parse(createdAt));
+              assertThat(m.getUpdatedAt()).isEqualTo(Instant.parse(correctedUpdatedAt));
             });
 
     var events = audits(memoId);
@@ -630,6 +642,19 @@ class TrustInterestMemoIntegrationTest {
             .with(jwt)
             .contentType(MediaType.APPLICATION_JSON)
             .content(json));
+  }
+
+  /**
+   * The response's timestamps carry no sub-microsecond part: Postgres timestamptz stores
+   * microseconds, and Linux clocks give nanoseconds — an untruncated value would differ from the
+   * stored one (the CI failure on fb900e5e3).
+   */
+  private static void assertStorePrecision(MvcResult result) throws Exception {
+    var body = result.getResponse().getContentAsString();
+    for (var path : List.of("$.createdAt", "$.updatedAt")) {
+      var instant = Instant.parse(JsonPath.<String>read(body, path));
+      assertThat(instant).as(path).isEqualTo(instant.truncatedTo(ChronoUnit.MICROS));
+    }
   }
 
   private static UUID memoId(ResultActions result) throws Exception {

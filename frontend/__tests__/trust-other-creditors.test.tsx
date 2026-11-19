@@ -911,6 +911,21 @@ describe("Other trust creditors page", () => {
     expect(rows).toHaveLength(2);
     expect(rows[0]).toHaveTextContent("September 2026");
     expect(rows[0]).toHaveTextContent("Fund statement SEP");
+    // F-OBS-1: the source note wraps at word boundaries only (never mid-word) with a min width,
+    // and the long money headers wrap instead of squeezing the Source column.
+    const sourceNote = within(rows[0]).getByTestId("interest-memo-source-note");
+    expect(sourceNote).toHaveClass("min-w-40", "max-w-xs");
+    expect(sourceNote.closest("td")).toHaveClass("whitespace-normal", "break-words");
+    expect(sourceNote.closest("td")).not.toHaveClass("[overflow-wrap:anywhere]");
+    for (const header of [
+      "Gross interest (at source)",
+      "Gross charges (at source)",
+      "VAT in the charges",
+    ]) {
+      expect(within(section).getByRole("columnheader", { name: header })).toHaveClass(
+        "whitespace-normal"
+      );
+    }
     expect(within(rows[0]).queryByTestId("interest-memo-locked")).not.toBeInTheDocument();
     expect(rows[1]).toHaveTextContent("October 2026");
     // formatCurrency emits a non-breaking space; compare the raw text, not the normalised one

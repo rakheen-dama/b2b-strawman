@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 /**
@@ -88,15 +89,18 @@ public class TrustInterestMemo {
     this.recordedBy = recordedBy;
   }
 
+  // Truncated to the column's precision (timestamptz = microseconds): on Linux Instant.now()
+  // carries
+  // nanoseconds, and the save response must return exactly what is stored.
   @PrePersist
   protected void onCreate() {
-    this.createdAt = Instant.now();
+    this.createdAt = Instant.now().truncatedTo(ChronoUnit.MICROS);
     this.updatedAt = this.createdAt;
   }
 
   @PreUpdate
   protected void onUpdate() {
-    this.updatedAt = Instant.now();
+    this.updatedAt = Instant.now().truncatedTo(ChronoUnit.MICROS);
   }
 
   public UUID getId() {

@@ -79,6 +79,26 @@ public class TrustTransactionService {
   private static final Set<TrustTransactionType> PLACEMENTS =
       EnumSet.of(TrustTransactionType.INV_PLACE, TrustTransactionType.FIRM_INV_PLACE);
 
+  /**
+   * FU-9 (Phase 92 F-6; founder-signed ruling {@code
+   * qa_cycle/evidence/phase92/legal/F-6-opinion.md}): the firm-initiated outflows from a trust
+   * account whose final approval the account's cashbook must cover ({@link
+   * #requireCashbookCovers}), each with the noun its refusal names. A section 86(3) placement
+   * ({@code FIRM_INV_PLACE}) is the same rule, checked by its owner under the same account lock
+   * with its own refusal ({@link InvestmentPlacementHooks#onPlacementApproving}, 648A F-3). Every
+   * other row is never checked: bank-confirmed entries (statement-driven postings, bank charges,
+   * sweeps, Fund interest), reversal contras (a dishonoured deposit), inflows and paired legs
+   * record what happened; the integrity check's {@code CASHBOOK_IN_DEBIT} surfaces any debit they
+   * leave.
+   */
+  private static final Map<TrustTransactionType, String> CASHBOOK_COVERED_OUTFLOWS =
+      Map.of(
+          TrustTransactionType.PAYMENT, "payment",
+          TrustTransactionType.REFUND, "refund",
+          TrustTransactionType.FEE_TRANSFER, "fee transfer",
+          TrustTransactionType.INV_PLACE, "section 86(4) placement",
+          TrustTransactionType.UNIDENT_FUND_PAY, "payment to the Fund");
+
   private final TrustTransactionRepository transactionRepository;
   private final TrustPostingService postingService;
   private final TrustLedgerQueryRepository ledgerQueries;
@@ -1003,10 +1023,18 @@ public class TrustTransactionService {
       }
     } else if (type.approval() == TrustTransactionType.Approval.REQUIRED) {
       // 648A review F-3: a placement's owner re-checks the cover the client check below cannot
-      // (a section 86(3) placement's is the funding account's cashbook). Lock order: this row, the
-      // funding account, then the client's lock anchor (section 86(4), below).
+      // (a section 86(3) placement's is the funding account's cashbook). Lock order: this row, then
+      // the funding account (section 86(3), which names no client, so takes no anchor). A section
+      // 86(4) placement takes nothing here: its client's anchor below, then the account (FU-9).
       if (PLACEMENTS.contains(type)) {
         investmentPlacementHooks.onPlacementApproving(transaction);
+      }
+      // FU-9 R-1: an unidentified deposit's resolution takes its item and (an allocation) the
+      // destination client's anchor here, before the cashbook check's account lock and the posting
+      // lock below — the global order, so it cannot deadlock with a payment approval for that
+      // client.
+      if (UNIDENTIFIED_RESOLUTIONS.contains(type)) {
+        unidentifiedResolutionHooks.onResolutionApproving(transaction);
       }
       // A CLIENT-ledger debit (PAYMENT, FEE_TRANSFER, REFUND, INV_PLACE) takes money off the
       // client; an unidentified-deposit resolution (UNIDENT_ALLOC_OUT, UNIDENT_FUND_PAY:
@@ -1024,8 +1052,10 @@ public class TrustTransactionService {
       // cascade in reverseTransaction matches on. No PSP is involved: a trust fee transfer is an
       // internal accounting operation. A PAID fee note is refused up front so trust is never
       // debited for a settled fee note.
-      if ("FEE_TRANSFER".equals(transaction.getTransactionType())
-          && transaction.getInvoiceId() != null) {
+      boolean settlesFeeNote =
+          "FEE_TRANSFER".equals(transaction.getTransactionType())
+              && transaction.getInvoiceId() != null;
+      if (settlesFeeNote) {
         var invoice =
             invoiceRepository
                 .findByIdForUpdate(transaction.getInvoiceId())
@@ -1038,6 +1068,17 @@ public class TrustTransactionService {
               "Fee note already paid",
               "Cannot complete fee transfer — fee note is already in PAID status");
         }
+      }
+
+      // FU-9: a firm-initiated outflow must also be covered by the account's cashbook. The account
+      // lock is the last step of the global lock order (TrustPostingService): after this row, the
+      // fee note and the client's lock anchor, never before the anchor (650A F-11).
+      var outflow = CASHBOOK_COVERED_OUTFLOWS.get(type);
+      if (outflow != null) {
+        requireCashbookCovers(transaction, outflow);
+      }
+
+      if (settlesFeeNote) {
         invoiceService.postPayment(
             transaction.getInvoiceId(),
             PaymentPosting.trustTransfer(transaction.getAmount(), transaction.getReference()));
@@ -1145,6 +1186,41 @@ public class TrustTransactionService {
         customer.getName(),
         transaction.getProjectId(),
         transaction.getAmount());
+  }
+
+  /**
+   * FU-9 (Phase 92 F-6, ruling 1): the trust account's derived cashbook must cover {@code
+   * transaction}'s amount, which is about to leave the account, as at {@code max(today, transaction
+   * date)} <em>and every later date a posted row is dated</em> (R-2): the lowest the cashbook
+   * stands from then on, so an already-approved later-dated outflow is not overdrawn by this one.
+   * Read under the account's lock ({@code FOR UPDATE}), so every covered outflow's approval on the
+   * account — and a section 86(3) placement's approval or request, which take the same lock — is
+   * serialised with this read; the posting lock taken next re-takes the row {@code FOR SHARE}
+   * (already held). The row is still AWAITING_APPROVAL, so the cashbook excludes it. Refused with
+   * the client-cover refusal's title (400), naming the remedy: money placed in a section 86(3)
+   * investment is withdrawn to the banking account first (Rule 54.14.7.3).
+   */
+  private void requireCashbookCovers(TrustTransaction transaction, String outflow) {
+    var accountId = transaction.getTrustAccountId();
+    trustAccountRepository
+        .findByIdForUpdate(accountId)
+        .orElseThrow(() -> new ResourceNotFoundException("TrustAccount", accountId));
+    var today = LocalDate.now(clock);
+    var asAt =
+        transaction.getTransactionDate().isAfter(today) ? transaction.getTransactionDate() : today;
+    var cashbook = ledgerQueries.lowestCashbookFrom(accountId, asAt);
+    if (cashbook.compareTo(transaction.getAmount()) < 0) {
+      throw new InvalidStateException(
+          "Insufficient trust balance",
+          "The trust account's cashbook does not cover this "
+              + outflow
+              + ". Available: "
+              + rand(cashbook)
+              + ", Requested: "
+              + rand(transaction.getAmount())
+              + ". If trust money has been placed in a section 86(3) investment, withdraw it from"
+              + " the investment first.");
+    }
   }
 
   // --- 441.5: Reject Transaction ---

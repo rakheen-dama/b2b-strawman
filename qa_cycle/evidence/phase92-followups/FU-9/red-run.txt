@@ -1,0 +1,67 @@
+# FU-9 red run — pre-fix (base 8feb21a3a; only the CASHBOOK_IN_DEBIT constant declared so the new tests compile), 2026-11-20
+# ./mvnw test -Dtest='CashbookCoverAtApprovalIntegrationTest,TrustInvestmentServiceIntegrationTest#clientPaymentAfterASection86_3Placement_isRefusedUnlessTheCashbookCoversIt_FU9+section86_3_cover_isCheckedAgainAtApproval_soTwoPendingPlacementsCannotOverdrawTheCashbook+twoSection86_3_approvalsAtOnce_secondWaitsOnTheFundingAccountLock_andIsRefused,TrustInvestmentWithdrawReverseRaceIntegrationTest'
+#
+# Red as expected (3): payment / refund / fee transfer / s86(4) placement approvals post although the cashbook cannot cover them;
+#   a dishonoured deposit that takes the cashbook to -R5 000 raises no CASHBOOK_IN_DEBIT.
+# Green pre-fix as expected (8): the exact-cover boundary test (approval allowed both before and after);
+#   the two F-3 s86(3) approval re-checks (F-6a / FU-1 — already delivered by 648A, PR #1799);
+#   the new lock-order guard (pre-fix the approval already took anchor -> account FOR SHARE; it guards the new FOR UPDATE's position)
+#   and the 4 existing race tests.
+
+[ERROR] Tests run: 3, Failures: 2, Errors: 0, Skipped: 0, Time elapsed: 30.33 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.CashbookCoverAtApprovalIntegrationTest
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.CashbookCoverAtApprovalIntegrationTest.refundFeeTransferAndSection86_4Placement_areRefusedAtApproval_whenTheCashbookCannotCover -- Time elapsed: 0.883 s <<< FAILURE!
+java.lang.AssertionError:
+
+Expecting code to raise a throwable.
+	at io.b2mash.b2b.b2bstrawman.testutil.TrustBooksFixture$Tenant.lambda$assertApprovalRefused$1(TrustBooksFixture.java:707)
+	at io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness.assertMoves(TrustBooksHarness.java:740)
+	at io.b2mash.b2b.b2bstrawman.testutil.TrustBooksFixture$Tenant.assertApprovalRefused(TrustBooksFixture.java:700)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.CashbookCoverAtApprovalIntegrationTest.refundFeeTransferAndSection86_4Placement_areRefusedAtApproval_whenTheCashbookCannotCover(CashbookCoverAtApprovalIntegrationTest.java:118)
+
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.CashbookCoverAtApprovalIntegrationTest.dishonouredDeposit_afterASection86_3Placement_isStillRecorded_andRaisesCashbookInDebit -- Time elapsed: 0.185 s <<< FAILURE!
+java.lang.AssertionError:
+[flag CASHBOOK_IN_DEBIT in []]
+Expected size: 1 but was: 0 in:
+[]
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.CashbookCoverAtApprovalIntegrationTest.only(CashbookCoverAtApprovalIntegrationTest.java:279)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.CashbookCoverAtApprovalIntegrationTest.dishonouredDeposit_afterASection86_3Placement_isStillRecorded_andRaisesCashbookInDebit(CashbookCoverAtApprovalIntegrationTest.java:205)
+
+[ERROR] Tests run: 3, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 1.163 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentServiceIntegrationTest
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentServiceIntegrationTest.clientPaymentAfterASection86_3Placement_isRefusedUnlessTheCashbookCoversIt_FU9 -- Time elapsed: 0.099 s <<< FAILURE!
+java.lang.AssertionError:
+
+Expecting code to raise a throwable.
+	at io.b2mash.b2b.b2bstrawman.testutil.TrustBooksFixture$Tenant.assertApprovalRefused(TrustBooksFixture.java:700)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentServiceIntegrationTest.clientPaymentAfterASection86_3Placement_isRefusedUnlessTheCashbookCoversIt_FU9(TrustInvestmentServiceIntegrationTest.java:863)
+
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.294 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentWithdrawReverseRaceIntegrationTest
+[ERROR] Tests run: 11, Failures: 3, Errors: 0, Skipped: 0
+[INFO] BUILD FAILURE
+
+
+# ============================================================================================
+# Review round 1 (independent Opus review of #1825 @fde930d5e: REQUEST_CHANGES R-1..R-3), 2026-11-20
+# ============================================================================================
+
+## (a) New tests against head fde930d5e (no production change) — 3 red as expected
+# ./mvnw test -Dtest='CashbookCoverAtApprovalIntegrationTest'   -> Tests run: 9, Failures: 3
+[ERROR]   CashbookCoverAtApprovalIntegrationTest.lockOrder_paymentApprovalAndAnAllocationApprovalForTheSameClient_bothComplete_noDeadlock:331 [the payment approval]
+  org.springframework.dao.CannotAcquireLockException: JDBC exception executing SQL [ERROR: deadlock detected        <- R-1 (40P01)
+[ERROR]   CashbookCoverAtApprovalIntegrationTest.paymentDatedToday_isRefused_whenAnAlreadyApprovedLaterPaymentLeavesTheCashbookShort:251
+Expecting code to raise a throwable.                                                                               <- R-2 (today-dated R100 posted)
+[ERROR]   CashbookCoverAtApprovalIntegrationTest.paymentToTheFund_isRefusedAtApproval_whenTheCashbookCannotCover:212
+Expecting code to raise a throwable.                                                                               <- R-3 (UNIDENT_FUND_PAY posted)
+# Green on fde930d5e as expected: paymentDatedLater_isRefused_... (the reverse order was already refused), and the split FU-9 tests below.
+
+## (b) The split FU-9 refusals against the pre-FU-9 TrustTransactionService (base 8feb21a3a, temporarily restored) — each red on its own
+# ./mvnw test -Dtest='CashbookCoverAtApprovalIntegrationTest#refund_...+feeTransfer_...+section86_4Placement_...'   -> Tests run: 3, Failures: 3
+[ERROR]   CashbookCoverAtApprovalIntegrationTest.feeTransfer_isRefusedAtApproval_whenTheCashbookCannotCover:157   Expecting code to raise a throwable.
+[ERROR]   CashbookCoverAtApprovalIntegrationTest.refund_isRefusedAtApproval_whenTheCashbookCannotCover_andPostsAfterTheWithdrawal:131   Expecting code to raise a throwable.
+[ERROR]   CashbookCoverAtApprovalIntegrationTest.section86_4Placement_isRefusedAtApproval_whenTheCashbookCannotCover:180   Expecting code to raise a throwable.
+
+## (c) Both lock-order tests with the R-1 hook call removed (head fde930d5e TrustTransactionService, temporarily restored) — both deadlock
+# ./mvnw test -Dtest='CashbookCoverAtApprovalIntegrationTest#lockOrder_*'   -> Tests run: 2, Failures: 2
+[ERROR]   CashbookCoverAtApprovalIntegrationTest.lockOrder_allocationApprovalAndASection86_4PlacementForTheSameClient_bothComplete_noDeadlock:497 [the placement request]
+  org.springframework.dao.CannotAcquireLockException: JDBC exception executing SQL [ERROR: deadlock detected        <- FU-11 / 650A F-12 (pre-existing)
+[ERROR]   CashbookCoverAtApprovalIntegrationTest.lockOrder_paymentApprovalAndAnAllocationApprovalForTheSameClient_bothComplete_noDeadlock:367 [the payment approval]
+  org.springframework.dao.CannotAcquireLockException: JDBC exception executing SQL [ERROR: deadlock detected        <- R-1

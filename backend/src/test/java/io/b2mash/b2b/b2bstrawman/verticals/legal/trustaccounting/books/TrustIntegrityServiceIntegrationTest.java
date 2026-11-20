@@ -321,8 +321,12 @@ class TrustIntegrityServiceIntegrationTest {
     var recoverableLine =
         books.unmatchedLine(recoverable, LocalDate.of(2026, 3, 20), "-40.00", "CHG-2");
     recordCharge(recoverableLine.lineId(), true);
+    // FU-9: the charge is a bank fact, recorded although the account holds nothing — so its
+    // cashbook is R40 in debit and CASHBOOK_IN_DEBIT is raised beside the Fund ledger's warning
     assertThat(codes(check(books, memberId, recoverable, null, null)))
-        .containsExactly(TrustIntegrityService.FUND_LEDGER_IN_DEBIT);
+        .containsExactly(
+            TrustIntegrityService.FUND_LEDGER_IN_DEBIT, TrustIntegrityService.CASHBOOK_IN_DEBIT);
+    books.assertServicesAgree(recoverable);
 
     var reversed = books.freshAccount(false);
     var reversedLine = books.unmatchedLine(reversed, LocalDate.of(2026, 3, 20), "-30.00", "CHG-3");

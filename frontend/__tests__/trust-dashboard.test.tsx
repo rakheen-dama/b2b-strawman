@@ -803,6 +803,19 @@ const FLAG_CASES: {
     href: "/org/acme/trust-accounting/client-ledgers/cust-1",
   },
   {
+    code: "CASHBOOK_IN_DEBIT",
+    flag: {
+      code: "CASHBOOK_IN_DEBIT",
+      severity: "WARNING",
+      message:
+        "The trust banking account's cashbook is R5 000,00 in debit as at 20 November 2026. Check that the trust money in the banking account, the trust investment accounts and trust cash still covers the balances of all trust creditors (Rule 54.14.8); if it does not, report to the Legal Practice Council immediately (Rule 54.14.10).",
+      amount: 5000,
+      subjects: [{ kind: "TRUST_ACCOUNT", id: "acc-1", name: "Main Trust Account", amount: 5000 }],
+    },
+    linkName: null,
+    href: null,
+  },
+  {
     code: "UNIDENTIFIED_OVER_ONE_YEAR",
     flag: {
       code: "UNIDENTIFIED_OVER_ONE_YEAR",

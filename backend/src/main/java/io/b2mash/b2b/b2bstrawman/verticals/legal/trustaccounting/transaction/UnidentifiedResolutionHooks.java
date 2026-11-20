@@ -12,9 +12,20 @@ import java.util.UUID;
  * Propagation.MANDATORY}). It lives here so {@code transaction} never imports the creditor service,
  * and the implementation never depends on {@link TrustTransactionService} (no bean cycle).
  *
- * <p>Lock order: the resolution row (locked by the caller) → the item → the client's lock anchor.
+ * <p>Lock order: the resolution row (locked by the caller) → the item → the client's lock anchor →
+ * (the caller) the trust account. On approval the item and the anchor are taken by {@link
+ * #onResolutionApproving}, before the caller's first account lock (FU-9 R-1, the global order of
+ * {@link TrustPostingService}).
  */
 public interface UnidentifiedResolutionHooks {
+
+  /**
+   * The resolution row is about to post (final approval), before any trust account lock: locks the
+   * item and, for an allocation, the destination client's lock anchor, so the approval takes them
+   * in the global order (own rows → client anchors → account rows). {@link #onResolutionApproved}
+   * then re-takes locks this transaction already holds.
+   */
+  void onResolutionApproving(TrustTransaction resolution);
 
   /**
    * The resolution row has just posted (final approval): for an allocation the {@code

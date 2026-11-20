@@ -414,6 +414,7 @@ class TrustPositionIntegrationTest {
             "UNRESOLVED_STATEMENT_LINES",
             "FUND_LEDGER_IN_DEBIT",
             "CLIENT_LEDGER_IN_DEBIT",
+            "CASHBOOK_IN_DEBIT",
             "CHARGES_TO_REFUND");
 
     String primary =

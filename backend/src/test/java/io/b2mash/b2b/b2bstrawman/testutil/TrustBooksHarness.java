@@ -67,8 +67,10 @@ import org.springframework.stereotype.Component;
  * raised exactly when the oracle's own check fails: {@code BOOKS_OUT_OF_BALANCE} ⇔ EQ-2 fails,
  * {@code FUND_LEDGER_IN_DEBIT} ⇔ the oracle's Fund ledger is below zero, {@code
  * UNIDENTIFIED_ITEMS_MISMATCH} ⇔ the oracle's EQ-4 fails, {@code INVESTMENT_BALANCE_MISMATCH} ⇔ the
- * oracle's EQ-5 fails (R-9, §16.3.9). The report's {@code balanced} is not asserted as a whole: a
- * caller may hold an unbalanced reconciliation at that date ({@code BANK_DIFFERENCE}).
+ * oracle's EQ-5 fails (R-9, §16.3.9), and (FU-9) {@code CASHBOOK_IN_DEBIT} ⇔ the account is a trust
+ * banking ({@code GENERAL}) account and the oracle's cashbook is below zero. The report's {@code
+ * balanced} is not asserted as a whole: a caller may hold an unbalanced reconciliation at that date
+ * ({@code BANK_DIFFERENCE}).
  *
  * <h2>Version 4 (647B) — EQ-4: unidentified deposits are itemised</h2>
  *
@@ -702,6 +704,17 @@ public final class TrustBooksHarness {
         .assertThat(codes.contains(TrustIntegrityService.FUND_LEDGER_IN_DEBIT))
         .as("integrity FUND_LEDGER_IN_DEBIT raised ⇔ oracle Fund ledger %s < 0", s.fundLedger())
         .isEqualTo(s.fundLedger().signum() < 0);
+    var accountType =
+        jdbc.queryForObject(
+            "SELECT account_type FROM \"%s\".trust_accounts WHERE id = ?".formatted(schema()),
+            String.class,
+            trustAccountId);
+    softly
+        .assertThat(codes.contains(TrustIntegrityService.CASHBOOK_IN_DEBIT))
+        .as(
+            "integrity CASHBOOK_IN_DEBIT raised ⇔ %s account and oracle cashbook %s < 0",
+            accountType, s.cashbook())
+        .isEqualTo("GENERAL".equals(accountType) && s.cashbook().signum() < 0);
     softly
         .assertThat(codes.contains(TrustIntegrityService.UNIDENTIFIED_ITEMS_MISMATCH))
         .as("integrity UNIDENTIFIED_ITEMS_MISMATCH raised ⇔ oracle EQ-4 fails")

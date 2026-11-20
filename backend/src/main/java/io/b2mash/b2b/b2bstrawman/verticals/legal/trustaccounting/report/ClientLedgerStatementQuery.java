@@ -45,6 +45,11 @@ public class ClientLedgerStatementQuery implements ReportQuery {
   }
 
   @Override
+  public java.util.Optional<String> requiredCapability() {
+    return java.util.Optional.of(io.b2mash.b2b.b2bstrawman.orgrole.Capability.VIEW_TRUST.name());
+  }
+
+  @Override
   public ReportResult execute(Map<String, Object> parameters, Pageable pageable) {
     var queryResult = buildRowsAndBalances(parameters);
     var summary = computeSummary(queryResult);

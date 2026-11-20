@@ -1,0 +1,6 @@
+Run on main code (new test only, before the fix) - TrustReportCapabilityIntegrationTest
+[ERROR]   executeClientLedgerStatement_withoutViewTrust_is403:111 Status expected:<403> but was:<400>
+[ERROR]   exportsPreviewAndDefinition_withoutViewTrust_are403:125 Status expected:<403> but was:<200>   (trust-position export/pdf leaked to a FINANCIAL_VISIBILITY-only role)
+[ERROR]   list_withoutViewTrust_omitsTrustReports_butKeepsOthers:149 Expected: not a collection containing "client-ledger-statement" but: was <[invoice-aging, ..., client-ledger-statement, ... section-35-data-pack]>
+[ERROR] Tests run: 5, Failures: 3, Errors: 0, Skipped: 0
+(client-ledger-statement execute returned 400 pre-fix only because the request omits its required params; no 403 either way)

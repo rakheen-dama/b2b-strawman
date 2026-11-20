@@ -1,0 +1,13 @@
+[ERROR] Tests run: 3, Failures: 3, Errors: 0, Skipped: 0, Time elapsed: 13.48 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report.TrustReceiptsPaymentsReversedPairsIntegrationTest
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report.TrustReceiptsPaymentsReversedPairsIntegrationTest.section35PartOne_agreesWithReceiptsPayments -- Time elapsed: 1.339 s <<< FAILURE!
+expected: 1400.00
+ but was: 900.00
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report.TrustReceiptsPaymentsReversedPairsIntegrationTest.pairsReversedInThePeriod_countBothHalves_netUnchanged -- Time elapsed: 0.299 s <<< FAILURE!
+Expected size: 6 but was: 1 in:
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report.TrustReceiptsPaymentsReversedPairsIntegrationTest.depositReversedAfterThePeriod_countsTheOriginalOnly -- Time elapsed: 0.112 s <<< FAILURE!
+Expected size: 1 but was: 0 in:
+Expected size: 1 but was: 0 in:
+Expected size: 6 but was: 1 in:
+expected: 1400.00
+ but was: 900.00
+[ERROR] Tests run: 3, Failures: 3, Errors: 0, Skipped: 0

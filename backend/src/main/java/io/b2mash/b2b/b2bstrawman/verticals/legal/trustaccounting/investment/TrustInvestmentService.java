@@ -1367,11 +1367,12 @@ public class TrustInvestmentService implements InvestmentPlacementHooks {
 
   /**
    * A section 86(3) placement's cover: the funding account's cashbook as at today must cover {@code
-   * principal}. The caller holds the funding account's lock. The one refusal for the request and
-   * the approval.
+   * principal} — and so must the cashbook as at every later date a posted row is dated (FU-9 R-2: a
+   * payment approved ahead of its date is counted). The caller holds the funding account's lock.
+   * The one refusal for the request and the approval.
    */
   private void requireCashbookCovers(UUID fundingAccountId, BigDecimal principal) {
-    var cashbook = ledgerQueries.cashbook(fundingAccountId, LocalDate.now(clock));
+    var cashbook = ledgerQueries.lowestCashbookFrom(fundingAccountId, LocalDate.now(clock));
     if (cashbook.compareTo(principal) < 0) {
       throw new InvalidStateException(
           "Insufficient trust balance",

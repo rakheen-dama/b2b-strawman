@@ -53,10 +53,11 @@ import org.springframework.transaction.annotation.Transactional;
  *   <li>trust account rows: the posting lock ({@code FOR SHARE}, {@link #postedNow}) or an
  *       account-level lock ({@code FOR UPDATE}: the Rule 54.15 list, an account's update or
  *       closing, a placement request, a section 86(3) placement's approval, and — FU-9 — the final
- *       approval of a payment, refund, fee transfer or section 86(4) placement, for its cashbook
- *       check, after the client's anchor). A path that touches two accounts — only an investment's
- *       placement, approval or withdrawal, never two accounts of the same type — takes the trust
- *       banking account before the investment account.
+ *       approval of a payment, refund, fee transfer, section 86(4) placement or payment to the
+ *       Fund, for its cashbook check, after the client's anchor or the unidentified item). A path
+ *       that touches two accounts — only an investment's placement, approval or withdrawal, never
+ *       two accounts of the same type — takes the trust banking account before the investment
+ *       account.
  * </ol>
  *
  * Account rows come last because the posting lock is taken here, after the caller's locks: a path

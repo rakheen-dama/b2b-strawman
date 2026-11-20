@@ -109,3 +109,119 @@ Tests run: 9, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman
 Tests run: 1, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustWireContractTest
 Tests run: 5, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustCoexistenceTest
 Tests run: 2, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustPostingRulesTest
+
+
+# ============================================================================================
+# Review round 1 (R-1..R-3) — Tier 2 re-run after the fixes (after ./mvnw spotless:apply), 2026-11-20
+# ============================================================================================
+# Scope: the whole trust test tree (**/verticals/legal/trustaccounting/**/*Test) + the 23 outside classes above
+#   + outside users of the newly changed classes (UnidentifiedDepositService / UnidentifiedResolutionHooks /
+#     TrustLedgerQueryRepository): ComplianceDataCollectorServiceTest, TrustAwareCollectionsAdvisorTest,
+#     TrustBalanceZeroGateTest, TrustBoundaryGuardUnitTest (LegalDemoTrustBooksIntegrationTest and
+#     TrustLedgerPortalSyncServiceIntegrationTest were already in) + TerminologyRemnantScanTest, LayerDependencyRulesTest.
+# Result: Tests run: 1041, Failures: 0, Errors: 0, Skipped: 0 — BUILD SUCCESS (101 classes)
+# Then (test-only addition after that run compiled: the FU-11 lock-order variant):
+#   ./mvnw test -Dtest='CashbookCoverAtApprovalIntegrationTest' -> Tests run: 10, Failures: 0, Errors: 0, Skipped: 0
+# Full backend ./mvnw verify: owned by the orchestrator (not run here).
+
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.demo.seed.LegalDemoTrustBooksIntegrationTest
+Tests run: 4, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.activity.MatterFeedIntegrationTest
+Tests run: 7, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.integration.accounting.sync.TrustBoundaryGuardTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.integration.accounting.sync.TrustBoundaryGuardUnitTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.integration.ai.skill.fica.FicaVerificationTrustAccessIntegrationTest
+Tests run: 6, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.integration.ai.skill.complianceaudit.ComplianceDataCollectorServiceTest
+Tests run: 6, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.template.ClientTrustStatementContextIntegrationTest
+Tests run: 12, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.template.GeneratedDocumentTrustAccessIntegrationTest
+Tests run: 13, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.mcp.tool.CatalogueBatch2TrustBillingTest
+Tests run: 12, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.project.MatterListRowIntegrationTest
+Tests run: 9, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.project.MatterTrustBalanceEndpointTest
+Tests run: 19, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.dashboard.TrustBalanceTrendIntegrationTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.dashboard.DashboardActivityCacheTest
+Tests run: 12, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.dashboard.TrustPositionIntegrationTest
+Tests run: 6, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.architecture.TerminologyRemnantScanTest
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.audit.MatterScopedPublisherGuardTest
+Tests run: 16, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.report.BillingTrendIntegrationTest
+Tests run: 12, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.collections.CollectionsReadApiTest
+Tests run: 9, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.collections.CollectionsTriageServiceTest
+Tests run: 16, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.customer.ClientListRowIntegrationTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.customerbackend.service.PortalTrustLongReferenceIntegrationTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.customerbackend.service.PortalTrustTransactionDateIntegrationTest
+Tests run: 17, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.customerbackend.service.TrustLedgerPortalSyncServiceIntegrationTest
+Tests run: 6, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.closure.gates.TrustBalanceZeroGateTest
+Tests run: 22, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.DisbursementServiceTest
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.statement.StatementBuilderClosedPrimaryAccountIntegrationTest
+Tests run: 6, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.statement.StatementTrustVisibilityIntegrationTest
+Tests run: 9, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.UnidentifiedDepositsMigrationTest
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationControllerTest
+Tests run: 60, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.parser.BankStatementParserTest
+Tests run: 17, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationServiceReconciliationTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.BankStatementImportErrorIntegrationTest
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationDraftIntegrationTest
+Tests run: 14, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.ReversedOriginalMatchIntegrationTest
+Tests run: 28, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.StatementLinePostingIntegrationTest
+Tests run: 16, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationServiceMatchingTest
+Tests run: 15, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationCompletionGateIntegrationTest
+Tests run: 4, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransferTargetMatterIntegrationTest
+Tests run: 8, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustMatterDebitGuardIntegrationTest
+Tests run: 8, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustFeeTransferReversalCascadeTest
+Tests run: 4, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionTypeControllerTest
+Tests run: 34, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionTypeLabelsTest
+Tests run: 48, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionServiceTest
+Tests run: 12, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustClientMatterRequiredIntegrationTest
+Tests run: 9, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.CashbookCoverAtApprovalIntegrationTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionTypeSchemaTest
+Tests run: 6, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustPostingServiceRecordWithPairTest
+Tests run: 18, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionTypeRegistryTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustPostingDateZoneIntegrationTest
+Tests run: 18, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionControllerTest
+Tests run: 15, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustReversalEquationIntegrationTest
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.DerivedLedgerBalanceIntegrationTest
+Tests run: 6, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerRunningBalanceIntegrationTest
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.InvestmentStatementAccountSelectionIntegrationTest
+Tests run: 12, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerControllerTest
+Tests run: 7, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.LedgerTotalsTest
+Tests run: 8, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.InvestedBlockStatementsIntegrationTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.InvestmentClientLedgerReadSurfacesIntegrationTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerTotalsIntegrationTest
+Tests run: 6, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentAccountsMigrationTest
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentInterestIntegrationTest
+Tests run: 21, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentControllerTest
+Tests run: 22, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentServiceIntegrationTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentInterestMigrationTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentWithdrawReverseRaceIntegrationTest
+Tests run: 6, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentPlacementGuardIntegrationTest
+Tests run: 6, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustDataVisibilityTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustReconUniqueMigrationTest
+Tests run: 7, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustReconBreakdownMigrationTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustInvestmentSchemaTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.UnidentifiedDepositAgeUnitTest
+Tests run: 31, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.TrustCreditorAccountIntegrationTest
+Tests run: 8, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.TrustInterestMemoIntegrationTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.TrustInterestMemosMigrationTest
+Tests run: 27, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.UnidentifiedDepositIntegrationTest
+Tests run: 9, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustMonthlyListIntegrationTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustMonthlyListsMigrationTest
+Tests run: 15, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustIntegrityServiceIntegrationTest
+Tests run: 9, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustPositionAsAtIntegrationTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountingSchemaTest
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountingConstantsTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentAccountBasisMigrationTest
+Tests run: 7, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.StatementLineClassificationMigrationTest
+Tests run: 9, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustPostingCoreMigrationTest
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountingControllerTest
+Tests run: 9, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report.InvestmentReportBasisIntegrationTest
+Tests run: 14, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report.TrustReportQueryIntegrationTest
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report.Section35DataPackContentIntegrationTest
+Tests run: 11, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report.TrustReportPackSeederIntegrationTest
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report.TrustReceiptsPaymentsReversedPairsIntegrationTest
+Tests run: 16, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report.TrustScheduleAndAgeAnalysisIntegrationTest
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustReversalContraMigrationTest
+Tests run: 21, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustEquationCharacterisationIntegrationTest
+Tests run: 18, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountServiceTest
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustNotificationHandlerTest
+Tests run: 9, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InterestRunRemovalTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustWireContractTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustCoexistenceTest
+Tests run: 4, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.collections.TrustAwareCollectionsAdvisorTest
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.architecture.LayerDependencyRulesTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustPostingRulesTest

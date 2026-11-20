@@ -96,7 +96,8 @@ public class TrustTransactionService {
           TrustTransactionType.PAYMENT, "payment",
           TrustTransactionType.REFUND, "refund",
           TrustTransactionType.FEE_TRANSFER, "fee transfer",
-          TrustTransactionType.INV_PLACE, "section 86(4) placement");
+          TrustTransactionType.INV_PLACE, "section 86(4) placement",
+          TrustTransactionType.UNIDENT_FUND_PAY, "payment to the Fund");
 
   private final TrustTransactionRepository transactionRepository;
   private final TrustPostingService postingService;
@@ -1028,6 +1029,13 @@ public class TrustTransactionService {
       if (PLACEMENTS.contains(type)) {
         investmentPlacementHooks.onPlacementApproving(transaction);
       }
+      // FU-9 R-1: an unidentified deposit's resolution takes its item and (an allocation) the
+      // destination client's anchor here, before the cashbook check's account lock and the posting
+      // lock below — the global order, so it cannot deadlock with a payment approval for that
+      // client.
+      if (UNIDENTIFIED_RESOLUTIONS.contains(type)) {
+        unidentifiedResolutionHooks.onResolutionApproving(transaction);
+      }
       // A CLIENT-ledger debit (PAYMENT, FEE_TRANSFER, REFUND, INV_PLACE) takes money off the
       // client; an unidentified-deposit resolution (UNIDENT_ALLOC_OUT, UNIDENT_FUND_PAY:
       // NON_CLIENT, no client on the row) takes it off its own item, whole by construction
@@ -1181,14 +1189,16 @@ public class TrustTransactionService {
   }
 
   /**
-   * FU-9 (Phase 92 F-6, ruling 1): the trust account's derived cashbook as at {@code max(today,
-   * transaction date)} must cover {@code transaction}'s amount, which is about to leave the
-   * account. Read under the account's lock ({@code FOR UPDATE}), so every covered outflow's
-   * approval on the account — and a section 86(3) placement's approval or request, which take the
-   * same lock — is serialised with this read; the posting lock taken next re-takes the row {@code
-   * FOR SHARE} (already held). The row is still AWAITING_APPROVAL, so the cashbook excludes it.
-   * Refused with the client-cover refusal's title (400), naming the remedy: money placed in a
-   * section 86(3) investment is withdrawn to the banking account first (Rule 54.14.7.3).
+   * FU-9 (Phase 92 F-6, ruling 1): the trust account's derived cashbook must cover {@code
+   * transaction}'s amount, which is about to leave the account, as at {@code max(today, transaction
+   * date)} <em>and every later date a posted row is dated</em> (R-2): the lowest the cashbook
+   * stands from then on, so an already-approved later-dated outflow is not overdrawn by this one.
+   * Read under the account's lock ({@code FOR UPDATE}), so every covered outflow's approval on the
+   * account — and a section 86(3) placement's approval or request, which take the same lock — is
+   * serialised with this read; the posting lock taken next re-takes the row {@code FOR SHARE}
+   * (already held). The row is still AWAITING_APPROVAL, so the cashbook excludes it. Refused with
+   * the client-cover refusal's title (400), naming the remedy: money placed in a section 86(3)
+   * investment is withdrawn to the banking account first (Rule 54.14.7.3).
    */
   private void requireCashbookCovers(TrustTransaction transaction, String outflow) {
     var accountId = transaction.getTrustAccountId();
@@ -1198,7 +1208,7 @@ public class TrustTransactionService {
     var today = LocalDate.now(clock);
     var asAt =
         transaction.getTransactionDate().isAfter(today) ? transaction.getTransactionDate() : today;
-    var cashbook = ledgerQueries.cashbook(accountId, asAt);
+    var cashbook = ledgerQueries.lowestCashbookFrom(accountId, asAt);
     if (cashbook.compareTo(transaction.getAmount()) < 0) {
       throw new InvalidStateException(
           "Insufficient trust balance",

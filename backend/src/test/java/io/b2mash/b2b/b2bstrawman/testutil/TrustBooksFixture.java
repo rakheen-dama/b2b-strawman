@@ -294,6 +294,12 @@ public final class TrustBooksFixture {
 
     /** A requested payment awaits approval and moves nothing. */
     public UUID requestPayment(UUID account, Client client, String amount) {
+      return requestPayment(account, client, amount, POSTING_DATE);
+    }
+
+    /** As {@link #requestPayment(UUID, Client, String)}, dated {@code transactionDate} (FU-9). */
+    public UUID requestPayment(
+        UUID account, Client client, String amount, LocalDate transactionDate) {
       var id = new UUID[1];
       as(
           memberId,
@@ -312,7 +318,7 @@ public final class TrustBooksFixture {
                                       new BigDecimal(amount),
                                       reference("PAY"),
                                       "Payment",
-                                      POSTING_DATE))
+                                      transactionDate))
                               .id()));
       assertThat(statusOf(id[0])).isEqualTo("AWAITING_APPROVAL");
       return id[0];

@@ -408,6 +408,23 @@ public class UnidentifiedDepositService implements UnidentifiedResolutionHooks {
   // --- Resolution hooks (UnidentifiedResolutionHooks; called by TrustTransactionService) ---
 
   /**
+   * Before the resolution posts (final approval; FU-9 R-1): the item, then — for an allocation —
+   * the destination client's lock anchor, both before the caller takes any trust account lock (the
+   * posting lock, or the cashbook check's account lock for a payment to the Fund). Without this an
+   * allocation's approval held the account's posting lock while it waited for the anchor, and a
+   * payment approval for the same client (anchor, then the account) deadlocked with it.
+   */
+  @Override
+  @Transactional(propagation = Propagation.MANDATORY)
+  public void onResolutionApproving(TrustTransaction resolution) {
+    moduleGuard.requireModule(MODULE_ID);
+    var item = lockResolvedItem(resolution, UnidentifiedDepositStatus.HELD);
+    if (ALLOC_OUT.equals(resolution.getTransactionType())) {
+      postingService.lockClient(item.getTrustAccountId(), item.getAllocatedCustomerId());
+    }
+  }
+
+  /**
    * The resolution row has just posted on final approval. An allocation: the {@code
    * UNIDENT_ALLOC_IN} credit leg is created APPROVED and posted for the client and matter (same
    * date and reference, its approvers inherited), described "Deposit received {date} — {bank

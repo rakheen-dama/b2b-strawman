@@ -42,6 +42,30 @@ public interface TrustLedgerQueryRepository extends Repository<TrustTransaction,
               + AS_AT)
   BigDecimal cashbook(@Param("trustAccountId") UUID trustAccountId, @Param("asAt") LocalDate asAt);
 
+  /**
+   * The lowest the account's cashbook stands as at {@code from} or as at any later date a posted
+   * row is dated (FU-9 R-2): {@code min(cashbook(from), cashbook(d) for every posted d > from)}. An
+   * outflow dated on or before {@code from} lowers every one of those figures, so it is covered
+   * only if this is at least its amount — a later-dated row already posted (a payment approved
+   * ahead of its date) is counted. {@code from} is required (a date, never null).
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          WITH daily AS (
+            SELECT t.transaction_date AS d, SUM(t.cashbook_effect) AS net
+              FROM trust_transactions t
+             WHERE t.trust_account_id = :trustAccountId AND t.posted_at IS NOT NULL
+             GROUP BY t.transaction_date),
+          running AS (
+            SELECT d, SUM(net) OVER (ORDER BY d) AS balance FROM daily)
+          SELECT LEAST(
+            COALESCE((SELECT SUM(net) FROM daily WHERE d <= CAST(:from AS date)), 0),
+            (SELECT MIN(balance) FROM running WHERE d > CAST(:from AS date)))""")
+  BigDecimal lowestCashbookFrom(
+      @Param("trustAccountId") UUID trustAccountId, @Param("from") LocalDate from);
+
   /** The total of the client ledgers on the account ({@code CLIENT} ledger). */
   @Query(
       nativeQuery = true,

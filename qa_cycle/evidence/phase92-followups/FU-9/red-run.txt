@@ -37,3 +37,31 @@ Expecting code to raise a throwable.
 [INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.294 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentWithdrawReverseRaceIntegrationTest
 [ERROR] Tests run: 11, Failures: 3, Errors: 0, Skipped: 0
 [INFO] BUILD FAILURE
+
+
+# ============================================================================================
+# Review round 1 (independent Opus review of #1825 @fde930d5e: REQUEST_CHANGES R-1..R-3), 2026-11-20
+# ============================================================================================
+
+## (a) New tests against head fde930d5e (no production change) — 3 red as expected
+# ./mvnw test -Dtest='CashbookCoverAtApprovalIntegrationTest'   -> Tests run: 9, Failures: 3
+[ERROR]   CashbookCoverAtApprovalIntegrationTest.lockOrder_paymentApprovalAndAnAllocationApprovalForTheSameClient_bothComplete_noDeadlock:331 [the payment approval]
+  org.springframework.dao.CannotAcquireLockException: JDBC exception executing SQL [ERROR: deadlock detected        <- R-1 (40P01)
+[ERROR]   CashbookCoverAtApprovalIntegrationTest.paymentDatedToday_isRefused_whenAnAlreadyApprovedLaterPaymentLeavesTheCashbookShort:251
+Expecting code to raise a throwable.                                                                               <- R-2 (today-dated R100 posted)
+[ERROR]   CashbookCoverAtApprovalIntegrationTest.paymentToTheFund_isRefusedAtApproval_whenTheCashbookCannotCover:212
+Expecting code to raise a throwable.                                                                               <- R-3 (UNIDENT_FUND_PAY posted)
+# Green on fde930d5e as expected: paymentDatedLater_isRefused_... (the reverse order was already refused), and the split FU-9 tests below.
+
+## (b) The split FU-9 refusals against the pre-FU-9 TrustTransactionService (base 8feb21a3a, temporarily restored) — each red on its own
+# ./mvnw test -Dtest='CashbookCoverAtApprovalIntegrationTest#refund_...+feeTransfer_...+section86_4Placement_...'   -> Tests run: 3, Failures: 3
+[ERROR]   CashbookCoverAtApprovalIntegrationTest.feeTransfer_isRefusedAtApproval_whenTheCashbookCannotCover:157   Expecting code to raise a throwable.
+[ERROR]   CashbookCoverAtApprovalIntegrationTest.refund_isRefusedAtApproval_whenTheCashbookCannotCover_andPostsAfterTheWithdrawal:131   Expecting code to raise a throwable.
+[ERROR]   CashbookCoverAtApprovalIntegrationTest.section86_4Placement_isRefusedAtApproval_whenTheCashbookCannotCover:180   Expecting code to raise a throwable.
+
+## (c) Both lock-order tests with the R-1 hook call removed (head fde930d5e TrustTransactionService, temporarily restored) — both deadlock
+# ./mvnw test -Dtest='CashbookCoverAtApprovalIntegrationTest#lockOrder_*'   -> Tests run: 2, Failures: 2
+[ERROR]   CashbookCoverAtApprovalIntegrationTest.lockOrder_allocationApprovalAndASection86_4PlacementForTheSameClient_bothComplete_noDeadlock:497 [the placement request]
+  org.springframework.dao.CannotAcquireLockException: JDBC exception executing SQL [ERROR: deadlock detected        <- FU-11 / 650A F-12 (pre-existing)
+[ERROR]   CashbookCoverAtApprovalIntegrationTest.lockOrder_paymentApprovalAndAnAllocationApprovalForTheSameClient_bothComplete_noDeadlock:367 [the payment approval]
+  org.springframework.dao.CannotAcquireLockException: JDBC exception executing SQL [ERROR: deadlock detected        <- R-1

@@ -20,7 +20,8 @@ import org.springframework.stereotype.Component;
 
 /**
  * Chronological journal of all trust receipts and payments of a trust account for a date range —
- * the cashbook order, every posted row that is not a reversal or reversed.
+ * the cashbook order, every posted row by its own date: a reversed original and its contra both
+ * count (649B), each with its own cashbook effect.
  *
  * <p>v4 (Phase 92 650C, §16.8.5, D-15): receipt or payment and the running balance come from the
  * row's {@code cashbook_effect} (a cashbook-neutral row — a transfer between clients, an

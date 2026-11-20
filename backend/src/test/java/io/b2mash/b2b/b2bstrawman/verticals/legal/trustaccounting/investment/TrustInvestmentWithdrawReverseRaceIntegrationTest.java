@@ -108,6 +108,7 @@ class TrustInvestmentWithdrawReverseRaceIntegrationTest {
 
   private String tenantSchema;
   private UUID ownerId;
+  private UUID approverId;
   private UUID trustAccountId;
   private UUID investmentAccountId;
   private LocalDate today;
@@ -123,8 +124,10 @@ class TrustInvestmentWithdrawReverseRaceIntegrationTest {
         UUID.fromString(
             TestMemberHelper.syncMember(
                 mockMvc, ORG_ID, OWNER_SUB, "tiwr_owner@test.com", "TIWR Owner", "owner"));
-    TestMemberHelper.syncMember(
-        mockMvc, ORG_ID, APPROVER_SUB, "tiwr_approver@test.com", "TIWR Approver", "owner");
+    approverId =
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, APPROVER_SUB, "tiwr_approver@test.com", "TIWR Approver", "owner"));
     today = LocalDate.now(clock);
     trustAccountId =
         as(
@@ -271,6 +274,55 @@ class TrustInvestmentWithdrawReverseRaceIntegrationTest {
     assertThat(clientBalance(client))
         .as("the deposit posted; the placement awaits approval")
         .isEqualByComparingTo("5100.00");
+  }
+
+  /**
+   * FU-9 (Phase 92 F-6): a payment's approval now takes the trust account's lock ({@code FOR
+   * UPDATE}) for its cashbook check — after the client's lock anchor, the global order (650A F-11)
+   * a section 86(4) placement request also follows (anchor, then the account). The approval goes
+   * first: it takes the anchor and blocks on the gate at the account; the placement request for the
+   * same client then blocks behind it on the anchor. Released, both complete. Had the approval
+   * taken the account before the anchor, the placement would hold the anchor while the approval
+   * held the account, and Postgres would abort one with 40P01.
+   */
+  @Test
+  void lockOrder_paymentApprovalAndASection86_4PlacementForTheSameClient_bothComplete_noDeadlock()
+      throws Exception {
+    UUID client = newClient("Lock Order Payment Client");
+    UUID matter = newMatter(client, "Lock Order Payment Matter");
+    deposit(client, matter);
+    String recorded =
+        mockMvc
+            .perform(
+                post("/api/trust-accounts/" + trustAccountId + "/transactions/payment")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUB))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"clientId": "%s", "matterId": "%s", "amount": 500.00,
+                         "reference": "TIWR-LO-PAY-%d", "description": "Payment",
+                         "transactionDate": "%s"}
+                        """
+                            .formatted(client, matter, ++counter, today)))
+            .andExpect(status().isCreated())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    UUID paymentId = UUID.fromString(JsonPath.read(recorded, "$.id"));
+
+    var outcome =
+        gatedOnTrustAccount(
+            () ->
+                asMember(
+                    approverId, () -> transactionService.approveTransaction(paymentId, approverId)),
+            () -> investmentService.placeInvestment(trustAccountId, placement(client, matter)));
+
+    assertThat(outcome.secondBlocked()).as("both blocked before the gate opened").isTrue();
+    assertThat(outcome.first()).as("the payment approval").isNull();
+    assertThat(outcome.second()).as("the placement request").isNull();
+    assertThat(clientBalance(client))
+        .as("the payment posted; the placement awaits approval")
+        .isEqualByComparingTo("4500.00");
   }
 
   private TrustInvestmentService.PlaceInvestmentRequest placement(UUID client, UUID matter) {
@@ -616,9 +668,13 @@ class TrustInvestmentWithdrawReverseRaceIntegrationTest {
   }
 
   private <T> T as(Supplier<T> action) {
+    return asMember(ownerId, action);
+  }
+
+  private <T> T asMember(UUID memberId, Supplier<T> action) {
     return ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .where(RequestScopes.ORG_ID, ORG_ID)
-        .where(RequestScopes.MEMBER_ID, ownerId)
+        .where(RequestScopes.MEMBER_ID, memberId)
         .where(RequestScopes.ORG_ROLE, "owner")
         .where(
             RequestScopes.CAPABILITIES,

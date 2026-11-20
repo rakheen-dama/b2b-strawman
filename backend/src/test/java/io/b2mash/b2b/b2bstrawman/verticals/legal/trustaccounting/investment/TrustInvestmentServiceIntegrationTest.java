@@ -831,16 +831,17 @@ class TrustInvestmentServiceIntegrationTest {
   }
 
   /**
-   * ORCHESTRATOR RULING 648A F-6 (found.md; §16 "sufficiency checks stay where they are", R14 "no
-   * hard block on posting", ADR-380): a client payment's sufficiency is checked against the
-   * client's ledger and matter cell only — not the account's cashbook. A section 86(3) placement
-   * lowers the cashbook and leaves every client ledger as it was (the inter-account ledger carries
-   * the offset), so a later payment for the same client posts and takes the cashbook into debit.
-   * This test PINS that behaviour until the founder rules on the sufficiency model (owner 649C);
-   * the books still balance — EQ-2/EQ-3 hold because the inter-account term carries the placement.
+   * FU-9 (Phase 92 F-6; founder-signed ruling {@code
+   * qa_cycle/evidence/phase92/legal/F-6-opinion.md}, replacing the 648A orchestrator pin "checked
+   * against the client ledger only"): a client payment's approval is refused unless the trust
+   * banking account's cashbook also covers it. A section 86(3) placement lowers the cashbook and
+   * leaves every client ledger as it was, so the client still covers R4 000 while the cashbook
+   * holds R2 000: the approval is refused with the "withdraw it from the investment first" sentence
+   * and nothing moves. Once the section 86(3) investment is withdrawn the same payment approves,
+   * and the cashbook never goes into debit.
    */
   @Test
-  void clientPaymentAfterASection86_3Placement_isCheckedAgainstTheClientLedgerOnly_ruling648A_F6() {
+  void clientPaymentAfterASection86_3Placement_isRefusedUnlessTheCashbookCoversIt_FU9() {
     var funding = books.freshAccount(false);
     var firmAccount = books.freshInvestmentAccount(InvestmentBasis.FIRM_DISCRETION);
     var client = books.newClient("F-6 payment after s86(3)");
@@ -859,15 +860,32 @@ class TrustInvestmentServiceIntegrationTest {
     assertThat(books.clientLedger(funding, client)).isEqualByComparingTo("5000.00");
 
     var payment = books.requestPayment(funding, client, "4000.00");
+    books.assertApprovalRefused(
+        funding,
+        payment,
+        approverId,
+        "Insufficient trust balance",
+        "The trust account's cashbook does not cover this payment. Available: R2 000,00,"
+            + " Requested: R4 000,00. If trust money has been placed in a section 86(3)"
+            + " investment, withdraw it from the investment first.");
+    assertThat(books.statusOf(payment)).isEqualTo("AWAITING_APPROVAL");
+    assertThat(books.snapshotAsAt(funding, books.today()).cashbook())
+        .isEqualByComparingTo("2000.00");
+
+    books.withdraw(
+        funding,
+        Expected.cashbookAndInterAccount("3000.00"),
+        firmAccount,
+        Expected.cashbookAndInterAccount("-3000.00"),
+        placed.id(),
+        books.today());
     books.approve(funding, payment, approverId, Expected.cashbookAndClient("-4000.00"));
 
     assertThat(books.statusOf(payment)).isEqualTo("APPROVED");
     var after = books.snapshotAsAt(funding, books.today());
-    assertThat(after.cashbook())
-        .as("G's cashbook, in debit by R2 000")
-        .isEqualByComparingTo("-2000.00");
+    assertThat(after.cashbook()).isEqualByComparingTo("1000.00");
     assertThat(books.clientLedger(funding, client)).isEqualByComparingTo("1000.00");
-    assertThat(after.interAccount()).isEqualByComparingTo("-3000.00");
+    assertThat(after.interAccount()).isEqualByComparingTo("0");
     books.assertBalancedAsAt(funding, books.today());
     books.assertBalancedAsAt(firmAccount, books.today());
     books.assertFirmBalanced();

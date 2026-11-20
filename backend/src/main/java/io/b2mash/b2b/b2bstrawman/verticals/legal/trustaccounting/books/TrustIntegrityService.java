@@ -7,6 +7,7 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccount;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountType;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustBooksService.BankPosition;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustBooksService.TrustPosition;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.TrustCreditorAccountRepository;
@@ -61,7 +62,7 @@ public class TrustIntegrityService {
   public static final String BLOCKING = "BLOCKING";
   public static final String WARNING = "WARNING";
 
-  // The twelve codes of §16.3.9.
+  // The twelve codes of §16.3.9, and FU-9's CASHBOOK_IN_DEBIT.
   /** EQ-1 fails at a reconciliation's period end. Blocking. */
   public static final String BANK_DIFFERENCE = "BANK_DIFFERENCE";
 
@@ -85,6 +86,14 @@ public class TrustIntegrityService {
 
   /** A client ledger is in debit (ruling #5, OL-7: flag only). Warning. */
   public static final String CLIENT_LEDGER_IN_DEBIT = "CLIENT_LEDGER_IN_DEBIT";
+
+  /**
+   * A trust banking ({@code GENERAL}) account's cashbook is below zero as at the date (FU-9, Phase
+   * 92 F-6; legal opinion {@code qa_cycle/evidence/phase92/legal/F-6-opinion.md}): something the
+   * approval-time cover check cannot refuse — a bank-confirmed or back-dated entry — took it into
+   * debit. Warning: the firm checks Rule 54.14.8 and, if short, reports under Rule 54.14.10.
+   */
+  public static final String CASHBOOK_IN_DEBIT = "CASHBOOK_IN_DEBIT";
 
   /** An unidentified deposit open for more than a year (L9). Warning. */
   public static final String UNIDENTIFIED_OVER_ONE_YEAR = "UNIDENTIFIED_OVER_ONE_YEAR";
@@ -335,6 +344,7 @@ public class TrustIntegrityService {
               subjects));
     }
     clientsInDebit(accountId, date).ifPresent(flags::add);
+    cashbookInDebit(position).ifPresent(flags::add);
     unidentifiedOverOneYear(date, items).ifPresent(flags::add);
     chargesToRefund(accountId, date).ifPresent(flags::add);
     backdatedAfterLock(accountId, date).ifPresent(flags::add);
@@ -591,6 +601,42 @@ public class TrustIntegrityService {
                 : inDebit.size() + " client ledgers are in debit, " + rand(total) + " in total.",
             total,
             subjects));
+  }
+
+  /**
+   * FU-9 (ruling 3): a trust banking ({@code GENERAL}) account whose cashbook is below zero as at
+   * the date. The sentence prompts the aggregate Rule 54.14.8 check and, only if trust money falls
+   * short, the Rule 54.14.10 report — it does not assert the debit is itself reportable (the
+   * opinion's open point). The account is read only when the cashbook is in debit.
+   */
+  private Optional<IntegrityFlag> cashbookInDebit(TrustPosition position) {
+    if (position.cashbook().signum() >= 0) {
+      return Optional.empty();
+    }
+    var account = trustAccountRepository.findById(position.trustAccountId());
+    if (account.isEmpty() || account.get().getAccountType() != TrustAccountType.GENERAL) {
+      return Optional.empty();
+    }
+    var debit = position.cashbook().abs();
+    return Optional.of(
+        flag(
+            CASHBOOK_IN_DEBIT,
+            WARNING,
+            "The trust banking account's cashbook is "
+                + rand(debit)
+                + " in debit as at "
+                + IntegrityMessages.date(position.asAt())
+                + ". Check that the trust money in the banking account, the trust investment"
+                + " accounts and trust cash still covers the balances of all trust creditors (Rule"
+                + " 54.14.8); if it does not, report to the Legal Practice Council immediately"
+                + " (Rule 54.14.10).",
+            debit,
+            List.of(
+                new FlagSubject(
+                    SUBJECT_TRUST_ACCOUNT,
+                    position.trustAccountId(),
+                    account.get().getAccountName(),
+                    debit))));
   }
 
   /** Items open as at the date (by their balance, EQ-4) and received more than a year before. */

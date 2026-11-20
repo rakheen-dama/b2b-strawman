@@ -9,9 +9,11 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction;
  * depends on {@link TrustTransactionService} (no bean cycle) — the pattern of {@link
  * UnidentifiedResolutionHooks}.
  *
- * <p>Lock order: the placement row (locked by the caller) → the funding account ({@link
- * #onPlacementApproving}, section 86(3)) → the client's lock anchor (section 86(4), taken by the
- * caller's client-cover check) → the investment row.
+ * <p>Lock order (the global order, {@link TrustPostingService}): the placement row (locked by the
+ * caller) → for a section 86(3) placement the funding account ({@link #onPlacementApproving}; it
+ * names no client); for a section 86(4) placement the client's lock anchor (the caller's
+ * client-cover check) and then the funding account (the caller's cashbook check, FU-9) → the
+ * investment row.
  */
 public interface InvestmentPlacementHooks {
 

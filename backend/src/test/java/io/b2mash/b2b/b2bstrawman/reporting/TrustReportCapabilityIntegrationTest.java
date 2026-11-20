@@ -122,22 +122,34 @@ class TrustReportCapabilityIntegrationTest {
             get("/api/report-definitions/trust-position/export/pdf")
                 .param("asOfDate", "2026-01-31")
                 .with(jwt))
-        .andExpect(status().isForbidden());
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.status").value(403))
+        .andExpect(jsonPath("$.title").value("Insufficient permissions"))
+        .andExpect(jsonPath("$.detail").value(containsString("VIEW_TRUST")));
     mockMvc
         .perform(
             get("/api/report-definitions/trust-position/export/csv")
                 .param("asOfDate", "2026-01-31")
                 .with(jwt))
-        .andExpect(status().isForbidden());
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.status").value(403))
+        .andExpect(jsonPath("$.title").value("Insufficient permissions"))
+        .andExpect(jsonPath("$.detail").value(containsString("VIEW_TRUST")));
     mockMvc
         .perform(
             get("/api/report-definitions/trust-position/preview")
                 .param("asOfDate", "2026-01-31")
                 .with(jwt))
-        .andExpect(status().isForbidden());
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.status").value(403))
+        .andExpect(jsonPath("$.title").value("Insufficient permissions"))
+        .andExpect(jsonPath("$.detail").value(containsString("VIEW_TRUST")));
     mockMvc
         .perform(get("/api/report-definitions/section-35-data-pack").with(jwt))
-        .andExpect(status().isForbidden());
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.status").value(403))
+        .andExpect(jsonPath("$.title").value("Insufficient permissions"))
+        .andExpect(jsonPath("$.detail").value(containsString("VIEW_TRUST")));
   }
 
   @Test

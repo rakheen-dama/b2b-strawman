@@ -1,7 +1,7 @@
 {
-  "commit": "42bfa0001",
-  "command": "cd backend && bash scripts/verify.sh -q (worktree agent-ac59e818c55510b41, PR #1823)",
+  "commit": "d6a7bc6c1",
+  "command": "cd backend && bash scripts/verify.sh -q (worktree agent-a7583e430cf85b95f, PR #1824)",
   "exit": 0,
-  "ts": "2026-11-20T08:15:38Z",
-  "summary": "PR #1823 (FU-2) @42bfa0001 — 7425 <testcase> / 0 failures / 0 errors / 26 skipped; later commit f137fdf3c test-only"
+  "ts": "2026-11-20T11:13:26Z",
+  "summary": "PR #1824 (FU-13) @d6a7bc6c1 — 7428 <testcase> / 0 failures / 0 errors / 26 skipped"
 }

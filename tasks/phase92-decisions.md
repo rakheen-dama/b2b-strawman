@@ -33,7 +33,7 @@ Columns: **id** · **source** (slice / found.md) · **decision taken** · **alte
 | id | covers | scope note |
 |---|---|---|
 | FU-1 | F-6a | `TrustInvestmentService` approval path for `FIRM_INV_PLACE`: lock funding account, re-check `cashbook(G, max(today, date)) ≥ amount`; red test with two pending placements first. |
-| FU-2 | R-2 | Report definitions / report controller: trust-figure reports gated by the trust-view capability; capability-matrix test. |
+| FU-2 | R-2 | Report definitions / report controller: trust-figure reports gated by the trust-view capability; capability-matrix test. | **DONE — PR #1823 (c3646bccc), 2026-11-20.**
 | FU-3 | R-1 | Statement builders: read general + invested balances in a `REQUIRES_NEW`, read-only, REPEATABLE_READ sub-transaction (648F found.md option a). |
 | FU-4 | W1 | Firm client-ledger-statement report: shared client-description rule + test. |
 | FU-5 | S2 | Deposit-reversal approval: cover check as at `reversalDate` and as at today. |

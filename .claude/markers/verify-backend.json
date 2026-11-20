@@ -1,7 +1,7 @@
 {
-  "commit": "d9f42136e",
-  "command": "cd backend && caffeinate -is ./mvnw clean verify -q",
+  "commit": "42bfa0001",
+  "command": "cd backend && bash scripts/verify.sh -q (worktree agent-ac59e818c55510b41, PR #1823)",
   "exit": 0,
-  "ts": "2026-11-19T20:03:25Z",
-  "summary": "7420 testcases / 0 failures / 0 errors / 26 skipped (counted <testcase>) — PR #1820 (652H) head d9f42136e2b3"
+  "ts": "2026-11-20T08:15:38Z",
+  "summary": "PR #1823 (FU-2) @42bfa0001 — 7425 <testcase> / 0 failures / 0 errors / 26 skipped; later commit f137fdf3c test-only"
 }

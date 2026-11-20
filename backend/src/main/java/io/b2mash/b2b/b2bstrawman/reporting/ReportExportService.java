@@ -78,6 +78,7 @@ public class ReportExportService {
                         entry.getKey(),
                         CATEGORY_LABELS.getOrDefault(entry.getKey(), entry.getKey()),
                         entry.getValue().stream()
+                            .filter(def -> reportExecutionService.canAccess(def.getSlug()))
                             .map(
                                 def ->
                                     new ReportSummary(
@@ -91,6 +92,7 @@ public class ReportExportService {
   /** Get a single report definition by slug. */
   @Transactional(readOnly = true)
   public ReportDetailResponse getBySlug(String slug) {
+    reportExecutionService.assertCanAccess(slug);
     var definition =
         reportDefinitionRepository
             .findBySlug(slug)

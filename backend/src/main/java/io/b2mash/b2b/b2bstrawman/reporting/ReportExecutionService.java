@@ -2,8 +2,10 @@ package io.b2mash.b2b.b2bstrawman.reporting;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +45,26 @@ public class ReportExecutionService {
     this.auditService = auditService;
   }
 
+  /** True if the current caller holds any extra capability the report's query requires. */
+  public boolean canAccess(String slug) {
+    var query = queryMap.get(slug);
+    return query == null
+        || query.requiredCapability().map(RequestScopes::hasCapability).orElse(true);
+  }
+
+  /**
+   * Throws 403 when the caller lacks the extra capability the report requires (e.g. VIEW_TRUST).
+   */
+  public void assertCanAccess(String slug) {
+    if (!canAccess(slug)) {
+      throw new ForbiddenException(
+          "Insufficient permissions",
+          "This report requires the "
+              + queryMap.get(slug).requiredCapability().orElseThrow()
+              + " capability");
+    }
+  }
+
   @Transactional
   public ReportExecutionResponse execute(
       String slug, Map<String, Object> parameters, Pageable pageable) {
@@ -51,6 +73,7 @@ public class ReportExecutionService {
             .findBySlug(slug)
             .orElseThrow(() -> new ResourceNotFoundException("ReportDefinition", slug));
 
+    assertCanAccess(slug);
     var query = queryMap.get(slug);
     if (query == null) {
       throw new InvalidStateException(
@@ -90,6 +113,7 @@ public class ReportExecutionService {
             .findBySlug(slug)
             .orElseThrow(() -> new ResourceNotFoundException("ReportDefinition", slug));
 
+    assertCanAccess(slug);
     var query = queryMap.get(slug);
     if (query == null) {
       throw new InvalidStateException(

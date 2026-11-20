@@ -1,0 +1,18 @@
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 12.04 s -- in io.b2mash.b2b.b2bstrawman.reporting.InvoiceAgingReportQueryTest
+[INFO] Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.835 s -- in io.b2mash.b2b.b2bstrawman.reporting.ReportRenderingServiceTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.890 s -- in io.b2mash.b2b.b2bstrawman.reporting.TrustReportCapabilityIntegrationTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.574 s -- in io.b2mash.b2b.b2bstrawman.reporting.ProjectProfitabilityReportQueryTest
+[INFO] Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.547 s -- in io.b2mash.b2b.b2bstrawman.reporting.TimesheetReportQueryTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.376 s -- in io.b2mash.b2b.b2bstrawman.reporting.StandardReportPackSeederResolverTest
+[INFO] Tests run: 24, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.812 s -- in io.b2mash.b2b.b2bstrawman.reporting.ReportingControllerTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.589 s -- in io.b2mash.b2b.b2bstrawman.reporting.ReportExecutionServiceTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.509 s -- in io.b2mash.b2b.b2bstrawman.reporting.StandardReportPackSeederTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.512 s -- in io.b2mash.b2b.b2bstrawman.reporting.ReportingSchemaTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.341 s -- in io.b2mash.b2b.b2bstrawman.reporting.StandardReportPackSeederReconcileTest
+[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.365 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report.InvestmentReportBasisIntegrationTest
+[INFO] Tests run: 14, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.024 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report.TrustReportQueryIntegrationTest
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.972 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report.Section35DataPackContentIntegrationTest
+[INFO] Tests run: 11, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.186 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report.TrustReportPackSeederIntegrationTest
+[INFO] Tests run: 16, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.513 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report.TrustScheduleAndAgeAnalysisIntegrationTest
+[INFO] Tests run: 154, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 12, Failures: 0 -- DashboardWithoutCapacityTest

@@ -460,7 +460,7 @@ export interface TrustCreditorBreakdown {
 // Integrity check types (649C) — mirror backend `books.TrustIntegrityService` and
 // `books.TrustBooksService` records (key order = Java component order).
 
-/** The twelve flag codes of the integrity check (§16.3.9). */
+/** The flag codes of the integrity check (§16.3.9, plus FU-9's CASHBOOK_IN_DEBIT). */
 export type IntegrityFlagCode =
   | "BANK_DIFFERENCE"
   | "BOOKS_OUT_OF_BALANCE"
@@ -470,6 +470,7 @@ export type IntegrityFlagCode =
   | "UNRESOLVED_STATEMENT_LINES"
   | "FUND_LEDGER_IN_DEBIT"
   | "CLIENT_LEDGER_IN_DEBIT"
+  | "CASHBOOK_IN_DEBIT"
   | "UNIDENTIFIED_OVER_ONE_YEAR"
   | "CHARGES_TO_REFUND"
   | "BACKDATED_AFTER_LOCK";

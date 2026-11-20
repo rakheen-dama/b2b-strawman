@@ -20,6 +20,7 @@ export const INTEGRITY_FLAG_LABELS: Record<IntegrityFlagCode, string> = {
   UNRESOLVED_STATEMENT_LINES: "Statement lines not yet resolved",
   FUND_LEDGER_IN_DEBIT: "Fund interest and charges ledger in debit",
   CLIENT_LEDGER_IN_DEBIT: "Client ledger in debit",
+  CASHBOOK_IN_DEBIT: "Trust banking account cashbook in debit",
   UNIDENTIFIED_OVER_ONE_YEAR: "Unidentified deposit held over a year",
   CHARGES_TO_REFUND: "Bank charges to refund from the business account",
   BACKDATED_AFTER_LOCK: "Entered after a monthly list was locked",

@@ -1,0 +1,33 @@
+FU-3 RED run: TrustSnapshotReadsIntegrationTest (final version) on UNMODIFIED production code (main @ 5019e87b5; TrustSnapshotReads.java present but not wired into any builder)
+worktree HEAD: 5019e87b5b11a861034a6debed3cc37e5453c0c2 (branch fix/phase92-fu3-trust-snapshot-reads)
+command: cd backend && ./mvnw test -Dtest=TrustSnapshotReadsIntegrationTest
+date: 2026-11-21T13:43:23Z
+
+Expected: the three document tests FAIL (torn reads). The two report tests PASS: 650C D-38 already gives every report one read-only REPEATABLE_READ transaction at ReportExportService. The runner proof test PASSes: it exercises only the unwired runner class.
+
+--- surefire per-test results ---
+<testcase name="statementOfAccount_placementApprovedBetweenTheReads_storedStatementCountsItOnce" time="0.581"
+<testcase name="snapshotRead_insideAWritingTransaction_ownTenantConnection_readOnlyRepeatableRead" time="0.029"
+<testcase name="rule5415Report_depositCommittedBetweenThePositionAndTheLines_listAgreesWithItself" time="0.133"
+<testcase name="clientTrustStatement_placementApprovedBetweenTheReads_storedDocumentCountsItOnce" time="1.089"
+<testcase name="clientTrustStatement_investmentReturnedDuringTheAccountChoice_choosesTheAccountHoldingIt" time="0.167"
+<testcase name="clientLedgerStatementReport_placementApprovedBetweenTheReads_countsItOnce" time="0.1"
+
+--- maven output (results / assertion lines) ---
+[ERROR] Tests run: 6, Failures: 3, Errors: 0, Skipped: 0, Time elapsed: 17.62 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.TrustSnapshotReadsIntegrationTest
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.TrustSnapshotReadsIntegrationTest.statementOfAccount_placementApprovedBetweenTheReads_storedStatementCountsItOnce -- Time elapsed: 0.581 s <<< FAILURE!
+expected: 50000.00
+ but was: 80000.00
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.TrustSnapshotReadsIntegrationTest.clientTrustStatement_placementApprovedBetweenTheReads_storedDocumentCountsItOnce -- Time elapsed: 1.089 s <<< FAILURE!
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.TrustSnapshotReadsIntegrationTest.clientTrustStatement_investmentReturnedDuringTheAccountChoice_choosesTheAccountHoldingIt -- Time elapsed: 0.167 s <<< FAILURE!
+expected: "Trust Books 15"
+ but was: "Trust Books 16"
+expected: "Trust Books 15"
+ but was: "Trust Books 16"
+expected: 50000.00
+ but was: 80000.00
+[ERROR] Tests run: 6, Failures: 3, Errors: 0, Skipped: 0
+[INFO] BUILD FAILURE
+
+--- CTS failure: the stored document's HTML (built by generatePdf) prints ---
+Closing balance: R50 000,00 Section 86(4) investment Placed in section 86(4) investment: R30 000,00 Gross interest: R0,00 Fund share of section 86(4) interest (5%): R0,00 Net interest: R0,00 Investment returned to trust: R0,00 Invested on your instruction (section 86(4)): R30 000,00 Current Balance In the firm's trust account: R50 000,00 Invested on your instruction (section 86(4)): R30 000,00 Held in trust: R80 000,00

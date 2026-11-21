@@ -1,0 +1,19 @@
+FU-3 GREEN run: TrustSnapshotReadsIntegrationTest with the fix (TrustSnapshotReads wired into StatementOfAccountContextBuilder.buildTrustBlock and ClientTrustStatementContext.buildFor; uncommitted working tree on main @ 5019e87b5)
+worktree HEAD: 5019e87b5b11a861034a6debed3cc37e5453c0c2 (branch fix/phase92-fu3-trust-snapshot-reads)
+command: cd backend && ./mvnw test -Dtest=TrustSnapshotReadsIntegrationTest
+date: 2026-11-21T13:44:20Z
+
+Expected: all 6 pass (3 document races fixed, 2 report guards, 1 runner tenant/connection proof).
+
+--- surefire per-test results ---
+<testcase name="statementOfAccount_placementApprovedBetweenTheReads_storedStatementCountsItOnce" time="0.521"
+<testcase name="snapshotRead_insideAWritingTransaction_ownTenantConnection_readOnlyRepeatableRead" time="0.018"
+<testcase name="rule5415Report_depositCommittedBetweenThePositionAndTheLines_listAgreesWithItself" time="0.123"
+<testcase name="clientTrustStatement_placementApprovedBetweenTheReads_storedDocumentCountsItOnce" time="1.023"
+<testcase name="clientTrustStatement_investmentReturnedDuringTheAccountChoice_choosesTheAccountHoldingIt" time="0.184"
+<testcase name="clientLedgerStatementReport_placementApprovedBetweenTheReads_countsItOnce" time="0.103"
+
+--- maven output (results / assertion lines) ---
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 16.76 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.TrustSnapshotReadsIntegrationTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS

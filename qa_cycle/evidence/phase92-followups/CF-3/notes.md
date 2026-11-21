@@ -100,27 +100,43 @@ and green).
 ## Tests added
 
 `backend/src/test/java/.../trustaccounting/reconciliation/AutoMatchLockOrderIntegrationTest.java`
-(6 tests). Each test uses the house `gatedOnRow` pattern from `CashbookCoverAtApprovalIntegrationTest`:
+(7 tests). Each test uses the house `gatedOnRow` pattern from `CashbookCoverAtApprovalIntegrationTest`:
 a gate connection outside the pool holds one row `FOR NO KEY UPDATE`, and blocking is observed via
-`pg_stat_activity` / `pg_blocking_pids`, with no sleeps.
+`pg_stat_activity` / `pg_blocking_pids`, with no sleeps. Since review round 1, the wait counts only
+backends in the gate's own wait tree: those waiting on the gate, directly or transitively through a
+waiter (a recursive `pg_blocking_pids` query). An unrelated waiter elsewhere in the cluster can no
+longer release the gate early. `Gated.secondBlocked` records whether the second operation was seen
+blocked.
 
 | Test | Gate | Red on base (`red-run.txt`) |
 |---|---|---|
 | `recordFromLine_duringAutoMatchOfTheSameLine_isNeverOverwritten` | the deposit row | 2 rows linked to the line (line AUTO_MATCHED over RECORDED) |
-| `manualMatchOfAnotherLine_duringAutoMatch_keepsBothCounts` | the auto-match row | `matched_count` 1, expected 2 (lost increment) |
+| `manualMatchOfAnotherLine_duringAutoMatch_keepsBothCounts` | the auto-match row | `matched_count` 1, expected 2 (lost increment). With the fix, the guard is the line lock (step 1): the manual match's line is one of the locked UNMATCHED lines. |
 | `manualMatchOnAnotherStatement_beforeAutoMatchTakesTheRow_isNotDoubleLinked` | the other statement | row re-linked to the auto-match line (double link) |
 | `twoAutoMatchesWantingTheSameRow_linkItOnce` | the row | 2 lines matched to 1 row |
 | `manualMatch_duringAutoMatchOfTheSameLineAndRow_noDeadlock` | the statement | `CannotAcquireLockException`: 40P01 deadlock on `trust_transactions` |
-| `twoAutoMatchesTakingTwoRowsInOppositeOrders_noDeadlock` | the first line | `CannotAcquireLockException`: 40P01 deadlock on `trust_transactions` |
+| `twoAutoMatchesTakingTwoRowsInOppositeOrders_noDeadlock` (round 0, gate on statement 1's first line) | the first line | `CannotAcquireLockException`: 40P01 deadlock on `trust_transactions` |
+| `twoAutoMatchesTakingTwoRowsInOppositeOrders_lockThemInIdOrder_noDeadlock` (round 1, replaces the above) | row `lo` (`lo` < `hi` by `UUID.compareTo`; statement 1 matches `lo` then `hi`, statement 2 `hi` then `lo`) | both auto-matches block in step 2 behind the gate (asserted). Pins `planned.sort`: with the sort removed it deadlocks (40P01, `mutation-sort.txt`). |
+| `unmatchOfAnAlreadyMatchedLine_duringAutoMatch_isNotOverwrittenByAStaleCount` (round 1, new) | the row auto-match plans for line Y | Line X was pre-matched manually, and `unmatch(X)` runs to completion without blocking (asserted). Pins the statement's locking refresh (step 3): counting from the stale copy gives `matched_count` 2, expected 1 (`mutation-refresh.txt`). |
 
 The class ends with `assertFirmBalanced` (`@AfterAll`).
+
+**Review round 1 (Opus review + CodeRabbit on #1826 @5cc7b28):** the round-0 crossed test gated on a
+line. With the fix, auto-match #1 then blocked in step 1 and #2 ran alone, so the test stayed green
+with `planned.sort` deleted. No test pinned the statement's locking refresh either. Both gaps are
+closed above with test-only changes. Each new guard was proven by a mutation run on the production
+code, which was restored with `git checkout` afterwards. Production code is unchanged from 5cc7b28.
 
 ## Evidence
 
 - `red-run.txt`: 6/6 FAIL on unmodified production code (base 409fdff7a), each with the predicted
   mechanism.
-- `green-run.txt`: 6/6 PASS with the fix. The class was then re-run 3 more times, all green.
-- `tier2-run.txt`: 24 classes, 297 testcases, 0 failures / errors / skipped. The set was the whole
+- `green-run.txt` (round 1): `AutoMatchLockOrderIntegrationTest` 7/7 PASS on 3 consecutive runs,
+  plus the whole reconciliation test package: 10 classes, 179 testcases, 0 failures / errors /
+  skipped. (Round 0: 6/6 PASS, then 3 more green runs.)
+- `mutation-sort.txt`: `planned.sort` removed → the crossed-rows test fails with 40P01 (`PessimisticLockException`, deadlock on `trust_transactions`).
+- `mutation-refresh.txt`: the statement's locking refresh removed → the stale-count test fails with `matched_count` 2, expected 1.
+- `tier2-run.txt` (round 0, at 5cc7b28): 24 classes, 297 testcases, 0 failures / errors / skipped. The set was the whole
   `reconciliation` test tree (including `parser`), every test class using the changed code
   (`TrustWireContractTest`, `TrustIntegrityServiceIntegrationTest`, `TrustMonthlyListIntegrationTest`,
   `TrustPositionAsAtIntegrationTest`, `TrustInterestMemoIntegrationTest`,
@@ -129,4 +145,5 @@ The class ends with `assertFirmBalanced` (`@AfterAll`).
   (`TrustInvestmentWithdrawReverseRaceIntegrationTest`, `CashbookCoverAtApprovalIntegrationTest`), and
   the ArchUnit guards (`TrustPostingRulesTest`, `LayerDependencyRulesTest`,
   `MatterScopedPublisherGuardTest`, `TestConventionsTest`).
-- Full `./mvnw verify`: **not run by the builder** (the orchestrator runs it).
+- Full `./mvnw verify`: run by the orchestrator at 5cc7b28 (green, 7 445 testcases; not re-run by the
+  builder after the round-1 test-only changes).

@@ -1,0 +1,19 @@
+# CF-3 mutation run (review fix 1), 2026-11-21: TrustReconciliationService line 'planned.sort(Comparator.comparing(match -> match.transaction().getId()));' REMOVED, only twoAutoMatchesTakingTwoRowsInOppositeOrders_lockThemInIdOrder_noDeadlock run. Expected RED (40P01). Production file restored with git checkout afterwards (planned.sort present again).
+# command: cd backend && ./mvnw -q test -Dtest=<classes>
+
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 16.08 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.AutoMatchLockOrderIntegrationTest
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.AutoMatchLockOrderIntegrationTest.twoAutoMatchesTakingTwoRowsInOppositeOrders_lockThemInIdOrder_noDeadlock -- Time elapsed: 1.486 s <<< FAILURE!
+[ERROR]   AutoMatchLockOrderIntegrationTest.twoAutoMatchesTakingTwoRowsInOppositeOrders_lockThemInIdOrder_noDeadlock:341 [second auto-match (no 40P01)]
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0
+
+# per-test outcome (surefire XML)
+== FAIL AutoMatchLockOrderIntegrationTest.twoAutoMatchesTakingTwoRowsInOppositeOrders_lockThemInIdOrder_noDeadlock (1.486 s)
+   [second auto-match (no 40P01)] 
+   expected: 
+     null
+    but was: 
+     jakarta.persistence.PessimisticLockException: JDBC exception executing SQL [ERROR: deadlock detected
+       Detail: Process 62367 waits for ShareLock on transaction 829; blocked by process 62312.
+     Process 62312 waits for ShareLock on transaction 830; blocked by process 62367.
+       Hint: See server log for query details.
+       Where: while locking tuple (0,2) in relation "trust_transactions"] [select tt1_0.id,tt1_0.amount,tt1_0.approved_at,tt1_0.approved_by,tt1_0.bank_statement_line_id,tt1_0.cashbook_effect,tt1_0.charge_recoverable,tt1_0.charge_vat_amount,tt1_0.counterparty_customer_id,tt1_0.created_at,tt1_0.creditor_account_id,tt1_0.c

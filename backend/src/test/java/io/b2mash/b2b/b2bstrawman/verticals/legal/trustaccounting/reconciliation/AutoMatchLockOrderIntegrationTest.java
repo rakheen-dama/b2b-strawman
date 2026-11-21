@@ -152,7 +152,10 @@ class AutoMatchLockOrderIntegrationTest {
    * A manual match of a second line of the statement (to a row outside auto-match's window) while
    * auto-match is matching the first. RED on main: auto-match wrote {@code matched_count =
    * alreadyMatched + autoMatched} from its stale read, losing the manual match's increment (1, not
-   * 2). Now the count is incremented on the statement row locked last.
+   * 2). Now the manual match's line is one of the UNMATCHED lines auto-match locks first (step 1),
+   * so the manual match waits behind the whole auto-match and then counts from the committed value
+   * — this test is guarded by the line lock. The statement's locking re-read (step 3) is pinned by
+   * {@link #unmatchOfAnAlreadyMatchedLine_duringAutoMatch_isNotOverwrittenByAStaleCount}.
    */
   @Test
   void manualMatchOfAnotherLine_duringAutoMatch_keepsBothCounts() throws Exception {
@@ -290,63 +293,131 @@ class AutoMatchLockOrderIntegrationTest {
 
   /**
    * Two auto-matches of two statements of one account whose lines take the same two rows in
-   * opposite orders (statement 1: A then B; statement 2: B then A). The first is gated on its first
-   * line. RED on main: the first held A and waited on its line; the second took B and waited on A;
-   * released, the first then wanted B — 40P01. Now every auto-match locks its own lines first and
-   * its rows in id order, so the two never wait on each other in a cycle.
+   * opposite match orders: statement 1 matches {@code lo} then {@code hi}, statement 2 {@code hi}
+   * then {@code lo} ({@code lo} < {@code hi} in the order auto-match sorts its planned rows by,
+   * {@code UUID.compareTo}). The gate holds row {@code lo}, so both auto-matches get past their own
+   * (disjoint) line locks and block in step 2, behind the gate. Released, the first takes {@code
+   * lo} then {@code hi}; the second, also locking in id order, waits on {@code lo} holding nothing
+   * auto-match #1 needs, then finds both rows taken and leaves its lines unmatched. Without the
+   * id-order sort the second would take {@code hi} (its first match) and then wait on {@code lo},
+   * while the first, released, waits on {@code hi} — 40P01 ({@code mutation-sort.txt}). RED on main
+   * (rows locked in match order, gate on a line then): 40P01.
    */
   @Test
-  void twoAutoMatchesTakingTwoRowsInOppositeOrders_noDeadlock() throws Exception {
+  void twoAutoMatchesTakingTwoRowsInOppositeOrders_lockThemInIdOrder_noDeadlock() throws Exception {
     var account = books.freshAccount(false);
     var client = books.newClient("crossed auto-matches");
     var rowA = deposit(account, client, "110.00", "CF3-CR-A", LocalDate.of(2026, 3, 1));
     var rowB = deposit(account, client, "220.00", "CF3-CR-B", LocalDate.of(2026, 3, 1));
+    boolean aIsLo = rowA.compareTo(rowB) < 0;
+    var lo = aIsLo ? rowA : rowB;
+    var hi = aIsLo ? rowB : rowA;
+    var loLine = aIsLo ? "Deposit A,110.00,%s,CF3-CR-A" : "Deposit B,220.00,%s,CF3-CR-B";
+    var hiLine = aIsLo ? "Deposit B,220.00,%s,CF3-CR-B" : "Deposit A,110.00,%s,CF3-CR-A";
     var first =
         importStatement(
             account,
             "cf3-cross-1.csv",
-            "01/03/2026,Deposit A,110.00,110.00,CF3-CR-A",
-            "02/03/2026,Deposit B,220.00,330.00,CF3-CR-B");
+            "01/03/2026," + loLine.formatted("1000.00"),
+            "02/03/2026," + hiLine.formatted("2000.00"));
     var second =
         importStatement(
             account,
             "cf3-cross-2.csv",
-            "01/03/2026,Deposit B,220.00,220.00,CF3-CR-B",
-            "02/03/2026,Deposit A,110.00,330.00,CF3-CR-A");
+            "01/03/2026," + hiLine.formatted("1000.00"),
+            "02/03/2026," + loLine.formatted("2000.00"));
 
     var outcome =
         gatedOnRow(
-            "bank_statement_lines",
-            first.lines().getFirst().id(),
+            "trust_transactions",
+            lo,
             () -> reconciliationService.autoMatchStatement(first.id()),
             () -> reconciliationService.autoMatchStatement(second.id()));
 
-    assertThat(outcome.first()).as("first auto-match").isNull();
-    assertThat(outcome.second()).as("second auto-match").isNull();
-    assertThat(linesMatchedTo(rowA)).as("lines matched to A").isEqualTo(1L);
-    assertThat(linesMatchedTo(rowB)).as("lines matched to B").isEqualTo(1L);
+    assertThat(outcome.secondBlocked())
+        .as("the second auto-match blocked behind the gate as well")
+        .isTrue();
+    assertThat(outcome.first()).as("first auto-match (no 40P01)").isNull();
+    assertThat(outcome.second()).as("second auto-match (no 40P01)").isNull();
+    assertThat(linesMatchedTo(lo)).as("lines matched to lo").isEqualTo(1L);
+    assertThat(linesMatchedTo(hi)).as("lines matched to hi").isEqualTo(1L);
+    assertThat(bankLineOf(lo)).isEqualTo(first.lines().get(0).id());
+    assertThat(bankLineOf(hi)).isEqualTo(first.lines().get(1).id());
     assertMatchedCountAgreesWithLines(first.id());
     assertMatchedCountAgreesWithLines(second.id());
-    assertThat(matchedCount(first.id()) + matchedCount(second.id())).isEqualTo(2);
+    assertThat(matchedCount(first.id())).isEqualTo(2);
+    assertThat(matchedCount(second.id())).isZero();
+  }
+
+  // --- the statement is re-read under its lock ---------------------------------------------------
+
+  /**
+   * Line X of the statement is already matched (manually); auto-match then runs for line Y, gated
+   * on Y's row, so it has read the statement ({@code matched_count} 1) and blocks in step 2.
+   * Meanwhile X is unmatched to completion — it does not block: auto-match holds only the UNMATCHED
+   * lines (X is not one) and has not locked the statement yet — so the committed count drops to 0.
+   * Released, auto-match matches Y and must count from the statement as now committed (0 + 1), not
+   * from its stale copy (1 + 1 = 2, with only Y matched). Pins step 3's locking re-read ({@code
+   * mutation-refresh.txt}).
+   */
+  @Test
+  void unmatchOfAnAlreadyMatchedLine_duringAutoMatch_isNotOverwrittenByAStaleCount()
+      throws Exception {
+    var account = books.freshAccount(false);
+    var client = books.newClient("stale statement count");
+    var rowX = deposit(account, client, "150.00", "CF3-ST-X", LocalDate.of(2026, 3, 1));
+    var rowY = deposit(account, client, "175.00", "CF3-ST-Y", LocalDate.of(2026, 3, 2));
+    var statement =
+        importStatement(
+            account,
+            "cf3-stale.csv",
+            "01/03/2026,Deposit X,150.00,150.00,",
+            "02/03/2026,Deposit Y,175.00,325.00,CF3-ST-Y");
+    var lineX = statement.lines().get(0).id();
+    var lineY = statement.lines().get(1).id();
+    books.as(memberId, () -> reconciliationService.manualMatch(lineX, rowX));
+    assertThat(matchedCount(statement.id())).as("X matched before the run").isEqualTo(1);
+
+    var outcome =
+        gatedOnRow(
+            "trust_transactions",
+            rowY,
+            () -> reconciliationService.autoMatchStatement(statement.id()),
+            () -> reconciliationService.unmatch(lineX));
+
+    assertThat(outcome.secondBlocked()).as("the unmatch ran without blocking").isFalse();
+    assertThat(outcome.first()).as("auto-match").isNull();
+    assertThat(outcome.second()).as("unmatch").isNull();
+    assertThat(matchStatus(lineX)).isEqualTo("UNMATCHED");
+    assertThat(bankLineOf(rowX)).isNull();
+    assertThat(matchStatus(lineY)).isEqualTo("AUTO_MATCHED");
+    assertThat(bankLineOf(rowY)).isEqualTo(lineY);
+    assertMatchedCountAgreesWithLines(statement.id());
+    assertThat(matchedCount(statement.id())).isEqualTo(1);
   }
 
   // --- helpers -----------------------------------------------------------------------------------
 
-  /** Each side's failure (null = succeeded). */
-  private record Gated(Throwable first, Throwable second) {}
+  /**
+   * Each side's failure (null = succeeded), and whether the second was seen blocked behind the gate
+   * (false: it finished without blocking).
+   */
+  private record Gated(Throwable first, Throwable second, boolean secondBlocked) {}
 
   /**
    * Holds {@code table}'s row {@code id} {@code FOR NO KEY UPDATE} on a gate connection outside the
    * pool, starts {@code first} and waits until it is blocked by the gate, starts {@code second} and
-   * waits (bounded) until it is blocked or has finished — observed in {@code pg_stat_activity}, not
-   * a sleep — then releases the gate and joins both. A lock order that let one side hold a lock the
-   * other needs while waiting for one the other holds deadlocks here (Postgres aborts one, 40P01).
+   * waits (bounded) until it is blocked behind the gate too (on the gate itself, or on the first)
+   * or has finished — observed in {@code pg_stat_activity}, not a sleep — then releases the gate
+   * and joins both. A lock order that let one side hold a lock the other needs while waiting for
+   * one the other holds deadlocks here (Postgres aborts one, 40P01).
    */
   private Gated gatedOnRow(String table, UUID id, Runnable first, Runnable second)
       throws Exception {
     var firstError = new AtomicReference<Throwable>();
     var secondError = new AtomicReference<Throwable>();
     var secondFinished = new AtomicBoolean(false);
+    boolean secondBlocked;
     Thread firstThread = null;
     Thread secondThread = null;
     var pool = dataSource.unwrap(HikariDataSource.class);
@@ -368,10 +439,12 @@ class AutoMatchLockOrderIntegrationTest {
       }
       try {
         firstThread = Thread.ofPlatform().start(() -> capture(first, firstError, null));
-        assertThat(awaitBlocked(gatePid, null)).as("the first blocked on the gate").isTrue();
+        assertThat(awaitBlockedBehind(gatePid, 1, null))
+            .as("the first blocked on the gate")
+            .isTrue();
         secondThread =
             Thread.ofPlatform().start(() -> capture(second, secondError, secondFinished));
-        awaitBlocked(null, secondFinished);
+        secondBlocked = awaitBlockedBehind(gatePid, 2, secondFinished);
       } finally {
         gate.rollback();
       }
@@ -385,7 +458,7 @@ class AutoMatchLockOrderIntegrationTest {
         assertThat(secondThread.isAlive()).as("second finished").isFalse();
       }
     }
-    return new Gated(firstError.get(), secondError.get());
+    return new Gated(firstError.get(), secondError.get(), secondBlocked);
   }
 
   private void capture(Runnable action, AtomicReference<Throwable> error, AtomicBoolean done) {
@@ -401,20 +474,26 @@ class AutoMatchLockOrderIntegrationTest {
   }
 
   /**
-   * Waits (bounded, 30 s) until a backend is blocked — by {@code holderPid} when given, else a
-   * second one in all — (true), or {@code finished} is set (false).
+   * Waits (bounded, 30 s) until at least {@code expected} backends wait, directly or transitively,
+   * on the gate backend {@code gatePid} (true), or {@code finished} is set (false). Only this
+   * test's waiters are counted: a backend blocked by anything outside the gate's wait tree is not.
    */
-  private boolean awaitBlocked(Integer holderPid, AtomicBoolean finished) {
-    long expected = holderPid != null ? 1 : 2;
+  private boolean awaitBlockedBehind(int gatePid, long expected, AtomicBoolean finished) {
     long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(30);
     while (System.nanoTime() < deadline) {
       Long waiting =
           jdbc.queryForObject(
-              "SELECT count(*) FROM pg_stat_activity WHERE cardinality(pg_blocking_pids(pid)) > 0"
-                  + " AND (CAST(? AS int) IS NULL OR CAST(? AS int) = ANY(pg_blocking_pids(pid)))",
+              """
+              WITH RECURSIVE behind(pid) AS (
+                SELECT pid FROM pg_stat_activity WHERE ? = ANY(pg_blocking_pids(pid))
+                UNION
+                SELECT a.pid FROM pg_stat_activity a
+                  JOIN behind b ON b.pid = ANY(pg_blocking_pids(a.pid))
+              )
+              SELECT count(*) FROM behind
+              """,
               Long.class,
-              holderPid,
-              holderPid);
+              gatePid);
       if (waiting != null && waiting >= expected) {
         return true;
       }
@@ -423,7 +502,7 @@ class AutoMatchLockOrderIntegrationTest {
       }
       LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(10)); // poll interval
     }
-    throw new AssertionError("operation not blocked on a lock within 30 s");
+    throw new AssertionError("operation not blocked behind the gate within 30 s");
   }
 
   /** Refused as the sequential operation is: a 400 on the line's state, not a lock failure. */

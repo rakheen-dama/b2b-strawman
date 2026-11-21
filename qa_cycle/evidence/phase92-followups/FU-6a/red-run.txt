@@ -1,0 +1,24 @@
+FU-6a red run — the new tests on UNMODIFIED production code (base 5019e87b5), 2026-11-21
+Command: cd backend && ./mvnw test -Dtest='BankStatementImportErrorIntegrationTest,StatementLinePostingIntegrationTest'
+
+Expected red (reproduces F-647C):
+  - BankStatementImportErrorIntegrationTest.aLineDatedAfterToday_refusesTheWholeImport_andStoresNothing
+    (a CSV with lines dated tomorrow and tomorrow+3 imports 201)
+  - StatementLinePostingIntegrationTest.aLineDatedAfterToday_isRefused_forEveryClassification
+    (a stored line dated tomorrow records as FUND_INTEREST, 201)
+Green on main, as expected:
+  - aLineDatedToday_imports201, aLineDatedToday_isRecorded_andUnmatches (today boundaries)
+  - investmentInterest_fromALineDatedAfterToday_isRefused (the existing entry-date rule in
+    TrustInvestmentService already refuses section 86(4) interest from a future-dated line)
+
+Surefire output:
+[ERROR] Tests run: 4, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 23.77 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.BankStatementImportErrorIntegrationTest
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.BankStatementImportErrorIntegrationTest.aLineDatedAfterToday_refusesTheWholeImport_andStoresNothing -- Time elapsed: 0.039 s <<< FAILURE!
+java.lang.AssertionError: Status expected:<400> but was:<201>
+[ERROR] Tests run: 31, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 3.981 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.StatementLinePostingIntegrationTest
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.StatementLinePostingIntegrationTest.aLineDatedAfterToday_isRefused_forEveryClassification -- Time elapsed: 0.027 s <<< FAILURE!
+java.lang.AssertionError: Status expected:<400> but was:<201>
+[ERROR]   BankStatementImportErrorIntegrationTest.aLineDatedAfterToday_refusesTheWholeImport_andStoresNothing:183 Status expected:<400> but was:<201>
+[ERROR]   StatementLinePostingIntegrationTest.aLineDatedAfterToday_isRefused_forEveryClassification:598->assertRecordRefused:1292->moves:1242->lambda$moves$0:1245->lambda$moves$1:1250->lambda$assertRecordRefused$0:1297 Status expected:<400> but was:<201>
+[ERROR] Tests run: 35, Failures: 2, Errors: 0, Skipped: 0
+[INFO] BUILD FAILURE

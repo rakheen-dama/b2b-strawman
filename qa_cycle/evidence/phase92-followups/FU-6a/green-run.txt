@@ -1,0 +1,16 @@
+FU-6a green run — the same tests after the fix, 2026-11-21
+Command: cd backend && ./mvnw test -Dtest='BankStatementImportErrorIntegrationTest,StatementLinePostingIntegrationTest'
+
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 13.81 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.BankStatementImportErrorIntegrationTest
+[INFO] Tests run: 31, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.519 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.StatementLinePostingIntegrationTest
+[INFO] Tests run: 35, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+
+Formerly red, now green:
+  - BankStatementImportErrorIntegrationTest.aLineDatedAfterToday_refusesTheWholeImport_andStoresNothing
+    (400 "Cannot import bank statement" / "This statement has a line dated <tomorrow>, which is after
+    today. Import the statement once the bank has processed that line."; no statement, no stored file)
+  - StatementLinePostingIntegrationTest.aLineDatedAfterToday_isRefused_forEveryClassification
+    (400 "Cannot record statement line" / "This statement line is dated <tomorrow>, which is after
+    today. Record it on or after that date." for FUND_INTEREST, CHARGE_REFUND, UNIDENTIFIED_DEPOSIT,
+    FUND_SWEEP, BANK_CHARGE; nothing moves; the lines stay UNMATCHED; matched_count 0)

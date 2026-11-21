@@ -3,9 +3,11 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.template.VariableFormatter;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionType;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -29,6 +31,24 @@ public final class StatementLines {
     if (!"UNMATCHED".equals(line.getMatchStatus())) {
       throw new InvalidStateException(
           RECORD_TITLE, "This statement line is already matched, recorded or excluded");
+    }
+  }
+
+  /**
+   * A line dated after {@code today} ({@code LocalDate.now(clock)}, the SA business date) is not
+   * recorded (FU-6a, ruling F-647C), as a fee transfer or a reversal is never future-dated: its row
+   * would carry the line's date, so it could not be unmatched (the contra is never in the future)
+   * and the as-at-today cards would disagree with the running balances until that date. The import
+   * refuses such a line too; this guards lines stored before it did.
+   */
+  public static void requireNotAfterToday(BankStatementLine line, LocalDate today) {
+    var lineDate = line.getTransactionDate();
+    if (lineDate.isAfter(today)) {
+      throw new InvalidStateException(
+          RECORD_TITLE,
+          "This statement line is dated "
+              + VariableFormatter.formatDateText(lineDate)
+              + ", which is after today. Record it on or after that date.");
     }
   }
 

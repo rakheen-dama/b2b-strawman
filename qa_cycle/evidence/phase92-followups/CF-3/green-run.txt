@@ -1,0 +1,11 @@
+# CF-3 GREEN run: AutoMatchLockOrderIntegrationTest with the fix (lines then rows in id order then statement), 2026-11-21
+# command: cd backend && ./mvnw -q test -Dtest=<classes>
+
+
+# per-test outcome (surefire XML)
+== PASS AutoMatchLockOrderIntegrationTest.manualMatch_duringAutoMatchOfTheSameLineAndRow_noDeadlock (0.464 s)
+== PASS AutoMatchLockOrderIntegrationTest.manualMatchOfAnotherLine_duringAutoMatch_keepsBothCounts (0.116 s)
+== PASS AutoMatchLockOrderIntegrationTest.twoAutoMatchesWantingTheSameRow_linkItOnce (0.086 s)
+== PASS AutoMatchLockOrderIntegrationTest.manualMatchOnAnotherStatement_beforeAutoMatchTakesTheRow_isNotDoubleLinked (0.079 s)
+== PASS AutoMatchLockOrderIntegrationTest.twoAutoMatchesTakingTwoRowsInOppositeOrders_noDeadlock (0.09 s)
+== PASS AutoMatchLockOrderIntegrationTest.recordFromLine_duringAutoMatchOfTheSameLine_isNeverOverwritten (0.071 s)

@@ -1,0 +1,18 @@
+FU-5 green run - the fix applied on 8c611eb51905e6a3b05d178fa78f6c891e80b5b5 (uncommitted working tree at run time; committed on fix/phase92-fu5-reversal-cover-as-at)
+Command: cd backend && ./mvnw -q test -Dtest='BackDatedReversalCoverIntegrationTest' -Dsurefire.failIfNoSpecifiedTests=false
+Run: 2026-11-21T12:40:09Z
+Maven exit code: 0
+
+=== Surefire report ===
+-------------------------------------------------------------------------------
+Test set: io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.BackDatedReversalCoverIntegrationTest
+-------------------------------------------------------------------------------
+Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 15.52 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.BackDatedReversalCoverIntegrationTest
+
+=== Test cases (from the XML report) ===
+<testcase name="reversalDatedToday_isRefused_withTheUnchangedMessage_whenTheClientCannotCoverIt"
+<testcase name="reversalDatedToday_isApproved_whenTheClientCoversItToday"
+<testcase name="backDatedReversal_isApproved_whenCoveredOnEveryDateFromTheReversalDate"
+<testcase name="backDatedReversal_isRefused_whenTheClientWouldBeInDebitAsAtALaterDate"
+<testcase name="backDatedReversal_isRefused_whenTheMatterCellWouldBeInDebitAsAtALaterDate"
+<testcase name="backDatedReversal_isRefused_whenTheClientWouldBeInDebitAsAtTheReversalDate"

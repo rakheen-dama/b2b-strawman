@@ -1,0 +1,51 @@
+FU-5 red run - unmodified production code at 8c611eb51905e6a3b05d178fa78f6c891e80b5b5 (only the new test and the fixture overloads added)
+Command: cd backend && ./mvnw -q test -Dtest='BackDatedReversalCoverIntegrationTest' -Dsurefire.failIfNoSpecifiedTests=false
+Run: 2026-11-21T12:38Z
+
+Expected: the three back-dated refusal cases FAIL (the approval succeeds: 'Expecting code to raise a throwable'); the covered and dated-today controls pass.
+
+=== Maven output ===
+[ERROR] Tests run: 6, Failures: 3, Errors: 0, Skipped: 0, Time elapsed: 26.32 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.BackDatedReversalCoverIntegrationTest
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.BackDatedReversalCoverIntegrationTest.backDatedReversal_isRefused_whenTheClientWouldBeInDebitAsAtALaterDate -- Time elapsed: 0.117 s <<< FAILURE!
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.BackDatedReversalCoverIntegrationTest.backDatedReversal_isRefused_whenTheMatterCellWouldBeInDebitAsAtALaterDate -- Time elapsed: 0.134 s <<< FAILURE!
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.BackDatedReversalCoverIntegrationTest.backDatedReversal_isRefused_whenTheClientWouldBeInDebitAsAtTheReversalDate -- Time elapsed: 0.112 s <<< FAILURE!
+[ERROR]   BackDatedReversalCoverIntegrationTest.backDatedReversal_isRefused_whenTheClientWouldBeInDebitAsAtALaterDate:113 
+[ERROR]   BackDatedReversalCoverIntegrationTest.backDatedReversal_isRefused_whenTheClientWouldBeInDebitAsAtTheReversalDate:141 
+[ERROR]   BackDatedReversalCoverIntegrationTest.backDatedReversal_isRefused_whenTheMatterCellWouldBeInDebitAsAtALaterDate:169->lambda$backDatedReversal_isRefused_whenTheMatterCellWouldBeInDebitAsAtALaterDate$0:172 
+[ERROR] Tests run: 6, Failures: 3, Errors: 0, Skipped: 0
+
+=== Surefire report ===
+-------------------------------------------------------------------------------
+Test set: io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.BackDatedReversalCoverIntegrationTest
+-------------------------------------------------------------------------------
+Tests run: 6, Failures: 3, Errors: 0, Skipped: 0, Time elapsed: 26.32 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.BackDatedReversalCoverIntegrationTest
+io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.BackDatedReversalCoverIntegrationTest.backDatedReversal_isRefused_whenTheClientWouldBeInDebitAsAtALaterDate -- Time elapsed: 0.117 s <<< FAILURE!
+java.lang.AssertionError: 
+
+Expecting code to raise a throwable.
+	at io.b2mash.b2b.b2bstrawman.testutil.TrustBooksFixture$Tenant.lambda$assertApprovalRefused$1(TrustBooksFixture.java:732)
+	at io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness.assertMoves(TrustBooksHarness.java:753)
+	at io.b2mash.b2b.b2bstrawman.testutil.TrustBooksFixture$Tenant.lambda$assertApprovalRefused$0(TrustBooksFixture.java:728)
+	at io.b2mash.b2b.b2bstrawman.testutil.TrustBooksFixture$Tenant.as(TrustBooksFixture.java:171)
+	at io.b2mash.b2b.b2bstrawman.testutil.TrustBooksFixture$Tenant.assertApprovalRefused(TrustBooksFixture.java:725)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.BackDatedReversalCoverIntegrationTest.backDatedReversal_isRefused_whenTheClientWouldBeInDebitAsAtALaterDate(BackDatedReversalCoverIntegrationTest.java:113)
+
+io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.BackDatedReversalCoverIntegrationTest.backDatedReversal_isRefused_whenTheMatterCellWouldBeInDebitAsAtALaterDate -- Time elapsed: 0.134 s <<< FAILURE!
+java.lang.AssertionError: 
+
+Expecting code to raise a throwable.
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.BackDatedReversalCoverIntegrationTest.lambda$backDatedReversal_isRefused_whenTheMatterCellWouldBeInDebitAsAtALaterDate$0(BackDatedReversalCoverIntegrationTest.java:172)
+	at io.b2mash.b2b.b2bstrawman.testutil.TrustBooksFixture$Tenant.as(TrustBooksFixture.java:171)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.BackDatedReversalCoverIntegrationTest.backDatedReversal_isRefused_whenTheMatterCellWouldBeInDebitAsAtALaterDate(BackDatedReversalCoverIntegrationTest.java:169)
+
+io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.BackDatedReversalCoverIntegrationTest.backDatedReversal_isRefused_whenTheClientWouldBeInDebitAsAtTheReversalDate -- Time elapsed: 0.112 s <<< FAILURE!
+java.lang.AssertionError: 
+
+Expecting code to raise a throwable.
+	at io.b2mash.b2b.b2bstrawman.testutil.TrustBooksFixture$Tenant.lambda$assertApprovalRefused$1(TrustBooksFixture.java:732)
+	at io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness.assertMoves(TrustBooksHarness.java:753)
+	at io.b2mash.b2b.b2bstrawman.testutil.TrustBooksFixture$Tenant.lambda$assertApprovalRefused$0(TrustBooksFixture.java:728)
+	at io.b2mash.b2b.b2bstrawman.testutil.TrustBooksFixture$Tenant.as(TrustBooksFixture.java:171)
+	at io.b2mash.b2b.b2bstrawman.testutil.TrustBooksFixture$Tenant.assertApprovalRefused(TrustBooksFixture.java:725)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.BackDatedReversalCoverIntegrationTest.backDatedReversal_isRefused_whenTheClientWouldBeInDebitAsAtTheReversalDate(BackDatedReversalCoverIntegrationTest.java:141)
+

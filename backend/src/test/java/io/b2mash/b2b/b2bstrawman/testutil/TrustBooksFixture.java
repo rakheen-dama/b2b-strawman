@@ -264,10 +264,29 @@ public final class TrustBooksFixture {
       return new Client(client, matter, name);
     }
 
+    /** The same client on a second, newly opened trust matter of its own (FU-5). */
+    public Client onNewMatter(Client client) {
+      var n = sequence.incrementAndGet();
+      var matter =
+          TestTrustMatterHelper.openClientMatter(
+              schema,
+              transactionTemplate,
+              projectRepository,
+              client.id(),
+              "Trust books matter " + n,
+              memberId);
+      return new Client(client.id(), matter, client.name());
+    }
+
     // --- posting paths (each asserted through TrustBooksHarness.assertMoves) ----------------
 
     /** Path 1: a deposit posts immediately (RECORDED) and moves cashbook and client together. */
     public UUID deposit(UUID account, Client client, String amount) {
+      return deposit(account, client, amount, POSTING_DATE);
+    }
+
+    /** As {@link #deposit(UUID, Client, String)}, dated {@code transactionDate} (FU-5). */
+    public UUID deposit(UUID account, Client client, String amount, LocalDate transactionDate) {
       var id = new UUID[1];
       as(
           memberId,
@@ -286,7 +305,7 @@ public final class TrustBooksFixture {
                                       new BigDecimal(amount),
                                       reference("DEP"),
                                       "Deposit",
-                                      POSTING_DATE))
+                                      transactionDate))
                               .id()));
       assertThat(statusOf(id[0])).isEqualTo("RECORDED");
       return id[0];

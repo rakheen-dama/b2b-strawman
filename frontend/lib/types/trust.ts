@@ -287,7 +287,13 @@ export type ClientLedgerResponse = ClientLedgerCard;
 
 export type BankStatementFormat = "CSV" | "OFX";
 
-export type BankStatementStatus = "IMPORTED" | "MATCHING_IN_PROGRESS" | "MATCHED" | "RECONCILED";
+// FU-6b: RETIRED — replaced by a re-import or discarded; kept (file and lines) for the audit trail
+export type BankStatementStatus =
+  | "IMPORTED"
+  | "MATCHING_IN_PROGRESS"
+  | "MATCHED"
+  | "RECONCILED"
+  | "RETIRED";
 
 export type BankStatementLineMatchStatus =
   | "UNMATCHED"
@@ -436,6 +442,11 @@ export interface BankStatementResponse {
   importedBy: string;
   createdAt: string;
   updatedAt: string;
+  // FU-6b: set on a RETIRED statement only (replacedByStatementId on a replace only)
+  retiredAt: string | null;
+  retiredBy: string | null;
+  retiredReason: string | null;
+  replacedByStatementId: string | null;
   lines: BankStatementLineResponse[];
 }
 

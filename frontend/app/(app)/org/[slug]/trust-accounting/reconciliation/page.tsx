@@ -8,10 +8,13 @@ import { Badge } from "@b2mash/ui/badge";
 import { Button } from "@b2mash/ui/button";
 import { fetchTrustAccounts } from "@/app/(app)/org/[slug]/trust-accounting/actions";
 import {
+  fetchBankStatements,
   fetchReconciliations,
   type ReconciliationPage,
 } from "@/app/(app)/org/[slug]/trust-accounting/reconciliation/actions";
+import { DiscardStatementDialog } from "@/components/trust/DiscardStatementDialog";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
+import type { BankStatementResponse } from "@/lib/types";
 
 // ── Page ────────────────────────────��─────────────────────────────
 
@@ -77,6 +80,19 @@ export default async function ReconciliationListPage({
       });
     } catch {
       fetchError = true;
+    }
+  }
+
+  // FU-6b: the account's imported statements not yet reconciled (replaced and discarded statements
+  // are retired and not listed). One left behind by a refused wizard can be discarded here.
+  let openStatements: BankStatementResponse[] | null = null;
+  let statementsFetchError = false;
+  if (accountId) {
+    try {
+      const statements = await fetchBankStatements(accountId);
+      openStatements = statements.filter((s) => s.status !== "RECONCILED");
+    } catch {
+      statementsFetchError = true;
     }
   }
 
@@ -289,6 +305,81 @@ export default async function ReconciliationListPage({
                 )}
               </>
             )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* FU-6b: imported statements not yet reconciled, with Discard */}
+      {statementsFetchError && (
+        <Card>
+          <CardContent className="py-8 text-center">
+            <p className="text-sm text-red-600 dark:text-red-400">
+              Failed to load bank statements. Please try again.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {openStatements && openStatements.length > 0 && (
+        <Card data-testid="open-statements">
+          <CardHeader>
+            <CardTitle>Statements Not Yet Reconciled</CardTitle>
+            <CardDescription>
+              Imported bank statements no reconciliation has completed. Discard one uploaded in
+              error; to correct one, upload its replacement in a new reconciliation.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm" data-testid="open-statements-table">
+                <thead>
+                  <tr className="border-b border-slate-200 dark:border-slate-700">
+                    <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
+                      File
+                    </th>
+                    <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
+                      Period
+                    </th>
+                    <th className="pr-4 pb-3 text-right font-medium text-slate-500 dark:text-slate-400">
+                      Lines
+                    </th>
+                    <th className="pr-4 pb-3 text-right font-medium text-slate-500 dark:text-slate-400">
+                      Matched
+                    </th>
+                    <th className="pb-3 text-right font-medium text-slate-500 dark:text-slate-400">
+                      <span className="sr-only">Actions</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {openStatements.map((stmt) => (
+                    <tr
+                      key={stmt.id}
+                      className="border-b border-slate-100 last:border-0 dark:border-slate-800"
+                      data-testid={`open-statement-row-${stmt.id}`}
+                    >
+                      <td className="py-3 pr-4 font-medium text-slate-950 dark:text-slate-50">
+                        {stmt.fileName}
+                      </td>
+                      <td className="py-3 pr-4 text-slate-700 dark:text-slate-300">
+                        {formatLocalDate(stmt.periodStart)} – {formatLocalDate(stmt.periodEnd)}
+                      </td>
+                      <td className="py-3 pr-4 text-right font-mono text-slate-700 tabular-nums dark:text-slate-300">
+                        {stmt.lineCount}
+                      </td>
+                      <td className="py-3 pr-4 text-right font-mono text-slate-700 tabular-nums dark:text-slate-300">
+                        {stmt.matchedCount}
+                      </td>
+                      <td className="py-3 text-right">
+                        {canManageTrust && (
+                          <DiscardStatementDialog statementId={stmt.id} fileName={stmt.fileName} />
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </CardContent>
         </Card>
       )}

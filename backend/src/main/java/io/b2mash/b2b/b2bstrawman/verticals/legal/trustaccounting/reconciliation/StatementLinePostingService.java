@@ -185,6 +185,7 @@ public class StatementLinePostingService {
             .findByIdForUpdate(line.getBankStatementId())
             .orElseThrow(
                 () -> new ResourceNotFoundException("BankStatement", line.getBankStatementId()));
+    StatementLines.requireNotRetired(statement);
     var account =
         trustAccountRepository
             .findById(statement.getTrustAccountId())

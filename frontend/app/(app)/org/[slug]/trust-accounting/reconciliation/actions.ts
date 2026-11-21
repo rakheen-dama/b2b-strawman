@@ -71,10 +71,30 @@ export async function fetchMonthlyList(listId: string): Promise<MonthlyList> {
 
 const MAX_STATEMENT_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
 
+/**
+ * A refused import whose statement ends on the same date as one already imported for the account
+ * (FU-6b, ruling F-646C-1: 409 `bank_statement.duplicate_end_date`). The upload offers to replace
+ * the existing statement and re-submits with `replacesStatementId`.
+ */
+export interface DuplicateStatement {
+  existingStatementId: string;
+  existingFileName: string;
+}
+
+export interface UploadStatementResult {
+  success: boolean;
+  data?: BankStatementResponse;
+  error?: string;
+  duplicate?: DuplicateStatement;
+}
+
+// FU-6b: `replacesStatementId` names the statement this upload replaces (a corrected re-upload, or
+// the confirmed "Replace existing statement"); the backend retires it in the same transaction.
 export async function uploadBankStatement(
   accountId: string,
-  file: File
-): Promise<{ success: boolean; data?: BankStatementResponse; error?: string }> {
+  file: File,
+  replacesStatementId?: string
+): Promise<UploadStatementResult> {
   // Server-side validation — the UI `accept` attribute is not a security boundary
   if (file.type && file.type !== "text/csv" && file.type !== "application/vnd.ms-excel") {
     return { success: false, error: "Only CSV files are accepted" };
@@ -94,6 +114,9 @@ export async function uploadBankStatement(
 
     const formData = new FormData();
     formData.append("file", file);
+    if (replacesStatementId) {
+      formData.append("replacesStatementId", replacesStatementId);
+    }
 
     const response = await fetch(`${API_BASE}/api/trust-accounts/${accountId}/bank-statements`, {
       method: "POST",
@@ -107,13 +130,23 @@ export async function uploadBankStatement(
 
     if (!response.ok) {
       let message = response.statusText;
+      let duplicate: DuplicateStatement | undefined;
       try {
         const detail = await response.json();
         message = detail?.detail || detail?.title || message;
+        if (
+          detail?.code === "bank_statement.duplicate_end_date" &&
+          typeof detail.existingStatementId === "string"
+        ) {
+          duplicate = {
+            existingStatementId: detail.existingStatementId,
+            existingFileName: String(detail.existingFileName ?? ""),
+          };
+        }
       } catch {
         // ignore
       }
-      return { success: false, error: message };
+      return { success: false, error: message, ...(duplicate ? { duplicate } : {}) };
     }
 
     const data = (await response.json()) as BankStatementResponse;
@@ -133,6 +166,30 @@ export async function fetchBankStatements(accountId: string): Promise<BankStatem
 
 export async function fetchBankStatement(statementId: string): Promise<BankStatementResponse> {
   return api.get<BankStatementResponse>(`/api/bank-statements/${statementId}`);
+}
+
+/**
+ * FU-6b: discards an imported statement (retired without a replacement — the statement left behind
+ * when the wizard refused it, or one uploaded in error). It is kept for the audit trail. The error
+ * is the server's ProblemDetail detail (a recorded line, a reconciliation that uses it).
+ */
+export async function discardBankStatement(
+  statementId: string,
+  reason: string
+): Promise<{ success: boolean; data?: BankStatementResponse; error?: string }> {
+  try {
+    const data = await api.post<BankStatementResponse>(
+      `/api/bank-statements/${statementId}/discard`,
+      { reason }
+    );
+    revalidatePath("/", "layout");
+    return { success: true, data };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to discard the statement",
+    };
+  }
 }
 
 // ── Matching actions ──────────────────────────────────────────────

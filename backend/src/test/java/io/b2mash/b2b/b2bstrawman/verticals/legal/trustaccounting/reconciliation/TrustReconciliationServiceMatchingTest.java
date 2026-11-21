@@ -410,7 +410,7 @@ class TrustReconciliationServiceMatchingTest {
             """
             FNB Trust Account Statement - Account 62012345678
             Date,Description,Amount,Balance,Reference
-            22/03/2026,Deposit received,9999.99,233736.41,NO-MATCH-REF
+            29/03/2026,Deposit received,9999.99,233736.41,NO-MATCH-REF
             """);
 
     var result =
@@ -435,7 +435,7 @@ class TrustReconciliationServiceMatchingTest {
   @Test
   void autoMatch_signMismatch_excludedFromCandidates() throws Exception {
     // Create a PAYMENT (debit type) -- positive bank line should NOT match it
-    createPaymentApproved("PAY-SIGN-MISMATCH", "5000.00", "2026-03-05");
+    createPaymentApproved("PAY-SIGN-MISMATCH", "5000.00", "2026-03-06");
 
     // Import statement with POSITIVE amount (credit) -- should NOT match the payment
     String statementId =
@@ -443,7 +443,7 @@ class TrustReconciliationServiceMatchingTest {
             """
             FNB Trust Account Statement - Account 62012345678
             Date,Description,Amount,Balance,Reference
-            05/03/2026,Credit received,5000.00,238736.41,PAY-SIGN-MISMATCH
+            06/03/2026,Credit received,5000.00,238736.41,PAY-SIGN-MISMATCH
             """);
 
     var result =
@@ -603,14 +603,14 @@ class TrustReconciliationServiceMatchingTest {
   @Test
   void unmatch_clearsBothSidesAndDecrementsCount() throws Exception {
     // Create and manually match first
-    String depositId = createDeposit("REF-UNMATCH-001", "3333.33", "2026-03-19");
+    String depositId = createDeposit("REF-UNMATCH-001", "3333.33", "2026-03-24");
 
     String statementId =
         importStatement(
             """
             FNB Trust Account Statement - Account 62012345678
             Date,Description,Amount,Balance,Reference
-            19/03/2026,Deposit,3333.33,249847.51,UNMATCH-REF
+            24/03/2026,Deposit,3333.33,249847.51,UNMATCH-REF
             """);
 
     UUID lineId =
@@ -695,7 +695,7 @@ class TrustReconciliationServiceMatchingTest {
             """
             FNB Trust Account Statement - Account 62012345678
             Date,Description,Amount,Balance,Reference
-            22/03/2026,Deposit,11111.11,260908.62,SKIP-MATCH-REF
+            26/03/2026,Deposit,11111.11,260908.62,SKIP-MATCH-REF
             """);
 
     UUID lineId1 =

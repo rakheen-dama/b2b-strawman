@@ -127,6 +127,13 @@ export const reversalReasonSchema = z.object({
 
 export type ReversalReasonFormData = z.infer<typeof reversalReasonSchema>;
 
+// FU-6b: why an imported bank statement is discarded (kept on the retired statement, 500 max)
+export const discardStatementSchema = z.object({
+  reason: z.string().trim().min(1, "Reason is required").max(500),
+});
+
+export type DiscardStatementFormData = z.infer<typeof discardStatementSchema>;
+
 /**
  * Allocate an unidentified deposit to a client and matter (647D, §16.3.6). The allocation date —
  * the day the firm identified the owner — is optional (blank = today); the server is the authority

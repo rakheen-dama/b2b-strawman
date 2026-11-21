@@ -406,9 +406,11 @@ class TrustReconciliationDraftIntegrationTest {
         importStatement(
             account, "draft-stale-a.csv", "01/03/2026,Deposit received,1000.00,1000.00,TRD-SA");
     var draft = createAndCalculate(account, MARCH_END, a.id());
+    // A day later than A: two statements of one account may not end on the same date (FU-6b).
+    // The refusal below comes from the expected-statement check, before any period rule.
     var b =
         importStatement(
-            account, "draft-stale-b.csv", "01/03/2026,Deposit received,1000.00,1000.00,TRD-SA");
+            account, "draft-stale-b.csv", "02/03/2026,Deposit received,1000.00,1000.00,TRD-SA");
     match(b, 0, deposit);
     var repointed = create(account, MARCH_END, b.id()); // the other tab's continuation
     assertThat(repointed.id()).isEqualTo(draft.id());
@@ -598,7 +600,12 @@ class TrustReconciliationDraftIntegrationTest {
             account,
             label + "-b.csv",
             "01/03/2026,Deposit received,1000.00,1000.00,TRD-RA",
-            "01/03/2026,Bank charge,-10.00,990.00,TRD-RB");
+            "02/03/2026,Bank charge,-10.00,990.00,TRD-RB");
+    // FU-6b refuses a second statement ending on A's date at import, so B is imported a day later
+    // and then moved onto A's date — a same-day pair imported before FU-6b, which the database can
+    // still hold. A then still fits the period end, so only the lock stands between the stale call
+    // and A.
+    legacySameDay(b.id(), LocalDate.of(2026, 3, 1));
 
     var continuationDone = new CountDownLatch(1);
     var releaseContinuation = new CountDownLatch(1);
@@ -805,6 +812,22 @@ class TrustReconciliationDraftIntegrationTest {
         Long.class,
         account,
         periodEnd);
+  }
+
+  /**
+   * Moves every line of {@code statementId} onto {@code date} (and its period end): a same-end-date
+   * pair imported before FU-6b refused one at import (ruling F-646C-1).
+   */
+  private void legacySameDay(UUID statementId, LocalDate date) {
+    jdbc.update(
+        "UPDATE \"%s\".bank_statement_lines SET transaction_date = ? WHERE bank_statement_id = ?"
+            .formatted(books.schema()),
+        date,
+        statementId);
+    jdbc.update(
+        "UPDATE \"%s\".bank_statements SET period_end = ? WHERE id = ?".formatted(books.schema()),
+        date,
+        statementId);
   }
 
   /** Imports an FNB statement through the production import (as the maker). */

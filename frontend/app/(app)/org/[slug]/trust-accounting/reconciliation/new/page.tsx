@@ -737,9 +737,12 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
       {/* Step 2: Upload Statement */}
       {currentStep === 2 && (
         <div className="space-y-4">
+          {/* FU-6b: a re-upload replaces the statement this wizard already uploaded (its matches
+              are released and a draft on it moves to the new statement) — never a second copy. */}
           <BankStatementUpload
             accountId={selectedAccountId}
             onUploadComplete={handleUploadComplete}
+            replacesStatementId={statement?.id}
             uploadAction={uploadBankStatement}
           />
           <div className="flex justify-between">

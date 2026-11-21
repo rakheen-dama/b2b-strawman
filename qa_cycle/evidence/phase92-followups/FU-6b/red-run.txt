@@ -1,0 +1,30 @@
+# FU-6b red run — unmodified production code at 2fde9a1918eaff2a3608623a01a828d01e8d97fb
+# (only the new test class BankStatementReplaceDiscardIntegrationTest added)
+# cmd: cd backend && ./mvnw test -Dtest='BankStatementReplaceDiscardIntegrationTest'
+# date: 2026-11-21
+#
+# (a) sameEndDateSecondImport_isRefused — a second import of the same account ending on 31 March
+#     (intraday + full-day export) is ACCEPTED (201), so both pass the period-fit rule (F-646C-1).
+# (b) replace_releasesTheFirstStatementsMatches_forTheNewStatement — after auto-matching A and
+#     re-uploading B (the replacesStatementId param is ignored: no replace exists), B's auto-match
+#     finds 0 lines: the deposit stays linked to A's line (stranded, F-652C-1).
+# (c) discard_ofAStep4Leftover_stopsItCounting — PASSES its pre-discard assertions on unmodified
+#     code: the step-4 leftover IS a subject of UNRESOLVED_STATEMENT_LINES, and its 10 March line
+#     DOES make createReconciliation(31 March, the March statement) refuse "Statement does not fit
+#     the period end". It then fails because there is no way to discard it (404, no endpoint).
+
+[ERROR] Tests run: 3, Failures: 3, Errors: 0, Skipped: 0, Time elapsed: 14.08 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.BankStatementReplaceDiscardIntegrationTest
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.BankStatementReplaceDiscardIntegrationTest.discard_ofAStep4Leftover_stopsItCounting -- Time elapsed: 0.486 s <<< FAILURE!
+java.lang.AssertionError: Status expected:<200> but was:<404>
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.BankStatementReplaceDiscardIntegrationTest.replace_releasesTheFirstStatementsMatches_forTheNewStatement -- Time elapsed: 0.324 s <<< FAILURE!
+expected: 1
+ but was: 0
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.BankStatementReplaceDiscardIntegrationTest.sameEndDateSecondImport_isRefused -- Time elapsed: 0.029 s <<< FAILURE!
+java.lang.AssertionError: Status expected:<409> but was:<201>
+[ERROR] Failures:
+[ERROR]   BankStatementReplaceDiscardIntegrationTest.discard_ofAStep4Leftover_stopsItCounting:193 Status expected:<200> but was:<404>
+[ERROR]   BankStatementReplaceDiscardIntegrationTest.replace_releasesTheFirstStatementsMatches_forTheNewStatement:145 [B's auto-match finds the released deposit]
+expected: 1
+ but was: 0
+[ERROR]   BankStatementReplaceDiscardIntegrationTest.sameEndDateSecondImport_isRefused:105 Status expected:<409> but was:<201>
+[ERROR] Tests run: 3, Failures: 3, Errors: 0, Skipped: 0

@@ -32,6 +32,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -58,6 +59,7 @@ class TrustReconciliationServiceReconciliationTest {
   @Autowired private BankStatementRepository bankStatementRepository;
 
   @Autowired private Clock clock;
+  @Autowired private JdbcTemplate jdbc;
 
   private String tenantSchema;
   private String customerId;
@@ -581,7 +583,10 @@ class TrustReconciliationServiceReconciliationTest {
 
   /**
    * Rule 3 boundary — another statement's line dated on this statement's last line date is not in
-   * the gap (the gap starts after the last line), so it does not refuse.
+   * the gap (the gap starts after the last line), so it does not refuse. Since FU-6b the import
+   * refuses a second statement ending on the same date (ruling F-646C-1), so the other statement is
+   * imported a day later and then moved onto that date: a same-day pair imported before FU-6b,
+   * which the database can still hold and rule 3 still reads.
    */
   @Test
   void createReconciliation_acceptsAnotherStatementLineOnThisStatementsLastLineDate()
@@ -596,14 +601,26 @@ class TrustReconciliationServiceReconciliationTest {
             Date,Description,Amount,Balance,Reference
             05/03/2026,Deposit received,1000.00,1000.00,RULE3-003
             """);
-    importStatementForAccount(
-        accountId,
-        "rule3-same-day.csv",
-        """
-        FNB Trust Account Statement - Account 62100000000
-        Date,Description,Amount,Balance,Reference
-        05/03/2026,Deposit received,500.00,1500.00,RULE3-004
-        """);
+    var sameDayId =
+        importStatementForAccount(
+            accountId,
+            "rule3-same-day.csv",
+            """
+            FNB Trust Account Statement - Account 62100000000
+            Date,Description,Amount,Balance,Reference
+            06/03/2026,Deposit received,500.00,1500.00,RULE3-004
+            """);
+    jdbc.update(
+        "UPDATE \"%s\".bank_statement_lines SET transaction_date = ? WHERE bank_statement_id = ?"
+            .formatted(tenantSchema),
+        LocalDate.of(2026, 3, 5),
+        UUID.fromString(sameDayId));
+    jdbc.update(
+        "UPDATE \"%s\".bank_statements SET period_start = ?, period_end = ? WHERE id = ?"
+            .formatted(tenantSchema),
+        LocalDate.of(2026, 3, 5),
+        LocalDate.of(2026, 3, 5),
+        UUID.fromString(sameDayId));
 
     var created = create(accountId, LocalDate.of(2026, 3, 31), earlyId);
 

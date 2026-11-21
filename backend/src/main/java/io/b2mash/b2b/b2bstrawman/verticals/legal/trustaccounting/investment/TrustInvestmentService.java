@@ -1274,12 +1274,18 @@ public class TrustInvestmentService implements InvestmentPlacementHooks {
     return line;
   }
 
-  /** Locks the line's statement (it serialises the matched_count update). */
+  /**
+   * Locks the line's statement (it serialises the matched_count update); a line of a RETIRED
+   * statement is never recorded (FU-6b).
+   */
   private BankStatement lockStatement(BankStatementLine line) {
-    return statementRepository
-        .findByIdForUpdate(line.getBankStatementId())
-        .orElseThrow(
-            () -> new ResourceNotFoundException("BankStatement", line.getBankStatementId()));
+    var statement =
+        statementRepository
+            .findByIdForUpdate(line.getBankStatementId())
+            .orElseThrow(
+                () -> new ResourceNotFoundException("BankStatement", line.getBankStatementId()));
+    StatementLines.requireNotRetired(statement);
+    return statement;
   }
 
   /** A client row posted: the portal read-model re-projects (CLIENT rows only until 648D). */

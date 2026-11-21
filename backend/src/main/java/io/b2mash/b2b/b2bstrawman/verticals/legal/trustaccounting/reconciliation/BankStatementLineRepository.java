@@ -47,6 +47,22 @@ public interface BankStatementLineRepository extends JpaRepository<BankStatement
   List<BankStatementLine> findUnmatchedByStatementIdForUpdate(
       @Param("statementId") UUID statementId);
 
+  /**
+   * FU-6b replace / discard: every line of the statement, row-locked (PESSIMISTIC_WRITE) in one
+   * query, in auto-match's order (date, then id — {@link #findUnmatchedByStatementIdForUpdate}
+   * locks a subset of these rows in the same order, so the two never lock two lines crosswise).
+   * Taken after the reconciliation rows and before any trust transaction and the statement (line →
+   * transaction → statement). Must be the first read of these lines in the transaction.
+   */
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @Query(
+      """
+      SELECT l FROM BankStatementLine l
+      WHERE l.bankStatementId = :statementId
+      ORDER BY l.transactionDate ASC, l.id ASC
+      """)
+  List<BankStatementLine> findByStatementIdForUpdate(@Param("statementId") UUID statementId);
+
   /** The date of the statement's last line; empty for a statement with no lines (646C). */
   @Query(
       "SELECT MAX(l.transactionDate) FROM BankStatementLine l WHERE l.bankStatementId ="
@@ -55,12 +71,14 @@ public interface BankStatementLineRepository extends JpaRepository<BankStatement
 
   /**
    * File names of the account's other statements with a line dated in {@code (after, upTo]}, oldest
-   * import first — §16.3.4's "another imported statement covers the gap" rule (646C).
+   * import first — §16.3.4's "another imported statement covers the gap" rule (646C). A RETIRED
+   * statement (replaced or discarded, FU-6b) never covers a gap.
    */
   @Query(
       """
       SELECT s.fileName FROM BankStatement s
       WHERE s.trustAccountId = :trustAccountId AND s.id <> :statementId
+        AND s.status <> 'RETIRED'
         AND EXISTS (SELECT l.id FROM BankStatementLine l WHERE l.bankStatementId = s.id
                       AND l.transactionDate > :after AND l.transactionDate <= :upTo)
       ORDER BY s.createdAt, s.id
@@ -84,7 +102,7 @@ public interface BankStatementLineRepository extends JpaRepository<BankStatement
   /**
    * The account's imported statements not yet {@code RECONCILED} that hold {@code UNMATCHED} lines,
    * with the count of such lines, oldest import first — {@code UNRESOLVED_STATEMENT_LINES} on the
-   * dashboard (649C, §16.3.9).
+   * dashboard (649C, §16.3.9). A RETIRED statement (replaced or discarded, FU-6b) is not counted.
    */
   @Query(
       nativeQuery = true,
@@ -93,7 +111,7 @@ public interface BankStatementLineRepository extends JpaRepository<BankStatement
           SELECT s.id AS statementId, s.file_name AS fileName, COUNT(l.id) AS unresolvedCount
             FROM bank_statements s
             JOIN bank_statement_lines l ON l.bank_statement_id = s.id
-           WHERE s.trust_account_id = :trustAccountId AND s.status <> 'RECONCILED'
+           WHERE s.trust_account_id = :trustAccountId AND s.status NOT IN ('RECONCILED', 'RETIRED')
              AND l.match_status = 'UNMATCHED'
            GROUP BY s.id, s.file_name, s.created_at
            ORDER BY s.created_at, s.id""")

@@ -1,0 +1,59 @@
+# FU-6b green run, on branch fix/phase92-fu6b-statement-replace-discard (base 2fde9a191), 2026-11-22
+#
+# ── Backend Tier 2 ─────────────────────────────────────────────────────────────────────────────
+# cmd (from backend/, after ./mvnw spotless:apply; spotless:check = 0):
+#   ./mvnw test -Dtest='io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.**.*Test,
+#     TrustLedgerPortalSyncServiceIntegrationTest,DashboardActivityCacheTest,TrustPositionIntegrationTest,
+#     InformationRequestControllerTest,TrustBalanceTrendIntegrationTest,LegalDemoTrustBooksIntegrationTest,
+#     CatalogueBatch2TrustBillingTest,ClientTrustStatementContextIntegrationTest,
+#     StatementBuilderClosedPrimaryAccountIntegrationTest,LayerDependencyRulesTest,TestConventionsTest,
+#     TerminologyRemnantScanTest,TrustPostingRulesTest'
+# Scope:
+#   - the whole trustaccounting test tree;
+#   - every test class outside it that uses the changed code (grep for TrustReconciliationService,
+#     BankStatement*, TrustInvestmentService, StatementLinePostingService, TrustIntegrityService,
+#     TrustBooksFixture/Harness);
+#   - the four ArchUnit guards.
+# Not the full ./mvnw verify (the orchestrator runs it).
+
+[INFO] Tests run: 964, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+(88 test classes)
+
+Selected classes:
+Tests run: 14, Failures: 0, Errors: 0, Skipped: 0 -- in ...reconciliation.BankStatementReplaceDiscardIntegrationTest
+Tests run: 17, Failures: 0, Errors: 0, Skipped: 0 -- in ...reconciliation.TrustReconciliationServiceReconciliationTest
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0 -- in ...reconciliation.TrustReconciliationDraftIntegrationTest
+Tests run: 31, Failures: 0, Errors: 0, Skipped: 0 -- in ...reconciliation.StatementLinePostingIntegrationTest
+Tests run: 16, Failures: 0, Errors: 0, Skipped: 0 -- in ...reconciliation.TrustReconciliationServiceMatchingTest
+Tests run:  7, Failures: 0, Errors: 0, Skipped: 0 -- in ...reconciliation.AutoMatchLockOrderIntegrationTest
+Tests run:  1, Failures: 0, Errors: 0, Skipped: 0 -- in ...trustaccounting.TrustWireContractTest
+Tests run:  3, Failures: 0, Errors: 0, Skipped: 0 -- in ...architecture.LayerDependencyRulesTest
+Tests run:  3, Failures: 0, Errors: 0, Skipped: 0 -- in ...architecture.TestConventionsTest
+Tests run:  6, Failures: 0, Errors: 0, Skipped: 0 -- in ...architecture.TerminologyRemnantScanTest
+Tests run:  2, Failures: 0, Errors: 0, Skipped: 0 -- in ...transaction.TrustPostingRulesTest
+
+# The red reproductions now pass (they are the first three tests of BankStatementReplaceDiscardIntegrationTest):
+#   sameEndDateSecondImport_isRefused
+#   replace_releasesTheFirstStatementsMatches_forTheNewStatement
+#   discard_ofAStep4Leftover_stopsItCounting
+#
+# Mutation checks (production change reverted locally, the test fails, then restored):
+#   createReconciliation statement read findByIdForShare -> findById:
+#     discard_racingACreateOnTheStatement_waitsAndRefuses and
+#     create_racingADiscard_waitsAndFindsTheStatementRetired FAIL ("waited on ... statement lock")
+#   releaseMatch findByIdForUpdate -> findById:
+#     discard_racingAReversalOfAMatchedRow_waitsAndKeepsTheReversal FAIL ("the reversal stands": RECORDED)
+#
+# ── Frontend gate (from frontend/, nvm node v20.11.1, NODE_OPTIONS="") ─────────────────────────
+pnpm install --frozen-lockfile  -> exit 0
+pnpm lint                       -> exit 0 (0 errors, 77 warnings; none in the changed files)
+pnpm typecheck                  -> exit 0
+pnpm format:check               -> exit 0 ("All matched files use Prettier code style!")
+pnpm test                       -> exit 0
+   Test Files  483 passed (483)
+        Tests  4606 passed | 2 skipped (4608)
+   (new: __tests__/trust/bank-statement-replace-discard.test.tsx 12 tests;
+    __tests__/trust-reconciliation.test.tsx +2)
+   Pre-existing stderr noise in the run: happy-dom ECONNREFUSED 127.0.0.1:3000 / blob: iframe trace
+   from an unrelated PDF-preview test; exit 0.

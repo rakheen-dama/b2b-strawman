@@ -14,10 +14,14 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
+import io.b2mash.b2b.b2bstrawman.template.VariableFormatter;
 import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -64,6 +68,7 @@ class BankStatementImportErrorIntegrationTest {
   @Autowired private TransactionTemplate transactionTemplate;
   @Autowired private StorageService storageService;
   @Autowired private BankStatementRepository bankStatementRepository;
+  @Autowired private Clock clock;
 
   private String tenantSchema;
   private int accountCounter = 0;
@@ -146,6 +151,87 @@ class BankStatementImportErrorIntegrationTest {
 
     assertThat(storageService.listKeys("trust-statements/" + tenantSchema + "/" + accountId + "/"))
         .hasSize(1);
+  }
+
+  /**
+   * FU-6a (ruling F-647C): a statement with a line dated after today is refused whole — 400 naming
+   * the first such line's date — and leaves no statement, no line and no stored file. No line is
+   * silently dropped.
+   */
+  @Test
+  void aLineDatedAfterToday_refusesTheWholeImport_andStoresNothing() throws Exception {
+    String accountId = createIsolatedTrustAccount();
+    var today = LocalDate.now(clock);
+    var tomorrow = today.plusDays(1);
+    var csv =
+        """
+        Date,Description,Amount,Balance,Reference
+        %s,Deposit from client,250.00,1250.00,REF-FUT-001
+        %s,Value-dated interest,12.00,1262.00,REF-FUT-002
+        %s,Later value-dated credit,5.00,1267.00,REF-FUT-003
+        """
+            .formatted(day(today.minusDays(2)), day(tomorrow), day(tomorrow.plusDays(3)));
+    var csvFile =
+        new MockMultipartFile(
+            "file", "future.csv", "text/csv", csv.getBytes(StandardCharsets.UTF_8));
+
+    mockMvc
+        .perform(
+            multipart("/api/trust-accounts/{accountId}/bank-statements", accountId)
+                .file(csvFile)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER)))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.title").value("Cannot import bank statement"))
+        .andExpect(
+            jsonPath("$.detail")
+                .value(
+                    "This statement has a line dated "
+                        + VariableFormatter.formatDateText(tomorrow)
+                        + ", which is after today. Import the statement once the bank has"
+                        + " processed that line."));
+
+    assertThat(storageService.listKeys("trust-statements/" + tenantSchema + "/" + accountId + "/"))
+        .isEmpty();
+    List<BankStatement> statements =
+        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+            .call(
+                () ->
+                    transactionTemplate.execute(
+                        tx ->
+                            bankStatementRepository.findByTrustAccountIdOrderByPeriodEndDesc(
+                                UUID.fromString(accountId))));
+    assertThat(statements).isEmpty();
+  }
+
+  /** FU-6a boundary: a line dated today is not in the future, so the statement imports. */
+  @Test
+  void aLineDatedToday_imports201() throws Exception {
+    String accountId = createIsolatedTrustAccount();
+    var today = LocalDate.now(clock);
+    var csv =
+        """
+        Date,Description,Amount,Balance,Reference
+        %s,Deposit from client,250.00,1250.00,REF-TODAY-001
+        %s,Interest credited today,12.00,1262.00,REF-TODAY-002
+        """
+            .formatted(day(today.minusDays(1)), day(today));
+    var csvFile =
+        new MockMultipartFile(
+            "file", "today.csv", "text/csv", csv.getBytes(StandardCharsets.UTF_8));
+
+    mockMvc
+        .perform(
+            multipart("/api/trust-accounts/{accountId}/bank-statements", accountId)
+                .file(csvFile)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER)))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.lineCount").value(2))
+        .andExpect(jsonPath("$.periodEnd").value(today.toString()));
+  }
+
+  private static String day(LocalDate date) {
+    return date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
   }
 
   private String createIsolatedTrustAccount() throws Exception {

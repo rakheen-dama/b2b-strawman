@@ -7,6 +7,7 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.template.VariableFormatter;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountSection;
@@ -240,6 +241,7 @@ public class TrustReconciliationService {
     } catch (IOException e) {
       throw new BankStatementParseException("Failed to parse bank statement file", e);
     }
+    requireNoLineAfterToday(parsed);
 
     // Store file in S3 only after a successful parse, so a rejected import leaves no orphaned
     // object. G88-F33: a fresh uuid segment per import, so a re-import of a same-named file (banks
@@ -311,6 +313,26 @@ public class TrustReconciliationService {
             .build());
 
     return toResponse(statement, savedLines);
+  }
+
+  /**
+   * FU-6a (ruling F-647C): a statement with any line dated after today ({@code
+   * LocalDate.now(clock)}, the SA business date — as the fee-transfer and reversal dates) is
+   * refused whole, before anything is stored; no line is dropped. The refusal names the first such
+   * line in file order.
+   */
+  private void requireNoLineAfterToday(ParsedStatement parsed) {
+    var today = LocalDate.now(clock);
+    for (var line : parsed.lines()) {
+      if (line.date().isAfter(today)) {
+        throw new InvalidStateException(
+            "Cannot import bank statement",
+            "This statement has a line dated "
+                + VariableFormatter.formatDateText(line.date())
+                + ", which is after today. Import the statement once the bank has processed that"
+                + " line.");
+      }
+    }
   }
 
   @Transactional(readOnly = true)

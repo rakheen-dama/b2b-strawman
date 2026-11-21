@@ -12,6 +12,7 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEvent;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.template.VariableFormatter;
 import io.b2mash.b2b.b2bstrawman.testutil.BooksSnapshot;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
@@ -571,6 +572,76 @@ class StatementLinePostingIntegrationTest {
         "{\"classification\":\"FUND_INTEREST\"}",
         RECORD_TITLE,
         "Trust account is closed");
+  }
+
+  /**
+   * FU-6a (ruling F-647C): a stored line dated after today (imported before the import refused one)
+   * is not recorded, whatever its classification — 400 naming the line's date; nothing moves and
+   * the line stays {@code UNMATCHED}.
+   */
+  @Test
+  void aLineDatedAfterToday_isRefused_forEveryClassification() throws Exception {
+    var account = books.freshAccount(false);
+    var tomorrow = books.today().plusDays(1);
+    var credit = books.unmatchedLine(account, tomorrow, "40.00", "FUT-CR");
+    var debitId = books.addLine(credit.statementId(), 2, tomorrow, "-6.50", "FUT-DR");
+    var detail =
+        "This statement line is dated "
+            + VariableFormatter.formatDateText(tomorrow)
+            + ", which is after today. Record it on or after that date.";
+
+    for (var json :
+        List.of(
+            "{\"classification\":\"FUND_INTEREST\"}",
+            "{\"classification\":\"CHARGE_REFUND\"}",
+            "{\"classification\":\"UNIDENTIFIED_DEPOSIT\"}")) {
+      assertRecordRefused(account, credit.lineId(), json, RECORD_TITLE, detail);
+    }
+    for (var json :
+        List.of(
+            "{\"classification\":\"FUND_SWEEP\"}",
+            "{\"classification\":\"BANK_CHARGE\",\"chargeRecoverable\":false,"
+                + "\"chargeVatAmount\":0}")) {
+      assertRecordRefused(account, debitId, json, RECORD_TITLE, detail);
+    }
+    assertThat(line(credit.lineId()).getMatchStatus()).isEqualTo("UNMATCHED");
+    assertThat(line(debitId).getMatchStatus()).isEqualTo("UNMATCHED");
+    assertThat(matchedCount(credit)).isZero();
+  }
+
+  /**
+   * FU-6a: section 86(4) interest from a line dated after today was already refused before FU-6a
+   * (the entry is dated the line's date, and an entry date is never in the future —
+   * TrustInvestmentService); pinned here so the record paths stay aligned.
+   */
+  @Test
+  void investmentInterest_fromALineDatedAfterToday_isRefused() throws Exception {
+    var held = s86_4Investment("10000.00");
+    var line =
+        books.unmatchedLine(
+            held.investmentAccount(), books.today().plusDays(1), "95.00", "FUT-INT");
+
+    assertRecordRefused(
+        held.investmentAccount(),
+        line.lineId(),
+        interestJson(held.investmentId(), "NET", "100.00", null),
+        "Cannot record investment interest",
+        "The entry date cannot be in the future.");
+    assertThat(line(line.lineId()).getMatchStatus()).isEqualTo("UNMATCHED");
+  }
+
+  /** FU-6a boundary: a line dated today is recorded, and can be unmatched the same day. */
+  @Test
+  void aLineDatedToday_isRecorded_andUnmatches() throws Exception {
+    var account = books.freshAccount(false);
+    var line = books.unmatchedLine(account, books.today(), "18.00", "TODAY-INT");
+    recordAndMove(account, line, "{\"classification\":\"FUND_INTEREST\"}", "18.00");
+
+    moves(
+        account,
+        Expected.cashbookAndFund("-18.00"),
+        () -> unmatch(line.lineId()).andExpect(status().isOk()));
+    assertThat(line(line.lineId()).getMatchStatus()).isEqualTo("UNMATCHED");
   }
 
   @Test

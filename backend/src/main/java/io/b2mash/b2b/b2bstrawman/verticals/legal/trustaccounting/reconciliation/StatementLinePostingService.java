@@ -27,6 +27,8 @@ import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.UUID;
@@ -74,6 +76,7 @@ public class StatementLinePostingService {
   private final TrustInvestmentService investmentService;
   private final VerticalModuleGuard moduleGuard;
   private final AuditService auditService;
+  private final Clock clock;
 
   public StatementLinePostingService(
       BankStatementLineRepository lineRepository,
@@ -86,7 +89,8 @@ public class StatementLinePostingService {
       UnidentifiedDepositService unidentifiedDepositService,
       TrustInvestmentService investmentService,
       VerticalModuleGuard moduleGuard,
-      AuditService auditService) {
+      AuditService auditService,
+      Clock clock) {
     this.lineRepository = lineRepository;
     this.statementRepository = statementRepository;
     this.trustAccountRepository = trustAccountRepository;
@@ -98,6 +102,7 @@ public class StatementLinePostingService {
     this.investmentService = investmentService;
     this.moduleGuard = moduleGuard;
     this.auditService = auditService;
+    this.clock = clock;
   }
 
   // --- DTO Records ---
@@ -142,7 +147,8 @@ public class StatementLinePostingService {
    * the unidentified-deposits ledger), {@code amount = |line|}, dated the line's date, linked to
    * the line; the line becomes {@code RECORDED} and the statement's {@code matched_count} rises by
    * one. An {@code UNIDENTIFIED_DEPOSIT} also opens a HELD item, saved before the row so the row
-   * names it (647B), and is refused on an investment account. Every check runs before the first
+   * names it (647B), and is refused on an investment account. A line dated after today is refused
+   * (FU-6a; section 86(4) interest by its entry-date rule). Every check runs before the first
    * write, so a refusal moves nothing. No sufficiency check: a Fund ledger in debit is allowed
    * (ADR-381).
    */
@@ -171,6 +177,8 @@ public class StatementLinePostingService {
             .findByIdForUpdate(lineId)
             .orElseThrow(() -> new ResourceNotFoundException("BankStatementLine", lineId));
     StatementLines.requireUnmatched(line);
+    // FU-6a (ruling F-647C): never a line dated after today (one stored before the import refused).
+    StatementLines.requireNotAfterToday(line, LocalDate.now(clock));
     // Line, then statement: the statement lock serialises the matched_count update.
     var statement =
         statementRepository

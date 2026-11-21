@@ -44,11 +44,12 @@ public class TestcontainersConfiguration {
       EmbeddedPostgres pg =
           // Binaries + data directory under target/embedded-pg (EmbeddedPostgresDirectories).
           EmbeddedPostgresDirectories.builder()
-              // Singleton Postgres is shared across Spring's test-context cache (default max 32
-              // contexts). Even with minimumIdle=0 below, worst-case concurrent load is dozens of
-              // Hikari pools draining connections at once during context eviction/handover. 300
-              // gives generous headroom for 32 contexts × 7-connection pools without flirting with
-              // the "too many clients already" FATAL.
+              // Singleton Postgres is shared across Spring's test-context cache (capped at 12
+              // contexts by src/test/resources/spring.properties, Phase 92 FU-8; Spring's default
+              // is 32). Even with minimumIdle=0 below, worst-case concurrent load is many Hikari
+              // pools draining connections at once during context eviction/handover. 300 was sized
+              // for 32 contexts × 7-connection pools and is kept as headroom against the "too many
+              // clients already" FATAL.
               .setServerConfig("max_connections", "300")
               .start();
       Runtime.getRuntime()
@@ -78,8 +79,9 @@ public class TestcontainersConfiguration {
       registry.add("spring.datasource.app.maximum-pool-size", () -> "3");
       // minimum-idle=0 lets Hikari release idle connections when a context is not actively
       // running a query. Without this, each cached Spring context holds its max pool size
-      // worth of live Postgres connections indefinitely, and ~32 cached contexts × 7 connections
-      // blow past the shared singleton's max_connections ceiling with "too many clients already".
+      // worth of live Postgres connections indefinitely, and many cached contexts × 7 connections
+      // (up to 12 since FU-8; 32 before) can blow past the shared singleton's max_connections
+      // ceiling with "too many clients already".
       registry.add("spring.datasource.app.minimum-idle", () -> "0");
       registry.add("spring.datasource.migration.jdbc-url", () -> jdbcUrl);
       registry.add("spring.datasource.migration.username", () -> "postgres");

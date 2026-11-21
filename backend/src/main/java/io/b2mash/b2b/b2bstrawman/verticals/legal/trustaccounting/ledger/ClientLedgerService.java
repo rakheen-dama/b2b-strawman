@@ -414,7 +414,9 @@ public class ClientLedgerService {
    * the totals but not the closing balance. Read-only, so Postgres cannot raise a serialization
    * failure here. The isolation applies only where this call starts the transaction — inside a
    * caller's transaction it reads on the caller's snapshot
-   * (qa_cycle/evidence/phase92/648F/found.md, R-1).
+   * (qa_cycle/evidence/phase92/648F/found.md, R-1) — so the client documents call it inside {@code
+   * TrustSnapshotReads} with their other trust reads (FU-3), and the reports inside the read-only
+   * REPEATABLE_READ transaction {@code ReportExportService} opens (650C D-38).
    */
   @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
   public InvestedStatement getClientInvestedStatement(

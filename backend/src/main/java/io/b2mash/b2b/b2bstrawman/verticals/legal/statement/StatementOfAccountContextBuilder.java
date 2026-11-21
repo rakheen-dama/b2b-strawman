@@ -21,6 +21,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.statement.dto.StatementSummary;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.statement.dto.TrustTxDto;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustDataVisibility;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustSnapshotReads;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientTrustStatementContext;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
@@ -119,6 +120,7 @@ public class StatementOfAccountContextBuilder {
   private final ObjectMapper objectMapper;
   private final TaxRateRepository taxRateRepository;
   private final TrustTransactionRepository trustTransactionRepository;
+  private final TrustSnapshotReads snapshotReads;
   private final Clock clock;
 
   public StatementOfAccountContextBuilder(
@@ -135,6 +137,7 @@ public class StatementOfAccountContextBuilder {
       ObjectMapper objectMapper,
       TaxRateRepository taxRateRepository,
       TrustTransactionRepository trustTransactionRepository,
+      TrustSnapshotReads snapshotReads,
       Clock clock) {
     this.projectRepository = projectRepository;
     this.customerRepository = customerRepository;
@@ -149,6 +152,7 @@ public class StatementOfAccountContextBuilder {
     this.objectMapper = objectMapper;
     this.taxRateRepository = taxRateRepository;
     this.trustTransactionRepository = trustTransactionRepository;
+    this.snapshotReads = snapshotReads;
     this.clock = clock;
   }
 
@@ -537,6 +541,16 @@ public class StatementOfAccountContextBuilder {
     if (!trustDataVisibility.visibleToCurrentMember()) {
       return TrustBlock.withheldBlock();
     }
+    // FU-3 (R-1): the account choice, the ledger statement and the invested block on one snapshot
+    // — a placement or return committing mid-build cannot be counted twice, or empty the account
+    UUID customerId = customer.getId();
+    return snapshotReads.read(
+        () -> readTrustBlock(customerId, periodStart, periodEnd, withInvested));
+  }
+
+  /** The trust section's reads and values; runs inside {@link TrustSnapshotReads}. */
+  private TrustBlock readTrustBlock(
+      UUID customerId, LocalDate periodStart, LocalDate periodEnd, boolean withInvested) {
     // GAP-L-94: prefer the trust account(s) where THIS customer actually has activity. The
     // previous resolver (`findByAccountTypeAndPrimaryTrue(GENERAL)`) returned a tenant-wide
     // primary account and silently short-circuited the SoA when the customer's deposits
@@ -552,10 +566,10 @@ public class StatementOfAccountContextBuilder {
     // shared with the Client Trust Statement. Logging is intentional: a customer with activity on
     // several trust accounts is an unusual operational shape worth surfacing.
     List<UUID> customerTrustAccountIds =
-        trustTransactionRepository.findDistinctTrustAccountIdsByCustomerId(customer.getId());
+        trustTransactionRepository.findDistinctTrustAccountIdsByCustomerId(customerId);
     var selected =
         ClientTrustStatementContext.statementAccountId(
-            customer.getId(),
+            customerId,
             customerTrustAccountIds,
             periodEnd,
             clientLedgerService,
@@ -567,7 +581,7 @@ public class StatementOfAccountContextBuilder {
     if (customerTrustAccountIds.size() > 1) {
       log.warn(
           "Customer {} has activity on {} trust accounts; using {} for SoA Trust Activity section",
-          customer.getId(),
+          customerId,
           customerTrustAccountIds.size(),
           trustAccountId);
     }
@@ -581,7 +595,7 @@ public class StatementOfAccountContextBuilder {
     // query COALESCEs to 0).
     var statement =
         clientLedgerService.getClientLedgerStatement(
-            customer.getId(), trustAccountId, periodStart, periodEnd);
+            customerId, trustAccountId, periodStart, periodEnd);
     BigDecimal opening = statement.openingBalance();
     BigDecimal closing = statement.closingBalance();
     var deposits = new ArrayList<TrustTxDto>();
@@ -614,7 +628,7 @@ public class StatementOfAccountContextBuilder {
     var invested =
         withInvested
             ? clientLedgerService.getClientInvestedStatement(
-                customer.getId(), trustAccountId, periodStart, periodEnd)
+                customerId, trustAccountId, periodStart, periodEnd)
             : ClientLedgerService.InvestedStatement.NONE;
     return new TrustBlock(
         opening,

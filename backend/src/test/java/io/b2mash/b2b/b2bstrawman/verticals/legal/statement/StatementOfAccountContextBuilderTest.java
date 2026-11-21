@@ -42,6 +42,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccount;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountType;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustDataVisibility;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustSnapshotReads;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService.InvestedInterestLine;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService.InvestedStatement;
@@ -57,6 +58,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -88,6 +90,9 @@ class StatementOfAccountContextBuilderTest {
   @Mock private TrustDataVisibility trustDataVisibility;
   @Mock private TaxRateRepository taxRateRepository;
   @Mock private TrustTransactionRepository trustTransactionRepository;
+
+  // FU-3: the trust reads run inside the snapshot runner; here it just runs them
+  @Mock private TrustSnapshotReads snapshotReads;
 
   // Real ObjectMapper (Jackson 3 — `tools.jackson.databind`, the same artifact Spring Boot 4
   // autoconfigures and injects in production). Needed because the GAP-L-71 fix uses
@@ -139,7 +144,11 @@ class StatementOfAccountContextBuilderTest {
             objectMapper,
             taxRateRepository,
             trustTransactionRepository,
+            snapshotReads,
             clock);
+    lenient()
+        .when(snapshotReads.read(any()))
+        .thenAnswer(inv -> inv.<Supplier<?>>getArgument(0).get());
     lenient().when(templateContextHelper.buildOrgContext()).thenReturn(Map.of("name", "Acme Law"));
     lenient().when(memberNameResolver.resolveName(any())).thenReturn("Jane Attorney");
     // Default: trust money is visible (module on + VIEW_TRUST, TrustDataVisibility). Individual

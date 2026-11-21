@@ -1,7 +1,7 @@
 {
-  "commit": "6ad91e311",
-  "command": "cd backend && bash scripts/verify.sh -q (worktree agent-affb5e0bb6fa3cf9a, PR #1825)",
+  "commit": "5cc7b28c6",
+  "command": "cd backend && ./mvnw -q spotless:check && bash scripts/verify.sh -q (worktree agent-a47599e8a488722ed, PR #1826)",
   "exit": 0,
-  "ts": "2026-11-20T13:17:52Z",
-  "summary": "PR #1825 (FU-9) @6ad91e311 — 7439 <testcase> / 0 failures / 0 errors"
+  "ts": "2026-11-21T11:43:19Z",
+  "summary": "PR #1826 (CF-3a/b) @5cc7b28c6 — 7445 <testcase> / 0 failures / 0 errors / 26 skipped; head df3015a22 adds test-only changes (AutoMatchLockOrderIntegrationTest 7/7 x3, reconciliation package 179/179)"
 }

@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccount;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountType;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustDataVisibility;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustSnapshotReads;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionTypeLabels;
 import java.math.BigDecimal;
@@ -39,6 +40,10 @@ import org.springframework.stereotype.Component;
  * <p>648F (§16.6.4, ADR-379 L7): a client with section 86(4) investments placed from that account
  * also gets {@code invested} ({@link #investedBlock}) — the block the Statement of Account prints
  * too — over all history to today.
+ *
+ * <p>Phase 92 FU-3 (R-1): the account choice, the lines and both balances are read in one {@link
+ * TrustSnapshotReads} call, so a posting committed while a document is generated is on the block
+ * whole or not at all.
  */
 @Component
 public class ClientTrustStatementContext {
@@ -55,6 +60,7 @@ public class ClientTrustStatementContext {
   private final TrustTransactionRepository trustTransactionRepository;
   private final TrustAccountRepository trustAccountRepository;
   private final ClientLedgerService clientLedgerService;
+  private final TrustSnapshotReads snapshotReads;
   private final Clock clock;
 
   public ClientTrustStatementContext(
@@ -62,11 +68,13 @@ public class ClientTrustStatementContext {
       TrustTransactionRepository trustTransactionRepository,
       TrustAccountRepository trustAccountRepository,
       ClientLedgerService clientLedgerService,
+      TrustSnapshotReads snapshotReads,
       Clock clock) {
     this.trustDataVisibility = trustDataVisibility;
     this.trustTransactionRepository = trustTransactionRepository;
     this.trustAccountRepository = trustAccountRepository;
     this.clientLedgerService = clientLedgerService;
+    this.snapshotReads = snapshotReads;
     this.clock = clock;
   }
 
@@ -85,10 +93,17 @@ public class ClientTrustStatementContext {
     if (!trustDataVisibility.visibleToCurrentMember()) {
       return Optional.empty();
     }
+    // FU-3 (R-1): the account choice, the ledger lines and both balances on one snapshot — a
+    // placement or return committing mid-build cannot be counted twice, or empty the account
+    return Optional.of(snapshotReads.read(() -> trustBlock(clientId)));
+  }
+
+  /** The {@code trust} block's reads and values; runs inside {@link TrustSnapshotReads}. */
+  private Map<String, Object> trustBlock(UUID clientId) {
     LocalDate today = LocalDate.now(clock);
     Optional<TrustAccount> account = selectAccount(clientId, today);
     if (account.isEmpty()) {
-      return Optional.of(Map.of("status", STATUS_NONE));
+      return Map.of("status", STATUS_NONE);
     }
     var statement =
         clientLedgerService.getClientLedgerStatement(
@@ -125,7 +140,7 @@ public class ClientTrustStatementContext {
     if (!invested.isEmpty()) {
       trust.put("invested", investedBlock(invested, statement.closingBalance()));
     }
-    return Optional.of(trust);
+    return trust;
   }
 
   /**

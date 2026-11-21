@@ -1,0 +1,51 @@
+FU-3 Tier 2 run (finished 2026-11-21T13:48Z); working tree = the fix as committed
+command: cd backend && ./mvnw test -Dtest='<selector below>' -Dsurefire.failIfNoSpecifiedTests=false
+selector:
+  io/b2mash/b2b/b2bstrawman/verticals/legal/statement/**/*
+  io/b2mash/b2b/b2bstrawman/template/**/*
+  io/b2mash/b2b/b2bstrawman/reporting/**/*
+  io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/ledger/**/*
+  io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/investment/**/*
+  io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/report/**/*
+  LayerDependencyRulesTest
+  TestConventionsTest
+  TerminologyRemnantScanTest
+  TrustPostingRulesTest
+  io/b2mash/b2b/b2bstrawman/datarequest/DataProtectionControllerTest
+  io/b2mash/b2b/b2bstrawman/portal/PortalActivityInternalDraftIntegrationTest
+  io/b2mash/b2b/b2bstrawman/portal/PortalDocumentNotificationHandlerIntegrationTest
+  io/b2mash/b2b/b2bstrawman/seeder/LegalPackSeederIntegrationTest
+  io/b2mash/b2b/b2bstrawman/activity/MatterFeedIntegrationTest
+  io/b2mash/b2b/b2bstrawman/activity/ActivityMessageFormatterTest
+  io/b2mash/b2b/b2bstrawman/integration/storage/s3/StorageKeyValidationTest
+  io/b2mash/b2b/b2bstrawman/integration/ai/skill/fica/FicaVerificationTrustAccessIntegrationTest
+  io/b2mash/b2b/b2bstrawman/packs/ConveyancingTemplatePackTest
+  io/b2mash/b2b/b2bstrawman/packs/LegalZaTemplateReconcileIntegrationTest
+  io/b2mash/b2b/b2bstrawman/packs/TemplatePackReconcileIntegrationTest
+  io/b2mash/b2b/b2bstrawman/billingrun/BillingRunWithoutRetainersIntegrationTest
+  io/b2mash/b2b/b2bstrawman/billingrun/BillingRunCancelTest
+  io/b2mash/b2b/b2bstrawman/billingrun/BillingRunNotificationTest
+  io/b2mash/b2b/b2bstrawman/billingrun/BillingRunBatchOperationsTest
+  io/b2mash/b2b/b2bstrawman/billingrun/BillingRunGenerateTest
+  io/b2mash/b2b/b2bstrawman/audit/EntityTypeLiteralStabilityTest
+  io/b2mash/b2b/b2bstrawman/acceptance/EngagementLetterWithoutProposalIntegrationTest
+  io/b2mash/b2b/b2bstrawman/acceptance/AcceptanceCertificateServiceTest
+  io/b2mash/b2b/b2bstrawman/acceptance/AcceptanceDeclineIntegrationTest
+  io/b2mash/b2b/b2bstrawman/customerbackend/PortalInvoiceReceiptIntegrationTest
+  io/b2mash/b2b/b2bstrawman/invoice/InvoiceSentDocumentPersistenceIntegrationTest
+  io/b2mash/b2b/b2bstrawman/invoice/PaymentReceiptIntegrationTest
+  io/b2mash/b2b/b2bstrawman/invoice/InvoiceAddedLineSortOrderIntegrationTest
+  io/b2mash/b2b/b2bstrawman/invoice/InvoiceLineDescriptionIntegrationTest
+  io/b2mash/b2b/b2bstrawman/invoice/InvoicePreviewTaxIntegrationTest
+  io/b2mash/b2b/b2bstrawman/invoice/InvoiceEmailFallbackGuardIntegrationTest
+  io/b2mash/b2b/b2bstrawman/invoice/InvoicePreviewIntegrationTest
+  io/b2mash/b2b/b2bstrawman/verticals/legal/closure/MatterClosureEmailIntegrationTest
+  io/b2mash/b2b/b2bstrawman/verticals/legal/closure/MatterClosureServiceIntegrationTest
+  io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/TrustWireContractTest
+  io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/transaction/TrustPostingDateZoneIntegrationTest
+  io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/transaction/TrustTransactionServiceTest
+
+surefire classes: 131; <testcase> elements: 1439
+[INFO] Tests run: 1439, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+[INFO] Total time:  03:06 min

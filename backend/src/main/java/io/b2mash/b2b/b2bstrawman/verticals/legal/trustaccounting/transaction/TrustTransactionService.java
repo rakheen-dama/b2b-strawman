@@ -1017,9 +1017,14 @@ public class TrustTransactionService {
             "The transaction this reversal undoes is no longer posted or has already been"
                 + " reversed");
       }
+      // FU-5 (Phase 92 S2): the contra posts on its own (reversal) date, so a back-dated one lowers
+      // the client's balance as at that date and every later date — it must be covered on each of
+      // them, not only today. A contra dated today (or later) is checked as before.
       if (TrustPostingService.contraOf(original).ledgerEffect().signum() < 0
           && transaction.getCustomerId() != null) {
-        requireClientCovers(transaction);
+        var contraDate = transaction.getTransactionDate();
+        requireClientCovers(
+            transaction, contraDate.isBefore(LocalDate.now(clock)) ? contraDate : null);
       }
     } else if (type.approval() == TrustTransactionType.Approval.REQUIRED) {
       // 648A review F-3: a placement's owner re-checks the cover the client check below cannot
@@ -1152,6 +1157,17 @@ public class TrustTransactionService {
    * still AWAITING_APPROVAL, so neither sum includes it.
    */
   private void requireClientCovers(TrustTransaction transaction) {
+    requireClientCovers(transaction, null);
+  }
+
+  /**
+   * As {@link #requireClientCovers(TrustTransaction)}; with a {@code coveredFrom} date (FU-5, a
+   * back-dated credit contra), both balances must cover the amount as at that date and as at every
+   * later date a posted row is dated — the lowest balance from then on, which is never above the
+   * current one — and a refusal names the (earliest) date of that lowest balance. Null = the
+   * current balance only (every posted row), as before.
+   */
+  private void requireClientCovers(TrustTransaction transaction, LocalDate coveredFrom) {
     var customer =
         customerRepository
             .findById(transaction.getCustomerId())
@@ -1161,15 +1177,26 @@ public class TrustTransactionService {
 
     // Serialise with the client's other postings, then read the derived balance (ADR-378)
     postingService.lockClient(transaction.getTrustAccountId(), transaction.getCustomerId());
-    var availableBalance =
-        ledgerQueries.clientBalance(
-            transaction.getTrustAccountId(), transaction.getCustomerId(), null);
+    BigDecimal availableBalance;
+    String asAtText = "";
+    if (coveredFrom == null) {
+      availableBalance =
+          ledgerQueries.clientBalance(
+              transaction.getTrustAccountId(), transaction.getCustomerId(), null);
+    } else {
+      var lowest =
+          ledgerQueries.lowestClientBalanceFrom(
+              transaction.getTrustAccountId(), transaction.getCustomerId(), coveredFrom);
+      availableBalance = lowest.getBalance();
+      asAtText = asAt(lowest.getAsAt());
+    }
 
     if (availableBalance.compareTo(transaction.getAmount()) < 0) {
       throw new InvalidStateException(
           "Insufficient trust balance",
           "Insufficient trust balance for "
               + customer.getName()
+              + asAtText
               + ". Available: "
               + rand(availableBalance)
               + ", Requested: "
@@ -1185,7 +1212,8 @@ public class TrustTransactionService {
         transaction.getCustomerId(),
         customer.getName(),
         transaction.getProjectId(),
-        transaction.getAmount());
+        transaction.getAmount(),
+        coveredFrom);
   }
 
   /**
@@ -1912,10 +1940,35 @@ public class TrustTransactionService {
    */
   private void requireMatterCellCovers(
       UUID trustAccountId, UUID customerId, String clientName, UUID projectId, BigDecimal amount) {
+    requireMatterCellCovers(trustAccountId, customerId, clientName, projectId, amount, null);
+  }
+
+  /**
+   * As above; with a {@code coveredFrom} date (FU-5, a back-dated credit contra) the cell must
+   * cover {@code amount} as at that date and every later posted date (the lowest cell balance from
+   * then on), and a refusal names the date of that lowest balance. Null = the current cell only.
+   */
+  private void requireMatterCellCovers(
+      UUID trustAccountId,
+      UUID customerId,
+      String clientName,
+      UUID projectId,
+      BigDecimal amount,
+      LocalDate coveredFrom) {
     if (projectId == null) {
       return;
     }
-    var available = ledgerQueries.matterCellBalance(trustAccountId, customerId, projectId, null);
+    BigDecimal available;
+    String asAtText = "";
+    if (coveredFrom == null) {
+      available = ledgerQueries.matterCellBalance(trustAccountId, customerId, projectId, null);
+    } else {
+      var lowest =
+          ledgerQueries.lowestMatterCellBalanceFrom(
+              trustAccountId, customerId, projectId, coveredFrom);
+      available = lowest.getBalance();
+      asAtText = asAt(lowest.getAsAt());
+    }
     if (available == null) {
       available = BigDecimal.ZERO;
     }
@@ -1935,6 +1988,7 @@ public class TrustTransactionService {
             + matterName
             + " for "
             + clientName
+            + asAtText
             + ". Available on matter: "
             + rand(available)
             + ", Requested: "
@@ -1945,6 +1999,14 @@ public class TrustTransactionService {
   /** A rand amount for a refusal message, in the house en-ZA format ("R10 055,21"; G89-F40). */
   private static String rand(BigDecimal amount) {
     return VariableFormatter.formatCurrencyText(amount, TRUST_LOCALE);
+  }
+
+  /**
+   * " as at 10 March 2026" for a refusal message (FU-5), in the house document date format ({@link
+   * VariableFormatter#formatDateText}).
+   */
+  private static String asAt(LocalDate date) {
+    return " as at " + VariableFormatter.formatDateText(date);
   }
 
   private void validateReference(String reference) {

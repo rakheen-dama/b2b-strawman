@@ -185,6 +185,71 @@ public interface TrustLedgerQueryRepository extends Repository<TrustTransaction,
       @Param("asAt") LocalDate asAt);
 
   /**
+   * The tail of the "lowest from" queries (FU-5): over a {@code daily} CTE of per-date nets, the
+   * balance as at {@code :from} and the running balance as at every later date a posted row is
+   * dated, lowest first, earliest date first on a tie. Always one row (a history with no rows gives
+   * {@code (from, 0)}).
+   */
+  String LOWEST_FROM =
+      """
+      running AS (
+        SELECT d, SUM(net) OVER (ORDER BY d) AS balance FROM daily),
+      points AS (
+        SELECT CAST(:from AS date) AS d,
+               COALESCE((SELECT SUM(net) FROM daily WHERE d <= CAST(:from AS date)), 0) AS balance
+        UNION ALL
+        SELECT d, balance FROM running WHERE d > CAST(:from AS date))
+      SELECT p.d AS asAt, p.balance AS balance FROM points p ORDER BY p.balance, p.d LIMIT 1""";
+
+  /**
+   * The lowest one client's balance on one account stands as at {@code from} or as at any later
+   * date a posted row is dated (FU-5, the client-ledger form of {@link #lowestCashbookFrom}), with
+   * the earliest date it stands there. A debit dated {@code from} lowers every one of those
+   * figures, so it is covered only if this balance is at least its amount; the last point is the
+   * {@link #clientBalance} of every posted row, so this is never above the current balance. {@code
+   * from} is required.
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          WITH daily AS (
+            SELECT t.transaction_date AS d, SUM(t.ledger_effect) AS net
+              FROM trust_transactions t
+             WHERE t.trust_account_id = :trustAccountId AND t.customer_id = :customerId
+               AND t.ledger = 'CLIENT' AND t.posted_at IS NOT NULL
+             GROUP BY t.transaction_date),
+          """
+              + LOWEST_FROM)
+  LowestBalanceRow lowestClientBalanceFrom(
+      @Param("trustAccountId") UUID trustAccountId,
+      @Param("customerId") UUID customerId,
+      @Param("from") LocalDate from);
+
+  /**
+   * As {@link #lowestClientBalanceFrom}, for the matter sub-ledger cell ({@link
+   * #matterCellBalance}): one client's money on one matter in one account (FU-5).
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          WITH daily AS (
+            SELECT t.transaction_date AS d, SUM(t.ledger_effect) AS net
+              FROM trust_transactions t
+             WHERE t.trust_account_id = :trustAccountId AND t.customer_id = :customerId
+               AND t.project_id = :projectId AND t.ledger = 'CLIENT'
+               AND t.posted_at IS NOT NULL
+             GROUP BY t.transaction_date),
+          """
+              + LOWEST_FROM)
+  LowestBalanceRow lowestMatterCellBalanceFrom(
+      @Param("trustAccountId") UUID trustAccountId,
+      @Param("customerId") UUID customerId,
+      @Param("projectId") UUID projectId,
+      @Param("from") LocalDate from);
+
+  /**
    * One client's balance per matter (a null {@code projectId} = the unmattered rows); the rows sum
    * exactly to {@link #clientBalance}. The opening balances of the per-matter interest buckets
    * (ADR-366).

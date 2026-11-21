@@ -1,0 +1,10 @@
+== base
+[WARNING] Tests run: 7452, Failures: 0, Errors: 0, Skipped: 26
+[INFO] BUILD SUCCESS
+[INFO] Total time:  28:56 min
+cache statistics: [DefaultContextCache@5bbf98bc size = 32, maxSize = 32, contextUsageCount = 1, parentContextCount = 0, hitCount = 75338, missCount = 41, failureCount = 0]
+== n12
+[WARNING] Tests run: 7452, Failures: 0, Errors: 0, Skipped: 26
+[INFO] BUILD SUCCESS
+[INFO] Total time:  26:27 min
+cache statistics: [DefaultContextCache@32296044 size = 12, maxSize = 12, contextUsageCount = 1, parentContextCount = 0, hitCount = 75335, missCount = 44, failureCount = 0]

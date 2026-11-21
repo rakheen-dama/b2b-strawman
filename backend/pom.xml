@@ -310,7 +310,8 @@
                          suite (up to 32 cached contexts) sits right at that ceiling and OOMs on the
                          heaviest context load. Pin a headroom-safe 3g (leaves room for embedded
                          Postgres + Maven + OS under 7g). @{argLine} preserves the JaCoCo agent under
-                         -Pcoverage. -->
+                         -Pcoverage. Phase 92 FU-8: the suite outgrew 3g with 32 cached contexts, so the
+                         context cache is now capped at 12 (src/test/resources/spring.properties). -->
                     <argLine>@{argLine} -Xmx3g -Duser.timezone=${test.timezone}</argLine>
                     <forkedProcessExitTimeoutInSeconds>60</forkedProcessExitTimeoutInSeconds>
                     <shutdown>kill</shutdown>

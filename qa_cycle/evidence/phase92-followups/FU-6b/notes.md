@@ -134,9 +134,32 @@ statement order (`findByIdForUpdate` Javadoc; auto-match CF-3), and with 652C D-
 3. The statement: `findByIdForUpdate`, as its first read. It refuses when RETIRED, RECONCILED or
    of another account. Then the reconciliations on it are read again; one not locked in step 1
    refuses (409 "Reconciliation started at the same time"). `matched_count` is lowered.
-4. Import only: the trust account row `FOR UPDATE`, last (account rows are step 3 of the global
-   order). It serialises two imports of one account, so two same-end-date imports cannot both pass
-   the check. A plain import takes only this lock.
+4. Import only: the account's **import lock**, last. This is a transaction-scoped advisory lock,
+   `pg_advisory_xact_lock(hashtextextended('bank_stmt_import:' || current_schema() || ':' ||
+   accountId, 0))` (`BankStatementRepository.lockImportsOfAccount`, a native query). It is keyed
+   per tenant schema and account. It serialises two imports of one account, so two same-end-date
+   imports cannot both pass the check. A plain import takes only this lock. (Review round 1,
+   finding 2: it replaces the trust account row `FOR UPDATE` of e5ef682, which made every posting
+   on the account wait for the whole import, including the inserts, recalculation and storage
+   upload.)
+   - **Why it cannot deadlock.** Only an import takes it. After taking it, an import waits on
+     nothing another import holds:
+     - it inserts new rows;
+     - it writes the old statement and drafts, which it locked before;
+     - it reads the books plainly (the recalculation takes no row lock);
+     - it uploads the file;
+     - the FK `KEY SHARE` locks of its inserts conflict only with an account `FOR UPDATE` taker
+       (complete's Rule 54.15 list lock, an account update, a final approval). None of those takes
+       the advisory lock, and none waits on rows an import holds, other than through the
+       reconciliation-row and statement locks, which an import takes before the advisory lock in
+       the global order.
+
+     A second import of the account that waits on the lock holds only its own old statement's rows
+     (reconciliations, lines, rows, statement), and the first import never asks for those after
+     taking the lock. A contended old statement is waited on before the lock, in `prepareRetirement`
+     steps 1–3. So no cycle can close through the advisory lock.
+   - **Other paths.** No other path relied on the import's account row lock. It existed only in
+     e5ef682 (this PR), and no other code reads it.
 
 **createReconciliation** now share-locks the statement (`findByIdForShare`, `FOR SHARE`) after the
 reconciliation row, as its first read:
@@ -156,8 +179,8 @@ already had.
 - **The lost update.** `TrustTransaction` has no `@Version` or `@DynamicUpdate`, so the unlink
   writes back the whole row. A reversal locks the row but never the line, so a reversal committed
   between the plain read and the flush was overwritten: the original went back to RECORDED while
-  its contra stayed. A replace makes this far more likely, because it waits on the account lock
-  inside that window.
+  its contra stayed. A replace made this far more likely, because it waited on the account lock (now
+  the import lock) inside that window.
 - **Why the lock order still holds.** It is line → transaction → statement. A reversal holds the
   row and waits only on client anchors and the account, which a retire takes last or never.
 - **Test.** `discard_racingAReversalOfAMatchedRow_waitsAndKeepsTheReversal`. Mutation check: with
@@ -186,7 +209,7 @@ merge-gate marker rule, FU-26).
 
 ## Tests
 
-Backend: new `BankStatementReplaceDiscardIntegrationTest` (14 tests).
+Backend: new `BankStatementReplaceDiscardIntegrationTest` (17 tests).
 - **Red reproductions (a, b, c):**
   - same-end-date import refused 409 with `existingStatementId` / `code`, nothing stored;
   - replace after auto-match releases A's match, A RETIRED with `matched_count` 0, B's auto-match
@@ -203,7 +226,12 @@ Backend: new `BankStatementReplaceDiscardIntegrationTest` (14 tests).
   - replace and discard are refused with a RECORDED line, and work after unmatching it;
   - replace and discard of a RECONCILED statement (completed reconciliation, and status-only) are
     refused;
-  - a replace naming another account's statement is refused, with nothing changed.
+  - a replace naming another account's statement is refused, with nothing changed;
+  - (review round 1, D-2) a replace whose new statement clashes with *another* live statement is
+    refused 409 `bank_statement.duplicate_end_date_while_replacing`. The detail reads "Statement
+    … also ends on 9 March 2026. Discard it from the Reconciliation page first, then upload
+    again." There is no `existingStatementId`. A stays live with its match, C is untouched, and the
+    new statement is not stored.
 - **Discard:**
   - refused while a draft uses it (HTTP ProblemDetail title/detail); a blank reason gives 400;
   - after the draft moves, the discard releases the matches, is audited, and the new statement
@@ -215,7 +243,13 @@ Backend: new `BankStatementReplaceDiscardIntegrationTest` (14 tests).
   - a discard racing a held reversal of a matched row waits on the row lock, and the reversal
     stands (review fix; a mutation check fails without it);
   - a discard racing a held create waits on the statement lock and refuses 409;
-  - a create racing a held discard waits on the lock and finds "Statement retired".
+  - a create racing a held discard waits on the lock and finds "Statement retired";
+  - (review round 1, finding 3) two same-end-date imports of one account: the second waits on the
+    import lock while the first is held open, then gets the 409, and exactly one live statement
+    exists. Mutation check (`mutation-import-lock.txt`): without the lock, two live statements
+    result ("expected 1L but was 2L");
+  - a deposit on the account while an import is held open is not blocked. Mutation check: with
+    the e5ef682 account row `FOR UPDATE` put back, the deposit waits and the test fails.
   - Mutation check: with create's statement read made a plain `findById`, both race tests fail
     (no wait observed).
 
@@ -267,21 +301,21 @@ Evidence: `red-run.txt`, `green-run.txt`.
 - **Legacy duplicates.** Same-end-date pairs imported before FU-6b are not migrated. They still
   both pass rule 3 until one is replaced or discarded; both actions are now available for them.
   The duplicate check only blocks new imports.
-- **Account lock on import.** Every import now takes the trust account row `FOR UPDATE` until it
-  commits, briefly blocking postings on that account (they take it `FOR SHARE`). Imports are rare
-  and short. A replace with drafts also recalculates them under this lock.
+- **Import lock.** Two imports of one account are serialised by an advisory lock held to commit.
+  Postings are not affected (pinned by a test). An advisory lock is invisible to row-lock tooling;
+  the key is documented on `lockImportsOfAccount`.
 - **RECONCILED statements count as duplicates.** A new import ending on a reconciled statement's
   date is refused, and replacing a reconciled statement is refused. That is deliberate
   (conservative). A firm that genuinely needs a second statement for an already-reconciled date
   has no path; none is known.
 - **Retired detail in the UI.** Retired statements are hidden from the UI. The API exposes them
   (`includeRetired`, the GET by id) for audit. There is no "show retired" toggle (minimal scope).
-- **Wizard re-upload that hits a different duplicate.** Raised by the reviewer (about 60
-  confidence, a product call). The wizard re-uploads with its own statement as
-  `replacesStatementId`. If that upload is refused as a duplicate of a *different* statement,
-  "Replace existing statement" re-submits replacing that other statement instead. The wizard's
-  earlier statement then stays live, with its matches, until it is discarded or replaced. Not
-  changed: it needs a ruling on whether one import may retire two statements.
+- **Wizard re-upload that hits a different duplicate: fixed** (review round 1, ruling FU-6b D-2:
+  one import retires at most one statement). The backend refuses with
+  `bank_statement.duplicate_end_date_while_replacing` and no replace invitation. The upload
+  component never offers a second Replace while `replacesStatementId` is set and shows the
+  refusal as a plain error. The user discards the clashing statement from the Reconciliation page,
+  then uploads again.
 - **Discard does not detach drafts.** A draft on a wrong statement must be moved first (new wizard
   run or replace). The refusal says how.
 - **Pre-existing test noise.** The frontend `pnpm test` run prints a happy-dom
@@ -292,8 +326,10 @@ Evidence: `red-run.txt`, `green-run.txt`.
 
 - **D-1. Discard while a DRAFT reconciliation uses the statement: refuse** (not detach). See rule
   4.
-- **D-2. "Same end date" = last line date, else `period_end`** (the period-fit definition).
+- **D-8 (was D-2 before the ruling took that label). "Same end date" = last line date, else `period_end`** (the period-fit definition).
   RECONCILED statements count; RETIRED ones do not.
+- **D-2 (ruling, review round 1). One import retires at most one statement.** A replace that
+  clashes with another live statement is refused; the user discards that statement first.
 - **D-3. Replace does not require the old and new end dates to match.** Any non-retired statement
   of the same account can be replaced, which is what the wizard's corrected re-upload needs. The
   duplicate check excludes only the statement being replaced.

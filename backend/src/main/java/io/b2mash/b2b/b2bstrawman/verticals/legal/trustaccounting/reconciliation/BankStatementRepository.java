@@ -40,6 +40,22 @@ public interface BankStatementRepository extends JpaRepository<BankStatement, UU
   List<StatementRef> findLiveStatementsEndingOn(
       @Param("trustAccountId") UUID trustAccountId, @Param("endDate") LocalDate endDate);
 
+  /**
+   * FU-6b: serialises the statement imports of one trust account until the caller's transaction
+   * ends ({@code pg_advisory_xact_lock}, keyed by tenant schema and account). The import takes it
+   * just before its same-end-date check, so two imports of one account cannot both pass the check;
+   * nothing but an import takes it, so no posting waits on an import (the account row is not
+   * locked). Must run inside the import's transaction. Returns 1.
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          SELECT 1 FROM pg_advisory_xact_lock(hashtextextended(
+              'bank_stmt_import:' || current_schema() || ':' || CAST(:accountId AS text), 0))
+          """)
+  int lockImportsOfAccount(@Param("accountId") UUID accountId);
+
   /** A statement's id and file name (a row of {@link #findLiveStatementsEndingOn}). */
   interface StatementRef {
     UUID getStatementId();

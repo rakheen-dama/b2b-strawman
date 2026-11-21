@@ -68,7 +68,10 @@ export function BankStatementUpload({
         if (response.success && response.data) {
           setResult(response.data);
           onUploadComplete(response.data);
-        } else if (response.duplicate) {
+        } else if (response.duplicate && !replaces) {
+          // FU-6b D-2: one upload replaces at most one statement. An upload that already replaces
+          // one (a wizard re-upload, or a confirmed replace) never offers a second replace — its
+          // refusal is shown as it stands.
           setPending({ file, duplicate: response.duplicate });
         } else {
           setError(response.error ?? "Upload failed");

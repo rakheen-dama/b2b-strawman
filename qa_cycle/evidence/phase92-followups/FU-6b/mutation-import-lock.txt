@@ -1,0 +1,32 @@
+# FU-6b mutation check: the import's advisory lock (review round 1, finding 3)
+#
+# Mutation: in TrustReconciliationService.importBankStatement, the account's import lock was
+# commented out:
+#     // MUTATION: bankStatementRepository.lockImportsOfAccount(accountId);
+# cmd: cd backend && ./mvnw test
+#        -Dtest='BankStatementReplaceDiscardIntegrationTest#twoConcurrentSameEndDateImports_theSecondWaits_andIsRefused'
+# date: 2026-11-22
+#
+# Without the lock, import 2's same-end-date check runs while import 1 is still uncommitted. It sees
+# nothing, so both imports commit and the account has TWO live statements ending on 12 March 2026.
+# This is exactly the race F-646C-1 must not allow. The line was then restored (sed back; the
+# restored line was printed and checked), and the test passes again in green-run.txt.
+
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 13.34 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.BankStatementReplaceDiscardIntegrationTest
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.BankStatementReplaceDiscardIntegrationTest.twoConcurrentSameEndDateImports_theSecondWaits_andIsRefused -- Time elapsed: 0.417 s <<< FAILURE!
+expected: 1L
+ but was: 2L
+[ERROR] Failures:
+[ERROR]   BankStatementReplaceDiscardIntegrationTest.twoConcurrentSameEndDateImports_theSecondWaits_andIsRefused:797 [exactly one live statement]
+expected: 1L
+ but was: 2L
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0
+[INFO] BUILD FAILURE
+
+# ── Second mutation: the import's lock put back to the trust account row FOR UPDATE ────────────
+# The advisory call was replaced with trustAccountRepository.findByIdForUpdate(accountId) (the
+# e5ef682 code), and aPostingOnTheAccount_isNotBlockedByAnImportHeldOpen was run. The deposit then
+# waits on the held import (its posting lock is FOR SHARE on the account row), so the test fails.
+# Restored afterwards.
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 45.01 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.BankStatementReplaceDiscardIntegrationTest
+[ERROR]   BankStatementReplaceDiscardIntegrationTest.aPostingOnTheAccount_isNotBlockedByAnImportHeldOpen:824->join:931 [thread finished within 30 s]

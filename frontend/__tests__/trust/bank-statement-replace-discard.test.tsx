@@ -117,6 +117,28 @@ describe("uploadBankStatement (FU-6b)", () => {
     });
   });
 
+  it("maps the while-replacing refusal to a plain error with no duplicate (FU-6b D-2)", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          title: "A statement ending on this date is already imported",
+          detail:
+            "Statement march-c.csv also ends on 31 March 2026. Discard it from the Reconciliation page first, then upload again.",
+          code: "bank_statement.duplicate_end_date_while_replacing",
+        }),
+        { status: 409 }
+      )
+    );
+
+    const result = await uploadBankStatement("acc-1", csv(), "stmt-a");
+
+    expect(result).toEqual({
+      success: false,
+      error:
+        "Statement march-c.csv also ends on 31 March 2026. Discard it from the Reconciliation page first, then upload again.",
+    });
+  });
+
   it("returns a replace refusal's detail with no duplicate", async () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValue(
       new Response(
@@ -230,6 +252,47 @@ describe("BankStatementUpload replace flow (FU-6b)", () => {
     await waitFor(() =>
       expect(upload).toHaveBeenCalledWith("acc-1", expect.any(File), "stmt-wizard")
     );
+  });
+
+  // FU-6b D-2: the wizard holds A and uploads B replacing A, but B clashes with another statement C.
+  // One upload replaces at most one statement: the refusal is shown plainly, never a second replace.
+  it("never offers a second replace when an upload that replaces a statement clashes with another", async () => {
+    const upload = vi
+      .fn()
+      .mockResolvedValueOnce({
+        // the backend's own refusal carries no duplicate
+        success: false,
+        error:
+          "Statement march-c.csv also ends on 31 March 2026. Discard it from the Reconciliation page first, then upload again.",
+      })
+      .mockResolvedValueOnce({
+        // even a duplicate (defensive) is not offered while replacing
+        success: false,
+        error: "Statement march-c.csv also ends on 31 March 2026.",
+        duplicate: { existingStatementId: "stmt-c", existingFileName: "march-c.csv" },
+      });
+    render(
+      <BankStatementUpload
+        accountId="acc-1"
+        onUploadComplete={vi.fn()}
+        replacesStatementId="stmt-a"
+        uploadAction={upload}
+      />
+    );
+
+    fireEvent.change(screen.getByTestId("file-input"), { target: { files: [csv()] } });
+    expect(await screen.findByTestId("upload-error")).toHaveTextContent(
+      "Discard it from the Reconciliation page first, then upload again."
+    );
+    expect(screen.queryByTestId("replace-statement-dialog")).not.toBeInTheDocument();
+
+    fireEvent.change(screen.getByTestId("file-input"), { target: { files: [csv()] } });
+    await waitFor(() => expect(upload).toHaveBeenCalledTimes(2));
+    expect(await screen.findByTestId("upload-error")).toHaveTextContent(
+      "Statement march-c.csv also ends on 31 March 2026."
+    );
+    expect(screen.queryByTestId("replace-statement-dialog")).not.toBeInTheDocument();
+    expect(upload).toHaveBeenNthCalledWith(2, "acc-1", expect.any(File), "stmt-a");
   });
 
   it("shows a replace refusal's detail", async () => {

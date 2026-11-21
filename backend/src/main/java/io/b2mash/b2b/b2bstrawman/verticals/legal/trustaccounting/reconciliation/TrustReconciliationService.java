@@ -216,10 +216,17 @@ public class TrustReconciliationService {
    * (this statement does not fit its period end). Every refusal stores nothing.
    *
    * <p>Lock order (a replace): the old statement's reconciliation rows, its lines, the trust
-   * transactions they release, the old statement — then, for every import, the trust account row
-   * ({@code FOR UPDATE}, last — {@code TrustPostingService}'s step 3), which serialises two imports
-   * of one account so two same-end-date imports cannot both pass the check. The raw file is
-   * uploaded last, once every refusal has been passed.
+   * transactions they release, the old statement — then, for every import, the account's import
+   * lock ({@link BankStatementRepository#lockImportsOfAccount}, a transaction-scoped advisory lock
+   * keyed by tenant schema and account), which serialises two imports of one account so two
+   * same-end-date imports cannot both pass the check. No trust account row is locked, so postings
+   * on the account never wait on an import. The advisory lock cannot close a cycle: only an import
+   * takes it, and after it an import waits on nothing another import holds — it inserts new rows,
+   * writes the old statement and drafts it already locked, and reads the books plainly. A second
+   * import of the account waits on it holding only its own old statement's rows, which the first
+   * never asks for after taking it (a contended old statement is waited on before it, in steps 1–3
+   * of {@link #prepareRetirement}). The raw file is uploaded last, once every refusal has been
+   * passed.
    */
   @Transactional
   public BankStatementResponse importBankStatement(
@@ -278,10 +285,10 @@ public class TrustReconciliationService {
         replacesStatementId == null
             ? null
             : prepareRetirement(replacesStatementId, accountId, true);
-    // The account row last (FOR UPDATE): two imports of one account are serialised, so two
-    // same-end-date statements cannot both pass the check below. Only the lock is wanted (the
-    // entity was read above, so it is not refreshed).
-    trustAccountRepository.findByIdForUpdate(accountId);
+    // The account's import lock last (a transaction-scoped advisory lock, not the account row):
+    // two imports of one account are serialised, so two same-end-date statements cannot both pass
+    // the check below, while postings on the account never wait on an import.
+    bankStatementRepository.lockImportsOfAccount(accountId);
     requireNoLiveStatementEndingOn(accountId, endDateOf(parsed), replacesStatementId);
 
     // G88-F33: a fresh uuid segment per import, so a re-import of a same-named file (banks export
@@ -374,9 +381,12 @@ public class TrustReconciliationService {
    * FU-6b (ruling F-646C-1): refuses (409) when a non-RETIRED statement of the account other than
    * {@code replacesStatementId} ends on {@code endDate}. Two such statements would both fit any
    * period end from that date (rule 3 looks only for lines after the selected statement's last
-   * line), so a month could be reconciled against the superseded one. The ProblemDetail names the
-   * existing statement ({@code existingStatementId}, {@code existingFileName}) so the UI can offer
-   * to replace it.
+   * line), so a month could be reconciled against the superseded one. A plain import's
+   * ProblemDetail ({@code bank_statement.duplicate_end_date}) names the existing statement ({@code
+   * existingStatementId}, {@code existingFileName}) so the UI can offer to replace it. An import
+   * that already replaces a statement is refused with {@code
+   * bank_statement.duplicate_end_date_while_replacing} and no replace invitation (FU-6b D-2: one
+   * import retires at most one statement).
    */
   private void requireNoLiveStatementEndingOn(
       UUID accountId, LocalDate endDate, UUID replacesStatementId) {
@@ -388,6 +398,19 @@ public class TrustReconciliationService {
       return;
     }
     var ref = existing.get();
+    var endDateText = endDate.format(PERIOD_END_FORMAT);
+    if (replacesStatementId != null) {
+      // FU-6b D-2 (ruling): one import retires at most one statement. This import already
+      // replaces a statement, so it never invites a second replace — the clash is discarded first.
+      throw new ResourceConflictException(
+          "A statement ending on this date is already imported",
+          "Statement "
+              + ref.getFileName()
+              + " also ends on "
+              + endDateText
+              + ". Discard it from the Reconciliation page first, then upload again.",
+          Map.of("code", "bank_statement.duplicate_end_date_while_replacing"));
+    }
     var properties = new LinkedHashMap<String, Object>();
     properties.put("code", "bank_statement.duplicate_end_date");
     properties.put("existingStatementId", ref.getStatementId().toString());
@@ -397,7 +420,7 @@ public class TrustReconciliationService {
         "Statement "
             + ref.getFileName()
             + " of this trust account also ends on "
-            + endDate.format(PERIOD_END_FORMAT)
+            + endDateText
             + ". Replace it with this statement, or import a statement that ends on another"
             + " date.",
         properties);

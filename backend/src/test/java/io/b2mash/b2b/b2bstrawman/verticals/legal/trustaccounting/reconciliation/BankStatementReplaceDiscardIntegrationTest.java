@@ -727,6 +727,113 @@ class BankStatementReplaceDiscardIntegrationTest {
     assertThat(statementStatus(s.id())).isEqualTo("RETIRED");
   }
 
+  /**
+   * FU-6b D-2 (ruling): one import retires at most one statement. The wizard holds A and uploads B
+   * replacing A, but B ends on the same date as another live statement C: refused 409 with the
+   * distinct code and no replace invitation (no existingStatementId), and nothing changes — A is
+   * still live with its match, C is untouched, B is not stored.
+   */
+  @Test
+  void replace_whoseNewStatementClashesWithAnotherStatement_isRefusedWithoutAReplaceInvitation()
+      throws Exception {
+    var account = books.freshAccount(false);
+    var client = books.newClient("fu6b clash");
+    var deposit = books.deposit(account, client, "1000.00");
+    var a =
+        importStatement(
+            account, "fu6b-clash-a.csv", "01/03/2026,Deposit received,1000.00,1000.00,FU6B-CL");
+    match(a, 0, deposit);
+    var c =
+        importStatement(account, "fu6b-clash-c.csv", "09/03/2026,Bank charge,-4.00,-4.00,FU6B-CC");
+
+    importHttp(
+            account,
+            a.id(),
+            "fu6b-clash-b.csv",
+            "01/03/2026,Deposit received,1000.00,1000.00,FU6B-CL",
+            "09/03/2026,Bank charge,-4.00,996.00,FU6B-CB")
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.title").value("A statement ending on this date is already imported"))
+        .andExpect(
+            jsonPath("$.detail")
+                .value(
+                    "Statement fu6b-clash-c.csv also ends on 9 March 2026. Discard it from the"
+                        + " Reconciliation page first, then upload again."))
+        .andExpect(jsonPath("$.code").value("bank_statement.duplicate_end_date_while_replacing"))
+        .andExpect(jsonPath("$.existingStatementId").doesNotExist());
+
+    assertThat(statementCount(account)).as("B is not stored").isEqualTo(2L);
+    assertThat(statementStatus(a.id())).as("A is still live").isEqualTo("IMPORTED");
+    assertThat(matchStatus(a.lines().getFirst().id())).isEqualTo("MANUALLY_MATCHED");
+    assertThat(linkedLine(deposit)).isEqualTo(a.lines().getFirst().id());
+    assertThat(statementStatus(c.id())).as("C is untouched").isEqualTo("IMPORTED");
+  }
+
+  /**
+   * The same-end-date check is race-free: two imports of one account are serialised by the
+   * account's import lock. Import 1 is held open (uncommitted); import 2 of a statement ending on
+   * the same date waits on the lock, then — once import 1 commits — sees it and is refused (409).
+   * Exactly one live statement results.
+   */
+  @Test
+  void twoConcurrentSameEndDateImports_theSecondWaits_andIsRefused() throws Exception {
+    var account = books.freshAccount(false);
+    var first = csvFile("fu6b-imp-1.csv", "12/03/2026,Bank charge,-6.00,-6.00,FU6B-I1");
+    var second = csvFile("fu6b-imp-2.csv", "12/03/2026,Bank charge,-6.00,-6.00,FU6B-I1");
+
+    var holder = holdInTransaction(() -> reconciliationService.importBankStatement(account, first));
+    var outcome = runConcurrently(() -> reconciliationService.importBankStatement(account, second));
+    boolean blocked;
+    try {
+      blocked =
+          awaitBlockedHeldByOrFinished(holder.pid(), outcome.finished(), "pg_advisory_xact_lock");
+    } finally {
+      holder.release().countDown();
+      join(holder.thread());
+      join(outcome.thread());
+    }
+
+    assertThat(holder.error().get()).as("import 1 committed").isNull();
+    assertThat(liveStatementCount(account)).as("exactly one live statement").isEqualTo(1L);
+    assertThat(outcome.error().get())
+        .as("import 2")
+        .isInstanceOfSatisfying(
+            ResourceConflictException.class,
+            e ->
+                assertThat(e.getBody().getProperties())
+                    .containsEntry("code", "bank_statement.duplicate_end_date"));
+    assertThat(blocked).as("import 2 waited on import 1's import lock").isTrue();
+  }
+
+  /**
+   * The import lock is not the trust account row: a posting on the account while an import of it is
+   * held open (uncommitted) is not blocked.
+   */
+  @Test
+  void aPostingOnTheAccount_isNotBlockedByAnImportHeldOpen() throws Exception {
+    var account = books.freshAccount(false);
+    var client = books.newClient("fu6b posting not blocked");
+    var file = csvFile("fu6b-held.csv", "13/03/2026,Bank charge,-7.00,-7.00,FU6B-H");
+
+    var holder = holdInTransaction(() -> reconciliationService.importBankStatement(account, file));
+    var deposit = new AtomicReference<UUID>();
+    var outcome = runConcurrently(() -> deposit.set(books.deposit(account, client, "250.00")));
+    boolean blocked;
+    try {
+      blocked = awaitBlockedHeldByOrFinished(holder.pid(), outcome.finished(), "");
+      join(outcome.thread());
+      assertThat(holder.thread().isAlive()).as("the import is still held open").isTrue();
+    } finally {
+      holder.release().countDown();
+      join(holder.thread());
+    }
+
+    assertThat(blocked).as("the posting did not wait on the held import").isFalse();
+    assertThat(outcome.error().get()).as("the posting").isNull();
+    assertThat(deposit.get()).isNotNull();
+    assertThat(holder.error().get()).as("the import committed").isNull();
+  }
+
   // --- helpers -----------------------------------------------------------------------------------
 
   private record Holder(
@@ -957,6 +1064,14 @@ class BankStatementReplaceDiscardIntegrationTest {
   private long statementCount(UUID account) {
     return jdbc.queryForObject(
         "SELECT count(*) FROM \"%s\".bank_statements WHERE trust_account_id = ?"
+            .formatted(books.schema()),
+        Long.class,
+        account);
+  }
+
+  private long liveStatementCount(UUID account) {
+    return jdbc.queryForObject(
+        "SELECT count(*) FROM \"%s\".bank_statements WHERE trust_account_id = ? AND status <> 'RETIRED'"
             .formatted(books.schema()),
         Long.class,
         account);

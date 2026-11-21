@@ -1,4 +1,5 @@
-# FU-6b green run, on branch fix/phase92-fu6b-statement-replace-discard (base 2fde9a191), 2026-11-22
+# FU-6b green run (review round 1 fixes on top of e5ef682), branch
+# fix/phase92-fu6b-statement-replace-discard (base 2fde9a191), 2026-11-22
 #
 # ── Backend Tier 2 ─────────────────────────────────────────────────────────────────────────────
 # cmd (from backend/, after ./mvnw spotless:apply; spotless:check = 0):
@@ -10,40 +11,45 @@
 #     TerminologyRemnantScanTest,TrustPostingRulesTest'
 # Scope:
 #   - the whole trustaccounting test tree;
-#   - every test class outside it that uses the changed code (grep for TrustReconciliationService,
-#     BankStatement*, TrustInvestmentService, StatementLinePostingService, TrustIntegrityService,
-#     TrustBooksFixture/Harness);
+#   - every test class outside it that uses the changed code;
 #   - the four ArchUnit guards.
 # Not the full ./mvnw verify (the orchestrator runs it).
 
-[INFO] Tests run: 964, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 967, Failures: 0, Errors: 0, Skipped: 0
 [INFO] BUILD SUCCESS
 (88 test classes)
 
 Selected classes:
-Tests run: 14, Failures: 0, Errors: 0, Skipped: 0 -- in ...reconciliation.BankStatementReplaceDiscardIntegrationTest
-Tests run: 17, Failures: 0, Errors: 0, Skipped: 0 -- in ...reconciliation.TrustReconciliationServiceReconciliationTest
-Tests run: 10, Failures: 0, Errors: 0, Skipped: 0 -- in ...reconciliation.TrustReconciliationDraftIntegrationTest
-Tests run: 31, Failures: 0, Errors: 0, Skipped: 0 -- in ...reconciliation.StatementLinePostingIntegrationTest
-Tests run: 16, Failures: 0, Errors: 0, Skipped: 0 -- in ...reconciliation.TrustReconciliationServiceMatchingTest
-Tests run:  7, Failures: 0, Errors: 0, Skipped: 0 -- in ...reconciliation.AutoMatchLockOrderIntegrationTest
+Tests run: 17, Failures: 0, Errors: 0, Skipped: 0 -- in ...reconciliation.BankStatementReplaceDiscardIntegrationTest
 Tests run:  1, Failures: 0, Errors: 0, Skipped: 0 -- in ...trustaccounting.TrustWireContractTest
 Tests run:  3, Failures: 0, Errors: 0, Skipped: 0 -- in ...architecture.LayerDependencyRulesTest
 Tests run:  3, Failures: 0, Errors: 0, Skipped: 0 -- in ...architecture.TestConventionsTest
 Tests run:  6, Failures: 0, Errors: 0, Skipped: 0 -- in ...architecture.TerminologyRemnantScanTest
 Tests run:  2, Failures: 0, Errors: 0, Skipped: 0 -- in ...transaction.TrustPostingRulesTest
+(The adapted existing classes — Draft, Matching, Reconciliation, AutoMatchLockOrder and
+ StatementLinePosting — are inside the 967 and all green.)
 
 # The red reproductions now pass (they are the first three tests of BankStatementReplaceDiscardIntegrationTest):
 #   sameEndDateSecondImport_isRefused
 #   replace_releasesTheFirstStatementsMatches_forTheNewStatement
 #   discard_ofAStep4Leftover_stopsItCounting
 #
-# Mutation checks (production change reverted locally, the test fails, then restored):
+# Review round 1 tests (all green):
+#   replace_whoseNewStatementClashesWithAnotherStatement_isRefusedWithoutAReplaceInvitation   (finding 1)
+#   twoConcurrentSameEndDateImports_theSecondWaits_andIsRefused                                (finding 3)
+#   aPostingOnTheAccount_isNotBlockedByAnImportHeldOpen                                        (finding 2)
+#
+# Mutation checks (production change reverted locally, the test fails, then restored and re-run green):
+#   import advisory lock removed:
+#     twoConcurrentSameEndDateImports... FAILS, "exactly one live statement" expected 1L but was 2L
+#     (mutation-import-lock.txt)
+#   import lock put back to the trust account row FOR UPDATE (e5ef682):
+#     aPostingOnTheAccount_isNotBlockedByAnImportHeldOpen FAILS, the posting waited
+#     (mutation-import-lock.txt)
 #   createReconciliation statement read findByIdForShare -> findById:
-#     discard_racingACreateOnTheStatement_waitsAndRefuses and
-#     create_racingADiscard_waitsAndFindsTheStatementRetired FAIL ("waited on ... statement lock")
+#     the two create/discard race tests FAIL
 #   releaseMatch findByIdForUpdate -> findById:
-#     discard_racingAReversalOfAMatchedRow_waitsAndKeepsTheReversal FAIL ("the reversal stands": RECORDED)
+#     discard_racingAReversalOfAMatchedRow_waitsAndKeepsTheReversal FAILS (status came back RECORDED)
 #
 # ── Frontend gate (from frontend/, nvm node v20.11.1, NODE_OPTIONS="") ─────────────────────────
 pnpm install --frozen-lockfile  -> exit 0
@@ -52,8 +58,9 @@ pnpm typecheck                  -> exit 0
 pnpm format:check               -> exit 0 ("All matched files use Prettier code style!")
 pnpm test                       -> exit 0
    Test Files  483 passed (483)
-        Tests  4606 passed | 2 skipped (4608)
-   (new: __tests__/trust/bank-statement-replace-discard.test.tsx 12 tests;
-    __tests__/trust-reconciliation.test.tsx +2)
-   Pre-existing stderr noise in the run: happy-dom ECONNREFUSED 127.0.0.1:3000 / blob: iframe trace
-   from an unrelated PDF-preview test; exit 0.
+        Tests  4608 passed | 2 skipped (4610)
+   (__tests__/trust/bank-statement-replace-discard.test.tsx: 14 tests;
+    __tests__/trust-reconciliation.test.tsx: +2)
+   Pre-existing stderr noise: happy-dom ECONNREFUSED / blob: iframe trace from an unrelated
+   PDF-preview test; exit 0.
+rm -rf .next && pnpm build      -> exit 0 ("✓ Compiled successfully", 14/14 static pages generated)

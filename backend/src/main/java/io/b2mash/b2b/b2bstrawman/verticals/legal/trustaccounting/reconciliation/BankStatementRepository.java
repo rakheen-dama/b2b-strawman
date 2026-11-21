@@ -18,7 +18,9 @@ public interface BankStatementRepository extends JpaRepository<BankStatement, UU
    * matched_count}: two members matching, recording or unmatching lines of one statement are
    * serialised, so neither overwrites the other's count. Must be the first read of the statement in
    * the transaction (a later locking read does not refresh an already-loaded row) and is always
-   * taken after the line lock (line-then-statement order).
+   * taken after the line lock (line-then-statement order). Auto-match, which needs the statement's
+   * period before it locks anything, reads it plainly and later locks it with a locking {@code
+   * refresh} instead (CF-3).
    */
   @Lock(LockModeType.PESSIMISTIC_WRITE)
   @Query("SELECT s FROM BankStatement s WHERE s.id = :id")

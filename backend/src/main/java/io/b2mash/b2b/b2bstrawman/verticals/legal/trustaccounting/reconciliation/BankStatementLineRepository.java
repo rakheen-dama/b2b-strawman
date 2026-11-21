@@ -22,14 +22,30 @@ public interface BankStatementLineRepository extends JpaRepository<BankStatement
    * on one line — record from statement, manual match, exclude and unmatch (647A). Two members
    * acting on the same line are serialised: the second waits for the first's commit and then sees
    * its state (and is refused if the line is no longer {@code UNMATCHED} / matched), so no stale
-   * write overwrites a recorded, matched or excluded line. Taken before the statement lock.
+   * write overwrites a recorded, matched or excluded line. Taken before the statement lock. Auto-
+   * match locks all of its statement's {@code UNMATCHED} lines at once instead ({@link
+   * #findUnmatchedByStatementIdForUpdate}).
    */
   @Lock(LockModeType.PESSIMISTIC_WRITE)
   @Query("SELECT l FROM BankStatementLine l WHERE l.id = :id")
   Optional<BankStatementLine> findByIdForUpdate(@Param("id") UUID id);
 
-  List<BankStatementLine> findByBankStatementIdAndMatchStatusOrderByTransactionDateAscIdAsc(
-      UUID bankStatementId, String matchStatus);
+  /**
+   * Auto-match's first lock (CF-3): every {@code UNMATCHED} line of the statement, row-locked
+   * (PESSIMISTIC_WRITE) in one query, in matching order (date, then id — a fixed order, so two
+   * auto-matches of one statement lock its lines in the same order). Must be the first read of
+   * these lines in the transaction. Postgres re-checks the predicate on a row it waited for, so a
+   * line a concurrent record, manual match or exclude took while auto-match waited is not returned.
+   */
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @Query(
+      """
+      SELECT l FROM BankStatementLine l
+      WHERE l.bankStatementId = :statementId AND l.matchStatus = 'UNMATCHED'
+      ORDER BY l.transactionDate ASC, l.id ASC
+      """)
+  List<BankStatementLine> findUnmatchedByStatementIdForUpdate(
+      @Param("statementId") UUID statementId);
 
   /** The date of the statement's last line; empty for a statement with no lines (646C). */
   @Query(

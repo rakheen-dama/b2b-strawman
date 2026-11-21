@@ -1,0 +1,13 @@
+# CF-3 mutation run (review fix 2), 2026-11-21: TrustReconciliationService line 'entityManager.refresh(statement, LockModeType.PESSIMISTIC_WRITE);' REMOVED (auto-match counts from the statement copy it read at the start), only unmatchOfAnAlreadyMatchedLine_duringAutoMatch_isNotOverwrittenByAStaleCount run. Expected RED (stale count). Production file restored with git checkout afterwards (refresh present again).
+# command: cd backend && ./mvnw -q test -Dtest=<classes>
+
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 16.52 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.AutoMatchLockOrderIntegrationTest
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.AutoMatchLockOrderIntegrationTest.unmatchOfAnAlreadyMatchedLine_duringAutoMatch_isNotOverwrittenByAStaleCount -- Time elapsed: 0.555 s <<< FAILURE!
+[ERROR]   AutoMatchLockOrderIntegrationTest.unmatchOfAnAlreadyMatchedLine_duringAutoMatch_isNotOverwrittenByAStaleCount:395->assertMatchedCountAgreesWithLines:633 [matched_count of statement 82af7839-9fa4-4c36-9176-835851138f78 agrees with its lines]
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0
+
+# per-test outcome (surefire XML)
+== FAIL AutoMatchLockOrderIntegrationTest.unmatchOfAnAlreadyMatchedLine_duringAutoMatch_isNotOverwrittenByAStaleCount (0.555 s)
+   [matched_count of statement 82af7839-9fa4-4c36-9176-835851138f78 agrees with its lines] 
+   expected: 1
+    but was: 2

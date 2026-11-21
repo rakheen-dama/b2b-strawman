@@ -29,6 +29,8 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.Tru
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionType;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -40,6 +42,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -80,6 +83,7 @@ public class TrustReconciliationService {
   private final AuditService auditService;
   private final Clock clock;
   private final StatementLinePostingService statementLinePostingService;
+  private final EntityManager entityManager;
   private final List<BankStatementParser> parsers;
 
   public TrustReconciliationService(
@@ -95,7 +99,8 @@ public class TrustReconciliationService {
       VerticalModuleGuard moduleGuard,
       AuditService auditService,
       Clock clock,
-      StatementLinePostingService statementLinePostingService) {
+      StatementLinePostingService statementLinePostingService,
+      EntityManager entityManager) {
     this.bankStatementRepository = bankStatementRepository;
     this.bankStatementLineRepository = bankStatementLineRepository;
     this.trustAccountRepository = trustAccountRepository;
@@ -109,6 +114,7 @@ public class TrustReconciliationService {
     this.auditService = auditService;
     this.clock = clock;
     this.statementLinePostingService = statementLinePostingService;
+    this.entityManager = entityManager;
     // Parsers are plain classes (not Spring beans). GenericCsvParser must be last (always matches).
     this.parsers =
         List.of(
@@ -341,14 +347,49 @@ public class TrustReconciliationService {
 
   // --- Auto-Match ---
 
+  /**
+   * Auto-matches the statement's {@code UNMATCHED} lines to posted, unlinked rows of its account
+   * dated within the period ±7 days, by the tiers below (exact reference; amount and date; the 0.60
+   * / 0.40 suggestions; 652H D-1/D-6 for REVERSED originals).
+   *
+   * <p>Lock order (CF-3) is the one every line writer uses, line → transaction → statement ({@code
+   * TrustPostingService}'s global order, step 1), and every locked row is read fresh under its
+   * lock:
+   *
+   * <ol>
+   *   <li>the statement's {@code UNMATCHED} lines, all in one locking query, before anything else
+   *       is locked ({@link BankStatementLineRepository#findUnmatchedByStatementIdForUpdate}). A
+   *       line that a concurrent record, manual match or exclude took is not returned, so it is
+   *       never overwritten;
+   *   <li>the rows this run matches, one at a time in id order, each re-read under its lock. A row
+   *       that a concurrent manual match (or an auto-match of another statement) linked in the
+   *       meantime, or whose status changed, is skipped and its line stays {@code UNMATCHED};
+   *   <li>the statement, last, re-read under its lock: {@code matched_count} rises by the matches
+   *       made, from its current value.
+   * </ol>
+   *
+   * No client anchor or account row is locked. Manual match, unmatch, exclude and record-from-line
+   * each lock one line first, then their rows (and item or investment), with the statement after
+   * the line. Complete locks reconciliation → statement → account. Another auto-match locks its own
+   * lines, then its rows in the same id order. So no path waits on auto-match while holding
+   * something auto-match is waiting for. Every match is decided before any row is locked, against
+   * the pool as read, so the tiers and their outcomes do not change.
+   */
   @Transactional
   public MatchResult autoMatchStatement(UUID statementId) {
     moduleGuard.requireModule(MODULE_ID);
 
+    // A plain read for its account and period (fixed at import); re-read under its lock in step 3.
     var statement =
         bankStatementRepository
             .findById(statementId)
             .orElseThrow(() -> new ResourceNotFoundException("BankStatement", statementId));
+
+    // 1. Every UNMATCHED line, locked first (matching order: date, then id), state re-checked.
+    List<BankStatementLine> unmatchedLines =
+        bankStatementLineRepository.findUnmatchedByStatementIdForUpdate(statementId).stream()
+            .filter(line -> "UNMATCHED".equals(line.getMatchStatus()))
+            .toList();
 
     // Build candidate pool: posted transactions (RECORDED, APPROVED or REVERSED), unmatched,
     // within date range; only the REVERSED originals auto-match may link stay in it (652H D-6)
@@ -359,15 +400,7 @@ public class TrustReconciliationService {
             trustTransactionRepository.findUnmatchedCandidates(
                 statement.getTrustAccountId(), startDate, endDate));
 
-    // Get all UNMATCHED lines for this statement (deterministic order for reproducible matching)
-    List<BankStatementLine> unmatchedLines =
-        bankStatementLineRepository
-            .findByBankStatementIdAndMatchStatusOrderByTransactionDateAscIdAsc(
-                statementId, "UNMATCHED");
-
-    int autoMatched = 0;
-    int alreadyMatched = statement.getMatchedCount();
-
+    List<PlannedMatch> planned = new ArrayList<>();
     for (BankStatementLine line : unmatchedLines) {
       // Filter candidates by sign compatibility
       List<TrustTransaction> signFilteredCandidates =
@@ -377,11 +410,10 @@ public class TrustReconciliationService {
         continue;
       }
 
-      // Try matching strategies in priority order
-      if (tryExactReferenceMatch(line, signFilteredCandidates, statement)) {
-        autoMatched++;
-        // Remove matched transaction from candidate pool
-        candidatePool.removeIf(c -> c.getId().equals(line.getTrustTransactionId()));
+      // Try matching strategies in priority order; a matched row leaves the candidate pool
+      TrustTransaction byReference = exactReferenceMatch(line, signFilteredCandidates);
+      if (byReference != null) {
+        plan(planned, candidatePool, line, byReference, new BigDecimal("1.00"));
         continue;
       }
 
@@ -389,9 +421,9 @@ public class TrustReconciliationService {
       List<TrustTransaction> liveCandidates =
           signFilteredCandidates.stream().filter(c -> !isReversed(c)).toList();
 
-      if (tryAmountExactDateMatch(line, liveCandidates, statement)) {
-        autoMatched++;
-        candidatePool.removeIf(c -> c.getId().equals(line.getTrustTransactionId()));
+      TrustTransaction byAmountAndDate = amountExactDateMatch(line, liveCandidates);
+      if (byAmountAndDate != null) {
+        plan(planned, candidatePool, line, byAmountAndDate, AUTO_MATCH_THRESHOLD);
         continue;
       }
 
@@ -403,7 +435,18 @@ public class TrustReconciliationService {
       tryAmountOnlyMatch(line, liveCandidates);
     }
 
-    // Persist updated matchedCount
+    // 2. The matched rows, locked in id order (two auto-matches never lock two rows crosswise).
+    planned.sort(Comparator.comparing(match -> match.transaction().getId()));
+    int autoMatched = 0;
+    for (PlannedMatch match : planned) {
+      if (applyAutoMatch(match)) {
+        autoMatched++;
+      }
+    }
+
+    // 3. The statement last, re-read under its lock: the count rises from its current value.
+    entityManager.refresh(statement, LockModeType.PESSIMISTIC_WRITE);
+    int alreadyMatched = statement.getMatchedCount();
     statement.setMatchedCount(alreadyMatched + autoMatched);
     bankStatementRepository.save(statement);
 
@@ -1276,10 +1319,11 @@ public class TrustReconciliationService {
     return lineIsCredit ? effect > 0 : effect < 0;
   }
 
-  private boolean tryExactReferenceMatch(
-      BankStatementLine line, List<TrustTransaction> candidates, BankStatement statement) {
+  /** Tier 1: the one candidate with the line's reference and amount, else null. */
+  private TrustTransaction exactReferenceMatch(
+      BankStatementLine line, List<TrustTransaction> candidates) {
     if (line.getReference() == null || line.getReference().isBlank()) {
-      return false;
+      return null;
     }
 
     List<TrustTransaction> refMatches =
@@ -1291,15 +1335,12 @@ public class TrustReconciliationService {
                         && c.getAmount().compareTo(line.getAmount().abs()) == 0)
             .toList();
 
-    if (refMatches.size() == 1) {
-      applyAutoMatch(line, refMatches.getFirst(), new BigDecimal("1.00"), statement);
-      return true;
-    }
-    return false;
+    return refMatches.size() == 1 ? refMatches.getFirst() : null;
   }
 
-  private boolean tryAmountExactDateMatch(
-      BankStatementLine line, List<TrustTransaction> candidates, BankStatement statement) {
+  /** Tier 2: the one candidate with the line's amount and date, else null. */
+  private TrustTransaction amountExactDateMatch(
+      BankStatementLine line, List<TrustTransaction> candidates) {
     BigDecimal lineAmount = line.getAmount().abs();
 
     List<TrustTransaction> matches =
@@ -1310,11 +1351,7 @@ public class TrustReconciliationService {
                         && c.getTransactionDate().equals(line.getTransactionDate()))
             .toList();
 
-    if (matches.size() == 1) {
-      applyAutoMatch(line, matches.getFirst(), AUTO_MATCH_THRESHOLD, statement);
-      return true;
-    }
-    return false;
+    return matches.size() == 1 ? matches.getFirst() : null;
   }
 
   private boolean tryAmountCloseDateMatch(
@@ -1356,34 +1393,48 @@ public class TrustReconciliationService {
     }
   }
 
-  private void applyAutoMatch(
+  /** A line auto-match has matched to a row, applied once the row is locked (CF-3). */
+  private record PlannedMatch(
+      BankStatementLine line, TrustTransaction transaction, BigDecimal confidence) {}
+
+  /** Plans {@code line} → {@code transaction} and takes the row out of the candidate pool. */
+  private static void plan(
+      List<PlannedMatch> planned,
+      List<TrustTransaction> candidatePool,
       BankStatementLine line,
       TrustTransaction transaction,
-      BigDecimal confidence,
-      BankStatement statement) {
-    // Re-fetch with pessimistic write lock to prevent concurrent match claims.
-    // While auto-match on the same statement is inherently sequential (one transaction per loop
-    // iteration), this guards against a concurrent manualMatch claiming the same transaction.
-    var locked =
-        trustTransactionRepository
-            .findByIdForUpdate(transaction.getId())
-            .orElseThrow(
-                () -> new ResourceNotFoundException("TrustTransaction", transaction.getId()));
+      BigDecimal confidence) {
+    planned.add(new PlannedMatch(line, transaction, confidence));
+    candidatePool.removeIf(c -> c.getId().equals(transaction.getId()));
+  }
 
-    // Double-check the transaction hasn't been claimed since we built the candidate pool
-    if (locked.getBankStatementLineId() != null) {
-      return; // Already claimed by a concurrent operation — skip silently
+  /**
+   * Locks the planned row and re-reads it under the lock ({@code refresh}: the pool's unlocked copy
+   * is managed, so a locking query would hand back that stale copy). A row that a concurrent
+   * operation linked, or whose status changed, since the pool was read is skipped (false) and its
+   * line stays {@code UNMATCHED}. Otherwise both sides are linked (true). The line is already
+   * locked (step 1).
+   */
+  private boolean applyAutoMatch(PlannedMatch match) {
+    var transaction = match.transaction();
+    String statusInPool = transaction.getStatus();
+    entityManager.refresh(transaction, LockModeType.PESSIMISTIC_WRITE);
+    if (transaction.getBankStatementLineId() != null
+        || !Objects.equals(statusInPool, transaction.getStatus())) {
+      return false;
     }
 
+    var line = match.line();
     line.setMatchStatus("AUTO_MATCHED");
-    line.setTrustTransactionId(locked.getId());
-    line.setMatchConfidence(confidence);
+    line.setTrustTransactionId(transaction.getId());
+    line.setMatchConfidence(match.confidence());
     // §16.3.5 / ADR-380 (647C): auto-match runs first; a line that auto-matches keeps no
     // suggestion.
     line.setSuggestedClassification(null);
     bankStatementLineRepository.save(line);
 
-    postingService.linkBankLine(locked, line.getId());
+    postingService.linkBankLine(transaction, line.getId());
+    return true;
   }
 
   // --- Private Helpers ---

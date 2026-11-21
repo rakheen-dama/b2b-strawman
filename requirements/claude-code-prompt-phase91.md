@@ -1,5 +1,7 @@
 # Phase 91 — Kazi UI Modernization II: Light-Mode Colour Scheme, Kink Register, Settings and the Daily-Use Long Tail
 
+> **Sequencing update (2026-11-20):** runs AFTER Phase 93 (client & trust take-on), order 92 → 93 → 91 (founder decision). Before `/architecture`, refresh this phase's trust sub-page scope for the Phase 92 surfaces (creditor accounts, investments, Rule 54.15 monthly list) and include the Phase 93 `settings/matters?tab=take-on` tab in the settings-shell work.
+>
 > **Status: READY for `/architecture`. Start building only after Phase 90 closes**, meaning Epic 644 (exit gate) has merged and its closure report exists. Scope was agreed in `/ideate` on 2026-11-12. Phase 91 consumes three outputs of 644: the **dark-mode debt list**, the **long-tail adoption backlog** and the before/after metrics. Starting earlier would blur Phase 90's exit metrics and collide with 642/643 on shared files (`grouped-tab-bar.tsx`, `trust-accounting/actions.ts`).
 >
 > **Why this phase exists.** Phase 90 built the design system: tokens, dark mode, the shadcn sidebar shell, PageHeader, DataTable, StatCard, the chart kit, EmptyState and DetailHero. It moved the four surfaces a design partner sees first onto that system. Everything else still uses the old patterns. A demo that opens on the polished dashboard and then clicks into Settings, a fee note or a trust ledger falls back into the old look. Only 3 of 57 pages under `org/[slug]` use `PageHeader`. The new primitives are also being used at the wrong size: "No tasks assigned" and "No custom fields configured" render as full empty-page blocks inside small sections.
@@ -233,7 +235,7 @@ Same shape as Phase 90's 644:
 
 ## ADR Topics to Address
 
-ADR numbering continues from **ADR-385** (Phase 90 used 367–374, including 374 for the theme init script; Phase 92, which runs before this phase, used 375–384). Epics continue after Phase 92's 645–652.
+ADR numbering continues from **the next free ADR after Phase 93** (Phase 90 used 367–374, including 374 for the theme init script; Phase 92 used 375–384; Phase 93, which now runs before this phase, takes ADR-385 onward — check `adr/` at architecture time). Epics continue after Phase 92's 645–652.
 1. **Light-mode colour scheme.** Supersedes the Phase 90 sidebar ruling (§15, `architecture/phase90-ui-modernization.md:234`). Covers: the candidates, the founder's pick, rail and canvas and primary-button tokens, `--brand-color` treatment, AA contrast evidence, and the portal/marketing scope decision with its mechanism.
 2. **EmptyState sizing rule.** The variants, when each applies, the enforcement mechanism (lint, vitest guard or default-prop change), and the custom-fields one-liner as the worked example.
 3. **Settings shell and `SettingsSection`.** Layering per ADR-367, per-card vs page-level save, the danger-zone variant, the mobile settings nav, and how it relates to `settings-family-page.tsx` and ADR-341.

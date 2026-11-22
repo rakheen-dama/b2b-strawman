@@ -240,8 +240,10 @@ class AutoMatchLockOrderIntegrationTest {
     var depositId = deposit(account, client, "400.00", "CF3-DBL", LocalDate.of(2026, 3, 1));
     var first =
         importStatement(account, "cf3-dbl-1.csv", "01/03/2026,Deposit,400.00,400.00,CF3-DBL");
+    // A day later: two statements of one account may not end on the same date (FU-6b); tier 1
+    // matches by reference, so the date does not change what either auto-match wants.
     var second =
-        importStatement(account, "cf3-dbl-2.csv", "01/03/2026,Deposit,400.00,400.00,CF3-DBL");
+        importStatement(account, "cf3-dbl-2.csv", "02/03/2026,Deposit,400.00,400.00,CF3-DBL");
 
     var outcome =
         gatedOnRow(
@@ -320,12 +322,14 @@ class AutoMatchLockOrderIntegrationTest {
             "cf3-cross-1.csv",
             "01/03/2026," + loLine.formatted("1000.00"),
             "02/03/2026," + hiLine.formatted("2000.00"));
+    // Two days later (FU-6b: no two statements of one account end on the same date); the lines
+    // keep their order, and tier 1 matches by reference, so each run still wants the same rows.
     var second =
         importStatement(
             account,
             "cf3-cross-2.csv",
-            "01/03/2026," + hiLine.formatted("1000.00"),
-            "02/03/2026," + loLine.formatted("2000.00"));
+            "03/03/2026," + hiLine.formatted("1000.00"),
+            "04/03/2026," + loLine.formatted("2000.00"));
 
     var outcome =
         gatedOnRow(

@@ -144,6 +144,7 @@ import MonthlyListPage from "@/app/(app)/org/[slug]/trust-accounting/reconciliat
 import { BankStatementUpload } from "@/components/trust/BankStatementUpload";
 import { ReconciliationSplitPane } from "@/components/trust/ReconciliationSplitPane";
 import { fetchTransactions } from "@/app/(app)/org/[slug]/trust-accounting/transactions/actions";
+import { fetchTrustAccounts } from "@/app/(app)/org/[slug]/trust-accounting/actions";
 import { ApiError } from "@/lib/api";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
 import { recordFromStatementSchemaFor } from "@/lib/schemas/trust";
@@ -387,10 +388,109 @@ async function renderReconciliationList() {
 describe("Trust Reconciliation", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // FU-6b: the list page also lists the statements not yet reconciled
+    mockFetchBankStatements.mockResolvedValue([]);
   });
 
   afterEach(() => {
     cleanup();
+  });
+
+  // FU-6b (F-652C-1): a statement left behind by a refused wizard is listed with Discard; a
+  // reconciled one is not listed (retired ones never come back from the list endpoint).
+  // FU-6b (CodeRabbit round 1): the wizard's account select offers every trust account, so the
+  // list covers every account too: a statement imported into a non-primary account is listed
+  // (with its account) and can be discarded.
+  it("lists unreconciled statements of every trust account, not only the primary (FU-6b)", async () => {
+    const account = (id: string, accountName: string, isPrimary: boolean) => ({
+      id,
+      accountName,
+      bankName: "FNB",
+      branchCode: "250655",
+      accountNumber: id === "acc-1" ? "1234567890" : "9876543210",
+      accountType: "GENERAL",
+      isPrimary,
+      requireDualApproval: false,
+      paymentApprovalThreshold: null,
+      status: "ACTIVE",
+      openedDate: "2025-01-01",
+      closedDate: null,
+      notes: null,
+      createdAt: "2025-01-01T00:00:00Z",
+      updatedAt: "2025-01-01T00:00:00Z",
+    });
+    vi.mocked(fetchTrustAccounts).mockResolvedValueOnce([
+      account("acc-1", "Main Trust", true),
+      account("acc-2", "Second Trust", false),
+    ] as unknown as Awaited<ReturnType<typeof fetchTrustAccounts>>);
+    mockFetchReconciliations.mockResolvedValue({
+      content: [],
+      totalElements: 0,
+      totalPages: 0,
+      pageSize: 20,
+      pageNumber: 0,
+    });
+    mockFetchBankStatements.mockImplementation(async (accountId: string) =>
+      accountId === "acc-2"
+        ? [
+            {
+              id: "stmt-other",
+              fileName: "second-account.csv",
+              periodStart: "2026-11-01",
+              periodEnd: "2026-11-15",
+              lineCount: 2,
+              matchedCount: 0,
+              status: "IMPORTED",
+            },
+          ]
+        : []
+    );
+
+    await renderReconciliationList();
+
+    expect(mockFetchBankStatements).toHaveBeenCalledWith("acc-1");
+    expect(mockFetchBankStatements).toHaveBeenCalledWith("acc-2");
+    const row = screen.getByTestId("open-statement-row-stmt-other");
+    expect(row).toHaveTextContent("Second Trust");
+    expect(row).toHaveTextContent("second-account.csv");
+    expect(screen.getByTestId("discard-statement-stmt-other")).toBeInTheDocument();
+  });
+
+  it("lists the statements not yet reconciled, each with Discard (FU-6b)", async () => {
+    mockFetchReconciliations.mockResolvedValue({
+      content: [],
+      totalElements: 0,
+      totalPages: 0,
+      pageSize: 20,
+      pageNumber: 0,
+    });
+    mockFetchBankStatements.mockResolvedValue([
+      {
+        id: "stmt-left",
+        fileName: "leftover.csv",
+        periodStart: "2026-11-16",
+        periodEnd: "2026-11-16",
+        lineCount: 1,
+        matchedCount: 0,
+        status: "IMPORTED",
+      },
+      {
+        id: "stmt-done",
+        fileName: "october.csv",
+        periodStart: "2026-10-01",
+        periodEnd: "2026-10-31",
+        lineCount: 9,
+        matchedCount: 9,
+        status: "RECONCILED",
+      },
+    ]);
+
+    await renderReconciliationList();
+
+    expect(mockFetchBankStatements).toHaveBeenCalledWith("acc-1");
+    expect(screen.getByTestId("open-statement-row-stmt-left")).toHaveTextContent("leftover.csv");
+    expect(screen.getByTestId("discard-statement-stmt-left")).toBeInTheDocument();
+    expect(screen.queryByTestId("open-statement-row-stmt-done")).not.toBeInTheDocument();
   });
 
   // Test 1: Reconciliation list renders
@@ -910,6 +1010,145 @@ describe("Trust Reconciliation", () => {
     expect(screen.getByText("1 / 2 lines resolved")).toBeInTheDocument();
     expect(mockFetchBankStatement).toHaveBeenCalledWith("stmt-1");
   });
+  // FU-6b: the wizard's first upload replaces nothing; a corrected re-upload replaces the statement
+  // the wizard already uploaded (never a second copy of the same period).
+  it("re-uploads in the wizard replace the wizard's statement (FU-6b)", async () => {
+    const uploaded = (id: string) => ({
+      success: true,
+      data: {
+        id,
+        trustAccountId: "acc-1",
+        periodStart: "2026-03-01",
+        periodEnd: "2026-03-31",
+        openingBalance: 0,
+        closingBalance: 15000,
+        fileName: `${id}.csv`,
+        format: "CSV",
+        lineCount: 1,
+        matchedCount: 0,
+        status: "IMPORTED",
+        importedBy: "member-1",
+        createdAt: "2026-04-01T00:00:00Z",
+        updatedAt: "2026-04-01T00:00:00Z",
+        lines: [makeBankLine()],
+      },
+    });
+    mockUploadBankStatement
+      .mockResolvedValueOnce(uploaded("stmt-a"))
+      .mockResolvedValueOnce(uploaded("stmt-b"));
+
+    await act(async () => {
+      render(
+        <Suspense fallback={null}>
+          <NewReconciliationPage params={Promise.resolve({ slug: "acme" })} />
+        </Suspense>
+      );
+    });
+    await waitFor(() => expect(screen.getByTestId("account-select")).toHaveValue("acc-1"));
+    fireEvent.change(screen.getByTestId("period-end-input"), {
+      target: { value: "2026-03-31" },
+    });
+    fireEvent.click(screen.getByTestId("step-next-btn"));
+    const csvFile = () => new File(["csv"], "march-2026.csv", { type: "text/csv" });
+    fireEvent.change(await screen.findByTestId("file-input"), { target: { files: [csvFile()] } });
+    await waitFor(() => expect(mockUploadBankStatement).toHaveBeenCalledTimes(1));
+    expect(mockUploadBankStatement).toHaveBeenNthCalledWith(
+      1,
+      "acc-1",
+      expect.any(File),
+      undefined
+    );
+
+    fireEvent.change(screen.getByTestId("file-input"), { target: { files: [csvFile()] } });
+    await waitFor(() => expect(mockUploadBankStatement).toHaveBeenCalledTimes(2));
+    expect(mockUploadBankStatement).toHaveBeenNthCalledWith(2, "acc-1", expect.any(File), "stmt-a");
+  });
+
+  // FU-6b (CodeRabbit round 1): an upload that completes after the wizard was reset (the period
+  // changed while it uploaded) is dropped — it never becomes the wizard's statement, so the next
+  // upload replaces nothing instead of naming the stale statement.
+  it("drops an upload that completes after a wizard reset (FU-6b)", async () => {
+    let finishUpload: (v: unknown) => void = () => {};
+    mockUploadBankStatement
+      .mockReturnValueOnce(new Promise((resolve) => (finishUpload = resolve)))
+      .mockResolvedValueOnce({
+        success: true,
+        data: {
+          id: "stmt-fresh",
+          trustAccountId: "acc-1",
+          periodStart: "2026-04-01",
+          periodEnd: "2026-04-30",
+          openingBalance: 0,
+          closingBalance: 0,
+          fileName: "april.csv",
+          format: "CSV",
+          lineCount: 1,
+          matchedCount: 0,
+          status: "IMPORTED",
+          importedBy: "member-1",
+          createdAt: "2026-05-01T00:00:00Z",
+          updatedAt: "2026-05-01T00:00:00Z",
+          lines: [makeBankLine()],
+        },
+      });
+
+    await act(async () => {
+      render(
+        <Suspense fallback={null}>
+          <NewReconciliationPage params={Promise.resolve({ slug: "acme" })} />
+        </Suspense>
+      );
+    });
+    await waitFor(() => expect(screen.getByTestId("account-select")).toHaveValue("acc-1"));
+    fireEvent.change(screen.getByTestId("period-end-input"), { target: { value: "2026-03-31" } });
+    fireEvent.click(screen.getByTestId("step-next-btn"));
+    const csvFile = () => new File(["csv"], "march-2026.csv", { type: "text/csv" });
+    fireEvent.change(await screen.findByTestId("file-input"), { target: { files: [csvFile()] } });
+    await waitFor(() => expect(mockUploadBankStatement).toHaveBeenCalledTimes(1));
+
+    // While it uploads: back to step 1, a different period end (a reset), then step 2 again
+    fireEvent.click(screen.getByRole("button", { name: "Back" }));
+    fireEvent.change(await screen.findByTestId("period-end-input"), {
+      target: { value: "2026-04-30" },
+    });
+    fireEvent.click(screen.getByTestId("step-next-btn"));
+    await screen.findByTestId("file-input");
+
+    await act(async () => {
+      finishUpload({
+        success: true,
+        data: {
+          id: "stmt-stale",
+          trustAccountId: "acc-1",
+          periodStart: "2026-03-01",
+          periodEnd: "2026-03-31",
+          openingBalance: 0,
+          closingBalance: 0,
+          fileName: "march-2026.csv",
+          format: "CSV",
+          lineCount: 1,
+          matchedCount: 0,
+          status: "IMPORTED",
+          importedBy: "member-1",
+          createdAt: "2026-04-01T00:00:00Z",
+          updatedAt: "2026-04-01T00:00:00Z",
+          lines: [makeBankLine()],
+        },
+      });
+    });
+    expect(screen.getByTestId("step-next-btn")).toBeDisabled();
+
+    fireEvent.change(screen.getByTestId("file-input"), { target: { files: [csvFile()] } });
+    await waitFor(() => expect(mockUploadBankStatement).toHaveBeenCalledTimes(2));
+    expect(mockUploadBankStatement).toHaveBeenNthCalledWith(
+      2,
+      "acc-1",
+      expect.any(File),
+      undefined
+    );
+    await waitFor(() => expect(screen.getByTestId("step-next-btn")).toBeEnabled());
+  });
+
   // Test 7: while auto-match (and the statement re-read) is in flight, the user
   // cannot go back and change the account/period under it.
   it("disables Back on the auto-match step while auto-match is running", async () => {

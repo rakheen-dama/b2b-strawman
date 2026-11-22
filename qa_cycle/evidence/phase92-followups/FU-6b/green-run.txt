@@ -1,0 +1,65 @@
+# FU-6b green run, after review round 1 (ee80d5a) and CodeRabbit round 1 fixes; branch
+# fix/phase92-fu6b-statement-replace-discard (base 2fde9a191), 2026-11-22
+#
+# ── Backend Tier 2 ─────────────────────────────────────────────────────────────────────────────
+# cmd (from backend/, after ./mvnw spotless:apply; spotless:check = 0; no MUTATION left in main):
+#   ./mvnw test -Dtest='io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.**.*Test,
+#     TrustLedgerPortalSyncServiceIntegrationTest,DashboardActivityCacheTest,TrustPositionIntegrationTest,
+#     InformationRequestControllerTest,TrustBalanceTrendIntegrationTest,LegalDemoTrustBooksIntegrationTest,
+#     CatalogueBatch2TrustBillingTest,ClientTrustStatementContextIntegrationTest,
+#     StatementBuilderClosedPrimaryAccountIntegrationTest,LayerDependencyRulesTest,TestConventionsTest,
+#     TerminologyRemnantScanTest,TrustPostingRulesTest'
+# Scope:
+#   - the whole trustaccounting test tree;
+#   - every test class outside it that uses the changed code;
+#   - the four ArchUnit guards.
+# Not the full ./mvnw verify (the orchestrator runs it).
+
+[INFO] Tests run: 969, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+(88 test classes)
+
+Selected classes:
+Tests run: 19, Failures: 0, Errors: 0, Skipped: 0 -- in ...reconciliation.BankStatementReplaceDiscardIntegrationTest
+Tests run:  3, Failures: 0, Errors: 0, Skipped: 0 -- in ...architecture.LayerDependencyRulesTest
+Tests run:  3, Failures: 0, Errors: 0, Skipped: 0 -- in ...architecture.TestConventionsTest
+Tests run:  6, Failures: 0, Errors: 0, Skipped: 0 -- in ...architecture.TerminologyRemnantScanTest
+Tests run:  2, Failures: 0, Errors: 0, Skipped: 0 -- in ...transaction.TrustPostingRulesTest
+(TrustWireContractTest and the adapted existing classes — Draft, Matching, Reconciliation,
+ AutoMatchLockOrder and StatementLinePosting — are inside the 969 and all green.)
+
+# The red reproductions now pass (they are the first three tests of BankStatementReplaceDiscardIntegrationTest):
+#   sameEndDateSecondImport_isRefused
+#   replace_releasesTheFirstStatementsMatches_forTheNewStatement
+#   discard_ofAStep4Leftover_stopsItCounting
+#
+# Mutation checks (production change reverted locally, the test fails, then restored and re-run green):
+#   release order back to line (date) order:
+#     discard_releasesRowsInIdOrder_noDeadlockWithAnIdOrderLocker FAILS with 40P01
+#     ("deadlock detected"; mutation-release-order.txt)
+#   import advisory lock removed:
+#     twoConcurrentSameEndDateImports... FAILS, expected 1L but was 2L live statements
+#     (mutation-import-lock.txt)
+#   import lock put back to the trust account row FOR UPDATE:
+#     aPostingOnTheAccount_isNotBlockedByAnImportHeldOpen FAILS (mutation-import-lock.txt)
+#   createReconciliation statement read findByIdForShare -> findById:
+#     the two create/discard race tests FAIL
+#   releaseMatch findByIdForUpdate -> findById:
+#     the reversal race FAILS (status came back RECORDED)
+#   wizard upload generation guard disabled (frontend):
+#     "drops an upload that completes after a wizard reset (FU-6b)" FAILS
+#
+# ── Frontend gate (from frontend/, nvm node v20.11.1, NODE_OPTIONS="") ─────────────────────────
+pnpm install --frozen-lockfile  -> exit 0
+pnpm lint                       -> exit 0 (0 errors, 77 warnings; none in the changed files)
+pnpm typecheck                  -> exit 0
+pnpm format:check               -> exit 0
+pnpm test                       -> exit 0
+   Test Files  483 passed (483)
+        Tests  4610 passed | 2 skipped (4612)
+   (__tests__/trust/bank-statement-replace-discard.test.tsx: 14 tests;
+    __tests__/trust-reconciliation.test.tsx: +4 over main — list card, every-account list, wizard
+    re-upload replaces, stale upload dropped)
+   Pre-existing stderr noise: happy-dom ECONNREFUSED / blob: iframe trace from an unrelated
+   PDF-preview test; exit 0.
+rm -rf .next && pnpm build      -> exit 0 ("✓ Compiled successfully", 14/14 static pages generated)

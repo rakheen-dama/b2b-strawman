@@ -1,0 +1,33 @@
+# FU-6b mutation check: the retire's release order (CodeRabbit round 1 on PR #1831, ruling 1)
+#
+# Fix under test: prepareRetirement releases the matched lines' trust rows in trust transaction id
+# order (UUID.compareTo). That is the order autoMatchStatement locks its rows in (planned.sort).
+# Before the fix they were released in line (date, id) order.
+#
+# Mutation: in TrustReconciliationService.prepareRetirement the sort key was changed back to the
+# line order:
+#     BankStatementLine::getTransactionDate, // MUTATION: line (date) order
+# cmd: cd backend && ./mvnw test
+#        -Dtest='BankStatementReplaceDiscardIntegrationTest#discard_releasesRowsInIdOrder_noDeadlockWithAnIdOrderLocker'
+# date: 2026-11-22
+#
+# The test makes the statement's line order cross the id order: the earlier line holds the higher
+# id. A gate connection holds the lower id, as an auto-match holding its first lock would. The
+# discard then:
+#   - in line order: locks the higher id, then waits on the lower one;
+#   - when the gate asks for the higher id, the cycle closes and Postgres aborts the discard with
+#     40P01.
+# With the fix, the discard waits on the lower id holding no row, the gate takes the higher id at
+# once, and nothing deadlocks.
+# The file was restored from a backup copy taken before the mutation (grep -c MUTATION = 0). The
+# test passes again in green-run.txt.
+
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 15.11 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.BankStatementReplaceDiscardIntegrationTest
+[the discard (no 40P01)]
+expected:
+ but was:
+  org.springframework.dao.CannotAcquireLockException: JDBC exception executing SQL [ERROR: deadlock detected
+    Detail: Process 16957 waits for ShareLock on transaction 832; blocked by process 16958.
+  Process 16958 waits for ShareLock on transaction 833; blocked by process 16957.
+[ERROR]   BankStatementReplaceDiscardIntegrationTest.discard_releasesRowsInIdOrder_noDeadlockWithAnIdOrderLocker:997 [the discard (no 40P01)]
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0

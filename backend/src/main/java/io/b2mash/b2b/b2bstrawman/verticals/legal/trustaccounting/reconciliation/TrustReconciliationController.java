@@ -11,6 +11,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
@@ -43,16 +44,28 @@ public class TrustReconciliationController {
       consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @RequiresCapability("MANAGE_TRUST")
   public ResponseEntity<BankStatementResponse> importBankStatement(
-      @PathVariable UUID accountId, @RequestParam("file") MultipartFile file) {
+      @PathVariable UUID accountId,
+      @RequestParam("file") MultipartFile file,
+      @RequestParam(value = "replacesStatementId", required = false) UUID replacesStatementId) {
     return ResponseEntity.status(HttpStatus.CREATED)
-        .body(trustReconciliationService.importBankStatement(accountId, file));
+        .body(trustReconciliationService.importBankStatement(accountId, file, replacesStatementId));
   }
 
   @GetMapping("/api/trust-accounts/{accountId}/bank-statements")
   @RequiresCapability("VIEW_TRUST")
   public ResponseEntity<List<BankStatementResponse>> listBankStatements(
-      @PathVariable UUID accountId) {
-    return ResponseEntity.ok(trustReconciliationService.listBankStatements(accountId));
+      @PathVariable UUID accountId,
+      @RequestParam(value = "includeRetired", defaultValue = "false") boolean includeRetired) {
+    return ResponseEntity.ok(
+        trustReconciliationService.listBankStatements(accountId, includeRetired));
+  }
+
+  @PostMapping("/api/bank-statements/{statementId}/discard")
+  @RequiresCapability("MANAGE_TRUST")
+  public ResponseEntity<BankStatementResponse> discardBankStatement(
+      @PathVariable UUID statementId, @Valid @RequestBody DiscardStatementRequest request) {
+    return ResponseEntity.ok(
+        trustReconciliationService.discardBankStatement(statementId, request.reason()));
   }
 
   @GetMapping("/api/bank-statements/{statementId}")
@@ -149,4 +162,6 @@ public class TrustReconciliationController {
   record ManualMatchRequest(@NotNull UUID transactionId) {}
 
   record ExcludeLineRequest(@NotBlank String reason) {}
+
+  record DiscardStatementRequest(@NotBlank @Size(max = 500) String reason) {}
 }

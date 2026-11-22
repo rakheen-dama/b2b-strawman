@@ -190,6 +190,18 @@
       "name" : "updatedAt",
       "type" : "java.time.Instant"
     }, {
+      "name" : "retiredAt",
+      "type" : "java.time.Instant"
+    }, {
+      "name" : "retiredBy",
+      "type" : "java.util.UUID"
+    }, {
+      "name" : "retiredReason",
+      "type" : "java.lang.String"
+    }, {
+      "name" : "replacedByStatementId",
+      "type" : "java.util.UUID"
+    }, {
       "name" : "lines",
       "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService$BankStatementLineResponse>"
     } ],

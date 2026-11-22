@@ -70,6 +70,24 @@ public final class StatementLines {
     }
   }
 
+  /**
+   * No line of a RETIRED statement (replaced or discarded, FU-6b) changes state: it is not matched,
+   * recorded, excluded or unmatched, and its statement is not auto-matched. Retiring released every
+   * match, and a statement with a recorded line is never retired, so a retired statement's lines
+   * are all {@code UNMATCHED} or {@code EXCLUDED} and stay so for the audit trail. Call on the
+   * statement locked after the line (or, for exclude, read after the line lock: a retire locks
+   * every line first, so a waiting exclude reads the committed status).
+   */
+  public static void requireNotRetired(BankStatement statement) {
+    if (statement.isRetired()) {
+      throw new InvalidStateException(
+          "Statement retired",
+          "This bank statement was "
+              + (statement.getReplacedByStatementId() != null ? "replaced" : "discarded")
+              + ", so its lines cannot be matched, recorded or excluded.");
+    }
+  }
+
   /** Rule 2: the classification agrees with the line's sign; a zero line is never recorded. */
   public static void requireSignAgrees(
       StatementLineClassification classification, BigDecimal lineAmount) {

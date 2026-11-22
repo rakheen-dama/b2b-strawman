@@ -564,6 +564,11 @@ describe("trust wire shapes match the backend contract (ADR-365)", () => {
       importedBy: "",
       createdAt: "",
       updatedAt: "",
+      // FU-6b: who, when and why a statement was retired; the statement that replaced it
+      retiredAt: null,
+      retiredBy: null,
+      retiredReason: null,
+      replacedByStatementId: null,
       lines: [],
     };
     expect(Object.keys(literal)).toEqual(componentNames(records.BankStatementResponse));

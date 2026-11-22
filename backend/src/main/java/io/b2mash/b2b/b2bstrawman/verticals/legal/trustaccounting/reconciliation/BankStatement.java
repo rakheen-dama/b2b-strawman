@@ -17,6 +17,13 @@ import java.util.UUID;
 @Table(name = "bank_statements")
 public class BankStatement {
 
+  /**
+   * The terminal status of a replaced or discarded statement (FU-6b, ruling F-646C-1 / F-652C-1).
+   * Never deleted: the file and the lines stay for the audit trail; who, when and why are kept on
+   * the row ({@code chk_bank_stmt_retired}, V30).
+   */
+  public static final String RETIRED = "RETIRED";
+
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
   private UUID id;
@@ -56,6 +63,18 @@ public class BankStatement {
 
   @Column(name = "imported_by", nullable = false)
   private UUID importedBy;
+
+  @Column(name = "retired_at")
+  private Instant retiredAt;
+
+  @Column(name = "retired_by")
+  private UUID retiredBy;
+
+  @Column(name = "retired_reason", length = 500)
+  private String retiredReason;
+
+  @Column(name = "replaced_by_statement_id")
+  private UUID replacedByStatementId;
 
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
@@ -166,6 +185,38 @@ public class BankStatement {
 
   public void setStatus(String status) {
     this.status = status;
+  }
+
+  public boolean isRetired() {
+    return RETIRED.equals(status);
+  }
+
+  /**
+   * Retires the statement (FU-6b): replaced by {@code replacedBy}, or discarded when it is null.
+   * Call on the row locked with {@code findByIdForUpdate}, once its matches are released.
+   */
+  public void retire(UUID retiredBy, Instant retiredAt, String reason, UUID replacedBy) {
+    this.status = RETIRED;
+    this.retiredBy = retiredBy;
+    this.retiredAt = retiredAt;
+    this.retiredReason = reason;
+    this.replacedByStatementId = replacedBy;
+  }
+
+  public Instant getRetiredAt() {
+    return retiredAt;
+  }
+
+  public UUID getRetiredBy() {
+    return retiredBy;
+  }
+
+  public String getRetiredReason() {
+    return retiredReason;
+  }
+
+  public UUID getReplacedByStatementId() {
+    return replacedByStatementId;
   }
 
   public UUID getImportedBy() {

@@ -244,6 +244,28 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
     load();
   }, []);
 
+  // The upload, guarded like the other async handlers (652A D-6): the wizard generation is captured
+  // when the upload starts, and a result that lands after a reset (a changed account or period, a
+  // fresh wizard) is dropped — it never becomes this wizard's statement, so a later re-upload never
+  // names a statement of another account or period as the one it replaces (FU-6b, CodeRabbit round
+  // 1). The statement is stored by then; it is listed on the Reconciliation page to discard.
+  const uploadForThisWizard = useCallback(
+    async (accountId: string, file: File, replacesStatementId?: string) => {
+      const generation = wizardGeneration.current;
+      const result = await uploadBankStatement(accountId, file, replacesStatementId);
+      if (generation !== wizardGeneration.current) {
+        return {
+          success: false,
+          error: result.success
+            ? "The statement was imported, but the account or period changed while it uploaded, so this reconciliation does not use it. Upload it again, or discard it from the Reconciliation page."
+            : result.error,
+        };
+      }
+      return result;
+    },
+    []
+  );
+
   // Handle upload complete — also reset downstream state for replacement uploads
   const handleUploadComplete = useCallback(
     (stmt: BankStatementResponse) => {
@@ -737,10 +759,13 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
       {/* Step 2: Upload Statement */}
       {currentStep === 2 && (
         <div className="space-y-4">
+          {/* FU-6b: a re-upload replaces the statement this wizard already uploaded (its matches
+              are released and a draft on it moves to the new statement) — never a second copy. */}
           <BankStatementUpload
             accountId={selectedAccountId}
             onUploadComplete={handleUploadComplete}
-            uploadAction={uploadBankStatement}
+            replacesStatementId={statement?.id}
+            uploadAction={uploadForThisWizard}
           />
           <div className="flex justify-between">
             <Button type="button" variant="outline" onClick={() => setCurrentStep(1)}>

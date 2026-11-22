@@ -143,6 +143,11 @@ public class TrustReconciliationService {
       UUID importedBy,
       Instant createdAt,
       Instant updatedAt,
+      // FU-6b: set on a RETIRED statement only (replacedByStatementId on a replace only)
+      Instant retiredAt,
+      UUID retiredBy,
+      String retiredReason,
+      UUID replacedByStatementId,
       List<BankStatementLineResponse> lines) {}
 
   public record BankStatementLineResponse(
@@ -193,8 +198,39 @@ public class TrustReconciliationService {
 
   // --- Service Methods ---
 
+  /** An import that replaces nothing (see the three-argument overload). */
   @Transactional
   public BankStatementResponse importBankStatement(UUID accountId, MultipartFile file) {
+    return importBankStatement(accountId, file, null);
+  }
+
+  /**
+   * Imports a bank statement (FU-6b, ruling F-646C-1): refused (409, {@code
+   * bank_statement.duplicate_end_date}, naming the existing statement in {@code
+   * existingStatementId}) when another non-RETIRED statement of the account ends on the same date —
+   * unless {@code replacesStatementId} names the statement this one replaces. A replace retires
+   * that statement in the same transaction ({@link #retire}): its matches are released, it is
+   * marked RETIRED (replaced by this one), and a draft reconciliation on it is re-pointed to this
+   * one and recalculated. A replace is refused while the old statement is reconciled, is used by a
+   * completed reconciliation, or has a recorded line; and when a draft on it cannot be re-pointed
+   * (this statement does not fit its period end). Every refusal stores nothing.
+   *
+   * <p>Lock order (a replace): the old statement's reconciliation rows, its lines, the trust
+   * transactions they release, the old statement — then, for every import, the account's import
+   * lock ({@link BankStatementRepository#lockImportsOfAccount}, a transaction-scoped advisory lock
+   * keyed by tenant schema and account), which serialises two imports of one account so two
+   * same-end-date imports cannot both pass the check. No trust account row is locked, so postings
+   * on the account never wait on an import. The advisory lock cannot close a cycle: only an import
+   * takes it, and after it an import waits on nothing another import holds — it inserts new rows,
+   * writes the old statement and drafts it already locked, and reads the books plainly. A second
+   * import of the account waits on it holding only its own old statement's rows, which the first
+   * never asks for after taking it (a contended old statement is waited on before it, in steps 1–3
+   * of {@link #prepareRetirement}). The raw file is uploaded last, once every refusal has been
+   * passed.
+   */
+  @Transactional
+  public BankStatementResponse importBankStatement(
+      UUID accountId, MultipartFile file, UUID replacesStatementId) {
     moduleGuard.requireModule(MODULE_ID);
 
     var account =
@@ -243,13 +279,24 @@ public class TrustReconciliationService {
     }
     requireNoLineAfterToday(parsed);
 
-    // Store file in S3 only after a successful parse, so a rejected import leaves no orphaned
-    // object. G88-F33: a fresh uuid segment per import, so a re-import of a same-named file (banks
-    // export fixed names such as statement.csv) never overwrites the earlier raw file.
+    // FU-6b: the statement this import replaces — its reconciliations, lines, released rows and
+    // the statement itself are locked and checked first (refusals roll everything back).
+    Retirement replaced =
+        replacesStatementId == null
+            ? null
+            : prepareRetirement(replacesStatementId, accountId, true);
+    // The account's import lock last (a transaction-scoped advisory lock, not the account row):
+    // two imports of one account are serialised, so two same-end-date statements cannot both pass
+    // the check below, while postings on the account never wait on an import.
+    bankStatementRepository.lockImportsOfAccount(accountId);
+    requireNoLiveStatementEndingOn(accountId, endDateOf(parsed), replacesStatementId);
+
+    // G88-F33: a fresh uuid segment per import, so a re-import of a same-named file (banks export
+    // fixed names such as statement.csv) never overwrites the earlier raw file. Uploaded last
+    // (below), so a refused import leaves no orphaned object.
     String s3Key =
         "trust-statements/%s/%s/%s/%s"
             .formatted(tenantSchema, accountId, UUID.randomUUID(), fileName);
-    storageService.upload(s3Key, fileBytes, file.getContentType());
 
     // Determine format label from parser class name
     String format = detectFormat(matchedParser);
@@ -295,24 +342,299 @@ public class TrustReconciliationService {
     }
 
     // Audit the import
+    var importDetails = new LinkedHashMap<String, Object>();
+    importDetails.put("trust_account_id", accountId.toString());
+    importDetails.put("file_name", fileName);
+    importDetails.put("format", format);
+    importDetails.put("line_count", parsed.lines().size());
+    if (replacesStatementId != null) {
+      importDetails.put("replaces_statement_id", replacesStatementId.toString());
+    }
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("bank_statement.imported")
             .entityType("bank_statement")
             .entityId(statement.getId())
-            .details(
-                Map.of(
-                    "trust_account_id",
-                    accountId.toString(),
-                    "file_name",
-                    fileName,
-                    "format",
-                    format,
-                    "line_count",
-                    parsed.lines().size()))
+            .details(importDetails)
             .build());
 
+    if (replaced != null) {
+      retire(replaced, memberId, "Replaced by " + fileName, statement);
+    }
+
+    storageService.upload(s3Key, fileBytes, file.getContentType());
     return toResponse(statement, savedLines);
+  }
+
+  /**
+   * The end date the period-fit rule uses for a statement ({@code requireStatementFitsPeriodEnd}):
+   * its last line's date, or its period end when it has no lines.
+   */
+  private static LocalDate endDateOf(ParsedStatement parsed) {
+    return parsed.lines().stream()
+        .map(line -> line.date())
+        .max(Comparator.naturalOrder())
+        .orElse(parsed.periodEnd());
+  }
+
+  /**
+   * FU-6b (ruling F-646C-1): refuses (409) when a non-RETIRED statement of the account other than
+   * {@code replacesStatementId} ends on {@code endDate}. Two such statements would both fit any
+   * period end from that date (rule 3 looks only for lines after the selected statement's last
+   * line), so a month could be reconciled against the superseded one. A plain import's
+   * ProblemDetail ({@code bank_statement.duplicate_end_date}) names the existing statement ({@code
+   * existingStatementId}, {@code existingFileName}) so the UI can offer to replace it. An import
+   * that already replaces a statement is refused with {@code
+   * bank_statement.duplicate_end_date_while_replacing} and no replace invitation (FU-6b D-2: one
+   * import retires at most one statement).
+   */
+  private void requireNoLiveStatementEndingOn(
+      UUID accountId, LocalDate endDate, UUID replacesStatementId) {
+    var existing =
+        bankStatementRepository.findLiveStatementsEndingOn(accountId, endDate).stream()
+            .filter(ref -> !ref.getStatementId().equals(replacesStatementId))
+            .findFirst();
+    if (existing.isEmpty()) {
+      return;
+    }
+    var ref = existing.get();
+    var endDateText = endDate.format(PERIOD_END_FORMAT);
+    if (replacesStatementId != null) {
+      // FU-6b D-2 (ruling): one import retires at most one statement. This import already
+      // replaces a statement, so it never invites a second replace — the clash is discarded first.
+      // A reconciled statement cannot be discarded, so it is not offered as the way out.
+      String wayOut =
+          "RECONCILED".equals(ref.getStatus())
+              ? " and is reconciled, so it cannot be discarded. Upload a statement ending on a"
+                  + " different date."
+              : ". Discard it from the Reconciliation page first, then upload again.";
+      throw new ResourceConflictException(
+          "A statement ending on this date is already imported",
+          "Statement " + ref.getFileName() + " also ends on " + endDateText + wayOut,
+          Map.of("code", "bank_statement.duplicate_end_date_while_replacing"));
+    }
+    var properties = new LinkedHashMap<String, Object>();
+    properties.put("code", "bank_statement.duplicate_end_date");
+    properties.put("existingStatementId", ref.getStatementId().toString());
+    properties.put("existingFileName", ref.getFileName());
+    throw new ResourceConflictException(
+        "A statement ending on this date is already imported",
+        "Statement "
+            + ref.getFileName()
+            + " of this trust account also ends on "
+            + endDateText
+            + ". Replace it with this statement, or import a statement that ends on another"
+            + " date.",
+        properties);
+  }
+
+  // --- Replace / discard (FU-6b) ---
+
+  /**
+   * A statement checked and locked for retirement, with its matches already released: the statement
+   * row, and the reconciliations on it (each locked; only DRAFTs reach here).
+   */
+  private record Retirement(BankStatement statement, List<TrustReconciliation> drafts) {}
+
+  /**
+   * Discards an imported statement (FU-6b, F-652C-1: the statement left behind when the wizard
+   * refused it, or one uploaded in error): it is retired without a replacement, with {@code
+   * reason}. Its file and lines are kept; it stops counting in the period-fit rules and {@code
+   * UNRESOLVED_STATEMENT_LINES}. Refused while it is reconciled, used by a completed reconciliation
+   * or has a recorded line (the rules of a replace) and — FU-6b default — while a draft
+   * reconciliation uses it: discarding would leave that draft without a statement; continue the
+   * draft with another statement (or replace this one) first. Lock order as a replace.
+   */
+  @Transactional
+  public BankStatementResponse discardBankStatement(UUID statementId, String reason) {
+    moduleGuard.requireModule(MODULE_ID);
+    if (reason == null || reason.isBlank()) {
+      throw new InvalidStateException(
+          "Cannot discard statement", "Give a reason for discarding this statement.");
+    }
+    var retirement = prepareRetirement(statementId, null, false);
+    retire(retirement, RequestScopes.requireMemberId(), reason.strip(), null);
+    var statement = retirement.statement();
+    return toResponse(
+        statement, bankStatementLineRepository.findByBankStatementIdOrderByLineNumber(statementId));
+  }
+
+  /**
+   * Locks and checks {@code statementId} for a replace ({@code replacing}, by an import into {@code
+   * accountId}) or a discard, and releases its matches. In the order the default FU-6 D-1 and the
+   * global lock order set (reconciliation → line → transaction → statement, as {@code
+   * completeReconciliation} and {@link #unmatch}):
+   *
+   * <ol>
+   *   <li>every reconciliation on the statement, each row locked in id order (its first read): a
+   *       COMPLETED one refuses; a DRAFT refuses a discard and is re-pointed by a replace;
+   *   <li>every line of the statement, locked in auto-match's order ({@link
+   *       BankStatementLineRepository#findByStatementIdForUpdate}): a RECORDED line refuses (its
+   *       rows are real trust entries — unmatch it first, which reverses them); each AUTO_ /
+   *       MANUALLY_ MATCHED line is released through {@link #releaseMatch}, the code {@link
+   *       #unmatch} uses (the line UNMATCHED, its row unlinked); EXCLUDED lines are left as they
+   *       are. The released rows are locked one at a time in trust transaction id order — the order
+   *       {@link #autoMatchStatement} locks its rows in — each re-read under its lock and unlinked
+   *       only while it is still linked to its line;
+   *   <li>the statement, locked last: refused when RETIRED, RECONCILED or of another account;
+   *       {@code matched_count} falls by the lines released. Then the reconciliations on it are
+   *       read again: one that a concurrent create pointed at it after step 1 refuses (create locks
+   *       the statement after its reconciliation, so it either committed before this lock and is
+   *       seen here, or waits and then finds the statement RETIRED).
+   * </ol>
+   *
+   * A refusal after a release rolls the release back with the rest of the transaction.
+   */
+  private Retirement prepareRetirement(UUID statementId, UUID accountId, boolean replacing) {
+    String title = replacing ? "Cannot replace statement" : "Cannot discard statement";
+
+    // 1. The reconciliations on it, each locked (first read) in id order
+    var lockedIds = trustReconciliationRepository.findIdsByBankStatementId(statementId);
+    var drafts = new ArrayList<TrustReconciliation>();
+    for (UUID reconciliationId : lockedIds) {
+      var reconciliation =
+          trustReconciliationRepository
+              .findByIdForUpdate(reconciliationId)
+              .orElseThrow(
+                  () -> new ResourceNotFoundException("TrustReconciliation", reconciliationId));
+      if (!statementId.equals(reconciliation.getBankStatementId())) {
+        continue; // re-pointed elsewhere while we waited for its lock
+      }
+      var periodEndText = reconciliation.getPeriodEnd().format(PERIOD_END_FORMAT);
+      if (reconciliation.getStatus() != ReconciliationStatus.DRAFT) {
+        throw new InvalidStateException(
+            title,
+            "The reconciliation to "
+                + periodEndText
+                + " was completed with this statement, so it cannot be "
+                + (replacing ? "replaced." : "discarded."));
+      }
+      if (!replacing) {
+        throw new InvalidStateException(
+            title,
+            "The draft reconciliation to "
+                + periodEndText
+                + " uses this statement. Continue that reconciliation with another statement, or"
+                + " import the corrected statement as its replacement.");
+      }
+      drafts.add(reconciliation);
+    }
+
+    // 2. Every line, locked; recorded lines refuse; matched lines are released
+    var lines = bankStatementLineRepository.findByStatementIdForUpdate(statementId);
+    long recorded = lines.stream().filter(l -> "RECORDED".equals(l.getMatchStatus())).count();
+    if (recorded > 0) {
+      throw new InvalidStateException(
+          title,
+          (recorded == 1
+                  ? "1 line of this statement was recorded"
+                  : recorded + " lines of this statement were recorded")
+              + " from the statement and created trust entries. Unmatch "
+              + (recorded == 1 ? "it" : "them")
+              + " first, which reverses those entries.");
+    }
+    // The matched lines' rows are locked in trust transaction id order (UUID.compareTo), the order
+    // auto-match locks its rows in (planned.sort): a run holding a lower id never waits on a higher
+    // one this retire holds while the retire waits on the lower (CodeRabbit round 1 on PR #1831).
+    var matched =
+        lines.stream()
+            .filter(
+                l ->
+                    "AUTO_MATCHED".equals(l.getMatchStatus())
+                        || "MANUALLY_MATCHED".equals(l.getMatchStatus()))
+            .sorted(
+                Comparator.comparing(
+                    BankStatementLine::getTrustTransactionId,
+                    Comparator.nullsLast(Comparator.naturalOrder())))
+            .toList();
+    int released = 0;
+    for (var line : matched) {
+      releaseMatch(line);
+      released++;
+    }
+
+    // 3. The statement last, locked (its first read), then its reconciliations again
+    var statement =
+        bankStatementRepository
+            .findByIdForUpdate(statementId)
+            .orElseThrow(() -> new ResourceNotFoundException("BankStatement", statementId));
+    if (accountId != null && !statement.getTrustAccountId().equals(accountId)) {
+      throw new InvalidStateException(
+          "Trust account mismatch",
+          "The statement to replace does not belong to the specified trust account");
+    }
+    if (statement.isRetired()) {
+      throw new InvalidStateException(
+          title,
+          "This statement was already "
+              + (statement.getReplacedByStatementId() != null ? "replaced." : "discarded."));
+    }
+    if ("RECONCILED".equals(statement.getStatus())) {
+      throw new InvalidStateException(
+          title,
+          "This statement's reconciliation is complete, so it cannot be "
+              + (replacing ? "replaced." : "discarded."));
+    }
+    var nowOnIt = trustReconciliationRepository.findIdsByBankStatementId(statementId);
+    var expected = drafts.stream().map(TrustReconciliation::getId).toList();
+    if (!expected.containsAll(nowOnIt)) {
+      throw new ResourceConflictException(
+          "Reconciliation started at the same time",
+          "Another member started a reconciliation with this statement at the same time. Reload"
+              + " and try again.");
+    }
+    for (int i = 0; i < released; i++) {
+      statement.decrementMatched();
+    }
+    return new Retirement(statement, drafts);
+  }
+
+  /**
+   * Retires a prepared statement (replaced by {@code replacement}, or discarded when it is null):
+   * status RETIRED with who, when and why; then, on a replace, every draft on it is re-pointed to
+   * the replacement and recalculated (652C's continuation, D-5) — a draft the replacement does not
+   * fit refuses the whole replace. Audited as {@code bank_statement.replaced} / {@code
+   * bank_statement.discarded} (lowercase entity type {@code bank_statement}).
+   */
+  private void retire(
+      Retirement retirement, UUID memberId, String reason, BankStatement replacement) {
+    var statement = retirement.statement();
+    UUID replacementId = replacement != null ? replacement.getId() : null;
+    statement.retire(memberId, Instant.now(), reason, replacementId);
+    bankStatementRepository.save(statement);
+
+    var repointed = new ArrayList<String>();
+    for (var draft : retirement.drafts()) {
+      try {
+        continueDraft(draft, replacementId);
+      } catch (InvalidStateException e) {
+        throw new InvalidStateException(
+            "Cannot replace statement",
+            "The draft reconciliation to "
+                + draft.getPeriodEnd().format(PERIOD_END_FORMAT)
+                + " uses the statement you are replacing, and the new statement does not fit"
+                + " that period end: "
+                + e.getBody().getDetail());
+      }
+      repointed.add(draft.getId().toString());
+    }
+
+    var details = new LinkedHashMap<String, Object>();
+    details.put("trust_account_id", statement.getTrustAccountId().toString());
+    details.put("file_name", statement.getFileName());
+    details.put("reason", reason);
+    if (replacement != null) {
+      details.put("replaced_by_statement_id", replacementId.toString());
+      details.put("replaced_by_file_name", replacement.getFileName());
+      details.put("repointed_reconciliation_ids", repointed);
+    }
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType(replacement != null ? "bank_statement.replaced" : "bank_statement.discarded")
+            .entityType("bank_statement")
+            .entityId(statement.getId())
+            .details(details)
+            .build());
   }
 
   /**
@@ -335,17 +657,25 @@ public class TrustReconciliationService {
     }
   }
 
+  /**
+   * The account's statements, latest period end first. RETIRED statements (replaced or discarded,
+   * FU-6b) are left out unless {@code includeRetired}; a retired one carries its status and who,
+   * when and why.
+   */
   @Transactional(readOnly = true)
-  public List<BankStatementResponse> listBankStatements(UUID accountId) {
+  public List<BankStatementResponse> listBankStatements(UUID accountId, boolean includeRetired) {
     moduleGuard.requireModule(MODULE_ID);
 
     trustAccountRepository
         .findById(accountId)
         .orElseThrow(() -> new ResourceNotFoundException("TrustAccount", accountId));
 
-    return bankStatementRepository.findByTrustAccountIdOrderByPeriodEndDesc(accountId).stream()
-        .map(stmt -> toResponse(stmt, List.of()))
-        .toList();
+    var statements =
+        includeRetired
+            ? bankStatementRepository.findByTrustAccountIdOrderByPeriodEndDesc(accountId)
+            : bankStatementRepository.findByTrustAccountIdAndStatusNotOrderByPeriodEndDesc(
+                accountId, BankStatement.RETIRED);
+    return statements.stream().map(stmt -> toResponse(stmt, List.of())).toList();
   }
 
   @Transactional(readOnly = true)
@@ -406,6 +736,8 @@ public class TrustReconciliationService {
         bankStatementRepository
             .findById(statementId)
             .orElseThrow(() -> new ResourceNotFoundException("BankStatement", statementId));
+    // FU-6b: a RETIRED statement is not auto-matched (re-checked under its lock in step 3)
+    StatementLines.requireNotRetired(statement);
 
     // 1. Every UNMATCHED line, locked first (matching order: date, then id), state re-checked.
     List<BankStatementLine> unmatchedLines =
@@ -468,6 +800,9 @@ public class TrustReconciliationService {
 
     // 3. The statement last, re-read under its lock: the count rises from its current value.
     entityManager.refresh(statement, LockModeType.PESSIMISTIC_WRITE);
+    // A retire that held the lines while this run waited released them (UNMATCHED again), so the
+    // run may have matched lines of a now-RETIRED statement: refuse, rolling every match back.
+    StatementLines.requireNotRetired(statement);
     int alreadyMatched = statement.getMatchedCount();
     statement.setMatchedCount(alreadyMatched + autoMatched);
     bankStatementRepository.save(statement);
@@ -542,6 +877,7 @@ public class TrustReconciliationService {
             .findByIdForUpdate(line.getBankStatementId())
             .orElseThrow(
                 () -> new ResourceNotFoundException("BankStatement", line.getBankStatementId()));
+    StatementLines.requireNotRetired(statement);
     if (!statement.getTrustAccountId().equals(transaction.getTrustAccountId())) {
       throw new InvalidStateException(
           "Trust account mismatch",
@@ -606,32 +942,18 @@ public class TrustReconciliationService {
           "Invalid match state", "Bank statement line must be matched to unmatch");
     }
 
-    UUID transactionId = line.getTrustTransactionId();
-
-    // Clear the line side
-    line.setMatchStatus("UNMATCHED");
-    line.setTrustTransactionId(null);
-    line.setMatchConfidence(null);
-    bankStatementLineRepository.save(line);
-
-    // Clear the transaction side
-    if (transactionId != null) {
-      trustTransactionRepository
-          .findById(transactionId)
-          .ifPresent(
-              txn -> {
-                postingService.linkBankLine(txn, null);
-              });
-    }
+    releaseMatch(line);
 
     // Decrement matched count (statement locked after the line); refused once the statement is
-    // RECONCILED (D-14) — the refusal rolls back the line and transaction changes above.
+    // RECONCILED (D-14) or RETIRED (FU-6b) — the refusal rolls back the line and transaction
+    // changes above.
     var statement =
         bankStatementRepository
             .findByIdForUpdate(line.getBankStatementId())
             .orElseThrow(
                 () -> new ResourceNotFoundException("BankStatement", line.getBankStatementId()));
     StatementLines.requireNotReconciled(statement);
+    StatementLines.requireNotRetired(statement);
     statement.decrementMatched();
     bankStatementRepository.save(statement);
 
@@ -641,6 +963,34 @@ public class TrustReconciliationService {
             .entityType("bank_statement_line")
             .entityId(lineId)
             .build());
+  }
+
+  /**
+   * Releases a matched ({@code AUTO_MATCHED} / {@code MANUALLY_MATCHED}) line, already locked: the
+   * line goes back to {@code UNMATCHED} and its row is unlinked ({@code linkBankLine(row, null)},
+   * which never touches the row's effects). The caller locks the statement next and lowers its
+   * {@code matched_count}. Used by {@link #unmatch} and by a replace or discard (FU-6b).
+   */
+  private void releaseMatch(BankStatementLine line) {
+    UUID transactionId = line.getTrustTransactionId();
+
+    // Clear the line side
+    line.setMatchStatus("UNMATCHED");
+    line.setTrustTransactionId(null);
+    line.setMatchConfidence(null);
+    bankStatementLineRepository.save(line);
+
+    // Clear the transaction side. The row is locked and read fresh (line → transaction →
+    // statement): the save writes the whole row, so a plain read could write back a stale status
+    // over a reversal committed meanwhile (a reversal locks the row, never the line — FU-6b
+    // review). This is the first read of the row in every caller's transaction. Re-read under its
+    // lock, the row is unlinked only while it is still linked to this line.
+    if (transactionId != null) {
+      trustTransactionRepository
+          .findByIdForUpdate(transactionId)
+          .filter(txn -> line.getId().equals(txn.getBankStatementLineId()))
+          .ifPresent(txn -> postingService.linkBankLine(txn, null));
+    }
   }
 
   // --- Exclude ---
@@ -659,6 +1009,11 @@ public class TrustReconciliationService {
       throw new InvalidStateException(
           "Invalid match state", "Only UNMATCHED lines can be excluded");
     }
+    // FU-6b: never a line of a RETIRED statement. A plain read after the line lock: a retire locks
+    // every line of the statement before it retires it, so this read sees its committed status.
+    bankStatementRepository
+        .findById(line.getBankStatementId())
+        .ifPresent(StatementLines::requireNotRetired);
 
     // Intentionally does NOT update matchedCount: excluded lines are not "matched" in the
     // reconciliation sense. matchedCount tracks matched (AUTO_MATCHED + MANUALLY_MATCHED) and
@@ -793,9 +1148,13 @@ public class TrustReconciliationService {
       throw alreadyReconciled(periodEnd);
     }
 
+    // Share-locked after the reconciliation row (reconciliation → statement, D-13), as its first
+    // read: a replace or discard of this statement (FU-6b) locks it FOR UPDATE, so a create either
+    // commits first (and the retire sees the reconciliation and refuses) or waits and finds it
+    // RETIRED here. A share lock, so two creates on one statement do not wait on each other here.
     var statement =
         bankStatementRepository
-            .findById(bankStatementId)
+            .findByIdForShare(bankStatementId)
             .orElseThrow(() -> new ResourceNotFoundException("BankStatement", bankStatementId));
     requireStatementFitsPeriodEnd(accountId, statement, periodEnd);
 
@@ -899,6 +1258,15 @@ public class TrustReconciliationService {
       throw new InvalidStateException(
           "Trust account mismatch",
           "Bank statement does not belong to the specified trust account");
+    }
+    // FU-6b: a RETIRED statement (replaced or discarded) is never reconciled against
+    if (statement.isRetired()) {
+      throw new InvalidStateException(
+          "Statement retired",
+          "This bank statement was "
+              + (statement.getReplacedByStatementId() != null ? "replaced" : "discarded")
+              + ". Reconcile against the statement that replaced it, or import the statement for"
+              + " this period.");
     }
     var periodEndText = periodEnd.format(PERIOD_END_FORMAT);
     // The parsers set period_end to the last line's date, so a statement with no lines uses its
@@ -1510,6 +1878,10 @@ public class TrustReconciliationService {
         statement.getImportedBy(),
         statement.getCreatedAt(),
         statement.getUpdatedAt(),
+        statement.getRetiredAt(),
+        statement.getRetiredBy(),
+        statement.getRetiredReason(),
+        statement.getReplacedByStatementId(),
         lines.stream()
             .map(
                 line ->

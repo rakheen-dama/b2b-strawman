@@ -61,4 +61,14 @@ public interface TrustReconciliationRepository extends JpaRepository<TrustReconc
   @Lock(LockModeType.PESSIMISTIC_WRITE)
   @Query("SELECT r FROM TrustReconciliation r WHERE r.id = :id")
   Optional<TrustReconciliation> findByIdForUpdate(@Param("id") UUID id);
+
+  /**
+   * The ids of the reconciliations on statement {@code bankStatementId}, in id order (FU-6b). Ids
+   * only, so no entity is loaded before the caller locks each row with {@link #findByIdForUpdate}
+   * (a later locking read does not refresh an already-loaded row).
+   */
+  @Query(
+      "SELECT r.id FROM TrustReconciliation r WHERE r.bankStatementId = :bankStatementId"
+          + " ORDER BY r.id")
+  List<UUID> findIdsByBankStatementId(@Param("bankStatementId") UUID bankStatementId);
 }

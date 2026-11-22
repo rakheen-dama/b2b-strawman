@@ -554,6 +554,97 @@ class BankStatementReplaceDiscardIntegrationTest {
   }
 
   /**
+   * 646C O-2 guard (hypothesis not reproduced as a harm): the wizard auto-matches a statement (step
+   * 3) before {@code createReconciliation} checks it fits the period end (step 4). Here the refused
+   * statement is a wrong file whose line coincides with a real deposit: auto-match links the
+   * deposit, create refuses, and the link stays (matches belong to lines, not reconciliations —
+   * 652C D-5). The link does take the deposit out of another draft's outstanding items, but never
+   * silently: the bank side lacks it, so the draft shows a difference of exactly that amount and
+   * completion is refused (G1). Discarding the refused statement (FU-6b) releases the link; the
+   * draft then balances and completes.
+   */
+  @Test
+  void refusedStatementsAutoMatchLinks_neverSilentlyHideAnOutstandingItem_andDiscardReleasesThem()
+      throws Exception {
+    var account = books.freshAccount(false);
+    var client = books.newClient("o2 refused automatch");
+    var deposit = books.deposit(account, client, "1000.00"); // 1 March, not yet on the bank
+    var second = books.deposit(account, client, "500.00", LocalDate.of(2026, 3, 3));
+    var periodEnd = LocalDate.of(2026, 3, 10);
+
+    // Steps 2-3 of the wizard: a wrong file is imported and auto-matched; step 4 refuses it.
+    var wrong =
+        importStatement(
+            account,
+            "o2-wrong.csv",
+            "01/03/2026,Deposit received,1000.00,1000.00,O2-W1",
+            "20/03/2026,Unknown credit,75.00,1075.00,O2-W2");
+    assertThat(autoMatch(wrong.id()).autoMatched()).isEqualTo(1);
+    books.as(
+        memberId,
+        () ->
+            assertThatThrownBy(
+                    () ->
+                        reconciliationService.createReconciliation(account, periodEnd, wrong.id()))
+                .hasMessageContaining("Statement does not fit the period end"));
+    assertThat(reconciliationRows(account)).as("the refusal stored no reconciliation").isZero();
+    assertThat(linkedLineStatement(deposit))
+        .as("the refused statement's auto-match link persists")
+        .isEqualTo(wrong.id());
+
+    // The right statement: the bank shows only the second deposit by the period end.
+    var march =
+        importStatement(account, "o2-march.csv", "03/03/2026,Deposit received,500.00,500.00,O2-M1");
+    assertThat(autoMatch(march.id()).autoMatched()).isEqualTo(1);
+    assertThat(linkedLineStatement(second)).isEqualTo(march.id());
+    var draft = createAndCalculate(account, periodEnd, march.id());
+
+    // The link hides the 1 March deposit from outstanding deposits — and the draft says so.
+    assertThat(draft.bankBalance()).isEqualByComparingTo("500.00");
+    assertThat(draft.cashbookBalance()).isEqualByComparingTo("1500.00");
+    assertThat(draft.outstandingDeposits())
+        .as("the deposit linked to the refused statement's line is not outstanding")
+        .isEqualByComparingTo("0.00");
+    assertThat(draft.bankToCashbookDifference().abs())
+        .as("the hidden item surfaces as a difference of exactly its amount")
+        .isEqualByComparingTo("1000.00");
+    assertThat(draft.isBalanced()).isFalse();
+    books.as(
+        memberId,
+        () -> {
+          var error =
+              org.assertj.core.api.Assertions.catchThrowable(
+                  () -> reconciliationService.completeReconciliation(draft.id(), march.id()));
+          assertThat(error).isInstanceOf(InvalidStateException.class);
+          assertThat(((InvalidStateException) error).getBody().getTitle())
+              .isEqualTo("Reconciliation does not balance");
+        });
+
+    // Recovery (FU-6b): discard the refused statement; its link is released.
+    books.as(
+        memberId,
+        () -> reconciliationService.discardBankStatement(wrong.id(), "Wrong file (O-2 guard)"));
+    assertThat(statementStatus(wrong.id())).isEqualTo("RETIRED");
+    assertThat(matchStatus(wrong.lines().getFirst().id())).isEqualTo("UNMATCHED");
+    assertThat(linkedLine(deposit)).as("the discard released the deposit").isNull();
+
+    var recalculated = new TrustReconciliationResponse[1];
+    books.as(
+        memberId,
+        () ->
+            recalculated[0] =
+                reconciliationService.calculateReconciliation(draft.id(), march.id()));
+    assertThat(recalculated[0].outstandingDeposits()).isEqualByComparingTo("1000.00");
+    assertThat(recalculated[0].difference()).isEqualByComparingTo("0.00");
+    assertThat(recalculated[0].isBalanced()).isTrue();
+    var completed = new TrustReconciliationResponse[1];
+    books.as(
+        memberId,
+        () -> completed[0] = reconciliationService.completeReconciliation(draft.id(), march.id()));
+    assertThat(completed[0].status()).isEqualTo("COMPLETED");
+  }
+
+  /**
    * A RETIRED statement counts nowhere: it is hidden from the statement list (shown only with
    * includeRetired), it is not reconciled against, and none of its lines can be matched, recorded
    * or excluded; it is not auto-matched.

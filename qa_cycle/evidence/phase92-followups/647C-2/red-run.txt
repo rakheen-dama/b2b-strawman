@@ -1,0 +1,29 @@
+647C #2 / 649B F2 — RED run on origin/main @ 34f45c07170ea48f471c67df08cb9e916979d957
+(production code = main; only ClientLedgerRunningBalanceIntegrationTest changed: two new tests)
+
+Command: cd backend && ./mvnw test -Dtest=ClientLedgerRunningBalanceIntegrationTest
+Test clock "today" = 2026-11-22 (d-10 = 11-12 ... d-2 = 11-20)
+
+Verdict: REPRODUCED. Not only the "—" (null) on the REVERSED original and its contra: an ordinary,
+un-reversed posted row between the original's date and the contra's date shows a WRONG figure:
+  - payment case: DEPOSIT R100 on d-4 shows 1100.00, the client's balance as at d-4 is 700.00
+  - deposit case: PAYMENT R100 on d-6 shows 900.00, the client's balance as at d-6 is 1200.00
+
+Surefire output (verbatim):
+
+[ERROR] Tests run: 8, Failures: 2, Errors: 0, Skipped: 0, Time elapsed: 18.43 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerRunningBalanceIntegrationTest
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerRunningBalanceIntegrationTest.history_paymentReversedByALaterContra_everyPostedRowIsTheAsAtClientBalance -- Time elapsed: 0.948 s <<< FAILURE!
+[history running balance vs clientBalance(asAt = row date)]
+Expecting empty but was: ["posted REVERSAL RECORDED dated 2026-11-20 6b12af6c-466c-4cc6-820e-8ea1c82921b0: clientBalance(asAt) 1100.00, running balance null",
+    "posted DEPOSIT RECORDED dated 2026-11-18 1dab508a-ea05-450f-a30d-cd77063ee9fe: clientBalance(asAt) 700.00, running balance 1100.0",
+    "posted PAYMENT REVERSED dated 2026-11-16 30fa5ee1-59cf-4a22-bdfd-f66e76c9de51: clientBalance(asAt) 600.00, running balance null"]
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerRunningBalanceIntegrationTest.history_depositReversedByALaterApprovedContra_everyPostedRowIsTheAsAtClientBalance -- Time elapsed: 0.165 s <<< FAILURE!
+[history running balance vs clientBalance(asAt = row date)]
+Expecting empty but was: ["posted REVERSAL APPROVED dated 2026-11-20 0814ff25-5edc-424e-96da-015fd462d209: clientBalance(asAt) 900.00, running balance null",
+    "posted PAYMENT APPROVED dated 2026-11-16 324c436a-142f-4708-b534-3f26ec86acfb: clientBalance(asAt) 1200.00, running balance 900.0",
+    "posted DEPOSIT REVERSED dated 2026-11-14 196614d5-4486-4e37-86b2-92ebcfe5b712: clientBalance(asAt) 1300.00, running balance null"]
+[ERROR] Tests run: 8, Failures: 2, Errors: 0, Skipped: 0
+
+(The deposit-reversal test's pre-approval check, contra AWAITING_APPROVAL, passed: while the contra
+is unposted the original is still RECORDED and inside the window. It goes red only once the
+contra is approved and the original becomes REVERSED.)

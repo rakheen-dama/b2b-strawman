@@ -400,7 +400,7 @@ export default async function ClientDetailPage({
                             </Badge>
                           </td>
                           <td className="py-3 text-right font-mono text-slate-950 tabular-nums dark:text-slate-50">
-                            {/* ADR-361: server-computed; null on non-posted / REVERSAL rows */}
+                            {/* ADR-361: server-computed; null on unposted rows only (647C #2) */}
                             {tx.runningBalance != null
                               ? formatCurrency(tx.runningBalance, currency)
                               : "\u2014"}

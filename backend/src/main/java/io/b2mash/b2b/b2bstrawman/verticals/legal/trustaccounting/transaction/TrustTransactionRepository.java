@@ -83,12 +83,14 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
   /**
    * A client's trust history on one account, newest first ({@code transaction_date DESC, created_at
    * DESC, id DESC}), each row carrying its running balance (ADR-361, arch §14.3.3). The window runs
-   * over POSTED rows only ({@code status IN ('RECORDED','APPROVED')}, REVERSAL excluded) in posting
-   * order and BEFORE the filters narrow the page, so a type/status/date filter never changes a
-   * balance; non-posted, REVERSED and REVERSAL rows get a null balance. Each row adds its own
-   * {@code ledger_effect} (Phase 92, ADR-378) — the same figure as {@link
-   * TrustLedgerQueryRepository#clientBalance}. Callers MUST pass a sort-free {@link Pageable} — the
-   * ORDER BY lives in the SQL and Spring Data appends only the page window (R6.7).
+   * over POSTED rows ({@code posted_at IS NOT NULL}) in posting order and BEFORE the filters narrow
+   * the page, so a type/status/date filter never changes a balance; unposted rows (awaiting
+   * approval, rejected) get a null balance. Each row adds its own {@code ledger_effect} (Phase 92,
+   * ADR-378), so a REVERSED original and its posted REVERSAL contra each count on their own date —
+   * the posted-row rule of {@link TrustLedgerQueryRepository#clientBalance}, so a row's balance is
+   * the client's balance as at that row (647C #2 / 649B F2; the rule of the creditor ledger and of
+   * Receipts & Payments, FU-13). Callers MUST pass a sort-free {@link Pageable} — the ORDER BY
+   * lives in the SQL and Spring Data appends only the page window (R6.7).
    *
    * <p>646E: each row also carries its original's type ({@code reversedType}, a join to the unique
    * id — the count query needs no join) for a REVERSAL's direction, and {@code reversalPending},
@@ -111,8 +113,7 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
                            ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS running_balance
               FROM trust_transactions t
              WHERE t.customer_id = :customerId AND t.trust_account_id = :accountId
-               AND t.status IN ('RECORDED','APPROVED')
-               AND t.transaction_type <> 'REVERSAL'
+               AND t.posted_at IS NOT NULL
           )
           SELECT t.id AS id, t.trust_account_id AS trustAccountId,
                  t.transaction_type AS transactionType, t.amount AS amount,

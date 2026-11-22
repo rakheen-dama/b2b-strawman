@@ -8,8 +8,8 @@ import java.util.UUID;
 /**
  * Native projection for {@link TrustTransactionRepository#findClientHistoryWithRunningBalance} —
  * one trust transaction plus its server-computed running balance (ADR-361, arch §14.3.3). {@link
- * #getRunningBalance()} is null for non-posted (AWAITING_APPROVAL / REJECTED / REVERSED) and
- * REVERSAL rows.
+ * #getRunningBalance()} is null for unposted (AWAITING_APPROVAL / REJECTED) rows only; a REVERSED
+ * original and a posted REVERSAL contra carry theirs (647C #2 / 649B F2).
  *
  * <p>Deliberately an interface, not a record: {@code WireVocabularyContractTest} scans records
  * whose name ends in {@code Row}, and the stored column names ({@code customerId}, {@code

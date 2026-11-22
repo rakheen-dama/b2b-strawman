@@ -5,20 +5,22 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 /**
- * The audited report endpoints: runs a report through its transactional entry point in {@link
- * ReportExportService} and writes the report's audit row after that transaction has completed
- * (Phase 92 FU-12).
+ * The audited report endpoints (execute, PDF): runs a report through its transactional entry point
+ * in {@link ReportExportService} and then writes the audit row the entry point returned (Phase 92
+ * FU-12).
  *
- * <p><strong>Deliberately not {@code @Transactional}.</strong> The entry point must start its own
- * read-only {@code REPEATABLE_READ} transaction (FU-3 D-1), and the audit row must be written after
- * it has released its connection — so the audit write needs a caller outside that transaction, and
- * a call through the {@code ReportExportService} proxy (a self-invocation would bypass it). An
- * annotation here would make the entry point join this transaction and bring back two pooled
- * connections per report ({@code ReportAuditConnectionBudgetIntegrationTest} guards it).
+ * <p>The entry point is called through its proxy (never a self-invocation), so it starts and ends
+ * its own read-only {@code REPEATABLE_READ} transaction (FU-3 D-1). A normal return means that
+ * transaction has committed and released its connection, so the audit write holds one pooled
+ * connection. A rollback, or a failed commit, throws: nothing is written.
  *
- * <p>CSV needs no wrapper: its audit row is written in {@link
- * ReportExportService#writeCsvAndAudit}, after {@link ReportExportService#exportAsCsv} has
- * returned, with no transaction open.
+ * <p><strong>Deliberately not {@code @Transactional}.</strong> An annotation here would make the
+ * entry point join this transaction (no longer its own snapshot), would write the row before the
+ * report's outcome is known, and would hold two connections ({@code
+ * ReportAuditConnectionBudgetIntegrationTest} guards it).
+ *
+ * <p>CSV needs no wrapper: its row is written in {@link ReportExportService#writeCsvAndAudit},
+ * after {@link ReportExportService#exportAsCsv} has returned, with no transaction open.
  */
 @Service
 public class ReportRunService {
@@ -32,16 +34,20 @@ public class ReportRunService {
     this.reportAuditRecorder = reportAuditRecorder;
   }
 
-  /** Executes a report query with pagination; {@code REPORT_GENERATED} is written afterwards. */
+  /** Executes a report query with pagination, then writes {@code REPORT_GENERATED}. */
   public ReportExecutionResponse execute(
       String slug, Map<String, Object> parameters, Pageable pageable) {
-    return reportAuditRecorder.writeAfter(
-        () -> reportExportService.execute(slug, parameters, pageable));
+    return recorded(reportExportService.execute(slug, parameters, pageable));
   }
 
-  /** Exports a report as PDF; {@code REPORT_EXPORTED} is written afterwards. */
+  /** Exports a report as PDF, then writes {@code REPORT_EXPORTED}. */
   public ReportExportService.PdfExportResult exportAsPdf(
       String slug, Map<String, Object> parameters) {
-    return reportAuditRecorder.writeAfter(() -> reportExportService.exportAsPdf(slug, parameters));
+    return recorded(reportExportService.exportAsPdf(slug, parameters));
+  }
+
+  private <T> T recorded(AuditedReport<T> report) {
+    reportAuditRecorder.record(report.audit());
+    return report.result();
   }
 }

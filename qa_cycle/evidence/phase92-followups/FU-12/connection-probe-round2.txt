@@ -1,0 +1,11 @@
+# FU-12 connection probe, review round 2 (final design: entry points return the row, ReportRunService writes it after they return), from the Tier 2 run 2026-11-22T11:34Z
+# Samples as in connection-probe-before.txt (target/fu12-connection-budget.txt):
+
+2026-11-22T11:34:45.241367Z CSV export: idle=0 samples={duringAuditWrite=1}
+2026-11-22T11:34:45.292819Z PDF export: idle=0 samples={reportTransactionReadOnly=1, duringAuditWrite=1, insideReportTransaction=1, afterCommitBeforeAuditWrite=1}
+2026-11-22T11:34:45.314588Z execute: idle=0 samples={duringAuditWrite=1}
+
+PASS  ReportAuditConnectionBudgetIntegrationTest.csvExport_auditWriteHoldsAtMostOneConnection
+PASS  ReportAuditConnectionBudgetIntegrationTest.pdfExport_auditWriteHoldsAtMostOneConnection
+PASS  ReportAuditConnectionBudgetIntegrationTest.execute_auditWriteHoldsAtMostOneConnection
+PASS  ReportAuditConnectionBudgetIntegrationTest.pdfExportFailingAfterTheAuditWasBuilt_writesNoRow

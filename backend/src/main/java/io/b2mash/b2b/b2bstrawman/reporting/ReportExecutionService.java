@@ -19,12 +19,9 @@ public class ReportExecutionService {
 
   private final Map<String, ReportQuery> queryMap;
   private final ReportDefinitionRepository reportDefinitionRepository;
-  private final ReportAuditRecorder reportAuditRecorder;
 
   public ReportExecutionService(
-      List<ReportQuery> queries,
-      ReportDefinitionRepository reportDefinitionRepository,
-      ReportAuditRecorder reportAuditRecorder) {
+      List<ReportQuery> queries, ReportDefinitionRepository reportDefinitionRepository) {
     this.queryMap =
         queries.stream()
             .collect(
@@ -41,7 +38,6 @@ public class ReportExecutionService {
                               + duplicate.getClass().getSimpleName());
                     }));
     this.reportDefinitionRepository = reportDefinitionRepository;
-    this.reportAuditRecorder = reportAuditRecorder;
   }
 
   /** True if the current caller holds any extra capability the report's query requires. */
@@ -64,8 +60,14 @@ public class ReportExecutionService {
     }
   }
 
+  /**
+   * Runs a report query with pagination and returns the {@code REPORT_GENERATED} row with it, not
+   * logged: on the HTTP path this runs inside {@link ReportExportService}'s read-only transaction,
+   * where a joined write is never flushed. {@link ReportRunService} writes the row after that
+   * transaction has committed (Phase 92 FU-12).
+   */
   @Transactional
-  public ReportExecutionResponse execute(
+  public AuditedReport<ReportExecutionResponse> execute(
       String slug, Map<String, Object> parameters, Pageable pageable) {
     var definition =
         reportDefinitionRepository
@@ -81,10 +83,7 @@ public class ReportExecutionService {
 
     var result = query.execute(parameters, pageable);
 
-    // Not written in this transaction: the HTTP path runs this inside ReportExportService's
-    // read-only transaction, where a joined write is never flushed. Collected at its commit and
-    // written by ReportRunService once it has completed (Phase 92 FU-12).
-    reportAuditRecorder.recordAfterCommit(
+    var audit =
         AuditEventBuilder.builder()
             .eventType("REPORT_GENERATED")
             .entityType("REPORT")
@@ -99,9 +98,9 @@ public class ReportExecutionService {
                     "preview",
                     "rowCount",
                     result.totalElements()))
-            .build());
+            .build();
 
-    return toResponse(definition, parameters, result, pageable);
+    return new AuditedReport<>(toResponse(definition, parameters, result, pageable), audit);
   }
 
   /**

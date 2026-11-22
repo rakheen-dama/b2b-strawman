@@ -65,6 +65,7 @@ class ReportAuditRowsIntegrationTest {
   @Autowired private AuditEventRepository auditEventRepository;
   @Autowired private ReportDefinitionRepository reportDefinitionRepository;
   @Autowired private ReportExportService reportExportService;
+  @Autowired private ReportRunService reportRunService;
   @Autowired private TransactionTemplate transactionTemplate;
 
   private String schema;
@@ -173,37 +174,34 @@ class ReportAuditRowsIntegrationTest {
     assertThat(newRows("REPORT_EXPORTED", SECTION_35, before)).isEmpty();
   }
 
-  // --- the row is written after the report transaction commits -----------------------------
+  // --- the entry point returns the row; ReportRunService writes it ---------------------------
 
   /**
-   * An export whose transaction rolls back is not audited as exported; the same export committed
-   * is, once. (The report entry point joins the test's transaction here, so the rollback is the
-   * export's own.)
+   * The transactional entry point returns its row and writes nothing itself (inside its read-only
+   * transaction a written row was never flushed); {@link ReportRunService} writes it, once, after
+   * the entry point has returned. A rolled-back export writes nothing: see {@code
+   * ReportAuditConnectionBudgetIntegrationTest.pdfExportFailingAfterTheAuditWasBuilt_writesNoRow}.
    */
   @Test
-  void exportInATransactionThatRollsBack_writesNoRow_committed_writesOne() {
+  void entryPointReturnsTheRowAndWritesNone_runServiceWritesItOnce() {
     Map<String, Object> params =
         Map.of("dateFrom", "2025-06-01", "dateTo", "2025-06-30", "groupBy", "member");
 
-    var beforeRollback = rowIds("REPORT_EXPORTED", TIMESHEET);
-    asOwner(
-        () ->
-            transactionTemplate.execute(
-                tx -> {
-                  reportExportService.exportAsPdf(TIMESHEET, params);
-                  tx.setRollbackOnly();
-                  return null;
-                }));
-    assertThat(newRows("REPORT_EXPORTED", TIMESHEET, beforeRollback))
-        .as("rolled-back export")
+    var beforeEntryPoint = rowIds("REPORT_EXPORTED", TIMESHEET);
+    var exported = asOwner(() -> reportExportService.exportAsPdf(TIMESHEET, params));
+    assertThat(exported.result().bytes()).isNotEmpty();
+    assertThat(exported.audit().eventType()).isEqualTo("REPORT_EXPORTED");
+    assertThat(exported.audit().entityId()).isEqualTo(definitionId(TIMESHEET));
+    assertThat(exported.audit().actorId()).isEqualTo(ownerId);
+    assertThat(exported.audit().details()).containsEntry("format", "pdf");
+    assertThat(newRows("REPORT_EXPORTED", TIMESHEET, beforeEntryPoint))
+        .as("rows written by the entry point itself")
         .isEmpty();
 
-    var beforeCommit = rowIds("REPORT_EXPORTED", TIMESHEET);
-    asOwner(
-        () ->
-            transactionTemplate.execute(tx -> reportExportService.exportAsPdf(TIMESHEET, params)));
-    assertThat(newRows("REPORT_EXPORTED", TIMESHEET, beforeCommit))
-        .as("committed export")
+    var beforeRun = rowIds("REPORT_EXPORTED", TIMESHEET);
+    asOwner(() -> reportRunService.exportAsPdf(TIMESHEET, params));
+    assertThat(newRows("REPORT_EXPORTED", TIMESHEET, beforeRun))
+        .as("rows written by ReportRunService")
         .hasSize(1);
   }
 

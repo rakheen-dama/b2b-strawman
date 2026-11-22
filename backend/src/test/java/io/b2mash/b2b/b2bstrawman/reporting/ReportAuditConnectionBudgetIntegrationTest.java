@@ -44,16 +44,17 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  *
  * <p>Sampled with {@code HikariPoolMXBean.getActiveConnections()} at three points of one PDF
  * export: inside the report transaction (in {@code renderPdf}); in an {@code afterCommit} callback
- * that the render registers on the report transaction before the audit is registered, so it runs
- * before the audit write; and inside the audit write ({@code AuditService.log}, after the real
- * call, so the audit transaction's own connection has been acquired by its member lookup).
+ * the test registers on the report transaction (a probe of the framework only: production code
+ * registers no synchronization); and inside the audit write ({@code AuditService.log}, after the
+ * real call, so the audit transaction's own connection has been acquired by its member lookup).
  * Scheduling is off in tests, so the pool is otherwise idle; the idle count is sampled first and
  * every assertion is relative to it.
  *
  * <p>Measured before the fix (the row written from {@code afterCommit} in {@code REQUIRES_NEW}):
  * idle 0, inside the report transaction 1, at {@code afterCommit} 1 (the report transaction's
- * connection is still checked out there), during the audit write 2. With the write moved after the
- * entry point returns ({@link ReportRunService}) the audit write holds 1: these tests guard it.
+ * connection is still checked out there), during the audit write 2. Now the entry point returns its
+ * row and {@link ReportRunService} writes it after the entry point has returned: the audit write
+ * holds 1, and these tests guard it.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -146,13 +147,13 @@ class ReportAuditConnectionBudgetIntegrationTest {
 
   /**
    * The HTTP path (through {@link ReportRunService}): a PDF export whose transaction rolls back
-   * after its audit row was registered writes no row.
+   * after its audit row was built (the PDF rendered) writes no row.
    */
   @Test
-  void pdfExportFailingAfterTheAuditWasRegistered_writesNoRow() throws Exception {
+  void pdfExportFailingAfterTheAuditWasBuilt_writesNoRow() throws Exception {
     doThrow(
             new io.b2mash.b2b.b2bstrawman.exception.InvalidStateException(
-                "Probe failure", "failed after the audit row was registered"))
+                "Probe failure", "failed after the audit row was built"))
         .when(reportRenderingService)
         .generateFilename(any(), any(), any());
 
@@ -166,7 +167,7 @@ class ReportAuditConnectionBudgetIntegrationTest {
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.status").value(400))
         .andExpect(jsonPath("$.title").value("Probe failure"))
-        .andExpect(jsonPath("$.detail").value("failed after the audit row was registered"));
+        .andExpect(jsonPath("$.detail").value("failed after the audit row was built"));
 
     assertThat(samples).as("the PDF was rendered").containsKey("insideReportTransaction");
     verify(auditService, never())
@@ -220,8 +221,9 @@ class ReportAuditConnectionBudgetIntegrationTest {
 
   /** Appends the samples to {@code target/fu12-connection-budget.txt} (evidence, FU-12 notes). */
   private void measured(String path, int idle) throws java.io.IOException {
+    var target = java.nio.file.Files.createDirectories(java.nio.file.Path.of("target"));
     java.nio.file.Files.writeString(
-        java.nio.file.Path.of("target", "fu12-connection-budget.txt"),
+        target.resolve("fu12-connection-budget.txt"),
         "%s %s: idle=%d samples=%s%n".formatted(java.time.Instant.now(), path, idle, samples),
         java.nio.file.StandardOpenOption.CREATE,
         java.nio.file.StandardOpenOption.APPEND);

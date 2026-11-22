@@ -2,7 +2,7 @@
 
 Register row: `qa_cycle/evidence/phase92-exit/defect-register.md` F-650C-1 (MEDIUM, OPEN → FU-12).
 Sources: `qa_cycle/evidence/phase92/650C/found.md` F-650C-1; `tasks/phase92-decisions.md` FU-12, FU-3 D-1.
-Base: `main` @ 623c22cc92998f4b501642d94eb5313d2e39ddfa.
+Base: `main` @ 623c22cc92998f4b501642d94eb5313d2e39ddfa; merged with main at 751b9b20b.
 
 ## Root cause (reproduced)
 
@@ -17,213 +17,192 @@ Base: `main` @ 623c22cc92998f4b501642d94eb5313d2e39ddfa.
   each added 0 rows. The tightened `ReportingControllerTest.exportPdfPersistsReportExportedAuditEvent` failed
   the same way; its old `isNotEmpty()` check had passed only because of the CSV rows sibling tests write.
 
-## Constraint (FU-3 D-1)
+## Constraints
 
-The report transaction must stay a read-only REPEATABLE_READ transaction that the entry point starts, because it
-gives `client-ledger-statement` and Rule 54.15 their single snapshot. `AuditService.log`'s propagation must not
-change globally. Neither changed: the `@Transactional` annotations on `ReportExportService` are untouched, and
-so is `DatabaseAuditService`.
+- **FU-3 D-1:** the four report entry points stay read-only REPEATABLE_READ transactions that start the
+  transaction, because they give `client-ledger-statement` and Rule 54.15 their single snapshot. Their
+  annotations are untouched. `AuditService.log`'s propagation is unchanged, so every other audit row still
+  commits or rolls back with its business transaction.
+- **ADR-T008** (`architecture/TenantScopeBindingTest`): no `ScopedValue.where` outside `multitenancy`. Ruling
+  2026-11-22: do not amend it, and use no ScopedValue, ThreadLocal or TransactionSynchronization in the design.
 
-## Design: option (a), after commit; since review round 1, written once the report transaction has completed
+## Design (final, review round 2): the entry points return the row; a non-transactional caller writes it
 
-The rows are written in their own `REQUIRES_NEW` writable transaction, and only for a report transaction that
-committed. Two parts (`reporting/ReportAuditRecorder` and `reporting/ReportRunService`):
+- **`AuditedReport<T>(T result, AuditEventRecord audit)`** is a small internal record, never an HTTP
+  response. The transactional methods that used to log a report row now **build and return it** instead:
+  - `ReportExecutionService.execute` returns `AuditedReport<ReportExecutionResponse>` (the `REPORT_GENERATED`
+    row, format `preview`);
+  - `ReportExportService.execute` returns `AuditedReport<ReportExecutionResponse>`;
+  - `ReportExportService.exportAsPdf` returns `AuditedReport<PdfExportResult>` (the `REPORT_EXPORTED` row,
+    format `pdf`).
 
-- **Collect at commit.** `ReportAuditRecorder.recordAfterCommit(record)` is called at the audit sites, inside the
-  report transaction. It registers a `TransactionSynchronization` whose `afterCommit` **adds the row to a
-  collection** owned by the enclosing `writeAfter` call (a `ScopedValue`, the project convention; no
-  `ThreadLocal`). A report whose transaction rolls back is never collected.
-- **Write after completion.** `ReportRunService` is not `@Transactional`; the controller's execute and PDF
-  endpoints call it, one service method per endpoint. It calls `ReportAuditRecorder.writeAfter(() ->
-  reportExportService.execute(...) / exportAsPdf(...))`. The call goes **through the `ReportExportService`
-  proxy**, not by self-invocation, so the entry point still starts its own read-only REPEATABLE_READ
-  transaction. `writeAfter` writes the collected rows only after that call has returned, by which point the
-  report transaction has completed, its session is closed and its connection is back in the pool.
-- **CSV:** `writeCsvAndAudit` runs after `exportAsCsv` has returned, with no transaction open, so it writes at
-  once. It needs no wrapper.
-- **Direct callers** (tests, or a future in-process caller not wrapped in `writeAfter`) still get their row,
-  written at `afterCommit` in `REQUIRES_NEW`. That is correct, but it briefly holds a second connection, so the
-  production endpoints go through `ReportRunService`. Inside a caller's own transaction, `writeAfter` only runs
-  the call, and the row is written at that transaction's commit; the rollback test uses this path.
-- **Best effort:** any `RuntimeException`, including one from the new transaction's commit or a pool timeout,
-  is caught. It is logged at **ERROR** with the event type, report definition id, actor, source, IP, user agent
-  and details, so the report is not failed and the row can be reconstructed. IP and user agent are already
-  stored in audit rows. This matters at `afterCommit` for direct callers, because Spring propagates an
-  `afterCommit` exception to the committing caller. The nearest precedent, `McpSessionAuditListener`, also
-  catches and does not fail the request, but logs at WARN; ERROR was chosen here because a missing row for a
-  trust-report export is an audit gap.
+  The HTTP response shapes (`ReportExecutionResponse`, the PDF bytes and filename) are unchanged.
+- **`ReportRunService`** is not `@Transactional`; the controller's execute and PDF endpoints call it, one
+  service method per endpoint. It calls the entry point **through the `ReportExportService` proxy**, never by
+  self-invocation, so the entry point starts and ends its own read-only REPEATABLE_READ transaction. Once the
+  call has **returned normally**, it hands the returned row to `ReportAuditRecorder.record`. A normal return
+  means the proxy has committed and the session, with its connection, is closed. A rollback or a failed commit
+  throws, so nothing is written.
+- **`ReportAuditRecorder.record(row)`** writes in a new (`REQUIRES_NEW`) writable `TransactionTemplate`, so it
+  never joins a caller's transaction. It is best effort: any `RuntimeException`, including a commit failure or
+  a pool timeout, is caught and logged at **ERROR** with the event type, report id, actor, source, IP, user
+  agent and details. The report is not failed, and the row can be reconstructed from the log. IP and user agent
+  are already stored in audit rows. Precedent: `McpSessionAuditListener` also does not fail the request, but
+  logs at WARN; ERROR was chosen because a missing row for a trust-report export is an audit gap.
+- **CSV** is unchanged: `writeCsvAndAudit` runs after `exportAsCsv` has returned, with no transaction open, and
+  calls `record` in its `finally`, so an export attempt whose stream failed mid-write is still audited.
+- **Tenant and actor:** the row is built on the request thread inside the entry point, so the actor, IP and
+  user agent are the caller's. The audit transaction's connection comes from the multitenant connection
+  provider, which sets `search_path` from `RequestScopes.TENANT_ID`, still bound for the whole request.
+  `actor_name` is resolved in that tenant; `ReportAuditRowsIntegrationTest` asserts `actor_name = "RAR Owner"`.
 
-Why (a) over (b), an inline `REQUIRES_NEW` call: (a) never audits a report whose transaction rolled back. For
-example, a PDF that rendered but whose transaction then failed is not recorded as exported. (b) would commit
-the row before the outcome is known, and it also holds two connections. (a) needs no change to the
-`AuditService` interface, whose contract still says "within the current transaction".
+Why (a), write after the report transaction, over (b), write inline in `REQUIRES_NEW`: (a) never audits a
+report whose transaction rolled back, and holds one connection at a time. (b) would write before the outcome is
+known, and would hold two connections.
 
-**Tenant and actor:** the `AuditEventRecord` is built by the caller on the request thread, so the actor, IP,
-user agent and source are the caller's. The new transaction's connection comes from the multitenant connection
-provider, which sets `search_path` from `RequestScopes.TENANT_ID`. That ScopedValue is still bound, because
-`writeAfter` runs inside the request's scope. `actor_name` enrichment (`DatabaseAuditService.enrichActorName`)
-runs in the new transaction against the tenant's `members` table. The integration test asserts
-`actor_name = "RAR Owner"`, which proves the write ran in the right tenant schema.
+## History of the design
 
-## Review round 1, finding 1: connection budget (measured, then fixed)
+1. **PR (863e8155e):** `TransactionSynchronization.afterCommit` wrote the row in `REQUIRES_NEW`.
+2. **Review round 1 (59684913e):** CodeRabbit's connection-budget finding was **measured and confirmed** (table
+   below): at `afterCommit` the report connection is still checked out, so that write held two. Fixed by
+   collecting rows at `afterCommit` into a `ScopedValue` and writing them in a non-transactional
+   `ReportRunService` after the entry point returned.
+3. **Review round 2 (this commit):** the full verify at 59684913e failed one test:
+   `TenantScopeBindingTest.no_direct_scopedvalue_binding_outside_multitenancy_and_exempt`, because
+   `ReportAuditRecorder.writeAfter` called `ScopedValue.where`. My Tier 2 had not included the `architecture`
+   package. Per the ruling, the ScopedValue / `afterCommit` collection was replaced by the design above, which
+   has the same semantics with simpler mechanics. `recordAfterCommit` and `writeAfter` are removed, and no
+   production code in `reporting` registers a synchronization or binds a ScopedValue.
 
-CodeRabbit (Major) and the independent reviewer raised the same question: does the `REQUIRES_NEW` write from
-`afterCommit` need a second connection while the report transaction's connection is still checked out?
+## Connection budget (review round 1; re-measured in round 2)
 
-**Measured** with `reporting/ReportAuditConnectionBudgetIntegrationTest`, on the real HTTP path, using
-`HikariPoolMXBean.getActiveConnections()` on `appDataSource`. That is the tenant pool: the primary shard reuses
-it. Scheduling is off in tests, so the pool was otherwise idle (idle = 0 for every test). The samples:
+Measured by `reporting/ReportAuditConnectionBudgetIntegrationTest` on the real HTTP path, using
+`HikariPoolMXBean.getActiveConnections()` on `appDataSource` (the tenant pool, which the primary shard reuses).
+Scheduling is off in tests, so the pool was otherwise idle: idle = 0 in every run that recorded it.
 
-- `insideReportTransaction`: in a `renderPdf` spy, after the real call;
-- `afterCommitBeforeAuditWrite`: an `afterCommit` callback registered by the render, ahead of the audit's, so
-  it runs before the audit write;
+The samples:
+
+- `insideReportTransaction`: in a `renderPdf` spy;
+- `afterCommitBeforeAuditWrite`: a test-only `afterCommit` probe, a framework fact rather than production code;
 - `duringAuditWrite`: in an `AuditService.log` spy, after the real call, so the audit transaction's own
-  connection is already acquired by its member lookup.
+  connection has been acquired.
 
-| Path | Code | idle | inside report tx | at `afterCommit`, before the write | during the audit write |
+| Path | Code | idle | inside report tx | at `afterCommit` | during the audit write |
 |---|---|---|---|---|---|
-| PDF | before (751b9b20b) | 0 | 1 | **1** | **2** |
-| execute | before | 0 | — | — | **2** |
-| CSV | before | 0 | — | — | 1 |
-| PDF | after the fix | 0 | 1 | 1 | **1** |
-| execute | after | 0 | — | — | **1** |
-| CSV | after | 0 | — | — | **1** |
+| PDF | 751b9b20b (`afterCommit` write) | 0 | 1 | **1** | **2** |
+| execute | 751b9b20b | 0 | — | — | **2** |
+| CSV | 751b9b20b | 0 | — | — | 1 |
+| PDF | round 1 (59684913e) | 0 | 1 | 1 | 1 |
+| execute / CSV | round 1 | 0 | — | — | 1 / 1 |
+| PDF | **round 2 (final)** | 0 | 1 | 1 | **1** |
+| execute / CSV | **round 2 (final)** | 0 | — | — | **1 / 1** |
 
-Evidence: `connection-probe-before.txt` (2 failures, actual 2) and `connection-probe-after.txt` (4/4).
+Evidence:
 
-**The fact:** at `afterCommit` the report transaction's JDBC connection is **still checked out**. Spring calls
-`triggerAfterCommit` before `cleanupAfterCompletion`, which closes the EntityManager. Spring Boot's Hibernate
-connection handling (delayed acquisition, held until the session closes) keeps the connection until then. The
-read-only + REPEATABLE_READ preparation in `HibernateJpaDialect.beginTransaction` acquires it at begin. So the
-old design held two connections per execute or PDF report for the length of the audit write. Under concurrent
-reports this could exhaust the pool: each audit write waits up to `connection-timeout`, then the row is dropped.
+- `connection-probe-before.txt`: 751b9b20b, 2 failures, actual 2;
+- `connection-probe-after.txt`: round 1, 4/4;
+- `connection-probe-round2.txt`: final code, 4/4.
 
-**Fixed** with the coordinator's preferred design, described above: the write happens after the
-`@Transactional` entry-point method has returned, in `ReportRunService` (one small non-transactional
-collaborator). Nothing else changed:
+At `afterCommit` the report transaction's JDBC connection is still checked out. Spring calls
+`triggerAfterCommit` before `cleanupAfterCompletion` closes the EntityManager, and Hibernate's delayed
+acquisition holds the connection until the session closes. The final design writes after the proxy has
+returned, by which point that cleanup has run.
 
-- semantics: written only if the report transaction commits, never on rollback, best effort with an ERROR log;
-- the four entry points (still `@Transactional(readOnly = true, isolation = REPEATABLE_READ)`, still the
-  transaction starters);
-- the FU-3 guard `ReportExecutionServiceTest.reportEntryPoints_readOneSnapshot_readOnlyRepeatableRead`, which
-  needed no edit;
-- `AuditService.log`.
-
-The `afterCommit` sample is still 1 after the fix. That is the framework fact; the fix no longer writes there.
-
-`ReportAuditConnectionBudgetIntegrationTest` now guards the fix:
-
-- the audit write holds at most one connection on the PDF, execute and CSV paths;
-- a PDF whose transaction rolls back after its audit was registered writes no row (a `generateFilename` spy
-  throws; the test checks the 400 ProblemDetail);
-- the report transaction is read-only.
-
-## Review round 1, finding 2
-
-`ReportAuditRowsIntegrationTest.refusedPdfExport_writesNoRow` now asserts 400 and the ProblemDetail `status`
-(400), `title` ("Missing required parameter") and `detail` ("Parameter 'trust_account_id' is required"),
-instead of any 4xx. That was the only error-path assertion in the new tests that had the gap; the new HTTP
-rollback test asserts its ProblemDetail the same way.
+The strict asserts (`idle + 1` inside the report and during the write) were stable across all runs, so they are
+kept. The evidence file write now calls `Files.createDirectories` first (reviewer note).
 
 ## Audit sites covered (grep `REPORT_` in `src/main`: these are all of them)
 
-| Site | Event | Before | After |
+| Site | Event | Before FU-12 | Now |
 |---|---|---|---|
-| `ReportExecutionService.execute` (via `POST /execute` → `ReportExportService.execute`) | `REPORT_GENERATED`, format `preview` | lost | collected at commit, written by `ReportRunService` after the transaction completes |
-| `ReportExportService.exportAsPdf` | `REPORT_EXPORTED`, format `pdf` | lost | collected at commit, written by `ReportRunService` after the transaction completes |
-| `ReportExportService.writeCsvAndAudit` (`finally`) | `REPORT_EXPORTED`, format `csv` | written | written at once (no transaction), now best effort |
+| `ReportExecutionService.execute` (via `POST /execute` → `ReportRunService` → `ReportExportService.execute`) | `REPORT_GENERATED`, format `preview` | lost | returned by the entry point, written by `ReportRunService` after it returns |
+| `ReportExportService.exportAsPdf` (via `ReportRunService`) | `REPORT_EXPORTED`, format `pdf` | lost | returned, written by `ReportRunService` after it returns |
+| `ReportExportService.writeCsvAndAudit` (`finally`) | `REPORT_EXPORTED`, format `csv` | written | written at once (no transaction), best effort |
 | `ReportExportService.renderPreviewHtml` | none | none | none (never audited; not added, scope) |
 
-`ReportExecutionService.execute` has one production caller, `ReportExportService.execute`, which is read-only.
-Tests also call it directly, in its own writable transaction; there the row is written at that transaction's
-commit, the direct-caller path.
+`ReportExecutionService.execute` has one production caller, `ReportExportService.execute`; no production code
+calls either `execute` or `exportAsPdf` except `ReportRunService` (grep). Tests that call them directly receive
+the row in the `AuditedReport` and assert it.
 
 ## Failure semantics
 
-- The report query or render throws: no row (the audit is registered only after rendering).
-- The report transaction rolls back after the audit was registered: no row, because `afterCommit` never runs and
-  nothing is collected. This is tested on the HTTP path (a `generateFilename` spy throws), in the unit test
-  (`writeAfter_rolledBackReport_writesNothing`), and on the direct-caller path (an export joined to a
-  rollback-only transaction).
-- The audit write fails: the report is still returned, and an ERROR log is written.
-- CSV: `finally` is kept, so a stream failure mid-write still records the export attempt. This is unchanged and
-  is the conservative choice for an export audit trail. The one behaviour change is that an audit failure there
-  no longer propagates; before, it could replace the stream's own exception or fail a fully streamed CSV.
+- The report query or render throws, or the transaction rolls back or fails to commit: the entry point
+  throws, so nothing is written.
+  - HTTP test: a `generateFilename` spy throws after the row was built
+    (`ReportAuditConnectionBudgetIntegrationTest.pdfExportFailingAfterTheAuditWasBuilt_writesNoRow`).
+  - Unit test: `runService_entryPointThrows_writesNothing`.
+- The audit write fails: the report is still returned, and an ERROR log is written with the row's fields.
+- CSV: `finally` is kept, so a failed stream still records the export attempt; an audit failure there no longer
+  propagates.
 
 ## Tests
 
-- `reporting/ReportAuditRowsIntegrationTest` (new; legal-za tenant; rows id-scoped by definition id and the ids
+- **`reporting/ReportAuditRowsIntegrationTest`** (legal-za tenant; rows id-scoped by definition id and the ids
   the call added):
-  - execute adds one `REPORT_GENERATED` row; PDF (timesheet) adds one `REPORT_EXPORTED` row; **Section 35 PDF**
-    adds one; CSV adds one. Each check covers the actor id, `USER`, `actor_name` and format.
-  - A refused PDF (missing `trust_account_id`) adds none; the test asserts the 400 ProblemDetail.
-  - An export in a rolled-back transaction adds none; the same export committed adds one.
-- `reporting/ReportAuditRecorderTest` (new, unit, no Spring, 9 tests):
-  - with no transaction, the row is written now in `REQUIRES_NEW` (writable);
-  - direct callers: not written before commit, written at `afterCommit`, never written after a rollback;
-  - `writeAfter`: a committed row is written only after the report call returns, and not at `afterCommit`;
-  - `writeAfter` after a rollback writes nothing; inside a caller's transaction, the row is written at that
-    transaction's commit;
-  - an audit failure throws nothing and logs an ERROR with source, IP and user agent, directly, from
-    `afterCommit`, and from `writeAfter`.
-- `reporting/ReportAuditConnectionBudgetIntegrationTest` (new in round 1, 4 tests; see the round 1 section).
-- `ReportingControllerTest.exportPdfPersistsReportExportedAuditEvent`: tightened to an id-scoped delta of PDF
-  rows (`hasSize(1)`).
-- Read-only REPEATABLE_READ guards, unchanged and green:
-  - `ReportExecutionServiceTest.reportEntryPoints_readOneSnapshot_readOnlyRepeatableRead` (annotations on all
-    four entry points);
-  - `TrustSnapshotReadsIntegrationTest.clientLedgerStatementReport_placementApprovedBetweenTheReads_countsItOnce`
-    and `rule5415Report_depositCommittedBetweenThePositionAndTheLines_listAgreesWithItself` (behaviour, with
-    the audit row now written after commit in those report runs).
+  - execute, timesheet PDF, **Section 35 PDF** and CSV each add exactly one row, with the right actor, `USER`,
+    `actor_name` and format;
+  - a refused PDF adds none, and the test asserts 400 plus the ProblemDetail `status`, `title` and `detail`
+    (CodeRabbit round 1 minor);
+  - `entryPointReturnsTheRowAndWritesNone_runServiceWritesItOnce`.
+- **`reporting/ReportAuditConnectionBudgetIntegrationTest`** (4 tests): at most one connection during the
+  audit write on PDF, execute and CSV; an HTTP PDF that fails after its row was built writes no row
+  (ProblemDetail asserted); the report transaction is read-only.
+- **`reporting/ReportAuditRecorderTest`** (unit, 6 tests):
+  - `record` uses a new writable `REQUIRES_NEW` transaction;
+  - an audit failure does not throw and logs an ERROR with source, IP and user agent;
+  - `ReportRunService` writes the returned row after the entry point returns (PDF and execute);
+  - `ReportRunService` writes nothing when the entry point throws, and still returns the report when the audit
+    write fails.
+- **`ReportExecutionServiceTest.executeReturnsReportGeneratedAuditRecord`** replaces the old row-lookup test:
+  `execute` returns the row (type, entity, actor, slug, format). The other direct calls use `.result()`.
+- **`ReportingControllerTest.exportPdfPersistsReportExportedAuditEvent`:** tightened to an id-scoped delta of
+  PDF rows.
+- **Guards, unchanged and green:**
+  - `ReportExecutionServiceTest.reportEntryPoints_readOneSnapshot_readOnlyRepeatableRead`;
+  - the `TrustSnapshotReadsIntegrationTest` report race tests;
+  - the whole `architecture` package, including `TenantScopeBindingTest`.
 
 Evidence:
 
 - `red-run.txt`: 4 failures on unmodified code;
-- `connection-probe-before.txt` and `connection-probe-after.txt`: round 1;
-- `green-run.txt`: 55/55, the FU-12 tests, the budget guard and the FU-3 guards, round-1 code;
+- `connection-probe-*.txt`;
+- `green-run.txt`: the FU-12 tests and the guards, final code;
 - `tier2-run.txt`: every testcase.
 
 ## Tier 2
 
-Each run: `./mvnw -q spotless:apply`, then one `./mvnw -q test` covering:
+Each run: `./mvnw -q spotless:apply`, then one `./mvnw -q test`. Counts are of the surefire XML `<testcase>`
+elements.
 
-- the `reporting`, `report`, `audit` (including `audit.export`) and `verticals.legal.trustaccounting.report`
-  packages;
-- `TrustSnapshotReadsIntegrationTest` and `DashboardWithoutCapacityTest` (the other classes that use the
-  changed code);
-- `LayerDependencyRulesTest`, `TestConventionsTest` and `TerminologyRemnantScanTest`.
+- Initial PR (02:48Z): 59 classes, 438 testcases, all green.
+- Round 1 (10:48Z): 61 classes, 448 testcases, all green. That run did **not** include the whole
+  `architecture` package, and `TenantScopeBindingTest` failed in the orchestrator's full verify.
+- **Round 2 (final, 11:34Z): 65 classes, 460 testcases, 0 failures, 0 errors, 0 skipped**, including all 7 classes of the `architecture` package (`TenantScopeBindingTest` among them). The run is in `tier2-run.txt`; `green-run.txt` has the 57/57 FU-12, guard and ADR-T008 tests.
 
-Counts are of the surefire XML `<testcase>` elements.
-
-- Initial PR (2026-11-22T02:48Z): 59 classes, 438 testcases, 0 failures, 0 errors, 0 skipped.
-- **Review round 1** (2026-11-22T10:48Z, round-1 code on 751b9b20b): **61 classes, 448 testcases, 0 failures,
-  0 errors, 0 skipped** (`tier2-run.txt`). `green-run.txt`: 55/55 FU-12 and guard tests.
-
-The full `./mvnw verify` was not run here; the orchestrator runs it (it passed at 751b9b20b, before round 1).
+The full `./mvnw verify` was not run here; the orchestrator runs it.
 
 ## Architecture doc
 
 `kazi-architecture/30-modules/reporting.md` §6 "Audit" is at the repo root, not under `backend/`, so editing it
-does not trip the FU-26 merge-gate marker rule. Updated:
+does not trip the FU-26 merge-gate marker rule. It now describes the final design:
 
-- removed the wrong line "recorded inside the same transaction as the read", along with stale line numbers;
-- added the preview (no row);
-- added a paragraph on `ReportAuditRecorder` / `ReportRunService`: collected at commit and written once the
-  report transaction has completed (one connection at a time), the no-transaction CSV path, and best effort
-  with an ERROR log.
+- the entry points return the row, and `ReportRunService` writes it after they return;
+- one connection at a time;
+- the no-transaction CSV path;
+- best effort with an ERROR log.
+
+The wrong line "recorded inside the same transaction as the read" and the stale line numbers are removed.
 
 ## Residual risk
 
 - **Commit-to-audit gap.** If the JVM dies between the report commit and the audit commit, the report is served
-  but not audited. This is inherent to after-commit (option b has the mirror-image gap); the ERROR log covers
-  only in-process failures.
-- **Connection budget.** Execute and PDF now hold one connection at a time; the old two-at-once pattern
-  remains only on the direct-caller path, which no production endpoint uses. Under pool saturation an audit
-  write still waits up to `connection-timeout` for its single connection and, on timeout, is dropped with an
-  ERROR. Nothing reserves capacity for it, as for any other request.
-- **Unknown future callers.** A future in-process caller of `ReportExportService.execute` / `exportAsPdf` that
-  does not go through `ReportRunService` gets correct rows but the two-connection pattern. The
-  `ReportAuditRecorder` and `ReportRunService` javadocs say so; no ArchUnit rule enforces it.
-- **`ReportRunService` must stay non-transactional.** An annotation there would make the entry points join it
-  and break FU-3 D-1. Its javadoc says so, and `ReportAuditConnectionBudgetIntegrationTest` would fail (two
-  connections).
+  but not audited. This is inherent to writing after the report transaction; the ERROR log covers only
+  in-process failures.
+- **Pool saturation.** An audit write waits up to `connection-timeout` for its single connection like any other
+  request, and on timeout is dropped with an ERROR. Nothing reserves capacity for it.
+- **Bypassing `ReportRunService`.** A future in-process caller of `ReportExportService.execute` / `exportAsPdf`
+  that ignores the returned `AuditedReport.audit()` would write no row. The return type makes the row explicit
+  at every call site; no ArchUnit rule enforces it.
+- **`ReportRunService` must stay non-transactional.** With an annotation, the entry points would join its
+  transaction (breaking FU-3 D-1), the row would be written before the outcome is known, and the write would
+  hold two connections. Its javadoc says so, and `ReportAuditConnectionBudgetIntegrationTest` would fail.

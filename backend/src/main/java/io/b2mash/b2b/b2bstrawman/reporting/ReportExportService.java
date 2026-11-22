@@ -28,11 +28,12 @@ import org.springframework.transaction.annotation.Transactional;
  * (40001) at {@code REPEATABLE_READ}.
  *
  * <p>Audit rows ({@code REPORT_GENERATED} on execute, {@code REPORT_EXPORTED} on PDF and CSV) go
- * through {@link ReportAuditRecorder}, so this transaction stays read-only (Phase 92 FU-12, 650C
- * F-650C-1 — a row joined to it was never flushed). They are collected when this transaction
- * commits and written after it has completed: by {@link ReportRunService} (the execute and PDF
- * endpoints call it, not these methods) or, for CSV, in {@link #writeCsvAndAudit}. A preview
- * ({@link #renderPreviewHtml}) is not audited.
+ * through {@link ReportAuditRecorder}, never into this transaction, so it stays read-only (Phase 92
+ * FU-12, 650C F-650C-1 — a row joined to it was never flushed). {@link #execute} and {@link
+ * #exportAsPdf} return their row ({@link AuditedReport}); {@link ReportRunService}, which the
+ * execute and PDF endpoints call, writes it after this transaction has committed. CSV writes its
+ * row in {@link #writeCsvAndAudit}, after {@link #exportAsCsv} has returned. A preview ({@link
+ * #renderPreviewHtml}) is not audited.
  */
 @Service
 public class ReportExportService {
@@ -109,9 +110,9 @@ public class ReportExportService {
         definition.isSystem());
   }
 
-  /** Execute a report query with pagination. */
+  /** Execute a report query with pagination; returns the REPORT_GENERATED row, not logged. */
   @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
-  public ReportExecutionResponse execute(
+  public AuditedReport<ReportExecutionResponse> execute(
       String slug, Map<String, Object> parameters, Pageable pageable) {
     return reportExecutionService.execute(slug, parameters, pageable);
   }
@@ -122,9 +123,12 @@ public class ReportExportService {
     return reportRenderingService.renderPreviewHtml(slug, parameters);
   }
 
-  /** Export report as PDF: fetch definition, execute query, render PDF, log audit event. */
+  /**
+   * Export report as PDF: fetch definition, execute query, render PDF. Returns the REPORT_EXPORTED
+   * row with the PDF, not logged.
+   */
   @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
-  public PdfExportResult exportAsPdf(String slug, Map<String, Object> parameters) {
+  public AuditedReport<PdfExportResult> exportAsPdf(String slug, Map<String, Object> parameters) {
     var definition =
         reportDefinitionRepository
             .findBySlug(slug)
@@ -133,7 +137,7 @@ public class ReportExportService {
     var result = reportExecutionService.executeForExport(slug, parameters);
     byte[] pdfBytes = reportRenderingService.renderPdf(definition, result, parameters);
 
-    reportAuditRecorder.recordAfterCommit(
+    var audit =
         AuditEventBuilder.builder()
             .eventType("REPORT_EXPORTED")
             .entityType("REPORT")
@@ -148,10 +152,10 @@ public class ReportExportService {
                     "pdf",
                     "rowCount",
                     result.totalElements()))
-            .build());
+            .build();
 
     String filename = reportRenderingService.generateFilename(slug, parameters, "pdf");
-    return new PdfExportResult(pdfBytes, filename);
+    return new AuditedReport<>(new PdfExportResult(pdfBytes, filename), audit);
   }
 
   /**
@@ -183,7 +187,7 @@ public class ReportExportService {
           csvResult.definition(), csvResult.result(), csvResult.parameters(), outputStream);
     } finally {
       // No transaction is open here (exportAsCsv has returned): written now, in its own.
-      reportAuditRecorder.recordAfterCommit(
+      reportAuditRecorder.record(
           AuditEventBuilder.builder()
               .eventType("REPORT_EXPORTED")
               .entityType("REPORT")

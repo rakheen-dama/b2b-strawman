@@ -319,8 +319,9 @@ public class TrustTransactionService {
    * Lists a trust account's transactions, newest first. All filters are optional; with none set the
    * result equals the historical unfiltered list. {@code matterId} narrows to the matter's
    * transactions ({@code trust_transactions.project_id}); {@code ledger} to one creditor ledger;
-   * {@code excludeLinked} hides transactions already linked to a legal disbursement (Phase 88 Epic
-   * 621A — trust-link picker).
+   * {@code clientId} to one client's rows ({@code customer_id}); {@code dateFrom}/{@code dateTo} to
+   * an inclusive transaction-date range (F-646E-2); {@code excludeLinked} hides transactions
+   * already linked to a legal disbursement (Phase 88 Epic 621A — trust-link picker).
    */
   @Transactional(readOnly = true)
   public Page<TrustTransactionResponse> listTransactions(
@@ -329,9 +330,17 @@ public class TrustTransactionService {
       String transactionType,
       String status,
       TrustLedger ledger,
+      UUID clientId,
+      LocalDate dateFrom,
+      LocalDate dateTo,
       boolean excludeLinked,
       Pageable pageable) {
     moduleGuard.requireModule(MODULE_ID);
+
+    if (dateFrom != null && dateTo != null && dateFrom.isAfter(dateTo)) {
+      throw new InvalidStateException(
+          "Invalid date range", "The 'from' date must not be after the 'to' date");
+    }
 
     trustAccountRepository
         .findById(trustAccountId)
@@ -339,7 +348,16 @@ public class TrustTransactionService {
 
     var page =
         transactionRepository.findFiltered(
-            trustAccountId, matterId, transactionType, status, ledger, excludeLinked, pageable);
+            trustAccountId,
+            matterId,
+            transactionType,
+            status,
+            ledger,
+            clientId,
+            dateFrom,
+            dateTo,
+            excludeLinked,
+            pageable);
     return new PageImpl<>(
         toResponses(page.getContent()), page.getPageable(), page.getTotalElements());
   }

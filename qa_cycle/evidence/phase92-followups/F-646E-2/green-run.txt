@@ -1,0 +1,7 @@
+# Orchestrator re-capture after the review fix (ProblemDetail asserts), 2026-11-22T18:15:03Z
+# ./mvnw test -Dtest=TrustTransactionControllerTest
+[INFO] Tests run: 20, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 16.40 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionControllerTest
+[INFO] Tests run: 20, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+
+# Full backend verify @4e2b62d57 (scripts/verify.sh -q): exit 0 — 7 523 <testcase> / 0 failures / 0 errors; TrustTransactionControllerTest tests=20 failures=0 errors=0

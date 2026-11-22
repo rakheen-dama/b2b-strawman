@@ -1,7 +1,7 @@
 {
-  "commit": "7811f1f86",
-  "command": "cd portal && pnpm install && pnpm run lint && pnpm run typecheck && pnpm run format:check && pnpm test && pnpm run build (nvm node v20.11.1, NODE_OPTIONS=\"\")",
+  "commit": "9063aceda",
+  "command": "cd portal && rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (node 20.11.1, PR #1841)",
   "exit": 0,
-  "ts": "2026-11-18T13:00:58Z",
-  "summary": "PR #1802 (648D) @7811f1f86 — lint (0 errors, 4 pre-existing warnings), typecheck, format:check, build OK; vitest 51 files, 292 passed (baseline 285)."
+  "ts": "2026-11-22T22:18:24Z",
+  "summary": "PR #1841 @9063aceda — vitest 51 files / 292 passed; build OK"
 }

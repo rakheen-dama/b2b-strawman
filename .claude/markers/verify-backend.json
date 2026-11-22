@@ -1,7 +1,7 @@
 {
-  "commit": "45fbbb21b",
-  "command": "cd backend && ./mvnw -q spotless:check && bash scripts/verify.sh -q (worktree agent-a4c94e2f28747fc09, PR #1842)",
+  "commit": "9063aceda",
+  "command": "cd backend && ./mvnw -q spotless:check && bash scripts/verify.sh -q (worktree agent-a6c71da6a24efafed, PR #1841)",
   "exit": 0,
-  "ts": "2026-11-22T23:22:59Z",
-  "summary": "PR #1842 (FU-27) @45fbbb21b — 7527 <testcase> / 0 failures / 0 errors; harness-check.sh 70/70 PASS over the full-suite reports"
+  "ts": "2026-11-22T22:14:57Z",
+  "summary": "PR #1841 (648B F-11) @9063aceda — 7555 <testcase> / 0 failures / 0 errors; head 94978afc2 = main merge (tests/docs only); the merged-in classes + coverage guard re-run @94978afc2: 56/56"
 }

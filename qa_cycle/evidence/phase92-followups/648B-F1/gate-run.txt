@@ -1,0 +1,991 @@
+Scope: all 5 workspace projects
+
+╭ Warning ─────────────────────────────────────────────────────────────────────╮
+│                                                                              │
+│   Ignored build scripts: esbuild@0.27.7, unrs-resolver@1.11.1.               │
+│   Run "pnpm approve-builds" to pick which dependencies should be allowed     │
+│   to run scripts.                                                            │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+Done in 684ms using pnpm v10.26.1
+
+> frontend@0.1.0 lint /Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend
+> eslint
+
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/__tests__/DocxTemplateManagement.test.tsx
+  1:36  warning  'beforeEach' is defined but never used  @typescript-eslint/no-unused-vars
+  2:35  warning  'within' is defined but never used      @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/__tests__/clauses/clauses-content.test.tsx
+  46:21  warning  'opts' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/__tests__/compliance/ChecklistInstancePanel.test.tsx
+  3:8  warning  'userEvent' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/__tests__/customer-profitability.test.tsx
+  2:35  warning  'within' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/__tests__/customers/customer-tabs-audit-capability.test.tsx
+  81:25  warning  '_unused' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/__tests__/rates-settings.test.tsx
+  44:7  warning  'today' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/__tests__/role-dialog.test.tsx
+  12:15  warning  'initial' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  12:24  warning  'animate' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  12:33  warning  'transition' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/__tests__/settings/data-protection.test.tsx
+  21:15  warning  'initial' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  21:24  warning  'animate' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  21:33  warning  'transition' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/__tests__/settings/org-documents-section.test.tsx
+  26:23  warning  '_props' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/__tests__/settings/packs-page.test.tsx
+   3:44  warning  'within' is defined but never used               @typescript-eslint/no-unused-vars
+  16:15  warning  'initial' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  16:24  warning  'animate' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  16:33  warning  'transition' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/__tests__/team/member-role-management.test.tsx
+  12:15  warning  'initial' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  12:24  warning  'animate' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  12:33  warning  'transition' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/app/(app)/org/[slug]/clients/[id]/error.tsx
+  4:10  warning  '_error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/app/(app)/org/[slug]/clients/error.tsx
+  4:10  warning  '_error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/app/(app)/org/[slug]/compliance/actions.ts
+  47:3  warning  'orgSlug' is defined but never used  @typescript-eslint/no-unused-vars
+  81:3  warning  'orgSlug' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/app/(app)/org/[slug]/invoices/collections/reminder-queue.tsx
+  249:25  warning  Unused eslint-disable directive (no problems were reported from 'react/no-danger')
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/app/(app)/org/[slug]/invoices/error.tsx
+  8:47  warning  '_error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/app/(app)/org/[slug]/legal/disbursements/disbursements-list-client.tsx
+  59:9  warning  The 'refetch' function makes the dependencies of useEffect Hook (at line 100) change on every render. To fix this, wrap the definition of 'refetch' in its own useCallback() Hook  react-hooks/exhaustive-deps
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/app/(app)/org/[slug]/matters/error.tsx
+  3:41  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/app/(app)/org/[slug]/settings/connections/_tabs/packs-page-client.tsx
+  41:10  warning  'isPending' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/app/(app)/org/[slug]/settings/connections/_tabs/xero-actions.ts
+  31:3   warning  'slug' is defined but never used   @typescript-eslint/no-unused-vars
+  63:47  warning  '_slug' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/app/(app)/org/[slug]/settings/connections/xero/sync-log/actions.ts
+  48:3  warning  '_slug' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/app/(app)/org/[slug]/settings/error.tsx
+  4:10  warning  '_error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/app/(app)/org/[slug]/settings/firm/_tabs/data-protection-actions.ts
+   45:46  warning  '_slug' is defined but never used  @typescript-eslint/no-unused-vars
+   85:3   warning  '_slug' is defined but never used  @typescript-eslint/no-unused-vars
+  141:49  warning  '_slug' is defined but never used  @typescript-eslint/no-unused-vars
+  225:3   warning  '_slug' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/app/(app)/org/[slug]/settings/firm/_tabs/data-requests-actions.ts
+  24:41  warning  '_slug' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/app/(app)/org/[slug]/team/invitation-actions.ts
+   5:15  warning  'ApiError' is defined but never used              @typescript-eslint/no-unused-vars
+  47:10  warning  'mapBffInvitation' is defined but never used      @typescript-eslint/no-unused-vars
+  80:3   warning  '_capabilityOverrides' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/app/(app)/org/[slug]/trust-accounting/investments/page.tsx
+  81:17  warning  '_slug' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/app/accept/[token]/page.tsx
+  152:13  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/components/activity/activity-item.tsx
+  46:9  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/components/audit/audit-timeline.tsx
+  81:16  warning  '_showFilters' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/components/billing-runs/billing-run-wizard.tsx
+  4:10  warning  'Button' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/components/billing-runs/cherry-pick-step.tsx
+  64:36  warning  The ref value 'debounceTimers.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'debounceTimers.current' to a variable inside the effect, and use that variable in the cleanup function  react-hooks/exhaustive-deps
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/components/clauses/clause-editor-sheet.tsx
+  83:3  warning  'onError' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/components/customers/client-overflow-menu.tsx
+  50:3  warning  'customerStatus' is defined but never used   @typescript-eslint/no-unused-vars
+  51:3  warning  'lifecycleStatus' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/components/customers/create-customer-dialog.tsx
+  244:32  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/components/customers/create-customer-dialog.tsx:244:32
+  242 |
+  243 |   // Filter out trust-variant groups when the selected customer type is not TRUST
+> 244 |   const selectedCustomerType = form.watch("customerType");
+      |                                ^^^^ React Hook Form's `useForm()` API returns a `watch()` function which cannot be memoized safely.
+  245 |   const filteredIntakeGroups =
+  246 |     selectedCustomerType === "TRUST"
+  247 |       ? intakeGroups  react-hooks/incompatible-library
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/components/dashboard/recent-activity-widget.tsx
+  49:56  warning  '_orgSlug' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/components/field-definitions/CustomFieldSection.tsx
+  42:11  warning  'ValidationError' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/components/invoices/XeroStatusChip.tsx
+  62:12  warning  'handleResync' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/components/invoices/unbilled-summary.tsx
+  200:58  warning  '_projectId' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/components/legal/create-disbursement-dialog.tsx
+  107:28  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/components/legal/create-disbursement-dialog.tsx:107:28
+  105 |   });
+  106 |
+> 107 |   const selectedCategory = form.watch("category");
+      |                            ^^^^ React Hook Form's `useForm()` API returns a `watch()` function which cannot be memoized safely.
+  108 |   const selectedPaymentSource = form.watch("paymentSource");
+  109 |   const selectedProjectId = form.watch("projectId");
+  110 |  react-hooks/incompatible-library
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/components/legal/edit-disbursement-dialog.tsx
+  66:28  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/components/legal/edit-disbursement-dialog.tsx:66:28
+  64 |   });
+  65 |
+> 66 |   const selectedCategory = form.watch("category");
+     |                            ^^^^ React Hook Form's `useForm()` API returns a `watch()` function which cannot be memoized safely.
+  67 |
+  68 |   useEffect(() => {
+  69 |     if (open) {  react-hooks/incompatible-library
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/components/legal/matter-closure-dialog.tsx
+  122:25  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/components/legal/matter-closure-dialog.tsx:122:25
+  120 |   });
+  121 |
+> 122 |   const overrideValue = form.watch("override");
+      |                         ^^^^ React Hook Form's `useForm()` API returns a `watch()` function which cannot be memoized safely.
+  123 |   const letterValue = useWatch({ control: form.control, name: "generateClosureLetter" });
+  124 |   const soaValue = useWatch({ control: form.control, name: "generateStatementOfAccount" });
+  125 |   const notifyValue = useWatch({ control: form.control, name: "notifyClient" });  react-hooks/incompatible-library
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/components/legal/project-disbursements-tab.tsx
+  29:14  warning  '_canManage' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/components/projects/kpi-dashboard.tsx
+    1:16  warning  'CardContent' is defined but never used   @typescript-eslint/no-unused-vars
+    1:29  warning  'CardHeader' is defined but never used    @typescript-eslint/no-unused-vars
+    1:41  warning  'CardTitle' is defined but never used     @typescript-eslint/no-unused-vars
+  130:16  warning  '_projectName' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/components/projects/project-customers-panel.tsx
+  10:10  warning  'formatDate' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/components/projects/project-members-panel.tsx
+  26:29  warning  'MatterRole' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/components/tasks/__tests__/task-recurrence.test.tsx
+  2:35  warning  'waitFor' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/components/tasks/log-time-dialog.tsx
+   98:7  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/set-state-in-effect')
+  100:7  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/set-state-in-effect')
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/components/team/invite-member-form.tsx
+  133:27  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/components/team/invite-member-form.tsx:133:27
+  131 |   const [success, setSuccess] = useState<string | null>(null);
+  132 |
+> 133 |   const roleSelectValue = form.watch("roleSelectValue");
+      |                           ^^^^ React Hook Form's `useForm()` API returns a `watch()` function which cannot be memoized safely.
+  134 |   const suppressRoleChangeClearRef = useRef(false);
+  135 |
+  136 |   // Reset overrides + status messages when role selection changes  react-hooks/incompatible-library
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/components/time-entries/billing-status-badge.tsx
+  14:3  warning  'invoiceNumber' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/components/trust/InvestmentInterestEntriesDialog.tsx
+  17:45  warning  'InvestmentInterest' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/components/trust/RecordDepositDialog.tsx
+  86:22  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/components/trust/RecordDepositDialog.tsx:86:22
+  84 |   const transactionDate = useWatch({ control: form.control, name: "transactionDate" });
+  85 |
+> 86 |   const customerId = form.watch("customerId");
+     |                      ^^^^ React Hook Form's `useForm()` API returns a `watch()` function which cannot be memoized safely.
+  87 |
+  88 |   function handleOpenChange(newOpen: boolean) {
+  89 |     onOpenChange(newOpen);  react-hooks/incompatible-library
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/components/trust/RecordPaymentDialog.tsx
+  83:22  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/components/trust/RecordPaymentDialog.tsx:83:22
+  81 |   const transactionDate = useWatch({ control: form.control, name: "transactionDate" });
+  82 |
+> 83 |   const customerId = form.watch("customerId");
+     |                      ^^^^ React Hook Form's `useForm()` API returns a `watch()` function which cannot be memoized safely.
+  84 |
+  85 |   function handleOpenChange(newOpen: boolean) {
+  86 |     onOpenChange(newOpen);  react-hooks/incompatible-library
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/components/trust/RecordRefundDialog.tsx
+  83:22  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/components/trust/RecordRefundDialog.tsx:83:22
+  81 |   const transactionDate = useWatch({ control: form.control, name: "transactionDate" });
+  82 |
+> 83 |   const customerId = form.watch("customerId");
+     |                      ^^^^ React Hook Form's `useForm()` API returns a `watch()` function which cannot be memoized safely.
+  84 |
+  85 |   function handleOpenChange(newOpen: boolean) {
+  86 |     onOpenChange(newOpen);  react-hooks/incompatible-library
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/components/views/CreateViewDialog.tsx
+  78:3  warning  'slug' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/e2e/tests/demo-full-90day.spec.ts
+  2:16  warning  'expect' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend/e2e/tests/demo-recording.spec.ts
+  2:16  warning  'expect' is defined but never used  @typescript-eslint/no-unused-vars
+
+✖ 78 problems (0 errors, 78 warnings)
+  0 errors and 3 warnings potentially fixable with the `--fix` option.
+
+
+> frontend@0.1.0 typecheck /Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend
+> next typegen && tsc --noEmit -p .
+
+Generating route types...
+✓ Types generated successfully
+
+> frontend@0.1.0 format:check /Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend
+> prettier --check .
+
+Checking formatting...
+All matched files use Prettier code style!
+
+> frontend@0.1.0 test /Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend
+> vitest run
+
+
+ RUN  v4.1.5 /Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend
+
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+AggregateError: 
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 8080
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:8080
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 8080
+    }
+  ]
+}
+DOMException [NotSupportedError]: Failed to fetch from "blob:http://localhost/fake-pdf-url": URL scheme "blob" is not supported.
+    at Function.validateSchema (file:///Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/utilities/FetchRequestValidationUtility.js:90:19)
+    at Fetch.send (file:///Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/Fetch.js:126:39)
+    at Function.navigate (file:///Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/browser/utilities/BrowserFrameNavigator.js:202:36)
+    at DetachedBrowserFrame.goto (file:///Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/browser/detached-browser/DetachedBrowserFrame.js:152:38)
+    at HTMLIFrameElement.#loadPage (file:///Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:345:14)
+    at HTMLIFrameElement.[connectedToDocument] (file:///Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:230:23)
+    at HTMLIFrameElement.[connectedToNode] (file:///Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/node/Node.js:794:53)
+    at HTMLDivElement.[connectedToNode] (file:///Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/node/Node.js:786:58)
+    at HTMLDivElement.[connectedToNode] (file:///Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/node/Node.js:786:58)
+    at HTMLDivElement.[appendChild] (file:///Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/node/Node.js:413:45)
+DOMException [NotSupportedError]: Failed to fetch from "blob:http://localhost/fake-pdf-url": URL scheme "blob" is not supported.
+    at Function.validateSchema (file:///Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/utilities/FetchRequestValidationUtility.js:90:19)
+    at Fetch.send (file:///Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/Fetch.js:126:39)
+    at Function.navigate (file:///Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/browser/utilities/BrowserFrameNavigator.js:202:36)
+    at DetachedBrowserFrame.goto (file:///Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/browser/detached-browser/DetachedBrowserFrame.js:152:38)
+    at HTMLIFrameElement.#loadPage (file:///Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:345:14)
+    at HTMLIFrameElement.[connectedToDocument] (file:///Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:230:23)
+    at HTMLIFrameElement.[connectedToNode] (file:///Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/node/Node.js:794:53)
+    at HTMLDivElement.[connectedToNode] (file:///Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/node/Node.js:786:58)
+    at HTMLDivElement.[connectedToNode] (file:///Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/node/Node.js:786:58)
+    at HTMLDivElement.[appendChild] (file:///Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/node/Node.js:413:45)
+DOMException [NotSupportedError]: Failed to fetch from "blob:http://localhost/fake-pdf-url": URL scheme "blob" is not supported.
+    at Function.validateSchema (file:///Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/utilities/FetchRequestValidationUtility.js:90:19)
+    at Fetch.send (file:///Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/fetch/Fetch.js:126:39)
+    at Function.navigate (file:///Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/browser/utilities/BrowserFrameNavigator.js:202:36)
+    at DetachedBrowserFrame.goto (file:///Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/browser/detached-browser/DetachedBrowserFrame.js:152:38)
+    at HTMLIFrameElement.#loadPage (file:///Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:345:14)
+    at HTMLIFrameElement.[connectedToDocument] (file:///Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:230:23)
+    at HTMLIFrameElement.[connectedToNode] (file:///Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/node/Node.js:794:53)
+    at HTMLDivElement.[connectedToNode] (file:///Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/node/Node.js:786:58)
+    at HTMLDivElement.[connectedToNode] (file:///Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/node/Node.js:786:58)
+    at HTMLDivElement.[appendChild] (file:///Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/node_modules/.pnpm/happy-dom@20.9.0/node_modules/happy-dom/lib/nodes/node/Node.js:413:45)
+node:events:496
+      throw er; // Unhandled 'error' event
+      ^
+
+AggregateError
+    at internalConnectMultiple (node:net:1114:18)
+    at afterConnectMultiple (node:net:1667:5)
+Emitted 'error' event on ClientRequest instance at:
+    at Socket.socketErrorListener (node:_http_client:495:9)
+    at Socket.emit (node:events:518:28)
+    at emitErrorNT (node:internal/streams/destroy:169:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:128:3)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21) {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:3000
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 3000
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:3000
+        at createConnectionError (node:net:1634:14)
+        at afterConnectMultiple (node:net:1664:40) {
+      errno: -61,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 3000
+    }
+  ]
+}
+
+Node.js v20.11.1
+
+ Test Files  484 passed (484)
+      Tests  4618 passed | 2 skipped (4620)
+   Start at  20:50:33
+   Duration  86.08s (transform 26.33s, setup 51.84s, import 269.50s, tests 214.78s, environment 147.37s)
+

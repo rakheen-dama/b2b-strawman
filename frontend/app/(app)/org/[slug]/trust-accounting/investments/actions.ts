@@ -129,6 +129,31 @@ export async function recordInvestmentInterest(
   }
 }
 
+/** Every interest entry of one investment, oldest first (the listing is POSTED and REVERSED). */
+export async function fetchInvestmentInterest(investmentId: string): Promise<InvestmentInterest[]> {
+  return api.get<InvestmentInterest[]>(`/api/trust-investments/${investmentId}/interest`);
+}
+
+/**
+ * Reverses one POSTED bank-advice interest entry (648B F-1). The endpoint takes no body: no
+ * reason, no date. The server refuses an entry already reversed, one recorded from a statement
+ * line (unmatch the line instead), a withdrawn investment and a closed account; its detail is
+ * returned as `error`.
+ */
+export async function reverseInvestmentInterest(
+  interestId: string
+): Promise<{ success: boolean; interest?: InvestmentInterest; error?: string }> {
+  try {
+    const interest = await api.post<InvestmentInterest>(
+      `/api/trust-investment-interest/${interestId}/reverse`
+    );
+    return { success: true, interest };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Failed to reverse interest entry";
+    return { success: false, error: message };
+  }
+}
+
 /**
  * The investment account's UNMATCHED credit lines, newest first — the lines an interest entry can
  * be recorded from (OQ-11). Only statements with an unresolved line are opened.

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@b2mash/ui/button";
 import { PlaceInvestmentDialog } from "@/components/trust/PlaceInvestmentDialog";
+import { InvestmentInterestEntriesDialog } from "@/components/trust/InvestmentInterestEntriesDialog";
 import { RecordInvestmentInterestDialog } from "@/components/trust/RecordInvestmentInterestDialog";
 import { WithdrawInvestmentDialog } from "@/components/trust/WithdrawInvestmentDialog";
 import type { TrustAccount } from "@/lib/types/trust";
@@ -26,6 +27,11 @@ interface InvestmentPageClientProps {
    * investment's interest is the Fund's; a MATURED one can still be withdrawn).
    */
   canRecordInterest?: boolean;
+  /**
+   * The investment is a held (ACTIVE or MATURED) section 86(4) investment: its interest entries
+   * can be listed and a bank-advice entry reversed (648B F-1). The server refuses once withdrawn.
+   */
+  showInterestEntries?: boolean;
   currency?: string;
 }
 
@@ -38,11 +44,13 @@ export function InvestmentPageClient({
   investmentDepositDate,
   investmentAccountId,
   canRecordInterest = false,
+  showInterestEntries = false,
   currency,
 }: InvestmentPageClientProps) {
   const router = useRouter();
   const [placeOpen, setPlaceOpen] = useState(false);
   const [interestOpen, setInterestOpen] = useState(false);
+  const [entriesOpen, setEntriesOpen] = useState(false);
   const [withdrawOpen, setWithdrawOpen] = useState(false);
 
   function handleSuccess() {
@@ -73,6 +81,11 @@ export function InvestmentPageClient({
           Record interest
         </Button>
       )}
+      {showInterestEntries && (
+        <Button variant="outline" size="sm" onClick={() => setEntriesOpen(true)}>
+          Interest entries
+        </Button>
+      )}
       <Button variant="outline" size="sm" onClick={() => setWithdrawOpen(true)}>
         Withdraw
       </Button>
@@ -87,6 +100,15 @@ export function InvestmentPageClient({
               open={interestOpen}
               onOpenChange={setInterestOpen}
               onSuccess={handleSuccess}
+            />
+          )}
+          {showInterestEntries && (
+            <InvestmentInterestEntriesDialog
+              investmentId={investmentId}
+              currency={currency ?? "ZAR"}
+              open={entriesOpen}
+              onOpenChange={setEntriesOpen}
+              onReversed={handleSuccess}
             />
           )}
           <WithdrawInvestmentDialog

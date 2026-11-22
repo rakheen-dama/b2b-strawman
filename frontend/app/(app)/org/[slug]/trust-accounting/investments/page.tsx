@@ -318,6 +318,7 @@ export default async function InvestmentsPage({
                                     inv.investmentBasis === "CLIENT_INSTRUCTION" &&
                                     inv.status === "ACTIVE"
                                   }
+                                  showInterestEntries={inv.investmentBasis === "CLIENT_INSTRUCTION"}
                                   currency={currency}
                                 />
                               )}

@@ -1,0 +1,9 @@
+
+ RUN  v4.1.5 /Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-ae0c9bfb4b4b1dbfa/frontend
+
+
+ Test Files  1 passed (1)
+      Tests  8 passed (8)
+   Start at  20:49:21
+   Duration  1.47s (transform 302ms, setup 94ms, import 745ms, tests 346ms, environment 176ms)
+

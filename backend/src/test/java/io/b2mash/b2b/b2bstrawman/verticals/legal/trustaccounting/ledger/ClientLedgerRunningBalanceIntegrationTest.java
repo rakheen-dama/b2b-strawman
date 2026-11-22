@@ -77,10 +77,6 @@ class ClientLedgerRunningBalanceIntegrationTest {
 
   private static final String ORG_ID = "org_ledger_running_balance";
   private static final String OWNER_SUB = "user_ledger_rb_owner";
-  private static final Set<String> CREDIT_TYPES = Set.of("DEPOSIT", "TRANSFER_IN");
-  private static final Set<String> DEBIT_TYPES =
-      Set.of("PAYMENT", "TRANSFER_OUT", "FEE_TRANSFER", "REFUND");
-
   @Autowired private MockMvc mockMvc;
   @Autowired private io.b2mash.b2b.b2bstrawman.project.ProjectRepository projectRepository;
   @Autowired private TenantProvisioningService provisioningService;
@@ -187,9 +183,11 @@ class ClientLedgerRunningBalanceIntegrationTest {
       }
     }
 
-    // First POSTED row == balance-as-of(today) == /statement's last running balance.
+    // First POSTED row == balance-as-of(today) == /statement's last running balance. Since 647C #2
+    // that is the reversed payment's contra (today, created after the fee transfer).
     var firstPosted = rows.stream().filter(this::isPosted).findFirst().orElseThrow();
-    assertThat(firstPosted.get("id")).isEqualTo(ledger.feeTransferId().toString());
+    assertThat(firstPosted.get("transactionType")).isEqualTo("REVERSAL");
+    assertThat(firstPosted.get("reversalOf")).isEqualTo(ledger.reversedPaymentId().toString());
     BigDecimal balanceAsOfToday =
         as(
             ownerId,
@@ -221,25 +219,28 @@ class ClientLedgerRunningBalanceIntegrationTest {
     assertThat(money(statementBalances.getLast()))
         .isEqualByComparingTo(money(firstPosted.get("runningBalance")));
 
-    // Walking the page oldest → newest reproduces every intermediate balance.
+    // Walking the page oldest → newest reproduces every intermediate balance: each posted row
+    // (a REVERSED original and its REVERSAL contra included, 647C #2) adds its amount signed by the
+    // row's direction (a payment's contra is IN, 646E F8).
     BigDecimal running = BigDecimal.ZERO;
     for (int i = rows.size() - 1; i >= 0; i--) {
       var row = rows.get(i);
       if (isPosted(row)) {
         var amount = money(row.get("amount"));
         String type = (String) row.get("transactionType");
-        if (CREDIT_TYPES.contains(type)) {
-          running = running.add(amount);
-        } else if (DEBIT_TYPES.contains(type)) {
-          running = running.subtract(amount);
-        }
+        running =
+            switch ((String) row.get("direction")) {
+              case "IN" -> running.add(amount);
+              case "OUT" -> running.subtract(amount);
+              default -> running;
+            };
         assertThat(money(row.get("runningBalance")))
             .as("running balance of %s %s", type, row.get("id"))
             .isEqualByComparingTo(running);
       } else {
         assertThat(row.get("runningBalance"))
             .as(
-                "non-posted / REVERSAL row %s (%s, %s) must carry null",
+                "unposted row %s (%s, %s) must carry null",
                 row.get("id"), row.get("transactionType"), row.get("status"))
             .isNull();
       }
@@ -253,15 +254,20 @@ class ClientLedgerRunningBalanceIntegrationTest {
     assertThat(byId.get(ledger.rejectedPaymentId().toString()).get("status")).isEqualTo("REJECTED");
     assertThat(byId.get(ledger.rejectedPaymentId().toString()).get("runningBalance")).isNull();
     assertThat(byId.get(ledger.reversedPaymentId().toString()).get("status")).isEqualTo("REVERSED");
-    assertThat(byId.get(ledger.reversedPaymentId().toString()).get("runningBalance")).isNull();
+    // 647C #2: the REVERSED original keeps its effect on its own date (today-2): 9 000 - 700
+    assertThat(money(byId.get(ledger.reversedPaymentId().toString()).get("runningBalance")))
+        .isEqualByComparingTo("8300.00");
+    // ... and the fee transfer (today, before the contra) follows it: 8 300 - 1 150
+    assertThat(money(byId.get(ledger.feeTransferId().toString()).get("runningBalance")))
+        .isEqualByComparingTo("7150.00");
     assertThat(byId.get(ledger.awaitingPaymentId().toString()).get("status"))
         .isEqualTo("AWAITING_APPROVAL");
     assertThat(byId.get(ledger.awaitingPaymentId().toString()).get("runningBalance")).isNull();
     var reversalRow =
         rows.stream().filter(r -> "REVERSAL".equals(r.get("transactionType"))).findFirst();
     assertThat(reversalRow).isPresent();
-    assertThat(reversalRow.get()).containsKey("runningBalance");
-    assertThat(reversalRow.get().get("runningBalance")).isNull();
+    // The contra carries the negation on its own date: 7 150 + 700 = the balance today
+    assertThat(money(reversalRow.get().get("runningBalance"))).isEqualByComparingTo("7850.00");
   }
 
   // --- Statement across a period boundary (649B, D15) ---
@@ -351,6 +357,160 @@ class ClientLedgerRunningBalanceIntegrationTest {
         .isEqualByComparingTo("10000.00");
     List<String> types = JsonPath.read(statementBody, "$.transactions[*].transactionType");
     assertThat(types).as("the reversal is listed inside the period").contains("REVERSAL");
+  }
+
+  // --- Reversed pairs on their own dates (647C #2 / 649B F2, ADR-378) ---
+
+  /**
+   * Phase 92 647C #2 / 649B F2: a reversal is a contra — the original keeps its effect on its own
+   * date and the contra carries the negation on its own date (ADR-378). A payment reversed by a
+   * contra dated after a later deposit: between the payment's date and the contra's date the
+   * client's as-at balance includes the payment, so every posted row's running balance must equal
+   * {@code clientBalance(asAt = that row's date)} — including the REVERSED original and its
+   * REVERSAL contra.
+   */
+  @Test
+  void history_paymentReversedByALaterContra_everyPostedRowIsTheAsAtClientBalance()
+      throws Exception {
+    UUID clientId = newClient("RB Pair Payment Client");
+    recordDeposit(clientId, "1000.00", "RB-PP-DEP", 10);
+    UUID paymentId = recordPayment(clientId, "400.00", "RB-PP-PAY-" + clientCounter, 6);
+    approve(paymentId);
+    recordDeposit(clientId, "100.00", "RB-PP-DEP2", 4);
+    UUID contraId =
+        as(
+            ownerId,
+            () ->
+                transactionService
+                    .reverseTransaction(
+                        paymentId, new ReverseRequest("Paid in error", today.minusDays(2)))
+                    .id());
+
+    var rows = history(clientId, "size=50");
+    var byId = indexById(rows);
+    assertThat(byId.get(paymentId.toString()).get("status")).isEqualTo("REVERSED");
+    assertThat(byId.get(contraId.toString()).get("transactionType")).isEqualTo("REVERSAL");
+    assertEveryPostedRowIsTheAsAtClientBalance(clientId, rows);
+    assertThat(balancesNewestFirst(rows))
+        .as("newest first: contra d-2, deposit d-4, payment d-6, deposit d-10")
+        .containsExactly("1100.00", "700.00", "600.00", "1000.00");
+  }
+
+  /** As above for a deposit reversal — the approval path (the contra awaits approval first). */
+  @Test
+  void history_depositReversedByALaterApprovedContra_everyPostedRowIsTheAsAtClientBalance()
+      throws Exception {
+    UUID clientId = newClient("RB Pair Deposit Client");
+    recordDeposit(clientId, "1000.00", "RB-PD-DEP", 10);
+    UUID depositId = recordDeposit(clientId, "300.00", "RB-PD-DEP2", 8);
+    UUID paymentId = recordPayment(clientId, "100.00", "RB-PD-PAY-" + clientCounter, 6);
+    approve(paymentId);
+    UUID contraId =
+        as(
+            ownerId,
+            () ->
+                transactionService
+                    .reverseTransaction(
+                        depositId, new ReverseRequest("Deposit bounced", today.minusDays(2)))
+                    .id());
+
+    // Before approval the contra is not posted: the original still counts, the contra has none.
+    var pending = history(clientId, "size=50");
+    assertThat(indexById(pending).get(contraId.toString()).get("status"))
+        .isEqualTo("AWAITING_APPROVAL");
+    assertThat(indexById(pending).get(contraId.toString()).get("runningBalance")).isNull();
+    assertEveryPostedRowIsTheAsAtClientBalance(clientId, pending);
+
+    approve(contraId);
+    var rows = history(clientId, "size=50");
+    var byId = indexById(rows);
+    assertThat(byId.get(depositId.toString()).get("status")).isEqualTo("REVERSED");
+    assertThat(byId.get(contraId.toString()).get("status")).isEqualTo("APPROVED");
+    assertEveryPostedRowIsTheAsAtClientBalance(clientId, rows);
+    assertThat(balancesNewestFirst(rows))
+        .as("newest first: contra d-2, payment d-6, deposit d-8, deposit d-10")
+        .containsExactly("900.00", "1200.00", "1300.00", "1000.00");
+  }
+
+  private static List<String> balancesNewestFirst(List<Map<String, Object>> rows) {
+    return rows.stream()
+        .map(r -> r.get("runningBalance"))
+        .map(b -> b == null ? "null" : money(b).setScale(2).toPlainString())
+        .toList();
+  }
+
+  /**
+   * Each posted row (its own date distinct from every other row's) carries a running balance equal
+   * to the client's as-at balance on that date; an unposted row carries null. Every row is checked
+   * before failing, so a red run lists each disagreeing row (expected vs shown).
+   */
+  private void assertEveryPostedRowIsTheAsAtClientBalance(
+      UUID clientId, List<Map<String, Object>> rows) {
+    var disagreements = new ArrayList<String>();
+    for (var row : rows) {
+      var date = LocalDate.parse((String) row.get("transactionDate"));
+      String label =
+          row.get("transactionType")
+              + " "
+              + row.get("status")
+              + " dated "
+              + date
+              + " "
+              + row.get("id");
+      Object shown = row.get("runningBalance");
+      if (row.get("postedAt") == null) {
+        if (shown != null) {
+          disagreements.add("unposted " + label + ": expected null, shown " + shown);
+        }
+        continue;
+      }
+      BigDecimal asAt =
+          as(
+              ownerId,
+              () ->
+                  transactionTemplate.execute(
+                      tx ->
+                          trustLedgerQueryRepository.clientBalance(
+                              trustAccountId, clientId, date)));
+      if (shown == null || money(shown).compareTo(asAt) != 0) {
+        disagreements.add(
+            "posted " + label + ": clientBalance(asAt) " + asAt + ", running balance " + shown);
+      }
+    }
+    assertThat(disagreements)
+        .as("history running balance vs clientBalance(asAt = row date)")
+        .isEmpty();
+  }
+
+  private UUID newClient(String name) {
+    int n = ++clientCounter;
+    return as(
+        ownerId,
+        () ->
+            transactionTemplate.execute(
+                tx ->
+                    customerRepository
+                        .save(
+                            TestCustomerFactory.createActiveCustomer(
+                                name + " " + n, "rb_pair_client_" + n + "@test.com", ownerId))
+                        .getId()));
+  }
+
+  private UUID recordDeposit(UUID clientId, String amount, String reference, int daysAgo) {
+    return as(
+        ownerId,
+        () ->
+            transactionService
+                .recordDeposit(
+                    trustAccountId,
+                    new RecordDepositRequest(
+                        clientId,
+                        trustMatterOf(clientId),
+                        new BigDecimal(amount),
+                        reference + "-" + clientCounter,
+                        "Deposit " + reference,
+                        today.minusDays(daysAgo)))
+                .id());
   }
 
   // --- Filters bind after the window ---
@@ -547,7 +707,9 @@ class ClientLedgerRunningBalanceIntegrationTest {
    * (today-5, approved) → fee transfer R1 150 (server-dated today, approved) → payment R500
    * (today-3, rejected) → payment R700 (today-2, approved then reversed: original REVERSED + a
    * RECORDED REVERSAL row dated today) → payment R300 (today-1, left AWAITING_APPROVAL). Posted
-   * balances: 10 000 → 9 000 → 7 850.
+   * balances in posting order (647C #2: both halves of the reversed pair count on their own dates):
+   * 10 000 → 9 000 → 8 300 (the reversed payment, today-2) → 7 150 (fee transfer) → 7 850 (the
+   * contra).
    */
   private Ledger seedLedger() {
     int n = ++clientCounter;
@@ -759,10 +921,9 @@ class ClientLedgerRunningBalanceIntegrationTest {
     }
   }
 
+  /** Posted = {@code postedAt} set (ADR-378): a REVERSED original and a posted contra included. */
   private boolean isPosted(Map<String, Object> row) {
-    var status = row.get("status");
-    return ("RECORDED".equals(status) || "APPROVED".equals(status))
-        && !"REVERSAL".equals(row.get("transactionType"));
+    return row.get("postedAt") != null;
   }
 
   private static BigDecimal money(Object jsonNumber) {

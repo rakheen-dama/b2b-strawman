@@ -119,7 +119,7 @@ import { formatCurrency } from "@/lib/format";
 
 // G88-F23 (Phase 89 630C, ADR-361): the client-ledger card renders the server-computed
 // `runningBalance` on every page — no client-side backward walk — with "—" for null
-// (non-posted / REVERSAL rows), and REFUND is an outflow.
+// (unposted rows only since 647C #2), and REFUND is an outflow.
 
 function setupDefaultMocks() {
   mockGetOrgSettings.mockResolvedValue({

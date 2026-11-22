@@ -1,7 +1,7 @@
 {
-  "commit": "20d5d519d",
-  "command": "cd frontend && rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (node 20.11.1, worktree agent-ae0c9bfb4b4b1dbfa, PR #1838)",
+  "commit": "5e9732626",
+  "command": "cd frontend && rm -rf .next && pnpm install --frozen-lockfile && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (node 20.11.1, worktree wt-1839, PR #1839)",
   "exit": 0,
-  "ts": "2026-11-22T19:31:03Z",
-  "summary": "PR #1838 (648B F-1) @20d5d519d — vitest 485 files / 4621 passed / 2 skipped; lint 0 errors (77 warnings = main); typecheck, format:check, build OK"
+  "ts": "2026-11-22T21:36:04Z",
+  "summary": "PR #1839 (647C #2) @5e9732626 — vitest 485 files / 4621 passed / 2 skipped; lint 0 errors; typecheck, format:check, build OK"
 }

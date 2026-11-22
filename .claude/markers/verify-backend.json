@@ -1,7 +1,7 @@
 {
-  "commit": "4e2b62d57",
-  "command": "cd backend && ./mvnw -q spotless:check && bash scripts/verify.sh -q (worktree agent-a139e77d573cad73e, PR #1837)",
+  "commit": "5e9732626",
+  "command": "cd backend && ./mvnw -q spotless:check && bash scripts/verify.sh -q (worktree wt-1839, PR #1839)",
   "exit": 0,
-  "ts": "2026-11-22T18:13:23Z",
-  "summary": "PR #1837 (F-646E-2) @4e2b62d57 — 7523 <testcase> / 0 failures / 0 errors; head 3db46944f is test + evidence only"
+  "ts": "2026-11-22T21:05:15Z",
+  "summary": "PR #1839 (647C #2) @5e9732626 — 7525 <testcase> / 0 failures / 0 errors"
 }

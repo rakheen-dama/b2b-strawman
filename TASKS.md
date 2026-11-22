@@ -742,6 +742,17 @@
 | 651 | Remove the Calculated Interest Run — Screens, Engine, Rates, Docs, Scenario Amendments (E7) | Frontend; Backend; Docs | 650C | L | 651C, 651A, 651E, 651D, 651B (2 verifies) | 651C **Done** (PR #1810) · 651A **Done** (PR #1811) · 651E **Done** (PR #1812) · 651D **Done** (PR #1813) · 651B **Done** (PR #1814) · **Done** |
 | 652 | Wizard and Import Defects (reproduce first) and the Exit Gate — the Balanced Month (E8) | Frontend; Backend; e2e; QA / Docs | per slice; 652E after every code slice; 652F last | L | 652A, 652B, 652C, 652D, 652G, 652H (all CONDITIONAL), 652E, 652F (0 verifies + up to 4) | 652A **Done** (PR #1815) · 652B **Done** (PR #1816) · 652C **Done** (PR #1817) · 652D **Done** (PR #1818) · 652G **Done** (PR #1819) · 652H **Done** (PR #1820) · 652E **Done** (PR #1821) · 652F **Done** (PR #1822) · **Epic 652 Done** |
 
+| **Phase 91 — Kazi UI Modernization II: Light-Mode Colour Scheme, Kink Register, Settings and the Daily-Use Long Tail** | | | | | | See [tasks/phase91-ui-modernization-ii.md](tasks/phase91-ui-modernization-ii.md). Architecture: `architecture/phase91-ui-modernization-ii.md` §18, ADR-392..396 (ADR-392 Proposed pending FD-1). Runs AFTER Phase 93 (sequence 92 → 93 → 91, founder 2026-11-20); epics 653–660 reserved for Phase 93. Frontend-only: no migrations, no pack bumps, 0 backend verifies; PORTAL-GATE in 661B. 10 epics / 22 slices; est. ≈ 87 h, flagged > 40 h, merge options M-1..M-5 unruled. Founder 2026-11-22: FD-2, FD-4..FD-11 ruled as recommended; FD-12 waives the >20-slices rule, so Sections 8–9 stay. **OPEN: FD-1 blocks 661B, FD-3 blocks 663A.** |
+| 661 | Light-Mode Colour Scheme — Prototype, Founder Pick, Scoped Firm-Shell Tokens (E1) | Evidence; Frontend + packages/ui | Phase 93 on `main`; FD-1 for 661B | M | 661A (evidence only), 661B (0 verifies; PORTAL-GATE) | |
+| 662 | Kinks Register — Real-Browser Walk on the Final Scheme (E2) | QA / Docs | 661B | M | 662A (evidence only) | |
+| 663 | EmptyState Sizing Rule, Variant Guard and Sweep + Cross-Cutting Shell Kinks (E3) | Frontend | 662A + FD-3 | M | 663A, 663B, 663C (0 verifies) | |
+| 664 | Settings Shell (SettingsSection, Rail, Mobile Family Bar, Underline Tabs) + DataTable Server-Paged Mode (E4) | Frontend | 663A | M | 664A, 664B (0 verifies) | |
+| 665 | Settings Content — 32 Tabs and 11 Sub-Pages on SettingsSection + DataTable (E5) | Frontend | 664A; 664B for 665B, 665F; Phase 93 for 665C | XL | 665A–665F (0 verifies) | |
+| 666 | Fee Notes — List, Billing Runs, Collections, Unbilled on the Kit + Client-Derived Fee-Note Hero (E6) | Frontend | 663A, 664A | L | 666A, 666B (0 verifies) | |
+| 667 | Trust Sub-Pages — Server-Paged Tables, Client Wrappers, Phase 92 Alignment (E7) | Frontend | 664B | L | 667A, 667B (0 verifies) | |
+| 668 | Diary, My Work, Timesheet, Notifications on the Kit (E8) | Frontend | 663A, 664B | M | 668A (0 verifies) | |
+| 669 | Light Pass + EmptyState Guard Finalised (E9) | Frontend | 663A, 664B; every allowlist owner for 669B | M | 669A, 669B (0 verifies) | |
+| 670 | Exit Gate — Fresh-Stack Suites, Observation Matrix, Metrics vs Baseline, Closure (E10; gate epic, no product code) | QA / Process / Docs | every slice merged | M | 670A (0 verifies; FE-GATE + PORTAL-GATE on `main`) | |
 
 ---
 

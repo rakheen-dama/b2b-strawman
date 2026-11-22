@@ -1,21 +1,24 @@
 # Phase 91 — Kazi UI Modernization II: Light-Mode Colour Scheme, Kink Register, Settings and the Daily-Use Long Tail
 
+> **Refreshed 2026-11-22 for `/architecture`** against `main` @ `5aae8f4ab`: Section 7's trust routes reflect Phase 92 (the interest screen was removed, and `other-creditors` and the Rule 54.15 monthly list were added); Section 5 includes the Phase 93 `take-on` tab; scouting numbers were re-measured. The full corrections table is in `architecture/phase91-ui-modernization-ii.md` §18.0.
+>
 > **Sequencing update (2026-11-20):** runs AFTER Phase 93 (client & trust take-on), order 92 → 93 → 91 (founder decision). Before `/architecture`, refresh this phase's trust sub-page scope for the Phase 92 surfaces (creditor accounts, investments, Rule 54.15 monthly list) and include the Phase 93 `settings/matters?tab=take-on` tab in the settings-shell work.
 >
 > **Status: READY for `/architecture`. Start building only after Phase 90 closes**, meaning Epic 644 (exit gate) has merged and its closure report exists. Scope was agreed in `/ideate` on 2026-11-12. Phase 91 consumes three outputs of 644: the **dark-mode debt list**, the **long-tail adoption backlog** and the before/after metrics. Starting earlier would blur Phase 90's exit metrics and collide with 642/643 on shared files (`grouped-tab-bar.tsx`, `trust-accounting/actions.ts`).
 >
-> **Why this phase exists.** Phase 90 built the design system: tokens, dark mode, the shadcn sidebar shell, PageHeader, DataTable, StatCard, the chart kit, EmptyState and DetailHero. It moved the four surfaces a design partner sees first onto that system. Everything else still uses the old patterns. A demo that opens on the polished dashboard and then clicks into Settings, a fee note or a trust ledger falls back into the old look. Only 3 of 57 pages under `org/[slug]` use `PageHeader`. The new primitives are also being used at the wrong size: "No tasks assigned" and "No custom fields configured" render as full empty-page blocks inside small sections.
+> **Why this phase exists.** Phase 90 built the design system: tokens, dark mode, the shadcn sidebar shell, PageHeader, DataTable, StatCard, the chart kit, EmptyState and DetailHero. It moved the four surfaces a design partner sees first onto that system. Everything else still uses the old patterns. A demo that opens on the polished dashboard and then clicks into Settings, a fee note or a trust ledger falls back into the old look. Only 7 of 58 pages under `org/[slug]` use `PageHeader` (re-measured 2026-11-22). The new primitives are also being used at the wrong size: "No tasks assigned" and "No custom fields configured" render as full empty-page blocks inside small sections.
 >
 > **Founder decisions (2026-11-12):**
-> 1. **Scope = daily-use pages + settings, with a light pass on the rest.** The full migration covers settings (5 families, 31 tabs), fee notes, trust sub-pages, diary, My Work, timesheet and notifications. Compliance, conflict check, the legal registers, team, documents, AI reviews and platform-admin get a **light pass** only: PageHeader, the correct EmptyState size, and DataTable where a table already exists.
+> 1. **Scope = daily-use pages + settings, with a light pass on the rest.** The full migration covers settings (5 families, 31 tabs today, 32 once Phase 93 adds `take-on`), fee notes, trust sub-pages, diary, My Work, timesheet and notifications. Compliance, conflict check, the legal registers, team, documents, AI reviews and platform-admin get a **light pass** only: PageHeader, the correct EmptyState size, and DataTable where a table already exists.
 > 2. **Revisit the light-mode colour scheme.** The founder wants an alternative to "black side-menu, white main area". This **reverses a deliberate Phase 90 ruling** (`architecture/phase90-ui-modernization.md:234` kept the slate-950 light sidebar as "Signal Deck's strongest identity mark"). It is therefore decided design-first: candidates are rendered on real pages, the founder picks one, and a new ADR records the reversal. Dark mode keeps a dark sidebar.
 > 3. **Settings = settings shell + section cards.** Keep Phase 87's five families and `?tab=` tabs. Restyle the settings nav, give it a mobile form, and put every tab's content into titled section cards with right-aligned actions. Same routes, same labels.
 > 4. **Empty custom fields = a compact one-liner, visible to everyone.** This is a purely visual change with no visibility or role logic.
 > 5. **Observe-first kink hunt.** The phase opens with a real-browser walk of every page that produces a **kinks register**. The founder approves which register items are fixed in this phase; the rest go to a backlog.
 >
 > **Scouting note (verified against `main` @ `38c34ce92`, 2026-11-12; re-check line numbers at build time because 642–644 will move them):**
-> - **Primitive adoption.** `PageHeader` is used by 3 of 57 `org/[slug]` pages, and 76 files under `org/[slug]` still contain an inline `<h1`.
-> - **Files that render a `<Table`/`<table` directly:** settings 11, trust-accounting 7, invoices 4, legal 1.
+> - **Primitive adoption** (re-measured 2026-11-22 @ `5aae8f4ab`). `PageHeader` is used by 7 of 58 `org/[slug]` page files, and 71 files under `org/[slug]` still contain an inline `<h1`.
+> - **Files that render a `<Table`/`<table` directly:** settings 10, trust-accounting 6, invoices 4, legal 1. Several trust and settings tables page on the server through a `?page=` URL parameter; DataTable (639C) pages locally only.
+> - **EmptyState count correction (2026-11-22):** there are 61 calls of the shared component in 52 files, 8 of them with `variant` (all `compact`; `dashboard/my-tasks-widget.tsx` is already one). The other 2 of the 63 below come from a local look-alike in `ai/reviews/reviews-client.tsx`. "No tasks assigned" is hard-coded in the My Work components, not read from `empty-states.json`.
 > - **EmptyState** (`frontend/components/empty-state.tsx`, adapted from admincn in 639B) has `variant = "default" | "compact" | "inline"`, documented as "default = page-level; compact = widgets and chart cards; inline = one line in a table body". There are **63 call sites in 53 files, and only 8 pass `variant`**. The other ~55 render the page-level block wherever they sit. Known offenders:
 >   - `components/my-work/assigned-task-list.tsx:65` ("No tasks assigned")
 >   - `components/dashboard/my-tasks-widget.tsx:59`
@@ -41,7 +44,7 @@
 >   - The forms are in `components/settings/*` (18 files).
 > - **Daily-use page sizes (lines of `page.tsx`):**
 >   - Fee notes: `invoices` 352, `invoices/[id]` 224, `invoices/billing-runs` 178 (+ `[id]`, `new`), `invoices/collections` 96, `invoices/unbilled` 120.
->   - Trust: `trust-accounting/transactions` 479, `client-ledgers` 317 (+ `[clientId]`), `investments` 293, `interest` 289, `reconciliation` 279 (+ `new`), `reports` 117.
+>   - Trust (post-Phase 92): `trust-accounting/transactions` 530, `other-creditors` 515 (Phase 92; already on `PageHeader`), `reconciliation` 403 (+ `new` 970, + `lists/[listId]`, the Rule 54.15 monthly list, which is Phase 92 and already on `PageHeader`), `investments` 338, `client-ledgers` (+ `[clientId]`), `reports`. **`trust-accounting/interest` no longer exists** (it was removed by Phase 92 PR #1810, and e2e asserts that it is absent).
 >   - Personal: `my-work` 240, `my-work/timesheet` 91, `diary` 80, `notifications` 34.
 >   - Light-pass pages: `compliance` 114 (+ `requests`, `requests/[id]`), `conflict-check` 84, `legal/tariffs` 60, `legal/disbursements` 56 (+ `[id]`), `legal/adverse-parties` 53, `team` 61, `ai/reviews` 89, `information-requests/[id]`, and `platform-admin/{access-requests,billing,demo}`.
 > - **Phase 90 assets to reuse, not rebuild:**
@@ -167,11 +170,11 @@ This slice merges **before any other Phase 91 surface slice**, so all later obse
 - **New primitive: `SettingsSection`** (or a `Card` composition, which `/architecture` names). It has a title, an optional description, content, and an optional footer with right-aligned actions plus a dirty/saving state slot. It supports both per-card save and page-level save. It has a destructive variant for danger-zone blocks (e.g. data-protection anonymise, disconnect Xero) that is visually distinct, uses no new copy and keeps the existing confirmation dialogs. It goes in `@b2mash/ui` or `frontend/components` per ADR-367's layering rule. Vitest covers all of its states.
 - Each settings family page gets a `PageHeader` (existing title; description only where one already exists).
 
-## Section 5 — Settings Content (31 tabs + sub-pages)
+## Section 5 — Settings Content (32 tabs incl. Phase 93 `take-on`, + sub-pages)
 
 - Migrate every tab's content onto `SettingsSection`, with any list or table on DataTable (client mode, `frame={false}` inside a card), and status chips on the Phase 90 badge helpers. Group the slices by family:
   - **firm**: general, roles, audit-trail (DataTable with today's filters and paging), data-protection, data-requests, compliance, features, subscription;
-  - **matters**: templates, naming, custom-fields, tags, checklists, request-templates, request-settings;
+  - **matters**: templates, naming, custom-fields, tags, checklists, request-templates, request-settings, and **take-on** (Phase 93, gated by `MANAGE_TAKE_ON`). For the take-on wizard, the frame, sections and tables are restyled; its steps, validation, sign-off sheet and the Home sign-off widget keep their behaviour exactly as Phase 93 ships it. Re-scout it at build time, because it is not built at the time of writing;
   - **fees**: tariffs, tax (`tax-rate-table`), time-recording, fee-runs, collections, trust-accounting;
   - **documents + connections**: templates, clauses, acceptance, email; xero, mcp, ai, notifications, packs, automations.
 - Sub-pages (the template editor, checklist editor, request-template and matter-template detail, `xero/sync-log`, `ai/history`, `automations/executions`) get PageHeader + SettingsSection + DataTable for their logs. The **Tiptap template editor's internals are not touched**; only its page frame changes.
@@ -186,10 +189,11 @@ This slice merges **before any other Phase 91 surface slice**, so all later obse
 
 ## Section 7 — Trust Sub-Pages
 
-- `client-ledgers` (+ `[clientId]`), `transactions` (479 lines), `reconciliation` (+ `new`), `interest`, `investments` and `reports`: PageHeader, tables on DataTable with parity (filters, date ranges, running balance column, approval status chips, row actions as today), and StatCard summaries only where the page already shows summary figures.
+- **Full migration:** `client-ledgers` (+ `[clientId]`), `transactions` (530 lines), `reconciliation` (list), `investments` and `reports`. Each gets PageHeader, tables on DataTable with parity (filters, date ranges, the running balance column, approval status chips, row actions and **server-side `?page=` paging, all as today**), and StatCard summaries only where the page already shows summary figures.
+- **Alignment only:** `other-creditors` and `reconciliation/lists/[listId]` (the Rule 54.15 monthly list) were built in Phase 92 and already use `PageHeader`. They get tables on DataTable where the parity rules allow, plus approved register items, and no layout redesign.
 - Reuse 643A's `trust-transactions-table.tsx` wrapper where the columns match; do not fork it.
-- **No trust domain logic changes.** Running balances stay server-side (ADR-361), the interest-run approval surface keeps its behaviour (ADR-362), and Section 35 report generation is untouched.
-- The reconciliation wizard (`reconciliation/new`) gets visual alignment only.
+- **No trust domain logic changes.** Running balances stay server-side (ADR-361), and the Phase 92 statement-driven interest, creditor-ledger and investment behaviour (ADR-375–384) and Section 35 report generation are untouched. The removed interest-run screen stays removed.
+- The reconciliation wizard (`reconciliation/new`, 970 lines) gets visual alignment only. Do not refactor its internals.
 
 ## Section 8 — Diary, My Work, Timesheet, Notifications
 
@@ -216,7 +220,7 @@ Same shape as Phase 90's 644:
 - **Observation matrix:** every in-scope surface at 1024 and 1440 in light and dark, plus owner and member for settings and fee notes, and 390px for the shell and settings nav. Screenshots go to `qa_cycle/evidence/phase91-ui/`.
 - **Closure report:**
   - kinks register outcomes (fixed / backlog / won't-fix, each with a reason);
-  - before/after metrics: `PageHeader` adoption out of 57, inline `<h1` count, direct `<Table` count by area, EmptyState calls without `variant` (target 0), and raw-hex count;
+  - before/after metrics: `PageHeader` adoption out of 58 (or the count at exit), inline `<h1` count, direct `<Table` count by area, EmptyState calls without `variant` (target 0), and raw-hex count;
   - the updated dark-mode debt list;
   - any documented `PageHeader` exceptions;
   - the light-scheme ADR link.

@@ -12,6 +12,12 @@ import type {
   MonthlyList,
 } from "@/lib/types";
 import type { RecordFromStatementFormData } from "@/lib/schemas/trust";
+import {
+  idempotencyHeaders,
+  idempotent,
+  isOutcomeUnknown,
+  unknownOutcome,
+} from "@/lib/idempotency";
 
 // ── Response types ─────────────────────────────────────────────────
 
@@ -26,6 +32,8 @@ export interface ReconciliationPage {
 interface ActionResult {
   success: boolean;
   error?: string;
+  /** A failed trust write whose outcome is unknown: the resubmit reuses its Idempotency-Key. */
+  outcomeUnknown?: boolean;
 }
 
 // ── Reconciliation fetch actions ──────────────────────────────────
@@ -83,6 +91,8 @@ export interface DuplicateStatement {
 
 export interface UploadStatementResult {
   success: boolean;
+  /** A failed import whose outcome is unknown: the resubmit reuses its Idempotency-Key. */
+  outcomeUnknown?: boolean;
   data?: BankStatementResponse;
   error?: string;
   duplicate?: DuplicateStatement;
@@ -93,7 +103,8 @@ export interface UploadStatementResult {
 export async function uploadBankStatement(
   accountId: string,
   file: File,
-  replacesStatementId?: string
+  replacesStatementId: string | undefined,
+  idempotencyKey: string
 ): Promise<UploadStatementResult> {
   // Server-side validation — the UI `accept` attribute is not a security boundary
   if (file.type && file.type !== "text/csv" && file.type !== "application/vnd.ms-excel") {
@@ -122,6 +133,7 @@ export async function uploadBankStatement(
       method: "POST",
       headers: {
         ...authOptions.headers,
+        ...idempotencyHeaders(idempotencyKey),
         // NOTE: Do NOT set Content-Type -- browser sets multipart boundary automatically
       },
       body: formData,
@@ -131,8 +143,10 @@ export async function uploadBankStatement(
     if (!response.ok) {
       let message = response.statusText;
       let duplicate: DuplicateStatement | undefined;
+      let code: unknown;
       try {
         const detail = await response.json();
+        code = detail?.code;
         message = detail?.detail || detail?.title || message;
         if (
           detail?.code === "bank_statement.duplicate_end_date" &&
@@ -146,7 +160,12 @@ export async function uploadBankStatement(
       } catch {
         // ignore
       }
-      return { success: false, error: message, ...(duplicate ? { duplicate } : {}) };
+      return {
+        success: false,
+        error: message,
+        ...(isOutcomeUnknown(response.status, code) ? { outcomeUnknown: true } : {}),
+        ...(duplicate ? { duplicate } : {}),
+      };
     }
 
     const data = (await response.json()) as BankStatementResponse;
@@ -155,6 +174,7 @@ export async function uploadBankStatement(
   } catch (error) {
     return {
       success: false,
+      outcomeUnknown: true, // no response: the import may have been stored
       error: error instanceof Error ? error.message : "Failed to upload statement",
     };
   }
@@ -175,18 +195,26 @@ export async function fetchBankStatement(statementId: string): Promise<BankState
  */
 export async function discardBankStatement(
   statementId: string,
-  reason: string
-): Promise<{ success: boolean; data?: BankStatementResponse; error?: string }> {
+  reason: string,
+  idempotencyKey: string
+): Promise<{
+  success: boolean;
+  outcomeUnknown?: boolean;
+  data?: BankStatementResponse;
+  error?: string;
+}> {
   try {
     const data = await api.post<BankStatementResponse>(
       `/api/bank-statements/${statementId}/discard`,
-      { reason }
+      { reason },
+      idempotent(idempotencyKey)
     );
     revalidatePath("/", "layout");
     return { success: true, data };
   } catch (error) {
     return {
       success: false,
+      ...unknownOutcome(error),
       error: error instanceof Error ? error.message : "Failed to discard the statement",
     };
   }
@@ -195,60 +223,92 @@ export async function discardBankStatement(
 // ── Matching actions ──────────────────────────────────────────────
 
 export async function autoMatch(
-  statementId: string
-): Promise<{ success: boolean; data?: MatchResultResponse; error?: string }> {
+  statementId: string,
+  idempotencyKey: string
+): Promise<{
+  success: boolean;
+  outcomeUnknown?: boolean;
+  data?: MatchResultResponse;
+  error?: string;
+}> {
   try {
     const data = await api.post<MatchResultResponse>(
-      `/api/bank-statements/${statementId}/auto-match`
+      `/api/bank-statements/${statementId}/auto-match`,
+      undefined,
+      idempotent(idempotencyKey)
     );
     revalidatePath("/", "layout");
     return { success: true, data };
   } catch (error) {
     return {
       success: false,
+      ...unknownOutcome(error),
       error: error instanceof Error ? error.message : "Failed to auto-match",
     };
   }
 }
 
-export async function manualMatch(lineId: string, transactionId: string): Promise<ActionResult> {
+export async function manualMatch(
+  lineId: string,
+  transactionId: string,
+  idempotencyKey: string
+): Promise<ActionResult> {
   try {
-    await api.post(`/api/bank-statement-lines/${lineId}/match`, {
-      transactionId,
-    });
+    await api.post(
+      `/api/bank-statement-lines/${lineId}/match`,
+      {
+        transactionId,
+      },
+      idempotent(idempotencyKey)
+    );
     revalidatePath("/", "layout");
     return { success: true };
   } catch (error) {
     return {
       success: false,
+      ...unknownOutcome(error),
       error: error instanceof Error ? error.message : "Failed to match line",
     };
   }
 }
 
-export async function unmatch(lineId: string): Promise<ActionResult> {
+export async function unmatch(lineId: string, idempotencyKey: string): Promise<ActionResult> {
   try {
-    await api.post(`/api/bank-statement-lines/${lineId}/unmatch`);
+    await api.post(
+      `/api/bank-statement-lines/${lineId}/unmatch`,
+      undefined,
+      idempotent(idempotencyKey)
+    );
     revalidatePath("/", "layout");
     return { success: true };
   } catch (error) {
     return {
       success: false,
+      ...unknownOutcome(error),
       error: error instanceof Error ? error.message : "Failed to unmatch line",
     };
   }
 }
 
-export async function excludeLine(lineId: string, reason: string): Promise<ActionResult> {
+export async function excludeLine(
+  lineId: string,
+  reason: string,
+  idempotencyKey: string
+): Promise<ActionResult> {
   try {
-    await api.post(`/api/bank-statement-lines/${lineId}/exclude`, {
-      reason,
-    });
+    await api.post(
+      `/api/bank-statement-lines/${lineId}/exclude`,
+      {
+        reason,
+      },
+      idempotent(idempotencyKey)
+    );
     revalidatePath("/", "layout");
     return { success: true };
   } catch (error) {
     return {
       success: false,
+      ...unknownOutcome(error),
       error: error instanceof Error ? error.message : "Failed to exclude line",
     };
   }
@@ -261,8 +321,14 @@ export async function excludeLine(lineId: string, reason: string): Promise<Actio
  */
 export async function recordFromStatement(
   lineId: string,
-  input: RecordFromStatementFormData
-): Promise<{ success: boolean; data?: RecordFromLineResponse; error?: string }> {
+  input: RecordFromStatementFormData,
+  idempotencyKey: string
+): Promise<{
+  success: boolean;
+  outcomeUnknown?: boolean;
+  data?: RecordFromLineResponse;
+  error?: string;
+}> {
   const notes = input.notes ? input.notes : null;
   // Each classification sends only its own fields: the server refuses the others (648B)
   let body: RecordFromLineRequest = { classification: input.classification, notes };
@@ -286,13 +352,15 @@ export async function recordFromStatement(
   try {
     const data = await api.post<RecordFromLineResponse>(
       `/api/bank-statement-lines/${lineId}/record`,
-      body
+      body,
+      idempotent(idempotencyKey)
     );
     revalidatePath("/", "layout");
     return { success: true, data };
   } catch (error) {
     return {
       success: false,
+      ...unknownOutcome(error),
       error: error instanceof Error ? error.message : "Failed to record the line",
     };
   }
@@ -306,9 +374,11 @@ export async function recordFromStatement(
 // can head it. `errorTitle` is set only when it adds to `error`.
 export async function createReconciliation(
   accountId: string,
-  data: { periodEnd: string; bankStatementId: string }
+  data: { periodEnd: string; bankStatementId: string },
+  idempotencyKey: string
 ): Promise<{
   success: boolean;
+  outcomeUnknown?: boolean;
   data?: TrustReconciliationResponse;
   error?: string;
   errorTitle?: string;
@@ -316,7 +386,8 @@ export async function createReconciliation(
   try {
     const result = await api.post<TrustReconciliationResponse>(
       `/api/trust-accounts/${accountId}/reconciliations`,
-      data
+      data,
+      idempotent(idempotencyKey)
     );
     revalidatePath("/", "layout");
     return { success: true, data: result };
@@ -325,6 +396,7 @@ export async function createReconciliation(
     const message = error instanceof Error ? error.message : "Failed to create reconciliation";
     return {
       success: false,
+      ...unknownOutcome(error),
       error: message,
       ...(title && title !== message ? { errorTitle: title } : {}),
     };
@@ -336,9 +408,11 @@ export async function createReconciliation(
 // uses a different statement" — nothing is calculated or completed.
 export async function calculateReconciliation(
   reconciliationId: string,
-  expectedBankStatementId: string
+  expectedBankStatementId: string,
+  idempotencyKey: string
 ): Promise<{
   success: boolean;
+  outcomeUnknown?: boolean;
   data?: TrustReconciliationResponse;
   error?: string;
   errorTitle?: string;
@@ -347,7 +421,8 @@ export async function calculateReconciliation(
     const body: ExpectedStatementRequest = { expectedBankStatementId };
     const result = await api.post<TrustReconciliationResponse>(
       `/api/trust-reconciliations/${reconciliationId}/calculate`,
-      body
+      body,
+      idempotent(idempotencyKey)
     );
     return { success: true, data: result };
   } catch (error) {
@@ -355,6 +430,7 @@ export async function calculateReconciliation(
     const message = error instanceof Error ? error.message : "Failed to calculate reconciliation";
     return {
       success: false,
+      ...unknownOutcome(error),
       error: message,
       ...(title && title !== message ? { errorTitle: title } : {}),
     };
@@ -366,9 +442,11 @@ export async function calculateReconciliation(
 // detail. `errorTitle` is set only when it adds to `error` (the client falls back to the title).
 export async function completeReconciliation(
   reconciliationId: string,
-  expectedBankStatementId: string
+  expectedBankStatementId: string,
+  idempotencyKey: string
 ): Promise<{
   success: boolean;
+  outcomeUnknown?: boolean;
   data?: TrustReconciliationResponse;
   error?: string;
   errorTitle?: string;
@@ -377,7 +455,8 @@ export async function completeReconciliation(
     const body: ExpectedStatementRequest = { expectedBankStatementId };
     const result = await api.post<TrustReconciliationResponse>(
       `/api/trust-reconciliations/${reconciliationId}/complete`,
-      body
+      body,
+      idempotent(idempotencyKey)
     );
     revalidatePath("/", "layout");
     return { success: true, data: result };
@@ -386,6 +465,7 @@ export async function completeReconciliation(
     const message = error instanceof Error ? error.message : "Failed to complete reconciliation";
     return {
       success: false,
+      ...unknownOutcome(error),
       error: message,
       ...(title && title !== message ? { errorTitle: title } : {}),
     };

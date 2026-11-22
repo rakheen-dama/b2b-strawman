@@ -135,13 +135,17 @@ describe("legal wire bodies (Phase 87 S3 Batch 4)", () => {
     ["payment", recordPayment],
     ["refund", recordRefund],
   ] as const)("record %s maps form data to clientId + matterId", async (kind, fn) => {
-    await fn("ta-1", {
-      customerId: C,
-      projectId: M,
-      amount: 1000,
-      reference: "REF-1",
-      transactionDate: "2026-10-20",
-    });
+    await fn(
+      "ta-1",
+      {
+        customerId: C,
+        projectId: M,
+        amount: 1000,
+        reference: "REF-1",
+        transactionDate: "2026-10-20",
+      },
+      "idem-key"
+    );
     const [path, body] = lastPost();
     expect(path).toBe(`/api/trust-accounts/ta-1/transactions/${kind}`);
     expect(body).toMatchObject({ clientId: C, matterId: M });
@@ -150,15 +154,19 @@ describe("legal wire bodies (Phase 87 S3 Batch 4)", () => {
   });
 
   it("recordTransfer sends sourceClientId/sourceMatterId/targetClientId/targetMatterId", async () => {
-    await recordTransfer("ta-1", {
-      sourceCustomerId: C,
-      targetCustomerId: C2,
-      projectId: M,
-      targetProjectId: M2,
-      amount: 1000,
-      reference: "TRF-1",
-      transactionDate: "2026-10-20",
-    });
+    await recordTransfer(
+      "ta-1",
+      {
+        sourceCustomerId: C,
+        targetCustomerId: C2,
+        projectId: M,
+        targetProjectId: M2,
+        amount: 1000,
+        reference: "TRF-1",
+        transactionDate: "2026-10-20",
+      },
+      "idem-key"
+    );
     const [path, body] = lastPost();
     expect(path).toBe("/api/trust-accounts/ta-1/transactions/transfer");
     // D39: each leg names its own client's matter
@@ -176,12 +184,16 @@ describe("legal wire bodies (Phase 87 S3 Batch 4)", () => {
   });
 
   it("recordFeeTransfer sends clientId", async () => {
-    await recordFeeTransfer("ta-1", {
-      customerId: C,
-      invoiceId: "inv-1",
-      amount: 500,
-      reference: "FT-1",
-    });
+    await recordFeeTransfer(
+      "ta-1",
+      {
+        customerId: C,
+        invoiceId: "inv-1",
+        amount: 500,
+        reference: "FT-1",
+      },
+      "idem-key"
+    );
     const [, body] = lastPost();
     expect(body.clientId).toBe(C);
     expect(body).not.toHaveProperty("customerId");
@@ -386,17 +398,21 @@ describe("legal wire bodies (Phase 87 S3 Batch 4)", () => {
   );
 
   it("placeInvestment sends clientId + matterId (never customerId/projectId) and a decimal rate", async () => {
-    await placeInvestment("ta-1", {
-      investmentBasis: "CLIENT_INSTRUCTION",
-      investmentAccountId: IA,
-      customerId: C,
-      projectId: M,
-      institution: "ABSA",
-      accountNumber: "INV-1",
-      principal: 1000,
-      interestRate: 7.5,
-      depositDate: "2026-10-01",
-    });
+    await placeInvestment(
+      "ta-1",
+      {
+        investmentBasis: "CLIENT_INSTRUCTION",
+        investmentAccountId: IA,
+        customerId: C,
+        projectId: M,
+        institution: "ABSA",
+        accountNumber: "INV-1",
+        principal: 1000,
+        interestRate: 7.5,
+        depositDate: "2026-10-01",
+      },
+      "idem-key"
+    );
     const [path, body] = lastPost();
     expect(path).toBe("/api/trust-accounts/ta-1/investments");
     // 648A: placed into an investment account of the basis
@@ -412,19 +428,23 @@ describe("legal wire bodies (Phase 87 S3 Batch 4)", () => {
   // 648A: a section 86(3) investment is the firm's surplus trust money — it names no client or
   // matter (the backend refuses either with 400).
   it("placeInvestment omits the client and matter for a section 86(3) investment", async () => {
-    await placeInvestment("ta-1", {
-      investmentBasis: "FIRM_DISCRETION",
-      investmentAccountId: IA,
-      customerId: "",
-      projectId: "",
-      institution: "Investec",
-      accountNumber: "FD-1",
-      principal: 5000,
-      interestRate: 8,
-      depositDate: "2026-10-01",
-      maturityDate: "",
-      notes: "",
-    });
+    await placeInvestment(
+      "ta-1",
+      {
+        investmentBasis: "FIRM_DISCRETION",
+        investmentAccountId: IA,
+        customerId: "",
+        projectId: "",
+        institution: "Investec",
+        accountNumber: "FD-1",
+        principal: 5000,
+        interestRate: 8,
+        depositDate: "2026-10-01",
+        maturityDate: "",
+        notes: "",
+      },
+      "idem-key"
+    );
     const [, body] = lastPost();
     expect(body.investmentAccountId).toBe(IA);
     expect(body.investmentBasis).toBe("FIRM_DISCRETION");
@@ -436,10 +456,14 @@ describe("legal wire bodies (Phase 87 S3 Batch 4)", () => {
 
   // 648A: the withdrawal takes its date (@NotNull on the backend); the amount is derived.
   it("withdrawInvestment POSTs the withdrawal date and no amount", async () => {
-    await withdrawInvestment("inv-1", { withdrawalDate: "2026-11-01" });
-    expect(mockPost).toHaveBeenCalledWith("/api/trust-investments/inv-1/withdraw", {
-      withdrawalDate: "2026-11-01",
-    });
+    await withdrawInvestment("inv-1", { withdrawalDate: "2026-11-01" }, "idem-key");
+    expect(mockPost).toHaveBeenCalledWith(
+      "/api/trust-investments/inv-1/withdraw",
+      {
+        withdrawalDate: "2026-11-01",
+      },
+      { headers: { "Idempotency-Key": expect.any(String) } }
+    );
   });
 
   it("importXeroCustomers POSTs /api/integrations/xero/import-clients", async () => {

@@ -27,6 +27,7 @@ import { recordFeeTransfer } from "@/app/(app)/org/[slug]/trust-accounting/trans
 import { recordFeeTransferSchema, type RecordFeeTransferFormData } from "@/lib/schemas/trust";
 import { todayInSA } from "@b2mash/shared/date";
 import { LockedMonthWarning } from "./locked-month-warning";
+import { useIdempotencyKey } from "@/hooks/use-idempotency-key";
 
 interface RecordFeeTransferDialogProps {
   accountId: string;
@@ -44,6 +45,7 @@ export function RecordFeeTransferDialog({
   onSuccess,
   lockedThrough,
 }: RecordFeeTransferDialogProps) {
+  const idempotency = useIdempotencyKey();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -73,7 +75,10 @@ export function RecordFeeTransferDialog({
     setIsSubmitting(true);
 
     try {
-      const result = await recordFeeTransfer(accountId, data);
+      const result = await idempotency.run(
+        ["recordFeeTransfer", accountId, data],
+        (idempotencyKey) => recordFeeTransfer(accountId, data, idempotencyKey)
+      );
       if (result.success) {
         onSuccess?.();
         handleOpenChange(false);

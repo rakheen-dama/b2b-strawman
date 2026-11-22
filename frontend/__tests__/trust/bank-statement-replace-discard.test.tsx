@@ -75,7 +75,7 @@ describe("uploadBankStatement (FU-6b)", () => {
       .spyOn(globalThis, "fetch")
       .mockResolvedValue(new Response(JSON.stringify(statement()), { status: 201 }));
 
-    const result = await uploadBankStatement("acc-1", csv(), "stmt-old");
+    const result = await uploadBankStatement("acc-1", csv(), "stmt-old", "idem-key");
 
     expect(result.success).toBe(true);
     const body = fetchSpy.mock.calls[0][1]?.body as FormData;
@@ -88,7 +88,7 @@ describe("uploadBankStatement (FU-6b)", () => {
       .spyOn(globalThis, "fetch")
       .mockResolvedValue(new Response(JSON.stringify(statement()), { status: 201 }));
 
-    await uploadBankStatement("acc-1", csv());
+    await uploadBankStatement("acc-1", csv(), undefined, "idem-key");
 
     const body = fetchSpy.mock.calls[0][1]?.body as FormData;
     expect(body.has("replacesStatementId")).toBe(false);
@@ -108,7 +108,7 @@ describe("uploadBankStatement (FU-6b)", () => {
       )
     );
 
-    const result = await uploadBankStatement("acc-1", csv());
+    const result = await uploadBankStatement("acc-1", csv(), undefined, "idem-key");
 
     expect(result).toEqual({
       success: false,
@@ -130,7 +130,7 @@ describe("uploadBankStatement (FU-6b)", () => {
       )
     );
 
-    const result = await uploadBankStatement("acc-1", csv(), "stmt-a");
+    const result = await uploadBankStatement("acc-1", csv(), "stmt-a", "idem-key");
 
     expect(result).toEqual({
       success: false,
@@ -150,7 +150,7 @@ describe("uploadBankStatement (FU-6b)", () => {
       )
     );
 
-    const result = await uploadBankStatement("acc-1", csv(), "stmt-old");
+    const result = await uploadBankStatement("acc-1", csv(), "stmt-old", "idem-key");
 
     expect(result).toEqual({
       success: false,
@@ -168,18 +168,26 @@ describe("discardBankStatement (FU-6b)", () => {
   it("posts the reason to the discard endpoint", async () => {
     mockPost.mockResolvedValue(statement({ status: "RETIRED" }));
 
-    const result = await discardBankStatement("stmt-1", "Uploaded in error");
+    const result = await discardBankStatement("stmt-1", "Uploaded in error", "idem-key");
 
-    expect(mockPost).toHaveBeenCalledWith("/api/bank-statements/stmt-1/discard", {
-      reason: "Uploaded in error",
-    });
+    expect(mockPost).toHaveBeenCalledWith(
+      "/api/bank-statements/stmt-1/discard",
+      {
+        reason: "Uploaded in error",
+      },
+      { headers: { "Idempotency-Key": expect.any(String) } }
+    );
     expect(result.success).toBe(true);
   });
 
   it("returns the server's refusal", async () => {
-    mockPost.mockRejectedValue(new Error("The draft reconciliation to 31 March 2026 uses it."));
+    mockPost.mockRejectedValue(
+      Object.assign(new Error("The draft reconciliation to 31 March 2026 uses it."), {
+        status: 400,
+      })
+    );
 
-    expect(await discardBankStatement("stmt-1", "x")).toEqual({
+    expect(await discardBankStatement("stmt-1", "x", "idem-key")).toEqual({
       success: false,
       error: "The draft reconciliation to 31 March 2026 uses it.",
     });
@@ -339,9 +347,13 @@ describe("DiscardStatementDialog (FU-6b)", () => {
     await user.click(screen.getByTestId("discard-statement-confirm"));
 
     await waitFor(() =>
-      expect(mockPost).toHaveBeenCalledWith("/api/bank-statements/stmt-left/discard", {
-        reason: "Uploaded in error",
-      })
+      expect(mockPost).toHaveBeenCalledWith(
+        "/api/bank-statements/stmt-left/discard",
+        {
+          reason: "Uploaded in error",
+        },
+        { headers: { "Idempotency-Key": expect.any(String) } }
+      )
     );
     await waitFor(() => expect(mockRefresh).toHaveBeenCalled());
     await waitFor(() =>

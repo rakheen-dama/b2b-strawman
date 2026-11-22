@@ -323,7 +323,8 @@ describe("Epic 455 / 648A — Investment Basis and investment accounts", () => {
           accountType: "INVESTMENT",
           investmentBasis: "CLIENT_INSTRUCTION",
           isPrimary: false,
-        })
+        }),
+        expect.any(String)
       )
     );
     await waitFor(() =>
@@ -558,7 +559,8 @@ describe("Epic 455 / 648A — Investment Basis and investment accounts", () => {
 
     await waitFor(() => expect(mockCreateTrustAccount).toHaveBeenCalledTimes(1));
     expect(mockCreateTrustAccount).toHaveBeenCalledWith(
-      expect.objectContaining({ accountType: "INVESTMENT", investmentBasis: "CLIENT_INSTRUCTION" })
+      expect.objectContaining({ accountType: "INVESTMENT", investmentBasis: "CLIENT_INSTRUCTION" }),
+      expect.any(String)
     );
   });
 

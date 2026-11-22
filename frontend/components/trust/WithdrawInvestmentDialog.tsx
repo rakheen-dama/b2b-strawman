@@ -27,6 +27,7 @@ import { todayInSA } from "@b2mash/shared/date";
 import { formatCurrency } from "@/lib/format";
 import { withdrawInvestmentSchema, type WithdrawInvestmentFormData } from "@/lib/schemas/trust";
 import { withdrawInvestment } from "@/app/(app)/org/[slug]/trust-accounting/investments/actions";
+import { useIdempotencyKey } from "@/hooks/use-idempotency-key";
 
 interface WithdrawInvestmentDialogProps {
   investmentId: string;
@@ -61,6 +62,7 @@ export function WithdrawInvestmentDialog({
   onOpenChange,
   onSuccess,
 }: WithdrawInvestmentDialogProps) {
+  const idempotency = useIdempotencyKey();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -88,7 +90,10 @@ export function WithdrawInvestmentDialog({
     setIsSubmitting(true);
 
     try {
-      const result = await withdrawInvestment(investmentId, data);
+      const result = await idempotency.run(
+        ["withdrawInvestment", investmentId, data],
+        (idempotencyKey) => withdrawInvestment(investmentId, data, idempotencyKey)
+      );
       if (result.success) {
         onSuccess();
         router.refresh();

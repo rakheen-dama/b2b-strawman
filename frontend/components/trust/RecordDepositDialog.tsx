@@ -31,6 +31,7 @@ import {
   type TrustPickerCustomer,
 } from "./TrustEntityPickers";
 import { LockedMonthWarning } from "./locked-month-warning";
+import { useIdempotencyKey } from "@/hooks/use-idempotency-key";
 
 interface RecordDepositDialogProps {
   accountId: string;
@@ -72,6 +73,7 @@ export function RecordDepositDialog({
   defaultProjectId,
   lockedThrough,
 }: RecordDepositDialogProps) {
+  const idempotency = useIdempotencyKey();
   void slug;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -98,7 +100,9 @@ export function RecordDepositDialog({
     setIsSubmitting(true);
 
     try {
-      const result = await recordDeposit(accountId, data);
+      const result = await idempotency.run(["recordDeposit", accountId, data], (idempotencyKey) =>
+        recordDeposit(accountId, data, idempotencyKey)
+      );
       if (result.success) {
         onSuccess?.();
         handleOpenChange(false);

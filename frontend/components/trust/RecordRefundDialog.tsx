@@ -31,6 +31,7 @@ import {
   type TrustPickerCustomer,
 } from "./TrustEntityPickers";
 import { LockedMonthWarning } from "./locked-month-warning";
+import { useIdempotencyKey } from "@/hooks/use-idempotency-key";
 
 interface RecordRefundDialogProps {
   accountId: string;
@@ -70,6 +71,7 @@ export function RecordRefundDialog({
   defaultProjectId,
   lockedThrough,
 }: RecordRefundDialogProps) {
+  const idempotency = useIdempotencyKey();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -95,7 +97,9 @@ export function RecordRefundDialog({
     setIsSubmitting(true);
 
     try {
-      const result = await recordRefund(accountId, data);
+      const result = await idempotency.run(["recordRefund", accountId, data], (idempotencyKey) =>
+        recordRefund(accountId, data, idempotencyKey)
+      );
       if (result.success) {
         onSuccess?.();
         handleOpenChange(false);

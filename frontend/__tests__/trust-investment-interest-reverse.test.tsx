@@ -115,7 +115,9 @@ describe("Reverse a section 86(4) interest entry (648B F-1)", () => {
     expect(mockReverseInvestmentInterest).not.toHaveBeenCalled();
     mockFetchInvestmentInterest.mockResolvedValue([entry({ status: "REVERSED" })]);
     await user.click(screen.getByTestId("confirm-reverse-interest"));
-    await waitFor(() => expect(mockReverseInvestmentInterest).toHaveBeenCalledWith("int-1"));
+    await waitFor(() =>
+      expect(mockReverseInvestmentInterest).toHaveBeenCalledWith("int-1", expect.any(String))
+    );
     await waitFor(() => expect(mockRefresh).toHaveBeenCalled());
     await waitFor(() =>
       expect(

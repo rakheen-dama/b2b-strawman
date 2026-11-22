@@ -36,6 +36,7 @@ import type {
   TrustReconciliationResponse,
 } from "@/lib/types";
 import type { RecordFromStatementFormData } from "@/lib/schemas/trust";
+import { useIdempotencyKey } from "@/hooks/use-idempotency-key";
 
 // ── Constants ─────────────────────────────────────────────────────
 
@@ -154,6 +155,8 @@ const STEP_LABELS = [
 // ── Page ────────────────────────────────────────────────────��─────
 
 export default function NewReconciliationPage({ params }: { params: Promise<{ slug: string }> }) {
+  // 648B F-11: every trust write below carries an Idempotency-Key, one per submit intent
+  const idempotency = useIdempotencyKey();
   const { slug } = React.use(params);
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
@@ -252,7 +255,18 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
   const uploadForThisWizard = useCallback(
     async (accountId: string, file: File, replacesStatementId?: string) => {
       const generation = wizardGeneration.current;
-      const result = await uploadBankStatement(accountId, file, replacesStatementId);
+      const result = await idempotency.run(
+        [
+          "uploadBankStatement",
+          accountId,
+          file.name,
+          file.size,
+          file.lastModified,
+          replacesStatementId ?? null,
+        ],
+        (idempotencyKey) =>
+          uploadBankStatement(accountId, file, replacesStatementId, idempotencyKey)
+      );
       if (generation !== wizardGeneration.current) {
         return {
           success: false,
@@ -263,7 +277,7 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
       }
       return result;
     },
-    []
+    [idempotency]
   );
 
   // Handle upload complete — also reset downstream state for replacement uploads
@@ -282,7 +296,9 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
     setAutoMatching(true);
     setError(null);
     try {
-      const result = await autoMatch(statement.id);
+      const result = await idempotency.run(["autoMatch", statement.id], (idempotencyKey) =>
+        autoMatch(statement.id, idempotencyKey)
+      );
       if (result.success && result.data) {
         // The auto-match response is counts only; re-read the statement for the
         // lines with their post-match statuses (the review step renders them).
@@ -300,7 +316,7 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
     } finally {
       setAutoMatching(false);
     }
-  }, [statement]);
+  }, [statement, idempotency]);
 
   // Load unmatched transactions + create reconciliation for review step
   const handleStartReview = useCallback(async () => {
@@ -314,10 +330,11 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
       // Create reconciliation if not already created
       let recon = reconciliation;
       if (!recon) {
-        const reconResult = await createReconciliation(selectedAccountId, {
-          periodEnd,
-          bankStatementId: statement.id,
-        });
+        const create = { periodEnd, bankStatementId: statement.id };
+        const reconResult = await idempotency.run(
+          ["createReconciliation", selectedAccountId, create],
+          (idempotencyKey) => createReconciliation(selectedAccountId, create, idempotencyKey)
+        );
         if (reconResult.success && reconResult.data) {
           recon = reconResult.data;
           setReconciliation(recon);
@@ -333,7 +350,10 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
       // already resolved every line). On failure stay here; a retry recalculates.
       // Every calculate and complete names the statement this wizard reviewed (652C): a draft
       // re-pointed since by a continuation in another tab is refused (409), never calculated.
-      const calcResult = await calculateReconciliation(recon.id, statement.id);
+      const calcResult = await idempotency.run(
+        ["calculateReconciliation", recon.id, statement.id],
+        (idempotencyKey) => calculateReconciliation(recon.id, statement.id, idempotencyKey)
+      );
       if (calcResult.success && calcResult.data) {
         setReconciliation(calcResult.data);
         setFiguresStale(false);
@@ -349,7 +369,7 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
     } finally {
       setStartingReview(false);
     }
-  }, [selectedAccountId, statement, periodEnd, reconciliation]);
+  }, [selectedAccountId, statement, periodEnd, reconciliation, idempotency]);
 
   // Handle manual match
   const handleMatch = useCallback(
@@ -357,7 +377,10 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
       setError(null);
       const generation = wizardGeneration.current;
       try {
-        const result = await manualMatch(lineId, transactionId);
+        const result = await idempotency.run(
+          ["manualMatch", lineId, transactionId],
+          (idempotencyKey) => manualMatch(lineId, transactionId, idempotencyKey)
+        );
         if (generation !== wizardGeneration.current) return;
         if (result.success) {
           // Update local state
@@ -375,9 +398,11 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
           setUnmatchedTransactions((prev) => prev.filter((tx) => tx.id !== transactionId));
           // Recalculate reconciliation
           if (reconciliation && statement) {
-            const calcResult = await calculateReconciliation(reconciliation.id, statement.id).catch(
-              calculateRejected
-            );
+            const calcResult = await idempotency
+              .run(["calculateReconciliation", reconciliation.id, statement.id], (idempotencyKey) =>
+                calculateReconciliation(reconciliation.id, statement.id, idempotencyKey)
+              )
+              .catch(calculateRejected);
             if (generation !== wizardGeneration.current) return;
             if (calcResult.success && calcResult.data) {
               setReconciliation(calcResult.data);
@@ -394,7 +419,7 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
         setError(err instanceof Error ? err.message : "Failed to match line");
       }
     },
-    [reconciliation, statement]
+    [reconciliation, statement, idempotency]
   );
 
   // Handle exclude
@@ -403,7 +428,10 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
       setError(null);
       const generation = wizardGeneration.current;
       try {
-        const result = await excludeLine(lineId, "Non-trust item");
+        const result = await idempotency.run(
+          ["excludeLine", lineId, "Non-trust item"],
+          (idempotencyKey) => excludeLine(lineId, "Non-trust item", idempotencyKey)
+        );
         if (generation !== wizardGeneration.current) return;
         if (result.success) {
           setLines((prev) =>
@@ -411,9 +439,11 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
           );
           // Recalculate reconciliation
           if (reconciliation && statement) {
-            const calcResult = await calculateReconciliation(reconciliation.id, statement.id).catch(
-              calculateRejected
-            );
+            const calcResult = await idempotency
+              .run(["calculateReconciliation", reconciliation.id, statement.id], (idempotencyKey) =>
+                calculateReconciliation(reconciliation.id, statement.id, idempotencyKey)
+              )
+              .catch(calculateRejected);
             if (generation !== wizardGeneration.current) return;
             if (calcResult.success && calcResult.data) {
               setReconciliation(calcResult.data);
@@ -430,7 +460,7 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
         setError(err instanceof Error ? err.message : "Failed to exclude line");
       }
     },
-    [reconciliation, statement]
+    [reconciliation, statement, idempotency]
   );
 
   // Handle unmatch
@@ -439,7 +469,9 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
       setError(null);
       const generation = wizardGeneration.current;
       try {
-        const result = await unmatch(lineId);
+        const result = await idempotency.run(["unmatch", lineId], (idempotencyKey) =>
+          unmatch(lineId, idempotencyKey)
+        );
         if (generation !== wizardGeneration.current) return;
         if (result.success) {
           setLines((prev) =>
@@ -463,7 +495,13 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
               ? fetchUnmatchedTransactions(selectedAccountId).catch(() => null)
               : undefined,
             reconciliation && statement
-              ? calculateReconciliation(reconciliation.id, statement.id).catch(calculateRejected)
+              ? idempotency
+                  .run(
+                    ["calculateReconciliation", reconciliation.id, statement.id],
+                    (idempotencyKey) =>
+                      calculateReconciliation(reconciliation.id, statement.id, idempotencyKey)
+                  )
+                  .catch(calculateRejected)
               : null,
           ]);
           if (generation !== wizardGeneration.current) return;
@@ -489,7 +527,7 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
         setError(err instanceof Error ? err.message : "Failed to unmatch line");
       }
     },
-    [selectedAccountId, reconciliation, statement]
+    [selectedAccountId, reconciliation, statement, idempotency]
   );
 
   // Handle record from statement (647A). A refusal is returned to the dialog (shown there, the
@@ -501,16 +539,21 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
     ): Promise<{ success: boolean; error?: string }> => {
       setError(null);
       const generation = wizardGeneration.current;
-      const result = await recordFromStatement(lineId, input);
+      const result = await idempotency.run(
+        ["recordFromStatement", lineId, input],
+        (idempotencyKey) => recordFromStatement(lineId, input, idempotencyKey)
+      );
       if (!result.success || !result.data) {
         return { success: false, error: result.error ?? "Failed to record the line" };
       }
       const updated = result.data.line;
       setLines((prev) => prev.map((l) => (l.id === lineId ? updated : l)));
       if (reconciliation && statement) {
-        const calcResult = await calculateReconciliation(reconciliation.id, statement.id).catch(
-          calculateRejected
-        );
+        const calcResult = await idempotency
+          .run(["calculateReconciliation", reconciliation.id, statement.id], (idempotencyKey) =>
+            calculateReconciliation(reconciliation.id, statement.id, idempotencyKey)
+          )
+          .catch(calculateRejected);
         if (generation !== wizardGeneration.current) {
           // The wizard was reset while recalculating: this result is the old reconciliation's.
           return { success: true };
@@ -525,7 +568,7 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
       }
       return { success: true };
     },
-    [reconciliation, statement]
+    [reconciliation, statement, idempotency]
   );
 
   // Handle complete. The backend gate (G1–G4, 649C) recalculates and refuses once with every
@@ -543,7 +586,10 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
     try {
       // A 409 (the draft now uses another statement — 652C) is a refusal like the gate's: the banner
       // shows its title and detail, and the wizard stays on this step.
-      const result = await completeReconciliation(reconciliation.id, statement.id);
+      const result = await idempotency.run(
+        ["completeReconciliation", reconciliation.id, statement.id],
+        (idempotencyKey) => completeReconciliation(reconciliation.id, statement.id, idempotencyKey)
+      );
       if (generation !== wizardGeneration.current) return;
       if (result.success) {
         setCurrentStep(5);
@@ -551,7 +597,11 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
         return;
       }
       const [calcResult, refreshedStatement, refreshedTransactions] = await Promise.all([
-        calculateReconciliation(reconciliation.id, statement.id),
+        idempotency.run(
+          ["calculateReconciliation", reconciliation.id, statement.id],
+          (idempotencyKey) =>
+            calculateReconciliation(reconciliation.id, statement.id, idempotencyKey)
+        ),
         fetchBankStatement(statement.id).catch(() => null),
         fetchUnmatchedTransactions(selectedAccountId).catch(() => null),
       ]);
@@ -577,7 +627,7 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
     } finally {
       setIsCompleting(false);
     }
-  }, [reconciliation, statement, selectedAccountId]);
+  }, [reconciliation, statement, selectedAccountId, idempotency]);
 
   return (
     <div className="space-y-8">

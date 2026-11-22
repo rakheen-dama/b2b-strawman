@@ -45,6 +45,7 @@ import {
   fetchUnmatchedCreditLines,
   recordInvestmentInterest,
 } from "@/app/(app)/org/[slug]/trust-accounting/investments/actions";
+import { useIdempotencyKey } from "@/hooks/use-idempotency-key";
 
 interface RecordInvestmentInterestDialogProps {
   investmentId: string;
@@ -100,6 +101,7 @@ export function RecordInvestmentInterestDialog({
   onOpenChange,
   onSuccess,
 }: RecordInvestmentInterestDialogProps) {
+  const idempotency = useIdempotencyKey();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -216,7 +218,10 @@ export function RecordInvestmentInterestDialog({
       };
       if (data.fundShareAmount !== undefined) payload.fundShareAmount = data.fundShareAmount;
       if (data.bankStatementLineId) payload.bankStatementLineId = data.bankStatementLineId;
-      const result = await recordInvestmentInterest(investmentId, payload);
+      const result = await idempotency.run(
+        ["recordInvestmentInterest", investmentId, payload],
+        (idempotencyKey) => recordInvestmentInterest(investmentId, payload, idempotencyKey)
+      );
       if (!result.success) {
         setError(result.error ?? "Failed to record interest");
         return;

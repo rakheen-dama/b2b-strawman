@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/form";
 import { discardBankStatement } from "@/app/(app)/org/[slug]/trust-accounting/reconciliation/actions";
 import { discardStatementSchema, type DiscardStatementFormData } from "@/lib/schemas/trust";
+import { useIdempotencyKey } from "@/hooks/use-idempotency-key";
 
 interface DiscardStatementDialogProps {
   statementId: string;
@@ -39,6 +40,7 @@ interface DiscardStatementDialogProps {
  * shows the server's reason. The dialog owns its trigger button (Dialog Trigger Composition).
  */
 export function DiscardStatementDialog({ statementId, fileName }: DiscardStatementDialogProps) {
+  const idempotency = useIdempotencyKey();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -61,7 +63,10 @@ export function DiscardStatementDialog({ statementId, fileName }: DiscardStateme
     setError(null);
     setIsSubmitting(true);
     try {
-      const result = await discardBankStatement(statementId, data.reason);
+      const result = await idempotency.run(
+        ["discardBankStatement", statementId, data.reason],
+        (idempotencyKey) => discardBankStatement(statementId, data.reason, idempotencyKey)
+      );
       if (result.success) {
         handleOpenChange(false);
         router.refresh();

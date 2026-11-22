@@ -27,11 +27,14 @@ export async function api(
   init: ApiInit = {},
   user: SeedUser = "alice"
 ): Promise<Response> {
+  const method = init.method ?? "GET";
   return fetch(`${BACKEND_URL}${path}`, {
-    method: init.method ?? "GET",
+    method,
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${await getApiToken(user)}`,
+      // 648B F-11: every trust write requires an Idempotency-Key; one setup call is one intent
+      ...(method === "GET" ? {} : { "Idempotency-Key": crypto.randomUUID() }),
     },
     body: init.body === undefined ? undefined : JSON.stringify(init.body),
   });

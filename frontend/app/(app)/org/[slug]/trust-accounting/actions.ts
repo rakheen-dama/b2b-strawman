@@ -1,6 +1,7 @@
 "use server";
 
 import { api } from "@/lib/api";
+import { idempotent, unknownOutcome } from "@/lib/idempotency";
 import { matterPath } from "@/lib/api/matters";
 import { settle } from "@/lib/settle";
 import type { WidgetResult } from "@/lib/dashboard-home";
@@ -51,17 +52,22 @@ export async function fetchMatterTrustBalance(
 
 export type CreateTrustAccountResult =
   | { success: true; account: TrustAccount }
-  | { success: false; error: string };
+  | { success: false; error: string; outcomeUnknown?: boolean };
 
 export async function createTrustAccount(
-  input: CreateTrustAccountRequest
+  input: CreateTrustAccountRequest,
+  idempotencyKey: string
 ): Promise<CreateTrustAccountResult> {
   try {
-    const account = await api.post<TrustAccount>("/api/trust-accounts", input);
+    const account = await api.post<TrustAccount>(
+      "/api/trust-accounts",
+      input,
+      idempotent(idempotencyKey)
+    );
     return { success: true, account };
   } catch (err) {
     const message = err instanceof Error ? err.message : "Failed to create trust account";
-    return { success: false, error: message };
+    return { success: false, ...unknownOutcome(err), error: message };
   }
 }
 

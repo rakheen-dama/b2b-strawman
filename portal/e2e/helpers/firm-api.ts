@@ -67,11 +67,14 @@ export async function firmApiOk<T>(
   path: string,
   init: { method?: string; body?: unknown } = {},
 ): Promise<T> {
+  const method = init.method ?? "GET";
   const res = await fetch(`${BACKEND_URL}${path}`, {
-    method: init.method ?? "GET",
+    method,
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${await aliceToken()}`,
+      // 648B F-11: every trust write (the deposit below) requires an Idempotency-Key
+      ...(method === "GET" ? {} : { "Idempotency-Key": crypto.randomUUID() }),
     },
     body: init.body === undefined ? undefined : JSON.stringify(init.body),
   });

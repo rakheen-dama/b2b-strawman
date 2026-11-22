@@ -35,7 +35,8 @@ import {
 } from "@/components/ui/form";
 import { createTrustAccountSchema, type CreateTrustAccountFormData } from "@/lib/schemas/trust";
 import { createTrustAccount } from "@/app/(app)/org/[slug]/trust-accounting/actions";
-import type { InvestmentBasis, TrustAccount } from "@/lib/types/trust";
+import type { CreateTrustAccountRequest, InvestmentBasis, TrustAccount } from "@/lib/types/trust";
+import { useIdempotencyKey } from "@/hooks/use-idempotency-key";
 
 /** 648A: the Place Investment dialog opens this one to add an investment account of its basis. */
 export interface InvestmentAccountPreset {
@@ -83,6 +84,7 @@ export function CreateTrustAccountDialog({
   onCreated,
 }: CreateTrustAccountDialogProps) {
   const router = useRouter();
+  const idempotency = useIdempotencyKey();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -104,7 +106,7 @@ export function CreateTrustAccountDialog({
     setError(null);
     setIsSubmitting(true);
     try {
-      const result = await createTrustAccount({
+      const input: CreateTrustAccountRequest = {
         accountName: values.accountName,
         bankName: values.bankName,
         branchCode: values.branchCode,
@@ -120,7 +122,10 @@ export function CreateTrustAccountDialog({
         notes: values.notes && values.notes.trim().length > 0 ? values.notes : undefined,
         // ADR-379: only an investment account carries a basis (the backend refuses it otherwise)
         investmentBasis: values.accountType === "INVESTMENT" ? values.investmentBasis : undefined,
-      });
+      };
+      const result = await idempotency.run(input, (idempotencyKey) =>
+        createTrustAccount(input, idempotencyKey)
+      );
 
       if (result.success) {
         onCreated?.(result.account);

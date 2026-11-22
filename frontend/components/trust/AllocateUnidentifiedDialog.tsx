@@ -34,6 +34,7 @@ import {
   TrustMatterPicker,
   type TrustPickerCustomer,
 } from "./TrustEntityPickers";
+import { useIdempotencyKey } from "@/hooks/use-idempotency-key";
 
 interface AllocateUnidentifiedDialogProps {
   /** A held item with no pending allocation or payment. */
@@ -60,6 +61,7 @@ export function AllocateUnidentifiedDialog({
   customers,
   currency,
 }: AllocateUnidentifiedDialogProps) {
+  const idempotency = useIdempotencyKey();
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -91,7 +93,10 @@ export function AllocateUnidentifiedDialog({
     setError(null);
     setIsSubmitting(true);
     try {
-      const result = await allocateUnidentifiedDeposit(item.id, values);
+      const result = await idempotency.run(
+        ["allocateUnidentifiedDeposit", item.id, values],
+        (idempotencyKey) => allocateUnidentifiedDeposit(item.id, values, idempotencyKey)
+      );
       if (!result.success) {
         setError(result.error ?? "Failed to request the allocation");
         return;

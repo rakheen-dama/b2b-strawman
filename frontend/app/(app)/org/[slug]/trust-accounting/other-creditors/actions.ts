@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { api } from "@/lib/api";
+import { idempotent, unknownOutcome } from "@/lib/idempotency";
 import type {
   AllocateUnidentifiedRequest,
   CreditorLedgerPage,
@@ -22,6 +23,8 @@ import type {
 interface ActionResult {
   success: boolean;
   error?: string;
+  /** A failed trust write whose outcome is unknown: the resubmit reuses its Idempotency-Key. */
+  outcomeUnknown?: boolean;
 }
 
 /** The trust account's non-client creditor ledgers with balances (§16.4.2). A read. */
@@ -69,7 +72,8 @@ export async function fetchUnidentifiedDeposits(
  */
 export async function allocateUnidentifiedDeposit(
   depositId: string,
-  data: AllocateUnidentifiedFormData
+  data: AllocateUnidentifiedFormData,
+  idempotencyKey: string
 ): Promise<ActionResult> {
   const body: AllocateUnidentifiedRequest = {
     clientId: data.customerId,
@@ -78,12 +82,17 @@ export async function allocateUnidentifiedDeposit(
     notes: data.notes || null,
   };
   try {
-    await api.post(`/api/unidentified-deposits/${depositId}/allocate`, body);
+    await api.post(
+      `/api/unidentified-deposits/${depositId}/allocate`,
+      body,
+      idempotent(idempotencyKey)
+    );
     revalidatePath("/", "layout");
     return { success: true };
   } catch (error) {
     return {
       success: false,
+      ...unknownOutcome(error),
       error: error instanceof Error ? error.message : "Failed to request the allocation",
     };
   }
@@ -95,7 +104,8 @@ export async function allocateUnidentifiedDeposit(
  */
 export async function payUnidentifiedDepositToFund(
   depositId: string,
-  data: PayToFundFormData
+  data: PayToFundFormData,
+  idempotencyKey: string
 ): Promise<ActionResult> {
   const body: PayToFundRequest = {
     reference: data.reference.trim(),
@@ -103,12 +113,17 @@ export async function payUnidentifiedDepositToFund(
     notes: data.notes || null,
   };
   try {
-    await api.post(`/api/unidentified-deposits/${depositId}/pay-to-fund`, body);
+    await api.post(
+      `/api/unidentified-deposits/${depositId}/pay-to-fund`,
+      body,
+      idempotent(idempotencyKey)
+    );
     revalidatePath("/", "layout");
     return { success: true };
   } catch (error) {
     return {
       success: false,
+      ...unknownOutcome(error),
       error: error instanceof Error ? error.message : "Failed to request the payment to the Fund",
     };
   }
@@ -136,7 +151,8 @@ export async function fetchLockedMonths(accountId: string): Promise<string[]> {
  */
 export async function saveInterestMemo(
   accountId: string,
-  data: SaveInterestMemoFormData
+  data: SaveInterestMemoFormData,
+  idempotencyKey: string
 ): Promise<ActionResult> {
   const body: SaveInterestMemoRequest = {
     grossInterest: data.grossInterest,
@@ -147,13 +163,15 @@ export async function saveInterestMemo(
   try {
     await api.put(
       `/api/trust-accounts/${accountId}/interest-memos/${encodeURIComponent(data.month)}`,
-      body
+      body,
+      idempotent(idempotencyKey)
     );
     revalidatePath("/", "layout");
     return { success: true };
   } catch (error) {
     return {
       success: false,
+      ...unknownOutcome(error),
       error: error instanceof Error ? error.message : "Failed to save the memo",
     };
   }

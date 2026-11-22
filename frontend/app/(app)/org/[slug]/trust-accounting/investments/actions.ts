@@ -1,6 +1,7 @@
 "use server";
 
 import { api } from "@/lib/api";
+import { idempotent, unknownOutcome } from "@/lib/idempotency";
 import type {
   BankStatementLineResponse,
   BankStatementResponse,
@@ -64,8 +65,14 @@ export async function fetchInterestEligibleInvestments(
  */
 export async function placeInvestment(
   accountId: string,
-  data: PlaceInvestmentFormData
-): Promise<{ success: boolean; investment?: TrustInvestment; error?: string }> {
+  data: PlaceInvestmentFormData,
+  idempotencyKey: string
+): Promise<{
+  success: boolean;
+  outcomeUnknown?: boolean;
+  investment?: TrustInvestment;
+  error?: string;
+}> {
   try {
     const payload: PlaceInvestmentRequest = {
       investmentAccountId: data.investmentAccountId,
@@ -86,12 +93,13 @@ export async function placeInvestment(
     }
     const investment = await api.post<TrustInvestment>(
       `/api/trust-accounts/${accountId}/investments`,
-      payload
+      payload,
+      idempotent(idempotencyKey)
     );
     return { success: true, investment };
   } catch (err) {
     const message = err instanceof Error ? err.message : "Failed to place investment";
-    return { success: false, error: message };
+    return { success: false, ...unknownOutcome(err), error: message };
   }
 }
 
@@ -104,8 +112,14 @@ export async function placeInvestment(
  */
 export async function recordInvestmentInterest(
   investmentId: string,
-  data: RecordInvestmentInterestFormData
-): Promise<{ success: boolean; interest?: InvestmentInterest; error?: string }> {
+  data: RecordInvestmentInterestFormData,
+  idempotencyKey: string
+): Promise<{
+  success: boolean;
+  outcomeUnknown?: boolean;
+  interest?: InvestmentInterest;
+  error?: string;
+}> {
   try {
     const payload: RecordInvestmentInterestRequest = {
       entryDate: data.entryDate,
@@ -120,12 +134,13 @@ export async function recordInvestmentInterest(
     }
     const interest = await api.post<InvestmentInterest>(
       `/api/trust-investments/${investmentId}/interest`,
-      payload
+      payload,
+      idempotent(idempotencyKey)
     );
     return { success: true, interest };
   } catch (err) {
     const message = err instanceof Error ? err.message : "Failed to record interest";
-    return { success: false, error: message };
+    return { success: false, ...unknownOutcome(err), error: message };
   }
 }
 
@@ -141,16 +156,24 @@ export async function fetchInvestmentInterest(investmentId: string): Promise<Inv
  * returned as `error`.
  */
 export async function reverseInvestmentInterest(
-  interestId: string
-): Promise<{ success: boolean; interest?: InvestmentInterest; error?: string }> {
+  interestId: string,
+  idempotencyKey: string
+): Promise<{
+  success: boolean;
+  outcomeUnknown?: boolean;
+  interest?: InvestmentInterest;
+  error?: string;
+}> {
   try {
     const interest = await api.post<InvestmentInterest>(
-      `/api/trust-investment-interest/${interestId}/reverse`
+      `/api/trust-investment-interest/${interestId}/reverse`,
+      undefined,
+      idempotent(idempotencyKey)
     );
     return { success: true, interest };
   } catch (err) {
     const message = err instanceof Error ? err.message : "Failed to reverse interest entry";
-    return { success: false, error: message };
+    return { success: false, ...unknownOutcome(err), error: message };
   }
 }
 
@@ -177,17 +200,24 @@ export async function fetchUnmatchedCreditLines(
 /** The whole investment returns on the date (648A); the amount is derived, never typed. */
 export async function withdrawInvestment(
   investmentId: string,
-  data: WithdrawInvestmentFormData
-): Promise<{ success: boolean; investment?: TrustInvestment; error?: string }> {
+  data: WithdrawInvestmentFormData,
+  idempotencyKey: string
+): Promise<{
+  success: boolean;
+  outcomeUnknown?: boolean;
+  investment?: TrustInvestment;
+  error?: string;
+}> {
   try {
     const investment = await api.post<TrustInvestment>(
       `/api/trust-investments/${investmentId}/withdraw`,
-      { withdrawalDate: data.withdrawalDate }
+      { withdrawalDate: data.withdrawalDate },
+      idempotent(idempotencyKey)
     );
     return { success: true, investment };
   } catch (err) {
     const message = err instanceof Error ? err.message : "Failed to withdraw investment";
-    return { success: false, error: message };
+    return { success: false, ...unknownOutcome(err), error: message };
   }
 }
 

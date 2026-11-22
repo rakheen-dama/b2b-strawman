@@ -74,6 +74,28 @@ api_post() {
   cat "$_API_TMPFILE.body"
 }
 
+# new_idempotency_key — a fresh UUID (alpine has no uuidgen; Linux exposes one in /proc)
+new_idempotency_key() {
+  if [ -r /proc/sys/kernel/random/uuid ]; then
+    cat /proc/sys/kernel/random/uuid
+  else
+    uuidgen | tr 'A-Z' 'a-z'
+  fi
+}
+
+# api_post_trust <path> <body> <jwt> — POST to a trust write (648B F-11): every trust write requires
+# an Idempotency-Key header. One seed call is one intent, so each call takes a fresh key.
+api_post_trust() {
+  _p="$1"; _b="$2"; _j="$3"
+  curl -s -o "$_API_TMPFILE.body" -w "%{http_code}" \
+    -X POST "${BACKEND_URL}${_p}" \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${_j}" \
+    -H "Idempotency-Key: $(new_idempotency_key)" \
+    -d "$_b" > "$_API_TMPFILE"
+  cat "$_API_TMPFILE.body"
+}
+
 api_get() {
   _p="$1"; _j="${2:-}"
   if [ -n "$_j" ]; then

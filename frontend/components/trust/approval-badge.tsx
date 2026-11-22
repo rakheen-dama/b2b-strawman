@@ -29,6 +29,7 @@ import {
   rejectTransaction,
 } from "@/app/(app)/org/[slug]/trust-accounting/transactions/actions";
 import { rejectionReasonSchema, type RejectionReasonFormData } from "@/lib/schemas/trust";
+import { useIdempotencyKey } from "@/hooks/use-idempotency-key";
 
 interface ApprovalBadgeProps {
   transactionId: string;
@@ -46,6 +47,7 @@ export function ApprovalBadge({
   firstApprovedBy,
   currentMemberId,
 }: ApprovalBadgeProps) {
+  const idempotency = useIdempotencyKey();
   const router = useRouter();
   const [isApproving, setIsApproving] = useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
@@ -62,7 +64,10 @@ export function ApprovalBadge({
     setError(null);
     setIsApproving(true);
     try {
-      const result = await approveTransaction(transactionId);
+      const result = await idempotency.run(
+        ["approveTransaction", transactionId],
+        (idempotencyKey) => approveTransaction(transactionId, idempotencyKey)
+      );
       if (result.success) {
         // LZKC-016: the first dual-mode approval keeps the transaction in
         // AWAITING_APPROVAL — say so explicitly instead of registering silently.
@@ -132,6 +137,7 @@ function RejectDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const idempotency = useIdempotencyKey();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -155,7 +161,10 @@ function RejectDialog({
     setIsSubmitting(true);
 
     try {
-      const result = await rejectTransaction(transactionId, data.reason);
+      const result = await idempotency.run(
+        ["rejectTransaction", transactionId, data.reason],
+        (idempotencyKey) => rejectTransaction(transactionId, data.reason, idempotencyKey)
+      );
       if (result.success) {
         handleOpenChange(false);
       } else {

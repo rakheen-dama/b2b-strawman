@@ -990,7 +990,10 @@ class TrustTransactionControllerTest {
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_txn_ctrl_owner"))
                 .param("dateFrom", "2026-05-02")
                 .param("dateTo", "2026-05-01"))
-        .andExpect(status().isBadRequest());
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.title").value("Invalid date range"))
+        .andExpect(jsonPath("$.detail").value("The 'from' date must not be after the 'to' date"));
   }
 
   private String recordDeposit(String clientId, String matterId, String amount, String reference)

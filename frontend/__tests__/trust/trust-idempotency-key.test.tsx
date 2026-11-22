@@ -187,6 +187,25 @@ describe("trust write server action (648B F-11)", () => {
     });
   });
 
+  it("shows the in-progress refusal's instruction and keeps the key (outcome unknown)", async () => {
+    const detail =
+      "An earlier submit of this entry is still in progress, or its outcome is unknown. Check the" +
+      " ledger to see whether the entry was recorded; if it was not, reload the page and submit" +
+      " again.";
+    mockPost.mockRejectedValueOnce(
+      Object.assign(new Error(detail), {
+        status: 409,
+        detail: { title: "Request still in progress", detail, code: "idempotency_in_progress" },
+      })
+    );
+
+    expect(await recordDeposit("acc-1", DEPOSIT, "k")).toEqual({
+      success: false,
+      error: detail,
+      outcomeUnknown: true,
+    });
+  });
+
   it("a resubmit through the hook after a lost response reuses the key on the wire", async () => {
     const keys = createIdempotencyKeys(sequentialKeys());
     mockPost.mockRejectedValueOnce(new TypeError("fetch failed")).mockResolvedValueOnce({});

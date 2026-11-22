@@ -1347,6 +1347,34 @@ describe("Trust Reconciliation", () => {
     expect(mockCalculateReconciliation).toHaveBeenCalledTimes(2);
   });
 
+  // 648B F-11 review: calculate posts nothing, and a 5xx leaves its key IN_PROGRESS on the server —
+  // so every calculate takes a fresh key; one transient 500 never blocks the next recalculation.
+  it("sends the calculate after a 500 with a different Idempotency-Key", async () => {
+    await driveToReviewWithAllLinesAutoMatched();
+    mockCalculateReconciliation.mockResolvedValueOnce({
+      success: false,
+      error: "Internal Server Error",
+      outcomeUnknown: true,
+    });
+
+    fireEvent.click(screen.getByTestId("step-next-btn"));
+    expect(await screen.findByText("Internal Server Error")).toBeInTheDocument();
+
+    mockCalculateReconciliation.mockResolvedValueOnce({
+      success: true,
+      data: makeRecon({ status: "DRAFT", isBalanced: true, completedAt: null }),
+    });
+    fireEvent.click(screen.getByTestId("step-next-btn"));
+    expect(await screen.findByTestId("reconciliation-split-pane")).toBeInTheDocument();
+
+    const calls = mockCalculateReconciliation.mock.calls;
+    expect(calls).toHaveLength(2);
+    expect(calls[0].slice(0, 2)).toEqual(calls[1].slice(0, 2)); // the same request
+    expect(calls[0][2]).toEqual(expect.any(String));
+    expect(calls[1][2]).toEqual(expect.any(String));
+    expect(calls[1][2]).not.toBe(calls[0][2]); // a fresh key, not the stuck one
+  });
+
   // 652C (§16.3.12): a re-upload resets the wizard and drops its handle to the draft; the next
   // Review Matches asks for the reconciliation again with the new statement, and the backend's
   // get-or-create returns the same draft re-pointed to it — no orphan handling in the wizard.

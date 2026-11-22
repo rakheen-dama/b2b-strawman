@@ -37,6 +37,7 @@ import type {
 } from "@/lib/types";
 import type { RecordFromStatementFormData } from "@/lib/schemas/trust";
 import { useIdempotencyKey } from "@/hooks/use-idempotency-key";
+import { freshIdempotencyKey } from "@/lib/idempotency";
 
 // ── Constants ─────────────────────────────────────────────────────
 
@@ -155,7 +156,10 @@ const STEP_LABELS = [
 // ── Page ────────────────────────────────────────────────────��─────
 
 export default function NewReconciliationPage({ params }: { params: Promise<{ slug: string }> }) {
-  // 648B F-11: every trust write below carries an Idempotency-Key, one per submit intent
+  // 648B F-11: every trust write below carries an Idempotency-Key, one per submit intent — except
+  // calculate, which posts nothing (it only recomputes and stores the figures) and is re-run after
+  // every line change: each calculate takes a fresh key, so one transient 5xx (which leaves its key
+  // in progress) never blocks the figures for the rest of the session.
   const idempotency = useIdempotencyKey();
   const { slug } = React.use(params);
   const router = useRouter();
@@ -350,9 +354,10 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
       // already resolved every line). On failure stay here; a retry recalculates.
       // Every calculate and complete names the statement this wizard reviewed (652C): a draft
       // re-pointed since by a continuation in another tab is refused (409), never calculated.
-      const calcResult = await idempotency.run(
-        ["calculateReconciliation", recon.id, statement.id],
-        (idempotencyKey) => calculateReconciliation(recon.id, statement.id, idempotencyKey)
+      const calcResult = await calculateReconciliation(
+        recon.id,
+        statement.id,
+        freshIdempotencyKey()
       );
       if (calcResult.success && calcResult.data) {
         setReconciliation(calcResult.data);
@@ -398,11 +403,11 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
           setUnmatchedTransactions((prev) => prev.filter((tx) => tx.id !== transactionId));
           // Recalculate reconciliation
           if (reconciliation && statement) {
-            const calcResult = await idempotency
-              .run(["calculateReconciliation", reconciliation.id, statement.id], (idempotencyKey) =>
-                calculateReconciliation(reconciliation.id, statement.id, idempotencyKey)
-              )
-              .catch(calculateRejected);
+            const calcResult = await calculateReconciliation(
+              reconciliation.id,
+              statement.id,
+              freshIdempotencyKey()
+            ).catch(calculateRejected);
             if (generation !== wizardGeneration.current) return;
             if (calcResult.success && calcResult.data) {
               setReconciliation(calcResult.data);
@@ -439,11 +444,11 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
           );
           // Recalculate reconciliation
           if (reconciliation && statement) {
-            const calcResult = await idempotency
-              .run(["calculateReconciliation", reconciliation.id, statement.id], (idempotencyKey) =>
-                calculateReconciliation(reconciliation.id, statement.id, idempotencyKey)
-              )
-              .catch(calculateRejected);
+            const calcResult = await calculateReconciliation(
+              reconciliation.id,
+              statement.id,
+              freshIdempotencyKey()
+            ).catch(calculateRejected);
             if (generation !== wizardGeneration.current) return;
             if (calcResult.success && calcResult.data) {
               setReconciliation(calcResult.data);
@@ -495,13 +500,11 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
               ? fetchUnmatchedTransactions(selectedAccountId).catch(() => null)
               : undefined,
             reconciliation && statement
-              ? idempotency
-                  .run(
-                    ["calculateReconciliation", reconciliation.id, statement.id],
-                    (idempotencyKey) =>
-                      calculateReconciliation(reconciliation.id, statement.id, idempotencyKey)
-                  )
-                  .catch(calculateRejected)
+              ? calculateReconciliation(
+                  reconciliation.id,
+                  statement.id,
+                  freshIdempotencyKey()
+                ).catch(calculateRejected)
               : null,
           ]);
           if (generation !== wizardGeneration.current) return;
@@ -549,11 +552,11 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
       const updated = result.data.line;
       setLines((prev) => prev.map((l) => (l.id === lineId ? updated : l)));
       if (reconciliation && statement) {
-        const calcResult = await idempotency
-          .run(["calculateReconciliation", reconciliation.id, statement.id], (idempotencyKey) =>
-            calculateReconciliation(reconciliation.id, statement.id, idempotencyKey)
-          )
-          .catch(calculateRejected);
+        const calcResult = await calculateReconciliation(
+          reconciliation.id,
+          statement.id,
+          freshIdempotencyKey()
+        ).catch(calculateRejected);
         if (generation !== wizardGeneration.current) {
           // The wizard was reset while recalculating: this result is the old reconciliation's.
           return { success: true };
@@ -597,11 +600,7 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
         return;
       }
       const [calcResult, refreshedStatement, refreshedTransactions] = await Promise.all([
-        idempotency.run(
-          ["calculateReconciliation", reconciliation.id, statement.id],
-          (idempotencyKey) =>
-            calculateReconciliation(reconciliation.id, statement.id, idempotencyKey)
-        ),
+        calculateReconciliation(reconciliation.id, statement.id, freshIdempotencyKey()),
         fetchBankStatement(statement.id).catch(() => null),
         fetchUnmatchedTransactions(selectedAccountId).catch(() => null),
       ]);

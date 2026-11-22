@@ -78,7 +78,10 @@ the test as expected.
     - COMPLETED → the stored status, body, Content-Type and Location are replayed verbatim (plus
       `Idempotency-Replayed: true`), and the handler never runs;
     - IN_PROGRESS → 409 `Request still in progress`, `code: idempotency_in_progress`, never
-      re-executed.
+      re-executed. The detail tells the firm what to do (review round, 2026-11-22): "An earlier
+      submit of this entry is still in progress, or its outcome is unknown. Check the ledger to see
+      whether the entry was recorded; if it was not, reload the page and submit again." The frontend
+      shows the detail as the error.
 
     The claim transaction commits and returns its connection before the write starts. No lock and no
     second connection is held while (b) runs (`open-in-view` is false).
@@ -156,9 +159,23 @@ the test as expected.
     Refund dialogs, ReversalButton, ApprovalBadge (approve) and its RejectDialog, PlaceInvestment,
     RecordInvestmentInterest, InvestmentInterestEntries (reverse), WithdrawInvestment,
     AllocateUnidentified, PayToFund, InterestMemo, DiscardStatement;
-  - the reconciliation wizard `reconciliation/new/page.tsx`: upload, auto-match, create, every
-    calculate, match, exclude, unmatch, record, complete. Its `idempotency` is added to each
+  - the reconciliation wizard `reconciliation/new/page.tsx`: upload, auto-match, create, match,
+    exclude, unmatch, record and complete go through the hook. Its `idempotency` is added to each
     `useCallback`'s deps.
+  - **Calculate always takes a fresh key** (`freshIdempotencyKey()`). This follows the orchestrator
+    ruling on the independent review's note. Calculate posts nothing: it only recomputes and stores
+    the figures. The wizard re-runs it with the same request after every match, exclude, unmatch,
+    record and complete. With the hook's stable key, one transient 5xx would leave the key
+    IN_PROGRESS, so every later refresh would get the in-progress 409 and the figures would stop
+    refreshing for the session. A fresh key per call re-runs a recompute, which carries no money
+    risk. The endpoint stays annotated and the protocol is unchanged.
+  - I checked the other wizard calls; none is a pure recompute:
+    - auto-match, match, unmatch and exclude change line match state;
+    - create is a get-or-create of the draft;
+    - record posts a trust entry;
+    - complete locks the month and the Rule 54.15 list.
+
+    So calculate is the only exception.
 
   There are no `legal/**` trust writes: `legal/disbursements/actions.ts` only reads trust
   transactions.
@@ -202,7 +219,12 @@ It is idempotent: `CREATE … IF NOT EXISTS`, constraints inline, no catalog loo
 - `TrustIdempotencyFilterTest` (6): buffering bounds, multipart never buffered, nothing read
   without a member or for another endpoint.
 - `TrustIdempotencyCoverageTest`: the guard.
-- Frontend `__tests__/trust/trust-idempotency-key.test.tsx` (10):
+- Review round: `trust-reconciliation.test.tsx` asserts that the calculate sent after a calculate
+  returning a 500 (`outcomeUnknown`) carries a different key. A mutation check pinned the key and
+  the test failed. `trust-idempotency-key.test.tsx` asserts that the in-progress 409 surfaces its
+  instruction as the error and keeps the key. `TrustIdempotencyIntegrationTest` asserts the new
+  ProblemDetail detail.
+- Frontend `__tests__/trust/trust-idempotency-key.test.tsx` (11):
   - the key is stable across a network-failure retry and across unknown outcomes;
   - a new key per intent, after a success, after a refusal and for a changed request;
   - concurrent submits get their own keys; keys are UUIDs;
@@ -251,8 +273,12 @@ Fix:
 - **Keys only protect retries inside one page session.** The key lives in the component. A full page
   reload, or a different tab, after a lost response gets a new key and could post again. The
   server-side duplicate heuristic (option C) was not chosen.
-- **A stuck key.** A key left IN_PROGRESS by a 5xx or a crash refuses that intent's retries until it
-  is purged (7 days). The UI shows the "check the ledger" refusal. This is by design.
+- **A stuck key.** A key left IN_PROGRESS by a 5xx or a crash refuses that intent's retries (an
+  identical resubmit in the same page session) until it is purged (7 days). The 409 tells the firm
+  to check the ledger and, if the entry is not there, reload and submit again: a reload gives a new
+  key. This is by design. Calculate is exempt (a fresh key per call, see §5).
+- **Left as follow-ups by the orchestrator** (not fixed here): BigDecimal parsing in
+  `TrustRequestHasher`, a path assertion in the coverage guard, and the 7-day key expiry.
 - **A changed request after an unknown outcome is a new intent.** The first submit may have posted,
   and the firm sees both in the ledger.
 - **Response buffering.** The response is buffered in memory and stored in `response_body`. It is

@@ -253,8 +253,10 @@ class TrustIdempotencyIntegrationTest {
         retry,
         409,
         "Request still in progress",
-        "A request with this key is still in progress or its outcome is unknown — check the"
-            + " ledger before retrying",
+        // the copy tells the firm what to do (and the key is still never re-executed)
+        "An earlier submit of this entry is still in progress, or its outcome is unknown. Check the"
+            + " ledger to see whether the entry was recorded; if it was not, reload the page and"
+            + " submit again.",
         TrustIdempotencyService.IN_PROGRESS_CODE);
     assertThat(postings("IDEM-IN-PROGRESS")).isEqualTo(1);
     assertThat(stateOf(key)).isEqualTo("IN_PROGRESS");

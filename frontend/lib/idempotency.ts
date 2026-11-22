@@ -16,6 +16,15 @@ export const IDEMPOTENCY_HEADER = "Idempotency-Key";
 /** The backend's 409 `code` for a key whose first request is still running or ended unknown. */
 export const IDEMPOTENCY_IN_PROGRESS_CODE = "idempotency_in_progress";
 
+/**
+ * A fresh key for a trust write that posts nothing and may safely run again — reconciliation
+ * calculate, which only recomputes and stores the figures. Every other trust write keeps one key per
+ * submit intent (`useIdempotencyKey`).
+ */
+export function freshIdempotencyKey(): string {
+  return crypto.randomUUID();
+}
+
 /** The header to send on a trust write. */
 export function idempotencyHeaders(key: string): Record<string, string> {
   return { [IDEMPOTENCY_HEADER]: key };

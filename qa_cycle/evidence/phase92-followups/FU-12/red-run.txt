@@ -1,0 +1,37 @@
+# FU-12 red run: production code unmodified (base 623c22cc92998f4b501642d94eb5313d2e39ddfa), 2026-11-22T02:15Z
+# Command: cd backend && ./mvnw -q test -Dtest='ReportAuditRowsIntegrationTest,ReportingControllerTest'
+# Only test sources changed: new ReportAuditRowsIntegrationTest; ReportingControllerTest.exportPdfPersistsReportExportedAuditEvent tightened to an id-scoped delta of PDF rows.
+# Expected red: execute (REPORT_GENERATED) and PDF (REPORT_EXPORTED, timesheet + Section 35) add 0 rows. CSV passes (it audits outside the read-only transaction, as 650C found.md says).
+# The rollback test passes here too: on main the export joins the test's writable transaction, which flushes on commit.
+
+FAIL  ReportAuditRowsIntegrationTest.execute_writesOneReportGeneratedRow  -- [REPORT_GENERATED rows added for timesheet]  Expected size: 1 but was: 0 in: []
+PASS  ReportAuditRowsIntegrationTest.exportInATransactionThatRollsBack_writesNoRow_committed_writesOne
+PASS  ReportAuditRowsIntegrationTest.csvExport_writesOneReportExportedRow
+PASS  ReportAuditRowsIntegrationTest.refusedPdfExport_writesNoRow
+FAIL  ReportAuditRowsIntegrationTest.pdfExport_writesOneReportExportedRow  -- [REPORT_EXPORTED rows added for timesheet]  Expected size: 1 but was: 0 in: []
+FAIL  ReportAuditRowsIntegrationTest.section35PdfExport_writesOneReportExportedRow  -- [REPORT_EXPORTED rows added for section-35-data-pack]  Expected size: 1 but was: 0 in: []
+PASS  ReportingControllerTest.exportCsvPersistsReportExportedAuditEventWithCsvFormat
+PASS  ReportingControllerTest.getReportDefinitionBySlugReturnsDetail
+PASS  ReportingControllerTest.exportPdfReturns200ApplicationPdfWithContentDisposition
+PASS  ReportingControllerTest.exportCsvWithoutFinancialVisibilityReturns403
+PASS  ReportingControllerTest.listReportDefinitionsRequiresAuthentication
+PASS  ReportingControllerTest.listReportDefinitionsHasCorrectCategoryLabels
+PASS  ReportingControllerTest.executeReportWithPaginationReturnsCorrectPage
+PASS  ReportingControllerTest.previewReportWithoutFinancialVisibilityReturns403
+PASS  ReportingControllerTest.executeReportWithUnknownSlugReturns404
+PASS  ReportingControllerTest.exportPdfWithoutFinancialVisibilityReturns403
+PASS  ReportingControllerTest.executeReportWithoutFinancialVisibilityReturns403
+PASS  ReportingControllerTest.previewReportReturns200TextHtml
+PASS  ReportingControllerTest.getReportDefinitionUnknownSlugReturns404
+PASS  ReportingControllerTest.listReportDefinitionsReturnsThreeCategories
+FAIL  ReportingControllerTest.exportPdfPersistsReportExportedAuditEvent  -- [PDF REPORT_EXPORTED rows added by one export]  Expected size: 1 but was: 0 in: []
+PASS  ReportingControllerTest.exportCsvWithoutAuthenticationReturns401
+PASS  ReportingControllerTest.executeReportWithoutAuthenticationReturns401
+PASS  ReportingControllerTest.exportCsvReturns200TextCsvWithContentDisposition
+PASS  ReportingControllerTest.listReportDefinitionsWithoutFinancialVisibilityReturns403
+PASS  ReportingControllerTest.getReportDefinitionWithoutFinancialVisibilityReturns403
+PASS  ReportingControllerTest.listReportDefinitionsWithFinancialVisibilityReturns200
+PASS  ReportingControllerTest.previewReportUnknownSlugReturns404
+PASS  ReportingControllerTest.exportCsvUnknownSlugReturns404
+PASS  ReportingControllerTest.executeReportWithValidSlugReturns200
+TOTAL testcases=30 failures=4 errors=0 skipped=0

@@ -1,0 +1,13 @@
+# FU-12 connection probe AFTER the round-1 fix (audit row written by ReportRunService after the entry point returns), 2026-11-22T10:48:07Z
+# cd backend && ./mvnw -q test -Dtest='ReportAuditConnectionBudgetIntegrationTest'  (exit 0)
+# Samples as in connection-probe-before.txt (target/fu12-connection-budget.txt):
+
+2026-11-22T10:47:53.991277Z CSV export: idle=0 samples={duringAuditWrite=1}
+2026-11-22T10:47:55.124934Z PDF export: idle=0 samples={reportTransactionReadOnly=1, duringAuditWrite=1, insideReportTransaction=1, afterCommitBeforeAuditWrite=1}
+2026-11-22T10:47:55.153739Z execute: idle=0 samples={duringAuditWrite=1}
+
+PASS  ReportAuditConnectionBudgetIntegrationTest.csvExport_auditWriteHoldsAtMostOneConnection
+PASS  ReportAuditConnectionBudgetIntegrationTest.pdfExport_auditWriteHoldsAtMostOneConnection
+PASS  ReportAuditConnectionBudgetIntegrationTest.execute_auditWriteHoldsAtMostOneConnection
+PASS  ReportAuditConnectionBudgetIntegrationTest.pdfExportFailingAfterTheAuditWasRegistered_writesNoRow
+TOTAL testcases=4 failures=0 errors=0 skipped=0

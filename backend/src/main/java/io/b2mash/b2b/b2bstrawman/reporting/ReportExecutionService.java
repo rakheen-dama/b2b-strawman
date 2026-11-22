@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.reporting;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
-import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
@@ -20,12 +19,9 @@ public class ReportExecutionService {
 
   private final Map<String, ReportQuery> queryMap;
   private final ReportDefinitionRepository reportDefinitionRepository;
-  private final AuditService auditService;
 
   public ReportExecutionService(
-      List<ReportQuery> queries,
-      ReportDefinitionRepository reportDefinitionRepository,
-      AuditService auditService) {
+      List<ReportQuery> queries, ReportDefinitionRepository reportDefinitionRepository) {
     this.queryMap =
         queries.stream()
             .collect(
@@ -42,7 +38,6 @@ public class ReportExecutionService {
                               + duplicate.getClass().getSimpleName());
                     }));
     this.reportDefinitionRepository = reportDefinitionRepository;
-    this.auditService = auditService;
   }
 
   /** True if the current caller holds any extra capability the report's query requires. */
@@ -65,8 +60,14 @@ public class ReportExecutionService {
     }
   }
 
+  /**
+   * Runs a report query with pagination and returns the {@code REPORT_GENERATED} row with it, not
+   * logged: on the HTTP path this runs inside {@link ReportExportService}'s read-only transaction,
+   * where a joined write is never flushed. {@link ReportRunService} writes the row after that
+   * transaction has committed (Phase 92 FU-12).
+   */
   @Transactional
-  public ReportExecutionResponse execute(
+  public AuditedReport<ReportExecutionResponse> execute(
       String slug, Map<String, Object> parameters, Pageable pageable) {
     var definition =
         reportDefinitionRepository
@@ -82,7 +83,7 @@ public class ReportExecutionService {
 
     var result = query.execute(parameters, pageable);
 
-    auditService.log(
+    var audit =
         AuditEventBuilder.builder()
             .eventType("REPORT_GENERATED")
             .entityType("REPORT")
@@ -97,14 +98,14 @@ public class ReportExecutionService {
                     "preview",
                     "rowCount",
                     result.totalElements()))
-            .build());
+            .build();
 
-    return toResponse(definition, parameters, result, pageable);
+    return new AuditedReport<>(toResponse(definition, parameters, result, pageable), audit);
   }
 
   /**
-   * Execute report for export (PDF/CSV). No pagination. Audit logging (REPORT_EXPORTED) is handled
-   * by the controller after rendering completes, because the controller knows the export format.
+   * Execute report for export (PDF/CSV). No pagination. Audit logging (REPORT_EXPORTED) is done by
+   * {@link ReportExportService} after rendering completes, because it knows the export format.
    */
   @Transactional(readOnly = true)
   public ReportResult executeForExport(String slug, Map<String, Object> parameters) {

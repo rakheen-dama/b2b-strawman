@@ -115,7 +115,9 @@ class ReportExecutionServiceTest {
               params.put("groupBy", "member");
 
               var response =
-                  reportExecutionService.execute("timesheet", params, PageRequest.of(0, 50));
+                  reportExecutionService
+                      .execute("timesheet", params, PageRequest.of(0, 50))
+                      .result();
 
               assertThat(response.reportName()).isEqualTo("Timesheet Report");
               assertThat(response.rows()).isNotEmpty();
@@ -144,8 +146,12 @@ class ReportExecutionServiceTest {
             });
   }
 
+  /**
+   * Phase 92 FU-12: execute returns its REPORT_GENERATED row instead of logging it (inside the
+   * read-only report transaction a logged row was never flushed); ReportRunService writes it.
+   */
   @Test
-  void executeFiresReportGeneratedAuditEvent() {
+  void executeReturnsReportGeneratedAuditRecord() {
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .where(RequestScopes.ORG_ID, ORG_ID)
         .where(RequestScopes.MEMBER_ID, memberId)
@@ -157,16 +163,17 @@ class ReportExecutionServiceTest {
               params.put("dateTo", "2025-03-31");
               params.put("groupBy", "member");
 
-              reportExecutionService.execute("timesheet", params, PageRequest.of(0, 50));
+              var audit =
+                  reportExecutionService
+                      .execute("timesheet", params, PageRequest.of(0, 50))
+                      .audit();
 
-              // Verify audit event
-              var auditPage =
-                  auditEventRepository.findByFilter(
-                      "REPORT", null, null, "REPORT_GENERATED", null, null, PageRequest.of(0, 10));
-              assertThat(auditPage.getContent()).isNotEmpty();
-              var latestEvent = auditPage.getContent().getFirst();
-              assertThat(latestEvent.getEventType()).isEqualTo("REPORT_GENERATED");
-              assertThat(latestEvent.getEntityType()).isEqualTo("REPORT");
+              assertThat(audit.eventType()).isEqualTo("REPORT_GENERATED");
+              assertThat(audit.entityType()).isEqualTo("REPORT");
+              assertThat(audit.actorId()).isEqualTo(memberId);
+              assertThat(audit.details())
+                  .containsEntry("slug", "timesheet")
+                  .containsEntry("format", "preview");
             });
   }
 
@@ -184,7 +191,9 @@ class ReportExecutionServiceTest {
               params.put("groupBy", "member");
 
               var response =
-                  reportExecutionService.execute("timesheet", params, PageRequest.of(0, 1));
+                  reportExecutionService
+                      .execute("timesheet", params, PageRequest.of(0, 1))
+                      .result();
 
               assertThat(response.pagination().page()).isEqualTo(0);
               assertThat(response.pagination().size()).isEqualTo(1);
@@ -229,7 +238,7 @@ class ReportExecutionServiceTest {
               params.put("groupBy", "member");
 
               var response =
-                  reportExportService.execute("timesheet", params, PageRequest.of(0, 10));
+                  reportExportService.execute("timesheet", params, PageRequest.of(0, 10)).result();
 
               assertThat(response.rows()).isNotEmpty();
             });

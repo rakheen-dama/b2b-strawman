@@ -38,6 +38,9 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
         AND (:transactionType IS NULL OR t.transactionType = :transactionType)
         AND (:status IS NULL OR t.status = :status)
         AND (:ledger IS NULL OR t.ledger = :ledger)
+        AND (:clientId IS NULL OR t.customerId = :clientId)
+        AND (CAST(:dateFrom AS LocalDate) IS NULL OR t.transactionDate >= :dateFrom)
+        AND (CAST(:dateTo AS LocalDate) IS NULL OR t.transactionDate <= :dateTo)
         AND (:excludeLinked = false
              OR NOT EXISTS (
                SELECT d.id FROM LegalDisbursement d WHERE d.trustTransactionId = t.id))
@@ -49,6 +52,9 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
       @Param("transactionType") String transactionType,
       @Param("status") String status,
       @Param("ledger") TrustLedger ledger,
+      @Param("clientId") UUID clientId,
+      @Param("dateFrom") java.time.LocalDate dateFrom,
+      @Param("dateTo") java.time.LocalDate dateTo,
       @Param("excludeLinked") boolean excludeLinked,
       Pageable pageable);
 

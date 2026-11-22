@@ -730,6 +730,54 @@ class ReversedOriginalMatchIntegrationTest {
     books.assertServicesAgree(account, MARCH_END);
   }
 
+  /**
+   * FU-16 review: a contra is never picked at the amount/date tiers, but it still counts there, so
+   * it keeps blocking an otherwise-unique match as it did before FU-16. Contra C (-1 000, 3 March)
+   * of a returned deposit R, and an unrelated booked payment P (-1 000, 3 March). The bank shows
+   * the return on 3 March under its own reference, and P on 4 March under P's reference — so the
+   * return line is matched first, whatever the lines' ids. Tier 2 for the return sees {C, P}:
+   * ambiguous, left for a human; P's line then takes P by reference. RED on 1d33d51 (C dropped from
+   * tiers 2–4): tier 2 saw {P} alone and AUTO_MATCHED the return line to P, leaving P's own line
+   * unmatched.
+   */
+  @Test
+  void
+      autoMatch_aContraStillMakesTheAmountAndDateTiersAmbiguous_soTheReturnLineDoesNotTakeAPayment() {
+    var account = books.freshAccount(false);
+    var payer = books.newClient("ambiguity payer");
+    var depositId = books.deposit(account, payer, "2000.00", LocalDate.of(2026, 3, 1));
+    var paymentId = books.requestPayment(account, payer, "1000.00", LocalDate.of(2026, 3, 3));
+    books.approve(account, paymentId, approverId, Expected.cashbookAndClient("-1000.00"));
+    var returned = books.newClient("ambiguity returned deposit");
+    var originalId = depositOn(account, returned, "H-AMB-R", LocalDate.of(2026, 3, 1));
+    var contra = books.reverse(account, originalId, Expected.none(), LocalDate.of(2026, 3, 3));
+    books.approve(account, contra.id(), approverId, Expected.cashbookAndClient("-1000.00"));
+    var march =
+        importStatement(
+            account,
+            "fu16-ambiguity.csv",
+            "01/03/2026,Deposit received,2000.00,2000.00," + referenceOf(depositId),
+            "01/03/2026,Deposit received,1000.00,3000.00,H-AMB-R",
+            "03/03/2026,Unpaid deposit returned,-1000.00,2000.00,BANK-RD-0303",
+            "04/03/2026,EFT payment,-1000.00,1000.00," + referenceOf(paymentId));
+    var returnLine = 2;
+    var paymentLine = 3;
+
+    var result = autoMatch(march);
+
+    var ret = lineState(march.lines().get(returnLine).id());
+    assertThat(ret.get("match_status")).as("return line status").isEqualTo("UNMATCHED");
+    assertThat(ret.get("trust_transaction_id")).as("return line: no row").isNull();
+    assertLineMatchedTo(march, paymentLine, paymentId, "AUTO_MATCHED");
+    assertThat(bankLineOf(contra.id())).as("contra C unlinked").isNull();
+    assertThat(result.autoMatched()).as("deposit, R and P").isEqualTo(3);
+
+    match(march, returnLine, contra.id());
+    var recon = reconcile(account, MARCH_END, march.id());
+    assertBalancedWithNothingOutstanding(recon, "1000.00");
+    books.assertServicesAgree(account, MARCH_END);
+  }
+
   // --- FU-16 (a) 652H M-1: an already-linked live row still shadows a REVERSED original --------
 
   /**

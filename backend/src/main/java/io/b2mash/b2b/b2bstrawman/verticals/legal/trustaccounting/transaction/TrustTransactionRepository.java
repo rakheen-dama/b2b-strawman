@@ -313,45 +313,30 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
       @Param("today") LocalDate today);
 
   /**
-   * Finds unmatched candidate transactions for bank reconciliation auto-matching: posted rows
-   * ({@code posted_at} set — RECORDED, APPROVED or REVERSED, {@code chk_trust_txn_posting}) not yet
-   * matched to a bank statement line, within the specified date range. A REVERSED original is still
-   * posted with its own cashbook effect (649B), so it matches the bank line that shows it like any
-   * other posted row (652H); an unposted row (AWAITING_APPROVAL, REJECTED) never does. The caller
-   * drops a REVERSED row recorded from a statement line ({@link
-   * TrustTransactionType#recordedOnlyFromStatementLine}).
+   * Bank reconciliation auto-matching's one read of its window: every posted row ({@code posted_at}
+   * set — RECORDED, APPROVED or REVERSED, {@code chk_trust_txn_posting}) of the account dated
+   * within the range, matched to a bank statement line or not. The caller splits it in memory, so
+   * both halves come from one snapshot (FU-16):
+   *
+   * <ul>
+   *   <li>the rows not yet matched ({@code bank_statement_line_id IS NULL}) are the candidates. A
+   *       REVERSED original is still posted with its own cashbook effect (649B), so it matches the
+   *       bank line that shows it like any other posted row (652H); an unposted row
+   *       (AWAITING_APPROVAL, REJECTED) never does. The caller drops a REVERSED row recorded from a
+   *       statement line ({@link TrustTransactionType#recordedOnlyFromStatementLine});
+   *   <li>the live (non-REVERSED) rows already matched are never candidates; they only shadow a
+   *       REVERSED original of their amount and sign (FU-16, 652H M-1).
+   * </ul>
    */
   @Query(
       """
       SELECT t FROM TrustTransaction t
       WHERE t.trustAccountId = :trustAccountId
         AND t.postedAt IS NOT NULL
-        AND t.bankStatementLineId IS NULL
         AND t.transactionDate >= :startDate
         AND t.transactionDate <= :endDate
       """)
-  List<TrustTransaction> findUnmatchedCandidates(
-      @Param("trustAccountId") UUID trustAccountId,
-      @Param("startDate") LocalDate startDate,
-      @Param("endDate") LocalDate endDate);
-
-  /**
-   * The live posted rows (RECORDED or APPROVED, not REVERSED) already matched to a bank statement
-   * line, within the date range — the complement of {@link #findUnmatchedCandidates} for live rows.
-   * Auto-match reads them only to decide whether a REVERSED original is shadowed by a live row of
-   * its amount and sign (FU-16, 652H M-1); they are never match candidates.
-   */
-  @Query(
-      """
-      SELECT t FROM TrustTransaction t
-      WHERE t.trustAccountId = :trustAccountId
-        AND t.postedAt IS NOT NULL
-        AND t.status <> 'REVERSED'
-        AND t.bankStatementLineId IS NOT NULL
-        AND t.transactionDate >= :startDate
-        AND t.transactionDate <= :endDate
-      """)
-  List<TrustTransaction> findLinkedLiveRows(
+  List<TrustTransaction> findPostedInAutoMatchWindow(
       @Param("trustAccountId") UUID trustAccountId,
       @Param("startDate") LocalDate startDate,
       @Param("endDate") LocalDate endDate);

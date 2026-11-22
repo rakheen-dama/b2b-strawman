@@ -1,16 +1,16 @@
-16:15:39.176 [main] INFO com.tngtech.archunit.ArchConfiguration -- Reading ArchUnit properties from file:/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-a7d1c7ab2c14bd106/backend/target/test-classes/archunit.properties
-16:15:39.346 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [io.b2mash.b2b.b2bstrawman.demo.seed.LegalDemoDataSeederTest]: LegalDemoDataSeederTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-16:15:39.519 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration io.b2mash.b2b.b2bstrawman.BackendApplication for test class io.b2mash.b2b.b2bstrawman.demo.seed.LegalDemoDataSeederTest
+17:00:56.166 [main] INFO com.tngtech.archunit.ArchConfiguration -- Reading ArchUnit properties from file:/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-a7d1c7ab2c14bd106/backend/target/test-classes/archunit.properties
+17:00:56.387 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [io.b2mash.b2b.b2bstrawman.demo.seed.LegalDemoDataSeederTest]: LegalDemoDataSeederTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+17:00:56.558 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration io.b2mash.b2b.b2bstrawman.BackendApplication for test class io.b2mash.b2b.b2bstrawman.demo.seed.LegalDemoDataSeederTest
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
-OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/Users/rakheendama/.m2/repository/net/bytebuddy/byte-buddy-agent/1.17.8/byte-buddy-agent-1.17.8.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-com.openhtmltopdf.load INFO:: TIME: parse stylesheets 27ms
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+com.openhtmltopdf.load INFO:: TIME: parse stylesheets 25ms
 com.openhtmltopdf.match INFO:: Matcher created with 181 selectors
 com.openhtmltopdf.general INFO:: Using fast-mode renderer. Prepare to fly.
-com.openhtmltopdf.load INFO:: TIME: parse stylesheets 0ms
+com.openhtmltopdf.load INFO:: TIME: parse stylesheets 1ms
 com.openhtmltopdf.match INFO:: Matcher created with 181 selectors
 com.openhtmltopdf.general INFO:: Using fast-mode renderer. Prepare to fly.
 com.openhtmltopdf.load INFO:: TIME: parse stylesheets 0ms

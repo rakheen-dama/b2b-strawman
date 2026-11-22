@@ -57,8 +57,13 @@ balances are written; then commit (which releases the lock).
     pool checkout.
   - The old entity query had no other caller and was removed.
 - **Record fields:** exactly what the projection reads:
-  - `id`, `transactionType`, `amount`, `customerId`, `projectId`, `reference`, `description`
+  - `id`, `transactionType`, `amount`, `clientId`, `matterId`, `reference`, `description`
   - `transactionDate`, `status`, `approvedAt`, `createdAt`, `ledger`, `ledgerEffect`
+
+  `clientId` / `matterId` are the record's component names (ADR-337 wire vocabulary: a `*Row`
+  record is a wire record to `WireVocabularyContractTest`, so a `customer`/`project` component
+  fails it; round 3). The JPQL still selects the entity fields `t.customerId` / `t.projectId`,
+  in the same argument order.
 
   The consumers are:
   - the status filter and portal scope;
@@ -153,10 +158,20 @@ The three tests:
 | `green-run.txt` | round-2 head | 3/3 PASS |
 | `mutation-no-transaction.txt` | round-2 head minus the `portalTxTemplate` wrapper (lock kept; the xact lock then releases at once) | 2/3 FAIL (F-4 partial commit; F-5 `was 100.00`); the stale-read test passes |
 | `mutation-no-lock.txt` | round-2 head minus `lockMatterReplay` (transaction kept) | 1/3 FAIL: F-5 `was 100.00`; F-4 and stale-read pass |
+| `tier2-part0-codebase-scanners.txt` | every test that scans the whole codebase outside the `architecture` package (`@AnalyzeClasses` / `ClassFileImporter` / `ClassPathScanning` / source walks): `WireVocabularyContractTest`, `EngagementLetterWithoutProposalIntegrationTest`, `BillingRunWithoutRetainersIntegrationTest`, `DashboardWithoutCapacityTest`, `AiFoundationWithoutAssistantTest`, `McpToolContractTest`, `NotificationCatalogueWithoutSchedulesTest`, `LegalOnlyProfileReplacementTest`, `TrustPostingRulesTest`, `EntityTypeLiteralStabilityTest`, `MatterScopedPublisherGuardTest`, `CollectionsCoreBoundaryTest`, `CollectionsSqlSourceScanTest`, `Phase81BoundaryTest`, `DeadlineCopyRuleTest` (`TerminologyRemnantScanTest` is in part 1's `architecture.**`) | 15 classes, 64 testcases, 0 failures/errors (3 classes overlap parts 1–3) |
 | `tier2-part1.txt` | `architecture.**` + `customerbackend.**` + portal-trust classes elsewhere | 48 classes, 347 testcases, 0 failures/errors |
 | `tier2-part2-trustaccounting.txt` | `verticals.legal.trustaccounting.**` (every trust service test that posts and so triggers a replay) | 78 classes, 863 testcases, 0 failures/errors |
 | `tier2-part3-trust-consumers.txt` | 12 trust-posting classes outside those packages (demo seed, statements, dashboard, reporting, MCP, templates, FICA, audit guard) | 12 classes, 94 testcases, 0 failures/errors |
 | `tier2-part4-repository-users.txt` | the remaining `TrustTransactionRepository` users (`LegalDemoDataSeederTest`, `DisbursementServiceTest`, `StatementRenderingIntegrationTest`, `StatementOfAccountContextBuilderTest`) | 4 classes, 73 testcases, 0 failures/errors |
+
+Tier 2 parts 0–4 were re-run after the round-3 rename. The red and mutation runs were NOT re-run
+after round 3: the rename is a pure component rename (no logic, query or ordering change) on the
+paths they exercise, and the green run of all three tests is inside part 1
+(`customerbackend.**`).
+
+Round 3 cause: the orchestrator's full verify of `71f620410` (and Backend CI) failed only
+`WireVocabularyContractTest.noNewLegacyNounInScopedWireRecords` on
+`TrustTransactionHistoryRow#customerId` / `#projectId`. They were renamed, not baselined.
 
 Counts are `<testcase>` elements in `target/surefire-reports`, cleared between parts. The
 mutation and red runs skip `spotless:check` (`-Dspotless.check.skip=true`) because the temporary

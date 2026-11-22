@@ -278,7 +278,7 @@ public class TrustLedgerPortalSyncService {
             if (ledger.isEmpty()) {
               continue;
             }
-            UUID rowCustomerId = txn.customerId();
+            UUID rowCustomerId = txn.clientId();
             Instant occurredAt = deriveOccurredAt(txn);
             BigDecimal running =
                 balancesByCustomer
@@ -371,10 +371,8 @@ public class TrustLedgerPortalSyncService {
             if (!hasPortalScope(txn) || projectedLedger(txn).isEmpty()) {
               continue;
             }
-            UUID matterId = txn.projectId();
-            rollups
-                .computeIfAbsent(matterId, id -> new MatterRollup(id, txn.customerId()))
-                .add(txn);
+            UUID matterId = txn.matterId();
+            rollups.computeIfAbsent(matterId, id -> new MatterRollup(id, txn.clientId())).add(txn);
           }
           // Snapshot the tenant's customer id set inside the same scope binding — needed for
           // the wipe-and-rewrite drift repair below.
@@ -603,7 +601,7 @@ public class TrustLedgerPortalSyncService {
    * surfaceable — e.g., some inter-account FEE_TRANSFER rows carry a customer but no project.
    */
   private static boolean hasPortalScope(TrustTransactionHistoryRow txn) {
-    return txn.customerId() != null && txn.projectId() != null;
+    return txn.clientId() != null && txn.matterId() != null;
   }
 
   private static boolean hasPortalScope(UUID customerId, UUID projectId) {

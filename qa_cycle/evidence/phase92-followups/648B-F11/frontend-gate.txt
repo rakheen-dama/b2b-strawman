@@ -1,0 +1,29 @@
+# 648B F-11 frontend gate — nvm node v20.9.0, NODE_OPTIONS="", /opt/homebrew/bin NOT on PATH
+# cd frontend
+
+pnpm install --frozen-lockfile   → exit 0
+pnpm lint                         → exit 0 — 0 errors, 77 warnings (none new: the warnings in touched
+                                    files are the pre-existing react-hook-form `watch`
+                                    "incompatible library" notices)
+pnpm typecheck                    → exit 0
+pnpm format:check                 → exit 0 — "All matched files use Prettier code style!"
+pnpm test (vitest run, full)      → exit 1
+   Test Files  4 failed | 482 passed (486)
+        Tests  27 failed | 4604 passed | 2 skipped (4633)
+
+All 27 failures are in 4 files this PR does not touch, and fail identically on UNMODIFIED main
+(detached checkout of 34f45c071 in this worktree, same node_modules, same command restricted to the
+4 files: "Test Files 4 failed (4) / Tests 27 failed | 17 passed (44)"):
+   2  __tests__/comments/comment-item.test.tsx
+  13  __tests__/legal/statement-of-account-dialog.test.tsx
+   4  __tests__/matters/matter-search.test.tsx
+   8  components/legal/__tests__/retention-card.test.tsx
+  All are "Error: Hook timed out in 10000ms" in an afterEach (cleanup / vi.useRealTimers) of fake-timer
+  tests — an environment/fake-timer issue on this machine (node v20.9.0), not a behaviour of this PR.
+Triage decision: not fixed here (scope discipline: one fix per PR); raised to the orchestrator.
+Every trust test file passes (28 trust files + legal-wire-bodies: 432/432 before the new hook test;
+the new __tests__/trust/trust-idempotency-key.test.tsx: 10/10).
+
+Portal (changed only portal/e2e/helpers/firm-api.ts): pnpm typecheck → exit 0; eslint on the file →
+clean; prettier --check on the file → clean.
+frontend/e2e/helpers/api.ts: eslint clean, prettier clean (covered by the frontend lint/format above).

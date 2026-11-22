@@ -1,0 +1,38 @@
+# 648B F-11 backend Tier 2 (not the full verify — the orchestrator runs ./mvnw verify)
+# after ./mvnw spotless:apply (spotless:check clean), code at 03053a8fa (fix + bounded buffering)
+
+## Run 1 — ./mvnw test -Dtest='<pattern>'   (05:47 min)
+Pattern:
+  io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/**/*   (all 83 test classes, incl. TrustPostingRulesTest, the idempotency tests)
+  io/b2mash/b2b/b2bstrawman/architecture/*      (LayerDependencyRules, PortalLinkBuilderArch, PortalReadModelOrgScopingGuard,
+                                                  TenantScopeBinding, TerminologyRemnantScan, TestConventions, ZoneAwareTimeArch)
+  io/b2mash/b2b/b2bstrawman/customerbackend/**/*   (39 classes, incl. DeadlineCopyRuleTest)
+  io/b2mash/b2b/b2bstrawman/mcp/**/*               (32 classes, incl. McpToolContractTest, CatalogueBatch2TrustBillingTest)
+  whole-codebase scanners (grep @AnalyzeClasses / ClassFileImporter / ClassPathScanning):
+    EngagementLetterWithoutProposalIntegrationTest, BillingRunWithoutRetainersIntegrationTest,
+    DashboardWithoutCapacityTest, AiFoundationWithoutAssistantTest, NotificationCatalogueWithoutSchedulesTest,
+    WireVocabularyContractTest, LegalOnlyProfileReplacementTest
+  every other test class calling trust endpoints over MockMvc (grep /api/trust-, /api/bank-statement,
+  /api/unidentified-deposits) or using the trust fixtures (TrustBooksFixture / TrustBooksHarness /
+  TestTrustInvestmentAccountHelper):
+    MatterFeedIntegrationTest, TrustBalanceTrendIntegrationTest, TrustPositionIntegrationTest,
+    PortalActivityTrustEventsIntegrationTest, MatterTrustBalanceEndpointTest, BillingTrendIntegrationTest,
+    LegalModuleStubControllerTest, StatementRenderingIntegrationTest, LegalDemoTrustBooksIntegrationTest,
+    ReportAuditRowsIntegrationTest, ClientTrustStatementContextIntegrationTest,
+    StatementBuilderClosedPrimaryAccountIntegrationTest
+
+Result (180 report files; <testcase> count from target/surefire-reports):
+  testcases 1479, failures 1, errors 0, skipped 0
+  The one failure: architecture.TerminologyRemnantScanTest.problemDetailExceptionsAreAllScanned —
+    "a ProblemDetail-rendering exception the guard cannot see — add it to MESSAGE_CALLEES …
+     exception/PayloadTooLargeException.java"
+  i.e. the scanner caught the new 413 exception (added by the security fix). Fixed: PayloadTooLargeException
+  added to MESSAGE_CALLEES (its title/detail are now scanned for ADR-357 remnants).
+
+## Run 2 — ./mvnw test -Dtest='io/b2mash/b2b/b2bstrawman/architecture/*'  (after the fix)
+  Tests run: 27, Failures: 0, Errors: 0, Skipped: 0 — BUILD SUCCESS
+  (TerminologyRemnantScanTest 6/6, ZoneAwareTimeArchTest 5, TenantScopeBindingTest 5, LayerDependencyRulesTest 3,
+   PortalLinkBuilderArchTest 3, TestConventionsTest 3, PortalReadModelOrgScopingGuardTest 2)
+
+The fix changed only that test's allow-set; no production code changed between run 1 and run 2, so
+the other 1478 run-1 results stand.

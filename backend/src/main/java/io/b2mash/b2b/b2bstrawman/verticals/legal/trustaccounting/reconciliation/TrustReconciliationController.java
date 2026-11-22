@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation;
 
 import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.idempotency.IdempotentTrustWrite;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.StatementLinePostingService.RecordFromLineRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.StatementLinePostingService.RecordFromLineResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService.BankStatementResponse;
@@ -42,6 +43,7 @@ public class TrustReconciliationController {
   @PostMapping(
       value = "/api/trust-accounts/{accountId}/bank-statements",
       consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @IdempotentTrustWrite
   @RequiresCapability("MANAGE_TRUST")
   public ResponseEntity<BankStatementResponse> importBankStatement(
       @PathVariable UUID accountId,
@@ -61,6 +63,7 @@ public class TrustReconciliationController {
   }
 
   @PostMapping("/api/bank-statements/{statementId}/discard")
+  @IdempotentTrustWrite
   @RequiresCapability("MANAGE_TRUST")
   public ResponseEntity<BankStatementResponse> discardBankStatement(
       @PathVariable UUID statementId, @Valid @RequestBody DiscardStatementRequest request) {
@@ -77,12 +80,14 @@ public class TrustReconciliationController {
   // --- Matching Endpoints ---
 
   @PostMapping("/api/bank-statements/{statementId}/auto-match")
+  @IdempotentTrustWrite
   @RequiresCapability("MANAGE_TRUST")
   public ResponseEntity<MatchResult> autoMatchStatement(@PathVariable UUID statementId) {
     return ResponseEntity.ok(trustReconciliationService.autoMatchStatement(statementId));
   }
 
   @PostMapping("/api/bank-statement-lines/{lineId}/match")
+  @IdempotentTrustWrite
   @RequiresCapability("MANAGE_TRUST")
   public ResponseEntity<Void> manualMatch(
       @PathVariable UUID lineId, @Valid @RequestBody ManualMatchRequest request) {
@@ -91,6 +96,7 @@ public class TrustReconciliationController {
   }
 
   @PostMapping("/api/bank-statement-lines/{lineId}/record")
+  @IdempotentTrustWrite
   @RequiresCapability("MANAGE_TRUST")
   public ResponseEntity<RecordFromLineResponse> recordFromLine(
       @PathVariable UUID lineId, @Valid @RequestBody RecordFromLineRequest request) {
@@ -99,6 +105,7 @@ public class TrustReconciliationController {
   }
 
   @PostMapping("/api/bank-statement-lines/{lineId}/unmatch")
+  @IdempotentTrustWrite
   @RequiresCapability("MANAGE_TRUST")
   public ResponseEntity<Void> unmatch(@PathVariable UUID lineId) {
     trustReconciliationService.unmatch(lineId);
@@ -106,6 +113,7 @@ public class TrustReconciliationController {
   }
 
   @PostMapping("/api/bank-statement-lines/{lineId}/exclude")
+  @IdempotentTrustWrite
   @RequiresCapability("MANAGE_TRUST")
   public ResponseEntity<Void> excludeLine(
       @PathVariable UUID lineId, @Valid @RequestBody ExcludeLineRequest request) {
@@ -116,6 +124,7 @@ public class TrustReconciliationController {
   // --- Reconciliation Endpoints ---
 
   @PostMapping("/api/trust-accounts/{accountId}/reconciliations")
+  @IdempotentTrustWrite
   @RequiresCapability("MANAGE_TRUST")
   public ResponseEntity<TrustReconciliationResponse> createReconciliation(
       @PathVariable UUID accountId, @Valid @RequestBody CreateReconciliationRequest request) {
@@ -140,6 +149,7 @@ public class TrustReconciliationController {
   }
 
   @PostMapping("/api/trust-reconciliations/{reconciliationId}/calculate")
+  @IdempotentTrustWrite
   @RequiresCapability("MANAGE_TRUST")
   public ResponseEntity<TrustReconciliationResponse> calculateReconciliation(
       @PathVariable UUID reconciliationId, @Valid @RequestBody ExpectedStatementRequest request) {
@@ -149,6 +159,7 @@ public class TrustReconciliationController {
   }
 
   @PostMapping("/api/trust-reconciliations/{reconciliationId}/complete")
+  @IdempotentTrustWrite
   @RequiresCapability("MANAGE_TRUST")
   public ResponseEntity<TrustReconciliationResponse> completeReconciliation(
       @PathVariable UUID reconciliationId, @Valid @RequestBody ExpectedStatementRequest request) {

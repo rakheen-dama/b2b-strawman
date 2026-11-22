@@ -1056,12 +1056,19 @@ describe("Trust Reconciliation", () => {
       1,
       "acc-1",
       expect.any(File),
-      undefined
+      undefined,
+      expect.any(String)
     );
 
     fireEvent.change(screen.getByTestId("file-input"), { target: { files: [csvFile()] } });
     await waitFor(() => expect(mockUploadBankStatement).toHaveBeenCalledTimes(2));
-    expect(mockUploadBankStatement).toHaveBeenNthCalledWith(2, "acc-1", expect.any(File), "stmt-a");
+    expect(mockUploadBankStatement).toHaveBeenNthCalledWith(
+      2,
+      "acc-1",
+      expect.any(File),
+      "stmt-a",
+      expect.any(String)
+    );
   });
 
   // FU-6b (CodeRabbit round 1): an upload that completes after the wizard was reset (the period
@@ -1144,7 +1151,8 @@ describe("Trust Reconciliation", () => {
       2,
       "acc-1",
       expect.any(File),
-      undefined
+      undefined,
+      expect.any(String)
     );
     await waitFor(() => expect(screen.getByTestId("step-next-btn")).toBeEnabled());
   });
@@ -1305,7 +1313,11 @@ describe("Trust Reconciliation", () => {
     fireEvent.click(screen.getByTestId("step-next-btn"));
 
     expect(await screen.findByTestId("reconciliation-split-pane")).toBeInTheDocument();
-    expect(mockCalculateReconciliation).toHaveBeenCalledWith("recon-1", "stmt-1");
+    expect(mockCalculateReconciliation).toHaveBeenCalledWith(
+      "recon-1",
+      "stmt-1",
+      expect.any(String)
+    );
     expect(screen.getByText("1 / 1 lines resolved")).toBeInTheDocument();
     expect(screen.getByTestId("complete-reconciliation-btn")).toBeEnabled();
   });
@@ -1333,6 +1345,34 @@ describe("Trust Reconciliation", () => {
     expect(await screen.findByTestId("reconciliation-split-pane")).toBeInTheDocument();
     expect(mockCreateReconciliation).toHaveBeenCalledTimes(1);
     expect(mockCalculateReconciliation).toHaveBeenCalledTimes(2);
+  });
+
+  // 648B F-11 review: calculate posts nothing, and a 5xx leaves its key IN_PROGRESS on the server —
+  // so every calculate takes a fresh key; one transient 500 never blocks the next recalculation.
+  it("sends the calculate after a 500 with a different Idempotency-Key", async () => {
+    await driveToReviewWithAllLinesAutoMatched();
+    mockCalculateReconciliation.mockResolvedValueOnce({
+      success: false,
+      error: "Internal Server Error",
+      outcomeUnknown: true,
+    });
+
+    fireEvent.click(screen.getByTestId("step-next-btn"));
+    expect(await screen.findByText("Internal Server Error")).toBeInTheDocument();
+
+    mockCalculateReconciliation.mockResolvedValueOnce({
+      success: true,
+      data: makeRecon({ status: "DRAFT", isBalanced: true, completedAt: null }),
+    });
+    fireEvent.click(screen.getByTestId("step-next-btn"));
+    expect(await screen.findByTestId("reconciliation-split-pane")).toBeInTheDocument();
+
+    const calls = mockCalculateReconciliation.mock.calls;
+    expect(calls).toHaveLength(2);
+    expect(calls[0].slice(0, 2)).toEqual(calls[1].slice(0, 2)); // the same request
+    expect(calls[0][2]).toEqual(expect.any(String));
+    expect(calls[1][2]).toEqual(expect.any(String));
+    expect(calls[1][2]).not.toBe(calls[0][2]); // a fresh key, not the stuck one
   });
 
   // 652C (§16.3.12): a re-upload resets the wizard and drops its handle to the draft; the next
@@ -1398,15 +1438,29 @@ describe("Trust Reconciliation", () => {
 
     expect(await screen.findByTestId("reconciliation-split-pane")).toBeInTheDocument();
     expect(mockCreateReconciliation).toHaveBeenCalledTimes(2);
-    expect(mockCreateReconciliation).toHaveBeenNthCalledWith(1, "acc-1", {
-      periodEnd: "2026-03-31",
-      bankStatementId: "stmt-1",
-    });
-    expect(mockCreateReconciliation).toHaveBeenNthCalledWith(2, "acc-1", {
-      periodEnd: "2026-03-31",
-      bankStatementId: "stmt-2",
-    });
-    expect(mockCalculateReconciliation).toHaveBeenLastCalledWith("recon-1", "stmt-2");
+    expect(mockCreateReconciliation).toHaveBeenNthCalledWith(
+      1,
+      "acc-1",
+      {
+        periodEnd: "2026-03-31",
+        bankStatementId: "stmt-1",
+      },
+      expect.any(String)
+    );
+    expect(mockCreateReconciliation).toHaveBeenNthCalledWith(
+      2,
+      "acc-1",
+      {
+        periodEnd: "2026-03-31",
+        bankStatementId: "stmt-2",
+      },
+      expect.any(String)
+    );
+    expect(mockCalculateReconciliation).toHaveBeenLastCalledWith(
+      "recon-1",
+      "stmt-2",
+      expect.any(String)
+    );
     expect(screen.queryByTestId("reconciliation-error")).not.toBeInTheDocument();
   });
 
@@ -1485,7 +1539,11 @@ describe("Trust Reconciliation", () => {
     fireEvent.click(screen.getByTestId("complete-reconciliation-btn"));
 
     expect(await screen.findByTestId("reconciliation-error")).toHaveTextContent(refusal);
-    expect(mockCompleteReconciliation).toHaveBeenCalledWith("recon-1", "stmt-1");
+    expect(mockCompleteReconciliation).toHaveBeenCalledWith(
+      "recon-1",
+      "stmt-1",
+      expect.any(String)
+    );
     expect(mockCalculateReconciliation).toHaveBeenCalledTimes(2);
     // The summary now shows the recalculated figures and the gate's flags.
     expect(screen.getByTestId("bank-to-cashbook-difference").textContent).toBe(
@@ -1636,11 +1694,19 @@ describe("Trust Reconciliation", () => {
 
     fireEvent.click(screen.getByTestId("step-next-btn"));
     expect(await screen.findByTestId("reconciliation-split-pane")).toBeInTheDocument();
-    expect(mockCalculateReconciliation).toHaveBeenCalledWith("recon-1", "stmt-1");
+    expect(mockCalculateReconciliation).toHaveBeenCalledWith(
+      "recon-1",
+      "stmt-1",
+      expect.any(String)
+    );
     fireEvent.click(screen.getByTestId("complete-reconciliation-btn"));
 
     const banner = await screen.findByTestId("reconciliation-error");
-    expect(mockCompleteReconciliation).toHaveBeenCalledWith("recon-1", "stmt-1");
+    expect(mockCompleteReconciliation).toHaveBeenCalledWith(
+      "recon-1",
+      "stmt-1",
+      expect.any(String)
+    );
     expect(within(banner).getByTestId("reconciliation-error-title")).toHaveTextContent(
       /^This reconciliation now uses a different statement$/
     );
@@ -1683,7 +1749,11 @@ describe("Trust Reconciliation", () => {
     fireEvent.click(screen.getByTestId("complete-reconciliation-btn"));
 
     expect(await screen.findByTestId("step-complete")).toBeInTheDocument();
-    expect(mockCompleteReconciliation).toHaveBeenCalledWith("recon-1", "stmt-1");
+    expect(mockCompleteReconciliation).toHaveBeenCalledWith(
+      "recon-1",
+      "stmt-1",
+      expect.any(String)
+    );
     expect(mockCalculateReconciliation).toHaveBeenCalledTimes(1);
     expect(screen.queryByTestId("reconciliation-error")).not.toBeInTheDocument();
   });
@@ -1876,7 +1946,11 @@ describe("Trust Reconciliation", () => {
 
     fireEvent.click(screen.getByTestId("step-next-btn"));
     await waitFor(() =>
-      expect(mockCalculateReconciliation).toHaveBeenCalledWith("recon-1", "stmt-1")
+      expect(mockCalculateReconciliation).toHaveBeenCalledWith(
+        "recon-1",
+        "stmt-1",
+        expect.any(String)
+      )
     );
     expect(screen.getByTestId("auto-match-back-btn")).toBeDisabled();
     expect(screen.getByTestId("step-next-btn")).toBeDisabled();
@@ -2583,7 +2657,8 @@ describe("Trust Reconciliation", () => {
       ).toBeInTheDocument();
       expect(mockRecordFromStatement).toHaveBeenCalledWith(
         "line-1",
-        expect.objectContaining({ classification: "FUND_INTEREST" })
+        expect.objectContaining({ classification: "FUND_INTEREST" }),
+        expect.any(String)
       );
       expect(screen.getByTestId("recorded-badge-line-1")).toHaveTextContent(
         `Recorded: ${FUND_INTEREST}`
@@ -2796,7 +2871,7 @@ describe("Trust Reconciliation", () => {
       expect(await screen.findByTestId("reconciliation-error")).toHaveTextContent(
         `The match was saved but the balances could not be recalculated: ${REFUSAL}`
       );
-      expect(mockManualMatch).toHaveBeenCalledWith("line-1", "tx-1");
+      expect(mockManualMatch).toHaveBeenCalledWith("line-1", "tx-1", expect.any(String));
       expect(mockCalculateReconciliation).toHaveBeenCalledTimes(2);
       expectFiguresMarkedStale();
       // The match itself stands.
@@ -2815,7 +2890,7 @@ describe("Trust Reconciliation", () => {
       expect(await screen.findByTestId("reconciliation-error")).toHaveTextContent(
         `The line was excluded but the balances could not be recalculated: ${REFUSAL}`
       );
-      expect(mockExcludeLine).toHaveBeenCalledWith("line-1", "Non-trust item");
+      expect(mockExcludeLine).toHaveBeenCalledWith("line-1", "Non-trust item", expect.any(String));
       expect(mockCalculateReconciliation).toHaveBeenCalledTimes(2);
       expectFiguresMarkedStale();
       expect(
@@ -2879,7 +2954,8 @@ describe("Trust Reconciliation", () => {
         expectFiguresMarkedStale();
         expect(mockRecordFromStatement).toHaveBeenCalledWith(
           "line-1",
-          expect.objectContaining({ classification: "FUND_INTEREST" })
+          expect.objectContaining({ classification: "FUND_INTEREST" }),
+          expect.any(String)
         );
         // The rejection is handled in the page: the record stands and the dialog closes cleanly.
         await waitFor(() =>
@@ -2901,7 +2977,7 @@ describe("Trust Reconciliation", () => {
       expect(await screen.findByTestId("reconciliation-error")).toHaveTextContent(
         `The line was unmatched but the balances could not be recalculated: ${REFUSAL}`
       );
-      expect(mockUnmatch).toHaveBeenCalledWith("line-2");
+      expect(mockUnmatch).toHaveBeenCalledWith("line-2", expect.any(String));
       expect(mockCalculateReconciliation).toHaveBeenCalledTimes(2);
       expectFiguresMarkedStale();
       expect(
@@ -3022,7 +3098,11 @@ describe("Trust Reconciliation", () => {
       expect(await screen.findByTestId("reconciliation-error")).toHaveTextContent(
         "The line was unmatched. The unmatched transactions could not be refreshed and may be out of date."
       );
-      expect(mockCalculateReconciliation).toHaveBeenCalledWith("recon-1", "stmt-1");
+      expect(mockCalculateReconciliation).toHaveBeenCalledWith(
+        "recon-1",
+        "stmt-1",
+        expect.any(String)
+      );
       expect(screen.queryByTestId("reconciliation-figures-stale")).not.toBeInTheDocument();
       expect(
         within(screen.getByTestId("bank-line-line-2")).getByText("Unmatched")

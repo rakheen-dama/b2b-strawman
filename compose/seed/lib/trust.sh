@@ -1,6 +1,6 @@
 #!/bin/sh
 # compose/seed/lib/trust.sh — Boot-seed trust account (Phase 88 628F, U22)
-# Requires: lib/common.sh (api_get, api_post, check_status, get_jwt)
+# Requires: lib/common.sh (api_get, api_post_trust, check_status, get_jwt)
 #
 # The values MUST equal TRUST_ACCOUNT in frontend/e2e/helpers/legal-lifecycle.ts and the depth-ii
 # Day 5 create: the lifecycle Day 0 / depth-ii Day 5 specs take their "account exists" branch on this
@@ -32,7 +32,7 @@ seed_trust_account() {
     return 1
   fi
 
-  _ta_body=$(api_post "/api/trust-accounts" '{
+  _ta_body=$(api_post_trust "/api/trust-accounts" '{
     "accountName": "Mathebula & Partners Trust Account",
     "bankName": "Standard Bank",
     "branchCode": "051001",

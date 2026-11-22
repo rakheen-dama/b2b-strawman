@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { api } from "@/lib/api";
+import { idempotent, unknownOutcome } from "@/lib/idempotency";
 import type { TrustTransaction } from "@/lib/types";
 import type {
   RecordDepositFormData,
@@ -35,6 +36,8 @@ export interface TransactionPage {
 interface ActionResult {
   success: boolean;
   error?: string;
+  /** A failed trust write whose outcome is unknown: the resubmit reuses its Idempotency-Key. */
+  outcomeUnknown?: boolean;
 }
 
 export interface ApproveTransactionResult extends ActionResult {
@@ -87,22 +90,28 @@ export async function fetchTransactions(
 
 export async function recordDeposit(
   accountId: string,
-  data: RecordDepositFormData
+  data: RecordDepositFormData,
+  idempotencyKey: string
 ): Promise<ActionResult> {
   try {
-    await api.post(`/api/trust-accounts/${accountId}/transactions/deposit`, {
-      clientId: data.customerId,
-      matterId: data.projectId || null,
-      amount: data.amount,
-      reference: data.reference,
-      description: data.description || null,
-      transactionDate: data.transactionDate,
-    });
+    await api.post(
+      `/api/trust-accounts/${accountId}/transactions/deposit`,
+      {
+        clientId: data.customerId,
+        matterId: data.projectId || null,
+        amount: data.amount,
+        reference: data.reference,
+        description: data.description || null,
+        transactionDate: data.transactionDate,
+      },
+      idempotent(idempotencyKey)
+    );
     revalidatePath("/", "layout");
     return { success: true };
   } catch (error) {
     return {
       success: false,
+      ...unknownOutcome(error),
       error: error instanceof Error ? error.message : "Failed to record deposit",
     };
   }
@@ -110,22 +119,28 @@ export async function recordDeposit(
 
 export async function recordPayment(
   accountId: string,
-  data: RecordPaymentFormData
+  data: RecordPaymentFormData,
+  idempotencyKey: string
 ): Promise<ActionResult> {
   try {
-    await api.post(`/api/trust-accounts/${accountId}/transactions/payment`, {
-      clientId: data.customerId,
-      matterId: data.projectId || null,
-      amount: data.amount,
-      reference: data.reference,
-      description: data.description || null,
-      transactionDate: data.transactionDate,
-    });
+    await api.post(
+      `/api/trust-accounts/${accountId}/transactions/payment`,
+      {
+        clientId: data.customerId,
+        matterId: data.projectId || null,
+        amount: data.amount,
+        reference: data.reference,
+        description: data.description || null,
+        transactionDate: data.transactionDate,
+      },
+      idempotent(idempotencyKey)
+    );
     revalidatePath("/", "layout");
     return { success: true };
   } catch (error) {
     return {
       success: false,
+      ...unknownOutcome(error),
       error: error instanceof Error ? error.message : "Failed to record payment",
     };
   }
@@ -133,24 +148,30 @@ export async function recordPayment(
 
 export async function recordTransfer(
   accountId: string,
-  data: RecordTransferFormData
+  data: RecordTransferFormData,
+  idempotencyKey: string
 ): Promise<ActionResult> {
   try {
-    await api.post(`/api/trust-accounts/${accountId}/transactions/transfer`, {
-      sourceClientId: data.sourceCustomerId,
-      sourceMatterId: data.projectId || null,
-      targetClientId: data.targetCustomerId,
-      targetMatterId: data.targetProjectId || null,
-      amount: data.amount,
-      reference: data.reference,
-      description: data.description || null,
-      transactionDate: data.transactionDate,
-    });
+    await api.post(
+      `/api/trust-accounts/${accountId}/transactions/transfer`,
+      {
+        sourceClientId: data.sourceCustomerId,
+        sourceMatterId: data.projectId || null,
+        targetClientId: data.targetCustomerId,
+        targetMatterId: data.targetProjectId || null,
+        amount: data.amount,
+        reference: data.reference,
+        description: data.description || null,
+        transactionDate: data.transactionDate,
+      },
+      idempotent(idempotencyKey)
+    );
     revalidatePath("/", "layout");
     return { success: true };
   } catch (error) {
     return {
       success: false,
+      ...unknownOutcome(error),
       error: error instanceof Error ? error.message : "Failed to record transfer",
     };
   }
@@ -158,22 +179,28 @@ export async function recordTransfer(
 
 export async function recordFeeTransfer(
   accountId: string,
-  data: RecordFeeTransferFormData
+  data: RecordFeeTransferFormData,
+  idempotencyKey: string
 ): Promise<ActionResult> {
   try {
-    await api.post(`/api/trust-accounts/${accountId}/transactions/fee-transfer`, {
-      clientId: data.customerId,
-      invoiceId: data.invoiceId,
-      amount: data.amount,
-      reference: data.reference,
-      // Blank means "today" — the server defaults a missing transactionDate to the SA business date.
-      transactionDate: data.transactionDate || null,
-    });
+    await api.post(
+      `/api/trust-accounts/${accountId}/transactions/fee-transfer`,
+      {
+        clientId: data.customerId,
+        invoiceId: data.invoiceId,
+        amount: data.amount,
+        reference: data.reference,
+        // Blank means "today" — the server defaults a missing transactionDate to the SA business date.
+        transactionDate: data.transactionDate || null,
+      },
+      idempotent(idempotencyKey)
+    );
     revalidatePath("/", "layout");
     return { success: true };
   } catch (error) {
     return {
       success: false,
+      ...unknownOutcome(error),
       error: error instanceof Error ? error.message : "Failed to record fee transfer",
     };
   }
@@ -181,22 +208,28 @@ export async function recordFeeTransfer(
 
 export async function recordRefund(
   accountId: string,
-  data: RecordRefundFormData
+  data: RecordRefundFormData,
+  idempotencyKey: string
 ): Promise<ActionResult> {
   try {
-    await api.post(`/api/trust-accounts/${accountId}/transactions/refund`, {
-      clientId: data.customerId,
-      matterId: data.projectId || null,
-      amount: data.amount,
-      reference: data.reference,
-      description: data.description || null,
-      transactionDate: data.transactionDate,
-    });
+    await api.post(
+      `/api/trust-accounts/${accountId}/transactions/refund`,
+      {
+        clientId: data.customerId,
+        matterId: data.projectId || null,
+        amount: data.amount,
+        reference: data.reference,
+        description: data.description || null,
+        transactionDate: data.transactionDate,
+      },
+      idempotent(idempotencyKey)
+    );
     revalidatePath("/", "layout");
     return { success: true };
   } catch (error) {
     return {
       success: false,
+      ...unknownOutcome(error),
       error: error instanceof Error ? error.message : "Failed to record refund",
     };
   }
@@ -204,16 +237,22 @@ export async function recordRefund(
 
 // ── Approval actions ──────────────────────────────────────────────
 
-export async function approveTransaction(transactionId: string): Promise<ApproveTransactionResult> {
+export async function approveTransaction(
+  transactionId: string,
+  idempotencyKey: string
+): Promise<ApproveTransactionResult> {
   try {
     const transaction = await api.post<TrustTransaction>(
-      `/api/trust-transactions/${transactionId}/approve`
+      `/api/trust-transactions/${transactionId}/approve`,
+      undefined,
+      idempotent(idempotencyKey)
     );
     revalidatePath("/", "layout");
     return { success: true, transaction };
   } catch (error) {
     return {
       success: false,
+      ...unknownOutcome(error),
       error: error instanceof Error ? error.message : "Failed to approve transaction",
     };
   }
@@ -221,17 +260,23 @@ export async function approveTransaction(transactionId: string): Promise<Approve
 
 export async function rejectTransaction(
   transactionId: string,
-  reason: string
+  reason: string,
+  idempotencyKey: string
 ): Promise<ActionResult> {
   try {
-    await api.post(`/api/trust-transactions/${transactionId}/reject`, {
-      reason,
-    });
+    await api.post(
+      `/api/trust-transactions/${transactionId}/reject`,
+      {
+        reason,
+      },
+      idempotent(idempotencyKey)
+    );
     revalidatePath("/", "layout");
     return { success: true };
   } catch (error) {
     return {
       success: false,
+      ...unknownOutcome(error),
       error: error instanceof Error ? error.message : "Failed to reject transaction",
     };
   }
@@ -239,19 +284,25 @@ export async function rejectTransaction(
 
 export async function reverseTransaction(
   transactionId: string,
-  data: ReversalReasonFormData
+  data: ReversalReasonFormData,
+  idempotencyKey: string
 ): Promise<ActionResult> {
   try {
-    await api.post(`/api/trust-transactions/${transactionId}/reverse`, {
-      reason: data.reason,
-      // Blank means "today" — the server defaults a missing reversalDate to the SA business date.
-      reversalDate: data.reversalDate || null,
-    });
+    await api.post(
+      `/api/trust-transactions/${transactionId}/reverse`,
+      {
+        reason: data.reason,
+        // Blank means "today" — the server defaults a missing reversalDate to the SA business date.
+        reversalDate: data.reversalDate || null,
+      },
+      idempotent(idempotencyKey)
+    );
     revalidatePath("/", "layout");
     return { success: true };
   } catch (error) {
     return {
       success: false,
+      ...unknownOutcome(error),
       error: error instanceof Error ? error.message : "Failed to reverse transaction",
     };
   }

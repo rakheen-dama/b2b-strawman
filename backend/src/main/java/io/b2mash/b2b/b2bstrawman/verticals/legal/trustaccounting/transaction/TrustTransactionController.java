@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction;
 
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.idempotency.IdempotentTrustWrite;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.CashbookBalanceResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordDepositRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordFeeTransferRequest;
@@ -75,6 +76,7 @@ public class TrustTransactionController {
   }
 
   @PostMapping("/api/trust-accounts/{accountId}/transactions/deposit")
+  @IdempotentTrustWrite
   @RequiresCapability("MANAGE_TRUST")
   public ResponseEntity<TrustTransactionResponse> recordDeposit(
       @PathVariable UUID accountId, @Valid @RequestBody RecordDepositRequest request) {
@@ -83,6 +85,7 @@ public class TrustTransactionController {
   }
 
   @PostMapping("/api/trust-accounts/{accountId}/transactions/payment")
+  @IdempotentTrustWrite
   @RequiresCapability("MANAGE_TRUST")
   public ResponseEntity<TrustTransactionResponse> recordPayment(
       @PathVariable UUID accountId, @Valid @RequestBody RecordPaymentRequest request) {
@@ -91,6 +94,7 @@ public class TrustTransactionController {
   }
 
   @PostMapping("/api/trust-accounts/{accountId}/transactions/transfer")
+  @IdempotentTrustWrite
   @RequiresCapability("MANAGE_TRUST")
   public ResponseEntity<List<TrustTransactionResponse>> recordTransfer(
       @PathVariable UUID accountId, @Valid @RequestBody RecordTransferRequest request) {
@@ -99,6 +103,7 @@ public class TrustTransactionController {
   }
 
   @PostMapping("/api/trust-accounts/{accountId}/transactions/fee-transfer")
+  @IdempotentTrustWrite
   @RequiresCapability("MANAGE_TRUST")
   public ResponseEntity<TrustTransactionResponse> recordFeeTransfer(
       @PathVariable UUID accountId, @Valid @RequestBody RecordFeeTransferRequest request) {
@@ -107,6 +112,7 @@ public class TrustTransactionController {
   }
 
   @PostMapping("/api/trust-accounts/{accountId}/transactions/refund")
+  @IdempotentTrustWrite
   @RequiresCapability("MANAGE_TRUST")
   public ResponseEntity<TrustTransactionResponse> recordRefund(
       @PathVariable UUID accountId, @Valid @RequestBody RecordRefundRequest request) {
@@ -117,6 +123,7 @@ public class TrustTransactionController {
   // --- Approval Endpoints (under /api/trust-transactions/{id}) ---
 
   @PostMapping("/api/trust-transactions/{id}/approve")
+  @IdempotentTrustWrite
   @RequiresCapability("APPROVE_TRUST_PAYMENT")
   public ResponseEntity<TrustTransactionResponse> approveTransaction(@PathVariable UUID id) {
     return ResponseEntity.ok(
@@ -124,6 +131,7 @@ public class TrustTransactionController {
   }
 
   @PostMapping("/api/trust-transactions/{id}/reject")
+  @IdempotentTrustWrite
   @RequiresCapability("APPROVE_TRUST_PAYMENT")
   public ResponseEntity<TrustTransactionResponse> rejectTransaction(
       @PathVariable UUID id, @Valid @RequestBody RejectRequest request) {
@@ -133,6 +141,7 @@ public class TrustTransactionController {
   }
 
   @PostMapping("/api/trust-transactions/{id}/reverse")
+  @IdempotentTrustWrite
   @RequiresCapability("MANAGE_TRUST")
   public ResponseEntity<TrustTransactionResponse> reverseTransaction(
       @PathVariable UUID id, @Valid @RequestBody ReverseRequest request) {

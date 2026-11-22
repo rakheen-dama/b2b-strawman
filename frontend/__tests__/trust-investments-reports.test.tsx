@@ -299,7 +299,8 @@ describe("Trust Investments & Reports", () => {
           accountNumber: "INV-999",
           principal: 100000,
           interestRate: 8.5,
-        })
+        }),
+        expect.any(String)
       );
     });
   });
@@ -420,7 +421,11 @@ describe("Trust Investments & Reports", () => {
     await user.click(within(dialog).getByRole("button", { name: "Confirm Withdrawal" }));
 
     await waitFor(() =>
-      expect(mockWithdrawInvestment).toHaveBeenCalledWith("inv-1", { withdrawalDate: "2026-11-01" })
+      expect(mockWithdrawInvestment).toHaveBeenCalledWith(
+        "inv-1",
+        { withdrawalDate: "2026-11-01" },
+        expect.any(String)
+      )
     );
   });
 
@@ -466,7 +471,11 @@ describe("Trust Investments & Reports", () => {
     fireEvent.change(date, { target: { value: "2026-01-15" } });
     await user.click(within(dialog).getByRole("button", { name: "Confirm Withdrawal" }));
     await waitFor(() =>
-      expect(mockWithdrawInvestment).toHaveBeenCalledWith("inv-1", { withdrawalDate: "2026-01-15" })
+      expect(mockWithdrawInvestment).toHaveBeenCalledWith(
+        "inv-1",
+        { withdrawalDate: "2026-01-15" },
+        expect.any(String)
+      )
     );
   });
 
@@ -596,12 +605,16 @@ describe("Trust Investments & Reports", () => {
 
     await user.click(within(dialog).getByRole("button", { name: "Record interest" }));
     await waitFor(() =>
-      expect(mockRecordInvestmentInterest).toHaveBeenCalledWith("inv-1", {
-        entryDate: "2026-10-31",
-        grossAmount: 400,
-        presentation: "GROSS",
-        bankStatementLineId: "line-400",
-      })
+      expect(mockRecordInvestmentInterest).toHaveBeenCalledWith(
+        "inv-1",
+        {
+          entryDate: "2026-10-31",
+          grossAmount: 400,
+          presentation: "GROSS",
+          bankStatementLineId: "line-400",
+        },
+        expect.any(String)
+      )
     );
   });
 
@@ -700,7 +713,8 @@ describe("Trust Investments & Reports", () => {
     await waitFor(() =>
       expect(mockRecordInvestmentInterest).toHaveBeenCalledWith(
         "inv-1",
-        expect.objectContaining({ entryDate: "2026-11-02", grossAmount: 100, presentation: "NET" })
+        expect.objectContaining({ entryDate: "2026-11-02", grossAmount: 100, presentation: "NET" }),
+        expect.any(String)
       )
     );
     expect(mockRecordInvestmentInterest.mock.calls[0][1]).not.toHaveProperty("bankStatementLineId");
@@ -757,11 +771,15 @@ describe("Trust Investments & Reports", () => {
     fireEvent.change(date, { target: { value: "2026-11-06" } });
     await user.click(within(dialog).getByRole("button", { name: "Record interest" }));
     await waitFor(() =>
-      expect(mockRecordInvestmentInterest).toHaveBeenCalledWith("inv-1", {
-        entryDate: "2026-11-06",
-        grossAmount: 100,
-        presentation: "NET",
-      })
+      expect(mockRecordInvestmentInterest).toHaveBeenCalledWith(
+        "inv-1",
+        {
+          entryDate: "2026-11-06",
+          grossAmount: 100,
+          presentation: "NET",
+        },
+        expect.any(String)
+      )
     );
   });
 
@@ -836,12 +854,16 @@ describe("Trust Investments & Reports", () => {
     expect(gross.value).toBe("400");
     await user.click(within(dialog).getByRole("button", { name: "Record interest" }));
     await waitFor(() =>
-      expect(mockRecordInvestmentInterest).toHaveBeenCalledWith("inv-1", {
-        entryDate: "2026-10-31",
-        grossAmount: 400,
-        presentation: "GROSS",
-        bankStatementLineId: "line-400",
-      })
+      expect(mockRecordInvestmentInterest).toHaveBeenCalledWith(
+        "inv-1",
+        {
+          entryDate: "2026-10-31",
+          grossAmount: 400,
+          presentation: "GROSS",
+          bankStatementLineId: "line-400",
+        },
+        expect.any(String)
+      )
     );
   });
 
@@ -909,11 +931,15 @@ describe("Trust Investments & Reports", () => {
 
     await user.click(within(dialog).getByRole("button", { name: "Record interest" }));
     await waitFor(() =>
-      expect(mockRecordInvestmentInterest).toHaveBeenCalledWith("inv-1", {
-        entryDate: "2026-11-01",
-        grossAmount: 100,
-        presentation: "NET",
-      })
+      expect(mockRecordInvestmentInterest).toHaveBeenCalledWith(
+        "inv-1",
+        {
+          entryDate: "2026-11-01",
+          grossAmount: 100,
+          presentation: "NET",
+        },
+        expect.any(String)
+      )
     );
   });
 

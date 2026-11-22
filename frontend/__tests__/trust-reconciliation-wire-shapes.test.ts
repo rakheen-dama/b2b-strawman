@@ -107,11 +107,15 @@ describe("completeReconciliation refusal (O-OBS-2)", () => {
       new MockApiError(400, detail, { title: "Reconciliation does not balance", detail })
     );
 
-    const result = await completeReconciliation("recon-1", "stmt-1");
+    const result = await completeReconciliation("recon-1", "stmt-1", "idem-key");
 
-    expect(mockPost).toHaveBeenCalledWith("/api/trust-reconciliations/recon-1/complete", {
-      expectedBankStatementId: "stmt-1",
-    });
+    expect(mockPost).toHaveBeenCalledWith(
+      "/api/trust-reconciliations/recon-1/complete",
+      {
+        expectedBankStatementId: "stmt-1",
+      },
+      { headers: { "Idempotency-Key": expect.any(String) } }
+    );
     expect(result).toEqual({
       success: false,
       error: detail,
@@ -126,7 +130,7 @@ describe("completeReconciliation refusal (O-OBS-2)", () => {
       })
     );
 
-    expect(await completeReconciliation("recon-1", "stmt-1")).toEqual({
+    expect(await completeReconciliation("recon-1", "stmt-1", "idem-key")).toEqual({
       success: false,
       error: "Reconciliation already completed",
     });
@@ -135,9 +139,11 @@ describe("completeReconciliation refusal (O-OBS-2)", () => {
   it("returns only the message for a non-API error", async () => {
     mockPost.mockRejectedValue(new Error("fetch failed"));
 
-    expect(await completeReconciliation("recon-1", "stmt-1")).toEqual({
+    expect(await completeReconciliation("recon-1", "stmt-1", "idem-key")).toEqual({
       success: false,
       error: "fetch failed",
+      // no response: the outcome is unknown, so the resubmit keeps its Idempotency-Key (648B F-11)
+      outcomeUnknown: true,
     });
   });
 });
@@ -157,15 +163,23 @@ describe("createReconciliation refusal (652C)", () => {
       new MockApiError(409, detail, { title: "This period is already reconciled", detail })
     );
 
-    const result = await createReconciliation("acc-1", {
-      periodEnd: "2026-03-31",
-      bankStatementId: "stmt-1",
-    });
+    const result = await createReconciliation(
+      "acc-1",
+      {
+        periodEnd: "2026-03-31",
+        bankStatementId: "stmt-1",
+      },
+      "idem-key"
+    );
 
-    expect(mockPost).toHaveBeenCalledWith("/api/trust-accounts/acc-1/reconciliations", {
-      periodEnd: "2026-03-31",
-      bankStatementId: "stmt-1",
-    });
+    expect(mockPost).toHaveBeenCalledWith(
+      "/api/trust-accounts/acc-1/reconciliations",
+      {
+        periodEnd: "2026-03-31",
+        bankStatementId: "stmt-1",
+      },
+      { headers: { "Idempotency-Key": expect.any(String) } }
+    );
     expect(result).toEqual({
       success: false,
       error: detail,
@@ -177,8 +191,12 @@ describe("createReconciliation refusal (652C)", () => {
     mockPost.mockRejectedValue(new Error("fetch failed"));
 
     expect(
-      await createReconciliation("acc-1", { periodEnd: "2026-03-31", bankStatementId: "stmt-1" })
-    ).toEqual({ success: false, error: "fetch failed" });
+      await createReconciliation(
+        "acc-1",
+        { periodEnd: "2026-03-31", bankStatementId: "stmt-1" },
+        "idem-key"
+      )
+    ).toEqual({ success: false, error: "fetch failed", outcomeUnknown: true });
   });
 });
 
@@ -194,11 +212,15 @@ describe("calculateReconciliation sends the reviewed statement (652C)", () => {
   it("posts the expected statement id as the body", async () => {
     mockPost.mockResolvedValue(rec("recon-1"));
 
-    const result = await calculateReconciliation("recon-1", "stmt-1");
+    const result = await calculateReconciliation("recon-1", "stmt-1", "idem-key");
 
-    expect(mockPost).toHaveBeenCalledWith("/api/trust-reconciliations/recon-1/calculate", {
-      expectedBankStatementId: "stmt-1",
-    });
+    expect(mockPost).toHaveBeenCalledWith(
+      "/api/trust-reconciliations/recon-1/calculate",
+      {
+        expectedBankStatementId: "stmt-1",
+      },
+      { headers: { "Idempotency-Key": expect.any(String) } }
+    );
     expect(result.success).toBe(true);
   });
 
@@ -212,7 +234,7 @@ describe("calculateReconciliation sends the reviewed statement (652C)", () => {
       })
     );
 
-    expect(await calculateReconciliation("recon-1", "stmt-1")).toEqual({
+    expect(await calculateReconciliation("recon-1", "stmt-1", "idem-key")).toEqual({
       success: false,
       error: detail,
       errorTitle: "This reconciliation now uses a different statement",

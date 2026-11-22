@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor;
 import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.TrustInterestMemoService.InterestMemoResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.TrustInterestMemoService.SaveInterestMemoRequest;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.idempotency.IdempotentTrustWrite;
 import jakarta.validation.Valid;
 import java.time.YearMonth;
 import java.util.List;
@@ -37,6 +38,7 @@ public class TrustInterestMemoController {
   }
 
   @PutMapping("/api/trust-accounts/{accountId}/interest-memos/{month}")
+  @IdempotentTrustWrite
   @RequiresCapability("MANAGE_TRUST")
   public ResponseEntity<InterestMemoResponse> save(
       @PathVariable UUID accountId,

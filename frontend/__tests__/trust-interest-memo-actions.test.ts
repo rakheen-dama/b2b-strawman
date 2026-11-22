@@ -37,36 +37,50 @@ describe("interest and charges memo actions (650B)", () => {
   it("puts the month's memo with the SaveInterestMemoRequest body, the note trimmed", async () => {
     mockPut.mockResolvedValue({});
 
-    const result = await saveInterestMemo("acc-1", {
-      month: "2026-10",
-      grossInterest: 1234.56,
-      grossCharges: 115,
-      chargesVat: 15,
-      sourceNote: "  FNB advice  ",
-    });
+    const result = await saveInterestMemo(
+      "acc-1",
+      {
+        month: "2026-10",
+        grossInterest: 1234.56,
+        grossCharges: 115,
+        chargesVat: 15,
+        sourceNote: "  FNB advice  ",
+      },
+      "idem-key"
+    );
 
     expect(result).toEqual({ success: true });
-    expect(mockPut).toHaveBeenCalledWith("/api/trust-accounts/acc-1/interest-memos/2026-10", {
-      grossInterest: 1234.56,
-      grossCharges: 115,
-      chargesVat: 15,
-      sourceNote: "FNB advice",
-    });
+    expect(mockPut).toHaveBeenCalledWith(
+      "/api/trust-accounts/acc-1/interest-memos/2026-10",
+      {
+        grossInterest: 1234.56,
+        grossCharges: 115,
+        chargesVat: 15,
+        sourceNote: "FNB advice",
+      },
+      { headers: { "Idempotency-Key": expect.any(String) } }
+    );
     expect(mockRevalidatePath).toHaveBeenCalledWith("/", "layout");
   });
 
   it("returns the server's refusal as error and revalidates nothing", async () => {
     mockPut.mockRejectedValue(
-      new Error("The VAT cannot be more than the gross charges it is included in.")
+      Object.assign(new Error("The VAT cannot be more than the gross charges it is included in."), {
+        status: 400,
+      })
     );
 
-    const result = await saveInterestMemo("acc-1", {
-      month: "2026-10",
-      grossInterest: 0,
-      grossCharges: 10,
-      chargesVat: 20,
-      sourceNote: "FNB advice",
-    });
+    const result = await saveInterestMemo(
+      "acc-1",
+      {
+        month: "2026-10",
+        grossInterest: 0,
+        grossCharges: 10,
+        chargesVat: 20,
+        sourceNote: "FNB advice",
+      },
+      "idem-key"
+    );
 
     expect(result).toEqual({
       success: false,

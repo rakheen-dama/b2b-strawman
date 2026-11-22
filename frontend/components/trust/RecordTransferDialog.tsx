@@ -26,6 +26,7 @@ import { Loader2 } from "lucide-react";
 import { recordTransfer } from "@/app/(app)/org/[slug]/trust-accounting/transactions/actions";
 import { recordTransferSchema, type RecordTransferFormData } from "@/lib/schemas/trust";
 import { LockedMonthWarning } from "./locked-month-warning";
+import { useIdempotencyKey } from "@/hooks/use-idempotency-key";
 
 interface RecordTransferDialogProps {
   accountId: string;
@@ -56,6 +57,7 @@ export function RecordTransferDialog({
   onOpenChange,
   lockedThrough,
 }: RecordTransferDialogProps) {
+  const idempotency = useIdempotencyKey();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -79,7 +81,9 @@ export function RecordTransferDialog({
     setIsSubmitting(true);
 
     try {
-      const result = await recordTransfer(accountId, data);
+      const result = await idempotency.run(["recordTransfer", accountId, data], (idempotencyKey) =>
+        recordTransfer(accountId, data, idempotencyKey)
+      );
       if (result.success) {
         handleOpenChange(false);
       } else {

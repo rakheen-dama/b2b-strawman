@@ -31,6 +31,7 @@ import {
 } from "@/app/(app)/org/[slug]/trust-accounting/other-creditors/actions";
 import { saveInterestMemoSchema, type SaveInterestMemoFormData } from "@/lib/schemas/trust";
 import type { InterestMemo } from "@/lib/types";
+import { useIdempotencyKey } from "@/hooks/use-idempotency-key";
 
 /** Shown for a month whose Rule 54.15 list is locked (650D's posting warning does not apply). */
 export const LOCKED_MONTH_MEMO_NOTE =
@@ -127,6 +128,7 @@ export function InterestMemoDialog({
   triggerVariant = "outline",
   triggerTestId,
 }: InterestMemoDialogProps) {
+  const idempotency = useIdempotencyKey();
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -190,7 +192,10 @@ export function InterestMemoDialog({
     setError(null);
     setIsSubmitting(true);
     try {
-      const result = await saveInterestMemo(trustAccountId, values);
+      const result = await idempotency.run(
+        ["saveInterestMemo", trustAccountId, values],
+        (idempotencyKey) => saveInterestMemo(trustAccountId, values, idempotencyKey)
+      );
       if (!result.success) {
         setError(result.error ?? "Failed to save the memo");
         return;

@@ -1,0 +1,54 @@
+# 648B F-11 green run — the fix (backend) with the bounded-buffering security fix
+# cd backend && ./mvnw test -Dtest='TrustIdempotency*'
+
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0 -- in ...idempotency.TrustIdempotencyFilterTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0 -- in ...idempotency.TrustIdempotencyCoverageTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0 -- in ...idempotency.TrustIdempotencyRedTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0 -- in ...idempotency.TrustIdempotencyInterceptorTest
+[INFO] Tests run: 16, Failures: 0, Errors: 0, Skipped: 0 -- in ...idempotency.TrustIdempotencyIntegrationTest
+[INFO] Tests run: 30, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+
+The red test (TrustIdempotencyRedTest, red-run.txt: 2 postings) now posts once.
+
+Test cases (from target/surefire-reports, <testcase> elements):
+TrustIdempotencyRedTest.aRetryWithTheSameKeyAndTheSameRequest_postsOnce
+TrustIdempotencyIntegrationTest.sameKeySameRequest_postsOnce_andReplaysTheFirstResponseVerbatim
+TrustIdempotencyIntegrationTest.sameKeySameRequest_layoutOfTheJsonDoesNotMatter
+TrustIdempotencyIntegrationTest.aStoredLocationHeaderIsReplayed
+TrustIdempotencyIntegrationTest.sameKeyDifferentBody_isRefusedWith409_andNothingMorePosts
+TrustIdempotencyIntegrationTest.sameKeyOnADifferentEndpoint_isRefusedWith409
+TrustIdempotencyIntegrationTest.sameKeyDifferentMember_isRefusedWith409
+TrustIdempotencyIntegrationTest.anInProgressKey_isRefusedWith409_andNeverReExecuted
+TrustIdempotencyIntegrationTest.aMissingKey_isRefusedWith400_andNothingPosts
+TrustIdempotencyIntegrationTest.aMalformedKey_isRefusedWith400_andNothingPosts
+TrustIdempotencyIntegrationTest.aRefusal_isReplayedForTheSameKey_evenAfterItsCauseIsGone
+TrustIdempotencyIntegrationTest.anOversizedJsonBody_isRefusedWith413_beforeTheKeyIsClaimedOrTheWriteRuns
+TrustIdempotencyIntegrationTest.aBodyJustUnderTheLimit_isAccepted_andReplayed
+TrustIdempotencyIntegrationTest.anUnauthenticatedOversizedRequest_isRefusedBySecurityFirst
+TrustIdempotencyIntegrationTest.concurrentRequestsWithOneKey_exactlyOneExecutes
+TrustIdempotencyIntegrationTest.aStatementImport_isIdempotent_andADifferentFileUnderTheSameKeyIsRefused
+TrustIdempotencyIntegrationTest.thePurge_deletesKeysOlderThanSevenDays_only
+TrustIdempotencyCoverageTest.everyMutatingTrustMappingIsAnIdempotentTrustWrite
+TrustIdempotencyInterceptorTest.aSuccessIsStored
+TrustIdempotencyInterceptorTest.a4xxRefusalIsStored
+TrustIdempotencyInterceptorTest.a5xxLeavesTheKeyInProgress
+TrustIdempotencyInterceptorTest.anUnresolvedExceptionLeavesTheKeyInProgress
+TrustIdempotencyInterceptorTest.anUnannotatedHandlerIsIgnored
+TrustIdempotencyInterceptorTest.aReplayWritesTheStoredResponseAndSkipsTheHandler
+TrustIdempotencyFilterTest.aNormalBodyIsBufferedWhole_andTheResponseIsWrapped
+TrustIdempotencyFilterTest.aDeclaredLengthOverTheLimit_isNotReadAtAll
+TrustIdempotencyFilterTest.aBodyWithoutALength_orWithAFalseOne_isReadAtMostOneBytePastTheLimit
+TrustIdempotencyFilterTest.aMultipartBodyIsNeverBuffered
+TrustIdempotencyFilterTest.withoutAResolvedMember_nothingIsLookedUpOrRead
+TrustIdempotencyFilterTest.anotherEndpointIsPassedThroughUntouched
+
+Guard mutation check: removing @IdempotentTrustWrite from TrustInterestMemoController.save made
+TrustIdempotencyCoverageTest fail with `Expecting empty but was: ["TrustInterestMemoController.save"]`
+(restored afterwards).
+
+Frontend (vitest): __tests__/trust/trust-idempotency-key.test.tsx — 10 passed (key stable across a
+retry within one submit intent, new per intent / after success / after a refusal / for a changed
+request, concurrent identical submits get their own keys, UUID keys, the action sends the
+Idempotency-Key header, unknown-outcome flag, a hook resubmit after a lost response reuses the key on
+the wire).

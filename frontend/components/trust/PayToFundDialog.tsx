@@ -29,6 +29,7 @@ import { payUnidentifiedDepositToFund } from "@/app/(app)/org/[slug]/trust-accou
 import { formatCurrency, formatLocalDate } from "@/lib/format";
 import { payToFundSchema, type PayToFundFormData } from "@/lib/schemas/trust";
 import type { UnidentifiedDeposit } from "@/lib/types";
+import { useIdempotencyKey } from "@/hooks/use-idempotency-key";
 
 interface PayToFundDialogProps {
   /** A held item with no pending allocation or payment. */
@@ -53,6 +54,7 @@ function heldFor(days: number) {
  * (never an adjacent `asChild` trigger — Dialog Trigger Composition).
  */
 export function PayToFundDialog({ item, currency }: PayToFundDialogProps) {
+  const idempotency = useIdempotencyKey();
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -83,7 +85,10 @@ export function PayToFundDialog({ item, currency }: PayToFundDialogProps) {
     setError(null);
     setIsSubmitting(true);
     try {
-      const result = await payUnidentifiedDepositToFund(item.id, values);
+      const result = await idempotency.run(
+        ["payUnidentifiedDepositToFund", item.id, values],
+        (idempotencyKey) => payUnidentifiedDepositToFund(item.id, values, idempotencyKey)
+      );
       if (!result.success) {
         setError(result.error ?? "Failed to request the payment to the Fund");
         return;

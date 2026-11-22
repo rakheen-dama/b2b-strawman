@@ -19,6 +19,7 @@ import {
   fetchInvestmentInterest,
   reverseInvestmentInterest,
 } from "@/app/(app)/org/[slug]/trust-accounting/investments/actions";
+import { useIdempotencyKey } from "@/hooks/use-idempotency-key";
 
 interface InvestmentInterestEntriesDialogProps {
   investmentId: string;
@@ -43,6 +44,7 @@ export function InvestmentInterestEntriesDialog({
   onOpenChange,
   onReversed,
 }: InvestmentInterestEntriesDialogProps) {
+  const idempotency = useIdempotencyKey();
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -71,7 +73,10 @@ export function InvestmentInterestEntriesDialog({
     setError(null);
     setIsSubmitting(true);
     try {
-      const result = await reverseInvestmentInterest(interestId);
+      const result = await idempotency.run(
+        ["reverseInvestmentInterest", interestId],
+        (idempotencyKey) => reverseInvestmentInterest(interestId, idempotencyKey)
+      );
       if (result.success) {
         setConfirmingId(null);
         await mutate();

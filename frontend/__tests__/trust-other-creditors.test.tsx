@@ -743,12 +743,16 @@ describe("Other trust creditors page", () => {
     await user.click(within(dialog).getByTestId("allocate-submit"));
 
     await waitFor(() =>
-      expect(mockAllocateUnidentifiedDeposit).toHaveBeenCalledWith("ud-1", {
-        customerId: CLIENT.id,
-        projectId: MATTER.id,
-        allocationDate: todayInSA(),
-        notes: "",
-      })
+      expect(mockAllocateUnidentifiedDeposit).toHaveBeenCalledWith(
+        "ud-1",
+        {
+          customerId: CLIENT.id,
+          projectId: MATTER.id,
+          allocationDate: todayInSA(),
+          notes: "",
+        },
+        expect.any(String)
+      )
     );
     expect(await within(dialog).findByRole("alert")).toHaveTextContent(
       "This deposit already has a pending allocation or payment"
@@ -781,11 +785,15 @@ describe("Other trust creditors page", () => {
     await user.type(within(dialog).getByTestId("pay-to-fund-reference"), "LPFF-UID-1");
     await user.click(within(dialog).getByTestId("pay-to-fund-submit"));
     await waitFor(() =>
-      expect(mockPayUnidentifiedDepositToFund).toHaveBeenCalledWith("ud-young", {
-        reference: "LPFF-UID-1",
-        transactionDate: todayInSA(),
-        notes: "",
-      })
+      expect(mockPayUnidentifiedDepositToFund).toHaveBeenCalledWith(
+        "ud-young",
+        {
+          reference: "LPFF-UID-1",
+          transactionDate: todayInSA(),
+          notes: "",
+        },
+        expect.any(String)
+      )
     );
     await waitFor(() => expect(screen.queryByTestId("pay-to-fund-dialog")).not.toBeInTheDocument());
 
@@ -1021,13 +1029,17 @@ describe("Other trust creditors page", () => {
     await user.click(within(dialog).getByTestId("interest-memo-submit"));
 
     await waitFor(() =>
-      expect(mockSaveInterestMemo).toHaveBeenCalledWith("acc-1", {
-        month: "2026-09",
-        grossInterest: 500.25,
-        grossCharges: 20,
-        chargesVat: 2.61,
-        sourceNote: "FNB advice SEP",
-      })
+      expect(mockSaveInterestMemo).toHaveBeenCalledWith(
+        "acc-1",
+        {
+          month: "2026-09",
+          grossInterest: 500.25,
+          grossCharges: 20,
+          chargesVat: 2.61,
+          sourceNote: "FNB advice SEP",
+        },
+        expect.any(String)
+      )
     );
     expect(await within(dialog).findByRole("alert")).toHaveTextContent(
       "A memo can be saved for this month or an earlier one, not for December 2026."

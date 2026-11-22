@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateTrustAccountRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.TrustAccountResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.UpdateTrustAccountRequest;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.idempotency.IdempotentTrustWrite;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
@@ -41,6 +42,7 @@ public class TrustAccountingController {
   }
 
   @PostMapping
+  @IdempotentTrustWrite
   @RequiresCapability("MANAGE_TRUST")
   public ResponseEntity<TrustAccountResponse> create(
       @Valid @RequestBody CreateTrustAccountRequest request) {
@@ -49,6 +51,7 @@ public class TrustAccountingController {
   }
 
   @PutMapping("/{id}")
+  @IdempotentTrustWrite
   @RequiresCapability("MANAGE_TRUST")
   public ResponseEntity<TrustAccountResponse> update(
       @PathVariable UUID id, @Valid @RequestBody UpdateTrustAccountRequest request) {
@@ -56,6 +59,7 @@ public class TrustAccountingController {
   }
 
   @PostMapping("/{id}/close")
+  @IdempotentTrustWrite
   @RequiresCapability("MANAGE_TRUST")
   public ResponseEntity<TrustAccountResponse> close(@PathVariable UUID id) {
     return ResponseEntity.ok(trustAccountService.closeTrustAccount(id));

@@ -1,0 +1,17 @@
+# 648B F-11 red run — unmodified code at main 34f45c071 (only the red test added)
+# cd backend && ./mvnw test -Dtest=TrustIdempotencyRedTest
+# The test POSTs the same deposit twice with the same Idempotency-Key (a lost-response retry)
+# and counts trust_transactions rows with that reference.
+
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 28.10 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.idempotency.TrustIdempotencyRedTest
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.idempotency.TrustIdempotencyRedTest.aRetryWithTheSameKeyAndTheSameRequest_postsOnce -- Time elapsed: 0.721 s <<< FAILURE!
+org.opentest4j.AssertionFailedError:
+[deposits posted for one submit intent]
+expected: 1L
+ but was: 2L
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.idempotency.TrustIdempotencyRedTest.aRetryWithTheSameKeyAndTheSameRequest_postsOnce(TrustIdempotencyRedTest.java:120)
+
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0
+[INFO] BUILD FAILURE
+
+Reproduced: the retry posted a second deposit (2 rows for one submit intent).

@@ -39,6 +39,7 @@ import { CreateTrustAccountDialog } from "@/components/trust/CreateTrustAccountD
 import { placeInvestmentSchema, type PlaceInvestmentFormData } from "@/lib/schemas/trust";
 import type { InvestmentBasis, TrustAccount } from "@/lib/types/trust";
 import { placeInvestment } from "@/app/(app)/org/[slug]/trust-accounting/investments/actions";
+import { useIdempotencyKey } from "@/hooks/use-idempotency-key";
 
 const INVESTMENT_BASIS_HELP: Record<InvestmentBasis, string> = {
   FIRM_DISCRETION:
@@ -84,6 +85,7 @@ export function PlaceInvestmentDialog({
   onOpenChange,
   onSuccess,
 }: PlaceInvestmentDialogProps) {
+  const idempotency = useIdempotencyKey();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -135,7 +137,9 @@ export function PlaceInvestmentDialog({
     setIsSubmitting(true);
 
     try {
-      const result = await placeInvestment(accountId, data);
+      const result = await idempotency.run(["placeInvestment", accountId, data], (idempotencyKey) =>
+        placeInvestment(accountId, data, idempotencyKey)
+      );
       if (result.success) {
         onSuccess();
         router.refresh();

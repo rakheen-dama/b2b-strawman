@@ -629,7 +629,8 @@ describe("Trust Transactions", () => {
           customerId: "550e8400-e29b-41d4-a716-446655440000",
           projectId: "770e8400-e29b-41d4-a716-446655440002",
           reference: "DEP/2026/TEST",
-        })
+        }),
+        expect.any(String)
       );
     });
   });
@@ -763,7 +764,8 @@ describe("Trust Transactions", () => {
         expect.objectContaining({
           projectId: "770e8400-e29b-41d4-a716-446655440002",
           targetProjectId: "880e8400-e29b-41d4-a716-446655440003",
-        })
+        }),
+        expect.any(String)
       );
     });
   });
@@ -996,10 +998,14 @@ describe("Trust Transactions", () => {
     await user.click(screen.getByTestId("confirm-reverse-button"));
 
     await waitFor(() => {
-      expect(mockReverseTransaction).toHaveBeenCalledWith("tx-approved", {
-        reason: "Duplicate entry",
-        reversalDate: "",
-      });
+      expect(mockReverseTransaction).toHaveBeenCalledWith(
+        "tx-approved",
+        {
+          reason: "Duplicate entry",
+          reversalDate: "",
+        },
+        expect.any(String)
+      );
     });
   });
 
@@ -1024,10 +1030,14 @@ describe("Trust Transactions", () => {
     await user.click(screen.getByTestId("confirm-reverse-button"));
 
     await waitFor(() => {
-      expect(mockReverseTransaction).toHaveBeenCalledWith("tx-approved", {
-        reason: "Bank returned the payment",
-        reversalDate: "2026-04-15",
-      });
+      expect(mockReverseTransaction).toHaveBeenCalledWith(
+        "tx-approved",
+        {
+          reason: "Bank returned the payment",
+          reversalDate: "2026-04-15",
+        },
+        expect.any(String)
+      );
     });
   });
 
@@ -1135,7 +1145,8 @@ describe("Trust Transactions", () => {
     await waitFor(() =>
       expect(mockRecordFeeTransfer).toHaveBeenCalledWith(
         "acc-1",
-        expect.objectContaining({ transactionDate: "2026-03-15", reference: "FEE/2026/BACK" })
+        expect.objectContaining({ transactionDate: "2026-03-15", reference: "FEE/2026/BACK" }),
+        expect.any(String)
       )
     );
   });
@@ -1187,7 +1198,8 @@ describe("Trust Transactions", () => {
     await waitFor(() =>
       expect(mockRecordDeposit).toHaveBeenCalledWith(
         "acc-1",
-        expect.objectContaining({ transactionDate: "2026-03-15", reference: "DEP/2026/BACK" })
+        expect.objectContaining({ transactionDate: "2026-03-15", reference: "DEP/2026/BACK" }),
+        expect.any(String)
       )
     );
   });

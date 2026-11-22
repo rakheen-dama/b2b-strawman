@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.UnidentifiedDepositService.AllocateRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.UnidentifiedDepositService.PayToFundRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.UnidentifiedDepositService.UnidentifiedDepositResponse;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.idempotency.IdempotentTrustWrite;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -35,6 +36,7 @@ public class UnidentifiedDepositController {
   }
 
   @PostMapping("/api/unidentified-deposits/{depositId}/allocate")
+  @IdempotentTrustWrite
   @RequiresCapability("MANAGE_TRUST")
   public ResponseEntity<UnidentifiedDepositResponse> allocate(
       @PathVariable UUID depositId, @Valid @RequestBody AllocateRequest request) {
@@ -42,6 +44,7 @@ public class UnidentifiedDepositController {
   }
 
   @PostMapping("/api/unidentified-deposits/{depositId}/pay-to-fund")
+  @IdempotentTrustWrite
   @RequiresCapability("MANAGE_TRUST")
   public ResponseEntity<UnidentifiedDepositResponse> payToFund(
       @PathVariable UUID depositId, @Valid @RequestBody PayToFundRequest request) {

@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment;
 
 import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.idempotency.IdempotentTrustWrite;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.InvestmentInterestResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.PlaceInvestmentRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.RecordInvestmentInterestRequest;
@@ -52,6 +53,7 @@ public class TrustInvestmentController {
 
   /** {@code accountId} is the funding trust banking account (648A). */
   @PostMapping("/api/trust-accounts/{accountId}/investments")
+  @IdempotentTrustWrite
   @RequiresCapability("MANAGE_TRUST")
   public ResponseEntity<TrustInvestmentResponse> placeInvestment(
       @PathVariable UUID accountId, @Valid @RequestBody PlaceInvestmentRequest request) {
@@ -61,6 +63,7 @@ public class TrustInvestmentController {
 
   /** 648B (§16.4.5): a section 86(4) interest entry — replaces the typed {@code PUT}. */
   @PostMapping("/api/trust-investments/{investmentId}/interest")
+  @IdempotentTrustWrite
   @RequiresCapability("MANAGE_TRUST")
   public ResponseEntity<InvestmentInterestResponse> recordInterest(
       @PathVariable UUID investmentId,
@@ -77,12 +80,14 @@ public class TrustInvestmentController {
   }
 
   @PostMapping("/api/trust-investment-interest/{interestId}/reverse")
+  @IdempotentTrustWrite
   @RequiresCapability("MANAGE_TRUST")
   public ResponseEntity<InvestmentInterestResponse> reverseInterest(@PathVariable UUID interestId) {
     return ResponseEntity.ok(investmentService.reverseInterest(interestId));
   }
 
   @PostMapping("/api/trust-investments/{investmentId}/withdraw")
+  @IdempotentTrustWrite
   @RequiresCapability("MANAGE_TRUST")
   public ResponseEntity<TrustInvestmentResponse> withdrawInvestment(
       @PathVariable UUID investmentId, @Valid @RequestBody WithdrawInvestmentRequest request) {

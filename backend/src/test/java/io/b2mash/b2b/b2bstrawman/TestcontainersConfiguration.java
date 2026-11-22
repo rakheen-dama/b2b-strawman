@@ -4,13 +4,16 @@ import io.b2mash.b2b.b2bstrawman.infrastructure.testutil.EmbeddedPostgresDirecto
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.testutil.InMemoryStorageService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestAiConfiguration;
+import io.b2mash.b2b.b2bstrawman.testutil.TestIdempotency;
 import io.zonky.test.db.postgres.embedded.EmbeddedPostgres;
 import java.io.IOException;
 import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.webmvc.test.autoconfigure.MockMvcBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.test.context.DynamicPropertyRegistrar;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 /**
  * Test infrastructure: embedded Postgres (no Docker) + in-memory StorageService (no LocalStack).
@@ -103,5 +106,17 @@ public class TestcontainersConfiguration {
   @Primary
   StorageService inMemoryStorageService() {
     return new InMemoryStorageService();
+  }
+
+  /**
+   * Every trust write requires an {@code Idempotency-Key} (648B F-11): a fresh key on every
+   * mutating MockMvc request that has none, so tests that do not exercise the protocol post as
+   * before. Declared here (not in a new imported config) so it adds no context-cache key.
+   */
+  @Bean
+  MockMvcBuilderCustomizer idempotencyKeyDefault() {
+    return builder ->
+        builder.defaultRequest(
+            MockMvcRequestBuilders.get("/").with(TestIdempotency.freshKeyIfAbsent()));
   }
 }

@@ -1,0 +1,17 @@
+00:54:02.568 [main] INFO com.tngtech.archunit.ArchConfiguration -- Reading ArchUnit properties from file:/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-a2a733b130d3017df/backend/target/test-classes/archunit.properties
+00:54:02.662 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report.ClientLedgerStatementReversalReasonIntegrationTest]: ClientLedgerStatementReversalReasonIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+00:54:02.864 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration io.b2mash.b2b.b2bstrawman.BackendApplication for test class io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report.ClientLedgerStatementReversalReasonIntegrationTest
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by net.bytebuddy.dynamic.loading.ClassInjector$UsingUnsafe$Dispatcher$CreationAction (file:/Users/rakheendama/.m2/repository/net/bytebuddy/byte-buddy/1.17.8/byte-buddy-1.17.8.jar)
+WARNING: Please consider reporting this to the maintainers of class net.bytebuddy.dynamic.loading.ClassInjector$UsingUnsafe$Dispatcher$CreationAction
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/Users/rakheendama/.m2/repository/net/bytebuddy/byte-buddy-agent/1.17.8/byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+com.openhtmltopdf.load INFO:: TIME: parse stylesheets 24ms
+com.openhtmltopdf.match INFO:: Matcher created with 180 selectors
+com.openhtmltopdf.general INFO:: Using fast-mode renderer. Prepare to fly.
+BUILD OK: Tests run: 2, Failures: 0, Errors: 0 (ClientLedgerStatementReversalReasonIntegrationTest)

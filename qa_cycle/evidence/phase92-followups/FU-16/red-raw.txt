@@ -1,0 +1,104 @@
+12:12:59.779 [main] INFO com.tngtech.archunit.ArchConfiguration -- Reading ArchUnit properties from file:/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-a1006eab704f07d46/backend/target/test-classes/archunit.properties
+12:12:59.886 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.ReversedOriginalMatchIntegrationTest]: ReversedOriginalMatchIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+12:13:00.087 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration io.b2mash.b2b.b2bstrawman.BackendApplication for test class io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.ReversedOriginalMatchIntegrationTest
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/Users/rakheendama/.m2/repository/net/bytebuddy/byte-buddy-agent/1.17.8/byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by net.bytebuddy.dynamic.loading.ClassInjector$UsingUnsafe$Dispatcher$CreationAction (file:/Users/rakheendama/.m2/repository/net/bytebuddy/byte-buddy/1.17.8/byte-buddy-1.17.8.jar)
+WARNING: Please consider reporting this to the maintainers of class net.bytebuddy.dynamic.loading.ClassInjector$UsingUnsafe$Dispatcher$CreationAction
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+[ERROR] Tests run: 21, Failures: 7, Errors: 0, Skipped: 0, Time elapsed: 24.39 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.ReversedOriginalMatchIntegrationTest
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.ReversedOriginalMatchIntegrationTest.autoMatch_reversedOriginalStaysShadowedByALiveRowMatchedByHand -- Time elapsed: 0.098 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+[line 1 status] 
+expected: "UNMATCHED"
+ but was: "AUTO_MATCHED"
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.ReversedOriginalMatchIntegrationTest.assertLineLeftForAHuman(ReversedOriginalMatchIntegrationTest.java:804)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.ReversedOriginalMatchIntegrationTest.autoMatch_reversedOriginalStaysShadowedByALiveRowMatchedByHand(ReversedOriginalMatchIntegrationTest.java:793)
+
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.ReversedOriginalMatchIntegrationTest.autoMatch_reversedOriginalStaysShadowedByALiveRowLinkedOnAnEarlierStatement -- Time elapsed: 0.086 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+[line 0 status] 
+expected: "UNMATCHED"
+ but was: "AUTO_MATCHED"
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.ReversedOriginalMatchIntegrationTest.assertLineLeftForAHuman(ReversedOriginalMatchIntegrationTest.java:804)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.ReversedOriginalMatchIntegrationTest.autoMatch_reversedOriginalStaysShadowedByALiveRowLinkedOnAnEarlierStatement(ReversedOriginalMatchIntegrationTest.java:764)
+
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.ReversedOriginalMatchIntegrationTest.autoMatch_doesNotLetAContraAbsorbAnUnrelatedLineByAmountAndDate -- Time elapsed: 0.063 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+[line 0 status] 
+expected: "UNMATCHED"
+ but was: "AUTO_MATCHED"
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.ReversedOriginalMatchIntegrationTest.assertLineLeftForAHuman(ReversedOriginalMatchIntegrationTest.java:804)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.ReversedOriginalMatchIntegrationTest.autoMatch_doesNotLetAContraAbsorbAnUnrelatedLineByAmountAndDate(ReversedOriginalMatchIntegrationTest.java:605)
+
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.ReversedOriginalMatchIntegrationTest.autoMatch_leavesAContrasOwnLineWithoutItsReferenceForAHuman_manualMatchAcceptsIt -- Time elapsed: 0.062 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+[line 1 status] 
+expected: "UNMATCHED"
+ but was: "AUTO_MATCHED"
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.ReversedOriginalMatchIntegrationTest.assertLineLeftForAHuman(ReversedOriginalMatchIntegrationTest.java:804)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.ReversedOriginalMatchIntegrationTest.autoMatch_leavesAContrasOwnLineWithoutItsReferenceForAHuman_manualMatchAcceptsIt(ReversedOriginalMatchIntegrationTest.java:720)
+
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.ReversedOriginalMatchIntegrationTest.autoMatch_doesNotLetAnUnrecordContraAbsorbAnUnrelatedLine -- Time elapsed: 0.042 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+[line 1 status] 
+expected: "UNMATCHED"
+ but was: "AUTO_MATCHED"
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.ReversedOriginalMatchIntegrationTest.assertLineLeftForAHuman(ReversedOriginalMatchIntegrationTest.java:804)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.ReversedOriginalMatchIntegrationTest.autoMatch_doesNotLetAnUnrecordContraAbsorbAnUnrelatedLine(ReversedOriginalMatchIntegrationTest.java:691)
+
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.ReversedOriginalMatchIntegrationTest.autoMatch_doesNotSuggestAContraForAnUnrelatedLineByAmountAndCloseDate -- Time elapsed: 0.054 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+[line 0: no row suggested] 
+expected: null
+ but was: 8f823754-43c3-4e60-a1c4-c274cc6e82ca
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.ReversedOriginalMatchIntegrationTest.assertLineLeftForAHuman(ReversedOriginalMatchIntegrationTest.java:805)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.ReversedOriginalMatchIntegrationTest.autoMatch_doesNotSuggestAContraForAnUnrelatedLineByAmountAndCloseDate(ReversedOriginalMatchIntegrationTest.java:661)
+
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.ReversedOriginalMatchIntegrationTest.autoMatch_doesNotLetAContraAbsorbAnUnrelatedLineOnALaterStatement -- Time elapsed: 0.055 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+[line 0 status] 
+expected: "UNMATCHED"
+ but was: "AUTO_MATCHED"
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.ReversedOriginalMatchIntegrationTest.assertLineLeftForAHuman(ReversedOriginalMatchIntegrationTest.java:804)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.ReversedOriginalMatchIntegrationTest.autoMatch_doesNotLetAContraAbsorbAnUnrelatedLineOnALaterStatement(ReversedOriginalMatchIntegrationTest.java:636)
+
+[ERROR] Failures: 
+[ERROR]   ReversedOriginalMatchIntegrationTest.autoMatch_doesNotLetAContraAbsorbAnUnrelatedLineByAmountAndDate:605->assertLineLeftForAHuman:804 [line 0 status] 
+expected: "UNMATCHED"
+ but was: "AUTO_MATCHED"
+[ERROR]   ReversedOriginalMatchIntegrationTest.autoMatch_doesNotLetAContraAbsorbAnUnrelatedLineOnALaterStatement:636->assertLineLeftForAHuman:804 [line 0 status] 
+expected: "UNMATCHED"
+ but was: "AUTO_MATCHED"
+[ERROR]   ReversedOriginalMatchIntegrationTest.autoMatch_doesNotLetAnUnrecordContraAbsorbAnUnrelatedLine:691->assertLineLeftForAHuman:804 [line 1 status] 
+expected: "UNMATCHED"
+ but was: "AUTO_MATCHED"
+[ERROR]   ReversedOriginalMatchIntegrationTest.autoMatch_doesNotSuggestAContraForAnUnrelatedLineByAmountAndCloseDate:661->assertLineLeftForAHuman:805 [line 0: no row suggested] 
+expected: null
+ but was: 8f823754-43c3-4e60-a1c4-c274cc6e82ca
+[ERROR]   ReversedOriginalMatchIntegrationTest.autoMatch_leavesAContrasOwnLineWithoutItsReferenceForAHuman_manualMatchAcceptsIt:720->assertLineLeftForAHuman:804 [line 1 status] 
+expected: "UNMATCHED"
+ but was: "AUTO_MATCHED"
+[ERROR]   ReversedOriginalMatchIntegrationTest.autoMatch_reversedOriginalStaysShadowedByALiveRowLinkedOnAnEarlierStatement:764->assertLineLeftForAHuman:804 [line 0 status] 
+expected: "UNMATCHED"
+ but was: "AUTO_MATCHED"
+[ERROR]   ReversedOriginalMatchIntegrationTest.autoMatch_reversedOriginalStaysShadowedByALiveRowMatchedByHand:793->assertLineLeftForAHuman:804 [line 1 status] 
+expected: "UNMATCHED"
+ but was: "AUTO_MATCHED"
+[ERROR] Tests run: 21, Failures: 7, Errors: 0, Skipped: 0
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.5.4:test (default-test) on project b2b-strawman-backend: There are test failures.
+[ERROR] 
+[ERROR] See /Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-a1006eab704f07d46/backend/target/surefire-reports for the individual test results.
+[ERROR] See dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

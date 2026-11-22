@@ -336,6 +336,27 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
       @Param("endDate") LocalDate endDate);
 
   /**
+   * The live posted rows (RECORDED or APPROVED, not REVERSED) already matched to a bank statement
+   * line, within the date range — the complement of {@link #findUnmatchedCandidates} for live rows.
+   * Auto-match reads them only to decide whether a REVERSED original is shadowed by a live row of
+   * its amount and sign (FU-16, 652H M-1); they are never match candidates.
+   */
+  @Query(
+      """
+      SELECT t FROM TrustTransaction t
+      WHERE t.trustAccountId = :trustAccountId
+        AND t.postedAt IS NOT NULL
+        AND t.status <> 'REVERSED'
+        AND t.bankStatementLineId IS NOT NULL
+        AND t.transactionDate >= :startDate
+        AND t.transactionDate <= :endDate
+      """)
+  List<TrustTransaction> findLinkedLiveRows(
+      @Param("trustAccountId") UUID trustAccountId,
+      @Param("startDate") LocalDate startDate,
+      @Param("endDate") LocalDate endDate);
+
+  /**
    * Fetches every posted transaction ({@code posted_at} set) for a trust account whose own {@code
    * transaction_date} falls in the range, ordered by date ASC. A reversed original (status {@code
    * REVERSED}) and its {@code REVERSAL} contra are both included, each on its own date with its own

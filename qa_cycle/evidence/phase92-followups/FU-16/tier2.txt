@@ -1,0 +1,45 @@
+FU-16 Tier 2 — fix applied on base d0098d179 (same content as the PR head)
+Pre-step: cd backend && ./mvnw -q spotless:apply   (exit 0)
+Command:  cd backend && ./mvnw -q test -Dtest='io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.**,io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.**,io.b2mash.b2b.b2bstrawman.architecture.**'
+Result:   Maven exit 0. 34 classes (= every *Test.java in the three packages), 436 <testcase> elements
+          (counted from target/surefire-reports/TEST-*.xml), 0 failures, 0 errors, 0 skipped.
+
+Every caller of the changed code (TrustReconciliationService.autoMatchStatement, the new
+TrustTransactionRepository.findLinkedLiveRows) and every test that runs auto-match lives in the
+reconciliation package (grep "autoMatch|auto.match" in backend/src/test), so it is covered above.
+
+Per class:
+3 testcases, 0 failures/errors — architecture.LayerDependencyRulesTest
+3 testcases, 0 failures/errors — architecture.PortalLinkBuilderArchTest
+2 testcases, 0 failures/errors — architecture.PortalReadModelOrgScopingGuardTest
+5 testcases, 0 failures/errors — architecture.TenantScopeBindingTest
+6 testcases, 0 failures/errors — architecture.TerminologyRemnantScanTest
+3 testcases, 0 failures/errors — architecture.TestConventionsTest
+5 testcases, 0 failures/errors — architecture.ZoneAwareTimeArchTest
+7 testcases, 0 failures/errors — reconciliation.AutoMatchLockOrderIntegrationTest
+4 testcases, 0 failures/errors — reconciliation.BankStatementImportErrorIntegrationTest
+19 testcases, 0 failures/errors — reconciliation.BankStatementReplaceDiscardIntegrationTest
+21 testcases, 0 failures/errors — reconciliation.ReversedOriginalMatchIntegrationTest
+31 testcases, 0 failures/errors — reconciliation.StatementLinePostingIntegrationTest
+15 testcases, 0 failures/errors — reconciliation.TrustReconciliationCompletionGateIntegrationTest
+10 testcases, 0 failures/errors — reconciliation.TrustReconciliationControllerTest
+10 testcases, 0 failures/errors — reconciliation.TrustReconciliationDraftIntegrationTest
+16 testcases, 0 failures/errors — reconciliation.TrustReconciliationServiceMatchingTest
+17 testcases, 0 failures/errors — reconciliation.TrustReconciliationServiceReconciliationTest
+60 testcases, 0 failures/errors — reconciliation.parser.BankStatementParserTest
+6 testcases, 0 failures/errors — transaction.BackDatedReversalCoverIntegrationTest
+10 testcases, 0 failures/errors — transaction.CashbookCoverAtApprovalIntegrationTest
+12 testcases, 0 failures/errors — transaction.TrustClientMatterRequiredIntegrationTest
+8 testcases, 0 failures/errors — transaction.TrustFeeTransferReversalCascadeTest
+8 testcases, 0 failures/errors — transaction.TrustMatterDebitGuardIntegrationTest
+5 testcases, 0 failures/errors — transaction.TrustPostingDateZoneIntegrationTest
+2 testcases, 0 failures/errors — transaction.TrustPostingRulesTest
+6 testcases, 0 failures/errors — transaction.TrustPostingServiceRecordWithPairTest
+15 testcases, 0 failures/errors — transaction.TrustReversalEquationIntegrationTest
+18 testcases, 0 failures/errors — transaction.TrustTransactionControllerTest
+48 testcases, 0 failures/errors — transaction.TrustTransactionServiceTest
+4 testcases, 0 failures/errors — transaction.TrustTransactionTypeControllerTest
+34 testcases, 0 failures/errors — transaction.TrustTransactionTypeLabelsTest
+18 testcases, 0 failures/errors — transaction.TrustTransactionTypeRegistryTest
+1 testcases, 0 failures/errors — transaction.TrustTransactionTypeSchemaTest
+4 testcases, 0 failures/errors — transaction.TrustTransferTargetMatterIntegrationTest

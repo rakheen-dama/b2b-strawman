@@ -1,0 +1,28 @@
+FU-16 (a) 652H M-1 — REPRODUCED (red) on unmodified main d0098d1793f98be7cd413e01bd1ef6f743e3344c
+Production code untouched; only the new tests in ReversedOriginalMatchIntegrationTest were added.
+Command: cd backend && ./mvnw -q test -Dtest='ReversedOriginalMatchIntegrationTest'
+Full surefire console log: red-raw.txt (this directory)
+
+Class result:
+[ERROR] Tests run: 21, Failures: 7, Errors: 0, Skipped: 0   (14 pre-existing green; 2 M-1 red below, 5 HF-7 in red-HF-7.txt)
+
+In both cases the reversed original R is the only unlinked posted +1 000 row, so the AUTO_MATCHED
+row on main is R.
+
+1. autoMatch_reversedOriginalStaysShadowedByALiveRowLinkedOnAnEarlierStatement  (cross-statement)
+   R DEP-55 1 000 on 28 Mar (wrong client), reversed 29 Mar (C), re-entered as G DEP-55 on 30 Mar.
+   March statement: one +1 000 DEP-55 line on 28 Mar -> auto-matched to G (R shadowed; green on main).
+   April statement: a further unbooked +1 000 DEP-55 line on 2 Apr; R (28 Mar) is in April's window.
+   ReversedOriginalMatchIntegrationTest.autoMatch_reversedOriginalStaysShadowedByALiveRowLinkedOnAnEarlierStatement:764->assertLineLeftForAHuman:804 [line 0 status]
+   expected: "UNMATCHED"
+    but was: "AUTO_MATCHED"
+
+2. autoMatch_reversedOriginalStaysShadowedByALiveRowMatchedByHand  (same statement, G matched by hand)
+   R DEP-66 1 000 on 1 Mar reversed 2 Mar, G DEP-66 on 4 Mar. Statement: two +1 000 DEP-66 lines
+   (4 and 5 Mar); line 0 manually matched to G, then auto-match.
+   ReversedOriginalMatchIntegrationTest.autoMatch_reversedOriginalStaysShadowedByALiveRowMatchedByHand:793->assertLineLeftForAHuman:804 [line 1 status]
+   expected: "UNMATCHED"
+    but was: "AUTO_MATCHED"
+
+Severity: LOW (source). Root cause: withAutoMatchableReversedOriginalsOnly decides shadowing from the
+run's pool, which findUnmatchedCandidates limits to bankStatementLineId IS NULL — a linked G is invisible.

@@ -53,6 +53,9 @@ import org.springframework.test.web.servlet.MockMvc;
  * reversed row, whatever reference the line carries, and an unrelated line of its amount is never
  * absorbed by it. Anything else is left for a human (manual match).
  *
+ * <p>FU-16: a live row already linked to a line also shadows a REVERSED original (652H M-1), and a
+ * {@code REVERSAL} contra, like its original, auto-matches only on its own reference (HF-7).
+ *
  * <p>One harness tenant, a fresh account per test; the class ends with {@code assertFirmBalanced}.
  */
 @SpringBootTest
@@ -576,7 +579,235 @@ class ReversedOriginalMatchIntegrationTest {
     assertStillReversedBy(reEntered.reversed(), reEntered.contra());
   }
 
+  // --- FU-16 (b) HF-7: a contra auto-matches only its own line, by its own reference ------------
+
+  /**
+   * HF-7, same statement, tier 2: a deposit R of R1 000 recorded in error on 1 March (never
+   * received) is reversed on 2 March by contra C (-1 000, dated 2 March). The bank shows an
+   * unrelated -1 000 payment on 2 March under its own reference — never booked. C must not be
+   * linked to that line (not matched, not suggested): the line stays unresolved and G4 keeps the
+   * month open. RED on main: C is the only -1 000 row dated 2 March, so tier 2 AUTO_MATCHES the
+   * line to C — R then sits as an outstanding deposit and the month "balances" with an unbooked
+   * payment.
+   */
+  @Test
+  void autoMatch_doesNotLetAContraAbsorbAnUnrelatedLineByAmountAndDate() {
+    var account = books.freshAccount(false);
+    var client = books.newClient("hf7 same statement");
+    var originalId = depositOn(account, client, "H-HF7-11", LocalDate.of(2026, 3, 1));
+    var contra = books.reverse(account, originalId, Expected.none(), LocalDate.of(2026, 3, 2));
+    books.approve(account, contra.id(), approverId, Expected.cashbookAndClient("-1000.00"));
+    var march =
+        importStatement(
+            account,
+            "hf7-same-statement.csv",
+            "02/03/2026,EFT payment,-1000.00,-1000.00,BANK-EFT-0302");
+
+    var result = autoMatch(march);
+
+    assertLineLeftForAHuman(march, 0);
+    assertThat(result.autoMatched()).as("nothing auto-matched").isZero();
+    assertThat(bankLineOf(contra.id())).as("contra C unlinked").isNull();
+    assertStillReversedBy(originalId, contra.id());
+    var recon = reconcile(account, MARCH_END, march.id());
+    assertThat(recon.unresolvedLineCount()).as("the payment is unresolved (G4)").isEqualTo(1);
+    assertThat(recon.outstandingDeposits()).as("R and C still cancel").isEqualByComparingTo("0");
+  }
+
+  /**
+   * HF-7, a later statement: R (R1 000, 20 March, never received) is reversed on 2 April, so C is
+   * dated 2 April and falls in April's window (period ±7 days) while R does not. The April
+   * statement shows an unrelated -1 000 payment on 2 April. C must not take it. RED on main: tier 2
+   * AUTO_MATCHES the line to C.
+   */
+  @Test
+  void autoMatch_doesNotLetAContraAbsorbAnUnrelatedLineOnALaterStatement() {
+    var account = books.freshAccount(false);
+    var client = books.newClient("hf7 later statement");
+    var originalId = depositOn(account, client, "H-HF7-22", LocalDate.of(2026, 3, 20));
+    var contra = books.reverse(account, originalId, Expected.none(), LocalDate.of(2026, 4, 2));
+    books.approve(account, contra.id(), approverId, Expected.cashbookAndClient("-1000.00"));
+    var april =
+        importStatement(
+            account,
+            "hf7-later-statement.csv",
+            "02/04/2026,EFT payment,-1000.00,-1000.00,BANK-EFT-0402",
+            "10/04/2026,Deposit received,250.00,-750.00,BANK-DEP-0410");
+
+    var result = autoMatch(april);
+
+    assertLineLeftForAHuman(april, 0);
+    assertThat(result.autoMatched()).as("nothing auto-matched").isZero();
+    assertThat(bankLineOf(contra.id())).as("contra C unlinked").isNull();
+    assertStillReversedBy(originalId, contra.id());
+  }
+
+  /**
+   * HF-7, tier 3: as the same-statement case, the unrelated payment dated 4 March (two days after
+   * C). C must not be suggested for it either. RED on main: tier 3 suggests C at 0.60.
+   */
+  @Test
+  void autoMatch_doesNotSuggestAContraForAnUnrelatedLineByAmountAndCloseDate() {
+    var account = books.freshAccount(false);
+    var client = books.newClient("hf7 close date");
+    var originalId = depositOn(account, client, "H-HF7-33", LocalDate.of(2026, 3, 1));
+    var contra = books.reverse(account, originalId, Expected.none(), LocalDate.of(2026, 3, 2));
+    books.approve(account, contra.id(), approverId, Expected.cashbookAndClient("-1000.00"));
+    var march =
+        importStatement(
+            account,
+            "hf7-close-date.csv",
+            "04/03/2026,EFT payment,-1000.00,-1000.00,BANK-EFT-0304");
+
+    var result = autoMatch(march);
+
+    assertLineLeftForAHuman(march, 0);
+    assertThat(result.autoMatched()).as("nothing auto-matched").isZero();
+    assertThat(bankLineOf(contra.id())).as("contra C unlinked").isNull();
+  }
+
+  /**
+   * HF-7 through 647A's path: a bank charge recorded from its line, then unrecorded (unmatching the
+   * RECORDED line reverses it — contra C of +57,50, RECORDED, unlinked, dated the line's date). The
+   * statement also shows an unrelated +57,50 credit that day. C must not take it. RED on main: tier
+   * 2 AUTO_MATCHES the credit to C; the reversed charge R is a statement-only row that never
+   * matches (D-1), so R alone is then an outstanding payment.
+   */
+  @Test
+  void autoMatch_doesNotLetAnUnrecordContraAbsorbAnUnrelatedLine() {
+    var account = books.freshAccount(false);
+    var march =
+        importStatement(
+            account,
+            "hf7-unrecord.csv",
+            "20/03/2026,Service fee,-57.50,-57.50,H-HF7-FEE",
+            "20/03/2026,Unrelated credit,57.50,0.00,BANK-CR-0320");
+    var feeLineId = march.lines().get(0).id();
+    var chargeId = recordCharge(feeLineId);
+    books.as(memberId, () -> reconciliationService.unmatch(feeLineId));
+    var contraId = books.reversedByOf(chargeId);
+    assertThat(books.statusOf(chargeId)).as("unrecorded: reversed").isEqualTo("REVERSED");
+    assertThat(books.statusOf(contraId)).as("the unrecord contra is posted").isEqualTo("RECORDED");
+
+    var result = autoMatch(march);
+
+    assertLineLeftForAHuman(march, 1);
+    assertThat(result.autoMatched()).as("nothing auto-matched").isZero();
+    assertThat(bankLineOf(contraId)).as("contra C unlinked").isNull();
+    assertThat(bankLineOf(chargeId)).as("R unlinked").isNull();
+  }
+
+  /**
+   * FU-16 (b) trade-off, pinned: a contra auto-matches only by its own reference (tier 1), so a
+   * bank return that carries the bank's own reference instead of C's is left for a human, like a
+   * REVERSED original (652H D-6) — manual match accepts C and the month balances. (On main tier 2
+   * matched it, because amount and date agree; the same rule is what HF-7 exploits.)
+   */
+  @Test
+  void autoMatch_leavesAContrasOwnLineWithoutItsReferenceForAHuman_manualMatchAcceptsIt() {
+    var account = books.freshAccount(false);
+    var client = books.newClient("hf7 own line other ref");
+    var originalId = depositOn(account, client, "H-HF7-44", LocalDate.of(2026, 3, 1));
+    var contra = books.reverse(account, originalId, Expected.none(), LocalDate.of(2026, 3, 3));
+    books.approve(account, contra.id(), approverId, Expected.cashbookAndClient("-1000.00"));
+    var march =
+        importStatement(
+            account,
+            "hf7-own-line-other-ref.csv",
+            "01/03/2026,Deposit received,1000.00,1000.00,H-HF7-44",
+            "03/03/2026,Unpaid deposit returned,-1000.00,0.00,BANK-RD-0303");
+
+    var result = autoMatch(march);
+
+    assertLineMatchedTo(march, 0, originalId, "AUTO_MATCHED");
+    assertLineLeftForAHuman(march, 1);
+    assertThat(result.autoMatched()).as("the original only").isEqualTo(1);
+
+    match(march, 1, contra.id());
+    assertLineMatchedTo(march, 1, contra.id(), "MANUALLY_MATCHED");
+    var recon = reconcile(account, MARCH_END, march.id());
+    assertBalancedWithNothingOutstanding(recon, "0");
+    books.assertServicesAgree(account, MARCH_END);
+  }
+
+  // --- FU-16 (a) 652H M-1: an already-linked live row still shadows a REVERSED original --------
+
+  /**
+   * M-1, cross-statement: R (DEP-55, R1 000, 28 March, wrong client) is reversed on 29 March and
+   * re-entered as G (DEP-55, 30 March). The March statement shows the receipt once (28 March,
+   * DEP-55): auto-match links it to G (R is shadowed by G). The April statement shows a further,
+   * unbooked R1 000 deposit under the same recurring reference DEP-55 on 2 April; R (28 March) is
+   * still inside April's window. R must not take it — G, the live row of R's amount and sign, is
+   * already linked, and still shadows R. RED on main: D-6's shadow looks only at unlinked rows, so
+   * R is unshadowed and tier 1 AUTO_MATCHES the April line to R (C then sits outstanding and the
+   * unbooked receipt is hidden).
+   */
+  @Test
+  void autoMatch_reversedOriginalStaysShadowedByALiveRowLinkedOnAnEarlierStatement() {
+    var account = books.freshAccount(false);
+    var reEntered =
+        reverseAndReEnter(
+            account,
+            "DEP-55",
+            "DEP-55",
+            LocalDate.of(2026, 3, 28),
+            LocalDate.of(2026, 3, 29),
+            LocalDate.of(2026, 3, 30));
+    var march =
+        importStatement(
+            account, "m1-march.csv", "28/03/2026,Deposit received,1000.00,1000.00,DEP-55");
+    assertThat(autoMatch(march).autoMatched()).as("March: G").isEqualTo(1);
+    assertLineMatchedTo(march, 0, reEntered.live(), "AUTO_MATCHED");
+
+    var april =
+        importStatement(
+            account, "m1-april.csv", "02/04/2026,Deposit received,1000.00,2000.00,DEP-55");
+    var result = autoMatch(april);
+
+    assertLineLeftForAHuman(april, 0);
+    assertThat(result.autoMatched()).as("April: nothing auto-matched").isZero();
+    assertThat(bankLineOf(reEntered.reversed())).as("reversed R unlinked").isNull();
+    assertThat(bankLineOf(reEntered.contra())).as("contra C unlinked").isNull();
+    assertStillReversedBy(reEntered.reversed(), reEntered.contra());
+  }
+
+  /**
+   * M-1, one statement, the live row matched by hand first: the statement shows two R1 000 DEP-66
+   * deposits (4 and 5 March); the firm matches the first to G by hand, then runs auto-match. The
+   * second line must not go to R — G, already linked, still shadows it. RED on main: G is off the
+   * pool, so tier 1 AUTO_MATCHES the second line to R.
+   */
+  @Test
+  void autoMatch_reversedOriginalStaysShadowedByALiveRowMatchedByHand() {
+    var account = books.freshAccount(false);
+    var reEntered =
+        reverseAndReEnter(account, "DEP-66", LocalDate.of(2026, 3, 1), LocalDate.of(2026, 3, 4));
+    var march =
+        importStatement(
+            account,
+            "m1-by-hand.csv",
+            "04/03/2026,Deposit received,1000.00,1000.00,DEP-66",
+            "05/03/2026,Deposit received,1000.00,2000.00,DEP-66");
+    match(march, 0, reEntered.live());
+
+    var result = autoMatch(march);
+
+    assertLineMatchedTo(march, 0, reEntered.live(), "MANUALLY_MATCHED");
+    assertLineLeftForAHuman(march, 1);
+    assertThat(result.autoMatched()).as("nothing auto-matched").isZero();
+    assertThat(bankLineOf(reEntered.reversed())).as("reversed R unlinked").isNull();
+    assertStillReversedBy(reEntered.reversed(), reEntered.contra());
+  }
+
   // --- helpers -----------------------------------------------------------------------------------
+
+  /** The line is UNMATCHED with no row linked or suggested and no confidence. */
+  private void assertLineLeftForAHuman(BankStatementResponse statement, int index) {
+    var state = lineState(statement.lines().get(index).id());
+    assertThat(state.get("match_status")).as("line %d status", index).isEqualTo("UNMATCHED");
+    assertThat(state.get("trust_transaction_id")).as("line %d: no row suggested", index).isNull();
+    assertThat(state.get("match_confidence")).as("line %d: no confidence", index).isNull();
+  }
 
   /** The original R, its approved contra C, and the corrected deposit G re-entered after it. */
   private record ReEntered(UUID reversed, UUID contra, UUID live) {}
@@ -597,10 +828,27 @@ class ReversedOriginalMatchIntegrationTest {
       String reEnteredReference,
       LocalDate originalDate,
       LocalDate reEnteredDate) {
+    return reverseAndReEnter(
+        account,
+        originalReference,
+        reEnteredReference,
+        originalDate,
+        LocalDate.of(2026, 3, 2),
+        reEnteredDate);
+  }
+
+  /** As above, reversed on {@code reversalDate}. */
+  private ReEntered reverseAndReEnter(
+      UUID account,
+      String originalReference,
+      String reEnteredReference,
+      LocalDate originalDate,
+      LocalDate reversalDate,
+      LocalDate reEnteredDate) {
     var wrongClient = books.newClient("re-enter wrong client");
     var rightClient = books.newClient("re-enter right client");
     var originalId = depositOn(account, wrongClient, originalReference, originalDate);
-    var contra = books.reverse(account, originalId, Expected.none(), LocalDate.of(2026, 3, 2));
+    var contra = books.reverse(account, originalId, Expected.none(), reversalDate);
     books.approve(account, contra.id(), approverId, Expected.cashbookAndClient("-1000.00"));
     assertThat(books.statusOf(originalId)).as("reversed before matching").isEqualTo("REVERSED");
     var liveId = depositOn(account, rightClient, reEnteredReference, reEnteredDate);

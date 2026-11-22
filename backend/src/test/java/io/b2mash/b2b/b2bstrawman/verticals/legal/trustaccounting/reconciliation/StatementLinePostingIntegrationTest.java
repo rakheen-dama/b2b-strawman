@@ -23,8 +23,11 @@ import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness.Expected;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateTrustAccountRequest;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.IntegrityFlag;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustBooksService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustBooksService.BankPosition;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustIntegrityService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustIntegrityService.TrustIntegrityReport;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedger;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
@@ -92,6 +95,7 @@ class StatementLinePostingIntegrationTest {
   @Autowired private BankStatementRepository statementRepository;
   @Autowired private TrustBooksService booksService;
   @Autowired private TrustAccountService trustAccountService;
+  @Autowired private TrustIntegrityService integrityService;
   @Autowired private AuditEventRepository auditEventRepository;
   @Autowired private JdbcTemplate jdbc;
 
@@ -378,6 +382,125 @@ class StatementLinePostingIntegrationTest {
     assertThat(line(line.lineId()).getClassification()).isNull();
     assertThat(matchedCount(line)).isZero();
     books.assertBalancedAsAt(account, date);
+  }
+
+  /**
+   * FU-27 (Phase 92 exit item 2, §16.9.2 path 12 "BANK_CHARGE (recoverable) — and unmatch"): a
+   * recoverable charge recorded from its line, then unmatched. The unmatch reverses it through the
+   * normal reversal path — cashbook and Fund ledger back by +L, one contra dated the line's date on
+   * the Fund creditor account — and resets the line. Recoverable-specific: the charge debits the
+   * Fund ledger like any charge (so {@code FUND_LEDGER_IN_DEBIT} while recorded, cleared by the
+   * unmatch), but it is never owed back by the business account, so {@code CHARGES_TO_REFUND} is
+   * raised neither while recorded nor after. EQ-1 holds while the line is recorded; after the
+   * unmatch the bank still shows the charge, so the adjusted bank differs from the cashbook by
+   * exactly the line, which is the unresolved line. EQ-2, EQ-4, EQ-5, EQ-6 hold throughout
+   * (assertMoves, assertBalancedAsAt); EQ-3 is asserted firm-wide.
+   */
+  @Test
+  void aRecordedRecoverableBankCharge_reversesOnUnmatch_dated_the_lines_date_andIsNeverToRefund()
+      throws Exception {
+    var account = books.freshAccount(false);
+    var date = pastDate();
+    // A client's R1 000,00 (not on the statement: an outstanding deposit) keeps the cashbook in
+    // credit, so CASHBOOK_IN_DEBIT stays out of the picture and the flags are the charge's own.
+    books.deposit(account, books.newClient("recoverable charge"), "1000.00", date);
+    var line = books.unmatchedLine(account, date, "-57.50", "SVC-FEE-RECOV");
+    // The statement's closing balance is the one line (opening 0,00), so EQ-1 can be judged.
+    jdbc.update(
+        "UPDATE \"%s\".bank_statements SET closing_balance = -57.50 WHERE id = ?"
+            .formatted(books.schema()),
+        line.statementId());
+    var beforeOnTheDay = books.snapshotAsAt(account, date);
+
+    var rowId =
+        recordAndMove(
+            account,
+            line,
+            "{\"classification\":\"BANK_CHARGE\",\"chargeRecoverable\":true,"
+                + "\"chargeVatAmount\":7.50}",
+            "-57.50");
+
+    // Recorded: EQ-1 holds; the Fund ledger is in debit; a recoverable charge is not to refund.
+    books.as(ownerId, () -> harness.assertBankAgrees(account, line.statementId(), date));
+    var recorded = integrity(account, date, line.statementId());
+    assertThat(codes(recorded))
+        .as("flags while the recoverable charge is recorded")
+        .containsExactly(TrustIntegrityService.FUND_LEDGER_IN_DEBIT);
+    assertThat(recorded.flags().getFirst().amount()).isEqualByComparingTo("57.50");
+    books.assertServicesAgree(account);
+    var charge = audit("trust_transaction", rowId, "trust_bank_charge.recorded");
+    assertThat(charge.getDetails())
+        .containsEntry("recoverable", "true")
+        .containsEntry("vat_amount", "7.50");
+
+    moves(
+        account,
+        Expected.cashbookAndFund("57.50"),
+        () -> unmatch(line.lineId()).andExpect(status().isOk()));
+
+    // The reversal: one contra, dated the line's date, on the Fund creditor account.
+    var contras = reversalsOf(rowId);
+    assertThat(contras).hasSize(1);
+    var contra = contras.getFirst();
+    assertThat(contra.getTransactionDate()).as("contra dated the line's date").isEqualTo(date);
+    assertThat(contra.getStatus()).isEqualTo("RECORDED");
+    assertThat(contra.getAmount()).isEqualByComparingTo("57.50");
+    assertThat(contra.getLedger()).isEqualTo(TrustLedger.NON_CLIENT);
+    assertThat(contra.getCreditorAccountId()).isEqualTo(books.creditorAccount(account, FUND));
+    assertThat(contra.getBankStatementLineId()).isNull();
+    assertThat(contra.getChargeRecoverable()).as("charge fields belong to the charge").isNull();
+
+    // The original keeps what it was (a recoverable charge with its VAT), now reversed, unlinked.
+    var original = row(rowId);
+    assertThat(original.getStatus()).isEqualTo("REVERSED");
+    assertThat(original.getReversedById()).isEqualTo(contra.getId());
+    assertThat(original.getBankStatementLineId()).as("original unlinked").isNull();
+    assertThat(original.getChargeRecoverable()).isTrue();
+    assertThat(original.getChargeVatAmount()).isEqualByComparingTo("7.50");
+
+    var unmatched = line(line.lineId());
+    assertThat(unmatched.getMatchStatus()).isEqualTo("UNMATCHED");
+    assertThat(unmatched.getClassification()).isNull();
+    assertThat(unmatched.getTrustTransactionId()).isNull();
+    assertThat(matchedCount(line)).isZero();
+    assertThat(
+            audit("bank_statement_line", line.lineId(), "bank_statement_line.unmatched")
+                .getDetails())
+        .containsEntry("classification", "BANK_CHARGE")
+        .containsEntry("reversed_transaction_ids", List.of(rowId.toString()));
+
+    // The pair nets to zero on the line's date: as at that date nothing changed, Fund at nil.
+    var afterOnTheDay = books.snapshotAsAt(account, date);
+    assertThat(afterOnTheDay.cashbook()).isEqualByComparingTo(beforeOnTheDay.cashbook());
+    assertThat(afterOnTheDay.fundLedger()).isEqualByComparingTo(beforeOnTheDay.fundLedger());
+    assertThat(snapshot(account).fundLedger()).isEqualByComparingTo("0.00");
+    books.assertBalancedAsAt(account, date);
+    assertBalanced(account);
+    books.assertServicesAgree(account);
+    books.assertFirmBalanced();
+
+    // After the unmatch the bank still shows the charge: the pair is not outstanding (only the
+    // deposit is), and the adjusted bank is the line below the cashbook, held by the unresolved
+    // line. No refund owed.
+    var position = bankPosition(account, line, date);
+    assertThat(position.outstandingDeposits()).isEqualByComparingTo("1000.00");
+    assertThat(position.outstandingPayments()).isEqualByComparingTo("0.00");
+    assertThat(position.adjustedBankBalance()).isEqualByComparingTo("942.50");
+    assertThat(afterOnTheDay.cashbook()).isEqualByComparingTo("1000.00");
+    var after = integrity(account, date, line.statementId());
+    assertThat(codes(after))
+        .as("flags after the unmatch")
+        .containsExactlyInAnyOrder(
+            TrustIntegrityService.BANK_DIFFERENCE, TrustIntegrityService.UNRESOLVED_STATEMENT_LINES)
+        .doesNotContain(
+            TrustIntegrityService.CHARGES_TO_REFUND, TrustIntegrityService.FUND_LEDGER_IN_DEBIT);
+    assertThat(
+            after.flags().stream()
+                .filter(f -> TrustIntegrityService.BANK_DIFFERENCE.equals(f.code()))
+                .findFirst()
+                .orElseThrow()
+                .amount())
+        .isEqualByComparingTo("57.50");
   }
 
   @Test
@@ -1331,6 +1454,16 @@ class StatementLinePostingIntegrationTest {
             transactionRepository.findAll().stream()
                 .filter(t -> originalId.equals(t.getReversalOf()))
                 .toList());
+  }
+
+  private TrustIntegrityReport integrity(UUID account, LocalDate asAt, UUID statementId) {
+    var report = new TrustIntegrityReport[1];
+    books.as(ownerId, () -> report[0] = integrityService.check(account, asAt, statementId));
+    return report[0];
+  }
+
+  private static List<String> codes(TrustIntegrityReport report) {
+    return report.flags().stream().map(IntegrityFlag::code).toList();
   }
 
   private BankStatementLine line(UUID lineId) {

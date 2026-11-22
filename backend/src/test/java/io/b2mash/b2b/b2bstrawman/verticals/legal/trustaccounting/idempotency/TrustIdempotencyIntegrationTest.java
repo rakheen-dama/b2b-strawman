@@ -332,6 +332,77 @@ class TrustIdempotencyIntegrationTest {
     assertThat(postings("IDEM-REFUSAL")).isEqualTo(2); // the transfer's pair of rows
   }
 
+  // --- bounded buffering (security review MEDIUM) ---------------------------------------------
+
+  @Test
+  void anOversizedJsonBody_isRefusedWith413_beforeTheKeyIsClaimedOrTheWriteRuns() throws Exception {
+    var client = newClient("oversized");
+    var key = UUID.randomUUID().toString();
+    var padding = "x".repeat(TrustIdempotencyFilter.MAX_JSON_BODY_BYTES);
+    var body =
+        """
+        {"clientId": "%s", "matterId": "%s", "amount": 100.00, "reference": "IDEM-OVERSIZED",
+         "description": "%s", "transactionDate": "2026-03-01"}
+        """
+            .formatted(client.clientId(), client.matterId(), padding);
+
+    var refused = postDeposit(key, body, owner());
+
+    assertProblem(
+        refused,
+        413,
+        "Request body too large",
+        "A trust write's request body may not exceed 256 KB.",
+        null);
+    assertThat(stateOf(key)).as("no key claimed").isNull();
+    assertThat(postings("IDEM-OVERSIZED")).isZero();
+  }
+
+  @Test
+  void aBodyJustUnderTheLimit_isAccepted_andReplayed() throws Exception {
+    var client = newClient("at limit");
+    var key = UUID.randomUUID().toString();
+    var template =
+        """
+        {"clientId": "%s", "matterId": "%s", "amount": 100.00, "reference": "IDEM-AT-LIMIT",
+         "description": "Idempotency test", "transactionDate": "2026-03-01", "pad": "%s"}
+        """;
+    int frame =
+        template
+            .formatted(client.clientId(), client.matterId(), "")
+            .getBytes(StandardCharsets.UTF_8)
+            .length;
+    var body =
+        template.formatted(
+            client.clientId(),
+            client.matterId(),
+            "x".repeat(TrustIdempotencyFilter.MAX_JSON_BODY_BYTES - frame));
+    assertThat(body.getBytes(StandardCharsets.UTF_8))
+        .hasSize(TrustIdempotencyFilter.MAX_JSON_BODY_BYTES);
+
+    var first = postDeposit(key, body, owner());
+    var retry = postDeposit(key, body, owner());
+
+    assertThat(first.getStatus()).as(first.getContentAsString()).isEqualTo(201);
+    assertThat(retry.getHeader(TrustIdempotencyService.REPLAYED_HEADER)).isEqualTo("true");
+    assertThat(postings("IDEM-AT-LIMIT")).isEqualTo(1);
+  }
+
+  @Test
+  void anUnauthenticatedOversizedRequest_isRefusedBySecurityFirst() throws Exception {
+    var refused =
+        perform(
+            post("/api/trust-accounts/" + accountId + "/transactions/deposit")
+                .header(KEY, UUID.randomUUID().toString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    "{\"pad\": \""
+                        + "x".repeat(2 * TrustIdempotencyFilter.MAX_JSON_BODY_BYTES)
+                        + "\"}"));
+
+    assertThat(refused.getStatus()).isEqualTo(401);
+  }
+
   // --- concurrency ----------------------------------------------------------------------------
 
   /**

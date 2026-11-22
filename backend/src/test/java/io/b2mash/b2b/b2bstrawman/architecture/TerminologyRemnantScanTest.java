@@ -114,6 +114,7 @@ class TerminologyRemnantScanTest {
           "MissingOrganizationContextException",
           "PlanLimitExceededException",
           "TooManyRequestsException",
+          "PayloadTooLargeException",
           "ValidationWarningException",
           "InvoiceValidationFailedException",
           "CommentAttachmentNotAllowedException",

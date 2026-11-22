@@ -2,8 +2,10 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.idempotency;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
@@ -27,7 +29,7 @@ import tools.jackson.databind.ObjectMapper;
  *       insignificant whitespace; a body that is not JSON is hashed as its bytes), or
  *   <li>a multipart request: every parameter / non-file part (sorted by name) and every file
  *       (sorted by part name) by its original name, content type, size and the SHA-256 of its
- *       bytes.
+ *       bytes, digested through a stream.
  * </ul>
  *
  * So the same request hashes the same however its JSON is laid out, and a changed amount, account,
@@ -56,7 +58,11 @@ class TrustRequestHasher {
     } else {
       update(digest, "query:" + (request.getQueryString() == null ? "" : request.getQueryString()));
       var buffered = WebUtils.getNativeRequest(request, BufferedBodyRequest.class);
-      update(digest, "body:" + canonicalBody(buffered == null ? new byte[0] : buffered.body()));
+      if (buffered == null) {
+        // Never hash a body we did not read: two different requests would share a hash.
+        throw new IllegalStateException("Trust write body was not buffered for idempotency");
+      }
+      update(digest, "body:" + canonicalBody(buffered.body()));
     }
     return HexFormat.of().formatHex(digest.digest());
   }
@@ -77,7 +83,7 @@ class TrustRequestHasher {
                             file.getOriginalFilename(),
                             file.getContentType(),
                             file.getSize(),
-                            sha256Hex(bytesOf(file))));
+                            streamedSha256Hex(file)));
               }
             });
   }
@@ -126,12 +132,15 @@ class TrustRequestHasher {
     }
   }
 
-  private static byte[] bytesOf(MultipartFile file) {
-    try {
-      return file.getBytes();
+  /** The file's SHA-256, read through a stream: the part is never copied into memory. */
+  private static String streamedSha256Hex(MultipartFile file) {
+    var digest = sha256();
+    try (var in = new DigestInputStream(file.getInputStream(), digest)) {
+      in.transferTo(OutputStream.nullOutputStream());
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }
+    return HexFormat.of().formatHex(digest.digest());
   }
 
   private static void update(MessageDigest digest, String part) {

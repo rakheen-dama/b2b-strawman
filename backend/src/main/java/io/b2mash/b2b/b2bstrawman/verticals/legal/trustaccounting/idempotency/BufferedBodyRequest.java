@@ -6,23 +6,23 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletRequestWrapper;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 /**
- * A request whose (non-multipart) body is read up front, so {@link TrustIdempotencyInterceptor} can
- * hash it before the handler reads it again (648B F-11). Used only for {@link IdempotentTrustWrite}
+ * A request whose (non-multipart) body was read up front — at most {@link
+ * TrustIdempotencyFilter#MAX_JSON_BODY_BYTES} — so {@link TrustIdempotencyInterceptor} can hash it
+ * before the handler reads it again (648B F-11). Used only for {@link IdempotentTrustWrite}
  * endpoints carrying an {@code Idempotency-Key}; those take small JSON bodies.
  */
 final class BufferedBodyRequest extends HttpServletRequestWrapper {
 
   private final byte[] body;
 
-  BufferedBodyRequest(HttpServletRequest request) throws IOException {
+  BufferedBodyRequest(HttpServletRequest request, byte[] body) {
     super(request);
-    this.body = request.getInputStream().readAllBytes();
+    this.body = body;
   }
 
   byte[] body() {

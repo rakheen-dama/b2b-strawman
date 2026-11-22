@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.idempotency;
 
+import io.b2mash.b2b.b2bstrawman.exception.PayloadTooLargeException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.idempotency.TrustIdempotencyService.Claim;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.idempotency.TrustIdempotencyService.StoredResponse;
@@ -24,10 +25,11 @@ import org.springframework.web.util.WebUtils;
  * scopes (bound by {@code TenantFilter} / {@code MemberFilter}); binds nothing itself.
  *
  * <ol>
- *   <li>{@link #preHandle}: a missing / malformed key → 400; otherwise the key is claimed in its
- *       own committed transaction ({@link TrustIdempotencyService#claim}). A completed key replays
- *       its stored response and the handler never runs; a key of another member or request, or one
- *       still in progress, → 409.
+ *   <li>{@link #preHandle}: a missing / malformed key → 400; a JSON body over {@link
+ *       TrustIdempotencyFilter#MAX_JSON_BODY_BYTES} → 413 (never read further); otherwise the key
+ *       is claimed in its own committed transaction ({@link TrustIdempotencyService#claim}). A
+ *       completed key replays its stored response and the handler never runs; a key of another
+ *       member or request, or one still in progress, → 409.
  *   <li>the handler runs exactly as it would without a key, in its own transaction.
  *   <li>{@link #afterCompletion}: the response this request sent — a success or a 4xx refusal — is
  *       stored on the claim (COMPLETED), so a retry replays the same outcome. A 5xx, or an
@@ -67,6 +69,14 @@ public class TrustIdempotencyInterceptor implements HandlerInterceptor {
       return true;
     }
     UUID key = idempotencyService.parseKey(request.getHeader(TrustIdempotencyService.HEADER));
+    if (Boolean.TRUE.equals(
+        request.getAttribute(TrustIdempotencyFilter.BODY_TOO_LARGE_ATTRIBUTE))) {
+      throw new PayloadTooLargeException(
+          "Request body too large",
+          "A trust write's request body may not exceed "
+              + TrustIdempotencyFilter.MAX_JSON_BODY_BYTES / 1024
+              + " KB.");
+    }
     String route = (String) request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE);
     String hash = hasher.hash(request, route);
     Claim claim =

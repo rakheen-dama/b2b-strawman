@@ -100,8 +100,7 @@ public class ClientLedgerStatementQuery implements ReportQuery {
       row.put("reference", tx.getReference());
       row.put("type", TrustTransactionTypeLabels.firmLabel(tx.getTransactionType()));
       // The report is handed to the client: a REVERSAL row reads "Reversal — <reference>", never
-      // the
-      // firm user's reason (Phase 92 W1 / FU-4) — the rule of every other client surface
+      // the firm user's reason (Phase 92 W1 / FU-4), the rule of every other client surface
       row.put(
           "description",
           TrustTransactionTypeLabels.clientDescription(

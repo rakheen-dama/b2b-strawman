@@ -207,6 +207,11 @@ class PortalReadModelOrgScopingGuardTest {
         "Deliberately tenant-agnostic: enumerates every customer_id that has any portal trust row, "
             + "for the backfill drift-repair job (TrustLedgerPortalSyncService). Never reachable "
             + "from a portal request.");
+    m.put(
+        trust + "lockMatterReplay",
+        "pg_advisory_xact_lock on a key derived from the tenant schema and matter id — reads and"
+            + " writes no table rows; serialises one matter's portal trust replays"
+            + " (TrustLedgerPortalSyncService.recomputeMatter, Phase 92 648D F-5).");
 
     // ── portal_contact_directory (Phase 88 U11, ADR-351): global routing table + backfill marker
     // ──

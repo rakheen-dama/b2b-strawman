@@ -248,32 +248,49 @@ public class TrustLedgerPortalSyncService {
    * keying each row by its own {@code customer_id} (rather than the event's customerId) prevents
    * the second leg's replay from re-attributing the first leg's portal rows to the wrong customer
    * (CodeRabbit follow-up to GAP-L-52).
+   *
+   * <p><b>Atomic and in order (Phase 92 648D F-4 / F-5):</b> the whole replay runs in one portal
+   * transaction, so its rows and its balance snapshot commit or roll back together — a failed write
+   * never leaves rows whose running balance disagrees with the stored balance. Its first statement
+   * takes the matter's replay lock ({@link PortalTrustReadModelRepository#lockMatterReplay}), held
+   * until that commit; the firm history is read only after the lock is granted, each statement at
+   * READ COMMITTED, so a replay that runs after another has committed reads at least the history
+   * the other read — two concurrent replays of one matter can no longer write an older balance
+   * last. The listeners run {@code AFTER_COMMIT}, so the replay holds no firm-side lock, and its
+   * history read is a plain {@code SELECT} that waits on none; a fan-out takes one matter's lock at
+   * a time (each released at that matter's commit).
    */
   private void recomputeMatter(UUID matterId) {
-    var history = trustTransactionRepository.findByProjectIdOrderByTransactionDateAsc(matterId);
-    Map<UUID, Balances> balancesByCustomer = new LinkedHashMap<>();
-    for (var txn : history) {
-      if (!PORTAL_STATUSES.contains(txn.getStatus()) || !hasPortalScope(txn)) {
-        continue;
-      }
-      var ledger = projectedLedger(txn);
-      if (ledger.isEmpty()) {
-        continue;
-      }
-      UUID rowCustomerId = txn.getCustomerId();
-      Instant occurredAt = deriveOccurredAt(txn);
-      BigDecimal running =
-          balancesByCustomer
-              .computeIfAbsent(rowCustomerId, id -> new Balances())
-              .apply(txn, ledger.get(), occurredAt);
-      if (isVisibleRow(txn, ledger.get())) {
-        upsertRow(txn, rowCustomerId, matterId, ledger.get(), running, occurredAt);
-      }
-    }
-    balancesByCustomer.forEach(
-        (customerId, balances) ->
-            portalTrustRepo.upsertBalance(
-                customerId, matterId, balances.general, balances.invested, balances.latest));
+    String tenantSchema = RequestScopes.requireTenantId();
+    portalTxTemplate.executeWithoutResult(
+        status -> {
+          portalTrustRepo.lockMatterReplay(tenantSchema, matterId);
+          var history =
+              trustTransactionRepository.findByProjectIdOrderByTransactionDateAsc(matterId);
+          Map<UUID, Balances> balancesByCustomer = new LinkedHashMap<>();
+          for (var txn : history) {
+            if (!PORTAL_STATUSES.contains(txn.getStatus()) || !hasPortalScope(txn)) {
+              continue;
+            }
+            var ledger = projectedLedger(txn);
+            if (ledger.isEmpty()) {
+              continue;
+            }
+            UUID rowCustomerId = txn.getCustomerId();
+            Instant occurredAt = deriveOccurredAt(txn);
+            BigDecimal running =
+                balancesByCustomer
+                    .computeIfAbsent(rowCustomerId, id -> new Balances())
+                    .apply(txn, ledger.get(), occurredAt);
+            if (isVisibleRow(txn, ledger.get())) {
+              upsertRow(txn, rowCustomerId, matterId, ledger.get(), running, occurredAt);
+            }
+          }
+          balancesByCustomer.forEach(
+              (customerId, balances) ->
+                  portalTrustRepo.upsertBalance(
+                      customerId, matterId, balances.general, balances.invested, balances.latest));
+        });
   }
 
   // ── Backfill ───────────────────────────────────────────────────────────

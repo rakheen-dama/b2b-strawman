@@ -51,6 +51,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -702,7 +703,7 @@ public class TrustReconciliationService {
   /**
    * Auto-matches the statement's {@code UNMATCHED} lines to posted, unlinked rows of its account
    * dated within the period ±7 days, by the tiers below (exact reference; amount and date; the 0.60
-   * / 0.40 suggestions; 652H D-1/D-6 for REVERSED originals).
+   * / 0.40 suggestions; 652H D-1/D-6 and FU-16 for REVERSED originals and their contras).
    *
    * <p>Lock order (CF-3) is the one every line writer uses, line → transaction → statement ({@code
    * TrustPostingService}'s global order, step 1), and every locked row is read fresh under its
@@ -746,16 +747,30 @@ public class TrustReconciliationService {
             .toList();
 
     // Build candidate pool: posted transactions (RECORDED, APPROVED or REVERSED), unmatched,
-    // within date range; only the REVERSED originals auto-match may link stay in it (652H D-6)
+    // within date range; only the REVERSED originals auto-match may link stay in it (652H D-6).
+    // A live row already linked to a line still shadows a REVERSED original (FU-16, 652H M-1).
+    // One read of the window, split in memory, so a concurrent unmatch cannot drop a row from
+    // both halves (plain read, no lock — CF-3 order unchanged).
     LocalDate startDate = statement.getPeriodStart().minusDays(7);
     LocalDate endDate = statement.getPeriodEnd().plusDays(7);
+    Map<Boolean, List<TrustTransaction>> byLinked =
+        trustTransactionRepository
+            .findPostedInAutoMatchWindow(statement.getTrustAccountId(), startDate, endDate)
+            .stream()
+            .collect(Collectors.partitioningBy(t -> t.getBankStatementLineId() != null));
+    List<TrustTransaction> linkedLiveRows =
+        byLinked.get(true).stream().filter(t -> !isReversed(t)).toList();
     List<TrustTransaction> candidatePool =
-        withAutoMatchableReversedOriginalsOnly(
-            trustTransactionRepository.findUnmatchedCandidates(
-                statement.getTrustAccountId(), startDate, endDate));
+        withAutoMatchableReversedOriginalsOnly(byLinked.get(false), linkedLiveRows);
 
     List<PlannedMatch> planned = new ArrayList<>();
     for (BankStatementLine line : unmatchedLines) {
+      // An earlier run's suggestion (tier 3 row + 0.60, or tier 4's 0.40) is recomputed, never
+      // kept: the line (UNMATCHED, locked in step 1) is reset first and the tier that applies now
+      // writes its result, or leaves it clean (FU-16, CodeRabbit). suggestedClassification is the
+      // parser's (647C) and is untouched.
+      clearSuggestion(line);
+
       // Filter candidates by sign compatibility
       List<TrustTransaction> signFilteredCandidates =
           candidatePool.stream().filter(c -> isSignCompatible(line, c)).toList();
@@ -771,22 +786,26 @@ public class TrustReconciliationService {
         continue;
       }
 
-      // A REVERSED original matches only by its own reference (tier 1), never by amount/date (D-6)
-      List<TrustTransaction> liveCandidates =
-          signFilteredCandidates.stream().filter(c -> !isReversed(c)).toList();
-
-      TrustTransaction byAmountAndDate = amountExactDateMatch(line, liveCandidates);
-      if (byAmountAndDate != null) {
+      // A member of a reversed pair — the REVERSED original (652H D-6) or its REVERSAL contra
+      // (FU-16, HF-7) — matches only by its own reference (tier 1), never by amount/date. At
+      // tiers 2 and 3 it still counts, so it keeps an otherwise-unique row ambiguous (FU-16
+      // review), but it is never itself matched or suggested.
+      TrustTransaction byAmountAndDate = amountExactDateMatch(line, signFilteredCandidates);
+      if (byAmountAndDate != null && !isReversalPairMember(byAmountAndDate)) {
         plan(planned, candidatePool, line, byAmountAndDate, AUTO_MATCH_THRESHOLD);
         continue;
       }
 
-      if (tryAmountCloseDateMatch(line, liveCandidates)) {
+      TrustTransaction byAmountAndCloseDate = amountCloseDateMatch(line, signFilteredCandidates);
+      if (byAmountAndCloseDate != null && !isReversalPairMember(byAmountAndCloseDate)) {
         // Confidence 0.60 -- below threshold, remains UNMATCHED
+        suggest(line, byAmountAndCloseDate);
         continue;
       }
 
-      tryAmountOnlyMatch(line, liveCandidates);
+      // Tier 4 links no row; its 0.40 hint stays about live rows only (652H D-6, FU-16)
+      tryAmountOnlyMatch(
+          line, signFilteredCandidates.stream().filter(c -> !isReversalPairMember(c)).toList());
     }
 
     // 2. The matched rows, locked in id order (two auto-matches never lock two rows crosswise).
@@ -1668,26 +1687,46 @@ public class TrustReconciliationService {
   }
 
   /**
+   * A member of a reversed pair: the REVERSED original, or a {@code REVERSAL} contra (posted, as
+   * every pool row is). Auto-match links either at tier 1 only — its own reference and amount —
+   * never at the amount/date tiers (652H D-6 for the original; FU-16 / HF-7 for the contra). There
+   * it still counts toward a tier's uniqueness, so it keeps another row of its amount and date
+   * ambiguous, as before FU-16; it is just never the row picked or suggested.
+   *
+   * <p>A contra's own line is the one carrying the contra's reference: {@code REV-} + the
+   * original's, generated by {@code TrustPostingService.contraDraft} and carried by the bank's
+   * return line in the exit month (§16.9.6 #8 {@code REV-DEP-B-002}, #10 {@code REV-PAY-A-002}). By
+   * amount and date alone a contra cannot tell its own return from an unrelated movement of its
+   * amount (HF-7: taking an unrelated, unbooked line leaves its original outstanding and the month
+   * balances over the unbooked line), so such a line is left for a human, who matches the contra by
+   * hand if it is the return.
+   */
+  private static boolean isReversalPairMember(TrustTransaction transaction) {
+    return isReversed(transaction) || "REVERSAL".equals(transaction.getTransactionType());
+  }
+
+  /**
    * 652H D-1/D-6: the auto-match pool — every unmatched posted row, except the REVERSED originals
    * auto-match may not link. Computed once per run, against the initial pool (before any line
    * consumes a row), and returned mutable so the run can shrink it. A REVERSED original stays only
-   * when it is not a statement-only row (D-1) and the initial pool holds no live (non-REVERSED) row
-   * of its amount and sign (cashbook direction) — so a row that once shadowed it keeps doing so
-   * after an earlier line takes it. A kept REVERSED original is then offered at tier 1 only (its
-   * own reference), never at the amount/date tiers ({@link #autoMatchStatement}): it matches its
-   * own line — the exit month's #7/#9 (§16.9.6) — but never absorbs an unrelated line of its
-   * amount, nor takes a line from a reverse-then-re-enter's corrected row. Anything else is left
-   * for a human (manual match still accepts it). Contras ({@code REVERSAL} rows) are live rows
-   * here: the rule is about reversed originals only (HF-7 untouched).
+   * when it is not a statement-only row (D-1) and no live (non-REVERSED) row of its amount and sign
+   * (cashbook direction) is in the run's window — neither in the initial pool, so a row that once
+   * shadowed it keeps doing so after an earlier line takes it, nor among {@code linkedLive}, the
+   * live rows already linked to a line (an earlier run, by hand, or on an earlier statement: FU-16,
+   * 652H M-1). A kept REVERSED original is then offered at tier 1 only (its own reference), never
+   * at the amount/date tiers ({@link #isReversalPairMember}): it matches its own line — the exit
+   * month's #7/#9 (§16.9.6) — but never absorbs an unrelated line of its amount, nor takes a line
+   * from a reverse-then-re-enter's corrected row. Anything else is left for a human (manual match
+   * still accepts it). Contras ({@code REVERSAL} rows) are live rows for shadowing.
    */
   private static List<TrustTransaction> withAutoMatchableReversedOriginalsOnly(
-      List<TrustTransaction> unmatched) {
+      List<TrustTransaction> unmatched, List<TrustTransaction> linkedLive) {
     return unmatched.stream()
         .filter(
             c ->
                 !isReversed(c)
                     || (!isReversedStatementOnlyRow(c)
-                        && unmatched.stream()
+                        && Stream.concat(unmatched.stream(), linkedLive.stream())
                             .noneMatch(
                                 live ->
                                     !isReversed(live)
@@ -1744,7 +1783,8 @@ public class TrustReconciliationService {
     return matches.size() == 1 ? matches.getFirst() : null;
   }
 
-  private boolean tryAmountCloseDateMatch(
+  /** Tier 3: the one candidate with the line's amount, dated within 3 days of it, else null. */
+  private TrustTransaction amountCloseDateMatch(
       BankStatementLine line, List<TrustTransaction> candidates) {
     BigDecimal lineAmount = line.getAmount().abs();
     LocalDate lineDate = line.getTransactionDate();
@@ -1760,15 +1800,33 @@ public class TrustReconciliationService {
                 })
             .toList();
 
-    if (matches.size() == 1) {
-      // Below auto-match threshold -- set confidence and suggest the transaction, but remain
-      // UNMATCHED so the user can review and manually confirm the match.
-      line.setMatchConfidence(new BigDecimal("0.60"));
-      line.setTrustTransactionId(matches.getFirst().getId());
-      bankStatementLineRepository.save(line);
-      return true;
+    return matches.size() == 1 ? matches.getFirst() : null;
+  }
+
+  /**
+   * Resets an UNMATCHED line's auto-match suggestion — the suggested row ({@code
+   * trust_transaction_id}) and its confidence. On an UNMATCHED line these are only ever a
+   * suggestion: the row's {@code bank_statement_line_id} is never set by one, so nothing is
+   * unlinked here. Saved only when something was set.
+   */
+  private void clearSuggestion(BankStatementLine line) {
+    if (!"UNMATCHED".equals(line.getMatchStatus())
+        || (line.getTrustTransactionId() == null && line.getMatchConfidence() == null)) {
+      return;
     }
-    return false;
+    line.setTrustTransactionId(null);
+    line.setMatchConfidence(null);
+    bankStatementLineRepository.save(line);
+  }
+
+  /**
+   * Tier 3's outcome: below the auto-match threshold -- set confidence and suggest the transaction,
+   * but remain UNMATCHED so the user can review and manually confirm the match.
+   */
+  private void suggest(BankStatementLine line, TrustTransaction transaction) {
+    line.setMatchConfidence(new BigDecimal("0.60"));
+    line.setTrustTransactionId(transaction.getId());
+    bankStatementLineRepository.save(line);
   }
 
   private void tryAmountOnlyMatch(BankStatementLine line, List<TrustTransaction> candidates) {

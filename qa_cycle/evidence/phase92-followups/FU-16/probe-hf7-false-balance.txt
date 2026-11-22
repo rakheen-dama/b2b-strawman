@@ -1,0 +1,1 @@
+PROBE-HF7 line={match_status=AUTO_MATCHED, trust_transaction_id=cc77378c-d30d-4b6f-9330-1fa6fae97baf, match_confidence=0.80, matched_count=1} contra=cc77378c-d30d-4b6f-9330-1fa6fae97baf osDep=1000.00 osPay=0 bank=-1000.00 adjBank=0.00 cashbook=0.00 unresolved=0 flags=[] balanced=true

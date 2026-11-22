@@ -1,0 +1,1 @@
+PROBE-TIER1 payment=93cf46ce-bceb-46f6-84c7-06c964725b1a unrelatedLine={match_status=AUTO_MATCHED, trust_transaction_id=93cf46ce-bceb-46f6-84c7-06c964725b1a, match_confidence=0.80, matched_count=2} paymentLine={match_status=UNMATCHED, trust_transaction_id=null, match_confidence=null, matched_count=2}

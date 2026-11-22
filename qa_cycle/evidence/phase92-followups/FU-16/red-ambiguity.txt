@@ -1,0 +1,18 @@
+FU-16 review finding 1 (tier 2–4 ambiguity guard lost) — RED on PR head 1d33d51d1ca2500606391b6a5e32c947cf60b5fb
+Production code at 1d33d51 (unchanged); only the new test added.
+Command: cd backend && ./mvnw -q test -Dtest='ReversedOriginalMatchIntegrationTest#autoMatch_aContraStillMakesTheAmountAndDateTiersAmbiguous*'
+Full console output: red-ambiguity-raw.txt (this directory)
+
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0
+[ERROR]   ReversedOriginalMatchIntegrationTest.autoMatch_aContraStillMakesTheAmountAndDateTiersAmbiguous_soTheReturnLineDoesNotTakeAPayment:769 [return line status]
+expected: "UNMATCHED"
+ but was: "AUTO_MATCHED"
+
+Scenario (deterministic order — the return line is dated 3 Mar, P's line 4 Mar; auto-match orders
+lines by date, then id, so the return line always goes first):
+  deposit D 2 000 (1 Mar), payment P -1 000 (3 Mar, approved), deposit R 1 000 (1 Mar, ref H-AMB-R)
+  reversed 3 Mar by contra C -1 000 (approved).
+  Bank: D's line, R's line (H-AMB-R), return -1 000 on 3 Mar ref BANK-RD-0303, P -1 000 on 4 Mar ref P's.
+At 1d33d51 tier 2 for the return line saw {P} only (C dropped from tiers 2–4), so it AUTO_MATCHED
+the return line to P (the only non-pair -1 000 row dated 3 Mar), and P's own line was left unmatched.
+Before FU-16 (main d0098d179) tier 2 saw {C, P}: ambiguous, line left for a human.

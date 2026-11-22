@@ -1,0 +1,53 @@
+FU-16 (b) HF-7 — REPRODUCED (red) on unmodified main d0098d1793f98be7cd413e01bd1ef6f743e3344c
+Production code untouched; only the new tests in ReversedOriginalMatchIntegrationTest were added.
+Command: cd backend && ./mvnw -q test -Dtest='ReversedOriginalMatchIntegrationTest'
+Full surefire console log: red-raw.txt (this directory)
+
+Class result:
+[ERROR] Tests run: 21, Failures: 7, Errors: 0, Skipped: 0   (14 pre-existing 652H tests green; 7 new tests red: 5 HF-7 below, 2 M-1 in red-M-1.txt)
+
+In every HF-7 case the contra C is the ONLY unlinked posted row of the line's sign, so the line's
+AUTO_MATCHED / suggested row on main is C (no other sign-compatible candidate exists in the account).
+
+1. autoMatch_doesNotLetAContraAbsorbAnUnrelatedLineByAmountAndDate  (same statement, tier 2)
+   Deposit R 1 000 on 1 Mar recorded in error, reversed 2 Mar (contra C -1 000 dated 2 Mar, approved).
+   Bank: unrelated EFT payment -1 000 on 2 Mar, ref BANK-EFT-0302.
+   ReversedOriginalMatchIntegrationTest.autoMatch_doesNotLetAContraAbsorbAnUnrelatedLineByAmountAndDate:605->assertLineLeftForAHuman:804 [line 0 status]
+   expected: "UNMATCHED"
+    but was: "AUTO_MATCHED"
+
+2. autoMatch_doesNotLetAContraAbsorbAnUnrelatedLineOnALaterStatement  (later statement, tier 2)
+   R 1 000 on 20 Mar (outside April's window), reversed 2 Apr (C dated 2 Apr, inside April's window).
+   April statement: unrelated EFT payment -1 000 on 2 Apr, ref BANK-EFT-0402.
+   ReversedOriginalMatchIntegrationTest.autoMatch_doesNotLetAContraAbsorbAnUnrelatedLineOnALaterStatement:636->assertLineLeftForAHuman:804 [line 0 status]
+   expected: "UNMATCHED"
+    but was: "AUTO_MATCHED"
+
+3. autoMatch_doesNotSuggestAContraForAnUnrelatedLineByAmountAndCloseDate  (tier 3 suggestion)
+   As 1, the unrelated payment dated 4 Mar (2 days after C).
+   ReversedOriginalMatchIntegrationTest.autoMatch_doesNotSuggestAContraForAnUnrelatedLineByAmountAndCloseDate:661->assertLineLeftForAHuman:805 [line 0: no row suggested]
+   expected: null
+    but was: 8f823754-43c3-4e60-a1c4-c274cc6e82ca   (C, suggested at 0.60)
+
+4. autoMatch_doesNotLetAnUnrecordContraAbsorbAnUnrelatedLine  (647A unrecord path, tier 2)
+   Bank charge recorded from its line (-57,50, 20 Mar), then unrecorded: R REVERSED (statement-only,
+   never matched per 652H D-1) + contra C +57,50 RECORDED dated 20 Mar. Same statement: unrelated
+   credit +57,50 on 20 Mar, ref BANK-CR-0320.
+   ReversedOriginalMatchIntegrationTest.autoMatch_doesNotLetAnUnrecordContraAbsorbAnUnrelatedLine:691->assertLineLeftForAHuman:804 [line 1 status]
+   expected: "UNMATCHED"
+    but was: "AUTO_MATCHED"
+
+5. autoMatch_leavesAContrasOwnLineWithoutItsReferenceForAHuman_manualMatchAcceptsIt  (NOT a bug repro)
+   Pins the trade-off of the rule chosen for HF-7: on main a contra's own return line carrying the
+   bank's reference (not REV-...) auto-matched at tier 2 — the same rule HF-7 exploits. After the fix
+   it is left UNMATCHED for a human; manual match accepts C and the month balances.
+   ReversedOriginalMatchIntegrationTest.autoMatch_leavesAContrasOwnLineWithoutItsReferenceForAHuman_manualMatchAcceptsIt:720->assertLineLeftForAHuman:804 [line 1 status]
+   expected: "UNMATCHED"
+    but was: "AUTO_MATCHED"
+
+Severity: MEDIUM (register HF-7, "MEDIUM if reproduced"). Case 1 is a silent false balance —
+OBSERVED on main with a temporary probe test (probeTemp_hf7FalseBalance, case 1 + reconcile as at
+31 Mar; not committed), output in probe-hf7-false-balance.txt:
+  line AUTO_MATCHED to the contra (confidence 0.80), o/s deposits 1000.00 (R), o/s payments 0,
+  bank -1000.00, adjusted bank 0.00 = cashbook 0.00, unresolved lines 0, flags [], balanced=true.
+An unbooked R1 000 payment is hidden and G1–G4 would all pass.

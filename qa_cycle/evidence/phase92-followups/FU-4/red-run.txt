@@ -1,0 +1,141 @@
+00:51:33.409 [main] INFO com.tngtech.archunit.ArchConfiguration -- Reading ArchUnit properties from file:/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-a2a733b130d3017df/backend/target/test-classes/archunit.properties
+00:51:33.496 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report.ClientLedgerStatementReversalReasonIntegrationTest]: ClientLedgerStatementReversalReasonIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+00:51:33.729 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration io.b2mash.b2b.b2bstrawman.BackendApplication for test class io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report.ClientLedgerStatementReversalReasonIntegrationTest
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by net.bytebuddy.dynamic.loading.ClassInjector$UsingUnsafe$Dispatcher$CreationAction (file:/Users/rakheendama/.m2/repository/net/bytebuddy/byte-buddy/1.17.8/byte-buddy-1.17.8.jar)
+WARNING: Please consider reporting this to the maintainers of class net.bytebuddy.dynamic.loading.ClassInjector$UsingUnsafe$Dispatcher$CreationAction
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/Users/rakheendama/.m2/repository/net/bytebuddy/byte-buddy-agent/1.17.8/byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /internal/members/sync
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", X-API-KEY:"test-api-key", Content-Length:"160"]
+             Body = {"clerkOrgId":"org_cls_reversal_reason_test","clerkUserId":"user_cls_owner","email":"cls_owner@test.com","name":"CLS Owner","avatarUrl":null,"orgRole":"owner"}
+
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.member.MemberSyncController
+           Method = io.b2mash.b2b.b2bstrawman.member.MemberSyncController#syncMember(SyncMemberRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/internal/members/685eebc0-d484-4fa8-9c84-a363493e1930", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"memberId":"685eebc0-d484-4fa8-9c84-a363493e1930","clerkUserId":"user_cls_owner","action":"created"}
+    Forwarded URL = null
+   Redirected URL = /internal/members/685eebc0-d484-4fa8-9c84-a363493e1930
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /internal/members/sync
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", X-API-KEY:"test-api-key", Content-Length:"169"]
+             Body = {"clerkOrgId":"org_cls_reversal_reason_test","clerkUserId":"user_cls_approver","email":"cls_approver@test.com","name":"CLS Approver","avatarUrl":null,"orgRole":"admin"}
+
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.member.MemberSyncController
+           Method = io.b2mash.b2b.b2bstrawman.member.MemberSyncController#syncMember(SyncMemberRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/internal/members/96234e33-0da7-4d91-b477-48c962f641f7", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"memberId":"96234e33-0da7-4d91-b477-48c962f641f7","clerkUserId":"user_cls_approver","action":"created"}
+    Forwarded URL = null
+   Redirected URL = /internal/members/96234e33-0da7-4d91-b477-48c962f641f7
+          Cookies = []
+[ERROR] Tests run: 2, Failures: 2, Errors: 0, Skipped: 0, Time elapsed: 13.15 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report.ClientLedgerStatementReversalReasonIntegrationTest
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report.ClientLedgerStatementReversalReasonIntegrationTest.execute_reversalRowReadsGeneratedDescription_neverTheFirmReason -- Time elapsed: 0.384 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+
+expected: "Reversal — REV-PAY-TB-4"
+ but was: "trust books fixture: reversed"
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report.ClientLedgerStatementReversalReasonIntegrationTest.execute_reversalRowReadsGeneratedDescription_neverTheFirmReason(ClientLedgerStatementReversalReasonIntegrationTest.java:109)
+
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report.ClientLedgerStatementReversalReasonIntegrationTest.csvHtmlAndPdf_neverCarryTheFirmReason -- Time elapsed: 0.020 s <<< FAILURE!
+java.lang.AssertionError: 
+
+Expecting actual:
+  "# Client Ledger Statement
+# Generated: 2026-11-22T00:51:46.593363Z
+# Parameters: trust_account_id=f3674227-c576-4894-a0bf-a60ac6165c12, dateTo=2026-11-22, customer_id=719cfa67-607d-439e-a596-71a385c2bd14, dateFrom=2026-01-01
+Date,Reference,Type,Description,Debit,Credit,Running Balance
+2026-03-01,DEP-TB-3,Deposit,Deposit,0.00,1000.00,1000.00
+2026-03-01,PAY-TB-4,Payment,Payment,400.00,0.00,600.00
+2026-11-22,REV-PAY-TB-4,Reversal,trust books fixture: reversed,0.00,400.00,1000.00
+"
+to contain:
+  "Reversal — REV-PAY-TB-4" 
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report.ClientLedgerStatementReversalReasonIntegrationTest.csvHtmlAndPdf_neverCarryTheFirmReason(ClientLedgerStatementReversalReasonIntegrationTest.java:127)
+
+[ERROR] Failures: 
+[ERROR]   ClientLedgerStatementReversalReasonIntegrationTest.csvHtmlAndPdf_neverCarryTheFirmReason:127 
+Expecting actual:
+  "# Client Ledger Statement
+# Generated: 2026-11-22T00:51:46.593363Z
+# Parameters: trust_account_id=f3674227-c576-4894-a0bf-a60ac6165c12, dateTo=2026-11-22, customer_id=719cfa67-607d-439e-a596-71a385c2bd14, dateFrom=2026-01-01
+Date,Reference,Type,Description,Debit,Credit,Running Balance
+2026-03-01,DEP-TB-3,Deposit,Deposit,0.00,1000.00,1000.00
+2026-03-01,PAY-TB-4,Payment,Payment,400.00,0.00,600.00
+2026-11-22,REV-PAY-TB-4,Reversal,trust books fixture: reversed,0.00,400.00,1000.00
+"
+to contain:
+  "Reversal — REV-PAY-TB-4" 
+[ERROR]   ClientLedgerStatementReversalReasonIntegrationTest.execute_reversalRowReadsGeneratedDescription_neverTheFirmReason:109 
+expected: "Reversal — REV-PAY-TB-4"
+ but was: "trust books fixture: reversed"
+[ERROR] Tests run: 2, Failures: 2, Errors: 0, Skipped: 0
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.5.4:test (default-test) on project b2b-strawman-backend: There are test failures.
+[ERROR] 
+[ERROR] See /Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-a2a733b130d3017df/backend/target/surefire-reports for the individual test results.
+[ERROR] See dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

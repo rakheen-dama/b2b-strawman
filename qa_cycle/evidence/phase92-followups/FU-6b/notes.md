@@ -209,7 +209,7 @@ merge-gate marker rule, FU-26).
 
 ## Tests
 
-Backend: new `BankStatementReplaceDiscardIntegrationTest` (17 tests).
+Backend: new `BankStatementReplaceDiscardIntegrationTest` (19 tests).
 - **Red reproductions (a, b, c):**
   - same-end-date import refused 409 with `existingStatementId` / `code`, nothing stored;
   - replace after auto-match releases A's match, A RETIRED with `matched_count` 0, B's auto-match
@@ -296,6 +296,79 @@ Frontend (vitest):
 
 Evidence: `red-run.txt`, `green-run.txt`.
 
+
+## CodeRabbit round 1 on PR #1831 (rulings 1–6)
+
+1. **FIXED — release order.**
+   - `prepareRetirement` keeps the line-lock order (date, id). It now releases the matched lines'
+     rows sorted by trust transaction id (`UUID.compareTo`), the order `autoMatchStatement` locks
+     its rows in (`planned.sort`).
+   - Each row is re-read under its lock (`findByIdForUpdate`) and unlinked only while it is still
+     linked to its line (`releaseMatch` filter).
+   - The lock-order Javadoc is updated.
+   - Test: `discard_releasesRowsInIdOrder_noDeadlockWithAnIdOrderLocker`. The statement's line
+     order crosses the id order, and a raw gate connection holds the lower id, then asks for the
+     higher one.
+   - Mutation: with the old line order the discard is aborted by `deadlock detected` (40P01), see
+     `mutation-release-order.txt`.
+2. **FIXED — ProblemDetail assertions.**
+   - The blank-reason discard asserts status 400, title "Validation failed", detail "1 field(s)
+     have validation errors" and `fieldErrors[0].field = reason`.
+   - The duplicate refusal asserts its full detail.
+   - Every other new error path in the class asserts status, title and the exact detail: the HTTP
+     ones through `jsonPath`, the service ones through an `assertProblem` helper. That covers the
+     recorded-line discard, the reconciled replace, the retired line actions, create on a retired
+     statement, a second discard, another account's statement, and both clash refusals.
+3. **FIXED — stale upload completion.**
+   - The wizard wraps the upload (`uploadForThisWizard`). It captures `wizardGeneration` when the
+     upload starts and drops a result that lands after a reset (a changed account or period, which
+     bump the generation through `resetFromStep2`; 652A D-6).
+   - A dropped success is reported as "The statement was imported, but the account or period
+     changed while it uploaded, so this reconciliation does not use it. Upload it again, or discard
+     it from the Reconciliation page."
+   - Test: "drops an upload that completes after a wizard reset (FU-6b)". The next upload sends no
+     `replacesStatementId`. A mutation with the guard disabled fails ("Received element is not
+     disabled").
+4. **EVALUATED, then FIXED — non-primary accounts.**
+   - The UI can import into a non-primary account. The wizard's step 1 offers every trust account:
+     `reconciliation/new/page.tsx:234` (`fetchTrustAccounts()`) and `:692–694` (`account-select`,
+     `accounts.map`). The upload uses the selected account (`:255`). 652E D-1 binds postings and
+     ledger pages, not the reconciliation wizard.
+   - So the Reconciliation page now lists the unreconciled statements of every account from the
+     same `fetchTrustAccounts` source, with a Trust Account column and Discard on each.
+   - The reconciliation history table is unchanged: it stays primary-only, which is pre-existing
+     and out of scope.
+   - Test: "lists unreconciled statements of every trust account, not only the primary (FU-6b)".
+5. **DEFERRED — a Replace action from the list into the wizard.**
+   - Under ruling F-646C-1 a corrected file with a *different* end date is not a duplicate. It is
+     imported alongside, and the old statement is then discarded from the list. If a draft uses the
+     old statement, the wizard first moves the draft to the corrected statement (create re-points
+     the draft for the same period end, 652C).
+   - Follow-up candidate: a "Replace" action on the statements list that opens the wizard with that
+     statement as `replacesStatementId`.
+   - See the residual risk below for the one narrow case where the old statement cannot be cleaned
+     up.
+6. **ALREADY FIXED in ee80d5a (D-2).**
+   - `BankStatementUpload.tsx:71` offers the Replace dialog only when the upload itself replaces
+     nothing (`response.duplicate && !replaces`). `confirmReplace` (`:105–109`) is reachable only
+     from that dialog.
+   - The backend never invites a replace while replacing (`TrustReconciliationService`
+     `requireNoLiveStatementEndingOn`, the `replacesStatementId != null` branch,
+     `bank_statement.duplicate_end_date_while_replacing`).
+   - Tests: vitest "never offers a second replace when an upload that replaces a statement clashes
+     with another" and "maps the while-replacing refusal to a plain error with no duplicate";
+     backend `replace_whoseNewStatementClashesWithAnotherStatement_isRefusedWithoutAReplaceInvitation`.
+
+**Low note (reviewer): APPLIED.**
+- `findLiveStatementsEndingOn` now also returns `status`.
+- When the statement that clashes with a replacing import is RECONCILED, the refusal reads
+  "Statement … also ends on <date> and is reconciled, so it cannot be discarded. Upload a statement
+  ending on a different date."
+- Test: `replace_clashingWithAReconciledStatement_saysItCannotBeDiscarded`.
+- A plain (non-replacing) import that duplicates a RECONCILED statement still offers Replace. The
+  replace is then refused with "This statement's reconciliation is complete, so it cannot be
+  replaced." That is a clear refusal, and it was left unchanged.
+
 ## Residual risk
 
 - **Legacy duplicates.** Same-end-date pairs imported before FU-6b are not migrated. They still
@@ -316,6 +389,16 @@ Evidence: `red-run.txt`, `green-run.txt`.
   component never offers a second Replace while `replacesStatementId` is set and shows the
   refusal as a plain error. The user discards the clashing statement from the Reconciliation page,
   then uploads again.
+- **A narrow dead end (reported, not changed).** A draft for period end D uses wrong statement A.
+  - A can be discarded only once the draft moves to another statement that fits D (the wizard's
+    create for D re-points it).
+  - A can be replaced only by a statement that fits D.
+  - There is no UI to abandon a draft.
+  - So if the firm has no statement that fits D (for example A was uploaded for the wrong period
+    end and only later statements exist), A and its draft stay. A then appears in the
+    UNRESOLVED_STATEMENT_LINES *warning* (not blocking). It does not block reconciling a later
+    period, because its lines are before the later statement's last line.
+  - This is pre-existing (652C: drafts cannot be abandoned), not created by FU-6b.
 - **Discard does not detach drafts.** A draft on a wrong statement must be moved first (new wizard
   run or replace). The refusal says how.
 - **Pre-existing test noise.** The frontend `pnpm test` run prints a happy-dom

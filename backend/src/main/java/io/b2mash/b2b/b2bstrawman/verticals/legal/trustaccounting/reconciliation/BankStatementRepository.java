@@ -31,7 +31,7 @@ public interface BankStatementRepository extends JpaRepository<BankStatement, UU
       nativeQuery = true,
       value =
           """
-          SELECT s.id AS statementId, s.file_name AS fileName
+          SELECT s.id AS statementId, s.file_name AS fileName, s.status AS status
             FROM bank_statements s
            WHERE s.trust_account_id = :trustAccountId AND s.status <> 'RETIRED'
              AND COALESCE((SELECT MAX(l.transaction_date) FROM bank_statement_lines l
@@ -61,6 +61,8 @@ public interface BankStatementRepository extends JpaRepository<BankStatement, UU
     UUID getStatementId();
 
     String getFileName();
+
+    String getStatus();
   }
 
   /**

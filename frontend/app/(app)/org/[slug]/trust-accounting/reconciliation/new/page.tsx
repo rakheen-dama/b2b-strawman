@@ -244,6 +244,28 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
     load();
   }, []);
 
+  // The upload, guarded like the other async handlers (652A D-6): the wizard generation is captured
+  // when the upload starts, and a result that lands after a reset (a changed account or period, a
+  // fresh wizard) is dropped — it never becomes this wizard's statement, so a later re-upload never
+  // names a statement of another account or period as the one it replaces (FU-6b, CodeRabbit round
+  // 1). The statement is stored by then; it is listed on the Reconciliation page to discard.
+  const uploadForThisWizard = useCallback(
+    async (accountId: string, file: File, replacesStatementId?: string) => {
+      const generation = wizardGeneration.current;
+      const result = await uploadBankStatement(accountId, file, replacesStatementId);
+      if (generation !== wizardGeneration.current) {
+        return {
+          success: false,
+          error: result.success
+            ? "The statement was imported, but the account or period changed while it uploaded, so this reconciliation does not use it. Upload it again, or discard it from the Reconciliation page."
+            : result.error,
+        };
+      }
+      return result;
+    },
+    []
+  );
+
   // Handle upload complete — also reset downstream state for replacement uploads
   const handleUploadComplete = useCallback(
     (stmt: BankStatementResponse) => {
@@ -743,7 +765,7 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
             accountId={selectedAccountId}
             onUploadComplete={handleUploadComplete}
             replacesStatementId={statement?.id}
-            uploadAction={uploadBankStatement}
+            uploadAction={uploadForThisWizard}
           />
           <div className="flex justify-between">
             <Button type="button" variant="outline" onClick={() => setCurrentStep(1)}>

@@ -14,7 +14,7 @@ import {
 } from "@/app/(app)/org/[slug]/trust-accounting/reconciliation/actions";
 import { DiscardStatementDialog } from "@/components/trust/DiscardStatementDialog";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
-import type { BankStatementResponse } from "@/lib/types";
+import type { BankStatementResponse, TrustAccount } from "@/lib/types";
 
 // ── Page ────────────────────────────��─────────────────────────────
 
@@ -57,8 +57,9 @@ export default async function ReconciliationListPage({
   // Fetch primary trust account
   let accountId: string | null = null;
   let accountFetchError = false;
+  let accounts: TrustAccount[] = [];
   try {
-    const accounts = await fetchTrustAccounts();
+    accounts = await fetchTrustAccounts();
     const primary = accounts.find((a) => a.isPrimary) ?? accounts[0];
     if (primary) {
       accountId = primary.id;
@@ -83,14 +84,22 @@ export default async function ReconciliationListPage({
     }
   }
 
-  // FU-6b: the account's imported statements not yet reconciled (replaced and discarded statements
-  // are retired and not listed). One left behind by a refused wizard can be discarded here.
-  let openStatements: BankStatementResponse[] | null = null;
+  // FU-6b: the imported statements not yet reconciled (replaced and discarded statements are
+  // retired and not listed). One left behind by a refused wizard can be discarded here. Every trust
+  // account the wizard offers (its account select reads the same fetchTrustAccounts list), so a
+  // statement imported into a non-primary account can be discarded too (CodeRabbit round 1).
+  let openStatements: { statement: BankStatementResponse; accountName: string }[] | null = null;
   let statementsFetchError = false;
-  if (accountId) {
+  if (accounts.length > 0) {
     try {
-      const statements = await fetchBankStatements(accountId);
-      openStatements = statements.filter((s) => s.status !== "RECONCILED");
+      const perAccount = await Promise.all(
+        accounts.map(async (account) =>
+          (await fetchBankStatements(account.id))
+            .filter((s) => s.status !== "RECONCILED")
+            .map((statement) => ({ statement, accountName: account.accountName }))
+        )
+      );
+      openStatements = perAccount.flat();
     } catch {
       statementsFetchError = true;
     }
@@ -335,6 +344,9 @@ export default async function ReconciliationListPage({
                 <thead>
                   <tr className="border-b border-slate-200 dark:border-slate-700">
                     <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
+                      Trust Account
+                    </th>
+                    <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
                       File
                     </th>
                     <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
@@ -352,12 +364,15 @@ export default async function ReconciliationListPage({
                   </tr>
                 </thead>
                 <tbody>
-                  {openStatements.map((stmt) => (
+                  {openStatements.map(({ statement: stmt, accountName }) => (
                     <tr
                       key={stmt.id}
                       className="border-b border-slate-100 last:border-0 dark:border-slate-800"
                       data-testid={`open-statement-row-${stmt.id}`}
                     >
+                      <td className="py-3 pr-4 text-slate-700 dark:text-slate-300">
+                        {accountName}
+                      </td>
                       <td className="py-3 pr-4 font-medium text-slate-950 dark:text-slate-50">
                         {stmt.fileName}
                       </td>

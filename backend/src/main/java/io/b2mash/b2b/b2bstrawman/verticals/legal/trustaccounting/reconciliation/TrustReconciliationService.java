@@ -402,13 +402,15 @@ public class TrustReconciliationService {
     if (replacesStatementId != null) {
       // FU-6b D-2 (ruling): one import retires at most one statement. This import already
       // replaces a statement, so it never invites a second replace — the clash is discarded first.
+      // A reconciled statement cannot be discarded, so it is not offered as the way out.
+      String wayOut =
+          "RECONCILED".equals(ref.getStatus())
+              ? " and is reconciled, so it cannot be discarded. Upload a statement ending on a"
+                  + " different date."
+              : ". Discard it from the Reconciliation page first, then upload again.";
       throw new ResourceConflictException(
           "A statement ending on this date is already imported",
-          "Statement "
-              + ref.getFileName()
-              + " also ends on "
-              + endDateText
-              + ". Discard it from the Reconciliation page first, then upload again.",
+          "Statement " + ref.getFileName() + " also ends on " + endDateText + wayOut,
           Map.of("code", "bank_statement.duplicate_end_date_while_replacing"));
     }
     var properties = new LinkedHashMap<String, Object>();
@@ -471,7 +473,9 @@ public class TrustReconciliationService {
    *       rows are real trust entries — unmatch it first, which reverses them); each AUTO_ /
    *       MANUALLY_ MATCHED line is released through {@link #releaseMatch}, the code {@link
    *       #unmatch} uses (the line UNMATCHED, its row unlinked); EXCLUDED lines are left as they
-   *       are;
+   *       are. The released rows are locked one at a time in trust transaction id order — the order
+   *       {@link #autoMatchStatement} locks its rows in — each re-read under its lock and unlinked
+   *       only while it is still linked to its line;
    *   <li>the statement, locked last: refused when RETIRED, RECONCILED or of another account;
    *       {@code matched_count} falls by the lines released. Then the reconciliations on it are
    *       read again: one that a concurrent create pointed at it after step 1 refuses (create locks
@@ -529,13 +533,24 @@ public class TrustReconciliationService {
               + (recorded == 1 ? "it" : "them")
               + " first, which reverses those entries.");
     }
+    // The matched lines' rows are locked in trust transaction id order (UUID.compareTo), the order
+    // auto-match locks its rows in (planned.sort): a run holding a lower id never waits on a higher
+    // one this retire holds while the retire waits on the lower (CodeRabbit round 1 on PR #1831).
+    var matched =
+        lines.stream()
+            .filter(
+                l ->
+                    "AUTO_MATCHED".equals(l.getMatchStatus())
+                        || "MANUALLY_MATCHED".equals(l.getMatchStatus()))
+            .sorted(
+                Comparator.comparing(
+                    BankStatementLine::getTrustTransactionId,
+                    Comparator.nullsLast(Comparator.naturalOrder())))
+            .toList();
     int released = 0;
-    for (var line : lines) {
-      if ("AUTO_MATCHED".equals(line.getMatchStatus())
-          || "MANUALLY_MATCHED".equals(line.getMatchStatus())) {
-        releaseMatch(line);
-        released++;
-      }
+    for (var line : matched) {
+      releaseMatch(line);
+      released++;
     }
 
     // 3. The statement last, locked (its first read), then its reconciliations again
@@ -968,10 +983,12 @@ public class TrustReconciliationService {
     // Clear the transaction side. The row is locked and read fresh (line → transaction →
     // statement): the save writes the whole row, so a plain read could write back a stale status
     // over a reversal committed meanwhile (a reversal locks the row, never the line — FU-6b
-    // review). This is the first read of the row in every caller's transaction.
+    // review). This is the first read of the row in every caller's transaction. Re-read under its
+    // lock, the row is unlinked only while it is still linked to this line.
     if (transactionId != null) {
       trustTransactionRepository
           .findByIdForUpdate(transactionId)
+          .filter(txn -> line.getId().equals(txn.getBankStatementLineId()))
           .ifPresent(txn -> postingService.linkBankLine(txn, null));
     }
   }

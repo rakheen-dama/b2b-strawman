@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.zaxxer.hikari.HikariDataSource;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
@@ -24,6 +25,9 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService;
 import jakarta.persistence.EntityManager;
 import java.nio.charset.StandardCharsets;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -32,6 +36,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.LockSupport;
+import javax.sql.DataSource;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -75,6 +80,7 @@ class BankStatementReplaceDiscardIntegrationTest {
   @Autowired private TrustReconciliationService reconciliationService;
   @Autowired private TrustIntegrityService integrityService;
   @Autowired private JdbcTemplate jdbc;
+  @Autowired private DataSource dataSource;
   @Autowired private StatementLinePostingService postingService;
   @Autowired private TrustTransactionService transactionService;
   @Autowired private TransactionTemplate transactionTemplate;
@@ -123,7 +129,14 @@ class BankStatementReplaceDiscardIntegrationTest {
             "31/03/2026,Deposit received,1000.00,1000.00,FU6B-A1",
             "31/03/2026,Bank charge,-10.00,990.00,FU6B-A2")
         .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.status").value(409))
         .andExpect(jsonPath("$.title").value("A statement ending on this date is already imported"))
+        .andExpect(
+            jsonPath("$.detail")
+                .value(
+                    "Statement fu6b-intraday.csv of this trust account also ends on 31 March"
+                        + " 2026. Replace it with this statement, or import a statement that ends"
+                        + " on another date."))
         .andExpect(jsonPath("$.existingStatementId").value(intraday.id().toString()))
         .andExpect(jsonPath("$.code").value("bank_statement.duplicate_end_date"));
 
@@ -392,8 +405,15 @@ class BankStatementReplaceDiscardIntegrationTest {
                                 + " entries.");
                   });
           assertThatThrownBy(() -> reconciliationService.discardBankStatement(a.id(), "wrong"))
-              .isInstanceOf(InvalidStateException.class)
-              .hasMessageContaining("Cannot discard statement");
+              .satisfies(
+                  e ->
+                      assertProblem(
+                          e,
+                          400,
+                          "Cannot discard statement",
+                          "1 line of this statement was recorded from the statement and created"
+                              + " trust entries. Unmatch it first, which reverses those"
+                              + " entries."));
         });
     assertThat(statementCount(account)).isEqualTo(1L);
     assertThat(matchStatus(lineId)).as("the recorded line is untouched").isEqualTo("RECORDED");
@@ -426,8 +446,14 @@ class BankStatementReplaceDiscardIntegrationTest {
         () -> {
           assertThatThrownBy(
                   () -> reconciliationService.importBankStatement(account, replacement, a.id()))
-              .isInstanceOf(InvalidStateException.class)
-              .hasMessageContaining("Cannot replace statement");
+              .satisfies(
+                  e ->
+                      assertProblem(
+                          e,
+                          400,
+                          "Cannot replace statement",
+                          "The reconciliation to 31 March 2026 was completed with this statement,"
+                              + " so it cannot be replaced."));
           assertThatThrownBy(() -> reconciliationService.discardBankStatement(a.id(), "wrong"))
               .isInstanceOfSatisfying(
                   InvalidStateException.class,
@@ -482,6 +508,7 @@ class BankStatementReplaceDiscardIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"reason\": \"Wrong file\"}"))
         .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
         .andExpect(jsonPath("$.title").value("Cannot discard statement"))
         .andExpect(
             jsonPath("$.detail")
@@ -495,7 +522,11 @@ class BankStatementReplaceDiscardIntegrationTest {
                 .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"reason\": \" \"}"))
-        .andExpect(status().isBadRequest());
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.title").value("Validation failed"))
+        .andExpect(jsonPath("$.detail").value("1 field(s) have validation errors"))
+        .andExpect(jsonPath("$.fieldErrors[0].field").value("reason"));
     assertThat(statementStatus(a.id())).isEqualTo("IMPORTED");
 
     // The draft is continued with another statement (ending on another date), then A is free
@@ -565,13 +596,38 @@ class BankStatementReplaceDiscardIntegrationTest {
         () -> {
           assertThatThrownBy(
                   () -> reconciliationService.createReconciliation(account, MARCH_END, a.id()))
-              .hasMessageContaining("Statement retired");
+              .satisfies(
+                  e ->
+                      assertProblem(
+                          e,
+                          400,
+                          "Statement retired",
+                          "This bank statement was discarded. Reconcile against the statement"
+                              + " that replaced it, or import the statement for this period."));
           assertThatThrownBy(() -> reconciliationService.autoMatchStatement(a.id()))
-              .hasMessageContaining("Statement retired");
+              .satisfies(
+                  e ->
+                      assertProblem(
+                          e,
+                          400,
+                          "Statement retired",
+                          "This bank statement was discarded, so its lines cannot be matched, recorded or excluded."));
           assertThatThrownBy(() -> reconciliationService.manualMatch(line0, deposit))
-              .hasMessageContaining("Statement retired");
+              .satisfies(
+                  e ->
+                      assertProblem(
+                          e,
+                          400,
+                          "Statement retired",
+                          "This bank statement was discarded, so its lines cannot be matched, recorded or excluded."));
           assertThatThrownBy(() -> reconciliationService.excludeLine(line1, "not trust"))
-              .hasMessageContaining("Statement retired");
+              .satisfies(
+                  e ->
+                      assertProblem(
+                          e,
+                          400,
+                          "Statement retired",
+                          "This bank statement was discarded, so its lines cannot be matched, recorded or excluded."));
           assertThatThrownBy(
                   () ->
                       postingService.recordFromLine(
@@ -585,9 +641,21 @@ class BankStatementReplaceDiscardIntegrationTest {
                               null,
                               null,
                               null)))
-              .hasMessageContaining("Statement retired");
+              .satisfies(
+                  e ->
+                      assertProblem(
+                          e,
+                          400,
+                          "Statement retired",
+                          "This bank statement was discarded, so its lines cannot be matched, recorded or excluded."));
           assertThatThrownBy(() -> reconciliationService.discardBankStatement(a.id(), "again"))
-              .hasMessageContaining("Cannot discard statement");
+              .satisfies(
+                  e ->
+                      assertProblem(
+                          e,
+                          400,
+                          "Cannot discard statement",
+                          "This statement was already discarded."));
         });
     assertThat(linkedLine(deposit)).isNull();
     assertThat(matchStatus(line1)).isEqualTo("UNMATCHED");
@@ -607,7 +675,14 @@ class BankStatementReplaceDiscardIntegrationTest {
         () ->
             assertThatThrownBy(
                     () -> reconciliationService.importBankStatement(account, file, foreign.id()))
-                .hasMessageContaining("Trust account mismatch"));
+                .satisfies(
+                    e ->
+                        assertProblem(
+                            e,
+                            400,
+                            "Trust account mismatch",
+                            "The statement to replace does not belong to the specified trust"
+                                + " account")));
     assertThat(statementStatus(foreign.id())).isEqualTo("IMPORTED");
     assertThat(statementCount(account)).isZero();
   }
@@ -753,6 +828,7 @@ class BankStatementReplaceDiscardIntegrationTest {
             "01/03/2026,Deposit received,1000.00,1000.00,FU6B-CL",
             "09/03/2026,Bank charge,-4.00,996.00,FU6B-CB")
         .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.status").value(409))
         .andExpect(jsonPath("$.title").value("A statement ending on this date is already imported"))
         .andExpect(
             jsonPath("$.detail")
@@ -767,6 +843,31 @@ class BankStatementReplaceDiscardIntegrationTest {
     assertThat(matchStatus(a.lines().getFirst().id())).isEqualTo("MANUALLY_MATCHED");
     assertThat(linkedLine(deposit)).isEqualTo(a.lines().getFirst().id());
     assertThat(statementStatus(c.id())).as("C is untouched").isEqualTo("IMPORTED");
+  }
+
+  /**
+   * The while-replacing refusal when the clashing statement is RECONCILED: it cannot be discarded,
+   * so the refusal says so and asks for a statement ending on another date instead.
+   */
+  @Test
+  void replace_clashingWithAReconciledStatement_saysItCannotBeDiscarded() throws Exception {
+    var account = books.freshAccount(false);
+    var a = importStatement(account, "fu6b-rc-a.csv", "02/03/2026,Bank charge,-1.00,-1.00,FU6B-RA");
+    var c = importStatement(account, "fu6b-rc-c.csv", "11/03/2026,Bank charge,-2.00,-2.00,FU6B-RC");
+    books.markStatementReconciledDirect(c.id());
+
+    importHttp(account, a.id(), "fu6b-rc-b.csv", "11/03/2026,Bank charge,-2.00,-2.00,FU6B-RB")
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.status").value(409))
+        .andExpect(jsonPath("$.title").value("A statement ending on this date is already imported"))
+        .andExpect(
+            jsonPath("$.detail")
+                .value(
+                    "Statement fu6b-rc-c.csv also ends on 11 March 2026 and is reconciled, so it"
+                        + " cannot be discarded. Upload a statement ending on a different date."))
+        .andExpect(jsonPath("$.code").value("bank_statement.duplicate_end_date_while_replacing"))
+        .andExpect(jsonPath("$.existingStatementId").doesNotExist());
+    assertThat(statementStatus(a.id())).isEqualTo("IMPORTED");
   }
 
   /**
@@ -832,6 +933,72 @@ class BankStatementReplaceDiscardIntegrationTest {
     assertThat(outcome.error().get()).as("the posting").isNull();
     assertThat(deposit.get()).isNotNull();
     assertThat(holder.error().get()).as("the import committed").isNull();
+  }
+
+  /**
+   * CodeRabbit round 1 on PR #1831: a retire releases its rows in trust transaction id order, the
+   * order auto-match locks its rows in. The statement's line order (date) is made to cross the id
+   * order: the earlier line holds the higher id. A gate connection stands in for an auto-match that
+   * holds the lower id (its first lock) and then wants the higher one. The discard waits on the
+   * lower id holding no row, so the gate takes the higher id at once; no deadlock (40P01). In line
+   * order the discard would hold the higher id while waiting on the lower, and the gate's request
+   * for the higher would close the cycle ({@code mutation-release-order.txt}).
+   */
+  @Test
+  void discard_releasesRowsInIdOrder_noDeadlockWithAnIdOrderLocker() throws Exception {
+    var account = books.freshAccount(false);
+    var client = books.newClient("fu6b release order");
+    var rowA = books.deposit(account, client, "110.00");
+    var rowB = books.deposit(account, client, "220.00");
+    boolean aIsLo = rowA.compareTo(rowB) < 0;
+    var lo = aIsLo ? rowA : rowB;
+    var hi = aIsLo ? rowB : rowA;
+    var loAmount = aIsLo ? "110.00" : "220.00";
+    var hiAmount = aIsLo ? "220.00" : "110.00";
+    var s =
+        importStatement(
+            account,
+            "fu6b-order.csv",
+            "01/03/2026,Deposit hi," + hiAmount + ",0.00,FU6B-OH",
+            "02/03/2026,Deposit lo," + loAmount + ",0.00,FU6B-OL");
+    match(s, 0, hi);
+    match(s, 1, lo);
+
+    var pool = dataSource.unwrap(HikariDataSource.class);
+    Throwable gateError = null;
+    Outcome outcome;
+    boolean discardBlocked;
+    try (Connection gate =
+        DriverManager.getConnection(pool.getJdbcUrl(), pool.getUsername(), pool.getPassword())) {
+      gate.setAutoCommit(false);
+      int gatePid;
+      try (var st = gate.createStatement();
+          var rs = st.executeQuery("SELECT pg_backend_pid()")) {
+        rs.next();
+        gatePid = rs.getInt(1);
+      }
+      lockTransactionRow(gate, lo); // the id-order locker's first lock: the lower id
+      outcome = runConcurrently(() -> reconciliationService.discardBankStatement(s.id(), "Wrong"));
+      try {
+        discardBlocked = awaitBlockedHeldByOrFinished(gatePid, outcome.finished(), "");
+        try {
+          lockTransactionRow(gate, hi); // its next lock: the higher id
+        } catch (SQLException e) {
+          gateError = e;
+        }
+      } finally {
+        gate.rollback();
+      }
+    }
+    join(outcome.thread());
+
+    assertThat(discardBlocked).as("the discard waited on the gate's lower id").isTrue();
+    assertThat(gateError).as("the gate took the higher id (no 40P01)").isNull();
+    assertThat(outcome.error().get()).as("the discard (no 40P01)").isNull();
+    assertThat(linkedLine(lo)).isNull();
+    assertThat(linkedLine(hi)).isNull();
+    assertThat(statementStatus(s.id())).isEqualTo("RETIRED");
+    assertThat(matchedCount(s.id())).isZero();
   }
 
   // --- helpers -----------------------------------------------------------------------------------
@@ -1067,6 +1234,25 @@ class BankStatementReplaceDiscardIntegrationTest {
             .formatted(books.schema()),
         Long.class,
         account);
+  }
+
+  private void lockTransactionRow(Connection gate, UUID id) throws SQLException {
+    try (var ps =
+        gate.prepareStatement(
+            "SELECT id FROM \"%s\".trust_transactions WHERE id = ? FOR UPDATE"
+                .formatted(books.schema()))) {
+      ps.setObject(1, id);
+      ps.executeQuery().close();
+    }
+  }
+
+  /** An error-path refusal: its ProblemDetail status, title and detail (backend test rules). */
+  private static void assertProblem(Throwable error, int status, String title, String detail) {
+    assertThat(error).isInstanceOf(org.springframework.web.ErrorResponseException.class);
+    var body = ((org.springframework.web.ErrorResponseException) error).getBody();
+    assertThat(body.getStatus()).as("status").isEqualTo(status);
+    assertThat(body.getTitle()).as("title").isEqualTo(title);
+    assertThat(body.getDetail()).as("detail").isEqualTo(detail);
   }
 
   private long liveStatementCount(UUID account) {

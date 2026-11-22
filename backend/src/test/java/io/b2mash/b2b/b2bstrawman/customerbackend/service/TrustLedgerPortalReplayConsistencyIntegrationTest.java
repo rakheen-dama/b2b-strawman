@@ -19,6 +19,10 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccount;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountType;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTransactionRecordedEvent;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustPostingService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordDepositRequest;
 import java.math.BigDecimal;
@@ -36,12 +40,14 @@ import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
 
 /**
@@ -69,6 +75,9 @@ class TrustLedgerPortalReplayConsistencyIntegrationTest {
   @Autowired private ProjectRepository projectRepository;
   @Autowired private TrustAccountRepository trustAccountRepository;
   @Autowired private TrustTransactionService trustTransactionService;
+  @Autowired private TrustTransactionRepository trustTransactionRepository;
+  @Autowired private TrustPostingService trustPostingService;
+  @Autowired private ApplicationEventPublisher eventPublisher;
   @Autowired private PlatformTransactionManager transactionManager;
   @Autowired private JdbcTemplate jdbc;
   @MockitoSpyBean private PortalTrustReadModelRepository portalTrustRepo;
@@ -229,7 +238,85 @@ class TrustLedgerPortalReplayConsistencyIntegrationTest {
     assertThat(bWaitedOnTheLock).as("replay B waited on replay A's matter lock").isTrue();
   }
 
+  // ==========================================================================
+  // F-5 (read side): the replay reads committed rows, not the committed transaction's managed
+  // entities — the AFTER_COMMIT replay runs on that transaction's still-open persistence context
+  // ==========================================================================
+
+  @Test
+  void aReplayReadsARowItsTransactionHeldUnpostedAsPostedOnceAnotherTransactionPostedIt() {
+    UUID matter = newMatter("Stale-read matter");
+    UUID deposit = deposit(matter, "100.00", "SR-DEP-1", LocalDate.of(2026, 3, 1));
+    UUID payment = awaitingPayment(matter, "30.00", "SR-PAY-1", LocalDate.of(2026, 3, 2));
+    var requiresNew = new TransactionTemplate(transactionManager);
+    requiresNew.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+
+    inTenant(
+        () ->
+            tenantTx.executeWithoutResult(
+                status -> {
+                  // This transaction loads the payment while it is unposted: it is now a managed
+                  // entity in this persistence context, effect 0.
+                  var held = trustTransactionRepository.findById(payment).orElseThrow();
+                  assertThat(held.getStatus()).isEqualTo("AWAITING_APPROVAL");
+                  // Another transaction (its own persistence context) posts it and commits.
+                  requiresNew.executeWithoutResult(
+                      inner ->
+                          trustPostingService.postOnApproval(
+                              trustTransactionRepository.findById(payment).orElseThrow(),
+                              memberId));
+                  // A replay of the matter is triggered by this transaction; it runs AFTER_COMMIT
+                  // on this thread, against this transaction's still-open persistence context.
+                  eventPublisher.publishEvent(
+                      TrustTransactionRecordedEvent.recorded(
+                          deposit,
+                          trustAccountId,
+                          matter,
+                          "DEPOSIT",
+                          new BigDecimal("100.00"),
+                          LocalDate.of(2026, 3, 1),
+                          customerId,
+                          memberId,
+                          tenantSchema,
+                          ORG_ID));
+                }));
+
+    // The replay saw the payment as committed (APPROVED, effect -30), not as the stale managed
+    // entity (AWAITING_APPROVAL, effect 0, filtered out).
+    assertThat(portalRows(matter))
+        .as("the posted payment reached the portal")
+        .extracting(PortalTrustTransactionView::id)
+        .containsExactly(payment, deposit);
+    assertThat(portalBalance(matter)).isEqualByComparingTo("70.00");
+    assertThat(portalRows(matter).getFirst().runningBalance()).isEqualByComparingTo("70.00");
+  }
+
   // ── Helpers ────────────────────────────────────────────────────────────
+
+  /** Records a payment awaiting approval (unposted, no event) in its own committed transaction. */
+  private UUID awaitingPayment(UUID matter, String amount, String reference, LocalDate date) {
+    var holder = new UUID[1];
+    inTenant(
+        () ->
+            tenantTx.executeWithoutResult(
+                status -> {
+                  var draft =
+                      new TrustTransaction(
+                          trustAccountId,
+                          "PAYMENT",
+                          new BigDecimal(amount),
+                          customerId,
+                          matter,
+                          null,
+                          reference,
+                          "Replay payment " + reference,
+                          date,
+                          "AWAITING_APPROVAL",
+                          memberId);
+                  holder[0] = trustPostingService.recordAwaitingApproval(draft).getId();
+                }));
+    return holder[0];
+  }
 
   private void capture(Runnable action, AtomicReference<Throwable> error, AtomicBoolean done) {
     try {
@@ -244,9 +331,11 @@ class TrustLedgerPortalReplayConsistencyIntegrationTest {
   }
 
   /**
-   * Waits (bounded, 30 s) until a backend waits on an advisory lock (true — replay B queued behind
-   * replay A's matter lock) or {@code finished} is set (false — B ran to completion without
-   * waiting). Observed in {@code pg_stat_activity}, never a sleep.
+   * Waits (bounded, 30 s) until a backend waits on the portal matter-replay advisory lock (true —
+   * replay B queued behind replay A's matter lock) or {@code finished} is set (false — B ran to
+   * completion without waiting). Observed in {@code pg_stat_activity}, never a sleep; only a
+   * backend whose waiting statement is the matter-replay lock counts, so an unrelated advisory
+   * waiter cannot release A early.
    */
   private boolean awaitAdvisoryWaitOrFinished(AtomicBoolean finished) {
     long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(30);
@@ -256,6 +345,7 @@ class TrustLedgerPortalReplayConsistencyIntegrationTest {
               """
               SELECT count(*) FROM pg_stat_activity
               WHERE wait_event_type = 'Lock' AND wait_event = 'advisory'
+                AND query LIKE '%portal_trust_matter%'
               """,
               Long.class);
       if (waiting != null && waiting > 0) {

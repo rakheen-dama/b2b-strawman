@@ -32,6 +32,27 @@ public class PortalTrustReadModelRepository {
     return instant != null ? Timestamp.from(instant) : null;
   }
 
+  // ── Replay lock ───────────────────────────────────────────────────────
+
+  /**
+   * Serialises the portal replays of one matter until the caller's portal transaction ends ({@code
+   * pg_advisory_xact_lock}, keyed by tenant schema and matter — Phase 92 648D F-5). The replay
+   * takes it before it reads the matter's firm history, so a replay that starts after another has
+   * committed reads at least that history and the later writer is always the newer read. Only the
+   * replay takes it; it never waits on a firm-side lock while holding it. Must run inside a {@code
+   * portalTransactionManager} transaction.
+   */
+  public void lockMatterReplay(String tenantSchema, UUID matterId) {
+    jdbc.sql(
+            """
+            SELECT 1 FROM pg_advisory_xact_lock(hashtextextended(
+                'portal_trust_matter:' || ? || ':' || CAST(? AS text), 0))
+            """)
+        .params(tenantSchema, matterId)
+        .query(Integer.class)
+        .single();
+  }
+
   // ── Balance upserts ───────────────────────────────────────────────────
 
   /**

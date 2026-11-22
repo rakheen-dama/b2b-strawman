@@ -10,7 +10,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustDoma
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTransactionApprovalEvent;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTransactionRecordedEvent;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedger;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionHistoryRow;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionType;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionTypeLabels;
@@ -198,7 +198,7 @@ public class TrustLedgerPortalSyncService {
       return;
     }
     var txn = txnOpt.get();
-    if (!hasPortalScope(txn)) {
+    if (!hasPortalScope(txn.getCustomerId(), txn.getProjectId())) {
       return;
     }
     // Upsert this row plus replay the matter so the new transaction's running_balance and every
@@ -216,7 +216,7 @@ public class TrustLedgerPortalSyncService {
     for (var status : PORTAL_STATUSES) {
       for (var txn :
           trustTransactionRepository.findByStatusAndTrustAccountId(status, trustAccountId)) {
-        if (!hasPortalScope(txn)) {
+        if (!hasPortalScope(txn.getCustomerId(), txn.getProjectId())) {
           continue;
         }
         if (!seenMatters.add(txn.getProjectId())) {
@@ -248,32 +248,51 @@ public class TrustLedgerPortalSyncService {
    * keying each row by its own {@code customer_id} (rather than the event's customerId) prevents
    * the second leg's replay from re-attributing the first leg's portal rows to the wrong customer
    * (CodeRabbit follow-up to GAP-L-52).
+   *
+   * <p><b>Atomic and in order (Phase 92 648D F-4 / F-5):</b> the whole replay runs in one portal
+   * transaction, so its rows and its balance snapshot commit or roll back together — a failed write
+   * never leaves rows whose running balance disagrees with the stored balance. Its first statement
+   * takes the matter's replay lock ({@link PortalTrustReadModelRepository#lockMatterReplay}), held
+   * until that commit; the firm history is read only after the lock is granted, at READ COMMITTED,
+   * as {@link TrustTransactionHistoryRow} projections built from column values ({@link
+   * TrustTransactionRepository#findHistoryRowsByProjectId}) — never entities, so a row the
+   * committed transaction's still-open persistence context holds from before cannot come back
+   * stale. A replay that runs after another has committed therefore reads at least every committed
+   * row the other read: two concurrent replays of one matter can no longer write an older balance
+   * last. The listeners run {@code AFTER_COMMIT}, so the replay holds no firm-side lock, and its
+   * history read is a plain {@code SELECT} that waits on none; a fan-out takes one matter's lock at
+   * a time (each released at that matter's commit).
    */
   private void recomputeMatter(UUID matterId) {
-    var history = trustTransactionRepository.findByProjectIdOrderByTransactionDateAsc(matterId);
-    Map<UUID, Balances> balancesByCustomer = new LinkedHashMap<>();
-    for (var txn : history) {
-      if (!PORTAL_STATUSES.contains(txn.getStatus()) || !hasPortalScope(txn)) {
-        continue;
-      }
-      var ledger = projectedLedger(txn);
-      if (ledger.isEmpty()) {
-        continue;
-      }
-      UUID rowCustomerId = txn.getCustomerId();
-      Instant occurredAt = deriveOccurredAt(txn);
-      BigDecimal running =
-          balancesByCustomer
-              .computeIfAbsent(rowCustomerId, id -> new Balances())
-              .apply(txn, ledger.get(), occurredAt);
-      if (isVisibleRow(txn, ledger.get())) {
-        upsertRow(txn, rowCustomerId, matterId, ledger.get(), running, occurredAt);
-      }
-    }
-    balancesByCustomer.forEach(
-        (customerId, balances) ->
-            portalTrustRepo.upsertBalance(
-                customerId, matterId, balances.general, balances.invested, balances.latest));
+    String tenantSchema = RequestScopes.requireTenantId();
+    portalTxTemplate.executeWithoutResult(
+        status -> {
+          portalTrustRepo.lockMatterReplay(tenantSchema, matterId);
+          var history = trustTransactionRepository.findHistoryRowsByProjectId(matterId);
+          Map<UUID, Balances> balancesByCustomer = new LinkedHashMap<>();
+          for (var txn : history) {
+            if (!PORTAL_STATUSES.contains(txn.status()) || !hasPortalScope(txn)) {
+              continue;
+            }
+            var ledger = projectedLedger(txn);
+            if (ledger.isEmpty()) {
+              continue;
+            }
+            UUID rowCustomerId = txn.clientId();
+            Instant occurredAt = deriveOccurredAt(txn);
+            BigDecimal running =
+                balancesByCustomer
+                    .computeIfAbsent(rowCustomerId, id -> new Balances())
+                    .apply(txn, ledger.get(), occurredAt);
+            if (isVisibleRow(txn, ledger.get())) {
+              upsertRow(txn, rowCustomerId, matterId, ledger.get(), running, occurredAt);
+            }
+          }
+          balancesByCustomer.forEach(
+              (customerId, balances) ->
+                  portalTrustRepo.upsertBalance(
+                      customerId, matterId, balances.general, balances.invested, balances.latest));
+        });
   }
 
   // ── Backfill ───────────────────────────────────────────────────────────
@@ -344,17 +363,16 @@ public class TrustLedgerPortalSyncService {
           // Load every trust transaction once, filter projected + portal-status inline and
           // bucket by matter. (Previously this looped over the statuses with a findAll() call
           // inside — O(2N) heap load + silent duplicates.)
-          for (var txn : trustTransactionRepository.findAll()) {
-            if (!PORTAL_STATUSES.contains(txn.getStatus())) {
+          for (var entity : trustTransactionRepository.findAll()) {
+            var txn = TrustTransactionHistoryRow.of(entity);
+            if (!PORTAL_STATUSES.contains(txn.status())) {
               continue;
             }
             if (!hasPortalScope(txn) || projectedLedger(txn).isEmpty()) {
               continue;
             }
-            UUID matterId = txn.getProjectId();
-            rollups
-                .computeIfAbsent(matterId, id -> new MatterRollup(id, txn.getCustomerId()))
-                .add(txn);
+            UUID matterId = txn.matterId();
+            rollups.computeIfAbsent(matterId, id -> new MatterRollup(id, txn.clientId())).add(txn);
           }
           // Snapshot the tenant's customer id set inside the same scope binding — needed for
           // the wipe-and-rewrite drift repair below.
@@ -375,7 +393,7 @@ public class TrustLedgerPortalSyncService {
             status -> {
               int written = 0;
               for (var rollup : rollups.values()) {
-                List<TrustTransaction> ordered = rollup.ascHistory();
+                List<TrustTransactionHistoryRow> ordered = rollup.ascHistory();
                 // The window counts visible rows only; every projected row still moves its
                 // ledger, so the first retained row's running balance reflects every older
                 // credit/debit (and an INV_RECEIVE outside the window still counts as invested).
@@ -395,7 +413,7 @@ public class TrustLedgerPortalSyncService {
                     continue;
                   }
                   upsertRow(txn, rollup.customerId, rollup.matterId, ledger, running, occurredAt);
-                  retainedTxnIds.add(txn.getId());
+                  retainedTxnIds.add(txn.id());
                   written++;
                 }
                 // The final balances after walking every transaction are the matter's current
@@ -476,7 +494,7 @@ public class TrustLedgerPortalSyncService {
      * Moves {@code ledger} by the row's effect and {@code latest} to the row's {@code occurredAt}
      * ({@link #deriveOccurredAt}); returns that ledger's running balance.
      */
-    BigDecimal apply(TrustTransaction txn, TrustLedger ledger, Instant occurredAt) {
+    BigDecimal apply(TrustTransactionHistoryRow txn, TrustLedger ledger, Instant occurredAt) {
       if (latest == null || occurredAt.isAfter(latest)) {
         latest = occurredAt;
       }
@@ -493,31 +511,32 @@ public class TrustLedgerPortalSyncService {
   private static final class MatterRollup {
     final UUID matterId;
     final UUID customerId;
-    final java.util.ArrayList<TrustTransaction> transactions = new java.util.ArrayList<>();
+    final java.util.ArrayList<TrustTransactionHistoryRow> transactions =
+        new java.util.ArrayList<>();
 
     MatterRollup(UUID matterId, UUID customerId) {
       this.matterId = matterId;
       this.customerId = customerId;
     }
 
-    void add(TrustTransaction txn) {
+    void add(TrustTransactionHistoryRow txn) {
       transactions.add(txn);
     }
 
     /** Returns the matter's transactions in ascending date / createdAt order. */
-    List<TrustTransaction> ascHistory() {
+    List<TrustTransactionHistoryRow> ascHistory() {
       transactions.sort(
           (a, b) -> {
-            int byDate = a.getTransactionDate().compareTo(b.getTransactionDate());
+            int byDate = a.transactionDate().compareTo(b.transactionDate());
             if (byDate != 0) {
               return byDate;
             }
-            Instant aCreated = a.getCreatedAt() == null ? Instant.EPOCH : a.getCreatedAt();
-            Instant bCreated = b.getCreatedAt() == null ? Instant.EPOCH : b.getCreatedAt();
+            Instant aCreated = a.createdAt() == null ? Instant.EPOCH : a.createdAt();
+            Instant bCreated = b.createdAt() == null ? Instant.EPOCH : b.createdAt();
             int byCreated = aCreated.compareTo(bCreated);
-            // Same final tiebreak as findByProjectIdOrderByTransactionDateAsc and the portal
+            // Same final tiebreak as findHistoryRowsByProjectId and the portal
             // read order (G89-F39), so running balances read in display order.
-            return byCreated != 0 ? byCreated : compareInPostgresOrder(a.getId(), b.getId());
+            return byCreated != 0 ? byCreated : compareInPostgresOrder(a.id(), b.id());
           });
       return List.copyOf(transactions);
     }
@@ -541,25 +560,25 @@ public class TrustLedgerPortalSyncService {
 
   /** Upserts one visible row under {@code customerId} with its own ledger's running balance. */
   private void upsertRow(
-      TrustTransaction txn,
+      TrustTransactionHistoryRow txn,
       UUID customerId,
       UUID matterId,
       TrustLedger ledger,
       BigDecimal runningBalance,
       Instant occurredAt) {
     portalTrustRepo.upsertTransaction(
-        txn.getId(),
+        txn.id(),
         customerId,
         matterId,
-        txn.getTransactionType(),
+        txn.transactionType(),
         ledger.name(),
-        txn.getAmount(),
+        txn.amount(),
         runningBalance,
-        txn.getTransactionDate(),
+        txn.transactionDate(),
         recordedAt(txn),
         occurredAt,
         portalDescription(txn),
-        txn.getReference());
+        txn.reference());
   }
 
   /**
@@ -569,20 +588,24 @@ public class TrustLedgerPortalSyncService {
    * sanitiser (140-char cap, {@code [internal]} strip, blank fallback). The fallback names the type
    * by its client label ("Payment — TX-1"), never the raw code (648D, OQ-5).
    */
-  private String portalDescription(TrustTransaction txn) {
+  private String portalDescription(TrustTransactionHistoryRow txn) {
     return sanitiser.sanitise(
         TrustTransactionTypeLabels.clientDescription(
-            txn.getTransactionType(), txn.getDescription(), txn.getReference()),
-        TrustTransactionTypeLabels.label(txn.getTransactionType()),
-        txn.getReference());
+            txn.transactionType(), txn.description(), txn.reference()),
+        TrustTransactionTypeLabels.label(txn.transactionType()),
+        txn.reference());
   }
 
   /**
    * Portal surfaces are customer/matter scoped. A trust transaction must carry both to be
    * surfaceable — e.g., some inter-account FEE_TRANSFER rows carry a customer but no project.
    */
-  private static boolean hasPortalScope(TrustTransaction txn) {
-    return txn.getCustomerId() != null && txn.getProjectId() != null;
+  private static boolean hasPortalScope(TrustTransactionHistoryRow txn) {
+    return txn.clientId() != null && txn.matterId() != null;
+  }
+
+  private static boolean hasPortalScope(UUID customerId, UUID projectId) {
+    return customerId != null && projectId != null;
   }
 
   /**
@@ -597,11 +620,11 @@ public class TrustLedgerPortalSyncService {
    * other code). Every investment-ledger row counts, visible or not, so the invested balance equals
    * the firm's.
    */
-  private static Optional<TrustLedger> projectedLedger(TrustTransaction txn) {
-    TrustLedger ledger = txn.getLedger();
+  private static Optional<TrustLedger> projectedLedger(TrustTransactionHistoryRow txn) {
+    TrustLedger ledger = txn.ledger();
     if (ledger == TrustLedger.CLIENT) {
       boolean clientVisible =
-          TrustTransactionType.find(txn.getTransactionType())
+          TrustTransactionType.find(txn.transactionType())
               .map(TrustTransactionType::clientVisible)
               .orElse(false);
       return clientVisible ? Optional.of(ledger) : Optional.empty();
@@ -617,11 +640,11 @@ public class TrustLedgerPortalSyncService {
    * balance without a line: the placement and the return show on the general ledger as {@code
    * INV_PLACE} / {@code INV_RETURN}.
    */
-  private static boolean isVisibleRow(TrustTransaction txn, TrustLedger ledger) {
+  private static boolean isVisibleRow(TrustTransactionHistoryRow txn, TrustLedger ledger) {
     if (ledger == TrustLedger.CLIENT) {
       return true;
     }
-    return TrustTransactionType.find(txn.getTransactionType())
+    return TrustTransactionType.find(txn.transactionType())
         .filter(t -> t == TrustTransactionType.INV_INTEREST || t == TrustTransactionType.REVERSAL)
         .isPresent();
   }
@@ -631,27 +654,27 @@ public class TrustLedgerPortalSyncService {
    * credit, {@code -amount} for a debit, zero for an unposted or zero-effect row — the figure every
    * derived balance in {@code TrustLedgerQueryRepository} sums.
    */
-  private static BigDecimal signedAmount(TrustTransaction txn) {
-    return txn.getLedgerEffect() != null ? txn.getLedgerEffect() : BigDecimal.ZERO;
+  private static BigDecimal signedAmount(TrustTransactionHistoryRow txn) {
+    return txn.ledgerEffect() != null ? txn.ledgerEffect() : BigDecimal.ZERO;
   }
 
   /**
    * The firm row's recorded time ({@code created_at}): the portal ledger's tiebreak after the
-   * transaction date, matching {@code findByProjectIdOrderByTransactionDateAsc} (G89-F39). Falls
-   * back to {@link #deriveOccurredAt} for a row without one.
+   * transaction date, matching {@code findHistoryRowsByProjectId} (G89-F39). Falls back to {@link
+   * #deriveOccurredAt} for a row without one.
    */
-  private static Instant recordedAt(TrustTransaction txn) {
-    return txn.getCreatedAt() != null ? txn.getCreatedAt() : deriveOccurredAt(txn);
+  private static Instant recordedAt(TrustTransactionHistoryRow txn) {
+    return txn.createdAt() != null ? txn.createdAt() : deriveOccurredAt(txn);
   }
 
-  private static Instant deriveOccurredAt(TrustTransaction txn) {
-    if (txn.getApprovedAt() != null) {
-      return txn.getApprovedAt();
+  private static Instant deriveOccurredAt(TrustTransactionHistoryRow txn) {
+    if (txn.approvedAt() != null) {
+      return txn.approvedAt();
     }
-    if (txn.getCreatedAt() != null) {
-      return txn.getCreatedAt();
+    if (txn.createdAt() != null) {
+      return txn.createdAt();
     }
     // Fall back to transaction date at UTC midnight — transactionDate is always non-null.
-    return txn.getTransactionDate().atStartOfDay(ZoneOffset.UTC).toInstant();
+    return txn.transactionDate().atStartOfDay(ZoneOffset.UTC).toInstant();
   }
 }

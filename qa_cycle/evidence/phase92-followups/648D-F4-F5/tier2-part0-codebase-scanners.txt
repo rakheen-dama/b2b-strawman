@@ -1,0 +1,27 @@
+16:54:11.587 [main] INFO com.tngtech.archunit.ArchConfiguration -- Reading ArchUnit properties from file:/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-a7d1c7ab2c14bd106/backend/target/test-classes/archunit.properties
+16:54:11.804 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [io.b2mash.b2b.b2bstrawman.notification.NotificationCatalogueWithoutSchedulesTest]: NotificationCatalogueWithoutSchedulesTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+16:54:11.994 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration io.b2mash.b2b.b2bstrawman.BackendApplication for test class io.b2mash.b2b.b2bstrawman.notification.NotificationCatalogueWithoutSchedulesTest
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/Users/rakheendama/.m2/repository/net/bytebuddy/byte-buddy-agent/1.17.8/byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+
+[WireVocabularyContractTest] DTO offenders in scope io.b2mash.b2b.b2bstrawman (excluding .mcp): 0
+
+[WireVocabularyContractTest] ROUTE offenders in scope io.b2mash.b2b.b2bstrawman (excluding .mcp): 0
+com.openhtmltopdf.load INFO:: TIME: parse stylesheets 42ms
+com.openhtmltopdf.match INFO:: Matcher created with 181 selectors
+com.openhtmltopdf.general INFO:: Using fast-mode renderer. Prepare to fly.
+com.openhtmltopdf.css-parse WARNING:: (null#inline_style_1) Value flex is not a recognized identifier at line 16. Skipping declaration.
+com.openhtmltopdf.css-parse WARNING:: (null#inline_style_1) align-items is an unrecognized CSS property at line 16. Ignoring declaration.
+com.openhtmltopdf.css-parse WARNING:: (null#inline_style_1) Value for color must be an identifier or a color at line 33. Skipping declaration.
+com.openhtmltopdf.css-parse WARNING:: (null#inline_style_1) last-of-type is not a recognized pseudo-class at line 39. Skipping ruleset.
+com.openhtmltopdf.css-parse WARNING:: (null#inline_style_1) Value flex is not a recognized identifier at line 51. Skipping declaration.
+com.openhtmltopdf.css-parse WARNING:: (null#inline_style_1) flex-shrink is an unrecognized CSS property at line 57. Ignoring declaration.
+com.openhtmltopdf.css-parse WARNING:: (null#inline_style_1) word-break is an unrecognized CSS property at line 62. Ignoring declaration.
+com.openhtmltopdf.css-parse WARNING:: (null#inline_style_1) word-break is an unrecognized CSS property at line 79. Ignoring declaration.
+com.openhtmltopdf.load INFO:: TIME: parse stylesheets 2ms
+com.openhtmltopdf.match INFO:: Matcher created with 173 selectors
+com.openhtmltopdf.general INFO:: Using fast-mode renderer. Prepare to fly.

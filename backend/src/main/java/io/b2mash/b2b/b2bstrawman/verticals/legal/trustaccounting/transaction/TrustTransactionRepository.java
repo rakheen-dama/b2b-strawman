@@ -146,18 +146,25 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
   List<TrustTransaction> findByStatusAndTrustAccountId(String status, UUID trustAccountId);
 
   /**
-   * Fetches every trust transaction for a matter (project) in ascending transaction date / created
-   * order. Used by the portal trust sync service to walk a matter's history forward and assign a
-   * progressive running balance per row (Epic 495A).
+   * Every trust transaction of a matter (project) in ascending transaction date / created order, as
+   * {@link TrustTransactionHistoryRow} projections. Used by the portal trust sync service to walk a
+   * matter's history forward and assign a progressive running balance per row (Epic 495A). A
+   * constructor expression, not an entity query: its values come from the columns, never from the
+   * persistence context, so the replay that runs {@code AFTER_COMMIT} on the committed
+   * transaction's still-open context reads committed rows, not entities that transaction loaded
+   * earlier (Phase 92 648D F-5).
    */
   @Query(
       """
-      SELECT t FROM TrustTransaction t
+      SELECT new io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionHistoryRow(
+              t.id, t.transactionType, t.amount, t.customerId,
+              t.projectId, t.reference, t.description, t.transactionDate, t.status, t.approvedAt,
+              t.createdAt, t.ledger, t.ledgerEffect)
+      FROM TrustTransaction t
       WHERE t.projectId = :projectId
       ORDER BY t.transactionDate ASC, t.createdAt ASC, t.id ASC
       """)
-  List<TrustTransaction> findByProjectIdOrderByTransactionDateAsc(
-      @Param("projectId") UUID projectId);
+  List<TrustTransactionHistoryRow> findHistoryRowsByProjectId(@Param("projectId") UUID projectId);
 
   /** Acquires a pessimistic write lock on the transaction row to prevent concurrent reversals. */
   @Lock(LockModeType.PESSIMISTIC_WRITE)

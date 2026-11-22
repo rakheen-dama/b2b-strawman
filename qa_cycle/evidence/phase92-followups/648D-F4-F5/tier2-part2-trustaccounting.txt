@@ -1,0 +1,112 @@
+16:57:29.593 [main] INFO com.tngtech.archunit.ArchConfiguration -- Reading ArchUnit properties from file:/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-a7d1c7ab2c14bd106/backend/target/test-classes/archunit.properties
+16:57:30.224 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.UnidentifiedDepositsMigrationTest]: UnidentifiedDepositsMigrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+16:57:30.436 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration io.b2mash.b2b.b2bstrawman.BackendApplication for test class io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.UnidentifiedDepositsMigrationTest
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/Users/rakheendama/.m2/repository/net/bytebuddy/byte-buddy-agent/1.17.8/byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by net.bytebuddy.dynamic.loading.ClassInjector$UsingUnsafe$Dispatcher$CreationAction (file:/Users/rakheendama/.m2/repository/net/bytebuddy/byte-buddy/1.17.8/byte-buddy-1.17.8.jar)
+WARNING: Please consider reporting this to the maintainers of class net.bytebuddy.dynamic.loading.ClassInjector$UsingUnsafe$Dispatcher$CreationAction
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+=== 630C OQ #3 EXPLAIN (ANALYZE, FORMAT TEXT) findClientHistoryWithRunningBalance — no statistics ===
+Incremental Sort  (cost=33.13..33.17 rows=2 width=1533) (actual time=0.052..0.052 rows=7 loops=1)
+  Sort Key: t.transaction_date DESC, t.created_at DESC, t.id DESC
+  Presorted Key: t.transaction_date
+  Full-sort Groups: 1  Sort Method: quicksort  Average Memory: 26kB  Peak Memory: 26kB
+  CTE posted
+    ->  WindowAgg  (cost=8.18..8.26 rows=2 width=60) (actual time=0.022..0.024 rows=3 loops=1)
+          ->  Incremental Sort  (cost=8.18..8.22 rows=2 width=46) (actual time=0.009..0.010 rows=3 loops=1)
+                Sort Key: t_1.transaction_date, t_1.created_at, t_1.id
+                Presorted Key: t_1.transaction_date
+                Full-sort Groups: 1  Sort Method: quicksort  Average Memory: 25kB  Peak Memory: 25kB
+                ->  Index Scan Backward using idx_trust_txn_customer on trust_transactions t_1  (cost=0.14..8.17 rows=1 width=46) (actual time=0.002..0.006 rows=3 loops=1)
+                      Index Cond: (customer_id = '297cb9ef-e3b3-473a-b6f1-f9672ff2c7c2'::uuid)
+                      Filter: (((status)::text = ANY ('{RECORDED,APPROVED}'::text[])) AND ((transaction_type)::text <> 'REVERSAL'::text) AND (trust_account_id = '6a871cfa-3a97-42ac-a0d6-1ff2a96c310b'::uuid))
+                      Rows Removed by Filter: 4
+  ->  Nested Loop Left Join  (cost=8.44..24.86 rows=1 width=1533) (actual time=0.036..0.044 rows=7 loops=1)
+        ->  Nested Loop Left Join  (cost=0.14..8.22 rows=1 width=1474) (actual time=0.031..0.036 rows=7 loops=1)
+              Join Filter: (p.id = t.id)
+              Rows Removed by Join Filter: 18
+              ->  Index Scan using idx_trust_txn_customer on trust_transactions t  (cost=0.14..8.16 rows=1 width=1442) (actual time=0.005..0.007 rows=7 loops=1)
+                    Index Cond: (customer_id = '297cb9ef-e3b3-473a-b6f1-f9672ff2c7c2'::uuid)
+                    Filter: (trust_account_id = '6a871cfa-3a97-42ac-a0d6-1ff2a96c310b'::uuid)
+              ->  CTE Scan on posted p  (cost=0.00..0.04 rows=2 width=48) (actual time=0.003..0.004 rows=3 loops=7)
+        ->  Index Scan using trust_transactions_pkey on trust_transactions o  (cost=0.14..8.16 rows=1 width=74) (actual time=0.000..0.000 rows=0 loops=7)
+              Index Cond: (id = t.reversal_of)
+        SubPlan 2
+          ->  Index Scan using idx_trust_txn_status on trust_transactions r  (cost=0.14..8.15 rows=1 width=16) (actual time=0.002..0.002 rows=0 loops=1)
+                Filter: (reversal_of IS NOT NULL)
+                Rows Removed by Filter: 2
+Planning Time: 0.561 ms
+Execution Time: 0.163 ms
+=== end EXPLAIN ===
+=== 630C OQ #3 EXPLAIN (ANALYZE, FORMAT TEXT) findClientHistoryWithRunningBalance — after ANALYZE trust_transactions ===
+Sort  (cost=5.35..5.37 rows=7 width=394) (actual time=0.041..0.042 rows=7 loops=1)
+  Sort Key: t.transaction_date DESC, t.created_at DESC, t.id DESC
+  Sort Method: quicksort  Memory: 26kB
+  CTE posted
+    ->  WindowAgg  (cost=1.30..1.37 rows=3 width=60) (actual time=0.009..0.010 rows=3 loops=1)
+          ->  Sort  (cost=1.30..1.31 rows=3 width=32) (actual time=0.006..0.006 rows=3 loops=1)
+                Sort Key: t_1.transaction_date, t_1.created_at, t_1.id
+                Sort Method: quicksort  Memory: 25kB
+                ->  Seq Scan on trust_transactions t_1  (cost=0.00..1.28 rows=3 width=32) (actual time=0.003..0.004 rows=3 loops=1)
+                      Filter: (((status)::text = ANY ('{RECORDED,APPROVED}'::text[])) AND ((transaction_type)::text <> 'REVERSAL'::text) AND (customer_id = '297cb9ef-e3b3-473a-b6f1-f9672ff2c7c2'::uuid) AND (trust_account_id = '6a871cfa-3a97-42ac-a0d6-1ff2a96c310b'::uuid))
+                      Rows Removed by Filter: 11
+  ->  Hash Left Join  (cost=2.59..3.88 rows=7 width=394) (actual time=0.032..0.036 rows=7 loops=1)
+        Hash Cond: (t.reversal_of = o.id)
+        ->  Hash Left Join  (cost=0.10..1.35 rows=7 width=385) (actual time=0.022..0.025 rows=7 loops=1)
+              Hash Cond: (t.id = p.id)
+              ->  Seq Scan on trust_transactions t  (cost=0.00..1.21 rows=7 width=353) (actual time=0.005..0.007 rows=7 loops=1)
+                    Filter: ((customer_id = '297cb9ef-e3b3-473a-b6f1-f9672ff2c7c2'::uuid) AND (trust_account_id = '6a871cfa-3a97-42ac-a0d6-1ff2a96c310b'::uuid))
+                    Rows Removed by Filter: 7
+              ->  Hash  (cost=0.06..0.06 rows=3 width=48) (actual time=0.012..0.012 rows=3 loops=1)
+                    Buckets: 1024  Batches: 1  Memory Usage: 9kB
+                    ->  CTE Scan on posted p  (cost=0.00..0.06 rows=3 width=48) (actual time=0.009..0.011 rows=3 loops=1)
+        ->  Hash  (cost=1.14..1.14 rows=14 width=24) (actual time=0.003..0.003 rows=14 loops=1)
+              Buckets: 1024  Batches: 1  Memory Usage: 9kB
+              ->  Seq Scan on trust_transactions o  (cost=0.00..1.14 rows=14 width=24) (actual time=0.001..0.002 rows=14 loops=1)
+        SubPlan 2
+          ->  Seq Scan on trust_transactions r  (cost=0.00..1.18 rows=1 width=16) (actual time=0.002..0.002 rows=0 loops=1)
+                Filter: ((reversal_of IS NOT NULL) AND ((status)::text = 'AWAITING_APPROVAL'::text))
+                Rows Removed by Filter: 14
+Planning Time: 0.559 ms
+Execution Time: 0.064 ms
+=== end EXPLAIN ===
+com.openhtmltopdf.load INFO:: TIME: parse stylesheets 26ms
+com.openhtmltopdf.match INFO:: Matcher created with 181 selectors
+com.openhtmltopdf.general INFO:: Using fast-mode renderer. Prepare to fly.
+com.openhtmltopdf.load INFO:: TIME: parse stylesheets 1ms
+com.openhtmltopdf.match INFO:: Matcher created with 181 selectors
+com.openhtmltopdf.general INFO:: Using fast-mode renderer. Prepare to fly.
+com.openhtmltopdf.load INFO:: TIME: parse stylesheets 0ms
+com.openhtmltopdf.match INFO:: Matcher created with 181 selectors
+com.openhtmltopdf.general INFO:: Using fast-mode renderer. Prepare to fly.
+com.openhtmltopdf.load INFO:: TIME: parse stylesheets 0ms
+com.openhtmltopdf.match INFO:: Matcher created with 181 selectors
+com.openhtmltopdf.general INFO:: Using fast-mode renderer. Prepare to fly.
+
+[TrustIntegrityServiceIntegrationTest] accounts=1 prepared statements=13
+
+[TrustIntegrityServiceIntegrationTest] accounts=3 prepared statements=33
+
+[TrustIntegrityServiceIntegrationTest] accounts=10 prepared statements=103
+
+[TrustIntegrityServiceIntegrationTest] per account=10 (1→3), 3→10 delta=70
+com.openhtmltopdf.load INFO:: TIME: parse stylesheets 1ms
+com.openhtmltopdf.match INFO:: Matcher created with 180 selectors
+com.openhtmltopdf.general INFO:: Using fast-mode renderer. Prepare to fly.
+com.openhtmltopdf.load INFO:: TIME: parse stylesheets 0ms
+com.openhtmltopdf.match INFO:: Matcher created with 180 selectors
+com.openhtmltopdf.general INFO:: Using fast-mode renderer. Prepare to fly.
+com.openhtmltopdf.load INFO:: TIME: parse stylesheets 4ms
+com.openhtmltopdf.match INFO:: Matcher created with 180 selectors
+com.openhtmltopdf.general INFO:: Using fast-mode renderer. Prepare to fly.
+com.openhtmltopdf.load INFO:: TIME: parse stylesheets 1ms
+com.openhtmltopdf.match INFO:: Matcher created with 180 selectors
+com.openhtmltopdf.general INFO:: Using fast-mode renderer. Prepare to fly.
+com.openhtmltopdf.load INFO:: TIME: parse stylesheets 0ms
+com.openhtmltopdf.match INFO:: Matcher created with 180 selectors
+com.openhtmltopdf.general INFO:: Using fast-mode renderer. Prepare to fly.

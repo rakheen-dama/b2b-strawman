@@ -573,9 +573,9 @@ class TrustLedgerPortalSyncServiceIntegrationTest {
   /**
    * Two rows on the same date recorded at the same instant are ordered by id alone. The backfill's
    * in-memory sort must break that tie in PostgreSQL's (unsigned byte) UUID order — the order of
-   * {@code findByProjectIdOrderByTransactionDateAsc} and of the portal's read — or the two rows
-   * carry each other's running balance (PR #1802 review). The ids differ in the top bit, where a
-   * signed {@code UUID.compareTo} and PostgreSQL disagree.
+   * {@code findHistoryRowsByProjectId} and of the portal's read — or the two rows carry each
+   * other's running balance (PR #1802 review). The ids differ in the top bit, where a signed {@code
+   * UUID.compareTo} and PostgreSQL disagree.
    */
   @Test
   void backfillBreaksASameInstantTieInPostgresUuidOrder() {

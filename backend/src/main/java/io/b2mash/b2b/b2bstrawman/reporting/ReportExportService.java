@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.reporting;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
-import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -28,10 +27,10 @@ import org.springframework.transaction.annotation.Transactional;
  * no writes, and in PostgreSQL a read-only transaction cannot fail with a serialization error
  * (40001) at {@code REPEATABLE_READ}.
  *
- * <p>Known pre-existing defect (650C found.md F-650C-1, not changed here): the audit event that
- * {@code execute} and {@code exportAsPdf} log joins this read-only transaction, whose Hibernate
- * flush mode is MANUAL, so the {@code REPORT_GENERATED} / {@code REPORT_EXPORTED} rows are never
- * flushed. CSV export audits outside the transaction and is recorded.
+ * <p>Audit rows ({@code REPORT_GENERATED} on execute, {@code REPORT_EXPORTED} on PDF and CSV) go
+ * through {@link ReportAuditRecorder}: written after this transaction commits, in a transaction of
+ * their own, so this one stays read-only (Phase 92 FU-12, 650C F-650C-1 — a row joined to it was
+ * never flushed). A preview ({@link #renderPreviewHtml}) is not audited.
  */
 @Service
 public class ReportExportService {
@@ -45,17 +44,17 @@ public class ReportExportService {
   private final ReportDefinitionRepository reportDefinitionRepository;
   private final ReportExecutionService reportExecutionService;
   private final ReportRenderingService reportRenderingService;
-  private final AuditService auditService;
+  private final ReportAuditRecorder reportAuditRecorder;
 
   public ReportExportService(
       ReportDefinitionRepository reportDefinitionRepository,
       ReportExecutionService reportExecutionService,
       ReportRenderingService reportRenderingService,
-      AuditService auditService) {
+      ReportAuditRecorder reportAuditRecorder) {
     this.reportDefinitionRepository = reportDefinitionRepository;
     this.reportExecutionService = reportExecutionService;
     this.reportRenderingService = reportRenderingService;
-    this.auditService = auditService;
+    this.reportAuditRecorder = reportAuditRecorder;
   }
 
   /** List all report definitions grouped by category. */
@@ -132,7 +131,7 @@ public class ReportExportService {
     var result = reportExecutionService.executeForExport(slug, parameters);
     byte[] pdfBytes = reportRenderingService.renderPdf(definition, result, parameters);
 
-    auditService.log(
+    reportAuditRecorder.recordAfterCommit(
         AuditEventBuilder.builder()
             .eventType("REPORT_EXPORTED")
             .entityType("REPORT")
@@ -181,7 +180,8 @@ public class ReportExportService {
       reportRenderingService.writeCsv(
           csvResult.definition(), csvResult.result(), csvResult.parameters(), outputStream);
     } finally {
-      auditService.log(
+      // No transaction is open here (exportAsCsv has returned): written now, in its own.
+      reportAuditRecorder.recordAfterCommit(
           AuditEventBuilder.builder()
               .eventType("REPORT_EXPORTED")
               .entityType("REPORT")

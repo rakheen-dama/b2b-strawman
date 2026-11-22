@@ -312,8 +312,14 @@ class ReportingControllerTest {
                     "attachment; filename=\"timesheet-2025-06-01-to-2025-06-30.pdf\""));
   }
 
+  /**
+   * Phase 92 FU-12: a count delta of PDF rows. The old {@code isNotEmpty()} check passed falsely —
+   * sibling CSV tests write {@code REPORT_EXPORTED} rows in this tenant, and no PDF row was ever
+   * written (650C F-650C-1).
+   */
   @Test
   void exportPdfPersistsReportExportedAuditEvent() throws Exception {
+    var pdfRowsBefore = pdfExportRowIds();
     mockMvc
         .perform(
             get("/api/report-definitions/timesheet/export/pdf")
@@ -323,27 +329,31 @@ class ReportingControllerTest {
                 .param("groupBy", "member"))
         .andExpect(status().isOk());
 
-    // Verify audit event was persisted
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .where(RequestScopes.ORG_ID, ORG_ID)
-        .where(RequestScopes.MEMBER_ID, ownerMemberId)
-        .where(RequestScopes.ORG_ROLE, "owner")
-        .run(
-            () -> {
-              var auditPage =
-                  auditEventRepository.findByFilter(
-                      "REPORT",
-                      null,
-                      null,
-                      "REPORT_EXPORTED",
-                      null,
-                      null,
-                      org.springframework.data.domain.PageRequest.of(0, 10));
-              assertThat(auditPage.getContent()).isNotEmpty();
-              var latestEvent = auditPage.getContent().getFirst();
-              assertThat(latestEvent.getEventType()).isEqualTo("REPORT_EXPORTED");
-              assertThat(latestEvent.getEntityType()).isEqualTo("REPORT");
-            });
+    var added = new java.util.HashSet<>(pdfExportRowIds());
+    added.removeAll(pdfRowsBefore);
+    assertThat(added).as("PDF REPORT_EXPORTED rows added by one export").hasSize(1);
+  }
+
+  /** Ids of this tenant's {@code REPORT_EXPORTED} rows with format {@code pdf}. */
+  private java.util.Set<UUID> pdfExportRowIds() {
+    return ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .call(
+            () ->
+                auditEventRepository
+                    .findByFilter(
+                        "REPORT",
+                        null,
+                        null,
+                        "REPORT_EXPORTED",
+                        null,
+                        null,
+                        org.springframework.data.domain.PageRequest.of(0, 1000))
+                    .getContent()
+                    .stream()
+                    .filter(e -> "REPORT_EXPORTED".equals(e.getEventType()))
+                    .filter(e -> "pdf".equals(e.getDetails().get("format")))
+                    .map(io.b2mash.b2b.b2bstrawman.audit.AuditEvent::getId)
+                    .collect(java.util.stream.Collectors.toSet()));
   }
 
   // --- CSV export endpoint tests ---

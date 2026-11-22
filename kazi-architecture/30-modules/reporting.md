@@ -59,9 +59,12 @@ Discovery anchor: `_discovery/A2-frontend-map.md:160-179` ; `_discovery/A2-front
 
 **Audit (per ADR-264 audit-export-is-auditable).** Every execution and export writes an audit event:
 
-- `REPORT_GENERATED` on each `execute(...)` — recorded inside the same transaction as the read `→ reporting/ReportExecutionService.java:62-77`. Includes slug, parameters, format = `"preview"`, rowCount.
-- `REPORT_EXPORTED` on PDF export `→ reporting/ReportExportService.java:116-131` (format = `"pdf"`).
-- `REPORT_EXPORTED` on CSV export `→ reporting/ReportExportService.java:165-180`, written in a `finally` block so a stream failure mid-write still records the export attempt.
+- `REPORT_GENERATED` on each `execute(...)` `→ reporting/ReportExecutionService.java` (`execute`). Includes slug, parameters, format = `"preview"`, rowCount.
+- `REPORT_EXPORTED` on PDF export `→ reporting/ReportExportService.java` (`exportAsPdf`, format = `"pdf"`).
+- `REPORT_EXPORTED` on CSV export `→ reporting/ReportExportService.java` (`writeCsvAndAudit`, format = `"csv"`), written in a `finally` block so a stream failure mid-write still records the export attempt.
+- The HTML preview (`renderPreviewHtml`) writes no audit row.
+
+All three go through `→ reporting/ReportAuditRecorder.java`, not straight to `AuditService.log`. The report entry points run in a read-only `REPEATABLE_READ` transaction (one snapshot per report, Phase 92 650C D-38 / FU-3 D-1), and a row joined to that transaction was never flushed (Phase 92 F-650C-1: until FU-12 no execute or PDF export was audited). The recorder writes the row **after the report transaction commits**, in a new (`REQUIRES_NEW`) writable transaction, so a report whose transaction rolls back is not audited. When no transaction is open (the CSV `finally` block) it writes at once, in its own transaction. Audit writing is best effort: a failed audit write does not fail a report that has already been produced, and is logged at ERROR. Every other audit row in the system still joins its business transaction.
 
 **Strategy-pattern wiring (ADR-081).** Adding a new report requires (1) a new `@Component implements ReportQuery` and (2) a `ReportDefinition` seed entry — no framework changes. Boot-time validation rejects duplicate slugs `→ reporting/ReportExecutionService.java:32-41`.
 

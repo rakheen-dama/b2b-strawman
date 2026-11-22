@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.reporting;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
-import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
@@ -20,12 +19,12 @@ public class ReportExecutionService {
 
   private final Map<String, ReportQuery> queryMap;
   private final ReportDefinitionRepository reportDefinitionRepository;
-  private final AuditService auditService;
+  private final ReportAuditRecorder reportAuditRecorder;
 
   public ReportExecutionService(
       List<ReportQuery> queries,
       ReportDefinitionRepository reportDefinitionRepository,
-      AuditService auditService) {
+      ReportAuditRecorder reportAuditRecorder) {
     this.queryMap =
         queries.stream()
             .collect(
@@ -42,7 +41,7 @@ public class ReportExecutionService {
                               + duplicate.getClass().getSimpleName());
                     }));
     this.reportDefinitionRepository = reportDefinitionRepository;
-    this.auditService = auditService;
+    this.reportAuditRecorder = reportAuditRecorder;
   }
 
   /** True if the current caller holds any extra capability the report's query requires. */
@@ -82,7 +81,10 @@ public class ReportExecutionService {
 
     var result = query.execute(parameters, pageable);
 
-    auditService.log(
+    // After the report transaction commits, in a transaction of its own: the HTTP path runs this
+    // inside ReportExportService's read-only transaction, where a joined write is never flushed
+    // (Phase 92 FU-12).
+    reportAuditRecorder.recordAfterCommit(
         AuditEventBuilder.builder()
             .eventType("REPORT_GENERATED")
             .entityType("REPORT")
@@ -103,8 +105,8 @@ public class ReportExecutionService {
   }
 
   /**
-   * Execute report for export (PDF/CSV). No pagination. Audit logging (REPORT_EXPORTED) is handled
-   * by the controller after rendering completes, because the controller knows the export format.
+   * Execute report for export (PDF/CSV). No pagination. Audit logging (REPORT_EXPORTED) is done by
+   * {@link ReportExportService} after rendering completes, because it knows the export format.
    */
   @Transactional(readOnly = true)
   public ReportResult executeForExport(String slug, Map<String, Object> parameters) {

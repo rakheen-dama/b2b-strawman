@@ -6,11 +6,17 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.template.VariableFormatter;
 import io.b2mash.b2b.b2bstrawman.testutil.BooksSnapshot;
+import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksFixture;
 import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustIntegrityService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustIntegrityService.TrustIntegrityReport;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.ClientBalanceRow;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedgerQueryRepository;
 import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -33,6 +39,12 @@ import org.springframework.transaction.support.TransactionTemplate;
  * shows a creditor in debit. Before 646A the seeder wrote card-less rows straight to the repository
  * and the books were R27 000,00 out (649A path 11). 646B: the seeded account also carries its two
  * non-client creditor ledgers (ADR-376).
+ *
+ * <p>FU-27 (Phase 92 exit item 2, §16.9.2 path 11 "one client flagged in debit"): the client in
+ * debit is also asserted as the integrity check's {@code CLIENT_LEDGER_IN_DEBIT} flag, not only as
+ * a −R3 000,00 balance. {@code TrustIntegrityService.check} needs the {@code trust_accounting}
+ * module, so the module is enabled after seeding (a real demo tenant runs the legal-za profile,
+ * which enables it); the seeded rows are not touched.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -48,6 +60,9 @@ class LegalDemoTrustBooksIntegrationTest {
   @Autowired private TransactionTemplate transactionTemplate;
   @Autowired private TrustBooksHarness harness;
   @Autowired private TrustLedgerQueryRepository ledgerQueries;
+  @Autowired private TrustBooksFixture fixture;
+  @Autowired private TrustIntegrityService integrityService;
+  @Autowired private Clock clock;
 
   private String schema;
   private UUID accountId;
@@ -64,6 +79,8 @@ class LegalDemoTrustBooksIntegrationTest {
             "SELECT id FROM \"%s\".trust_accounts".formatted(schema), UUID.class);
     assertThat(accountIds).as("the seeder creates one trust account").hasSize(1);
     accountId = accountIds.getFirst();
+    // FU-27: after the seeder, so the seeded rows are as seeded; TrustIntegrityService needs it.
+    fixture.enableTrustModule(schema);
   }
 
   @Test
@@ -83,10 +100,18 @@ class LegalDemoTrustBooksIntegrationTest {
     assertThat(snapshot[0].difference()).isEqualByComparingTo("0.00");
   }
 
+  /**
+   * §16.9.2 path 11, "one client flagged in debit": the per-client balances are R30 000,00 and −R3
+   * 000,00, and (FU-27) the integrity check raises exactly one {@code CLIENT_LEDGER_IN_DEBIT}
+   * warning for R3 000,00 naming that client, while the books still balance (no blocking flag; the
+   * production services agree with the oracle flag by flag).
+   */
   @Test
   void seededClients_holdR30000_andMinusR3000_exactlyOneInDebit() {
     var balances = new ArrayList<BigDecimal>();
     var oracle = new ArrayList<BigDecimal>();
+    var debtors = new ArrayList<UUID>();
+    var report = new TrustIntegrityReport[1];
     ScopedValue.where(RequestScopes.TENANT_ID, schema)
         .run(
             () -> {
@@ -95,7 +120,12 @@ class LegalDemoTrustBooksIntegrationTest {
               for (var row : rows) {
                 balances.add(row.getBalance());
                 oracle.add(harness.clientLedger(accountId, row.getCustomerId()));
+                if (row.getBalance().signum() < 0) {
+                  debtors.add(row.getCustomerId());
+                }
               }
+              report[0] = integrityService.check(accountId, null, null);
+              harness.assertServicesAgree(accountId, LocalDate.now(clock));
             });
 
     assertThat(balances)
@@ -109,6 +139,35 @@ class LegalDemoTrustBooksIntegrationTest {
     var inDebit = balances.stream().filter(b -> b.signum() < 0).toList();
     assertThat(inDebit).as("clients in debit").hasSize(1);
     assertThat(inDebit.getFirst()).isEqualByComparingTo("-3000.00");
+
+    // FU-27: the debit is an integrity flag, not only a balance.
+    var flags =
+        report[0].flags().stream()
+            .filter(f -> TrustIntegrityService.CLIENT_LEDGER_IN_DEBIT.equals(f.code()))
+            .toList();
+    assertThat(flags).as("CLIENT_LEDGER_IN_DEBIT flags on the seeded books").hasSize(1);
+    var flag = flags.getFirst();
+    assertThat(flag.severity()).isEqualTo(TrustIntegrityService.WARNING);
+    assertThat(flag.amount()).isEqualByComparingTo("3000.00");
+    assertThat(flag.message())
+        .isEqualTo(
+            "1 client ledger is "
+                + VariableFormatter.formatCurrencyText(
+                    new BigDecimal("3000.00"), VariableFormatter.resolveLocale("ZAR"))
+                + " in debit.");
+    assertThat(flag.subjects())
+        .singleElement()
+        .satisfies(
+            s -> {
+              assertThat(s.kind()).isEqualTo(TrustIntegrityService.SUBJECT_CLIENT);
+              assertThat(s.id()).isEqualTo(debtors.getFirst());
+              assertThat(s.amount()).isEqualByComparingTo("3000.00");
+            });
+    assertThat(report[0].balanced()).as("balanced although a client is in debit").isTrue();
+    assertThat(report[0].flags())
+        .as("no blocking flag on the seeded books")
+        .noneMatch(TrustIntegrityService::isBlocking);
+    assertThat(report[0].position().difference()).isEqualByComparingTo("0.00");
   }
 
   @Test

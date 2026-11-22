@@ -22,6 +22,9 @@
 #         (default: backend/target/surefire-reports, relative to the current directory)
 # Exit:   0 every row PASS · 1 at least one row FAIL / SKIPPED / ABSENT · 2 usage / no reports
 #
+# FU-27 (2026-11-23): 70 rows — path 12 gains the recoverable BANK_CHARGE unmatch test; path 11's
+# seededClients_holdR30000_andMinusR3000_exactlyOneInDebit now also asserts CLIENT_LEDGER_IN_DEBIT.
+#
 # Plain bash 3.2 + find + awk (macOS BSD tools; no GNU-only flags). Read-only: it never writes
 # into the reports directory.
 #
@@ -119,6 +122,7 @@ ROWS=$(cat <<'EOF'
 12|io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.StatementLinePostingIntegrationTest|afterUnmatch_theCancellingPairIsNotAnOutstandingItem
 12|io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.StatementLinePostingIntegrationTest|audit_recordAndUnmatch
 12|io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.StatementLinePostingIntegrationTest|aRecordedChargeRefund_reversesOnUnmatch_dated_the_lines_date
+12|io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.StatementLinePostingIntegrationTest|aRecordedRecoverableBankCharge_reversesOnUnmatch_dated_the_lines_date_andIsNeverToRefund
 13|io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.StatementLinePostingIntegrationTest|aChargeBeforeAnyInterest_drivesTheFundLedgerIntoDebit_andTheBooksStayBalanced
 13|io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustIntegrityServiceIntegrationTest|fundLedgerInDebit_isAWarning_andClearedByInterest
 14|io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.UnidentifiedDepositIntegrationTest|recordFromACreditLine_opensAHeldItem_thatItsRowNames

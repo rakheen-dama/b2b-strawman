@@ -1,0 +1,77 @@
+F-646D-1 Tier 2 (after spotless:apply, with the fix). Command: cd backend && ./mvnw -q test -Dtest='io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.**,io.b2mash.b2b.b2bstrawman.architecture.**,<58 fee-transfer classes>'. Maven exit 0. Classes: the whole trustaccounting/transaction package (17), the whole architecture package (7), and every test class mentioning FEE_TRANSFER / recordFeeTransfer / requestFeeTransfer / feeTransfer / RecordFeeTransferRequest / TrustBooksFixture / 'fee transfer' / trust_fee_transfer / TRUST_TRANSFER (58, overlapping the package).
+
+
+classes=70 testcases=1054 failures=0 errors=0 skipped=0
+
+--- Maven log (Tests run / ERROR lines) ---
+Classes run:
+  io.b2mash.b2b.b2bstrawman.activity.ActivityMessageFormatterTest
+  io.b2mash.b2b.b2bstrawman.architecture.LayerDependencyRulesTest
+  io.b2mash.b2b.b2bstrawman.architecture.PortalLinkBuilderArchTest
+  io.b2mash.b2b.b2bstrawman.architecture.PortalReadModelOrgScopingGuardTest
+  io.b2mash.b2b.b2bstrawman.architecture.TenantScopeBindingTest
+  io.b2mash.b2b.b2bstrawman.architecture.TerminologyRemnantScanTest
+  io.b2mash.b2b.b2bstrawman.architecture.TestConventionsTest
+  io.b2mash.b2b.b2bstrawman.architecture.ZoneAwareTimeArchTest
+  io.b2mash.b2b.b2bstrawman.customerbackend.service.TrustLedgerPortalSyncServiceIntegrationTest
+  io.b2mash.b2b.b2bstrawman.dashboard.TrustBalanceTrendIntegrationTest
+  io.b2mash.b2b.b2bstrawman.dashboard.TrustPositionIntegrationTest
+  io.b2mash.b2b.b2bstrawman.invoice.CardPaymentBalanceLinkIntegrationTest
+  io.b2mash.b2b.b2bstrawman.invoice.InvoiceLifecycleIntegrationTest
+  io.b2mash.b2b.b2bstrawman.invoice.PaymentEventTest
+  io.b2mash.b2b.b2bstrawman.mcp.tool.CatalogueBatch2TrustBillingTest
+  io.b2mash.b2b.b2bstrawman.portal.PortalActivityServiceFirmFilterTest
+  io.b2mash.b2b.b2bstrawman.portal.notification.PortalEmailNotificationChannelIntegrationTest
+  io.b2mash.b2b.b2bstrawman.report.BillingTrendIntegrationTest
+  io.b2mash.b2b.b2bstrawman.reporting.ReportAuditRowsIntegrationTest
+  io.b2mash.b2b.b2bstrawman.template.ClientTrustStatementContextIntegrationTest
+  io.b2mash.b2b.b2bstrawman.template.InvoiceContextBuilderTest
+  io.b2mash.b2b.b2bstrawman.verticals.legal.statement.StatementBuilderClosedPrimaryAccountIntegrationTest
+  io.b2mash.b2b.b2bstrawman.verticals.legal.statement.StatementOfAccountContextBuilderTest
+  io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustEquationCharacterisationIntegrationTest
+  io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustPostingCoreMigrationTest
+  io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustIntegrityServiceIntegrationTest
+  io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustMonthlyListIntegrationTest
+  io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustPositionAsAtIntegrationTest
+  io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.TrustCreditorAccountIntegrationTest
+  io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.TrustInterestMemoIntegrationTest
+  io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.UnidentifiedDepositIntegrationTest
+  io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustNotificationHandlerTest
+  io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentInterestIntegrationTest
+  io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentServiceIntegrationTest
+  io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerControllerTest
+  io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerRunningBalanceIntegrationTest
+  io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerTotalsIntegrationTest
+  io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.DerivedLedgerBalanceIntegrationTest
+  io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.InvestedBlockStatementsIntegrationTest
+  io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.InvestmentClientLedgerReadSurfacesIntegrationTest
+  io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.LedgerTotalsTest
+  io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.TrustSnapshotReadsIntegrationTest
+  io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.AutoMatchLockOrderIntegrationTest
+  io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.BankStatementReplaceDiscardIntegrationTest
+  io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.ReversedOriginalMatchIntegrationTest
+  io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.StatementLinePostingIntegrationTest
+  io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationCompletionGateIntegrationTest
+  io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationDraftIntegrationTest
+  io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report.ClientLedgerStatementReversalReasonIntegrationTest
+  io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report.Section35DataPackContentIntegrationTest
+  io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report.TrustReceiptsPaymentsReversedPairsIntegrationTest
+  io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report.TrustReportQueryIntegrationTest
+  io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report.TrustScheduleAndAgeAnalysisIntegrationTest
+  io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.BackDatedFeeTransferCoverIntegrationTest
+  io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.BackDatedReversalCoverIntegrationTest
+  io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.CashbookCoverAtApprovalIntegrationTest
+  io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustClientMatterRequiredIntegrationTest
+  io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustFeeTransferReversalCascadeTest
+  io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustMatterDebitGuardIntegrationTest
+  io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustPostingDateZoneIntegrationTest
+  io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustPostingRulesTest
+  io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustPostingServiceRecordWithPairTest
+  io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustReversalEquationIntegrationTest
+  io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionControllerTest
+  io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionServiceTest
+  io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionTypeControllerTest
+  io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionTypeLabelsTest
+  io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionTypeRegistryTest
+  io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionTypeSchemaTest
+  io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransferTargetMatterIntegrationTest

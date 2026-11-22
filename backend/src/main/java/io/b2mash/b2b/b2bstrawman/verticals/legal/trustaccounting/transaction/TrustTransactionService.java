@@ -1045,8 +1045,18 @@ public class TrustTransactionService {
       // client; an unidentified-deposit resolution (UNIDENT_ALLOC_OUT, UNIDENT_FUND_PAY:
       // NON_CLIENT, no client on the row) takes it off its own item, whole by construction
       // (§16.2.4).
+      // F-646D-1 (Phase 92 646D, default D-1 by analogy with S2 / FU-5): a fee transfer posts on
+      // its own date, so a back-dated one lowers the client's balance — and the matter cell's — as
+      // at that date and every later date; it must be covered at the lowest point from its date
+      // on. A fee transfer dated today, and every other outflow, is checked as before.
       if (type.ledger() == TrustLedger.CLIENT) {
-        requireClientCovers(transaction);
+        var transactionDate = transaction.getTransactionDate();
+        requireClientCovers(
+            transaction,
+            type == TrustTransactionType.FEE_TRANSFER
+                    && transactionDate.isBefore(LocalDate.now(clock))
+                ? transactionDate
+                : null);
       }
 
       // 441.9 / Phase 88 U15 (ADR-347, N-5): a fee transfer posts its real amount through the one
@@ -1155,17 +1165,12 @@ public class TrustTransactionService {
    * amount, which is about to leave the client's ledger. Takes the client's lock anchor first, so
    * the derived balances read here cannot race with another posting for the client; the row is
    * still AWAITING_APPROVAL, so neither sum includes it.
-   */
-  private void requireClientCovers(TrustTransaction transaction) {
-    requireClientCovers(transaction, null);
-  }
-
-  /**
-   * As {@link #requireClientCovers(TrustTransaction)}; with a {@code coveredFrom} date (FU-5, a
-   * back-dated credit contra), both balances must cover the amount as at that date and as at every
-   * later date a posted row is dated — the lowest balance from then on, which is never above the
-   * current one — and a refusal names the (earliest) date of that lowest balance. Null = the
-   * current balance only (every posted row), as before.
+   *
+   * <p>With a {@code coveredFrom} date (FU-5, a back-dated credit contra; F-646D-1, a back-dated
+   * fee transfer), both balances must cover the amount as at that date and as at every later date a
+   * posted row is dated — the lowest balance from then on, which is never above the current one —
+   * and a refusal names the (earliest) date of that lowest balance. Null = the current balance only
+   * (every posted row), as before.
    */
   private void requireClientCovers(TrustTransaction transaction, LocalDate coveredFrom) {
     var customer =
@@ -1552,7 +1557,9 @@ public class TrustTransactionService {
 
   /**
    * The fee transfer's date (ruling #6): {@code requested}, or today ({@code LocalDate.now(clock)},
-   * the SA business date) when null; never in the future. No lower bound — the ruling sets none.
+   * the SA business date) when null; never in the future. No lower bound on the date itself — the
+   * ruling sets none — but a back-dated transfer is approved only if the client and the matter cell
+   * cover it from its date on (F-646D-1, {@code performApprovalCompletion}).
    */
   private LocalDate resolveFeeTransferDate(LocalDate requested) {
     var today = LocalDate.now(clock);

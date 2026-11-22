@@ -1,0 +1,125 @@
+14:14:41.415 [main] INFO com.tngtech.archunit.ArchConfiguration -- Reading ArchUnit properties from file:/Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-a1006eab704f07d46/backend/target/test-classes/archunit.properties
+14:14:41.544 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.ReversedOriginalMatchIntegrationTest]: ReversedOriginalMatchIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+14:14:41.793 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration io.b2mash.b2b.b2bstrawman.BackendApplication for test class io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.ReversedOriginalMatchIntegrationTest
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/Users/rakheendama/.m2/repository/net/bytebuddy/byte-buddy-agent/1.17.8/byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by net.bytebuddy.dynamic.loading.ClassInjector$UsingUnsafe$Dispatcher$CreationAction (file:/Users/rakheendama/.m2/repository/net/bytebuddy/byte-buddy/1.17.8/byte-buddy-1.17.8.jar)
+WARNING: Please consider reporting this to the maintainers of class net.bytebuddy.dynamic.loading.ClassInjector$UsingUnsafe$Dispatcher$CreationAction
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /internal/members/sync
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", X-API-KEY:"test-api-key", Content-Length:"150"]
+             Body = {"clerkOrgId":"org_trust_reversed_match","clerkUserId":"user_trm_owner","email":"trm@test.com","name":"TRM Owner","avatarUrl":null,"orgRole":"owner"}
+
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.member.MemberSyncController
+           Method = io.b2mash.b2b.b2bstrawman.member.MemberSyncController#syncMember(SyncMemberRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/internal/members/69baab82-add9-4f7f-8d6e-b30169380965", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"memberId":"69baab82-add9-4f7f-8d6e-b30169380965","clerkUserId":"user_trm_owner","action":"created"}
+    Forwarded URL = null
+   Redirected URL = /internal/members/69baab82-add9-4f7f-8d6e-b30169380965
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /internal/members/sync
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", X-API-KEY:"test-api-key", Content-Length:"165"]
+             Body = {"clerkOrgId":"org_trust_reversed_match","clerkUserId":"user_trm_approver","email":"trm_approver@test.com","name":"TRM Approver","avatarUrl":null,"orgRole":"owner"}
+
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.member.MemberSyncController
+           Method = io.b2mash.b2b.b2bstrawman.member.MemberSyncController#syncMember(SyncMemberRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/internal/members/aae30927-f93e-4c40-b9ba-8a488592a52c", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"memberId":"aae30927-f93e-4c40-b9ba-8a488592a52c","clerkUserId":"user_trm_approver","action":"created"}
+    Forwarded URL = null
+   Redirected URL = /internal/members/aae30927-f93e-4c40-b9ba-8a488592a52c
+          Cookies = []
+[ERROR] Tests run: 3, Failures: 2, Errors: 0, Skipped: 0, Time elapsed: 17.01 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.ReversedOriginalMatchIntegrationTest
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.ReversedOriginalMatchIntegrationTest.autoMatch_clearsAStaleSuggestionOfAContraOnAnUnmatchedLine -- Time elapsed: 1.055 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+[line 0: no row suggested] 
+expected: null
+ but was: 971b6d90-79f8-442c-a70f-a38aa3de82ae
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.ReversedOriginalMatchIntegrationTest.assertLineLeftForAHuman(ReversedOriginalMatchIntegrationTest.java:957)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.ReversedOriginalMatchIntegrationTest.autoMatch_clearsAStaleSuggestionOfAContraOnAnUnmatchedLine(ReversedOriginalMatchIntegrationTest.java:875)
+
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.ReversedOriginalMatchIntegrationTest.autoMatch_clearsStaleSuggestionsOfALinkedRowAndAnOldAmountOnlyConfidence -- Time elapsed: 0.125 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+[line 1: no row suggested] 
+expected: null
+ but was: 6e0a0381-d3df-4a9c-a1e5-e413b141430f
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.ReversedOriginalMatchIntegrationTest.assertLineLeftForAHuman(ReversedOriginalMatchIntegrationTest.java:957)
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.ReversedOriginalMatchIntegrationTest.autoMatch_clearsStaleSuggestionsOfALinkedRowAndAnOldAmountOnlyConfidence(ReversedOriginalMatchIntegrationTest.java:905)
+
+[ERROR] Failures: 
+[ERROR]   ReversedOriginalMatchIntegrationTest.autoMatch_clearsAStaleSuggestionOfAContraOnAnUnmatchedLine:875->assertLineLeftForAHuman:957 [line 0: no row suggested] 
+expected: null
+ but was: 971b6d90-79f8-442c-a70f-a38aa3de82ae
+[ERROR]   ReversedOriginalMatchIntegrationTest.autoMatch_clearsStaleSuggestionsOfALinkedRowAndAnOldAmountOnlyConfidence:905->assertLineLeftForAHuman:957 [line 1: no row suggested] 
+expected: null
+ but was: 6e0a0381-d3df-4a9c-a1e5-e413b141430f
+[ERROR] Tests run: 3, Failures: 2, Errors: 0, Skipped: 0
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.5.4:test (default-test) on project b2b-strawman-backend: There are test failures.
+[ERROR] 
+[ERROR] See /Users/rakheendama/Projects/2026/b2b-strawman/.claude/worktrees/agent-a1006eab704f07d46/backend/target/surefire-reports for the individual test results.
+[ERROR] See dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

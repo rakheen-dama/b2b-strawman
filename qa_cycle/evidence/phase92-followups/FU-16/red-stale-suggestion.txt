@@ -1,0 +1,22 @@
+FU-16 CodeRabbit Minor 2 (stale persisted suggestions) — RED on PR head 3298250e6294281fc9861497eb46cf0097d45c12
+Production code at 3298250 (unchanged); only the three new tests added. Suggestions are seeded through
+BankStatementLineRepository (findById → setTrustTransactionId / setMatchConfidence → save), as rows
+left by an earlier auto-match run look.
+Command: cd backend && ./mvnw -q test -Dtest='ReversedOriginalMatchIntegrationTest#autoMatch_clearsA*+autoMatch_clearsStale*+autoMatch_rewritesAStillValid*'
+Full console output: red-stale-suggestion-raw.txt (this directory)
+
+[ERROR] Tests run: 3, Failures: 2, Errors: 0, Skipped: 0
+
+1. autoMatch_clearsAStaleSuggestionOfAContraOnAnUnmatchedLine  — RED
+   UNMATCHED debit line seeded with trust_transaction_id = contra C, confidence 0.60 (a pre-FU-16 tier-3 suggestion).
+   ReversedOriginalMatchIntegrationTest.autoMatch_clearsAStaleSuggestionOfAContraOnAnUnmatchedLine:875->assertLineLeftForAHuman:957 [line 0: no row suggested]
+   expected: null
+    but was: 971b6d90-79f8-442c-a70f-a38aa3de82ae   (C — the stale suggestion survives auto-match)
+
+2. autoMatch_clearsStaleSuggestionsOfALinkedRowAndAnOldAmountOnlyConfidence  — RED
+   L2 seeded with trust_transaction_id = deposit D (since manually matched to L1), 0.60; L3 seeded with 0.40, no row.
+   ReversedOriginalMatchIntegrationTest.autoMatch_clearsStaleSuggestionsOfALinkedRowAndAnOldAmountOnlyConfidence:905->assertLineLeftForAHuman:957 [line 1: no row suggested]
+   expected: null
+    but was: 6e0a0381-d3df-4a9c-a1e5-e413b141430f   (D — stale; the assertion on L3 is not reached)
+
+3. autoMatch_rewritesAStillValidSuggestionIdentically  — GREEN (guard; passes before and after the fix)

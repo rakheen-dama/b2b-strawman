@@ -765,6 +765,12 @@ public class TrustReconciliationService {
 
     List<PlannedMatch> planned = new ArrayList<>();
     for (BankStatementLine line : unmatchedLines) {
+      // An earlier run's suggestion (tier 3 row + 0.60, or tier 4's 0.40) is recomputed, never
+      // kept: the line (UNMATCHED, locked in step 1) is reset first and the tier that applies now
+      // writes its result, or leaves it clean (FU-16, CodeRabbit). suggestedClassification is the
+      // parser's (647C) and is untouched.
+      clearSuggestion(line);
+
       // Filter candidates by sign compatibility
       List<TrustTransaction> signFilteredCandidates =
           candidatePool.stream().filter(c -> isSignCompatible(line, c)).toList();
@@ -1795,6 +1801,22 @@ public class TrustReconciliationService {
             .toList();
 
     return matches.size() == 1 ? matches.getFirst() : null;
+  }
+
+  /**
+   * Resets an UNMATCHED line's auto-match suggestion — the suggested row ({@code
+   * trust_transaction_id}) and its confidence. On an UNMATCHED line these are only ever a
+   * suggestion: the row's {@code bank_statement_line_id} is never set by one, so nothing is
+   * unlinked here. Saved only when something was set.
+   */
+  private void clearSuggestion(BankStatementLine line) {
+    if (!"UNMATCHED".equals(line.getMatchStatus())
+        || (line.getTrustTransactionId() == null && line.getMatchConfidence() == null)) {
+      return;
+    }
+    line.setTrustTransactionId(null);
+    line.setMatchConfidence(null);
+    bankStatementLineRepository.save(line);
   }
 
   /**

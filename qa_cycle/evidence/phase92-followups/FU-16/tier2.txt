@@ -1,10 +1,11 @@
-FU-16 Tier 2 — run 2, after the review fixes (tier 2/3 ambiguity guard; single window read).
-Content = the PR head after 1d33d51 (the review-fix commit).
+FU-16 Tier 2 — run 3, after the CodeRabbit stale-suggestion fix (on top of 3298250).
 Pre-step: cd backend && ./mvnw -q spotless:apply   (exit 0)
 Command:  cd backend && ./mvnw -q test -Dtest='io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.**,io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.**,io.b2mash.b2b.b2bstrawman.architecture.**'
-Result:   Maven exit 0. 34 classes (= every *Test.java in the three packages), 437 <testcase> elements
+Result:   Maven exit 0. 34 classes (= every *Test.java in the three packages), 440 <testcase> elements
           (counted from target/surefire-reports/TEST-*.xml), 0 failures, 0 errors, 0 skipped.
-          (Run 1 at 1d33d51: 34 classes, 436 testcases, 0 failures — the +1 is the ambiguity test.)
+          Run 1 at 1d33d51: 436 / 0. Run 2 at 3298250: 437 / 0 (+1 ambiguity test).
+          Run 3: +3 stale-suggestion tests. Per-class counts below are from run 2 except
+          ReversedOriginalMatchIntegrationTest, now 25.
 
 Every caller of the changed code (TrustReconciliationService.autoMatchStatement, the new
 TrustTransactionRepository.findPostedInAutoMatchWindow) and every test that runs auto-match lives in the
@@ -21,7 +22,7 @@ Per class:
 7 testcases, 0 failures/errors — reconciliation.AutoMatchLockOrderIntegrationTest
 4 testcases, 0 failures/errors — reconciliation.BankStatementImportErrorIntegrationTest
 19 testcases, 0 failures/errors — reconciliation.BankStatementReplaceDiscardIntegrationTest
-22 testcases, 0 failures/errors — reconciliation.ReversedOriginalMatchIntegrationTest
+25 testcases, 0 failures/errors — reconciliation.ReversedOriginalMatchIntegrationTest
 31 testcases, 0 failures/errors — reconciliation.StatementLinePostingIntegrationTest
 15 testcases, 0 failures/errors — reconciliation.TrustReconciliationCompletionGateIntegrationTest
 10 testcases, 0 failures/errors — reconciliation.TrustReconciliationControllerTest

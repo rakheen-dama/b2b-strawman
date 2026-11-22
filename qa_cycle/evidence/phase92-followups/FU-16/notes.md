@@ -59,8 +59,9 @@ Base: `main` @ `d0098d179`. Part (c) (wire exposure of the statement-only type s
 
 ## Tests
 
-- **Targeted:** `ReversedOriginalMatchIntegrationTest` 22/22 green with the review fixes (21 at 1d33d51, plus the ambiguity test).
-- **Tier 2 (run 2, after the review fixes):** see `tier2.txt`. The reconciliation, transaction and architecture packages ran 34 classes and 437 testcases, with 0 failures, 0 errors and 0 skipped. Run 1 at 1d33d51 was 34 classes / 436 testcases, all green.
+- **Targeted:** `ReversedOriginalMatchIntegrationTest` 25/25 green. That is 21 at 1d33d51, +1 ambiguity test (3298250), +3 stale-suggestion tests.
+- **Tier 2 (run 3):** see `tier2.txt`. The reconciliation, transaction and architecture packages ran 34 classes and 440 testcases, with 0 failures, 0 errors and 0 skipped. Earlier runs: 436 / 0 at 1d33d51 and 437 / 0 at 3298250.
+- **Orchestrator gates at 3298250:** full verify 7 508 / 0; exit-month E2E 16/16, steps 9–11 at 12 matched / 7 unmatched.
 - **Not run:** the full `verify.sh`, which belongs to the orchestrator.
 
 ## Residual risk
@@ -103,3 +104,59 @@ Base: `main` @ `d0098d179`. Part (c) (wire exposure of the statement-only type s
   - P's own line was left UNMATCHED.
 - The same behaviour is on main; FU-16 neither causes nor fixes it.
 - Suggested fix: two passes. Run tier 1 for every line first, then tiers 2–4 for the lines still unmatched. Re-check §16.9.6 and the CF-3 plan-then-lock order when doing it.
+
+## CodeRabbit round 1 (posted on 1d33d51); coordinator rulings
+
+### Minor 1: one consistent snapshot of the pool and the linked live rows
+Already fixed in 3298250 by the single `findPostedInAutoMatchWindow` read, split in memory (see "Review fixes" item 2). I replied on the thread.
+
+### Minor 2: stale persisted suggestions — facts first
+
+**How a suggestion is stored.** `bank_statement_lines` has `trust_transaction_id` (FK to `trust_transactions`) and `match_confidence` (`numeric(3,2)`, checked 0..1) (`V1__baseline.sql:1783-1787`; `BankStatementLine.java:47-50`). The same two columns carry a link and a suggestion; `match_status` tells them apart.
+
+| `match_status` | `trust_transaction_id` | `match_confidence` | Meaning |
+|---|---|---|---|
+| AUTO_MATCHED | set | 1.00 / 0.80 | link (`applyAutoMatch`) |
+| MANUALLY_MATCHED | set | 1 | link (`manualMatch`) |
+| RECORDED | the primary created row | null | link (`StatementLines.markRecorded`) |
+| UNMATCHED | the suggested row | 0.60 | tier 3 suggestion (`TrustReconciliationService.suggest`; before 3298250, `tryAmountCloseDateMatch`) |
+| UNMATCHED | unchanged | 0.40 | tier 4 hint; sets confidence only, no row (`tryAmountOnlyMatch`) |
+
+**Clearing before this fix.**
+- Only unmatch clears these fields: `releaseMatch` for matched lines, `StatementLinePostingService:377-378` for recorded lines.
+- No code path cleared an UNMATCHED line's suggestion. An old suggestion lasted until the line was matched, recorded or excluded, through any number of auto-match runs.
+- When a line has no sign-compatible candidate, the old code hit an early `continue` before any tier ran.
+
+**A suggestion is not a link.**
+- `suggest` / `tryAmountOnlyMatch` write only the line. The suggested row's `bank_statement_line_id` is untouched, so the row stays in the unmatched pool and in the outstanding items.
+- Only `applyAutoMatch` → `postingService.linkBankLine`, `manualMatch`, and record-from-line link a row.
+- Pinned by `autoMatch_clearsAStaleSuggestionOfAContraOnAnUnmatchedLine` ("a suggestion was never a link") and `autoMatch_rewritesAStillValidSuggestionIdentically` ("a suggestion is not a link").
+
+**Readers** (backend `git grep` of `getTrustTransactionId` / `getMatchConfidence` / JPQL `trustTransactionId` / native `trust_transaction_id`; frontend and portal `git grep` of `trustTransactionId` / `matchConfidence`):
+- **Response DTO.** `BankStatementLineResponse.of` (`TrustReconciliationService.java:~178-196`) copies both fields onto every line. It is used by the statement GET and by `StatementLinePostingService`. This is the one place a stale suggestion reaches a client.
+- **`manualMatch`.** It does not read the suggestion: it takes `lineId` + `transactionId` from the request, requires the line to be UNMATCHED, and overwrites both fields.
+- **`releaseMatch` / `unmatch`.** They read `trust_transaction_id` only for AUTO_MATCHED / MANUALLY_MATCHED lines (the guard just before `releaseMatch`). The recorded-line unmatch reads it only for RECORDED lines (`StatementLinePostingService:338-347`). Neither reads an UNMATCHED line's suggestion.
+- **Wizard pane.** The FE type carries both fields (`frontend/lib/types/trust.ts:407-408`), but nothing renders or uses them for an UNMATCHED line.
+  - `ReconciliationSplitPane.tsx:247-257` builds an UNMATCHED line's candidates from every unmatched transaction of the same absolute amount, not from the suggestion.
+  - `page.tsx:370`/`:451` only set the field optimistically after a manual match or unmatch.
+  - Correction to the finding's wording: the stale suggestion is not what the UI offers. The pane offers every same-amount unmatched row, contras included (F-652B-1, the pane offers a transfer's contra; still open), whatever is stored. A person can manually match a contra to an unrelated line through the pane with or without a stale suggestion, and that is unchanged by this fix (manual match is out of FU-16's scope).
+- **Integrity, report, outstanding and MCP readers.** None. No repository query reads a line's `trust_transaction_id` or `match_confidence`:
+  - outstanding items and the books read `trust_transactions.bank_statement_line_id`;
+  - G4 counts `match_status = 'UNMATCHED'`;
+  - no MCP tool exposes either field.
+- **`suggestedClassification` (647C / ADR-380).** It is a separate column, the parser's classification hint for recording a line. It is set at import and cleared only when the line auto-matches (`applyAutoMatch`).
+  - It names a classification, not a transaction. It is never written from a candidate pool and does not depend on which rows are candidates.
+  - So it is not part of the stale-suggestion problem, and it is untouched.
+
+**Fix.** In `autoMatchStatement`, each locked UNMATCHED line is reset first (`clearSuggestion`: `trust_transaction_id` and `match_confidence` set to null, saved only if something was set), before any tier runs and before the empty-candidates `continue`.
+- The tier that applies now writes its result (tier 2 → link at 0.80, tier 3 → row + 0.60, tier 4 → 0.40), or the line stays clean.
+- `clearSuggestion` acts only on UNMATCHED lines. The loop holds only UNMATCHED lines, locked in step 1, and the method re-checks the status. MATCHED / RECORDED / EXCLUDED lines are never touched.
+- No new lock: the lines were locked in step 1. CF-3 order is unchanged. A refusal at step 3 (RETIRED statement) rolls the resets back with everything else.
+
+**Tests** (seeded through `BankStatementLineRepository`, as a row left by an earlier run looks):
+- `autoMatch_clearsAStaleSuggestionOfAContraOnAnUnmatchedLine`: a pre-FU-16 tier-3 suggestion pointing at contra C is cleared.
+- `autoMatch_clearsStaleSuggestionsOfALinkedRowAndAnOldAmountOnlyConfidence`: a suggestion of a row since matched by hand to another line, and an old 0.40 with no row, are both cleared.
+- Both were RED on 3298250 (`red-stale-suggestion.txt`, full output in `red-stale-suggestion-raw.txt`) and are green now.
+- `autoMatch_rewritesAStillValidSuggestionIdentically` (guard, green before and after): a valid tier-3 suggestion (live deposit, 2 days off, alone at its amount) is written identically by a second run — same row, 0.60, status, `matched_count`.
+
+**Exit month.** Unaffected. Every line on G starts UNMATCHED with no suggestion at the single auto-match run, and all 12 matches are tier 1. This is reasoned; the 3298250 E2E is not re-run for this change.

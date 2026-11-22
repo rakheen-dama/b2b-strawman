@@ -78,6 +78,7 @@ class ReversedOriginalMatchIntegrationTest {
   @Autowired private TrustTransactionRepository transactionRepository;
   @Autowired private TrustTransactionService transactionService;
   @Autowired private JdbcTemplate jdbc;
+  @Autowired private BankStatementLineRepository lineRepository;
 
   private TrustBooksFixture.Tenant books;
   private UUID memberId;
@@ -847,7 +848,107 @@ class ReversedOriginalMatchIntegrationTest {
     assertStillReversedBy(reEntered.reversed(), reEntered.contra());
   }
 
+  // --- FU-16 CodeRabbit: an UNMATCHED line's stale suggestion is cleared by auto-match ----------
+
+  /**
+   * A tier-3 suggestion stored before FU-16 points an UNMATCHED line at a contra
+   * (trust_transaction_id = C, confidence 0.60; seeded through the repository, as such a row looks
+   * in the database). C is no longer suggestible (HF-7), so the next auto-match must clear the
+   * suggestion, not leave the response offering C. RED on 3298250: auto-match never resets an
+   * UNMATCHED line's suggestion.
+   */
+  @Test
+  void autoMatch_clearsAStaleSuggestionOfAContraOnAnUnmatchedLine() {
+    var account = books.freshAccount(false);
+    var client = books.newClient("stale contra suggestion");
+    var originalId = depositOn(account, client, "H-STALE-11", LocalDate.of(2026, 3, 1));
+    var contra = books.reverse(account, originalId, Expected.none(), LocalDate.of(2026, 3, 2));
+    books.approve(account, contra.id(), approverId, Expected.cashbookAndClient("-1000.00"));
+    var march =
+        importStatement(
+            account, "stale-contra.csv", "04/03/2026,EFT payment,-1000.00,-1000.00,BANK-EFT-STALE");
+    var lineId = march.lines().getFirst().id();
+    seedSuggestion(lineId, contra.id(), "0.60");
+
+    autoMatch(march);
+
+    assertLineLeftForAHuman(march, 0);
+    assertThat(bankLineOf(contra.id())).as("a suggestion was never a link").isNull();
+  }
+
+  /**
+   * Stale suggestions after the suggested row was linked elsewhere: line L2's tier-3 suggestion
+   * points at deposit D, which the firm has since matched by hand to L1; line L3 carries an old
+   * tier-4 confidence of 0.40 with no row. Neither line has a candidate now, so auto-match leaves
+   * both clean. RED on 3298250: both keep their old values (a line with no sign-compatible
+   * candidate was skipped before anything was written).
+   */
+  @Test
+  void autoMatch_clearsStaleSuggestionsOfALinkedRowAndAnOldAmountOnlyConfidence() {
+    var account = books.freshAccount(false);
+    var client = books.newClient("stale linked suggestion");
+    var depositId = books.deposit(account, client, "1000.00", LocalDate.of(2026, 3, 1));
+    var march =
+        importStatement(
+            account,
+            "stale-linked.csv",
+            "01/03/2026,Deposit received,1000.00,1000.00,BANK-DEP-0301",
+            "03/03/2026,Deposit received,1000.00,2000.00,BANK-DEP-0303",
+            "05/03/2026,Deposit received,1000.00,3000.00,BANK-DEP-0305");
+    match(march, 0, depositId);
+    seedSuggestion(march.lines().get(1).id(), depositId, "0.60");
+    seedSuggestion(march.lines().get(2).id(), null, "0.40");
+
+    autoMatch(march);
+
+    assertLineMatchedTo(march, 0, depositId, "MANUALLY_MATCHED");
+    assertLineLeftForAHuman(march, 1);
+    assertLineLeftForAHuman(march, 2);
+  }
+
+  /**
+   * Guard: a suggestion that is still valid is written again, identically — a live deposit D two
+   * days from the line, alone at its amount, is suggested at 0.60 by the first run and again by the
+   * second (the reset happens before the tiers, which then write the same result).
+   */
+  @Test
+  void autoMatch_rewritesAStillValidSuggestionIdentically() {
+    var account = books.freshAccount(false);
+    var client = books.newClient("valid suggestion");
+    var depositId = books.deposit(account, client, "777.00", LocalDate.of(2026, 3, 1));
+    var march =
+        importStatement(
+            account,
+            "valid-suggestion.csv",
+            "03/03/2026,Deposit received,777.00,777.00,BANK-DEP-VALID");
+    var lineId = march.lines().getFirst().id();
+
+    autoMatch(march);
+    var first = lineState(lineId);
+    autoMatch(march);
+    var second = lineState(lineId);
+
+    assertThat(first.get("match_status")).isEqualTo("UNMATCHED");
+    assertThat(first.get("trust_transaction_id")).as("first run suggests D").isEqualTo(depositId);
+    assertThat((BigDecimal) first.get("match_confidence")).isEqualByComparingTo("0.60");
+    assertThat(second).as("second run: the same suggestion").isEqualTo(first);
+    assertThat(bankLineOf(depositId)).as("a suggestion is not a link").isNull();
+  }
+
   // --- helpers -----------------------------------------------------------------------------------
+
+  /** Stores a suggestion on an UNMATCHED line the way an earlier auto-match run left it. */
+  private void seedSuggestion(UUID lineId, UUID transactionId, String confidence) {
+    books.as(
+        memberId,
+        () -> {
+          var line = lineRepository.findById(lineId).orElseThrow();
+          assertThat(line.getMatchStatus()).isEqualTo("UNMATCHED");
+          line.setTrustTransactionId(transactionId);
+          line.setMatchConfidence(new BigDecimal(confidence));
+          lineRepository.save(line);
+        });
+  }
 
   /** The line is UNMATCHED with no row linked or suggested and no confidence. */
   private void assertLineLeftForAHuman(BankStatementResponse statement, int index) {

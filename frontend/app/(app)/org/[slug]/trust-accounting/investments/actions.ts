@@ -129,7 +129,7 @@ export async function recordInvestmentInterest(
   }
 }
 
-/** Every interest entry of one investment, newest first (the listing is POSTED and REVERSED). */
+/** Every interest entry of one investment, oldest first (the listing is POSTED and REVERSED). */
 export async function fetchInvestmentInterest(investmentId: string): Promise<InvestmentInterest[]> {
   return api.get<InvestmentInterest[]>(`/api/trust-investments/${investmentId}/interest`);
 }

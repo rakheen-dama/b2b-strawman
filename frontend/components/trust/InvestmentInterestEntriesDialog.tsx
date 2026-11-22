@@ -14,7 +14,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
-import { INTEREST_PRESENTATION_LABELS, type InvestmentInterest } from "@/lib/types/trust";
+import { INTEREST_PRESENTATION_LABELS } from "@/lib/types/trust";
 import {
   fetchInvestmentInterest,
   reverseInvestmentInterest,

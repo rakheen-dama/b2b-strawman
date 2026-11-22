@@ -1,0 +1,12 @@
+# FU-12 connection probe BEFORE the round-1 fix (code @ 751b9b20b: audit row written from afterCommit in REQUIRES_NEW), 2026-11-22T10:42:39Z
+# cd backend && ./mvnw -q test -Dtest='ReportAuditConnectionBudgetIntegrationTest'
+# HikariPoolMXBean.getActiveConnections() on appDataSource (tenant pool, primary shard); idle = sampled before the request
+# insideReportTransaction: in renderPdf, in the report transaction
+# afterCommitBeforeAuditWrite: an afterCommit callback registered before the recorder's, so it runs before the REQUIRES_NEW
+# duringAuditWrite: in AuditService.log, after the real call
+# Result: the report transaction's connection is STILL checked out at afterCommit (1 with idle 0), and the audit write holds a second one (2).
+
+PASS  ReportAuditConnectionBudgetIntegrationTest.csvExport_auditWriteHoldsAtMostOneConnection
+FAIL  ReportAuditConnectionBudgetIntegrationTest.pdfExport_auditWriteHoldsAtMostOneConnection  -- [connections checked out while the audit row is written; idle=0 samples={reportTransactionReadOnly=1, duringAuditWrite=2, insideReportTransaction=1, afterCommitBeforeAuditWrite=1}]  expected: 1  but was: 2
+FAIL  ReportAuditConnectionBudgetIntegrationTest.execute_auditWriteHoldsAtMostOneConnection  -- [connections checked out while the audit row is written; idle=0 samples={duringAuditWrite=2}]  expected: 1  but was: 2
+TOTAL testcases=3 failures=2 errors=0 skipped=0

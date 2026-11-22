@@ -23,9 +23,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class ReportingController {
 
   private final ReportExportService reportExportService;
+  private final ReportRunService reportRunService;
 
-  public ReportingController(ReportExportService reportExportService) {
+  public ReportingController(
+      ReportExportService reportExportService, ReportRunService reportRunService) {
     this.reportExportService = reportExportService;
+    this.reportRunService = reportRunService;
   }
 
   @GetMapping
@@ -46,7 +49,7 @@ public class ReportingController {
   public ResponseEntity<ReportExecutionResponse> executeReport(
       @PathVariable String slug, @Valid @RequestBody ExecuteReportRequest request) {
     var pageable = PageRequest.of(request.page(), request.size());
-    return ResponseEntity.ok(reportExportService.execute(slug, request.parameters(), pageable));
+    return ResponseEntity.ok(reportRunService.execute(slug, request.parameters(), pageable));
   }
 
   @GetMapping("/{slug}/preview")
@@ -62,7 +65,7 @@ public class ReportingController {
   @RequiresCapability("FINANCIAL_VISIBILITY")
   public ResponseEntity<byte[]> exportPdf(
       @PathVariable String slug, @RequestParam Map<String, Object> parameters) {
-    var result = reportExportService.exportAsPdf(slug, parameters);
+    var result = reportRunService.exportAsPdf(slug, parameters);
     return ResponseEntity.ok()
         .contentType(MediaType.APPLICATION_PDF)
         .header("Content-Disposition", "attachment; filename=\"" + result.filename() + "\"")

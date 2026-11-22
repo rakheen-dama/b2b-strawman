@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.reporting;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
@@ -43,8 +44,8 @@ class ReportAuditRecorderTest {
           UUID.randomUUID(),
           "USER",
           "API",
-          null,
-          null,
+          "203.0.113.7",
+          "probe-agent/1.0",
           Map.of("slug", "section-35-data-pack", "format", "pdf"));
 
   private final AuditService auditService = mock(AuditService.class);
@@ -124,6 +125,10 @@ class ReportAuditRecorderTest {
               assertThat(event.getFormattedMessage())
                   .contains("REPORT_EXPORTED")
                   .contains(RECORD.entityId().toString())
+                  .contains(RECORD.actorId().toString())
+                  .contains("source=API")
+                  .contains("ip=203.0.113.7")
+                  .contains("userAgent=probe-agent/1.0")
                   .contains("section-35-data-pack");
               assertThat(event.getThrowableProxy().getMessage())
                   .isEqualTo("audit_events unavailable");
@@ -148,11 +153,93 @@ class ReportAuditRecorderTest {
     assertThat(appender.list).extracting(ILoggingEvent::getLevel).containsExactly(Level.ERROR);
   }
 
+  // --- writeAfter: written once the report transaction has completed (CodeRabbit round 1) ----
+
+  @Test
+  void writeAfter_committedRow_isWrittenOnlyAfterTheReportCallReturns() {
+    var result =
+        recorder.writeAfter(
+            () -> {
+              var synchronizations = openCallerTransaction();
+              recorder.recordAfterCommit(RECORD);
+              synchronizations.get().forEach(TransactionSynchronization::afterCommit);
+              // committed, but the report transaction has not completed (its connection is held)
+              verify(auditService, never()).log(any());
+              closeCallerTransaction(synchronizations, TransactionSynchronization.STATUS_COMMITTED);
+              return "report";
+            });
+
+    assertThat(result).isEqualTo("report");
+    verify(auditService).log(RECORD);
+    assertThat(transactionManager.begun.getFirst().getPropagationBehavior())
+        .isEqualTo(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+  }
+
+  @Test
+  void writeAfter_rolledBackReport_writesNothing() {
+    assertThatThrownBy(
+            () ->
+                recorder.writeAfter(
+                    () -> {
+                      var synchronizations = openCallerTransaction();
+                      recorder.recordAfterCommit(RECORD);
+                      closeCallerTransaction(
+                          synchronizations, TransactionSynchronization.STATUS_ROLLED_BACK);
+                      throw new IllegalStateException("render failed");
+                    }))
+        .hasMessage("render failed");
+
+    verify(auditService, never()).log(any());
+    assertThat(transactionManager.begun).isEmpty();
+  }
+
+  @Test
+  void writeAfter_auditWriteFails_reportIsReturned_errorIsLogged() {
+    doThrow(new IllegalStateException("pool exhausted")).when(auditService).log(any());
+
+    var result =
+        recorder.writeAfter(
+            () -> {
+              var synchronizations = openCallerTransaction();
+              recorder.recordAfterCommit(RECORD);
+              synchronizations.get().forEach(TransactionSynchronization::afterCommit);
+              closeCallerTransaction(synchronizations, TransactionSynchronization.STATUS_COMMITTED);
+              return "report";
+            });
+
+    assertThat(result).isEqualTo("report");
+    assertThat(appender.list).extracting(ILoggingEvent::getLevel).containsExactly(Level.ERROR);
+  }
+
+  /** Inside a caller's transaction there is nothing to wait for: the commit callback writes. */
+  @Test
+  void writeAfter_insideATransaction_writesAtThatTransactionsCommit() {
+    var synchronizations = openCallerTransaction();
+
+    recorder.writeAfter(
+        () -> {
+          recorder.recordAfterCommit(RECORD);
+          return null;
+        });
+    verify(auditService, never()).log(any());
+
+    synchronizations.get().forEach(TransactionSynchronization::afterCommit);
+    verify(auditService).log(RECORD);
+  }
+
   /** Simulates the caller's (report) transaction: synchronization on, a transaction active. */
   private java.util.function.Supplier<List<TransactionSynchronization>> openCallerTransaction() {
     TransactionSynchronizationManager.initSynchronization();
     TransactionSynchronizationManager.setActualTransactionActive(true);
     return TransactionSynchronizationManager::getSynchronizations;
+  }
+
+  /** Completes the simulated caller transaction, as {@code cleanupAfterCompletion} would. */
+  private void closeCallerTransaction(
+      java.util.function.Supplier<List<TransactionSynchronization>> synchronizations, int status) {
+    synchronizations.get().forEach(s -> s.afterCompletion(status));
+    TransactionSynchronizationManager.clearSynchronization();
+    TransactionSynchronizationManager.setActualTransactionActive(false);
   }
 
   /** Records what was begun, committed and rolled back; touches no resource. */

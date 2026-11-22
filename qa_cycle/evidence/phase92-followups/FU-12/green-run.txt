@@ -1,12 +1,20 @@
-# FU-12 green run: final code (ReportAuditRecorder; base 623c22cc9), Tier 2 run 2026-11-22T02:48Z-03:20Z, exit 0
-# The FU-12 tests and the FU-3 guards, extracted from the Tier 2 run (tier2-run.txt has every testcase).
-# The four red tests are green. The rollback test now passes through the after-commit path (rolled back: 0 rows; committed: 1).
+# FU-12 green run: review round 1 code (ReportRunService + ReportAuditRecorder.writeAfter; on 751b9b20b), Tier 2 run 2026-11-22T10:48Z-10:50Z, exit 0
+# The FU-12 tests, the connection-budget guard and the FU-3 guards, extracted from the Tier 2 run (tier2-run.txt has every testcase).
+# Round 1: ReportAuditConnectionBudgetIntegrationTest (audit write holds 1 connection; HTTP rollback writes no row), writeAfter unit tests, exact ProblemDetail on the refused export.
 
+PASS  ReportAuditConnectionBudgetIntegrationTest.csvExport_auditWriteHoldsAtMostOneConnection
+PASS  ReportAuditConnectionBudgetIntegrationTest.pdfExport_auditWriteHoldsAtMostOneConnection
+PASS  ReportAuditConnectionBudgetIntegrationTest.execute_auditWriteHoldsAtMostOneConnection
+PASS  ReportAuditConnectionBudgetIntegrationTest.pdfExportFailingAfterTheAuditWasRegistered_writesNoRow
 PASS  ReportAuditRecorderTest.auditWriteFailsAfterCommit_commitIsNotFailed
 PASS  ReportAuditRecorderTest.insideATransactionThatRollsBack_writesNothing
 PASS  ReportAuditRecorderTest.auditWriteFails_reportIsNotFailed_errorIsLogged
+PASS  ReportAuditRecorderTest.writeAfter_rolledBackReport_writesNothing
+PASS  ReportAuditRecorderTest.writeAfter_insideATransaction_writesAtThatTransactionsCommit
 PASS  ReportAuditRecorderTest.insideATransaction_writesOnlyAfterItCommits
 PASS  ReportAuditRecorderTest.noTransaction_writesNow_inANewWritableTransaction
+PASS  ReportAuditRecorderTest.writeAfter_committedRow_isWrittenOnlyAfterTheReportCallReturns
+PASS  ReportAuditRecorderTest.writeAfter_auditWriteFails_reportIsReturned_errorIsLogged
 PASS  ReportAuditRowsIntegrationTest.execute_writesOneReportGeneratedRow
 PASS  ReportAuditRowsIntegrationTest.exportInATransactionThatRollsBack_writesNoRow_committed_writesOne
 PASS  ReportAuditRowsIntegrationTest.csvExport_writesOneReportExportedRow
@@ -49,4 +57,4 @@ PASS  TrustSnapshotReadsIntegrationTest.rule5415Report_depositCommittedBetweenTh
 PASS  TrustSnapshotReadsIntegrationTest.clientTrustStatement_placementApprovedBetweenTheReads_storedDocumentCountsItOnce
 PASS  TrustSnapshotReadsIntegrationTest.clientTrustStatement_investmentReturnedDuringTheAccountChoice_choosesTheAccountHoldingIt
 PASS  TrustSnapshotReadsIntegrationTest.clientLedgerStatementReport_placementApprovedBetweenTheReads_countsItOnce
-SUBTOTAL 47 PASS, 0 FAIL/ERROR
+SUBTOTAL 55 PASS, 0 FAIL/ERROR

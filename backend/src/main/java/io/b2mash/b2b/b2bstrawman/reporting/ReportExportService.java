@@ -28,9 +28,11 @@ import org.springframework.transaction.annotation.Transactional;
  * (40001) at {@code REPEATABLE_READ}.
  *
  * <p>Audit rows ({@code REPORT_GENERATED} on execute, {@code REPORT_EXPORTED} on PDF and CSV) go
- * through {@link ReportAuditRecorder}: written after this transaction commits, in a transaction of
- * their own, so this one stays read-only (Phase 92 FU-12, 650C F-650C-1 — a row joined to it was
- * never flushed). A preview ({@link #renderPreviewHtml}) is not audited.
+ * through {@link ReportAuditRecorder}, so this transaction stays read-only (Phase 92 FU-12, 650C
+ * F-650C-1 — a row joined to it was never flushed). They are collected when this transaction
+ * commits and written after it has completed: by {@link ReportRunService} (the execute and PDF
+ * endpoints call it, not these methods) or, for CSV, in {@link #writeCsvAndAudit}. A preview
+ * ({@link #renderPreviewHtml}) is not audited.
  */
 @Service
 public class ReportExportService {

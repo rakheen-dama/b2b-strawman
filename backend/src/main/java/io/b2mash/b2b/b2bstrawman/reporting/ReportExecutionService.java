@@ -81,9 +81,9 @@ public class ReportExecutionService {
 
     var result = query.execute(parameters, pageable);
 
-    // After the report transaction commits, in a transaction of its own: the HTTP path runs this
-    // inside ReportExportService's read-only transaction, where a joined write is never flushed
-    // (Phase 92 FU-12).
+    // Not written in this transaction: the HTTP path runs this inside ReportExportService's
+    // read-only transaction, where a joined write is never flushed. Collected at its commit and
+    // written by ReportRunService once it has completed (Phase 92 FU-12).
     reportAuditRecorder.recordAfterCommit(
         AuditEventBuilder.builder()
             .eventType("REPORT_GENERATED")

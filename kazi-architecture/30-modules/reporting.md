@@ -64,7 +64,14 @@ Discovery anchor: `_discovery/A2-frontend-map.md:160-179` ; `_discovery/A2-front
 - `REPORT_EXPORTED` on CSV export `→ reporting/ReportExportService.java` (`writeCsvAndAudit`, format = `"csv"`), written in a `finally` block so a stream failure mid-write still records the export attempt.
 - The HTML preview (`renderPreviewHtml`) writes no audit row.
 
-All three go through `→ reporting/ReportAuditRecorder.java`, not straight to `AuditService.log`. The report entry points run in a read-only `REPEATABLE_READ` transaction (one snapshot per report, Phase 92 650C D-38 / FU-3 D-1), and a row joined to that transaction was never flushed (Phase 92 F-650C-1: until FU-12 no execute or PDF export was audited). The recorder writes the row **after the report transaction commits**, in a new (`REQUIRES_NEW`) writable transaction, so a report whose transaction rolls back is not audited. When no transaction is open (the CSV `finally` block) it writes at once, in its own transaction. Audit writing is best effort: a failed audit write does not fail a report that has already been produced, and is logged at ERROR. Every other audit row in the system still joins its business transaction.
+All three go through `→ reporting/ReportAuditRecorder.java`, not straight to `AuditService.log`. The report entry points run in a read-only `REPEATABLE_READ` transaction (one snapshot per report, Phase 92 650C D-38 / FU-3 D-1), and a row joined to that transaction was never flushed (Phase 92 F-650C-1: until FU-12 no execute or PDF export was audited).
+
+- **Collected at commit.** The audit site registers the row on the report transaction, and the row is collected only if that transaction commits. A report whose transaction rolls back is not audited.
+- **Written after completion.** The execute and PDF endpoints call `→ reporting/ReportRunService.java`, which is deliberately not transactional. It calls the `ReportExportService` entry point through its proxy, and once that call has returned writes the collected rows in a new (`REQUIRES_NEW`) writable transaction. By then the report transaction has completed and released its connection, so a report holds one pooled connection at a time. At `afterCommit` the report's connection is still checked out, which was measured in `ReportAuditConnectionBudgetIntegrationTest`.
+- **CSV.** With no transaction open (the CSV `finally` block), the row is written at once.
+- **Best effort.** A failed audit write does not fail a report that has already been produced; it is logged at ERROR with the row's fields.
+
+Every other audit row in the system still joins its business transaction.
 
 **Strategy-pattern wiring (ADR-081).** Adding a new report requires (1) a new `@Component implements ReportQuery` and (2) a `ReportDefinition` seed entry — no framework changes. Boot-time validation rejects duplicate slugs `→ reporting/ReportExecutionService.java:32-41`.
 

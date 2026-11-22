@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.reporting;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
@@ -164,7 +165,10 @@ class ReportAuditRowsIntegrationTest {
             get("/api/report-definitions/section-35-data-pack/export/pdf")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER))
                 .param("financial_year_end", "2026-03-31"))
-        .andExpect(status().is4xxClientError());
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.title").value("Missing required parameter"))
+        .andExpect(jsonPath("$.detail").value("Parameter 'trust_account_id' is required"));
 
     assertThat(newRows("REPORT_EXPORTED", SECTION_35, before)).isEmpty();
   }

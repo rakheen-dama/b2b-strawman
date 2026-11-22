@@ -64,11 +64,13 @@ public final class TrustTransactionTypeLabels {
 
   /**
    * The description a client reads for a trust ledger row — the one rule for every client surface
-   * (the portal trust ledger, the Statement of Account, the Client Trust Statement). A {@code
+   * (the portal trust ledger, the Statement of Account, the Client Trust Statement, and the firm's
+   * client-ledger-statement report, which is handed to the client — Phase 92 W1 / FU-4). A {@code
    * REVERSAL} row's own description is the firm user's free-text reversal reason, which never
    * reaches the client (Phase 92 649B, PR #1789 review): it reads "{@code Reversal — <reference>}"
    * ({@code Reversal} alone without a reference). Every other type keeps its own description.
-   * Firm-side readers (the client-ledger API, firm reports) print the row's own description.
+   * Firm-side readers (the client-ledger API and the other firm reports) print the row's own
+   * description.
    */
   public static String clientDescription(
       String transactionType, String description, String reference) {

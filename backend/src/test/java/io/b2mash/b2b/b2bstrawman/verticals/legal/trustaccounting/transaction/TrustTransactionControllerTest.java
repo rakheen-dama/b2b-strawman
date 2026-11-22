@@ -920,6 +920,79 @@ class TrustTransactionControllerTest {
                 .value(org.hamcrest.Matchers.contains(org.hamcrest.Matchers.nullValue())));
   }
 
+  // --- F-646E-2: date range + client filters on the list endpoint ---
+
+  @Test
+  void listTransactions_dateRangeAndClientFilters_narrowTheRows() throws Exception {
+    var ownerJwt = TestJwtFactory.ownerJwt(ORG_ID, "user_txn_ctrl_owner");
+    var clientA =
+        TestEntityHelper.createCustomer(mockMvc, ownerJwt, "Filter Client A", "f646e2_a@test.com");
+    var clientB =
+        TestEntityHelper.createCustomer(mockMvc, ownerJwt, "Filter Client B", "f646e2_b@test.com");
+    var a1 =
+        recordTxn(
+            "deposit", clientA, trustMatterOf(clientA).toString(), "100.00", "F2-A1", "2026-04-01");
+    var a2 =
+        recordTxn(
+            "deposit", clientA, trustMatterOf(clientA).toString(), "100.00", "F2-A2", "2026-04-10");
+    var b1 =
+        recordTxn(
+            "deposit", clientB, trustMatterOf(clientB).toString(), "100.00", "F2-B1", "2026-04-10");
+    var url = "/api/trust-accounts/" + trustAccountId + "/transactions";
+
+    // client filter: only client A's two rows
+    mockMvc
+        .perform(get(url).with(ownerJwt).param("clientId", clientA).param("size", "100"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[*].id", containsInAnyOrder(a1, a2)));
+
+    // date range: only the 2026-04-10 rows (both clients)
+    mockMvc
+        .perform(
+            get(url)
+                .with(ownerJwt)
+                .param("dateFrom", "2026-04-05")
+                .param("dateTo", "2026-04-10")
+                .param("size", "100"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[*].id", containsInAnyOrder(a2, b1)));
+
+    // inclusive bounds + client: dateTo equal to the row's date keeps it; dateFrom after drops it
+    mockMvc
+        .perform(
+            get(url)
+                .with(ownerJwt)
+                .param("clientId", clientA)
+                .param("dateTo", "2026-04-01")
+                .param("size", "100"))
+        .andExpect(jsonPath("$.content[*].id", containsInAnyOrder(a1)));
+    mockMvc
+        .perform(
+            get(url)
+                .with(ownerJwt)
+                .param("clientId", clientB)
+                .param("dateFrom", "2026-04-11")
+                .param("size", "100"))
+        .andExpect(jsonPath("$.content", hasSize(0)));
+
+    // an unknown client id is an empty page, not an error
+    mockMvc
+        .perform(get(url).with(ownerJwt).param("clientId", UUID.randomUUID().toString()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content", hasSize(0)));
+  }
+
+  @Test
+  void listTransactions_fromAfterTo_returns400() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/trust-accounts/" + trustAccountId + "/transactions")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_txn_ctrl_owner"))
+                .param("dateFrom", "2026-05-02")
+                .param("dateTo", "2026-05-01"))
+        .andExpect(status().isBadRequest());
+  }
+
   private String recordDeposit(String clientId, String matterId, String amount, String reference)
       throws Exception {
     return recordTxn("deposit", clientId, matterId, amount, reference, "2026-03-01");

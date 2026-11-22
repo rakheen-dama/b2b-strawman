@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -45,11 +46,25 @@ public class TrustTransactionController {
       @RequestParam(required = false) String type,
       @RequestParam(required = false) String status,
       @RequestParam(required = false) TrustLedger ledger,
+      @RequestParam(required = false) UUID clientId,
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+          LocalDate dateFrom,
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+          LocalDate dateTo,
       @RequestParam(defaultValue = "false") boolean excludeLinked,
       Pageable pageable) {
     return ResponseEntity.ok(
         trustTransactionService.listTransactions(
-            accountId, matterId, type, status, ledger, excludeLinked, pageable));
+            accountId,
+            matterId,
+            type,
+            status,
+            ledger,
+            clientId,
+            dateFrom,
+            dateTo,
+            excludeLinked,
+            pageable));
   }
 
   @GetMapping("/api/trust-accounts/{accountId}/transactions/{id}")

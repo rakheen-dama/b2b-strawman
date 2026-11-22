@@ -193,9 +193,9 @@ export interface TrustTransaction {
   recordedBy: string;
   createdAt: string;
   /**
-   * ADR-361: server-computed on the client-ledger /history endpoint (null on non-posted and
-   * REVERSAL rows) and on the creditor-ledger /transactions endpoint (647C: null on unposted rows
-   * only); null on every other endpoint.
+   * ADR-361: server-computed on the client-ledger /history endpoint and on the creditor-ledger
+   * /transactions endpoint (both null on unposted rows only: 647C, 647C #2, where a REVERSED
+   * original and its REVERSAL contra each carry theirs); null on every other endpoint.
    */
   runningBalance: number | null;
   /**

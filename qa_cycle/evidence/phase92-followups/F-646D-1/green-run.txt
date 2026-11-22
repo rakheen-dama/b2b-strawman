@@ -1,0 +1,13 @@
+F-646D-1 green run: BackDatedFeeTransferCoverIntegrationTest with the fix (TrustTransactionService.performApprovalCompletion passes coveredFrom = the transaction date for a back-dated FEE_TRANSFER). Command: cd backend && ./mvnw -q test -Dtest=BackDatedFeeTransferCoverIntegrationTest. Maven exit 0.
+
+PASS feeTransferDatedToday_isApproved_whenTheClientCoversItToday
+PASS feeTransferDatedToday_isRefused_withTheUnchangedMessage_whenTheClientCannotCoverIt
+PASS backDatedFeeTransfer_isRefused_whenDatedBeforeTheDepositItDrawsOn
+PASS backDatedFeeTransfer_isRefused_whenTheMatterCellIsEmptyAsAtItsDate
+PASS backDatedFeeTransfer_isApproved_whenCoveredOnEveryDateFromItsDate
+PASS backDatedFeeTransfer_isRefused_whenTheMatterCellWouldBeInDebitAsAtALaterDate
+PASS backDatedFeeTransfer_isRefused_whenTheClientWouldBeInDebitAsAtALaterDate
+
+classes=1 testcases=7 failures=0 errors=0 skipped=0
+
+--- Maven log (Tests run / ERROR lines) ---

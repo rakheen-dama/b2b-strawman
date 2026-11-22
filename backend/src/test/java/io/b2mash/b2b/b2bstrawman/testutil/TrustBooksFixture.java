@@ -374,6 +374,14 @@ public final class TrustBooksFixture {
      * (awaits approval, moves nothing).
      */
     public FeeTransfer requestFeeTransfer(UUID account, Client client) {
+      return requestFeeTransfer(account, client, null);
+    }
+
+    /**
+     * As {@link #requestFeeTransfer(UUID, Client)}, dated {@code transactionDate} (null = today;
+     * F-646D-1).
+     */
+    public FeeTransfer requestFeeTransfer(UUID account, Client client, LocalDate transactionDate) {
       var invoiceId = UUID.randomUUID();
       jdbc.update(
           """
@@ -416,7 +424,8 @@ public final class TrustBooksFixture {
                                       client.id(),
                                       invoiceId,
                                       new BigDecimal("1150.00"),
-                                      reference("FT")))
+                                      reference("FT"),
+                                      transactionDate))
                               .id()));
       assertThat(statusOf(id[0])).isEqualTo("AWAITING_APPROVAL");
       return new FeeTransfer(id[0], invoiceId);

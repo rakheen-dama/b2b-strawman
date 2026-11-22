@@ -1,0 +1,22 @@
+F-646D-1 red run: the new test on UNMODIFIED production code at HEAD 56fd0d3a9 (only test files changed: the TrustBooksFixture dated fee-transfer overload and BackDatedFeeTransferCoverIntegrationTest). Command: cd backend && ./mvnw -q test -Dtest=BackDatedFeeTransferCoverIntegrationTest. Maven exit 1.
+
+PASS feeTransferDatedToday_isApproved_whenTheClientCoversItToday
+PASS feeTransferDatedToday_isRefused_withTheUnchangedMessage_whenTheClientCannotCoverIt
+FAIL backDatedFeeTransfer_isRefused_whenDatedBeforeTheDepositItDrawsOn
+      Expecting code to raise a throwable.
+FAIL backDatedFeeTransfer_isRefused_whenTheMatterCellIsEmptyAsAtItsDate
+      Expecting code to raise a throwable.
+PASS backDatedFeeTransfer_isApproved_whenCoveredOnEveryDateFromItsDate
+FAIL backDatedFeeTransfer_isRefused_whenTheMatterCellWouldBeInDebitAsAtALaterDate
+      Expecting code to raise a throwable.
+FAIL backDatedFeeTransfer_isRefused_whenTheClientWouldBeInDebitAsAtALaterDate
+      Expecting code to raise a throwable.
+
+classes=1 testcases=7 failures=4 errors=0 skipped=0
+
+--- Maven log (Tests run / ERROR lines) ---
+[ERROR]   BackDatedFeeTransferCoverIntegrationTest.backDatedFeeTransfer_isRefused_whenDatedBeforeTheDepositItDrawsOn:109
+[ERROR]   BackDatedFeeTransferCoverIntegrationTest.backDatedFeeTransfer_isRefused_whenTheClientWouldBeInDebitAsAtALaterDate:136
+[ERROR]   BackDatedFeeTransferCoverIntegrationTest.backDatedFeeTransfer_isRefused_whenTheMatterCellIsEmptyAsAtItsDate:165->assertMatterRefused:286->lambda$assertMatterRefused$0:289
+[ERROR]   BackDatedFeeTransferCoverIntegrationTest.backDatedFeeTransfer_isRefused_whenTheMatterCellWouldBeInDebitAsAtALaterDate:184->assertMatterRefused:286->lambda$assertMatterRefused$0:289
+[ERROR] Tests run: 7, Failures: 4, Errors: 0, Skipped: 0

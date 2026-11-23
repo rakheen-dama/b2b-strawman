@@ -1,5 +1,8 @@
 # Trust accounting — open issues (2026-11-23)
 
+> **Status update (2026-11-23, later the same day): §1 and §2 D-1/D-2 are resolved.** All §1 residuals — 1.1 back-dated PAYMENT / REFUND / INV_PLACE / TRANSFER_OUT, 1.2 the two pair reversals, 1.3 the `reverseInterest` deadlock (not reproduced: impossible by construction), 1.4 the document trust flag, 1.5 the reload-surviving idempotency key — and D-2 (interest reversal requires a reason) were fixed by **PR #1845** (`f4923eb29`), founder-authorised as one cluster. The exit gate was re-run green on `main` `cb803686c`, and the register re-counts **0 open HIGH/MEDIUM** — Phase 92 exit **PASS** (closure report C.0, PR #1843). §3–§5 below remain the open backlog; the new Low follow-ups from #1845 are listed in `tasks/phase92-decisions.md` row "Residuals D-1".
+
+
 **Status of Phase 92's exit bar: NOT YET MET.** Every row the exit register (`qa_cycle/evidence/phase92-exit/defect-register.md`) listed as an open HIGH or MEDIUM on 2026-11-20 is now fixed or closed (follow-up PRs #1823–#1842). But the follow-up builders found **MEDIUM-class residuals of the same defect classes** (§1). Those residuals were never added to the register. The register's own rule is that a pending ruling does not close a row, so they count against exit-bar item (3), "0 open HIGH or MEDIUM trust defects". The independent review of the closure PR (#1843, REQUEST_CHANGES @616d915) found this gap. **#1843 is held. It must not merge with its PASS claim** until the §1 items are fixed or ruled.
 
 What *is* green, on `main` `ef0563fe3` (2026-11-23, `qa_cycle/evidence/phase92-exit/closure-2026-11-23/` on branch `docs/phase92-exit-gate-pass`):

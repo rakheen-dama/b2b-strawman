@@ -1,0 +1,27 @@
+
+> frontend@0.1.0 test:e2e:exit-month /Users/rakheendama/Projects/2026/wt-exit2/frontend
+> playwright test --config e2e/playwright.legal-lifecycle.config.ts --project exit-month --reporter=line
+
+
+Running 16 tests using 1 worker
+
+[1/16] [exit-month] › e2e/tests/legal-lifecycle/trust-balanced-month.spec.ts:775:7 › Phase 92 exit — one balanced month (§16.9.6) › 1 · fresh stack; set-up as Alice: I-A, I-B, two clients with matters and portal contacts, a sent fee note
+[exit-month] › e2e/tests/legal-lifecycle/trust-balanced-month.spec.ts:775:7 › Phase 92 exit — one balanced month (§16.9.6) › 1 · fresh stack; set-up as Alice: I-A, I-B, two clients with matters and portal contacts, a sent fee note
+exit month: October 2026; evidence: /tmp/exit92b/exit-month-evidence
+
+[2/16] [exit-month] › e2e/tests/legal-lifecycle/trust-balanced-month.spec.ts:878:7 › Phase 92 exit — one balanced month (§16.9.6) › 2 · postings #1–11 in date order (Alice records; her own approval refused; Bob approves)
+[3/16] [exit-month] › e2e/tests/legal-lifecycle/trust-balanced-month.spec.ts:1021:7 › Phase 92 exit — one balanced month (§16.9.6) › 3 · after #11: Ndlovu general R 19 000,00 · invested R 50 000,00 · total R 69 000,00 (unchanged); then #12
+[4/16] [exit-month] › e2e/tests/legal-lifecycle/trust-balanced-month.spec.ts:1039:7 › Phase 92 exit — one balanced month (§16.9.6) › 4–6 · reconcile I-A to the 31st: interest gross (#13), Fund sweep, withdraw on the 30th (#14), match, complete; October list locks
+[5/16] [exit-month] › e2e/tests/legal-lifecycle/trust-balanced-month.spec.ts:1135:7 › Phase 92 exit — one balanced month (§16.9.6) › 7 · reconcile I-B to the 31st: interest net (#15), complete; October list locks
+[6/16] [exit-month] › e2e/tests/legal-lifecycle/trust-balanced-month.spec.ts:1170:7 › Phase 92 exit — one balanced month (§16.9.6) › 8 · payment #16 PAY-B-001 R 1 500,00 dated the 31st; Bob approves (not on the statement)
+[7/16] [exit-month] › e2e/tests/legal-lifecycle/trust-balanced-month.spec.ts:1183:7 › Phase 92 exit — one balanced month (§16.9.6) › 9–11 · reconcile G: 19 lines, 12 matched / 7 unmatched; record six; one 400 (G1 + G4); record #18 → R 101 630,00
+[8/16] [exit-month] › e2e/tests/legal-lifecycle/trust-balanced-month.spec.ts:1331:7 › Phase 92 exit — one balanced month (§16.9.6) › 12–13 · other trust creditors: Fund R 0,00 with five rows, two held; allocate R 7 500,00 to Khumalo / M2 on the 27th (#24), Bob approves
+[9/16] [exit-month] › e2e/tests/legal-lifecycle/trust-balanced-month.spec.ts:1428:7 › Phase 92 exit — one balanced month (§16.9.6) › 14 · trust position as at the 30th for G: 102 957,50 = 102 957,50; Fund −172,50 flagged; R 57,50 charges to refund flagged; balanced
+[10/16] [exit-month] › e2e/tests/legal-lifecycle/trust-balanced-month.spec.ts:1474:7 › Phase 92 exit — one balanced month (§16.9.6) › 15 · back in G's reconciliation, recalculate: the expected table (G, I-A, I-B, firm); complete; G's October list locks
+[11/16] [exit-month] › e2e/tests/legal-lifecycle/trust-balanced-month.spec.ts:1564:7 › Phase 92 exit — one balanced month (§16.9.6) › 16 · Rule 54.15 list for the 31st: the three locked lists; firm-wide 121 725,00 = 101 630,00 + 20 095,00
+[12/16] [exit-month] › e2e/tests/legal-lifecycle/trust-balanced-month.spec.ts:1700:7 › Phase 92 exit — one balanced month (§16.9.6) › 17 · Rule 54.28 schedule for the month: G, I-A, I-B; total gross interest 1 734,56; total gross charges 172,50
+[13/16] [exit-month] › e2e/tests/legal-lifecycle/trust-balanced-month.spec.ts:1753:7 › Phase 92 exit — one balanced month (§16.9.6) › 18 · Section 35 data pack, year ending the 31st, per account (D-6): creditors, investments, schedule, the two Fund sweeps with file and line
+[14/16] [exit-month] › e2e/tests/legal-lifecycle/trust-balanced-month.spec.ts:1847:7 › Phase 92 exit — one balanced month (§16.9.6) › 19 · portal: Ndlovu sees R 380,00 s86(4) interest only; Khumalo R 95,00, R 31 000,00 + R 20 095,00 = R 51 095,00; neither sees R 1 234,56
+[15/16] [exit-month] › e2e/tests/legal-lifecycle/trust-balanced-month.spec.ts:1927:7 › Phase 92 exit — one balanced month (§16.9.6) › 20 · trust dashboard: integrity card "Books balance" firm-wide; flags: none
+[16/16] [exit-month] › e2e/tests/legal-lifecycle/trust-balanced-month.spec.ts:1940:7 › Phase 92 exit — one balanced month (§16.9.6) › 21 · psql (read-only): per account Σ cashbook_effect = Σ ledger_effect to the 31st; the three locked lists hold the totals
+  16 passed (1.4m)

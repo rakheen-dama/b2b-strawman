@@ -1,6 +1,6 @@
 # Phase 92 — Trust Books That Are Provably Right: Statement-Driven Interest, Non-Client Trust Creditors, Investments On The Books
 
-**Status: COMPLETE — all 36 slices merged (35 slice PRs #1786–#1821, excluding process PR #1805, plus the 652F exit PR #1822). Exit verdict: FAIL. Item 3 is not met: 18 open HIGH/MEDIUM trust defects by source severity (the headline number, by the register's rule that source severity wins), or 21 open (5 HIGH) under the register's rubric applied throughout, which is where follow-up triage should start; carried to the backlog. 10 of the 18 have a follow-up FU-n; for the other 8, new FU-17+ items are proposed. Item 2 is partly met: two path sub-cases are not asserted as the path states.** The post-merge bookkeeping commit marks 652F **Done (PR #1822)** and Epic 652 Done in four places: the 652F slice detail row, the Implementation Order row, the Epic Overview and the `TASKS.md` Epic 652 row. Breakdown written 2026-11-16. The per-slice history is in the Epic Overview and the slice tables. The verdict, the defect list and the follow-up register are in [§ Closure report](#closure-report) (C.1, C.8).
+**Status: COMPLETE — all 36 slices merged (35 slice PRs #1786–#1821, excluding process PR #1805, plus the 652F exit PR #1822). Exit bar now met: PASS on 2026-11-23 after the follow-ups #1823–#1845; gate of record: the re-run on `main` `cb803686c` (closure report C.0): 0 open HIGH/MEDIUM trust defects, harness 70 / 70, every gate and suite green. (A first re-run on `ef0563fe3` was also green, but item 3 was not yet met then: the unregistered residuals the independent review caught, H-1, fixed in #1845.) History, 2026-11-20 (652F) exit verdict: FAIL. Item 3 is not met: 18 open HIGH/MEDIUM trust defects by source severity (the headline number, by the register's rule that source severity wins), or 21 open (5 HIGH) under the register's rubric applied throughout, which is where follow-up triage should start; carried to the backlog. 10 of the 18 have a follow-up FU-n; for the other 8, new FU-17+ items are proposed. Item 2 is partly met: two path sub-cases are not asserted as the path states.** The post-merge bookkeeping commit marks 652F **Done (PR #1822)** and Epic 652 Done in four places: the 652F slice detail row, the Implementation Order row, the Epic Overview and the `TASKS.md` Epic 652 row. Breakdown written 2026-11-16. The per-slice history is in the Epic Overview and the slice tables. The verdict, the defect list and the follow-up register are in [§ Closure report](#closure-report) (C.0 for the 2026-11-23 re-run; C.1, C.8 for 2026-11-20).
 
 **Baseline (645.1, recorded on `main` `251100d54`, 2026-11-16 — full statement in [`qa_cycle/evidence/phase92/baseline/README.md`](../qa_cycle/evidence/phase92/baseline/README.md)):** BE-VERIFY **6 871** `<testcase>` / 0 failures / 26 skipped · FE-GATE vitest **4 357 passed / 2 skipped** · PORTAL-GATE vitest **284 passed** · E2E-LEGAL (fresh stack each, `PLAYWRIGHT_BASE_URL=http://localhost:3001`) lifecycle **105 / 105**, depth-ii **40 passed / 4 skipped** · demo-tenant `cashbook − stored card total` **DEFERRED** on the stack (demo provisioning needs Keycloak Admin, unavailable on the mock-auth stack) — **measured in 649A (PR #1787) by `TrustEquationCharacterisationIntegrationTest` path 11 on a seeded test tenant: cashbook R27 000,00, stored cards R0,00, difference R27 000,00**, pinned `_pinsKnownDefect` for 646A. After 645A: BE 6 865 (−6: 9 deleted, 3 added), FE 4 363 / 2, portal 284, lifecycle 105 / 105, depth-ii 40 / 4. After 649A: BE 6 890 (+25: 21 characterisation + 4 reversal-equation; tests only). After 646A (PR #1788, verified @3285515df): BE 6 917 (+28 new, −1 deleted), FE 4 363 / 2, lifecycle 105 / 105, depth-ii 40 / 4; on a lifecycle stack the UI balances equal the derived sums (EQ-2 difference 0,00); seeded demo books proven in-test by `LegalDemoTrustBooksIntegrationTest` (browser OBS DEFERRED — Keycloak Admin); evidence `qa_cycle/evidence/phase92/646A/`. Phase 92 is a **trust-correctness phase** and runs before Phase 91 (founder decision 1). It replaces how every trust balance is computed: each posted trust transaction carries its own effect, one Java registry decides those effects, every balance is a sum over those rows as at a date, the cashbook mirrors the bank statement (interest, Fund sweeps, bank charges and unidentified deposits are recorded from statement lines the firm classifies, never calculated), trust money held for a non-client has a ledger, invested money stays on the books, and one equation is enforced at four levels (row CHECK, test harness, visible integrity check, reconciliation gate) — never as a block on day-to-day posting. The calculated interest run is removed outright. Exit bar: one balanced month observed in the browser on a fresh stack with every figure worked out in advance (§16.9.6).
 
@@ -744,11 +744,84 @@ Merge-conflict hotspots (serial order removes them; a rebase re-greps): `TrustTr
 
 ## Closure report
 
+### C.0 Re-run after the follow-ups (2026-11-23): PASS
+
+**Date:** 2026-11-23. **Gate of record:** `main` @ `cb803686c` (`cb803686cf904d92313a52fb244a35a28558f444`). It holds every Phase 92 slice PR, the 652F exit PR #1822, the follow-up PRs #1823–#1842, the open-issues list #1844 and the residuals fix #1845 (`f4923eb29`). **Runner:** [`qa_cycle/evidence/phase92-exit/closure-2026-11-23/rerun-cb803686c/exit-gate.sh`](../qa_cycle/evidence/phase92-exit/closure-2026-11-23/rerun-cb803686c/exit-gate.sh). It is 652F's recipe with two changes: every stage's return code is checked and logged, and a suite is skipped if its stack is unhealthy. **Every rc was 0**, and no suite was skipped (`$X/closure-2026-11-23/rerun-cb803686c/runs/runner.txt`). **Evidence:** [`$X/closure-2026-11-23/README.md`](../qa_cycle/evidence/phase92-exit/closure-2026-11-23/README.md), which describes both runs. Status words follow root `CLAUDE.md` §3: PASS means observed.
+
+**PASS — the exit bar is met.** Items (1)–(4) are all met, and every gate and suite is green, each suite on its own fresh stack, with every count at or above its 652F baseline. The 2026-11-20 FAIL (C.1) had two causes: item (3), with 18 open HIGH / MEDIUM trust defects, and item (2), which was partly met. The follow-ups #1823–#1845 closed both.
+
+**A note on the first re-run (`ef0563fe3`).** The exit gate was first re-run on `main` `ef0563fe3`, after #1823–#1842, and it was also green at every stage (BE 7 557, harness 70 / 70, FE 4 633, portal 292, the five suites as below; `$X/closure-2026-11-23/runs/`). Item (3) was not yet met then, though. The follow-up builders had found MEDIUM-class residuals of the same defect classes, and nobody had registered them. The independent review of #1843 caught this (REQUEST_CHANGES @`616d915`, H-1). The residuals were listed in `tasks/trust-accounting-open-issues-2026-11-23.md` (#1844), the founder ruled on them (dec "Residuals D-1"), and all of them were fixed in #1845. They are now register section R. The run on `cb803686c` is the gate of record.
+
+| # | Exit-bar item (652.34) | Status | Evidence |
+|---|---|---|---|
+| 1 | The month observed end to end (652.17–652.31) | **Met.** Re-run on fresh stack A from `main` `cb803686c`: **16 / 16 passed** (1.4 min). Read-only psql re-check: per account, Σ `cashbook_effect` = Σ `ledger_effect` to 2026-10-31, difference 0,00 on each (trust account 101 630,00; Khumalo s86(4) 20 095,00; Ndlovu s86(4) 0,00); the three locked October lists hold the totals | `$X/closure-2026-11-23/rerun-cb803686c/runs/A-exit-month.txt`, `…/A-exit-month-psql-output.txt` |
+| 2 | The harness green across every posting path (652.33) | **Met.** `harness-check.sh` on the BE-VERIFY reports of record (7 576 testcases): **70 / 70 PASS** (0 FAIL, 0 SKIPPED, 0 ABSENT), §16.9.2 paths 1–24. FU-27 (#1842) asserts the two sub-cases 652F D-5 found missing. Path 12, a recoverable `BANK_CHARGE` record and unmatch, has its own test. Path 11 asserts the `CLIENT_LEDGER_IN_DEBIT` flag (R3 000,00), as §16.9.2 states | `$X/closure-2026-11-23/rerun-cb803686c/runs/harness-check.txt`; dec FU-27 D-1 |
+| 3 | **0 open HIGH or MEDIUM trust defects** | **Met: 0 open** by source severity. This was re-counted from the register's tables under its own rule (232 rows; HIGH 14 FIXED + 4 CLOSED; MEDIUM 28 FIXED + 25 CLOSED). All of the 18 open on 2026-11-20 (C.1.1) are closed, and so are the 3 HIGH / MEDIUM hypotheses and the 8 residuals of section R. 647C #2 / 649B F2 was reproduced as HIGH and fixed. HF-7 was reproduced as MEDIUM and fixed. 646C O-2 was not reproduced as harm, and its LOW remainder is in the backlog. Section R: R-1.1a–d, R-1.2, R-1.4 and R-1.5 are MEDIUM and closed by #1845; R-1.3 was a MEDIUM hypothesis, closed as not reproduced, impossible by construction. Under the rubric applied throughout, 2 rows stay open at MEDIUM (648E F-4, F-652E-3). Both are LOW by source and carried to the backlog | `$X/defect-register.md` § Summary, 2026-11-23; § R |
+| 4 | Assumptions A1–A6 and open legal points OL-1..OL-9 carried with status | **Still met.** They are carried as in C.1.2, and none was changed by the follow-ups | `$X/registers.md`; C.1.2 |
+| — | Gates and suites on fresh stacks (652.32; founder decision 8) | **Met** (table below) | `$X/closure-2026-11-23/README.md` |
+
+| Gate | 652F baseline (`b08a8916a`) | First re-run (`ef0563fe3`) | **Gate of record (`cb803686c`)** |
+|---|---|---|---|
+| BE-VERIFY (`spotless:check` + `scripts/verify.sh -q`, full suite) | 7 420 / 0 / 0 / 26 | 7 557 / 0 / 0 / 26 | **exit 0; 7 576 `<testcase>` / 0 failures / 0 errors / 26 skipped** |
+| Harness check (`harness-check.sh` on those reports) | 69 / 69 | 70 / 70 | **70 / 70 PASS** |
+| FE-GATE (lint, typecheck, format:check, test, build; idle machine, node 20.11.1) | 4 591 / 2 / 0 (482 files) | 4 633 / 2 / 0 (486 files) | **487 files, 4 654 passed / 2 skipped / 0 failed; lint 0 errors** |
+| PORTAL-GATE | 292 (51 files) | 292 | **292 passed; build OK** |
+| E2E exit month (stack A, portal on :3002) | 16 / 16 | 16 / 16 | **16 / 16** |
+| E2E lifecycle (stack B) | 105 / 105 | 105 / 105 | **105 / 105** |
+| E2E depth-ii (stack C) | 40 passed / 4 skipped | 40 / 4 | **40 / 4** |
+| E2E default (stack D, `KGOSI_EMAIL` set) | 168 / 0 / 12 | 168 / 0 / 12 | **168 / 0 / 12** |
+| E2E portal (stack E) | 34 / 34 | 34 / 34 | **34 / 34** |
+
+In both runs each suite ran on its own fresh stack (`e2e-down` then `e2e-up`), and no suite overlapped a BE-VERIFY.
+
+**The follow-up PRs, #1823–#1845.** PR numbers and merge SHAs are from `tasks/phase92-decisions.md` (the Follow-up PRs table and the D-rows).
+
+| PR | Merge | Follow-up | Closes (register rows) |
+|---|---|---|---|
+| #1823 | `c3646bccc` | FU-2 | 648F R-2 (HIGH) |
+| #1824 | `c4f66f9f6` | FU-13, widened: all posted rows by their own date | 649B F1 / F-652E-5 (HIGH); F-650C-2 (LOW) |
+| #1825 | `0c01b72b5` | FU-9 with FU-1; FU-11 is closed by it | 648A F-6 / F-6b (HIGH); 650A F-12 (LOW, FU-11) |
+| #1826 | `7fede74af` | CF-3 | CF-3a, CF-3b (MED) |
+| #1827 | `308c2665d` | FU-5 | 649B S2 (MED) |
+| #1828 | `a7570cf2e` | FU-3 | 648F R-1 (MED) |
+| #1829 | `3aa89cf7b` | FU-6a | F-647C (MED) |
+| #1830 | `390c2dd0b` | FU-8 | F-17, the CI OOM (LOW) |
+| #1831 | `8b9acc684` | FU-6b | F-646C-1, F-652C-1 (MED) |
+| #1832 | `4e07df3b6` | FU-4 | 649B W1 (MED) |
+| #1833 | `1ddd9d819` | FU-12 | F-650C-1 (MED) |
+| #1834 | `008084bd0` | FU-16 (a)+(b) | HF-7 (reproduced, MED); 652H M-1 (LOW) |
+| #1835 | `ae0f415cd` | F-646D-1 | F-646D-1 (MED) |
+| #1836 | `6d2bc3731` | 648D | 648D F-4, F-5 (MED) |
+| #1837 | `e2e198911` | F-646E-2 | F-646E-2 (MED) |
+| #1838 | `c0df2cc12` | 648B F-1 | 648B F-1 (MED) |
+| #1839 | `682a0707e` | 647C-2 | 647C #2 / 649B F2 (reproduced, HIGH) |
+| #1840 | `7371213a8` | 646C-O2 | 646C O-2: not reproduced as harm. LOW remainder: net-to-zero stray links |
+| #1841 | `56bdc641e` | 648B F-11 (founder ruling: option A) | 648B F-11 (MED), partly; #1845 closes the rest |
+| #1842 | `36a28f230` | FU-27 | Exit-bar item (2) sub-cases |
+| #1844 | `b85ca3531` | Open-issues list (docs) | Lists the unregistered residuals (review H-1) |
+| #1845 | `f4923eb29` | Residuals D-1 (founder ruling; CLAUDE.md §7 cluster authorised) | R-1.1a–d, R-1.2, R-1.4, R-1.5 (MED); R-1.3 (hypothesis, impossible by construction); the rest of 648B F-11; interest reversal now requires a reason (open-issues §2 D-2) |
+
+The C.8 proposals went in under these ids. FU-17 became the widened FU-13. FU-18 became CF-3 (dec CF-3 D-1). FU-19 to FU-25 became #1835, #1837, #1838, #1841, #1836, #1839 and #1840, and FU-27 became #1842. **FU-26** (the merge-gate docs classification, and `backend/db/BASELINE.md`'s next-free numbers, which should read tenant V32, global V8) is still open.
+
+**What is left: founder decisions and backlog only.** Nothing here is HIGH or MEDIUM. The list is in `tasks/phase92-handover.md` § Closed (2026-11-23), and the full list is in `tasks/trust-accounting-open-issues-2026-11-23.md` §2–§5.
+
+- Auto-match runs tier 1 first (dec FU-16 D-2).
+- The wizard pane offers contras (F-652B-1).
+- A draft reconciliation cannot be abandoned (dec FU-6b D-3).
+- FU-16 (c).
+- FU-26.
+- The Low follow-ups of #1845 (dec Residuals D-1).
+- The other LOW review follow-ups, and the LOW register rows: FU-7, FU-10, FU-14, FU-15 and 104 unassigned.
+
+The sections C.1–C.10 below are the 652F report of 2026-11-20, kept as history. Where a later status matters, C.0 and the register give it.
+
 **Date:** 2026-11-20. **Measured on:** `main` `b08a8916a`, the bookkeeping commit after 652E #1821. The 652F worktree `epic-652F/exit-gate` adds evidence only: `git diff --name-only b08a8916a HEAD -- backend frontend portal packages compose gateway` is empty. **Baseline:** 645.1, `main` `251100d54` (header). **Evidence root:** `qa_cycle/evidence/phase92-exit/` (`$X`). Status words follow root `CLAUDE.md` §3: PASS means observed.
 
 ### C.1 Exit verdict
 
-**FAIL — exit bar not met.** Item (3) is not met: 18 trust defects at HIGH or MEDIUM are open by source severity, and 21 (5 HIGH) under the register's rubric applied throughout. Item (2) is partly met: every path has a test and all 69 rows are green, but two sub-cases are not asserted as the path states. Items (1) and (4) are met. Every Phase 92 slice is merged. The phase is complete as a build, but it does not pass its exit bar.
+**Superseded by [C.0](#c0-re-run-after-the-follow-ups-2026-11-23-pass): PASS on 2026-11-23**, after the follow-ups #1823–#1845 (gate of record: `main` `cb803686c`). The 2026-11-20 verdict below is kept as history.
+
+**2026-11-20: FAIL — exit bar not met.** Item (3) is not met: 18 trust defects at HIGH or MEDIUM are open by source severity, and 21 (5 HIGH) under the register's rubric applied throughout. Item (2) is partly met: every path has a test and all 69 rows are green, but two sub-cases are not asserted as the path states. Items (1) and (4) are met. Every Phase 92 slice is merged. The phase is complete as a build, but it does not pass its exit bar.
 
 | # | Exit-bar item (652.34) | Status | Evidence |
 |---|---|---|---|

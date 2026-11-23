@@ -6,6 +6,13 @@
 - **Run:** fresh stack built from `05812c045`, 2026-11-23 (`e2e/lifecycle.log`). Re-run on a second fresh stack: 105/105 (`e2e/lifecycle-run2.log`).
 - **Relation to 657A:** none found — the PR touches no time-recording, matter-list or non-trust frontend code, and its backend changes are confined to `verticals/legal/trustaccounting/**`, `takeon` arch test and the V33 migration. Root cause not established (snapshots of run 1 were overwritten by the depth-ii run that followed on the same checkout).
 - **Next:** if either recurs on a later slice's fresh-stack run, capture the `error-context.md` immediately and reproduce on `main` before filing as a product defect.
+- **Resolved (orchestrator, 2026-11-23): this was a product defect, not a flake.**
+  - **Cause:** `TimeSummaryPanel` copied its server props into state at mount.
+    - Fees → Time opened in the window between the Log Time dialog closing and the `revalidatePath` refresh committing mounted the panel with pre-entry data.
+    - It then ignored the refresh and stayed stale until a reload.
+  - **Second failure:** the Day 90 one was a knock-on of the first. The serial day-75 describe skipped "Create 2nd Commercial matter for Apex", so that matter never existed.
+  - **Reproduced in a real browser:** 2/12 iterations never caught up on the old build; 0/12 on the fix, which caught up in 1.8 s.
+  - **Fix:** in PR __PR__. The evidence is `qa_cycle/evidence/f657a1/README.md`.
 
 ## F-657A-2 — `ReportAuditConnectionBudgetIntegrationTest` samples the whole connection pool (pre-existing flake)
 

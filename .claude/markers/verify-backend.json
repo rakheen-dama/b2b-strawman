@@ -1,7 +1,7 @@
 {
-  "commit": "5e9b6ab38",
-  "command": "cd backend && ./mvnw -q spotless:check && bash scripts/verify.sh -q (worktree-epic-653A, PR #1846)",
+  "commit": "087f76abd",
+  "command": "cd backend && bash scripts/verify.sh -q (preflight + caffeinate ./mvnw verify; worktree-epic-657A, PR #1847)",
   "exit": 0,
-  "ts": "2026-11-23T13:16:43Z",
-  "summary": "PR #1846 @5e9b6ab38 — 7781 <testcase> / 0 failures / 0 errors / 26 skipped; baseline main 7576 (+205)"
+  "ts": "2026-11-23T16:48:46Z",
+  "summary": "PR #1847 @087f76abd — 7894 testcases / 0 failures / 0 errors / 55 skipped (surefire <testcase> count) — 34 min"
 }

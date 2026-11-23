@@ -123,6 +123,7 @@ class TerminologyRemnantScanTest {
           "DocxGenerationException",
           "ClosureGateFailedException",
           "RetentionElapsedException",
+          "TakeOnProblemException",
           "withDetail",
           "withType",
           "ProblemDetailFactory.create",

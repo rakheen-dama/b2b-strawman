@@ -282,10 +282,12 @@ class AuditEventTypeRegistryTest {
     // trust_investment.interest_recorded / .interest_reversed (Phase 92 648B) = 81.
     // + 1 trust_monthly_list.locked (Phase 92 650A) = 82.
     // + 1 trust_interest_memo.saved (Phase 92 650B) = 83.
+    // + 6 takeon.batch.created/.validated/.cancelled, takeon.source.uploaded/.mapped,
+    // takeon.file.downloaded (Phase 93 653A) = 89.
     // Default fallback is synthesised inside resolve() and must NOT appear in entries().
     // (Phase 86 slice 2 / Epic 596B removed the 5 deal.* SALES entries; Phase 86 slice 3 / Epic
     // 597B removed proposal.*; Phase 86 slice 7 / Epic 601 removed six ai.specialist.* entries.)
-    assertThat(registry.entries()).hasSize(83);
+    assertThat(registry.entries()).hasSize(89);
     assertThat(registry.entries())
         .extracting(AuditEventTypeMetadata::eventType)
         .doesNotContain("(default fallback)")
@@ -323,7 +325,13 @@ class AuditEventTypeRegistryTest {
             "trust_inv_place.rejected",
             "trust_firm_inv_place.first_approved",
             "trust_firm_inv_place.approved",
-            "trust_firm_inv_place.rejected")
+            "trust_firm_inv_place.rejected",
+            "takeon.batch.created",
+            "takeon.source.uploaded",
+            "takeon.source.mapped",
+            "takeon.batch.validated",
+            "takeon.batch.cancelled",
+            "takeon.file.downloaded")
         .doesNotContain(
             "ai.specialist.*",
             "ai.specialist.invoked",
@@ -354,9 +362,32 @@ class AuditEventTypeRegistryTest {
   }
 
   @Test
+  void takeOnEventsAreDataGroupAndOnlyTheRawFileDownloadIsNotice() {
+    // Phase 93 653A (C-3): no "Take-on" group exists — the take-on events are the processing of
+    // personal information under POPIA, so DATA; reading a raw file is the one NOTICE.
+    for (String key :
+        List.of(
+            "takeon.batch.created",
+            "takeon.source.uploaded",
+            "takeon.source.mapped",
+            "takeon.batch.validated",
+            "takeon.batch.cancelled")) {
+      var resolved = registry.resolve(key);
+      assertThat(resolved.eventType()).isEqualTo(key);
+      assertThat(resolved.group()).isEqualTo(AuditEventGroup.DATA);
+      assertThat(resolved.severity()).isEqualTo(AuditSeverity.INFO);
+      assertThat(resolved.label()).startsWith("Take-on ");
+    }
+    var downloaded = registry.resolve("takeon.file.downloaded");
+    assertThat(downloaded.group()).isEqualTo(AuditEventGroup.DATA);
+    assertThat(downloaded.severity()).isEqualTo(AuditSeverity.NOTICE);
+    assertThat(downloaded.label()).isEqualTo("Take-on file downloaded");
+  }
+
+  @Test
   void entriesMatchingWithEmptyOrNullReturnsAll() {
-    assertThat(registry.entriesMatching(Set.of())).hasSize(83);
-    assertThat(registry.entriesMatching(null)).hasSize(83);
+    assertThat(registry.entriesMatching(Set.of())).hasSize(89);
+    assertThat(registry.entriesMatching(null)).hasSize(89);
   }
 
   @Test

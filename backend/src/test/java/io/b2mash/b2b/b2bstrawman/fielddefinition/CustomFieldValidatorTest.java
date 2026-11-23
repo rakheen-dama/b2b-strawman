@@ -250,6 +250,20 @@ class CustomFieldValidatorTest {
         .isInstanceOf(InvalidStateException.class);
   }
 
+  @Test
+  void checkValueReturnsTheRefusalWithoutThrowingOrLookingAnythingUp() {
+    // Phase 93 653A: the take-on dry run checks custom-field cells inside its own transaction.
+    var fd = createFieldDef("rating", FieldType.NUMBER, false);
+    fd.setValidation(Map.of("max", 10));
+
+    assertThat(validator.checkValue(fd, new java.math.BigDecimal("5"))).isNull();
+    assertThat(validator.checkValue(fd, new java.math.BigDecimal("50")))
+        .isEqualTo("Value must be at most 10");
+    assertThat(validator.checkValue(fd, "five")).isEqualTo("Expected a numeric value");
+    assertThat(validator.checkValue(fd, null)).isNull();
+    org.mockito.Mockito.verifyNoInteractions(fieldDefinitionRepository, fieldGroupMemberRepository);
+  }
+
   // --- Helper ---
 
   private FieldDefinition createFieldDef(String slug, FieldType fieldType, boolean required) {

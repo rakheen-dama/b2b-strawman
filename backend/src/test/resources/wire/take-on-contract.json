@@ -1,0 +1,338 @@
+{
+  "TakeOnBatchResponse" : [ {
+    "name" : "id",
+    "type" : "java.util.UUID"
+  }, {
+    "name" : "dataset",
+    "type" : "io.b2mash.b2b.b2bstrawman.takeon.TakeOnDataset"
+  }, {
+    "name" : "status",
+    "type" : "io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchStatus"
+  }, {
+    "name" : "name",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "cutoverDate",
+    "type" : "java.time.LocalDate"
+  }, {
+    "name" : "trustAccountId",
+    "type" : "java.util.UUID"
+  }, {
+    "name" : "sources",
+    "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService$TakeOnSourceResponse>"
+  }, {
+    "name" : "counts",
+    "type" : "io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService$TakeOnCountsResponse"
+  }, {
+    "name" : "validationHash",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "validatedAt",
+    "type" : "java.time.Instant"
+  }, {
+    "name" : "allowedActions",
+    "type" : "java.util.List<java.lang.String>"
+  }, {
+    "name" : "createdAt",
+    "type" : "java.time.Instant"
+  }, {
+    "name" : "cancelledAt",
+    "type" : "java.time.Instant"
+  } ],
+  "TakeOnBatchSummaryResponse" : [ {
+    "name" : "id",
+    "type" : "java.util.UUID"
+  }, {
+    "name" : "dataset",
+    "type" : "io.b2mash.b2b.b2bstrawman.takeon.TakeOnDataset"
+  }, {
+    "name" : "status",
+    "type" : "io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchStatus"
+  }, {
+    "name" : "name",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "cutoverDate",
+    "type" : "java.time.LocalDate"
+  }, {
+    "name" : "totalRows",
+    "type" : "int"
+  }, {
+    "name" : "validRows",
+    "type" : "int"
+  }, {
+    "name" : "errorRows",
+    "type" : "int"
+  }, {
+    "name" : "createdByName",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "createdAt",
+    "type" : "java.time.Instant"
+  } ],
+  "TakeOnCountsResponse" : [ {
+    "name" : "total",
+    "type" : "int"
+  }, {
+    "name" : "valid",
+    "type" : "int"
+  }, {
+    "name" : "error",
+    "type" : "int"
+  }, {
+    "name" : "duplicate",
+    "type" : "int"
+  }, {
+    "name" : "blocks",
+    "type" : "int"
+  } ],
+  "TakeOnDatasetResponse" : [ {
+    "name" : "dataset",
+    "type" : "io.b2mash.b2b.b2bstrawman.takeon.TakeOnDataset"
+  }, {
+    "name" : "label",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "requiresCutoverDate",
+    "type" : "boolean"
+  }, {
+    "name" : "requiresTrustAccount",
+    "type" : "boolean"
+  }, {
+    "name" : "customFieldEntityType",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "sections",
+    "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService$TakeOnSectionResponse>"
+  }, {
+    "name" : "completedBatches",
+    "type" : "long"
+  } ],
+  "TakeOnFieldResponse" : [ {
+    "name" : "key",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "label",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "type",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "required",
+    "type" : "boolean"
+  }, {
+    "name" : "maxLength",
+    "type" : "java.lang.Integer"
+  }, {
+    "name" : "allowedValues",
+    "type" : "java.util.List<java.lang.String>"
+  } ],
+  "TakeOnMappingRequest" : [ {
+    "name" : "targets",
+    "type" : "java.util.Map<java.lang.String, java.lang.String>"
+  }, {
+    "name" : "customFields",
+    "type" : "java.util.Map<java.lang.String, java.lang.String>"
+  }, {
+    "name" : "parked",
+    "type" : "java.util.List<java.lang.String>"
+  }, {
+    "name" : "defaults",
+    "type" : "java.util.Map<java.lang.String, java.lang.String>"
+  }, {
+    "name" : "parseOptions",
+    "type" : "io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService$TakeOnParseOptionsResponse"
+  } ],
+  "TakeOnMappingResponse" : [ {
+    "name" : "targets",
+    "type" : "java.util.Map<java.lang.String, java.lang.String>"
+  }, {
+    "name" : "customFields",
+    "type" : "java.util.Map<java.lang.String, java.lang.String>"
+  }, {
+    "name" : "parked",
+    "type" : "java.util.List<java.lang.String>"
+  }, {
+    "name" : "defaults",
+    "type" : "java.util.Map<java.lang.String, java.lang.String>"
+  } ],
+  "TakeOnParseOptionsResponse" : [ {
+    "name" : "dateFormat",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "decimalSeparator",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "delimiter",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "encoding",
+    "type" : "java.lang.String"
+  } ],
+  "TakeOnPositionRequest" : [ {
+    "name" : "cutoverDate",
+    "type" : "java.time.LocalDate"
+  } ],
+  "TakeOnPreviewResponse" : [ {
+    "name" : "sourceId",
+    "type" : "java.util.UUID"
+  }, {
+    "name" : "headers",
+    "type" : "java.util.List<java.lang.String>"
+  }, {
+    "name" : "rows",
+    "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService$TakeOnPreviewRow>"
+  }, {
+    "name" : "detectedOptions",
+    "type" : "io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService$TakeOnParseOptionsResponse"
+  }, {
+    "name" : "sheets",
+    "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService$TakeOnSheetNameResponse>"
+  }, {
+    "name" : "sheetName",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "headerRow",
+    "type" : "int"
+  }, {
+    "name" : "suggestedTargets",
+    "type" : "java.util.Map<java.lang.String, java.lang.String>"
+  }, {
+    "name" : "warnings",
+    "type" : "java.util.List<java.lang.String>"
+  } ],
+  "TakeOnPreviewRow" : [ {
+    "name" : "rowNumber",
+    "type" : "int"
+  }, {
+    "name" : "cells",
+    "type" : "java.util.List<java.lang.String>"
+  } ],
+  "TakeOnRowMessage" : [ {
+    "name" : "code",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "field",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "message",
+    "type" : "java.lang.String"
+  } ],
+  "TakeOnRowResponse" : [ {
+    "name" : "id",
+    "type" : "java.util.UUID"
+  }, {
+    "name" : "section",
+    "type" : "io.b2mash.b2b.b2bstrawman.takeon.TakeOnSection"
+  }, {
+    "name" : "rowNumber",
+    "type" : "int"
+  }, {
+    "name" : "sourceRef",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "status",
+    "type" : "io.b2mash.b2b.b2bstrawman.takeon.TakeOnRowStatus"
+  }, {
+    "name" : "block",
+    "type" : "boolean"
+  }, {
+    "name" : "values",
+    "type" : "java.util.Map<java.lang.String, java.lang.Object>"
+  }, {
+    "name" : "errors",
+    "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService$TakeOnRowMessage>"
+  }, {
+    "name" : "warnings",
+    "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService$TakeOnRowMessage>"
+  }, {
+    "name" : "duplicateOfId",
+    "type" : "java.util.UUID"
+  } ],
+  "TakeOnSectionResponse" : [ {
+    "name" : "section",
+    "type" : "io.b2mash.b2b.b2bstrawman.takeon.TakeOnSection"
+  }, {
+    "name" : "label",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "fields",
+    "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService$TakeOnFieldResponse>"
+  } ],
+  "TakeOnSheetNameResponse" : [ {
+    "name" : "name",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "hidden",
+    "type" : "boolean"
+  } ],
+  "TakeOnSheetRequest" : [ {
+    "name" : "sheetName",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "headerRow",
+    "type" : "int"
+  } ],
+  "TakeOnSourceResponse" : [ {
+    "name" : "id",
+    "type" : "java.util.UUID"
+  }, {
+    "name" : "section",
+    "type" : "io.b2mash.b2b.b2bstrawman.takeon.TakeOnSection"
+  }, {
+    "name" : "fileName",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "fileFormat",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "fileSize",
+    "type" : "long"
+  }, {
+    "name" : "sheetNames",
+    "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService$TakeOnSheetNameResponse>"
+  }, {
+    "name" : "sheetName",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "headerRow",
+    "type" : "int"
+  }, {
+    "name" : "parseOptions",
+    "type" : "io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService$TakeOnParseOptionsResponse"
+  }, {
+    "name" : "mapping",
+    "type" : "io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService$TakeOnMappingResponse"
+  }, {
+    "name" : "mapped",
+    "type" : "boolean"
+  }, {
+    "name" : "rowCount",
+    "type" : "int"
+  }, {
+    "name" : "malformedCount",
+    "type" : "int"
+  }, {
+    "name" : "blankSkipped",
+    "type" : "int"
+  }, {
+    "name" : "purged",
+    "type" : "boolean"
+  }, {
+    "name" : "uploadedAt",
+    "type" : "java.time.Instant"
+  } ],
+  "TakeOnUploadResponse" : [ {
+    "name" : "batch",
+    "type" : "io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService$TakeOnBatchResponse"
+  }, {
+    "name" : "sourceId",
+    "type" : "java.util.UUID"
+  }, {
+    "name" : "headers",
+    "type" : "java.util.List<java.lang.String>"
+  }, {
+    "name" : "warnings",
+    "type" : "java.util.List<java.lang.String>"
+  } ]
+}

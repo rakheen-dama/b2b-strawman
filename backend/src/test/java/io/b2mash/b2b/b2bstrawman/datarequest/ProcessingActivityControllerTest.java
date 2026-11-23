@@ -179,7 +179,8 @@ class ProcessingActivityControllerTest {
                     """))
         .andExpect(status().isOk());
 
-    // Verify at least 6 processing activities were seeded
+    // Verify the 7 ZA default processing activities were seeded (Phase 93 653A added "Client
+    // and Trust Take-On")
     mockMvc
         .perform(
             get("/api/settings/processing-activities")
@@ -190,6 +191,6 @@ class ProcessingActivityControllerTest {
                                 j.subject("user_seed_owner_" + seedOrgId)
                                     .claim("o", Map.of("id", seedOrgId, "rol", "owner")))))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.page.totalElements").value(6));
+        .andExpect(jsonPath("$.page.totalElements").value(7));
   }
 }

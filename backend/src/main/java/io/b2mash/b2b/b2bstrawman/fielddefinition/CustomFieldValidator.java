@@ -102,6 +102,17 @@ public class CustomFieldValidator {
     return validated;
   }
 
+  /**
+   * Checks one value against its definition's type and validation rules — no lookup, no
+   * transaction, no exception. Returns the error message, or {@code null} when the value is valid.
+   * For callers inside a transaction that must survive a refusal (the take-on dry run, Phase 93
+   * 653A): {@link #validate} throws from a transactional proxy, which marks the caller's
+   * transaction rollback-only.
+   */
+  public String checkValue(FieldDefinition definition, Object value) {
+    return value == null ? null : validateFieldValue(definition, value);
+  }
+
   private String validateFieldValue(FieldDefinition definition, Object value) {
     return switch (definition.getFieldType()) {
       case TEXT -> validateText(definition, value);

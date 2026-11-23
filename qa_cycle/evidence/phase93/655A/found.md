@@ -25,3 +25,11 @@ cannot race each other (one COMMITTING batch per tenant, in-file repeats are ERR
 on the lower-cased key), but a client created in the UI in the same instant as a take-on row with a case-variant email
 can still pass both checks. A case-folded unique rule on `customers.email` would need existing rows triaged first —
 a product/data decision, not a 655A change.
+
+## F-655A-3 — an email a client was taken on with stays reserved for take-on after the client moves off it (not fixed — outside the slice)
+
+- **Seen:** while reproducing delta-review finding M-1 (fix cycle 2, `75a9de65c`), 2026-11-24.
+- **Mechanism:** a CREATED take-on row keeps `dedup_key = 'email:<address>'` after the client's email changes in Kazi. `uq_take_on_rows_created_key (dataset, dedup_key) WHERE status = 'CREATED'` (V32) then refuses a later take-on of any client with that address. The row is marked FAILED with the generic "This row could not be committed…" text, even though no client in Kazi holds the address any more.
+- **Is it intended?** Perhaps. It follows from the RD-6 uniqueness rule, which keys created rows by the address in the file. But the user sees a generic failure and no reason.
+- **Not fixed in 655A:** it is outside M-1. Changing the key or the constraint changes the dedup contract that 656A, 657C and 658A rely on.
+- **Next:** product ruling. Option 1: keep the rule and give the row a specific failure reason. Option 2: re-key the created row when the client's email changes. Needs its own spec.

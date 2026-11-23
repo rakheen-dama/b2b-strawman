@@ -1,7 +1,7 @@
 {
-  "commit": "087f76abd",
-  "command": "cd backend && bash scripts/verify.sh -q (preflight + caffeinate ./mvnw verify; worktree-epic-657A, PR #1847)",
+  "commit": "e7d2dbb1b",
+  "command": "cd backend && bash scripts/verify.sh -q (wt-f657a2, PR #1849)",
   "exit": 0,
-  "ts": "2026-11-23T16:48:46Z",
-  "summary": "PR #1847 @087f76abd — 7894 testcases / 0 failures / 0 errors / 55 skipped (surefire <testcase> count) — 34 min"
+  "ts": "2026-11-23T18:32:00Z",
+  "summary": "PR #1849 @e7d2dbb1b \u2014 7897 <testcase> / 0 failures / 0 errors (surefire XML); later commits are docs-only (qa_cycle/)"
 }

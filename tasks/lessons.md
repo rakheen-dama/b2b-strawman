@@ -352,3 +352,14 @@ Deck lessons (636C, `$EV/deck/README.md`):
 - **Ask the founder in plain English, never in planning shorthand (Phase 93 breakdown, 2026-11-22).**
   - **What happened:** a question asked to authorise "P-3 / P-4 / P-5 bundled slices (E1+E2, E4+E7, report files + first post-cutover statement rules)". The founder replied "WHAT ARE YOU ASKING, ASK IN ENGLISH".
   - **Rule:** every founder question names the actual thing being built, in product terms, and gives the time/risk trade-off in hours. Example: "the upload screen and the column-matching preview, one PR or two? Two costs ≈ 2.5 h more and the first has nothing to test". Ids such as P-3 or E1 and labels such as "bundle", "verify" or "§7" may follow in brackets, but never lead. Ask about one concrete thing per question instead of a multi-select of ids.
+
+## 2026-11-23: never chain a branch delete after a PR merge in one command
+- **What happened:** the merge and a remote-branch delete were chained with `;`. The merge-gate hook refused the merge, but the delete still ran. GitHub closes a PR whose head branch is deleted, so PR #1849 was closed unmerged.
+- **Recovery:** re-push the branch, reopen the PR, and wait for CI to re-run (about 25 min).
+- **Rule:**
+  - Run the merge alone.
+  - Confirm the PR state is MERGED.
+  - Only then delete the branch.
+- **Related rules:**
+  - A hook-blocked command runs nothing, including file appends in the same command. Re-check every side effect before retrying.
+  - The merge-gate hook matches the merge command's text anywhere in a command, even inside a heredoc.

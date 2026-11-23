@@ -457,6 +457,7 @@ class TakeOnBatchLifecycleIntegrationTest {
     mapTargets(mockMvc, owner(), ids[0], ids[1], CLIENT_TARGETS);
     validate(mockMvc, owner(), ids[0]).andExpect(jsonPath("$.status").value("VALIDATED"));
     assertThat(storageService.listKeys(TakeOnStorageKeys.batchPrefix(schema, ids[0]))).hasSize(1);
+    assertThat(rowsWithIdentifiers(ids[0])).as("dedup keys and source refs before").isEqualTo(2);
 
     cancel(mockMvc, owner(), ids[0])
         .andExpect(status().isOk())
@@ -473,6 +474,8 @@ class TakeOnBatchLifecycleIntegrationTest {
     assertThat(content).hasSize(2);
     assertThat(content).extracting(r -> r.get("values")).containsOnly(Map.of("purged", true));
     assertThat(content).extracting(r -> r.get("status")).containsOnly("VALIDATED");
+    assertNoRowPii(ids[0]);
+    assertThat(storageKey(ids[1])).as("the key is forgotten once the delete succeeded").isNull();
 
     var cancelled =
         auditEvents(jdbc, schema, ids[0]).stream()
@@ -574,6 +577,105 @@ class TakeOnBatchLifecycleIntegrationTest {
         .andExpect(jsonPath("$[3].requiresCutoverDate").value(true));
   }
 
+  @Test
+  void cancelClearsTheRowMessageTextsButKeepsTheirCodes() throws Exception {
+    String csv =
+        CLIENTS_CSV.replace("thandi@example.test", "not-an-email-thandi")
+            + "Thandi Again,THANDI2@example.test,Individual,01/02/2024,Done,Screened clear,Box 3\n";
+    UUID[] ids = create(mockMvc, owner(), "CLIENTS", "messages.csv", TakeOnTestFiles.csv(csv));
+    mapTargets(mockMvc, owner(), ids[0], ids[1], CLIENT_TARGETS);
+    validate(mockMvc, owner(), ids[0]).andExpect(jsonPath("$.counts.error").value(1));
+    Integer quoting =
+        jdbc.queryForObject(
+            "SELECT count(*) FROM \"%s\".take_on_rows WHERE batch_id = ? AND errors::text LIKE ?"
+                .formatted(schema),
+            Integer.class,
+            ids[0],
+            "%not-an-email-thandi%");
+    assertThat(quoting).as("the error message quotes the cell before the purge").isEqualTo(1);
+
+    cancel(mockMvc, owner(), ids[0]).andExpect(status().isOk());
+
+    assertNoRowPii(ids[0]);
+    var content =
+        rowContent(
+            rows(mockMvc, owner(), ids[0], null).andReturn().getResponse().getContentAsString());
+    assertThat(content)
+        .filteredOn(r -> "ERROR".equals(r.get("status")))
+        .singleElement()
+        .satisfies(
+            r -> {
+              assertThat(r.get("sourceRef")).isNull();
+              @SuppressWarnings("unchecked")
+              var errors = (List<Map<String, Object>>) r.get("errors");
+              assertThat(errors)
+                  .singleElement()
+                  .satisfies(
+                      e -> {
+                        assertThat(e.get("code")).isEqualTo("EMAIL_INVALID");
+                        assertThat(e.get("field")).isEqualTo("email");
+                        assertThat(e.get("message")).isNull();
+                      });
+            });
+  }
+
+  @Test
+  void aPurgedFileWhoseDeleteFailedKeepsItsKeyAndTheNextPurgeRunDeletesIt() throws Exception {
+    UUID[] ids = create(mockMvc, owner(), "CLIENTS", "retry.csv", TakeOnTestFiles.csv(CLIENTS_CSV));
+    String key = storageKey(ids[1]);
+    byte[] bytes = storageService.download(key);
+    cancel(mockMvc, owner(), ids[0]).andExpect(status().isOk());
+    assertThat(storageKey(ids[1])).isNull();
+
+    // A delete that failed after commit: the object is still there and the source keeps its key.
+    storageService.upload(key, bytes, "text/csv");
+    jdbc.update(
+        "UPDATE \"%s\".take_on_sources SET s3_key = ? WHERE id = ?".formatted(schema), key, ids[1]);
+    mockMvc
+        .perform(
+            get("/api/take-on/batches/" + ids[0] + "/sources/" + ids[1] + "/file").with(owner()))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.code").value("TAKE_ON_FILE_PURGED"));
+    detail(mockMvc, owner(), ids[0]).andExpect(jsonPath("$.sources[0].purged").value(true));
+
+    purge(); // the daily job retries the delete
+
+    assertThat(storageService.listKeys(TakeOnStorageKeys.batchPrefix(schema, ids[0]))).isEmpty();
+    assertThat(storageKey(ids[1])).isNull();
+  }
+
+  private String storageKey(UUID sourceId) {
+    return jdbc.queryForObject(
+        "SELECT s3_key FROM \"%s\".take_on_sources WHERE id = ?".formatted(schema),
+        String.class,
+        sourceId);
+  }
+
+  private int rowsWithIdentifiers(UUID batchId) {
+    return jdbc.queryForObject(
+        ("SELECT count(*) FROM \"%s\".take_on_rows WHERE batch_id = ?"
+                + " AND (source_ref IS NOT NULL OR dedup_key IS NOT NULL)")
+            .formatted(schema),
+        Integer.class,
+        batchId);
+  }
+
+  /** §17.10 X4: after a purge no row keeps a value, an identifier or a message text. */
+  private void assertNoRowPii(UUID batchId) {
+    Integer leaking =
+        jdbc.queryForObject(
+            ("SELECT count(*) FROM \"%s\".take_on_rows WHERE batch_id = ? AND ("
+                    + " raw_values <> '{\"purged\": true}'::jsonb"
+                    + " OR mapped_values <> '{\"purged\": true}'::jsonb"
+                    + " OR source_ref IS NOT NULL OR dedup_key IS NOT NULL"
+                    + " OR jsonb_path_exists(errors, '$[*].message')"
+                    + " OR jsonb_path_exists(warnings, '$[*].message'))")
+                .formatted(schema),
+            Integer.class,
+            batchId);
+    assertThat(leaking).isZero();
+  }
+
   // --- abandoned-batch purge (FD-24, X5) ---
 
   @Test
@@ -591,6 +693,7 @@ class TakeOnBatchLifecycleIntegrationTest {
 
     detail(mockMvc, owner(), old[0]).andExpect(jsonPath("$.status").value("CANCELLED"));
     detail(mockMvc, owner(), fresh[0]).andExpect(jsonPath("$.status").value("UPLOADED"));
+    assertNoRowPii(old[0]);
     assertThat(storageService.listKeys(TakeOnStorageKeys.batchPrefix(schema, old[0]))).isEmpty();
     assertThat(storageService.listKeys(TakeOnStorageKeys.batchPrefix(schema, fresh[0]))).hasSize(1);
     var abandoned =

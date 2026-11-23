@@ -9,6 +9,7 @@ import static io.b2mash.b2b.b2bstrawman.takeon.TakeOnTestApi.rows;
 import static io.b2mash.b2b.b2bstrawman.takeon.TakeOnTestApi.sheet;
 import static io.b2mash.b2b.b2bstrawman.takeon.TakeOnTestApi.validate;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -19,10 +20,12 @@ import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.FormulaError;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -286,6 +289,160 @@ class TakeOnValidationIntegrationTest {
         .containsEntry("basis", "CLIENT_INSTRUCTION")
         .containsEntry("interestRate", "7.25")
         .containsEntry("principal", "10000.00");
+  }
+
+  private static final Map<String, String> INVESTMENT_TARGETS =
+      Map.of(
+          "investmentAccount", "Account",
+          "basis", "Basis",
+          "institution", "Institution",
+          "accountNumber", "Number",
+          "principal", "Principal",
+          "interestRate", "Rate",
+          "depositDate", "Deposited",
+          "balancePerConfirmation", "Confirmed");
+
+  @Test
+  void aPercentMeansTheSameInXlsxAndCsvAndXlsxNumbersIgnoreTheCommaSeparator() throws Exception {
+    // 653A review: Excel stores 7.50% as 0.075, and a numeric cell is point-decimal text, so the
+    // COMMA separator chosen for the file's text cells must not reject it.
+    byte[] workbook =
+        TakeOnTestFiles.xlsx(
+            wb -> {
+              Sheet sheet = wb.createSheet("Investments");
+              TakeOnTestFiles.writeRow(
+                  sheet.createRow(0),
+                  List.of(
+                      "Account",
+                      "Basis",
+                      "Institution",
+                      "Number",
+                      "Principal",
+                      "Rate",
+                      "Deposited",
+                      "Confirmed"));
+              Row row = sheet.createRow(1);
+              TakeOnTestFiles.writeRow(
+                  row, List.of("INV-1", "S86(4)", "Example Bank", "0001", "", "", "01/03/2026"));
+              CellStyle percent = wb.createCellStyle();
+              percent.setDataFormat(wb.createDataFormat().getFormat("0.00%"));
+              row.createCell(4).setCellValue(10000.5);
+              var rate = row.createCell(5);
+              rate.setCellValue(0.075);
+              rate.setCellStyle(percent);
+              row.createCell(7).setCellValue("10 050,25"); // a text cell: the comma applies
+            });
+    String xlsxRate = investmentRate(workbook, "investments.xlsx", "COMMA", "10000.50");
+
+    byte[] csv =
+        TakeOnTestFiles.csv(
+            "Account,Basis,Institution,Number,Principal,Rate,Deposited,Confirmed\n"
+                + "INV-1,S86(4),Example Bank,0001,\"10 000,50\",\"7,50%\",01/03/2026,\"10 050,25\"\n");
+    String csvRate = investmentRate(csv, "investments.csv", "COMMA", "10000.50");
+
+    assertThat(new BigDecimal(xlsxRate)).isEqualByComparingTo("7.5");
+    assertThat(new BigDecimal(csvRate)).isEqualByComparingTo(new BigDecimal(xlsxRate));
+  }
+
+  /** Uploads one investments row, maps it with {@code separator}, validates; the stored rate. */
+  private String investmentRate(
+      byte[] file, String fileName, String separator, String expectedPrincipal) throws Exception {
+    UUID[] ids =
+        create(
+            mockMvc,
+            owner(),
+            "TRUST_POSITION",
+            fileName,
+            file,
+            "section",
+            "INVESTMENTS",
+            "trustAccountId",
+            trustAccountId);
+    var body = new HashMap<String, Object>();
+    body.put("targets", INVESTMENT_TARGETS);
+    body.put("parseOptions", Map.of("decimalSeparator", separator));
+    map(mockMvc, owner(), ids[0], ids[1], body).andExpect(status().isOk());
+    position(mockMvc, owner(), ids[0], "2026-10-31");
+    validate(mockMvc, owner(), ids[0]).andExpect(jsonPath("$.counts.valid").value(1));
+    var values = values(rowsByNumber(ids[0]).get(2));
+    assertThat(values)
+        .containsEntry("principal", expectedPrincipal)
+        .containsEntry("balancePerConfirmation", "10050.25");
+    return (String) values.get("interestRate");
+  }
+
+  @Test
+  void aCustomFieldDeactivatedAfterMappingIsAnErrorAndNotADroppedValue() throws Exception {
+    String fieldId =
+        createCustomerField(
+            """
+            {"entityType": "CUSTOMER", "name": "Take-on legacy code", "slug": "takeon_legacy",
+             "fieldType": "TEXT", "required": false, "sortOrder": 0}
+            """);
+    String csv =
+        HEADER
+            + "Has Code,code@example.test,Individual,01/02/2024,Done,Screened clear,Box,L-1,\n"
+            + "No Code,nocode@example.test,Individual,01/02/2024,Done,Screened clear,Box,,\n";
+    UUID[] ids = create(mockMvc, owner(), "CLIENTS", "legacy.csv", TakeOnTestFiles.csv(csv));
+    var body = new HashMap<String, Object>();
+    body.put("targets", TARGETS);
+    body.put("customFields", Map.of("takeon_legacy", "Rating"));
+    map(mockMvc, owner(), ids[0], ids[1], body).andExpect(status().isOk());
+    mockMvc
+        .perform(delete("/api/field-definitions/" + fieldId).with(owner()))
+        .andExpect(status().isNoContent());
+
+    validate(mockMvc, owner(), ids[0])
+        .andExpect(jsonPath("$.counts.valid").value(1))
+        .andExpect(jsonPath("$.counts.error").value(1));
+    var byRow = rowsByNumber(ids[0]);
+    assertError(
+        byRow.get(2),
+        "CUSTOM_FIELD_INACTIVE",
+        "takeon_legacy",
+        "The custom field \"takeon_legacy\" is no longer active. Map the column \"Rating\" to"
+            + " another field or park it, then run the dry run again.");
+    assertThat(byRow.get(3).get("status")).as("a blank cell stays skipped").isEqualTo("VALIDATED");
+  }
+
+  @Test
+  void aMalformedSavedCustomFieldRuleIsARowErrorAndTheDryRunCompletes() throws Exception {
+    createCustomerField(
+        """
+        {"entityType": "CUSTOMER", "name": "Take-on size", "slug": "takeon_size",
+         "fieldType": "NUMBER", "required": false, "sortOrder": 0,
+         "validation": {"min": "ten"}}
+        """);
+    String csv =
+        HEADER + "Sized,sized@example.test,Individual,01/02/2024,Done,Screened clear,Box,5,\n";
+    UUID[] ids = create(mockMvc, owner(), "CLIENTS", "size.csv", TakeOnTestFiles.csv(csv));
+    var body = new HashMap<String, Object>();
+    body.put("targets", TARGETS);
+    body.put("customFields", Map.of("takeon_size", "Rating"));
+    map(mockMvc, owner(), ids[0], ids[1], body).andExpect(status().isOk());
+    validate(mockMvc, owner(), ids[0])
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("VALIDATED"))
+        .andExpect(jsonPath("$.counts.error").value(1));
+    assertError(
+        rowsByNumber(ids[0]).get(2),
+        "CUSTOM_FIELD_INVALID",
+        "takeon_size",
+        "Take-on size: The validation rule of the custom field \"Take-on size\" is set up"
+            + " incorrectly. Fix the field's configuration in Settings, then try again.");
+  }
+
+  private String createCustomerField(String json) throws Exception {
+    var result =
+        mockMvc
+            .perform(
+                post("/api/field-definitions")
+                    .with(owner())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(json))
+            .andExpect(status().isCreated())
+            .andReturn();
+    return TestEntityHelper.extractId(result);
   }
 
   @Test

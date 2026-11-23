@@ -54,8 +54,9 @@ public final class TakeOnTemplates {
 
   private TakeOnTemplates() {}
 
-  public static TakeOnTemplateFile template(TakeOnDataset dataset, TakeOnSection section) {
-    List<FieldSpec> fields = TakeOnFieldCatalogue.fields(dataset, section);
+  /** {@code fields}: the section's target fields from the dataset's handler, in order. */
+  public static TakeOnTemplateFile template(
+      TakeOnDataset dataset, TakeOnSection section, List<FieldSpec> fields) {
     String header = fields.stream().map(f -> csv(f.label())).collect(Collectors.joining(","));
     String example = fields.stream().map(f -> csv(example(f))).collect(Collectors.joining(","));
     byte[] body = (header + "\r\n" + example + "\r\n").getBytes(StandardCharsets.UTF_8);

@@ -158,6 +158,15 @@ export function UploadStep({ dataset, onUploaded, onClose }: UploadStepProps) {
         });
         if (position.success && position.data) {
           uploaded = { ...uploaded, batch: position.data };
+        } else {
+          // The file is in; only the date failed — say so before moving on (set it again later).
+          uploaded = {
+            ...uploaded,
+            warnings: [
+              ...uploaded.warnings,
+              `The cutover date was not saved: ${position.error ?? "try again"}. Enter it again before the dry run.`,
+            ],
+          };
         }
       }
       onUploaded(uploaded);

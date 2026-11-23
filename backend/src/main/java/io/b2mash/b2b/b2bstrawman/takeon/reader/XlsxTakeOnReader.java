@@ -4,8 +4,10 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -85,11 +87,11 @@ public final class XlsxTakeOnReader implements TakeOnFileReader {
             continue;
           }
           var assembler = new TakeOnSheetAssembler(target, headerRow);
-          var handler = new RowHandler(assembler);
+          var formatter = new TakeOnDataFormatter(info.date1904());
+          var handler = new RowHandler(assembler, formatter);
           XMLReader xml = XMLHelper.newXMLReader();
           xml.setContentHandler(
-              new XSSFSheetXMLHandler(
-                  styles, null, strings, handler, new TakeOnDataFormatter(info.date1904()), false));
+              new XSSFSheetXMLHandler(styles, null, strings, handler, formatter, false));
           xml.parse(new InputSource(sheet));
           // Plain .xlsx carries no text encoding or delimiter: report the options as given.
           return assembler.finish(detected.withDelimiter(null));
@@ -171,18 +173,22 @@ public final class XlsxTakeOnReader implements TakeOnFileReader {
   private static final class RowHandler implements XSSFSheetXMLHandler.SheetContentsHandler {
 
     private final TakeOnSheetAssembler assembler;
+    private final TakeOnDataFormatter formatter;
     private List<String> cells = new ArrayList<>();
+    private Set<Integer> numericColumns = new HashSet<>();
     private boolean overflow;
     private boolean errorCell;
     private int nextColumn;
 
-    RowHandler(TakeOnSheetAssembler assembler) {
+    RowHandler(TakeOnSheetAssembler assembler, TakeOnDataFormatter formatter) {
       this.assembler = assembler;
+      this.formatter = formatter;
     }
 
     @Override
     public void startRow(int rowNum) {
       cells = new ArrayList<>();
+      numericColumns = new HashSet<>();
       overflow = false;
       errorCell = false;
       nextColumn = 0;
@@ -190,13 +196,15 @@ public final class XlsxTakeOnReader implements TakeOnFileReader {
 
     @Override
     public void endRow(int rowNum) {
-      assembler.accept(rowNum + 1, cells, overflow, errorCell); // POI rows are 0-based
+      // POI rows are 0-based
+      assembler.accept(rowNum + 1, cells, overflow, errorCell, numericColumns);
     }
 
     @Override
     public void cell(String cellReference, String formattedValue, XSSFComment comment) {
       int column = cellReference == null ? nextColumn : new CellReference(cellReference).getCol();
       nextColumn = column + 1;
+      boolean numeric = formatter.takeNumeric(); // set only if this cell went through it
       String value = formattedValue == null ? "" : formattedValue;
       if (value.startsWith(ERROR_PREFIX)) {
         value = value.substring(ERROR_PREFIX.length());
@@ -209,6 +217,11 @@ public final class XlsxTakeOnReader implements TakeOnFileReader {
           overflow = true;
         }
         return;
+      }
+      if (numeric) {
+        numericColumns.add(column);
+      } else {
+        numericColumns.remove(column);
       }
       if (column < cells.size()) {
         cells.set(column, value);

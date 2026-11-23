@@ -14,8 +14,7 @@ import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService.TakeOnRowResponse;
 import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService.TakeOnSectionResponse;
 import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService.TakeOnSourceFile;
 import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService.TakeOnTemplateFile;
-import io.b2mash.b2b.b2bstrawman.takeon.dataset.GenericTakeOnDatasetHandler;
-import io.b2mash.b2b.b2bstrawman.takeon.dataset.TakeOnFieldCatalogue;
+import io.b2mash.b2b.b2bstrawman.takeon.dataset.TakeOnDatasetHandlers;
 import io.b2mash.b2b.b2bstrawman.takeon.dataset.TakeOnFieldCatalogue.FieldSpec;
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -53,6 +52,7 @@ public class TakeOnBatchQueryService {
   private final TakeOnBatchViews views;
   private final TakeOnAudit audit;
   private final MemberNameResolver memberNames;
+  private final TakeOnDatasetHandlers handlers;
 
   public TakeOnBatchQueryService(
       TakeOnBatchRepository batches,
@@ -62,7 +62,8 @@ public class TakeOnBatchQueryService {
       TakeOnSourceFiles sourceFiles,
       TakeOnBatchViews views,
       TakeOnAudit audit,
-      MemberNameResolver memberNames) {
+      MemberNameResolver memberNames,
+      TakeOnDatasetHandlers handlers) {
     this.batches = batches;
     this.sources = sources;
     this.rows = rows;
@@ -71,6 +72,12 @@ public class TakeOnBatchQueryService {
     this.views = views;
     this.audit = audit;
     this.memberNames = memberNames;
+    this.handlers = handlers;
+  }
+
+  /** A section's target fields, through the dataset's handler (the dataset seam). */
+  private List<FieldSpec> fields(TakeOnDataset dataset, TakeOnSection section) {
+    return handlers.forDataset(dataset).fields(dataset, section);
   }
 
   /** {@code GET /api/take-on/datasets}: in X3 order (clients → matters → trust → debtors). */
@@ -84,16 +91,14 @@ public class TakeOnBatchQueryService {
                     d.label(),
                     d.requiresCutoverDate(),
                     d.requiresTrustAccount(),
-                    GenericTakeOnDatasetHandler.customFieldEntityType(d)
-                        .map(Enum::name)
-                        .orElse(null),
+                    d.customFieldEntityType().map(Enum::name).orElse(null),
                     d.sections().stream()
                         .map(
                             s ->
                                 new TakeOnSectionResponse(
                                     s,
                                     s.label(),
-                                    TakeOnFieldCatalogue.fields(d, s).stream()
+                                    fields(d, s).stream()
                                         .map(TakeOnBatchQueryService::field)
                                         .toList()))
                         .toList(),
@@ -112,7 +117,7 @@ public class TakeOnBatchQueryService {
       throw new InvalidStateException(
           "Section required", "Choose which part of the trust position the template is for.");
     }
-    return TakeOnTemplates.template(dataset, resolved);
+    return TakeOnTemplates.template(dataset, resolved, fields(dataset, resolved));
   }
 
   /** {@code GET /api/take-on/batches}: newest first, readable datasets only (X1). */
@@ -182,8 +187,7 @@ public class TakeOnBatchQueryService {
         TakeOnBatchViews.sheetNames(source.getSheetNames()),
         source.getSheetName(),
         source.getHeaderRow(),
-        suggestTargets(
-            TakeOnFieldCatalogue.fields(batch.getDataset(), source.getSection()), sheet.headers()),
+        suggestTargets(fields(batch.getDataset(), source.getSection()), sheet.headers()),
         sheet.warnings());
   }
 

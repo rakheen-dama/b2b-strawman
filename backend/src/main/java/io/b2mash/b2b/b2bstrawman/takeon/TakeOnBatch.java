@@ -190,14 +190,19 @@ public class TakeOnBatch {
     if (status != TakeOnBatchStatus.MAPPED && status != TakeOnBatchStatus.VALIDATED) {
       throw new IllegalStateException("Only a mapped or validated take-on batch can be validated.");
     }
-    if (dataset.requiresCutoverDate() && cutoverDate == null) {
-      throw new IllegalStateException("Enter the cutover date before validating.");
-    }
+  }
+
+  /** The dataset needs a cutover date and none is set (checked by the dry run, C-14). */
+  public boolean missingCutoverDate() {
+    return dataset.requiresCutoverDate() && cutoverDate == null;
   }
 
   /** The dry run finished: record the hash every later sign-off and commit binds to. */
   public void markValidated(String hash, Counts counts, Map<String, Object> summary) {
     requireValidatable();
+    if (missingCutoverDate()) {
+      throw new IllegalStateException("Enter the cutover date before validating.");
+    }
     Objects.requireNonNull(hash, "hash");
     Objects.requireNonNull(counts, "counts");
     this.validationHash = hash;

@@ -78,6 +78,17 @@ public class S3StorageAdapter implements StorageService {
   }
 
   @Override
+  public boolean tryDelete(String key) {
+    try {
+      s3Client.deleteObject(DeleteObjectRequest.builder().bucket(bucketName).key(key).build());
+      return true;
+    } catch (Exception e) {
+      log.warn("S3 deletion failed for key={} (will be retried): {}", key, e.getMessage());
+      return false;
+    }
+  }
+
+  @Override
   public PresignedUrl generateUploadUrl(String key, String contentType, Duration expiry) {
     StorageKeyPolicy.requireValidKey(key);
     var putRequest =

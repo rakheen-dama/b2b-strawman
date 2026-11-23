@@ -37,6 +37,8 @@ import {
 import { TakeOnError } from "./upload-step";
 
 const PAGE_SIZE = 50;
+/** A row message after cancel or purge: the code stays, the text (it may quote a cell) is gone. */
+const PURGED_MESSAGE = "Details removed when the batch was cancelled.";
 const ALL = "ALL";
 
 /** The row statuses a 653A dry run can produce (commit statuses arrive with 655A). */
@@ -361,12 +363,12 @@ function RowTable({
                 <ul className="space-y-0.5">
                   {row.errors.map((m, i) => (
                     <li key={`e${i}`} className="text-red-700 dark:text-red-300">
-                      {m.message}
+                      {m.message ?? PURGED_MESSAGE}
                     </li>
                   ))}
                   {row.warnings.map((m, i) => (
                     <li key={`w${i}`} className="text-amber-700 dark:text-amber-300">
-                      {m.message}
+                      {m.message ?? PURGED_MESSAGE}
                     </li>
                   ))}
                 </ul>

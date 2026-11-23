@@ -275,6 +275,42 @@ describe("UploadStep — client-side refusals", () => {
   });
 });
 
+describe("UploadStep — cutover date not saved", () => {
+  it("carries a failed savePosition into the upload warnings instead of dropping it", async () => {
+    const DEBTORS: TakeOnDatasetCatalogue = {
+      ...CLIENTS,
+      dataset: "DEBTOR_BALANCES",
+      label: "Debtor opening balances",
+      requiresCutoverDate: true,
+      customFieldEntityType: "INVOICE",
+    };
+    const uploaded = {
+      batch: batch({ dataset: "DEBTOR_BALANCES" }),
+      sourceId: "src-1",
+      headers: ["Fee note number"],
+      warnings: ["Row 9 was blank and was skipped."],
+    };
+    actions.uploadTakeOnFile.mockResolvedValue({ success: true, data: uploaded });
+    actions.savePosition.mockResolvedValue({ success: false, error: "Access denied" });
+    const onUploaded = vi.fn();
+    const user = userEvent.setup();
+    render(withSWR(<UploadStep dataset={DEBTORS} onUploaded={onUploaded} onClose={vi.fn()} />));
+    await user.upload(
+      screen.getByTestId("take-on-file-input"),
+      fileOf("debtors.csv", 500, "text/csv")
+    );
+    await user.type(screen.getByTestId("take-on-cutover-date"), "2026-10-31");
+    await user.click(screen.getByTestId("take-on-upload-submit"));
+
+    await waitFor(() => expect(onUploaded).toHaveBeenCalledTimes(1));
+    expect(actions.savePosition).toHaveBeenCalledWith("batch-1", { cutoverDate: "2026-10-31" });
+    expect(onUploaded.mock.calls[0][0].warnings).toEqual([
+      "Row 9 was blank and was skipped.",
+      "The cutover date was not saved: Access denied. Enter it again before the dry run.",
+    ]);
+  });
+});
+
 describe("TakeOnWizard — sheet picker", () => {
   it("marks a hidden sheet and applies the chosen sheet with setSheet", async () => {
     const user = userEvent.setup();

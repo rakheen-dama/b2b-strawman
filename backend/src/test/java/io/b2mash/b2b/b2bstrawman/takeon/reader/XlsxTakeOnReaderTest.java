@@ -74,6 +74,40 @@ class XlsxTakeOnReaderTest {
   }
 
   @Test
+  void aPercentCellReadsAsTheDisplayedPercentageAndNumbersAreMarkedNumeric() {
+    // 653A review: Excel stores 7.50% as 0.075; a CSV "7.50%" means 7.5 — one meaning for both.
+    byte[] file =
+        oneRow(
+            List.of("Rate", "Principal", "Account", "Escaped"),
+            (workbook, row) -> {
+              CellStyle percent = workbook.createCellStyle();
+              percent.setDataFormat(workbook.createDataFormat().getFormat("0.00%"));
+              var rate = row.createCell(0);
+              rate.setCellValue(0.075);
+              rate.setCellStyle(percent);
+              CellStyle grouped = workbook.createCellStyle();
+              grouped.setDataFormat(workbook.createDataFormat().getFormat("#,##0.00"));
+              var principal = row.createCell(1);
+              principal.setCellValue(10000.5);
+              principal.setCellStyle(grouped);
+              row.createCell(2).setCellValue("0001");
+              CellStyle literal = workbook.createCellStyle();
+              literal.setDataFormat(workbook.createDataFormat().getFormat("0\"%\""));
+              var escaped = row.createCell(3);
+              escaped.setCellValue(12);
+              escaped.setCellStyle(literal);
+            });
+    var row = read(file, "Clients").rows().getFirst();
+    assertThat(row.values())
+        .containsEntry("Rate", "7.5")
+        .containsEntry("Principal", "10000.5")
+        .containsEntry("Account", "0001")
+        .as("a quoted %% is literal text, not a percent format")
+        .containsEntry("Escaped", "12");
+    assertThat(row.numericHeaders()).containsExactlyInAnyOrder("Rate", "Principal", "Escaped");
+  }
+
+  @Test
   void dateFormattedCellReadsAsIsoDate() {
     byte[] file =
         oneRow(

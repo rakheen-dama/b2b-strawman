@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.takeon.dataset;
 
 import io.b2mash.b2b.b2bstrawman.fielddefinition.CustomFieldValidator;
-import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinition;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
 import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatch;
@@ -16,13 +15,11 @@ import io.b2mash.b2b.b2bstrawman.takeon.reader.TakeOnValueParser;
 import io.b2mash.b2b.b2bstrawman.takeon.reader.TakeOnValueParser.Parsed;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import org.springframework.stereotype.Component;
@@ -40,6 +37,7 @@ public class GenericTakeOnDatasetHandler implements TakeOnDatasetHandler {
   public static final String CELL_ERROR = "CELL_ERROR";
   public static final String REQUIRED = "REQUIRED";
   public static final String CUSTOM_FIELD_INVALID = "CUSTOM_FIELD_INVALID";
+  public static final String CUSTOM_FIELD_INACTIVE = "CUSTOM_FIELD_INACTIVE";
   public static final String DECIMAL_INVALID = "DECIMAL_INVALID";
   public static final String DUPLICATE_IN_FILE = "DUPLICATE_IN_FILE";
   public static final String PARKED_KEY = "takeon_parked";
@@ -56,16 +54,6 @@ public class GenericTakeOnDatasetHandler implements TakeOnDatasetHandler {
       CustomFieldValidator customFieldValidator) {
     this.fieldDefinitionRepository = fieldDefinitionRepository;
     this.customFieldValidator = customFieldValidator;
-  }
-
-  /** The custom-field entity type of a dataset; trust rows take no custom fields. */
-  public static Optional<EntityType> customFieldEntityType(TakeOnDataset dataset) {
-    return switch (dataset) {
-      case CLIENTS -> Optional.of(EntityType.CUSTOMER);
-      case MATTERS -> Optional.of(EntityType.PROJECT);
-      case DEBTOR_BALANCES -> Optional.of(EntityType.INVOICE);
-      case TRUST_POSITION -> Optional.empty();
-    };
   }
 
   @Override
@@ -97,7 +85,7 @@ public class GenericTakeOnDatasetHandler implements TakeOnDatasetHandler {
               mapping.defaults(),
               TakeOnParseOptions.fromMap(source.getParseOptions())));
     }
-    var entityType = customFieldEntityType(batch.getDataset()).orElse(null);
+    var entityType = batch.getDataset().customFieldEntityType().orElse(null);
     var definitions = new HashMap<String, FieldDefinition>();
     if (entityType != null) {
       for (var d :
@@ -110,44 +98,69 @@ public class GenericTakeOnDatasetHandler implements TakeOnDatasetHandler {
 
   @Override
   public void mapAndValidate(TakeOnRow row, ValidationContext context) {
+    var check = checkGeneric(row, context);
+    check.dedupKey(dedupKey(row.getDataset(), check.mapped()));
+    finish(row, check, context);
+  }
+
+  /**
+   * Records a finished check on the row (one {@code applyValidation}) and its dedup key for the
+   * in-file duplicate check. Every handler ends a row with it.
+   */
+  public static void finish(TakeOnRow row, TakeOnRowCheck check, ValidationContext context) {
+    check.applyTo(row);
+    var dedup = check.dedupKey();
+    if (dedup != null) {
+      context.recordDedupKey(dedup.key(), row, dedup.field());
+    }
+  }
+
+  /**
+   * The generic checks of one row (§17.3.2), not yet recorded: Excel error cells, catalogue fields
+   * (mapped cell, else the batch default), custom fields, parked columns and the source ref. A
+   * dataset handler adds its own checks and dedup key, then calls {@link #finish}.
+   */
+  public TakeOnRowCheck checkGeneric(TakeOnRow row, ValidationContext context) {
     var source = context.source(row.getSourceId());
     boolean xlsx = source.source().getFileFormat() == TakeOnSource.FileFormat.XLSX;
     Map<String, Object> raw = row.getRawValues();
-    var errors = new ArrayList<Map<String, Object>>();
+    var mapped = new LinkedHashMap<String, Object>();
+    var check = new TakeOnRowCheck(mapped, null);
 
     // 1. Excel error cells (C-8): any column, kept stable across re-validation.
     for (var cell : raw.entrySet()) {
       TakeOnValueParser.excelErrorCode(text(cell.getValue()))
           .ifPresent(
               code ->
-                  errors.add(
-                      message(
-                          CELL_ERROR,
-                          cell.getKey(),
-                          "This cell holds an error (%s). Correct it in Excel and upload again."
-                              .formatted(code))));
+                  check.addError(
+                      CELL_ERROR,
+                      cell.getKey(),
+                      "This cell holds an error (%s). Correct it in Excel and upload again."
+                          .formatted(code)));
     }
 
     // 2. Catalogue fields: mapped cell, else the batch default, else blank.
-    var mapped = new LinkedHashMap<String, Object>();
     for (FieldSpec field : source.fields()) {
       String header = source.targets().get(field.key());
       String value = header == null ? null : text(raw.get(header));
       if (value != null && TakeOnValueParser.excelErrorCode(value).isPresent()) {
         continue; // already an error
       }
+      // An XLSX number is point-decimal text; the chosen separator is for text cells only.
+      var options = cellOptions(row, header, source.options());
       if (value == null || value.isBlank()) {
         value = source.defaults().get(field.key());
+        options = source.options();
       }
       if (value == null || value.isBlank()) {
         if (field.required()) {
-          errors.add(message(REQUIRED, field.key(), requiredMessage(field, xlsx)));
+          check.addError(REQUIRED, field.key(), requiredMessage(field, xlsx));
         }
         continue;
       }
-      Parsed<?> parsed = parse(field, value, source.options());
+      Parsed<?> parsed = parse(field, value, options);
       if (!parsed.ok()) {
-        errors.add(message(parsed.errorCode(), field.key(), parsed.message()));
+        check.addError(parsed.errorCode(), field.key(), parsed.message());
       } else if (parsed.value() != null) {
         mapped.put(field.key(), normalise(parsed.value()));
       }
@@ -157,25 +170,35 @@ public class GenericTakeOnDatasetHandler implements TakeOnDatasetHandler {
     var custom = new LinkedHashMap<String, Object>();
     for (var entry : source.customFields().entrySet()) {
       String value = text(raw.get(entry.getValue()));
-      var definition = context.customFieldDefinitions().get(entry.getKey());
-      if (value == null || value.isBlank() || definition == null) {
+      if (value == null || value.isBlank()) {
         continue;
       }
       if (TakeOnValueParser.excelErrorCode(value).isPresent()) {
         continue;
       }
-      Parsed<Object> converted = convertCustom(definition, value, source.options());
+      var definition = context.customFieldDefinitions().get(entry.getKey());
+      if (definition == null) {
+        // mapped while active, deactivated since: never drop the value silently
+        check.addError(
+            CUSTOM_FIELD_INACTIVE,
+            entry.getKey(),
+            ("The custom field \"%s\" is no longer active. Map the column \"%s\" to another"
+                    + " field or park it, then run the dry run again.")
+                .formatted(entry.getKey(), entry.getValue()));
+        continue;
+      }
+      Parsed<Object> converted =
+          convertCustom(definition, value, cellOptions(row, entry.getValue(), source.options()));
       if (!converted.ok()) {
-        errors.add(message(CUSTOM_FIELD_INVALID, entry.getKey(), converted.message()));
+        check.addError(CUSTOM_FIELD_INVALID, entry.getKey(), converted.message());
         continue;
       }
       String refusal = customFieldValidator.checkValue(definition, converted.value());
       if (refusal != null) {
-        errors.add(
-            message(
-                CUSTOM_FIELD_INVALID,
-                entry.getKey(),
-                "%s: %s".formatted(definition.getName(), refusal)));
+        check.addError(
+            CUSTOM_FIELD_INVALID,
+            entry.getKey(),
+            "%s: %s".formatted(definition.getName(), refusal));
       } else {
         custom.put(entry.getKey(), converted.value());
       }
@@ -196,19 +219,28 @@ public class GenericTakeOnDatasetHandler implements TakeOnDatasetHandler {
       mapped.put(PARKED_KEY, parked);
     }
 
-    // 5. Source ref and the lookup-free dedup key (C-25).
+    // 5. Source ref: the previous system's id, else the row number.
     Object ref = mapped.get(TakeOnFieldCatalogue.SOURCE_REF);
-    String sourceRef = ref instanceof String s && !s.isBlank() ? s : "row:" + row.getRowNumber();
-    String dedupField = dedupField(row.getDataset());
-    String dedupKey = null;
-    if (dedupField != null && mapped.get(dedupField) instanceof String keyValue) {
-      dedupKey = dedupPrefix(row.getDataset()) + keyValue.toLowerCase(Locale.ROOT);
-    }
+    check.sourceRef(ref instanceof String s && !s.isBlank() ? s : "row:" + row.getRowNumber());
+    return check;
+  }
 
-    row.applyValidation(mapped, sourceRef, dedupKey, errors, List.of(), false, null);
-    if (dedupKey != null) {
-      context.recordDedupKey(dedupKey, row, dedupField);
+  /** The lookup-free dedup key (C-25): the dataset's key field, lower-cased and prefixed. */
+  @Override
+  public DedupKey dedupKey(TakeOnDataset dataset, Map<String, Object> mapped) {
+    String field = dedupField(dataset);
+    if (field != null && mapped.get(field) instanceof String keyValue) {
+      return new DedupKey(field, dedupPrefix(dataset) + keyValue.toLowerCase(Locale.ROOT));
     }
+    return null;
+  }
+
+  /** The options for one cell: an XLSX number always reads with a decimal point. */
+  private static TakeOnParseOptions cellOptions(
+      TakeOnRow row, String header, TakeOnParseOptions options) {
+    return row.isNumericCell(header)
+        ? options.withDecimalSeparator(TakeOnParseOptions.DecimalSeparator.POINT)
+        : options;
   }
 
   @Override
@@ -272,11 +304,13 @@ public class GenericTakeOnDatasetHandler implements TakeOnDatasetHandler {
     if (raw.length() > MAX_DECIMAL_LENGTH) {
       return Parsed.error(DECIMAL_INVALID, "This value is too long to be a number.");
     }
-    String s = raw.replace(' ', ' ').strip();
+    String s = raw.replace('\u00A0', ' ').strip();
     if (s.endsWith("%")) {
-      s = s.substring(0, s.length() - 1);
+      s = s.substring(0, s.length() - 1).strip(); // "12 %" is fine
     }
-    s = s.replace(" ", "");
+    if (s.chars().anyMatch(Character::isWhitespace)) {
+      return Parsed.error(DECIMAL_INVALID, "\"%s\" is not a number.".formatted(raw.strip()));
+    }
     if (separator == TakeOnParseOptions.DecimalSeparator.COMMA) {
       if (s.indexOf('.') >= 0) {
         return Parsed.error(DECIMAL_INVALID, "\"%s\" is not a number.".formatted(raw.strip()));
@@ -340,13 +374,5 @@ public class GenericTakeOnDatasetHandler implements TakeOnDatasetHandler {
 
   private static String text(Object value) {
     return value == null ? null : value.toString();
-  }
-
-  private static Map<String, Object> message(String code, String field, String message) {
-    var m = new LinkedHashMap<String, Object>();
-    m.put("code", code);
-    m.put("field", field);
-    m.put("message", message);
-    return m;
   }
 }

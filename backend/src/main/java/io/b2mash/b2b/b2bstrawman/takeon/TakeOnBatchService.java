@@ -20,13 +20,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.Supplier;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
@@ -182,6 +179,7 @@ public class TakeOnBatchService {
   private final TakeOnAudit audit;
   private final StorageService storageService;
   private final TrustAccountRepository trustAccounts;
+  private final TakeOnStorageCleanup storageCleanup;
 
   public TakeOnBatchService(
       TakeOnBatchRepository batches,
@@ -195,7 +193,8 @@ public class TakeOnBatchService {
       TakeOnBatchViews views,
       TakeOnAudit audit,
       StorageService storageService,
-      TrustAccountRepository trustAccounts) {
+      TrustAccountRepository trustAccounts,
+      TakeOnStorageCleanup storageCleanup) {
     this.batches = batches;
     this.sources = sources;
     this.rows = rows;
@@ -208,6 +207,7 @@ public class TakeOnBatchService {
     this.audit = audit;
     this.storageService = storageService;
     this.trustAccounts = trustAccounts;
+    this.storageCleanup = storageCleanup;
   }
 
   /** {@code POST /api/take-on/batches}: a new batch with its first file (§17.3.1). */
@@ -265,7 +265,7 @@ public class TakeOnBatchService {
     String key = source.getS3Key();
     rows.deleteBySourceId(sourceId); // flushes, then clears the persistence context
     sources.deleteById(sourceId);
-    deleteAfterCommit(key == null ? List.of() : List.of(key));
+    storageCleanup.deleteAfterCommit(key == null ? List.of() : List.of(key));
 
     var reloaded = reload(batchId);
     var remaining = sources.findByBatchIdOrderBySectionAsc(batchId);
@@ -378,9 +378,10 @@ public class TakeOnBatchService {
 
   /**
    * Cancel and purge, shared with the abandoned-batch job (X4, X5). The caller holds the batch row
-   * lock and has checked it is open. Live sign-offs are revoked ({@code CANCELLED}), each source's
-   * S3 key forgotten ({@code purged_at}), every row's values replaced by {@code {"purged": true}}
-   * (the shells stay for the audit trail); the S3 objects are deleted after commit.
+   * lock and has checked it is open. Live sign-offs are revoked ({@code CANCELLED}), each source
+   * marked purged ({@code purged_at}), every row's values, source ref, dedup key and message texts
+   * cleared (the shells stay for the audit trail); the S3 objects are deleted after commit and each
+   * key forgotten only once its delete succeeded (else the purge job retries it).
    *
    * @param actor null when the purge job cancels (no member)
    */
@@ -391,20 +392,20 @@ public class TakeOnBatchService {
     for (var signOff : signOffs.findByBatchIdAndRevokedAtIsNull(batchId)) {
       signOff.revoke(TakeOnSignOff.RevokedReason.CANCELLED);
     }
-    var keys = new ArrayList<String>();
+    var keys = new LinkedHashMap<UUID, String>();
     int purged = 0;
     for (var source : sources.findByBatchIdOrderBySectionAsc(batchId)) {
       if (!source.isPurged()) {
         String key = source.purge();
         purged++;
         if (key != null) {
-          keys.add(key);
+          keys.put(source.getId(), key);
         }
       }
     }
     transition(() -> batch.cancel(actor));
     audit.batchCancelled(batch, purged, reasonCode);
-    deleteAfterCommit(keys);
+    storageCleanup.deletePurgedAfterCommit(keys);
     return batch;
   }
 
@@ -451,6 +452,7 @@ public class TakeOnBatchService {
     String key =
         TakeOnStorageKeys.sourceKey(RequestScopes.requireTenantId(), batch.getId(), fileName);
     storageService.upload(key, file.bytes(), file.contentType());
+    storageCleanup.deleteOnRollback(key); // a later failure must not leave the file behind
     source.attachStorageKey(key);
     return source;
   }
@@ -465,7 +467,8 @@ public class TakeOnBatchService {
               batch.getDataset(),
               source.getSection(),
               raw.rowNumber(),
-              new LinkedHashMap<>(raw.values())));
+              new LinkedHashMap<>(raw.values()),
+              raw.numericHeaders()));
     }
     rows.saveAll(toSave);
   }
@@ -552,27 +555,5 @@ public class TakeOnBatchService {
           "Name too long", "The take-on batch name is longer than 200 characters.");
     }
     return trimmed;
-  }
-
-  private void deleteAfterCommit(List<String> keys) {
-    if (keys.isEmpty()) {
-      return;
-    }
-    Supplier<Void> delete =
-        () -> {
-          keys.forEach(storageService::delete);
-          return null;
-        };
-    if (TransactionSynchronizationManager.isSynchronizationActive()) {
-      TransactionSynchronizationManager.registerSynchronization(
-          new TransactionSynchronization() {
-            @Override
-            public void afterCommit() {
-              delete.get();
-            }
-          });
-    } else {
-      delete.get();
-    }
   }
 }

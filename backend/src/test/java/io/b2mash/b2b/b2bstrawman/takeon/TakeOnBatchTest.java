@@ -177,11 +177,14 @@ class TakeOnBatchTest {
   void trustAndDebtorBatches_needACutoverDateToValidate(TakeOnDataset dataset) {
     var batch = uploaded(dataset);
     batch.markMapped();
+    assertThat(batch.missingCutoverDate()).isTrue();
+    batch.requireValidatable(); // the state alone is fine: the date is the dry run's own check
     assertThatThrownBy(() -> batch.markValidated(HASH, COUNTS, null))
         .isInstanceOf(IllegalStateException.class)
         .hasMessage("Enter the cutover date before validating.");
 
     batch.setCutoverDate(LocalDate.of(2026, 10, 31));
+    assertThat(batch.missingCutoverDate()).isFalse();
     batch.markValidated(HASH, COUNTS, null);
     assertThat(batch.getStatus()).isEqualTo(TakeOnBatchStatus.VALIDATED);
   }

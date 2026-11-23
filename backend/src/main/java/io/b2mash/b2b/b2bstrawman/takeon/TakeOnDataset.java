@@ -1,6 +1,8 @@
 package io.b2mash.b2b.b2bstrawman.takeon;
 
+import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * What a take-on batch brings across from the firm's previous system (Phase 93, §17.2.1). Stored in
@@ -42,6 +44,16 @@ public enum TakeOnDataset {
   /** A trust banking account is required (CHECK chk_take_on_batch_trust_account). */
   public boolean requiresTrustAccount() {
     return this == TRUST_POSITION;
+  }
+
+  /** The custom-field entity type of the dataset's records; trust rows take no custom fields. */
+  public Optional<EntityType> customFieldEntityType() {
+    return switch (this) {
+      case CLIENTS -> Optional.of(EntityType.CUSTOMER);
+      case MATTERS -> Optional.of(EntityType.PROJECT);
+      case DEBTOR_BALANCES -> Optional.of(EntityType.INVOICE);
+      case TRUST_POSITION -> Optional.empty();
+    };
   }
 
   /** Every dataset but the trust position takes exactly one file (section MAIN). */

@@ -34,18 +34,21 @@ public class TakeOnAbandonedBatchPurgeJob {
   private final TakeOnBatchService batchService;
   private final TransactionTemplate transactionTemplate;
   private final Clock clock;
+  private final TakeOnStorageCleanup storageCleanup;
 
   public TakeOnAbandonedBatchPurgeJob(
       TenantScopedRunner tenantScopedRunner,
       TakeOnBatchRepository batches,
       TakeOnBatchService batchService,
       PlatformTransactionManager transactionManager,
-      Clock clock) {
+      Clock clock,
+      TakeOnStorageCleanup storageCleanup) {
     this.tenantScopedRunner = tenantScopedRunner;
     this.batches = batches;
     this.batchService = batchService;
     this.transactionTemplate = new TransactionTemplate(transactionManager);
     this.clock = clock;
+    this.storageCleanup = storageCleanup;
   }
 
   @SchedulerLock(name = "take_on_abandoned_batch_purge", lockAtLeastFor = "5m")
@@ -61,8 +64,10 @@ public class TakeOnAbandonedBatchPurgeJob {
   }
 
   /**
-   * Purges the current tenant's open batches created before {@code cutoff}; the caller binds the
-   * tenant. Returns the number purged. Public for tests (the test profile switches scheduling off).
+   * Purges the current tenant's open batches created before {@code cutoff}, then retries the S3
+   * delete of every purged file still holding its key (a delete that failed after an earlier cancel
+   * or purge); the caller binds the tenant. Returns the number of batches purged. Public for tests
+   * (the test profile switches scheduling off).
    */
   public int purgeAbandonedInTenant(Instant cutoff) {
     int purged = 0;
@@ -87,6 +92,11 @@ public class TakeOnAbandonedBatchPurgeJob {
         // one batch failing must not stop the others; it is retried on the next run
         log.warn("Take-on abandoned-batch purge failed for batch {}: {}", id, e.getMessage());
       }
+    }
+    try {
+      storageCleanup.retryPurgedDeletes();
+    } catch (RuntimeException e) {
+      log.warn("Take-on purged-file delete retry failed: {}", e.getMessage());
     }
     return purged;
   }

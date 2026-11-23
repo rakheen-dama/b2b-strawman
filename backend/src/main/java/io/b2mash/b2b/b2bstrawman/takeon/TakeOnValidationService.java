@@ -50,15 +50,12 @@ public class TakeOnValidationService {
             .orElseThrow(() -> new ResourceNotFoundException("Take-on batch", batchId));
     accessPolicy.requireWrite(batch.getDataset());
     try {
-      batch.requireValidatable();
+      batch.requireValidatable(); // the state (409 wrong state) …
     } catch (IllegalStateException e) {
-      if (batch.getStatus().isOpen()
-          && batch.getStatus() != TakeOnBatchStatus.UPLOADED
-          && batch.getDataset().requiresCutoverDate()
-          && batch.getCutoverDate() == null) {
-        throw TakeOnProblems.cutoverDateRequired(); // C-14
-      }
       throw TakeOnProblems.wrongState(e.getMessage());
+    }
+    if (batch.missingCutoverDate()) {
+      throw TakeOnProblems.cutoverDateRequired(); // … then the position input (C-14)
     }
 
     var batchSources = sources.findByBatchIdOrderBySectionAsc(batchId);

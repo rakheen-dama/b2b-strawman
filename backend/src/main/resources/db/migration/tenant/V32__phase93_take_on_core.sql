@@ -96,6 +96,8 @@ CREATE TABLE IF NOT EXISTS take_on_rows (
     section varchar(30) NOT NULL,
     row_number integer NOT NULL,
     raw_values jsonb NOT NULL,
+    -- Headers whose XLSX cell was a number (point-decimal text whatever the chosen decimal separator).
+    numeric_cells jsonb,
     mapped_values jsonb,
     source_ref varchar(200),
     dedup_key varchar(300),

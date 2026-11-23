@@ -14,11 +14,19 @@ import java.util.Map;
  * clients, 656A matters, 657B trust, 658A debtors), and with it {@code commitRow} / {@code
  * commitAll} — not declared here until a slice needs them.
  *
+ * <p>A dataset handler reuses the generic checks through {@link
+ * GenericTakeOnDatasetHandler#checkGeneric}, adds its own errors, warnings, block or duplicate to
+ * the returned {@link TakeOnRowCheck}, and records the row once ({@link
+ * GenericTakeOnDatasetHandler#finish}).
+ *
  * <p>Every method runs inside the validating {@code REPEATABLE_READ} transaction: lookups made in
  * {@link #loadContext} see the same snapshot as the counts (§17.10 X2). A handler never creates or
  * changes a client, matter, fee note or trust row.
  */
 public interface TakeOnDatasetHandler {
+
+  /** A row's lookup-free dedup key (C-25) and the field it came from. */
+  record DedupKey(String field, String key) {}
 
   /** The dataset served; {@code null} for the generic handler, which serves any. */
   TakeOnDataset dataset();
@@ -31,6 +39,9 @@ public interface TakeOnDatasetHandler {
 
   /** Types one row's values and records its errors, warnings, source ref and dedup key. */
   void mapAndValidate(TakeOnRow row, ValidationContext context);
+
+  /** The row's dedup key from its typed values, or {@code null} when it has none. */
+  DedupKey dedupKey(TakeOnDataset dataset, Map<String, Object> mapped);
 
   /** Checks across rows (in-file duplicates; later: control totals, the trust equation). */
   void validateBatchLevel(TakeOnBatch batch, ValidationContext context);

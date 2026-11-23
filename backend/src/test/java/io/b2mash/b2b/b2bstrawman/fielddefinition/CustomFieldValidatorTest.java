@@ -264,6 +264,20 @@ class CustomFieldValidatorTest {
     org.mockito.Mockito.verifyNoInteractions(fieldDefinitionRepository, fieldGroupMemberRepository);
   }
 
+  @Test
+  void checkValueRefusesAMalformedSavedRuleInsteadOfThrowing() {
+    // A NUMBER rule saved with min "ten" must not crash the take-on dry run (653A review).
+    var fd = createFieldDef("size", FieldType.NUMBER, false);
+    fd.setValidation(Map.of("min", "ten"));
+    assertThat(validator.checkValue(fd, new java.math.BigDecimal("5")))
+        .isEqualTo(
+            "The validation rule of the custom field \"size\" is set up incorrectly. Fix the"
+                + " field's configuration in Settings, then try again.");
+    var text = createFieldDef("code", FieldType.TEXT, false);
+    text.setValidation(Map.of("maxLength", "many"));
+    assertThat(validator.checkValue(text, "abc")).contains("is set up incorrectly");
+  }
+
   // --- Helper ---
 
   private FieldDefinition createFieldDef(String slug, FieldType fieldType, boolean required) {

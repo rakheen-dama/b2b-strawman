@@ -243,11 +243,15 @@ export async function fetchTakeOnBankingAccounts(): Promise<
         .filter((a) => a.accountType !== "INVESTMENT" && a.status === "ACTIVE")
         .map((a) => ({ id: a.id, accountName: a.accountName })),
     };
-  } catch {
+  } catch (error) {
+    // A trust take-on needs MANAGE_TRUST and VIEW_TRUST (the backend's TakeOnAccessPolicy).
+    const forbidden = error instanceof ApiError && error.status === 403;
     return {
       success: false,
       data: [],
-      error: "Turn on trust accounting and add a trust account first.",
+      error: forbidden
+        ? "A trust take-on needs permission to view and manage trust accounting. Ask an owner or admin."
+        : "Turn on trust accounting and add a trust account first.",
     };
   }
 }

@@ -4,8 +4,7 @@ import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinition;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
 import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService.TakeOnMappingRequest;
-import io.b2mash.b2b.b2bstrawman.takeon.dataset.GenericTakeOnDatasetHandler;
-import io.b2mash.b2b.b2bstrawman.takeon.dataset.TakeOnFieldCatalogue;
+import io.b2mash.b2b.b2bstrawman.takeon.dataset.TakeOnDatasetHandlers;
 import io.b2mash.b2b.b2bstrawman.takeon.dataset.TakeOnFieldCatalogue.FieldSpec;
 import io.b2mash.b2b.b2bstrawman.takeon.reader.TakeOnParseOptions;
 import java.time.format.DateTimeFormatter;
@@ -38,14 +37,17 @@ public class TakeOnMappingValidator {
   private final TakeOnRowRepository rows;
   private final TakeOnSourceFiles sourceFiles;
   private final FieldDefinitionRepository fieldDefinitions;
+  private final TakeOnDatasetHandlers handlers;
 
   public TakeOnMappingValidator(
       TakeOnRowRepository rows,
       TakeOnSourceFiles sourceFiles,
-      FieldDefinitionRepository fieldDefinitions) {
+      FieldDefinitionRepository fieldDefinitions,
+      TakeOnDatasetHandlers handlers) {
     this.rows = rows;
     this.sourceFiles = sourceFiles;
     this.fieldDefinitions = fieldDefinitions;
+    this.handlers = handlers;
   }
 
   public Checked check(TakeOnBatch batch, TakeOnSource source, TakeOnMappingRequest request) {
@@ -53,7 +55,10 @@ public class TakeOnMappingValidator {
         new TakeOnColumnMapping(
             request.targets(), request.customFields(), request.parked(), request.defaults());
     Map<String, FieldSpec> fields =
-        TakeOnFieldCatalogue.fields(batch.getDataset(), source.getSection()).stream()
+        handlers
+            .forDataset(batch.getDataset())
+            .fields(batch.getDataset(), source.getSection())
+            .stream()
             .collect(Collectors.toMap(FieldSpec::key, f -> f));
     Set<String> headers = headersOf(source);
 
@@ -98,7 +103,7 @@ public class TakeOnMappingValidator {
     if (mapping.customFields().isEmpty()) {
       return;
     }
-    var entityType = GenericTakeOnDatasetHandler.customFieldEntityType(batch.getDataset());
+    var entityType = batch.getDataset().customFieldEntityType();
     if (entityType.isEmpty()) {
       throw refused("A trust take-on has no custom fields to fill.");
     }

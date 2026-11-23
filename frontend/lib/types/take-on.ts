@@ -189,7 +189,8 @@ export interface TakeOnPreview {
 export interface TakeOnRowMessage {
   code: string;
   field: string | null;
-  message: string;
+  /** null once the batch is cancelled or purged: the text may quote a cell (X4). */
+  message: string | null;
 }
 
 /** TakeOnRowResponse — `values`: typed after a dry run, raw before, `{purged: true}` after cancel. */

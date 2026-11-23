@@ -61,6 +61,19 @@ final class TakeOnSheetAssembler {
    * @param errorCell the row holds an Excel error cell: counted malformed, but kept (C-8)
    */
   void accept(int rowNumber, List<String> cells, boolean overflow, boolean errorCell) {
+    accept(rowNumber, cells, overflow, errorCell, Set.of());
+  }
+
+  /**
+   * As {@link #accept(int, List, boolean, boolean)}, with the 0-based columns whose XLSX cell was a
+   * number (their text is point-decimal whatever separator the user later chooses).
+   */
+  void accept(
+      int rowNumber,
+      List<String> cells,
+      boolean overflow,
+      boolean errorCell,
+      Set<Integer> numericColumns) {
     if (rowNumber < headerRow) {
       return; // a title row above the headers
     }
@@ -85,13 +98,18 @@ final class TakeOnSheetAssembler {
       throw tooManyRows();
     }
     var values = new LinkedHashMap<String, String>();
+    var numericHeaders = new HashSet<String>();
     for (int i = 0; i < headers.size(); i++) {
-      values.put(headers.get(i), cell(cells, i));
+      String value = cell(cells, i);
+      values.put(headers.get(i), value);
+      if (numericColumns.contains(i) && !value.isEmpty()) {
+        numericHeaders.add(headers.get(i));
+      }
     }
     if (errorCell) {
       malformedCount++;
     }
-    rows.add(new TakeOnRawRow(rowNumber, values));
+    rows.add(new TakeOnRawRow(rowNumber, values, numericHeaders));
   }
 
   /** A record that cannot be read at all (e.g. an unterminated CSV quote): counted and skipped. */

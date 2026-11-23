@@ -19,7 +19,8 @@ import org.hibernate.type.SqlTypes;
 /**
  * One uploaded file (and chosen sheet) inside a take-on batch (§17.2.2). Single-file datasets have
  * one source (section {@code MAIN}); a trust position has one per section it uses. The raw bytes
- * live in S3 under {@link #getS3Key()} until the batch is cancelled or purged.
+ * live in S3 under {@link #getS3Key()} until the batch is cancelled or purged (the key is cleared
+ * once the object is deleted).
  */
 @Entity
 @Table(name = "take_on_sources")
@@ -165,17 +166,17 @@ public class TakeOnSource {
   }
 
   /**
-   * Forgets the S3 object (cancel or abandoned purge) and returns the old key so the caller can
-   * delete it after commit; null if already purged.
+   * Marks the file purged (cancel or abandoned purge) and returns its S3 key so the caller can
+   * delete the object after commit; null if already purged. The key stays recorded until the delete
+   * succeeds ({@link TakeOnStorageCleanup}), so a failed delete is retried; every read treats a
+   * purged source as gone whatever its key.
    */
   public String purge() {
     if (purgedAt != null) {
       return null;
     }
-    String old = this.s3Key;
-    this.s3Key = null;
     this.purgedAt = Instant.now();
-    return old;
+    return this.s3Key;
   }
 
   public boolean isPurged() {

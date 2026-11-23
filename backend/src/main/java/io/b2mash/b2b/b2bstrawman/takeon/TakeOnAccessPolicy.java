@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.takeon;
 import io.b2mash.b2b.b2bstrawman.orgrole.CapabilityAuthorizationService;
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
@@ -34,9 +35,16 @@ public class TakeOnAccessPolicy {
     };
   }
 
-  /** Upload, map, validate, commit, cancel. */
-  public static String writeCapability(TakeOnDataset dataset) {
-    return dataset == TakeOnDataset.TRUST_POSITION ? "MANAGE_TRUST" : readCapability(dataset);
+  /**
+   * Upload, map, validate, commit, cancel: the dataset's write capability <b>and</b> its read
+   * capability. A trust write needs {@code MANAGE_TRUST} plus {@code VIEW_TRUST} — the upload step
+   * lists the trust accounts ({@code GET /api/trust-accounts}, {@code VIEW_TRUST}) and every write
+   * returns the batch, so a writer must be a reader (decision D-44; never looser than §17.9).
+   */
+  public static List<String> writeCapabilities(TakeOnDataset dataset) {
+    return dataset == TakeOnDataset.TRUST_POSITION
+        ? List.of("MANAGE_TRUST", readCapability(dataset))
+        : List.of(readCapability(dataset));
   }
 
   public void requireRead(TakeOnDataset dataset) {
@@ -44,7 +52,7 @@ public class TakeOnAccessPolicy {
   }
 
   public void requireWrite(TakeOnDataset dataset) {
-    capabilities.requireCapability(writeCapability(dataset));
+    writeCapabilities(dataset).forEach(capabilities::requireCapability);
   }
 
   /** The datasets whose batches the caller may see in the history. */

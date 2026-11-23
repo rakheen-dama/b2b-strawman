@@ -53,14 +53,26 @@ public interface TakeOnRowRepository extends JpaRepository<TakeOnRow, UUID> {
   @Query("delete from TakeOnRow r where r.sourceId = :sourceId")
   int deleteBySourceId(@Param("sourceId") UUID sourceId);
 
-  /** Cancel / abandoned purge: the row shells stay, their values go (§17.10 X4). */
+  /**
+   * Cancel / abandoned purge: the row shells stay, their values go (§17.10 X4) — the cells, the
+   * previous system's id ({@code source_ref}), the dedup key (a lower-cased email or reference) and
+   * the message text of every error and warning (it may quote a cell); only {code, field} remain.
+   */
   @Modifying(flushAutomatically = true, clearAutomatically = true)
   @Query(
       nativeQuery = true,
       value =
           """
           UPDATE take_on_rows SET raw_values = '{"purged": true}'::jsonb,
-                 mapped_values = '{"purged": true}'::jsonb, updated_at = now()
+                 mapped_values = '{"purged": true}'::jsonb,
+                 source_ref = NULL, dedup_key = NULL,
+                 errors = COALESCE((SELECT jsonb_agg(jsonb_build_object(
+                                      'code', e -> 'code', 'field', e -> 'field'))
+                                      FROM jsonb_array_elements(errors) e), '[]'::jsonb),
+                 warnings = COALESCE((SELECT jsonb_agg(jsonb_build_object(
+                                        'code', w -> 'code', 'field', w -> 'field'))
+                                        FROM jsonb_array_elements(warnings) w), '[]'::jsonb),
+                 updated_at = now()
            WHERE batch_id = :batchId""")
   int purgeValues(@Param("batchId") UUID batchId);
 

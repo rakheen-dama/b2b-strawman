@@ -14,6 +14,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
@@ -51,6 +52,11 @@ public class TakeOnRow {
   @JdbcTypeCode(SqlTypes.JSON)
   @Column(name = "raw_values", nullable = false, columnDefinition = "jsonb")
   private Map<String, Object> rawValues;
+
+  /** Headers whose XLSX cell was a number: their text is point-decimal (null for CSV). */
+  @JdbcTypeCode(SqlTypes.JSON)
+  @Column(name = "numeric_cells", columnDefinition = "jsonb", updatable = false)
+  private List<String> numericCells;
 
   @JdbcTypeCode(SqlTypes.JSON)
   @Column(name = "mapped_values", columnDefinition = "jsonb")
@@ -110,6 +116,21 @@ public class TakeOnRow {
       TakeOnSection section,
       int rowNumber,
       Map<String, Object> rawValues) {
+    this(batchId, sourceId, dataset, section, rowNumber, rawValues, Set.of());
+  }
+
+  public TakeOnRow(
+      UUID batchId,
+      UUID sourceId,
+      TakeOnDataset dataset,
+      TakeOnSection section,
+      int rowNumber,
+      Map<String, Object> rawValues,
+      Set<String> numericHeaders) {
+    this.numericCells =
+        numericHeaders == null || numericHeaders.isEmpty()
+            ? null
+            : numericHeaders.stream().sorted().toList();
     this.batchId = Objects.requireNonNull(batchId, "batchId");
     this.sourceId = Objects.requireNonNull(sourceId, "sourceId");
     this.dataset = Objects.requireNonNull(dataset, "dataset");
@@ -214,6 +235,11 @@ public class TakeOnRow {
 
   public Map<String, Object> getRawValues() {
     return rawValues;
+  }
+
+  /** Whether the cell under {@code header} was an XLSX number (point-decimal text). */
+  public boolean isNumericCell(String header) {
+    return numericCells != null && header != null && numericCells.contains(header);
   }
 
   public Map<String, Object> getMappedValues() {

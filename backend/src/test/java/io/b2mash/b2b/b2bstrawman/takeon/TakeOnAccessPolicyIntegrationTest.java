@@ -55,6 +55,7 @@ class TakeOnAccessPolicyIntegrationTest {
   private static final String CAROL = "user_toa_carol";
   private static final String CLIENTS_ONLY = "user_toa_clients";
   private static final String TRUST_VIEWER = "user_toa_trustview";
+  private static final String TRUST_MANAGER = "user_toa_trustmanage";
   private static final String ACCESS_DENIED = "Access denied";
   private static final String CLIENTS_CSV =
       "Client name,Email,Client type,CDD completed date,Beneficial ownership,Screening,Records\n"
@@ -87,6 +88,11 @@ class TakeOnAccessPolicyIntegrationTest {
                 mockMvc, ORG_ID, TRUST_VIEWER, "toa_trust@test.com", "TOA Trust", "member"));
     assignRole(clientsOnly, createRole("Clients take-on", "MANAGE_TAKE_ON", "CUSTOMER_MANAGEMENT"));
     assignRole(trustViewer, createRole("Trust take-on viewer", "MANAGE_TAKE_ON", "VIEW_TRUST"));
+    UUID trustManager =
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, TRUST_MANAGER, "toa_trustm@test.com", "TOA TrustM", "member"));
+    assignRole(trustManager, createRole("Trust take-on writer", "MANAGE_TAKE_ON", "MANAGE_TRUST"));
     var account =
         mockMvc
             .perform(
@@ -210,6 +216,28 @@ class TakeOnAccessPolicyIntegrationTest {
   }
 
   @Test
+  void manageTrustWithoutViewTrustCannotWriteATrustBatch() throws Exception {
+    // 653A review (decision D-44): a trust writer must also read trust — the upload step lists
+    // the trust accounts (VIEW_TRUST) and every write returns the batch.
+    denied(
+        TakeOnTestApi.upload(
+            mockMvc,
+            trustManager(),
+            "TRUST_POSITION",
+            "ledger.csv",
+            TakeOnTestApi.CSV,
+            TakeOnTestFiles.csv(LEDGER_CSV),
+            "section",
+            "CLIENT_LEDGER",
+            "trustAccountId",
+            trustAccountId));
+    denied(validate(mockMvc, trustManager(), trustBatch[0]));
+    denied(cancel(mockMvc, trustManager(), trustBatch[0]));
+    denied(rows(mockMvc, trustManager(), trustBatch[0], null));
+    detail(mockMvc, owner(), trustBatch[0]).andExpect(jsonPath("$.status").value("MAPPED"));
+  }
+
+  @Test
   void aSystemMemberIsRefusedEveryTakeOnEndpoint() throws Exception {
     denied(mockMvc.perform(get("/api/take-on/datasets").with(carol())));
     denied(mockMvc.perform(get("/api/take-on/templates/CLIENTS").with(carol())));
@@ -310,6 +338,10 @@ class TakeOnAccessPolicyIntegrationTest {
 
   private RequestPostProcessor clientsOnly() {
     return TestJwtFactory.customRoleJwt(ORG_ID, CLIENTS_ONLY);
+  }
+
+  private RequestPostProcessor trustManager() {
+    return TestJwtFactory.customRoleJwt(ORG_ID, TRUST_MANAGER);
   }
 
   private RequestPostProcessor trustViewer() {

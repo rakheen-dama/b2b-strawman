@@ -69,7 +69,7 @@ class TakeOnBatchLifecycleIntegrationTest {
   private static final String CLIENTS_CSV =
       """
       Client name,Email,Client type,CDD completed date,Beneficial ownership,Screening,CDD records location
-      Thandi Example,thandi@example.test,Individual,01/02/2024,Done,Screened clear,Box 1
+      Thandi Example,thandi@example.test,Individual,01/02/2024,Done,Not screened,Box 1
       Sipho Example,sipho@example.test,Company,02/02/2024,N/A,Not screened,Box 2
       """;
   private static final Map<String, String> CLIENT_TARGETS =
@@ -581,7 +581,7 @@ class TakeOnBatchLifecycleIntegrationTest {
   void cancelClearsTheRowMessageTextsButKeepsTheirCodes() throws Exception {
     String csv =
         CLIENTS_CSV.replace("thandi@example.test", "not-an-email-thandi")
-            + "Thandi Again,THANDI2@example.test,Individual,01/02/2024,Done,Screened clear,Box 3\n";
+            + "Thandi Again,THANDI2@example.test,Individual,01/02/2024,Done,Not screened,Box 3\n";
     UUID[] ids = create(mockMvc, owner(), "CLIENTS", "messages.csv", TakeOnTestFiles.csv(csv));
     mapTargets(mockMvc, owner(), ids[0], ids[1], CLIENT_TARGETS);
     validate(mockMvc, owner(), ids[0]).andExpect(jsonPath("$.counts.error").value(1));

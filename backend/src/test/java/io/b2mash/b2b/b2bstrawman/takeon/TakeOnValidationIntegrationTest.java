@@ -115,12 +115,12 @@ class TakeOnValidationIntegrationTest {
   void genericChecksMarkEachBadRowWithItsFieldAndCode() throws Exception {
     String csv =
         HEADER
-            + "Good Client,good.client@example.test,Individual,01/02/2024,Done,Screened clear,Box 1,5,Main\n"
-            + ",blank.name@example.test,Individual,01/02/2024,Done,Screened clear,Box 2,,\n"
-            + "Bad Date,bad.date@example.test,Individual,2024-31-31,Done,Screened clear,Box 3,,\n"
-            + "Serial Date,serial@example.test,Individual,45000,Done,Screened clear,Box 4,,\n"
-            + "Bad Type,bad.type@example.test,Alien,01/02/2024,Done,Screened clear,Box 5,,\n"
-            + "Bad Rating,bad.rating@example.test,Individual,01/02/2024,Done,Screened clear,Box 6,50,\n";
+            + "Good Client,good.client@example.test,Individual,01/02/2024,Done,Not screened,Box 1,5,Main\n"
+            + ",blank.name@example.test,Individual,01/02/2024,Done,Not screened,Box 2,,\n"
+            + "Bad Date,bad.date@example.test,Individual,2024-31-31,Done,Not screened,Box 3,,\n"
+            + "Serial Date,serial@example.test,Individual,45000,Done,Not screened,Box 4,,\n"
+            + "Bad Type,bad.type@example.test,Alien,01/02/2024,Done,Not screened,Box 5,,\n"
+            + "Bad Rating,bad.rating@example.test,Individual,01/02/2024,Done,Not screened,Box 6,50,\n";
     UUID[] ids = create(mockMvc, owner(), "CLIENTS", "checks.csv", TakeOnTestFiles.csv(csv));
     var body = new HashMap<String, Object>();
     body.put("targets", TARGETS);
@@ -381,8 +381,8 @@ class TakeOnValidationIntegrationTest {
             """);
     String csv =
         HEADER
-            + "Has Code,code@example.test,Individual,01/02/2024,Done,Screened clear,Box,L-1,\n"
-            + "No Code,nocode@example.test,Individual,01/02/2024,Done,Screened clear,Box,,\n";
+            + "Has Code,code@example.test,Individual,01/02/2024,Done,Not screened,Box,L-1,\n"
+            + "No Code,nocode@example.test,Individual,01/02/2024,Done,Not screened,Box,,\n";
     UUID[] ids = create(mockMvc, owner(), "CLIENTS", "legacy.csv", TakeOnTestFiles.csv(csv));
     var body = new HashMap<String, Object>();
     body.put("targets", TARGETS);
@@ -414,7 +414,7 @@ class TakeOnValidationIntegrationTest {
          "validation": {"min": "ten"}}
         """);
     String csv =
-        HEADER + "Sized,sized@example.test,Individual,01/02/2024,Done,Screened clear,Box,5,\n";
+        HEADER + "Sized,sized@example.test,Individual,01/02/2024,Done,Not screened,Box,5,\n";
     UUID[] ids = create(mockMvc, owner(), "CLIENTS", "size.csv", TakeOnTestFiles.csv(csv));
     var body = new HashMap<String, Object>();
     body.put("targets", TARGETS);
@@ -449,9 +449,9 @@ class TakeOnValidationIntegrationTest {
   void aRepeatedEmailInTheFileIsAnErrorOnTheLaterRow() throws Exception {
     String csv =
         HEADER
-            + "First,same@example.test,Individual,01/02/2024,Done,Screened clear,Box,,\n"
-            + "Second,other@example.test,Individual,01/02/2024,Done,Screened clear,Box,,\n"
-            + "Third,SAME@example.test,Individual,01/02/2024,Done,Screened clear,Box,,\n";
+            + "First,same@example.test,Individual,01/02/2024,Done,Not screened,Box,,\n"
+            + "Second,other@example.test,Individual,01/02/2024,Done,Not screened,Box,,\n"
+            + "Third,SAME@example.test,Individual,01/02/2024,Done,Not screened,Box,,\n";
     UUID[] ids = create(mockMvc, owner(), "CLIENTS", "dups.csv", TakeOnTestFiles.csv(csv));
     mapTargets(mockMvc, owner(), ids[0], ids[1], TARGETS);
     validate(mockMvc, owner(), ids[0]).andExpect(jsonPath("$.counts.error").value(1));
@@ -464,11 +464,11 @@ class TakeOnValidationIntegrationTest {
   void theSummaryCountsEqualTheRowTableByStatus() throws Exception {
     String csv =
         HEADER
-            + "A,a@example.test,Individual,01/02/2024,Done,Screened clear,Box,,\n"
-            + "B,b@example.test,Individual,01/02/2024,Done,Screened clear,Box,,\n"
-            + ",c@example.test,Individual,01/02/2024,Done,Screened clear,Box,,\n"
-            + "D,a@example.test,Individual,01/02/2024,Done,Screened clear,Box,,\n"
-            + "E,e@example.test,Individual,31/02/2024,Done,Screened clear,Box,,\n";
+            + "A,a@example.test,Individual,01/02/2024,Done,Not screened,Box,,\n"
+            + "B,b@example.test,Individual,01/02/2024,Done,Not screened,Box,,\n"
+            + ",c@example.test,Individual,01/02/2024,Done,Not screened,Box,,\n"
+            + "D,a@example.test,Individual,01/02/2024,Done,Not screened,Box,,\n"
+            + "E,e@example.test,Individual,31/02/2024,Done,Not screened,Box,,\n";
     UUID[] ids = create(mockMvc, owner(), "CLIENTS", "cards.csv", TakeOnTestFiles.csv(csv));
     mapTargets(mockMvc, owner(), ids[0], ids[1], TARGETS);
     String batch =
@@ -545,8 +545,8 @@ class TakeOnValidationIntegrationTest {
   void reValidationStartsFromScratchSoAFixedMappingClearsTheErrors() throws Exception {
     String csv =
         "Client name,Email,Client type,CDD completed date,Beneficial ownership,Screening,Records\n"
-            + "A,ra@example.test,Individual,01/02/2024,Done,Screened clear,\n"
-            + "B,rb@example.test,Individual,01/02/2024,Done,Screened clear,\n";
+            + "A,ra@example.test,Individual,01/02/2024,Done,Not screened,\n"
+            + "B,rb@example.test,Individual,01/02/2024,Done,Not screened,\n";
     UUID[] ids = create(mockMvc, owner(), "CLIENTS", "fix.csv", TakeOnTestFiles.csv(csv));
     mapTargets(mockMvc, owner(), ids[0], ids[1], TARGETS);
     validate(mockMvc, owner(), ids[0]).andExpect(jsonPath("$.counts.error").value(2));
@@ -572,7 +572,7 @@ class TakeOnValidationIntegrationTest {
             "CLIENTS",
             "refuse.csv",
             TakeOnTestFiles.csv(
-                HEADER + "A,a@x.test,Individual,01/02/2024,Done,Screened clear,B,,\n"));
+                HEADER + "A,a@x.test,Individual,01/02/2024,Done,Not screened,B,,\n"));
     var missing = new HashMap<>(TARGETS);
     missing.remove("cddRecordsLocation");
     mapTargets(mockMvc, owner(), ids[0], ids[1], missing)

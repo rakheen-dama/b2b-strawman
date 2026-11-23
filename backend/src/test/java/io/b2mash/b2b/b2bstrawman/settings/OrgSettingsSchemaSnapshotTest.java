@@ -80,6 +80,9 @@ class OrgSettingsSchemaSnapshotTest {
   // Tenant V7 (Phase 88 / Epic 626A, ADR-353): the sixteen nullable letterhead_* columns added —
   // deliberate, authorised pin update (LetterheadSettings embeddable + V7__phase88_letterhead.sql),
   // not drift.
+  // Tenant V34 (Phase 93 / 655A, ADR-388): the three fica_review_months_* columns (integer NOT NULL
+  // DEFAULT 36/24/12, CHECK 1–120) added — deliberate, authorised pin update
+  // (DataRequestSettings FICA review intervals + V34__phase93_client_take_on_fica.sql), not drift.
   private static final String EXPECTED_SNAPSHOT =
       """
       acceptance_expiry_days | integer | YES
@@ -110,6 +113,9 @@ class OrgSettingsSchemaSnapshotTest {
       document_signing_enabled | boolean | NO
       dormancy_threshold_days | integer | YES
       enabled_modules | jsonb | YES
+      fica_review_months_high | integer | NO
+      fica_review_months_low | integer | NO
+      fica_review_months_medium | integer | NO
       field_pack_status | jsonb | YES
       financial_retention_months | integer | YES
       id | uuid | NO

@@ -31,7 +31,11 @@ import tools.jackson.databind.json.JsonMapper;
  */
 class TakeOnWireContractTest {
 
-  /** The 18 take-on wire records (653A); each later slice adds the records it introduces. */
+  /**
+   * The take-on wire records: 18 from 653A, + 5 from 655A (sign-off, attestation statement,
+   * attestation and commit requests, portal-contacts response) = 23; each later slice adds the
+   * records it introduces.
+   */
   static final List<Class<?>> PINNED =
       List.of(
           TakeOnBatchService.TakeOnFieldResponse.class,
@@ -51,7 +55,13 @@ class TakeOnWireContractTest {
           TakeOnBatchService.TakeOnRowResponse.class,
           TakeOnBatchService.TakeOnMappingRequest.class,
           TakeOnBatchService.TakeOnSheetRequest.class,
-          TakeOnBatchService.TakeOnPositionRequest.class);
+          TakeOnBatchService.TakeOnPositionRequest.class,
+          // 655A
+          TakeOnBatchService.TakeOnSignOffResponse.class,
+          TakeOnBatchService.TakeOnAttestationStatementResponse.class,
+          TakeOnBatchService.TakeOnAttestationRequest.class,
+          TakeOnBatchService.TakeOnCommitRequest.class,
+          TakeOnBatchService.TakeOnPortalContactsResponse.class);
 
   private static final String UPDATE_FLAG = "takeon.contract.update";
   private static final Path SNAPSHOT = Path.of("src/test/resources/wire/take-on-contract.json");

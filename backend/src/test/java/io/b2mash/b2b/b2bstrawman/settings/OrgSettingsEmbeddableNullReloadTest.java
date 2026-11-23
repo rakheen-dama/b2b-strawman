@@ -112,8 +112,10 @@ class OrgSettingsEmbeddableNullReloadTest {
                   // Billing has a NOT-NULL-defaulted pair, but default_billing_run_currency is
                   // nullable; null it to exercise the null-safe billing accessor too.
                   + "default_billing_run_currency = NULL, "
-                  // Wave 3.5 DataRequest group — all three columns are nullable, so nulling them
-                  // makes Hibernate materialise a NULL embedded (the genuine NPE risk).
+                  // Wave 3.5 DataRequest group — its three original columns are nullable; since
+                  // tenant V34 (Phase 93 655A) the group also holds the NOT NULL FICA review
+                  // intervals, so it no longer materialises as a NULL embedded, but null the
+                  // nullable columns to exercise the null-tolerant accessors.
                   + "data_request_deadline_days = NULL, default_request_reminder_days = NULL, "
                   + "dormancy_threshold_days = NULL, "
                   // Wave 3.5 PackStatus group — all eight jsonb columns are nullable, so nulling
@@ -182,13 +184,16 @@ class OrgSettingsEmbeddableNullReloadTest {
                     assertThat(reloaded.getTax().getTaxLabel()).isNull();
                     assertThat(reloaded.getTax().getTaxRegistrationNumber()).isNull();
 
-                    // Wave 3.5 DataRequest group: all three columns nulled, so the embedded
-                    // materialises as NULL on reload — the lazy-fallback getter is the only thing
-                    // keeping this NPE-safe.
+                    // Wave 3.5 DataRequest group: the three nullable columns nulled; the NOT NULL
+                    // FICA review intervals (tenant V34, Phase 93 655A) keep their 36/24/12
+                    // defaults, so the group reloads non-null with the nullable getters null.
                     assertThat(reloaded.getDataRequest()).isNotNull();
                     assertThat(reloaded.getDataRequest().getDataRequestDeadlineDays()).isNull();
                     assertThat(reloaded.getDataRequest().getDefaultRequestReminderDays()).isNull();
                     assertThat(reloaded.getDataRequest().getDormancyThresholdDays()).isNull();
+                    assertThat(reloaded.getDataRequest().getFicaReviewMonthsLow()).isEqualTo(36);
+                    assertThat(reloaded.getDataRequest().getFicaReviewMonthsMedium()).isEqualTo(24);
+                    assertThat(reloaded.getDataRequest().getFicaReviewMonthsHigh()).isEqualTo(12);
 
                     // Wave 3.5 PackStatus group: all eight jsonb columns nulled, so the embedded
                     // materialises as NULL on reload — the lazy-fallback getter keeps it NPE-safe,

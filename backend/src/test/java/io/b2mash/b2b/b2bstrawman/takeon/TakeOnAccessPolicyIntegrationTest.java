@@ -59,7 +59,7 @@ class TakeOnAccessPolicyIntegrationTest {
   private static final String ACCESS_DENIED = "Access denied";
   private static final String CLIENTS_CSV =
       "Client name,Email,Client type,CDD completed date,Beneficial ownership,Screening,Records\n"
-          + "A,a@example.test,Individual,01/02/2024,Done,Screened clear,Box\n";
+          + "A,a@example.test,Individual,01/02/2024,Done,Not screened,Box\n";
   private static final String LEDGER_CSV =
       "Client reference,Matter reference,Balance at cutover\nC-1,M-1,1000.00\n";
 

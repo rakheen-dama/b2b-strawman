@@ -1,0 +1,15 @@
+# OBS F-1 red run — 2026-11-23T12:27:16Z on 88fb72068 (tests added, no fix)
+# ./mvnw test -Dtest=TakeOnUploadValidationIntegrationTest
+             Body = {"detail":"No row of this file could be read. Check that it is a .csv or .xlsx export and that every row has no more cells than the header row.","instance":"/api/take-on/batches","status":422,"title":"File could not be read","code":"TAKE_ON_ALL_ROWS_MALFORMED"}
+             Body = {"detail":"No row of this file could be read. Check that it is a .csv or .xlsx export and that every row has no more cells than the header row.","instance":"/api/take-on/batches","status":422,"title":"File could not be read","code":"TAKE_ON_ALL_ROWS_MALFORMED"}
+[ERROR] Tests run: 8, Failures: 2, Errors: 0, Skipped: 0, Time elapsed: 15.85 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.takeon.TakeOnUploadValidationIntegrationTest
+[ERROR] io.b2mash.b2b.b2bstrawman.takeon.TakeOnUploadValidationIntegrationTest.aCsvWithATitleLineUploadsAndIsReadFromTheChosenHeaderRow -- Time elapsed: 0.021 s <<< FAILURE!
+java.lang.AssertionError: Status expected:<201> but was:<422>
+	at org.springframework.test.util.AssertionErrors.fail(AssertionErrors.java:62)
+	at org.springframework.test.util.AssertionErrors.assertEquals(AssertionErrors.java:129)
+[ERROR] io.b2mash.b2b.b2bstrawman.takeon.TakeOnUploadValidationIntegrationTest.aWorkbookWhoseHeaderIsNotOnRowOneUploadsAndIsReadFromTheChosenHeaderRow -- Time elapsed: 0.090 s <<< FAILURE!
+java.lang.AssertionError: Status expected:<201> but was:<422>
+	at org.springframework.test.util.AssertionErrors.fail(AssertionErrors.java:62)
+	at org.springframework.test.util.AssertionErrors.assertEquals(AssertionErrors.java:129)
+[ERROR] Tests run: 8, Failures: 2, Errors: 0, Skipped: 0
+[INFO] BUILD FAILURE

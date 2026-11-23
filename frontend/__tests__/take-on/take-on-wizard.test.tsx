@@ -347,6 +347,57 @@ describe("TakeOnWizard — sheet picker", () => {
   });
 });
 
+describe("TakeOnWizard — header not on row 1 (OBS F-1)", () => {
+  const WARNING =
+    "No row could be read with row 1 as the header row. Choose the sheet and the row that holds the column names.";
+
+  it("resumes a file kept with no rows at Sheet, shows the warning and re-reads at the chosen header row", async () => {
+    const user = userEvent.setup();
+    const empty = source({ fileName: "debtors.csv", rowCount: 0 });
+    actions.fetchTakeOnPreview.mockResolvedValue({
+      success: true,
+      data: { ...PREVIEW, headers: [], rows: [], warnings: [WARNING] },
+    });
+    actions.setSheet.mockResolvedValue({
+      success: true,
+      data: {
+        batch: batch({ sources: [{ ...empty, headerRow: 3, rowCount: 4 }] }),
+        sourceId: "src-1",
+        headers: ["Client code"],
+        warnings: [],
+      },
+    });
+    actions.setSheet.mockResolvedValueOnce({
+      success: false,
+      error: "No row of this file could be read.",
+    });
+    renderWizard(batch({ sources: [empty] }));
+    expect(screen.getByTestId("take-on-step-sheet")).toHaveAttribute("aria-current", "step");
+    expect(await screen.findByText(WARNING)).toBeInTheDocument();
+
+    // Row 1 unchanged is still sent: the backend explains why it cannot be read.
+    await user.click(screen.getByTestId("take-on-apply-sheet"));
+    expect(actions.setSheet).toHaveBeenLastCalledWith("batch-1", "src-1", {
+      sheetName: null,
+      headerRow: 1,
+    });
+    expect(await screen.findByTestId("take-on-sheet-error")).toHaveTextContent(
+      "No row of this file could be read."
+    );
+
+    await user.clear(screen.getByTestId("take-on-header-row"));
+    await user.type(screen.getByTestId("take-on-header-row"), "3");
+    await user.click(screen.getByTestId("take-on-apply-sheet"));
+    expect(actions.setSheet).toHaveBeenLastCalledWith("batch-1", "src-1", {
+      sheetName: null,
+      headerRow: 3,
+    });
+    await waitFor(() =>
+      expect(screen.getByTestId("take-on-step-mapping")).toHaveAttribute("aria-current", "step")
+    );
+  });
+});
+
 describe("TakeOnWizard — mapping", () => {
   it("keeps Save disabled until every required field is mapped or defaulted", async () => {
     const user = userEvent.setup();

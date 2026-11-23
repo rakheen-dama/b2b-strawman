@@ -38,12 +38,13 @@ const STEPS: { id: TakeOnStep; label: string }[] = [
   { id: "validation", label: "Validation" },
 ];
 
+/** A multi-sheet XLSX, or a file kept with no rows because row 1 is not its header row (OBS F-1). */
 const needsSheetChoice = (src: TakeOnSource) =>
-  src.fileFormat === "XLSX" && src.sheetNames.length > 1;
+  src.rowCount === 0 || (src.fileFormat === "XLSX" && src.sheetNames.length > 1);
 
 const firstUnmapped = (batch: TakeOnBatch) => batch.sources.find((s) => !s.mapped);
 
-/** Where a batch resumes: no file → Upload; an unmapped file → Sheet (multi-sheet XLSX) or Mapping; mapped → Validation. */
+/** Where a batch resumes: no file → Upload; an unmapped file → Sheet (multi-sheet XLSX, or no rows read yet) or Mapping; mapped → Validation. */
 export function takeOnStepFor(batch: TakeOnBatch): TakeOnStep {
   if (batch.sources.length === 0) return "upload";
   if (batch.status === "MAPPED" || batch.status === "VALIDATED") return "validation";

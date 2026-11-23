@@ -325,6 +325,9 @@ public class TakeOnBatchService {
     var batch = lockForWrite(batchId);
     requireOpen(batch, "Only an open take-on batch can be mapped.");
     var source = requireSource(batchId, sourceId);
+    if (source.getRowCount() == 0) {
+      throw TakeOnProblems.noRows(); // nothing to map until the sheet and header row are chosen
+    }
     var checked = mappingValidator.check(batch, source, request);
     source.applyMapping(checked.mapping().toMap(), checked.parseOptions().toMap());
     boolean allMapped =
@@ -419,8 +422,16 @@ public class TakeOnBatchService {
     var file = TakeOnFileSniffer.sniff(multipart);
     var sheets = sourceFiles.sheetNames(file.bytes(), file.format());
     String sheetName = TakeOnSourceFiles.defaultSheet(sheets);
+    // Header row 1 is only a guess: a file that yields no row there is kept with no rows and a
+    // warning, and the wizard asks for the sheet and header row (OBS F-1).
     var sheet =
-        sourceFiles.read(file.bytes(), file.format(), sheetName, 1, TakeOnParseOptions.defaults());
+        sourceFiles.readOrNoRows(
+            file.bytes(),
+            file.format(),
+            sheetName,
+            1,
+            TakeOnParseOptions.defaults(),
+            sheets.size());
     return new Upload(file, sheets, sheet);
   }
 

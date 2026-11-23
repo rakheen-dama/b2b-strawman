@@ -55,14 +55,53 @@ public class TakeOnSourceFiles {
     }
   }
 
-  /** Re-reads a stored source with its current sheet, header row and parse options. */
+  /**
+   * As {@link #read}, but a file that opens and yields no row at {@code headerRow} — every row has
+   * more cells than that "header" (a title line above the real header row), or the sheet is empty
+   * in a workbook of several sheets — reads as no rows with {@link #headerRowWarning} instead of a
+   * 422, so the upload is kept and the wizard asks for the sheet and header row (OBS F-1). Every
+   * other refusal (unreadable, limits, an empty single-sheet file) is still a 422.
+   */
+  public TakeOnSheet readOrNoRows(
+      byte[] bytes,
+      TakeOnSource.FileFormat format,
+      String sheetName,
+      int headerRow,
+      TakeOnParseOptions options,
+      int sheetCount) {
+    try {
+      return readerFor(format).read(bytes, sheetName, headerRow, options);
+    } catch (TakeOnReadException e) {
+      boolean noRowsHere =
+          e.getCode() == TakeOnReadException.Code.ALL_ROWS_MALFORMED
+              || (e.getCode() == TakeOnReadException.Code.NO_HEADER && sheetCount > 1);
+      if (!noRowsHere) {
+        throw TakeOnProblems.unreadable(e);
+      }
+      return new TakeOnSheet(
+          sheetName, List.of(), List.of(), 0, 0, List.of(headerRowWarning(headerRow)), options);
+    }
+  }
+
+  /** The warning of a file read as no rows at {@code headerRow} ({@link #readOrNoRows}). */
+  public static String headerRowWarning(int headerRow) {
+    return ("No row could be read with row %d as the header row. Choose the sheet and the row"
+            + " that holds the column names.")
+        .formatted(headerRow);
+  }
+
+  /**
+   * Re-reads a stored source with its current sheet, header row and parse options; a source kept
+   * with no rows ({@link #readOrNoRows}) re-reads as no rows with the same warning.
+   */
   public TakeOnSheet reread(TakeOnSource source) {
-    return read(
+    return readOrNoRows(
         download(source),
         source.getFileFormat(),
         source.getSheetName(),
         source.getHeaderRow(),
-        readOptions(source));
+        readOptions(source),
+        source.getSheetNames() == null ? 1 : source.getSheetNames().size());
   }
 
   /** The raw bytes of a stored source; 404 {@code TAKE_ON_FILE_PURGED} once purged. */

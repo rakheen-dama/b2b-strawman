@@ -13,6 +13,12 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import org.apache.poi.ss.usermodel.FormulaError;
+import org.apache.poi.ss.usermodel.Sheet;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -161,6 +167,171 @@ class TakeOnUploadValidationIntegrationTest {
             "trustAccountId",
             java.util.UUID.randomUUID().toString())
         .andExpect(status().isBadRequest());
+  }
+
+  // --- OBS F-1: a header that is not on row 1 ---
+
+  private static final String HEADER_ROW_WARNING =
+      "No row could be read with row 1 as the header row. Choose the sheet and the row that holds"
+          + " the column names.";
+  private static final List<String> DEBTOR_HEADER =
+      List.of(
+          "Client code",
+          "Matter",
+          "Fee note",
+          "Issue date",
+          "Due date",
+          "Outstanding",
+          "Description");
+  private static final Map<String, String> DEBTOR_TARGETS =
+      Map.of(
+          "clientRef", "Client code",
+          "matterRef", "Matter",
+          "feeNoteNumber", "Fee note",
+          "issueDate", "Issue date",
+          "dueDate", "Due date",
+          "outstandingAmount", "Outstanding",
+          "description", "Description");
+
+  @Test
+  void aWorkbookWhoseHeaderIsNotOnRowOneUploadsAndIsReadFromTheChosenHeaderRow() throws Exception {
+    byte[] workbook =
+        TakeOnTestFiles.xlsx(
+            wb -> {
+              wb.createSheet("Old notes").createRow(0).createCell(0).setCellValue("Scratch");
+              Sheet sheet = wb.createSheet("Debtors");
+              sheet
+                  .createRow(0)
+                  .createCell(0)
+                  .setCellValue("Debtors at cutover - exported 2026-10-31");
+              TakeOnTestFiles.writeRow(sheet.createRow(2), DEBTOR_HEADER);
+              TakeOnTestFiles.writeRow(
+                  sheet.createRow(3),
+                  List.of(
+                      "CL-001", "MAT-01", "FN-1001", "2026-09-01", "2026-10-01", "", "Consult"));
+              sheet.getRow(3).createCell(5).setCellValue(1500.5);
+              TakeOnTestFiles.writeRow(
+                  sheet.createRow(4),
+                  List.of(
+                      "CL-002", "MAT-02", "FN-1002", "2026-09-15", "2026-10-15", "1,234", "Draft"));
+              TakeOnTestFiles.writeRow(
+                  sheet.createRow(5),
+                  List.of("CL-003", "MAT-03", "FN-1003", "2026-10-01", "2026-10-31", "", "Broken"));
+              sheet.getRow(5).createCell(5).setCellErrorValue(FormulaError.REF.getCode());
+              TakeOnTestFiles.writeRow(
+                  sheet.createRow(6),
+                  List.of("CL-004", "MAT-04", "FN-1004", "2026-10-05", "2026-11-05", "", "Court"));
+              sheet.getRow(6).createCell(5).setCellValue(980);
+              wb.setActiveSheet(1);
+              wb.setFirstVisibleTab(1);
+              wb.setSheetHidden(0, true);
+            });
+
+    UUID[] ids = uploadNeedingHeaderRow("debtors.xlsx", TakeOnTestApi.XLSX, workbook, "Debtors");
+    sheetThenValidate(ids, "Debtors");
+  }
+
+  @Test
+  void aCsvWithATitleLineUploadsAndIsReadFromTheChosenHeaderRow() throws Exception {
+    byte[] csv =
+        TakeOnTestFiles.csv(
+            "Debtors at cutover - exported 2026-10-31\n\n"
+                + String.join(",", DEBTOR_HEADER)
+                + "\n"
+                + "CL-001,MAT-01,FN-1001,2026-09-01,2026-10-01,1500.50,Consult\n"
+                + "CL-002,MAT-02,FN-1002,2026-09-15,2026-10-15,\"1,234\",Draft\n"
+                + "CL-003,MAT-03,FN-1003,2026-10-01,2026-10-31,350.00,Advice\n"
+                + "CL-004,MAT-04,FN-1004,2026-10-05,2026-11-05,980.00,Court\n");
+
+    UUID[] ids = uploadNeedingHeaderRow("debtors.csv", TakeOnTestApi.CSV, csv, "CSV");
+    TakeOnTestApi.sheet(mockMvc, owner(), ids[0], ids[1], null, 3)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.batch.sources[0].rowCount").value(4))
+        .andExpect(jsonPath("$.batch.sources[0].headerRow").value(3));
+    TakeOnTestApi.mapTargets(mockMvc, owner(), ids[0], ids[1], DEBTOR_TARGETS)
+        .andExpect(status().isOk());
+    TakeOnTestApi.position(mockMvc, owner(), ids[0], "2026-10-31").andExpect(status().isOk());
+    TakeOnTestApi.validate(mockMvc, owner(), ids[0])
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.counts.total").value(4))
+        .andExpect(jsonPath("$.counts.error").value(1));
+    assertRowError(rowsByNumber(ids[0]).get(5), "AMOUNT_AMBIGUOUS");
+  }
+
+  /**
+   * Uploads a readable file whose header row 1 yields no row: stored (file kept, no rows) with the
+   * header-row warning; the preview still answers; mapping and the dry run are refused until the
+   * header row is chosen.
+   */
+  private UUID[] uploadNeedingHeaderRow(
+      String fileName, String contentType, byte[] bytes, String expectedSheet) throws Exception {
+    String json =
+        TakeOnTestApi.upload(mockMvc, owner(), "DEBTOR_BALANCES", fileName, contentType, bytes)
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.warnings[0]").value(HEADER_ROW_WARNING))
+            .andExpect(jsonPath("$.batch.sources[0].rowCount").value(0))
+            .andExpect(jsonPath("$.batch.sources[0].sheetName").value(expectedSheet))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    UUID[] ids = {
+      UUID.fromString(JsonPath.read(json, "$.batch.id")),
+      UUID.fromString(JsonPath.read(json, "$.sourceId"))
+    };
+    assertThat(storageService.listKeys("take-on/" + schema + "/" + ids[0] + "/")).hasSize(1);
+    mockMvc
+        .perform(
+            get("/api/take-on/batches/" + ids[0] + "/sources/" + ids[1] + "/preview").with(owner()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.rows").isEmpty())
+        .andExpect(jsonPath("$.warnings[0]").value(HEADER_ROW_WARNING));
+    TakeOnTestApi.mapTargets(mockMvc, owner(), ids[0], ids[1], DEBTOR_TARGETS)
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.code").value("TAKE_ON_NO_ROWS"));
+    TakeOnTestApi.position(mockMvc, owner(), ids[0], "2026-10-31").andExpect(status().isOk());
+    TakeOnTestApi.validate(mockMvc, owner(), ids[0])
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.code").value("TAKE_ON_WRONG_STATE"));
+    return ids;
+  }
+
+  private void sheetThenValidate(UUID[] ids, String sheetName) throws Exception {
+    TakeOnTestApi.sheet(mockMvc, owner(), ids[0], ids[1], sheetName, 3)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.headers[0]").value("Client code"))
+        .andExpect(jsonPath("$.batch.sources[0].rowCount").value(4))
+        .andExpect(jsonPath("$.batch.sources[0].malformedCount").value(1));
+    TakeOnTestApi.mapTargets(mockMvc, owner(), ids[0], ids[1], DEBTOR_TARGETS)
+        .andExpect(status().isOk());
+    TakeOnTestApi.validate(mockMvc, owner(), ids[0])
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("VALIDATED"))
+        .andExpect(jsonPath("$.counts.total").value(4))
+        .andExpect(jsonPath("$.counts.error").value(2));
+    var byRow = rowsByNumber(ids[0]);
+    assertThat(byRow.keySet()).containsExactlyInAnyOrder(4, 5, 6, 7);
+    assertRowError(byRow.get(5), "AMOUNT_AMBIGUOUS");
+    assertRowError(byRow.get(6), "CELL_ERROR");
+  }
+
+  private Map<Integer, Map<String, Object>> rowsByNumber(UUID batchId) throws Exception {
+    var result = new HashMap<Integer, Map<String, Object>>();
+    for (var row :
+        TakeOnTestApi.rowContent(
+            TakeOnTestApi.rows(mockMvc, owner(), batchId, "size=200")
+                .andReturn()
+                .getResponse()
+                .getContentAsString())) {
+      result.put((Integer) row.get("rowNumber"), row);
+    }
+    return result;
+  }
+
+  @SuppressWarnings("unchecked")
+  private static void assertRowError(Map<String, Object> row, String code) {
+    assertThat(row.get("status")).isEqualTo("ERROR");
+    assertThat((List<Map<String, Object>>) row.get("errors"))
+        .anySatisfy(e -> assertThat(e.get("code")).isEqualTo(code));
   }
 
   private ResultActions refused(String fileName, String contentType, byte[] bytes, String code)

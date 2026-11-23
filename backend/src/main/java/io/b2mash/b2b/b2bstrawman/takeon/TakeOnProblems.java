@@ -43,6 +43,16 @@ public final class TakeOnProblems {
         message);
   }
 
+  /** Mapping a file kept with no rows (OBS F-1): the sheet and header row come first. */
+  public static TakeOnProblemException noRows() {
+    return new TakeOnProblemException(
+        HttpStatus.CONFLICT,
+        "TAKE_ON_NO_ROWS",
+        "No rows to map",
+        "No row of this file has been read yet. Choose the sheet and the row that holds the column"
+            + " names first.");
+  }
+
   public static TakeOnProblemException concurrentChange() {
     return new TakeOnProblemException(
         HttpStatus.CONFLICT,

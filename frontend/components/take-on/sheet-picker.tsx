@@ -98,7 +98,8 @@ export function SheetPicker({ batchId, source, onDone }: SheetPickerProps) {
     const unchanged =
       parsed.data.headerRow === source.headerRow &&
       (!isXlsx || parsed.data.sheetName === source.sheetName);
-    if (unchanged) {
+    // A file kept with no rows (OBS F-1) is re-read even when unchanged: the backend says why.
+    if (unchanged && source.rowCount > 0) {
       onDone(null);
       return;
     }

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { SWRConfig } from "swr";
@@ -16,14 +16,7 @@ vi.mock("@/app/(app)/org/[slug]/settings/matters/take-on-actions", () => actions
 
 import { AttestationStep } from "@/components/take-on/attestation-step";
 import type { TakeOnBatch } from "@/lib/types";
-import {
-  ATTEST_TEXT,
-  ATTESTATION,
-  CLIENTS_CATALOGUE,
-  clientRow,
-  clientsBatch,
-  emptyRowPage,
-} from "./fixtures";
+import { ATTEST_TEXT, ATTESTATION, CLIENTS_CATALOGUE, clientsBatch } from "./fixtures";
 
 function renderStep(batch: TakeOnBatch, onBatchChange = vi.fn(), onCommitted = vi.fn()) {
   const ui: ReactNode = (
@@ -37,10 +30,6 @@ function renderStep(batch: TakeOnBatch, onBatchChange = vi.fn(), onCommitted = v
   render(<SWRConfig value={{ provider: () => new Map(), dedupingInterval: 0 }}>{ui}</SWRConfig>);
   return { onBatchChange, onCommitted };
 }
-
-beforeEach(() => {
-  actions.fetchTakeOnRows.mockResolvedValue(emptyRowPage);
-});
 
 afterEach(() => {
   cleanup();
@@ -130,34 +119,44 @@ describe("AttestationStep — attest", () => {
     expect(onBatchChange).not.toHaveBeenCalled();
   });
 
-  it("counts the FICA columns of the clients to be created (duplicates left out), never as codes", async () => {
-    actions.fetchTakeOnRows.mockResolvedValue({
-      success: true,
-      data: {
-        content: [
-          clientRow(2, { riskRating: "LOW", screeningStatus: "SCREENED_CLEAR" }),
-          clientRow(3, { riskRating: "UNRATED", screeningStatus: "NOT_SCREENED" }),
-          clientRow(4, { riskRating: "LOW", screeningStatus: "SCREENED_CLEAR" }),
-          clientRow(5, { riskRating: "HIGH" }, { duplicateOfId: "existing-client" }),
-        ],
-        page: { totalElements: 4, totalPages: 1, size: 200, number: 0 },
-      },
-    });
-    renderStep(clientsBatch());
-    expect(await screen.findByTestId("take-on-fica-summary-riskRating")).toHaveTextContent(
+  it("shows the FICA columns the backend counted at validation, as labels in catalogue order, without reading the rows", () => {
+    renderStep(
+      clientsBatch({
+        summary: {
+          clients: 3,
+          fica: {
+            ficaClientType: { NATURAL_PERSON: 3 },
+            riskRating: { UNRATED: 1, LOW: 2 },
+            beneficialOwnershipStatus: { NOT_APPLICABLE: 3 },
+            screeningStatus: { NOT_SCREENED: 1, SCREENED_CLEAR: 2 },
+            sourceOfFundsStatus: {},
+          },
+        },
+      })
+    );
+    expect(screen.getByTestId("take-on-fica-summary-riskRating")).toHaveTextContent(
       "Low 2 · Not risk-rated 1"
     );
     expect(screen.getByTestId("take-on-fica-summary-screeningStatus")).toHaveTextContent(
       "Screened — clear 2 · Not screened 1"
     );
+    expect(screen.getByTestId("take-on-fica-summary-ficaClientType")).toHaveTextContent(
+      "Natural person 3"
+    );
+    expect(screen.getByTestId("take-on-fica-summary-sourceOfFundsStatus")).toHaveTextContent("—");
     expect(screen.getByTestId("take-on-attestation-fica-summary")).toHaveTextContent(
       "of the 3 clients to be created"
     );
-    expect(actions.fetchTakeOnRows).toHaveBeenCalledWith("batch-655", {
-      status: "VALIDATED",
-      page: 0,
-      size: 200,
-    });
+    expect(actions.fetchTakeOnRows).not.toHaveBeenCalled();
+  });
+
+  it("asks for a re-validation when the batch carries no FICA summary", () => {
+    renderStep(clientsBatch({ summary: {} }));
+    expect(screen.getByTestId("take-on-attestation-fica-summary-missing")).toHaveTextContent(
+      "Validate the batch again to see the FICA columns summarised."
+    );
+    expect(screen.queryByTestId("take-on-fica-summary-riskRating")).not.toBeInTheDocument();
+    expect(actions.fetchTakeOnRows).not.toHaveBeenCalled();
   });
 });
 

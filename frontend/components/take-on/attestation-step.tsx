@@ -1,14 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import useSWR from "swr";
 import { Button } from "@b2mash/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  attest,
-  fetchTakeOnRows,
-  revokeSignOff,
-} from "@/app/(app)/org/[slug]/settings/matters/take-on-actions";
+import { attest, revokeSignOff } from "@/app/(app)/org/[slug]/settings/matters/take-on-actions";
 import { formatDateTime } from "@/lib/format";
 import {
   TAKE_ON_CLIENT_VALUE_LABEL,
@@ -19,7 +14,7 @@ import {
 import { CommitTakeOnDialog } from "./commit-dialog";
 import { TakeOnError } from "./take-on-feedback";
 
-/** The FICA columns the summary counts (catalogue keys of the clients dataset). */
+/** The FICA columns the backend summarises at validation (catalogue keys of the clients dataset). */
 const FICA_FIELDS: ReadonlyArray<readonly [string, string]> = [
   ["ficaClientType", "Client type"],
   ["riskRating", "Risk rating"],
@@ -27,8 +22,6 @@ const FICA_FIELDS: ReadonlyArray<readonly [string, string]> = [
   ["screeningStatus", "Screening"],
   ["sourceOfFundsStatus", "Source of funds"],
 ];
-const PAGE_SIZE = 200; // the rows endpoint's maximum
-const MAX_PAGES = 50; // 10 000 rows, the batch maximum
 
 /** The backend's TAKE_ON_NOTHING_TO_ATTEST text, shown before anyone tries. */
 const NOTHING_TO_ATTEST =
@@ -36,6 +29,7 @@ const NOTHING_TO_ATTEST =
 const NOT_PERMITTED =
   "Attesting needs permission to manage compliance and clients. Ask an owner or admin.";
 const NO_STATEMENT = "The attestation statement could not be loaded. Reload the take-on.";
+const NO_SUMMARY = "Validate the batch again to see the FICA columns summarised.";
 
 /** The batch defaults the attestation repeats back: exactly the source's mapping defaults (D-89). */
 export function batchDefaults(batch: TakeOnBatch): Record<string, string> {
@@ -46,34 +40,27 @@ export function liveAttestation(batch: TakeOnBatch): TakeOnSignOff | null {
   return batch.signOffs.find((s) => s.kind === "FICA_ATTESTATION") ?? null;
 }
 
-interface FicaSummary {
-  clients: number;
-  byField: Record<string, Record<string, number>>;
-}
-
-/** Counts the FICA columns over the valid rows that will become clients (duplicates excluded). */
-async function summariseFica(batchId: string): Promise<FicaSummary> {
-  const byField: Record<string, Record<string, number>> = Object.fromEntries(
-    FICA_FIELDS.map(([key]) => [key, {}])
+/**
+ * One FICA column's counts as "Label n · Label n", in the catalogue's value order (else the label
+ * map's, which follows it) — labels, never codes; "—" when nothing was counted.
+ */
+function ficaCounts(
+  key: string,
+  counts: Record<string, number> | undefined,
+  allowedValues: string[] | null | undefined
+): string {
+  const order = allowedValues ?? Object.keys(TAKE_ON_CLIENT_VALUE_LABEL[key] ?? {});
+  const rank = (value: string) => {
+    const i = order.indexOf(value);
+    return i < 0 ? order.length : i;
+  };
+  return (
+    Object.entries(counts ?? {})
+      .filter(([, n]) => n > 0)
+      .sort(([a], [b]) => rank(a) - rank(b))
+      .map(([value, n]) => `${TAKE_ON_CLIENT_VALUE_LABEL[key]?.[value] ?? value} ${n}`)
+      .join(" · ") || "—"
   );
-  let clients = 0;
-  for (let page = 0, pages = 1; page < pages && page < MAX_PAGES; page++) {
-    const result = await fetchTakeOnRows(batchId, { status: "VALIDATED", page, size: PAGE_SIZE });
-    if (!result.success || !result.data) {
-      throw new Error(result.error ?? "The FICA columns could not be summarised.");
-    }
-    pages = result.data.page.totalPages;
-    for (const row of result.data.content) {
-      if (row.duplicateOfId) continue;
-      clients++;
-      for (const [key] of FICA_FIELDS) {
-        const raw = row.values?.[key];
-        const value = typeof raw === "string" ? raw : "";
-        byField[key][value] = (byField[key][value] ?? 0) + 1;
-      }
-    }
-  }
-  return { clients, byField };
 }
 
 interface AttestationStepProps {
@@ -106,15 +93,14 @@ export function AttestationStep({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const summary = useSWR(
-    validated ? `take-on-fica-summary-${batch.id}-${batch.validatedAt ?? "none"}` : null,
-    () => summariseFica(batch.id)
-  );
-
-  const ficaSummary = summary.data;
-  const fieldLabel = new Map(
-    dataset.sections.flatMap((s) => s.fields.map((f) => [f.key, f.label] as const))
-  );
+  // Counted by the backend at validation (take_on_batches.summary) — no rows reach the browser.
+  const ficaSummary =
+    batch.summary?.fica && typeof batch.summary.clients === "number"
+      ? { clients: batch.summary.clients, byField: batch.summary.fica }
+      : null;
+  const catalogueFields = dataset.sections.flatMap((s) => s.fields);
+  const fieldLabel = new Map(catalogueFields.map((f) => [f.key, f.label] as const));
+  const fieldValues = new Map(catalogueFields.map((f) => [f.key, f.allowedValues] as const));
 
   async function submit(call: () => ReturnType<typeof attest>, fallback: string) {
     setError(null);
@@ -217,14 +203,13 @@ export function AttestationStep({
               </span>
             )}
           </h4>
-          {summary.error && (
-            <TakeOnError
-              message={String(summary.error.message)}
-              testId="take-on-attestation-fica-summary-error"
-            />
-          )}
-          {!ficaSummary && !summary.error && (
-            <p className="text-sm text-slate-500 dark:text-slate-400">Counting the rows…</p>
+          {!ficaSummary && (
+            <p
+              className="text-sm text-slate-500 dark:text-slate-400"
+              data-testid="take-on-attestation-fica-summary-missing"
+            >
+              {NO_SUMMARY}
+            </p>
           )}
           {ficaSummary && (
             <dl className="grid gap-x-6 gap-y-1 text-sm sm:grid-cols-[max-content_1fr]">
@@ -237,12 +222,7 @@ export function AttestationStep({
                     className="text-slate-900 dark:text-slate-100"
                     data-testid={`take-on-fica-summary-${key}`}
                   >
-                    {Object.entries(ficaSummary.byField[key])
-                      .map(
-                        ([value, n]) =>
-                          `${value ? (TAKE_ON_CLIENT_VALUE_LABEL[key]?.[value] ?? value) : "Not given"} ${n}`
-                      )
-                      .join(" · ") || "—"}
+                    {ficaCounts(key, ficaSummary.byField[key], fieldValues.get(key))}
                   </dd>
                 </div>
               ))}

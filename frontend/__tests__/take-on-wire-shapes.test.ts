@@ -65,6 +65,7 @@ const BATCH: Required<TakeOnBatch> = {
   lastError: null,
   signOffs: [],
   attestationStatement: null,
+  summary: null,
 };
 
 // Each literal is typed Required<T>: a missing or extra key fails `pnpm typecheck`; the runtime

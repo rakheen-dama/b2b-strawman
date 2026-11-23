@@ -123,6 +123,7 @@ const BATCH: TakeOnBatch = {
   lastError: null,
   signOffs: [],
   attestationStatement: null,
+  summary: null,
 };
 
 function routeGets(batch: () => Promise<unknown>) {

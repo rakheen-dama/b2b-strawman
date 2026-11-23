@@ -143,6 +143,7 @@ function batch(overrides: Partial<TakeOnBatch> = {}): TakeOnBatch {
     lastError: null,
     signOffs: [],
     attestationStatement: null,
+    summary: null,
     ...overrides,
   };
 }

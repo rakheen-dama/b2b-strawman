@@ -216,46 +216,15 @@ export async function createPortalContacts(
   return run(() => api.post<TakeOnPortalContactsResult>(`${batchPath(batchId)}/portal-contacts`));
 }
 
-export interface TakeOnResultFile {
-  fileName: string;
-  content: string;
-}
-
-/** GET …/result.csv — one line per row with its outcome (raw fetch, like the template). */
+/** GET …/result.csv — one line per row with its outcome. */
 export async function downloadTakeOnResult(
   batchId: string
-): Promise<TakeOnActionResult<TakeOnResultFile>> {
-  const refused = "The result report could not be downloaded. Try again.";
-  try {
-    const authOptions = await getAuthFetchOptions("GET");
-    const response = await fetch(`${API_BASE}${batchPath(batchId)}/result.csv`, {
-      method: "GET",
-      headers: { ...authOptions.headers },
-      credentials: authOptions.credentials,
-      cache: "no-store",
-    });
-    if (!response.ok) {
-      let message = refused;
-      try {
-        const detail = await response.json();
-        message = detail?.detail || message;
-      } catch {
-        // not JSON — keep the generic text
-      }
-      return { success: false, error: message };
-    }
-    const disposition = response.headers.get("content-disposition") ?? "";
-    const match = disposition.match(/filename="?([^";]+)"?/i);
-    return {
-      success: true,
-      data: {
-        fileName: match?.[1] ?? `take-on-result-${batchId}.csv`,
-        content: await response.text(),
-      },
-    };
-  } catch {
-    return { success: false, error: refused };
-  }
+): Promise<TakeOnActionResult<TakeOnCsvFile>> {
+  return downloadTakeOnCsv(
+    `${batchPath(batchId)}/result.csv`,
+    `take-on-result-${batchId}.csv`,
+    "The result report could not be downloaded. Try again."
+  );
 }
 
 // ── Reads for the client steps (SWR fetchers call these) ───────────────
@@ -343,36 +312,60 @@ export async function fetchTakeOnBankingAccounts(): Promise<
   }
 }
 
-export interface TakeOnTemplateFile {
-  fileName: string;
-  content: string;
-}
-
 /** GET /api/take-on/templates/{dataset} — a CSV with the columns and one fictional row. */
 export async function downloadTakeOnTemplate(
   dataset: TakeOnDataset,
   section?: TakeOnSection
-): Promise<TakeOnActionResult<TakeOnTemplateFile>> {
+): Promise<TakeOnActionResult<TakeOnCsvFile>> {
+  const query = section ? `?section=${encodeURIComponent(section)}` : "";
+  return downloadTakeOnCsv(
+    `/api/take-on/templates/${dataset}${query}`,
+    `take-on-${dataset.toLowerCase().replace(/_/g, "-")}.csv`,
+    "The template could not be downloaded. Try again."
+  );
+}
+
+/** A downloaded CSV: the browser saves `content` as `fileName` from a Blob (D-43). */
+export interface TakeOnCsvFile {
+  fileName: string;
+  content: string;
+}
+
+/**
+ * Reads a take-on CSV download (raw fetch: the bytes, with the file name from
+ * Content-Disposition, else `fallbackName`). A refusal shows the backend's `detail` when it sends
+ * one, else `refusedText`.
+ */
+async function downloadTakeOnCsv(
+  path: string,
+  fallbackName: string,
+  refusedText: string
+): Promise<TakeOnActionResult<TakeOnCsvFile>> {
   try {
     const authOptions = await getAuthFetchOptions("GET");
-    const query = section ? `?section=${encodeURIComponent(section)}` : "";
-    const response = await fetch(`${API_BASE}/api/take-on/templates/${dataset}${query}`, {
+    const response = await fetch(`${API_BASE}${path}`, {
       method: "GET",
       headers: { ...authOptions.headers },
       credentials: authOptions.credentials,
       cache: "no-store",
     });
     if (!response.ok) {
-      return { success: false, error: "The template could not be downloaded. Try again." };
+      let message = refusedText;
+      try {
+        const detail = await response.json();
+        message = detail?.detail || message;
+      } catch {
+        // not JSON — keep the generic text
+      }
+      return { success: false, error: message };
     }
     const disposition = response.headers.get("content-disposition") ?? "";
     const match = disposition.match(/filename="?([^";]+)"?/i);
-    const fallback = `take-on-${dataset.toLowerCase().replace(/_/g, "-")}.csv`;
     return {
       success: true,
-      data: { fileName: match?.[1] ?? fallback, content: await response.text() },
+      data: { fileName: match?.[1] ?? fallbackName, content: await response.text() },
     };
   } catch {
-    return { success: false, error: "The template could not be downloaded. Try again." };
+    return { success: false, error: refusedText };
   }
 }

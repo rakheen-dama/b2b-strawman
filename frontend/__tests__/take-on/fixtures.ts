@@ -1,9 +1,9 @@
 import type {
   TakeOnBatch,
   TakeOnDatasetCatalogue,
-  TakeOnRow,
   TakeOnSignOff,
   TakeOnSource,
+  TakeOnValidationSummary,
 } from "@/lib/types";
 
 /**
@@ -97,6 +97,18 @@ export const ATTESTATION: TakeOnSignOff = {
 };
 
 /** A validated clients batch: 10 valid rows (2 duplicates of existing clients), 2 errors. */
+/** The stored validation summary of clientsBatch(): 10 valid − 2 duplicates = 8 clients. */
+export const CLIENTS_SUMMARY: TakeOnValidationSummary = {
+  clients: 8,
+  fica: {
+    ficaClientType: { NATURAL_PERSON: 5, COMPANY: 3 },
+    riskRating: { LOW: 6, UNRATED: 2 },
+    beneficialOwnershipStatus: { NOT_APPLICABLE: 5, DONE: 3 },
+    screeningStatus: { SCREENED_CLEAR: 7, NOT_SCREENED: 1 },
+    sourceOfFundsStatus: { NOT_REQUIRED: 8 },
+  },
+};
+
 export function clientsBatch(overrides: Partial<TakeOnBatch> = {}): TakeOnBatch {
   return {
     id: "batch-655",
@@ -126,33 +138,7 @@ export function clientsBatch(overrides: Partial<TakeOnBatch> = {}): TakeOnBatch 
     lastError: null,
     signOffs: [],
     attestationStatement: { version: "FICA-ATTEST-v1", text: ATTEST_TEXT },
+    summary: CLIENTS_SUMMARY,
     ...overrides,
   };
 }
-
-export function clientRow(
-  rowNumber: number,
-  values: Record<string, unknown>,
-  overrides: Partial<TakeOnRow> = {}
-): TakeOnRow {
-  return {
-    id: `row-${rowNumber}`,
-    section: "MAIN",
-    rowNumber,
-    sourceRef: `C-${rowNumber}`,
-    status: "VALIDATED",
-    block: false,
-    values,
-    errors: [],
-    warnings: [],
-    duplicateOfId: null,
-    failureReason: null,
-    resultEntityId: null,
-    ...overrides,
-  };
-}
-
-export const emptyRowPage = {
-  success: true,
-  data: { content: [], page: { totalElements: 0, totalPages: 0, size: 200, number: 0 } },
-};

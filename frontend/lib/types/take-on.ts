@@ -156,6 +156,18 @@ export interface TakeOnAttestationStatement {
   text: string;
 }
 
+/**
+ * TakeOnBatchResponse.summary — the dry run's stored summary (take_on_batches.summary), present
+ * from validation on (VALIDATED, COMMITTING, COMPLETED), else null. Per dataset; CLIENTS (655A):
+ * the FICA columns counted over the rows that will become clients.
+ */
+export interface TakeOnValidationSummary {
+  /** CLIENTS: the valid rows that will become clients (existing-client matches excluded). */
+  clients?: number;
+  /** CLIENTS: FICA field key → stored value → rows. */
+  fica?: Record<string, Record<string, number>>;
+}
+
 /** TakeOnBatchResponse */
 export interface TakeOnBatch {
   id: string;
@@ -178,6 +190,7 @@ export interface TakeOnBatch {
   signOffs: TakeOnSignOff[];
   /** Non-null only for a VALIDATED clients batch. */
   attestationStatement: TakeOnAttestationStatement | null;
+  summary: TakeOnValidationSummary | null;
 }
 
 /** TakeOnBatchSummaryResponse */

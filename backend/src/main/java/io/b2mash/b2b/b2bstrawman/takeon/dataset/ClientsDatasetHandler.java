@@ -72,6 +72,10 @@ public class ClientsDatasetHandler
   public static final String COUNTRY_INVALID = "COUNTRY_INVALID";
   public static final String ADDRESS_MISSING = "ADDRESS_MISSING";
 
+  static final String CUSTOM_FIELD_REFUSED_MESSAGE =
+      "A custom field value was refused. Correct it in the previous system, then take it on in a"
+          + " new batch.";
+
   static final String ROW_FAILED_MESSAGE =
       "This row could not be committed. Correct it in the previous system, then take it on in a"
           + " new batch.";
@@ -388,8 +392,10 @@ public class ClientsDatasetHandler
             .contains("uq_customers_email")) {
       return EMAIL_TAKEN_MESSAGE; // created in the UI while this row was committing
     }
-    if (failure instanceof InvalidStateException invalid && invalid.getBody().getDetail() != null) {
-      return "A custom field value was refused: " + invalid.getBody().getDetail();
+    if (failure instanceof InvalidStateException) {
+      // Fixed text: the validator's detail may quote the cell, and a row's failure reason is not
+      // redacted on anonymisation (it must stay value-free).
+      return CUSTOM_FIELD_REFUSED_MESSAGE;
     }
     return ROW_FAILED_MESSAGE;
   }

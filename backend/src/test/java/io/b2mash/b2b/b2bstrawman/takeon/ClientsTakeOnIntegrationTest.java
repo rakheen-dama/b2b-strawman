@@ -425,7 +425,9 @@ class ClientsTakeOnIntegrationTest {
     var byRef = rowsByRef(batch.batchId());
     assertThat(byRef.get("S-1").get("status")).isEqualTo("FAILED");
     assertThat(failureReason(batch.batchId(), "S-1"))
-        .startsWith("A custom field value was refused: ");
+        .isEqualTo(
+            "A custom field value was refused. Correct it in the previous system, then take it on"
+                + " in a new batch.");
     assertThat(byRef.get("S-2").get("status")).isEqualTo("CREATED");
     assertThat(
             count(

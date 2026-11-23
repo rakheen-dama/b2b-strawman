@@ -1,0 +1,13 @@
+Backend	Test	2026-11-23T16:35:28.0982839Z [INFO] Running io.b2mash.b2b.b2bstrawman.reporting.ReportAuditConnectionBudgetIntegrationTest
+Backend	Test	2026-11-23T16:35:47.2808872Z [ERROR] Tests run: 4, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 19.18 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.reporting.ReportAuditConnectionBudgetIntegrationTest
+Backend	Test	2026-11-23T16:35:47.2817372Z [ERROR] io.b2mash.b2b.b2bstrawman.reporting.ReportAuditConnectionBudgetIntegrationTest.execute_auditWriteHoldsAtMostOneConnection -- Time elapsed: 0.018 s <<< FAILURE!
+Backend	Test	2026-11-23T16:35:47.2819201Z [connections checked out while the audit row is written; idle=0 samples={duringAuditWrite=2}] 
+Backend	Test	2026-11-23T16:35:47.2820028Z expected: 1
+Backend	Test	2026-11-23T16:35:47.2820307Z  but was: 2
+Backend	Test	2026-11-23T16:35:47.2822804Z [INFO] Running io.b2mash.b2b.b2bstrawman.mcp.McpToolContractTest
+Backend	Test	2026-11-23T16:35:47.8326846Z {"@timestamp":"2026-11-23T16:35:47.763771468Z","log":{"level":"ERROR","logger":"io.b2mash.b2b.b2bstrawman.multitenancy.TenantScopedRunner"},"process":{"pid":2606,"thread":{"name":"virtual-1778"}},"service":{"name":"bac
+Backend	Test	2026-11-23T16:35:47.8469603Z {"@timestamp":"2026-11-23T16:35:47.765621286Z","log":{"level":"ERROR","logger":"io.b2mash.b2b.b2bstrawman.multitenancy.TenantScopedRunner"},"process":{"pid":2606,"thread":{"name":"virtual-1778"}},"service":{"name":"bac
+Backend	Test	2026-11-23T16:34:07.0307811Z {"@timestamp":"2026-11-23T16:34:07.010983549Z","log":{"level":"ERROR","logger":"io.b2mash.b2b.b2bstrawman.multitenancy.TenantScopedRunner"},"process":{"pid":2
+Backend	Test	2026-11-23T16:34:07.0538170Z {"@timestamp":"2026-11-23T16:34:07.012971240Z","log":{"level":"ERROR","logger":"io.b2mash.b2b.b2bstrawman.multitenancy.TenantScopedRunner"},"process":{"pid":2
+Backend	Test	2026-11-23T16:34:24.2776600Z {"@timestamp":"2026-11-23T16:34:24.129926747Z","log":{"level":"ERROR","logger":"io.b2mash.b2b.b2bstrawman.multitenancy.TenantScopedRunner"},"process":{"pid":2
+Backend	Test	2026-11-23T16:34:24.2867143Z {"@timestamp":"2026-11-23T16:34:24.131867134Z","log":{"level":"ERROR","logger":"io.b2mash.b2b.b2bstrawman.multitenancy.TenantScopedRunner"},"process":{"pid":2

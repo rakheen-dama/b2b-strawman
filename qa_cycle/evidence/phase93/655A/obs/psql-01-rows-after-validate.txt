@@ -1,0 +1,29 @@
+ row_number |  status   | dup |           duplicate_of_id            | risk_mapped | risk_raw  |                                                       errors                                                        
+------------+-----------+-----+--------------------------------------+-------------+-----------+---------------------------------------------------------------------------------------------------------------------
+          2 | VALIDATED | f   |                                      | LOW         | LOW       | []
+          3 | VALIDATED | f   |                                      | MEDIUM      | MEDIUM    | []
+          4 | VALIDATED | f   |                                      | HIGH        | HIGH      | []
+          5 | VALIDATED | f   |                                      | UNRATED     | UNRATED   | []
+          6 | VALIDATED | f   |                                      | MEDIUM      | MEDIUM    | []
+          7 | VALIDATED | f   |                                      | LOW         | LOW       | []
+          8 | VALIDATED | f   |                                      | MEDIUM      | MEDIUM    | []
+          9 | VALIDATED | f   |                                      | LOW         | LOW       | []
+         10 | VALIDATED | f   |                                      | LOW         | LOW       | []
+         11 | VALIDATED | f   |                                      | MEDIUM      | MEDIUM    | []
+         12 | VALIDATED | f   |                                      | LOW         | LOW       | []
+         13 | VALIDATED | f   |                                      | LOW         | LOW       | []
+         14 | VALIDATED | f   |                                      | MEDIUM      | MEDIUM    | []
+         15 | VALIDATED | f   |                                      | LOW         | LOW       | []
+         16 | VALIDATED | f   |                                      | LOW         | LOW       | []
+         17 | ERROR     | f   |                                      | LOW         | LOW       | [{"code": "DUPLICATE_IN_FILE", "field": "email", "message": "Duplicate of row 2 in this file"}]
+         18 | VALIDATED | t   | cfed538d-392d-4e61-812c-784d9867a0d9 | LOW         | LOW       | []
+         19 | ERROR     | f   |                                      | UNRATED     | VERY_HIGH | [{"code": "ENUM_INVALID", "field": "riskRating", "message": "VERY_HIGH is not one of: Low, Medium, High, Unrated"}]
+         20 | ERROR     | f   |                                      | LOW         | LOW       | [{"code": "REQUIRED", "field": "name", "message": "Client name is required."}]
+         21 | ERROR     | f   |                                      | LOW         | LOW       | [{"code": "REQUIRED", "field": "email", "message": "An email address is required to create a client in Kazi"}]
+(20 rows)
+
+                  id                  |   name    |          email           | lifecycle_status 
+--------------------------------------+-----------+--------------------------+------------------
+ cfed538d-392d-4e61-812c-784d9867a0d9 | Acme Corp | contact@acme.example.com | ACTIVE
+(1 row)
+

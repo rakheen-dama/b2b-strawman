@@ -1,0 +1,104 @@
++27 11 555 0105
++27 11 555 0117
++27 12 555 0110
++27 31 555 0111
++27 49 555 0107
++27 71 555 0115
++27 72 555 0104
++27 73 555 0106
++27 74 555 0118
++27 76 555 0109
++27 78 555 0119
++27 79 555 0112
++27 81 555 0113
++27 82 555 0101
++27 82 555 0108
++27 82 555 0114
++27 82 555 0116
++27 82 555 0120
++27 83 555 0102
++27 84 555 0103
+6611095800083
+7404045800088
+7712125800094
+7907215800082
+8207075800093
+8312125800100
+8503125800081
+8612125800091
+8808085800086
+8909095800098
+9003035800092
+9101015800099
+9123456705
+9202285800084
+9234567807
+9345678910
+9406065800095
+9511115800089
+Acme Corporation
+Ayanda Zulu
+Bongani Nkosi Trading (Pty) Ltd
+Botha
+Contact@acme.example.com
+Corporation
+Dlamini
+Farah Patel
+Johan Pretorius
+Kagiso Mahlangu
+Karoo Sunrise Family Trust
+Khoza
+Lerato Molefe
+Lindiwe Mabaso
+Mabaso
+Mahlangu
+Merwe
+Mokoena
+Molefe
+Mpho Sithole Plumbing CC
+Mthembu
+Naledi Khoza
+Ndaba
+Nomvula Ndaba
+Patel
+Pieter van der Merwe
+Pretorius
+Radebe
+Riaan Botha
+Sibusiso Radebe
+Sipho Dlamini
+T. Mokoena
+Thandiwe Mokoena
+Zanele Mthembu
+Zulu
+accounts@bongani-trading.example.test
+ayanda.zulu
+ayanda.zulu@example.test
+farah.patel
+farah.patel@example.test
+info@mphosithole.example.test
+johan.pretorius
+johan.pretorius@example.test
+kagiso.mahlangu
+kagiso.mahlangu@example.test
+lerato.molefe
+lerato.molefe@example.test
+lindiwe.mabaso
+lindiwe.mabaso@example.test
+naledi.khoza
+naledi.khoza@example.test
+nomvula.ndaba
+nomvula.ndaba@example.test
+olwethu.cele
+olwethu.cele@example.test
+pieter.vdmerwe
+pieter.vdmerwe@example.test
+riaan.botha
+riaan.botha@example.test
+sipho.dlamini
+sipho.dlamini@example.test
+thandiwe.mokoena
+thandiwe.mokoena@example.test
+trustees@karoosunrise.example.test
+zanele.mthembu
+zanele.mthembu@example.test

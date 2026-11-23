@@ -1,0 +1,58 @@
+-- OBS window start (before upload): 2026-11-23T22:33:54Z
+-- query: select occurred_at, event_type, entity_type, entity_id, details::text from tenant_7d218705360b.audit_events where occurred_at >= '2026-11-23T22:33:54Z' and (event_type like 'takeon.%' or event_type in ('customer.fica_attested','customer.created')) order by occurred_at
+          occurred_at          |           event_type           |  entity_type   |              entity_id               |                                                                                                                  details                                                                                                                  
+-------------------------------+--------------------------------+----------------+--------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 2026-11-23 22:33:56.182301+00 | takeon.batch.created           | take_on_batch  | c0ff1410-7fe4-463b-aff1-5b02af044fbb | {"dataset": "CLIENTS", "batch_id": "c0ff1410-7fe4-463b-aff1-5b02af044fbb", "actor_name": "Alice Owner"}
+ 2026-11-23 22:33:56.182895+00 | takeon.source.uploaded         | take_on_source | d2073b0a-0102-491d-a1b8-c1df38f28d93 | {"section": "MAIN", "batch_id": "c0ff1410-7fe4-463b-aff1-5b02af044fbb", "row_count": 20, "source_id": "d2073b0a-0102-491d-a1b8-c1df38f28d93", "actor_name": "Alice Owner", "file_format": "CSV", "file_size_kb": 4, "malformed_count": 0}
+ 2026-11-23 22:33:58.279633+00 | takeon.source.mapped           | take_on_source | d2073b0a-0102-491d-a1b8-c1df38f28d93 | {"batch_id": "c0ff1410-7fe4-463b-aff1-5b02af044fbb", "source_id": "d2073b0a-0102-491d-a1b8-c1df38f28d93", "actor_name": "Alice Owner", "custom_field_count": 0, "mapped_field_count": 16, "parked_column_count": 0}
+ 2026-11-23 22:33:58.41794+00  | takeon.batch.validated         | take_on_batch  | c0ff1410-7fe4-463b-aff1-5b02af044fbb | {"dataset": "CLIENTS", "batch_id": "c0ff1410-7fe4-463b-aff1-5b02af044fbb", "actor_name": "Alice Owner", "error_rows": 4, "total_rows": 20, "valid_rows": 16, "block_count": 0, "duplicate_rows": 1}
+ 2026-11-23 22:34:51.374184+00 | takeon.batch.attested          | take_on_batch  | c0ff1410-7fe4-463b-aff1-5b02af044fbb | {"batch_id": "c0ff1410-7fe4-463b-aff1-5b02af044fbb", "row_count": 15, "actor_name": "Alice Owner", "sign_off_id": "540eefb1-c984-4659-9129-cb93fc7720bd", "statement_version": "FICA-ATTEST-v1"}
+ 2026-11-23 22:35:03.694114+00 | takeon.batch.commit_requested  | take_on_batch  | c0ff1410-7fe4-463b-aff1-5b02af044fbb | {"dataset": "CLIENTS", "batch_id": "c0ff1410-7fe4-463b-aff1-5b02af044fbb", "actor_name": "Alice Owner", "sign_off_id": "540eefb1-c984-4659-9129-cb93fc7720bd"}
+ 2026-11-23 22:35:05.1659+00   | customer.created               | customer       | af176849-24b8-462a-a35f-68883d831ef6 | {"source": "TAKE_ON", "actor_name": "Alice Owner", "take_on_batch_id": "c0ff1410-7fe4-463b-aff1-5b02af044fbb"}
+ 2026-11-23 22:35:05.171193+00 | customer.fica_attested         | customer       | af176849-24b8-462a-a35f-68883d831ef6 | {"actor_name": "Alice Owner", "attestation_id": "8acb964f-0a2d-44d6-af1d-e93b9107d606", "take_on_batch_id": "c0ff1410-7fe4-463b-aff1-5b02af044fbb"}
+ 2026-11-23 22:35:05.186094+00 | customer.created               | customer       | 86053e12-2ff7-433a-90e1-eea02a11233e | {"source": "TAKE_ON", "actor_name": "Alice Owner", "take_on_batch_id": "c0ff1410-7fe4-463b-aff1-5b02af044fbb"}
+ 2026-11-23 22:35:05.186483+00 | customer.fica_attested         | customer       | 86053e12-2ff7-433a-90e1-eea02a11233e | {"actor_name": "Alice Owner", "attestation_id": "c3d2f33f-79e7-4143-9837-063304d1e024", "take_on_batch_id": "c0ff1410-7fe4-463b-aff1-5b02af044fbb"}
+ 2026-11-23 22:35:05.195302+00 | customer.created               | customer       | f59e3a7c-a4fe-4289-87f1-675bab0c273d | {"source": "TAKE_ON", "actor_name": "Alice Owner", "take_on_batch_id": "c0ff1410-7fe4-463b-aff1-5b02af044fbb"}
+ 2026-11-23 22:35:05.195622+00 | customer.fica_attested         | customer       | f59e3a7c-a4fe-4289-87f1-675bab0c273d | {"actor_name": "Alice Owner", "attestation_id": "37627e9b-6c0b-4d74-9702-cc8511f40e1b", "take_on_batch_id": "c0ff1410-7fe4-463b-aff1-5b02af044fbb"}
+ 2026-11-23 22:35:05.202988+00 | customer.created               | customer       | c854c32f-9b6d-4b49-a891-afb5c5ea7c52 | {"source": "TAKE_ON", "actor_name": "Alice Owner", "take_on_batch_id": "c0ff1410-7fe4-463b-aff1-5b02af044fbb"}
+ 2026-11-23 22:35:05.203389+00 | customer.fica_attested         | customer       | c854c32f-9b6d-4b49-a891-afb5c5ea7c52 | {"actor_name": "Alice Owner", "attestation_id": "5033b4c8-6284-4eb1-9752-96263e4f39ae", "take_on_batch_id": "c0ff1410-7fe4-463b-aff1-5b02af044fbb"}
+ 2026-11-23 22:35:05.213414+00 | customer.created               | customer       | d951ae42-5ea9-4b71-b598-0b9d4c302616 | {"source": "TAKE_ON", "actor_name": "Alice Owner", "take_on_batch_id": "c0ff1410-7fe4-463b-aff1-5b02af044fbb"}
+ 2026-11-23 22:35:05.213756+00 | customer.fica_attested         | customer       | d951ae42-5ea9-4b71-b598-0b9d4c302616 | {"actor_name": "Alice Owner", "attestation_id": "878da9cf-5e06-4191-9bcb-6b931f9e39c5", "take_on_batch_id": "c0ff1410-7fe4-463b-aff1-5b02af044fbb"}
+ 2026-11-23 22:35:05.22453+00  | customer.created               | customer       | 409e2226-7bc8-404a-8e04-3907e3cc32bf | {"source": "TAKE_ON", "actor_name": "Alice Owner", "take_on_batch_id": "c0ff1410-7fe4-463b-aff1-5b02af044fbb"}
+ 2026-11-23 22:35:05.224944+00 | customer.fica_attested         | customer       | 409e2226-7bc8-404a-8e04-3907e3cc32bf | {"actor_name": "Alice Owner", "attestation_id": "207976f4-4037-48be-a243-9063c489a1fa", "take_on_batch_id": "c0ff1410-7fe4-463b-aff1-5b02af044fbb"}
+ 2026-11-23 22:35:05.239401+00 | customer.created               | customer       | b7017b51-5ff8-4fad-9896-2c03fecca488 | {"source": "TAKE_ON", "actor_name": "Alice Owner", "take_on_batch_id": "c0ff1410-7fe4-463b-aff1-5b02af044fbb"}
+ 2026-11-23 22:35:05.239785+00 | customer.fica_attested         | customer       | b7017b51-5ff8-4fad-9896-2c03fecca488 | {"actor_name": "Alice Owner", "attestation_id": "3d0bba18-124b-4afa-a897-0bdf9b48198f", "take_on_batch_id": "c0ff1410-7fe4-463b-aff1-5b02af044fbb"}
+ 2026-11-23 22:35:05.248635+00 | customer.created               | customer       | a4d170fe-59e9-49be-a3df-0fb8995dab9d | {"source": "TAKE_ON", "actor_name": "Alice Owner", "take_on_batch_id": "c0ff1410-7fe4-463b-aff1-5b02af044fbb"}
+ 2026-11-23 22:35:05.24897+00  | customer.fica_attested         | customer       | a4d170fe-59e9-49be-a3df-0fb8995dab9d | {"actor_name": "Alice Owner", "attestation_id": "e3449ab6-cd32-44c5-8fef-d92ece0d32d2", "take_on_batch_id": "c0ff1410-7fe4-463b-aff1-5b02af044fbb"}
+ 2026-11-23 22:35:05.257708+00 | customer.created               | customer       | 0fabc827-ae93-4ca7-b5ee-1c2780eff166 | {"source": "TAKE_ON", "actor_name": "Alice Owner", "take_on_batch_id": "c0ff1410-7fe4-463b-aff1-5b02af044fbb"}
+ 2026-11-23 22:35:05.258028+00 | customer.fica_attested         | customer       | 0fabc827-ae93-4ca7-b5ee-1c2780eff166 | {"actor_name": "Alice Owner", "attestation_id": "41634b78-dd3a-4b3a-a7e4-a066e352a3ce", "take_on_batch_id": "c0ff1410-7fe4-463b-aff1-5b02af044fbb"}
+ 2026-11-23 22:35:05.265734+00 | customer.created               | customer       | ceeb13ef-aa82-4208-881e-460fc3bb644c | {"source": "TAKE_ON", "actor_name": "Alice Owner", "take_on_batch_id": "c0ff1410-7fe4-463b-aff1-5b02af044fbb"}
+ 2026-11-23 22:35:05.266076+00 | customer.fica_attested         | customer       | ceeb13ef-aa82-4208-881e-460fc3bb644c | {"actor_name": "Alice Owner", "attestation_id": "2936aa6a-cc62-4544-ab86-8c34eff4ca7b", "take_on_batch_id": "c0ff1410-7fe4-463b-aff1-5b02af044fbb"}
+ 2026-11-23 22:35:05.274865+00 | customer.created               | customer       | 4abcb178-15cb-480f-b7e8-6acbed7b3892 | {"source": "TAKE_ON", "actor_name": "Alice Owner", "take_on_batch_id": "c0ff1410-7fe4-463b-aff1-5b02af044fbb"}
+ 2026-11-23 22:35:05.275175+00 | customer.fica_attested         | customer       | 4abcb178-15cb-480f-b7e8-6acbed7b3892 | {"actor_name": "Alice Owner", "attestation_id": "f3fb7977-b66d-4f81-8be9-3170d12c1db7", "take_on_batch_id": "c0ff1410-7fe4-463b-aff1-5b02af044fbb"}
+ 2026-11-23 22:35:05.28635+00  | customer.created               | customer       | b0a99087-fcc6-4e57-9965-2005a528411c | {"source": "TAKE_ON", "actor_name": "Alice Owner", "take_on_batch_id": "c0ff1410-7fe4-463b-aff1-5b02af044fbb"}
+ 2026-11-23 22:35:05.287006+00 | customer.fica_attested         | customer       | b0a99087-fcc6-4e57-9965-2005a528411c | {"actor_name": "Alice Owner", "attestation_id": "6dd4c624-0bea-4e96-a8d4-7f9e63cb6aab", "take_on_batch_id": "c0ff1410-7fe4-463b-aff1-5b02af044fbb"}
+ 2026-11-23 22:35:05.302886+00 | customer.created               | customer       | f4449857-62ba-401c-b616-1017bf79e681 | {"source": "TAKE_ON", "actor_name": "Alice Owner", "take_on_batch_id": "c0ff1410-7fe4-463b-aff1-5b02af044fbb"}
+ 2026-11-23 22:35:05.303459+00 | customer.fica_attested         | customer       | f4449857-62ba-401c-b616-1017bf79e681 | {"actor_name": "Alice Owner", "attestation_id": "a10bcb02-9387-41de-9764-23255974e502", "take_on_batch_id": "c0ff1410-7fe4-463b-aff1-5b02af044fbb"}
+ 2026-11-23 22:35:05.324132+00 | customer.created               | customer       | 1f54f55f-79bd-47fe-894b-b253a7f7c716 | {"source": "TAKE_ON", "actor_name": "Alice Owner", "take_on_batch_id": "c0ff1410-7fe4-463b-aff1-5b02af044fbb"}
+ 2026-11-23 22:35:05.324523+00 | customer.fica_attested         | customer       | 1f54f55f-79bd-47fe-894b-b253a7f7c716 | {"actor_name": "Alice Owner", "attestation_id": "fd332355-a056-457a-8316-b7f1a5993c02", "take_on_batch_id": "c0ff1410-7fe4-463b-aff1-5b02af044fbb"}
+ 2026-11-23 22:35:05.334438+00 | customer.created               | customer       | 87307613-98a1-4160-adb9-9037a6e88b23 | {"source": "TAKE_ON", "actor_name": "Alice Owner", "take_on_batch_id": "c0ff1410-7fe4-463b-aff1-5b02af044fbb"}
+ 2026-11-23 22:35:05.334887+00 | customer.fica_attested         | customer       | 87307613-98a1-4160-adb9-9037a6e88b23 | {"actor_name": "Alice Owner", "attestation_id": "5d900571-9510-4a9c-b062-1e3ab11f7fd7", "take_on_batch_id": "c0ff1410-7fe4-463b-aff1-5b02af044fbb"}
+ 2026-11-23 22:35:05.353217+00 | takeon.batch.committed         | take_on_batch  | c0ff1410-7fe4-463b-aff1-5b02af044fbb | {"dataset": "CLIENTS", "batch_id": "c0ff1410-7fe4-463b-aff1-5b02af044fbb", "actor_name": "Alice Owner", "failed_rows": 0, "created_rows": 15, "skipped_rows": 1}
+ 2026-11-23 22:36:15.79623+00  | takeon.portal_contacts.created | take_on_batch  | c0ff1410-7fe4-463b-aff1-5b02af044fbb | {"batch_id": "c0ff1410-7fe4-463b-aff1-5b02af044fbb", "actor_name": "Alice Owner", "created_count": 15, "skipped_count": 0}
+(38 rows)
+
+           event_type           | count 
+--------------------------------+-------
+ customer.created               |    15
+ customer.fica_attested         |    15
+ takeon.batch.attested          |     1
+ takeon.batch.commit_requested  |     1
+ takeon.batch.committed         |     1
+ takeon.batch.created           |     1
+ takeon.batch.validated         |     1
+ takeon.portal_contacts.created |     1
+ takeon.source.mapped           |     1
+ takeon.source.uploaded         |     1
+(10 rows)
+

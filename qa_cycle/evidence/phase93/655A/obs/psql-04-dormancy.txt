@@ -1,0 +1,23 @@
+-- activity rows feeding DORMANCY_SQL for the 15 imported clients (read-only)
+ matter_links | documents | invoices | with_taken_on_at 
+--------------+-----------+----------+------------------
+            0 |         0 |        0 |               15
+(1 row)
+
+-- org dormancy threshold
+       column_name       
+-------------------------
+ dormancy_threshold_days
+(1 row)
+
+-- lifecycle after the dormancy check
+ lifecycle_status | count 
+------------------+-------
+ ACTIVE           |    15
+(1 row)
+
+ dormancy_threshold_days 
+-------------------------
+                        
+(1 row)
+

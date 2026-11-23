@@ -21,11 +21,15 @@ import {
   calculateReconciliation,
   completeReconciliation,
 } from "@/app/(app)/org/[slug]/trust-accounting/reconciliation/actions";
-import { fetchTrustAccounts } from "@/app/(app)/org/[slug]/trust-accounting/actions";
+import {
+  fetchTrustAccounts,
+  fetchTrustTransactionTypes,
+} from "@/app/(app)/org/[slug]/trust-accounting/actions";
 import { fetchTransactions } from "@/app/(app)/org/[slug]/trust-accounting/transactions/actions";
 import { useInterestEligibleInvestments } from "@/hooks/use-interest-eligible-investments";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
 import { todayInSA } from "@b2mash/shared/date";
+import { clearedAtCutoverCodes } from "@/lib/types";
 import type {
   TrustAccount,
   BankStatementResponse,
@@ -97,23 +101,31 @@ const STATEMENT_ONLY_TYPES = [
  * line (the right pane), newest first, without types that move no bank money and without a reversed
  * row recorded from a statement line. The list endpoint takes one status, so each is read on its
  * own (652B, 652H); if any read fails the whole read fails, so the pane is never silently partly
- * empty.
+ * empty. Also without a row cleared at the cutover date (657A): the bank never shows it and the
+ * backend refuses to match it (409 CLEARED_AT_CUTOVER). The registry says which types are
+ * cleared; if it cannot be read nothing is filtered on that ground.
  */
 async function fetchUnmatchedTransactions(accountId: string): Promise<TrustTransaction[]> {
-  const pages = await Promise.all(
-    MATCHABLE_STATUSES.map((status) =>
-      fetchTransactions(accountId, {
-        status,
-        page: 0,
-        size: 1000, // TODO: implement proper pagination for large trust accounts
-      })
-    )
-  );
+  const [pages, cleared] = await Promise.all([
+    Promise.all(
+      MATCHABLE_STATUSES.map((status) =>
+        fetchTransactions(accountId, {
+          status,
+          page: 0,
+          size: 1000, // TODO: implement proper pagination for large trust accounts
+        })
+      )
+    ),
+    fetchTrustTransactionTypes()
+      .then(clearedAtCutoverCodes)
+      .catch((): ReadonlySet<string> => new Set<string>()),
+  ]);
   return pages
     .flatMap((txPage) => txPage.content)
     .filter(
       (tx) =>
         !tx.bankStatementLineId &&
+        !cleared.has(tx.transactionType) &&
         !(NO_BANK_MOVEMENT_TYPES as readonly string[]).includes(tx.transactionType) &&
         !(
           tx.status === "REVERSED" &&

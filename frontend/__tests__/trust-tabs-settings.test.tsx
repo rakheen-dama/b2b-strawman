@@ -307,6 +307,7 @@ describe("Trust settings page", () => {
       createdAt: "2026-01-01T00:00:00Z",
       updatedAt: "2026-01-01T00:00:00Z",
       lockedThrough: null,
+      takeOnCutoverDate: null,
       ...overrides,
     };
   }

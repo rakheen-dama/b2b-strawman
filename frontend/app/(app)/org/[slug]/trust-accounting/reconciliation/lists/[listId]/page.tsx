@@ -254,7 +254,10 @@ export default async function MonthlyListPage({
   );
 }
 
-/** One creditor, its per-matter breakdown beneath; an unidentified deposit shows when received. */
+/**
+ * One creditor, its per-matter breakdown beneath; an unidentified deposit shows when received; a
+ * client taken on shows its balance brought forward at take-on (657A).
+ */
 function CreditorRows({ line }: { line: CreditorLine }) {
   const name =
     line.kind === "UNIDENTIFIED"
@@ -273,6 +276,19 @@ function CreditorRows({ line }: { line: CreditorLine }) {
           {formatCurrency(line.balance, CURRENCY)}
         </td>
       </tr>
+      {/* 657A: a client taken on from the previous system — its balance brought forward */}
+      {line.kind === "CLIENT" && line.broughtForward != null && line.broughtForward !== 0 && (
+        <tr
+          className="border-b border-slate-100 dark:border-slate-800"
+          data-testid="monthly-list-brought-forward"
+        >
+          <td className="py-2 pr-4 pl-6 text-slate-600 dark:text-slate-400">B/f at take-on</td>
+          <td className="py-2 pr-4 text-slate-500 dark:text-slate-400">Take-on</td>
+          <td className="py-2 text-right font-mono text-slate-600 tabular-nums dark:text-slate-400">
+            {formatCurrency(line.broughtForward, CURRENCY)}
+          </td>
+        </tr>
+      )}
       {line.matters.length > 0 &&
         line.matters.map((matter, index) => (
           <tr

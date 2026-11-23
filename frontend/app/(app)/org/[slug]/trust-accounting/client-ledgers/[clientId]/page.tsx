@@ -55,10 +55,14 @@ const STATUS_OPTIONS: TrustTransactionStatus[] = [
 /**
  * The types a client ledger can hold (646E, D6): rows on the client's own ledger or its investment
  * ledger, plus Reversal (ledger null — it moves its original's). Non-client and inter-account
- * types never sit on a client ledger, so they are not offered as filters here.
+ * types never sit on a client ledger, so they are not offered as filters here. Take-on-only types
+ * (657A) are never offered.
  */
 function isClientLedgerType(t: TrustTransactionTypeInfo): boolean {
-  return t.ledger === "CLIENT" || t.ledger === "CLIENT_INVESTMENT" || t.code === "REVERSAL";
+  return (
+    !t.takeOnOnly &&
+    (t.ledger === "CLIENT" || t.ledger === "CLIENT_INVESTMENT" || t.code === "REVERSAL")
+  );
 }
 
 // ── Page ──────────────────────────────────────────────────────────

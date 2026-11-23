@@ -42,6 +42,45 @@ vi.mock("@/app/(app)/org/[slug]/trust-accounting/reconciliation/actions", () => 
 
 // ── Mock parent trust actions ────────────────────────────────────
 vi.mock("@/app/(app)/org/[slug]/trust-accounting/actions", () => ({
+  // 657A: the registry tells the manual-match pane which types were cleared at the cutover date
+  fetchTrustTransactionTypes: vi.fn().mockResolvedValue([
+    {
+      code: "DEPOSIT",
+      label: "Deposit",
+      direction: "IN",
+      ledger: "CLIENT",
+      origin: "FIRM",
+      requiresApproval: false,
+      reversal: "NEEDS_APPROVAL",
+      clientVisible: true,
+      takeOnOnly: false,
+      clearedAtCutover: false,
+    },
+    {
+      code: "TAKEON_CLIENT",
+      label: "Balance brought forward — take-on",
+      direction: "IN",
+      ledger: "CLIENT",
+      origin: "TAKE_ON",
+      requiresApproval: false,
+      reversal: "NONE",
+      clientVisible: true,
+      takeOnOnly: true,
+      clearedAtCutover: true,
+    },
+    {
+      code: "TAKEON_PAY_UNPRES",
+      label: "Payment not yet presented at take-on",
+      direction: "OUT",
+      ledger: "CLIENT",
+      origin: "TAKE_ON",
+      requiresApproval: false,
+      reversal: "IMMEDIATE",
+      clientVisible: false,
+      takeOnOnly: true,
+      clearedAtCutover: false,
+    },
+  ]),
   fetchTrustAccounts: vi.fn().mockResolvedValue([
     {
       id: "acc-1",
@@ -235,6 +274,7 @@ function makeMonthlyList(overrides: Partial<MonthlyList> = {}): MonthlyList {
         totalPayments: 0,
         totalFeeTransfers: 0,
         lastTransactionDate: "2026-03-20",
+        broughtForward: null,
       },
       {
         kind: "CLIENT_INVESTMENT",
@@ -249,6 +289,7 @@ function makeMonthlyList(overrides: Partial<MonthlyList> = {}): MonthlyList {
         totalPayments: 0,
         totalFeeTransfers: 0,
         lastTransactionDate: null,
+        broughtForward: null,
       },
       {
         kind: "FUND",
@@ -263,6 +304,7 @@ function makeMonthlyList(overrides: Partial<MonthlyList> = {}): MonthlyList {
         totalPayments: null,
         totalFeeTransfers: null,
         lastTransactionDate: null,
+        broughtForward: null,
       },
       {
         kind: "UNIDENTIFIED",
@@ -277,6 +319,7 @@ function makeMonthlyList(overrides: Partial<MonthlyList> = {}): MonthlyList {
         totalPayments: null,
         totalFeeTransfers: null,
         lastTransactionDate: null,
+        broughtForward: null,
       },
     ],
     integrityFlags: [],
@@ -1877,6 +1920,35 @@ describe("Trust Reconciliation", () => {
       expect(afterLock).toHaveTextContent(zar(145250));
     });
 
+    it("prints a client's balance brought forward at take-on under its line, and nothing for other lines (657A)", async () => {
+      const list = makeMonthlyList();
+      mockFetchMonthlyList.mockResolvedValue({
+        ...list,
+        lines: list.lines.map((line) =>
+          line.kind === "CLIENT" ? { ...line, broughtForward: 25000 } : line
+        ),
+      });
+
+      render(
+        await MonthlyListPage({ params: Promise.resolve({ slug: "acme", listId: "list-1" }) })
+      );
+
+      const rows = screen.getAllByTestId("monthly-list-brought-forward");
+      expect(rows).toHaveLength(1);
+      expect(rows[0]).toHaveTextContent("B/f at take-on");
+      expect(rows[0]).toHaveTextContent(zar(25000));
+    });
+
+    it("prints no brought-forward row for a list frozen before take-on figures existed (657A)", async () => {
+      mockFetchMonthlyList.mockResolvedValue(makeMonthlyList());
+
+      render(
+        await MonthlyListPage({ params: Promise.resolve({ slug: "acme", listId: "list-1" }) })
+      );
+
+      expect(screen.queryByTestId("monthly-list-brought-forward")).not.toBeInTheDocument();
+    });
+
     it("sends an expired session (401) to the re-login flow instead of the load-error card", async () => {
       const expired = new ApiError(401, "Unauthorized");
       mockFetchMonthlyList.mockRejectedValue(expired);
@@ -3248,6 +3320,31 @@ describe("Trust Reconciliation", () => {
       fireEvent.click(screen.getByTestId("step-next-btn"));
       expect(await screen.findByTestId("reconciliation-split-pane")).toBeInTheDocument();
     }
+
+    it("never offers a take-on row cleared at the cutover date, but offers an item outstanding at cutover (657A)", async () => {
+      const cleared = makeTx({
+        id: "tx-takeon-client",
+        transactionType: "TAKEON_CLIENT",
+        typeLabel: "Balance brought forward — take-on",
+        status: "APPROVED",
+        reference: "TO-CLIENT",
+        amount: 15000,
+      });
+      const unpresented = makeTx({
+        id: "tx-takeon-cheque",
+        transactionType: "TAKEON_PAY_UNPRES",
+        typeLabel: "Payment not yet presented at take-on",
+        direction: "OUT",
+        status: "APPROVED",
+        reference: "PAY-778",
+        amount: 2000,
+      });
+      transactionsByStatus({ APPROVED: [cleared, unpresented] });
+      await driveToReview();
+
+      expect(screen.queryByTestId("transaction-tx-takeon-client")).not.toBeInTheDocument();
+      expect(screen.getByTestId("transaction-tx-takeon-cheque")).toBeInTheDocument();
+    });
 
     it("offers an unlinked recorded deposit beside an approved payment when the review opens", async () => {
       transactionsByStatus({

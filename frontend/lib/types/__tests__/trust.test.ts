@@ -1,6 +1,8 @@
 import { describe, it, expect } from "vitest";
 import {
   canOfferReversal,
+  clearedAtCutoverCodes,
+  offeredTransactionTypes,
   reversalRuleFor,
   type TrustTransactionTypeInfo,
 } from "@/lib/types/trust";
@@ -18,6 +20,8 @@ function typeInfo(code: string, reversal: TrustTransactionTypeInfo["reversal"]) 
     requiresApproval: false,
     reversal,
     clientVisible: true,
+    takeOnOnly: false,
+    clearedAtCutover: false,
   } satisfies TrustTransactionTypeInfo;
 }
 
@@ -90,5 +94,36 @@ describe("canOfferReversal", () => {
 
   it("offers nothing while the registry is unavailable", () => {
     expect(canOfferReversal(tx(), [])).toBe(false);
+  });
+});
+
+// 657A (ADR-386): take-on-only types are never offered; the cleared ones are read from the registry
+describe("offeredTransactionTypes / clearedAtCutoverCodes", () => {
+  const takeOnClient = {
+    ...typeInfo("TAKEON_CLIENT", "NONE"),
+    origin: "TAKE_ON" as const,
+    takeOnOnly: true,
+    clearedAtCutover: true,
+  };
+  const takeOnCheque = {
+    ...typeInfo("TAKEON_PAY_UNPRES", "IMMEDIATE"),
+    origin: "TAKE_ON" as const,
+    takeOnOnly: true,
+  };
+  const registry: TrustTransactionTypeInfo[] = [...TYPES, takeOnClient, takeOnCheque];
+
+  it("offers every type except those a take-on alone creates", () => {
+    expect(offeredTransactionTypes(registry).map((t) => t.code)).toEqual(TYPES.map((t) => t.code));
+  });
+
+  it("names the types cleared at the cutover date", () => {
+    expect([...clearedAtCutoverCodes(registry)]).toEqual(["TAKEON_CLIENT"]);
+    expect(clearedAtCutoverCodes([]).size).toBe(0);
+  });
+
+  it("keeps the reversal rule of an item outstanding at cutover in the full registry", () => {
+    expect(
+      canOfferReversal(tx({ transactionType: "TAKEON_PAY_UNPRES", status: "APPROVED" }), registry)
+    ).toBe(true);
   });
 });

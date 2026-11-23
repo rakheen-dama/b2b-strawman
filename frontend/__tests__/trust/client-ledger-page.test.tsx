@@ -26,6 +26,8 @@ const { REGISTRY_TYPES } = vi.hoisted(() => {
     requiresApproval: false,
     reversal: "NONE",
     clientVisible: true,
+    takeOnOnly: false,
+    clearedAtCutover: false,
   });
   return {
     REGISTRY_TYPES: [
@@ -39,6 +41,13 @@ const { REGISTRY_TYPES } = vi.hoisted(() => {
       ),
       typeInfo("INV_INTEREST", "Section 86(4) investment interest", "CLIENT_INVESTMENT"),
       typeInfo("FIRM_INV_PLACE", "Placed in section 86(3) investment", "INTER_ACCOUNT"),
+      // 657A: a CLIENT-ledger type a take-on alone creates — never offered as a pill
+      {
+        ...typeInfo("TAKEON_CLIENT", "Balance brought forward — take-on", "CLIENT"),
+        origin: "TAKE_ON",
+        takeOnOnly: true,
+        clearedAtCutover: true,
+      },
     ],
   };
 });
@@ -361,7 +370,8 @@ describe("Client ledger card — type filters from the registry (646E)", () => {
   });
 
   // 646A found-1: the retired "Interest Credit" / "Interest LPFF" pills are gone; a client ledger
-  // lists only the types that can sit on it (CLIENT / CLIENT_INVESTMENT ledgers, plus Reversal).
+  // lists only the types that can sit on it (CLIENT / CLIENT_INVESTMENT ledgers, plus Reversal),
+  // never a take-on-only type (657A).
   it("lists the client-ledger subset of the registry, no retired interest pills", async () => {
     setupDefaultMocks();
     mockFetchClientHistory.mockResolvedValue({
@@ -384,6 +394,11 @@ describe("Client ledger card — type filters from the registry (646E)", () => {
     ]);
     expect(screen.queryByText("Interest Credit")).not.toBeInTheDocument();
     expect(screen.queryByText("Interest LPFF")).not.toBeInTheDocument();
+    expect(
+      within(screen.getByTestId("type-filters")).queryByRole("link", {
+        name: "Balance brought forward — take-on",
+      })
+    ).not.toBeInTheDocument();
   });
 });
 

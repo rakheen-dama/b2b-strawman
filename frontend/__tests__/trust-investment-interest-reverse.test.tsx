@@ -107,16 +107,21 @@ describe("Reverse a section 86(4) interest entry (648B F-1)", () => {
     expect(within(fromLine).getByText(/Unmatch the statement line/)).toBeInTheDocument();
   });
 
-  it("asks for confirmation, then calls the action with the entry id and refreshes", async () => {
+  it("asks for confirmation and a reason, then sends both and refreshes", async () => {
     mockReverseInvestmentInterest.mockResolvedValue({ success: true });
     renderActions();
     const user = await openEntries();
     await user.click(screen.getByRole("button", { name: "Reverse" }));
     expect(mockReverseInvestmentInterest).not.toHaveBeenCalled();
     mockFetchInvestmentInterest.mockResolvedValue([entry({ status: "REVERSED" })]);
+    await user.type(screen.getByLabelText("Reason"), "Bank advice captured twice");
     await user.click(screen.getByTestId("confirm-reverse-interest"));
     await waitFor(() =>
-      expect(mockReverseInvestmentInterest).toHaveBeenCalledWith("int-1", expect.any(String))
+      expect(mockReverseInvestmentInterest).toHaveBeenCalledWith(
+        "int-1",
+        { reason: "Bank advice captured twice" },
+        expect.any(String)
+      )
     );
     await waitFor(() => expect(mockRefresh).toHaveBeenCalled());
     await waitFor(() =>
@@ -126,6 +131,17 @@ describe("Reverse a section 86(4) interest entry (648B F-1)", () => {
         })
       ).not.toBeInTheDocument()
     );
+  });
+
+  it("requires a reason (D-2): an empty reason is refused in the form and nothing is sent", async () => {
+    renderActions();
+    const user = await openEntries();
+    await user.click(screen.getByRole("button", { name: "Reverse" }));
+    const reason = screen.getByPlaceholderText("Reason for reversal");
+    expect(reason).toHaveAttribute("maxLength", "500");
+    await user.click(screen.getByTestId("confirm-reverse-interest"));
+    expect(await screen.findByText("Reason is required")).toBeInTheDocument();
+    expect(mockReverseInvestmentInterest).not.toHaveBeenCalled();
   });
 
   it("cancelling the confirmation reverses nothing", async () => {
@@ -145,6 +161,7 @@ describe("Reverse a section 86(4) interest entry (648B F-1)", () => {
     renderActions();
     const user = await openEntries();
     await user.click(screen.getByRole("button", { name: "Reverse" }));
+    await user.type(screen.getByLabelText("Reason"), "Captured twice");
     await user.click(screen.getByTestId("confirm-reverse-interest"));
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "This interest entry has already been reversed."
@@ -162,8 +179,9 @@ describe("Reverse a section 86(4) interest entry (648B F-1)", () => {
     renderActions();
     const user = await openEntries();
     await user.click(screen.getByRole("button", { name: "Reverse" }));
+    await user.type(screen.getByLabelText("Reason"), "Captured twice");
     await user.click(screen.getByTestId("confirm-reverse-interest"));
-    expect(screen.getByTestId("confirm-reverse-interest")).toBeDisabled();
+    await waitFor(() => expect(screen.getByTestId("confirm-reverse-interest")).toBeDisabled());
     await user.click(screen.getByTestId("confirm-reverse-interest"));
     expect(mockReverseInvestmentInterest).toHaveBeenCalledTimes(1);
     resolve({ success: true });

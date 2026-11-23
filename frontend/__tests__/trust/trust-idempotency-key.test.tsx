@@ -17,6 +17,7 @@ vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 import { createIdempotencyKeys, useIdempotencyKey } from "@/hooks/use-idempotency-key";
 import { isOutcomeUnknown, outcomeUnknownOf } from "@/lib/idempotency";
 import { recordDeposit } from "@/app/(app)/org/[slug]/trust-accounting/transactions/actions";
+import { reverseInvestmentInterest } from "@/app/(app)/org/[slug]/trust-accounting/investments/actions";
 
 const DEPOSIT = {
   customerId: "client-1",
@@ -32,6 +33,8 @@ function sequentialKeys() {
 }
 
 afterEach(() => cleanup());
+// §1.5: unsettled keys now persist in the tab's sessionStorage; each case starts from an empty tab
+beforeEach(() => window.sessionStorage.clear());
 
 describe("useIdempotencyKey (648B F-11)", () => {
   it("keeps the same key when a resubmit follows a network failure", async () => {
@@ -170,6 +173,22 @@ describe("trust write server action (648B F-11)", () => {
     );
   });
 
+  it("sends the interest reversal's reason in the body with the key (D-2)", async () => {
+    mockPost.mockResolvedValue({ id: "int-1", status: "REVERSED" });
+
+    await reverseInvestmentInterest(
+      "int-1",
+      { reason: "Bank advice captured twice" },
+      "3b241101-e2bb-4255-8caf-4136c566a962"
+    );
+
+    expect(mockPost).toHaveBeenCalledWith(
+      "/api/trust-investment-interest/int-1/reverse",
+      { reason: "Bank advice captured twice" },
+      { headers: { "Idempotency-Key": "3b241101-e2bb-4255-8caf-4136c566a962" } }
+    );
+  });
+
   it("flags an unknown outcome on a network failure and not on a refusal", async () => {
     mockPost.mockRejectedValueOnce(new TypeError("fetch failed"));
     expect(await recordDeposit("acc-1", DEPOSIT, "k")).toEqual({
@@ -190,8 +209,7 @@ describe("trust write server action (648B F-11)", () => {
   it("shows the in-progress refusal's instruction and keeps the key (outcome unknown)", async () => {
     const detail =
       "An earlier submit of this entry is still in progress, or its outcome is unknown. Check the" +
-      " ledger to see whether the entry was recorded; if it was not, reload the page and submit" +
-      " again.";
+      " ledger to see whether it was recorded; if it was not, choose 'Submit as a new entry'.";
     mockPost.mockRejectedValueOnce(
       Object.assign(new Error(detail), {
         status: 409,

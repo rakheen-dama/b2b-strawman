@@ -1,0 +1,42 @@
+# Red run — unmodified production code at ef0563fe3 (main), 2026-11-23
+# Only test code changed: BackDatedOutflowCoverIntegrationTest (new), ReverseInterestAutoMatchLockOrderIntegrationTest (new),
+# TrustInvestmentControllerTest (D-2 cases, HTTP only), TrustBooksFixture (dated requestRefund / requestPlacement overloads).
+# Command (backend/): ./mvnw test -Dtest='BackDatedOutflowCoverIntegrationTest,TrustInvestmentControllerTest,ReverseInterestAutoMatchLockOrderIntegrationTest'
+#
+# Item 1 (D-1): 9/12 FAIL, each "Expecting code to raise a throwable" (the back-dated outflow was approved / posted).
+#   The 3 controls pass on main as expected: backDatedPayment_isApproved_whenCoveredOnEveryDateFromItsDate,
+#   paymentDatedToday_isApproved_whenTheClientCoversItToday, paymentDatedToday_isRefused_withTheUnchangedMessage_whenTheClientCannotCoverIt.
+# Item 2 (CF-3b hypothesis): 3/3 PASS on main (not reproduced; guard tests — see ../reverse-interest-deadlock/notes.md).
+# Item 3 (D-2): 2 FAIL — no body/blank reason accepted (200, expected 400); the contra and audit carry the fixed text, not the reason.
+#   (The other 20 TrustInvestmentControllerTest cases pass.)
+
+[ERROR] Tests run: 12, Failures: 9, Errors: 0, Skipped: 0, Time elapsed: 14.86 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.BackDatedOutflowCoverIntegrationTest
+[ERROR] ...BackDatedOutflowCoverIntegrationTest.backDatedTransfer_isRefused_whenTheSourceWouldBeInDebitAsAtALaterDate <<< FAILURE!
+Expecting code to raise a throwable.
+[ERROR] ...BackDatedOutflowCoverIntegrationTest.backDatedAllocationReversal_isRefused_whenTheClientWouldBeInDebitAsAtALaterDate <<< FAILURE!
+Expecting code to raise a throwable.
+[ERROR] ...BackDatedOutflowCoverIntegrationTest.backDatedTransfer_isRefused_whenTheSourceMatterCellWouldBeInDebitAsAtALaterDate <<< FAILURE!
+Expecting code to raise a throwable.
+[ERROR] ...BackDatedOutflowCoverIntegrationTest.backDatedPayment_isRefused_whenTheMatterCellWouldBeInDebitAsAtALaterDate <<< FAILURE!
+Expecting code to raise a throwable.
+[ERROR] ...BackDatedOutflowCoverIntegrationTest.backDatedTransferReversal_isRefused_whenTheTargetWouldBeInDebitAsAtALaterDate <<< FAILURE!
+Expecting code to raise a throwable.
+[ERROR] ...BackDatedOutflowCoverIntegrationTest.backDatedPlacementRequest_isRefused_whenTheMatterCellIsEmptyAsAtItsDate <<< FAILURE!
+Expecting code to raise a throwable.
+[ERROR] ...BackDatedOutflowCoverIntegrationTest.backDatedPayment_isRefused_whenTheClientWouldBeInDebitAsAtALaterDate <<< FAILURE!
+Expecting code to raise a throwable.
+[ERROR] ...BackDatedOutflowCoverIntegrationTest.backDatedPlacementApproval_isRefused_whenTheClientWouldBeInDebitAsAtALaterDate <<< FAILURE!
+Expecting code to raise a throwable.
+[ERROR] ...BackDatedOutflowCoverIntegrationTest.backDatedRefund_isRefused_whenTheClientWouldBeInDebitAsAtALaterDate <<< FAILURE!
+Expecting code to raise a throwable.
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.136 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.ReverseInterestAutoMatchLockOrderIntegrationTest
+[ERROR] Tests run: 22, Failures: 2, Errors: 0, Skipped: 0, Time elapsed: 2.052 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentControllerTest
+[ERROR] ...TrustInvestmentControllerTest.reverseInterest_returns200Reversed <<< FAILURE!
+expected: "Bank advice captured twice"
+ but was: "Section 86(4) interest entry reversed"
+[ERROR] ...TrustInvestmentControllerTest.reverseInterest_withoutAReason_returns400_andReversesNothing <<< FAILURE!
+java.lang.AssertionError: Status expected:<400> but was:<200>
+[ERROR] Tests run: 37, Failures: 11, Errors: 0, Skipped: 0
+
+# Note: a first attempt also failed paymentDatedToday_isRefused_withTheUnchangedMessage because the test text used a plain
+# space where the rand format uses U+00A0 ("R1 150,00"). A test-text error, fixed before this recorded run (same as F-646D-1).

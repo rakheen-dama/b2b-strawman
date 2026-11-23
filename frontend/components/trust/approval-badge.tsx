@@ -30,6 +30,7 @@ import {
 } from "@/app/(app)/org/[slug]/trust-accounting/transactions/actions";
 import { rejectionReasonSchema, type RejectionReasonFormData } from "@/lib/schemas/trust";
 import { useIdempotencyKey } from "@/hooks/use-idempotency-key";
+import { UnsettledSubmitNotice } from "./unsettled-submit-notice";
 
 interface ApprovalBadgeProps {
   transactionId: string;
@@ -47,7 +48,7 @@ export function ApprovalBadge({
   firstApprovedBy,
   currentMemberId,
 }: ApprovalBadgeProps) {
-  const idempotency = useIdempotencyKey();
+  const idempotency = useIdempotencyKey(["approveTransaction", transactionId]);
   const router = useRouter();
   const [isApproving, setIsApproving] = useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
@@ -116,6 +117,15 @@ export function ApprovalBadge({
         <XCircle className="mr-1 size-3" />
         Reject
       </Button>
+      <UnsettledSubmitNotice
+        show={idempotency.unsettled}
+        inline
+        onSubmitAsNew={() => {
+          // no form here: forget the stuck key, then approve again with a fresh one
+          idempotency.discardUnsettled();
+          void handleApprove();
+        }}
+      />
       {error && <span className="text-destructive text-xs">{error}</span>}
       <RejectDialog
         transactionId={transactionId}
@@ -137,7 +147,7 @@ function RejectDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  const idempotency = useIdempotencyKey();
+  const idempotency = useIdempotencyKey(["rejectTransaction", transactionId]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -206,6 +216,11 @@ function RejectDialog({
                   <FormMessage />
                 </FormItem>
               )}
+            />
+
+            <UnsettledSubmitNotice
+              show={idempotency.unsettled}
+              onSubmitAsNew={idempotency.discardUnsettled}
             />
 
             {error && <p className="text-destructive text-sm">{error}</p>}

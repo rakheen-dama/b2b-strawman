@@ -32,6 +32,7 @@ import {
 } from "./TrustEntityPickers";
 import { LockedMonthWarning } from "./locked-month-warning";
 import { useIdempotencyKey } from "@/hooks/use-idempotency-key";
+import { UnsettledSubmitNotice } from "./unsettled-submit-notice";
 
 interface RecordDepositDialogProps {
   accountId: string;
@@ -73,7 +74,7 @@ export function RecordDepositDialog({
   defaultProjectId,
   lockedThrough,
 }: RecordDepositDialogProps) {
-  const idempotency = useIdempotencyKey();
+  const idempotency = useIdempotencyKey(["recordDeposit", accountId]);
   void slug;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -231,6 +232,10 @@ export function RecordDepositDialog({
 
             <LockedMonthWarning date={transactionDate} lockedThrough={lockedThrough} />
 
+            <UnsettledSubmitNotice
+              show={idempotency.unsettled}
+              onSubmitAsNew={idempotency.discardUnsettled}
+            />
             {error && <p className="text-destructive text-sm">{error}</p>}
 
             <DialogFooter>

@@ -541,7 +541,9 @@ class InvestmentReportBasisIntegrationTest {
     mockMvc
         .perform(
             post("/api/trust-investment-interest/" + reversed + "/reverse")
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_basis_owner")))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_basis_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"reason\": \"Captured against the wrong investment\"}"))
         .andExpect(status().isOk());
     runInTenant(
         () -> {

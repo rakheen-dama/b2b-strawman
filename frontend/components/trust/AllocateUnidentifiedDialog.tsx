@@ -35,6 +35,7 @@ import {
   type TrustPickerCustomer,
 } from "./TrustEntityPickers";
 import { useIdempotencyKey } from "@/hooks/use-idempotency-key";
+import { UnsettledSubmitNotice } from "./unsettled-submit-notice";
 
 interface AllocateUnidentifiedDialogProps {
   /** A held item with no pending allocation or payment. */
@@ -61,7 +62,7 @@ export function AllocateUnidentifiedDialog({
   customers,
   currency,
 }: AllocateUnidentifiedDialogProps) {
-  const idempotency = useIdempotencyKey();
+  const idempotency = useIdempotencyKey(["allocateUnidentifiedDeposit", item.id]);
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -220,6 +221,10 @@ export function AllocateUnidentifiedDialog({
                 )}
               />
 
+              <UnsettledSubmitNotice
+                show={idempotency.unsettled}
+                onSubmitAsNew={idempotency.discardUnsettled}
+              />
               {error && (
                 <p role="alert" className="text-sm text-red-600 dark:text-red-400">
                   {error}

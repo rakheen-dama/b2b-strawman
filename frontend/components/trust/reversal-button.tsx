@@ -27,6 +27,7 @@ import { RotateCcw, Loader2 } from "lucide-react";
 import { reverseTransaction } from "@/app/(app)/org/[slug]/trust-accounting/transactions/actions";
 import { reversalReasonSchema, type ReversalReasonFormData } from "@/lib/schemas/trust";
 import { useIdempotencyKey } from "@/hooks/use-idempotency-key";
+import { UnsettledSubmitNotice } from "./unsettled-submit-notice";
 
 interface ReversalButtonProps {
   transactionId: string;
@@ -41,7 +42,7 @@ export function ReversalButton({
   transactionDate,
   needsApproval = false,
 }: ReversalButtonProps) {
-  const idempotency = useIdempotencyKey();
+  const idempotency = useIdempotencyKey(["reverseTransaction", transactionId]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -149,6 +150,10 @@ export function ReversalButton({
                 )}
               />
 
+              <UnsettledSubmitNotice
+                show={idempotency.unsettled}
+                onSubmitAsNew={idempotency.discardUnsettled}
+              />
               {error && <p className="text-destructive text-sm">{error}</p>}
 
               <DialogFooter>

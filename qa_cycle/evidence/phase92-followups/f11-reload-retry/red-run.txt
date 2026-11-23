@@ -1,0 +1,40 @@
+# Red run — item 4 (§1.5) and item 3 frontend (D-2): unmodified frontend/hooks/use-idempotency-key.ts,
+# components/trust/InvestmentInterestEntriesDialog.tsx and investments/actions.ts (main ef0563fe3), 2026-11-23.
+# Command (frontend/, node v20.11.1, NODE_OPTIONS=""):
+#   /opt/homebrew/bin/pnpm exec vitest run __tests__/trust/trust-idempotency-reload.test.tsx __tests__/trust-investment-interest-reverse.test.tsx
+#
+# The load-bearing red (the brief's "reload-reuse" test): after a lost response and a reload, the same submit
+# goes out with a NEW key on main (page2-1), so the backend runs it as a new request — the double post.
+#
+#  FAIL  trust-idempotency-reload.test.tsx > a resubmit after a reload (a new key store, same storage, same content) reuses the key
+#  AssertionError: expected [ 'page1-1', 'page2-1' ] to deeply equal [ 'page1-1', 'page1-1' ]
+#
+# Every other §1.5 case fails on main too (no storage, no hasUnsettled, no hint). One control,
+# "shows no hint when nothing is unsettled", failed here for a test-text reason (the dialog title and its
+# submit button both read "Record Payment"); the query was narrowed to the heading before the green run.
+# The four D-2 dialog cases fail because the confirm step has no reason field.
+
+     × asks for confirmation and a reason, then sends both and refreshes 45ms
+     × requires a reason (D-2): an empty reason is refused in the form and nothing is sent 42ms
+     × shows the backend detail on a refusal and does not refresh 37ms
+     × disables the confirm button while the request is in flight 37ms
+     × a resubmit after a reload (a new key store, same storage, same content) reuses the key 7ms
+     × keeps the key while the first submit is still in flight (a reload mid-request) 1ms
+     × a definite refusal clears the stored key 0ms
+     × changed content gets a new key, and the first request's key stays for its own retry 1ms
+     × ignores and removes an entry older than the TTL (24 hours) 1ms
+     × falls back to in-memory keys when storage is unavailable (every access throws) 0ms
+     × uses the tab's sessionStorage by default 1ms
+     × useIdempotencyKey reports a stored unsettled key for its form's scope 1014ms
+     × shows the hint in the payment dialog when its form has a stored unsettled key 1055ms
+     × shows no hint when nothing is unsettled 1021ms
+AssertionError: expected [ 'page1-1', 'page2-1' ] to deeply equal [ 'page1-1', 'page1-1' ]
+AssertionError: expected [ 'page1-1', 'page2-1' ] to deeply equal [ 'page1-1', 'page1-1' ]
+AssertionError: expected +0 to be 1 // Object.is equality
+AssertionError: expected [ 'page1-1', 'page2-1', 'page2-2' ] to deeply equal [ 'page1-1', 'page2-1', 'page1-1' ]
+TypeError: nextDay.hasUnsettled is not a function
+TypeError: keys.hasUnsettled is not a function
+AssertionError: expected [ 'page1-1', 'page2-1' ] to deeply equal [ 'page1-1', 'page1-1' ]
+AssertionError: expected undefined to be true // Object.is equality
+ Test Files  2 failed (2)
+      Tests  14 failed | 6 passed (20)

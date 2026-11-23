@@ -3,6 +3,30 @@
 For the next orchestrating agent. Read this, then `tasks/phase92-decisions.md`, then the exit register. Do not
 re-derive anything below; verify a fact only before acting on it.
 
+## Closed (2026-11-23)
+
+- **Phase 92 exit: PASS.** The exit gate was re-run on `main` `ef0563fe3`. BE-VERIFY 7 557 / 0 / 0 / 26, harness
+  70 / 70, FE 4 633, portal 292, and all five E2E suites green, each on its own fresh stack. 0 open HIGH/MEDIUM in the
+  register. Closure report: `tasks/phase92-trust-books-provably-right.md` § C.0. Evidence:
+  `qa_cycle/evidence/phase92-exit/closure-2026-11-23/README.md`.
+- **All follow-ups are done:** #1823–#1842. Every HIGH/MEDIUM register row is closed, with its PR and merge SHA in
+  `qa_cycle/evidence/phase92-exit/defect-register.md`.
+- **What remains is founder decisions and backlog follow-ups only.** Nothing here is HIGH or MEDIUM. Sources are in
+  `tasks/phase92-decisions.md`:
+  - extend the back-dated cover check to PAYMENT, REFUND and TRANSFER_OUT (F-646D-1 D-1);
+  - interest reversal writes a fixed reason, unlike every other trust reversal (648B F-1 D-1);
+  - auto-match should apply tier 1 (reference) to every line before tiers 2–4 (FU-16 D-2);
+  - the wizard pane offers contras as manual-match candidates (F-652B-1; FU-16 D-2);
+  - a draft reconciliation can't be abandoned in the UI (FU-6b D-3 (b));
+  - `generateDocument` builds the trust data twice, as two snapshots (FU-3 D-1);
+  - the FU-5 leftovers: transfer-in reversal and unidentified-allocation reversal still check cover as at today only (FU-5 D-1);
+  - FU-16 (c): the statement-only type set on the type-registry wire (F-652H-2, F-652B-1/5);
+  - `backend/db/BASELINE.md` next-free numbers (FU-26; 652F D-4);
+  - the LOW review follow-ups recorded in the D-rows (CF-3 D-1, FU-6a D-1, FU-6b D-3, FU-8 D-1, FU-12 D-1, 648D D-1,
+    F-646E-2 D-1, 646C-O2 D-1, FU-27 D-1, F-11 D-1), plus the still-open LOW FU-7, FU-10, FU-14 and FU-15.
+
+Sections 1 onwards below are the 2026-11-20 handover, kept as history.
+
 ## 1. Where things stand
 
 - **Phase 92 (trust books provably right) is COMPLETE**: 36/36 slices merged, PRs #1786–#1822 (652H #1820 was inserted

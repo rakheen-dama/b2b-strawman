@@ -27,6 +27,7 @@ import {
 } from "@/app/(app)/org/[slug]/settings/matters/take-on-actions";
 import {
   TAKE_ON_COMMIT_ROW_STATUSES,
+  TAKE_ON_DUPLICATE_PENDING_LABEL,
   TAKE_ON_ROW_STATUS_LABEL,
   TAKE_ON_SECTION_LABEL,
   type TakeOnBatch,
@@ -47,17 +48,32 @@ const PAGE_SIZE = 50;
 /** A row message after cancel or purge: the code stays, the text (it may quote a cell) is gone. */
 const PURGED_MESSAGE = "Details removed when the batch was cancelled.";
 const ALL = "ALL";
+/** Status-filter value for the valid rows that match an existing record (OBS-655A-1). */
+const DUPLICATE = "DUPLICATE";
 
-/** The row statuses a dry run produces; a commit adds its own (655A, D-40). */
-const DRY_RUN_STATUSES: readonly TakeOnRowStatus[] = ["PENDING", "VALIDATED", "ERROR"];
+/** A valid row matching an existing record: the Duplicates card counts it, the commit skips it. */
+function isPendingDuplicate(row: TakeOnRow): boolean {
+  return row.status === "VALIDATED" && row.duplicateOfId !== null;
+}
 
-function filterStatusesFor(batch: TakeOnBatch): readonly TakeOnRowStatus[] {
-  if (batch.status !== "COMMITTING" && batch.status !== "COMPLETED") return DRY_RUN_STATUSES;
+type FilterOption = readonly [value: string, label: string];
+
+const statusOption = (s: TakeOnRowStatus): FilterOption => [s, TAKE_ON_ROW_STATUS_LABEL[s]];
+
+/**
+ * The row statuses a dry run produces, plus the valid rows that will be skipped as duplicates (none
+ * are left once the batch is completed); a commit adds its own statuses (655A, D-40).
+ */
+function filterOptionsFor(batch: TakeOnBatch): readonly FilterOption[] {
+  const dryRun: FilterOption[] = [statusOption("PENDING"), statusOption("VALIDATED")];
+  if (batch.status !== "COMPLETED") dryRun.push([DUPLICATE, TAKE_ON_DUPLICATE_PENDING_LABEL]);
+  dryRun.push(statusOption("ERROR"));
+  if (batch.status !== "COMMITTING" && batch.status !== "COMPLETED") return dryRun;
   // A nil balance is skipped only in the balance datasets — never a client.
   const commit = TAKE_ON_COMMIT_ROW_STATUSES.filter(
     (s) => !(batch.dataset === "CLIENTS" && s === "SKIPPED_ZERO")
-  );
-  return [...DRY_RUN_STATUSES, ...commit];
+  ).map(statusOption);
+  return [...dryRun, ...commit];
 }
 
 const STATUS_VARIANT: Record<TakeOnRowStatus, "success" | "warning" | "destructive" | "neutral"> = {
@@ -96,8 +112,10 @@ interface ValidationStepProps {
 /**
  * The dry run (Phase 93 653A, §17.3.2, X2): every row is checked, nothing is created. The cards
  * and the row table come from the same validation, so the table's status totals equal the cards.
- * After a commit the same table shows each row's outcome (Created, Duplicate — skipped, Failed);
- * the commit itself is on the Attestation step (655A).
+ * A valid row that matches an existing client shows "Duplicate — will be skipped" and has its own
+ * filter, so the Duplicates card, the filter and the table agree (OBS-655A-1). After a commit the
+ * same table shows each row's outcome (Created, Duplicate — skipped, Failed); the commit itself is
+ * on the Attestation step (655A).
  */
 export function ValidationStep({ batch, dataset, onBatchChange }: ValidationStepProps) {
   const allowed = new Set(batch.allowedActions);
@@ -116,7 +134,13 @@ export function ValidationStep({ batch, dataset, onBatchChange }: ValidationStep
   const rowsKey = `take-on-rows-${batch.id}-${batch.status}-${batch.validatedAt ?? "none"}-${status}-${section}-${blocksOnly}-${page}`;
   const rows = useSWR(rowsKey, async () => {
     const result = await fetchTakeOnRows(batch.id, {
-      status: status === ALL ? undefined : (status as TakeOnRowStatus),
+      status:
+        status === ALL
+          ? undefined
+          : status === DUPLICATE
+            ? "VALIDATED"
+            : (status as TakeOnRowStatus),
+      duplicatesOnly: status === DUPLICATE,
       section: section === ALL ? undefined : (section as TakeOnSection),
       blocksOnly,
       page,
@@ -243,9 +267,9 @@ export function ValidationStep({ batch, dataset, onBatchChange }: ValidationStep
           </SelectTrigger>
           <SelectContent>
             <SelectItem value={ALL}>All statuses</SelectItem>
-            {filterStatusesFor(batch).map((s) => (
-              <SelectItem key={s} value={s}>
-                {TAKE_ON_ROW_STATUS_LABEL[s]}
+            {filterOptionsFor(batch).map(([value, label]) => (
+              <SelectItem key={value} value={value}>
+                {label}
               </SelectItem>
             ))}
           </SelectContent>
@@ -374,10 +398,12 @@ function RowTable({
               {isClients && <ClientColumnCells rowNumber={row.rowNumber} values={row.values} />}
               <TableCell>
                 <Badge
-                  variant={STATUS_VARIANT[row.status]}
+                  variant={isPendingDuplicate(row) ? "warning" : STATUS_VARIANT[row.status]}
                   data-testid={`take-on-row-status-${row.rowNumber}`}
                 >
-                  {TAKE_ON_ROW_STATUS_LABEL[row.status]}
+                  {isPendingDuplicate(row)
+                    ? TAKE_ON_DUPLICATE_PENDING_LABEL
+                    : TAKE_ON_ROW_STATUS_LABEL[row.status]}
                 </Badge>
                 {row.block && (
                   <Badge variant="destructive" className="ml-1">
@@ -394,6 +420,16 @@ function RowTable({
               </TableCell>
               <TableCell className="max-w-md text-xs whitespace-normal">
                 <ul className="space-y-0.5">
+                  {isPendingDuplicate(row) && (
+                    <li
+                      className="text-amber-700 dark:text-amber-300"
+                      data-testid={`take-on-row-duplicate-${row.rowNumber}`}
+                    >
+                      {isClients
+                        ? "Matches a client already in Kazi"
+                        : "Matches a record already in Kazi"}
+                    </li>
+                  )}
                   {row.failureReason && (
                     <li
                       className="text-red-700 dark:text-red-300"

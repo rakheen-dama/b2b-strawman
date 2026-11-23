@@ -349,6 +349,12 @@ export const TAKE_ON_ROW_STATUS_LABEL: Record<TakeOnRowStatus, string> = {
   FAILED: "Failed",
 };
 
+/**
+ * A VALIDATED row that matches an existing record (`duplicateOfId`): it will commit as
+ * "Duplicate — skipped" (OBS-655A-1). Not a row status of its own — the row is valid.
+ */
+export const TAKE_ON_DUPLICATE_PENDING_LABEL = "Duplicate — will be skipped";
+
 /** The row statuses only a commit produces (655A). */
 export const TAKE_ON_COMMIT_ROW_STATUSES: readonly TakeOnRowStatus[] = [
   "CREATED",

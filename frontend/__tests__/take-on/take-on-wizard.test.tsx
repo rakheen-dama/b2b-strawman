@@ -584,6 +584,77 @@ describe("TakeOnWizard — validation", () => {
     );
   });
 
+  it("marks a valid row that matches an existing client and filters to those rows (OBS-655A-1)", async () => {
+    const user = userEvent.setup();
+    const row = (
+      rowNumber: number,
+      status: "VALIDATED" | "ERROR",
+      duplicateOfId: string | null
+    ) => ({
+      id: `row-${rowNumber}`,
+      section: "MAIN" as const,
+      rowNumber,
+      sourceRef: `C-0${rowNumber}`,
+      status,
+      block: false,
+      values: { name: `Client ${rowNumber}` },
+      errors:
+        status === "ERROR"
+          ? [
+              {
+                code: "DUPLICATE_IN_FILE",
+                field: "email",
+                message: "Duplicate of row 18 in this file",
+              },
+            ]
+          : [],
+      warnings: [],
+      duplicateOfId,
+      failureReason: null,
+      resultEntityId: null,
+    });
+    actions.fetchTakeOnRows.mockResolvedValue({
+      success: true,
+      data: {
+        content: [
+          row(2, "VALIDATED", null),
+          row(18, "VALIDATED", "cust-acme"),
+          row(19, "ERROR", "cust-acme"),
+        ],
+        page: { totalElements: 3, totalPages: 1, size: 50, number: 0 },
+      },
+    });
+    renderWizard({ ...VALIDATED, counts: { ...VALIDATED.counts, duplicate: 1 } });
+    expect(await screen.findByTestId("take-on-row-status-18")).toHaveTextContent(
+      "Duplicate — will be skipped"
+    );
+    expect(screen.getByTestId("take-on-row-duplicate-18")).toHaveTextContent(
+      "Matches a client already in Kazi"
+    );
+    expect(screen.getByTestId("take-on-row-status-2")).toHaveTextContent("Valid");
+    expect(screen.queryByTestId("take-on-row-duplicate-2")).not.toBeInTheDocument();
+    // an error row keeps its link to the client but is not a skipped duplicate (D-120)
+    expect(screen.getByTestId("take-on-row-status-19")).toHaveTextContent("Error");
+    expect(screen.queryByTestId("take-on-row-duplicate-19")).not.toBeInTheDocument();
+
+    await user.click(screen.getByTestId("take-on-filter-status"));
+    const options = (await screen.findAllByRole("option")).map((o) => o.textContent);
+    expect(options).toEqual([
+      "All statuses",
+      "Pending",
+      "Valid",
+      "Duplicate — will be skipped",
+      "Error",
+    ]);
+    await user.click(screen.getByRole("option", { name: "Duplicate — will be skipped" }));
+    await waitFor(() =>
+      expect(actions.fetchTakeOnRows).toHaveBeenLastCalledWith(
+        "batch-1",
+        expect.objectContaining({ status: "VALIDATED", duplicatesOnly: true, page: 0 })
+      )
+    );
+  });
+
   it("runs the dry run and shows the new counts", async () => {
     const user = userEvent.setup();
     const mapped = batch({

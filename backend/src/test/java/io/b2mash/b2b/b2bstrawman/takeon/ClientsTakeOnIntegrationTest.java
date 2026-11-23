@@ -899,6 +899,98 @@ class ClientsTakeOnIntegrationTest {
     assertThat(attested.details()).containsEntry("row_count", 1);
   }
 
+  // OBS-655A-1: the row list narrows to exactly the rows the Duplicates card counts
+  @Test
+  void theDuplicatesFilter_listsExactlyTheValidRowsTheDuplicatesCardCounts() throws Exception {
+    TestEntityHelper.createCustomer(
+        mockMvc, ownerJwt(), "Filter Existing", "filter.existing@example.test");
+    var batch =
+        validatedClients(
+            mockMvc,
+            owner(),
+            csv(
+                row("Filter New", "filter.new@example.test").ref("DF-A"),
+                row("Filter Existing", "FILTER.existing@example.test").ref("DF-B"),
+                row("Filter Repeat", "filter.existing@example.test").ref("DF-C")),
+            mapping());
+    assertThat((Integer) JsonPath.read(batch.json(), "$.counts.duplicate")).isEqualTo(1);
+
+    var duplicates =
+        rowContent(
+            json(rows(mockMvc, owner(), batch.batchId(), "status=VALIDATED&duplicatesOnly=true")));
+    assertThat(duplicates).extracting(r -> r.get("sourceRef")).containsExactly("DF-B");
+    assertThat(duplicates.getFirst().get("duplicateOfId")).isNotNull();
+    // the flag alone also lists the error row that keeps its link to the client (D-102) ...
+    assertThat(rowContent(json(rows(mockMvc, owner(), batch.batchId(), "duplicatesOnly=true"))))
+        .extracting(r -> r.get("sourceRef"))
+        .containsExactly("DF-B", "DF-C");
+    // ... and without it the status filter is unchanged
+    assertThat(rowContent(json(rows(mockMvc, owner(), batch.batchId(), "status=VALIDATED"))))
+        .extracting(r -> r.get("sourceRef"))
+        .containsExactly("DF-A", "DF-B");
+  }
+
+  // OBS-655A-2: a refused risk rating or source of funds is not replaced by the blank default
+  @Test
+  void aRefusedRiskRatingOrSourceOfFunds_isNotReplacedByTheBlankDefault() throws Exception {
+    var batch =
+        validatedClients(
+            mockMvc,
+            owner(),
+            csv(
+                row("Rating Refused", "rating.refused@example.test")
+                    .rating("VERY_HIGH")
+                    .ref("RR-1"),
+                row("Rating Blank Error", "").rating("").ref("RR-2"),
+                row("Rating Blank Valid", "rating.blank@example.test").rating("").ref("RR-3")),
+            mapping());
+    var byRef = rowsByRef(batch.batchId());
+    assertError(
+        byRef.get("RR-1"),
+        "ENUM_INVALID",
+        "riskRating",
+        "VERY_HIGH is not one of: Low, Medium, High, Unrated");
+    assertThat(values(byRef.get("RR-1"))).doesNotContainKey("riskRating");
+    // a blank rating is still "Not risk-rated", on an error row as on a valid one
+    assertThat(values(byRef.get("RR-2"))).containsEntry("riskRating", "UNRATED");
+    assertThat(byRef.get("RR-3").get("status")).isEqualTo("VALIDATED");
+    assertThat(values(byRef.get("RR-3"))).containsEntry("riskRating", "UNRATED");
+    // the FICA summary counts the one valid row only
+    assertThat((Integer) JsonPath.read(batch.json(), "$.summary.clients")).isEqualTo(1);
+    assertThat((Map<String, Object>) JsonPath.read(batch.json(), "$.summary.fica"))
+        .containsEntry("riskRating", Map.of("UNRATED", 1));
+
+    // The same for source of funds: the "Rating" column mapped to it instead.
+    @SuppressWarnings("unchecked")
+    var targets = new HashMap<>((Map<String, String>) mapping().get("targets"));
+    targets.remove("riskRating");
+    targets.put("sourceOfFundsStatus", "Rating");
+    var sofMapping = new HashMap<>(mapping());
+    sofMapping.put("targets", targets);
+    var sof =
+        validatedClients(
+            mockMvc,
+            owner(),
+            csv(
+                row("Funds Refused", "funds.refused@example.test").rating("Unknown").ref("SF-1"),
+                row("Funds Blank", "funds.blank@example.test").rating("").ref("SF-2")),
+            sofMapping);
+    var sofByRef = rowsByRef(sof.batchId());
+    assertError(
+        sofByRef.get("SF-1"),
+        "ENUM_INVALID",
+        "sourceOfFundsStatus",
+        "Unknown is not one of: Done, Not required, Outstanding");
+    assertThat(values(sofByRef.get("SF-1"))).doesNotContainKey("sourceOfFundsStatus");
+    assertThat(sofByRef.get("SF-2").get("status")).isEqualTo("VALIDATED");
+    assertThat(values(sofByRef.get("SF-2"))).containsEntry("sourceOfFundsStatus", "NOT_REQUIRED");
+  }
+
+  @SuppressWarnings("unchecked")
+  private static Map<String, Object> values(Map<String, Object> row) {
+    return (Map<String, Object>) row.get("values");
+  }
+
   // 13 (review A-H1)
   @Test
   void aDataDeletionRequest_dropsTheParkedColumns_andRedactsTheClientsTakeOnRows()

@@ -45,6 +45,17 @@ public interface TakeOnRowRepository extends JpaRepository<TakeOnRow, UUID> {
       Collection<Boolean> blocks,
       Pageable pageable);
 
+  /**
+   * As above, narrowed to the rows that match an existing record ({@code duplicate_of_id} set) —
+   * with {@code VALIDATED}, exactly the rows the Duplicates card counts (OBS-655A-1).
+   */
+  Page<TakeOnRow> findByBatchIdAndStatusInAndSectionInAndBlockInAndDuplicateOfIdIsNotNull(
+      UUID batchId,
+      Collection<TakeOnRowStatus> statuses,
+      Collection<TakeOnSection> sections,
+      Collection<Boolean> blocks,
+      Pageable pageable);
+
   /** The first row of a source — its raw key set is the header set for mapping checks. */
   Optional<TakeOnRow> findFirstBySourceIdOrderByRowNumberAsc(UUID sourceId);
 

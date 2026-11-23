@@ -50,7 +50,8 @@ import org.springframework.stereotype.Component;
  * screened; ISO 3166-1 alpha-2 country; an address warning; dedup (1) email, case-insensitive, (2)
  * name + tax number, (3) name + ID number — against existing clients ({@code duplicate_of_id}) and
  * against earlier rows of the file ({@code DUPLICATE_IN_FILE}, D-29, C-19). Blank risk rating ⇒
- * {@code UNRATED}; blank source of funds ⇒ {@code NOT_REQUIRED}.
+ * {@code UNRATED}; blank source of funds ⇒ {@code NOT_REQUIRED}; a refused value is not replaced by
+ * either (OBS-655A-2).
  */
 @Component
 public class ClientsDatasetHandler
@@ -218,8 +219,9 @@ public class ClientsDatasetHandler
           "screeningDate",
           "Screening date is required unless the client was not screened.");
     }
-    mapped.putIfAbsent("riskRating", FicaRiskRating.UNRATED.name());
-    mapped.putIfAbsent("sourceOfFundsStatus", SourceOfFundsStatus.NOT_REQUIRED.name());
+    defaultIfBlank(row, context, mapped, "riskRating", FicaRiskRating.UNRATED.name());
+    defaultIfBlank(
+        row, context, mapped, "sourceOfFundsStatus", SourceOfFundsStatus.NOT_REQUIRED.name());
 
     if (blank(mapped.get("addressLine1"))
         || blank(mapped.get("city"))
@@ -262,6 +264,32 @@ public class ClientsDatasetHandler
         recordNameKey(context, row, "nameid:" + nameKey(name, idNumber), "idNumber", repeated);
       }
     }
+  }
+
+  /**
+   * The documented default of an optional FICA field, applied only when the file gave nothing — the
+   * cell blank and no batch default. A value the generic checks refused stays absent (the row is an
+   * error that quotes it), so the row never shows a substituted value the file did not hold
+   * (OBS-655A-2). The other FICA fields are required and have no default.
+   */
+  private static void defaultIfBlank(
+      TakeOnRow row,
+      ValidationContext context,
+      Map<String, Object> mapped,
+      String key,
+      String fallback) {
+    if (mapped.containsKey(key)) {
+      return;
+    }
+    var source = context.source(row.getSourceId());
+    String header = source.targets().get(key);
+    if (header != null && !blank(row.getRawValues().get(header))) {
+      return; // refused
+    }
+    if (!blank(source.defaults().get(key))) {
+      return; // the batch default was refused
+    }
+    mapped.put(key, fallback);
   }
 
   /** Records an in-file name key; a repeat is reported once per row (D-29 semantics). */

@@ -247,6 +247,8 @@ export interface TakeOnRowFilters {
   status?: TakeOnRowStatus;
   section?: TakeOnSection;
   blocksOnly?: boolean;
+  /** Only rows that match an existing record (`duplicate_of_id`); with VALIDATED, the Duplicates card. */
+  duplicatesOnly?: boolean;
   page: number;
   size: number;
 }
@@ -259,6 +261,7 @@ export async function fetchTakeOnRows(
   if (filters.status) params.set("status", filters.status);
   if (filters.section) params.set("section", filters.section);
   if (filters.blocksOnly) params.set("blocksOnly", "true");
+  if (filters.duplicatesOnly) params.set("duplicatesOnly", "true");
   params.set("page", String(filters.page));
   params.set("size", String(filters.size));
   return run(() => api.get<TakeOnPage<TakeOnRow>>(`${batchPath(batchId)}/rows?${params}`));

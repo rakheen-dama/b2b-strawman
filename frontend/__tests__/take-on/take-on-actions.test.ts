@@ -29,6 +29,7 @@ import {
   downloadTakeOnResult,
   downloadTakeOnTemplate,
   fetchTakeOnBankingAccounts,
+  fetchTakeOnRows,
 } from "@/app/(app)/org/[slug]/settings/matters/take-on-actions";
 
 const PERMISSION =
@@ -74,6 +75,27 @@ describe("fetchTakeOnBankingAccounts — refusals", () => {
     const result = await fetchTakeOnBankingAccounts();
 
     expect(result).toEqual({ success: true, data: [{ id: "a", accountName: "Main" }] });
+  });
+});
+
+describe("fetchTakeOnRows — query", () => {
+  beforeEach(() => {
+    mockGet.mockReset();
+    mockGet.mockResolvedValue({ content: [], page: {} });
+  });
+
+  it("asks for the rows that match an existing record with duplicatesOnly (OBS-655A-1)", async () => {
+    await fetchTakeOnRows("b1", { status: "VALIDATED", duplicatesOnly: true, page: 0, size: 50 });
+    expect(mockGet).toHaveBeenCalledWith(
+      "/api/take-on/batches/b1/rows?status=VALIDATED&duplicatesOnly=true&page=0&size=50"
+    );
+  });
+
+  it("sends no duplicatesOnly when the filter is off", async () => {
+    await fetchTakeOnRows("b1", { status: "VALIDATED", page: 0, size: 50 });
+    expect(mockGet).toHaveBeenCalledWith(
+      "/api/take-on/batches/b1/rows?status=VALIDATED&page=0&size=50"
+    );
   });
 });
 

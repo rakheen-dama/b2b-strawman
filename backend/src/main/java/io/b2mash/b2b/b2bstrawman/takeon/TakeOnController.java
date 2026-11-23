@@ -183,8 +183,10 @@ public class TakeOnController {
       @RequestParam(required = false) TakeOnRowStatus status,
       @RequestParam(required = false) TakeOnSection section,
       @RequestParam(defaultValue = "false") boolean blocksOnly,
+      @RequestParam(defaultValue = "false") boolean duplicatesOnly,
       @PageableDefault(size = 50) Pageable pageable) {
-    return ResponseEntity.ok(queryService.listRows(batchId, status, section, blocksOnly, pageable));
+    return ResponseEntity.ok(
+        queryService.listRows(batchId, status, section, blocksOnly, duplicatesOnly, pageable));
   }
 
   @PostMapping("/api/take-on/batches/{batchId}/cancel")

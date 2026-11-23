@@ -19,6 +19,12 @@
 - **Seen:** Backend CI on PR #1847 @ `087f76abd` (run 45214014341, first attempt): `execute_auditWriteHoldsAtMostOneConnection` — "connections checked out while the audit row is written; idle=0 samples={duringAuditWrite=2}" (expected idle + 1). 7893 / 7894.
 - **Why it is not 657A:** the test (last changed by FU-12, #1833) reads the HikariCP pool's global active count; any concurrent thread holding a connection at the sampling instant bleeds in — a per-tenant scheduled action logged in the same second. Identical code passed CI on `05812c045`, the local full verify on `087f76abd` (7894/0/0) and the CI re-run (pass, 23m47s).
 - **Fix (follow-up):** id-scope the measurement to the request thread's own connection (memory `automation_count_bleed_side_effect_flavor`), not the pool total.
+- **Resolved (orchestrator, 2026-11-23):** the bleed came from `LegacyContentImportRunner`, not from a scheduled action.
+  - **Mechanism:** its `ApplicationRunner` starts a virtual-thread sweep over every tenant at each context start, and that sweep was never switched off in tests.
+  - **Reproduced deterministically:** 10/10 rounds read `0→2` right after the real startup trigger.
+  - **Fix:** gate the trigger behind `kazi.legacy-content-import.enabled` and turn it off in `application-test.yml`. The test's assertion is unchanged; it was correct once its "pool idle" premise holds.
+  - **Result:** 0/10 bled after the fix; the full verify passed with 7,897 tests, 0 failures.
+  - **Where:** PR #1849; evidence in `qa_cycle/evidence/f657a2/README.md`.
 
 ## F-657A-3 — reconciliation pane: 50-page cap refuses instead of filtering server-side (CodeRabbit later round, Major; deferred)
 

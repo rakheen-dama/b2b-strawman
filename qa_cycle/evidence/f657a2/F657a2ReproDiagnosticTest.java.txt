@@ -1,0 +1,144 @@
+package io.b2mash.b2b.b2bstrawman.reporting;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.zaxxer.hikari.HikariDataSource;
+import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.audit.AuditEventRecord;
+import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.template.LegacyContentImportRunner;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.DefaultApplicationArguments;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
+import org.springframework.test.web.servlet.MockMvc;
+
+/**
+ * F-657A-2 DIAGNOSTIC (not for merge): fires the real LegacyContentImportRunner startup trigger,
+ * the way every Spring context start does, then immediately runs the same request and pool sample
+ * as ReportAuditConnectionBudgetIntegrationTest.execute_auditWriteHoldsAtMostOneConnection. Extra
+ * tenants give the background sweep work, as the full suite's hundreds of tenants do.
+ */
+@SpringBootTest
+@AutoConfigureMockMvc
+@Import(TestcontainersConfiguration.class)
+@ActiveProfiles("test")
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+class F657a2ReproDiagnosticTest {
+
+  private static final String ORG_ID = "org_f657a2_repro";
+  private static final String OWNER = "user_f657a2_owner";
+  private static final int EXTRA_TENANTS = 25;
+  private static final int ROUNDS = 10;
+
+  @Autowired private MockMvc mockMvc;
+  @Autowired private TenantProvisioningService provisioningService;
+  @Autowired private LegacyContentImportRunner legacyContentImportRunner;
+
+  @Autowired
+  @Qualifier("appDataSource")
+  private HikariDataSource appDataSource;
+
+  @MockitoSpyBean private ReportRenderingService reportRenderingService;
+  @MockitoSpyBean private AuditService auditService;
+
+  @BeforeAll
+  void setup() throws Exception {
+    provisioningService.provisionTenant(ORG_ID, "F657A2 Repro Org", null);
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, OWNER, "f657a2_owner@test.com", "F657A2 Owner", "owner");
+    for (int i = 0; i < EXTRA_TENANTS; i++) {
+      provisioningService.provisionTenant("org_f657a2_extra_" + i, "Extra " + i, null);
+    }
+  }
+
+  @Test
+  void auditWriteSample_withAndWithoutTheStartupSweep() throws Exception {
+    AtomicInteger duringAuditWrite = new AtomicInteger(-1);
+    doAnswer(
+            inv -> {
+              inv.callRealMethod();
+              AuditEventRecord record = inv.getArgument(0);
+              if (record.eventType().startsWith("REPORT_")) {
+                duringAuditWrite.set(active());
+              }
+              return null;
+            })
+        .when(auditService)
+        .log(any());
+
+    List<String> quiet = new ArrayList<>();
+    List<String> withSweep = new ArrayList<>();
+    for (int round = 0; round < ROUNDS; round++) {
+      quiet.add(sample(duringAuditWrite, false));
+      withSweep.add(sample(duringAuditWrite, true));
+    }
+    System.out.println(
+        "F657A2-REPRO quiet (no startup trigger)  [idle->duringAuditWrite]: " + quiet);
+    System.out.println(
+        "F657A2-REPRO after the startup trigger   [idle->duringAuditWrite]: " + withSweep);
+    long bled =
+        withSweep.stream()
+            .filter(s -> !s.endsWith("->" + (Integer.parseInt(s.split("->")[0]) + 1)))
+            .count();
+    long quietBled =
+        quiet.stream()
+            .filter(s -> !s.endsWith("->" + (Integer.parseInt(s.split("->")[0]) + 1)))
+            .count();
+    System.out.println(
+        "F657A2-REPRO bled (sample != idle+1): quiet "
+            + quietBled
+            + "/"
+            + ROUNDS
+            + ", after trigger "
+            + bled
+            + "/"
+            + ROUNDS);
+  }
+
+  private String sample(AtomicInteger duringAuditWrite, boolean fireStartupTrigger)
+      throws Exception {
+    // Let any earlier sweep finish so each sample starts from a quiet pool.
+    for (int i = 0; i < 100 && active() != 0; i++) {
+      Thread.sleep(50);
+    }
+    int idle = active();
+    duringAuditWrite.set(-1);
+    if (fireStartupTrigger) {
+      legacyContentImportRunner.run(new DefaultApplicationArguments());
+    }
+    mockMvc
+        .perform(
+            post("/api/report-definitions/timesheet/execute")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"parameters": {"dateFrom": "2025-06-01", "dateTo": "2025-06-30",
+                     "groupBy": "member"}, "page": 0, "size": 50}
+                    """))
+        .andExpect(status().isOk());
+    return idle + "->" + duringAuditWrite.get();
+  }
+
+  private int active() {
+    return appDataSource.getHikariPoolMXBean().getActiveConnections();
+  }
+}

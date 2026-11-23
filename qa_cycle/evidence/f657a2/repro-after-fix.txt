@@ -1,0 +1,3 @@
+F657A2-REPRO after the startup trigger   [idle->duringAuditWrite]: [0->1, 0->1, 0->1, 0->1, 0->1, 0->1, 0->1, 0->1, 0->1, 0->1]
+F657A2-REPRO bled (sample != idle+1): quiet 0/10, after trigger 0/10
+F657A2-REPRO quiet (no startup trigger)  [idle->duringAuditWrite]: [0->1, 0->1, 0->1, 0->1, 0->1, 0->1, 0->1, 0->1, 0->1, 0->1]

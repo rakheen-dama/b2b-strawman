@@ -116,6 +116,11 @@ kazi:
   # scheduler can opt back in via @TestPropertySource(properties = "kazi.scheduling.enabled=true").
   scheduling:
     enabled: false
+  # LegacyContentImportRunner's startup sweep (a virtual thread over every tenant schema) would
+  # otherwise start at every context boot and hold pooled connections while unrelated test methods
+  # run (F-657A-2). LegacyContentImportRunnerTest calls runImport() directly.
+  legacy-content-import:
+    enabled: false
   sharding:
     enabled: false
   job-queue:

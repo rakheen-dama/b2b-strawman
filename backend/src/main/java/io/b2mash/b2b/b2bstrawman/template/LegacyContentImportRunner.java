@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.annotation.Order;
@@ -25,6 +26,12 @@ import org.springframework.transaction.support.TransactionTemplate;
  *
  * <p>This runner is idempotent: once a {@code legacyHtml} node is converted, it is replaced with
  * proper Tiptap nodes and will not match on subsequent runs.
+ *
+ * <p>The startup trigger is gated by {@code kazi.legacy-content-import.enabled} (default on). The
+ * test profile turns it off: every {@code @SpringBootTest} context start would otherwise launch a
+ * background sweep over every tenant schema in the shared embedded database, holding a pooled
+ * connection per tenant while unrelated test methods run (F-657A-2: a pool-sampling test read 2
+ * active connections instead of 1). Tests call {@link #runImport()} directly.
  */
 @Component
 @Order(200)
@@ -37,22 +44,29 @@ public class LegacyContentImportRunner implements ApplicationRunner {
   private final ClauseRepository clauseRepository;
   private final LegacyContentImporter importer;
   private final TransactionTemplate transactionTemplate;
+  private final boolean enabled;
 
   public LegacyContentImportRunner(
       TenantScopedRunner tenantScopedRunner,
       DocumentTemplateRepository templateRepository,
       ClauseRepository clauseRepository,
       LegacyContentImporter importer,
-      TransactionTemplate transactionTemplate) {
+      TransactionTemplate transactionTemplate,
+      @Value("${kazi.legacy-content-import.enabled:true}") boolean enabled) {
     this.tenantScopedRunner = tenantScopedRunner;
     this.templateRepository = templateRepository;
     this.clauseRepository = clauseRepository;
     this.importer = importer;
     this.transactionTemplate = transactionTemplate;
+    this.enabled = enabled;
   }
 
   @Override
   public void run(ApplicationArguments args) {
+    if (!enabled) {
+      log.debug("Legacy content import at startup disabled (kazi.legacy-content-import.enabled)");
+      return;
+    }
     Thread.startVirtualThread(
         () -> {
           try {

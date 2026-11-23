@@ -45,6 +45,10 @@ FU-5 (#1827) and F-646D-1 (#1835) fixed this for **deposit reversals** and **fee
 
 `TrustInvestmentService.reverseInterest` locks two transaction rows (the net row, then the Fund-share row) in a fixed order that is **not** transaction-id order. Auto-match (CF-3, #1826) locks the rows it matches in id order, so an auto-match that plans both rows could deadlock against a concurrent interest reversal (40P01 → a generic error; no corruption). Evidence: `qa_cycle/evidence/phase92-followups/CF-3/notes.md` (residual risk). **Not reproduced.** Proposed: a reproduce-first gated test (the pattern from `AutoMatchLockOrderIntegrationTest`). If it goes red, lock both rows in id order in `reverseInterest`; if it does not, close the hypothesis with the guard test.
 
+### 1.5 A retry after a page reload can still post twice (F-11 residual — MEDIUM)
+
+F-11 (#1841) keeps the `Idempotency-Key` in the page, so a resubmit **in the same page** after a lost response replays instead of posting again. After a **reload** (or from a second tab), the unsettled key is gone and the retry sends a new key, which the server treats as a new request. `recordPayment` (and the other trust writes) check only the reference format, not for an existing row with the same reference, amount and client. A retry after a reload therefore adds another `AWAITING_APPROVAL` row (for payments, refunds and fee transfers), and approving both posts twice. For writes that post at once (e.g. a deposit), the second row posts immediately. This is the original 648B F-11 defect ("a resubmit after a lost response posts twice") still reachable through a reload, so F-11 is **partly** closed (CodeRabbit, #1844). Fix options: (a) keep an unsettled request's key across reloads in `sessionStorage`, keyed by the form and its request content, so a reload and resubmit reuse it (frontend only; doesn't cover a second device); (b) have the server replay an unsettled matching request (risks refusing a genuine identical second entry). Proposed: (a), plus a visible "a submit of this entry may already have been recorded — check the ledger" hint when a stored unsettled key exists.
+
 ### 1.4 Not yet rated — rate before re-closing
 
 - **Documents build their trust context twice** (FU-3 D-1). `GeneratedDocumentService.generateDocument` builds the trust context once for `containsTrustData` and once for the PDF. A client's first-ever trust posting landing between the two could store a PDF that prints trust money while it is flagged as not containing trust data, which bypasses the G89-F52 download check. Proposed fix: derive the flag from the PDF's own context. Needs a rubric rating; the reviewer of #1843 suggests rating it in the same pass as 1.1–1.3.
@@ -113,6 +117,8 @@ FU-5 (#1827) and F-646D-1 (#1835) fixed this for **deposit reversals** and **fee
 ---
 
 ## 5. LOW register rows carried to the backlog
+
+**Gate basis for exit-bar item (3): source severity.** The register counts open HIGH/MEDIUM by **source severity**, not by its rubric: register notes (2026-11-20) note 4, "Source severity kept where the rubric reads higher", and the 652F closure headline "by the register's rule that source severity wins" (`tasks/phase92-trust-books-provably-right.md` § Closure report C.1). That rule was applied in both directions in Phase 92 (CF-3a and F-650C-2 were counted at source severity too), so the two rubric-MEDIUM LOW rows below are outside item (3) by that rule, not by omission. If the founder wants the rubric to govern instead, these two join §1.
 
 `qa_cycle/evidence/phase92-exit/defect-register.md` (as updated on `docs/phase92-exit-gate-pass`): **116 LOW rows** are open (7 assigned to a follow-up, 104 unassigned, 5 LOW hypotheses). Two rows are LOW by source but **MEDIUM under the rubric**: they show a misleading figure, but the source severity is kept.
 

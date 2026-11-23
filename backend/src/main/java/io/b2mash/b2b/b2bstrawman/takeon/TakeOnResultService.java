@@ -13,6 +13,7 @@ import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -31,6 +32,10 @@ public class TakeOnResultService {
   private static final Pattern PLAIN_NUMBER = Pattern.compile("^-?\\d+(\\.\\d+)?$");
   private static final List<String> HEADERS =
       List.of("Row", "Previous system ID", "Status", "Kazi record ID", "Message");
+
+  /** Clients whose name and email are gone: no portal contact is created for them. */
+  private static final Set<LifecycleStatus> REMOVED =
+      Set.of(LifecycleStatus.ANONYMIZED, LifecycleStatus.OFFBOARDED);
 
   /** The row statuses as the wizard shows them (§17.10 X3) — never the raw enum. */
   static final Map<TakeOnRowStatus, String> STATUS_LABELS =
@@ -113,7 +118,9 @@ public class TakeOnResultService {
    * {@code POST …/portal-contacts}: a {@code GENERAL} portal contact for each client the batch
    * created that has none yet, through {@link PortalContactService#createContact} — which sends no
    * email (FD-10; magic-link invitations stay the separate per-client action). Idempotent: a second
-   * call creates nothing. The batch row is locked so two clicks cannot both create.
+   * call creates nothing. The batch row is locked so two clicks cannot both create. A client that
+   * has been anonymised ({@code ANONYMIZED}) or offboarded ({@code OFFBOARDED} — a data-deletion
+   * request leaves it so, with its email replaced) is skipped.
    */
   @Transactional
   public TakeOnPortalContactsResponse createPortalContacts(UUID batchId) {
@@ -131,9 +138,12 @@ public class TakeOnResultService {
     int skipped = 0;
     for (TakeOnRow row :
         rows.findByBatchIdAndStatusOrderByRowNumberAsc(batchId, TakeOnRowStatus.CREATED)) {
-      var client = customers.findById(row.getResultEntityId()).orElse(null);
+      // Locked, then read: the one guard shared with both anonymisation paths, which lock the
+      // client first — so the contact gets the client's current name and email, never ones an
+      // anonymisation has removed, and an anonymisation waits for the contact and then finds it.
+      var client = customers.findByIdForUpdate(row.getResultEntityId()).orElse(null);
       if (client == null
-          || client.getLifecycleStatus() == LifecycleStatus.ANONYMIZED
+          || REMOVED.contains(client.getLifecycleStatus())
           || !portalContacts.findByCustomerId(client.getId()).isEmpty()) {
         skipped++;
         continue;

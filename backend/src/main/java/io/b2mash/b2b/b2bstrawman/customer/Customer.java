@@ -137,10 +137,11 @@ public class Customer {
   /**
    * A client taken on from the firm's previous system (Phase 93 655A, ADR-389): born {@code ACTIVE}
    * through the 8-argument constructor — no lifecycle transition happens, so no checklist, no
-   * lifecycle audit and no status event. The one documented caller is {@code
-   * TakenOnCustomerService.createTakenOn} (ArchUnit {@code TakeOnEntryPointsArchTest}).
+   * lifecycle audit and no status event. Package-private: the one caller is {@code
+   * TakenOnCustomerService.createTakenOn} (ADR-389 — no second entry path), whose own callers
+   * ArchUnit {@code TakeOnEntryPointsArchTest} confines to {@code ..takeon..}.
    */
-  public static Customer takenOn(
+  static Customer takenOn(
       String name,
       String email,
       String phone,

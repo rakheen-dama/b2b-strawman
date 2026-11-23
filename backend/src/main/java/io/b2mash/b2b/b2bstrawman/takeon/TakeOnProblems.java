@@ -169,6 +169,19 @@ public final class TakeOnProblems {
         "This take-on batch has no valid rows to attest. Correct the file and validate it again.");
   }
 
+  /**
+   * A statutory hard block on a row stops the whole batch (657B semantics; 655A guards the claim
+   * and the attestation so a blocked batch never reaches the drain). Additive code (CR-7).
+   */
+  public static TakeOnProblemException blocked() {
+    return new TakeOnProblemException(
+        HttpStatus.CONFLICT,
+        "TAKE_ON_BLOCKED",
+        "Take-on batch blocked",
+        "Rows in this take-on batch block it. Correct them in the previous system, upload the"
+            + " corrected file and validate it again.");
+  }
+
   /** Commit runs for one dataset in 655A; the others arrive with their slices. */
   public static TakeOnProblemException commitNotAvailable() {
     return new TakeOnProblemException(

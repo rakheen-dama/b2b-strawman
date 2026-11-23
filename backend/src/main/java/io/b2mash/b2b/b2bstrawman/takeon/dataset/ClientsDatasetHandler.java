@@ -17,6 +17,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatch;
 import io.b2mash.b2b.b2bstrawman.takeon.TakeOnDataset;
 import io.b2mash.b2b.b2bstrawman.takeon.TakeOnRow;
+import io.b2mash.b2b.b2bstrawman.takeon.TakeOnRowStatus;
 import io.b2mash.b2b.b2bstrawman.takeon.TakeOnSection;
 import io.b2mash.b2b.b2bstrawman.takeon.TakeOnSignOff;
 import io.b2mash.b2b.b2bstrawman.takeon.TakeOnSignOffKind;
@@ -33,7 +34,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.regex.Pattern;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 
@@ -47,10 +47,10 @@ import org.springframework.stereotype.Component;
  * holds the existing-client lookups and the in-file name keys.
  *
  * <p>Validation: email required (FD-22 text) and not a placeholder; the screening date unless not
- * screened; ISO-2 country; an address warning; dedup (1) email, case-insensitive, (2) name + tax
- * number, (3) name + ID number — against existing clients ({@code duplicate_of_id}) and against
- * earlier rows of the file ({@code DUPLICATE_IN_FILE}, D-29, C-19). Blank risk rating ⇒ {@code
- * UNRATED}; blank source of funds ⇒ {@code NOT_REQUIRED}.
+ * screened; ISO 3166-1 alpha-2 country; an address warning; dedup (1) email, case-insensitive, (2)
+ * name + tax number, (3) name + ID number — against existing clients ({@code duplicate_of_id}) and
+ * against earlier rows of the file ({@code DUPLICATE_IN_FILE}, D-29, C-19). Blank risk rating ⇒
+ * {@code UNRATED}; blank source of funds ⇒ {@code NOT_REQUIRED}.
  */
 @Component
 public class ClientsDatasetHandler
@@ -83,7 +83,20 @@ public class ClientsDatasetHandler
   /** The {@code take_on_rows.result_entity_type} of a client (ADR-342 storage key). */
   public static final String RESULT_ENTITY_TYPE = "customer";
 
-  private static final Pattern ISO2 = Pattern.compile("^[A-Z]{2}$");
+  /** The ISO 3166-1 alpha-2 country codes (no user-assigned code such as {@code ZZ}). */
+  private static final Set<String> ISO_COUNTRIES = Set.of(Locale.getISOCountries());
+
+  /**
+   * The FICA columns the attestation step summarises (catalogue keys), counted at validation into
+   * {@code take_on_batches.summary} so the browser never pages the rows (§17.3.3).
+   */
+  static final List<String> FICA_SUMMARY_FIELDS =
+      List.of(
+          "ficaClientType",
+          "riskRating",
+          "beneficialOwnershipStatus",
+          "screeningStatus",
+          "sourceOfFundsStatus");
 
   /** Local parts that stand in for "no email" in practice-management exports (FD-22). */
   private static final Set<String> PLACEHOLDER_LOCAL_PARTS =
@@ -110,6 +123,7 @@ public class ClientsDatasetHandler
     final Map<String, UUID> clientByNameAndId = new HashMap<>();
     final Map<String, Integer> firstRowByNameKey = new HashMap<>();
     final List<InFileDuplicate> nameDuplicates = new ArrayList<>();
+    final List<TakeOnRow> rows = new ArrayList<>();
 
     ClientsValidationContext(ValidationContext base) {
       super(base);
@@ -166,6 +180,7 @@ public class ClientsDatasetHandler
   @Override
   public void mapAndValidate(TakeOnRow row, ValidationContext base) {
     var context = (ClientsValidationContext) base;
+    context.rows.add(row);
     var check = generic.checkGeneric(row, context);
     var mapped = check.mapped();
 
@@ -181,13 +196,13 @@ public class ClientsDatasetHandler
 
     if (mapped.get("country") instanceof String country) {
       String iso = country.strip().toUpperCase(Locale.ROOT);
-      if (ISO2.matcher(iso).matches()) {
+      if (ISO_COUNTRIES.contains(iso)) {
         mapped.put("country", iso);
       } else {
         check.addError(
             COUNTRY_INVALID,
             "country",
-            "Enter the country as a two-letter code (for example ZA), or leave it blank.");
+            "Enter the country as its two-letter ISO code (for example ZA), or leave it blank.");
       }
     }
 
@@ -285,9 +300,33 @@ public class ClientsDatasetHandler
     }
   }
 
+  /**
+   * {@code {clients: n, fica: {field: {value: rows}}}} over the rows that will become clients —
+   * {@code VALIDATED} and not matching an existing client — for the attestation step (B-H2).
+   * Computed after the batch-level checks, so the statuses are final.
+   */
   @Override
-  public Map<String, Object> summary(ValidationContext context) {
-    return generic.summary(context);
+  public Map<String, Object> summary(ValidationContext base) {
+    var context = (ClientsValidationContext) base;
+    var fica = new LinkedHashMap<String, Map<String, Integer>>();
+    FICA_SUMMARY_FIELDS.forEach(field -> fica.put(field, new LinkedHashMap<>()));
+    int clients = 0;
+    for (TakeOnRow row : context.rows) {
+      if (row.getStatus() != TakeOnRowStatus.VALIDATED || row.getDuplicateOfId() != null) {
+        continue;
+      }
+      clients++;
+      for (String field : FICA_SUMMARY_FIELDS) {
+        String value = text(row.getMappedValues().get(field));
+        if (value != null) {
+          fica.get(field).merge(value, 1, Integer::sum);
+        }
+      }
+    }
+    var summary = new LinkedHashMap<String, Object>(generic.summary(context));
+    summary.put("clients", clients);
+    summary.put("fica", fica);
+    return summary;
   }
 
   // --- Commit (§17.3.3 per-row steps 1–4) ---

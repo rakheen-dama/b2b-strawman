@@ -78,7 +78,11 @@ public interface TakeOnRowRepository extends JpaRepository<TakeOnRow, UUID> {
            WHERE batch_id = :batchId""")
   int purgeValues(@Param("batchId") UUID batchId);
 
-  /** The summary counts, read in the same transaction that wrote the statuses (§17.10 X2). */
+  /**
+   * The summary counts, read in the same transaction that wrote the statuses (§17.10 X2). {@code
+   * duplicate} counts the valid rows that match an existing record (they commit as skipped) — an
+   * error row keeps its {@code duplicate_of_id} (the anonymisation link, D-102) but is not counted.
+   */
   @Query(
       nativeQuery = true,
       value =
@@ -86,7 +90,8 @@ public interface TakeOnRowRepository extends JpaRepository<TakeOnRow, UUID> {
           SELECT count(*)                                            AS total,
                  count(*) FILTER (WHERE status = 'VALIDATED')        AS valid,
                  count(*) FILTER (WHERE status = 'ERROR')            AS error,
-                 count(*) FILTER (WHERE duplicate_of_id IS NOT NULL) AS duplicate,
+                 count(*) FILTER (WHERE status = 'VALIDATED'
+                                    AND duplicate_of_id IS NOT NULL) AS duplicate,
                  count(*) FILTER (WHERE block)                       AS blocks
             FROM take_on_rows WHERE batch_id = :batchId""")
   RowCounts countsFor(@Param("batchId") UUID batchId);
@@ -166,20 +171,16 @@ public interface TakeOnRowRepository extends JpaRepository<TakeOnRow, UUID> {
 
   List<TakeOnRow> findByBatchIdAndStatusOrderByRowNumberAsc(UUID batchId, TakeOnRowStatus status);
 
-  /** The clients dedup key of an email (D-19): {@code "email:" + lower(email)}. */
-  static String clientDedupKey(String email) {
-    return "email:" + email.toLowerCase(java.util.Locale.ROOT);
-  }
-
   /**
    * POPIA (§17.6.5, FD-19, C-23): when a client is anonymised, every take-on row that produced it
-   * or matched it — by {@code result_entity_id} or {@code duplicate_of_id}, or by the client's
-   * email dedup key (a row that FAILED on an email clash with it, or an in-file repeat of it; pass
-   * the key taken <b>before</b> the email is overwritten) — loses its values — {@code {"redacted":
-   * true}}, the dedup key (a lower-cased email) and the message texts (they may quote a cell); only
-   * {code, field} stay. The {@code source_ref} stays (a later dataset cannot resolve an anonymised
-   * client anyway, and the row shell must still say what it was). The archived file is not
-   * rewritten while a legal retention period runs.
+   * or matched it — by {@code result_entity_id} or {@code duplicate_of_id}, or by the dedup key of
+   * any email the client has held ({@code dedupKeys}, from {@code TakeOnDedupKeys.client}: a row
+   * that FAILED on an email clash with it, an in-file repeat of it, a row keyed by an address it
+   * has since changed; taken <b>before</b> the email is overwritten) — loses its values: {@code
+   * {"redacted": true}}, the previous system's id ({@code source_ref}, free text that may be an
+   * email or a name), the dedup key and the message texts (they may quote a cell); only {code,
+   * field} stay. The row shell (number, status, result link) stays; the archived file is not
+   * rewritten while a legal retention period runs. Pass at least one key.
    */
   @Modifying(flushAutomatically = true, clearAutomatically = true)
   @Query(
@@ -188,7 +189,7 @@ public interface TakeOnRowRepository extends JpaRepository<TakeOnRow, UUID> {
           """
           UPDATE take_on_rows SET raw_values = '{"redacted": true}'::jsonb,
                  mapped_values = '{"redacted": true}'::jsonb,
-                 dedup_key = NULL,
+                 source_ref = NULL, dedup_key = NULL,
                  errors = COALESCE((SELECT jsonb_agg(jsonb_build_object(
                                       'code', e -> 'code', 'field', e -> 'field'))
                                       FROM jsonb_array_elements(errors) e), '[]'::jsonb),
@@ -197,6 +198,7 @@ public interface TakeOnRowRepository extends JpaRepository<TakeOnRow, UUID> {
                                         FROM jsonb_array_elements(warnings) w), '[]'::jsonb),
                  updated_at = now()
            WHERE result_entity_id = :clientId OR duplicate_of_id = :clientId
-              OR dedup_key = :dedupKey""")
-  int redactForClient(@Param("clientId") UUID clientId, @Param("dedupKey") String dedupKey);
+              OR dedup_key IN (:dedupKeys)""")
+  int redactForClient(
+      @Param("clientId") UUID clientId, @Param("dedupKeys") Collection<String> dedupKeys);
 }

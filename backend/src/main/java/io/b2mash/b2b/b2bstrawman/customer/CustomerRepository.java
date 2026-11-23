@@ -1,11 +1,13 @@
 package io.b2mash.b2b.b2bstrawman.customer;
 
+import jakarta.persistence.LockModeType;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -91,21 +93,65 @@ public interface CustomerRepository extends JpaRepository<Customer, UUID> {
               + " WHERE lifecycle_status <> 'ANONYMIZED'")
   List<DedupCandidate> findTakeOnDedupCandidates();
 
-  /** A client with this name (case-insensitive) and tax number — the take-on commit re-check. */
+  /**
+   * A client with this name and tax number — the take-on commit re-check. Both compared trimmed and
+   * case-insensitively, exactly as the dry run's name key does.
+   */
   @Query(
       nativeQuery = true,
       value =
-          "SELECT id FROM customers WHERE lower(name) = lower(:name) AND tax_number = :taxNumber"
+          "SELECT id FROM customers WHERE lower(btrim(name)) = lower(btrim(:name))"
+              + " AND lower(btrim(tax_number)) = lower(btrim(:taxNumber))"
               + " AND lifecycle_status <> 'ANONYMIZED' ORDER BY created_at LIMIT 1")
   Optional<UUID> findIdByNameAndTaxNumber(
       @Param("name") String name, @Param("taxNumber") String taxNumber);
 
-  /** A client with this name (case-insensitive) and ID number — the take-on commit re-check. */
+  /**
+   * A client with this name and ID number — the take-on commit re-check. Both compared trimmed and
+   * case-insensitively, exactly as the dry run's name key does.
+   */
   @Query(
       nativeQuery = true,
       value =
-          "SELECT id FROM customers WHERE lower(name) = lower(:name) AND id_number = :idNumber"
+          "SELECT id FROM customers WHERE lower(btrim(name)) = lower(btrim(:name))"
+              + " AND lower(btrim(id_number)) = lower(btrim(:idNumber))"
               + " AND lifecycle_status <> 'ANONYMIZED' ORDER BY created_at LIMIT 1")
   Optional<UUID> findIdByNameAndIdNumber(
       @Param("name") String name, @Param("idNumber") String idNumber);
+
+  /**
+   * The client, row-locked ({@code FOR UPDATE}): the one guard that serialises anonymisation with
+   * the take-on's portal-access creation (Phase 93 655A), so a portal contact is never written with
+   * a name or email that anonymisation has already removed, and anonymisation never misses a
+   * contact being created.
+   */
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @Query("SELECT c FROM Customer c WHERE c.id = :id")
+  Optional<Customer> findByIdForUpdate(@Param("id") UUID id);
+
+  /**
+   * Every email address the client is recorded as having held: the current one, plus the {@code
+   * email} of its {@code customer.created} audit row and the from/to of every {@code
+   * customer.updated} email change. Anonymisation reads it before overwriting the email, so the
+   * take-on rows keyed by an earlier address are redacted too (Phase 93 655A, POPIA §17.6.5).
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          SELECT DISTINCT h.email FROM (
+            SELECT c.email FROM customers c WHERE c.id = :id
+            UNION ALL
+            SELECT a.details ->> 'email' FROM audit_events a
+             WHERE a.entity_type = 'customer' AND a.entity_id = :id
+               AND jsonb_typeof(a.details -> 'email') = 'string'
+            UNION ALL
+            SELECT d.v FROM audit_events a
+             CROSS JOIN LATERAL (VALUES (a.details -> 'email' ->> 'from'),
+                                        (a.details -> 'email' ->> 'to')) AS d(v)
+             WHERE a.entity_type = 'customer' AND a.entity_id = :id
+               AND jsonb_typeof(a.details -> 'email') = 'object'
+          ) h(email)
+           WHERE h.email IS NOT NULL AND h.email <> ''""")
+  List<String> findEmailsEverHeld(@Param("id") UUID id);
 }

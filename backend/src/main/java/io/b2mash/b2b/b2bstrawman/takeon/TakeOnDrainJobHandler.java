@@ -27,18 +27,29 @@ import org.springframework.transaction.support.TransactionTemplate;
  * transaction), binds {@code MEMBER_ID} to the member who confirmed the commit ({@code
  * runForTenantOnShardWithMember}, keeping the worker's shard; audit rows and {@code created_by}
  * name the member), and runs {@link TakeOnRowRunner}; returns when no {@code COMMITTING} batch is
- * left, when another worker holds the batch's last rows, or when the run budget (10 minutes, below
- * the 15-minute stale-claim recovery) is spent — {@link TakeOnDrainSweep} or the next queued drain
- * continues. A redelivered or concurrent run is harmless: every claim re-checks status under its
- * lock. The job payload is always {@code null}.
+ * left, when another worker holds the batch's last rows, or when the run budget ({@link
+ * #DEFAULT_BUDGET}) is spent — {@link TakeOnDrainSweep} (every minute) continues. A redelivered or
+ * concurrent run is harmless: every claim re-checks status under its lock. The job payload is
+ * always {@code null}.
+ *
+ * <p>Why the budget is short: {@code JobWorker} waits for every job of its claimed batch before it
+ * polls again, so a long drain holds back the other tenants' jobs on the pod. The drain cannot
+ * re-enqueue itself when the budget runs out: its own job stays {@code CLAIMED} until it returns,
+ * and the queue's per-tenant dedup ({@code idx_job_queue_dedup}, and the enqueuer's pre-filter over
+ * {@code PENDING}/{@code CLAIMED}) refuses a second {@code take_on_drain} for the tenant until
+ * then. So the sweep re-enqueues it, at most a minute later, and other queued jobs run in between.
  */
 @Component
 public class TakeOnDrainJobHandler implements JobHandler {
 
   public static final String JOB_TYPE = "take_on_drain";
 
-  /** Below the queue's 15-minute stale-claim recovery ({@code JobQueueProperties}). */
-  public static final Duration DEFAULT_BUDGET = Duration.ofMinutes(10);
+  /**
+   * Two minutes a run: short enough that other tenants' jobs are not held back for long (the worker
+   * waits for its whole claimed batch), far below the queue's 15-minute stale-claim recovery. Tests
+   * pass their own budget through {@link #drainFor} (no property, no new context).
+   */
+  public static final Duration DEFAULT_BUDGET = Duration.ofSeconds(120);
 
   private static final Logger log = LoggerFactory.getLogger(TakeOnDrainJobHandler.class);
 

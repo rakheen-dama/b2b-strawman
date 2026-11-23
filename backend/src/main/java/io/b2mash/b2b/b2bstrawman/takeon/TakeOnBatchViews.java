@@ -12,6 +12,8 @@ import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService.TakeOnParseOptionsRes
 import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService.TakeOnSheetNameResponse;
 import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService.TakeOnSignOffResponse;
 import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService.TakeOnSourceResponse;
+import io.b2mash.b2b.b2bstrawman.takeon.dataset.TakeOnRowCommitter;
+import io.b2mash.b2b.b2bstrawman.takeon.dataset.TakeOnRowCommitters;
 import io.b2mash.b2b.b2bstrawman.takeon.reader.TakeOnParseOptions;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,18 +53,21 @@ public class TakeOnBatchViews {
   private final TakeOnRowRepository rows;
   private final TakeOnSignOffRepository signOffs;
   private final OrganizationRepository organizations;
+  private final TakeOnRowCommitters committers;
 
   public TakeOnBatchViews(
       TakeOnBatchRepository batches,
       TakeOnSourceRepository sources,
       TakeOnRowRepository rows,
       TakeOnSignOffRepository signOffs,
-      OrganizationRepository organizations) {
+      OrganizationRepository organizations,
+      TakeOnRowCommitters committers) {
     this.batches = batches;
     this.sources = sources;
     this.rows = rows;
     this.signOffs = signOffs;
     this.organizations = organizations;
+    this.committers = committers;
   }
 
   @Transactional(readOnly = true)
@@ -87,7 +92,12 @@ public class TakeOnBatchViews {
         counts(batch),
         batch.getValidationHash(),
         batch.getValidatedAt(),
-        allowedActions(batch, batchSources, live, RequestScopes.hasCapability(ATTEST_CAPABILITY))
+        allowedActions(
+                batch,
+                batchSources,
+                live,
+                committers.forDataset(batch.getDataset()).orElse(null),
+                RequestScopes.hasCapability(ATTEST_CAPABILITY))
             .stream()
             .map(Enum::name)
             .toList(),
@@ -97,7 +107,19 @@ public class TakeOnBatchViews {
         batch.getCompletedAt(),
         batch.getLastError(),
         live.stream().map(TakeOnBatchViews::signOff).toList(),
-        attestationStatement(batch));
+        attestationStatement(batch),
+        validationSummary(batch));
+  }
+
+  /**
+   * The dry run's stored summary, while it describes the batch: from validation on (VALIDATED,
+   * COMMITTING, COMPLETED); null before and after a re-map (the batch then needs validating again).
+   */
+  private static Map<String, Object> validationSummary(TakeOnBatch batch) {
+    return switch (batch.getStatus()) {
+      case VALIDATED, COMMITTING, COMPLETED -> batch.getSummary();
+      default -> null;
+    };
   }
 
   /**
@@ -205,16 +227,19 @@ public class TakeOnBatchViews {
   }
 
   /**
-   * What the wizard may offer (C-17). Open batches: the 653A actions, and for a validated clients
-   * batch {@code ATTEST} (no live attestation, a valid row to commit, the caller holds {@code
-   * MANAGE_COMPLIANCE}) or {@code COMMIT} + {@code REVOKE_ATTESTATION} (a live attestation on the
-   * current hash). {@code COMMITTING}: nothing. {@code COMPLETED}: the result report, and portal
-   * access for clients.
+   * What the wizard may offer (C-17). Open batches: the 653A actions; for a validated batch {@code
+   * COMMIT} when the dataset has a row committer (its slice has shipped), nothing blocks the batch
+   * and — if the committer requires a sign-off — a live one of that kind is on the current hash
+   * (exactly what the claim, {@code TakeOnCommitService.requestCommit}, accepts). Clients only:
+   * {@code ATTEST} (no live attestation, a valid row, no block, the caller holds {@code
+   * MANAGE_COMPLIANCE}) or {@code REVOKE_ATTESTATION} (a live one). {@code COMMITTING}: nothing.
+   * {@code COMPLETED}: the result report, and portal access for clients.
    */
   static List<Action> allowedActions(
       TakeOnBatch batch,
       List<TakeOnSource> batchSources,
       List<TakeOnSignOff> liveSignOffs,
+      TakeOnRowCommitter<?> committer,
       boolean mayAttest) {
     if (batch.getStatus() == TakeOnBatchStatus.COMPLETED) {
       return batch.getDataset() == TakeOnDataset.CLIENTS
@@ -239,20 +264,18 @@ public class TakeOnBatchViews {
       case MAPPED -> actions.add(Action.VALIDATE);
       case VALIDATED -> {
         actions.add(Action.REVALIDATE);
+        boolean blocked = batch.getBlockCount() > 0;
+        if (committer != null && !blocked && signedOffForCommit(batch, liveSignOffs, committer)) {
+          actions.add(Action.COMMIT);
+        }
         if (batch.getDataset() == TakeOnDataset.CLIENTS) {
-          var attestation =
+          boolean attested =
               liveSignOffs.stream()
-                  .filter(o -> o.getKind() == TakeOnSignOffKind.FICA_ATTESTATION)
-                  .findFirst();
-          if (attestation.isEmpty()) {
-            if (mayAttest && batch.getValidRows() > 0) {
-              actions.add(Action.ATTEST);
-            }
-          } else {
-            if (attestation.get().getValidationHash().equals(batch.getValidationHash())) {
-              actions.add(Action.COMMIT);
-            }
+                  .anyMatch(o -> o.getKind() == TakeOnSignOffKind.FICA_ATTESTATION);
+          if (attested) {
             actions.add(Action.REVOKE_ATTESTATION);
+          } else if (mayAttest && !blocked && batch.getValidRows() > 0) {
+            actions.add(Action.ATTEST);
           }
         }
       }
@@ -262,5 +285,16 @@ public class TakeOnBatchViews {
     }
     actions.add(Action.CANCEL);
     return List.copyOf(actions);
+  }
+
+  /** No sign-off required, or a live one of the required kind on the batch's current hash. */
+  private static boolean signedOffForCommit(
+      TakeOnBatch batch, List<TakeOnSignOff> liveSignOffs, TakeOnRowCommitter<?> committer) {
+    var kind = committer.requiredSignOff();
+    return kind == null
+        || liveSignOffs.stream()
+            .anyMatch(
+                o ->
+                    o.getKind() == kind && o.getValidationHash().equals(batch.getValidationHash()));
   }
 }

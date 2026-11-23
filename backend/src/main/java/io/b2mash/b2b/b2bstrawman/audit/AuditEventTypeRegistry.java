@@ -285,7 +285,7 @@ public class AuditEventTypeRegistry {
                 AuditSeverity.INFO,
                 AuditEventGroup.FINANCIAL),
             // DATA — client and trust take-on (Phase 93 653A, architecture §17.6.4). Additive keys
-            // (pin 83 → 89). Details are built only through TakeOnAuditDetails (no PII).
+            // (pin 83 → 89). Details are built only through SafeAuditDetails (no PII).
             new AuditEventTypeMetadata(
                 "takeon.batch.created",
                 "Take-on batch created",

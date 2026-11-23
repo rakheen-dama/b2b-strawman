@@ -2,9 +2,9 @@ package io.b2mash.b2b.b2bstrawman.customer;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.audit.SafeAuditDetails;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.CustomFieldValidator;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
-import io.b2mash.b2b.b2bstrawman.takeon.TakeOnAuditDetails;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.HashMap;
@@ -140,7 +140,7 @@ public class TakenOnCustomerService {
             .entityType("customer")
             .entityId(customer.getId())
             .details(
-                TakeOnAuditDetails.builder()
+                SafeAuditDetails.builder()
                     .token("source", "TAKE_ON")
                     .put("take_on_batch_id", takeOnBatchId)
                     .build())

@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Clients take-on files for integration tests (Phase 93 655A): one header, one mapping, and a row
@@ -136,26 +138,40 @@ public final class TakeOnClientsFiles {
 
     @Override
     public String toString() {
-      return String.join(
-              ",",
-              Objects.toString(name, ""),
-              Objects.toString(email, ""),
-              type,
-              cddDate,
-              bo,
-              screening,
-              screeningDate,
-              records,
-              rating,
-              tax,
-              idNumber,
-              address,
-              city,
-              country,
-              ref,
-              branch)
+      return Stream.of(
+                  Objects.toString(name, ""),
+                  Objects.toString(email, ""),
+                  type,
+                  cddDate,
+                  bo,
+                  screening,
+                  screeningDate,
+                  records,
+                  rating,
+                  tax,
+                  idNumber,
+                  address,
+                  city,
+                  country,
+                  ref,
+                  branch)
+              .map(TakeOnClientsFiles::field)
+              .collect(Collectors.joining(","))
           + "\n";
     }
+  }
+
+  /**
+   * One CSV field: quoted when it holds a comma, a double quote or a line break, with embedded
+   * quotes doubled (RFC 4180); an ordinary field is written as is.
+   */
+  static String field(String value) {
+    return value.contains(",")
+            || value.contains("\"")
+            || value.contains("\n")
+            || value.contains("\r")
+        ? "\"" + value.replace("\"", "\"\"") + "\""
+        : value;
   }
 
   /** The file: the header and the rows. */

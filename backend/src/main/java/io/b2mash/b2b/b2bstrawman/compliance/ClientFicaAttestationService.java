@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.compliance;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.audit.SafeAuditDetails;
 import io.b2mash.b2b.b2bstrawman.settings.DataRequestSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
@@ -9,7 +10,6 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -143,9 +143,11 @@ public class ClientFicaAttestationService {
                 attestation.attestedBy(),
                 attestation.attestedAt(),
                 clock.instant()));
-    var details = new LinkedHashMap<String, Object>();
-    details.put("attestation_id", saved.getId().toString());
-    details.put("take_on_batch_id", attestation.takeOnBatchId().toString());
+    var details =
+        SafeAuditDetails.builder() // ids only — the PII-safe guard (R-5, §17.6.4)
+            .put("attestation_id", saved.getId())
+            .put("take_on_batch_id", attestation.takeOnBatchId())
+            .build();
     auditService.log(
         AuditEventBuilder.builder()
             .eventType(FICA_ATTESTED)

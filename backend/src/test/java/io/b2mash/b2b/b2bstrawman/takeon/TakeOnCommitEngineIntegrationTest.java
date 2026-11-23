@@ -353,7 +353,8 @@ class TakeOnCommitEngineIntegrationTest {
 
   // 9
   @Test
-  void theSweep_findsOnlyTenantsWithACommittingBatch_andSkipsBadSchemaNames() throws Exception {
+  void theSweep_findsOnlyTenantsWithACommittingBatch_andSkipsBadSchemaNamesAndBrokenSchemas()
+      throws Exception {
     var mine = mappings.findBySchemaName(schema).orElseThrow();
     assertThat(sweep.tenantsWithWork(List.of(mine))).isEmpty();
     var batch = attested(1);
@@ -363,6 +364,12 @@ class TakeOnCommitEngineIntegrationTest {
         .containsExactly(schema);
     var hostile = new OrgSchemaMapping("org_hostile", "tenant_x\"; DROP TABLE customers; --");
     assertThat(sweep.tenantsWithWork(List.of(hostile, mine)))
+        .extracting(OrgSchemaMapping::getSchemaName)
+        .containsExactly(schema);
+    // a mapping whose schema has no take_on_batches (its boot-time migration failed — here it
+    // does not exist at all) must not hide the healthy tenant in the same chunk (review CR-8)
+    var broken = new OrgSchemaMapping("org_broken", "tenant_0000deadbeef");
+    assertThat(sweep.tenantsWithWork(List.of(broken, mine)))
         .extracting(OrgSchemaMapping::getSchemaName)
         .containsExactly(schema);
     TakeOnTestDrain.run(drain, schema, ORG_ID);

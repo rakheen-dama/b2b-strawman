@@ -59,6 +59,9 @@ public class TakeOnCommitService {
     if (batch.getStatus() != TakeOnBatchStatus.VALIDATED) {
       throw TakeOnProblems.wrongState("Only a validated take-on batch can be committed.");
     }
+    if (batch.getBlockCount() > 0) {
+      throw TakeOnProblems.blocked(); // a hard block stops the batch before it is claimed
+    }
     // Only datasets whose slice has shipped a row committer can reach COMMITTING (655A: clients),
     // so the drain never meets a batch it cannot run.
     var committer =

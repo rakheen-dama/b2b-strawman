@@ -35,13 +35,19 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.nio.charset.StandardCharsets;
+import java.sql.Connection;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import javax.sql.DataSource;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -75,6 +81,9 @@ class ClientsTakeOnIntegrationTest {
   private static final String FIRM = "Clients Take-on Attorneys";
   private static final String OWNER = "user_cto_owner";
   private static final String CLIENTS_ONLY = "user_cto_clients";
+  private static final String DEFAULTS_CHANGED =
+      "The batch defaults shown are not the ones the batch was validated with. Reload the take-on"
+          + " and attest again.";
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
@@ -84,6 +93,7 @@ class ClientsTakeOnIntegrationTest {
   @Autowired private CustomerRepository customers;
   @Autowired private ChecklistInstanceRepository checklistInstances;
   @Autowired private PortalContactRepository portalContactRepository;
+  @Autowired private DataSource dataSource;
 
   private String schema;
   private UUID ownerId;
@@ -301,9 +311,25 @@ class ClientsTakeOnIntegrationTest {
                 row("Not Screened", "not.screened@example.test")
                     .screening("Not screened", "")
                     .ref("R-5"),
-                row("No Address", "no.address@example.test").address("", "", "").ref("R-6")),
+                row("No Address", "no.address@example.test").address("", "", "").ref("R-6"),
+                // two letters, but user-assigned — not a country (CR-4)
+                row("Zz Country", "zz.country@example.test")
+                    .address("1 Road", "Durban", "ZZ")
+                    .ref("R-7"),
+                row("Lower Country", "lower.country@example.test")
+                    .address("1 Road", "Durban", "za")
+                    .ref("R-8")),
             mapping());
     var byRef = rowsByRef(batch.batchId());
+    assertError(
+        byRef.get("R-7"),
+        "COUNTRY_INVALID",
+        "country",
+        "Enter the country as its two-letter ISO code (for example ZA), or leave it blank.");
+    assertThat(byRef.get("R-8").get("status")).isEqualTo("VALIDATED");
+    @SuppressWarnings("unchecked")
+    var lowerValues = (Map<String, Object>) byRef.get("R-8").get("values");
+    assertThat(lowerValues).containsEntry("country", "ZA");
     assertError(
         byRef.get("R-1"),
         "REQUIRED",
@@ -522,7 +548,10 @@ class ClientsTakeOnIntegrationTest {
             batch.batchId(),
             batch.hash(),
             Map.of("cddRecordsLocation", "Old system archive"))
-        .andExpect(status().isForbidden());
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.status").value(403))
+        .andExpect(jsonPath("$.title").value("Access denied"))
+        .andExpect(jsonPath("$.detail").value("Insufficient permissions for this operation"));
     // … and it is not offered ATTEST
     var asClientsOnly = json(detail(mockMvc, clientsOnly(), batch.batchId()));
     assertThat((List<String>) JsonPath.read(asClientsOnly, "$.allowedActions"))
@@ -535,7 +564,9 @@ class ClientsTakeOnIntegrationTest {
             "f".repeat(64),
             Map.of("cddRecordsLocation", "Old system archive"))
         .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.status").value(409))
         .andExpect(jsonPath("$.code").value("HASH_MISMATCH"))
+        .andExpect(jsonPath("$.title").value("The batch changed since it was signed off"))
         .andExpect(jsonPath("$.detail").value("Re-validate and sign off again before committing."));
     attest(
             mockMvc,
@@ -543,9 +574,15 @@ class ClientsTakeOnIntegrationTest {
             batch.batchId(),
             batch.hash(),
             Map.of("cddRecordsLocation", "Elsewhere"))
-        .andExpect(status().isBadRequest());
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.title").value("Batch defaults changed"))
+        .andExpect(jsonPath("$.detail").value(DEFAULTS_CHANGED));
     attest(mockMvc, owner(), batch.batchId(), batch.hash(), Map.of())
-        .andExpect(status().isBadRequest());
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.title").value("Batch defaults changed"))
+        .andExpect(jsonPath("$.detail").value(DEFAULTS_CHANGED));
 
     var attested =
         json(
@@ -581,7 +618,14 @@ class ClientsTakeOnIntegrationTest {
             batch.hash(),
             Map.of("cddRecordsLocation", "Old system archive"))
         .andExpect(status().isConflict())
-        .andExpect(jsonPath("$.code").value("TAKE_ON_ALREADY_ATTESTED"));
+        .andExpect(jsonPath("$.status").value(409))
+        .andExpect(jsonPath("$.code").value("TAKE_ON_ALREADY_ATTESTED"))
+        .andExpect(jsonPath("$.title").value("Batch already attested"))
+        .andExpect(
+            jsonPath("$.detail")
+                .value(
+                    "This take-on batch has already been attested. Withdraw the attestation to"
+                        + " attest again."));
     var audit = TakeOnTestApi.auditEvents(jdbc, schema, batch.batchId());
     var attestedEvent =
         audit.stream()
@@ -656,7 +700,12 @@ class ClientsTakeOnIntegrationTest {
     // before the commit: not completed → 409
     portalContacts(mockMvc, owner(), batch.batchId())
         .andExpect(status().isConflict())
-        .andExpect(jsonPath("$.code").value("TAKE_ON_NOT_COMPLETED"));
+        .andExpect(jsonPath("$.status").value(409))
+        .andExpect(jsonPath("$.code").value("TAKE_ON_NOT_COMPLETED"))
+        .andExpect(jsonPath("$.title").value("Take-on batch not completed"))
+        .andExpect(
+            jsonPath("$.detail")
+                .value("Portal access can be created once the take-on has been committed."));
     attestAndCommit(batch);
     UUID one = resultEntity(batch.batchId(), "P-1");
     UUID two = resultEntity(batch.batchId(), "P-2");
@@ -708,7 +757,12 @@ class ClientsTakeOnIntegrationTest {
             mapping());
     resultCsv(mockMvc, owner(), batch.batchId())
         .andExpect(status().isConflict())
-        .andExpect(jsonPath("$.code").value("TAKE_ON_NO_RESULT"));
+        .andExpect(jsonPath("$.status").value(409))
+        .andExpect(jsonPath("$.code").value("TAKE_ON_NO_RESULT"))
+        .andExpect(jsonPath("$.title").value("No result yet"))
+        .andExpect(
+            jsonPath("$.detail")
+                .value("The result report is available once the take-on has been committed."));
     attestAndCommit(batch);
     var response =
         resultCsv(mockMvc, owner(), batch.batchId())
@@ -730,7 +784,7 @@ class ClientsTakeOnIntegrationTest {
 
   // 11
   @Test
-  void anonymisingATakenOnClient_redactsItsTakeOnRows_butKeepsTheShellAndSourceRef()
+  void anonymisingATakenOnClient_redactsItsTakeOnRows_andTheirSourceRef_butKeepsTheShell()
       throws Exception {
     var batch =
         validatedClients(
@@ -764,24 +818,28 @@ class ClientsTakeOnIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"confirmationName\": \"Anon Client\", \"reason\": \"test\"}"))
         .andExpect(status().isOk());
-    // the created row and the in-file repeat of its email are redacted; the shells stay
-    for (String ref : List.of("Z-1", "Z-2")) {
-      var r =
-          jdbc.queryForMap(
-              ("SELECT raw_values::text AS raw, mapped_values::text AS mapped, dedup_key,"
-                      + " source_ref, errors::text AS errors FROM \"%s\".take_on_rows"
-                      + " WHERE batch_id = ? AND source_ref = ?")
-                  .formatted(schema),
-              batch.batchId(),
-              ref);
-      assertThat((String) r.get("raw")).as(ref).isEqualTo("{\"redacted\": true}");
-      assertThat((String) r.get("mapped")).as(ref).isEqualTo("{\"redacted\": true}");
-      assertThat(r.get("dedup_key")).as(ref).isNull();
-      assertThat(r.get("source_ref")).as(ref).isEqualTo(ref);
-      assertThat((String) r.get("errors")).as(ref).doesNotContain("message");
+    // the created row and the in-file repeat of its email are redacted — the previous system's
+    // id too (free text: it may be an email or a name, CR-3); the shells (number, status) stay
+    for (int rowNumber : List.of(2, 3)) {
+      var r = rowByNumber(batch.batchId(), rowNumber);
+      assertThat((String) r.get("raw")).as("row %d", rowNumber).isEqualTo("{\"redacted\": true}");
+      assertThat((String) r.get("mapped"))
+          .as("row %d", rowNumber)
+          .isEqualTo("{\"redacted\": true}");
+      assertThat(r.get("dedup_key")).as("row %d", rowNumber).isNull();
+      assertThat(r.get("source_ref")).as("row %d", rowNumber).isNull();
+      assertThat((String) r.get("errors")).as("row %d", rowNumber).doesNotContain("message");
     }
-    assertThat(rowStatusByRef(batch.batchId(), "Z-1")).isEqualTo("CREATED");
-    assertThat(rowStatusByRef(batch.batchId(), "Z-2")).isEqualTo("ERROR");
+    assertThat(rowByNumber(batch.batchId(), 2).get("status")).isEqualTo("CREATED");
+    assertThat(rowByNumber(batch.batchId(), 3).get("status")).isEqualTo("ERROR");
+    // … and the result report carries no previous-system id for them
+    String report =
+        resultCsv(mockMvc, owner(), batch.batchId())
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString(StandardCharsets.UTF_8);
+    assertThat(report).doesNotContain("Z-1").doesNotContain("Z-2");
     assertThat(
             jdbc.queryForObject(
                 "SELECT raw_values::text FROM \"%s\".take_on_rows WHERE batch_id = ?"
@@ -799,7 +857,289 @@ class ClientsTakeOnIntegrationTest {
     assertThat(untouched).contains("anon.later@example.test");
   }
 
+  // 12 (review A-M1, B-H2)
+  @Test
+  void anInFileRepeatOfAnExistingClient_isAnErrorNotADuplicate_andTheSummaryCountsTheNewClients()
+      throws Exception {
+    TestEntityHelper.createCustomer(
+        mockMvc, ownerJwt(), "Summary Existing", "summary.existing@example.test");
+    var batch =
+        validatedClients(
+            mockMvc,
+            owner(),
+            csv(
+                row("Summary New", "summary.new@example.test").rating("High").ref("S-A"),
+                row("Summary Existing", "summary.existing@example.test").ref("S-B"),
+                row("Summary Repeat", "SUMMARY.EXISTING@example.test").ref("S-C")),
+            mapping());
+    assertThat((Integer) JsonPath.read(batch.json(), "$.counts.valid")).isEqualTo(2);
+    assertThat((Integer) JsonPath.read(batch.json(), "$.counts.duplicate"))
+        .as("only the valid match is a skipped duplicate")
+        .isEqualTo(1);
+    var byRef = rowsByRef(batch.batchId());
+    assertError(byRef.get("S-C"), "DUPLICATE_IN_FILE", "email", "Duplicate of row 3 in this file");
+    assertThat(byRef.get("S-C").get("duplicateOfId"))
+        .as("the error row keeps its link to the client (anonymisation)")
+        .isEqualTo(byRef.get("S-B").get("duplicateOfId"));
+    // the FICA summary, computed at validation over the one row that will become a client
+    assertThat((Integer) JsonPath.read(batch.json(), "$.summary.clients")).isEqualTo(1);
+    assertThat((Map<String, Object>) JsonPath.read(batch.json(), "$.summary.fica"))
+        .containsEntry("ficaClientType", Map.of("NATURAL_PERSON", 1))
+        .containsEntry("riskRating", Map.of("HIGH", 1))
+        .containsEntry("beneficialOwnershipStatus", Map.of("NOT_APPLICABLE", 1))
+        .containsEntry("screeningStatus", Map.of("SCREENED_CLEAR", 1))
+        .containsEntry("sourceOfFundsStatus", Map.of("NOT_REQUIRED", 1));
+    // the attestation's row_count agrees: valid − duplicate = 1
+    attestOk(batch);
+    var attested =
+        TakeOnTestApi.auditEvents(jdbc, schema, batch.batchId()).stream()
+            .filter(a -> a.eventType().equals("takeon.batch.attested"))
+            .findFirst()
+            .orElseThrow();
+    assertThat(attested.details()).containsEntry("row_count", 1);
+  }
+
+  // 13 (review A-H1)
+  @Test
+  void aDataDeletionRequest_dropsTheParkedColumns_andRedactsTheClientsTakeOnRows()
+      throws Exception {
+    var batch =
+        validatedClients(
+            mockMvc,
+            owner(),
+            csv(
+                row("Deletion Client", "deletion.client@example.test")
+                    .branch("Sandton")
+                    .ref("X-1")),
+            mapping());
+    attestAndCommit(batch);
+    UUID client = resultEntity(batch.batchId(), "X-1");
+    assertThat(customFieldsOf(client)).contains("takeon_parked").contains("Sandton");
+
+    String requestId =
+        JsonPath.read(
+            json(
+                mockMvc
+                    .perform(
+                        post("/api/data-requests")
+                            .with(owner())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(
+                                ("{\"clientId\":\"%s\",\"requestType\":\"DELETION\","
+                                        + "\"description\":\"The client asked\"}")
+                                    .formatted(client)))
+                    .andExpect(status().isCreated())),
+            "$.id");
+    mockMvc
+        .perform(
+            put("/api/data-requests/" + requestId + "/status")
+                .with(owner())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"action\":\"START_PROCESSING\"}"))
+        .andExpect(status().isOk());
+    mockMvc
+        .perform(
+            post("/api/data-requests/" + requestId + "/execute-deletion")
+                .with(owner())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"confirmClientName\":\"Deletion Client\"}"))
+        .andExpect(status().isOk());
+
+    assertThat(customFieldsOf(client)).doesNotContain("takeon_parked").doesNotContain("Sandton");
+    var r = rowByNumber(batch.batchId(), 2);
+    assertThat((String) r.get("raw")).isEqualTo("{\"redacted\": true}");
+    assertThat((String) r.get("mapped")).isEqualTo("{\"redacted\": true}");
+    assertThat(r.get("source_ref")).isNull();
+    assertThat(r.get("dedup_key")).isNull();
+  }
+
+  // 14 (review CR-2)
+  @Test
+  void anonymisingAClientWhoseEmailChanged_redactsTheRowsKeyedByItsEarlierEmail() throws Exception {
+    var batch =
+        validatedClients(
+            mockMvc,
+            owner(),
+            csv(row("Moved Client", "moved.before@example.test").ref("M-1")),
+            mapping());
+    // an unlinked row keyed by the same email: an error in another batch, validated before the
+    // commit, so it matched no client
+    var stray =
+        validatedClients(
+            mockMvc,
+            owner(),
+            csv(
+                row("Moved Client Elsewhere", "moved.before@example.test")
+                    .address("1 Road", "Durban", "ZZ")
+                    .ref("M-2")),
+            mapping());
+    attestAndCommit(batch);
+    UUID client = resultEntity(batch.batchId(), "M-1");
+    mockMvc
+        .perform(
+            put("/api/clients/" + client)
+                .with(owner())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"name\":\"Moved Client\",\"email\":\"moved.after@example.test\"}"))
+        .andExpect(status().isOk());
+    mockMvc
+        .perform(
+            post("/api/clients/" + client + "/anonymize")
+                .with(owner())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"confirmationName\": \"Moved Client\", \"reason\": \"test\"}"))
+        .andExpect(status().isOk());
+    var r = rowByNumber(stray.batchId(), 2);
+    assertThat((String) r.get("raw"))
+        .as("the row keyed by the client's earlier email is redacted")
+        .isEqualTo("{\"redacted\": true}");
+    assertThat(r.get("dedup_key")).isNull();
+  }
+
+  // 15 (review CR-6)
+  @Test
+  void theCommitRecheck_matchesNameAndTaxNumberCaseInsensitively_asTheDryRunDoes()
+      throws Exception {
+    var batch =
+        validatedClients(
+            mockMvc,
+            owner(),
+            csv(row("Case Tax Holdings", "case.tax@example.test").tax("AB123").ref("K-1")),
+            mapping());
+    assertThat((Integer) JsonPath.read(batch.json(), "$.counts.duplicate")).isZero();
+    // a client created in the UI after the dry run, its tax number in another case
+    UUID uiClient =
+        UUID.fromString(
+            TestEntityHelper.createCustomer(
+                mockMvc, ownerJwt(), "Case Tax Holdings", "case.tax.ui@example.test"));
+    jdbc.update(
+        "UPDATE \"%s\".customers SET tax_number = 'ab123' WHERE id = ?".formatted(schema),
+        uiClient);
+    attestAndCommit(batch);
+    assertThat(rowStatusByRef(batch.batchId(), "K-1")).isEqualTo("SKIPPED_DUPLICATE");
+    assertThat(resultEntity(batch.batchId(), "K-1")).isEqualTo(uiClient);
+  }
+
+  // 16 (review CR-7)
+  @Test
+  void aBlockedBatch_isNeitherAttestedNorCommitted() throws Exception {
+    var batch =
+        validatedClients(
+            mockMvc,
+            owner(),
+            csv(row("Blocked Client", "blocked.client@example.test").ref("B-1")),
+            mapping());
+    setBlockCount(batch.batchId(), 1);
+    assertThat(
+            (List<String>)
+                JsonPath.read(json(detail(mockMvc, owner(), batch.batchId())), "$.allowedActions"))
+        .doesNotContain("ATTEST", "COMMIT");
+    attest(mockMvc, owner(), batch.batchId(), batch.hash(), mappingDefaults(batch.batchId()))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.status").value(409))
+        .andExpect(jsonPath("$.code").value("TAKE_ON_BLOCKED"))
+        .andExpect(jsonPath("$.title").value("Take-on batch blocked"))
+        .andExpect(
+            jsonPath("$.detail")
+                .value(
+                    "Rows in this take-on batch block it. Correct them in the previous system,"
+                        + " upload the corrected file and validate it again."));
+    // attested while unblocked, then blocked: the claim refuses and the button is gone
+    setBlockCount(batch.batchId(), 0);
+    attestOk(batch);
+    setBlockCount(batch.batchId(), 1);
+    assertThat(
+            (List<String>)
+                JsonPath.read(json(detail(mockMvc, owner(), batch.batchId())), "$.allowedActions"))
+        .doesNotContain("COMMIT")
+        .contains("REVOKE_ATTESTATION");
+    assertThatThrownBy(
+            () ->
+                TakeOnTestDrain.commit(
+                    commitService, schema, ORG_ID, ownerId, batch.batchId(), batch.hash()))
+        .isInstanceOfSatisfying(
+            TakeOnProblemException.class,
+            e -> assertThat(e.getCode()).isEqualTo("TAKE_ON_BLOCKED"));
+    assertThat(
+            jdbc.queryForObject(
+                "SELECT status FROM \"%s\".take_on_batches WHERE id = ?".formatted(schema),
+                String.class,
+                batch.batchId()))
+        .isEqualTo("VALIDATED");
+    setBlockCount(batch.batchId(), 0);
+  }
+
+  // 17 (review CR-9)
+  @Test
+  void portalAccess_waitsForAClientLockedByAnAnonymisation_andThenSkipsTheAnonymisedClient()
+      throws Exception {
+    var batch =
+        validatedClients(
+            mockMvc,
+            owner(),
+            csv(row("Locked Client", "locked.client@example.test").ref("L-1")),
+            mapping());
+    attestAndCommit(batch);
+    UUID client = resultEntity(batch.batchId(), "L-1");
+    try (Connection anonymisation = dataSource.getConnection();
+        ExecutorService pool = Executors.newSingleThreadExecutor()) {
+      anonymisation.setAutoCommit(false);
+      try (var lock =
+          anonymisation.prepareStatement(
+              "SELECT id FROM \"%s\".customers WHERE id = ? FOR UPDATE".formatted(schema))) {
+        lock.setObject(1, client);
+        lock.executeQuery().close();
+      }
+      Future<String> portal =
+          pool.submit(() -> json(portalContacts(mockMvc, owner(), batch.batchId())));
+      Thread.sleep(1_000);
+      assertThat(portal.isDone())
+          .as("portal access waits for the client an anonymisation holds")
+          .isFalse();
+      try (var anonymise =
+          anonymisation.prepareStatement(
+              ("UPDATE \"%s\".customers SET lifecycle_status = 'ANONYMIZED',"
+                      + " name = 'Anonymized Client', email = 'anon-' || id || '@anonymized.invalid'"
+                      + " WHERE id = ?")
+                  .formatted(schema))) {
+        anonymise.setObject(1, client);
+        anonymise.executeUpdate();
+      }
+      anonymisation.commit();
+      String result = portal.get(30, TimeUnit.SECONDS);
+      assertThat((Integer) JsonPath.read(result, "$.createdCount")).isZero();
+      assertThat((Integer) JsonPath.read(result, "$.skippedCount")).isEqualTo(1);
+    }
+    assertThat(inTenant(() -> portalContactRepository.findByCustomerId(client))).isEmpty();
+  }
+
   // --- helpers ---
+
+  private Map<String, Object> rowByNumber(UUID batchId, int rowNumber) {
+    return jdbc.queryForMap(
+        ("SELECT status, raw_values::text AS raw, mapped_values::text AS mapped, dedup_key,"
+                + " source_ref, errors::text AS errors FROM \"%s\".take_on_rows"
+                + " WHERE batch_id = ? AND row_number = ?")
+            .formatted(schema),
+        batchId,
+        rowNumber);
+  }
+
+  private String customFieldsOf(UUID clientId) {
+    String fields =
+        jdbc.queryForObject(
+            "SELECT custom_fields::text FROM \"%s\".customers WHERE id = ?".formatted(schema),
+            String.class,
+            clientId);
+    return fields == null ? "" : fields;
+  }
+
+  private void setBlockCount(UUID batchId, int blocks) {
+    jdbc.update(
+        "UPDATE \"%s\".take_on_batches SET block_count = ? WHERE id = ?".formatted(schema),
+        blocks,
+        batchId);
+  }
 
   private void attestOk(Validated batch) throws Exception {
     attest(mockMvc, owner(), batch.batchId(), batch.hash(), mappingDefaults(batch.batchId()))

@@ -15,3 +15,13 @@ Why it is fixed in 655A rather than re-specced: 655A makes the take-on instant d
 imported client idle for the threshold takes exactly this path; the slice's own acceptance case (655.8: "`taken_on_at`
 moved back 91 days and no activity → DORMANT") cannot pass without it. The fix is one helper (`toInstant`) in the method
 655A already changes. Logged as a D-row. The orchestrator may split it out if preferred.
+
+## F-655A-2 — the UI create path dedups email case-sensitively (not fixed — outside the slice)
+
+Found while answering CodeRabbit CR-1/CR-5 on PR #1850 (D-129). `CustomerService.createCustomer` refuses a duplicate
+with `existsByEmail` (case-sensitive) and `uq_customers_email` is case-sensitive, so the UI can already create
+`Foo@x.test` beside `foo@x.test`; nothing anywhere enforces name + tax-number uniqueness. The take-on's own writers
+cannot race each other (one COMMITTING batch per tenant, in-file repeats are ERROR rows, `uq_take_on_rows_created_key`
+on the lower-cased key), but a client created in the UI in the same instant as a take-on row with a case-variant email
+can still pass both checks. A case-folded unique rule on `customers.email` would need existing rows triaged first —
+a product/data decision, not a 655A change.

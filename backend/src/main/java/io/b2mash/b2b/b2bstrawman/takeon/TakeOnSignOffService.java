@@ -69,6 +69,9 @@ public class TakeOnSignOffService {
     if (batch.getStatus() != TakeOnBatchStatus.VALIDATED) {
       throw TakeOnProblems.wrongState("Only a validated take-on batch can be attested.");
     }
+    if (batch.getBlockCount() > 0) {
+      throw TakeOnProblems.blocked(); // no sign-off on a batch that cannot be committed
+    }
     if (request == null
         || request.validationHash() == null
         || !request.validationHash().equals(batch.getValidationHash())) {

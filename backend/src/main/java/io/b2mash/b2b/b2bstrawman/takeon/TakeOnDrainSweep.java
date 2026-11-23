@@ -22,16 +22,20 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 /**
- * Every five minutes, enqueues {@code take_on_drain} for each tenant that has take-on work (Phase
- * 93 655A, §17.3.3 step 4) — not a fan-out to every tenant, which would write a job row per tenant
- * every five minutes. Catches a commit whose enqueue was deduplicated against a finishing drain, a
- * drain that stopped at its budget, and one that died with its pod: a stranded batch waits at most
- * one sweep. The queue's dedup makes a tenant with a drain already queued a no-op.
+ * Every minute, enqueues {@code take_on_drain} for each tenant that has take-on work (Phase 93
+ * 655A, §17.3.3 step 4) — not a fan-out to every tenant, which would write a job row per tenant
+ * every run. Catches a commit whose enqueue was deduplicated against a finishing drain, a drain
+ * that stopped at its two-minute budget (it cannot re-enqueue itself — see {@link
+ * TakeOnDrainJobHandler}), and one that died with its pod: a stranded batch waits at most a minute.
+ * The queue's dedup makes a tenant with a drain already queued a no-op. Cheap when idle: per shard
+ * and chunk of 200 schemas, one catalog read and one {@code EXISTS} statement.
  *
- * <p>Reads the tenants from {@code public.org_schema_mapping} and asks, per chunk of 200 schemas,
- * one native statement built only from mapping schema names — each validated against the codebase's
- * schema pattern ({@code ^tenant_[0-9a-f]{12}$}, C-11) and quoted; never request input. 657D adds
- * the report-file clause.
+ * <p>Reads the tenants from {@code public.org_schema_mapping} and asks, per chunk, one native
+ * statement built only from mapping schema names — each validated against the codebase's schema
+ * pattern ({@code ^tenant_[0-9a-f]{12}$}, C-11) and quoted; never request input. A schema without a
+ * {@code take_on_batches} table (a tenant whose boot-time migration failed) is left out first, and
+ * if the chunk's statement still fails each schema is asked on its own, so one broken schema never
+ * hides the others' work. 657D adds the report-file clause.
  */
 @Component
 public class TakeOnDrainSweep {
@@ -58,8 +62,8 @@ public class TakeOnDrainSweep {
     this.shardRegistry = shardRegistryProvider.getIfAvailable();
   }
 
-  @SchedulerLock(name = "take_on_drain_sweep", lockAtLeastFor = "1m")
-  @Scheduled(cron = "0 */5 * * * *", zone = KaziTime.ZONE_ID)
+  @SchedulerLock(name = "take_on_drain_sweep", lockAtLeastFor = "30s")
+  @Scheduled(cron = "0 * * * * *", zone = KaziTime.ZONE_ID)
   public void sweep() {
     int enqueued = 0;
     for (var mapping : tenantsWithWork(mappings.findAll())) {
@@ -106,11 +110,9 @@ public class TakeOnDrainSweep {
       for (int from = 0; from < shardMappings.size(); from += CHUNK) {
         var chunk = shardMappings.subList(from, Math.min(from + CHUNK, shardMappings.size()));
         try {
-          Set<String> withWork =
-              jdbc.queryForList(sql(chunk), String.class).stream().collect(Collectors.toSet());
-          chunk.stream().filter(m -> withWork.contains(m.getSchemaName())).forEach(hits::add);
+          hits.addAll(withWork(jdbc, withTakeOnTable(jdbc, chunk)));
         } catch (RuntimeException e) {
-          // one unreachable chunk (e.g. a schema mid-provisioning) must not stop the others
+          // the shard itself is unreachable: the next shard still runs
           log.warn(
               "Take-on drain sweep: a chunk of {} schemas on shard {} failed ({})",
               chunk.size(),
@@ -122,10 +124,52 @@ public class TakeOnDrainSweep {
     return hits;
   }
 
+  /** The chunk's schemas that have a {@code take_on_batches} table (one catalog read). */
+  private static List<OrgSchemaMapping> withTakeOnTable(
+      JdbcTemplate jdbc, List<OrgSchemaMapping> chunk) {
+    Set<String> present = Set.copyOf(jdbc.queryForList(tablesSql(chunk), String.class));
+    return chunk.stream().filter(m -> present.contains(m.getSchemaName())).toList();
+  }
+
+  /** One statement for the chunk; if it fails, each schema on its own (isolates a bad schema). */
+  private static List<OrgSchemaMapping> withWork(JdbcTemplate jdbc, List<OrgSchemaMapping> chunk) {
+    if (chunk.isEmpty()) {
+      return List.of();
+    }
+    try {
+      Set<String> withWork = Set.copyOf(jdbc.queryForList(sql(chunk), String.class));
+      return chunk.stream().filter(m -> withWork.contains(m.getSchemaName())).toList();
+    } catch (RuntimeException chunkFailure) {
+      var hits = new ArrayList<OrgSchemaMapping>();
+      for (var mapping : chunk) {
+        try {
+          if (!jdbc.queryForList(sql(List.of(mapping)), String.class).isEmpty()) {
+            hits.add(mapping);
+          }
+        } catch (RuntimeException e) {
+          log.warn(
+              "Take-on drain sweep: schema {} could not be read ({})",
+              mapping.getSchemaName(),
+              e.getClass().getSimpleName());
+        }
+      }
+      return hits;
+    }
+  }
+
   private DataSource dataSourceFor(String shardId) {
     return shardRegistry == null || PRIMARY_SHARD.equals(shardId)
         ? primaryDataSource
         : shardRegistry.getDataSource(shardId);
+  }
+
+  /** The chunk's schemas that hold a {@code take_on_batches} table, from the catalog. */
+  static String tablesSql(List<OrgSchemaMapping> chunk) {
+    return "SELECT n.nspname FROM pg_catalog.pg_class c"
+        + " JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace"
+        + " WHERE c.relname = 'take_on_batches' AND c.relkind IN ('r', 'p') AND n.nspname IN ("
+        + chunk.stream().map(m -> "'" + m.getSchemaName() + "'").collect(Collectors.joining(", "))
+        + ")";
   }
 
   /** {@code SELECT 'tenant_x' WHERE EXISTS (… "tenant_x".take_on_batches …) UNION ALL …}. */

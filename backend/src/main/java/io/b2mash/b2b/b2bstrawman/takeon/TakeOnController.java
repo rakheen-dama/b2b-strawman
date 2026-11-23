@@ -12,6 +12,7 @@ import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService.TakeOnPositionRequest
 import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService.TakeOnPreviewResponse;
 import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService.TakeOnRowResponse;
 import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService.TakeOnSheetRequest;
+import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService.TakeOnTemplateFile;
 import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService.TakeOnUploadResponse;
 import jakarta.validation.Valid;
 import java.net.URI;
@@ -73,13 +74,7 @@ public class TakeOnController {
   @RequiresCapability("MANAGE_TAKE_ON")
   public ResponseEntity<byte[]> template(
       @PathVariable TakeOnDataset dataset, @RequestParam(required = false) TakeOnSection section) {
-    var file = queryService.template(dataset, section);
-    return ResponseEntity.ok()
-        .contentType(new MediaType("text", "csv", StandardCharsets.UTF_8))
-        .header(
-            HttpHeaders.CONTENT_DISPOSITION,
-            ContentDisposition.attachment().filename(file.fileName()).build().toString())
-        .body(file.bytes());
+    return csvAttachment(queryService.template(dataset, section));
   }
 
   @PostMapping(value = "/api/take-on/batches", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -226,13 +221,7 @@ public class TakeOnController {
   @GetMapping("/api/take-on/batches/{batchId}/result.csv")
   @RequiresCapability("MANAGE_TAKE_ON")
   public ResponseEntity<byte[]> resultCsv(@PathVariable UUID batchId) {
-    var file = resultService.resultCsv(batchId);
-    return ResponseEntity.ok()
-        .contentType(new MediaType("text", "csv", StandardCharsets.UTF_8))
-        .header(
-            HttpHeaders.CONTENT_DISPOSITION,
-            ContentDisposition.attachment().filename(file.fileName()).build().toString())
-        .body(file.bytes());
+    return csvAttachment(resultService.resultCsv(batchId));
   }
 
   /** Also {@code CUSTOMER_MANAGEMENT} (access policy). Sends no email. */
@@ -241,5 +230,15 @@ public class TakeOnController {
   public ResponseEntity<TakeOnPortalContactsResponse> createPortalContacts(
       @PathVariable UUID batchId) {
     return ResponseEntity.ok(resultService.createPortalContacts(batchId));
+  }
+
+  /** A CSV file as a download (the HTTP adapter shared by the template and the result report). */
+  private static ResponseEntity<byte[]> csvAttachment(TakeOnTemplateFile file) {
+    return ResponseEntity.ok()
+        .contentType(new MediaType("text", "csv", StandardCharsets.UTF_8))
+        .header(
+            HttpHeaders.CONTENT_DISPOSITION,
+            ContentDisposition.attachment().filename(file.fileName()).build().toString())
+        .body(file.bytes());
   }
 }

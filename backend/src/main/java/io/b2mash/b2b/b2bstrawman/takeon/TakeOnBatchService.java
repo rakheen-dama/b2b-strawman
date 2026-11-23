@@ -114,6 +114,11 @@ public class TakeOnBatchService {
   /** The exact statement an attestation of this batch stores, with the firm name filled in. */
   public record TakeOnAttestationStatementResponse(String version, String text) {}
 
+  /**
+   * {@code summary} is the dataset's validation summary ({@code take_on_batches.summary}, written
+   * with the counts by the dry run; {@code null} before validation). Clients: {@code {clients,
+   * fica: {field: {value: rows}}}} over the rows that will become clients (655A).
+   */
   public record TakeOnBatchResponse(
       UUID id,
       TakeOnDataset dataset,
@@ -132,7 +137,8 @@ public class TakeOnBatchService {
       Instant completedAt,
       String lastError,
       List<TakeOnSignOffResponse> signOffs,
-      TakeOnAttestationStatementResponse attestationStatement) {}
+      TakeOnAttestationStatementResponse attestationStatement,
+      Map<String, Object> summary) {}
 
   public record TakeOnBatchSummaryResponse(
       UUID id,

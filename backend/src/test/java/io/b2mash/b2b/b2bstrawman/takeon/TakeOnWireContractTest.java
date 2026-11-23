@@ -34,7 +34,8 @@ class TakeOnWireContractTest {
   /**
    * The take-on wire records: 18 from 653A, + 5 from 655A (sign-off, attestation statement,
    * attestation and commit requests, portal-contacts response) = 23; each later slice adds the
-   * records it introduces.
+   * records it introduces. 655A also appended {@code TakeOnBatchResponse.summary} (review B-H2: the
+   * stored validation summary, so the attestation step never pages rows into the browser).
    */
   static final List<Class<?>> PINNED =
       List.of(

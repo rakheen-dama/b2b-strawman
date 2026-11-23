@@ -28,7 +28,7 @@ import org.springframework.stereotype.Component;
  * </ol>
  *
  * <p>An enqueue that fails is logged and the request still answers 202: the batch is {@code
- * COMMITTING} and {@link TakeOnDrainSweep} enqueues the drain within five minutes.
+ * COMMITTING} and {@link TakeOnDrainSweep} enqueues the drain within a minute.
  */
 @Component
 public class TakeOnCommitFacade {

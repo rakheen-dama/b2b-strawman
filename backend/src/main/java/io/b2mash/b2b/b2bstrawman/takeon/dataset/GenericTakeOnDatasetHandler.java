@@ -18,7 +18,6 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -225,12 +224,12 @@ public class GenericTakeOnDatasetHandler implements TakeOnDatasetHandler {
     return check;
   }
 
-  /** The lookup-free dedup key (C-25): the dataset's key field, lower-cased and prefixed. */
+  /** The lookup-free dedup key (C-25): {@link TakeOnDedupKeys}, the one definition. */
   @Override
   public DedupKey dedupKey(TakeOnDataset dataset, Map<String, Object> mapped) {
-    String field = dedupField(dataset);
+    String field = TakeOnDedupKeys.field(dataset);
     if (field != null && mapped.get(field) instanceof String keyValue) {
-      return new DedupKey(field, dedupPrefix(dataset) + keyValue.toLowerCase(Locale.ROOT));
+      return new DedupKey(field, TakeOnDedupKeys.of(dataset, keyValue));
     }
     return null;
   }
@@ -351,24 +350,6 @@ public class GenericTakeOnDatasetHandler implements TakeOnDatasetHandler {
       case LocalDate d -> d.toString();
       case BigDecimal b -> b.toPlainString();
       default -> value;
-    };
-  }
-
-  private static String dedupField(TakeOnDataset dataset) {
-    return switch (dataset) {
-      case CLIENTS -> "email";
-      case MATTERS -> "referenceNumber";
-      case DEBTOR_BALANCES -> "feeNoteNumber";
-      case TRUST_POSITION -> null; // needs resolved client/matter/account ids — 657B
-    };
-  }
-
-  private static String dedupPrefix(TakeOnDataset dataset) {
-    return switch (dataset) {
-      case CLIENTS -> "email:";
-      case MATTERS -> "ref:";
-      case DEBTOR_BALANCES -> "number:";
-      case TRUST_POSITION -> "";
     };
   }
 

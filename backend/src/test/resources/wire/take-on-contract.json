@@ -70,6 +70,9 @@
   }, {
     "name" : "attestationStatement",
     "type" : "io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService$TakeOnAttestationStatementResponse"
+  }, {
+    "name" : "summary",
+    "type" : "java.util.Map<java.lang.String, java.lang.Object>"
   } ],
   "TakeOnBatchSummaryResponse" : [ {
     "name" : "id",

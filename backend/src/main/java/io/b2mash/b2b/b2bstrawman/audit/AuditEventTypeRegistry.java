@@ -284,6 +284,38 @@ public class AuditEventTypeRegistry {
                 "Interest and charges memo saved",
                 AuditSeverity.INFO,
                 AuditEventGroup.FINANCIAL),
+            // DATA — client and trust take-on (Phase 93 653A, architecture §17.6.4). Additive keys
+            // (pin 83 → 89). Details are built only through TakeOnAuditDetails (no PII).
+            new AuditEventTypeMetadata(
+                "takeon.batch.created",
+                "Take-on batch created",
+                AuditSeverity.INFO,
+                AuditEventGroup.DATA),
+            new AuditEventTypeMetadata(
+                "takeon.source.uploaded",
+                "Take-on file uploaded",
+                AuditSeverity.INFO,
+                AuditEventGroup.DATA),
+            new AuditEventTypeMetadata(
+                "takeon.source.mapped",
+                "Take-on columns mapped",
+                AuditSeverity.INFO,
+                AuditEventGroup.DATA),
+            new AuditEventTypeMetadata(
+                "takeon.batch.validated",
+                "Take-on batch validated",
+                AuditSeverity.INFO,
+                AuditEventGroup.DATA),
+            new AuditEventTypeMetadata(
+                "takeon.batch.cancelled",
+                "Take-on batch cancelled",
+                AuditSeverity.INFO,
+                AuditEventGroup.DATA),
+            new AuditEventTypeMetadata(
+                "takeon.file.downloaded",
+                "Take-on file downloaded",
+                AuditSeverity.NOTICE,
+                AuditEventGroup.DATA),
             // DATA — data protection
             new AuditEventTypeMetadata(
                 "dataprotection.dsar.*",

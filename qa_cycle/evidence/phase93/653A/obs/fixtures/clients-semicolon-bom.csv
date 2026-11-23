@@ -1,0 +1,5 @@
+﻿Client name;Email address;Phone;ID number;Client type;CDD completed date;Beneficial ownership;Screening;CDD records location;Risk rating
+Ndlovu Family Trust;trustees@ndlovu.example;011 555 0101;;TRUST;2026-03-14;DONE;SCREENED_CLEAR;Box 12, Sandton office;LOW
+Thabo Mokoena;thabo.mokoena@example.com;082 555 0102;8001015009087;INDIVIDUAL;2026-05-02;N/A;SCREENED_CLEAR;Box 13, Sandton office;MEDIUM
+Karoo Logistics (Pty) Ltd;not-an-email;021 555 0103;;PTY_LTD;2026-02-30;DONE;NOT_SCREENED;Box 14, Cape Town office;HIGH
+Lindiwe Dube;lindiwe.dube@example.com;083 555 0104;;NATURAL_PERSON;;OUTSTANDING;SCREENED_MATCH;Box 15, Sandton office;

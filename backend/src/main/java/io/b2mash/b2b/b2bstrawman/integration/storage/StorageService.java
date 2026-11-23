@@ -24,6 +24,19 @@ public interface StorageService {
   /** Delete a file. Best-effort -- logs warning on failure. */
   void delete(String key);
 
+  /**
+   * Delete a file and report whether it is gone ({@code true}) or the delete failed ({@code
+   * false}), for callers that retry (take-on purge). {@link #delete} stays best-effort.
+   */
+  default boolean tryDelete(String key) {
+    try {
+      delete(key);
+      return true;
+    } catch (RuntimeException e) {
+      return false;
+    }
+  }
+
   /** Generate a presigned upload URL (time-limited). */
   PresignedUrl generateUploadUrl(String key, String contentType, Duration expiry);
 

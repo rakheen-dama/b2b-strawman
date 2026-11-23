@@ -16,6 +16,7 @@ export const CAPABILITIES = {
   AI_MANAGE: "AI_MANAGE",
   AI_EXECUTE: "AI_EXECUTE",
   AI_REVIEW: "AI_REVIEW",
+  MANAGE_TAKE_ON: "MANAGE_TAKE_ON",
 } as const;
 
 /** Capability metadata — single source of truth for labels, descriptions, and enum values. */
@@ -70,6 +71,19 @@ export const CAPABILITY_META = [
     label: "AI Review",
     description: "Review and approve or reject AI-proposed actions",
   },
+  {
+    value: CAPABILITIES.MANAGE_TAKE_ON,
+    label: "Manage take-on",
+    description: "Move clients, matters, trust balances and debtors from the previous system",
+  },
+  // Kept out of CAPABILITIES: the system Admin role card lists Object.values(CAPABILITIES), and
+  // admins do not hold owner-only capabilities (Phase 93 653A, decision D-12). Custom roles may
+  // still grant it, so it carries a label here.
+  {
+    value: "SIGN_OFF_TRUST_TAKE_ON",
+    label: "Sign off trust take-on",
+    description: "Sign off a trust opening position as a partner or director (Rule 54.19)",
+  },
 ] as const;
 
 const CAPABILITY_LABELS: ReadonlyMap<string, string> = new Map(
@@ -90,6 +104,7 @@ export const OWNER_ONLY_CAPABILITIES: ReadonlySet<string> = new Set([
   "MANAGE_COMPLIANCE_DESTRUCTIVE",
   "OVERRIDE_MATTER_CLOSURE",
   "FINANCIAL_RECONCILE",
+  "SIGN_OFF_TRUST_TAKE_ON",
 ]);
 
 // ---- Context Types ----

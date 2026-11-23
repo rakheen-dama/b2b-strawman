@@ -114,6 +114,14 @@ public class ProcessingActivityService {
         "Client contacts",
         "Duration of portal access + 1 year",
         "None");
+    // Phase 93 653A (§17.6.5): existing ZA tenants get this row from tenant V32.
+    seedIfAbsent(
+        "Client and Trust Take-On",
+        "Migrating the firm's client, matter, trust and debtor records from its previous system",
+        "legal_obligation",
+        "Clients",
+        "As the migrated trust and FICA records",
+        "None");
     log.info("Seeded ZA jurisdiction defaults for processing activities");
   }
 

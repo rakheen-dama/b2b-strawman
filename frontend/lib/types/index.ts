@@ -20,3 +20,4 @@ export * from "./fica";
 export * from "./correspondence";
 export * from "./activity";
 export * from "./comment";
+export * from "./take-on";

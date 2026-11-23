@@ -170,17 +170,17 @@ describe("CommandPaletteDialog", () => {
         .map((o) => o.textContent ?? "")
         .filter((t) => t.startsWith("Settings › "));
 
-    it("labels each entry Settings › {Family} › {Tab}; an owner with no modules sees 29", () => {
+    it("labels each entry Settings › {Family} › {Tab}; an owner with no modules sees 30", () => {
       renderDialog({ capabilities: [], isAdmin: false, isOwner: true, enabledModules: [] });
       const entries = settingsEntries();
-      expect(entries).toHaveLength(29);
+      expect(entries).toHaveLength(30); // 29 + Matters › Take-on (Phase 93 653A)
       expect(entries[0]).toBe("Settings › Firm › General");
       expect(entries).toContain("Settings › Firm › Roles");
       expect(entries).not.toContain("Settings › Fees & Trust › Fee runs");
       expect(entries).not.toContain("Settings › Fees & Trust › Trust accounting");
     });
 
-    it("shows the module-gated tabs to an owner with bulk_billing + trust_accounting (31)", () => {
+    it("shows the module-gated tabs to an owner with bulk_billing + trust_accounting (32)", () => {
       renderDialog({
         capabilities: [],
         isAdmin: false,
@@ -188,7 +188,7 @@ describe("CommandPaletteDialog", () => {
         enabledModules: ["bulk_billing", "trust_accounting"],
       });
       const entries = settingsEntries();
-      expect(entries).toHaveLength(31);
+      expect(entries).toHaveLength(32);
       expect(entries).toContain("Settings › Fees & Trust › Fee runs");
       expect(entries).toContain("Settings › Fees & Trust › Trust accounting");
     });

@@ -1,0 +1,18 @@
+                  id                  |     dataset     |  status   |             name              | cutover_date |         cancelled_at          
+--------------------------------------+-----------------+-----------+-------------------------------+--------------+-------------------------------
+ b7cb8bd6-8065-4c47-aefa-ed3c4bd24d79 | DEBTOR_BALANCES | CANCELLED | OBS 653A debtors (two sheets) | 2026-10-31   | 2026-11-23 12:21:27.438111+00
+(1 row)
+
+                  id                  |              file_name              | s3_key | sheet_name | header_row |          purged_at           
+--------------------------------------+-------------------------------------+--------+------------+------------+------------------------------
+ 6fa68c40-3a8b-42b3-880d-abeea0673db4 | debtors-two-sheets-header-row1.xlsx |        | Debtors    |          1 | 2026-11-23 12:21:27.43747+00
+(1 row)
+
+ row_number |  status   | source_ref | dedup_key |    raw_values    |  mapped_values   |  numeric_cells  |                            errors                            | warnings 
+------------+-----------+------------+-----------+------------------+------------------+-----------------+--------------------------------------------------------------+----------
+          2 | VALIDATED |            |           | {"purged": true} | {"purged": true} | ["Outstanding"] | []                                                           | []
+          3 | ERROR     |            |           | {"purged": true} | {"purged": true} |                 | [{"code": "AMOUNT_AMBIGUOUS", "field": "outstandingAmount"}] | []
+          4 | ERROR     |            |           | {"purged": true} | {"purged": true} |                 | [{"code": "CELL_ERROR", "field": "Outstanding"}]             | []
+          5 | VALIDATED |            |           | {"purged": true} | {"purged": true} | ["Outstanding"] | []                                                           | []
+(4 rows)
+

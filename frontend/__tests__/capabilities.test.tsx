@@ -22,6 +22,7 @@ const OWNER_ONLY_NAMES = [
   "MANAGE_COMPLIANCE_DESTRUCTIVE",
   "OVERRIDE_MATTER_CLOSURE",
   "FINANCIAL_RECONCILE",
+  "SIGN_OFF_TRUST_TAKE_ON",
 ] as const;
 
 function CapProbe({ caps }: { caps: readonly string[] }) {

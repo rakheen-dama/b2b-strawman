@@ -1,0 +1,12 @@
+[login] user_e2e_alice http://localhost:3001/org/e2e-test-org/dashboard
+[before cancel status] Validated
+[shot] s4-01-debtors-before-cancel.png
+[shot] s4-02-cancel-confirm-dialog.png
+[after cancel status] Cancelled
+[cancelled notice] This take-on was cancelled. Its uploaded files and row values were deleted.
+[shot] s4-03-debtors-cancelled.png
+[after reload status] Cancelled
+[shot] s4-04-debtors-cancelled-reload.png
+[history] Take-on |  | Move clients, matters, trust balances and debtors from your previous system |  | Take on clients first, then matters, then the trust position, then debtors. |  | Clients | 0 completed | Start | Download template | Matters | 0 completed | Start | Download template | Trust opening position | 0 completed | Start | Template: Client and matter balances | Template: Unidentified deposits | Template: Investments | Template: Items outstanding at cutover | Debtor opening balances | 0 completed | Start | Download template | Take-on history | Take-on batches | BATCH	DATASET	STATUS	ROWS (VALID / ERRORS)	UPLOADED BY	UPLOADED | OBS 653A debtors (two sheets)	Debtor opening balances	Cancelled	4 (2 / 2)	Alice Owner	23 Nov 2026 | OBS 653A clients (semicolon BOM)	Clients	Validated	4 (2 / 2)	Alice Owner	23 Nov 2026
+[shot] s4-05-history-after-cancel.png
+[summary step 4] console/page errors: 0

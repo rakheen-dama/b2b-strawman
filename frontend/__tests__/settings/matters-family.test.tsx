@@ -15,6 +15,7 @@ const { loaders, mockCaps, mockGetOrgSettings, mockReplace } = vi.hoisted(() => 
     checklists: vi.fn(async () => "checklists panel"),
     "request-templates": vi.fn(async () => "request templates panel"),
     "request-settings": vi.fn(async () => "request settings panel"),
+    "take-on": vi.fn(async () => "take-on panel"),
   },
   mockCaps: vi.fn(),
   mockGetOrgSettings: vi.fn(),
@@ -44,6 +45,9 @@ vi.mock("@/app/(app)/org/[slug]/settings/matters/_tabs/request-templates", () =>
 vi.mock("@/app/(app)/org/[slug]/settings/matters/_tabs/request-settings", () => ({
   renderRequestSettingsTab: loaders["request-settings"],
 }));
+vi.mock("@/app/(app)/org/[slug]/settings/matters/_tabs/take-on-tab", () => ({
+  renderTakeOnTab: loaders["take-on"],
+}));
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ replace: mockReplace, push: vi.fn(), refresh: vi.fn(), prefetch: vi.fn() }),
   usePathname: () => "/org/acme/settings/matters",
@@ -69,6 +73,7 @@ const ALL_MATTERS_TABS = [
   "Checklists",
   "Request templates",
   "Request settings",
+  "Take-on",
 ];
 
 function props(searchParams: SettingsSearchParams) {
@@ -107,7 +112,7 @@ describe("Matters settings family page", () => {
     vi.clearAllMocks();
   });
 
-  it("renders all seven tabs in §12.7.1 order for an owner and loads only Templates by default", async () => {
+  it("renders all eight tabs in §12.7.1 order for an owner and loads only Templates by default", async () => {
     await renderMatters();
     expect(tabNames()).toEqual(ALL_MATTERS_TABS);
     expect(screen.getByRole("tab", { name: "Templates" })).toHaveAttribute("aria-selected", "true");
@@ -115,7 +120,7 @@ describe("Matters settings family page", () => {
     expect(calledLoaders()).toEqual(["templates"]);
   });
 
-  it("gives an admin the same seven tabs", async () => {
+  it("gives an admin the same eight tabs", async () => {
     mockCaps.mockResolvedValue(ADMIN);
     await renderMatters();
     expect(tabNames()).toEqual(ALL_MATTERS_TABS);
@@ -136,7 +141,7 @@ describe("Matters settings family page", () => {
   });
 
   it("falls back to Templates for an unknown tab silently — never a 404", async () => {
-    await renderMatters("take-on"); // Phase 84's future tab is not declared yet
+    await renderMatters("not-a-tab"); // a genuinely undeclared id (take-on is declared since 653A)
     expect(screen.getByText("templates panel")).toBeInTheDocument();
     expect(screen.queryByRole("status")).not.toBeInTheDocument();
     expect(calledLoaders()).toEqual(["templates"]);
@@ -164,6 +169,31 @@ describe("Matters settings family page", () => {
     );
     expect(loaders["custom-fields"]).not.toHaveBeenCalled();
     expect(calledLoaders()).toEqual(["templates"]);
+  });
+
+  // Phase 93 653A: Take-on is gated by MANAGE_TAKE_ON (FD-36) — absent for a member without it,
+  // and a member's ?tab=take-on falls back to Templates with the notice; a custom role holding the
+  // capability sees it.
+  it("falls back to Templates with a notice when a member asks for Take-on", async () => {
+    mockCaps.mockResolvedValue(MEMBER);
+    await renderMatters("take-on");
+    expect(screen.queryByRole("tab", { name: "Take-on" })).not.toBeInTheDocument();
+    expect(screen.getByText("templates panel")).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent(
+      /don.t have access to Take-on — showing Templates instead/
+    );
+    expect(loaders["take-on"]).not.toHaveBeenCalled();
+  });
+
+  it("shows Take-on to a member whose role grants MANAGE_TAKE_ON and loads it", async () => {
+    mockCaps.mockResolvedValue({ ...MEMBER, capabilities: ["MANAGE_TAKE_ON"] });
+    await renderMatters("take-on");
+    expect(tabNames()).toEqual(["Templates", "Tags", "Take-on"]);
+    expect(screen.getByText("take-on panel")).toBeInTheDocument();
+    expect(loaders["take-on"]).toHaveBeenCalledWith({
+      slug: "acme",
+      searchParams: { tab: "take-on" },
+    });
   });
 
   it("lets a member open the Tags tab", async () => {

@@ -61,14 +61,29 @@ public enum Capability {
    * owner/admin (kept out of {@link #OWNER_ONLY} so admin inherits it); other roles need an
    * explicit grant (ADR-321).
    */
-  MCP_WRITE;
+  MCP_WRITE,
+
+  /**
+   * Run a client and trust take-on from the firm's previous system (upload, map, validate, commit).
+   * Admin-level: auto-granted to owner/admin (kept out of {@link #OWNER_ONLY}); custom roles need
+   * an explicit grant. Every take-on read or write also needs the dataset's own capability (Phase
+   * 93, §17.9).
+   */
+  MANAGE_TAKE_ON,
+
+  /**
+   * Sign off a trust opening position as the responsible partner or director (Rule 54.19).
+   * Owner-only by default (in {@link #OWNER_ONLY}); grantable to a custom "Partner" role (FD-4).
+   */
+  SIGN_OFF_TRUST_TAKE_ON;
 
   /** Capabilities restricted to the owner role — admin does NOT inherit these. */
   public static final Set<String> OWNER_ONLY =
       Set.of(
           MANAGE_COMPLIANCE_DESTRUCTIVE.name(),
           OVERRIDE_MATTER_CLOSURE.name(),
-          FINANCIAL_RECONCILE.name());
+          FINANCIAL_RECONCILE.name(),
+          SIGN_OFF_TRUST_TAKE_ON.name());
 
   public static final Set<String> ALL_NAMES =
       Arrays.stream(values()).map(Enum::name).collect(Collectors.toUnmodifiableSet());

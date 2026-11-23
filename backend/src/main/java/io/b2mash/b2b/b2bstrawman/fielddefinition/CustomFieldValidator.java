@@ -102,6 +102,29 @@ public class CustomFieldValidator {
     return validated;
   }
 
+  /**
+   * Checks one value against its definition's type and validation rules — no lookup, no
+   * transaction, no exception. Returns the error message, or {@code null} when the value is valid.
+   * For callers inside a transaction that must survive a refusal (the take-on dry run, Phase 93
+   * 653A): {@link #validate} throws from a transactional proxy, which marks the caller's
+   * transaction rollback-only. A malformed saved rule (e.g. a NUMBER {@code min} of {@code "ten"})
+   * is a refusal too — it tells the user to fix the field's configuration — never an exception.
+   */
+  public String checkValue(FieldDefinition definition, Object value) {
+    if (value == null) {
+      return null;
+    }
+    try {
+      return validateFieldValue(definition, value);
+    } catch (RuntimeException e) { // NumberFormatException, DateTimeParseException, ClassCast…
+      return MALFORMED_RULE.formatted(definition.getName());
+    }
+  }
+
+  static final String MALFORMED_RULE =
+      "The validation rule of the custom field \"%s\" is set up incorrectly. Fix the field's"
+          + " configuration in Settings, then try again.";
+
   private String validateFieldValue(FieldDefinition definition, Object value) {
     return switch (definition.getFieldType()) {
       case TEXT -> validateText(definition, value);

@@ -47,8 +47,10 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  * the test registers on the report transaction (a probe of the framework only: production code
  * registers no synchronization); and inside the audit write ({@code AuditService.log}, after the
  * real call, so the audit transaction's own connection has been acquired by its member lookup).
- * Scheduling is off in tests, so the pool is otherwise idle; the idle count is sampled first and
- * every assertion is relative to it.
+ * Scheduling, the job queue and the legacy-content-import startup sweep are off in tests, so the
+ * pool is otherwise idle; the idle count is sampled first and every assertion is relative to it.
+ * (F-657A-2: with the startup sweep on, a context start ran it over every tenant while these
+ * methods sampled the pool, and {@code duringAuditWrite} read 2.)
  *
  * <p>Measured before the fix (the row written from {@code afterCommit} in {@code REQUIRES_NEW}):
  * idle 0, inside the report transaction 1, at {@code afterCommit} 1 (the report transaction's

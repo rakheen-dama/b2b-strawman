@@ -1,0 +1,21 @@
+﻿Row,Previous system ID,Status,Kazi record ID,Message
+2,row:2,Created,af176849-24b8-462a-a35f-68883d831ef6,
+3,row:3,Created,86053e12-2ff7-433a-90e1-eea02a11233e,
+4,row:4,Created,f59e3a7c-a4fe-4289-87f1-675bab0c273d,
+5,row:5,Created,c854c32f-9b6d-4b49-a891-afb5c5ea7c52,
+6,row:6,Created,d951ae42-5ea9-4b71-b598-0b9d4c302616,
+7,row:7,Created,409e2226-7bc8-404a-8e04-3907e3cc32bf,
+8,row:8,Created,b7017b51-5ff8-4fad-9896-2c03fecca488,
+9,row:9,Created,a4d170fe-59e9-49be-a3df-0fb8995dab9d,
+10,row:10,Created,0fabc827-ae93-4ca7-b5ee-1c2780eff166,
+11,row:11,Created,ceeb13ef-aa82-4208-881e-460fc3bb644c,
+12,row:12,Created,4abcb178-15cb-480f-b7e8-6acbed7b3892,
+13,row:13,Created,b0a99087-fcc6-4e57-9965-2005a528411c,
+14,row:14,Created,f4449857-62ba-401c-b616-1017bf79e681,
+15,row:15,Created,1f54f55f-79bd-47fe-894b-b253a7f7c716,
+16,row:16,Created,87307613-98a1-4160-adb9-9037a6e88b23,
+17,row:17,Error,,Duplicate of row 2 in this file
+18,row:18,Duplicate — skipped,cfed538d-392d-4e61-812c-784d9867a0d9,
+19,row:19,Error,,"VERY_HIGH is not one of: Low, Medium, High, Unrated"
+20,row:20,Error,,Client name is required.
+21,row:21,Error,,An email address is required to create a client in Kazi

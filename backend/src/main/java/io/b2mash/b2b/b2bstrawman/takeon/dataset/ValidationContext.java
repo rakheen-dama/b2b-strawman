@@ -15,7 +15,8 @@ import java.util.UUID;
 /**
  * What one dry run needs, loaded once (§17.3.2): the batch, each source's mapping and parse
  * options, the custom-field definitions of the dataset's entity type, and the dedup keys seen so
- * far. Dataset slices extend it with their lookups (existing clients, matters, accounts).
+ * far. Dataset slices extend it with their lookups (existing clients, matters, accounts) through
+ * the copy constructor.
  */
 public class ValidationContext {
 
@@ -51,6 +52,16 @@ public class ValidationContext {
     this.sources = Map.copyOf(sources);
     this.customFieldEntityType = customFieldEntityType;
     this.customFieldDefinitions = Map.copyOf(customFieldDefinitions);
+  }
+
+  /**
+   * The extension seam for a dataset handler (653A found F-15, chosen in 655A): a handler that
+   * delegates to {@link GenericTakeOnDatasetHandler} subclasses this context and builds it from the
+   * generic one with this copy constructor, adding its own lookups. Copies the loaded mappings and
+   * definitions; the in-file dedup state starts empty (it is built while the rows are checked).
+   */
+  protected ValidationContext(ValidationContext base) {
+    this(base.batch, base.sources, base.customFieldEntityType, base.customFieldDefinitions);
   }
 
   public TakeOnBatch batch() {

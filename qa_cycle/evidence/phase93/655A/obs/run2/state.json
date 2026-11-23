@@ -1,0 +1,655 @@
+{
+  "seededClients": [
+    [
+      "Acme Corp Individual",
+      "Active",
+      "Done 24 Nov 2026",
+      "1",
+      "R 8 625,00 · 1",
+      "R 0,00",
+      "N/A",
+      "24 Nov 2026",
+      "contact@acme.example.com+1-555-0100",
+      "Client actions"
+    ]
+  ],
+  "existingClient": {
+    "name": "Acme Corp",
+    "url": "http://localhost:3001/org/e2e-test-org/clients/77c7b9cf-10ce-4993-8298-1dcb3523772f",
+    "emails": [
+      "contact@acme.example.com"
+    ]
+  },
+  "batch": "3e49c313-5008-46e7-9f1c-c39e34e27c5c",
+  "obsStart": "2026-11-23T23:07:04.182Z",
+  "suggestedMapping": {
+    "name": "Client name",
+    "email": "Email",
+    "phone": "Phone",
+    "idNumber": "ID number",
+    "registrationNumber": "Not mapped",
+    "taxNumber": "Tax number",
+    "ficaClientType": "Client type",
+    "addressLine1": "Address line 1",
+    "addressLine2": "Not mapped",
+    "city": "City",
+    "postalCode": "Postal code",
+    "country": "Country",
+    "cddCompletedDate": "CDD completed date",
+    "lastReviewDate": "Not mapped",
+    "riskRating": "Risk rating",
+    "beneficialOwnershipStatus": "Beneficial ownership",
+    "screeningStatus": "Screening",
+    "screeningDate": "Screening date",
+    "sourceOfFundsStatus": "Source of funds",
+    "cddRecordsLocation": "Not mapped",
+    "sourceRef": "Not mapped"
+  },
+  "a": {
+    "cards": {
+      "total": 20,
+      "valid": 16,
+      "error": 4,
+      "duplicate": 1,
+      "blocks": 0
+    },
+    "table": {
+      "all": 20,
+      "valid": 16,
+      "duplicate": 1,
+      "error": 4,
+      "duplicateFromMessages": 1
+    },
+    "eq": {
+      "total": true,
+      "valid": true,
+      "error": true,
+      "duplicate": true,
+      "duplicateFilter": true
+    },
+    "fix": {
+      "acmeStatus": "Duplicate — will be skipped",
+      "acmeDuplicateMessage": "Matches a client already in Kazi",
+      "acmeRowText": "18 | row:18 | Acme Corporation | Contact@acme.example.com | Company | Low | Archive room B, Sandton office | Duplicate — will be skipped | City: Johannesburg · Phone: +27 11 555 0117 · Country: ZA · Postal code: 2001 · Address line 1: 100 Commissioner Street · Screening date: 2024-02-01 · Screening: Screened — clear · CDD completed date: 2024-02-01 · Source of funds: Done · Beneficial ownership: Done | Matches a client already in Kazi",
+      "otherRowsWithDuplicateBadge": [],
+      "duplicateFilterRowNumbers": [
+        "18"
+      ],
+      "duplicateCard": 1,
+      "row19Risk": "—",
+      "row19RiskCellByTestId": "—",
+      "row19Messages": "VERY_HIGH is not one of: Low, Medium, High, Unrated",
+      "row19ShowsNotRiskRated": false,
+      "pass1": true,
+      "pass2": true
+    },
+    "allRows": [
+      [
+        "2",
+        "row:2",
+        "Thandiwe Mokoena",
+        "thandiwe.mokoena@example.test",
+        "Natural person",
+        "Low",
+        "Archive room B, Sandton office",
+        "Valid",
+        "City: Pretoria · Phone: +27 82 555 0101 · Country: ZA · ID number: 8503125800081 · Postal code: 0181 · Address line 1: 12 Jacaranda Street · Screening date: 2024-03-15 · Screening: Screened — clear · CDD completed date: 2024-03-15 · Source of funds: Done · Beneficial ownership: Not applicable",
+        ""
+      ],
+      [
+        "3",
+        "row:3",
+        "Sipho Dlamini",
+        "sipho.dlamini@example.test",
+        "Natural person",
+        "Medium",
+        "Archive room B, Sandton office",
+        "Valid",
+        "City: Durban · Phone: +27 83 555 0102 · Country: ZA · ID number: 7907215800082 · Postal code: 4001 · Address line 1: 44 Umgeni Road · Screening date: 2024-04-02 · Screening: Screened — clear · CDD completed date: 2024-04-02 · Source of funds: Done · Beneficial ownership: Not applicable",
+        ""
+      ],
+      [
+        "4",
+        "row:4",
+        "Pieter van der Merwe",
+        "pieter.vdmerwe@example.test",
+        "Natural person",
+        "High",
+        "Archive room B, Sandton office",
+        "Valid",
+        "City: Stellenbosch · Phone: +27 84 555 0103 · Country: ZA · ID number: 6611095800083 · Postal code: 7600 · Address line 1: 7 Kerkstraat · Screening date: 2023-11-20 · Screening: Screened — match · CDD completed date: 2023-11-20 · Source of funds: Done · Beneficial ownership: Not applicable",
+        ""
+      ],
+      [
+        "5",
+        "row:5",
+        "Naledi Khoza",
+        "naledi.khoza@example.test",
+        "Natural person",
+        "Not risk-rated",
+        "Archive room B, Sandton office",
+        "Valid",
+        "City: Bloemfontein · Phone: +27 72 555 0104 · Country: ZA · ID number: 9202285800084 · Postal code: 9301 · Address line 1: 3 Protea Lane · Screening: Not screened · CDD completed date: 2024-06-10 · Source of funds: Not required · Beneficial ownership: Not applicable",
+        ""
+      ],
+      [
+        "6",
+        "row:6",
+        "Bongani Nkosi Trading (Pty) Ltd",
+        "accounts@bongani-trading.example.test",
+        "Company",
+        "Medium",
+        "Archive room B, Sandton office",
+        "Valid",
+        "City: Sandton · Phone: +27 11 555 0105 · Country: ZA · Tax number: 9123456705 · Postal code: 2196 · Address line 1: 88 Rivonia Road · Screening date: 2024-01-18 · Screening: Screened — clear · CDD completed date: 2024-01-18 · Source of funds: Done · Beneficial ownership: Done",
+        ""
+      ],
+      [
+        "7",
+        "row:7",
+        "Lerato Molefe",
+        "lerato.molefe@example.test",
+        "Natural person",
+        "Low",
+        "Archive room B, Sandton office",
+        "Valid",
+        "City: Soweto · Phone: +27 73 555 0106 · Country: ZA · ID number: 8808085800086 · Postal code: 1804 · Address line 1: 21 Vilakazi Street · Screening date: 2024-05-05 · Screening: Screened — clear · CDD completed date: 2024-05-05 · Source of funds: Not required · Beneficial ownership: Not applicable",
+        ""
+      ],
+      [
+        "8",
+        "row:8",
+        "Karoo Sunrise Family Trust",
+        "trustees@karoosunrise.example.test",
+        "Trust",
+        "Medium",
+        "Archive room B, Sandton office",
+        "Valid",
+        "City: Graaff-Reinet · Phone: +27 49 555 0107 · Country: ZA · Tax number: 9234567807 · Postal code: 6280 · Address line 1: 1 Voortrekker Street · Screening date: 2023-09-12 · Screening: Screened — clear · CDD completed date: 2023-09-12 · Source of funds: Done · Beneficial ownership: Done",
+        ""
+      ],
+      [
+        "9",
+        "row:9",
+        "Johan Pretorius",
+        "johan.pretorius@example.test",
+        "Natural person",
+        "Low",
+        "Archive room B, Sandton office",
+        "Valid",
+        "City: Polokwane · Phone: +27 82 555 0108 · Country: ZA · ID number: 7404045800088 · Postal code: 0699 · Address line 1: 15 Boom Street · Screening date: 2024-02-27 · Screening: Screened — clear · CDD completed date: 2024-02-27 · Source of funds: Done · Beneficial ownership: Not applicable",
+        ""
+      ],
+      [
+        "10",
+        "row:10",
+        "Ayanda Zulu",
+        "ayanda.zulu@example.test",
+        "Natural person",
+        "Low",
+        "Archive room B, Sandton office",
+        "Valid",
+        "City: Durban · Phone: +27 76 555 0109 · Country: ZA · ID number: 9511115800089 · Postal code: 4001 · Address line 1: 9 Florida Road · Screening date: 2024-07-01 · Screening: Screened — clear · CDD completed date: 2024-07-01 · Source of funds: Not required · Beneficial ownership: Not applicable",
+        ""
+      ],
+      [
+        "11",
+        "row:11",
+        "Mpho Sithole Plumbing CC",
+        "info@mphosithole.example.test",
+        "Close corporation",
+        "Medium",
+        "Archive room B, Sandton office",
+        "Valid",
+        "City: Pretoria · Phone: +27 12 555 0110 · Country: ZA · Tax number: 9345678910 · Postal code: 0002 · Address line 1: 60 Church Street · Screening date: 2024-08-14 · Screening: Screened — clear · CDD completed date: 2024-08-14 · Source of funds: Done · Beneficial ownership: Done",
+        ""
+      ],
+      [
+        "12",
+        "row:12",
+        "Farah Patel",
+        "farah.patel@example.test",
+        "Natural person",
+        "Low",
+        "Archive room B, Sandton office",
+        "Valid",
+        "City: Durban · Phone: +27 31 555 0111 · Country: ZA · ID number: 8612125800091 · Postal code: 4001 · Address line 1: 5 Grey Street · Screening date: 2024-09-09 · Screening: Screened — clear · CDD completed date: 2024-09-09 · Source of funds: Done · Beneficial ownership: Not applicable",
+        ""
+      ],
+      [
+        "13",
+        "row:13",
+        "Kagiso Mahlangu",
+        "kagiso.mahlangu@example.test",
+        "Natural person",
+        "Low",
+        "Archive room B, Sandton office",
+        "Valid",
+        "City: Mbombela · Phone: +27 79 555 0112 · Country: ZA · ID number: 9003035800092 · Postal code: 1200 · Address line 1: 18 Nelson Mandela Drive · Screening date: 2024-10-01 · Screening: Screened — clear · CDD completed date: 2024-10-01 · Source of funds: Not required · Beneficial ownership: Not applicable",
+        ""
+      ],
+      [
+        "14",
+        "row:14",
+        "Zanele Mthembu",
+        "zanele.mthembu@example.test",
+        "Natural person",
+        "Medium",
+        "Archive room B, Sandton office",
+        "Valid",
+        "City: Cape Town · Phone: +27 81 555 0113 · Country: ZA · ID number: 8207075800093 · Postal code: 8001 · Address line 1: 32 Long Street · Screening date: 2024-03-30 · Screening: Screened — clear · CDD completed date: 2024-03-30 · Source of funds: Done · Beneficial ownership: Not applicable",
+        ""
+      ],
+      [
+        "15",
+        "row:15",
+        "Riaan Botha",
+        "riaan.botha@example.test",
+        "Natural person",
+        "Low",
+        "Archive room B, Sandton office",
+        "Valid",
+        "City: George · Phone: +27 82 555 0114 · Country: ZA · ID number: 7712125800094 · Postal code: 6529 · Address line 1: 4 Main Road · Screening date: 2024-04-22 · Screening: Screened — clear · CDD completed date: 2024-04-22 · Source of funds: Done · Beneficial ownership: Not applicable",
+        ""
+      ],
+      [
+        "16",
+        "row:16",
+        "Nomvula Ndaba",
+        "nomvula.ndaba@example.test",
+        "Natural person",
+        "Low",
+        "Archive room B, Sandton office",
+        "Valid",
+        "City: East London · Phone: +27 71 555 0115 · Country: ZA · ID number: 9406065800095 · Postal code: 5201 · Address line 1: 27 Oxford Street · Screening date: 2024-05-19 · Screening: Screened — clear · CDD completed date: 2024-05-19 · Source of funds: Not required · Beneficial ownership: Not applicable",
+        ""
+      ],
+      [
+        "17",
+        "row:17",
+        "T. Mokoena",
+        "thandiwe.mokoena@example.test",
+        "Natural person",
+        "Low",
+        "Archive room B, Sandton office",
+        "Error",
+        "City: Pretoria · Phone: +27 82 555 0116 · Country: ZA · Postal code: 0181 · Address line 1: 12 Jacaranda Street · Screening date: 2024-03-15 · Screening: Screened — clear · CDD completed date: 2024-03-15 · Source of funds: Done · Beneficial ownership: Not applicable",
+        "Duplicate of row 2 in this file"
+      ],
+      [
+        "18",
+        "row:18",
+        "Acme Corporation",
+        "Contact@acme.example.com",
+        "Company",
+        "Low",
+        "Archive room B, Sandton office",
+        "Duplicate — will be skipped",
+        "City: Johannesburg · Phone: +27 11 555 0117 · Country: ZA · Postal code: 2001 · Address line 1: 100 Commissioner Street · Screening date: 2024-02-01 · Screening: Screened — clear · CDD completed date: 2024-02-01 · Source of funds: Done · Beneficial ownership: Done",
+        "Matches a client already in Kazi"
+      ],
+      [
+        "19",
+        "row:19",
+        "Lindiwe Mabaso",
+        "lindiwe.mabaso@example.test",
+        "Natural person",
+        "—",
+        "Archive room B, Sandton office",
+        "Error",
+        "City: Kimberley · Phone: +27 74 555 0118 · Country: ZA · ID number: 8909095800098 · Postal code: 8301 · Address line 1: 11 Market Street · Screening date: 2024-06-06 · Screening: Screened — clear · CDD completed date: 2024-06-06 · Source of funds: Done · Beneficial ownership: Not applicable",
+        "VERY_HIGH is not one of: Low, Medium, High, Unrated"
+      ],
+      [
+        "20",
+        "row:20",
+        "—",
+        "olwethu.cele@example.test",
+        "Natural person",
+        "Low",
+        "Archive room B, Sandton office",
+        "Error",
+        "City: Gqeberha · Phone: +27 78 555 0119 · Country: ZA · ID number: 9101015800099 · Postal code: 6001 · Address line 1: 2 Beach Road · Screening date: 2024-07-07 · Screening: Screened — clear · CDD completed date: 2024-07-07 · Source of funds: Done · Beneficial ownership: Not applicable",
+        "Client name is required."
+      ],
+      [
+        "21",
+        "row:21",
+        "Sibusiso Radebe",
+        "—",
+        "Natural person",
+        "Low",
+        "Archive room B, Sandton office",
+        "Error",
+        "City: Pietermaritzburg · Phone: +27 82 555 0120 · Country: ZA · ID number: 8312125800100 · Postal code: 3201 · Address line 1: 6 Station Road · Screening date: 2024-08-08 · Screening: Screened — clear · CDD completed date: 2024-08-08 · Source of funds: Done · Beneficial ownership: Not applicable",
+        "An email address is required to create a client in Kazi"
+      ]
+    ],
+    "dupFilterRows": [
+      [
+        "18",
+        "row:18",
+        "Acme Corporation",
+        "Contact@acme.example.com",
+        "Company",
+        "Low",
+        "Archive room B, Sandton office",
+        "Duplicate — will be skipped",
+        "City: Johannesburg · Phone: +27 11 555 0117 · Country: ZA · Postal code: 2001 · Address line 1: 100 Commissioner Street · Screening date: 2024-02-01 · Screening: Screened — clear · CDD completed date: 2024-02-01 · Source of funds: Done · Beneficial ownership: Done",
+        "Matches a client already in Kazi"
+      ]
+    ]
+  },
+  "b": {
+    "statement": "I confirm that customer due diligence for the clients in this batch was performed by E2E Test Organization in its previous system, as recorded in each row, and that the records and the copies of, or references to, the verification documents remain available at the location recorded for each client for at least as long as FICA requires (sections 22 and 23). These clients will be shown as verified in the prior system, not as verified in Kazi.",
+    "disabledBefore": true,
+    "disabledAfter": false,
+    "live": "Attested by Alice Owner (Owner) on 24 Nov 2026, 01:07.\n\nCommit take-on\nWithdraw attestation"
+  },
+  "carol": {
+    "wizardRendered": false,
+    "h1": [
+      "Matter Templates"
+    ],
+    "attestButtons": 0,
+    "commitButtons": 0,
+    "unavailable": null
+  },
+  "c": {
+    "before": {
+      "total": 2,
+      "messages_count": 2
+    },
+    "after": {
+      "total": 2,
+      "messages_count": 2
+    },
+    "title": "Commit clients take-on?",
+    "body": "15 records will be created, and 1 duplicate skipped. This cannot be undone.",
+    "progressSeen": [
+      "Committing… 0 of 16"
+    ],
+    "results": {
+      "created": "Created 15",
+      "skipped": "Duplicate — skipped 1",
+      "failed": "Failed 0"
+    }
+  },
+  "d": {
+    "Karoo Sunrise Family Trust": {
+      "rows": [
+        "Karoo Sunrise Family Trust Trust | Active | Not started | 0 | — | R 0,00 | N/A | 24 Nov 2026 | trustees@karoosunrise.example.test+27 49 555 0107 | Client actions"
+      ],
+      "url": "http://localhost:3001/org/e2e-test-org/clients/384c16d0-9279-4d22-a4c0-7c137221b08b",
+      "head": "Back to Clients | Karoo Sunrise Family Trust | Active |  | trustees@karoosunrise.example.test · +27 49 555 0107 |  | Since 24 Nov 2026 · 0 matters |  | Edit | Generate Document | More actions | Open matters | 0 | Trust balance | R 0,00 | Mathebula & Partners Trust Account | Outstanding | R 0,00 | 0 overdue | FICA | Not started | Details | Overview | Matters | Fees | FICA & compliance | Activity | Client Readiness | Progress | 67% | Matters linked | Set up | No onboarding checklist | No required fields defined | View | Document Templates | Power of Attorney | Generate | Client Trust Statement | Generate | Trust Receipt | Generate | FICA Verification | AI | Verify with AI"
+    },
+    "Naledi Khoza": {
+      "rows": [
+        "Naledi Khoza Individual | Active | Not started | 0 | — | R 0,00 | N/A | 24 Nov 2026 | naledi.khoza@example.test+27 72 555 0104 | Client actions"
+      ],
+      "url": "http://localhost:3001/org/e2e-test-org/clients/5d0e8282-1c0d-4825-ac3d-96e727ca44e4",
+      "head": "Back to Clients | Naledi Khoza | Active |  | naledi.khoza@example.test · +27 72 555 0104 |  | ID | 9202285800084 |  | Since 24 Nov 2026 · 0 matters |  | Edit | Generate Document | More actions | Open matters | 0 | Trust balance | R 0,00 | Mathebula & Partners Trust Account | Outstanding | R 0,00 | 0 overdue | FICA | Not started | Details | Overview | Matters | Fees | FICA & compliance | Activity | Client Readiness | Progress | 67% | Matters linked | Set up | No onboarding checklist | No required fields defined | View | Document Templates | Power of Attorney | Generate | Client Trust Statement | Generate | Trust Receipt | Generate | FICA Verification | AI | Verify with AI"
+    }
+  },
+  "e": {
+    "before": {
+      "total": 2,
+      "messages_count": 2
+    },
+    "after": {
+      "total": 2,
+      "messages_count": 2
+    },
+    "result": "15 portal contacts created",
+    "error": null
+  },
+  "f": {
+    "name": "take-on-result-3e49c313-5008-46e7-9f1c-c39e34e27c5c.csv",
+    "out": "/Users/rakheendama/Projects/2026/worktree-epic-655A/qa_cycle/evidence/phase93/655A/obs/run2/result-download/take-on-result-3e49c313-5008-46e7-9f1c-c39e34e27c5c.csv",
+    "rows": [
+      [
+        "2",
+        "row:2",
+        "Thandiwe Mokoena",
+        "thandiwe.mokoena@example.test",
+        "Natural person",
+        "Low",
+        "Archive room B, Sandton office",
+        "Created",
+        "City: Pretoria · Phone: +27 82 555 0101 · Country: ZA · ID number: 8503125800081 · Postal code: 0181 · Address line 1: 12 Jacaranda Street · Screening date: 2024-03-15 · Screening: Screened — clear · CDD completed date: 2024-03-15 · Source of funds: Done · Beneficial ownership: Not applicable",
+        ""
+      ],
+      [
+        "3",
+        "row:3",
+        "Sipho Dlamini",
+        "sipho.dlamini@example.test",
+        "Natural person",
+        "Medium",
+        "Archive room B, Sandton office",
+        "Created",
+        "City: Durban · Phone: +27 83 555 0102 · Country: ZA · ID number: 7907215800082 · Postal code: 4001 · Address line 1: 44 Umgeni Road · Screening date: 2024-04-02 · Screening: Screened — clear · CDD completed date: 2024-04-02 · Source of funds: Done · Beneficial ownership: Not applicable",
+        ""
+      ],
+      [
+        "4",
+        "row:4",
+        "Pieter van der Merwe",
+        "pieter.vdmerwe@example.test",
+        "Natural person",
+        "High",
+        "Archive room B, Sandton office",
+        "Created",
+        "City: Stellenbosch · Phone: +27 84 555 0103 · Country: ZA · ID number: 6611095800083 · Postal code: 7600 · Address line 1: 7 Kerkstraat · Screening date: 2023-11-20 · Screening: Screened — match · CDD completed date: 2023-11-20 · Source of funds: Done · Beneficial ownership: Not applicable",
+        ""
+      ],
+      [
+        "5",
+        "row:5",
+        "Naledi Khoza",
+        "naledi.khoza@example.test",
+        "Natural person",
+        "Not risk-rated",
+        "Archive room B, Sandton office",
+        "Created",
+        "City: Bloemfontein · Phone: +27 72 555 0104 · Country: ZA · ID number: 9202285800084 · Postal code: 9301 · Address line 1: 3 Protea Lane · Screening: Not screened · CDD completed date: 2024-06-10 · Source of funds: Not required · Beneficial ownership: Not applicable",
+        ""
+      ],
+      [
+        "6",
+        "row:6",
+        "Bongani Nkosi Trading (Pty) Ltd",
+        "accounts@bongani-trading.example.test",
+        "Company",
+        "Medium",
+        "Archive room B, Sandton office",
+        "Created",
+        "City: Sandton · Phone: +27 11 555 0105 · Country: ZA · Tax number: 9123456705 · Postal code: 2196 · Address line 1: 88 Rivonia Road · Screening date: 2024-01-18 · Screening: Screened — clear · CDD completed date: 2024-01-18 · Source of funds: Done · Beneficial ownership: Done",
+        ""
+      ],
+      [
+        "7",
+        "row:7",
+        "Lerato Molefe",
+        "lerato.molefe@example.test",
+        "Natural person",
+        "Low",
+        "Archive room B, Sandton office",
+        "Created",
+        "City: Soweto · Phone: +27 73 555 0106 · Country: ZA · ID number: 8808085800086 · Postal code: 1804 · Address line 1: 21 Vilakazi Street · Screening date: 2024-05-05 · Screening: Screened — clear · CDD completed date: 2024-05-05 · Source of funds: Not required · Beneficial ownership: Not applicable",
+        ""
+      ],
+      [
+        "8",
+        "row:8",
+        "Karoo Sunrise Family Trust",
+        "trustees@karoosunrise.example.test",
+        "Trust",
+        "Medium",
+        "Archive room B, Sandton office",
+        "Created",
+        "City: Graaff-Reinet · Phone: +27 49 555 0107 · Country: ZA · Tax number: 9234567807 · Postal code: 6280 · Address line 1: 1 Voortrekker Street · Screening date: 2023-09-12 · Screening: Screened — clear · CDD completed date: 2023-09-12 · Source of funds: Done · Beneficial ownership: Done",
+        ""
+      ],
+      [
+        "9",
+        "row:9",
+        "Johan Pretorius",
+        "johan.pretorius@example.test",
+        "Natural person",
+        "Low",
+        "Archive room B, Sandton office",
+        "Created",
+        "City: Polokwane · Phone: +27 82 555 0108 · Country: ZA · ID number: 7404045800088 · Postal code: 0699 · Address line 1: 15 Boom Street · Screening date: 2024-02-27 · Screening: Screened — clear · CDD completed date: 2024-02-27 · Source of funds: Done · Beneficial ownership: Not applicable",
+        ""
+      ],
+      [
+        "10",
+        "row:10",
+        "Ayanda Zulu",
+        "ayanda.zulu@example.test",
+        "Natural person",
+        "Low",
+        "Archive room B, Sandton office",
+        "Created",
+        "City: Durban · Phone: +27 76 555 0109 · Country: ZA · ID number: 9511115800089 · Postal code: 4001 · Address line 1: 9 Florida Road · Screening date: 2024-07-01 · Screening: Screened — clear · CDD completed date: 2024-07-01 · Source of funds: Not required · Beneficial ownership: Not applicable",
+        ""
+      ],
+      [
+        "11",
+        "row:11",
+        "Mpho Sithole Plumbing CC",
+        "info@mphosithole.example.test",
+        "Close corporation",
+        "Medium",
+        "Archive room B, Sandton office",
+        "Created",
+        "City: Pretoria · Phone: +27 12 555 0110 · Country: ZA · Tax number: 9345678910 · Postal code: 0002 · Address line 1: 60 Church Street · Screening date: 2024-08-14 · Screening: Screened — clear · CDD completed date: 2024-08-14 · Source of funds: Done · Beneficial ownership: Done",
+        ""
+      ],
+      [
+        "12",
+        "row:12",
+        "Farah Patel",
+        "farah.patel@example.test",
+        "Natural person",
+        "Low",
+        "Archive room B, Sandton office",
+        "Created",
+        "City: Durban · Phone: +27 31 555 0111 · Country: ZA · ID number: 8612125800091 · Postal code: 4001 · Address line 1: 5 Grey Street · Screening date: 2024-09-09 · Screening: Screened — clear · CDD completed date: 2024-09-09 · Source of funds: Done · Beneficial ownership: Not applicable",
+        ""
+      ],
+      [
+        "13",
+        "row:13",
+        "Kagiso Mahlangu",
+        "kagiso.mahlangu@example.test",
+        "Natural person",
+        "Low",
+        "Archive room B, Sandton office",
+        "Created",
+        "City: Mbombela · Phone: +27 79 555 0112 · Country: ZA · ID number: 9003035800092 · Postal code: 1200 · Address line 1: 18 Nelson Mandela Drive · Screening date: 2024-10-01 · Screening: Screened — clear · CDD completed date: 2024-10-01 · Source of funds: Not required · Beneficial ownership: Not applicable",
+        ""
+      ],
+      [
+        "14",
+        "row:14",
+        "Zanele Mthembu",
+        "zanele.mthembu@example.test",
+        "Natural person",
+        "Medium",
+        "Archive room B, Sandton office",
+        "Created",
+        "City: Cape Town · Phone: +27 81 555 0113 · Country: ZA · ID number: 8207075800093 · Postal code: 8001 · Address line 1: 32 Long Street · Screening date: 2024-03-30 · Screening: Screened — clear · CDD completed date: 2024-03-30 · Source of funds: Done · Beneficial ownership: Not applicable",
+        ""
+      ],
+      [
+        "15",
+        "row:15",
+        "Riaan Botha",
+        "riaan.botha@example.test",
+        "Natural person",
+        "Low",
+        "Archive room B, Sandton office",
+        "Created",
+        "City: George · Phone: +27 82 555 0114 · Country: ZA · ID number: 7712125800094 · Postal code: 6529 · Address line 1: 4 Main Road · Screening date: 2024-04-22 · Screening: Screened — clear · CDD completed date: 2024-04-22 · Source of funds: Done · Beneficial ownership: Not applicable",
+        ""
+      ],
+      [
+        "16",
+        "row:16",
+        "Nomvula Ndaba",
+        "nomvula.ndaba@example.test",
+        "Natural person",
+        "Low",
+        "Archive room B, Sandton office",
+        "Created",
+        "City: East London · Phone: +27 71 555 0115 · Country: ZA · ID number: 9406065800095 · Postal code: 5201 · Address line 1: 27 Oxford Street · Screening date: 2024-05-19 · Screening: Screened — clear · CDD completed date: 2024-05-19 · Source of funds: Not required · Beneficial ownership: Not applicable",
+        ""
+      ],
+      [
+        "17",
+        "row:17",
+        "T. Mokoena",
+        "thandiwe.mokoena@example.test",
+        "Natural person",
+        "Low",
+        "Archive room B, Sandton office",
+        "Error",
+        "City: Pretoria · Phone: +27 82 555 0116 · Country: ZA · Postal code: 0181 · Address line 1: 12 Jacaranda Street · Screening date: 2024-03-15 · Screening: Screened — clear · CDD completed date: 2024-03-15 · Source of funds: Done · Beneficial ownership: Not applicable",
+        "Duplicate of row 2 in this file"
+      ],
+      [
+        "18",
+        "row:18",
+        "Acme Corporation",
+        "Contact@acme.example.com",
+        "Company",
+        "Low",
+        "Archive room B, Sandton office",
+        "Duplicate — skipped",
+        "City: Johannesburg · Phone: +27 11 555 0117 · Country: ZA · Postal code: 2001 · Address line 1: 100 Commissioner Street · Screening date: 2024-02-01 · Screening: Screened — clear · CDD completed date: 2024-02-01 · Source of funds: Done · Beneficial ownership: Done",
+        ""
+      ],
+      [
+        "19",
+        "row:19",
+        "Lindiwe Mabaso",
+        "lindiwe.mabaso@example.test",
+        "Natural person",
+        "—",
+        "Archive room B, Sandton office",
+        "Error",
+        "City: Kimberley · Phone: +27 74 555 0118 · Country: ZA · ID number: 8909095800098 · Postal code: 8301 · Address line 1: 11 Market Street · Screening date: 2024-06-06 · Screening: Screened — clear · CDD completed date: 2024-06-06 · Source of funds: Done · Beneficial ownership: Not applicable",
+        "VERY_HIGH is not one of: Low, Medium, High, Unrated"
+      ],
+      [
+        "20",
+        "row:20",
+        "—",
+        "olwethu.cele@example.test",
+        "Natural person",
+        "Low",
+        "Archive room B, Sandton office",
+        "Error",
+        "City: Gqeberha · Phone: +27 78 555 0119 · Country: ZA · ID number: 9101015800099 · Postal code: 6001 · Address line 1: 2 Beach Road · Screening date: 2024-07-07 · Screening: Screened — clear · CDD completed date: 2024-07-07 · Source of funds: Done · Beneficial ownership: Not applicable",
+        "Client name is required."
+      ],
+      [
+        "21",
+        "row:21",
+        "Sibusiso Radebe",
+        "—",
+        "Natural person",
+        "Low",
+        "Archive room B, Sandton office",
+        "Error",
+        "City: Pietermaritzburg · Phone: +27 82 555 0120 · Country: ZA · ID number: 8312125800100 · Postal code: 3201 · Address line 1: 6 Station Road · Screening date: 2024-08-08 · Screening: Screened — clear · CDD completed date: 2024-08-08 · Source of funds: Done · Beneficial ownership: Not applicable",
+        "An email address is required to create a client in Kazi"
+      ]
+    ]
+  },
+  "g": {
+    "text": "Dormancy Check\nCheck for Dormant Clients\n\nNo dormant clients detected."
+  }
+}

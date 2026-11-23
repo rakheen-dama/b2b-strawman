@@ -16,21 +16,8 @@ import {
   type TakeOnSection,
   type TakeOnUploadResult,
 } from "@/lib/types";
-import { TakeOnError, TakeOnWarnings } from "./take-on-feedback";
+import { saveTakeOnFile, TakeOnError, TakeOnWarnings } from "./take-on-feedback";
 import { UploadStep } from "./upload-step";
-
-/** Hands a downloaded template to the browser as a file. */
-function saveFile(fileName: string, content: string) {
-  if (typeof URL.createObjectURL !== "function") return;
-  const url = URL.createObjectURL(new Blob([content], { type: "text/csv;charset=utf-8" }));
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = fileName;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  URL.revokeObjectURL(url);
-}
 
 interface DatasetPickerProps {
   slug: string;
@@ -61,7 +48,7 @@ export function DatasetPicker({ slug, datasets }: DatasetPickerProps) {
       setTemplateError(result.error ?? "The template could not be downloaded. Try again.");
       return;
     }
-    saveFile(result.data.fileName, result.data.content);
+    saveTakeOnFile(result.data.fileName, result.data.content);
   }
 
   function uploaded(result: TakeOnUploadResult) {

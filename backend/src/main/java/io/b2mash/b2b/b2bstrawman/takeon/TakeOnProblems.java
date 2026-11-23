@@ -103,6 +103,112 @@ public final class TakeOnProblems {
             + " their investment rows.");
   }
 
+  // --- 409: attestation and commit (655A, §17.4.4, §17.10 X3) ---
+
+  /** A second commit of the same batch (a double-submit). */
+  public static TakeOnProblemException alreadyCommitting() {
+    return new TakeOnProblemException(
+        HttpStatus.CONFLICT,
+        "ALREADY_COMMITTING",
+        "This take-on batch is already committing",
+        "This take-on batch is already committing. Wait for it to finish.");
+  }
+
+  /** Another batch holds the tenant's one commit slot ({@code uq_take_on_batches_committing}). */
+  public static TakeOnProblemException anotherBatchCommitting() {
+    return new TakeOnProblemException(
+        HttpStatus.CONFLICT,
+        "ANOTHER_BATCH_COMMITTING",
+        "Another take-on batch is committing",
+        "Another take-on batch is committing. Wait for it to finish.");
+  }
+
+  /** The job queue is switched off on this server: refused before any claim (FD-35). */
+  public static TakeOnProblemException queueDisabled() {
+    return new TakeOnProblemException(
+        HttpStatus.CONFLICT,
+        "TAKE_ON_QUEUE_DISABLED",
+        "Take-on commits are switched off on this server",
+        "Take-on commits run in the background, and the background worker is switched off on"
+            + " this server.");
+  }
+
+  /** The hash sent is not the batch's (or the live attestation's) current hash. */
+  public static TakeOnProblemException hashMismatch() {
+    return new TakeOnProblemException(
+        HttpStatus.CONFLICT,
+        "HASH_MISMATCH",
+        "The batch changed since it was signed off",
+        "Re-validate and sign off again before committing.");
+  }
+
+  /** A clients batch commits only under a live FICA attestation on its current hash (C-15). */
+  public static TakeOnProblemException attestationRequired() {
+    return new TakeOnProblemException(
+        HttpStatus.CONFLICT,
+        "TAKE_ON_ATTESTATION_REQUIRED",
+        "FICA attestation required",
+        "Attest the FICA records of this batch before committing it.");
+  }
+
+  /** One live attestation per batch ({@code uq_take_on_sign_offs_live}). */
+  public static TakeOnProblemException alreadyAttested() {
+    return new TakeOnProblemException(
+        HttpStatus.CONFLICT,
+        "TAKE_ON_ALREADY_ATTESTED",
+        "Batch already attested",
+        "This take-on batch has already been attested. Withdraw the attestation to attest again.");
+  }
+
+  /** An attestation needs at least one row that a commit would create. */
+  public static TakeOnProblemException nothingToAttest() {
+    return new TakeOnProblemException(
+        HttpStatus.CONFLICT,
+        "TAKE_ON_NOTHING_TO_ATTEST",
+        "Nothing to attest",
+        "This take-on batch has no valid rows to attest. Correct the file and validate it again.");
+  }
+
+  /**
+   * A statutory hard block on a row stops the whole batch (657B semantics; 655A guards the claim
+   * and the attestation so a blocked batch never reaches the drain). Additive code (CR-7).
+   */
+  public static TakeOnProblemException blocked() {
+    return new TakeOnProblemException(
+        HttpStatus.CONFLICT,
+        "TAKE_ON_BLOCKED",
+        "Take-on batch blocked",
+        "Rows in this take-on batch block it. Correct them in the previous system, upload the"
+            + " corrected file and validate it again.");
+  }
+
+  /** Commit runs for one dataset in 655A; the others arrive with their slices. */
+  public static TakeOnProblemException commitNotAvailable() {
+    return new TakeOnProblemException(
+        HttpStatus.CONFLICT,
+        "TAKE_ON_COMMIT_NOT_AVAILABLE",
+        "Commit not available yet",
+        "This take-on cannot be committed yet.");
+  }
+
+  /** Portal access is created for a completed clients batch only. */
+  public static TakeOnProblemException notCompleted() {
+    return new TakeOnProblemException(
+        HttpStatus.CONFLICT,
+        "TAKE_ON_NOT_COMPLETED",
+        "Take-on batch not completed",
+        "Portal access can be created once the take-on has been committed.");
+  }
+
+  /** The result report exists once a commit has finished. */
+  public static TakeOnProblemException noResultYet() {
+    return new TakeOnProblemException(
+        HttpStatus.CONFLICT,
+        "TAKE_ON_NO_RESULT",
+        "No result yet",
+        "The result report is available once the take-on has been committed.");
+  }
+
   // --- 422 ---
 
   public static TakeOnProblemException fileUnsupported() {

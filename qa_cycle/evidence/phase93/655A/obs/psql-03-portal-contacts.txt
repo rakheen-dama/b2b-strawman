@@ -1,0 +1,41 @@
+-- BEFORE Create portal access (2026-11-23T22:36:13Z)
+ portal_contacts_for_batch_clients 
+-----------------------------------
+                                 0
+(1 row)
+
+ all_portal_contacts 
+---------------------
+                   1
+(1 row)
+
+-- AFTER Create portal access (2026-11-23T22:36:51Z)
+ portal_contacts_for_batch_clients 
+-----------------------------------
+                                15
+(1 row)
+
+ all_portal_contacts 
+---------------------
+                  16
+(1 row)
+
+              name               | same_email |  role   | status 
+---------------------------------+------------+---------+--------
+ Ayanda Zulu                     | t          | GENERAL | ACTIVE
+ Bongani Nkosi Trading (Pty) Ltd | t          | GENERAL | ACTIVE
+ Farah Patel                     | t          | GENERAL | ACTIVE
+ Johan Pretorius                 | t          | GENERAL | ACTIVE
+ Kagiso Mahlangu                 | t          | GENERAL | ACTIVE
+ Karoo Sunrise Family Trust      | t          | GENERAL | ACTIVE
+ Lerato Molefe                   | t          | GENERAL | ACTIVE
+ Mpho Sithole Plumbing CC        | t          | GENERAL | ACTIVE
+ Naledi Khoza                    | t          | GENERAL | ACTIVE
+ Nomvula Ndaba                   | t          | GENERAL | ACTIVE
+ Pieter van der Merwe            | t          | GENERAL | ACTIVE
+ Riaan Botha                     | t          | GENERAL | ACTIVE
+ Sipho Dlamini                   | t          | GENERAL | ACTIVE
+ Thandiwe Mokoena                | t          | GENERAL | ACTIVE
+ Zanele Mthembu                  | t          | GENERAL | ACTIVE
+(15 rows)
+

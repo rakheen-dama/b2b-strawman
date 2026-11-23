@@ -183,8 +183,9 @@ public class TakeOnBatch {
   }
 
   /**
-   * Guard for the dry run: the batch is {@code MAPPED} or {@code VALIDATED} and, for a trust or
-   * debtor take-on, carries its cutover date (CHECK {@code chk_take_on_batch_cutover}).
+   * Guard for the dry run: the batch is {@code MAPPED} or {@code VALIDATED}. The cutover date of a
+   * trust or debtor take-on is checked separately ({@link #missingCutoverDate()}, C-14), so the
+   * state refusal and the missing-input refusal stay distinct 409s.
    */
   public void requireValidatable() {
     if (status != TakeOnBatchStatus.MAPPED && status != TakeOnBatchStatus.VALIDATED) {

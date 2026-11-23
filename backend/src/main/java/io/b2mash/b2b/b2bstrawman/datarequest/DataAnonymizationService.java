@@ -5,10 +5,12 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.comment.CommentRepository;
 import io.b2mash.b2b.b2bstrawman.compliance.CustomerLifecycleService;
 import io.b2mash.b2b.b2bstrawman.config.KaziTime;
+import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
+import io.b2mash.b2b.b2bstrawman.customer.TakenOnCustomerService;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
 import io.b2mash.b2b.b2bstrawman.exception.EntityNoun;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
@@ -20,8 +22,11 @@ import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import io.b2mash.b2b.b2bstrawman.portal.directory.PortalContactDirectoryService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
+import io.b2mash.b2b.b2bstrawman.takeon.TakeOnRowRepository;
+import io.b2mash.b2b.b2bstrawman.takeon.dataset.TakeOnDedupKeys;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import java.time.LocalDate;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -49,6 +54,7 @@ public class DataAnonymizationService {
   private final OrgSettingsRepository orgSettingsRepository;
   private final DataExportService dataExportService;
   private final PortalContactDirectoryService portalContactDirectoryService;
+  private final TakeOnRowRepository takeOnRows;
 
   public DataAnonymizationService(
       DataSubjectRequestRepository requestRepository,
@@ -64,7 +70,8 @@ public class DataAnonymizationService {
       TimeEntryRepository timeEntryRepository,
       OrgSettingsRepository orgSettingsRepository,
       DataExportService dataExportService,
-      PortalContactDirectoryService portalContactDirectoryService) {
+      PortalContactDirectoryService portalContactDirectoryService,
+      TakeOnRowRepository takeOnRows) {
     this.requestRepository = requestRepository;
     this.customerRepository = customerRepository;
     this.documentRepository = documentRepository;
@@ -79,6 +86,7 @@ public class DataAnonymizationService {
     this.orgSettingsRepository = orgSettingsRepository;
     this.dataExportService = dataExportService;
     this.portalContactDirectoryService = portalContactDirectoryService;
+    this.takeOnRows = takeOnRows;
   }
 
   /**
@@ -113,9 +121,11 @@ public class DataAnonymizationService {
     }
 
     UUID customerId = request.getCustomerId();
+    // Locked: serialises with the take-on's portal-access creation (Phase 93 655A) — no portal
+    // contact is created from this client's name/email while (or after) it is anonymised.
     var customer =
         customerRepository
-            .findById(customerId)
+            .findByIdForUpdate(customerId)
             .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.CLIENT, customerId));
 
     // Verification: customer name must match exactly
@@ -127,7 +137,13 @@ public class DataAnonymizationService {
 
     // Step 1: Anonymize customer PII
     String hash = customerId.toString().substring(0, 6);
+    // Phase 93 655A: the take-on dedup keys need every email held before anonymize() overwrites
+    // the current one.
+    var takeOnDedupKeys = takeOnDedupKeys(customerId);
     customer.anonymize("Anonymized Client " + hash);
+    // Phase 93 655A: the take-on's parked legacy columns are free text that may hold PII; the
+    // other custom fields keep this path's existing behaviour.
+    dropTakeOnParkedColumns(customer);
     customerRepository.save(customer);
 
     // Step 2: Redact portal-visible comments (BEFORE deleting documents, since the query joins
@@ -171,6 +187,10 @@ public class DataAnonymizationService {
     request.complete(actorId);
     requestRepository.save(request);
 
+    // Phase 93 655A (FD-19, §17.6.5): the client's take-on rows lose their values. Runs last — the
+    // bulk update flushes and clears the persistence context.
+    takeOnRows.redactForClient(customerId, takeOnDedupKeys);
+
     // Audit event
     auditService.log(
         AuditEventBuilder.builder()
@@ -203,6 +223,27 @@ public class DataAnonymizationService {
   }
 
   /**
+   * The take-on dedup key of every email the client is recorded as having held (the current one,
+   * and each earlier one from its audit trail) — read before the email is overwritten.
+   */
+  private List<String> takeOnDedupKeys(UUID customerId) {
+    return customerRepository.findEmailsEverHeld(customerId).stream()
+        .map(TakeOnDedupKeys::client)
+        .distinct()
+        .toList();
+  }
+
+  /** Removes the take-on's parked-columns note ({@code customFields.takeon_parked}). */
+  private static void dropTakeOnParkedColumns(Customer customer) {
+    var fields = customer.getCustomFields();
+    if (fields != null && fields.containsKey(TakenOnCustomerService.PARKED_KEY)) {
+      var kept = new LinkedHashMap<>(fields);
+      kept.remove(TakenOnCustomerService.PARKED_KEY);
+      customer.setCustomFields(kept);
+    }
+  }
+
+  /**
    * Standalone customer anonymization — does NOT require a pre-existing DSAR. Generates a
    * pre-anonymization export, anonymizes all PII, sets ANONYMIZED status, and preserves financial
    * records.
@@ -217,9 +258,10 @@ public class DataAnonymizationService {
   public AnonymizationResult anonymizeCustomer(
       UUID customerId, String confirmationName, String reason, UUID actorId) {
 
+    // Locked: serialises with the take-on's portal-access creation (Phase 93 655A).
     var customer =
         customerRepository
-            .findById(customerId)
+            .findByIdForUpdate(customerId)
             .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.CLIENT, customerId));
 
     // Guard: reject if already ANONYMIZED
@@ -243,6 +285,9 @@ public class DataAnonymizationService {
 
     // Step 1: Anonymize customer PII (existing method)
     String hash = customerId.toString().substring(0, 6);
+    // Phase 93 655A: the take-on dedup keys need every email held before anonymize() overwrites
+    // the current one.
+    var takeOnDedupKeys = takeOnDedupKeys(customerId);
     customer.anonymize("Anonymized Client " + hash);
 
     // Step 2: Clear notes and customFields
@@ -292,6 +337,10 @@ public class DataAnonymizationService {
       invoiceRepository.save(invoice);
     }
     int invoicesPreserved = invoices.size();
+
+    // Phase 93 655A (FD-19, §17.6.5): the client's take-on rows lose their values. Runs last — the
+    // bulk update flushes and clears the persistence context.
+    takeOnRows.redactForClient(customerId, takeOnDedupKeys);
 
     // Step 8: Audit event with pre-anonymization export key (actual S3 key from export)
     auditService.log(

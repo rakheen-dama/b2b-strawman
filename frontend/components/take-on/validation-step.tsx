@@ -26,6 +26,8 @@ import {
   validateBatch,
 } from "@/app/(app)/org/[slug]/settings/matters/take-on-actions";
 import {
+  TAKE_ON_COMMIT_ROW_STATUSES,
+  TAKE_ON_DUPLICATE_PENDING_LABEL,
   TAKE_ON_ROW_STATUS_LABEL,
   TAKE_ON_SECTION_LABEL,
   type TakeOnBatch,
@@ -34,15 +36,45 @@ import {
   type TakeOnRowStatus,
   type TakeOnSection,
 } from "@/lib/types";
+import {
+  CLIENT_COLUMN_KEYS,
+  ClientColumnCells,
+  ClientColumnHeads,
+  clientValueText,
+} from "./clients-step";
 import { TakeOnError } from "./take-on-feedback";
 
 const PAGE_SIZE = 50;
 /** A row message after cancel or purge: the code stays, the text (it may quote a cell) is gone. */
 const PURGED_MESSAGE = "Details removed when the batch was cancelled.";
 const ALL = "ALL";
+/** Status-filter value for the valid rows that match an existing record (OBS-655A-1). */
+const DUPLICATE = "DUPLICATE";
 
-/** The row statuses a 653A dry run can produce (commit statuses arrive with 655A). */
-const FILTER_STATUSES: TakeOnRowStatus[] = ["PENDING", "VALIDATED", "ERROR"];
+/** A valid row matching an existing record: the Duplicates card counts it, the commit skips it. */
+function isPendingDuplicate(row: TakeOnRow): boolean {
+  return row.status === "VALIDATED" && row.duplicateOfId !== null;
+}
+
+type FilterOption = readonly [value: string, label: string];
+
+const statusOption = (s: TakeOnRowStatus): FilterOption => [s, TAKE_ON_ROW_STATUS_LABEL[s]];
+
+/**
+ * The row statuses a dry run produces, plus the valid rows that will be skipped as duplicates (none
+ * are left once the batch is completed); a commit adds its own statuses (655A, D-40).
+ */
+function filterOptionsFor(batch: TakeOnBatch): readonly FilterOption[] {
+  const dryRun: FilterOption[] = [statusOption("PENDING"), statusOption("VALIDATED")];
+  if (batch.status !== "COMPLETED") dryRun.push([DUPLICATE, TAKE_ON_DUPLICATE_PENDING_LABEL]);
+  dryRun.push(statusOption("ERROR"));
+  if (batch.status !== "COMMITTING" && batch.status !== "COMPLETED") return dryRun;
+  // A nil balance is skipped only in the balance datasets — never a client.
+  const commit = TAKE_ON_COMMIT_ROW_STATUSES.filter(
+    (s) => !(batch.dataset === "CLIENTS" && s === "SKIPPED_ZERO")
+  ).map(statusOption);
+  return [...dryRun, ...commit];
+}
 
 const STATUS_VARIANT: Record<TakeOnRowStatus, "success" | "warning" | "destructive" | "neutral"> = {
   PENDING: "neutral",
@@ -80,13 +112,17 @@ interface ValidationStepProps {
 /**
  * The dry run (Phase 93 653A, §17.3.2, X2): every row is checked, nothing is created. The cards
  * and the row table come from the same validation, so the table's status totals equal the cards.
- * There is no commit control here (Change #7 — it arrives with 655A).
+ * A valid row that matches an existing client shows "Duplicate — will be skipped" and has its own
+ * filter, so the Duplicates card, the filter and the table agree (OBS-655A-1). After a commit the
+ * same table shows each row's outcome (Created, Duplicate — skipped, Failed); the commit itself is
+ * on the Attestation step (655A).
  */
 export function ValidationStep({ batch, dataset, onBatchChange }: ValidationStepProps) {
   const allowed = new Set(batch.allowedActions);
   const canValidate = allowed.has("VALIDATE") || allowed.has("REVALIDATE");
   const validated = batch.status === "VALIDATED";
   const isTrust = dataset.requiresTrustAccount;
+  const isClients = dataset.dataset === "CLIENTS";
 
   const [status, setStatus] = useState<string>(ALL);
   const [section, setSection] = useState<string>(ALL);
@@ -98,7 +134,13 @@ export function ValidationStep({ batch, dataset, onBatchChange }: ValidationStep
   const rowsKey = `take-on-rows-${batch.id}-${batch.status}-${batch.validatedAt ?? "none"}-${status}-${section}-${blocksOnly}-${page}`;
   const rows = useSWR(rowsKey, async () => {
     const result = await fetchTakeOnRows(batch.id, {
-      status: status === ALL ? undefined : (status as TakeOnRowStatus),
+      status:
+        status === ALL
+          ? undefined
+          : status === DUPLICATE
+            ? "VALIDATED"
+            : (status as TakeOnRowStatus),
+      duplicatesOnly: status === DUPLICATE,
       section: section === ALL ? undefined : (section as TakeOnSection),
       blocksOnly,
       page,
@@ -225,9 +267,9 @@ export function ValidationStep({ batch, dataset, onBatchChange }: ValidationStep
           </SelectTrigger>
           <SelectContent>
             <SelectItem value={ALL}>All statuses</SelectItem>
-            {FILTER_STATUSES.map((s) => (
-              <SelectItem key={s} value={s}>
-                {TAKE_ON_ROW_STATUS_LABEL[s]}
+            {filterOptionsFor(batch).map(([value, label]) => (
+              <SelectItem key={value} value={value}>
+                {label}
               </SelectItem>
             ))}
           </SelectContent>
@@ -264,7 +306,14 @@ export function ValidationStep({ batch, dataset, onBatchChange }: ValidationStep
       {rows.error && (
         <TakeOnError message={String(rows.error.message)} testId="take-on-rows-error" />
       )}
-      {rows.data && <RowTable rows={rows.data.content} labels={labels} isTrust={isTrust} />}
+      {rows.data && (
+        <RowTable
+          rows={rows.data.content}
+          labels={labels}
+          isTrust={isTrust}
+          isClients={isClients}
+        />
+      )}
       {rows.data && totalPages > 1 && (
         <div className="flex items-center gap-3 text-sm" data-testid="take-on-rows-pager">
           <Button
@@ -305,10 +354,12 @@ function RowTable({
   rows,
   labels,
   isTrust,
+  isClients,
 }: {
   rows: TakeOnRow[];
   labels: Map<string, string>;
   isTrust: boolean;
+  isClients: boolean;
 }) {
   if (rows.length === 0) {
     return (
@@ -325,8 +376,9 @@ function RowTable({
             <TableHead className="w-16">Row</TableHead>
             {isTrust && <TableHead>Part</TableHead>}
             <TableHead>Previous system ID</TableHead>
+            {isClients && <ClientColumnHeads />}
             <TableHead>Status</TableHead>
-            <TableHead>Values</TableHead>
+            <TableHead>{isClients ? "Other values" : "Values"}</TableHead>
             <TableHead>Messages</TableHead>
           </TableRow>
         </TableHeader>
@@ -343,12 +395,15 @@ function RowTable({
                 <TableCell className="text-xs">{TAKE_ON_SECTION_LABEL[row.section]}</TableCell>
               )}
               <TableCell className="text-xs">{row.sourceRef ?? "—"}</TableCell>
+              {isClients && <ClientColumnCells rowNumber={row.rowNumber} values={row.values} />}
               <TableCell>
                 <Badge
-                  variant={STATUS_VARIANT[row.status]}
+                  variant={isPendingDuplicate(row) ? "warning" : STATUS_VARIANT[row.status]}
                   data-testid={`take-on-row-status-${row.rowNumber}`}
                 >
-                  {TAKE_ON_ROW_STATUS_LABEL[row.status]}
+                  {isPendingDuplicate(row)
+                    ? TAKE_ON_DUPLICATE_PENDING_LABEL
+                    : TAKE_ON_ROW_STATUS_LABEL[row.status]}
                 </Badge>
                 {row.block && (
                   <Badge variant="destructive" className="ml-1">
@@ -357,10 +412,32 @@ function RowTable({
                 )}
               </TableCell>
               <TableCell className="max-w-md text-xs text-slate-700 dark:text-slate-300">
-                <RowValues values={row.values} labels={labels} />
+                <RowValues
+                  values={row.values}
+                  labels={labels}
+                  exclude={isClients ? CLIENT_COLUMN_KEYS : undefined}
+                />
               </TableCell>
               <TableCell className="max-w-md text-xs whitespace-normal">
                 <ul className="space-y-0.5">
+                  {isPendingDuplicate(row) && (
+                    <li
+                      className="text-amber-700 dark:text-amber-300"
+                      data-testid={`take-on-row-duplicate-${row.rowNumber}`}
+                    >
+                      {isClients
+                        ? "Matches a client already in Kazi"
+                        : "Matches a record already in Kazi"}
+                    </li>
+                  )}
+                  {row.failureReason && (
+                    <li
+                      className="text-red-700 dark:text-red-300"
+                      data-testid={`take-on-row-failure-${row.rowNumber}`}
+                    >
+                      {row.failureReason}
+                    </li>
+                  )}
                   {row.errors.map((m, i) => (
                     <li key={`e${i}`} className="text-red-700 dark:text-red-300">
                       {m.message ?? PURGED_MESSAGE}
@@ -384,22 +461,29 @@ function RowTable({
 function RowValues({
   values,
   labels,
+  exclude,
 }: {
   values: Record<string, unknown> | null;
   labels: Map<string, string>;
+  exclude?: ReadonlySet<string>;
 }) {
   if (!values) return null;
   if (values.purged === true) {
     return <span>Deleted when the take-on was cancelled</span>;
   }
-  const entries = Object.entries(values).filter(([, v]) => v !== null && v !== "");
+  if (values.redacted === true) {
+    return <span>Removed when the client&apos;s personal information was anonymised</span>;
+  }
+  const entries = Object.entries(values).filter(
+    ([k, v]) => v !== null && v !== "" && !exclude?.has(k)
+  );
   return (
     <span className="line-clamp-2 whitespace-normal">
       {entries.map(([k, v], i) => (
         <span key={k}>
           {i > 0 && " · "}
           <span className="text-slate-500 dark:text-slate-400">{labels.get(k) ?? k}:</span>{" "}
-          {formatValue(v)}
+          {typeof v === "string" ? clientValueText(k, v) : formatValue(v)}
         </span>
       ))}
     </span>

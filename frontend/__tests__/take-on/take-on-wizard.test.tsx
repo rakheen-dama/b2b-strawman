@@ -28,6 +28,11 @@ const actions = vi.hoisted(() => ({
   fetchTakeOnCustomFields: vi.fn(),
   fetchTakeOnBankingAccounts: vi.fn(),
   downloadTakeOnTemplate: vi.fn(),
+  attest: vi.fn(),
+  revokeSignOff: vi.fn(),
+  commitBatch: vi.fn(),
+  createPortalContacts: vi.fn(),
+  downloadTakeOnResult: vi.fn(),
 }));
 vi.mock("@/app/(app)/org/[slug]/settings/matters/take-on-actions", () => actions);
 
@@ -118,12 +123,27 @@ function batch(overrides: Partial<TakeOnBatch> = {}): TakeOnBatch {
     cutoverDate: null,
     trustAccountId: null,
     sources: [source()],
-    counts: { total: 0, valid: 0, error: 0, duplicate: 0, blocks: 0 },
+    counts: {
+      total: 0,
+      valid: 0,
+      error: 0,
+      duplicate: 0,
+      blocks: 0,
+      created: 0,
+      skipped: 0,
+      failed: 0,
+    },
     validationHash: null,
     validatedAt: null,
     allowedActions: ["REMOVE_SOURCE", "MAP", "CANCEL"],
     createdAt: "2026-11-23T08:00:00Z",
     cancelledAt: null,
+    commitStartedAt: null,
+    completedAt: null,
+    lastError: null,
+    signOffs: [],
+    attestationStatement: null,
+    summary: null,
     ...overrides,
   };
 }
@@ -148,7 +168,16 @@ const VALIDATED = batch({
       mapping: { targets: { name: "Name" }, customFields: {}, parked: [], defaults: {} },
     }),
   ],
-  counts: { total: 10, valid: 7, error: 3, duplicate: 0, blocks: 0 },
+  counts: {
+    total: 10,
+    valid: 7,
+    error: 3,
+    duplicate: 0,
+    blocks: 0,
+    created: 0,
+    skipped: 0,
+    failed: 0,
+  },
   validationHash: "abc",
   validatedAt: "2026-11-23T09:00:00Z",
   allowedActions: ["REMOVE_SOURCE", "MAP", "REVALIDATE", "CANCEL"],
@@ -187,14 +216,16 @@ afterEach(() => {
 });
 
 describe("TakeOnWizard — stepper", () => {
-  it("labels the four steps and resumes an unmapped CSV at Mapping", async () => {
+  it("labels the six clients steps and resumes an unmapped CSV at Mapping", async () => {
     renderWizard(batch());
     const nav = screen.getByRole("navigation", { name: "Take-on steps" });
     expect(
       within(nav)
         .getAllByRole("button")
         .map((b) => b.textContent)
-    ).toEqual(["1Upload", "2Sheet", "3Mapping", "4Validation"]);
+    ).toEqual(["1Upload", "2Sheet", "3Mapping", "4Validation", "5Attestation", "6Results"]);
+    expect(screen.getByTestId("take-on-step-attestation")).toBeDisabled();
+    expect(screen.getByTestId("take-on-step-results")).toBeDisabled();
     expect(screen.getByTestId("take-on-step-mapping")).toHaveAttribute("aria-current", "step");
     expect(await screen.findByTestId("take-on-mapping")).toBeInTheDocument();
   });
@@ -221,8 +252,9 @@ describe("TakeOnWizard — stepper", () => {
     expect(screen.getByTestId("take-on-step-sheet")).toHaveAttribute("aria-current", "step");
   });
 
-  it("offers no commit control (Change #7 — the commit arrives with 655A)", () => {
+  it("offers no commit control on Validation — the commit follows the attestation", () => {
     renderWizard(VALIDATED);
+    expect(screen.getByTestId("take-on-to-attestation")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /commit/i })).not.toBeInTheDocument();
     expect(screen.queryByText(/commit/i)).not.toBeInTheDocument();
   });
@@ -530,6 +562,8 @@ describe("TakeOnWizard — validation", () => {
             errors: [{ code: "REQUIRED", field: "name", message: "Client name is required." }],
             warnings: [],
             duplicateOfId: null,
+            failureReason: null,
+            resultEntityId: null,
           },
         ],
         page: { totalElements: 1, totalPages: 1, size: 50, number: 0 },
@@ -546,6 +580,77 @@ describe("TakeOnWizard — validation", () => {
       expect(actions.fetchTakeOnRows).toHaveBeenLastCalledWith(
         "batch-1",
         expect.objectContaining({ status: "ERROR", page: 0, size: 50 })
+      )
+    );
+  });
+
+  it("marks a valid row that matches an existing client and filters to those rows (OBS-655A-1)", async () => {
+    const user = userEvent.setup();
+    const row = (
+      rowNumber: number,
+      status: "VALIDATED" | "ERROR",
+      duplicateOfId: string | null
+    ) => ({
+      id: `row-${rowNumber}`,
+      section: "MAIN" as const,
+      rowNumber,
+      sourceRef: `C-0${rowNumber}`,
+      status,
+      block: false,
+      values: { name: `Client ${rowNumber}` },
+      errors:
+        status === "ERROR"
+          ? [
+              {
+                code: "DUPLICATE_IN_FILE",
+                field: "email",
+                message: "Duplicate of row 18 in this file",
+              },
+            ]
+          : [],
+      warnings: [],
+      duplicateOfId,
+      failureReason: null,
+      resultEntityId: null,
+    });
+    actions.fetchTakeOnRows.mockResolvedValue({
+      success: true,
+      data: {
+        content: [
+          row(2, "VALIDATED", null),
+          row(18, "VALIDATED", "cust-acme"),
+          row(19, "ERROR", "cust-acme"),
+        ],
+        page: { totalElements: 3, totalPages: 1, size: 50, number: 0 },
+      },
+    });
+    renderWizard({ ...VALIDATED, counts: { ...VALIDATED.counts, duplicate: 1 } });
+    expect(await screen.findByTestId("take-on-row-status-18")).toHaveTextContent(
+      "Duplicate — will be skipped"
+    );
+    expect(screen.getByTestId("take-on-row-duplicate-18")).toHaveTextContent(
+      "Matches a client already in Kazi"
+    );
+    expect(screen.getByTestId("take-on-row-status-2")).toHaveTextContent("Valid");
+    expect(screen.queryByTestId("take-on-row-duplicate-2")).not.toBeInTheDocument();
+    // an error row keeps its link to the client but is not a skipped duplicate (D-120)
+    expect(screen.getByTestId("take-on-row-status-19")).toHaveTextContent("Error");
+    expect(screen.queryByTestId("take-on-row-duplicate-19")).not.toBeInTheDocument();
+
+    await user.click(screen.getByTestId("take-on-filter-status"));
+    const options = (await screen.findAllByRole("option")).map((o) => o.textContent);
+    expect(options).toEqual([
+      "All statuses",
+      "Pending",
+      "Valid",
+      "Duplicate — will be skipped",
+      "Error",
+    ]);
+    await user.click(screen.getByRole("option", { name: "Duplicate — will be skipped" }));
+    await waitFor(() =>
+      expect(actions.fetchTakeOnRows).toHaveBeenLastCalledWith(
+        "batch-1",
+        expect.objectContaining({ status: "VALIDATED", duplicatesOnly: true, page: 0 })
       )
     );
   });
@@ -580,5 +685,97 @@ describe("TakeOnWizard — validation", () => {
     expect(actions.cancelBatch).toHaveBeenCalledWith("batch-1");
     expect(await screen.findByTestId("take-on-cancelled")).toBeInTheDocument();
     expect(screen.getByTestId("take-on-batch-status")).toHaveTextContent("Cancelled");
+  });
+});
+
+describe("TakeOnWizard — clients commit steps (655A)", () => {
+  const SIGN_OFF = {
+    id: "so-1",
+    kind: "FICA_ATTESTATION" as const,
+    memberName: "Alice Owner",
+    roleName: "Owner",
+    statementVersion: "FICA-ATTEST-v1",
+    signedAt: "2026-11-23T10:00:00Z",
+  };
+  const COMPLETED = batch({
+    ...VALIDATED,
+    status: "COMPLETED",
+    signOffs: [SIGN_OFF],
+    allowedActions: ["DOWNLOAD_RESULT", "CREATE_PORTAL_ACCESS"],
+    completedAt: "2026-11-23T10:06:00Z",
+    counts: { ...VALIDATED.counts, created: 6, skipped: 0, failed: 1 },
+  });
+
+  it("resumes a completed batch at Results and an attested one at Attestation", () => {
+    renderWizard(COMPLETED);
+    expect(screen.getByTestId("take-on-step-results")).toHaveAttribute("aria-current", "step");
+    expect(screen.getByTestId("take-on-result-created")).toHaveTextContent("6");
+    cleanup();
+    renderWizard({
+      ...VALIDATED,
+      signOffs: [SIGN_OFF],
+      allowedActions: ["REVALIDATE", "COMMIT", "REVOKE_ATTESTATION", "CANCEL"],
+    });
+    expect(screen.getByTestId("take-on-step-attestation")).toHaveAttribute("aria-current", "step");
+    expect(screen.getByTestId("take-on-commit")).toBeInTheDocument();
+  });
+
+  it("moves from Validation to Attestation", async () => {
+    const user = userEvent.setup();
+    renderWizard(VALIDATED);
+    await user.click(screen.getByTestId("take-on-to-attestation"));
+    expect(screen.getByTestId("take-on-attestation")).toBeInTheDocument();
+  });
+
+  it("shows the clients columns, the failure reason and the commit statuses after a commit", async () => {
+    const user = userEvent.setup();
+    actions.fetchTakeOnRows.mockResolvedValue({
+      success: true,
+      data: {
+        content: [
+          {
+            id: "row-9",
+            section: "MAIN",
+            rowNumber: 9,
+            sourceRef: "C-009",
+            status: "FAILED",
+            block: false,
+            values: {
+              name: "Dlamini Family Trust",
+              email: "trust@dlamini.example",
+              ficaClientType: "TRUST",
+              riskRating: "UNRATED",
+              cddRecordsLocation: "Box 4",
+            },
+            errors: [],
+            warnings: [],
+            duplicateOfId: null,
+            failureReason: "A client with this email address already exists",
+            resultEntityId: null,
+          },
+        ],
+        page: { totalElements: 1, totalPages: 1, size: 50, number: 0 },
+      },
+    });
+    renderWizard(COMPLETED);
+    await user.click(screen.getByTestId("take-on-step-validation"));
+    expect(await screen.findByTestId("take-on-row-9-ficaClientType")).toHaveTextContent("Trust");
+    expect(screen.getByTestId("take-on-row-9-riskRating")).toHaveTextContent("Not risk-rated");
+    expect(screen.getByTestId("take-on-row-9-email")).toHaveTextContent("trust@dlamini.example");
+    expect(screen.getByTestId("take-on-row-status-9")).toHaveTextContent("Failed");
+    expect(screen.getByTestId("take-on-row-failure-9")).toHaveTextContent(
+      "A client with this email address already exists"
+    );
+    await user.click(screen.getByTestId("take-on-filter-status"));
+    const options = (await screen.findAllByRole("option")).map((o) => o.textContent);
+    expect(options).toEqual([
+      "All statuses",
+      "Pending",
+      "Valid",
+      "Error",
+      "Created",
+      "Duplicate — skipped",
+      "Failed",
+    ]);
   });
 });

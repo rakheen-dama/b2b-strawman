@@ -1,0 +1,7 @@
+         job_type         |  status   | count 
+--------------------------+-----------+-------
+ accounting_sync_drain    | COMPLETED |    12
+ automation_poll_triggers | COMPLETED |     6
+ take_on_drain            | COMPLETED |     1
+(3 rows)
+

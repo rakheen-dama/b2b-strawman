@@ -57,6 +57,12 @@ public class TakeOnValidationService {
     if (batch.missingCutoverDate()) {
       throw TakeOnProblems.cutoverDateRequired(); // … then the position input (C-14)
     }
+    if (rows.anyCommitted(batchId)) {
+      // Defence in depth (655A C-10): a batch returns to VALIDATED only before any row is terminal,
+      // so this cannot happen — and a committed row is never re-validated.
+      throw TakeOnProblems.wrongState(
+          "Part of this take-on batch has been committed. It cannot be validated again.");
+    }
 
     var batchSources = sources.findByBatchIdOrderBySectionAsc(batchId);
     var handler = handlers.forDataset(batch.getDataset());

@@ -166,13 +166,14 @@ class TrustTakeOnSchemaTest {
   // 1
   @Test
   void migrationAppliesOnAWalkedPhase92Schema_andLeavesOldRowsAlone() {
+    // Applied (not "the latest": a later migration must not break this pin — 655A, V34).
     assertThat(
             jdbc.queryForObject(
-                ("SELECT version FROM \"%s\".flyway_schema_history WHERE success"
-                        + " ORDER BY installed_rank DESC LIMIT 1")
+                "SELECT count(*) FROM \"%s\".flyway_schema_history WHERE success AND version = ?"
                     .formatted(S),
-                String.class))
-        .isEqualTo("33");
+                Integer.class,
+                "33"))
+        .isEqualTo(1);
     assertThat(
             jdbc.queryForObject(
                 ("SELECT count(*) FROM \"%s\".trust_transactions WHERE id IN (?, ?)"

@@ -8,5 +8,10 @@
     "file": "src/main/resources/clause-packs/conveyancing-za-clauses/pack.json",
     "text": "to comply with its customer due diligence obligations under FICA.",
     "reason": "statutory term — FIC Act 38 of 2001 'customer due diligence' (R-6)"
+  },
+  {
+    "file": "src/main/java/io/b2mash/b2b/b2bstrawman/takeon/TakeOnStatements.java",
+    "text": "I confirm that customer due diligence for the clients in this batch was performed by %s in",
+    "reason": "statutory term — FIC Act 38 of 2001 'customer due diligence' in the FICA-ATTEST-v1 attestation (§17.10 X3, verbatim legal copy)"
   }
 ]

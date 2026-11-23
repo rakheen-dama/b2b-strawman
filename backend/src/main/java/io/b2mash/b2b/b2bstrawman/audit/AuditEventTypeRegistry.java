@@ -285,7 +285,7 @@ public class AuditEventTypeRegistry {
                 AuditSeverity.INFO,
                 AuditEventGroup.FINANCIAL),
             // DATA — client and trust take-on (Phase 93 653A, architecture §17.6.4). Additive keys
-            // (pin 83 → 89). Details are built only through TakeOnAuditDetails (no PII).
+            // (pin 83 → 89). Details are built only through SafeAuditDetails (no PII).
             new AuditEventTypeMetadata(
                 "takeon.batch.created",
                 "Take-on batch created",
@@ -315,6 +315,45 @@ public class AuditEventTypeRegistry {
                 "takeon.file.downloaded",
                 "Take-on file downloaded",
                 AuditSeverity.NOTICE,
+                AuditEventGroup.DATA),
+            // DATA — take-on attestation, commit and portal access (Phase 93 655A, §17.6.4).
+            // Additive keys (pin 89 → 96). customer.fica_attested is an exact key (no customer.*
+            // prefix entry exists).
+            new AuditEventTypeMetadata(
+                "takeon.batch.attested",
+                "Take-on FICA attestation given",
+                AuditSeverity.INFO,
+                AuditEventGroup.DATA),
+            new AuditEventTypeMetadata(
+                "takeon.batch.sign_off_revoked",
+                "Take-on attestation or sign-off withdrawn",
+                AuditSeverity.INFO,
+                AuditEventGroup.DATA),
+            new AuditEventTypeMetadata(
+                "takeon.batch.commit_requested",
+                "Take-on commit requested",
+                AuditSeverity.INFO,
+                AuditEventGroup.DATA),
+            new AuditEventTypeMetadata(
+                "takeon.batch.committed",
+                "Take-on batch committed",
+                AuditSeverity.INFO,
+                AuditEventGroup.DATA),
+            // NOTICE: a commit that could not run and returned the batch to validated.
+            new AuditEventTypeMetadata(
+                "takeon.batch.commit_failed",
+                "Take-on commit failed",
+                AuditSeverity.NOTICE,
+                AuditEventGroup.DATA),
+            new AuditEventTypeMetadata(
+                "takeon.portal_contacts.created",
+                "Portal access created for taken-on clients",
+                AuditSeverity.INFO,
+                AuditEventGroup.DATA),
+            new AuditEventTypeMetadata(
+                "customer.fica_attested",
+                "FICA verified in prior system (attested)",
+                AuditSeverity.INFO,
                 AuditEventGroup.DATA),
             // DATA — data protection
             new AuditEventTypeMetadata(

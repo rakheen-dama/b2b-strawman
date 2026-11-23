@@ -1,0 +1,17 @@
+# canary grep (case-insensitive, fixed strings) — 104 canaries from fixtures/clients-20.csv: full names, surnames, full emails, dotted email local parts, ID numbers, tax numbers, phones (canaries.txt)
+# generic one-word local parts (contact/info/accounts/trustees) are excluded: a first pass hit 'contact' inside the event type 'takeon.portal_contacts.created' (false positive); their full addresses remain canaries
+## scope 1: psql-06-audit-events.txt (takeon.% + customer.fica_attested + customer.created since OBS start)
+hits: 0
+## scope 2: every audit_events row since OBS start (all types, 38 rows)
+hits: 0
+## event types in scope 2
+  15 customer.created
+  15 customer.fica_attested
+   1 takeon.batch.attested
+   1 takeon.batch.commit_requested
+   1 takeon.batch.committed
+   1 takeon.batch.created
+   1 takeon.batch.validated
+   1 takeon.portal_contacts.created
+   1 takeon.source.mapped
+   1 takeon.source.uploaded

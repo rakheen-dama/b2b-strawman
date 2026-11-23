@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.takeon;
 
 import static io.b2mash.b2b.b2bstrawman.takeon.TakeOnTestApi.create;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
@@ -12,6 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
@@ -26,6 +28,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -51,23 +54,34 @@ class TakeOnTenantIsolationIntegrationTest {
   private static final String OWNER_B = "user_toi_owner_b";
   private static final String CSV =
       "Client name,Email,Client type,CDD completed date,Beneficial ownership,Screening,Records\n"
-          + "A,iso@example.test,Individual,01/02/2024,Done,Screened clear,Box\n";
+          + "A,iso@example.test,Individual,01/02/2024,Done,Not screened,Box\n";
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private StorageService storageService;
+  @Autowired private JdbcTemplate jdbc;
+  @Autowired private TakeOnCommitService commitService;
+  @Autowired private TakeOnDrainJobHandler drain;
 
   private String schemaA;
   private String schemaB;
   private UUID batchId;
   private UUID sourceId;
+  private UUID ownerAId;
+  private UUID ownerBId;
 
   @BeforeAll
   void setup() throws Exception {
     schemaA = provisioningService.provisionTenant(ORG_A, "Take-on Iso A", "legal-za").schemaName();
     schemaB = provisioningService.provisionTenant(ORG_B, "Take-on Iso B", "legal-za").schemaName();
-    TestMemberHelper.syncMember(mockMvc, ORG_A, OWNER_A, "toi_a@test.com", "Iso A", "owner");
-    TestMemberHelper.syncMember(mockMvc, ORG_B, OWNER_B, "toi_b@test.com", "Iso B", "owner");
+    ownerAId =
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_A, OWNER_A, "toi_a@test.com", "Iso A", "owner"));
+    ownerBId =
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_B, OWNER_B, "toi_b@test.com", "Iso B", "owner"));
     UUID[] ids = create(mockMvc, ownerA(), "CLIENTS", "iso.csv", TakeOnTestFiles.csv(CSV));
     batchId = ids[0];
     sourceId = ids[1];
@@ -91,7 +105,14 @@ class TakeOnTenantIsolationIntegrationTest {
             json(put(source + "/mapping"), "{\"targets\":{}}"),
             json(put(batch + "/position"), "{\"cutoverDate\":\"2026-10-31\"}"),
             post(batch + "/validate"),
-            post(batch + "/cancel"));
+            post(batch + "/cancel"),
+            // 655A
+            json(
+                post(batch + "/attestation"),
+                "{\"validationHash\":\"x\",\"statementVersion\":\"FICA-ATTEST-v1\",\"defaults\":{}}"),
+            delete(batch + "/sign-offs/" + UUID.randomUUID()),
+            get(batch + "/result.csv"),
+            post(batch + "/portal-contacts"));
     for (var request : requests) {
       mockMvc
           .perform(request.with(ownerB()))
@@ -103,6 +124,55 @@ class TakeOnTenantIsolationIntegrationTest {
         .perform(get(batch).with(ownerA()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("UPLOADED"));
+  }
+
+  /**
+   * 655A: a commit claim from another tenant cannot see the batch (the controller's commit is
+   * refused up front while the test profile's queue is off, so the claim is driven directly), and a
+   * committed batch's clients exist only in the owning tenant's schema — another tenant's drain
+   * never touches it.
+   */
+  @Test
+  void committedClientsExistOnlyInTheOwningTenant() throws Exception {
+    var batch =
+        TakeOnTestApi.validatedClients(
+            mockMvc,
+            ownerA(),
+            TakeOnClientsFiles.csv(TakeOnClientsFiles.row("Iso Client", "iso.client@example.test")),
+            TakeOnClientsFiles.mapping());
+    TakeOnTestApi.attest(mockMvc, ownerA(), batch.batchId(), batch.hash(), java.util.Map.of())
+        .andExpect(status().isOk());
+    assertThatThrownBy(
+            () ->
+                TakeOnTestDrain.commit(
+                    commitService, schemaB, ORG_B, ownerBId, batch.batchId(), batch.hash()))
+        .isInstanceOf(ResourceNotFoundException.class);
+    TakeOnTestDrain.commit(commitService, schemaA, ORG_A, ownerAId, batch.batchId(), batch.hash());
+    TakeOnTestDrain.run(drain, schemaB, ORG_B); // B's drain sees no committing batch of A's
+    assertThat(batchStatus(schemaA, batch.batchId())).isEqualTo("COMMITTING");
+    TakeOnTestDrain.run(drain, schemaA, ORG_A);
+    assertThat(batchStatus(schemaA, batch.batchId())).isEqualTo("COMPLETED");
+    assertThat(clientsWithEmail(schemaA, "iso.client@example.test")).isEqualTo(1);
+    assertThat(clientsWithEmail(schemaB, "iso.client@example.test")).isZero();
+    assertThat(
+            jdbc.queryForObject(
+                "SELECT count(*) FROM \"%s\".client_fica_attestations".formatted(schemaB),
+                Integer.class))
+        .isZero();
+  }
+
+  private String batchStatus(String schema, UUID id) {
+    return jdbc.queryForObject(
+        "SELECT status FROM \"%s\".take_on_batches WHERE id = ?".formatted(schema),
+        String.class,
+        id);
+  }
+
+  private int clientsWithEmail(String schema, String email) {
+    return jdbc.queryForObject(
+        "SELECT count(*) FROM \"%s\".customers WHERE lower(email) = ?".formatted(schema),
+        Integer.class,
+        email);
   }
 
   @Test

@@ -61,3 +61,21 @@ export function TakeOnWarnings({ warnings }: { warnings: string[] }) {
     </ul>
   );
 }
+
+/**
+ * Hands a downloaded CSV to the browser as a file. `bom` re-adds the UTF-8 byte-order mark the
+ * backend sends (Response.text() drops it) so Excel reads accented names correctly.
+ */
+export function saveTakeOnFile(fileName: string, content: string, { bom = false } = {}) {
+  if (typeof URL.createObjectURL !== "function") return;
+  const body = bom && !content.startsWith("\uFEFF") ? `\uFEFF${content}` : content;
+  const url = URL.createObjectURL(new Blob([body], { type: "text/csv;charset=utf-8" }));
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  // Revoked a task later: some browsers drop a download whose URL is revoked synchronously.
+  setTimeout(() => URL.revokeObjectURL(url), 0);
+}

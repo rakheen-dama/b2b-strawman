@@ -41,6 +41,11 @@ vi.mock("@/app/(app)/org/[slug]/settings/matters/take-on-actions", () => ({
   fetchTakeOnCustomFields: vi.fn().mockResolvedValue({ success: true, data: [] }),
   fetchTakeOnBankingAccounts: vi.fn().mockResolvedValue({ success: true, data: [] }),
   downloadTakeOnTemplate: vi.fn(),
+  attest: vi.fn(),
+  revokeSignOff: vi.fn(),
+  commitBatch: vi.fn(),
+  createPortalContacts: vi.fn(),
+  downloadTakeOnResult: vi.fn(),
 }));
 
 import { renderTakeOnTab } from "@/app/(app)/org/[slug]/settings/matters/_tabs/take-on-tab";
@@ -98,12 +103,27 @@ const BATCH: TakeOnBatch = {
   cutoverDate: null,
   trustAccountId: null,
   sources: [],
-  counts: { total: 12, valid: 10, error: 2, duplicate: 0, blocks: 0 },
+  counts: {
+    total: 12,
+    valid: 10,
+    error: 2,
+    duplicate: 0,
+    blocks: 0,
+    created: 0,
+    skipped: 0,
+    failed: 0,
+  },
   validationHash: "h",
   validatedAt: "2026-11-23T09:00:00Z",
   allowedActions: ["ADD_SOURCE", "CANCEL"],
   createdAt: "2026-11-23T08:00:00Z",
   cancelledAt: null,
+  commitStartedAt: null,
+  completedAt: null,
+  lastError: null,
+  signOffs: [],
+  attestationStatement: null,
+  summary: null,
 };
 
 function routeGets(batch: () => Promise<unknown>) {

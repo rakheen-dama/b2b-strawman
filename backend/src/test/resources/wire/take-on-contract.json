@@ -1,4 +1,21 @@
 {
+  "TakeOnAttestationRequest" : [ {
+    "name" : "validationHash",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "statementVersion",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "defaults",
+    "type" : "java.util.Map<java.lang.String, java.lang.String>"
+  } ],
+  "TakeOnAttestationStatementResponse" : [ {
+    "name" : "version",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "text",
+    "type" : "java.lang.String"
+  } ],
   "TakeOnBatchResponse" : [ {
     "name" : "id",
     "type" : "java.util.UUID"
@@ -38,6 +55,24 @@
   }, {
     "name" : "cancelledAt",
     "type" : "java.time.Instant"
+  }, {
+    "name" : "commitStartedAt",
+    "type" : "java.time.Instant"
+  }, {
+    "name" : "completedAt",
+    "type" : "java.time.Instant"
+  }, {
+    "name" : "lastError",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "signOffs",
+    "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService$TakeOnSignOffResponse>"
+  }, {
+    "name" : "attestationStatement",
+    "type" : "io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService$TakeOnAttestationStatementResponse"
+  }, {
+    "name" : "summary",
+    "type" : "java.util.Map<java.lang.String, java.lang.Object>"
   } ],
   "TakeOnBatchSummaryResponse" : [ {
     "name" : "id",
@@ -70,6 +105,10 @@
     "name" : "createdAt",
     "type" : "java.time.Instant"
   } ],
+  "TakeOnCommitRequest" : [ {
+    "name" : "validationHash",
+    "type" : "java.lang.String"
+  } ],
   "TakeOnCountsResponse" : [ {
     "name" : "total",
     "type" : "int"
@@ -84,6 +123,15 @@
     "type" : "int"
   }, {
     "name" : "blocks",
+    "type" : "int"
+  }, {
+    "name" : "created",
+    "type" : "int"
+  }, {
+    "name" : "skipped",
+    "type" : "int"
+  }, {
+    "name" : "failed",
     "type" : "int"
   } ],
   "TakeOnDatasetResponse" : [ {
@@ -169,6 +217,16 @@
     "name" : "encoding",
     "type" : "java.lang.String"
   } ],
+  "TakeOnPortalContactsResponse" : [ {
+    "name" : "batch",
+    "type" : "io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService$TakeOnBatchResponse"
+  }, {
+    "name" : "createdCount",
+    "type" : "int"
+  }, {
+    "name" : "skippedCount",
+    "type" : "int"
+  } ],
   "TakeOnPositionRequest" : [ {
     "name" : "cutoverDate",
     "type" : "java.time.LocalDate"
@@ -248,6 +306,12 @@
   }, {
     "name" : "duplicateOfId",
     "type" : "java.util.UUID"
+  }, {
+    "name" : "failureReason",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "resultEntityId",
+    "type" : "java.util.UUID"
   } ],
   "TakeOnSectionResponse" : [ {
     "name" : "section",
@@ -272,6 +336,25 @@
   }, {
     "name" : "headerRow",
     "type" : "int"
+  } ],
+  "TakeOnSignOffResponse" : [ {
+    "name" : "id",
+    "type" : "java.util.UUID"
+  }, {
+    "name" : "kind",
+    "type" : "io.b2mash.b2b.b2bstrawman.takeon.TakeOnSignOffKind"
+  }, {
+    "name" : "memberName",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "roleName",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "statementVersion",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "signedAt",
+    "type" : "java.time.Instant"
   } ],
   "TakeOnSourceResponse" : [ {
     "name" : "id",

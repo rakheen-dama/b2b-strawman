@@ -17,6 +17,7 @@ import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService.TakeOnTemplateFile;
 import io.b2mash.b2b.b2bstrawman.takeon.dataset.TakeOnDatasetHandlers;
 import io.b2mash.b2b.b2bstrawman.takeon.dataset.TakeOnFieldCatalogue.FieldSpec;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -191,13 +192,18 @@ public class TakeOnBatchQueryService {
         sheet.warnings());
   }
 
-  /** {@code GET …/rows}: section then row number; filters by status, section, blocks only. */
+  /**
+   * {@code GET …/rows}: section then row number; filters by status, section, blocks only and
+   * duplicates only (rows matching an existing record; with {@code VALIDATED}, the rows the
+   * Duplicates card counts — OBS-655A-1).
+   */
   @Transactional(readOnly = true)
   public Page<TakeOnRowResponse> listRows(
       UUID batchId,
       TakeOnRowStatus status,
       TakeOnSection section,
       boolean blocksOnly,
+      boolean duplicatesOnly,
       Pageable pageable) {
     loadForRead(batchId);
     var page =
@@ -205,13 +211,19 @@ public class TakeOnBatchQueryService {
             pageable.getPageNumber(),
             clamp(pageable.getPageSize()),
             Sort.by("section").ascending().and(Sort.by("rowNumber").ascending()));
-    return rows.findByBatchIdAndStatusInAndSectionInAndBlockIn(
-            batchId,
-            status == null ? EnumSet.allOf(TakeOnRowStatus.class) : Set.of(status),
-            section == null ? EnumSet.allOf(TakeOnSection.class) : Set.of(section),
-            blocksOnly ? Set.of(Boolean.TRUE) : Set.of(Boolean.TRUE, Boolean.FALSE),
-            page)
-        .map(TakeOnBatchQueryService::row);
+    Collection<TakeOnRowStatus> statuses =
+        status == null ? EnumSet.allOf(TakeOnRowStatus.class) : Set.of(status);
+    Collection<TakeOnSection> sections =
+        section == null ? EnumSet.allOf(TakeOnSection.class) : Set.of(section);
+    Collection<Boolean> blocks =
+        blocksOnly ? Set.of(Boolean.TRUE) : Set.of(Boolean.TRUE, Boolean.FALSE);
+    var found =
+        duplicatesOnly
+            ? rows.findByBatchIdAndStatusInAndSectionInAndBlockInAndDuplicateOfIdIsNotNull(
+                batchId, statuses, sections, blocks, page)
+            : rows.findByBatchIdAndStatusInAndSectionInAndBlockIn(
+                batchId, statuses, sections, blocks, page);
+    return found.map(TakeOnBatchQueryService::row);
   }
 
   /** {@code GET …/file}: the raw file, streamed through the backend and audited. */
@@ -264,7 +276,9 @@ public class TakeOnBatchQueryService {
         values,
         messages(r.getErrors()),
         messages(r.getWarnings()),
-        r.getDuplicateOfId());
+        r.getDuplicateOfId(),
+        r.getFailureReason(),
+        r.getResultEntityId());
   }
 
   private static List<TakeOnRowMessage> messages(List<Map<String, Object>> stored) {

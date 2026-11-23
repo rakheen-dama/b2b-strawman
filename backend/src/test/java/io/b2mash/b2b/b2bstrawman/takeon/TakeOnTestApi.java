@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.takeon;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -167,6 +168,80 @@ public final class TakeOnTestApi {
     return mockMvc.perform(
         get("/api/take-on/batches/" + batchId + "/rows" + (query == null ? "" : "?" + query))
             .with(jwt));
+  }
+
+  // --- 655A: attestation, commit, results ---
+
+  /** {@code POST …/attestation} with {@code FICA-ATTEST-v1} and the given defaults. */
+  public static ResultActions attest(
+      MockMvc mockMvc,
+      RequestPostProcessor jwt,
+      UUID batchId,
+      String validationHash,
+      Map<String, String> defaults)
+      throws Exception {
+    var body = new HashMap<String, Object>();
+    body.put("validationHash", validationHash);
+    body.put("statementVersion", TakeOnStatements.FICA_ATTEST_V1);
+    body.put("defaults", defaults == null ? Map.of() : defaults);
+    return mockMvc.perform(
+        json(post("/api/take-on/batches/" + batchId + "/attestation"), body).with(jwt));
+  }
+
+  public static ResultActions revokeSignOff(
+      MockMvc mockMvc, RequestPostProcessor jwt, UUID batchId, UUID signOffId) throws Exception {
+    return mockMvc.perform(
+        delete("/api/take-on/batches/" + batchId + "/sign-offs/" + signOffId).with(jwt));
+  }
+
+  /**
+   * {@code POST …/commit} through the controller (refused while the test profile's queue is off).
+   */
+  public static ResultActions commit(
+      MockMvc mockMvc, RequestPostProcessor jwt, UUID batchId, String validationHash)
+      throws Exception {
+    return mockMvc.perform(
+        json(
+                post("/api/take-on/batches/" + batchId + "/commit"),
+                Map.of("validationHash", validationHash == null ? "" : validationHash))
+            .with(jwt));
+  }
+
+  public static ResultActions resultCsv(MockMvc mockMvc, RequestPostProcessor jwt, UUID batchId)
+      throws Exception {
+    return mockMvc.perform(get("/api/take-on/batches/" + batchId + "/result.csv").with(jwt));
+  }
+
+  public static ResultActions portalContacts(
+      MockMvc mockMvc, RequestPostProcessor jwt, UUID batchId) throws Exception {
+    return mockMvc.perform(post("/api/take-on/batches/" + batchId + "/portal-contacts").with(jwt));
+  }
+
+  /** A validated batch: its id and the hash every attestation and commit binds to. */
+  public record Validated(UUID batchId, String hash, String json) {}
+
+  /** Uploads {@code csv} as a clients file, maps {@code targets}, validates (expects 200). */
+  public static Validated validatedClients(
+      MockMvc mockMvc, RequestPostProcessor jwt, String csv, Map<String, Object> mapping)
+      throws Exception {
+    UUID[] ids =
+        create(
+            mockMvc,
+            jwt,
+            "CLIENTS",
+            "clients.csv",
+            csv.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+    map(mockMvc, jwt, ids[0], ids[1], mapping)
+        .andExpect(
+            org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isOk());
+    String json =
+        validate(mockMvc, jwt, ids[0])
+            .andExpect(
+                org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    return new Validated(ids[0], JsonPath.read(json, "$.validationHash"), json);
   }
 
   /** The {@code content} of a rows page as maps. */

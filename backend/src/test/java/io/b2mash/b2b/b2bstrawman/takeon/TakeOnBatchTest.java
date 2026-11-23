@@ -422,6 +422,56 @@ class TakeOnBatchTest {
     assertThat(row.getErrors()).hasSize(1);
   }
 
+  // --- 655A: the row's commit transitions ---
+
+  private static TakeOnRow validRow() {
+    var row = newRow();
+    row.applyValidation(
+        Map.of("name", "A"), "row:2", "email:a@x.test", List.of(), List.of(), false, null);
+    return row;
+  }
+
+  @Test
+  void validRow_toCreated_withTheResultAndRefs() {
+    var row = validRow();
+    UUID client = UUID.randomUUID();
+    row.markCreated("customer", client, Map.of("attestationId", "att-1"));
+    assertThat(row.getStatus()).isEqualTo(TakeOnRowStatus.CREATED);
+    assertThat(row.getResultEntityType()).isEqualTo("customer");
+    assertThat(row.getResultEntityId()).isEqualTo(client);
+    assertThat(row.getResultRefs()).containsEntry("attestationId", "att-1");
+    assertThatThrownBy(row::resetForValidation).isInstanceOf(IllegalStateException.class);
+  }
+
+  @Test
+  void validRow_toSkippedDuplicate_pointsAtTheExistingRecord() {
+    var row = validRow();
+    UUID existing = UUID.randomUUID();
+    row.markSkippedDuplicate("customer", existing);
+    assertThat(row.getStatus()).isEqualTo(TakeOnRowStatus.SKIPPED_DUPLICATE);
+    assertThat(row.getResultEntityId()).isEqualTo(existing);
+  }
+
+  @Test
+  void validRow_toFailed_keepsTheReasonWithinTheColumn() {
+    var row = validRow();
+    row.markFailed("x".repeat(1200));
+    assertThat(row.getStatus()).isEqualTo(TakeOnRowStatus.FAILED);
+    assertThat(row.getFailureReason()).hasSize(1000);
+  }
+
+  @Test
+  void onlyAValidRowCanBeCommitted_andOnlyOnce() {
+    var pending = newRow();
+    assertThatThrownBy(() -> pending.markFailed("no"))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage("Only a valid take-on row can be committed.");
+    var row = validRow();
+    row.markCreated("customer", UUID.randomUUID(), null);
+    assertThatThrownBy(() -> row.markSkippedDuplicate("customer", UUID.randomUUID()))
+        .isInstanceOf(IllegalStateException.class);
+  }
+
   private static TakeOnRow newRow() {
     return new TakeOnRow(
         UUID.randomUUID(),

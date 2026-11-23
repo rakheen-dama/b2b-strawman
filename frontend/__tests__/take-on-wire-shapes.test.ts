@@ -3,14 +3,18 @@ import { describe, it, expect } from "vitest";
 // Path: __tests__ → frontend → repo root.
 import contract from "../../backend/src/test/resources/wire/take-on-contract.json";
 import type {
+  TakeOnAttestationRequest,
+  TakeOnAttestationStatement,
   TakeOnBatch,
   TakeOnBatchSummary,
+  TakeOnCommitRequest,
   TakeOnCounts,
   TakeOnDatasetCatalogue,
   TakeOnField,
   TakeOnMapping,
   TakeOnMappingRequest,
   TakeOnParseOptions,
+  TakeOnPortalContactsResult,
   TakeOnPositionRequest,
   TakeOnPreview,
   TakeOnPreviewRow,
@@ -19,13 +23,23 @@ import type {
   TakeOnSectionCatalogue,
   TakeOnSheetName,
   TakeOnSheetRequest,
+  TakeOnSignOff,
   TakeOnSource,
   TakeOnUploadResult,
 } from "@/lib/types/take-on";
 
 const componentNames = (components: { name: string }[]) => components.map((c) => c.name);
 
-const COUNTS: Required<TakeOnCounts> = { total: 0, valid: 0, error: 0, duplicate: 0, blocks: 0 };
+const COUNTS: Required<TakeOnCounts> = {
+  total: 0,
+  valid: 0,
+  error: 0,
+  duplicate: 0,
+  blocks: 0,
+  created: 0,
+  skipped: 0,
+  failed: 0,
+};
 const PARSE_OPTIONS: Required<TakeOnParseOptions> = {
   dateFormat: "",
   decimalSeparator: "POINT",
@@ -46,22 +60,32 @@ const BATCH: Required<TakeOnBatch> = {
   allowedActions: [],
   createdAt: "",
   cancelledAt: null,
+  commitStartedAt: null,
+  completedAt: null,
+  lastError: null,
+  signOffs: [],
+  attestationStatement: null,
+  summary: null,
 };
 
 // Each literal is typed Required<T>: a missing or extra key fails `pnpm typecheck`; the runtime
 // assertion fails when the Java record changes and the literal was not updated. Literal key ORDER
 // must equal the Java record's declaration order (toEqual on arrays is order-sensitive).
 describe("take-on wire shapes match the backend contract (ADR-365, P-17)", () => {
-  it("pins exactly the 18 take-on records of 653A", () => {
+  it("pins exactly the 23 take-on records of 653A and 655A", () => {
     expect(Object.keys(contract).sort()).toEqual([
+      "TakeOnAttestationRequest",
+      "TakeOnAttestationStatementResponse",
       "TakeOnBatchResponse",
       "TakeOnBatchSummaryResponse",
+      "TakeOnCommitRequest",
       "TakeOnCountsResponse",
       "TakeOnDatasetResponse",
       "TakeOnFieldResponse",
       "TakeOnMappingRequest",
       "TakeOnMappingResponse",
       "TakeOnParseOptionsResponse",
+      "TakeOnPortalContactsResponse",
       "TakeOnPositionRequest",
       "TakeOnPreviewResponse",
       "TakeOnPreviewRow",
@@ -70,6 +94,7 @@ describe("take-on wire shapes match the backend contract (ADR-365, P-17)", () =>
       "TakeOnSectionResponse",
       "TakeOnSheetNameResponse",
       "TakeOnSheetRequest",
+      "TakeOnSignOffResponse",
       "TakeOnSourceResponse",
       "TakeOnUploadResponse",
     ]);
@@ -217,6 +242,8 @@ describe("take-on wire shapes match the backend contract (ADR-365, P-17)", () =>
       errors: [],
       warnings: [],
       duplicateOfId: null,
+      failureReason: null,
+      resultEntityId: null,
     };
     expect(Object.keys(literal)).toEqual(componentNames(contract.TakeOnRowResponse));
   });
@@ -240,5 +267,47 @@ describe("take-on wire shapes match the backend contract (ADR-365, P-17)", () =>
   it("TakeOnPositionRequest ↔ TakeOnPositionRequest", () => {
     const literal: Required<TakeOnPositionRequest> = { cutoverDate: "" };
     expect(Object.keys(literal)).toEqual(componentNames(contract.TakeOnPositionRequest));
+  });
+
+  it("TakeOnSignOff ↔ TakeOnSignOffResponse", () => {
+    const literal: Required<TakeOnSignOff> = {
+      id: "",
+      kind: "FICA_ATTESTATION",
+      memberName: "",
+      roleName: "",
+      statementVersion: "",
+      signedAt: "",
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(contract.TakeOnSignOffResponse));
+  });
+
+  it("TakeOnAttestationStatement ↔ TakeOnAttestationStatementResponse", () => {
+    const literal: Required<TakeOnAttestationStatement> = { version: "", text: "" };
+    expect(Object.keys(literal)).toEqual(
+      componentNames(contract.TakeOnAttestationStatementResponse)
+    );
+  });
+
+  it("TakeOnAttestationRequest ↔ TakeOnAttestationRequest", () => {
+    const literal: Required<TakeOnAttestationRequest> = {
+      validationHash: "",
+      statementVersion: "",
+      defaults: {},
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(contract.TakeOnAttestationRequest));
+  });
+
+  it("TakeOnCommitRequest ↔ TakeOnCommitRequest", () => {
+    const literal: Required<TakeOnCommitRequest> = { validationHash: "" };
+    expect(Object.keys(literal)).toEqual(componentNames(contract.TakeOnCommitRequest));
+  });
+
+  it("TakeOnPortalContactsResult ↔ TakeOnPortalContactsResponse", () => {
+    const literal: Required<TakeOnPortalContactsResult> = {
+      batch: BATCH,
+      createdCount: 0,
+      skippedCount: 0,
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(contract.TakeOnPortalContactsResponse));
   });
 });

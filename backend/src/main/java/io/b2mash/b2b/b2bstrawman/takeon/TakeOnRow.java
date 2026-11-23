@@ -28,6 +28,8 @@ import org.hibernate.type.SqlTypes;
 @Table(name = "take_on_rows")
 public class TakeOnRow {
 
+  private static final int FAILURE_REASON_MAX = 1000;
+
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
   private UUID id;
@@ -199,6 +201,49 @@ public class TakeOnRow {
     this.errors = updated;
     this.status = TakeOnRowStatus.ERROR;
     this.updatedAt = Instant.now();
+  }
+
+  // --- Commit transitions (655A): only from VALIDATED, each terminal (never re-validated) ---
+
+  /** The commit created the record ({@code CHECK chk_take_on_row_result}: type and id). */
+  public void markCreated(String entityType, UUID entityId, Map<String, Object> refs) {
+    requireCommittable();
+    this.resultEntityType = Objects.requireNonNull(entityType, "entityType");
+    this.resultEntityId = Objects.requireNonNull(entityId, "entityId");
+    this.resultRefs = refs == null || refs.isEmpty() ? null : new LinkedHashMap<>(refs);
+    this.status = TakeOnRowStatus.CREATED;
+    this.updatedAt = Instant.now();
+  }
+
+  /**
+   * The record already exists: nothing is created; the row points at the existing record so later
+   * datasets resolve its previous-system id to it.
+   */
+  public void markSkippedDuplicate(String entityType, UUID existingId) {
+    requireCommittable();
+    this.resultEntityType = Objects.requireNonNull(entityType, "entityType");
+    this.resultEntityId = Objects.requireNonNull(existingId, "existingId");
+    this.status = TakeOnRowStatus.SKIPPED_DUPLICATE;
+    this.updatedAt = Instant.now();
+  }
+
+  /**
+   * The commit of this row failed; the others go on. {@code reason} is user-facing X3-style text
+   * (never an exception message), kept to the column's 1 000 characters.
+   */
+  public void markFailed(String reason) {
+    requireCommittable();
+    Objects.requireNonNull(reason, "reason");
+    this.failureReason =
+        reason.length() > FAILURE_REASON_MAX ? reason.substring(0, FAILURE_REASON_MAX) : reason;
+    this.status = TakeOnRowStatus.FAILED;
+    this.updatedAt = Instant.now();
+  }
+
+  private void requireCommittable() {
+    if (status != TakeOnRowStatus.VALIDATED) {
+      throw new IllegalStateException("Only a valid take-on row can be committed.");
+    }
   }
 
   private void requireNotTerminal() {

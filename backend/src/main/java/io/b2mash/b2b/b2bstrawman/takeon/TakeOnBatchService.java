@@ -87,8 +87,32 @@ public class TakeOnBatchService {
       boolean purged,
       Instant uploadedAt) {}
 
-  /** created/skipped/failed arrive with the commit (655A). */
-  public record TakeOnCountsResponse(int total, int valid, int error, int duplicate, int blocks) {}
+  /**
+   * The validation roll-ups and (655A) the commit outcome. While the batch is {@code COMMITTING},
+   * {@code created}/{@code skipped}/{@code failed} are live counts from the rows (C-5); the wizard
+   * shows "Committing… {created + skipped + failed} of {valid}".
+   */
+  public record TakeOnCountsResponse(
+      int total,
+      int valid,
+      int error,
+      int duplicate,
+      int blocks,
+      int created,
+      int skipped,
+      int failed) {}
+
+  /** A live attestation or sign-off (who, as what, when). */
+  public record TakeOnSignOffResponse(
+      UUID id,
+      TakeOnSignOffKind kind,
+      String memberName,
+      String roleName,
+      String statementVersion,
+      Instant signedAt) {}
+
+  /** The exact statement an attestation of this batch stores, with the firm name filled in. */
+  public record TakeOnAttestationStatementResponse(String version, String text) {}
 
   public record TakeOnBatchResponse(
       UUID id,
@@ -103,7 +127,12 @@ public class TakeOnBatchService {
       Instant validatedAt,
       List<String> allowedActions,
       Instant createdAt,
-      Instant cancelledAt) {}
+      Instant cancelledAt,
+      Instant commitStartedAt,
+      Instant completedAt,
+      String lastError,
+      List<TakeOnSignOffResponse> signOffs,
+      TakeOnAttestationStatementResponse attestationStatement) {}
 
   public record TakeOnBatchSummaryResponse(
       UUID id,
@@ -135,6 +164,11 @@ public class TakeOnBatchService {
 
   public record TakeOnRowMessage(String code, String field, String message) {}
 
+  /**
+   * One row of the row table. From 655A: {@code failureReason} (the X3 reason of a {@code FAILED}
+   * row) and {@code resultEntityId} (the client a {@code CREATED} or {@code SKIPPED_DUPLICATE} row
+   * created or matched).
+   */
   public record TakeOnRowResponse(
       UUID id,
       TakeOnSection section,
@@ -145,7 +179,9 @@ public class TakeOnBatchService {
       Map<String, Object> values,
       List<TakeOnRowMessage> errors,
       List<TakeOnRowMessage> warnings,
-      UUID duplicateOfId) {}
+      UUID duplicateOfId,
+      String failureReason,
+      UUID resultEntityId) {}
 
   public record TakeOnMappingRequest(
       Map<String, String> targets,
@@ -157,6 +193,20 @@ public class TakeOnBatchService {
   public record TakeOnSheetRequest(String sheetName, @Min(1) @Max(50) int headerRow) {}
 
   public record TakeOnPositionRequest(@NotNull LocalDate cutoverDate) {}
+
+  /**
+   * {@code POST …/attestation} (clients): the hash attested, the statement version shown, and the
+   * batch defaults shown with it — they must equal the mapping step's defaults (C-8).
+   */
+  public record TakeOnAttestationRequest(
+      String validationHash, String statementVersion, Map<String, String> defaults) {}
+
+  /** {@code POST …/commit}. */
+  public record TakeOnCommitRequest(String validationHash) {}
+
+  /** {@code POST …/portal-contacts}: the batch, and how many contacts were created or skipped. */
+  public record TakeOnPortalContactsResponse(
+      TakeOnBatchResponse batch, int createdCount, int skippedCount) {}
 
   /** Downloads (not JSON): the controller writes them as attachments. */
   public record TakeOnTemplateFile(byte[] bytes, String fileName) {}

@@ -1,16 +1,22 @@
 package io.b2mash.b2b.b2bstrawman.takeon;
 
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.provisioning.Organization;
+import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
+import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService.TakeOnAttestationStatementResponse;
 import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService.TakeOnBatchResponse;
 import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService.TakeOnCountsResponse;
 import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService.TakeOnMappingResponse;
 import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService.TakeOnParseOptionsResponse;
 import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService.TakeOnSheetNameResponse;
+import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService.TakeOnSignOffResponse;
 import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService.TakeOnSourceResponse;
 import io.b2mash.b2b.b2bstrawman.takeon.reader.TakeOnParseOptions;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,22 +28,41 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 public class TakeOnBatchViews {
 
-  /** What the wizard may offer next (653A; SIGN_OFF / ATTEST / COMMIT arrive in 655A, 657C). */
+  /** What the wizard may offer next (653A; ATTEST … DOWNLOAD_RESULT from 655A; SIGN_OFF 657C). */
   public enum Action {
     ADD_SOURCE,
     REMOVE_SOURCE,
     MAP,
     VALIDATE,
     REVALIDATE,
-    CANCEL
+    CANCEL,
+    ATTEST,
+    REVOKE_ATTESTATION,
+    COMMIT,
+    CREATE_PORTAL_ACCESS,
+    DOWNLOAD_RESULT
   }
+
+  /** Holding it (on top of the write access) is what lets a member attest (FD-37). */
+  static final String ATTEST_CAPABILITY = "MANAGE_COMPLIANCE";
 
   private final TakeOnBatchRepository batches;
   private final TakeOnSourceRepository sources;
+  private final TakeOnRowRepository rows;
+  private final TakeOnSignOffRepository signOffs;
+  private final OrganizationRepository organizations;
 
-  public TakeOnBatchViews(TakeOnBatchRepository batches, TakeOnSourceRepository sources) {
+  public TakeOnBatchViews(
+      TakeOnBatchRepository batches,
+      TakeOnSourceRepository sources,
+      TakeOnRowRepository rows,
+      TakeOnSignOffRepository signOffs,
+      OrganizationRepository organizations) {
     this.batches = batches;
     this.sources = sources;
+    this.rows = rows;
+    this.signOffs = signOffs;
+    this.organizations = organizations;
   }
 
   @Transactional(readOnly = true)
@@ -50,6 +75,7 @@ public class TakeOnBatchViews {
 
   public TakeOnBatchResponse batch(TakeOnBatch batch) {
     var batchSources = sources.findByBatchIdOrderBySectionAsc(batch.getId());
+    var live = signOffs.findByBatchIdAndRevokedAtIsNull(batch.getId());
     return new TakeOnBatchResponse(
         batch.getId(),
         batch.getDataset(),
@@ -58,17 +84,80 @@ public class TakeOnBatchViews {
         batch.getCutoverDate(),
         batch.getTrustAccountId(),
         batchSources.stream().map(TakeOnBatchViews::source).toList(),
-        new TakeOnCountsResponse(
-            batch.getTotalRows(),
-            batch.getValidRows(),
-            batch.getErrorRows(),
-            batch.getDuplicateRows(),
-            batch.getBlockCount()),
+        counts(batch),
         batch.getValidationHash(),
         batch.getValidatedAt(),
-        allowedActions(batch, batchSources).stream().map(Enum::name).toList(),
+        allowedActions(batch, batchSources, live, RequestScopes.hasCapability(ATTEST_CAPABILITY))
+            .stream()
+            .map(Enum::name)
+            .toList(),
         batch.getCreatedAt(),
-        batch.getCancelledAt());
+        batch.getCancelledAt(),
+        batch.getCommitStartedAt(),
+        batch.getCompletedAt(),
+        batch.getLastError(),
+        live.stream().map(TakeOnBatchViews::signOff).toList(),
+        attestationStatement(batch));
+  }
+
+  /**
+   * The counts. While {@code COMMITTING} the commit outcome is read live from the rows (C-5: one
+   * count query; the batch columns are written once, by {@code complete}).
+   */
+  private TakeOnCountsResponse counts(TakeOnBatch batch) {
+    int created = batch.getCreatedRows();
+    int skipped = batch.getSkippedRows();
+    int failed = batch.getFailedRows();
+    if (batch.getStatus() == TakeOnBatchStatus.COMMITTING) {
+      var live = rows.commitCountsFor(batch.getId());
+      created = Math.toIntExact(live.getCreated());
+      skipped = Math.toIntExact(live.getSkipped());
+      failed = Math.toIntExact(live.getFailed());
+    }
+    return new TakeOnCountsResponse(
+        batch.getTotalRows(),
+        batch.getValidRows(),
+        batch.getErrorRows(),
+        batch.getDuplicateRows(),
+        batch.getBlockCount(),
+        created,
+        skipped,
+        failed);
+  }
+
+  static TakeOnSignOffResponse signOff(TakeOnSignOff signOff) {
+    return new TakeOnSignOffResponse(
+        signOff.getId(),
+        signOff.getKind(),
+        signOff.getMemberName(),
+        signOff.getRoleName(),
+        signOff.getStatementVersion(),
+        signOff.getSignedAt());
+  }
+
+  /**
+   * The {@code FICA-ATTEST-v1} text with the firm name, exactly as an attestation would store it
+   * (C-16) — for a validated clients batch only; null otherwise.
+   */
+  private TakeOnAttestationStatementResponse attestationStatement(TakeOnBatch batch) {
+    if (batch.getDataset() != TakeOnDataset.CLIENTS
+        || batch.getStatus() != TakeOnBatchStatus.VALIDATED) {
+      return null;
+    }
+    return firmName()
+        .map(
+            firm ->
+                new TakeOnAttestationStatementResponse(
+                    TakeOnStatements.FICA_ATTEST_V1, TakeOnStatements.ficaAttestation(firm)))
+        .orElse(null);
+  }
+
+  /** The firm's name (the organisation of the caller's org). */
+  Optional<String> firmName() {
+    String orgId = RequestScopes.getOrgIdOrNull();
+    return orgId == null
+        ? Optional.empty()
+        : organizations.findByExternalOrgId(orgId).map(Organization::getName);
   }
 
   static TakeOnSourceResponse source(TakeOnSource source) {
@@ -115,7 +204,23 @@ public class TakeOnBatchViews {
         .toList();
   }
 
-  static List<Action> allowedActions(TakeOnBatch batch, List<TakeOnSource> batchSources) {
+  /**
+   * What the wizard may offer (C-17). Open batches: the 653A actions, and for a validated clients
+   * batch {@code ATTEST} (no live attestation, a valid row to commit, the caller holds {@code
+   * MANAGE_COMPLIANCE}) or {@code COMMIT} + {@code REVOKE_ATTESTATION} (a live attestation on the
+   * current hash). {@code COMMITTING}: nothing. {@code COMPLETED}: the result report, and portal
+   * access for clients.
+   */
+  static List<Action> allowedActions(
+      TakeOnBatch batch,
+      List<TakeOnSource> batchSources,
+      List<TakeOnSignOff> liveSignOffs,
+      boolean mayAttest) {
+    if (batch.getStatus() == TakeOnBatchStatus.COMPLETED) {
+      return batch.getDataset() == TakeOnDataset.CLIENTS
+          ? List.of(Action.DOWNLOAD_RESULT, Action.CREATE_PORTAL_ACCESS)
+          : List.of(Action.DOWNLOAD_RESULT);
+    }
     if (!batch.getStatus().isOpen()) {
       return List.of();
     }
@@ -132,7 +237,25 @@ public class TakeOnBatchViews {
     }
     switch (batch.getStatus()) {
       case MAPPED -> actions.add(Action.VALIDATE);
-      case VALIDATED -> actions.add(Action.REVALIDATE);
+      case VALIDATED -> {
+        actions.add(Action.REVALIDATE);
+        if (batch.getDataset() == TakeOnDataset.CLIENTS) {
+          var attestation =
+              liveSignOffs.stream()
+                  .filter(o -> o.getKind() == TakeOnSignOffKind.FICA_ATTESTATION)
+                  .findFirst();
+          if (attestation.isEmpty()) {
+            if (mayAttest && batch.getValidRows() > 0) {
+              actions.add(Action.ATTEST);
+            }
+          } else {
+            if (attestation.get().getValidationHash().equals(batch.getValidationHash())) {
+              actions.add(Action.COMMIT);
+            }
+            actions.add(Action.REVOKE_ATTESTATION);
+          }
+        }
+      }
       default -> {
         // UPLOADED: map first
       }

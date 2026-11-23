@@ -1,10 +1,13 @@
 package io.b2mash.b2b.b2bstrawman.takeon;
 
 import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
+import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService.TakeOnAttestationRequest;
 import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService.TakeOnBatchResponse;
 import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService.TakeOnBatchSummaryResponse;
+import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService.TakeOnCommitRequest;
 import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService.TakeOnDatasetResponse;
 import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService.TakeOnMappingRequest;
+import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService.TakeOnPortalContactsResponse;
 import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService.TakeOnPositionRequest;
 import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService.TakeOnPreviewResponse;
 import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService.TakeOnRowResponse;
@@ -33,19 +36,31 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
- * {@code /api/take-on} (Phase 93 653A, §17.4.1 minus the 655A+ rows). {@code MANAGE_TAKE_ON} on
- * every method; the dataset's own capability is enforced in the services by {@link
- * TakeOnAccessPolicy} after the batch is loaded (404 before 403). One service call per method.
+ * {@code /api/take-on} (Phase 93 653A, §17.4.1; 655A adds attestation, revoke, commit, result CSV
+ * and portal contacts). {@code MANAGE_TAKE_ON} on every method; the dataset's own capability is
+ * enforced in the services by {@link TakeOnAccessPolicy} after the batch is loaded (404 before
+ * 403). One service call per method.
  */
 @RestController
 public class TakeOnController {
 
   private final TakeOnBatchService batchService;
   private final TakeOnBatchQueryService queryService;
+  private final TakeOnSignOffService signOffService;
+  private final TakeOnCommitFacade commitFacade;
+  private final TakeOnResultService resultService;
 
-  public TakeOnController(TakeOnBatchService batchService, TakeOnBatchQueryService queryService) {
+  public TakeOnController(
+      TakeOnBatchService batchService,
+      TakeOnBatchQueryService queryService,
+      TakeOnSignOffService signOffService,
+      TakeOnCommitFacade commitFacade,
+      TakeOnResultService resultService) {
     this.batchService = batchService;
     this.queryService = queryService;
+    this.signOffService = signOffService;
+    this.commitFacade = commitFacade;
+    this.resultService = resultService;
   }
 
   @GetMapping("/api/take-on/datasets")
@@ -181,5 +196,50 @@ public class TakeOnController {
   @RequiresCapability("MANAGE_TAKE_ON")
   public ResponseEntity<TakeOnBatchResponse> cancel(@PathVariable UUID batchId) {
     return ResponseEntity.ok(batchService.cancel(batchId));
+  }
+
+  // --- 655A: attestation, commit, results ---
+
+  /** Clients: also {@code CUSTOMER_MANAGEMENT} (access policy) and {@code MANAGE_COMPLIANCE}. */
+  @PostMapping("/api/take-on/batches/{batchId}/attestation")
+  @RequiresCapability("MANAGE_TAKE_ON")
+  public ResponseEntity<TakeOnBatchResponse> attest(
+      @PathVariable UUID batchId, @RequestBody TakeOnAttestationRequest request) {
+    return ResponseEntity.ok(signOffService.attest(batchId, request));
+  }
+
+  @DeleteMapping("/api/take-on/batches/{batchId}/sign-offs/{signOffId}")
+  @RequiresCapability("MANAGE_TAKE_ON")
+  public ResponseEntity<TakeOnBatchResponse> revokeSignOff(
+      @PathVariable UUID batchId, @PathVariable UUID signOffId) {
+    return ResponseEntity.ok(signOffService.revoke(batchId, signOffId));
+  }
+
+  /** 202: the batch is {@code COMMITTING}; the drain job does the work. */
+  @PostMapping("/api/take-on/batches/{batchId}/commit")
+  @RequiresCapability("MANAGE_TAKE_ON")
+  public ResponseEntity<TakeOnBatchResponse> commit(
+      @PathVariable UUID batchId, @RequestBody TakeOnCommitRequest request) {
+    return ResponseEntity.accepted().body(commitFacade.commit(batchId, request));
+  }
+
+  @GetMapping("/api/take-on/batches/{batchId}/result.csv")
+  @RequiresCapability("MANAGE_TAKE_ON")
+  public ResponseEntity<byte[]> resultCsv(@PathVariable UUID batchId) {
+    var file = resultService.resultCsv(batchId);
+    return ResponseEntity.ok()
+        .contentType(new MediaType("text", "csv", StandardCharsets.UTF_8))
+        .header(
+            HttpHeaders.CONTENT_DISPOSITION,
+            ContentDisposition.attachment().filename(file.fileName()).build().toString())
+        .body(file.bytes());
+  }
+
+  /** Also {@code CUSTOMER_MANAGEMENT} (access policy). Sends no email. */
+  @PostMapping("/api/take-on/batches/{batchId}/portal-contacts")
+  @RequiresCapability("MANAGE_TAKE_ON")
+  public ResponseEntity<TakeOnPortalContactsResponse> createPortalContacts(
+      @PathVariable UUID batchId) {
+    return ResponseEntity.ok(resultService.createPortalContacts(batchId));
   }
 }

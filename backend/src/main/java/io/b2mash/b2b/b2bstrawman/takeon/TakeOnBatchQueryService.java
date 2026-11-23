@@ -264,7 +264,9 @@ public class TakeOnBatchQueryService {
         values,
         messages(r.getErrors()),
         messages(r.getWarnings()),
-        r.getDuplicateOfId());
+        r.getDuplicateOfId(),
+        r.getFailureReason(),
+        r.getResultEntityId());
   }
 
   private static List<TakeOnRowMessage> messages(List<Map<String, Object>> stored) {

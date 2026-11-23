@@ -254,6 +254,27 @@ public final class RequestScopes {
   }
 
   /**
+   * Variant of {@link #runForTenantOnShard} that additionally binds {@link #MEMBER_ID} — the
+   * shard-aware counterpart of {@link #runForTenantWithMember}. Used by job handlers that act as a
+   * member (Phase 93 655A: the take-on drain acts as the member who confirmed the commit). The same
+   * caller-responsibility caveat as {@link #runForTenantWithMember} applies.
+   *
+   * @throws IllegalArgumentException if {@code tenantId} is null or blank.
+   * @throws NullPointerException if {@code action} or {@code memberId} is null.
+   */
+  public static void runForTenantOnShardWithMember(
+      String tenantId,
+      @Nullable String orgId,
+      @Nullable String shardId,
+      UUID memberId,
+      Runnable action) {
+    Objects.requireNonNull(action, "action");
+    Objects.requireNonNull(memberId, "memberId");
+    requireValidTenantId(tenantId);
+    bindTenantScope(tenantId, orgId, shardId).where(MEMBER_ID, memberId).run(action);
+  }
+
+  /**
    * Variant of {@link #runForTenantOnShard} that returns a value. Checked exceptions thrown by the
    * Callable are wrapped in {@link RuntimeException} per JDK Callable convention.
    *

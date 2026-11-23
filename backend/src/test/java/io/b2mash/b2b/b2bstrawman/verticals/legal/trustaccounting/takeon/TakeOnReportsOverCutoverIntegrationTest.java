@@ -8,15 +8,18 @@ import io.b2mash.b2b.b2bstrawman.reporting.ReportResult;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksFixture;
 import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness.Expected;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.CreditorLine;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.IntegrityMessages;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustMonthlyListService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService.ClientLedgerCardResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report.TrustInterestChargesScheduleQuery;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterAll;
@@ -140,6 +143,51 @@ class TakeOnReportsOverCutoverIntegrationTest {
         .isEqualByComparingTo("1250.00");
     assertThat((String) month.get("month"))
         .endsWith(" — Brought forward at take-on (" + IntegrityMessages.date(c) + ")");
+    // one month: the period's totals are that month's figures
+    var totals = block(result, takeOn.g());
+    assertThat(money(totals, "fundBroughtForward")).isEqualByComparingTo("1250.00");
+    assertTotalsIdentity(totals);
+    assertThat(totals.get("check")).isEqualTo("Balanced");
+  }
+
+  @Test
+  void interestAndChargesSchedule_cutoverInALaterMonth_periodTotalsCarryTheTakeOnOnce() {
+    var takeOn = books.takeOnSection17313(cutover());
+    var c = takeOn.cutover();
+
+    var result = schedule(takeOn.g(), c.minusMonths(2).withDayOfMonth(1), c.plusMonths(1));
+    var rows =
+        result.rows().stream().filter(r -> takeOn.g().equals(r.get("trustAccountId"))).toList();
+    assertThat(rows).hasSize(4);
+    assertThat(money(rows.getFirst(), "fundBroughtForward")).isEqualByComparingTo("0");
+    assertThat(money(rows.get(2), "fundBroughtForward")).isEqualByComparingTo("1250.00");
+
+    var totals = block(result, takeOn.g());
+    // the period's b/f is the ledger's at its start (nil) plus the Fund brought forward at take-on
+    assertThat(money(totals, "fundBroughtForward")).isEqualByComparingTo("1250.00");
+    assertThat(money(totals, "fundCarriedForward")).isEqualByComparingTo("1250.00");
+    assertTotalsIdentity(totals);
+    assertThat(totals.get("identityHolds")).isEqualTo(true);
+    assertThat(totals.get("check")).isEqualTo("Balanced");
+  }
+
+  @Test
+  void interestAndChargesSchedule_cutoverInTheFirstMonth_periodTotalsDoNotCountTheTakeOnTwice() {
+    var takeOn = books.takeOnSection17313(cutover());
+    var c = takeOn.cutover();
+
+    var result =
+        schedule(takeOn.g(), c.withDayOfMonth(1), YearMonth.from(c).plusMonths(2).atEndOfMonth());
+    var rows =
+        result.rows().stream().filter(r -> takeOn.g().equals(r.get("trustAccountId"))).toList();
+    assertThat(rows).hasSize(3);
+    assertThat(money(rows.getFirst(), "fundBroughtForward")).isEqualByComparingTo("1250.00");
+
+    var totals = block(result, takeOn.g());
+    assertThat(money(totals, "fundBroughtForward")).isEqualByComparingTo("1250.00");
+    assertThat(money(totals, "fundCarriedForward")).isEqualByComparingTo("1250.00");
+    assertTotalsIdentity(totals);
+    assertThat(totals.get("check")).isEqualTo("Balanced");
   }
 
   @Test
@@ -176,6 +224,64 @@ class TakeOnReportsOverCutoverIntegrationTest {
     assertThat(statement[0].openingBalance()).isEqualByComparingTo("0");
     assertThat(statement[0].capitalPlaced()).isEqualByComparingTo("200000.00");
     assertThat(statement[0].closingBalance()).isEqualByComparingTo("200000.00");
+  }
+
+  @Test
+  void ledgerCard_aClientTakenOnWithOnlyASection864Investment_showsItsInvestedBalance() {
+    var c = cutover();
+    var g = books.freshAccount(false);
+    var i4 = books.freshInvestmentAccount(InvestmentBasis.CLIENT_INSTRUCTION);
+    var d = books.newClient("TOD");
+    var batch = books.takeOnBatch(g, c);
+    var authority = books.authority(batch, c);
+    books.takenOnInvestment(authority, g, i4, d, "75000.00", c.minusMonths(3));
+
+    var card = card(d.id(), g);
+    assertThat(card.investedBalance()).isEqualByComparingTo("75000.00");
+    assertThat(card.balance()).isEqualByComparingTo("0");
+    assertThat(card.broughtForward()).isEqualByComparingTo("0");
+
+    // a client with nothing on the account still reads the zero card
+    var empty = card(books.newClient("TOE").id(), g);
+    assertThat(empty.id()).isNull();
+    assertThat(empty.investedBalance()).isEqualByComparingTo("0");
+  }
+
+  private ReportResult schedule(UUID account, LocalDate from, LocalDate to) {
+    return books.read(
+        () ->
+            scheduleQuery.executeAll(
+                new HashMap<>(
+                    Map.of(
+                        "trust_account_id",
+                        account.toString(),
+                        "dateFrom",
+                        from.toString(),
+                        "dateTo",
+                        to.toString()))));
+  }
+
+  @SuppressWarnings("unchecked")
+  private static Map<String, Object> block(ReportResult result, UUID account) {
+    return ((List<Map<String, Object>>) result.summary().get("blocks"))
+        .stream().filter(b -> account.equals(b.get("trustAccountId"))).findFirst().orElseThrow();
+  }
+
+  /** b/f + interest − charges + refunds − paid to the Fund = c/f, on the printed totals. */
+  private static void assertTotalsIdentity(Map<String, Object> totals) {
+    assertThat(
+            money(totals, "fundBroughtForward")
+                .add(money(totals, "grossInterestCashbook"))
+                .subtract(money(totals, "chargesRecoverable"))
+                .subtract(money(totals, "chargesNonRecoverable"))
+                .add(money(totals, "chargesRefunded"))
+                .subtract(money(totals, "paidToFund")))
+        .isEqualByComparingTo(money(totals, "fundCarriedForward"));
+  }
+
+  private static BigDecimal money(Map<String, Object> row, String key) {
+    var value = (BigDecimal) row.get(key);
+    return value != null ? value : BigDecimal.ZERO;
   }
 
   private ClientLedgerCardResponse card(UUID clientId, UUID account) {

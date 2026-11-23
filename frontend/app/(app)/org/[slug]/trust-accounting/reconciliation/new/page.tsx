@@ -96,32 +96,51 @@ const STATEMENT_ONLY_TYPES = [
   "FUND_INV_SHARE",
 ] as const satisfies readonly TrustTransactionType[];
 
+/** Page size of the unmatched-transactions read, and the most pages it reads per status (657A). */
+const UNMATCHED_PAGE_SIZE = 1000;
+const UNMATCHED_MAX_PAGES = 50;
+
+/**
+ * Every transaction of one status on the account, page after page (the list is ordered by date,
+ * then newest first, then id, so no row is skipped or repeated). A status with more than
+ * {@link UNMATCHED_MAX_PAGES} pages fails the read rather than show a pane that silently lacks rows.
+ */
+async function fetchAllWithStatus(
+  accountId: string,
+  status: TrustTransactionStatus
+): Promise<TrustTransaction[]> {
+  const rows: TrustTransaction[] = [];
+  for (let page = 0; page < UNMATCHED_MAX_PAGES; page++) {
+    const txPage = await fetchTransactions(accountId, { status, page, size: UNMATCHED_PAGE_SIZE });
+    rows.push(...txPage.content);
+    if (txPage.content.length === 0 || page + 1 >= txPage.totalPages) {
+      return rows;
+    }
+  }
+  throw new Error(
+    `The account has more than ${UNMATCHED_PAGE_SIZE * UNMATCHED_MAX_PAGES} transactions of one status, too many to list for matching.`
+  );
+}
+
 /**
  * The account's posted transactions (RECORDED, APPROVED and REVERSED) not yet matched to a statement
  * line (the right pane), newest first, without types that move no bank money and without a reversed
  * row recorded from a statement line. The list endpoint takes one status, so each is read on its
- * own (652B, 652H); if any read fails the whole read fails, so the pane is never silently partly
- * empty. Also without a row cleared at the cutover date (657A): the bank never shows it and the
- * backend refuses to match it (409 CLEARED_AT_CUTOVER). The registry says which types are
- * cleared; if it cannot be read nothing is filtered on that ground.
+ * own, every page of it (652B, 652H, 657A); if any read fails the whole read fails, so the pane is
+ * never silently partly empty. Also without a row cleared at the cutover date (657A): the bank
+ * never shows it and the backend refuses to match it (409 CLEARED_AT_CUTOVER). The registry says
+ * which types are cleared; if it cannot be read the whole read fails too — offering cleared rows
+ * as matchable would be wrong.
  */
 async function fetchUnmatchedTransactions(accountId: string): Promise<TrustTransaction[]> {
-  const [pages, cleared] = await Promise.all([
-    Promise.all(
-      MATCHABLE_STATUSES.map((status) =>
-        fetchTransactions(accountId, {
-          status,
-          page: 0,
-          size: 1000, // TODO: implement proper pagination for large trust accounts
-        })
-      )
-    ),
-    fetchTrustTransactionTypes()
-      .then(clearedAtCutoverCodes)
-      .catch((): ReadonlySet<string> => new Set<string>()),
+  const [perStatus, cleared] = await Promise.all([
+    Promise.all(MATCHABLE_STATUSES.map((status) => fetchAllWithStatus(accountId, status))),
+    fetchTrustTransactionTypes().then(clearedAtCutoverCodes),
   ]);
-  return pages
-    .flatMap((txPage) => txPage.content)
+  // A row inserted while the pages were read can push one already read onto the next page
+  const byId = new Map<string, TrustTransaction>();
+  for (const tx of perStatus.flat()) byId.set(tx.id, tx);
+  return [...byId.values()]
     .filter(
       (tx) =>
         !tx.bankStatementLineId &&

@@ -206,7 +206,11 @@ public class ClientLedgerService {
             .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.CLIENT, customerId));
     var summary = ledgerQueries.clientSummary(trustAccountId, customerId);
     var anchor = ledgerCardRepository.findByTrustAccountIdAndCustomerId(trustAccountId, customerId);
-    if (summary.isEmpty() && anchor.isEmpty()) {
+    var invested =
+        investedFor(trustAccountId, List.of(customerId)).getOrDefault(customerId, BigDecimal.ZERO);
+    // 657A: a client taken on with only a section 86(4) investment has no CLIENT row and no anchor
+    // (TAKEON_INVESTMENT posts to CLIENT_INVESTMENT), yet holds money in trust — not a zero card
+    if (summary.isEmpty() && anchor.isEmpty() && invested.signum() == 0) {
       return emptyLedgerCardResponse(customer, trustAccountId);
     }
     return toResponse(
@@ -216,7 +220,7 @@ public class ClientLedgerService {
         summary,
         anchor,
         totalsFor(trustAccountId, List.of(customerId)).getOrDefault(customerId, LedgerTotals.ZERO),
-        investedFor(trustAccountId, List.of(customerId)).getOrDefault(customerId, BigDecimal.ZERO));
+        invested);
   }
 
   /**

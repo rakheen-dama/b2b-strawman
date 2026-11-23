@@ -90,8 +90,16 @@ public class TrustInterestChargesScheduleQuery implements ReportQuery {
     this.memoRepository = memoRepository;
   }
 
-  /** One account's schedule: its monthly rows and the period's totals. */
-  record Block(TrustAccount account, List<Map<String, Object>> rows, Map<String, Object> totals) {}
+  /**
+   * One account's schedule: its monthly rows and the period's totals. {@code takeOnBroughtForward}
+   * is the Fund ledger brought forward at take-on inside the period's {@code fundBroughtForward}
+   * total (657A; zero when the account was not taken on in the period).
+   */
+  record Block(
+      TrustAccount account,
+      List<Map<String, Object>> rows,
+      Map<String, Object> totals,
+      BigDecimal takeOnBroughtForward) {}
 
   /** The money columns of a row, in column order (totals sum the additive ones). */
   static final List<String> MOVEMENT_COLUMNS =
@@ -302,7 +310,11 @@ public class TrustInterestChargesScheduleQuery implements ReportQuery {
     var sectionLabel = TrustReportWords.sectionLabel(section);
     var rows = new ArrayList<Map<String, Object>>();
     // b/f of the period and c/f of every row are read from the ledger (never computed)
-    BigDecimal broughtForward = fundBalance(fundId, from.minusDays(1));
+    final BigDecimal periodBroughtForward = fundBalance(fundId, from.minusDays(1));
+    BigDecimal broughtForward = periodBroughtForward;
+    // 657A: Σ the Fund ledger brought forward at take-on over the period's months, kept apart from
+    // the movement columns — the period's totals add it to their b/f exactly once
+    BigDecimal takeOnInPeriod = BigDecimal.ZERO;
     for (var month = first; !month.isAfter(last); month = month.plusMonths(1)) {
       var rowFrom = month.equals(first) ? from : month.atDay(1);
       var rowTo = month.equals(last) ? to : month.atEndOfMonth();
@@ -350,8 +362,13 @@ public class TrustInterestChargesScheduleQuery implements ReportQuery {
       row.put("check", check(identityHolds, m.hasUnexplained));
       rows.add(row);
       broughtForward = carriedForward;
+      takeOnInPeriod = takeOnInPeriod.add(m.takeOnBroughtForward);
     }
-    return new Block(account, List.copyOf(rows), totals(rows, s864));
+    return new Block(
+        account,
+        List.copyOf(rows),
+        totals(rows, s864, periodBroughtForward.add(takeOnInPeriod)),
+        takeOnInPeriod);
   }
 
   /**
@@ -402,9 +419,6 @@ public class TrustInterestChargesScheduleQuery implements ReportQuery {
   }
 
   /**
-   * "March 2026", or "16 March 2025 to 31 March 2025" for a month the period only partly covers.
-   */
-  /**
    * The month cell; the month of a take-on says so (X3 "Brought forward at take-on ({d MMMM
    * yyyy})", 657A — the schedule has no label column).
    */
@@ -420,6 +434,9 @@ public class TrustInterestChargesScheduleQuery implements ReportQuery {
         + ")";
   }
 
+  /**
+   * "March 2026", or "16 March 2025 to 31 March 2025" for a month the period only partly covers.
+   */
   private static String periodLabel(YearMonth month, LocalDate rowFrom, LocalDate rowTo) {
     if (rowFrom.equals(month.atDay(1)) && rowTo.equals(month.atEndOfMonth())) {
       return IntegrityMessages.monthYear(rowFrom);
@@ -427,10 +444,17 @@ public class TrustInterestChargesScheduleQuery implements ReportQuery {
     return IntegrityMessages.date(rowFrom) + " to " + IntegrityMessages.date(rowTo);
   }
 
-  /** The period's totals of one block: b/f of the first month, c/f of the last, Σ the movements. */
-  private static Map<String, Object> totals(List<Map<String, Object>> rows, boolean s864) {
+  /**
+   * The period's totals of one block: b/f, Σ the movements, c/f of the last month. The b/f is the
+   * ledger's at the period's start plus the Fund ledger brought forward at take-on in the period
+   * (657A) — counted once, whichever month holds the cutover date (in the first month it is that
+   * row's b/f already) — so b/f + the movements = c/f holds on the printed figures. The check is
+   * worked out on those figures, and every month must balance too.
+   */
+  private static Map<String, Object> totals(
+      List<Map<String, Object>> rows, boolean s864, BigDecimal broughtForward) {
     var totals = new LinkedHashMap<String, Object>();
-    totals.put("fundBroughtForward", rows.getFirst().get("fundBroughtForward"));
+    totals.put("fundBroughtForward", broughtForward);
     for (var column : MOVEMENT_COLUMNS) {
       boolean s864Only =
           column.equals("clientShare")
@@ -446,13 +470,30 @@ public class TrustInterestChargesScheduleQuery implements ReportQuery {
               .map(r -> (BigDecimal) r.get(column))
               .reduce(BigDecimal.ZERO, BigDecimal::add));
     }
-    totals.put("fundCarriedForward", rows.getLast().get("fundCarriedForward"));
-    boolean identityHolds =
-        rows.stream().allMatch(r -> Boolean.TRUE.equals(r.get("identityHolds")));
+    var carriedForward = (BigDecimal) rows.getLast().get("fundCarriedForward");
+    totals.put("fundCarriedForward", carriedForward);
+    var interestTerm = total(totals, s864 ? "fundShareCredited" : "grossInterestCashbook");
+    boolean totalsBalance =
+        broughtForward
+                .add(interestTerm)
+                .subtract(total(totals, "chargesRecoverable"))
+                .subtract(total(totals, "chargesNonRecoverable"))
+                .add(total(totals, "chargesRefunded"))
+                .subtract(total(totals, "paidToFund"))
+                .compareTo(carriedForward)
+            == 0;
     boolean unexplained = rows.stream().anyMatch(r -> CHECK_UNEXPLAINED.equals(r.get("check")));
+    boolean identityHolds =
+        !unexplained
+            && totalsBalance
+            && rows.stream().allMatch(r -> Boolean.TRUE.equals(r.get("identityHolds")));
     totals.put("identityHolds", identityHolds);
     totals.put("check", check(identityHolds, unexplained));
     return totals;
+  }
+
+  private static BigDecimal total(Map<String, Object> totals, String column) {
+    return orZero((BigDecimal) totals.get(column));
   }
 
   private BigDecimal fundBalance(UUID fundId, LocalDate asAt) {

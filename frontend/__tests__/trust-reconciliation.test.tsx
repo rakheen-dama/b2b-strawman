@@ -183,7 +183,10 @@ import MonthlyListPage from "@/app/(app)/org/[slug]/trust-accounting/reconciliat
 import { BankStatementUpload } from "@/components/trust/BankStatementUpload";
 import { ReconciliationSplitPane } from "@/components/trust/ReconciliationSplitPane";
 import { fetchTransactions } from "@/app/(app)/org/[slug]/trust-accounting/transactions/actions";
-import { fetchTrustAccounts } from "@/app/(app)/org/[slug]/trust-accounting/actions";
+import {
+  fetchTrustAccounts,
+  fetchTrustTransactionTypes,
+} from "@/app/(app)/org/[slug]/trust-accounting/actions";
 import { ApiError } from "@/lib/api";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
 import { recordFromStatementSchemaFor } from "@/lib/schemas/trust";
@@ -3253,8 +3256,8 @@ describe("Trust Reconciliation", () => {
     });
 
     // Step 4 with line-1 unmatched (a R15 000 deposit) and line-2 auto-matched to tx-2 (a R2 500
-    // recorded deposit); every calculation succeeds.
-    async function driveToReview() {
+    // recorded deposit); every calculation succeeds. `expectPane: false` stops after asking for it.
+    async function driveToReview({ expectPane = true }: { expectPane?: boolean } = {}) {
       const statement = {
         id: "stmt-1",
         trustAccountId: "acc-1",
@@ -3318,8 +3321,49 @@ describe("Trust Reconciliation", () => {
       fireEvent.click(await screen.findByTestId("auto-match-btn"));
       expect(await screen.findByText("Auto-matched 1 lines")).toBeInTheDocument();
       fireEvent.click(screen.getByTestId("step-next-btn"));
-      expect(await screen.findByTestId("reconciliation-split-pane")).toBeInTheDocument();
+      if (expectPane) {
+        expect(await screen.findByTestId("reconciliation-split-pane")).toBeInTheDocument();
+      }
     }
+
+    it("reads every page of each status, so no matchable row falls outside the first page (657A)", async () => {
+      const onFirstPage = makeTx({ id: "tx-page-0", status: "APPROVED", reference: "P0" });
+      const onSecondPage = makeTx({ id: "tx-page-1", status: "APPROVED", reference: "P1" });
+      vi.mocked(fetchTransactions).mockImplementation(async (_accountId, params = {}) => {
+        if (params.status !== "APPROVED") return pageOf([]);
+        const content = params.page === 1 ? [onSecondPage] : [onFirstPage];
+        return {
+          content,
+          totalElements: 2,
+          totalPages: 2,
+          pageSize: 1000,
+          pageNumber: params.page ?? 0,
+        };
+      });
+      await driveToReview();
+
+      expect(screen.getByTestId("transaction-tx-page-0")).toBeInTheDocument();
+      expect(screen.getByTestId("transaction-tx-page-1")).toBeInTheDocument();
+      expect(vi.mocked(fetchTransactions)).toHaveBeenCalledWith(
+        "acc-1",
+        expect.objectContaining({ status: "APPROVED", page: 1, size: 1000 })
+      );
+      // a status that fits on one page is read once
+      expect(
+        vi
+          .mocked(fetchTransactions)
+          .mock.calls.filter(([, params]) => params?.status === "RECORDED")
+      ).toHaveLength(1);
+    });
+
+    it("does not open the review when the type registry cannot be read (657A)", async () => {
+      transactionsByStatus({ APPROVED: [approvedPayment] });
+      vi.mocked(fetchTrustTransactionTypes).mockRejectedValueOnce(new Error("Registry down"));
+      await driveToReview({ expectPane: false });
+
+      expect(await screen.findByTestId("reconciliation-error")).toHaveTextContent("Registry down");
+      expect(screen.queryByTestId("reconciliation-split-pane")).not.toBeInTheDocument();
+    });
 
     it("never offers a take-on row cleared at the cutover date, but offers an item outstanding at cutover (657A)", async () => {
       const cleared = makeTx({

@@ -20,6 +20,7 @@ import { ClientHistoryFilters } from "@/components/trust/client-history-filters"
 import { LedgerTotalsBreakdown } from "@/components/trust/ledger-totals-breakdown";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
 import {
+  offeredTransactionTypes,
   type TrustTransactionStatus,
   type TrustTransactionTypeInfo,
   type ClientLedgerCard,
@@ -56,13 +57,10 @@ const STATUS_OPTIONS: TrustTransactionStatus[] = [
  * The types a client ledger can hold (646E, D6): rows on the client's own ledger or its investment
  * ledger, plus Reversal (ledger null — it moves its original's). Non-client and inter-account
  * types never sit on a client ledger, so they are not offered as filters here. Take-on-only types
- * (657A) are never offered.
+ * (657A) are removed first by `offeredTransactionTypes`, the one rule for what is offered.
  */
 function isClientLedgerType(t: TrustTransactionTypeInfo): boolean {
-  return (
-    !t.takeOnOnly &&
-    (t.ledger === "CLIENT" || t.ledger === "CLIENT_INVESTMENT" || t.code === "REVERSAL")
-  );
+  return t.ledger === "CLIENT" || t.ledger === "CLIENT_INVESTMENT" || t.code === "REVERSAL";
 }
 
 // ── Page ──────────────────────────────────────────────────────────
@@ -108,7 +106,7 @@ export default async function ClientDetailPage({
   // the account, ledger and history fetches below. Non-fatal: without it only the pills go.
   const typesPromise: Promise<TrustTransactionTypeInfo[]> = (async () => {
     try {
-      return (await fetchTrustTransactionTypes()).filter(isClientLedgerType);
+      return offeredTransactionTypes(await fetchTrustTransactionTypes()).filter(isClientLedgerType);
     } catch {
       return [];
     }

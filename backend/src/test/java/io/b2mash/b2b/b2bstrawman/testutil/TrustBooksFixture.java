@@ -45,6 +45,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.Tru
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -1450,9 +1451,13 @@ public final class TrustBooksFixture {
           });
     }
 
-    /** The authority every harness opening row posts under — the maker as signer, signed now. */
+    /**
+     * The authority every harness opening row posts under — the maker as signer, signed now
+     * (truncated to microseconds, the precision {@code approved_at} round-trips at).
+     */
     public OpeningAuthority authority(UUID batch, LocalDate cutover) {
-      return OpeningAuthorities.of(batch, cutover, memberId, clock.instant());
+      return OpeningAuthorities.of(
+          batch, cutover, memberId, clock.instant().truncatedTo(ChronoUnit.MICROS));
     }
 
     /**

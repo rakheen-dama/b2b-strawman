@@ -28,7 +28,9 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
    * disbursement ({@code legal_disbursements .trust_transaction_id}, index {@code
    * idx_legal_disbursements_trust_tx}) so the disbursement trust-link picker cannot offer a used
    * payment. JPQL (not native) so the callers' Pageable {@code sort=transactionDate,desc} resolves
-   * against the entity property.
+   * against the entity property. Rows of one date are ordered newest first and then by id, so the
+   * order is total and a caller reading page after page never skips or repeats a row (657A: the
+   * reconciliation pane reads every page).
    */
   @Query(
       """
@@ -44,7 +46,7 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
         AND (:excludeLinked = false
              OR NOT EXISTS (
                SELECT d.id FROM LegalDisbursement d WHERE d.trustTransactionId = t.id))
-      ORDER BY t.transactionDate DESC
+      ORDER BY t.transactionDate DESC, t.createdAt DESC, t.id DESC
       """)
   Page<TrustTransaction> findFiltered(
       @Param("trustAccountId") UUID trustAccountId,

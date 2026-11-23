@@ -281,6 +281,19 @@ class TrustTakeOnSchemaTest {
     insertRow("TAKEON_PAY_UNPRES", "CLIENT", CLIENT, MATTER, null, null, batch, false, null);
   }
 
+  // 6b
+  @Test
+  void oneBroughtForwardBalancePerClient_withoutAMatterToo() {
+    var otherBatch = insertBatch();
+    var first = insertRow("TAKEON_CLIENT", "CLIENT", CLIENT, null, null, null, batch, true, null);
+    assertThat(first).isNotNull();
+    // NULLS NOT DISTINCT: a second matterless balance for the same client is refused
+    assertRejected(
+        () ->
+            insertRow("TAKEON_CLIENT", "CLIENT", CLIENT, null, null, null, otherBatch, true, null),
+        "uq_trust_txn_takeon_client_matter");
+  }
+
   // 7
   @Test
   void accountTakeOn_dateAndBatchTogether() {
@@ -406,7 +419,10 @@ class TrustTakeOnSchemaTest {
             String.class,
             S,
             "uq_trust_txn_takeon_client_matter");
-    assertThat(uniqueIndex).contains("UNIQUE").contains("TAKEON_CLIENT");
+    assertThat(uniqueIndex)
+        .contains("UNIQUE")
+        .contains("NULLS NOT DISTINCT")
+        .contains("TAKEON_CLIENT");
   }
 
   // --- helpers ---

@@ -106,9 +106,11 @@ BEGIN
   END IF;
 END $$;
 
--- X5: one brought-forward balance per client and matter per account.
+-- X5: one brought-forward balance per client and matter per account. NULLS NOT DISTINCT: a
+-- client's matterless balance (project_id NULL) is one balance too — never two (PG 15+).
 CREATE UNIQUE INDEX IF NOT EXISTS uq_trust_txn_takeon_client_matter
-    ON trust_transactions (trust_account_id, customer_id, project_id) WHERE transaction_type = 'TAKEON_CLIENT';
+    ON trust_transactions (trust_account_id, customer_id, project_id) NULLS NOT DISTINCT
+    WHERE transaction_type = 'TAKEON_CLIENT';
 -- Auto-match pool: unmatched take-on outstanding items, regardless of date (§17.3.11).
 CREATE INDEX IF NOT EXISTS idx_trust_txn_take_on_open_items
     ON trust_transactions (trust_account_id)

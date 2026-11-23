@@ -118,7 +118,6 @@ public class TrustInvestmentService implements InvestmentPlacementHooks {
   private static final String INTEREST_TITLE = "Cannot record investment interest";
   private static final String REVERSE_INTEREST_TITLE = "Cannot reverse investment interest";
   private static final String UNMATCH_TITLE = "Cannot unmatch statement line";
-  private static final String INTEREST_REVERSAL_REASON = "Section 86(4) interest entry reversed";
   private static final String WITHDRAWN_WITH_INTEREST =
       "The investment has been withdrawn with this interest; its interest entries can no longer be"
           + " reversed.";
@@ -215,6 +214,14 @@ public class TrustInvestmentService implements InvestmentPlacementHooks {
       BigDecimal fundShareAmount,
       @NotNull InterestPresentation presentation,
       UUID bankStatementLineId) {}
+
+  /**
+   * The reversal of a bank-advice interest entry (founder ruling D-2, 2026-11-23): {@code reason}
+   * is required, validated as {@code TrustTransactionService.ReverseRequest}'s is, and becomes the
+   * contra's description and the audit reason, as for every other trust reversal. No date: the
+   * contra is dated the entry's date (§16.3.8).
+   */
+  public record ReverseInterestRequest(@NotBlank String reason) {}
 
   /** One interest entry: gross, the Fund's 5% and the client's 95% (A2, A3). */
   public record InvestmentInterestResponse(
@@ -387,9 +394,21 @@ public class TrustInvestmentService implements InvestmentPlacementHooks {
       matter = clientMatterRule.requireClientMatter(client, request.matterId());
       // The client's money on the matter must cover the placement — read under the client's lock
       // anchor, taken above (it is checked again at approval,
-      // TrustTransactionService.requireClientCovers)
-      var available =
-          ledgerQueries.matterCellBalance(fundingAccountId, client.getId(), matter.getId(), null);
+      // TrustTransactionService.requireClientCovers). Founder ruling D-1 (2026-11-23): the
+      // placement posts on its deposit date, so a back-dated one must be covered at the cell's
+      // lowest point from that date on; one dated today is checked as before.
+      BigDecimal available;
+      String asAtText = "";
+      if (request.depositDate().isBefore(LocalDate.now(clock))) {
+        var lowest =
+            ledgerQueries.lowestMatterCellBalanceFrom(
+                fundingAccountId, client.getId(), matter.getId(), request.depositDate());
+        available = lowest.getBalance();
+        asAtText = " as at " + VariableFormatter.formatDateText(lowest.getAsAt());
+      } else {
+        available =
+            ledgerQueries.matterCellBalance(fundingAccountId, client.getId(), matter.getId(), null);
+      }
       if (available.compareTo(request.principal()) < 0) {
         throw new InvalidStateException(
             "Insufficient trust balance",
@@ -397,6 +416,7 @@ public class TrustInvestmentService implements InvestmentPlacementHooks {
                 + matter.getName()
                 + " for "
                 + client.getName()
+                + asAtText
                 + ". Available on matter: "
                 + rand(available)
                 + ", Requested: "
@@ -814,12 +834,22 @@ public class TrustInvestmentService implements InvestmentPlacementHooks {
    * Reverses a bank-advice interest entry (§16.3.8): each of its rows by a contra dated the entry's
    * date (so the pair leaves no trace in any as-at balance), and the entry becomes {@code
    * REVERSED}. Refused for an entry recorded from a statement line (unmatch the line — OQ-3) or
-   * whose row has since been matched to one, and once the investment is withdrawn. Lock order: the
-   * investment row, the entry, its rows; no client anchor (OQ-17).
+   * whose row has since been matched to one, and once the investment is withdrawn. The request's
+   * reason (required, D-2) is each contra's description and the audit reason. Lock order: the
+   * investment row, the entry, its row; no client anchor (OQ-17). A reversible entry is a bank
+   * advice, so {@code NET} with one row ({@code GROSS} needs a line, {@code
+   * chk_invest_interest_fund_txn}) — the only trust row it locks, so it cannot lock two rows
+   * against an auto-match's id order (Phase 92 residual §1.3, CF-3b).
    */
   @Transactional
-  public InvestmentInterestResponse reverseInterest(UUID interestId) {
+  public InvestmentInterestResponse reverseInterest(
+      UUID interestId, ReverseInterestRequest request) {
     moduleGuard.requireModule(MODULE_ID);
+    // Validate the reason (service callers bypass the controller's @Valid), as reverseTransaction
+    String reason = request == null ? null : request.reason();
+    if (reason == null || reason.isBlank()) {
+      throw new InvalidStateException("Invalid reversal", "Reversal reason is required");
+    }
     var investmentId =
         interestRepository
             .findInvestmentIdById(interestId)
@@ -879,8 +909,7 @@ public class TrustInvestmentService implements InvestmentPlacementHooks {
     for (var original : originals) {
       var contra =
           postingService.postReversal(
-              TrustPostingService.contraDraft(
-                  original, INTEREST_REVERSAL_REASON, entry.getEntryDate(), memberId),
+              TrustPostingService.contraDraft(original, reason, entry.getEntryDate(), memberId),
               original);
       contras.add(contra);
       auditService.log(
@@ -897,7 +926,7 @@ public class TrustInvestmentService implements InvestmentPlacementHooks {
                           "original_type", original.getTransactionType(),
                           "amount", original.getAmount().toString(),
                           "reversal_status", contra.getStatus(),
-                          "reason", INTEREST_REVERSAL_REASON,
+                          "reason", reason,
                           "reversal_date", entry.getEntryDate().toString())))
               .build());
       if (contra.getCustomerId() != null) {
@@ -906,7 +935,7 @@ public class TrustInvestmentService implements InvestmentPlacementHooks {
     }
     entry.markReversed();
     entry = interestRepository.save(entry);
-    auditInterestReversed(investment, entry, contras);
+    auditInterestReversed(investment, entry, contras, reason);
     return InvestmentInterestResponse.of(entry);
   }
 
@@ -950,7 +979,7 @@ public class TrustInvestmentService implements InvestmentPlacementHooks {
                 () -> new ResourceNotFoundException("TrustInvestment", entry.getInvestmentId()));
     entry.markReversed();
     var saved = interestRepository.save(entry);
-    auditInterestReversed(investment, saved, contras);
+    auditInterestReversed(investment, saved, contras, null);
   }
 
   /**
@@ -1234,7 +1263,10 @@ public class TrustInvestmentService implements InvestmentPlacementHooks {
   }
 
   private void auditInterestReversed(
-      TrustInvestment investment, TrustInvestmentInterest entry, List<TrustTransaction> contras) {
+      TrustInvestment investment,
+      TrustInvestmentInterest entry,
+      List<TrustTransaction> contras,
+      String reason) {
     var details = baseDetails(investment);
     details.put("amount", entry.getGrossAmount().toPlainString());
     details.put("gross", entry.getGrossAmount().toPlainString());
@@ -1247,6 +1279,10 @@ public class TrustInvestmentService implements InvestmentPlacementHooks {
         contras.stream().map(contra -> contra.getReversalOf().toString()).toList());
     if (entry.getBankStatementLineId() != null) {
       details.put("bank_statement_line_id", entry.getBankStatementLineId().toString());
+    }
+    // D-2: a reversal from a bank advice says why (an unmatch carries no reason of its own)
+    if (reason != null) {
+      details.put("reason", reason);
     }
     audit("trust_investment.interest_reversed", investment, details);
   }

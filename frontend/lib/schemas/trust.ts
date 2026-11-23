@@ -127,6 +127,12 @@ export const reversalReasonSchema = z.object({
 
 export type ReversalReasonFormData = z.infer<typeof reversalReasonSchema>;
 
+// D-2 (2026-11-23): a section 86(4) interest entry's reversal takes a reason, validated as a
+// transaction reversal's is (no date: the contra is dated the entry's date)
+export const interestReversalReasonSchema = reversalReasonSchema.pick({ reason: true });
+
+export type InterestReversalReasonFormData = z.infer<typeof interestReversalReasonSchema>;
+
 // FU-6b: why an imported bank statement is discarded (kept on the retired statement, 500 max)
 export const discardStatementSchema = z.object({
   reason: z.string().trim().min(1, "Reason is required").max(500),

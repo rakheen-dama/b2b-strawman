@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import useSWR from "swr";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { Badge } from "@b2mash/ui/badge";
 import { Button } from "@b2mash/ui/button";
@@ -13,13 +15,27 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
 import { INTEREST_PRESENTATION_LABELS } from "@/lib/types/trust";
+import {
+  interestReversalReasonSchema,
+  type InterestReversalReasonFormData,
+} from "@/lib/schemas/trust";
 import {
   fetchInvestmentInterest,
   reverseInvestmentInterest,
 } from "@/app/(app)/org/[slug]/trust-accounting/investments/actions";
 import { useIdempotencyKey } from "@/hooks/use-idempotency-key";
+import { UnsettledSubmitNotice } from "./unsettled-submit-notice";
 
 interface InvestmentInterestEntriesDialogProps {
   investmentId: string;
@@ -32,7 +48,8 @@ interface InvestmentInterestEntriesDialogProps {
 
 /**
  * 648B F-1: the interest entries of one section 86(4) investment, each POSTED bank-advice entry
- * with a Reverse action (a confirm step; the endpoint takes no reason or date). An entry recorded
+ * with a Reverse action (a confirm step asking for the reason — required, D-2 — and no date: the
+ * contra is dated the entry's date). An entry recorded
  * from a statement line is reversed by unmatching the line in the reconciliation wizard, so it
  * carries no Reverse here. The page only mounts this for a user with MANAGE_TRUST, the
  * capability the endpoint enforces.
@@ -48,6 +65,16 @@ export function InvestmentInterestEntriesDialog({
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const form = useForm<InterestReversalReasonFormData>({
+    resolver: zodResolver(interestReversalReasonSchema),
+    defaultValues: { reason: "" },
+  });
+
+  function startConfirm(id: string | null) {
+    setError(null);
+    form.reset({ reason: "" });
+    setConfirmingId(id);
+  }
 
   const {
     data: entries,
@@ -62,23 +89,22 @@ export function InvestmentInterestEntriesDialog({
 
   function handleOpenChange(next: boolean) {
     if (!next) {
-      setConfirmingId(null);
-      setError(null);
+      startConfirm(null);
     }
     onOpenChange(next);
   }
 
-  async function handleConfirm(interestId: string) {
+  async function handleConfirm(interestId: string, data: InterestReversalReasonFormData) {
     if (isSubmitting) return;
     setError(null);
     setIsSubmitting(true);
     try {
       const result = await idempotency.run(
-        ["reverseInvestmentInterest", interestId],
-        (idempotencyKey) => reverseInvestmentInterest(interestId, idempotencyKey)
+        ["reverseInvestmentInterest", interestId, data],
+        (idempotencyKey) => reverseInvestmentInterest(interestId, data, idempotencyKey)
       );
       if (result.success) {
-        setConfirmingId(null);
+        startConfirm(null);
         await mutate();
         onReversed();
       } else {
@@ -92,6 +118,10 @@ export function InvestmentInterestEntriesDialog({
   }
 
   const confirming = entries?.find((e) => e.id === confirmingId) ?? null;
+  // §1.5: an earlier reversal of this entry may already have been recorded (client-only: the
+  // confirm step renders only after the entries load in the browser)
+  const confirmingUnsettled =
+    confirming !== null && idempotency.hasUnsettled(["reverseInvestmentInterest", confirming.id]);
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -185,8 +215,7 @@ export function InvestmentInterestEntriesDialog({
                                 className="mt-1"
                                 disabled={isSubmitting}
                                 onClick={() => {
-                                  setError(null);
-                                  setConfirmingId(entry.id);
+                                  startConfirm(entry.id);
                                 }}
                               >
                                 Reverse
@@ -216,32 +245,57 @@ export function InvestmentInterestEntriesDialog({
               Reverse the {formatLocalDate(confirming.entryDate)} interest entry (net{" "}
               {formatCurrency(confirming.netAmount, currency)})? This cannot be undone.
             </p>
-            <div className="flex justify-end gap-2">
-              <Button
-                type="button"
-                variant="plain"
-                disabled={isSubmitting}
-                onClick={() => setConfirmingId(null)}
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit((data) => handleConfirm(confirming.id, data))}
+                className="space-y-3"
               >
-                Keep entry
-              </Button>
-              <Button
-                type="button"
-                variant="destructive"
-                disabled={isSubmitting}
-                onClick={() => handleConfirm(confirming.id)}
-                data-testid="confirm-reverse-interest"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-1.5 size-4 animate-spin" />
-                    Reversing...
-                  </>
-                ) : (
-                  "Reverse interest entry"
-                )}
-              </Button>
-            </div>
+                <FormField
+                  control={form.control}
+                  name="reason"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Reason</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Reason for reversal"
+                          maxLength={500}
+                          data-testid="reverse-interest-reason-input"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <UnsettledSubmitNotice show={confirmingUnsettled} />
+                <div className="flex justify-end gap-2">
+                  <Button
+                    type="button"
+                    variant="plain"
+                    disabled={isSubmitting}
+                    onClick={() => startConfirm(null)}
+                  >
+                    Keep entry
+                  </Button>
+                  <Button
+                    type="submit"
+                    variant="destructive"
+                    disabled={isSubmitting}
+                    data-testid="confirm-reverse-interest"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-1.5 size-4 animate-spin" />
+                        Reversing...
+                      </>
+                    ) : (
+                      "Reverse interest entry"
+                    )}
+                  </Button>
+                </div>
+              </form>
+            </Form>
           </div>
         )}
 

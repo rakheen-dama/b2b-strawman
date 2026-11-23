@@ -635,6 +635,7 @@ class TrustInvestmentServiceIntegrationTest {
     var client = books.newClient("cover");
     books.deposit(funding, client, "1000.00");
 
+    // The request's placement is dated 1 March (back-dated): D-1 names the date of the lowest cell
     assertPlacementRefused(
         funding,
         clientAccount,
@@ -644,7 +645,7 @@ class TrustInvestmentServiceIntegrationTest {
             + matterName(client)
             + " for "
             + client.name()
-            + ". Available on matter: R1\u00a0000,00, Requested: R1\u00a0000,01");
+            + " as at 1 March 2026. Available on matter: R1\u00a0000,00, Requested: R1\u00a0000,01");
     assertPlacementRefused(
         funding,
         firmAccount,

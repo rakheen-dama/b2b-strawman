@@ -17,6 +17,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.Trus
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.InvestmentInterestResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.PlaceInvestmentRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.RecordInvestmentInterestRequest;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.ReverseInterestRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.TrustInvestmentResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.WithdrawInvestmentRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustPostingService;
@@ -67,6 +68,9 @@ public final class TrustBooksFixture {
 
   /** Posting date of every fixture row — in the past, so it counts in today's figures. */
   public static final LocalDate POSTING_DATE = LocalDate.of(2026, 3, 1);
+
+  /** The reason {@link Tenant#reverseInterest(UUID, Expected, UUID)} gives (required, D-2). */
+  public static final String INTEREST_REVERSAL_REASON = "trust books fixture: interest reversed";
 
   private final AtomicInteger sequence = new AtomicInteger();
 
@@ -345,6 +349,12 @@ public final class TrustBooksFixture {
 
     /** A requested refund awaits approval and moves nothing. */
     public UUID requestRefund(UUID account, Client client, String amount) {
+      return requestRefund(account, client, amount, POSTING_DATE);
+    }
+
+    /** As {@link #requestRefund(UUID, Client, String)}, dated {@code transactionDate}. */
+    public UUID requestRefund(
+        UUID account, Client client, String amount, LocalDate transactionDate) {
       var id = new UUID[1];
       as(
           memberId,
@@ -363,7 +373,7 @@ public final class TrustBooksFixture {
                                       new BigDecimal(amount),
                                       reference("REF"),
                                       "Refund",
-                                      POSTING_DATE))
+                                      transactionDate))
                               .id()));
       assertThat(statusOf(id[0])).isEqualTo("AWAITING_APPROVAL");
       return id[0];
@@ -469,6 +479,19 @@ public final class TrustBooksFixture {
      */
     public TrustInvestmentResponse requestPlacement(
         UUID funding, UUID investmentAccount, Client client, String principal) {
+      return requestPlacement(funding, investmentAccount, client, principal, POSTING_DATE);
+    }
+
+    /**
+     * As {@link #requestPlacement(UUID, UUID, Client, String)}, with the placement's deposit date
+     * {@code depositDate}.
+     */
+    public TrustInvestmentResponse requestPlacement(
+        UUID funding,
+        UUID investmentAccount,
+        Client client,
+        String principal,
+        LocalDate depositDate) {
       var basis =
           client == null ? InvestmentBasis.FIRM_DISCRETION : InvestmentBasis.CLIENT_INSTRUCTION;
       var placed = new TrustInvestmentResponse[1];
@@ -492,7 +515,7 @@ public final class TrustBooksFixture {
                                   reference("INVACC"),
                                   new BigDecimal(principal),
                                   new BigDecimal("0.0500"),
-                                  POSTING_DATE,
+                                  depositDate,
                                   null,
                                   null,
                                   basis))));
@@ -576,6 +599,12 @@ public final class TrustBooksFixture {
      */
     public InvestmentInterestResponse reverseInterest(
         UUID investmentAccount, Expected expected, UUID interestId) {
+      return reverseInterest(investmentAccount, expected, interestId, INTEREST_REVERSAL_REASON);
+    }
+
+    /** As {@link #reverseInterest(UUID, Expected, UUID)}, with {@code reason} (required, D-2). */
+    public InvestmentInterestResponse reverseInterest(
+        UUID investmentAccount, Expected expected, UUID interestId, String reason) {
       var reversed = new InvestmentInterestResponse[1];
       as(
           memberId,
@@ -583,7 +612,10 @@ public final class TrustBooksFixture {
               harness.assertMoves(
                   investmentAccount,
                   expected,
-                  () -> reversed[0] = investmentService.reverseInterest(interestId)));
+                  () ->
+                      reversed[0] =
+                          investmentService.reverseInterest(
+                              interestId, new ReverseInterestRequest(reason))));
       return reversed[0];
     }
 

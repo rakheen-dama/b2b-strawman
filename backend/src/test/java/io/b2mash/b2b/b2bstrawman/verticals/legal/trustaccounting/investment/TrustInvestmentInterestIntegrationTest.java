@@ -274,7 +274,10 @@ class TrustInvestmentInterestIntegrationTest {
 
     var reversed =
         books.reverseInterest(
-            held.investmentAccount(), Expected.cashbookAndInvestment("-95.00"), entry.id());
+            held.investmentAccount(),
+            Expected.cashbookAndInvestment("-95.00"),
+            entry.id(),
+            "Advice duplicated by the bank");
 
     assertThat(reversed.status()).isEqualTo("REVERSED");
     var original = row(entry.netTransactionId());
@@ -284,7 +287,11 @@ class TrustInvestmentInterestIntegrationTest {
     assertThat(contra.getReversalOf()).isEqualTo(original.getId());
     assertThat(contra.getTransactionDate()).isEqualTo(date);
     assertThat(contra.getReference()).isEqualTo("REV-" + original.getReference());
-    assertThat(contra.getDescription()).isEqualTo("Section 86(4) interest entry reversed");
+    // D-2: the reason given is the contra's description and the audit reason
+    assertThat(contra.getDescription()).isEqualTo("Advice duplicated by the bank");
+    assertThat(
+            audit("trust_transaction", contra.getId(), "trust_transaction.reversed").getDetails())
+        .containsEntry("reason", "Advice duplicated by the bank");
     assertThat(contra.getInvestmentId()).isEqualTo(held.investmentId());
     assertThat(contra.getLedger()).isEqualTo(TrustLedger.CLIENT_INVESTMENT);
     assertThat(get(held.investmentId()).balance()).isEqualByComparingTo("2000.00");
@@ -294,7 +301,8 @@ class TrustInvestmentInterestIntegrationTest {
     books.assertBalancedAsAt(held.investmentAccount(), date);
     assertThat(audit("trust_investment.interest_reversed", held.investmentId()).getDetails())
         .containsEntry("interest_id", entry.id().toString())
-        .containsEntry("reversed_transaction_ids", List.of(original.getId().toString()));
+        .containsEntry("reversed_transaction_ids", List.of(original.getId().toString()))
+        .containsEntry("reason", "Advice duplicated by the bank");
 
     assertReverseRefused(
         held.investmentAccount(), entry.id(), "This interest entry has already been reversed.");
@@ -319,6 +327,50 @@ class TrustInvestmentInterestIntegrationTest {
             held.investmentId(),
             books.today());
     assertThat(withdrawn.withdrawalAmount()).isEqualByComparingTo("2019.00");
+  }
+
+  /**
+   * D-2 (2026-11-23): a service caller (bypassing the controller's {@code @Valid}) without a
+   * reason, or with a blank one, is refused as {@code reverseTransaction} refuses it; nothing moves
+   * and the entry stays posted.
+   */
+  @Test
+  void path20_reversal_withoutAReason_isRefused() {
+    var held = s86_4Investment("1000.00");
+    var entry =
+        books.recordInterest(
+            held.investmentAccount(),
+            Expected.cashbookAndInvestment("95.00"),
+            held.investmentId(),
+            net(pastDate(), "100.00"));
+
+    for (var request :
+        new TrustInvestmentService.ReverseInterestRequest[] {
+          null,
+          new TrustInvestmentService.ReverseInterestRequest(null),
+          new TrustInvestmentService.ReverseInterestRequest("  ")
+        }) {
+      books.as(
+          ownerId,
+          () ->
+              harness.assertMoves(
+                  held.investmentAccount(),
+                  Expected.none(),
+                  () ->
+                      assertThatThrownBy(
+                              () -> investmentService.reverseInterest(entry.id(), request))
+                          .isInstanceOfSatisfying(
+                              InvalidStateException.class,
+                              e -> {
+                                assertThat(e.getBody().getStatus()).isEqualTo(400);
+                                assertThat(e.getBody().getTitle()).isEqualTo("Invalid reversal");
+                                assertThat(e.getBody().getDetail())
+                                    .isEqualTo("Reversal reason is required");
+                              })));
+    }
+    assertThat(list(held.investmentId()))
+        .singleElement()
+        .satisfies(e -> assertThat(e.status()).isEqualTo("POSTED"));
   }
 
   @Test
@@ -721,7 +773,12 @@ class TrustInvestmentInterestIntegrationTest {
                 investmentAccount,
                 Expected.none(),
                 () ->
-                    assertThatThrownBy(() -> investmentService.reverseInterest(interestId))
+                    assertThatThrownBy(
+                            () ->
+                                investmentService.reverseInterest(
+                                    interestId,
+                                    new TrustInvestmentService.ReverseInterestRequest(
+                                        "Advice duplicated by the bank")))
                         .isInstanceOfSatisfying(
                             InvalidStateException.class,
                             e -> {

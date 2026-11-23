@@ -11,6 +11,7 @@ import type {
   TrustInvestment,
 } from "@/lib/types/trust";
 import type {
+  InterestReversalReasonFormData,
   PlaceInvestmentFormData,
   RecordInvestmentInterestFormData,
   WithdrawInvestmentFormData,
@@ -150,13 +151,15 @@ export async function fetchInvestmentInterest(investmentId: string): Promise<Inv
 }
 
 /**
- * Reverses one POSTED bank-advice interest entry (648B F-1). The endpoint takes no body: no
- * reason, no date. The server refuses an entry already reversed, one recorded from a statement
- * line (unmatch the line instead), a withdrawn investment and a closed account; its detail is
- * returned as `error`.
+ * Reverses one POSTED bank-advice interest entry (648B F-1). The body carries the required
+ * `reason` (D-2, 2026-11-23) — the contra's description and the audit reason, never shown to the
+ * client; no date (the contra is dated the entry's date). The server refuses an entry already
+ * reversed, one recorded from a statement line (unmatch the line instead), a withdrawn investment
+ * and a closed account; its detail is returned as `error`.
  */
 export async function reverseInvestmentInterest(
   interestId: string,
+  data: InterestReversalReasonFormData,
   idempotencyKey: string
 ): Promise<{
   success: boolean;
@@ -167,7 +170,7 @@ export async function reverseInvestmentInterest(
   try {
     const interest = await api.post<InvestmentInterest>(
       `/api/trust-investment-interest/${interestId}/reverse`,
-      undefined,
+      { reason: data.reason },
       idempotent(idempotencyKey)
     );
     return { success: true, interest };

@@ -38,6 +38,7 @@ import type {
 import type { RecordFromStatementFormData } from "@/lib/schemas/trust";
 import { useIdempotencyKey } from "@/hooks/use-idempotency-key";
 import { freshIdempotencyKey } from "@/lib/idempotency";
+import { UnsettledSubmitNotice } from "@/components/trust/unsettled-submit-notice";
 
 // ── Constants ─────────────────────────────────────────────────────
 
@@ -687,6 +688,9 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
           })}
         </ol>
       </nav>
+
+      {/* §1.5: an earlier submit's outcome is unknown — check the ledger before submitting again */}
+      <UnsettledSubmitNotice show={idempotency.unsettled} />
 
       {/* Error banner */}
       {error && (

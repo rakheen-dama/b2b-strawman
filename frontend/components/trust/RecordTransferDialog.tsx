@@ -27,6 +27,7 @@ import { recordTransfer } from "@/app/(app)/org/[slug]/trust-accounting/transact
 import { recordTransferSchema, type RecordTransferFormData } from "@/lib/schemas/trust";
 import { LockedMonthWarning } from "./locked-month-warning";
 import { useIdempotencyKey } from "@/hooks/use-idempotency-key";
+import { UnsettledSubmitNotice } from "./unsettled-submit-notice";
 
 interface RecordTransferDialogProps {
   accountId: string;
@@ -57,7 +58,7 @@ export function RecordTransferDialog({
   onOpenChange,
   lockedThrough,
 }: RecordTransferDialogProps) {
-  const idempotency = useIdempotencyKey();
+  const idempotency = useIdempotencyKey(["recordTransfer", accountId]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -233,6 +234,7 @@ export function RecordTransferDialog({
 
             <LockedMonthWarning date={transactionDate} lockedThrough={lockedThrough} />
 
+            <UnsettledSubmitNotice show={idempotency.unsettled} />
             {error && <p className="text-destructive text-sm">{error}</p>}
 
             <DialogFooter>

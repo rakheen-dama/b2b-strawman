@@ -32,6 +32,7 @@ import {
 import { saveInterestMemoSchema, type SaveInterestMemoFormData } from "@/lib/schemas/trust";
 import type { InterestMemo } from "@/lib/types";
 import { useIdempotencyKey } from "@/hooks/use-idempotency-key";
+import { UnsettledSubmitNotice } from "./unsettled-submit-notice";
 
 /** Shown for a month whose Rule 54.15 list is locked (650D's posting warning does not apply). */
 export const LOCKED_MONTH_MEMO_NOTE =
@@ -128,7 +129,7 @@ export function InterestMemoDialog({
   triggerVariant = "outline",
   triggerTestId,
 }: InterestMemoDialogProps) {
-  const idempotency = useIdempotencyKey();
+  const idempotency = useIdempotencyKey(["saveInterestMemo", trustAccountId]);
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -365,6 +366,7 @@ export function InterestMemoDialog({
                 />
               </fieldset>
 
+              <UnsettledSubmitNotice show={idempotency.unsettled} />
               {error && (
                 <p role="alert" className="text-sm text-red-600 dark:text-red-400">
                   {error}

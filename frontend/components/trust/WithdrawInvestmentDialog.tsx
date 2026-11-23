@@ -28,6 +28,7 @@ import { formatCurrency } from "@/lib/format";
 import { withdrawInvestmentSchema, type WithdrawInvestmentFormData } from "@/lib/schemas/trust";
 import { withdrawInvestment } from "@/app/(app)/org/[slug]/trust-accounting/investments/actions";
 import { useIdempotencyKey } from "@/hooks/use-idempotency-key";
+import { UnsettledSubmitNotice } from "./unsettled-submit-notice";
 
 interface WithdrawInvestmentDialogProps {
   investmentId: string;
@@ -62,7 +63,7 @@ export function WithdrawInvestmentDialog({
   onOpenChange,
   onSuccess,
 }: WithdrawInvestmentDialogProps) {
-  const idempotency = useIdempotencyKey();
+  const idempotency = useIdempotencyKey(["withdrawInvestment", investmentId]);
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -150,6 +151,7 @@ export function WithdrawInvestmentDialog({
               )}
             />
 
+            <UnsettledSubmitNotice show={idempotency.unsettled} />
             {error && <p className="text-destructive text-sm">{error}</p>}
 
             <DialogFooter>

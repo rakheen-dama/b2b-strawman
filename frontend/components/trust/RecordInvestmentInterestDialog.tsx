@@ -46,6 +46,7 @@ import {
   recordInvestmentInterest,
 } from "@/app/(app)/org/[slug]/trust-accounting/investments/actions";
 import { useIdempotencyKey } from "@/hooks/use-idempotency-key";
+import { UnsettledSubmitNotice } from "./unsettled-submit-notice";
 
 interface RecordInvestmentInterestDialogProps {
   investmentId: string;
@@ -101,7 +102,7 @@ export function RecordInvestmentInterestDialog({
   onOpenChange,
   onSuccess,
 }: RecordInvestmentInterestDialogProps) {
-  const idempotency = useIdempotencyKey();
+  const idempotency = useIdempotencyKey(["recordInvestmentInterest", investmentId]);
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -451,6 +452,7 @@ export function RecordInvestmentInterestDialog({
               currency={currency}
             />
 
+            <UnsettledSubmitNotice show={idempotency.unsettled} />
             {error && (
               <p role="alert" className="text-destructive text-sm">
                 {error}

@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -15,11 +16,13 @@ import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestIdempotency;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestTrustInvestmentAccountHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestTrustMatterHelper;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.idempotency.TrustIdempotencyService;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -31,6 +34,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -51,6 +55,7 @@ class TrustInvestmentControllerTest {
   @Autowired private OrgSettingsRepository orgSettingsRepository;
   @Autowired private OrgSettingsService orgSettingsService;
   @Autowired private TransactionTemplate transactionTemplate;
+  @Autowired private JdbcTemplate jdbc;
 
   private String tenantSchema;
   private String trustAccountId;
@@ -278,7 +283,9 @@ class TrustInvestmentControllerTest {
     mockMvc
         .perform(
             post("/api/trust-investment-interest/" + interestId + "/reverse")
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_invest_ctrl_owner")))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_invest_ctrl_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"reason\": \"Bank advice captured twice\"}"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(interestId))
         .andExpect(jsonPath("$.status").value("REVERSED"));
@@ -290,6 +297,107 @@ class TrustInvestmentControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.netInterest").value(0))
         .andExpect(jsonPath("$.balance").value(5000.00));
+
+    // D-2 (2026-11-23): the reason is the contra's description and the audit reason, as for every
+    // other trust reversal — never the old fixed text
+    var netRowId =
+        jdbc.queryForObject(
+            "SELECT net_transaction_id FROM \"%s\".trust_investment_interest WHERE id = ?::uuid"
+                .formatted(tenantSchema),
+            UUID.class,
+            interestId);
+    assertThat(
+            jdbc.queryForObject(
+                "SELECT description FROM \"%s\".trust_transactions WHERE reversal_of = ?"
+                    .formatted(tenantSchema),
+                String.class,
+                netRowId))
+        .isEqualTo("Bank advice captured twice");
+    assertThat(
+            jdbc.queryForList(
+                """
+                SELECT details->>'reason' FROM "%s".audit_events
+                WHERE event_type = 'trust_transaction.reversed'
+                  AND details->>'original_transaction_id' = ?
+                """
+                    .formatted(tenantSchema),
+                String.class,
+                netRowId.toString()))
+        .containsExactly("Bank advice captured twice");
+  }
+
+  /**
+   * D-2 + F-11: the reversal keeps {@code @IdempotentTrustWrite}, and the request hash now covers
+   * the reason — the same key with the same reason replays; with another reason it is refused 409.
+   */
+  @Test
+  void reverseInterest_sameKey_replaysTheSameReason_andRefusesADifferentOne() throws Exception {
+    var investmentId = approvedClientInvestment("Interest Key Bank", "5550000014", "5000.00");
+    var interestId = postNetInterest(investmentId, "2026-03-01", "100.00");
+    var owner = TestJwtFactory.ownerJwt(ORG_ID, "user_invest_ctrl_owner");
+    var key = UUID.randomUUID().toString();
+    var url = "/api/trust-investment-interest/" + interestId + "/reverse";
+
+    mockMvc
+        .perform(
+            post(url)
+                .with(owner)
+                .header(TestIdempotency.HEADER, key)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"reason\": \"Captured twice\"}"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("REVERSED"));
+    mockMvc
+        .perform(
+            post(url)
+                .with(owner)
+                .header(TestIdempotency.HEADER, key)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"reason\": \"Captured twice\"}"))
+        .andExpect(status().isOk())
+        .andExpect(header().string(TrustIdempotencyService.REPLAYED_HEADER, "true"));
+    mockMvc
+        .perform(
+            post(url)
+                .with(owner)
+                .header(TestIdempotency.HEADER, key)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"reason\": \"Another reason\"}"))
+        .andExpect(status().isConflict());
+  }
+
+  /** D-2: an interest reversal requires a reason, like every other trust reversal (400). */
+  @Test
+  void reverseInterest_withoutAReason_returns400_andReversesNothing() throws Exception {
+    var investmentId = approvedClientInvestment("Interest Reason Bank", "5550000013", "5000.00");
+    var interestId = postNetInterest(investmentId, "2026-03-01", "100.00");
+    var owner = TestJwtFactory.ownerJwt(ORG_ID, "user_invest_ctrl_owner");
+
+    // No body at all
+    mockMvc
+        .perform(post("/api/trust-investment-interest/" + interestId + "/reverse").with(owner))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.title").value("Malformed request body"));
+    // A body without a reason, and a blank one
+    for (var body : List.of("{}", "{\"reason\": \"   \"}")) {
+      mockMvc
+          .perform(
+              post("/api/trust-investment-interest/" + interestId + "/reverse")
+                  .with(owner)
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(body))
+          .andExpect(status().isBadRequest())
+          .andExpect(jsonPath("$.status").value(400))
+          .andExpect(jsonPath("$.title").value("Validation failed"))
+          .andExpect(jsonPath("$.fieldErrors[0].field").value("reason"));
+    }
+
+    mockMvc
+        .perform(get("/api/trust-investments/" + investmentId + "/interest").with(owner))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[0].id").value(interestId))
+        .andExpect(jsonPath("$[0].status").value("POSTED"));
   }
 
   @Test
@@ -359,7 +467,9 @@ class TrustInvestmentControllerTest {
     mockMvc
         .perform(
             post("/api/trust-investment-interest/" + UUID.randomUUID() + "/reverse")
-                .with(TestJwtFactory.memberJwt(ORG_ID, "user_invest_ctrl_member")))
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_invest_ctrl_member"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"reason\": \"Captured twice\"}"))
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.status").value(403))
         .andExpect(jsonPath("$.title").value("Access denied"))

@@ -40,6 +40,7 @@ import { placeInvestmentSchema, type PlaceInvestmentFormData } from "@/lib/schem
 import type { InvestmentBasis, TrustAccount } from "@/lib/types/trust";
 import { placeInvestment } from "@/app/(app)/org/[slug]/trust-accounting/investments/actions";
 import { useIdempotencyKey } from "@/hooks/use-idempotency-key";
+import { UnsettledSubmitNotice } from "./unsettled-submit-notice";
 
 const INVESTMENT_BASIS_HELP: Record<InvestmentBasis, string> = {
   FIRM_DISCRETION:
@@ -85,7 +86,7 @@ export function PlaceInvestmentDialog({
   onOpenChange,
   onSuccess,
 }: PlaceInvestmentDialogProps) {
-  const idempotency = useIdempotencyKey();
+  const idempotency = useIdempotencyKey(["placeInvestment", accountId]);
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -405,6 +406,7 @@ export function PlaceInvestmentDialog({
 
             <Section866Advisory />
 
+            <UnsettledSubmitNotice show={idempotency.unsettled} />
             {error && <p className="text-destructive text-sm">{error}</p>}
 
             <DialogFooter>

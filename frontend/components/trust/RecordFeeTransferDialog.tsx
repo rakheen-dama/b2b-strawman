@@ -28,6 +28,7 @@ import { recordFeeTransferSchema, type RecordFeeTransferFormData } from "@/lib/s
 import { todayInSA } from "@b2mash/shared/date";
 import { LockedMonthWarning } from "./locked-month-warning";
 import { useIdempotencyKey } from "@/hooks/use-idempotency-key";
+import { UnsettledSubmitNotice } from "./unsettled-submit-notice";
 
 interface RecordFeeTransferDialogProps {
   accountId: string;
@@ -45,7 +46,7 @@ export function RecordFeeTransferDialog({
   onSuccess,
   lockedThrough,
 }: RecordFeeTransferDialogProps) {
-  const idempotency = useIdempotencyKey();
+  const idempotency = useIdempotencyKey(["recordFeeTransfer", accountId]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -195,6 +196,7 @@ export function RecordFeeTransferDialog({
               lockedThrough={lockedThrough}
             />
 
+            <UnsettledSubmitNotice show={idempotency.unsettled} />
             {error && <p className="text-destructive text-sm">{error}</p>}
 
             <DialogFooter>

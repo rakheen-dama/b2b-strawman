@@ -37,6 +37,7 @@ import { createTrustAccountSchema, type CreateTrustAccountFormData } from "@/lib
 import { createTrustAccount } from "@/app/(app)/org/[slug]/trust-accounting/actions";
 import type { CreateTrustAccountRequest, InvestmentBasis, TrustAccount } from "@/lib/types/trust";
 import { useIdempotencyKey } from "@/hooks/use-idempotency-key";
+import { UnsettledSubmitNotice } from "./unsettled-submit-notice";
 
 /** 648A: the Place Investment dialog opens this one to add an investment account of its basis. */
 export interface InvestmentAccountPreset {
@@ -84,7 +85,7 @@ export function CreateTrustAccountDialog({
   onCreated,
 }: CreateTrustAccountDialogProps) {
   const router = useRouter();
-  const idempotency = useIdempotencyKey();
+  const idempotency = useIdempotencyKey(["createTrustAccount"]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -123,7 +124,8 @@ export function CreateTrustAccountDialog({
         // ADR-379: only an investment account carries a basis (the backend refuses it otherwise)
         investmentBasis: values.accountType === "INVESTMENT" ? values.investmentBasis : undefined,
       };
-      const result = await idempotency.run(input, (idempotencyKey) =>
+      // §1.5: the form's stable identifier first, so a stored unsettled key is found by its scope
+      const result = await idempotency.run(["createTrustAccount", input], (idempotencyKey) =>
         createTrustAccount(input, idempotencyKey)
       );
 
@@ -391,6 +393,8 @@ export function CreateTrustAccountDialog({
                 </FormItem>
               )}
             />
+
+            <UnsettledSubmitNotice show={idempotency.unsettled} />
 
             {error && (
               <p className="text-destructive text-sm" role="alert">

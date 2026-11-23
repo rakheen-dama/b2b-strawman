@@ -254,9 +254,10 @@ class TrustIdempotencyIntegrationTest {
         409,
         "Request still in progress",
         // the copy tells the firm what to do (and the key is still never re-executed)
+        // §1.5 escape action: a reload no longer gives a fresh key, so the copy names the action
         "An earlier submit of this entry is still in progress, or its outcome is unknown. Check the"
-            + " ledger to see whether the entry was recorded; if it was not, reload the page and"
-            + " submit again.",
+            + " ledger to see whether it was recorded; if it was not, choose 'Submit as a new"
+            + " entry'.",
         TrustIdempotencyService.IN_PROGRESS_CODE);
     assertThat(postings("IDEM-IN-PROGRESS")).isEqualTo(1);
     assertThat(stateOf(key)).isEqualTo("IN_PROGRESS");

@@ -394,7 +394,10 @@ export function CreateTrustAccountDialog({
               )}
             />
 
-            <UnsettledSubmitNotice show={idempotency.unsettled} />
+            <UnsettledSubmitNotice
+              show={idempotency.unsettled}
+              onSubmitAsNew={idempotency.discardUnsettled}
+            />
 
             {error && (
               <p className="text-destructive text-sm" role="alert">

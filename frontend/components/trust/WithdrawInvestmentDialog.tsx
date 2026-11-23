@@ -151,7 +151,10 @@ export function WithdrawInvestmentDialog({
               )}
             />
 
-            <UnsettledSubmitNotice show={idempotency.unsettled} />
+            <UnsettledSubmitNotice
+              show={idempotency.unsettled}
+              onSubmitAsNew={idempotency.discardUnsettled}
+            />
             {error && <p className="text-destructive text-sm">{error}</p>}
 
             <DialogFooter>

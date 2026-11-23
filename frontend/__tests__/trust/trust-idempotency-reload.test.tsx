@@ -11,12 +11,16 @@ import { act, cleanup, render, renderHook, screen, waitFor } from "@testing-libr
 vi.mock("server-only", () => ({}));
 vi.mock("@/lib/api", () => ({ api: { post: vi.fn(), get: vi.fn() } }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
+const mockReverseTransaction = vi.fn();
 vi.mock("@/app/(app)/org/[slug]/trust-accounting/transactions/actions", () => ({
   recordPayment: vi.fn(),
+  reverseTransaction: (...args: unknown[]) => mockReverseTransaction(...args),
 }));
 
+import userEvent from "@testing-library/user-event";
 import { createIdempotencyKeys, useIdempotencyKey } from "@/hooks/use-idempotency-key";
 import { RecordPaymentDialog } from "@/components/trust/RecordPaymentDialog";
+import { ReversalButton } from "@/components/trust/reversal-button";
 
 const PAYMENT = {
   customerId: "client-1",
@@ -217,5 +221,92 @@ describe("the unsettled-submit hint (§1.5)", () => {
     );
     await screen.findByRole("heading", { name: "Record Payment" });
     expect(screen.queryByText(HINT)).not.toBeInTheDocument();
+  });
+});
+
+describe("the 'Submit as a new entry' escape action (§1.5 ruling)", () => {
+  beforeEach(() => {
+    window.sessionStorage.clear();
+    mockReverseTransaction.mockReset();
+  });
+
+  const ESCAPE = { name: "Submit as a new entry" };
+  const REVERSAL = { reason: "Paid twice", reversalDate: "" };
+
+  async function openReversal() {
+    const user = userEvent.setup();
+    render(<ReversalButton transactionId="tx-1" />);
+    await user.click(screen.getByTestId("reverse-button"));
+    await user.type(screen.getByTestId("reversal-reason-input"), REVERSAL.reason);
+    return user;
+  }
+
+  function storedKeys(): string[] {
+    const keys: string[] = [];
+    for (let i = 0; i < window.sessionStorage.length; i++) {
+      const name = window.sessionStorage.key(i)!;
+      keys.push(JSON.parse(window.sessionStorage.getItem(name)!).key);
+    }
+    return keys;
+  }
+
+  it("appears on the in-progress 409; using it sends a fresh key and clears the stored one", async () => {
+    mockReverseTransaction
+      .mockResolvedValueOnce({ success: false, outcomeUnknown: true, error: "in progress" })
+      .mockResolvedValueOnce({ success: true });
+    const user = await openReversal();
+    await user.click(screen.getByTestId("confirm-reverse-button"));
+
+    expect(await screen.findByRole("button", ESCAPE)).toBeInTheDocument();
+    expect(screen.getByText(/checked the ledger/)).toBeInTheDocument();
+    const stuckKey = mockReverseTransaction.mock.calls[0][2] as string;
+    expect(storedKeys()).toEqual([stuckKey]);
+
+    await user.click(screen.getByRole("button", ESCAPE));
+
+    await waitFor(() => expect(mockReverseTransaction).toHaveBeenCalledTimes(2));
+    const [, data, freshKey] = mockReverseTransaction.mock.calls[1];
+    expect(data).toEqual(REVERSAL);
+    expect(freshKey).not.toBe(stuckKey);
+    expect(storedKeys()).toEqual([]);
+  });
+
+  it("appears when the form opens with a stored unsettled key; it never reuses that key", async () => {
+    await createIdempotencyKeys(() => "stale-key").run(
+      ["reverseTransaction", "tx-1", REVERSAL],
+      unknown
+    );
+    mockReverseTransaction.mockResolvedValueOnce({ success: true });
+    const user = await openReversal();
+
+    expect(screen.getByText(HINT)).toBeInTheDocument();
+    await user.click(screen.getByRole("button", ESCAPE));
+
+    await waitFor(() => expect(mockReverseTransaction).toHaveBeenCalledTimes(1));
+    expect(mockReverseTransaction.mock.calls[0][2]).not.toBe("stale-key");
+    expect(storedKeys()).toEqual([]);
+  });
+
+  it("is never automatic: a plain resubmit after the 409 reuses the stuck key", async () => {
+    mockReverseTransaction.mockResolvedValue({ success: false, outcomeUnknown: true, error: "x" });
+    const user = await openReversal();
+    await user.click(screen.getByTestId("confirm-reverse-button"));
+    await screen.findByRole("button", ESCAPE);
+    await user.click(screen.getByTestId("confirm-reverse-button"));
+    await waitFor(() => expect(mockReverseTransaction).toHaveBeenCalledTimes(2));
+    expect(mockReverseTransaction.mock.calls[1][2]).toBe(mockReverseTransaction.mock.calls[0][2]);
+  });
+
+  it("is absent when nothing is unsettled, and after a definite refusal", async () => {
+    mockReverseTransaction.mockResolvedValueOnce({
+      success: false,
+      error: "Insufficient trust balance",
+    });
+    const user = await openReversal();
+    expect(screen.queryByRole("button", ESCAPE)).not.toBeInTheDocument();
+    await user.click(screen.getByTestId("confirm-reverse-button"));
+    expect(await screen.findByText("Insufficient trust balance")).toBeInTheDocument();
+    expect(screen.queryByRole("button", ESCAPE)).not.toBeInTheDocument();
+    expect(storedKeys()).toEqual([]);
   });
 });

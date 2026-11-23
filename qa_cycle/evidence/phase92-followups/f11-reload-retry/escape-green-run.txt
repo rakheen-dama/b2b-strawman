@@ -1,0 +1,24 @@
+# Green — §1.5 escape action ("Submit as a new entry"), PR head working tree, 2026-11-23
+# Frontend (node v20.11.1, /opt/homebrew/bin/pnpm, NODE_OPTIONS=""):
+#   vitest run __tests__/trust/trust-idempotency-reload.test.tsx __tests__/trust/trust-idempotency-key.test.tsx __tests__/trust-investment-interest-reverse.test.tsx
+ ✓ the 'Submit as a new entry' escape action (§1.5 ruling) > appears on the in-progress 409; using it sends a fresh key and clears the stored one
+ ✓ the 'Submit as a new entry' escape action (§1.5 ruling) > appears when the form opens with a stored unsettled key; it never reuses that key
+ ✓ the 'Submit as a new entry' escape action (§1.5 ruling) > is never automatic: a plain resubmit after the 409 reuses the stuck key
+ ✓ the 'Submit as a new entry' escape action (§1.5 ruling) > is absent when nothing is unsettled, and after a definite refusal
+ Test Files  3 passed (3)
+      Tests  36 passed (36)
+# Targeted set (25 files: __tests__/trust/ + __tests__/trust-*.test.* + dashboard/trust-position-widget + legal/legal-wire-bodies + stub-pages):
+ Test Files  25 passed (25)
+      Tests  371 passed (371)
+# pnpm lint: 0 errors (77 warnings; none on a changed line). pnpm typecheck: exit 0. prettier --check (changed paths): clean.
+#
+# Backend (./mvnw -q spotless:apply, then):
+#   ./mvnw test -Dtest='io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/idempotency/**/*Test,TerminologyRemnantScanTest'
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0 -- in io.b2mash.b2b.b2bstrawman.architecture.TerminologyRemnantScanTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0 -- in ...idempotency.TrustIdempotencyFilterTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0 -- in ...idempotency.TrustIdempotencyCoverageTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0 -- in ...idempotency.TrustIdempotencyRedTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0 -- in ...idempotency.TrustIdempotencyInterceptorTest
+[INFO] Tests run: 16, Failures: 0, Errors: 0, Skipped: 0 -- in ...idempotency.TrustIdempotencyIntegrationTest
+[INFO] Tests run: 36, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS

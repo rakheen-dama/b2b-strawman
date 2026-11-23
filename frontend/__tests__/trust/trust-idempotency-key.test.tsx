@@ -209,8 +209,7 @@ describe("trust write server action (648B F-11)", () => {
   it("shows the in-progress refusal's instruction and keeps the key (outcome unknown)", async () => {
     const detail =
       "An earlier submit of this entry is still in progress, or its outcome is unknown. Check the" +
-      " ledger to see whether the entry was recorded; if it was not, reload the page and submit" +
-      " again.";
+      " ledger to see whether it was recorded; if it was not, choose 'Submit as a new entry'.";
     mockPost.mockRejectedValueOnce(
       Object.assign(new Error(detail), {
         status: 409,

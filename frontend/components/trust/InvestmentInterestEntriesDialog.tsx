@@ -268,7 +268,13 @@ export function InvestmentInterestEntriesDialog({
                     </FormItem>
                   )}
                 />
-                <UnsettledSubmitNotice show={confirmingUnsettled} />
+                <UnsettledSubmitNotice
+                  show={confirmingUnsettled}
+                  onSubmitAsNew={() => {
+                    idempotency.discard(["reverseInvestmentInterest", confirming.id]);
+                    idempotency.discardUnsettled();
+                  }}
+                />
                 <div className="flex justify-end gap-2">
                   <Button
                     type="button"

@@ -124,7 +124,10 @@ export function DiscardStatementDialog({ statementId, fileName }: DiscardStateme
               )}
             />
 
-            <UnsettledSubmitNotice show={idempotency.unsettled} />
+            <UnsettledSubmitNotice
+              show={idempotency.unsettled}
+              onSubmitAsNew={idempotency.discardUnsettled}
+            />
             {error && (
               <p className="text-destructive text-sm" role="alert" data-testid="discard-error">
                 {error}

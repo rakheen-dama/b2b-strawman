@@ -117,7 +117,15 @@ export function ApprovalBadge({
         <XCircle className="mr-1 size-3" />
         Reject
       </Button>
-      <UnsettledSubmitNotice show={idempotency.unsettled} inline />
+      <UnsettledSubmitNotice
+        show={idempotency.unsettled}
+        inline
+        onSubmitAsNew={() => {
+          // no form here: forget the stuck key, then approve again with a fresh one
+          idempotency.discardUnsettled();
+          void handleApprove();
+        }}
+      />
       {error && <span className="text-destructive text-xs">{error}</span>}
       <RejectDialog
         transactionId={transactionId}
@@ -210,7 +218,10 @@ function RejectDialog({
               )}
             />
 
-            <UnsettledSubmitNotice show={idempotency.unsettled} />
+            <UnsettledSubmitNotice
+              show={idempotency.unsettled}
+              onSubmitAsNew={idempotency.discardUnsettled}
+            />
 
             {error && <p className="text-destructive text-sm">{error}</p>}
 

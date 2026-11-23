@@ -452,7 +452,10 @@ export function RecordInvestmentInterestDialog({
               currency={currency}
             />
 
-            <UnsettledSubmitNotice show={idempotency.unsettled} />
+            <UnsettledSubmitNotice
+              show={idempotency.unsettled}
+              onSubmitAsNew={idempotency.discardUnsettled}
+            />
             {error && (
               <p role="alert" className="text-destructive text-sm">
                 {error}

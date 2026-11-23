@@ -690,7 +690,10 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
       </nav>
 
       {/* §1.5: an earlier submit's outcome is unknown — check the ledger before submitting again */}
-      <UnsettledSubmitNotice show={idempotency.unsettled} />
+      <UnsettledSubmitNotice
+        show={idempotency.unsettled}
+        onSubmitAsNew={idempotency.discardUnsettled}
+      />
 
       {/* Error banner */}
       {error && (

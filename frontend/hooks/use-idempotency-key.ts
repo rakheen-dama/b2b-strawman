@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { TrustWriteOutcome } from "@/lib/idempotency";
 
 /**
@@ -137,26 +137,58 @@ export function createIdempotencyKeys(
    * request) has a stored unsettled key — the §1.5 hint. Expired entries are removed on the way.
    */
   function hasUnsettled(scope: readonly unknown[]): boolean {
-    const whole = JSON.stringify(scope) ?? "";
-    const prefix = whole.slice(0, -1) + ",";
+    const inScope = scopeMatcher(scope);
+    if (Array.from(unsettled.keys()).some(inScope)) return true; // this page (storage or not)
+    return storedIds()
+      .filter(inScope)
+      .some((id) => storedKey(id) !== undefined);
+  }
+
+  /**
+   * The §1.5 escape action ("Submit as a new entry"), a deliberate step after the person has
+   * checked the ledger: forgets every unsettled key under `scope` — in this page and in storage —
+   * so the next submit of that form takes a fresh key and runs as a new request. Never called
+   * automatically.
+   */
+  function discard(scope: readonly unknown[]) {
+    const inScope = scopeMatcher(scope);
+    for (const id of Array.from(unsettled.keys())) {
+      if (inScope(id)) unsettled.delete(id);
+    }
+    for (const id of storedIds().filter(inScope)) {
+      try {
+        storage?.removeItem(STORAGE_PREFIX + id);
+      } catch {
+        // ignore: the TTL ends a stale entry
+      }
+    }
+  }
+
+  /** The ids of the stored entries (empty when storage is unavailable). */
+  function storedIds(): string[] {
+    const ids: string[] = [];
     try {
-      if (!storage) return false;
-      const ids: string[] = [];
+      if (!storage) return ids;
       for (let i = 0; i < storage.length; i++) {
         const name = storage.key(i);
         if (name?.startsWith(STORAGE_PREFIX)) {
           ids.push(name.slice(STORAGE_PREFIX.length));
         }
       }
-      return ids
-        .filter((id) => id === whole || id.startsWith(prefix))
-        .some((id) => storedKey(id) !== undefined);
     } catch {
-      return false;
+      // storage unavailable: nothing stored
     }
+    return ids;
   }
 
-  return { run, hasUnsettled };
+  return { run, hasUnsettled, discard };
+}
+
+/** A request id (`JSON.stringify(request)`) is in `scope` when it equals it or extends it. */
+function scopeMatcher(scope: readonly unknown[]): (id: string) => boolean {
+  const whole = JSON.stringify(scope) ?? "";
+  const prefix = whole.slice(0, -1) + ",";
+  return (id) => id === whole || id.startsWith(prefix);
 }
 
 export type IdempotencyKeys = ReturnType<typeof createIdempotencyKeys>;
@@ -169,10 +201,13 @@ export type IdempotencyKeys = ReturnType<typeof createIdempotencyKeys>;
  */
 export function useIdempotencyKey(scope?: readonly unknown[]): IdempotencyKeys & {
   unsettled: boolean;
+  discardUnsettled: () => void;
 } {
   const [keys] = useState(() => createIdempotencyKeys());
   const [unsettled, setUnsettled] = useState(false);
   const scopeId = scope ? JSON.stringify(scope) : null;
+  // The last request this form ran (the wizard has no single scope)
+  const lastRequest = useRef<unknown[] | null>(null);
 
   useEffect(() => {
     if (scopeId !== null) {
@@ -194,6 +229,7 @@ export function useIdempotencyKey(scope?: readonly unknown[]): IdempotencyKeys &
             ? keys.hasUnsettled(JSON.parse(scopeId) as unknown[])
             : Array.isArray(request) && keys.hasUnsettled(request)
         );
+      lastRequest.current = Array.isArray(request) ? request : null;
       try {
         const result = await keys.run(request, call);
         refresh();
@@ -206,9 +242,23 @@ export function useIdempotencyKey(scope?: readonly unknown[]): IdempotencyKeys &
     [keys, scopeId]
   );
 
+  // §1.5 escape action: forget this form's unsettled keys (its scope, and the last request it
+  // ran), so its next submit is a new request with a fresh key. Only ever on the person's click.
+  const discardUnsettled = useCallback(() => {
+    if (scopeId !== null) keys.discard(JSON.parse(scopeId) as unknown[]);
+    if (lastRequest.current) keys.discard(lastRequest.current);
+    setUnsettled(false);
+  }, [keys, scopeId]);
+
   // Stable between renders (callers list it in hook deps); changes only when `unsettled` does
   return useMemo(
-    () => ({ run, hasUnsettled: keys.hasUnsettled, unsettled }),
-    [run, keys, unsettled]
+    () => ({
+      run,
+      hasUnsettled: keys.hasUnsettled,
+      discard: keys.discard,
+      unsettled,
+      discardUnsettled,
+    }),
+    [run, keys, unsettled, discardUnsettled]
   );
 }

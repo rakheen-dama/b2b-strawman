@@ -205,7 +205,10 @@ export function PayToFundDialog({ item, currency }: PayToFundDialogProps) {
                 )}
               />
 
-              <UnsettledSubmitNotice show={idempotency.unsettled} />
+              <UnsettledSubmitNotice
+                show={idempotency.unsettled}
+                onSubmitAsNew={idempotency.discardUnsettled}
+              />
               {error && (
                 <p role="alert" className="text-sm text-red-600 dark:text-red-400">
                   {error}

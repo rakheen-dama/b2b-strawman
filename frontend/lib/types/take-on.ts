@@ -36,7 +36,15 @@ export type TakeOnAction =
   | "MAP"
   | "VALIDATE"
   | "REVALIDATE"
-  | "CANCEL";
+  | "CANCEL"
+  | "ATTEST"
+  | "REVOKE_ATTESTATION"
+  | "COMMIT"
+  | "CREATE_PORTAL_ACCESS"
+  | "DOWNLOAD_RESULT";
+
+/** TakeOnSignOffKind — the FICA attestation of a clients batch (655A), the trust sign-off (657C). */
+export type TakeOnSignOffKind = "FICA_ATTESTATION" | "TRUST_SIGN_OFF";
 
 export type TakeOnFieldType = "TEXT" | "EMAIL" | "DATE" | "AMOUNT" | "DECIMAL" | "ENUM" | "BOOLEAN";
 
@@ -117,13 +125,35 @@ export interface TakeOnSource {
   uploadedAt: string;
 }
 
-/** TakeOnCountsResponse (created/skipped/failed arrive with the commit, 655A). */
+/**
+ * TakeOnCountsResponse. `created`/`skipped`/`failed` are the commit outcome (655A): read live
+ * from the rows while COMMITTING, written once when the batch completes.
+ */
 export interface TakeOnCounts {
   total: number;
   valid: number;
   error: number;
   duplicate: number;
   blocks: number;
+  created: number;
+  skipped: number;
+  failed: number;
+}
+
+/** TakeOnSignOffResponse — a live (not withdrawn) sign-off; names are snapshots. */
+export interface TakeOnSignOff {
+  id: string;
+  kind: TakeOnSignOffKind;
+  memberName: string;
+  roleName: string;
+  statementVersion: string;
+  signedAt: string;
+}
+
+/** TakeOnAttestationStatementResponse — the exact text to attest, with the firm name filled in. */
+export interface TakeOnAttestationStatement {
+  version: string;
+  text: string;
 }
 
 /** TakeOnBatchResponse */
@@ -141,6 +171,13 @@ export interface TakeOnBatch {
   allowedActions: TakeOnAction[];
   createdAt: string;
   cancelledAt: string | null;
+  commitStartedAt: string | null;
+  completedAt: string | null;
+  /** Why the last commit returned the batch to VALIDATED (plain English), else null. */
+  lastError: string | null;
+  signOffs: TakeOnSignOff[];
+  /** Non-null only for a VALIDATED clients batch. */
+  attestationStatement: TakeOnAttestationStatement | null;
 }
 
 /** TakeOnBatchSummaryResponse */
@@ -205,6 +242,10 @@ export interface TakeOnRow {
   errors: TakeOnRowMessage[];
   warnings: TakeOnRowMessage[];
   duplicateOfId: string | null;
+  /** Why a FAILED row was not committed (fixed text, never a cell value). */
+  failureReason: string | null;
+  /** The record a CREATED or SKIPPED_DUPLICATE row resolved to. */
+  resultEntityId: string | null;
 }
 
 /** TakeOnMappingRequest — only dateFormat and decimalSeparator of parseOptions are honoured. */
@@ -225,6 +266,25 @@ export interface TakeOnSheetRequest {
 /** TakeOnPositionRequest — the cutover date only in 653A (P-11). */
 export interface TakeOnPositionRequest {
   cutoverDate: string;
+}
+
+/** TakeOnAttestationRequest — `defaults` must equal the source's mapping defaults (else 400). */
+export interface TakeOnAttestationRequest {
+  validationHash: string;
+  statementVersion: string;
+  defaults: Record<string, string>;
+}
+
+/** TakeOnCommitRequest */
+export interface TakeOnCommitRequest {
+  validationHash: string;
+}
+
+/** TakeOnPortalContactsResponse — portal contacts created; nothing is emailed. */
+export interface TakeOnPortalContactsResult {
+  batch: TakeOnBatch;
+  createdCount: number;
+  skippedCount: number;
 }
 
 /** Spring Data VIA_DTO page. */
@@ -274,6 +334,38 @@ export const TAKE_ON_ROW_STATUS_LABEL: Record<TakeOnRowStatus, string> = {
   SKIPPED_DUPLICATE: "Duplicate — skipped",
   SKIPPED_ZERO: "Nil balance — skipped",
   FAILED: "Failed",
+};
+
+/** The row statuses only a commit produces (655A). */
+export const TAKE_ON_COMMIT_ROW_STATUSES: readonly TakeOnRowStatus[] = [
+  "CREATED",
+  "SKIPPED_DUPLICATE",
+  "SKIPPED_ZERO",
+  "FAILED",
+];
+
+/** Labels of the clients dataset's coded FICA values (catalogue `allowedValues`). */
+export const TAKE_ON_CLIENT_VALUE_LABEL: Record<string, Record<string, string>> = {
+  ficaClientType: {
+    NATURAL_PERSON: "Natural person",
+    COMPANY: "Company",
+    CLOSE_CORPORATION: "Close corporation",
+    TRUST: "Trust",
+    PARTNERSHIP: "Partnership",
+    OTHER: "Other",
+  },
+  riskRating: { LOW: "Low", MEDIUM: "Medium", HIGH: "High", UNRATED: "Not risk-rated" },
+  beneficialOwnershipStatus: {
+    DONE: "Done",
+    NOT_APPLICABLE: "Not applicable",
+    OUTSTANDING: "Outstanding",
+  },
+  screeningStatus: {
+    SCREENED_CLEAR: "Screened — clear",
+    SCREENED_MATCH: "Screened — match",
+    NOT_SCREENED: "Not screened",
+  },
+  sourceOfFundsStatus: { DONE: "Done", NOT_REQUIRED: "Not required", OUTSTANDING: "Outstanding" },
 };
 
 /** The date formats the dry run accepts (TakeOnValueParser; ISO yyyy-MM-dd is always accepted). */

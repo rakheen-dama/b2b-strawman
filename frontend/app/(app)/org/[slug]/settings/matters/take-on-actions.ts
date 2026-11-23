@@ -3,11 +3,14 @@
 import { api, API_BASE, ApiError, getAuthFetchOptions, getFieldDefinitions } from "@/lib/api";
 import { takeOnFileError } from "@/lib/schemas/take-on";
 import type {
+  TakeOnAttestationRequest,
   TakeOnBatch,
+  TakeOnCommitRequest,
   TakeOnCustomFieldEntityType,
   TakeOnDataset,
   TakeOnMappingRequest,
   TakeOnPage,
+  TakeOnPortalContactsResult,
   TakeOnPositionRequest,
   TakeOnPreview,
   TakeOnRow,
@@ -172,6 +175,87 @@ export async function validateBatch(batchId: string): Promise<TakeOnActionResult
 /** POST …/cancel — cancels the batch and deletes its files and row values. */
 export async function cancelBatch(batchId: string): Promise<TakeOnActionResult<TakeOnBatch>> {
   return run(() => api.post<TakeOnBatch>(`${batchPath(batchId)}/cancel`));
+}
+
+// ── Attestation, commit, results (655A) ────────────────────────────────
+
+/**
+ * POST …/attestation — the FICA attestation of a validated clients batch. `defaults` are the
+ * source's mapping defaults exactly as shown; a refusal's `detail` is shown verbatim.
+ */
+export async function attest(
+  batchId: string,
+  request: TakeOnAttestationRequest
+): Promise<TakeOnActionResult<TakeOnBatch>> {
+  return run(() => api.post<TakeOnBatch>(`${batchPath(batchId)}/attestation`, request));
+}
+
+/** DELETE …/sign-offs/{id} — withdraws a live attestation while the batch is still VALIDATED. */
+export async function revokeSignOff(
+  batchId: string,
+  signOffId: string
+): Promise<TakeOnActionResult<TakeOnBatch>> {
+  return run(() =>
+    api.delete<TakeOnBatch>(`${batchPath(batchId)}/sign-offs/${encodeURIComponent(signOffId)}`)
+  );
+}
+
+/** POST …/commit — 202 with the batch COMMITTING; the background drain creates the records. */
+export async function commitBatch(
+  batchId: string,
+  validationHash: string
+): Promise<TakeOnActionResult<TakeOnBatch>> {
+  const request: TakeOnCommitRequest = { validationHash };
+  return run(() => api.post<TakeOnBatch>(`${batchPath(batchId)}/commit`, request));
+}
+
+/** POST …/portal-contacts — a portal contact per client taken on. Sends no email. */
+export async function createPortalContacts(
+  batchId: string
+): Promise<TakeOnActionResult<TakeOnPortalContactsResult>> {
+  return run(() => api.post<TakeOnPortalContactsResult>(`${batchPath(batchId)}/portal-contacts`));
+}
+
+export interface TakeOnResultFile {
+  fileName: string;
+  content: string;
+}
+
+/** GET …/result.csv — one line per row with its outcome (raw fetch, like the template). */
+export async function downloadTakeOnResult(
+  batchId: string
+): Promise<TakeOnActionResult<TakeOnResultFile>> {
+  const refused = "The result report could not be downloaded. Try again.";
+  try {
+    const authOptions = await getAuthFetchOptions("GET");
+    const response = await fetch(`${API_BASE}${batchPath(batchId)}/result.csv`, {
+      method: "GET",
+      headers: { ...authOptions.headers },
+      credentials: authOptions.credentials,
+      cache: "no-store",
+    });
+    if (!response.ok) {
+      let message = refused;
+      try {
+        const detail = await response.json();
+        message = detail?.detail || message;
+      } catch {
+        // not JSON — keep the generic text
+      }
+      return { success: false, error: message };
+    }
+    const disposition = response.headers.get("content-disposition") ?? "";
+    const match = disposition.match(/filename="?([^";]+)"?/i);
+    return {
+      success: true,
+      data: {
+        fileName: match?.[1] ?? `take-on-result-${batchId}.csv`,
+        content: await response.text(),
+      },
+    };
+  } catch {
+    return { success: false, error: refused };
+  }
 }
 
 // ── Reads for the client steps (SWR fetchers call these) ───────────────

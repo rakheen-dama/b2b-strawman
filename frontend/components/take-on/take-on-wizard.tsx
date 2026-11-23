@@ -23,20 +23,34 @@ import {
   type TakeOnDatasetCatalogue,
   type TakeOnSource,
 } from "@/lib/types";
+import { AttestationStep, liveAttestation } from "./attestation-step";
 import { MappingStep } from "./mapping-step";
+import { ResultsStep, useTakeOnCommitProgress } from "./results-step";
 import { SheetPicker } from "./sheet-picker";
 import { TakeOnError } from "./take-on-feedback";
 import { TakeOnFilesPanel } from "./upload-step";
 import { ValidationStep } from "./validation-step";
 
-export type TakeOnStep = "upload" | "sheet" | "mapping" | "validation";
+export type TakeOnStep = "upload" | "sheet" | "mapping" | "validation" | "attestation" | "results";
 
-const STEPS: { id: TakeOnStep; label: string }[] = [
+const FILE_STEPS: { id: TakeOnStep; label: string }[] = [
   { id: "upload", label: "Upload" },
   { id: "sheet", label: "Sheet" },
   { id: "mapping", label: "Mapping" },
   { id: "validation", label: "Validation" },
 ];
+
+/** Clients commit in 655A (attest, then commit); the other datasets gain theirs in later slices. */
+const COMMIT_STEPS: { id: TakeOnStep; label: string }[] = [
+  { id: "attestation", label: "Attestation" },
+  { id: "results", label: "Results" },
+];
+
+const stepsFor = (batch: TakeOnBatch) =>
+  batch.dataset === "CLIENTS" ? [...FILE_STEPS, ...COMMIT_STEPS] : FILE_STEPS;
+
+const isCommitted = (batch: TakeOnBatch) =>
+  batch.status === "COMMITTING" || batch.status === "COMPLETED";
 
 /** A multi-sheet XLSX, or a file kept with no rows because row 1 is not its header row (OBS F-1). */
 const needsSheetChoice = (src: TakeOnSource) =>
@@ -44,8 +58,16 @@ const needsSheetChoice = (src: TakeOnSource) =>
 
 const firstUnmapped = (batch: TakeOnBatch) => batch.sources.find((s) => !s.mapped);
 
-/** Where a batch resumes: no file → Upload; an unmapped file → Sheet (multi-sheet XLSX, or no rows read yet) or Mapping; mapped → Validation. */
+/**
+ * Where a batch resumes: committing or completed → Results; a validated clients batch with a live
+ * attestation → Attestation; no file → Upload; an unmapped file → Sheet (multi-sheet XLSX, or no
+ * rows read yet) or Mapping; mapped → Validation.
+ */
 export function takeOnStepFor(batch: TakeOnBatch): TakeOnStep {
+  if (isCommitted(batch)) return "results";
+  if (batch.status === "VALIDATED" && batch.dataset === "CLIENTS" && liveAttestation(batch)) {
+    return "attestation";
+  }
   if (batch.sources.length === 0) return "upload";
   if (batch.status === "MAPPED" || batch.status === "VALIDATED") return "validation";
   const unmapped = firstUnmapped(batch);
@@ -60,8 +82,9 @@ interface TakeOnWizardProps {
 
 /**
  * The take-on wizard inside Settings → Matters → Take-on (`?tab=take-on&batch={id}`, Phase 93
- * 653A): Upload → Sheet → Mapping → Validation. It ends at the dry run — there is no commit control
- * (Change #7, 655A). Every control follows the batch's allowedActions.
+ * 653A/655A): Upload → Sheet → Mapping → Validation, and for clients → Attestation → Results
+ * (attest, commit, progress, outcome). While the batch is COMMITTING the wizard re-reads it until
+ * the status changes. Every control follows the batch's allowedActions.
  */
 export function TakeOnWizard({ batch: initialBatch, dataset }: TakeOnWizardProps) {
   const [batch, setBatch] = useState(initialBatch);
@@ -82,6 +105,17 @@ export function TakeOnWizard({ batch: initialBatch, dataset }: TakeOnWizardProps
     }
   }
 
+  function committed(next: TakeOnBatch) {
+    changeBatch(next);
+    setStep("results");
+  }
+
+  useTakeOnCommitProgress(batch, (next) => {
+    changeBatch(next);
+    // A commit that could not run returns the batch to VALIDATED with lastError (D-91).
+    if (next.status === "VALIDATED") setStep("attestation");
+  });
+
   function goToSourceWork(next: TakeOnBatch) {
     const unmapped = firstUnmapped(next);
     if (!unmapped) {
@@ -92,7 +126,12 @@ export function TakeOnWizard({ batch: initialBatch, dataset }: TakeOnWizardProps
     setStep(needsSheetChoice(unmapped) ? "sheet" : "mapping");
   }
 
-  const reachable = (id: TakeOnStep) => id === "upload" || hasSources;
+  const steps = stepsFor(batch);
+  const reachable = (id: TakeOnStep) => {
+    if (id === "attestation") return batch.status === "VALIDATED" || isCommitted(batch);
+    if (id === "results") return isCommitted(batch);
+    return id === "upload" || hasSources;
+  };
   const sectionFields = (src: TakeOnSource) =>
     dataset.sections.find((s) => s.section === src.section)?.fields ?? [];
 
@@ -132,9 +171,9 @@ export function TakeOnWizard({ batch: initialBatch, dataset }: TakeOnWizardProps
         <>
           <nav aria-label="Take-on steps">
             <ol className="flex flex-wrap items-center gap-2">
-              {STEPS.map(({ id, label }, index) => {
+              {steps.map(({ id, label }, index) => {
                 const active = id === step;
-                const done = STEPS.findIndex((s) => s.id === step) > index;
+                const done = steps.findIndex((s) => s.id === step) > index;
                 return (
                   <li key={id} className="flex items-center gap-2">
                     <button
@@ -166,7 +205,7 @@ export function TakeOnWizard({ batch: initialBatch, dataset }: TakeOnWizardProps
                         {label}
                       </span>
                     </button>
-                    {index < STEPS.length - 1 && (
+                    {index < steps.length - 1 && (
                       <div className="mx-2 h-px w-8 bg-slate-200 dark:bg-slate-700" />
                     )}
                   </li>
@@ -240,8 +279,29 @@ export function TakeOnWizard({ batch: initialBatch, dataset }: TakeOnWizardProps
             </div>
           )}
           {step === "validation" && (
-            <ValidationStep batch={batch} dataset={dataset} onBatchChange={changeBatch} />
+            <div className="space-y-6">
+              <ValidationStep batch={batch} dataset={dataset} onBatchChange={changeBatch} />
+              {batch.dataset === "CLIENTS" && batch.status === "VALIDATED" && (
+                <Button
+                  type="button"
+                  variant="accent"
+                  onClick={() => setStep("attestation")}
+                  data-testid="take-on-to-attestation"
+                >
+                  Continue to the FICA attestation
+                </Button>
+              )}
+            </div>
           )}
+          {step === "attestation" && (
+            <AttestationStep
+              batch={batch}
+              dataset={dataset}
+              onBatchChange={changeBatch}
+              onCommitted={committed}
+            />
+          )}
+          {step === "results" && <ResultsStep batch={batch} onBatchChange={changeBatch} />}
         </>
       )}
     </div>

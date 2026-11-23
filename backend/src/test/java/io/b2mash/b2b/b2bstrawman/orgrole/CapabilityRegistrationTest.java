@@ -41,4 +41,19 @@ class CapabilityRegistrationTest {
         .isEqualTo(Capability.APPROVE_TRUST_PAYMENT);
     assertThat(Capability.ALL_NAMES).contains("APPROVE_TRUST_PAYMENT");
   }
+
+  @Test
+  void manageTakeOn_isAdminLevel() {
+    assertThat(Capability.fromString("MANAGE_TAKE_ON")).isEqualTo(Capability.MANAGE_TAKE_ON);
+    assertThat(Capability.ALL_NAMES).contains("MANAGE_TAKE_ON");
+    assertThat(Capability.OWNER_ONLY).doesNotContain("MANAGE_TAKE_ON");
+  }
+
+  @Test
+  void signOffTrustTakeOn_isOwnerOnly() {
+    assertThat(Capability.fromString("SIGN_OFF_TRUST_TAKE_ON"))
+        .isEqualTo(Capability.SIGN_OFF_TRUST_TAKE_ON);
+    assertThat(Capability.ALL_NAMES).contains("SIGN_OFF_TRUST_TAKE_ON");
+    assertThat(Capability.OWNER_ONLY).contains("SIGN_OFF_TRUST_TAKE_ON");
+  }
 }

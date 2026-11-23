@@ -40,6 +40,7 @@ const TAB_GATES: Record<string, Flags> = {
   "matters/checklists": { adminOnly: true },
   "matters/request-templates": { adminOnly: true },
   "matters/request-settings": { adminOnly: true },
+  "matters/take-on": { requiredCapability: "MANAGE_TAKE_ON" }, // Phase 93 653A (FD-36)
   "documents/templates": {},
   "documents/clauses": {},
   "documents/acceptance": { adminOnly: true }, // D19 (616C, D6/D18 rule)
@@ -95,9 +96,9 @@ describe("SETTINGS_FAMILIES", () => {
     ]);
   });
 
-  it("declares 31 tabs, 8/7/4/6/6, with the §12.7.1 ids", () => {
-    expect(SETTINGS_FAMILIES.map((f) => f.tabs.length)).toEqual([8, 7, 4, 6, 6]);
-    expect(SETTINGS_FAMILIES.flatMap((f) => f.tabs)).toHaveLength(31);
+  it("declares 32 tabs, 8/8/4/6/6, with the §12.7.1 ids (+ take-on, Phase 93 653A)", () => {
+    expect(SETTINGS_FAMILIES.map((f) => f.tabs.length)).toEqual([8, 8, 4, 6, 6]);
+    expect(SETTINGS_FAMILIES.flatMap((f) => f.tabs)).toHaveLength(32);
     const ids = Object.fromEntries(SETTINGS_FAMILIES.map((f) => [f.id, f.tabs.map((t) => t.id)]));
     expect(ids).toEqual({
       firm: [
@@ -118,6 +119,7 @@ describe("SETTINGS_FAMILIES", () => {
         "checklists",
         "request-templates",
         "request-settings",
+        "take-on",
       ],
       documents: ["templates", "clauses", "acceptance", "email"],
       fees: ["tariffs", "tax", "time-recording", "fee-runs", "collections", "trust-accounting"],
@@ -152,14 +154,14 @@ describe("SETTINGS_FAMILIES", () => {
     }
   });
 
-  it("pins every tab's gate — 31 rows (rulings D5–D7, D18–D20, D24)", () => {
+  it("pins every tab's gate — 32 rows (rulings D5–D7, D18–D20, D24)", () => {
     const actual = Object.fromEntries(
       SETTINGS_FAMILIES.flatMap((f) => f.tabs.map((t) => [tabKey(f.id, t.id), normalised(t)]))
     );
     const expected = Object.fromEntries(
       Object.entries(TAB_GATES).map(([key, flags]) => [key, normalised(flags)])
     );
-    expect(Object.keys(TAB_GATES)).toHaveLength(31);
+    expect(Object.keys(TAB_GATES)).toHaveLength(32);
     expect(actual).toEqual(expected);
   });
 
@@ -347,6 +349,10 @@ describe("settings redirect rows ↔ SETTINGS_FAMILIES (616E, §12.7.3)", () => 
   });
 
   it("gives every declared tab at least one redirect row", () => {
+    // Tabs created after Phase 87 had no pre-Phase-87 page to redirect from, so the append-only
+    // LEGACY_REDIRECTS table has no row for them (Phase 93 653A, decision D-4: ADR-341 reserved
+    // the take-on id; inventing a redirect for a page that never existed is refused).
+    const POST_PHASE_87_TABS = new Set(["matters/take-on"]);
     const tabTargets = new Set(
       settingsRows
         .filter((r) => r.destination.includes("?tab="))
@@ -356,7 +362,9 @@ describe("settings redirect rows ↔ SETTINGS_FAMILIES (616E, §12.7.3)", () => 
         })
     );
     expect([...tabTargets].sort()).toEqual(
-      SETTINGS_FAMILIES.flatMap((f) => f.tabs.map((t) => tabKey(f.id, t.id))).sort()
+      SETTINGS_FAMILIES.flatMap((f) => f.tabs.map((t) => tabKey(f.id, t.id)))
+        .filter((key) => !POST_PHASE_87_TABS.has(key))
+        .sort()
     );
   });
 

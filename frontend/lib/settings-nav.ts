@@ -3,7 +3,7 @@ import { isNavEntryVisible, type NavFilterAccess } from "@/lib/nav-filter";
 
 /**
  * One settings navigation source (Phase 87 S9, ADR-341, architecture §12.7.3): five families,
- * 31 tabs addressed by `?tab=<id>`. It is the only source: the family pages' tab strips, the
+ * 32 tabs addressed by `?tab=<id>`. It is the only source: the family pages' tab strips, the
  * settings rail (components/settings/settings-sidebar.tsx) and the command palette all read it, and
  * all gate through the one rule in lib/nav-filter.ts, so a tab cannot exist in one and not the
  * others. Every tab's `adminOnly` / `requiredModule` / `requiredCapability` is pinned by a gate
@@ -174,6 +174,15 @@ const FAMILIES = [
         // non-admins; a member-visible tab holding only a denial message is the "disabled tab"
         // §12.7.4 forbids.
         adminOnly: true,
+      },
+      {
+        // Phase 93 653A (architecture §17.8.2): the id ADR-341 reserved. Gated by MANAGE_TAKE_ON
+        // only (FD-36) — the dataset capabilities are checked by the backend per dataset.
+        id: "take-on",
+        label: "Take-on",
+        description: "Move clients, matters, trust balances and debtors from your previous system",
+        requiredCapability: "MANAGE_TAKE_ON",
+        keywords: ["import", "migrate", "take-on", "opening balances", "previous system"],
       },
     ],
   },

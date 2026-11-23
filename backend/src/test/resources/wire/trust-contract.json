@@ -9,7 +9,7 @@
     "TrustAccountType" : [ "GENERAL", "INVESTMENT", "SECTION_86" ],
     "TrustLedger" : [ "CLIENT", "CLIENT_INVESTMENT", "NON_CLIENT", "INTER_ACCOUNT" ],
     "TrustTransactionDirection" : [ "IN", "OUT", "NEUTRAL" ],
-    "TrustTransactionType.Origin" : [ "FIRM", "BANK" ],
+    "TrustTransactionType.Origin" : [ "FIRM", "BANK", "TAKE_ON" ],
     "TrustTransactionType.Reversal" : [ "IMMEDIATE", "NEEDS_APPROVAL", "PAIR", "VIA_PAIR", "OWNER", "NONE" ]
   },
   "records" : {
@@ -245,6 +245,9 @@
       "name" : "totalInvestmentReturns",
       "type" : "java.math.BigDecimal"
     }, {
+      "name" : "broughtForward",
+      "type" : "java.math.BigDecimal"
+    }, {
       "name" : "investedBalance",
       "type" : "java.math.BigDecimal"
     }, {
@@ -349,6 +352,9 @@
     }, {
       "name" : "lastTransactionDate",
       "type" : "java.lang.String"
+    }, {
+      "name" : "broughtForward",
+      "type" : "java.math.BigDecimal"
     } ],
     "ExpectedStatementRequest" : [ {
       "name" : "expectedBankStatementId",
@@ -800,6 +806,9 @@
     }, {
       "name" : "lockedThrough",
       "type" : "java.time.LocalDate"
+    }, {
+      "name" : "takeOnCutoverDate",
+      "type" : "java.time.LocalDate"
     } ],
     "TrustIntegrityReport" : [ {
       "name" : "trustAccountId",
@@ -1187,6 +1196,12 @@
       "type" : "io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionType$Reversal"
     }, {
       "name" : "clientVisible",
+      "type" : "boolean"
+    }, {
+      "name" : "takeOnOnly",
+      "type" : "boolean"
+    }, {
+      "name" : "clearedAtCutover",
       "type" : "boolean"
     } ],
     "UnidentifiedDepositResponse" : [ {

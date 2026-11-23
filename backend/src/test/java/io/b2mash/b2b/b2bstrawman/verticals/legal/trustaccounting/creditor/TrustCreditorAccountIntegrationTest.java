@@ -551,10 +551,15 @@ class TrustCreditorAccountIntegrationTest {
     while (matcher.find()) {
       constrained.add(matcher.group(1));
     }
+    // This scratch schema stops at V18: its list is the 25 Phase 92 types — the registry less the
+    // eleven take-on types V33 adds (657A; TrustTransactionTypeSchemaTest pins the full 36)
     assertThat(constrained)
-        .hasSize(36)
+        .hasSize(25)
         .containsExactlyInAnyOrderElementsOf(
-            Arrays.stream(TrustTransactionType.values()).map(Enum::name).toList());
+            Arrays.stream(TrustTransactionType.values())
+                .filter(t -> !t.recordedOnlyAtTakeOn())
+                .map(Enum::name)
+                .toList());
 
     // account_type carries no CHECK on purpose (ADR-376): only the PK and the FK
     assertThat(

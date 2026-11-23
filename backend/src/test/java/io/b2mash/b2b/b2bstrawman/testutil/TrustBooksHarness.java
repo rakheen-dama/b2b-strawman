@@ -53,6 +53,17 @@ import org.springframework.stereotype.Component;
  *       without changing a single expectation except the pins it closes (task 646.9).
  * </ol>
  *
+ * <h2>Version 9 (657A) — opening entries cleared at cutover</h2>
+ *
+ * <p>A take-on's opening entries ({@code TAKEON_*}, posted only by {@code
+ * TrustPostingService.recordOpening}) are rows like any other: every balance term sums them. The
+ * oracle states two rules of its own (ADR-386): a row cleared at the cutover date ({@code
+ * cleared_at_cutover}) was already in the bank balance at C, so it is never an outstanding item in
+ * {@link #assertBankAgrees}; and EQ-6 also re-derives the stored clearance from the registry —
+ * {@code cleared_at_cutover} is true exactly for a type whose {@code Clearance} is {@code
+ * AT_CUTOVER} (false on every {@code REVERSAL}), and {@code take_on_batch_id} is set exactly on a
+ * {@code TAKEON_*} row.
+ *
  * <h2>Version 8 (650A) — entries back-dated into a locked month</h2>
  *
  * <p>{@link #assertServicesAgree} also asserts {@code BACKDATED_AFTER_LOCK} is raised exactly when
@@ -196,7 +207,8 @@ public final class TrustBooksHarness {
   private static final String POSTED_ROWS_SQL =
       """
       SELECT t.id, t.transaction_type, t.amount, t.status, t.ledger, t.cashbook_effect,
-             t.ledger_effect, o.transaction_type AS original_type, o.amount AS original_amount
+             t.ledger_effect, o.transaction_type AS original_type, o.amount AS original_amount,
+             t.cleared_at_cutover, t.take_on_batch_id
       FROM "%s".trust_transactions t
       LEFT JOIN "%s".trust_transactions o ON o.id = t.reversal_of
       WHERE t.trust_account_id = ? AND t.posted_at IS NOT NULL AND t.transaction_date <= ?
@@ -213,7 +225,8 @@ public final class TrustBooksHarness {
    * Outstanding items as at D (646C, ADR-377): posted rows moving the cashbook, dated on or before
    * D, not on a statement line dated on or before D — a match is dated by the <b>line's</b> date. A
    * reversed row and its posted contra, neither on a line, cancel (the entry never reached the
-   * bank). Binds: account, D, D, D.
+   * bank). A row cleared at the cutover date (657A, v9) was in the bank balance at C: never
+   * outstanding. Binds: account, D, D, D.
    */
   private static final String OUTSTANDING_SQL =
       """
@@ -224,6 +237,7 @@ public final class TrustBooksHarness {
       FROM "%1$s".trust_transactions t
       LEFT JOIN "%1$s".bank_statement_lines l ON l.id = t.bank_statement_line_id
       WHERE t.trust_account_id = ? AND t.posted_at IS NOT NULL AND t.cashbook_effect <> 0
+        AND NOT t.cleared_at_cutover
         AND t.transaction_date <= ?
         AND (t.bank_statement_line_id IS NULL OR l.transaction_date > ?)
         AND NOT (t.bank_statement_line_id IS NULL AND t.reversed_by_id IS NOT NULL
@@ -424,7 +438,9 @@ public final class TrustBooksHarness {
   /**
    * EQ-6: every posted row's stored (ledger, cashbook effect, ledger effect) equals the registry's
    * effect for its type and amount — a {@code REVERSED} original included — and a {@code REVERSAL}
-   * contra's equals the negation of its original's (649B, ADR-378).
+   * contra's equals the negation of its original's (649B, ADR-378). v9 (657A): the stored {@code
+   * cleared_at_cutover} is the registry's clearance (false on a contra), and {@code
+   * take_on_batch_id} is set exactly on a {@code TAKEON_*} row.
    */
   private void assertEffectsDerived(SoftAssertions softly, UUID trustAccountId, LocalDate asAt) {
     var schema = schema();
@@ -435,6 +451,18 @@ public final class TrustBooksHarness {
       var what =
           "EQ-6 on trust account %s, %s %s %s (%s)"
               .formatted(trustAccountId, row.get("status"), type, amount, row.get("id"));
+      boolean expectCleared =
+          !"REVERSAL".equals(type)
+              && TrustTransactionType.of(type).clearance()
+                  == TrustTransactionType.Clearance.AT_CUTOVER;
+      softly
+          .assertThat((Boolean) row.get("cleared_at_cutover"))
+          .as(what + " cleared_at_cutover")
+          .isEqualTo(expectCleared);
+      softly
+          .assertThat(row.get("take_on_batch_id") != null)
+          .as(what + " take_on_batch_id")
+          .isEqualTo(type.startsWith("TAKEON_"));
       TrustLedgerEffect expected;
       if ("REVERSAL".equals(type)) {
         var originalType = (String) row.get("original_type");

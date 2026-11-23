@@ -49,7 +49,8 @@ class TrustTakeOnSchemaTest {
   private static final String PREVIOUS_VERSION = "32";
 
   // Never provisioned or mapped — only names the scratch schema.
-  private static final String S = SchemaNameGenerator.generateSchemaName("org_trust_takeon_scratch");
+  private static final String S =
+      SchemaNameGenerator.generateSchemaName("org_trust_takeon_scratch");
 
   private static final UUID OWNER = UUID.fromString("00000000-0000-0000-0000-000000000001");
   private static final UUID CLIENT = UUID.fromString("00000000-0000-0000-0000-0000000000c1");
@@ -58,8 +59,7 @@ class TrustTakeOnSchemaTest {
   private static final UUID ACCOUNT = UUID.fromString("00000000-0000-0000-0000-0000000000e1");
   private static final UUID INV_ACCOUNT = UUID.fromString("00000000-0000-0000-0000-0000000000e2");
   private static final UUID UD_CREDITOR = UUID.fromString("00000000-0000-0000-0000-0000000000f1");
-  private static final UUID FUND_CREDITOR =
-      UUID.fromString("00000000-0000-0000-0000-0000000000f2");
+  private static final UUID FUND_CREDITOR = UUID.fromString("00000000-0000-0000-0000-0000000000f2");
   private static final UUID DEPOSIT_ROW = UUID.fromString("00000000-0000-0000-0000-0000000000d1");
   private static final UUID STATEMENT = UUID.fromString("00000000-0000-0000-0000-0000000000b1");
   private static final UUID LINE = UUID.fromString("00000000-0000-0000-0000-0000000000b2");
@@ -241,9 +241,7 @@ class TrustTakeOnSchemaTest {
   @Test
   void clearedAtCutover_onlyOnATakeOnRowWithoutALine() {
     assertRejected(
-        () ->
-            insertRow(
-                "TAKEON_CLIENT", "CLIENT", CLIENT, MATTER_2, null, null, batch, true, LINE),
+        () -> insertRow("TAKEON_CLIENT", "CLIENT", CLIENT, MATTER_2, null, null, batch, true, LINE),
         "chk_trust_txn_cutover_cleared");
     assertRejected(
         () -> insertClientRow("DEPOSIT", MATTER_2, null, true), "chk_trust_txn_cutover_cleared");
@@ -345,7 +343,8 @@ class TrustTakeOnSchemaTest {
   void batchReferences_areForeignKeysThatNeverCascade() {
     var missing = UUID.randomUUID();
     assertRejected(
-        () -> insertRow("TAKEON_CLIENT", "CLIENT", CLIENT, MATTER_2, null, null, missing, true, null),
+        () ->
+            insertRow("TAKEON_CLIENT", "CLIENT", CLIENT, MATTER_2, null, null, missing, true, null),
         "trust_transactions_take_on_batch_fkey");
     assertRejected(
         () ->

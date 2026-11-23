@@ -9,10 +9,18 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
+import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatch;
+import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchRepository;
+import io.b2mash.b2b.b2bstrawman.takeon.TakeOnDataset;
 import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness.Expected;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateTrustAccountRequest;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.UnidentifiedDeposit;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.UnidentifiedDepositRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestment;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.InvestmentInterestResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.PlaceInvestmentRequest;
@@ -20,6 +28,8 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.Trus
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.ReverseInterestRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.TrustInvestmentResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.WithdrawInvestmentRequest;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.takeon.OpeningAuthorities;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.takeon.OpeningAuthority;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustPostingService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
@@ -87,6 +97,10 @@ public final class TrustBooksFixture {
   private final CustomerRepository customerRepository;
   private final ProjectRepository projectRepository;
   private final TrustInvestmentService investmentService;
+  private final TakeOnBatchRepository takeOnBatchRepository;
+  private final TrustAccountRepository trustAccountRepository;
+  private final UnidentifiedDepositRepository unidentifiedDepositRepository;
+  private final TrustInvestmentRepository trustInvestmentRepository;
 
   public TrustBooksFixture(
       TrustBooksHarness harness,
@@ -101,7 +115,11 @@ public final class TrustBooksFixture {
       TrustPostingService postingService,
       CustomerRepository customerRepository,
       ProjectRepository projectRepository,
-      TrustInvestmentService investmentService) {
+      TrustInvestmentService investmentService,
+      TakeOnBatchRepository takeOnBatchRepository,
+      TrustAccountRepository trustAccountRepository,
+      UnidentifiedDepositRepository unidentifiedDepositRepository,
+      TrustInvestmentRepository trustInvestmentRepository) {
     this.harness = harness;
     this.transactionTemplate = transactionTemplate;
     this.jdbc = jdbc;
@@ -115,6 +133,10 @@ public final class TrustBooksFixture {
     this.customerRepository = customerRepository;
     this.projectRepository = projectRepository;
     this.investmentService = investmentService;
+    this.takeOnBatchRepository = takeOnBatchRepository;
+    this.trustAccountRepository = trustAccountRepository;
+    this.unidentifiedDepositRepository = unidentifiedDepositRepository;
+    this.trustInvestmentRepository = trustInvestmentRepository;
   }
 
   /** Enables the {@code trust_accounting} module for the tenant (needed by the services). */
@@ -143,6 +165,66 @@ public final class TrustBooksFixture {
 
   /** A requested fee transfer and the SENT fee note it settles. */
   public record FeeTransfer(UUID transactionId, UUID invoiceId) {}
+
+  /**
+   * One opening entry of a take-on (657A): the ledger target {@code chk_trust_txn_ledger_target}
+   * needs — client + matter ({@code CLIENT}), creditor account ({@code NON_CLIENT}), investment
+   * ({@code CLIENT_INVESTMENT}, {@code INTER_ACCOUNT}) — and, for {@code TAKEON_UNIDENTIFIED}, its
+   * item. Dated at the authority's cutover date.
+   */
+  public record OpeningRow(
+      UUID account,
+      String type,
+      String amount,
+      UUID customerId,
+      UUID projectId,
+      UUID creditorAccountId,
+      UUID investmentId,
+      UUID unidentifiedDepositId,
+      String reference) {
+
+    /** A {@code CLIENT}-ledger opening row on the client's matter. */
+    public static OpeningRow client(
+        UUID account, String type, String amount, Client client, String reference) {
+      return new OpeningRow(
+          account, type, amount, client.id(), client.matter(), null, null, null, reference);
+    }
+  }
+
+  /** A held unidentified deposit brought forward (657A) and its {@code TAKEON_UNIDENTIFIED} row. */
+  public record TakenOnItem(UUID itemId, UUID rowId) {}
+
+  /** An investment brought forward (657A), its placement row and (s86(3)) its funding-side row. */
+  public record TakenOnInvestment(UUID investmentId, UUID placementRowId, UUID fundingRowId) {}
+
+  /**
+   * The 657A "take-on" path on the architecture §17.3.13 figures: banking account {@code g} with
+   * clients {@code a} (R300 000, and a cheque {@code PAY-778} of R20 000 unpresented at cutover),
+   * {@code b} (R150 000, and a deposit {@code EFT B-0001} of R5 000 not yet cleared) and {@code c}
+   * (R49 500); the Fund ledger R1 250; two unidentified deposits (R2 000 received about 16 months
+   * before cutover, R750 two months before); a section 86(3) investment of R100 000 in {@code i3}
+   * and a section 86(4) investment of R200 000 for client {@code a} in {@code i4}. All three
+   * accounts are marked taken on at {@code cutover} by {@code batch}.
+   */
+  public record TakeOn(
+      UUID g,
+      UUID i3,
+      UUID i4,
+      UUID batch,
+      LocalDate cutover,
+      OpeningAuthority authority,
+      Client a,
+      Client b,
+      Client c,
+      UUID clientRowA,
+      UUID payUnpres,
+      UUID payOffset,
+      UUID depTransit,
+      UUID depOffset,
+      TakenOnItem unidentifiedOld,
+      TakenOnItem unidentifiedRecent,
+      TakenOnInvestment s863,
+      TakenOnInvestment s864) {}
 
   /** The fixture's steps, bound to one tenant and its maker. */
   public final class Tenant {
@@ -808,6 +890,7 @@ public final class TrustBooksFixture {
      * be written without the posting service — {@code chk_trust_txn_posting}).
      */
     public UUID postDirect(UUID account, String type, String amount, Client client) {
+      refuseTakeOnType(type);
       var approval = TrustTransactionType.of(type).approval();
       return read(
           () -> {
@@ -1070,6 +1153,7 @@ public final class TrustBooksFixture {
      * {@link #unidentifiedDepositDirect}.
      */
     public UUID postNonClientDirect(UUID account, String type, String amount, LocalDate date) {
+      refuseTakeOnType(type);
       if ("UNIDENTIFIED_DEPOSIT".equals(type)) {
         return unidentifiedDepositDirect(account, amount, date);
       }
@@ -1102,6 +1186,7 @@ public final class TrustBooksFixture {
         UUID projectId,
         UUID creditorAccountId,
         UUID investmentId) {
+      refuseTakeOnType(type);
       return insertLedgerRow(
           account,
           type,
@@ -1260,7 +1345,295 @@ public final class TrustBooksFixture {
       return id;
     }
 
-    // --- reads and harness assertions -------------------------------------------------------
+    /**
+     * The 657A "take-on" path ({@link TakeOn}): fresh accounts G (banking), I3 (section 86(3)) and
+     * I4 (section 86(4)), three clients, every creditor group of the §17.3.13 figures posted at
+     * {@code cutover} through a test-only planner under one authority, then the three accounts
+     * marked taken on. Items and investments are saved first, then their rows, then the rows are
+     * attached (as 647B / 648A do). Expected at C: G cashbook 403 500.00 (clients 499 500.00, Fund
+     * 1 250.00, unidentified 2 750.00, inter-account −100 000.00); outstanding deposits 5 000.00
+     * and payments 20 000.00; I3 100 000.00; I4 200 000.00.
+     */
+    public TakeOn takeOnSection17313(LocalDate cutover) {
+      var g = freshAccount(false);
+      var i3 = freshInvestmentAccount(InvestmentBasis.FIRM_DISCRETION);
+      var i4 = freshInvestmentAccount(InvestmentBasis.CLIENT_INSTRUCTION);
+      var a = newClient("TOA");
+      var b = newClient("TOB");
+      var c = newClient("TOC");
+      var batch = takeOnBatch(g, cutover);
+      var authority = authority(batch, cutover);
+      return read(
+          () -> {
+            var clientRowA =
+                postOpening(authority, OpeningRow.client(g, "TAKEON_CLIENT", "300000.00", a, null));
+            postOpening(authority, OpeningRow.client(g, "TAKEON_CLIENT", "150000.00", b, null));
+            postOpening(authority, OpeningRow.client(g, "TAKEON_CLIENT", "49500.00", c, null));
+            postOpening(
+                authority,
+                new OpeningRow(
+                    g,
+                    "TAKEON_FUND",
+                    "1250.00",
+                    null,
+                    null,
+                    creditorAccount(g, "FUND_INTEREST_AND_CHARGES"),
+                    null,
+                    null,
+                    null));
+            var unidentifiedOld =
+                takenOnUnidentified(authority, g, "2000.00", cutover.minusDays(500), "UNK-1");
+            var unidentifiedRecent =
+                takenOnUnidentified(authority, g, "750.00", cutover.minusDays(58), "UNK-2");
+            var s863 =
+                takenOnInvestment(authority, g, i3, null, "100000.00", cutover.minusMonths(6));
+            var s864 = takenOnInvestment(authority, g, i4, a, "200000.00", cutover.minusMonths(3));
+            var depTransit =
+                postOpening(
+                    authority,
+                    OpeningRow.client(g, "TAKEON_DEP_TRANSIT", "5000.00", b, "EFT B-0001"));
+            var depOffset =
+                postOpening(
+                    authority, OpeningRow.client(g, "TAKEON_DEP_OFFSET", "5000.00", b, null));
+            var payUnpres =
+                postOpening(
+                    authority, OpeningRow.client(g, "TAKEON_PAY_UNPRES", "20000.00", a, "PAY-778"));
+            var payOffset =
+                postOpening(
+                    authority, OpeningRow.client(g, "TAKEON_PAY_OFFSET", "20000.00", a, null));
+            markTakenOn(g, cutover, batch);
+            markTakenOn(i3, cutover, batch);
+            markTakenOn(i4, cutover, batch);
+            return new TakeOn(
+                g,
+                i3,
+                i4,
+                batch,
+                cutover,
+                authority,
+                a,
+                b,
+                c,
+                clientRowA,
+                payUnpres,
+                payOffset,
+                depTransit,
+                depOffset,
+                unidentifiedOld,
+                unidentifiedRecent,
+                s863,
+                s864);
+          });
+    }
+
+    /** 657A: a take-on row is posted only through {@link #postOpening} (recordOpening). */
+    private void refuseTakeOnType(String type) {
+      if (TrustTransactionType.of(type).recordedOnlyAtTakeOn()) {
+        throw new IllegalArgumentException(type + " is a take-on type: use postOpening");
+      }
+    }
+
+    // --- take-on (657A): opening entries through TrustPostingService.recordOpening ----------
+
+    /**
+     * A TRUST_POSITION take-on batch for {@code account} at {@code cutover} (UPLOADED) — the FK
+     * target of every opening row; saved through JPA.
+     */
+    public UUID takeOnBatch(UUID account, LocalDate cutover) {
+      return read(
+          () -> {
+            var batch =
+                new TakeOnBatch(
+                    TakeOnDataset.TRUST_POSITION, account, "Trust books take-on", memberId);
+            batch.setCutoverDate(cutover);
+            return takeOnBatchRepository.save(batch).getId();
+          });
+    }
+
+    /** The authority every harness opening row posts under — the maker as signer, signed now. */
+    public OpeningAuthority authority(UUID batch, LocalDate cutover) {
+      return OpeningAuthorities.of(batch, cutover, memberId, clock.instant());
+    }
+
+    /**
+     * One opening row straight through {@link TrustPostingService#recordOpening} (no lock anchor,
+     * no audit — the commit's planner does those in 657C), in its own transaction (or the caller's,
+     * when nested in {@link #read}). Returns its id.
+     */
+    public UUID postOpening(OpeningAuthority authority, OpeningRow row) {
+      return read(
+          () -> {
+            var draft =
+                new TrustTransaction(
+                    row.account(),
+                    row.type(),
+                    new BigDecimal(row.amount()),
+                    row.customerId(),
+                    row.projectId(),
+                    null,
+                    row.reference() != null ? row.reference() : reference("TO"),
+                    "trust books take-on",
+                    authority.cutoverDate(),
+                    null,
+                    memberId);
+            draft.setTakeOnBatchId(authority.batchId());
+            draft.setCreditorAccountId(row.creditorAccountId());
+            draft.setInvestmentId(row.investmentId());
+            draft.setUnidentifiedDepositId(row.unidentifiedDepositId());
+            return postingService.recordOpening(draft, authority).getId();
+          });
+    }
+
+    /** Marks {@code account} taken on (TrustAccount.markTakenOn) — what the commit does last. */
+    public void markTakenOn(UUID account, LocalDate cutover, UUID batch) {
+      read(
+          () -> {
+            var trustAccount = trustAccountRepository.findById(account).orElseThrow();
+            trustAccount.markTakenOn(cutover, batch);
+            return trustAccountRepository.save(trustAccount);
+          });
+    }
+
+    /**
+     * A held unidentified deposit brought forward ({@link UnidentifiedDeposit#takenOn}, no line,
+     * its original received date) and its {@code TAKEON_UNIDENTIFIED} row, attached as its opening
+     * row.
+     */
+    public TakenOnItem takenOnUnidentified(
+        OpeningAuthority authority,
+        UUID account,
+        String amount,
+        LocalDate receivedDate,
+        String bankReference) {
+      return read(
+          () -> {
+            var creditorAccountId = creditorAccount(account, "UNIDENTIFIED_DEPOSITS");
+            var item =
+                unidentifiedDepositRepository.saveAndFlush(
+                    UnidentifiedDeposit.takenOn(
+                        account,
+                        creditorAccountId,
+                        authority.batchId(),
+                        receivedDate,
+                        null,
+                        bankReference,
+                        new BigDecimal(amount),
+                        null));
+            var rowId =
+                postOpening(
+                    authority,
+                    new OpeningRow(
+                        account,
+                        "TAKEON_UNIDENTIFIED",
+                        amount,
+                        null,
+                        null,
+                        creditorAccountId,
+                        null,
+                        item.getId(),
+                        null));
+            item.attachDepositTransaction(rowId);
+            unidentifiedDepositRepository.save(item);
+            return new TakenOnItem(item.getId(), rowId);
+          });
+    }
+
+    /**
+     * An investment brought forward ({@link TrustInvestment#takenOn}) funded from {@code
+     * bankingAccount} and held in {@code investmentAccount}: for {@code client} (section 86(4) — a
+     * {@code TAKEON_INVESTMENT} on the investment account, with an instruction and a confirmed
+     * endorsement, accrued interest R1 234,56 as a memo), or for no client (null — section 86(3):
+     * {@code TAKEON_FIRM_INV_OUT} on the banking account and {@code TAKEON_FIRM_INV_IN} on the
+     * investment account). The investment-account row is its placement row.
+     */
+    public TakenOnInvestment takenOnInvestment(
+        OpeningAuthority authority,
+        UUID bankingAccount,
+        UUID investmentAccount,
+        Client client,
+        String principal,
+        LocalDate depositDate) {
+      return read(
+          () -> {
+            var basis =
+                client == null
+                    ? InvestmentBasis.FIRM_DISCRETION
+                    : InvestmentBasis.CLIENT_INSTRUCTION;
+            var terms =
+                client == null
+                    ? new TrustInvestment.TakeOnTerms(
+                        authority.batchId(), null, null, false, null, null)
+                    : new TrustInvestment.TakeOnTerms(
+                        authority.batchId(),
+                        reference("INSTR"),
+                        depositDate,
+                        true,
+                        new BigDecimal("1234.56"),
+                        null);
+            var investment =
+                trustInvestmentRepository.saveAndFlush(
+                    TrustInvestment.takenOn(
+                        bankingAccount,
+                        investmentAccount,
+                        client == null ? null : client.id(),
+                        client == null ? null : client.matter(),
+                        "Trust Books Bank",
+                        reference("INVACC"),
+                        new BigDecimal(principal),
+                        new BigDecimal("0.0500"),
+                        depositDate,
+                        null,
+                        basis,
+                        terms));
+            UUID fundingRow = null;
+            UUID placementRow;
+            if (client == null) {
+              fundingRow =
+                  postOpening(
+                      authority,
+                      new OpeningRow(
+                          bankingAccount,
+                          "TAKEON_FIRM_INV_OUT",
+                          principal,
+                          null,
+                          null,
+                          null,
+                          investment.getId(),
+                          null,
+                          null));
+              placementRow =
+                  postOpening(
+                      authority,
+                      new OpeningRow(
+                          investmentAccount,
+                          "TAKEON_FIRM_INV_IN",
+                          principal,
+                          null,
+                          null,
+                          null,
+                          investment.getId(),
+                          null,
+                          null));
+            } else {
+              placementRow =
+                  postOpening(
+                      authority,
+                      new OpeningRow(
+                          investmentAccount,
+                          "TAKEON_INVESTMENT",
+                          principal,
+                          client.id(),
+                          client.matter(),
+                          null,
+                          investment.getId(),
+                          null,
+                          null));
+            }
+            investment.setDepositTransactionId(placementRow);
+            trustInvestmentRepository.save(investment);
+            return new TakenOnInvestment(investment.getId(), placementRow, fundingRow);
+          });
+    }
 
     public String statusOf(UUID transactionId) {
       return read(() -> transactionRepository.findById(transactionId).orElseThrow().getStatus());

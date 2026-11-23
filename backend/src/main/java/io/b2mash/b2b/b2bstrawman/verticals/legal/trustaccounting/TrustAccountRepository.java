@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting;
 
 import jakarta.persistence.LockModeType;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -29,4 +30,12 @@ public interface TrustAccountRepository extends JpaRepository<TrustAccount, UUID
   @Lock(LockModeType.PESSIMISTIC_READ)
   @Query("SELECT t FROM TrustAccount t WHERE t.id = :id")
   Optional<TrustAccount> findByIdForShare(@Param("id") UUID id);
+
+  /**
+   * Phase 93 (657A): the account's take-on cutover date; empty when it was never taken on. A JPQL
+   * scalar — always read from the database, never from a managed (possibly stale) {@code
+   * TrustAccount} — so {@code TrustPostingService} reads it after taking the posting lock.
+   */
+  @Query("SELECT t.takeOnCutoverDate FROM TrustAccount t WHERE t.id = :id")
+  Optional<LocalDate> findTakeOnCutoverDate(@Param("id") UUID id);
 }

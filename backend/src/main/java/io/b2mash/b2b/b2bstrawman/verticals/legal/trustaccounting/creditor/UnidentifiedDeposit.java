@@ -13,6 +13,7 @@ import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -43,8 +44,16 @@ public class UnidentifiedDeposit {
   @Column(name = "deposit_transaction_id")
   private UUID depositTransactionId;
 
-  @Column(name = "bank_statement_line_id", nullable = false)
+  /**
+   * The statement line the item was opened from; null exactly for an item taken on (Phase 93 657A,
+   * chk_unidentified_deposit_origin).
+   */
+  @Column(name = "bank_statement_line_id")
   private UUID bankStatementLineId;
+
+  /** Phase 93: the take-on batch that brought the item forward; null for an item from a line. */
+  @Column(name = "take_on_batch_id", updatable = false)
+  private UUID takeOnBatchId;
 
   @Column(name = "received_date", nullable = false)
   private LocalDate receivedDate;
@@ -89,6 +98,10 @@ public class UnidentifiedDeposit {
   @Column(name = "updated_at", nullable = false)
   private Instant updatedAt;
 
+  /** The description of a taken-on item whose file gave none (X3, ADR-387). */
+  public static final String TAKEN_ON_DESCRIPTION =
+      "Unidentified deposit brought forward — take-on";
+
   protected UnidentifiedDeposit() {}
 
   /** A HELD item for one bank credit; its opening row is attached right after it posts. */
@@ -110,6 +123,44 @@ public class UnidentifiedDeposit {
     this.amount = amount;
     this.notes = notes;
     this.status = UnidentifiedDepositStatus.HELD;
+  }
+
+  /**
+   * A HELD item brought forward by a trust take-on (Phase 93, ADR-387): no statement line, its
+   * original {@code receivedDate} (the s87(4)(a) clock — never the cutover date), and the file's
+   * description, else "Unidentified deposit brought forward — take-on (ref {bank reference})". Its
+   * opening {@code TAKEON_UNIDENTIFIED} row is attached right after it posts ({@link
+   * #attachDepositTransaction}).
+   */
+  public static UnidentifiedDeposit takenOn(
+      UUID trustAccountId,
+      UUID creditorAccountId,
+      UUID takeOnBatchId,
+      LocalDate receivedDate,
+      String bankDescription,
+      String bankReference,
+      BigDecimal amount,
+      String notes) {
+    Objects.requireNonNull(takeOnBatchId, "takeOnBatchId");
+    String description =
+        bankDescription != null && !bankDescription.isBlank()
+            ? bankDescription.strip()
+            : TAKEN_ON_DESCRIPTION
+                + (bankReference != null && !bankReference.isBlank()
+                    ? " (ref " + bankReference.strip() + ")"
+                    : "");
+    var item =
+        new UnidentifiedDeposit(
+            trustAccountId,
+            creditorAccountId,
+            null,
+            receivedDate,
+            description,
+            bankReference,
+            amount,
+            notes);
+    item.takeOnBatchId = takeOnBatchId;
+    return item;
   }
 
   @PrePersist
@@ -234,6 +285,11 @@ public class UnidentifiedDeposit {
     return depositTransactionId;
   }
 
+  public UUID getTakeOnBatchId() {
+    return takeOnBatchId;
+  }
+
+  /** The line the item was opened from; null for an item taken on (Phase 93 657A). */
   public UUID getBankStatementLineId() {
     return bankStatementLineId;
   }

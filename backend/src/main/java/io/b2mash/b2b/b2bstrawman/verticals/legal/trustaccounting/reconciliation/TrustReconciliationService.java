@@ -874,6 +874,11 @@ public class TrustReconciliationService {
           "Invalid match state", "Transaction is already matched to a bank statement line");
     }
 
+    // Phase 93 (657A): an entry cleared at the cutover date never meets a bank line
+    if (transaction.isClearedAtCutover()) {
+      throw TrustPostingService.clearedAtCutover();
+    }
+
     // A posted row can be matched — RECORDED, APPROVED or REVERSED (a reversed original keeps its
     // cashbook effect and still shows on the bank statement, 652H). Matching never changes its
     // status (linkBankLine).

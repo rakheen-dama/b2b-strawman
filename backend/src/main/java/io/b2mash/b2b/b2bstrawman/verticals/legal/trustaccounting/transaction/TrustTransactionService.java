@@ -269,7 +269,10 @@ public class TrustTransactionService {
    * One registry entry as data (§16.4.1) — feeds every type filter. {@code label} is the firm
    * label; {@code ledger} and {@code origin} are null for REVERSAL (its original's). {@code
    * requiresApproval} is true for maker-checker types ({@code Approval.REQUIRED}); a {@code
-   * WITH_PAIR} row follows its pair and is never recorded alone.
+   * WITH_PAIR} row follows its pair and is never recorded alone. Phase 93 (657A, ADR-386): {@code
+   * takeOnOnly} — created only by a trust take-on commit, so no picker or filter offers it; {@code
+   * clearedAtCutover} — a posted row of the type was cleared at the cutover date, so it is never
+   * outstanding and never offered for bank matching.
    */
   public record TrustTransactionTypeResponse(
       String code,
@@ -279,7 +282,12 @@ public class TrustTransactionService {
       TrustTransactionType.Origin origin,
       boolean requiresApproval,
       TrustTransactionType.Reversal reversal,
-      boolean clientVisible) {}
+      boolean clientVisible,
+      // Phase 93 (657A, ADR-386): created only by a take-on commit — no picker offers it
+      boolean takeOnOnly,
+      // Phase 93 (657A): cleared at the cutover date — never outstanding, never offered for
+      // matching
+      boolean clearedAtCutover) {}
 
   public record RejectRequest(@NotBlank String reason) {}
 
@@ -311,7 +319,9 @@ public class TrustTransactionService {
                     t.origin(),
                     t.approval() == TrustTransactionType.Approval.REQUIRED,
                     t.reversal(),
-                    t.clientVisible()))
+                    t.clientVisible(),
+                    t.recordedOnlyAtTakeOn(),
+                    t.clearance() == TrustTransactionType.Clearance.AT_CUTOVER))
         .toList();
   }
 

@@ -91,15 +91,18 @@ public class ClientLedgerService {
       BigDecimal totalDeposits,
       BigDecimal totalPayments,
       BigDecimal totalFeeTransfers,
-      // G89-F13 / 648E: every total is derived from the posted ledger (LedgerTotals), so
-      // deposits + transfers in + investment returns - payments - fee transfers - refunds
-      // - transfers out - investment placements == balance (general);
+      // G89-F13 / 648E / 657A: every total is derived from the posted ledger (LedgerTotals), so
+      // broughtForward + deposits + transfers in + investment returns - payments - fee transfers
+      // - refunds - transfers out - investment placements == balance (general);
       // total held in trust = balance + investedBalance
       BigDecimal totalRefunds,
       BigDecimal totalTransfersIn,
       BigDecimal totalTransfersOut,
       BigDecimal totalInvestmentPlacements,
       BigDecimal totalInvestmentReturns,
+      // Phase 93 (657A): "Brought forward at take-on" — the signed net of the client's take-on rows
+      // (LedgerTotals.broughtForward); 0 for a client never taken on. Still sums to balance.
+      BigDecimal broughtForward,
       BigDecimal investedBalance,
       LocalDate lastTransactionDate,
       Instant createdAt,
@@ -235,6 +238,7 @@ public class ClientLedgerService {
         BigDecimal.ZERO,
         BigDecimal.ZERO, // totalInvestmentPlacements
         BigDecimal.ZERO, // totalInvestmentReturns
+        BigDecimal.ZERO, // broughtForward
         BigDecimal.ZERO, // investedBalance
         null, // lastTransactionDate
         null, // createdAt
@@ -486,7 +490,9 @@ public class ClientLedgerService {
 
     InvestedMovements plus(TrustTransactionType type, BigDecimal total) {
       return switch (type) {
-        case INV_RECEIVE -> new InvestedMovements(placed.add(total), interestNet, withdrawn);
+        // 657A: a taken-on section 86(4) investment's placement row is its TAKEON_INVESTMENT
+        case INV_RECEIVE, TAKEON_INVESTMENT ->
+            new InvestedMovements(placed.add(total), interestNet, withdrawn);
         case INV_INTEREST -> new InvestedMovements(placed, interestNet.add(total), withdrawn);
         case INV_WITHDRAW -> new InvestedMovements(placed, interestNet, withdrawn.add(total));
         // Never a group key here: clientInvestedTotalsByType groups a reversal under the type it
@@ -512,7 +518,17 @@ public class ClientLedgerService {
             FIRM_INV_PLACE,
             FIRM_INV_RECEIVE,
             FIRM_INV_WITHDRAW,
-            FIRM_INV_RETURN ->
+            FIRM_INV_RETURN,
+            TAKEON_CLIENT,
+            TAKEON_FUND,
+            TAKEON_FUND_DEBIT,
+            TAKEON_UNIDENTIFIED,
+            TAKEON_FIRM_INV_OUT,
+            TAKEON_FIRM_INV_IN,
+            TAKEON_PAY_UNPRES,
+            TAKEON_PAY_OFFSET,
+            TAKEON_DEP_TRANSIT,
+            TAKEON_DEP_OFFSET ->
             this;
       };
     }
@@ -563,6 +579,7 @@ public class ClientLedgerService {
         totals.transfersOut(),
         totals.investmentPlacements(),
         totals.investmentReturns(),
+        totals.broughtForward(),
         investedBalance,
         summary.map(ClientBalanceRow::getLastTransactionDate).orElse(null),
         anchor.map(ClientLedgerCard::getCreatedAt).orElse(null),

@@ -552,7 +552,7 @@ class TrustCreditorAccountIntegrationTest {
       constrained.add(matcher.group(1));
     }
     assertThat(constrained)
-        .hasSize(25)
+        .hasSize(36)
         .containsExactlyInAnyOrderElementsOf(
             Arrays.stream(TrustTransactionType.values()).map(Enum::name).toList());
 

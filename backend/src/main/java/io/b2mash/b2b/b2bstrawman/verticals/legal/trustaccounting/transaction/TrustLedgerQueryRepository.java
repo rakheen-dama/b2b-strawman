@@ -568,7 +568,9 @@ public interface TrustLedgerQueryRepository extends Repository<TrustTransaction,
    * {@code asAt} — a match is dated by the LINE's date, never by when it was made. A reversed row
    * and its posted reversal, neither on a statement line, cancel and are not outstanding.
    * Cashbook-neutral rows never reach the bank and are never outstanding. Replaces the old
-   * status/type-list pair (649B F4). {@code asAt} is required.
+   * status/type-list pair (649B F4). {@code asAt} is required. Phase 93 (657A, ADR-386): a row
+   * cleared at the cutover date (an opening entry the cutover bank balance already holds) is never
+   * outstanding.
    */
   @Query(
       nativeQuery = true,
@@ -582,6 +584,7 @@ public interface TrustLedgerQueryRepository extends Repository<TrustTransaction,
           WHERE t.trust_account_id = :trustAccountId
             AND t.posted_at IS NOT NULL
             AND t.cashbook_effect <> 0
+            AND NOT t.cleared_at_cutover
             AND t.transaction_date <= CAST(:asAt AS date)
             AND (t.bank_statement_line_id IS NULL OR l.transaction_date > CAST(:asAt AS date))
             AND NOT (t.bank_statement_line_id IS NULL AND t.reversed_by_id IS NOT NULL AND EXISTS (

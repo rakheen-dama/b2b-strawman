@@ -1,11 +1,17 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction;
 
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.takeon.OpeningAuthority;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -68,9 +74,29 @@ import org.springframework.transaction.annotation.Transactional;
  * that investment takes first, and interest on an investment whose placement is unapproved is
  * refused before it posts. Within one transaction an account row held {@code FOR UPDATE} may be
  * re-taken {@code FOR SHARE} (already held), never the reverse (a lock upgrade).
+ *
+ * <p>Phase 93 (657A, ADR-386): a take-on's opening entries post only through {@link
+ * #recordOpening}, under an {@code OpeningAuthority} (the batch, its cutover date and the trust
+ * sign-off), {@code APPROVED} with the signer as approver and {@code cleared_at_cutover} from the
+ * registry's {@link TrustTransactionType.Clearance}. Every other posting path refuses a take-on
+ * type and refuses an entry dated on or before the account's take-on cutover date ({@code
+ * DATED_BEFORE_TAKE_ON}, 409) — checked under the posting lock in {@link #postedNow}, and with a
+ * plain read on the two unposted saves. {@link #linkBankLine} refuses a row cleared at the cutover
+ * date ({@code CLEARED_AT_CUTOVER}, 409). The lock order above is unchanged: {@code recordOpening}
+ * takes the posting lock last, like every other path.
  */
 @Service
 public class TrustPostingService {
+
+  /** 409 code: a non-take-on entry dated on or before an account's take-on cutover date (657A). */
+  public static final String DATED_BEFORE_TAKE_ON = "DATED_BEFORE_TAKE_ON";
+
+  /** 409 code: an entry cleared at the cutover date offered for a bank line (657A). */
+  public static final String CLEARED_AT_CUTOVER = "CLEARED_AT_CUTOVER";
+
+  /** "31 October 2026" — the cutover date in a refusal (X3). */
+  private static final DateTimeFormatter TAKE_ON_DATE =
+      DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.ENGLISH);
 
   private final TrustTransactionRepository transactionRepository;
   private final ClientLedgerCardRepository ledgerCardRepository;
@@ -114,6 +140,10 @@ public class TrustPostingService {
   @Transactional
   public TrustTransaction record(TrustTransaction draft) {
     var type = TrustTransactionType.of(draft.getTransactionType());
+    if (type.recordedOnlyAtTakeOn()) {
+      throw new IllegalStateException(
+          "record is not the posting path for " + type + " (a take-on type: recordOpening only)");
+    }
     require(type.approval() == TrustTransactionType.Approval.NONE, type, "record");
     draft.setStatus("RECORDED");
     draft.applyPosting(type.effectFor(draft.getAmount()), postedNow(draft));
@@ -129,6 +159,8 @@ public class TrustPostingService {
     var type = TrustTransactionType.of(draft.getTransactionType());
     require(
         type.approval() == TrustTransactionType.Approval.REQUIRED, type, "recordAwaitingApproval");
+    // Unposted: a plain read. postOnApproval re-checks under the posting lock.
+    requireAfterTakeOn(draft, takeOnCutoverOf(draft));
     draft.setStatus("AWAITING_APPROVAL");
     draft.applyPosting(TrustLedgerEffect.zero(type.ledger()), null);
     return transactionRepository.save(draft);
@@ -158,7 +190,8 @@ public class TrustPostingService {
         switch (pairApproval) {
           case REQUIRED -> "APPROVED";
           case NONE -> "RECORDED";
-          case WITH_PAIR, WITH_ORIGINAL -> null;
+          // AT_SIGN_OFF (657A): a take-on row is never a pair
+          case WITH_PAIR, WITH_ORIGINAL, AT_SIGN_OFF -> null;
         };
     if (!pair.getStatus().equals(pairPostsAs)) {
       throw new IllegalStateException(
@@ -241,14 +274,68 @@ public class TrustPostingService {
   }
 
   /**
+   * An opening entry of a trust take-on (Phase 93 657A, ADR-386, architecture §17.3.9): a {@code
+   * TAKE_ON}-origin type, posted {@code APPROVED} with the take-on's trust signer as approver and
+   * the sign-off time as {@code approved_at} (FD-25, ADR-387 — the investment flows require an
+   * approved placement), effects from the registry, and {@code cleared_at_cutover} from the type's
+   * {@link TrustTransactionType.Clearance}. The row must name the authority's batch and be dated at
+   * its cutover date. It runs no sufficiency or cover check (the commit's self-check is the proof,
+   * 657C) and no {@code DATED_BEFORE_TAKE_ON} guard (a shared investment account may already be
+   * taken on at the same date). Nothing is published: this service publishes no event, and the
+   * commit publishes no {@code TrustTransactionRecordedEvent} (no portal email can fire). {@code
+   * MANDATORY}: only inside the commit's transaction, after the caller's locks — the posting lock
+   * is taken here last (global lock order, class Javadoc).
+   */
+  @Transactional(propagation = Propagation.MANDATORY)
+  public TrustTransaction recordOpening(TrustTransaction draft, OpeningAuthority authority) {
+    Objects.requireNonNull(authority, "authority");
+    var type = TrustTransactionType.of(draft.getTransactionType());
+    require(type.approval() == TrustTransactionType.Approval.AT_SIGN_OFF, type, "recordOpening");
+    if (!authority.batchId().equals(draft.getTakeOnBatchId())) {
+      throw new IllegalStateException(
+          "recordOpening: the row names take-on batch "
+              + draft.getTakeOnBatchId()
+              + " but the authority is for batch "
+              + authority.batchId());
+    }
+    if (!authority.cutoverDate().equals(draft.getTransactionDate())) {
+      throw new IllegalStateException(
+          "recordOpening: an opening entry is dated at the cutover date "
+              + authority.cutoverDate()
+              + ", not "
+              + draft.getTransactionDate());
+    }
+    draft.setStatus("APPROVED");
+    draft.setApprovedBy(authority.signedBy());
+    draft.setApprovedAt(authority.signedAt());
+    lockForPosting(draft);
+    draft.applyPosting(type.effectFor(draft.getAmount()), clock.instant());
+    draft.applyClearance(type.clearance());
+    return transactionRepository.save(draft);
+  }
+
+  /**
    * Links (or, with a null {@code bankStatementLineId}, unlinks) a row and a bank statement line —
    * reconciliation's only write to a trust row. Effects, status and {@code posted_at} are
-   * untouched.
+   * untouched. A row cleared at the cutover date is never linked (409 {@code CLEARED_AT_CUTOVER};
+   * also {@code chk_trust_txn_cutover_cleared}).
    */
   @Transactional
   public TrustTransaction linkBankLine(TrustTransaction transaction, UUID bankStatementLineId) {
+    if (bankStatementLineId != null && transaction.isClearedAtCutover()) {
+      throw clearedAtCutover();
+    }
     transaction.setBankStatementLineId(bankStatementLineId);
     return transactionRepository.save(transaction);
+  }
+
+  /** The X3 refusal for a cleared row offered to a bank line (shared with manual match). */
+  public static ResourceConflictException clearedAtCutover() {
+    return new ResourceConflictException(
+        "Cleared at the cutover date",
+        "This entry is part of the take-on position, which was cleared at the cutover date. It"
+            + " cannot be matched to a bank statement line.",
+        Map.of("code", CLEARED_AT_CUTOVER));
   }
 
   /**
@@ -279,6 +366,8 @@ public class TrustPostingService {
         yield saved;
       }
       case NEEDS_APPROVAL -> {
+        // Unposted: a plain read. postReversalOnApproval re-checks under the posting lock.
+        requireAfterTakeOn(reversal, takeOnCutoverOf(reversal));
         reversal.setStatus("AWAITING_APPROVAL");
         reversal.applyPosting(TrustLedgerEffect.zero(original.getLedger()), null);
         yield transactionRepository.save(reversal);
@@ -342,11 +431,43 @@ public class TrustPostingService {
    * flight to commit before it reads the books, and a posting that starts while the list is locking
    * waits for it — so its {@code posted_at} falls after the list's {@code locked_at}. Taken here,
    * the one place {@code posted_at} is written, after the caller's own locks — the last step of the
-   * global lock order (class Javadoc).
+   * global lock order (class Javadoc). Under that lock it also refuses a row dated on or before the
+   * account's take-on cutover date (657A, {@code DATED_BEFORE_TAKE_ON}) — read after the lock, so a
+   * take-on committed while this posting waited is seen.
    */
   private Instant postedNow(TrustTransaction row) {
-    trustAccountRepository.findByIdForShare(row.getTrustAccountId());
+    lockForPosting(row);
+    requireAfterTakeOn(row, takeOnCutoverOf(row));
     return clock.instant();
+  }
+
+  /** The posting lock: FOR SHARE on the trust account row, held to commit (650A F-1). */
+  private void lockForPosting(TrustTransaction row) {
+    trustAccountRepository.findByIdForShare(row.getTrustAccountId());
+  }
+
+  /**
+   * The account's take-on cutover date, or null — a JPQL scalar read, so it is the committed value
+   * even when the account is already managed in this persistence context.
+   */
+  private LocalDate takeOnCutoverOf(TrustTransaction row) {
+    return trustAccountRepository.findTakeOnCutoverDate(row.getTrustAccountId()).orElse(null);
+  }
+
+  /**
+   * Phase 93 (§17.3.11, FD-1): a taken-on account accepts no entry dated on or before its cutover
+   * date — the take-on position is what the partner signed and the auditor received. Reversals are
+   * dated by their own reversal date and refused the same way. 409 {@code DATED_BEFORE_TAKE_ON}.
+   */
+  private static void requireAfterTakeOn(TrustTransaction row, LocalDate cutover) {
+    if (cutover != null && !row.getTransactionDate().isAfter(cutover)) {
+      throw new ResourceConflictException(
+          "Entry dated before the take-on",
+          "This account was taken on at "
+              + TAKE_ON_DATE.format(cutover)
+              + ". Entries on or before that date belong in the previous system's books.",
+          Map.of("code", DATED_BEFORE_TAKE_ON));
+    }
   }
 
   /** The original stays posted with its effects; it is only marked as reversed by the contra. */

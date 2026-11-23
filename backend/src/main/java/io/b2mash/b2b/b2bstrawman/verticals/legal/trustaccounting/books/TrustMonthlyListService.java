@@ -615,6 +615,7 @@ public class TrustMonthlyListService {
             null,
             null,
             null,
+            null,
             null));
 
     // Open as at the date (EQ-4): the item's own rows sum to its amount; oldest first
@@ -634,6 +635,7 @@ public class TrustMonthlyListService {
                     null,
                     null,
                     null,
+                    null,
                     null))
         .forEach(lines::add);
 
@@ -647,6 +649,7 @@ public class TrustMonthlyListService {
                   : HELD_FOR_TRUST_CREDITORS,
               List.of(),
               position.interAccount(),
+              null,
               null,
               null,
               null,
@@ -681,7 +684,8 @@ public class TrustMonthlyListService {
         totals != null ? totals.deposits() : null,
         totals != null ? totals.payments() : null,
         totals != null ? totals.feeTransfers() : null,
-        totals != null && lastDate != null ? lastDate.toString() : null);
+        totals != null && lastDate != null ? lastDate.toString() : null,
+        totals != null ? totals.broughtForward() : null);
   }
 
   private Map<UUID, String> customerNames(Collection<UUID> ids) {

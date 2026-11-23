@@ -227,8 +227,11 @@ public class TrustInterestChargesScheduleQuery implements ReportQuery {
         .toList();
   }
 
-  /** One (type, recoverable) group's Σ ledger effect and VAT, for one month. */
-  private static final class MonthMovements {
+  /**
+   * One (type, recoverable) group's Σ ledger effect and VAT, for one month. Package-private for
+   * {@code TrustInterestChargesFundGroupTest} (657A: every Fund-ledger type has a column).
+   */
+  static final class MonthMovements {
     BigDecimal fundInterest = BigDecimal.ZERO;
     BigDecimal fundInvShare = BigDecimal.ZERO;
     BigDecimal chargesRecoverable = BigDecimal.ZERO;
@@ -239,6 +242,12 @@ public class TrustInterestChargesScheduleQuery implements ReportQuery {
     BigDecimal entriesGross = BigDecimal.ZERO;
     BigDecimal entriesNet = BigDecimal.ZERO;
     BigDecimal fundSharePaidAtSource = BigDecimal.ZERO;
+
+    /**
+     * 657A: Σ ledger effect of TAKEON_FUND / TAKEON_FUND_DEBIT — the Fund ledger brought forward at
+     * take-on: the opening figure of the month of the cutover date, never a movement.
+     */
+    BigDecimal takeOnBroughtForward = BigDecimal.ZERO;
 
     /** Σ ledger effect of groups whose type has no column here; never part of the identity. */
     BigDecimal unexplained = BigDecimal.ZERO;
@@ -304,9 +313,11 @@ public class TrustInterestChargesScheduleQuery implements ReportQuery {
       var grossInterestCashbook = s864 ? m.entriesGross : m.fundInterest;
       var interestTerm = s864 ? m.fundInvShare : grossInterestCashbook;
       var charges = m.chargesRecoverable.add(m.chargesNonRecoverable);
+      // 657A (§17.3.15): the month of a take-on opens with the Fund ledger brought forward
+      var openingFund = broughtForward.add(m.takeOnBroughtForward);
       boolean identityHolds =
           !m.hasUnexplained
-              && broughtForward
+              && openingFund
                       .add(interestTerm)
                       .subtract(charges)
                       .add(m.refunds)
@@ -318,9 +329,9 @@ public class TrustInterestChargesScheduleQuery implements ReportQuery {
       row.put("trustAccountId", account.getId());
       row.put("accountName", account.getAccountName());
       row.put("sectionLabel", sectionLabel);
-      row.put("month", periodLabel(month, rowFrom, rowTo));
+      row.put("month", monthLabel(month, rowFrom, rowTo, m, account));
       row.put("monthStart", rowFrom.toString());
-      row.put("fundBroughtForward", broughtForward);
+      row.put("fundBroughtForward", openingFund);
       row.put("grossInterestCashbook", grossInterestCashbook);
       row.put("grossInterestMemo", memo != null ? memo.getGrossInterest() : BigDecimal.ZERO);
       row.put("clientShare", s864 ? m.entriesNet : null);
@@ -346,10 +357,10 @@ public class TrustInterestChargesScheduleQuery implements ReportQuery {
   /**
    * Adds one Fund ledger group to its month by its registry type. A type with no column here — a
    * registry type that never moves a Fund ledger, or a code the registry no longer knows — is never
-   * dropped: its amount is unexplained and the month does not balance (B-H1).
+   * dropped: its amount is unexplained and the month does not balance (B-H1). Package-private for
+   * {@code TrustInterestChargesFundGroupTest} (657A).
    */
-  private static void addFundGroup(
-      MonthMovements m, TrustReportQueryRepository.FundLedgerMonthRow g) {
+  static void addFundGroup(MonthMovements m, TrustReportQueryRepository.FundLedgerMonthRow g) {
     var effect = orZero(g.getLedgerEffect());
     var type = TrustTransactionType.find(g.getTxType()).orElse(null);
     if (type == null) {
@@ -369,6 +380,10 @@ public class TrustInterestChargesScheduleQuery implements ReportQuery {
       }
       case CHARGE_REFUND -> m.refunds = m.refunds.add(effect);
       case FUND_SWEEP -> m.sweeps = m.sweeps.subtract(effect);
+      // 657A (§17.3.15): the Fund ledger brought forward at take-on is the month's opening figure,
+      // never a movement — without this arm the month of C would read "does not balance"
+      case TAKEON_FUND, TAKEON_FUND_DEBIT ->
+          m.takeOnBroughtForward = m.takeOnBroughtForward.add(effect);
       default -> addUnexplained(m, effect);
     }
   }
@@ -389,6 +404,22 @@ public class TrustInterestChargesScheduleQuery implements ReportQuery {
   /**
    * "March 2026", or "16 March 2025 to 31 March 2025" for a month the period only partly covers.
    */
+  /**
+   * The month cell; the month of a take-on says so (X3 "Brought forward at take-on ({d MMMM
+   * yyyy})", 657A — the schedule has no label column).
+   */
+  private static String monthLabel(
+      YearMonth month, LocalDate rowFrom, LocalDate rowTo, MonthMovements m, TrustAccount account) {
+    var label = periodLabel(month, rowFrom, rowTo);
+    if (m.takeOnBroughtForward.signum() == 0 || account.getTakeOnCutoverDate() == null) {
+      return label;
+    }
+    return label
+        + " — Brought forward at take-on ("
+        + IntegrityMessages.date(account.getTakeOnCutoverDate())
+        + ")";
+  }
+
   private static String periodLabel(YearMonth month, LocalDate rowFrom, LocalDate rowTo) {
     if (rowFrom.equals(month.atDay(1)) && rowTo.equals(month.atEndOfMonth())) {
       return IntegrityMessages.monthYear(rowFrom);

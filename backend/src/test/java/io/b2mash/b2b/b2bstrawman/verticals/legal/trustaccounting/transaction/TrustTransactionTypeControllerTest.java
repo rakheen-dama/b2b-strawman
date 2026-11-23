@@ -116,7 +116,7 @@ class TrustTransactionTypeControllerTest {
         .perform(get(URL).with(owner()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(TrustTransactionType.values().length))
-        .andExpect(jsonPath("$.length()").value(25))
+        .andExpect(jsonPath("$.length()").value(36))
         .andExpect(jsonPath("$[0].code").value("DEPOSIT"))
         .andExpect(jsonPath("$[0].label").value("Deposit"))
         .andExpect(jsonPath("$[0].direction").value("IN"))
@@ -125,6 +125,20 @@ class TrustTransactionTypeControllerTest {
         .andExpect(jsonPath("$[0].requiresApproval").value(false))
         .andExpect(jsonPath("$[0].reversal").value("NEEDS_APPROVAL"))
         .andExpect(jsonPath("$[0].clientVisible").value(true))
+        // 657A (ADR-386): the take-on flags — an ordinary type is neither
+        .andExpect(jsonPath("$[0].takeOnOnly").value(false))
+        .andExpect(jsonPath("$[0].clearedAtCutover").value(false))
+        .andExpect(jsonPath("$[?(@.code == 'TAKEON_CLIENT')].takeOnOnly").value(true))
+        .andExpect(jsonPath("$[?(@.code == 'TAKEON_CLIENT')].clearedAtCutover").value(true))
+        .andExpect(jsonPath("$[?(@.code == 'TAKEON_CLIENT')].origin").value("TAKE_ON"))
+        .andExpect(jsonPath("$[?(@.code == 'TAKEON_CLIENT')].requiresApproval").value(false))
+        .andExpect(jsonPath("$[?(@.code == 'TAKEON_CLIENT')].clientVisible").value(true))
+        .andExpect(
+            jsonPath("$[?(@.code == 'TAKEON_CLIENT')].label")
+                .value("Balance brought forward — take-on"))
+        .andExpect(jsonPath("$[?(@.code == 'TAKEON_PAY_UNPRES')].takeOnOnly").value(true))
+        .andExpect(jsonPath("$[?(@.code == 'TAKEON_PAY_UNPRES')].clearedAtCutover").value(false))
+        .andExpect(jsonPath("$[?(@.code == 'TAKEON_PAY_UNPRES')].reversal").value("IMMEDIATE"))
         .andExpect(jsonPath("$[?(@.code == 'PAYMENT')].requiresApproval").value(true))
         .andExpect(jsonPath("$[?(@.code == 'PAYMENT')].direction").value("OUT"))
         .andExpect(jsonPath("$[?(@.code == 'PAYMENT')].reversal").value("IMMEDIATE"))
@@ -150,7 +164,7 @@ class TrustTransactionTypeControllerTest {
     mockMvc
         .perform(get(URL).with(TestJwtFactory.memberJwt(ORG_ID, MEMBER_SUBJECT)))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.length()").value(25));
+        .andExpect(jsonPath("$.length()").value(36));
   }
 
   @Test

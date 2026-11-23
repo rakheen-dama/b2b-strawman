@@ -341,14 +341,20 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
    *   <li>the live (non-REVERSED) rows already matched are never candidates; they only shadow a
    *       REVERSED original of their amount and sign (FU-16, 652H M-1).
    * </ul>
+   *
+   * <p>Phase 93 (657A, ADR-386, FD-3): a row cleared at the cutover date is never in the pool; an
+   * unmatched take-on item (an item outstanding at cutover — {@code take_on_batch_id} set, not
+   * cleared, no line) is in it whatever its date, so a cheque presented months after the cutover
+   * still auto-matches by its reference.
    */
   @Query(
       """
       SELECT t FROM TrustTransaction t
       WHERE t.trustAccountId = :trustAccountId
         AND t.postedAt IS NOT NULL
-        AND t.transactionDate >= :startDate
-        AND t.transactionDate <= :endDate
+        AND t.clearedAtCutover = false
+        AND ((t.transactionDate >= :startDate AND t.transactionDate <= :endDate)
+             OR (t.takeOnBatchId IS NOT NULL AND t.bankStatementLineId IS NULL))
       """)
   List<TrustTransaction> findPostedInAutoMatchWindow(
       @Param("trustAccountId") UUID trustAccountId,

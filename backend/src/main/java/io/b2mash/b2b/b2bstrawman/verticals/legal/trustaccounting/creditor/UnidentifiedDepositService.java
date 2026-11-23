@@ -628,10 +628,23 @@ public class UnidentifiedDepositService implements UnidentifiedResolutionHooks {
    * A resolution is dated from the item's received date to today (OL-6, OL-4 ruling) — and, for an
    * item reopened by an undo, not before the latest undo's date (its reopening contra, read from
    * the item's own posted rows): dated earlier, the item would read below zero between the two
-   * dates (EQ-4).
+   * dates (EQ-4). On a taken-on account (Phase 93 657A) it is also after the take-on cutover date:
+   * the posting would be refused on or before it ({@code DATED_BEFORE_TAKE_ON}), so the window
+   * floor is {@code max(received_date, cutover + 1)}.
    */
   private LocalDate requireDateInWindow(
       LocalDate date, UnidentifiedDeposit item, LocalDate today, String title, String noun) {
+    var cutover =
+        trustAccountRepository.findTakeOnCutoverDate(item.getTrustAccountId()).orElse(null);
+    if (cutover != null && (!date.isAfter(cutover) || date.isAfter(today))) {
+      throw new InvalidStateException(
+          title,
+          "The "
+              + noun
+              + " date must be after the take-on date ("
+              + RECEIVED.format(cutover)
+              + ") and no later than today");
+    }
     var reopened =
         transactionRepository
             .findLatestReopeningDate(item.getId())

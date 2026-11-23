@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.TrustCreditorAccountType;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionType.Approval;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionType.Clearance;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionType.Origin;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionType.Reversal;
 import java.math.BigDecimal;
@@ -16,16 +17,17 @@ import org.junit.jupiter.api.Test;
 
 /**
  * Phase 92 slices 646A / 646B (tasks 646.2 / 646.13, architecture §16.2.1, ADR-378, ADR-376): the
- * transaction-type registry carries exactly the 25 types — the seven kept (646A) and the eighteen
- * non-client, investment and inter-account types (646B) — each with every attribute of the §16.2.1
- * table, including {@code creditorAccountType}. Plain JUnit — the registry is a pure enum.
+ * transaction-type registry carries exactly the 36 types — the seven kept (646A), the eighteen
+ * non-client, investment and inter-account types (646B) and the eleven take-on types (657A,
+ * §17.2.8) — each with every attribute of the §16.2.1 / §17.2.8 tables, including {@code
+ * creditorAccountType}. Plain JUnit — the registry is a pure enum.
  */
 class TrustTransactionTypeRegistryTest {
 
   /** An all-upper-case constant name such as {@code FEE_TRANSFER} or {@code DEPOSIT}. */
   private static final Pattern CONSTANT = Pattern.compile("\\b[A-Z]{2,}(_[A-Z]+)*\\b");
 
-  /** The §16.2.1 table for all 25 types, row by row. */
+  /** The §16.2.1 / §17.2.8 tables for all 36 types, row by row (clearance: tested by sets). */
   private record Row(
       TrustTransactionType type,
       int cashbookSign,
@@ -374,12 +376,156 @@ class TrustTransactionTypeRegistryTest {
               false,
               "trust_firm_inv_return",
               "Section 86(3) investment returned to trust",
-              "Section 86(3) investment returned to trust"));
+              "Section 86(3) investment returned to trust"),
+          // Phase 93 / 657A (§17.2.8): the eleven take-on types
+          new Row(
+              TrustTransactionType.TAKEON_CLIENT,
+              1,
+              TrustLedger.CLIENT,
+              1,
+              null,
+              Approval.AT_SIGN_OFF,
+              Reversal.NONE,
+              Origin.TAKE_ON,
+              true,
+              "trust_takeon_client",
+              "Balance brought forward — take-on",
+              "Balance brought forward — take-on"),
+          new Row(
+              TrustTransactionType.TAKEON_FUND,
+              1,
+              TrustLedger.NON_CLIENT,
+              1,
+              FUND,
+              Approval.AT_SIGN_OFF,
+              Reversal.NONE,
+              Origin.TAKE_ON,
+              false,
+              "trust_takeon_fund",
+              "Fund ledger brought forward — take-on",
+              "Fund ledger brought forward — take-on"),
+          new Row(
+              TrustTransactionType.TAKEON_FUND_DEBIT,
+              -1,
+              TrustLedger.NON_CLIENT,
+              -1,
+              FUND,
+              Approval.AT_SIGN_OFF,
+              Reversal.NONE,
+              Origin.TAKE_ON,
+              false,
+              "trust_takeon_fund_debit",
+              "Fund ledger brought forward in debit — take-on",
+              "Fund ledger brought forward in debit — take-on"),
+          new Row(
+              TrustTransactionType.TAKEON_UNIDENTIFIED,
+              1,
+              TrustLedger.NON_CLIENT,
+              1,
+              UNID,
+              Approval.AT_SIGN_OFF,
+              Reversal.NONE,
+              Origin.TAKE_ON,
+              false,
+              "trust_takeon_unidentified",
+              "Unidentified deposit brought forward — take-on",
+              "Unidentified deposit brought forward — take-on"),
+          new Row(
+              TrustTransactionType.TAKEON_INVESTMENT,
+              1,
+              TrustLedger.CLIENT_INVESTMENT,
+              1,
+              null,
+              Approval.AT_SIGN_OFF,
+              Reversal.NONE,
+              Origin.TAKE_ON,
+              false,
+              "trust_takeon_investment",
+              "Section 86(4) investment brought forward — take-on",
+              "Section 86(4) investment brought forward — take-on"),
+          new Row(
+              TrustTransactionType.TAKEON_FIRM_INV_OUT,
+              -1,
+              TrustLedger.INTER_ACCOUNT,
+              -1,
+              null,
+              Approval.AT_SIGN_OFF,
+              Reversal.NONE,
+              Origin.TAKE_ON,
+              false,
+              "trust_takeon_firm_inv_out",
+              "Placed in section 86(3) investment — brought forward",
+              "Placed in section 86(3) investment — brought forward"),
+          new Row(
+              TrustTransactionType.TAKEON_FIRM_INV_IN,
+              1,
+              TrustLedger.INTER_ACCOUNT,
+              1,
+              null,
+              Approval.AT_SIGN_OFF,
+              Reversal.NONE,
+              Origin.TAKE_ON,
+              false,
+              "trust_takeon_firm_inv_in",
+              "Section 86(3) investment brought forward — take-on",
+              "Section 86(3) investment brought forward — take-on"),
+          new Row(
+              TrustTransactionType.TAKEON_PAY_UNPRES,
+              -1,
+              TrustLedger.CLIENT,
+              -1,
+              null,
+              Approval.AT_SIGN_OFF,
+              Reversal.IMMEDIATE,
+              Origin.TAKE_ON,
+              false,
+              "trust_takeon_pay_unpres",
+              "Payment not yet presented at take-on",
+              "Payment not yet presented at take-on"),
+          new Row(
+              TrustTransactionType.TAKEON_PAY_OFFSET,
+              1,
+              TrustLedger.CLIENT,
+              1,
+              null,
+              Approval.AT_SIGN_OFF,
+              Reversal.NONE,
+              Origin.TAKE_ON,
+              false,
+              "trust_takeon_pay_offset",
+              "Take-on offset — payment not yet presented",
+              "Take-on offset — payment not yet presented"),
+          new Row(
+              TrustTransactionType.TAKEON_DEP_TRANSIT,
+              1,
+              TrustLedger.CLIENT,
+              1,
+              null,
+              Approval.AT_SIGN_OFF,
+              Reversal.NEEDS_APPROVAL,
+              Origin.TAKE_ON,
+              false,
+              "trust_takeon_dep_transit",
+              "Deposit not yet cleared at take-on",
+              "Deposit not yet cleared at take-on"),
+          new Row(
+              TrustTransactionType.TAKEON_DEP_OFFSET,
+              -1,
+              TrustLedger.CLIENT,
+              -1,
+              null,
+              Approval.AT_SIGN_OFF,
+              Reversal.NONE,
+              Origin.TAKE_ON,
+              false,
+              "trust_takeon_dep_offset",
+              "Take-on offset — deposit not yet cleared",
+              "Take-on offset — deposit not yet cleared"));
 
   @Test
-  void registry_holdsTheTwentyFiveTypes() {
-    assertThat(TrustTransactionType.values()).hasSize(25);
-    assertThat(TABLE).hasSize(25);
+  void registry_holdsTheThirtySixTypes() {
+    assertThat(TrustTransactionType.values()).hasSize(36);
+    assertThat(TABLE).hasSize(36);
     assertThat(TrustTransactionType.values())
         .containsExactlyInAnyOrderElementsOf(TABLE.stream().map(Row::type).toList());
   }
@@ -452,7 +598,7 @@ class TrustTransactionTypeRegistryTest {
     assertThat(TrustTransactionType.values())
         .filteredOn(
             t -> t.ledger() == TrustLedger.NON_CLIENT || t.ledger() == TrustLedger.INTER_ACCOUNT)
-        .hasSize(12)
+        .hasSize(17)
         .allSatisfy(t -> assertThat(t.clientVisible()).as("%s clientVisible", t).isFalse());
   }
 
@@ -469,11 +615,74 @@ class TrustTransactionTypeRegistryTest {
             TrustTransactionType.FIRM_INV_PLACE,
             TrustTransactionType.FIRM_INV_RECEIVE,
             TrustTransactionType.FIRM_INV_WITHDRAW,
-            TrustTransactionType.FIRM_INV_RETURN);
+            TrustTransactionType.FIRM_INV_RETURN,
+            // 657A: a taken-on investment's placement rows (ledger-derived; never reversed, FD-25)
+            TrustTransactionType.TAKEON_INVESTMENT,
+            TrustTransactionType.TAKEON_FIRM_INV_OUT,
+            TrustTransactionType.TAKEON_FIRM_INV_IN);
     // Every one but the owner-reversed interest entry (648B) is final: withdrawn, never reversed
     assertThat(TrustTransactionType.values())
         .filteredOn(type -> type.isInvestmentRow() && type.reversal() != Reversal.NONE)
         .containsExactly(TrustTransactionType.INV_INTEREST);
+  }
+
+  @Test
+  void takeOnTypes_areTheElevenPostedAtSignOff() {
+    assertThat(TrustTransactionType.values())
+        .filteredOn(TrustTransactionType::recordedOnlyAtTakeOn)
+        .hasSize(11)
+        .allSatisfy(
+            t -> {
+              assertThat(t.origin()).isEqualTo(Origin.TAKE_ON);
+              assertThat(t.approval()).isEqualTo(Approval.AT_SIGN_OFF);
+              assertThat(t.name()).startsWith("TAKEON_");
+            });
+    // AT_SIGN_OFF is the take-on types' approval and no one else's; every TAKEON_ name is one
+    assertThat(TrustTransactionType.values())
+        .filteredOn(t -> t.approval() == Approval.AT_SIGN_OFF || t.name().startsWith("TAKEON_"))
+        .allSatisfy(t -> assertThat(t.recordedOnlyAtTakeOn()).as("%s", t).isTrue());
+  }
+
+  @Test
+  void clearance_isAtCutoverExactlyForTheNineClearedTakeOnTypes() {
+    assertThat(TrustTransactionType.values())
+        .filteredOn(t -> t.clearance() == Clearance.AT_CUTOVER)
+        .containsExactlyInAnyOrder(
+            TrustTransactionType.TAKEON_CLIENT,
+            TrustTransactionType.TAKEON_FUND,
+            TrustTransactionType.TAKEON_FUND_DEBIT,
+            TrustTransactionType.TAKEON_UNIDENTIFIED,
+            TrustTransactionType.TAKEON_INVESTMENT,
+            TrustTransactionType.TAKEON_FIRM_INV_OUT,
+            TrustTransactionType.TAKEON_FIRM_INV_IN,
+            TrustTransactionType.TAKEON_PAY_OFFSET,
+            TrustTransactionType.TAKEON_DEP_OFFSET);
+    // the two items outstanding at cutover wait for the bank, like every pre-Phase-93 type
+    assertThat(TrustTransactionType.TAKEON_PAY_UNPRES.clearance()).isEqualTo(Clearance.BANK);
+    assertThat(TrustTransactionType.TAKEON_DEP_TRANSIT.clearance()).isEqualTo(Clearance.BANK);
+    assertThat(TrustTransactionType.values())
+        .filteredOn(t -> !t.recordedOnlyAtTakeOn())
+        .allSatisfy(t -> assertThat(t.clearance()).as("%s", t).isEqualTo(Clearance.BANK));
+  }
+
+  @Test
+  void onlyTheBroughtForwardBalance_isClientVisible_amongTakeOnTypes() {
+    // FD-8: the portal shows the client the balance brought forward, never the cutover items
+    assertThat(TrustTransactionType.values())
+        .filteredOn(t -> t.recordedOnlyAtTakeOn() && t.clientVisible())
+        .containsExactly(TrustTransactionType.TAKEON_CLIENT);
+  }
+
+  @Test
+  void takeOnItems_reverseLikeThePaymentAndDepositTheyStandFor_clearedRowsNever() {
+    // FD-25: a cutover cheque reverses like PAYMENT, a deposit in transit like DEPOSIT
+    assertThat(TrustTransactionType.TAKEON_PAY_UNPRES.reversal())
+        .isEqualTo(TrustTransactionType.PAYMENT.reversal());
+    assertThat(TrustTransactionType.TAKEON_DEP_TRANSIT.reversal())
+        .isEqualTo(TrustTransactionType.DEPOSIT.reversal());
+    assertThat(TrustTransactionType.values())
+        .filteredOn(t -> t.clearance() == Clearance.AT_CUTOVER)
+        .allSatisfy(t -> assertThat(t.reversal()).as("%s", t).isEqualTo(Reversal.NONE));
   }
 
   @Test

@@ -14,6 +14,7 @@ import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Objects;
 import java.util.UUID;
 
 @Entity
@@ -87,6 +88,33 @@ public class TrustInvestment {
   @Column(name = "investment_basis", nullable = false)
   private InvestmentBasis investmentBasis;
 
+  // --- Phase 93 / 657A (ADR-387, §17.2.10): an investment brought forward by a trust take-on.
+
+  /** s86(4): the client's instruction or Rule 54.17.2 written confirmation reference. */
+  @Column(name = "instruction_reference", length = 200)
+  private String instructionReference;
+
+  @Column(name = "instruction_date")
+  private LocalDate instructionDate;
+
+  /** Rule 54.17.3: the account is endorsed as opened under s86(4). */
+  @Column(name = "endorsement_confirmed", nullable = false)
+  private boolean endorsementConfirmed;
+
+  /** Accrued, uncapitalised interest at cutover — a memo, never posted (A5, FD-13). */
+  @Column(name = "accrued_interest_at_take_on", precision = 15, scale = 2)
+  private BigDecimal accruedInterestAtTakeOn;
+
+  /**
+   * Capitalised interest owed to the Fund and not yet paid over at cutover (posted TAKEON_FUND).
+   */
+  @Column(name = "fund_amount_at_take_on", precision = 15, scale = 2)
+  private BigDecimal fundAmountAtTakeOn;
+
+  /** The take-on batch that brought the investment forward; null for one placed in Kazi. */
+  @Column(name = "take_on_batch_id", updatable = false)
+  private UUID takeOnBatchId;
+
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
 
@@ -123,6 +151,71 @@ public class TrustInvestment {
     this.investmentBasis = investmentBasis;
   }
 
+  /** What a take-on records about an investment beyond a Kazi placement (ADR-387). */
+  public record TakeOnTerms(
+      UUID takeOnBatchId,
+      String instructionReference,
+      LocalDate instructionDate,
+      boolean endorsementConfirmed,
+      BigDecimal accruedInterestAtTakeOn,
+      BigDecimal fundAmountAtTakeOn) {}
+
+  /**
+   * An ACTIVE investment brought forward by a trust take-on (ADR-387): {@code principal} is the
+   * client's balance in it at cutover (capitalised interest included, the Fund's share excluded);
+   * {@code depositDate} is the original placement date; {@code trustAccountId} is the banking
+   * account taken on (the money returns there); its placement row ({@code deposit_transaction_id})
+   * is the {@code TAKEON_INVESTMENT} / {@code TAKEON_FIRM_INV_IN} row, set after it posts. A
+   * section 86(4) investment needs the instruction reference, date and confirmed endorsement
+   * (FD-14, chk_trust_invest_take_on_instruction).
+   */
+  public static TrustInvestment takenOn(
+      UUID trustAccountId,
+      UUID investmentAccountId,
+      UUID customerId,
+      UUID projectId,
+      String institution,
+      String accountNumber,
+      BigDecimal principal,
+      BigDecimal interestRate,
+      LocalDate depositDate,
+      LocalDate maturityDate,
+      InvestmentBasis investmentBasis,
+      TakeOnTerms terms) {
+    Objects.requireNonNull(terms, "terms");
+    Objects.requireNonNull(terms.takeOnBatchId(), "takeOnBatchId");
+    if (investmentBasis == InvestmentBasis.CLIENT_INSTRUCTION
+        && (terms.instructionReference() == null
+            || terms.instructionReference().isBlank()
+            || terms.instructionDate() == null
+            || !terms.endorsementConfirmed())) {
+      throw new IllegalArgumentException(
+          "A section 86(4) investment taken on needs the client's instruction reference and date"
+              + " and a confirmed endorsement (Rule 54.17.3)");
+    }
+    var investment =
+        new TrustInvestment(
+            trustAccountId,
+            investmentAccountId,
+            customerId,
+            projectId,
+            institution,
+            accountNumber,
+            principal,
+            interestRate,
+            depositDate,
+            maturityDate,
+            null,
+            investmentBasis);
+    investment.takeOnBatchId = terms.takeOnBatchId();
+    investment.instructionReference = terms.instructionReference();
+    investment.instructionDate = terms.instructionDate();
+    investment.endorsementConfirmed = terms.endorsementConfirmed();
+    investment.accruedInterestAtTakeOn = terms.accruedInterestAtTakeOn();
+    investment.fundAmountAtTakeOn = terms.fundAmountAtTakeOn();
+    return investment;
+  }
+
   @PrePersist
   protected void onCreate() {
     var now = Instant.now();
@@ -136,6 +229,30 @@ public class TrustInvestment {
   }
 
   // --- Getters ---
+
+  public String getInstructionReference() {
+    return instructionReference;
+  }
+
+  public LocalDate getInstructionDate() {
+    return instructionDate;
+  }
+
+  public boolean isEndorsementConfirmed() {
+    return endorsementConfirmed;
+  }
+
+  public BigDecimal getAccruedInterestAtTakeOn() {
+    return accruedInterestAtTakeOn;
+  }
+
+  public BigDecimal getFundAmountAtTakeOn() {
+    return fundAmountAtTakeOn;
+  }
+
+  public UUID getTakeOnBatchId() {
+    return takeOnBatchId;
+  }
 
   public UUID getId() {
     return id;

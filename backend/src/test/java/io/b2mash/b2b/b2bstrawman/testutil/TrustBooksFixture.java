@@ -924,6 +924,33 @@ public final class TrustBooksFixture {
     }
 
     /**
+     * A bank statement on {@code account} with no lines and the given balances, written straight to
+     * the table (657A: EQ-1 needs a statement whose closing balance is the bank balance). Returns
+     * its id.
+     */
+    public UUID statementDirect(
+        UUID account, LocalDate periodStart, LocalDate periodEnd, String opening, String closing) {
+      var statementId = UUID.randomUUID();
+      jdbc.update(
+          """
+          INSERT INTO "%s".bank_statements (id, trust_account_id, period_start, period_end,
+              opening_balance, closing_balance, file_key, file_name, format, line_count,
+              matched_count, status, imported_by)
+          VALUES (?, ?, ?, ?, ?, ?, 'trust-books/statement.csv', 'statement.csv', 'CSV', 0, 0,
+              'IMPORTED', ?)
+          """
+              .formatted(schema),
+          statementId,
+          account,
+          periodStart,
+          periodEnd,
+          new BigDecimal(opening),
+          new BigDecimal(closing),
+          memberId);
+      return statementId;
+    }
+
+    /**
      * Adds an {@code UNMATCHED} line {@code lineNumber} to {@code statementId} (647A); the
      * statement's {@code line_count} and {@code period_end} follow. Returns the line id.
      */

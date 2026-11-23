@@ -1,0 +1,47 @@
+# Green — TTL anchored to the first store (CodeRabbit round 1 Major), PR head working tree, 2026-11-23
+# vitest run --reporter=verbose __tests__/trust/trust-idempotency-reload.test.tsx __tests__/trust/trust-idempotency-key.test.tsx __tests__/trust-investment-interest-reverse.test.tsx
+ ✓ trust/trust-idempotency-key.test.tsx > useIdempotencyKey (648B F-11) > keeps the same key when a resubmit follows a network failure 2ms
+ ✓ trust/trust-idempotency-key.test.tsx > useIdempotencyKey (648B F-11) > keeps the same key when the action reports the outcome unknown (a 5xx, in progress) 0ms
+ ✓ trust/trust-idempotency-key.test.tsx > useIdempotencyKey (648B F-11) > takes a new key after a success and after a definite refusal 0ms
+ ✓ trust/trust-idempotency-key.test.tsx > useIdempotencyKey (648B F-11) > takes a new key for a changed request, even after an unknown outcome 0ms
+ ✓ trust/trust-idempotency-key.test.tsx > useIdempotencyKey (648B F-11) > gives concurrent identical submits their own keys (each is an intent) 0ms
+ ✓ trust/trust-idempotency-key.test.tsx > useIdempotencyKey (648B F-11) > keeps one key store for the component's lifetime, with UUID keys 7ms
+ ✓ trust/trust-idempotency-key.test.tsx > outcome classification (648B F-11) > treats no response, a 5xx and the in-progress 409 as unknown; any other answer as definite 0ms
+ ✓ trust/trust-idempotency-key.test.tsx > trust write server action (648B F-11) > sends the key as the Idempotency-Key header 1ms
+ ✓ trust/trust-idempotency-key.test.tsx > trust write server action (648B F-11) > sends the interest reversal's reason in the body with the key (D-2) 0ms
+ ✓ trust/trust-idempotency-key.test.tsx > trust write server action (648B F-11) > flags an unknown outcome on a network failure and not on a refusal 0ms
+ ✓ trust/trust-idempotency-key.test.tsx > trust write server action (648B F-11) > shows the in-progress refusal's instruction and keeps the key (outcome unknown) 0ms
+ ✓ trust/trust-idempotency-key.test.tsx > trust write server action (648B F-11) > a resubmit through the hook after a lost response reuses the key on the wire 0ms
+ ✓ trust/trust-idempotency-reload.test.tsx > an unsettled Idempotency-Key survives a reload (§1.5) > a resubmit after a reload (a new key store, same storage, same content) reuses the key 2ms
+ ✓ trust/trust-idempotency-reload.test.tsx > an unsettled Idempotency-Key survives a reload (§1.5) > keeps the key while the first submit is still in flight (a reload mid-request) 0ms
+ ✓ trust/trust-idempotency-reload.test.tsx > an unsettled Idempotency-Key survives a reload (§1.5) > a success clears the stored key; the next identical submit is a new intent 0ms
+ ✓ trust/trust-idempotency-reload.test.tsx > an unsettled Idempotency-Key survives a reload (§1.5) > a definite refusal clears the stored key 0ms
+ ✓ trust/trust-idempotency-reload.test.tsx > an unsettled Idempotency-Key survives a reload (§1.5) > changed content gets a new key, and the first request's key stays for its own retry 0ms
+ ✓ trust/trust-idempotency-reload.test.tsx > an unsettled Idempotency-Key survives a reload (§1.5) > ignores and removes an entry older than the TTL (24 hours) 0ms
+ ✓ trust/trust-idempotency-reload.test.tsx > an unsettled Idempotency-Key survives a reload (§1.5) > the 24 h bound is anchored to the first store > a retry within 24 h (after a reload) keeps the original timestamp 0ms
+ ✓ trust/trust-idempotency-reload.test.tsx > an unsettled Idempotency-Key survives a reload (§1.5) > the 24 h bound is anchored to the first store > a retry within 24 h (same page, in-memory key) keeps the original timestamp 0ms
+ ✓ trust/trust-idempotency-reload.test.tsx > an unsettled Idempotency-Key survives a reload (§1.5) > the 24 h bound is anchored to the first store > retries cannot stretch the bound: 24 h after the first store the stored key expires 0ms
+ ✓ trust/trust-idempotency-reload.test.tsx > an unsettled Idempotency-Key survives a reload (§1.5) > the 24 h bound is anchored to the first store > the in-memory key expires on the same bound: a fresh key plus the hint 0ms
+ ✓ trust/trust-idempotency-reload.test.tsx > an unsettled Idempotency-Key survives a reload (§1.5) > falls back to in-memory keys when storage is unavailable (every access throws) 0ms
+ ✓ trust/trust-idempotency-reload.test.tsx > an unsettled Idempotency-Key survives a reload (§1.5) > uses the tab's sessionStorage by default 0ms
+ ✓ trust/trust-idempotency-reload.test.tsx > the unsettled-submit hint (§1.5) > useIdempotencyKey reports a stored unsettled key for its form's scope 11ms
+ ✓ trust/trust-idempotency-reload.test.tsx > the unsettled-submit hint (§1.5) > shows the hint in the payment dialog when its form has a stored unsettled key 56ms
+ ✓ trust/trust-idempotency-reload.test.tsx > the unsettled-submit hint (§1.5) > shows no hint when nothing is unsettled 24ms
+ ✓ trust-investment-interest-reverse.test.tsx > Reverse a section 86(4) interest entry (648B F-1) > offers an Interest entries control on a section 86(4) investment 36ms
+ ✓ trust-investment-interest-reverse.test.tsx > Reverse a section 86(4) interest entry (648B F-1) > does not offer it when the investment takes no interest entries 6ms
+ ✓ trust-investment-interest-reverse.test.tsx > Reverse a section 86(4) interest entry (648B F-1) > shows Reverse only on a POSTED bank-advice entry 56ms
+ ✓ trust/trust-idempotency-reload.test.tsx > the 'Submit as a new entry' escape action (§1.5 ruling) > appears on the in-progress 409; using it sends a fresh key and clears the stored one 99ms
+ ✓ trust/trust-idempotency-reload.test.tsx > the 'Submit as a new entry' escape action (§1.5 ruling) > appears when the form opens with a stored unsettled key; it never reuses that key 64ms
+ ✓ trust/trust-idempotency-reload.test.tsx > the 'Submit as a new entry' escape action (§1.5 ruling) > is never automatic: a plain resubmit after the 409 reuses the stuck key 64ms
+ ✓ trust/trust-idempotency-reload.test.tsx > the 'Submit as a new entry' escape action (§1.5 ruling) > is absent when nothing is unsettled, and after a definite refusal 51ms
+ ✓ trust-investment-interest-reverse.test.tsx > Reverse a section 86(4) interest entry (648B F-1) > asks for confirmation and a reason, then sends both and refreshes 126ms
+ ✓ trust-investment-interest-reverse.test.tsx > Reverse a section 86(4) interest entry (648B F-1) > requires a reason (D-2): an empty reason is refused in the form and nothing is sent 54ms
+ ✓ trust-investment-interest-reverse.test.tsx > Reverse a section 86(4) interest entry (648B F-1) > cancelling the confirmation reverses nothing 51ms
+ ✓ trust-investment-interest-reverse.test.tsx > Reverse a section 86(4) interest entry (648B F-1) > shows the backend detail on a refusal and does not refresh 76ms
+ ✓ trust-investment-interest-reverse.test.tsx > Reverse a section 86(4) interest entry (648B F-1) > disables the confirm button while the request is in flight 86ms
+ ✓ trust-investment-interest-reverse.test.tsx > Reverse a section 86(4) interest entry (648B F-1) > shows an error when the entries cannot be loaded 29ms
+ Test Files  3 passed (3)
+      Tests  40 passed (40)
+
+# Targeted trust set (25 files): 375 passed
+# pnpm lint: 0 errors (77 warnings, none on a changed line). pnpm typecheck: exit 0. pnpm format:check: clean.

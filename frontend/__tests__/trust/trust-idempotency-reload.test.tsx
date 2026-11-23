@@ -142,10 +142,88 @@ describe("an unsettled Idempotency-Key survives a reload (§1.5)", () => {
 
     now += 24 * 60 * 60 * 1000 + 1;
     const nextDay = createIdempotencyKeys(sequentialKeys("page2"), { storage, now: clock });
-    expect(nextDay.hasUnsettled(["recordPayment", "acc-1"])).toBe(false);
+    // Expired: removed from storage, never reused — and the hint still shows, since that submit's
+    // outcome was never known (CodeRabbit round 1 ruling)
+    expect(nextDay.hasUnsettled(["recordPayment", "acc-1"])).toBe(true);
     expect(storage.length).toBe(0);
     await nextDay.run(REQUEST, async (key) => (seen.push(key), { success: true }));
     expect(seen).toEqual(["page1-1", "page2-1"]);
+  });
+
+  // CodeRabbit round 1 (Major): the TTL is anchored to the key's FIRST store. A retry must never
+  // refresh it, or retries under 24 h apart keep a key alive past the backend's 7-day purge —
+  // after which the same key runs as a new request (a double post if the first one committed).
+  describe("the 24 h bound is anchored to the first store", () => {
+    const HOUR = 60 * 60 * 1000;
+    const T0 = Date.UTC(2026, 10, 23, 8, 0, 0);
+
+    function storedAt(storage: Storage): number[] {
+      const at: number[] = [];
+      for (let i = 0; i < storage.length; i++) {
+        at.push(JSON.parse(storage.getItem(storage.key(i)!)!).at);
+      }
+      return at;
+    }
+
+    it("a retry within 24 h (after a reload) keeps the original timestamp", async () => {
+      const storage = memoryStorage();
+      let now = T0;
+      const clock = () => now;
+      await createIdempotencyKeys(sequentialKeys("page1"), { storage, now: clock }).run(
+        REQUEST,
+        unknown
+      );
+      now = T0 + HOUR;
+      await createIdempotencyKeys(sequentialKeys("page2"), { storage, now: clock }).run(
+        REQUEST,
+        unknown
+      );
+      expect(storedAt(storage)).toEqual([T0]);
+    });
+
+    it("a retry within 24 h (same page, in-memory key) keeps the original timestamp", async () => {
+      const storage = memoryStorage();
+      let now = T0;
+      const keys = createIdempotencyKeys(sequentialKeys(), { storage, now: () => now });
+      await keys.run(REQUEST, unknown);
+      now = T0 + HOUR;
+      await keys.run(REQUEST, unknown);
+      expect(storedAt(storage)).toEqual([T0]);
+    });
+
+    it("retries cannot stretch the bound: 24 h after the first store the stored key expires", async () => {
+      const storage = memoryStorage();
+      let now = T0;
+      const clock = () => now;
+      const seen: string[] = [];
+      await createIdempotencyKeys(sequentialKeys("page1"), { storage, now: clock }).run(
+        REQUEST,
+        async (key) => (seen.push(key), unknown())
+      );
+      now = T0 + 12 * HOUR; // a retry half-way through, after a reload
+      await createIdempotencyKeys(sequentialKeys("page2"), { storage, now: clock }).run(
+        REQUEST,
+        async (key) => (seen.push(key), unknown())
+      );
+      now = T0 + 24 * HOUR + 1;
+      const page3 = createIdempotencyKeys(sequentialKeys("page3"), { storage, now: clock });
+      expect(page3.hasUnsettled(["recordPayment", "acc-1"])).toBe(true); // the hint still shows
+      await page3.run(REQUEST, async (key) => (seen.push(key), { success: true }));
+      expect(seen).toEqual(["page1-1", "page1-1", "page3-1"]);
+    });
+
+    it("the in-memory key expires on the same bound: a fresh key plus the hint", async () => {
+      let now = T0;
+      const seen: string[] = [];
+      const keys = createIdempotencyKeys(sequentialKeys(), { storage: null, now: () => now });
+      await keys.run(REQUEST, async (key) => (seen.push(key), unknown()));
+      now = T0 + 12 * HOUR;
+      await keys.run(REQUEST, async (key) => (seen.push(key), unknown()));
+      now = T0 + 24 * HOUR + 1;
+      expect(keys.hasUnsettled(["recordPayment", "acc-1"])).toBe(true);
+      await keys.run(REQUEST, async (key) => (seen.push(key), { success: true }));
+      expect(seen).toEqual(["key-1", "key-1", "key-2"]);
+    });
   });
 
   it("falls back to in-memory keys when storage is unavailable (every access throws)", async () => {

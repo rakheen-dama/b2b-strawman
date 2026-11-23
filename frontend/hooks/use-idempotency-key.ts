@@ -53,7 +53,11 @@ function defaultStorage(): Storage | null {
  * §1.5: while a request's outcome is unknown — from the moment it is sent until a definite answer
  * — its key is also kept in `storage` (default `sessionStorage`) under that identity, so a reload
  * (or a remount) followed by the same submit reuses it. A success or a definite refusal removes
- * the entry; an entry older than {@link UNSETTLED_KEY_TTL_MS} is ignored and removed. Every storage
+ * the entry. A key's life runs from its FIRST store: a retry that reuses it keeps the original
+ * time, never refreshes it, so retries cannot keep a key alive towards the backend's 7-day purge
+ * (after which the same key would run as a new request). Once older than {@link
+ * UNSETTLED_KEY_TTL_MS} — stored or in this page's memory alike — it is ignored and removed; the
+ * next submit takes a fresh key and the hint keeps showing until a definite answer. Every storage
  * access is guarded: when storage is unavailable the keys live in memory only, as in F-11. A
  * second device (or a second tab, whose `sessionStorage` is its own) is not covered.
  */
@@ -63,12 +67,19 @@ export function createIdempotencyKeys(
 ) {
   const storage = "storage" in options ? (options.storage ?? null) : defaultStorage();
   const now = options.now ?? Date.now;
-  // Requests whose last submit ended unknown, by their serialised form → the key to reuse.
-  const unsettled = new Map<string, string>();
+  // Requests whose last submit ended unknown, by their serialised form → the key to reuse and
+  // when it was FIRST stored (the TTL's anchor; never refreshed by a retry — CodeRabbit round 1).
+  const unsettled = new Map<string, StoredKey>();
   // Requests of this store in flight: a concurrent identical submit is its own intent.
   const inFlight = new Set<string>();
+  // Requests whose unsettled key expired here (memory or storage): the next submit takes a fresh
+  // key, and the hint keeps showing until a definite answer or the escape action.
+  const expired = new Set<string>();
 
-  function storedKey(id: string): string | undefined {
+  const isExpired = (entry: StoredKey) => now() - entry.at > UNSETTLED_KEY_TTL_MS;
+
+  /** The stored entry for `id`, or undefined; an expired or malformed one is removed. */
+  function storedEntry(id: string): StoredKey | undefined {
     try {
       const raw = storage?.getItem(STORAGE_PREFIX + id);
       if (raw == null) return undefined;
@@ -77,19 +88,31 @@ export function createIdempotencyKeys(
         storage?.removeItem(STORAGE_PREFIX + id);
         return undefined;
       }
-      if (now() - entry.at > UNSETTLED_KEY_TTL_MS) {
+      if (isExpired(entry as StoredKey)) {
         storage?.removeItem(STORAGE_PREFIX + id);
+        expired.add(id);
         return undefined;
       }
-      return entry.key;
+      return { key: entry.key, at: entry.at };
     } catch {
       return undefined;
     }
   }
 
-  function store(id: string, key: string) {
+  /** This page's unsettled entry for `id`, or undefined; an expired one is dropped. */
+  function memoryEntry(id: string): StoredKey | undefined {
+    const entry = unsettled.get(id);
+    if (entry && isExpired(entry)) {
+      unsettled.delete(id);
+      expired.add(id);
+      return undefined;
+    }
+    return entry;
+  }
+
+  function store(id: string, entry: StoredKey) {
     try {
-      storage?.setItem(STORAGE_PREFIX + id, JSON.stringify({ key, at: now() } satisfies StoredKey));
+      storage?.setItem(STORAGE_PREFIX + id, JSON.stringify(entry satisfies StoredKey));
     } catch {
       // storage full or blocked: the in-memory map still holds the key for this page
     }
@@ -98,12 +121,13 @@ export function createIdempotencyKeys(
   /** Removes the entry once settled — only if it is still this submit's key. */
   function settle(id: string, key: string) {
     try {
-      if (storedKey(id) === key) {
+      if (storedEntry(id)?.key === key) {
         storage?.removeItem(STORAGE_PREFIX + id);
       }
     } catch {
       // ignore: the TTL ends a stale entry
     }
+    expired.delete(id); // a definite answer: nothing is left unknown for this request
   }
 
   async function run<T extends TrustWriteOutcome>(
@@ -111,37 +135,45 @@ export function createIdempotencyKeys(
     call: (idempotencyKey: string) => Promise<T>
   ): Promise<T> {
     const id = JSON.stringify(request) ?? "";
-    const key = unsettled.get(id) ?? (inFlight.has(id) ? undefined : storedKey(id)) ?? newKey();
+    // A reused key keeps the time it was first stored: the 24 h bound runs from the first submit,
+    // whatever the retries (the backend purges keys 7 days after their first claim).
+    const reused = memoryEntry(id) ?? (inFlight.has(id) ? undefined : storedEntry(id));
+    const entry: StoredKey = reused ?? { key: newKey(), at: now() };
     unsettled.delete(id); // in flight: a concurrent identical submit is its own intent
     inFlight.add(id);
-    store(id, key); // unknown until answered: a reload mid-request keeps the key
+    store(id, entry); // unknown until answered: a reload mid-request keeps the key
     let result: T;
     try {
-      result = await call(key);
+      result = await call(entry.key);
     } catch (error) {
-      unsettled.set(id, key);
+      unsettled.set(id, entry);
       throw error;
     } finally {
       inFlight.delete(id);
     }
     if (!result.success && result.outcomeUnknown) {
-      unsettled.set(id, key);
+      unsettled.set(id, entry);
     } else {
-      settle(id, key);
+      settle(id, entry.key);
     }
     return result;
   }
 
   /**
    * Whether a request starting with `scope` (e.g. `["recordPayment", accountId]`, or a whole
-   * request) has a stored unsettled key — the §1.5 hint. Expired entries are removed on the way.
+   * request) has an unsettled key — in this page or stored — or had one that expired here
+   * without a definite answer: the §1.5 hint. Expired entries are removed on the way.
    */
   function hasUnsettled(scope: readonly unknown[]): boolean {
     const inScope = scopeMatcher(scope);
-    if (Array.from(unsettled.keys()).some(inScope)) return true; // this page (storage or not)
-    return storedIds()
-      .filter(inScope)
-      .some((id) => storedKey(id) !== undefined);
+    const live =
+      Array.from(unsettled.keys())
+        .filter(inScope)
+        .some((id) => memoryEntry(id) !== undefined) ||
+      storedIds()
+        .filter(inScope)
+        .some((id) => storedEntry(id) !== undefined);
+    return live || Array.from(expired).some(inScope);
   }
 
   /**
@@ -154,6 +186,9 @@ export function createIdempotencyKeys(
     const inScope = scopeMatcher(scope);
     for (const id of Array.from(unsettled.keys())) {
       if (inScope(id)) unsettled.delete(id);
+    }
+    for (const id of Array.from(expired)) {
+      if (inScope(id)) expired.delete(id);
     }
     for (const id of storedIds().filter(inScope)) {
       try {

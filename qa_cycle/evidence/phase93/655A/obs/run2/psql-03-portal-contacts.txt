@@ -1,0 +1,28 @@
+-- BEFORE Create portal access (2026-11-23T23:09:10Z)
+ portal_contacts_for_batch_clients 
+-----------------------------------
+                                 0
+(1 row)
+
+ all_portal_contacts 
+---------------------
+                   1
+(1 row)
+
+-- AFTER Create portal access (2026-11-23T23:09:47Z)
+ portal_contacts_for_batch_clients 
+-----------------------------------
+                                15
+(1 row)
+
+ all_portal_contacts 
+---------------------
+                  16
+(1 row)
+
+-- detail: contacts for the batch's clients (role/status, email equals the client's)
+  role   | status | count | email_matches_client 
+---------+--------+-------+----------------------
+ GENERAL | ACTIVE |    15 |                   15
+(1 row)
+

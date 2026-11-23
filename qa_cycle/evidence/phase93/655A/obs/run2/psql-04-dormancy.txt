@@ -1,0 +1,14 @@
+-- activity rows feeding DORMANCY_SQL for the 15 imported clients (read-only)
+-- query: select (select count(*) from tenant_7d218705360b.customer_projects cp join tenant_7d218705360b.customers c on c.id=cp.customer_id where c.take_on_batch_id='3e49c313-5008-46e7-9f1c-c39e34e27c5c') as matter_links, (select count(*) from tenant_7d218705360b.documents d join tenant_7d218705360b.customers c on c.id=d.customer_id where c.take_on_batch_id='3e49c313-5008-46e7-9f1c-c39e34e27c5c') as documents, (select count(*) from tenant_7d218705360b.invoices i join tenant_7d218705360b.customers c on c.id=i.customer_id where c.take_on_batch_id='3e49c313-5008-46e7-9f1c-c39e34e27c5c') as invoices, (select count(*) from tenant_7d218705360b.customers where take_on_batch_id='3e49c313-5008-46e7-9f1c-c39e34e27c5c' and taken_on_at is not null) as with_taken_on_at
+ matter_links | documents | invoices | with_taken_on_at 
+--------------+-----------+----------+------------------
+            0 |         0 |        0 |               15
+(1 row)
+
+-- lifecycle after the dormancy check
+-- query: select lifecycle_status, count(*) from tenant_7d218705360b.customers where take_on_batch_id='3e49c313-5008-46e7-9f1c-c39e34e27c5c' group by 1
+ lifecycle_status | count 
+------------------+-------
+ ACTIVE           |    15
+(1 row)
+

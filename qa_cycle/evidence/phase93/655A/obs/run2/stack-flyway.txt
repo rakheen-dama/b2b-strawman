@@ -1,0 +1,5 @@
+ installed_rank | version |         description         | success 
+----------------+---------+-----------------------------+---------
+             34 | 34      | phase93 client take on fica | t
+(1 row)
+

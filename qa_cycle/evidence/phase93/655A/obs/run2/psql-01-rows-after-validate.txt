@@ -1,0 +1,38 @@
+-- rows after validate, batch 3e49c313-5008-46e7-9f1c-c39e34e27c5c (read-only)
+-- query: select row_number, status, duplicate_of_id is not null as dup, duplicate_of_id, coalesce(mapped_values->>'riskRating','(absent)') as risk_mapped, raw_values->>'Risk rating' as risk_raw, errors::text from tenant_7d218705360b.take_on_rows where batch_id='3e49c313-5008-46e7-9f1c-c39e34e27c5c' order by row_number
+ row_number |  status   | dup |           duplicate_of_id            | risk_mapped | risk_raw  |                                                       errors                                                        
+------------+-----------+-----+--------------------------------------+-------------+-----------+---------------------------------------------------------------------------------------------------------------------
+          2 | VALIDATED | f   |                                      | LOW         | LOW       | []
+          3 | VALIDATED | f   |                                      | MEDIUM      | MEDIUM    | []
+          4 | VALIDATED | f   |                                      | HIGH        | HIGH      | []
+          5 | VALIDATED | f   |                                      | UNRATED     | UNRATED   | []
+          6 | VALIDATED | f   |                                      | MEDIUM      | MEDIUM    | []
+          7 | VALIDATED | f   |                                      | LOW         | LOW       | []
+          8 | VALIDATED | f   |                                      | MEDIUM      | MEDIUM    | []
+          9 | VALIDATED | f   |                                      | LOW         | LOW       | []
+         10 | VALIDATED | f   |                                      | LOW         | LOW       | []
+         11 | VALIDATED | f   |                                      | MEDIUM      | MEDIUM    | []
+         12 | VALIDATED | f   |                                      | LOW         | LOW       | []
+         13 | VALIDATED | f   |                                      | LOW         | LOW       | []
+         14 | VALIDATED | f   |                                      | MEDIUM      | MEDIUM    | []
+         15 | VALIDATED | f   |                                      | LOW         | LOW       | []
+         16 | VALIDATED | f   |                                      | LOW         | LOW       | []
+         17 | ERROR     | f   |                                      | LOW         | LOW       | [{"code": "DUPLICATE_IN_FILE", "field": "email", "message": "Duplicate of row 2 in this file"}]
+         18 | VALIDATED | t   | 77c7b9cf-10ce-4993-8298-1dcb3523772f | LOW         | LOW       | []
+         19 | ERROR     | f   |                                      | (absent)    | VERY_HIGH | [{"code": "ENUM_INVALID", "field": "riskRating", "message": "VERY_HIGH is not one of: Low, Medium, High, Unrated"}]
+         20 | ERROR     | f   |                                      | LOW         | LOW       | [{"code": "REQUIRED", "field": "name", "message": "Client name is required."}]
+         21 | ERROR     | f   |                                      | LOW         | LOW       | [{"code": "REQUIRED", "field": "email", "message": "An email address is required to create a client in Kazi"}]
+(20 rows)
+
+-- batch counters
+  status   | total_rows | valid_rows | error_rows | duplicate_rows | block_count 
+-----------+------------+------------+------------+----------------+-------------
+ VALIDATED |         20 |         16 |          4 |              1 |           0
+(1 row)
+
+-- the client a row was matched to
+                  id                  |   name    |          email           
+--------------------------------------+-----------+--------------------------
+ 77c7b9cf-10ce-4993-8298-1dcb3523772f | Acme Corp | contact@acme.example.com
+(1 row)
+

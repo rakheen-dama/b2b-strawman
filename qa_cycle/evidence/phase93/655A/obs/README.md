@@ -1,5 +1,40 @@
 # 655A OBS (task 655.10): clients take-on — attest, commit, results, portal access, dormancy
 
+## Run 2: head `493c4fe68` (after the OBS-655A-1 / OBS-655A-2 fixes), evidence in `run2/`
+
+- **Stack:** a fresh E2E mock-auth stack (`e2e-down.sh && e2e-up.sh`) built from worktree-epic-655A @ `493c4fe68` (`run2/stack-head.txt`, `run2/stack-up.log`), after the E2E-LEGAL re-run on a separate stack (`../e2e/README.md`, run 2). Backend container created 2026-11-23T23:06:07Z. Tenant `tenant_7d218705360b`, Flyway V34 (`run2/stack-flyway.txt`).
+- **Script:** `obs.cjs`, run as `OUT_DIR=run2 STEP=… node obs.cjs`. Two changes from run 1. First, `OUT_DIR` sends screenshots, `state.json`, `obs-log.txt` and the CSV download to `run2/`. Second, step a also reads the "Duplicate — will be skipped" filter and records `[fix checks]`: row 18's status badge (`take-on-row-status-18`), its duplicate message (`take-on-row-duplicate-18`), the filter's row numbers, the Duplicates card, and row 19's risk cell (column text and `take-on-row-19-riskRating`) plus its message. Steps 0, b–g are unchanged. Run 1 used the same steps without these additions.
+- **Fixture, browser, rules:** same as run 1. Same `fixtures/clients-20.csv`, headless Chromium on node v20.11.1, read-only `psql`, Mailpit API only, every product action in the browser. The canary list is the same `canaries.txt` (104 strings).
+- **Window:** 2026-11-23T23:06:46Z (`run2/obs-window-start.txt`, before step 0) → 23:10:42Z (`run2/obs-window-end.txt`). One pass per step, no re-runs. `run2/obs-log.txt` is the full log in step order.
+
+### Run 2 verdict: every check PASSES except g, so this is not a blanket PASS. Both fixed defects (a1, a2) are observed fixed. Check g is the same as run 1: the dormancy check is OBSERVED-AS-NOT-CANDIDATES and the job run is DEFERRED.
+
+| Check | Verdict (`493c4fe68`) | Figures / observation | Evidence (`run2/`) |
+|---|---|---|---|
+| a. Upload → map → validate | **PASS** | Cards: Total 20 · Valid 16 · Errors 4 · Duplicates 1 · Blocks 0. Table: All 20, Valid 16, Duplicate — will be skipped **1**, Error 4. All five comparisons are true: `{total, valid, error, duplicate, duplicateFilter}`. Filter options: All statuses / Pending / Valid / **Duplicate — will be skipped** / Error. Messages are the same as run 1 (rows 17, 19, 20, 21). Mapping auto-suggested all 16 columns. psql: batch VALIDATED 20/16/4/dup 1/blocks 0. | `a-01`, `a-03`, `a-04`, `a-05-filter-{valid,duplicate,error}`, `a-06`, `a-07`, `psql-01-rows-after-validate.txt` |
+| a1. **OBS-655A-1 fixed** | **PASS** | Row 18 (`Acme Corporation`, `Contact@acme.example.com`) has the status badge "**Duplicate — will be skipped**" (amber) and the message "**Matches a client already in Kazi**". No other row has that badge. The "Duplicate — will be skipped" filter lists exactly **one** row, row 18, and the Duplicates card says **1**. psql: row 18 is VALIDATED with `duplicate_of_id` = `77c7b9cf…`, which is Acme Corp `contact@acme.example.com`. After the commit the row reads "Duplicate — skipped" (f-02). | `a-05-filter-duplicate.png`, `a-06-acme-duplicate-row.png`, log `[fix checks]` (`pass1: true`) |
+| a2. **OBS-655A-2 fixed** | **PASS** | Row 19 (`Lindiwe Mabaso`, file value `VERY_HIGH`): the Risk rating cell shows "**—**" (both the column text and `take-on-row-19-riskRating`), not "Not risk-rated". The message is "VERY_HIGH is not one of: Low, Medium, High, Unrated". psql: `mapped_values.riskRating` is **absent** and `raw_values` = `VERY_HIGH`; in run 1 the mapped value was `UNRATED`. Row 5 (`Naledi Khoza`, file value `UNRATED`) still shows "Not risk-rated", which is correct. | `a-07-row19-risk.png`, `a-05-filter-error.png`, log `[fix checks]` (`pass2: true`), `psql-01` |
+| b. Attestation (Alice) | **PASS** | The statement is FICA-ATTEST-v1, "performed by **E2E Test Organization**". Batch default: CDD records location = Archive room B, Sandton office. The FICA summary covers "the 15 clients to be created": Natural person 12 · Company 1 · CC 1 · Trust 1; Low 8 · Medium 5 · High 1 · Not risk-rated 1; BO Done 3 · N/A 12; Screened clear 13 · match 1 · not screened 1; SoF Done 10 · Not required 5. These are the same figures as run 1, and the risk counts are unchanged because row 19 is ERROR and is not counted. Attest is disabled until the box is ticked (true → false). After attesting: "Attested by Alice Owner (Owner) on 24 Nov 2026, 01:07." with Commit and Withdraw. | `b-01..03`, log `[statement]`, `[fica summary]` |
+| b′. Carol (member) cannot attest | **PASS** | The deep link gives "You don't have access to Take-on — showing Templates instead." No wizard, 0 Attest buttons, 0 Commit buttons. | `b-04-carol-deeplink.png` |
+| c. Commit, progress, results; Mailpit | **PASS** | Mailpit **2** before the commit and **2** after (+5 s). Dialog: "Commit clients take-on?" / "15 records will be created, and 1 duplicate skipped. This cannot be undone.", which equals the outcome. Progress showed "Committing… 0 of 16" (+76 ms), then Completed. commit_started 23:07:54.74 → completed 23:07:56.21 (~1.5 s, under the poll interval). Results: **Created 15 · Duplicate — skipped 1 · Failed 0**. | `c-01..03`, log `[progress]`, `[results]` |
+| d. Clients ACTIVE | **PASS** | Client list: 16 rows. Karoo Sunrise Family Trust (`384c16d0…`) and Naledi Khoza (`5d0e8282…`) show "Active" in the list and on detail. psql: 15 `customers` with `take_on_batch_id` = batch, all ACTIVE with `taken_on_at`. Rows: CREATED 15, SKIPPED_DUPLICATE 1 (row 18 → Acme `77c7b9cf…`), ERROR 4. The batch is COMPLETED with created 15 / skipped 1 / failed 0. | `d-01..05`, `psql-02-customers-after-commit.txt` |
+| e. Portal access; Mailpit | **PASS** | Before: **0** portal contacts for the batch's clients (1 in the tenant). After clicking: "15 portal contacts created". psql: **15** (16 in the tenant), all GENERAL / ACTIVE, and 15/15 have the client's email. Mailpit **2 → 2** (+5 s). | `e-01`, `e-02`, `psql-03-portal-contacts.txt` |
+| f. Result CSV | **PASS** | `result-download/take-on-result-3e49c313-….csv` has a UTF-8 BOM (`ef bb bf`), the header `Row, Previous system ID, Status, Kazi record ID, Message`, and 20 rows: 15 Created, 1 "Duplicate — skipped" → `77c7b9cf…` (Acme), 4 Error with the same messages as the table. Row 5 → `5d0e8282…` and row 8 → `384c16d0…` equal the client URLs from step d. The post-commit Validation table shows the same outcomes, and row 19's risk cell is still "—". | `result-download/`, `f-01`, `f-02` |
+| g. Dormancy | **OBSERVED-AS-NOT-CANDIDATES** for the check. The job run is **DEFERRED** | "Check for Dormant Clients" → "No dormant clients detected". Backend: "Dormancy check completed: threshold=90 days, candidates=0" at 23:10:12Z. The 15 imported clients have 0 matter links, 0 documents, 0 invoices and 15 `taken_on_at` (psql), and all 15 are still ACTIVE afterwards. Job run: still no product trigger. `public.job_queue` has only accounting_sync_drain 7, automation_poll_triggers 3 and take_on_drain 1, with no `dormancy_check`. The fix commit touched no scheduler or job code, so run 1's reasoning stands. | `g-01`, `g-02`, `psql-04-dormancy.txt`, `psql-05-job-queue.txt` |
+| h. No PII in audit | **PASS** | 38 audit rows in the window: customer.created 15, customer.fica_attested 15, and one each of takeon.batch.created / source.uploaded / source.mapped / batch.validated / batch.attested / commit_requested / batch.committed / portal_contacts.created. 104 fixture canaries: **0 hits** in the scoped rows and **0** across all 38 rows. Positive controls: "Alice Owner" was found 38×, and the same canary list hits all 20 data lines of the fixture. | `psql-06-audit-events.txt`, `audit-canary-grep.txt` |
+| i. Backend log | **PASS** | 29 lines in the window, all INFO: **0 WARN / 0 ERROR**, **0** canary hits. Messages carry ids only, e.g. "Take-on batch 3e49c313… committed: created=15, skipped=1, failed=0" and "Created portal contact <id> for customer <id>". The frontend container logged 0 lines in the window. | `backend-log-obs-window.txt`, `backend-log-warn-error.txt` (empty), `frontend-log-warn-error.txt` (empty) |
+
+Browser console in run 2: 1 error in the whole run. It is the known mock-auth `MockAuthContextProvider: failed to fetch userinfo` during step d's login, the same as run 1, and is not a 655A error.
+
+Screenshot note: `a-06` and `a-07` are full-page captures taken after scrolling the row into view. The sticky app header is drawn over the middle of the table there, which is a capture artefact. The authoritative values are the DOM reads in `run2/obs-log.txt` (`[rows (All statuses)]`, `[duplicate-filter rows]`, `[fix checks]`).
+
+No new defects in run 2.
+
+---
+
+## Run 1: head `d2738e819`, evidence in this directory (top level)
+
+
 - **Stack:** E2E mock-auth stack built fresh (`e2e-down.sh && e2e-up.sh`) from worktree-epic-655A @ `d2738e819` (PR #1850), after the E2E-LEGAL runs on a separate stack. Backend container created 2026-11-23T22:30:54Z. Tenant `tenant_7d218705360b`, Flyway V34 applied.
 - **Browser:** headless Chromium from `frontend/node_modules/@playwright/test`, node v20.11.1, driven by `obs.cjs` (included as last run; `STEP=0|a|b|carol|c|d|e|f|g node obs.cjs`). Sign-in via `/mock-login`. Alice (owner) unless stated.
 - **Database:** read-only `psql` `select`s only (`psql-0*.txt`). No SQL writes.
@@ -11,7 +46,7 @@
   - Bad rows: row 19 risk rating `VERY_HIGH`; row 20 missing name.
   - No email: row 21. UNRATED: row 5 `Naledi Khoza`.
 
-## Verdict
+### Run 1 verdict
 
 **Not a clean PASS.** 8 checks PASS. Check (a) has one sub-check that FAILs: a row matched to an existing client cannot be told apart in the row table (OBS-655A-1, in scope, reported). Check (g) is OBSERVED-AS-NOT-CANDIDATES for the dormancy check, and the job run itself is DEFERRED.
 
@@ -30,7 +65,7 @@
 
 Browser console: 1 error in the whole run. It was the known mock-auth `MockAuthContextProvider: failed to fetch userinfo` during step d's login, which is not a 655A error.
 
-## In-scope findings (reported to the orchestrator, not fixed)
+### Run 1 in-scope findings (reported to the orchestrator; both fixed in `493c4fe68`, see run 2 above)
 
 ### OBS-655A-1: a row matched to an existing client cannot be seen as a duplicate before the commit
 
@@ -49,6 +84,6 @@ Browser console: 1 error in the whole run. It was the known mock-auth `MockAuthC
 - **Impact:** the row is ERROR, so it is never committed and is not counted in the FICA summary, which only counts VALIDATED rows. The cell still contradicts the file.
 - **Evidence:** `a-04-validation-all.png`, `a-05-filter-error.png`.
 
-## Noted, not a defect
+### Run 1: noted, not a defect
 
 - Imported clients show FICA "Not started" on the client list and detail. This is the designed 655A → 655B intermediate state (P-19): the projector learns `ATTESTED` in 655B.

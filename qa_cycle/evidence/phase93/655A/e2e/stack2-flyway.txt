@@ -1,0 +1,7 @@
+ installed_rank | version |         description         | success 
+----------------+---------+-----------------------------+---------
+             34 | 34      | phase93 client take on fica | t
+             33 | 33      | phase93 trust take on       | t
+             32 | 32      | phase93 take on core        | t
+(3 rows)
+

@@ -1,5 +1,6 @@
 // 655A OBS — the clients take-on commit engine observed in a real browser (e2e mock stack :3001).
-// Usage: STEP=0|a|b|carol|c|d|e|f|g node obs.cjs   (state shared via state.json in this directory)
+// Usage: [OUT_DIR=run2] STEP=0|a|b|carol|c|d|e|f|g node obs.cjs   (state shared via state.json in the output dir;
+//        OUT_DIR is relative to this directory, default = this directory, i.e. the first run)
 //   0      read the seeded client list (pick an existing client's email for the duplicate row)
 //   a      upload -> map (CDD records location default) -> validate; cards vs row table
 //   b      attestation as Alice (statement, FICA summary, checkbox gate, attest)
@@ -16,7 +17,9 @@ const BASE = 'http://localhost:3001';
 const SLUG = 'e2e-test-org';
 const STEP = process.env.STEP;
 const FIXTURE = `${D}/fixtures/clients-20.csv`;
-const STATE_FILE = `${D}/state.json`;
+const OUT = process.env.OUT_DIR ? `${D}/${process.env.OUT_DIR}` : D;
+fs.mkdirSync(OUT, { recursive: true });
+const STATE_FILE = `${OUT}/state.json`;
 const state = fs.existsSync(STATE_FILE) ? JSON.parse(fs.readFileSync(STATE_FILE, 'utf8')) : {};
 const saveState = () => fs.writeFileSync(STATE_FILE, JSON.stringify(state, null, 2));
 const log = [];
@@ -24,7 +27,7 @@ const L = (...a) => { const s = a.map(x => (typeof x === 'string' ? x : JSON.str
 
 let page, currentLabel = 'init';
 const consoleErrors = [];
-const shot = async n => { await page.screenshot({ path: `${D}/${n}.png`, fullPage: true }); L('[shot]', `${n}.png`); };
+const shot = async n => { await page.screenshot({ path: `${OUT}/${n}.png`, fullPage: true }); L('[shot]', `${n}.png`); };
 
 async function mailpitTotal() {
   const r = await fetch('http://localhost:8026/api/v1/messages?limit=1');
@@ -175,21 +178,50 @@ async function stepA() {
   allRows.forEach(r => L('   ', r.join(' | ')));
   await shot('a-04-validation-all');
   L('[status filter options]', await filterOptions());
-  for (const [label, key] of [['Valid', 'valid'], ['Error', 'error']]) {
+  const DUP_LABEL = 'Duplicate — will be skipped';
+  let dupFilterRows = [];
+  for (const [label, key] of [['Valid', 'valid'], [DUP_LABEL, 'duplicate'], ['Error', 'error']]) {
     await selectOption(page.getByTestId('take-on-filter-status'), label);
     table[key] = await countRows();
     if (key === 'error') { L('[error rows]'); (await readRows()).forEach(r => L('   ', r.join(' | '))); }
+    if (key === 'duplicate') { dupFilterRows = await readRows(); L('[duplicate-filter rows]'); dupFilterRows.forEach(r => L('   ', r.join(' | '))); }
     await shot(`a-05-filter-${key}`);
   }
   await selectOption(page.getByTestId('take-on-filter-status'), 'All statuses');
   await countRows();
   // Duplicates = rows whose messages name an existing client (duplicate_of_id); count from the table.
-  const dupRows = allRows.filter(r => /already exists|duplicate of an existing|matches an existing/i.test(r.join(' ')));
+  const dupRows = allRows.filter(r => /already exists|duplicate of an existing|matches an? (client|record) already/i.test(r.join(' ')));
   table.duplicateFromMessages = dupRows.length;
   L('[table counts]', table);
-  const eq = { total: cards.total === table.all, valid: cards.valid === table.valid, error: cards.error === table.error, duplicate: cards.duplicate === table.duplicateFromMessages };
+  const eq = { total: cards.total === table.all, valid: cards.valid === table.valid, error: cards.error === table.error, duplicate: cards.duplicate === table.duplicateFromMessages, duplicateFilter: cards.duplicate === table.duplicate };
   L('[cards==table]', eq);
-  state.a = { cards, table, eq, allRows }; saveState();
+  // OBS-655A-1 / OBS-655A-2 fix checks (re-run @493c4fe).
+  const statusText = async n => (await page.getByTestId(`take-on-row-status-${n}`).innerText()).trim();
+  const dupMsg = async n => (await page.getByTestId(`take-on-row-duplicate-${n}`).innerText().catch(() => null));
+  const acme = allRows.find(r => r[2] === 'Acme Corporation');
+  const row19 = allRows.find(r => r[0] === '19');
+  const fix = {
+    acmeStatus: await statusText(18),
+    acmeDuplicateMessage: await dupMsg(18),
+    acmeRowText: acme && acme.join(' | '),
+    otherRowsWithDuplicateBadge: allRows.filter(r => r.includes(DUP_LABEL) && r[0] !== '18').map(r => r[0]),
+    duplicateFilterRowNumbers: dupFilterRows.map(r => r[0]),
+    duplicateCard: cards.duplicate,
+    row19Risk: row19 && row19[5],
+    row19RiskCellByTestId: (await page.getByTestId('take-on-row-19-riskRating').innerText().catch(() => null)),
+    row19Messages: row19 && row19[row19.length - 1],
+    row19ShowsNotRiskRated: !!row19 && row19.join(' | ').includes('Not risk-rated'),
+  };
+  fix.pass1 = fix.acmeStatus === DUP_LABEL && fix.acmeDuplicateMessage === 'Matches a client already in Kazi' && fix.otherRowsWithDuplicateBadge.length === 0
+    && fix.duplicateFilterRowNumbers.length === 1 && fix.duplicateFilterRowNumbers[0] === '18' && fix.duplicateCard === 1;
+  fix.pass2 = !fix.row19ShowsNotRiskRated && fix.row19Risk === '—' && (fix.row19RiskCellByTestId || '').trim() === '—' && /VERY_HIGH/.test(fix.row19Messages || '');
+  L('[fix checks]', fix);
+  // The Acme row and row 19 scrolled into view, so the Status / Messages columns are in the screenshot.
+  await page.getByTestId('take-on-row-duplicate-18').scrollIntoViewIfNeeded().catch(() => {});
+  await shot('a-06-acme-duplicate-row');
+  await page.getByTestId('take-on-row-status-19').scrollIntoViewIfNeeded().catch(() => {});
+  await shot('a-07-row19-risk');
+  state.a = { cards, table, eq, fix, allRows, dupFilterRows }; saveState();
 }
 
 async function stepB() {
@@ -338,8 +370,8 @@ async function stepF() {
   await page.getByTestId('take-on-result-download').waitFor({ timeout: 60000 });
   const [download] = await Promise.all([page.waitForEvent('download', { timeout: 60000 }), page.getByTestId('take-on-result-download').click()]);
   const name = download.suggestedFilename();
-  const out = `${D}/result-download/${name}`;
-  fs.mkdirSync(`${D}/result-download`, { recursive: true });
+  const out = `${OUT}/result-download/${name}`;
+  fs.mkdirSync(`${OUT}/result-download`, { recursive: true });
   await download.saveAs(out);
   L('[downloaded]', name, fs.statSync(out).size, 'bytes');
   await shot('f-01-after-download');
@@ -390,6 +422,6 @@ async function stepG() {
     process.exitCode = 1;
   }
   L(`[step ${STEP}] end`, new Date().toISOString(), 'console/page errors:', consoleErrors.length);
-  fs.appendFileSync(`${D}/obs-log.txt`, log.join('\n') + '\n');
+  fs.appendFileSync(`${OUT}/obs-log.txt`, log.join('\n') + '\n');
   await browser.close();
 })();

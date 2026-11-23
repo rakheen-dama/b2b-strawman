@@ -1,0 +1,8 @@
+-- query: select job_type, status, count(*) from public.job_queue group by 1,2 order by 1
+         job_type         |  status   | count 
+--------------------------+-----------+-------
+ accounting_sync_drain    | COMPLETED |     7
+ automation_poll_triggers | COMPLETED |     3
+ take_on_drain            | COMPLETED |     1
+(3 rows)
+

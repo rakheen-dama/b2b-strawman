@@ -1,7 +1,7 @@
 {
-  "commit": "05812c045",
-  "command": "cd frontend && rm -rf .next && pnpm install --frozen-lockfile && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (node v20.11.1, worktree-epic-657A, PR #1847)",
+  "commit": "d00b2ec64",
+  "command": "cd frontend && pnpm run lint && pnpm run format:check && pnpm run build && pnpm test (wt-f657a1, PR #1848, nvm node v20.11.1)",
   "exit": 0,
-  "ts": "2026-11-23T15:43:12Z",
-  "summary": "PR #1847 @05812c045 — lint 0 errors, typecheck ok, format clean, vitest 491 files / 4713 passed / 2 skipped, build ok"
+  "ts": "2026-11-23T17:51:59Z",
+  "summary": "PR #1848 @d00b2ec64 \u2014 lint 0 errors (77 pre-existing warnings), format clean, build ok, vitest 491 files / 4717 passed / 2 skipped"
 }

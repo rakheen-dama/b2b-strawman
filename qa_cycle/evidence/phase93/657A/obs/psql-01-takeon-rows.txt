@@ -1,0 +1,46 @@
+select schema_name, external_org_id from public.org_schema_mapping
+     schema_name     | external_org_id 
+---------------------+-----------------
+ tenant_7d218705360b | e2e-test-org
+(1 row)
+
+select count(*) as takeon_rows from tenant_7d218705360b.trust_transactions where transaction_type like 'TAKEON_%'
+ takeon_rows 
+-------------
+           0
+(1 row)
+
+select count(*) as total_rows, count(*) filter (where cleared_at_cutover) as cleared_true, count(*) filter (where take_on_batch_id is not null) as with_batch from tenant_7d218705360b.trust_transactions
+ total_rows | cleared_true | with_batch 
+------------+--------------+------------
+         31 |            0 |          0
+(1 row)
+
+select transaction_type, status, count(*) from tenant_7d218705360b.trust_transactions group by 1,2 order by 1,2
+   transaction_type   |  status  | count 
+----------------------+----------+-------
+ BANK_CHARGE          | RECORDED |     2
+ CHARGE_REFUND        | RECORDED |     1
+ DEPOSIT              | RECORDED |     2
+ DEPOSIT              | REVERSED |     1
+ FEE_TRANSFER         | APPROVED |     1
+ FUND_INTEREST        | RECORDED |     1
+ FUND_INV_SHARE       | RECORDED |     1
+ FUND_SWEEP           | RECORDED |     2
+ INV_INTEREST         | RECORDED |     2
+ INV_PLACE            | APPROVED |     2
+ INV_RECEIVE          | APPROVED |     2
+ INV_RETURN           | RECORDED |     1
+ INV_WITHDRAW         | RECORDED |     1
+ PAYMENT              | APPROVED |     2
+ PAYMENT              | REVERSED |     1
+ REFUND               | APPROVED |     1
+ REVERSAL             | APPROVED |     1
+ REVERSAL             | RECORDED |     1
+ TRANSFER_IN          | RECORDED |     1
+ TRANSFER_OUT         | RECORDED |     1
+ UNIDENTIFIED_DEPOSIT | RECORDED |     2
+ UNIDENT_ALLOC_IN     | APPROVED |     1
+ UNIDENT_ALLOC_OUT    | APPROVED |     1
+(23 rows)
+

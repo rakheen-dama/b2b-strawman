@@ -28,7 +28,9 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
    * disbursement ({@code legal_disbursements .trust_transaction_id}, index {@code
    * idx_legal_disbursements_trust_tx}) so the disbursement trust-link picker cannot offer a used
    * payment. JPQL (not native) so the callers' Pageable {@code sort=transactionDate,desc} resolves
-   * against the entity property.
+   * against the entity property. Rows of one date are ordered newest first and then by id, so the
+   * order is total and a caller reading page after page never skips or repeats a row (657A: the
+   * reconciliation pane reads every page).
    */
   @Query(
       """
@@ -44,7 +46,7 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
         AND (:excludeLinked = false
              OR NOT EXISTS (
                SELECT d.id FROM LegalDisbursement d WHERE d.trustTransactionId = t.id))
-      ORDER BY t.transactionDate DESC
+      ORDER BY t.transactionDate DESC, t.createdAt DESC, t.id DESC
       """)
   Page<TrustTransaction> findFiltered(
       @Param("trustAccountId") UUID trustAccountId,
@@ -341,14 +343,20 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
    *   <li>the live (non-REVERSED) rows already matched are never candidates; they only shadow a
    *       REVERSED original of their amount and sign (FU-16, 652H M-1).
    * </ul>
+   *
+   * <p>Phase 93 (657A, ADR-386, FD-3): a row cleared at the cutover date is never in the pool; an
+   * unmatched take-on item (an item outstanding at cutover — {@code take_on_batch_id} set, not
+   * cleared, no line) is in it whatever its date, so a cheque presented months after the cutover
+   * still auto-matches by its reference.
    */
   @Query(
       """
       SELECT t FROM TrustTransaction t
       WHERE t.trustAccountId = :trustAccountId
         AND t.postedAt IS NOT NULL
-        AND t.transactionDate >= :startDate
-        AND t.transactionDate <= :endDate
+        AND t.clearedAtCutover = false
+        AND ((t.transactionDate >= :startDate AND t.transactionDate <= :endDate)
+             OR (t.takeOnBatchId IS NOT NULL AND t.bankStatementLineId IS NULL))
       """)
   List<TrustTransaction> findPostedInAutoMatchWindow(
       @Param("trustAccountId") UUID trustAccountId,

@@ -5,6 +5,7 @@ import type { ClientLedgerCard } from "@/lib/types";
 type LedgerTotals = Pick<
   ClientLedgerCard,
   | "balance"
+  | "broughtForward"
   | "totalDeposits"
   | "totalTransfersIn"
   | "totalPayments"
@@ -40,14 +41,31 @@ interface Row {
  * While money is invested for the client (ADR-379 L7), the balance row reads "General balance"
  * and is followed by "Invested (section 86(4))" and "Total held in trust" (general + invested —
  * the client's total, unchanged by a placement or its return).
+ *
+ * A client taken on from the previous system (657A) starts from "Brought forward at take-on"
+ * (signed; hidden while zero), then Deposits is an addition.
  */
 export function LedgerTotalsBreakdown({
   ledger,
   currency = "ZAR",
   className,
 }: LedgerTotalsBreakdownProps) {
+  // `?? 0`: a stale response without the key still renders (TrustBalanceCard shares this)
+  const broughtForward = ledger.broughtForward ?? 0;
   const rows: Row[] = [
-    { key: "deposits", sign: "", label: "Deposits", amount: ledger.totalDeposits },
+    {
+      key: "brought-forward",
+      sign: "",
+      label: "Brought forward at take-on",
+      amount: broughtForward,
+      hideWhenZero: true,
+    },
+    {
+      key: "deposits",
+      sign: broughtForward !== 0 ? "+" : "",
+      label: "Deposits",
+      amount: ledger.totalDeposits,
+    },
     {
       key: "transfers-in",
       sign: "+",

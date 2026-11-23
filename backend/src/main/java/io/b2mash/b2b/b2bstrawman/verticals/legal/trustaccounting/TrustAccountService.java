@@ -144,7 +144,10 @@ public class TrustAccountService {
       Instant updatedAt,
       // 650D (§16.3.10, ADR-382): the latest period end of the account's locked Rule 54.15 lists;
       // null when none. Posting dialogs warn (never refuse) on a date on or before it.
-      LocalDate lockedThrough) {}
+      LocalDate lockedThrough,
+      // Phase 93 (657A): the take-on cutover date; null unless the account was taken on. Posting
+      // dialogs may not date an entry on or before it (409 DATED_BEFORE_TAKE_ON).
+      LocalDate takeOnCutoverDate) {}
 
   // --- Service Methods ---
 
@@ -466,6 +469,7 @@ public class TrustAccountService {
         entity.getNotes(),
         entity.getCreatedAt(),
         entity.getUpdatedAt(),
-        lockedThrough);
+        lockedThrough,
+        entity.getTakeOnCutoverDate());
   }
 }

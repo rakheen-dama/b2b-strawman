@@ -49,6 +49,8 @@ export interface TrustAccount {
    * (650D, §16.3.10). Posting dialogs warn — never refuse — on a date on or before it.
    */
   lockedThrough: string | null;
+  /** 657A: the take-on cutover date (yyyy-MM-dd); null unless the account was taken on. */
+  takeOnCutoverDate: string | null;
 }
 
 /**
@@ -72,7 +74,7 @@ export interface CreateTrustAccountRequest {
 // Trust transaction types
 
 /**
- * A trust transaction type code — a key of the backend registry (`TrustTransactionType`, 25 types).
+ * A trust transaction type code — a key of the backend registry (`TrustTransactionType`, 36 types).
  * No local list or label map (Phase 92 646E): labels, direction and reversal rules arrive from the
  * API — on every transaction (`typeLabel`, `direction`) and from `GET /api/trust-transaction-types`.
  */
@@ -101,11 +103,32 @@ export interface TrustTransactionTypeInfo {
   direction: TrustTransactionDirection;
   /** Null for REVERSAL (it moves its original's ledger). */
   ledger: TrustLedger | null;
-  /** Null for REVERSAL (it inherits its original's origin). */
-  origin: "FIRM" | "BANK" | null;
+  /** Null for REVERSAL (it inherits its original's origin). TAKE_ON: a trust take-on commit (657A). */
+  origin: "FIRM" | "BANK" | "TAKE_ON" | null;
   requiresApproval: boolean;
   reversal: TrustReversalRule;
   clientVisible: boolean;
+  /** 657A: created only by a trust take-on commit — never offered in a type picker or filter. */
+  takeOnOnly: boolean;
+  /** 657A: cleared at the cutover date — never outstanding, never offered for bank matching. */
+  clearedAtCutover: boolean;
+}
+
+/**
+ * The registry types a screen may offer (pickers and filters): every type except those a trust
+ * take-on alone creates (657A, ADR-386) — read from the registry, never a hard-coded list.
+ */
+export function offeredTransactionTypes(
+  types: readonly TrustTransactionTypeInfo[]
+): TrustTransactionTypeInfo[] {
+  return types.filter((t) => !t.takeOnOnly);
+}
+
+/** The codes of the types cleared at the cutover date — rows the bank statement never shows (657A). */
+export function clearedAtCutoverCodes(
+  types: readonly TrustTransactionTypeInfo[]
+): ReadonlySet<string> {
+  return new Set(types.filter((t) => t.clearedAtCutover).map((t) => t.code));
 }
 
 /** The registry's reversal rule for a type code; a code the list does not carry is "NONE". */
@@ -229,6 +252,8 @@ export interface ClientLedgerCard {
   totalInvestmentPlacements: number;
   /** 648E: INV_RETURN — returned from section 86(4) investments to the general balance */
   totalInvestmentReturns: number;
+  /** 657A: "Brought forward at take-on" — signed; 0 unless the client was taken on. */
+  broughtForward: number;
   /** 648E: held for the client in section 86(4) investments placed from this account (ADR-379) */
   investedBalance: number;
   lastTransactionDate: string | null;
@@ -662,6 +687,8 @@ export interface CreditorLine {
   totalPayments: number | null;
   totalFeeTransfers: number | null;
   lastTransactionDate: string | null;
+  /** 657A: "B/f at take-on" — signed, client's first line only; null elsewhere and on older lists. */
+  broughtForward: number | null;
 }
 
 /** Mirrors `TrustMonthlyListService.MonthlyListSummary` — one locked list without its lines. */
@@ -943,7 +970,8 @@ export interface UnidentifiedDeposit {
   resolutionTransactionId: string | null;
   resolutionStatus: string | null;
   resolvedDate: string | null;
-  bankStatementLineId: string;
+  /** The statement line the item was opened from; null for an item taken on (657A). */
+  bankStatementLineId: string | null;
   notes: string | null;
 }
 

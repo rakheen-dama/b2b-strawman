@@ -42,6 +42,45 @@ vi.mock("@/app/(app)/org/[slug]/trust-accounting/reconciliation/actions", () => 
 
 // ── Mock parent trust actions ────────────────────────────────────
 vi.mock("@/app/(app)/org/[slug]/trust-accounting/actions", () => ({
+  // 657A: the registry tells the manual-match pane which types were cleared at the cutover date
+  fetchTrustTransactionTypes: vi.fn().mockResolvedValue([
+    {
+      code: "DEPOSIT",
+      label: "Deposit",
+      direction: "IN",
+      ledger: "CLIENT",
+      origin: "FIRM",
+      requiresApproval: false,
+      reversal: "NEEDS_APPROVAL",
+      clientVisible: true,
+      takeOnOnly: false,
+      clearedAtCutover: false,
+    },
+    {
+      code: "TAKEON_CLIENT",
+      label: "Balance brought forward — take-on",
+      direction: "IN",
+      ledger: "CLIENT",
+      origin: "TAKE_ON",
+      requiresApproval: false,
+      reversal: "NONE",
+      clientVisible: true,
+      takeOnOnly: true,
+      clearedAtCutover: true,
+    },
+    {
+      code: "TAKEON_PAY_UNPRES",
+      label: "Payment not yet presented at take-on",
+      direction: "OUT",
+      ledger: "CLIENT",
+      origin: "TAKE_ON",
+      requiresApproval: false,
+      reversal: "IMMEDIATE",
+      clientVisible: false,
+      takeOnOnly: true,
+      clearedAtCutover: false,
+    },
+  ]),
   fetchTrustAccounts: vi.fn().mockResolvedValue([
     {
       id: "acc-1",
@@ -144,7 +183,10 @@ import MonthlyListPage from "@/app/(app)/org/[slug]/trust-accounting/reconciliat
 import { BankStatementUpload } from "@/components/trust/BankStatementUpload";
 import { ReconciliationSplitPane } from "@/components/trust/ReconciliationSplitPane";
 import { fetchTransactions } from "@/app/(app)/org/[slug]/trust-accounting/transactions/actions";
-import { fetchTrustAccounts } from "@/app/(app)/org/[slug]/trust-accounting/actions";
+import {
+  fetchTrustAccounts,
+  fetchTrustTransactionTypes,
+} from "@/app/(app)/org/[slug]/trust-accounting/actions";
 import { ApiError } from "@/lib/api";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
 import { recordFromStatementSchemaFor } from "@/lib/schemas/trust";
@@ -235,6 +277,7 @@ function makeMonthlyList(overrides: Partial<MonthlyList> = {}): MonthlyList {
         totalPayments: 0,
         totalFeeTransfers: 0,
         lastTransactionDate: "2026-03-20",
+        broughtForward: null,
       },
       {
         kind: "CLIENT_INVESTMENT",
@@ -249,6 +292,7 @@ function makeMonthlyList(overrides: Partial<MonthlyList> = {}): MonthlyList {
         totalPayments: 0,
         totalFeeTransfers: 0,
         lastTransactionDate: null,
+        broughtForward: null,
       },
       {
         kind: "FUND",
@@ -263,6 +307,7 @@ function makeMonthlyList(overrides: Partial<MonthlyList> = {}): MonthlyList {
         totalPayments: null,
         totalFeeTransfers: null,
         lastTransactionDate: null,
+        broughtForward: null,
       },
       {
         kind: "UNIDENTIFIED",
@@ -277,6 +322,7 @@ function makeMonthlyList(overrides: Partial<MonthlyList> = {}): MonthlyList {
         totalPayments: null,
         totalFeeTransfers: null,
         lastTransactionDate: null,
+        broughtForward: null,
       },
     ],
     integrityFlags: [],
@@ -1877,6 +1923,35 @@ describe("Trust Reconciliation", () => {
       expect(afterLock).toHaveTextContent(zar(145250));
     });
 
+    it("prints a client's balance brought forward at take-on under its line, and nothing for other lines (657A)", async () => {
+      const list = makeMonthlyList();
+      mockFetchMonthlyList.mockResolvedValue({
+        ...list,
+        lines: list.lines.map((line) =>
+          line.kind === "CLIENT" ? { ...line, broughtForward: 25000 } : line
+        ),
+      });
+
+      render(
+        await MonthlyListPage({ params: Promise.resolve({ slug: "acme", listId: "list-1" }) })
+      );
+
+      const rows = screen.getAllByTestId("monthly-list-brought-forward");
+      expect(rows).toHaveLength(1);
+      expect(rows[0]).toHaveTextContent("B/f at take-on");
+      expect(rows[0]).toHaveTextContent(zar(25000));
+    });
+
+    it("prints no brought-forward row for a list frozen before take-on figures existed (657A)", async () => {
+      mockFetchMonthlyList.mockResolvedValue(makeMonthlyList());
+
+      render(
+        await MonthlyListPage({ params: Promise.resolve({ slug: "acme", listId: "list-1" }) })
+      );
+
+      expect(screen.queryByTestId("monthly-list-brought-forward")).not.toBeInTheDocument();
+    });
+
     it("sends an expired session (401) to the re-login flow instead of the load-error card", async () => {
       const expired = new ApiError(401, "Unauthorized");
       mockFetchMonthlyList.mockRejectedValue(expired);
@@ -3181,8 +3256,8 @@ describe("Trust Reconciliation", () => {
     });
 
     // Step 4 with line-1 unmatched (a R15 000 deposit) and line-2 auto-matched to tx-2 (a R2 500
-    // recorded deposit); every calculation succeeds.
-    async function driveToReview() {
+    // recorded deposit); every calculation succeeds. `expectPane: false` stops after asking for it.
+    async function driveToReview({ expectPane = true }: { expectPane?: boolean } = {}) {
       const statement = {
         id: "stmt-1",
         trustAccountId: "acc-1",
@@ -3246,8 +3321,74 @@ describe("Trust Reconciliation", () => {
       fireEvent.click(await screen.findByTestId("auto-match-btn"));
       expect(await screen.findByText("Auto-matched 1 lines")).toBeInTheDocument();
       fireEvent.click(screen.getByTestId("step-next-btn"));
-      expect(await screen.findByTestId("reconciliation-split-pane")).toBeInTheDocument();
+      if (expectPane) {
+        expect(await screen.findByTestId("reconciliation-split-pane")).toBeInTheDocument();
+      }
     }
+
+    it("reads every page of each status, so no matchable row falls outside the first page (657A)", async () => {
+      const onFirstPage = makeTx({ id: "tx-page-0", status: "APPROVED", reference: "P0" });
+      const onSecondPage = makeTx({ id: "tx-page-1", status: "APPROVED", reference: "P1" });
+      vi.mocked(fetchTransactions).mockImplementation(async (_accountId, params = {}) => {
+        if (params.status !== "APPROVED") return pageOf([]);
+        const content = params.page === 1 ? [onSecondPage] : [onFirstPage];
+        return {
+          content,
+          totalElements: 2,
+          totalPages: 2,
+          pageSize: 1000,
+          pageNumber: params.page ?? 0,
+        };
+      });
+      await driveToReview();
+
+      expect(screen.getByTestId("transaction-tx-page-0")).toBeInTheDocument();
+      expect(screen.getByTestId("transaction-tx-page-1")).toBeInTheDocument();
+      expect(vi.mocked(fetchTransactions)).toHaveBeenCalledWith(
+        "acc-1",
+        expect.objectContaining({ status: "APPROVED", page: 1, size: 1000 })
+      );
+      // a status that fits on one page is read once
+      expect(
+        vi
+          .mocked(fetchTransactions)
+          .mock.calls.filter(([, params]) => params?.status === "RECORDED")
+      ).toHaveLength(1);
+    });
+
+    it("does not open the review when the type registry cannot be read (657A)", async () => {
+      transactionsByStatus({ APPROVED: [approvedPayment] });
+      vi.mocked(fetchTrustTransactionTypes).mockRejectedValueOnce(new Error("Registry down"));
+      await driveToReview({ expectPane: false });
+
+      expect(await screen.findByTestId("reconciliation-error")).toHaveTextContent("Registry down");
+      expect(screen.queryByTestId("reconciliation-split-pane")).not.toBeInTheDocument();
+    });
+
+    it("never offers a take-on row cleared at the cutover date, but offers an item outstanding at cutover (657A)", async () => {
+      const cleared = makeTx({
+        id: "tx-takeon-client",
+        transactionType: "TAKEON_CLIENT",
+        typeLabel: "Balance brought forward — take-on",
+        status: "APPROVED",
+        reference: "TO-CLIENT",
+        amount: 15000,
+      });
+      const unpresented = makeTx({
+        id: "tx-takeon-cheque",
+        transactionType: "TAKEON_PAY_UNPRES",
+        typeLabel: "Payment not yet presented at take-on",
+        direction: "OUT",
+        status: "APPROVED",
+        reference: "PAY-778",
+        amount: 2000,
+      });
+      transactionsByStatus({ APPROVED: [cleared, unpresented] });
+      await driveToReview();
+
+      expect(screen.queryByTestId("transaction-tx-takeon-client")).not.toBeInTheDocument();
+      expect(screen.getByTestId("transaction-tx-takeon-cheque")).toBeInTheDocument();
+    });
 
     it("offers an unlinked recorded deposit beside an approved payment when the review opens", async () => {
       transactionsByStatus({

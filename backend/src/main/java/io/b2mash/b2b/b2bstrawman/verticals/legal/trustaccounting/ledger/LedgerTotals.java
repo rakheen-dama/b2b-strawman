@@ -32,6 +32,14 @@ import java.util.UUID;
  * is invested sits beside it ({@code ClientLedgerCardResponse.investedBalance}), and a future net
  * interest entry (648B, {@code CLIENT_INVESTMENT} ledger) changes only the invested balance and,
  * once returned, {@code investmentReturns}.
+ *
+ * <p>Phase 93 (657A, ADR-386, §17.3.15): {@code broughtForward} is a <b>signed</b> net — the
+ * client's take-on rows on the account: the brought-forward balance ({@code TAKEON_CLIENT}) and
+ * each item outstanding at cutover with its offset ({@code TAKEON_DEP_TRANSIT} + / {@code
+ * TAKEON_DEP_OFFSET} −, {@code TAKEON_PAY_UNPRES} − / {@code TAKEON_PAY_OFFSET} +), which net to
+ * zero while the item stands. A later reversal of a cutover item nets under its own type, so the
+ * cancelled cheque comes back into {@code broughtForward}. {@link #derivedBalance()} adds it as-is,
+ * so it still equals {@code clientBalance}.
  */
 public record LedgerTotals(
     BigDecimal deposits,
@@ -41,10 +49,12 @@ public record LedgerTotals(
     BigDecimal refunds,
     BigDecimal transfersOut,
     BigDecimal investmentPlacements,
-    BigDecimal investmentReturns) {
+    BigDecimal investmentReturns,
+    BigDecimal broughtForward) {
 
   public static final LedgerTotals ZERO =
       new LedgerTotals(
+          BigDecimal.ZERO,
           BigDecimal.ZERO,
           BigDecimal.ZERO,
           BigDecimal.ZERO,
@@ -56,7 +66,7 @@ public record LedgerTotals(
 
   /**
    * Σ total × {@code ledgerSign()} over the types (deposits, transfers in and investment returns
-   * add, the rest subtract).
+   * add, the rest subtract), plus the signed brought-forward net (657A).
    */
   public BigDecimal derivedBalance() {
     return signed(DEPOSIT, deposits)
@@ -66,7 +76,8 @@ public record LedgerTotals(
         .add(signed(REFUND, refunds))
         .add(signed(TRANSFER_OUT, transfersOut))
         .add(signed(INV_PLACE, investmentPlacements))
-        .add(signed(INV_RETURN, investmentReturns));
+        .add(signed(INV_RETURN, investmentReturns))
+        .add(broughtForward);
   }
 
   /**
@@ -93,6 +104,11 @@ public record LedgerTotals(
       // (approved INV_PLACE) and back (INV_RETURN) — the client's total in trust does not move.
       case INV_PLACE -> withInvestmentPlacements(investmentPlacements.add(amount));
       case INV_RETURN -> withInvestmentReturns(investmentReturns.add(amount));
+      // 657A: the take-on, one signed brought-forward figure — never a deposit or a payment
+      case TAKEON_CLIENT, TAKEON_PAY_OFFSET, TAKEON_DEP_TRANSIT ->
+          withBroughtForward(broughtForward.add(amount));
+      case TAKEON_PAY_UNPRES, TAKEON_DEP_OFFSET ->
+          withBroughtForward(broughtForward.subtract(amount));
       case REVERSAL -> this;
       // Never on the CLIENT ledger: clientTotalsByType filters ledger = 'CLIENT' (a reversal row
       // carries its original's ledger), so these cannot reach the totals.
@@ -110,12 +126,18 @@ public record LedgerTotals(
           FIRM_INV_PLACE,
           FIRM_INV_RECEIVE,
           FIRM_INV_WITHDRAW,
-          FIRM_INV_RETURN ->
+          FIRM_INV_RETURN,
+          TAKEON_FUND,
+          TAKEON_FUND_DEBIT,
+          TAKEON_UNIDENTIFIED,
+          TAKEON_INVESTMENT,
+          TAKEON_FIRM_INV_OUT,
+          TAKEON_FIRM_INV_IN ->
           this;
     };
   }
 
-  // One component changed per helper, so no switch arm re-lists the eight positional arguments.
+  // One component changed per helper, so no switch arm re-lists the nine positional arguments.
 
   private LedgerTotals withDeposits(BigDecimal value) {
     return new LedgerTotals(
@@ -126,7 +148,8 @@ public record LedgerTotals(
         refunds,
         transfersOut,
         investmentPlacements,
-        investmentReturns);
+        investmentReturns,
+        broughtForward);
   }
 
   private LedgerTotals withTransfersIn(BigDecimal value) {
@@ -138,7 +161,8 @@ public record LedgerTotals(
         refunds,
         transfersOut,
         investmentPlacements,
-        investmentReturns);
+        investmentReturns,
+        broughtForward);
   }
 
   private LedgerTotals withPayments(BigDecimal value) {
@@ -150,7 +174,8 @@ public record LedgerTotals(
         refunds,
         transfersOut,
         investmentPlacements,
-        investmentReturns);
+        investmentReturns,
+        broughtForward);
   }
 
   private LedgerTotals withFeeTransfers(BigDecimal value) {
@@ -162,7 +187,8 @@ public record LedgerTotals(
         refunds,
         transfersOut,
         investmentPlacements,
-        investmentReturns);
+        investmentReturns,
+        broughtForward);
   }
 
   private LedgerTotals withRefunds(BigDecimal value) {
@@ -174,7 +200,8 @@ public record LedgerTotals(
         value,
         transfersOut,
         investmentPlacements,
-        investmentReturns);
+        investmentReturns,
+        broughtForward);
   }
 
   private LedgerTotals withTransfersOut(BigDecimal value) {
@@ -186,7 +213,8 @@ public record LedgerTotals(
         refunds,
         value,
         investmentPlacements,
-        investmentReturns);
+        investmentReturns,
+        broughtForward);
   }
 
   private LedgerTotals withInvestmentPlacements(BigDecimal value) {
@@ -198,7 +226,8 @@ public record LedgerTotals(
         refunds,
         transfersOut,
         value,
-        investmentReturns);
+        investmentReturns,
+        broughtForward);
   }
 
   private LedgerTotals withInvestmentReturns(BigDecimal value) {
@@ -210,6 +239,20 @@ public record LedgerTotals(
         refunds,
         transfersOut,
         investmentPlacements,
+        value,
+        broughtForward);
+  }
+
+  private LedgerTotals withBroughtForward(BigDecimal value) {
+    return new LedgerTotals(
+        deposits,
+        transfersIn,
+        payments,
+        feeTransfers,
+        refunds,
+        transfersOut,
+        investmentPlacements,
+        investmentReturns,
         value);
   }
 
@@ -247,6 +290,7 @@ public record LedgerTotals(
         refunds.add(other.refunds),
         transfersOut.add(other.transfersOut),
         investmentPlacements.add(other.investmentPlacements),
-        investmentReturns.add(other.investmentReturns));
+        investmentReturns.add(other.investmentReturns),
+        broughtForward.add(other.broughtForward));
   }
 }

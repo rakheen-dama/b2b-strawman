@@ -1,0 +1,9 @@
+select installed_rank, version, description, type, success, installed_on from tenant_7d218705360b.flyway_schema_history where version::int >= 30 order by installed_rank
+ installed_rank | version |          description           | type | success |        installed_on        
+----------------+---------+--------------------------------+------+---------+----------------------------
+             30 | 30      | phase92 bank statement retired | SQL  | t       | 2026-11-23 15:48:59.726454
+             31 | 31      | phase92 trust idempotency keys | SQL  | t       | 2026-11-23 15:48:59.736833
+             32 | 32      | phase93 take on core           | SQL  | t       | 2026-11-23 15:48:59.746232
+             33 | 33      | phase93 trust take on          | SQL  | t       | 2026-11-23 15:48:59.783024
+(4 rows)
+

@@ -24,6 +24,7 @@ import { TransactionFilters } from "@/components/trust/transaction-filters";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
 import {
   canOfferReversal,
+  offeredTransactionTypes,
   reversalRuleFor,
   type OrgMember,
   type TrustTransactionStatus,
@@ -294,7 +295,8 @@ export default async function TransactionsPage({
         >
           All
         </Link>
-        {types.map((t) => (
+        {/* 657A: take-on-only types are never offered; `types` stays whole for reversal rules */}
+        {offeredTransactionTypes(types).map((t) => (
           <Link
             key={t.code}
             href={filterUrl({ type: t.code })}

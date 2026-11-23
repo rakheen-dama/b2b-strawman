@@ -90,8 +90,16 @@ public class TrustInterestChargesScheduleQuery implements ReportQuery {
     this.memoRepository = memoRepository;
   }
 
-  /** One account's schedule: its monthly rows and the period's totals. */
-  record Block(TrustAccount account, List<Map<String, Object>> rows, Map<String, Object> totals) {}
+  /**
+   * One account's schedule: its monthly rows and the period's totals. {@code takeOnBroughtForward}
+   * is the Fund ledger brought forward at take-on inside the period's {@code fundBroughtForward}
+   * total (657A; zero when the account was not taken on in the period).
+   */
+  record Block(
+      TrustAccount account,
+      List<Map<String, Object>> rows,
+      Map<String, Object> totals,
+      BigDecimal takeOnBroughtForward) {}
 
   /** The money columns of a row, in column order (totals sum the additive ones). */
   static final List<String> MOVEMENT_COLUMNS =
@@ -227,8 +235,11 @@ public class TrustInterestChargesScheduleQuery implements ReportQuery {
         .toList();
   }
 
-  /** One (type, recoverable) group's Σ ledger effect and VAT, for one month. */
-  private static final class MonthMovements {
+  /**
+   * One (type, recoverable) group's Σ ledger effect and VAT, for one month. Package-private for
+   * {@code TrustInterestChargesFundGroupTest} (657A: every Fund-ledger type has a column).
+   */
+  static final class MonthMovements {
     BigDecimal fundInterest = BigDecimal.ZERO;
     BigDecimal fundInvShare = BigDecimal.ZERO;
     BigDecimal chargesRecoverable = BigDecimal.ZERO;
@@ -239,6 +250,12 @@ public class TrustInterestChargesScheduleQuery implements ReportQuery {
     BigDecimal entriesGross = BigDecimal.ZERO;
     BigDecimal entriesNet = BigDecimal.ZERO;
     BigDecimal fundSharePaidAtSource = BigDecimal.ZERO;
+
+    /**
+     * 657A: Σ ledger effect of TAKEON_FUND / TAKEON_FUND_DEBIT — the Fund ledger brought forward at
+     * take-on: the opening figure of the month of the cutover date, never a movement.
+     */
+    BigDecimal takeOnBroughtForward = BigDecimal.ZERO;
 
     /** Σ ledger effect of groups whose type has no column here; never part of the identity. */
     BigDecimal unexplained = BigDecimal.ZERO;
@@ -293,7 +310,11 @@ public class TrustInterestChargesScheduleQuery implements ReportQuery {
     var sectionLabel = TrustReportWords.sectionLabel(section);
     var rows = new ArrayList<Map<String, Object>>();
     // b/f of the period and c/f of every row are read from the ledger (never computed)
-    BigDecimal broughtForward = fundBalance(fundId, from.minusDays(1));
+    final BigDecimal periodBroughtForward = fundBalance(fundId, from.minusDays(1));
+    BigDecimal broughtForward = periodBroughtForward;
+    // 657A: Σ the Fund ledger brought forward at take-on over the period's months, kept apart from
+    // the movement columns — the period's totals add it to their b/f exactly once
+    BigDecimal takeOnInPeriod = BigDecimal.ZERO;
     for (var month = first; !month.isAfter(last); month = month.plusMonths(1)) {
       var rowFrom = month.equals(first) ? from : month.atDay(1);
       var rowTo = month.equals(last) ? to : month.atEndOfMonth();
@@ -304,9 +325,11 @@ public class TrustInterestChargesScheduleQuery implements ReportQuery {
       var grossInterestCashbook = s864 ? m.entriesGross : m.fundInterest;
       var interestTerm = s864 ? m.fundInvShare : grossInterestCashbook;
       var charges = m.chargesRecoverable.add(m.chargesNonRecoverable);
+      // 657A (§17.3.15): the month of a take-on opens with the Fund ledger brought forward
+      var openingFund = broughtForward.add(m.takeOnBroughtForward);
       boolean identityHolds =
           !m.hasUnexplained
-              && broughtForward
+              && openingFund
                       .add(interestTerm)
                       .subtract(charges)
                       .add(m.refunds)
@@ -318,9 +341,9 @@ public class TrustInterestChargesScheduleQuery implements ReportQuery {
       row.put("trustAccountId", account.getId());
       row.put("accountName", account.getAccountName());
       row.put("sectionLabel", sectionLabel);
-      row.put("month", periodLabel(month, rowFrom, rowTo));
+      row.put("month", monthLabel(month, rowFrom, rowTo, m, account));
       row.put("monthStart", rowFrom.toString());
-      row.put("fundBroughtForward", broughtForward);
+      row.put("fundBroughtForward", openingFund);
       row.put("grossInterestCashbook", grossInterestCashbook);
       row.put("grossInterestMemo", memo != null ? memo.getGrossInterest() : BigDecimal.ZERO);
       row.put("clientShare", s864 ? m.entriesNet : null);
@@ -339,17 +362,22 @@ public class TrustInterestChargesScheduleQuery implements ReportQuery {
       row.put("check", check(identityHolds, m.hasUnexplained));
       rows.add(row);
       broughtForward = carriedForward;
+      takeOnInPeriod = takeOnInPeriod.add(m.takeOnBroughtForward);
     }
-    return new Block(account, List.copyOf(rows), totals(rows, s864));
+    return new Block(
+        account,
+        List.copyOf(rows),
+        totals(rows, s864, periodBroughtForward.add(takeOnInPeriod)),
+        takeOnInPeriod);
   }
 
   /**
    * Adds one Fund ledger group to its month by its registry type. A type with no column here — a
    * registry type that never moves a Fund ledger, or a code the registry no longer knows — is never
-   * dropped: its amount is unexplained and the month does not balance (B-H1).
+   * dropped: its amount is unexplained and the month does not balance (B-H1). Package-private for
+   * {@code TrustInterestChargesFundGroupTest} (657A).
    */
-  private static void addFundGroup(
-      MonthMovements m, TrustReportQueryRepository.FundLedgerMonthRow g) {
+  static void addFundGroup(MonthMovements m, TrustReportQueryRepository.FundLedgerMonthRow g) {
     var effect = orZero(g.getLedgerEffect());
     var type = TrustTransactionType.find(g.getTxType()).orElse(null);
     if (type == null) {
@@ -369,6 +397,10 @@ public class TrustInterestChargesScheduleQuery implements ReportQuery {
       }
       case CHARGE_REFUND -> m.refunds = m.refunds.add(effect);
       case FUND_SWEEP -> m.sweeps = m.sweeps.subtract(effect);
+      // 657A (§17.3.15): the Fund ledger brought forward at take-on is the month's opening figure,
+      // never a movement — without this arm the month of C would read "does not balance"
+      case TAKEON_FUND, TAKEON_FUND_DEBIT ->
+          m.takeOnBroughtForward = m.takeOnBroughtForward.add(effect);
       default -> addUnexplained(m, effect);
     }
   }
@@ -387,6 +419,22 @@ public class TrustInterestChargesScheduleQuery implements ReportQuery {
   }
 
   /**
+   * The month cell; the month of a take-on says so (X3 "Brought forward at take-on ({d MMMM
+   * yyyy})", 657A — the schedule has no label column).
+   */
+  private static String monthLabel(
+      YearMonth month, LocalDate rowFrom, LocalDate rowTo, MonthMovements m, TrustAccount account) {
+    var label = periodLabel(month, rowFrom, rowTo);
+    if (m.takeOnBroughtForward.signum() == 0 || account.getTakeOnCutoverDate() == null) {
+      return label;
+    }
+    return label
+        + " — Brought forward at take-on ("
+        + IntegrityMessages.date(account.getTakeOnCutoverDate())
+        + ")";
+  }
+
+  /**
    * "March 2026", or "16 March 2025 to 31 March 2025" for a month the period only partly covers.
    */
   private static String periodLabel(YearMonth month, LocalDate rowFrom, LocalDate rowTo) {
@@ -396,10 +444,17 @@ public class TrustInterestChargesScheduleQuery implements ReportQuery {
     return IntegrityMessages.date(rowFrom) + " to " + IntegrityMessages.date(rowTo);
   }
 
-  /** The period's totals of one block: b/f of the first month, c/f of the last, Σ the movements. */
-  private static Map<String, Object> totals(List<Map<String, Object>> rows, boolean s864) {
+  /**
+   * The period's totals of one block: b/f, Σ the movements, c/f of the last month. The b/f is the
+   * ledger's at the period's start plus the Fund ledger brought forward at take-on in the period
+   * (657A) — counted once, whichever month holds the cutover date (in the first month it is that
+   * row's b/f already) — so b/f + the movements = c/f holds on the printed figures. The check is
+   * worked out on those figures, and every month must balance too.
+   */
+  private static Map<String, Object> totals(
+      List<Map<String, Object>> rows, boolean s864, BigDecimal broughtForward) {
     var totals = new LinkedHashMap<String, Object>();
-    totals.put("fundBroughtForward", rows.getFirst().get("fundBroughtForward"));
+    totals.put("fundBroughtForward", broughtForward);
     for (var column : MOVEMENT_COLUMNS) {
       boolean s864Only =
           column.equals("clientShare")
@@ -415,13 +470,30 @@ public class TrustInterestChargesScheduleQuery implements ReportQuery {
               .map(r -> (BigDecimal) r.get(column))
               .reduce(BigDecimal.ZERO, BigDecimal::add));
     }
-    totals.put("fundCarriedForward", rows.getLast().get("fundCarriedForward"));
-    boolean identityHolds =
-        rows.stream().allMatch(r -> Boolean.TRUE.equals(r.get("identityHolds")));
+    var carriedForward = (BigDecimal) rows.getLast().get("fundCarriedForward");
+    totals.put("fundCarriedForward", carriedForward);
+    var interestTerm = total(totals, s864 ? "fundShareCredited" : "grossInterestCashbook");
+    boolean totalsBalance =
+        broughtForward
+                .add(interestTerm)
+                .subtract(total(totals, "chargesRecoverable"))
+                .subtract(total(totals, "chargesNonRecoverable"))
+                .add(total(totals, "chargesRefunded"))
+                .subtract(total(totals, "paidToFund"))
+                .compareTo(carriedForward)
+            == 0;
     boolean unexplained = rows.stream().anyMatch(r -> CHECK_UNEXPLAINED.equals(r.get("check")));
+    boolean identityHolds =
+        !unexplained
+            && totalsBalance
+            && rows.stream().allMatch(r -> Boolean.TRUE.equals(r.get("identityHolds")));
     totals.put("identityHolds", identityHolds);
     totals.put("check", check(identityHolds, unexplained));
     return totals;
+  }
+
+  private static BigDecimal total(Map<String, Object> totals, String column) {
+    return orZero((BigDecimal) totals.get(column));
   }
 
   private BigDecimal fundBalance(UUID fundId, LocalDate asAt) {

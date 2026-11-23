@@ -33,6 +33,15 @@ class TrustTransactionTypeLabelsTest {
         .isEqualTo("Interest received for the Legal Practitioners' Fidelity Fund");
   }
 
+  @Test
+  void theTakeOnTypes_readAsTakeOnCopy() {
+    // 657A (§17.2.8, X3): the brought-forward balance is the one take-on row a client sees
+    assertThat(TrustTransactionTypeLabels.label("TAKEON_CLIENT"))
+        .isEqualTo("Balance brought forward — take-on");
+    assertThat(TrustTransactionTypeLabels.firmLabel("TAKEON_PAY_UNPRES"))
+        .isEqualTo("Payment not yet presented at take-on");
+  }
+
   /**
    * D4: a retired code (INTEREST_CREDIT / INTEREST_LPFF, deleted by V16 but still on historic audit
    * events) or any unknown code falls back to sentence case — never the raw enum, never a throw.

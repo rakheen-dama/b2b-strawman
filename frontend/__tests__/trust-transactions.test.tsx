@@ -69,8 +69,26 @@ function typeInfo(
     requiresApproval: false,
     reversal,
     clientVisible: true,
+    takeOnOnly: false,
+    clearedAtCutover: false,
   };
 }
+
+/** 657A: two take-on-only types — never a pill; the cutover cheque still reverses like PAYMENT. */
+const TAKE_ON_TYPES = [
+  {
+    ...typeInfo("TAKEON_CLIENT", "Balance brought forward — take-on", "IN", "NONE"),
+    origin: "TAKE_ON",
+    takeOnOnly: true,
+    clearedAtCutover: true,
+  },
+  {
+    ...typeInfo("TAKEON_PAY_UNPRES", "Payment not yet presented at take-on", "OUT", "IMMEDIATE"),
+    origin: "TAKE_ON",
+    clientVisible: false,
+    takeOnOnly: true,
+  },
+];
 
 const REGISTRY_TYPES = [
   typeInfo("DEPOSIT", "Deposit", "IN", "NEEDS_APPROVAL"),
@@ -1105,6 +1123,45 @@ describe("Trust Transactions", () => {
     ]) {
       expect(screen.queryByTestId(`reversal-action-${id}`)).not.toBeInTheDocument();
     }
+  });
+
+  // 657A (ADR-386): a take-on-only type is never a filter pill; the full registry still decides
+  // Reverse, so a cheque unpresented at cutover reverses like a payment and a cleared row never.
+  it("offers no take-on type as a pill, yet reverses an item outstanding at cutover", async () => {
+    mockFetchTrustTransactionTypes.mockResolvedValue([...REGISTRY_TYPES, ...TAKE_ON_TYPES]);
+    mockFetchTransactions.mockResolvedValue({
+      content: [
+        makeTx({
+          id: "tx-cheque",
+          transactionType: "TAKEON_PAY_UNPRES",
+          typeLabel: "Payment not yet presented at take-on",
+          direction: "OUT",
+          status: "APPROVED",
+        }),
+        makeTx({
+          id: "tx-bf",
+          transactionType: "TAKEON_CLIENT",
+          typeLabel: "Balance brought forward — take-on",
+          status: "APPROVED",
+        }),
+      ],
+      totalElements: 2,
+      totalPages: 1,
+      pageSize: 20,
+      pageNumber: 0,
+    });
+
+    await renderTransactionsPage();
+
+    const pills = within(screen.getByTestId("type-filters")).getAllByRole("link");
+    expect(pills.map((p) => p.textContent)).toEqual(["All", ...REGISTRY_TYPES.map((t) => t.label)]);
+    expect(
+      within(screen.getByTestId("type-filters")).queryByRole("link", {
+        name: "Balance brought forward — take-on",
+      })
+    ).not.toBeInTheDocument();
+    expect(screen.getByTestId("reversal-action-tx-cheque")).toBeInTheDocument();
+    expect(screen.queryByTestId("reversal-action-tx-bf")).not.toBeInTheDocument();
   });
 
   // Phase 92 646D (ruling #6): optional fee-transfer date — the date the bank shows the transfer.

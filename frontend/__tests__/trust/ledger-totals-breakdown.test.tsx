@@ -10,6 +10,7 @@ afterEach(() => cleanup());
 
 const LEDGER = {
   balance: 3750,
+  broughtForward: 0,
   totalDeposits: 5000,
   totalTransfersIn: 0,
   totalPayments: 1250,
@@ -114,5 +115,40 @@ describe("LedgerTotalsBreakdown — section 86(4) invested balance", () => {
     expect(screen.queryByTestId("ledger-total-invested")).toBeNull();
     expect(screen.queryByTestId("ledger-total-held")).toBeNull();
     expect(amount("balance")).toBe(formatCurrency(50000, "ZAR"));
+  });
+});
+
+// 657A (§17.3.15): a client taken on from the previous system starts from its balance brought
+// forward; the rows still sum to the balance.
+describe("LedgerTotalsBreakdown — brought forward at take-on (657A)", () => {
+  const amount = (key: string) =>
+    screen.getByTestId(`ledger-total-${key}`).querySelector("dd")!.textContent;
+  const sign = (key: string) => term(key).querySelector('[aria-hidden="true"]')!.textContent;
+
+  it("opens with the balance brought forward, then deposits add to it", () => {
+    render(
+      <LedgerTotalsBreakdown
+        ledger={{
+          ...LEDGER,
+          broughtForward: 300000,
+          totalDeposits: 60000,
+          totalPayments: 10000,
+          balance: 350000,
+        }}
+      />
+    );
+
+    expect(term("brought-forward").textContent).toContain("Brought forward at take-on");
+    expect(amount("brought-forward")).toBe(formatCurrency(300000, "ZAR"));
+    expect(sign("brought-forward")).toBe("");
+    expect(sign("deposits")).toBe("+");
+    expect(amount("balance")).toBe(formatCurrency(350000, "ZAR"));
+  });
+
+  it("shows no brought-forward row for a client never taken on, and deposits carry no sign", () => {
+    render(<LedgerTotalsBreakdown ledger={LEDGER} />);
+
+    expect(screen.queryByTestId("ledger-total-brought-forward")).toBeNull();
+    expect(sign("deposits")).toBe("");
   });
 });

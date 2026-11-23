@@ -1,0 +1,20 @@
+# 3a  2026-11-23T15:58:00.086Z
+POST http://localhost:8081/api/bank-statement-lines/e01a8f2c-ac2f-42ce-b3f2-57b929b6997f/record
+Idempotency-Key: d842f6bd-92e6-400d-b1c3-c001ef2f3356
+Authorization: Bearer <mock-auth-token cookie of Alice's browser session>
+{"classification":"TAKEON_CLIENT","notes":"657A OBS crafted request"}
+→ HTTP 400
+{"detail":"The request body could not be read or parsed","instance":"/api/bank-statement-lines/e01a8f2c-ac2f-42ce-b3f2-57b929b6997f/record","status":400,"title":"Malformed request body"}
+
+# 3b  2026-11-23T15:58:00.148Z
+POST http://localhost:8081/api/trust-transaction-types
+{"code":"TAKEON_CLIENT"}
+→ HTTP 405
+{"detail":"Method 'POST' is not supported.","instance":"/api/trust-transaction-types","status":405,"title":"Method Not Allowed"}
+
+# 3c (control)  2026-11-23T15:58:00.165Z
+POST http://localhost:8081/api/bank-statement-lines/e01a8f2c-ac2f-42ce-b3f2-57b929b6997f/record
+Idempotency-Key: 8e38dbc0-e6e3-4afa-a5c1-8bcb269c9cae
+{"classification":"FUND_INTEREST","notes":"657A OBS control request"}
+→ HTTP 400
+{"detail":"This statement line is already matched, recorded or excluded","instance":"/api/bank-statement-lines/e01a8f2c-ac2f-42ce-b3f2-57b929b6997f/record","status":400,"title":"Cannot record statement line"}

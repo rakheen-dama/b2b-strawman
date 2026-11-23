@@ -171,6 +171,7 @@ function investmentAccount(id: string, name: string, basis: InvestmentBasis): Tr
     createdAt: "2025-01-01T00:00:00Z",
     updatedAt: "2025-01-01T00:00:00Z",
     lockedThrough: null,
+    takeOnCutoverDate: null,
   };
 }
 

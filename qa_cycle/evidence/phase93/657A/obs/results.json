@@ -1,0 +1,352 @@
+{
+  "c1": {
+    "status": 200,
+    "total": 36,
+    "takeOnOnly": [
+      {
+        "code": "TAKEON_CLIENT",
+        "label": "Balance brought forward — take-on",
+        "ledger": "CLIENT",
+        "origin": "TAKE_ON",
+        "clearedAtCutover": true,
+        "reversal": "NONE",
+        "requiresApproval": false
+      },
+      {
+        "code": "TAKEON_FUND",
+        "label": "Fund ledger brought forward — take-on",
+        "ledger": "NON_CLIENT",
+        "origin": "TAKE_ON",
+        "clearedAtCutover": true,
+        "reversal": "NONE",
+        "requiresApproval": false
+      },
+      {
+        "code": "TAKEON_FUND_DEBIT",
+        "label": "Fund ledger brought forward in debit — take-on",
+        "ledger": "NON_CLIENT",
+        "origin": "TAKE_ON",
+        "clearedAtCutover": true,
+        "reversal": "NONE",
+        "requiresApproval": false
+      },
+      {
+        "code": "TAKEON_UNIDENTIFIED",
+        "label": "Unidentified deposit brought forward — take-on",
+        "ledger": "NON_CLIENT",
+        "origin": "TAKE_ON",
+        "clearedAtCutover": true,
+        "reversal": "NONE",
+        "requiresApproval": false
+      },
+      {
+        "code": "TAKEON_INVESTMENT",
+        "label": "Section 86(4) investment brought forward — take-on",
+        "ledger": "CLIENT_INVESTMENT",
+        "origin": "TAKE_ON",
+        "clearedAtCutover": true,
+        "reversal": "NONE",
+        "requiresApproval": false
+      },
+      {
+        "code": "TAKEON_FIRM_INV_OUT",
+        "label": "Placed in section 86(3) investment — brought forward",
+        "ledger": "INTER_ACCOUNT",
+        "origin": "TAKE_ON",
+        "clearedAtCutover": true,
+        "reversal": "NONE",
+        "requiresApproval": false
+      },
+      {
+        "code": "TAKEON_FIRM_INV_IN",
+        "label": "Section 86(3) investment brought forward — take-on",
+        "ledger": "INTER_ACCOUNT",
+        "origin": "TAKE_ON",
+        "clearedAtCutover": true,
+        "reversal": "NONE",
+        "requiresApproval": false
+      },
+      {
+        "code": "TAKEON_PAY_UNPRES",
+        "label": "Payment not yet presented at take-on",
+        "ledger": "CLIENT",
+        "origin": "TAKE_ON",
+        "clearedAtCutover": false,
+        "reversal": "IMMEDIATE",
+        "requiresApproval": false
+      },
+      {
+        "code": "TAKEON_PAY_OFFSET",
+        "label": "Take-on offset — payment not yet presented",
+        "ledger": "CLIENT",
+        "origin": "TAKE_ON",
+        "clearedAtCutover": true,
+        "reversal": "NONE",
+        "requiresApproval": false
+      },
+      {
+        "code": "TAKEON_DEP_TRANSIT",
+        "label": "Deposit not yet cleared at take-on",
+        "ledger": "CLIENT",
+        "origin": "TAKE_ON",
+        "clearedAtCutover": false,
+        "reversal": "NEEDS_APPROVAL",
+        "requiresApproval": false
+      },
+      {
+        "code": "TAKEON_DEP_OFFSET",
+        "label": "Take-on offset — deposit not yet cleared",
+        "ledger": "CLIENT",
+        "origin": "TAKE_ON",
+        "clearedAtCutover": true,
+        "reversal": "NONE",
+        "requiresApproval": false
+      }
+    ],
+    "takeOnOnlyAllTAKEON": true,
+    "takeOnOnlyCount": 11,
+    "notTakeOnCount": 25,
+    "notTakeOnAnyTAKEON": false,
+    "missingFlags": [],
+    "clearedAtCutover": [
+      "TAKEON_CLIENT",
+      "TAKEON_FUND",
+      "TAKEON_FUND_DEBIT",
+      "TAKEON_UNIDENTIFIED",
+      "TAKEON_INVESTMENT",
+      "TAKEON_FIRM_INV_OUT",
+      "TAKEON_FIRM_INV_IN",
+      "TAKEON_PAY_OFFSET",
+      "TAKEON_DEP_OFFSET"
+    ],
+    "clearedOutsideTakeOn": [],
+    "preExistingCodes": [
+      "DEPOSIT",
+      "PAYMENT",
+      "FEE_TRANSFER",
+      "REFUND",
+      "TRANSFER_OUT",
+      "TRANSFER_IN",
+      "REVERSAL",
+      "FUND_INTEREST",
+      "FUND_SWEEP",
+      "BANK_CHARGE",
+      "CHARGE_REFUND",
+      "UNIDENTIFIED_DEPOSIT",
+      "UNIDENT_ALLOC_OUT",
+      "UNIDENT_ALLOC_IN",
+      "UNIDENT_FUND_PAY",
+      "INV_PLACE",
+      "INV_RECEIVE",
+      "INV_INTEREST",
+      "FUND_INV_SHARE",
+      "INV_WITHDRAW",
+      "INV_RETURN",
+      "FIRM_INV_PLACE",
+      "FIRM_INV_RECEIVE",
+      "FIRM_INV_WITHDRAW",
+      "FIRM_INV_RETURN"
+    ]
+  },
+  "c2": {
+    "dialogs": {
+      "transactions: Record Deposit": {
+        "text": "Record Deposit | Record a trust deposit from a client into the trust account. | Client | Select a client... | Matter | Select a client first | Amount | Reference | Description (Optional) | Transaction Date | Cancel | Record Deposit | Close",
+        "comboLabels": [
+          "trust-deposit-customer-trigger :: Select a client...",
+          "trust-deposit-matter-trigger :: Select a client first"
+        ],
+        "radios": [],
+        "hits": [],
+        "title": "Record Deposit"
+      },
+      "transactions: Record Payment": {
+        "text": "Record Payment | Record a trust payment on behalf of a client. Payments above the approval threshold will require approval. | Client | Select a client... | Matter | Select a client first | Amount | Reference | Description (Optional) | Transaction Date | Cancel | Record Payment | Close",
+        "comboLabels": [
+          "trust-payment-customer-trigger :: Select a client...",
+          "trust-payment-matter-trigger :: Select a client first"
+        ],
+        "radios": [],
+        "hits": [],
+        "title": "Record Payment"
+      },
+      "transactions: Record Transfer": {
+        "text": "Record Transfer | Transfer funds between client ledgers within the trust account. | Source Client ID | Target Client ID | Source Matter | Target Matter | Amount | Reference | Description (Optional) | Transaction Date | Cancel | Record Transfer | Close",
+        "comboLabels": [],
+        "radios": [],
+        "hits": [],
+        "title": "Record Transfer"
+      },
+      "transactions: Record Fee Transfer": {
+        "text": "Record Fee Transfer | Transfer fees from trust to the office account against an unpaid fee note. | Client ID | Fee note ID | Amount | Reference | Fee transfer date (optional) | Leave blank for today. Use the date the bank shows the transfer. | Cancel | Record Fee Transfer | Close",
+        "comboLabels": [],
+        "radios": [],
+        "hits": [],
+        "title": "Record Fee Transfer"
+      },
+      "transactions: Record Refund": {
+        "text": "Record Refund | Refund trust funds back to the client. | Client | Select a client... | Matter | Select a client first | Amount | Reference | Description (Optional) | Transaction Date | Cancel | Record Refund | Close",
+        "comboLabels": [
+          "trust-refund-customer-trigger :: Select a client...",
+          "trust-refund-matter-trigger :: Select a client first"
+        ],
+        "radios": [],
+        "hits": [],
+        "title": "Record Refund"
+      },
+      "transactions: Reverse Transaction": {
+        "text": "Reverse Transaction | This will create a reversal entry. Please provide a reason. | Reason | Reversal date (optional) | Leave blank for today. Use the date the bank shows the reversal. | Cancel | Reverse Transaction | Close",
+        "comboLabels": [],
+        "radios": [],
+        "hits": []
+      },
+      "client page trust card: Record Deposit": {
+        "text": "Record Deposit | Record a trust deposit from a client into the trust account. | Client | Ndlovu Family Trust | Matter | Select a matter... | Amount | Reference | Description (Optional) | Transaction Date | Cancel | Record Deposit | Close",
+        "comboLabels": [
+          "trust-deposit-customer-trigger :: Ndlovu Family Trust",
+          "trust-deposit-matter-trigger :: Select a matter..."
+        ],
+        "radios": [],
+        "hits": []
+      },
+      "client page trust card: Record Payment": {
+        "text": "Record Payment | Record a trust payment on behalf of a client. Payments above the approval threshold will require approval. | Client | Ndlovu Family Trust | Matter | Select a matter... | Amount | Reference | Description (Optional) | Transaction Date | Cancel | Record Payment | Close",
+        "comboLabels": [
+          "trust-payment-customer-trigger :: Ndlovu Family Trust",
+          "trust-payment-matter-trigger :: Select a matter..."
+        ],
+        "radios": [],
+        "hits": []
+      },
+      "client page trust card: Fee Transfer": {
+        "text": "Record Fee Transfer | Transfer fees from trust to the office account against an unpaid fee note. | Client ID | Fee note ID | Amount | Reference | Fee transfer date (optional) | Leave blank for today. Use the date the bank shows the transfer. | Cancel | Record Fee Transfer | Close",
+        "comboLabels": [],
+        "radios": [],
+        "hits": []
+      },
+      "investments: Place Investment": {
+        "text": "Place Investment | Place trust money from this account into an investment account. | Investment basis | Section 86(3) — the firm invests surplus trust money | Section 86(4) — invested on a client's instruction | Interest on a section 86(3) investment belongs to the Legal Practitioners’ Fidelity Fund. | Investment account | Select the investment account | The firm has no section 86(3) investment account yet. | Add investment account | Institution | Account Number | Principal | Interest Rate % | Deposit Date | Maturity Date (optional) | Notes (optional) | The bank must have an arrangement with the Legal Practitioners Fidelity Fund (Section 86(6)). Contact the LPFF to verify. | Cancel | Place Investment | Close",
+        "comboLabels": [
+          "investment-account-select :: Select the investment account",
+          " :: "
+        ],
+        "radios": [
+          "FIRM_DISCRETION",
+          "CLIENT_INSTRUCTION"
+        ],
+        "hits": []
+      }
+    },
+    "transactionsPills": {
+      "count": 25,
+      "expectedCount": 25,
+      "equalsOfferedList": true,
+      "forbiddenHits": []
+    },
+    "menuItems": [
+      "Record Deposit",
+      "Record Payment",
+      "Record Transfer",
+      "Record Fee Transfer",
+      "Record Refund"
+    ],
+    "menuHits": [],
+    "reversal": {
+      "rowsOnPage": 20,
+      "reverseButtons": 9,
+      "firstRow": "31 Oct 2026 STMT-19-20261031 Bank charge refunded from the business account R 57,50 RECORDED Reverse"
+    },
+    "ledgerPills Ndlovu Family Trust": {
+      "count": 13,
+      "expectedCount": 13,
+      "wouldBeWithoutFilter": 19,
+      "equalsOfferedList": true,
+      "forbiddenHits": []
+    },
+    "ledgerPills Khumalo Holdings": {
+      "count": 13,
+      "expectedCount": 13,
+      "wouldBeWithoutFilter": 19,
+      "equalsOfferedList": true,
+      "forbiddenHits": []
+    },
+    "anyDialogHits": []
+  },
+  "c4": {
+    "Ndlovu Family Trust": {
+      "general": "R 69 380,00",
+      "invested": null,
+      "total": null,
+      "broughtForwardRowCount": 0,
+      "breakdown": "Deposits | R 100 000,00 | +Returned from section 86(4) investments | R 50 380,00 | − | less | Payments | R 12 500,00 | − | less | Fee transfers | R 8 500,00 | − | less | Refunds | R 0,00 | − | less | Transfers out | R 10 000,00 | − | less | Placed in section 86(4) investments | R 50 000,00 | =Balance | R 69 380,00",
+      "pageHasBroughtForwardText": false,
+      "apiBroughtForward": 0,
+      "apiBalance": 69380,
+      "matches": true
+    },
+    "Khumalo Holdings": {
+      "general": "R 31 000,00",
+      "invested": "R 20 095,00",
+      "total": "R 51 095,00",
+      "broughtForwardRowCount": 0,
+      "breakdown": "Deposits | R 47 500,00 | +Transfers in | R 10 000,00 | − | less | Payments | R 1 500,00 | − | less | Fee transfers | R 0,00 | − | less | Refunds | R 5 000,00 | − | less | Placed in section 86(4) investments | R 20 000,00 | =General balance | R 31 000,00 | +Invested (section 86(4)) | R 20 095,00 | =Total held in trust | R 51 095,00",
+      "pageHasBroughtForwardText": false,
+      "apiBroughtForward": 0,
+      "apiBalance": 31000,
+      "matches": true
+    },
+    "reconciliations": [
+      "31 Oct 2026 R 103 130,00 R 101 630,00 R 100 380,00 Balanced 23 Nov 2026 List locked"
+    ],
+    "list g": {
+      "stat": {
+        "Adjusted bank balance": "R 101 630,00",
+        "Cashbook": "R 101 630,00",
+        "Trust creditors": "R 101 630,00",
+        "Difference": "R 0,00"
+      },
+      "creditorRows": [
+        "Khumalo Holdings Client R 31 000,00",
+        "Khumalo — lease dispute Matter R 31 000,00",
+        "Ndlovu Family Trust Client R 69 380,00",
+        "Ndlovu — estate transfer Matter R 69 380,00",
+        "Legal Practitioners' Fidelity Fund — interest and charges Legal Practitioners' Fidelity Fund R 0,00",
+        "ACB CREDIT UNKNOWN · received 22 Oct 2026 Unidentified deposit R 1 250,00"
+      ],
+      "containsAll": true,
+      "broughtForwardRows": 0,
+      "hasBf": false
+    },
+    "list ib": {
+      "stat": {
+        "Adjusted bank balance": "R 20 095,00",
+        "Cashbook": "R 20 095,00",
+        "Trust creditors": "R 20 095,00",
+        "Difference": "R 0,00"
+      },
+      "creditorRows": [
+        "Khumalo Holdings Invested (section 86(4)) R 20 095,00",
+        "Legal Practitioners' Fidelity Fund — interest and charges Legal Practitioners' Fidelity Fund R 0,00"
+      ],
+      "containsAll": true,
+      "broughtForwardRows": 0,
+      "hasBf": false
+    },
+    "dashboard": {
+      "integrityCard": "Trust integrity | As at 23 Nov 2026, all trust accounts | Books balance | No flags",
+      "booksBalance": "Books balance",
+      "noFlags": true,
+      "flags": 0,
+      "summary": "Trust Balance | R 101 630,00 | Mathebula & Partners Trust Account cashbook balance | Trust creditors R 101 630,00 | (agrees with the cashbook) | Active Clients | 2 | Clients with trust balances | Pending Approvals | 0 | Transactions awaiting approval | Reconciliation | Balanced | Last reconciled 31 Oct 2026 · 23 days ago"
+    }
+  },
+  "c3": {
+    "r3a": 400,
+    "r3aBody": "{\"detail\":\"The request body could not be read or parsed\",\"instance\":\"/api/bank-statement-lines/e01a8f2c-ac2f-42ce-b3f2-57b929b6997f/record\",\"status\":400,\"title\":\"Malformed request body\"}",
+    "r3b": 405,
+    "r3bBody": "{\"detail\":\"Method 'POST' is not supported.\",\"instance\":\"/api/trust-transaction-types\",\"status\":405,\"title\":\"Method Not Allowed\"}",
+    "r3c": 400,
+    "r3cBody": "{\"detail\":\"This statement line is already matched, recorded or excluded\",\"instance\":\"/api/bank-statement-lines/e01a8f2c-ac2f-42ce-b3f2-57b929b6997f/record\",\"status\":400,\"title\":\"Cannot record statement line\"}"
+  },
+  "consoleErrors": []
+}

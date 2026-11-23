@@ -43,10 +43,12 @@ class LedgerTotalsTest {
             new BigDecimal("50"),
             new BigDecimal("100"),
             new BigDecimal("70"),
-            new BigDecimal("20"));
+            new BigDecimal("20"),
+            new BigDecimal("-5"));
 
-    // 1000 + 200 + 20 − 300 − 150 − 50 − 100 − 70 (placements 70, returns 20 — 648E)
-    assertThat(totals.derivedBalance()).isEqualByComparingTo("550");
+    // 1000 + 200 + 20 − 300 − 150 − 50 − 100 − 70 (placements 70, returns 20 — 648E) + (−5)
+    // (the signed brought-forward net — 657A, added as-is)
+    assertThat(totals.derivedBalance()).isEqualByComparingTo("545");
   }
 
   @Test
@@ -69,7 +71,8 @@ class LedgerTotalsTest {
 
   @Test
   void plus_nonClientLedgerTypesAreANoOp() {
-    // 646B (D4): the fifteen types that never sit on the CLIENT ledger leave the totals unchanged.
+    // 646B (D4): the fifteen types that never sit on the CLIENT ledger leave the totals unchanged;
+    // 657A: so do the six take-on types that never sit on it (21).
     var base = LedgerTotals.ZERO.plus("DEPOSIT", new BigDecimal("100"));
     for (var type :
         List.of(
@@ -87,7 +90,13 @@ class LedgerTotalsTest {
             "FIRM_INV_PLACE",
             "FIRM_INV_RECEIVE",
             "FIRM_INV_WITHDRAW",
-            "FIRM_INV_RETURN")) {
+            "FIRM_INV_RETURN",
+            "TAKEON_FUND",
+            "TAKEON_FUND_DEBIT",
+            "TAKEON_UNIDENTIFIED",
+            "TAKEON_INVESTMENT",
+            "TAKEON_FIRM_INV_OUT",
+            "TAKEON_FIRM_INV_IN")) {
       assertThat(base.plus(type, new BigDecimal("999"))).as(type).isEqualTo(base);
     }
   }
@@ -125,6 +134,46 @@ class LedgerTotalsTest {
     assertThat(folded.get(CLIENT_A).transfersOut()).isEqualByComparingTo("0");
     assertThat(folded.get(CLIENT_A).transfersIn()).isEqualByComparingTo("0");
     assertThat(folded.get(CLIENT_A).derivedBalance()).isEqualByComparingTo("50000.00");
+  }
+
+  @Test
+  void plus_takeOnRows_areOneSignedBroughtForwardFigure() {
+    // 657A (§17.3.13 client A): balance brought forward 300 000 and a cheque unpresented at
+    // cutover (20 000) with its offset — the item and its offset net to zero while it stands
+    var totals =
+        LedgerTotals.ZERO
+            .plus("TAKEON_CLIENT", new BigDecimal("300000.00"))
+            .plus("TAKEON_PAY_UNPRES", new BigDecimal("20000.00"))
+            .plus("TAKEON_PAY_OFFSET", new BigDecimal("20000.00"))
+            .plus("TAKEON_DEP_TRANSIT", new BigDecimal("5000.00"))
+            .plus("TAKEON_DEP_OFFSET", new BigDecimal("5000.00"));
+
+    assertThat(totals.broughtForward()).isEqualByComparingTo("300000.00");
+    assertThat(totals.deposits()).isEqualByComparingTo("0");
+    assertThat(totals.payments()).isEqualByComparingTo("0");
+    assertThat(totals.derivedBalance()).isEqualByComparingTo("300000.00");
+
+    // byCustomer receives signed ledger_effect sums: the unpresented cheque is −20 000 and turns
+    // into a 20 000 posted amount that plus() subtracts
+    var folded =
+        LedgerTotals.byCustomer(
+            List.of(
+                row(CLIENT_A, "TAKEON_CLIENT", "300000.00"),
+                row(CLIENT_A, "TAKEON_PAY_UNPRES", "-20000.00"),
+                row(CLIENT_A, "TAKEON_PAY_OFFSET", "20000.00")));
+    assertThat(folded.get(CLIENT_A).broughtForward()).isEqualByComparingTo("300000.00");
+    assertThat(folded.get(CLIENT_A).derivedBalance()).isEqualByComparingTo("300000.00");
+
+    // the cheque cancelled after cutover: its REVERSAL nets under TAKEON_PAY_UNPRES (0), so the
+    // money comes back into the brought-forward figure
+    var reversed =
+        LedgerTotals.byCustomer(
+            List.of(
+                row(CLIENT_A, "TAKEON_CLIENT", "300000.00"),
+                row(CLIENT_A, "TAKEON_PAY_UNPRES", "0.00"),
+                row(CLIENT_A, "TAKEON_PAY_OFFSET", "20000.00")));
+    assertThat(reversed.get(CLIENT_A).broughtForward()).isEqualByComparingTo("320000.00");
+    assertThat(reversed.get(CLIENT_A).derivedBalance()).isEqualByComparingTo("320000.00");
   }
 
   @Test

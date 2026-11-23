@@ -143,6 +143,23 @@ public class TrustTransaction {
   @Column(name = "charge_vat_amount", precision = 15, scale = 2)
   private BigDecimal chargeVatAmount;
 
+  // --- Phase 93 / 657A (ADR-386): opening entries of a take-on.
+
+  /**
+   * The take-on batch whose commit posted this opening entry; null on every other row, including
+   * the REVERSAL of a take-on row (chk_trust_txn_take_on_batch). Set once, before the first save.
+   */
+  @Column(name = "take_on_batch_id", updatable = false)
+  private UUID takeOnBatchId;
+
+  /**
+   * Cleared at the cutover date (the registry's {@code Clearance.AT_CUTOVER}): never outstanding,
+   * never linked to a bank line (chk_trust_txn_cutover_cleared). Written only by {@link
+   * TrustPostingService#recordOpening} through {@link #applyClearance}; false on every other row.
+   */
+  @Column(name = "cleared_at_cutover", nullable = false, updatable = false)
+  private boolean clearedAtCutover;
+
   protected TrustTransaction() {}
 
   public TrustTransaction(
@@ -312,6 +329,35 @@ public class TrustTransaction {
   /** When the row was posted; null while AWAITING_APPROVAL or REJECTED. */
   public Instant getPostedAt() {
     return postedAt;
+  }
+
+  public UUID getTakeOnBatchId() {
+    return takeOnBatchId;
+  }
+
+  public boolean isClearedAtCutover() {
+    return clearedAtCutover;
+  }
+
+  /** Phase 93: names the take-on batch of an opening entry — set once, before the first save. */
+  public void setTakeOnBatchId(UUID takeOnBatchId) {
+    if (this.takeOnBatchId != null) {
+      throw new IllegalStateException(
+          "Trust transaction " + id + " already names its take-on batch");
+    }
+    this.takeOnBatchId = takeOnBatchId;
+  }
+
+  /**
+   * Writes the registry's clearance onto an opening entry. Package-private and called only by
+   * {@link TrustPostingService#recordOpening} (same rule as {@link #applyPosting}).
+   */
+  void applyClearance(TrustTransactionType.Clearance clearance) {
+    boolean cleared = clearance == TrustTransactionType.Clearance.AT_CUTOVER;
+    if (cleared && takeOnBatchId == null) {
+      throw new IllegalStateException("Only a take-on row is cleared at the cutover date");
+    }
+    this.clearedAtCutover = cleared;
   }
 
   /**

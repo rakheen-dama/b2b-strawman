@@ -342,8 +342,15 @@ public class Section35DataPackQuery implements ReportQuery {
       var t = block.totals();
       String name = account.getAccountName();
       boolean s864 = account.getSection() == TrustAccountSection.S86_4;
-      rows.add(
-          scheduleLine(account, name + " — Fund ledger brought forward", t, "fundBroughtForward"));
+      // 657A: the period's b/f includes the Fund ledger brought forward at take-on — say so
+      String broughtForwardLabel = name + " — Fund ledger brought forward";
+      if (block.takeOnBroughtForward().signum() != 0 && account.getTakeOnCutoverDate() != null) {
+        broughtForwardLabel +=
+            ", including brought forward at take-on ("
+                + IntegrityMessages.date(account.getTakeOnCutoverDate())
+                + ")";
+      }
+      rows.add(scheduleLine(account, broughtForwardLabel, t, "fundBroughtForward"));
       rows.add(
           scheduleLine(
               account,

@@ -34,6 +34,11 @@ import java.util.UUID;
  * the account as at the list's date — carried once per client, on its {@code CLIENT} line (or, with
  * none, its {@code CLIENT_INVESTMENT} line), null on every other line. Frozen with the list, so a
  * locked list's report rows show the figures of the day, not today's ledger.
+ *
+ * <p>{@code broughtForward} (Phase 93 657A): the client's signed brought-forward-at-take-on net on
+ * the account as at the list's date ({@code LedgerTotals.broughtForward}) — printed "B/f at
+ * take-on"; on the client's first line only, like the totals; null elsewhere and on lists frozen
+ * before 657A (Hibernate's JSON mapper reads a missing key as null).
  */
 public record CreditorLine(
     Kind kind,
@@ -47,7 +52,8 @@ public record CreditorLine(
     BigDecimal totalDeposits,
     BigDecimal totalPayments,
     BigDecimal totalFeeTransfers,
-    String lastTransactionDate) {
+    String lastTransactionDate,
+    BigDecimal broughtForward) {
 
   /** What a line is a balance of. */
   public enum Kind {

@@ -116,6 +116,7 @@ const TS_UNIONS: Record<keyof typeof enums, string[]> = {
   "TrustTransactionType.Origin": Object.keys({
     FIRM: true,
     BANK: true,
+    TAKE_ON: true,
   } satisfies Record<NonNullable<TrustTransactionTypeInfo["origin"]>, true>),
   "TrustTransactionType.Reversal": Object.keys({
     IMMEDIATE: true,
@@ -224,6 +225,8 @@ describe("trust wire shapes match the backend contract (ADR-365)", () => {
       requiresApproval: false,
       reversal: "NONE",
       clientVisible: false,
+      takeOnOnly: false,
+      clearedAtCutover: false,
     };
     expect(Object.keys(literal)).toEqual(componentNames(records.TrustTransactionTypeResponse));
   });
@@ -281,6 +284,7 @@ describe("trust wire shapes match the backend contract (ADR-365)", () => {
       totalPayments: null,
       totalFeeTransfers: null,
       lastTransactionDate: null,
+      broughtForward: null,
     };
     expect(Object.keys(literal)).toEqual(componentNames(records.CreditorLine));
   });
@@ -662,6 +666,7 @@ describe("trust wire shapes match the backend contract (ADR-365)", () => {
       createdAt: "",
       updatedAt: "",
       lockedThrough: null,
+      takeOnCutoverDate: null,
     };
     expect(Object.keys(literal)).toEqual(componentNames(records.TrustAccountResponse));
   });
@@ -796,6 +801,7 @@ describe("trust wire shapes match the backend contract (ADR-365)", () => {
       totalTransfersOut: 0,
       totalInvestmentPlacements: 0,
       totalInvestmentReturns: 0,
+      broughtForward: 0,
       investedBalance: 0,
       lastTransactionDate: null,
       createdAt: "",

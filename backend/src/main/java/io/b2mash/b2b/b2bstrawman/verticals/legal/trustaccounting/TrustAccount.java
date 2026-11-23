@@ -13,6 +13,7 @@ import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Objects;
 import java.util.UUID;
 
 @Entity
@@ -66,6 +67,18 @@ public class TrustAccount {
   @Column(name = "notes", columnDefinition = "TEXT")
   private String notes;
 
+  /**
+   * Phase 93 (657A, ADR-386): the date the account was taken on from the previous system, with the
+   * batch that did it — set together by the take-on commit (657C) on the banking account and each
+   * investment account the batch posts to, never changed afterwards (chk_trust_account_take_on).
+   * While set, no entry dated on or before it is accepted ({@code DATED_BEFORE_TAKE_ON}).
+   */
+  @Column(name = "take_on_cutover_date")
+  private LocalDate takeOnCutoverDate;
+
+  @Column(name = "take_on_batch_id")
+  private UUID takeOnBatchId;
+
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
 
@@ -73,6 +86,33 @@ public class TrustAccount {
   private Instant updatedAt;
 
   protected TrustAccount() {}
+
+  /**
+   * Marks the account taken on at {@code cutoverDate} by {@code batchId}. An investment account
+   * shared by two banking accounts is taken on by the first batch; a later batch at the same date
+   * is a no-op (it keeps the first batch), at another date it is refused (§17.3.9).
+   */
+  public void markTakenOn(LocalDate cutoverDate, UUID batchId) {
+    Objects.requireNonNull(cutoverDate, "cutoverDate");
+    Objects.requireNonNull(batchId, "batchId");
+    if (takeOnCutoverDate != null) {
+      if (takeOnCutoverDate.equals(cutoverDate)) {
+        return;
+      }
+      throw new IllegalStateException(
+          "Trust account " + id + " was already taken on at " + takeOnCutoverDate);
+    }
+    this.takeOnCutoverDate = cutoverDate;
+    this.takeOnBatchId = batchId;
+  }
+
+  public LocalDate getTakeOnCutoverDate() {
+    return takeOnCutoverDate;
+  }
+
+  public UUID getTakeOnBatchId() {
+    return takeOnBatchId;
+  }
 
   /** A non-investment account (GENERAL, SECTION_86): no investment basis. */
   public TrustAccount(

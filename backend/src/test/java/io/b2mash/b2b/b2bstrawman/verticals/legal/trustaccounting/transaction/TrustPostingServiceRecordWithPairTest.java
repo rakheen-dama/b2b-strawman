@@ -8,6 +8,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
 import java.math.BigDecimal;
@@ -15,6 +16,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,7 +26,8 @@ import org.springframework.test.util.ReflectionTestUtils;
  * Phase 92 slice 647D (fix cycle 1): the guards of {@link TrustPostingService#recordWithPair} — a
  * WITH_PAIR row ({@code UNIDENT_ALLOC_IN}; 648A's {@code INV_RETURN}) posts only with its pair, and
  * only once that pair is posted with the status its own type posts with (REQUIRED → APPROVED, NONE
- * → RECORDED). Each refusal saves nothing.
+ * → RECORDED). Each refusal saves nothing. 657A: a take-on row is never a pair, and a leg dated on
+ * or before a taken-on account's cutover date is refused (DATED_BEFORE_TAKE_ON).
  */
 class TrustPostingServiceRecordWithPairTest {
 
@@ -37,17 +40,19 @@ class TrustPostingServiceRecordWithPairTest {
   private static final LocalDate DATE = LocalDate.of(2026, 11, 10);
 
   private TrustTransactionRepository repository;
+  private TrustAccountRepository accountRepository;
   private TrustPostingService service;
 
   @BeforeEach
   void setUp() {
     repository = mock(TrustTransactionRepository.class);
     when(repository.save(any(TrustTransaction.class))).thenAnswer(i -> i.getArgument(0));
+    accountRepository = mock(TrustAccountRepository.class);
     service =
         new TrustPostingService(
             repository,
             mock(ClientLedgerCardRepository.class),
-            mock(TrustAccountRepository.class),
+            accountRepository,
             Clock.fixed(NOW, ZoneOffset.UTC));
   }
 
@@ -132,6 +137,66 @@ class TrustPostingServiceRecordWithPairTest {
     assertThat(leg.getLedgerEffect()).isEqualByComparingTo("80.00");
     assertThat(leg.getCashbookEffect()).isEqualByComparingTo("0");
     verify(repository).save(leg);
+  }
+
+  /** 657A: a take-on row (Approval.AT_SIGN_OFF) is never a pair. */
+  @Test
+  void aTakeOnRowAsThePair_isRefused() {
+    var takeOn =
+        new TrustTransaction(
+            ACCOUNT,
+            "TAKEON_INVESTMENT",
+            new BigDecimal("80.00"),
+            CLIENT,
+            MATTER,
+            null,
+            "TO-TEST",
+            "Brought forward",
+            DATE,
+            "APPROVED",
+            MAKER);
+    ReflectionTestUtils.setField(takeOn, "id", UUID.randomUUID());
+    takeOn.applyPosting(
+        TrustTransactionType.TAKEON_INVESTMENT.effectFor(new BigDecimal("80.00")), NOW);
+
+    assertThatThrownBy(() -> service.recordWithPair(draft("INV_RETURN"), takeOn))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage(
+            "recordWithPair: pair "
+                + takeOn.getId()
+                + " is APPROVED but its type TAKEON_INVESTMENT posts with approval AT_SIGN_OFF");
+    verify(repository, never()).save(any());
+  }
+
+  /**
+   * 657A (§17.3.11): on a taken-on account a pair leg dated on or before the cutover date is
+   * refused under the posting lock — 409 DATED_BEFORE_TAKE_ON, nothing saved.
+   */
+  @Test
+  void aLegDatedOnOrBeforeTheTakeOn_isRefusedWithDatedBeforeTakeOn() {
+    when(accountRepository.findTakeOnCutoverDate(ACCOUNT)).thenReturn(Optional.of(DATE));
+    var withdrawal = postedWithdrawal("RECORDED");
+
+    assertThatThrownBy(() -> service.recordWithPair(draft("INV_RETURN"), withdrawal))
+        .isInstanceOfSatisfying(
+            ResourceConflictException.class,
+            e -> {
+              assertThat(e.getBody().getStatus()).isEqualTo(409);
+              assertThat(e.getBody().getTitle()).isEqualTo("Entry dated before the take-on");
+              assertThat(e.getBody().getDetail())
+                  .isEqualTo(
+                      "This account was taken on at 10 November 2026. Entries on or before that"
+                          + " date belong in the previous system's books.");
+              assertThat(e.getBody().getProperties())
+                  .containsEntry("code", TrustPostingService.DATED_BEFORE_TAKE_ON);
+            });
+    verify(repository, never()).save(any());
+
+    // dated the day after: posts
+    when(accountRepository.findTakeOnCutoverDate(ACCOUNT))
+        .thenReturn(Optional.of(DATE.minusDays(1)));
+    assertThat(service.recordWithPair(draft("INV_RETURN"), withdrawal).getPostedAt())
+        .isEqualTo(NOW);
   }
 
   private static TrustTransaction draft(String type) {

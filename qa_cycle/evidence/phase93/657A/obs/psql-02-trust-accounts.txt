@@ -1,0 +1,8 @@
+select account_name, account_type, is_primary, take_on_cutover_date, take_on_batch_id from tenant_7d218705360b.trust_accounts order by account_name
+            account_name            | account_type | is_primary | take_on_cutover_date | take_on_batch_id 
+------------------------------------+--------------+------------+----------------------+------------------
+ Mathebula & Partners Trust Account | GENERAL      | t          |                      | 
+ Section 86(4) investment — Khumalo | INVESTMENT   | f          |                      | 
+ Section 86(4) investment — Ndlovu  | INVESTMENT   | f          |                      | 
+(3 rows)
+

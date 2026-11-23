@@ -34,7 +34,7 @@ import {
   type TakeOnRowStatus,
   type TakeOnSection,
 } from "@/lib/types";
-import { TakeOnError } from "./upload-step";
+import { TakeOnError } from "./take-on-feedback";
 
 const PAGE_SIZE = 50;
 /** A row message after cancel or purge: the code stays, the text (it may quote a cell) is gone. */

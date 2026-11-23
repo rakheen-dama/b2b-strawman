@@ -29,7 +29,7 @@ import {
   type TakeOnSource,
 } from "@/lib/types";
 import { useTakeOnPreview } from "./sheet-picker";
-import { TakeOnError } from "./upload-step";
+import { TakeOnError } from "./take-on-feedback";
 
 const NOT_MAPPED = "__none__";
 const IGNORE = "ignore";

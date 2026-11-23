@@ -20,7 +20,7 @@ import {
 } from "@/app/(app)/org/[slug]/settings/matters/take-on-actions";
 import { takeOnSheetSchema } from "@/lib/schemas";
 import type { TakeOnPreview, TakeOnSource, TakeOnUploadResult } from "@/lib/types";
-import { TakeOnError, TakeOnWarnings } from "./upload-step";
+import { TakeOnError, TakeOnWarnings } from "./take-on-feedback";
 
 /** SWR key of a source's preview — changes whenever the stored sheet or header row changes. */
 export function takeOnPreviewKey(batchId: string, source: TakeOnSource): string {

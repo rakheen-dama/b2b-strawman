@@ -25,7 +25,8 @@ import {
 } from "@/lib/types";
 import { MappingStep } from "./mapping-step";
 import { SheetPicker } from "./sheet-picker";
-import { TakeOnError, TakeOnFilesPanel } from "./upload-step";
+import { TakeOnError } from "./take-on-feedback";
+import { TakeOnFilesPanel } from "./upload-step";
 import { ValidationStep } from "./validation-step";
 
 export type TakeOnStep = "upload" | "sheet" | "mapping" | "validation";

@@ -16,7 +16,8 @@ import {
   type TakeOnSection,
   type TakeOnUploadResult,
 } from "@/lib/types";
-import { TakeOnError, TakeOnWarnings, UploadStep } from "./upload-step";
+import { TakeOnError, TakeOnWarnings } from "./take-on-feedback";
+import { UploadStep } from "./upload-step";
 
 /** Hands a downloaded template to the browser as a file. */
 function saveFile(fileName: string, content: string) {

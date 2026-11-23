@@ -244,8 +244,11 @@ export async function fetchTakeOnBankingAccounts(): Promise<
         .map((a) => ({ id: a.id, accountName: a.accountName })),
     };
   } catch (error) {
-    // A trust take-on needs MANAGE_TRUST and VIEW_TRUST (the backend's TakeOnAccessPolicy).
-    const forbidden = error instanceof ApiError && error.status === 403;
+    // The module guard also answers 403 (ModuleNotEnabledException, ProblemDetail `moduleId`);
+    // only a 403 that is not a module refusal is a missing permission — a trust take-on needs
+    // MANAGE_TRUST and VIEW_TRUST (the backend's TakeOnAccessPolicy).
+    const moduleOff = error instanceof ApiError && error.detail?.moduleId === "trust_accounting";
+    const forbidden = error instanceof ApiError && error.status === 403 && !moduleOff;
     return {
       success: false,
       data: [],

@@ -1,5 +1,9 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { cleanup, render, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import {
+  fetchProjectTimeSummary,
+  fetchTimeSummaryByTask,
+} from "@/app/(app)/org/[slug]/matters/[id]/time-summary-actions";
 import { TimeSummaryPanel } from "@/components/projects/time-summary-panel";
 import type { MatterTimeSummary, MemberTimeSummary, TaskTimeSummary } from "@/lib/types";
 
@@ -72,6 +76,7 @@ const memberSummaries: MemberTimeSummary[] = [
 describe("TimeSummaryPanel", () => {
   afterEach(() => {
     cleanup();
+    vi.clearAllMocks();
   });
 
   it("renders total summary cards with formatted durations", () => {
@@ -197,5 +202,162 @@ describe("TimeSummaryPanel", () => {
     const dateInputs = screen.getAllByDisplayValue("");
     const fromInput = dateInputs.find((el) => el.getAttribute("type") === "date");
     expect(fromInput).toBeDefined();
+  });
+
+  // F-657A-1: the matter page re-renders with fresh server data after a time entry is logged
+  // (revalidatePath). If the Time tab mounted before that refresh committed, the panel must still
+  // show the fresh data, not the values it mounted with.
+  it("shows fresh server data when its initial props change after mount (no date filter)", () => {
+    const before: TaskTimeSummary[] = [
+      {
+        taskId: "t1",
+        taskTitle: "Report estate to Master of High Court",
+        billableMinutes: 60,
+        totalMinutes: 60,
+        entryCount: 1,
+      },
+    ];
+    const after: TaskTimeSummary[] = [
+      ...before,
+      {
+        taskId: "t2",
+        taskTitle: "Prepare Liquidation & Distribution account",
+        billableMinutes: 360,
+        totalMinutes: 360,
+        entryCount: 1,
+      },
+    ];
+    const oneHour: MatterTimeSummary = {
+      billableMinutes: 60,
+      nonBillableMinutes: 0,
+      totalMinutes: 60,
+      contributorCount: 1,
+      entryCount: 1,
+    };
+    const sevenHours: MatterTimeSummary = {
+      ...oneHour,
+      billableMinutes: 420,
+      totalMinutes: 420,
+      entryCount: 2,
+    };
+
+    const { rerender } = render(
+      <TimeSummaryPanel
+        projectId="p1"
+        initialSummary={oneHour}
+        initialByTask={before}
+        initialByMember={null}
+      />
+    );
+    expect(
+      screen.queryByText("Prepare Liquidation & Distribution account")
+    ).not.toBeInTheDocument();
+
+    rerender(
+      <TimeSummaryPanel
+        projectId="p1"
+        initialSummary={sevenHours}
+        initialByTask={after}
+        initialByMember={null}
+      />
+    );
+
+    const row = screen.getByText("Prepare Liquidation & Distribution account").closest("tr");
+    expect(row).not.toBeNull();
+    expect(within(row as HTMLElement).getAllByText("6h").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("7h").length).toBeGreaterThan(0);
+  });
+
+  describe("date filter", () => {
+    const filteredSummary: MatterTimeSummary = {
+      billableMinutes: 90,
+      nonBillableMinutes: 0,
+      totalMinutes: 90,
+      contributorCount: 1,
+      entryCount: 2,
+    };
+    const filteredByTask: TaskTimeSummary[] = [
+      {
+        taskId: "t9",
+        taskTitle: "Filtered task",
+        billableMinutes: 90,
+        totalMinutes: 90,
+        entryCount: 2,
+      },
+    ];
+    const fromInput = () =>
+      screen
+        .getAllByDisplayValue("")
+        .find((el) => el.getAttribute("type") === "date") as HTMLElement;
+
+    it("fetches and shows the filtered data when a From date is set", async () => {
+      vi.mocked(fetchProjectTimeSummary).mockResolvedValue(filteredSummary);
+      vi.mocked(fetchTimeSummaryByTask).mockResolvedValue(filteredByTask);
+      render(
+        <TimeSummaryPanel
+          projectId="p1"
+          initialSummary={populatedSummary}
+          initialByTask={taskSummaries}
+          initialByMember={null}
+        />
+      );
+      expect(fetchProjectTimeSummary).not.toHaveBeenCalled();
+
+      fireEvent.change(fromInput(), { target: { value: "2026-11-01" } });
+
+      expect(await screen.findByText("Filtered task")).toBeInTheDocument();
+      expect(fetchProjectTimeSummary).toHaveBeenCalledWith("p1", "2026-11-01", undefined);
+      expect(screen.queryByText("Design mockups")).not.toBeInTheDocument();
+    });
+
+    it("re-fetches the filtered view when the server data changes underneath it", async () => {
+      vi.mocked(fetchProjectTimeSummary).mockResolvedValue(filteredSummary);
+      vi.mocked(fetchTimeSummaryByTask).mockResolvedValue(filteredByTask);
+      const { rerender } = render(
+        <TimeSummaryPanel
+          projectId="p1"
+          initialSummary={populatedSummary}
+          initialByTask={taskSummaries}
+          initialByMember={null}
+        />
+      );
+      fireEvent.change(fromInput(), { target: { value: "2026-11-01" } });
+      await screen.findByText("Filtered task");
+      expect(fetchProjectTimeSummary).toHaveBeenCalledTimes(1);
+
+      rerender(
+        <TimeSummaryPanel
+          projectId="p1"
+          initialSummary={{ ...populatedSummary, entryCount: 16 }}
+          initialByTask={taskSummaries}
+          initialByMember={null}
+        />
+      );
+
+      await waitFor(() => expect(fetchProjectTimeSummary).toHaveBeenCalledTimes(2));
+      expect(screen.getByText("Filtered task")).toBeInTheDocument();
+    });
+
+    it("shows the server data again, without a fetch, when the filter is cleared", async () => {
+      vi.mocked(fetchProjectTimeSummary).mockResolvedValue(filteredSummary);
+      vi.mocked(fetchTimeSummaryByTask).mockResolvedValue(filteredByTask);
+      render(
+        <TimeSummaryPanel
+          projectId="p1"
+          initialSummary={populatedSummary}
+          initialByTask={taskSummaries}
+          initialByMember={null}
+        />
+      );
+      const input = fromInput();
+      fireEvent.change(input, { target: { value: "2026-11-01" } });
+      await screen.findByText("Filtered task");
+
+      fireEvent.change(input, { target: { value: "" } });
+
+      expect(screen.getByText("Design mockups")).toBeInTheDocument();
+      expect(screen.queryByText("Filtered task")).not.toBeInTheDocument();
+      expect(fetchProjectTimeSummary).toHaveBeenCalledTimes(1);
+    });
   });
 });

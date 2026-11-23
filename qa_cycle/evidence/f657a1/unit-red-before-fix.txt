@@ -1,0 +1,8 @@
+     × shows fresh server data when its initial props change after mount (no date filter) 13ms
+       × re-fetches the filtered view when the server data changes underneath it 1018ms
+       × shows the server data again, without a fetch, when the filter is cleared 16ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  __tests__/components/projects/time-summary-panel.test.tsx > TimeSummaryPanel > shows fresh server data when its initial props change after mount (no date filter)
+ FAIL  __tests__/components/projects/time-summary-panel.test.tsx > TimeSummaryPanel > date filter > re-fetches the filtered view when the server data changes underneath it
+ FAIL  __tests__/components/projects/time-summary-panel.test.tsx > TimeSummaryPanel > date filter > shows the server data again, without a fetch, when the filter is cleared
+      Tests  3 failed | 7 passed (10)

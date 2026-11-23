@@ -19,7 +19,6 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinition;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupResolver;
-import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupService;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
 import io.b2mash.b2b.b2bstrawman.informationrequest.FicaStatusProjector;
 import io.b2mash.b2b.b2bstrawman.informationrequest.InformationRequestService;
@@ -42,7 +41,6 @@ import io.b2mash.b2b.b2bstrawman.view.ViewFilterHelper;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -75,7 +73,6 @@ public class CustomerService {
   private final CustomFieldValidator customFieldValidator;
   private final FieldDefinitionRepository fieldDefinitionRepository;
   private final FieldGroupResolver fieldGroupResolver;
-  private final FieldGroupService fieldGroupService;
   private final ProjectRepository projectRepository;
   private final CustomerProjectRepository customerProjectRepository;
   private final InvoiceRepository invoiceRepository;
@@ -88,6 +85,7 @@ public class CustomerService {
   private final ClientListRowRepository clientListRowRepository;
   private final TrustLedgerQueryRepository trustLedgerQueries;
   private final OrgSettingsRepository orgSettingsRepository;
+  private final CustomerFieldGroupAutoApply fieldGroupAutoApply;
 
   public CustomerService(
       CustomerRepository repository,
@@ -96,7 +94,6 @@ public class CustomerService {
       CustomFieldValidator customFieldValidator,
       FieldDefinitionRepository fieldDefinitionRepository,
       FieldGroupResolver fieldGroupResolver,
-      FieldGroupService fieldGroupService,
       ProjectRepository projectRepository,
       CustomerProjectRepository customerProjectRepository,
       InvoiceRepository invoiceRepository,
@@ -108,14 +105,14 @@ public class CustomerService {
       CustomerReadinessService customerReadinessService,
       ClientListRowRepository clientListRowRepository,
       TrustLedgerQueryRepository trustLedgerQueries,
-      OrgSettingsRepository orgSettingsRepository) {
+      OrgSettingsRepository orgSettingsRepository,
+      CustomerFieldGroupAutoApply fieldGroupAutoApply) {
     this.repository = repository;
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
     this.customFieldValidator = customFieldValidator;
     this.fieldDefinitionRepository = fieldDefinitionRepository;
     this.fieldGroupResolver = fieldGroupResolver;
-    this.fieldGroupService = fieldGroupService;
     this.projectRepository = projectRepository;
     this.customerProjectRepository = customerProjectRepository;
     this.invoiceRepository = invoiceRepository;
@@ -128,6 +125,7 @@ public class CustomerService {
     this.clientListRowRepository = clientListRowRepository;
     this.trustLedgerQueries = trustLedgerQueries;
     this.orgSettingsRepository = orgSettingsRepository;
+    this.fieldGroupAutoApply = fieldGroupAutoApply;
   }
 
   @Transactional(readOnly = true)
@@ -513,24 +511,9 @@ public class CustomerService {
     customer.setEntityType(entityType);
     customer.setFinancialYearEnd(financialYearEnd);
 
-    // Auto-apply field groups before save so audit events capture final state
-    // OBS-5004: pass entity type value so groups scoped to an entity type (e.g. TRUST) are only
-    // auto-applied to customers of that entity type.
-    var autoApplyIds =
-        fieldGroupService.resolveAutoApplyGroupIds(EntityType.CUSTOMER, null, entityType);
-    if (!autoApplyIds.isEmpty()) {
-      var merged =
-          new ArrayList<>(
-              customer.getAppliedFieldGroups() != null
-                  ? customer.getAppliedFieldGroups()
-                  : List.of());
-      for (UUID id : autoApplyIds) {
-        if (!merged.contains(id)) {
-          merged.add(id);
-        }
-      }
-      customer.setAppliedFieldGroups(merged);
-    }
+    // Auto-apply field groups before save so audit events capture final state (shared with the
+    // take-on path, Phase 93 655A).
+    fieldGroupAutoApply.apply(customer, entityType);
     customer = repository.save(customer);
 
     log.info("Created customer {} with email {}", customer.getId(), email);

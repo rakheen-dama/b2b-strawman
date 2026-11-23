@@ -41,6 +41,12 @@ public class CustomerLifecycleService {
 
   private static final Logger log = LoggerFactory.getLogger(CustomerLifecycleService.class);
 
+  /**
+   * ACTIVE clients whose latest activity is older than the cutoff, or who have none. Phase 93 655A
+   * (R-9): the take-on counts as activity — {@code MAX(c.taken_on_at)} is in all three {@code
+   * GREATEST(...)} expressions (the SELECT feeds {@code daysSinceActivity}; both HAVING terms
+   * decide). {@code GREATEST} ignores NULLs, so a client that was not taken on is unaffected.
+   */
   private static final String DORMANCY_SQL =
       """
       SELECT c.id, c.name,
@@ -49,7 +55,8 @@ public class CustomerLifecycleService {
           MAX(t.updated_at),
           MAX(d.created_at),
           MAX(i.created_at),
-          MAX(cm.created_at)
+          MAX(cm.created_at),
+          MAX(c.taken_on_at)
         ) AS last_activity
       FROM customers c
       LEFT JOIN customer_projects cp ON cp.customer_id = c.id
@@ -63,11 +70,11 @@ public class CustomerLifecycleService {
       GROUP BY c.id, c.name
       HAVING GREATEST(
           MAX(te.created_at), MAX(t.updated_at), MAX(d.created_at),
-          MAX(i.created_at), MAX(cm.created_at)
+          MAX(i.created_at), MAX(cm.created_at), MAX(c.taken_on_at)
         ) < CAST(:cutoffDate AS TIMESTAMPTZ)
          OR GREATEST(
           MAX(te.created_at), MAX(t.updated_at), MAX(d.created_at),
-          MAX(i.created_at), MAX(cm.created_at)
+          MAX(i.created_at), MAX(cm.created_at), MAX(c.taken_on_at)
         ) IS NULL
       ORDER BY last_activity ASC NULLS FIRST
       """;
@@ -228,9 +235,7 @@ public class CustomerLifecycleService {
         rows.stream()
             .map(
                 row -> {
-                  var lastActivity = row.get("last_activity");
-                  Instant lastActivityInstant =
-                      lastActivity != null ? ((Timestamp) lastActivity).toInstant() : null;
+                  Instant lastActivityInstant = toInstant(row.get("last_activity"));
                   long daysSince =
                       lastActivityInstant != null
                           ? ChronoUnit.DAYS.between(lastActivityInstant, Instant.now())
@@ -249,6 +254,24 @@ public class CustomerLifecycleService {
         candidates.size());
 
     return new DormancyCheckResult(thresholdDays, candidates);
+  }
+
+  /**
+   * A native {@code timestamptz} value as an {@link Instant}. Hibernate 7 returns {@code Instant}
+   * (an earlier cast to {@code Timestamp} threw {@code ClassCastException} for every candidate with
+   * activity — found and fixed in Phase 93 655A, where the take-on instant makes that path the
+   * normal one for imported clients).
+   */
+  private static Instant toInstant(Object value) {
+    return switch (value) {
+      case null -> null;
+      case Instant instant -> instant;
+      case Timestamp timestamp -> timestamp.toInstant();
+      case java.time.OffsetDateTime offset -> offset.toInstant();
+      default ->
+          throw new IllegalStateException(
+              "Unexpected last_activity type " + value.getClass().getName());
+    };
   }
 
   /**

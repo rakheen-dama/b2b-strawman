@@ -258,6 +258,87 @@ class TakeOnUploadValidationIntegrationTest {
     assertRowError(rowsByNumber(ids[0]).get(5), "AMOUNT_AMBIGUOUS");
   }
 
+  @Test
+  void aCsvWhoseFirstRowIsBlankUploadsAndIsReadFromTheChosenHeaderRow() throws Exception {
+    byte[] csv =
+        TakeOnTestFiles.csv(
+            "\nDebtors at cutover - exported 2026-10-31\n\n"
+                + String.join(",", DEBTOR_HEADER)
+                + "\n"
+                + "CL-001,MAT-01,FN-1001,2026-09-01,2026-10-01,1500.50,Consult\n"
+                + "CL-002,MAT-02,FN-1002,2026-09-15,2026-10-15,350.00,Draft\n");
+
+    UUID[] ids = uploadNeedingHeaderRow("debtors-blank-first.csv", TakeOnTestApi.CSV, csv, "CSV");
+    TakeOnTestApi.sheet(mockMvc, owner(), ids[0], ids[1], null, 1)
+        .andExpect(status().isUnprocessableEntity())
+        .andExpect(jsonPath("$.code").value("TAKE_ON_HEADER_ROW_BLANK"))
+        .andExpect(
+            jsonPath("$.detail")
+                .value(
+                    "The chosen header row is blank. Choose the row that holds the column"
+                        + " names."));
+    TakeOnTestApi.sheet(mockMvc, owner(), ids[0], ids[1], null, 4)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.headers[0]").value("Client code"))
+        .andExpect(jsonPath("$.batch.sources[0].rowCount").value(2))
+        .andExpect(jsonPath("$.batch.sources[0].headerRow").value(4));
+  }
+
+  @Test
+  void aSingleSheetWorkbookWhoseFirstRowIsBlankUploadsAndIsReadFromTheChosenHeaderRow()
+      throws Exception {
+    byte[] workbook =
+        TakeOnTestFiles.xlsx(
+            wb -> {
+              Sheet sheet = wb.createSheet("Debtors");
+              sheet
+                  .createRow(1)
+                  .createCell(0)
+                  .setCellValue("Debtors at cutover - exported 2026-10-31");
+              TakeOnTestFiles.writeRow(sheet.createRow(3), DEBTOR_HEADER);
+              TakeOnTestFiles.writeRow(
+                  sheet.createRow(4),
+                  List.of(
+                      "CL-001", "MAT-01", "FN-1001", "2026-09-01", "2026-10-01", "1500.50", "A"));
+              TakeOnTestFiles.writeRow(
+                  sheet.createRow(5),
+                  List.of(
+                      "CL-002", "MAT-02", "FN-1002", "2026-09-15", "2026-10-15", "350.00", "B"));
+            });
+
+    UUID[] ids =
+        uploadNeedingHeaderRow("debtors-blank-first.xlsx", TakeOnTestApi.XLSX, workbook, "Debtors");
+    TakeOnTestApi.sheet(mockMvc, owner(), ids[0], ids[1], "Debtors", 4)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.headers[0]").value("Client code"))
+        .andExpect(jsonPath("$.batch.sources[0].rowCount").value(2));
+  }
+
+  @Test
+  void anEmptySingleSheetWorkbookIsStillRefused() throws Exception {
+    byte[] workbook = TakeOnTestFiles.xlsx(wb -> wb.createSheet("Clients"));
+    refused("empty-sheet.xlsx", TakeOnTestApi.XLSX, workbook, "TAKE_ON_NO_HEADER");
+  }
+
+  @Test
+  void aSemicolonCsvWithATitleLineKeepsItsDetectedOptionsOnceTheHeaderRowIsChosen()
+      throws Exception {
+    byte[] csv =
+        TakeOnTestFiles.csv(
+            "Debtors at cutover;exported 2026-10-31\n\n"
+                + String.join(";", DEBTOR_HEADER)
+                + "\n"
+                + "CL-001;MAT-01;FN-1001;2026-09-01;2026-10-01;1500,50;Consult\n"
+                + "CL-002;MAT-02;FN-1002;2026-09-15;2026-10-15;350,00;Draft\n");
+
+    UUID[] ids = uploadNeedingHeaderRow("debtors-semicolon.csv", TakeOnTestApi.CSV, csv, "CSV");
+    TakeOnTestApi.sheet(mockMvc, owner(), ids[0], ids[1], null, 3)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.batch.sources[0].rowCount").value(2))
+        .andExpect(jsonPath("$.batch.sources[0].parseOptions.delimiter").value(";"))
+        .andExpect(jsonPath("$.batch.sources[0].parseOptions.decimalSeparator").value("COMMA"));
+  }
+
   /**
    * Uploads a readable file whose header row 1 yields no row: stored (file kept, no rows) with the
    * header-row warning; the preview still answers; mapping and the dry run are refused until the

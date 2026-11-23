@@ -49,8 +49,8 @@ public final class TakeOnProblems {
         HttpStatus.CONFLICT,
         "TAKE_ON_NO_ROWS",
         "No rows to map",
-        "No row of this file has been read yet. Choose the sheet and the row that holds the column"
-            + " names first.");
+        "This file has no rows to map below the chosen header row. Choose the sheet and the row"
+            + " that holds the column names.");
   }
 
   public static TakeOnProblemException concurrentChange() {
@@ -154,6 +154,12 @@ public final class TakeOnProblems {
               HttpStatus.UNPROCESSABLE_ENTITY,
               "TAKE_ON_SHEET_NOT_FOUND",
               "Sheet not found",
+              e.getMessage());
+      case HEADER_ROW_BLANK ->
+          new TakeOnProblemException(
+              HttpStatus.UNPROCESSABLE_ENTITY,
+              "TAKE_ON_HEADER_ROW_BLANK",
+              "Header row is blank",
               e.getMessage());
       case UNREADABLE, ALL_ROWS_MALFORMED, NO_HEADER ->
           new TakeOnProblemException(

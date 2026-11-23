@@ -153,6 +153,38 @@ class CsvTakeOnReaderTest {
   }
 
   @Test
+  void blankHeaderRowWithContentBelow_isHeaderRowBlank_withNothingBelow_isNoHeader() {
+    assertThatThrownBy(
+            () ->
+                reader.read(
+                    csv("\nClient list\n\nName,Email\nA,a@example.test\n"),
+                    null,
+                    1,
+                    TakeOnParseOptions.defaults()))
+        .isInstanceOfSatisfying(
+            TakeOnReadException.class,
+            e -> {
+              assertThat(e.getCode()).isEqualTo(TakeOnReadException.Code.HEADER_ROW_BLANK);
+              assertThat(e.getMessage())
+                  .isEqualTo(
+                      "The chosen header row is blank. Choose the row that holds the column"
+                          + " names.");
+            });
+    assertThatThrownBy(() -> reader.read(csv("\n\n\n"), null, 1, TakeOnParseOptions.defaults()))
+        .isInstanceOfSatisfying(
+            TakeOnReadException.class,
+            e -> assertThat(e.getCode()).isEqualTo(TakeOnReadException.Code.NO_HEADER));
+    var sheet =
+        reader.read(
+            csv("\nClient list\n\nName,Email\nA,a@example.test\n"),
+            null,
+            4,
+            TakeOnParseOptions.defaults());
+    assertThat(sheet.headers()).containsExactly("Name", "Email");
+    assertThat(sheet.rows().getFirst().rowNumber()).isEqualTo(5);
+  }
+
+  @Test
   void oneHundredAndOneColumns_isTooManyColumns() {
     assertThat(read(TakeOnTestFiles.csvOfSize(1, 100)).headers()).hasSize(100);
     assertThatThrownBy(() -> read(TakeOnTestFiles.csvOfSize(1, 101)))

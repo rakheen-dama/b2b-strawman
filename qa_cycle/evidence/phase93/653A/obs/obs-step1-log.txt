@@ -1,0 +1,28 @@
+[login] user_e2e_alice http://localhost:3001/org/e2e-test-org/dashboard
+[matters tabs] ["Templates","Naming","Custom fields","Tags","Checklists","Request templates","Request settings","Take-on"]
+[take-on tab visible] true
+[url after tab click] http://localhost:3001/org/e2e-test-org/settings/matters?tab=take-on
+[shot] s1-01-alice-take-on-tab.png
+[shot] s1-02-clients-upload-form.png
+[clients batch] 3bcc5edb-8910-4e06-9316-bbbbca0087aa
+[shot] s1-04-clients-mapping.png
+[clients preview headers] ["ROW","CLIENT NAME","EMAIL ADDRESS","PHONE","ID NUMBER","CLIENT TYPE","CDD COMPLETED DATE","BENEFICIAL OWNERSHIP","SCREENING","CDD RECORDS LOCATION","RISK RATING"]
+[first header] "ROW" codepoints ["52","4f","57"]
+[clients preview first row] ["2","Ndlovu Family Trust","trustees@ndlovu.example","011 555 0101","","TRUST","2026-03-14","DONE","SCREENED_CLEAR","Box 12, Sandton office","LOW"]
+[shot] s1-05-clients-preview-headers.png
+[clients suggested mapping] {"name":"Client name","email":"Email address","phone":"Phone","idNumber":"ID number","registrationNumber":"Not mapped","taxNumber":"Not mapped","ficaClientType":"Client type","addressLine1":"Not mapped","addressLine2":"Not mapped","city":"Not mapped","postalCode":"Not mapped","country":"Not mapped","cddCompletedDate":"CDD completed date","lastReviewDate":"Not mapped","riskRating":"Risk rating","beneficialOwnershipStatus":"Beneficial ownership","screeningStatus":"Screening","screeningDate":"Not mapped","sourceOfFundsStatus":"Not mapped","cddRecordsLocation":"CDD records location","sourceRef":"Not mapped"}
+[clients batch status] Validated
+[s1-clients cards] {"total":4,"valid":2,"error":2,"duplicate":0,"blocks":0}
+[s1-clients rows (All statuses)]
+    2 | row:2 | Valid | Client name: Ndlovu Family Trust · Email: trustees@ndlovu.example · Phone: 011 555 0101 · Risk rating: LOW · Client type: TRUST · Screening: SCREENED_CLEAR · CDD completed date: 2026-03-14 · CDD records location: Box 12, Sandton office · Beneficial ownership: DONE | 
+    3 | row:3 | Valid | Client name: Thabo Mokoena · Email: thabo.mokoena@example.com · Phone: 082 555 0102 · ID number: 8001015009087 · Risk rating: MEDIUM · Client type: NATURAL_PERSON · Screening: SCREENED_CLEAR · CDD completed date: 2026-05-02 · CDD records location: Box 13, Sandton office · Beneficial ownership: NOT_APPLICABLE | 
+    4 | row:4 | Error | Client name: Karoo Logistics (Pty) Ltd · Phone: 021 555 0103 · Risk rating: HIGH · Client type: COMPANY · Screening: NOT_SCREENED · CDD records location: Box 14, Cape Town office · Beneficial ownership: DONE | "not-an-email" is not a valid email address. "2026-02-30" is not a date in the format dd/mm/yyyy.
+    5 | row:5 | Error | Client name: Lindiwe Dube · Email: lindiwe.dube@example.com · Phone: 083 555 0104 · Client type: NATURAL_PERSON · Screening: SCREENED_MATCH · CDD records location: Box 15, Sandton office · Beneficial ownership: OUTSTANDING | CDD completed date is required.
+[shot] s1-clients-validation-all.png
+[shot] s1-clients-filter-pending.png
+[shot] s1-clients-filter-valid.png
+[shot] s1-clients-filter-error.png
+[shot] s1-clients-filter-blocks-only.png
+[s1-clients table counts] {"all":4,"pending":0,"valid":2,"error":2,"blocksOnly":0}
+[s1-clients cards==table] {"total":true,"valid":true,"error":true,"blocks":true,"pendingZero":true}
+[summary step 1] console/page errors: 0

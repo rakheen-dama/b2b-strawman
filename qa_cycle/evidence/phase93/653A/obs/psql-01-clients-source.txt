@@ -1,0 +1,19 @@
+         file_name         | file_format |                                                             s3_key                                                              | header_row |                                          parse_options                                           | name_target |        name_hex        | row_count | malformed_count | blank_skipped 
+---------------------------+-------------+---------------------------------------------------------------------------------------------------------------------------------+------------+--------------------------------------------------------------------------------------------------+-------------+------------------------+-----------+-----------------+---------------
+ clients-semicolon-bom.csv | CSV         | take-on/tenant_7d218705360b/3bcc5edb-8910-4e06-9316-bbbbca0087aa/ab6be181-3e43-441b-9b2b-1a9c2fda3a52/clients-semicolon-bom.csv |          1 | {"encoding": "UTF-8", "delimiter": ";", "dateFormat": "dd/MM/yyyy", "decimalSeparator": "COMMA"} | Client name | 436c69656e74206e616d65 |         4 |               0 |             0
+(1 row)
+
+ row_number |  status   | source_ref |       raw_key        
+------------+-----------+------------+----------------------
+          2 | VALIDATED | row:2      | Phone
+          2 | VALIDATED | row:2      | ID number
+          2 | VALIDATED | row:2      | Screening
+          2 | VALIDATED | row:2      | Client name
+          2 | VALIDATED | row:2      | Client type
+          2 | VALIDATED | row:2      | Risk rating
+          2 | VALIDATED | row:2      | Email address
+          2 | VALIDATED | row:2      | CDD completed date
+          2 | VALIDATED | row:2      | Beneficial ownership
+          2 | VALIDATED | row:2      | CDD records location
+(10 rows)
+

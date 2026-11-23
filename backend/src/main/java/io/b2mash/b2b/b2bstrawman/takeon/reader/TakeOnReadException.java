@@ -14,6 +14,8 @@ public class TakeOnReadException extends RuntimeException {
     TOO_MANY_COLUMNS,
     ALL_ROWS_MALFORMED,
     NO_HEADER,
+    /** The header row is blank but rows with content follow it. */
+    HEADER_ROW_BLANK,
     SHEET_NOT_FOUND
   }
 

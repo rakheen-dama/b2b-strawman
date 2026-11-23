@@ -154,6 +154,14 @@ public class TakeOnSource {
     this.mappedAt = null;
   }
 
+  /**
+   * Records the options detected on a re-read (delimiter, encoding, decimal separator) for a source
+   * kept with no rows at upload, whose stored options are still the defaults (OBS F-1).
+   */
+  public void recordDetectedOptions(Map<String, Object> parseOptions) {
+    this.parseOptions = Objects.requireNonNull(parseOptions, "parseOptions");
+  }
+
   /** Stores the column mapping verbatim and the parse options used to type the values. */
   public void applyMapping(Map<String, Object> mapping, Map<String, Object> parseOptions) {
     this.columnMapping = Objects.requireNonNull(mapping, "mapping");

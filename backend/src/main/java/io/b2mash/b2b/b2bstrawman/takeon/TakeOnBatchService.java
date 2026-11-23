@@ -312,6 +312,11 @@ public class TakeOnBatchService {
     var reloadedSource = sources.findById(sourceId).orElseThrow();
     saveRows(reloadedBatch, reloadedSource, sheet);
     reloadedSource.selectSheet(sheetName, headerRow);
+    if (reloadedSource.getFileFormat() == TakeOnSource.FileFormat.CSV
+        && reloadedSource.getParseOptions().get("delimiter") == null) {
+      // Only a CSV kept with no rows at upload has no delimiter recorded (OBS F-1).
+      reloadedSource.recordDetectedOptions(sheet.detected().toMap());
+    }
     reloadedSource.recordRead(sheet.rows().size(), sheet.malformedCount(), sheet.blankSkipped());
     transition(reloadedBatch::returnToUploaded);
     return new TakeOnUploadResponse(

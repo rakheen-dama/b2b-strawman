@@ -228,6 +228,28 @@ class XlsxTakeOnReaderTest {
   }
 
   @Test
+  void blankHeaderRowWithContentBelow_isHeaderRowBlank() {
+    byte[] file =
+        TakeOnTestFiles.xlsx(
+            workbook -> {
+              var sheet = workbook.createSheet("Clients");
+              sheet.createRow(1).createCell(0).setCellValue("Client list — exported 31 Oct");
+              TakeOnTestFiles.writeRow(sheet.createRow(3), List.of("Name", "Email"));
+              TakeOnTestFiles.writeRow(sheet.createRow(4), List.of("A", "a@example.test"));
+            });
+    assertThat(codeOf(() -> reader.read(file, "Clients", 1, TakeOnParseOptions.defaults())))
+        .isEqualTo(TakeOnReadException.Code.HEADER_ROW_BLANK);
+    assertThat(codeOf(() -> reader.read(file, "Clients", 3, TakeOnParseOptions.defaults())))
+        .isEqualTo(TakeOnReadException.Code.HEADER_ROW_BLANK);
+    var sheet = reader.read(file, "Clients", 4, TakeOnParseOptions.defaults());
+    assertThat(sheet.headers()).containsExactly("Name", "Email");
+    assertThat(sheet.rows()).extracting(TakeOnRawRow::rowNumber).containsExactly(5);
+    byte[] empty = TakeOnTestFiles.xlsx(workbook -> workbook.createSheet("Clients"));
+    assertThat(codeOf(() -> reader.read(empty, "Clients", 1, TakeOnParseOptions.defaults())))
+        .isEqualTo(TakeOnReadException.Code.NO_HEADER);
+  }
+
+  @Test
   void tenThousandAndOneRows_isTooManyRows() {
     assertThat(read(TakeOnTestFiles.xlsxLarge(10_000, 1, 0, 1L), "Data").rows()).hasSize(10_000);
     assertThat(codeOf(() -> read(TakeOnTestFiles.xlsxLarge(10_001, 1, 0, 1L), "Data")))

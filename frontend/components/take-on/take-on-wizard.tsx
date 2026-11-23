@@ -209,6 +209,8 @@ export function TakeOnWizard({ batch: initialBatch, dataset }: TakeOnWizardProps
               source={activeSource}
               onDone={(result) => {
                 if (result) changeBatch(result.batch);
+                const read = result?.batch.sources.find((s) => s.id === activeSource.id);
+                if (read?.rowCount === 0) return; // nothing below the header row: stay on Sheet
                 setStep("mapping");
               }}
             />

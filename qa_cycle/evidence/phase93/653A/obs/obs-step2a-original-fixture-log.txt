@@ -1,0 +1,22 @@
+[login] user_e2e_alice http://localhost:3001/org/e2e-test-org/dashboard
+[console.error @settings-matters] MockAuthContextProvider: failed to fetch userinfo TypeError: Failed to fetch
+    at http://localhost:3001/_next/static/chunks/1kvf-7k8cibf1.js:1:1582
+    at iw (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:118706)
+    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142848)
+    at uh (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142510)
+    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142828)
+    at uh (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142510)
+    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142893)
+    at uh (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142510)
+    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142828)
+    at uh (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142510)
+[matters tabs] ["Templates","Naming","Custom fields","Tags","Checklists","Request templates","Request settings","Take-on"]
+[take-on tab visible] true
+[shot] s2-01-debtors-upload-form.png
+[upload server error] No row of this file could be read. Check that it is a .csv or .xlsx export and that every row has no more cells than the header row.
+[shot] s2-02-upload-error.png
+[script error] Error: debtors upload failed
+    at step2 (/private/tmp/653obs/evidence/obs.cjs:175:45)
+    at async /private/tmp/653obs/evidence/obs.cjs:290:28
+[shot] s2-zz-failure.png
+[summary step 2] console/page errors: 1

@@ -114,6 +114,10 @@ export function SheetPicker({ batchId, source, onDone }: SheetPickerProps) {
         setError(result.error ?? "The sheet could not be read.");
         return;
       }
+      // A header-only file reads with no rows: the wizard stays here (it has nothing to map).
+      if (result.data.batch.sources.find((s) => s.id === source.id)?.rowCount === 0) {
+        setError("There are no rows below this header row.");
+      }
       onDone(result.data);
     } finally {
       setBusy(false);

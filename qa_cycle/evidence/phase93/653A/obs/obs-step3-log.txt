@@ -1,0 +1,15 @@
+[login] user_e2e_bob http://localhost:3001/org/e2e-test-org/dashboard
+[matters tabs] ["Templates","Naming","Custom fields","Tags","Checklists","Request templates","Request settings","Take-on"]
+[take-on tab visible] true
+[shot] s3-bob-matters-tabs.png
+[bob take-on tab] Take-on |  | Move clients, matters, trust balances and debtors from your previous system |  | Take on clients first, then matters, then the trust position, then debtors. |  | Clients | 0 completed | Start | Download template | Matters | 0 completed | Start | Download template | Trust opening position | 0 completed | Start | Template: Client and matter balances | Template: Unidentified deposits | Template: Investments | Template: Items o
+[shot] s3-bob-take-on-tab.png
+[bob deep link ?tab=take-on] {"url":"http://localhost:3001/org/e2e-test-org/settings/matters?tab=take-on","selectedTab":["Take-on"],"takeOnRendered":true,"h1":["Take-on"]}
+[shot] s3-bob-deeplink-take-on.png
+[login] user_e2e_carol http://localhost:3001/org/e2e-test-org/dashboard
+[matters tabs] ["Templates","Tags"]
+[take-on tab visible] false
+[shot] s3-carol-matters-tabs.png
+[carol deep link ?tab=take-on] {"url":"http://localhost:3001/org/e2e-test-org/settings/matters?tab=take-on","selectedTab":["Templates"],"takeOnRendered":false,"h1":["Matter Templates"]}
+[shot] s3-carol-deeplink-take-on.png
+[summary step 3] console/page errors: 0

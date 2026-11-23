@@ -30,6 +30,7 @@ final class TakeOnSheetAssembler {
   private final List<String> warnings = new ArrayList<>();
   private final List<TakeOnRawRow> rows = new ArrayList<>();
   private List<String> headers;
+  private boolean headerRowBlank;
   private int malformedCount;
   private int malformedSkipped;
   private int blankSkipped;
@@ -78,9 +79,13 @@ final class TakeOnSheetAssembler {
       return; // a title row above the headers
     }
     if (headers == null) {
-      if (rowNumber > headerRow) {
-        // The header row itself was absent (an empty XLSX row is not emitted).
-        throw noHeader();
+      if (headerRowBlank || rowNumber > headerRow) {
+        // The header row is blank (an empty XLSX row is not even emitted): a later blank row
+        // changes nothing, a later row with content means the names are not on the header row.
+        if (overflow || lastNonBlank(cells) >= 0) {
+          throw headerRowBlank();
+        }
+        return;
       }
       readHeaders(cells, overflow);
       return;
@@ -162,7 +167,8 @@ final class TakeOnSheetAssembler {
           TakeOnReadException.Code.TOO_MANY_COLUMNS, "This sheet has more than 100 columns.");
     }
     if (width == 0) {
-      throw noHeader();
+      headerRowBlank = true; // NO_HEADER in finish if nothing follows, else HEADER_ROW_BLANK
+      return;
     }
     var names = new ArrayList<String>(width);
     Set<String> taken = new HashSet<>();
@@ -188,6 +194,12 @@ final class TakeOnSheetAssembler {
       names.add(unique);
     }
     this.headers = names;
+  }
+
+  private static TakeOnReadException headerRowBlank() {
+    return new TakeOnReadException(
+        TakeOnReadException.Code.HEADER_ROW_BLANK,
+        "The chosen header row is blank. Choose the row that holds the column names.");
   }
 
   private TakeOnReadException noHeader() {

@@ -345,6 +345,34 @@ describe("TakeOnWizard — sheet picker", () => {
       expect(screen.getByTestId("take-on-step-mapping")).toHaveAttribute("aria-current", "step")
     );
   });
+
+  it("stays on Sheet when the chosen header row has no rows below it (a header-only file)", async () => {
+    const user = userEvent.setup();
+    const empty = source({ fileName: "header-only.csv", rowCount: 0 });
+    actions.fetchTakeOnPreview.mockResolvedValue({
+      success: true,
+      data: { ...PREVIEW, rows: [], warnings: [] },
+    });
+    actions.setSheet.mockResolvedValue({
+      success: true,
+      data: {
+        batch: batch({ sources: [{ ...empty, headerRow: 2, rowCount: 0 }] }),
+        sourceId: "src-1",
+        headers: ["Client code"],
+        warnings: [],
+      },
+    });
+    renderWizard(batch({ sources: [empty] }));
+
+    await user.clear(screen.getByTestId("take-on-header-row"));
+    await user.type(screen.getByTestId("take-on-header-row"), "2");
+    await user.click(screen.getByTestId("take-on-apply-sheet"));
+    expect(await screen.findByTestId("take-on-sheet-error")).toHaveTextContent(
+      "There are no rows below this header row."
+    );
+    expect(screen.getByTestId("take-on-step-sheet")).toHaveAttribute("aria-current", "step");
+    expect(screen.queryByTestId("take-on-change-sheet")).not.toBeInTheDocument();
+  });
 });
 
 describe("TakeOnWizard — header not on row 1 (OBS F-1)", () => {
@@ -395,6 +423,34 @@ describe("TakeOnWizard — header not on row 1 (OBS F-1)", () => {
     await waitFor(() =>
       expect(screen.getByTestId("take-on-step-mapping")).toHaveAttribute("aria-current", "step")
     );
+  });
+
+  it("stays on Sheet when the chosen header row has no rows below it (a header-only file)", async () => {
+    const user = userEvent.setup();
+    const empty = source({ fileName: "header-only.csv", rowCount: 0 });
+    actions.fetchTakeOnPreview.mockResolvedValue({
+      success: true,
+      data: { ...PREVIEW, rows: [], warnings: [] },
+    });
+    actions.setSheet.mockResolvedValue({
+      success: true,
+      data: {
+        batch: batch({ sources: [{ ...empty, headerRow: 2, rowCount: 0 }] }),
+        sourceId: "src-1",
+        headers: ["Client code"],
+        warnings: [],
+      },
+    });
+    renderWizard(batch({ sources: [empty] }));
+
+    await user.clear(screen.getByTestId("take-on-header-row"));
+    await user.type(screen.getByTestId("take-on-header-row"), "2");
+    await user.click(screen.getByTestId("take-on-apply-sheet"));
+    expect(await screen.findByTestId("take-on-sheet-error")).toHaveTextContent(
+      "There are no rows below this header row."
+    );
+    expect(screen.getByTestId("take-on-step-sheet")).toHaveAttribute("aria-current", "step");
+    expect(screen.queryByTestId("take-on-change-sheet")).not.toBeInTheDocument();
   });
 });
 

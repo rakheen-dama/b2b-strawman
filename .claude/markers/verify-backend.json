@@ -1,7 +1,7 @@
 {
-  "commit": "fe1ab1a74",
-  "command": "cd backend && ./mvnw -q spotless:check && bash scripts/verify.sh -q (worktree agent-ab6c9bf83bec1c008, PR #1845)",
+  "commit": "5e9b6ab38",
+  "command": "cd backend && ./mvnw -q spotless:check && bash scripts/verify.sh -q (worktree-epic-653A, PR #1846)",
   "exit": 0,
-  "ts": "2026-11-23T08:01:08Z",
-  "summary": "PR #1845 @fe1ab1a74 — 7576 <testcase> / 0 failures / 0 errors; harness 70/70; head cb414488b is frontend-only"
+  "ts": "2026-11-23T13:16:43Z",
+  "summary": "PR #1846 @5e9b6ab38 — 7781 <testcase> / 0 failures / 0 errors / 26 skipped; baseline main 7576 (+205)"
 }

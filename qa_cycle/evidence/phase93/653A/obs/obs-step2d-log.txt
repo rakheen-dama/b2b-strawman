@@ -1,0 +1,44 @@
+[login] user_e2e_alice http://localhost:3001/org/e2e-test-org/dashboard
+[console.error @settings-matters] MockAuthContextProvider: failed to fetch userinfo TypeError: Failed to fetch
+    at http://localhost:3001/_next/static/chunks/1kvf-7k8cibf1.js:1:1582
+    at iw (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:118706)
+    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142848)
+    at uh (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142510)
+    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142828)
+    at uh (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142510)
+    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142893)
+    at uh (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142510)
+    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142828)
+    at uh (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142510)
+[matters tabs] ["Templates","Naming","Custom fields","Tags","Checklists","Request templates","Request settings","Take-on"]
+[take-on tab visible] true
+[shot] s2d-01-debtors-upload-form.png
+[upload warnings] No row could be read with row 1 as the header row. Choose the sheet and the row that holds the column names.
+[shot] s2d-02-upload-warnings.png
+[debtors batch] b567952f-979d-43cc-9928-7fe9f6163184
+[cutover shown] Cutover date 2026-10-31
+[sheet options] [{"idx":"0","name":"Old notes","hiddenBadge":true,"checked":"false"},{"idx":"1","name":"Debtors","hiddenBadge":false,"checked":"true"}]
+[default header row] 1
+[shot] s2d-03-debtors-sheet-picker-initial.png
+[shot] s2d-04-debtors-mapping.png
+[debtors preview headers] ["ROW","CLIENT CODE","MATTER","FEE NOTE","ISSUE DATE","DUE DATE","OUTSTANDING","DESCRIPTION"]
+   preview 4 | CL-001 | MAT-01 | FN-1001 | 2026-09-01 | 2026-10-01 | 1500.5 | Consultation
+   preview 5 | CL-002 | MAT-02 | FN-1002 | 2026-09-15 | 2026-10-15 | 1,234 | Drafting - ambiguous amount
+   preview 6 | CL-003 | MAT-03 | FN-1003 | 2026-10-01 | 2026-10-31 | #REF! | Broken formula
+   preview 7 | CL-004 | MAT-04 | FN-1004 | 2026-10-05 | 2026-11-05 | 980 | Court attendance
+[shot] s2d-05-debtors-sheet-after-apply.png
+[debtors suggested mapping] {"clientRef":"Client code","matterRef":"Matter","feeNoteNumber":"Fee note","issueDate":"Issue date","dueDate":"Due date","outstandingAmount":"Outstanding","currency":"Not mapped","description":"Description","sourceRef":"Not mapped"}
+[s2d-debtors cards] {"total":4,"valid":2,"error":2,"duplicate":0,"blocks":0}
+[s2d-debtors rows (All statuses)]
+    4 | row:4 | Valid | Due date: 2026-10-01 · Client reference: CL-001 · Issue date: 2026-09-01 · Matter reference: MAT-01 · Description: Consultation · Fee note number: FN-1001 · Outstanding amount: 1500.50 | 
+    5 | row:5 | Error | Due date: 2026-10-15 · Client reference: CL-002 · Issue date: 2026-09-15 · Matter reference: MAT-02 · Description: Drafting - ambiguous amount · Fee note number: FN-1002 | "1,234" is ambiguous: it could use a comma for thousands or for decimals. Check the decimal separator chosen for this file.
+    6 | row:6 | Error | Due date: 2026-10-31 · Client reference: CL-003 · Issue date: 2026-10-01 · Matter reference: MAT-03 · Description: Broken formula · Fee note number: FN-1003 | This cell holds an error (#REF!). Correct it in Excel and upload again.
+    7 | row:7 | Valid | Due date: 2026-11-05 · Client reference: CL-004 · Issue date: 2026-10-05 · Matter reference: MAT-04 · Description: Court attendance · Fee note number: FN-1004 · Outstanding amount: 980.00 | 
+[shot] s2d-debtors-validation-all.png
+[shot] s2d-debtors-filter-pending.png
+[shot] s2d-debtors-filter-valid.png
+[shot] s2d-debtors-filter-error.png
+[shot] s2d-debtors-filter-blocks-only.png
+[s2d-debtors table counts] {"all":4,"pending":0,"valid":2,"error":2,"blocksOnly":0}
+[s2d-debtors cards==table] {"total":true,"valid":true,"error":true,"blocks":true,"pendingZero":true}
+[summary step 2] console/page errors: 1

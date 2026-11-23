@@ -1,0 +1,6 @@
+                  id                  |  status   | cancelled | header_row | sheet_name | s3_key | purged | rows | purged_rows 
+--------------------------------------+-----------+-----------+------------+------------+--------+--------+------+-------------
+ b567952f-979d-43cc-9928-7fe9f6163184 | CANCELLED | t         |          3 | Debtors    |        | t      |    4 |           4
+ 6619cafa-8d0e-4506-8186-fa3a7b5857e8 | CANCELLED | t         |          3 | Debtors    |        | t      |    4 |           4
+(2 rows)
+

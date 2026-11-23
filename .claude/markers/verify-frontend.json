@@ -1,7 +1,7 @@
 {
-  "commit": "cb414488b",
-  "command": "cd frontend && rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (node 20.11.1, idle machine, PR #1845)",
+  "commit": "5e9b6ab38",
+  "command": "cd frontend && pnpm install && pnpm run lint && pnpm run format:check && pnpm run build && pnpm test (worktree-epic-653A, PR #1846, fixer run)",
   "exit": 0,
-  "ts": "2026-11-23T08:19:47Z",
-  "summary": "PR #1845 @cb414488b — vitest 487 files / 4654 passed / 2 skipped / 0 failed; lint 0 errors; build OK"
+  "ts": "2026-11-23T13:16:43Z",
+  "summary": "PR #1846 @5e9b6ab38 — lint 0 errors, format clean, build ok, vitest 491 files / 4702 passed / 2 skipped"
 }

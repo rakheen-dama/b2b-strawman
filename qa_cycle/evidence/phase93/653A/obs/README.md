@@ -143,3 +143,44 @@
 2. **`file_name` after purge.** `take_on_sources.file_name` is kept after the cancel and purge.
 3. **Misleading date message.** For `2026-02-30` the message says "not a date in the format dd/mm/yyyy". The cell is ISO-shaped and ISO is always accepted, so the real problem is an impossible day. The message is misleading but harmless.
 4. **Malformed count.** `takeon.source.uploaded` for the debtors file has `malformed_count: 1`, because the `#REF!` cell is counted as a malformed row at read time.
+
+---
+
+## Re-run of step 2 on the fixed code (orchestrator, 2026-11-23 13:55–13:57 UTC): **PASS**
+
+- **Stack.** The E2E stack was rebuilt at 13:18 UTC, after the fix head `5e9b6ab38` (12:45 UTC). It is the PR #1846 head with fixes `f9a422906` (header not on row 1) and `5e9b6ab38` (blank first row).
+- **Browser and script.** Same `obs.cjs`, unchanged. Headless Chromium on node v20.11.1. No REST calls; the database and S3 checks were read-only.
+
+| Run | Fixture | Result |
+|---|---|---|
+| 2c | `fixtures/debtors-two-sheets.xlsx`, the **given fixture** (title row 1, blank row 2, header row 3) | **PASS** |
+| 2d | `fixtures/debtors-blank-first-row.xlsx` (the given fixture with the title cell removed, so rows 1–2 are blank and the header is on row 3) | **PASS** |
+
+Runs 2c and 2d behaved the same:
+
+- **Upload.** The upload is accepted, with the warning "No row could be read with row 1 as the header row. Choose the sheet and the row that holds the column names." (`s2c-02`, `s2d-02`).
+- **Sheet step.**
+  - The wizard opens on Sheet, showing "Old notes" with a **Hidden sheet** badge and "Debtors" pre-selected (`s2c-03`).
+  - The default header row is 1, and the preview is empty because no rows sit below row 1.
+- **Header row 3.** "Use this sheet and header row" goes to Mapping. Going back to the Sheet step, the preview headers are Client code, Matter, Fee note, Issue date, Due date, Outstanding, Description. The rows are 4–7, with `1,234` and `#REF!` shown verbatim (`s2c-05`).
+- **Mapping.** All 7 columns were auto-suggested. Saved.
+- **Dry run.**
+  - Cards: Rows 4, Valid 2, Errors 2, Duplicates 0, Blocks 0.
+  - Table: All 4, Pending 0, Valid 2, Error 2, Blocks only 0.
+  - **Cards equal the table.**
+- **Errors, exact text:**
+  - Row 5: `"1,234" is ambiguous: it could use a comma for thousands or for decimals. Check the decimal separator chosen for this file.`
+  - Row 6: `This cell holds an error (#REF!). Correct it in Excel and upload again.`
+- **Cleanup through the UI.** Each batch was then cancelled through the UI with `STEP=4` (`s4c-*`, `s4d-*`; logs `obs-step4c-log.txt`, `obs-step4d-log.txt`).
+  - Status shows Cancelled and is still Cancelled after a reload.
+  - `psql-05-rerun-step2-cancelled.txt`: both batches are CANCELLED with `header_row` 3 and `sheet_name` Debtors. `s3_key` is NULL, `purged_at` is set, and all 4 rows are purged in each batch.
+  - S3: 0 objects remain under either batch id.
+- **Console errors.**
+  - 2c: 0.
+  - 2d: 1, the known spurious `MockAuthContextProvider: failed to fetch userinfo`, right after login (step 6 above).
+  - Step 4 runs: 0.
+- **Backend log.** No WARN or ERROR lines from 13:55 UTC on (`backend-log-rerun-warn-error.txt`, empty).
+
+**Overall verdict, steps 1–6, at `5e9b6ab38`: PASS.**
+
+**Script note.** `STEP=4` writes untagged `s4-*` screenshots. The re-run copies were renamed to `s4c-*` and `s4d-*`, and the original `s4-*` files from the first run were restored unchanged.

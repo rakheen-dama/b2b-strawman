@@ -62,3 +62,28 @@ The row whose file says `VERY_HIGH` (ERROR, `ENUM_INVALID` on `riskRating`, whic
 - Both backend tests pass (the source-of-funds half too). Tier 2 (`takeon/**` plus `TakeOnWireContractTest`, the architecture scanners `LayerDependencyRulesTest`, `TenantScopeBindingTest`, `TestConventionsTest`, `PortalLinkBuilderArchTest`, `ZoneAwareTimeArchTest`, `TakeOnEntryPointsArchTest`, `TrustPostingRulesTest`, `project/WireVocabularyContractTest`, `LegalOnlyProfileReplacementTest`, `AiFoundationWithoutAssistantTest`, `ClientLedgerControllerTest`): **284 testcases, 0 failures, 0 errors, 0 skipped**, 29 classes (surefire XML `<testcase>` count).
 - FE-GATE from `frontend/`: lint 0 errors (77 warnings, none in take-on files) · typecheck 0 · format:check clean · vitest **494 files, 4756 passed, 2 skipped** · build 0.
 - Decisions: D-131, D-132, D-133 in `tasks/phase93-decisions.md`.
+
+## Delta review M-1: anonymising a client redacts another live client's take-on rows by a shared old email
+
+Test: `ClientsTakeOnIntegrationTest#anonymisingAClientWhoseEarlierEmailAnotherClientNowHolds_leavesThatClientsRowsAlone` (#18). Real write paths: A taken on with `first.address@`, A's email changed to `shared.address@` then `own.address@` through `PUT /api/clients/{id}` (the `customer.updated` audit rows), B taken on with `shared.address@` (CREATED), a later batch row for the same address (SKIPPED_DUPLICATE, matched to B), then `POST /api/clients/{A}/anonymize`.
+
+Command (on head 07c556e1e + the new test, before the fix):
+
+```
+cd backend && ./mvnw test -Dtest='ClientsTakeOnIntegrationTest#anonymisingAClientWhoseEarlierEmailAnotherClientNowHolds*' -Dsurefire.failIfNoSpecifiedTests=false
+```
+
+```
+[ERROR]   ClientsTakeOnIntegrationTest.anonymisingAClientWhoseEarlierEmailAnotherClientNowHolds_leavesThatClientsRowsAlone:1265 [the other client's take-on row keeps its values]
+Expecting actual:
+  "{"redacted": true}"
+to contain:
+  "shared.address@example.test"
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0
+```
+
+B's CREATED row was redacted by A's anonymisation. A first draft of the test (A taken on directly with the shared address) could not reach the scenario: B's row FAILED at commit ("This row could not be committed…") because A's CREATED row keeps `dedup_key = email:shared.address@` after the email change and `uq_take_on_rows_created_key` rejects B's — so the test takes A on with a different address first (D-134).
+
+Green after the fix: the same command, `Tests run: 1, Failures: 0, Errors: 0, Skipped: 0`.
+
+Tier 2 after the fix (`takeon/**`, `datarequest/*`, the customer tests that use `CustomerRepository`, `CustomerLifecycleEntityTest`, `retention/RetentionServiceTest` + `RetentionControllerTest`, `PortalContactDirectoryIntegrationTest`, `AuditEventTypeRegistryTest`, `architecture/*`, `project/WireVocabularyContractTest` and every other `@AnalyzeClasses`/`ClassFileImporter` scanner): **54 classes, 508 testcases, 0 failures, 0 errors, 0 skipped** (surefire XML `<testcase>` count).

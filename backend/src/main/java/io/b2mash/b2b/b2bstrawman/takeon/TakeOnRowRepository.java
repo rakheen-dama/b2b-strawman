@@ -187,11 +187,13 @@ public interface TakeOnRowRepository extends JpaRepository<TakeOnRow, UUID> {
    * or matched it — by {@code result_entity_id} or {@code duplicate_of_id}, or by the dedup key of
    * any email the client has held ({@code dedupKeys}, from {@code TakeOnDedupKeys.client}: a row
    * that FAILED on an email clash with it, an in-file repeat of it, a row keyed by an address it
-   * has since changed; taken <b>before</b> the email is overwritten) — loses its values: {@code
-   * {"redacted": true}}, the previous system's id ({@code source_ref}, free text that may be an
-   * email or a name), the dedup key and the message texts (they may quote a cell); only {code,
-   * field} stay. The row shell (number, status, result link) stays; the archived file is not
-   * rewritten while a legal retention period runs. Pass at least one key.
+   * has since changed; taken <b>before</b> the email is overwritten; a row keyed by such an email
+   * but linked to <b>another</b> client — one who holds that address now — is that client's and
+   * stays, delta review M-1) — loses its values: {@code {"redacted": true}}, the previous system's
+   * id ({@code source_ref}, free text that may be an email or a name), the dedup key and the
+   * message texts (they may quote a cell); only {code, field} stay. The row shell (number, status,
+   * result link) stays; the archived file is not rewritten while a legal retention period runs.
+   * Pass at least one key.
    */
   @Modifying(flushAutomatically = true, clearAutomatically = true)
   @Query(
@@ -209,7 +211,9 @@ public interface TakeOnRowRepository extends JpaRepository<TakeOnRow, UUID> {
                                         FROM jsonb_array_elements(warnings) w), '[]'::jsonb),
                  updated_at = now()
            WHERE result_entity_id = :clientId OR duplicate_of_id = :clientId
-              OR dedup_key IN (:dedupKeys)""")
+              OR (dedup_key IN (:dedupKeys)
+                  AND (result_entity_id IS NULL OR result_entity_id = :clientId)
+                  AND (duplicate_of_id IS NULL OR duplicate_of_id = :clientId))""")
   int redactForClient(
       @Param("clientId") UUID clientId, @Param("dedupKeys") Collection<String> dedupKeys);
 }

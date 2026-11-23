@@ -94,6 +94,7 @@ class ClientsTakeOnIntegrationTest {
   @Autowired private ChecklistInstanceRepository checklistInstances;
   @Autowired private PortalContactRepository portalContactRepository;
   @Autowired private DataSource dataSource;
+  @Autowired private TakeOnRowRepository takeOnRows;
 
   private String schema;
   private UUID ownerId;
@@ -1203,6 +1204,82 @@ class ClientsTakeOnIntegrationTest {
       assertThat((Integer) JsonPath.read(result, "$.skippedCount")).isEqualTo(1);
     }
     assertThat(inTenant(() -> portalContactRepository.findByCustomerId(client))).isEmpty();
+  }
+
+  // 18 (delta review M-1)
+  @Test
+  void anonymisingAClientWhoseEarlierEmailAnotherClientNowHolds_leavesThatClientsRowsAlone()
+      throws Exception {
+    var first =
+        validatedClients(
+            mockMvc,
+            owner(),
+            csv(row("Earlier Holder", "first.address@example.test").ref("H-1")),
+            mapping());
+    attestAndCommit(first);
+    UUID earlier = resultEntity(first.batchId(), "H-1");
+    // the earlier holder moves to the shared address, then on again — freeing it
+    changeEmail(earlier, "Earlier Holder", "shared.address@example.test");
+    changeEmail(earlier, "Earlier Holder", "own.address@example.test");
+    // a second client is then taken on with the freed address …
+    var second =
+        validatedClients(
+            mockMvc,
+            owner(),
+            csv(row("Current Holder", "shared.address@example.test").ref("H-2")),
+            mapping());
+    attestAndCommit(second);
+    assertThat(rowStatusByRef(second.batchId(), "H-2"))
+        .as("H-2: %s", failureReason(second.batchId(), "H-2"))
+        .isEqualTo("CREATED");
+    UUID current = resultEntity(second.batchId(), "H-2");
+    assertThat(current).isNotEqualTo(earlier);
+    // … and matched again by a later row (a duplicate of it, by the same address)
+    var repeat =
+        validatedClients(
+            mockMvc,
+            owner(),
+            csv(row("Current Holder", "shared.address@example.test").ref("H-3")),
+            mapping());
+    attestAndCommit(repeat);
+    assertThat(rowStatusByRef(repeat.batchId(), "H-3")).isEqualTo("SKIPPED_DUPLICATE");
+    assertThat(resultEntity(repeat.batchId(), "H-3")).isEqualTo(current);
+    mockMvc
+        .perform(
+            post("/api/clients/" + earlier + "/anonymize")
+                .with(owner())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"confirmationName\": \"Earlier Holder\", \"reason\": \"test\"}"))
+        .andExpect(status().isOk());
+    // the anonymised client's own row is redacted …
+    var own = rowByNumber(first.batchId(), 2);
+    assertThat((String) own.get("raw")).isEqualTo("{\"redacted\": true}");
+    assertThat((String) own.get("mapped")).isEqualTo("{\"redacted\": true}");
+    assertThat(own.get("source_ref")).isNull();
+    assertThat(own.get("dedup_key")).isNull();
+    // … the rows of the live client who now holds its earlier address keep their values
+    for (var batch : List.of(second, repeat)) {
+      var kept = rowByNumber(batch.batchId(), 2);
+      assertThat((String) kept.get("raw"))
+          .as("the other client's take-on row keeps its values")
+          .contains("shared.address@example.test");
+      assertThat((String) kept.get("mapped")).contains("shared.address@example.test");
+      assertThat(kept.get("dedup_key")).isEqualTo("email:shared.address@example.test");
+    }
+    assertThat(rowByNumber(second.batchId(), 2).get("source_ref")).isEqualTo("H-2");
+    assertThat(rowByNumber(repeat.batchId(), 2).get("source_ref")).isEqualTo("H-3");
+    assertThat(inTenant(() -> takeOnRows.clientBySourceRef("H-2"))).contains(current);
+    assertThat(inTenant(() -> takeOnRows.clientBySourceRef("H-3"))).contains(current);
+  }
+
+  private void changeEmail(UUID clientId, String name, String email) throws Exception {
+    mockMvc
+        .perform(
+            put("/api/clients/" + clientId)
+                .with(owner())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"name\":\"%s\",\"email\":\"%s\"}".formatted(name, email)))
+        .andExpect(status().isOk());
   }
 
   // --- helpers ---

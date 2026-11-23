@@ -14,6 +14,7 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
@@ -120,7 +121,42 @@ public class Customer {
   @Column(name = "collections_exempt", nullable = false)
   private boolean collectionsExempt;
 
+  /**
+   * The take-on batch that created this client (Phase 93 655A, ADR-389) — set only by {@link
+   * #takenOn}; with {@link #takenOnAt} both or neither (CHECK {@code chk_customer_taken_on}).
+   */
+  @Column(name = "take_on_batch_id", updatable = false)
+  private UUID takeOnBatchId;
+
+  /** When the take-on created this client; counts as activity for dormancy (§17.3.3). */
+  @Column(name = "taken_on_at", updatable = false)
+  private Instant takenOnAt;
+
   protected Customer() {}
+
+  /**
+   * A client taken on from the firm's previous system (Phase 93 655A, ADR-389): born {@code ACTIVE}
+   * through the 8-argument constructor — no lifecycle transition happens, so no checklist, no
+   * lifecycle audit and no status event. The one documented caller is {@code
+   * TakenOnCustomerService.createTakenOn} (ArchUnit {@code TakeOnEntryPointsArchTest}).
+   */
+  public static Customer takenOn(
+      String name,
+      String email,
+      String phone,
+      String idNumber,
+      UUID createdBy,
+      CustomerType type,
+      UUID takeOnBatchId,
+      Instant now) {
+    var customer =
+        new Customer(name, email, phone, idNumber, null, createdBy, type, LifecycleStatus.ACTIVE);
+    customer.lifecycleStatusChangedAt = now;
+    customer.lifecycleStatusChangedBy = createdBy;
+    customer.takeOnBatchId = Objects.requireNonNull(takeOnBatchId, "takeOnBatchId");
+    customer.takenOnAt = Objects.requireNonNull(now, "now");
+    return customer;
+  }
 
   public Customer(
       String name, String email, String phone, String idNumber, String notes, UUID createdBy) {
@@ -439,6 +475,14 @@ public class Customer {
   public void setFinancialYearEnd(LocalDate financialYearEnd) {
     this.financialYearEnd = financialYearEnd;
     this.updatedAt = Instant.now();
+  }
+
+  public UUID getTakeOnBatchId() {
+    return takeOnBatchId;
+  }
+
+  public Instant getTakenOnAt() {
+    return takenOnAt;
   }
 
   public boolean isCollectionsExempt() {

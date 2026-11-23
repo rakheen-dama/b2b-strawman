@@ -100,6 +100,16 @@ public class OrgSettings {
   @AttributeOverride(
       name = "dormancyThresholdDays",
       column = @Column(name = "dormancy_threshold_days"))
+  // Tenant V34 (Phase 93 655A, ADR-388): FICA review intervals, NOT NULL DEFAULT 36/24/12.
+  @AttributeOverride(
+      name = "ficaReviewMonthsLow",
+      column = @Column(name = "fica_review_months_low", nullable = false))
+  @AttributeOverride(
+      name = "ficaReviewMonthsMedium",
+      column = @Column(name = "fica_review_months_medium", nullable = false))
+  @AttributeOverride(
+      name = "ficaReviewMonthsHigh",
+      column = @Column(name = "fica_review_months_high", nullable = false))
   private DataRequestSettings dataRequest = new DataRequestSettings();
 
   @Column(name = "acceptance_expiry_days")

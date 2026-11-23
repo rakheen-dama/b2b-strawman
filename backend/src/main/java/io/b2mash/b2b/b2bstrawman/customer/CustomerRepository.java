@@ -60,4 +60,52 @@ public interface CustomerRepository extends JpaRepository<Customer, UUID> {
       value = "SELECT * FROM customers WHERE registration_number = :registrationNumber",
       nativeQuery = true)
   List<Customer> findByRegistrationNumber(@Param("registrationNumber") String registrationNumber);
+
+  // --- Take-on dedup (Phase 93 655A, §17.3.3) ---
+
+  /** The client holding {@code email}, case-insensitively (take-on: email clash at commit). */
+  Optional<Customer> findFirstByEmailIgnoreCase(String email);
+
+  /** Native projection of the fields the take-on dedup compares. */
+  interface DedupCandidate {
+    UUID getId();
+
+    String getEmail();
+
+    String getName();
+
+    String getTaxNumber();
+
+    String getIdNumber();
+  }
+
+  /**
+   * Every client the take-on dry run could match (anonymised clients excluded): loaded once per
+   * validation in its snapshot (X2).
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          "SELECT id, email, name, tax_number AS \"taxNumber\", id_number AS \"idNumber\""
+              + " FROM customers"
+              + " WHERE lifecycle_status <> 'ANONYMIZED'")
+  List<DedupCandidate> findTakeOnDedupCandidates();
+
+  /** A client with this name (case-insensitive) and tax number — the take-on commit re-check. */
+  @Query(
+      nativeQuery = true,
+      value =
+          "SELECT id FROM customers WHERE lower(name) = lower(:name) AND tax_number = :taxNumber"
+              + " AND lifecycle_status <> 'ANONYMIZED' ORDER BY created_at LIMIT 1")
+  Optional<UUID> findIdByNameAndTaxNumber(
+      @Param("name") String name, @Param("taxNumber") String taxNumber);
+
+  /** A client with this name (case-insensitive) and ID number — the take-on commit re-check. */
+  @Query(
+      nativeQuery = true,
+      value =
+          "SELECT id FROM customers WHERE lower(name) = lower(:name) AND id_number = :idNumber"
+              + " AND lifecycle_status <> 'ANONYMIZED' ORDER BY created_at LIMIT 1")
+  Optional<UUID> findIdByNameAndIdNumber(
+      @Param("name") String name, @Param("idNumber") String idNumber);
 }

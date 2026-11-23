@@ -18,9 +18,10 @@ import jakarta.persistence.Embeddable;
  * <p>Persisted inline on the {@code org_settings} table via {@code @Embedded} +
  * {@code @AttributeOverride} on {@link OrgSettings}. Column names, types, and nullability are
  * UNCHANGED from when these fields lived directly on the entity (zero schema change — see {@code
- * OrgSettingsSchemaSnapshotTest}). All three columns are nullable, so when they are all NULL
- * Hibernate materialises a NULL embedded object on reload — the lazy-fallback {@link
- * OrgSettings#getDataRequest()} getter is what keeps callers NPE-safe (see {@code
+ * OrgSettingsSchemaSnapshotTest}). The three original columns are nullable; since tenant V34 (Phase
+ * 93 655A) the group also holds the three {@code NOT NULL} FICA review intervals, so it no longer
+ * materialises as a NULL embedded on reload — the lazy-fallback {@link
+ * OrgSettings#getDataRequest()} getter stays as a guard (see {@code
  * OrgSettingsEmbeddableNullReloadTest}).
  *
  * <p>Field-level setters here intentionally do NOT bump {@code OrgSettings.updatedAt}; the
@@ -38,6 +39,25 @@ public class DataRequestSettings {
 
   @Column(name = "dormancy_threshold_days")
   private Integer dormancyThresholdDays;
+
+  /**
+   * FICA review intervals by risk rating, in months (Phase 93 655A, §17.2.5, FD-7): the firm's RMCP
+   * frequency, not law. {@code NOT NULL DEFAULT 36/24/12} with CHECK 1–120 (tenant V34), so they
+   * are {@code int} with the same defaults here — a new {@code org_settings} row must never insert
+   * NULL into them. Editable from 655B (which adds the guarded setter).
+   */
+  @Column(name = "fica_review_months_low", nullable = false)
+  private int ficaReviewMonthsLow = DEFAULT_FICA_REVIEW_MONTHS_LOW;
+
+  @Column(name = "fica_review_months_medium", nullable = false)
+  private int ficaReviewMonthsMedium = DEFAULT_FICA_REVIEW_MONTHS_MEDIUM;
+
+  @Column(name = "fica_review_months_high", nullable = false)
+  private int ficaReviewMonthsHigh = DEFAULT_FICA_REVIEW_MONTHS_HIGH;
+
+  public static final int DEFAULT_FICA_REVIEW_MONTHS_LOW = 36;
+  public static final int DEFAULT_FICA_REVIEW_MONTHS_MEDIUM = 24;
+  public static final int DEFAULT_FICA_REVIEW_MONTHS_HIGH = 12;
 
   protected DataRequestSettings() {}
 
@@ -63,5 +83,17 @@ public class DataRequestSettings {
 
   public void setDormancyThresholdDays(Integer dormancyThresholdDays) {
     this.dormancyThresholdDays = dormancyThresholdDays;
+  }
+
+  public int getFicaReviewMonthsLow() {
+    return ficaReviewMonthsLow;
+  }
+
+  public int getFicaReviewMonthsMedium() {
+    return ficaReviewMonthsMedium;
+  }
+
+  public int getFicaReviewMonthsHigh() {
+    return ficaReviewMonthsHigh;
   }
 }

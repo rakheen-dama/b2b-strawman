@@ -53,4 +53,20 @@ public interface TakeOnBatchRepository extends JpaRepository<TakeOnBatch, UUID> 
       nativeQuery = true,
       value = "SELECT * FROM take_on_batches WHERE id = :id FOR UPDATE SKIP LOCKED")
   Optional<TakeOnBatch> findByIdForUpdateSkipLocked(@Param("id") UUID id);
+
+  // --- Commit (655A) ---
+
+  /**
+   * The drain's next batch (§17.3.3 step 2): the oldest {@code COMMITTING} batch no other worker is
+   * claiming right now. There is at most one per tenant ({@code uq_take_on_batches_committing}).
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          SELECT * FROM take_on_batches WHERE status = 'COMMITTING'
+           ORDER BY commit_started_at LIMIT 1 FOR UPDATE SKIP LOCKED""")
+  Optional<TakeOnBatch> findNextCommittingSkipLocked();
+
+  boolean existsByStatus(TakeOnBatchStatus status);
 }

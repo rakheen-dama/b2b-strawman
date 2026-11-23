@@ -29,6 +29,6 @@ Scouted at HEAD `cb803686c` (2026-11-23); adjusted by the Family 1 builder. Esti
 | Family | Create | Modify |
 |---|---|---|
 | 1 | V32 SQL; `takeon/` 5 enums, 4 entities, 4 repositories; `TakeOnCoreSchemaTest`, `TakeOnBatchTest`; this file; `tasks/phase93-decisions.md` | `Capability.java`, `CapabilityRegistrationTest.java` |
-| 2 | `takeon/reader/` 9 classes; `CsvTakeOnReaderTest`, `XlsxTakeOnReaderTest`, `TakeOnValueParserTest`, `TakeOnTestFiles` | — |
+| 2 | `takeon/reader/` 10 classes (the brief's 9 + package-private `TakeOnSheetAssembler`, the shared row-model rules); `CsvTakeOnReaderTest`, `XlsxTakeOnReaderTest`, `TakeOnValueParserTest`, `TakeOnTestFiles` | — |
 | 3 | ≈ 15 main + ≈ 8 test + `wire/take-on-contract.json` | `AuditEventTypeRegistry`, `ProcessingActivityService`, `AuditEventTypeRegistryTest`, `ProcessingActivityControllerTest` |
 | 4 | tab, actions, 7 components, types, schemas, 3 vitest | 9 files (see above) |

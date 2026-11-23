@@ -1,0 +1,6 @@
+# 653A — found outside the slice (reported, not fixed here)
+
+| # | Found by | What | Where | Status |
+|---|---|---|---|---|
+| F-1 | Family 1 builder (automated security-review hook on the `OWNER_ONLY` change) | `Capability.OWNER_ONLY` is only subtracted from the **system admin** role (`OrgRoleService.resolveCapabilities`, `adminCaps.removeAll(Capability.OWNER_ONLY)`); nothing stops a caller who may manage roles from putting an owner-only capability (`MANAGE_COMPLIANCE_DESTRUCTIVE`, `OVERRIDE_MATTER_CLOSURE`, `FINANCIAL_RECONCILE`, and now `SIGN_OFF_TRUST_TAKE_ON`) into a **custom** role. FD-4 intends `SIGN_OFF_TRUST_TAKE_ON` to be grantable to a custom "Partner" role, so the grant itself is by design; whether a non-owner may create/assign such a role is the open question. Pre-existing for the three existing owner-only capabilities. | `backend/src/main/java/io/b2mash/b2b/b2bstrawman/orgrole/OrgRoleService.java` (role create/update/assign) | Reported — needs a re-spec (who may grant owner-only capabilities); not in 653A scope. Release-relevant before 657C ships the sign-off write. |
+| F-2 | brief C-5 | The pre-existing 1 MB Next server-action body ceiling also limits `uploadBankStatement`. | `frontend/next.config.ts` | To be recorded by Family 4 (shared config change). |

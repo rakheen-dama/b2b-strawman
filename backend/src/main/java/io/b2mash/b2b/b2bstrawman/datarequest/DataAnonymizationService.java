@@ -20,6 +20,7 @@ import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import io.b2mash.b2b.b2bstrawman.portal.directory.PortalContactDirectoryService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
+import io.b2mash.b2b.b2bstrawman.takeon.TakeOnRowRepository;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import java.time.LocalDate;
 import java.util.List;
@@ -49,6 +50,7 @@ public class DataAnonymizationService {
   private final OrgSettingsRepository orgSettingsRepository;
   private final DataExportService dataExportService;
   private final PortalContactDirectoryService portalContactDirectoryService;
+  private final TakeOnRowRepository takeOnRows;
 
   public DataAnonymizationService(
       DataSubjectRequestRepository requestRepository,
@@ -64,7 +66,8 @@ public class DataAnonymizationService {
       TimeEntryRepository timeEntryRepository,
       OrgSettingsRepository orgSettingsRepository,
       DataExportService dataExportService,
-      PortalContactDirectoryService portalContactDirectoryService) {
+      PortalContactDirectoryService portalContactDirectoryService,
+      TakeOnRowRepository takeOnRows) {
     this.requestRepository = requestRepository;
     this.customerRepository = customerRepository;
     this.documentRepository = documentRepository;
@@ -79,6 +82,7 @@ public class DataAnonymizationService {
     this.orgSettingsRepository = orgSettingsRepository;
     this.dataExportService = dataExportService;
     this.portalContactDirectoryService = portalContactDirectoryService;
+    this.takeOnRows = takeOnRows;
   }
 
   /**
@@ -170,6 +174,10 @@ public class DataAnonymizationService {
     // Step 6: Complete the request
     request.complete(actorId);
     requestRepository.save(request);
+
+    // Phase 93 655A (FD-19, §17.6.5): the client's take-on rows lose their values. Runs last — the
+    // bulk update flushes and clears the persistence context.
+    takeOnRows.redactForClient(customerId);
 
     // Audit event
     auditService.log(
@@ -292,6 +300,10 @@ public class DataAnonymizationService {
       invoiceRepository.save(invoice);
     }
     int invoicesPreserved = invoices.size();
+
+    // Phase 93 655A (FD-19, §17.6.5): the client's take-on rows lose their values. Runs last — the
+    // bulk update flushes and clears the persistence context.
+    takeOnRows.redactForClient(customerId);
 
     // Step 8: Audit event with pre-anonymization export key (actual S3 key from export)
     auditService.log(

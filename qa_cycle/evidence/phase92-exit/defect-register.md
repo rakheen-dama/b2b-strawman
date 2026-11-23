@@ -3,9 +3,11 @@
 Compiled 2026-11-20 on worktree `epic-652F/exit-gate` = `main` `b08a8916a`. It is the register that task 652.34's
 exit bar item (3), "0 open HIGH or MEDIUM trust defects", is judged against.
 
-**Updated 2026-11-23** for the exit-gate re-run on `main` `ef0563fe3`, after the follow-up PRs #1823–#1842. Each row the
-follow-ups closed now reads `CLOSED → <FU/id> #<PR> (<merge sha>)`, followed by its 2026-11-20 status. PR numbers and merge
-SHAs are from `tasks/phase92-decisions.md` (the Follow-up PRs table and the D-rows at the bottom). Every other column is unchanged.
+**Updated 2026-11-23** for the exit-gate re-run after the follow-up PRs #1823–#1845. The gate of record is the run on
+`main` `cb803686c`. Each row the follow-ups closed now reads `CLOSED → <FU/id> #<PR> (<merge sha>)`, followed by its
+2026-11-20 status. PR numbers and merge SHAs are from `tasks/phase92-decisions.md` (the Follow-up PRs table and the D-rows
+at the bottom). Every other column is unchanged. Section R adds 8 residuals the follow-up builders had found but nobody
+had registered (review H-1 on #1843). All 8 are CLOSED by #1845.
 
 **Sources.** Every `$EV/*/found*.md` (31 files) and `$X/found.md`; `tasks/phase92-decisions.md` (rulings, agent rows,
 FU-1..FU-16); architecture §16.14.4; `$X/audit-facts.md` §1 (hypothesis outcomes) and §6 (§16.14.4 status), used, not
@@ -14,7 +16,7 @@ merged into that row; the few never carried are in table N.
 
 **Shorthands.** `$EV` = `qa_cycle/evidence/phase92` · `$X` = `qa_cycle/evidence/phase92-exit` · `$B` =
 `backend/src/main/java/io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting` · `$FT` =
-`frontend/app/(app)/org/[slug]/trust-accounting` · dec = `tasks/phase92-decisions.md` · "PR #n" = the squash commit on `main`.
+`frontend/app/(app)/org/[slug]/trust-accounting` · `$FU` = `qa_cycle/evidence/phase92-followups` · dec = `tasks/phase92-decisions.md` · "PR #n" = the squash commit on `main`.
 
 ## Rules applied
 
@@ -44,7 +46,8 @@ merged into that row; the few never carried are in table N.
 
 ## Summary
 
-224 rows (sections A–H from the found.md files, the decisions log and §16.14.4; section N from the nested gate files).
+232 rows (sections A–H from the found.md files, the decisions log and §16.14.4; section N from the nested gate files;
+section R, added 2026-11-23, from the follow-up builders' notes). The 2026-11-20 count was 224.
 
 ### 2026-11-23: after the follow-ups (current)
 
@@ -53,9 +56,9 @@ Re-counted from the tables below, by source severity under the rules above.
 | Severity | FIXED (in phase) | CLOSED (follow-up) | OPEN → FU-n | OPEN — unassigned | DECLINED | STRUCK | HYPOTHESIS | Total |
 |---|---|---|---|---|---|---|---|---|
 | HIGH | 14 | 4 | 0 | 0 | 0 | 0 | 0 | 18 |
-| MEDIUM | 28 | 17 | 0 | 0 | 0 | 0 | 0 | 45 |
+| MEDIUM | 28 | 25 | 0 | 0 | 0 | 0 | 0 | 53 |
 | LOW | 22 | 4 | 7 | 104 | 18 | 1 | 5 | 161 |
-| **Total** | 64 | 25 | 7 | 104 | 18 | 1 | 5 | 224 |
+| **Total** | 64 | 33 | 7 | 104 | 18 | 1 | 5 | 232 |
 
 **Open trust defects at HIGH or MEDIUM: 0.** No row of any kind, trust or not, is open at HIGH or MEDIUM, and no
 HIGH or MEDIUM hypothesis is left. On exit-bar item (3), **met**.
@@ -65,13 +68,20 @@ Every one of the 18 open on 2026-11-20 is closed:
 - HIGH (3): 648A F-6 / F-6b → FU-9 #1825; 648F R-2 → FU-2 #1823; 649B F1 / F-652E-5 → FU-13 #1824 (widened, so the
   scope gap in note 2 is closed).
 - MEDIUM (15): F-646C-1 and F-652C-1 → FU-6b #1831; F-647C → FU-6a #1829; F-646D-1 → #1835; F-646E-2 → #1837;
-  CF-3a and CF-3b → CF-3 #1826; 648B F-1 → #1838; 648B F-11 → #1841 (founder ruling: option A); 648D F-4 and F-5 →
+  CF-3a and CF-3b → CF-3 #1826; 648B F-1 → #1838; 648B F-11 → #1841 (founder ruling: option A), partly, and fully closed by #1845; 648D F-4 and F-5 →
   #1836; 648F R-1 → FU-3 #1828; 649B S2 → FU-5 #1827; 649B W1 → FU-4 #1832; F-650C-1 → FU-12 #1833.
 
 The three HIGH / MEDIUM hypotheses are closed too: 647C #2 / 649B F2 was reproduced as HIGH and fixed (#1839); HF-7 was
 reproduced as MEDIUM and fixed (FU-16 #1834); 646C O-2 was tested and not reproduced as harm (#1840), with a LOW
 remainder. Four LOW rows were closed by follow-ups as well: F-17 → FU-8 #1830, 650A F-12 → FU-11 (closed by #1825),
 F-650C-2 → FU-13 #1824, 652H M-1 → FU-16 #1834.
+
+**The 8 residuals in section R are closed by #1845 (`f4923eb29`).** All are MEDIUM by the rubric. They are R-1.1a–d
+(back-dated PAYMENT, REFUND, INV_PLACE and TRANSFER_OUT), R-1.2 (back-dated pair reversals), R-1.4 (the document trust
+flag) and R-1.5 (the idempotency key after a reload). The eighth, R-1.3 (the `reverseInterest` vs auto-match deadlock), was
+a MEDIUM hypothesis and is closed as not reproduced, impossible by construction. Before section R was added, the first
+re-run on `ef0563fe3` had no open row in the register's tables. Item (3) was still not met then, though, because
+these MEDIUM-class residuals were open outside the register.
 
 **Under the rubric applied throughout: 2 open, both MEDIUM:** 648E F-4 and F-652E-3. Both are LOW by source (note 4), so
 the headline stays 0 by the source-severity rule. CF-3a and F-650C-2, the other two rubric-raised rows, are closed.
@@ -84,7 +94,15 @@ the headline stays 0 by the source-severity rule. CF-3a and F-650C-2, the other 
 - the rows placed LOW because their precondition is API-only today (note 5): 652D (i) (rubric HIGH), F-652D-O3
   (rubric MEDIUM), 652D (iii) and §16.14.4 #9. They become real once a UI can close an account or post to a
   non-primary GENERAL account;
-- the LOW remainder of 646C O-2 (net-to-zero stray links on an undiscarded wrong file).
+- the LOW remainder of 646C O-2 (net-to-zero stray links on an undiscarded wrong file);
+- the Low follow-ups of #1845 (dec "Residuals D-1"), which are not register rows:
+  - hash the stored request identity;
+  - the escape clears the whole form scope;
+  - a whitespace-only reason, and no `@Size`;
+  - a bank-advice re-entry after a lost line-backed interest submit (needs a server duplicate-credit check);
+  - the reconciliation notice scope;
+  - memory-only status;
+  - the hint is not kept across a second reload.
 
 ### 2026-11-20: 652F (history, kept as compiled)
 
@@ -232,7 +250,7 @@ on `main` (cited in their rows). If the verdict counts them, the total is 21 by 
 | 648B F-5 | `$EV/648B/found.md` | Reversing interest whose net row is matched is refused ("unmatch first"); not covered by a ruling | Yes | LOW (src: INFO) | OPEN — unassigned (confirm or overrule) |
 | 648B F-6 | `$EV/648B/found.md` | Unmatching a GROSS interest line after its sweep leaves the Fund ledger in debit | Yes | LOW (src) | DECLINED (ADR-381 / founder decision 9: a Fund ledger in debit is allowed and flagged) |
 | 648B F-7/8/9/13 | `$EV/648B/found.md` | Maintainability: `TrustInvestmentService` size; investment↔reconciliation package cycle; duplicated reversal audit block and event publish | No | LOW (src: INFO) | OPEN — unassigned |
-| 648B F-11 | `$EV/648B/found.md` | No trust write carries an idempotency key; a resubmit after a lost response posts twice | Yes | MEDIUM (src) | **CLOSED → 648B F-11 #1841 (56bdc641e)** (founder ruling 2026-11-22: option A, an idempotency key on every trust write). 2026-11-20 status: OPEN — unassigned (cross-cutting; product / architecture) |
+| 648B F-11 | `$EV/648B/found.md` | No trust write carries an idempotency key; a resubmit after a lost response posts twice | Yes | MEDIUM (src) | **CLOSED → 648B F-11 #1841 (56bdc641e), partly; fully closed by #1845 (f4923eb29)** (the reload residual, row R-1.5) (founder ruling 2026-11-22: option A, an idempotency key on every trust write). 2026-11-20 status: OPEN — unassigned (cross-cutting; product / architecture) |
 | 648B F-12 | `$EV/648B/found.md`; dec F-12 | V24 drops `interest_earned` without carrying totals over | Yes | LOW (src) | DECLINED (ruling F-12) |
 | 648B F-14 | `$EV/648B/found.md` | Interest dialog controls stay editable while submitting | No | LOW (assigned) | OPEN — unassigned |
 | 648B F-15 | `$EV/648B/found.md` | Reset-on-open vitest cannot catch a reset keyed on the line list | No | LOW (assigned) | OPEN — unassigned |
@@ -409,3 +427,18 @@ on `main` (cited in their rows). If the verdict counts them, the total is 21 by 
 | 648A-G P-1 | `$EV/648A/gates/found-obs.md` | Transactions status column shows enum-cased words | No | LOW (src) | OPEN — unassigned |
 | 648A-G E-1 | `$EV/648A/gates/found-obs.md` | A console 404 on each client-ledger page visit | No | LOW (assigned) | OPEN — unassigned |
 | 648C-G W-1 | `$EV/648C/gates/found-obs.md` | Settings row of the primary account wraps at 1280 px | No | LOW (src: cosmetic) | OPEN — unassigned |
+
+## R. Residuals found by the follow-up builders (registered 2026-11-23)
+
+The builders of the follow-ups recorded these residuals in their notes, but they were never added to this register. The independent review of #1843 (REQUEST_CHANGES @`616d915`, H-1) caught the gap. They were listed in `tasks/trust-accounting-open-issues-2026-11-23.md` (#1844, "open-issues" below), the founder ruled on them (dec "Residuals D-1"), and all of them were fixed in #1845 (`f4923eb29`, 2026-11-23). The severities come from the rubric, as the open-issues file rates them; §1.4 was rated MEDIUM by the orchestrator (`$FU/document-trust-flag/notes.md`).
+
+| ID | Source(s) | Description | Trust? | Severity | Disposition |
+|---|---|---|---|---|---|
+| R-1.1a | `$FU/F-646D-1/notes.md` "Other outflows with the same gap"; open-issues §1.1; fix evidence `$FU/backdated-cover-all/` | A back-dated `PAYMENT` was cover-checked at approval against the current client balance only. The client ledger or matter cell could be in debit as at past dates, with no flag | Yes | MEDIUM (assigned): missing refusal, class F-646D-1 | **CLOSED → #1845 (f4923eb29)** (covered from its date on) |
+| R-1.1b | `$FU/F-646D-1/notes.md` "Other outflows with the same gap"; open-issues §1.1; fix evidence `$FU/backdated-cover-all/` | A back-dated `REFUND` was cover-checked at approval against the current client balance only. Same effect as R-1.1a | Yes | MEDIUM (assigned): missing refusal, class F-646D-1 | **CLOSED → #1845 (f4923eb29)** (covered from its date on) |
+| R-1.1c | `$FU/F-646D-1/notes.md` "Other outflows with the same gap"; open-issues §1.1; fix evidence `$FU/backdated-cover-all/` | A back-dated `INV_PLACE` (s86(4) placement) was checked against the current matter cell at request and the current client balance at approval. Same effect as R-1.1a | Yes | MEDIUM (assigned): missing refusal, class F-646D-1 | **CLOSED → #1845 (f4923eb29)** (request and approval both covered from its date on) |
+| R-1.1d | `$FU/F-646D-1/notes.md` "Other outflows with the same gap"; open-issues §1.1; fix evidence `$FU/backdated-cover-all/` | A back-dated `TRANSFER_OUT` (posts at once) checked the source client and matter cell as at today only. Same effect as R-1.1a | Yes | MEDIUM (assigned): missing refusal, class F-646D-1 | **CLOSED → #1845 (f4923eb29)** (covered from its date on) |
+| R-1.2 | `$FU/FU-5/notes.md` § Residual risk; open-issues §1.2; fix evidence `$FU/backdated-cover-all/` | `reverseTransferOut` and `reverseUnidentifiedAllocation` post at once with a `reversalDate`, but checked the current balance only. The client could be in debit as at past dates, with no flag | Yes | MEDIUM (assigned): missing refusal, class 649B S2 | **CLOSED → #1845 (f4923eb29)** (covered from the reversal date on) |
+| R-1.3 | `$FU/CF-3/notes.md` § Trade-offs / residual risk; open-issues §1.3; `$FU/reverse-interest-deadlock/notes.md` | `reverseInterest` locks two rows in an order that is not id order, so it could deadlock against an auto-match that locks both rows (40P01 → a generic error, no corruption) | Yes | MEDIUM if reproduced (assigned): deadlock, class CF-3b | **CLOSED (not reproduced — impossible by construction) → #1845 (f4923eb29)** (a non-line interest entry is always NET, so it locks one row: V24 `chk_invest_interest_fund_txn`; guard tests kept) |
+| R-1.4 | `$FU/FU-3/notes.md` "Several contexts per generation"; dec FU-3 D-1; open-issues §1.4; `$FU/document-trust-flag/notes.md` | `generateDocument` built the trust context twice. A client's first-ever trust posting landing between the builds could store a PDF that prints trust money but is flagged as not containing trust data, which bypasses the G89-F52 download check | Yes | MEDIUM (assigned in #1845): a narrow race whose effect is an access-control bypass | **CLOSED → #1845 (f4923eb29)** (the flag is derived from the one rendered context) |
+| R-1.5 | dec F-11 D-1 (Low follow-up "a reload or second tab gets a new key"); `$FU/648B-F11/notes.md`; open-issues §1.5 (CodeRabbit, #1844); `$FU/f11-reload-retry/notes.md` | After a lost response and a page reload, the unsettled `Idempotency-Key` was gone, so a retry sent a new key and could post twice. This is the original 648B F-11 defect, still reachable | Yes | MEDIUM (assigned): the 648B F-11 class | **CLOSED → #1845 (f4923eb29)** (the key survives a reload: `sessionStorage`, 24 h TTL anchored to the first store, plus a deliberate "Submit as a new entry" escape) |

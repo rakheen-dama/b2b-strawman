@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useCallback } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { Clock } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
 import {
@@ -19,6 +19,12 @@ import {
   fetchTimeSummaryByTask,
 } from "@/app/(app)/org/[slug]/matters/[id]/time-summary-actions";
 
+interface FilteredTimeData {
+  summary: MatterTimeSummary;
+  byTask: TaskTimeSummary[];
+  byMember: MemberTimeSummary[] | null;
+}
+
 interface TimeSummaryPanelProps {
   projectId: string;
   initialSummary: MatterTimeSummary;
@@ -32,41 +38,60 @@ export function TimeSummaryPanel({
   initialByTask,
   initialByMember,
 }: TimeSummaryPanelProps) {
-  const [summary, setSummary] = useState(initialSummary);
-  const [byTask, setByTask] = useState(initialByTask);
-  const [byMember, setByMember] = useState(initialByMember);
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
+  // Data fetched for the active date filter only. With no filter the panel renders the server
+  // props directly, so a page refresh after a time entry is logged (revalidatePath) shows at once
+  // even when this tab mounted before the refresh committed (F-657A-1). Copying the props into
+  // state kept the mount-time values until a reload.
+  const [filtered, setFiltered] = useState<FilteredTimeData | null>(null);
   const [isPending, startTransition] = useTransition();
+  const hasFilter = fromDate !== "" || toDate !== "";
+  const withMembers = initialByMember !== null;
 
-  const refetchData = useCallback(
-    (from: string, to: string) => {
-      startTransition(async () => {
-        const fromParam = from || undefined;
-        const toParam = to || undefined;
-        const [newSummary, newByTask, newByMember] = await Promise.all([
-          fetchProjectTimeSummary(projectId, fromParam, toParam),
-          fetchTimeSummaryByTask(projectId, fromParam, toParam),
-          initialByMember !== null
-            ? fetchTimeSummaryByMember(projectId, fromParam, toParam)
-            : Promise.resolve(null),
-        ]);
-        setSummary(newSummary);
-        setByTask(newByTask);
-        setByMember(newByMember);
-      });
-    },
-    [projectId, initialByMember]
-  );
+  // Re-fetch the filtered view when the filter changes, and also when the server data changes
+  // underneath it (a new entry), so a filtered view never lags the page either. Responses that
+  // arrive after a newer request started are dropped.
+  useEffect(() => {
+    if (!hasFilter) return;
+    let cancelled = false;
+    startTransition(async () => {
+      const fromParam = fromDate || undefined;
+      const toParam = toDate || undefined;
+      const [summary, byTask, byMember] = await Promise.all([
+        fetchProjectTimeSummary(projectId, fromParam, toParam),
+        fetchTimeSummaryByTask(projectId, fromParam, toParam),
+        withMembers
+          ? fetchTimeSummaryByMember(projectId, fromParam, toParam)
+          : Promise.resolve(null),
+      ]);
+      if (!cancelled) setFiltered({ summary, byTask, byMember });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    hasFilter,
+    fromDate,
+    toDate,
+    projectId,
+    withMembers,
+    initialSummary,
+    initialByTask,
+    initialByMember,
+  ]);
+
+  const { summary, byTask, byMember } =
+    hasFilter && filtered
+      ? filtered
+      : { summary: initialSummary, byTask: initialByTask, byMember: initialByMember };
 
   function handleFromChange(value: string) {
     setFromDate(value);
-    refetchData(value, toDate);
   }
 
   function handleToChange(value: string) {
     setToDate(value);
-    refetchData(fromDate, value);
   }
 
   const isEmpty = summary.totalMinutes === 0 && summary.entryCount === 0;

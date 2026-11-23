@@ -734,9 +734,26 @@ class ClientsTakeOnIntegrationTest {
         validatedClients(
             mockMvc,
             owner(),
-            csv(row("Anon Client", "anon.client@example.test").ref("Z-1")),
+            csv(
+                row("Anon Client", "anon.client@example.test").ref("Z-1"),
+                row("Anon Client Again", "ANON.CLIENT@example.test").ref("Z-2")),
+            mapping());
+    // validated before the first commit, so its row FAILS on the email clash when it commits
+    var clash =
+        validatedClients(
+            mockMvc,
+            owner(),
+            csv(row("Anon Clash", "anon.client@example.test").ref("Z-4")),
+            mapping());
+    var later =
+        validatedClients(
+            mockMvc,
+            owner(),
+            csv(row("Anon Later", "anon.later@example.test").ref("Z-3")),
             mapping());
     attestAndCommit(batch);
+    attestAndCommit(clash);
+    assertThat(rowStatusByRef(clash.batchId(), "Z-4")).isEqualTo("FAILED");
     UUID client = resultEntity(batch.batchId(), "Z-1");
     mockMvc
         .perform(
@@ -745,16 +762,39 @@ class ClientsTakeOnIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"confirmationName\": \"Anon Client\", \"reason\": \"test\"}"))
         .andExpect(status().isOk());
-    var r =
-        jdbc.queryForMap(
-            "SELECT raw_values::text AS raw, mapped_values::text AS mapped, dedup_key, source_ref,"
-                + " status FROM \"%s\".take_on_rows WHERE batch_id = ?".formatted(schema),
-            batch.batchId());
-    assertThat((String) r.get("raw")).isEqualTo("{\"redacted\": true}");
-    assertThat((String) r.get("mapped")).isEqualTo("{\"redacted\": true}");
-    assertThat(r.get("dedup_key")).isNull();
-    assertThat(r.get("source_ref")).isEqualTo("Z-1");
-    assertThat(r.get("status")).isEqualTo("CREATED");
+    // the created row and the in-file repeat of its email are redacted; the shells stay
+    for (String ref : List.of("Z-1", "Z-2")) {
+      var r =
+          jdbc.queryForMap(
+              ("SELECT raw_values::text AS raw, mapped_values::text AS mapped, dedup_key,"
+                      + " source_ref, errors::text AS errors FROM \"%s\".take_on_rows"
+                      + " WHERE batch_id = ? AND source_ref = ?")
+                  .formatted(schema),
+              batch.batchId(),
+              ref);
+      assertThat((String) r.get("raw")).as(ref).isEqualTo("{\"redacted\": true}");
+      assertThat((String) r.get("mapped")).as(ref).isEqualTo("{\"redacted\": true}");
+      assertThat(r.get("dedup_key")).as(ref).isNull();
+      assertThat(r.get("source_ref")).as(ref).isEqualTo(ref);
+      assertThat((String) r.get("errors")).as(ref).doesNotContain("message");
+    }
+    assertThat(rowStatusByRef(batch.batchId(), "Z-1")).isEqualTo("CREATED");
+    assertThat(rowStatusByRef(batch.batchId(), "Z-2")).isEqualTo("ERROR");
+    assertThat(
+            jdbc.queryForObject(
+                "SELECT raw_values::text FROM \"%s\".take_on_rows WHERE batch_id = ?"
+                    .formatted(schema),
+                String.class,
+                clash.batchId()))
+        .as("the row that failed on the email clash is redacted too")
+        .isEqualTo("{\"redacted\": true}");
+    // another client's rows are untouched
+    var untouched =
+        jdbc.queryForObject(
+            "SELECT raw_values::text FROM \"%s\".take_on_rows WHERE batch_id = ?".formatted(schema),
+            String.class,
+            later.batchId());
+    assertThat(untouched).contains("anon.later@example.test");
   }
 
   // --- helpers ---
@@ -806,6 +846,15 @@ class ClientsTakeOnIntegrationTest {
 
   private UUID clientIdByRef(UUID batchId, String ref) {
     return resultEntity(batchId, ref);
+  }
+
+  private String rowStatusByRef(UUID batchId, String ref) {
+    return jdbc.queryForObject(
+        "SELECT status FROM \"%s\".take_on_rows WHERE batch_id = ? AND source_ref = ?"
+            .formatted(schema),
+        String.class,
+        batchId,
+        ref);
   }
 
   private String failureReason(UUID batchId, String ref) {

@@ -131,6 +131,8 @@ public class DataAnonymizationService {
 
     // Step 1: Anonymize customer PII
     String hash = customerId.toString().substring(0, 6);
+    // Phase 93 655A: the take-on dedup key needs the email before anonymize() overwrites it.
+    String takeOnDedupKey = TakeOnRowRepository.clientDedupKey(customer.getEmail());
     customer.anonymize("Anonymized Client " + hash);
     customerRepository.save(customer);
 
@@ -177,7 +179,7 @@ public class DataAnonymizationService {
 
     // Phase 93 655A (FD-19, §17.6.5): the client's take-on rows lose their values. Runs last — the
     // bulk update flushes and clears the persistence context.
-    takeOnRows.redactForClient(customerId);
+    takeOnRows.redactForClient(customerId, takeOnDedupKey);
 
     // Audit event
     auditService.log(
@@ -251,6 +253,8 @@ public class DataAnonymizationService {
 
     // Step 1: Anonymize customer PII (existing method)
     String hash = customerId.toString().substring(0, 6);
+    // Phase 93 655A: the take-on dedup key needs the email before anonymize() overwrites it.
+    String takeOnDedupKey = TakeOnRowRepository.clientDedupKey(customer.getEmail());
     customer.anonymize("Anonymized Client " + hash);
 
     // Step 2: Clear notes and customFields
@@ -303,7 +307,7 @@ public class DataAnonymizationService {
 
     // Phase 93 655A (FD-19, §17.6.5): the client's take-on rows lose their values. Runs last — the
     // bulk update flushes and clears the persistence context.
-    takeOnRows.redactForClient(customerId);
+    takeOnRows.redactForClient(customerId, takeOnDedupKey);
 
     // Step 8: Audit event with pre-anonymization export key (actual S3 key from export)
     auditService.log(

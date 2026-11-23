@@ -166,13 +166,20 @@ public interface TakeOnRowRepository extends JpaRepository<TakeOnRow, UUID> {
 
   List<TakeOnRow> findByBatchIdAndStatusOrderByRowNumberAsc(UUID batchId, TakeOnRowStatus status);
 
+  /** The clients dedup key of an email (D-19): {@code "email:" + lower(email)}. */
+  static String clientDedupKey(String email) {
+    return "email:" + email.toLowerCase(java.util.Locale.ROOT);
+  }
+
   /**
    * POPIA (§17.6.5, FD-19, C-23): when a client is anonymised, every take-on row that produced it
-   * or matched it loses its values — {@code {"redacted": true}}, the dedup key (a lower-cased
-   * email) and the message texts (they may quote a cell); only {code, field} stay. The {@code
-   * source_ref} stays (a later dataset cannot resolve an anonymised client anyway, and the row
-   * shell must still say what it was). The archived file is not rewritten while a legal retention
-   * period runs.
+   * or matched it — by {@code result_entity_id} or {@code duplicate_of_id}, or by the client's
+   * email dedup key (a row that FAILED on an email clash with it, or an in-file repeat of it; pass
+   * the key taken <b>before</b> the email is overwritten) — loses its values — {@code {"redacted":
+   * true}}, the dedup key (a lower-cased email) and the message texts (they may quote a cell); only
+   * {code, field} stay. The {@code source_ref} stays (a later dataset cannot resolve an anonymised
+   * client anyway, and the row shell must still say what it was). The archived file is not
+   * rewritten while a legal retention period runs.
    */
   @Modifying(flushAutomatically = true, clearAutomatically = true)
   @Query(
@@ -189,6 +196,7 @@ public interface TakeOnRowRepository extends JpaRepository<TakeOnRow, UUID> {
                                         'code', w -> 'code', 'field', w -> 'field'))
                                         FROM jsonb_array_elements(warnings) w), '[]'::jsonb),
                  updated_at = now()
-           WHERE result_entity_id = :clientId OR duplicate_of_id = :clientId""")
-  int redactForClient(@Param("clientId") UUID clientId);
+           WHERE result_entity_id = :clientId OR duplicate_of_id = :clientId
+              OR dedup_key = :dedupKey""")
+  int redactForClient(@Param("clientId") UUID clientId, @Param("dedupKey") String dedupKey);
 }

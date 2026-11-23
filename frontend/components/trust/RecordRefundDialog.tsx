@@ -32,6 +32,7 @@ import {
 } from "./TrustEntityPickers";
 import { LockedMonthWarning } from "./locked-month-warning";
 import { useIdempotencyKey } from "@/hooks/use-idempotency-key";
+import { UnsettledSubmitNotice } from "./unsettled-submit-notice";
 
 interface RecordRefundDialogProps {
   accountId: string;
@@ -71,7 +72,7 @@ export function RecordRefundDialog({
   defaultProjectId,
   lockedThrough,
 }: RecordRefundDialogProps) {
-  const idempotency = useIdempotencyKey();
+  const idempotency = useIdempotencyKey(["recordRefund", accountId]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -222,6 +223,10 @@ export function RecordRefundDialog({
 
             <LockedMonthWarning date={transactionDate} lockedThrough={lockedThrough} />
 
+            <UnsettledSubmitNotice
+              show={idempotency.unsettled}
+              onSubmitAsNew={idempotency.discardUnsettled}
+            />
             {error && <p className="text-destructive text-sm">{error}</p>}
 
             <DialogFooter>

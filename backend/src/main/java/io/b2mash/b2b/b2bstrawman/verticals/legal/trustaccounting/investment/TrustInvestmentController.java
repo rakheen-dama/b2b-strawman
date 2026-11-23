@@ -6,6 +6,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.idempotency.Ide
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.InvestmentInterestResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.PlaceInvestmentRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.RecordInvestmentInterestRequest;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.ReverseInterestRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.TrustInvestmentResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.WithdrawInvestmentRequest;
 import jakarta.validation.Valid;
@@ -82,8 +83,9 @@ public class TrustInvestmentController {
   @PostMapping("/api/trust-investment-interest/{interestId}/reverse")
   @IdempotentTrustWrite
   @RequiresCapability("MANAGE_TRUST")
-  public ResponseEntity<InvestmentInterestResponse> reverseInterest(@PathVariable UUID interestId) {
-    return ResponseEntity.ok(investmentService.reverseInterest(interestId));
+  public ResponseEntity<InvestmentInterestResponse> reverseInterest(
+      @PathVariable UUID interestId, @Valid @RequestBody ReverseInterestRequest request) {
+    return ResponseEntity.ok(investmentService.reverseInterest(interestId, request));
   }
 
   @PostMapping("/api/trust-investments/{investmentId}/withdraw")

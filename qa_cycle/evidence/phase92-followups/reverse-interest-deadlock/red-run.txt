@@ -1,0 +1,12 @@
+# Reproduce-first run — item 2 (§1.3, CF-3b class) on unmodified production code (main ef0563fe3), 2026-11-23
+# Command (backend/): ./mvnw test -Dtest='ReverseInterestAutoMatchLockOrderIntegrationTest' (run together with the item-1/3 red set)
+#
+# Verdict: NOT REPRODUCED — all three cases pass on main (no 40P01 in either order). This is the expected result:
+# a reversible interest entry has exactly one trust row, so reverseInterest cannot lock two rows against
+# auto-match's id order (see notes.md for the file:line chain). The tests stay as guards.
+
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.136 s -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.ReverseInterestAutoMatchLockOrderIntegrationTest
+
+#   aReversibleInterestEntryHasExactlyOneRow                                  PASS (the hypothesis' precondition is impossible)
+#   autoMatchHoldingTheLine_thenReverseInterestOfItsRow_noDeadlock            PASS (reversal blocked behind the gate, then refused 400 "matched to a bank statement line")
+#   reverseInterestHoldingTheRow_thenAutoMatchOfIt_noDeadlock                 PASS (auto-match blocked behind the reversal, then skipped the REVERSED row)

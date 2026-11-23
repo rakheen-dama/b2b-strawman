@@ -528,19 +528,15 @@ public class TrustTransactionService {
     postingService.lockClient(trustAccountId, firstId);
     postingService.lockClient(trustAccountId, secondId);
 
-    // Source must have a sufficient derived balance (a client with no posted row has R0,00)
-    var sourceAvailable =
-        ledgerQueries.clientBalance(trustAccountId, request.sourceClientId(), null);
-    if (sourceAvailable.compareTo(request.amount()) < 0) {
-      throw new InvalidStateException(
-          "Insufficient trust balance",
-          "Insufficient trust balance for "
-              + sourceCustomer.getName()
-              + ". Available: "
-              + rand(sourceAvailable)
-              + ", Requested: "
-              + rand(request.amount()));
-    }
+    // Source must have a sufficient derived balance (a client with no posted row has R0,00); a
+    // back-dated transfer at its lowest point from its date on (founder ruling D-1, 2026-11-23)
+    var coveredFrom = coveredFromIfBackDated(request.transactionDate());
+    requireClientBalanceCovers(
+        trustAccountId,
+        request.sourceClientId(),
+        sourceCustomer.getName(),
+        request.amount(),
+        coveredFrom);
 
     // A transfer moves the source client's money on its matter (G89-F12)
     requireMatterCellCovers(
@@ -548,7 +544,8 @@ public class TrustTransactionService {
         request.sourceClientId(),
         sourceCustomer.getName(),
         request.sourceMatterId(),
-        request.amount());
+        request.amount(),
+        coveredFrom);
 
     // Create paired transactions
     var transferOut =
@@ -1040,9 +1037,7 @@ public class TrustTransactionService {
       // them, not only today. A contra dated today (or later) is checked as before.
       if (TrustPostingService.contraOf(original).ledgerEffect().signum() < 0
           && transaction.getCustomerId() != null) {
-        var contraDate = transaction.getTransactionDate();
-        requireClientCovers(
-            transaction, contraDate.isBefore(LocalDate.now(clock)) ? contraDate : null);
+        requireClientCovers(transaction, coveredFromIfBackDated(transaction.getTransactionDate()));
       }
     } else if (type.approval() == TrustTransactionType.Approval.REQUIRED) {
       // 648A review F-3: a placement's owner re-checks the cover the client check below cannot
@@ -1063,18 +1058,12 @@ public class TrustTransactionService {
       // client; an unidentified-deposit resolution (UNIDENT_ALLOC_OUT, UNIDENT_FUND_PAY:
       // NON_CLIENT, no client on the row) takes it off its own item, whole by construction
       // (§16.2.4).
-      // F-646D-1 (Phase 92 646D, default D-1 by analogy with S2 / FU-5): a fee transfer posts on
-      // its own date, so a back-dated one lowers the client's balance — and the matter cell's — as
-      // at that date and every later date; it must be covered at the lowest point from its date
-      // on. A fee transfer dated today, and every other outflow, is checked as before.
+      // Founder ruling D-1 (2026-11-23; extends S2 / FU-5 and F-646D-1): a client-ledger debit
+      // posts on its own date, so a back-dated one lowers the client's balance — and the matter
+      // cell's — as at that date and every later date; it must be covered at the lowest point from
+      // its date on. One dated today (or later) is checked as before.
       if (type.ledger() == TrustLedger.CLIENT) {
-        var transactionDate = transaction.getTransactionDate();
-        requireClientCovers(
-            transaction,
-            type == TrustTransactionType.FEE_TRANSFER
-                    && transactionDate.isBefore(LocalDate.now(clock))
-                ? transactionDate
-                : null);
+        requireClientCovers(transaction, coveredFromIfBackDated(transaction.getTransactionDate()));
       }
 
       // 441.9 / Phase 88 U15 (ADR-347, N-5): a fee transfer posts its real amount through the one
@@ -1184,11 +1173,11 @@ public class TrustTransactionService {
    * the derived balances read here cannot race with another posting for the client; the row is
    * still AWAITING_APPROVAL, so neither sum includes it.
    *
-   * <p>With a {@code coveredFrom} date (FU-5, a back-dated credit contra; F-646D-1, a back-dated
-   * fee transfer), both balances must cover the amount as at that date and as at every later date a
-   * posted row is dated — the lowest balance from then on, which is never above the current one —
-   * and a refusal names the (earliest) date of that lowest balance. Null = the current balance only
-   * (every posted row), as before.
+   * <p>With a {@code coveredFrom} date (a back-dated outflow: {@link #coveredFromIfBackDated}),
+   * both balances must cover the amount as at that date and as at every later date a posted row is
+   * dated — the lowest balance from then on, which is never above the current one — and a refusal
+   * names the (earliest) date of that lowest balance. Null = the current balance only (every posted
+   * row), as before.
    */
   private void requireClientCovers(TrustTransaction transaction, LocalDate coveredFrom) {
     var customer =
@@ -1200,31 +1189,12 @@ public class TrustTransactionService {
 
     // Serialise with the client's other postings, then read the derived balance (ADR-378)
     postingService.lockClient(transaction.getTrustAccountId(), transaction.getCustomerId());
-    BigDecimal availableBalance;
-    String asAtText = "";
-    if (coveredFrom == null) {
-      availableBalance =
-          ledgerQueries.clientBalance(
-              transaction.getTrustAccountId(), transaction.getCustomerId(), null);
-    } else {
-      var lowest =
-          ledgerQueries.lowestClientBalanceFrom(
-              transaction.getTrustAccountId(), transaction.getCustomerId(), coveredFrom);
-      availableBalance = lowest.getBalance();
-      asAtText = asAt(lowest.getAsAt());
-    }
-
-    if (availableBalance.compareTo(transaction.getAmount()) < 0) {
-      throw new InvalidStateException(
-          "Insufficient trust balance",
-          "Insufficient trust balance for "
-              + customer.getName()
-              + asAtText
-              + ". Available: "
-              + rand(availableBalance)
-              + ", Requested: "
-              + rand(transaction.getAmount()));
-    }
+    requireClientBalanceCovers(
+        transaction.getTrustAccountId(),
+        transaction.getCustomerId(),
+        customer.getName(),
+        transaction.getAmount(),
+        coveredFrom);
 
     // G89-F12: a debit on a matter (the fee transfer's matter is inferred from its fee note at
     // record time) must also be covered by this client's money on that matter. The anchor lock
@@ -1766,24 +1736,22 @@ public class TrustTransactionService {
         customerRepository
             .findById(targetCustomerId)
             .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.CLIENT, targetCustomerId));
-    var targetAvailable =
-        ledgerQueries.clientBalance(original.getTrustAccountId(), targetCustomerId, null);
-    if (targetAvailable.compareTo(pairedTransferIn.getAmount()) < 0) {
-      throw new InvalidStateException(
-          "Insufficient trust balance",
-          "Insufficient trust balance for "
-              + targetCustomer.getName()
-              + ". Available: "
-              + rand(targetAvailable)
-              + ", Requested: "
-              + rand(pairedTransferIn.getAmount()));
-    }
+    // Founder ruling D-1 (2026-11-23; S2 / FU-5 for this pair contra): the contra posts on the
+    // reversal date, so a back-dated one must be covered from that date on.
+    var coveredFrom = coveredFromIfBackDated(reversalDate);
+    requireClientBalanceCovers(
+        original.getTrustAccountId(),
+        targetCustomerId,
+        targetCustomer.getName(),
+        pairedTransferIn.getAmount(),
+        coveredFrom);
     requireMatterCellCovers(
         pairedTransferIn.getTrustAccountId(),
         targetCustomerId,
         targetCustomer.getName(),
         pairedTransferIn.getProjectId(),
-        pairedTransferIn.getAmount());
+        pairedTransferIn.getAmount(),
+        coveredFrom);
 
     // Contra for the TRANSFER_OUT (credits the source back); the TRANSFER_OUT is marked REVERSED
     // and keeps its own effect
@@ -1859,24 +1827,21 @@ public class TrustTransactionService {
             .findById(credit.getCustomerId())
             .orElseThrow(
                 () -> new ResourceNotFoundException(EntityNoun.CLIENT, credit.getCustomerId()));
-    var available =
-        ledgerQueries.clientBalance(credit.getTrustAccountId(), credit.getCustomerId(), null);
-    if (available.compareTo(credit.getAmount()) < 0) {
-      throw new InvalidStateException(
-          "Insufficient trust balance",
-          "Insufficient trust balance for "
-              + client.getName()
-              + ". Available: "
-              + rand(available)
-              + ", Requested: "
-              + rand(credit.getAmount()));
-    }
+    // Founder ruling D-1 (2026-11-23): a back-dated contra is covered from the reversal date on.
+    var coveredFrom = coveredFromIfBackDated(reversalDate);
+    requireClientBalanceCovers(
+        credit.getTrustAccountId(),
+        credit.getCustomerId(),
+        client.getName(),
+        credit.getAmount(),
+        coveredFrom);
     requireMatterCellCovers(
         credit.getTrustAccountId(),
         credit.getCustomerId(),
         client.getName(),
         credit.getProjectId(),
-        credit.getAmount());
+        credit.getAmount(),
+        coveredFrom);
 
     // Both contras post at once (PAIR / VIA_PAIR) and carry the item's id (postReversal copies the
     // ledger target), so EQ-4 reads the item as allocated until the reversal date.
@@ -1955,6 +1920,50 @@ public class TrustTransactionService {
   // --- Private Helpers ---
 
   /**
+   * The {@code coveredFrom} date for a client outflow dated {@code date} (founder ruling D-1,
+   * 2026-11-23; S2 / FU-5, F-646D-1): the date itself when it is before today ({@code
+   * LocalDate.now(clock)}) — the outflow lowers every balance from then on — else null (today's
+   * check and message, unchanged).
+   */
+  private LocalDate coveredFromIfBackDated(LocalDate date) {
+    return date != null && date.isBefore(LocalDate.now(clock)) ? date : null;
+  }
+
+  /**
+   * The client's derived balance must cover {@code amount}: the current balance (null {@code
+   * coveredFrom}), or its lowest point from {@code coveredFrom} on, a refusal then naming the date
+   * of that lowest balance. Callers hold the client's lock anchor (ADR-378), so the read cannot
+   * race with another posting for the client.
+   */
+  private void requireClientBalanceCovers(
+      UUID trustAccountId,
+      UUID customerId,
+      String clientName,
+      BigDecimal amount,
+      LocalDate coveredFrom) {
+    BigDecimal available;
+    String asAtText = "";
+    if (coveredFrom == null) {
+      available = ledgerQueries.clientBalance(trustAccountId, customerId, null);
+    } else {
+      var lowest = ledgerQueries.lowestClientBalanceFrom(trustAccountId, customerId, coveredFrom);
+      available = lowest.getBalance();
+      asAtText = asAt(lowest.getAsAt());
+    }
+    if (available.compareTo(amount) < 0) {
+      throw new InvalidStateException(
+          "Insufficient trust balance",
+          "Insufficient trust balance for "
+              + clientName
+              + asAtText
+              + ". Available: "
+              + rand(available)
+              + ", Requested: "
+              + rand(amount));
+    }
+  }
+
+  /**
    * G89-F12: a debit on a matter must be covered by this client's money on that matter in this
    * trust account (the matter sub-ledger cell), not only by the client balance — otherwise a refund
    * of "matter + client-level credit" leaves the matter negative while the closure gate (which
@@ -1962,16 +1971,11 @@ public class TrustTransactionService {
    * money on a shared matter. No-op for an unmattered debit (the client balance check covers it).
    * Callers hold the client's lock anchor, so the cell sum cannot race with another posting for the
    * client.
-   */
-  private void requireMatterCellCovers(
-      UUID trustAccountId, UUID customerId, String clientName, UUID projectId, BigDecimal amount) {
-    requireMatterCellCovers(trustAccountId, customerId, clientName, projectId, amount, null);
-  }
-
-  /**
-   * As above; with a {@code coveredFrom} date (FU-5, a back-dated credit contra) the cell must
-   * cover {@code amount} as at that date and every later posted date (the lowest cell balance from
-   * then on), and a refusal names the date of that lowest balance. Null = the current cell only.
+   *
+   * <p>With a {@code coveredFrom} date (a back-dated outflow, {@link #coveredFromIfBackDated}) the
+   * cell must cover {@code amount} as at that date and every later posted date (the lowest cell
+   * balance from then on), and a refusal names the date of that lowest balance. Null = the current
+   * cell only.
    */
   private void requireMatterCellCovers(
       UUID trustAccountId,

@@ -477,8 +477,12 @@ class TrustLedgerPortalSyncServiceIntegrationTest {
             Expected.cashbookAndInvestment("95.00"),
             held.investmentId(),
             netInterest(books.today().minusDays(10), "100.00"));
+    // D-2: the firm's reason is required; it is stored on the contra, never shown to the client
     books.reverseInterest(
-        held.investmentAccount(), Expected.cashbookAndInvestment("-95.00"), entry.id());
+        held.investmentAccount(),
+        Expected.cashbookAndInvestment("-95.00"),
+        entry.id(),
+        "Advice keyed against the wrong client — internal note");
     var interestReference =
         books.read(
             () ->
@@ -508,6 +512,7 @@ class TrustLedgerPortalSyncServiceIntegrationTest {
     // 649B privacy rule: never the firm's reversal reason on a client surface
     assertThat(contra.description())
         .doesNotContain("interest entry reversed")
+        .doesNotContain("internal note")
         .isEqualTo("Reversal — REV-" + interestReference);
     var balance = portalTrustRepo.findBalance(client.id(), client.matter()).orElseThrow();
     assertThat(balance.currentBalance()).isEqualByComparingTo("0.00");

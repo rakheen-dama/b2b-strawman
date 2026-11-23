@@ -1,0 +1,21 @@
+# Red run — CodeRabbit round 1 (Major): the unsettled-key TTL is refreshed by every retry.
+# Hook at fe1ab1a74 (PR head after the main merge), unmodified; only the test file changed. 2026-11-23.
+# Command (frontend/, node v20.11.1, NODE_OPTIONS=""):
+#   /opt/homebrew/bin/pnpm exec vitest run --reporter=verbose __tests__/trust/trust-idempotency-reload.test.tsx
+#
+# T0 = 1795420800000 (2026-11-23 08:00Z); T0 + 1 h = 1795424400000.
+# - The timestamp tests: a retry re-stored the key with the retry's time (T0 + 1 h), not T0.
+# - The bound tests: a retry at T0 + 12 h stretched the life of the key, so 24 h + 1 ms after the first store
+#   the stale key was still reused (storage path: page1-1; in-memory path: key-1), never a fresh key.
+# The other 15 cases in the file (reload reuse, settle clears, escape action, ...) pass.
+
+ × ... the 24 h bound is anchored to the first store > a retry within 24 h (after a reload) keeps the original timestamp
+   → expected [ 1795424400000 ] to deeply equal [ 1795420800000 ]
+ × ... the 24 h bound is anchored to the first store > a retry within 24 h (same page, in-memory key) keeps the original timestamp
+   → expected [ 1795424400000 ] to deeply equal [ 1795420800000 ]
+ × ... the 24 h bound is anchored to the first store > retries cannot stretch the bound: 24 h after the first store the stored key expires
+   → expected [ 'page1-1', 'page1-1', 'page1-1' ] to deeply equal [ 'page1-1', 'page1-1', 'page3-1' ]
+ × ... the 24 h bound is anchored to the first store > the in-memory key expires on the same bound: a fresh key plus the hint
+   → expected [ 'key-1', 'key-1', 'key-1' ] to deeply equal [ 'key-1', 'key-1', 'key-2' ]
+ Test Files  1 failed (1)
+      Tests  4 failed | 15 passed (19)

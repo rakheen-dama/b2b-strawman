@@ -16,6 +16,7 @@ import io.b2mash.b2b.b2bstrawman.template.CustomerContextBuilder;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateRepository;
 import io.b2mash.b2b.b2bstrawman.template.GeneratedDocumentService;
 import io.b2mash.b2b.b2bstrawman.template.PdfRenderingService;
+import io.b2mash.b2b.b2bstrawman.template.TemplateValidationService;
 import io.b2mash.b2b.b2bstrawman.template.VariableFormatter;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
@@ -113,6 +114,7 @@ class TrustSnapshotReadsIntegrationTest {
 
   @MockitoSpyBean private ClientLedgerService clientLedgerService;
   @MockitoSpyBean private TrustIntegrityService integrityService;
+  @MockitoSpyBean private TemplateValidationService templateValidationService;
 
   /** The armed concurrent posting and where it may fire; null = disarmed. */
   private final AtomicReference<Armed> armed = new AtomicReference<>();
@@ -179,6 +181,15 @@ class TrustSnapshotReadsIntegrationTest {
             })
         .when(integrityService)
         .check(any(), any(), any());
+    // §1.4: after a document's context is validated, before its PDF is rendered
+    doAnswer(
+            inv -> {
+              Object validation = inv.callRealMethod();
+              fireIfArmed();
+              return validation;
+            })
+        .when(templateValidationService)
+        .validateRequiredFields(any(), any(), any());
   }
 
   @AfterAll
@@ -225,14 +236,14 @@ class TrustSnapshotReadsIntegrationTest {
 
   /**
    * Client Trust Statement through {@code GeneratedDocumentService.generateDocument} (the writing
-   * generate transaction): the stored PDF's HTML — the context {@code generatePdf} builds — reads
-   * the general and invested balances from one snapshot.
+   * generate transaction): the stored PDF's HTML — the one context {@code generateDocument} builds
+   * (§1.4) — reads the general and invested balances from one snapshot.
    */
   @Test
   void clientTrustStatement_placementApprovedBetweenTheReads_storedDocumentCountsItOnce()
       throws Exception {
     var s = pendingPlacement();
-    armAt(calledFrom(PdfRenderingService.class, "generatePdf"), () -> approve(s));
+    armAt(calledFrom(PdfRenderingService.class, "buildContext"), () -> approve(s));
 
     UUID ctsId =
         inTenant(
@@ -254,6 +265,48 @@ class TrustSnapshotReadsIntegrationTest {
         .contains(currency("50000.00"))
         .as("the placed R30 000 is counted once in the total held")
         .doesNotContain(currency("80000.00"));
+  }
+
+  /**
+   * Phase 92 residual §1.4 (FU-3 residual, G89-F52): the stored document's {@code
+   * containsTrustData} flag and the PDF it stores come from the same context. The client has no
+   * trust activity yet; its first-ever deposit commits after the context is validated and before
+   * the PDF is rendered (the hook on {@code validateRequiredFields}). Whichever state the document
+   * shows, the flag must agree with it — otherwise a PDF printing trust money is stored unflagged
+   * and the download gate lets a member without {@code VIEW_TRUST} read it. RED on main: the flag
+   * came from the first context build (no trust: false) and the PDF from a second one (the
+   * deposit).
+   */
+  @Test
+  void clientTrustStatement_firstDepositCommittedBetweenValidationAndRender_flagMatchesThePdf()
+      throws Exception {
+    UUID funding = books.freshAccount(false);
+    Client client = books.newClient("first posting mid-generation");
+    armAtValidation(() -> books.deposit(funding, client, "1234.56"));
+
+    UUID ctsId =
+        inTenant(
+            () ->
+                documentTemplateRepository
+                    .findPackSeeded("legal-za", "client-trust-statement")
+                    .getFirst()
+                    .getId());
+    var result =
+        asOwner(
+            () ->
+                generatedDocumentService.generateDocument(
+                    ctsId, client.id(), false, true, List.of(), ownerId));
+
+    assertFired();
+    assertThat(books.clientLedger(funding, client)).isEqualByComparingTo("1234.56");
+    boolean printsTheDeposit = result.pdfResult().htmlPreview().contains(currency("1234.56"));
+    assertThat(result.generatedDocument().isContainsTrustData())
+        .as(
+            "containsTrustData agrees with the stored PDF (prints the deposit: %s)",
+            printsTheDeposit)
+        .isEqualTo(printsTheDeposit);
+    // One context: the PDF is the one validated, read before the deposit committed
+    assertThat(printsTheDeposit).as("rendered from the validated context").isFalse();
   }
 
   /**
@@ -448,6 +501,22 @@ class TrustSnapshotReadsIntegrationTest {
 
   private void armAt(Predicate<StackWalker> where, Runnable posting) {
     armed.set(new Armed(where, posting));
+  }
+
+  /**
+   * Arms {@code posting} to commit when a document's required fields are validated — after the
+   * context is built, before the PDF is rendered (§1.4).
+   */
+  private void armAtValidation(Runnable posting) {
+    armAt(
+        walker ->
+            walker.walk(
+                frames ->
+                    frames.anyMatch(
+                        f ->
+                            f.getClassName().startsWith(TemplateValidationService.class.getName())
+                                && f.getMethodName().equals("validateRequiredFields"))),
+        posting);
   }
 
   private static Predicate<StackWalker> anywhere() {

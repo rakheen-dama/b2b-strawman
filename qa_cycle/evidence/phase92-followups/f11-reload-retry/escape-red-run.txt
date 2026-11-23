@@ -1,0 +1,24 @@
+ ✓ __tests__/trust/trust-idempotency-reload.test.tsx > an unsettled Idempotency-Key survives a reload (§1.5) > a resubmit after a reload (a new key store, same storage, same content) reuses the key 2ms
+ ✓ __tests__/trust/trust-idempotency-reload.test.tsx > an unsettled Idempotency-Key survives a reload (§1.5) > keeps the key while the first submit is still in flight (a reload mid-request) 0ms
+ ✓ __tests__/trust/trust-idempotency-reload.test.tsx > an unsettled Idempotency-Key survives a reload (§1.5) > a success clears the stored key; the next identical submit is a new intent 0ms
+ ✓ __tests__/trust/trust-idempotency-reload.test.tsx > an unsettled Idempotency-Key survives a reload (§1.5) > a definite refusal clears the stored key 0ms
+ ✓ __tests__/trust/trust-idempotency-reload.test.tsx > an unsettled Idempotency-Key survives a reload (§1.5) > changed content gets a new key, and the first request's key stays for its own retry 0ms
+ ✓ __tests__/trust/trust-idempotency-reload.test.tsx > an unsettled Idempotency-Key survives a reload (§1.5) > ignores and removes an entry older than the TTL (24 hours) 0ms
+ ✓ __tests__/trust/trust-idempotency-reload.test.tsx > an unsettled Idempotency-Key survives a reload (§1.5) > falls back to in-memory keys when storage is unavailable (every access throws) 0ms
+ ✓ __tests__/trust/trust-idempotency-reload.test.tsx > an unsettled Idempotency-Key survives a reload (§1.5) > uses the tab's sessionStorage by default 0ms
+ ✓ __tests__/trust/trust-idempotency-reload.test.tsx > the unsettled-submit hint (§1.5) > useIdempotencyKey reports a stored unsettled key for its form's scope 11ms
+ ✓ __tests__/trust/trust-idempotency-reload.test.tsx > the unsettled-submit hint (§1.5) > shows the hint in the payment dialog when its form has a stored unsettled key 54ms
+ ✓ __tests__/trust/trust-idempotency-reload.test.tsx > the unsettled-submit hint (§1.5) > shows no hint when nothing is unsettled 22ms
+ × __tests__/trust/trust-idempotency-reload.test.tsx > the 'Submit as a new entry' escape action (§1.5 ruling) > appears on the in-progress 409; using it sends a fresh key and clears the stored one 1066ms
+   → Unable to find role="button" and name "Submit as a new entry"
+ × __tests__/trust/trust-idempotency-reload.test.tsx > the 'Submit as a new entry' escape action (§1.5 ruling) > appears when the form opens with a stored unsettled key; it never reuses that key 59ms
+   → Unable to find an accessible element with the role "button" and name "Submit as a new entry"
+ × __tests__/trust/trust-idempotency-reload.test.tsx > the 'Submit as a new entry' escape action (§1.5 ruling) > is never automatic: a plain resubmit after the 409 reuses the stuck key 1051ms
+   → Unable to find role="button" and name "Submit as a new entry"
+ ✓ __tests__/trust/trust-idempotency-reload.test.tsx > the 'Submit as a new entry' escape action (§1.5 ruling) > is absent when nothing is unsettled, and after a definite refusal 64ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+TestingLibraryElementError: Unable to find role="button" and name "Submit as a new entry"
+TestingLibraryElementError: Unable to find an accessible element with the role "button" and name "Submit as a new entry"
+TestingLibraryElementError: Unable to find role="button" and name "Submit as a new entry"
+ Test Files  1 failed (1)
+      Tests  3 failed | 12 passed (15)

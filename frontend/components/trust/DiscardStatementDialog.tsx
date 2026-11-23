@@ -26,6 +26,7 @@ import {
 import { discardBankStatement } from "@/app/(app)/org/[slug]/trust-accounting/reconciliation/actions";
 import { discardStatementSchema, type DiscardStatementFormData } from "@/lib/schemas/trust";
 import { useIdempotencyKey } from "@/hooks/use-idempotency-key";
+import { UnsettledSubmitNotice } from "./unsettled-submit-notice";
 
 interface DiscardStatementDialogProps {
   statementId: string;
@@ -40,7 +41,7 @@ interface DiscardStatementDialogProps {
  * shows the server's reason. The dialog owns its trigger button (Dialog Trigger Composition).
  */
 export function DiscardStatementDialog({ statementId, fileName }: DiscardStatementDialogProps) {
-  const idempotency = useIdempotencyKey();
+  const idempotency = useIdempotencyKey(["discardBankStatement", statementId]);
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -123,6 +124,10 @@ export function DiscardStatementDialog({ statementId, fileName }: DiscardStateme
               )}
             />
 
+            <UnsettledSubmitNotice
+              show={idempotency.unsettled}
+              onSubmitAsNew={idempotency.discardUnsettled}
+            />
             {error && (
               <p className="text-destructive text-sm" role="alert" data-testid="discard-error">
                 {error}

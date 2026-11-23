@@ -30,6 +30,7 @@ import { formatCurrency, formatLocalDate } from "@/lib/format";
 import { payToFundSchema, type PayToFundFormData } from "@/lib/schemas/trust";
 import type { UnidentifiedDeposit } from "@/lib/types";
 import { useIdempotencyKey } from "@/hooks/use-idempotency-key";
+import { UnsettledSubmitNotice } from "./unsettled-submit-notice";
 
 interface PayToFundDialogProps {
   /** A held item with no pending allocation or payment. */
@@ -54,7 +55,7 @@ function heldFor(days: number) {
  * (never an adjacent `asChild` trigger — Dialog Trigger Composition).
  */
 export function PayToFundDialog({ item, currency }: PayToFundDialogProps) {
-  const idempotency = useIdempotencyKey();
+  const idempotency = useIdempotencyKey(["payUnidentifiedDepositToFund", item.id]);
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -204,6 +205,10 @@ export function PayToFundDialog({ item, currency }: PayToFundDialogProps) {
                 )}
               />
 
+              <UnsettledSubmitNotice
+                show={idempotency.unsettled}
+                onSubmitAsNew={idempotency.discardUnsettled}
+              />
               {error && (
                 <p role="alert" className="text-sm text-red-600 dark:text-red-400">
                   {error}

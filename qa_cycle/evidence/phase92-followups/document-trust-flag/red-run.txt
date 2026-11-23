@@ -1,0 +1,18 @@
+# Red run — item 5 (§1.4): unmodified GeneratedDocumentService / PdfRenderingService (main ef0563fe3), 2026-11-23
+# Test code only: TrustSnapshotReadsIntegrationTest — new case + a third spy (TemplateValidationService) in the class's own spy set.
+# Command (backend/): ./mvnw test -Dtest='TrustSnapshotReadsIntegrationTest'
+#
+# The client has no trust activity; its first-ever deposit (R1 234,56) commits in the hook on validateRequiredFields,
+# i.e. after the first context build and before generatePdf builds the context again.
+# Result: the stored PDF prints the deposit, but containsTrustData = false (the flag came from the first build).
+# => a PDF printing trust money is stored unflagged; the G89-F52 download gate would let a member without VIEW_TRUST read it.
+
+[ERROR] Tests run: 7, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 19.34 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.TrustSnapshotReadsIntegrationTest
+[ERROR] io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.TrustSnapshotReadsIntegrationTest.clientTrustStatement_firstDepositCommittedBetweenValidationAndRender_flagMatchesThePdf -- Time elapsed: 0.118 s <<< FAILURE!
+org.opentest4j.AssertionFailedError:
+[containsTrustData agrees with the stored PDF (prints the deposit: true)]
+expected: true
+ but was: false
+	at io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.TrustSnapshotReadsIntegrationTest.clientTrustStatement_firstDepositCommittedBetweenValidationAndRender_flagMatchesThePdf(TrustSnapshotReadsIntegrationTest.java:307)
+[ERROR] Tests run: 7, Failures: 1, Errors: 0, Skipped: 0
+# The 6 existing FU-3 cases pass unchanged with the extra spy.

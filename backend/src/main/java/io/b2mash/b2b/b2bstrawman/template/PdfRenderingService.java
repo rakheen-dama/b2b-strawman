@@ -135,7 +135,23 @@ public class PdfRenderingService {
     if (extraContext != null) {
       contextMap.putAll(extraContext);
     }
+    return renderPdf(template, entityId, contextMap, resolvedClauses, extraFormatHints);
+  }
 
+  /**
+   * Renders {@code template} to a PDF from {@code contextMap}, a context the caller has already
+   * built (and merged any extra context into) — so whatever the caller derived from that context
+   * (required-field validation, the G89-F52 {@code containsTrustData} flag) describes exactly the
+   * PDF rendered here (Phase 92 residual §1.4). {@code extraFormatHints} as in {@link
+   * #generatePdf(UUID, UUID, UUID, List, Map, Map)}; {@code entityId} is for the log only.
+   */
+  @Transactional(readOnly = true)
+  public PdfResult renderPdf(
+      DocumentTemplate template,
+      UUID entityId,
+      Map<String, Object> contextMap,
+      List<Clause> resolvedClauses,
+      Map<String, String> extraFormatHints) {
     String fullHtml = renderTemplateToHtml(template, contextMap, resolvedClauses, extraFormatHints);
     byte[] pdfBytes = htmlToPdf(fullHtml);
     String fileName =

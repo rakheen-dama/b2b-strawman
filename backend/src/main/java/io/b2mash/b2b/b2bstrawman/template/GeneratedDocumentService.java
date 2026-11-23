@@ -270,8 +270,10 @@ public class GeneratedDocumentService {
       }
     }
 
-    // 0b. Validate required fields before generation (against the same merged context that
-    // rendering will see)
+    // 0b. Build the context ONCE (Phase 92 residual §1.4): required-field validation, the
+    // containsTrustData flag and the PDF all come from this one merged context, so the stored flag
+    // can never disagree with the file it describes (a first trust posting committing mid-request
+    // is either on all three or on none)
     var contextMap =
         new HashMap<>(pdfRenderingService.buildContext(templateId, entityId, memberId));
     if (extraContext != null) {
@@ -293,10 +295,11 @@ public class GeneratedDocumentService {
     // 0c. G89-F52: does the stored file print trust money? (gates every later download)
     boolean containsTrustData = printsTrustData(template, contextMap, resolvedClauses);
 
-    // 1. Generate PDF (clause-aware, extra context merged over the builder-produced context)
+    // 1. Render the PDF (clause-aware) from the context validated and flagged above — extra context
+    // already merged over the builder-produced context, as generatePdf merges it
     var pdfResult =
-        pdfRenderingService.generatePdf(
-            templateId, entityId, memberId, resolvedClauses, extraContext, extraFormatHints);
+        pdfRenderingService.renderPdf(
+            template, entityId, contextMap, resolvedClauses, extraFormatHints);
 
     // 2. Load template metadata
     var templateDetail = documentTemplateService.getById(templateId);

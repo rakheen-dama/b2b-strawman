@@ -38,8 +38,8 @@ public class TrustIdempotencyService {
   static final String IN_PROGRESS_TITLE = "Request still in progress";
   static final String IN_PROGRESS_DETAIL =
       "An earlier submit of this entry is still in progress, or its outcome is unknown. Check the"
-          + " ledger to see whether the entry was recorded; if it was not, reload the page and"
-          + " submit again.";
+          + " ledger to see whether it was recorded; if it was not, choose 'Submit as a new"
+          + " entry'.";
 
   /**
    * Machine-readable {@code code} of the two 409s, so a client can tell "outcome unknown, keep the

@@ -19,6 +19,7 @@ The orchestration is done by `scripts/run-phase.sh`, a bash script that:
    claude -p "/epic_v2 {SLICE} auto-merge" --dangerously-skip-permissions --model opus
    ```
    The `/epic_v2` skill natively supports slice IDs (digits+letter → single-slice mode).
+   Each slice runs under a **hang watchdog, not a time budget**. A slice is stopped only when its session is hung: neither its transcript nor any of its subagent transcripts (under `~/.claude/projects/<repo-slug>/<session-id>[.jsonl|/]`) has been written for `SLICE_IDLE_MIN` minutes (default 45). `SLICE_MAX_MIN` (default 720) is a backstop for a session that loops while still writing. A long slice that is making progress runs to the end. Override per run, e.g. `SLICE_IDLE_MIN=60 ./scripts/run-phase.sh 93`.
 5. After each invocation, checks if that slice was marked Done in the task file
 6. If Done → next slice. If not Done → stops (you investigate and restart)
 

@@ -291,7 +291,8 @@ if [[ "$DRY_RUN" == true ]]; then
   done
   echo ""
   echo "Command per slice:"
-  echo "  CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=0 claude -p \"/epic_v2 {SLICE} auto-merge\" --dangerously-skip-permissions --model opus"
+  echo "  CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=0 claude -p \"/epic_v2 {SLICE} auto-merge\" --dangerously-skip-permissions --model opus --session-id <uuid>"
+  echo "  Watchdog: stopped only when HUNG (no transcript write for ${SLICE_IDLE_MIN:-45}m); backstop ${SLICE_MAX_MIN:-720}m"
   exit 0
 fi
 
@@ -337,22 +338,64 @@ for i in "${!SLICES_TO_RUN[@]}"; do
   git checkout main >> "$LOG_FILE" 2>&1
   git pull --ff-only >> "$LOG_FILE" 2>&1
 
-  # Run claude with fresh context (timeout: 260 min = 15600 sec). Raised from 200 min after
-  # Phase 92: slices whose gates find a real defect need fix + re-gate time (647D 185m,
-  # 648A timed out at 200m one commit from merge).
+  # ── Hang watchdog, not a work budget ──
+  # A slice that is still making progress is never stopped, however long it runs. The runner
+  # stops a slice only when its session is HUNG: no write to the slice's session transcript or
+  # any of its subagent transcripts for SLICE_IDLE_MIN minutes. (653A, 2026-11-23: the longest
+  # silent stretch across parent + 20 subagents was 9.5 min; the parent alone went 32 min quiet
+  # while subagents worked, so subagent transcripts must count.) SLICE_MAX_MIN is only a
+  # backstop for a session that loops while writing. Agents: do not plan your work around
+  # either limit; finish the slice.
+  # History: a fixed 200 → 260 min cap ended 648A one commit from merge (Phase 92) and made
+  # 653A stand down 9 min before it with only an OBS re-run left (Phase 93).
   SLICE_START=$(date +%s)
-  SLICE_TIMEOUT=15600
+  SLICE_IDLE_MIN="${SLICE_IDLE_MIN:-45}"
+  SLICE_MAX_MIN="${SLICE_MAX_MIN:-720}"
+  SLICE_TIMEOUT=$(( SLICE_MAX_MIN * 60 ))
+  SESSION_ID="$(uuidgen | tr '[:upper:]' '[:lower:]')"
+  TRANSCRIPT_DIR="${HOME}/.claude/projects/$(pwd -P | sed 's#[/.]#-#g')"
+  TRANSCRIPT="${TRANSCRIPT_DIR}/${SESSION_ID}.jsonl"
+  log "Session ${SESSION_ID} — watchdog: hung after ${SLICE_IDLE_MIN}m without a transcript write; backstop ${SLICE_MAX_MIN}m"
 
   # Unset CLAUDECODE to avoid nested session detection.
   # CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=0: without it, -p stops background subagents 10 min
-  # after the orchestrator's last turn and exits 0 mid-slice (614B). SLICE_TIMEOUT still bounds hangs.
-  # -k 120: a claude -p that ignores SIGTERM is SIGKILLed 2 min after the cap (634A lived 29 min
-  # past it); timeout then exits 137 instead of 124.
-  if timeout -k 120 "${SLICE_TIMEOUT}" env CLAUDECODE="" CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=0 \
+  # after the orchestrator's last turn and exits 0 mid-slice (614B).
+  # -k 120: a claude -p that ignores SIGTERM is SIGKILLed 2 min later (634A lived 29 min past
+  # its cap); timeout then exits 137 instead of 124. timeout forwards a SIGTERM it receives.
+  timeout -k 120 "${SLICE_TIMEOUT}" env CLAUDECODE="" CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=0 \
     claude -p "/epic_v2 ${slice} auto-merge" \
+    --session-id "${SESSION_ID}" \
     --dangerously-skip-permissions \
     --model opus \
-    >> "$LOG_FILE" 2>&1; then
+    >> "$LOG_FILE" 2>&1 &
+  CLAUDE_PID=$!
+
+  SLICE_HUNG=0
+  WARNED_NO_TRANSCRIPT=0
+  while kill -0 "$CLAUDE_PID" 2>/dev/null; do
+    sleep 60
+    kill -0 "$CLAUDE_PID" 2>/dev/null || break
+    NOW=$(date +%s)
+    if [[ -f "$TRANSCRIPT" ]]; then
+      # `|| true`: set -euo pipefail would end the runner when the subagent dir does not exist yet.
+      LAST_WRITE=$( { find "$TRANSCRIPT" "${TRANSCRIPT_DIR}/${SESSION_ID}" -type f -exec stat -f %m {} + 2>/dev/null || true; } | sort -n | tail -1)
+    else
+      LAST_WRITE=""
+      # No transcript after 10 min means the path scheme changed: fall back to the backstop
+      # only (never kill on a signal we cannot see).
+      if (( NOW - SLICE_START > 600 && WARNED_NO_TRANSCRIPT == 0 )); then
+        log "WARNING: no transcript at ${TRANSCRIPT}; hang watchdog off for ${slice}, backstop ${SLICE_MAX_MIN}m only"
+        WARNED_NO_TRANSCRIPT=1
+      fi
+    fi
+    if [[ -n "$LAST_WRITE" ]] && (( NOW - LAST_WRITE >= SLICE_IDLE_MIN * 60 )); then
+      log "ERROR: Slice ${slice} HUNG — no transcript write for $(( (NOW - LAST_WRITE) / 60 ))m; stopping it"
+      SLICE_HUNG=1
+      kill -TERM "$CLAUDE_PID" 2>/dev/null || true
+      break
+    fi
+  done
+  if wait "$CLAUDE_PID"; then
     CLAUDE_EXIT=0
   else
     CLAUDE_EXIT=$?
@@ -373,8 +416,10 @@ for i in "${!SLICES_TO_RUN[@]}"; do
   else
     # 137 means a timeout only when the cap was actually reached (timeout -k escalated to SIGKILL);
     # an earlier SIGKILL (e.g. OOM) is reported as the failure it is.
-    if [[ "$CLAUDE_EXIT" -eq 124 ]] || [[ "$CLAUDE_EXIT" -eq 137 && "$SLICE_DURATION" -ge "$SLICE_TIMEOUT" ]]; then
-      log "ERROR: Slice ${slice} TIMED OUT after ${SLICE_MINUTES}m (limit: $((SLICE_TIMEOUT / 60))m)"
+    if [[ "$SLICE_HUNG" -eq 1 ]]; then
+      log "ERROR: Slice ${slice} stopped as HUNG after ${SLICE_MINUTES}m (exit ${CLAUDE_EXIT}). Transcript: ${TRANSCRIPT}"
+    elif [[ "$CLAUDE_EXIT" -eq 124 ]] || [[ "$CLAUDE_EXIT" -eq 137 && "$SLICE_DURATION" -ge "$SLICE_TIMEOUT" ]]; then
+      log "ERROR: Slice ${slice} hit the ${SLICE_MAX_MIN}m BACKSTOP after ${SLICE_MINUTES}m"
     else
       log "ERROR: Slice ${slice} did NOT complete (exit code: ${CLAUDE_EXIT}, duration: ${SLICE_MINUTES}m)"
     fi

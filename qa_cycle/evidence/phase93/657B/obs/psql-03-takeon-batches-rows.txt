@@ -1,0 +1,29 @@
+set search_path=tenant_7d218705360b; select id, dataset, status, cutover_date, bank_balance, outstanding_deposits_total, outstanding_payments_total, cashbook_balance, fund_ledger_balance, invested_total, mid_month_acknowledged, total_rows, error_rows, block_count, validated_at from take_on_batches order by created_at; select s.section, r.row_number, r.status, r.block, r.mapped_values->>'balance' as balance, r.mapped_values->>'amount' as amount from take_on_rows r join take_on_sources s on s.id = r.source_id join take_on_batches b on b.id = r.batch_id where b.dataset = 'TRUST_POSITION' order by s.section, r.row_number; select p.name, p.reference_number, c.name as client from projects p join customer_projects cp on cp.project_id = p.id join customers c on c.id = cp.customer_id where p.reference_number in ('A1','B1','C1') order by 2;
+SET
+                  id                  |    dataset     |  status   | cutover_date | bank_balance | outstanding_deposits_total | outstanding_payments_total | cashbook_balance | fund_ledger_balance | invested_total | mid_month_acknowledged | total_rows | error_rows | block_count |         validated_at          
+--------------------------------------+----------------+-----------+--------------+--------------+----------------------------+----------------------------+------------------+---------------------+----------------+------------------------+------------+------------+-------------+-------------------------------
+ 990898c0-1af9-4f2e-84c3-aada36e7a40a | CLIENTS        | COMPLETED |              |              |                            |                            |                  |                0.00 |           0.00 | f                      |          3 |          0 |           0 | 2026-11-24 07:10:50.195695+00
+ 1fbb3f88-3827-46ff-8583-dcdf56a51e78 | MATTERS        | COMPLETED |              |              |                            |                            |                  |                0.00 |           0.00 | f                      |          3 |          0 |           0 | 2026-11-24 07:11:00.910025+00
+ 0cae8abe-0bd2-4d4a-b576-1f900c6b413c | TRUST_POSITION | VALIDATED | 2026-10-31   |    418500.00 |                    5000.00 |                   20000.00 |        403500.00 |             1250.00 |      300000.00 | f                      |          9 |          0 |           0 | 2026-11-24 07:14:55.732142+00
+(3 rows)
+
+        section        | row_number |  status   | block |  balance  |  amount  
+-----------------------+------------+-----------+-------+-----------+----------
+ CLIENT_LEDGER         |          2 | VALIDATED | f     | 300000.00 | 
+ CLIENT_LEDGER         |          3 | VALIDATED | f     | 150000.00 | 
+ CLIENT_LEDGER         |          4 | VALIDATED | f     | 49500.00  | 
+ INVESTMENTS           |          2 | VALIDATED | f     |           | 
+ INVESTMENTS           |          3 | VALIDATED | f     |           | 
+ OUTSTANDING_ITEMS     |          2 | VALIDATED | f     |           | 5000.00
+ OUTSTANDING_ITEMS     |          3 | VALIDATED | f     |           | 20000.00
+ UNIDENTIFIED_DEPOSITS |          2 | VALIDATED | f     |           | 2000.00
+ UNIDENTIFIED_DEPOSITS |          3 | VALIDATED | f     |           | 750.00
+(9 rows)
+
+             name             | reference_number |     client     
+------------------------------+------------------+----------------
+ Transfer of Erf 101 Brooklyn | A1               | Amahle Zulu
+ Estate late S Nkosi          | B1               | Bongani Nkosi
+ Supply contract claim        | C1               | Chantal Pillay
+(3 rows)
+

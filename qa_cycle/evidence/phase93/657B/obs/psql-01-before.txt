@@ -1,0 +1,24 @@
+set search_path=tenant_7d218705360b; select count(*) as trust_transactions, count(*) filter (where transaction_type like 'TAKEON_%') as takeon_rows from trust_transactions; select count(*) as trust_investments from trust_investments; select count(*) as unidentified_deposits from unidentified_deposits; select account_name, account_type, status, is_primary, opened_date, take_on_cutover_date, take_on_batch_id from trust_accounts order by created_at;
+SET
+ trust_transactions | takeon_rows 
+--------------------+-------------
+                 31 |           0
+(1 row)
+
+ trust_investments 
+-------------------
+                 2
+(1 row)
+
+ unidentified_deposits 
+-----------------------
+                     2
+(1 row)
+
+            account_name            | account_type | status | is_primary | opened_date | take_on_cutover_date | take_on_batch_id 
+------------------------------------+--------------+--------+------------+-------------+----------------------+------------------
+ Mathebula & Partners Trust Account | GENERAL      | ACTIVE | t          | 2026-11-24  |                      | 
+ Section 86(4) investment — Ndlovu  | INVESTMENT   | ACTIVE | f          | 2026-10-01  |                      | 
+ Section 86(4) investment — Khumalo | INVESTMENT   | ACTIVE | f          | 2026-10-01  |                      | 
+(3 rows)
+

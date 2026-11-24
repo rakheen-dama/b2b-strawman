@@ -71,3 +71,25 @@ Proposal: extract a shared `TakeOnClientResolver` in `takeon.dataset` (the looku
 `loadContext`, and one `resolve(reference, kinds)` returning the client id and how it resolved, or the
 error code and text), used by the matters and trust handlers — **before 658A adds a third copy**. Behaviour-neutral
 refactor; pinned by the existing `MattersTakeOnIntegrationTest` and `TrustPositionValidationIntegrationTest` cases.
+
+## OBS-657B-1 (OBS, LOW, in 657B's surface) — the "No trust deficit" row agrees yet shows a non-zero difference when the money held exceeds the trust creditors
+
+Found in the 657B OBS (`obs/README.md` check 2; screenshot `obs/o-13-debit-validation.png`, log `obs/obs-log.txt` `[debit]`).
+Not fixed (evidence-only run); for the orchestrator to triage.
+
+**Reproduction** (e2e stack @ `01ae60e12`, Alice): a trust position batch on a fresh banking account at 31 Oct 2026 with
+the §17.3.13 files except client C at −R500,00 (`obs/files/trust-client-ledger-debit.csv`) and the §17.3.13 position
+(B 418 500, OD 5 000, OP 20 000, CB 403 500, F 1 250, invested 300 000) → Save position → dry run.
+
+**Observed:** `summary.equation.deficit` = `{trustCreditors "653500.00", moneyHeld "703500.00", difference "-50000.00",
+inDeficit false}`. The indicator row `take-on-equation-deficit` has `data-holds="true"`, a green tick, the label
+"No trust deficit", and **"Difference R 50 000,00"** in green — an agreeing row with a R50 000,00 difference. (EQ-2 in the
+same run correctly shows "Does not agree · Difference R 50 000,00", and the EQ-2 block is raised, so nothing can proceed.)
+
+**Why it matters:** X3 gives each indicator row "Difference R{x}"; for the four equalities a non-zero difference always
+means "does not agree", and the corrected set shows R0,00 on all five. On the deficit row the indicator shows the
+magnitude of `trustCreditors − moneyHeld` (D-185 OP-9, `trust-equation-indicator.tsx` `differenceText` = `abs`), so a
+surplus (money held above creditors, itself a sign that a creditor group is missing) reads as an agreeing row with a
+difference. A reader could take "R 50 000,00" as the size of a deficit. Options for the spec: show the difference only
+when `inDeficit` (R0,00 otherwise), or show the deficit as `max(0, trustCreditors − moneyHeld)`, or keep as is and
+label it. Copy / product decision — not a money or posting defect (nothing posts in 657B).

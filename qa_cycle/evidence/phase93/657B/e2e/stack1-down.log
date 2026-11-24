@@ -1,0 +1,4 @@
+Stopping E2E mock-auth stack...
+
+Stack stopped. All containers and volumes removed.
+Run 'bash compose/scripts/e2e-up.sh' to start fresh.

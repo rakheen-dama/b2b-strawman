@@ -141,27 +141,16 @@ export function MemberDetailPanel({
 
   function toggleCapability(cap: string) {
     if (isLockedCapability(cap)) return;
+    // Flip the effective state and keep at most one override for the capability: none when the
+    // new state is the role's default, else "+cap" / "-cap". Never both — the backend refuses a
+    // contradictory pair (400), and a stored redundant "+cap" must not survive an uncheck.
+    const wanted = !isEffectivelyEnabled(cap);
     const inRole = roleCapabilities.has(cap);
-    const hasPlus = overrides.includes(`+${cap}`);
-    const hasMinus = overrides.includes(`-${cap}`);
-
-    if (inRole) {
-      if (hasMinus) {
-        // Remove the minus (restore default)
-        setOverrides((prev) => prev.filter((o) => o !== `-${cap}`));
-      } else {
-        // Add minus (remove from role)
-        setOverrides((prev) => [...prev, `-${cap}`]);
-      }
-    } else {
-      if (hasPlus) {
-        // Remove the plus (restore default)
-        setOverrides((prev) => prev.filter((o) => o !== `+${cap}`));
-      } else {
-        // Add plus (add beyond role)
-        setOverrides((prev) => [...prev, `+${cap}`]);
-      }
-    }
+    setOverrides((prev) => {
+      const others = prev.filter((o) => o !== `+${cap}` && o !== `-${cap}`);
+      if (wanted === inRole) return others;
+      return [...others, wanted ? `+${cap}` : `-${cap}`];
+    });
   }
 
   async function handleSave() {

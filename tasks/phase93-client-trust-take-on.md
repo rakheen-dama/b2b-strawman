@@ -203,7 +203,7 @@ Root `CLAUDE.md` §7: more than one gap or feature in one PR needs the founder's
 |------|------|-------|------|--------|--------|--------|
 | 653 | Take-On Foundation — Batches, Sources, Rows, Reader, Capabilities, Tab (E1) | Backend + Frontend (together) | — (P-3, P-6 ruled) | XL | 653A (1 verify) | **Done** (PR #1846) |
 | 654 | Mapping and Dry-Run Validation (E2) | built inside 653A | 653 | — | — (in 653A) | |
-| 655 | Clients With FICA Attestation — Commit Engine, Entry Path, Attestation, Review Queue (E3) | Backend + Frontend (together) | 653A | L | 655A, 655B (2 verifies) | |
+| 655 | Clients With FICA Attestation — Commit Engine, Entry Path, Attestation, Review Queue (E3) | Backend + Frontend (together) | 653A | L | 655A, 655B (2 verifies) || 655A **Done** (PR #1850); 655B open |
 | 656 | Matters + Go-Live Checklist (E4; E7 checklist) | Backend + Frontend (together) | 655A | M | 656A (1 verify) | |
 | 657 | Trust Opening Position — Registry, Validation and Blocks, Sign-Off and Commit, Report and First Reconciliation (E5) | Backend + Frontend + Portal test | 653A; 656A for 657B | XL | 657A, 657B, 657C, 657D (4 verifies) | 657A **Done** (PR #1847); 657B–657D open |
 | 658 | Debtor Opening Balances — Quiet Issue (E6) | Backend + Frontend (together) | 655A, 656A | M | 658A (1 verify) | |
@@ -311,7 +311,7 @@ Cross-slice facts a builder must not rediscover: `take_on_sign_offs` exists from
 | **0 — Baseline** | 653.1 (task inside 653A) | BE-VERIFY total, FE-GATE and PORTAL-GATE vitest totals, E2E-LEGAL lifecycle / depth-ii / exit-month counts on a fresh stack, recorded on `main` into `$EV/baseline/README.md` and this header | — |
 | **1 — Foundation** | 653A (after P-3, P-6) | BE-VERIFY · FE-GATE · E2E-LEGAL · OBS (upload CSV + XLSX, map, validate, cancel/purge) | — |
 | **2 — Trust registry** | 657A **Done** (PR #1847) | BE-VERIFY (registry pins 36, harness) · FE-GATE · E2E-LEGAL + exit-month · OBS | 657A ∥ 655A–656A (independent after 653A) |
-| **3 — Clients** | 655A → 655B | BE-VERIFY ×2 · FE-GATE ×2 · E2E-LEGAL ×2 · OBS: commit with Mailpit 0, dormancy job, then FICA statuses and the review queue | 655B ∥ 656A |
+| **3 — Clients** | 655A **Done** (PR #1850) → 655B | BE-VERIFY ×2 · FE-GATE ×2 · E2E-LEGAL ×2 · OBS: commit with Mailpit 0, dormancy job, then FICA statuses and the review queue | 655B ∥ 656A |
 | **4 — Matters** | 656A (after P-4) | BE-VERIFY · FE-GATE · E2E-LEGAL · OBS | — |
 | **5 — Trust position** | 657B → 657C → 657D (657D after P-5) | BE-VERIFY ×3 · FE-GATE ×3 · PORTAL-GATE (657C) · E2E-LEGAL + exit-month ×3 · OBS: blocks fire, sign-off by the owner, commit, report download, first month reconciled | 658A ∥ 657B–657D (needs only 655A + 656A) |
 | **6 — Debtors** | 658A | BE-VERIFY · FE-GATE · E2E-LEGAL · OBS with Mailpit 0 and no Xero enqueue | — |
@@ -427,13 +427,13 @@ Merge-conflict hotspots (serial order removes them; a rebase re-greps): `$K/Take
 
 **Dependencies**: 653A. **Scope**: Backend + Frontend together. **Verifies: 2.** **Estimated Effort**: L
 
-**Status**:
+**Status**: 655A **Done** — PR #1850 merged as `e8479d366` (2026-11-24); BE-VERIFY 7947/0/0/55 @`c93e3a3f0`, Backend + Frontend CI pass, FE-GATE @`493c4fe68` (vitest 4756/2 skipped), E2E-LEGAL 105 + depth-ii 40/4 (fresh stacks @`d2738e819`, @`493c4fe68`), OBS PASS run 2 @`493c4fe68` (Created 15 / Duplicate 1 / Failed 0; Mailpit 2→2; portal contacts 0→15 only on the action; 0 audit canary hits) — the dormancy job run itself DEFERRED (no product trigger; imported clients observed as not candidates; transition proven by `ImportedClientDormancyIntegrationTest`) (`$EV/655A/`). Tenant migration V34 (next free V35). 655B open.
 
 ### Slices
 
 | Slice | Scope | Delivers | Files (est.) main · test · FE | Migration | Verify | PW / OBS | Depends on |
 |-------|-------|----------|-------------------------------|-----------|--------|----------|------------|
-| **655A** | BE: commit engine (`TakeOnCommitService`, `TakeOnCommitFacade`, `TakeOnDrainJobHandler` `take_on_drain`, per-row runner, `TakeOnDrainSweep`, `TakeOnTestDrain`); `ClientsDatasetHandler`; `TakenOnCustomerService.createTakenOn`; `Customer` fields + factory; field-group auto-apply extracted; dormancy `taken_on_at`; `client_fica_attestations` + service; attestation / revoke / commit / result CSV / portal-contacts endpoints; anonymisation redaction; 7 audit events; no-PII test. FE: attestation step, commit dialog, results step (+ "Create portal access"), clients columns, progress polling | E3 (entry path, attestation, commit) | **≈ 27 · 12 · 10 = ≈ 49** | tenant, guide V32 → **V33** today (§17.7.4) | **yes** | ✓ E2E-LEGAL; OBS: 20-row commit, Mailpit 0, no portal contacts until the action, dormancy job leaves them ACTIVE | 653A |
+| **655A** | BE: commit engine (`TakeOnCommitService`, `TakeOnCommitFacade`, `TakeOnDrainJobHandler` `take_on_drain`, per-row runner, `TakeOnDrainSweep`, `TakeOnTestDrain`); `ClientsDatasetHandler`; `TakenOnCustomerService.createTakenOn`; `Customer` fields + factory; field-group auto-apply extracted; dormancy `taken_on_at`; `client_fica_attestations` + service; attestation / revoke / commit / result CSV / portal-contacts endpoints; anonymisation redaction; 7 audit events; no-PII test. FE: attestation step, commit dialog, results step (+ "Create portal access"), clients columns, progress polling | E3 (entry path, attestation, commit) | **≈ 27 · 12 · 10 = ≈ 49** | tenant, guide V32 → **V33** today (§17.7.4) | **yes** | ✓ E2E-LEGAL; OBS: 20-row commit, Mailpit 0, no portal contacts until the action, dormancy job leaves them ACTIVE | 653A · **Done** (PR #1850) |
 | **655B** | BE: `FicaStatusProjector` (`ATTESTED`, `ATTESTED_REVIEW`, review reasons, `isOutstanding` / `isClear`); `InformationRequestService` bulk load; `DashboardService`, `CustomerService` / `ClientListQuery` (`ficaStatus=REVIEW`), `ComplianceTools`; `GET /api/clients/{id}/fica-attestation`; review intervals on `PATCH /api/settings/compliance`. FE: FICA labels and badges, attestation card, "FICA review due" system view, dashboard widget, review-interval inputs | E3 (projection, queue) | **≈ 11 · 7 · 18 = ≈ 36** | — | **yes** | ✓ E2E-LEGAL; OBS: badges, queue ordering, card, widget; an existing client's status unchanged | 655A |
 
 ### Tasks

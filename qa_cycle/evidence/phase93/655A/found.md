@@ -33,3 +33,11 @@ a product/data decision, not a 655A change.
 - **Is it intended?** Perhaps. It follows from the RD-6 uniqueness rule, which keys created rows by the address in the file. But the user sees a generic failure and no reason.
 - **Not fixed in 655A:** it is outside M-1. Changing the key or the constraint changes the dedup contract that 656A, 657C and 658A rely on.
 - **Next:** product ruling. Option 1: keep the rule and give the row a specific failure reason. Option 2: re-key the created row when the client's email changes. Needs its own spec.
+
+## F-655A-4..6 — CodeRabbit later round (review of `529740894`), deferred under the one-round rule
+
+All three are non-critical: no security, tenant, data-corruption or money finding. Each is listed in the PR #1850 comment (issuecomment-7117211160) and none was fixed in 655A.
+
+- **F-655A-4 (Major, test stability):** `ClientsTakeOnIntegrationTest` (portal-access vs anonymisation lock case, around line 1178). If an assertion fails before `anonymisation.commit()`, the try-with-resources closes the executor first. The executor's close waits on a request that is itself waiting for the customer row lock the open transaction holds, so the test hangs instead of failing. A passing run is unaffected; the full verify passed at `c93e3a3f0`. Fix: wrap the statements in an inner `try` and roll back in its `finally`.
+- **F-655A-5 (Minor, wording):** `frontend/components/take-on/results-step.tsx` (around line 222). "{m} already had access" also counts clients skipped because they were anonymised, offboarded or missing. Fix: neutral wording such as "{m} skipped".
+- **F-655A-6 (Minor, evidence script):** `qa_cycle/evidence/phase93/655A/obs/obs.cjs:13` loads Playwright from an absolute worktree path that no longer exists. Fix: resolve it from the checkout's `frontend/node_modules`.

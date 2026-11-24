@@ -1,7 +1,7 @@
 {
-  "commit": "d00b2ec64",
-  "command": "cd frontend && pnpm run lint && pnpm run format:check && pnpm run build && pnpm test (wt-f657a1, PR #1848, nvm node v20.11.1)",
+  "commit": "493c4fe68",
+  "command": "cd frontend && rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (worktree-epic-655A, PR #1850, nvm node v20.11.1)",
   "exit": 0,
-  "ts": "2026-11-23T17:51:59Z",
-  "summary": "PR #1848 @d00b2ec64 \u2014 lint 0 errors (77 pre-existing warnings), format clean, build ok, vitest 491 files / 4717 passed / 2 skipped"
+  "ts": "2026-11-23T22:20:00Z",
+  "summary": "PR #1850 @493c4fe68 — lint 0 errors (77 pre-existing warnings), typecheck ok, format clean, vitest 494 files / 4756 passed / 2 skipped, build ok; later commits touch no frontend/ (backend + qa_cycle/tasks only); Frontend CI pass @c93e3a3f0"
 }

@@ -1,7 +1,7 @@
 {
-  "commit": "e7d2dbb1b",
-  "command": "cd backend && bash scripts/verify.sh -q (wt-f657a2, PR #1849)",
+  "commit": "c93e3a3f0",
+  "command": "cd backend && bash scripts/verify.sh -q (worktree-epic-655A, PR #1850)",
   "exit": 0,
-  "ts": "2026-11-23T18:32:00Z",
-  "summary": "PR #1849 @e7d2dbb1b \u2014 7897 <testcase> / 0 failures / 0 errors (surefire XML); later commits are docs-only (qa_cycle/)"
+  "ts": "2026-11-23T23:56:46Z",
+  "summary": "PR #1850 @c93e3a3f0 — 7947 <testcase> / 0 failures / 0 errors / 55 skipped (surefire XML), ~29 min"
 }

@@ -22,9 +22,12 @@ import java.util.UUID;
  */
 public final class TakeOnTestDrain {
 
-  /** What a member who may commit a clients batch holds (owner/admin hold all of these). */
+  /**
+   * What a member who may commit a clients or matters batch holds (owner/admin hold all of these;
+   * 656A adds {@code PROJECT_MANAGEMENT}, the matters dataset capability).
+   */
   public static final Set<String> COMMIT_CAPABILITIES =
-      Set.of("MANAGE_TAKE_ON", "CUSTOMER_MANAGEMENT", "MANAGE_COMPLIANCE");
+      Set.of("MANAGE_TAKE_ON", "CUSTOMER_MANAGEMENT", "MANAGE_COMPLIANCE", "PROJECT_MANAGEMENT");
 
   private TakeOnTestDrain() {}
 

@@ -39,7 +39,8 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
 /**
  * Phase 93 653A: a take-on batch lives in its tenant's schema only — every batch and source
  * endpoint answers 404 from another tenant, the other tenant's history does not list it, and the
- * archived file's S3 key carries the owning tenant's schema. (Extended by 655A, 657C, 658A.)
+ * archived file's S3 key carries the owning tenant's schema. (Extended by 655A, 656A — matters and
+ * the go-live checklist — 657C, 658A.)
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -159,6 +160,83 @@ class TakeOnTenantIsolationIntegrationTest {
                 "SELECT count(*) FROM \"%s\".client_fica_attestations".formatted(schemaB),
                 Integer.class))
         .isZero();
+  }
+
+  /**
+   * 656A: a matters batch committed in A creates its matter in A's schema only, linked to A's
+   * client; B's drain never touches it.
+   */
+  @Test
+  void committedMattersExistOnlyInTheOwningTenant() throws Exception {
+    var clients =
+        TakeOnTestApi.validatedClients(
+            mockMvc,
+            ownerA(),
+            TakeOnClientsFiles.csv(
+                TakeOnClientsFiles.row("Iso Matter Client", "iso.matter.client@example.test")),
+            TakeOnClientsFiles.mapping());
+    TakeOnTestApi.attest(mockMvc, ownerA(), clients.batchId(), clients.hash(), java.util.Map.of())
+        .andExpect(status().isOk());
+    TakeOnTestDrain.commitAndDrain(
+        commitService, drain, schemaA, ORG_A, ownerAId, clients.batchId(), clients.hash());
+    var matters =
+        TakeOnTestApi.validatedMatters(
+            mockMvc,
+            ownerA(),
+            TakeOnMattersFiles.csv(
+                TakeOnMattersFiles.row("Iso matter")
+                    .clientEmail("iso.matter.client@example.test")
+                    .number("ISO-M-1")),
+            TakeOnMattersFiles.mapping());
+    assertThatThrownBy(
+            () ->
+                TakeOnTestDrain.commit(
+                    commitService, schemaB, ORG_B, ownerBId, matters.batchId(), matters.hash()))
+        .isInstanceOf(ResourceNotFoundException.class);
+    TakeOnTestDrain.commit(
+        commitService, schemaA, ORG_A, ownerAId, matters.batchId(), matters.hash());
+    TakeOnTestDrain.run(drain, schemaB, ORG_B);
+    assertThat(batchStatus(schemaA, matters.batchId())).isEqualTo("COMMITTING");
+    TakeOnTestDrain.run(drain, schemaA, ORG_A);
+    assertThat(batchStatus(schemaA, matters.batchId())).isEqualTo("COMPLETED");
+    assertThat(mattersWithReference(schemaA, "ISO-M-1")).isEqualTo(1);
+    assertThat(mattersWithReference(schemaB, "ISO-M-1")).isZero();
+  }
+
+  /** 656A: the go-live checklist is the firm's own — B sees nothing A acknowledged. */
+  @Test
+  void anotherTenantsGoLiveChecklistShowsNothingThisTenantAcknowledged() throws Exception {
+    String url = "/api/take-on/go-live-checklist";
+    mockMvc
+        .perform(
+            json(put(url + "/AUDITOR_INFORMED"), "{\"note\":\"Told on 1 November\"}")
+                .with(ownerA()))
+        .andExpect(status().isOk());
+    mockMvc
+        .perform(get(url).with(ownerB()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[?(@.itemKey == 'AUDITOR_INFORMED')].acknowledged").value(false))
+        .andExpect(jsonPath("$[?(@.acknowledged == true)]").isEmpty());
+    // B cannot withdraw A's acknowledgement: in B there is nothing to withdraw
+    mockMvc
+        .perform(delete(url + "/AUDITOR_INFORMED").with(ownerB()))
+        .andExpect(status().isNotFound());
+    mockMvc
+        .perform(get(url).with(ownerA()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[?(@.itemKey == 'AUDITOR_INFORMED')].acknowledged").value(true));
+    assertThat(
+            jdbc.queryForObject(
+                "SELECT count(*) FROM \"%s\".take_on_go_live_items".formatted(schemaB),
+                Integer.class))
+        .isZero();
+  }
+
+  private int mattersWithReference(String schema, String reference) {
+    return jdbc.queryForObject(
+        "SELECT count(*) FROM \"%s\".projects WHERE reference_number = ?".formatted(schema),
+        Integer.class,
+        reference);
   }
 
   private String batchStatus(String schema, UUID id) {

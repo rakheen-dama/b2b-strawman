@@ -205,6 +205,22 @@ public class TakeOnRow {
 
   // --- Commit transitions (655A): only from VALIDATED, each terminal (never re-validated) ---
 
+  /**
+   * Adds one warning while the row commits (656A: the matter's lead could not be applied), before
+   * the terminal transition. The status does not change; the row stays committable.
+   */
+  public void addCommitWarning(String code, String field, String message) {
+    requireCommittable();
+    var warning = new LinkedHashMap<String, Object>();
+    warning.put("code", code);
+    warning.put("field", field);
+    warning.put("message", message);
+    var updated = new ArrayList<>(this.warnings);
+    updated.add(warning);
+    this.warnings = updated;
+    this.updatedAt = Instant.now();
+  }
+
   /** The commit created the record ({@code CHECK chk_take_on_row_result}: type and id). */
   public void markCreated(String entityType, UUID entityId, Map<String, Object> refs) {
     requireCommittable();

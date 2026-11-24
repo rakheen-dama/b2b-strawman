@@ -11,7 +11,11 @@ import {
   fetchTakeOnBatch,
 } from "@/app/(app)/org/[slug]/settings/matters/take-on-actions";
 import { formatDateTime } from "@/lib/format";
-import type { TakeOnBatch, TakeOnPortalContactsResult } from "@/lib/types";
+import {
+  TAKE_ON_COMMIT_TRAITS,
+  type TakeOnBatch,
+  type TakeOnPortalContactsResult,
+} from "@/lib/types";
 import { saveTakeOnFile, TakeOnError } from "./take-on-feedback";
 
 /** How often the wizard re-reads a committing batch. */
@@ -100,7 +104,10 @@ export function ResultsStep({ batch, onBatchChange }: ResultsStepProps) {
   }
 
   const counts = batch.counts;
-  const skippedLabel = batch.dataset === "CLIENTS" ? "Duplicate — skipped" : "Skipped";
+  // Clients and matters skip only duplicates; the balance datasets also skip nil balances.
+  const skippedLabel = TAKE_ON_COMMIT_TRAITS[batch.dataset].skipsNilBalance
+    ? "Skipped"
+    : "Duplicate — skipped";
 
   async function download() {
     setDownloadError(null);

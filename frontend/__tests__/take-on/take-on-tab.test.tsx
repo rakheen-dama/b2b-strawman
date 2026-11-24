@@ -46,10 +46,13 @@ vi.mock("@/app/(app)/org/[slug]/settings/matters/take-on-actions", () => ({
   commitBatch: vi.fn(),
   createPortalContacts: vi.fn(),
   downloadTakeOnResult: vi.fn(),
+  acknowledgeGoLiveItem: vi.fn(),
+  withdrawGoLiveItem: vi.fn(),
 }));
 
 import { renderTakeOnTab } from "@/app/(app)/org/[slug]/settings/matters/_tabs/take-on-tab";
 import type { TakeOnBatch, TakeOnBatchSummary, TakeOnDatasetCatalogue } from "@/lib/types";
+import { GO_LIVE_TEXT, goLiveItems } from "./fixtures";
 
 const BATCH_ID = "0b6a2f4e-1c3d-4e5f-8a9b-0c1d2e3f4a5b";
 
@@ -136,6 +139,11 @@ function routeGets(batch: () => Promise<unknown>) {
       };
     }
     if (endpoint.startsWith("/api/take-on/batches/")) return batch();
+    if (endpoint === "/api/take-on/go-live-checklist") {
+      return goLiveItems({
+        TRUST_RECORDS_RETAINED: { name: "Alice Owner", at: "2026-11-24T08:00:00Z" },
+      });
+    }
     throw new Error(`unexpected GET ${endpoint}`);
   });
 }
@@ -179,6 +187,21 @@ describe("Matters › Take-on tab", () => {
     expect(
       screen.getByTestId("take-on-template-trust-position-unidentified-deposits")
     ).toHaveTextContent("Template: Unidentified deposits");
+  });
+
+  it("shows the go-live checklist beside the dataset picker, fetched with it (656A)", async () => {
+    await renderTab();
+    const card = screen.getByTestId("take-on-go-live-card");
+    // Beside the picker: both in the same two-column row, the checklist second.
+    expect(card.parentElement).toBe(screen.getByTestId("take-on-dataset-picker").parentElement);
+    expect(
+      within(card).getByTestId("take-on-go-live-text-trust-records-retained")
+    ).toHaveTextContent(GO_LIVE_TEXT.TRUST_RECORDS_RETAINED);
+    expect(
+      screen.getByTestId("take-on-go-live-acknowledged-trust-records-retained")
+    ).toHaveTextContent("Acknowledged by Alice Owner on 24 Nov 2026");
+    expect(screen.getByTestId("take-on-go-live-acknowledge-auditor-informed")).toBeInTheDocument();
+    expect(mockGet).toHaveBeenCalledWith("/api/take-on/go-live-checklist");
   });
 
   it("lists the history with a link to each batch's wizard", async () => {
@@ -227,5 +250,6 @@ describe("Matters › Take-on tab", () => {
       "You don't have access to take-on."
     );
     expect(screen.queryByTestId("take-on-dataset-picker")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("take-on-go-live-card")).not.toBeInTheDocument();
   });
 });

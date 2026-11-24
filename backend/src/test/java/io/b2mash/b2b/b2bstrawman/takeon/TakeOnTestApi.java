@@ -224,13 +224,27 @@ public final class TakeOnTestApi {
   public static Validated validatedClients(
       MockMvc mockMvc, RequestPostProcessor jwt, String csv, Map<String, Object> mapping)
       throws Exception {
+    return validated(mockMvc, jwt, "CLIENTS", "clients.csv", csv, mapping);
+  }
+
+  /** Uploads {@code csv} as a matters file (656A), maps it, validates (expects 200). */
+  public static Validated validatedMatters(
+      MockMvc mockMvc, RequestPostProcessor jwt, String csv, Map<String, Object> mapping)
+      throws Exception {
+    return validated(mockMvc, jwt, "MATTERS", "matters.csv", csv, mapping);
+  }
+
+  private static Validated validated(
+      MockMvc mockMvc,
+      RequestPostProcessor jwt,
+      String dataset,
+      String fileName,
+      String csv,
+      Map<String, Object> mapping)
+      throws Exception {
     UUID[] ids =
         create(
-            mockMvc,
-            jwt,
-            "CLIENTS",
-            "clients.csv",
-            csv.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            mockMvc, jwt, dataset, fileName, csv.getBytes(java.nio.charset.StandardCharsets.UTF_8));
     map(mockMvc, jwt, ids[0], ids[1], mapping)
         .andExpect(
             org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isOk());

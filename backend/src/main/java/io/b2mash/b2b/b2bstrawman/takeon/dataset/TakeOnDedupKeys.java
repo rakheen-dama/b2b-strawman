@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.takeon.dataset;
 
 import io.b2mash.b2b.b2bstrawman.takeon.TakeOnDataset;
 import java.util.Locale;
+import java.util.UUID;
 
 /**
  * The one definition of a take-on row's lookup-free dedup key (D-19, C-25): the dataset's key
@@ -32,6 +33,14 @@ public final class TakeOnDedupKeys {
   /** The clients dedup key of an email address. */
   public static String client(String email) {
     return of(TakeOnDataset.CLIENTS, email);
+  }
+
+  /**
+   * The matters dedup key of a row without a matter reference (656A, §17.3.6): the matter's name on
+   * its resolved client, {@code "name:" + clientId + ":" + lower(strip(name))}.
+   */
+  public static String matterName(UUID clientId, String name) {
+    return "name:" + clientId + ":" + name.strip().toLowerCase(Locale.ROOT);
   }
 
   private static String prefix(TakeOnDataset dataset) {

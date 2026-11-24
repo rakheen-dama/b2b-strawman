@@ -1,0 +1,5 @@
+                       title                        | recipient |          created_at           
+----------------------------------------------------+-----------+-------------------------------
+ You were added to matter "Supply contract dispute" | Bob Admin | 2026-11-24 04:12:54.651151+00
+(1 row)
+

@@ -5,6 +5,7 @@ import { api, ApiError } from "@/lib/api";
 import { EmptyState } from "@/components/empty-state";
 import { BatchHistoryTable } from "@/components/take-on/batch-history-table";
 import { DatasetPicker } from "@/components/take-on/dataset-picker";
+import { GoLiveChecklistCard } from "@/components/take-on/go-live-checklist-card";
 import { TakeOnWizard } from "@/components/take-on/take-on-wizard";
 import { getSettingsFamily, settingsHref } from "@/lib/settings-nav";
 import type { SettingsTabProps } from "@/components/settings/settings-family-page";
@@ -12,6 +13,7 @@ import type {
   TakeOnBatch,
   TakeOnBatchSummary,
   TakeOnDatasetCatalogue,
+  TakeOnGoLiveItem,
   TakeOnPage,
 } from "@/lib/types";
 
@@ -45,7 +47,8 @@ async function loadBatch(batchId: string): Promise<TakeOnBatch | null> {
 /**
  * Matters › Take-on (Phase 93 653A, architecture §17.8.2). The family page has already gated
  * MANAGE_TAKE_ON; each dataset's own capability is checked by the backend. `?batch={id}` renders
- * the wizard inside the tab, so the settings route count stays 17 (ADR-341).
+ * the wizard inside the tab, so the settings route count stays 17 (ADR-341). The go-live checklist
+ * (656A) sits beside the dataset picker; it needs MANAGE_TAKE_ON only, like the tab.
  */
 export async function renderTakeOnTab({ slug, searchParams }: SettingsTabProps) {
   const rawBatch = searchParams.batch;
@@ -53,14 +56,17 @@ export async function renderTakeOnTab({ slug, searchParams }: SettingsTabProps) 
 
   let datasets: TakeOnDatasetCatalogue[] = [];
   let history: TakeOnBatchSummary[] = [];
+  let goLive: TakeOnGoLiveItem[] = [];
   let loadNotice: string | null = null;
   try {
-    const [catalogue, page] = await Promise.all([
+    const [catalogue, page, checklist] = await Promise.all([
       api.get<TakeOnDatasetCatalogue[]>("/api/take-on/datasets"),
       api.get<TakeOnPage<TakeOnBatchSummary>>("/api/take-on/batches?page=0&size=20"),
+      api.get<TakeOnGoLiveItem[]>("/api/take-on/go-live-checklist"),
     ]);
     datasets = catalogue;
     history = page.content;
+    goLive = checklist;
   } catch (error) {
     if (!(error instanceof ApiError)) throw error;
     loadNotice =
@@ -98,7 +104,10 @@ export async function renderTakeOnTab({ slug, searchParams }: SettingsTabProps) 
       {batchNotice && <Notice testId="take-on-batch-notice">{batchNotice}</Notice>}
       {!loadNotice && (
         <>
-          <DatasetPicker slug={slug} datasets={datasets} />
+          <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
+            <DatasetPicker slug={slug} datasets={datasets} />
+            <GoLiveChecklistCard items={goLive} />
+          </div>
           <section className="space-y-3">
             <h2 className="font-display text-xl text-slate-950 dark:text-slate-50">
               Take-on history

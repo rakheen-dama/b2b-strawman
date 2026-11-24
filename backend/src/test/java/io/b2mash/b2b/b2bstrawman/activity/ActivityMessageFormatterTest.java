@@ -1639,6 +1639,17 @@ class ActivityMessageFormatterTest {
         Arguments.of("invoice.custom_fields_updated", "invoice", d(), "Alice updated a fee note"),
         Arguments.of(
             "trust_account.created", "trust_account", d(), "Alice created a trust account"),
+        // Phase 93 656A (D-165): the go-live checklist noun; "acknowledged" has no verb of its own
+        Arguments.of(
+            "takeon.go_live.acknowledged",
+            "take_on_go_live_item",
+            d("item_key", "AUDITOR_INFORMED"),
+            "Alice updated a go-live checklist item"),
+        Arguments.of(
+            "takeon.go_live.withdrawn",
+            "take_on_go_live_item",
+            d("item_key", "AUDITOR_INFORMED"),
+            "Alice withdrew a go-live checklist item"),
         Arguments.of(
             "information_request.frobnicated",
             "information_request",

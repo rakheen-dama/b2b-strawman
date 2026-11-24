@@ -1,14 +1,17 @@
 import type {
   TakeOnBatch,
   TakeOnDatasetCatalogue,
+  TakeOnField,
+  TakeOnGoLiveItem,
+  TakeOnGoLiveItemKey,
   TakeOnSignOff,
   TakeOnSource,
   TakeOnValidationSummary,
 } from "@/lib/types";
 
 /**
- * Take-on fixtures for the 655A step tests (attestation, commit dialog, results). Not a test file
- * (no `.test.` suffix).
+ * Take-on fixtures for the 655A/656A step tests (attestation, commit dialog, results, matters,
+ * go-live checklist). Not a test file (no `.test.` suffix).
  */
 
 export const ATTEST_TEXT =
@@ -141,4 +144,114 @@ export function clientsBatch(overrides: Partial<TakeOnBatch> = {}): TakeOnBatch 
     summary: CLIENTS_SUMMARY,
     ...overrides,
   };
+}
+
+// ---- 656A: matters and the go-live checklist ----
+
+const text = (key: string, label: string, required = false): TakeOnField => ({
+  key,
+  label,
+  type: "TEXT",
+  required,
+  maxLength: 255,
+  allowedValues: null,
+});
+
+/** The matters catalogue fields (backend TakeOnFieldCatalogue.MATTERS + the previous-system ID). */
+export const MATTERS_CATALOGUE: TakeOnDatasetCatalogue = {
+  dataset: "MATTERS",
+  label: "Matters",
+  requiresCutoverDate: false,
+  requiresTrustAccount: false,
+  customFieldEntityType: "PROJECT",
+  sections: [
+    {
+      section: "MAIN",
+      label: "File",
+      fields: [
+        text("name", "Matter name", true),
+        text("clientEmail", "Client email"),
+        text("clientRef", "Client previous-system ID"),
+        text("clientIdNumber", "Client ID number"),
+        text("referenceNumber", "Matter reference"),
+        text("description", "Description"),
+        text("dueDate", "Due date"),
+        text("workType", "Work type"),
+        {
+          key: "priority",
+          label: "Priority",
+          type: "ENUM",
+          required: false,
+          maxLength: null,
+          allowedValues: ["LOW", "MEDIUM", "HIGH"],
+        },
+        text("leadMemberEmail", "Responsible attorney email"),
+        text("sourceRef", "Previous system ID"),
+      ],
+    },
+  ],
+  completedBatches: 0,
+};
+
+/** A validated matters batch: 15 rows, 14 valid (1 a duplicate of an existing matter), 1 error. */
+export function mattersBatch(overrides: Partial<TakeOnBatch> = {}): TakeOnBatch {
+  return {
+    ...clientsBatch(),
+    id: "batch-656",
+    dataset: "MATTERS",
+    sources: [
+      clientsSource({
+        fileName: "matters.csv",
+        rowCount: 15,
+        mapping: { targets: { name: "Matter" }, customFields: {}, parked: [], defaults: {} },
+      }),
+    ],
+    counts: {
+      total: 15,
+      valid: 14,
+      error: 1,
+      duplicate: 1,
+      blocks: 0,
+      created: 0,
+      skipped: 0,
+      failed: 0,
+    },
+    // Matters need no attestation: COMMIT straight after a clean dry run (D-155).
+    allowedActions: ["REMOVE_SOURCE", "MAP", "REVALIDATE", "COMMIT", "CANCEL"],
+    attestationStatement: null,
+    summary: null,
+    ...overrides,
+  };
+}
+
+/** The four go-live statements, §17.10 X3 verbatim, in X3 order (pinned again here, D-167). */
+export const GO_LIVE_TEXT: Readonly<Record<TakeOnGoLiveItemKey, string>> = {
+  TRUST_RECORDS_RETAINED:
+    "Trust records from the previous system will be kept for at least seven years from the last entry, secured and immediately accessible to the firm and the Council (Rules 54.9.1 and 54.9.2).",
+  FICA_RECORDS_RETAINED:
+    "FICA records from the previous system will be kept for at least five years after each business relationship ends (section 23).",
+  ARCHIVE_HOSTING_CONSIDERED:
+    "If the previous vendor keeps hosting the archive, or its location changes, we have considered whether Council consent (Rule 54.9.2) or a notification to the FIC (section 24(3)) is needed. Kazi does not file either.",
+  AUDITOR_INFORMED:
+    "Our trust auditor has been told the cutover date and will receive the take-on report.",
+};
+
+/** The checklist as the backend lists it; `acknowledged` items carry who, when and a note. */
+export function goLiveItems(
+  acknowledged: Partial<
+    Record<TakeOnGoLiveItemKey, { name: string; at: string; note?: string }>
+  > = {}
+): TakeOnGoLiveItem[] {
+  return (Object.keys(GO_LIVE_TEXT) as TakeOnGoLiveItemKey[]).map((itemKey) => {
+    const ack = acknowledged[itemKey];
+    return {
+      itemKey,
+      text: GO_LIVE_TEXT[itemKey],
+      acknowledged: ack !== undefined,
+      acknowledgedBy: ack ? "member-1" : null,
+      acknowledgedByName: ack?.name ?? null,
+      acknowledgedAt: ack?.at ?? null,
+      note: ack?.note ?? null,
+    };
+  });
 }

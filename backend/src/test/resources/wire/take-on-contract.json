@@ -328,6 +328,32 @@
     "name" : "allowedValues",
     "type" : "java.util.List<java.lang.String>"
   } ],
+  "TakeOnGoLiveAcknowledgeRequest" : [ {
+    "name" : "note",
+    "type" : "java.lang.String"
+  } ],
+  "TakeOnGoLiveItemResponse" : [ {
+    "name" : "itemKey",
+    "type" : "io.b2mash.b2b.b2bstrawman.takeon.GoLiveItem"
+  }, {
+    "name" : "text",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "acknowledged",
+    "type" : "boolean"
+  }, {
+    "name" : "acknowledgedBy",
+    "type" : "java.util.UUID"
+  }, {
+    "name" : "acknowledgedByName",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "acknowledgedAt",
+    "type" : "java.time.Instant"
+  }, {
+    "name" : "note",
+    "type" : "java.lang.String"
+  } ],
   "TakeOnMappingRequest" : [ {
     "name" : "targets",
     "type" : "java.util.Map<java.lang.String, java.lang.String>"

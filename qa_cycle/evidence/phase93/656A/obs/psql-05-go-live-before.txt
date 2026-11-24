@@ -1,0 +1,10 @@
+-- BEFORE step e (2026-11-24T04:16:53Z)
+ item_key | acknowledged_by | acknowledged_at | note 
+----------+-----------------+-----------------+------
+(0 rows)
+
+ count 
+-------
+     0
+(1 row)
+

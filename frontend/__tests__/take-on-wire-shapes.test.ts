@@ -11,6 +11,8 @@ import type {
   TakeOnCounts,
   TakeOnDatasetCatalogue,
   TakeOnField,
+  TakeOnGoLiveAcknowledgeRequest,
+  TakeOnGoLiveItem,
   TakeOnMapping,
   TakeOnMappingRequest,
   TakeOnParseOptions,
@@ -78,7 +80,7 @@ const BATCH: Required<TakeOnBatch> = {
 // assertion fails when the Java record changes and the literal was not updated. Literal key ORDER
 // must equal the Java record's declaration order (toEqual on arrays is order-sensitive).
 describe("take-on wire shapes match the backend contract (ADR-365, P-17)", () => {
-  it("pins exactly the 27 records of 653A, 655A and 655B", () => {
+  it("pins exactly the 29 records of 653A, 655A, 655B and 656A", () => {
     expect(Object.keys(contract).sort()).toEqual([
       "ClientFicaAttestationResponse",
       "ClientListRow",
@@ -91,6 +93,8 @@ describe("take-on wire shapes match the backend contract (ADR-365, P-17)", () =>
       "TakeOnCountsResponse",
       "TakeOnDatasetResponse",
       "TakeOnFieldResponse",
+      "TakeOnGoLiveAcknowledgeRequest",
+      "TakeOnGoLiveItemResponse",
       "TakeOnMappingRequest",
       "TakeOnMappingResponse",
       "TakeOnParseOptionsResponse",
@@ -359,6 +363,24 @@ describe("take-on wire shapes match the backend contract (ADR-365, P-17)", () =>
       attestedAt: "",
     };
     expect(Object.keys(literal)).toEqual(componentNames(contract.ClientFicaAttestationResponse));
+  });
+
+  it("TakeOnGoLiveItem ↔ TakeOnGoLiveItemResponse", () => {
+    const literal: Required<TakeOnGoLiveItem> = {
+      itemKey: "TRUST_RECORDS_RETAINED",
+      text: "",
+      acknowledged: false,
+      acknowledgedBy: null,
+      acknowledgedByName: null,
+      acknowledgedAt: null,
+      note: null,
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(contract.TakeOnGoLiveItemResponse));
+  });
+
+  it("TakeOnGoLiveAcknowledgeRequest ↔ TakeOnGoLiveAcknowledgeRequest", () => {
+    const literal: Required<TakeOnGoLiveAcknowledgeRequest> = { note: null };
+    expect(Object.keys(literal)).toEqual(componentNames(contract.TakeOnGoLiveAcknowledgeRequest));
   });
 
   it("ClientListRow ↔ ClientListRow", () => {

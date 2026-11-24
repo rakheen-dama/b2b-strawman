@@ -27,6 +27,7 @@ import {
 } from "@/app/(app)/org/[slug]/settings/matters/take-on-actions";
 import {
   TAKE_ON_COMMIT_ROW_STATUSES,
+  TAKE_ON_COMMIT_TRAITS,
   TAKE_ON_DUPLICATE_PENDING_LABEL,
   TAKE_ON_ROW_STATUS_LABEL,
   TAKE_ON_SECTION_LABEL,
@@ -42,6 +43,12 @@ import {
   ClientColumnHeads,
   clientValueText,
 } from "./clients-step";
+import {
+  MATTER_COLUMN_KEYS,
+  MatterColumnCells,
+  MatterColumnHeads,
+  matterValueText,
+} from "./matters-step";
 import { TakeOnError } from "./take-on-feedback";
 
 const PAGE_SIZE = 50;
@@ -69,9 +76,10 @@ function filterOptionsFor(batch: TakeOnBatch): readonly FilterOption[] {
   if (batch.status !== "COMPLETED") dryRun.push([DUPLICATE, TAKE_ON_DUPLICATE_PENDING_LABEL]);
   dryRun.push(statusOption("ERROR"));
   if (batch.status !== "COMMITTING" && batch.status !== "COMPLETED") return dryRun;
-  // A nil balance is skipped only in the balance datasets — never a client.
+  // A nil balance is skipped only in the balance datasets — never a client or a matter.
+  const { skipsNilBalance } = TAKE_ON_COMMIT_TRAITS[batch.dataset];
   const commit = TAKE_ON_COMMIT_ROW_STATUSES.filter(
-    (s) => !(batch.dataset === "CLIENTS" && s === "SKIPPED_ZERO")
+    (s) => skipsNilBalance || s !== "SKIPPED_ZERO"
   ).map(statusOption);
   return [...dryRun, ...commit];
 }
@@ -114,8 +122,9 @@ interface ValidationStepProps {
  * and the row table come from the same validation, so the table's status totals equal the cards.
  * A valid row that matches an existing client shows "Duplicate — will be skipped" and has its own
  * filter, so the Duplicates card, the filter and the table agree (OBS-655A-1). After a commit the
- * same table shows each row's outcome (Created, Duplicate — skipped, Failed); the commit itself is
- * on the Attestation step (655A).
+ * same table shows each row's outcome (Created, Duplicate — skipped, Failed). Clients commit from
+ * the Attestation step (655A); matters, which need no attestation, from under this step (656A,
+ * D-169). Matters rows show the client the dry run matched and the responsible attorney.
  */
 export function ValidationStep({ batch, dataset, onBatchChange }: ValidationStepProps) {
   const allowed = new Set(batch.allowedActions);
@@ -123,6 +132,7 @@ export function ValidationStep({ batch, dataset, onBatchChange }: ValidationStep
   const validated = batch.status === "VALIDATED";
   const isTrust = dataset.requiresTrustAccount;
   const isClients = dataset.dataset === "CLIENTS";
+  const isMatters = dataset.dataset === "MATTERS";
 
   const [status, setStatus] = useState<string>(ALL);
   const [section, setSection] = useState<string>(ALL);
@@ -312,6 +322,7 @@ export function ValidationStep({ batch, dataset, onBatchChange }: ValidationStep
           labels={labels}
           isTrust={isTrust}
           isClients={isClients}
+          isMatters={isMatters}
         />
       )}
       {rows.data && totalPages > 1 && (
@@ -355,11 +366,13 @@ function RowTable({
   labels,
   isTrust,
   isClients,
+  isMatters,
 }: {
   rows: TakeOnRow[];
   labels: Map<string, string>;
   isTrust: boolean;
   isClients: boolean;
+  isMatters: boolean;
 }) {
   if (rows.length === 0) {
     return (
@@ -377,8 +390,9 @@ function RowTable({
             {isTrust && <TableHead>Part</TableHead>}
             <TableHead>Previous system ID</TableHead>
             {isClients && <ClientColumnHeads />}
+            {isMatters && <MatterColumnHeads />}
             <TableHead>Status</TableHead>
-            <TableHead>{isClients ? "Other values" : "Values"}</TableHead>
+            <TableHead>{isClients || isMatters ? "Other values" : "Values"}</TableHead>
             <TableHead>Messages</TableHead>
           </TableRow>
         </TableHeader>
@@ -396,6 +410,7 @@ function RowTable({
               )}
               <TableCell className="text-xs">{row.sourceRef ?? "—"}</TableCell>
               {isClients && <ClientColumnCells rowNumber={row.rowNumber} values={row.values} />}
+              {isMatters && <MatterColumnCells row={row} />}
               <TableCell>
                 <Badge
                   variant={isPendingDuplicate(row) ? "warning" : STATUS_VARIANT[row.status]}
@@ -415,7 +430,10 @@ function RowTable({
                 <RowValues
                   values={row.values}
                   labels={labels}
-                  exclude={isClients ? CLIENT_COLUMN_KEYS : undefined}
+                  exclude={
+                    isClients ? CLIENT_COLUMN_KEYS : isMatters ? MATTER_COLUMN_KEYS : undefined
+                  }
+                  valueText={isMatters ? matterValueText : clientValueText}
                 />
               </TableCell>
               <TableCell className="max-w-md text-xs whitespace-normal">
@@ -462,10 +480,13 @@ function RowValues({
   values,
   labels,
   exclude,
+  valueText,
 }: {
   values: Record<string, unknown> | null;
   labels: Map<string, string>;
   exclude?: ReadonlySet<string>;
+  /** The dataset's label for a coded value (never a raw enum on screen). */
+  valueText: (key: string, value: unknown) => string;
 }) {
   if (!values) return null;
   if (values.purged === true) {
@@ -483,7 +504,7 @@ function RowValues({
         <span key={k}>
           {i > 0 && " · "}
           <span className="text-slate-500 dark:text-slate-400">{labels.get(k) ?? k}:</span>{" "}
-          {typeof v === "string" ? clientValueText(k, v) : formatValue(v)}
+          {typeof v === "string" ? valueText(k, v) : formatValue(v)}
         </span>
       ))}
     </span>

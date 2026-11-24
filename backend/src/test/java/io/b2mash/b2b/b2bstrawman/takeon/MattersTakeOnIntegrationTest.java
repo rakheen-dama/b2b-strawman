@@ -658,12 +658,63 @@ class MattersTakeOnIntegrationTest {
     assertThat(other.get("dedup_key")).isNotNull();
   }
 
+  // 12 (delta review M-1, D-178 amended): a VALIDATED row redacted before its batch commits
+  @Test
+  void aClientAnonymisedBetweenValidationAndCommit_failsItsRedactedRowWithTheClientGoneText()
+      throws Exception {
+    UUID gone =
+        inTenant(
+            () ->
+                customers
+                    .save(
+                        TestCustomerFactory.createActiveCustomer(
+                            "Gone Before Commit", "mt.gone@example.test", ownerId))
+                    .getId());
+    var batch =
+        validatedMatters(
+            mockMvc,
+            owner(),
+            csv(
+                row("Matter of a client anonymised")
+                    .clientEmail("mt.gone@example.test")
+                    .ref("R14-1"),
+                row("Thandi first of two").clientEmail(THANDI_EMAIL).ref("R14-2"),
+                row("Thandi second of two").clientEmail(THANDI_EMAIL).ref("R14-3")),
+            mapping());
+    assertThat((Integer) JsonPath.read(batch.json(), "$.counts.valid")).isEqualTo(3);
+
+    mockMvc
+        .perform(
+            post("/api/clients/" + gone + "/anonymize")
+                .with(owner())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"confirmationName\": \"Gone Before Commit\", \"reason\": \"test\"}"))
+        .andExpect(status().isOk());
+    var redacted = rowByNumber(batch.batchId(), 2);
+    assertThat(redacted.get("status")).isEqualTo("VALIDATED");
+    assertThat((String) redacted.get("mapped")).isEqualTo("{\"redacted\": true}");
+
+    commit(batch);
+    var failed = rowByNumber(batch.batchId(), 2);
+    assertThat(failed.get("status")).isEqualTo("FAILED");
+    assertThat(failed.get("failure_reason")).isEqualTo(MattersDatasetHandler.CLIENT_GONE_MESSAGE);
+    assertThat((String) failed.get("raw")).isEqualTo("{\"redacted\": true}");
+    assertThat((String) failed.get("mapped")).isEqualTo("{\"redacted\": true}");
+    assertThat(failed.get("source_ref")).isNull();
+    for (int rowNumber : List.of(3, 4)) {
+      var r = rowByNumber(batch.batchId(), rowNumber);
+      assertThat(r.get("status")).as("row %d", rowNumber).isEqualTo("CREATED");
+      assertThat((String) r.get("mapped")).as("row %d", rowNumber).contains(thandi.toString());
+    }
+    assertThat(inTenant(() -> projects.findByCustomerId(gone))).isEmpty();
+  }
+
   // --- helpers ---
 
   private Map<String, Object> rowByNumber(UUID batchId, int rowNumber) {
     return jdbc.queryForMap(
         ("SELECT status, raw_values::text AS raw, mapped_values::text AS mapped, dedup_key,"
-                + " source_ref FROM \"%s\".take_on_rows WHERE batch_id = ? AND row_number = ?")
+                + " source_ref, failure_reason FROM \"%s\".take_on_rows WHERE batch_id = ? AND row_number = ?")
             .formatted(schema),
         batchId,
         rowNumber);

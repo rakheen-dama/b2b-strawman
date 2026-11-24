@@ -192,10 +192,11 @@ public interface TakeOnRowRepository extends JpaRepository<TakeOnRow, UUID> {
    * stays, delta review M-1) — loses its values: {@code {"redacted": true}}, the previous system's
    * id ({@code source_ref}, free text that may be an email or a name), the dedup key and the
    * message texts (they may quote a cell); only {code, field} stay. A matters row resolved to the
-   * client (its mapped {@code clientId}, D-159) is redacted the same way: it links to the matter
-   * and is keyed by the matter, but holds the client reference the file gave (email, previous
-   * system id, ID number — D-178). The row shell (number, status, result link) stays; the archived
-   * file is not rewritten while a legal retention period runs. Pass at least one key.
+   * client (its mapped {@code clientId}, D-159; the SQL literal {@code 'clientId'} repeats {@code
+   * MattersDatasetHandler.CLIENT_ID}) is redacted the same way: it links to the matter and is keyed
+   * by the matter, but holds the client reference the file gave (email, previous system id, ID
+   * number — D-178). The row shell (number, status, result link) stays; the archived file is not
+   * rewritten while a legal retention period runs. Pass at least one key.
    */
   @Modifying(flushAutomatically = true, clearAutomatically = true)
   @Query(

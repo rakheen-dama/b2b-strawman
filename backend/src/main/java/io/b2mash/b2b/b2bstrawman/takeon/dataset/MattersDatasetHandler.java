@@ -98,7 +98,10 @@ public class MattersDatasetHandler
   static final List<String> CLIENT_REFERENCE_FIELDS =
       List.of("clientEmail", "clientRef", "clientIdNumber");
 
-  /** The derived values the dry run adds to a row's mapped values (D-159). */
+  /**
+   * The derived values the dry run adds to a row's mapped values (D-159). {@code
+   * TakeOnRowRepository.redactForClient} repeats this key as a SQL literal.
+   */
   public static final String CLIENT_ID = "clientId";
 
   public static final String CLIENT_RESOLVED_BY = "clientResolvedBy";
@@ -394,7 +397,13 @@ public class MattersDatasetHandler
   @Override
   public void commitRow(TakeOnRow row, MattersCommitContext context) {
     Map<String, Object> v = row.getMappedValues();
-    UUID clientId = UUID.fromString(text(v.get(CLIENT_ID)));
+    UUID clientId = uuid(v.get(CLIENT_ID));
+    if (clientId == null) {
+      // D-178: the row was redacted because its client was anonymised after the dry run — read
+      // nothing else from its values; it fails with the client-gone text (D-171).
+      row.markFailed(CLIENT_GONE_MESSAGE);
+      return;
+    }
     String name = text(v.get("name"));
     String ref = text(v.get("referenceNumber"));
 

@@ -88,3 +88,20 @@ with a free-text work type lands on this header.
 
 **Fix (for the orchestrator to dispatch; outside 656A's diff):** render `humaniseWorkType(workType)` in
 `MatterHeaderCard` (one line), with a vitest for a canonical multi-word value. The 656A validation table is correct.
+
+## F-656A-4 (delta review, Low — record only) — an unresolved matters row is not reached by the D-178 redaction arm
+
+A matters row that ended in ERROR `CLIENT_AMBIGUOUS` (or any matters row with no resolved `clientId`) is not
+matched by the `dataset = 'MATTERS' AND mapped_values ->> 'clientId' = …` arm of
+`TakeOnRowRepository.redactForClient`, so after the client is anonymised it can still hold that client's ID number
+or email in `raw_values` / `mapped_values`. Rare (needs an ambiguous or orphan reference that happens to carry the
+anonymised client's details). Candidate fix: at anonymisation, also match unresolved matters rows by the client's
+ID number / email (normalised as the dry run compares them). Not reproduced by a test (out of scope).
+
+## F-656A-5 (delta review, Low — design notes for 657B)
+
+- `TakeOnGoLiveItem`'s public constructor has no callers: the rows are written only by the native upsert.
+- `TAKE_ON_COMMIT_TRAITS.signOffStep` is typed as the whole `TakeOnStep` union, while `takeOnStepFor` and the
+  Validation button still compare against the literal `"attestation"`.
+- The SQL literal `'clientId'` in `redactForClient` repeats `MattersDatasetHandler.CLIENT_ID` (a cross-reference
+  comment was added at both sites in the M-1 fix; no shared constant).

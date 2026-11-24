@@ -336,3 +336,57 @@ describe("InviteMemberForm — owner-only capabilities", () => {
     expect(screen.queryByRole("option", { name: /Owner/ })).not.toBeInTheDocument();
   });
 });
+
+// --- review round 1 ---
+
+// The hint must not become part of the option's text: Radix copies an item's ItemText into the
+// select trigger, which showed "PartnerOnly the owner can grant this" for a selected locked role.
+describe("Role select trigger — a selected locked role shows its name only", () => {
+  it("a member already on a Partner role, seen by a non-owner", async () => {
+    openPanel("admin", "Partner");
+    await waitFor(() => expect(screen.getByRole("combobox")).toHaveTextContent("Partner"));
+    expect(screen.getByRole("combobox").textContent).toBe("Partner");
+  });
+
+  it("a member on the system Admin role, seen by a non-owner", async () => {
+    openPanel("admin", "Admin", [bookkeeper, partner, systemAdmin]);
+    await waitFor(() => expect(screen.getByRole("combobox")).toHaveTextContent("Admin"));
+    expect(screen.getByRole("combobox").textContent).toBe("Admin");
+  });
+});
+
+// The hint is the disabled checkbox's accessible description (its aria-label names it).
+describe("Owner-only hint — tied to its disabled checkbox", () => {
+  it("in the role dialog", () => {
+    asCaller("admin", <RoleDialog slug="acme" open={true} onOpenChange={vi.fn()} />);
+    expect(screen.getByRole("checkbox", { name: SIGN_OFF_LABEL })).toHaveAccessibleDescription(
+      HINT
+    );
+  });
+
+  it("in the member detail panel", async () => {
+    openPanel("admin", "Bookkeeper");
+    await waitFor(() => expect(screen.getByRole("combobox")).toHaveTextContent("Bookkeeper"));
+    expect(screen.getByRole("checkbox", { name: SIGN_OFF_LABEL })).toHaveAccessibleDescription(
+      HINT
+    );
+  });
+
+  it("in the invite form", async () => {
+    const user = userEvent.setup();
+    asCaller("admin", <InviteMemberForm {...inviteProps} />);
+    await user.click(screen.getByRole("combobox"));
+    await user.click(screen.getByTestId("role-option-role-bookkeeper"));
+    await user.click(screen.getByText("Customize for this user"));
+    expect(
+      await screen.findByRole("checkbox", { name: SIGN_OFF_LABEL })
+    ).toHaveAccessibleDescription(HINT);
+  });
+
+  it("an ordinary capability has no description", () => {
+    asCaller("admin", <RoleDialog slug="acme" open={true} onOpenChange={vi.fn()} />);
+    expect(screen.getByRole("checkbox", { name: "Billing" })).not.toHaveAttribute(
+      "aria-describedby"
+    );
+  });
+});

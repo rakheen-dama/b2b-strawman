@@ -105,3 +105,7 @@ ID number / email (normalised as the dry run compares them). Not reproduced by a
   Validation button still compare against the literal `"attestation"`.
 - The SQL literal `'clientId'` in `redactForClient` repeats `MattersDatasetHandler.CLIENT_ID` (a cross-reference
   comment was added at both sites in the M-1 fix; no shared constant).
+
+## F-656A-6 (delta review 2, 2026-11-24, record only) — a clients row redacted while still VALIDATED fails with the generic text
+
+**Found by:** both 656A delta-2 reviewers (below their reporting bar; not reproduced). `ClientsDatasetHandler.commitRow` (655A) has no guard like the one 656A added to `MattersDatasetHandler.commitRow` (D-178 clause, `aClientAnonymisedBetweenValidationAndCommit_failsItsRedactedRowWithTheClientGoneText`). If a VALIDATED clients row is redacted through the `dedup_key` arm of `TakeOnRowRepository.redactForClient` before its batch commits (e.g. the row is keyed by an email another client held and that client is anonymised), the commit most likely throws on the redacted values (e.g. `FicaClientType.valueOf(null)`) and the row fails with `ROW_FAILED_MESSAGE` instead of a fixed specific text. No data or PII damage (the row ends FAILED, values stay redacted). Same bug class as 656A M-1, other slice → reproduce first, separate PR.

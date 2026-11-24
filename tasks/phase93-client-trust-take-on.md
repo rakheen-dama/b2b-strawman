@@ -204,7 +204,7 @@ Root `CLAUDE.md` §7: more than one gap or feature in one PR needs the founder's
 | 653 | Take-On Foundation — Batches, Sources, Rows, Reader, Capabilities, Tab (E1) | Backend + Frontend (together) | — (P-3, P-6 ruled) | XL | 653A (1 verify) | **Done** (PR #1846) |
 | 654 | Mapping and Dry-Run Validation (E2) | built inside 653A | 653 | — | — (in 653A) | |
 | 655 | Clients With FICA Attestation — Commit Engine, Entry Path, Attestation, Review Queue (E3) | Backend + Frontend (together) | 653A | L | 655A, 655B (2 verifies) | **Done** (PR #1850, PR #1851) |
-| 656 | Matters + Go-Live Checklist (E4; E7 checklist) | Backend + Frontend (together) | 655A | M | 656A (1 verify) | |
+| 656 | Matters + Go-Live Checklist (E4; E7 checklist) | Backend + Frontend (together) | 655A | M | 656A (1 verify) || **Done** (PR #1852) |
 | 657 | Trust Opening Position — Registry, Validation and Blocks, Sign-Off and Commit, Report and First Reconciliation (E5) | Backend + Frontend + Portal test | 653A; 656A for 657B | XL | 657A, 657B, 657C, 657D (4 verifies) | 657A **Done** (PR #1847); 657B–657D open |
 | 658 | Debtor Opening Balances — Quiet Issue (E6) | Backend + Frontend (together) | 655A, 656A | M | 658A (1 verify) | |
 | 659 | Frontend Wizard and Go-Live Checklist (E7) | spread across the dataset slices | — | — | — (in 653A, 655A, 656A, 657B–657D, 658A) | |
@@ -312,7 +312,7 @@ Cross-slice facts a builder must not rediscover: `take_on_sign_offs` exists from
 | **1 — Foundation** | 653A (after P-3, P-6) | BE-VERIFY · FE-GATE · E2E-LEGAL · OBS (upload CSV + XLSX, map, validate, cancel/purge) | — |
 | **2 — Trust registry** | 657A **Done** (PR #1847) | BE-VERIFY (registry pins 36, harness) · FE-GATE · E2E-LEGAL + exit-month · OBS | 657A ∥ 655A–656A (independent after 653A) |
 | **3 — Clients** | 655A **Done** (PR #1850) → 655B **Done** (PR #1851) | BE-VERIFY ×2 · FE-GATE ×2 · E2E-LEGAL ×2 · OBS: commit with Mailpit 0, dormancy job, then FICA statuses and the review queue | 655B ∥ 656A |
-| **4 — Matters** | 656A (after P-4) | BE-VERIFY · FE-GATE · E2E-LEGAL · OBS | — |
+| **4 — Matters** | 656A **Done** (PR #1852) | BE-VERIFY · FE-GATE · E2E-LEGAL · OBS | — |
 | **5 — Trust position** | 657B → 657C → 657D (657D after P-5) | BE-VERIFY ×3 · FE-GATE ×3 · PORTAL-GATE (657C) · E2E-LEGAL + exit-month ×3 · OBS: blocks fire, sign-off by the owner, commit, report download, first month reconciled | 658A ∥ 657B–657D (needs only 655A + 656A) |
 | **6 — Debtors** | 658A | BE-VERIFY · FE-GATE · E2E-LEGAL · OBS with Mailpit 0 and no Xero enqueue | — |
 | **7 — Capstone** | 660A | fresh stack: `take-on.spec.ts` + lifecycle + depth-ii + exit-month green; gap report; closure report | Serial, last |
@@ -490,7 +490,7 @@ Merge-conflict hotspots (serial order removes them; a rebase re-greps): `$K/Take
 
 | Slice | Scope | Delivers | Files (est.) main · test · FE | Migration | Verify | PW / OBS | Depends on |
 |-------|-------|----------|-------------------------------|-----------|--------|----------|------------|
-| **656A** | BE: `MattersDatasetHandler` (resolution incl. previous batches' source refs, lifecycle guard, dedup, lead transfer); `take_on_go_live_items` + entity / service / controller; 2 audit events. FE: matters columns, go-live checklist card on the tab | E4 + E7 checklist (bundle, P-4) | **≈ 9 · 5 · 7 = ≈ 21** | tenant, guide V33 → **V34** today (§17.7.5) | **yes** | ✓ E2E-LEGAL; OBS: orphan refused, matters linked, portal project row, checklist acknowledged / withdrawn | 655A, P-4 |
+| **656A** | BE: `MattersDatasetHandler` (resolution incl. previous batches' source refs, lifecycle guard, dedup, lead transfer); `take_on_go_live_items` + entity / service / controller; 2 audit events. FE: matters columns, go-live checklist card on the tab | E4 + E7 checklist (bundle, P-4) | **≈ 9 · 5 · 7 = ≈ 21** | tenant, guide V33 → **V34** today (§17.7.5) | **yes** | ✓ E2E-LEGAL; OBS: orphan refused, matters linked, portal project row, checklist acknowledged / withdrawn | 655A, P-4 · **Done** (PR #1852) |
 
 ### Tasks
 

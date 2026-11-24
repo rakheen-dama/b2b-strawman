@@ -1,7 +1,7 @@
 {
-  "commit": "743c13ade",
-  "command": "cd backend && bash scripts/verify.sh -q (worktree-epic-655B, PR #1851)",
+  "commit": "f5c9478ed",
+  "command": "cd backend && bash scripts/verify.sh (worktree-epic-656A, PR #1852)",
   "exit": 0,
-  "ts": "2026-11-24T02:26:57Z",
-  "summary": "PR #1851 @743c13ade — 7978 <testcase> / 0 failures / 0 errors / 55 skipped (surefire XML), started 01:57:21Z"
+  "ts": "2026-11-24T05:03:03Z",
+  "summary": "PR #1852 @f5c9478ed — 8005 <testcase> / 0 failures / 0 errors / 55 skipped (surefire+failsafe XML), BUILD SUCCESS 29:30 min; Backend CI pass @f5c9478ed (29m48s)"
 }

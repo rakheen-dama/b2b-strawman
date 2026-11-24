@@ -1,7 +1,7 @@
 {
-  "commit": "5eb996c5c",
-  "command": "cd frontend && rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (worktree-epic-655B, PR #1851, nvm node v20.11.1)",
+  "commit": "580ae0388",
+  "command": "cd frontend && pnpm format && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (worktree-epic-656A, PR #1852, nvm node v20.11.1; fixer run)",
   "exit": 0,
-  "ts": "2026-11-24T02:27:32Z",
-  "summary": "PR #1851 @5eb996c5c — lint ok, typecheck ok, format clean, vitest 495 files / 4798 passed / 2 skipped, build ok (fixer run); 743c13ade adds qa_cycle/ evidence only; Frontend CI pass @743c13ade"
+  "ts": "2026-11-24T04:20:00Z",
+  "summary": "PR #1852 @580ae0388 — lint ok, typecheck ok, format clean, vitest 497 files / 4811 passed / 2 skipped, build ok; later commits (d616cd32d, 79b0474e1, f5c9478ed) touch backend + qa_cycle/ + tasks/ only; Frontend CI pass @f5c9478ed"
 }

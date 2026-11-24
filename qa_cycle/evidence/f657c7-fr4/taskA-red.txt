@@ -1,0 +1,871 @@
+
+ RUN  v4.1.5 /Users/rakheendama/Projects/2026/wt-f657c7-fr4/frontend
+
+ ❯ __tests__/owner-only-grant-actions.test.ts (4 tests | 3 failed) 8ms
+     × createRoleAction 5ms
+     × updateRoleAction 1ms
+     × assignMemberRole 1ms
+ ❯ __tests__/owner-only-capability-grants.test.tsx (9 tests | 8 failed) 507ms
+     × a non-owner sees the owner-only capability disabled, with the hint 77ms
+     × a non-owner editing an owner-made role keeps the owner-only capability unchanged 39ms
+     × a non-owner cannot pick a role holding an owner-only capability, and sees the hint 57ms
+     × a non-owner cannot toggle an owner-only override, and sees the hint 35ms
+     × the owner can pick the role and toggle the override; no hint 54ms
+     × a non-owner cannot pick a role holding an owner-only capability, and sees the hint 42ms
+     × a non-owner cannot add an owner-only capability when customizing 34ms
+     × the owner can pick the role; no hint 29ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 11 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  __tests__/owner-only-capability-grants.test.tsx > RoleDialog — owner-only capabilities > a non-owner sees the owner-only capability disabled, with the hint
+Error: [2mexpect([22m[31melement[39m[2m).toBeDisabled()[22m
+
+Received element is not disabled:
+  [31m<button
+  aria-checked="false"
+  aria-label="Sign off trust take-on"
+  class="peer border-input dark:bg-input/30 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground dark:data-[state=checked]:bg-primary data-[state=checked]:border-primary focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive size-4 shrink-0 rounded-[4px] border shadow-xs transition-shadow outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50"
+  data-slot="checkbox"
+  data-state="unchecked"
+  role="checkbox"
+  type="button"
+  value="on"
+/>[39m
+ ❯ __tests__/owner-only-capability-grants.test.tsx:112:21
+    110|
+    111|     const signOff = screen.getByRole("checkbox", { name: SIGN_OFF_LABE…
+    112|     expect(signOff).toBeDisabled();
+       |                     ^
+    113|     expect(signOff).toHaveAttribute("data-testid", `role-capability-${…
+    114|     expect(screen.getByTestId(`owner-only-hint-${SIGN_OFF}`)).toHaveTe…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/11]⎯
+
+ FAIL  __tests__/owner-only-capability-grants.test.tsx > RoleDialog — owner-only capabilities > a non-owner editing an owner-made role keeps the owner-only capability unchanged
+Error: [2mexpect([22m[31melement[39m[2m).toBeDisabled()[22m
+
+Received element is not disabled:
+  [31m<button
+  aria-checked="true"
+  aria-label="Sign off trust take-on"
+  class="peer border-input dark:bg-input/30 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground dark:data-[state=checked]:bg-primary data-[state=checked]:border-primary focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive size-4 shrink-0 rounded-[4px] border shadow-xs transition-shadow outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50"
+  data-slot="checkbox"
+  data-state="checked"
+  role="checkbox"
+  type="button"
+  value="on"
+/>[39m
+ ❯ __tests__/owner-only-capability-grants.test.tsx:125:21
+    123|
+    124|     const signOff = screen.getByRole("checkbox", { name: SIGN_OFF_LABE…
+    125|     expect(signOff).toBeDisabled();
+       |                     ^
+    126|     expect(signOff).toHaveAttribute("data-state", "checked");
+    127|     await user.click(signOff);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/11]⎯
+
+ FAIL  __tests__/owner-only-capability-grants.test.tsx > MemberDetailPanel — owner-only capabilities > a non-owner cannot pick a role holding an owner-only capability, and sees the hint
+TestingLibraryElementError: Unable to find an element by: [data-testid="role-option-role-partner"]
+
+Ignored nodes: comments, script, style
+[36m<body[39m
+  [33mdata-scroll-locked[39m=[32m"2"[39m
+  [33mstyle[39m=[32m"pointer-events: none;"[39m
+[36m>[39m
+  [36m<span[39m
+    [33maria-hidden[39m=[32m"true"[39m
+    [33mdata-aria-hidden[39m=[32m"true"[39m
+    [33mdata-radix-focus-guard[39m=[32m""[39m
+    [33mstyle[39m=[32m"opacity: 0; position: fixed; pointer-events: none; outline-color: none; outline-style: none; outline-width: initial;"[39m
+    [33mtabindex[39m=[32m"0"[39m
+  [36m/>[39m
+  [36m<div[39m
+    [33maria-hidden[39m=[32m"true"[39m
+    [33mdata-aria-hidden[39m=[32m"true"[39m
+  [36m/>[39m
+  [36m<div[39m
+    [33maria-hidden[39m=[32m"true"[39m
+    [33mclass[39m=[32m"data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/50"[39m
+    [33mdata-aria-hidden[39m=[32m"true"[39m
+    [33mdata-slot[39m=[32m"sheet-overlay"[39m
+    [33mdata-state[39m=[32m"open"[39m
+    [33mstyle[39m=[32m"pointer-events: auto;"[39m
+  [36m/>[39m
+  [36m<div[39m
+    [33maria-describedby[39m=[32m"radix-_r_b_"[39m
+    [33maria-hidden[39m=[32m"true"[39m
+    [33maria-labelledby[39m=[32m"radix-_r_a_"[39m
+    [33mclass[39m=[32m"bg-background data-[state=open]:animate-in data-[state=closed]:animate-out fixed z-50 shadow-lg transition ease-in-out data-[state=closed]:duration-300 data-[state=open]:duration-500 data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right inset-y-0 right-0 h-full border-l flex w-full flex-col gap-0 overflow-y-auto p-0 sm:max-w-md"[39m
+    [33mdata-aria-hidden[39m=[32m"true"[39m
+    [33mdata-slot[39m=[32m"sheet-content"[39m
+    [33mdata-state[39m=[32m"open"[39m
+    [33mid[39m=[32m"radix-_r_9_"[39m
+    [33mrole[39m=[32m"dialog"[39m
+    [33mstyle[39m=[32m"pointer-events: none;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+  [36m>[39m
+    [36m<h2[39m
+      [33mclass[39m=[32m"text-foreground font-semibold sr-only"[39m
+      [33mdata-slot[39m=[32m"sheet-title"[39m
+      [33mid[39m=[32m"radix-_r_a_"[39m
+    [36m>[39m
+      [0mMember Detail[0m
+    [36m</h2>[39m
+    [36m<p[39m
+      [33mclass[39m=[32m"text-muted-foreground text-sm sr-only"[39m
+      [33mdata-slot[39m=[32m"sheet-description"[39m
+      [33mid[39m=[32m"radix-_r_b_"[39m
+    [36m>[39m
+      [0mMember role and capability management.[0m
+    [36m</p>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"flex items-start justify-between gap-4 border-b border-slate-200 px-6 py-4 dark:border-slate-800"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"min-w-0 flex-1"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-base leading-snug font-semibold text-slate-950 dark:text-slate-50"[39m
+        [36m>[39m
+          [0mThandi[0m
+        [36m</h2>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-0.5 text-sm text-slate-500 dark:text-slate-400"[39m
+        [36m>[39m
+          [0mthandi@test.com[0m
+        [36m</p>[39m
+      [36m</div>[39m
+      [36m<button[39m
+        [33maria-label[39m=[32m"Close"[39m
+        [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive text-slate-700 hover:bg-slate-100 hover:text-slate-950 rounded-md dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100 size-9 shrink-0"[39m
+        [33mdata-size[39m=[32m"icon"[39m
+        [33mdata-slot[39m=[32m"sheet-close"[39m
+        [33mdata-variant[39m=[32m"ghost"[39m
+        [33mtype[39m=[32m"button"[39m
+      [36m>[39m
+        [36m<svg[39m
+          [33maria-hidden[39m=[32m"true"[39m
+          [33mclass[39m=[32m"lucide lucide-x size-4"[39m
+          [33mfill[39m=[32m"none"[39m
+          [33mheight[39m=[32m"24"[39m
+          [33mstroke[39m=[32m"currentColor"[39m
+          [33mstroke-linecap[39m=[32m"round"[39m
+          [33mstroke-linejoin[39m=[32m"round"[39m
+          [33mstroke-width[39m=[32m"2"[39m
+          [33mviewBox[39m=[32m"0 0 24 24"[39m
+          [33mwidth[39m=[32m"24"[39m
+          [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+        [36m>[39m
+          [36m<path[39m
+            [33md[39m=[32m"M18 6 6 18"[39m
+          [36m/>[39m
+          [36m<path[39m
+            [33md[39m=[32m"m6 6 12 12"[39m
+          [36m/>[39m
+        [36m</svg>[39m
+      [36m</button>[39m
+    [36m</div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"border-b border-slate-200 px-6 py-4 dark:border-slate-800"[39m
+    [36m>[39m
+      [36m<label[39m
+        [33mclass[39m=[32m"items-center gap-2 select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50 mb-2 block text-sm font-medium"[39m
+        [33mdata-slot[39m=[32m"label"[39m
+      [36m>[39m
+        [0mRole[0m
+      [36m</label>[39m
+      [36m<button[39m
+        [33maria-autocomplete[39m=[32m"none"[39m
+        [33maria-controls[39m=[32m"radix-_r_c_"[39m
+        [33maria-expanded[39m=[32m"true"[39m
+        [33mclass[39m=[32m"border-input data-[placeholder]:text-muted-foreground [&_svg:not([class*='text-'])]:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 dark:hover:bg-input/50 flex items-center justify-between gap-2 rounded-md border bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 data-[size=default]:h-9 data-[size=sm]:h-8 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 h-9 w-full"[39m
+        [33mdata-size[39m=[32m"default"[39m
+        [33mdata-slot[39m=[32m"select-trigger"[39m
+        [33mdata-state[39m=[32m"open"[39m
+        [33mdir[39m=[32m"ltr"[39m
+        [33mrole[39m=[32m"combobox"[39m
+        [33mtype[39m=[32m"button"[39m
+      [36m>[39m
+        [36m<span[39m
+          [33mdata-slot[39m=[32m"select-value"[39m
+          [33mstyle[39m=[32m"pointer-events: none;"[39m
+        [36m>[39m
+          [0mBookkeeper[0m
+        [36m</span>[39m
+        [36m<svg[39m
+          [33maria-hidden[39m=[32...
+ ❯ Object.getElementError ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ __tests__/owner-only-capability-grants.test.tsx:188:34
+    186|
+    187|     await user.click(screen.getByRole("combobox"));
+    188|     const partnerOption = screen.getByTestId("role-option-role-partner…
+       |                                  ^
+    189|     expect(partnerOption).toHaveAttribute("aria-disabled", "true");
+    190|     expect(screen.getByTestId("owner-only-role-hint-role-partner")).to…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/11]⎯
+
+ FAIL  __tests__/owner-only-capability-grants.test.tsx > MemberDetailPanel — owner-only capabilities > a non-owner cannot toggle an owner-only override, and sees the hint
+Error: [2mexpect([22m[31melement[39m[2m).toBeDisabled()[22m
+
+Received element is not disabled:
+  [31m<button
+  aria-checked="false"
+  aria-label="Sign off trust take-on"
+  class="peer border-input dark:bg-input/30 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground dark:data-[state=checked]:bg-primary data-[state=checked]:border-primary focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive size-4 shrink-0 rounded-[4px] border shadow-xs transition-shadow outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50"
+  data-slot="checkbox"
+  data-state="unchecked"
+  role="checkbox"
+  type="button"
+  value="on"
+/>[39m
+ ❯ __tests__/owner-only-capability-grants.test.tsx:202:21
+    200|
+    201|     const signOff = screen.getByRole("checkbox", { name: SIGN_OFF_LABE…
+    202|     expect(signOff).toBeDisabled();
+       |                     ^
+    203|     expect(signOff).toHaveAttribute("data-testid", `member-capability-…
+    204|     expect(screen.getByTestId(`owner-only-hint-${SIGN_OFF}`)).toHaveTe…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/11]⎯
+
+ FAIL  __tests__/owner-only-capability-grants.test.tsx > MemberDetailPanel — owner-only capabilities > the owner can pick the role and toggle the override; no hint
+TestingLibraryElementError: Unable to find an element by: [data-testid="role-option-role-partner"]
+
+Ignored nodes: comments, script, style
+[36m<body[39m
+  [33mdata-scroll-locked[39m=[32m"2"[39m
+  [33mstyle[39m=[32m"pointer-events: none;"[39m
+[36m>[39m
+  [36m<span[39m
+    [33maria-hidden[39m=[32m"true"[39m
+    [33mdata-aria-hidden[39m=[32m"true"[39m
+    [33mdata-radix-focus-guard[39m=[32m""[39m
+    [33mstyle[39m=[32m"opacity: 0; position: fixed; pointer-events: none; outline-color: none; outline-style: none; outline-width: initial;"[39m
+    [33mtabindex[39m=[32m"0"[39m
+  [36m/>[39m
+  [36m<div[39m
+    [33maria-hidden[39m=[32m"true"[39m
+    [33mdata-aria-hidden[39m=[32m"true"[39m
+  [36m/>[39m
+  [36m<div[39m
+    [33maria-hidden[39m=[32m"true"[39m
+    [33mclass[39m=[32m"data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/50"[39m
+    [33mdata-aria-hidden[39m=[32m"true"[39m
+    [33mdata-slot[39m=[32m"sheet-overlay"[39m
+    [33mdata-state[39m=[32m"open"[39m
+    [33mstyle[39m=[32m"pointer-events: auto;"[39m
+  [36m/>[39m
+  [36m<div[39m
+    [33maria-describedby[39m=[32m"radix-_r_s_"[39m
+    [33maria-hidden[39m=[32m"true"[39m
+    [33maria-labelledby[39m=[32m"radix-_r_r_"[39m
+    [33mclass[39m=[32m"bg-background data-[state=open]:animate-in data-[state=closed]:animate-out fixed z-50 shadow-lg transition ease-in-out data-[state=closed]:duration-300 data-[state=open]:duration-500 data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right inset-y-0 right-0 h-full border-l flex w-full flex-col gap-0 overflow-y-auto p-0 sm:max-w-md"[39m
+    [33mdata-aria-hidden[39m=[32m"true"[39m
+    [33mdata-slot[39m=[32m"sheet-content"[39m
+    [33mdata-state[39m=[32m"open"[39m
+    [33mid[39m=[32m"radix-_r_q_"[39m
+    [33mrole[39m=[32m"dialog"[39m
+    [33mstyle[39m=[32m"pointer-events: none;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+  [36m>[39m
+    [36m<h2[39m
+      [33mclass[39m=[32m"text-foreground font-semibold sr-only"[39m
+      [33mdata-slot[39m=[32m"sheet-title"[39m
+      [33mid[39m=[32m"radix-_r_r_"[39m
+    [36m>[39m
+      [0mMember Detail[0m
+    [36m</h2>[39m
+    [36m<p[39m
+      [33mclass[39m=[32m"text-muted-foreground text-sm sr-only"[39m
+      [33mdata-slot[39m=[32m"sheet-description"[39m
+      [33mid[39m=[32m"radix-_r_s_"[39m
+    [36m>[39m
+      [0mMember role and capability management.[0m
+    [36m</p>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"flex items-start justify-between gap-4 border-b border-slate-200 px-6 py-4 dark:border-slate-800"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"min-w-0 flex-1"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-base leading-snug font-semibold text-slate-950 dark:text-slate-50"[39m
+        [36m>[39m
+          [0mThandi[0m
+        [36m</h2>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-0.5 text-sm text-slate-500 dark:text-slate-400"[39m
+        [36m>[39m
+          [0mthandi@test.com[0m
+        [36m</p>[39m
+      [36m</div>[39m
+      [36m<button[39m
+        [33maria-label[39m=[32m"Close"[39m
+        [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive text-slate-700 hover:bg-slate-100 hover:text-slate-950 rounded-md dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100 size-9 shrink-0"[39m
+        [33mdata-size[39m=[32m"icon"[39m
+        [33mdata-slot[39m=[32m"sheet-close"[39m
+        [33mdata-variant[39m=[32m"ghost"[39m
+        [33mtype[39m=[32m"button"[39m
+      [36m>[39m
+        [36m<svg[39m
+          [33maria-hidden[39m=[32m"true"[39m
+          [33mclass[39m=[32m"lucide lucide-x size-4"[39m
+          [33mfill[39m=[32m"none"[39m
+          [33mheight[39m=[32m"24"[39m
+          [33mstroke[39m=[32m"currentColor"[39m
+          [33mstroke-linecap[39m=[32m"round"[39m
+          [33mstroke-linejoin[39m=[32m"round"[39m
+          [33mstroke-width[39m=[32m"2"[39m
+          [33mviewBox[39m=[32m"0 0 24 24"[39m
+          [33mwidth[39m=[32m"24"[39m
+          [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+        [36m>[39m
+          [36m<path[39m
+            [33md[39m=[32m"M18 6 6 18"[39m
+          [36m/>[39m
+          [36m<path[39m
+            [33md[39m=[32m"m6 6 12 12"[39m
+          [36m/>[39m
+        [36m</svg>[39m
+      [36m</button>[39m
+    [36m</div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"border-b border-slate-200 px-6 py-4 dark:border-slate-800"[39m
+    [36m>[39m
+      [36m<label[39m
+        [33mclass[39m=[32m"items-center gap-2 select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50 mb-2 block text-sm font-medium"[39m
+        [33mdata-slot[39m=[32m"label"[39m
+      [36m>[39m
+        [0mRole[0m
+      [36m</label>[39m
+      [36m<button[39m
+        [33maria-autocomplete[39m=[32m"none"[39m
+        [33maria-controls[39m=[32m"radix-_r_t_"[39m
+        [33maria-expanded[39m=[32m"true"[39m
+        [33mclass[39m=[32m"border-input data-[placeholder]:text-muted-foreground [&_svg:not([class*='text-'])]:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 dark:hover:bg-input/50 flex items-center justify-between gap-2 rounded-md border bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 data-[size=default]:h-9 data-[size=sm]:h-8 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 h-9 w-full"[39m
+        [33mdata-size[39m=[32m"default"[39m
+        [33mdata-slot[39m=[32m"select-trigger"[39m
+        [33mdata-state[39m=[32m"open"[39m
+        [33mdir[39m=[32m"ltr"[39m
+        [33mrole[39m=[32m"combobox"[39m
+        [33mtype[39m=[32m"button"[39m
+      [36m>[39m
+        [36m<span[39m
+          [33mdata-slot[39m=[32m"select-value"[39m
+          [33mstyle[39m=[32m"pointer-events: none;"[39m
+        [36m>[39m
+          [0mBookkeeper[0m
+        [36m</span>[39m
+        [36m<svg[39m
+          [33maria-hidden[39m=[32...
+ ❯ Object.getElementError ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ __tests__/owner-only-capability-grants.test.tsx:216:19
+    214|     expect(screen.queryByTestId(`owner-only-hint-${SIGN_OFF}`)).not.to…
+    215|     await user.click(screen.getByRole("combobox"));
+    216|     expect(screen.getByTestId("role-option-role-partner")).not.toHaveA…
+       |                   ^
+    217|       "aria-disabled",
+    218|       "true"
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/11]⎯
+
+ FAIL  __tests__/owner-only-capability-grants.test.tsx > InviteMemberForm — owner-only capabilities > a non-owner cannot pick a role holding an owner-only capability, and sees the hint
+TestingLibraryElementError: Unable to find an element by: [data-testid="role-option-role-partner"]
+
+Ignored nodes: comments, script, style
+[36m<body[39m
+  [33mdata-scroll-locked[39m=[32m"1"[39m
+  [33mstyle[39m=[32m"pointer-events: none;"[39m
+[36m>[39m
+  [36m<span[39m
+    [33maria-hidden[39m=[32m"true"[39m
+    [33mdata-aria-hidden[39m=[32m"true"[39m
+    [33mdata-radix-focus-guard[39m=[32m""[39m
+    [33mstyle[39m=[32m"opacity: 0; position: fixed; pointer-events: none; outline-color: none; outline-style: none; outline-width: initial;"[39m
+    [33mtabindex[39m=[32m"0"[39m
+  [36m/>[39m
+  [36m<div[39m
+    [33maria-hidden[39m=[32m"true"[39m
+    [33mdata-aria-hidden[39m=[32m"true"[39m
+  [36m>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-4"[39m
+    [36m>[39m
+      [36m<form[39m
+        [33mclass[39m=[32m"flex flex-col gap-3 sm:flex-row sm:items-end"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex-1 space-y-1.5"[39m
+          [33mdata-slot[39m=[32m"form-item"[39m
+        [36m>[39m
+          [36m<label[39m
+            [33mclass[39m=[32m"flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50"[39m
+            [33mdata-slot[39m=[32m"label"[39m
+            [33mfor[39m=[32m"_r_14_-form-item"[39m
+          [36m>[39m
+            [0mEmail address[0m
+          [36m</label>[39m
+          [36m<input[39m
+            [33maria-describedby[39m=[32m"_r_14_-form-item-description"[39m
+            [33maria-invalid[39m=[32m"false"[39m
+            [33mclass[39m=[32m"file:text-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 h-9 w-full min-w-0 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-base transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-slate-400 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm dark:border-slate-700 focus-visible:border-slate-400 focus-visible:ring-[3px] focus-visible:ring-slate-500/30 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive"[39m
+            [33mdata-slot[39m=[32m"form-control"[39m
+            [33mdata-testid[39m=[32m"invite-email-input"[39m
+            [33mid[39m=[32m"_r_14_-form-item"[39m
+            [33mname[39m=[32m"emailAddress"[39m
+            [33mplaceholder[39m=[32m"colleague@company.com"[39m
+            [33mtype[39m=[32m"email"[39m
+            [33mvalue[39m=[32m""[39m
+          [36m/>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"space-y-1.5"[39m
+          [33mdata-slot[39m=[32m"form-item"[39m
+        [36m>[39m
+          [36m<label[39m
+            [33mclass[39m=[32m"flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50"[39m
+            [33mdata-slot[39m=[32m"label"[39m
+            [33mfor[39m=[32m"_r_15_-form-item"[39m
+          [36m>[39m
+            [0mRole[0m
+          [36m</label>[39m
+          [36m<button[39m
+            [33maria-autocomplete[39m=[32m"none"[39m
+            [33maria-controls[39m=[32m"radix-_r_16_"[39m
+            [33maria-expanded[39m=[32m"true"[39m
+            [33mclass[39m=[32m"border-input data-[placeholder]:text-muted-foreground [&_svg:not([class*='text-'])]:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 dark:hover:bg-input/50 flex items-center justify-between gap-2 rounded-md border bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 data-[size=default]:h-9 data-[size=sm]:h-8 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 h-9 w-full min-w-[140px]"[39m
+            [33mdata-size[39m=[32m"default"[39m
+            [33mdata-slot[39m=[32m"select-trigger"[39m
+            [33mdata-state[39m=[32m"open"[39m
+            [33mdata-testid[39m=[32m"role-select"[39m
+            [33mdir[39m=[32m"ltr"[39m
+            [33mrole[39m=[32m"combobox"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mdata-slot[39m=[32m"select-value"[39m
+              [33mstyle[39m=[32m"pointer-events: none;"[39m
+            [36m>[39m
+              [0mMember[0m
+            [36m</span>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-down size-4 opacity-50"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m6 9 6 6 6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</button>[39m
+          [36m<select[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mstyle[39m=[32m"position: absolute; border: 0px; width: 1px; height: 1px; padding: 0px; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; word-wrap: normal;"[39m
+            [33mtabindex[39m=[32m"-1"[39m
+          [36m>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"system:member"[39m
+            [36m>[39m
+              [0mMember[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"system:admin"[39m
+            [36m>[39m
+              [0mAdmin[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"role-bookkeeper"[39m
+            [36m>[39m
+              [0mBookkeeper[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"role-partner"[39m
+            [36m>[39m
+              [0mPartner[0m
+            [36m</option>[39m
+          [36m</select>[39m
+          [36m<input[39m
+            [33mdata-testid[39m=[32m"role-hidden"[39m
+            ...
+ ❯ Object.getElementError ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ __tests__/owner-only-capability-grants.test.tsx:234:19
+    232|
+    233|     await user.click(screen.getByRole("combobox"));
+    234|     expect(screen.getByTestId("role-option-role-partner")).toHaveAttri…
+       |                   ^
+    235|     expect(screen.getByTestId("owner-only-role-hint-role-partner")).to…
+    236|     expect(screen.getByTestId("role-option-role-bookkeeper")).not.toHa…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/11]⎯
+
+ FAIL  __tests__/owner-only-capability-grants.test.tsx > InviteMemberForm — owner-only capabilities > a non-owner cannot add an owner-only capability when customizing
+TestingLibraryElementError: Unable to find an element by: [data-testid="role-option-role-bookkeeper"]
+
+Ignored nodes: comments, script, style
+[36m<body[39m
+  [33mdata-scroll-locked[39m=[32m"1"[39m
+  [33mstyle[39m=[32m"pointer-events: none;"[39m
+[36m>[39m
+  [36m<span[39m
+    [33maria-hidden[39m=[32m"true"[39m
+    [33mdata-aria-hidden[39m=[32m"true"[39m
+    [33mdata-radix-focus-guard[39m=[32m""[39m
+    [33mstyle[39m=[32m"opacity: 0; position: fixed; pointer-events: none; outline-color: none; outline-style: none; outline-width: initial;"[39m
+    [33mtabindex[39m=[32m"0"[39m
+  [36m/>[39m
+  [36m<div[39m
+    [33maria-hidden[39m=[32m"true"[39m
+    [33mdata-aria-hidden[39m=[32m"true"[39m
+  [36m>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-4"[39m
+    [36m>[39m
+      [36m<form[39m
+        [33mclass[39m=[32m"flex flex-col gap-3 sm:flex-row sm:items-end"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex-1 space-y-1.5"[39m
+          [33mdata-slot[39m=[32m"form-item"[39m
+        [36m>[39m
+          [36m<label[39m
+            [33mclass[39m=[32m"flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50"[39m
+            [33mdata-slot[39m=[32m"label"[39m
+            [33mfor[39m=[32m"_r_1j_-form-item"[39m
+          [36m>[39m
+            [0mEmail address[0m
+          [36m</label>[39m
+          [36m<input[39m
+            [33maria-describedby[39m=[32m"_r_1j_-form-item-description"[39m
+            [33maria-invalid[39m=[32m"false"[39m
+            [33mclass[39m=[32m"file:text-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 h-9 w-full min-w-0 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-base transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-slate-400 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm dark:border-slate-700 focus-visible:border-slate-400 focus-visible:ring-[3px] focus-visible:ring-slate-500/30 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive"[39m
+            [33mdata-slot[39m=[32m"form-control"[39m
+            [33mdata-testid[39m=[32m"invite-email-input"[39m
+            [33mid[39m=[32m"_r_1j_-form-item"[39m
+            [33mname[39m=[32m"emailAddress"[39m
+            [33mplaceholder[39m=[32m"colleague@company.com"[39m
+            [33mtype[39m=[32m"email"[39m
+            [33mvalue[39m=[32m""[39m
+          [36m/>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"space-y-1.5"[39m
+          [33mdata-slot[39m=[32m"form-item"[39m
+        [36m>[39m
+          [36m<label[39m
+            [33mclass[39m=[32m"flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50"[39m
+            [33mdata-slot[39m=[32m"label"[39m
+            [33mfor[39m=[32m"_r_1k_-form-item"[39m
+          [36m>[39m
+            [0mRole[0m
+          [36m</label>[39m
+          [36m<button[39m
+            [33maria-autocomplete[39m=[32m"none"[39m
+            [33maria-controls[39m=[32m"radix-_r_1l_"[39m
+            [33maria-expanded[39m=[32m"true"[39m
+            [33mclass[39m=[32m"border-input data-[placeholder]:text-muted-foreground [&_svg:not([class*='text-'])]:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 dark:hover:bg-input/50 flex items-center justify-between gap-2 rounded-md border bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 data-[size=default]:h-9 data-[size=sm]:h-8 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 h-9 w-full min-w-[140px]"[39m
+            [33mdata-size[39m=[32m"default"[39m
+            [33mdata-slot[39m=[32m"select-trigger"[39m
+            [33mdata-state[39m=[32m"open"[39m
+            [33mdata-testid[39m=[32m"role-select"[39m
+            [33mdir[39m=[32m"ltr"[39m
+            [33mrole[39m=[32m"combobox"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mdata-slot[39m=[32m"select-value"[39m
+              [33mstyle[39m=[32m"pointer-events: none;"[39m
+            [36m>[39m
+              [0mMember[0m
+            [36m</span>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-down size-4 opacity-50"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m6 9 6 6 6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</button>[39m
+          [36m<select[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mstyle[39m=[32m"position: absolute; border: 0px; width: 1px; height: 1px; padding: 0px; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; word-wrap: normal;"[39m
+            [33mtabindex[39m=[32m"-1"[39m
+          [36m>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"system:member"[39m
+            [36m>[39m
+              [0mMember[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"system:admin"[39m
+            [36m>[39m
+              [0mAdmin[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"role-bookkeeper"[39m
+            [36m>[39m
+              [0mBookkeeper[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"role-partner"[39m
+            [36m>[39m
+              [0mPartner[0m
+            [36m</option>[39m
+          [36m</select>[39m
+          [36m<input[39m
+            [33mdata-testid[39m=[32m"role-hidden"[39m
+            ...
+ ❯ Object.getElementError ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ __tests__/owner-only-capability-grants.test.tsx:247:29
+    245|
+    246|     await user.click(screen.getByRole("combobox"));
+    247|     await user.click(screen.getByTestId("role-option-role-bookkeeper")…
+       |                             ^
+    248|     await user.click(screen.getByText("Customize for this user"));
+    249|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/11]⎯
+
+ FAIL  __tests__/owner-only-capability-grants.test.tsx > InviteMemberForm — owner-only capabilities > the owner can pick the role; no hint
+TestingLibraryElementError: Unable to find an element by: [data-testid="role-option-role-partner"]
+
+Ignored nodes: comments, script, style
+[36m<body[39m
+  [33mdata-scroll-locked[39m=[32m"1"[39m
+  [33mstyle[39m=[32m"pointer-events: none;"[39m
+[36m>[39m
+  [36m<span[39m
+    [33maria-hidden[39m=[32m"true"[39m
+    [33mdata-aria-hidden[39m=[32m"true"[39m
+    [33mdata-radix-focus-guard[39m=[32m""[39m
+    [33mstyle[39m=[32m"opacity: 0; position: fixed; pointer-events: none; outline-color: none; outline-style: none; outline-width: initial;"[39m
+    [33mtabindex[39m=[32m"0"[39m
+  [36m/>[39m
+  [36m<div[39m
+    [33maria-hidden[39m=[32m"true"[39m
+    [33mdata-aria-hidden[39m=[32m"true"[39m
+  [36m>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-4"[39m
+    [36m>[39m
+      [36m<form[39m
+        [33mclass[39m=[32m"flex flex-col gap-3 sm:flex-row sm:items-end"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex-1 space-y-1.5"[39m
+          [33mdata-slot[39m=[32m"form-item"[39m
+        [36m>[39m
+          [36m<label[39m
+            [33mclass[39m=[32m"flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50"[39m
+            [33mdata-slot[39m=[32m"label"[39m
+            [33mfor[39m=[32m"_r_22_-form-item"[39m
+          [36m>[39m
+            [0mEmail address[0m
+          [36m</label>[39m
+          [36m<input[39m
+            [33maria-describedby[39m=[32m"_r_22_-form-item-description"[39m
+            [33maria-invalid[39m=[32m"false"[39m
+            [33mclass[39m=[32m"file:text-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 h-9 w-full min-w-0 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-base transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-slate-400 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm dark:border-slate-700 focus-visible:border-slate-400 focus-visible:ring-[3px] focus-visible:ring-slate-500/30 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive"[39m
+            [33mdata-slot[39m=[32m"form-control"[39m
+            [33mdata-testid[39m=[32m"invite-email-input"[39m
+            [33mid[39m=[32m"_r_22_-form-item"[39m
+            [33mname[39m=[32m"emailAddress"[39m
+            [33mplaceholder[39m=[32m"colleague@company.com"[39m
+            [33mtype[39m=[32m"email"[39m
+            [33mvalue[39m=[32m""[39m
+          [36m/>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"space-y-1.5"[39m
+          [33mdata-slot[39m=[32m"form-item"[39m
+        [36m>[39m
+          [36m<label[39m
+            [33mclass[39m=[32m"flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50"[39m
+            [33mdata-slot[39m=[32m"label"[39m
+            [33mfor[39m=[32m"_r_23_-form-item"[39m
+          [36m>[39m
+            [0mRole[0m
+          [36m</label>[39m
+          [36m<button[39m
+            [33maria-autocomplete[39m=[32m"none"[39m
+            [33maria-controls[39m=[32m"radix-_r_24_"[39m
+            [33maria-expanded[39m=[32m"true"[39m
+            [33mclass[39m=[32m"border-input data-[placeholder]:text-muted-foreground [&_svg:not([class*='text-'])]:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 dark:hover:bg-input/50 flex items-center justify-between gap-2 rounded-md border bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 data-[size=default]:h-9 data-[size=sm]:h-8 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 h-9 w-full min-w-[140px]"[39m
+            [33mdata-size[39m=[32m"default"[39m
+            [33mdata-slot[39m=[32m"select-trigger"[39m
+            [33mdata-state[39m=[32m"open"[39m
+            [33mdata-testid[39m=[32m"role-select"[39m
+            [33mdir[39m=[32m"ltr"[39m
+            [33mrole[39m=[32m"combobox"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mdata-slot[39m=[32m"select-value"[39m
+              [33mstyle[39m=[32m"pointer-events: none;"[39m
+            [36m>[39m
+              [0mMember[0m
+            [36m</span>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-down size-4 opacity-50"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m6 9 6 6 6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</button>[39m
+          [36m<select[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mstyle[39m=[32m"position: absolute; border: 0px; width: 1px; height: 1px; padding: 0px; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; word-wrap: normal;"[39m
+            [33mtabindex[39m=[32m"-1"[39m
+          [36m>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"system:member"[39m
+            [36m>[39m
+              [0mMember[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"system:admin"[39m
+            [36m>[39m
+              [0mAdmin[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"role-bookkeeper"[39m
+            [36m>[39m
+              [0mBookkeeper[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"role-partner"[39m
+            [36m>[39m
+              [0mPartner[0m
+            [36m</option>[39m
+          [36m</select>[39m
+          [36m<input[39m
+            [33mdata-testid[39m=[32m"role-hidden"[39m
+            ...
+ ❯ Object.getElementError ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ __tests__/owner-only-capability-grants.test.tsx:261:19
+    259|
+    260|     await user.click(screen.getByRole("combobox"));
+    261|     expect(screen.getByTestId("role-option-role-partner")).not.toHaveA…
+       |                   ^
+    262|       "aria-disabled",
+    263|       "true"
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/11]⎯
+
+ FAIL  __tests__/owner-only-grant-actions.test.ts > owner-only grant refusals surface the ProblemDetail detail > createRoleAction
+AssertionError: expected { success: false, …(1) } to deeply equal { success: false, …(1) }
+
+- Expected
++ Received
+
+  {
+-   "error": "Only the owner can create a role holding an owner-only capability: SIGN_OFF_TRUST_TAKE_ON.",
++   "error": "You do not have permission to create roles.",
+    "success": false,
+  }
+
+ ❯ __tests__/owner-only-grant-actions.test.ts:67:20
+     65|     });
+     66|
+     67|     expect(result).toEqual({ success: false, error: detail });
+       |                    ^
+     68|   });
+     69|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/11]⎯
+
+ FAIL  __tests__/owner-only-grant-actions.test.ts > owner-only grant refusals surface the ProblemDetail detail > updateRoleAction
+AssertionError: expected { success: false, …(1) } to deeply equal { success: false, …(1) }
+
+- Expected
++ Received
+
+  {
+-   "error": "Only the owner can add an owner-only capability to a role: SIGN_OFF_TRUST_TAKE_ON.",
++   "error": "You do not have permission to update roles.",
+    "success": false,
+  }
+
+ ❯ __tests__/owner-only-grant-actions.test.ts:79:20
+     77|     });
+     78|
+     79|     expect(result).toEqual({ success: false, error: detail });
+       |                    ^
+     80|   });
+     81|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/11]⎯
+
+ FAIL  __tests__/owner-only-grant-actions.test.ts > owner-only grant refusals surface the ProblemDetail detail > assignMemberRole
+AssertionError: expected { success: false, …(1) } to deeply equal { success: false, …(1) }
+
+- Expected
++ Received
+
+  {
+-   "error": "Only the owner can assign a role holding an owner-only capability: SIGN_OFF_TRUST_TAKE_ON.",
++   "error": "You do not have permission to change this member's role.",
+    "success": false,
+  }
+
+ ❯ __tests__/owner-only-grant-actions.test.ts:89:20
+     87|     const result = await assignMemberRole("acme", "m1", "role-partner"…
+     88|
+     89|     expect(result).toEqual({ success: false, error: detail });
+       |                    ^
+     90|   });
+     91|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/11]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  11 failed | 2 passed (13)
+   Start at  16:57:30
+   Duration  2.34s (transform 320ms, setup 200ms, import 912ms, tests 515ms, environment 536ms)
+

@@ -13,6 +13,11 @@ import java.util.UUID;
  * first month. {@code currency} is the org default (trust accounts carry none); {@code asOf} is the
  * SA business date. {@code accounts} lists the active trust accounts, like {@link
  * TrustPositionResponse#accounts()}.
+ *
+ * <p>Phase 93 (657D, §17.3.15): for an account taken on at a cutover date, {@code months} starts at
+ * the month containing it (earlier months are omitted — they are the previous system's), so it may
+ * hold fewer than the requested number; {@code takenOnAt} is that cutover date (null when the
+ * account was not taken on).
  */
 public record TrustBalanceTrendResponse(
     UUID trustAccountId,
@@ -22,4 +27,5 @@ public record TrustBalanceTrendResponse(
     BigDecimal openingCashbookBalance,
     BigDecimal openingClientLedgerTotal,
     List<TrustBalanceTrendPoint> months,
-    List<TrustAccountRef> accounts) {}
+    List<TrustAccountRef> accounts,
+    LocalDate takenOnAt) {}

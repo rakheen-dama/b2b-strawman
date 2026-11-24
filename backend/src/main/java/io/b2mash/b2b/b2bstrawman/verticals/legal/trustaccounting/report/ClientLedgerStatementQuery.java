@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.reporting.ReportQuery;
 import io.b2mash.b2b.b2bstrawman.reporting.ReportResult;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService.InvestedStatement;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.takeon.TakeOnStatementLines;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedgerQueryRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionTypeLabels;
@@ -22,6 +23,10 @@ import org.springframework.stereotype.Component;
  * ClientLedgerService#getClientInvestedStatement}: opening / closing invested balance, capital
  * placed, interest gross / Fund's 5% / net, returned to trust). The trust-reports v4 template
  * (650C) prints it; the rows and columns are unchanged.
+ *
+ * <p>Phase 93 (657D, §17.3.15): the client's take-on rows in the range are one line, "Balance
+ * brought forward — take-on", dated at the cutover ({@link TakeOnStatementLines#fold}, {@code
+ * broughtForward: true}); the opening and closing balances are unchanged.
  */
 @Component
 public class ClientLedgerStatementQuery implements ReportQuery {
@@ -94,7 +99,28 @@ public class ClientLedgerStatementQuery implements ReportQuery {
     BigDecimal runningBalance = openingBalance;
     var rows = new java.util.ArrayList<Map<String, Object>>();
 
-    for (var tx : transactions) {
+    // 657D (§17.3.15): the client's take-on rows fold into one brought-forward line
+    for (var entry : TakeOnStatementLines.fold(transactions)) {
+      if (entry instanceof TakeOnStatementLines.Entry.BroughtForward bf) {
+        var row = new LinkedHashMap<String, Object>();
+        row.put("date", bf.date().toString());
+        row.put("reference", null);
+        row.put("type", TakeOnStatementLines.LABEL);
+        row.put("description", TakeOnStatementLines.LABEL);
+        if (bf.ledgerEffect().signum() >= 0) {
+          row.put("credit", bf.ledgerEffect());
+          row.put("debit", BigDecimal.ZERO);
+        } else {
+          row.put("credit", BigDecimal.ZERO);
+          row.put("debit", bf.ledgerEffect().negate());
+        }
+        runningBalance = runningBalance.add(bf.ledgerEffect());
+        row.put("runningBalance", runningBalance);
+        row.put("broughtForward", true);
+        rows.add(row);
+        continue;
+      }
+      var tx = ((TakeOnStatementLines.Entry.Row) entry).transaction();
       var row = new LinkedHashMap<String, Object>();
       row.put("date", tx.getTransactionDate().toString());
       row.put("reference", tx.getReference());

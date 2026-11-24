@@ -570,6 +570,15 @@ public class DashboardService {
     LocalDate today = LocalDate.now(clock);
     YearMonth current = YearMonth.from(today);
     YearMonth first = current.minusMonths(months - 1L);
+    // 657D (§17.3.15): a taken-on account's series starts at the month of its cutover date — the
+    // months before it were kept in the previous system's books
+    LocalDate takenOnAt = account.takeOnCutoverDate();
+    if (takenOnAt != null) {
+      YearMonth cutoverMonth = YearMonth.from(takenOnAt);
+      if (cutoverMonth.isAfter(first)) {
+        first = cutoverMonth.isAfter(current) ? current : cutoverMonth;
+      }
+    }
 
     BigDecimal openingCashbook = BigDecimal.ZERO;
     BigDecimal openingLedger = BigDecimal.ZERO;
@@ -607,7 +616,8 @@ public class DashboardService {
         openingCashbook,
         openingLedger,
         points,
-        accountRefs(accounts));
+        accountRefs(accounts),
+        takenOnAt);
   }
 
   /**

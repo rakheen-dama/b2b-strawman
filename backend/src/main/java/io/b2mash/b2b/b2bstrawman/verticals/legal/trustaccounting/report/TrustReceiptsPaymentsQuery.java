@@ -3,12 +3,16 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.reporting.ReportQuery;
 import io.b2mash.b2b.b2bstrawman.reporting.ReportResult;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.IntegrityMessages;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.TrustCreditorAccount;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.TrustCreditorAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.TrustCreditorAccountType;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.takeon.TakeOnStatementLines;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionTypeLabels;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -28,6 +32,14 @@ import org.springframework.stereotype.Component;
  * unidentified allocation — shows 0 / 0); the type is the registry's firm label; each row carries
  * the ledger heading it sits under ("Client", "Section 86(4) investment", "Section 86(3)
  * investment", the Fund, "Unidentified deposits") and the summary totals each heading.
+ *
+ * <p>Phase 93 (657D, §17.3.15): the take-on is one brought-forward figure, never a movement.
+ * Take-on rows are not listed; when the range contains the account's cutover date C the report
+ * opens with one line dated C, "Balance brought forward — take-on", credit CB (the cashbook the
+ * take-on posted), {@code broughtForward: true}, and the running balance starts from it. The totals
+ * exclude that line; {@code summary.broughtForward} carries it with {@code
+ * summary.broughtForwardNote}. A range starting after C is unchanged (its running balance starts at
+ * 0, as for every range — P-21).
  */
 @Component
 public class TrustReceiptsPaymentsQuery implements ReportQuery {
@@ -35,14 +47,25 @@ public class TrustReceiptsPaymentsQuery implements ReportQuery {
   private final TrustTransactionRepository transactionRepository;
   private final CustomerRepository customerRepository;
   private final TrustCreditorAccountRepository creditorAccountRepository;
+  private final TrustAccountRepository trustAccountRepository;
+
+  /** The row key marking the take-on brought-forward line (657D). */
+  public static final String BROUGHT_FORWARD = "broughtForward";
 
   public TrustReceiptsPaymentsQuery(
       TrustTransactionRepository transactionRepository,
       CustomerRepository customerRepository,
-      TrustCreditorAccountRepository creditorAccountRepository) {
+      TrustCreditorAccountRepository creditorAccountRepository,
+      TrustAccountRepository trustAccountRepository) {
     this.transactionRepository = transactionRepository;
     this.customerRepository = customerRepository;
     this.creditorAccountRepository = creditorAccountRepository;
+    this.trustAccountRepository = trustAccountRepository;
+  }
+
+  /** Whether {@code row} is the take-on brought-forward line. */
+  public static boolean isBroughtForward(Map<String, Object> row) {
+    return Boolean.TRUE.equals(row.get(BROUGHT_FORWARD));
   }
 
   @Override
@@ -113,6 +136,23 @@ public class TrustReceiptsPaymentsQuery implements ReportQuery {
 
     BigDecimal runningBalance = BigDecimal.ZERO;
     var rows = new ArrayList<Map<String, Object>>();
+    LocalDate cutover = trustAccountRepository.findTakeOnCutoverDate(trustAccountId).orElse(null);
+    if (cutover != null && !cutover.isBefore(dateFrom) && !cutover.isAfter(dateTo)) {
+      // 657D (§17.3.15): the take-on as one brought-forward line, read in this transaction
+      var broughtForward = transactionRepository.sumTakeOnCashbookEffect(trustAccountId);
+      var row = new LinkedHashMap<String, Object>();
+      row.put("date", cutover.toString());
+      row.put("reference", null);
+      row.put("type", TakeOnStatementLines.LABEL);
+      row.put("clientName", "-");
+      row.put("ledgerHeading", "");
+      row.put("credit", broughtForward);
+      row.put("debit", BigDecimal.ZERO);
+      row.put("balance", broughtForward);
+      row.put(BROUGHT_FORWARD, true);
+      runningBalance = broughtForward;
+      rows.add(row);
+    }
     for (var tx : sorted) {
       var row = new LinkedHashMap<String, Object>();
       row.put("date", tx.getTransactionDate().toString());
@@ -156,8 +196,17 @@ public class TrustReceiptsPaymentsQuery implements ReportQuery {
     var summary = new LinkedHashMap<String, Object>();
     BigDecimal totalReceipts = BigDecimal.ZERO;
     BigDecimal totalPayments = BigDecimal.ZERO;
-
+    Map<String, Object> broughtForward = null;
+    var movements = new ArrayList<Map<String, Object>>();
     for (var row : rows) {
+      if (isBroughtForward(row)) {
+        broughtForward = row;
+      } else {
+        movements.add(row);
+      }
+    }
+
+    for (var row : movements) {
       totalReceipts = totalReceipts.add((BigDecimal) row.get("credit"));
       totalPayments = totalPayments.add((BigDecimal) row.get("debit"));
     }
@@ -165,11 +214,11 @@ public class TrustReceiptsPaymentsQuery implements ReportQuery {
     summary.put("totalReceipts", totalReceipts);
     summary.put("totalPayments", totalPayments);
     summary.put("netMovement", totalReceipts.subtract(totalPayments));
-    summary.put("transactionCount", rows.size());
+    summary.put("transactionCount", movements.size());
 
     // Per-heading totals (a nested list: the report screen shows flat values only)
     var byHeading = new LinkedHashMap<String, BigDecimal[]>();
-    for (var row : rows) {
+    for (var row : movements) {
       var totals =
           byHeading.computeIfAbsent(
               (String) row.get("ledgerHeading"),
@@ -188,6 +237,19 @@ public class TrustReceiptsPaymentsQuery implements ReportQuery {
         });
     summary.put("headings", List.copyOf(headings));
     summary.put("scopeNote", TrustReportWords.TRUST_ASSETS_NOTE);
+    if (broughtForward != null) {
+      summary.put("broughtForward", broughtForward.get("credit"));
+      summary.put(
+          "broughtForwardNote",
+          broughtForwardNote(LocalDate.parse((String) broughtForward.get("date"))));
+    }
     return summary;
+  }
+
+  /** The §17.10 X3 footnote under a report that carries the take-on brought-forward line. */
+  public static String broughtForwardNote(LocalDate cutover) {
+    return "The opening position taken on at "
+        + IntegrityMessages.date(cutover)
+        + " is shown as one brought-forward line, not as receipts.";
   }
 }

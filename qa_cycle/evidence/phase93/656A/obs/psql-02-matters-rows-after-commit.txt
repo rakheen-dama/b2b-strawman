@@ -1,0 +1,19 @@
+ row_number | status  | result_entity_type | has_result | failure_reason |                                                                                        warnings                                                                                         
+------------+---------+--------------------+------------+----------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+          2 | CREATED | project            | t          |                | []
+          3 | CREATED | project            | t          |                | []
+          4 | CREATED | project            | t          |                | []
+          5 | CREATED | project            | t          |                | []
+          6 | CREATED | project            | t          |                | []
+          7 | CREATED | project            | t          |                | []
+          8 | CREATED | project            | t          |                | [{"code": "LEAD_MEMBER_UNKNOWN", "field": "leadMemberEmail", "message": "No member of the firm has this email address. The member who commits the take-on will be the matter's lead."}]
+          9 | CREATED | project            | t          |                | []
+         10 | CREATED | project            | t          |                | []
+         11 | CREATED | project            | t          |                | []
+         12 | CREATED | project            | t          |                | []
+         13 | CREATED | project            | t          |                | []
+         14 | CREATED | project            | t          |                | []
+         15 | ERROR   |                    | f          |                | []
+         16 | CREATED | project            | t          |                | []
+(15 rows)
+

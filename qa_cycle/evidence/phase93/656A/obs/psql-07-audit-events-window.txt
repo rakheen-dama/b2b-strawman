@@ -1,0 +1,19 @@
+           event_type           | count 
+--------------------------------+-------
+ customer.created               |    12
+ customer.fica_attested         |    12
+ project.created                |    15
+ project_member.added           |     1
+ project_member.role_changed    |     2
+ takeon.batch.attested          |     1
+ takeon.batch.commit_requested  |     2
+ takeon.batch.committed         |     2
+ takeon.batch.created           |     2
+ takeon.batch.validated         |     2
+ takeon.go_live.acknowledged    |     3
+ takeon.go_live.withdrawn       |     1
+ takeon.portal_contacts.created |     1
+ takeon.source.mapped           |     2
+ takeon.source.uploaded         |     2
+(15 rows)
+

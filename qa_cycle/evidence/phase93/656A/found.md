@@ -61,3 +61,30 @@ anonymisation, also drop `takeon_parked` from every matter whose `customer_id` i
 
 Evidence: by reading — `DataAnonymizationService.dropTakeOnParkedColumns` (client only) against
 `MattersDatasetHandler.mergeParked`. Not reproduced by a test (out of scope).
+
+## OBS-656A-1 (OBS gate, 2026-11-24) — the matter header shows the stored work-type code (e.g. `COMMERCIAL_LITIGATION`), not a label (pre-existing render; every take-on matter reaches it)
+
+**Found by:** the 656A OBS run on a fresh E2E stack built from `580ae0388` (`obs/README.md`, check 4).
+
+**Steps:** Settings → Matters → Take-on → Matters → upload `obs/fixtures/matters-656a.csv` (row 4: Work type
+`commercial litigation`) → map → validate → commit. Open the matter "Supply contract dispute" (any tab).
+
+**Expected:** a human label, as the take-on validation table shows it ("Work type: Commercial litigation",
+`matterValueText` → `humaniseWorkType`) and as the phase rule requires ("no raw enum on any screen").
+
+**Actual:** the matter hero shows `COMMERCIAL_LITIGATION` next to the Active badge (`obs/d-40-matter-details-0.png`).
+The same happens for every imported matter with a work type: `CONVEYANCING` (`d-41`), `LICENSING` (`d-42`). The DOM
+scan of `main` finds the token (`obs-log.txt`, second step-d pass: `"raw":["COMMERCIAL_LITIGATION"]`, `["CONVEYANCING"]`,
+`["LICENSING"]`). psql: `projects.work_type` is stored canonical (`COMMERCIAL_LITIGATION`, `psql-03-matters-created.txt`),
+which is correct (`WorkTypes.normalizeForStorage`, field groups match on it).
+
+**Not introduced by 656A — control:** a matter created through the ordinary New Matter dialog with work type
+"Commercial litigation" shows the same `COMMERCIAL_LITIGATION` in its header (`obs/g-01-ui-new-matter-dialog.png`,
+`obs/g-02-ui-created-matter-header.png`, log `[ui-created matter header]`). Root cause by reading:
+`frontend/components/projects/matter-header-card.tsx:94` renders `{workType}` raw; unchanged by 656A (last touched in
+641B, #1771; the raw render dates from 50aec5407, 2026-05). The Matters list's work-type column already uses
+`humaniseWorkType` (`components/matters/matter-columns.tsx`). 656A makes it reachable at scale: every taken-on matter
+with a free-text work type lands on this header.
+
+**Fix (for the orchestrator to dispatch; outside 656A's diff):** render `humaniseWorkType(workType)` in
+`MatterHeaderCard` (one line), with a vitest for a canonical multi-word value. The 656A validation table is correct.

@@ -1,0 +1,7 @@
+ version |         description         | success |        installed_on        
+---------+-----------------------------+---------+----------------------------
+ 35      | phase93 go live checklist   | t       | 2026-11-24 04:03:02.18974
+ 34      | phase93 client take on fica | t       | 2026-11-24 04:03:02.169931
+ 33      | phase93 trust take on       | t       | 2026-11-24 04:03:02.148627
+(3 rows)
+

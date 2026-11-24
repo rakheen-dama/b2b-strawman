@@ -1,0 +1,23 @@
+             client             |           portal_project           | status |    org_id    | same_customer | portal_contacts_of_client 
+--------------------------------+------------------------------------+--------+--------------+---------------+---------------------------
+ Lindiwe Mthembu                | Transfer of Erf 412 Hatfield       | ACTIVE | e2e-test-org | t             |                         1
+ Pieter van der Merwe           | Estate late J van der Merwe        | ACTIVE | e2e-test-org | t             |                         1
+ Highveld Logistics (Pty) Ltd   | Supply contract dispute            | ACTIVE | e2e-test-org | t             |                         1
+ Lindiwe Mthembu                | Bond registration Erf 412 Hatfield | ACTIVE | e2e-test-org | t             |                         1
+ Nomvula Dlamini                | Divorce settlement                 | ACTIVE | e2e-test-org | t             |                         1
+ Karabo Sithole                 | Labour dispute CCMA                | ACTIVE | e2e-test-org | t             |                         1
+ Cape Vines Wholesale (Pty) Ltd | Liquor licence renewal             | ACTIVE | e2e-test-org | t             |                         1
+ Sipho Ndlovu                   | Will drafting                      | ACTIVE | e2e-test-org | t             |                         1
+ Elena Rossouw                  | Sale of Erf 88 Kimberley           | ACTIVE | e2e-test-org | t             |                         1
+ Tshepo Molefe                  | Road accident claim                | ACTIVE | e2e-test-org | t             |                         1
+ Fatima Essop                   | Trust deed amendment               | ACTIVE | e2e-test-org | t             |                         1
+ Jacobus Botha                  | Farm lease agreement               | ACTIVE | e2e-test-org | t             |                         1
+ Zanele Khoza                   | Antenuptial contract               | ACTIVE | e2e-test-org | t             |                         1
+ Pieter van der Merwe           | Estate duty objection              | ACTIVE | e2e-test-org | t             |                         1
+(14 rows)
+
+ portal_projects_for_batch 
+---------------------------
+                        14
+(1 row)
+

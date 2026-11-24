@@ -1,0 +1,21 @@
+-- AFTER step e (2026-11-24T04:21:34Z)
+        item_key        | acknowledged_by |        acknowledged_at        |                                 note                                 
+------------------------+-----------------+-------------------------------+----------------------------------------------------------------------
+ TRUST_RECORDS_RETAINED | Alice Owner     | 2026-11-24 04:18:56.398138+00 | Previous system archive kept in Archive room E; checked by A. Owner.
+ FICA_RECORDS_RETAINED  | Alice Owner     | 2026-11-24 04:18:56.480707+00 | 
+(2 rows)
+
+          occurred_at          |         event_type          |     entity_type      |              entity_id               |                               details                               
+-------------------------------+-----------------------------+----------------------+--------------------------------------+---------------------------------------------------------------------
+ 2026-11-24 04:18:56.406371+00 | takeon.go_live.acknowledged | take_on_go_live_item | b4f0c873-a3aa-3373-8c6e-7ce5292972a1 | {"item_key": "TRUST_RECORDS_RETAINED", "actor_name": "Alice Owner"}
+ 2026-11-24 04:18:56.48224+00  | takeon.go_live.acknowledged | take_on_go_live_item | 51b3926a-82d6-3685-ba5e-86407c3faefe | {"item_key": "FICA_RECORDS_RETAINED", "actor_name": "Alice Owner"}
+ 2026-11-24 04:18:56.526388+00 | takeon.go_live.acknowledged | take_on_go_live_item | 61380f45-d30e-346d-93b9-f83e3e5515f1 | {"item_key": "AUDITOR_INFORMED", "actor_name": "Alice Owner"}
+ 2026-11-24 04:19:26.807398+00 | takeon.go_live.withdrawn    | take_on_go_live_item | 61380f45-d30e-346d-93b9-f83e3e5515f1 | {"item_key": "AUDITOR_INFORMED", "actor_name": "Alice Owner"}
+(4 rows)
+
+         event_type          | count | has_item_key |     detail_keys     
+-----------------------------+-------+--------------+---------------------
+ takeon.go_live.acknowledged |     3 | t            | actor_name,item_key
+ takeon.go_live.withdrawn    |     1 | t            | actor_name,item_key
+(2 rows)
+

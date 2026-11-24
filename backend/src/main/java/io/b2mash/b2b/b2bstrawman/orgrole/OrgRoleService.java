@@ -62,7 +62,16 @@ public class OrgRoleService {
             .findById(memberId)
             .orElseThrow(() -> new ResourceNotFoundException("Member", memberId));
 
-    var role = member.getOrgRoleEntity();
+    return effectiveCapabilities(member.getOrgRoleEntity(), member.getCapabilityOverrides());
+  }
+
+  /**
+   * The capabilities a member on {@code role} with {@code overrides} holds: the system Owner role
+   * all of them, the system Admin role all but the owner-only ones (overrides ignored for both), a
+   * custom or Member role its own capabilities with the {@code +CAP}/{@code -CAP} overrides
+   * applied.
+   */
+  private static Set<String> effectiveCapabilities(OrgRole role, Set<String> overrides) {
     if (role == null) {
       return Collections.emptySet();
     }
@@ -81,7 +90,7 @@ public class OrgRoleService {
         role.getCapabilities().stream().map(Capability::name).collect(Collectors.toSet());
     effective = new HashSet<>(effective);
 
-    for (String override : member.getCapabilityOverrides()) {
+    for (String override : overrides) {
       String capName = override.substring(1);
       if (!Capability.ALL_NAMES.contains(capName)) {
         continue; // skip invalid overrides for forward-compatibility
@@ -294,11 +303,6 @@ public class OrgRoleService {
 
     requireSystemRoleGrantable(role);
 
-    // FR-4: a role holding an owner-only capability is assigned by an owner only
-    requireOwnerToGrant(
-        role.getCapabilities().stream().map(Capability::name).toList(),
-        "assign a role holding an owner-only capability");
-
     // Validate override format
     Set<String> overrides =
         request.capabilityOverrides() != null ? request.capabilityOverrides() : Set.of();
@@ -318,10 +322,7 @@ public class OrgRoleService {
       }
     }
 
-    // FR-4: "+CAP" for an owner-only capability is granted by an owner only ("-CAP" stays open)
-    requireOwnerToGrant(
-        overrides.stream().filter(o -> o.startsWith("+")).map(o -> o.substring(1)).toList(),
-        "grant an owner-only capability");
+    requireOwnerForNewOwnerOnlyCapabilities(member, role, overrides);
 
     // Resolve previous role name for audit
     String previousRole =
@@ -428,12 +429,47 @@ public class OrgRoleService {
    * owner-only capabilities through it. Refuses (403) when {@code capabilities} names one and the
    * caller is not the owner; {@code action} completes "Only the owner can …".
    */
-  private static void requireOwnerToGrant(Collection<String> capabilities, String action) {
+  public static void requireOwnerToGrant(Collection<String> capabilities, String action) {
     var ownerOnly = capabilities.stream().filter(Capability.OWNER_ONLY::contains).sorted().toList();
     if (!ownerOnly.isEmpty() && !Roles.ORG_OWNER.equals(RequestScopes.getOrgRole())) {
       throw new ForbiddenException(
           "Owner-only capability",
           "Only the owner can " + action + ": " + String.join(", ", ownerOnly) + ".");
+    }
+  }
+
+  /**
+   * FR-4 on assignment: the founder ruling is about the member's EFFECTIVE capabilities, so a
+   * non-owner is refused only when the new role and overrides give the member an owner-only
+   * capability they do not hold now — assigning a role holding one ("assign a role …"), a {@code
+   * +CAP}, or dropping a {@code -CAP} that kept one away ("grant …"). Editing the ordinary
+   * overrides of a member already holding one, or taking one away, stays open.
+   */
+  private static void requireOwnerForNewOwnerOnlyCapabilities(
+      Member member, OrgRole role, Set<String> overrides) {
+    var before = effectiveCapabilities(member.getOrgRoleEntity(), member.getCapabilityOverrides());
+    var gained =
+        effectiveCapabilities(role, overrides).stream()
+            .filter(Capability.OWNER_ONLY::contains)
+            .filter(cap -> !before.contains(cap))
+            .collect(Collectors.toSet());
+    if (gained.isEmpty()) {
+      return;
+    }
+    boolean roleChanges =
+        member.getOrgRoleEntity() == null
+            || !member.getOrgRoleEntity().getId().equals(role.getId());
+    Set<String> roleCaps =
+        role.getCapabilities().stream().map(Capability::name).collect(Collectors.toSet());
+    if (roleChanges) {
+      requireOwnerToGrant(
+          gained.stream().filter(roleCaps::contains).toList(),
+          "assign a role holding an owner-only capability");
+      requireOwnerToGrant(
+          gained.stream().filter(cap -> !roleCaps.contains(cap)).toList(),
+          "grant an owner-only capability");
+    } else {
+      requireOwnerToGrant(gained, "grant an owner-only capability");
     }
   }
 

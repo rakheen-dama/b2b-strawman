@@ -1,0 +1,61 @@
+            Trust take-on report
+            E2E Test Organization
+            OBS 657D Trust banking K · 6576001 · Standard Bank
+            Cutover date: 30 September 2026
+            Reconciled position at cutover
+                                                                                         Previous system            Kazi Difference
+            Bank balance                                                                       R60 500,00 R60 500,00            R0,00
+            Outstanding deposits                                                                R5 000,00     R5 000,00         R0,00
+            Outstanding payments                                                               R20 000,00 R20 000,00            R0,00
+            Adjusted bank balance                                                              R45 500,00 R45 500,00            R0,00
+            Cashbook                                                                           R45 500,00 R45 500,00            R0,00
+            Legal Practitioners' Fidelity Fund (the Fund) interest and charges ledger                R0,00         R0,00        R0,00
+            Total invested                                                                           R0,00         R0,00        R0,00
+            Trust creditors at cutover
+            OBS 657D Trust banking K — as at 30 September 2026
+            Cashbook R45 500,00 · trust creditors R45 500,00
+            Client ledgers
+            Amahle Zulu                 Transfer of Erf 101 Brooklyn R30 000,00                                           R30 000,00
+            Bongani Nkosi               Estate late S Nkosi R15 000,00                                                    R15 000,00
+            Fund interest and charges ledger
+            Legal Practitioners' Fidelity Fund — interest and charges                                                           R0,00
+            Unidentified deposits
+            Unidentified deposit brought forward —         Received 10 September 2026 · Unidentified deposit brought         R500,00
+            take-on (ref EFT K-UNKNOWN)                    forward — take-on (ref EFT K-UNKNOWN)
+            Unidentified deposits
+            Received                              Age at cutover                 Reference                                   Amount
+            10 September 2026                     20 days                        EFT K-UNKNOWN                               R500,00
+            Outstanding items at cutover
+            Item                    Date                  Reference     Client          Matter                               Amount
+            Deposit in transit      29 September          EFT K-        Bongani         B1 Estate late S Nkosi             R5 000,00
+                                    2026                  0001          Nkosi
+            Unpresented             25 September          PAY-K-779 Amahle Zulu         A1 Transfer of Erf 101            R20 000,00
+            payment                 2026                                                Brooklyn
+            Control totals
+            Bank balance + outstanding deposits - outstanding         R60 500,00 + R5 000,00 - R20 000,00 = R45 500,00 against 
+            payments = cashbook                                       R45 500,00 — agrees
+            Outstanding items listed agree with the reconciled        Deposits R5 000,00, payments R20 000,00 — agrees
+            position
+            Cashbook = trust creditors                                R45 500,00 against R45 500,00 — agrees
+            Investments listed agree with the institutions'           R0,00 against R0,00 — agrees
+            confirmations
+            Trust money held covers the trust creditors               R45 500,00 against R45 500,00 — no deficit
+            Flags
+            None.
+            Sign-off
+            Signed off by Alice Owner (Owner) on 24 November 2026, 16:14.
+            Prepared by Bob Admin.
+            Declaration (version TAKEON-SIGNOFF-v1)
+            I am a partner or director of E2E Test Organization responsible for its trust accounting records (Rule 54.19). I have 
+            reviewed this take-on of OBS 657D Trust banking K at 30 September 2026. The trust creditors listed agree, to the cent, 
+            with the reconciled trust position in the previous system at that date, and no trust creditor is in debit.
+            Source files
+             File                                Section                         Sheet Rows Uploaded
+             trust-client-ledger-K.csv           Client and matter balances      CSV 2           Bob Admin, 24 November 2026, 16:14
+             SHA-256 b0cee89c1cc84eaf3f0100b7cffd70c274f5437e383a5424729db338d2649ac8
+             trust-outstanding-items-K.csv       Items outstanding at cutover CSV        2       Bob Admin, 24 November 2026, 16:14
+             SHA-256 38182626984ad2cb9187b25bbcba90dfc3857f63e1d03309f1255e9d39b1e5a5
+             trust-unidentified-deposits-K.csv   Unidentified deposits           CSV 1           Bob Admin, 24 November 2026, 16:14
+             SHA-256 95177767f75f5644b14569ea81040dd0da55f8df7f80f5b4b9c36641ba3c479e
+            Report 991aeddb-a74c-4424-b18d-01479e187867 · generated 24 November 2026, 16:14
+            Snapshot SHA-256 ff619458137b084aa6a422f3a86a3bf786dbbd9821d00a6531da96367b4e7840

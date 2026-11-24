@@ -1,0 +1,5 @@
+53c13f35f8f1f5eb707f9cb958921bd02035162466039b8c17904e5959025e48  results-step-take-on-report-obs-657d-trust-banking-k-2026-09-30.csv
+96cc3be5e8a56439c98bb5c551072db6098f91fc882c715473d18c6ac95e12f8  results-step-take-on-report-obs-657d-trust-banking-k-2026-09-30.pdf
+total 24
+-rw-r--r--@ 1 rakheendama  staff   981 Nov 24 16:14 results-step-take-on-report-obs-657d-trust-banking-k-2026-09-30.csv
+-rw-r--r--@ 1 rakheendama  staff  6750 Nov 24 16:14 results-step-take-on-report-obs-657d-trust-banking-k-2026-09-30.pdf

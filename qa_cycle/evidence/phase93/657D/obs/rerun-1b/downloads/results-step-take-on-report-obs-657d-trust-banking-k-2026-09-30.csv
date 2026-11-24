@@ -1,0 +1,10 @@
+# Trust take-on report — OBS 657D Trust banking K at 30 September 2026
+# Generated 2026-11-24T14:14:53.791763Z
+Section,Group,Client,Matter,Reference,Date,Amount
+CREDITOR,Client ledgers,Amahle Zulu,Transfer of Erf 101 Brooklyn,OBS 657D Trust banking K,2026-09-30,30000.00
+CREDITOR,Client ledgers,Bongani Nkosi,Estate late S Nkosi,OBS 657D Trust banking K,2026-09-30,15000.00
+CREDITOR,Fund interest and charges ledger,Legal Practitioners' Fidelity Fund — interest and charges,,OBS 657D Trust banking K,2026-09-30,0.00
+CREDITOR,Unidentified deposits,Unidentified deposit brought forward — take-on (ref EFT K-UNKNOWN),,Unidentified deposit brought forward — take-on (ref EFT K-UNKNOWN),2026-09-10,500.00
+UNIDENTIFIED,Unidentified deposits,,,EFT K-UNKNOWN,2026-09-10,500.00
+OUTSTANDING,Deposit in transit,Bongani Nkosi,B1 Estate late S Nkosi,EFT K-0001,2026-09-29,5000.00
+OUTSTANDING,Unpresented payment,Amahle Zulu,A1 Transfer of Erf 101 Brooklyn,PAY-K-779,2026-09-25,20000.00

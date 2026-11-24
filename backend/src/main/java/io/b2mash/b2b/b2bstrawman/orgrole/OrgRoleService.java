@@ -147,7 +147,9 @@ public class OrgRoleService {
         memberId,
         roleName,
         roleCapabilities,
-        member.getCapabilityOverrides(),
+        // a copy read inside the transaction: the entity's collection is lazy, and for the system
+        // owner/admin roles nothing above has loaded it (open-in-view is off)
+        Set.copyOf(member.getCapabilityOverrides()),
         effectiveCapabilities);
   }
 

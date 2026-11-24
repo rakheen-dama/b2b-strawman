@@ -145,8 +145,7 @@ class OwnerOnlyCapabilityGrantIntegrationTest {
     var assigned = assign(self, selfAdminId, partnerRole).andReturn();
 
     signOffQueue("user_oog_self_admin").andExpect(status().isForbidden());
-    // read through /api/me: GET /api/members/{id}/capabilities answers 500 for a member on the
-    // system Admin role (pre-existing, unrelated: HttpMessageNotWritableException, see README)
+    // the admin's own view (/api/me): still on the system Admin role, without the capability
     var me = myCapabilities("user_oog_self_admin");
     assertThat((String) JsonPath.read(me, "$.role")).isEqualTo("Admin");
     assertThat((List<String>) JsonPath.read(me, "$.capabilities"))

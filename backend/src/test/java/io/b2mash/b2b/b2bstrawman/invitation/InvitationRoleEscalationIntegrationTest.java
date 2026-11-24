@@ -29,13 +29,15 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
 /**
  * Task C (FR-4 follow-through): an invitation grants its role when the invitee first signs in
  * ({@code MemberFilter.lazyCreateMember}: the pending invitation's role slug → the member's system
- * role). {@code POST /api/invitations} needs only {@code TEAM_OVERSIGHT}, which an admin holds; it
- * must apply the same rules as {@code OrgRoleService.assignRole}: the system Owner role is never
- * granted by invitation, the system Admin role and any role holding an owner-only capability only
- * by the owner.
+ * role). {@code POST /api/invitations} needs only {@code TEAM_OVERSIGHT}, which an admin holds.
+ * Enforced at the invitation ({@code InvitationService.createInvitation}): the system Owner role is
+ * never invited into (by anyone); the system Admin role only by the owner; a role holding an
+ * owner-only capability only by the owner (route 3, review round 1). Invitations carry no
+ * capability overrides, so there is no {@code +CAP} route.
  *
- * <p>Each case invites as an ADMIN, then signs the invitee in (a JWT carrying the invited email)
- * and reads what they got ({@code GET /api/me/capabilities}) before checking the invitation answer.
+ * <p>The Owner/Admin cases invite as an ADMIN, then sign the invitee in (a JWT carrying the invited
+ * email) and read what they got ({@code GET /api/me/capabilities}) before checking the invitation
+ * answer.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -98,35 +100,18 @@ class InvitationRoleEscalationIntegrationTest {
         "Only owners can assign the Admin system role");
   }
 
-  // (3) a custom role holding an owner-only capability: the invitation is taken (201), but the
-  // invitee's first sign-in grants nothing — MemberFilter.lazyCreateMember resolves the invited
-  // role among the system roles only, so a custom-role invitee is never created (their requests
-  // answer 500, MemberContextNotBoundException; a separate defect). Not an escalation on this path.
+  // (3) a custom role holding an owner-only capability (review round 1, defence in depth: on the
+  // JIT sign-in path such an invitation grants nothing, but the Keycloak sync path resolves any
+  // role slug — so the owner-only rule applies at the invitation itself)
 
   @Test
-  void anInvitationIntoARoleHoldingAnOwnerOnlyCapability_grantsNothingOnSignIn() throws Exception {
+  void anAdminCannotInviteIntoARoleHoldingAnOwnerOnlyCapability() throws Exception {
     String partner = partnerRole("Partner Invite A");
-    invite(admin(), "ies_new_partner@test.com", partner).andExpect(status().isCreated());
-
-    mockMvc.perform(
-        get("/api/me/capabilities")
-            .with(
-                jwt()
-                    .jwt(
-                        j ->
-                            j.subject("user_ies_new_partner")
-                                .claim("o", Map.of("id", ORG_ID, "rol", "member"))
-                                .claim("email", "ies_new_partner@test.com"))));
-
-    String members =
-        mockMvc
-            .perform(get("/api/members").with(owner()))
-            .andExpect(status().isOk())
-            .andReturn()
-            .getResponse()
-            .getContentAsString();
-    assertThat((List<String>) JsonPath.read(members, "$[*].email"))
-        .doesNotContain("ies_new_partner@test.com");
+    assertForbidden(
+        invite(admin(), "ies_new_partner@test.com", partner).andReturn(),
+        "Owner-only capability",
+        "Only the owner can invite into a role holding an owner-only capability:"
+            + " SIGN_OFF_TRUST_TAKE_ON.");
   }
 
   // what stays open

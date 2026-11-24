@@ -185,11 +185,11 @@ class OwnerOnlyCapabilityGrantIntegrationTest {
     updateCapabilities(admin(), roleId, "INVOICING", "VIEW_TRUST")
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.capabilities.length()").value(2));
-    assign(admin(), memberId, roleId, "+PROJECT_MANAGEMENT", "-SIGN_OFF_TRUST_TAKE_ON")
+    assign(admin(), memberId, roleId, "+PROJECT_MANAGEMENT", "-INVOICING")
         .andExpect(status().isOk());
     assertThat(effectiveCapabilities(memberId))
-        .contains("INVOICING", "VIEW_TRUST", "PROJECT_MANAGEMENT")
-        .doesNotContain("SIGN_OFF_TRUST_TAKE_ON");
+        .contains("VIEW_TRUST", "PROJECT_MANAGEMENT")
+        .doesNotContain("INVOICING");
 
     // an owner's Partner role: an admin may still rename it or take an owner-only capability away
     String partnerRole =
@@ -203,6 +203,48 @@ class OwnerOnlyCapabilityGrantIntegrationTest {
         .andExpect(status().isOk());
     updateCapabilities(admin(), partnerRole, "SIGN_OFF_TRUST_TAKE_ON").andExpect(status().isOk());
     assertThat(roleCapabilities(partnerRole)).containsExactly("SIGN_OFF_TRUST_TAKE_ON");
+  }
+
+  // --- review round 1: the rule is about the member's EFFECTIVE owner-only capabilities ---
+  // (a non-owner is refused only when the change adds one the member does not hold already)
+
+  @Test
+  void anAdminCanEditOrdinaryOverridesOfAMemberAlreadyOnAPartnerRole() throws Exception {
+    String memberId = syncMember("user_oog_partner_r1a", "member");
+    String partnerRole =
+        id(createRole(owner(), "Partner R1A", "SIGN_OFF_TRUST_TAKE_ON", "VIEW_TRUST"));
+    assign(owner(), memberId, partnerRole).andExpect(status().isOk());
+
+    assign(admin(), memberId, partnerRole, "+INVOICING").andExpect(status().isOk());
+    assertThat(effectiveCapabilities(memberId))
+        .contains("SIGN_OFF_TRUST_TAKE_ON", "VIEW_TRUST", "INVOICING");
+  }
+
+  @Test
+  void anAdminCanTakeAnOwnerOnlyCapabilityAwayFromAPartnerMember() throws Exception {
+    String memberId = syncMember("user_oog_partner_r1b", "member");
+    String partnerRole =
+        id(createRole(owner(), "Partner R1B", "SIGN_OFF_TRUST_TAKE_ON", "VIEW_TRUST"));
+    assign(owner(), memberId, partnerRole).andExpect(status().isOk());
+
+    assign(admin(), memberId, partnerRole, "-SIGN_OFF_TRUST_TAKE_ON").andExpect(status().isOk());
+    assertThat(effectiveCapabilities(memberId))
+        .contains("VIEW_TRUST")
+        .doesNotContain("SIGN_OFF_TRUST_TAKE_ON");
+  }
+
+  @Test
+  void anAdminCannotDropAMinusOverrideThatWouldRestoreAnOwnerOnlyCapability() throws Exception {
+    String memberId = syncMember("user_oog_partner_r1c", "member");
+    String partnerRole =
+        id(createRole(owner(), "Partner R1C", "SIGN_OFF_TRUST_TAKE_ON", "VIEW_TRUST"));
+    assign(owner(), memberId, partnerRole, "-SIGN_OFF_TRUST_TAKE_ON").andExpect(status().isOk());
+
+    var restored = assign(admin(), memberId, partnerRole).andReturn();
+
+    assertThat(effectiveCapabilities(memberId)).doesNotContain("SIGN_OFF_TRUST_TAKE_ON");
+    assertForbidden(
+        restored, "Only the owner can grant an owner-only capability: SIGN_OFF_TRUST_TAKE_ON.");
   }
 
   // --- what owners keep (FD-4) ---

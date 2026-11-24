@@ -20,6 +20,15 @@ the orchestrator/founder (not applied — permissions are not a builder call, C-
 `trustBalance` / `outstandingFeeNoteTotal`; (c) accept as-is (the list already shows every member the FICA status).
 Recommended: (b) in 655B before merge, cheap and contained to `toRow` + the controller.
 
+**Resolved for the new detail (D-148, option (b)):** a caller without `CUSTOMER_MANAGEMENT` now gets
+`ficaReviewReasons: []` and `ficaRiskRating` / `ficaNextReviewDate` / `ficaRecordsLocation` null on `GET /api/clients`,
+and `reviewReasons: []` / `attestationId: null` on `fica-status`; owner/admin (and any role granted the capability)
+see them. Proven for the seeded Member role and a custom role without the capability in
+`FicaReviewQueueIntegrationTest.withoutClientManagement*` (both red before the change). **What remains out of scope**
+is only the pre-existing exposure: both endpoints stay ungated, so any member still sees every client's FICA status
+(`NOT_STARTED` … `ATTESTED_REVIEW`) and can filter the list by `ficaStatus` (including `REVIEW`, whose order is
+server-side) — option (a), a permissions decision for the founder (D-140).
+
 ## F-655B-2 — a PEP/sanctions screening match is not a review reason (legal question for RG-3)
 
 FD-30 (build default, release-gated RG-3) names five review reasons; `SCREENED_MATCH` is not one of them, so an

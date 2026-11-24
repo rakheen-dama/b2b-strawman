@@ -65,6 +65,8 @@ class FicaReviewQueueIntegrationTest {
   private static final String ORG_ID = "org_fica_review_queue_test";
   private static final String OWNER = "user_frq_owner";
   private static final String NO_CLIENTS = "user_frq_no_cm";
+  private static final String MEMBER = "user_frq_member";
+  private static final String ADMIN = "user_frq_admin";
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
@@ -185,6 +187,11 @@ class FicaReviewQueueIntegrationTest {
         TestMemberHelper.syncMember(
             mockMvc, ORG_ID, NO_CLIENTS, "frq_nocm@test.com", "No Clients", "member");
     assignRole(noClientsId, createRole("FRQ invoicing only", "INVOICING"));
+    // The seeded system roles: Member has no CUSTOMER_MANAGEMENT, Admin does (D-148).
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, MEMBER, "frq_member@test.com", "Plain Member", "member");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, ADMIN, "frq_admin@test.com", "Queue Admin", "admin");
   }
 
   // --- the review queue (ficaStatus=REVIEW) ---
@@ -274,6 +281,75 @@ class FicaReviewQueueIntegrationTest {
     assertRow(cleanRow, List.of(), "LOW", "2029-02-01", "Box Q-CLEAN");
     assertThat(cleanRow.get("ficaStatus")).isEqualTo("ATTESTED");
     assertThat(cleanRow.get("ficaLastVerifiedAt")).isNull();
+  }
+
+  // --- attestation detail needs CUSTOMER_MANAGEMENT on the ungated reads (D-148, F-655B-1) ---
+
+  @Test
+  void withoutClientManagementTheListKeepsStatusAndOrderButBlanksAttestationDetail()
+      throws Exception {
+    var own =
+        Set.of(
+            unrated, boOutstanding, mediumLater, notScreened, reviewPassed, sofOutstanding, clean);
+    var ownerOrder = ids(listRows("REVIEW", own, ownerJwt()));
+    for (var caller :
+        List.of(
+            TestJwtFactory.memberJwt(ORG_ID, MEMBER),
+            TestJwtFactory.customRoleJwt(ORG_ID, NO_CLIENTS))) {
+      var review = listRows("REVIEW", own, caller);
+      // the review queue (filter + server-side order) is the same as the owner's …
+      assertThat(ids(review)).isNotEmpty().isEqualTo(ownerOrder);
+      assertThat(review)
+          .allSatisfy(r -> assertThat(r.get("ficaStatus")).isEqualTo("ATTESTED_REVIEW"))
+          // … but every row's attestation detail is blank
+          .allSatisfy(r -> assertRow(r, List.of(), null, null, null));
+
+      var done = listRows("DONE", Set.of(clean), caller);
+      assertThat(done).hasSize(1);
+      assertThat(done.getFirst().get("ficaStatus")).isEqualTo("ATTESTED");
+      assertRow(done.getFirst(), List.of(), null, null, null);
+    }
+    // the admin holds CUSTOMER_MANAGEMENT through the system role and sees the detail
+    var adminRow =
+        listRows("REVIEW", Set.of(boOutstanding), TestJwtFactory.adminJwt(ORG_ID, ADMIN));
+    assertRow(
+        adminRow.getFirst(),
+        List.of("BENEFICIAL_OWNERSHIP_OUTSTANDING"),
+        "MEDIUM",
+        "2028-06-01",
+        "Box Q-BO");
+  }
+
+  @Test
+  void withoutClientManagementFicaStatusKeepsStatusButBlanksReasonsAndAttestationId()
+      throws Exception {
+    for (var caller :
+        List.of(
+            TestJwtFactory.memberJwt(ORG_ID, MEMBER),
+            TestJwtFactory.customRoleJwt(ORG_ID, NO_CLIENTS))) {
+      mockMvc
+          .perform(get("/api/clients/{id}/fica-status", reviewPassed).with(caller))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.clientId").value(reviewPassed.toString()))
+          .andExpect(jsonPath("$.status").value("ATTESTED_REVIEW"))
+          .andExpect(jsonPath("$.reviewReasons").isArray())
+          .andExpect(jsonPath("$.reviewReasons").isEmpty())
+          .andExpect(jsonPath("$.attestationId").doesNotExist());
+      mockMvc
+          .perform(get("/api/clients/{id}/fica-status", clean).with(caller))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.status").value("ATTESTED"))
+          .andExpect(jsonPath("$.attestationId").doesNotExist());
+    }
+    // owner and admin (CUSTOMER_MANAGEMENT) see the detail
+    for (var caller : List.of(ownerJwt(), TestJwtFactory.adminJwt(ORG_ID, ADMIN))) {
+      mockMvc
+          .perform(get("/api/clients/{id}/fica-status", reviewPassed).with(caller))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.status").value("ATTESTED_REVIEW"))
+          .andExpect(jsonPath("$.reviewReasons[0]").value("REVIEW_DATE_PASSED"))
+          .andExpect(jsonPath("$.attestationId").value(attestationIdOf(reviewPassed).toString()));
+    }
   }
 
   // --- the single read, the dashboard widget, FD-29 ---
@@ -457,9 +533,15 @@ class FicaReviewQueueIntegrationTest {
 
   /** {@code GET /api/clients?ficaStatus=…}, in response order, kept to {@code only} when given. */
   private List<Map<String, Object>> listRows(String ficaStatus, Set<UUID> only) throws Exception {
+    return listRows(ficaStatus, only, ownerJwt());
+  }
+
+  /** As {@link #listRows(String, Set)}, as {@code caller}. */
+  private List<Map<String, Object>> listRows(
+      String ficaStatus, Set<UUID> only, JwtRequestPostProcessor caller) throws Exception {
     String json =
         mockMvc
-            .perform(get("/api/clients?ficaStatus=" + ficaStatus).with(ownerJwt()))
+            .perform(get("/api/clients?ficaStatus=" + ficaStatus).with(caller))
             .andExpect(status().isOk())
             .andReturn()
             .getResponse()

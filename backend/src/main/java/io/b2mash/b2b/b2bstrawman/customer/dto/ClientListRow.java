@@ -28,7 +28,9 @@ import java.util.UUID;
  * ATTESTED_REVIEW} client is due for review. {@code ficaRiskRating}, {@code ficaNextReviewDate} and
  * {@code ficaRecordsLocation} come from the client's active FICA attestation and are null when it
  * has none ({@code ficaNextReviewDate} is also null when the rating is {@code UNRATED}) — read in
- * the same batch as the status, no extra query.
+ * the same batch as the status, no extra query. Those four are attestation detail: a caller without
+ * CUSTOMER_MANAGEMENT gets {@code ficaReviewReasons} empty and the other three null (D-148); {@code
+ * ficaStatus} is never redacted.
  */
 public record ClientListRow(
     UUID id,

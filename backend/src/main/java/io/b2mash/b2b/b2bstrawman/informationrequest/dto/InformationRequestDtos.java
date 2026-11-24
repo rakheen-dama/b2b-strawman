@@ -213,6 +213,10 @@ public final class InformationRequestDtos {
    * the attestation's dates live on {@code GET /api/clients/{id}/fica-attestation}). {@code
    * reviewReasons} is never null ({@code UNRATED}, {@code BENEFICIAL_OWNERSHIP_OUTSTANDING}, {@code
    * SOURCE_OF_FUNDS_OUTSTANDING}, {@code NOT_SCREENED}, {@code REVIEW_DATE_PASSED}, in that order).
+   *
+   * <p>{@code reviewReasons} and {@code attestationId} are attestation detail: a caller without
+   * {@code CUSTOMER_MANAGEMENT} gets {@link #withoutAttestationDetail()} (D-148) — the status
+   * stays.
    */
   public record FicaStatusResponse(
       UUID clientId,
@@ -221,5 +225,15 @@ public final class InformationRequestDtos {
       UUID requestId,
       UUID checklistInstanceId,
       List<String> reviewReasons,
-      UUID attestationId) {}
+      UUID attestationId) {
+
+    /**
+     * The same status with the attestation detail blanked — {@code reviewReasons} empty (never
+     * null), {@code attestationId} null (D-148, F-655B-1).
+     */
+    public FicaStatusResponse withoutAttestationDetail() {
+      return new FicaStatusResponse(
+          clientId, status, lastVerifiedAt, requestId, checklistInstanceId, List.of(), null);
+    }
+  }
 }

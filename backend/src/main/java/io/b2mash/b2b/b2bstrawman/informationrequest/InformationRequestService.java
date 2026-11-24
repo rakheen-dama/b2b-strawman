@@ -56,6 +56,7 @@ public class InformationRequestService {
 
   private static final Logger log = LoggerFactory.getLogger(InformationRequestService.class);
   private static final int DEFAULT_REMINDER_INTERVAL_DAYS = 5;
+  private static final String FICA_ATTESTATION_DETAIL_CAPABILITY = "CUSTOMER_MANAGEMENT";
 
   private final InformationRequestRepository requestRepository;
   private final RequestItemRepository itemRepository;
@@ -781,11 +782,45 @@ public class InformationRequestService {
   }
 
   /**
+   * {@link #getFicaStatus} for the current caller — the ungated {@code GET
+   * /api/clients/{id}/fica-status}: without {@code CUSTOMER_MANAGEMENT} the attestation detail is
+   * blanked ({@link FicaStatusResponse#withoutAttestationDetail()}, D-148); the status stays.
+   */
+  @Transactional(readOnly = true)
+  public FicaStatusResponse getFicaStatusForCaller(UUID customerId) {
+    var status = getFicaStatus(customerId);
+    return status == null || callerSeesFicaAttestationDetail()
+        ? status
+        : status.withoutAttestationDetail();
+  }
+
+  /**
+   * Whether the current caller may see FICA attestation detail (review reasons, attestation id,
+   * risk rating, next review date, CDD records location) on the ungated client list and {@code
+   * fica-status} reads — the same {@code CUSTOMER_MANAGEMENT} capability that gates {@code GET
+   * /api/clients/{id}/fica-attestation} (D-148, F-655B-1). Owner/admin hold it through their system
+   * roles; the seeded Member role does not.
+   */
+  public static boolean callerSeesFicaAttestationDetail() {
+    return RequestScopes.hasCapability(FICA_ATTESTATION_DETAIL_CAPABILITY);
+  }
+
+  /**
    * One client's FICA status together with the active attestation the projection read (null when
    * none) — so the client list can show the attestation's rating, review date and records location
    * without another query (655B, C-4).
    */
-  public record FicaRead(FicaStatusResponse status, ClientFicaAttestation attestation) {}
+  public record FicaRead(FicaStatusResponse status, ClientFicaAttestation attestation) {
+
+    /**
+     * The same status with every piece of attestation detail blanked — the status's review reasons
+     * and attestation id, and the attestation itself (so the list's rating, review date and records
+     * location read null). D-148.
+     */
+    public FicaRead withoutAttestationDetail() {
+      return new FicaRead(status == null ? null : status.withoutAttestationDetail(), null);
+    }
+  }
 
   /**
    * Batched FICA status, independent of how many clients are asked for — {@link #getFicaReads}

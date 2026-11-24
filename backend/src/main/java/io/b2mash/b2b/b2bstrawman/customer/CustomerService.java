@@ -70,16 +70,6 @@ public class CustomerService {
   private static final String FICA_FILTER_DONE = "DONE";
   private static final String FICA_FILTER_REVIEW = "REVIEW";
 
-  /**
-   * The FICA review queue order ({@code ficaStatus=REVIEW}, §17.3.5): next review date ascending,
-   * unrated (no date) first, then name and id for determinism.
-   */
-  private static final Comparator<ClientListRow> FICA_REVIEW_ORDER =
-      Comparator.comparing(
-              ClientListRow::ficaNextReviewDate, Comparator.nullsFirst(Comparator.naturalOrder()))
-          .thenComparing(ClientListRow::name, String.CASE_INSENSITIVE_ORDER)
-          .thenComparing(ClientListRow::id);
-
   private final CustomerRepository repository;
   private final AuditService auditService;
   private final ApplicationEventPublisher eventPublisher;
@@ -181,7 +171,10 @@ public class CustomerService {
    * <p>Redaction: {@code outstandingFeeNoteTotal} needs FINANCIAL_VISIBILITY (owner/admin always —
    * the 614A home rule); {@code trustBalance} needs VIEW_TRUST and the trust_accounting module.
    * Counts and currency are never redacted. {@code hasTrustBalance} without trust visibility
-   * returns no rows (filtering by a redacted column would leak it).
+   * returns no rows (filtering by a redacted column would leak it). The FICA attestation detail
+   * ({@code ficaReviewReasons} → empty, {@code ficaRiskRating} / {@code ficaNextReviewDate} /
+   * {@code ficaRecordsLocation} → null) needs CUSTOMER_MANAGEMENT (D-148); {@code ficaStatus}, the
+   * {@code ficaStatus} filters and the review-queue order are the same for every caller.
    *
    * @throws InvalidStateException (400) when {@code ficaStatus} is not OUTSTANDING, DONE or REVIEW
    */
@@ -242,6 +235,12 @@ public class CustomerService {
     if (ficaFilter != null) {
       clients = clients.stream().filter(c -> matchesFica(fica.get(c.getId()), ficaFilter)).toList();
     }
+    // The review queue is ordered on the unredacted attestation, before any row is built, so the
+    // order is the same for a caller whose rows have the attestation detail blanked (D-148).
+    if (FICA_FILTER_REVIEW.equals(ficaFilter)) {
+      clients = clients.stream().sorted(ficaReviewOrder(fica)).toList();
+    }
+    boolean seesFicaDetail = InformationRequestService.callerSeesFicaAttestationDetail();
     if (clients.isEmpty()) {
       return List.of();
     }
@@ -261,7 +260,7 @@ public class CustomerService {
                     toRow(
                         c,
                         aggregates.get(c.getId()),
-                        fica.get(c.getId()),
+                        ficaForCaller(fica.get(c.getId()), seesFicaDetail),
                         completeness.get(c.getId()),
                         trust,
                         tagsByEntityId.getOrDefault(c.getId(), List.of()),
@@ -278,10 +277,29 @@ public class CustomerService {
             rows.stream().filter(r -> TagFilterUtil.matchesTagFilter(r.tags(), tagSlugs)).toList();
       }
     }
-    if (FICA_FILTER_REVIEW.equals(ficaFilter)) {
-      rows = rows.stream().sorted(FICA_REVIEW_ORDER).toList();
-    }
     return rows;
+  }
+
+  /**
+   * The FICA review queue order ({@code ficaStatus=REVIEW}, §17.3.5): the active attestation's next
+   * review date ascending, unrated (no date) first, then name and id for determinism.
+   */
+  private static Comparator<Customer> ficaReviewOrder(Map<UUID, FicaRead> fica) {
+    return Comparator.comparing(
+            (Customer c) -> {
+              FicaRead read = fica.get(c.getId());
+              return read == null || read.attestation() == null
+                  ? null
+                  : read.attestation().getNextReviewDate();
+            },
+            Comparator.nullsFirst(Comparator.naturalOrder()))
+        .thenComparing(Customer::getName, String.CASE_INSENSITIVE_ORDER)
+        .thenComparing(Customer::getId);
+  }
+
+  /** The FICA read as the caller may see it — attestation detail blanked without it (D-148). */
+  private static FicaRead ficaForCaller(FicaRead read, boolean seesFicaDetail) {
+    return read == null || seesFicaDetail ? read : read.withoutAttestationDetail();
   }
 
   /**

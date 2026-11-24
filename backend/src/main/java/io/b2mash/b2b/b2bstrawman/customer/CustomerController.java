@@ -271,11 +271,12 @@ public class CustomerController {
    * {status: NOT_STARTED|IN_PROGRESS|DONE|ATTESTED|ATTESTED_REVIEW, lastVerifiedAt, requestId,
    * checklistInstanceId, reviewReasons, attestationId}} — {@code checklistInstanceId} when the
    * checklist decided, {@code requestId} when a request did, {@code attestationId} when the
-   * attestation did. No KYC-adapter coupling.
+   * attestation did. No KYC-adapter coupling. Ungated: {@code reviewReasons} and {@code
+   * attestationId} are blanked for a caller without {@code CUSTOMER_MANAGEMENT} (D-148).
    */
   @GetMapping("/{clientId}/fica-status")
   public ResponseEntity<FicaStatusResponse> getFicaStatus(@PathVariable UUID clientId) {
-    return ResponseEntity.ok(informationRequestService.getFicaStatus(clientId));
+    return ResponseEntity.ok(informationRequestService.getFicaStatusForCaller(clientId));
   }
 
   /**

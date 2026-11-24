@@ -1,7 +1,7 @@
 {
-  "commit": "43a8b9bdc",
-  "command": "cd backend && ./mvnw spotless:check && ./mvnw clean && bash scripts/verify.sh -q (worktree-epic-657B, PR #1853)",
+  "commit": "a1ab2d929",
+  "command": "cd backend && ./mvnw spotless:check && bash scripts/verify.sh -q",
   "exit": 0,
-  "ts": "2026-11-24T07:49:59Z",
-  "summary": "PR #1853 @43a8b9bdc (code identical to head dbf36a290, docs-only delta) — 8044 <testcase> / 0 failures / 0 errors / 55 skipped (surefire XML, 913 files), exit 0, 30 min"
+  "ts": "2026-11-24T11:28:49Z",
+  "summary": "8085 tests / 0 failures / 0 errors / 55 skipped (counted from 918 fresh surefire <testcase> reports) — ~32 min; PR #1854 head b3bedb773 differs only in frontend + qa_cycle evidence"
 }

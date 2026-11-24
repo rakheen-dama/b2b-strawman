@@ -1,7 +1,7 @@
 {
-  "commit": "01ae60e12",
-  "command": "cd frontend && rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (worktree-epic-657B, PR #1853, nvm node v20.11.1)",
+  "commit": "b3bedb773",
+  "command": "cd frontend && rm -rf .next && pnpm install && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build",
   "exit": 0,
-  "ts": "2026-11-24T06:57:08Z",
-  "summary": "PR #1853 @01ae60e12 — lint 0 errors, typecheck clean, format:check clean, vitest 499 files / 4841 passed / 2 skipped / 0 failed, next build OK"
+  "ts": "2026-11-24T11:32:30Z",
+  "summary": "lint 0, typecheck 0, format:check 0, vitest 501 files / 4899 passed / 2 skipped, build 0"
 }

@@ -279,10 +279,12 @@ public class Invoice {
    * DRAFT → SENT for a brought-forward fee note (Phase 93 658A, ADR-390): a debt the previous
    * system generated, numbered and sent. Keeps the source number and dates, stamps the committing
    * member as approver and records the take-on batch — all in one update, so {@code
-   * chk_invoice_brought_forward_status} holds at every flush. Reached only from the take-on commit;
-   * {@link #approve} and {@link #markSent} are unchanged.
+   * chk_invoice_brought_forward_status} holds at every flush. {@link #approve} and {@link
+   * #markSent} are unchanged. Package-private: the one caller is {@code
+   * BroughtForwardFeeNoteService.issue} (ADR-390 — no second entry path), whose own callers
+   * ArchUnit {@code TakeOnEntryPointsArchTest} confines to {@code ..takeon..}.
    */
-  public void issueBroughtForward(
+  void issueBroughtForward(
       String invoiceNumber,
       LocalDate issueDate,
       LocalDate dueDate,

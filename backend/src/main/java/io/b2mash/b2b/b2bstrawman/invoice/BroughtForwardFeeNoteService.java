@@ -3,8 +3,11 @@ package io.b2mash.b2b.b2bstrawman.invoice;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.audit.SafeAuditDetails;
+import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.InvoiceSyncEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.TaxContext;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.CustomFieldValidator;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
@@ -14,13 +17,16 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -29,11 +35,13 @@ import org.springframework.transaction.annotation.Transactional;
  * ({@code TakeOnEntryPointsArchTest}).
  *
  * <p>What it deliberately does NOT do, by construction (not by a flag): no {@code assignNumber}
- * (the firm's sequence is untouched, FD-20), no {@code InvoiceApprovedEvent} / {@code
- * InvoiceSentEvent} (so no email, PDF, notification, Xero push or automation), no {@code
- * validateInvoiceSend}, no payment link, no {@code INVOICE_GENERATION} prerequisite (FD-21), no tax
- * rate on the line (the amount is the VAT-inclusive balance, FD-26). It publishes only {@code
- * InvoiceSyncEvent} "SENT" with no payment URL (portal visibility, FD-9). Logs ids only.
+ * (the firm's sequence is not used for a brought-forward fee note, FD-20 — though a source number
+ * in the firm's own {@code INV-n} format moves it on so Kazi's own numbers continue after it,
+ * D-253), no {@code InvoiceApprovedEvent} / {@code InvoiceSentEvent} (so no email, PDF,
+ * notification, Xero push or automation), no {@code validateInvoiceSend}, no payment link, no
+ * {@code INVOICE_GENERATION} prerequisite (FD-21), no tax rate on the line (the amount is the
+ * VAT-inclusive balance, FD-26). It publishes only {@code InvoiceSyncEvent} "SENT" with no payment
+ * URL (portal visibility, FD-9). Logs ids only.
  *
  * <p>The two audit rows are written here, not in {@link InvoiceCreationService} ({@code
  * MatterScopedPublisherGuardTest}); their details come only from {@link SafeAuditDetails} — no
@@ -55,7 +63,17 @@ public class BroughtForwardFeeNoteService {
       String sourceRef,
       LocalDate asAt,
       String description,
-      Map<String, Object> customFields) {}
+      Map<String, Object> customFields,
+      Map<String, Object> parkedColumns) {}
+
+  /**
+   * Why a client cannot take a fee note, as {@link InvoiceCreationService}'s own rule words it:
+   * {@code notActive} when its legacy status is not ACTIVE, else its lifecycle refused.
+   */
+  public record ClientRefusal(boolean notActive, String message) {}
+
+  /** The parked-columns note kept on the fee note (D-163, as on a taken-on client). */
+  public static final String PARKED_KEY = "takeon_parked";
 
   static final DateTimeFormatter AS_AT = DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.ENGLISH);
 
@@ -65,6 +83,8 @@ public class BroughtForwardFeeNoteService {
   }
 
   private final InvoiceCreationService creation;
+  private final InvoiceNumberService numbers;
+  private final CustomFieldValidator customFieldValidator;
   private final InvoiceRepository invoices;
   private final InvoiceLineRepository lines;
   private final InvoiceTaxService tax;
@@ -75,6 +95,8 @@ public class BroughtForwardFeeNoteService {
 
   public BroughtForwardFeeNoteService(
       InvoiceCreationService creation,
+      InvoiceNumberService numbers,
+      CustomFieldValidator customFieldValidator,
       InvoiceRepository invoices,
       InvoiceLineRepository lines,
       InvoiceTaxService tax,
@@ -83,6 +105,8 @@ public class BroughtForwardFeeNoteService {
       AuditService auditService,
       ApplicationEventPublisher events) {
     this.creation = creation;
+    this.numbers = numbers;
+    this.customFieldValidator = customFieldValidator;
     this.invoices = invoices;
     this.lines = lines;
     this.tax = tax;
@@ -93,11 +117,31 @@ public class BroughtForwardFeeNoteService {
   }
 
   /**
-   * Issues one brought-forward fee note, SENT, in the caller's (the take-on row's) transaction.
-   * Throws the client checks' refusals ({@code ResourceNotFoundException}, {@code
-   * InvalidStateException}); the take-on commit re-checks them first so a row fails cleanly.
+   * The client checks every fee note needs (legacy ACTIVE status, lifecycle {@code
+   * CREATE_INVOICE}), as a value: {@link InvoiceCreationService#requireInvoiceableClient}'s own
+   * rule and text, read by the take-on dry run and commit without a throw (D-25).
    */
-  @Transactional
+  public Optional<ClientRefusal> clientRefusal(Customer client) {
+    return creation
+        .invoiceableClientRefusal(client)
+        .map(r -> new ClientRefusal(r.notActive(), r.exception().getBody().getDetail()));
+  }
+
+  /** The firm's currency, as {@code OrgSettingsService.getDefaultCurrency} reads it. */
+  public String firmCurrency() {
+    return orgSettings
+        .findForCurrentTenant()
+        .map(OrgSettings::getDefaultCurrency)
+        .orElse(OrgSettingsService.DEFAULT_CURRENCY);
+  }
+
+  /**
+   * Issues one brought-forward fee note, SENT, in the caller's (the take-on row's) transaction
+   * ({@code MANDATORY}). Throws the client checks' refusals ({@code ResourceNotFoundException},
+   * {@code InvalidStateException}) and a custom-field refusal; the take-on commit re-checks the
+   * client first so a row fails cleanly, and any other throw rolls the row back.
+   */
+  @Transactional(propagation = Propagation.MANDATORY)
   public Invoice issue(BroughtForwardFeeNote spec, UUID takeOnBatchId, UUID actorMemberId) {
     // 1. Legacy ACTIVE status + lifecycle guard CREATE_INVOICE — NOT INVOICE_GENERATION (FD-21).
     var client = creation.requireInvoiceableClient(spec.clientId());
@@ -107,9 +151,7 @@ public class BroughtForwardFeeNoteService {
     if (spec.description() != null) {
       invoice.updateDraft(null, spec.description(), null, null);
     }
-    if (spec.customFields() != null && !spec.customFields().isEmpty()) {
-      invoice.setCustomFields(new HashMap<>(spec.customFields()));
-    }
+    invoice.setCustomFields(customFields(spec));
     invoice = invoices.save(invoice); // DRAFT, no batch id yet: the CHECK holds
 
     // 3. One untaxed MANUAL line (FD-26) — never applyTaxToLine: it would apply the default rate.
@@ -126,12 +168,17 @@ public class BroughtForwardFeeNoteService {
     lines.save(line);
     tax.recalculateInvoiceTotals(invoice);
 
-    // 4. DRAFT → SENT in one transition: source number and dates, approver, take-on batch.
+    // 4. A source number in the firm's own format: Kazi's own numbers continue after it (D-253).
+    //    Before the numbered save, so the counter's row lock is held first — a concurrent approval
+    //    waits and then numbers after it.
+    InvoiceNumberService.sequenceValueOf(spec.feeNoteNumber()).ifPresent(numbers::advancePast);
+
+    // 5. DRAFT → SENT in one transition: source number and dates, approver, take-on batch.
     invoice.issueBroughtForward(
         spec.feeNoteNumber(), spec.issueDate(), spec.dueDate(), takeOnBatchId, actorMemberId);
     invoice = invoices.save(invoice);
 
-    // 5. Audit — ids and a token only.
+    // 6. Audit — ids and a token only.
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("invoice.created")
@@ -156,19 +203,29 @@ public class BroughtForwardFeeNoteService {
                     .build())
             .build());
 
-    // 6. The portal fee note only: "SENT", no payment URL or session (FD-9).
+    // 7. The portal fee note only: "SENT", no payment URL or session (FD-9).
     publishPortalSync(invoice);
     log.debug(
         "Issued brought-forward fee note {} in take-on batch {}", invoice.getId(), takeOnBatchId);
     return invoice;
   }
 
-  /** The firm's currency, as {@code OrgSettingsService.getDefaultCurrency} reads it. */
-  private String firmCurrency() {
-    return orgSettings
-        .findForCurrentTenant()
-        .map(OrgSettings::getDefaultCurrency)
-        .orElse(OrgSettingsService.DEFAULT_CURRENCY);
+  /**
+   * The custom fields validated at write time, as {@code TakenOnCustomerService} does; then the
+   * parked columns as {@code takeon_parked} (after validation: the validator strips slugs it does
+   * not know, and there is no field definition for the parked-columns note, D-163).
+   */
+  private Map<String, Object> customFields(BroughtForwardFeeNote spec) {
+    Map<String, Object> validated =
+        new LinkedHashMap<>(
+            customFieldValidator.validate(
+                EntityType.INVOICE,
+                spec.customFields() != null ? spec.customFields() : new HashMap<>(),
+                null));
+    if (spec.parkedColumns() != null && !spec.parkedColumns().isEmpty()) {
+      validated.put(PARKED_KEY, new LinkedHashMap<>(spec.parkedColumns()));
+    }
+    return validated;
   }
 
   /** The portal sync {@code InvoiceTransitionService.send} publishes, without a payment link. */

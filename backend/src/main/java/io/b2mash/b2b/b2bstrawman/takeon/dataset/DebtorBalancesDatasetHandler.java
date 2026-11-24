@@ -1,7 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.takeon.dataset;
 
-import io.b2mash.b2b.b2bstrawman.compliance.CustomerLifecycleGuard;
-import io.b2mash.b2b.b2bstrawman.compliance.LifecycleAction;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
@@ -11,7 +9,10 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.invoice.BroughtForwardFeeNoteService;
 import io.b2mash.b2b.b2bstrawman.invoice.BroughtForwardFeeNoteService.BroughtForwardFeeNote;
 import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceCreationService;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceNumberService;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceStatus;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteContext;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteService;
@@ -49,16 +50,20 @@ import org.springframework.stereotype.Component;
  * through {@link BroughtForwardFeeNoteService#issue}, one row per transaction.
  *
  * <p>Extension model (D-103): delegation to {@link GenericTakeOnDatasetHandler}, plus a {@link
- * ValidationContext} subclass holding the client, matter, fee-note and firm lookups.
+ * ValidationContext} subclass holding the client, matter and firm lookups. The fee-note number is
+ * looked up per row ({@code InvoiceRepository.findByInvoiceNumberIgnoreCase}), at the dry run and
+ * again at the commit.
  *
  * <p>Validation: a client reference (email → previous-system ID → ID number, as the trust dataset
  * resolves it), a fee-note number, an issue date on or before the cutover date and an outstanding
  * amount above zero. An optional matter must be the client's; a blank due date defaults to the
  * issue date plus the firm's payment terms (warning); a currency must be the firm's. The source
  * number is kept (FD-20): one already in Kazi is an error, except an earlier brought-forward fee
- * note of the same client and amount, which is a duplicate. A client without a billing address or
- * email is only a warning — {@code INVOICE_GENERATION} is not applied to a brought-forward fee note
- * (FD-21). The client's legacy status and lifecycle are checked as every fee note's are.
+ * note of the same client and amount, which is a duplicate (a VOID one is not: its number stays
+ * with it, D-254). A number in Kazi's own {@code INV-n} format is a warning: Kazi's own numbers
+ * continue after it (D-253). A client without a billing address or email is only a warning — {@code
+ * INVOICE_GENERATION} is not applied to a brought-forward fee note (FD-21). The client's legacy
+ * status and lifecycle are checked as every fee note's are.
  *
  * <p>No sign-off: {@link #requiredSignOff()} is not overridden (the matters shape, D-155).
  */
@@ -82,12 +87,13 @@ public class DebtorBalancesDatasetHandler
   public static final String CURRENCY_MISMATCH = "CURRENCY_MISMATCH";
   public static final String DUE_DATE_DEFAULTED = "DUE_DATE_DEFAULTED";
   public static final String CLIENT_DETAILS_MISSING = "CLIENT_DETAILS_MISSING";
+  public static final String NUMBER_CONTINUES_SEQUENCE = "NUMBER_CONTINUES_SEQUENCE";
 
   /**
    * {@code validateInvoicePrerequisites}' own text for a client whose legacy status is not ACTIVE.
    */
   public static final String CLIENT_NOT_ACTIVE_MESSAGE =
-      "Client must be in ACTIVE status to create a fee note";
+      InvoiceCreationService.CLIENT_NOT_ACTIVE_DETAIL;
 
   /** FD-21: the address / email warning (copy, RG). */
   public static final String CLIENT_DETAILS_MISSING_MESSAGE =
@@ -106,6 +112,23 @@ public class DebtorBalancesDatasetHandler
   public static final String NUMBER_TAKEN_AT_COMMIT_MESSAGE =
       "A fee note with this number is already in Kazi. Correct it in the previous system, then take"
           + " it on in a new batch.";
+
+  /**
+   * The row's matter is no longer the client's at the commit (it was moved to another client after
+   * the dry run). Fixed text (D-102, D-256).
+   */
+  public static final String MATTER_MOVED_MESSAGE =
+      "The matter of this fee note is no longer a matter of its client in Kazi. Correct the matter,"
+          + " then take this fee note on in a new batch.";
+
+  /** The firm's currency changed between the dry run and the commit. Fixed text (D-102, D-255). */
+  public static final String CURRENCY_CHANGED_MESSAGE =
+      "The firm's currency changed after the dry run. Take this fee note on in a new batch.";
+
+  /** D-253 (copy): a source number in Kazi's own format. */
+  public static String numberContinuesSequence(String number) {
+    return "Kazi's own fee-note numbers will continue after %s.".formatted(number);
+  }
 
   /** FD-20, §17.3.10 verbatim. */
   public static String numberExists(String number) {
@@ -172,7 +195,6 @@ public class DebtorBalancesDatasetHandler
   private final CustomerRepository customers;
   private final ProjectRepository projects;
   private final TakeOnRowRepository takeOnRows;
-  private final CustomerLifecycleGuard lifecycleGuard;
   private final TrustClientMatterRule clientMatterRule;
   private final PrerequisiteService prerequisites;
   private final OrgSettingsRepository orgSettings;
@@ -184,7 +206,6 @@ public class DebtorBalancesDatasetHandler
       CustomerRepository customers,
       ProjectRepository projects,
       TakeOnRowRepository takeOnRows,
-      CustomerLifecycleGuard lifecycleGuard,
       TrustClientMatterRule clientMatterRule,
       PrerequisiteService prerequisites,
       OrgSettingsRepository orgSettings,
@@ -194,7 +215,6 @@ public class DebtorBalancesDatasetHandler
     this.customers = customers;
     this.projects = projects;
     this.takeOnRows = takeOnRows;
-    this.lifecycleGuard = lifecycleGuard;
     this.clientMatterRule = clientMatterRule;
     this.prerequisites = prerequisites;
     this.orgSettings = orgSettings;
@@ -345,16 +365,23 @@ public class DebtorBalancesDatasetHandler
         } else {
           check.addError(FEE_NOTE_NUMBER_EXISTS, "feeNoteNumber", numberExists(number));
         }
+      } else if (InvoiceNumberService.sequenceValueOf(number).isPresent()) {
+        check.addWarning(
+            NUMBER_CONTINUES_SEQUENCE, "feeNoteNumber", numberContinuesSequence(number));
       }
     }
 
     GenericTakeOnDatasetHandler.finish(row, check, context);
   }
 
-  /** An earlier brought-forward fee note of the same client and amount (FD-20's duplicate). */
+  /**
+   * An earlier brought-forward fee note of the same client and amount (FD-20's duplicate) — not a
+   * VOID one: its number stays with it, so a re-import is the number-exists error (D-254).
+   */
   private static boolean isBroughtForwardDuplicate(
       Invoice invoice, UUID clientId, BigDecimal amount) {
     return invoice.getTakeOnBatchId() != null
+        && invoice.getStatus() != InvoiceStatus.VOID
         && clientId != null
         && clientId.equals(invoice.getCustomerId())
         && amount != null
@@ -364,8 +391,8 @@ public class DebtorBalancesDatasetHandler
 
   /**
    * The legacy-status and lifecycle checks of {@code validateInvoicePrerequisites} (§17.3.10 step
-   * 1), as a refusal instead of a throw: the guard is a plain component and its refusal is caught
-   * here, so nothing escapes a transactional proxy (D-25).
+   * 1), as a refusal instead of a throw — the invoice domain's one rule and text ({@link
+   * BroughtForwardFeeNoteService#clientRefusal}), so nothing escapes a transactional proxy (D-25).
    */
   private Optional<ClientRefusal> clientRefusal(UUID clientId) {
     var client = customers.findById(clientId).orElse(null);
@@ -376,15 +403,12 @@ public class DebtorBalancesDatasetHandler
   }
 
   private Optional<ClientRefusal> refusalOf(Customer client) {
-    if (!"ACTIVE".equals(client.getStatus())) {
-      return Optional.of(new ClientRefusal(CLIENT_NOT_ACTIVE, CLIENT_NOT_ACTIVE_MESSAGE));
-    }
-    try {
-      lifecycleGuard.requireActionPermitted(client, LifecycleAction.CREATE_INVOICE);
-      return Optional.empty();
-    } catch (InvalidStateException e) {
-      return Optional.of(new ClientRefusal(CLIENT_LIFECYCLE, e.getBody().getDetail()));
-    }
+    return broughtForwardFeeNotes
+        .clientRefusal(client)
+        .map(
+            r ->
+                new ClientRefusal(
+                    r.notActive() ? CLIENT_NOT_ACTIVE : CLIENT_LIFECYCLE, r.message()));
   }
 
   /**
@@ -555,11 +579,30 @@ public class DebtorBalancesDatasetHandler
       return;
     }
 
-    // 3. The fee note, issued quietly.
+    // 3. The matter is still the client's (D-256): it may have moved since the dry run.
+    UUID matterId = uuid(v.get(MATTER_ID));
+    if (matterId != null) {
+      try {
+        clientMatterRule.requireClientMatter(client, matterId);
+      } catch (InvalidStateException | ResourceNotFoundException e) {
+        row.markFailed(MATTER_MOVED_MESSAGE);
+        return;
+      }
+    }
+
+    // 4. The firm's currency is still the one the row was validated in (D-255).
+    String validatedCurrency = text(v, "currency");
+    if (validatedCurrency != null
+        && !validatedCurrency.equalsIgnoreCase(broughtForwardFeeNotes.firmCurrency())) {
+      row.markFailed(CURRENCY_CHANGED_MESSAGE);
+      return;
+    }
+
+    // 5. The fee note, issued quietly.
     var spec =
         new BroughtForwardFeeNote(
             clientId,
-            uuid(v.get(MATTER_ID)),
+            matterId,
             number,
             date(v, "issueDate"),
             date(v, "dueDate"),
@@ -567,7 +610,8 @@ public class DebtorBalancesDatasetHandler
             text(v, TakeOnFieldCatalogue.SOURCE_REF),
             context.asAt(),
             text(v, "description"),
-            customFields(v));
+            map(v.get(GenericTakeOnDatasetHandler.CUSTOM_FIELDS_KEY)),
+            map(v.get(GenericTakeOnDatasetHandler.PARKED_KEY)));
     Invoice invoice =
         broughtForwardFeeNotes.issue(spec, context.batchId(), context.actorMemberId());
     row.markCreated(RESULT_ENTITY_TYPE, invoice.getId(), null);
@@ -580,20 +624,6 @@ public class DebtorBalancesDatasetHandler
   }
 
   // --- helpers ---
-
-  /** The validated custom fields with the parked columns as {@code takeon_parked} (D-163). */
-  private static Map<String, Object> customFields(Map<String, Object> v) {
-    var merged = new LinkedHashMap<String, Object>();
-    var custom = map(v.get(GenericTakeOnDatasetHandler.CUSTOM_FIELDS_KEY));
-    if (custom != null) {
-      merged.putAll(custom);
-    }
-    var parked = map(v.get(GenericTakeOnDatasetHandler.PARKED_KEY));
-    if (parked != null && !parked.isEmpty()) {
-      merged.put(GenericTakeOnDatasetHandler.PARKED_KEY, parked);
-    }
-    return merged.isEmpty() ? null : merged;
-  }
 
   private static String lower(String s) {
     return s.strip().toLowerCase(Locale.ROOT);

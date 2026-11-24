@@ -36,7 +36,7 @@ const actions = vi.hoisted(() => ({
 vi.mock("@/app/(app)/org/[slug]/settings/matters/take-on-actions", () => actions);
 
 import { TakeOnWizard } from "@/components/take-on/take-on-wizard";
-import { formatCurrency, formatDate } from "@/lib/format";
+import { formatCurrency } from "@/lib/format";
 import type { TakeOnBatch, TakeOnRow } from "@/lib/types";
 import { DEBTORS_CATALOGUE, debtorsBatch } from "./fixtures";
 
@@ -125,6 +125,23 @@ afterEach(() => {
 });
 
 describe("Debtor opening balances take-on rows (658A)", () => {
+  it("shows a date-only value on its own calendar day in a zone west of UTC", async () => {
+    const zone = process.env.TZ;
+    process.env.TZ = "America/New_York";
+    try {
+      // The zone took effect: a Date parse of the date-only value is the previous day here.
+      expect(new Date("2026-09-15").getDate()).toBe(14);
+      renderWizard(debtorsBatch());
+      await screen.findByTestId("take-on-rows");
+      expect(screen.getByTestId("take-on-row-2-issueDate")).toHaveTextContent("15 September 2026");
+      expect(screen.getByTestId("take-on-row-2-dueDate")).toHaveTextContent("15 October 2026");
+      expect(screen.getByTestId("take-on-row-3-issueDate")).toHaveTextContent("1 August 2026");
+    } finally {
+      if (zone === undefined) delete process.env.TZ;
+      else process.env.TZ = zone;
+    }
+  });
+
   it("shows the fee note, its client, dates and outstanding amount", async () => {
     renderWizard(debtorsBatch());
     const table = await screen.findByTestId("take-on-rows");
@@ -152,9 +169,7 @@ describe("Debtor opening balances take-on rows (658A)", () => {
     expect(screen.getByTestId("take-on-row-3-client")).toHaveTextContent(
       "Client email: mokoena@example.co.za"
     );
-    expect(screen.getByTestId("take-on-row-2-issueDate")).toHaveTextContent(
-      formatDate("2026-09-15")
-    );
+    expect(screen.getByTestId("take-on-row-2-issueDate")).toHaveTextContent("15 September 2026");
     // (textContent, not toHaveTextContent: the currency text holds non-breaking spaces)
     expect(screen.getByTestId("take-on-row-2-outstandingAmount").textContent).toBe(
       formatCurrency(12345.67, "ZAR")

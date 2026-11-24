@@ -8,7 +8,9 @@ import static io.b2mash.b2b.b2bstrawman.takeon.TakeOnTestApi.rowContent;
 import static io.b2mash.b2b.b2bstrawman.takeon.TakeOnTestApi.rows;
 import static io.b2mash.b2b.b2bstrawman.takeon.TakeOnTestApi.validatedDebtors;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.jayway.jsonpath.JsonPath;
@@ -31,6 +33,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -44,7 +47,6 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -118,12 +120,17 @@ class DebtorBalancesTakeOnIntegrationTest {
     var clients =
         TakeOnTestApi.validatedClients(
             mockMvc,
-            ownerJwt(),
+            TestJwtFactory.ownerJwt(ORG_ID, OWNER),
             TakeOnClientsFiles.csv(
                 TakeOnClientsFiles.row("Lerato Molefe", "db.lerato@example.test")
                     .ref(TAKEN_ON_REF)),
             TakeOnClientsFiles.mapping());
-    TakeOnTestApi.attest(mockMvc, ownerJwt(), clients.batchId(), clients.hash(), Map.of())
+    TakeOnTestApi.attest(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_ID, OWNER),
+            clients.batchId(),
+            clients.hash(),
+            Map.of())
         .andExpect(status().isOk());
     TakeOnTestDrain.commitAndDrain(
         commitService, drain, schema, ORG_ID, ownerId, clients.batchId(), clients.hash());
@@ -238,6 +245,7 @@ class DebtorBalancesTakeOnIntegrationTest {
   void aNumberAlreadyInKazi_isAnError_exceptAnEarlierBroughtForwardNoteOfTheSameClientAndAmount()
       throws Exception {
     String kaziNumber = approvedKaziFeeNote(thandi);
+    String kaziNumberLower = kaziNumber.toLowerCase(Locale.ROOT);
     var earlier =
         validate(
             row(THANDI_EMAIL, "DB-DUP-1").amount("500.00").ref("R4a-1"),
@@ -251,7 +259,7 @@ class DebtorBalancesTakeOnIntegrationTest {
             row(THANDI_EMAIL, "db-dup-1").amount("500").ref("R4-1"),
             row(SIPHO_EMAIL, "DB-DUP-2").amount("700.00").ref("R4-2"),
             row(THANDI_EMAIL, "DB-DUP-3").amount("999.00").ref("R4-3"),
-            row(THANDI_EMAIL, kaziNumber.toLowerCase()).ref("R4-4"),
+            row(THANDI_EMAIL, kaziNumberLower).ref("R4-4"),
             row(THANDI_EMAIL, "DB-NEW-5").ref("R4-5"),
             row(THANDI_EMAIL, "db-new-5").ref("R4-6"));
     var rows = rowsByRef(batch.batchId());
@@ -272,7 +280,7 @@ class DebtorBalancesTakeOnIntegrationTest {
         rows.get("R4-4"),
         DebtorBalancesDatasetHandler.FEE_NOTE_NUMBER_EXISTS,
         "feeNoteNumber",
-        "Fee-note number " + kaziNumber.toLowerCase() + " already exists in Kazi");
+        "Fee-note number " + kaziNumberLower + " already exists in Kazi");
     assertError(
         rows.get("R4-6"),
         "DUPLICATE_IN_FILE",
@@ -397,13 +405,13 @@ class DebtorBalancesTakeOnIntegrationTest {
             row(THANDI_EMAIL, "DB-RES-3").ref("R9-3"));
     TakeOnTestDrain.commit(commitService, schema, ORG_ID, ownerId, batch.batchId(), batch.hash());
     TakeOnTestDrain.run(drain, schema, ORG_ID, Duration.ZERO); // stops after one row
-    var mid = json(detail(mockMvc, ownerJwt(), batch.batchId()));
+    var mid = json(detail(mockMvc, TestJwtFactory.ownerJwt(ORG_ID, OWNER), batch.batchId()));
     assertThat((String) JsonPath.read(mid, "$.status")).isEqualTo("COMMITTING");
     assertThat((Integer) JsonPath.read(mid, "$.counts.created")).isEqualTo(1);
 
     TakeOnTestDrain.run(drain, schema, ORG_ID);
     TakeOnTestDrain.run(drain, schema, ORG_ID); // a redelivered run finds nothing to do
-    var done = json(detail(mockMvc, ownerJwt(), batch.batchId()));
+    var done = json(detail(mockMvc, TestJwtFactory.ownerJwt(ORG_ID, OWNER), batch.batchId()));
     assertThat((String) JsonPath.read(done, "$.status")).isEqualTo("COMPLETED");
     assertThat((Integer) JsonPath.read(done, "$.counts.created")).isEqualTo(3);
     for (String number : List.of("DB-RES-1", "DB-RES-2", "DB-RES-3")) {
@@ -469,7 +477,7 @@ class DebtorBalancesTakeOnIntegrationTest {
     mockMvc
         .perform(
             post("/api/clients/" + gone + "/anonymize")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"confirmationName\": \"Gone Debtor\", \"reason\": \"test\"}"))
         .andExpect(status().isOk());
@@ -491,10 +499,115 @@ class DebtorBalancesTakeOnIntegrationTest {
     assertThat(inTenant(() -> invoices.findByCustomerId(gone))).isEmpty();
   }
 
+  // 12 (D-254): a VOID brought-forward fee note keeps its number — never a duplicate
+  @Test
+  void aVoidedBroughtForwardFeeNote_isNotADuplicate_itsNumberIsAnError() throws Exception {
+    var first = validate(row(THANDI_EMAIL, "DB-VOID-1").amount("450.00").ref("R12-1"));
+    commit(first);
+    UUID voided = resultEntity(rowsByRef(first.batchId()).get("R12-1"));
+    mockMvc
+        .perform(
+            post("/api/invoices/" + voided + "/void").with(TestJwtFactory.ownerJwt(ORG_ID, OWNER)))
+        .andExpect(status().isOk());
+
+    var again = validate(row(THANDI_EMAIL, "DB-VOID-1").amount("450.00").ref("R12-2"));
+    var rows = rowsByRef(again.batchId());
+    assertError(
+        rows.get("R12-2"),
+        DebtorBalancesDatasetHandler.FEE_NOTE_NUMBER_EXISTS,
+        "feeNoteNumber",
+        "Fee-note number DB-VOID-1 already exists in Kazi");
+    assertThat(rows.get("R12-2").get("duplicateOfId")).isNull();
+    assertThat((Integer) JsonPath.read(again.json(), "$.counts.duplicate")).isZero();
+  }
+
+  // 13 (D-256): the matter moved to another client between the dry run and the commit
+  @Test
+  void aMatterMovedToAnotherClientAfterTheDryRun_failsItsRow_andNoFeeNoteIsIssued()
+      throws Exception {
+    UUID moving = createMatter("Matter that moves", thandi, "DB-MOVE-1");
+    var batch =
+        validate(
+            row(THANDI_EMAIL, "DB-MOVE-FN").matter("DB-MOVE-1").ref("R13-1"),
+            row(THANDI_EMAIL, "DB-MOVE-OK").ref("R13-2"));
+    assertThat((Integer) JsonPath.read(batch.json(), "$.counts.valid")).isEqualTo(2);
+
+    // move the matter to Sipho and unlink it from Thandi (PUT /api/matters, then the client link)
+    var body = new HashMap<String, Object>();
+    body.put("name", "Matter that moves");
+    body.put("clientId", sipho.toString());
+    mockMvc
+        .perform(
+            put("/api/matters/" + moving)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(JsonMapper.builder().build().writeValueAsString(body)))
+        .andExpect(status().isOk());
+    mockMvc
+        .perform(
+            delete("/api/clients/" + thandi + "/matters/" + moving)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER)))
+        .andExpect(status().is2xxSuccessful());
+
+    commit(batch);
+    var failed = rowByNumber(batch.batchId(), 2);
+    assertThat(failed.get("status")).isEqualTo("FAILED");
+    assertThat(failed.get("failure_reason"))
+        .isEqualTo(DebtorBalancesDatasetHandler.MATTER_MOVED_MESSAGE);
+    assertThat(count("SELECT count(*) FROM %s.invoices WHERE invoice_number = ?", "DB-MOVE-FN"))
+        .isZero();
+    assertThat(rowByNumber(batch.batchId(), 3).get("status")).isEqualTo("CREATED");
+  }
+
+  // 14 (D-255): the firm's currency changed between the dry run and the commit
+  @Test
+  void aFirmCurrencyChangedAfterTheDryRun_failsTheRow_insteadOfIssuingInAnotherCurrency()
+      throws Exception {
+    var batch = validate(row(THANDI_EMAIL, "DB-CCY-1").ref("R14-1"));
+    assertThat(values(rowsByRef(batch.batchId()).get("R14-1"))).containsEntry("currency", "ZAR");
+    setFirmCurrency("USD");
+    try {
+      commit(batch);
+    } finally {
+      setFirmCurrency("ZAR");
+    }
+    var failed = rowByNumber(batch.batchId(), 2);
+    assertThat(failed.get("status")).isEqualTo("FAILED");
+    assertThat(failed.get("failure_reason"))
+        .isEqualTo(DebtorBalancesDatasetHandler.CURRENCY_CHANGED_MESSAGE);
+    assertThat(count("SELECT count(*) FROM %s.invoices WHERE invoice_number = ?", "DB-CCY-1"))
+        .isZero();
+  }
+
+  // 15: custom fields validated at write time, then the parked columns kept as takeon_parked
+  @Test
+  void theParkedColumns_areKeptOnTheFeeNote() throws Exception {
+    var batch = validate(row(THANDI_EMAIL, "DB-PARK-1").ledger("LEDGER-77").ref("R15-1"));
+    commit(batch);
+    UUID created = resultEntity(rowsByRef(batch.batchId()).get("R15-1"));
+    String customFields =
+        jdbc.queryForObject(
+            "SELECT custom_fields::text FROM \"%s\".invoices WHERE id = ?".formatted(schema),
+            String.class,
+            created);
+    assertThat(customFields).contains("\"takeon_parked\"").contains("LEDGER-77");
+  }
+
   // --- helpers ---
 
+  private void setFirmCurrency(String currency) throws Exception {
+    mockMvc
+        .perform(
+            put("/api/settings")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"defaultCurrency\": \"%s\"}".formatted(currency)))
+        .andExpect(status().isOk());
+  }
+
   private Validated validate(TakeOnDebtorsFiles.Row... rows) throws Exception {
-    return validatedDebtors(mockMvc, ownerJwt(), csv(rows), mapping(), CUTOVER);
+    return validatedDebtors(
+        mockMvc, TestJwtFactory.ownerJwt(ORG_ID, OWNER), csv(rows), mapping(), CUTOVER);
   }
 
   private void commit(Validated batch) {
@@ -554,7 +667,7 @@ class DebtorBalancesTakeOnIntegrationTest {
         mockMvc
             .perform(
                 post("/api/matters")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(JsonMapper.builder().build().writeValueAsString(body)))
             .andExpect(status().isCreated())
@@ -568,14 +681,14 @@ class DebtorBalancesTakeOnIntegrationTest {
         json(
             mockMvc.perform(
                 post("/api/invoices")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{\"clientId\": \"%s\", \"currency\": \"ZAR\"}".formatted(clientId))));
     String id = JsonPath.read(draft, "$.id");
     mockMvc
         .perform(
             post("/api/invoices/" + id + "/lines")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     "{\"description\": \"Consultation\", \"quantity\": 1, \"unitPrice\": 250.00,"
@@ -584,7 +697,9 @@ class DebtorBalancesTakeOnIntegrationTest {
     String approved =
         json(
             mockMvc
-                .perform(post("/api/invoices/" + id + "/approve").with(ownerJwt()))
+                .perform(
+                    post("/api/invoices/" + id + "/approve")
+                        .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER)))
                 .andExpect(status().isOk()));
     return JsonPath.read(approved, "$.invoiceNumber");
   }
@@ -599,7 +714,9 @@ class DebtorBalancesTakeOnIntegrationTest {
   }
 
   private Map<String, Map<String, Object>> rowsByRef(UUID batchId) throws Exception {
-    return rowContent(json(rows(mockMvc, ownerJwt(), batchId, "size=200"))).stream()
+    return rowContent(
+            json(rows(mockMvc, TestJwtFactory.ownerJwt(ORG_ID, OWNER), batchId, "size=200")))
+        .stream()
         .collect(Collectors.toMap(r -> (String) r.get("sourceRef"), r -> r));
   }
 
@@ -668,9 +785,5 @@ class DebtorBalancesTakeOnIntegrationTest {
 
   private <T> T inTenant(Callable<T> action) {
     return RequestScopes.callForTenant(schema, ORG_ID, action);
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return TestJwtFactory.ownerJwt(ORG_ID, OWNER);
   }
 }

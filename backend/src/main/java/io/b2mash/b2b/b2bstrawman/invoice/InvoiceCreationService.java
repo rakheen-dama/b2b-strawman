@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -794,13 +795,42 @@ public class InvoiceCreationService {
             .findById(customerId)
             .orElseThrow(() -> new ResourceNotFoundException(EntityNoun.CLIENT, customerId));
 
-    if (!"ACTIVE".equals(customer.getStatus())) {
-      throw new InvalidStateException(
-          "Client not active", "Client must be in ACTIVE status to create a fee note");
+    var refusal = invoiceableClientRefusal(customer);
+    if (refusal.isPresent()) {
+      throw refusal.get().exception();
     }
-
-    customerLifecycleGuard.requireActionPermitted(customer, LifecycleAction.CREATE_INVOICE);
     return customer;
+  }
+
+  /** The refusal text of a client whose legacy status is not ACTIVE. */
+  public static final String CLIENT_NOT_ACTIVE_DETAIL =
+      "Client must be in ACTIVE status to create a fee note";
+
+  /**
+   * A refusal of {@link #requireInvoiceableClient}'s status and lifecycle checks, not thrown:
+   * {@code notActive} when the legacy status is not ACTIVE (else the lifecycle guard refused), and
+   * the exception {@code requireInvoiceableClient} throws for it.
+   */
+  record InvoiceableClientRefusal(boolean notActive, InvalidStateException exception) {}
+
+  /**
+   * The one rule of {@link #requireInvoiceableClient} for a loaded client, as a value (Phase 93
+   * 658A): the take-on dry run and commit read it without a throw crossing a transactional proxy
+   * (D-25). The lifecycle guard is a plain component, so its refusal is caught here.
+   */
+  Optional<InvoiceableClientRefusal> invoiceableClientRefusal(
+      io.b2mash.b2b.b2bstrawman.customer.Customer customer) {
+    if (!"ACTIVE".equals(customer.getStatus())) {
+      return Optional.of(
+          new InvoiceableClientRefusal(
+              true, new InvalidStateException("Client not active", CLIENT_NOT_ACTIVE_DETAIL)));
+    }
+    try {
+      customerLifecycleGuard.requireActionPermitted(customer, LifecycleAction.CREATE_INVOICE);
+      return Optional.empty();
+    } catch (InvalidStateException e) {
+      return Optional.of(new InvoiceableClientRefusal(false, e));
+    }
   }
 
   /**

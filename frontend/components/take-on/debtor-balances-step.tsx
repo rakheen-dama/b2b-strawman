@@ -1,7 +1,7 @@
 import { Badge } from "@b2mash/ui/badge";
 import { TableCell, TableHead } from "@/components/ui/table";
-import { formatCurrency, formatDate } from "@/lib/format";
-import type { TakeOnRow } from "@/lib/types";
+import { formatCurrency } from "@/lib/format";
+import { takeOnLongDate, type TakeOnRow } from "@/lib/types";
 
 /**
  * The debtor opening balances' own columns in the take-on row table (Phase 93 658A, §17.3.10): the
@@ -45,11 +45,15 @@ export const DEBTOR_COLUMN_KEYS: ReadonlySet<string> = new Set([
   "matterId",
 ]);
 
-/** A debtor value as text: dates as on the fee-note list; anything else as given. */
+/**
+ * A debtor value as text: the dates (date-only "yyyy-MM-dd") as the dry run's messages write them,
+ * "15 September 2026" — plain calendar arithmetic, so the day is the same in every time zone (a
+ * `Date` parse reads them as UTC midnight, the previous day west of UTC); anything else as given.
+ */
 export function debtorValueText(key: string, value: unknown): string {
   if (value === null || value === undefined || value === "") return "";
   const text = String(value);
-  if (key === "issueDate" || key === "dueDate") return formatDate(text) || text;
+  if (key === "issueDate" || key === "dueDate") return takeOnLongDate(text) || text;
   return text;
 }
 

@@ -50,6 +50,10 @@ class BroughtForwardFeeNoteSchemaTest {
   private static final String MIGRATION_FILE =
       "db/migration/tenant/V37__phase93_brought_forward_fee_notes.sql";
   private static final String PREVIOUS_VERSION = "36";
+
+  /** The migration under test: walk to it, not to the latest (a later one must not change this). */
+  private static final String VERSION = "37";
+
   private static final String CHECK = "chk_invoice_brought_forward_status";
   private static final String FK = "invoices_take_on_batch_fkey";
 
@@ -91,7 +95,7 @@ class BroughtForwardFeeNoteSchemaTest {
             .replace("%o", OWNER.toString())
             .replace("%c", CLIENT.toString())
             .replace("%b", BATCH.toString()));
-    tenantFlyway().load().migrate();
+    tenantFlyway().target(MigrationVersion.fromVersion(VERSION)).load().migrate();
   }
 
   @AfterAll

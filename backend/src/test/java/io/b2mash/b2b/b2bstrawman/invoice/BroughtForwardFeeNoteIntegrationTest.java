@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.invoice;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.jayway.jsonpath.JsonPath;
@@ -74,14 +75,15 @@ import tools.jackson.databind.json.JsonMapper;
  * Phase 93 658A (task 658.6, architecture §17.3.10, ADR-390): the quiet issue of brought-forward
  * fee notes, driven through the take-on write path (upload → cutover date → map → validate → commit
  * through {@link TakeOnTestDrain}). Each fee note is SENT with its source number, dates and one
- * untaxed MANUAL line; nothing of approve or send runs — the firm's number sequence is untouched,
- * no payment link, no {@code InvoiceApprovedEvent} / {@code InvoiceSentEvent}, no notification, no
- * accounting sync entry (with Xero CONNECTED), no automation, no email; only the portal fee note is
- * upserted, without a payment URL. Afterwards they are ordinary SENT fee notes: the cash digest and
- * aging count them, collections no-ops while switched off, a void or payment fires the ordinary
- * listeners — except that a brought-forward fee note is never enqueued for Xero (FD-28) — and
- * {@code INVOICE_GENERATION} is still enforced on {@code createDraft} (FD-21). Every assertion is
- * scoped to this test's own fee notes (id-scope).
+ * untaxed MANUAL line; nothing of approve or send runs — the firm's number sequence is not used (a
+ * source number in its own {@code INV-n} format only moves it on, D-253), no payment link, no
+ * {@code InvoiceApprovedEvent} / {@code InvoiceSentEvent}, no notification, no accounting sync
+ * entry (with Xero CONNECTED), no automation, no email; only the portal fee note is upserted,
+ * without a payment URL. Afterwards they are ordinary SENT fee notes: the cash digest and aging
+ * count them, collections no-ops while switched off, a void or payment fires the ordinary listeners
+ * — except that a brought-forward fee note is never enqueued for Xero (FD-28) — and {@code
+ * INVOICE_GENERATION} is still enforced on {@code createDraft} (FD-21). Every assertion is scoped
+ * to this test's own fee notes (id-scope).
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -439,10 +441,17 @@ class BroughtForwardFeeNoteIntegrationTest {
     mockMvc
         .perform(
             post("/api/invoices")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"clientId\": \"%s\", \"currency\": \"ZAR\"}".formatted(bare)))
-        .andExpect(status().isUnprocessableEntity());
+        .andExpect(status().isUnprocessableEntity())
+        .andExpect(jsonPath("$.status").value(422))
+        .andExpect(jsonPath("$.title").value("Prerequisites not met"))
+        .andExpect(
+            jsonPath("$.detail")
+                .value(
+                    org.hamcrest.Matchers.matchesPattern(
+                        "\\d+ required field\\(s\\) missing for Fee note generation")));
   }
 
   // 14
@@ -453,7 +462,9 @@ class BroughtForwardFeeNoteIntegrationTest {
     String json =
         json(
             mockMvc
-                .perform(post("/api/invoices/" + id + "/void").with(ownerJwt()))
+                .perform(
+                    post("/api/invoices/" + id + "/void")
+                        .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER)))
                 .andExpect(status().isOk()));
     assertThat((String) JsonPath.read(json, "$.status")).isEqualTo("VOID");
     assertThat(TakeOnTestApi.auditEvents(jdbc, schema, id))
@@ -491,20 +502,24 @@ class BroughtForwardFeeNoteIntegrationTest {
     String detail =
         json(
             mockMvc
-                .perform(get("/api/invoices/" + id).with(ownerJwt()))
+                .perform(get("/api/invoices/" + id).with(TestJwtFactory.ownerJwt(ORG_ID, OWNER)))
                 .andExpect(status().isOk()));
     assertThat((String) JsonPath.read(detail, "$.takeOnBatchId")).isEqualTo(batchId.toString());
     UUID ordinary = approvedOrdinaryFeeNote(thandi).id();
     String ordinaryDetail =
         json(
             mockMvc
-                .perform(get("/api/invoices/" + ordinary).with(ownerJwt()))
+                .perform(
+                    get("/api/invoices/" + ordinary).with(TestJwtFactory.ownerJwt(ORG_ID, OWNER)))
                 .andExpect(status().isOk()));
     assertThat((Object) JsonPath.read(ordinaryDetail, "$.takeOnBatchId")).isNull();
     String list =
         json(
             mockMvc
-                .perform(get("/api/invoices").param("clientId", thandi.toString()).with(ownerJwt()))
+                .perform(
+                    get("/api/invoices")
+                        .param("clientId", thandi.toString())
+                        .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER)))
                 .andExpect(status().isOk()));
     List<String> listed = JsonPath.read(list, "$[?(@.id == '" + id + "')].takeOnBatchId");
     assertThat(listed).containsExactly(batchId.toString());
@@ -530,36 +545,136 @@ class BroughtForwardFeeNoteIntegrationTest {
     }
   }
 
+  // 18 (D-253): a fresh tenant, so the counter's first use is this test's own
+  @Test
+  void aSourceNumberInTheFirmsFormat_movesTheCounterPastIt_neverBackwards_andApprovalStillWorks()
+      throws Exception {
+    String org = "org_bf_counter_test";
+    String subject = "user_bfc_owner";
+    String counterSchema =
+        provisioningService
+            .provisionTenant(org, "Counter Continuity Attorneys", "legal-za")
+            .schemaName();
+    UUID owner =
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc, org, subject, "bfc_owner@test.com", "BFC Owner", "owner"));
+    var jwt = TestJwtFactory.ownerJwt(org, subject);
+    UUID client =
+        RequestScopes.callForTenant(
+            counterSchema,
+            org,
+            () ->
+                customers
+                    .save(
+                        TestCustomerFactory.createActiveCustomerWithPrerequisiteFields(
+                            "Counter Client", "bfc.client@example.test", owner))
+                    .getId());
+    assertThat(counterOf(counterSchema)).as("a fresh counter").isEmpty();
+
+    // INV-0001 and INV-0005 brought forward: the dry run warns, the commit moves the counter on
+    var batch =
+        TakeOnTestApi.validatedDebtors(
+            mockMvc,
+            jwt,
+            TakeOnDebtorsFiles.csv(
+                TakeOnDebtorsFiles.row("bfc.client@example.test", "INV-0001").ref("C-1"),
+                TakeOnDebtorsFiles.row("bfc.client@example.test", "inv-0005").ref("C-5")),
+            TakeOnDebtorsFiles.mapping(),
+            CUTOVER.toString());
+    assertThat((Integer) JsonPath.read(batch.json(), "$.counts.error")).isZero();
+    List<Map<String, Object>> dryRun =
+        TakeOnTestApi.rowContent(
+            json(TakeOnTestApi.rows(mockMvc, jwt, batch.batchId(), "size=200")));
+    assertThat(dryRun)
+        .hasSize(2)
+        .allSatisfy(
+            r -> {
+              @SuppressWarnings("unchecked")
+              var values = (Map<String, Object>) r.get("values");
+              @SuppressWarnings("unchecked")
+              var warnings = (List<Map<String, Object>>) r.get("warnings");
+              assertThat(r.get("status")).isEqualTo("VALIDATED");
+              assertThat(warnings)
+                  .anySatisfy(
+                      w -> {
+                        assertThat(w.get("code")).isEqualTo("NUMBER_CONTINUES_SEQUENCE");
+                        assertThat(w.get("field")).isEqualTo("feeNoteNumber");
+                        assertThat(w.get("message"))
+                            .isEqualTo(
+                                "Kazi's own fee-note numbers will continue after "
+                                    + values.get("feeNoteNumber")
+                                    + ".");
+                      });
+            });
+    commitIn(counterSchema, org, owner, jwt, batch, 2);
+    assertThat(counterOf(counterSchema)).containsExactly(6L);
+
+    // the next ordinary fee note is INV-0006, and its approval succeeds
+    assertThat(approvedOrdinaryFeeNote(jwt, client).number()).isEqualTo("INV-0006");
+
+    // INV-0002 when the counter is already past it: the counter is not moved backwards
+    var later =
+        TakeOnTestApi.validatedDebtors(
+            mockMvc,
+            jwt,
+            TakeOnDebtorsFiles.csv(
+                TakeOnDebtorsFiles.row("bfc.client@example.test", "INV-0002").ref("C-2")),
+            TakeOnDebtorsFiles.mapping(),
+            CUTOVER.toString());
+    commitIn(counterSchema, org, owner, jwt, later, 1);
+    assertThat(counterOf(counterSchema)).containsExactly(7L);
+    assertThat(approvedOrdinaryFeeNote(jwt, client).number()).isEqualTo("INV-0007");
+  }
+
   // --- helpers ---
 
   /** Uploads, dates, maps, validates and commits one debtors batch; returns the batch id. */
   private UUID commitDebtors(TakeOnDebtorsFiles.Row... rows) throws Exception {
+    var jwt = TestJwtFactory.ownerJwt(ORG_ID, OWNER);
     var batch =
         TakeOnTestApi.validatedDebtors(
             mockMvc,
-            ownerJwt(),
+            jwt,
             TakeOnDebtorsFiles.csv(rows),
             TakeOnDebtorsFiles.mapping(),
             CUTOVER.toString());
     assertThat((Integer) JsonPath.read(batch.json(), "$.counts.error")).isZero();
-    TakeOnTestDrain.commitAndDrain(
-        commitService, drain, schema, ORG_ID, ownerId, batch.batchId(), batch.hash());
-    String detail = json(TakeOnTestApi.detail(mockMvc, ownerJwt(), batch.batchId()));
-    assertThat((String) JsonPath.read(detail, "$.status")).isEqualTo("COMPLETED");
-    assertThat((Integer) JsonPath.read(detail, "$.counts.created")).isEqualTo(rows.length);
+    commitIn(schema, ORG_ID, ownerId, jwt, batch, rows.length);
     return batch.batchId();
+  }
+
+  /** Commits a validated debtors batch through the drain; every row is CREATED. */
+  private void commitIn(
+      String tenantSchema,
+      String orgId,
+      UUID actor,
+      JwtRequestPostProcessor jwt,
+      TakeOnTestApi.Validated batch,
+      int created)
+      throws Exception {
+    TakeOnTestDrain.commitAndDrain(
+        commitService, drain, tenantSchema, orgId, actor, batch.batchId(), batch.hash());
+    String detail = json(TakeOnTestApi.detail(mockMvc, jwt, batch.batchId()));
+    assertThat((String) JsonPath.read(detail, "$.status")).isEqualTo("COMPLETED");
+    assertThat((Integer) JsonPath.read(detail, "$.counts.created")).isEqualTo(created);
   }
 
   private record Ordinary(UUID id, String number) {}
 
   /** An ordinary Kazi fee note: createDraft + a manual line + approve. */
   private Ordinary approvedOrdinaryFeeNote(UUID clientId) throws Exception {
+    return approvedOrdinaryFeeNote(TestJwtFactory.ownerJwt(ORG_ID, OWNER), clientId);
+  }
+
+  private Ordinary approvedOrdinaryFeeNote(JwtRequestPostProcessor jwt, UUID clientId)
+      throws Exception {
     String draft =
         json(
             mockMvc
                 .perform(
                     post("/api/invoices")
-                        .with(ownerJwt())
+                        .with(jwt)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(
                             "{\"clientId\": \"%s\", \"currency\": \"ZAR\"}".formatted(clientId)))
@@ -568,7 +683,7 @@ class BroughtForwardFeeNoteIntegrationTest {
     mockMvc
         .perform(
             post("/api/invoices/" + id + "/lines")
-                .with(ownerJwt())
+                .with(jwt)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     "{\"description\": \"Consultation\", \"quantity\": 1, \"unitPrice\": 250.00,"
@@ -577,7 +692,7 @@ class BroughtForwardFeeNoteIntegrationTest {
     String approved =
         json(
             mockMvc
-                .perform(post("/api/invoices/" + id + "/approve").with(ownerJwt()))
+                .perform(post("/api/invoices/" + id + "/approve").with(jwt))
                 .andExpect(status().isOk()));
     return new Ordinary(UUID.fromString(id), JsonPath.read(approved, "$.invoiceNumber"));
   }
@@ -587,7 +702,7 @@ class BroughtForwardFeeNoteIntegrationTest {
         mockMvc
             .perform(
                 post("/api/invoices/" + id + "/payment")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         "{\"amount\": %s, \"paymentMethod\": \"EFT\", \"paymentReference\": \"EFT-1\"}"
@@ -624,7 +739,7 @@ class BroughtForwardFeeNoteIntegrationTest {
             mockMvc
                 .perform(
                     post("/api/matters")
-                        .with(ownerJwt())
+                        .with(TestJwtFactory.ownerJwt(ORG_ID, OWNER))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(JsonMapper.builder().build().writeValueAsString(body)))
                 .andExpect(status().isCreated()));
@@ -656,8 +771,12 @@ class BroughtForwardFeeNoteIntegrationTest {
 
   /** The firm's fee-note counter ({@code invoice_counters.next_number}); empty when never used. */
   private List<Long> counter() {
+    return counterOf(schema);
+  }
+
+  private List<Long> counterOf(String tenantSchema) {
     return jdbc.queryForList(
-        "SELECT next_number FROM \"%s\".invoice_counters".formatted(schema), Long.class);
+        "SELECT next_number FROM \"%s\".invoice_counters".formatted(tenantSchema), Long.class);
   }
 
   private long count(String sql, Object... args) {
@@ -671,9 +790,5 @@ class BroughtForwardFeeNoteIntegrationTest {
 
   private <T> T inTenant(Callable<T> action) {
     return RequestScopes.callForTenant(schema, ORG_ID, action);
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return TestJwtFactory.ownerJwt(ORG_ID, OWNER);
   }
 }

@@ -15,6 +15,7 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -314,26 +315,52 @@ class TakeOnAuditNoPiiIntegrationTest {
         commitService, drain, schema, ORG_ID, ownerId, debtors.batchId(), debtors.hash());
     resultCsv(mockMvc, owner(), debtors.batchId()).andExpect(status().isOk());
 
-    var rows =
+    // The issued fee notes, by the debtors batch; their audit rows are selected by id, so an
+    // invoice.created without source=TAKE_ON cannot hide from the checks below.
+    List<UUID> issued =
         jdbc.queryForList(
-            ("SELECT event_type, details::text AS details FROM \"%s\".audit_events"
-                    + " WHERE occurred_at >= ? AND (event_type LIKE 'takeon.%%'"
-                    + " OR event_type = 'invoice.brought_forward_issued'"
-                    + " OR (event_type = 'invoice.created' AND details->>'source' = 'TAKE_ON'))")
+            "SELECT id FROM \"%s\".invoices WHERE take_on_batch_id = ?".formatted(schema),
+            UUID.class,
+            debtors.batchId());
+    assertThat(issued).hasSize(2);
+    var invoiceRows =
+        jdbc.queryForList(
+            ("SELECT event_type, entity_id, details::text AS details FROM \"%s\".audit_events"
+                    + " WHERE entity_id IN (?, ?) AND event_type IN"
+                    + " ('invoice.created', 'invoice.brought_forward_issued')")
                 .formatted(schema),
-            Timestamp.from(started));
+            issued.get(0),
+            issued.get(1));
+    for (String type : List.of("invoice.created", "invoice.brought_forward_issued")) {
+      assertThat(invoiceRows)
+          .filteredOn(r -> type.equals(r.get("event_type")))
+          .extracting(r -> (UUID) r.get("entity_id"))
+          .as("exactly one %s per issued fee note", type)
+          .containsExactlyInAnyOrderElementsOf(issued);
+    }
+    for (var row : invoiceRows) {
+      if ("invoice.created".equals(row.get("event_type"))) {
+        @SuppressWarnings("unchecked")
+        Map<String, Object> details = JSON.readValue((String) row.get("details"), Map.class);
+        assertThat(details)
+            .as("invoice.created %s", row.get("entity_id"))
+            .containsEntry("source", "TAKE_ON");
+      }
+    }
+    var rows = new ArrayList<Map<String, Object>>(invoiceRows);
+    rows.addAll(
+        jdbc.queryForList(
+            ("SELECT event_type, entity_id, details::text AS details FROM \"%s\".audit_events"
+                    + " WHERE occurred_at >= ? AND event_type LIKE 'takeon.%%'")
+                .formatted(schema),
+            Timestamp.from(started)));
     assertThat(rows)
         .extracting(r -> (String) r.get("event_type"))
         .contains(
             "takeon.batch.created",
             "takeon.batch.validated",
             "takeon.batch.commit_requested",
-            "invoice.created",
-            "invoice.brought_forward_issued",
             "takeon.batch.committed");
-    assertThat(rows)
-        .filteredOn(r -> "invoice.brought_forward_issued".equals(r.get("event_type")))
-        .hasSize(2);
     var canaries =
         List.of(
             "Dineo Pii-Canary",
@@ -342,6 +369,7 @@ class TakeOnAuditNoPiiIntegrationTest {
             "PIIFN-7788",
             "PIIFN-7789",
             "PIIFNREF-1",
+            "PIIFNREF-2",
             "12345.67",
             "9876.54",
             "Canary fee note");

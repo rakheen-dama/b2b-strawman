@@ -48,4 +48,14 @@ public interface TakeOnDatasetHandler {
 
   /** The batch summary stored with the validation ({@code take_on_batches.summary}). */
   Map<String, Object> summary(ValidationContext context);
+
+  /**
+   * The statutory hard blocks found across rows, not on one row (657B: the trust equation — a
+   * deficit or a control total that does not agree). Counted into {@code block_count} with the rows
+   * that hold a block, so every guard that reads it refuses the batch (D-124 {@code
+   * TAKE_ON_BLOCKED}, {@code allowedActions}). Called after {@link #validateBatchLevel}.
+   */
+  default int batchBlockCount(ValidationContext context) {
+    return 0;
+  }
 }

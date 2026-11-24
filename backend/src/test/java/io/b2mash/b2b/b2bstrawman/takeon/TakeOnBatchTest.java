@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.takeon;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -206,6 +207,101 @@ class TakeOnBatchTest {
     batch.setCutoverDate(LocalDate.of(2026, 9, 30));
     assertThat(batch.getStatus()).isEqualTo(TakeOnBatchStatus.MAPPED);
     assertThat(batch.getCutoverDate()).isEqualTo(LocalDate.of(2026, 9, 30));
+  }
+
+  // --- updatePosition (657B) ---
+
+  private static TakeOnBatch trustBatch() {
+    var batch = uploaded(TakeOnDataset.TRUST_POSITION);
+    batch.setCutoverDate(LocalDate.of(2026, 10, 31));
+    return batch;
+  }
+
+  private static void section17313(TakeOnBatch batch) {
+    batch.updatePosition(
+        new BigDecimal("418500"),
+        new BigDecimal("5000.0"),
+        new BigDecimal("20000.00"),
+        new BigDecimal("403500.00"),
+        new BigDecimal("1250.00"),
+        new BigDecimal("300000.00"),
+        false);
+  }
+
+  @Test
+  void updatePosition_storesTheFiguresToTheCent_andTheRequiredFourEndMissingPosition() {
+    var batch = trustBatch();
+    assertThat(batch.missingPosition()).isTrue();
+    section17313(batch);
+    assertThat(batch.missingPosition()).isFalse();
+    assertThat(batch.getBankBalance()).isEqualTo(new BigDecimal("418500.00"));
+    assertThat(batch.getOutstandingDepositsTotal()).isEqualTo(new BigDecimal("5000.00"));
+    assertThat(batch.getFundLedgerBalance()).isEqualTo(new BigDecimal("1250.00"));
+    assertThat(batch.isMidMonthAcknowledged()).isFalse();
+    assertThat(batch.getStatus())
+        .as("an UPLOADED batch stays UPLOADED")
+        .isEqualTo(TakeOnBatchStatus.UPLOADED);
+
+    batch.updatePosition(
+        new BigDecimal("1"),
+        new BigDecimal("0"),
+        new BigDecimal("0"),
+        new BigDecimal("1"),
+        null,
+        null,
+        true);
+    assertThat(batch.getFundLedgerBalance())
+        .as("null Fund → R0,00")
+        .isEqualTo(new BigDecimal("0.00"));
+    assertThat(batch.getInvestedTotal()).isEqualTo(new BigDecimal("0.00"));
+    assertThat(batch.isMidMonthAcknowledged()).isTrue();
+  }
+
+  @Test
+  void updatePosition_onAValidatedBatch_returnsItToMappedOnlyWhenAFigureChanges() {
+    var batch = trustBatch();
+    section17313(batch);
+    batch.markMapped();
+    batch.markValidated(HASH, COUNTS, null);
+
+    batch.updatePosition(
+        new BigDecimal("418500.00"),
+        new BigDecimal("5000"),
+        new BigDecimal("20000.0"),
+        new BigDecimal("403500"),
+        new BigDecimal("1250.0"),
+        new BigDecimal("300000"),
+        false);
+    assertThat(batch.getStatus())
+        .as("the same figures at another scale are no change")
+        .isEqualTo(TakeOnBatchStatus.VALIDATED);
+
+    batch.updatePosition(
+        new BigDecimal("418500.00"),
+        new BigDecimal("5000.00"),
+        new BigDecimal("20000.00"),
+        new BigDecimal("403500.00"),
+        new BigDecimal("1250.00"),
+        new BigDecimal("300000.00"),
+        true);
+    assertThat(batch.getStatus())
+        .as("acknowledging a mid-month cutover is a change")
+        .isEqualTo(TakeOnBatchStatus.MAPPED);
+  }
+
+  @Test
+  void updatePosition_onlyOnAnOpenTrustBatch() {
+    var debtors = uploaded(TakeOnDataset.DEBTOR_BALANCES);
+    assertThatThrownBy(() -> section17313(debtors))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage("Only a trust take-on has a reconciled position.");
+    assertThat(debtors.missingPosition()).as("only a trust take-on has the figures").isFalse();
+
+    var cancelled = trustBatch();
+    cancelled.cancel(MEMBER);
+    assertThatThrownBy(() -> section17313(cancelled))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage("The trust position can only be changed on an open take-on batch.");
   }
 
   // --- claimCommit ---

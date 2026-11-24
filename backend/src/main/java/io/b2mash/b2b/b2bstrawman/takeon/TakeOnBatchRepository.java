@@ -69,4 +69,17 @@ public interface TakeOnBatchRepository extends JpaRepository<TakeOnBatch, UUID> 
   Optional<TakeOnBatch> findNextCommittingSkipLocked();
 
   boolean existsByStatus(TakeOnBatchStatus status);
+
+  // --- Trust position (657B) ---
+
+  /**
+   * Another batch of {@code dataset} on the trust account in one of {@code statuses} (the "already
+   * taken on" account check: a {@code TRUST_POSITION} batch {@code COMMITTING} or {@code
+   * COMPLETED}), other than {@code batchId}; the first such batch, to quote its id.
+   */
+  Optional<TakeOnBatch> findFirstByTrustAccountIdAndDatasetAndStatusInAndIdNot(
+      UUID trustAccountId,
+      TakeOnDataset dataset,
+      Collection<TakeOnBatchStatus> statuses,
+      UUID batchId);
 }

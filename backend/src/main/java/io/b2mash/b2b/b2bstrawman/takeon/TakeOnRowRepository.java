@@ -118,6 +118,20 @@ public interface TakeOnRowRepository extends JpaRepository<TakeOnRow, UUID> {
            ORDER BY r.updated_at DESC LIMIT 1""")
   Optional<UUID> clientBySourceRef(@Param("sourceRef") String sourceRef);
 
+  /**
+   * A matter taken on earlier, by the previous system's id (657B: the trust position finds a matter
+   * by it when the file gives no matter reference number).
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          SELECT r.result_entity_id FROM take_on_rows r
+           WHERE r.dataset = 'MATTERS' AND r.status IN ('CREATED', 'SKIPPED_DUPLICATE')
+             AND lower(r.source_ref) = lower(:sourceRef)
+           ORDER BY r.updated_at DESC LIMIT 1""")
+  Optional<UUID> matterBySourceRef(@Param("sourceRef") String sourceRef);
+
   // --- Commit (655A) ---
 
   /** Native-query projection of the commit progress (aliases must match). */

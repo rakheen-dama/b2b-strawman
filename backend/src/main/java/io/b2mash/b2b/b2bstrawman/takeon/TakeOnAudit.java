@@ -69,10 +69,7 @@ public class TakeOnAudit {
 
   /** Counts only. {@code eq1_holds}/{@code eq2_holds} arrive with the trust equation (657B). */
   public void batchValidated(TakeOnBatch batch) {
-    log(
-        "takeon.batch.validated",
-        BATCH,
-        batch.getId(),
+    var details =
         SafeAuditDetails.builder()
             .put("batch_id", batch.getId())
             .put("dataset", batch.getDataset())
@@ -80,8 +77,22 @@ public class TakeOnAudit {
             .put("valid_rows", batch.getValidRows())
             .put("error_rows", batch.getErrorRows())
             .put("duplicate_rows", batch.getDuplicateRows())
-            .put("block_count", batch.getBlockCount())
-            .build());
+            .put("block_count", batch.getBlockCount());
+    if (batch.getDataset() == TakeOnDataset.TRUST_POSITION) {
+      // 657B (D-20): whether EQ-1 and EQ-2 held — booleans only, never an amount (§17.6.4)
+      details
+          .put("eq1_holds", equationHolds(batch.getSummary(), "eq1"))
+          .put("eq2_holds", equationHolds(batch.getSummary(), "eq2"));
+    }
+    log("takeon.batch.validated", BATCH, batch.getId(), details.build());
+  }
+
+  /** {@code summary.equation.<row>.holds}; false when no equation was computed (account check). */
+  private static boolean equationHolds(Map<String, Object> summary, String row) {
+    return summary != null
+        && summary.get("equation") instanceof Map<?, ?> equation
+        && equation.get(row) instanceof Map<?, ?> values
+        && Boolean.TRUE.equals(values.get("holds"));
   }
 
   /** {@code reasonCode}: {@code USER} (cancel) or {@code ABANDONED} (30-day purge). */

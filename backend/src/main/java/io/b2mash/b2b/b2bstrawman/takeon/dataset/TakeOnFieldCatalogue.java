@@ -109,11 +109,16 @@ public final class TakeOnFieldCatalogue {
                   "kind",
                   "Item type",
                   true,
-                  List.of("DEPOSIT_IN_TRANSIT", "UNPRESENTED_PAYMENT"),
+                  // 657B (OP-6): INVESTMENT_IN_TRANSIT is accepted only to be refused with the
+                  // §17.3.7 text — investment movements are settled before the cutover date.
+                  List.of("DEPOSIT_IN_TRANSIT", "UNPRESENTED_PAYMENT", "INVESTMENT_IN_TRANSIT"),
                   Map.of(
                       "DEPOSIT", "DEPOSIT_IN_TRANSIT",
                       "CHEQUE", "UNPRESENTED_PAYMENT",
-                      "PAYMENT", "UNPRESENTED_PAYMENT")),
+                      "PAYMENT", "UNPRESENTED_PAYMENT",
+                      "INVESTMENT", "INVESTMENT_IN_TRANSIT",
+                      "PLACEMENT", "INVESTMENT_IN_TRANSIT",
+                      "WITHDRAWAL", "INVESTMENT_IN_TRANSIT")),
               date("originalDate", "Original date", true, "date"),
               amount("amount", "Amount", true),
               text("reference", "Reference", true, 200),

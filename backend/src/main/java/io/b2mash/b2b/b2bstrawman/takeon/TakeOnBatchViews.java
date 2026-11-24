@@ -9,6 +9,7 @@ import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService.TakeOnBatchResponse;
 import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService.TakeOnCountsResponse;
 import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService.TakeOnMappingResponse;
 import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService.TakeOnParseOptionsResponse;
+import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService.TakeOnPositionResponse;
 import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService.TakeOnSheetNameResponse;
 import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService.TakeOnSignOffResponse;
 import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService.TakeOnSourceResponse;
@@ -108,7 +109,23 @@ public class TakeOnBatchViews {
         batch.getLastError(),
         live.stream().map(TakeOnBatchViews::signOff).toList(),
         attestationStatement(batch),
-        validationSummary(batch));
+        validationSummary(batch),
+        batch.isMidMonthAcknowledged(),
+        position(batch));
+  }
+
+  /** The trust take-on's reconciled position at cutover (657B); null on every other dataset. */
+  private static TakeOnPositionResponse position(TakeOnBatch batch) {
+    if (batch.getDataset() != TakeOnDataset.TRUST_POSITION) {
+      return null;
+    }
+    return new TakeOnPositionResponse(
+        batch.getBankBalance(),
+        batch.getOutstandingDepositsTotal(),
+        batch.getOutstandingPaymentsTotal(),
+        batch.getCashbookBalance(),
+        batch.getFundLedgerBalance(),
+        batch.getInvestedTotal());
   }
 
   /**

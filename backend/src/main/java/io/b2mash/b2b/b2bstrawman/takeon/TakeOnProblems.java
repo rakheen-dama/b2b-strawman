@@ -69,6 +69,15 @@ public final class TakeOnProblems {
         "Enter the cutover date before validating.");
   }
 
+  /** 657B: a trust take-on's dry run needs the reconciled position at cutover. */
+  public static TakeOnProblemException positionRequired() {
+    return new TakeOnProblemException(
+        HttpStatus.CONFLICT,
+        "TAKE_ON_POSITION_REQUIRED",
+        "Reconciled position required",
+        "Enter the reconciled position at cutover before validating.");
+  }
+
   public static TakeOnProblemException positionNotApplicable() {
     return new TakeOnProblemException(
         HttpStatus.CONFLICT,

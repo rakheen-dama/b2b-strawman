@@ -1,0 +1,56 @@
+657D OBS — expected figures, written before any observation (stack 3, head 4a8bdbbe8)
+Written at: 2026-11-24T13:51:59Z
+
+Feasibility (F-657C-8): the reconciliation wizard (account-select) and the Receipts & Payments report
+(Trust Account entity picker) accept any account; the trust dashboard (and so the trend) binds to the
+primary account (trust-accounting/page.tsx:178-199). Hence:
+  G = new non-primary General account, opened 2026-01-01, C = 30 September 2026 (month end two months
+      back), the §17.3.13 set (outstanding items re-dated 2026-09-29 / 2026-09-25 so they are <= C).
+  H = new non-primary General account, C = 30 September 2026, one client balance B/B1 R50 000,00
+      (spanning-statement + OPENING_DIFFERS checks).
+  P = the seeded primary, C = 24 November 2026 (its opened date; mid-month), C/C1 R10 000,00 (trend).
+
+Check 1 (G report files): PDF starts %PDF, CSV starts "# Trust take-on report — OBS 657D Trust banking G
+  at 30 September 2026"; SHA-256 of each download (Results step and Take-on reports card) ==
+  take_on_report_files.sha256 == report JSON files.{pdf,csv}.sha256; 2 (or 4) audit rows
+  takeon.report.downloaded (details report_id, format PDF/CSV). File names
+  take-on-report-obs-657d-trust-banking-g-2026-09-30.{pdf,csv}.
+
+Check 2 (G first statement, 1-31 October 2026, period end 2026-10-31):
+  opening 418 500,00 (= B); 02 Oct EFT B-0001 +5 000,00 (423 500,00); 05 Oct PAY-778 -20 000,00
+  (403 500,00); 31 Oct INTEREST +312,40 (403 812,40); 31 Oct SERVICE FEE -85,00 (403 727,40).
+  Auto-match: 2 matched (EFT B-0001 -> TAKEON_DEP_TRANSIT, PAY-778 -> TAKEON_PAY_UNPRES), 2 remaining.
+  INTEREST recorded as Fund interest; SERVICE FEE as Bank charge, recoverable, VAT 0.
+  No import warning (no line <= C).
+
+Check 3 (reconcile G at 31 October 2026):
+  bank 403 727,40; outstanding deposits 0,00; outstanding payments 0,00; adjusted bank 403 727,40;
+  cashbook 403 500 + 312,40 - 85,00 = 403 727,40; difference 0,00 (EQ-1).
+  creditors: client ledgers 499 500,00; Fund 1 250 + 312,40 - 85,00 = 1 477,40; unidentified 2 750,00;
+  placed in s86(3) -100 000,00 -> total 403 727,40 = cashbook (EQ-2), difference 0,00.
+  0 unresolved lines; no OPENING_DIFFERS_FROM_TAKE_ON (statement balance at C 418 500,00 = B);
+  UNIDENTIFIED_OVER_ONE_YEAR may show (15 June 2025 item) as non-blocking.
+  Complete -> COMPLETED; "October 2026 list locked — R 403 727,40 agrees ..."; no manual adjustment.
+  (The §17.3.13 client movements C1 +60 000 / B1 -15 000 / A1 -10 000 are not reproduced: no UI posts
+  a client deposit or payment to a non-primary account — F-657C-8. Hence 403 727,40, not 438 727,40.)
+
+Check 4 (R&P on G):
+  1 Sep - 31 Oct 2026 (contains C): exactly one b/f row dated 2026-09-30 "Balance brought forward —
+  take-on" R 403 500,00; then 31 Oct Fund interest receipt 312,40 and bank charge payment 85,00;
+  totals receipts 312,40, payments 85,00 (b/f excluded); footnote "The opening position taken on at
+  30 September 2026 is shown as one brought-forward line, not as receipts."
+  1 Oct - 31 Oct 2026: no b/f row, no footnote, same 2 rows and totals.
+
+Check 5 (trend, primary P taken on at 24 November 2026): dashboard trend starts at November 2026
+  (one point, "(to date)"), note "Taken on at 24 November 2026"; API takenOnAt 2026-11-24.
+  G (API GET only, UI binds to primary): takenOnAt 2026-09-30, months Sep, Oct, Nov 2026.
+
+Check 6:
+  a. G, statement of 15 & 28 Sep 2026 only (all <= C): refused, text "Every line of this statement is
+     dated on or before the take-on date 30 September 2026. It belongs to the previous system's books."
+     No statement stored.
+  b. H, statement 20 Sep (+2 000, bal 49 000) + 5 Oct (+10, bal 49 010): warning "1 lines dated on or
+     before the take-on date 30 September 2026 were excluded."; line 1 Excluded.
+  c. H: OPENING_DIFFERS_FROM_TAKE_ON shown (balance at C 49 000,00 vs take-on 50 000,00), WARNING,
+     not blocking; G: absent.
+Mailpit: total unchanged across each commit and across the G reconciliation.

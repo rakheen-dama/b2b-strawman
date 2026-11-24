@@ -1,0 +1,4 @@
+Previous system ID,Client name,Email,Phone,ID number,Registration number,Client type,Address line 1,City,Postal code,Country,CDD completed date,Last review date,Risk rating,Beneficial ownership,Screening,Screening date,Source of funds,CDD records location
+A,Amahle Zulu,amahle.zulu@example.test,+27 82 555 0701,8803125800081,,NATURAL_PERSON,3 Jacaranda Street,Pretoria,0181,ZA,2025-06-10,,LOW,NOT_APPLICABLE,SCREENED_CLEAR,2025-06-10,DONE,Archive room F box 1
+B,Bongani Nkosi,bongani.nkosi@example.test,+27 82 555 0702,7004045800082,,NATURAL_PERSON,11 Kerk Street,Stellenbosch,7600,ZA,2025-07-01,,LOW,NOT_APPLICABLE,SCREENED_CLEAR,2025-07-01,DONE,Archive room F box 2
+C,Chantal Pillay,chantal.pillay@example.test,+27 83 555 0703,9105055800084,,NATURAL_PERSON,27 Florida Road,Durban,4001,ZA,2025-09-01,,LOW,NOT_APPLICABLE,SCREENED_CLEAR,2025-09-01,DONE,Archive room F box 3

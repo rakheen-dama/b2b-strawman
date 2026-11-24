@@ -1,0 +1,4 @@
+5181ca8bf26d26cfc7e6eff96a260ef34de496e6b06872d58642828ad29f7d83  reports-card-take-on-report-obs-657d-trust-banking-g-2026-09-30.csv
+6a6468207b34c1381925a9d2f2c9669b69083ca379d6407ff3768343ce7fa94f  reports-card-take-on-report-obs-657d-trust-banking-g-2026-09-30.pdf
+5181ca8bf26d26cfc7e6eff96a260ef34de496e6b06872d58642828ad29f7d83  results-step-take-on-report-obs-657d-trust-banking-g-2026-09-30.csv
+6a6468207b34c1381925a9d2f2c9669b69083ca379d6407ff3768343ce7fa94f  results-step-take-on-report-obs-657d-trust-banking-g-2026-09-30.pdf

@@ -17,6 +17,8 @@ import io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.MemberCapabilitiesRespo
 import io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.MyCapabilitiesResponse;
 import io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.OrgRoleResponse;
 import io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.UpdateOrgRoleRequest;
+import io.b2mash.b2b.b2bstrawman.security.Roles;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -175,6 +177,9 @@ public class OrgRoleService {
     }
 
     validateCapabilities(request.capabilities());
+    if (request.capabilities() != null) {
+      requireOwnerToGrant(request.capabilities(), "create a role holding an owner-only capability");
+    }
 
     String slug = generateSlug(request.name());
     var role = new OrgRole(request.name(), slug, request.description(), false);
@@ -228,6 +233,8 @@ public class OrgRoleService {
       removedCaps =
           beforeCaps.stream().filter(c -> !afterCaps.contains(c)).collect(Collectors.toSet());
       capsChanged = !addedCaps.isEmpty() || !removedCaps.isEmpty();
+      // removing an owner-only capability, or keeping one, stays open to admins (FR-4)
+      requireOwnerToGrant(addedCaps, "add an owner-only capability to a role");
       role.setCapabilities(
           request.capabilities().stream().map(Capability::valueOf).collect(Collectors.toSet()));
     }
@@ -298,6 +305,11 @@ public class OrgRoleService {
       }
     }
 
+    // FR-4: a role holding an owner-only capability is assigned by an owner only
+    requireOwnerToGrant(
+        role.getCapabilities().stream().map(Capability::name).toList(),
+        "assign a role holding an owner-only capability");
+
     // Validate override format
     Set<String> overrides =
         request.capabilityOverrides() != null ? request.capabilityOverrides() : Set.of();
@@ -316,6 +328,11 @@ public class OrgRoleService {
             "Unknown capability: '" + capName + "'. Valid values: " + Capability.ALL_NAMES);
       }
     }
+
+    // FR-4: "+CAP" for an owner-only capability is granted by an owner only ("-CAP" stays open)
+    requireOwnerToGrant(
+        overrides.stream().filter(o -> o.startsWith("+")).map(o -> o.substring(1)).toList(),
+        "grant an owner-only capability");
 
     // Resolve previous role name for audit
     String previousRole =
@@ -396,6 +413,22 @@ public class OrgRoleService {
       case "member" -> "Member";
       default -> clerkRole;
     };
+  }
+
+  /**
+   * FR-4 (founder ruling 2026-11-24): only an owner may put an owner-only capability ({@link
+   * Capability#OWNER_ONLY}) into a role or into a member's effective capabilities. An admin holds
+   * {@code TEAM_OVERSIGHT}, which opens role management and assignment, but must not reach the
+   * owner-only capabilities through it. Refuses (403) when {@code capabilities} names one and the
+   * caller is not the owner; {@code action} completes "Only the owner can …".
+   */
+  private static void requireOwnerToGrant(Collection<String> capabilities, String action) {
+    var ownerOnly = capabilities.stream().filter(Capability.OWNER_ONLY::contains).sorted().toList();
+    if (!ownerOnly.isEmpty() && !Roles.ORG_OWNER.equals(RequestScopes.getOrgRole())) {
+      throw new ForbiddenException(
+          "Owner-only capability",
+          "Only the owner can " + action + ": " + String.join(", ", ownerOnly) + ".");
+    }
   }
 
   private void validateCapabilities(Set<String> capabilities) {

@@ -145,7 +145,12 @@ class OwnerOnlyCapabilityGrantIntegrationTest {
     var assigned = assign(self, selfAdminId, partnerRole).andReturn();
 
     signOffQueue("user_oog_self_admin").andExpect(status().isForbidden());
-    assertThat(effectiveCapabilities(selfAdminId)).doesNotContain("SIGN_OFF_TRUST_TAKE_ON");
+    // read through /api/me: GET /api/members/{id}/capabilities answers 500 for a member on the
+    // system Admin role (pre-existing, unrelated: HttpMessageNotWritableException, see README)
+    var me = myCapabilities("user_oog_self_admin");
+    assertThat((String) JsonPath.read(me, "$.role")).isEqualTo("Admin");
+    assertThat((List<String>) JsonPath.read(me, "$.capabilities"))
+        .doesNotContain("SIGN_OFF_TRUST_TAKE_ON");
     assertForbidden(
         assigned,
         "Only the owner can assign a role holding an owner-only capability:"
@@ -280,6 +285,15 @@ class OwnerOnlyCapabilityGrantIntegrationTest {
             .andExpect(status().isOk())
             .andReturn();
     return JsonPath.read(result.getResponse().getContentAsString(), "$.effectiveCapabilities");
+  }
+
+  private String myCapabilities(String subject) throws Exception {
+    return mockMvc
+        .perform(get("/api/me/capabilities").with(TestJwtFactory.customRoleJwt(ORG_ID, subject)))
+        .andExpect(status().isOk())
+        .andReturn()
+        .getResponse()
+        .getContentAsString();
   }
 
   private List<String> roleCapabilities(String roleId) throws Exception {

@@ -1,0 +1,12 @@
+-- read-only: settings audit events in the step-g window (01:52:41Z-01:53:01Z) and the org_settings row afterwards
+          occurred_at          |           event_type            | low | medium | high 
+-------------------------------+---------------------------------+-----+--------+------
+ 2026-11-24 01:52:43.097189+00 | org_settings.compliance_updated | 36  | 18     | 12
+ 2026-11-24 01:52:56.862027+00 | org_settings.compliance_updated | 36  | 24     | 12
+(2 rows)
+
+ fica_review_months_low | fica_review_months_medium | fica_review_months_high |          updated_at           
+------------------------+---------------------------+-------------------------+-------------------------------
+                     36 |                        24 |                      12 | 2026-11-24 01:52:56.864542+00
+(1 row)
+

@@ -1,0 +1,7 @@
+ version |         description         | success |        installed_on        
+---------+-----------------------------+---------+----------------------------
+ 34      | phase93 client take on fica | t       | 2026-11-24 01:39:59.498469
+ 33      | phase93 trust take on       | t       | 2026-11-24 01:39:59.477769
+ 32      | phase93 take on core        | t       | 2026-11-24 01:39:59.434493
+(3 rows)
+

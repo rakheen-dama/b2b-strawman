@@ -55,3 +55,12 @@ CodeRabbit (review round 1 on #1851, `OrgSettingsIntegrationTest.java:358`): the
 the validation error body (which field, which bound). Deferred per the founder ruling that Minor findings are
 follow-ups, not extra review rounds (memory `feedback_only_high_medium_in_pr`). Follow-up: assert the ProblemDetail
 `detail` / field errors in both tests.
+
+## 655.17 E2E-LEGAL + OBS @ `5eb996c5c` — no OBS-655B defects
+
+E2E-LEGAL: legal-lifecycle 105 passed, legal-depth-ii 40 passed / 4 skipped (= baseline, `e2e/README.md`). OBS checks
+a–i all PASS (`obs/README.md`); no OBS-655B-n finding was raised. Two items were observed and **not** filed: (1) the
+dashboard briefly renders two copies of the FICA widget for < 500 ms after navigation, the same transient hidden copy
+`frontend/e2e/helpers/grouped-tabs.ts` documents (628F); (2) the widget's "N of M active clients" denominator counts
+every client including Onboarding ones; that copy predates 655B (D-150). The backend 403 for a member on `fica-status` /
+`ficaStatus=REVIEW` was not observed in the browser (the frontend gates the calls), only in `FicaReviewQueueIntegrationTest`.

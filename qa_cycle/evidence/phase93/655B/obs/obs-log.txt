@@ -1,0 +1,279 @@
+[step 0] start 2026-11-24T01:48:31.758Z
+[login] user_e2e_alice http://localhost:3001/org/e2e-test-org/dashboard
+[client list headers] ["CLIENT","LIFECYCLE","FICA","OPEN MATTERS","OUTSTANDING FEE NOTES","TRUST BALANCE","COMPLETENESS","CREATED","Contact","ACTIONS"]
+    Acme Corp | Done | null
+[shot] s0-01-client-list-before.png
+[onboarding client created] http://localhost:3001/org/e2e-test-org/clients/e31a27ad-d8d1-4f44-931f-04c1cee235f2 lifecycle: Prospect
+[onboarding client detail before take-on] {"lifecycle":"Onboarding","tiles":"Open matters 0 Trust balance R 0,00 Mathebula & Partners Trust Account Outstanding R 0,00 0 overdue FICA In progress","attestationCards":0}
+[shot] s0-02-onboarding-client-detail-before.png
+[onboarding client list row before take-on] {"name":"Palesa Dube (OBS 655B onboarding)","href":"/org/e2e-test-org/clients/e31a27ad-d8d1-4f44-931f-04c1cee235f2","ficaStatus":"In progress","reasons":null,"recordsLocation":null,"recordsLocationTitle":null,"cells":["Palesa Dube (OBS 655B onboarding) Individual","Onboarding","In progress","0","—","R 0,00","N/A","24 Nov 2026","palesa.dube.obs655b@example.test","Client actions"]}
+[shot] s0-03-onboarding-client-list-before.png
+[step 0] end 2026-11-24T01:48:42.059Z console/page errors: 0 http>=400: 0
+[step a] start 2026-11-24T01:48:46.487Z
+[login] user_e2e_alice http://localhost:3001/org/e2e-test-org/dashboard
+[batch] 38251e4c-4a6e-4172-a681-c648a9eada6c
+[suggested mapping] {"name":"Client name","email":"Email","phone":"Phone","idNumber":"ID number","registrationNumber":"Registration number","taxNumber":"Not mapped","ficaClientType":"Client type","addressLine1":"Address line 1","addressLine2":"Not mapped","city":"City","postalCode":"Postal code","country":"Country","cddCompletedDate":"CDD completed date","lastReviewDate":"Last review date","riskRating":"Risk rating","beneficialOwnershipStatus":"Beneficial ownership","screeningStatus":"Screening","screeningDate":"Screening date","sourceOfFundsStatus":"Source of funds","cddRecordsLocation":"CDD records location","sourceRef":"Previous system ID"}
+[shot] a-01-mapping.png
+[cards] {"total":8,"valid":8,"error":0,"duplicate":0,"blocks":0}
+    2 | OLD-B01 | Busisiwe Ngcobo | busisiwe.ngcobo@example.test | Natural person | Low | Archive room A box 3 | Valid | City: Pretoria · Phone: +27 82 555 0201 · Country: ZA · ID number: 8605125800081 · Previous system ID: OLD-B01 · Postal code: 0181 · Address line 1: 14 Acacia Avenue · Screening date: 2025-06-10 · Screening: Screened — clear · CDD completed date: 2025-06-10 · Source of funds: Done · Beneficial ownership: Not applicable | 
+    3 | OLD-B02 | Umhlanga Ridge Holdings (Pty) Ltd | accounts@umhlanga-ridge.example.test | Company | Medium | Archive room A box 4 | Valid | City: Umhlanga · Phone: +27 31 555 0202 · Country: ZA · Previous system ID: OLD-B02 · Postal code: 4319 · Address line 1: 22 Ridge Road · Screening date: 2025-09-01 · Screening: Screened — clear · CDD completed date: 2025-09-01 · Registration number: 2015/123456/07 · Source of funds: Done · Beneficial ownership: Done | 
+    4 | OLD-B03 | Hendrik Joubert | hendrik.joubert@example.test | Natural person | Low | Archive room A box 5 | Valid | City: Paarl · Phone: +27 83 555 0203 · Country: ZA · ID number: 7102035800083 · Previous system ID: OLD-B03 · Postal code: 7646 · Address line 1: 9 Dorp Street · Screening date: 2025-10-01 · Last review date: 2025-10-01 · Screening: Screened — clear · CDD completed date: 2019-02-14 · Source of funds: Done · Beneficial ownership: Not applicable | 
+    5 | OLD-B04 | Thabo Mashaba | thabo.mashaba@example.test | Natural person | Not risk-rated | Archive room C shelf 1 | Valid | City: Johannesburg · Phone: +27 84 555 0204 · Country: ZA · ID number: 8807075800084 · Previous system ID: OLD-B04 · Postal code: 2193 · Address line 1: 31 Jan Smuts Avenue · Screening date: 2025-03-01 · Screening: Screened — clear · CDD completed date: 2025-03-01 · Source of funds: Done · Beneficial ownership: Not applicable | 
+    6 | OLD-B05 | Mokopane Mining Supplies (Pty) Ltd | info@mokopane-mining.example.test | Company | Low | Archive room C shelf 2 | Valid | City: Mokopane · Phone: +27 15 555 0205 · Country: ZA · Previous system ID: OLD-B05 · Postal code: 0600 · Address line 1: 5 Industrial Road · Screening date: 2025-02-01 · Screening: Screened — clear · CDD completed date: 2025-02-01 · Registration number: 2010/654321/07 · Source of funds: Done · Beneficial ownership: Outstanding | 
+    7 | OLD-B06 | Refilwe Moloi | refilwe.moloi@example.test | Natural person | Medium | Archive room C shelf 3 | Valid | City: Bloemfontein · Phone: +27 72 555 0206 · Country: ZA · ID number: 9203035800086 · Previous system ID: OLD-B06 · Postal code: 9301 · Address line 1: 18 Church Street · Screening date: 2025-05-15 · Screening: Screened — clear · CDD completed date: 2025-05-15 · Source of funds: Outstanding · Beneficial ownership: Not applicable | 
+    8 | OLD-B07 | Andile Khumalo | andile.khumalo@example.test | Natural person | High | Archive room C shelf 4 | Valid | City: Durban · Phone: +27 73 555 0207 · Country: ZA · ID number: 8501015800087 · Previous system ID: OLD-B07 · Postal code: 4001 · Address line 1: 7 Musgrave Road · Screening: Not screened · CDD completed date: 2026-01-20 · Source of funds: Done · Beneficial ownership: Not applicable | 
+    9 | OLD-B08 | Gerrit Coetzee | gerrit.coetzee@example.test | Natural person | High | Archive room D, Sandton office | Valid | City: Bellville · Phone: +27 82 555 0208 · Country: ZA · ID number: 6909095800088 · Previous system ID: OLD-B08 · Postal code: 7530 · Address line 1: 40 Voortrekker Road · Screening date: 2025-08-01 · Last review date: 2025-08-01 · Screening: Screened — clear · CDD completed date: 2024-08-01 · Source of funds: Done · Beneficial ownership: Not applicable | 
+[shot] a-02-validation.png
+[defaults] Batch defaults CDD records location Archive room D, Sandton office A default fills only the rows that leave the column blank.
+[fica summary] FICA columns of the 8 clients to be created Client type Natural person 6 · Company 2 Risk rating Low 3 · Medium 2 · High 2 · Not risk-rated 1 Beneficial ownership Done 1 · Not applicable 6 · Outstanding 1 Screening Screened — clear 7 · Not screened 1 Source of funds Done 7 · Outstanding 1
+[live attestation] Attested by Alice Owner (Owner) on 24 Nov 2026, 03:48. Commit take-on Withdraw attestation
+[shot] a-03-attested.png
+[commit dialog] 8 records will be created. This cannot be undone.
+[results] {"created":"Created 8","skipped":"Duplicate — skipped 0","failed":"Failed 0"}
+[batch status] Completed
+[shot] a-04-results.png
+[step a] end 2026-11-24T01:48:56.351Z console/page errors: 0 http>=400: 0
+[step b] start 2026-11-24T01:49:10.625Z
+[login] user_e2e_alice http://localhost:3001/org/e2e-test-org/dashboard
+[client list headers] ["CLIENT","LIFECYCLE","FICA","OPEN MATTERS","OUTSTANDING FEE NOTES","TRUST BALANCE","COMPLETENESS","CREATED","Contact","ACTIONS"]
+[client list rows] 10
+    Acme Corp | Done | null | null | Acme Corp Individual ¦ Active ¦ Done 24 Nov 2026 ¦ 1 ¦ R 8 625,00 · 1 ¦ R 0,00 ¦ N/A ¦ 24 Nov 2026 ¦ contact@acme.example.com+1-555-0100 ¦ Client actions
+    Andile Khumalo | Review due (attested) | Not screened | Archive room C shelf 4 | Andile Khumalo Individual ¦ Active ¦ Review due (attested) Not screened Risk: High Archive room C shelf 4 ¦ 0 ¦ — ¦ R 0,00 ¦ N/A ¦ 24 Nov 2026 ¦ andile.khumalo@example.test+27 73 555 0207 ¦ Client actions
+    Busisiwe Ngcobo | Verified in prior system (attested) | null | Archive room A box 3 | Busisiwe Ngcobo Individual ¦ Active ¦ Verified in prior system (attested) Archive room A box 3 ¦ 0 ¦ — ¦ R 0,00 ¦ N/A ¦ 24 Nov 2026 ¦ busisiwe.ngcobo@example.test+27 82 555 0201 ¦ Client actions
+    Gerrit Coetzee | Review due (attested) | Review date passed | Archive room D, Sandton office | Gerrit Coetzee Individual ¦ Active ¦ Review due (attested) Review date passed Risk: High Archive room D, Sandton office ¦ 0 ¦ — ¦ R 0,00 ¦ N/A ¦ 24 Nov 2026 ¦ gerrit.coetzee@example.test+27 82 555 0208 ¦ Client actions
+    Hendrik Joubert | Verified in prior system (attested) | null | Archive room A box 5 | Hendrik Joubert Individual ¦ Active ¦ Verified in prior system (attested) Archive room A box 5 ¦ 0 ¦ — ¦ R 0,00 ¦ N/A ¦ 24 Nov 2026 ¦ hendrik.joubert@example.test+27 83 555 0203 ¦ Client actions
+    Mokopane Mining Supplies (Pty) Ltd | Review due (attested) | Beneficial ownership outstanding | Archive room C shelf 2 | Mokopane Mining Supplies (Pty) Ltd Company ¦ Active ¦ Review due (attested) Beneficial ownership outstanding Risk: Low Archive room C shelf 2 ¦ 0 ¦ — ¦ R 0,00 ¦ N/A ¦ 24 Nov 2026 ¦ info@mokopane-mining.example.test+27 15 555 0205 ¦ Client actions
+    Palesa Dube (OBS 655B onboarding) | In progress | null | null | Palesa Dube (OBS 655B onboarding) Individual ¦ Onboarding ¦ In progress ¦ 0 ¦ — ¦ R 0,00 ¦ N/A ¦ 24 Nov 2026 ¦ palesa.dube.obs655b@example.test ¦ Client actions
+    Refilwe Moloi | Review due (attested) | Source of funds outstanding | Archive room C shelf 3 | Refilwe Moloi Individual ¦ Active ¦ Review due (attested) Source of funds outstanding Risk: Medium Archive room C shelf 3 ¦ 0 ¦ — ¦ R 0,00 ¦ N/A ¦ 24 Nov 2026 ¦ refilwe.moloi@example.test+27 72 555 0206 ¦ Client actions
+    Thabo Mashaba | Review due (attested) | Not risk-rated | Archive room C shelf 1 | Thabo Mashaba Individual ¦ Active ¦ Review due (attested) Not risk-rated Risk: Not risk-rated Archive room C shelf 1 ¦ 0 ¦ — ¦ R 0,00 ¦ N/A ¦ 24 Nov 2026 ¦ thabo.mashaba@example.test+27 84 555 0204 ¦ Client actions
+    Umhlanga Ridge Holdings (Pty) Ltd | Verified in prior system (attested) | null | Archive room A box 4 | Umhlanga Ridge Holdings (Pty) Ltd Company ¦ Active ¦ Verified in prior system (attested) Archive room A box 4 ¦ 0 ¦ — ¦ R 0,00 ¦ N/A ¦ 24 Nov 2026 ¦ accounts@umhlanga-ridge.example.test+27 31 555 0202 ¦ Client actions
+[shot] b-01-client-list-after.png
+[badge check] {"name":"Busisiwe Ngcobo","expect":"clean","ficaStatus":"Verified in prior system (attested)","reasons":null,"recordsLocation":"Archive room A box 3","ficaCell":"Verified in prior system (attested) Archive room A box 3","ok":true}
+[badge check] {"name":"Umhlanga Ridge Holdings (Pty) Ltd","expect":"clean","ficaStatus":"Verified in prior system (attested)","reasons":null,"recordsLocation":"Archive room A box 4","ficaCell":"Verified in prior system (attested) Archive room A box 4","ok":true}
+[badge check] {"name":"Hendrik Joubert","expect":"clean","ficaStatus":"Verified in prior system (attested)","reasons":null,"recordsLocation":"Archive room A box 5","ficaCell":"Verified in prior system (attested) Archive room A box 5","ok":true}
+[badge check] {"name":"Thabo Mashaba","expect":"review","ficaStatus":"Review due (attested)","reasons":"Not risk-rated","recordsLocation":"Archive room C shelf 1","ficaCell":"Review due (attested) Not risk-rated Risk: Not risk-rated Archive room C shelf 1","ok":true}
+[badge check] {"name":"Mokopane Mining Supplies (Pty) Ltd","expect":"review","ficaStatus":"Review due (attested)","reasons":"Beneficial ownership outstanding","recordsLocation":"Archive room C shelf 2","ficaCell":"Review due (attested) Beneficial ownership outstanding Risk: Low Archive room C shelf 2","ok":true}
+[badge check] {"name":"Refilwe Moloi","expect":"review","ficaStatus":"Review due (attested)","reasons":"Source of funds outstanding","recordsLocation":"Archive room C shelf 3","ficaCell":"Review due (attested) Source of funds outstanding Risk: Medium Archive room C shelf 3","ok":true}
+[badge check] {"name":"Andile Khumalo","expect":"review","ficaStatus":"Review due (attested)","reasons":"Not screened","recordsLocation":"Archive room C shelf 4","ficaCell":"Review due (attested) Not screened Risk: High Archive room C shelf 4","ok":true}
+[badge check] {"name":"Gerrit Coetzee","expect":"review","ficaStatus":"Review due (attested)","reasons":"Review date passed","recordsLocation":"Archive room D, Sandton office","ficaCell":"Review due (attested) Review date passed Risk: High Archive room D, Sandton office","ok":true}
+[raw-enum scan, client list main] ["OUTSTANDING","TRUST"]
+[shot] b-02-review-due-row-mokopane.png
+[shot] b-03-attested-row-busisiwe.png
+[b allPass] false
+[step b] end 2026-11-24T01:49:15.380Z console/page errors: 0 http>=400: 0
+=== step b re-run (01:49:27Z): the first pass's raw-enum scan read innerText, which applies the table headers' CSS text-transform ("OUTSTANDING FEE NOTES", "TRUST BALANCE" headers) — a scan artefact, not on-screen raw enums; the scan now reads textContent. The badge checks are identical in both passes. ===
+[step b] start 2026-11-24T01:49:26.267Z
+[login] user_e2e_alice http://localhost:3001/org/e2e-test-org/dashboard
+[client list headers] ["CLIENT","LIFECYCLE","FICA","OPEN MATTERS","OUTSTANDING FEE NOTES","TRUST BALANCE","COMPLETENESS","CREATED","Contact","ACTIONS"]
+[client list rows] 10
+    Acme Corp | Done | null | null | Acme Corp Individual ¦ Active ¦ Done 24 Nov 2026 ¦ 1 ¦ R 8 625,00 · 1 ¦ R 0,00 ¦ N/A ¦ 24 Nov 2026 ¦ contact@acme.example.com+1-555-0100 ¦ Client actions
+    Andile Khumalo | Review due (attested) | Not screened | Archive room C shelf 4 | Andile Khumalo Individual ¦ Active ¦ Review due (attested) Not screened Risk: High Archive room C shelf 4 ¦ 0 ¦ — ¦ R 0,00 ¦ N/A ¦ 24 Nov 2026 ¦ andile.khumalo@example.test+27 73 555 0207 ¦ Client actions
+    Busisiwe Ngcobo | Verified in prior system (attested) | null | Archive room A box 3 | Busisiwe Ngcobo Individual ¦ Active ¦ Verified in prior system (attested) Archive room A box 3 ¦ 0 ¦ — ¦ R 0,00 ¦ N/A ¦ 24 Nov 2026 ¦ busisiwe.ngcobo@example.test+27 82 555 0201 ¦ Client actions
+    Gerrit Coetzee | Review due (attested) | Review date passed | Archive room D, Sandton office | Gerrit Coetzee Individual ¦ Active ¦ Review due (attested) Review date passed Risk: High Archive room D, Sandton office ¦ 0 ¦ — ¦ R 0,00 ¦ N/A ¦ 24 Nov 2026 ¦ gerrit.coetzee@example.test+27 82 555 0208 ¦ Client actions
+    Hendrik Joubert | Verified in prior system (attested) | null | Archive room A box 5 | Hendrik Joubert Individual ¦ Active ¦ Verified in prior system (attested) Archive room A box 5 ¦ 0 ¦ — ¦ R 0,00 ¦ N/A ¦ 24 Nov 2026 ¦ hendrik.joubert@example.test+27 83 555 0203 ¦ Client actions
+    Mokopane Mining Supplies (Pty) Ltd | Review due (attested) | Beneficial ownership outstanding | Archive room C shelf 2 | Mokopane Mining Supplies (Pty) Ltd Company ¦ Active ¦ Review due (attested) Beneficial ownership outstanding Risk: Low Archive room C shelf 2 ¦ 0 ¦ — ¦ R 0,00 ¦ N/A ¦ 24 Nov 2026 ¦ info@mokopane-mining.example.test+27 15 555 0205 ¦ Client actions
+    Palesa Dube (OBS 655B onboarding) | In progress | null | null | Palesa Dube (OBS 655B onboarding) Individual ¦ Onboarding ¦ In progress ¦ 0 ¦ — ¦ R 0,00 ¦ N/A ¦ 24 Nov 2026 ¦ palesa.dube.obs655b@example.test ¦ Client actions
+    Refilwe Moloi | Review due (attested) | Source of funds outstanding | Archive room C shelf 3 | Refilwe Moloi Individual ¦ Active ¦ Review due (attested) Source of funds outstanding Risk: Medium Archive room C shelf 3 ¦ 0 ¦ — ¦ R 0,00 ¦ N/A ¦ 24 Nov 2026 ¦ refilwe.moloi@example.test+27 72 555 0206 ¦ Client actions
+    Thabo Mashaba | Review due (attested) | Not risk-rated | Archive room C shelf 1 | Thabo Mashaba Individual ¦ Active ¦ Review due (attested) Not risk-rated Risk: Not risk-rated Archive room C shelf 1 ¦ 0 ¦ — ¦ R 0,00 ¦ N/A ¦ 24 Nov 2026 ¦ thabo.mashaba@example.test+27 84 555 0204 ¦ Client actions
+    Umhlanga Ridge Holdings (Pty) Ltd | Verified in prior system (attested) | null | Archive room A box 4 | Umhlanga Ridge Holdings (Pty) Ltd Company ¦ Active ¦ Verified in prior system (attested) Archive room A box 4 ¦ 0 ¦ — ¦ R 0,00 ¦ N/A ¦ 24 Nov 2026 ¦ accounts@umhlanga-ridge.example.test+27 31 555 0202 ¦ Client actions
+[shot] b-01-client-list-after.png
+[badge check] {"name":"Busisiwe Ngcobo","expect":"clean","ficaStatus":"Verified in prior system (attested)","reasons":null,"recordsLocation":"Archive room A box 3","ficaCell":"Verified in prior system (attested) Archive room A box 3","ok":true}
+[badge check] {"name":"Umhlanga Ridge Holdings (Pty) Ltd","expect":"clean","ficaStatus":"Verified in prior system (attested)","reasons":null,"recordsLocation":"Archive room A box 4","ficaCell":"Verified in prior system (attested) Archive room A box 4","ok":true}
+[badge check] {"name":"Hendrik Joubert","expect":"clean","ficaStatus":"Verified in prior system (attested)","reasons":null,"recordsLocation":"Archive room A box 5","ficaCell":"Verified in prior system (attested) Archive room A box 5","ok":true}
+[badge check] {"name":"Thabo Mashaba","expect":"review","ficaStatus":"Review due (attested)","reasons":"Not risk-rated","recordsLocation":"Archive room C shelf 1","ficaCell":"Review due (attested) Not risk-rated Risk: Not risk-rated Archive room C shelf 1","ok":true}
+[badge check] {"name":"Mokopane Mining Supplies (Pty) Ltd","expect":"review","ficaStatus":"Review due (attested)","reasons":"Beneficial ownership outstanding","recordsLocation":"Archive room C shelf 2","ficaCell":"Review due (attested) Beneficial ownership outstanding Risk: Low Archive room C shelf 2","ok":true}
+[badge check] {"name":"Refilwe Moloi","expect":"review","ficaStatus":"Review due (attested)","reasons":"Source of funds outstanding","recordsLocation":"Archive room C shelf 3","ficaCell":"Review due (attested) Source of funds outstanding Risk: Medium Archive room C shelf 3","ok":true}
+[badge check] {"name":"Andile Khumalo","expect":"review","ficaStatus":"Review due (attested)","reasons":"Not screened","recordsLocation":"Archive room C shelf 4","ficaCell":"Review due (attested) Not screened Risk: High Archive room C shelf 4","ok":true}
+[badge check] {"name":"Gerrit Coetzee","expect":"review","ficaStatus":"Review due (attested)","reasons":"Review date passed","recordsLocation":"Archive room D, Sandton office","ficaCell":"Review due (attested) Review date passed Risk: High Archive room D, Sandton office","ok":true}
+[raw-enum scan, client list main] []
+[shot] b-02-review-due-row-mokopane.png
+[shot] b-03-attested-row-busisiwe.png
+[b allPass] true
+[step b] end 2026-11-24T01:49:31.217Z console/page errors: 0 http>=400: 0
+[step c] start 2026-11-24T01:49:38.363Z
+[login] user_e2e_alice http://localhost:3001/org/e2e-test-org/dashboard
+[url] http://localhost:3001/org/e2e-test-org/clients?view=system:fica-review-due
+[headers + aria-sort] [{"text":"CLIENT","ariaSort":"none"},{"text":"LIFECYCLE","ariaSort":"none"},{"text":"FICA","ariaSort":"none"},{"text":"OPEN MATTERS","ariaSort":"none"},{"text":"OUTSTANDING FEE NOTES","ariaSort":"none"},{"text":"TRUST BALANCE","ariaSort":"none"},{"text":"COMPLETENESS","ariaSort":"none"},{"text":"CREATED","ariaSort":"none"},{"text":"Contact","ariaSort":null},{"text":"ACTIONS","ariaSort":null}]
+   1. Thabo Mashaba | Review due (attested) | Not risk-rated | Archive room C shelf 1 | Thabo Mashaba Individual ¦ Active ¦ Review due (attested) Not risk-rated Risk: Not risk-rated Archive room C shelf 1 ¦ 0 ¦ — ¦ R 0,00 ¦ N/A ¦ 24 Nov 2026 ¦ thabo.mashaba@example.test+27 84 555 0204 ¦ Client actions
+   2. Gerrit Coetzee | Review due (attested) | Review date passed | Archive room D, Sandton office | Gerrit Coetzee Individual ¦ Active ¦ Review due (attested) Review date passed Risk: High Archive room D, Sandton office ¦ 0 ¦ — ¦ R 0,00 ¦ N/A ¦ 24 Nov 2026 ¦ gerrit.coetzee@example.test+27 82 555 0208 ¦ Client actions
+   3. Andile Khumalo | Review due (attested) | Not screened | Archive room C shelf 4 | Andile Khumalo Individual ¦ Active ¦ Review due (attested) Not screened Risk: High Archive room C shelf 4 ¦ 0 ¦ — ¦ R 0,00 ¦ N/A ¦ 24 Nov 2026 ¦ andile.khumalo@example.test+27 73 555 0207 ¦ Client actions
+   4. Refilwe Moloi | Review due (attested) | Source of funds outstanding | Archive room C shelf 3 | Refilwe Moloi Individual ¦ Active ¦ Review due (attested) Source of funds outstanding Risk: Medium Archive room C shelf 3 ¦ 0 ¦ — ¦ R 0,00 ¦ N/A ¦ 24 Nov 2026 ¦ refilwe.moloi@example.test+27 72 555 0206 ¦ Client actions
+   5. Mokopane Mining Supplies (Pty) Ltd | Review due (attested) | Beneficial ownership outstanding | Archive room C shelf 2 | Mokopane Mining Supplies (Pty) Ltd Company ¦ Active ¦ Review due (attested) Beneficial ownership outstanding Risk: Low Archive room C shelf 2 ¦ 0 ¦ — ¦ R 0,00 ¦ N/A ¦ 24 Nov 2026 ¦ info@mokopane-mining.example.test+27 15 555 0205 ¦ Client actions
+[page top text] Clients 5 clients New Client All clients Active FICA outstanding FICA review due With trust balance Save View All Prospect Onboarding Active Dormant Offboarding Offboarded Show incomplete Columns Export CSV Clients — FICA review due CLIENT LIFECYCLE FICA OPEN MATTERS OUTSTANDING FEE NOTES TRUST BALANCE COMPLETENESS CREATED ACTIONS Thabo Mashaba Individual Active Review due (attested) Not risk-rate
+[shot] c-01-review-due-view.png
+[raw-enum scan, review view] []
+[Client header href] /org/e2e-test-org/clients?view=system%3Afica-review-due&sortBy=name&sortDir=asc
+[after click url] http://localhost:3001/org/e2e-test-org/clients?view=system%3Afica-review-due&sortBy=name&sortDir=asc
+[after click headers + aria-sort] [{"text":"CLIENT","ariaSort":"ascending"},{"text":"LIFECYCLE","ariaSort":"none"},{"text":"FICA","ariaSort":"none"},{"text":"OPEN MATTERS","ariaSort":"none"},{"text":"OUTSTANDING FEE NOTES","ariaSort":"none"},{"text":"TRUST BALANCE","ariaSort":"none"},{"text":"COMPLETENESS","ariaSort":"none"},{"text":"CREATED","ariaSort":"none"},{"text":"Contact","ariaSort":null},{"text":"ACTIONS","ariaSort":null}]
+   1. Andile Khumalo
+   2. Gerrit Coetzee
+   3. Mokopane Mining Supplies (Pty) Ltd
+   4. Refilwe Moloi
+   5. Thabo Mashaba
+[shot] c-02-review-due-after-client-click.png
+[c summary] {"order":["Thabo Mashaba","Gerrit Coetzee","Andile Khumalo","Refilwe Moloi","Mokopane Mining Supplies (Pty) Ltd"],"rowsDetail":[{"name":"Thabo Mashaba","ficaStatus":"Review due (attested)","reasons":"Not risk-rated","recordsLocation":"Archive room C shelf 1"},{"name":"Gerrit Coetzee","ficaStatus":"Review due (attested)","reasons":"Review date passed","recordsLocation":"Archive room D, Sandton office"},{"name":"Andile Khumalo","ficaStatus":"Review due (attested)","reasons":"Not screened","recordsLocation":"Archive room C shelf 4"},{"name":"Refilwe Moloi","ficaStatus":"Review due (attested)","reasons":"Source of funds outstanding","recordsLocation":"Archive room C shelf 3"},{"name":"Mokopane Mining Supplies (Pty) Ltd","ficaStatus":"Review due (attested)","reasons":"Beneficial ownership outstanding","recordsLocation":"Archive room C shelf 2"}],"heads":[{"text":"CLIENT","ariaSort":"none"},{"text":"LIFECYCLE","ariaSort":"none"},{"text":"FICA","ariaSort":"none"},{"text":"OPEN MATTERS","ariaSort":"none"},{"text":"OUTSTANDING FEE NOTES","ariaSort":"none"},{"text":"TRUST BALANCE","ariaSort":"none"},{"text":"COMPLETENESS","ariaSort":"none"},{"text":"CREATED","ariaSort":"none"},{"text":"Contact","ariaSort":null},{"text":"ACTIONS","ariaSort":null}],"activeSort":[],"raw":[],"afterClick":{"url":"http://localhost:3001/org/e2e-test-org/clients?view=system%3Afica-review-due&sortBy=name&sortDir=asc","names":["Andile Khumalo","Gerrit Coetzee","Mokopane Mining Supplies (Pty) Ltd","Refilwe Moloi","Thabo Mashaba"],"isNameAsc":true}}
+[step c] end 2026-11-24T01:49:41.735Z console/page errors: 0 http>=400: 0
+[step d] start 2026-11-24T01:49:47.744Z
+[login] user_e2e_alice http://localhost:3001/org/e2e-test-org/dashboard
+[console.error @detail-OLD-B01] MockAuthContextProvider: failed to fetch userinfo TypeError: Failed to fetch
+    at http://localhost:3001/_next/static/chunks/1kvf-7k8cibf1.js:1:1582
+    at iw (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:118706)
+    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142848)
+    at uh (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142510)
+    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142828)
+    at uh (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142510)
+    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142893)
+    at uh (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142510)
+    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142828)
+    at uh (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142510)
+[detail OLD-B01 Busisiwe Ngcobo] {"url":"http://localhost:3001/org/e2e-test-org/clients/437b79d6-26e1-4f94-807e-4339092e5052","cardCount":1,"status":"Verified in prior system (attested)","note":"CDD was done in the previous system. This client is not verified in Kazi.","reasons":null,"fields":{"client-type":"Natural person","risk-rating":"Low","cdd-completed":"10 Jun 2025","last-review":"—","next-review":"10 Jun 2028","beneficial-ownership":"Not applicable","screening":"Screened — clear · 10 Jun 2025","source-of-funds":"Done","records-location":"Archive room A box 3","source-system-ref":"OLD-B01","attested-by":"Alice Owner (Owner)","attested-on":"24 Nov 2026","statement-version":"FICA-ATTEST-v1"},"tiles":"Open matters 0 Trust balance R 0,00 Mathebula & Partners Trust Account Outstanding R 0,00 0 overdue FICA Verified in prior system (attested)","raw":[]}
+[shot] d-01-detail-OLD-B01.png
+[detail OLD-B02 Umhlanga Ridge Holdings (Pty) Ltd] {"url":"http://localhost:3001/org/e2e-test-org/clients/ea11ee44-5f0f-4811-9551-907d54228f38","cardCount":1,"status":"Verified in prior system (attested)","note":"CDD was done in the previous system. This client is not verified in Kazi.","reasons":null,"fields":{"client-type":"Company","risk-rating":"Medium","cdd-completed":"1 Sept 2025","last-review":"—","next-review":"1 Sept 2027","beneficial-ownership":"Done","screening":"Screened — clear · 1 Sept 2025","source-of-funds":"Done","records-location":"Archive room A box 4","source-system-ref":"OLD-B02","attested-by":"Alice Owner (Owner)","attested-on":"24 Nov 2026","statement-version":"FICA-ATTEST-v1"},"tiles":"Open matters 0 Trust balance R 0,00 Mathebula & Partners Trust Account Outstanding R 0,00 0 overdue FICA Verified in prior system (attested)","raw":[]}
+[shot] d-02-detail-OLD-B02.png
+[detail OLD-B03 Hendrik Joubert] {"url":"http://localhost:3001/org/e2e-test-org/clients/7d461c96-19a0-4e98-9f38-95bd5230159b","cardCount":1,"status":"Verified in prior system (attested)","note":"CDD was done in the previous system. This client is not verified in Kazi.","reasons":null,"fields":{"client-type":"Natural person","risk-rating":"Low","cdd-completed":"14 Feb 2019","last-review":"1 Oct 2025","next-review":"1 Oct 2028","beneficial-ownership":"Not applicable","screening":"Screened — clear · 1 Oct 2025","source-of-funds":"Done","records-location":"Archive room A box 5","source-system-ref":"OLD-B03","attested-by":"Alice Owner (Owner)","attested-on":"24 Nov 2026","statement-version":"FICA-ATTEST-v1"},"tiles":"Open matters 0 Trust balance R 0,00 Mathebula & Partners Trust Account Outstanding R 0,00 0 overdue FICA Verified in prior system (attested)","raw":[]}
+[shot] d-03-detail-OLD-B03.png
+[detail OLD-B04 Thabo Mashaba] {"url":"http://localhost:3001/org/e2e-test-org/clients/80556005-3ed4-4cf3-9ba5-bc816c67723d","cardCount":1,"status":"Review due (attested)","note":"CDD was done in the previous system. This client is not verified in Kazi.","reasons":"Not risk-rated","fields":{"client-type":"Natural person","risk-rating":"Not risk-rated","cdd-completed":"1 Mar 2025","last-review":"—","next-review":"—","beneficial-ownership":"Not applicable","screening":"Screened — clear · 1 Mar 2025","source-of-funds":"Done","records-location":"Archive room C shelf 1","source-system-ref":"OLD-B04","attested-by":"Alice Owner (Owner)","attested-on":"24 Nov 2026","statement-version":"FICA-ATTEST-v1"},"tiles":"Open matters 0 Trust balance R 0,00 Mathebula & Partners Trust Account Outstanding R 0,00 0 overdue FICA Review due (attested) Not risk-rated","raw":[]}
+[shot] d-04-detail-OLD-B04.png
+[detail OLD-B05 Mokopane Mining Supplies (Pty) Ltd] {"url":"http://localhost:3001/org/e2e-test-org/clients/6817381a-8b5e-49aa-80fe-8c1730c12574","cardCount":1,"status":"Review due (attested)","note":"CDD was done in the previous system. This client is not verified in Kazi.","reasons":"Beneficial ownership outstanding","fields":{"client-type":"Company","risk-rating":"Low","cdd-completed":"1 Feb 2025","last-review":"—","next-review":"1 Feb 2028","beneficial-ownership":"Outstanding","screening":"Screened — clear · 1 Feb 2025","source-of-funds":"Done","records-location":"Archive room C shelf 2","source-system-ref":"OLD-B05","attested-by":"Alice Owner (Owner)","attested-on":"24 Nov 2026","statement-version":"FICA-ATTEST-v1"},"tiles":"Open matters 0 Trust balance R 0,00 Mathebula & Partners Trust Account Outstanding R 0,00 0 overdue FICA Review due (attested) Beneficial ownership outstanding","raw":[]}
+[shot] d-05-detail-OLD-B05.png
+[detail OLD-B06 Refilwe Moloi] {"url":"http://localhost:3001/org/e2e-test-org/clients/54217cef-db92-4a19-81ed-9cf4b4468c37","cardCount":1,"status":"Review due (attested)","note":"CDD was done in the previous system. This client is not verified in Kazi.","reasons":"Source of funds outstanding","fields":{"client-type":"Natural person","risk-rating":"Medium","cdd-completed":"15 May 2025","last-review":"—","next-review":"15 May 2027","beneficial-ownership":"Not applicable","screening":"Screened — clear · 15 May 2025","source-of-funds":"Outstanding","records-location":"Archive room C shelf 3","source-system-ref":"OLD-B06","attested-by":"Alice Owner (Owner)","attested-on":"24 Nov 2026","statement-version":"FICA-ATTEST-v1"},"tiles":"Open matters 0 Trust balance R 0,00 Mathebula & Partners Trust Account Outstanding R 0,00 0 overdue FICA Review due (attested) Source of funds outstanding","raw":[]}
+[shot] d-06-detail-OLD-B06.png
+[detail OLD-B07 Andile Khumalo] {"url":"http://localhost:3001/org/e2e-test-org/clients/9da26cf0-a536-4630-a735-0d3434bcac42","cardCount":1,"status":"Review due (attested)","note":"CDD was done in the previous system. This client is not verified in Kazi.","reasons":"Not screened","fields":{"client-type":"Natural person","risk-rating":"High","cdd-completed":"20 Jan 2026","last-review":"—","next-review":"20 Jan 2027","beneficial-ownership":"Not applicable","screening":"Not screened","source-of-funds":"Done","records-location":"Archive room C shelf 4","source-system-ref":"OLD-B07","attested-by":"Alice Owner (Owner)","attested-on":"24 Nov 2026","statement-version":"FICA-ATTEST-v1"},"tiles":"Open matters 0 Trust balance R 0,00 Mathebula & Partners Trust Account Outstanding R 0,00 0 overdue FICA Review due (attested) Not screened","raw":[]}
+[shot] d-07-detail-OLD-B07.png
+[detail OLD-B08 Gerrit Coetzee] {"url":"http://localhost:3001/org/e2e-test-org/clients/a10e3af9-4724-4809-bb4b-5ba4515969e8","cardCount":1,"status":"Review due (attested)","note":"CDD was done in the previous system. This client is not verified in Kazi.","reasons":"Review date passed","fields":{"client-type":"Natural person","risk-rating":"High","cdd-completed":"1 Aug 2024","last-review":"1 Aug 2025","next-review":"1 Aug 2026","beneficial-ownership":"Not applicable","screening":"Screened — clear · 1 Aug 2025","source-of-funds":"Done","records-location":"Archive room D, Sandton office","source-system-ref":"OLD-B08","attested-by":"Alice Owner (Owner)","attested-on":"24 Nov 2026","statement-version":"FICA-ATTEST-v1"},"tiles":"Open matters 0 Trust balance R 0,00 Mathebula & Partners Trust Account Outstanding R 0,00 0 overdue FICA Review due (attested) Review date passed","raw":[]}
+[shot] d-08-detail-OLD-B08.png
+[step d] end 2026-11-24T01:51:23.146Z console/page errors: 1 http>=400: 0
+[step e] start 2026-11-24T01:51:28.478Z
+[login] user_e2e_alice http://localhost:3001/org/e2e-test-org/dashboard
+[console.error @dashboard] MockAuthContextProvider: failed to fetch userinfo TypeError: Failed to fetch
+    at http://localhost:3001/_next/static/chunks/1kvf-7k8cibf1.js:1:1582
+    at iw (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:118706)
+    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142848)
+    at uh (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142510)
+    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142828)
+    at uh (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142510)
+    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142893)
+    at uh (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142510)
+    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142828)
+    at uh (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142510)
+[fica widget] FICA outstanding | View all | Open compliance |  | 6 |  | of 10 active clients without completed FICA |  | Andile Khumalo | Review due (attested) | 0 days | Gerrit Coetzee | Review due (attested) | 0 days | Mokopane Mining Supplies (Pty) Ltd | Review due (attested) | 0 days | Palesa Dube (OBS 655B onboarding) | In progress | 0 days | Refilwe Moloi | Review due (attested) | 0 days | Incomplete profiles
+    {"name":"Busisiwe Ngcobo","expect":"clean","inWidget":false}
+    {"name":"Umhlanga Ridge Holdings (Pty) Ltd","expect":"clean","inWidget":false}
+    {"name":"Hendrik Joubert","expect":"clean","inWidget":false}
+    {"name":"Thabo Mashaba","expect":"review","inWidget":false}
+    {"name":"Mokopane Mining Supplies (Pty) Ltd","expect":"review","inWidget":true}
+    {"name":"Refilwe Moloi","expect":"review","inWidget":true}
+    {"name":"Andile Khumalo","expect":"review","inWidget":true}
+    {"name":"Gerrit Coetzee","expect":"review","inWidget":true}
+[onboarding client in widget] true
+[shot] e-02-dashboard.png
+[e pass] false raw []
+[step e] end 2026-11-24T01:51:30.869Z console/page errors: 1 http>=400: 0
+[step f] start 2026-11-24T01:51:31.535Z
+[login] user_e2e_alice http://localhost:3001/org/e2e-test-org/dashboard
+[console.error @onboarding-client-after] MockAuthContextProvider: failed to fetch userinfo TypeError: Failed to fetch
+    at http://localhost:3001/_next/static/chunks/1kvf-7k8cibf1.js:1:1582
+    at iw (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:118706)
+    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142848)
+    at uh (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142510)
+    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142828)
+    at uh (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142510)
+    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142893)
+    at uh (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142510)
+    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142828)
+    at uh (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142510)
+[shot] f-01-onboarding-client-detail-after.png
+[shot] f-02-onboarding-client-list-after.png
+[onboarding before] {"lifecycle":"Onboarding","tiles":"Open matters 0 Trust balance R 0,00 Mathebula & Partners Trust Account Outstanding R 0,00 0 overdue FICA In progress","attestationCards":0,"listFica":"In progress","listCells":["Palesa Dube (OBS 655B onboarding) Individual","Onboarding","In progress","0","—","R 0,00","N/A","24 Nov 2026","palesa.dube.obs655b@example.test","Client actions"]}
+[onboarding after] {"lifecycle":"Onboarding","tiles":"Open matters 0 Trust balance R 0,00 Mathebula & Partners Trust Account Outstanding R 0,00 0 overdue FICA In progress","attestationCards":0,"listFica":"In progress","listCells":["Palesa Dube (OBS 655B onboarding) Individual","Onboarding","In progress","0","—","R 0,00","N/A","24 Nov 2026","palesa.dube.obs655b@example.test","Client actions"]}
+   [seeded] {"name":"Acme Corp","before":"Done","after":"Done"}
+[f same] true seededSame true
+[step f] end 2026-11-24T01:51:37.626Z console/page errors: 1 http>=400: 0
+[step e2] start 2026-11-24T01:51:58.071Z
+[login] user_e2e_alice http://localhost:3001/org/e2e-test-org/dashboard
+[script error] locator.waitFor: Error: strict mode violation: getByTestId('fica-outstanding-widget') resolved to 2 elements:
+    1) <div data-slot="card" data-testid="fica-outstanding-widget" class="bg-card text-card-foreground flex flex-col rounded-lg border border-slate-200/80 dark:border-slate-800/80 gap-4 py-5 shadow-(--shadow-card)">…</div> aka locator('#main-content').getByTestId('fica-outstanding-widget')
+    2) <div data-slot="card" data-testid="fica-outstanding-widget" class="bg-card text-card-foreground flex flex-col rounded-lg border border-slate-200/80 dark:border-slate-800/80 gap-4 py-5 shadow-(--shadow-card)">…</div> aka getByTestId('fica-outstanding-widget').nth(1)
+
+Call log:
+[2m  - waiting for getByTestId('fica-outstanding-widget') to be visible[22m
+
+    at Object.stepE2 (/Users/rakheendama/Projects/2026/worktree-epic-655B/qa_cycle/evidence/phase93/655B/obs/obs.cjs:364:11)
+    at async /Users/rakheendama/Projects/2026/worktree-epic-655B/qa_cycle/evidence/phase93/655B/obs/obs.cjs:584:5
+[shot] zz-failure-step-e2.png
+[step e2] end 2026-11-24T01:51:59.068Z console/page errors: 0 http>=400: 0
+[step e2] start 2026-11-24T01:52:34.336Z
+[login] user_e2e_alice http://localhost:3001/org/e2e-test-org/dashboard
+[url] http://localhost:3001/org/e2e-test-org/clients?view=system:fica-outstanding
+   1. Andile Khumalo | Review due (attested) | Not screened
+   2. Gerrit Coetzee | Review due (attested) | Review date passed
+   3. Mokopane Mining Supplies (Pty) Ltd | Review due (attested) | Beneficial ownership outstanding
+   4. Palesa Dube (OBS 655B onboarding) | In progress | null
+   5. Refilwe Moloi | Review due (attested) | Source of funds outstanding
+   6. Thabo Mashaba | Review due (attested) | Not risk-rated
+[shot] e-03-fica-outstanding-view-all.png
+    {"name":"Busisiwe Ngcobo","expect":"clean","listed":false}
+    {"name":"Umhlanga Ridge Holdings (Pty) Ltd","expect":"clean","listed":false}
+    {"name":"Hendrik Joubert","expect":"clean","listed":false}
+    {"name":"Thabo Mashaba","expect":"review","listed":true}
+    {"name":"Mokopane Mining Supplies (Pty) Ltd","expect":"review","listed":true}
+    {"name":"Refilwe Moloi","expect":"review","listed":true}
+    {"name":"Andile Khumalo","expect":"review","listed":true}
+    {"name":"Gerrit Coetzee","expect":"review","listed":true}
+[e2 pass] true onboarding listed true
+[step e2] end 2026-11-24T01:52:37.007Z console/page errors: 0 http>=400: 0
+[step g] start 2026-11-24T01:52:41.558Z
+[login] user_e2e_alice http://localhost:3001/org/e2e-test-org/dashboard
+[intervals initial] {"low":"36","medium":"24","high":"12"}
+[section text] FICA review intervals Your firm's choice in its Risk Management and Compliance Programme (RMCP). Changes apply to clients taken on after you save. Low risk (months) Medium risk (months) High risk (months)
+[shot] g-01-intervals-initial.png
+[medium cleared → typed] {"cleared":"","typed":"18"}
+[save 18 message] ["Compliance settings updated."]
+[shot] g-02-medium-18-saved.png
+[intervals after reload] {"low":"36","medium":"18","high":"12"}
+[shot] g-03-after-reload.png
+[shot] g-04-refused-0.png
+[refuse 0] {"typed":"0","errBlur":"Enter a whole number of months from 1 to 120.","errSave":"Enter a whole number of months from 1 to 120.","ariaInvalid":"true","msgs":[],"postsDuringSave":1,"reread":{"low":"36","medium":"18","high":"12"}}
+[shot] g-04-refused-121.png
+[refuse 121] {"typed":"121","errBlur":"Enter a whole number of months from 1 to 120.","errSave":"Enter a whole number of months from 1 to 120.","ariaInvalid":"true","msgs":[],"postsDuringSave":1,"reread":{"low":"36","medium":"18","high":"12"}}
+[restore 24] {"restoreMsg":["Compliance settings updated."],"restored":{"low":"36","medium":"24","high":"12"}}
+[shot] g-05-restored-24.png
+[step g] end 2026-11-24T01:53:00.423Z console/page errors: 0 http>=400: 0
+[step matter] start 2026-11-24T01:53:23.719Z
+[login] user_e2e_alice http://localhost:3001/org/e2e-test-org/dashboard
+[console.error @new-matter] MockAuthContextProvider: failed to fetch userinfo TypeError: Failed to fetch
+    at http://localhost:3001/_next/static/chunks/1kvf-7k8cibf1.js:1:1582
+    at iw (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:118706)
+    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142848)
+    at uh (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142510)
+    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142828)
+    at uh (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142510)
+    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142893)
+    at uh (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142510)
+    at ug (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142828)
+    at uh (http://localhost:3001/_next/static/chunks/1vv33_qsr0bfk.js:1:142510)
+[matter overview (Alice)] {"url":"http://localhost:3001/org/e2e-test-org/matters/b10e344f-b909-453f-be46-ead28161392f","cardCount":1,"badge":"Review due (attested)","reasons":"Not risk-rated","attestationLink":"/org/e2e-test-org/clients/80556005-3ed4-4cf3-9ba5-bc816c67723d","cardText":"FICA Review due (attested) CDD was done in the previous system. Not risk-rated View attestation"}
+[shot] h-01-matter-overview-alice.png
+[step matter] end 2026-11-24T01:53:28.431Z console/page errors: 1 http>=400: 0
+[step carol] start 2026-11-24T01:53:34.394Z
+[login] user_e2e_carol http://localhost:3001/org/e2e-test-org/dashboard
+[carol clients] {"url":"http://localhost:3001/org/e2e-test-org/clients","h1":[],"text":"You don't have access to Clients Contact your organisation admin to update your role. Go to dashboard","tables":0}
+[shot] h-02-carol-clients.png
+[carol review view] {"status":200,"url":"http://localhost:3001/org/e2e-test-org/clients?view=system:fica-review-due","h1":[],"text":"You don't have access to Clients Contact your organisation admin to update your role. Go to dashboard","tables":0}
+[shot] h-03-carol-review-view.png
+[carol client detail] {"status":200,"url":"http://localhost:3001/org/e2e-test-org/clients/80556005-3ed4-4cf3-9ba5-bc816c67723d","h1":["Thabo Mashaba"],"text":"Back to Clients Thabo Mashaba Active thabo.mashaba@example.test · +27 84 555 0204 ID 8807075800084 Since 24 Nov 2026 · 0 matters Edit More actions Open matters 0 Trust balance R 0,00 Mathebula & Partners Trust Account Details Overview Matters Fees FICA & compliance FICA Verification AI Verify with AI","attestationCards":0,"tiles":"Open matters 0 Trust balance R 0,00 Mathebula & Partners Trust Account","ficaTile":false}
+[shot] h-04-carol-client-detail.png
+[carol matter] {"status":200,"url":"http://localhost:3001/org/e2e-test-org/matters/b10e344f-b909-453f-be46-ead28161392f","h1":[],"text":"This matter isn't on your list It may not exist, or you haven't been added to its team. Ask the matter lead or a firm admin to add you. Back to Matters","ficaCards":0}
+[shot] h-05-carol-matter.png
+[step carol] end 2026-11-24T01:53:47.739Z console/page errors: 0 http>=400: 0
+[step team] start 2026-11-24T01:54:11.581Z
+[login] user_e2e_alice http://localhost:3001/org/e2e-test-org/dashboard
+[console.error @matter-team] MockAuthContextProvider: failed to fetch userinfo TypeError: Failed to fetch
+[team] Members 2 Add Member MEMBER EMAIL ROLE ADDED AO Alice Owner alice@e2e-test.local Lead Owner 24 Nov 2026 CM Carol Member carol@e2e-test.local Member 24 Nov 2026 Open menu
+[shot] h-06-matter-team-carol-added.png
+[step team] end 2026-11-24T01:54:14.080Z console/page errors: 1 http>=400: 0
+[step carolmatter] start 2026-11-24T01:54:14.480Z
+[login] user_e2e_carol http://localhost:3001/org/e2e-test-org/dashboard
+[carol matter (on team)] {"status":200,"url":"http://localhost:3001/org/e2e-test-org/matters/b10e344f-b909-453f-be46-ead28161392f","h1":["Mashaba — OBS 655B attested-client matter"],"text":"Back to Matters Generate Statement of Account More actions Mashaba — OBS 655B attested-client matter Active LITIGATION Thabo Mashaba·Alice Owner·Opened 24 Nov 2026 Trust balance R 0,00 Next court date — Not available None scheduled Details Overview Work Fees Client Diary Activity Unknown Client: Thabo Mashaba No tasks created yet 3/5 setup steps complete 60% 0.0h HOURS LOGGED 0% TASK COMPLETION R 0,00 TRUST BALANCE Upcoming Deadlines No upcoming deadlines.","ficaCards":0,"errorBoundary":0}
+[shot] h-07-carol-matter-overview.png
+[step carolmatter] end 2026-11-24T01:54:18.176Z console/page errors: 0 http>=400: 0

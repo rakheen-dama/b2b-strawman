@@ -1,0 +1,6 @@
+ version |         description         | success 
+---------+-----------------------------+---------
+ 34      | phase93 client take on fica | t
+ 33      | phase93 trust take on       | t
+(2 rows)
+

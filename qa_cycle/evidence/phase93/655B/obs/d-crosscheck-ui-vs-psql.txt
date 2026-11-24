@@ -1,0 +1,10 @@
+UI (client detail attestation card, DOM) vs psql client_fica_attestations (read-only), per field
+OLD-B04 MATCH (13/13 fields)
+OLD-B08 MATCH (13/13 fields)
+OLD-B07 MATCH (13/13 fields)
+OLD-B06 MATCH (13/13 fields)
+OLD-B02 MATCH (13/13 fields)
+OLD-B05 MATCH (13/13 fields)
+OLD-B01 MATCH (13/13 fields)
+OLD-B03 MATCH (13/13 fields)
+ALL MATCH

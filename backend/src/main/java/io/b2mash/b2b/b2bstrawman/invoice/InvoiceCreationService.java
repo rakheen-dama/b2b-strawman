@@ -155,21 +155,7 @@ public class InvoiceCreationService {
     var customer = validateInvoicePrerequisites(request.clientId());
     var warnings = collectDraftWarnings(customer);
 
-    String orgId = RequestScopes.requireOrgId();
-    var organization =
-        organizationRepository
-            .findByClerkOrgId(orgId)
-            .orElseThrow(() -> new ResourceNotFoundException("Organization", orgId));
-
-    var invoice =
-        new Invoice(
-            request.clientId(),
-            request.currency(),
-            customer.getName(),
-            customer.getEmail(),
-            null,
-            organization.getName(),
-            createdBy);
+    var invoice = newDraft(customer, request.currency(), createdBy);
 
     // Set all draft fields in one call to avoid the 4-arg overload wiping new fields
     if (request.dueDate() != null
@@ -796,7 +782,13 @@ public class InvoiceCreationService {
     }
   }
 
-  io.b2mash.b2b.b2bstrawman.customer.Customer validateInvoicePrerequisites(UUID customerId) {
+  /**
+   * The client checks every fee note needs (Phase 93 658A, ADR-390): the client exists, its legacy
+   * status is ACTIVE and its lifecycle permits {@link LifecycleAction#CREATE_INVOICE}. Shared by
+   * {@link #validateInvoicePrerequisites} (which adds the {@code INVOICE_GENERATION} prerequisite)
+   * and the brought-forward path (which does not, FD-21).
+   */
+  io.b2mash.b2b.b2bstrawman.customer.Customer requireInvoiceableClient(UUID customerId) {
     var customer =
         customerRepository
             .findById(customerId)
@@ -808,6 +800,34 @@ public class InvoiceCreationService {
     }
 
     customerLifecycleGuard.requireActionPermitted(customer, LifecycleAction.CREATE_INVOICE);
+    return customer;
+  }
+
+  /**
+   * The customer-snapshot draft builder (Phase 93 658A, ADR-390): a new, unsaved DRAFT carrying the
+   * client's name and email and the organisation name as they are now. {@link #createDraft} and the
+   * brought-forward path both build their draft here, so both snapshot identically.
+   */
+  Invoice newDraft(
+      io.b2mash.b2b.b2bstrawman.customer.Customer customer, String currency, UUID createdBy) {
+    String orgId = RequestScopes.requireOrgId();
+    var organization =
+        organizationRepository
+            .findByClerkOrgId(orgId)
+            .orElseThrow(() -> new ResourceNotFoundException("Organization", orgId));
+
+    return new Invoice(
+        customer.getId(),
+        currency,
+        customer.getName(),
+        customer.getEmail(),
+        null,
+        organization.getName(),
+        createdBy);
+  }
+
+  io.b2mash.b2b.b2bstrawman.customer.Customer validateInvoicePrerequisites(UUID customerId) {
+    var customer = requireInvoiceableClient(customerId);
 
     var prerequisiteCheck =
         prerequisiteService.checkForContext(

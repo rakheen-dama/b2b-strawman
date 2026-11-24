@@ -41,7 +41,10 @@ import tools.jackson.databind.json.JsonMapper;
  * since the test started whose type starts {@code takeon.}, is {@code customer.fica_attested}, or
  * is {@code customer.created} with {@code source = TAKE_ON} must have (a) only UUID, enum-name,
  * number, boolean or SAFE_TOKEN values and (b) no canary in any case or with separators removed.
- * The platform's {@code actor_name} (the staff member, D-32) is split off first.
+ * The platform's {@code actor_name} (the staff member, D-32) is split off first. 657B added the
+ * trust flow; 658A the debtor opening balances flow, whose {@code invoice.created} ({@code source =
+ * TAKE_ON}) and {@code invoice.brought_forward_issued} rows must carry no client reference,
+ * fee-note number, description or amount either.
  *
  * <p>The job payload of {@code take_on_drain} is {@code null} by construction ({@code
  * TakeOnCommitFacade}, {@code TakeOnDrainSweep}); with the test profile's queue off there is no
@@ -250,6 +253,98 @@ class TakeOnAuditNoPiiIntegrationTest {
             "takeon.report.downloaded",
             "takeon.batch.committed");
     var canaries = List.of("TCANARY", "TCANARY-PREV", "12345.67", "R 12 345,67", "12 345,67");
+    for (var row : rows) {
+      @SuppressWarnings("unchecked")
+      Map<String, Object> details = JSON.readValue((String) row.get("details"), Map.class);
+      details.remove("actor_name"); // D-32: the platform's staff-name stamp, not take-on data
+      for (var entry : details.entrySet()) {
+        String where = row.get("event_type") + "." + entry.getKey();
+        Object value = entry.getValue();
+        assertThat(isSafe(value))
+            .as("%s = %s is not an id, enum, number or token", where, value)
+            .isTrue();
+        String normalised = normalise(String.valueOf(value));
+        for (String canary : canaries) {
+          assertThat(normalised)
+              .as("%s carries canary %s", where, canary)
+              .doesNotContain(normalise(canary));
+        }
+      }
+    }
+  }
+
+  /**
+   * 658A: a clients take-on with canary name, email and previous-system id, then a debtors take-on
+   * whose client references, fee-note numbers, amounts and description are canaries. Every {@code
+   * takeon.*} row, the take-on's {@code invoice.created} and every {@code
+   * invoice.brought_forward_issued} carry ids, enums, numbers, booleans and tokens only.
+   */
+  @Test
+  void theDebtorTakeOnAuditTrailCarriesNoPersonalInformationOrAmount() throws Exception {
+    Instant started = jdbc.queryForObject("SELECT clock_timestamp()", Timestamp.class).toInstant();
+    var clients =
+        validatedClients(
+            mockMvc,
+            owner(),
+            TakeOnClientsFiles.csv(
+                TakeOnClientsFiles.row("Dineo Pii-Canary", "debtor.canary@example.test")
+                    .ref("PIIDEBTOR-1")),
+            TakeOnClientsFiles.mapping());
+    attest(mockMvc, owner(), clients.batchId(), clients.hash(), Map.of())
+        .andExpect(status().isOk());
+    TakeOnTestDrain.commitAndDrain(
+        commitService, drain, schema, ORG_ID, ownerId, clients.batchId(), clients.hash());
+
+    var debtors =
+        TakeOnTestApi.validatedDebtors(
+            mockMvc,
+            owner(),
+            TakeOnDebtorsFiles.csv(
+                TakeOnDebtorsFiles.row("PIIDEBTOR-1", "PIIFN-7788")
+                    .amount("12345.67")
+                    .description("Canary fee note")
+                    .ref("PIIFNREF-1"),
+                TakeOnDebtorsFiles.row("debtor.canary@example.test", "PIIFN-7789")
+                    .amount("9876.54")
+                    .ref("PIIFNREF-2")),
+            TakeOnDebtorsFiles.mapping(),
+            "2026-10-31");
+    assertThat((Integer) JsonPath.read(debtors.json(), "$.counts.valid")).isEqualTo(2);
+    TakeOnTestDrain.commitAndDrain(
+        commitService, drain, schema, ORG_ID, ownerId, debtors.batchId(), debtors.hash());
+    resultCsv(mockMvc, owner(), debtors.batchId()).andExpect(status().isOk());
+
+    var rows =
+        jdbc.queryForList(
+            ("SELECT event_type, details::text AS details FROM \"%s\".audit_events"
+                    + " WHERE occurred_at >= ? AND (event_type LIKE 'takeon.%%'"
+                    + " OR event_type = 'invoice.brought_forward_issued'"
+                    + " OR (event_type = 'invoice.created' AND details->>'source' = 'TAKE_ON'))")
+                .formatted(schema),
+            Timestamp.from(started));
+    assertThat(rows)
+        .extracting(r -> (String) r.get("event_type"))
+        .contains(
+            "takeon.batch.created",
+            "takeon.batch.validated",
+            "takeon.batch.commit_requested",
+            "invoice.created",
+            "invoice.brought_forward_issued",
+            "takeon.batch.committed");
+    assertThat(rows)
+        .filteredOn(r -> "invoice.brought_forward_issued".equals(r.get("event_type")))
+        .hasSize(2);
+    var canaries =
+        List.of(
+            "Dineo Pii-Canary",
+            "debtor.canary@example.test",
+            "PIIDEBTOR-1",
+            "PIIFN-7788",
+            "PIIFN-7789",
+            "PIIFNREF-1",
+            "12345.67",
+            "9876.54",
+            "Canary fee note");
     for (var row : rows) {
       @SuppressWarnings("unchecked")
       Map<String, Object> details = JSON.readValue((String) row.get("details"), Map.class);

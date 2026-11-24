@@ -25,7 +25,8 @@ public final class TakeOnTestDrain {
   /**
    * What a member who may commit a clients, matters or trust batch holds (owner/admin hold all of
    * these; 656A adds {@code PROJECT_MANAGEMENT}, the matters dataset capability; 657C {@code
-   * MANAGE_TRUST} and {@code VIEW_TRUST}, the trust position's write access, R-12).
+   * MANAGE_TRUST} and {@code VIEW_TRUST}, the trust position's write access, R-12; 658A {@code
+   * INVOICING}, the debtor opening balances' write access).
    */
   public static final Set<String> COMMIT_CAPABILITIES =
       Set.of(
@@ -34,6 +35,7 @@ public final class TakeOnTestDrain {
           "MANAGE_COMPLIANCE",
           "PROJECT_MANAGEMENT",
           "MANAGE_TRUST",
+          "INVOICING",
           "VIEW_TRUST");
 
   private TakeOnTestDrain() {}

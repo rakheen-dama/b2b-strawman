@@ -6,6 +6,7 @@ import { getOrgSettings } from "@/lib/api/settings";
 import type { InvoiceResponse, InvoiceStatus, OutstandingSummary } from "@/lib/types";
 import { hasCapability, type WidgetResult } from "@/lib/dashboard-home";
 import { StatusBadge, invoiceStatusLabel } from "@/components/invoices/status-badge";
+import { BroughtForwardBadge } from "@/components/invoices/brought-forward-badge";
 import { BalanceDueHint } from "@/components/invoices/balance-due-hint";
 import { CreateInvoiceButton } from "@/components/invoices/create-invoice-button";
 import { EmptyState } from "@/components/empty-state";
@@ -318,6 +319,7 @@ export default async function InvoicesPage({
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       <StatusBadge status={invoice.status} />
+                      <BroughtForwardBadge takeOnBatchId={invoice.takeOnBatchId} />
                       {invoice.paymentUrl && (
                         <span
                           title="Online payment enabled"

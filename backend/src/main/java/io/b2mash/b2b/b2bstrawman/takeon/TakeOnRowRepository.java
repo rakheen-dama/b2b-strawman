@@ -259,7 +259,10 @@ public interface TakeOnRowRepository extends JpaRepository<TakeOnRow, UUID> {
    * by the matter, but holds the client reference the file gave (email, previous system id, ID
    * number — D-178). A trust position row resolved to the client (the same mapped {@code clientId},
    * {@code TrustPositionDatasetHandler.CLIENT_ID}: client and matter balances, section 86(4)
-   * investments, items outstanding) is redacted the same way, in every status (D-192). The row
+   * investments, items outstanding) is redacted the same way, in every status (D-192). A debtor
+   * opening-balance row resolved to the client (the same mapped {@code clientId}, {@code
+   * DebtorBalancesDatasetHandler.CLIENT_ID}, 658A) is redacted the same way, in every status: it
+   * links to the brought-forward fee note but holds the client reference the file gave. The row
    * shell (number, status, result link) stays; the archived file is not rewritten while a legal
    * retention period runs. Pass at least one key. The rows are locked first in {@code id} order
    * ({@code locked}), the order the trust take-on commit locks its batch's rows in ({@link
@@ -273,7 +276,7 @@ public interface TakeOnRowRepository extends JpaRepository<TakeOnRow, UUID> {
           WITH locked AS (
             SELECT id FROM take_on_rows
              WHERE result_entity_id = :clientId OR duplicate_of_id = :clientId
-                OR (dataset IN ('MATTERS', 'TRUST_POSITION')
+                OR (dataset IN ('MATTERS', 'TRUST_POSITION', 'DEBTOR_BALANCES')
                     AND mapped_values ->> 'clientId' = CAST(:clientId AS varchar))
                 OR (dedup_key IN (:dedupKeys)
                     AND (result_entity_id IS NULL OR result_entity_id = :clientId)

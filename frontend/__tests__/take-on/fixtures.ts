@@ -236,6 +236,80 @@ export function mattersBatch(overrides: Partial<TakeOnBatch> = {}): TakeOnBatch 
   };
 }
 
+// ---- 658A: debtor opening balances ----
+
+const typed = (
+  key: string,
+  label: string,
+  type: TakeOnField["type"],
+  required = false
+): TakeOnField => ({ key, label, type, required, maxLength: null, allowedValues: null });
+
+/** The debtors catalogue fields (backend TakeOnFieldCatalogue.DEBTOR_BALANCES + previous ID). */
+export const DEBTORS_CATALOGUE: TakeOnDatasetCatalogue = {
+  dataset: "DEBTOR_BALANCES",
+  label: "Debtor opening balances",
+  requiresCutoverDate: true,
+  requiresTrustAccount: false,
+  customFieldEntityType: "INVOICE",
+  sections: [
+    {
+      section: "MAIN",
+      label: "File",
+      fields: [
+        text("clientRef", "Client reference", true),
+        text("matterRef", "Matter reference"),
+        text("feeNoteNumber", "Fee note number", true),
+        typed("issueDate", "Issue date", "DATE", true),
+        typed("dueDate", "Due date", "DATE"),
+        typed("outstandingAmount", "Outstanding amount", "AMOUNT", true),
+        text("currency", "Currency"),
+        text("description", "Description"),
+        text("sourceRef", "Previous system ID"),
+      ],
+    },
+  ],
+  completedBatches: 0,
+};
+
+/** A validated debtors batch: 3 rows, 2 valid, 1 error; COMMIT offered (no sign-off). */
+export function debtorsBatch(overrides: Partial<TakeOnBatch> = {}): TakeOnBatch {
+  return {
+    ...clientsBatch(),
+    id: "batch-658",
+    dataset: "DEBTOR_BALANCES",
+    cutoverDate: "2026-10-31",
+    sources: [
+      clientsSource({
+        fileName: "debtors.csv",
+        rowCount: 3,
+        mapping: {
+          targets: { clientRef: "Client", feeNoteNumber: "Fee note number" },
+          customFields: {},
+          parked: [],
+          defaults: {},
+        },
+      }),
+    ],
+    counts: {
+      total: 3,
+      valid: 2,
+      error: 1,
+      duplicate: 0,
+      blocks: 0,
+      created: 0,
+      skipped: 0,
+      failed: 0,
+    },
+    allowedActions: ["REMOVE_SOURCE", "MAP", "REVALIDATE", "COMMIT", "CANCEL"],
+    attestationStatement: null,
+    summary: null,
+    midMonthAcknowledged: false,
+    position: null,
+    ...overrides,
+  };
+}
+
 /** The four go-live statements, §17.10 X3 verbatim, in X3 order (pinned again here, D-167). */
 export const GO_LIVE_TEXT: Readonly<Record<TakeOnGoLiveItemKey, string>> = {
   TRUST_RECORDS_RETAINED:

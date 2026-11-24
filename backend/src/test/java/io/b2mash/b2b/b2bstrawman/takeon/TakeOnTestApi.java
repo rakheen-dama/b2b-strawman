@@ -313,6 +313,30 @@ public final class TakeOnTestApi {
     return validated(mockMvc, jwt, "MATTERS", "matters.csv", csv, mapping);
   }
 
+  /**
+   * Uploads {@code csv} as a debtor opening-balances file (658A), saves the cutover date ({@code
+   * PUT …/position}, as the wizard does right after the upload), maps it, validates (expects 200).
+   */
+  public static Validated validatedDebtors(
+      MockMvc mockMvc,
+      RequestPostProcessor jwt,
+      String csv,
+      Map<String, Object> mapping,
+      String cutoverDate)
+      throws Exception {
+    UUID[] ids =
+        create(
+            mockMvc,
+            jwt,
+            "DEBTOR_BALANCES",
+            "debtors.csv",
+            csv.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+    position(mockMvc, jwt, ids[0], cutoverDate)
+        .andExpect(
+            org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isOk());
+    return mapAndValidate(mockMvc, jwt, ids, mapping);
+  }
+
   private static Validated validated(
       MockMvc mockMvc,
       RequestPostProcessor jwt,
@@ -324,6 +348,12 @@ public final class TakeOnTestApi {
     UUID[] ids =
         create(
             mockMvc, jwt, dataset, fileName, csv.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+    return mapAndValidate(mockMvc, jwt, ids, mapping);
+  }
+
+  private static Validated mapAndValidate(
+      MockMvc mockMvc, RequestPostProcessor jwt, UUID[] ids, Map<String, Object> mapping)
+      throws Exception {
     map(mockMvc, jwt, ids[0], ids[1], mapping)
         .andExpect(
             org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isOk());

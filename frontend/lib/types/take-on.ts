@@ -749,13 +749,15 @@ export interface TakeOnCommitTraits {
 
 /**
  * The one place the wizard reads each dataset's commit path from (656A, D-177). The trust position
- * is signed off by a partner or director, then committed (657C); debtors set theirs in 658A.
+ * is signed off by a partner or director, then committed (657C); debtor opening balances need no
+ * sign-off and commit from under Validation, and never skip a nil balance — a nil or negative
+ * outstanding amount is a row error (658A).
  */
 export const TAKE_ON_COMMIT_TRAITS: Record<TakeOnDataset, TakeOnCommitTraits> = {
   CLIENTS: { signOffStep: "attestation", commitsFromValidation: false, skipsNilBalance: false },
   MATTERS: { signOffStep: null, commitsFromValidation: true, skipsNilBalance: false },
   TRUST_POSITION: { signOffStep: "signOff", commitsFromValidation: false, skipsNilBalance: true },
-  DEBTOR_BALANCES: { signOffStep: null, commitsFromValidation: false, skipsNilBalance: true },
+  DEBTOR_BALANCES: { signOffStep: null, commitsFromValidation: true, skipsNilBalance: false },
 };
 
 export const TAKE_ON_DATASET_LABEL: Record<TakeOnDataset, string> = {

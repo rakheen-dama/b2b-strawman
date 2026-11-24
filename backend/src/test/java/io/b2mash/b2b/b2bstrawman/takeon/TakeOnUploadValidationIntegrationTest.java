@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import org.apache.poi.ss.usermodel.FormulaError;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -253,9 +254,10 @@ class TakeOnUploadValidationIntegrationTest {
     TakeOnTestApi.position(mockMvc, owner(), ids[0], "2026-10-31").andExpect(status().isOk());
     TakeOnTestApi.validate(mockMvc, owner(), ids[0])
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.counts.total").value(4))
-        .andExpect(jsonPath("$.counts.error").value(1));
-    assertRowError(rowsByNumber(ids[0]).get(5), "AMOUNT_AMBIGUOUS");
+        .andExpect(jsonPath("$.counts.total").value(4));
+    var byRow = rowsByNumber(ids[0]);
+    assertRowError(byRow.get(5), "AMOUNT_AMBIGUOUS");
+    assertThat(rowsWithReaderErrors(byRow)).containsExactly(5);
   }
 
   @Test
@@ -387,12 +389,32 @@ class TakeOnUploadValidationIntegrationTest {
     TakeOnTestApi.validate(mockMvc, owner(), ids[0])
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("VALIDATED"))
-        .andExpect(jsonPath("$.counts.total").value(4))
-        .andExpect(jsonPath("$.counts.error").value(2));
+        .andExpect(jsonPath("$.counts.total").value(4));
     var byRow = rowsByNumber(ids[0]);
     assertThat(byRow.keySet()).containsExactlyInAnyOrder(4, 5, 6, 7);
     assertRowError(byRow.get(5), "AMOUNT_AMBIGUOUS");
     assertRowError(byRow.get(6), "CELL_ERROR");
+    assertThat(rowsWithReaderErrors(byRow)).containsExactlyInAnyOrder(5, 6);
+  }
+
+  /**
+   * The debtors dataset carries these reader tests. Since 658A it has its own rules, so its client
+   * and matter references ("CL-001", "MAT-01" — none in this tenant) are row errors too; the
+   * reader's outcome is the rows with any other error.
+   */
+  private static final Set<String> DEBTOR_RULE_CODES =
+      Set.of("CLIENT_UNRESOLVED", "MATTER_UNRESOLVED");
+
+  @SuppressWarnings("unchecked")
+  private static List<Integer> rowsWithReaderErrors(Map<Integer, Map<String, Object>> byRow) {
+    return byRow.entrySet().stream()
+        .filter(
+            e ->
+                ((List<Map<String, Object>>) e.getValue().get("errors"))
+                    .stream().anyMatch(err -> !DEBTOR_RULE_CODES.contains(err.get("code"))))
+        .map(Map.Entry::getKey)
+        .sorted()
+        .toList();
   }
 
   private Map<Integer, Map<String, Object>> rowsByNumber(UUID batchId) throws Exception {

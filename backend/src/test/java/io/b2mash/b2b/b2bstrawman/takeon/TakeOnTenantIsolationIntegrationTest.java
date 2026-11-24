@@ -204,6 +204,47 @@ class TakeOnTenantIsolationIntegrationTest {
     assertThat(mattersWithReference(schemaB, "ISO-M-1")).isZero();
   }
 
+  /**
+   * 658A: a debtors batch committed in A issues its brought-forward fee note in A's schema only,
+   * for A's client; B can neither claim the batch nor see the fee note, and B's drain never touches
+   * it.
+   */
+  @Test
+  void committedFeeNotesExistOnlyInTheOwningTenant() throws Exception {
+    var clients =
+        TakeOnTestApi.validatedClients(
+            mockMvc,
+            ownerA(),
+            TakeOnClientsFiles.csv(
+                TakeOnClientsFiles.row("Iso Debtor Client", "iso.debtor.client@example.test")),
+            TakeOnClientsFiles.mapping());
+    TakeOnTestApi.attest(mockMvc, ownerA(), clients.batchId(), clients.hash(), java.util.Map.of())
+        .andExpect(status().isOk());
+    TakeOnTestDrain.commitAndDrain(
+        commitService, drain, schemaA, ORG_A, ownerAId, clients.batchId(), clients.hash());
+    var debtors =
+        TakeOnTestApi.validatedDebtors(
+            mockMvc,
+            ownerA(),
+            TakeOnDebtorsFiles.csv(
+                TakeOnDebtorsFiles.row("iso.debtor.client@example.test", "ISO-FN-1")),
+            TakeOnDebtorsFiles.mapping(),
+            "2026-10-31");
+    assertThatThrownBy(
+            () ->
+                TakeOnTestDrain.commit(
+                    commitService, schemaB, ORG_B, ownerBId, debtors.batchId(), debtors.hash()))
+        .isInstanceOf(ResourceNotFoundException.class);
+    TakeOnTestDrain.commit(
+        commitService, schemaA, ORG_A, ownerAId, debtors.batchId(), debtors.hash());
+    TakeOnTestDrain.run(drain, schemaB, ORG_B);
+    assertThat(batchStatus(schemaA, debtors.batchId())).isEqualTo("COMMITTING");
+    TakeOnTestDrain.run(drain, schemaA, ORG_A);
+    assertThat(batchStatus(schemaA, debtors.batchId())).isEqualTo("COMPLETED");
+    assertThat(feeNotesWithNumber(schemaA, "ISO-FN-1")).isEqualTo(1);
+    assertThat(feeNotesWithNumber(schemaB, "ISO-FN-1")).isZero();
+  }
+
   /** 656A: the go-live checklist is the firm's own — B sees nothing A acknowledged. */
   @Test
   void anotherTenantsGoLiveChecklistShowsNothingThisTenantAcknowledged() throws Exception {
@@ -375,6 +416,13 @@ class TakeOnTenantIsolationIntegrationTest {
   private static MockHttpServletRequestBuilder json(
       MockHttpServletRequestBuilder builder, String body) {
     return builder.contentType(MediaType.APPLICATION_JSON).content(body);
+  }
+
+  private int feeNotesWithNumber(String schema, String number) {
+    return jdbc.queryForObject(
+        "SELECT count(*) FROM \"%s\".invoices WHERE invoice_number = ?".formatted(schema),
+        Integer.class,
+        number);
   }
 
   private RequestPostProcessor ownerA() {

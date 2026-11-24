@@ -139,6 +139,12 @@ public class MemberFilter extends OncePerRequestFilter {
         .orElseGet(() -> lazyCreateMember(clerkUserId, jwt));
   }
 
+  private OrgRole requireSystemRole(String slug) {
+    return orgRoleService
+        .findSystemRoleBySlug(slug)
+        .orElseThrow(() -> new IllegalStateException("System role not found for slug: " + slug));
+  }
+
   private MemberInfo lazyCreateMember(String clerkUserId, Jwt jwt) {
     // Always extract real email/name from JWT when available.
     // Keycloak JWTs include email/name directly; Clerk JWTs may not (updated via webhook).
@@ -150,8 +156,10 @@ public class MemberFilter extends OncePerRequestFilter {
             : clerkUserId + "@placeholder.internal";
     String name = jwtName;
 
-    // Determine role: check pending invitation first, then default to member
-    String effectiveRole = Roles.ORG_MEMBER;
+    // Determine role: a pending invitation's role, applied by the id the invitation stores — the
+    // exact role that passed the invitation's guards (InvitationService.createInvitation), never
+    // re-resolved from its slug or from any token claim. No invitation → the system Member role.
+    UUID invitedRoleId = null;
     UUID acceptedInvitationId = null;
 
     if (jwtEmail != null && jwtEmail.contains("@")) {
@@ -159,34 +167,33 @@ public class MemberFilter extends OncePerRequestFilter {
         var pendingInvitation = invitationService.findPendingByEmail(jwtEmail);
         if (pendingInvitation.isPresent()) {
           var invitation = pendingInvitation.get();
-          effectiveRole = invitation.getOrgRole().getSlug();
+          invitedRoleId = invitation.getOrgRole().getId();
           acceptedInvitationId = invitation.getId();
-          log.info("Found pending invitation for email {} with role {}", jwtEmail, effectiveRole);
+          log.info(
+              "Found pending invitation for email {} with role {}",
+              jwtEmail,
+              invitation.getOrgRole().getSlug());
         }
       } catch (Exception e) {
         log.warn("Failed to lookup pending invitation for email {}: {}", jwtEmail, e.getMessage());
       }
     }
 
-    // First member in a newly-provisioned tenant becomes owner (founding user).
-    if (Roles.ORG_MEMBER.equals(effectiveRole) && memberRepository.count() == 0) {
-      effectiveRole = Roles.ORG_OWNER;
-      acceptedInvitationId = null; // Don't mark invitation as accepted if promoting to owner
-      log.info("Promoting first member {} to owner (founding user)", clerkUserId);
-    }
-
-    final String finalEffectiveRole = effectiveRole;
-    final UUID finalAcceptedInvitationId = acceptedInvitationId;
-
     try {
       // Look up the OrgRole entity before constructing the Member
       OrgRole orgRole =
-          orgRoleService
-              .findSystemRoleBySlug(finalEffectiveRole)
-              .orElseThrow(
-                  () ->
-                      new IllegalStateException(
-                          "System role not found for slug: " + finalEffectiveRole));
+          invitedRoleId != null
+              ? orgRoleService.findRoleForInvitation(invitedRoleId)
+              : requireSystemRole(Roles.ORG_MEMBER);
+
+      // First member in a newly-provisioned tenant becomes owner (founding user) — only when the
+      // member would otherwise get the system Member role (no invitation, or one into Member).
+      boolean systemMember = orgRole.isSystem() && Roles.ORG_MEMBER.equals(orgRole.getSlug());
+      if (systemMember && memberRepository.count() == 0) {
+        orgRole = requireSystemRole(Roles.ORG_OWNER);
+        acceptedInvitationId = null; // Don't mark invitation as accepted if promoting to owner
+        log.info("Promoting first member {} to owner (founding user)", clerkUserId);
+      }
 
       var member = new Member(clerkUserId, email, name, null, orgRole);
       memberRepository.save(member);
@@ -200,14 +207,12 @@ public class MemberFilter extends OncePerRequestFilter {
       }
 
       // Mark the invitation as accepted after member creation succeeds
-      if (finalAcceptedInvitationId != null) {
+      if (acceptedInvitationId != null) {
         try {
-          invitationService.markAccepted(finalAcceptedInvitationId);
+          invitationService.markAccepted(acceptedInvitationId);
         } catch (Exception e) {
           log.warn(
-              "Failed to mark invitation {} as accepted: {}",
-              finalAcceptedInvitationId,
-              e.getMessage());
+              "Failed to mark invitation {} as accepted: {}", acceptedInvitationId, e.getMessage());
         }
       }
 
@@ -216,7 +221,7 @@ public class MemberFilter extends OncePerRequestFilter {
           member.getId(),
           clerkUserId,
           RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : "unknown");
-      return new MemberInfo(member.getId(), finalEffectiveRole);
+      return new MemberInfo(member.getId(), orgRole.getSlug());
     } catch (DataIntegrityViolationException e) {
       // Race condition: another instance already created this member
       return memberRepository

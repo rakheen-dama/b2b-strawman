@@ -25,4 +25,7 @@ public interface PendingInvitationRepository extends JpaRepository<PendingInvita
       "SELECT p FROM PendingInvitation p JOIN FETCH p.orgRole JOIN FETCH p.invitedBy"
           + " ORDER BY p.createdAt DESC")
   List<PendingInvitation> findAllByOrderByCreatedAtDesc();
+
+  /** Invitations in {@code status} that would grant the role {@code orgRoleId}. */
+  long countByOrgRole_IdAndStatus(UUID orgRoleId, InvitationStatus status);
 }

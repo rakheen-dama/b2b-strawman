@@ -6,6 +6,8 @@ import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.invitation.InvitationStatus;
+import io.b2mash.b2b.b2bstrawman.invitation.PendingInvitationRepository;
 import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberFilter;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
@@ -41,18 +43,21 @@ public class OrgRoleService {
   private final AuditService auditService;
   private final NotificationService notificationService;
   private final MemberFilter memberFilter;
+  private final PendingInvitationRepository invitationRepository;
 
   public OrgRoleService(
       OrgRoleRepository orgRoleRepository,
       MemberRepository memberRepository,
       AuditService auditService,
       NotificationService notificationService,
-      @Lazy MemberFilter memberFilter) {
+      @Lazy MemberFilter memberFilter,
+      PendingInvitationRepository invitationRepository) {
     this.orgRoleRepository = orgRoleRepository;
     this.memberRepository = memberRepository;
     this.auditService = auditService;
     this.notificationService = notificationService;
     this.memberFilter = memberFilter;
+    this.invitationRepository = invitationRepository;
   }
 
   @Transactional(readOnly = true)
@@ -389,6 +394,21 @@ public class OrgRoleService {
               + " member(s)");
     }
 
+    // A pending invitation grants this exact role at first sign-in (by the id it stores), so the
+    // role stays while one offers it — the invitee lands on the role the inviter chose, never a
+    // silent fallback. (The invitation's FK would refuse the delete anyway, as a 500.)
+    long pendingInvitations =
+        invitationRepository.countByOrgRole_IdAndStatus(id, InvitationStatus.PENDING);
+    if (pendingInvitations > 0) {
+      throw new ResourceConflictException(
+          "Role in use",
+          "Cannot delete role '"
+              + role.getName()
+              + "' because it is offered in "
+              + pendingInvitations
+              + " pending invitation(s). Revoke the invitation(s) first.");
+    }
+
     auditService.log(AuditEventBuilder.roleDeleted(role));
     orgRoleRepository.delete(role);
   }
@@ -400,6 +420,18 @@ public class OrgRoleService {
   @Transactional(readOnly = true)
   public java.util.Optional<OrgRole> findSystemRoleBySlug(String slug) {
     return orgRoleRepository.findBySlug(slug).filter(OrgRole::isSystem);
+  }
+
+  /**
+   * The role a pending invitation grants, by the id the invitation stores (system or custom). The
+   * invitation's guards ran when it was created ({@code InvitationService.createInvitation}); the
+   * role cannot be deleted while a pending invitation offers it ({@link #deleteRole}).
+   */
+  @Transactional(readOnly = true)
+  public OrgRole findRoleForInvitation(UUID roleId) {
+    return orgRoleRepository
+        .findById(roleId)
+        .orElseThrow(() -> new ResourceNotFoundException("OrgRole", roleId));
   }
 
   static String generateSlug(String name) {

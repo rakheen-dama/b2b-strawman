@@ -13,6 +13,11 @@ Only targeted test runs (`./mvnw -q test -Dtest=…`). **No full `./mvnw verify`
 | `99192c0ba` | Task B fix (GREEN) |
 | `c87c87eb3` | Task A frontend tests (RED) |
 | `35246e379` | Task A frontend fix (GREEN, full frontend gate) |
+| `26161f9fb` | evidence for A and B |
+| `8ac0c3a5e` | Task C backend reproduction tests (RED) |
+| `70748dfd5` | Task C backend fix (GREEN) |
+| `f0ebb2749` | Task C frontend test (RED) |
+| `b7dd7e51f` | Task C frontend fix (GREEN, full frontend gate) |
 
 ---
 
@@ -156,4 +161,54 @@ Caused by: org.hibernate.LazyInitializationException: …
 
 **Machine-sharing note:** my first Task B red run (one class, about 18 s) started while the 657D full verify was live. My `pgrep` check printed it, but the command did not stop on it. The red run recorded here is a clean rerun made after that verify finished. Every later run waited for a clear machine. The wait now uses a self-excluding pattern, because `pgrep -f 'surefire'` also matches other agents' polling shells and the waiter itself.
 
-**Unverified hypothesis (not touched):** `POST /api/invitations` (`InvitationService.java:78-81`, `TEAM_OVERSIGHT`) accepts any `orgRoleId`, with no owner-only check. On acceptance, `MemberFilter.lazyCreateMember` resolves the role by slug among system roles only. So an admin might be able to invite someone straight into the system **Owner** role, and a custom-role invitation may fail to create the member at all. I did not reproduce either; each needs its own ticket and reproduce-first test.
+**Hypothesis (later taken up as Task C below):** `POST /api/invitations` (`InvitationService.java:78-81`, `TEAM_OVERSIGHT`) accepts any `orgRoleId`, with no owner-only check. On acceptance, `MemberFilter.lazyCreateMember` resolves the role by slug among system roles only. So an admin might be able to invite someone straight into the system **Owner** role, and a custom-role invitation may fail to create the member at all. I did not reproduce either; each needs its own ticket and reproduce-first test.
+
+---
+
+## Task C — invitation role escalation. **REPRODUCED (Owner and Admin routes), FIXED**
+
+**How an invitation is accepted** (traced before testing):
+- `POST /api/invitations` (`InvitationController`, `@RequiresCapability("TEAM_OVERSIGHT")`) stores a `PendingInvitation` with any `orgRoleId`.
+- On the invitee's first authenticated request, `MemberFilter.lazyCreateMember` (`member/MemberFilter.java:155-191`) finds the pending invitation by the JWT email and creates the member with `findSystemRoleBySlug(invitation role slug)`. The invited system role becomes the member's org role.
+- `CreateInvitationRequest` is only `(email, orgRoleId)`. There are no capability overrides, so route (4) does not exist.
+
+**Test:** `backend/src/test/java/io/b2mash/b2b/b2bstrawman/invitation/InvitationRoleEscalationIntegrationTest.java`. Each case invites as an ADMIN (`TestJwtFactory.adminJwt`) over HTTP, signs the invitee in (a JWT carrying the invited email, `GET /api/me/capabilities`), and only then checks the invitation answer.
+
+**RED** (`taskC-red.txt`: 6 tests, 3 failures):
+
+| Route | Result on the old code |
+|---|---|
+| (1) admin invites into the **Owner** role | **Open.** 201, and the invitee signs in as an owner: `[invitee is an owner: {"capabilities":["FINANCIAL_RECONCILE", … "SIGN_OFF_TRUST_TAKE_ON" …]} …] Expecting value to be false but was true` |
+| (1b) the owner invites into the Owner role | **Open.** `[invitation answer {… "roleSlug":"owner" …}] expected: 403 but was: 201` (assignRole forbids this for everyone) |
+| (2) admin invites into the **Admin** role | **Open.** 201, and the invitee signs in as an admin: `[invitee is an admin: …] Expecting value to be false but was true` |
+| (3) admin invites into an owner-made custom role holding `SIGN_OFF_TRUST_TAKE_ON` | **Taken (201) but no escalation on this path.** `lazyCreateMember` finds no system role for a custom slug (`IllegalStateException "System role not found for slug: partner-invite-a"`, swallowed in `resolveMember`), so the invitee is never created and their request answers 500 (`MemberContextNotBoundException`). The committed test asserts no member is created. |
+| (4) `+CAP` override | **Does not exist** (no overrides on invitations). |
+
+**Fix** (proven routes only):
+- `OrgRoleService.requireSystemRoleGrantable(OrgRole)` is extracted from `assignRole` (unchanged rules and messages). The Owner system role is never granted: 403 "Owner role assignment forbidden" / "Cannot assign the Owner system role to a member". The Admin system role is granted only by an owner: 403 "Admin role assignment restricted" / "Only owners can assign the Admin system role".
+- `InvitationService.createInvitation` now calls it.
+- Route (3) is left unchanged (not proven).
+
+**Existing tests aligned** (they encoded the escalation):
+- `InvitationControllerTest`: the admin caller now invites into the Member role instead of Admin.
+- `InvitationServiceTest`: the owner-run cases now bind `ORG_ROLE=owner`.
+
+**GREEN backend** (`taskC-green-targeted.txt`, `taskC-targeted-per-class.txt`, classes in `taskC-targeted-classes.txt`): every class in `orgrole/`, `member/` and `invitation/`, every class referencing invitations, plus `LayerDependencyRulesTest`, `TerminologyRemnantScanTest`, `TenantScopeBindingTest` and `TestConventionsTest`. **26 classes / 210 tests, 0 failures, 0 errors.** `InvitationRoleEscalationIntegrationTest` is 6/6.
+
+**Frontend:**
+- **Problem:** the invite form offered **Admin** to everyone. **Owner** is not offered today, and the tests keep it absent.
+- **Change:** for a non-owner the Admin option is now disabled, with "Only the owner can grant this" (`role-option-system-admin`, `owner-only-role-hint-system-admin`).
+- **RED** (`taskC-frontend-red.txt`): 11 tests, 2 failed — `Unable to find an element by: [data-testid="role-option-system-admin"]`.
+- **Existing test updated:** `__tests__/invite-role-selection.test.tsx` now renders as the owner. Two of its tests picked Admin without a capability provider, which is now the non-owner view.
+- **Full frontend gate** (node 20.11.1):
+
+| Step | Result | Output |
+|---|---|---|
+| lint | exit 0: 0 errors, 77 warnings | `taskC-gate-lint.txt` |
+| format:check | exit 0, clean | `taskC-gate-format.txt` |
+| build | exit 0 on the rerun | `taskC-gate-build.txt` |
+| vitest | exit 0: **503 files, 4914 passed, 2 skipped** (4916) | `taskC-gate-test.txt` |
+
+The first build attempt printed its complete output, including the route table, and then sat idle in `next build` teardown for about 10 minutes (0% CPU, a turbopack postcss pool worker still alive). It was killed (`taskC-gate-build-hung-attempt1.txt`). The rerun exited 0.
+
+**Not covered:** route (3) above. Custom-role invitations never complete on the JIT sign-in path, which is a separate defect (`MemberFilter.java:183-190`). The Keycloak-side path, where `InvitationService` sends the role slug to Keycloak and `MemberSyncService.resolveOrgRole` resolves any slug including custom ones, was not exercised. If that path grants a custom role, route (3) becomes a real escalation and needs the FR-4 owner-only check on invitations. In the member detail panel, the system **Admin** option is still selectable by a non-owner; the backend refuses it with a 403 whose detail is now shown.

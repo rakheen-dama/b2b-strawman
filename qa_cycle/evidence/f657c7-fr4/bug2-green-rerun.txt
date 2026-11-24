@@ -1,0 +1,19 @@
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::staticFieldBase has been called by com.diffplug.spotless.java.ModuleHelper (file:/Users/rakheendama/.m2/repository/com/diffplug/spotless/spotless-lib/4.3.0/spotless-lib-4.3.0.jar)
+WARNING: Please consider reporting this to the maintainers of class com.diffplug.spotless.java.ModuleHelper
+WARNING: sun.misc.Unsafe::staticFieldBase will be removed in a future release
+14:20:12.237 [main] INFO com.tngtech.archunit.ArchConfiguration -- Reading ArchUnit properties from file:/Users/rakheendama/Projects/2026/wt-f657c7-fr4/backend/target/test-classes/archunit.properties
+14:20:12.624 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleControllerTest]: OrgRoleControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+14:20:12.972 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration io.b2mash.b2b.b2bstrawman.BackendApplication for test class io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleControllerTest
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/Users/rakheendama/.m2/repository/net/bytebuddy/byte-buddy-agent/1.17.8/byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+
+# surefire XML summary (appended by agent after the run)
+name="io.b2mash.b2b.b2bstrawman.orgrole.OwnerOnlyCapabilityGrantIntegrationTest" tests="7" errors="0" skipped="0" failures="0" 
+name="io.b2mash.b2b.b2bstrawman.orgrole.RoleAssignmentTest" tests="11" errors="0" skipped="0" failures="0" 
+name="io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleControllerTest" tests="13" errors="0" skipped="0" failures="0" 
+name="io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleServiceTest" tests="20" errors="0" skipped="0" failures="0" 

@@ -1,0 +1,363 @@
+14:14:42.450 [main] INFO com.tngtech.archunit.ArchConfiguration -- Reading ArchUnit properties from file:/Users/rakheendama/Projects/2026/wt-f657c7-fr4/backend/target/test-classes/archunit.properties
+14:14:43.094 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [io.b2mash.b2b.b2bstrawman.datarequest.AnonymizationControllerTest]: AnonymizationControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+14:14:43.269 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration io.b2mash.b2b.b2bstrawman.BackendApplication for test class io.b2mash.b2b.b2bstrawman.datarequest.AnonymizationControllerTest
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/Users/rakheendama/.m2/repository/net/bytebuddy/byte-buddy-agent/1.17.8/byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+com.openhtmltopdf.load INFO:: TIME: parse stylesheets 26ms
+com.openhtmltopdf.match INFO:: Matcher created with 181 selectors
+com.openhtmltopdf.general INFO:: Using fast-mode renderer. Prepare to fly.
+com.openhtmltopdf.load INFO:: TIME: parse stylesheets 0ms
+com.openhtmltopdf.match INFO:: Matcher created with 181 selectors
+com.openhtmltopdf.general INFO:: Using fast-mode renderer. Prepare to fly.
+com.openhtmltopdf.load INFO:: TIME: parse stylesheets 0ms
+com.openhtmltopdf.match INFO:: Matcher created with 181 selectors
+com.openhtmltopdf.general INFO:: Using fast-mode renderer. Prepare to fly.
+com.openhtmltopdf.load INFO:: TIME: parse stylesheets 0ms
+com.openhtmltopdf.match INFO:: Matcher created with 181 selectors
+com.openhtmltopdf.general INFO:: Using fast-mode renderer. Prepare to fly.
+com.openhtmltopdf.load INFO:: TIME: parse stylesheets 1ms
+com.openhtmltopdf.match INFO:: Matcher created with 181 selectors
+com.openhtmltopdf.general INFO:: Using fast-mode renderer. Prepare to fly.
+com.openhtmltopdf.load INFO:: TIME: parse stylesheets 1ms
+com.openhtmltopdf.match INFO:: Matcher created with 181 selectors
+com.openhtmltopdf.general INFO:: Using fast-mode renderer. Prepare to fly.
+com.openhtmltopdf.load INFO:: TIME: parse stylesheets 0ms
+com.openhtmltopdf.match INFO:: Matcher created with 181 selectors
+com.openhtmltopdf.general INFO:: Using fast-mode renderer. Prepare to fly.
+com.openhtmltopdf.load INFO:: TIME: parse stylesheets 1ms
+com.openhtmltopdf.match INFO:: Matcher created with 181 selectors
+com.openhtmltopdf.general INFO:: Using fast-mode renderer. Prepare to fly.
+com.openhtmltopdf.load INFO:: TIME: parse stylesheets 0ms
+com.openhtmltopdf.match INFO:: Matcher created with 181 selectors
+com.openhtmltopdf.general INFO:: Using fast-mode renderer. Prepare to fly.
+com.openhtmltopdf.load INFO:: TIME: parse stylesheets 0ms
+com.openhtmltopdf.match INFO:: Matcher created with 181 selectors
+com.openhtmltopdf.general INFO:: Using fast-mode renderer. Prepare to fly.
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /internal/members/sync
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", X-API-KEY:"test-api-key", Content-Length:"159", Idempotency-Key:"059762e3-6ecb-4276-bce0-8c15de88e894"]
+             Body = {"clerkOrgId":"org_owner_only_grant_test","clerkUserId":"user_oog_owner","email":"oog_owner@test.com","name":"Grant Owner","avatarUrl":null,"orgRole":"owner"}
+
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.member.MemberSyncController
+           Method = io.b2mash.b2b.b2bstrawman.member.MemberSyncController#syncMember(SyncMemberRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/internal/members/c11ad618-7bfa-4f32-bd9a-04d9f7f8b3c7", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"memberId":"c11ad618-7bfa-4f32-bd9a-04d9f7f8b3c7","clerkUserId":"user_oog_owner","action":"created"}
+    Forwarded URL = null
+   Redirected URL = /internal/members/c11ad618-7bfa-4f32-bd9a-04d9f7f8b3c7
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /internal/members/sync
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", X-API-KEY:"test-api-key", Content-Length:"159", Idempotency-Key:"6425c6f6-3e71-4aa5-ae2b-83d74311bb2e"]
+             Body = {"clerkOrgId":"org_owner_only_grant_test","clerkUserId":"user_oog_admin","email":"oog_admin@test.com","name":"Grant Admin","avatarUrl":null,"orgRole":"admin"}
+
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.member.MemberSyncController
+           Method = io.b2mash.b2b.b2bstrawman.member.MemberSyncController#syncMember(SyncMemberRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/internal/members/0aaf751c-a9d6-448e-8bcf-58075280345b", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"memberId":"0aaf751c-a9d6-448e-8bcf-58075280345b","clerkUserId":"user_oog_admin","action":"created"}
+    Forwarded URL = null
+   Redirected URL = /internal/members/0aaf751c-a9d6-448e-8bcf-58075280345b
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /internal/members/sync
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", X-API-KEY:"test-api-key", Content-Length:"182", Idempotency-Key:"e30dccf2-f9cd-4087-8d8a-bccab957df52"]
+             Body = {"clerkOrgId":"org_owner_only_grant_test","clerkUserId":"user_oog_self_admin","email":"user_oog_self_admin@test.com","name":"user_oog_self_admin","avatarUrl":null,"orgRole":"admin"}
+
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.member.MemberSyncController
+           Method = io.b2mash.b2b.b2bstrawman.member.MemberSyncController#syncMember(SyncMemberRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/internal/members/ccc81679-dffc-4ec6-8e16-97319ce890c0", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"memberId":"ccc81679-dffc-4ec6-8e16-97319ce890c0","clerkUserId":"user_oog_self_admin","action":"created"}
+    Forwarded URL = null
+   Redirected URL = /internal/members/ccc81679-dffc-4ec6-8e16-97319ce890c0
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/org-roles
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"106", Idempotency-Key:"713ee9a2-9f2f-40b5-8077-1e46d0bdf962"]
+             Body = {"name": "Partner D", "description": "Test role", "capabilities": ["SIGN_OFF_TRUST_TAKE_ON","VIEW_TRUST"]}
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleController
+           Method = io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleController#createRole(CreateOrgRoleRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/api/org-roles/2fd145d1-07f3-40a7-9aaa-7d2fb7e6baad", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"2fd145d1-07f3-40a7-9aaa-7d2fb7e6baad","name":"Partner D","slug":"partner-d","description":"Test role","capabilities":["SIGN_OFF_TRUST_TAKE_ON","VIEW_TRUST"],"isSystem":false,"memberCount":0,"createdAt":"2026-11-24T14:15:55.501082Z","updatedAt":"2026-11-24T14:15:55.501082Z"}
+    Forwarded URL = null
+   Redirected URL = /api/org-roles/2fd145d1-07f3-40a7-9aaa-7d2fb7e6baad
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = PUT
+      Request URI = /api/members/ccc81679-dffc-4ec6-8e16-97319ce890c0/role
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"80", Idempotency-Key:"31b0d60c-98ab-4678-99b0-207aacc82ebe"]
+             Body = {"orgRoleId": "2fd145d1-07f3-40a7-9aaa-7d2fb7e6baad", "capabilityOverrides": []}
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.member.OrgMemberController
+           Method = io.b2mash.b2b.b2bstrawman.member.OrgMemberController#assignRole(UUID, AssignRoleRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = io.b2mash.b2b.b2bstrawman.exception.ForbiddenException
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 403
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/problem+json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/problem+json
+             Body = {"detail":"Only the owner can assign a role holding an owner-only capability: SIGN_OFF_TRUST_TAKE_ON.","instance":"/api/members/ccc81679-dffc-4ec6-8e16-97319ce890c0/role","status":403,"title":"Owner-only capability"}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = GET
+      Request URI = /api/take-on/sign-off-queue
+       Parameters = {}
+          Headers = []
+             Body = null
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController
+           Method = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController#signOffQueue()
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = org.springframework.security.authorization.AuthorizationDeniedException
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 403
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/problem+json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/problem+json
+             Body = {"detail":"Insufficient permissions for this operation","instance":"/api/take-on/sign-off-queue","status":403,"title":"Access denied"}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = GET
+      Request URI = /api/members/ccc81679-dffc-4ec6-8e16-97319ce890c0/capabilities
+       Parameters = {}
+          Headers = []
+             Body = null
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.member.OrgMemberController
+           Method = io.b2mash.b2b.b2bstrawman.member.OrgMemberController#getMemberCapabilities(UUID)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = org.springframework.http.converter.HttpMessageNotWritableException
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 500
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/problem+json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/problem+json
+             Body = {"detail":"Failed to write request","instance":"/api/members/ccc81679-dffc-4ec6-8e16-97319ce890c0/capabilities","status":500,"title":"Internal Server Error"}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+[ERROR] Tests run: 7, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 0.975 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.orgrole.OwnerOnlyCapabilityGrantIntegrationTest
+[ERROR] io.b2mash.b2b.b2bstrawman.orgrole.OwnerOnlyCapabilityGrantIntegrationTest.anAdminCannotAssignARoleHoldingAnOwnerOnlyCapabilityToThemselves -- Time elapsed: 0.055 s <<< FAILURE!
+java.lang.AssertionError: Status expected:<200> but was:<500>
+	at org.springframework.test.util.AssertionErrors.fail(AssertionErrors.java:62)
+	at org.springframework.test.util.AssertionErrors.assertEquals(AssertionErrors.java:129)
+	at org.springframework.test.web.servlet.result.StatusResultMatchers.lambda$matcher$0(StatusResultMatchers.java:600)
+	at org.springframework.test.web.servlet.MockMvc$1.andExpect(MockMvc.java:212)
+	at io.b2mash.b2b.b2bstrawman.orgrole.OwnerOnlyCapabilityGrantIntegrationTest.effectiveCapabilities(OwnerOnlyCapabilityGrantIntegrationTest.java:280)
+	at io.b2mash.b2b.b2bstrawman.orgrole.OwnerOnlyCapabilityGrantIntegrationTest.anAdminCannotAssignARoleHoldingAnOwnerOnlyCapabilityToThemselves(OwnerOnlyCapabilityGrantIntegrationTest.java:148)
+
+
+[MatterListRowIntegrationTest] rows=55 prepared statements=7
+
+[MatterListRowIntegrationTest] rows=1 prepared statements=7
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by net.bytebuddy.dynamic.loading.ClassInjector$UsingUnsafe$Dispatcher$CreationAction (file:/Users/rakheendama/.m2/repository/net/bytebuddy/byte-buddy/1.17.8/byte-buddy-1.17.8.jar)
+WARNING: Please consider reporting this to the maintainers of class net.bytebuddy.dynamic.loading.ClassInjector$UsingUnsafe$Dispatcher$CreationAction
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+com.openhtmltopdf.load INFO:: TIME: parse stylesheets 1ms
+com.openhtmltopdf.match INFO:: Matcher created with 181 selectors
+com.openhtmltopdf.general INFO:: Using fast-mode renderer. Prepare to fly.
+com.openhtmltopdf.load INFO:: TIME: parse stylesheets 1ms
+com.openhtmltopdf.match INFO:: Matcher created with 181 selectors
+com.openhtmltopdf.general INFO:: Using fast-mode renderer. Prepare to fly.
+com.openhtmltopdf.load INFO:: TIME: parse stylesheets 0ms
+com.openhtmltopdf.match INFO:: Matcher created with 181 selectors
+com.openhtmltopdf.general INFO:: Using fast-mode renderer. Prepare to fly.
+com.openhtmltopdf.load INFO:: TIME: parse stylesheets 1ms
+com.openhtmltopdf.match INFO:: Matcher created with 181 selectors
+com.openhtmltopdf.general INFO:: Using fast-mode renderer. Prepare to fly.
+com.openhtmltopdf.load INFO:: TIME: parse stylesheets 0ms
+com.openhtmltopdf.match INFO:: Matcher created with 181 selectors
+com.openhtmltopdf.general INFO:: Using fast-mode renderer. Prepare to fly.
+com.openhtmltopdf.load INFO:: TIME: parse stylesheets 1ms
+com.openhtmltopdf.match INFO:: Matcher created with 181 selectors
+com.openhtmltopdf.general INFO:: Using fast-mode renderer. Prepare to fly.
+
+[ClientListRowIntegrationTest] rows=56 prepared statements=11
+
+[ClientListRowIntegrationTest] rows=1 prepared statements=11
+
+[TrustIntegrityServiceIntegrationTest] accounts=1 prepared statements=13
+
+[TrustIntegrityServiceIntegrationTest] accounts=3 prepared statements=33
+
+[TrustIntegrityServiceIntegrationTest] accounts=10 prepared statements=103
+
+[TrustIntegrityServiceIntegrationTest] per account=10 (1→3), 3→10 delta=70
+[ERROR] Failures: 
+[ERROR]   OwnerOnlyCapabilityGrantIntegrationTest.anAdminCannotAssignARoleHoldingAnOwnerOnlyCapabilityToThemselves:148->effectiveCapabilities:280 Status expected:<200> but was:<500>
+[ERROR] Tests run: 873, Failures: 1, Errors: 0, Skipped: 14
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.5.4:test (default-test) on project b2b-strawman-backend: There are test failures.
+[ERROR] 
+[ERROR] See /Users/rakheendama/Projects/2026/wt-f657c7-fr4/backend/target/surefire-reports for the individual test results.
+[ERROR] See dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

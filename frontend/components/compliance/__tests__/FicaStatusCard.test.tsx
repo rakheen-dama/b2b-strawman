@@ -16,6 +16,8 @@ describe("FicaStatusCard (GAP-L-46)", () => {
           lastVerifiedAt: "2026-04-22T10:30:00Z",
           requestId: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
           checklistInstanceId: null,
+          reviewReasons: [],
+          attestationId: null,
         }}
       />
     );
@@ -41,6 +43,8 @@ describe("FicaStatusCard (GAP-L-46)", () => {
           lastVerifiedAt: null,
           requestId: "req-123",
           checklistInstanceId: null,
+          reviewReasons: [],
+          attestationId: null,
         }}
       />
     );
@@ -59,6 +63,8 @@ describe("FicaStatusCard (GAP-L-46)", () => {
           lastVerifiedAt: null,
           requestId: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
           checklistInstanceId: null,
+          reviewReasons: [],
+          attestationId: null,
         }}
       />
     );
@@ -79,6 +85,8 @@ describe("FicaStatusCard (GAP-L-46)", () => {
           lastVerifiedAt: null,
           requestId: null,
           checklistInstanceId: null,
+          reviewReasons: [],
+          attestationId: null,
         }}
       />
     );
@@ -117,6 +125,8 @@ describe("FicaStatusCard — checklist-first (Phase 88, ADR-348)", () => {
           lastVerifiedAt: "2026-10-23T08:00:00Z",
           requestId: null,
           checklistInstanceId: INSTANCE,
+          reviewReasons: [],
+          attestationId: null,
         }}
       />
     );
@@ -141,6 +151,8 @@ describe("FicaStatusCard — checklist-first (Phase 88, ADR-348)", () => {
           lastVerifiedAt: null,
           requestId: null,
           checklistInstanceId: INSTANCE,
+          reviewReasons: [],
+          attestationId: null,
         }}
       />
     );
@@ -166,6 +178,8 @@ describe("FicaStatusCard — checklist-first (Phase 88, ADR-348)", () => {
           lastVerifiedAt: "2026-10-23T08:00:00Z",
           requestId: REQUEST,
           checklistInstanceId: INSTANCE,
+          reviewReasons: [],
+          attestationId: null,
         }}
       />
     );
@@ -175,5 +189,70 @@ describe("FicaStatusCard — checklist-first (Phase 88, ADR-348)", () => {
       `/org/legal-test/clients/${CLIENT}?tab=onboarding`
     );
     expect(screen.queryByTestId("fica-request-link")).not.toBeInTheDocument();
+  });
+});
+
+describe("FicaStatusCard — take-on attestation (Phase 93 655B, ADR-388)", () => {
+  afterEach(() => cleanup());
+
+  const CLIENT = "33333333-3333-3333-3333-333333333333";
+  const ATTESTATION = "44444444-4444-4444-4444-444444444444";
+
+  it("labels a clean attestation with the X3 wording and links to the client's attestation", () => {
+    render(
+      <FicaStatusCard
+        slug="legal-test"
+        ficaStatus={{
+          clientId: CLIENT,
+          status: "ATTESTED",
+          lastVerifiedAt: null,
+          requestId: null,
+          checklistInstanceId: null,
+          reviewReasons: [],
+          attestationId: ATTESTATION,
+        }}
+      />
+    );
+
+    expect(screen.getByTestId("fica-status-badge")).toHaveTextContent(
+      "Verified in prior system (attested)"
+    );
+    expect(screen.getByText("CDD was done in the previous system.")).toBeInTheDocument();
+    expect(screen.queryByTestId("fica-review-reasons")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("fica-last-verified-at")).not.toBeInTheDocument();
+    expect(screen.getByTestId("fica-attestation-link")).toHaveAttribute(
+      "href",
+      `/org/legal-test/clients/${CLIENT}`
+    );
+    expect(screen.queryByText("ATTESTED")).not.toBeInTheDocument();
+  });
+
+  it("lists the review reasons, in wire order and as labels, when review is due", () => {
+    render(
+      <FicaStatusCard
+        slug="legal-test"
+        ficaStatus={{
+          clientId: CLIENT,
+          status: "ATTESTED_REVIEW",
+          lastVerifiedAt: null,
+          requestId: null,
+          checklistInstanceId: null,
+          reviewReasons: ["UNRATED", "BENEFICIAL_OWNERSHIP_OUTSTANDING", "REVIEW_DATE_PASSED"],
+          attestationId: ATTESTATION,
+        }}
+      />
+    );
+
+    expect(screen.getByTestId("fica-status-badge")).toHaveTextContent("Review due (attested)");
+    const items = Array.from(
+      screen.getByTestId("fica-review-reasons").querySelectorAll("li"),
+      (li) => li.textContent
+    );
+    expect(items).toEqual([
+      "Not risk-rated",
+      "Beneficial ownership outstanding",
+      "Review date passed",
+    ]);
+    expect(screen.queryByText(/UNRATED|REVIEW_DATE_PASSED/)).not.toBeInTheDocument();
   });
 });

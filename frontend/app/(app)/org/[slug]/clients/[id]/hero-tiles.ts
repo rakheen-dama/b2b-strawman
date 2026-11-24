@@ -15,6 +15,7 @@ import { settle } from "@/lib/settle";
 import { fetchTrustAccounts } from "@/app/(app)/org/[slug]/trust-accounting/actions";
 import { fetchClientLedger } from "@/app/(app)/org/[slug]/trust-accounting/client-ledgers/actions";
 import type { FicaOnboardingStatus, FicaStatus, TrustAccount } from "@/lib/types";
+import { ficaReviewReasonLabels } from "@/lib/types/fica";
 
 // Client hero tiles (Phase 90 642B, arch §15.3.5, ADR-373) — the 641B matter shape. Server-only,
 // not a server action: the client page is the only caller and passes its own capabilities.
@@ -157,7 +158,23 @@ const FICA_ICON: Record<FicaOnboardingStatus, { icon: LucideIcon; className: str
   DONE: { icon: ShieldCheck, className: "text-success" },
   IN_PROGRESS: { icon: Clock, className: "text-warning" },
   NOT_STARTED: { icon: ShieldAlert, className: "text-danger" },
+  // Phase 93 655B (ADR-388): attested in the previous system; review due when a reason applies.
+  ATTESTED: { icon: ShieldCheck, className: "text-success" },
+  ATTESTED_REVIEW: { icon: ShieldAlert, className: "text-warning" },
 };
+
+/** The tile hint: the verified date for DONE, the review reasons for ATTESTED_REVIEW. */
+function ficaHint(fica: FicaStatus): string | undefined {
+  if (fica.status === "DONE" && fica.lastVerifiedAt) {
+    // FicaStatusCard's wording (ADR-348: a checklist decision is "Completed"); SA calendar.
+    return `${fica.checklistInstanceId ? "Completed" : "Verified"} ${formatDateInSA(fica.lastVerifiedAt)}`;
+  }
+  if (fica.status === "ATTESTED_REVIEW") {
+    // Empty when the caller cannot see the detail (D-148) → no hint.
+    return ficaReviewReasonLabels(fica.reviewReasons).join(", ") || undefined;
+  }
+  return undefined;
+}
 
 /** No default currency (the settings read failed) → the currency rule can't apply → "error". */
 function outstandingResult(
@@ -180,11 +197,7 @@ function ficaTile(fica: FicaStatus): { value: ReactNode; hint?: ReactNode } {
       createElement(icon, { "aria-hidden": true, className: `size-4 shrink-0 ${className}` }),
       FICA_STATUS_LABEL[status]
     ),
-    // FicaStatusCard's wording (ADR-348: a checklist decision is "Completed"); SA calendar.
-    hint:
-      fica.status === "DONE" && fica.lastVerifiedAt
-        ? `${fica.checklistInstanceId ? "Completed" : "Verified"} ${formatDateInSA(fica.lastVerifiedAt)}`
-        : undefined,
+    hint: ficaHint(fica),
   };
 }
 

@@ -41,6 +41,9 @@ interface ClientOverviewTabProps {
   /** Section F: FICA panel — pre-rendered ReactNode */
   ficaPanel: ReactNode | null;
 
+  /** Section F: the take-on FICA attestation card (Phase 93 655B) — pre-rendered ReactNode */
+  ficaAttestationPanel?: ReactNode | null;
+
   /** Empty state: customer name */
   customerName: string;
 
@@ -57,6 +60,7 @@ export function ClientOverviewTab({
   unbilledTimeData,
   templateReadiness,
   ficaPanel,
+  ficaAttestationPanel = null,
   customerName,
   lifecycleStatus,
   linkedProjectCount,
@@ -66,7 +70,8 @@ export function ClientOverviewTab({
     lifecyclePrompt !== null ||
     unbilledTimeData !== null ||
     templateReadiness !== null ||
-    ficaPanel !== null;
+    ficaPanel !== null ||
+    ficaAttestationPanel !== null;
 
   if (!hasContent) {
     return (
@@ -146,7 +151,8 @@ export function ClientOverviewTab({
         />
       )}
 
-      {/* Section F: FICA Panel */}
+      {/* Section F: FICA attestation (take-on, 655B), then the FICA Panel */}
+      {ficaAttestationPanel}
       {ficaPanel}
     </div>
   );

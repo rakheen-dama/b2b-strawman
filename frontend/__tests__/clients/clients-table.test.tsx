@@ -52,6 +52,10 @@ function row(overrides: Partial<ClientListRow> = {}): ClientListRow {
     lifecycleStatusChangedAt: null,
     ficaStatus: "DONE",
     ficaLastVerifiedAt: "2026-05-03T08:00:00Z",
+    ficaReviewReasons: [],
+    ficaRiskRating: null,
+    ficaNextReviewDate: null,
+    ficaRecordsLocation: null,
     outstandingFeeNoteTotal: 18400,
     outstandingFeeNoteCount: 2,
     currency: "ZAR",
@@ -220,6 +224,89 @@ describe("ClientsDataTable — FICA, fee notes, financial redaction", () => {
     expect(notStarted).toHaveTextContent("Not started");
     expect(notStarted.tagName).toBe("SPAN");
     expect(notStarted).toHaveClass("text-destructive");
+  });
+
+  it("renders the two attested variants with the X3 labels, reasons, risk and records location (655B)", () => {
+    renderTable([
+      row({
+        id: "att",
+        name: "Alpha Attested",
+        ficaStatus: "ATTESTED",
+        ficaLastVerifiedAt: null,
+        ficaRiskRating: "LOW",
+        ficaNextReviewDate: "2028-01-10",
+        ficaRecordsLocation: "Archive box 12, Pretoria office",
+      }),
+      row({
+        id: "rev",
+        name: "Bravo Review",
+        ficaStatus: "ATTESTED_REVIEW",
+        ficaLastVerifiedAt: null,
+        ficaReviewReasons: ["UNRATED", "BENEFICIAL_OWNERSHIP_OUTSTANDING"],
+        ficaRiskRating: "UNRATED",
+        ficaRecordsLocation: "LegalSuite matter 4471",
+      }),
+    ]);
+    const [attested, review] = screen.getAllByTestId("client-fica-status");
+    expect(attested).toHaveTextContent("Verified in prior system (attested)");
+    expect(attested).toHaveAttribute("data-variant", "success");
+    expect(review).toHaveTextContent("Review due (attested)");
+    expect(review).toHaveAttribute("data-variant", "warning");
+
+    // Only the review-due row lists reasons; both show the records location (full text in title).
+    const [reasons] = screen.getAllByTestId("client-fica-review-reasons");
+    expect(screen.getAllByTestId("client-fica-review-reasons")).toHaveLength(1);
+    expect(reasons).toHaveTextContent("Not risk-rated, Beneficial ownership outstanding");
+    expect(cellText("FICA", 1)).toContain("Risk: Not risk-rated");
+    const locations = screen.getAllByTestId("client-fica-records-location");
+    expect(locations.map((l) => l.getAttribute("title"))).toEqual([
+      "Archive box 12, Pretoria office",
+      "LegalSuite matter 4471",
+    ]);
+    // Never a raw enum.
+    expect(cellText("FICA", 0)).not.toMatch(/ATTESTED|LOW/);
+    expect(cellText("FICA", 1)).not.toMatch(/ATTESTED_REVIEW|UNRATED|BENEFICIAL/);
+  });
+
+  it("a review-due row with the detail hidden (D-148) shows '—' for the reasons", () => {
+    renderTable([row({ ficaStatus: "ATTESTED_REVIEW", ficaLastVerifiedAt: null })]);
+    expect(screen.getByTestId("client-fica-review-reasons")).toHaveTextContent(/^—$/);
+    expect(screen.queryByTestId("client-fica-records-location")).not.toBeInTheDocument();
+    expect(cellText("FICA", 0)).not.toContain("Risk:");
+  });
+
+  it("exports the attested labels and the review reasons to CSV (655B)", async () => {
+    const user = userEvent.setup();
+    const stub = stubDownload();
+    try {
+      renderTable(
+        [
+          row({ id: "att", name: "Alpha", ficaStatus: "ATTESTED", ficaLastVerifiedAt: null }),
+          row({
+            id: "rev",
+            name: "Bravo",
+            ficaStatus: "ATTESTED_REVIEW",
+            ficaLastVerifiedAt: null,
+            ficaReviewReasons: ["NOT_SCREENED", "REVIEW_DATE_PASSED"],
+          }),
+          row({
+            id: "hid",
+            name: "Charlie",
+            ficaStatus: "ATTESTED_REVIEW",
+            ficaLastVerifiedAt: null,
+          }),
+        ],
+        { columns: ["name", "ficaStatus"] }
+      );
+      await user.click(screen.getByRole("button", { name: "Export CSV" }));
+      const [header, first, second, third] = await csvRecords(stub.captured.blobs[0]);
+      expect(header).toBe("Client,FICA");
+      expect(first).toBe("Alpha,Verified in prior system (attested)");
+      expect(second).toBe('Bravo,"Review due (attested) · Not screened, Review date passed"');
+      expect(third).toBe("Charlie,Review due (attested)");
+    } finally {
+      await stub.restore();
+    }
   });
 
   it('renders outstanding fee notes as "R … · n", count only when redacted, "—" when none', () => {

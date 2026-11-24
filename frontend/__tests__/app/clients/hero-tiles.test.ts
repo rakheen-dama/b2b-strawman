@@ -97,6 +97,8 @@ const FICA = {
   lastVerifiedAt: "2026-05-01T23:30:00Z",
   requestId: null,
   checklistInstanceId: "chk-1",
+  reviewReasons: [],
+  attestationId: null,
 };
 
 async function tilesFor(
@@ -393,6 +395,52 @@ describe("client hero tiles (642B)", () => {
       const value = renderNode(fica.value);
       expect(value).toHaveTextContent(new RegExp(`^${label}$`));
       expect(value.querySelector("svg")).toHaveClass(colour);
+      expect(fica.hint).toBeUndefined();
+    });
+
+    it("ATTESTED (655B): shield + the X3 label, no hint", async () => {
+      mockFica.mockResolvedValue({
+        ...FICA,
+        status: "ATTESTED",
+        lastVerifiedAt: null,
+        checklistInstanceId: null,
+        attestationId: "att-1",
+      });
+      const fica = tile(await tilesFor(ADMIN), "fica");
+
+      const value = renderNode(fica.value);
+      expect(value).toHaveTextContent(/^Verified in prior system \(attested\)$/);
+      expect(value.querySelector("svg")).toHaveClass("text-success");
+      expect(fica.hint).toBeUndefined();
+    });
+
+    it("ATTESTED_REVIEW (655B): warning + the X3 label, the reasons as the hint", async () => {
+      mockFica.mockResolvedValue({
+        ...FICA,
+        status: "ATTESTED_REVIEW",
+        lastVerifiedAt: null,
+        checklistInstanceId: null,
+        reviewReasons: ["UNRATED", "NOT_SCREENED"],
+        attestationId: "att-1",
+      });
+      const fica = tile(await tilesFor(ADMIN), "fica");
+
+      const value = renderNode(fica.value);
+      expect(value).toHaveTextContent(/^Review due \(attested\)$/);
+      expect(value.querySelector("svg")).toHaveClass("text-warning");
+      expect(fica.hint).toBe("Not risk-rated, Not screened");
+    });
+
+    it("ATTESTED_REVIEW with the detail hidden (D-148): no hint", async () => {
+      mockFica.mockResolvedValue({
+        ...FICA,
+        status: "ATTESTED_REVIEW",
+        lastVerifiedAt: null,
+        checklistInstanceId: null,
+      });
+      const fica = tile(await tilesFor(MEMBER), "fica");
+
+      expect(renderNode(fica.value)).toHaveTextContent(/^Review due \(attested\)$/);
       expect(fica.hint).toBeUndefined();
     });
 

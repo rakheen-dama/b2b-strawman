@@ -1,6 +1,8 @@
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api, handleApiError } from "@/lib/api";
-import { getClient } from "@/lib/api/clients";
+import { getClient, getClientFicaAttestation } from "@/lib/api/clients";
+import { hasCapability } from "@/lib/dashboard-home";
+import { settle } from "@/lib/settle";
 import type { Client, OrgSettings } from "@/lib/types";
 import { CustomerProjectsPanel } from "@/components/customers/customer-projects-panel";
 import { CustomerDocumentsPanel } from "@/components/documents/customer-documents-panel";
@@ -26,6 +28,7 @@ import { CreateRequestDialog } from "@/components/information-requests/create-re
 import { TrustBalanceCard } from "@/components/trust/TrustBalanceCard";
 import { formatCurrencySafe } from "@/lib/format";
 import { FicaVerificationPanel } from "@/components/ai/fica-verification-panel";
+import { ClientFicaAttestationCard } from "@/components/compliance/ClientFicaAttestationCard";
 import { ArrowLeft, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { RecordRecentItem } from "@/components/record-recent-item";
@@ -60,13 +63,17 @@ export default async function CustomerDetailPage({
 
   // Loaders (642B, §15.3.5): the tab-panel reads (./client-page-data) and the hero reads
   // (./hero-tiles — open matters, debtor detail, trust pair, FICA; the debtor detail is shared
-  // with the Chase-history card). Each read once; the two loaders run in parallel.
-  const [data, hero] = await Promise.all([
+  // with the Chase-history card). Each read once; the loaders run in parallel. 655B: the FICA
+  // attestation (CUSTOMER_MANAGEMENT; 403/404 → absent → no card) rides alongside.
+  const [data, hero, ficaAttestation] = await Promise.all([
     loadClientPageData({ id, customer, caps, orgSettings }),
     loadClientHeroData(id, caps, {
       trustEnabled: (orgSettings?.enabledModules ?? []).includes("trust_accounting"),
       chasePage: chasePageNum,
     }),
+    settle(hasCapability(caps, "CUSTOMER_MANAGEMENT"), "client FICA attestation", () =>
+      getClientFicaAttestation(id)
+    ),
   ]);
   const debtorDetail = chaseHistory(hero);
   const {
@@ -284,6 +291,14 @@ export default async function CustomerDetailPage({
                   hasPendingChecklistItems={hasPendingChecklistItems}
                   isAiConfigured={isAiConfigured}
                   canReviewGates={caps.capabilities.includes("AI_REVIEW")}
+                />
+              ) : null
+            }
+            ficaAttestationPanel={
+              ficaAttestation.state === "ok" ? (
+                <ClientFicaAttestationCard
+                  attestation={ficaAttestation.data}
+                  ficaStatus={hero.ficaStatus.state === "ok" ? hero.ficaStatus.data : null}
                 />
               ) : null
             }

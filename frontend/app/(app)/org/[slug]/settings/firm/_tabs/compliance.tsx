@@ -76,6 +76,9 @@ export async function renderComplianceTab({ slug }: SettingsTabProps) {
         slug={slug}
         dormancyThresholdDays={settings.dormancyThresholdDays ?? 365}
         dataRequestDeadlineDays={settings.dataRequestDeadlineDays ?? 30}
+        ficaReviewMonthsLow={settings.ficaReviewMonthsLow ?? 36}
+        ficaReviewMonthsMedium={settings.ficaReviewMonthsMedium ?? 24}
+        ficaReviewMonthsHigh={settings.ficaReviewMonthsHigh ?? 12}
       />
 
       {/* Section 3: Retention Policies */}

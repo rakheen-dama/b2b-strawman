@@ -65,8 +65,13 @@ export function describeCarriedFilter(key: string, value: unknown): string {
       const str = String(value).toLowerCase();
       return `Lifecycle: ${str.charAt(0).toUpperCase()}${str.slice(1)}`;
     }
-    case "ficaStatus":
-      return String(value).toUpperCase() === "DONE" ? "FICA done" : "FICA outstanding";
+    case "ficaStatus": {
+      const fica = String(value).toUpperCase();
+      if (fica === "DONE") return "FICA done";
+      // Phase 93 655B: the review queue's system view name.
+      if (fica === "REVIEW") return "FICA review due";
+      return "FICA outstanding";
+    }
     case "hasTrustBalance":
       return "Has a trust balance";
     default:

@@ -21,6 +21,7 @@ import {
   resolveViewSelection,
 } from "@/lib/constants/system-views";
 import {
+  FICA_REVIEW_FILTER,
   applySavedViewLifecycle,
   buildClientListParams,
   isLifecycleStatus,
@@ -28,6 +29,7 @@ import {
   resolveClientColumns,
   savedViewShowIncomplete,
   searchClientRows,
+  sortByFicaReview,
   sortClientRows,
 } from "@/lib/clients-list";
 import { CreateCustomerDialog } from "@/components/customers/create-customer-dialog";
@@ -122,7 +124,14 @@ export default async function ClientsPage({
   const search = param("search");
   const sort = parseClientSort(param("sortBy"), param("sortDir"));
   const viewRows = applySavedViewLifecycle(rows, selection);
-  const visibleRows = sortClientRows(searchClientRows(viewRows, search), sort.key, sort.dir);
+  const searchedRows = searchClientRows(viewRows, search);
+  // C-3 (655B): the FICA review queue ("FICA review due", or a saved view carrying
+  // ficaStatus=REVIEW) keeps its review order — unrated first, then next review date — until the
+  // user picks a column; an explicit `sortBy` still wins.
+  const reviewOrder = listParams.ficaStatus === FICA_REVIEW_FILTER && param("sortBy") === null;
+  const visibleRows = reviewOrder
+    ? sortByFicaReview(searchedRows)
+    : sortClientRows(searchedRows, sort.key, sort.dir);
 
   const columns = resolveClientColumns(savedViewActive ? selection.view.columns : null, {
     trustVisible,

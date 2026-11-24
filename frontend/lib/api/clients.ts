@@ -30,6 +30,7 @@ import type {
   ClientProfitabilityResponse,
   ClientReadiness,
   CompletenessScore,
+  ClientFicaAttestation,
   CreateClientRequest,
   DormancyCheckResult,
   FicaStatus,
@@ -64,8 +65,12 @@ export interface ListClientsParams {
   status?: string;
   /** Ignored by the backend (615B). */
   size?: number;
-  /** OUTSTANDING = NOT_STARTED or IN_PROGRESS; DONE. Anything else → 400. Applies on the view path too. */
-  ficaStatus?: "OUTSTANDING" | "DONE";
+  /**
+   * OUTSTANDING = NOT_STARTED, IN_PROGRESS or ATTESTED_REVIEW; DONE = DONE or ATTESTED; REVIEW =
+   * ATTESTED_REVIEW only, ordered next review date ascending, unrated first (Phase 93 655B).
+   * Anything else → 400. Applies on the view path too.
+   */
+  ficaStatus?: "OUTSTANDING" | "DONE" | "REVIEW";
   /** Trust balance > 0. Returns [] when the caller cannot see trust. Applies on the view path too. */
   hasTrustBalance?: boolean | string;
   /** Required fields apply and completeness < 100. Applies on the view path too. */
@@ -164,6 +169,11 @@ export async function getClientReadiness(clientId: string): Promise<ClientReadin
 
 export async function getClientFicaStatus(clientId: string): Promise<FicaStatus> {
   return api.get<FicaStatus>(clientPath(clientId, "fica-status"));
+}
+
+/** The client's active FICA attestation (Phase 93 655B; CUSTOMER_MANAGEMENT; 404 when none). */
+export async function getClientFicaAttestation(clientId: string): Promise<ClientFicaAttestation> {
+  return api.get<ClientFicaAttestation>(clientPath(clientId, "fica-attestation"));
 }
 
 export async function getClientCompletenessSummary(

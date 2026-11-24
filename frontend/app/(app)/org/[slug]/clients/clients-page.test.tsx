@@ -132,6 +132,10 @@ function makeRow(overrides: Partial<ClientListRow> = {}): ClientListRow {
     lifecycleStatusChangedAt: null,
     ficaStatus: "NOT_STARTED",
     ficaLastVerifiedAt: null,
+    ficaReviewReasons: [],
+    ficaRiskRating: null,
+    ficaNextReviewDate: null,
+    ficaRecordsLocation: null,
     outstandingFeeNoteTotal: null,
     outstandingFeeNoteCount: 0,
     currency: "ZAR",
@@ -224,7 +228,7 @@ describe("ClientsPage — list request", () => {
     const selector = screen.getByTestId("view-selector-client");
     expect(selector).toHaveAttribute(
       "data-system-views",
-      "All clients|Active|FICA outstanding|With trust balance"
+      "All clients|Active|FICA outstanding|FICA review due|With trust balance"
     );
     expect(selector).toHaveAttribute("data-default-view", "system:all-clients");
     expect(selector).toHaveAttribute("data-clear-on-saved-view", "tags,lifecycleStatus");
@@ -233,6 +237,7 @@ describe("ClientsPage — list request", () => {
   it.each([
     [{ view: "system:active" }, "/api/clients?lifecycleStatus=ACTIVE"],
     [{ view: "system:fica-outstanding" }, "/api/clients?ficaStatus=OUTSTANDING"],
+    [{ view: "system:fica-review-due" }, "/api/clients?ficaStatus=REVIEW"],
     [{ view: "system:with-trust-balance" }, "/api/clients?hasTrustBalance=true"],
     [{ showIncomplete: "true" }, "/api/clients?showIncomplete=true"],
     [{ lifecycleStatus: "PROSPECT" }, "/api/clients?lifecycleStatus=PROSPECT"],
@@ -273,6 +278,25 @@ describe("ClientsPage — table", () => {
     cleanup();
     await renderPage({ sortBy: "completeness", sortDir: "desc" });
     expect(rowNames()).toEqual(["Bravo", "Charlie", "Alpha"]);
+  });
+
+  it("FICA review due (655B, C-3): unrated first, then next review date — until a column is picked", async () => {
+    const review = (id: string, name: string, ficaNextReviewDate: string | null) =>
+      makeRow({ id, name, ficaStatus: "ATTESTED_REVIEW", ficaNextReviewDate });
+    mockApiGet.mockResolvedValue([
+      review("a", "Alpha", "2026-03-01"),
+      review("b", "Zulu", null),
+      review("c", "Bravo", "2025-06-30"),
+    ]);
+    await renderPage({ view: "system:fica-review-due" });
+    expect(rowNames()).toEqual(["Zulu", "Bravo", "Alpha"]);
+    cleanup();
+    await renderPage({ view: "system:fica-review-due", sortBy: "name", sortDir: "asc" });
+    expect(rowNames()).toEqual(["Alpha", "Bravo", "Zulu"]);
+    cleanup();
+    // Any other view keeps the default name order.
+    await renderPage({ view: "system:fica-outstanding" });
+    expect(rowNames()).toEqual(["Alpha", "Bravo", "Zulu"]);
   });
 
   it("filters by ?search= over name, email and phone, keeping the count in step", async () => {

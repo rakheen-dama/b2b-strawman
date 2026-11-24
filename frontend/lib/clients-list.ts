@@ -52,11 +52,16 @@ export const CLIENT_TYPE_LABEL: Record<ClientType, string> = {
   TRUST: "Trust",
 };
 
-/** FICA onboarding status labels: the Clients table (cell + CSV) and the client hero tile (642B). */
+/**
+ * FICA onboarding status labels: the Clients table (cell + CSV) and the client hero tile (642B).
+ * The two attested statuses use the §17.10 X3 wording (Phase 93 655B).
+ */
 export const FICA_STATUS_LABEL: Record<FicaOnboardingStatus, string> = {
   DONE: "Done",
   IN_PROGRESS: "In progress",
   NOT_STARTED: "Not started",
+  ATTESTED: "Verified in prior system (attested)",
+  ATTESTED_REVIEW: "Review due (attested)",
 };
 
 /** Lifecycle order used for sorting (the order a client moves through). */
@@ -70,7 +75,8 @@ export const LIFECYCLE_ORDER: readonly LifecycleStatus[] = [
   "ANONYMIZED",
 ];
 
-const FICA_ORDER = ["NOT_STARTED", "IN_PROGRESS", "DONE"] as const;
+/** FICA sort rank: outstanding first (`isOutstanding`), then clear (`isClear`) — D-149. */
+const FICA_ORDER = ["NOT_STARTED", "ATTESTED_REVIEW", "IN_PROGRESS", "ATTESTED", "DONE"] as const;
 
 export function isLifecycleStatus(value: string | null | undefined): value is LifecycleStatus {
   return typeof value === "string" && (LIFECYCLE_ORDER as readonly string[]).includes(value);
@@ -151,6 +157,25 @@ export function sortClientRows(
     if (vb === null) return -1;
     const cmp = compareValues(va, vb);
     return cmp !== 0 ? cmp * sign : compareTieBreak(a, b);
+  });
+}
+
+/**
+ * The FICA review queue's default order (§17.3.5, C-3 — the backend's REVIEW order, which the page's
+ * own sort would otherwise replace): no next review date first (unrated), then next review date
+ * ascending, then name, then id. Returns a new array.
+ */
+export function sortByFicaReview(rows: readonly ClientListRow[]): ClientListRow[] {
+  return [...rows].sort((a, b) => {
+    const da = a.ficaNextReviewDate ?? null;
+    const db = b.ficaNextReviewDate ?? null;
+    if (da !== db) {
+      if (da === null) return -1;
+      if (db === null) return 1;
+      // "YYYY-MM-DD" compares lexically.
+      return da < db ? -1 : 1;
+    }
+    return compareTieBreak(a, b);
   });
 }
 
@@ -262,7 +287,10 @@ export function buildClientSortHref(
 /** Keys a saved view's `filters` may carry that the list endpoint applies on the view path. */
 const FORWARDED_VIEW_FILTER_KEYS = ["ficaStatus", "hasTrustBalance", "showIncomplete"] as const;
 
-const FICA_FILTER_VALUES = new Set(["OUTSTANDING", "DONE"]);
+const FICA_FILTER_VALUES = new Set(["OUTSTANDING", "DONE", "REVIEW"]);
+
+/** The `ficaStatus` list param of the FICA review queue (`system:fica-review-due`, §17.3.5). */
+export const FICA_REVIEW_FILTER = "REVIEW";
 
 function isTrue(value: unknown): boolean {
   return value === true || value === "true";

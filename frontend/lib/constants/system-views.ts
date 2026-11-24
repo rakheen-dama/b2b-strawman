@@ -72,6 +72,14 @@ export const CLIENT_SYSTEM_VIEWS: readonly SystemView[] = [
     system: true,
   },
   {
+    // Phase 93 655B (§17.3.5, FD-6): the FICA review queue — attested clients with a review reason.
+    id: "system:fica-review-due",
+    entityType: "CUSTOMER",
+    name: "FICA review due",
+    params: { ficaStatus: "REVIEW" },
+    system: true,
+  },
+  {
     id: "system:with-trust-balance",
     entityType: "CUSTOMER",
     name: "With trust balance",

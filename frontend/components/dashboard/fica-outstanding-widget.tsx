@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { CircleDashed, CircleDot, ShieldCheck } from "lucide-react";
+import { CircleDashed, CircleDot, ShieldAlert, ShieldCheck } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
 import { cn } from "@/lib/utils";
 import type { FicaOutstandingResponse, FicaOutstandingStatus } from "@/lib/dashboard-types";
@@ -18,6 +18,8 @@ const STATUS: Record<FicaOutstandingStatus, { label: string; tone: StatusTone; i
   {
     NOT_STARTED: { label: "Not started", tone: "warning", icon: <CircleDashed /> },
     IN_PROGRESS: { label: "In progress", tone: "info", icon: <CircleDot /> },
+    // Phase 93 655B: an attested client with a review reason counts as outstanding (FD-6).
+    ATTESTED_REVIEW: { label: "Review due (attested)", tone: "warning", icon: <ShieldAlert /> },
   };
 
 interface FicaOutstandingWidgetProps {

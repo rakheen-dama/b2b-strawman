@@ -122,31 +122,39 @@ describe("Invite Form Role Selection", () => {
     expect(screen.queryByText("Matter Management")).not.toBeInTheDocument();
   });
 
-  it("hides customization section when Admin is selected", async () => {
-    const user = userEvent.setup();
-    const bookkeeper = makeCustomRole();
+  // FR-7 (founder ruling 2026-11-24): capabilities are not customised at invite time — they are
+  // changed on the Team page after the person joins
+  it.each([
+    ["owner", true],
+    ["admin", false],
+  ] as const)(
+    "never offers 'Customize for this user' at invite time (%s)",
+    async (role, isOwner) => {
+      const user = userEvent.setup();
+      const bookkeeper = makeCustomRole();
 
-    renderAsOwner(<InviteMemberForm {...defaultProps} roles={[bookkeeper]} />);
+      render(
+        <CapabilityProvider
+          capabilities={isOwner ? [] : ["TEAM_OVERSIGHT"]}
+          role={role}
+          isAdmin={!isOwner}
+          isOwner={isOwner}
+        >
+          <InviteMemberForm {...defaultProps} roles={[bookkeeper]} />
+        </CapabilityProvider>
+      );
 
-    // Select the custom role first to show customization
-    const trigger = screen.getByRole("combobox");
-    await user.click(trigger);
-    await user.click(screen.getByRole("option", { name: "Bookkeeper" }));
+      await user.click(screen.getByRole("combobox"));
+      await user.click(screen.getByRole("option", { name: "Bookkeeper" }));
 
-    // "Customize for this user" should be visible
-    await waitFor(() => {
-      expect(screen.getByText("Customize for this user")).toBeInTheDocument();
-    });
-
-    // Now switch to Admin
-    await user.click(trigger);
-    await user.click(screen.getByRole("option", { name: "Admin" }));
-
-    // "Customize for this user" should be gone
-    await waitFor(() => {
+      // the role's capability summary still shows ...
+      await waitFor(() => expect(screen.getByText("Financial Visibility")).toBeInTheDocument());
+      // ... but there is nothing to customise
       expect(screen.queryByText("Customize for this user")).not.toBeInTheDocument();
-    });
-  });
+      expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
+      expect(screen.queryByTestId(/^invite-capability-/)).not.toBeInTheDocument();
+    }
+  );
 
   it("sends orgRoleId with custom role on invite", async () => {
     const user = userEvent.setup();
@@ -166,11 +174,11 @@ describe("Invite Form Role Selection", () => {
     await user.click(screen.getByRole("button", { name: "Send Invite" }));
 
     await waitFor(() => {
+      // no capability overrides travel with an invitation (FR-7)
       expect(mockInviteMember).toHaveBeenCalledWith(
         "test@example.com",
         "org:member",
-        "custom-bookkeeper",
-        undefined
+        "custom-bookkeeper"
       );
     });
   });

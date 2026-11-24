@@ -492,6 +492,35 @@ class TakeOnReportIntegrationTest {
               "Legal Practitioners' Fidelity Fund",
               "31 October 2026");
       assertThat(text).doesNotContain("CLIENT_INSTRUCTION", "UNPRESENTED_PAYMENT", "TAKEON_");
+
+      // OBS 1b: every character has a glyph in the PDF's fonts (an unmapped one prints as "#"),
+      // so the control-total equation keeps its minus signs
+      String compact = text.replaceAll("[\\s\\u00A0]", "");
+      assertThat(compact).doesNotContain("#");
+      assertThat(compact)
+          .contains(
+              "deposits-outstandingpayments=cashbook", "R418500,00+R5000,00-R20000,00=R403500,00");
+
+      // OBS 1b: each source file's SHA-256 is printed whole, on one line, inside the page
+      List<String> hashes = JsonPath.read(reportJson(id), "$.snapshot.sources[*].sha256");
+      assertThat(hashes).hasSize(4).allSatisfy(h -> assertThat(text).contains(h));
+      var glyphs =
+          new org.apache.pdfbox.text.PDFTextStripper() {
+            float maxRight;
+
+            @Override
+            protected void writeString(
+                String s, List<org.apache.pdfbox.text.TextPosition> positions)
+                throws java.io.IOException {
+              for (var p : positions) {
+                maxRight = Math.max(maxRight, p.getXDirAdj() + p.getWidthDirAdj());
+              }
+              super.writeString(s, positions);
+            }
+          };
+      glyphs.getText(doc);
+      float rightMargin = doc.getPage(0).getMediaBox().getWidth() - 16 / 25.4f * 72;
+      assertThat(glyphs.maxRight).isLessThanOrEqualTo(rightMargin + 1);
     }
   }
 

@@ -469,11 +469,11 @@ public class TakeOnReportRenderer {
       var e = totals.eq1();
       rows.add(
           new LabelValue(
-              "Bank balance + outstanding deposits − outstanding payments = cashbook",
+              "Bank balance + outstanding deposits - outstanding payments = cashbook",
               rand(e.bankBalance())
                   + " + "
                   + rand(e.plusOutstandingDeposits())
-                  + " − "
+                  + " - "
                   + rand(e.lessOutstandingPayments())
                   + " = "
                   + rand(e.adjustedBank())

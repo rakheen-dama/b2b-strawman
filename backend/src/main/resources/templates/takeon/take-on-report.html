@@ -64,7 +64,15 @@
     .mono {
       font-family: "Courier New", Courier, monospace;
       font-size: 7.5pt;
-      word-break: break-all;
+    }
+    tbody.source {
+      page-break-inside: avoid;
+    }
+    tbody.source tr:first-child td {
+      border-bottom: none;
+    }
+    td.source-hash {
+      padding-top: 0;
     }
     .footer {
       margin-top: 20px;
@@ -233,22 +241,27 @@
 
 <h2>Source files</h2>
 <table>
+  <thead>
   <tr>
     <th>File</th>
     <th>Section</th>
     <th>Sheet</th>
     <th>Rows</th>
     <th>Uploaded</th>
-    <th>SHA-256</th>
   </tr>
-  <tr th:each="f : ${r.sources}">
-    <td th:text="${f.fileName}"></td>
-    <td th:text="${f.section}"></td>
-    <td th:text="${f.sheetName}"></td>
-    <td th:text="${f.rows}"></td>
-    <td th:text="${f.uploadedBy != null ? f.uploadedBy + ', ' + f.uploadedAt : f.uploadedAt}"></td>
-    <td class="mono" th:text="${f.sha256}"></td>
-  </tr>
+  </thead>
+  <tbody class="source" th:each="f : ${r.sources}">
+    <tr>
+      <td th:text="${f.fileName}"></td>
+      <td th:text="${f.section}"></td>
+      <td th:text="${f.sheetName}"></td>
+      <td th:text="${f.rows}"></td>
+      <td th:text="${f.uploadedBy != null ? f.uploadedBy + ', ' + f.uploadedAt : f.uploadedAt}"></td>
+    </tr>
+    <tr>
+      <td colspan="5" class="source-hash"><span class="muted">SHA-256 </span><span class="mono" th:text="${f.sha256}"></span></td>
+    </tr>
+  </tbody>
 </table>
 
 <div class="footer">

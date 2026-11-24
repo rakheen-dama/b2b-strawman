@@ -156,16 +156,121 @@ export interface TakeOnAttestationStatement {
   text: string;
 }
 
+// ---- The trust position's dry-run summary (657B, §17.4.4) — records nested in backend
+// takeon/dataset/TrustPositionEquation.java, keys in declaration order (pinned like the records
+// above). Amounts are two-decimal strings ("418500.00", "-100000.00"): `Number()` them only to
+// display them. ----
+
+/** TrustPositionMessage — `message` is the backend's text, fully formatted: render it verbatim. */
+export interface TakeOnTrustMessage {
+  code: string;
+  message: string;
+}
+
+/** TrustEq1 — EQ-1(C): bank + outstanding deposits − outstanding payments = cashbook. */
+export interface TakeOnTrustEq1 {
+  bankBalance: string;
+  plusOutstandingDeposits: string;
+  lessOutstandingPayments: string;
+  adjustedBank: string;
+  cashbook: string;
+  /** adjustedBank − cashbook */
+  difference: string;
+  holds: boolean;
+}
+
+/** TrustItemsTie — the listed outstanding items against the position's totals. */
+export interface TakeOnTrustItemsTie {
+  listedDeposits: string;
+  listedPayments: string;
+  outstandingDeposits: string;
+  outstandingPayments: string;
+  /** |listed deposits − OD| + |listed payments − OP| */
+  difference: string;
+  holds: boolean;
+}
+
+/** TrustEq2 — EQ-2(C): cashbook = trust creditors of the banking account. */
+export interface TakeOnTrustEq2 {
+  clientLedgers: string;
+  fundLedger: string;
+  unidentified: string;
+  /** Negative: − Σ section 86(3) principal. */
+  placedInSection86_3: string;
+  creditors: string;
+  cashbook: string;
+  /** creditors − cashbook */
+  difference: string;
+  holds: boolean;
+}
+
+/** TrustInvestmentsTie — Σ balance per confirmation against the total invested. */
+export interface TakeOnTrustInvestmentsTie {
+  perConfirmations: string;
+  listed: string;
+  /** listed − perConfirmations */
+  difference: string;
+  holds: boolean;
+}
+
+/** TrustDeficit — the deficit test: trust creditors of the firm against the trust money held. */
+export interface TakeOnTrustDeficit {
+  trustCreditors: string;
+  moneyHeld: string;
+  /** trustCreditors − moneyHeld */
+  difference: string;
+  inDeficit: boolean;
+}
+
+/** TrustEquationSummary */
+export interface TakeOnTrustEquation {
+  eq1: TakeOnTrustEq1;
+  itemsTie: TakeOnTrustItemsTie;
+  eq2: TakeOnTrustEq2;
+  investments: TakeOnTrustInvestmentsTie;
+  deficit: TakeOnTrustDeficit;
+}
+
+/** TrustPositionSummary.flags — flags, never blocks. */
+export type TakeOnTrustFlag = "FUND_LEDGER_IN_DEBIT" | "UNIDENTIFIED_OVER_ONE_YEAR";
+
+/** TrustPositionSummary — the whole `summary` of a trust batch. */
+export interface TakeOnTrustSummary {
+  /** §17.3.9 account checks; [] when they pass. Errors, shown above the table. */
+  accountErrors: TakeOnTrustMessage[];
+  /** Batch-level statutory blocks, the deficit first. Never overridable. */
+  blocks: TakeOnTrustMessage[];
+  /** Batch-level flags with their text (the Fund ledger in debit). */
+  warnings: TakeOnTrustMessage[];
+  flags: TakeOnTrustFlag[];
+  /** null when an account check failed. */
+  equation: TakeOnTrustEquation | null;
+}
+
 /**
  * TakeOnBatchResponse.summary — the dry run's stored summary (take_on_batches.summary), present
  * from validation on (VALIDATED, COMMITTING, COMPLETED), else null. Per dataset; CLIENTS (655A):
- * the FICA columns counted over the rows that will become clients.
+ * the FICA columns counted over the rows that will become clients; TRUST_POSITION (657B): the
+ * account errors, blocks, flags and equation of `TakeOnTrustSummary`.
  */
-export interface TakeOnValidationSummary {
+export interface TakeOnValidationSummary extends Partial<TakeOnTrustSummary> {
   /** CLIENTS: the valid rows that will become clients (existing-client matches excluded). */
   clients?: number;
   /** CLIENTS: FICA field key → stored value → rows. */
   fica?: Record<string, Record<string, number>>;
+}
+
+/**
+ * TakeOnPositionResponse — the trust take-on's reconciled position at cutover (657B), JSON
+ * numbers; a figure never entered is null (the Fund ledger and total invested store 0, D-183).
+ */
+export interface TakeOnPosition {
+  bankBalance: number | null;
+  outstandingDepositsTotal: number | null;
+  outstandingPaymentsTotal: number | null;
+  cashbookBalance: number | null;
+  fundLedgerBalance: number | null;
+  investedTotal: number | null;
 }
 
 /** TakeOnBatchResponse */
@@ -191,6 +296,10 @@ export interface TakeOnBatch {
   /** Non-null only for a VALIDATED clients batch. */
   attestationStatement: TakeOnAttestationStatement | null;
   summary: TakeOnValidationSummary | null;
+  /** Trust only (657B): "This is a mid-month cutover" was ticked; false on every other dataset. */
+  midMonthAcknowledged: boolean;
+  /** Trust only (657B): the reconciled position at cutover; null on every other dataset. */
+  position: TakeOnPosition | null;
 }
 
 /** TakeOnBatchSummaryResponse */
@@ -276,9 +385,20 @@ export interface TakeOnSheetRequest {
   headerRow: number;
 }
 
-/** TakeOnPositionRequest — the cutover date only in 653A (P-11). */
+/**
+ * TakeOnPositionRequest — the cutover date and (trust, 657B) the reconciled position (P-11). A
+ * missing or null figure keeps the stored value (D-183), so the upload step's date-only call stays
+ * valid; the trust position form always sends every field.
+ */
 export interface TakeOnPositionRequest {
   cutoverDate: string;
+  bankBalance?: number | null;
+  outstandingDepositsTotal?: number | null;
+  outstandingPaymentsTotal?: number | null;
+  cashbookBalance?: number | null;
+  fundLedgerBalance?: number | null;
+  investedTotal?: number | null;
+  midMonthAcknowledged?: boolean | null;
 }
 
 /** TakeOnAttestationRequest — `defaults` must equal the source's mapping defaults (else 400). */
@@ -438,6 +558,34 @@ export const TAKE_ON_CLIENT_VALUE_LABEL: Record<string, Record<string, string>> 
     NOT_SCREENED: "Not screened",
   },
   sourceOfFundsStatus: { DONE: "Done", NOT_REQUIRED: "Not required", OUTSTANDING: "Outstanding" },
+};
+
+/** The trust flags (never a raw enum on screen; product copy, D-190). */
+export const TAKE_ON_TRUST_FLAG_LABEL: Record<TakeOnTrustFlag, string> = {
+  FUND_LEDGER_IN_DEBIT: "Legal Practitioners' Fidelity Fund ledger in debit",
+  UNIDENTIFIED_OVER_ONE_YEAR: "Unidentified deposit older than one year",
+};
+
+/**
+ * Labels of the trust position's coded values (catalogue `allowedValues`) and of the dry run's
+ * `clientResolvedBy` (D-189 b) — the row table never shows the raw code (D-190).
+ */
+export const TAKE_ON_TRUST_VALUE_LABEL: Record<string, Record<string, string>> = {
+  basis: {
+    CLIENT_INSTRUCTION: "Section 86(4) — on a client's instruction",
+    FIRM_DISCRETION: "Section 86(3) — at the firm's discretion",
+  },
+  kind: {
+    DEPOSIT_IN_TRANSIT: "Deposit in transit",
+    UNPRESENTED_PAYMENT: "Unpresented payment",
+    INVESTMENT_IN_TRANSIT: "Investment movement in transit",
+  },
+  clientResolvedBy: {
+    email: "Client email",
+    previousSystemId: "Client previous-system ID",
+    idNumber: "Client ID number",
+  },
+  endorsementConfirmed: { true: "Yes", false: "No" },
 };
 
 /** The date formats the dry run accepts (TakeOnValueParser; ISO yyyy-MM-dd is always accepted). */

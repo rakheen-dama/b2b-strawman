@@ -9,6 +9,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Map;
@@ -25,7 +26,8 @@ import org.hibernate.type.SqlTypes;
  * stamped here. A transition from the wrong status throws {@link IllegalStateException} with a
  * user-facing message; services convert it to a 409 ProblemDetail (the entity never builds HTTP
  * errors). The trust position inputs ({@code bank_balance} … {@code mid_month_acknowledged}) are
- * mapped read-only here; slice 657B adds their setters with the form.
+ * set by {@link #updatePosition} (657B, the reconciled position at cutover); they are part of the
+ * validation hash.
  */
 @Entity
 @Table(name = "take_on_batches")
@@ -235,6 +237,72 @@ public class TakeOnBatch {
   }
 
   /**
+   * Sets the trust position's reconciled figures at cutover (657B, P-11). Only while the batch is
+   * open and only on a trust take-on; amounts are stored to the cent ({@code numeric(15,2)}), and
+   * the Fund ledger and total invested are never null (null stores R0,00). A change — compared by
+   * value, so 1250.0 equals 1250.00 — moves a validated batch back to {@code MAPPED} (the inputs
+   * are part of the validation hash, so a sign-off on the old figures no longer matches).
+   */
+  public void updatePosition(
+      BigDecimal bankBalance,
+      BigDecimal outstandingDepositsTotal,
+      BigDecimal outstandingPaymentsTotal,
+      BigDecimal cashbookBalance,
+      BigDecimal fundLedgerBalance,
+      BigDecimal investedTotal,
+      boolean midMonthAcknowledged) {
+    requireOpen("The trust position can only be changed on an open take-on batch.");
+    if (dataset != TakeOnDataset.TRUST_POSITION) {
+      throw new IllegalStateException("Only a trust take-on has a reconciled position.");
+    }
+    BigDecimal fund = fundLedgerBalance == null ? BigDecimal.ZERO : fundLedgerBalance;
+    BigDecimal invested = investedTotal == null ? BigDecimal.ZERO : investedTotal;
+    boolean changed =
+        !sameAmount(this.bankBalance, bankBalance)
+            || !sameAmount(this.outstandingDepositsTotal, outstandingDepositsTotal)
+            || !sameAmount(this.outstandingPaymentsTotal, outstandingPaymentsTotal)
+            || !sameAmount(this.cashbookBalance, cashbookBalance)
+            || !sameAmount(this.fundLedgerBalance, fund)
+            || !sameAmount(this.investedTotal, invested)
+            || this.midMonthAcknowledged != midMonthAcknowledged;
+    if (!changed) {
+      return;
+    }
+    this.bankBalance = cents(bankBalance);
+    this.outstandingDepositsTotal = cents(outstandingDepositsTotal);
+    this.outstandingPaymentsTotal = cents(outstandingPaymentsTotal);
+    this.cashbookBalance = cents(cashbookBalance);
+    this.fundLedgerBalance = cents(fund);
+    this.investedTotal = cents(invested);
+    this.midMonthAcknowledged = midMonthAcknowledged;
+    if (status == TakeOnBatchStatus.VALIDATED) {
+      this.status = TakeOnBatchStatus.MAPPED;
+    }
+    this.updatedAt = Instant.now();
+  }
+
+  /**
+   * A trust take-on without one of the four figures the equation needs (bank balance, outstanding
+   * deposits and payments, cashbook): the dry run refuses it ({@code TAKE_ON_POSITION_REQUIRED}).
+   */
+  public boolean missingPosition() {
+    return dataset == TakeOnDataset.TRUST_POSITION
+        && (bankBalance == null
+            || outstandingDepositsTotal == null
+            || outstandingPaymentsTotal == null
+            || cashbookBalance == null);
+  }
+
+  private static boolean sameAmount(BigDecimal a, BigDecimal b) {
+    return a == null ? b == null : b != null && a.compareTo(b) == 0;
+  }
+
+  /** To the cent; callers refuse more than two decimals first (the service's 400). */
+  private static BigDecimal cents(BigDecimal amount) {
+    return amount == null ? null : amount.setScale(2, RoundingMode.UNNECESSARY);
+  }
+
+  /**
    * Claims the commit (first called in 655A). The batch must be {@code VALIDATED}, and both the
    * batch's hash and the live sign-off's hash must equal {@code hash}. Datasets without a sign-off
    * pass {@link TakeOnSignOff#notRequired(String)}.
@@ -372,6 +440,15 @@ public class TakeOnBatch {
 
   public int getValidRows() {
     return validRows;
+  }
+
+  /**
+   * The batch may not be signed off or committed: a statutory block, or — for a batch committed
+   * whole ({@link TakeOnDataset#commitsWhole}, the trust position) — any error, a row's or an
+   * account check's (D-191). Every sign-off and commit guard reads this.
+   */
+  public boolean blocksCommit() {
+    return blockCount > 0 || (dataset.commitsWhole() && errorRows > 0);
   }
 
   public int getErrorRows() {

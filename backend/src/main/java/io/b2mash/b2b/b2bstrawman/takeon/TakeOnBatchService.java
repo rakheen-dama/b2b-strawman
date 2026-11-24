@@ -13,9 +13,11 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountTyp
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -117,7 +119,9 @@ public class TakeOnBatchService {
   /**
    * {@code summary} is the dataset's validation summary ({@code take_on_batches.summary}, written
    * with the counts by the dry run; {@code null} before validation). Clients: {@code {clients,
-   * fica: {field: {value: rows}}}} over the rows that will become clients (655A).
+   * fica: {field: {value: rows}}}} over the rows that will become clients (655A). Trust position:
+   * {@code TrustPositionEquation.TrustPositionSummary} (657B). {@code midMonthAcknowledged} and
+   * {@code position} are the trust position inputs (657B; false / null on other datasets).
    */
   public record TakeOnBatchResponse(
       UUID id,
@@ -138,7 +142,21 @@ public class TakeOnBatchService {
       String lastError,
       List<TakeOnSignOffResponse> signOffs,
       TakeOnAttestationStatementResponse attestationStatement,
-      Map<String, Object> summary) {}
+      Map<String, Object> summary,
+      boolean midMonthAcknowledged,
+      TakeOnPositionResponse position) {}
+
+  /**
+   * The trust take-on's reconciled position at cutover (657B; {@code null} on every other dataset).
+   * Unset figures are {@code null}; the Fund ledger and total invested default to R0,00.
+   */
+  public record TakeOnPositionResponse(
+      BigDecimal bankBalance,
+      BigDecimal outstandingDepositsTotal,
+      BigDecimal outstandingPaymentsTotal,
+      BigDecimal cashbookBalance,
+      BigDecimal fundLedgerBalance,
+      BigDecimal investedTotal) {}
 
   public record TakeOnBatchSummaryResponse(
       UUID id,
@@ -198,7 +216,20 @@ public class TakeOnBatchService {
 
   public record TakeOnSheetRequest(String sheetName, @Min(1) @Max(50) int headerRow) {}
 
-  public record TakeOnPositionRequest(@NotNull LocalDate cutoverDate) {}
+  /**
+   * {@code PUT …/position}: the cutover date (trust and debtors) and, for a trust take-on, the
+   * reconciled position at cutover (657B, P-11). A null figure keeps the stored one, so a call with
+   * the date alone never clears the figures.
+   */
+  public record TakeOnPositionRequest(
+      @NotNull LocalDate cutoverDate,
+      BigDecimal bankBalance,
+      BigDecimal outstandingDepositsTotal,
+      BigDecimal outstandingPaymentsTotal,
+      BigDecimal cashbookBalance,
+      BigDecimal fundLedgerBalance,
+      BigDecimal investedTotal,
+      Boolean midMonthAcknowledged) {}
 
   /**
    * {@code POST …/attestation} (clients): the hash attested, the statement version shown, and the
@@ -404,7 +435,12 @@ public class TakeOnBatchService {
     return views.batch(batch);
   }
 
-  /** {@code PUT …/position}: the cutover date only in 653A (P-11). No audit event is defined. */
+  /**
+   * {@code PUT …/position}: the cutover date, and for a trust take-on the reconciled position at
+   * cutover (657B). A null figure keeps the stored one (D-183). Every refusal comes before anything
+   * is written. A change on a validated batch moves it back to {@code MAPPED}. No audit event is
+   * defined.
+   */
   @Transactional
   public TakeOnBatchResponse savePosition(UUID batchId, TakeOnPositionRequest request) {
     var batch = lockForWrite(batchId);
@@ -414,8 +450,82 @@ public class TakeOnBatchService {
     if (request.cutoverDate() == null) {
       throw new InvalidStateException("Cutover date required", "Enter the cutover date.");
     }
+    boolean trust = batch.getDataset() == TakeOnDataset.TRUST_POSITION;
+    if (!trust && hasTrustFigures(request)) {
+      throw new InvalidStateException(
+          "Trust position not applicable", "The trust position applies only to a trust take-on.");
+    }
+    if (!trust) {
+      transition(() -> batch.setCutoverDate(request.cutoverDate()));
+      return views.batch(batch);
+    }
+    BigDecimal bank = orStored(request.bankBalance(), batch.getBankBalance());
+    BigDecimal deposits =
+        orStored(request.outstandingDepositsTotal(), batch.getOutstandingDepositsTotal());
+    BigDecimal payments =
+        orStored(request.outstandingPaymentsTotal(), batch.getOutstandingPaymentsTotal());
+    BigDecimal cashbook = orStored(request.cashbookBalance(), batch.getCashbookBalance());
+    BigDecimal fund = orStored(request.fundLedgerBalance(), batch.getFundLedgerBalance());
+    BigDecimal invested = orStored(request.investedTotal(), batch.getInvestedTotal());
+    boolean midMonth =
+        request.midMonthAcknowledged() != null
+            ? request.midMonthAcknowledged()
+            : batch.isMidMonthAcknowledged();
+    requirePositionAmounts(bank, deposits, payments, cashbook, fund, invested);
     transition(() -> batch.setCutoverDate(request.cutoverDate()));
+    transition(
+        () -> batch.updatePosition(bank, deposits, payments, cashbook, fund, invested, midMonth));
     return views.batch(batch);
+  }
+
+  /** The largest amount a {@code numeric(15,2)} column holds. */
+  private static final BigDecimal MAX_AMOUNT = new BigDecimal("9999999999999.99");
+
+  private static boolean hasTrustFigures(TakeOnPositionRequest request) {
+    return request.bankBalance() != null
+        || request.outstandingDepositsTotal() != null
+        || request.outstandingPaymentsTotal() != null
+        || request.cashbookBalance() != null
+        || request.fundLedgerBalance() != null
+        || request.investedTotal() != null
+        || Boolean.TRUE.equals(request.midMonthAcknowledged());
+  }
+
+  private static BigDecimal orStored(BigDecimal given, BigDecimal stored) {
+    return given != null ? given : stored;
+  }
+
+  /**
+   * 400 before anything is written: the outstanding totals and the total invested are never
+   * negative (the DB CHECK {@code chk_take_on_batch_outstanding} would otherwise fail the write),
+   * and every figure fits {@code numeric(15,2)}. The bank, cashbook and Fund figures are signed: a
+   * debit there is a fact the dry run reports, not an input error.
+   */
+  private static void requirePositionAmounts(
+      BigDecimal bank,
+      BigDecimal deposits,
+      BigDecimal payments,
+      BigDecimal cashbook,
+      BigDecimal fund,
+      BigDecimal invested) {
+    if (negative(deposits) || negative(payments) || negative(invested)) {
+      throw new InvalidStateException(
+          "Amount cannot be negative",
+          "Outstanding deposits, outstanding payments and the total invested cannot be negative.");
+    }
+    for (BigDecimal amount : Arrays.asList(bank, deposits, payments, cashbook, fund, invested)) {
+      if (amount == null) {
+        continue;
+      }
+      if (amount.stripTrailingZeros().scale() > 2 || amount.abs().compareTo(MAX_AMOUNT) > 0) {
+        throw new InvalidStateException(
+            "Amount not valid", "Enter amounts in rand and cents, up to R9 999 999 999 999,99.");
+      }
+    }
+  }
+
+  private static boolean negative(BigDecimal amount) {
+    return amount != null && amount.signum() < 0;
   }
 
   /**

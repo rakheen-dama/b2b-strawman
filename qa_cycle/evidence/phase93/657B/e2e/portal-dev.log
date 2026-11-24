@@ -1,0 +1,26 @@
+
+> portal@0.1.0 dev /Users/rakheendama/Projects/2026/worktree-epic-657B/portal
+> next dev --port 3002
+
+▲ Next.js 16.3.8 (Turbopack)
+- Local:         http://localhost:3002
+- Network:       http://192.168.0.113:3002
+✓ Ready in 475ms
+✓ Running next.config.ts took 102ms
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead.
+
+  To migrate automatically, run:
+  npx @next/codemod@canary middleware-to-proxy .
+
+  Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+- Experiments (use with caution):
+  ⨯ useTypeScriptCli
+
+ GET /login 200 in 1804ms (next.js: 1640ms, application-code: 164ms)
+ GET /trust/bf580818-4839-4eb3-97e6-e52d781a8147 200 in 868ms (next.js: 797ms, application-code: 71ms)
+ GET /trust/bf580818-4839-4eb3-97e6-e52d781a8147 200 in 24ms (next.js: 4ms, application-code: 21ms)
+ GET /login 200 in 20ms (next.js: 1.7ms, application-code: 18ms)
+ GET /trust/f6b7dede-c170-4170-a3ed-2154e1ddd1e4 200 in 27ms (next.js: 3ms, application-code: 23ms)
+ GET /trust/f6b7dede-c170-4170-a3ed-2154e1ddd1e4 200 in 38ms (next.js: 3ms, application-code: 35ms)
+[?25h
+ ELIFECYCLE  Command failed with exit code 143.

@@ -137,6 +137,14 @@ public final class TakeOnTestApi {
             .with(jwt));
   }
 
+  /** {@code PUT …/position} with a full body (657B: the trust position's figures). */
+  public static ResultActions position(
+      MockMvc mockMvc, RequestPostProcessor jwt, UUID batchId, Map<String, Object> body)
+      throws Exception {
+    return mockMvc.perform(
+        json(put("/api/take-on/batches/" + batchId + "/position"), body).with(jwt));
+  }
+
   public static ResultActions sheet(
       MockMvc mockMvc,
       RequestPostProcessor jwt,

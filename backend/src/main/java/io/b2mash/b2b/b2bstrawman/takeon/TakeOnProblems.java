@@ -69,6 +69,15 @@ public final class TakeOnProblems {
         "Enter the cutover date before validating.");
   }
 
+  /** 657B: a trust take-on's dry run needs the reconciled position at cutover. */
+  public static TakeOnProblemException positionRequired() {
+    return new TakeOnProblemException(
+        HttpStatus.CONFLICT,
+        "TAKE_ON_POSITION_REQUIRED",
+        "Reconciled position required",
+        "Enter the reconciled position at cutover before validating.");
+  }
+
   public static TakeOnProblemException positionNotApplicable() {
     return new TakeOnProblemException(
         HttpStatus.CONFLICT,
@@ -180,6 +189,19 @@ public final class TakeOnProblems {
         "Take-on batch blocked",
         "Rows in this take-on batch block it. Correct them in the previous system, upload the"
             + " corrected file and validate it again.");
+  }
+
+  /**
+   * A batch committed whole (the trust position, D-191) still holds an error — on a row or an
+   * account check above the table. Additive code.
+   */
+  public static TakeOnProblemException errorsRemain() {
+    return new TakeOnProblemException(
+        HttpStatus.CONFLICT,
+        "TAKE_ON_ERRORS_REMAIN",
+        "Take-on batch has errors",
+        "A trust take-on is committed whole. Correct every error, upload the corrected files and"
+            + " validate it again.");
   }
 
   /** Commit runs for one dataset in 655A; the others arrive with their slices. */

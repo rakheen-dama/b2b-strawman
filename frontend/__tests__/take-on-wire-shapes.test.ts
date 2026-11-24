@@ -17,6 +17,7 @@ import type {
   TakeOnMappingRequest,
   TakeOnParseOptions,
   TakeOnPortalContactsResult,
+  TakeOnPosition,
   TakeOnPositionRequest,
   TakeOnPreview,
   TakeOnPreviewRow,
@@ -27,6 +28,14 @@ import type {
   TakeOnSheetRequest,
   TakeOnSignOff,
   TakeOnSource,
+  TakeOnTrustDeficit,
+  TakeOnTrustEq1,
+  TakeOnTrustEq2,
+  TakeOnTrustEquation,
+  TakeOnTrustInvestmentsTie,
+  TakeOnTrustItemsTie,
+  TakeOnTrustMessage,
+  TakeOnTrustSummary,
   TakeOnUploadResult,
 } from "@/lib/types/take-on";
 import type {
@@ -74,13 +83,15 @@ const BATCH: Required<TakeOnBatch> = {
   signOffs: [],
   attestationStatement: null,
   summary: null,
+  midMonthAcknowledged: false,
+  position: null,
 };
 
 // Each literal is typed Required<T>: a missing or extra key fails `pnpm typecheck`; the runtime
 // assertion fails when the Java record changes and the literal was not updated. Literal key ORDER
 // must equal the Java record's declaration order (toEqual on arrays is order-sensitive).
 describe("take-on wire shapes match the backend contract (ADR-365, P-17)", () => {
-  it("pins exactly the 29 records of 653A, 655A, 655B and 656A", () => {
+  it("pins exactly the 38 records of 653A, 655A, 655B, 656A and 657B", () => {
     expect(Object.keys(contract).sort()).toEqual([
       "ClientFicaAttestationResponse",
       "ClientListRow",
@@ -100,6 +111,7 @@ describe("take-on wire shapes match the backend contract (ADR-365, P-17)", () =>
       "TakeOnParseOptionsResponse",
       "TakeOnPortalContactsResponse",
       "TakeOnPositionRequest",
+      "TakeOnPositionResponse",
       "TakeOnPreviewResponse",
       "TakeOnPreviewRow",
       "TakeOnRowMessage",
@@ -110,6 +122,14 @@ describe("take-on wire shapes match the backend contract (ADR-365, P-17)", () =>
       "TakeOnSignOffResponse",
       "TakeOnSourceResponse",
       "TakeOnUploadResponse",
+      "TrustDeficit",
+      "TrustEq1",
+      "TrustEq2",
+      "TrustEquationSummary",
+      "TrustInvestmentsTie",
+      "TrustItemsTie",
+      "TrustPositionMessage",
+      "TrustPositionSummary",
       "UpdateComplianceSettingsRequest",
     ]);
   });
@@ -279,8 +299,117 @@ describe("take-on wire shapes match the backend contract (ADR-365, P-17)", () =>
   });
 
   it("TakeOnPositionRequest ↔ TakeOnPositionRequest", () => {
-    const literal: Required<TakeOnPositionRequest> = { cutoverDate: "" };
+    const literal: Required<TakeOnPositionRequest> = {
+      cutoverDate: "",
+      bankBalance: null,
+      outstandingDepositsTotal: null,
+      outstandingPaymentsTotal: null,
+      cashbookBalance: null,
+      fundLedgerBalance: null,
+      investedTotal: null,
+      midMonthAcknowledged: null,
+    };
     expect(Object.keys(literal)).toEqual(componentNames(contract.TakeOnPositionRequest));
+  });
+
+  // 657B: the trust position (P-11) and the trust batch's `summary` records (A.4). The summary is
+  // a Map on the wire, so these pins are what keeps the frontend mirror of it honest.
+  it("TakeOnPosition ↔ TakeOnPositionResponse", () => {
+    const literal: Required<TakeOnPosition> = {
+      bankBalance: null,
+      outstandingDepositsTotal: null,
+      outstandingPaymentsTotal: null,
+      cashbookBalance: null,
+      fundLedgerBalance: null,
+      investedTotal: null,
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(contract.TakeOnPositionResponse));
+  });
+
+  it("TakeOnTrustMessage ↔ TrustPositionMessage", () => {
+    const literal: Required<TakeOnTrustMessage> = { code: "", message: "" };
+    expect(Object.keys(literal)).toEqual(componentNames(contract.TrustPositionMessage));
+  });
+
+  it("TakeOnTrustEq1 ↔ TrustEq1", () => {
+    const literal: Required<TakeOnTrustEq1> = {
+      bankBalance: "",
+      plusOutstandingDeposits: "",
+      lessOutstandingPayments: "",
+      adjustedBank: "",
+      cashbook: "",
+      difference: "",
+      holds: true,
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(contract.TrustEq1));
+  });
+
+  it("TakeOnTrustItemsTie ↔ TrustItemsTie", () => {
+    const literal: Required<TakeOnTrustItemsTie> = {
+      listedDeposits: "",
+      listedPayments: "",
+      outstandingDeposits: "",
+      outstandingPayments: "",
+      difference: "",
+      holds: true,
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(contract.TrustItemsTie));
+  });
+
+  it("TakeOnTrustEq2 ↔ TrustEq2", () => {
+    const literal: Required<TakeOnTrustEq2> = {
+      clientLedgers: "",
+      fundLedger: "",
+      unidentified: "",
+      placedInSection86_3: "",
+      creditors: "",
+      cashbook: "",
+      difference: "",
+      holds: true,
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(contract.TrustEq2));
+  });
+
+  it("TakeOnTrustInvestmentsTie ↔ TrustInvestmentsTie", () => {
+    const literal: Required<TakeOnTrustInvestmentsTie> = {
+      perConfirmations: "",
+      listed: "",
+      difference: "",
+      holds: true,
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(contract.TrustInvestmentsTie));
+  });
+
+  it("TakeOnTrustDeficit ↔ TrustDeficit", () => {
+    const literal: Required<TakeOnTrustDeficit> = {
+      trustCreditors: "",
+      moneyHeld: "",
+      difference: "",
+      inDeficit: false,
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(contract.TrustDeficit));
+  });
+
+  it("TakeOnTrustEquation ↔ TrustEquationSummary", () => {
+    const literal: Required<TakeOnTrustEquation> = {
+      eq1: {} as TakeOnTrustEq1,
+      itemsTie: {} as TakeOnTrustItemsTie,
+      eq2: {} as TakeOnTrustEq2,
+      investments: {} as TakeOnTrustInvestmentsTie,
+      deficit: {} as TakeOnTrustDeficit,
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(contract.TrustEquationSummary));
+  });
+
+  it("TakeOnTrustSummary ↔ TrustPositionSummary", () => {
+    const literal: Required<TakeOnTrustSummary> = {
+      accountErrors: [],
+      blocks: [],
+      warnings: [],
+      flags: [],
+      equation: null,
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(contract.TrustPositionSummary));
   });
 
   it("TakeOnSignOff ↔ TakeOnSignOffResponse", () => {

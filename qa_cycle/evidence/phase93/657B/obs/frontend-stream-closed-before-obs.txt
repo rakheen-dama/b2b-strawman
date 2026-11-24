@@ -1,0 +1,6 @@
+# 'destination stream closed early' in the frontend container BEFORE the OBS window (exit-month run, 07:00-07:10:31Z)
+2026-11-24T07:08:51.989297220Z ⨯ Error: The destination stream closed early.
+2026-11-24T07:08:52.003618054Z ⨯ Error: The destination stream closed early.
+2026-11-24T07:08:52.014456554Z ⨯ Error: The destination stream closed early.
+2026-11-24T07:08:52.029047429Z ⨯ Error: The destination stream closed early.
+2026-11-24T07:08:57.417609292Z ⨯ Error: The destination stream closed early.

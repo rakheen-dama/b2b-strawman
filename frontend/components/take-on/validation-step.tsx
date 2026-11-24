@@ -31,6 +31,8 @@ import {
   TAKE_ON_DUPLICATE_PENDING_LABEL,
   TAKE_ON_ROW_STATUS_LABEL,
   TAKE_ON_SECTION_LABEL,
+  TAKE_ON_TRUST_FLAG_LABEL,
+  TAKE_ON_TRUST_VALUE_LABEL,
   type TakeOnBatch,
   type TakeOnDatasetCatalogue,
   type TakeOnRow,
@@ -50,6 +52,8 @@ import {
   matterValueText,
 } from "./matters-step";
 import { TakeOnError } from "./take-on-feedback";
+import { TrustEquationIndicator } from "./trust-equation-indicator";
+import { TrustPositionForm } from "./trust-position-form";
 
 const PAGE_SIZE = 50;
 /** A row message after cancel or purge: the code stays, the text (it may quote a cell) is gone. */
@@ -98,7 +102,25 @@ const STATUS_VARIANT: Record<TakeOnRowStatus, "success" | "warning" | "destructi
 const EXTRA_VALUE_LABELS: ReadonlyArray<readonly [string, string]> = [
   ["customFields", "Custom fields"],
   ["takeon_parked", "Kept as a note"],
+  ["clientResolvedBy", "Client matched by"],
 ];
+
+/**
+ * Ids the trust dry run stores on a resolved row (TrustPositionDatasetHandler): internal, never
+ * shown — the references they came from are (D-175 approach).
+ */
+const TRUST_HIDDEN_KEYS: ReadonlySet<string> = new Set([
+  "clientId",
+  "matterId",
+  "investmentAccountId",
+]);
+
+/** A coded trust value's label ("DEPOSIT_IN_TRANSIT" → "Deposit in transit"); else as text. */
+function trustValueText(key: string, value: unknown): string {
+  if (value === null || value === undefined || value === "") return "";
+  const text = String(value);
+  return TAKE_ON_TRUST_VALUE_LABEL[key]?.[text] ?? text;
+}
 
 function formatValue(value: unknown): string {
   if (value === null || value === undefined) return "";
@@ -139,7 +161,11 @@ export function ValidationStep({ batch, dataset, onBatchChange }: ValidationStep
   const [blocksOnly, setBlocksOnly] = useState(false);
   const [page, setPage] = useState(0);
   const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
+  /**
+   * The one request on this batch in flight: the manual dry run or the position save (which runs
+   * its own dry run). Each disables the other, so a stale response never overwrites a newer batch.
+   */
+  const [inFlight, setInFlight] = useState<"dryRun" | "position" | null>(null);
 
   const rowsKey = `take-on-rows-${batch.id}-${batch.status}-${batch.validatedAt ?? "none"}-${status}-${section}-${blocksOnly}-${page}`;
   const rows = useSWR(rowsKey, async () => {
@@ -169,7 +195,7 @@ export function ValidationStep({ batch, dataset, onBatchChange }: ValidationStep
 
   async function runDryRun() {
     setError(null);
-    setBusy(true);
+    setInFlight("dryRun");
     try {
       const result = await validateBatch(batch.id);
       if (!result.success || !result.data) {
@@ -179,8 +205,14 @@ export function ValidationStep({ batch, dataset, onBatchChange }: ValidationStep
       setPage(0);
       onBatchChange(result.data);
     } finally {
-      setBusy(false);
+      setInFlight(null);
     }
+  }
+
+  /** A batch the position form saved (and re-validated): its rows start on the first page. */
+  function positionSaved(next: TakeOnBatch) {
+    setPage(0);
+    onBatchChange(next);
   }
 
   function filterChanged(apply: () => void) {
@@ -190,19 +222,32 @@ export function ValidationStep({ batch, dataset, onBatchChange }: ValidationStep
 
   const counts = batch.counts;
   const totalPages = rows.data?.page.totalPages ?? 0;
+  const summary = validated ? batch.summary : null;
 
   return (
     <div className="space-y-6" data-testid="take-on-validation">
+      {isTrust && (
+        <TrustPositionForm
+          batch={batch}
+          onBatchChange={positionSaved}
+          disabled={inFlight === "dryRun"}
+          onBusyChange={(b) => setInFlight(b ? "position" : null)}
+        />
+      )}
       <div className="flex flex-wrap items-center gap-3">
         {canValidate && (
           <Button
             type="button"
             variant="accent"
-            disabled={busy}
+            disabled={inFlight !== null}
             onClick={runDryRun}
             data-testid="take-on-validate"
           >
-            {busy ? "Running the dry run…" : validated ? "Run the dry run again" : "Run dry run"}
+            {inFlight === "dryRun"
+              ? "Running the dry run…"
+              : validated
+                ? "Run the dry run again"
+                : "Run dry run"}
           </Button>
         )}
         <p className="text-sm text-slate-600 dark:text-slate-400">
@@ -254,7 +299,30 @@ export function ValidationStep({ batch, dataset, onBatchChange }: ValidationStep
         </div>
       )}
 
-      {validated && counts.blocks > 0 && (
+      {isTrust && summary?.accountErrors && summary.accountErrors.length > 0 && (
+        <div
+          role="alert"
+          data-testid="take-on-account-errors"
+          className="space-y-1 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-800 dark:bg-red-950 dark:text-red-200"
+        >
+          <p className="font-medium">Correct these before the dry run can check the figures</p>
+          <ul className="list-disc space-y-1 pl-5">
+            {summary.accountErrors.map((m, i) => (
+              <li key={`${m.code}-${i}`}>{m.message}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {isTrust && validated && counts.blocks > 0 && (
+        <TrustBlockBanner blocks={summary?.blocks ?? []} rowBlocks={rowBlockCount(batch)} />
+      )}
+
+      {isTrust && <TrustEquationIndicator equation={summary?.equation} />}
+
+      {isTrust && summary && <TrustFlags summary={summary} />}
+
+      {!isTrust && validated && counts.blocks > 0 && (
         <div
           role="alert"
           data-testid="take-on-block-banner"
@@ -357,6 +425,76 @@ export function ValidationStep({ batch, dataset, onBatchChange }: ValidationStep
   );
 }
 
+/** The rows holding a block: `counts.blocks` also counts the batch-level blocks (D-184). */
+function rowBlockCount(batch: TakeOnBatch): number {
+  const batchBlocks = batch.summary?.blocks?.length ?? 0;
+  return Math.max(0, batch.counts.blocks - batchBlocks);
+}
+
+/**
+ * The trust position's statutory blocks (§17.3.9, X3 texts verbatim, the deficit first as sent)
+ * and the rows holding one. Never overridable: nothing here dismisses or acknowledges a block —
+ * the only way on is a corrected file or position and a new dry run. Product copy: D-190.
+ */
+function TrustBlockBanner({
+  blocks,
+  rowBlocks,
+}: {
+  blocks: readonly { code: string; message: string }[];
+  rowBlocks: number;
+}) {
+  return (
+    <div
+      role="alert"
+      data-testid="take-on-trust-block-banner"
+      className="space-y-2 rounded-lg border-2 border-l-8 border-red-700 bg-red-50 px-4 py-3 text-sm text-red-900 dark:border-red-500 dark:bg-red-950 dark:text-red-100"
+    >
+      <p className="font-semibold">Statutory block — cannot be overridden</p>
+      {blocks.length > 0 && (
+        <ul className="list-disc space-y-1 pl-5" data-testid="take-on-trust-blocks">
+          {blocks.map((m, i) => (
+            <li key={`${m.code}-${i}`} data-testid={`take-on-trust-block-${i}`}>
+              {m.message}
+            </li>
+          ))}
+        </ul>
+      )}
+      {rowBlocks > 0 && (
+        <p data-testid="take-on-trust-row-blocks">
+          <span className="font-mono tabular-nums">{rowBlocks}</span>{" "}
+          {rowBlocks === 1 ? "row holds" : "rows hold"} a statutory block (marked Block below).
+          Correct {rowBlocks === 1 ? "it" : "them"} in the previous system, then upload the
+          corrected file.
+        </p>
+      )}
+    </div>
+  );
+}
+
+/** Flags, not blocks: the batch warnings' texts verbatim, then any other flag by its label. */
+function TrustFlags({ summary }: { summary: NonNullable<TakeOnBatch["summary"]> }) {
+  const warnings = summary.warnings ?? [];
+  const withText = new Set(warnings.map((w) => w.code));
+  const others = (summary.flags ?? []).filter((f) => !withText.has(f));
+  if (warnings.length === 0 && others.length === 0) return null;
+  return (
+    <div
+      data-testid="take-on-trust-flags"
+      className="space-y-1 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:bg-amber-950 dark:text-amber-100"
+    >
+      <p className="font-medium">Flags</p>
+      <ul className="list-disc space-y-1 pl-5">
+        {warnings.map((w, i) => (
+          <li key={`${w.code}-${i}`}>{w.message}</li>
+        ))}
+        {others.map((f) => (
+          <li key={f}>{TAKE_ON_TRUST_FLAG_LABEL[f] ?? "Flagged"}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 function Figure({ n }: { n: number }) {
   return <span className="font-mono tabular-nums">{n.toLocaleString("en-ZA")}</span>;
 }
@@ -431,9 +569,17 @@ function RowTable({
                   values={row.values}
                   labels={labels}
                   exclude={
-                    isClients ? CLIENT_COLUMN_KEYS : isMatters ? MATTER_COLUMN_KEYS : undefined
+                    isClients
+                      ? CLIENT_COLUMN_KEYS
+                      : isMatters
+                        ? MATTER_COLUMN_KEYS
+                        : isTrust
+                          ? TRUST_HIDDEN_KEYS
+                          : undefined
                   }
-                  valueText={isMatters ? matterValueText : clientValueText}
+                  valueText={
+                    isMatters ? matterValueText : isTrust ? trustValueText : clientValueText
+                  }
                 />
               </TableCell>
               <TableCell className="max-w-md text-xs whitespace-normal">
@@ -504,7 +650,7 @@ function RowValues({
         <span key={k}>
           {i > 0 && " · "}
           <span className="text-slate-500 dark:text-slate-400">{labels.get(k) ?? k}:</span>{" "}
-          {typeof v === "string" ? valueText(k, v) : formatValue(v)}
+          {typeof v === "string" || typeof v === "boolean" ? valueText(k, v) : formatValue(v)}
         </span>
       ))}
     </span>

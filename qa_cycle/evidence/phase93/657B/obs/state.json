@@ -1,0 +1,1010 @@
+{
+  "accounts": [
+    {
+      "id": "3d376b68-930e-4c53-83fe-68e6025f924f",
+      "accountName": "Mathebula & Partners Trust Account",
+      "accountType": "GENERAL",
+      "investmentBasis": null,
+      "isPrimary": true,
+      "status": "ACTIVE",
+      "openedDate": "2026-11-24",
+      "accountNumber": "0123456789"
+    },
+    {
+      "id": "394a98b5-fd09-4f30-94bc-422aaa0eaf5e",
+      "accountName": "Section 86(4) investment — Ndlovu",
+      "accountType": "INVESTMENT",
+      "investmentBasis": "CLIENT_INSTRUCTION",
+      "isPrimary": false,
+      "status": "ACTIVE",
+      "openedDate": "2026-10-01",
+      "accountNumber": "62000000001"
+    },
+    {
+      "id": "3235fc7c-d952-472f-b6b3-fdf744a167b4",
+      "accountName": "Section 86(4) investment — Khumalo",
+      "accountType": "INVESTMENT",
+      "investmentBasis": "CLIENT_INSTRUCTION",
+      "isPrimary": false,
+      "status": "ACTIVE",
+      "openedDate": "2026-10-01",
+      "accountNumber": "62000000002"
+    },
+    {
+      "id": "e2bbd69e-d999-4f58-be4d-b3fc6673d38e",
+      "accountName": "OBS 657B Trust banking G",
+      "accountType": "GENERAL",
+      "investmentBasis": null,
+      "isPrimary": false,
+      "status": "ACTIVE",
+      "openedDate": "2026-01-01",
+      "accountNumber": "6570001"
+    },
+    {
+      "id": "a89bf238-fb73-473f-81fe-48152a071c8a",
+      "accountName": "OBS 657B s86(3) investment I3",
+      "accountType": "INVESTMENT",
+      "investmentBasis": "FIRM_DISCRETION",
+      "isPrimary": false,
+      "status": "ACTIVE",
+      "openedDate": "2026-01-01",
+      "accountNumber": "6573001"
+    },
+    {
+      "id": "55b74fbe-e738-47f5-810c-5c609899e16b",
+      "accountName": "OBS 657B s86(4) investment I4",
+      "accountType": "INVESTMENT",
+      "investmentBasis": "CLIENT_INSTRUCTION",
+      "isPrimary": false,
+      "status": "ACTIVE",
+      "openedDate": "2026-01-01",
+      "accountNumber": "6574001"
+    }
+  ],
+  "consoleErrors": {
+    "accounts": [],
+    "clients": [],
+    "matters": [],
+    "debit": [],
+    "r10": [],
+    "fix": [],
+    "acctcheck": []
+  },
+  "clientsBatch": "990898c0-1af9-4f2e-84c3-aada36e7a40a",
+  "clients": {
+    "cards": {
+      "total": 3,
+      "valid": 3,
+      "error": 0,
+      "duplicate": 0,
+      "blocks": 0
+    },
+    "results": {
+      "created": "Created 3",
+      "failed": "Failed 0"
+    }
+  },
+  "mattersBatch": "1fbb3f88-3827-46ff-8583-dcdf56a51e78",
+  "matters": {
+    "cards": {
+      "total": 3,
+      "valid": 3,
+      "error": 0,
+      "duplicate": 0,
+      "blocks": 0
+    },
+    "results": {
+      "created": "Created 3",
+      "failed": "Failed 0"
+    }
+  },
+  "trustBatch": "0cae8abe-0bd2-4d4a-b576-1f900c6b413c",
+  "mapping": {
+    "client-ledger": {
+      "clientRef": "Client reference",
+      "matterRef": "Matter reference",
+      "balance": "Balance at cutover",
+      "sourceRef": "Previous system ID"
+    },
+    "investments": {
+      "investmentAccount": "Investment account (number or name)",
+      "basis": "Basis",
+      "institution": "Institution",
+      "accountNumber": "Account number",
+      "principal": "Principal at cutover",
+      "interestRate": "Interest rate",
+      "depositDate": "Original deposit date",
+      "clientRef": "Client reference",
+      "matterRef": "Matter reference",
+      "instructionReference": "Instruction reference",
+      "instructionDate": "Instruction date",
+      "endorsementConfirmed": "Endorsed under section 86(4)",
+      "accruedInterest": "Accrued interest not capitalised",
+      "fundAmount": "Legal Practitioners' Fidelity Fund amount held",
+      "balancePerConfirmation": "Balance per confirmation"
+    },
+    "outstanding-items": {
+      "kind": "Item type",
+      "originalDate": "Original date",
+      "amount": "Amount",
+      "reference": "Reference",
+      "clientRef": "Client reference",
+      "matterRef": "Matter reference"
+    },
+    "unidentified-deposits": {
+      "receivedDate": "Date received",
+      "amount": "Amount",
+      "bankReference": "Bank reference",
+      "description": "Description"
+    }
+  },
+  "debit": {
+    "status": "Validated",
+    "cutoverShown": "Cutover date 2026-10-31",
+    "cards": {
+      "total": 9,
+      "valid": 8,
+      "error": 1,
+      "duplicate": 0,
+      "blocks": 2
+    },
+    "positionError": null,
+    "accountErrors": null,
+    "accountErrorItems": [],
+    "banner": "Statutory block — cannot be overridden\n\nThe trust creditors (R353 500,00) do not equal the cashbook balance at cutover (R403 500,00): difference R50 000,00. Every creditor group must be included and must agree to the cent.\n\n1 row holds a statutory block (marked Block below). Correct it in the previous system, then upload the corrected file.",
+    "blockItems": [
+      "The trust creditors (R353 500,00) do not equal the cashbook balance at cutover (R403 500,00): difference R50 000,00. Every creditor group must be included and must agree to the cent."
+    ],
+    "rowBlocks": "1 row holds a statutory block (marked Block below). Correct it in the previous system, then upload the corrected file.",
+    "bannerControls": 0,
+    "equationShown": true,
+    "equation": {
+      "eq1": {
+        "holds": "true",
+        "difference": "Difference R 0,00",
+        "text": "Bank balance + outstanding deposits − outstanding payments = cashbook Agrees Difference R 0,00 The figures"
+      },
+      "items": {
+        "holds": "true",
+        "difference": "Difference R 0,00",
+        "text": "Listed outstanding items agree with the totals Agrees Difference R 0,00 The figures"
+      },
+      "eq2": {
+        "holds": "false",
+        "difference": "Difference R 50 000,00",
+        "text": "Cashbook = trust creditors Does not agree Difference R 50 000,00 The figures"
+      },
+      "investments": {
+        "holds": "true",
+        "difference": "Difference R 0,00",
+        "text": "Investments agree with the confirmations Agrees Difference R 0,00 The figures"
+      },
+      "deficit": {
+        "holds": "true",
+        "difference": "Difference R 50 000,00",
+        "text": "No trust deficit Agrees Difference R 50 000,00 The figures"
+      }
+    },
+    "flags": "Flags Unidentified deposit older than one year",
+    "rows": [
+      "2 | Client and matter balances | TL-A1 | Valid | Balance at cutover: 300000.00 · Client reference: A · Matter reference: A1 · Previous system ID: TL-A1 · Client matched by: Client previous-system ID | ",
+      "3 | Client and matter balances | TL-B1 | Valid | Balance at cutover: 150000.00 · Client reference: B · Matter reference: B1 · Previous system ID: TL-B1 · Client matched by: Client previous-system ID | ",
+      "4 | Client and matter balances | TL-C1 | ErrorBlock | Balance at cutover: -500.00 · Client reference: C · Matter reference: C1 · Previous system ID: TL-C1 · Client matched by: Client previous-system ID | This client's matter is in debit (R-500,00) at the cutover date. No trust creditor may be in debit (Rule 54.14.9). The firm must immediately report a debit balance to the Council in writing, with the reason and proof that it was rectified (Rule 54.14.11). Correct it in the previous system, then upload the corrected file.",
+      "2 | Investments | row:2 | Valid | Basis: Section 86(3) — at the firm's discretion · Principal at cutover: 100000.00 · Original deposit date: 2026-03-01 · Institution: Investec · Interest rate: 7.25 · Account number: 0001 · Investment account (number or name): 6573001 · Balance per confirmation: 100000.00 | ",
+      "3 | Investments | row:3 | Valid | Basis: Section 86(4) — on a client's instruction · Client reference: A · Matter reference: A1 · Principal at cutover: 200000.00 · Legal Practitioners' Fidelity Fund amount held: 0.00 · Original deposit date: 2026-04-01 · Institution: Investec · Interest rate: 7.50 · Account number: 0002 · Accrued interest not capitalised: 1234.56 · Instruction date: 2026-04-01 · Client matched by: Client previous-system ID · Investment account (number or name): 6574001 · Endorsed under section 86(4): Yes · Instruction reference: INSTR-A-01 · Balance per confirmation: 200000.00 | ",
+      "2 | Items outstanding at cutover | row:2 | Valid | Item type: Deposit in transit · Amount: 5000.00 · Client reference: B · Matter reference: B1 · Reference: EFT B-0001 · Original date: 2026-10-30 · Client matched by: Client previous-system ID | ",
+      "3 | Items outstanding at cutover | row:3 | Valid | Item type: Unpresented payment · Amount: 20000.00 · Client reference: A · Matter reference: A1 · Reference: PAY-778 · Original date: 2026-10-28 · Client matched by: Client previous-system ID | ",
+      "2 | Unidentified deposits | row:2 | Valid | Amount: 2000.00 · Date received: 2025-06-15 · Bank reference: ACB CREDIT UNKNOWN | This deposit was received more than a year before the cutover date. It is taken on with its original date and flagged.",
+      "3 | Unidentified deposits | row:3 | Valid | Amount: 750.00 · Date received: 2026-09-03 · Bank reference: EFT 7781 | "
+    ],
+    "rowMessagesRaw": [
+      "2\tClient and matter balances\tTL-A1\tValid\t\nBalance at cutover: 300000.00 · Client reference: A · Matter reference: A1 · Previous system ID: TL-A1 · Client matched by: Client previous-system ID\n\t",
+      "3\tClient and matter balances\tTL-B1\tValid\t\nBalance at cutover: 150000.00 · Client reference: B · Matter reference: B1 · Previous system ID: TL-B1 · Client matched by: Client previous-system ID\n\t",
+      "4\tClient and matter balances\tTL-C1\tErrorBlock\t\nBalance at cutover: -500.00 · Client reference: C · Matter reference: C1 · Previous system ID: TL-C1 · Client matched by: Client previous-system ID\n\t\nThis client's matter is in debit (R-500,00) at the cutover date. No trust creditor may be in debit (Rule 54.14.9). The firm must immediately report a debit balance to the Council in writing, with the reason and proof that it was rectified (Rule 54.14.11). Correct it in the previous system, then upload the corrected file.",
+      "2\tInvestments\trow:2\tValid\t\nBasis: Section 86(3) — at the firm's discretion · Principal at cutover: 100000.00 · Original deposit date: 2026-03-01 · Institution: Investec · Interest rate: 7.25 · Account number: 0001 · Investment account (number or name): 6573001 · Balance per confirmation: 100000.00\n\t",
+      "3\tInvestments\trow:3\tValid\t\nBasis: Section 86(4) — on a client's instruction · Client reference: A · Matter reference: A1 · Principal at cutover: 200000.00 · Legal Practitioners' Fidelity Fund amount held: 0.00 · Original deposit date: 2026-04-01 · Institution: Investec · Interest rate: 7.50 · Account number: 0002 · Accrued interest not capitalised: 1234.56 · Instruction date: 2026-04-01 · Client matched by: Client previous-system ID · Investment account (number or name): 6574001 · Endorsed under section 86(4): Yes · Instruction reference: INSTR-A-01 · Balance per confirmation: 200000.00\n\t",
+      "2\tItems outstanding at cutover\trow:2\tValid\t\nItem type: Deposit in transit · Amount: 5000.00 · Client reference: B · Matter reference: B1 · Reference: EFT B-0001 · Original date: 2026-10-30 · Client matched by: Client previous-system ID\n\t",
+      "3\tItems outstanding at cutover\trow:3\tValid\t\nItem type: Unpresented payment · Amount: 20000.00 · Client reference: A · Matter reference: A1 · Reference: PAY-778 · Original date: 2026-10-28 · Client matched by: Client previous-system ID\n\t",
+      "2\tUnidentified deposits\trow:2\tValid\t\nAmount: 2000.00 · Date received: 2025-06-15 · Bank reference: ACB CREDIT UNKNOWN\n\t\nThis deposit was received more than a year before the cutover date. It is taken on with its original date and flagged.",
+      "3\tUnidentified deposits\trow:3\tValid\t\nAmount: 750.00 · Date received: 2026-09-03 · Bank reference: EFT 7781\n\t"
+    ],
+    "buttons": [
+      "Cancel take-on",
+      "1 Upload",
+      "2 Sheet",
+      "3 Mapping",
+      "4 Validation",
+      "Save position",
+      "Run the dry run again",
+      "All statuses",
+      "All parts"
+    ],
+    "overrideLikeButtons": [],
+    "commitControls": 0,
+    "checkboxesOutsideForm": [
+      "take-on-position-mid-month",
+      "take-on-filter-blocks"
+    ],
+    "api": {
+      "http": 200,
+      "status": "VALIDATED",
+      "allowedActions": [
+        "REMOVE_SOURCE",
+        "MAP",
+        "REVALIDATE",
+        "CANCEL"
+      ],
+      "counts": {
+        "total": 9,
+        "valid": 8,
+        "error": 1,
+        "duplicate": 0,
+        "blocks": 2,
+        "created": 0,
+        "skipped": 0,
+        "failed": 0
+      },
+      "validatedAt": "2026-11-24T07:13:32.709564Z",
+      "cutoverDate": "2026-10-31",
+      "position": {
+        "bankBalance": 418500,
+        "outstandingDepositsTotal": 5000,
+        "outstandingPaymentsTotal": 20000,
+        "cashbookBalance": 403500,
+        "fundLedgerBalance": 1250,
+        "investedTotal": 300000
+      },
+      "midMonthAcknowledged": false,
+      "summary": {
+        "flags": [
+          "UNIDENTIFIED_OVER_ONE_YEAR"
+        ],
+        "blocks": [
+          {
+            "code": "CONTROL_TOTAL_EQ2",
+            "message": "The trust creditors (R353 500,00) do not equal the cashbook balance at cutover (R403 500,00): difference R50 000,00. Every creditor group must be included and must agree to the cent."
+          }
+        ],
+        "equation": {
+          "eq1": {
+            "holds": true,
+            "cashbook": "403500.00",
+            "difference": "0.00",
+            "bankBalance": "418500.00",
+            "adjustedBank": "403500.00",
+            "lessOutstandingPayments": "20000.00",
+            "plusOutstandingDeposits": "5000.00"
+          },
+          "eq2": {
+            "holds": false,
+            "cashbook": "403500.00",
+            "creditors": "353500.00",
+            "difference": "-50000.00",
+            "fundLedger": "1250.00",
+            "unidentified": "2750.00",
+            "clientLedgers": "449500.00",
+            "placedInSection86_3": "-100000.00"
+          },
+          "deficit": {
+            "inDeficit": false,
+            "moneyHeld": "703500.00",
+            "difference": "-50000.00",
+            "trustCreditors": "653500.00"
+          },
+          "itemsTie": {
+            "holds": true,
+            "difference": "0.00",
+            "listedDeposits": "5000.00",
+            "listedPayments": "20000.00",
+            "outstandingDeposits": "5000.00",
+            "outstandingPayments": "20000.00"
+          },
+          "investments": {
+            "holds": true,
+            "listed": "300000.00",
+            "difference": "0.00",
+            "perConfirmations": "300000.00"
+          }
+        },
+        "warnings": [],
+        "accountErrors": []
+      }
+    },
+    "x3": {
+      "debitC": {
+        "exactInBanner": false,
+        "exactInRows": true,
+        "exactInApiBlocks": false
+      },
+      "eq2Debit": {
+        "exactInBanner": true,
+        "exactInRows": false,
+        "exactInApiBlocks": true
+      }
+    }
+  },
+  "r10": {
+    "status": "Validated",
+    "cutoverShown": "Cutover date 2026-10-31",
+    "cards": {
+      "total": 9,
+      "valid": 9,
+      "error": 0,
+      "duplicate": 0,
+      "blocks": 2
+    },
+    "positionError": null,
+    "accountErrors": null,
+    "accountErrorItems": [],
+    "banner": "Statutory block — cannot be overridden\n\nBank balance R418 500,00 + outstanding deposits R5 000,00 − outstanding payments R20 000,00 is R403 500,00, not the cashbook balance R403 510,00.\nThe trust creditors (R403 500,00) do not equal the cashbook balance at cutover (R403 510,00): difference R10,00. Every creditor group must be included and must agree to the cent.",
+    "blockItems": [
+      "Bank balance R418 500,00 + outstanding deposits R5 000,00 − outstanding payments R20 000,00 is R403 500,00, not the cashbook balance R403 510,00.",
+      "The trust creditors (R403 500,00) do not equal the cashbook balance at cutover (R403 510,00): difference R10,00. Every creditor group must be included and must agree to the cent."
+    ],
+    "rowBlocks": null,
+    "bannerControls": 0,
+    "equationShown": true,
+    "equation": {
+      "eq1": {
+        "holds": "false",
+        "difference": "Difference R 10,00",
+        "text": "Bank balance + outstanding deposits − outstanding payments = cashbook Does not agree Difference R 10,00 The figures"
+      },
+      "items": {
+        "holds": "true",
+        "difference": "Difference R 0,00",
+        "text": "Listed outstanding items agree with the totals Agrees Difference R 0,00 The figures"
+      },
+      "eq2": {
+        "holds": "false",
+        "difference": "Difference R 10,00",
+        "text": "Cashbook = trust creditors Does not agree Difference R 10,00 The figures"
+      },
+      "investments": {
+        "holds": "true",
+        "difference": "Difference R 0,00",
+        "text": "Investments agree with the confirmations Agrees Difference R 0,00 The figures"
+      },
+      "deficit": {
+        "holds": "true",
+        "difference": "Difference R 0,00",
+        "text": "No trust deficit Agrees Difference R 0,00 The figures"
+      }
+    },
+    "flags": "Flags Unidentified deposit older than one year",
+    "rows": [
+      "2 | Client and matter balances | TL-A1 | Valid | Balance at cutover: 300000.00 · Client reference: A · Matter reference: A1 · Previous system ID: TL-A1 · Client matched by: Client previous-system ID | ",
+      "3 | Client and matter balances | TL-B1 | Valid | Balance at cutover: 150000.00 · Client reference: B · Matter reference: B1 · Previous system ID: TL-B1 · Client matched by: Client previous-system ID | ",
+      "4 | Client and matter balances | TL-C1 | Valid | Balance at cutover: 49500.00 · Client reference: C · Matter reference: C1 · Previous system ID: TL-C1 · Client matched by: Client previous-system ID | ",
+      "2 | Investments | row:2 | Valid | Basis: Section 86(3) — at the firm's discretion · Principal at cutover: 100000.00 · Original deposit date: 2026-03-01 · Institution: Investec · Interest rate: 7.25 · Account number: 0001 · Investment account (number or name): 6573001 · Balance per confirmation: 100000.00 | ",
+      "3 | Investments | row:3 | Valid | Basis: Section 86(4) — on a client's instruction · Client reference: A · Matter reference: A1 · Principal at cutover: 200000.00 · Legal Practitioners' Fidelity Fund amount held: 0.00 · Original deposit date: 2026-04-01 · Institution: Investec · Interest rate: 7.50 · Account number: 0002 · Accrued interest not capitalised: 1234.56 · Instruction date: 2026-04-01 · Client matched by: Client previous-system ID · Investment account (number or name): 6574001 · Endorsed under section 86(4): Yes · Instruction reference: INSTR-A-01 · Balance per confirmation: 200000.00 | ",
+      "2 | Items outstanding at cutover | row:2 | Valid | Item type: Deposit in transit · Amount: 5000.00 · Client reference: B · Matter reference: B1 · Reference: EFT B-0001 · Original date: 2026-10-30 · Client matched by: Client previous-system ID | ",
+      "3 | Items outstanding at cutover | row:3 | Valid | Item type: Unpresented payment · Amount: 20000.00 · Client reference: A · Matter reference: A1 · Reference: PAY-778 · Original date: 2026-10-28 · Client matched by: Client previous-system ID | ",
+      "2 | Unidentified deposits | row:2 | Valid | Amount: 2000.00 · Date received: 2025-06-15 · Bank reference: ACB CREDIT UNKNOWN | This deposit was received more than a year before the cutover date. It is taken on with its original date and flagged.",
+      "3 | Unidentified deposits | row:3 | Valid | Amount: 750.00 · Date received: 2026-09-03 · Bank reference: EFT 7781 | "
+    ],
+    "rowMessagesRaw": [
+      "2\tClient and matter balances\tTL-A1\tValid\t\nBalance at cutover: 300000.00 · Client reference: A · Matter reference: A1 · Previous system ID: TL-A1 · Client matched by: Client previous-system ID\n\t",
+      "3\tClient and matter balances\tTL-B1\tValid\t\nBalance at cutover: 150000.00 · Client reference: B · Matter reference: B1 · Previous system ID: TL-B1 · Client matched by: Client previous-system ID\n\t",
+      "4\tClient and matter balances\tTL-C1\tValid\t\nBalance at cutover: 49500.00 · Client reference: C · Matter reference: C1 · Previous system ID: TL-C1 · Client matched by: Client previous-system ID\n\t",
+      "2\tInvestments\trow:2\tValid\t\nBasis: Section 86(3) — at the firm's discretion · Principal at cutover: 100000.00 · Original deposit date: 2026-03-01 · Institution: Investec · Interest rate: 7.25 · Account number: 0001 · Investment account (number or name): 6573001 · Balance per confirmation: 100000.00\n\t",
+      "3\tInvestments\trow:3\tValid\t\nBasis: Section 86(4) — on a client's instruction · Client reference: A · Matter reference: A1 · Principal at cutover: 200000.00 · Legal Practitioners' Fidelity Fund amount held: 0.00 · Original deposit date: 2026-04-01 · Institution: Investec · Interest rate: 7.50 · Account number: 0002 · Accrued interest not capitalised: 1234.56 · Instruction date: 2026-04-01 · Client matched by: Client previous-system ID · Investment account (number or name): 6574001 · Endorsed under section 86(4): Yes · Instruction reference: INSTR-A-01 · Balance per confirmation: 200000.00\n\t",
+      "2\tItems outstanding at cutover\trow:2\tValid\t\nItem type: Deposit in transit · Amount: 5000.00 · Client reference: B · Matter reference: B1 · Reference: EFT B-0001 · Original date: 2026-10-30 · Client matched by: Client previous-system ID\n\t",
+      "3\tItems outstanding at cutover\trow:3\tValid\t\nItem type: Unpresented payment · Amount: 20000.00 · Client reference: A · Matter reference: A1 · Reference: PAY-778 · Original date: 2026-10-28 · Client matched by: Client previous-system ID\n\t",
+      "2\tUnidentified deposits\trow:2\tValid\t\nAmount: 2000.00 · Date received: 2025-06-15 · Bank reference: ACB CREDIT UNKNOWN\n\t\nThis deposit was received more than a year before the cutover date. It is taken on with its original date and flagged.",
+      "3\tUnidentified deposits\trow:3\tValid\t\nAmount: 750.00 · Date received: 2026-09-03 · Bank reference: EFT 7781\n\t"
+    ],
+    "buttons": [
+      "Cancel take-on",
+      "1 Upload",
+      "2 Sheet",
+      "3 Mapping",
+      "4 Validation",
+      "Save position",
+      "Run the dry run again",
+      "All statuses",
+      "All parts"
+    ],
+    "overrideLikeButtons": [],
+    "commitControls": 0,
+    "checkboxesOutsideForm": [
+      "take-on-position-mid-month",
+      "take-on-filter-blocks"
+    ],
+    "api": {
+      "http": 200,
+      "status": "VALIDATED",
+      "allowedActions": [
+        "REMOVE_SOURCE",
+        "MAP",
+        "REVALIDATE",
+        "CANCEL"
+      ],
+      "counts": {
+        "total": 9,
+        "valid": 9,
+        "error": 0,
+        "duplicate": 0,
+        "blocks": 2,
+        "created": 0,
+        "skipped": 0,
+        "failed": 0
+      },
+      "validatedAt": "2026-11-24T07:14:27.314742Z",
+      "cutoverDate": "2026-10-31",
+      "position": {
+        "bankBalance": 418500,
+        "outstandingDepositsTotal": 5000,
+        "outstandingPaymentsTotal": 20000,
+        "cashbookBalance": 403510,
+        "fundLedgerBalance": 1250,
+        "investedTotal": 300000
+      },
+      "midMonthAcknowledged": false,
+      "summary": {
+        "flags": [
+          "UNIDENTIFIED_OVER_ONE_YEAR"
+        ],
+        "blocks": [
+          {
+            "code": "CONTROL_TOTAL_EQ1",
+            "message": "Bank balance R418 500,00 + outstanding deposits R5 000,00 − outstanding payments R20 000,00 is R403 500,00, not the cashbook balance R403 510,00."
+          },
+          {
+            "code": "CONTROL_TOTAL_EQ2",
+            "message": "The trust creditors (R403 500,00) do not equal the cashbook balance at cutover (R403 510,00): difference R10,00. Every creditor group must be included and must agree to the cent."
+          }
+        ],
+        "equation": {
+          "eq1": {
+            "holds": false,
+            "cashbook": "403510.00",
+            "difference": "-10.00",
+            "bankBalance": "418500.00",
+            "adjustedBank": "403500.00",
+            "lessOutstandingPayments": "20000.00",
+            "plusOutstandingDeposits": "5000.00"
+          },
+          "eq2": {
+            "holds": false,
+            "cashbook": "403510.00",
+            "creditors": "403500.00",
+            "difference": "-10.00",
+            "fundLedger": "1250.00",
+            "unidentified": "2750.00",
+            "clientLedgers": "499500.00",
+            "placedInSection86_3": "-100000.00"
+          },
+          "deficit": {
+            "inDeficit": false,
+            "moneyHeld": "703500.00",
+            "difference": "0.00",
+            "trustCreditors": "703500.00"
+          },
+          "itemsTie": {
+            "holds": true,
+            "difference": "0.00",
+            "listedDeposits": "5000.00",
+            "listedPayments": "20000.00",
+            "outstandingDeposits": "5000.00",
+            "outstandingPayments": "20000.00"
+          },
+          "investments": {
+            "holds": true,
+            "listed": "300000.00",
+            "difference": "0.00",
+            "perConfirmations": "300000.00"
+          }
+        },
+        "warnings": [],
+        "accountErrors": []
+      }
+    },
+    "x3": {
+      "eq1R10": {
+        "exactInBanner": true,
+        "exactInRows": false,
+        "exactInApiBlocks": true
+      },
+      "eq2R10": {
+        "exactInBanner": true,
+        "exactInRows": false,
+        "exactInApiBlocks": true
+      }
+    }
+  },
+  "fix": {
+    "status": "Validated",
+    "cutoverShown": "Cutover date 2026-10-31",
+    "cards": {
+      "total": 9,
+      "valid": 9,
+      "error": 0,
+      "duplicate": 0,
+      "blocks": 0
+    },
+    "positionError": null,
+    "accountErrors": null,
+    "accountErrorItems": [],
+    "banner": null,
+    "blockItems": [],
+    "rowBlocks": null,
+    "bannerControls": null,
+    "equationShown": true,
+    "equation": {
+      "eq1": {
+        "holds": "true",
+        "difference": "Difference R 0,00",
+        "text": "Bank balance + outstanding deposits − outstanding payments = cashbook Agrees Difference R 0,00 The figures"
+      },
+      "items": {
+        "holds": "true",
+        "difference": "Difference R 0,00",
+        "text": "Listed outstanding items agree with the totals Agrees Difference R 0,00 The figures"
+      },
+      "eq2": {
+        "holds": "true",
+        "difference": "Difference R 0,00",
+        "text": "Cashbook = trust creditors Agrees Difference R 0,00 The figures"
+      },
+      "investments": {
+        "holds": "true",
+        "difference": "Difference R 0,00",
+        "text": "Investments agree with the confirmations Agrees Difference R 0,00 The figures"
+      },
+      "deficit": {
+        "holds": "true",
+        "difference": "Difference R 0,00",
+        "text": "No trust deficit Agrees Difference R 0,00 The figures"
+      }
+    },
+    "flags": "Flags Unidentified deposit older than one year",
+    "rows": [
+      "2 | Client and matter balances | TL-A1 | Valid | Balance at cutover: 300000.00 · Client reference: A · Matter reference: A1 · Previous system ID: TL-A1 · Client matched by: Client previous-system ID | ",
+      "3 | Client and matter balances | TL-B1 | Valid | Balance at cutover: 150000.00 · Client reference: B · Matter reference: B1 · Previous system ID: TL-B1 · Client matched by: Client previous-system ID | ",
+      "4 | Client and matter balances | TL-C1 | Valid | Balance at cutover: 49500.00 · Client reference: C · Matter reference: C1 · Previous system ID: TL-C1 · Client matched by: Client previous-system ID | ",
+      "2 | Investments | row:2 | Valid | Basis: Section 86(3) — at the firm's discretion · Principal at cutover: 100000.00 · Original deposit date: 2026-03-01 · Institution: Investec · Interest rate: 7.25 · Account number: 0001 · Investment account (number or name): 6573001 · Balance per confirmation: 100000.00 | ",
+      "3 | Investments | row:3 | Valid | Basis: Section 86(4) — on a client's instruction · Client reference: A · Matter reference: A1 · Principal at cutover: 200000.00 · Legal Practitioners' Fidelity Fund amount held: 0.00 · Original deposit date: 2026-04-01 · Institution: Investec · Interest rate: 7.50 · Account number: 0002 · Accrued interest not capitalised: 1234.56 · Instruction date: 2026-04-01 · Client matched by: Client previous-system ID · Investment account (number or name): 6574001 · Endorsed under section 86(4): Yes · Instruction reference: INSTR-A-01 · Balance per confirmation: 200000.00 | ",
+      "2 | Items outstanding at cutover | row:2 | Valid | Item type: Deposit in transit · Amount: 5000.00 · Client reference: B · Matter reference: B1 · Reference: EFT B-0001 · Original date: 2026-10-30 · Client matched by: Client previous-system ID | ",
+      "3 | Items outstanding at cutover | row:3 | Valid | Item type: Unpresented payment · Amount: 20000.00 · Client reference: A · Matter reference: A1 · Reference: PAY-778 · Original date: 2026-10-28 · Client matched by: Client previous-system ID | ",
+      "2 | Unidentified deposits | row:2 | Valid | Amount: 2000.00 · Date received: 2025-06-15 · Bank reference: ACB CREDIT UNKNOWN | This deposit was received more than a year before the cutover date. It is taken on with its original date and flagged.",
+      "3 | Unidentified deposits | row:3 | Valid | Amount: 750.00 · Date received: 2026-09-03 · Bank reference: EFT 7781 | "
+    ],
+    "rowMessagesRaw": [
+      "2\tClient and matter balances\tTL-A1\tValid\t\nBalance at cutover: 300000.00 · Client reference: A · Matter reference: A1 · Previous system ID: TL-A1 · Client matched by: Client previous-system ID\n\t",
+      "3\tClient and matter balances\tTL-B1\tValid\t\nBalance at cutover: 150000.00 · Client reference: B · Matter reference: B1 · Previous system ID: TL-B1 · Client matched by: Client previous-system ID\n\t",
+      "4\tClient and matter balances\tTL-C1\tValid\t\nBalance at cutover: 49500.00 · Client reference: C · Matter reference: C1 · Previous system ID: TL-C1 · Client matched by: Client previous-system ID\n\t",
+      "2\tInvestments\trow:2\tValid\t\nBasis: Section 86(3) — at the firm's discretion · Principal at cutover: 100000.00 · Original deposit date: 2026-03-01 · Institution: Investec · Interest rate: 7.25 · Account number: 0001 · Investment account (number or name): 6573001 · Balance per confirmation: 100000.00\n\t",
+      "3\tInvestments\trow:3\tValid\t\nBasis: Section 86(4) — on a client's instruction · Client reference: A · Matter reference: A1 · Principal at cutover: 200000.00 · Legal Practitioners' Fidelity Fund amount held: 0.00 · Original deposit date: 2026-04-01 · Institution: Investec · Interest rate: 7.50 · Account number: 0002 · Accrued interest not capitalised: 1234.56 · Instruction date: 2026-04-01 · Client matched by: Client previous-system ID · Investment account (number or name): 6574001 · Endorsed under section 86(4): Yes · Instruction reference: INSTR-A-01 · Balance per confirmation: 200000.00\n\t",
+      "2\tItems outstanding at cutover\trow:2\tValid\t\nItem type: Deposit in transit · Amount: 5000.00 · Client reference: B · Matter reference: B1 · Reference: EFT B-0001 · Original date: 2026-10-30 · Client matched by: Client previous-system ID\n\t",
+      "3\tItems outstanding at cutover\trow:3\tValid\t\nItem type: Unpresented payment · Amount: 20000.00 · Client reference: A · Matter reference: A1 · Reference: PAY-778 · Original date: 2026-10-28 · Client matched by: Client previous-system ID\n\t",
+      "2\tUnidentified deposits\trow:2\tValid\t\nAmount: 2000.00 · Date received: 2025-06-15 · Bank reference: ACB CREDIT UNKNOWN\n\t\nThis deposit was received more than a year before the cutover date. It is taken on with its original date and flagged.",
+      "3\tUnidentified deposits\trow:3\tValid\t\nAmount: 750.00 · Date received: 2026-09-03 · Bank reference: EFT 7781\n\t"
+    ],
+    "buttons": [
+      "Cancel take-on",
+      "1 Upload",
+      "2 Sheet",
+      "3 Mapping",
+      "4 Validation",
+      "Save position",
+      "Run the dry run again",
+      "All statuses",
+      "All parts"
+    ],
+    "overrideLikeButtons": [],
+    "commitControls": 0,
+    "checkboxesOutsideForm": [
+      "take-on-position-mid-month",
+      "take-on-filter-blocks"
+    ],
+    "api": {
+      "http": 200,
+      "status": "VALIDATED",
+      "allowedActions": [
+        "REMOVE_SOURCE",
+        "MAP",
+        "REVALIDATE",
+        "CANCEL"
+      ],
+      "counts": {
+        "total": 9,
+        "valid": 9,
+        "error": 0,
+        "duplicate": 0,
+        "blocks": 0,
+        "created": 0,
+        "skipped": 0,
+        "failed": 0
+      },
+      "validatedAt": "2026-11-24T07:14:42.468350Z",
+      "cutoverDate": "2026-10-31",
+      "position": {
+        "bankBalance": 418500,
+        "outstandingDepositsTotal": 5000,
+        "outstandingPaymentsTotal": 20000,
+        "cashbookBalance": 403500,
+        "fundLedgerBalance": 1250,
+        "investedTotal": 300000
+      },
+      "midMonthAcknowledged": false,
+      "summary": {
+        "flags": [
+          "UNIDENTIFIED_OVER_ONE_YEAR"
+        ],
+        "blocks": [],
+        "equation": {
+          "eq1": {
+            "holds": true,
+            "cashbook": "403500.00",
+            "difference": "0.00",
+            "bankBalance": "418500.00",
+            "adjustedBank": "403500.00",
+            "lessOutstandingPayments": "20000.00",
+            "plusOutstandingDeposits": "5000.00"
+          },
+          "eq2": {
+            "holds": true,
+            "cashbook": "403500.00",
+            "creditors": "403500.00",
+            "difference": "0.00",
+            "fundLedger": "1250.00",
+            "unidentified": "2750.00",
+            "clientLedgers": "499500.00",
+            "placedInSection86_3": "-100000.00"
+          },
+          "deficit": {
+            "inDeficit": false,
+            "moneyHeld": "703500.00",
+            "difference": "0.00",
+            "trustCreditors": "703500.00"
+          },
+          "itemsTie": {
+            "holds": true,
+            "difference": "0.00",
+            "listedDeposits": "5000.00",
+            "listedPayments": "20000.00",
+            "outstandingDeposits": "5000.00",
+            "outstandingPayments": "20000.00"
+          },
+          "investments": {
+            "holds": true,
+            "listed": "300000.00",
+            "difference": "0.00",
+            "perConfirmations": "300000.00"
+          }
+        },
+        "warnings": [],
+        "accountErrors": []
+      }
+    },
+    "mappedDuringSave": {
+      "at": "2026-11-24T07:14:36.700Z",
+      "status": "MAPPED",
+      "cashbook": 403500,
+      "validatedAt": "2026-11-24T07:14:27.314742Z",
+      "summary": null,
+      "allowedActions": [
+        "REMOVE_SOURCE",
+        "MAP",
+        "VALIDATE",
+        "CANCEL"
+      ]
+    },
+    "beforeValidatedAt": "2026-11-24T07:14:27.314742Z",
+    "actions": [
+      {
+        "at": "2026-11-24T07:14:36.370Z",
+        "body": "[\"0cae8abe-0bd2-4d4a-b576-1f900c6b413c\",{\"cutoverDate\":\"2026-10-31\",\"bankBalance\":418500,\"outstandingDepositsTotal\":5000,\"outstandingPaymentsTotal\":20000,\"cashbookBalance\":403500,\"fundLedgerBalance\":1"
+      },
+      {
+        "at": "2026-11-24T07:14:36.408Z",
+        "body": "[\"0cae8abe-0bd2-4d4a-b576-1f900c6b413c\"]"
+      },
+      {
+        "at": "2026-11-24T07:14:42.495Z",
+        "body": "[\"0cae8abe-0bd2-4d4a-b576-1f900c6b413c\",{\"status\":\"$undefined\",\"duplicatesOnly\":false,\"section\":\"$undefined\",\"blocksOnly\":false,\"page\":0,\"size\":50}]"
+      }
+    ],
+    "actionResponses": [
+      {
+        "at": "2026-11-24T07:14:36.358Z",
+        "batchStatusInResponse": null,
+        "bytes": 0
+      },
+      {
+        "at": "2026-11-24T07:14:36.409Z",
+        "batchStatusInResponse": null,
+        "bytes": 0
+      },
+      {
+        "at": "2026-11-24T07:14:42.495Z",
+        "batchStatusInResponse": null,
+        "bytes": 0
+      },
+      {
+        "at": "2026-11-24T07:14:42.518Z",
+        "batchStatusInResponse": null,
+        "bytes": 0
+      }
+    ]
+  },
+  "acctcheck": {
+    "status": "Validated",
+    "cutoverShown": "Cutover date 2026-10-30",
+    "cards": {
+      "total": 9,
+      "valid": 9,
+      "error": 1,
+      "duplicate": 0,
+      "blocks": 0
+    },
+    "positionError": null,
+    "accountErrors": "Correct these before the dry run can check the figures\n\nThe cutover date is not a month end. Confirm a mid-month cutover, and reconcile the previous system to this date.",
+    "accountErrorItems": [
+      "The cutover date is not a month end. Confirm a mid-month cutover, and reconcile the previous system to this date."
+    ],
+    "banner": null,
+    "blockItems": [],
+    "rowBlocks": null,
+    "bannerControls": null,
+    "equationShown": false,
+    "equation": {
+      "eq1": null,
+      "items": null,
+      "eq2": null,
+      "investments": null,
+      "deficit": null
+    },
+    "flags": "",
+    "rows": [
+      "2 | Client and matter balances | TL-A1 | Valid | Balance at cutover: 300000.00 · Client reference: A · Matter reference: A1 · Previous system ID: TL-A1 | ",
+      "3 | Client and matter balances | TL-B1 | Valid | Balance at cutover: 150000.00 · Client reference: B · Matter reference: B1 · Previous system ID: TL-B1 | ",
+      "4 | Client and matter balances | TL-C1 | Valid | Balance at cutover: 49500.00 · Client reference: C · Matter reference: C1 · Previous system ID: TL-C1 | ",
+      "2 | Investments | row:2 | Valid | Basis: Section 86(3) — at the firm's discretion · Principal at cutover: 100000.00 · Original deposit date: 2026-03-01 · Institution: Investec · Interest rate: 7.25 · Account number: 0001 · Investment account (number or name): 6573001 · Balance per confirmation: 100000.00 | ",
+      "3 | Investments | row:3 | Valid | Basis: Section 86(4) — on a client's instruction · Client reference: A · Matter reference: A1 · Principal at cutover: 200000.00 · Legal Practitioners' Fidelity Fund amount held: 0.00 · Original deposit date: 2026-04-01 · Institution: Investec · Interest rate: 7.50 · Account number: 0002 · Accrued interest not capitalised: 1234.56 · Instruction date: 2026-04-01 · Investment account (number or name): 6574001 · Endorsed under section 86(4): Yes · Instruction reference: INSTR-A-01 · Balance per confirmation: 200000.00 | ",
+      "2 | Items outstanding at cutover | row:2 | Valid | Item type: Deposit in transit · Amount: 5000.00 · Client reference: B · Matter reference: B1 · Reference: EFT B-0001 · Original date: 2026-10-30 | ",
+      "3 | Items outstanding at cutover | row:3 | Valid | Item type: Unpresented payment · Amount: 20000.00 · Client reference: A · Matter reference: A1 · Reference: PAY-778 · Original date: 2026-10-28 | ",
+      "2 | Unidentified deposits | row:2 | Valid | Amount: 2000.00 · Date received: 2025-06-15 · Bank reference: ACB CREDIT UNKNOWN | ",
+      "3 | Unidentified deposits | row:3 | Valid | Amount: 750.00 · Date received: 2026-09-03 · Bank reference: EFT 7781 | "
+    ],
+    "rowMessagesRaw": [
+      "2\tClient and matter balances\tTL-A1\tValid\t\nBalance at cutover: 300000.00 · Client reference: A · Matter reference: A1 · Previous system ID: TL-A1\n\t",
+      "3\tClient and matter balances\tTL-B1\tValid\t\nBalance at cutover: 150000.00 · Client reference: B · Matter reference: B1 · Previous system ID: TL-B1\n\t",
+      "4\tClient and matter balances\tTL-C1\tValid\t\nBalance at cutover: 49500.00 · Client reference: C · Matter reference: C1 · Previous system ID: TL-C1\n\t",
+      "2\tInvestments\trow:2\tValid\t\nBasis: Section 86(3) — at the firm's discretion · Principal at cutover: 100000.00 · Original deposit date: 2026-03-01 · Institution: Investec · Interest rate: 7.25 · Account number: 0001 · Investment account (number or name): 6573001 · Balance per confirmation: 100000.00\n\t",
+      "3\tInvestments\trow:3\tValid\t\nBasis: Section 86(4) — on a client's instruction · Client reference: A · Matter reference: A1 · Principal at cutover: 200000.00 · Legal Practitioners' Fidelity Fund amount held: 0.00 · Original deposit date: 2026-04-01 · Institution: Investec · Interest rate: 7.50 · Account number: 0002 · Accrued interest not capitalised: 1234.56 · Instruction date: 2026-04-01 · Investment account (number or name): 6574001 · Endorsed under section 86(4): Yes · Instruction reference: INSTR-A-01 · Balance per confirmation: 200000.00\n\t",
+      "2\tItems outstanding at cutover\trow:2\tValid\t\nItem type: Deposit in transit · Amount: 5000.00 · Client reference: B · Matter reference: B1 · Reference: EFT B-0001 · Original date: 2026-10-30\n\t",
+      "3\tItems outstanding at cutover\trow:3\tValid\t\nItem type: Unpresented payment · Amount: 20000.00 · Client reference: A · Matter reference: A1 · Reference: PAY-778 · Original date: 2026-10-28\n\t",
+      "2\tUnidentified deposits\trow:2\tValid\t\nAmount: 2000.00 · Date received: 2025-06-15 · Bank reference: ACB CREDIT UNKNOWN\n\t",
+      "3\tUnidentified deposits\trow:3\tValid\t\nAmount: 750.00 · Date received: 2026-09-03 · Bank reference: EFT 7781\n\t"
+    ],
+    "buttons": [
+      "Cancel take-on",
+      "1 Upload",
+      "2 Sheet",
+      "3 Mapping",
+      "4 Validation",
+      "Save position",
+      "Run the dry run again",
+      "All statuses",
+      "All parts"
+    ],
+    "overrideLikeButtons": [],
+    "commitControls": 0,
+    "checkboxesOutsideForm": [
+      "take-on-position-mid-month",
+      "take-on-filter-blocks"
+    ],
+    "api": {
+      "http": 200,
+      "status": "VALIDATED",
+      "allowedActions": [
+        "REMOVE_SOURCE",
+        "MAP",
+        "REVALIDATE",
+        "CANCEL"
+      ],
+      "counts": {
+        "total": 9,
+        "valid": 9,
+        "error": 1,
+        "duplicate": 0,
+        "blocks": 0,
+        "created": 0,
+        "skipped": 0,
+        "failed": 0
+      },
+      "validatedAt": "2026-11-24T07:14:52.488530Z",
+      "cutoverDate": "2026-10-30",
+      "position": {
+        "bankBalance": 418500,
+        "outstandingDepositsTotal": 5000,
+        "outstandingPaymentsTotal": 20000,
+        "cashbookBalance": 403500,
+        "fundLedgerBalance": 1250,
+        "investedTotal": 300000
+      },
+      "midMonthAcknowledged": false,
+      "summary": {
+        "flags": [],
+        "blocks": [],
+        "equation": null,
+        "warnings": [],
+        "accountErrors": [
+          {
+            "code": "CUTOVER_NOT_MONTH_END",
+            "message": "The cutover date is not a month end. Confirm a mid-month cutover, and reconcile the previous system to this date."
+          }
+        ]
+      }
+    },
+    "monthEndExact": true
+  },
+  "restored": {
+    "status": "Validated",
+    "cutoverShown": "Cutover date 2026-10-31",
+    "cards": {
+      "total": 9,
+      "valid": 9,
+      "error": 0,
+      "duplicate": 0,
+      "blocks": 0
+    },
+    "positionError": null,
+    "accountErrors": null,
+    "accountErrorItems": [],
+    "banner": null,
+    "blockItems": [],
+    "rowBlocks": null,
+    "bannerControls": null,
+    "equationShown": true,
+    "equation": {
+      "eq1": {
+        "holds": "true",
+        "difference": "Difference R 0,00",
+        "text": "Bank balance + outstanding deposits − outstanding payments = cashbook Agrees Difference R 0,00 The figures"
+      },
+      "items": {
+        "holds": "true",
+        "difference": "Difference R 0,00",
+        "text": "Listed outstanding items agree with the totals Agrees Difference R 0,00 The figures"
+      },
+      "eq2": {
+        "holds": "true",
+        "difference": "Difference R 0,00",
+        "text": "Cashbook = trust creditors Agrees Difference R 0,00 The figures"
+      },
+      "investments": {
+        "holds": "true",
+        "difference": "Difference R 0,00",
+        "text": "Investments agree with the confirmations Agrees Difference R 0,00 The figures"
+      },
+      "deficit": {
+        "holds": "true",
+        "difference": "Difference R 0,00",
+        "text": "No trust deficit Agrees Difference R 0,00 The figures"
+      }
+    },
+    "flags": "Flags Unidentified deposit older than one year",
+    "rows": [
+      "2 | Client and matter balances | TL-A1 | Valid | Balance at cutover: 300000.00 · Client reference: A · Matter reference: A1 · Previous system ID: TL-A1 · Client matched by: Client previous-system ID | ",
+      "3 | Client and matter balances | TL-B1 | Valid | Balance at cutover: 150000.00 · Client reference: B · Matter reference: B1 · Previous system ID: TL-B1 · Client matched by: Client previous-system ID | ",
+      "4 | Client and matter balances | TL-C1 | Valid | Balance at cutover: 49500.00 · Client reference: C · Matter reference: C1 · Previous system ID: TL-C1 · Client matched by: Client previous-system ID | ",
+      "2 | Investments | row:2 | Valid | Basis: Section 86(3) — at the firm's discretion · Principal at cutover: 100000.00 · Original deposit date: 2026-03-01 · Institution: Investec · Interest rate: 7.25 · Account number: 0001 · Investment account (number or name): 6573001 · Balance per confirmation: 100000.00 | ",
+      "3 | Investments | row:3 | Valid | Basis: Section 86(4) — on a client's instruction · Client reference: A · Matter reference: A1 · Principal at cutover: 200000.00 · Legal Practitioners' Fidelity Fund amount held: 0.00 · Original deposit date: 2026-04-01 · Institution: Investec · Interest rate: 7.50 · Account number: 0002 · Accrued interest not capitalised: 1234.56 · Instruction date: 2026-04-01 · Client matched by: Client previous-system ID · Investment account (number or name): 6574001 · Endorsed under section 86(4): Yes · Instruction reference: INSTR-A-01 · Balance per confirmation: 200000.00 | ",
+      "2 | Items outstanding at cutover | row:2 | Valid | Item type: Deposit in transit · Amount: 5000.00 · Client reference: B · Matter reference: B1 · Reference: EFT B-0001 · Original date: 2026-10-30 · Client matched by: Client previous-system ID | ",
+      "3 | Items outstanding at cutover | row:3 | Valid | Item type: Unpresented payment · Amount: 20000.00 · Client reference: A · Matter reference: A1 · Reference: PAY-778 · Original date: 2026-10-28 · Client matched by: Client previous-system ID | ",
+      "2 | Unidentified deposits | row:2 | Valid | Amount: 2000.00 · Date received: 2025-06-15 · Bank reference: ACB CREDIT UNKNOWN | This deposit was received more than a year before the cutover date. It is taken on with its original date and flagged.",
+      "3 | Unidentified deposits | row:3 | Valid | Amount: 750.00 · Date received: 2026-09-03 · Bank reference: EFT 7781 | "
+    ],
+    "rowMessagesRaw": [
+      "2\tClient and matter balances\tTL-A1\tValid\t\nBalance at cutover: 300000.00 · Client reference: A · Matter reference: A1 · Previous system ID: TL-A1 · Client matched by: Client previous-system ID\n\t",
+      "3\tClient and matter balances\tTL-B1\tValid\t\nBalance at cutover: 150000.00 · Client reference: B · Matter reference: B1 · Previous system ID: TL-B1 · Client matched by: Client previous-system ID\n\t",
+      "4\tClient and matter balances\tTL-C1\tValid\t\nBalance at cutover: 49500.00 · Client reference: C · Matter reference: C1 · Previous system ID: TL-C1 · Client matched by: Client previous-system ID\n\t",
+      "2\tInvestments\trow:2\tValid\t\nBasis: Section 86(3) — at the firm's discretion · Principal at cutover: 100000.00 · Original deposit date: 2026-03-01 · Institution: Investec · Interest rate: 7.25 · Account number: 0001 · Investment account (number or name): 6573001 · Balance per confirmation: 100000.00\n\t",
+      "3\tInvestments\trow:3\tValid\t\nBasis: Section 86(4) — on a client's instruction · Client reference: A · Matter reference: A1 · Principal at cutover: 200000.00 · Legal Practitioners' Fidelity Fund amount held: 0.00 · Original deposit date: 2026-04-01 · Institution: Investec · Interest rate: 7.50 · Account number: 0002 · Accrued interest not capitalised: 1234.56 · Instruction date: 2026-04-01 · Client matched by: Client previous-system ID · Investment account (number or name): 6574001 · Endorsed under section 86(4): Yes · Instruction reference: INSTR-A-01 · Balance per confirmation: 200000.00\n\t",
+      "2\tItems outstanding at cutover\trow:2\tValid\t\nItem type: Deposit in transit · Amount: 5000.00 · Client reference: B · Matter reference: B1 · Reference: EFT B-0001 · Original date: 2026-10-30 · Client matched by: Client previous-system ID\n\t",
+      "3\tItems outstanding at cutover\trow:3\tValid\t\nItem type: Unpresented payment · Amount: 20000.00 · Client reference: A · Matter reference: A1 · Reference: PAY-778 · Original date: 2026-10-28 · Client matched by: Client previous-system ID\n\t",
+      "2\tUnidentified deposits\trow:2\tValid\t\nAmount: 2000.00 · Date received: 2025-06-15 · Bank reference: ACB CREDIT UNKNOWN\n\t\nThis deposit was received more than a year before the cutover date. It is taken on with its original date and flagged.",
+      "3\tUnidentified deposits\trow:3\tValid\t\nAmount: 750.00 · Date received: 2026-09-03 · Bank reference: EFT 7781\n\t"
+    ],
+    "buttons": [
+      "Cancel take-on",
+      "1 Upload",
+      "2 Sheet",
+      "3 Mapping",
+      "4 Validation",
+      "Save position",
+      "Run the dry run again",
+      "All statuses",
+      "All parts"
+    ],
+    "overrideLikeButtons": [],
+    "commitControls": 0,
+    "checkboxesOutsideForm": [
+      "take-on-position-mid-month",
+      "take-on-filter-blocks"
+    ],
+    "api": {
+      "http": 200,
+      "status": "VALIDATED",
+      "allowedActions": [
+        "REMOVE_SOURCE",
+        "MAP",
+        "REVALIDATE",
+        "CANCEL"
+      ],
+      "counts": {
+        "total": 9,
+        "valid": 9,
+        "error": 0,
+        "duplicate": 0,
+        "blocks": 0,
+        "created": 0,
+        "skipped": 0,
+        "failed": 0
+      },
+      "validatedAt": "2026-11-24T07:14:55.732142Z",
+      "cutoverDate": "2026-10-31",
+      "position": {
+        "bankBalance": 418500,
+        "outstandingDepositsTotal": 5000,
+        "outstandingPaymentsTotal": 20000,
+        "cashbookBalance": 403500,
+        "fundLedgerBalance": 1250,
+        "investedTotal": 300000
+      },
+      "midMonthAcknowledged": false,
+      "summary": {
+        "flags": [
+          "UNIDENTIFIED_OVER_ONE_YEAR"
+        ],
+        "blocks": [],
+        "equation": {
+          "eq1": {
+            "holds": true,
+            "cashbook": "403500.00",
+            "difference": "0.00",
+            "bankBalance": "418500.00",
+            "adjustedBank": "403500.00",
+            "lessOutstandingPayments": "20000.00",
+            "plusOutstandingDeposits": "5000.00"
+          },
+          "eq2": {
+            "holds": true,
+            "cashbook": "403500.00",
+            "creditors": "403500.00",
+            "difference": "0.00",
+            "fundLedger": "1250.00",
+            "unidentified": "2750.00",
+            "clientLedgers": "499500.00",
+            "placedInSection86_3": "-100000.00"
+          },
+          "deficit": {
+            "inDeficit": false,
+            "moneyHeld": "703500.00",
+            "difference": "0.00",
+            "trustCreditors": "703500.00"
+          },
+          "itemsTie": {
+            "holds": true,
+            "difference": "0.00",
+            "listedDeposits": "5000.00",
+            "listedPayments": "20000.00",
+            "outstandingDeposits": "5000.00",
+            "outstandingPayments": "20000.00"
+          },
+          "investments": {
+            "holds": true,
+            "listed": "300000.00",
+            "difference": "0.00",
+            "perConfirmations": "300000.00"
+          }
+        },
+        "warnings": [],
+        "accountErrors": []
+      }
+    }
+  }
+}

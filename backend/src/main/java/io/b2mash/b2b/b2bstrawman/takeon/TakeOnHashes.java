@@ -20,9 +20,10 @@ import tools.jackson.databind.json.JsonMapper;
 /**
  * The validation hash (§17.3.2): SHA-256 over a canonical JSON of the batch inputs, each source's
  * file hash, sheet, header row, parse options and mapping, and every row's status and mapped
- * values. Every later attestation, sign-off and commit binds to it, so it must be deterministic:
- * map keys sorted, sources by section, rows by (section, row number), decimals as plain strings,
- * ids, dates and enums as strings. 64 lower-case hex characters ({@code validation_hash}).
+ * values; for a trust take-on also the reconciled position at cutover (657B). Every later
+ * attestation, sign-off and commit binds to it, so it must be deterministic: map keys sorted,
+ * sources by section, rows by (section, row number), decimals as plain strings, ids, dates and
+ * enums as strings. 64 lower-case hex characters ({@code validation_hash}).
  */
 public final class TakeOnHashes {
 
@@ -37,6 +38,18 @@ public final class TakeOnHashes {
     input.put("dataset", batch.getDataset().name());
     input.put("trustAccountId", str(batch.getTrustAccountId()));
     input.put("cutoverDate", str(batch.getCutoverDate()));
+    if (batch.getDataset() == TakeOnDataset.TRUST_POSITION) {
+      // 657B: the reconciled position at cutover (trust only — the other hashes are unchanged).
+      var position = new HashMap<String, Object>();
+      position.put("bankBalance", canonical(batch.getBankBalance()));
+      position.put("outstandingDepositsTotal", canonical(batch.getOutstandingDepositsTotal()));
+      position.put("outstandingPaymentsTotal", canonical(batch.getOutstandingPaymentsTotal()));
+      position.put("cashbookBalance", canonical(batch.getCashbookBalance()));
+      position.put("fundLedgerBalance", canonical(batch.getFundLedgerBalance()));
+      position.put("investedTotal", canonical(batch.getInvestedTotal()));
+      position.put("midMonthAcknowledged", batch.isMidMonthAcknowledged());
+      input.put("position", position);
+    }
 
     List<Map<String, Object>> sourceList = new ArrayList<>();
     sources.stream()

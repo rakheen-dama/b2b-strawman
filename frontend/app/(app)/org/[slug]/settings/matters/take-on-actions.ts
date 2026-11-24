@@ -162,7 +162,10 @@ export async function saveMapping(
   return run(() => api.put<TakeOnBatch>(`${sourcePath(batchId, sourceId)}/mapping`, request));
 }
 
-/** PUT …/position — the cutover date only in 653A (P-11). */
+/**
+ * PUT …/position — the cutover date and (trust) the reconciled position (657B, P-11). A null
+ * figure keeps the stored value (D-183).
+ */
 export async function savePosition(
   batchId: string,
   request: TakeOnPositionRequest

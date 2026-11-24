@@ -1,0 +1,3 @@
+# grep -rl "take-on-equation" /app/frontend/.next (frontend container, stack 2)
+/app/frontend/.next/server/chunks/ssr/frontend_0imcgad._.js
+/app/frontend/.next/static/chunks/12wgn6qraax1a.js

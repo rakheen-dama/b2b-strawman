@@ -282,13 +282,50 @@ class TakeOnValidationIntegrationTest {
             "interestRate", "Rate",
             "depositDate", "Deposited",
             "balancePerConfirmation", "Confirmed"));
-    position(mockMvc, owner(), ids[0], "2026-10-31");
-    validate(mockMvc, owner(), ids[0]).andExpect(jsonPath("$.counts.valid").value(1));
+    trustPosition(ids[0]);
+    validate(mockMvc, owner(), ids[0]).andExpect(jsonPath("$.status").value("VALIDATED"));
     var row = rowsByNumber(ids[0]).get(2);
     assertThat(values(row))
         .containsEntry("basis", "CLIENT_INSTRUCTION")
         .containsEntry("interestRate", "7.25")
         .containsEntry("principal", "10000.00");
+    assertNoTypingError(row);
+  }
+
+  /**
+   * 657B: a trust batch is now validated by the trust position handler, so these typing tests send
+   * the reconciled position (the dry run refuses a trust batch without it) and assert the typed
+   * values and the absence of any typing error. The rows' trust checks (the investment account
+   * {@code INV-1} does not exist, principal ≠ confirmation, an s86(4) row without its client) are
+   * {@code TrustPositionValidationIntegrationTest}'s, not these tests'.
+   */
+  private void trustPosition(UUID batchId) throws Exception {
+    var body = new HashMap<String, Object>();
+    body.put("cutoverDate", "2026-10-31");
+    body.put("bankBalance", "0.00");
+    body.put("outstandingDepositsTotal", "0.00");
+    body.put("outstandingPaymentsTotal", "0.00");
+    body.put("cashbookBalance", "0.00");
+    position(mockMvc, owner(), batchId, body).andExpect(status().isOk());
+  }
+
+  private static final List<String> TYPING_ERRORS =
+      List.of(
+          "ENUM_INVALID",
+          "DECIMAL_INVALID",
+          "AMOUNT_INVALID",
+          "AMOUNT_AMBIGUOUS",
+          "AMOUNT_TOO_PRECISE",
+          "AMOUNT_TOO_LARGE",
+          "DATE_INVALID",
+          "NUMERIC_IN_DATE",
+          "CELL_ERROR");
+
+  @SuppressWarnings("unchecked")
+  private static void assertNoTypingError(Map<String, Object> row) {
+    assertThat((List<Map<String, Object>>) row.get("errors"))
+        .extracting(e -> (String) e.get("code"))
+        .doesNotContainAnyElementsOf(TYPING_ERRORS);
   }
 
   private static final Map<String, String> INVESTMENT_TARGETS =
@@ -362,12 +399,14 @@ class TakeOnValidationIntegrationTest {
     body.put("targets", INVESTMENT_TARGETS);
     body.put("parseOptions", Map.of("decimalSeparator", separator));
     map(mockMvc, owner(), ids[0], ids[1], body).andExpect(status().isOk());
-    position(mockMvc, owner(), ids[0], "2026-10-31");
-    validate(mockMvc, owner(), ids[0]).andExpect(jsonPath("$.counts.valid").value(1));
-    var values = values(rowsByNumber(ids[0]).get(2));
+    trustPosition(ids[0]);
+    validate(mockMvc, owner(), ids[0]).andExpect(jsonPath("$.status").value("VALIDATED"));
+    var row = rowsByNumber(ids[0]).get(2);
+    var values = values(row);
     assertThat(values)
         .containsEntry("principal", expectedPrincipal)
         .containsEntry("balancePerConfirmation", "10050.25");
+    assertNoTypingError(row);
     return (String) values.get("interestRate");
   }
 

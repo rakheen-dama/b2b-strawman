@@ -448,4 +448,40 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
       @Param("trustAccountId") UUID trustAccountId,
       @Param("periodEnd") LocalDate periodEnd,
       @Param("lockedAt") Instant lockedAt);
+
+  // --- Take-on account checks (Phase 93 657B, §17.3.9) ---
+
+  /**
+   * Whether the account has a row dated on or before {@code date} in any status but {@code
+   * REJECTED} (a take-on must be the account's first entry).
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          SELECT EXISTS (SELECT 1 FROM trust_transactions t
+                          WHERE t.trust_account_id = :accountId
+                            AND t.transaction_date <= :date
+                            AND t.status <> 'REJECTED')""")
+  boolean existsOnOrBefore(@Param("accountId") UUID accountId, @Param("date") LocalDate date);
+
+  /**
+   * As {@link #existsOnOrBefore}, ignoring the take-on rows of a {@code COMPLETED} take-on batch
+   * with the same cutover date — an investment account shared by two banking accounts, already
+   * taken on by the other banking account's batch at that date.
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          SELECT EXISTS (SELECT 1 FROM trust_transactions t
+                          WHERE t.trust_account_id = :accountId
+                            AND t.transaction_date <= :date
+                            AND t.status <> 'REJECTED'
+                            AND NOT EXISTS (SELECT 1 FROM take_on_batches b
+                                             WHERE b.id = t.take_on_batch_id
+                                               AND b.status = 'COMPLETED'
+                                               AND b.cutover_date = :date))""")
+  boolean existsOnOrBeforeOtherThanTakeOnAt(
+      @Param("accountId") UUID accountId, @Param("date") LocalDate date);
 }

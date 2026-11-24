@@ -12,6 +12,7 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatch;
 import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchRepository;
 import io.b2mash.b2b.b2bstrawman.takeon.TakeOnDataset;
+import io.b2mash.b2b.b2bstrawman.takeon.TakeOnSignOff;
 import io.b2mash.b2b.b2bstrawman.testutil.TrustBooksHarness.Expected;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
@@ -47,6 +48,7 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -1496,6 +1498,25 @@ public final class TrustBooksFixture {
             var trustAccount = trustAccountRepository.findById(account).orElseThrow();
             trustAccount.markTakenOn(cutover, batch);
             return trustAccountRepository.save(trustAccount);
+          });
+    }
+
+    /**
+     * 657B: drives the harness take-on batch to {@code COMPLETED} through its own entity
+     * transitions (mapped → validated → committing → completed, in one transaction — no SQL), as
+     * the 657C commit will leave it; what a shared investment account taken on by another banking
+     * account's batch at the same cutover date looks like.
+     */
+    public void completeTakeOnBatch(UUID batch) {
+      read(
+          () -> {
+            var takeOn = takeOnBatchRepository.findById(batch).orElseThrow();
+            String hash = "0".repeat(64);
+            takeOn.markMapped();
+            takeOn.markValidated(hash, new TakeOnBatch.Counts(0, 0, 0, 0, 0), Map.of());
+            takeOn.claimCommit(hash, TakeOnSignOff.notRequired(hash), memberId);
+            takeOn.complete(0, 0, 0);
+            return takeOnBatchRepository.save(takeOn);
           });
     }
 

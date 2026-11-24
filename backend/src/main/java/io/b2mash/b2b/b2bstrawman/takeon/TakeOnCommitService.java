@@ -62,6 +62,9 @@ public class TakeOnCommitService {
     if (batch.getBlockCount() > 0) {
       throw TakeOnProblems.blocked(); // a hard block stops the batch before it is claimed
     }
+    if (batch.blocksCommit()) {
+      throw TakeOnProblems.errorsRemain(); // a trust batch is committed whole (D-191)
+    }
     // Only datasets whose slice has shipped a row committer can reach COMMITTING (655A: clients),
     // so the drain never meets a batch it cannot run.
     var committer =

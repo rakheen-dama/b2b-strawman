@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.takeon;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.audit.SafeAuditDetails;
+import io.b2mash.b2b.b2bstrawman.takeon.dataset.TrustPositionEquation.TrustPositionSummary;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
@@ -69,10 +70,7 @@ public class TakeOnAudit {
 
   /** Counts only. {@code eq1_holds}/{@code eq2_holds} arrive with the trust equation (657B). */
   public void batchValidated(TakeOnBatch batch) {
-    log(
-        "takeon.batch.validated",
-        BATCH,
-        batch.getId(),
+    var details =
         SafeAuditDetails.builder()
             .put("batch_id", batch.getId())
             .put("dataset", batch.getDataset())
@@ -80,8 +78,16 @@ public class TakeOnAudit {
             .put("valid_rows", batch.getValidRows())
             .put("error_rows", batch.getErrorRows())
             .put("duplicate_rows", batch.getDuplicateRows())
-            .put("block_count", batch.getBlockCount())
-            .build());
+            .put("block_count", batch.getBlockCount());
+    if (batch.getDataset() == TakeOnDataset.TRUST_POSITION) {
+      // 657B (D-20): whether EQ-1 and EQ-2 held — booleans only, never an amount (§17.6.4); false
+      // when no equation was computed (an account check failed)
+      var summary = TrustPositionSummary.from(batch.getSummary());
+      details
+          .put("eq1_holds", summary.map(TrustPositionSummary::eq1Holds).orElse(false))
+          .put("eq2_holds", summary.map(TrustPositionSummary::eq2Holds).orElse(false));
+    }
+    log("takeon.batch.validated", BATCH, batch.getId(), details.build());
   }
 
   /** {@code reasonCode}: {@code USER} (cancel) or {@code ABANDONED} (30-day purge). */

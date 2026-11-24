@@ -48,4 +48,26 @@ public interface TakeOnDatasetHandler {
 
   /** The batch summary stored with the validation ({@code take_on_batches.summary}). */
   Map<String, Object> summary(ValidationContext context);
+
+  /**
+   * The statutory hard blocks found across rows, not on one row (657B: the trust equation — a
+   * deficit or a control total that does not agree). Counted into {@code block_count} with the rows
+   * that hold a block, so every guard that reads it refuses the batch (D-124 {@code
+   * TAKE_ON_BLOCKED}, {@code allowedActions}). Called after {@link #validateBatchLevel}.
+   */
+  default int batchBlockCount(ValidationContext context) {
+    return 0;
+  }
+
+  /**
+   * The errors found across rows, not on one row (657B: a failed §17.3.9 account check on the
+   * banking account or on an investment account the rows name). Counted into {@code error_rows}
+   * with the rows in error, so a batch that is all-or-nothing ({@link
+   * io.b2mash.b2b.b2bstrawman.takeon.TakeOnDataset#commitsWhole}) cannot be offered or claimed for
+   * commit while one stands ({@link io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatch#blocksCommit},
+   * D-191). Called after {@link #validateBatchLevel}.
+   */
+  default int batchErrorCount(ValidationContext context) {
+    return 0;
+  }
 }

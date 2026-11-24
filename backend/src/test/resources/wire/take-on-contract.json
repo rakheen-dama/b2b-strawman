@@ -226,6 +226,12 @@
   }, {
     "name" : "summary",
     "type" : "java.util.Map<java.lang.String, java.lang.Object>"
+  }, {
+    "name" : "midMonthAcknowledged",
+    "type" : "boolean"
+  }, {
+    "name" : "position",
+    "type" : "io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService$TakeOnPositionResponse"
   } ],
   "TakeOnBatchSummaryResponse" : [ {
     "name" : "id",
@@ -409,6 +415,46 @@
   "TakeOnPositionRequest" : [ {
     "name" : "cutoverDate",
     "type" : "java.time.LocalDate"
+  }, {
+    "name" : "bankBalance",
+    "type" : "java.math.BigDecimal"
+  }, {
+    "name" : "outstandingDepositsTotal",
+    "type" : "java.math.BigDecimal"
+  }, {
+    "name" : "outstandingPaymentsTotal",
+    "type" : "java.math.BigDecimal"
+  }, {
+    "name" : "cashbookBalance",
+    "type" : "java.math.BigDecimal"
+  }, {
+    "name" : "fundLedgerBalance",
+    "type" : "java.math.BigDecimal"
+  }, {
+    "name" : "investedTotal",
+    "type" : "java.math.BigDecimal"
+  }, {
+    "name" : "midMonthAcknowledged",
+    "type" : "java.lang.Boolean"
+  } ],
+  "TakeOnPositionResponse" : [ {
+    "name" : "bankBalance",
+    "type" : "java.math.BigDecimal"
+  }, {
+    "name" : "outstandingDepositsTotal",
+    "type" : "java.math.BigDecimal"
+  }, {
+    "name" : "outstandingPaymentsTotal",
+    "type" : "java.math.BigDecimal"
+  }, {
+    "name" : "cashbookBalance",
+    "type" : "java.math.BigDecimal"
+  }, {
+    "name" : "fundLedgerBalance",
+    "type" : "java.math.BigDecimal"
+  }, {
+    "name" : "investedTotal",
+    "type" : "java.math.BigDecimal"
   } ],
   "TakeOnPreviewResponse" : [ {
     "name" : "sourceId",
@@ -596,6 +642,137 @@
   }, {
     "name" : "warnings",
     "type" : "java.util.List<java.lang.String>"
+  } ],
+  "TrustDeficit" : [ {
+    "name" : "trustCreditors",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "moneyHeld",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "difference",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "inDeficit",
+    "type" : "boolean"
+  } ],
+  "TrustEq1" : [ {
+    "name" : "bankBalance",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "plusOutstandingDeposits",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "lessOutstandingPayments",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "adjustedBank",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "cashbook",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "difference",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "holds",
+    "type" : "boolean"
+  } ],
+  "TrustEq2" : [ {
+    "name" : "clientLedgers",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "fundLedger",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "unidentified",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "placedInSection86_3",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "creditors",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "cashbook",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "difference",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "holds",
+    "type" : "boolean"
+  } ],
+  "TrustEquationSummary" : [ {
+    "name" : "eq1",
+    "type" : "io.b2mash.b2b.b2bstrawman.takeon.dataset.TrustPositionEquation$TrustEq1"
+  }, {
+    "name" : "itemsTie",
+    "type" : "io.b2mash.b2b.b2bstrawman.takeon.dataset.TrustPositionEquation$TrustItemsTie"
+  }, {
+    "name" : "eq2",
+    "type" : "io.b2mash.b2b.b2bstrawman.takeon.dataset.TrustPositionEquation$TrustEq2"
+  }, {
+    "name" : "investments",
+    "type" : "io.b2mash.b2b.b2bstrawman.takeon.dataset.TrustPositionEquation$TrustInvestmentsTie"
+  }, {
+    "name" : "deficit",
+    "type" : "io.b2mash.b2b.b2bstrawman.takeon.dataset.TrustPositionEquation$TrustDeficit"
+  } ],
+  "TrustInvestmentsTie" : [ {
+    "name" : "perConfirmations",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "listed",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "difference",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "holds",
+    "type" : "boolean"
+  } ],
+  "TrustItemsTie" : [ {
+    "name" : "listedDeposits",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "listedPayments",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "outstandingDeposits",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "outstandingPayments",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "difference",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "holds",
+    "type" : "boolean"
+  } ],
+  "TrustPositionMessage" : [ {
+    "name" : "code",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "message",
+    "type" : "java.lang.String"
+  } ],
+  "TrustPositionSummary" : [ {
+    "name" : "accountErrors",
+    "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.takeon.dataset.TrustPositionEquation$TrustPositionMessage>"
+  }, {
+    "name" : "blocks",
+    "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.takeon.dataset.TrustPositionEquation$TrustPositionMessage>"
+  }, {
+    "name" : "warnings",
+    "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.takeon.dataset.TrustPositionEquation$TrustPositionMessage>"
+  }, {
+    "name" : "flags",
+    "type" : "java.util.List<java.lang.String>"
+  }, {
+    "name" : "equation",
+    "type" : "io.b2mash.b2b.b2bstrawman.takeon.dataset.TrustPositionEquation$TrustEquationSummary"
   } ],
   "UpdateComplianceSettingsRequest" : [ {
     "name" : "dormancyThresholdDays",

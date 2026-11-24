@@ -120,3 +120,64 @@ export function takeOnMappingSchema(required: readonly { key: string; label: str
       }
     });
 }
+
+// ---- The trust position at cutover (657B, P-11, D-183) ----
+
+/** Spaces, no-break spaces and thin spaces a pasted rand amount may hold ("418 500,00"). */
+const AMOUNT_SPACES = /[\s  ]/g;
+
+/** "418 500,00", "418500.00", "-1 250" → "418500.00" / "-1250"; null when it is not an amount. */
+export function normaliseTakeOnAmount(raw: string): string | null {
+  const compact = raw.replace(AMOUNT_SPACES, "");
+  if (compact.includes(",") && compact.includes(".")) return null; // two separators: ambiguous
+  const pointed = compact.replace(",", ".");
+  // ≤ 13 integer digits and ≤ 2 decimals: numeric(15,2), as the backend refuses (D-183).
+  return /^-?\d{1,13}(\.\d{1,2})?$/.test(pointed) ? pointed : null;
+}
+
+/** The typed amount as a number, or null for a blank field. Call after the schema accepted it. */
+export function takeOnAmountValue(raw: string): number | null {
+  if (raw.trim() === "") return null;
+  const normalised = normaliseTakeOnAmount(raw);
+  return normalised === null ? null : Number(normalised);
+}
+
+const NOT_AN_AMOUNT = "Enter an amount in rand and cents, for example 418 500,00.";
+
+/**
+ * One position figure: required or not, and whether it may be negative (bank, cashbook and the
+ * Fund ledger may; the outstanding totals and the total invested may not — the backend's 400s).
+ */
+function positionAmount(requiredMessage: string | null, mayBeNegative: boolean) {
+  return z.string().superRefine((raw, ctx) => {
+    if (raw.trim() === "") {
+      if (requiredMessage) ctx.addIssue({ code: "custom", message: requiredMessage });
+      return;
+    }
+    const normalised = normaliseTakeOnAmount(raw);
+    if (normalised === null) {
+      ctx.addIssue({ code: "custom", message: NOT_AN_AMOUNT });
+      return;
+    }
+    if (!mayBeNegative && Number(normalised) < 0) {
+      ctx.addIssue({ code: "custom", message: "This amount cannot be negative." });
+    }
+  });
+}
+
+/**
+ * The trust position form (§17.10 X3 labels): the cutover date, the reconciled position in the
+ * previous system at that date and the mid-month acknowledgement. Copy: D-190.
+ */
+export const takeOnTrustPositionSchema = z.object({
+  cutoverDate: isoDate,
+  bankBalance: positionAmount("Enter the bank statement balance at cutover.", true),
+  outstandingDepositsTotal: positionAmount("Enter the outstanding deposits at cutover.", false),
+  outstandingPaymentsTotal: positionAmount("Enter the outstanding payments at cutover.", false),
+  cashbookBalance: positionAmount("Enter the cashbook balance at cutover.", true),
+  fundLedgerBalance: positionAmount(null, true),
+  investedTotal: positionAmount(null, false),
+  midMonthAcknowledged: z.boolean(),
+});
+
+export type TakeOnTrustPositionFormData = z.infer<typeof takeOnTrustPositionSchema>;

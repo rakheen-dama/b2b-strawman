@@ -7,6 +7,7 @@ import io.b2mash.b2b.b2bstrawman.compliance.ClientFicaAttestationService;
 import io.b2mash.b2b.b2bstrawman.customer.dto.ClientListRow;
 import io.b2mash.b2b.b2bstrawman.informationrequest.dto.InformationRequestDtos;
 import io.b2mash.b2b.b2bstrawman.settings.dto.UpdateComplianceSettingsRequest;
+import io.b2mash.b2b.b2bstrawman.takeon.dataset.TrustPositionEquation;
 import java.io.IOException;
 import java.lang.reflect.RecordComponent;
 import java.nio.charset.StandardCharsets;
@@ -42,7 +43,11 @@ class TakeOnWireContractTest {
    * stored validation summary, so the attestation step never pages rows into the browser). 655B
    * adds the FICA wire records the review queue reads (C-10): the FICA status, the attestation
    * read, the client-list row and the compliance-settings request = 27. 656A adds the go-live
-   * checklist item and its acknowledge request = 29.
+   * checklist item and its acknowledge request = 29. 657B appends {@code midMonthAcknowledged} and
+   * {@code position} to {@code TakeOnBatchResponse}, extends {@code TakeOnPositionRequest} with the
+   * reconciled position, and adds the position response and the eight records of a trust batch's
+   * {@code summary} (pinned although {@code summary} is a map, so the frontend mirror is checked) =
+   * 38.
    */
   static final List<Class<?>> PINNED =
       List.of(
@@ -77,7 +82,17 @@ class TakeOnWireContractTest {
           UpdateComplianceSettingsRequest.class,
           // 656A
           TakeOnGoLiveService.TakeOnGoLiveItemResponse.class,
-          TakeOnGoLiveService.TakeOnGoLiveAcknowledgeRequest.class);
+          TakeOnGoLiveService.TakeOnGoLiveAcknowledgeRequest.class,
+          // 657B
+          TakeOnBatchService.TakeOnPositionResponse.class,
+          TrustPositionEquation.TrustPositionSummary.class,
+          TrustPositionEquation.TrustEquationSummary.class,
+          TrustPositionEquation.TrustEq1.class,
+          TrustPositionEquation.TrustItemsTie.class,
+          TrustPositionEquation.TrustEq2.class,
+          TrustPositionEquation.TrustInvestmentsTie.class,
+          TrustPositionEquation.TrustDeficit.class,
+          TrustPositionEquation.TrustPositionMessage.class);
 
   private static final String UPDATE_FLAG = "takeon.contract.update";
   private static final Path SNAPSHOT = Path.of("src/test/resources/wire/take-on-contract.json");

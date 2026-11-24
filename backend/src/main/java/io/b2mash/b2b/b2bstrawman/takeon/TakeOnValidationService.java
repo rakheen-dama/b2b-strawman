@@ -57,6 +57,9 @@ public class TakeOnValidationService {
     if (batch.missingCutoverDate()) {
       throw TakeOnProblems.cutoverDateRequired(); // … then the position input (C-14)
     }
+    if (batch.missingPosition()) {
+      throw TakeOnProblems.positionRequired(); // 657B: the trust equation needs its four figures
+    }
     if (rows.anyCommitted(batchId)) {
       // Defence in depth (655A C-10): a batch returns to VALIDATED only before any row is terminal,
       // so this cannot happen — and a committed row is never re-validated.
@@ -87,9 +90,11 @@ public class TakeOnValidationService {
         new TakeOnBatch.Counts(
             Math.toIntExact(counts.getTotal()),
             Math.toIntExact(counts.getValid()),
-            Math.toIntExact(counts.getError()),
+            // rows in error + the batch-level errors (657B: the trust account checks, D-191)
+            Math.toIntExact(counts.getError()) + handler.batchErrorCount(context),
             Math.toIntExact(counts.getDuplicate()),
-            Math.toIntExact(counts.getBlocks())),
+            // rows holding a block + the batch-level statutory blocks (657B: the trust equation)
+            Math.toIntExact(counts.getBlocks()) + handler.batchBlockCount(context)),
         handler.summary(context));
     audit.batchValidated(batch);
     return batch;

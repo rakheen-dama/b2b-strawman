@@ -269,4 +269,32 @@ describe("InviteMemberForm — owner-only capabilities", () => {
     );
     expect(screen.queryByTestId("owner-only-role-hint-role-partner")).not.toBeInTheDocument();
   });
+
+  // Task C: the system Admin role is invited by the owner only; the Owner role is never offered
+  it("a non-owner sees the Admin role disabled with the hint; no Owner role", async () => {
+    const user = userEvent.setup();
+    asCaller("admin", <InviteMemberForm {...inviteProps} />);
+
+    await user.click(screen.getByRole("combobox"));
+    expect(screen.getByTestId("role-option-system-admin")).toHaveAttribute("aria-disabled", "true");
+    expect(screen.getByTestId("owner-only-role-hint-system-admin")).toHaveTextContent(HINT);
+    expect(screen.getByRole("option", { name: "Member" })).not.toHaveAttribute(
+      "aria-disabled",
+      "true"
+    );
+    expect(screen.queryByRole("option", { name: /Owner/ })).not.toBeInTheDocument();
+  });
+
+  it("the owner can pick the Admin role; no hint; no Owner role", async () => {
+    const user = userEvent.setup();
+    asCaller("owner", <InviteMemberForm {...inviteProps} />);
+
+    await user.click(screen.getByRole("combobox"));
+    expect(screen.getByTestId("role-option-system-admin")).not.toHaveAttribute(
+      "aria-disabled",
+      "true"
+    );
+    expect(screen.queryByTestId("owner-only-role-hint-system-admin")).not.toBeInTheDocument();
+    expect(screen.queryByRole("option", { name: /Owner/ })).not.toBeInTheDocument();
+  });
 });

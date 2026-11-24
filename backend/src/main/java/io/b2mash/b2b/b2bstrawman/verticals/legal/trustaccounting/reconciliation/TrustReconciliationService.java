@@ -5,6 +5,7 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.exception.UnprocessableEntityException;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.template.VariableFormatter;
@@ -12,6 +13,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountSection;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.IntegrityFlag;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.IntegrityMessages;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustBooksService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustIntegrityService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustIntegrityService.TrustIntegrityReport;
@@ -63,6 +65,18 @@ import org.springframework.web.multipart.MultipartFile;
 public class TrustReconciliationService {
 
   private static final String MODULE_ID = "trust_accounting";
+
+  /**
+   * Phase 93 (657D, §17.3.11, X3): the reason stored on a line of a taken-on account's statement
+   * dated on or before its take-on cutover date — excluded at import, in the previous system's
+   * books.
+   */
+  public static final String BEFORE_TAKE_ON_REASON =
+      "Before take-on: in the previous system's books";
+
+  /** 422 code: every line of the statement is dated on or before the take-on date (657D). */
+  public static final String STATEMENT_BEFORE_TAKE_ON = "STATEMENT_BEFORE_TAKE_ON";
+
   private static final BigDecimal AUTO_MATCH_THRESHOLD = new BigDecimal("0.80");
 
   /** How a period end is written in a refusal ("31 March 2026"). */
@@ -149,7 +163,10 @@ public class TrustReconciliationService {
       UUID retiredBy,
       String retiredReason,
       UUID replacedByStatementId,
-      List<BankStatementLineResponse> lines) {}
+      List<BankStatementLineResponse> lines,
+      // Phase 93 (657D, A-4): "{n} lines dated on or before the take-on date {C} were excluded."
+      // when lines of a taken-on account's statement were excluded at import; empty otherwise
+      List<String> warnings) {}
 
   public record BankStatementLineResponse(
       UUID id,
@@ -279,6 +296,10 @@ public class TrustReconciliationService {
       throw new BankStatementParseException("Failed to parse bank statement file", e);
     }
     requireNoLineAfterToday(parsed);
+    // 657D (§17.3.11, FD-32): on a taken-on account lines dated on or before C are excluded at
+    // construction; a statement whose every line is ≤ C is refused before anything is stored
+    LocalDate cutover = account.getTakeOnCutoverDate();
+    requireNotWhollyBeforeTakeOn(parsed, cutover);
 
     // FU-6b: the statement this import replaces — its reconciliations, lines, released rows and
     // the statement itself are locked and checked first (refusals roll everything back).
@@ -320,6 +341,7 @@ public class TrustReconciliationService {
 
     // Create BankStatementLine entities
     var savedLines = new java.util.ArrayList<BankStatementLine>();
+    int excludedBeforeTakeOn = 0;
     for (int i = 0; i < parsed.lines().size(); i++) {
       var parsedLine = parsed.lines().get(i);
       var line =
@@ -336,7 +358,13 @@ public class TrustReconciliationService {
       if (section864 && suggested == StatementLineClassification.FUND_INTEREST) {
         suggested = StatementLineClassification.INVESTMENT_INTEREST;
       }
-      if (suggested != null) {
+      if (cutover != null && !parsedLine.date().isAfter(cutover)) {
+        // 657D: in the previous system's books — EXCLUDED before its single save (never through
+        // excludeLine, which locks and audits a saved UNMATCHED line); no suggestion
+        line.setMatchStatus("EXCLUDED");
+        line.setExcludedReason(BEFORE_TAKE_ON_REASON);
+        excludedBeforeTakeOn++;
+      } else if (suggested != null) {
         line.setSuggestedClassification(suggested.name());
       }
       savedLines.add(bankStatementLineRepository.save(line));
@@ -348,6 +376,9 @@ public class TrustReconciliationService {
     importDetails.put("file_name", fileName);
     importDetails.put("format", format);
     importDetails.put("line_count", parsed.lines().size());
+    if (cutover != null) {
+      importDetails.put("excluded_before_take_on", excludedBeforeTakeOn);
+    }
     if (replacesStatementId != null) {
       importDetails.put("replaces_statement_id", replacesStatementId.toString());
     }
@@ -636,6 +667,26 @@ public class TrustReconciliationService {
             .entityId(statement.getId())
             .details(details)
             .build());
+  }
+
+  /**
+   * 657D (§17.3.11, FD-32, A-10): on an account taken on at {@code cutover}, a statement with at
+   * least one line whose every line is dated on or before it belongs to the previous system's books
+   * and is refused whole (422 {@code STATEMENT_BEFORE_TAKE_ON}), before anything is stored.
+   */
+  private static void requireNotWhollyBeforeTakeOn(ParsedStatement parsed, LocalDate cutover) {
+    if (cutover == null || parsed.lines().isEmpty()) {
+      return;
+    }
+    boolean allBefore = parsed.lines().stream().noneMatch(line -> line.date().isAfter(cutover));
+    if (allBefore) {
+      throw new UnprocessableEntityException(
+          "Statement before the take-on",
+          "Every line of this statement is dated on or before the take-on date "
+              + IntegrityMessages.date(cutover)
+              + ". It belongs to the previous system's books.",
+          Map.of("code", STATEMENT_BEFORE_TAKE_ON));
+    }
   }
 
   /**
@@ -1950,7 +2001,32 @@ public class TrustReconciliationService {
                 line ->
                     BankStatementLineResponse.of(
                         line, created.getOrDefault(line.getId(), List.of())))
-            .toList());
+            .toList(),
+        takeOnWarnings(statement, lines));
+  }
+
+  /**
+   * 657D (A-4): the import warning, from the stored lines — the import response and every later
+   * read of the statement with its lines agree. A listing without lines carries none.
+   */
+  private List<String> takeOnWarnings(BankStatement statement, List<BankStatementLine> lines) {
+    long excluded =
+        lines.stream()
+            .filter(line -> BEFORE_TAKE_ON_REASON.equals(line.getExcludedReason()))
+            .count();
+    if (excluded == 0) {
+      return List.of();
+    }
+    return trustAccountRepository
+        .findTakeOnCutoverDate(statement.getTrustAccountId())
+        .map(
+            cutover ->
+                List.of(
+                    excluded
+                        + " lines dated on or before the take-on date "
+                        + IntegrityMessages.date(cutover)
+                        + " were excluded."))
+        .orElse(List.of());
   }
 
   /**

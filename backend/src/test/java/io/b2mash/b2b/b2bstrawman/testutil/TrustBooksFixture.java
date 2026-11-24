@@ -1365,6 +1365,7 @@ public final class TrustBooksFixture {
       var b = newClient("TOB");
       var c = newClient("TOC");
       var batch = takeOnBatch(g, cutover);
+      positionSection17313(batch);
       var authority = authority(batch, cutover);
       return read(
           () -> {
@@ -1426,6 +1427,27 @@ public final class TrustBooksFixture {
                 unidentifiedRecent,
                 s863,
                 s864);
+          });
+    }
+
+    /**
+     * 657D (A-8): the §17.3.13 reconciled position on the harness batch, through the entity (B R418
+     * 500,00, OD R5 000,00, OP R20 000,00, CB R403 500,00, F R1 250,00, invested R300 000,00) — the
+     * bank balance {@code OPENING_DIFFERS_FROM_TAKE_ON} compares the first statement with.
+     */
+    private void positionSection17313(UUID batch) {
+      read(
+          () -> {
+            var takeOn = takeOnBatchRepository.findById(batch).orElseThrow();
+            takeOn.updatePosition(
+                new BigDecimal("418500.00"),
+                new BigDecimal("5000.00"),
+                new BigDecimal("20000.00"),
+                new BigDecimal("403500.00"),
+                new BigDecimal("1250.00"),
+                new BigDecimal("300000.00"),
+                false);
+            return takeOnBatchRepository.save(takeOn);
           });
     }
 

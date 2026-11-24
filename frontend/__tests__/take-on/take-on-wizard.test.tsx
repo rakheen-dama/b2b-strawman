@@ -33,13 +33,25 @@ const actions = vi.hoisted(() => ({
   commitBatch: vi.fn(),
   createPortalContacts: vi.fn(),
   downloadTakeOnResult: vi.fn(),
+  getSignOffReview: vi.fn(),
+  signOff: vi.fn(),
+  withdrawMySignOff: vi.fn(),
+  getTakeOnReport: vi.fn(),
 }));
 vi.mock("@/app/(app)/org/[slug]/settings/matters/take-on-actions", () => actions);
 
 import { TakeOnWizard } from "@/components/take-on/take-on-wizard";
 import { UploadStep } from "@/components/take-on/upload-step";
 import type { TakeOnBatch, TakeOnDatasetCatalogue, TakeOnPreview, TakeOnSource } from "@/lib/types";
-import { TRUST_CATALOGUE, trustBatch, trustSource, trustSummaryWith } from "./fixtures";
+import {
+  TRUST_CATALOGUE,
+  TRUST_SIGN_OFF,
+  signOffReview,
+  signedReview,
+  trustBatch,
+  trustSource,
+  trustSummaryWith,
+} from "./fixtures";
 
 const CLIENTS: TakeOnDatasetCatalogue = {
   dataset: "CLIENTS",
@@ -147,6 +159,8 @@ function batch(overrides: Partial<TakeOnBatch> = {}): TakeOnBatch {
     summary: null,
     midMonthAcknowledged: false,
     position: null,
+    trustAccountName: null,
+    reportId: null,
     ...overrides,
   };
 }
@@ -966,5 +980,100 @@ describe("TakeOnWizard — trust position (657B)", () => {
       )
     );
     expect(screen.getByText(/Page/)).toHaveTextContent("Page 1 of 3");
+  });
+});
+
+describe("TakeOnWizard — trust sign-off (657C)", () => {
+  /** As the owner sees it: SIGN_OFF (owner-only capability + VIEW_TRUST, R-5). */
+  const OWNER_VIEW = trustBatch({
+    allowedActions: ["REMOVE_SOURCE", "MAP", "REVALIDATE", "CANCEL", "SIGN_OFF"],
+  });
+  /** As the preparer (admin) sees it once the owner signed: COMMIT and REVOKE_SIGN_OFF. */
+  const SIGNED_ADMIN_VIEW = trustBatch({
+    signOffs: [TRUST_SIGN_OFF],
+    allowedActions: ["REVALIDATE", "CANCEL", "COMMIT", "REVOKE_SIGN_OFF"],
+  });
+
+  it("adds a Sign-off step and a Continue to sign-off button on a validated trust batch", async () => {
+    const user = userEvent.setup();
+    renderWizard(trustBatch(), TRUST_CATALOGUE);
+    expect(screen.getByTestId("take-on-step-signOff")).toHaveTextContent("Sign-off");
+    expect(screen.getByTestId("take-on-step-signOff")).toBeEnabled();
+    expect(screen.queryByTestId("take-on-step-attestation")).not.toBeInTheDocument();
+    await user.click(screen.getByTestId("take-on-to-sign-off"));
+    expect(screen.getByTestId("take-on-step-signOff")).toHaveAttribute("aria-current", "step");
+  });
+
+  it("admin without SIGN_OFF: the status text, no panel and no read of the signer's review", async () => {
+    const user = userEvent.setup();
+    renderWizard(trustBatch(), TRUST_CATALOGUE);
+    await user.click(screen.getByTestId("take-on-to-sign-off"));
+    expect(screen.getByTestId("take-on-signoff-status")).toHaveTextContent(
+      "A partner or director signs off this take-on from their Home page."
+    );
+    expect(screen.queryByTestId("takeon-signoff-panel")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("take-on-commit")).not.toBeInTheDocument();
+    expect(actions.getSignOffReview).not.toHaveBeenCalled();
+  });
+
+  it("resumes a signed batch on Sign-off: the admin sees who signed, may withdraw it and commit", async () => {
+    const user = userEvent.setup();
+    const unsigned = trustBatch();
+    actions.revokeSignOff.mockResolvedValue({ success: true, data: unsigned });
+    renderWizard(SIGNED_ADMIN_VIEW, TRUST_CATALOGUE);
+
+    expect(screen.getByTestId("take-on-step-signOff")).toHaveAttribute("aria-current", "step");
+    expect(screen.getByTestId("take-on-signoff-status")).toHaveTextContent(
+      "Signed off by Alice Owner (Owner) on"
+    );
+    expect(screen.queryByTestId("takeon-signoff-panel")).not.toBeInTheDocument();
+    expect(screen.getByTestId("take-on-commit")).toBeInTheDocument();
+
+    await user.click(screen.getByTestId("take-on-signoff-revoke"));
+    expect(actions.revokeSignOff).toHaveBeenCalledWith("batch-657b", "sign-off-trust-1");
+    await waitFor(() =>
+      expect(screen.getByTestId("take-on-signoff-status")).toHaveTextContent(
+        "A partner or director signs off"
+      )
+    );
+    expect(screen.queryByTestId("take-on-commit")).not.toBeInTheDocument();
+  });
+
+  it("owner with SIGN_OFF: the same panel as the Home sheet; signing re-reads the batch and offers the commit", async () => {
+    const user = userEvent.setup();
+    actions.getSignOffReview.mockResolvedValue({ success: true, data: signOffReview() });
+    actions.signOff.mockResolvedValue({ success: true, data: signedReview() });
+    actions.fetchTakeOnBatch.mockResolvedValue({
+      success: true,
+      data: trustBatch({
+        signOffs: [TRUST_SIGN_OFF],
+        allowedActions: ["REVALIDATE", "CANCEL", "COMMIT", "WITHDRAW_SIGN_OFF", "REVOKE_SIGN_OFF"],
+      }),
+    });
+    renderWizard(OWNER_VIEW, TRUST_CATALOGUE);
+
+    await user.click(screen.getByTestId("take-on-to-sign-off"));
+    await user.click(await screen.findByTestId("takeon-signoff-accept"));
+    await user.click(screen.getByTestId("takeon-signoff-submit"));
+    await waitFor(() => expect(actions.fetchTakeOnBatch).toHaveBeenCalledWith("batch-657b"));
+    expect(await screen.findByTestId("take-on-commit")).toBeInTheDocument();
+    // The signer keeps the panel (WITHDRAW_SIGN_OFF), not the preparer's status block.
+    expect(screen.getByTestId("takeon-signoff-withdraw")).toBeInTheDocument();
+    expect(screen.queryByTestId("take-on-signoff-status")).not.toBeInTheDocument();
+  });
+
+  it("disables the step buttons while a position save is in flight (F-657B-6)", async () => {
+    const user = userEvent.setup();
+    let finishSave: (v: unknown) => void = () => {};
+    actions.savePosition.mockReturnValue(new Promise((resolve) => (finishSave = resolve)));
+    renderWizard(trustBatch(), TRUST_CATALOGUE);
+
+    await user.click(screen.getByTestId("take-on-position-save"));
+    await waitFor(() => expect(screen.getByTestId("take-on-step-upload")).toBeDisabled());
+    expect(screen.getByTestId("take-on-step-signOff")).toBeDisabled();
+    expect(screen.getByTestId("take-on-to-sign-off")).toBeDisabled();
+    finishSave({ success: true, data: trustBatch() });
+    await waitFor(() => expect(screen.getByTestId("take-on-step-upload")).toBeEnabled());
+    expect(screen.getByTestId("take-on-step-signOff")).toBeEnabled();
   });
 });

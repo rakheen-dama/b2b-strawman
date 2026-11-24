@@ -8,10 +8,13 @@ import { DashboardHeader } from "./dashboard-header";
 // and owner layout (all imported, not copied) so skeleton → content does not shift. It cannot know
 // the audience (no props, no data), so it draws the owner rows — firm differs only in row 4, below
 // the fold; a fee earner has no KPI row, so their diary moves up on load. No test ids: e2e waits on
-// `home-page` / `home-cell-*`, which only the loaded page renders.
+// `home-page` / `home-cell-*`, which only the loaded page renders. The trust take-on sign-off row
+// (657C) is left out: it is shown only while a take-on awaits the caller's sign-off, which is
+// rare, so reserving its space would make every other load shift up.
 
 type OwnerWidget = (typeof OWNER_HOME_ROWS)[number][number];
-type SkeletonWidget = Exclude<OwnerWidget, "kpis">;
+type SkeletonRowWidget = Exclude<OwnerWidget, "takeOnSignOff">;
+type SkeletonWidget = Exclude<SkeletonRowWidget, "kpis">;
 
 /** WidgetCard's chrome around its content (padding, title row, gap), measured at 1440. */
 const WIDGET_CHROME_PX = 86;
@@ -49,7 +52,11 @@ function WidgetSkeleton({ widget }: { widget: SkeletonWidget }) {
   );
 }
 
-const ROWS: ReadonlyArray<ReadonlyArray<OwnerWidget>> = OWNER_HOME_ROWS;
+const OWNER_ROWS: ReadonlyArray<ReadonlyArray<OwnerWidget>> = OWNER_HOME_ROWS;
+
+const ROWS: ReadonlyArray<ReadonlyArray<SkeletonRowWidget>> = OWNER_ROWS.map((row) =>
+  row.filter((widget): widget is SkeletonRowWidget => widget !== "takeOnSignOff")
+).filter((row) => row.length > 0);
 
 export default function DashboardLoading() {
   return (

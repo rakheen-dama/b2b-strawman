@@ -232,6 +232,87 @@ class TakeOnTenantIsolationIntegrationTest {
         .isZero();
   }
 
+  /**
+   * 657C: a trust take-on committed in A — its opening rows, unidentified items, investments and
+   * report exist only in A's schema; B's sign-off queue is empty of it, B's signer endpoints and
+   * B's claim cannot see it (404), and A's report is not found in B.
+   */
+  @Test
+  void aCommittedTrustTakeOnExistsOnlyInTheOwningTenant() throws Exception {
+    var world =
+        new TakeOnTrustWorld(
+            mockMvc, jdbc, commitService, drain, ORG_A, OWNER_A, schemaA, ownerAId, "toi");
+    world.takeOnClientsAndMatters(List.of("A", "B", "C"));
+    var acc = world.freshAccounts();
+    var batch = world.validated(acc);
+    world.signOff(batch);
+
+    for (var request :
+        List.<MockHttpServletRequestBuilder>of(
+            get("/api/take-on/batches/" + batch.batchId() + "/sign-off-review"),
+            json(
+                post("/api/take-on/batches/" + batch.batchId() + "/sign-off"),
+                "{\"validationHash\":\"%s\",\"statementVersion\":\"TAKEON-SIGNOFF-v1\",\"declarationAccepted\":true}"
+                    .formatted(batch.hash())),
+            delete("/api/take-on/batches/" + batch.batchId() + "/trust-sign-off"))) {
+      mockMvc
+          .perform(request.with(ownerB()))
+          .andExpect(status().isNotFound())
+          .andExpect(jsonPath("$.title").value("Take-on batch not found"));
+    }
+    List<String> queueB =
+        JsonPath.read(
+            mockMvc
+                .perform(get("/api/take-on/sign-off-queue").with(ownerB()))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString(),
+            "$[*].batchId");
+    assertThat(queueB).doesNotContain(batch.batchId().toString());
+    assertThatThrownBy(
+            () ->
+                TakeOnTestDrain.commit(
+                    commitService, schemaB, ORG_B, ownerBId, batch.batchId(), batch.hash()))
+        .isInstanceOf(ResourceNotFoundException.class);
+
+    world.claim(batch);
+    TakeOnTestDrain.run(drain, schemaB, ORG_B); // B's drain sees no committing batch of A's
+    assertThat(batchStatus(schemaA, batch.batchId())).isEqualTo("COMMITTING");
+    world.drain();
+    assertThat(batchStatus(schemaA, batch.batchId())).isEqualTo("COMPLETED");
+
+    UUID reportId = UUID.fromString(JsonPath.read(world.batchJson(batch.batchId()), "$.reportId"));
+    for (var check :
+        List.of(
+            List.of("trust_transactions", "take_on_batch_id"),
+            List.of("unidentified_deposits", "take_on_batch_id"),
+            List.of("trust_investments", "take_on_batch_id"),
+            List.of("take_on_reports", "batch_id"))) {
+      String sql = "SELECT count(*) FROM \"%s\".%s WHERE %s = ?";
+      assertThat(
+              jdbc.queryForObject(
+                  sql.formatted(schemaA, check.get(0), check.get(1)),
+                  Integer.class,
+                  batch.batchId()))
+          .as("A holds its %s", check.get(0))
+          .isPositive();
+      assertThat(
+              jdbc.queryForObject(
+                  sql.formatted(schemaB, check.get(0), check.get(1)),
+                  Integer.class,
+                  batch.batchId()))
+          .as("B holds none of A's %s", check.get(0))
+          .isZero();
+    }
+    mockMvc
+        .perform(get("/api/take-on/reports/" + reportId).with(ownerB()))
+        .andExpect(status().isNotFound());
+    mockMvc
+        .perform(get("/api/take-on/reports/" + reportId).with(ownerA()))
+        .andExpect(status().isOk());
+  }
+
   private int mattersWithReference(String schema, String reference) {
     return jdbc.queryForObject(
         "SELECT count(*) FROM \"%s\".projects WHERE reference_number = ?".formatted(schema),

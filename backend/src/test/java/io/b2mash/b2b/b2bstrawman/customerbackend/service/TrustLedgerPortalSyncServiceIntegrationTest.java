@@ -177,6 +177,18 @@ class TrustLedgerPortalSyncServiceIntegrationTest {
     // (deposit_transaction_id) — delete its rows first, then the investments. 648D: interest
     // entries name the investment and their rows; an investment placed through the services names
     // its placement and withdrawal rows.
+    // 657C: a take-on's unidentified items name their opening rows and those rows name the item
+    // (deposit_transaction_id / unidentified_deposit_id): unlink, delete the rows, then the items.
+    jdbcTemplate.update(
+        "UPDATE \"%s\".unidentified_deposits SET deposit_transaction_id = NULL"
+                .formatted(tenantSchema)
+            + " WHERE take_on_batch_id IS NOT NULL");
+    jdbcTemplate.update(
+        "DELETE FROM \"%s\".trust_transactions WHERE unidentified_deposit_id IS NOT NULL"
+            .formatted(tenantSchema));
+    jdbcTemplate.update(
+        "DELETE FROM \"%s\".unidentified_deposits WHERE take_on_batch_id IS NOT NULL"
+            .formatted(tenantSchema));
     jdbcTemplate.update("DELETE FROM \"%s\".trust_investment_interest".formatted(tenantSchema));
     jdbcTemplate.update(
         ("UPDATE \"%s\".trust_investments SET deposit_transaction_id = NULL,"
@@ -1207,6 +1219,71 @@ class TrustLedgerPortalSyncServiceIntegrationTest {
                                 memberId,
                                 tenantSchema,
                                 ORG_ID))));
+  }
+
+  /**
+   * 657C (§17.6.6): a committed trust take-on publishes one {@code TakeOnPositionCommitted}; its
+   * AFTER_COMMIT listener recomputes every matter of the accounts once — one visible "Balance
+   * brought forward — take-on" line per matter ({@code TAKEON_CLIENT}), the offsets and items
+   * hidden, the invested balance from the section 86(4) take-on row.
+   */
+  @Test
+  void takeOnPositionCommittedRecomputesEachMatterOnce() {
+    var takeOn = books.takeOnSection17313(LocalDate.of(2026, 10, 31));
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, memberId)
+        .run(
+            () ->
+                tenantTxTemplate.executeWithoutResult(
+                    status ->
+                        eventPublisher.publishEvent(
+                            TrustDomainEvent.TakeOnPositionCommitted.of(
+                                takeOn.batch(),
+                                java.util.List.of(takeOn.g(), takeOn.i3(), takeOn.i4()),
+                                UUID.randomUUID(),
+                                memberId,
+                                tenantSchema,
+                                ORG_ID))));
+
+    for (var expected :
+        java.util.List.of(
+            java.util.Map.entry(takeOn.a(), java.util.List.of("300000.00", "200000.00")),
+            java.util.Map.entry(takeOn.b(), java.util.List.of("150000.00", "0")),
+            java.util.Map.entry(takeOn.c(), java.util.List.of("49500.00", "0")))) {
+      var client = expected.getKey();
+      var rows = portalTrustRepo.findTransactions(client.id(), client.matter(), null, null, 50, 0);
+      assertThat(rows)
+          .as(client.name())
+          .singleElement()
+          .satisfies(
+              t -> {
+                assertThat(t.transactionType()).isEqualTo("TAKEON_CLIENT");
+                assertThat(t.ledger()).isEqualTo("CLIENT");
+                assertThat(t.amount()).isEqualByComparingTo(expected.getValue().get(0));
+                assertThat(t.runningBalance()).isEqualByComparingTo(expected.getValue().get(0));
+              });
+      var balance = portalTrustRepo.findBalance(client.id(), client.matter()).orElseThrow();
+      assertThat(balance.currentBalance()).isEqualByComparingTo(expected.getValue().get(0));
+      assertThat(balance.investedBalance()).isEqualByComparingTo(expected.getValue().get(1));
+    }
+    assertThat(
+            portalJdbc
+                .sql("SELECT count(*) FROM portal.portal_trust_transaction WHERE id = ANY (?)")
+                .params(
+                    (Object)
+                        new UUID[] {
+                          takeOn.payUnpres(),
+                          takeOn.payOffset(),
+                          takeOn.depTransit(),
+                          takeOn.depOffset(),
+                          takeOn.s864().placementRowId(),
+                          takeOn.unidentifiedOld().rowId()
+                        })
+                .query(Long.class)
+                .single())
+        .as("offsets, items, the investment and unidentified rows stay hidden")
+        .isZero();
   }
 
   private void publishReconciliationCompletedEvent() {

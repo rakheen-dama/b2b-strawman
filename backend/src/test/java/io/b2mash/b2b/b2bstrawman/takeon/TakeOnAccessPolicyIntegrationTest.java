@@ -56,6 +56,7 @@ class TakeOnAccessPolicyIntegrationTest {
   private static final String CLIENTS_ONLY = "user_toa_clients";
   private static final String TRUST_VIEWER = "user_toa_trustview";
   private static final String TRUST_MANAGER = "user_toa_trustmanage";
+  private static final String TRUST_READER = "user_toa_trustread";
   private static final String ACCESS_DENIED = "Access denied";
   private static final String CLIENTS_CSV =
       "Client name,Email,Client type,CDD completed date,Beneficial ownership,Screening,Records\n"
@@ -93,6 +94,11 @@ class TakeOnAccessPolicyIntegrationTest {
             TestMemberHelper.syncMember(
                 mockMvc, ORG_ID, TRUST_MANAGER, "toa_trustm@test.com", "TOA TrustM", "member"));
     assignRole(trustManager, createRole("Trust take-on writer", "MANAGE_TAKE_ON", "MANAGE_TRUST"));
+    UUID trustReader =
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, TRUST_READER, "toa_trustr@test.com", "TOA TrustR", "member"));
+    assignRole(trustReader, createRole("Trust reader", "VIEW_TRUST"));
     var account =
         mockMvc
             .perform(
@@ -279,6 +285,28 @@ class TakeOnAccessPolicyIntegrationTest {
 
   // --- helpers ---
 
+  // 657C (§17.9, X1): the take-on reports are VIEW_TRUST — never MANAGE_TAKE_ON alone, and never
+  // FINANCIAL_VISIBILITY (ReportingController)
+  @Test
+  void theTakeOnReportsNeedViewTrust() throws Exception {
+    TakeOnTestApi.reports(mockMvc, trustViewer(), null).andExpect(status().isOk());
+    TakeOnTestApi.reports(mockMvc, trustViewer(), UUID.fromString(trustAccountId))
+        .andExpect(status().isOk());
+    TakeOnTestApi.report(mockMvc, trustViewer(), UUID.randomUUID())
+        .andExpect(status().isNotFound());
+    // VIEW_TRUST alone, without MANAGE_TAKE_ON: the list is read; an unknown report is not found,
+    // never forbidden (a real report's 200 is TakeOnReportIntegrationTest's)
+    TakeOnTestApi.reports(mockMvc, trustReader(), null).andExpect(status().isOk());
+    TakeOnTestApi.reports(mockMvc, trustReader(), UUID.fromString(trustAccountId))
+        .andExpect(status().isOk());
+    TakeOnTestApi.report(mockMvc, trustReader(), UUID.randomUUID())
+        .andExpect(status().isNotFound());
+    denied(TakeOnTestApi.reports(mockMvc, trustManager(), null));
+    denied(TakeOnTestApi.report(mockMvc, trustManager(), UUID.randomUUID()));
+    denied(TakeOnTestApi.reports(mockMvc, clientsOnly(), null));
+    denied(TakeOnTestApi.signOffQueue(mockMvc, trustViewer())); // SIGN_OFF_TRUST_TAKE_ON only
+  }
+
   private List<String> historyIds(RequestPostProcessor jwt) throws Exception {
     String json =
         mockMvc
@@ -342,6 +370,10 @@ class TakeOnAccessPolicyIntegrationTest {
 
   private RequestPostProcessor trustManager() {
     return TestJwtFactory.customRoleJwt(ORG_ID, TRUST_MANAGER);
+  }
+
+  private RequestPostProcessor trustReader() {
+    return TestJwtFactory.customRoleJwt(ORG_ID, TRUST_READER);
   }
 
   private RequestPostProcessor trustViewer() {

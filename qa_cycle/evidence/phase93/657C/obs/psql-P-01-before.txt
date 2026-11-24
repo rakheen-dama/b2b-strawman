@@ -1,0 +1,18 @@
+select id, account_name, account_type, is_primary, opened_date, take_on_cutover_date from tenant_7d218705360b.trust_accounts
+                  id                  |            account_name            | account_type | is_primary | opened_date | take_on_cutover_date 
+--------------------------------------+------------------------------------+--------------+------------+-------------+----------------------
+ 17e51f19-f94d-442d-813b-46c54e012ac1 | Mathebula & Partners Trust Account | GENERAL      | t          | 2026-11-24  | 
+(1 row)
+
+select count(*) trust_transactions from tenant_7d218705360b.trust_transactions
+ trust_transactions 
+--------------------
+                  0
+(1 row)
+
+select count(*) completed_reconciliations from tenant_7d218705360b.trust_reconciliations
+ completed_reconciliations 
+---------------------------
+                         0
+(1 row)
+

@@ -9,9 +9,10 @@ import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 /**
- * The {@code takeon.*} audit events (§17.6.4: six from 653A, six from 655A, two from 656A), each
- * with exactly its documented params, built through {@link SafeAuditDetails} — ids, enums and
- * counts only, never a name, file name, header or value. Logged in the caller's transaction.
+ * The {@code takeon.*} audit events (§17.6.4: six from 653A, six from 655A, two from 656A, two from
+ * 657C), each with exactly its documented params, built through {@link SafeAuditDetails} — ids,
+ * enums and counts only, never a name, file name, header or value. Logged in the caller's
+ * transaction.
  */
 @Component
 public class TakeOnAudit {
@@ -19,6 +20,7 @@ public class TakeOnAudit {
   static final String BATCH = "take_on_batch";
   static final String SOURCE = "take_on_source";
   static final String GO_LIVE_ITEM = "take_on_go_live_item";
+  static final String REPORT = "take_on_report";
 
   private final AuditService auditService;
 
@@ -212,6 +214,33 @@ public class TakeOnAudit {
         GO_LIVE_ITEM,
         item.auditEntityId(),
         SafeAuditDetails.builder().put("item_key", item).build());
+  }
+
+  // --- 657C: the trust sign-off and the take-on report (§17.6.4) ---
+
+  public void batchSignedOff(TakeOnBatch batch, TakeOnSignOff signOff) {
+    log(
+        "takeon.batch.signed_off",
+        BATCH,
+        batch.getId(),
+        SafeAuditDetails.builder()
+            .put("batch_id", batch.getId())
+            .put("sign_off_id", signOff.getId())
+            .put("trust_account_id", batch.getTrustAccountId())
+            .token("statement_version", signOff.getStatementVersion())
+            .build());
+  }
+
+  public void reportGenerated(TakeOnReport report) {
+    log(
+        "takeon.report.generated",
+        REPORT,
+        report.getId(),
+        SafeAuditDetails.builder()
+            .put("batch_id", report.getBatchId())
+            .put("report_id", report.getId())
+            .put("trust_account_id", report.getTrustAccountId())
+            .build());
   }
 
   private void log(String eventType, String entityType, UUID entityId, Map<String, Object> d) {

@@ -201,6 +201,37 @@ describe("TransactionList", () => {
     expect(screen.queryByText(/Unident alloc in/i)).toBeNull();
   });
 
+  it("labels a balance brought forward at take-on in words, never the code (657C)", async () => {
+    mockGetMatterTransactions.mockResolvedValueOnce(
+      buildPage([
+        txn({
+          id: "t-bf",
+          transactionType: "TAKEON_CLIENT",
+          typeLabel: "Balance brought forward — take-on",
+          amount: 300000,
+          runningBalance: 300000,
+          transactionDate: "2026-10-31",
+          occurredAt: "2026-11-24T10:00:00Z",
+          // The commit writes the firm label as the description (TrustOpeningPositionService).
+          description: "Balance brought forward — take-on",
+          reference: "TAKEON-CL-2",
+        }),
+      ]),
+    );
+
+    render(<TransactionList matterId="matter-1" />);
+
+    await waitFor(() =>
+      expect(
+        screen.getAllByText("Balance brought forward — take-on").length,
+      ).toBeGreaterThan(0),
+    );
+    const table = screen.getByRole("table", { name: "Trust transactions" });
+    expect(table.textContent).toContain("31 Oct 2026");
+    expect(screen.queryByText(/TAKEON_CLIENT/)).toBeNull();
+    expect(screen.queryByText(/Takeon client/i)).toBeNull();
+  });
+
   it("renders the backend's label for section 86(4) rows, never the code (648D, 648A A-1)", async () => {
     mockGetMatterTransactions.mockResolvedValueOnce(
       buildPage([

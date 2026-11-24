@@ -97,12 +97,15 @@ class TakeOnEntryPointsArchTest {
     assertThat(TAKE_ON_ONLY_CLASSES).allMatch(n -> n.startsWith("io.b2mash.b2b.b2bstrawman."));
   }
 
-  /** 657A, 655A: the guarded methods exist, so the rule above is not vacuous for them. */
+  /** 657A, 655A, 657C: the guarded methods exist, so the rule above is not vacuous for them. */
   @Test
   void theGuardedTakeOnMethodsExist() throws Exception {
     assertThat(Class.forName(TAKE_ON_ONLY_CLASSES.getFirst()).getMethods())
         .as("655A: TakenOnCustomerService.createTakenOn")
         .anyMatch(m -> m.getName().equals("createTakenOn"));
+    assertThat(Class.forName(TAKE_ON_ONLY_CLASSES.get(1)).getMethods())
+        .as("657C: TrustOpeningPositionService.commit")
+        .anyMatch(m -> m.getName().equals("commit"));
     assertThat(Class.forName(TRUST_POSTING_SERVICE).getMethods())
         .anyMatch(m -> m.getName().equals("recordOpening"));
     assertThat(Class.forName(OPENING_AUTHORITY).getMethods())

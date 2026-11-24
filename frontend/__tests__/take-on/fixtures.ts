@@ -1,5 +1,9 @@
 import type {
   TakeOnBatch,
+  TakeOnReport,
+  TakeOnRow,
+  TakeOnSignOffQueueItem,
+  TakeOnSignOffReview,
   TakeOnDatasetCatalogue,
   TakeOnField,
   TakeOnGoLiveItem,
@@ -146,6 +150,8 @@ export function clientsBatch(overrides: Partial<TakeOnBatch> = {}): TakeOnBatch 
     summary: CLIENTS_SUMMARY,
     midMonthAcknowledged: false,
     position: null,
+    trustAccountName: null,
+    reportId: null,
     ...overrides,
   };
 }
@@ -436,7 +442,9 @@ export function trustBatch(overrides: Partial<TakeOnBatch> = {}): TakeOnBatch {
       skipped: 0,
       failed: 0,
     },
-    // No trust committer in 657B: no COMMIT, no sign-off yet (657C).
+    trustAccountName: "Trust Account G",
+    // As the preparer (an admin) sees it before the sign-off (657C, R-5): no SIGN_OFF (owner-only
+    // SIGN_OFF_TRUST_TAKE_ON), no COMMIT (a trust commit needs a live TRUST_SIGN_OFF).
     allowedActions: ["REMOVE_SOURCE", "MAP", "REVALIDATE", "CANCEL"],
     attestationStatement: null,
     summary: TRUST_SUMMARY_17313,
@@ -450,5 +458,184 @@ export function trustBatch(overrides: Partial<TakeOnBatch> = {}): TakeOnBatch {
       investedTotal: 300000,
     },
     ...overrides,
+  };
+}
+
+// ---- 657C: the trust sign-off and the take-on report ----
+
+/** TAKEON-SIGNOFF-v1 as the backend fills it for the §17.3.13 batch (§17.10 X3, verbatim). */
+export const SIGN_OFF_TEXT =
+  "I am a partner or director of Mathebula & Partners responsible for its trust accounting records (Rule 54.19). I have reviewed this take-on of Trust Account G at 31 October 2026. The trust creditors listed agree, to the cent, with the reconciled trust position in the previous system at that date, and no trust creditor is in debit.";
+
+/** A live trust sign-off by the owner. */
+export const TRUST_SIGN_OFF: TakeOnSignOff = {
+  id: "sign-off-trust-1",
+  kind: "TRUST_SIGN_OFF",
+  memberName: "Alice Owner",
+  roleName: "Owner",
+  statementVersion: "TAKEON-SIGNOFF-v1",
+  signedAt: "2026-11-24T09:30:00Z",
+};
+
+/** One client-ledger row of the §17.3.13 set (client A's matter A1, R300 000,00). */
+export const TRUST_ROW_A1: TakeOnRow = {
+  id: "row-a1",
+  section: "CLIENT_LEDGER",
+  rowNumber: 2,
+  sourceRef: "AJS-C-0001",
+  status: "VALIDATED",
+  block: false,
+  values: {
+    clientRef: "client.a@example.com",
+    matterRef: "M-A1",
+    balance: "300000.00",
+    clientId: "4b1d7c3e-0000-0000-0000-00000000000a",
+  },
+  errors: [],
+  warnings: [],
+  duplicateOfId: null,
+  failureReason: null,
+  resultEntityId: null,
+};
+
+/** The queue item of the §17.3.13 batch, as the Home widget lists it. */
+export const QUEUE_ITEM: TakeOnSignOffQueueItem = {
+  batchId: "batch-657b",
+  trustAccountId: "acc-g",
+  trustAccountName: "Trust Account G",
+  cutoverDate: "2026-10-31",
+  preparedByName: "Bob Admin",
+  validatedAt: "2026-11-24T08:00:00Z",
+};
+
+/** The sign-off review of the §17.3.13 batch, as the owner sees it before signing (SIGN_OFF). */
+export function signOffReview(overrides: Partial<TakeOnSignOffReview> = {}): TakeOnSignOffReview {
+  const batch = trustBatch();
+  return {
+    batchId: batch.id,
+    status: "VALIDATED",
+    trustAccountId: "acc-g",
+    trustAccountName: "Trust Account G",
+    cutoverDate: "2026-10-31",
+    midMonthAcknowledged: false,
+    position: batch.position,
+    counts: batch.counts,
+    summary: TRUST_SUMMARY_17313,
+    validationHash: "hash-trust-v1",
+    validatedAt: "2026-11-24T08:00:00Z",
+    preparedByName: "Bob Admin",
+    declaration: { version: "TAKEON-SIGNOFF-v1", text: SIGN_OFF_TEXT },
+    liveSignOff: null,
+    signedByCaller: false,
+    allowedActions: ["SIGN_OFF"],
+    rows: {
+      content: [TRUST_ROW_A1],
+      page: { totalElements: 1, totalPages: 1, size: 50, number: 0 },
+    },
+    ...overrides,
+  };
+}
+
+/** The same review once the caller signed it (WITHDRAW_SIGN_OFF). */
+export function signedReview(overrides: Partial<TakeOnSignOffReview> = {}): TakeOnSignOffReview {
+  return signOffReview({
+    liveSignOff: TRUST_SIGN_OFF,
+    signedByCaller: true,
+    allowedActions: ["WITHDRAW_SIGN_OFF"],
+    ...overrides,
+  });
+}
+
+const POSITION_17313 = {
+  bankBalance: "418500.00",
+  outstandingDeposits: "5000.00",
+  outstandingPayments: "20000.00",
+  adjustedBank: "403500.00",
+  cashbook: "403500.00",
+  fundLedger: "1250.00",
+  investedTotal: "300000.00",
+};
+
+const ZERO_POSITION = Object.fromEntries(
+  Object.keys(POSITION_17313).map((k) => [k, "0.00"])
+) as typeof POSITION_17313;
+
+/** The take-on report of the committed §17.3.13 batch (the parts the results summary reads). */
+export const TAKE_ON_REPORT_17313: TakeOnReport = {
+  id: "report-1",
+  batchId: "batch-657b",
+  trustAccountId: "acc-g",
+  cutoverDate: "2026-10-31",
+  snapshotSha256: "a".repeat(64),
+  generatedAt: "2026-11-24T10:00:00Z",
+  snapshot: {
+    firm: { name: "Mathebula & Partners" },
+    account: {
+      id: "acc-g",
+      name: "Trust Account G",
+      accountNumber: "1234567890",
+      bankName: "Standard Bank",
+      accountType: "GENERAL",
+      requireDualApproval: true,
+    },
+    cutoverDate: "2026-10-31",
+    midMonth: false,
+    previousSystem: POSITION_17313,
+    kazi: POSITION_17313,
+    differences: ZERO_POSITION,
+    creditorList: {
+      trustAccountId: "acc-g",
+      accountName: "Trust Account G",
+      asAt: "2026-10-31",
+      cashbook: "403500.00",
+      creditorTotal: "403500.00",
+      lines: [
+        creditorLine("CLIENT", "Client A", "300000.00"),
+        creditorLine("CLIENT", "Client B", "199500.00"),
+        creditorLine("FUND", "Legal Practitioners' Fidelity Fund", "1250.00"),
+        creditorLine("UNIDENTIFIED", null, "2000.00"),
+        creditorLine("UNIDENTIFIED", null, "750.00"),
+      ],
+    },
+    investmentAccounts: [],
+    investments: [],
+    unidentified: [],
+    outstandingItems: [],
+    totals: TRUST_EQUATION_17313,
+    flags: ["UNIDENTIFIED_OVER_ONE_YEAR"],
+    signOff: {
+      signedBy: "Alice Owner",
+      role: "Owner",
+      statementVersion: "TAKEON-SIGNOFF-v1",
+      statementText: SIGN_OFF_TEXT,
+      signedAt: "2026-11-24T09:30:00Z",
+      preparedBy: "Bob Admin",
+      samePerson: false,
+      notes: ["Authorised by the take-on sign-off"],
+    },
+    sources: [],
+    batchId: "batch-657b",
+  },
+};
+
+function creditorLine(
+  kind: TakeOnReport["snapshot"]["creditorList"]["lines"][number]["kind"],
+  name: string | null,
+  balance: string
+): TakeOnReport["snapshot"]["creditorList"]["lines"][number] {
+  return {
+    kind,
+    clientId: null,
+    name,
+    matters: [],
+    balance,
+    unidentifiedDepositId: null,
+    receivedDate: null,
+    bankDescription: null,
+    totalDeposits: null,
+    totalPayments: null,
+    totalFeeTransfers: null,
+    lastTransactionDate: null,
+    broughtForward: balance,
   };
 }

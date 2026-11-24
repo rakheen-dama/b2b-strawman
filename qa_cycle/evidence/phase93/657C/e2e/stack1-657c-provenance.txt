@@ -1,0 +1,9 @@
+/app/frontend/.next/server/app/(app)/org/[slug]/dashboard/page_client-reference-manifest.js
+/app/frontend/.next/server/chunks/ssr/frontend_0kagp3g._.js
+/app/frontend/.next/server/chunks/ssr/frontend_0vgtt-d._.js
+     2689  11-24-2026 10:31   io/b2mash/b2b/b2bstrawman/takeon/TakeOnReportService$TakeOnReportSummaryResponse.class
+    24440  11-24-2026 10:31   io/b2mash/b2b/b2bstrawman/takeon/TakeOnReportService.class
+     3195  11-24-2026 10:31   io/b2mash/b2b/b2bstrawman/takeon/TakeOnReportService$TakeOnReportResponse.class
+    30344  11-24-2026 10:31   io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/takeon/TrustOpeningPositionService.class
+     2378  11-24-2026 10:31   io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/takeon/TrustOpeningPositionService$Posted.class
+     1793  11-24-2026 10:31   io/b2mash/b2b/b2bstrawman/verticals/legal/trustaccounting/takeon/TrustOpeningPositionService$Result.class

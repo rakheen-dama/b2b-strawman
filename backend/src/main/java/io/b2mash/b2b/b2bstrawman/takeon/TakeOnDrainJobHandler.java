@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.takeon;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobHandler;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.takeon.dataset.TakeOnRowCommitters;
 import jakarta.annotation.Nullable;
 import java.time.Clock;
 import java.time.Duration;
@@ -26,8 +27,9 @@ import org.springframework.transaction.support.TransactionTemplate;
  * <p>Loops: claims the oldest {@code COMMITTING} batch ({@code FOR UPDATE SKIP LOCKED}, a short
  * transaction), binds {@code MEMBER_ID} to the member who confirmed the commit ({@code
  * runForTenantOnShardWithMember}, keeping the worker's shard; audit rows and {@code created_by}
- * name the member), and runs {@link TakeOnRowRunner}; returns when no {@code COMMITTING} batch is
- * left, when another worker holds the batch's last rows, or when the run budget ({@link
+ * name the member), and runs {@link TakeOnRowRunner} — or, for a dataset committed whole (657C: the
+ * trust position, R-2), its {@link TakeOnBatchCommitter}; returns when no {@code COMMITTING} batch
+ * is left, when another worker holds the batch's last rows, or when the run budget ({@link
  * #DEFAULT_BUDGET}) is spent — {@link TakeOnDrainSweep} (every minute) continues. A redelivered or
  * concurrent run is harmless: every claim re-checks status under its lock. The job payload is
  * always {@code null}.
@@ -55,16 +57,19 @@ public class TakeOnDrainJobHandler implements JobHandler {
 
   private final TakeOnBatchRepository batches;
   private final TakeOnRowRunner runner;
+  private final TakeOnRowCommitters committers;
   private final TransactionTemplate tx;
   private final Clock clock;
 
   public TakeOnDrainJobHandler(
       TakeOnBatchRepository batches,
       TakeOnRowRunner runner,
+      TakeOnRowCommitters committers,
       PlatformTransactionManager transactionManager,
       Clock clock) {
     this.batches = batches;
     this.runner = runner;
+    this.committers = committers;
     this.tx = new TransactionTemplate(transactionManager);
     this.clock = clock;
   }
@@ -79,7 +84,7 @@ public class TakeOnDrainJobHandler implements JobHandler {
     drainFor(DEFAULT_BUDGET);
   }
 
-  private record Claim(UUID batchId, UUID actor) {}
+  private record Claim(UUID batchId, UUID actor, TakeOnDataset dataset) {}
 
   /**
    * Drains the bound tenant within {@code budget} (checked after each row; {@code Duration.ZERO}
@@ -95,7 +100,7 @@ public class TakeOnDrainJobHandler implements JobHandler {
               status ->
                   batches
                       .findNextCommittingSkipLocked()
-                      .map(b -> new Claim(b.getId(), b.getCommitRequestedBy())));
+                      .map(b -> new Claim(b.getId(), b.getCommitRequestedBy(), b.getDataset())));
       if (claim == null || claim.isEmpty()) {
         return; // no committing batch left (or another worker is claiming it this instant)
       }
@@ -108,12 +113,17 @@ public class TakeOnDrainJobHandler implements JobHandler {
         return;
       }
       var outcome = new AtomicReference<TakeOnRowRunner.Outcome>();
+      var batchCommitter = committers.batchCommitterFor(c.dataset());
       RequestScopes.runForTenantOnShardWithMember(
           RequestScopes.requireTenantId(),
           RequestScopes.getOrgIdOrNull(),
           RequestScopes.getShardIdOrDefault(),
           c.actor(),
-          () -> outcome.set(runner.run(c.batchId(), deadline)));
+          () ->
+              outcome.set(
+                  batchCommitter.isPresent()
+                      ? batchCommitter.get().commit(c.batchId()) // one transaction (R-2)
+                      : runner.run(c.batchId(), deadline)));
       switch (outcome.get()) {
         case COMPLETED, NOT_COMMITTING, RETURNED_TO_VALIDATED -> {
           // look for the next committing batch

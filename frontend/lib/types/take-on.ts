@@ -41,7 +41,13 @@ export type TakeOnAction =
   | "REVOKE_ATTESTATION"
   | "COMMIT"
   | "CREATE_PORTAL_ACCESS"
-  | "DOWNLOAD_RESULT";
+  | "DOWNLOAD_RESULT"
+  /** The caller may sign off this trust take-on (657C: SIGN_OFF_TRUST_TAKE_ON + VIEW_TRUST). */
+  | "SIGN_OFF"
+  /** The caller is the live trust signer and may withdraw their own sign-off (657C). */
+  | "WITHDRAW_SIGN_OFF"
+  /** A live trust sign-off may be revoked by the preparer or an admin (D-113, 657C). */
+  | "REVOKE_SIGN_OFF";
 
 /** TakeOnSignOffKind — the FICA attestation of a clients batch (655A), the trust sign-off (657C). */
 export type TakeOnSignOffKind = "FICA_ATTESTATION" | "TRUST_SIGN_OFF";
@@ -300,6 +306,10 @@ export interface TakeOnBatch {
   midMonthAcknowledged: boolean;
   /** Trust only (657B): the reconciled position at cutover; null on every other dataset. */
   position: TakeOnPosition | null;
+  /** Trust only (657C): the banking account's name; null on every other dataset. */
+  trustAccountName: string | null;
+  /** Trust only (657C): the take-on report, once the batch completed; else null. */
+  reportId: string | null;
 }
 
 /** TakeOnBatchSummaryResponse */
@@ -449,6 +459,240 @@ export interface TakeOnGoLiveAcknowledgeRequest {
   note: string | null;
 }
 
+// ---- Trust sign-off and the take-on report (Phase 93 657C, §17.4.1/§17.4.2, R-7) — records
+// nested in backend takeon/TakeOnSignOffService.java, TakeOnReportService.java and
+// TakeOnReportSnapshot.java, keys in declaration order (pinned like the records above). ----
+
+/** TakeOnSignOffQueueItem — a trust take-on awaiting the caller's sign-off (the Home widget). */
+export interface TakeOnSignOffQueueItem {
+  batchId: string;
+  trustAccountId: string;
+  trustAccountName: string | null;
+  cutoverDate: string;
+  preparedByName: string | null;
+  validatedAt: string | null;
+}
+
+/**
+ * TakeOnSignOffDeclarationResponse — the TAKEON-SIGNOFF-v1 declaration (§17.10 X3, legal copy)
+ * with the firm, account and cutover date filled in by the backend: render it verbatim.
+ */
+export interface TakeOnSignOffDeclaration {
+  version: string;
+  text: string;
+}
+
+/** TakeOnSignOffRequest — `statementVersion` is the declaration's own version, sent back. */
+export interface TakeOnSignOffRequest {
+  validationHash: string;
+  statementVersion: string;
+  declarationAccepted: boolean;
+}
+
+/**
+ * TakeOnSignOffReviewResponse — what the signer signs (sign-off-review, and the answer of sign-off
+ * and withdraw): the position, the dry-run summary, the declaration and a page of the rows.
+ */
+export interface TakeOnSignOffReview {
+  batchId: string;
+  status: TakeOnBatchStatus;
+  trustAccountId: string | null;
+  trustAccountName: string | null;
+  cutoverDate: string | null;
+  midMonthAcknowledged: boolean;
+  position: TakeOnPosition | null;
+  counts: TakeOnCounts;
+  summary: TakeOnValidationSummary | null;
+  validationHash: string | null;
+  validatedAt: string | null;
+  preparedByName: string | null;
+  /** null without a firm, account or cutover date (nothing to declare). */
+  declaration: TakeOnSignOffDeclaration | null;
+  liveSignOff: TakeOnSignOff | null;
+  signedByCaller: boolean;
+  /** SIGN_OFF and/or WITHDRAW_SIGN_OFF only — the signer's own controls. */
+  allowedActions: TakeOnAction[];
+  rows: TakeOnPage<TakeOnRow>;
+}
+
+/** TakeOnReportSummaryResponse — one take-on report in the list. */
+export interface TakeOnReportSummary {
+  id: string;
+  batchId: string;
+  trustAccountId: string;
+  cutoverDate: string;
+  generatedAt: string;
+  generatedByName: string | null;
+}
+
+/** FirmHeader */
+export interface TakeOnReportFirm {
+  name: string | null;
+}
+
+/** AccountHeader */
+export interface TakeOnReportAccount {
+  id: string;
+  name: string | null;
+  accountNumber: string | null;
+  bankName: string | null;
+  accountType: string | null;
+  requireDualApproval: boolean;
+}
+
+/** ReconciledPosition — two-decimal amount strings. */
+export interface TakeOnReportPosition {
+  bankBalance: string | null;
+  outstandingDeposits: string | null;
+  outstandingPayments: string | null;
+  adjustedBank: string | null;
+  cashbook: string | null;
+  fundLedger: string | null;
+  investedTotal: string | null;
+}
+
+/** MatterEntry */
+export interface TakeOnReportMatter {
+  matterId: string | null;
+  name: string | null;
+  balance: string | null;
+}
+
+/** CreditorLine.Kind of a liveList line. */
+export type TakeOnReportCreditorKind =
+  | "CLIENT"
+  | "CLIENT_INVESTMENT"
+  | "FUND"
+  | "UNIDENTIFIED"
+  | "INTER_ACCOUNT";
+
+/** CreditorLineEntry — one liveList line. */
+export interface TakeOnReportCreditorLine {
+  kind: TakeOnReportCreditorKind;
+  clientId: string | null;
+  name: string | null;
+  matters: TakeOnReportMatter[];
+  balance: string | null;
+  unidentifiedDepositId: string | null;
+  receivedDate: string | null;
+  bankDescription: string | null;
+  totalDeposits: string | null;
+  totalPayments: string | null;
+  totalFeeTransfers: string | null;
+  lastTransactionDate: string | null;
+  broughtForward: string | null;
+}
+
+/** CreditorListSection — one account's liveList at the cutover date. */
+export interface TakeOnReportCreditorList {
+  trustAccountId: string;
+  accountName: string | null;
+  asAt: string;
+  cashbook: string | null;
+  creditorTotal: string | null;
+  lines: TakeOnReportCreditorLine[];
+}
+
+/** InvestmentLine */
+export interface TakeOnReportInvestment {
+  basis: string;
+  clientId: string | null;
+  clientName: string | null;
+  matterId: string | null;
+  matterName: string | null;
+  investmentAccountId: string | null;
+  investmentAccountName: string | null;
+  institution: string | null;
+  accountNumber: string | null;
+  principal: string | null;
+  interestRatePercent: string | null;
+  depositDate: string | null;
+  accruedInterest: string | null;
+  fundAmount: string | null;
+  balancePerConfirmation: string | null;
+  instructionReference: string | null;
+  instructionDate: string | null;
+  endorsementConfirmed: boolean;
+}
+
+/** UnidentifiedLine */
+export interface TakeOnReportUnidentified {
+  receivedDate: string | null;
+  ageInDaysAtCutover: number;
+  amount: string | null;
+  reference: string | null;
+}
+
+/** OutstandingLine */
+export interface TakeOnReportOutstanding {
+  kind: string;
+  originalDate: string | null;
+  reference: string | null;
+  clientId: string | null;
+  clientName: string | null;
+  matterId: string | null;
+  matterName: string | null;
+  amount: string | null;
+}
+
+/** SignOffSection — `notes`: "Prepared and signed off by the same person" and/or "Authorised by the take-on sign-off". */
+export interface TakeOnReportSignOff {
+  signedBy: string | null;
+  role: string | null;
+  statementVersion: string | null;
+  statementText: string | null;
+  signedAt: string | null;
+  preparedBy: string | null;
+  samePerson: boolean;
+  notes: string[];
+}
+
+/** SourceFile */
+export interface TakeOnReportSource {
+  fileName: string | null;
+  section: string | null;
+  sheetName: string | null;
+  sha256: string | null;
+  rowCount: number;
+  uploadedBy: string | null;
+  uploadedAt: string | null;
+}
+
+/** The report flags: the batch's trust flags plus the mid-month cutover. */
+export type TakeOnReportFlag = TakeOnTrustFlag | "MID_MONTH_CUTOVER";
+
+/** TakeOnReportSnapshot — the immutable snapshot (§17.3.12, R-9); `differences` = kazi − previous. */
+export interface TakeOnReportSnapshot {
+  firm: TakeOnReportFirm;
+  account: TakeOnReportAccount;
+  cutoverDate: string;
+  midMonth: boolean;
+  previousSystem: TakeOnReportPosition;
+  kazi: TakeOnReportPosition;
+  differences: TakeOnReportPosition;
+  creditorList: TakeOnReportCreditorList;
+  investmentAccounts: TakeOnReportCreditorList[];
+  investments: TakeOnReportInvestment[];
+  unidentified: TakeOnReportUnidentified[];
+  outstandingItems: TakeOnReportOutstanding[];
+  totals: TakeOnTrustEquation | null;
+  flags: TakeOnReportFlag[];
+  signOff: TakeOnReportSignOff | null;
+  sources: TakeOnReportSource[];
+  batchId: string;
+}
+
+/** TakeOnReportResponse — the snapshot as JSON (the results step). */
+export interface TakeOnReport {
+  id: string;
+  batchId: string;
+  trustAccountId: string;
+  cutoverDate: string;
+  snapshotSha256: string;
+  generatedAt: string;
+  snapshot: TakeOnReportSnapshot;
+}
+
 /** Spring Data VIA_DTO page. */
 export interface TakeOnPage<T> {
   content: T[];
@@ -465,7 +709,14 @@ export const TAKE_ON_DATASET_ORDER: readonly TakeOnDataset[] = [
 ];
 
 /** The take-on wizard's steps (653A/655A/656A). */
-export type TakeOnStep = "upload" | "sheet" | "mapping" | "validation" | "attestation" | "results";
+export type TakeOnStep =
+  | "upload"
+  | "sheet"
+  | "mapping"
+  | "validation"
+  | "attestation"
+  | "signOff"
+  | "results";
 
 /** How a dataset reaches its commit in the wizard, and what its commit can skip. */
 export interface TakeOnCommitTraits {
@@ -479,12 +730,12 @@ export interface TakeOnCommitTraits {
 
 /**
  * The one place the wizard reads each dataset's commit path from (656A, D-177). The trust position
- * and debtors have no commit yet: their slices set their sign-off step here.
+ * is signed off by a partner or director, then committed (657C); debtors set theirs in 658A.
  */
 export const TAKE_ON_COMMIT_TRAITS: Record<TakeOnDataset, TakeOnCommitTraits> = {
   CLIENTS: { signOffStep: "attestation", commitsFromValidation: false, skipsNilBalance: false },
   MATTERS: { signOffStep: null, commitsFromValidation: true, skipsNilBalance: false },
-  TRUST_POSITION: { signOffStep: null, commitsFromValidation: false, skipsNilBalance: true },
+  TRUST_POSITION: { signOffStep: "signOff", commitsFromValidation: false, skipsNilBalance: true },
   DEBTOR_BALANCES: { signOffStep: null, commitsFromValidation: false, skipsNilBalance: true },
 };
 
@@ -565,6 +816,38 @@ export const TAKE_ON_TRUST_FLAG_LABEL: Record<TakeOnTrustFlag, string> = {
   FUND_LEDGER_IN_DEBIT: "Legal Practitioners' Fidelity Fund ledger in debit",
   UNIDENTIFIED_OVER_ONE_YEAR: "Unidentified deposit older than one year",
 };
+
+/** The take-on report's flags (product copy, 657C): the trust flags plus a mid-month cutover. */
+export const TAKE_ON_REPORT_FLAG_LABEL: Record<TakeOnReportFlag, string> = {
+  ...TAKE_ON_TRUST_FLAG_LABEL,
+  MID_MONTH_CUTOVER: "Mid-month cutover",
+};
+
+const MONTHS = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+] as const;
+
+/**
+ * A cutover date as X3 writes it, `d MMMM yyyy` ("2026-10-31" → "31 October 2026") — the same
+ * form as the backend's declaration. Plain arithmetic on the ISO date: no zone, no locale.
+ */
+export function takeOnLongDate(isoDate: string | null | undefined): string {
+  if (!isoDate) return "";
+  const [y, m, d] = isoDate.split("-").map(Number);
+  if (!y || !m || !d || m < 1 || m > 12) return isoDate;
+  return `${d} ${MONTHS[m - 1]} ${y}`;
+}
 
 /**
  * Labels of the trust position's coded values (catalogue `allowedValues`) and of the dry run's

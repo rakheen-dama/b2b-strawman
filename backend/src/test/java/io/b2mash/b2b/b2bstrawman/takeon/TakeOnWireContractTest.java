@@ -47,7 +47,10 @@ class TakeOnWireContractTest {
    * {@code position} to {@code TakeOnBatchResponse}, extends {@code TakeOnPositionRequest} with the
    * reconciled position, and adds the position response and the eight records of a trust batch's
    * {@code summary} (pinned although {@code summary} is a map, so the frontend mirror is checked) =
-   * 38.
+   * 38. 657C appends {@code trustAccountName} and {@code reportId} to {@code TakeOnBatchResponse}
+   * and adds the trust sign-off records (queue item, declaration, request, review), the report
+   * records (summary, response) and the report snapshot's records (pinned although {@code snapshot}
+   * is a map) = 38 + 6 + 12 = 56.
    */
   static final List<Class<?>> PINNED =
       List.of(
@@ -92,7 +95,26 @@ class TakeOnWireContractTest {
           TrustPositionEquation.TrustEq2.class,
           TrustPositionEquation.TrustInvestmentsTie.class,
           TrustPositionEquation.TrustDeficit.class,
-          TrustPositionEquation.TrustPositionMessage.class);
+          TrustPositionEquation.TrustPositionMessage.class,
+          // 657C
+          TakeOnSignOffService.TakeOnSignOffQueueItem.class,
+          TakeOnSignOffService.TakeOnSignOffDeclarationResponse.class,
+          TakeOnSignOffService.TakeOnSignOffRequest.class,
+          TakeOnSignOffService.TakeOnSignOffReviewResponse.class,
+          TakeOnReportService.TakeOnReportSummaryResponse.class,
+          TakeOnReportService.TakeOnReportResponse.class,
+          TakeOnReportSnapshot.class,
+          TakeOnReportSnapshot.FirmHeader.class,
+          TakeOnReportSnapshot.AccountHeader.class,
+          TakeOnReportSnapshot.ReconciledPosition.class,
+          TakeOnReportSnapshot.CreditorListSection.class,
+          TakeOnReportSnapshot.CreditorLineEntry.class,
+          TakeOnReportSnapshot.MatterEntry.class,
+          TakeOnReportSnapshot.InvestmentLine.class,
+          TakeOnReportSnapshot.UnidentifiedLine.class,
+          TakeOnReportSnapshot.OutstandingLine.class,
+          TakeOnReportSnapshot.SignOffSection.class,
+          TakeOnReportSnapshot.SourceFile.class);
 
   private static final String UPDATE_FLAG = "takeon.contract.update";
   private static final Path SNAPSHOT = Path.of("src/test/resources/wire/take-on-contract.json");

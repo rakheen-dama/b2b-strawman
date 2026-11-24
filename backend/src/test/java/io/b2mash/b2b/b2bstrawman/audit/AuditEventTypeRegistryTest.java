@@ -287,10 +287,11 @@ class AuditEventTypeRegistryTest {
     // + 7 takeon.batch.attested/.sign_off_revoked/.commit_requested/.committed/.commit_failed,
     // takeon.portal_contacts.created, customer.fica_attested (Phase 93 655A) = 96.
     // + 2 takeon.go_live.acknowledged/.withdrawn (Phase 93 656A) = 98.
+    // + 2 takeon.batch.signed_off, takeon.report.generated (Phase 93 657C) = 100.
     // Default fallback is synthesised inside resolve() and must NOT appear in entries().
     // (Phase 86 slice 2 / Epic 596B removed the 5 deal.* SALES entries; Phase 86 slice 3 / Epic
     // 597B removed proposal.*; Phase 86 slice 7 / Epic 601 removed six ai.specialist.* entries.)
-    assertThat(registry.entries()).hasSize(98);
+    assertThat(registry.entries()).hasSize(100);
     assertThat(registry.entries())
         .extracting(AuditEventTypeMetadata::eventType)
         .doesNotContain("(default fallback)")
@@ -336,7 +337,9 @@ class AuditEventTypeRegistryTest {
             "takeon.batch.cancelled",
             "takeon.file.downloaded",
             "takeon.go_live.acknowledged",
-            "takeon.go_live.withdrawn")
+            "takeon.go_live.withdrawn",
+            "takeon.batch.signed_off",
+            "takeon.report.generated")
         .doesNotContain(
             "ai.specialist.*",
             "ai.specialist.invoked",
@@ -386,6 +389,14 @@ class AuditEventTypeRegistryTest {
       assertThat(resolved.severity()).isEqualTo(AuditSeverity.INFO);
       assertThat(resolved.label()).startsWith("Take-on ");
     }
+    // 657C: the trust sign-off and the take-on report
+    for (String key : List.of("takeon.batch.signed_off", "takeon.report.generated")) {
+      var resolved = registry.resolve(key);
+      assertThat(resolved.eventType()).isEqualTo(key);
+      assertThat(resolved.group()).isEqualTo(AuditEventGroup.DATA);
+      assertThat(resolved.severity()).isEqualTo(AuditSeverity.INFO);
+      assertThat(resolved.label()).startsWith("Trust take-on ");
+    }
     var downloaded = registry.resolve("takeon.file.downloaded");
     assertThat(downloaded.group()).isEqualTo(AuditEventGroup.DATA);
     assertThat(downloaded.severity()).isEqualTo(AuditSeverity.NOTICE);
@@ -394,8 +405,8 @@ class AuditEventTypeRegistryTest {
 
   @Test
   void entriesMatchingWithEmptyOrNullReturnsAll() {
-    assertThat(registry.entriesMatching(Set.of())).hasSize(98);
-    assertThat(registry.entriesMatching(null)).hasSize(98);
+    assertThat(registry.entriesMatching(Set.of())).hasSize(100);
+    assertThat(registry.entriesMatching(null)).hasSize(100);
   }
 
   @Test

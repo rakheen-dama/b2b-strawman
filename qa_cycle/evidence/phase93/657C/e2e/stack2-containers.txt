@@ -1,0 +1,6 @@
+e2e-frontend	2026-11-24 12:40:26 +0200 SAST	docteams-e2e-frontend	Up About a minute (healthy)
+e2e-backend	2026-11-24 12:40:26 +0200 SAST	docteams-e2e-backend	Up About a minute (healthy)
+e2e-localstack	2026-11-24 12:40:25 +0200 SAST	localstack/localstack:3	Up About a minute (healthy)
+e2e-mock-idp	2026-11-24 12:40:25 +0200 SAST	docteams-e2e-mock-idp	Up About a minute (healthy)
+e2e-postgres	2026-11-24 12:40:25 +0200 SAST	postgres:16-alpine	Up About a minute (healthy)
+e2e-mailpit	2026-11-24 12:40:25 +0200 SAST	axllent/mailpit:latest	Up About a minute (healthy)

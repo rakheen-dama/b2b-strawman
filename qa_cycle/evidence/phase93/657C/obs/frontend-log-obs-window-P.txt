@@ -1,0 +1,32 @@
+2026-11-24T10:50:03.452877959Z ⨯ Error: The destination stream closed early.
+2026-11-24T10:50:03.452947042Z     at ignore-listed frames {
+2026-11-24T10:50:03.452949709Z   digest: '1054653889'
+2026-11-24T10:50:03.452950834Z }
+2026-11-24T10:50:03.460252376Z ⨯ Error: The destination stream closed early.
+2026-11-24T10:50:03.460316084Z     at ignore-listed frames {
+2026-11-24T10:50:03.460325042Z   digest: '1054653889'
+2026-11-24T10:50:03.460326542Z }
+2026-11-24T10:50:03.467594417Z ⨯ Error: The destination stream closed early.
+2026-11-24T10:50:03.467623001Z     at ignore-listed frames {
+2026-11-24T10:50:03.467624542Z   digest: '1054653889'
+2026-11-24T10:50:03.467625667Z }
+2026-11-24T10:50:03.475675042Z ⨯ Error: The destination stream closed early.
+2026-11-24T10:50:03.475720751Z     at ignore-listed frames {
+2026-11-24T10:50:03.475722459Z   digest: '1054653889'
+2026-11-24T10:50:03.475723584Z }
+2026-11-24T10:50:05.642028710Z ⨯ Error: The destination stream closed early.
+2026-11-24T10:50:05.642065877Z     at ignore-listed frames {
+2026-11-24T10:50:05.642067793Z   digest: '1054653889'
+2026-11-24T10:50:05.642069043Z }
+2026-11-24T10:50:05.642194752Z ⨯ Error: The destination stream closed early.
+2026-11-24T10:50:05.642202377Z     at ignore-listed frames {
+2026-11-24T10:50:05.642203918Z   digest: '1054653889'
+2026-11-24T10:50:05.642205168Z }
+2026-11-24T10:50:05.642206252Z ⨯ Error: The destination stream closed early.
+2026-11-24T10:50:05.642207418Z     at ignore-listed frames {
+2026-11-24T10:50:05.642208585Z   digest: '1054653889'
+2026-11-24T10:50:05.642209710Z }
+2026-11-24T10:50:05.642225043Z ⨯ Error: The destination stream closed early.
+2026-11-24T10:50:05.642227377Z     at ignore-listed frames {
+2026-11-24T10:50:05.642228668Z   digest: '1054653889'
+2026-11-24T10:50:05.642229668Z }

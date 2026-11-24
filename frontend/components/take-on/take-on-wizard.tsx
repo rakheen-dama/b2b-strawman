@@ -31,8 +31,9 @@ import { MappingStep } from "./mapping-step";
 import { ResultsStep, useTakeOnCommitProgress } from "./results-step";
 import { SheetPicker } from "./sheet-picker";
 import { TakeOnError } from "./take-on-feedback";
+import { liveTrustSignOff, TrustSignOffStep } from "./trust-sign-off-step";
 import { TakeOnFilesPanel } from "./upload-step";
-import { ValidationStep } from "./validation-step";
+import { ValidationStep, type TakeOnInFlight } from "./validation-step";
 
 export type { TakeOnStep };
 
@@ -42,6 +43,7 @@ const STEP_LABEL: Record<TakeOnStep, string> = {
   mapping: "Mapping",
   validation: "Validation",
   attestation: "Attestation",
+  signOff: "Sign-off",
   results: "Results",
 };
 
@@ -53,11 +55,14 @@ const traitsOf = (batch: TakeOnBatch) => TAKE_ON_COMMIT_TRAITS[batch.dataset];
 
 /**
  * Matters need no sign-off: the commit sits under Validation, then Results (656A, D-169). The
- * trust position and debtors gain their commit steps in later slices.
+ * trust position is signed off, then committed (657C); debtors gain their commit step in 658A.
  */
 const commitsFromValidation = (batch: TakeOnBatch) => traitsOf(batch).commitsFromValidation;
 
-/** Clients attest, then commit (655A); matters commit from Validation (656A). */
+/**
+ * Clients attest, then commit (655A); matters commit from Validation (656A); the trust position is
+ * signed off, then committed (657C).
+ */
 const stepsFor = (batch: TakeOnBatch) => {
   const { signOffStep } = traitsOf(batch);
   if (signOffStep) return [...FILE_STEPS, stepOf(signOffStep), stepOf("results")];
@@ -76,17 +81,18 @@ const firstUnmapped = (batch: TakeOnBatch) => batch.sources.find((s) => !s.mappe
 
 /**
  * Where a batch resumes: committing or completed → Results; a validated clients batch with a live
- * attestation → Attestation; no file → Upload; an unmapped file → Sheet (multi-sheet XLSX, or no
- * rows read yet) or Mapping; mapped → Validation.
+ * attestation → Attestation; a validated trust batch with a live sign-off → Sign-off; no file →
+ * Upload; an unmapped file → Sheet (multi-sheet XLSX, or no rows read yet) or Mapping; mapped →
+ * Validation.
  */
 export function takeOnStepFor(batch: TakeOnBatch): TakeOnStep {
   if (isCommitted(batch)) return "results";
-  if (
-    batch.status === "VALIDATED" &&
-    traitsOf(batch).signOffStep === "attestation" &&
-    liveAttestation(batch)
-  ) {
+  const { signOffStep } = traitsOf(batch);
+  if (batch.status === "VALIDATED" && signOffStep === "attestation" && liveAttestation(batch)) {
     return "attestation";
+  }
+  if (batch.status === "VALIDATED" && signOffStep === "signOff" && liveTrustSignOff(batch)) {
+    return "signOff";
   }
   if (batch.sources.length === 0) return "upload";
   if (batch.status === "MAPPED" || batch.status === "VALIDATED") return "validation";
@@ -102,8 +108,9 @@ interface TakeOnWizardProps {
 
 /**
  * The take-on wizard inside Settings → Matters → Take-on (`?tab=take-on&batch={id}`, Phase 93
- * 653A/655A/656A): Upload → Sheet → Mapping → Validation, then for clients → Attestation → Results
- * (attest, commit, progress, outcome) and for matters → Results (committed from Validation). While
+ * 653A/655A/656A/657C): Upload → Sheet → Mapping → Validation, then for clients → Attestation →
+ * Results (attest, commit, progress, outcome), for matters → Results (committed from Validation)
+ * and for the trust position → Sign-off → Results. While
  * the batch is COMMITTING the wizard re-reads it until the status changes. Every control follows
  * the batch's allowedActions.
  */
@@ -113,6 +120,12 @@ export function TakeOnWizard({ batch: initialBatch, dataset }: TakeOnWizardProps
   const [activeSourceId, setActiveSourceId] = useState<string | null>(
     () => (firstUnmapped(initialBatch) ?? initialBatch.sources[0])?.id ?? null
   );
+  /**
+   * The Validation step's one request in flight (dry run or position save), kept here so leaving
+   * the step cannot drop it: the stepper is disabled while it runs, so a stale save can never land
+   * after the step changed (F-657B-6) — from 657C it could revoke a sign-off just shown.
+   */
+  const [inFlight, setInFlight] = useState<TakeOnInFlight>(null);
 
   const activeSource =
     batch.sources.find((s) => s.id === activeSourceId) ?? firstUnmapped(batch) ?? batch.sources[0];
@@ -152,7 +165,10 @@ export function TakeOnWizard({ batch: initialBatch, dataset }: TakeOnWizardProps
 
   const steps = stepsFor(batch);
   const reachable = (id: TakeOnStep) => {
-    if (id === "attestation") return batch.status === "VALIDATED" || isCommitted(batch);
+    if (inFlight !== null) return false;
+    if (id === "attestation" || id === "signOff") {
+      return batch.status === "VALIDATED" || isCommitted(batch);
+    }
     if (id === "results") return isCommitted(batch);
     return id === "upload" || hasSources;
   };
@@ -304,7 +320,13 @@ export function TakeOnWizard({ batch: initialBatch, dataset }: TakeOnWizardProps
           )}
           {step === "validation" && (
             <div className="space-y-6">
-              <ValidationStep batch={batch} dataset={dataset} onBatchChange={changeBatch} />
+              <ValidationStep
+                batch={batch}
+                dataset={dataset}
+                onBatchChange={changeBatch}
+                inFlight={inFlight}
+                onInFlightChange={setInFlight}
+              />
               {traitsOf(batch).signOffStep === "attestation" && batch.status === "VALIDATED" && (
                 <Button
                   type="button"
@@ -313,6 +335,17 @@ export function TakeOnWizard({ batch: initialBatch, dataset }: TakeOnWizardProps
                   data-testid="take-on-to-attestation"
                 >
                   Continue to the FICA attestation
+                </Button>
+              )}
+              {traitsOf(batch).signOffStep === "signOff" && batch.status === "VALIDATED" && (
+                <Button
+                  type="button"
+                  variant="accent"
+                  disabled={inFlight !== null}
+                  onClick={() => setStep("signOff")}
+                  data-testid="take-on-to-sign-off"
+                >
+                  Continue to sign-off
                 </Button>
               )}
               {commitsFromValidation(batch) && batch.status === "VALIDATED" && batch.lastError && (
@@ -330,6 +363,9 @@ export function TakeOnWizard({ batch: initialBatch, dataset }: TakeOnWizardProps
               onBatchChange={changeBatch}
               onCommitted={committed}
             />
+          )}
+          {step === "signOff" && (
+            <TrustSignOffStep batch={batch} onBatchChange={changeBatch} onCommitted={committed} />
           )}
           {step === "results" && <ResultsStep batch={batch} onBatchChange={changeBatch} />}
         </>

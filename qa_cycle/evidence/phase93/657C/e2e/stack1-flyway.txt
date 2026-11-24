@@ -1,0 +1,6 @@
+ version |        description        |        installed_on        
+---------+---------------------------+----------------------------
+ 36      | phase93 take on reports   | 2026-11-24 10:32:39.343063
+ 35      | phase93 go live checklist | 2026-11-24 10:32:39.335
+(2 rows)
+

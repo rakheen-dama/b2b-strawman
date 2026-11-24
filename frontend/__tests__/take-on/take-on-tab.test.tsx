@@ -129,6 +129,8 @@ const BATCH: TakeOnBatch = {
   summary: null,
   midMonthAcknowledged: false,
   position: null,
+  trustAccountName: null,
+  reportId: null,
 };
 
 function routeGets(batch: () => Promise<unknown>) {

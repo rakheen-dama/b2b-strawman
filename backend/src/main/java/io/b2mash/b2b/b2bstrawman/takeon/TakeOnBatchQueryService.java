@@ -263,7 +263,7 @@ public class TakeOnBatchQueryService {
   }
 
   @SuppressWarnings("unchecked")
-  private static TakeOnRowResponse row(TakeOnRow r) {
+  static TakeOnRowResponse row(TakeOnRow r) {
     Map<String, Object> values =
         r.getMappedValues() != null ? r.getMappedValues() : r.getRawValues();
     return new TakeOnRowResponse(

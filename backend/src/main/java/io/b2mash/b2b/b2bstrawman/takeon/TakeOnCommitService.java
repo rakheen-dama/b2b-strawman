@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class TakeOnCommitService {
 
   private final TakeOnBatchRepository batches;
+  private final TakeOnRowRepository rows;
   private final TakeOnAccessPolicy accessPolicy;
   private final TakeOnSignOffService signOffService;
   private final TakeOnRowCommitters committers;
@@ -33,12 +34,14 @@ public class TakeOnCommitService {
 
   public TakeOnCommitService(
       TakeOnBatchRepository batches,
+      TakeOnRowRepository rows,
       TakeOnAccessPolicy accessPolicy,
       TakeOnSignOffService signOffService,
       TakeOnRowCommitters committers,
       TakeOnBatchViews views,
       TakeOnAudit audit) {
     this.batches = batches;
+    this.rows = rows;
     this.accessPolicy = accessPolicy;
     this.signOffService = signOffService;
     this.committers = committers;
@@ -65,15 +68,21 @@ public class TakeOnCommitService {
     if (batch.blocksCommit()) {
       throw TakeOnProblems.errorsRemain(); // a trust batch is committed whole (D-191)
     }
-    // Only datasets whose slice has shipped a row committer can reach COMMITTING (655A: clients),
-    // so the drain never meets a batch it cannot run.
-    var committer =
-        committers.forDataset(batch.getDataset()).orElseThrow(TakeOnProblems::commitNotAvailable);
+    if (batch.getDataset().commitsWhole() && rows.anyRedacted(batchId)) {
+      throw TakeOnProblems.rowsRedacted(); // D-194: a client anonymised since the dry run (R-3)
+    }
+    // Only datasets whose slice has shipped a commit path can reach COMMITTING (655A clients, 656A
+    // matters: a row committer; 657C trust: a whole-batch committer, R-2), so the drain never
+    // meets a batch it cannot run.
+    if (!committers.canCommit(batch.getDataset())) {
+      throw TakeOnProblems.commitNotAvailable();
+    }
+    TakeOnSignOffKind requiredSignOff = committers.requiredSignOff(batch.getDataset()).orElse(null);
     String hash = request == null ? null : request.validationHash();
     if (hash == null || !hash.equals(batch.getValidationHash())) {
       throw TakeOnProblems.hashMismatch();
     }
-    var signOff = signOffService.requireLiveFor(batch, committer.requiredSignOff());
+    var signOff = signOffService.requireLiveFor(batch, requiredSignOff);
     if (!hash.equals(signOff.getValidationHash())) {
       throw TakeOnProblems.hashMismatch();
     }
@@ -90,7 +99,7 @@ public class TakeOnCommitService {
     } catch (DataIntegrityViolationException e) {
       throw TakeOnProblems.anotherBatchCommitting(); // uq_take_on_batches_committing race
     }
-    audit.commitRequested(batch, committer.requiredSignOff() == null ? null : signOff.getId());
+    audit.commitRequested(batch, requiredSignOff == null ? null : signOff.getId());
     return views.batch(batch);
   }
 }

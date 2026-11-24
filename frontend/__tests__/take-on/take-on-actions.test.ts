@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 // Mock server-only so the "use server" module loads in the test environment.
 vi.mock("server-only", () => ({}));
 
-const { mockGet, MockApiError } = vi.hoisted(() => {
+const { mockGet, mockPost, mockDelete, MockApiError } = vi.hoisted(() => {
   class MockApiError extends Error {
     constructor(
       public status: number,
@@ -14,11 +14,11 @@ const { mockGet, MockApiError } = vi.hoisted(() => {
       this.name = "ApiError";
     }
   }
-  return { mockGet: vi.fn(), MockApiError };
+  return { mockGet: vi.fn(), mockPost: vi.fn(), mockDelete: vi.fn(), MockApiError };
 });
 
 vi.mock("@/lib/api", () => ({
-  api: { get: mockGet },
+  api: { get: mockGet, post: mockPost, delete: mockDelete },
   API_BASE: "http://backend",
   ApiError: MockApiError,
   getAuthFetchOptions: vi.fn(async () => ({ headers: {}, credentials: "include" })),
@@ -30,6 +30,11 @@ import {
   downloadTakeOnTemplate,
   fetchTakeOnBankingAccounts,
   fetchTakeOnRows,
+  getSignOffQueue,
+  getSignOffReview,
+  getTakeOnReport,
+  signOff,
+  withdrawMySignOff,
 } from "@/app/(app)/org/[slug]/settings/matters/take-on-actions";
 
 const PERMISSION =
@@ -163,6 +168,67 @@ describe("take-on CSV downloads", () => {
     expect(await downloadTakeOnResult("b1")).toEqual({
       success: false,
       error: "The result report could not be downloaded. Try again.",
+    });
+  });
+});
+
+// 657C: the signer's endpoints (SIGN_OFF_TRUST_TAKE_ON + VIEW_TRUST) and the report JSON.
+describe("trust sign-off and report actions", () => {
+  beforeEach(() => {
+    mockGet.mockReset();
+    mockPost.mockReset();
+    mockDelete.mockReset();
+  });
+
+  it("reads the queue, a review page and the report from the signer's paths", async () => {
+    mockGet.mockResolvedValue([]);
+    await getSignOffQueue();
+    await getSignOffReview("b 1", 2);
+    await getTakeOnReport("r/1");
+    expect(mockGet.mock.calls.map((c) => c[0])).toEqual([
+      "/api/take-on/sign-off-queue",
+      "/api/take-on/batches/b%201/sign-off-review?page=2&size=50",
+      "/api/take-on/reports/r%2F1",
+    ]);
+  });
+
+  it("signs off with the request body and withdraws with DELETE …/trust-sign-off", async () => {
+    mockPost.mockResolvedValue({ batchId: "b1" });
+    mockDelete.mockResolvedValue({ batchId: "b1" });
+    const request = {
+      validationHash: "h",
+      statementVersion: "TAKEON-SIGNOFF-v1",
+      declarationAccepted: true,
+    };
+    expect(await signOff("b1", request)).toEqual({ success: true, data: { batchId: "b1" } });
+    expect(mockPost).toHaveBeenCalledWith("/api/take-on/batches/b1/sign-off", request);
+    await withdrawMySignOff("b1");
+    expect(mockDelete).toHaveBeenCalledWith("/api/take-on/batches/b1/trust-sign-off");
+  });
+
+  it("returns the backend's detail and code on a refusal (a non-signer's 403)", async () => {
+    mockDelete.mockRejectedValue(
+      new MockApiError(403, "Forbidden", {
+        title: "Access denied",
+        detail: "Only the member who signed off can withdraw this sign-off.",
+      })
+    );
+    expect(await withdrawMySignOff("b1")).toEqual({
+      success: false,
+      error: "Only the member who signed off can withdraw this sign-off.",
+    });
+    mockPost.mockRejectedValue(
+      new MockApiError(409, "Conflict", {
+        code: "TAKE_ON_ROWS_REDACTED",
+        detail: "A client named in this trust take-on was anonymised after it was validated.",
+      })
+    );
+    expect(
+      await signOff("b1", { validationHash: "h", statementVersion: "v", declarationAccepted: true })
+    ).toEqual({
+      success: false,
+      error: "A client named in this trust take-on was anonymised after it was validated.",
+      code: "TAKE_ON_ROWS_REDACTED",
     });
   });
 });

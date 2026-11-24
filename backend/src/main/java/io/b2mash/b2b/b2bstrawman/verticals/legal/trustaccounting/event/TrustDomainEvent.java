@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -211,6 +212,39 @@ public sealed interface TrustDomainEvent {
           tenantId,
           orgId,
           Instant.now());
+    }
+  }
+
+  /**
+   * Published once when a trust take-on is committed (Phase 93 657C, §17.3.9, §17.6.6): the batch,
+   * every account it took on (the banking account and its investment accounts), its take-on report
+   * and the member who confirmed the commit. Its AFTER_COMMIT listener in {@code
+   * TrustLedgerPortalSyncService} recomputes the portal once per matter of those accounts. No
+   * per-row event and no email accompany a take-on.
+   */
+  record TakeOnPositionCommitted(
+      UUID batchId,
+      List<UUID> accountIds,
+      UUID reportId,
+      UUID committedBy,
+      String tenantId,
+      String orgId,
+      Instant occurredAt)
+      implements TrustDomainEvent {
+
+    public TakeOnPositionCommitted {
+      accountIds = List.copyOf(accountIds);
+    }
+
+    public static TakeOnPositionCommitted of(
+        UUID batchId,
+        List<UUID> accountIds,
+        UUID reportId,
+        UUID committedBy,
+        String tenantId,
+        String orgId) {
+      return new TakeOnPositionCommitted(
+          batchId, accountIds, reportId, committedBy, tenantId, orgId, Instant.now());
     }
   }
 }

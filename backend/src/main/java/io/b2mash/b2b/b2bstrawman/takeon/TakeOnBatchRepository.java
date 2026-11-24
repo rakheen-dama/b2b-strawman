@@ -82,4 +82,11 @@ public interface TakeOnBatchRepository extends JpaRepository<TakeOnBatch, UUID> 
       TakeOnDataset dataset,
       Collection<TakeOnBatchStatus> statuses,
       UUID batchId);
+
+  /**
+   * The trust sign-off queue's candidates (657C): batches of {@code dataset} in {@code status},
+   * oldest validation first. The service filters out the blocked, the signed and the redacted.
+   */
+  List<TakeOnBatch> findByDatasetAndStatusOrderByValidatedAtAsc(
+      TakeOnDataset dataset, TakeOnBatchStatus status);
 }

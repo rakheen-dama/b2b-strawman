@@ -279,6 +279,21 @@ class TakeOnAccessPolicyIntegrationTest {
 
   // --- helpers ---
 
+  // 657C (§17.9, X1): the take-on reports are VIEW_TRUST — never MANAGE_TAKE_ON alone, and never
+  // FINANCIAL_VISIBILITY (ReportingController)
+  @Test
+  void theTakeOnReportsNeedViewTrust() throws Exception {
+    TakeOnTestApi.reports(mockMvc, trustViewer(), null).andExpect(status().isOk());
+    TakeOnTestApi.reports(mockMvc, trustViewer(), UUID.fromString(trustAccountId))
+        .andExpect(status().isOk());
+    TakeOnTestApi.report(mockMvc, trustViewer(), UUID.randomUUID())
+        .andExpect(status().isNotFound());
+    denied(TakeOnTestApi.reports(mockMvc, trustManager(), null));
+    denied(TakeOnTestApi.report(mockMvc, trustManager(), UUID.randomUUID()));
+    denied(TakeOnTestApi.reports(mockMvc, clientsOnly(), null));
+    denied(TakeOnTestApi.signOffQueue(mockMvc, trustViewer())); // SIGN_OFF_TRUST_TAKE_ON only
+  }
+
   private List<String> historyIds(RequestPostProcessor jwt) throws Exception {
     String json =
         mockMvc

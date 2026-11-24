@@ -235,6 +235,16 @@ public class TakeOnRow {
    * The record already exists: nothing is created; the row points at the existing record so later
    * datasets resolve its previous-system id to it.
    */
+  /**
+   * A nil balance at commit (FD-33, 657C): validated and listed, nothing posted ({@code
+   * chk_trust_txn_amount_positive} forbids a zero amount). No result entity.
+   */
+  public void markSkippedZero() {
+    requireCommittable();
+    this.status = TakeOnRowStatus.SKIPPED_ZERO;
+    this.updatedAt = Instant.now();
+  }
+
   public void markSkippedDuplicate(String entityType, UUID existingId) {
     requireCommittable();
     this.resultEntityType = Objects.requireNonNull(entityType, "entityType");

@@ -14,6 +14,9 @@ import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService.TakeOnRowResponse;
 import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService.TakeOnSheetRequest;
 import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService.TakeOnTemplateFile;
 import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService.TakeOnUploadResponse;
+import io.b2mash.b2b.b2bstrawman.takeon.TakeOnSignOffService.TakeOnSignOffQueueItem;
+import io.b2mash.b2b.b2bstrawman.takeon.TakeOnSignOffService.TakeOnSignOffRequest;
+import io.b2mash.b2b.b2bstrawman.takeon.TakeOnSignOffService.TakeOnSignOffReviewResponse;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -40,7 +43,9 @@ import org.springframework.web.multipart.MultipartFile;
  * {@code /api/take-on} (Phase 93 653A, §17.4.1; 655A adds attestation, revoke, commit, result CSV
  * and portal contacts). {@code MANAGE_TAKE_ON} on every method; the dataset's own capability is
  * enforced in the services by {@link TakeOnAccessPolicy} after the batch is loaded (404 before
- * 403). One service call per method.
+ * 403). 657C adds the four trust signer endpoints, {@code SIGN_OFF_TRUST_TAKE_ON} instead (with
+ * {@code VIEW_TRUST} in the service; never {@code MANAGE_TAKE_ON}, FD-36). One service call per
+ * method.
  */
 @RestController
 public class TakeOnController {
@@ -232,6 +237,35 @@ public class TakeOnController {
   public ResponseEntity<TakeOnPortalContactsResponse> createPortalContacts(
       @PathVariable UUID batchId) {
     return ResponseEntity.ok(resultService.createPortalContacts(batchId));
+  }
+
+  // --- 657C: the trust sign-off (the signer's sheet; FD-4, FD-36) ---
+
+  @GetMapping("/api/take-on/sign-off-queue")
+  @RequiresCapability("SIGN_OFF_TRUST_TAKE_ON")
+  public ResponseEntity<List<TakeOnSignOffQueueItem>> signOffQueue() {
+    return ResponseEntity.ok(signOffService.signOffQueue());
+  }
+
+  @GetMapping("/api/take-on/batches/{batchId}/sign-off-review")
+  @RequiresCapability("SIGN_OFF_TRUST_TAKE_ON")
+  public ResponseEntity<TakeOnSignOffReviewResponse> signOffReview(
+      @PathVariable UUID batchId, @PageableDefault(size = 50) Pageable pageable) {
+    return ResponseEntity.ok(signOffService.signOffReview(batchId, pageable));
+  }
+
+  @PostMapping("/api/take-on/batches/{batchId}/sign-off")
+  @RequiresCapability("SIGN_OFF_TRUST_TAKE_ON")
+  public ResponseEntity<TakeOnSignOffReviewResponse> signOff(
+      @PathVariable UUID batchId, @RequestBody TakeOnSignOffRequest request) {
+    return ResponseEntity.ok(signOffService.signOff(batchId, request));
+  }
+
+  /** The signer withdraws their own live trust sign-off (anyone else: 403). */
+  @DeleteMapping("/api/take-on/batches/{batchId}/trust-sign-off")
+  @RequiresCapability("SIGN_OFF_TRUST_TAKE_ON")
+  public ResponseEntity<TakeOnSignOffReviewResponse> withdrawMySignOff(@PathVariable UUID batchId) {
+    return ResponseEntity.ok(signOffService.withdrawMySignOff(batchId));
   }
 
   /** A CSV file as a download (the HTTP adapter shared by the template and the result report). */

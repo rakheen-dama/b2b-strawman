@@ -225,6 +225,65 @@ public final class TakeOnTestApi {
     return mockMvc.perform(post("/api/take-on/batches/" + batchId + "/portal-contacts").with(jwt));
   }
 
+  // --- 657C: the trust sign-off and the take-on report ---
+
+  public static ResultActions signOffQueue(MockMvc mockMvc, RequestPostProcessor jwt)
+      throws Exception {
+    return mockMvc.perform(get("/api/take-on/sign-off-queue").with(jwt));
+  }
+
+  public static ResultActions signOffReview(
+      MockMvc mockMvc, RequestPostProcessor jwt, UUID batchId, String query) throws Exception {
+    return mockMvc.perform(
+        get("/api/take-on/batches/"
+                + batchId
+                + "/sign-off-review"
+                + (query == null ? "" : "?" + query))
+            .with(jwt));
+  }
+
+  /** {@code POST …/sign-off} with {@code TAKEON-SIGNOFF-v1} and the declaration accepted. */
+  public static ResultActions signOff(
+      MockMvc mockMvc, RequestPostProcessor jwt, UUID batchId, String validationHash)
+      throws Exception {
+    return signOff(
+        mockMvc, jwt, batchId, validationHash, TakeOnStatements.TAKEON_SIGNOFF_V1, Boolean.TRUE);
+  }
+
+  public static ResultActions signOff(
+      MockMvc mockMvc,
+      RequestPostProcessor jwt,
+      UUID batchId,
+      String validationHash,
+      String statementVersion,
+      Boolean declarationAccepted)
+      throws Exception {
+    var body = new HashMap<String, Object>();
+    body.put("validationHash", validationHash);
+    body.put("statementVersion", statementVersion);
+    body.put("declarationAccepted", declarationAccepted);
+    return mockMvc.perform(
+        json(post("/api/take-on/batches/" + batchId + "/sign-off"), body).with(jwt));
+  }
+
+  public static ResultActions withdrawSignOff(
+      MockMvc mockMvc, RequestPostProcessor jwt, UUID batchId) throws Exception {
+    return mockMvc.perform(delete("/api/take-on/batches/" + batchId + "/trust-sign-off").with(jwt));
+  }
+
+  public static ResultActions reports(
+      MockMvc mockMvc, RequestPostProcessor jwt, UUID trustAccountId) throws Exception {
+    return mockMvc.perform(
+        get("/api/take-on/reports"
+                + (trustAccountId == null ? "" : "?trustAccountId=" + trustAccountId))
+            .with(jwt));
+  }
+
+  public static ResultActions report(MockMvc mockMvc, RequestPostProcessor jwt, UUID reportId)
+      throws Exception {
+    return mockMvc.perform(get("/api/take-on/reports/" + reportId).with(jwt));
+  }
+
   /** A validated batch: its id and the hash every attestation and commit binds to. */
   public record Validated(UUID batchId, String hash, String json) {}
 

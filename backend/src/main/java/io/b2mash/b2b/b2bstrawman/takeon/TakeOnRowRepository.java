@@ -197,6 +197,20 @@ public interface TakeOnRowRepository extends JpaRepository<TakeOnRow, UUID> {
   List<TakeOnRow> findByBatchIdAndStatusOrderByRowNumberAsc(UUID batchId, TakeOnRowStatus status);
 
   /**
+   * D-194 (657C, R-3): whether any row of the batch was redacted by a client's anonymisation
+   * ({@link #redactForClient} writes {@code {"redacted": true}} to both value columns). A trust
+   * batch holding one is neither signed off nor committed until it is validated again.
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          SELECT EXISTS (SELECT 1 FROM take_on_rows WHERE batch_id = :batchId
+                           AND (raw_values ->> 'redacted' = 'true'
+                                OR mapped_values ->> 'redacted' = 'true'))""")
+  boolean anyRedacted(@Param("batchId") UUID batchId);
+
+  /**
    * POPIA (§17.6.5, FD-19, C-23): when a client is anonymised, every take-on row that produced it
    * or matched it — by {@code result_entity_id} or {@code duplicate_of_id}, or by the dedup key of
    * any email the client has held ({@code dedupKeys}, from {@code TakeOnDedupKeys.client}: a row

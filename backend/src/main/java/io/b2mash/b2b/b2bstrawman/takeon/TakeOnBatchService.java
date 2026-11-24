@@ -121,7 +121,10 @@ public class TakeOnBatchService {
    * with the counts by the dry run; {@code null} before validation). Clients: {@code {clients,
    * fica: {field: {value: rows}}}} over the rows that will become clients (655A). Trust position:
    * {@code TrustPositionEquation.TrustPositionSummary} (657B). {@code midMonthAcknowledged} and
-   * {@code position} are the trust position inputs (657B; false / null on other datasets).
+   * {@code position} are the trust position inputs (657B; false / null on other datasets). 657C:
+   * {@code trustAccountName} (the trust account's name; null on other datasets — the commit
+   * dialog's trust sentence) and {@code reportId} (the take-on report of a completed trust batch;
+   * null otherwise — the results step reads it).
    */
   public record TakeOnBatchResponse(
       UUID id,
@@ -144,7 +147,9 @@ public class TakeOnBatchService {
       TakeOnAttestationStatementResponse attestationStatement,
       Map<String, Object> summary,
       boolean midMonthAcknowledged,
-      TakeOnPositionResponse position) {}
+      TakeOnPositionResponse position,
+      String trustAccountName,
+      UUID reportId) {}
 
   /**
    * The trust take-on's reconciled position at cutover (657B; {@code null} on every other dataset).

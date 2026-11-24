@@ -190,6 +190,81 @@ class TakeOnAuditNoPiiIntegrationTest {
     }
   }
 
+  /**
+   * 657C: the trust flow — upload, dry run, sign-off, withdrawal, sign-off again, commit and the
+   * take-on report — on a client whose previous-system id and balance are canaries. Every {@code
+   * takeon.*} row it writes (now {@code signed_off}, {@code report.generated} and {@code committed}
+   * for {@code TRUST_POSITION}) carries ids, enums, numbers, booleans and tokens only.
+   */
+  @Test
+  void theTrustTakeOnAuditTrailCarriesNoPersonalInformationOrAmount() throws Exception {
+    Instant started = jdbc.queryForObject("SELECT clock_timestamp()", Timestamp.class).toInstant();
+    var world =
+        new TakeOnTrustWorld(
+            mockMvc, jdbc, commitService, drain, ORG_ID, OWNER, schema, ownerId, "tnp");
+    world.takeOnClientsAndMatters(List.of("A", "B", "C", "TCANARY"));
+    var acc = world.freshAccounts();
+    var files =
+        TakeOnTrustFiles.withRows(
+            world.files(acc),
+            TakeOnTrustFiles.CLIENT_LEDGER,
+            List.of(
+                "A,A1,300000.00,",
+                "B,B1,150000.00,",
+                "C,C1,49500.00,",
+                "TCANARY,TCANARY1,12345.67,TCANARY-PREV"));
+    var position = TakeOnTrustFiles.section17313Position(TakeOnTrustWorld.C);
+    position =
+        TakeOnTrustFiles.withFigure(position, "bankBalance", new java.math.BigDecimal("430845.67"));
+    position =
+        TakeOnTrustFiles.withFigure(
+            position, "cashbookBalance", new java.math.BigDecimal("415845.67"));
+    var batch = world.validated(acc.g(), files, position);
+    assertThat((Integer) JsonPath.read(batch.json(), "$.counts.blocks")).isZero();
+    world.signOff(batch);
+    TakeOnTestApi.withdrawSignOff(mockMvc, owner(), batch.batchId()).andExpect(status().isOk());
+    world.signOff(batch);
+    world.claim(batch);
+    world.drain();
+    assertThat((String) JsonPath.read(world.batchJson(batch.batchId()), "$.status"))
+        .isEqualTo("COMPLETED");
+
+    var rows =
+        jdbc.queryForList(
+            ("SELECT event_type, details::text AS details FROM \"%s\".audit_events"
+                    + " WHERE occurred_at >= ? AND event_type LIKE 'takeon.%%'")
+                .formatted(schema),
+            Timestamp.from(started));
+    assertThat(rows)
+        .extracting(r -> (String) r.get("event_type"))
+        .contains(
+            "takeon.batch.validated",
+            "takeon.batch.signed_off",
+            "takeon.batch.sign_off_revoked",
+            "takeon.batch.commit_requested",
+            "takeon.report.generated",
+            "takeon.batch.committed");
+    var canaries = List.of("TCANARY", "TCANARY-PREV", "12345.67", "R 12 345,67", "12 345,67");
+    for (var row : rows) {
+      @SuppressWarnings("unchecked")
+      Map<String, Object> details = JSON.readValue((String) row.get("details"), Map.class);
+      details.remove("actor_name"); // D-32: the platform's staff-name stamp, not take-on data
+      for (var entry : details.entrySet()) {
+        String where = row.get("event_type") + "." + entry.getKey();
+        Object value = entry.getValue();
+        assertThat(isSafe(value))
+            .as("%s = %s is not an id, enum, number or token", where, value)
+            .isTrue();
+        String normalised = normalise(String.valueOf(value));
+        for (String canary : canaries) {
+          assertThat(normalised)
+              .as("%s carries canary %s", where, canary)
+              .doesNotContain(normalise(canary));
+        }
+      }
+    }
+  }
+
   private static boolean isSafe(Object value) {
     return switch (value) {
       case Number n -> true;

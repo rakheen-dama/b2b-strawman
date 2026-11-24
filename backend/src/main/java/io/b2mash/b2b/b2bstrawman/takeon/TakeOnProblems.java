@@ -204,6 +204,49 @@ public final class TakeOnProblems {
             + " validate it again.");
   }
 
+  // --- 657C: the trust sign-off ---
+
+  /** A trust commit claimed without the live partner/director sign-off (R-6, product copy). */
+  public static TakeOnProblemException signOffRequired() {
+    return new TakeOnProblemException(
+        HttpStatus.CONFLICT,
+        "TAKE_ON_SIGN_OFF_REQUIRED",
+        "Trust sign-off required",
+        "A partner or director must sign off this trust take-on before it is committed.");
+  }
+
+  /** A second live trust sign-off (also {@code uq_take_on_sign_offs_live}). */
+  public static TakeOnProblemException alreadySignedOff() {
+    return new TakeOnProblemException(
+        HttpStatus.CONFLICT,
+        "TAKE_ON_ALREADY_SIGNED_OFF",
+        "Trust take-on already signed off",
+        "This trust take-on has already been signed off. Withdraw the sign-off to sign again.");
+  }
+
+  /**
+   * D-194 (R-3): a trust batch holding a row redacted by a client's anonymisation after it was
+   * validated is neither signed off nor committed until it is validated again (product copy,
+   * RG-10).
+   */
+  public static TakeOnProblemException rowsRedacted() {
+    return new TakeOnProblemException(
+        HttpStatus.CONFLICT,
+        "TAKE_ON_ROWS_REDACTED",
+        "Take-on batch changed",
+        "A client named in this trust take-on was anonymised after it was validated. Validate it"
+            + " again, then sign it off.");
+  }
+
+  /** 400: the sign-off request did not accept the declaration. */
+  public static TakeOnProblemException declarationRequired() {
+    return new TakeOnProblemException(
+        HttpStatus.BAD_REQUEST,
+        "TAKE_ON_DECLARATION_REQUIRED",
+        "Declaration not accepted",
+        "Accept the declaration to sign off.");
+  }
+
   /** Commit runs for one dataset in 655A; the others arrive with their slices. */
   public static TakeOnProblemException commitNotAvailable() {
     return new TakeOnProblemException(

@@ -46,6 +46,9 @@ import org.springframework.transaction.support.TransactionTemplate;
  *   <li>{@link TrustTransactionRecordedEvent} — the same, for rows posted when recorded.
  *   <li>{@link TrustDomainEvent.ReconciliationCompleted} — fans out across every matter in the
  *       account; the reconciliation may have adjusted many matters' running balances.
+ *   <li>{@link TrustDomainEvent.TakeOnPositionCommitted} (Phase 93 657C, §17.6.6) — fans out across
+ *       every matter of every account a trust take-on posted to, each matter recomputed once: the
+ *       take-on publishes no per-row event (and so sends no email).
  * </ul>
  *
  * <p>Raw firm-side descriptions pass through {@link PortalTrustDescriptionSanitiser} before
@@ -189,6 +192,35 @@ public class TrustLedgerPortalSyncService {
         });
   }
 
+  /**
+   * A committed trust take-on (657C): every matter with a posted row on any of the accounts is
+   * recomputed once — the brought-forward balance ({@code TAKEON_CLIENT}, the one visible take-on
+   * row) and the invested balance; offsets, items and non-client rows stay hidden by the projection
+   * rules. One failure per account is logged and does not stop the others.
+   */
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void onTakeOnPositionCommitted(TrustDomainEvent.TakeOnPositionCommitted event) {
+    RequestScopes.runForTenant(
+        event.tenantId(),
+        event.orgId(),
+        () -> {
+          Set<UUID> seenMatters = new HashSet<>();
+          for (UUID accountId : event.accountIds()) {
+            try {
+              syncForTrustAccount(accountId, seenMatters);
+            } catch (Exception e) {
+              log.error(
+                  "Portal trust sync failed for event=take_on_position_committed tenant={}"
+                      + " batch={} account={}",
+                  event.tenantId(),
+                  event.batchId(),
+                  accountId,
+                  e);
+            }
+          }
+        });
+  }
+
   // ── Sync helpers (must run inside a bound tenant scope) ─────────────────
 
   private void syncSingleTransaction(UUID transactionId) {
@@ -212,7 +244,11 @@ public class TrustLedgerPortalSyncService {
    * transaction in the given account. Used by the reconciliation-completed fan-out handler.
    */
   private void syncForTrustAccount(UUID trustAccountId) {
-    Set<UUID> seenMatters = new HashSet<>();
+    syncForTrustAccount(trustAccountId, new HashSet<>());
+  }
+
+  /** As above, skipping the matters already recomputed in this fan-out ({@code seenMatters}). */
+  private void syncForTrustAccount(UUID trustAccountId, Set<UUID> seenMatters) {
     for (var status : PORTAL_STATUSES) {
       for (var txn :
           trustTransactionRepository.findByStatusAndTrustAccountId(status, trustAccountId)) {

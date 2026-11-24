@@ -367,6 +367,18 @@ public class AuditEventTypeRegistry {
                 "Take-on go-live item withdrawn",
                 AuditSeverity.INFO,
                 AuditEventGroup.DATA),
+            // DATA — the trust take-on sign-off and the take-on report (Phase 93 657C, §17.6.4).
+            // Additive keys (pin 98 → 100). Details are ids and the statement version only.
+            new AuditEventTypeMetadata(
+                "takeon.batch.signed_off",
+                "Trust take-on signed off",
+                AuditSeverity.INFO,
+                AuditEventGroup.DATA),
+            new AuditEventTypeMetadata(
+                "takeon.report.generated",
+                "Trust take-on report generated",
+                AuditSeverity.INFO,
+                AuditEventGroup.DATA),
             // DATA — data protection
             new AuditEventTypeMetadata(
                 "dataprotection.dsar.*",

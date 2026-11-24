@@ -1,4 +1,23 @@
 {
+  "AccountHeader" : [ {
+    "name" : "id",
+    "type" : "java.util.UUID"
+  }, {
+    "name" : "name",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "accountNumber",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "bankName",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "accountType",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "requireDualApproval",
+    "type" : "boolean"
+  } ],
   "ClientFicaAttestationResponse" : [ {
     "name" : "id",
     "type" : "java.util.UUID"
@@ -130,6 +149,65 @@
     "name" : "customFields",
     "type" : "java.util.Map<java.lang.String, java.lang.Object>"
   } ],
+  "CreditorLineEntry" : [ {
+    "name" : "kind",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "clientId",
+    "type" : "java.util.UUID"
+  }, {
+    "name" : "name",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "matters",
+    "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.takeon.TakeOnReportSnapshot$MatterEntry>"
+  }, {
+    "name" : "balance",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "unidentifiedDepositId",
+    "type" : "java.util.UUID"
+  }, {
+    "name" : "receivedDate",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "bankDescription",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "totalDeposits",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "totalPayments",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "totalFeeTransfers",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "lastTransactionDate",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "broughtForward",
+    "type" : "java.lang.String"
+  } ],
+  "CreditorListSection" : [ {
+    "name" : "trustAccountId",
+    "type" : "java.util.UUID"
+  }, {
+    "name" : "accountName",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "asAt",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "cashbook",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "creditorTotal",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "lines",
+    "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.takeon.TakeOnReportSnapshot$CreditorLineEntry>"
+  } ],
   "FicaStatusResponse" : [ {
     "name" : "clientId",
     "type" : "java.util.UUID"
@@ -151,6 +229,169 @@
   }, {
     "name" : "attestationId",
     "type" : "java.util.UUID"
+  } ],
+  "FirmHeader" : [ {
+    "name" : "name",
+    "type" : "java.lang.String"
+  } ],
+  "InvestmentLine" : [ {
+    "name" : "basis",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "clientId",
+    "type" : "java.util.UUID"
+  }, {
+    "name" : "clientName",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "matterId",
+    "type" : "java.util.UUID"
+  }, {
+    "name" : "matterName",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "investmentAccountId",
+    "type" : "java.util.UUID"
+  }, {
+    "name" : "investmentAccountName",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "institution",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "accountNumber",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "principal",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "interestRatePercent",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "depositDate",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "accruedInterest",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "fundAmount",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "balancePerConfirmation",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "instructionReference",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "instructionDate",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "endorsementConfirmed",
+    "type" : "boolean"
+  } ],
+  "MatterEntry" : [ {
+    "name" : "matterId",
+    "type" : "java.util.UUID"
+  }, {
+    "name" : "name",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "balance",
+    "type" : "java.lang.String"
+  } ],
+  "OutstandingLine" : [ {
+    "name" : "kind",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "originalDate",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "reference",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "clientId",
+    "type" : "java.util.UUID"
+  }, {
+    "name" : "clientName",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "matterId",
+    "type" : "java.util.UUID"
+  }, {
+    "name" : "matterName",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "amount",
+    "type" : "java.lang.String"
+  } ],
+  "ReconciledPosition" : [ {
+    "name" : "bankBalance",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "outstandingDeposits",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "outstandingPayments",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "adjustedBank",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "cashbook",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "fundLedger",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "investedTotal",
+    "type" : "java.lang.String"
+  } ],
+  "SignOffSection" : [ {
+    "name" : "signedBy",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "role",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "statementVersion",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "statementText",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "signedAt",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "preparedBy",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "samePerson",
+    "type" : "boolean"
+  }, {
+    "name" : "notes",
+    "type" : "java.util.List<java.lang.String>"
+  } ],
+  "SourceFile" : [ {
+    "name" : "fileName",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "section",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "sheetName",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "sha256",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "rowCount",
+    "type" : "int"
+  }, {
+    "name" : "uploadedBy",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "uploadedAt",
+    "type" : "java.lang.String"
   } ],
   "TakeOnAttestationRequest" : [ {
     "name" : "validationHash",
@@ -232,6 +473,12 @@
   }, {
     "name" : "position",
     "type" : "io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService$TakeOnPositionResponse"
+  }, {
+    "name" : "trustAccountName",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "reportId",
+    "type" : "java.util.UUID"
   } ],
   "TakeOnBatchSummaryResponse" : [ {
     "name" : "id",
@@ -491,6 +738,99 @@
     "name" : "cells",
     "type" : "java.util.List<java.lang.String>"
   } ],
+  "TakeOnReportResponse" : [ {
+    "name" : "id",
+    "type" : "java.util.UUID"
+  }, {
+    "name" : "batchId",
+    "type" : "java.util.UUID"
+  }, {
+    "name" : "trustAccountId",
+    "type" : "java.util.UUID"
+  }, {
+    "name" : "cutoverDate",
+    "type" : "java.time.LocalDate"
+  }, {
+    "name" : "snapshotSha256",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "generatedAt",
+    "type" : "java.time.Instant"
+  }, {
+    "name" : "snapshot",
+    "type" : "java.util.Map<java.lang.String, java.lang.Object>"
+  } ],
+  "TakeOnReportSnapshot" : [ {
+    "name" : "firm",
+    "type" : "io.b2mash.b2b.b2bstrawman.takeon.TakeOnReportSnapshot$FirmHeader"
+  }, {
+    "name" : "account",
+    "type" : "io.b2mash.b2b.b2bstrawman.takeon.TakeOnReportSnapshot$AccountHeader"
+  }, {
+    "name" : "cutoverDate",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "midMonth",
+    "type" : "boolean"
+  }, {
+    "name" : "previousSystem",
+    "type" : "io.b2mash.b2b.b2bstrawman.takeon.TakeOnReportSnapshot$ReconciledPosition"
+  }, {
+    "name" : "kazi",
+    "type" : "io.b2mash.b2b.b2bstrawman.takeon.TakeOnReportSnapshot$ReconciledPosition"
+  }, {
+    "name" : "differences",
+    "type" : "io.b2mash.b2b.b2bstrawman.takeon.TakeOnReportSnapshot$ReconciledPosition"
+  }, {
+    "name" : "creditorList",
+    "type" : "io.b2mash.b2b.b2bstrawman.takeon.TakeOnReportSnapshot$CreditorListSection"
+  }, {
+    "name" : "investmentAccounts",
+    "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.takeon.TakeOnReportSnapshot$CreditorListSection>"
+  }, {
+    "name" : "investments",
+    "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.takeon.TakeOnReportSnapshot$InvestmentLine>"
+  }, {
+    "name" : "unidentified",
+    "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.takeon.TakeOnReportSnapshot$UnidentifiedLine>"
+  }, {
+    "name" : "outstandingItems",
+    "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.takeon.TakeOnReportSnapshot$OutstandingLine>"
+  }, {
+    "name" : "totals",
+    "type" : "io.b2mash.b2b.b2bstrawman.takeon.dataset.TrustPositionEquation$TrustEquationSummary"
+  }, {
+    "name" : "flags",
+    "type" : "java.util.List<java.lang.String>"
+  }, {
+    "name" : "signOff",
+    "type" : "io.b2mash.b2b.b2bstrawman.takeon.TakeOnReportSnapshot$SignOffSection"
+  }, {
+    "name" : "sources",
+    "type" : "java.util.List<io.b2mash.b2b.b2bstrawman.takeon.TakeOnReportSnapshot$SourceFile>"
+  }, {
+    "name" : "batchId",
+    "type" : "java.util.UUID"
+  } ],
+  "TakeOnReportSummaryResponse" : [ {
+    "name" : "id",
+    "type" : "java.util.UUID"
+  }, {
+    "name" : "batchId",
+    "type" : "java.util.UUID"
+  }, {
+    "name" : "trustAccountId",
+    "type" : "java.util.UUID"
+  }, {
+    "name" : "cutoverDate",
+    "type" : "java.time.LocalDate"
+  }, {
+    "name" : "generatedAt",
+    "type" : "java.time.Instant"
+  }, {
+    "name" : "generatedByName",
+    "type" : "java.lang.String"
+  } ],
   "TakeOnRowMessage" : [ {
     "name" : "code",
     "type" : "java.lang.String"
@@ -562,6 +902,42 @@
     "name" : "headerRow",
     "type" : "int"
   } ],
+  "TakeOnSignOffDeclarationResponse" : [ {
+    "name" : "version",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "text",
+    "type" : "java.lang.String"
+  } ],
+  "TakeOnSignOffQueueItem" : [ {
+    "name" : "batchId",
+    "type" : "java.util.UUID"
+  }, {
+    "name" : "trustAccountId",
+    "type" : "java.util.UUID"
+  }, {
+    "name" : "trustAccountName",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "cutoverDate",
+    "type" : "java.time.LocalDate"
+  }, {
+    "name" : "preparedByName",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "validatedAt",
+    "type" : "java.time.Instant"
+  } ],
+  "TakeOnSignOffRequest" : [ {
+    "name" : "validationHash",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "statementVersion",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "declarationAccepted",
+    "type" : "java.lang.Boolean"
+  } ],
   "TakeOnSignOffResponse" : [ {
     "name" : "id",
     "type" : "java.util.UUID"
@@ -580,6 +956,58 @@
   }, {
     "name" : "signedAt",
     "type" : "java.time.Instant"
+  } ],
+  "TakeOnSignOffReviewResponse" : [ {
+    "name" : "batchId",
+    "type" : "java.util.UUID"
+  }, {
+    "name" : "status",
+    "type" : "io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchStatus"
+  }, {
+    "name" : "trustAccountId",
+    "type" : "java.util.UUID"
+  }, {
+    "name" : "trustAccountName",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "cutoverDate",
+    "type" : "java.time.LocalDate"
+  }, {
+    "name" : "midMonthAcknowledged",
+    "type" : "boolean"
+  }, {
+    "name" : "position",
+    "type" : "io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService$TakeOnPositionResponse"
+  }, {
+    "name" : "counts",
+    "type" : "io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService$TakeOnCountsResponse"
+  }, {
+    "name" : "summary",
+    "type" : "java.util.Map<java.lang.String, java.lang.Object>"
+  }, {
+    "name" : "validationHash",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "validatedAt",
+    "type" : "java.time.Instant"
+  }, {
+    "name" : "preparedByName",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "declaration",
+    "type" : "io.b2mash.b2b.b2bstrawman.takeon.TakeOnSignOffService$TakeOnSignOffDeclarationResponse"
+  }, {
+    "name" : "liveSignOff",
+    "type" : "io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService$TakeOnSignOffResponse"
+  }, {
+    "name" : "signedByCaller",
+    "type" : "boolean"
+  }, {
+    "name" : "allowedActions",
+    "type" : "java.util.List<java.lang.String>"
+  }, {
+    "name" : "rows",
+    "type" : "org.springframework.data.web.PagedModel<io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService$TakeOnRowResponse>"
   } ],
   "TakeOnSourceResponse" : [ {
     "name" : "id",
@@ -773,6 +1201,19 @@
   }, {
     "name" : "equation",
     "type" : "io.b2mash.b2b.b2bstrawman.takeon.dataset.TrustPositionEquation$TrustEquationSummary"
+  } ],
+  "UnidentifiedLine" : [ {
+    "name" : "receivedDate",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "ageInDaysAtCutover",
+    "type" : "long"
+  }, {
+    "name" : "amount",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "reference",
+    "type" : "java.lang.String"
   } ],
   "UpdateComplianceSettingsRequest" : [ {
     "name" : "dormancyThresholdDays",

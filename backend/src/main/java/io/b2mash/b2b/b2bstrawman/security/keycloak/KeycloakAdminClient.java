@@ -174,6 +174,44 @@ public class KeycloakAdminClient {
         .body(new ParameterizedTypeReference<>() {});
   }
 
+  /**
+   * The ids of the organization's Keycloak invitations for exactly {@code email}, across every page
+   * (FR-8). Keycloak 26.5's {@code email} filter is a LIKE ({@code %email%}) and results are paged,
+   * so this pages with {@code first}/{@code max} until a short page and re-checks each email
+   * exactly. Any Keycloak error propagates — callers must not read it as "none".
+   */
+  public List<String> findInvitationIdsByEmail(String orgId, String email) {
+    List<String> ids = new ArrayList<>();
+    int first = 0;
+    int max = 100;
+    while (true) {
+      List<Map<String, Object>> page =
+          restClient
+              .get()
+              .uri(
+                  "/organizations/{orgId}/invitations?email={email}&first={first}&max={max}",
+                  orgId,
+                  email,
+                  first,
+                  max)
+              .header("Authorization", "Bearer " + getAdminToken())
+              .retrieve()
+              .body(new ParameterizedTypeReference<>() {});
+      if (page == null || page.isEmpty()) {
+        break;
+      }
+      page.stream()
+          .filter(inv -> email.equalsIgnoreCase(String.valueOf(inv.get("email"))))
+          .map(inv -> String.valueOf(inv.get("id")))
+          .forEach(ids::add);
+      if (page.size() < max) {
+        break;
+      }
+      first += max;
+    }
+    return ids;
+  }
+
   public void revokeInvitation(String orgId, String invitationId) {
     restClient
         .delete()

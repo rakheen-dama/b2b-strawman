@@ -182,10 +182,12 @@ public class InvitationService {
    * FR-8: cancels the Keycloak side of an invitation. Keycloak 26.5 persists an organization
    * invitation at {@code invite-user} and, when the emailed link is used (registration or existing
    * user), refuses it once that invitation no longer exists; org membership is added only on
-   * acceptance, and Keycloak deletes its invitation then. So: delete every Keycloak invitation for
-   * this exact email; if there is none but the person is already a member of the Keycloak org, the
-   * link was used before they reached Kazi — refuse (409), because revoking only the Kazi
-   * invitation would let them join as Member. Any Keycloak failure refuses the revoke (the caller's
+   * acceptance, and Keycloak deletes its invitation then. So: find every Keycloak invitation for
+   * this exact email (all pages) and delete it; if there is none, check membership explicitly —
+   * already a member of the Keycloak org means the link was used before they reached Kazi: refuse
+   * (409), because revoking only the Kazi invitation would let them join as Member; not a member
+   * means Keycloak holds no invitation record (e.g. invite-user failed at creation), so no link can
+   * work and the Kazi revoke goes ahead. Any Keycloak failure refuses the revoke (the caller's
    * transaction rolls back), so a link is never left live behind a "revoked" invitation. Mock/e2e
    * mode (no Keycloak client) and calls without an org context are unaffected.
    */
@@ -200,12 +202,12 @@ public class InvitationService {
     boolean alreadyAccepted = false;
     try {
       kcOrgId = keycloakAdminClient.resolveOrgId(orgId);
-      kcInvitationIds =
-          keycloakAdminClient.listInvitations(kcOrgId).stream()
-              .filter(inv -> email.equalsIgnoreCase(String.valueOf(inv.get("email"))))
-              .map(inv -> String.valueOf(inv.get("id")))
-              .toList();
+      // exhaustive (every page, exact email); an error is never read as "no invitation"
+      kcInvitationIds = keycloakAdminClient.findInvitationIdsByEmail(kcOrgId, email);
       if (kcInvitationIds.isEmpty()) {
+        // An empty lookup alone proves nothing: decide explicitly. Accepted -> the person is a
+        // member of the Keycloak org (Keycloak deletes its invitation on acceptance). Not a member
+        // -> Keycloak holds no invitation record, and it refuses any invite link without one.
         alreadyAccepted =
             keycloakAdminClient
                 .findUserByEmail(email)
@@ -233,7 +235,13 @@ public class InvitationService {
         throw keycloakRevokeFailed(email, e);
       }
     }
-    log.info("Revoked {} Keycloak invitation(s) for email={}", kcInvitationIds.size(), email);
+    if (kcInvitationIds.isEmpty()) {
+      log.warn(
+          "No Keycloak invitation and no org membership for email={} — revoked in Kazi only",
+          email);
+    } else {
+      log.info("Revoked {} Keycloak invitation(s) for email={}", kcInvitationIds.size(), email);
+    }
   }
 
   private static InvalidStateException keycloakRevokeFailed(String email, Exception cause) {

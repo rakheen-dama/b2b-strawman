@@ -305,14 +305,12 @@ class TakeOnAccessPolicyIntegrationTest {
     denied(TakeOnTestApi.report(mockMvc, trustManager(), UUID.randomUUID()));
     // 657D: the PDF, the CSV and "Try again" are VIEW_TRUST too
     for (String format : List.of("pdf", "csv")) {
-      TakeOnTestApi.reportFile(mockMvc, trustReader(), UUID.randomUUID(), format)
-          .andExpect(status().isNotFound());
-      denied(TakeOnTestApi.reportFile(mockMvc, trustManager(), UUID.randomUUID(), format));
-      denied(TakeOnTestApi.reportFile(mockMvc, clientsOnly(), UUID.randomUUID(), format));
+      reportNotFound(TakeOnTestApi.reportFile(mockMvc, trustReader(), UNKNOWN_REPORT, format));
+      deniedProblem(TakeOnTestApi.reportFile(mockMvc, trustManager(), UNKNOWN_REPORT, format));
+      deniedProblem(TakeOnTestApi.reportFile(mockMvc, clientsOnly(), UNKNOWN_REPORT, format));
     }
-    TakeOnTestApi.renderReport(mockMvc, trustReader(), UUID.randomUUID())
-        .andExpect(status().isNotFound());
-    denied(TakeOnTestApi.renderReport(mockMvc, trustManager(), UUID.randomUUID()));
+    reportNotFound(TakeOnTestApi.renderReport(mockMvc, trustReader(), UNKNOWN_REPORT));
+    deniedProblem(TakeOnTestApi.renderReport(mockMvc, trustManager(), UNKNOWN_REPORT));
     denied(TakeOnTestApi.reports(mockMvc, clientsOnly(), null));
     denied(TakeOnTestApi.signOffQueue(mockMvc, trustViewer())); // SIGN_OFF_TRUST_TAKE_ON only
   }
@@ -330,6 +328,25 @@ class TakeOnAccessPolicyIntegrationTest {
 
   private static void denied(ResultActions result) throws Exception {
     result.andExpect(status().isForbidden()).andExpect(jsonPath("$.title").value(ACCESS_DENIED));
+  }
+
+  /** 657D: an unknown report id, for the report file and render endpoints. */
+  private static final UUID UNKNOWN_REPORT = UUID.randomUUID();
+
+  /** {@link #denied} with the whole ProblemDetail (657D's report file and render endpoints). */
+  private static void deniedProblem(ResultActions result) throws Exception {
+    denied(result);
+    result
+        .andExpect(jsonPath("$.status").value(403))
+        .andExpect(jsonPath("$.detail").value("Insufficient permissions for this operation"));
+  }
+
+  private static void reportNotFound(ResultActions result) throws Exception {
+    result
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.status").value(404))
+        .andExpect(jsonPath("$.title").value("Take-on report not found"))
+        .andExpect(jsonPath("$.detail").value("No take-on report found with id " + UNKNOWN_REPORT));
   }
 
   private String createRole(String name, String... capabilities) throws Exception {

@@ -252,8 +252,9 @@ describe("ResultsStep — trust take-on report summary (657C)", () => {
 
     render(withSWR(<ResultsStep batch={COMPLETED} onBatchChange={vi.fn()} />));
     expect(screen.queryByTestId("take-on-report-summary")).not.toBeInTheDocument();
-    // the summary and the report downloads (657D) each read the report once; a clients batch none
-    expect(actions.getTakeOnReport).toHaveBeenCalledTimes(2);
+    // the summary and the report downloads (657D) share one read of the report; a clients batch
+    // none
+    expect(actions.getTakeOnReport).toHaveBeenCalledTimes(1);
   });
 
   it("offers the report's PDF and CSV under the summary (657D)", async () => {

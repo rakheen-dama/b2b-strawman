@@ -300,6 +300,10 @@ export async function downloadTakeOnReport(
   reportId: string,
   format: "pdf" | "csv"
 ): Promise<TakeOnActionResult<TakeOnReportDownload>> {
+  // A server action's arguments are untrusted: only the two report formats reach the URL
+  if (format !== "pdf" && format !== "csv") {
+    return { success: false, error: DOWNLOAD_REFUSED };
+  }
   try {
     const authOptions = await getAuthFetchOptions("GET");
     const response = await fetch(

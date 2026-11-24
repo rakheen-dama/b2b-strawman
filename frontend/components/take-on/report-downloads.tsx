@@ -1,15 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import useSWR from "swr";
 import { Button } from "@b2mash/ui/button";
 import {
   downloadTakeOnReport,
-  getTakeOnReport,
   retryReportRender,
 } from "@/app/(app)/org/[slug]/settings/matters/take-on-actions";
 import type { TakeOnReportFiles, TakeOnReportFileState } from "@/lib/types";
 import { TakeOnError } from "./take-on-feedback";
+import { useTakeOnReport } from "./use-take-on-report";
 
 /** §17.10 X3 — the report files while the drain renders them. */
 export const REPORT_FILES_PREPARING = "Preparing the report files…";
@@ -31,6 +30,10 @@ function anyRendering(files: TakeOnReportFiles | undefined) {
 
 function anyFailed(files: TakeOnReportFiles | undefined) {
   return files?.pdf.status === "FAILED" || files?.csv.status === "FAILED";
+}
+
+function allReady(files: TakeOnReportFiles | undefined) {
+  return files?.pdf.status === "READY" && files?.csv.status === "READY";
 }
 
 /** Saves the bytes exactly as stored, so the downloaded file's SHA-256 is the one on record. */
@@ -55,6 +58,10 @@ function saveBytes(fileName: string, contentType: string, base64: string) {
  * is ready; "Preparing the report files…" while the drain renders them (the state is re-read every
  * three seconds until none is rendering); the X3 failure text and "Try again" once the render gave
  * up. Used on the trust Results step and in the Trust Reports page's "Take-on reports" list.
+ *
+ * The files are read from the report under the summary's SWR key ({@link useTakeOnReport}), so the
+ * Results step fetches the report once. Given `files` that are both ready (the Trust Reports list),
+ * nothing is fetched until a download finds otherwise.
  */
 export function ReportDownloads({
   reportId,
@@ -65,21 +72,20 @@ export function ReportDownloads({
 }) {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<Format | "retry" | null>(null);
-  const report = useSWR(
-    `take-on-report-files-${reportId}`,
-    async () => {
-      const result = await getTakeOnReport(reportId);
-      if (!result.success || !result.data) {
-        throw new Error(result.error ?? "The take-on report could not be loaded.");
-      }
-      return result.data.files;
-    },
-    {
-      fallbackData: initialFiles,
-      refreshInterval: (latest) => (anyRendering(latest) ? 3000 : 0),
+  // Both files already ready: no read until a download finds a file rendering or failed
+  const [watching, setWatching] = useState(() => !allReady(initialFiles));
+  const report = useTakeOnReport(watching ? reportId : null, {
+    refreshInterval: (latest) => (anyRendering(latest?.files) ? 3000 : 0),
+  });
+  const files = report.data?.files ?? initialFiles;
+
+  async function refresh() {
+    if (watching) {
+      await report.mutate();
+    } else {
+      setWatching(true); // the key is set: SWR reads the report
     }
-  );
-  const files = report.data;
+  }
 
   async function download(format: Format) {
     setError(null);
@@ -88,11 +94,11 @@ export function ReportDownloads({
       const result = await downloadTakeOnReport(reportId, format);
       if (!result.success || !result.data) {
         setError(result.error ?? "The report file could not be downloaded. Try again.");
-        if (result.code === "REPORT_RENDER_FAILED") await report.mutate();
+        if (result.code === "REPORT_RENDER_FAILED") await refresh();
         return;
       }
       if (result.data.status === "RENDERING") {
-        await report.mutate();
+        await refresh();
         return;
       }
       saveBytes(result.data.fileName, result.data.contentType, result.data.base64);
@@ -110,7 +116,8 @@ export function ReportDownloads({
         setError(result.error ?? "The report files could not be prepared. Try again.");
         return;
       }
-      await report.mutate(result.data?.files, { revalidate: false });
+      // Reachable only while watching (a failed file is never in the all-ready `files`)
+      await report.mutate(result.data, { revalidate: false });
     } finally {
       setBusy(null);
     }

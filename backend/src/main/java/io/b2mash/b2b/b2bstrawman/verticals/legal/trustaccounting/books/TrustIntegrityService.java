@@ -4,8 +4,6 @@ import static io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.In
 
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
-import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatch;
-import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccount;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
@@ -22,6 +20,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliation;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.UnresolvedStatementRow;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.takeon.TakeOnPositionFacts;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.ClientBalanceRow;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedgerQueryRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.UnidentifiedItemBalanceRow;
@@ -172,7 +171,7 @@ public class TrustIntegrityService {
   private final TrustCreditorAccountRepository creditorAccountRepository;
   private final CustomerRepository customerRepository;
   private final TrustMonthlyListRepository monthlyListRepository;
-  private final TakeOnBatchRepository takeOnBatchRepository;
+  private final TakeOnPositionFacts takeOnPositionFacts;
   private final VerticalModuleGuard moduleGuard;
   private final Clock clock;
 
@@ -186,7 +185,7 @@ public class TrustIntegrityService {
       TrustCreditorAccountRepository creditorAccountRepository,
       CustomerRepository customerRepository,
       TrustMonthlyListRepository monthlyListRepository,
-      TakeOnBatchRepository takeOnBatchRepository,
+      TakeOnPositionFacts takeOnPositionFacts,
       VerticalModuleGuard moduleGuard,
       Clock clock) {
     this.trustBooksService = trustBooksService;
@@ -198,7 +197,7 @@ public class TrustIntegrityService {
     this.creditorAccountRepository = creditorAccountRepository;
     this.customerRepository = customerRepository;
     this.monthlyListRepository = monthlyListRepository;
-    this.takeOnBatchRepository = takeOnBatchRepository;
+    this.takeOnPositionFacts = takeOnPositionFacts;
     this.moduleGuard = moduleGuard;
     this.clock = clock;
   }
@@ -402,7 +401,8 @@ public class TrustIntegrityService {
    * statement with a line dated after C (or, with no line, a period end after C) — whose balance at
    * C is not the batch's entered bank balance B. The balance at C is the running balance of its
    * last line dated on or before C when it has one, else the opening balance + Σ the lines dated on
-   * or before C. No flag on any other statement, nor when B is unknown.
+   * or before C. No flag on any other statement, nor when B is unknown, nor on an investment
+   * account the batch marked taken on (B is the banking account's balance).
    */
   private Optional<IntegrityFlag> openingDiffersFromTakeOn(UUID accountId, UUID statementId) {
     var account = trustAccountRepository.findById(accountId).orElse(null);
@@ -412,11 +412,10 @@ public class TrustIntegrityService {
       return Optional.empty();
     }
     LocalDate cutover = account.getTakeOnCutoverDate();
+    // only the batch's banking account has an entered bank balance; an investment account it
+    // also marked taken on is never compared with the banking account's balance
     BigDecimal entered =
-        takeOnBatchRepository
-            .findById(account.getTakeOnBatchId())
-            .map(TakeOnBatch::getBankBalance)
-            .orElse(null);
+        takeOnPositionFacts.enteredBankBalance(account.getTakeOnBatchId(), accountId).orElse(null);
     if (entered == null) {
       return Optional.empty();
     }

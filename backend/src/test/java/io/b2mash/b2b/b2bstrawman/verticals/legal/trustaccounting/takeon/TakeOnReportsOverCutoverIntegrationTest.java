@@ -372,6 +372,16 @@ class TakeOnReportsOverCutoverIntegrationTest {
     var total = part1.getLast();
     assertThat(total.get("_total")).isEqualTo(true);
     assertThat(money(total, "amount")).isEqualByComparingTo("60000.00");
+    // the section's row count is the movements only, as its transactionCount
+    @SuppressWarnings("unchecked")
+    var meta =
+        ((List<Map<String, Object>>) result.summary().get("sections"))
+            .stream()
+                .filter(m -> "Trust Receipts & Payments".equals(m.get("sectionName")))
+                .findFirst()
+                .orElseThrow();
+    assertThat(meta.get("rowCount")).isEqualTo(1);
+    assertThat(meta.get("transactionCount")).isEqualTo(1);
   }
 
   /**
@@ -404,12 +414,21 @@ class TakeOnReportsOverCutoverIntegrationTest {
     assertThat(month.transactions()).isEmpty();
 
     // the report query (client-ledger-statement) folds the same way
-    var rows = clientStatementRows(a.id(), takeOn.g(), c.withDayOfMonth(1), books.today());
+    var report = clientStatement(a.id(), takeOn.g(), c.withDayOfMonth(1), books.today());
+    var rows = report.rows();
     assertThat(rows).hasSize(1);
     assertThat(rows.getFirst().get("broughtForward")).isEqualTo(true);
     assertThat(rows.getFirst().get("type")).isEqualTo("Balance brought forward — take-on");
     assertThat(money(rows.getFirst(), "credit")).isEqualByComparingTo("300000.00");
     assertThat(money(rows.getFirst(), "debit")).isEqualByComparingTo("0");
+    // one brought-forward figure, never a movement: not in the totals nor the count (as R&P)
+    assertThat(money(report.summary(), "totalCredits")).isEqualByComparingTo("0");
+    assertThat(money(report.summary(), "totalDebits")).isEqualByComparingTo("0");
+    assertThat(report.summary().get("transactionCount")).isEqualTo(0);
+    assertThat(money(report.summary(), "broughtForward")).isEqualByComparingTo("300000.00");
+    assertThat(report.summary().get("broughtForwardNote"))
+        .isEqualTo(TrustReceiptsPaymentsQuery.broughtForwardNote(c));
+    assertThat(money(report.summary(), "closingBalance")).isEqualByComparingTo("300000.00");
 
     // the cheque is cancelled today: an ordinary REVERSAL after the brought-forward line
     books.reverse(takeOn.g(), takeOn.payUnpres(), Expected.cashbookAndClient("+20000.00"));
@@ -487,8 +506,7 @@ class TakeOnReportsOverCutoverIntegrationTest {
     return statement[0];
   }
 
-  private List<Map<String, Object>> clientStatementRows(
-      UUID clientId, UUID account, LocalDate from, LocalDate to) {
+  private ReportResult clientStatement(UUID clientId, UUID account, LocalDate from, LocalDate to) {
     var result = new ReportResult[1];
     books.as(
         ownerId,
@@ -507,7 +525,7 @@ class TakeOnReportsOverCutoverIntegrationTest {
                                     from.toString(),
                                     "dateTo",
                                     to.toString())))));
-    return result[0].rows();
+    return result[0];
   }
 
   private ReportResult receiptsPayments(UUID account, LocalDate from, LocalDate to) {

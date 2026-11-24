@@ -67,9 +67,41 @@ describe("ReportDownloads (657D)", () => {
       expect(screen.getByTestId("take-on-report-download-csv")).toHaveTextContent("Download CSV");
       expect(screen.queryByTestId("take-on-report-files-preparing")).not.toBeInTheDocument();
       expect(screen.queryByTestId("take-on-report-files-failed")).not.toBeInTheDocument();
+      // both files given as ready: the report is never read
+      expect(actions.getTakeOnReport).not.toHaveBeenCalled();
     } finally {
       await download.restore();
     }
+  });
+
+  it("given both files ready, reads the report only once a download finds one rendering", async () => {
+    actions.getTakeOnReport.mockResolvedValue(reportWith(files("READY", "RENDERING")));
+    actions.downloadTakeOnReport.mockResolvedValue({
+      success: true,
+      data: { status: "RENDERING", retryAfterSeconds: 5 },
+    });
+    render(withSWR(<ReportDownloads reportId="report-1" files={files("READY")} />));
+    expect(actions.getTakeOnReport).not.toHaveBeenCalled();
+    await userEvent.click(screen.getByTestId("take-on-report-download-csv"));
+    expect(await screen.findByTestId("take-on-report-files-preparing")).toBeInTheDocument();
+    expect(actions.getTakeOnReport).toHaveBeenCalledWith("report-1");
+    expect(screen.queryByTestId("take-on-report-download-error")).not.toBeInTheDocument();
+  });
+
+  it("reads the report under one key: two readers of the same report fetch it once", async () => {
+    actions.getTakeOnReport.mockResolvedValue(reportWith(files("READY")));
+    render(
+      withSWR(
+        <>
+          <ReportDownloads reportId="report-1" />
+          <ReportDownloads reportId="report-1" />
+        </>
+      )
+    );
+    await waitFor(() =>
+      expect(screen.getAllByTestId("take-on-report-download-pdf")).toHaveLength(2)
+    );
+    expect(actions.getTakeOnReport).toHaveBeenCalledTimes(1);
   });
 
   it("says the files are being prepared while they render, then offers them", async () => {

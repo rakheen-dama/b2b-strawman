@@ -1,6 +1,9 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.takeon;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.endsWith;
+import static org.hamcrest.Matchers.startsWith;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -23,6 +26,7 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterAll;
@@ -63,6 +67,8 @@ class FirstPostCutoverReconciliationIntegrationTest {
   private static final String ORG_ID = "org_first_post_cutover_recon";
   private static final String OWNER = "user_fpc_owner";
   private static final DateTimeFormatter FNB_DATE = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+  private static final DateTimeFormatter LONG_DATE =
+      DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.ENGLISH);
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
@@ -210,6 +216,7 @@ class FirstPostCutoverReconciliationIntegrationTest {
             line(c.minusDays(5), "OLD DEPOSIT", "1000.00", "419500.00", "OLD-1"),
             line(c, "OLD PAYMENT", "-1000.00", "418500.00", "OLD-2"))
         .andExpect(status().isUnprocessableEntity())
+        .andExpect(jsonPath("$.status").value(422))
         .andExpect(jsonPath("$.code").value(TrustReconciliationService.STATEMENT_BEFORE_TAKE_ON))
         .andExpect(jsonPath("$.title").value("Statement before the take-on"))
         .andExpect(
@@ -292,13 +299,35 @@ class FirstPostCutoverReconciliationIntegrationTest {
     importStatementResult(
             takeOn.g(), line(m.atDay(2), "EFT B-0001", "5000.00", "423500.00", "EFT B-0001"))
         .andExpect(status().isConflict())
-        .andExpect(jsonPath("$.code").value("bank_statement.duplicate_end_date"));
+        .andExpect(jsonPath("$.status").value(409))
+        .andExpect(jsonPath("$.code").value("bank_statement.duplicate_end_date"))
+        .andExpect(jsonPath("$.title").value("A statement ending on this date is already imported"))
+        .andExpect(
+            jsonPath(
+                "$.detail",
+                allOf(
+                    startsWith("Statement fpc-statement-"),
+                    endsWith(
+                        " of this trust account also ends on "
+                            + m.atDay(2).format(LONG_DATE)
+                            + ". Replace it with this statement, or import a statement that ends"
+                            + " on another date."))));
 
+    var tomorrow = books.today().plusDays(1);
     importStatementResult(
             takeOn.g(),
             line(m.atDay(3), "EFT B-0001", "5000.00", "423500.00", "EFT B-0001"),
-            line(books.today().plusDays(1), "TOMORROW", "1.00", "423501.00", "T-1"))
-        .andExpect(status().isBadRequest());
+            line(tomorrow, "TOMORROW", "1.00", "423501.00", "T-1"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.title").value("Cannot import bank statement"))
+        .andExpect(
+            jsonPath("$.detail")
+                .value(
+                    "This statement has a line dated "
+                        + tomorrow.format(LONG_DATE)
+                        + ", which is after today. Import the statement once the bank has"
+                        + " processed that line."));
   }
 
   // 6
@@ -311,6 +340,20 @@ class FirstPostCutoverReconciliationIntegrationTest {
     var day = books.today().withDayOfMonth(1);
     String second = importStatement(takeOn.g(), line(day, "SMALL DEPOSIT", "0.01", "", "SD-1"));
     var calculated = calculate(reconciliation(takeOn.g(), second, day));
+    assertThat(flagCodes(calculated)).doesNotContain(OPENING_DIFFERS);
+  }
+
+  // 7
+  @Test
+  void anInvestmentAccountsFirstStatement_isNotComparedWithTheBankingAccountsBalance()
+      throws Exception {
+    // i3 is marked taken on by the batch, but the batch's entered bank balance (R418 500,00) is
+    // the banking account g's: i3's first statement (opening R100 000,00) raises no warning
+    var takeOn = books.takeOnSection17313(cutover());
+    var m = YearMonth.from(takeOn.cutover()).plusMonths(1);
+    String statement =
+        importStatement(takeOn.i3(), line(m.atDay(5), "INTEREST", "100.00", "100100.00", "I3-INT"));
+    var calculated = calculate(reconciliation(takeOn.i3(), statement, m.atDay(5)));
     assertThat(flagCodes(calculated)).doesNotContain(OPENING_DIFFERS);
   }
 

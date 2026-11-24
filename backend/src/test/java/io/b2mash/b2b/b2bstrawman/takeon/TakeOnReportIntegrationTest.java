@@ -515,7 +515,9 @@ class TakeOnReportIntegrationTest {
         .andExpect(
             org.springframework.test.web.servlet.result.MockMvcResultMatchers.header()
                 .string("Retry-After", "5"))
+        .andExpect(jsonPath("$.status").value(202))
         .andExpect(jsonPath("$.code").value("REPORT_RENDERING"))
+        .andExpect(jsonPath("$.title").value("Take-on report files being prepared"))
         .andExpect(jsonPath("$.detail").value("Preparing the report files…"));
     assertThat(sweep.tenantsWithWork(List.of(mine())))
         .extracting(OrgSchemaMapping::getSchemaName)
@@ -554,6 +556,7 @@ class TakeOnReportIntegrationTest {
     assertThat((String) JsonPath.read(report, "$.files.csv.status")).isEqualTo("FAILED");
     TakeOnTestApi.reportFile(mockMvc, world.owner(), id, "pdf")
         .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.status").value(409))
         .andExpect(jsonPath("$.code").value("REPORT_RENDER_FAILED"))
         .andExpect(jsonPath("$.title").value("Take-on report files not produced"))
         .andExpect(
@@ -598,12 +601,16 @@ class TakeOnReportIntegrationTest {
     for (String format : List.of("pdf", "csv")) {
       TakeOnTestApi.reportFile(mockMvc, takeOnOnly(), id, format)
           .andExpect(status().isForbidden())
-          .andExpect(jsonPath("$.title").value("Access denied"));
+          .andExpect(jsonPath("$.status").value(403))
+          .andExpect(jsonPath("$.title").value("Access denied"))
+          .andExpect(jsonPath("$.detail").value("Insufficient permissions for this operation"));
       TakeOnTestApi.reportFile(mockMvc, trustReader(), id, format).andExpect(status().isOk());
     }
     TakeOnTestApi.renderReport(mockMvc, takeOnOnly(), id)
         .andExpect(status().isForbidden())
-        .andExpect(jsonPath("$.title").value("Access denied"));
+        .andExpect(jsonPath("$.status").value(403))
+        .andExpect(jsonPath("$.title").value("Access denied"))
+        .andExpect(jsonPath("$.detail").value("Insufficient permissions for this operation"));
     TakeOnTestApi.renderReport(mockMvc, trustReader(), id).andExpect(status().isOk());
     UUID unknown = UUID.randomUUID();
     TakeOnTestApi.reportFile(mockMvc, world.owner(), unknown, "pdf")
@@ -613,7 +620,9 @@ class TakeOnReportIntegrationTest {
         .andExpect(jsonPath("$.detail").value("No take-on report found with id " + unknown));
     TakeOnTestApi.renderReport(mockMvc, world.owner(), unknown)
         .andExpect(status().isNotFound())
-        .andExpect(jsonPath("$.title").value("Take-on report not found"));
+        .andExpect(jsonPath("$.status").value(404))
+        .andExpect(jsonPath("$.title").value("Take-on report not found"))
+        .andExpect(jsonPath("$.detail").value("No take-on report found with id " + unknown));
   }
 
   // --- 657D helpers ---

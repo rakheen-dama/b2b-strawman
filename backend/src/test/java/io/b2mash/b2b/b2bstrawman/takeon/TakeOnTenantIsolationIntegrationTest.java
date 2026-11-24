@@ -32,6 +32,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.AbstractMockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
@@ -313,11 +314,19 @@ class TakeOnTenantIsolationIntegrationTest {
         .andExpect(status().isOk());
     // 657D: nor can B download A's report files, or ask for them to be rendered
     for (String format : List.of("pdf", "csv")) {
-      TakeOnTestApi.reportFile(mockMvc, ownerB(), reportId, format)
-          .andExpect(status().isNotFound());
+      reportNotFound(TakeOnTestApi.reportFile(mockMvc, ownerB(), reportId, format), reportId);
       TakeOnTestApi.reportFile(mockMvc, ownerA(), reportId, format).andExpect(status().isOk());
     }
-    TakeOnTestApi.renderReport(mockMvc, ownerB(), reportId).andExpect(status().isNotFound());
+    reportNotFound(TakeOnTestApi.renderReport(mockMvc, ownerB(), reportId), reportId);
+  }
+
+  /** 657D: another tenant's report reads as not found, with the whole ProblemDetail. */
+  private static void reportNotFound(ResultActions result, UUID reportId) throws Exception {
+    result
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.status").value(404))
+        .andExpect(jsonPath("$.title").value("Take-on report not found"))
+        .andExpect(jsonPath("$.detail").value("No take-on report found with id " + reportId));
   }
 
   private int mattersWithReference(String schema, String reference) {

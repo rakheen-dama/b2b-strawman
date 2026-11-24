@@ -567,7 +567,13 @@ public class Section35DataPackQuery implements ReportQuery {
     // Add section summary metadata
     var sectionMeta = new LinkedHashMap<String, Object>();
     sectionMeta.put("sectionName", sectionName);
-    sectionMeta.put("rowCount", result.rows().size());
+    // 657D (A-3): the brought-forward line is not a movement, so not counted (as transactionCount)
+    sectionMeta.put(
+        "rowCount",
+        (int)
+            result.rows().stream()
+                .filter(r -> !TrustReceiptsPaymentsQuery.isBroughtForward(r))
+                .count());
     if (result.summary() != null) {
       sectionMeta.putAll(result.summary());
     }

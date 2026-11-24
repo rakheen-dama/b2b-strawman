@@ -9,6 +9,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.Tru
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionTypeLabels;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +27,9 @@ import org.springframework.stereotype.Component;
  *
  * <p>Phase 93 (657D, §17.3.15): the client's take-on rows in the range are one line, "Balance
  * brought forward — take-on", dated at the cutover ({@link TakeOnStatementLines#fold}, {@code
- * broughtForward: true}); the opening and closing balances are unchanged.
+ * broughtForward: true}); the opening and closing balances are unchanged. The totals and the count
+ * exclude that line; {@code summary.broughtForward} carries it with {@code
+ * summary.broughtForwardNote}, as Receipts &amp; Payments.
  */
 @Component
 public class ClientLedgerStatementQuery implements ReportQuery {
@@ -116,7 +119,7 @@ public class ClientLedgerStatementQuery implements ReportQuery {
         }
         runningBalance = runningBalance.add(bf.ledgerEffect());
         row.put("runningBalance", runningBalance);
-        row.put("broughtForward", true);
+        row.put(TrustReceiptsPaymentsQuery.BROUGHT_FORWARD, true);
         rows.add(row);
         continue;
       }
@@ -163,19 +166,39 @@ public class ClientLedgerStatementQuery implements ReportQuery {
   private Map<String, Object> computeSummary(QueryResult queryResult) {
     var summary = new LinkedHashMap<String, Object>();
 
+    // 657D (§17.3.15): the brought-forward line is one figure, never a movement — it moves the
+    // closing balance but not the totals or the count (as Receipts & Payments)
     BigDecimal totalDebits = BigDecimal.ZERO;
     BigDecimal totalCredits = BigDecimal.ZERO;
+    BigDecimal broughtForward = null;
+    LocalDate cutover = null;
+    int transactionCount = 0;
     for (var row : queryResult.rows) {
-      totalDebits = totalDebits.add((BigDecimal) row.get("debit"));
-      totalCredits = totalCredits.add((BigDecimal) row.get("credit"));
+      var credit = (BigDecimal) row.get("credit");
+      var debit = (BigDecimal) row.get("debit");
+      if (TrustReceiptsPaymentsQuery.isBroughtForward(row)) {
+        var effect = credit.subtract(debit);
+        broughtForward = broughtForward == null ? effect : broughtForward.add(effect);
+        if (cutover == null) {
+          cutover = LocalDate.parse((String) row.get("date"));
+        }
+        continue;
+      }
+      totalDebits = totalDebits.add(debit);
+      totalCredits = totalCredits.add(credit);
+      transactionCount++;
     }
 
     summary.put("openingBalance", queryResult.openingBalance);
     summary.put("closingBalance", queryResult.closingBalance);
     summary.put("totalDebits", totalDebits);
     summary.put("totalCredits", totalCredits);
-    summary.put("transactionCount", queryResult.rows.size());
+    summary.put("transactionCount", transactionCount);
     summary.put("scopeNote", TrustReportWords.TRUST_ASSETS_NOTE);
+    if (broughtForward != null) {
+      summary.put("broughtForward", broughtForward);
+      summary.put("broughtForwardNote", TrustReceiptsPaymentsQuery.broughtForwardNote(cutover));
+    }
     // A nested map: the firm report screen shows flat summary values only (R-A, 650C prints it)
     if (!queryResult.invested().isEmpty()) {
       var inv = queryResult.invested();

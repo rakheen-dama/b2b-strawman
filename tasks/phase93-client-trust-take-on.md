@@ -1,6 +1,6 @@
 # Phase 93 — Client & Trust Take-On: Move a Firm Onto Kazi With Books That Reconcile From Day One
 
-**Status: IN PROGRESS — 7/10 slices Done (653A, PR #1846; 657A, PR #1847 — 2026-11-23; 655A, PR #1850; 655B, PR #1851; 656A, PR #1852; 657B, PR #1853; 657C, PR #1854 — 2026-11-24).** Breakdown written 2026-11-22 against `origin/main` @ `f73eea861`. A firm (or the founder, white-gloving a pilot) uploads its previous system's exports (CSV or XLSX) under **Settings → Matters → Take-on**, maps the columns, reviews a full dry run, signs where the law puts responsibility, commits, and gets a per-row result report. Four datasets go in dependency order: **clients** (ACTIVE, with a FICA attestation), **matters**, the **trust opening position** (every creditor group plus the bank items outstanding at cutover, gated by the reconciled cutover position and signed off by a partner or director), and **debtor opening balances** (brought-forward fee notes, issued with none of the side effects of sending). The exit bar is the requirements' acceptance invariant: **the first post-cutover reconciliation balances with no manual adjustment**, observed in the browser on a fresh stack (§17.3.13, slice 660A).
+**Status: IN PROGRESS — 9/10 slices Done (653A, PR #1846; 657A, PR #1847 — 2026-11-23; 655A, PR #1850; 655B, PR #1851; 656A, PR #1852; 657B, PR #1853; 657C, PR #1854; 657D, PR #1855; 658A, PR #1857 — 2026-11-24). Next: 660A (capstone).** Breakdown written 2026-11-22 against `origin/main` @ `f73eea861`. A firm (or the founder, white-gloving a pilot) uploads its previous system's exports (CSV or XLSX) under **Settings → Matters → Take-on**, maps the columns, reviews a full dry run, signs where the law puts responsibility, commits, and gets a per-row result report. Four datasets go in dependency order: **clients** (ACTIVE, with a FICA attestation), **matters**, the **trust opening position** (every creditor group plus the bank items outstanding at cutover, gated by the reconciled cutover position and signed off by a partner or director), and **debtor opening balances** (brought-forward fee notes, issued with none of the side effects of sending). The exit bar is the requirements' acceptance invariant: **the first post-cutover reconciliation balances with no manual adjustment**, observed in the browser on a fresh stack (§17.3.13, slice 660A).
 
 **Sources.** Architecture: [`architecture/phase93-client-trust-take-on.md`](../architecture/phase93-client-trust-take-on.md) (Section 17 — §17.2 domain model, §17.3 flows, §17.4 API, §17.6 files/audit/POPIA/portal, §17.7 migrations, §17.8 implementation guidance and testing, §17.9 permissions, §17.10 X1–X5 and founder decisions FD-1..FD-37, **§17.11 capability slices**). ADRs [385](../adr/ADR-385-take-on-architecture.md) · [386](../adr/ADR-386-trust-opening-entries-in-the-registry.md) · [387](../adr/ADR-387-investments-and-unidentified-deposits-at-cutover.md) · [388](../adr/ADR-388-fica-attestation-model.md) · [389](../adr/ADR-389-imported-client-lifecycle-entry-path.md) · [390](../adr/ADR-390-quiet-issue-of-brought-forward-fee-notes.md) · [391](../adr/ADR-391-take-on-report-and-sign-off.md). Requirements: [`requirements/claude-code-prompt-phase93.md`](../requirements/claude-code-prompt-phase93.md) (RD-1..RD-7, legal basis, assumptions A1–A6, epics E1–E8). Code inventory: `.arch-context.md` (file paths, signatures, DDL, fan-out). **The architecture was verified at `8feb21a3a`; ten Phase 92 follow-up PRs (#1825–#1835) have merged since and moved lines in `TrustPostingService`, `TrustReconciliationService`, `TrustTransactionRepository`, `TrustReceiptsPaymentsQuery`, `ClientLedgerStatementQuery` and the statement builders — re-grep every file:line, never trust a number.**
 
@@ -219,7 +219,7 @@ Root `CLAUDE.md` §7: more than one gap or feature in one PR needs the founder's
 | 655 | Clients With FICA Attestation — Commit Engine, Entry Path, Attestation, Review Queue (E3) | Backend + Frontend (together) | 653A | L | 655A, 655B (2 verifies) | **Done** (PR #1850, PR #1851) |
 | 656 | Matters + Go-Live Checklist (E4; E7 checklist) | Backend + Frontend (together) | 655A | M | 656A (1 verify) || **Done** (PR #1852) |
 | 657 | Trust Opening Position — Registry, Validation and Blocks, Sign-Off and Commit, Report and First Reconciliation (E5) | Backend + Frontend + Portal test | 653A; 656A for 657B | XL | 657A, 657B, 657C, 657D (4 verifies) | **Done** — 657A (PR #1847); 657B (PR #1853); 657C (PR #1854); 657D (PR #1855) |
-| 658 | Debtor Opening Balances — Quiet Issue (E6) | Backend + Frontend (together) | 655A, 656A | M | 658A (1 verify) | |
+| 658 | Debtor Opening Balances — Quiet Issue (E6) | Backend + Frontend (together) | 655A, 656A | M | 658A (1 verify) | **Done** (PR #1857) |
 | 659 | Frontend Wizard and Go-Live Checklist (E7) | spread across the dataset slices | — | — | — (in 653A, 655A, 656A, 657B–657D, 658A) | |
 | 660 | QA Capstone — Observed End to End (E8) | e2e + QA / Docs | every slice merged | L | 660A (0 verifies; +1 per defect-fix PR) | |
 
@@ -327,7 +327,7 @@ Cross-slice facts a builder must not rediscover: `take_on_sign_offs` exists from
 | **3 — Clients** | 655A **Done** (PR #1850) → 655B **Done** (PR #1851) | BE-VERIFY ×2 · FE-GATE ×2 · E2E-LEGAL ×2 · OBS: commit with Mailpit 0, dormancy job, then FICA statuses and the review queue | 655B ∥ 656A |
 | **4 — Matters** | 656A **Done** (PR #1852) | BE-VERIFY · FE-GATE · E2E-LEGAL · OBS | — |
 | **5 — Trust position** | 657B **Done** (PR #1853) → 657C **Done** (PR #1854) → 657D **Done** (PR #1855) | BE-VERIFY ×3 · FE-GATE ×3 · PORTAL-GATE (657C) · E2E-LEGAL + exit-month ×3 · OBS: blocks fire, sign-off by the owner, commit, report download, first month reconciled | 658A ∥ 657B–657D (needs only 655A + 656A) |
-| **6 — Debtors** | 658A | BE-VERIFY · FE-GATE · E2E-LEGAL · OBS with Mailpit 0 and no Xero enqueue | — |
+| **6 — Debtors** | 658A **Done** (PR #1857) | BE-VERIFY · FE-GATE · E2E-LEGAL · OBS with Mailpit 0 and no Xero enqueue | — |
 | **7 — Capstone** | 660A | fresh stack: `take-on.spec.ts` + lifecycle + depth-ii + exit-month green; gap report; closure report | Serial, last |
 
 Merge-conflict hotspots (serial order removes them; a rebase re-greps): `$K/TakeOnController.java`, `$SM/take-on-actions.ts`, `$FL/types/take-on.ts`, `$FK/take-on-wizard.tsx` (every slice); `$B/audit/AuditEventTypeRegistry.java` (every backend slice); `$TA/transaction/TrustPostingService.java` (657A, 657C — and any Phase 92 follow-up); `$TA/reconciliation/TrustReconciliationService.java` (657A, 657D); `$TA/transaction/TrustTransactionType.java` (657A; FU-16 (c)); `$B/customer/CustomerService.java` (655A, 655B); `$B/dashboard/DashboardService.java` (655B, 657D); `$SM/_tabs/take-on-tab.tsx` (653A, 656A); `$K/TakeOnDrainJobHandler.java` / `TakeOnDrainSweep.java` (655A, 657C, 657D); `$T/testutil/TrustBooksHarness.java` (657A, 657C).
@@ -618,13 +618,20 @@ Merge-conflict hotspots (serial order removes them; a rebase re-greps): `$K/Take
 
 **Dependencies**: 655A (clients, engine), 656A (matters). **Scope**: Backend + Frontend together. **Verifies: 1.** **Estimated Effort**: M
 
-**Status**:
+**Status**: 658A **Done** — PR #1857 merged as `7f3ba321f` (2026-11-24). Gates:
+- BE-VERIFY 8,175/0/0/55 @`bc2c478ad`.
+- Backend + Frontend CI pass.
+- FE-GATE @`0d08e820f`: vitest 4,960 passed / 2 skipped.
+- E2E-LEGAL: lifecycle 105, depth-ii 40 + 4 skipped.
+- OBS: 9/11 PASS, 2 DEFERRED (portal browser view, CashDigest trigger) — `$EV/658A/`.
+
+Migration **V37** (guide V35 → V36 → V37). Audit registry 101 → 102. Decisions D-239–D-257; **D-253 is a founder checkpoint item** (it refines FD-20). Found: F-658A-1 (Xero enqueue from the after-commit listeners — needs its own repro) to F-658A-9.
 
 ### Slices
 
 | Slice | Scope | Delivers | Files (est.) main · test · FE | Migration | Verify | PW / OBS | Depends on |
 |-------|-------|----------|-------------------------------|-----------|--------|----------|------------|
-| **658A** | BE: `invoices.take_on_batch_id`; `Invoice.issueBroughtForward` (DRAFT → SENT, take-on only); draft-builder extraction from `createDraft` (no behaviour change); `BroughtForwardFeeNoteService`; `DebtorBalancesDatasetHandler`; `AccountingSyncService.enqueueInvoicePush` provenance guard; `takeOnBatchId` on the invoice DTO; audit. FE: debtor columns, "Brought forward — take-on" badge on list and detail | E6 | **≈ 8 · 8 · 6 = ≈ 22** (the `Invoice` constructor is unchanged, so the 53 test files that build invoices need no edit — the scout confirms) | tenant, guide V35 → **V36** today (§17.7.7) | **yes** | ✓ E2E-LEGAL; OBS: SENT with source numbers, Mailpit 0, no payment link or notification, CashDigest and AR include them, void → no Xero enqueue | 655A, 656A |
+| **658A** | BE: `invoices.take_on_batch_id`; `Invoice.issueBroughtForward` (DRAFT → SENT, take-on only); draft-builder extraction from `createDraft` (no behaviour change); `BroughtForwardFeeNoteService`; `DebtorBalancesDatasetHandler`; `AccountingSyncService.enqueueInvoicePush` provenance guard; `takeOnBatchId` on the invoice DTO; audit. FE: debtor columns, "Brought forward — take-on" badge on list and detail | E6 | **≈ 8 · 8 · 6 = ≈ 22** (the `Invoice` constructor is unchanged, so the 53 test files that build invoices need no edit — the scout confirms) | tenant, guide V35 → **V36** today (§17.7.7) | **yes** | ✓ E2E-LEGAL; OBS: SENT with source numbers, Mailpit 0, no payment link or notification, CashDigest and AR include them, void → no Xero enqueue | 655A, 656A · **Done** (PR #1857) |
 
 ### Tasks
 

@@ -1,6 +1,6 @@
 # 658A FE-GATE @ 0d08e820f
 
-Command (frontend/, nvm node v20.11.1, pnpm by absolute path): `rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build`.
+Commands (frontend/, nvm node v20.11.1, pnpm by absolute path): `rm -rf .next`, then `pnpm lint`, `pnpm typecheck`, `pnpm format:check`, `pnpm test`, `pnpm build` — each run as a **separate** step with its exit code recorded (`status-run1.txt`), so run 1's `test` failure did not stop `build`. Run 2 re-ran `pnpm test` alone. (Corrected after merge — CodeRabbit later-round nit.)
 
 | Step | Run 1 (concurrent with the OBS browser run) | Run 2 |
 |---|---|---|

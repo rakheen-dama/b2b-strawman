@@ -13,7 +13,7 @@
 //   void      void PS-1003 in the UI; status, audit trail; Mailpit
 //   reimport  re-upload the same debtors file into a new batch and validate (not committed; cancelled)
 //   carol     Carol (member): the Take-on tab
-const { chromium } = require('/Users/rakheendama/Projects/2026/worktree-epic-658A/frontend/node_modules/@playwright/test');
+const { chromium } = require(require.resolve('@playwright/test', { paths: [require('path').resolve(__dirname, '../../../../../frontend')] }));
 const fs = require('fs');
 const D = __dirname;
 const BASE = 'http://localhost:3001';

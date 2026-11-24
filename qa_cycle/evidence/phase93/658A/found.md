@@ -18,3 +18,15 @@ Builder, 2026-11-24, branch `epic-658A/debtor-opening-balances` (base `c8907fb7d
 
 
 `frontend/__tests__/trust/trust-balance-trend-chart.test.tsx` › "renders the 12-month series with a to-date last point and an sr summary" uses `screen.findByRole('figure', …)` with the default 1000 ms wait. Under machine load (≈ 20, concurrent headless-Chromium OBS) it took 1141 ms and failed once in the 658A FE-GATE (evidence `fe-gate/vitest-run1-0d08e82.log`); it passes alone (6/6) and in the full re-run. Follow-up: give the lazy chart render an explicit timeout or render synchronously in the test.
+
+## F-658A-8 — LOW, comment only (Architecture delta-2 review)
+
+`backend/.../invoice/InvoiceNumberService.java:28-36`: the `MAX_SEQUENCE_VALUE` Javadoc was inserted between `FIRM_FORMAT`'s Javadoc and its field, so `FIRM_FORMAT` lost its doc comment. The amended ADR-048 bullet (`:18-20`) ends elliptically ("continues after its previous system's"). Follow-up: move the `INV-<digits>` comment back above `FIRM_FORMAT` and finish the sentence.
+
+## F-658A-9 — MAJOR per CodeRabbit (later round, deferred under the one-round rule); practically unreachable
+
+`InvoiceNumberService.sequenceValueOf` returns empty for a firm-format `INV-<n>` with n > `MAX_SEQUENCE_VALUE` (999,999,999), so the dry run accepts it silently and the counter is not moved. A later approval can only collide once the counter itself passes 1,000,000,000, which takes a billion approvals, or one batch carrying both `INV-999999999` and a larger `INV-` number. The Javadoc's "the counter never reaches it" overstates this, because `assignNumber` has no ceiling. No money, PII or tenant data is at risk. Follow-up: refuse firm-format numbers above `MAX_SEQUENCE_VALUE` as a row error at the dry run, and correct the Javadoc. PR reply: https://github.com/rakheen-dama/b2b-strawman/pull/1857#issuecomment-7144151441.
+
+## Evidence-tool nits (CodeRabbit later round) — corrected in the bookkeeping commit
+
+`obs/obs.cjs` now resolves `@playwright/test` from the repository's `frontend/` workspace instead of an absolute worktree path. `obs/psql-snap.sh` now runs with `set -eo pipefail`. `fe-gate/README.md` now records that the gate steps ran separately.

@@ -1,7 +1,7 @@
 {
-  "commit": "2f66fc2b8",
-  "command": "cd frontend && pnpm run lint && pnpm run format:check && pnpm run build && pnpm test (wt-f657c7-fr4, PR #1856, round 3)",
+  "commit": "0d08e820f",
+  "command": "cd frontend && rm -rf .next && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build (nvm node v20.11.1)",
   "exit": 0,
-  "ts": "2026-11-24T17:00:00Z",
-  "summary": "PR #1856 @2f66fc2b8 \u2014 lint 0 errors (77 pre-existing warnings), format clean, build ok, vitest 503 files / 4929 passed / 2 skipped"
+  "ts": "2026-11-24T20:15:30Z",
+  "summary": "PR #1857 (658A) @ 0d08e820f (frontend unchanged at head bc2c478ad): lint 0 errors, typecheck 0, format:check 0, build 0; vitest 506 files / 4960 passed / 2 skipped (re-run; run 1 had 1 load-timeout flake in untouched trust-balance-trend-chart.test.tsx, F-658A-7)"
 }

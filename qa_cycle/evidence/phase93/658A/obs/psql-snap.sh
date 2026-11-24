@@ -1,4 +1,5 @@
 #!/bin/bash
+set -eo pipefail
 # Read-only evidence snapshot (SELECTs only). Usage: psql-snap.sh <label> <since-iso>
 S=tenant_7d218705360b; L=$1; SINCE=${2:-2026-11-24T00:00:00Z}; OUT=$(dirname "$0")/psql-$L.txt
 q(){ echo "-- $1"; docker exec e2e-postgres psql -U postgres -d app -c "$1"; }

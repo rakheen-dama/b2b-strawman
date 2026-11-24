@@ -1,0 +1,20 @@
+# Trust take-on report — OBS 657D Trust banking G at 30 September 2026
+# Generated 2026-11-24T13:54:14.151304Z
+Section,Group,Client,Matter,Reference,Date,Amount
+CREDITOR,Client ledgers,Amahle Zulu,Transfer of Erf 101 Brooklyn,OBS 657D Trust banking G,2026-09-30,300000.00
+CREDITOR,Client ledgers,Bongani Nkosi,Estate late S Nkosi,OBS 657D Trust banking G,2026-09-30,150000.00
+CREDITOR,Client ledgers,Chantal Pillay,Supply contract claim,OBS 657D Trust banking G,2026-09-30,49500.00
+CREDITOR,Fund interest and charges ledger,Legal Practitioners' Fidelity Fund — interest and charges,,OBS 657D Trust banking G,2026-09-30,1250.00
+CREDITOR,Unidentified deposits,Unidentified deposit brought forward — take-on (ref ACB CREDIT UNKNOWN),,Unidentified deposit brought forward — take-on (ref ACB CREDIT UNKNOWN),2025-06-15,2000.00
+CREDITOR,Unidentified deposits,Unidentified deposit brought forward — take-on (ref EFT 7781),,Unidentified deposit brought forward — take-on (ref EFT 7781),2026-09-03,750.00
+CREDITOR,Section 86(3) investments,Placed in section 86(3) investment accounts,,OBS 657D Trust banking G,2026-09-30,-100000.00
+CREDITOR,Section 86(4) investments,Amahle Zulu,,OBS 657D s86(4) investment I4,2026-09-30,200000.00
+CREDITOR,Fund interest and charges ledger,Legal Practitioners' Fidelity Fund — interest and charges,,OBS 657D s86(4) investment I4,2026-09-30,0.00
+CREDITOR,Fund interest and charges ledger,Legal Practitioners' Fidelity Fund — interest and charges,,OBS 657D s86(3) investment I3,2026-09-30,0.00
+CREDITOR,Section 86(3) investments,Held for the firm's trust creditors,,OBS 657D s86(3) investment I3,2026-09-30,100000.00
+INVESTMENT,Section 86(3) investments,,,Investec · 0001,2026-03-01,100000.00
+INVESTMENT,Section 86(4) investments,Amahle Zulu,A1 Transfer of Erf 101 Brooklyn,Investec · 0002,2026-04-01,200000.00
+UNIDENTIFIED,Unidentified deposits,,,ACB CREDIT UNKNOWN,2025-06-15,2000.00
+UNIDENTIFIED,Unidentified deposits,,,EFT 7781,2026-09-03,750.00
+OUTSTANDING,Deposit in transit,Bongani Nkosi,B1 Estate late S Nkosi,EFT B-0001,2026-09-29,5000.00
+OUTSTANDING,Unpresented payment,Amahle Zulu,A1 Transfer of Erf 101 Brooklyn,PAY-778,2026-09-25,20000.00

@@ -13,12 +13,14 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustBook
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.TrustCreditorAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.creditor.TrustCreditorAccountType;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.BankStatement;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.BankStatementLine;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.BankStatementLineRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.BankStatementRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.ReconciliationStatus;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliation;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.UnresolvedStatementRow;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.takeon.TakeOnPositionFacts;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.ClientBalanceRow;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedgerQueryRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.UnidentifiedItemBalanceRow;
@@ -107,6 +109,13 @@ public class TrustIntegrityService {
    */
   public static final String BACKDATED_AFTER_LOCK = "BACKDATED_AFTER_LOCK";
 
+  /**
+   * Phase 93 (657D, §17.3.11, FD-11): the first statement of a taken-on account whose balance at
+   * the take-on date is not the bank balance entered at take-on. Warning — never blocks (EQ-1 uses
+   * the closing balance only; a statement without running balances opens at R0,00).
+   */
+  public static final String OPENING_DIFFERS_FROM_TAKE_ON = "OPENING_DIFFERS_FROM_TAKE_ON";
+
   /** Subject kinds (D-5). */
   public static final String SUBJECT_CLIENT = "CLIENT";
 
@@ -162,6 +171,7 @@ public class TrustIntegrityService {
   private final TrustCreditorAccountRepository creditorAccountRepository;
   private final CustomerRepository customerRepository;
   private final TrustMonthlyListRepository monthlyListRepository;
+  private final TakeOnPositionFacts takeOnPositionFacts;
   private final VerticalModuleGuard moduleGuard;
   private final Clock clock;
 
@@ -175,6 +185,7 @@ public class TrustIntegrityService {
       TrustCreditorAccountRepository creditorAccountRepository,
       CustomerRepository customerRepository,
       TrustMonthlyListRepository monthlyListRepository,
+      TakeOnPositionFacts takeOnPositionFacts,
       VerticalModuleGuard moduleGuard,
       Clock clock) {
     this.trustBooksService = trustBooksService;
@@ -186,6 +197,7 @@ public class TrustIntegrityService {
     this.creditorAccountRepository = creditorAccountRepository;
     this.customerRepository = customerRepository;
     this.monthlyListRepository = monthlyListRepository;
+    this.takeOnPositionFacts = takeOnPositionFacts;
     this.moduleGuard = moduleGuard;
     this.clock = clock;
   }
@@ -281,7 +293,9 @@ public class TrustIntegrityService {
     var flags = new ArrayList<IntegrityFlag>();
 
     // EQ-1 — with the statement given, else a reconciliation of the account at this date
-    BankPosition bank = bankAt(accountId, bankStatementId, date);
+    UUID statementId = statementAt(accountId, bankStatementId, date);
+    BankPosition bank =
+        statementId != null ? trustBooksService.bankPosition(accountId, statementId, date) : null;
     if (bank != null && bank.adjustedBankBalance().compareTo(position.cashbook()) != 0) {
       var diff = bank.adjustedBankBalance().subtract(position.cashbook()).abs();
       flags.add(
@@ -348,6 +362,9 @@ public class TrustIntegrityService {
     unidentifiedOverOneYear(date, items).ifPresent(flags::add);
     chargesToRefund(accountId, date).ifPresent(flags::add);
     backdatedAfterLock(accountId, date).ifPresent(flags::add);
+    if (statementId != null) {
+      openingDiffersFromTakeOn(accountId, statementId).ifPresent(flags::add);
+    }
 
     // Blocking first; the stable sort keeps the table order within each severity
     flags.sort(Comparator.comparing(f -> isBlocking(f) ? 0 : 1));
@@ -368,15 +385,97 @@ public class TrustIntegrityService {
         lastCompleted.map(TrustReconciliation::getPeriodEnd).orElse(null));
   }
 
-  private BankPosition bankAt(UUID accountId, UUID bankStatementId, LocalDate date) {
+  /** The statement in play: the one given, else a reconciliation's of the account at the date. */
+  private UUID statementAt(UUID accountId, UUID bankStatementId, LocalDate date) {
     if (bankStatementId != null) {
-      return trustBooksService.bankPosition(accountId, bankStatementId, date);
+      return bankStatementId;
     }
     return reconciliationRepository
         .findFirstByTrustAccountIdAndPeriodEndOrderByCreatedAtDesc(accountId, date)
         .map(TrustReconciliation::getBankStatementId)
-        .map(statementId -> trustBooksService.bankPosition(accountId, statementId, date))
         .orElse(null);
+  }
+
+  /**
+   * 657D (§17.3.11, A-8, A-9): on an account taken on at C, the first statement — the earliest live
+   * statement with a line dated after C (or, with no line, a period end after C) — whose balance at
+   * C is not the batch's entered bank balance B. The balance at C is the running balance of its
+   * last line dated on or before C when it has one, else the opening balance + Σ the lines dated on
+   * or before C. No flag on any other statement, nor when B is unknown, nor on an investment
+   * account the batch marked taken on (B is the banking account's balance).
+   */
+  private Optional<IntegrityFlag> openingDiffersFromTakeOn(UUID accountId, UUID statementId) {
+    var account = trustAccountRepository.findById(accountId).orElse(null);
+    if (account == null
+        || account.getTakeOnCutoverDate() == null
+        || account.getTakeOnBatchId() == null) {
+      return Optional.empty();
+    }
+    LocalDate cutover = account.getTakeOnCutoverDate();
+    // only the batch's banking account has an entered bank balance; an investment account it
+    // also marked taken on is never compared with the banking account's balance
+    BigDecimal entered =
+        takeOnPositionFacts.enteredBankBalance(account.getTakeOnBatchId(), accountId).orElse(null);
+    if (entered == null) {
+      return Optional.empty();
+    }
+    var statements =
+        new ArrayList<>(
+            bankStatementRepository.findByTrustAccountIdAndStatusNotOrderByPeriodEndDesc(
+                accountId, "RETIRED"));
+    statements.sort(Comparator.comparing(BankStatement::getPeriodEnd));
+    for (var statement : statements) {
+      var lines =
+          bankStatementLineRepository.findByBankStatementIdOrderByLineNumber(statement.getId());
+      boolean followsCutover =
+          lines.isEmpty()
+              ? statement.getPeriodEnd().isAfter(cutover)
+              : lines.stream().anyMatch(line -> line.getTransactionDate().isAfter(cutover));
+      if (!followsCutover) {
+        continue;
+      }
+      if (!statement.getId().equals(statementId)) {
+        return Optional.empty();
+      }
+      BigDecimal atCutover = balanceAtCutover(statement, lines, cutover);
+      if (atCutover.compareTo(entered) == 0) {
+        return Optional.empty();
+      }
+      return Optional.of(
+          flag(
+              OPENING_DIFFERS_FROM_TAKE_ON,
+              WARNING,
+              "The statement's balance at the take-on date ("
+                  + rand(atCutover)
+                  + ") is not the bank balance entered at take-on ("
+                  + rand(entered)
+                  + "). Check this is the statement that follows the cutover.",
+              atCutover.subtract(entered).abs(),
+              List.of(
+                  new FlagSubject(
+                      SUBJECT_BANK_STATEMENT, statement.getId(), statement.getFileName(), null))));
+    }
+    return Optional.empty();
+  }
+
+  private static BigDecimal balanceAtCutover(
+      BankStatement statement, List<BankStatementLine> lines, LocalDate cutover) {
+    var before =
+        lines.stream()
+            .filter(line -> !line.getTransactionDate().isAfter(cutover))
+            .sorted(
+                Comparator.comparing(BankStatementLine::getTransactionDate)
+                    .thenComparingInt(BankStatementLine::getLineNumber))
+            .toList();
+    if (!before.isEmpty() && before.getLast().getRunningBalance() != null) {
+      return before.getLast().getRunningBalance();
+    }
+    BigDecimal balance =
+        statement.getOpeningBalance() != null ? statement.getOpeningBalance() : BigDecimal.ZERO;
+    for (var line : before) {
+      balance = balance.add(line.getAmount());
+    }
+    return balance;
   }
 
   /** The G2 sentence (§16.3.4, §16.4.4): both totals, the difference, then the breakdown. */

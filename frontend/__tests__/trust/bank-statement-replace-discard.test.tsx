@@ -56,6 +56,7 @@ function statement(overrides: Partial<BankStatementResponse> = {}): BankStatemen
     retiredReason: null,
     replacedByStatementId: null,
     lines: [],
+    warnings: [],
     ...overrides,
   };
 }

@@ -1,0 +1,148 @@
+select a.account_name, a.account_type, a.is_primary, a.opened_date, a.take_on_cutover_date, a.take_on_batch_id from tenant_7d218705360b.trust_accounts a order by a.created_at;
+            account_name            | account_type | is_primary | opened_date | take_on_cutover_date |           take_on_batch_id           
+------------------------------------+--------------+------------+-------------+----------------------+--------------------------------------
+ Mathebula & Partners Trust Account | GENERAL      | t          | 2026-11-24  | 2026-11-24           | 530bf60a-5e92-4d19-a66d-532cc07225ac
+ OBS 657D Trust banking G           | GENERAL      | f          | 2026-01-01  | 2026-09-30           | aecfa487-b13d-4f6e-a14d-5272d5f0534b
+ OBS 657D Trust banking H           | GENERAL      | f          | 2026-01-01  | 2026-09-30           | 960e2a68-0d13-4a30-8086-a2d9266c31c4
+ OBS 657D s86(3) investment I3      | INVESTMENT   | f          | 2026-01-01  | 2026-09-30           | aecfa487-b13d-4f6e-a14d-5272d5f0534b
+ OBS 657D s86(4) investment I4      | INVESTMENT   | f          | 2026-01-01  | 2026-09-30           | aecfa487-b13d-4f6e-a14d-5272d5f0534b
+(5 rows)
+
+select r.id report_id, a.account_name, r.cutover_date, r.generated_at from tenant_7d218705360b.take_on_reports r join tenant_7d218705360b.take_on_batches b on b.id = r.batch_id join tenant_7d218705360b.trust_accounts a on a.id = b.trust_account_id order by r.generated_at;
+              report_id               |            account_name            | cutover_date |         generated_at          
+--------------------------------------+------------------------------------+--------------+-------------------------------
+ 1594a09a-42b4-4717-94d1-2cf29f1fb4f8 | OBS 657D Trust banking G           | 2026-09-30   | 2026-11-24 13:54:14.151304+00
+ 654339e0-9547-4a77-aa4b-e2b9612db7c7 | OBS 657D Trust banking H           | 2026-09-30   | 2026-11-24 13:54:34.686253+00
+ 957f2798-6597-45a8-beb7-e2156ccb97ac | Mathebula & Partners Trust Account | 2026-11-24   | 2026-11-24 13:54:53.050662+00
+(3 rows)
+
+select f.report_id, f.format, f.sha256, f.file_size, f.s3_key, f.rendered_at from tenant_7d218705360b.take_on_report_files f order by f.rendered_at, f.format;
+              report_id               | format |                              sha256                              | file_size |                                                             s3_key                                                              |          rendered_at          
+--------------------------------------+--------+------------------------------------------------------------------+-----------+---------------------------------------------------------------------------------------------------------------------------------+-------------------------------
+ 1594a09a-42b4-4717-94d1-2cf29f1fb4f8 | PDF    | 6a6468207b34c1381925a9d2f2c9669b69083ca379d6407ff3768343ce7fa94f |     10243 | take-on/tenant_7d218705360b/aecfa487-b13d-4f6e-a14d-5272d5f0534b/report/1594a09a-42b4-4717-94d1-2cf29f1fb4f8/take-on-report.pdf | 2026-11-24 13:54:14.508772+00
+ 1594a09a-42b4-4717-94d1-2cf29f1fb4f8 | CSV    | 5181ca8bf26d26cfc7e6eff96a260ef34de496e6b06872d58642828ad29f7d83 |      2192 | take-on/tenant_7d218705360b/aecfa487-b13d-4f6e-a14d-5272d5f0534b/report/1594a09a-42b4-4717-94d1-2cf29f1fb4f8/take-on-report.csv | 2026-11-24 13:54:14.525078+00
+ 654339e0-9547-4a77-aa4b-e2b9612db7c7 | PDF    | 21fbf699afe83ec179cffb50cf81e3e2066de6e80370df70a4c6a0521bee3ec1 |      4989 | take-on/tenant_7d218705360b/960e2a68-0d13-4a30-8086-a2d9266c31c4/report/654339e0-9547-4a77-aa4b-e2b9612db7c7/take-on-report.pdf | 2026-11-24 13:54:34.776077+00
+ 654339e0-9547-4a77-aa4b-e2b9612db7c7 | CSV    | 3e07f6fca38ab9206f4778881f84e07905f2adcd7c54ccd0bae88b35e6fa8533 |       410 | take-on/tenant_7d218705360b/960e2a68-0d13-4a30-8086-a2d9266c31c4/report/654339e0-9547-4a77-aa4b-e2b9612db7c7/take-on-report.csv | 2026-11-24 13:54:34.786403+00
+ 957f2798-6597-45a8-beb7-e2156ccb97ac | PDF    | bb8ea774bf683e709dee16dd6796c44f9ffad0eb8bd1afa61c5121d62370a21b |      5428 | take-on/tenant_7d218705360b/530bf60a-5e92-4d19-a66d-532cc07225ac/report/957f2798-6597-45a8-beb7-e2156ccb97ac/take-on-report.pdf | 2026-11-24 13:54:53.185773+00
+ 957f2798-6597-45a8-beb7-e2156ccb97ac | CSV    | 0d8777ee1b27b1620c03aa443cbe61d8f6b341ce330b82c7acd0e3e50154c8d7 |       442 | take-on/tenant_7d218705360b/530bf60a-5e92-4d19-a66d-532cc07225ac/report/957f2798-6597-45a8-beb7-e2156ccb97ac/take-on-report.csv | 2026-11-24 13:54:53.204066+00
+(6 rows)
+
+select report_id, attempts, last_error_code, last_attempt_at, failed_at from tenant_7d218705360b.take_on_report_renders order by last_attempt_at;
+              report_id               | attempts | last_error_code | last_attempt_at | failed_at 
+--------------------------------------+----------+-----------------+-----------------+-----------
+ 1594a09a-42b4-4717-94d1-2cf29f1fb4f8 |        0 |                 |                 | 
+ 654339e0-9547-4a77-aa4b-e2b9612db7c7 |        0 |                 |                 | 
+ 957f2798-6597-45a8-beb7-e2156ccb97ac |        0 |                 |                 | 
+(3 rows)
+
+select event_type, entity_type, entity_id, details, occurred_at from tenant_7d218705360b.audit_events where event_type = 'takeon.report.downloaded' order by occurred_at;
+        event_type        |  entity_type   |              entity_id               |                                               details                                               |          occurred_at          
+--------------------------+----------------+--------------------------------------+-----------------------------------------------------------------------------------------------------+-------------------------------
+ takeon.report.downloaded | take_on_report | 1594a09a-42b4-4717-94d1-2cf29f1fb4f8 | {"format": "PDF", "report_id": "1594a09a-42b4-4717-94d1-2cf29f1fb4f8", "actor_name": "Bob Admin"}   | 2026-11-24 13:54:17.874294+00
+ takeon.report.downloaded | take_on_report | 1594a09a-42b4-4717-94d1-2cf29f1fb4f8 | {"format": "CSV", "report_id": "1594a09a-42b4-4717-94d1-2cf29f1fb4f8", "actor_name": "Bob Admin"}   | 2026-11-24 13:54:17.925705+00
+ takeon.report.downloaded | take_on_report | 1594a09a-42b4-4717-94d1-2cf29f1fb4f8 | {"format": "PDF", "report_id": "1594a09a-42b4-4717-94d1-2cf29f1fb4f8", "actor_name": "Alice Owner"} | 2026-11-24 13:55:11.291675+00
+ takeon.report.downloaded | take_on_report | 1594a09a-42b4-4717-94d1-2cf29f1fb4f8 | {"format": "CSV", "report_id": "1594a09a-42b4-4717-94d1-2cf29f1fb4f8", "actor_name": "Alice Owner"} | 2026-11-24 13:55:11.398193+00
+(4 rows)
+
+select a.account_name, s.file_name, s.period_start, s.period_end, s.opening_balance, s.closing_balance, s.line_count, s.matched_count, s.status from tenant_7d218705360b.bank_statements s join tenant_7d218705360b.trust_accounts a on a.id = s.trust_account_id order by s.created_at;
+       account_name       |         file_name          | period_start | period_end | opening_balance | closing_balance | line_count | matched_count |   status   
+--------------------------+----------------------------+--------------+------------+-----------------+-----------------+------------+---------------+------------
+ OBS 657D Trust banking G | statement-G-october.csv    | 2026-10-02   | 2026-10-31 |       418500.00 |       403727.40 |          4 |             4 | RECONCILED
+ OBS 657D Trust banking H | statement-H-spanning-C.csv | 2026-09-20   | 2026-10-05 |        47000.00 |        49010.00 |          2 |             0 | IMPORTED
+(2 rows)
+
+select a.account_name, l.line_number, l.transaction_date, l.description, l.reference, l.amount, l.running_balance, l.match_status, l.classification, l.excluded_reason, t.transaction_type matched_type from tenant_7d218705360b.bank_statement_lines l join tenant_7d218705360b.bank_statements s on s.id = l.bank_statement_id join tenant_7d218705360b.trust_accounts a on a.id = s.trust_account_id left join tenant_7d218705360b.trust_transactions t on t.id = l.trust_transaction_id order by a.account_name, l.line_number;
+       account_name       | line_number | transaction_date |  description  |  reference  |  amount   | running_balance | match_status | classification |                excluded_reason                 |    matched_type    
+--------------------------+-------------+------------------+---------------+-------------+-----------+-----------------+--------------+----------------+------------------------------------------------+--------------------
+ OBS 657D Trust banking G |           1 | 2026-10-02       | EFT B-0001    | EFT B-0001  |   5000.00 |       423500.00 | AUTO_MATCHED |                |                                                | TAKEON_DEP_TRANSIT
+ OBS 657D Trust banking G |           2 | 2026-10-05       | PAY-778       | PAY-778     | -20000.00 |       403500.00 | AUTO_MATCHED |                |                                                | TAKEON_PAY_UNPRES
+ OBS 657D Trust banking G |           3 | 2026-10-31       | INTEREST      | INTEREST    |    312.40 |       403812.40 | RECORDED     | FUND_INTEREST  |                                                | FUND_INTEREST
+ OBS 657D Trust banking G |           4 | 2026-10-31       | SERVICE FEE   | SERVICE FEE |    -85.00 |       403727.40 | RECORDED     | BANK_CHARGE    |                                                | BANK_CHARGE
+ OBS 657D Trust banking H |           1 | 2026-09-20       | PRIOR DEPOSIT | PRIOR-H1    |   2000.00 |        49000.00 | EXCLUDED     |                | Before take-on: in the previous system's books | 
+ OBS 657D Trust banking H |           2 | 2026-10-05       | INTEREST      | INTEREST-H  |     10.00 |        49010.00 | UNMATCHED    |                |                                                | 
+(6 rows)
+
+select entity_id statement_id, details from tenant_7d218705360b.audit_events where event_type = 'bank_statement.imported' order by occurred_at;
+             statement_id             |                                                                                               details                                                                                                
+--------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 8725fa24-f8ed-4579-8b89-3c111d049777 | {"format": "CSV", "file_name": "statement-G-october.csv", "actor_name": "Alice Owner", "line_count": 4, "trust_account_id": "1a7c18f1-82b6-4c0e-95bc-fddc1827c74c", "excluded_before_take_on": 0}
+ 2a722920-ebb8-4628-92c0-5aa971e83a73 | {"format": "CSV", "file_name": "statement-H-spanning-C.csv", "actor_name": "Alice Owner", "line_count": 2, "trust_account_id": "91b2f4a8-3571-4ab9-a920-bec7a6616f28", "excluded_before_take_on": 1}
+(2 rows)
+
+select count(*) as line_excluded_audit_rows from tenant_7d218705360b.audit_events where event_type = 'bank_statement_line.excluded';
+ line_excluded_audit_rows 
+--------------------------
+                        0
+(1 row)
+
+select a.account_name, r.period_end, r.status, r.is_balanced, r.bank_balance, r.outstanding_deposits, r.outstanding_payments, r.adjusted_bank_balance, r.cashbook_balance, r.client_ledger_total, r.fund_ledger_balance, r.unidentified_deposit_total, r.inter_account_balance, r.creditor_total, r.difference, r.notes, r.completed_at, r.integrity_flags from tenant_7d218705360b.trust_reconciliations r join tenant_7d218705360b.trust_accounts a on a.id = r.trust_account_id order by r.created_at;
+       account_name       | period_end |  status   | is_balanced | bank_balance | outstanding_deposits | outstanding_payments | adjusted_bank_balance | cashbook_balance | client_ledger_total | fund_ledger_balance | unidentified_deposit_total | inter_account_balance | creditor_total | difference | notes |         completed_at          |                                                                                                                                                                                                                                                                                                                                                                                                                                                                integrity_flags                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+--------------------------+------------+-----------+-------------+--------------+----------------------+----------------------+-----------------------+------------------+---------------------+---------------------+----------------------------+-----------------------+----------------+------------+-------+-------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ OBS 657D Trust banking G | 2026-10-31 | COMPLETED | t           |    403727.40 |                 0.00 |                 0.00 |             403727.40 |        403727.40 |           499500.00 |             1477.40 |                    2750.00 |            -100000.00 |      403727.40 |       0.00 |       | 2026-11-24 13:55:32.744874+00 | [{"code": "UNIDENTIFIED_OVER_ONE_YEAR", "amount": 2000.00, "message": "1 unidentified deposit of R2 000,00 has been held for more than a year.", "severity": "WARNING", "subjects": [{"id": "cf3ae461-c79c-4cb9-9391-f2d0e7066c5a", "kind": "UNIDENTIFIED_DEPOSIT", "name": "Unidentified deposit brought forward — take-on (ref ACB CREDIT UNKNOWN)", "amount": 2000.00}]}]
+ OBS 657D Trust banking H | 2026-10-31 | DRAFT     | f           |     49010.00 |                 0.00 |                 0.00 |              49010.00 |         50000.00 |            50000.00 |                0.00 |                       0.00 |                  0.00 |       50000.00 |    -990.00 |       |                               | [{"code": "BANK_DIFFERENCE", "amount": 990.00, "message": "Adjusted bank balance R49 010,00 differs from the cashbook R50 000,00 by R990,00 as at 31 October 2026.", "severity": "BLOCKING", "subjects": []}, {"code": "UNRESOLVED_STATEMENT_LINES", "amount": null, "message": "1 statement line is neither matched, recorded nor excluded.", "severity": "BLOCKING", "subjects": [{"id": "2a722920-ebb8-4628-92c0-5aa971e83a73", "kind": "BANK_STATEMENT", "name": "statement-H-spanning-C.csv", "amount": null}]}, {"code": "OPENING_DIFFERS_FROM_TAKE_ON", "amount": 1000.00, "message": "The statement's balance at the take-on date (R49 000,00) is not the bank balance entered at take-on (R50 000,00). Check this is the statement that follows the cutover.", "severity": "WARNING", "subjects": [{"id": "2a722920-ebb8-4628-92c0-5aa971e83a73", "kind": "BANK_STATEMENT", "name": "statement-H-spanning-C.csv", "amount": null}]}]
+(2 rows)
+
+select a.account_name, m.period_end, m.adjusted_bank_balance, m.cashbook_balance, m.creditor_total, m.difference, m.locked_at from tenant_7d218705360b.trust_monthly_lists m join tenant_7d218705360b.trust_accounts a on a.id = m.trust_account_id;
+       account_name       | period_end | adjusted_bank_balance | cashbook_balance | creditor_total | difference |           locked_at           
+--------------------------+------------+-----------------------+------------------+----------------+------------+-------------------------------
+ OBS 657D Trust banking G | 2026-10-31 |             403727.40 |        403727.40 |      403727.40 |       0.00 | 2026-11-24 13:55:32.767709+00
+(1 row)
+
+select a.account_name, t.transaction_type, t.amount, t.transaction_date, t.reference, t.status, t.cleared_at_cutover, t.take_on_batch_id is not null as take_on from tenant_7d218705360b.trust_transactions t join tenant_7d218705360b.trust_accounts a on a.id = t.trust_account_id where a.account_name like 'OBS 657D Trust banking G' order by t.transaction_date, t.transaction_type;
+       account_name       |  transaction_type   |  amount   | transaction_date |     reference      |  status  | cleared_at_cutover | take_on 
+--------------------------+---------------------+-----------+------------------+--------------------+----------+--------------------+---------
+ OBS 657D Trust banking G | TAKEON_CLIENT       | 300000.00 | 2026-09-30       | TAKEON-CL-2        | APPROVED | t                  | t
+ OBS 657D Trust banking G | TAKEON_CLIENT       |  49500.00 | 2026-09-30       | TAKEON-CL-4        | APPROVED | t                  | t
+ OBS 657D Trust banking G | TAKEON_CLIENT       | 150000.00 | 2026-09-30       | TAKEON-CL-3        | APPROVED | t                  | t
+ OBS 657D Trust banking G | TAKEON_DEP_OFFSET   |   5000.00 | 2026-09-30       | TAKEON-OI-2        | APPROVED | t                  | t
+ OBS 657D Trust banking G | TAKEON_DEP_TRANSIT  |   5000.00 | 2026-09-30       | EFT B-0001         | APPROVED | f                  | t
+ OBS 657D Trust banking G | TAKEON_FIRM_INV_OUT | 100000.00 | 2026-09-30       | TAKEON-IN-2        | APPROVED | t                  | t
+ OBS 657D Trust banking G | TAKEON_FUND         |   1250.00 | 2026-09-30       | TAKEON-FUND        | APPROVED | t                  | t
+ OBS 657D Trust banking G | TAKEON_PAY_OFFSET   |  20000.00 | 2026-09-30       | TAKEON-OI-3        | APPROVED | t                  | t
+ OBS 657D Trust banking G | TAKEON_PAY_UNPRES   |  20000.00 | 2026-09-30       | PAY-778            | APPROVED | f                  | t
+ OBS 657D Trust banking G | TAKEON_UNIDENTIFIED |    750.00 | 2026-09-30       | EFT 7781           | APPROVED | t                  | t
+ OBS 657D Trust banking G | TAKEON_UNIDENTIFIED |   2000.00 | 2026-09-30       | ACB CREDIT UNKNOWN | APPROVED | t                  | t
+ OBS 657D Trust banking G | BANK_CHARGE         |     85.00 | 2026-10-31       | SERVICE FEE        | RECORDED | f                  | f
+ OBS 657D Trust banking G | FUND_INTEREST       |    312.40 | 2026-10-31       | INTEREST           | RECORDED | f                  | f
+(13 rows)
+
+select a.account_name, sum(t.cashbook_effect) cashbook_now from tenant_7d218705360b.trust_transactions t join tenant_7d218705360b.trust_accounts a on a.id = t.trust_account_id where t.posted_at is not null group by 1 order by 1;
+            account_name            | cashbook_now 
+------------------------------------+--------------
+ Mathebula & Partners Trust Account |     10000.00
+ OBS 657D Trust banking G           |    403727.40
+ OBS 657D Trust banking H           |     50000.00
+ OBS 657D s86(3) investment I3      |    100000.00
+ OBS 657D s86(4) investment I4      |    200000.00
+(5 rows)
+
+select event_type, count(*) from tenant_7d218705360b.audit_events where occurred_at >= '2026-11-24T13:52:02Z' group by 1 order by 1;
+           event_type            | count 
+---------------------------------+-------
+ REPORT_GENERATED                |     4
+ bank_statement.auto_matched     |     2
+ bank_statement.imported         |     2
+ bank_statement_line.recorded    |     2
+ customer.created                |     3
+ customer.fica_attested          |     3
+ project.created                 |     3
+ takeon.batch.attested           |     1
+ takeon.batch.commit_requested   |     5
+ takeon.batch.committed          |     5
+ takeon.batch.created            |     5
+ takeon.batch.signed_off         |     3
+ takeon.batch.validated          |     5
+ takeon.report.downloaded        |     4
+ takeon.report.generated         |     3
+ takeon.source.mapped            |     8
+ takeon.source.uploaded          |     8
+ trust_account.created           |     4
+ trust_bank_charge.recorded      |     1
+ trust_creditor_account.created  |     8
+ trust_fund_interest.recorded    |     1
+ trust_monthly_list.locked       |     1
+ trust_reconciliation.calculated |     4
+ trust_reconciliation.completed  |     1
+ trust_reconciliation.created    |     2
+(25 rows)
+

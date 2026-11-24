@@ -3,6 +3,8 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
+import io.b2mash.b2b.b2bstrawman.dashboard.dto.TrustBalanceTrendPoint;
+import io.b2mash.b2b.b2bstrawman.dashboard.dto.TrustBalanceTrendResponse;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.TrustPositionResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.CreditorLine;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.FlagSubject;
@@ -114,7 +116,10 @@ class TrustWireContractTest {
           TrustInterestMemoService.InterestMemoResponse.class,
           TrustInterestMemoService.SaveInterestMemoRequest.class,
           // 652C: the body of calculate and complete — the statement the wizard reviewed
-          TrustReconciliationService.ExpectedStatementRequest.class);
+          TrustReconciliationService.ExpectedStatementRequest.class,
+          // 657D: the trust trend over a cutover (takenOnAt); BankStatementResponse gains warnings
+          TrustBalanceTrendResponse.class,
+          TrustBalanceTrendPoint.class);
 
   private static final String UPDATE_FLAG = "trust.contract.update";
   private static final Path SNAPSHOT = Path.of("src/test/resources/wire/trust-contract.json");

@@ -182,6 +182,11 @@ public record TakeOnReportSnapshot(
     return JSON.convertValue(this, Map.class);
   }
 
+  /** 657D: the typed snapshot back from its stored map (the PDF and CSV render from it). */
+  public static TakeOnReportSnapshot from(Map<String, Object> snapshot) {
+    return JSON.convertValue(snapshot, TakeOnReportSnapshot.class);
+  }
+
   /**
    * SHA-256 (64 lower-case hex) of the canonical JSON of a stored snapshot map — recomputable from
    * the jsonb as read back, because the map holds only strings, booleans, integers and nulls.

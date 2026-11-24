@@ -369,6 +369,10 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
    * REVERSED}) and its {@code REVERSAL} contra are both included, each on its own date with its own
    * cashbook effect (649B, ADR-378) — the same rule as {@link #findForStatement}. Used by the
    * Receipts & Payments report (and so Section 35 part 1).
+   *
+   * <p>Phase 93 (657D, §17.3.15): a take-on row ({@code take_on_batch_id} set) is never a receipt
+   * or payment — the report prints the take-on as one brought-forward line ({@link
+   * #sumTakeOnCashbookEffect}). A reversal of a take-on item carries no batch id and is listed.
    */
   @Query(
       """
@@ -377,12 +381,27 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
         AND t.transactionDate >= :startDate
         AND t.transactionDate <= :endDate
         AND t.postedAt IS NOT NULL
+        AND t.takeOnBatchId IS NULL
       ORDER BY t.transactionDate ASC, t.createdAt ASC
       """)
   List<TrustTransaction> findForReceiptsPayments(
       @Param("trustAccountId") UUID trustAccountId,
       @Param("startDate") LocalDate startDate,
       @Param("endDate") LocalDate endDate);
+
+  /**
+   * Phase 93 (657D, §17.3.15): the cashbook at the cutover date as the take-on posted it — Σ {@code
+   * cashbook_effect} of the account's posted take-on rows ({@code CB}). The Receipts & Payments
+   * brought-forward line.
+   */
+  @Query(
+      """
+      SELECT COALESCE(SUM(t.cashbookEffect), 0) FROM TrustTransaction t
+      WHERE t.trustAccountId = :trustAccountId
+        AND t.takeOnBatchId IS NOT NULL
+        AND t.postedAt IS NOT NULL
+      """)
+  java.math.BigDecimal sumTakeOnCashbookEffect(@Param("trustAccountId") UUID trustAccountId);
 
   /**
    * A customer's posted transactions on the client ledger in a date range, oldest first, for a

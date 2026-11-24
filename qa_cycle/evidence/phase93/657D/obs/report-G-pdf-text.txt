@@ -1,0 +1,101 @@
+            Trust take-on report
+            E2E Test Organization
+            OBS 657D Trust banking G · 6570001 · Standard Bank
+            Cutover date: 30 September 2026
+            Reconciled position at cutover
+                                                                                        Previous system             Kazi Difference
+            Bank balance                                                                     R418 500,00 R418 500,00            R0,00
+            Outstanding deposits                                                               R5 000,00      R5 000,00         R0,00
+            Outstanding payments                                                              R20 000,00     R20 000,00         R0,00
+            Adjusted bank balance                                                            R403 500,00 R403 500,00            R0,00
+            Cashbook                                                                         R403 500,00 R403 500,00            R0,00
+            Legal Practitioners' Fidelity Fund (the Fund) interest and charges ledger          R1 250,00      R1 250,00         R0,00
+            Total invested                                                                   R300 000,00 R300 000,00            R0,00
+            Trust creditors at cutover
+            OBS 657D Trust banking G — as at 30 September 2026
+            Cashbook R403 500,00 · trust creditors R403 500,00
+            Client ledgers
+            Amahle Zulu                Transfer of Erf 101 Brooklyn R300 000,00                                          R300 000,00
+            Bongani Nkosi              Estate late S Nkosi R150 000,00                                                   R150 000,00
+            Chantal Pillay             Supply contract claim R49 500,00                                                   R49 500,00
+            Fund interest and charges ledger
+            Legal Practitioners' Fidelity Fund — interest and charges                                                      R1 250,00
+            Unidentified deposits
+            Unidentified deposit brought forward — take- Received 15 June 2025 · Unidentified deposit brought              R2 000,00
+            on (ref ACB CREDIT UNKNOWN)                     forward — take-on (ref ACB CREDIT UNKNOWN)
+            Unidentified deposit brought forward — take- Received 3 September 2026 · Unidentified deposit brought            R750,00
+            on (ref EFT 7781)                               forward — take-on (ref EFT 7781)
+            Section 86(3) investments
+            Placed in section 86(3) investment accounts                                                                 -R100 000,00
+            OBS 657D s86(4) investment I4 — as at 30 September 2026
+            Cashbook R200 000,00 · trust creditors R200 000,00
+            Section 86(4) investments
+            Amahle Zulu                                                                                                  R200 000,00
+            Fund interest and charges ledger
+            Legal Practitioners' Fidelity Fund — interest and charges                                                           R0,00
+            OBS 657D s86(3) investment I3 — as at 30 September 2026
+            Cashbook R100 000,00 · trust creditors R100 000,00
+            Fund interest and charges ledger
+            Legal Practitioners' Fidelity Fund — interest and charges                                                           R0,00
+            Section 86(3) investments
+            Held for the firm's trust creditors                                                                          R100 000,00
+            Section 86(4) investments
+             Client    Matter               Held at                       Placed       Principal Accrued interest Per confirmation
+             Amahle  A1 Transfer of         OBS 657D s86(4)               1 April   R200 000,00            R1 234,56         R200 000,00
+             Zulu      Erf 101 Brooklyn     investment I4 · Investec ·    2026
+                                            0002
+            Section 86(3) investments
+             Held at                                               Placed              Principal Accrued interest Per confirmation
+             OBS 657D s86(3) investment I3 · Investec · 0001 1 March 2026 R100 000,00                              —         R100 000,00
+            Unidentified deposits
+             Received                         Age at cutover              Reference                                              Amount
+             15 June 2025                     472 days                    ACB CREDIT UNKNOWN                                   R2 000,00
+             3 September 2026                 27 days                     EFT 7781                                               R750,00
+            Outstanding items at cutover
+             Item                     Date                  Reference     Client           Matter                                Amount
+             Deposit in transit       29 September          EFT B-        Bongani          B1 Estate late S Nkosi              R5 000,00
+                                      2026                  0001          Nkosi
+             Unpresented              25 September          PAY-778       Amahle Zulu      A1 Transfer of Erf 101             R20 000,00
+             payment                  2026                                                 Brooklyn
+            Control totals
+             Bank balance + outstanding deposits # outstanding         R418 500,00 + R5 000,00 # R20 000,00 = R403 500,00 
+             payments = cashbook                                       against R403 500,00 — agrees
+             Outstanding items listed agree with the reconciled        Deposits R5 000,00, payments R20 000,00 — agrees
+             position
+             Cashbook = trust creditors                                R403 500,00 against R403 500,00 — agrees
+             Investments listed agree with the institutions'           R300 000,00 against R300 000,00 — agrees
+             confirmations
+             Trust money held covers the trust creditors               R703 500,00 against R703 500,00 — no deficit
+            Flags
+                   Unidentified deposit older than one year
+            Sign-off
+            Signed off by Alice Owner (Owner) on 24 November 2026, 15:53.
+            Prepared by Bob Admin.
+            Declaration (version TAKEON-SIGNOFF-v1)
+            I am a partner or director of E2E Test Organization responsible for its trust accounting records (Rule 54.19). I have 
+            reviewed this take-on of OBS 657D Trust banking G at 30 September 2026. The trust creditors listed agree, to the cent, 
+            with the reconciled trust position in the previous system at that date, and no trust creditor is in debit.
+            Source files
+             File           Section       Sheet Rows Uploaded SHA-256
+             trust-client-  Client and    CSV 3           Bob           95a5145ec548cfd50de6db756e0e93fd21eb580d39e1ccef9f1dcde73bb86e98
+             ledger.csv     matter                        Admin, 24 
+                            balances                      November 
+                                                          2026, 15:
+                                                          52
+             trust-         Investments CSV       2       Bob           806085d9129b2585074a435dec57597003daae31e90588e802e8f0398f2bb335
+             investments.                                 Admin, 24 
+           csv                                       November 
+                                                     2026, 15:
+                                                     52
+           trust-        Items        CSV 2          Bob        ef31108db73a0c88a9d1a07aee89707014f6e91943639417bf9ee824d84e494c
+           outstanding- outstanding                  Admin, 24 
+           items.csv     at cutover                  November 
+                                                     2026, 15:
+                                                     52
+           trust-        Unidentified  CSV   2       Bob        436395b0b6f1a8e2d071fdda7db2ba3a7c925c5d86585be9dbe3e627f85aa011
+           unidentified- deposits                    Admin, 24 
+           deposits.csv                              November 
+                                                     2026, 15:
+                                                     52
+           Report 1594a09a-42b4-4717-94d1-2cf29f1fb4f8 · generated 24 November 2026, 15:54
+           Snapshot SHA-256 dae5479f05006775edd76a6d8fd5e4636f28b3d760d75a5e926fcc5e448337f8

@@ -47,6 +47,54 @@ describe("ReportResults", () => {
     vi.clearAllMocks();
   });
 
+  // 657D (§17.3.15): Receipts & Payments over a cutover opens with the take-on brought-forward line
+  it("marks the take-on brought-forward row and formats summary.broughtForward as money", () => {
+    render(
+      <ReportResults
+        response={makeResponse({
+          columns: [
+            { key: "date", label: "Date", type: "string" },
+            { key: "type", label: "Type", type: "string" },
+            { key: "credit", label: "Receipts", type: "currency" },
+          ],
+          rows: [
+            {
+              date: "2026-10-31",
+              type: "Balance brought forward — take-on",
+              credit: 403500,
+              broughtForward: true,
+            },
+            { date: "2026-11-10", type: "Deposit", credit: 60000 },
+          ],
+          summary: { totalReceipts: 60000, broughtForward: 403500 },
+        })}
+        isLoading={false}
+        onPageChange={vi.fn()}
+      />
+    );
+    const rows = screen.getAllByTestId("report-row-brought-forward");
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toHaveTextContent("Balance brought forward — take-on");
+    expect(rows[0].className).toContain("font-medium");
+    expect(screen.getByText("Brought Forward")).toBeInTheDocument();
+    expect(screen.getAllByText(money(403500)).length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("prints summary.broughtForwardNote as a footnote under the table, not a stat card", () => {
+    const note =
+      "The opening position taken on at 31 October 2026 is shown as one brought-forward line, not as receipts.";
+    render(
+      <ReportResults
+        response={makeResponse({ summary: { totalHours: 98.25, broughtForwardNote: note } })}
+        isLoading={false}
+        onPageChange={vi.fn()}
+      />
+    );
+    expect(screen.getByTestId("report-footnote-brought-forward")).toHaveTextContent(note);
+    expect(screen.getAllByText(note)).toHaveLength(1);
+    expect(screen.queryByText("Brought Forward Note")).not.toBeInTheDocument();
+  });
+
   it("renders nothing when response is null", () => {
     const { container } = render(
       <ReportResults response={null} isLoading={false} onPageChange={vi.fn()} />

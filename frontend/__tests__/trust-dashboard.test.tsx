@@ -853,6 +853,20 @@ const FLAG_CASES: {
     linkName: "March 2026 list",
     href: "/org/acme/trust-accounting/reconciliation/lists/list-1",
   },
+  {
+    // 657D: the first statement of a taken-on account opens away from the take-on (warning)
+    code: "OPENING_DIFFERS_FROM_TAKE_ON",
+    flag: {
+      code: "OPENING_DIFFERS_FROM_TAKE_ON",
+      severity: "WARNING",
+      message:
+        "The statement's balance at the take-on date (R0,00) is not the bank balance entered at take-on (R418 500,00). Check this is the statement that follows the cutover.",
+      amount: 418500,
+      subjects: [{ kind: "BANK_STATEMENT", id: "stmt-2", name: "november-2026.csv", amount: null }],
+    },
+    linkName: "november-2026.csv",
+    href: "/org/acme/trust-accounting/reconciliation",
+  },
 ];
 
 /** A report raising `flag` where the backend raises it: firm-level for EQ-3, else on the account. */

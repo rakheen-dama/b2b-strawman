@@ -111,6 +111,7 @@ class TerminologyRemnantScanTest {
           "PrerequisiteNotMetException",
           "ModuleNotEnabledException",
           "MissingRequiredClausesException",
+          "UnprocessableEntityException",
           "MissingOrganizationContextException",
           "PlanLimitExceededException",
           "TooManyRequestsException",

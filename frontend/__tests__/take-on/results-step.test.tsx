@@ -33,6 +33,8 @@ const actions = vi.hoisted(() => ({
   fetchTakeOnBankingAccounts: vi.fn(),
   downloadTakeOnTemplate: vi.fn(),
   getTakeOnReport: vi.fn(),
+  downloadTakeOnReport: vi.fn(),
+  retryReportRender: vi.fn(),
 }));
 vi.mock("@/app/(app)/org/[slug]/settings/matters/take-on-actions", () => actions);
 
@@ -250,6 +252,19 @@ describe("ResultsStep — trust take-on report summary (657C)", () => {
 
     render(withSWR(<ResultsStep batch={COMPLETED} onBatchChange={vi.fn()} />));
     expect(screen.queryByTestId("take-on-report-summary")).not.toBeInTheDocument();
+    // the summary and the report downloads (657D) share one read of the report; a clients batch
+    // none
     expect(actions.getTakeOnReport).toHaveBeenCalledTimes(1);
+  });
+
+  it("offers the report's PDF and CSV under the summary (657D)", async () => {
+    actions.getTakeOnReport.mockResolvedValue({ success: true, data: TAKE_ON_REPORT_17313 });
+    render(withSWR(<ResultsStep batch={COMMITTED_TRUST} onBatchChange={vi.fn()} />));
+
+    expect(await screen.findByTestId("take-on-report-download-pdf")).toHaveTextContent(
+      "Download PDF"
+    );
+    expect(screen.getByTestId("take-on-report-download-csv")).toHaveTextContent("Download CSV");
+    expect(screen.queryByTestId("take-on-report-files-preparing")).not.toBeInTheDocument();
   });
 });

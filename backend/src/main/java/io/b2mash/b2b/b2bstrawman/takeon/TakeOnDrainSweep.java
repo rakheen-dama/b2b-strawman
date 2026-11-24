@@ -35,7 +35,12 @@ import org.springframework.stereotype.Component;
  * pattern ({@code ^tenant_[0-9a-f]{12}$}, C-11) and quoted; never request input. A schema without a
  * {@code take_on_batches} table (a tenant whose boot-time migration failed) is left out first, and
  * if the chunk's statement still fails each schema is asked on its own, so one broken schema never
- * hides the others' work. 657D adds the report-file clause.
+ * hides the others' work.
+ *
+ * <p>657D (§17.3.3 step 4, §17.3.12): a tenant also has work when a take-on report is missing its
+ * PDF or its CSV and its render has not failed for good ({@code take_on_report_renders.failed_at}
+ * set after five attempts) — a render lost to a crash is picked up again; a permanently failing one
+ * is not re-enqueued every minute forever (R-18) until "Try again" resets it.
  */
 @Component
 public class TakeOnDrainSweep {
@@ -88,8 +93,9 @@ public class TakeOnDrainSweep {
   }
 
   /**
-   * The mappings whose schema has a {@code COMMITTING} take-on batch. Schema names that do not
-   * match the tenant pattern are skipped. Public for tests (scheduling is off in the test profile).
+   * The mappings whose schema has a {@code COMMITTING} take-on batch or a take-on report missing a
+   * file whose render has not failed for good (657D). Schema names that do not match the tenant
+   * pattern are skipped. Public for tests (scheduling is off in the test profile).
    */
   public List<OrgSchemaMapping> tenantsWithWork(List<OrgSchemaMapping> candidates) {
     Map<String, List<OrgSchemaMapping>> byShard = new LinkedHashMap<>();
@@ -178,9 +184,16 @@ public class TakeOnDrainSweep {
         .map(OrgSchemaMapping::getSchemaName)
         .map(
             schema ->
-                "SELECT '%1$s' AS schema_name WHERE EXISTS (SELECT 1 FROM \"%1$s\".take_on_batches"
-                        .formatted(schema)
-                    + " WHERE status = 'COMMITTING')")
+                ("SELECT '%1$s' AS schema_name WHERE EXISTS (SELECT 1 FROM \"%1$s\".take_on_batches"
+                        + " WHERE status = 'COMMITTING')"
+                        + " OR EXISTS (SELECT 1 FROM \"%1$s\".take_on_reports r"
+                        + " WHERE (NOT EXISTS (SELECT 1 FROM \"%1$s\".take_on_report_files f"
+                        + " WHERE f.report_id = r.id AND f.format = 'PDF')"
+                        + " OR NOT EXISTS (SELECT 1 FROM \"%1$s\".take_on_report_files f"
+                        + " WHERE f.report_id = r.id AND f.format = 'CSV'))"
+                        + " AND NOT EXISTS (SELECT 1 FROM \"%1$s\".take_on_report_renders x"
+                        + " WHERE x.report_id = r.id AND x.failed_at IS NOT NULL))")
+                    .formatted(schema))
         .collect(Collectors.joining(" UNION ALL "));
   }
 }

@@ -1,0 +1,258 @@
+{
+  "accounts": [
+    {
+      "id": "30d4e59f-94ff-4a45-8eb3-2dfb3dea13b6",
+      "accountName": "Mathebula & Partners Trust Account",
+      "accountType": "GENERAL",
+      "isPrimary": true,
+      "status": "ACTIVE",
+      "openedDate": "2026-11-24",
+      "accountNumber": "0123456789"
+    },
+    {
+      "id": "1a7c18f1-82b6-4c0e-95bc-fddc1827c74c",
+      "accountName": "OBS 657D Trust banking G",
+      "accountType": "GENERAL",
+      "isPrimary": false,
+      "status": "ACTIVE",
+      "openedDate": "2026-01-01",
+      "accountNumber": "6570001"
+    },
+    {
+      "id": "91b2f4a8-3571-4ab9-a920-bec7a6616f28",
+      "accountName": "OBS 657D Trust banking H",
+      "accountType": "GENERAL",
+      "isPrimary": false,
+      "status": "ACTIVE",
+      "openedDate": "2026-01-01",
+      "accountNumber": "6575001"
+    },
+    {
+      "id": "dbf57a7f-1f9d-431f-be4f-f17e4361fdef",
+      "accountName": "OBS 657D s86(3) investment I3",
+      "accountType": "INVESTMENT",
+      "isPrimary": false,
+      "status": "ACTIVE",
+      "openedDate": "2026-01-01",
+      "accountNumber": "6573001"
+    },
+    {
+      "id": "8249c754-1c4d-4abc-988a-ed96b736e07e",
+      "accountName": "OBS 657D s86(4) investment I4",
+      "accountType": "INVESTMENT",
+      "isPrimary": false,
+      "status": "ACTIVE",
+      "openedDate": "2026-01-01",
+      "accountNumber": "6574001"
+    },
+    {
+      "id": "b95fe569-d3c4-43eb-869d-973536d69ad9",
+      "accountName": "OBS 657D Trust banking K",
+      "accountType": "GENERAL",
+      "isPrimary": false,
+      "status": "ACTIVE",
+      "openedDate": "2026-01-01",
+      "accountNumber": "6576001"
+    }
+  ],
+  "consoleErrors": {
+    "accounts-K": [],
+    "trust-K": [],
+    "signoff-K": [],
+    "commit-K": []
+  },
+  "trust": {
+    "K": {
+      "batch": "a59d099b-737e-4583-8a5b-11e550729488",
+      "validated": {
+        "status": "Validated",
+        "cards": {
+          "total": 5,
+          "valid": 5,
+          "error": 0,
+          "duplicate": 0,
+          "blocks": 0
+        },
+        "banner": null,
+        "accountErrors": null,
+        "equation": {
+          "eq1": {
+            "holds": "true",
+            "difference": "Difference R 0,00"
+          },
+          "items": {
+            "holds": "true",
+            "difference": "Difference R 0,00"
+          },
+          "eq2": {
+            "holds": "true",
+            "difference": "Difference R 0,00"
+          },
+          "investments": {
+            "holds": "true",
+            "difference": "Difference R 0,00"
+          },
+          "deficit": {
+            "holds": "true",
+            "difference": "Difference R 0,00"
+          }
+        },
+        "flags": null,
+        "api": {
+          "http": 200,
+          "status": "VALIDATED",
+          "allowedActions": [
+            "ADD_SOURCE",
+            "REMOVE_SOURCE",
+            "MAP",
+            "REVALIDATE",
+            "CANCEL"
+          ],
+          "counts": {
+            "total": 5,
+            "valid": 5,
+            "error": 0,
+            "duplicate": 0,
+            "blocks": 0,
+            "created": 0,
+            "skipped": 0,
+            "failed": 0
+          },
+          "cutoverDate": "2026-09-30",
+          "reportId": null,
+          "trustAccountName": "OBS 657D Trust banking K",
+          "lastError": null
+        }
+      },
+      "signoff": {
+        "itemText": "OBS 657D Trust banking K at 30 September 2026 Prepared by Bob Admin · validated 24 Nov 2026, 16:14",
+        "widgetCount": 1,
+        "widgetVisible": [
+          true
+        ],
+        "title": "Sign off the trust take-on of OBS 657D Trust banking K at 30 September 2026",
+        "live": "Signed off by you (Owner) on 24 Nov 2026, 16:14. Withdraw my sign-off",
+        "api": {
+          "http": 200,
+          "status": "VALIDATED",
+          "allowedActions": [
+            "ADD_SOURCE",
+            "REMOVE_SOURCE",
+            "MAP",
+            "REVALIDATE",
+            "COMMIT",
+            "WITHDRAW_SIGN_OFF",
+            "REVOKE_SIGN_OFF",
+            "CANCEL"
+          ],
+          "counts": {
+            "total": 5,
+            "valid": 5,
+            "error": 0,
+            "duplicate": 0,
+            "blocks": 0,
+            "created": 0,
+            "skipped": 0,
+            "failed": 0
+          },
+          "cutoverDate": "2026-09-30",
+          "reportId": null,
+          "trustAccountName": "OBS 657D Trust banking K",
+          "lastError": null
+        }
+      },
+      "reportId": "991aeddb-a74c-4424-b18d-01479e187867",
+      "commit": {
+        "mailBefore": {
+          "at": "2026-11-24T14:14:49.967Z",
+          "total": 2,
+          "latest": {
+            "id": "5KsbuR9WGDgxyB3FT9D4dy",
+            "subject": "Information request REQ-0001 from E2E Test Organization",
+            "created": "2026-11-24T13:41:35.616Z"
+          }
+        },
+        "trustSentence": "The opening position of OBS 657D Trust banking K at 30 September 2026 will be posted and the account will not accept entries dated on or before that date.",
+        "commitClickedAt": "2026-11-24T14:14:51.718Z",
+        "resultsAt": "2026-11-24T14:14:56.631Z",
+        "results": {
+          "created": "Created 5",
+          "skipped": "Skipped 0",
+          "failed": "Failed 0"
+        },
+        "filesWatch": [
+          {
+            "atMs": 17,
+            "at": "2026-11-24T14:14:56.677Z",
+            "preparing": false,
+            "preparingText": null,
+            "pdf": true,
+            "csv": true,
+            "failed": false
+          }
+        ],
+        "api": {
+          "http": 200,
+          "status": "COMPLETED",
+          "allowedActions": [
+            "DOWNLOAD_RESULT"
+          ],
+          "counts": {
+            "total": 5,
+            "valid": 5,
+            "error": 0,
+            "duplicate": 0,
+            "blocks": 0,
+            "created": 5,
+            "skipped": 0,
+            "failed": 0
+          },
+          "cutoverDate": "2026-09-30",
+          "reportId": "991aeddb-a74c-4424-b18d-01479e187867",
+          "trustAccountName": "OBS 657D Trust banking K",
+          "lastError": null
+        },
+        "downloads": {
+          "pdf": {
+            "suggestedFilename": "take-on-report-obs-657d-trust-banking-k-2026-09-30.pdf",
+            "file": "downloads/results-step-take-on-report-obs-657d-trust-banking-k-2026-09-30.pdf",
+            "size": 6750,
+            "sha256": "96cc3be5e8a56439c98bb5c551072db6098f91fc882c715473d18c6ac95e12f8",
+            "head": "%PDF-1.6"
+          },
+          "csv": {
+            "suggestedFilename": "take-on-report-obs-657d-trust-banking-k-2026-09-30.csv",
+            "file": "downloads/results-step-take-on-report-obs-657d-trust-banking-k-2026-09-30.csv",
+            "size": 981,
+            "sha256": "53c13f35f8f1f5eb707f9cb958921bd02035162466039b8c17904e5959025e48",
+            "head": "# Trust "
+          }
+        },
+        "downloadError": null,
+        "reportApiFiles": {
+          "pdf": {
+            "status": "READY",
+            "sha256": "96cc3be5e8a56439c98bb5c551072db6098f91fc882c715473d18c6ac95e12f8",
+            "fileSize": 6750,
+            "renderedAt": "2026-11-24T14:14:54.866204Z"
+          },
+          "csv": {
+            "status": "READY",
+            "sha256": "53c13f35f8f1f5eb707f9cb958921bd02035162466039b8c17904e5959025e48",
+            "fileSize": 981,
+            "renderedAt": "2026-11-24T14:14:54.881668Z"
+          }
+        },
+        "mailAfter": {
+          "at": "2026-11-24T14:15:06.335Z",
+          "total": 2,
+          "latest": {
+            "id": "5KsbuR9WGDgxyB3FT9D4dy",
+            "subject": "Information request REQ-0001 from E2E Test Organization",
+            "created": "2026-11-24T13:41:35.616Z"
+          }
+        }
+      }
+    }
+  }
+}

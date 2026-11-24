@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.takeon;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.audit.SafeAuditDetails;
+import io.b2mash.b2b.b2bstrawman.reporting.ReportAuditRecorder;
 import io.b2mash.b2b.b2bstrawman.takeon.dataset.TrustPositionEquation.TrustPositionSummary;
 import java.util.Map;
 import java.util.UUID;
@@ -10,9 +11,11 @@ import org.springframework.stereotype.Component;
 
 /**
  * The {@code takeon.*} audit events (§17.6.4: six from 653A, six from 655A, two from 656A, two from
- * 657C), each with exactly its documented params, built through {@link SafeAuditDetails} — ids,
- * enums and counts only, never a name, file name, header or value. Logged in the caller's
- * transaction.
+ * 657C, one from 657D), each with exactly its documented params, built through {@link
+ * SafeAuditDetails} — ids, enums and counts only, never a name, file name, header or value. Logged
+ * in the caller's transaction, except {@code takeon.report.downloaded}: a download reads in a
+ * read-only transaction, so its row is written in a transaction of its own (FU-12, {@link
+ * ReportAuditRecorder}).
  */
 @Component
 public class TakeOnAudit {
@@ -23,9 +26,11 @@ public class TakeOnAudit {
   static final String REPORT = "take_on_report";
 
   private final AuditService auditService;
+  private final ReportAuditRecorder ownTransaction;
 
-  public TakeOnAudit(AuditService auditService) {
+  public TakeOnAudit(AuditService auditService, ReportAuditRecorder ownTransaction) {
     this.auditService = auditService;
+    this.ownTransaction = ownTransaction;
   }
 
   public void batchCreated(TakeOnBatch batch) {
@@ -240,6 +245,24 @@ public class TakeOnAudit {
             .put("batch_id", report.getBatchId())
             .put("report_id", report.getId())
             .put("trust_account_id", report.getTrustAccountId())
+            .build());
+  }
+
+  /**
+   * 657D: a take-on report file was downloaded — {@code report_id}, {@code format}. Written in a
+   * transaction of its own after the read (FU-12), best effort.
+   */
+  public void reportDownloaded(TakeOnReport report, TakeOnReportFile.Format format) {
+    ownTransaction.record(
+        AuditEventBuilder.builder()
+            .eventType("takeon.report.downloaded")
+            .entityType(REPORT)
+            .entityId(report.getId())
+            .details(
+                SafeAuditDetails.builder()
+                    .put("report_id", report.getId())
+                    .put("format", format)
+                    .build())
             .build());
   }
 

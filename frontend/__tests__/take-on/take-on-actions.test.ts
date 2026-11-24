@@ -26,6 +26,7 @@ vi.mock("@/lib/api", () => ({
 }));
 
 import {
+  downloadTakeOnReport,
   downloadTakeOnResult,
   downloadTakeOnTemplate,
   fetchTakeOnBankingAccounts,
@@ -169,6 +170,16 @@ describe("take-on CSV downloads", () => {
       success: false,
       error: "The result report could not be downloaded. Try again.",
     });
+  });
+
+  // 657D: a server action's arguments are untrusted — only pdf / csv reach the backend URL
+  it("refuses a report file format other than pdf or csv, without calling the backend", async () => {
+    const result = await downloadTakeOnReport("r1", "../batches/b1/result.csv" as "pdf");
+    expect(result).toEqual({
+      success: false,
+      error: "The report file could not be downloaded. Try again.",
+    });
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });
 

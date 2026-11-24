@@ -1,7 +1,5 @@
 "use client";
 
-import useSWR from "swr";
-import { getTakeOnReport } from "@/app/(app)/org/[slug]/settings/matters/take-on-actions";
 import { formatCurrency, formatDateTime } from "@/lib/format";
 import {
   TAKE_ON_REPORT_FLAG_LABEL,
@@ -11,6 +9,7 @@ import {
   type TakeOnReportPosition,
 } from "@/lib/types";
 import { TakeOnError } from "./take-on-feedback";
+import { useTakeOnReport } from "./use-take-on-report";
 
 /**
  * The reconciled-position lines in X3 words; the Fund is spelt out on its first use on the screen,
@@ -49,16 +48,10 @@ function groupTotal(lines: TakeOnReportCreditorLine[], kind: TakeOnReportCredito
  * The trust take-on report summary on the Results step (Phase 93 657C, R-11): read from `GET
  * /api/take-on/reports/{id}` — the snapshot the commit wrote — never recomputed. Previous system
  * against Kazi with the difference (R0,00 by the self-check), the trust creditors by group, the
- * sign-off and the flags. The PDF and CSV come with 657D.
+ * sign-off and the flags. The PDF and CSV are `ReportDownloads` (657D), shown beside it.
  */
 export function TakeOnReportSummary({ reportId }: { reportId: string }) {
-  const report = useSWR(`take-on-report-${reportId}`, async () => {
-    const result = await getTakeOnReport(reportId);
-    if (!result.success || !result.data) {
-      throw new Error(result.error ?? "The take-on report could not be loaded.");
-    }
-    return result.data;
-  });
+  const report = useTakeOnReport(reportId);
 
   if (report.error) {
     return <TakeOnError message={String(report.error.message)} testId="take-on-report-error" />;

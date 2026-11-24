@@ -103,6 +103,9 @@ class TakeOnWireContractTest {
           TakeOnSignOffService.TakeOnSignOffReviewResponse.class,
           TakeOnReportService.TakeOnReportSummaryResponse.class,
           TakeOnReportService.TakeOnReportResponse.class,
+          // 657D: the report's files
+          TakeOnReportService.TakeOnReportFiles.class,
+          TakeOnReportService.TakeOnReportFileState.class,
           TakeOnReportSnapshot.class,
           TakeOnReportSnapshot.FirmHeader.class,
           TakeOnReportSnapshot.AccountHeader.class,

@@ -738,6 +738,26 @@
     "name" : "cells",
     "type" : "java.util.List<java.lang.String>"
   } ],
+  "TakeOnReportFileState" : [ {
+    "name" : "status",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "sha256",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "fileSize",
+    "type" : "java.lang.Long"
+  }, {
+    "name" : "renderedAt",
+    "type" : "java.time.Instant"
+  } ],
+  "TakeOnReportFiles" : [ {
+    "name" : "pdf",
+    "type" : "io.b2mash.b2b.b2bstrawman.takeon.TakeOnReportService$TakeOnReportFileState"
+  }, {
+    "name" : "csv",
+    "type" : "io.b2mash.b2b.b2bstrawman.takeon.TakeOnReportService$TakeOnReportFileState"
+  } ],
   "TakeOnReportResponse" : [ {
     "name" : "id",
     "type" : "java.util.UUID"
@@ -759,6 +779,9 @@
   }, {
     "name" : "snapshot",
     "type" : "java.util.Map<java.lang.String, java.lang.Object>"
+  }, {
+    "name" : "files",
+    "type" : "io.b2mash.b2b.b2bstrawman.takeon.TakeOnReportService$TakeOnReportFiles"
   } ],
   "TakeOnReportSnapshot" : [ {
     "name" : "firm",
@@ -830,6 +853,9 @@
   }, {
     "name" : "generatedByName",
     "type" : "java.lang.String"
+  }, {
+    "name" : "files",
+    "type" : "io.b2mash.b2b.b2bstrawman.takeon.TakeOnReportService$TakeOnReportFiles"
   } ],
   "TakeOnRowMessage" : [ {
     "name" : "code",

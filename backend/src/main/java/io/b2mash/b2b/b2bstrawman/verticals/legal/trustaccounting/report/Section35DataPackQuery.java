@@ -9,6 +9,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountSec
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.CreditorLine;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.IntegrityMessages;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.takeon.TakeOnStatementLines;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.InvestmentTieRow;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedgerQueryRepository;
 import java.math.BigDecimal;
@@ -547,7 +548,10 @@ public class Section35DataPackQuery implements ReportQuery {
         Line projected = projector.apply(row);
         taggedRow.put("label", projected.label());
         taggedRow.put("amount", projected.amount());
-        total = total.add(projected.amount());
+        // 657D (A-3): the take-on brought-forward line is printed, never totalled
+        if (!TrustReceiptsPaymentsQuery.isBroughtForward(row)) {
+          total = total.add(projected.amount());
+        }
       }
       allRows.add(taggedRow);
     }
@@ -563,7 +567,13 @@ public class Section35DataPackQuery implements ReportQuery {
     // Add section summary metadata
     var sectionMeta = new LinkedHashMap<String, Object>();
     sectionMeta.put("sectionName", sectionName);
-    sectionMeta.put("rowCount", result.rows().size());
+    // 657D (A-3): the brought-forward line is not a movement, so not counted (as transactionCount)
+    sectionMeta.put(
+        "rowCount",
+        (int)
+            result.rows().stream()
+                .filter(r -> !TrustReceiptsPaymentsQuery.isBroughtForward(r))
+                .count());
     if (result.summary() != null) {
       sectionMeta.putAll(result.summary());
     }
@@ -582,6 +592,14 @@ public class Section35DataPackQuery implements ReportQuery {
    * → credit − debit (receipts positive).
    */
   private static Line receiptPaymentLine(Map<String, Object> row) {
+    if (TrustReceiptsPaymentsQuery.isBroughtForward(row)) {
+      // 657D (§17.3.15): the take-on as one brought-forward line, in the same column layout
+      return line(
+          IntegrityMessages.date(LocalDate.parse(text(row, "date")))
+              + " · "
+              + TakeOnStatementLines.LABEL,
+          money(row, "credit"));
+    }
     String type = text(row, "type");
     String heading = text(row, "ledgerHeading");
     String label =

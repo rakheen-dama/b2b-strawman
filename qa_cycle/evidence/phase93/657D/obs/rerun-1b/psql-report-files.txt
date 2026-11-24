@@ -1,0 +1,37 @@
+select f.format, f.sha256, f.file_size, f.rendered_at, f.s3_key from tenant_7d218705360b.take_on_report_files f where f.report_id = '991aeddb-a74c-4424-b18d-01479e187867' order by f.format;
+ format |                              sha256                              | file_size |          rendered_at          |                                                             s3_key                                                              
+--------+------------------------------------------------------------------+-----------+-------------------------------+---------------------------------------------------------------------------------------------------------------------------------
+ CSV    | 53c13f35f8f1f5eb707f9cb958921bd02035162466039b8c17904e5959025e48 |       981 | 2026-11-24 14:14:54.881668+00 | take-on/tenant_7d218705360b/a59d099b-737e-4583-8a5b-11e550729488/report/991aeddb-a74c-4424-b18d-01479e187867/take-on-report.csv
+ PDF    | 96cc3be5e8a56439c98bb5c551072db6098f91fc882c715473d18c6ac95e12f8 |      6750 | 2026-11-24 14:14:54.866204+00 | take-on/tenant_7d218705360b/a59d099b-737e-4583-8a5b-11e550729488/report/991aeddb-a74c-4424-b18d-01479e187867/take-on-report.pdf
+(2 rows)
+
+select r.id, r.attempts, r.failed_at, r.last_error from tenant_7d218705360b.take_on_report_renders r where r.report_id = '991aeddb-a74c-4424-b18d-01479e187867';
+ERROR:  column r.id does not exist
+LINE 1: select r.id, r.attempts, r.failed_at, r.last_error from tena...
+               ^
+select count(*) as report_files_total from tenant_7d218705360b.take_on_report_files;
+ report_files_total 
+--------------------
+                  8
+(1 row)
+
+select report_id, attempts, last_error_code, last_attempt_at, failed_at from tenant_7d218705360b.take_on_report_renders where report_id = '991aeddb-a74c-4424-b18d-01479e187867';
+              report_id               | attempts | last_error_code | last_attempt_at | failed_at 
+--------------------------------------+----------+-----------------+-----------------+-----------
+ 991aeddb-a74c-4424-b18d-01479e187867 |        0 |                 |                 | 
+(1 row)
+
+select id, snapshot_sha256 from tenant_7d218705360b.take_on_reports where id = '991aeddb-a74c-4424-b18d-01479e187867';
+                  id                  |                         snapshot_sha256                          
+--------------------------------------+------------------------------------------------------------------
+ 991aeddb-a74c-4424-b18d-01479e187867 | ff619458137b084aa6a422f3a86a3bf786dbbd9821d00a6531da96367b4e7840
+(1 row)
+
+select * from tenant_7d218705360b.take_on_sources where batch_id = 'a59d099b-737e-4583-8a5b-11e550729488';
+                  id                  |               batch_id               |        section        |             file_name             | content_type | file_format | file_size |                           file_sha256                            |                                                                 s3_key                                                                  |            sheet_names             | sheet_name | header_row |                                          parse_options                                           |                                                                                                            column_mapping                                                                                                             | row_count | malformed_count | blank_skipped |             uploaded_by              |          uploaded_at          |           mapped_at           | purged_at 
+--------------------------------------+--------------------------------------+-----------------------+-----------------------------------+--------------+-------------+-----------+------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------+------------------------------------+------------+------------+--------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------+-----------------+---------------+--------------------------------------+-------------------------------+-------------------------------+-----------
+ ee52384c-64c1-4b19-863e-61e0f9dceb85 | a59d099b-737e-4583-8a5b-11e550729488 | CLIENT_LEDGER         | trust-client-ledger-K.csv         | text/csv     | CSV         |       116 | b0cee89c1cc84eaf3f0100b7cffd70c274f5437e383a5424729db338d2649ac8 | take-on/tenant_7d218705360b/a59d099b-737e-4583-8a5b-11e550729488/8af9236d-6f77-4ded-9f32-77b738e6169f/trust-client-ledger-K.csv         | [{"name": "CSV", "hidden": false}] | CSV        |          1 | {"encoding": "UTF-8", "delimiter": ",", "dateFormat": "yyyy-MM-dd", "decimalSeparator": "POINT"} | {"parked": [], "targets": {"balance": "Balance at cutover", "clientRef": "Client reference", "matterRef": "Matter reference", "sourceRef": "Previous system ID"}, "defaults": {}, "customFields": {}}                                 |         2 |               0 |             0 | 32f32fff-11b3-4d34-a64c-723fe581efc0 | 2026-11-24 14:14:17.609053+00 | 2026-11-24 14:14:21.19136+00  | 
+ 6f7b29aa-37ac-452f-82ce-e56732c9675b | a59d099b-737e-4583-8a5b-11e550729488 | OUTSTANDING_ITEMS     | trust-outstanding-items-K.csv     | text/csv     | CSV         |       160 | 38182626984ad2cb9187b25bbcba90dfc3857f63e1d03309f1255e9d39b1e5a5 | take-on/tenant_7d218705360b/a59d099b-737e-4583-8a5b-11e550729488/d36bd292-dfda-41d3-9329-b387cfdd0b04/trust-outstanding-items-K.csv     | [{"name": "CSV", "hidden": false}] | CSV        |          1 | {"encoding": "UTF-8", "delimiter": ",", "dateFormat": "yyyy-MM-dd", "decimalSeparator": "POINT"} | {"parked": [], "targets": {"kind": "Item type", "amount": "Amount", "clientRef": "Client reference", "matterRef": "Matter reference", "reference": "Reference", "originalDate": "Original date"}, "defaults": {}, "customFields": {}} |         2 |               0 |             0 | 32f32fff-11b3-4d34-a64c-723fe581efc0 | 2026-11-24 14:14:18.942759+00 | 2026-11-24 14:14:25.71928+00  | 
+ 4a193d19-d74a-4414-8796-cdbe10aa746f | a59d099b-737e-4583-8a5b-11e550729488 | UNIDENTIFIED_DEPOSITS | trust-unidentified-deposits-K.csv | text/csv     | CSV         |        81 | 95177767f75f5644b14569ea81040dd0da55f8df7f80f5b4b9c36641ba3c479e | take-on/tenant_7d218705360b/a59d099b-737e-4583-8a5b-11e550729488/7d75367a-859d-41dd-bb88-1d19daeabea9/trust-unidentified-deposits-K.csv | [{"name": "CSV", "hidden": false}] | CSV        |          1 | {"encoding": "UTF-8", "delimiter": ",", "dateFormat": "yyyy-MM-dd", "decimalSeparator": "POINT"} | {"parked": [], "targets": {"amount": "Amount", "description": "Description", "receivedDate": "Date received", "bankReference": "Bank reference"}, "defaults": {}, "customFields": {}}                                                 |         1 |               0 |             0 | 32f32fff-11b3-4d34-a64c-723fe581efc0 | 2026-11-24 14:14:18.493682+00 | 2026-11-24 14:14:30.222459+00 | 
+(3 rows)
+

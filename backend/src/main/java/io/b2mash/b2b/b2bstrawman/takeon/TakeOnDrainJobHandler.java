@@ -40,6 +40,10 @@ import org.springframework.transaction.support.TransactionTemplate;
  * and the queue's per-tenant dedup ({@code idx_job_queue_dedup}, and the enqueuer's pre-filter over
  * {@code PENDING}/{@code CLAIMED}) refuses a second {@code take_on_drain} for the tenant until
  * then. So the sweep re-enqueues it, at most a minute later, and other queued jobs run in between.
+ *
+ * <p>657D (§17.3.12): after the batches, every run renders the take-on reports still missing a PDF
+ * or a CSV ({@link TakeOnReportRenderer#renderPending}) — the report a trust commit just wrote, and
+ * any file lost to a crash. A render problem never fails the job: it is counted on the report.
  */
 @Component
 public class TakeOnDrainJobHandler implements JobHandler {
@@ -58,6 +62,7 @@ public class TakeOnDrainJobHandler implements JobHandler {
   private final TakeOnBatchRepository batches;
   private final TakeOnRowRunner runner;
   private final TakeOnRowCommitters committers;
+  private final TakeOnReportRenderer renderer;
   private final TransactionTemplate tx;
   private final Clock clock;
 
@@ -65,11 +70,13 @@ public class TakeOnDrainJobHandler implements JobHandler {
       TakeOnBatchRepository batches,
       TakeOnRowRunner runner,
       TakeOnRowCommitters committers,
+      TakeOnReportRenderer renderer,
       PlatformTransactionManager transactionManager,
       Clock clock) {
     this.batches = batches;
     this.runner = runner;
     this.committers = committers;
+    this.renderer = renderer;
     this.tx = new TransactionTemplate(transactionManager);
     this.clock = clock;
   }
@@ -93,6 +100,15 @@ public class TakeOnDrainJobHandler implements JobHandler {
    */
   public void drainFor(Duration budget) {
     Instant deadline = clock.instant().plus(budget);
+    drainBatches(deadline);
+    try {
+      renderer.renderPending(deadline);
+    } catch (RuntimeException e) {
+      log.warn("Take-on report render pass failed ({})", e.getClass().getSimpleName());
+    }
+  }
+
+  private void drainBatches(Instant deadline) {
     var seen = new HashSet<UUID>();
     while (true) {
       Optional<Claim> claim =

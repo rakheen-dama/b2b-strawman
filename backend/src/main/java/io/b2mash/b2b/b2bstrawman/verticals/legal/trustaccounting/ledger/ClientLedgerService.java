@@ -9,6 +9,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustBooksService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentInterestRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService.CreditorBreakdown;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.takeon.TakeOnStatementLines;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.ClientBalanceRow;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.ClientHistoryRow;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustLedger;
@@ -389,22 +390,41 @@ public class ClientLedgerService {
     List<LedgerStatementLine> lines = new ArrayList<>();
     BigDecimal runningBalance = openingBalance;
 
-    for (TrustTransaction txn : transactions) {
-      // The row's own posted effect (ADR-378) — no type-name sign table
-      BigDecimal effect = txn.getLedgerEffect();
-      runningBalance = runningBalance.add(effect);
+    // 657D (§17.3.15): the client's take-on rows fold into one brought-forward line
+    for (var entry : TakeOnStatementLines.fold(transactions)) {
+      switch (entry) {
+        case TakeOnStatementLines.Entry.Row(TrustTransaction txn) -> {
+          // The row's own posted effect (ADR-378) — no type-name sign table
+          BigDecimal effect = txn.getLedgerEffect();
+          runningBalance = runningBalance.add(effect);
 
-      lines.add(
-          new LedgerStatementLine(
-              txn.getId(),
-              txn.getTransactionType(),
-              txn.getAmount(),
-              txn.getReference(),
-              txn.getDescription(),
-              txn.getTransactionDate(),
-              txn.getStatus(),
-              runningBalance,
-              effect));
+          lines.add(
+              new LedgerStatementLine(
+                  txn.getId(),
+                  txn.getTransactionType(),
+                  txn.getAmount(),
+                  txn.getReference(),
+                  txn.getDescription(),
+                  txn.getTransactionDate(),
+                  txn.getStatus(),
+                  runningBalance,
+                  effect));
+        }
+        case TakeOnStatementLines.Entry.BroughtForward bf -> {
+          runningBalance = runningBalance.add(bf.ledgerEffect());
+          lines.add(
+              new LedgerStatementLine(
+                  bf.anchorRowId(),
+                  "TAKEON_CLIENT",
+                  bf.ledgerEffect().abs(),
+                  null,
+                  TakeOnStatementLines.LABEL,
+                  bf.date(),
+                  "APPROVED",
+                  runningBalance,
+                  bf.ledgerEffect()));
+        }
+      }
     }
 
     BigDecimal closingBalance = lines.isEmpty() ? openingBalance : lines.getLast().runningBalance();

@@ -48,9 +48,14 @@ function formatCellValue(value: unknown, column: ColumnDefinition): string {
 // Summary values carry no column type, so money is recognised by its key (G89-F18): balances,
 // totals, receipts, shares… and the trust position's ledgers (cashbook, client ledgers, the
 // creditor and deposit lines, the difference — 650C) — but never counts, hours, days or rates.
-// A key ending in "Net" (afterLockNet) is a net amount too (F-650C-OBS-5).
+// A key ending in "Net" (afterLockNet) is a net amount too (F-650C-OBS-5). The take-on's
+// brought-forward figure (broughtForward, 657D) is money.
 const MONEY_SUMMARY_KEY =
-  /(amount|balance|total|receipts|payments|movement|principal|interest|share|fees|revenue|cost|billed|outstanding|owing|cashbook|ledger|creditor|deposit|interaccount|nonclient|difference|net$)/i;
+  /(amount|balance|total|receipts|payments|movement|principal|interest|share|fees|revenue|cost|billed|outstanding|owing|cashbook|ledger|creditor|deposit|interaccount|nonclient|difference|forward$|net$)/i;
+
+// 657D (§17.3.15): the Receipts & Payments footnote under a report that carries the take-on's
+// brought-forward line — printed under the table, never a stat card.
+const FOOTNOTE_SUMMARY_KEY = "broughtForwardNote";
 // A whole value that is an ISO date ("2026-09-30": period ends, as-at dates) reads as a date
 // (F-650C-OBS-4); a sentence that merely contains one is left alone.
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
@@ -109,8 +114,9 @@ export function ReportResults({ response, isLoading, onPageChange }: ReportResul
   // Nested summary values (e.g. the Section 35 pack's `sections` list) are not stat cards: String()
   // would print "[object Object]" (G89-F18).
   const summaryEntries = Object.entries(response.summary).filter(
-    ([, value]) => value == null || typeof value !== "object"
+    ([key, value]) => key !== FOOTNOTE_SUMMARY_KEY && (value == null || typeof value !== "object")
   );
+  const footnote = response.summary[FOOTNOTE_SUMMARY_KEY];
   const { pagination } = response;
 
   return (
@@ -155,7 +161,14 @@ export function ReportResults({ response, isLoading, onPageChange }: ReportResul
                 </TableHeader>
                 <TableBody>
                   {response.rows.map((row, rowIdx) => (
-                    <TableRow key={rowIdx}>
+                    <TableRow
+                      key={rowIdx}
+                      // 657D: the take-on brought-forward line opens the report, not a receipt
+                      className={cn(row.broughtForward === true && "font-medium")}
+                      data-testid={
+                        row.broughtForward === true ? "report-row-brought-forward" : undefined
+                      }
+                    >
                       {response.columns.map((col) => (
                         <TableCell
                           key={col.key}
@@ -173,6 +186,15 @@ export function ReportResults({ response, isLoading, onPageChange }: ReportResul
                   ))}
                 </TableBody>
               </Table>
+
+              {typeof footnote === "string" && footnote.length > 0 && (
+                <p
+                  className="mt-3 text-sm text-slate-600 dark:text-slate-400"
+                  data-testid="report-footnote-brought-forward"
+                >
+                  {footnote}
+                </p>
+              )}
 
               {/* Pagination */}
               {pagination.totalPages > 0 && (

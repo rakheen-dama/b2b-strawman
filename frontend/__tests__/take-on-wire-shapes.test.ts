@@ -25,6 +25,8 @@ import type {
   TakeOnReportAccount,
   TakeOnReportCreditorLine,
   TakeOnReportCreditorList,
+  TakeOnReportFiles,
+  TakeOnReportFileState,
   TakeOnReportFirm,
   TakeOnReportInvestment,
   TakeOnReportMatter,
@@ -111,7 +113,7 @@ const BATCH: Required<TakeOnBatch> = {
 // assertion fails when the Java record changes and the literal was not updated. Literal key ORDER
 // must equal the Java record's declaration order (toEqual on arrays is order-sensitive).
 describe("take-on wire shapes match the backend contract (ADR-365, P-17)", () => {
-  it("pins exactly the 56 records of 653A, 655A, 655B, 656A, 657B and 657C", () => {
+  it("pins exactly the 58 records of 653A, 655A, 655B, 656A, 657B, 657C and 657D", () => {
     expect(Object.keys(contract).sort()).toEqual([
       "AccountHeader",
       "ClientFicaAttestationResponse",
@@ -144,6 +146,8 @@ describe("take-on wire shapes match the backend contract (ADR-365, P-17)", () =>
       "TakeOnPositionResponse",
       "TakeOnPreviewResponse",
       "TakeOnPreviewRow",
+      "TakeOnReportFileState",
+      "TakeOnReportFiles",
       "TakeOnReportResponse",
       "TakeOnReportSnapshot",
       "TakeOnReportSummaryResponse",
@@ -648,8 +652,27 @@ describe("take-on wire shapes match the backend contract (ADR-365, P-17)", () =>
       cutoverDate: "",
       generatedAt: "",
       generatedByName: null,
+      files: {} as TakeOnReportFiles,
     };
     expect(Object.keys(literal)).toEqual(componentNames(contract.TakeOnReportSummaryResponse));
+  });
+
+  it("TakeOnReportFiles ↔ TakeOnReportFiles (657D)", () => {
+    const literal: Required<TakeOnReportFiles> = {
+      pdf: {} as TakeOnReportFileState,
+      csv: {} as TakeOnReportFileState,
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(contract.TakeOnReportFiles));
+  });
+
+  it("TakeOnReportFileState ↔ TakeOnReportFileState (657D)", () => {
+    const literal: Required<TakeOnReportFileState> = {
+      status: "READY",
+      sha256: null,
+      fileSize: null,
+      renderedAt: null,
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(contract.TakeOnReportFileState));
   });
 
   const REPORT_POSITION: Required<TakeOnReportPosition> = {
@@ -679,6 +702,7 @@ describe("take-on wire shapes match the backend contract (ADR-365, P-17)", () =>
       snapshotSha256: "",
       generatedAt: "",
       snapshot: {} as TakeOnReportSnapshot,
+      files: {} as TakeOnReportFiles,
     };
     expect(Object.keys(literal)).toEqual(componentNames(contract.TakeOnReportResponse));
   });

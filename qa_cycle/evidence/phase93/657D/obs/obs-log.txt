@@ -1,0 +1,200 @@
+[start accounts T=G] 2026-11-24T13:52:03.718Z
+[login] user_e2e_bob http://localhost:3001/org/e2e-test-org/dashboard
+[shot] 01-create-account-G.png
+[account created] OBS 657D Trust banking G
+[shot] 01-create-account-H.png
+[account created] OBS 657D Trust banking H
+[shot] 01-create-account-I3.png
+[account created] OBS 657D s86(3) investment I3
+[shot] 01-create-account-I4.png
+[account created] OBS 657D s86(4) investment I4
+[trust accounts] [{"id":"30d4e59f-94ff-4a45-8eb3-2dfb3dea13b6","accountName":"Mathebula & Partners Trust Account","accountType":"GENERAL","isPrimary":true,"status":"ACTIVE","openedDate":"2026-11-24","accountNumber":"0123456789"},{"id":"1a7c18f1-82b6-4c0e-95bc-fddc1827c74c","accountName":"OBS 657D Trust banking G","accountType":"GENERAL","isPrimary":false,"status":"ACTIVE","openedDate":"2026-01-01","accountNumber":"6570001"},{"id":"91b2f4a8-3571-4ab9-a920-bec7a6616f28","accountName":"OBS 657D Trust banking H","accountType":"GENERAL","isPrimary":false,"status":"ACTIVE","openedDate":"2026-01-01","accountNumber":"6575001"},{"id":"dbf57a7f-1f9d-431f-be4f-f17e4361fdef","accountName":"OBS 657D s86(3) investment I3","accountType":"INVESTMENT","isPrimary":false,"status":"ACTIVE","openedDate":"2026-01-01","accountNumber":"6573001"},{"id":"8249c754-1c4d-4abc-988a-ed96b736e07e","accountName":"OBS 657D s86(4) investment I4","accountType":"INVESTMENT","isPrimary":false,"status":"ACTIVE","openedDate":"2026-01-01","accountNumber":"6574001"}]
+[shot] 02-trust-accounts.png
+[end accounts T=G] 2026-11-24T13:52:15.568Z console/page errors: 0
+[start clients T=G] 2026-11-24T13:52:21.363Z
+[login] user_e2e_bob http://localhost:3001/org/e2e-test-org/dashboard
+[batch] clients 6a8328d6-7e32-4659-9bab-33fe6531d4c8
+[clients cards] {"total":3,"valid":3,"error":0,"duplicate":0,"blocks":0}
+[clients results] {"created":"Created 3","failed":"Failed 0"}
+[shot] 03-clients-results.png
+[end clients T=G] 2026-11-24T13:52:28.486Z console/page errors: 0
+[start matters T=G] 2026-11-24T13:52:28.958Z
+[login] user_e2e_bob http://localhost:3001/org/e2e-test-org/dashboard
+[batch] matters abc7ccb9-2b02-4974-8957-2e17ce3eb751
+[matters cards] {"total":3,"valid":3,"error":0,"duplicate":0,"blocks":0}
+[matters results] {"created":"Created 3","failed":"Failed 0"}
+[shot] 04-matters-results.png
+[end matters T=G] 2026-11-24T13:52:35.780Z console/page errors: 0
+[start trust T=G] 2026-11-24T13:52:39.781Z
+[login] user_e2e_bob http://localhost:3001/org/e2e-test-org/dashboard
+[batch] trust-position aecfa487-b13d-4f6e-a14d-5272d5f0534b
+[source added] unidentified-deposits
+[source added] investments
+[source added] outstanding-items
+[shot] g-11-trust-files.png
+[mapping source] client-ledger
+[mapping] suggested {"clientRef":"Client reference","matterRef":"Matter reference","balance":"Balance at cutover","sourceRef":"Previous system ID"}
+[mapping source] investments
+[mapping] suggested {"investmentAccount":"Investment account (number or name)","basis":"Basis","institution":"Institution","accountNumber":"Account number","principal":"Principal at cutover","interestRate":"Interest rate","depositDate":"Original deposit date","clientRef":"Client reference","matterRef":"Matter reference","instructionReference":"Instruction reference","instructionDate":"Instruction date","endorsementConfirmed":"Endorsed under section 86(4)","accruedInterest":"Accrued interest not capitalised","fundAmount":"Legal Practitioners' Fidelity Fund amount held","balancePerConfirmation":"Balance per confirmation"}
+[mapping source] outstanding-items
+[mapping] suggested {"kind":"Item type","originalDate":"Original date","amount":"Amount","reference":"Reference","clientRef":"Client reference","matterRef":"Matter reference"}
+[mapping source] unidentified-deposits
+[mapping] suggested {"receivedDate":"Date received","amount":"Amount","bankReference":"Bank reference","description":"Description"}
+[trust G validated] {"status":"Validated","cards":{"total":9,"valid":9,"error":0,"duplicate":0,"blocks":0},"banner":null,"accountErrors":null,"equation":{"eq1":{"holds":"true","difference":"Difference R 0,00"},"items":{"holds":"true","difference":"Difference R 0,00"},"eq2":{"holds":"true","difference":"Difference R 0,00"},"investments":{"holds":"true","difference":"Difference R 0,00"},"deficit":{"holds":"true","difference":"Difference R 0,00"}},"flags":"Flags Unidentified deposit older than one year","api":{"http":200,"status":"VALIDATED","allowedActions":["REMOVE_SOURCE","MAP","REVALIDATE","CANCEL"],"counts":{"total":9,"valid":9,"error":0,"duplicate":0,"blocks":0,"created":0,"skipped":0,"failed":0},"cutoverDate":"2026-09-30","reportId":null,"trustAccountName":"OBS 657D Trust banking G","lastError":null}}
+[shot] g-13-validated.png
+[end trust T=G] 2026-11-24T13:53:05.114Z console/page errors: 0
+[start trust T=H] 2026-11-24T13:53:10.204Z
+[login] user_e2e_bob http://localhost:3001/org/e2e-test-org/dashboard
+[batch] trust-position 960e2a68-0d13-4a30-8086-a2d9266c31c4
+[shot] h-11-trust-files.png
+[mapping source] client-ledger
+[mapping] suggested {"clientRef":"Client reference","matterRef":"Matter reference","balance":"Balance at cutover","sourceRef":"Previous system ID"}
+[trust H validated] {"status":"Validated","cards":{"total":1,"valid":1,"error":0,"duplicate":0,"blocks":0},"banner":null,"accountErrors":null,"equation":{"eq1":{"holds":"true","difference":"Difference R 0,00"},"items":{"holds":"true","difference":"Difference R 0,00"},"eq2":{"holds":"true","difference":"Difference R 0,00"},"investments":{"holds":"true","difference":"Difference R 0,00"},"deficit":{"holds":"true","difference":"Difference R 0,00"}},"flags":null,"api":{"http":200,"status":"VALIDATED","allowedActions":["ADD_SOURCE","REMOVE_SOURCE","MAP","REVALIDATE","CANCEL"],"counts":{"total":1,"valid":1,"error":0,"duplicate":0,"blocks":0,"created":0,"skipped":0,"failed":0},"cutoverDate":"2026-09-30","reportId":null,"trustAccountName":"OBS 657D Trust banking H","lastError":null}}
+[shot] h-13-validated.png
+[end trust T=H] 2026-11-24T13:53:21.108Z console/page errors: 0
+[start trust T=P] 2026-11-24T13:53:21.570Z
+[login] user_e2e_bob http://localhost:3001/org/e2e-test-org/dashboard
+[batch] trust-position 530bf60a-5e92-4d19-a66d-532cc07225ac
+[shot] p-11-trust-files.png
+[mapping source] client-ledger
+[mapping] suggested {"clientRef":"Client reference","matterRef":"Matter reference","balance":"Balance at cutover","sourceRef":"Previous system ID"}
+[trust P validated] {"status":"Validated","cards":{"total":1,"valid":1,"error":0,"duplicate":0,"blocks":0},"banner":null,"accountErrors":null,"equation":{"eq1":{"holds":"true","difference":"Difference R 0,00"},"items":{"holds":"true","difference":"Difference R 0,00"},"eq2":{"holds":"true","difference":"Difference R 0,00"},"investments":{"holds":"true","difference":"Difference R 0,00"},"deficit":{"holds":"true","difference":"Difference R 0,00"}},"flags":null,"api":{"http":200,"status":"VALIDATED","allowedActions":["ADD_SOURCE","REMOVE_SOURCE","MAP","REVALIDATE","CANCEL"],"counts":{"total":1,"valid":1,"error":0,"duplicate":0,"blocks":0,"created":0,"skipped":0,"failed":0},"cutoverDate":"2026-11-24","reportId":null,"trustAccountName":"Mathebula & Partners Trust Account","lastError":null}}
+[shot] p-13-validated.png
+[end trust T=P] 2026-11-24T13:53:31.789Z console/page errors: 0
+[start signoff T=G] 2026-11-24T13:53:36.134Z
+[login] user_e2e_alice http://localhost:3001/org/e2e-test-org/dashboard
+[alice signed G] {"itemText":"OBS 657D Trust banking G at 30 September 2026 Prepared by Bob Admin · validated 24 Nov 2026, 15:53","title":"Sign off the trust take-on of OBS 657D Trust banking G at 30 September 2026","live":"Signed off by you (Owner) on 24 Nov 2026, 15:53. Withdraw my sign-off","api":{"http":200,"status":"VALIDATED","allowedActions":["REMOVE_SOURCE","MAP","REVALIDATE","COMMIT","WITHDRAW_SIGN_OFF","REVOKE_SIGN_OFF","CANCEL"],"counts":{"total":9,"valid":9,"error":0,"duplicate":0,"blocks":0,"created":0,"skipped":0,"failed":0},"cutoverDate":"2026-09-30","reportId":null,"trustAccountName":"OBS 657D Trust banking G","lastError":null}}
+[shot] g-22-alice-signed.png
+[end signoff T=G] 2026-11-24T13:53:39.061Z console/page errors: 0
+[start signoff T=H] 2026-11-24T13:53:39.412Z
+[login] user_e2e_alice http://localhost:3001/org/e2e-test-org/dashboard
+[script error] locator.waitFor: Error: strict mode violation: getByTestId('take-on-sign-off-widget') resolved to 2 elements:
+    1) <div data-slot="card" data-testid="take-on-sign-off-widget" class="bg-card text-card-foreground flex flex-col rounded-lg border border-slate-200/80 dark:border-slate-800/80 gap-4 py-5 shadow-(--shadow-card)">…</div> aka locator('#main-content').getByTestId('take-on-sign-off-widget')
+    2) <div data-slot="card" data-testid="take-on-sign-off-widget" class="bg-card text-card-foreground flex flex-col rounded-lg border border-slate-200/80 dark:border-slate-800/80 gap-4 py-5 shadow-(--shadow-card)">…</div> aka getByTestId('take-on-sign-off-widget').nth(1)
+
+Call log:
+[2m  - waiting for getByTestId('take-on-sign-off-widget') to be visible[22m
+
+    at Object.stepSignOff (/Users/rakheendama/Projects/2026/worktree-epic-657D/qa_cycle/evidence/phase93/657D/obs/obs.cjs:388:16)
+    at async /Users/rakheendama/Projects/2026/worktree-epic-657D/qa_cycle/evidence/phase93/657D/obs/obs.cjs:740:5
+[shot] zz-failure-signoff-H.png
+[end signoff T=H] 2026-11-24T13:53:40.154Z console/page errors: 0
+[start signoff T=P] 2026-11-24T13:53:40.402Z
+[login] user_e2e_alice http://localhost:3001/org/e2e-test-org/dashboard
+[script error] locator.waitFor: Error: strict mode violation: getByTestId('take-on-sign-off-widget') resolved to 2 elements:
+    1) <div data-slot="card" data-testid="take-on-sign-off-widget" class="bg-card text-card-foreground flex flex-col rounded-lg border border-slate-200/80 dark:border-slate-800/80 gap-4 py-5 shadow-(--shadow-card)">…</div> aka locator('#main-content').getByTestId('take-on-sign-off-widget')
+    2) <div data-slot="card" data-testid="take-on-sign-off-widget" class="bg-card text-card-foreground flex flex-col rounded-lg border border-slate-200/80 dark:border-slate-800/80 gap-4 py-5 shadow-(--shadow-card)">…</div> aka getByTestId('take-on-sign-off-widget').nth(1)
+
+Call log:
+[2m  - waiting for getByTestId('take-on-sign-off-widget') to be visible[22m
+
+    at Object.stepSignOff (/Users/rakheendama/Projects/2026/worktree-epic-657D/qa_cycle/evidence/phase93/657D/obs/obs.cjs:388:16)
+    at async /Users/rakheendama/Projects/2026/worktree-epic-657D/qa_cycle/evidence/phase93/657D/obs/obs.cjs:740:5
+[shot] zz-failure-signoff-P.png
+[end signoff T=P] 2026-11-24T13:53:41.115Z console/page errors: 0
+[start signoff T=H] 2026-11-24T13:53:52.254Z
+[login] user_e2e_alice http://localhost:3001/org/e2e-test-org/dashboard
+[shot] h-20-alice-home.png
+[alice signed H] {"itemText":"OBS 657D Trust banking H at 30 September 2026 Prepared by Bob Admin · validated 24 Nov 2026, 15:53","widgetCount":1,"widgetVisible":[true],"title":"Sign off the trust take-on of OBS 657D Trust banking H at 30 September 2026","live":"Signed off by you (Owner) on 24 Nov 2026, 15:53. Withdraw my sign-off","api":{"http":200,"status":"VALIDATED","allowedActions":["ADD_SOURCE","REMOVE_SOURCE","MAP","REVALIDATE","COMMIT","WITHDRAW_SIGN_OFF","REVOKE_SIGN_OFF","CANCEL"],"counts":{"total":1,"valid":1,"error":0,"duplicate":0,"blocks":0,"created":0,"skipped":0,"failed":0},"cutoverDate":"2026-09-30","reportId":null,"trustAccountName":"OBS 657D Trust banking H","lastError":null}}
+[shot] h-22-alice-signed.png
+[end signoff T=H] 2026-11-24T13:53:58.487Z console/page errors: 0
+[start signoff T=P] 2026-11-24T13:53:58.906Z
+[login] user_e2e_alice http://localhost:3001/org/e2e-test-org/dashboard
+[shot] p-20-alice-home.png
+[alice signed P] {"itemText":"Mathebula & Partners Trust Account at 24 November 2026 Prepared by Bob Admin · validated 24 Nov 2026, 15:53","widgetCount":1,"widgetVisible":[true],"title":"Sign off the trust take-on of Mathebula & Partners Trust Account at 24 November 2026","live":"Signed off by you (Owner) on 24 Nov 2026, 15:54. Withdraw my sign-off","api":{"http":200,"status":"VALIDATED","allowedActions":["ADD_SOURCE","REMOVE_SOURCE","MAP","REVALIDATE","COMMIT","WITHDRAW_SIGN_OFF","REVOKE_SIGN_OFF","CANCEL"],"counts":{"total":1,"valid":1,"error":0,"duplicate":0,"blocks":0,"created":0,"skipped":0,"failed":0},"cutoverDate":"2026-11-24","reportId":null,"trustAccountName":"Mathebula & Partners Trust Account","lastError":null}}
+[shot] p-22-alice-signed.png
+[end signoff T=P] 2026-11-24T13:54:04.487Z console/page errors: 0
+[start commit T=G] 2026-11-24T13:54:09.336Z
+[login] user_e2e_bob http://localhost:3001/org/e2e-test-org/dashboard
+[mailpit before commit] {"at":"2026-11-24T13:54:09.947Z","total":2,"latest":{"id":"5KsbuR9WGDgxyB3FT9D4dy","subject":"Information request REQ-0001 from E2E Test Organization","created":"2026-11-24T13:41:35.616Z"}}
+[report files watch] [{"atMs":5,"at":"2026-11-24T13:54:16.655Z","preparing":false,"preparingText":null,"pdf":true,"csv":true,"failed":false}]
+[shot] g-32-results-report.png
+[download] results-step {"suggestedFilename":"take-on-report-obs-657d-trust-banking-g-2026-09-30.pdf","file":"downloads/results-step-take-on-report-obs-657d-trust-banking-g-2026-09-30.pdf","size":10243,"sha256":"6a6468207b34c1381925a9d2f2c9669b69083ca379d6407ff3768343ce7fa94f","head":"%PDF-1.6"}
+[download] results-step {"suggestedFilename":"take-on-report-obs-657d-trust-banking-g-2026-09-30.csv","file":"downloads/results-step-take-on-report-obs-657d-trust-banking-g-2026-09-30.csv","size":2192,"sha256":"5181ca8bf26d26cfc7e6eff96a260ef34de496e6b06872d58642828ad29f7d83","head":"# Trust "}
+[report API files] {"pdf":{"status":"READY","sha256":"6a6468207b34c1381925a9d2f2c9669b69083ca379d6407ff3768343ce7fa94f","fileSize":10243,"renderedAt":"2026-11-24T13:54:14.508772Z"},"csv":{"status":"READY","sha256":"5181ca8bf26d26cfc7e6eff96a260ef34de496e6b06872d58642828ad29f7d83","fileSize":2192,"renderedAt":"2026-11-24T13:54:14.525078Z"}}
+[results] {"created":"Created 9","skipped":"Skipped 0","failed":"Failed 0"} | api {"http":200,"status":"COMPLETED","allowedActions":["DOWNLOAD_RESULT"],"counts":{"total":9,"valid":9,"error":0,"duplicate":0,"blocks":0,"created":9,"skipped":0,"failed":0},"cutoverDate":"2026-09-30","reportId":"1594a09a-42b4-4717-94d1-2cf29f1fb4f8","trustAccountName":"OBS 657D Trust banking G","lastError":null}
+[mailpit after commit] {"at":"2026-11-24T13:54:26.004Z","total":2,"latest":{"id":"5KsbuR9WGDgxyB3FT9D4dy","subject":"Information request REQ-0001 from E2E Test Organization","created":"2026-11-24T13:41:35.616Z"}}
+[end commit T=G] 2026-11-24T13:54:26.005Z console/page errors: 0
+[start commit T=H] 2026-11-24T13:54:31.318Z
+[login] user_e2e_bob http://localhost:3001/org/e2e-test-org/dashboard
+[mailpit before commit] {"at":"2026-11-24T13:54:32.060Z","total":2,"latest":{"id":"5KsbuR9WGDgxyB3FT9D4dy","subject":"Information request REQ-0001 from E2E Test Organization","created":"2026-11-24T13:41:35.616Z"}}
+[report files watch] [{"atMs":4,"at":"2026-11-24T13:54:38.740Z","preparing":false,"preparingText":null,"pdf":true,"csv":true,"failed":false}]
+[shot] h-32-results-report.png
+[report API files] {"pdf":{"status":"READY","sha256":"21fbf699afe83ec179cffb50cf81e3e2066de6e80370df70a4c6a0521bee3ec1","fileSize":4989,"renderedAt":"2026-11-24T13:54:34.776077Z"},"csv":{"status":"READY","sha256":"3e07f6fca38ab9206f4778881f84e07905f2adcd7c54ccd0bae88b35e6fa8533","fileSize":410,"renderedAt":"2026-11-24T13:54:34.786403Z"}}
+[results] {"created":"Created 1","skipped":"Skipped 0","failed":"Failed 0"} | api {"http":200,"status":"COMPLETED","allowedActions":["DOWNLOAD_RESULT"],"counts":{"total":1,"valid":1,"error":0,"duplicate":0,"blocks":0,"created":1,"skipped":0,"failed":0},"cutoverDate":"2026-09-30","reportId":"654339e0-9547-4a77-aa4b-e2b9612db7c7","trustAccountName":"OBS 657D Trust banking H","lastError":null}
+[mailpit after commit] {"at":"2026-11-24T13:54:47.925Z","total":2,"latest":{"id":"5KsbuR9WGDgxyB3FT9D4dy","subject":"Information request REQ-0001 from E2E Test Organization","created":"2026-11-24T13:41:35.616Z"}}
+[end commit T=H] 2026-11-24T13:54:47.927Z console/page errors: 0
+[start commit T=P] 2026-11-24T13:54:48.341Z
+[login] user_e2e_bob http://localhost:3001/org/e2e-test-org/dashboard
+[mailpit before commit] {"at":"2026-11-24T13:54:48.970Z","total":2,"latest":{"id":"5KsbuR9WGDgxyB3FT9D4dy","subject":"Information request REQ-0001 from E2E Test Organization","created":"2026-11-24T13:41:35.616Z"}}
+[report files watch] [{"atMs":4,"at":"2026-11-24T13:54:55.702Z","preparing":false,"preparingText":null,"pdf":true,"csv":true,"failed":false}]
+[shot] p-32-results-report.png
+[report API files] {"pdf":{"status":"READY","sha256":"bb8ea774bf683e709dee16dd6796c44f9ffad0eb8bd1afa61c5121d62370a21b","fileSize":5428,"renderedAt":"2026-11-24T13:54:53.185773Z"},"csv":{"status":"READY","sha256":"0d8777ee1b27b1620c03aa443cbe61d8f6b341ce330b82c7acd0e3e50154c8d7","fileSize":442,"renderedAt":"2026-11-24T13:54:53.204066Z"}}
+[results] {"created":"Created 1","skipped":"Skipped 0","failed":"Failed 0"} | api {"http":200,"status":"COMPLETED","allowedActions":["DOWNLOAD_RESULT"],"counts":{"total":1,"valid":1,"error":0,"duplicate":0,"blocks":0,"created":1,"skipped":0,"failed":0},"cutoverDate":"2026-11-24","reportId":"957f2798-6597-45a8-beb7-e2156ccb97ac","trustAccountName":"Mathebula & Partners Trust Account","lastError":null}
+[mailpit after commit] {"at":"2026-11-24T13:55:04.941Z","total":2,"latest":{"id":"5KsbuR9WGDgxyB3FT9D4dy","subject":"Information request REQ-0001 from E2E Test Organization","created":"2026-11-24T13:41:35.616Z"}}
+[end commit T=P] 2026-11-24T13:55:04.942Z console/page errors: 0
+[start reportcard T=G] 2026-11-24T13:55:10.075Z
+[login] user_e2e_alice http://localhost:3001/org/e2e-test-org/dashboard
+[take-on reports card] Take-on reports The trust account's position at its cutover date, as signed off and taken on. Mathebula & Partners Trust Account — taken on at 24 November 2026 Generated 24 Nov 2026, 15:54 by Bob Admin Download PDF Download CSV OBS 657D Trust banking H — taken on at 30 September 2026 Generated 24 Nov 2026, 15:54 by Bob Admin Download PDF Download CSV OBS 657D Trust banking G — taken on at 30 September 2026 Generated 24 Nov 2026, 15:54 by Bob Admin Download PDF Download CSV
+[shot] 50-trust-reports-take-on-card.png
+[download] reports-card {"suggestedFilename":"take-on-report-obs-657d-trust-banking-g-2026-09-30.pdf","file":"downloads/reports-card-take-on-report-obs-657d-trust-banking-g-2026-09-30.pdf","size":10243,"sha256":"6a6468207b34c1381925a9d2f2c9669b69083ca379d6407ff3768343ce7fa94f","head":"%PDF-1.6"}
+[download] reports-card {"suggestedFilename":"take-on-report-obs-657d-trust-banking-g-2026-09-30.csv","file":"downloads/reports-card-take-on-report-obs-657d-trust-banking-g-2026-09-30.csv","size":2192,"sha256":"5181ca8bf26d26cfc7e6eff96a260ef34de496e6b06872d58642828ad29f7d83","head":"# Trust "}
+[report API files] {"pdf":{"status":"READY","sha256":"6a6468207b34c1381925a9d2f2c9669b69083ca379d6407ff3768343ce7fa94f","fileSize":10243,"renderedAt":"2026-11-24T13:54:14.508772Z"},"csv":{"status":"READY","sha256":"5181ca8bf26d26cfc7e6eff96a260ef34de496e6b06872d58642828ad29f7d83","fileSize":2192,"renderedAt":"2026-11-24T13:54:14.525078Z"}}
+[end reportcard T=G] 2026-11-24T13:55:11.482Z console/page errors: 0
+[start reconrefuse T=G] 2026-11-24T13:55:15.901Z
+[login] user_e2e_alice http://localhost:3001/org/e2e-test-org/dashboard
+[shot] g-r0-refused-01-select.png
+[shot] g-r0-refused-02-upload.png
+[g-r0-refused upload] {"accountOptions":["Mathebula & Partners Trust Account (Standard Bank - 0123456789)","OBS 657D Trust banking G (Standard Bank - 6570001)","OBS 657D Trust banking H (Standard Bank - 6575001)","OBS 657D s86(3) investment I3 (Standard Bank - 6573001)","OBS 657D s86(4) investment I4 (Standard Bank - 6574001)"],"selected":"OBS 657D Trust banking G (Standard Bank - 6570001)","periodEnd":"2026-09-30","file":"files/statement-G-september-wholly-before-C.csv","uploadError":"Every line of this statement is dated on or before the take-on date 30 September 2026. It belongs to the previous system's books.","uploadResult":null,"wizardError":null,"warnings":null,"warningsCount":0}
+[G statements after refused import] {"http":200,"count":0}
+[end reconrefuse T=G] 2026-11-24T13:55:17.926Z console/page errors: 0
+[start recong T=G] 2026-11-24T13:55:23.215Z
+[login] user_e2e_alice http://localhost:3001/org/e2e-test-org/dashboard
+[mailpit before reconcile] {"at":"2026-11-24T13:55:23.792Z","total":2,"latest":{"id":"5KsbuR9WGDgxyB3FT9D4dy","subject":"Information request REQ-0001 from E2E Test Organization","created":"2026-11-24T13:41:35.616Z"}}
+[shot] g-r1-01-select.png
+[shot] g-r1-02-upload.png
+[g-r1 upload] {"accountOptions":["Mathebula & Partners Trust Account (Standard Bank - 0123456789)","OBS 657D Trust banking G (Standard Bank - 6570001)","OBS 657D Trust banking H (Standard Bank - 6575001)","OBS 657D s86(3) investment I3 (Standard Bank - 6573001)","OBS 657D s86(4) investment I4 (Standard Bank - 6574001)"],"selected":"OBS 657D Trust banking G (Standard Bank - 6570001)","periodEnd":"2026-10-31","file":"files/statement-G-october.csv","uploadError":null,"uploadResult":"Statement imported successfully Lines imported: 4 File: statement-G-october.csv Period: 2026-10-02 to 2026-10-31 Format: CSV","wizardError":null,"warnings":null,"warningsCount":0}
+[shot] g-r1-03-auto-match.png
+[G after auto-match] Auto-matched 2 lines 2 lines remaining for manual review ["#1 02 Oct 2026 EFT B-0001 Ref: EFT B-0001 R 5 000,00 CR Auto-matched Unmatch","#2 05 Oct 2026 PAY-778 Ref: PAY-778 R 20 000,00 DR Auto-matched Unmatch","#3 31 Oct 2026 INTEREST Ref: INTEREST R 312,40 CR Unmatched","#4 31 Oct 2026 SERVICE FEE Ref: SERVICE FEE R 85,00 DR Unmatched"] {"bankCashbook":"Bank and cashbook Bank balance R 403 727,40 + Outstanding deposits R 0,00 − Outstanding payments R 0,00 = Adjusted bank balance R 403 727,40 Cashbook R 403 500,00 Difference R 227,40","cashbookCreditors":"Cashbook and trust creditors Cashbook R 403 500,00 Trust creditors R 403 500,00 Difference R 0,00","creditors":"Trust creditors Client ledgers R 499 500,00 Legal Practitioners' Fidelity Fund — interest and charges R 1 250,00 Unidentified deposits R 2 750,00 Placed in section 86(3) investment accounts -R 100 000,00","unresolved":"2 statement lines are neither matched, recorded nor excluded","excludedTotal":"Excluded statement lines total R 0,00. An excluded line adjusts nothing: excluding a real bank movement leaves its amount as the difference between the bank and the cashbook.","flags":"Integrity check Blocking Bank and cashbook differ Adjusted bank balance R403 727,40 differs from the cashbook R403 500,00 by R227,40 as at 31 October 2026. Blocking Statement lines not yet resolved 2 statement lines are neither matched, recorded nor excluded. Warning Unidentified deposit held over a year 1 unidentified deposit of R2 000,00 has been held for more than a year.","flagCodes":["BANK_DIFFERENCE","UNRESOLVED_STATEMENT_LINES","UNIDENTIFIED_OVER_ONE_YEAR"],"balancedText":"Reconciliation is not balanced","completeEnabled":false}
+[shot] g-r1-04-review-after-auto-match.png
+[shot] g-r-record-FUND_INTEREST.png
+[recorded] {"text":"INTEREST","classification":"FUND_INTEREST","choices":"Interest received for the Legal Practitioners' Fidelity Fund Bank charge refunded from the business account Unidentified deposit","badge":"Recorded: Interest received for the Legal Practitioners' Fidelity Fund"}
+[shot] g-r-record-BANK_CHARGE.png
+[recorded] {"text":"SERVICE FEE","classification":"BANK_CHARGE","choices":"Interest paid to the Legal Practitioners' Fidelity Fund Bank charge","badge":"Recorded: Bank charge"}
+[G review summary] {"bankCashbook":"Bank and cashbook Bank balance R 403 727,40 + Outstanding deposits R 0,00 − Outstanding payments R 0,00 = Adjusted bank balance R 403 727,40 Cashbook R 403 727,40 Difference R 0,00","cashbookCreditors":"Cashbook and trust creditors Cashbook R 403 727,40 Trust creditors R 403 727,40 Difference R 0,00","creditors":"Trust creditors Client ledgers R 499 500,00 Legal Practitioners' Fidelity Fund — interest and charges R 1 477,40 Unidentified deposits R 2 750,00 Placed in section 86(3) investment accounts -R 100 000,00","unresolved":"0 statement lines are neither matched, recorded nor excluded","excludedTotal":"Excluded statement lines total R 0,00. An excluded line adjusts nothing: excluding a real bank movement leaves its amount as the difference between the bank and the cashbook.","flags":"Integrity check Warning Unidentified deposit held over a year 1 unidentified deposit of R2 000,00 has been held for more than a year.","flagCodes":["UNIDENTIFIED_OVER_ONE_YEAR"],"balancedText":"Reconciliation is balanced","completeEnabled":true}
+[G lines] ["#1 02 Oct 2026 EFT B-0001 Ref: EFT B-0001 R 5 000,00 CR Auto-matched Unmatch","#2 05 Oct 2026 PAY-778 Ref: PAY-778 R 20 000,00 DR Auto-matched Unmatch","#3 31 Oct 2026 INTEREST Ref: INTEREST R 312,40 CR Recorded: Interest received for the Legal Practitioners' Fidelity Fund Unmatch","#4 31 Oct 2026 SERVICE FEE Ref: SERVICE FEE R 85,00 DR Recorded: Bank charge Unmatch"]
+[shot] g-r1-05-review-balanced.png
+[G complete] {"complete":"Reconciliation Complete The reconciliation has been completed successfully Bank Balance R 403 727,40 Cashbook Balance R 403 727,40 Trust creditors R 403 727,40 October 2026 list locked — R 403 727,40 agrees with the cashbook and the adjusted bank balance. View the locked list Done","listLocked":"October 2026 list locked — R 403 727,40 agrees with the cashbook and the adjusted bank balance.","listNotLocked":null,"error":null}
+[shot] g-r1-06-complete.png
+[G locked list] http://localhost:3001/org/e2e-test-org/trust-accounting/reconciliation/lists/56861991-2b5e-4650-b39c-daf406d1177b Trust creditors list — 31 Oct 2026 OBS 657D Trust banking G · Locked 24 Nov 2026, 15:55 by Alice Owner · Rule 54.15 Reconciliation Adjusted bank balance R 403 727,40 Cashbook R 403 727,40 Trust creditors R 403 727,40 Difference R 0,00 Trust creditors as at 31 Oct 2026 Frozen when the reconciliation completed. Trust cash, estates and other trust assets are not recorded in Kazi and are not included in this comparison. Trust creditor Kind Balance Amahle Zulu Client R 300 000,00 B/f at take-on Take-on R 300 000,00 Transfer of Erf 101 Brooklyn Matter R 300 000,00 Bongani Nkosi Client R 150 000,00 B/f at take-on Take-on R 150 000,00 Estate late S Nkosi Matter R 150 000,00 Chantal Pillay Client R 49 500,00 B/f at take-on Take-on R 49 500,00 Supply contract claim Matter R 49 500,00 Legal Practitioners' Fidelity Fund — interest and charges Legal Practitioners' Fidelity Fund R 1 477,40 Unidentified deposit brought forward — take-on (ref ACB CREDIT UNKNOWN) · received 15 Jun 2025 Unidentified deposit R 2 000,00 Unidentified deposit brought forward — take-on (ref EFT 7781) · received 03 Sept 2026 Unidentified deposit R 750,00 Placed in section 86(3) investment accounts Section 86(3) placements -R 100 000,00 Total trust creditors R 403 727,40 Flags at completion What the trust books check showed when the list was locked Unidentified deposit held over a year Warning 1 unidentified deposit of R2 000,00 has been held for more than a year. Entered after this list was locked Entries dated on or before 31 Oct 2026 and recorded after the list was locked. They are part of the books, not of this list. Nothing has been entered after this list was locked.
+[shot] g-r1-07-locked-list.png
+[mailpit after reconcile] {"at":"2026-11-24T13:55:42.071Z","total":2,"latest":{"id":"5KsbuR9WGDgxyB3FT9D4dy","subject":"Information request REQ-0001 from E2E Test Organization","created":"2026-11-24T13:41:35.616Z"}}
+[end recong T=G] 2026-11-24T13:55:42.072Z console/page errors: 0
+[start reconh T=G] 2026-11-24T13:55:46.339Z
+[login] user_e2e_alice http://localhost:3001/org/e2e-test-org/dashboard
+[shot] h-r1-01-select.png
+[shot] h-r1-02-upload.png
+[h-r1 upload] {"accountOptions":["Mathebula & Partners Trust Account (Standard Bank - 0123456789)","OBS 657D Trust banking G (Standard Bank - 6570001)","OBS 657D Trust banking H (Standard Bank - 6575001)","OBS 657D s86(3) investment I3 (Standard Bank - 6573001)","OBS 657D s86(4) investment I4 (Standard Bank - 6574001)"],"selected":"OBS 657D Trust banking H (Standard Bank - 6575001)","periodEnd":"2026-10-31","file":"files/statement-H-spanning-C.csv","uploadError":null,"uploadResult":"Statement imported successfully Lines imported: 2 File: statement-H-spanning-C.csv Period: 2026-09-20 to 2026-10-05 Format: CSV","wizardError":null,"warnings":"1 lines dated on or before the take-on date 30 September 2026 were excluded.","warningsCount":1}
+[shot] h-r1-03-auto-match.png
+[H review] {"upload":{"accountOptions":["Mathebula & Partners Trust Account (Standard Bank - 0123456789)","OBS 657D Trust banking G (Standard Bank - 6570001)","OBS 657D Trust banking H (Standard Bank - 6575001)","OBS 657D s86(3) investment I3 (Standard Bank - 6573001)","OBS 657D s86(4) investment I4 (Standard Bank - 6574001)"],"selected":"OBS 657D Trust banking H (Standard Bank - 6575001)","periodEnd":"2026-10-31","file":"files/statement-H-spanning-C.csv","uploadError":null,"uploadResult":"Statement imported successfully Lines imported: 2 File: statement-H-spanning-C.csv Period: 2026-09-20 to 2026-10-05 Format: CSV","wizardError":null,"warnings":"1 lines dated on or before the take-on date 30 September 2026 were excluded.","warningsCount":1},"autoMatch":"Auto-matched 0 lines 1 lines remaining for manual review","lines":["#1 20 Sept 2026 PRIOR DEPOSIT Ref: PRIOR-H1 R 2 000,00 CR Excluded","#2 05 Oct 2026 INTEREST Ref: INTEREST-H R 10,00 CR Unmatched"],"summary":{"bankCashbook":"Bank and cashbook Bank balance R 49 010,00 + Outstanding deposits R 0,00 − Outstanding payments R 0,00 = Adjusted bank balance R 49 010,00 Cashbook R 50 000,00 Difference -R 990,00","cashbookCreditors":"Cashbook and trust creditors Cashbook R 50 000,00 Trust creditors R 50 000,00 Difference R 0,00","creditors":"Trust creditors Client ledgers R 50 000,00 Legal Practitioners' Fidelity Fund — interest and charges R 0,00 Unidentified deposits R 0,00","unresolved":"1 statement line is neither matched, recorded nor excluded","excludedTotal":"Excluded statement lines total R 2 000,00. An excluded line adjusts nothing: excluding a real bank movement leaves its amount as the difference between the bank and the cashbook.","flags":"Integrity check Blocking Bank and cashbook differ Adjusted bank balance R49 010,00 differs from the cashbook R50 000,00 by R990,00 as at 31 October 2026. Blocking Statement lines not yet resolved 1 statement line is neither matched, recorded nor excluded. Warning Statement balance at the take-on date differs from the take-on The statement's balance at the take-on date (R49 000,00) is not the bank balance entered at take-on (R50 000,00). Check this is the statement that follows the cutover.","flagCodes":["BANK_DIFFERENCE","UNRESOLVED_STATEMENT_LINES","OPENING_DIFFERS_FROM_TAKE_ON"],"balancedText":"Reconciliation is not balanced","completeEnabled":false},"openingFlag":"Warning Statement balance at the take-on date differs from the take-on The statement's balance at the take-on date (R49 000,00) is not the bank balance entered at take-on (R50 000,00). Check this is the statement that follows the cutover."}
+[shot] h-r1-04-review-flags.png
+[end reconh T=G] 2026-11-24T13:55:50.446Z console/page errors: 0
+[start rp T=G] 2026-11-24T13:55:56.613Z
+[login] user_e2e_alice http://localhost:3001/org/e2e-test-org/dashboard
+[R&P g-2026-09-01_2026-10-31] {"accountName":"OBS 657D Trust banking G","from":"2026-09-01","to":"2026-10-31","columns":["DATE","REFERENCE","TYPE","LEDGER","CLIENT","CREDIT","DEBIT","BALANCE"],"rows":[{"bf":true,"cells":["2026-09-30","—","Balance brought forward — take-on","","-","R 403 500,00","R 0,00","R 403 500,00"]},{"bf":false,"cells":["2026-10-31","INTEREST","Interest received for the Legal Practitioners' Fidelity Fund","Legal Practitioners' Fidelity Fund — interest and charges","-","R 312,40","R 0,00","R 403 812,40"]},{"bf":false,"cells":["2026-10-31","SERVICE FEE","Bank charge","Legal Practitioners' Fidelity Fund — interest and charges","-","R 0,00","R 85,00","R 403 727,40"]}],"bfCount":1,"bfText":"2026-09-30 — Balance brought forward — take-on - R 403 500,00 R 0,00 R 403 500,00","footnote":"The opening position taken on at 30 September 2026 is shown as one brought-forward line, not as receipts.","summaryCards":"Trust Account * OBS 657D Trust banking G ••••0001 From Date * To Date *"}
+[shot] rp-g-2026-09-01_2026-10-31.png
+[R&P g-2026-10-01_2026-10-31] {"accountName":"OBS 657D Trust banking G","from":"2026-10-01","to":"2026-10-31","columns":["DATE","REFERENCE","TYPE","LEDGER","CLIENT","CREDIT","DEBIT","BALANCE"],"rows":[{"bf":false,"cells":["2026-10-31","INTEREST","Interest received for the Legal Practitioners' Fidelity Fund","Legal Practitioners' Fidelity Fund — interest and charges","-","R 312,40","R 0,00","R 312,40"]},{"bf":false,"cells":["2026-10-31","SERVICE FEE","Bank charge","Legal Practitioners' Fidelity Fund — interest and charges","-","R 0,00","R 85,00","R 227,40"]}],"bfCount":0,"bfText":null,"footnote":null,"summaryCards":"Trust Account * OBS 657D Trust banking G ••••0001 From Date * To Date *"}
+[shot] rp-g-2026-10-01_2026-10-31.png
+[end rp T=G] 2026-11-24T13:56:01.919Z console/page errors: 0
+[start rp T=G] 2026-11-24T13:56:08.820Z
+[login] user_e2e_alice http://localhost:3001/org/e2e-test-org/dashboard
+[R&P g-2026-09-01_2026-10-31] {"accountName":"OBS 657D Trust banking G","from":"2026-09-01","to":"2026-10-31","columns":["DATE","REFERENCE","TYPE","LEDGER","CLIENT","CREDIT","DEBIT","BALANCE"],"rows":[{"bf":true,"cells":["2026-09-30","—","Balance brought forward — take-on","","-","R 403 500,00","R 0,00","R 403 500,00"]},{"bf":false,"cells":["2026-10-31","INTEREST","Interest received for the Legal Practitioners' Fidelity Fund","Legal Practitioners' Fidelity Fund — interest and charges","-","R 312,40","R 0,00","R 403 812,40"]},{"bf":false,"cells":["2026-10-31","SERVICE FEE","Bank charge","Legal Practitioners' Fidelity Fund — interest and charges","-","R 0,00","R 85,00","R 403 727,40"]}],"bfCount":1,"bfText":"2026-09-30 — Balance brought forward — take-on - R 403 500,00 R 0,00 R 403 500,00","footnote":"The opening position taken on at 30 September 2026 is shown as one brought-forward line, not as receipts.","summaryCards":"Total Receipts R 312,40 Total Payments R 85,00 Net Movement R 227,40 Transaction Count 2 Scope Note Trust cash, estates and other trust assets are not recorded in Kazi and are not included in this comparison. Brought Forward R 403 500,00"}
+[shot] rp-g-2026-09-01_2026-10-31.png
+[R&P g-2026-10-01_2026-10-31] {"accountName":"OBS 657D Trust banking G","from":"2026-10-01","to":"2026-10-31","columns":["DATE","REFERENCE","TYPE","LEDGER","CLIENT","CREDIT","DEBIT","BALANCE"],"rows":[{"bf":false,"cells":["2026-10-31","INTEREST","Interest received for the Legal Practitioners' Fidelity Fund","Legal Practitioners' Fidelity Fund — interest and charges","-","R 312,40","R 0,00","R 312,40"]},{"bf":false,"cells":["2026-10-31","SERVICE FEE","Bank charge","Legal Practitioners' Fidelity Fund — interest and charges","-","R 0,00","R 85,00","R 227,40"]}],"bfCount":0,"bfText":null,"footnote":null,"summaryCards":"Total Receipts R 312,40 Total Payments R 85,00 Net Movement R 227,40 Transaction Count 2 Scope Note Trust cash, estates and other trust assets are not recorded in Kazi and are not included in this comparison."}
+[shot] rp-g-2026-10-01_2026-10-31.png
+[end rp T=G] 2026-11-24T13:56:13.961Z console/page errors: 0
+[start trend T=G] 2026-11-24T13:56:18.408Z
+[login] user_e2e_alice http://localhost:3001/org/e2e-test-org/dashboard
+[shot] 60-trust-dashboard-trend.png
+[trend] {"takenOn":"Taken on at 24 November 2026","chartText":"Trust balance trend Month-end balances as currently recorded (ZAR) Taken on at 24 November 2026 Cashbook Trust creditors Nov 2026 R 0 R 2,5 k R 5 k R 7,5 k R 10 k Trust balance trend: Cashbook from R 10 000,00 in Nov 2026 (to date) to R 10 000,00 in Nov 2026 (to date), peak R 10 000,00 in Nov 2026 (to date); Trust creditors from R 10 000,00 in Nov 2026 (to date) to R 10 000,00 in Nov 2026 (to date), peak R 10 000,00 in Nov 2026 (to date). View as table","xTicks":[],"api:Mathebula & Partners Trust Account":{"trustAccountId":"30d4e59f-94ff-4a45-8eb3-2dfb3dea13b6","accountName":"Mathebula & Partners Trust Account","currency":"ZAR","asOf":"2026-11-24","openingCashbookBalance":0,"openingClientLedgerTotal":0,"months":[{"month":"2026-11","periodEnd":"2026-11-24","cashbookBalance":10000,"clientLedgerTotal":10000,"partial":true}],"accounts":[{"id":"30d4e59f-94ff-4a45-8eb3-2dfb3dea13b6","accountName":"Mathebula & Partners Trust Account","isPrimary":true},{"id":"1a7c18f1-82b6-4c0e-95bc-fddc1827c74c","accountName":"OBS 657D Trust banking G","isPrimary":false},{"id":"91b2f4a8-3571-4ab9-a920-bec7a6616f28","accountName":"OBS 657D Trust banking H","isPrimary":false},{"id":"dbf57a7f-1f9d-431f-be4f-f17e4361fdef","accountName":"OBS 657D s86(3) investment I3","isPrimary":false},{"id":"8249c754-1c4d-4abc-988a-ed96b736e07e","accountName":"OBS 657D s86(4) investment I4","isPrimary":false}],"takenOnAt":"2026-11-24"},"api:OBS 657D Trust banking G":{"trustAccountId":"1a7c18f1-82b6-4c0e-95bc-fddc1827c74c","accountName":"OBS 657D Trust banking G","currency":"ZAR","asOf":"2026-11-24","openingCashbookBalance":0,"openingClientLedgerTotal":0,"months":[{"month":"2026-09","periodEnd":"2026-09-30","cashbookBalance":403500,"clientLedgerTotal":403500,"partial":false},{"month":"2026-10","periodEnd":"2026-10-31","cashbookBalance":403727.4,"clientLedgerTotal":403727.4,"partial":false},{"month":"2026-11","periodEnd":"2026-11-24","cashbookBalance":403727.4,"clientLedgerTotal":403727.4,"partial":true}],"accounts":[{"id":"30d4e59f-94ff-4a45-8eb3-2dfb3dea13b6","accountName":"Mathebula & Partners Trust Account","isPrimary":true},{"id":"1a7c18f1-82b6-4c0e-95bc-fddc1827c74c","accountName":"OBS 657D Trust banking G","isPrimary":false},{"id":"91b2f4a8-3571-4ab9-a920-bec7a6616f28","accountName":"OBS 657D Trust banking H","isPrimary":false},{"id":"dbf57a7f-1f9d-431f-be4f-f17e4361fdef","accountName":"OBS 657D s86(3) investment I3","isPrimary":false},{"id":"8249c754-1c4d-4abc-988a-ed96b736e07e","accountName":"OBS 657D s86(4) investment I4","isPrimary":false}],"takenOnAt":"2026-09-30"},"api:OBS 657D Trust banking H":{"trustAccountId":"91b2f4a8-3571-4ab9-a920-bec7a6616f28","accountName":"OBS 657D Trust banking H","currency":"ZAR","asOf":"2026-11-24","openingCashbookBalance":0,"openingClientLedgerTotal":0,"months":[{"month":"2026-09","periodEnd":"2026-09-30","cashbookBalance":50000,"clientLedgerTotal":50000,"partial":false},{"month":"2026-10","periodEnd":"2026-10-31","cashbookBalance":50000,"clientLedgerTotal":50000,"partial":false},{"month":"2026-11","periodEnd":"2026-11-24","cashbookBalance":50000,"clientLedgerTotal":50000,"partial":true}],"accounts":[{"id":"30d4e59f-94ff-4a45-8eb3-2dfb3dea13b6","accountName":"Mathebula & Partners Trust Account","isPrimary":true},{"id":"1a7c18f1-82b6-4c0e-95bc-fddc1827c74c","accountName":"OBS 657D Trust banking G","isPrimary":false},{"id":"91b2f4a8-3571-4ab9-a920-bec7a6616f28","accountName":"OBS 657D Trust banking H","isPrimary":false},{"id":"dbf57a7f-1f9d-431f-be4f-f17e4361fdef","accountName":"OBS 657D s86(3) investment I3","isPrimary":false},{"id":"8249c754-1c4d-4abc-988a-ed96b736e07e","accountName":"OBS 657D s86(4) investment I4","isPrimary":false}],"takenOnAt":"2026-09-30"}}
+[end trend T=G] 2026-11-24T13:56:24.415Z console/page errors: 0

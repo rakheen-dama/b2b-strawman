@@ -1,0 +1,17 @@
+657D OBS 1b re-run — expected figures, written before any observation (stack 3, backend rebuilt at c20927686)
+Written at: 2026-11-24T14:13:52Z
+
+K = new non-primary General account "OBS 657D Trust banking K", Standard Bank 051001, no. 6576001, opened 2026-01-01.
+Cutover C = 30 September 2026 (same as G). Sources (files/):
+  client ledger: A/A1 30 000,00, B/B1 15 000,00 (= 45 000,00)
+  unidentified deposits: 2026-09-10 500,00 EFT K-UNKNOWN
+  outstanding items: deposit in transit EFT K-0001 5 000,00 (B/B1, 29 Sep), unpresented cheque PAY-K-779 20 000,00 (A/A1, 25 Sep)
+Position: bank 60 500,00; outstanding deposits 5 000,00; outstanding payments 20 000,00; cashbook 45 500,00;
+  Fund ledger 0,00; invested 0,00.
+  EQ-1: 60 500,00 + 5 000,00 - 20 000,00 = 45 500,00. EQ-2: cashbook 45 500,00 = ledgers 45 000,00 + unidentified 500,00.
+Expected PDF (after c20927686): Control totals read
+  "Bank balance + outstanding deposits - outstanding payments = cashbook" and
+  "R60 500,00 + R5 000,00 - R20 000,00 = R45 500,00" with ASCII "-", no "#";
+  "Source files" lists 3 files, each with its full 64-hex SHA-256 visible inside the page (own row);
+  SHA-256 of downloaded PDF/CSV == take_on_report_files.sha256.
+  Backend log: no "word-break" WARN for this render; 0 ERROR.

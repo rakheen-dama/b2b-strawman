@@ -32,6 +32,36 @@ public final class TakeOnProblems {
     }
   }
 
+  // --- 202 / 409: the take-on report files (657D, §17.4.2, X3) ---
+
+  /** Seconds the browser waits before asking again for a report file still being rendered. */
+  public static final int REPORT_RETRY_AFTER_SECONDS = 5;
+
+  /**
+   * 202 + {@code Retry-After}: the report file is not rendered yet (the drain renders it after the
+   * commit). Not a failure — the download is asked again (A-6).
+   */
+  public static TakeOnProblemException reportRendering() {
+    var problem =
+        new TakeOnProblemException(
+            HttpStatus.ACCEPTED,
+            "REPORT_RENDERING",
+            "Take-on report files being prepared",
+            "Preparing the report files…");
+    problem.getHeaders().set("Retry-After", Integer.toString(REPORT_RETRY_AFTER_SECONDS));
+    return problem;
+  }
+
+  /** 409: the render failed five times; "Try again" ({@code POST …/render}) resets it. */
+  public static TakeOnProblemException reportRenderFailed() {
+    return new TakeOnProblemException(
+        HttpStatus.CONFLICT,
+        "REPORT_RENDER_FAILED",
+        "Take-on report files not produced",
+        "The report files could not be produced. The report itself is saved and unchanged. Try"
+            + " again, or contact support if it fails again.");
+  }
+
   // --- 409 ---
 
   /** An entity transition refused (C-2): the entity's X3 message is the detail. */

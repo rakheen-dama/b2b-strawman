@@ -1,0 +1,6 @@
+e2e-frontend Up 12 seconds (healthy) 2026-11-24 15:31:30 +0200 SAST
+e2e-backend Up 28 seconds (healthy) 2026-11-24 15:31:30 +0200 SAST
+e2e-localstack Up 34 seconds (healthy) 2026-11-24 15:31:29 +0200 SAST
+e2e-mock-idp Up 34 seconds (healthy) 2026-11-24 15:31:29 +0200 SAST
+e2e-postgres Up 34 seconds (healthy) 2026-11-24 15:31:29 +0200 SAST
+e2e-mailpit Up 34 seconds (healthy) 2026-11-24 15:31:29 +0200 SAST

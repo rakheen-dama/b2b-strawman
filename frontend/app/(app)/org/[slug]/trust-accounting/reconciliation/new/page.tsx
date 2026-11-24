@@ -854,6 +854,17 @@ export default function NewReconciliationPage({ params }: { params: Promise<{ sl
             replacesStatementId={statement?.id}
             uploadAction={uploadForThisWizard}
           />
+          {/* 657D: lines of a taken-on account dated on or before its take-on date were excluded */}
+          {statement && (statement.warnings ?? []).length > 0 && (
+            <ul
+              data-testid="statement-import-warnings"
+              className="list-disc space-y-1 rounded-md border border-amber-200 bg-amber-50 py-2 pr-3 pl-7 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-300"
+            >
+              {(statement.warnings ?? []).map((warning, i) => (
+                <li key={i}>{warning}</li>
+              ))}
+            </ul>
+          )}
           <div className="flex justify-between">
             <Button type="button" variant="outline" onClick={() => setCurrentStep(1)}>
               Back

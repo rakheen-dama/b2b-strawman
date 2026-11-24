@@ -473,6 +473,8 @@ export interface BankStatementResponse {
   retiredReason: string | null;
   replacedByStatementId: string | null;
   lines: BankStatementLineResponse[];
+  // 657D: "{n} lines dated on or before the take-on date {C} were excluded." on a taken-on account
+  warnings: string[];
 }
 
 // Reconciliation types
@@ -509,7 +511,9 @@ export type IntegrityFlagCode =
   | "CASHBOOK_IN_DEBIT"
   | "UNIDENTIFIED_OVER_ONE_YEAR"
   | "CHARGES_TO_REFUND"
-  | "BACKDATED_AFTER_LOCK";
+  | "BACKDATED_AFTER_LOCK"
+  // 657D: the first statement of a taken-on account opens away from the take-on (warning)
+  | "OPENING_DIFFERS_FROM_TAKE_ON";
 
 /** A BLOCKING flag means the books are not provably right; a WARNING never blocks completion. */
 export type IntegritySeverity = "BLOCKING" | "WARNING";

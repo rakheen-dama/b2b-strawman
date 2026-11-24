@@ -523,6 +523,24 @@ export interface TakeOnReportSummary {
   cutoverDate: string;
   generatedAt: string;
   generatedByName: string | null;
+  files: TakeOnReportFiles;
+}
+
+/** 657D: a take-on report file's state — rendered, being rendered, or given up (five failures). */
+export type TakeOnReportFileStatus = "READY" | "RENDERING" | "FAILED";
+
+/** TakeOnReportFileState */
+export interface TakeOnReportFileState {
+  status: TakeOnReportFileStatus;
+  sha256: string | null;
+  fileSize: number | null;
+  renderedAt: string | null;
+}
+
+/** TakeOnReportFiles */
+export interface TakeOnReportFiles {
+  pdf: TakeOnReportFileState;
+  csv: TakeOnReportFileState;
 }
 
 /** FirmHeader */
@@ -691,6 +709,7 @@ export interface TakeOnReport {
   snapshotSha256: string;
   generatedAt: string;
   snapshot: TakeOnReportSnapshot;
+  files: TakeOnReportFiles;
 }
 
 /** Spring Data VIA_DTO page. */

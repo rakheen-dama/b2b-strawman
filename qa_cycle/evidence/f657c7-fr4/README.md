@@ -70,6 +70,8 @@ Only targeted test runs (`./mvnw -q test -Dtest=…`). **No full `./mvnw verify`
 - `assignRole`, on the target role's stored capabilities.
 - `assignRole`, on `+` overrides only. `-CAP` stays open.
 
+> **Superseded in review round 1 (section E).** `assignRole` now compares the member's effective owner-only capabilities before and after. The two `assignRole` bullets above were too broad: a role holding an owner-only capability blocked even a no-gain edit, which is a regression. They also missed one case: dropping a `-CAP` that kept an owner-only capability away.
+
 No data migration. Existing roles and assignments are untouched.
 
 **GREEN:**
@@ -226,4 +228,29 @@ The first build attempt printed its complete output, including the route table, 
 
 - **Inviting into a custom role:** the invitation is accepted (201), but at sign-in no system role matches the custom slug, the invitee is never created, and the invitee gets a 500 (mock-auth path; see C).
   - This is a functional defect, not an escalation.
-  - The Keycloak sign-in path needs checking too: if it resolves custom slugs, an owner-only custom role invited by an admin would become a real escalation. C does not block that route.
+  - The Keycloak sign-in path needs checking too: if it resolves custom slugs, an owner-only custom role invited by an admin would become a real escalation. C did not block that route; **review round 1 (E) does**: `createInvitation` refuses a non-owner inviting into a role holding an owner-only capability. The functional defect (custom-role invitees never created on the JIT path) is still open.
+- **`updateRole` concurrent-update race** (security review, PR #1856): `OrgRole` has no `@Version`, so two concurrent role updates can overwrite each other's capability set. The fix needs a migration. Separate item; not touched.
+
+---
+
+## E. Review round 1 (PR #1856)
+
+| # | Finding | Fix | Tests |
+|---|---|---|---|
+| 1 | **MEDIUM** (quality): `assignRole` refused a non-owner whenever the target role held an owner-only capability. An admin could neither edit the ordinary overrides of a member already on an owner-made Partner role nor take `SIGN_OFF_TRUST_TAKE_ON` away. The removal test was a no-op (Bookkeeper never held the capability). | Per the ruling ("only an owner may put an owner-only capability into a member's **effective** capabilities"), `assignRole` computes the member's effective capabilities before and after (role + overrides, via the `effectiveCapabilities(role, overrides)` now shared with `resolveCapabilities`). It refuses a non-owner only for an owner-only capability **gained**. With a role change, the role-sourced part reads "assign a role holding …" and override-sourced parts "grant …". With the role unchanged, a dropped `-CAP` reads "grant an owner-only capability: …". (c), (d) and (e) are still refused, with unchanged messages. | Added to `OwnerOnlyCapabilityGrantIntegrationTest`: admin adds `+INVOICING` to a Partner member → 200 (red: `expected:<200> but was:<403>`); admin applies `-SIGN_OFF_TRUST_TAKE_ON` → 200 and the capability is gone from effective (red: same); admin drops an existing `-SIGN_OFF_TRUST_TAKE_ON` → 403 "Only the owner can grant an owner-only capability: SIGN_OFF_TRUST_TAKE_ON." (red: already 403, but with the role-assignment detail). The no-op removal is replaced by `-INVOICING` on the Bookkeeper role. |
+| 2 | **LOW** (security, defence in depth): `createInvitation` checked only the system roles. | Also `OrgRoleService.requireOwnerToGrant(role capabilities, "invite into a role holding an owner-only capability")`, now `public static`. | Route (3) in `InvitationRoleEscalationIntegrationTest` now expects 403 with title/detail (red: `expected: 403 but was: 201`). The owner→Partner invite stays 201. The class Javadoc states exactly what is enforced. |
+| 3 | **LOW** (visible defect from this PR): the owner-only hint sat inside `SelectItem`'s `ItemText`, so Radix copied it into the trigger ("AdminOnly the owner can grant this"). | `components/ui/select.tsx` `SelectItem` takes an optional `hint`, rendered after `ItemText` (never mirrored into the trigger). `role-option.tsx` and the invite form's Admin item pass the hint through it. | Trigger text equals the role name exactly for a selected locked Partner role and for the system Admin role, seen by a non-owner (red: `expected 'PartnerOnly the owner can grant this' to be 'Partner'`, and the same for Admin). |
+| 4 | **LOW** (a11y): the hint was not tied to its disabled checkbox. | `OwnerOnlyHint` takes an `id`. The checkbox gets `aria-describedby`, with a per-component prefix: `role-dialog-` / `member-panel-` / `invite-owner-only-hint-<CAP>`. | `toHaveAccessibleDescription("Only the owner can grant this")` in the role dialog, member panel and invite form (red: empty description). An ordinary capability has no `aria-describedby`. |
+
+**Red outputs:** `review1-backend-red.txt` (16 tests, 4 failures) and `review1-frontend-red.txt` (19 tests, 5 failed).
+
+**Green backend** (`review1-backend-green.txt`, `review1-targeted-per-class.txt`, list in `review1-targeted-classes.txt`): every class in `orgrole/`, `member/`, `invitation/` and `architecture/`, every class referencing invitations, and `TakeOnRevalidationAnonymisationRaceIntegrationTest`. **30 classes / 224 tests, 0 failures, 0 errors.**
+
+**Full frontend gate** (node 20.11.1, `/opt/homebrew/bin/pnpm`):
+
+| Step | Result | Output |
+|---|---|---|
+| lint | exit 0: 0 errors, 77 warnings | `review1-gate-lint.txt` |
+| format:check | exit 0, clean | `review1-gate-format.txt` |
+| build (`timeout 900`) | exit 0 | `review1-gate-build.txt` |
+| vitest | exit 0: **503 files, 4922 passed, 2 skipped** (4924) | `review1-gate-test.txt` |

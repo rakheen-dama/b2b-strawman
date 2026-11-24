@@ -1,0 +1,101 @@
+
+ RUN  v4.1.5 /Users/rakheendama/Projects/2026/wt-f657c7-fr4/frontend
+
+ ❯ __tests__/owner-only-capability-grants.test.tsx (19 tests | 5 failed) 1186ms
+     × a member already on a Partner role, seen by a non-owner 31ms
+     × a member on the system Admin role, seen by a non-owner 34ms
+     × in the role dialog 36ms
+     × in the member detail panel 43ms
+     × in the invite form 92ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  __tests__/owner-only-capability-grants.test.tsx > Role select trigger — a selected locked role shows its name only > a member already on a Partner role, seen by a non-owner
+AssertionError: expected 'PartnerOnly the owner can grant this' to be 'Partner' // Object.is equality
+
+Expected: "Partner"
+Received: "PartnerOnly the owner can grant this"
+
+ ❯ __tests__/owner-only-capability-grants.test.tsx:348:54
+    346|     openPanel("admin", "Partner");
+    347|     await waitFor(() => expect(screen.getByRole("combobox")).toHaveTex…
+    348|     expect(screen.getByRole("combobox").textContent).toBe("Partner");
+       |                                                      ^
+    349|   });
+    350|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  __tests__/owner-only-capability-grants.test.tsx > Role select trigger — a selected locked role shows its name only > a member on the system Admin role, seen by a non-owner
+AssertionError: expected 'AdminOnly the owner can grant this' to be 'Admin' // Object.is equality
+
+Expected: "Admin"
+Received: "AdminOnly the owner can grant this"
+
+ ❯ __tests__/owner-only-capability-grants.test.tsx:354:54
+    352|     openPanel("admin", "Admin", [bookkeeper, partner, systemAdmin]);
+    353|     await waitFor(() => expect(screen.getByRole("combobox")).toHaveTex…
+    354|     expect(screen.getByRole("combobox").textContent).toBe("Admin");
+       |                                                      ^
+    355|   });
+    356| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  __tests__/owner-only-capability-grants.test.tsx > Owner-only hint — tied to its disabled checkbox > in the role dialog
+Error: [2mexpect([22m[31melement[39m[2m).toHaveAccessibleDescription()[22m
+
+Expected element to have accessible description:
+[32m  Only the owner can grant this[39m
+Received:
+[31m[39m
+ ❯ __tests__/owner-only-capability-grants.test.tsx:362:68
+    360|   it("in the role dialog", () => {
+    361|     asCaller("admin", <RoleDialog slug="acme" open={true} onOpenChange…
+    362|     expect(screen.getByRole("checkbox", { name: SIGN_OFF_LABEL })).toH…
+       |                                                                    ^
+    363|       HINT
+    364|     );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  __tests__/owner-only-capability-grants.test.tsx > Owner-only hint — tied to its disabled checkbox > in the member detail panel
+Error: [2mexpect([22m[31melement[39m[2m).toHaveAccessibleDescription()[22m
+
+Expected element to have accessible description:
+[32m  Only the owner can grant this[39m
+Received:
+[31m[39m
+ ❯ __tests__/owner-only-capability-grants.test.tsx:370:68
+    368|     openPanel("admin", "Bookkeeper");
+    369|     await waitFor(() => expect(screen.getByRole("combobox")).toHaveTex…
+    370|     expect(screen.getByRole("checkbox", { name: SIGN_OFF_LABEL })).toH…
+       |                                                                    ^
+    371|       HINT
+    372|     );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  __tests__/owner-only-capability-grants.test.tsx > Owner-only hint — tied to its disabled checkbox > in the invite form
+Error: [2mexpect([22m[31melement[39m[2m).toHaveAccessibleDescription()[22m
+
+Expected element to have accessible description:
+[32m  Only the owner can grant this[39m
+Received:
+[31m[39m
+ ❯ __tests__/owner-only-capability-grants.test.tsx:383:7
+    381|     expect(
+    382|       await screen.findByRole("checkbox", { name: SIGN_OFF_LABEL })
+    383|     ).toHaveAccessibleDescription(HINT);
+       |       ^
+    384|   });
+    385|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  5 failed | 14 passed (19)
+   Start at  18:17:44
+   Duration  2.40s (transform 228ms, setup 135ms, import 751ms, tests 1.19s, environment 222ms)
+

@@ -480,3 +480,42 @@ describe("MemberDetailPanel — a non-owner removes owner-only capabilities, nev
     expect(signOff).toBeDisabled();
   });
 });
+
+// review round 3: the backend refuses an override set holding both "+X" and "-X" (400); the panel
+// must never send one — e.g. unchecking a capability the role holds that also carries a stored,
+// redundant "+X"
+describe("MemberDetailPanel — never a contradictory override pair", () => {
+  it("unchecking a role capability that also has a stored +X sends only -X", async () => {
+    const user = userEvent.setup();
+    openPanelWith("Bookkeeper", ["+INVOICING"]);
+    await waitFor(() => expect(screen.getByRole("combobox")).toHaveTextContent("Bookkeeper"));
+
+    const billing = screen.getByRole("checkbox", { name: "Billing" });
+    expect(billing).toHaveAttribute("data-state", "checked");
+    await user.click(billing);
+    expect(billing).toHaveAttribute("data-state", "unchecked");
+
+    await user.click(screen.getByRole("button", { name: "Save" }));
+    await waitFor(() =>
+      expect(mockAssignMemberRole).toHaveBeenCalledWith("acme", "m1", "role-bookkeeper", [
+        "-INVOICING",
+      ])
+    );
+  });
+
+  it("re-checking it restores the role default (no override)", async () => {
+    const user = userEvent.setup();
+    openPanelWith("Bookkeeper", ["+INVOICING"]);
+    await waitFor(() => expect(screen.getByRole("combobox")).toHaveTextContent("Bookkeeper"));
+
+    const billing = screen.getByRole("checkbox", { name: "Billing" });
+    await user.click(billing);
+    await user.click(billing);
+    expect(billing).toHaveAttribute("data-state", "checked");
+
+    await user.click(screen.getByRole("button", { name: "Save" }));
+    await waitFor(() =>
+      expect(mockAssignMemberRole).toHaveBeenCalledWith("acme", "m1", "role-bookkeeper", [])
+    );
+  });
+});

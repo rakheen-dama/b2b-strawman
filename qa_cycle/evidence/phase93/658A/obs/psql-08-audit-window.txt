@@ -1,0 +1,53 @@
+# audit_events in window 2026-11-24T20:06:54Z → 2026-11-24T20:12:54Z
+           event_type           | count 
+--------------------------------+-------
+ REPORT_GENERATED               |     1
+ customer.created               |     6
+ customer.fica_attested         |     6
+ invoice.approved               |     1
+ invoice.brought_forward_issued |     6
+ invoice.created                |     6
+ invoice.voided                 |     1
+ project.created                |     2
+ takeon.batch.attested          |     1
+ takeon.batch.cancelled         |     1
+ takeon.batch.commit_requested  |     3
+ takeon.batch.committed         |     3
+ takeon.batch.created           |     4
+ takeon.batch.validated         |     4
+ takeon.portal_contacts.created |     1
+ takeon.source.mapped           |     4
+ takeon.source.uploaded         |     4
+(17 rows)
+
+           event_type           |                                                                     details                                                                     
+--------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------
+ invoice.created                | {"source": "TAKE_ON", "actor_name": "Alice Owner", "take_on_batch_id": "d04746a3-657d-49e7-84dd-a2e318efa512"}
+ invoice.brought_forward_issued | {"actor_name": "Alice Owner", "invoice_id": "854fab98-a594-40b5-9f59-eb091fd631d7", "take_on_batch_id": "d04746a3-657d-49e7-84dd-a2e318efa512"}
+ invoice.created                | {"source": "TAKE_ON", "actor_name": "Alice Owner", "take_on_batch_id": "d04746a3-657d-49e7-84dd-a2e318efa512"}
+ invoice.brought_forward_issued | {"actor_name": "Alice Owner", "invoice_id": "b0bdd23b-19e1-455a-8a4d-e9cc51270acb", "take_on_batch_id": "d04746a3-657d-49e7-84dd-a2e318efa512"}
+ invoice.created                | {"source": "TAKE_ON", "actor_name": "Alice Owner", "take_on_batch_id": "d04746a3-657d-49e7-84dd-a2e318efa512"}
+ invoice.brought_forward_issued | {"actor_name": "Alice Owner", "invoice_id": "bc6b241d-91be-4c03-ae8e-ce22a50ec3ae", "take_on_batch_id": "d04746a3-657d-49e7-84dd-a2e318efa512"}
+ invoice.created                | {"source": "TAKE_ON", "actor_name": "Alice Owner", "take_on_batch_id": "d04746a3-657d-49e7-84dd-a2e318efa512"}
+ invoice.brought_forward_issued | {"actor_name": "Alice Owner", "invoice_id": "c67065c9-808a-467c-a5dd-f3d3f9728e87", "take_on_batch_id": "d04746a3-657d-49e7-84dd-a2e318efa512"}
+ invoice.created                | {"source": "TAKE_ON", "actor_name": "Alice Owner", "take_on_batch_id": "d04746a3-657d-49e7-84dd-a2e318efa512"}
+ invoice.brought_forward_issued | {"actor_name": "Alice Owner", "invoice_id": "6a7fc9f9-a144-4e75-bced-ffa4b5a2d016", "take_on_batch_id": "d04746a3-657d-49e7-84dd-a2e318efa512"}
+ invoice.created                | {"source": "TAKE_ON", "actor_name": "Alice Owner", "take_on_batch_id": "d04746a3-657d-49e7-84dd-a2e318efa512"}
+ invoice.brought_forward_issued | {"actor_name": "Alice Owner", "invoice_id": "ccd15ca9-2745-49c0-b8c0-22220f0da3fc", "take_on_batch_id": "d04746a3-657d-49e7-84dd-a2e318efa512"}
+(12 rows)
+
+           event_type           | rows_with_fixture_strings |                                       detail_keys                                        
+--------------------------------+---------------------------+------------------------------------------------------------------------------------------
+ invoice.brought_forward_issued |                         0 | actor_name,invoice_id,take_on_batch_id
+ invoice.created                |                         0 | actor_name,source,take_on_batch_id
+ takeon.batch.attested          |                         0 | actor_name,batch_id,row_count,sign_off_id,statement_version
+ takeon.batch.cancelled         |                         0 | actor_name,batch_id,dataset,purged_sources,reason_code
+ takeon.batch.commit_requested  |                         0 | actor_name,batch_id,dataset | actor_name,batch_id,dataset,sign_off_id
+ takeon.batch.committed         |                         0 | actor_name,batch_id,created_rows,dataset,failed_rows,skipped_rows
+ takeon.batch.created           |                         0 | actor_name,batch_id,dataset
+ takeon.batch.validated         |                         0 | actor_name,batch_id,block_count,dataset,duplicate_rows,error_rows,total_rows,valid_rows
+ takeon.portal_contacts.created |                         0 | actor_name,batch_id,created_count,skipped_count
+ takeon.source.mapped           |                         0 | actor_name,batch_id,custom_field_count,mapped_field_count,parked_column_count,source_id
+ takeon.source.uploaded         |                         0 | actor_name,batch_id,file_format,file_size_kb,malformed_count,row_count,section,source_id
+(11 rows)
+

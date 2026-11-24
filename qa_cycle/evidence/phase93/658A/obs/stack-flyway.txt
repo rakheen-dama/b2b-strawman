@@ -1,0 +1,11 @@
+     schema_name     
+---------------------
+ tenant_7d218705360b
+(1 row)
+
+ version |            description            |        installed_on        
+---------+-----------------------------------+----------------------------
+ 37      | phase93 brought forward fee notes | 2026-11-24 20:00:37.891125
+ 36      | phase93 take on reports           | 2026-11-24 20:00:37.869274
+(2 rows)
+

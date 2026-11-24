@@ -1,0 +1,1200 @@
+{
+  "clientsBatch": "924d9c57-c9a0-41d2-9a40-9f9b2f752c53",
+  "clients": {
+    "mapped": {
+      "name": "Client name",
+      "email": "Email",
+      "phone": "Phone",
+      "idNumber": "ID number",
+      "registrationNumber": "Registration number",
+      "taxNumber": "Not mapped",
+      "ficaClientType": "Client type",
+      "addressLine1": "Address line 1",
+      "addressLine2": "Not mapped",
+      "city": "City",
+      "postalCode": "Postal code",
+      "country": "Country",
+      "cddCompletedDate": "CDD completed date",
+      "lastReviewDate": "Last review date",
+      "riskRating": "Risk rating",
+      "beneficialOwnershipStatus": "Beneficial ownership",
+      "screeningStatus": "Screening",
+      "screeningDate": "Screening date",
+      "sourceOfFundsStatus": "Source of funds",
+      "cddRecordsLocation": "CDD records location",
+      "sourceRef": "Previous system ID"
+    },
+    "cards": {
+      "total": 6,
+      "valid": 6,
+      "error": 0,
+      "duplicate": 0,
+      "blocks": 0
+    },
+    "dialog": {
+      "title": "Commit clients take-on?",
+      "body": "6 records will be created. This cannot be undone."
+    },
+    "results": {
+      "created": "Created 6",
+      "skipped": "Duplicate — skipped 0",
+      "failed": "Failed 0",
+      "batchStatus": "Completed"
+    },
+    "portalResult": "6 portal contacts created",
+    "mailpitBefore": {
+      "at": "2026-11-24T20:09:07.784Z",
+      "total": 2,
+      "latest": {
+        "subject": "Information request REQ-0001 from E2E Test Organization",
+        "created": "2026-11-24T20:00:41.825Z"
+      }
+    },
+    "mailpitAfter": {
+      "at": "2026-11-24T20:09:13.116Z",
+      "total": 2,
+      "latest": {
+        "subject": "Information request REQ-0001 from E2E Test Organization",
+        "created": "2026-11-24T20:00:41.825Z"
+      }
+    }
+  },
+  "mattersBatch": "b70b9b21-3ea6-4d3b-9a19-640956e84a1b",
+  "matters": {
+    "mapped": {
+      "name": "Matter name",
+      "clientEmail": "Not mapped",
+      "clientRef": "Client previous-system ID",
+      "clientIdNumber": "Not mapped",
+      "referenceNumber": "Matter reference",
+      "description": "Not mapped",
+      "dueDate": "Not mapped",
+      "workType": "Not mapped",
+      "priority": "Not mapped",
+      "leadMemberEmail": "Not mapped",
+      "sourceRef": "Previous system ID"
+    },
+    "cards": {
+      "total": 2,
+      "valid": 2,
+      "error": 0,
+      "duplicate": 0,
+      "blocks": 0
+    },
+    "dialog": {
+      "title": "Commit matters take-on?",
+      "body": "2 records will be created. This cannot be undone."
+    },
+    "results": {
+      "created": "Created 2",
+      "skipped": "Duplicate — skipped 0",
+      "failed": "Failed 0",
+      "batchStatus": "Completed"
+    }
+  },
+  "debtorsBatch": "d04746a3-657d-49e7-84dd-a2e318efa512",
+  "validate": {
+    "mapped": {
+      "clientRef": "Client reference",
+      "matterRef": "Matter reference",
+      "feeNoteNumber": "Fee note number",
+      "issueDate": "Issue date",
+      "dueDate": "Due date",
+      "outstandingAmount": "Outstanding amount",
+      "currency": "Currency",
+      "description": "Description",
+      "sourceRef": "Previous system ID"
+    },
+    "cards": {
+      "total": 11,
+      "valid": 6,
+      "error": 5,
+      "duplicate": 0,
+      "blocks": 0
+    },
+    "heads": [
+      "ROW",
+      "PREVIOUS SYSTEM ID",
+      "FEE NOTE NUMBER",
+      "CLIENT",
+      "ISSUE DATE",
+      "DUE DATE",
+      "OUTSTANDING",
+      "CLIENT DETAILS",
+      "STATUS",
+      "OTHER VALUES",
+      "MESSAGES"
+    ],
+    "rows": [
+      {
+        "n": "2",
+        "status": "Valid",
+        "feeNoteNumber": "PS-1001",
+        "client": "Client previous-system ID: D-001",
+        "issueDate": "15 July 2026",
+        "dueDate": "14 August 2026",
+        "dueDefault": null,
+        "outstanding": "R 4 600,00",
+        "clientDetails": "—",
+        "duplicate": null,
+        "messages": [],
+        "cells": [
+          "2",
+          "DEB-01",
+          "PS-1001",
+          "Client previous-system ID: D-001",
+          "15 July 2026",
+          "14 August 2026",
+          "R 4 600,00",
+          "—",
+          "Valid",
+          "Currency: ZAR · Matter reference: TO-D-2001 · Previous system ID: DEB-01 · Description: Transfer fees",
+          ""
+        ]
+      },
+      {
+        "n": "3",
+        "status": "Valid",
+        "feeNoteNumber": "PS-1002",
+        "client": "Client email: johan.pretorius@example.test",
+        "issueDate": "1 September 2026",
+        "dueDate": "1 October 2026",
+        "dueDefault": null,
+        "outstanding": "R 12 075,50",
+        "clientDetails": "—",
+        "duplicate": null,
+        "messages": [],
+        "cells": [
+          "3",
+          "DEB-02",
+          "PS-1002",
+          "Client email: johan.pretorius@example.test",
+          "1 September 2026",
+          "1 October 2026",
+          "R 12 075,50",
+          "—",
+          "Valid",
+          "Currency: ZAR · Previous system ID: DEB-02",
+          ""
+        ]
+      },
+      {
+        "n": "4",
+        "status": "Valid",
+        "feeNoteNumber": "PS-1003",
+        "client": "Client previous-system ID: D-003",
+        "issueDate": "20 October 2026",
+        "dueDate": "19 November 2026Default",
+        "dueDefault": "Default",
+        "outstanding": "R 2 300,00",
+        "clientDetails": "—",
+        "duplicate": null,
+        "messages": [
+          "No due date was given. It is set to 19 November 2026, the issue date plus the firm's payment terms of 30 days."
+        ],
+        "cells": [
+          "4",
+          "DEB-03",
+          "PS-1003",
+          "Client previous-system ID: D-003",
+          "20 October 2026",
+          "19 November 2026Default",
+          "R 2 300,00",
+          "—",
+          "Valid",
+          "Currency: ZAR · Previous system ID: DEB-03",
+          "No due date was given. It is set to 19 November 2026, the issue date plus the firm's payment terms of 30 days."
+        ]
+      },
+      {
+        "n": "5",
+        "status": "Valid",
+        "feeNoteNumber": "PS-1004",
+        "client": "Client ID number: 8803035800085",
+        "issueDate": "1 October 2026",
+        "dueDate": "15 December 2026",
+        "dueDefault": null,
+        "outstanding": "R 8 050,00",
+        "clientDetails": "—",
+        "duplicate": null,
+        "messages": [],
+        "cells": [
+          "5",
+          "DEB-04",
+          "PS-1004",
+          "Client ID number: 8803035800085",
+          "1 October 2026",
+          "15 December 2026",
+          "R 8 050,00",
+          "—",
+          "Valid",
+          "Currency: ZAR · Previous system ID: DEB-04",
+          ""
+        ]
+      },
+      {
+        "n": "6",
+        "status": "Valid",
+        "feeNoteNumber": "INV-0007",
+        "client": "Client previous-system ID: D-005",
+        "issueDate": "30 September 2026",
+        "dueDate": "30 October 2026",
+        "dueDefault": null,
+        "outstanding": "R 1 150,00",
+        "clientDetails": "—",
+        "duplicate": null,
+        "messages": [
+          "Kazi's own fee-note numbers will continue after INV-0007."
+        ],
+        "cells": [
+          "6",
+          "DEB-05",
+          "INV-0007",
+          "Client previous-system ID: D-005",
+          "30 September 2026",
+          "30 October 2026",
+          "R 1 150,00",
+          "—",
+          "Valid",
+          "Currency: ZAR · Previous system ID: DEB-05",
+          "Kazi's own fee-note numbers will continue after INV-0007."
+        ]
+      },
+      {
+        "n": "7",
+        "status": "Valid",
+        "feeNoteNumber": "PS-1006",
+        "client": "Client previous-system ID: D-006",
+        "issueDate": "31 August 2026",
+        "dueDate": "30 September 2026",
+        "dueDefault": null,
+        "outstanding": "R 3 450,00",
+        "clientDetails": "Address or email missing",
+        "duplicate": null,
+        "messages": [
+          "This client has no billing address or email in Kazi. The brought-forward fee note is taken on as it is; add them before generating a new fee note for this client."
+        ],
+        "cells": [
+          "7",
+          "DEB-06",
+          "PS-1006",
+          "Client previous-system ID: D-006",
+          "31 August 2026",
+          "30 September 2026",
+          "R 3 450,00",
+          "Address or email missing",
+          "Valid",
+          "Currency: ZAR · Previous system ID: DEB-06",
+          "This client has no billing address or email in Kazi. The brought-forward fee note is taken on as it is; add them before generating a new fee note for this client."
+        ]
+      },
+      {
+        "n": "8",
+        "status": "Error",
+        "feeNoteNumber": "PS-1007",
+        "client": "D-099",
+        "issueDate": "1 August 2026",
+        "dueDate": "31 August 2026",
+        "dueDefault": null,
+        "outstanding": "R 999,00",
+        "clientDetails": "—",
+        "duplicate": null,
+        "messages": [
+          "No client matches D-099. Take the client on first, or correct the reference."
+        ],
+        "cells": [
+          "8",
+          "DEB-07",
+          "PS-1007",
+          "D-099",
+          "1 August 2026",
+          "31 August 2026",
+          "R 999,00",
+          "—",
+          "Error",
+          "Currency: ZAR · Previous system ID: DEB-07",
+          "No client matches D-099. Take the client on first, or correct the reference."
+        ]
+      },
+      {
+        "n": "9",
+        "status": "Error",
+        "feeNoteNumber": "PS-1008",
+        "client": "Client previous-system ID: D-001",
+        "issueDate": "15 September 2026",
+        "dueDate": "15 October 2026",
+        "dueDefault": null,
+        "outstanding": "R 0,00",
+        "clientDetails": "—",
+        "duplicate": null,
+        "messages": [
+          "The amount must be more than R0,00."
+        ],
+        "cells": [
+          "9",
+          "DEB-08",
+          "PS-1008",
+          "Client previous-system ID: D-001",
+          "15 September 2026",
+          "15 October 2026",
+          "R 0,00",
+          "—",
+          "Error",
+          "Currency: ZAR · Previous system ID: DEB-08",
+          "The amount must be more than R0,00."
+        ]
+      },
+      {
+        "n": "10",
+        "status": "Error",
+        "feeNoteNumber": "PS-1009",
+        "client": "Client previous-system ID: D-002",
+        "issueDate": "10 November 2026",
+        "dueDate": "10 December 2026",
+        "dueDefault": null,
+        "outstanding": "R 1 725,00",
+        "clientDetails": "—",
+        "duplicate": null,
+        "messages": [
+          "The date (10 November 2026) is after the cutover date (31 October 2026). Take on only what the previous system held at the cutover date."
+        ],
+        "cells": [
+          "10",
+          "DEB-09",
+          "PS-1009",
+          "Client previous-system ID: D-002",
+          "10 November 2026",
+          "10 December 2026",
+          "R 1 725,00",
+          "—",
+          "Error",
+          "Currency: ZAR · Previous system ID: DEB-09",
+          "The date (10 November 2026) is after the cutover date (31 October 2026). Take on only what the previous system held at the cutover date."
+        ]
+      },
+      {
+        "n": "11",
+        "status": "Error",
+        "feeNoteNumber": "PS-1010",
+        "client": "Client previous-system ID: D-003",
+        "issueDate": "10 September 2026",
+        "dueDate": "10 October 2026",
+        "dueDefault": null,
+        "outstanding": "R 575,00",
+        "clientDetails": "—",
+        "duplicate": null,
+        "messages": [
+          "Matter TO-D-2001 is not a matter of client D-003."
+        ],
+        "cells": [
+          "11",
+          "DEB-10",
+          "PS-1010",
+          "Client previous-system ID: D-003",
+          "10 September 2026",
+          "10 October 2026",
+          "R 575,00",
+          "—",
+          "Error",
+          "Currency: ZAR · Matter reference: TO-D-2001 · Previous system ID: DEB-10",
+          "Matter TO-D-2001 is not a matter of client D-003."
+        ]
+      },
+      {
+        "n": "12",
+        "status": "Error",
+        "feeNoteNumber": "INV-0001",
+        "client": "Client previous-system ID: D-004",
+        "issueDate": "30 June 2026",
+        "dueDate": "30 July 2026",
+        "dueDefault": null,
+        "outstanding": "R 690,00",
+        "clientDetails": "—",
+        "duplicate": null,
+        "messages": [
+          "Fee-note number INV-0001 already exists in Kazi"
+        ],
+        "cells": [
+          "12",
+          "DEB-11",
+          "INV-0001",
+          "Client previous-system ID: D-004",
+          "30 June 2026",
+          "30 July 2026",
+          "R 690,00",
+          "—",
+          "Error",
+          "Currency: ZAR · Previous system ID: DEB-11",
+          "Fee-note number INV-0001 already exists in Kazi"
+        ]
+      }
+    ],
+    "mappingRaw": [],
+    "validationRaw": [],
+    "present": {
+      "unknownClient": true,
+      "amountZero": true,
+      "afterCutover": true,
+      "matterNotClients": true,
+      "numberExists1": true,
+      "dueDefaulted": true,
+      "continuesSeq": true,
+      "detailsMissing": true,
+      "duplicate": false,
+      "numberExistsVoided": false
+    },
+    "stepper": "1 Upload 2 Sheet 3 Mapping 4 Validation 5 Results",
+    "commitVisible": true,
+    "attestationButtons": 0,
+    "filterOptions": [
+      "All statuses",
+      "Pending",
+      "Valid",
+      "Duplicate — will be skipped",
+      "Error"
+    ],
+    "errorRows": [
+      "8",
+      "9",
+      "10",
+      "11",
+      "12"
+    ]
+  },
+  "commitClickedAt": "2026-11-24T20:10:02.851Z",
+  "commit": {
+    "before": {
+      "at": "2026-11-24T20:10:02.523Z",
+      "total": 2,
+      "latest": {
+        "subject": "Information request REQ-0001 from E2E Test Organization",
+        "created": "2026-11-24T20:00:41.825Z"
+      }
+    },
+    "after": {
+      "at": "2026-11-24T20:10:22.513Z",
+      "total": 2,
+      "latest": {
+        "subject": "Information request REQ-0001 from E2E Test Organization",
+        "created": "2026-11-24T20:00:41.825Z"
+      }
+    },
+    "dialog": {
+      "title": "Commit debtor opening balances take-on?",
+      "body": "6 records will be created. This cannot be undone."
+    },
+    "results": {
+      "created": "Created 6",
+      "skipped": "Duplicate — skipped 0",
+      "failed": "Failed 0",
+      "batchStatus": "Completed"
+    },
+    "raw": []
+  },
+  "feeNoteHrefs": {
+    "PS-1006": "/org/e2e-test-org/invoices/ccd15ca9-2745-49c0-b8c0-22220f0da3fc",
+    "INV-0007": "/org/e2e-test-org/invoices/6a7fc9f9-a144-4e75-bced-ffa4b5a2d016",
+    "PS-1004": "/org/e2e-test-org/invoices/c67065c9-808a-467c-a5dd-f3d3f9728e87",
+    "PS-1003": "/org/e2e-test-org/invoices/bc6b241d-91be-4c03-ae8e-ce22a50ec3ae",
+    "PS-1002": "/org/e2e-test-org/invoices/b0bdd23b-19e1-455a-8a4d-e9cc51270acb",
+    "PS-1001": "/org/e2e-test-org/invoices/854fab98-a594-40b5-9f59-eb091fd631d7",
+    "INV-0001": "/org/e2e-test-org/invoices/6ee7727a-2a4a-42f7-8245-f2f1af3332f3",
+    "Draft": "/org/e2e-test-org/invoices/2e8b7912-d14c-41b2-8239-fbea137f9c12"
+  },
+  "feenotes": {
+    "list": [
+      {
+        "text": "PS-1006 Bongani Zulu Sent Brought forward — take-on 31 Aug 2026 30 Sept 2026 R 3 450,00 ZAR",
+        "href": "/org/e2e-test-org/invoices/ccd15ca9-2745-49c0-b8c0-22220f0da3fc",
+        "number": "PS-1006",
+        "badge": "Brought forward — take-on"
+      },
+      {
+        "text": "INV-0007 Lerato Mahlangu Sent Brought forward — take-on 30 Sept 2026 30 Oct 2026 R 1 150,00 ZAR",
+        "href": "/org/e2e-test-org/invoices/6a7fc9f9-a144-4e75-bced-ffa4b5a2d016",
+        "number": "INV-0007",
+        "badge": "Brought forward — take-on"
+      },
+      {
+        "text": "PS-1004 Ayesha Patel Sent Brought forward — take-on 1 Oct 2026 15 Dec 2026 R 8 050,00 ZAR",
+        "href": "/org/e2e-test-org/invoices/c67065c9-808a-467c-a5dd-f3d3f9728e87",
+        "number": "PS-1004",
+        "badge": "Brought forward — take-on"
+      },
+      {
+        "text": "PS-1003 Karoo Freight (Pty) Ltd Sent Brought forward — take-on 20 Oct 2026 19 Nov 2026 R 2 300,00 ZAR",
+        "href": "/org/e2e-test-org/invoices/bc6b241d-91be-4c03-ae8e-ce22a50ec3ae",
+        "number": "PS-1003",
+        "badge": "Brought forward — take-on"
+      },
+      {
+        "text": "PS-1002 Johan Pretorius Sent Brought forward — take-on 1 Sept 2026 1 Oct 2026 R 12 075,50 ZAR",
+        "href": "/org/e2e-test-org/invoices/b0bdd23b-19e1-455a-8a4d-e9cc51270acb",
+        "number": "PS-1002",
+        "badge": "Brought forward — take-on"
+      },
+      {
+        "text": "PS-1001 Thandiwe Mokoena Sent Brought forward — take-on 15 Jul 2026 14 Aug 2026 R 4 600,00 ZAR",
+        "href": "/org/e2e-test-org/invoices/854fab98-a594-40b5-9f59-eb091fd631d7",
+        "number": "PS-1001",
+        "badge": "Brought forward — take-on"
+      },
+      {
+        "text": "INV-0001 Acme Corp Sent 24 Nov 2026 24 Dec 2026 R 8 625,00 ZAR",
+        "href": "/org/e2e-test-org/invoices/6ee7727a-2a4a-42f7-8245-f2f1af3332f3",
+        "number": "INV-0001",
+        "badge": null
+      },
+      {
+        "text": "Draft Acme Corp Draft — — R 3 450,00 ZAR",
+        "href": "/org/e2e-test-org/invoices/2e8b7912-d14c-41b2-8239-fbea137f9c12",
+        "number": "Draft",
+        "badge": null
+      }
+    ],
+    "listRaw": [],
+    "details": {
+      "PS-1001": {
+        "href": "/org/e2e-test-org/invoices/854fab98-a594-40b5-9f59-eb091fd631d7",
+        "h1": "PS-1001",
+        "badge": [
+          "Brought forward — take-on"
+        ],
+        "buttons": {
+          "Preview": 1,
+          "Approve": 0,
+          "Delete Draft": 0,
+          "Send fee note": 0,
+          "Void": 1,
+          "Record Payment": 1
+        },
+        "paymentLinkSection": false,
+        "bfLine": [
+          "Balance brought forward as at 31 October 2026 — fee note PS-1001"
+        ],
+        "header": "Back to fee notes Generate Document PS-1001 Sent Brought forward — take-on Client: Thandiwe Mokoena Issued: 15 Jul 2026 Due: 14 Aug 2026 Currency: ZAR Preview Record Payment Void Payment History No payment events yet. Fee note details Due Date 14 Aug 2026 Notes Transfer fees Line Items DESCRIPTION MATTER QTY RATE AMOUNT Balance brought forward as at 31 October 2026 — fee note PS-1001 Transfer of E",
+        "audit": "Audit trail INFO Fee note brought forward at take-on Alice Owner just now INFO Fee note created Alice Owner just now",
+        "raw": []
+      },
+      "INV-0007": {
+        "href": "/org/e2e-test-org/invoices/6a7fc9f9-a144-4e75-bced-ffa4b5a2d016",
+        "h1": "INV-0007",
+        "badge": [
+          "Brought forward — take-on"
+        ],
+        "buttons": {
+          "Preview": 1,
+          "Approve": 0,
+          "Delete Draft": 0,
+          "Send fee note": 0,
+          "Void": 1,
+          "Record Payment": 1
+        },
+        "paymentLinkSection": false,
+        "bfLine": [
+          "Balance brought forward as at 31 October 2026 — fee note INV-0007"
+        ],
+        "header": "Back to fee notes Generate Document INV-0007 Sent Brought forward — take-on Client: Lerato Mahlangu Issued: 30 Sept 2026 Due: 30 Oct 2026 Currency: ZAR Preview Record Payment Void Payment History No payment events yet. Fee note details Due Date 30 Oct 2026 Line Items DESCRIPTION MATTER QTY RATE AMOUNT Balance brought forward as at 31 October 2026 — fee note INV-0007 — 1 R 1 150,00 R 1 150,00 Subto",
+        "audit": "Audit trail INFO Fee note brought forward at take-on Alice Owner just now INFO Fee note created Alice Owner just now",
+        "raw": []
+      },
+      "PS-1006": {
+        "href": "/org/e2e-test-org/invoices/ccd15ca9-2745-49c0-b8c0-22220f0da3fc",
+        "h1": "PS-1006",
+        "badge": [
+          "Brought forward — take-on"
+        ],
+        "buttons": {
+          "Preview": 1,
+          "Approve": 0,
+          "Delete Draft": 0,
+          "Send fee note": 0,
+          "Void": 1,
+          "Record Payment": 1
+        },
+        "paymentLinkSection": false,
+        "bfLine": [
+          "Balance brought forward as at 31 October 2026 — fee note PS-1006"
+        ],
+        "header": "Back to fee notes Generate Document PS-1006 Sent Brought forward — take-on Client: Bongani Zulu Issued: 31 Aug 2026 Due: 30 Sept 2026 Currency: ZAR Preview Record Payment Void Payment History No payment events yet. Fee note details Due Date 30 Sept 2026 Line Items DESCRIPTION MATTER QTY RATE AMOUNT Balance brought forward as at 31 October 2026 — fee note PS-1006 — 1 R 3 450,00 R 3 450,00 Subtotal ",
+        "audit": "Audit trail INFO Fee note brought forward at take-on Alice Owner just now INFO Fee note created Alice Owner just now",
+        "raw": []
+      },
+      "INV-0001": {
+        "href": "/org/e2e-test-org/invoices/6ee7727a-2a4a-42f7-8245-f2f1af3332f3",
+        "h1": "INV-0001",
+        "badge": [],
+        "buttons": {
+          "Preview": 1,
+          "Approve": 0,
+          "Delete Draft": 0,
+          "Send fee note": 0,
+          "Void": 1,
+          "Record Payment": 1
+        },
+        "paymentLinkSection": false,
+        "bfLine": [],
+        "header": "Back to fee notes Generate Document INV-0001 Sent Client: Acme Corp Issued: 24 Nov 2026 Due: 24 Dec 2026 Currency: ZAR Preview Record Payment Void Payment History No payment events yet. Fee note details Due Date 24 Dec 2026 Payment Terms Net 30 Notes E2E seed fee note — sent Line Items DESCRIPTION MATTER QTY RATE AMOUNT TAX Drafting — services agreement Website Redesign 3 R 2 500,00 R 7 500,00 VAT",
+        "audit": "Audit trail INFO Fee note sent Alice Owner 10 minutes ago INFO Fee note approved Alice Owner 10 minutes ago INFO Fee note updated Alice Owner 10 minutes ago INFO Fee note created Alice Owner 10 minutes ago",
+        "raw": []
+      }
+    }
+  },
+  "notify": {
+    "alice": {
+      "unread": "1",
+      "bell": "1 unread notifications 1",
+      "feeNoteMentions": [],
+      "excerpt": "Notifications All Unread Mark all as read Complete onboarding: Acme Corp 10 minutes ago"
+    },
+    "bob": {
+      "unread": "3",
+      "bell": "3 unread notifications 3",
+      "feeNoteMentions": [
+        "Notifications All Unread Mark all as read Fee Note INV-0001 for Acme Corp has been sent 10 minutes ago Alice Owner generated document \"fee-note-inv-0001-2026-11-24"
+      ],
+      "excerpt": "Notifications All Unread Mark all as read Fee Note INV-0001 for Acme Corp has been sent 10 minutes ago Alice Owner generated document \"fee-note-inv-0001-2026-11-24.pdf\" 10 minutes ago Complete onboarding: Acme Corp 10 minutes ago"
+    }
+  },
+  "approve": {
+    "href": "/org/e2e-test-org/invoices/2e8b7912-d14c-41b2-8239-fbea137f9c12",
+    "before": {
+      "h1": "Draft fee note",
+      "badge": [],
+      "buttons": {
+        "Preview": 1,
+        "Approve": 1,
+        "Delete Draft": 1,
+        "Send fee note": 0,
+        "Void": 0,
+        "Record Payment": 0
+      }
+    },
+    "h1": "INV-0008",
+    "errors": [],
+    "after": {
+      "h1": "INV-0008",
+      "badge": [],
+      "buttons": {
+        "Preview": 1,
+        "Approve": 0,
+        "Delete Draft": 0,
+        "Send fee note": 1,
+        "Void": 1,
+        "Record Payment": 0
+      },
+      "header": "Back to fee notes Generate Document INV-0008 Approved Client: Acme Corp Issued: 24 Nov 2026 Due: 24 Dec 2026 Currency: ZAR Preview Send fee note Void Fee note details Due Date 24 Dec 2026 Payment Terms Net 30 Notes E2E seed fee note — draft Line Items DESCRIPTION MATTER QTY RATE AMOUNT TAX Consultation — website redesign mandate Website Redesign 2 R 1 500,00 R 3 000,00 VAT — Standard (15%) R 450,0"
+    },
+    "mailBefore": {
+      "at": "2026-11-24T20:11:18.520Z",
+      "total": 2,
+      "latest": {
+        "subject": "Information request REQ-0001 from E2E Test Organization",
+        "created": "2026-11-24T20:00:41.825Z"
+      }
+    },
+    "mailAfter": {
+      "at": "2026-11-24T20:11:22.880Z",
+      "total": 2,
+      "latest": {
+        "subject": "Information request REQ-0001 from E2E Test Organization",
+        "created": "2026-11-24T20:00:41.825Z"
+      }
+    }
+  },
+  "reports": {
+    "title": "Fee Note Aging Report",
+    "heads": [
+      "FEE NOTE #",
+      "CLIENT",
+      "ISSUE DATE",
+      "DUE DATE",
+      "AMOUNT",
+      "CURRENCY",
+      "DAYS OVERDUE",
+      "BUCKET"
+    ],
+    "rows": [
+      [
+        "PS-1001",
+        "Thandiwe Mokoena",
+        "2026-07-15",
+        "2026-08-14",
+        "R 4 600,00",
+        "ZAR",
+        "102",
+        "90+ Days"
+      ],
+      [
+        "PS-1006",
+        "Bongani Zulu",
+        "2026-08-31",
+        "2026-09-30",
+        "R 3 450,00",
+        "ZAR",
+        "55",
+        "31-60 Days"
+      ],
+      [
+        "PS-1002",
+        "Johan Pretorius",
+        "2026-09-01",
+        "2026-10-01",
+        "R 12 075,50",
+        "ZAR",
+        "54",
+        "31-60 Days"
+      ],
+      [
+        "INV-0007",
+        "Lerato Mahlangu",
+        "2026-09-30",
+        "2026-10-30",
+        "R 1 150,00",
+        "ZAR",
+        "25",
+        "1-30 Days"
+      ],
+      [
+        "PS-1003",
+        "Karoo Freight (Pty) Ltd",
+        "2026-10-20",
+        "2026-11-19",
+        "R 2 300,00",
+        "ZAR",
+        "5",
+        "1-30 Days"
+      ],
+      [
+        "PS-1004",
+        "Ayesha Patel",
+        "2026-10-01",
+        "2026-12-15",
+        "R 8 050,00",
+        "ZAR",
+        "-21",
+        "Current"
+      ],
+      [
+        "INV-0001",
+        "Acme Corp",
+        "2026-11-24",
+        "2026-12-24",
+        "R 8 625,00",
+        "ZAR",
+        "-30",
+        "Current"
+      ]
+    ],
+    "summary": "Back to Reports Fee Note Aging Report Outstanding fee notes grouped by age bucket. As of Date * Client Select a client… Run Report Export CSV Export PDF Current Count 2 Current Amount R 16 675,00 Bucket1_30Count 2 Bucket1_30Amount R 3 450,00 Bucket31_60Count 2 Bucket31_60Amount R 15 525,50 Bucket61_90Count 0 Bucket61_90Amount R 0,00 Bucket90Plus Count 1 Bucket90Plus Amount R 4 600,00 Total Count 7 Total Amount R 40 250,50 FEE NOTE # CLIENT ISSUE DATE DUE DATE AMOUNT CURRENCY DAYS OVERDUE BUCKET PS-1001 Thandiwe Mokoena 2026-07-15 2026-08-14 R 4 600,00 ZAR 102 90+ Days PS-1006 Bongani Zulu 2026-08-31 2026-09-30 R 3 450,00 ZAR 55 31-60 Days PS-1002 Johan Pretorius 2026-09-01 2026-10-01 R 12 075,50 ZAR 54 31-60 Days INV-0007 Lerato Mahlangu 2026-09-30 2026-10-30 R 1 150,00 ZAR 25 1-30 Days PS-1003 Karoo Freight (Pty) Ltd 2026-10-20 2026-11-19 R 2 300,00 ZAR 5 1-30 Days PS-1004 Ayesha Patel 2026-10-01 2026-12-15 R 8 050,00 ZAR -21 Current INV-0001 Acme Corp 2026-11-24 2026-12-24 R 8 625,00 ZAR -30 Current Page 1 of 1 Previous Next",
+    "raw": [],
+    "collRows": [
+      "Johan Pretorius 1 fee note · ZAR R 12 075,50 54d overdue R 0,00 R 0,00 R 12 075,50 R 0,00 — No chase history",
+      "Acme Corp 1 fee note · ZAR R 8 625,00 30d until due R 8 625,00 R 0,00 R 0,00 R 0,00 — No chase history",
+      "Ayesha Patel 1 fee note · ZAR R 8 050,00 21d until due R 8 050,00 R 0,00 R 0,00 R 0,00 — No chase history",
+      "Thandiwe Mokoena 1 fee note · ZAR R 4 600,00 102d overdue R 0,00 R 0,00 R 0,00 R 4 600,00 — No chase history",
+      "Bongani Zulu 1 fee note · ZAR R 3 450,00 55d overdue R 0,00 R 0,00 R 3 450,00 R 0,00 — No chase history",
+      "Karoo Freight (Pty) Ltd 1 fee note · ZAR R 2 300,00 5d overdue R 0,00 R 2 300,00 R 0,00 R 0,00 — No chase history",
+      "Lerato Mahlangu 1 fee note · ZAR R 1 150,00 25d overdue R 0,00 R 1 150,00 R 0,00 R 0,00 — No chase history"
+    ],
+    "collExcerpt": "Debtors Track outstanding debtors and approve drafted reminders before they are sent. Debtor book Outstanding balances grouped by client and currency, aged into buckets. CLIENT OUTSTANDING OLDEST CURRENT 30D 60D 90D+ SIGNALS LAST ACTIVITY Johan Pretorius 1 fee note · ZAR R 12 075,50 54d overdue R 0,00 R 0,00 R 12 075,50 R 0,00 — No chase history Acme Corp 1 fee note · ZAR R 8 625,00 30d until due R 8 625,00 R 0,00 R 0,00 R 0,00 — No chase history Ayesha Patel 1 fee note · ZAR R 8 050,00 21d until due R 8 050,00 R 0,00 R 0,00 R 0,00 — No chase history Thandiwe Mokoena 1 fee note · ZAR R 4 600,00 102d overdue R 0,00 R 0,00 R 0,00 R 4 600,00 — No chase history Bongani Zulu 1 fee note · ZAR R 3 450,00 55d overdue R 0,00 R 0,00 R 3 450,00 R 0,00 — No chase history Karoo Freight (Pty) Ltd 1 fee note · ZAR R 2 300,00 5d overdue R 0,00 R 2 300,00 R 0,00 R 0,00 — No chase history Lerato Mahlangu 1 fee note · ZAR R 1 150,00 25d overdue R 0,00 R 1 150,00 R 0,00 R 0,00 — No chase history Pending reminders Review the drafted reminders before they are sent to clients. No reminders awaiting approval Drafted collection reminders will appear here for review before they are sent."
+  },
+  "voidClickedAt": "2026-11-24T20:12:08.632Z",
+  "void": {
+    "before": {
+      "h1": "PS-1003",
+      "buttons": {
+        "Preview": 1,
+        "Approve": 0,
+        "Delete Draft": 0,
+        "Send fee note": 0,
+        "Void": 1,
+        "Record Payment": 1
+      }
+    },
+    "after": {
+      "href": "/org/e2e-test-org/invoices/bc6b241d-91be-4c03-ae8e-ce22a50ec3ae",
+      "h1": "PS-1003",
+      "badge": [
+        "Brought forward — take-on"
+      ],
+      "buttons": {
+        "Preview": 1,
+        "Approve": 0,
+        "Delete Draft": 0,
+        "Send fee note": 0,
+        "Void": 0,
+        "Record Payment": 0
+      },
+      "paymentLinkSection": false,
+      "bfLine": [
+        "Balance brought forward as at 31 October 2026 — fee note PS-1003"
+      ],
+      "header": "Back to fee notes Generate Document PS-1003 Void Brought forward — take-on Client: Karoo Freight (Pty) Ltd Issued: 20 Oct 2026 Due: 19 Nov 2026 Currency: ZAR Preview This fee note has been voided. Fee note details Due Date 19 Nov 2026 Line Items DESCRIPTION MATTER QTY RATE AMOUNT Balance brought forward as at 31 October 2026 — fee note PS-1003 — 1 R 2 300,00 R 2 300,00 Subtotal R 2 300,00 Tax R 0,",
+      "audit": "Audit trail INFO Fee note voided Alice Owner just now INFO Fee note brought forward at take-on Alice Owner 2 minutes ago INFO Fee note created Alice Owner 2 minutes ago",
+      "raw": []
+    },
+    "mailBefore": {
+      "at": "2026-11-24T20:12:08.632Z",
+      "total": 2,
+      "latest": {
+        "subject": "Information request REQ-0001 from E2E Test Organization",
+        "created": "2026-11-24T20:00:41.825Z"
+      }
+    },
+    "mailAfter": {
+      "at": "2026-11-24T20:12:24.107Z",
+      "total": 2,
+      "latest": {
+        "subject": "Information request REQ-0001 from E2E Test Organization",
+        "created": "2026-11-24T20:00:41.825Z"
+      }
+    }
+  },
+  "reimportBatch": "e44aab2d-463a-4b40-81f2-3af0282c2641",
+  "reimport": {
+    "cards": {
+      "total": 11,
+      "valid": 5,
+      "error": 6,
+      "duplicate": 5,
+      "blocks": 0
+    },
+    "rows": [
+      {
+        "n": "2",
+        "status": "Duplicate — will be skipped",
+        "feeNoteNumber": "PS-1001",
+        "client": "Client previous-system ID: D-001",
+        "issueDate": "15 July 2026",
+        "dueDate": "14 August 2026",
+        "dueDefault": null,
+        "outstanding": "R 4 600,00",
+        "clientDetails": "—",
+        "duplicate": "Matches a brought-forward fee note already in Kazi",
+        "messages": [
+          "Matches a brought-forward fee note already in Kazi"
+        ],
+        "cells": [
+          "2",
+          "DEB-01",
+          "PS-1001",
+          "Client previous-system ID: D-001",
+          "15 July 2026",
+          "14 August 2026",
+          "R 4 600,00",
+          "—",
+          "Duplicate — will be skipped",
+          "Currency: ZAR · Matter reference: TO-D-2001 · Previous system ID: DEB-01 · Description: Transfer fees",
+          "Matches a brought-forward fee note already in Kazi"
+        ]
+      },
+      {
+        "n": "3",
+        "status": "Duplicate — will be skipped",
+        "feeNoteNumber": "PS-1002",
+        "client": "Client email: johan.pretorius@example.test",
+        "issueDate": "1 September 2026",
+        "dueDate": "1 October 2026",
+        "dueDefault": null,
+        "outstanding": "R 12 075,50",
+        "clientDetails": "—",
+        "duplicate": "Matches a brought-forward fee note already in Kazi",
+        "messages": [
+          "Matches a brought-forward fee note already in Kazi"
+        ],
+        "cells": [
+          "3",
+          "DEB-02",
+          "PS-1002",
+          "Client email: johan.pretorius@example.test",
+          "1 September 2026",
+          "1 October 2026",
+          "R 12 075,50",
+          "—",
+          "Duplicate — will be skipped",
+          "Currency: ZAR · Previous system ID: DEB-02",
+          "Matches a brought-forward fee note already in Kazi"
+        ]
+      },
+      {
+        "n": "4",
+        "status": "Error",
+        "feeNoteNumber": "PS-1003",
+        "client": "Client previous-system ID: D-003",
+        "issueDate": "20 October 2026",
+        "dueDate": "19 November 2026Default",
+        "dueDefault": "Default",
+        "outstanding": "R 2 300,00",
+        "clientDetails": "—",
+        "duplicate": null,
+        "messages": [
+          "Fee-note number PS-1003 already exists in Kazi",
+          "No due date was given. It is set to 19 November 2026, the issue date plus the firm's payment terms of 30 days."
+        ],
+        "cells": [
+          "4",
+          "DEB-03",
+          "PS-1003",
+          "Client previous-system ID: D-003",
+          "20 October 2026",
+          "19 November 2026Default",
+          "R 2 300,00",
+          "—",
+          "Error",
+          "Currency: ZAR · Previous system ID: DEB-03",
+          "Fee-note number PS-1003 already exists in Kazi No due date was given. It is set to 19 November 2026, the issue date plus the firm's payment terms of 30 days."
+        ]
+      },
+      {
+        "n": "5",
+        "status": "Duplicate — will be skipped",
+        "feeNoteNumber": "PS-1004",
+        "client": "Client ID number: 8803035800085",
+        "issueDate": "1 October 2026",
+        "dueDate": "15 December 2026",
+        "dueDefault": null,
+        "outstanding": "R 8 050,00",
+        "clientDetails": "—",
+        "duplicate": "Matches a brought-forward fee note already in Kazi",
+        "messages": [
+          "Matches a brought-forward fee note already in Kazi"
+        ],
+        "cells": [
+          "5",
+          "DEB-04",
+          "PS-1004",
+          "Client ID number: 8803035800085",
+          "1 October 2026",
+          "15 December 2026",
+          "R 8 050,00",
+          "—",
+          "Duplicate — will be skipped",
+          "Currency: ZAR · Previous system ID: DEB-04",
+          "Matches a brought-forward fee note already in Kazi"
+        ]
+      },
+      {
+        "n": "6",
+        "status": "Duplicate — will be skipped",
+        "feeNoteNumber": "INV-0007",
+        "client": "Client previous-system ID: D-005",
+        "issueDate": "30 September 2026",
+        "dueDate": "30 October 2026",
+        "dueDefault": null,
+        "outstanding": "R 1 150,00",
+        "clientDetails": "—",
+        "duplicate": "Matches a brought-forward fee note already in Kazi",
+        "messages": [
+          "Matches a brought-forward fee note already in Kazi"
+        ],
+        "cells": [
+          "6",
+          "DEB-05",
+          "INV-0007",
+          "Client previous-system ID: D-005",
+          "30 September 2026",
+          "30 October 2026",
+          "R 1 150,00",
+          "—",
+          "Duplicate — will be skipped",
+          "Currency: ZAR · Previous system ID: DEB-05",
+          "Matches a brought-forward fee note already in Kazi"
+        ]
+      },
+      {
+        "n": "7",
+        "status": "Duplicate — will be skipped",
+        "feeNoteNumber": "PS-1006",
+        "client": "Client previous-system ID: D-006",
+        "issueDate": "31 August 2026",
+        "dueDate": "30 September 2026",
+        "dueDefault": null,
+        "outstanding": "R 3 450,00",
+        "clientDetails": "Address or email missing",
+        "duplicate": "Matches a brought-forward fee note already in Kazi",
+        "messages": [
+          "Matches a brought-forward fee note already in Kazi",
+          "This client has no billing address or email in Kazi. The brought-forward fee note is taken on as it is; add them before generating a new fee note for this client."
+        ],
+        "cells": [
+          "7",
+          "DEB-06",
+          "PS-1006",
+          "Client previous-system ID: D-006",
+          "31 August 2026",
+          "30 September 2026",
+          "R 3 450,00",
+          "Address or email missing",
+          "Duplicate — will be skipped",
+          "Currency: ZAR · Previous system ID: DEB-06",
+          "Matches a brought-forward fee note already in Kazi This client has no billing address or email in Kazi. The brought-forward fee note is taken on as it is; add them before generating a new fee note for this client."
+        ]
+      },
+      {
+        "n": "8",
+        "status": "Error",
+        "feeNoteNumber": "PS-1007",
+        "client": "D-099",
+        "issueDate": "1 August 2026",
+        "dueDate": "31 August 2026",
+        "dueDefault": null,
+        "outstanding": "R 999,00",
+        "clientDetails": "—",
+        "duplicate": null,
+        "messages": [
+          "No client matches D-099. Take the client on first, or correct the reference."
+        ],
+        "cells": [
+          "8",
+          "DEB-07",
+          "PS-1007",
+          "D-099",
+          "1 August 2026",
+          "31 August 2026",
+          "R 999,00",
+          "—",
+          "Error",
+          "Currency: ZAR · Previous system ID: DEB-07",
+          "No client matches D-099. Take the client on first, or correct the reference."
+        ]
+      },
+      {
+        "n": "9",
+        "status": "Error",
+        "feeNoteNumber": "PS-1008",
+        "client": "Client previous-system ID: D-001",
+        "issueDate": "15 September 2026",
+        "dueDate": "15 October 2026",
+        "dueDefault": null,
+        "outstanding": "R 0,00",
+        "clientDetails": "—",
+        "duplicate": null,
+        "messages": [
+          "The amount must be more than R0,00."
+        ],
+        "cells": [
+          "9",
+          "DEB-08",
+          "PS-1008",
+          "Client previous-system ID: D-001",
+          "15 September 2026",
+          "15 October 2026",
+          "R 0,00",
+          "—",
+          "Error",
+          "Currency: ZAR · Previous system ID: DEB-08",
+          "The amount must be more than R0,00."
+        ]
+      },
+      {
+        "n": "10",
+        "status": "Error",
+        "feeNoteNumber": "PS-1009",
+        "client": "Client previous-system ID: D-002",
+        "issueDate": "10 November 2026",
+        "dueDate": "10 December 2026",
+        "dueDefault": null,
+        "outstanding": "R 1 725,00",
+        "clientDetails": "—",
+        "duplicate": null,
+        "messages": [
+          "The date (10 November 2026) is after the cutover date (31 October 2026). Take on only what the previous system held at the cutover date."
+        ],
+        "cells": [
+          "10",
+          "DEB-09",
+          "PS-1009",
+          "Client previous-system ID: D-002",
+          "10 November 2026",
+          "10 December 2026",
+          "R 1 725,00",
+          "—",
+          "Error",
+          "Currency: ZAR · Previous system ID: DEB-09",
+          "The date (10 November 2026) is after the cutover date (31 October 2026). Take on only what the previous system held at the cutover date."
+        ]
+      },
+      {
+        "n": "11",
+        "status": "Error",
+        "feeNoteNumber": "PS-1010",
+        "client": "Client previous-system ID: D-003",
+        "issueDate": "10 September 2026",
+        "dueDate": "10 October 2026",
+        "dueDefault": null,
+        "outstanding": "R 575,00",
+        "clientDetails": "—",
+        "duplicate": null,
+        "messages": [
+          "Matter TO-D-2001 is not a matter of client D-003."
+        ],
+        "cells": [
+          "11",
+          "DEB-10",
+          "PS-1010",
+          "Client previous-system ID: D-003",
+          "10 September 2026",
+          "10 October 2026",
+          "R 575,00",
+          "—",
+          "Error",
+          "Currency: ZAR · Matter reference: TO-D-2001 · Previous system ID: DEB-10",
+          "Matter TO-D-2001 is not a matter of client D-003."
+        ]
+      },
+      {
+        "n": "12",
+        "status": "Error",
+        "feeNoteNumber": "INV-0001",
+        "client": "Client previous-system ID: D-004",
+        "issueDate": "30 June 2026",
+        "dueDate": "30 July 2026",
+        "dueDefault": null,
+        "outstanding": "R 690,00",
+        "clientDetails": "—",
+        "duplicate": null,
+        "messages": [
+          "Fee-note number INV-0001 already exists in Kazi"
+        ],
+        "cells": [
+          "12",
+          "DEB-11",
+          "INV-0001",
+          "Client previous-system ID: D-004",
+          "30 June 2026",
+          "30 July 2026",
+          "R 690,00",
+          "—",
+          "Error",
+          "Currency: ZAR · Previous system ID: DEB-11",
+          "Fee-note number INV-0001 already exists in Kazi"
+        ]
+      }
+    ],
+    "present": {
+      "duplicate": true,
+      "numberExistsVoided": true,
+      "continuesSeq": false
+    },
+    "raw": [],
+    "cancelled": "Cancelled"
+  },
+  "carol": {
+    "status": 200,
+    "url": "http://localhost:3001/org/e2e-test-org/settings/matters?tab=take-on",
+    "text": "Firm Matters Templates Tags Documents Fees & Trust Connections Templates Tags You don't have access to Take-on — showing Templates instead. Matter Templates Create and manage reusable matter blueprints to standardize matter structure. NAME SOURCE TASKS TAGS STATUS Collections (Debt Recovery) Debt recovery workflow from demand to execution. Pack 9 0 Active Commercial (Corporate & Contract) Corporate and commercial transaction workflow. Pack 9 0 Active Deceased Estate Administration Administration of deceased estate from reporting to final distribution. Pack 9 0 Active Litigation (Personal Injur",
+    "takeOnTab": 0,
+    "picker": 0,
+    "tabs": [
+      "Templates",
+      "Tags"
+    ],
+    "deepLink": {
+      "status": 200,
+      "wizard": 0,
+      "rows": 0,
+      "text": "Firm Matters Templates Tags Documents Fees & Trust Connections Templates Tags You don't have access to Take-on — showing Templates instead. Matter Templates Create and manage reusable matter blueprints to standardize matter structure. NAME SOURCE TASKS TAGS STATUS Collections (Debt Recovery) Debt re"
+    }
+  }
+}

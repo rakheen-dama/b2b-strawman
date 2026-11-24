@@ -1,0 +1,120 @@
+# snapshot 06-after-void at 2026-11-24T20:12:24Z (since 2026-11-24T20:06:54Z)
+-- select next_number from tenant_7d218705360b.invoice_counters
+ next_number 
+-------------
+           9
+(1 row)
+
+-- select i.invoice_number, i.status, i.issue_date, i.due_date, i.subtotal, i.tax_amount, i.total, i.amount_paid, i.currency, (i.take_on_batch_id is not null) as brought_forward, i.take_on_batch_id, i.payment_url, i.payment_session_id, c.name as client, (i.approved_by is not null) as approved_by_set, i.created_at from tenant_7d218705360b.invoices i join tenant_7d218705360b.customers c on c.id=i.customer_id order by i.created_at, i.invoice_number
+ invoice_number |  status  | issue_date |  due_date  | subtotal | tax_amount |  total   | amount_paid | currency | brought_forward |           take_on_batch_id           | payment_url | payment_session_id |         client          | approved_by_set |          created_at           
+----------------+----------+------------+------------+----------+------------+----------+-------------+----------+-----------------+--------------------------------------+-------------+--------------------+-------------------------+-----------------+-------------------------------
+ INV-0008       | APPROVED | 2026-11-24 | 2026-12-24 |  3000.00 |     450.00 |  3450.00 |        0.00 | ZAR      | f               |                                      |             |                    | Acme Corp               | t               | 2026-11-24 20:00:40.190408+00
+ INV-0001       | SENT     | 2026-11-24 | 2026-12-24 |  7500.00 |    1125.00 |  8625.00 |        0.00 | ZAR      | f               |                                      |             |                    | Acme Corp               | t               | 2026-11-24 20:00:40.286265+00
+ PS-1001        | SENT     | 2026-07-15 | 2026-08-14 |  4600.00 |       0.00 |  4600.00 |        0.00 | ZAR      | t               | d04746a3-657d-49e7-84dd-a2e318efa512 |             |                    | Thandiwe Mokoena        | t               | 2026-11-24 20:10:04.768995+00
+ PS-1002        | SENT     | 2026-09-01 | 2026-10-01 | 12075.50 |       0.00 | 12075.50 |        0.00 | ZAR      | t               | d04746a3-657d-49e7-84dd-a2e318efa512 |             |                    | Johan Pretorius         | t               | 2026-11-24 20:10:04.798642+00
+ PS-1003        | VOID     | 2026-10-20 | 2026-11-19 |  2300.00 |       0.00 |  2300.00 |        0.00 | ZAR      | t               | d04746a3-657d-49e7-84dd-a2e318efa512 |             |                    | Karoo Freight (Pty) Ltd | t               | 2026-11-24 20:10:04.823773+00
+ PS-1004        | SENT     | 2026-10-01 | 2026-12-15 |  8050.00 |       0.00 |  8050.00 |        0.00 | ZAR      | t               | d04746a3-657d-49e7-84dd-a2e318efa512 |             |                    | Ayesha Patel            | t               | 2026-11-24 20:10:04.847112+00
+ INV-0007       | SENT     | 2026-09-30 | 2026-10-30 |  1150.00 |       0.00 |  1150.00 |        0.00 | ZAR      | t               | d04746a3-657d-49e7-84dd-a2e318efa512 |             |                    | Lerato Mahlangu         | t               | 2026-11-24 20:10:04.873759+00
+ PS-1006        | SENT     | 2026-08-31 | 2026-09-30 |  3450.00 |       0.00 |  3450.00 |        0.00 | ZAR      | t               | d04746a3-657d-49e7-84dd-a2e318efa512 |             |                    | Bongani Zulu            | t               | 2026-11-24 20:10:04.899533+00
+(8 rows)
+
+-- select i.invoice_number, l.line_type, l.description, l.quantity, l.unit_price, l.amount, l.tax_rate_id, l.tax_amount, (l.project_id is not null) as has_matter, p.reference_number as matter_ref from tenant_7d218705360b.invoices i join tenant_7d218705360b.invoice_lines l on l.invoice_id=i.id left join tenant_7d218705360b.projects p on p.id=l.project_id where i.take_on_batch_id is not null order by i.invoice_number
+ invoice_number | line_type |                            description                            | quantity | unit_price |  amount  | tax_rate_id | tax_amount | has_matter | matter_ref 
+----------------+-----------+-------------------------------------------------------------------+----------+------------+----------+-------------+------------+------------+------------
+ INV-0007       | MANUAL    | Balance brought forward as at 31 October 2026 — fee note INV-0007 |   1.0000 |    1150.00 |  1150.00 |             |            | f          | 
+ PS-1001        | MANUAL    | Balance brought forward as at 31 October 2026 — fee note PS-1001  |   1.0000 |    4600.00 |  4600.00 |             |            | t          | TO-D-2001
+ PS-1002        | MANUAL    | Balance brought forward as at 31 October 2026 — fee note PS-1002  |   1.0000 |   12075.50 | 12075.50 |             |            | f          | 
+ PS-1003        | MANUAL    | Balance brought forward as at 31 October 2026 — fee note PS-1003  |   1.0000 |    2300.00 |  2300.00 |             |            | f          | 
+ PS-1004        | MANUAL    | Balance brought forward as at 31 October 2026 — fee note PS-1004  |   1.0000 |    8050.00 |  8050.00 |             |            | f          | 
+ PS-1006        | MANUAL    | Balance brought forward as at 31 October 2026 — fee note PS-1006  |   1.0000 |    3450.00 |  3450.00 |             |            | f          | 
+(6 rows)
+
+-- select count(*) as notifications_since, string_agg(distinct type, ',') as types from tenant_7d218705360b.notifications where created_at >= '2026-11-24T20:06:54Z'
+ notifications_since |     types      
+---------------------+----------------
+                   1 | INVOICE_VOIDED
+(1 row)
+
+-- select n.type, n.title, m.name as recipient, n.created_at from tenant_7d218705360b.notifications n join tenant_7d218705360b.members m on m.id=n.recipient_member_id where n.created_at >= '2026-11-24T20:06:54Z' order by n.created_at
+      type      |                            title                             | recipient |          created_at           
+----------------+--------------------------------------------------------------+-----------+-------------------------------
+ INVOICE_VOIDED | Fee Note PS-1003 for Karoo Freight (Pty) Ltd has been voided | Bob Admin | 2026-11-24 20:12:08.732046+00
+(1 row)
+
+-- select count(*) as accounting_sync_entries_total from tenant_7d218705360b.accounting_sync_entry
+ accounting_sync_entries_total 
+-------------------------------
+                             0
+(1 row)
+
+-- select e.entity_type, e.trigger, e.state, i.invoice_number, e.created_at from tenant_7d218705360b.accounting_sync_entry e left join tenant_7d218705360b.invoices i on i.id=e.entity_id order by e.created_at
+ entity_type | trigger | state | invoice_number | created_at 
+-------------+---------+-------+----------------+------------
+(0 rows)
+
+-- select count(*) as payment_events_total from tenant_7d218705360b.payment_events
+ payment_events_total 
+----------------------
+                    0
+(1 row)
+
+-- select count(*) as automation_executions_since from tenant_7d218705360b.automation_executions where created_at >= '2026-11-24T20:06:54Z'
+ automation_executions_since 
+-----------------------------
+                           0
+(1 row)
+
+-- select count(*) as email_delivery_log_since from tenant_7d218705360b.email_delivery_log where created_at >= '2026-11-24T20:06:54Z'
+ email_delivery_log_since 
+--------------------------
+                        0
+(1 row)
+
+-- select domain, provider_slug, enabled from tenant_7d218705360b.org_integrations
+ domain | provider_slug | enabled 
+--------+---------------+---------
+(0 rows)
+
+-- select pi.invoice_number, pi.status, pi.issue_date, pi.due_date, pi.total, pi.tax_amount, pi.payment_url, pi.payment_session_id, pi.synced_at from portal.portal_invoices pi where pi.org_id='e2e-test-org' order by pi.invoice_number
+ invoice_number | status | issue_date |  due_date  |  total   | tax_amount | payment_url | payment_session_id |         synced_at          
+----------------+--------+------------+------------+----------+------------+-------------+--------------------+----------------------------
+ INV-0001       | SENT   | 2026-11-24 | 2026-12-24 |  8625.00 |    1125.00 |             |                    | 2026-11-24 20:00:41.527551
+ INV-0007       | SENT   | 2026-09-30 | 2026-10-30 |  1150.00 |       0.00 |             |                    | 2026-11-24 20:10:04.892925
+ PS-1001        | SENT   | 2026-07-15 | 2026-08-14 |  4600.00 |       0.00 |             |                    | 2026-11-24 20:10:04.790242
+ PS-1002        | SENT   | 2026-09-01 | 2026-10-01 | 12075.50 |       0.00 |             |                    | 2026-11-24 20:10:04.814908
+ PS-1004        | SENT   | 2026-10-01 | 2026-12-15 |  8050.00 |       0.00 |             |                    | 2026-11-24 20:10:04.867177
+ PS-1006        | SENT   | 2026-08-31 | 2026-09-30 |  3450.00 |       0.00 |             |                    | 2026-11-24 20:10:04.90889
+(6 rows)
+
+-- select event_type, entity_type, details, occurred_at from tenant_7d218705360b.audit_events where occurred_at >= '2026-11-24T20:06:54Z' and (event_type like 'invoice.%' or event_type like 'takeon.batch.%' or event_type like 'payment%') order by occurred_at
+           event_type           |  entity_type  |                                                                                                                                 details                                                                                                                                 |          occurred_at          
+--------------------------------+---------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------
+ takeon.batch.created           | take_on_batch | {"dataset": "CLIENTS", "batch_id": "924d9c57-c9a0-41d2-9a40-9f9b2f752c53", "actor_name": "Alice Owner"}                                                                                                                                                                 | 2026-11-24 20:08:59.269752+00
+ takeon.batch.validated         | take_on_batch | {"dataset": "CLIENTS", "batch_id": "924d9c57-c9a0-41d2-9a40-9f9b2f752c53", "actor_name": "Alice Owner", "error_rows": 0, "total_rows": 6, "valid_rows": 6, "block_count": 0, "duplicate_rows": 0}                                                                       | 2026-11-24 20:09:00.506923+00
+ takeon.batch.attested          | take_on_batch | {"batch_id": "924d9c57-c9a0-41d2-9a40-9f9b2f752c53", "row_count": 6, "actor_name": "Alice Owner", "sign_off_id": "759b8a9c-8f2d-4cd8-ba22-ab784ec563e9", "statement_version": "FICA-ATTEST-v1"}                                                                         | 2026-11-24 20:09:02.787194+00
+ takeon.batch.commit_requested  | take_on_batch | {"dataset": "CLIENTS", "batch_id": "924d9c57-c9a0-41d2-9a40-9f9b2f752c53", "actor_name": "Alice Owner", "sign_off_id": "759b8a9c-8f2d-4cd8-ba22-ab784ec563e9"}                                                                                                          | 2026-11-24 20:09:03.37469+00
+ takeon.batch.committed         | take_on_batch | {"dataset": "CLIENTS", "batch_id": "924d9c57-c9a0-41d2-9a40-9f9b2f752c53", "actor_name": "Alice Owner", "failed_rows": 0, "created_rows": 6, "skipped_rows": 0}                                                                                                         | 2026-11-24 20:09:04.260995+00
+ takeon.batch.created           | take_on_batch | {"dataset": "MATTERS", "batch_id": "b70b9b21-3ea6-4d3b-9a19-640956e84a1b", "actor_name": "Alice Owner"}                                                                                                                                                                 | 2026-11-24 20:09:20.782054+00
+ takeon.batch.validated         | take_on_batch | {"dataset": "MATTERS", "batch_id": "b70b9b21-3ea6-4d3b-9a19-640956e84a1b", "actor_name": "Alice Owner", "error_rows": 0, "total_rows": 2, "valid_rows": 2, "block_count": 0, "duplicate_rows": 0}                                                                       | 2026-11-24 20:09:21.597721+00
+ takeon.batch.commit_requested  | take_on_batch | {"dataset": "MATTERS", "batch_id": "b70b9b21-3ea6-4d3b-9a19-640956e84a1b", "actor_name": "Alice Owner"}                                                                                                                                                                 | 2026-11-24 20:09:24.095855+00
+ takeon.batch.committed         | take_on_batch | {"dataset": "MATTERS", "batch_id": "b70b9b21-3ea6-4d3b-9a19-640956e84a1b", "actor_name": "Alice Owner", "failed_rows": 0, "created_rows": 2, "skipped_rows": 0}                                                                                                         | 2026-11-24 20:09:24.410787+00
+ takeon.batch.created           | take_on_batch | {"dataset": "DEBTOR_BALANCES", "batch_id": "d04746a3-657d-49e7-84dd-a2e318efa512", "actor_name": "Alice Owner"}                                                                                                                                                         | 2026-11-24 20:09:36.718374+00
+ takeon.batch.validated         | take_on_batch | {"dataset": "DEBTOR_BALANCES", "batch_id": "d04746a3-657d-49e7-84dd-a2e318efa512", "actor_name": "Alice Owner", "error_rows": 5, "total_rows": 11, "valid_rows": 6, "block_count": 0, "duplicate_rows": 0}                                                              | 2026-11-24 20:09:37.935882+00
+ takeon.batch.commit_requested  | take_on_batch | {"dataset": "DEBTOR_BALANCES", "batch_id": "d04746a3-657d-49e7-84dd-a2e318efa512", "actor_name": "Alice Owner"}                                                                                                                                                         | 2026-11-24 20:10:03.081389+00
+ invoice.created                | invoice       | {"source": "TAKE_ON", "actor_name": "Alice Owner", "take_on_batch_id": "d04746a3-657d-49e7-84dd-a2e318efa512"}                                                                                                                                                          | 2026-11-24 20:10:04.77778+00
+ invoice.brought_forward_issued | invoice       | {"actor_name": "Alice Owner", "invoice_id": "854fab98-a594-40b5-9f59-eb091fd631d7", "take_on_batch_id": "d04746a3-657d-49e7-84dd-a2e318efa512"}                                                                                                                         | 2026-11-24 20:10:04.778091+00
+ invoice.created                | invoice       | {"source": "TAKE_ON", "actor_name": "Alice Owner", "take_on_batch_id": "d04746a3-657d-49e7-84dd-a2e318efa512"}                                                                                                                                                          | 2026-11-24 20:10:04.803857+00
+ invoice.brought_forward_issued | invoice       | {"actor_name": "Alice Owner", "invoice_id": "b0bdd23b-19e1-455a-8a4d-e9cc51270acb", "take_on_batch_id": "d04746a3-657d-49e7-84dd-a2e318efa512"}                                                                                                                         | 2026-11-24 20:10:04.804178+00
+ invoice.created                | invoice       | {"source": "TAKE_ON", "actor_name": "Alice Owner", "take_on_batch_id": "d04746a3-657d-49e7-84dd-a2e318efa512"}                                                                                                                                                          | 2026-11-24 20:10:04.829705+00
+ invoice.brought_forward_issued | invoice       | {"actor_name": "Alice Owner", "invoice_id": "bc6b241d-91be-4c03-ae8e-ce22a50ec3ae", "take_on_batch_id": "d04746a3-657d-49e7-84dd-a2e318efa512"}                                                                                                                         | 2026-11-24 20:10:04.830262+00
+ invoice.created                | invoice       | {"source": "TAKE_ON", "actor_name": "Alice Owner", "take_on_batch_id": "d04746a3-657d-49e7-84dd-a2e318efa512"}                                                                                                                                                          | 2026-11-24 20:10:04.857562+00
+ invoice.brought_forward_issued | invoice       | {"actor_name": "Alice Owner", "invoice_id": "c67065c9-808a-467c-a5dd-f3d3f9728e87", "take_on_batch_id": "d04746a3-657d-49e7-84dd-a2e318efa512"}                                                                                                                         | 2026-11-24 20:10:04.857936+00
+ invoice.created                | invoice       | {"source": "TAKE_ON", "actor_name": "Alice Owner", "take_on_batch_id": "d04746a3-657d-49e7-84dd-a2e318efa512"}                                                                                                                                                          | 2026-11-24 20:10:04.884443+00
+ invoice.brought_forward_issued | invoice       | {"actor_name": "Alice Owner", "invoice_id": "6a7fc9f9-a144-4e75-bced-ffa4b5a2d016", "take_on_batch_id": "d04746a3-657d-49e7-84dd-a2e318efa512"}                                                                                                                         | 2026-11-24 20:10:04.884862+00
+ invoice.created                | invoice       | {"source": "TAKE_ON", "actor_name": "Alice Owner", "take_on_batch_id": "d04746a3-657d-49e7-84dd-a2e318efa512"}                                                                                                                                                          | 2026-11-24 20:10:04.902708+00
+ invoice.brought_forward_issued | invoice       | {"actor_name": "Alice Owner", "invoice_id": "ccd15ca9-2745-49c0-b8c0-22220f0da3fc", "take_on_batch_id": "d04746a3-657d-49e7-84dd-a2e318efa512"}                                                                                                                         | 2026-11-24 20:10:04.902897+00
+ takeon.batch.committed         | take_on_batch | {"dataset": "DEBTOR_BALANCES", "batch_id": "d04746a3-657d-49e7-84dd-a2e318efa512", "actor_name": "Alice Owner", "failed_rows": 0, "created_rows": 6, "skipped_rows": 0}                                                                                                 | 2026-11-24 20:10:04.913944+00
+ invoice.approved               | invoice       | {"total": "3450.00", "actor_name": "Alice Owner", "issue_date": "2026-11-24", "project_id": "96d3b6c9-e195-44bb-b7ef-86b63d825793", "customer_id": "75419046-ae8b-418b-b020-82a4dfe13a76", "expense_count": "0", "invoice_number": "INV-0008", "time_entry_count": "0"} | 2026-11-24 20:11:18.575717+00
+ invoice.voided                 | invoice       | {"total": "2300.00", "actor_name": "Alice Owner", "project_id": "", "customer_id": "a0290c21-8846-4049-801a-2c51a8844e37", "invoice_number": "PS-1003", "reverted_expense_count": "0", "reverted_time_entry_count": "0"}                                                | 2026-11-24 20:12:08.694604+00
+(27 rows)
+

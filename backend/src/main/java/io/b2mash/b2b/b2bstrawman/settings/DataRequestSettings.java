@@ -44,7 +44,8 @@ public class DataRequestSettings {
    * FICA review intervals by risk rating, in months (Phase 93 655A, §17.2.5, FD-7): the firm's RMCP
    * frequency, not law. {@code NOT NULL DEFAULT 36/24/12} with CHECK 1–120 (tenant V34), so they
    * are {@code int} with the same defaults here — a new {@code org_settings} row must never insert
-   * NULL into them. Editable from 655B (which adds the guarded setter).
+   * NULL into them. Edited through {@link #setFicaReviewMonths} (655B), which guards the same 1–120
+   * range as {@code chk_org_settings_fica_review_months}.
    */
   @Column(name = "fica_review_months_low", nullable = false)
   private int ficaReviewMonthsLow = DEFAULT_FICA_REVIEW_MONTHS_LOW;
@@ -58,6 +59,11 @@ public class DataRequestSettings {
   public static final int DEFAULT_FICA_REVIEW_MONTHS_LOW = 36;
   public static final int DEFAULT_FICA_REVIEW_MONTHS_MEDIUM = 24;
   public static final int DEFAULT_FICA_REVIEW_MONTHS_HIGH = 12;
+
+  /** The CHECK range of the review intervals ({@code chk_org_settings_fica_review_months}). */
+  public static final int MIN_FICA_REVIEW_MONTHS = 1;
+
+  public static final int MAX_FICA_REVIEW_MONTHS = 120;
 
   protected DataRequestSettings() {}
 
@@ -95,5 +101,40 @@ public class DataRequestSettings {
 
   public int getFicaReviewMonthsHigh() {
     return ficaReviewMonthsHigh;
+  }
+
+  /**
+   * Sets the FICA review intervals (Phase 93 655B, FD-7); a null argument keeps that interval.
+   * Validates all three before changing any. Affects attestations created afterwards only ({@code
+   * next_review_date} is stored at take-on).
+   *
+   * @throws IllegalArgumentException when a non-null interval is outside 1–120 months
+   */
+  public void setFicaReviewMonths(Integer low, Integer medium, Integer high) {
+    requireReviewMonths("ficaReviewMonthsLow", low);
+    requireReviewMonths("ficaReviewMonthsMedium", medium);
+    requireReviewMonths("ficaReviewMonthsHigh", high);
+    if (low != null) {
+      this.ficaReviewMonthsLow = low;
+    }
+    if (medium != null) {
+      this.ficaReviewMonthsMedium = medium;
+    }
+    if (high != null) {
+      this.ficaReviewMonthsHigh = high;
+    }
+  }
+
+  private static void requireReviewMonths(String name, Integer months) {
+    if (months != null && (months < MIN_FICA_REVIEW_MONTHS || months > MAX_FICA_REVIEW_MONTHS)) {
+      throw new IllegalArgumentException(
+          name
+              + " must be between "
+              + MIN_FICA_REVIEW_MONTHS
+              + " and "
+              + MAX_FICA_REVIEW_MONTHS
+              + " months, was "
+              + months);
+    }
   }
 }

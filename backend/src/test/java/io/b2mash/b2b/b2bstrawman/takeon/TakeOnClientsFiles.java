@@ -88,6 +88,12 @@ public final class TakeOnClientsFiles {
       return this;
     }
 
+    /** The "Beneficial ownership" cell (e.g. "Outstanding", "Done", "Not applicable"). */
+    public Row bo(String v) {
+      this.bo = v;
+      return this;
+    }
+
     public Row screening(String status, String date) {
       this.screening = status;
       this.screeningDate = date;

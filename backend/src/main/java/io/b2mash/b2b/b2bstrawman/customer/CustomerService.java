@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditDeltaBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstanceService;
+import io.b2mash.b2b.b2bstrawman.compliance.ClientFicaAttestation;
 import io.b2mash.b2b.b2bstrawman.customer.dto.ClientListRow;
 import io.b2mash.b2b.b2bstrawman.customer.dto.CollectionsExemptionResponse;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.CustomerCreatedEvent;
@@ -22,7 +23,7 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupResolver;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
 import io.b2mash.b2b.b2bstrawman.informationrequest.FicaStatusProjector;
 import io.b2mash.b2b.b2bstrawman.informationrequest.InformationRequestService;
-import io.b2mash.b2b.b2bstrawman.informationrequest.dto.InformationRequestDtos.FicaStatusResponse;
+import io.b2mash.b2b.b2bstrawman.informationrequest.InformationRequestService.FicaRead;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
@@ -42,6 +43,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -66,6 +68,17 @@ public class CustomerService {
   private static final String TRUST_ACCOUNTING_MODULE = "trust_accounting";
   private static final String FICA_FILTER_OUTSTANDING = "OUTSTANDING";
   private static final String FICA_FILTER_DONE = "DONE";
+  private static final String FICA_FILTER_REVIEW = "REVIEW";
+
+  /**
+   * The FICA review queue order ({@code ficaStatus=REVIEW}, §17.3.5): next review date ascending,
+   * unrated (no date) first, then name and id for determinism.
+   */
+  private static final Comparator<ClientListRow> FICA_REVIEW_ORDER =
+      Comparator.comparing(
+              ClientListRow::ficaNextReviewDate, Comparator.nullsFirst(Comparator.naturalOrder()))
+          .thenComparing(ClientListRow::name, String.CASE_INSENSITIVE_ORDER)
+          .thenComparing(ClientListRow::id);
 
   private final CustomerRepository repository;
   private final AuditService auditService;
@@ -156,17 +169,21 @@ public class CustomerService {
    * the tag batch.
    *
    * <p>Statement budget on the default path (no view): base 1 + org settings 1 + trust 0–1 +
-   * completeness field definitions 1 + FICA 2–3 (onboarding checklist instances 1 + FICA requests 1
-   * + items of COMPLETED requests 0–1) + client aggregates 1 + tags 1–2 = at most 10, independent
-   * of page size (pinned by {@code ClientListRowIntegrationTest}). A saved view adds 1 (the view
-   * lookup; the view query replaces the base query).
+   * completeness field definitions 1 + FICA 3–4 (onboarding checklist instances 1 + FICA requests 1
+   * + items of COMPLETED requests 0–1 + active FICA attestations 1, Phase 93 655B) + client
+   * aggregates 1 + tags 1–2 = at most 11, independent of page size (pinned by {@code
+   * ClientListRowIntegrationTest}). A saved view adds 1 (the view lookup; the view query replaces
+   * the base query).
+   *
+   * <p>{@code ficaStatus=REVIEW} orders the rows by next review date ascending, unrated first (the
+   * FICA review queue, §17.3.5); every other request keeps the base order.
    *
    * <p>Redaction: {@code outstandingFeeNoteTotal} needs FINANCIAL_VISIBILITY (owner/admin always —
    * the 614A home rule); {@code trustBalance} needs VIEW_TRUST and the trust_accounting module.
    * Counts and currency are never redacted. {@code hasTrustBalance} without trust visibility
    * returns no rows (filtering by a redacted column would leak it).
    *
-   * @throws InvalidStateException (400) when {@code ficaStatus} is not OUTSTANDING or DONE
+   * @throws InvalidStateException (400) when {@code ficaStatus} is not OUTSTANDING, DONE or REVIEW
    */
   @Transactional(readOnly = true)
   public List<ClientListRow> listClientRows(ClientListQuery q, ActorContext actor) {
@@ -221,7 +238,7 @@ public class CustomerService {
       clients = clients.stream().filter(c -> isIncomplete(completeness.get(c.getId()))).toList();
     }
 
-    Map<UUID, FicaStatusResponse> fica = informationRequestService.getFicaStatuses(idsOf(clients));
+    Map<UUID, FicaRead> fica = informationRequestService.getFicaReads(idsOf(clients));
     if (ficaFilter != null) {
       clients = clients.stream().filter(c -> matchesFica(fica.get(c.getId()), ficaFilter)).toList();
     }
@@ -261,6 +278,9 @@ public class CustomerService {
             rows.stream().filter(r -> TagFilterUtil.matchesTagFilter(r.tags(), tagSlugs)).toList();
       }
     }
+    if (FICA_FILTER_REVIEW.equals(ficaFilter)) {
+      rows = rows.stream().sorted(FICA_REVIEW_ORDER).toList();
+    }
     return rows;
   }
 
@@ -285,13 +305,18 @@ public class CustomerService {
         false);
   }
 
-  /** {@code OUTSTANDING} / {@code DONE} (case-insensitive), null when absent; else a 400. */
+  /**
+   * {@code OUTSTANDING} / {@code DONE} / {@code REVIEW} (case-insensitive), null when absent; else
+   * a 400.
+   */
   private static String parseFicaFilter(String ficaStatus) {
     if (ficaStatus == null || ficaStatus.isBlank()) {
       return null;
     }
     String normalized = ficaStatus.trim().toUpperCase(Locale.ROOT);
-    if (FICA_FILTER_OUTSTANDING.equals(normalized) || FICA_FILTER_DONE.equals(normalized)) {
+    if (FICA_FILTER_OUTSTANDING.equals(normalized)
+        || FICA_FILTER_DONE.equals(normalized)
+        || FICA_FILTER_REVIEW.equals(normalized)) {
       return normalized;
     }
     throw new InvalidStateException(
@@ -301,13 +326,24 @@ public class CustomerService {
             + "'. Valid values: "
             + FICA_FILTER_OUTSTANDING
             + ", "
-            + FICA_FILTER_DONE);
+            + FICA_FILTER_DONE
+            + ", "
+            + FICA_FILTER_REVIEW);
   }
 
-  /** DONE = the FICA rule's DONE; OUTSTANDING = anything else (NOT_STARTED or IN_PROGRESS). */
-  private static boolean matchesFica(FicaStatusResponse fica, String filter) {
-    boolean done = fica != null && FicaStatusProjector.DONE.equals(fica.status());
-    return FICA_FILTER_DONE.equals(filter) == done;
+  /**
+   * The FICA filter through the projector's named predicates (655B): OUTSTANDING = {@link
+   * FicaStatusProjector#isOutstanding}, DONE = {@link FicaStatusProjector#isClear}, REVIEW = {@code
+   * ATTESTED_REVIEW} only. A client with no FICA entry counts as NOT_STARTED.
+   */
+  private static boolean matchesFica(FicaRead fica, String filter) {
+    String status = fica == null ? FicaStatusProjector.NOT_STARTED : fica.status().status();
+    return switch (filter) {
+      case FICA_FILTER_OUTSTANDING -> FicaStatusProjector.isOutstanding(status);
+      case FICA_FILTER_DONE -> FicaStatusProjector.isClear(status);
+      case FICA_FILTER_REVIEW -> FicaStatusProjector.ATTESTED_REVIEW.equals(status);
+      default -> throw new IllegalStateException("Unparsed FICA filter: " + filter);
+    };
   }
 
   /** Below 100% with at least one required field; clients with none are N/A, never incomplete. */
@@ -334,7 +370,7 @@ public class CustomerService {
   private static ClientListRow toRow(
       Customer c,
       ClientListAggregateProjection agg,
-      FicaStatusResponse fica,
+      FicaRead fica,
       CompletenessScore completeness,
       Map<UUID, BigDecimal> trust,
       List<TagResponse> tags,
@@ -349,6 +385,8 @@ public class CustomerService {
                   : agg.getOutstandingFeeNoteTotal())
               .setScale(2, RoundingMode.HALF_UP);
     }
+    var ficaStatus = fica == null ? null : fica.status();
+    ClientFicaAttestation attestation = fica == null ? null : fica.attestation();
     return new ClientListRow(
         c.getId(),
         c.getName(),
@@ -359,8 +397,12 @@ public class CustomerService {
         c.getStatus(),
         c.getCreatedAt(),
         c.getLifecycleStatusChangedAt(),
-        fica == null ? FicaStatusProjector.NOT_STARTED : fica.status(),
-        fica == null ? null : fica.lastVerifiedAt(),
+        ficaStatus == null ? FicaStatusProjector.NOT_STARTED : ficaStatus.status(),
+        ficaStatus == null ? null : ficaStatus.lastVerifiedAt(),
+        ficaStatus == null ? List.of() : ficaStatus.reviewReasons(),
+        attestation == null ? null : attestation.getRiskRating().name(),
+        attestation == null ? null : attestation.getNextReviewDate(),
+        attestation == null ? null : attestation.getCddRecordsLocation(),
         outstanding,
         agg == null || agg.getOutstandingFeeNoteCount() == null
             ? 0

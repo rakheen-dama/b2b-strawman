@@ -89,7 +89,11 @@ class OrgSettingsIntegrationTest {
         .andExpect(jsonPath("$.letterhead.addressLine1").value(nullValue()))
         .andExpect(jsonPath("$.letterhead.email").value(nullValue()))
         .andExpect(jsonPath("$.letterhead.bankAccountNumber").value(nullValue()))
-        .andExpect(jsonPath("$.letterhead.signatoryDesignation").value(nullValue()));
+        .andExpect(jsonPath("$.letterhead.signatoryDesignation").value(nullValue()))
+        // Phase 93 655B (FD-7): the review-interval defaults
+        .andExpect(jsonPath("$.ficaReviewMonthsLow").value(36))
+        .andExpect(jsonPath("$.ficaReviewMonthsMedium").value(24))
+        .andExpect(jsonPath("$.ficaReviewMonthsHigh").value(12));
   }
 
   @Test
@@ -295,6 +299,75 @@ class OrgSettingsIntegrationTest {
                 .content(
                     """
                     {"dataRequestDeadlineDays": 0}
+                    """))
+        .andExpect(status().isBadRequest());
+  }
+
+  // --- FICA review intervals (Phase 93 655B, FD-7) ---
+
+  @Test
+  @Order(32)
+  void patchComplianceSettings_savesFicaReviewIntervals() throws Exception {
+    mockMvc
+        .perform(
+            patch("/api/settings/compliance")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"ficaReviewMonthsLow": 30, "ficaReviewMonthsMedium": 18, "ficaReviewMonthsHigh": 6}
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.ficaReviewMonthsLow").value(30))
+        .andExpect(jsonPath("$.ficaReviewMonthsMedium").value(18))
+        .andExpect(jsonPath("$.ficaReviewMonthsHigh").value(6));
+    mockMvc
+        .perform(get("/api/settings").with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.ficaReviewMonthsLow").value(30))
+        .andExpect(jsonPath("$.ficaReviewMonthsMedium").value(18))
+        .andExpect(jsonPath("$.ficaReviewMonthsHigh").value(6));
+
+    // A partial update keeps the other intervals.
+    mockMvc
+        .perform(
+            patch("/api/settings/compliance")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"ficaReviewMonthsHigh": 120}
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.ficaReviewMonthsLow").value(30))
+        .andExpect(jsonPath("$.ficaReviewMonthsMedium").value(18))
+        .andExpect(jsonPath("$.ficaReviewMonthsHigh").value(120));
+  }
+
+  @Test
+  void patchComplianceSettings_rejectsFicaReviewIntervalBelowOne() throws Exception {
+    mockMvc
+        .perform(
+            patch("/api/settings/compliance")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"ficaReviewMonthsHigh": 0}
+                    """))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void patchComplianceSettings_rejectsFicaReviewIntervalAbove120() throws Exception {
+    mockMvc
+        .perform(
+            patch("/api/settings/compliance")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"ficaReviewMonthsLow": 121}
                     """))
         .andExpect(status().isBadRequest());
   }

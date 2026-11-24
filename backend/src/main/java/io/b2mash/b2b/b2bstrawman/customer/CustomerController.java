@@ -2,6 +2,8 @@ package io.b2mash.b2b.b2bstrawman.customer;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEvent;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventResponse;
+import io.b2mash.b2b.b2bstrawman.compliance.ClientFicaAttestationService;
+import io.b2mash.b2b.b2bstrawman.compliance.ClientFicaAttestationService.ClientFicaAttestationResponse;
 import io.b2mash.b2b.b2bstrawman.compliance.CustomerLifecycleService;
 import io.b2mash.b2b.b2bstrawman.customer.dto.ClientDtos.ClientMatterResponse;
 import io.b2mash.b2b.b2bstrawman.customer.dto.ClientDtos.ClientResponse;
@@ -67,6 +69,7 @@ public class CustomerController {
   private final PortalContactService portalContactService;
   private final InformationRequestService informationRequestService;
   private final ClientActivityService clientActivityService;
+  private final ClientFicaAttestationService clientFicaAttestationService;
 
   public CustomerController(
       CustomerService customerService,
@@ -78,7 +81,8 @@ public class CustomerController {
       CustomerReadinessService customerReadinessService,
       PortalContactService portalContactService,
       InformationRequestService informationRequestService,
-      ClientActivityService clientActivityService) {
+      ClientActivityService clientActivityService,
+      ClientFicaAttestationService clientFicaAttestationService) {
     this.customerService = customerService;
     this.customerProjectService = customerProjectService;
     this.invoiceService = invoiceService;
@@ -89,6 +93,7 @@ public class CustomerController {
     this.portalContactService = portalContactService;
     this.informationRequestService = informationRequestService;
     this.clientActivityService = clientActivityService;
+    this.clientFicaAttestationService = clientFicaAttestationService;
   }
 
   @GetMapping
@@ -262,13 +267,26 @@ public class CustomerController {
   /**
    * FICA onboarding status projection for a customer (GAP-L-46). Derived from the customer's
    * onboarding checklist instances first, its {@code fica-onboarding-pack} information requests as
-   * fallback (ADR-348). Returns {@code {status: NOT_STARTED|IN_PROGRESS|DONE, lastVerifiedAt,
-   * requestId, checklistInstanceId}} — {@code checklistInstanceId} when the checklist decided,
-   * {@code requestId} when a request did. No KYC-adapter coupling.
+   * fallback (ADR-348), then its active FICA attestation (Phase 93 655B, ADR-388). Returns {@code
+   * {status: NOT_STARTED|IN_PROGRESS|DONE|ATTESTED|ATTESTED_REVIEW, lastVerifiedAt, requestId,
+   * checklistInstanceId, reviewReasons, attestationId}} — {@code checklistInstanceId} when the
+   * checklist decided, {@code requestId} when a request did, {@code attestationId} when the
+   * attestation did. No KYC-adapter coupling.
    */
   @GetMapping("/{clientId}/fica-status")
   public ResponseEntity<FicaStatusResponse> getFicaStatus(@PathVariable UUID clientId) {
     return ResponseEntity.ok(informationRequestService.getFicaStatus(clientId));
+  }
+
+  /**
+   * The client's active FICA attestation from a take-on (Phase 93 655B, §17.3.5) — 404 when the
+   * client has none.
+   */
+  @GetMapping("/{clientId}/fica-attestation")
+  @RequiresCapability("CUSTOMER_MANAGEMENT")
+  public ResponseEntity<ClientFicaAttestationResponse> getFicaAttestation(
+      @PathVariable UUID clientId) {
+    return ResponseEntity.ok(clientFicaAttestationService.getActiveForClient(clientId));
   }
 
   @GetMapping("/{clientId}/unbilled-time")

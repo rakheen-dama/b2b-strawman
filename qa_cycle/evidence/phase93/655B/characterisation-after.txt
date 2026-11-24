@@ -1,0 +1,14 @@
+# 655.11 characterisation AFTER — 655B change applied on d40d2013e (uncommitted working tree) — 2026-11-24T00:37:55Z
+$ ./mvnw test -Dtest="FicaStatusProjectorTest,FicaOutstandingIntegrationTest,ClientListRowIntegrationTest,CatalogueBatch2ComplianceAuditTest"
+exit=0
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 14.01 s -- in io.b2mash.b2b.b2bstrawman.mcp.CatalogueBatch2ComplianceAuditTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.573 s -- in io.b2mash.b2b.b2bstrawman.dashboard.FicaOutstandingIntegrationTest
+[INFO] Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.016 s -- in io.b2mash.b2b.b2bstrawman.informationrequest.FicaStatusProjectorTest$Rule
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.336 s -- in io.b2mash.b2b.b2bstrawman.informationrequest.FicaStatusProjectorTest$BatchEqualsSingle
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.016 s -- in io.b2mash.b2b.b2bstrawman.informationrequest.FicaStatusProjectorTest$ChecklistFirst
+[INFO] Tests run: 15, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.015 s -- in io.b2mash.b2b.b2bstrawman.informationrequest.FicaStatusProjectorTest$Attestation
+[INFO] Tests run: 0, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.392 s -- in io.b2mash.b2b.b2bstrawman.informationrequest.FicaStatusProjectorTest
+[INFO] Tests run: 16, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.006 s -- in io.b2mash.b2b.b2bstrawman.customer.ClientListRowIntegrationTest
+[INFO] Tests run: 66, Failures: 0, Errors: 0, Skipped: 0
+[ClientListRowIntegrationTest] rows=56 prepared statements=11
+[ClientListRowIntegrationTest] rows=1 prepared statements=11

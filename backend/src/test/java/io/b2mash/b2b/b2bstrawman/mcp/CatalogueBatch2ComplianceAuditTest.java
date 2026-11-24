@@ -223,6 +223,11 @@ class CatalogueBatch2ComplianceAuditTest {
     assertThat(payload.has("ficaStatus")).isTrue();
     assertThat(payload.at("/items").isArray()).isTrue();
     assertThat(payload.at("/truncated").asBoolean()).isFalse();
+    // 655B (C-11, ADR-388): the gap flag through FicaStatusProjector.isOutstanding + the reasons.
+    assertThat(payload.has("ficaOutstanding")).isTrue();
+    assertThat(payload.at("/ficaOutstanding").asBoolean()).isTrue(); // no FICA evidence
+    assertThat(payload.at("/ficaReviewReasons").isArray()).isTrue();
+    assertThat(payload.at("/ficaReviewReasons").size()).isZero();
 
     // Member without CUSTOMER_MANAGEMENT is forbidden.
     String roleId = createCustomRole("mcp-only-no-cm", Set.of("MCP_ACCESS", "INVOICING"));

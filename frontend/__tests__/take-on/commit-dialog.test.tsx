@@ -7,8 +7,12 @@ vi.mock("server-only", () => ({}));
 const actions = vi.hoisted(() => ({ commitBatch: vi.fn() }));
 vi.mock("@/app/(app)/org/[slug]/settings/matters/take-on-actions", () => actions);
 
-import { CommitTakeOnDialog, commitBody } from "@/components/take-on/commit-dialog";
-import { ATTESTATION, clientsBatch } from "./fixtures";
+import {
+  CommitTakeOnDialog,
+  commitBody,
+  commitTrustSentence,
+} from "@/components/take-on/commit-dialog";
+import { ATTESTATION, TRUST_SIGN_OFF, clientsBatch, trustBatch } from "./fixtures";
 
 const ATTESTED = clientsBatch({
   signOffs: [ATTESTATION],
@@ -68,5 +72,30 @@ describe("CommitTakeOnDialog", () => {
     expect(commitBody({ ...ATTESTED, counts: { ...counts, valid: 4, duplicate: 1 } })).toBe(
       "3 records will be created, and 1 duplicate skipped. This cannot be undone."
     );
+  });
+
+  it("adds the X3 trust sentence for a trust take-on, naming the account and the cutover date (657C)", async () => {
+    const user = userEvent.setup();
+    const signed = trustBatch({
+      signOffs: [TRUST_SIGN_OFF],
+      validationHash: "hash-trust-v1",
+      allowedActions: ["REVALIDATE", "COMMIT", "REVOKE_SIGN_OFF", "CANCEL"],
+    });
+    render(<CommitTakeOnDialog batch={signed} onCommitted={vi.fn()} />);
+
+    await user.click(screen.getByTestId("take-on-commit"));
+    expect(await screen.findByText("Commit trust opening position take-on?")).toBeInTheDocument();
+    expect(screen.getByTestId("take-on-commit-trust").textContent).toBe(
+      "The opening position of Trust Account G at 31 October 2026 will be posted and the account will not accept entries dated on or before that date."
+    );
+    expect(commitTrustSentence(ATTESTED)).toBeNull();
+  });
+
+  it("shows no trust sentence on a clients commit", async () => {
+    const user = userEvent.setup();
+    render(<CommitTakeOnDialog batch={ATTESTED} onCommitted={vi.fn()} />);
+    await user.click(screen.getByTestId("take-on-commit"));
+    await screen.findByRole("alertdialog");
+    expect(screen.queryByTestId("take-on-commit-trust")).not.toBeInTheDocument();
   });
 });

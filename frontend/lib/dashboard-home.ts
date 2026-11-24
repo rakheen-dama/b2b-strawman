@@ -18,6 +18,7 @@ export interface HomeCaps {
 }
 
 export type HomeWidget =
+  | "takeOnSignOff"
   | "kpis"
   | "diary"
   | "tasks"
@@ -31,6 +32,11 @@ export type HomeWidget =
 
 export interface HomePlan {
   audience: HomeAudience;
+  /**
+   * "Trust take-on awaiting your sign-off" (Phase 93 657C, R-10): owner-only SIGN_OFF_TRUST_TAKE_ON
+   * (or a custom role granted it) with VIEW_TRUST and the trust module; absent when the queue is empty.
+   */
+  takeOnSignOff: boolean;
   /** Firm-wide KPI row (Phase 90 640A, §15.3.4) — firm and owner audiences only (B2). */
   kpis: boolean;
   /** `me` = the caller's own diary (feeEarnerId); `firm` = everyone's (admin/owner only). */
@@ -62,6 +68,7 @@ type HomeRows = ReadonlyArray<ReadonlyArray<HomeWidget>>;
  * compile there until it has a skeleton.
  */
 export const OWNER_HOME_ROWS = [
+  ["takeOnSignOff"],
   ["kpis"],
   ["diary"],
   ["unbilledWip", "debtors", "trustPosition"],
@@ -71,11 +78,14 @@ export const OWNER_HOME_ROWS = [
 
 /**
  * Row layout per audience, before per-widget gates (§12.6.3; Phase 90 §15.3.4 regrid: today →
- * money → risk → activity for firm and owner; fee earner unchanged, no KPI row — B2).
+ * money → risk → activity for firm and owner; fee earner unchanged, no KPI row — B2). The trust
+ * take-on sign-off leads every audience (657C, R-10): a custom "Partner" role granted it resolves
+ * to the fee-earner audience, so it must sit in that layout too.
  */
 const AUDIENCE_ROWS: Record<HomeAudience, HomeRows> = {
-  feeEarner: [["diary"], ["tasks", "unbilledWip"], ["matterHealth", "activity"]],
+  feeEarner: [["takeOnSignOff"], ["diary"], ["tasks", "unbilledWip"], ["matterHealth", "activity"]],
   firm: [
+    ["takeOnSignOff"],
     ["kpis"],
     ["diary"],
     ["unbilledWip", "debtors", "trustPosition"],
@@ -114,13 +124,21 @@ export function buildHomePlan(caps: HomeCaps, enabledModules: readonly string[])
   const firmView = audience !== "feeEarner";
   const has = (capability: string) => hasCapability(caps, capability);
 
+  const trustModule = enabledModules.includes(TRUST_MODULE);
+
   const gates: Record<HomeWidget, boolean> = {
+    // Not `has(...)`: admins do not inherit this owner-only capability (FD-4) — only the owner or
+    // a role granted it explicitly may sign, and the sign-off shows trust balances (VIEW_TRUST).
+    takeOnSignOff:
+      (caps.isOwner || caps.capabilities.includes("SIGN_OFF_TRUST_TAKE_ON")) &&
+      has("VIEW_TRUST") &&
+      trustModule,
     kpis: firmView,
     diary: true,
     tasks: audience === "feeEarner",
     unbilledWip: true,
     debtors: firmView && has("INVOICING"),
-    trustPosition: firmView && has("VIEW_TRUST") && enabledModules.includes(TRUST_MODULE),
+    trustPosition: firmView && has("VIEW_TRUST") && trustModule,
     ficaOutstanding: firmView && has("CUSTOMER_MANAGEMENT"),
     matterHealth: audience !== "firm",
     activity: true,
@@ -129,6 +147,7 @@ export function buildHomePlan(caps: HomeCaps, enabledModules: readonly string[])
 
   return {
     audience,
+    takeOnSignOff: gates.takeOnSignOff,
     kpis: gates.kpis,
     diaryScope: caps.isAdmin || caps.isOwner ? "firm" : "me",
     tasks: gates.tasks,

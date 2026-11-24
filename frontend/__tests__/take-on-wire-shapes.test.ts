@@ -21,12 +21,30 @@ import type {
   TakeOnPositionRequest,
   TakeOnPreview,
   TakeOnPreviewRow,
+  TakeOnReport,
+  TakeOnReportAccount,
+  TakeOnReportCreditorLine,
+  TakeOnReportCreditorList,
+  TakeOnReportFirm,
+  TakeOnReportInvestment,
+  TakeOnReportMatter,
+  TakeOnReportOutstanding,
+  TakeOnReportPosition,
+  TakeOnReportSignOff,
+  TakeOnReportSnapshot,
+  TakeOnReportSource,
+  TakeOnReportSummary,
+  TakeOnReportUnidentified,
   TakeOnRow,
   TakeOnRowMessage,
   TakeOnSectionCatalogue,
   TakeOnSheetName,
   TakeOnSheetRequest,
   TakeOnSignOff,
+  TakeOnSignOffDeclaration,
+  TakeOnSignOffQueueItem,
+  TakeOnSignOffRequest,
+  TakeOnSignOffReview,
   TakeOnSource,
   TakeOnTrustDeficit,
   TakeOnTrustEq1,
@@ -85,17 +103,29 @@ const BATCH: Required<TakeOnBatch> = {
   summary: null,
   midMonthAcknowledged: false,
   position: null,
+  trustAccountName: null,
+  reportId: null,
 };
 
 // Each literal is typed Required<T>: a missing or extra key fails `pnpm typecheck`; the runtime
 // assertion fails when the Java record changes and the literal was not updated. Literal key ORDER
 // must equal the Java record's declaration order (toEqual on arrays is order-sensitive).
 describe("take-on wire shapes match the backend contract (ADR-365, P-17)", () => {
-  it("pins exactly the 38 records of 653A, 655A, 655B, 656A and 657B", () => {
+  it("pins exactly the 56 records of 653A, 655A, 655B, 656A, 657B and 657C", () => {
     expect(Object.keys(contract).sort()).toEqual([
+      "AccountHeader",
       "ClientFicaAttestationResponse",
       "ClientListRow",
+      "CreditorLineEntry",
+      "CreditorListSection",
       "FicaStatusResponse",
+      "FirmHeader",
+      "InvestmentLine",
+      "MatterEntry",
+      "OutstandingLine",
+      "ReconciledPosition",
+      "SignOffSection",
+      "SourceFile",
       "TakeOnAttestationRequest",
       "TakeOnAttestationStatementResponse",
       "TakeOnBatchResponse",
@@ -114,12 +144,19 @@ describe("take-on wire shapes match the backend contract (ADR-365, P-17)", () =>
       "TakeOnPositionResponse",
       "TakeOnPreviewResponse",
       "TakeOnPreviewRow",
+      "TakeOnReportResponse",
+      "TakeOnReportSnapshot",
+      "TakeOnReportSummaryResponse",
       "TakeOnRowMessage",
       "TakeOnRowResponse",
       "TakeOnSectionResponse",
       "TakeOnSheetNameResponse",
       "TakeOnSheetRequest",
+      "TakeOnSignOffDeclarationResponse",
+      "TakeOnSignOffQueueItem",
+      "TakeOnSignOffRequest",
       "TakeOnSignOffResponse",
+      "TakeOnSignOffReviewResponse",
       "TakeOnSourceResponse",
       "TakeOnUploadResponse",
       "TrustDeficit",
@@ -130,6 +167,7 @@ describe("take-on wire shapes match the backend contract (ADR-365, P-17)", () =>
       "TrustItemsTie",
       "TrustPositionMessage",
       "TrustPositionSummary",
+      "UnidentifiedLine",
       "UpdateComplianceSettingsRequest",
     ]);
   });
@@ -550,5 +588,245 @@ describe("take-on wire shapes match the backend contract (ADR-365, P-17)", () =>
       ficaReviewMonthsHigh: 0,
     };
     expect(Object.keys(literal)).toEqual(componentNames(contract.UpdateComplianceSettingsRequest));
+  });
+
+  // 657C (R-7): the trust sign-off, the take-on report and its snapshot records.
+  it("TakeOnSignOffQueueItem ↔ TakeOnSignOffQueueItem", () => {
+    const literal: Required<TakeOnSignOffQueueItem> = {
+      batchId: "",
+      trustAccountId: "",
+      trustAccountName: null,
+      cutoverDate: "",
+      preparedByName: null,
+      validatedAt: null,
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(contract.TakeOnSignOffQueueItem));
+  });
+
+  it("TakeOnSignOffDeclaration ↔ TakeOnSignOffDeclarationResponse", () => {
+    const literal: Required<TakeOnSignOffDeclaration> = { version: "", text: "" };
+    expect(Object.keys(literal)).toEqual(componentNames(contract.TakeOnSignOffDeclarationResponse));
+  });
+
+  it("TakeOnSignOffRequest ↔ TakeOnSignOffRequest", () => {
+    const literal: Required<TakeOnSignOffRequest> = {
+      validationHash: "",
+      statementVersion: "",
+      declarationAccepted: true,
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(contract.TakeOnSignOffRequest));
+  });
+
+  it("TakeOnSignOffReview ↔ TakeOnSignOffReviewResponse", () => {
+    const literal: Required<TakeOnSignOffReview> = {
+      batchId: "",
+      status: "VALIDATED",
+      trustAccountId: null,
+      trustAccountName: null,
+      cutoverDate: null,
+      midMonthAcknowledged: false,
+      position: null,
+      counts: COUNTS,
+      summary: null,
+      validationHash: null,
+      validatedAt: null,
+      preparedByName: null,
+      declaration: null,
+      liveSignOff: null,
+      signedByCaller: false,
+      allowedActions: [],
+      rows: { content: [], page: { totalElements: 0, totalPages: 0, size: 0, number: 0 } },
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(contract.TakeOnSignOffReviewResponse));
+  });
+
+  it("TakeOnReportSummary ↔ TakeOnReportSummaryResponse", () => {
+    const literal: Required<TakeOnReportSummary> = {
+      id: "",
+      batchId: "",
+      trustAccountId: "",
+      cutoverDate: "",
+      generatedAt: "",
+      generatedByName: null,
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(contract.TakeOnReportSummaryResponse));
+  });
+
+  const REPORT_POSITION: Required<TakeOnReportPosition> = {
+    bankBalance: null,
+    outstandingDeposits: null,
+    outstandingPayments: null,
+    adjustedBank: null,
+    cashbook: null,
+    fundLedger: null,
+    investedTotal: null,
+  };
+  const CREDITOR_LIST: Required<TakeOnReportCreditorList> = {
+    trustAccountId: "",
+    accountName: null,
+    asAt: "",
+    cashbook: null,
+    creditorTotal: null,
+    lines: [],
+  };
+
+  it("TakeOnReport ↔ TakeOnReportResponse", () => {
+    const literal: Required<TakeOnReport> = {
+      id: "",
+      batchId: "",
+      trustAccountId: "",
+      cutoverDate: "",
+      snapshotSha256: "",
+      generatedAt: "",
+      snapshot: {} as TakeOnReportSnapshot,
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(contract.TakeOnReportResponse));
+  });
+
+  it("TakeOnReportSnapshot ↔ TakeOnReportSnapshot", () => {
+    const literal: Required<TakeOnReportSnapshot> = {
+      firm: { name: null },
+      account: {} as TakeOnReportAccount,
+      cutoverDate: "",
+      midMonth: false,
+      previousSystem: REPORT_POSITION,
+      kazi: REPORT_POSITION,
+      differences: REPORT_POSITION,
+      creditorList: CREDITOR_LIST,
+      investmentAccounts: [],
+      investments: [],
+      unidentified: [],
+      outstandingItems: [],
+      totals: null,
+      flags: [],
+      signOff: null,
+      sources: [],
+      batchId: "",
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(contract.TakeOnReportSnapshot));
+  });
+
+  it("TakeOnReportFirm ↔ FirmHeader", () => {
+    const literal: Required<TakeOnReportFirm> = { name: null };
+    expect(Object.keys(literal)).toEqual(componentNames(contract.FirmHeader));
+  });
+
+  it("TakeOnReportAccount ↔ AccountHeader", () => {
+    const literal: Required<TakeOnReportAccount> = {
+      id: "",
+      name: null,
+      accountNumber: null,
+      bankName: null,
+      accountType: null,
+      requireDualApproval: false,
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(contract.AccountHeader));
+  });
+
+  it("TakeOnReportPosition ↔ ReconciledPosition", () => {
+    expect(Object.keys(REPORT_POSITION)).toEqual(componentNames(contract.ReconciledPosition));
+  });
+
+  it("TakeOnReportCreditorList ↔ CreditorListSection", () => {
+    expect(Object.keys(CREDITOR_LIST)).toEqual(componentNames(contract.CreditorListSection));
+  });
+
+  it("TakeOnReportCreditorLine ↔ CreditorLineEntry", () => {
+    const literal: Required<TakeOnReportCreditorLine> = {
+      kind: "CLIENT",
+      clientId: null,
+      name: null,
+      matters: [],
+      balance: null,
+      unidentifiedDepositId: null,
+      receivedDate: null,
+      bankDescription: null,
+      totalDeposits: null,
+      totalPayments: null,
+      totalFeeTransfers: null,
+      lastTransactionDate: null,
+      broughtForward: null,
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(contract.CreditorLineEntry));
+  });
+
+  it("TakeOnReportMatter ↔ MatterEntry", () => {
+    const literal: Required<TakeOnReportMatter> = { matterId: null, name: null, balance: null };
+    expect(Object.keys(literal)).toEqual(componentNames(contract.MatterEntry));
+  });
+
+  it("TakeOnReportInvestment ↔ InvestmentLine", () => {
+    const literal: Required<TakeOnReportInvestment> = {
+      basis: "",
+      clientId: null,
+      clientName: null,
+      matterId: null,
+      matterName: null,
+      investmentAccountId: null,
+      investmentAccountName: null,
+      institution: null,
+      accountNumber: null,
+      principal: null,
+      interestRatePercent: null,
+      depositDate: null,
+      accruedInterest: null,
+      fundAmount: null,
+      balancePerConfirmation: null,
+      instructionReference: null,
+      instructionDate: null,
+      endorsementConfirmed: false,
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(contract.InvestmentLine));
+  });
+
+  it("TakeOnReportUnidentified ↔ UnidentifiedLine", () => {
+    const literal: Required<TakeOnReportUnidentified> = {
+      receivedDate: null,
+      ageInDaysAtCutover: 0,
+      amount: null,
+      reference: null,
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(contract.UnidentifiedLine));
+  });
+
+  it("TakeOnReportOutstanding ↔ OutstandingLine", () => {
+    const literal: Required<TakeOnReportOutstanding> = {
+      kind: "",
+      originalDate: null,
+      reference: null,
+      clientId: null,
+      clientName: null,
+      matterId: null,
+      matterName: null,
+      amount: null,
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(contract.OutstandingLine));
+  });
+
+  it("TakeOnReportSignOff ↔ SignOffSection", () => {
+    const literal: Required<TakeOnReportSignOff> = {
+      signedBy: null,
+      role: null,
+      statementVersion: null,
+      statementText: null,
+      signedAt: null,
+      preparedBy: null,
+      samePerson: false,
+      notes: [],
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(contract.SignOffSection));
+  });
+
+  it("TakeOnReportSource ↔ SourceFile", () => {
+    const literal: Required<TakeOnReportSource> = {
+      fileName: null,
+      section: null,
+      sheetName: null,
+      sha256: null,
+      rowCount: 0,
+      uploadedBy: null,
+      uploadedAt: null,
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(contract.SourceFile));
   });
 });

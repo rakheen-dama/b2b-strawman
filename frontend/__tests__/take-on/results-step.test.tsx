@@ -32,6 +32,7 @@ const actions = vi.hoisted(() => ({
   fetchTakeOnCustomFields: vi.fn(),
   fetchTakeOnBankingAccounts: vi.fn(),
   downloadTakeOnTemplate: vi.fn(),
+  getTakeOnReport: vi.fn(),
 }));
 vi.mock("@/app/(app)/org/[slug]/settings/matters/take-on-actions", () => actions);
 
@@ -39,7 +40,14 @@ import { ResultsStep, COMMIT_POLL_MS } from "@/components/take-on/results-step";
 import { TakeOnWizard } from "@/components/take-on/take-on-wizard";
 import type { TakeOnBatch } from "@/lib/types";
 import { blobText, stubDownload } from "../helpers/csv-download";
-import { ATTESTATION, CLIENTS_CATALOGUE, clientsBatch } from "./fixtures";
+import {
+  ATTESTATION,
+  CLIENTS_CATALOGUE,
+  TAKE_ON_REPORT_17313,
+  TRUST_SIGN_OFF,
+  clientsBatch,
+  trustBatch,
+} from "./fixtures";
 
 const withSWR = (ui: ReactNode) => (
   <SWRConfig value={{ provider: () => new Map(), dedupingInterval: 0 }}>{ui}</SWRConfig>
@@ -192,5 +200,56 @@ describe("ResultsStep — completed", () => {
     render(withSWR(<ResultsStep batch={COMPLETED} onBatchChange={vi.fn()} />));
     await user.click(screen.getByTestId("take-on-portal-access"));
     expect((await screen.findByTestId("take-on-portal-error")).textContent).toBe(detail);
+  });
+});
+
+describe("ResultsStep — trust take-on report summary (657C)", () => {
+  const COMMITTED_TRUST = trustBatch({
+    status: "COMPLETED",
+    signOffs: [TRUST_SIGN_OFF],
+    allowedActions: ["DOWNLOAD_RESULT"],
+    completedAt: "2026-11-24T10:00:00Z",
+    counts: { ...trustBatch().counts, created: 8, skipped: 1 },
+    reportId: "report-1",
+  });
+
+  it("reads the report JSON and shows previous system vs Kazi, the creditors by group, the sign-off and flags", async () => {
+    actions.getTakeOnReport.mockResolvedValue({ success: true, data: TAKE_ON_REPORT_17313 });
+    render(withSWR(<ResultsStep batch={COMMITTED_TRUST} onBatchChange={vi.fn()} />));
+
+    const summary = await screen.findByTestId("take-on-report-summary");
+    expect(actions.getTakeOnReport).toHaveBeenCalledWith("report-1");
+    expect(summary).toHaveTextContent("Trust take-on report");
+    expect(summary).toHaveTextContent("Trust Account G at 31 October 2026");
+    const cashbook = screen.getByTestId("take-on-report-position-cashbook");
+    expect(cashbook.textContent).toMatch(/403\s?500,00.*403\s?500,00.*0,00/);
+    expect(screen.getByTestId("take-on-report-position-fundLedger")).toHaveTextContent(
+      "Legal Practitioners' Fidelity Fund interest and charges ledger"
+    );
+    expect(screen.getByTestId("take-on-report-creditor-client")).toHaveTextContent(/499\s?500,00/);
+    expect(screen.getByTestId("take-on-report-creditor-unidentified")).toHaveTextContent(
+      /2\s?750,00/
+    );
+    expect(screen.getByTestId("take-on-report-creditor-total")).toHaveTextContent(/403\s?500,00/);
+    const signOff = screen.getByTestId("take-on-report-signoff");
+    expect(signOff).toHaveTextContent("Signed off by Alice Owner (Owner)");
+    expect(signOff).toHaveTextContent("Prepared by Bob Admin.");
+    expect(signOff).toHaveTextContent("Authorised by the take-on sign-off");
+    expect(screen.getByTestId("take-on-report-flags")).toHaveTextContent(
+      "Unidentified deposit older than one year"
+    );
+    // Nil balances are skipped, not "Duplicate — skipped".
+    expect(screen.getByTestId("take-on-result-skipped")).toHaveTextContent("Skipped");
+  });
+
+  it("shows a report read failure verbatim, and no summary for a batch without a report", async () => {
+    actions.getTakeOnReport.mockResolvedValue({ success: false, error: "Access denied" });
+    render(withSWR(<ResultsStep batch={COMMITTED_TRUST} onBatchChange={vi.fn()} />));
+    expect((await screen.findByTestId("take-on-report-error")).textContent).toBe("Access denied");
+    cleanup();
+
+    render(withSWR(<ResultsStep batch={COMPLETED} onBatchChange={vi.fn()} />));
+    expect(screen.queryByTestId("take-on-report-summary")).not.toBeInTheDocument();
+    expect(actions.getTakeOnReport).toHaveBeenCalledTimes(1);
   });
 });

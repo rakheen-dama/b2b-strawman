@@ -17,6 +17,7 @@ import {
   type TakeOnPortalContactsResult,
 } from "@/lib/types";
 import { saveTakeOnFile, TakeOnError } from "./take-on-feedback";
+import { TakeOnReportSummary } from "./take-on-report-summary";
 
 /** How often the wizard re-reads a committing batch. */
 export const COMMIT_POLL_MS = 2000;
@@ -61,8 +62,8 @@ interface ResultsStepProps {
 
 /**
  * Commit progress and outcome (Phase 93 655A): "Committing… {n} of {m}" while the background
- * drain runs, then the counts, the result report and — for clients — portal access, which creates
- * portal contacts and sends no email. Every control follows the batch's allowedActions.
+ * drain runs, then the counts, the result report, the trust take-on report summary (657C) and —
+ * for clients — portal access, which creates portal contacts and sends no email. Every control follows the batch's allowedActions.
  */
 export function ResultsStep({ batch, onBatchChange }: ResultsStepProps) {
   const allowed = new Set(batch.allowedActions);
@@ -171,6 +172,10 @@ export function ResultsStep({ batch, onBatchChange }: ResultsStepProps) {
           data-testid="take-on-result-failed"
         />
       </div>
+
+      {batch.dataset === "TRUST_POSITION" && batch.reportId && (
+        <TakeOnReportSummary reportId={batch.reportId} />
+      )}
 
       {counts.failed > 0 && (
         <p

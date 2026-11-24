@@ -168,6 +168,35 @@ describe("fetchHomeWidgets — gate → call matrix", () => {
     expect(calledUrls()).not.toContain("/api/my-work/tasks");
   });
 
+  // 657C (R-10): the sign-off queue — owner (or a role granted the capability) only.
+  const QUEUE_URL = "/api/take-on/sign-off-queue";
+  const QUEUE = [{ batchId: "b1", trustAccountName: "Trust Account G", cutoverDate: "2026-10-31" }];
+
+  it("sign-off queue: the owner reads it; a non-empty queue is ok, an empty one absent", async () => {
+    routeGets({ [QUEUE_URL]: () => QUEUE });
+    const data = await fetchHomeWidgets(buildHomePlan(OWNER, ALL_MODULES), TODAY);
+    expect(calledUrls()).toContain(QUEUE_URL);
+    expect(data.takeOnSignOff).toEqual({ state: "ok", data: QUEUE });
+
+    routeGets({ [QUEUE_URL]: () => [] });
+    const empty = await fetchHomeWidgets(buildHomePlan(OWNER, ALL_MODULES), TODAY);
+    expect(empty.takeOnSignOff).toEqual({ state: "absent" });
+  });
+
+  it("sign-off queue: never read for an admin or a member; a 403 → absent", async () => {
+    await fetchHomeWidgets(buildHomePlan(ADMIN, ALL_MODULES), TODAY);
+    await fetchHomeWidgets(buildHomePlan(MEMBER, ALL_MODULES), TODAY);
+    expect(calledUrls()).not.toContain(QUEUE_URL);
+
+    routeGets({
+      [QUEUE_URL]: () => {
+        throw new MockApiError(403, "Forbidden");
+      },
+    });
+    const data = await fetchHomeWidgets(buildHomePlan(OWNER, ALL_MODULES), TODAY);
+    expect(data.takeOnSignOff).toEqual({ state: "absent" });
+  });
+
   it("module trust_accounting off → no trust-position call", async () => {
     const data = await fetchHomeWidgets(buildHomePlan(OWNER, ["disbursements"]), TODAY);
 

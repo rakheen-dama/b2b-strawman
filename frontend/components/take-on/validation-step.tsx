@@ -133,10 +133,19 @@ function formatValue(value: unknown): string {
   return String(value);
 }
 
+/** The one request on a batch in flight on the Validation step: the dry run or a position save. */
+export type TakeOnInFlight = "dryRun" | "position" | null;
+
 interface ValidationStepProps {
   batch: TakeOnBatch;
   dataset: TakeOnDatasetCatalogue;
   onBatchChange: (batch: TakeOnBatch) => void;
+  /**
+   * Owned by the wizard (F-657B-6), which disables its stepper while a request runs: each request
+   * disables the other, so a stale response never overwrites a newer batch.
+   */
+  inFlight: TakeOnInFlight;
+  onInFlightChange: (inFlight: TakeOnInFlight) => void;
 }
 
 /**
@@ -148,7 +157,13 @@ interface ValidationStepProps {
  * the Attestation step (655A); matters, which need no attestation, from under this step (656A,
  * D-169). Matters rows show the client the dry run matched and the responsible attorney.
  */
-export function ValidationStep({ batch, dataset, onBatchChange }: ValidationStepProps) {
+export function ValidationStep({
+  batch,
+  dataset,
+  onBatchChange,
+  inFlight,
+  onInFlightChange: setInFlight,
+}: ValidationStepProps) {
   const allowed = new Set(batch.allowedActions);
   const canValidate = allowed.has("VALIDATE") || allowed.has("REVALIDATE");
   const validated = batch.status === "VALIDATED";
@@ -161,11 +176,6 @@ export function ValidationStep({ batch, dataset, onBatchChange }: ValidationStep
   const [blocksOnly, setBlocksOnly] = useState(false);
   const [page, setPage] = useState(0);
   const [error, setError] = useState<string | null>(null);
-  /**
-   * The one request on this batch in flight: the manual dry run or the position save (which runs
-   * its own dry run). Each disables the other, so a stale response never overwrites a newer batch.
-   */
-  const [inFlight, setInFlight] = useState<"dryRun" | "position" | null>(null);
 
   const rowsKey = `take-on-rows-${batch.id}-${batch.status}-${batch.validatedAt ?? "none"}-${status}-${section}-${blocksOnly}-${page}`;
   const rows = useSWR(rowsKey, async () => {

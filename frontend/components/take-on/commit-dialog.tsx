@@ -13,7 +13,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { commitBatch } from "@/app/(app)/org/[slug]/settings/matters/take-on-actions";
-import { TAKE_ON_DATASET_LABEL, type TakeOnBatch } from "@/lib/types";
+import { TAKE_ON_DATASET_LABEL, takeOnLongDate, type TakeOnBatch } from "@/lib/types";
 import { TakeOnError } from "./take-on-feedback";
 
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
@@ -31,6 +31,17 @@ export function commitBody(batch: TakeOnBatch): string {
   return `${plural(created, "record", "records")} will be created${skipped}. This cannot be undone.`;
 }
 
+/**
+ * The X3 trust sentence of the commit dialog (657C): "The opening position of {account} at {cutover
+ * date} will be posted and the account will not accept entries dated on or before that date."
+ * Null for every other dataset.
+ */
+export function commitTrustSentence(batch: TakeOnBatch): string | null {
+  if (batch.dataset !== "TRUST_POSITION") return null;
+  const account = batch.trustAccountName ?? "the trust account";
+  return `The opening position of ${account} at ${takeOnLongDate(batch.cutoverDate)} will be posted and the account will not accept entries dated on or before that date.`;
+}
+
 interface CommitTakeOnDialogProps {
   batch: TakeOnBatch;
   /** The batch as the commit answered it (COMMITTING). */
@@ -46,6 +57,7 @@ export function CommitTakeOnDialog({ batch, onCommitted }: CommitTakeOnDialogPro
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const dataset = TAKE_ON_DATASET_LABEL[batch.dataset].toLowerCase();
+  const trustSentence = commitTrustSentence(batch);
 
   function changeOpen(next: boolean) {
     if (busy) return;
@@ -95,6 +107,14 @@ export function CommitTakeOnDialog({ batch, onCommitted }: CommitTakeOnDialogPro
           <AlertDialogDescription className="text-center" data-testid="take-on-commit-body">
             {commitBody(batch)}
           </AlertDialogDescription>
+          {trustSentence && (
+            <p
+              className="text-muted-foreground text-center text-sm"
+              data-testid="take-on-commit-trust"
+            >
+              {trustSentence}
+            </p>
+          )}
         </AlertDialogHeader>
         {error && <TakeOnError message={error} testId="take-on-commit-error" />}
         <AlertDialogFooter>

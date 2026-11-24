@@ -16,10 +16,14 @@ import type {
   TakeOnPortalContactsResult,
   TakeOnPositionRequest,
   TakeOnPreview,
+  TakeOnReport,
   TakeOnRow,
   TakeOnRowStatus,
   TakeOnSection,
   TakeOnSheetRequest,
+  TakeOnSignOffQueueItem,
+  TakeOnSignOffRequest,
+  TakeOnSignOffReview,
   TakeOnUploadResult,
   TrustAccount,
 } from "@/lib/types";
@@ -220,6 +224,51 @@ export async function createPortalContacts(
   batchId: string
 ): Promise<TakeOnActionResult<TakeOnPortalContactsResult>> {
   return run(() => api.post<TakeOnPortalContactsResult>(`${batchPath(batchId)}/portal-contacts`));
+}
+
+// ── Trust sign-off and the take-on report (657C, FD-36) ─────────────────
+// The signer's four endpoints (SIGN_OFF_TRUST_TAKE_ON + VIEW_TRUST): none of them needs
+// MANAGE_TAKE_ON, so a partner who may only sign works from Home without the Take-on tab.
+
+/** GET /api/take-on/sign-off-queue — validated trust take-ons awaiting a sign-off. */
+export async function getSignOffQueue(): Promise<TakeOnActionResult<TakeOnSignOffQueueItem[]>> {
+  return run(() => api.get<TakeOnSignOffQueueItem[]>("/api/take-on/sign-off-queue"));
+}
+
+/** GET …/sign-off-review?page= — what the signer signs, with a page of the batch's rows. */
+export async function getSignOffReview(
+  batchId: string,
+  page = 0,
+  size = 50
+): Promise<TakeOnActionResult<TakeOnSignOffReview>> {
+  const params = new URLSearchParams({
+    page: String(Math.max(0, Math.trunc(page))),
+    size: String(Math.trunc(size)),
+  });
+  return run(() => api.get<TakeOnSignOffReview>(`${batchPath(batchId)}/sign-off-review?${params}`));
+}
+
+/**
+ * POST …/sign-off — the TAKEON-SIGNOFF-v1 declaration, accepted on the hash the signer reviewed.
+ * Answers the review (page 0); a refusal's `detail` is shown verbatim.
+ */
+export async function signOff(
+  batchId: string,
+  request: TakeOnSignOffRequest
+): Promise<TakeOnActionResult<TakeOnSignOffReview>> {
+  return run(() => api.post<TakeOnSignOffReview>(`${batchPath(batchId)}/sign-off`, request));
+}
+
+/** DELETE …/trust-sign-off — the signer withdraws their own live sign-off before the commit. */
+export async function withdrawMySignOff(
+  batchId: string
+): Promise<TakeOnActionResult<TakeOnSignOffReview>> {
+  return run(() => api.delete<TakeOnSignOffReview>(`${batchPath(batchId)}/trust-sign-off`));
+}
+
+/** GET /api/take-on/reports/{reportId} — the take-on report snapshot as JSON (VIEW_TRUST). */
+export async function getTakeOnReport(reportId: string): Promise<TakeOnActionResult<TakeOnReport>> {
+  return run(() => api.get<TakeOnReport>(`/api/take-on/reports/${encodeURIComponent(reportId)}`));
 }
 
 const goLivePath = (itemKey: TakeOnGoLiveItemKey) =>

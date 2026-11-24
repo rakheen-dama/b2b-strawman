@@ -17,7 +17,7 @@ import type {
   TrustPositionResponse,
   FicaOutstandingResponse,
 } from "@/lib/dashboard-types";
-import type { MyWorkTasksResponse, OrgMember } from "@/lib/types";
+import type { MyWorkTasksResponse, OrgMember, TakeOnSignOffQueueItem } from "@/lib/types";
 
 // Legal-native Home fan-out (Phase 87 614B, arch §12.5.3). Server-only, not a server action: the
 // Home page is the only caller, and the plan it passes must come from the caller's own
@@ -28,6 +28,8 @@ import type { MyWorkTasksResponse, OrgMember } from "@/lib/types";
  * relies on that to drop every `absent` WidgetResult without a per-widget list.
  */
 export interface HomeWidgetData {
+  /** Trust take-ons awaiting the caller's sign-off (657C) — never `ok` with an empty list. */
+  takeOnSignOff: WidgetResult<TakeOnSignOffQueueItem[]>;
   /** Firm-wide KPIs for the last 30 days vs the 30 before (640A) — firm and owner only. */
   kpis: WidgetResult<KpiResponse>;
   /** Today's diary — always shown; `null` = could not load, `"unidentified"` = no member match. */
@@ -83,6 +85,11 @@ async function loadHomeDiary(plan: HomePlan, today: string): Promise<TodaysDiary
   return loadTodaysDiary(today, await resolveCurrentMemberId());
 }
 
+/** An empty sign-off queue drops the widget ("hidden when empty", R-10): absent, not an empty card. */
+function presentWhenNonEmpty<T>(result: WidgetResult<T[]>): WidgetResult<T[]> {
+  return result.state === "ok" && result.data.length === 0 ? { state: "absent" } : result;
+}
+
 /**
  * Home's parallel reads — each one only when its gate in `plan` passes (§12.5.3). Diary is the
  * caller's own day for members (feeEarnerId = me) and the firm's day for admins and owners.
@@ -90,6 +97,7 @@ async function loadHomeDiary(plan: HomePlan, today: string): Promise<TodaysDiary
 export async function fetchHomeWidgets(plan: HomePlan, today: string): Promise<HomeWidgetData> {
   const { from, to } = kpiWindow(today);
   const [
+    takeOnSignOff,
     kpis,
     diary,
     tasks,
@@ -100,6 +108,9 @@ export async function fetchHomeWidgets(plan: HomePlan, today: string): Promise<H
     activity,
     health,
   ] = await Promise.all([
+    settle(plan.takeOnSignOff, "trust take-on sign-off", () =>
+      api.get<TakeOnSignOffQueueItem[]>("/api/take-on/sign-off-queue")
+    ).then(presentWhenNonEmpty),
     settle(plan.kpis, "KPIs", () =>
       api.get<KpiResponse>(`/api/dashboard/kpis?from=${from}&to=${to}`)
     ),
@@ -125,6 +136,7 @@ export async function fetchHomeWidgets(plan: HomePlan, today: string): Promise<H
 
   // `satisfies` keeps every key a widget name — `absentWidgets` depends on it.
   return {
+    takeOnSignOff,
     kpis,
     diary,
     tasks,

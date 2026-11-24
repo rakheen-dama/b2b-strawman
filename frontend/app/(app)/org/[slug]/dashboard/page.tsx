@@ -33,6 +33,7 @@ import { FicaOutstandingWidget } from "@/components/dashboard/fica-outstanding-w
 import { MatterHealthWidget } from "@/components/dashboard/matter-health-widget";
 import { RecentActivityWidget } from "@/components/dashboard/recent-activity-widget";
 import { SensitiveEventsWidget } from "@/components/dashboard/sensitive-events-widget";
+import { TakeOnSignOffWidget } from "@/components/dashboard/take-on-sign-off-widget";
 import { todayInSA } from "@b2mash/shared/date";
 
 const SENSITIVE_LOOKBACK_MS = 7 * 24 * 60 * 60 * 1000;
@@ -126,6 +127,8 @@ export default async function OrgDashboardPage({ params }: { params: Promise<{ s
 
   function renderWidget(widget: HomeWidget): ReactNode {
     switch (widget) {
+      case "takeOnSignOff":
+        return <TakeOnSignOffWidget data={dataOf(data.takeOnSignOff)} />;
       case "kpis":
         return (
           <KpiRow result={data.kpis} to={today} seesFinancials={caps.isAdmin || caps.isOwner} />

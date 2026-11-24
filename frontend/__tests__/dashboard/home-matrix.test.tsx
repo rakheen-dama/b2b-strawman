@@ -46,6 +46,13 @@ vi.mock("@/lib/api/audit-events", () => ({
   listAuditEvents: mockAudit,
 }));
 vi.mock("@/lib/dashboard-home-fetch", () => ({ fetchHomeWidgets: mockFetchHome }));
+// The sign-off widget's sheet calls the signer's server actions (657C) — none run in this test.
+vi.mock("@/app/(app)/org/[slug]/settings/matters/take-on-actions", () => ({
+  getSignOffQueue: vi.fn(),
+  getSignOffReview: vi.fn(),
+  signOff: vi.fn(),
+  withdrawMySignOff: vi.fn(),
+}));
 vi.mock("@/components/auth/return-to-handler", () => ({ ReturnToHandler: () => null }));
 vi.mock("@/app/(app)/org/[slug]/dashboard/provisioning-pending-refresh", () => ({
   ProvisioningPendingRefresh: () => null,
@@ -92,6 +99,7 @@ vi.mock("next/link", () => ({
 }));
 
 import OrgDashboardPage from "@/app/(app)/org/[slug]/dashboard/page";
+import { QUEUE_ITEM } from "../take-on/fixtures";
 
 const ALL_MODULES = ["trust_accounting", "disbursements", "court_calendar"];
 
@@ -188,6 +196,8 @@ const ABSENT = { state: "absent" as const };
 /** What the fan-out returns for a plan — only the planned reads come back loaded. */
 function dataFor(plan: HomePlan): HomeWidgetData {
   return {
+    // An empty sign-off queue comes back absent (657C, R-10) — the usual case.
+    takeOnSignOff: ABSENT,
     kpis: plan.kpis ? ok(KPIS) : ABSENT,
     diary: [],
     tasks: plan.tasks ? ok({ assigned: [], unassigned: [] }) : ABSENT,
@@ -333,6 +343,41 @@ describe("Home widget matrix (614B)", () => {
     // `last:` must land on the third cell: it is the row grid's last direct child.
     expect(sensitiveCell.parentElement?.lastElementChild).toBe(sensitiveCell);
     expect(screen.getByTestId("matter-health-panel")).toBeInTheDocument();
+  });
+
+  it("owner with a take-on awaiting sign-off: the sign-off widget leads Home (657C)", async () => {
+    mockCaps.mockResolvedValue(OWNER_CAPS);
+    mockFetchHome.mockImplementation(async (plan: HomePlan) => ({
+      ...dataFor(plan),
+      takeOnSignOff: plan.takeOnSignOff ? ok([QUEUE_ITEM]) : ABSENT,
+    }));
+    await renderHome();
+
+    expect(plannedWith().takeOnSignOff).toBe(true);
+    expect(cellRows()[0]).toEqual(["takeOnSignOff"]);
+    expect(screen.getByTestId("home-cell-takeOnSignOff")).toHaveClass("lg:col-span-12");
+    const widget = screen.getByTestId("take-on-sign-off-widget");
+    expect(within(widget).getByText("Trust take-on awaiting your sign-off")).toBeInTheDocument();
+    expect(within(widget).getByTestId("take-on-sign-off-item-batch-657b")).toHaveTextContent(
+      "Trust Account G at 31 October 2026"
+    );
+  });
+
+  it("owner with an empty queue (absent): no sign-off widget, no empty row", async () => {
+    mockCaps.mockResolvedValue(OWNER_CAPS);
+    await renderHome();
+
+    expect(plannedWith().takeOnSignOff).toBe(true);
+    expect(screen.queryByTestId("take-on-sign-off-widget")).not.toBeInTheDocument();
+    expect(cellRows()[0]).toEqual(["kpis"]);
+  });
+
+  it("admin: the sign-off queue is never read (owner-only capability, 657C)", async () => {
+    mockCaps.mockResolvedValue(ADMIN_CAPS);
+    await renderHome();
+
+    expect(plannedWith().takeOnSignOff).toBe(false);
+    expect(screen.queryByTestId("home-cell-takeOnSignOff")).not.toBeInTheDocument();
   });
 
   it("no trust account (404 → absent): the trust card drops out and WIP + debtors share the row", async () => {

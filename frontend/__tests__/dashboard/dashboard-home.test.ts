@@ -88,12 +88,13 @@ describe("buildHomePlan", () => {
     expect(plan.unbilledWipLink).toBe(true);
   });
 
-  it("owner: KPIs → diary → WIP + debtors + trust → FICA + health + sensitive → activity", () => {
+  it("owner: sign-off → KPIs → diary → WIP + debtors + trust → FICA + health + sensitive → activity", () => {
     const plan = buildHomePlan(OWNER, ALL_MODULES);
     expect(plan.audience).toBe("owner");
     expect(plan.kpis).toBe(true);
     expect(plan.diaryScope).toBe("firm");
     expect(plan.rows).toEqual([
+      ["takeOnSignOff"],
       ["kpis"],
       ["diary"],
       ["unbilledWip", "debtors", "trustPosition"],
@@ -139,18 +140,81 @@ describe("buildHomePlan", () => {
   });
 });
 
+// Phase 93 657C (R-10, FD-4): the trust take-on sign-off widget — owner-only SIGN_OFF_TRUST_TAKE_ON
+// (or a role granted it) with VIEW_TRUST and the trust module. Never `hasCapability`: an admin does
+// not inherit the capability.
+describe("buildHomePlan — takeOnSignOff gate (657C)", () => {
+  const PARTNER: HomeCaps = {
+    capabilities: ["SIGN_OFF_TRUST_TAKE_ON", "VIEW_TRUST"],
+    isAdmin: false,
+    isOwner: false,
+  };
+
+  it("owner: shown, in the first row", () => {
+    const plan = buildHomePlan(OWNER, ALL_MODULES);
+    expect(plan.takeOnSignOff).toBe(true);
+    expect(plan.rows[0]).toEqual(["takeOnSignOff"]);
+  });
+
+  it("admin: never — admins do not inherit the owner-only capability", () => {
+    const plan = buildHomePlan(ADMIN, ALL_MODULES);
+    expect(plan.takeOnSignOff).toBe(false);
+    expect(plan.rows.flat()).not.toContain("takeOnSignOff");
+  });
+
+  it("member with VIEW_TRUST only: never", () => {
+    const plan = buildHomePlan(MEMBER, ALL_MODULES);
+    expect(plan.takeOnSignOff).toBe(false);
+    expect(plan.rows.flat()).not.toContain("takeOnSignOff");
+  });
+
+  it("custom role with both capabilities: shown, first row of the fee-earner audience", () => {
+    const plan = buildHomePlan(PARTNER, ALL_MODULES);
+    expect(plan.audience).toBe("feeEarner");
+    expect(plan.takeOnSignOff).toBe(true);
+    expect(plan.rows).toEqual([
+      ["takeOnSignOff"],
+      ["diary"],
+      ["tasks", "unbilledWip"],
+      ["matterHealth", "activity"],
+    ]);
+  });
+
+  it("a firm-audience role with both capabilities: first row, above the KPIs", () => {
+    const plan = buildHomePlan(
+      { ...PARTNER, capabilities: [...PARTNER.capabilities, "FINANCIAL_VISIBILITY"] },
+      ALL_MODULES
+    );
+    expect(plan.audience).toBe("firm");
+    expect(plan.rows.slice(0, 2)).toEqual([["takeOnSignOff"], ["kpis"]]);
+  });
+
+  it("either capability alone: never", () => {
+    for (const capabilities of [["SIGN_OFF_TRUST_TAKE_ON"], ["VIEW_TRUST"]]) {
+      expect(buildHomePlan({ ...PARTNER, capabilities }, ALL_MODULES).takeOnSignOff).toBe(false);
+    }
+  });
+
+  it("trust module off: never, not even for the owner", () => {
+    expect(buildHomePlan(OWNER, ["disbursements"]).takeOnSignOff).toBe(false);
+    expect(buildHomePlan(PARTNER, ["disbursements"]).takeOnSignOff).toBe(false);
+  });
+});
+
 describe("withoutAbsent", () => {
   it("drops absent widgets and the rows they leave empty", () => {
     const rows = buildHomePlan(OWNER, ALL_MODULES).rows;
     expect(withoutAbsent(rows, new Set(["debtors", "trustPosition"]))).toEqual([
+      ["takeOnSignOff"],
       ["kpis"],
       ["diary"],
       ["unbilledWip"],
       ["ficaOutstanding", "matterHealth", "sensitive"],
       ["activity"],
     ]);
-    // A KPI read that came back absent (403/404) drops the whole KPI row.
-    expect(withoutAbsent(rows, new Set(["kpis"]))[0]).toEqual(["diary"]);
+    // A KPI read that came back absent (403/404) drops the whole KPI row; an empty sign-off queue
+    // (absent, 657C) drops the sign-off row the same way.
+    expect(withoutAbsent(rows, new Set(["takeOnSignOff", "kpis"]))[0]).toEqual(["diary"]);
   });
 });
 

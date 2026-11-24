@@ -19,7 +19,6 @@ import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -139,25 +138,21 @@ class InvitationServiceTest {
   @Test
   void revokeInvitation_revokesTheKeycloakInvitationForThatEmail() {
     when(keycloakAdminClient.resolveOrgId(ORG_ID)).thenReturn("kc-org-uuid");
-    when(keycloakAdminClient.listInvitations("kc-org-uuid"))
-        .thenReturn(
-            List.of(
-                Map.of("id", "kc-inv-other", "email", "other-kc-revoke1@example.com"),
-                Map.of("id", "kc-inv-1", "email", "kc-revoke1@example.com")));
+    when(keycloakAdminClient.findInvitationIdsByEmail("kc-org-uuid", "kc-revoke1@example.com"))
+        .thenReturn(List.of("kc-inv-1"));
 
     UUID id = invite("kc-revoke1@example.com");
     inOwnerScope(() -> invitationService.revokeInvitation(id));
 
     verify(keycloakAdminClient).revokeInvitation("kc-org-uuid", "kc-inv-1");
-    verify(keycloakAdminClient, never()).revokeInvitation("kc-org-uuid", "kc-inv-other");
     assertThat(status(id)).isEqualTo(InvitationStatus.REVOKED);
   }
 
   @Test
   void revokeInvitation_keycloakRevokeFails_refusedAndKaziInvitationStaysPending() {
     when(keycloakAdminClient.resolveOrgId(ORG_ID)).thenReturn("kc-org-uuid");
-    when(keycloakAdminClient.listInvitations("kc-org-uuid"))
-        .thenReturn(List.of(Map.of("id", "kc-inv-2", "email", "kc-revoke2@example.com")));
+    when(keycloakAdminClient.findInvitationIdsByEmail("kc-org-uuid", "kc-revoke2@example.com"))
+        .thenReturn(List.of("kc-inv-2"));
     doThrow(new InvalidStateException("Keycloak unavailable", "Keycloak Admin API unavailable"))
         .when(keycloakAdminClient)
         .revokeInvitation("kc-org-uuid", "kc-inv-2");
@@ -181,7 +176,7 @@ class InvitationServiceTest {
   @Test
   void revokeInvitation_keycloakUnreachable_refusedAndKaziInvitationStaysPending() {
     when(keycloakAdminClient.resolveOrgId(ORG_ID)).thenReturn("kc-org-uuid");
-    when(keycloakAdminClient.listInvitations("kc-org-uuid"))
+    when(keycloakAdminClient.findInvitationIdsByEmail("kc-org-uuid", "kc-revoke3@example.com"))
         .thenThrow(new RuntimeException("connection refused"));
 
     UUID id = invite("kc-revoke3@example.com");
@@ -200,7 +195,8 @@ class InvitationServiceTest {
     // the person used the link (now a Keycloak org member, Keycloak deleted its invitation) but has
     // not signed in to Kazi yet: revoking only the Kazi invitation would let them join as Member
     when(keycloakAdminClient.resolveOrgId(ORG_ID)).thenReturn("kc-org-uuid");
-    when(keycloakAdminClient.listInvitations("kc-org-uuid")).thenReturn(List.of());
+    when(keycloakAdminClient.findInvitationIdsByEmail("kc-org-uuid", "kc-revoke4@example.com"))
+        .thenReturn(List.of());
     when(keycloakAdminClient.findUserByEmail("kc-revoke4@example.com"))
         .thenReturn(Optional.of("kc-user-4"));
     when(keycloakAdminClient.listOrgMemberIds("kc-org-uuid"))
@@ -225,18 +221,47 @@ class InvitationServiceTest {
   }
 
   @Test
-  void revokeInvitation_noKeycloakInvitationAndNotAMember_revokesInKazi() {
-    // e.g. the Keycloak invite-user call failed when the invitation was created (best-effort)
+  void revokeInvitation_noKeycloakInvitationAndNotAMember_isDecidedExplicitlyThenRevoked() {
+    // e.g. the Keycloak invite-user call failed when the invitation was created (best-effort).
+    // An empty lookup alone proves nothing: the revoke goes ahead only after the exhaustive
+    // lookup came back empty AND the membership check says the person is not in the org — then
+    // Keycloak holds no invitation record, and Keycloak refuses any link without one.
     when(keycloakAdminClient.resolveOrgId(ORG_ID)).thenReturn("kc-org-uuid");
-    when(keycloakAdminClient.listInvitations("kc-org-uuid")).thenReturn(List.of());
+    when(keycloakAdminClient.findInvitationIdsByEmail("kc-org-uuid", "kc-revoke5@example.com"))
+        .thenReturn(List.of());
     when(keycloakAdminClient.findUserByEmail("kc-revoke5@example.com"))
-        .thenReturn(Optional.empty());
+        .thenReturn(Optional.of("kc-user-5"));
+    when(keycloakAdminClient.listOrgMemberIds("kc-org-uuid")).thenReturn(List.of("kc-user-x"));
 
     UUID id = invite("kc-revoke5@example.com");
     inOwnerScope(() -> invitationService.revokeInvitation(id));
 
     assertThat(status(id)).isEqualTo(InvitationStatus.REVOKED);
+    verify(keycloakAdminClient).findInvitationIdsByEmail("kc-org-uuid", "kc-revoke5@example.com");
+    verify(keycloakAdminClient).listOrgMemberIds("kc-org-uuid");
+    verify(keycloakAdminClient, never()).listInvitations(any());
     verify(keycloakAdminClient, never()).revokeInvitation(any(), any());
+  }
+
+  @Test
+  void revokeInvitation_keycloakErrorDuringTheMembershipCheck_refusedAndStaysPending() {
+    when(keycloakAdminClient.resolveOrgId(ORG_ID)).thenReturn("kc-org-uuid");
+    when(keycloakAdminClient.findInvitationIdsByEmail("kc-org-uuid", "kc-revoke7@example.com"))
+        .thenReturn(List.of());
+    when(keycloakAdminClient.findUserByEmail("kc-revoke7@example.com"))
+        .thenReturn(Optional.of("kc-user-7"));
+    when(keycloakAdminClient.listOrgMemberIds("kc-org-uuid"))
+        .thenThrow(new InvalidStateException("Keycloak unavailable", "down"));
+
+    UUID id = invite("kc-revoke7@example.com");
+    var refused =
+        catchThrowableOfType(
+            InvalidStateException.class,
+            () -> inOwnerScope(() -> invitationService.revokeInvitation(id)));
+
+    assertThat(refused).isNotNull();
+    assertThat(refused.getBody().getTitle()).isEqualTo("Invitation not revoked");
+    assertThat(status(id)).isEqualTo(InvitationStatus.PENDING);
   }
 
   @Test
@@ -248,7 +273,7 @@ class InvitationServiceTest {
         .run(() -> invitationService.revokeInvitation(id));
 
     assertThat(status(id)).isEqualTo(InvitationStatus.REVOKED);
-    verify(keycloakAdminClient, never()).listInvitations(any());
+    verify(keycloakAdminClient, never()).findInvitationIdsByEmail(any(), any());
     verify(keycloakAdminClient, never()).revokeInvitation(any(), any());
   }
 

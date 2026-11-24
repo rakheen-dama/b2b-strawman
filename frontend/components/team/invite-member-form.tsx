@@ -282,7 +282,20 @@ function InviteFormUI({
                       <SelectGroup>
                         <SelectLabel>System</SelectLabel>
                         <SelectItem value={SYSTEM_MEMBER_VALUE}>Member</SelectItem>
-                        <SelectItem value={SYSTEM_ADMIN_VALUE}>Admin</SelectItem>
+                        {/* Task C: the Admin role is invited by the owner only */}
+                        <SelectItem
+                          value={SYSTEM_ADMIN_VALUE}
+                          disabled={!canGrantOwnerOnly}
+                          data-testid="role-option-system-admin"
+                        >
+                          Admin
+                          {!canGrantOwnerOnly && (
+                            <OwnerOnlyHint
+                              testId="owner-only-role-hint-system-admin"
+                              className="inline"
+                            />
+                          )}
+                        </SelectItem>
                       </SelectGroup>
                       {customRoles.length > 0 && (
                         <SelectGroup>

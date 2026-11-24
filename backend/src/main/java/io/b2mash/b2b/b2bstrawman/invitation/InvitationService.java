@@ -18,6 +18,7 @@ import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -162,6 +163,10 @@ public class InvitationService {
     invitation.revoke();
     invitationRepository.save(invitation);
 
+    // FR-8: the Keycloak invitation (its email link) goes too. Runs inside this transaction, so a
+    // refusal rolls the Kazi revoke back — never a revoked invitation whose link still works.
+    revokeInKeycloak(invitation.getEmail());
+
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("invitation.revoked")
@@ -171,6 +176,75 @@ public class InvitationService {
             .build());
 
     log.info("Revoked invitation id={} for email={}", invitationId, invitation.getEmail());
+  }
+
+  /**
+   * FR-8: cancels the Keycloak side of an invitation. Keycloak 26.5 persists an organization
+   * invitation at {@code invite-user} and, when the emailed link is used (registration or existing
+   * user), refuses it once that invitation no longer exists; org membership is added only on
+   * acceptance, and Keycloak deletes its invitation then. So: delete every Keycloak invitation for
+   * this exact email; if there is none but the person is already a member of the Keycloak org, the
+   * link was used before they reached Kazi — refuse (409), because revoking only the Kazi
+   * invitation would let them join as Member. Any Keycloak failure refuses the revoke (the caller's
+   * transaction rolls back), so a link is never left live behind a "revoked" invitation. Mock/e2e
+   * mode (no Keycloak client) and calls without an org context are unaffected.
+   */
+  private void revokeInKeycloak(String email) {
+    String orgId = RequestScopes.getOrgIdOrNull();
+    if (keycloakAdminClient == null || orgId == null) {
+      return;
+    }
+
+    String kcOrgId;
+    List<String> kcInvitationIds;
+    boolean alreadyAccepted = false;
+    try {
+      kcOrgId = keycloakAdminClient.resolveOrgId(orgId);
+      kcInvitationIds =
+          keycloakAdminClient.listInvitations(kcOrgId).stream()
+              .filter(inv -> email.equalsIgnoreCase(String.valueOf(inv.get("email"))))
+              .map(inv -> String.valueOf(inv.get("id")))
+              .toList();
+      if (kcInvitationIds.isEmpty()) {
+        alreadyAccepted =
+            keycloakAdminClient
+                .findUserByEmail(email)
+                .map(userId -> keycloakAdminClient.listOrgMemberIds(kcOrgId).contains(userId))
+                .orElse(false);
+      }
+    } catch (Exception e) {
+      throw keycloakRevokeFailed(email, e);
+    }
+
+    if (alreadyAccepted) {
+      throw new ResourceConflictException(
+          "Invitation already accepted",
+          "'"
+              + email
+              + "' has already accepted the invitation email and joins with the invited role on"
+              + " their first sign-in, so it can no longer be revoked. Remove them from the team"
+              + " once they appear.");
+    }
+
+    for (String kcInvitationId : kcInvitationIds) {
+      try {
+        keycloakAdminClient.revokeInvitation(kcOrgId, kcInvitationId);
+      } catch (Exception e) {
+        throw keycloakRevokeFailed(email, e);
+      }
+    }
+    log.info("Revoked {} Keycloak invitation(s) for email={}", kcInvitationIds.size(), email);
+  }
+
+  private static InvalidStateException keycloakRevokeFailed(String email, Exception cause) {
+    log.warn(
+        "Failed to revoke the Keycloak invitation for email={}: {}", email, cause.getMessage());
+    return new InvalidStateException(
+        "Invitation not revoked",
+        "The invitation email for '"
+            + email
+            + "' could not be cancelled in Keycloak, so its link may still work. Nothing was"
+            + " changed. Please try again.");
   }
 
   @Transactional

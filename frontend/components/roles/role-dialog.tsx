@@ -37,9 +37,12 @@ export function RoleDialog({ slug, role, open, onOpenChange }: RoleDialogProps) 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [capabilities, setCapabilities] = useState<Set<string>>(new Set());
-  // FR-4: a non-owner sees an owner-only capability locked in its current state
+  // FR-4: a non-owner cannot grant an owner-only capability, but may take one away (the backend
+  // refuses only additions) — so its box is disabled while unchecked, enabled while checked
   const canGrantOwnerOnly = useCanGrantOwnerOnly();
-  const isLocked = (cap: string) => !canGrantOwnerOnly && OWNER_ONLY_CAPABILITIES.has(cap);
+  const isOwnerOnlyForCaller = (cap: string) =>
+    !canGrantOwnerOnly && OWNER_ONLY_CAPABILITIES.has(cap);
+  const isLocked = (cap: string) => isOwnerOnlyForCaller(cap) && !capabilities.has(cap);
 
   // Reset form when dialog opens
   useEffect(() => {
@@ -146,6 +149,7 @@ export function RoleDialog({ slug, role, open, onOpenChange }: RoleDialogProps) 
               <Label>Capabilities</Label>
               <div className="space-y-3">
                 {CAPABILITY_META.map((cap) => {
+                  const ownerOnly = isOwnerOnlyForCaller(cap.value);
                   const locked = isLocked(cap.value);
                   return (
                     <label
@@ -158,7 +162,7 @@ export function RoleDialog({ slug, role, open, onOpenChange }: RoleDialogProps) 
                         disabled={locked}
                         aria-label={cap.label}
                         aria-describedby={
-                          locked ? `role-dialog-owner-only-hint-${cap.value}` : undefined
+                          ownerOnly ? `role-dialog-owner-only-hint-${cap.value}` : undefined
                         }
                         data-testid={`role-capability-${cap.value}`}
                       />
@@ -167,7 +171,7 @@ export function RoleDialog({ slug, role, open, onOpenChange }: RoleDialogProps) 
                         <p className="text-xs text-slate-500 dark:text-slate-400">
                           {cap.description}
                         </p>
-                        {locked && (
+                        {ownerOnly && (
                           <OwnerOnlyHint
                             id={`role-dialog-owner-only-hint-${cap.value}`}
                             testId={`owner-only-hint-${cap.value}`}

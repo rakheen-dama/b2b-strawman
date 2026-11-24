@@ -72,8 +72,13 @@ export function MemberDetailPanel({
     !canGrantOwnerOnly &&
     (holdsOwnerOnlyCapability(role.capabilities) ||
       (role.isSystem && (role.slug === "admin" || role.slug === "owner")));
-  const isLockedCapability = (cap: string) =>
+  // The backend's effective-capabilities rule: a non-owner may take an owner-only capability away
+  // (drop a "+X", add a "-X" for an inherited X) but not grant one (add a "+X", drop a "-X") — so
+  // its box is disabled while unchecked, enabled while checked.
+  const isOwnerOnlyForCaller = (cap: string) =>
     !canGrantOwnerOnly && OWNER_ONLY_CAPABILITIES.has(cap);
+  const isLockedCapability = (cap: string) =>
+    isOwnerOnlyForCaller(cap) && !isEffectivelyEnabled(cap);
 
   const systemRoles = roles.filter((r) => r.isSystem);
   const customRoles = roles.filter((r) => !r.isSystem);
@@ -260,6 +265,7 @@ export function MemberDetailPanel({
                 {CAPABILITY_META.map((cap) => {
                   const enabled = isEffectivelyEnabled(cap.value);
                   const status = getOverrideStatus(cap.value);
+                  const ownerOnly = isOwnerOnlyForCaller(cap.value);
                   const locked = isLockedCapability(cap.value);
 
                   return (
@@ -273,7 +279,7 @@ export function MemberDetailPanel({
                         disabled={locked}
                         aria-label={cap.label}
                         aria-describedby={
-                          locked ? `member-panel-owner-only-hint-${cap.value}` : undefined
+                          ownerOnly ? `member-panel-owner-only-hint-${cap.value}` : undefined
                         }
                         data-testid={`member-capability-${cap.value}`}
                       />
@@ -290,7 +296,7 @@ export function MemberDetailPanel({
                         <p className="text-xs text-slate-500 dark:text-slate-400">
                           {cap.description}
                         </p>
-                        {locked && (
+                        {ownerOnly && (
                           <OwnerOnlyHint
                             id={`member-panel-owner-only-hint-${cap.value}`}
                             testId={`owner-only-hint-${cap.value}`}

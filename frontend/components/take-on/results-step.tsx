@@ -17,6 +17,7 @@ import {
   type TakeOnPortalContactsResult,
 } from "@/lib/types";
 import { saveTakeOnFile, TakeOnError } from "./take-on-feedback";
+import { ReportDownloads } from "./report-downloads";
 import { TakeOnReportSummary } from "./take-on-report-summary";
 
 /** How often the wizard re-reads a committing batch. */
@@ -174,7 +175,10 @@ export function ResultsStep({ batch, onBatchChange }: ResultsStepProps) {
       </div>
 
       {batch.dataset === "TRUST_POSITION" && batch.reportId && (
-        <TakeOnReportSummary reportId={batch.reportId} />
+        <>
+          <TakeOnReportSummary reportId={batch.reportId} />
+          <ReportDownloads reportId={batch.reportId} />
+        </>
       )}
 
       {counts.failed > 0 && (

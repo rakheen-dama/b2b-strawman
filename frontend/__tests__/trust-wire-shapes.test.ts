@@ -3,6 +3,8 @@ import { describe, it, expect } from "vitest";
 // typecheck and vitest. Path: __tests__ → frontend → repo root.
 import contract from "../../backend/src/test/resources/wire/trust-contract.json";
 import type {
+  TrustBalanceTrendPoint,
+  TrustBalanceTrendResponse,
   TrustIntegrityFlagCount,
   TrustIntegritySummary,
   TrustPositionResponse,
@@ -163,6 +165,8 @@ describe("trust wire shapes match the backend contract (ADR-365)", () => {
       "SaveInterestMemoRequest",
       "TotalBalanceResponse",
       "TrustAccountResponse",
+      "TrustBalanceTrendPoint",
+      "TrustBalanceTrendResponse",
       "TrustIntegrityReport",
       "TrustInvestmentResponse",
       "TrustPosition",
@@ -574,8 +578,36 @@ describe("trust wire shapes match the backend contract (ADR-365)", () => {
       retiredReason: null,
       replacedByStatementId: null,
       lines: [],
+      // 657D: the import warning of a taken-on account's statement
+      warnings: [],
     };
     expect(Object.keys(literal)).toEqual(componentNames(records.BankStatementResponse));
+  });
+
+  it("TrustBalanceTrendResponse ↔ dashboard.dto.TrustBalanceTrendResponse (657D)", () => {
+    const literal: Required<TrustBalanceTrendResponse> = {
+      trustAccountId: "",
+      accountName: "",
+      currency: "ZAR",
+      asOf: "",
+      openingCashbookBalance: 0,
+      openingClientLedgerTotal: 0,
+      months: [],
+      accounts: [],
+      takenOnAt: null,
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(records.TrustBalanceTrendResponse));
+  });
+
+  it("TrustBalanceTrendPoint ↔ dashboard.dto.TrustBalanceTrendPoint (657D)", () => {
+    const literal: Required<TrustBalanceTrendPoint> = {
+      month: "",
+      periodEnd: "",
+      cashbookBalance: 0,
+      clientLedgerTotal: 0,
+      partial: false,
+    };
+    expect(Object.keys(literal)).toEqual(componentNames(records.TrustBalanceTrendPoint));
   });
 
   it("RecordFromLineResponse ↔ StatementLinePostingService.RecordFromLineResponse (647A)", () => {

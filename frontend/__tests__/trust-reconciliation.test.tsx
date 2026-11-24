@@ -939,6 +939,49 @@ describe("Trust Reconciliation", () => {
     expect(screen.getByTestId("complete-reconciliation-btn")).toBeEnabled();
   });
 
+  // 657D: the first statement of a taken-on account opening away from the take-on is a labelled
+  // warning — never the raw code, and it never disables Complete.
+  it("labels OPENING_DIFFERS_FROM_TAKE_ON as a warning that does not block completion", () => {
+    const opening = {
+      code: "OPENING_DIFFERS_FROM_TAKE_ON",
+      severity: "WARNING",
+      message:
+        "The statement's balance at the take-on date (R0,00) is not the bank balance entered at take-on (R418 500,00). Check this is the statement that follows the cutover.",
+      amount: 418500,
+      subjects: [],
+    };
+    render(
+      <ReconciliationSplitPane
+        lines={[]}
+        unmatchedTransactions={[]}
+        currency="ZAR"
+        onMatch={vi.fn()}
+        onExclude={vi.fn()}
+        onUnmatch={vi.fn()}
+        onRecord={vi.fn()}
+        onComplete={vi.fn()}
+        isCompleting={false}
+        reconciliation={
+          makeRecon({
+            status: "DRAFT",
+            isBalanced: true,
+            integrityFlags: [opening],
+          }) as unknown as TrustReconciliationResponse
+        }
+      />
+    );
+    const flag = within(screen.getByTestId("reconciliation-flag-OPENING_DIFFERS_FROM_TAKE_ON"));
+    expect(
+      flag.getByText("Statement balance at the take-on date differs from the take-on")
+    ).toBeInTheDocument();
+    expect(flag.getByText("Warning")).toBeInTheDocument();
+    expect(flag.getByText(opening.message)).toBeInTheDocument();
+    expect(screen.getByTestId("reconciliation-integrity-flags")).not.toHaveTextContent(
+      /OPENING_DIFFERS_FROM_TAKE_ON|WARNING/
+    );
+    expect(screen.getByTestId("complete-reconciliation-btn")).toBeEnabled();
+  });
+
   // 646C R9 (F-646E-1): an unmatched row prints its registry label, never the raw type.
   it("labels an unmatched transaction from its typeLabel, not the raw type", () => {
     render(

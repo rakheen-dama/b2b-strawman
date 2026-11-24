@@ -70,6 +70,7 @@ function twelveMonths(): TrustBalanceTrendResponse {
       partial: i === 11,
     })),
     accounts: [{ id: "acc-1", accountName: "Main Trust Account", isPrimary: true }],
+    takenOnAt: null,
   };
 }
 
@@ -126,6 +127,18 @@ describe("TrustBalanceTrendChart", () => {
   });
 
   // Zero balances do not mean "no postings" (a month can net to zero): the flat line is drawn.
+  it("a taken-on account's trend says when it was taken on; any other says nothing (657D)", async () => {
+    render(<TrustBalanceTrendChart trend={{ ...twelveMonths(), takenOnAt: "2026-10-31" }} />);
+    expect(await screen.findByTestId("trust-balance-trend-taken-on")).toHaveTextContent(
+      "Taken on at 31 October 2026"
+    );
+    cleanup();
+
+    render(<TrustBalanceTrendChart trend={twelveMonths()} />);
+    await screen.findByRole("figure", { name: "Trust balance trend" });
+    expect(screen.queryByTestId("trust-balance-trend-taken-on")).not.toBeInTheDocument();
+  });
+
   it("an all-zero trend renders the chart, not an empty state", async () => {
     render(<TrustBalanceTrendChart trend={zeroMonths()} />);
 

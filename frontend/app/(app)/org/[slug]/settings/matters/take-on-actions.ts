@@ -17,6 +17,7 @@ import type {
   TakeOnPositionRequest,
   TakeOnPreview,
   TakeOnReport,
+  TakeOnReportSummary,
   TakeOnRow,
   TakeOnRowStatus,
   TakeOnSection,
@@ -269,6 +270,95 @@ export async function withdrawMySignOff(
 /** GET /api/take-on/reports/{reportId} — the take-on report snapshot as JSON (VIEW_TRUST). */
 export async function getTakeOnReport(reportId: string): Promise<TakeOnActionResult<TakeOnReport>> {
   return run(() => api.get<TakeOnReport>(`/api/take-on/reports/${encodeURIComponent(reportId)}`));
+}
+
+/** GET /api/take-on/reports?trustAccountId= — the take-on reports, newest first (VIEW_TRUST). */
+export async function listTakeOnReports(
+  trustAccountId?: string
+): Promise<TakeOnActionResult<TakeOnReportSummary[]>> {
+  const query = trustAccountId ? `?trustAccountId=${encodeURIComponent(trustAccountId)}` : "";
+  return run(() => api.get<TakeOnReportSummary[]>(`/api/take-on/reports${query}`));
+}
+
+/**
+ * A take-on report file (657D): `READY` with the bytes base64-encoded (a server action returns
+ * only serialisable values; the browser saves them unchanged, so the file's SHA-256 is the one
+ * stored), or `RENDERING` while the drain has not produced it yet (202 + Retry-After).
+ */
+export type TakeOnReportDownload =
+  | { status: "READY"; fileName: string; contentType: string; base64: string }
+  | { status: "RENDERING"; retryAfterSeconds: number };
+
+const DOWNLOAD_REFUSED = "The report file could not be downloaded. Try again.";
+
+/**
+ * GET /api/take-on/reports/{reportId}/pdf|csv (raw fetch: binary). 202 is `response.ok` — it is
+ * checked first. 409 REPORT_RENDER_FAILED (and every other refusal) → the backend's `detail` and
+ * `code`.
+ */
+export async function downloadTakeOnReport(
+  reportId: string,
+  format: "pdf" | "csv"
+): Promise<TakeOnActionResult<TakeOnReportDownload>> {
+  try {
+    const authOptions = await getAuthFetchOptions("GET");
+    const response = await fetch(
+      `${API_BASE}/api/take-on/reports/${encodeURIComponent(reportId)}/${format}`,
+      {
+        method: "GET",
+        headers: { ...authOptions.headers },
+        credentials: authOptions.credentials,
+        cache: "no-store",
+      }
+    );
+    if (response.status === 202) {
+      const retryAfter = Number(response.headers.get("retry-after"));
+      return {
+        success: true,
+        data: {
+          status: "RENDERING",
+          retryAfterSeconds: Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter : 5,
+        },
+      };
+    }
+    if (!response.ok) {
+      let message = DOWNLOAD_REFUSED;
+      let code: string | undefined;
+      try {
+        const detail = await response.json();
+        message = detail?.detail || message;
+        code = typeof detail?.code === "string" ? detail.code : undefined;
+      } catch {
+        // not JSON — keep the generic text
+      }
+      return { success: false, error: message, ...(code ? { code } : {}) };
+    }
+    const disposition = response.headers.get("content-disposition") ?? "";
+    const match = disposition.match(/filename="?([^";]+)"?/i);
+    const buffer = await response.arrayBuffer();
+    return {
+      success: true,
+      data: {
+        status: "READY",
+        fileName: match?.[1] ?? `take-on-report-${reportId}.${format}`,
+        contentType:
+          response.headers.get("content-type") ??
+          (format === "pdf" ? "application/pdf" : "text/csv"),
+        base64: Buffer.from(buffer).toString("base64"),
+      },
+    };
+  } catch {
+    return { success: false, error: DOWNLOAD_REFUSED };
+  }
+}
+
+/** POST /api/take-on/reports/{reportId}/render — "Try again" after a failed render (657D). */
+export async function retryReportRender(
+  reportId: string
+): Promise<TakeOnActionResult<TakeOnReport>> {
+  return run(() =>
+    api.post<TakeOnReport>(`/api/take-on/reports/${encodeURIComponent(reportId)}/render`)
+  );
 }
 
 const goLivePath = (itemKey: TakeOnGoLiveItemKey) =>

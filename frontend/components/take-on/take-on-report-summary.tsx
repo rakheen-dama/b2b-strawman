@@ -49,7 +49,7 @@ function groupTotal(lines: TakeOnReportCreditorLine[], kind: TakeOnReportCredito
  * The trust take-on report summary on the Results step (Phase 93 657C, R-11): read from `GET
  * /api/take-on/reports/{id}` — the snapshot the commit wrote — never recomputed. Previous system
  * against Kazi with the difference (R0,00 by the self-check), the trust creditors by group, the
- * sign-off and the flags. The PDF and CSV come with 657D.
+ * sign-off and the flags. The PDF and CSV are `ReportDownloads` (657D), shown beside it.
  */
 export function TakeOnReportSummary({ reportId }: { reportId: string }) {
   const report = useSWR(`take-on-report-${reportId}`, async () => {

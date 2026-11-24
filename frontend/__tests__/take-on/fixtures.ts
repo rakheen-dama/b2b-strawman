@@ -616,6 +616,20 @@ export const TAKE_ON_REPORT_17313: TakeOnReport = {
     sources: [],
     batchId: "batch-657b",
   },
+  files: {
+    pdf: {
+      status: "READY",
+      sha256: "b".repeat(64),
+      fileSize: 48213,
+      renderedAt: "2026-11-24T10:00:05Z",
+    },
+    csv: {
+      status: "READY",
+      sha256: "c".repeat(64),
+      fileSize: 2210,
+      renderedAt: "2026-11-24T10:00:05Z",
+    },
+  },
 };
 
 function creditorLine(

@@ -7,6 +7,7 @@ import { ChartCard } from "@/components/charts/chart-card";
 import type { ChartRow, ChartSeries } from "@/components/charts/chart-summary";
 import { monthLabel } from "@/lib/chart-format";
 import type { TrustBalanceTrendResponse } from "@/lib/dashboard-types";
+import { takeOnLongDate } from "@/lib/types";
 
 /** Visible card title and the figure's name — not "Trust Balance", which names the StatCard. */
 export const TREND_TITLE = "Trust balance trend";
@@ -60,6 +61,7 @@ interface TrustBalanceTrendChartProps {
  * balances (every trust creditor since 646D) for the last 12 SA months, the current month labelled "(to date)" and drawn dashed.
  * Absent and error states render through ChartCard without loading recharts. An all-zero series
  * is drawn as a flat line: zero balances do not mean "no postings" (a month can net to zero).
+ * An account taken on at a cutover date (657D) starts at that month and says "Taken on at {date}".
  */
 export function TrustBalanceTrendChart({ trend, failed = false }: TrustBalanceTrendChartProps) {
   const rows = useMemo<ChartRow[]>(
@@ -93,7 +95,18 @@ export function TrustBalanceTrendChart({ trend, failed = false }: TrustBalanceTr
   return (
     <TrendAreaChart
       title={TREND_TITLE}
-      description={`${TREND_CAPTION} (${trend.currency})`}
+      description={
+        trend.takenOnAt ? (
+          <>
+            {`${TREND_CAPTION} (${trend.currency})`}
+            <span className="block" data-testid="trust-balance-trend-taken-on">
+              {`Taken on at ${takeOnLongDate(trend.takenOnAt)}`}
+            </span>
+          </>
+        ) : (
+          `${TREND_CAPTION} (${trend.currency})`
+        )
+      }
       data={rows}
       xKey="month"
       categoryLabel="Month"

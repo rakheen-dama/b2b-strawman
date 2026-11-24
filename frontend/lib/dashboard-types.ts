@@ -246,4 +246,6 @@ export interface TrustBalanceTrendResponse {
   openingClientLedgerTotal: number;
   months: TrustBalanceTrendPoint[];
   accounts: TrustAccountRef[];
+  /** 657D: yyyy-MM-dd cutover date of a taken-on account (months start at its month), else null. */
+  takenOnAt: string | null;
 }

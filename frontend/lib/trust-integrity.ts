@@ -24,6 +24,7 @@ export const INTEGRITY_FLAG_LABELS: Record<IntegrityFlagCode, string> = {
   UNIDENTIFIED_OVER_ONE_YEAR: "Unidentified deposit held over a year",
   CHARGES_TO_REFUND: "Bank charges to refund from the business account",
   BACKDATED_AFTER_LOCK: "Entered after a monthly list was locked",
+  OPENING_DIFFERS_FROM_TAKE_ON: "Statement balance at the take-on date differs from the take-on",
 };
 
 export const INTEGRITY_SEVERITY_LABELS: Record<IntegritySeverity, string> = {

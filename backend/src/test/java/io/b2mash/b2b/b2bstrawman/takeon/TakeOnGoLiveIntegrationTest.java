@@ -9,12 +9,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.takeon.TakeOnGoLiveService.TakeOnGoLiveAcknowledgeRequest;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -28,6 +34,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
+import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * Phase 93 656A (task 656.5, §17.3.14, §17.4.2, §17.6.7): the go-live checklist through its three
@@ -36,7 +43,8 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
  * audited with exactly {@code {item_key}}; every endpoint needs {@code MANAGE_TAKE_ON}. The
  * checklist gates nothing — the matters and clients commits run with no item acknowledged ({@code
  * MattersTakeOnIntegrationTest}, {@code ClientsTakeOnIntegrationTest}). Each test owns its own
- * item, so the tests never share state.
+ * item, so the tests never share state (the concurrency test borrows the refusals test's item and
+ * withdraws it again; the refusals test only needs it unacknowledged).
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -54,6 +62,8 @@ class TakeOnGoLiveIntegrationTest {
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private JdbcTemplate jdbc;
+  @Autowired private TakeOnGoLiveService goLive;
+  @Autowired private TransactionTemplate transactionTemplate;
 
   private String schema;
   private UUID ownerId;
@@ -176,6 +186,7 @@ class TakeOnGoLiveIntegrationTest {
     mockMvc
         .perform(delete(URL + "/FICA_RECORDS_RETAINED").with(owner()))
         .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.status").value(404))
         .andExpect(jsonPath("$.title").value("Go-live item not acknowledged"))
         .andExpect(
             jsonPath("$.detail")
@@ -221,20 +232,127 @@ class TakeOnGoLiveIntegrationTest {
   // 5
   @Test
   void everyEndpointNeedsManageTakeOn_andAnUnknownItemOrALongNoteIsRefused() throws Exception {
-    mockMvc.perform(get(URL).with(member())).andExpect(status().isForbidden());
-    acknowledge(member(), "AUDITOR_INFORMED", "{}").andExpect(status().isForbidden());
-    mockMvc
-        .perform(delete(URL + "/AUDITOR_INFORMED").with(member()))
-        .andExpect(status().isForbidden());
+    for (var refused :
+        List.of(
+            mockMvc.perform(get(URL).with(member())),
+            acknowledge(member(), "AUDITOR_INFORMED", "{}"),
+            mockMvc.perform(delete(URL + "/AUDITOR_INFORMED").with(member())))) {
+      refused
+          .andExpect(status().isForbidden())
+          .andExpect(jsonPath("$.status").value(403))
+          .andExpect(jsonPath("$.title").value("Access denied"))
+          .andExpect(jsonPath("$.detail").value("Insufficient permissions for this operation"));
+    }
     assertThat(rowCount("AUDITOR_INFORMED")).isZero();
 
-    acknowledge(owner(), "NOT_AN_ITEM", "{}").andExpect(status().isBadRequest());
+    acknowledge(owner(), "NOT_AN_ITEM", "{}")
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.title").value("Invalid parameter value"))
+        .andExpect(jsonPath("$.detail").value("Parameter 'itemKey' should be of type GoLiveItem"));
     acknowledge(owner(), "AUDITOR_INFORMED", "{\"note\":\"" + "x".repeat(1001) + "\"}")
-        .andExpect(status().isBadRequest());
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.title").value("Validation failed"))
+        .andExpect(jsonPath("$.detail").value("1 field(s) have validation errors"))
+        .andExpect(jsonPath("$.fieldErrors[0].field").value("note"));
     assertThat(rowCount("AUDITOR_INFORMED")).isZero();
   }
 
+  // 6 (review F4, D-180)
+  @Test
+  void twoFirstAcknowledgementsAtOnce_bothSucceed_andLeaveOneRow() throws Exception {
+    var item = GoLiveItem.AUDITOR_INFORMED;
+    var firstWritten = new CountDownLatch(1);
+    var release = new CountDownLatch(1);
+    var executor = Executors.newFixedThreadPool(2);
+    try {
+      // the first acknowledgement writes its row and holds its transaction open …
+      Future<?> first =
+          executor.submit(
+              () ->
+                  asMember(
+                      ownerId,
+                      "owner",
+                      () ->
+                          transactionTemplate.executeWithoutResult(
+                              tx -> {
+                                goLive.acknowledge(
+                                    item, new TakeOnGoLiveAcknowledgeRequest("First"));
+                                firstWritten.countDown();
+                                await(release);
+                              })));
+      assertThat(firstWritten.await(20, TimeUnit.SECONDS)).isTrue();
+      // … the second starts while that row is uncommitted (it cannot see it) and waits on its key
+      Future<?> second =
+          executor.submit(
+              () ->
+                  asMember(
+                      adminId,
+                      "admin",
+                      () ->
+                          goLive.acknowledge(item, new TakeOnGoLiveAcknowledgeRequest("Second"))));
+      awaitALockWaitOnTheChecklist();
+      release.countDown();
+      first.get(30, TimeUnit.SECONDS);
+      second.get(30, TimeUnit.SECONDS); // a key violation here would be the 500 (review F4)
+    } finally {
+      release.countDown();
+      executor.shutdownNow();
+    }
+
+    assertThat(rowCount("AUDITOR_INFORMED")).isEqualTo(1);
+    assertThat(
+            item(
+                body(mockMvc.perform(get(URL).with(owner())).andExpect(status().isOk())),
+                "AUDITOR_INFORMED"))
+        .containsEntry("acknowledgedBy", adminId.toString())
+        .containsEntry("note", "Second");
+    assertThat(TakeOnTestApi.auditEvents(jdbc, schema, item.auditEntityId()))
+        .extracting(TakeOnTestApi.AuditRow::eventType)
+        .containsExactly("takeon.go_live.acknowledged", "takeon.go_live.acknowledged");
+
+    // give the item back unacknowledged (the refusals test needs it so)
+    mockMvc.perform(delete(URL + "/AUDITOR_INFORMED").with(owner())).andExpect(status().isOk());
+  }
+
   // --- helpers ---
+
+  private void asMember(UUID memberId, String role, Runnable action) {
+    ScopedValue.where(RequestScopes.TENANT_ID, schema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, memberId)
+        .where(RequestScopes.ORG_ROLE, role)
+        .run(action);
+  }
+
+  private static void await(CountDownLatch latch) {
+    try {
+      if (!latch.await(20, TimeUnit.SECONDS)) {
+        throw new IllegalStateException("latch not released");
+      }
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new IllegalStateException(e);
+    }
+  }
+
+  /** Waits until a session is blocked on a lock while writing the checklist (at most 20 s). */
+  private void awaitALockWaitOnTheChecklist() throws InterruptedException {
+    long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(20);
+    while (System.nanoTime() < deadline) {
+      Integer waiting =
+          jdbc.queryForObject(
+              "SELECT count(*) FROM pg_stat_activity WHERE pid <> pg_backend_pid()"
+                  + " AND wait_event_type = 'Lock' AND query ILIKE '%take_on_go_live_items%'",
+              Integer.class);
+      if (waiting != null && waiting > 0) {
+        return;
+      }
+      Thread.sleep(50);
+    }
+    throw new AssertionError("the second acknowledgement never waited on the first");
+  }
 
   private ResultActions acknowledge(RequestPostProcessor jwt, String key, String json)
       throws Exception {

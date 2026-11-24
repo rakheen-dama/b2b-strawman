@@ -1,6 +1,7 @@
 import { Badge } from "@b2mash/ui/badge";
 import { TableCell, TableHead } from "@/components/ui/table";
 import type { TakeOnRow } from "@/lib/types";
+import { humaniseWorkType } from "@/lib/matters-list";
 
 /**
  * The matters dataset's own columns in the take-on row table (Phase 93 656A): the matter, the
@@ -45,10 +46,14 @@ const MATTER_VALUE_LABEL: Readonly<Record<string, Record<string, string>>> = {
   priority: { LOW: "Low", MEDIUM: "Medium", HIGH: "High" },
 };
 
-/** A coded matter value's label ("HIGH" → "High"); any other value as text. */
+/**
+ * A coded matter value's label ("HIGH" → "High"; the stored work type "LITIGATION_MATTERS" →
+ * "Litigation matters", as the Matters list shows it); any other value as text.
+ */
 export function matterValueText(key: string, value: unknown): string {
   if (value === null || value === undefined || value === "") return "";
   const text = String(value);
+  if (key === "workType") return humaniseWorkType(text);
   return MATTER_VALUE_LABEL[key]?.[text] ?? text;
 }
 

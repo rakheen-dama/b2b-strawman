@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.takeon.dataset;
 
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.CustomFieldValidator;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinition;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
@@ -42,6 +43,14 @@ public class GenericTakeOnDatasetHandler implements TakeOnDatasetHandler {
   public static final String PARKED_KEY = "takeon_parked";
   public static final String CUSTOM_FIELDS_KEY = "customFields";
 
+  static final String CUSTOM_FIELD_REFUSED_MESSAGE =
+      "A custom field value was refused. Correct it in the previous system, then take it on in a"
+          + " new batch.";
+
+  static final String ROW_FAILED_MESSAGE =
+      "This row could not be committed. Correct it in the previous system, then take it on in a"
+          + " new batch.";
+
   private static final Pattern DECIMAL = Pattern.compile("^-?\\d{1,9}(\\.\\d{1,6})?$");
   private static final int MAX_DECIMAL_LENGTH = 40;
 
@@ -58,6 +67,17 @@ public class GenericTakeOnDatasetHandler implements TakeOnDatasetHandler {
   @Override
   public TakeOnDataset dataset() {
     return null;
+  }
+
+  /**
+   * The fixed failure reason of a committed row whose write threw (each committer's {@code
+   * failureMessage} ends with it, after its own special cases). Fixed text only: a validator's
+   * detail may quote the cell, and a row's failure reason is not redacted on anonymisation.
+   */
+  static String fixedFailureMessage(RuntimeException failure) {
+    return failure instanceof InvalidStateException
+        ? CUSTOM_FIELD_REFUSED_MESSAGE
+        : ROW_FAILED_MESSAGE;
   }
 
   @Override

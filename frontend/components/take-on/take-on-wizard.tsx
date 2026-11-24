@@ -16,12 +16,14 @@ import {
 import { cancelBatch } from "@/app/(app)/org/[slug]/settings/matters/take-on-actions";
 import {
   TAKE_ON_BATCH_STATUS_LABEL,
+  TAKE_ON_COMMIT_TRAITS,
   TAKE_ON_DATASET_LABEL,
   TAKE_ON_SECTION_LABEL,
   takeOnKebab,
   type TakeOnBatch,
   type TakeOnDatasetCatalogue,
   type TakeOnSource,
+  type TakeOnStep,
 } from "@/lib/types";
 import { AttestationStep, liveAttestation } from "./attestation-step";
 import { CommitTakeOnDialog } from "./commit-dialog";
@@ -32,32 +34,34 @@ import { TakeOnError } from "./take-on-feedback";
 import { TakeOnFilesPanel } from "./upload-step";
 import { ValidationStep } from "./validation-step";
 
-export type TakeOnStep = "upload" | "sheet" | "mapping" | "validation" | "attestation" | "results";
+export type { TakeOnStep };
 
-const FILE_STEPS: { id: TakeOnStep; label: string }[] = [
-  { id: "upload", label: "Upload" },
-  { id: "sheet", label: "Sheet" },
-  { id: "mapping", label: "Mapping" },
-  { id: "validation", label: "Validation" },
-];
+const STEP_LABEL: Record<TakeOnStep, string> = {
+  upload: "Upload",
+  sheet: "Sheet",
+  mapping: "Mapping",
+  validation: "Validation",
+  attestation: "Attestation",
+  results: "Results",
+};
 
-const RESULTS_STEP: { id: TakeOnStep; label: string } = { id: "results", label: "Results" };
+const stepOf = (id: TakeOnStep) => ({ id, label: STEP_LABEL[id] });
 
-/** Clients attest, then commit (655A). */
-const ATTESTED_COMMIT_STEPS: { id: TakeOnStep; label: string }[] = [
-  { id: "attestation", label: "Attestation" },
-  RESULTS_STEP,
-];
+const FILE_STEPS = (["upload", "sheet", "mapping", "validation"] as const).map(stepOf);
+
+const traitsOf = (batch: TakeOnBatch) => TAKE_ON_COMMIT_TRAITS[batch.dataset];
 
 /**
  * Matters need no sign-off: the commit sits under Validation, then Results (656A, D-169). The
  * trust position and debtors gain their commit steps in later slices.
  */
-const commitsFromValidation = (batch: TakeOnBatch) => batch.dataset === "MATTERS";
+const commitsFromValidation = (batch: TakeOnBatch) => traitsOf(batch).commitsFromValidation;
 
+/** Clients attest, then commit (655A); matters commit from Validation (656A). */
 const stepsFor = (batch: TakeOnBatch) => {
-  if (batch.dataset === "CLIENTS") return [...FILE_STEPS, ...ATTESTED_COMMIT_STEPS];
-  if (commitsFromValidation(batch)) return [...FILE_STEPS, RESULTS_STEP];
+  const { signOffStep } = traitsOf(batch);
+  if (signOffStep) return [...FILE_STEPS, stepOf(signOffStep), stepOf("results")];
+  if (commitsFromValidation(batch)) return [...FILE_STEPS, stepOf("results")];
   return FILE_STEPS;
 };
 
@@ -77,7 +81,11 @@ const firstUnmapped = (batch: TakeOnBatch) => batch.sources.find((s) => !s.mappe
  */
 export function takeOnStepFor(batch: TakeOnBatch): TakeOnStep {
   if (isCommitted(batch)) return "results";
-  if (batch.status === "VALIDATED" && batch.dataset === "CLIENTS" && liveAttestation(batch)) {
+  if (
+    batch.status === "VALIDATED" &&
+    traitsOf(batch).signOffStep === "attestation" &&
+    liveAttestation(batch)
+  ) {
     return "attestation";
   }
   if (batch.sources.length === 0) return "upload";
@@ -128,7 +136,7 @@ export function TakeOnWizard({ batch: initialBatch, dataset }: TakeOnWizardProps
     // A commit that could not run returns the batch to VALIDATED with lastError (D-91): back to
     // the step that holds the commit.
     if (next.status === "VALIDATED") {
-      setStep(next.dataset === "CLIENTS" ? "attestation" : "validation");
+      setStep(traitsOf(next).signOffStep ?? "validation");
     }
   });
 
@@ -297,7 +305,7 @@ export function TakeOnWizard({ batch: initialBatch, dataset }: TakeOnWizardProps
           {step === "validation" && (
             <div className="space-y-6">
               <ValidationStep batch={batch} dataset={dataset} onBatchChange={changeBatch} />
-              {batch.dataset === "CLIENTS" && batch.status === "VALIDATED" && (
+              {traitsOf(batch).signOffStep === "attestation" && batch.status === "VALIDATED" && (
                 <Button
                   type="button"
                   variant="accent"

@@ -10,6 +10,7 @@ import static io.b2mash.b2b.b2bstrawman.takeon.TakeOnTestApi.validatedMatters;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.jayway.jsonpath.JsonPath;
@@ -553,7 +554,120 @@ class MattersTakeOnIntegrationTest {
     assertThat(inTenant(() -> projects.findByCustomerId(leaving))).isEmpty();
   }
 
+  // 10 (review F3, D-164 amended by D-179)
+  @Test
+  void aValidatedDuplicateWhoseReferenceChangesBeforeTheCommit_isCreated() throws Exception {
+    UUID existing = createMatter("Renumbered matter", thandi, "MT-CHG-1");
+    var batch =
+        validatedMatters(
+            mockMvc,
+            owner(),
+            csv(row("Renumbered matter").clientEmail(THANDI_EMAIL).number("MT-CHG-1").ref("R12-1")),
+            mapping());
+    assertThat(rowsByRef(batch.batchId()).get("R12-1").get("duplicateOfId"))
+        .isEqualTo(existing.toString());
+
+    // the existing matter is renumbered in the UI before the commit: it no longer has the key
+    var body = new HashMap<String, Object>();
+    body.put("name", "Renumbered matter");
+    body.put("clientId", thandi.toString());
+    body.put("referenceNumber", "MT-CHG-1-OLD");
+    mockMvc
+        .perform(
+            put("/api/matters/" + existing)
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(JsonMapper.builder().build().writeValueAsString(body)))
+        .andExpect(status().isOk());
+
+    commit(batch);
+    var row = rowsByRef(batch.batchId()).get("R12-1");
+    assertThat(row.get("status")).isEqualTo("CREATED");
+    assertThat(resultEntity(row)).isNotEqualTo(existing);
+    assertThat(
+            count("SELECT count(*) FROM %s.projects WHERE lower(reference_number) = ?", "mt-chg-1"))
+        .isEqualTo(1);
+  }
+
+  // 11 (review F2, D-178)
+  @Test
+  void anonymisingAClient_redactsTheMattersRowsResolvedToIt_andLeavesAnotherClientsRowsAlone()
+      throws Exception {
+    // a client taken on through the clients take-on, then its matters through the matters take-on
+    var clients =
+        TakeOnTestApi.validatedClients(
+            mockMvc,
+            owner(),
+            TakeOnClientsFiles.csv(
+                TakeOnClientsFiles.row("Anon Matter Client", "mt.anon@example.test")
+                    .idNumber("8203035009085")
+                    .ref("MT-C-ANON")),
+            TakeOnClientsFiles.mapping());
+    TakeOnTestApi.attest(mockMvc, owner(), clients.batchId(), clients.hash(), Map.of())
+        .andExpect(status().isOk());
+    TakeOnTestDrain.commitAndDrain(
+        commitService, drain, schema, ORG_ID, ownerId, clients.batchId(), clients.hash());
+    UUID anon =
+        jdbc.queryForObject(
+            "SELECT result_entity_id FROM \"%s\".take_on_rows WHERE batch_id = ? AND source_ref = ?"
+                .formatted(schema),
+            UUID.class,
+            clients.batchId(),
+            "MT-C-ANON");
+    var batch =
+        validatedMatters(
+            mockMvc,
+            owner(),
+            csv(
+                row("Anon by email").clientEmail("mt.anon@example.test").ref("R13-1"),
+                row("Anon by previous ID").clientRef("MT-C-ANON").number("MT-ANON-2").ref("R13-2"),
+                row("Anon by ID number").clientIdNumber("8203035009085").ref("R13-3"),
+                row("Thandi keeps hers").clientEmail(THANDI_EMAIL).ref("R13-4")),
+            mapping());
+    assertThat((Integer) JsonPath.read(batch.json(), "$.counts.valid")).isEqualTo(4);
+    commit(batch);
+    assertThat(rowsByRef(batch.batchId()).values())
+        .extracting(r -> r.get("status"))
+        .containsOnly("CREATED");
+
+    mockMvc
+        .perform(
+            post("/api/clients/" + anon + "/anonymize")
+                .with(owner())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"confirmationName\": \"Anon Matter Client\", \"reason\": \"test\"}"))
+        .andExpect(status().isOk());
+
+    // the three matters rows resolved to the anonymised client lose their values (its email,
+    // previous-system ID and ID number) exactly as its own clients row does; the shells stay
+    for (int rowNumber : List.of(2, 3, 4)) {
+      var r = rowByNumber(batch.batchId(), rowNumber);
+      assertThat((String) r.get("raw")).as("row %d", rowNumber).isEqualTo("{\"redacted\": true}");
+      assertThat((String) r.get("mapped"))
+          .as("row %d", rowNumber)
+          .isEqualTo("{\"redacted\": true}");
+      assertThat(r.get("source_ref")).as("row %d", rowNumber).isNull();
+      assertThat(r.get("dedup_key")).as("row %d", rowNumber).isNull();
+      assertThat(r.get("status")).as("row %d", rowNumber).isEqualTo("CREATED");
+    }
+    // the row of another client is untouched
+    var other = rowByNumber(batch.batchId(), 5);
+    assertThat((String) other.get("raw")).contains(THANDI_EMAIL);
+    assertThat((String) other.get("mapped")).contains(thandi.toString());
+    assertThat(other.get("source_ref")).isEqualTo("R13-4");
+    assertThat(other.get("dedup_key")).isNotNull();
+  }
+
   // --- helpers ---
+
+  private Map<String, Object> rowByNumber(UUID batchId, int rowNumber) {
+    return jdbc.queryForMap(
+        ("SELECT status, raw_values::text AS raw, mapped_values::text AS mapped, dedup_key,"
+                + " source_ref FROM \"%s\".take_on_rows WHERE batch_id = ? AND row_number = ?")
+            .formatted(schema),
+        batchId,
+        rowNumber);
+  }
 
   private void commit(Validated batch) {
     TakeOnTestDrain.commitAndDrain(

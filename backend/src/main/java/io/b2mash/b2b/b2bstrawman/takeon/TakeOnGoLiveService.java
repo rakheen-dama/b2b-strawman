@@ -82,7 +82,8 @@ public class TakeOnGoLiveService {
   /**
    * Acknowledges {@code item} as the current member, now. An item already acknowledged is
    * acknowledged again: the member, time and note are replaced and the act is audited again
-   * (D-166).
+   * (D-166). One upsert, so concurrent acknowledgements of the same item each succeed and leave one
+   * row (D-180).
    */
   @Transactional
   public List<TakeOnGoLiveItemResponse> acknowledge(
@@ -93,11 +94,7 @@ public class TakeOnGoLiveService {
         request == null || request.note() == null || request.note().isBlank()
             ? null
             : request.note().strip();
-    items
-        .findById(item)
-        .ifPresentOrElse(
-            existing -> existing.reacknowledge(member, now, note),
-            () -> items.save(new TakeOnGoLiveItem(item, member, now, note)));
+    items.upsertAcknowledgement(item.name(), member, now, note);
     audit.goLiveAcknowledged(item);
     return list();
   }

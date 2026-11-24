@@ -344,6 +344,30 @@ export const TAKE_ON_DATASET_ORDER: readonly TakeOnDataset[] = [
   "DEBTOR_BALANCES",
 ];
 
+/** The take-on wizard's steps (653A/655A/656A). */
+export type TakeOnStep = "upload" | "sheet" | "mapping" | "validation" | "attestation" | "results";
+
+/** How a dataset reaches its commit in the wizard, and what its commit can skip. */
+export interface TakeOnCommitTraits {
+  /** The sign-off step between the dry run and the commit (clients: the FICA attestation). */
+  signOffStep: TakeOnStep | null;
+  /** The commit sits under the Validation step: no sign-off (matters, 656A D-169). */
+  commitsFromValidation: boolean;
+  /** The commit skips nil-balance rows (`SKIPPED_ZERO`): the balance datasets only. */
+  skipsNilBalance: boolean;
+}
+
+/**
+ * The one place the wizard reads each dataset's commit path from (656A, D-177). The trust position
+ * and debtors have no commit yet: their slices set their sign-off step here.
+ */
+export const TAKE_ON_COMMIT_TRAITS: Record<TakeOnDataset, TakeOnCommitTraits> = {
+  CLIENTS: { signOffStep: "attestation", commitsFromValidation: false, skipsNilBalance: false },
+  MATTERS: { signOffStep: null, commitsFromValidation: true, skipsNilBalance: false },
+  TRUST_POSITION: { signOffStep: null, commitsFromValidation: false, skipsNilBalance: true },
+  DEBTOR_BALANCES: { signOffStep: null, commitsFromValidation: false, skipsNilBalance: true },
+};
+
 export const TAKE_ON_DATASET_LABEL: Record<TakeOnDataset, string> = {
   CLIENTS: "Clients",
   MATTERS: "Matters",

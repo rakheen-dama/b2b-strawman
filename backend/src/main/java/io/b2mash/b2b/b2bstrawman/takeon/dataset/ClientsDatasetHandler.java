@@ -12,7 +12,6 @@ import io.b2mash.b2b.b2bstrawman.compliance.SourceOfFundsStatus;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customer.TakenOnCustomerService;
 import io.b2mash.b2b.b2bstrawman.customer.TakenOnCustomerService.TakenOnClient;
-import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatch;
 import io.b2mash.b2b.b2bstrawman.takeon.TakeOnDataset;
@@ -72,14 +71,6 @@ public class ClientsDatasetHandler
   public static final String EMAIL_PLACEHOLDER = "EMAIL_PLACEHOLDER";
   public static final String COUNTRY_INVALID = "COUNTRY_INVALID";
   public static final String ADDRESS_MISSING = "ADDRESS_MISSING";
-
-  static final String CUSTOM_FIELD_REFUSED_MESSAGE =
-      "A custom field value was refused. Correct it in the previous system, then take it on in a"
-          + " new batch.";
-
-  static final String ROW_FAILED_MESSAGE =
-      "This row could not be committed. Correct it in the previous system, then take it on in a"
-          + " new batch.";
 
   /** The {@code take_on_rows.result_entity_type} of a client (ADR-342 storage key). */
   public static final String RESULT_ENTITY_TYPE = "customer";
@@ -459,12 +450,7 @@ public class ClientsDatasetHandler
             .contains("uq_customers_email")) {
       return EMAIL_TAKEN_MESSAGE; // created in the UI while this row was committing
     }
-    if (failure instanceof InvalidStateException) {
-      // Fixed text: the validator's detail may quote the cell, and a row's failure reason is not
-      // redacted on anonymisation (it must stay value-free).
-      return CUSTOM_FIELD_REFUSED_MESSAGE;
-    }
-    return ROW_FAILED_MESSAGE;
+    return GenericTakeOnDatasetHandler.fixedFailureMessage(failure);
   }
 
   // --- helpers ---

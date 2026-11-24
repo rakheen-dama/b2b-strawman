@@ -27,6 +27,7 @@ import {
 } from "@/app/(app)/org/[slug]/settings/matters/take-on-actions";
 import {
   TAKE_ON_COMMIT_ROW_STATUSES,
+  TAKE_ON_COMMIT_TRAITS,
   TAKE_ON_DUPLICATE_PENDING_LABEL,
   TAKE_ON_ROW_STATUS_LABEL,
   TAKE_ON_SECTION_LABEL,
@@ -76,9 +77,9 @@ function filterOptionsFor(batch: TakeOnBatch): readonly FilterOption[] {
   dryRun.push(statusOption("ERROR"));
   if (batch.status !== "COMMITTING" && batch.status !== "COMPLETED") return dryRun;
   // A nil balance is skipped only in the balance datasets — never a client or a matter.
-  const noBalance = batch.dataset === "CLIENTS" || batch.dataset === "MATTERS";
+  const { skipsNilBalance } = TAKE_ON_COMMIT_TRAITS[batch.dataset];
   const commit = TAKE_ON_COMMIT_ROW_STATUSES.filter(
-    (s) => !(noBalance && s === "SKIPPED_ZERO")
+    (s) => skipsNilBalance || s !== "SKIPPED_ZERO"
   ).map(statusOption);
   return [...dryRun, ...commit];
 }

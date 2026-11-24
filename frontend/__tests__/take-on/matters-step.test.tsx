@@ -79,7 +79,8 @@ const ROWS: TakeOnRow[] = [
       referenceNumber: "LIT-2026-001",
       leadMemberEmail: "thandi@firm.example",
       priority: "HIGH",
-      workType: "Litigation",
+      // the canonical form the dry run stores (WorkTypes.normalizeForStorage)
+      workType: "LITIGATION_MATTERS",
     },
     warnings: [{ code: "LEAD_MEMBER_UNKNOWN", field: "leadMemberEmail", message: UNKNOWN_LEAD }],
   }),
@@ -147,7 +148,8 @@ describe("Matters take-on rows (656A)", () => {
     // Ids and codes the dry run adds never show; coded values show their label.
     const other = within(screen.getByTestId("take-on-row-2")).getAllByRole("cell")[7];
     expect(other).toHaveTextContent("Priority: High");
-    expect(other).toHaveTextContent("Work type: Litigation");
+    expect(other).toHaveTextContent("Work type: Litigation matters");
+    expect(other.textContent).not.toMatch(/LITIGATION_MATTERS/);
     expect(other.textContent).not.toMatch(/clientId|clientResolvedBy|6f1c9a2e|HIGH|C-001/);
   });
 

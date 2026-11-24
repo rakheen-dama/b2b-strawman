@@ -94,14 +94,6 @@ public class MattersDatasetHandler
       "The client of this matter is no longer in Kazi. Take the client on first, then take this"
           + " matter on in a new batch.";
 
-  static final String CUSTOM_FIELD_REFUSED_MESSAGE =
-      "A custom field value was refused. Correct it in the previous system, then take it on in a"
-          + " new batch.";
-
-  static final String ROW_FAILED_MESSAGE =
-      "This row could not be committed. Correct it in the previous system, then take it on in a"
-          + " new batch.";
-
   /** The client reference fields, in resolution order (§17.3.6, D-157). */
   static final List<String> CLIENT_REFERENCE_FIELDS =
       List.of("clientEmail", "clientRef", "clientIdNumber");
@@ -406,13 +398,8 @@ public class MattersDatasetHandler
     String name = text(v.get("name"));
     String ref = text(v.get("referenceNumber"));
 
-    // 1. Duplicates: the validated match (if it still exists), then the key again — a matter may
-    //    have been created in the UI since the dry run.
-    UUID duplicate = row.getDuplicateOfId();
-    if (duplicate != null && projects.existsById(duplicate)) {
-      row.markSkippedDuplicate(RESULT_ENTITY_TYPE, duplicate);
-      return;
-    }
+    // 1. Duplicates: the row's key again, by the dry run's rule (D-170) — a matter may have been
+    //    created in the UI since the dry run, or the validated match's reference or name changed.
     var again =
         ref != null
             ? projects.findIdByReferenceNumber(ref)
@@ -474,10 +461,7 @@ public class MattersDatasetHandler
 
   @Override
   public String failureMessage(RuntimeException failure) {
-    // Fixed text only: a validator detail may quote the cell, and a failure reason is not redacted.
-    return failure instanceof InvalidStateException
-        ? CUSTOM_FIELD_REFUSED_MESSAGE
-        : ROW_FAILED_MESSAGE;
+    return GenericTakeOnDatasetHandler.fixedFailureMessage(failure);
   }
 
   // --- helpers ---

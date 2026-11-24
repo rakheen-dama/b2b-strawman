@@ -12,8 +12,10 @@ import java.util.UUID;
 
 /**
  * One go-live item the firm has acknowledged (Phase 93 656A, §17.2.6): who, when and an optional
- * note. One row per item ({@code item_key} is the key); withdrawing an acknowledgement deletes the
- * row. Advisory: nothing in the take-on commit reads it (A2).
+ * note. One row per item ({@code item_key} is the key), written by {@link
+ * TakeOnGoLiveItemRepository#upsertAcknowledgement} (a new acknowledgement replaces it, D-166);
+ * withdrawing an acknowledgement deletes the row. Advisory: nothing in the take-on commit reads it
+ * (A2).
  */
 @Entity
 @Table(name = "take_on_go_live_items")
@@ -37,11 +39,6 @@ public class TakeOnGoLiveItem {
 
   public TakeOnGoLiveItem(GoLiveItem itemKey, UUID acknowledgedBy, Instant at, String note) {
     this.itemKey = Objects.requireNonNull(itemKey, "itemKey");
-    reacknowledge(acknowledgedBy, at, note);
-  }
-
-  /** A new acknowledgement of the same item replaces the earlier one (D-166). */
-  public void reacknowledge(UUID acknowledgedBy, Instant at, String note) {
     this.acknowledgedBy = Objects.requireNonNull(acknowledgedBy, "acknowledgedBy");
     this.acknowledgedAt = Objects.requireNonNull(at, "at");
     this.note = note;

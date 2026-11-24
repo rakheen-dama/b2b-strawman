@@ -191,9 +191,11 @@ public interface TakeOnRowRepository extends JpaRepository<TakeOnRow, UUID> {
    * but linked to <b>another</b> client — one who holds that address now — is that client's and
    * stays, delta review M-1) — loses its values: {@code {"redacted": true}}, the previous system's
    * id ({@code source_ref}, free text that may be an email or a name), the dedup key and the
-   * message texts (they may quote a cell); only {code, field} stay. The row shell (number, status,
-   * result link) stays; the archived file is not rewritten while a legal retention period runs.
-   * Pass at least one key.
+   * message texts (they may quote a cell); only {code, field} stay. A matters row resolved to the
+   * client (its mapped {@code clientId}, D-159) is redacted the same way: it links to the matter
+   * and is keyed by the matter, but holds the client reference the file gave (email, previous
+   * system id, ID number — D-178). The row shell (number, status, result link) stays; the archived
+   * file is not rewritten while a legal retention period runs. Pass at least one key.
    */
   @Modifying(flushAutomatically = true, clearAutomatically = true)
   @Query(
@@ -211,6 +213,8 @@ public interface TakeOnRowRepository extends JpaRepository<TakeOnRow, UUID> {
                                         FROM jsonb_array_elements(warnings) w), '[]'::jsonb),
                  updated_at = now()
            WHERE result_entity_id = :clientId OR duplicate_of_id = :clientId
+              OR (dataset = 'MATTERS'
+                  AND mapped_values ->> 'clientId' = CAST(:clientId AS varchar))
               OR (dedup_key IN (:dedupKeys)
                   AND (result_entity_id IS NULL OR result_entity_id = :clientId)
                   AND (duplicate_of_id IS NULL OR duplicate_of_id = :clientId))""")

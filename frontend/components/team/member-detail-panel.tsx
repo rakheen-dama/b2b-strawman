@@ -15,13 +15,19 @@ import {
   Select,
   SelectContent,
   SelectGroup,
-  SelectItem,
   SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@b2mash/ui/label";
-import { CAPABILITY_META } from "@/lib/capabilities";
+import {
+  CAPABILITY_META,
+  OWNER_ONLY_CAPABILITIES,
+  holdsOwnerOnlyCapability,
+  useCanGrantOwnerOnly,
+} from "@/lib/capabilities";
+import { OwnerOnlyHint } from "@/components/roles/owner-only-hint";
+import { RoleOption } from "@/components/roles/role-option";
 import {
   assignMemberRole,
   fetchMemberCapabilities,
@@ -58,6 +64,21 @@ export function MemberDetailPanel({
   const [error, setError] = useState<string | null>(null);
   const [selectedRoleId, setSelectedRoleId] = useState<string>("");
   const [overrides, setOverrides] = useState<string[]>([]);
+  // FR-4: a non-owner can neither assign a role holding an owner-only capability nor toggle one
+  const canGrantOwnerOnly = useCanGrantOwnerOnly();
+  // Locked for a non-owner: a role holding an owner-only capability (FR-4), and the system Admin
+  // and Owner roles, which only the owner may assign (OrgRoleService.requireSystemRoleGrantable).
+  const isLockedRole = (role: OrgRole) =>
+    !canGrantOwnerOnly &&
+    (holdsOwnerOnlyCapability(role.capabilities) ||
+      (role.isSystem && (role.slug === "admin" || role.slug === "owner")));
+  // The backend's effective-capabilities rule: a non-owner may take an owner-only capability away
+  // (drop a "+X", add a "-X" for an inherited X) but not grant one (add a "+X", drop a "-X") — so
+  // its box is disabled while unchecked, enabled while checked.
+  const isOwnerOnlyForCaller = (cap: string) =>
+    !canGrantOwnerOnly && OWNER_ONLY_CAPABILITIES.has(cap);
+  const isLockedCapability = (cap: string) =>
+    isOwnerOnlyForCaller(cap) && !isEffectivelyEnabled(cap);
 
   const systemRoles = roles.filter((r) => r.isSystem);
   const customRoles = roles.filter((r) => !r.isSystem);
@@ -119,27 +140,17 @@ export function MemberDetailPanel({
   }
 
   function toggleCapability(cap: string) {
+    if (isLockedCapability(cap)) return;
+    // Flip the effective state and keep at most one override for the capability: none when the
+    // new state is the role's default, else "+cap" / "-cap". Never both — the backend refuses a
+    // contradictory pair (400), and a stored redundant "+cap" must not survive an uncheck.
+    const wanted = !isEffectivelyEnabled(cap);
     const inRole = roleCapabilities.has(cap);
-    const hasPlus = overrides.includes(`+${cap}`);
-    const hasMinus = overrides.includes(`-${cap}`);
-
-    if (inRole) {
-      if (hasMinus) {
-        // Remove the minus (restore default)
-        setOverrides((prev) => prev.filter((o) => o !== `-${cap}`));
-      } else {
-        // Add minus (remove from role)
-        setOverrides((prev) => [...prev, `-${cap}`]);
-      }
-    } else {
-      if (hasPlus) {
-        // Remove the plus (restore default)
-        setOverrides((prev) => prev.filter((o) => o !== `+${cap}`));
-      } else {
-        // Add plus (add beyond role)
-        setOverrides((prev) => [...prev, `+${cap}`]);
-      }
-    }
+    setOverrides((prev) => {
+      const others = prev.filter((o) => o !== `+${cap}` && o !== `-${cap}`);
+      if (wanted === inRole) return others;
+      return [...others, wanted ? `+${cap}` : `-${cap}`];
+    });
   }
 
   async function handleSave() {
@@ -220,9 +231,7 @@ export function MemberDetailPanel({
                     <SelectGroup>
                       <SelectLabel>System</SelectLabel>
                       {systemRoles.map((role) => (
-                        <SelectItem key={role.id} value={role.id}>
-                          {role.name}
-                        </SelectItem>
+                        <RoleOption key={role.id} role={role} locked={isLockedRole(role)} />
                       ))}
                     </SelectGroup>
                   )}
@@ -230,9 +239,7 @@ export function MemberDetailPanel({
                     <SelectGroup>
                       <SelectLabel>Custom</SelectLabel>
                       {customRoles.map((role) => (
-                        <SelectItem key={role.id} value={role.id}>
-                          {role.name}
-                        </SelectItem>
+                        <RoleOption key={role.id} role={role} locked={isLockedRole(role)} />
                       ))}
                     </SelectGroup>
                   )}
@@ -247,13 +254,23 @@ export function MemberDetailPanel({
                 {CAPABILITY_META.map((cap) => {
                   const enabled = isEffectivelyEnabled(cap.value);
                   const status = getOverrideStatus(cap.value);
+                  const ownerOnly = isOwnerOnlyForCaller(cap.value);
+                  const locked = isLockedCapability(cap.value);
 
                   return (
-                    <label key={cap.value} className="flex cursor-pointer items-start gap-3">
+                    <label
+                      key={cap.value}
+                      className={`flex items-start gap-3 ${locked ? "cursor-not-allowed" : "cursor-pointer"}`}
+                    >
                       <Checkbox
                         checked={enabled}
                         onCheckedChange={() => toggleCapability(cap.value)}
+                        disabled={locked}
                         aria-label={cap.label}
+                        aria-describedby={
+                          ownerOnly ? `member-panel-owner-only-hint-${cap.value}` : undefined
+                        }
+                        data-testid={`member-capability-${cap.value}`}
                       />
                       <div className="flex-1 space-y-0.5">
                         <div className="flex items-center gap-1.5">
@@ -268,6 +285,12 @@ export function MemberDetailPanel({
                         <p className="text-xs text-slate-500 dark:text-slate-400">
                           {cap.description}
                         </p>
+                        {ownerOnly && (
+                          <OwnerOnlyHint
+                            id={`member-panel-owner-only-hint-${cap.value}`}
+                            testId={`owner-only-hint-${cap.value}`}
+                          />
+                        )}
                       </div>
                     </label>
                   );

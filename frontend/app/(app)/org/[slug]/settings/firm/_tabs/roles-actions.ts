@@ -10,6 +10,9 @@ interface ActionResult {
   error?: string;
 }
 
+// A 403 shows the backend's ProblemDetail detail when it has one (FR-4: "Only the owner can …"),
+// else a generic permission message.
+
 export async function createRoleAction(
   slug: string,
   data: CreateOrgRoleRequest
@@ -21,7 +24,7 @@ export async function createRoleAction(
       if (error.status === 403) {
         return {
           success: false,
-          error: "You do not have permission to create roles.",
+          error: error.detail?.detail ?? "You do not have permission to create roles.",
         };
       }
       if (error.status === 409) {
@@ -51,7 +54,7 @@ export async function updateRoleAction(
       if (error.status === 403) {
         return {
           success: false,
-          error: "You do not have permission to update roles.",
+          error: error.detail?.detail ?? "You do not have permission to update roles.",
         };
       }
       if (error.status === 409) {
@@ -77,7 +80,7 @@ export async function deleteRoleAction(slug: string, id: string): Promise<Action
       if (error.status === 403) {
         return {
           success: false,
-          error: "You do not have permission to delete roles.",
+          error: error.detail?.detail ?? "You do not have permission to delete roles.",
         };
       }
       return { success: false, error: error.message };

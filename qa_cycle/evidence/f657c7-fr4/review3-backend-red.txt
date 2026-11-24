@@ -1,0 +1,572 @@
+16:47:41.941 [main] INFO com.tngtech.archunit.ArchConfiguration -- Reading ArchUnit properties from file:/Users/rakheendama/Projects/2026/wt-f657c7-fr4/backend/target/test-classes/archunit.properties
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/Users/rakheendama/.m2/repository/net/bytebuddy/byte-buddy-agent/1.17.8/byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[ERROR] Tests run: 21, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 0.899 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleServiceTest
+[ERROR] io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleServiceTest.resolveCapabilities_contradictoryPair_minusWinsInEitherIterationOrder -- Time elapsed: 0.033 s <<< FAILURE!
+java.lang.AssertionError: 
+[overrides iterated as [+SIGN_OFF_TRUST_TAKE_ON, -SIGN_OFF_TRUST_TAKE_ON, -INVOICING, +INVOICING]] 
+Expecting
+  ["INVOICING"]
+not to contain
+  ["SIGN_OFF_TRUST_TAKE_ON", "INVOICING"]
+but found
+  ["INVOICING"]
+
+	at io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleServiceTest.resolveCapabilities_contradictoryPair_minusWinsInEitherIterationOrder(OrgRoleServiceTest.java:330)
+
+16:47:42.969 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [io.b2mash.b2b.b2bstrawman.orgrole.ContradictoryOverrideIntegrationTest]: ContradictoryOverrideIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+16:47:43.131 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration io.b2mash.b2b.b2bstrawman.BackendApplication for test class io.b2mash.b2b.b2bstrawman.orgrole.ContradictoryOverrideIntegrationTest
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /internal/members/sync
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", X-API-KEY:"test-api-key", Content-Length:"163", Idempotency-Key:"9a6cab85-d4b5-47ec-aebf-11bb5b262fe4"]
+             Body = {"clerkOrgId":"org_contradictory_override_test","clerkUserId":"user_cov_owner","email":"cov_owner@test.com","name":"Cov Owner","avatarUrl":null,"orgRole":"owner"}
+
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.member.MemberSyncController
+           Method = io.b2mash.b2b.b2bstrawman.member.MemberSyncController#syncMember(SyncMemberRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/internal/members/ef8b53cb-0544-4fcf-8e61-5531f1921b37", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"memberId":"ef8b53cb-0544-4fcf-8e61-5531f1921b37","clerkUserId":"user_cov_owner","action":"created"}
+    Forwarded URL = null
+   Redirected URL = /internal/members/ef8b53cb-0544-4fcf-8e61-5531f1921b37
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /internal/members/sync
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", X-API-KEY:"test-api-key", Content-Length:"163", Idempotency-Key:"7b42b9ac-f93a-4a21-89de-eeea64094406"]
+             Body = {"clerkOrgId":"org_contradictory_override_test","clerkUserId":"user_cov_admin","email":"cov_admin@test.com","name":"Cov Admin","avatarUrl":null,"orgRole":"admin"}
+
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.member.MemberSyncController
+           Method = io.b2mash.b2b.b2bstrawman.member.MemberSyncController#syncMember(SyncMemberRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/internal/members/4b93550e-3d63-4707-94e7-adcd613531b1", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"memberId":"4b93550e-3d63-4707-94e7-adcd613531b1","clerkUserId":"user_cov_admin","action":"created"}
+    Forwarded URL = null
+   Redirected URL = /internal/members/4b93550e-3d63-4707-94e7-adcd613531b1
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /internal/members/sync
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", X-API-KEY:"test-api-key", Content-Length:"183", Idempotency-Key:"1ae9793d-8120-47a7-aab6-af45a9577a0a"]
+             Body = {"clerkOrgId":"org_contradictory_override_test","clerkUserId":"user_cov_target_a","email":"user_cov_target_a@test.com","name":"user_cov_target_a","avatarUrl":null,"orgRole":"member"}
+
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.member.MemberSyncController
+           Method = io.b2mash.b2b.b2bstrawman.member.MemberSyncController#syncMember(SyncMemberRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/internal/members/8eccd287-3464-4980-8ed9-0b50e9bba485", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"memberId":"8eccd287-3464-4980-8ed9-0b50e9bba485","clerkUserId":"user_cov_target_a","action":"created"}
+    Forwarded URL = null
+   Redirected URL = /internal/members/8eccd287-3464-4980-8ed9-0b50e9bba485
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/org-roles
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"90", Idempotency-Key:"7ba9d223-ec56-458d-b78c-e7cf88628f49"]
+             Body = {"name": "Bookkeeper Contra A", "description": "Test role", "capabilities": ["INVOICING"]}
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleController
+           Method = io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleController#createRole(CreateOrgRoleRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/api/org-roles/9900c0fb-b846-4b14-a37b-53c03a227ed7", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"9900c0fb-b846-4b14-a37b-53c03a227ed7","name":"Bookkeeper Contra A","slug":"bookkeeper-contra-a","description":"Test role","capabilities":["INVOICING"],"isSystem":false,"memberCount":0,"createdAt":"2026-11-24T16:47:57.069528Z","updatedAt":"2026-11-24T16:47:57.069528Z"}
+    Forwarded URL = null
+   Redirected URL = /api/org-roles/9900c0fb-b846-4b14-a37b-53c03a227ed7
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = PUT
+      Request URI = /api/members/8eccd287-3464-4980-8ed9-0b50e9bba485/role
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"320", Idempotency-Key:"f210fc36-ba79-49bb-a875-67c3daadc711"]
+             Body = {"orgRoleId": "9900c0fb-b846-4b14-a37b-53c03a227ed7", "capabilityOverrides": ["+MANAGE_COMPLIANCE_DESTRUCTIVE","-MANAGE_COMPLIANCE_DESTRUCTIVE","+INVOICING","+PROJECT_MANAGEMENT","+CUSTOMER_MANAGEMENT","+AUTOMATIONS","+VIEW_LEGAL","+MANAGE_LEGAL","+MANAGE_TRUST","+CLOSE_MATTER","+AI_EXECUTE","+AI_REVIEW","+AI_MANAGE"]}
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.member.OrgMemberController
+           Method = io.b2mash.b2b.b2bstrawman.member.OrgMemberController#assignRole(UUID, AssignRoleRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"memberId":"8eccd287-3464-4980-8ed9-0b50e9bba485","roleName":"Bookkeeper Contra A","roleCapabilities":["INVOICING"],"overrides":["-MANAGE_COMPLIANCE_DESTRUCTIVE","+CLOSE_MATTER","+AI_REVIEW","+AUTOMATIONS","+INVOICING","+AI_EXECUTE","+CUSTOMER_MANAGEMENT","+MANAGE_LEGAL","+AI_MANAGE","+MANAGE_TRUST","+MANAGE_COMPLIANCE_DESTRUCTIVE","+PROJECT_MANAGEMENT","+VIEW_LEGAL"],"effectiveCapabilities":["INVOICING","MANAGE_LEGAL","AI_EXECUTE","PROJECT_MANAGEMENT","VIEW_LEGAL","CLOSE_MATTER","AI_REVIEW","MANAGE_TRUST","CUSTOMER_MANAGEMENT","AUTOMATIONS","AI_MANAGE"]}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = GET
+      Request URI = /api/me/capabilities
+       Parameters = {}
+          Headers = []
+             Body = null
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.orgrole.CapabilityController
+           Method = io.b2mash.b2b.b2bstrawman.orgrole.CapabilityController#getMyCapabilities()
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"capabilities":["INVOICING","MANAGE_LEGAL","AI_EXECUTE","PROJECT_MANAGEMENT","VIEW_LEGAL","CLOSE_MATTER","AI_REVIEW","MANAGE_TRUST","CUSTOMER_MANAGEMENT","AUTOMATIONS","AI_MANAGE"],"role":"Bookkeeper Contra A","isAdmin":false,"isOwner":false,"memberId":"8eccd287-3464-4980-8ed9-0b50e9bba485"}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /internal/members/sync
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", X-API-KEY:"test-api-key", Content-Length:"183", Idempotency-Key:"bd80f818-9b3e-4371-83a3-decb7bc735f0"]
+             Body = {"clerkOrgId":"org_contradictory_override_test","clerkUserId":"user_cov_target_b","email":"user_cov_target_b@test.com","name":"user_cov_target_b","avatarUrl":null,"orgRole":"member"}
+
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.member.MemberSyncController
+           Method = io.b2mash.b2b.b2bstrawman.member.MemberSyncController#syncMember(SyncMemberRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/internal/members/77f802a2-26da-43dc-8dfe-52c77a248801", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"memberId":"77f802a2-26da-43dc-8dfe-52c77a248801","clerkUserId":"user_cov_target_b","action":"created"}
+    Forwarded URL = null
+   Redirected URL = /internal/members/77f802a2-26da-43dc-8dfe-52c77a248801
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/org-roles
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"90", Idempotency-Key:"1f11dc57-e0a4-43dc-a9f3-805cb8e355d4"]
+             Body = {"name": "Bookkeeper Contra B", "description": "Test role", "capabilities": ["INVOICING"]}
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleController
+           Method = io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleController#createRole(CreateOrgRoleRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/api/org-roles/fbc5f9e3-2f02-469c-850e-b1435c7a92fd", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"fbc5f9e3-2f02-469c-850e-b1435c7a92fd","name":"Bookkeeper Contra B","slug":"bookkeeper-contra-b","description":"Test role","capabilities":["INVOICING"],"isSystem":false,"memberCount":0,"createdAt":"2026-11-24T16:47:57.154314Z","updatedAt":"2026-11-24T16:47:57.154314Z"}
+    Forwarded URL = null
+   Redirected URL = /api/org-roles/fbc5f9e3-2f02-469c-850e-b1435c7a92fd
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = PUT
+      Request URI = /api/members/77f802a2-26da-43dc-8dfe-52c77a248801/role
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"105", Idempotency-Key:"df69dfe3-4447-461b-ae38-93f44e3fc123"]
+             Body = {"orgRoleId": "fbc5f9e3-2f02-469c-850e-b1435c7a92fd", "capabilityOverrides": ["+INVOICING","-INVOICING"]}
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.member.OrgMemberController
+           Method = io.b2mash.b2b.b2bstrawman.member.OrgMemberController#assignRole(UUID, AssignRoleRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"memberId":"77f802a2-26da-43dc-8dfe-52c77a248801","roleName":"Bookkeeper Contra B","roleCapabilities":["INVOICING"],"overrides":["+INVOICING","-INVOICING"],"effectiveCapabilities":["INVOICING"]}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /internal/members/sync
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", X-API-KEY:"test-api-key", Content-Length:"183", Idempotency-Key:"bc2364e6-9fe6-481b-8fa7-29af417dbd0e"]
+             Body = {"clerkOrgId":"org_contradictory_override_test","clerkUserId":"user_cov_target_c","email":"user_cov_target_c@test.com","name":"user_cov_target_c","avatarUrl":null,"orgRole":"member"}
+
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.member.MemberSyncController
+           Method = io.b2mash.b2b.b2bstrawman.member.MemberSyncController#syncMember(SyncMemberRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/internal/members/529c4d16-bd68-437a-88dc-5945e94e59ac", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"memberId":"529c4d16-bd68-437a-88dc-5945e94e59ac","clerkUserId":"user_cov_target_c","action":"created"}
+    Forwarded URL = null
+   Redirected URL = /internal/members/529c4d16-bd68-437a-88dc-5945e94e59ac
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/org-roles
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"90", Idempotency-Key:"7d65ddef-f9ba-4f52-9d88-7065aa3916d3"]
+             Body = {"name": "Bookkeeper Contra C", "description": "Test role", "capabilities": ["INVOICING"]}
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleController
+           Method = io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleController#createRole(CreateOrgRoleRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/api/org-roles/5d36e7f4-1774-4066-82ea-2a2ee7821008", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"5d36e7f4-1774-4066-82ea-2a2ee7821008","name":"Bookkeeper Contra C","slug":"bookkeeper-contra-c","description":"Test role","capabilities":["INVOICING"],"isSystem":false,"memberCount":0,"createdAt":"2026-11-24T16:47:57.195243Z","updatedAt":"2026-11-24T16:47:57.195243Z"}
+    Forwarded URL = null
+   Redirected URL = /api/org-roles/5d36e7f4-1774-4066-82ea-2a2ee7821008
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = PUT
+      Request URI = /api/members/529c4d16-bd68-437a-88dc-5945e94e59ac/role
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"80", Idempotency-Key:"e1d62437-0f15-4409-b19d-a4c0e17bb05b"]
+             Body = {"orgRoleId": "5d36e7f4-1774-4066-82ea-2a2ee7821008", "capabilityOverrides": []}
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.member.OrgMemberController
+           Method = io.b2mash.b2b.b2bstrawman.member.OrgMemberController#assignRole(UUID, AssignRoleRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"memberId":"529c4d16-bd68-437a-88dc-5945e94e59ac","roleName":"Bookkeeper Contra C","roleCapabilities":["INVOICING"],"overrides":[],"effectiveCapabilities":["INVOICING"]}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = GET
+      Request URI = /api/me/capabilities
+       Parameters = {}
+          Headers = []
+             Body = null
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.orgrole.CapabilityController
+           Method = io.b2mash.b2b.b2bstrawman.orgrole.CapabilityController#getMyCapabilities()
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"capabilities":["INVOICING","SIGN_OFF_TRUST_TAKE_ON"],"role":"Bookkeeper Contra C","isAdmin":false,"isOwner":false,"memberId":"529c4d16-bd68-437a-88dc-5945e94e59ac"}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+[ERROR] Tests run: 3, Failures: 3, Errors: 0, Skipped: 0, Time elapsed: 14.31 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.orgrole.ContradictoryOverrideIntegrationTest
+[ERROR] io.b2mash.b2b.b2bstrawman.orgrole.ContradictoryOverrideIntegrationTest.anAdminCannotSendAContradictoryOverridePair -- Time elapsed: 0.121 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+[status of {"memberId":"8eccd287-3464-4980-8ed9-0b50e9bba485","roleName":"Bookkeeper Contra A","roleCapabilities":["INVOICING"],"overrides":["-MANAGE_COMPLIANCE_DESTRUCTIVE","+CLOSE_MATTER","+AI_REVIEW","+AUTOMATIONS","+INVOICING","+AI_EXECUTE","+CUSTOMER_MANAGEMENT","+MANAGE_LEGAL","+AI_MANAGE","+MANAGE_TRUST","+MANAGE_COMPLIANCE_DESTRUCTIVE","+PROJECT_MANAGEMENT","+VIEW_LEGAL"],"effectiveCapabilities":["INVOICING","MANAGE_LEGAL","AI_EXECUTE","PROJECT_MANAGEMENT","VIEW_LEGAL","CLOSE_MATTER","AI_REVIEW","MANAGE_TRUST","CUSTOMER_MANAGEMENT","AUTOMATIONS","AI_MANAGE"]}] 
+expected: 400
+ but was: 200
+	at io.b2mash.b2b.b2bstrawman.orgrole.ContradictoryOverrideIntegrationTest.assertContradictory(ContradictoryOverrideIntegrationTest.java:199)
+	at io.b2mash.b2b.b2bstrawman.orgrole.ContradictoryOverrideIntegrationTest.anAdminCannotSendAContradictoryOverridePair(ContradictoryOverrideIntegrationTest.java:94)
+
+[ERROR] io.b2mash.b2b.b2bstrawman.orgrole.ContradictoryOverrideIntegrationTest.theOwnerCannotSendAContradictoryOverridePairEither -- Time elapsed: 0.041 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+[status of {"memberId":"77f802a2-26da-43dc-8dfe-52c77a248801","roleName":"Bookkeeper Contra B","roleCapabilities":["INVOICING"],"overrides":["+INVOICING","-INVOICING"],"effectiveCapabilities":["INVOICING"]}] 
+expected: 400
+ but was: 200
+	at io.b2mash.b2b.b2bstrawman.orgrole.ContradictoryOverrideIntegrationTest.assertContradictory(ContradictoryOverrideIntegrationTest.java:199)
+	at io.b2mash.b2b.b2bstrawman.orgrole.ContradictoryOverrideIntegrationTest.theOwnerCannotSendAContradictoryOverridePairEither(ContradictoryOverrideIntegrationTest.java:102)
+
+[ERROR] io.b2mash.b2b.b2bstrawman.orgrole.ContradictoryOverrideIntegrationTest.storedOverridesHoldingBothSignsResolveWithTheMinusWinning -- Time elapsed: 0.052 s <<< FAILURE!
+java.lang.AssertionError: 
+
+Expecting
+  ["INVOICING", "SIGN_OFF_TRUST_TAKE_ON"]
+not to contain
+  ["SIGN_OFF_TRUST_TAKE_ON"]
+but found
+  ["SIGN_OFF_TRUST_TAKE_ON"]
+
+	at io.b2mash.b2b.b2bstrawman.orgrole.ContradictoryOverrideIntegrationTest.storedOverridesHoldingBothSignsResolveWithTheMinusWinning(ContradictoryOverrideIntegrationTest.java:124)
+
+[ERROR] Failures: 
+[ERROR]   ContradictoryOverrideIntegrationTest.anAdminCannotSendAContradictoryOverridePair:94->assertContradictory:199 [status of {"memberId":"8eccd287-3464-4980-8ed9-0b50e9bba485","roleName":"Bookkeeper Contra A","roleCapabilities":["INVOICING"],"overrides":["-MANAGE_COMPLIANCE_DESTRUCTIVE","+CLOSE_MATTER","+AI_REVIEW","+AUTOMATIONS","+INVOICING","+AI_EXECUTE","+CUSTOMER_MANAGEMENT","+MANAGE_LEGAL","+AI_MANAGE","+MANAGE_TRUST","+MANAGE_COMPLIANCE_DESTRUCTIVE","+PROJECT_MANAGEMENT","+VIEW_LEGAL"],"effectiveCapabilities":["INVOICING","MANAGE_LEGAL","AI_EXECUTE","PROJECT_MANAGEMENT","VIEW_LEGAL","CLOSE_MATTER","AI_REVIEW","MANAGE_TRUST","CUSTOMER_MANAGEMENT","AUTOMATIONS","AI_MANAGE"]}] 
+expected: 400
+ but was: 200
+[ERROR]   ContradictoryOverrideIntegrationTest.storedOverridesHoldingBothSignsResolveWithTheMinusWinning:124 
+Expecting
+  ["INVOICING", "SIGN_OFF_TRUST_TAKE_ON"]
+not to contain
+  ["SIGN_OFF_TRUST_TAKE_ON"]
+but found
+  ["SIGN_OFF_TRUST_TAKE_ON"]
+
+[ERROR]   ContradictoryOverrideIntegrationTest.theOwnerCannotSendAContradictoryOverridePairEither:102->assertContradictory:199 [status of {"memberId":"77f802a2-26da-43dc-8dfe-52c77a248801","roleName":"Bookkeeper Contra B","roleCapabilities":["INVOICING"],"overrides":["+INVOICING","-INVOICING"],"effectiveCapabilities":["INVOICING"]}] 
+expected: 400
+ but was: 200
+[ERROR]   OrgRoleServiceTest.resolveCapabilities_contradictoryPair_minusWinsInEitherIterationOrder:330 [overrides iterated as [+SIGN_OFF_TRUST_TAKE_ON, -SIGN_OFF_TRUST_TAKE_ON, -INVOICING, +INVOICING]] 
+Expecting
+  ["INVOICING"]
+not to contain
+  ["SIGN_OFF_TRUST_TAKE_ON", "INVOICING"]
+but found
+  ["INVOICING"]
+
+[ERROR] Tests run: 24, Failures: 4, Errors: 0, Skipped: 0
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.5.4:test (default-test) on project b2b-strawman-backend: There are test failures.
+[ERROR] 
+[ERROR] See /Users/rakheendama/Projects/2026/wt-f657c7-fr4/backend/target/surefire-reports for the individual test results.
+[ERROR] See dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

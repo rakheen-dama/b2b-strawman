@@ -1,0 +1,827 @@
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::staticFieldBase has been called by com.diffplug.spotless.java.ModuleHelper (file:/Users/rakheendama/.m2/repository/com/diffplug/spotless/spotless-lib/4.3.0/spotless-lib-4.3.0.jar)
+WARNING: Please consider reporting this to the maintainers of class com.diffplug.spotless.java.ModuleHelper
+WARNING: sun.misc.Unsafe::staticFieldBase will be removed in a future release
+14:11:01.452 [main] INFO com.tngtech.archunit.ArchConfiguration -- Reading ArchUnit properties from file:/Users/rakheendama/Projects/2026/wt-f657c7-fr4/backend/target/test-classes/archunit.properties
+14:11:01.545 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [io.b2mash.b2b.b2bstrawman.takeon.TakeOnRevalidationAnonymisationRaceIntegrationTest]: TakeOnRevalidationAnonymisationRaceIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+14:11:01.745 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration io.b2mash.b2b.b2bstrawman.BackendApplication for test class io.b2mash.b2b.b2bstrawman.takeon.TakeOnRevalidationAnonymisationRaceIntegrationTest
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/Users/rakheendama/.m2/repository/net/bytebuddy/byte-buddy-agent/1.17.8/byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /internal/members/sync
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", X-API-KEY:"test-api-key", Content-Length:"167", Idempotency-Key:"54945daf-3cb2-4999-83b7-c02cc10d0c4e"]
+             Body = {"clerkOrgId":"org_take_on_revalidation_race_test","clerkUserId":"user_trr_owner","email":"trr_owner@test.com","name":"Race Owner","avatarUrl":null,"orgRole":"owner"}
+
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.member.MemberSyncController
+           Method = io.b2mash.b2b.b2bstrawman.member.MemberSyncController#syncMember(SyncMemberRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/internal/members/85bb3b21-f25b-4a4d-97ad-eb7cbb3a0839", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"memberId":"85bb3b21-f25b-4a4d-97ad-eb7cbb3a0839","clerkUserId":"user_trr_owner","action":"created"}
+    Forwarded URL = null
+   Redirected URL = /internal/members/85bb3b21-f25b-4a4d-97ad-eb7cbb3a0839
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/take-on/batches
+       Parameters = {dataset=[CLIENTS]}
+          Headers = [Content-Type:"multipart/form-data;charset=UTF-8", Idempotency-Key:"260b40d6-5ffc-4d5f-8cc3-b60d1665cb9e"]
+             Body = null
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController
+           Method = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController#createBatch(MultipartFile, TakeOnDataset, TakeOnSection, UUID, String)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/api/take-on/batches/c7d472a7-7d82-4fd3-b80c-800b15914ee7", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"batch":{"id":"c7d472a7-7d82-4fd3-b80c-800b15914ee7","dataset":"CLIENTS","status":"UPLOADED","name":null,"cutoverDate":null,"trustAccountId":null,"sources":[{"id":"8f69f5f5-c437-4d34-9e5c-1617c76aec7e","section":"MAIN","fileName":"clients.csv","fileFormat":"CSV","fileSize":609,"sheetNames":[{"name":"CSV","hidden":false}],"sheetName":"CSV","headerRow":1,"parseOptions":{"dateFormat":"dd/MM/yyyy","decimalSeparator":"POINT","delimiter":",","encoding":"UTF-8"},"mapping":null,"mapped":false,"rowCount":3,"malformedCount":0,"blankSkipped":0,"purged":false,"uploadedAt":"2026-11-24T14:11:19.015030Z"}],"counts":{"total":0,"valid":0,"error":0,"duplicate":0,"blocks":0,"created":0,"skipped":0,"failed":0},"validationHash":null,"validatedAt":null,"allowedActions":["REMOVE_SOURCE","MAP","CANCEL"],"createdAt":"2026-11-24T14:11:19.012562Z","cancelledAt":null,"commitStartedAt":null,"completedAt":null,"lastError":null,"signOffs":[],"attestationStatement":null,"summary":null,"midMonthAcknowledged":false,"position":null,"trustAccountName":null,"reportId":null},"sourceId":"8f69f5f5-c437-4d34-9e5c-1617c76aec7e","headers":["Client name","Email","Client type","CDD completed date","Beneficial ownership","Screening","Screening date","Records","Rating","Tax number","ID number","Address","City","Country","Previous ID","Branch"],"warnings":[]}
+    Forwarded URL = null
+   Redirected URL = /api/take-on/batches/c7d472a7-7d82-4fd3-b80c-800b15914ee7
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = PUT
+      Request URI = /api/take-on/batches/c7d472a7-7d82-4fd3-b80c-800b15914ee7/sources/8f69f5f5-c437-4d34-9e5c-1617c76aec7e/mapping
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"441", Idempotency-Key:"505d9020-7667-4195-8e4a-8a41c409df1d"]
+             Body = {"parked":["Branch"],"targets":{"name":"Client name","beneficialOwnershipStatus":"Beneficial ownership","ficaClientType":"Client type","country":"Country","addressLine1":"Address","sourceRef":"Previous ID","cddCompletedDate":"CDD completed date","cddRecordsLocation":"Records","taxNumber":"Tax number","idNumber":"ID number","email":"Email","screeningDate":"Screening date","screeningStatus":"Screening","riskRating":"Rating","city":"City"}}
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController
+           Method = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController#saveMapping(UUID, UUID, TakeOnMappingRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"c7d472a7-7d82-4fd3-b80c-800b15914ee7","dataset":"CLIENTS","status":"MAPPED","name":null,"cutoverDate":null,"trustAccountId":null,"sources":[{"id":"8f69f5f5-c437-4d34-9e5c-1617c76aec7e","section":"MAIN","fileName":"clients.csv","fileFormat":"CSV","fileSize":609,"sheetNames":[{"name":"CSV","hidden":false}],"sheetName":"CSV","headerRow":1,"parseOptions":{"dateFormat":"dd/MM/yyyy","decimalSeparator":"POINT","delimiter":",","encoding":"UTF-8"},"mapping":{"targets":{"name":"Client name","beneficialOwnershipStatus":"Beneficial ownership","ficaClientType":"Client type","country":"Country","addressLine1":"Address","sourceRef":"Previous ID","cddCompletedDate":"CDD completed date","cddRecordsLocation":"Records","taxNumber":"Tax number","idNumber":"ID number","email":"Email","screeningDate":"Screening date","screeningStatus":"Screening","riskRating":"Rating","city":"City"},"customFields":{},"parked":["Branch"],"defaults":{}},"mapped":true,"rowCount":3,"malformedCount":0,"blankSkipped":0,"purged":false,"uploadedAt":"2026-11-24T14:11:19.015030Z"}],"counts":{"total":0,"valid":0,"error":0,"duplicate":0,"blocks":0,"created":0,"skipped":0,"failed":0},"validationHash":null,"validatedAt":null,"allowedActions":["REMOVE_SOURCE","MAP","VALIDATE","CANCEL"],"createdAt":"2026-11-24T14:11:19.012562Z","cancelledAt":null,"commitStartedAt":null,"completedAt":null,"lastError":null,"signOffs":[],"attestationStatement":null,"summary":null,"midMonthAcknowledged":false,"position":null,"trustAccountName":null,"reportId":null}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/take-on/batches/c7d472a7-7d82-4fd3-b80c-800b15914ee7/validate
+       Parameters = {}
+          Headers = [Idempotency-Key:"a2b57992-cdf0-41b3-9ca6-1d256274e75f"]
+             Body = null
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController
+           Method = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController#validate(UUID)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"c7d472a7-7d82-4fd3-b80c-800b15914ee7","dataset":"CLIENTS","status":"VALIDATED","name":null,"cutoverDate":null,"trustAccountId":null,"sources":[{"id":"8f69f5f5-c437-4d34-9e5c-1617c76aec7e","section":"MAIN","fileName":"clients.csv","fileFormat":"CSV","fileSize":609,"sheetNames":[{"name":"CSV","hidden":false}],"sheetName":"CSV","headerRow":1,"parseOptions":{"dateFormat":"dd/MM/yyyy","decimalSeparator":"POINT","delimiter":",","encoding":"UTF-8"},"mapping":{"targets":{"city":"City","name":"Client name","email":"Email","country":"Country","idNumber":"ID number","sourceRef":"Previous ID","taxNumber":"Tax number","riskRating":"Rating","addressLine1":"Address","screeningDate":"Screening date","ficaClientType":"Client type","screeningStatus":"Screening","cddCompletedDate":"CDD completed date","cddRecordsLocation":"Records","beneficialOwnershipStatus":"Beneficial ownership"},"customFields":{},"parked":["Branch"],"defaults":{}},"mapped":true,"rowCount":3,"malformedCount":0,"blankSkipped":0,"purged":false,"uploadedAt":"2026-11-24T14:11:19.015030Z"}],"counts":{"total":3,"valid":3,"error":0,"duplicate":0,"blocks":0,"created":0,"skipped":0,"failed":0},"validationHash":"cb96e58f63e4e4b919cf8bc99c42c001b0c7769beb1bf4d44b70efe8c031d658","validatedAt":"2026-11-24T14:11:19.110869Z","allowedActions":["REMOVE_SOURCE","MAP","REVALIDATE","ATTEST","CANCEL"],"createdAt":"2026-11-24T14:11:19.012562Z","cancelledAt":null,"commitStartedAt":null,"completedAt":null,"lastError":null,"signOffs":[],"attestationStatement":{"version":"FICA-ATTEST-v1","text":"I confirm that customer due diligence for the clients in this batch was performed by Revalidation Race in its previous system, as recorded in each row, and that the records and the copies of, or references to, the verification documents remain available at the location recorded for each client for at least as long as FICA requires (sections 22 and 23). These clients will be shown as verified in the prior system, not as verified in Kazi."},"summary":{"fica":{"riskRating":{"LOW":3},"ficaClientType":{"NATURAL_PERSON":3},"screeningStatus":{"SCREENED_CLEAR":3},"sourceOfFundsStatus":{"NOT_REQUIRED":3},"beneficialOwnershipStatus":{"NOT_APPLICABLE":3}},"clients":3},"midMonthAcknowledged":false,"position":null,"trustAccountName":null,"reportId":null}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/take-on/batches/c7d472a7-7d82-4fd3-b80c-800b15914ee7/attestation
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"135", Idempotency-Key:"291f53f0-d34c-4d84-8681-6aec70e6dc57"]
+             Body = {"statementVersion":"FICA-ATTEST-v1","defaults":{},"validationHash":"cb96e58f63e4e4b919cf8bc99c42c001b0c7769beb1bf4d44b70efe8c031d658"}
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController
+           Method = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController#attest(UUID, TakeOnAttestationRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"c7d472a7-7d82-4fd3-b80c-800b15914ee7","dataset":"CLIENTS","status":"VALIDATED","name":null,"cutoverDate":null,"trustAccountId":null,"sources":[{"id":"8f69f5f5-c437-4d34-9e5c-1617c76aec7e","section":"MAIN","fileName":"clients.csv","fileFormat":"CSV","fileSize":609,"sheetNames":[{"name":"CSV","hidden":false}],"sheetName":"CSV","headerRow":1,"parseOptions":{"dateFormat":"dd/MM/yyyy","decimalSeparator":"POINT","delimiter":",","encoding":"UTF-8"},"mapping":{"targets":{"city":"City","name":"Client name","email":"Email","country":"Country","idNumber":"ID number","sourceRef":"Previous ID","taxNumber":"Tax number","riskRating":"Rating","addressLine1":"Address","screeningDate":"Screening date","ficaClientType":"Client type","screeningStatus":"Screening","cddCompletedDate":"CDD completed date","cddRecordsLocation":"Records","beneficialOwnershipStatus":"Beneficial ownership"},"customFields":{},"parked":["Branch"],"defaults":{}},"mapped":true,"rowCount":3,"malformedCount":0,"blankSkipped":0,"purged":false,"uploadedAt":"2026-11-24T14:11:19.015030Z"}],"counts":{"total":3,"valid":3,"error":0,"duplicate":0,"blocks":0,"created":0,"skipped":0,"failed":0},"validationHash":"cb96e58f63e4e4b919cf8bc99c42c001b0c7769beb1bf4d44b70efe8c031d658","validatedAt":"2026-11-24T14:11:19.110869Z","allowedActions":["REMOVE_SOURCE","MAP","REVALIDATE","COMMIT","REVOKE_ATTESTATION","CANCEL"],"createdAt":"2026-11-24T14:11:19.012562Z","cancelledAt":null,"commitStartedAt":null,"completedAt":null,"lastError":null,"signOffs":[{"id":"5c0da989-8efe-4391-baa0-2186cbba2c42","kind":"FICA_ATTESTATION","memberName":"Race Owner","roleName":"Owner","statementVersion":"FICA-ATTEST-v1","signedAt":"2026-11-24T14:11:19.136404Z"}],"attestationStatement":{"version":"FICA-ATTEST-v1","text":"I confirm that customer due diligence for the clients in this batch was performed by Revalidation Race in its previous system, as recorded in each row, and that the records and the copies of, or references to, the verification documents remain available at the location recorded for each client for at least as long as FICA requires (sections 22 and 23). These clients will be shown as verified in the prior system, not as verified in Kazi."},"summary":{"fica":{"riskRating":{"LOW":3},"ficaClientType":{"NATURAL_PERSON":3},"screeningStatus":{"SCREENED_CLEAR":3},"sourceOfFundsStatus":{"NOT_REQUIRED":3},"beneficialOwnershipStatus":{"NOT_APPLICABLE":3}},"clients":3},"midMonthAcknowledged":false,"position":null,"trustAccountName":null,"reportId":null}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/take-on/batches
+       Parameters = {dataset=[MATTERS]}
+          Headers = [Content-Type:"multipart/form-data;charset=UTF-8", Idempotency-Key:"43428d41-e487-41c2-be11-d978db99acdb"]
+             Body = null
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController
+           Method = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController#createBatch(MultipartFile, TakeOnDataset, TakeOnSection, UUID, String)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/api/take-on/batches/13738267-453a-4478-b4ce-355ba4ea3c81", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"batch":{"id":"13738267-453a-4478-b4ce-355ba4ea3c81","dataset":"MATTERS","status":"UPLOADED","name":null,"cutoverDate":null,"trustAccountId":null,"sources":[{"id":"6a3abe92-fb4e-4651-8201-0181a6a54e8e","section":"MAIN","fileName":"matters.csv","fileFormat":"CSV","fileSize":221,"sheetNames":[{"name":"CSV","hidden":false}],"sheetName":"CSV","headerRow":1,"parseOptions":{"dateFormat":"dd/MM/yyyy","decimalSeparator":"POINT","delimiter":",","encoding":"UTF-8"},"mapping":null,"mapped":false,"rowCount":3,"malformedCount":0,"blankSkipped":0,"purged":false,"uploadedAt":"2026-11-24T14:11:19.211928Z"}],"counts":{"total":0,"valid":0,"error":0,"duplicate":0,"blocks":0,"created":0,"skipped":0,"failed":0},"validationHash":null,"validatedAt":null,"allowedActions":["REMOVE_SOURCE","MAP","CANCEL"],"createdAt":"2026-11-24T14:11:19.211651Z","cancelledAt":null,"commitStartedAt":null,"completedAt":null,"lastError":null,"signOffs":[],"attestationStatement":null,"summary":null,"midMonthAcknowledged":false,"position":null,"trustAccountName":null,"reportId":null},"sourceId":"6a3abe92-fb4e-4651-8201-0181a6a54e8e","headers":["Matter name","Client email","Client ID","Client ID number","Matter number","Description","Due date","Work type","Priority","Attorney email","Previous ID","File room"],"warnings":[]}
+    Forwarded URL = null
+   Redirected URL = /api/take-on/batches/13738267-453a-4478-b4ce-355ba4ea3c81
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = PUT
+      Request URI = /api/take-on/batches/13738267-453a-4478-b4ce-355ba4ea3c81/sources/6a3abe92-fb4e-4651-8201-0181a6a54e8e/mapping
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"335", Idempotency-Key:"fbca8a78-7fc0-431c-8fd3-9ffa518f4ba6"]
+             Body = {"parked":["File room"],"targets":{"clientRef":"Client ID","clientEmail":"Client email","referenceNumber":"Matter number","description":"Description","priority":"Priority","name":"Matter name","workType":"Work type","sourceRef":"Previous ID","leadMemberEmail":"Attorney email","clientIdNumber":"Client ID number","dueDate":"Due date"}}
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController
+           Method = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController#saveMapping(UUID, UUID, TakeOnMappingRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"13738267-453a-4478-b4ce-355ba4ea3c81","dataset":"MATTERS","status":"MAPPED","name":null,"cutoverDate":null,"trustAccountId":null,"sources":[{"id":"6a3abe92-fb4e-4651-8201-0181a6a54e8e","section":"MAIN","fileName":"matters.csv","fileFormat":"CSV","fileSize":221,"sheetNames":[{"name":"CSV","hidden":false}],"sheetName":"CSV","headerRow":1,"parseOptions":{"dateFormat":"dd/MM/yyyy","decimalSeparator":"POINT","delimiter":",","encoding":"UTF-8"},"mapping":{"targets":{"clientRef":"Client ID","clientEmail":"Client email","referenceNumber":"Matter number","description":"Description","priority":"Priority","name":"Matter name","workType":"Work type","sourceRef":"Previous ID","leadMemberEmail":"Attorney email","clientIdNumber":"Client ID number","dueDate":"Due date"},"customFields":{},"parked":["File room"],"defaults":{}},"mapped":true,"rowCount":3,"malformedCount":0,"blankSkipped":0,"purged":false,"uploadedAt":"2026-11-24T14:11:19.211928Z"}],"counts":{"total":0,"valid":0,"error":0,"duplicate":0,"blocks":0,"created":0,"skipped":0,"failed":0},"validationHash":null,"validatedAt":null,"allowedActions":["REMOVE_SOURCE","MAP","VALIDATE","CANCEL"],"createdAt":"2026-11-24T14:11:19.211651Z","cancelledAt":null,"commitStartedAt":null,"completedAt":null,"lastError":null,"signOffs":[],"attestationStatement":null,"summary":null,"midMonthAcknowledged":false,"position":null,"trustAccountName":null,"reportId":null}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/take-on/batches/13738267-453a-4478-b4ce-355ba4ea3c81/validate
+       Parameters = {}
+          Headers = [Idempotency-Key:"153f39d9-180c-41be-ab3a-1029970b5b74"]
+             Body = null
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController
+           Method = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController#validate(UUID)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"13738267-453a-4478-b4ce-355ba4ea3c81","dataset":"MATTERS","status":"VALIDATED","name":null,"cutoverDate":null,"trustAccountId":null,"sources":[{"id":"6a3abe92-fb4e-4651-8201-0181a6a54e8e","section":"MAIN","fileName":"matters.csv","fileFormat":"CSV","fileSize":221,"sheetNames":[{"name":"CSV","hidden":false}],"sheetName":"CSV","headerRow":1,"parseOptions":{"dateFormat":"dd/MM/yyyy","decimalSeparator":"POINT","delimiter":",","encoding":"UTF-8"},"mapping":{"targets":{"name":"Matter name","dueDate":"Due date","priority":"Priority","workType":"Work type","clientRef":"Client ID","sourceRef":"Previous ID","clientEmail":"Client email","description":"Description","clientIdNumber":"Client ID number","leadMemberEmail":"Attorney email","referenceNumber":"Matter number"},"customFields":{},"parked":["File room"],"defaults":{}},"mapped":true,"rowCount":3,"malformedCount":0,"blankSkipped":0,"purged":false,"uploadedAt":"2026-11-24T14:11:19.211928Z"}],"counts":{"total":3,"valid":3,"error":0,"duplicate":0,"blocks":0,"created":0,"skipped":0,"failed":0},"validationHash":"9a3b5d8a17d9324d093dff864a26d34f189095ec21376c8bddf0b10334b3ec30","validatedAt":"2026-11-24T14:11:19.263297Z","allowedActions":["REMOVE_SOURCE","MAP","REVALIDATE","COMMIT","CANCEL"],"createdAt":"2026-11-24T14:11:19.211651Z","cancelledAt":null,"commitStartedAt":null,"completedAt":null,"lastError":null,"signOffs":[],"attestationStatement":null,"summary":{},"midMonthAcknowledged":false,"position":null,"trustAccountName":null,"reportId":null}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/trust-accounts
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"228", Idempotency-Key:"01d56f69-32fb-43ed-bd12-17d7d80805cb"]
+             Body = {"accountName": "trr Trust 1", "bankName": "First National Bank",
+ "branchCode": "250655", "accountNumber": "6200000001",
+ "accountType": "GENERAL", "isPrimary": false,
+ "requireDualApproval": false, "openedDate": "2025-01-01"}
+
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountingController
+           Method = io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountingController#create(CreateTrustAccountRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", Content-Length:"505", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"a85638f0-6cc6-43e6-8170-a8ee29b46970","accountName":"trr Trust 1","bankName":"First National Bank","branchCode":"250655","accountNumber":"6200000001","accountType":"GENERAL","investmentBasis":null,"section":"S86_2","isPrimary":false,"requireDualApproval":false,"paymentApprovalThreshold":null,"status":"ACTIVE","openedDate":"2025-01-01","closedDate":null,"notes":null,"createdAt":"2026-11-24T14:11:19.369360Z","updatedAt":"2026-11-24T14:11:19.369360Z","lockedThrough":null,"takeOnCutoverDate":null}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/trust-accounts
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"264", Idempotency-Key:"6a2ab7b5-c48f-4d37-a2e2-a0abb9ee6313"]
+             Body = {"accountName": "trr I3 1", "bankName": "First National Bank",
+ "branchCode": "250655", "accountNumber": "TRR-I3-1",
+ "accountType": "INVESTMENT", "isPrimary": false,
+ "requireDualApproval": false, "openedDate": "2025-01-01", "investmentBasis": "FIRM_DISCRETION"}
+
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountingController
+           Method = io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountingController#create(CreateTrustAccountRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", Content-Length:"516", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"139f27fb-5c28-4448-90cb-ed8d9052f8a9","accountName":"trr I3 1","bankName":"First National Bank","branchCode":"250655","accountNumber":"TRR-I3-1","accountType":"INVESTMENT","investmentBasis":"FIRM_DISCRETION","section":"S86_3","isPrimary":false,"requireDualApproval":false,"paymentApprovalThreshold":null,"status":"ACTIVE","openedDate":"2025-01-01","closedDate":null,"notes":null,"createdAt":"2026-11-24T14:11:19.391734Z","updatedAt":"2026-11-24T14:11:19.391734Z","lockedThrough":null,"takeOnCutoverDate":null}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/trust-accounts
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"267", Idempotency-Key:"69e5f266-fe03-4c76-9b7b-e8482b386300"]
+             Body = {"accountName": "trr I4 1", "bankName": "First National Bank",
+ "branchCode": "250655", "accountNumber": "TRR-I4-1",
+ "accountType": "INVESTMENT", "isPrimary": false,
+ "requireDualApproval": false, "openedDate": "2025-01-01", "investmentBasis": "CLIENT_INSTRUCTION"}
+
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountingController
+           Method = io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountingController#create(CreateTrustAccountRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", Content-Length:"519", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"347e4def-a41e-4c6a-a654-15a1d71d7f4e","accountName":"trr I4 1","bankName":"First National Bank","branchCode":"250655","accountNumber":"TRR-I4-1","accountType":"INVESTMENT","investmentBasis":"CLIENT_INSTRUCTION","section":"S86_4","isPrimary":false,"requireDualApproval":false,"paymentApprovalThreshold":null,"status":"ACTIVE","openedDate":"2025-01-01","closedDate":null,"notes":null,"createdAt":"2026-11-24T14:11:19.405147Z","updatedAt":"2026-11-24T14:11:19.405147Z","lockedThrough":null,"takeOnCutoverDate":null}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/take-on/batches
+       Parameters = {dataset=[TRUST_POSITION], section=[CLIENT_LEDGER], trustAccountId=[a85638f0-6cc6-43e6-8170-a8ee29b46970]}
+          Headers = [Content-Type:"multipart/form-data;charset=UTF-8", Idempotency-Key:"c6f30ea8-4513-40ab-b5c3-bc949992c131"]
+             Body = null
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController
+           Method = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController#createBatch(MultipartFile, TakeOnDataset, TakeOnSection, UUID, String)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/api/take-on/batches/956bfe54-79e8-4fa5-a90f-36bc17f7951e", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"batch":{"id":"956bfe54-79e8-4fa5-a90f-36bc17f7951e","dataset":"TRUST_POSITION","status":"UPLOADED","name":null,"cutoverDate":null,"trustAccountId":"a85638f0-6cc6-43e6-8170-a8ee29b46970","sources":[{"id":"b49b7805-3284-4b48-bfe2-74ca52486241","section":"CLIENT_LEDGER","fileName":"client_ledger.csv","fileFormat":"CSV","fileSize":112,"sheetNames":[{"name":"CSV","hidden":false}],"sheetName":"CSV","headerRow":1,"parseOptions":{"dateFormat":"dd/MM/yyyy","decimalSeparator":"POINT","delimiter":",","encoding":"UTF-8"},"mapping":null,"mapped":false,"rowCount":3,"malformedCount":0,"blankSkipped":0,"purged":false,"uploadedAt":"2026-11-24T14:11:19.421999Z"}],"counts":{"total":0,"valid":0,"error":0,"duplicate":0,"blocks":0,"created":0,"skipped":0,"failed":0},"validationHash":null,"validatedAt":null,"allowedActions":["ADD_SOURCE","REMOVE_SOURCE","MAP","CANCEL"],"createdAt":"2026-11-24T14:11:19.421791Z","cancelledAt":null,"commitStartedAt":null,"completedAt":null,"lastError":null,"signOffs":[],"attestationStatement":null,"summary":null,"midMonthAcknowledged":false,"position":{"bankBalance":null,"outstandingDepositsTotal":null,"outstandingPaymentsTotal":null,"cashbookBalance":null,"fundLedgerBalance":0.00,"investedTotal":0.00},"trustAccountName":"trr Trust 1","reportId":null},"sourceId":"b49b7805-3284-4b48-bfe2-74ca52486241","headers":["Client reference","Matter reference","Balance at cutover","Previous ID"],"warnings":[]}
+    Forwarded URL = null
+   Redirected URL = /api/take-on/batches/956bfe54-79e8-4fa5-a90f-36bc17f7951e
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = PUT
+      Request URI = /api/take-on/batches/956bfe54-79e8-4fa5-a90f-36bc17f7951e/sources/b49b7805-3284-4b48-bfe2-74ca52486241/mapping
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"132", Idempotency-Key:"96f9940e-f43d-4538-82d3-cbba8caa2749"]
+             Body = {"targets":{"clientRef":"Client reference","sourceRef":"Previous ID","matterRef":"Matter reference","balance":"Balance at cutover"}}
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController
+           Method = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController#saveMapping(UUID, UUID, TakeOnMappingRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"956bfe54-79e8-4fa5-a90f-36bc17f7951e","dataset":"TRUST_POSITION","status":"MAPPED","name":null,"cutoverDate":null,"trustAccountId":"a85638f0-6cc6-43e6-8170-a8ee29b46970","sources":[{"id":"b49b7805-3284-4b48-bfe2-74ca52486241","section":"CLIENT_LEDGER","fileName":"client_ledger.csv","fileFormat":"CSV","fileSize":112,"sheetNames":[{"name":"CSV","hidden":false}],"sheetName":"CSV","headerRow":1,"parseOptions":{"dateFormat":"dd/MM/yyyy","decimalSeparator":"POINT","delimiter":",","encoding":"UTF-8"},"mapping":{"targets":{"clientRef":"Client reference","sourceRef":"Previous ID","matterRef":"Matter reference","balance":"Balance at cutover"},"customFields":{},"parked":[],"defaults":{}},"mapped":true,"rowCount":3,"malformedCount":0,"blankSkipped":0,"purged":false,"uploadedAt":"2026-11-24T14:11:19.421999Z"}],"counts":{"total":0,"valid":0,"error":0,"duplicate":0,"blocks":0,"created":0,"skipped":0,"failed":0},"validationHash":null,"validatedAt":null,"allowedActions":["ADD_SOURCE","REMOVE_SOURCE","MAP","VALIDATE","CANCEL"],"createdAt":"2026-11-24T14:11:19.421791Z","cancelledAt":null,"commitStartedAt":null,"completedAt":null,"lastError":null,"signOffs":[],"attestationStatement":null,"summary":null,"midMonthAcknowledged":false,"position":{"bankBalance":null,"outstandingDepositsTotal":null,"outstandingPaymentsTotal":null,"cashbookBalance":null,"fundLedgerBalance":0.00,"investedTotal":0.00},"trustAccountName":"trr Trust 1","reportId":null}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/take-on/batches/956bfe54-79e8-4fa5-a90f-36bc17f7951e/sources
+       Parameters = {section=[UNIDENTIFIED_DEPOSITS]}
+          Headers = [Content-Type:"multipart/form-data;charset=UTF-8", Idempotency-Key:"f9f0a967-c52c-4be1-aed2-44a2c8e888ea"]
+             Body = null
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController
+           Method = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController#addSource(UUID, MultipartFile, TakeOnSection)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"batch":{"id":"956bfe54-79e8-4fa5-a90f-36bc17f7951e","dataset":"TRUST_POSITION","status":"UPLOADED","name":null,"cutoverDate":null,"trustAccountId":"a85638f0-6cc6-43e6-8170-a8ee29b46970","sources":[{"id":"b49b7805-3284-4b48-bfe2-74ca52486241","section":"CLIENT_LEDGER","fileName":"client_ledger.csv","fileFormat":"CSV","fileSize":112,"sheetNames":[{"name":"CSV","hidden":false}],"sheetName":"CSV","headerRow":1,"parseOptions":{"dateFormat":"dd/MM/yyyy","decimalSeparator":"POINT","delimiter":",","encoding":"UTF-8"},"mapping":{"targets":{"balance":"Balance at cutover","clientRef":"Client reference","matterRef":"Matter reference","sourceRef":"Previous ID"},"customFields":{},"parked":[],"defaults":{}},"mapped":true,"rowCount":3,"malformedCount":0,"blankSkipped":0,"purged":false,"uploadedAt":"2026-11-24T14:11:19.421999Z"},{"id":"a573b4b5-eb91-458a-810e-210748257b30","section":"UNIDENTIFIED_DEPOSITS","fileName":"unidentified_deposits.csv","fileFormat":"CSV","fileSize":115,"sheetNames":[{"name":"CSV","hidden":false}],"sheetName":"CSV","headerRow":1,"parseOptions":{"dateFormat":"dd/MM/yyyy","decimalSeparator":"POINT","delimiter":",","encoding":"UTF-8"},"mapping":null,"mapped":false,"rowCount":2,"malformedCount":0,"blankSkipped":0,"purged":false,"uploadedAt":"2026-11-24T14:11:19.460616Z"}],"counts":{"total":0,"valid":0,"error":0,"duplicate":0,"blocks":0,"created":0,"skipped":0,"failed":0},"validationHash":null,"validatedAt":null,"allowedActions":["ADD_SOURCE","REMOVE_SOURCE","MAP","CANCEL"],"createdAt":"2026-11-24T14:11:19.421791Z","cancelledAt":null,"commitStartedAt":null,"completedAt":null,"lastError":null,"signOffs":[],"attestationStatement":null,"summary":null,"midMonthAcknowledged":false,"position":{"bankBalance":null,"outstandingDepositsTotal":null,"outstandingPaymentsTotal":null,"cashbookBalance":null,"fundLedgerBalance":0.00,"investedTotal":0.00},"trustAccountName":"trr Trust 1","reportId":null},"sourceId":"a573b4b5-eb91-458a-810e-210748257b30","headers":["Date received","Amount","Bank reference","Description"],"warnings":[]}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = PUT
+      Request URI = /api/take-on/batches/956bfe54-79e8-4fa5-a90f-36bc17f7951e/sources/a573b4b5-eb91-458a-810e-210748257b30/mapping
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"123", Idempotency-Key:"5287c208-f5f0-42ce-92f3-ec48b4f7f0d8"]
+             Body = {"targets":{"receivedDate":"Date received","amount":"Amount","bankReference":"Bank reference","description":"Description"}}
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController
+           Method = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController#saveMapping(UUID, UUID, TakeOnMappingRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"956bfe54-79e8-4fa5-a90f-36bc17f7951e","dataset":"TRUST_POSITION","status":"MAPPED","name":null,"cutoverDate":null,"trustAccountId":"a85638f0-6cc6-43e6-8170-a8ee29b46970","sources":[{"id":"b49b7805-3284-4b48-bfe2-74ca52486241","section":"CLIENT_LEDGER","fileName":"client_ledger.csv","fileFormat":"CSV","fileSize":112,"sheetNames":[{"name":"CSV","hidden":false}],"sheetName":"CSV","headerRow":1,"parseOptions":{"dateFormat":"dd/MM/yyyy","decimalSeparator":"POINT","delimiter":",","encoding":"UTF-8"},"mapping":{"targets":{"balance":"Balance at cutover","clientRef":"Client reference","matterRef":"Matter reference","sourceRef":"Previous ID"},"customFields":{},"parked":[],"defaults":{}},"mapped":true,"rowCount":3,"malformedCount":0,"blankSkipped":0,"purged":false,"uploadedAt":"2026-11-24T14:11:19.421999Z"},{"id":"a573b4b5-eb91-458a-810e-210748257b30","section":"UNIDENTIFIED_DEPOSITS","fileName":"unidentified_deposits.csv","fileFormat":"CSV","fileSize":115,"sheetNames":[{"name":"CSV","hidden":false}],"sheetName":"CSV","headerRow":1,"parseOptions":{"dateFormat":"dd/MM/yyyy","decimalSeparator":"POINT","delimiter":",","encoding":"UTF-8"},"mapping":{"targets":{"receivedDate":"Date received","amount":"Amount","bankReference":"Bank reference","description":"Description"},"customFields":{},"parked":[],"defaults":{}},"mapped":true,"rowCount":2,"malformedCount":0,"blankSkipped":0,"purged":false,"uploadedAt":"2026-11-24T14:11:19.460616Z"}],"counts":{"total":0,"valid":0,"error":0,"duplicate":0,"blocks":0,"created":0,"skipped":0,"failed":0},"validationHash":null,"validatedAt":null,"allowedActions":["ADD_SOURCE","REMOVE_SOURCE","MAP","VALIDATE","CANCEL"],"createdAt":"2026-11-24T14:11:19.421791Z","cancelledAt":null,"commitStartedAt":null,"completedAt":null,"lastError":null,"signOffs":[],"attestationStatement":null,"summary":null,"midMonthAcknowledged":false,"position":{"bankBalance":null,"outstandingDepositsTotal":null,"outstandingPaymentsTotal":null,"cashbookBalance":null,"fundLedgerBalance":0.00,"investedTotal":0.00},"trustAccountName":"trr Trust 1","reportId":null}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/take-on/batches/956bfe54-79e8-4fa5-a90f-36bc17f7951e/sources
+       Parameters = {section=[INVESTMENTS]}
+          Headers = [Content-Type:"multipart/form-data;charset=UTF-8", Idempotency-Key:"befdd24f-b1b5-424a-8fd0-d89103c9bec7"]
+             Body = null
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController
+           Method = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController#addSource(UUID, MultipartFile, TakeOnSection)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"batch":{"id":"956bfe54-79e8-4fa5-a90f-36bc17f7951e","dataset":"TRUST_POSITION","status":"UPLOADED","name":null,"cutoverDate":null,"trustAccountId":"a85638f0-6cc6-43e6-8170-a8ee29b46970","sources":[{"id":"b49b7805-3284-4b48-bfe2-74ca52486241","section":"CLIENT_LEDGER","fileName":"client_ledger.csv","fileFormat":"CSV","fileSize":112,"sheetNames":[{"name":"CSV","hidden":false}],"sheetName":"CSV","headerRow":1,"parseOptions":{"dateFormat":"dd/MM/yyyy","decimalSeparator":"POINT","delimiter":",","encoding":"UTF-8"},"mapping":{"targets":{"balance":"Balance at cutover","clientRef":"Client reference","matterRef":"Matter reference","sourceRef":"Previous ID"},"customFields":{},"parked":[],"defaults":{}},"mapped":true,"rowCount":3,"malformedCount":0,"blankSkipped":0,"purged":false,"uploadedAt":"2026-11-24T14:11:19.421999Z"},{"id":"121541ad-c87d-4a33-bbe2-3793c4747008","section":"INVESTMENTS","fileName":"investments.csv","fileFormat":"CSV","fileSize":344,"sheetNames":[{"name":"CSV","hidden":false}],"sheetName":"CSV","headerRow":1,"parseOptions":{"dateFormat":"dd/MM/yyyy","decimalSeparator":"POINT","delimiter":",","encoding":"UTF-8"},"mapping":null,"mapped":false,"rowCount":2,"malformedCount":0,"blankSkipped":0,"purged":false,"uploadedAt":"2026-11-24T14:11:19.487455Z"},{"id":"a573b4b5-eb91-458a-810e-210748257b30","section":"UNIDENTIFIED_DEPOSITS","fileName":"unidentified_deposits.csv","fileFormat":"CSV","fileSize":115,"sheetNames":[{"name":"CSV","hidden":false}],"sheetName":"CSV","headerRow":1,"parseOptions":{"dateFormat":"dd/MM/yyyy","decimalSeparator":"POINT","delimiter":",","encoding":"UTF-8"},"mapping":{"targets":{"amount":"Amount","description":"Description","receivedDate":"Date received","bankReference":"Bank reference"},"customFields":{},"parked":[],"defaults":{}},"mapped":true,"rowCount":2,"malformedCount":0,"blankSkipped":0,"purged":false,"uploadedAt":"2026-11-24T14:11:19.460616Z"}],"counts":{"total":0,"valid":0,"error":0,"duplicate":0,"blocks":0,"created":0,"skipped":0,"failed":0},"validationHash":null,"validatedAt":null,"allowedActions":["ADD_SOURCE","REMOVE_SOURCE","MAP","CANCEL"],"createdAt":"2026-11-24T14:11:19.421791Z","cancelledAt":null,"commitStartedAt":null,"completedAt":null,"lastError":null,"signOffs":[],"attestationStatement":null,"summary":null,"midMonthAcknowledged":false,"position":{"bankBalance":null,"outstandingDepositsTotal":null,"outstandingPaymentsTotal":null,"cashbookBalance":null,"fundLedgerBalance":0.00,"investedTotal":0.00},"trustAccountName":"trr Trust 1","reportId":null},"sourceId":"121541ad-c87d-4a33-bbe2-3793c4747008","headers":["Investment account","Basis","Institution","Account number","Principal","Rate","Deposited","Client","Matter","Instruction","Instruction date","Endorsed","Accrued","Fund amount","Confirmed"],"warnings":[]}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = PUT
+      Request URI = /api/take-on/batches/956bfe54-79e8-4fa5-a90f-36bc17f7951e/sources/121541ad-c87d-4a33-bbe2-3793c4747008/mapping
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"445", Idempotency-Key:"521ada0b-8950-4f0e-b3a7-e9b1e049766a"]
+             Body = {"targets":{"depositDate":"Deposited","instructionReference":"Instruction","interestRate":"Rate","instructionDate":"Instruction date","investmentAccount":"Investment account","institution":"Institution","accountNumber":"Account number","accruedInterest":"Accrued","endorsementConfirmed":"Endorsed","principal":"Principal","basis":"Basis","clientRef":"Client","matterRef":"Matter","balancePerConfirmation":"Confirmed","fundAmount":"Fund amount"}}
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController
+           Method = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController#saveMapping(UUID, UUID, TakeOnMappingRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"956bfe54-79e8-4fa5-a90f-36bc17f7951e","dataset":"TRUST_POSITION","status":"MAPPED","name":null,"cutoverDate":null,"trustAccountId":"a85638f0-6cc6-43e6-8170-a8ee29b46970","sources":[{"id":"b49b7805-3284-4b48-bfe2-74ca52486241","section":"CLIENT_LEDGER","fileName":"client_ledger.csv","fileFormat":"CSV","fileSize":112,"sheetNames":[{"name":"CSV","hidden":false}],"sheetName":"CSV","headerRow":1,"parseOptions":{"dateFormat":"dd/MM/yyyy","decimalSeparator":"POINT","delimiter":",","encoding":"UTF-8"},"mapping":{"targets":{"balance":"Balance at cutover","clientRef":"Client reference","matterRef":"Matter reference","sourceRef":"Previous ID"},"customFields":{},"parked":[],"defaults":{}},"mapped":true,"rowCount":3,"malformedCount":0,"blankSkipped":0,"purged":false,"uploadedAt":"2026-11-24T14:11:19.421999Z"},{"id":"121541ad-c87d-4a33-bbe2-3793c4747008","section":"INVESTMENTS","fileName":"investments.csv","fileFormat":"CSV","fileSize":344,"sheetNames":[{"name":"CSV","hidden":false}],"sheetName":"CSV","headerRow":1,"parseOptions":{"dateFormat":"dd/MM/yyyy","decimalSeparator":"POINT","delimiter":",","encoding":"UTF-8"},"mapping":{"targets":{"depositDate":"Deposited","instructionReference":"Instruction","interestRate":"Rate","instructionDate":"Instruction date","investmentAccount":"Investment account","institution":"Institution","accountNumber":"Account number","accruedInterest":"Accrued","endorsementConfirmed":"Endorsed","principal":"Principal","basis":"Basis","clientRef":"Client","matterRef":"Matter","balancePerConfirmation":"Confirmed","fundAmount":"Fund amount"},"customFields":{},"parked":[],"defaults":{}},"mapped":true,"rowCount":2,"malformedCount":0,"blankSkipped":0,"purged":false,"uploadedAt":"2026-11-24T14:11:19.487455Z"},{"id":"a573b4b5-eb91-458a-810e-210748257b30","section":"UNIDENTIFIED_DEPOSITS","fileName":"unidentified_deposits.csv","fileFormat":"CSV","fileSize":115,"sheetNames":[{"name":"CSV","hidden":false}],"sheetName":"CSV","headerRow":1,"parseOptions":{"dateFormat":"dd/MM/yyyy","decimalSeparator":"POINT","delimiter":",","encoding":"UTF-8"},"mapping":{"targets":{"amount":"Amount","description":"Description","receivedDate":"Date received","bankReference":"Bank reference"},"customFields":{},"parked":[],"defaults":{}},"mapped":true,"rowCount":2,"malformedCount":0,"blankSkipped":0,"purged":false,"uploadedAt":"2026-11-24T14:11:19.460616Z"}],"counts":{"total":0,"valid":0,"error":0,"duplicate":0,"blocks":0,"created":0,"skipped":0,"failed":0},"validationHash":null,"validatedAt":null,"allowedActions":["ADD_SOURCE","REMOVE_SOURCE","MAP","VALIDATE","CANCEL"],"createdAt":"2026-11-24T14:11:19.421791Z","cancelledAt":null,"commitStartedAt":null,"completedAt":null,"lastError":null,"signOffs":[],"attestationStatement":null,"summary":null,"midMonthAcknowledged":false,"position":{"bankBalance":null,"outstandingDepositsTotal":null,"outstandingPaymentsTotal":null,"cashbookBalance":null,"fundLedgerBalance":0.00,"investedTotal":0.00},"trustAccountName":"trr Trust 1","reportId":null}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/take-on/batches/956bfe54-79e8-4fa5-a90f-36bc17f7951e/sources
+       Parameters = {section=[OUTSTANDING_ITEMS]}
+          Headers = [Content-Type:"multipart/form-data;charset=UTF-8", Idempotency-Key:"f9d26653-e988-45e6-afc5-8d774ac922eb"]
+             Body = null
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController
+           Method = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController#addSource(UUID, MultipartFile, TakeOnSection)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"batch":{"id":"956bfe54-79e8-4fa5-a90f-36bc17f7951e","dataset":"TRUST_POSITION","status":"UPLOADED","name":null,"cutoverDate":null,"trustAccountId":"a85638f0-6cc6-43e6-8170-a8ee29b46970","sources":[{"id":"b49b7805-3284-4b48-bfe2-74ca52486241","section":"CLIENT_LEDGER","fileName":"client_ledger.csv","fileFormat":"CSV","fileSize":112,"sheetNames":[{"name":"CSV","hidden":false}],"sheetName":"CSV","headerRow":1,"parseOptions":{"dateFormat":"dd/MM/yyyy","decimalSeparator":"POINT","delimiter":",","encoding":"UTF-8"},"mapping":{"targets":{"balance":"Balance at cutover","clientRef":"Client reference","matterRef":"Matter reference","sourceRef":"Previous ID"},"customFields":{},"parked":[],"defaults":{}},"mapped":true,"rowCount":3,"malformedCount":0,"blankSkipped":0,"purged":false,"uploadedAt":"2026-11-24T14:11:19.421999Z"},{"id":"121541ad-c87d-4a33-bbe2-3793c4747008","section":"INVESTMENTS","fileName":"investments.csv","fileFormat":"CSV","fileSize":344,"sheetNames":[{"name":"CSV","hidden":false}],"sheetName":"CSV","headerRow":1,"parseOptions":{"dateFormat":"dd/MM/yyyy","decimalSeparator":"POINT","delimiter":",","encoding":"UTF-8"},"mapping":{"targets":{"basis":"Basis","clientRef":"Client","matterRef":"Matter","principal":"Principal","fundAmount":"Fund amount","depositDate":"Deposited","institution":"Institution","interestRate":"Rate","accountNumber":"Account number","accruedInterest":"Accrued","instructionDate":"Instruction date","investmentAccount":"Investment account","endorsementConfirmed":"Endorsed","instructionReference":"Instruction","balancePerConfirmation":"Confirmed"},"customFields":{},"parked":[],"defaults":{}},"mapped":true,"rowCount":2,"malformedCount":0,"blankSkipped":0,"purged":false,"uploadedAt":"2026-11-24T14:11:19.487455Z"},{"id":"8de4c8fe-bd52-4f19-8e7d-e3a03d1472c9","section":"OUTSTANDING_ITEMS","fileName":"outstanding_items.csv","fileFormat":"CSV","fileSize":158,"sheetNames":[{"name":"CSV","hidden":false}],"sheetName":"CSV","headerRow":1,"parseOptions":{"dateFormat":"dd/MM/yyyy","decimalSeparator":"POINT","delimiter":",","encoding":"UTF-8"},"mapping":null,"mapped":false,"rowCount":2,"malformedCount":0,"blankSkipped":0,"purged":false,"uploadedAt":"2026-11-24T14:11:19.516744Z"},{"id":"a573b4b5-eb91-458a-810e-210748257b30","section":"UNIDENTIFIED_DEPOSITS","fileName":"unidentified_deposits.csv","fileFormat":"CSV","fileSize":115,"sheetNames":[{"name":"CSV","hidden":false}],"sheetName":"CSV","headerRow":1,"parseOptions":{"dateFormat":"dd/MM/yyyy","decimalSeparator":"POINT","delimiter":",","encoding":"UTF-8"},"mapping":{"targets":{"amount":"Amount","description":"Description","receivedDate":"Date received","bankReference":"Bank reference"},"customFields":{},"parked":[],"defaults":{}},"mapped":true,"rowCount":2,"malformedCount":0,"blankSkipped":0,"purged":false,"uploadedAt":"2026-11-24T14:11:19.460616Z"}],"counts":{"total":0,"valid":0,"error":0,"duplicate":0,"blocks":0,"created":0,"skipped":0,"failed":0},"validationHash":null,"validatedAt":null,"allowedActions":["REMOVE_SOURCE","MAP","CANCEL"],"createdAt":"2026-11-24T14:11:19.421791Z","cancelledAt":null,"commitStartedAt":null,"completedAt":null,"lastError":null,"signOffs":[],"attestationStatement":null,"summary":null,"midMonthAcknowledged":false,"position":{"bankBalance":null,"outstandingDepositsTotal":null,"outstandingPaymentsTotal":null,"cashbookBalance":null,"fundLedgerBalance":0.00,"investedTotal":0.00},"trustAccountName":"trr Trust 1","reportId":null},"sourceId":"8de4c8fe-bd52-4f19-8e7d-e3a03d1472c9","headers":["Item type","Original date","Amount","Reference","Client reference","Matter reference"],"warnings":[]}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = PUT
+      Request URI = /api/take-on/batches/956bfe54-79e8-4fa5-a90f-36bc17f7951e/sources/8de4c8fe-bd52-4f19-8e7d-e3a03d1472c9/mapping
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"167", Idempotency-Key:"4f9903b5-bea1-4e12-afff-a3ae4cbe25d0"]
+             Body = {"targets":{"clientRef":"Client reference","matterRef":"Matter reference","originalDate":"Original date","kind":"Item type","amount":"Amount","reference":"Reference"}}
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController
+           Method = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController#saveMapping(UUID, UUID, TakeOnMappingRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"956bfe54-79e8-4fa5-a90f-36bc17f7951e","dataset":"TRUST_POSITION","status":"MAPPED","name":null,"cutoverDate":null,"trustAccountId":"a85638f0-6cc6-43e6-8170-a8ee29b46970","sources":[{"id":"b49b7805-3284-4b48-bfe2-74ca52486241","section":"CLIENT_LEDGER","fileName":"client_ledger.csv","fileFormat":"CSV","fileSize":112,"sheetNames":[{"name":"CSV","hidden":false}],"sheetName":"CSV","headerRow":1,"parseOptions":{"dateFormat":"dd/MM/yyyy","decimalSeparator":"POINT","delimiter":",","encoding":"UTF-8"},"mapping":{"targets":{"balance":"Balance at cutover","clientRef":"Client reference","matterRef":"Matter reference","sourceRef":"Previous ID"},"customFields":{},"parked":[],"defaults":{}},"mapped":true,"rowCount":3,"malformedCount":0,"blankSkipped":0,"purged":false,"uploadedAt":"2026-11-24T14:11:19.421999Z"},{"id":"121541ad-c87d-4a33-bbe2-3793c4747008","section":"INVESTMENTS","fileName":"investments.csv","fileFormat":"CSV","fileSize":344,"sheetNames":[{"name":"CSV","hidden":false}],"sheetName":"CSV","headerRow":1,"parseOptions":{"dateFormat":"dd/MM/yyyy","decimalSeparator":"POINT","delimiter":",","encoding":"UTF-8"},"mapping":{"targets":{"basis":"Basis","clientRef":"Client","matterRef":"Matter","principal":"Principal","fundAmount":"Fund amount","depositDate":"Deposited","institution":"Institution","interestRate":"Rate","accountNumber":"Account number","accruedInterest":"Accrued","instructionDate":"Instruction date","investmentAccount":"Investment account","endorsementConfirmed":"Endorsed","instructionReference":"Instruction","balancePerConfirmation":"Confirmed"},"customFields":{},"parked":[],"defaults":{}},"mapped":true,"rowCount":2,"malformedCount":0,"blankSkipped":0,"purged":false,"uploadedAt":"2026-11-24T14:11:19.487455Z"},{"id":"8de4c8fe-bd52-4f19-8e7d-e3a03d1472c9","section":"OUTSTANDING_ITEMS","fileName":"outstanding_items.csv","fileFormat":"CSV","fileSize":158,"sheetNames":[{"name":"CSV","hidden":false}],"sheetName":"CSV","headerRow":1,"parseOptions":{"dateFormat":"dd/MM/yyyy","decimalSeparator":"POINT","delimiter":",","encoding":"UTF-8"},"mapping":{"targets":{"clientRef":"Client reference","matterRef":"Matter reference","originalDate":"Original date","kind":"Item type","amount":"Amount","reference":"Reference"},"customFields":{},"parked":[],"defaults":{}},"mapped":true,"rowCount":2,"malformedCount":0,"blankSkipped":0,"purged":false,"uploadedAt":"2026-11-24T14:11:19.516744Z"},{"id":"a573b4b5-eb91-458a-810e-210748257b30","section":"UNIDENTIFIED_DEPOSITS","fileName":"unidentified_deposits.csv","fileFormat":"CSV","fileSize":115,"sheetNames":[{"name":"CSV","hidden":false}],"sheetName":"CSV","headerRow":1,"parseOptions":{"dateFormat":"dd/MM/yyyy","decimalSeparator":"POINT","delimiter":",","encoding":"UTF-8"},"mapping":{"targets":{"amount":"Amount","description":"Description","receivedDate":"Date received","bankReference":"Bank reference"},"customFields":{},"parked":[],"defaults":{}},"mapped":true,"rowCount":2,"malformedCount":0,"blankSkipped":0,"purged":false,"uploadedAt":"2026-11-24T14:11:19.460616Z"}],"counts":{"total":0,"valid":0,"error":0,"duplicate":0,"blocks":0,"created":0,"skipped":0,"failed":0},"validationHash":null,"validatedAt":null,"allowedActions":["REMOVE_SOURCE","MAP","VALIDATE","CANCEL"],"createdAt":"2026-11-24T14:11:19.421791Z","cancelledAt":null,"commitStartedAt":null,"completedAt":null,"lastError":null,"signOffs":[],"attestationStatement":null,"summary":null,"midMonthAcknowledged":false,"position":{"bankBalance":null,"outstandingDepositsTotal":null,"outstandingPaymentsTotal":null,"cashbookBalance":null,"fundLedgerBalance":0.00,"investedTotal":0.00},"trustAccountName":"trr Trust 1","reportId":null}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = PUT
+      Request URI = /api/take-on/batches/956bfe54-79e8-4fa5-a90f-36bc17f7951e/position
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"234", Idempotency-Key:"b50e7363-6090-4655-91af-aaf55d7ebdf8"]
+             Body = {"cutoverDate":"2026-10-31","bankBalance":418500.00,"outstandingDepositsTotal":5000.00,"outstandingPaymentsTotal":20000.00,"cashbookBalance":403500.00,"fundLedgerBalance":1250.00,"investedTotal":300000.00,"midMonthAcknowledged":false}
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController
+           Method = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController#savePosition(UUID, TakeOnPositionRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"956bfe54-79e8-4fa5-a90f-36bc17f7951e","dataset":"TRUST_POSITION","status":"MAPPED","name":null,"cutoverDate":"2026-10-31","trustAccountId":"a85638f0-6cc6-43e6-8170-a8ee29b46970","sources":[{"id":"b49b7805-3284-4b48-bfe2-74ca52486241","section":"CLIENT_LEDGER","fileName":"client_ledger.csv","fileFormat":"CSV","fileSize":112,"sheetNames":[{"name":"CSV","hidden":false}],"sheetName":"CSV","headerRow":1,"parseOptions":{"dateFormat":"dd/MM/yyyy","decimalSeparator":"POINT","delimiter":",","encoding":"UTF-8"},"mapping":{"targets":{"balance":"Balance at cutover","clientRef":"Client reference","matterRef":"Matter reference","sourceRef":"Previous ID"},"customFields":{},"parked":[],"defaults":{}},"mapped":true,"rowCount":3,"malformedCount":0,"blankSkipped":0,"purged":false,"uploadedAt":"2026-11-24T14:11:19.421999Z"},{"id":"121541ad-c87d-4a33-bbe2-3793c4747008","section":"INVESTMENTS","fileName":"investments.csv","fileFormat":"CSV","fileSize":344,"sheetNames":[{"name":"CSV","hidden":false}],"sheetName":"CSV","headerRow":1,"parseOptions":{"dateFormat":"dd/MM/yyyy","decimalSeparator":"POINT","delimiter":",","encoding":"UTF-8"},"mapping":{"targets":{"basis":"Basis","clientRef":"Client","matterRef":"Matter","principal":"Principal","fundAmount":"Fund amount","depositDate":"Deposited","institution":"Institution","interestRate":"Rate","accountNumber":"Account number","accruedInterest":"Accrued","instructionDate":"Instruction date","investmentAccount":"Investment account","endorsementConfirmed":"Endorsed","instructionReference":"Instruction","balancePerConfirmation":"Confirmed"},"customFields":{},"parked":[],"defaults":{}},"mapped":true,"rowCount":2,"malformedCount":0,"blankSkipped":0,"purged":false,"uploadedAt":"2026-11-24T14:11:19.487455Z"},{"id":"8de4c8fe-bd52-4f19-8e7d-e3a03d1472c9","section":"OUTSTANDING_ITEMS","fileName":"outstanding_items.csv","fileFormat":"CSV","fileSize":158,"sheetNames":[{"name":"CSV","hidden":false}],"sheetName":"CSV","headerRow":1,"parseOptions":{"dateFormat":"dd/MM/yyyy","decimalSeparator":"POINT","delimiter":",","encoding":"UTF-8"},"mapping":{"targets":{"kind":"Item type","amount":"Amount","clientRef":"Client reference","matterRef":"Matter reference","reference":"Reference","originalDate":"Original date"},"customFields":{},"parked":[],"defaults":{}},"mapped":true,"rowCount":2,"malformedCount":0,"blankSkipped":0,"purged":false,"uploadedAt":"2026-11-24T14:11:19.516744Z"},{"id":"a573b4b5-eb91-458a-810e-210748257b30","section":"UNIDENTIFIED_DEPOSITS","fileName":"unidentified_deposits.csv","fileFormat":"CSV","fileSize":115,"sheetNames":[{"name":"CSV","hidden":false}],"sheetName":"CSV","headerRow":1,"parseOptions":{"dateFormat":"dd/MM/yyyy","decimalSeparator":"POINT","delimiter":",","encoding":"UTF-8"},"mapping":{"targets":{"amount":"Amount","description":"Description","receivedDate":"Date received","bankReference":"Bank reference"},"customFields":{},"parked":[],"defaults":{}},"mapped":true,"rowCount":2,"malformedCount":0,"blankSkipped":0,"purged":false,"uploadedAt":"2026-11-24T14:11:19.460616Z"}],"counts":{"total":0,"valid":0,"error":0,"duplicate":0,"blocks":0,"created":0,"skipped":0,"failed":0},"validationHash":null,"validatedAt":null,"allowedActions":["REMOVE_SOURCE","MAP","VALIDATE","CANCEL"],"createdAt":"2026-11-24T14:11:19.421791Z","cancelledAt":null,"commitStartedAt":null,"completedAt":null,"lastError":null,"signOffs":[],"attestationStatement":null,"summary":null,"midMonthAcknowledged":false,"position":{"bankBalance":418500.00,"outstandingDepositsTotal":5000.00,"outstandingPaymentsTotal":20000.00,"cashbookBalance":403500.00,"fundLedgerBalance":1250.00,"investedTotal":300000.00},"trustAccountName":"trr Trust 1","reportId":null}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/take-on/batches/956bfe54-79e8-4fa5-a90f-36bc17f7951e/validate
+       Parameters = {}
+          Headers = [Idempotency-Key:"c5fdaa4e-6611-4d31-b5a8-20a5ab28918a"]
+             Body = null
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController
+           Method = io.b2mash.b2b.b2bstrawman.takeon.TakeOnController#validate(UUID)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"956bfe54-79e8-4fa5-a90f-36bc17f7951e","dataset":"TRUST_POSITION","status":"VALIDATED","name":null,"cutoverDate":"2026-10-31","trustAccountId":"a85638f0-6cc6-43e6-8170-a8ee29b46970","sources":[{"id":"b49b7805-3284-4b48-bfe2-74ca52486241","section":"CLIENT_LEDGER","fileName":"client_ledger.csv","fileFormat":"CSV","fileSize":112,"sheetNames":[{"name":"CSV","hidden":false}],"sheetName":"CSV","headerRow":1,"parseOptions":{"dateFormat":"dd/MM/yyyy","decimalSeparator":"POINT","delimiter":",","encoding":"UTF-8"},"mapping":{"targets":{"balance":"Balance at cutover","clientRef":"Client reference","matterRef":"Matter reference","sourceRef":"Previous ID"},"customFields":{},"parked":[],"defaults":{}},"mapped":true,"rowCount":3,"malformedCount":0,"blankSkipped":0,"purged":false,"uploadedAt":"2026-11-24T14:11:19.421999Z"},{"id":"121541ad-c87d-4a33-bbe2-3793c4747008","section":"INVESTMENTS","fileName":"investments.csv","fileFormat":"CSV","fileSize":344,"sheetNames":[{"name":"CSV","hidden":false}],"sheetName":"CSV","headerRow":1,"parseOptions":{"dateFormat":"dd/MM/yyyy","decimalSeparator":"POINT","delimiter":",","encoding":"UTF-8"},"mapping":{"targets":{"basis":"Basis","clientRef":"Client","matterRef":"Matter","principal":"Principal","fundAmount":"Fund amount","depositDate":"Deposited","institution":"Institution","interestRate":"Rate","accountNumber":"Account number","accruedInterest":"Accrued","instructionDate":"Instruction date","investmentAccount":"Investment account","endorsementConfirmed":"Endorsed","instructionReference":"Instruction","balancePerConfirmation":"Confirmed"},"customFields":{},"parked":[],"defaults":{}},"mapped":true,"rowCount":2,"malformedCount":0,"blankSkipped":0,"purged":false,"uploadedAt":"2026-11-24T14:11:19.487455Z"},{"id":"8de4c8fe-bd52-4f19-8e7d-e3a03d1472c9","section":"OUTSTANDING_ITEMS","fileName":"outstanding_items.csv","fileFormat":"CSV","fileSize":158,"sheetNames":[{"name":"CSV","hidden":false}],"sheetName":"CSV","headerRow":1,"parseOptions":{"dateFormat":"dd/MM/yyyy","decimalSeparator":"POINT","delimiter":",","encoding":"UTF-8"},"mapping":{"targets":{"kind":"Item type","amount":"Amount","clientRef":"Client reference","matterRef":"Matter reference","reference":"Reference","originalDate":"Original date"},"customFields":{},"parked":[],"defaults":{}},"mapped":true,"rowCount":2,"malformedCount":0,"blankSkipped":0,"purged":false,"uploadedAt":"2026-11-24T14:11:19.516744Z"},{"id":"a573b4b5-eb91-458a-810e-210748257b30","section":"UNIDENTIFIED_DEPOSITS","fileName":"unidentified_deposits.csv","fileFormat":"CSV","fileSize":115,"sheetNames":[{"name":"CSV","hidden":false}],"sheetName":"CSV","headerRow":1,"parseOptions":{"dateFormat":"dd/MM/yyyy","decimalSeparator":"POINT","delimiter":",","encoding":"UTF-8"},"mapping":{"targets":{"amount":"Amount","description":"Description","receivedDate":"Date received","bankReference":"Bank reference"},"customFields":{},"parked":[],"defaults":{}},"mapped":true,"rowCount":2,"malformedCount":0,"blankSkipped":0,"purged":false,"uploadedAt":"2026-11-24T14:11:19.460616Z"}],"counts":{"total":9,"valid":9,"error":0,"duplicate":0,"blocks":0,"created":0,"skipped":0,"failed":0},"validationHash":"9d6260a24aa36488944838e842b4cb30471da78bce85e704c311e8931f1fd242","validatedAt":"2026-11-24T14:11:19.602233Z","allowedActions":["REMOVE_SOURCE","MAP","REVALIDATE","SIGN_OFF","CANCEL"],"createdAt":"2026-11-24T14:11:19.421791Z","cancelledAt":null,"commitStartedAt":null,"completedAt":null,"lastError":null,"signOffs":[],"attestationStatement":null,"summary":{"flags":["UNIDENTIFIED_OVER_ONE_YEAR"],"blocks":[],"equation":{"eq1":{"holds":true,"cashbook":"403500.00","difference":"0.00","bankBalance":"418500.00","adjustedBank":"403500.00","lessOutstandingPayments":"20000.00","plusOutstandingDeposits":"5000.00"},"eq2":{"holds":true,"cashbook":"403500.00","creditors":"403500.00","difference":"0.00","fundLedger":"1250.00","unidentified":"2750.00","clientLedgers":"499500.00","placedInSection86_3":"-100000.00"},"deficit":{"inDeficit":false,"moneyHeld":"703500.00","difference":"0.00","trustCreditors":"703500.00"},"itemsTie":{"holds":true,"difference":"0.00","listedDeposits":"5000.00","listedPayments":"20000.00","outstandingDeposits":"5000.00","outstandingPayments":"20000.00"},"investments":{"holds":true,"listed":"300000.00","difference":"0.00","perConfirmations":"300000.00"}},"warnings":[],"accountErrors":[]},"midMonthAcknowledged":false,"position":{"bankBalance":418500.00,"outstandingDepositsTotal":5000.00,"outstandingPaymentsTotal":20000.00,"cashbookBalance":403500.00,"fundLedgerBalance":1250.00,"investedTotal":300000.00},"trustAccountName":"trr Trust 1","reportId":null}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 18.32 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.takeon.TakeOnRevalidationAnonymisationRaceIntegrationTest
+[ERROR] io.b2mash.b2b.b2bstrawman.takeon.TakeOnRevalidationAnonymisationRaceIntegrationTest.anAnonymisationCommittingDuringARevalidation_keepsItsRedaction -- Time elapsed: 0.475 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+[redacted take-on rows after the re-validation (HTTP 200)] 
+expected: 1L
+ but was: 0L
+	at io.b2mash.b2b.b2bstrawman.takeon.TakeOnRevalidationAnonymisationRaceIntegrationTest.anAnonymisationCommittingDuringARevalidation_keepsItsRedaction(TakeOnRevalidationAnonymisationRaceIntegrationTest.java:183)
+
+[ERROR] Failures: 
+[ERROR]   TakeOnRevalidationAnonymisationRaceIntegrationTest.anAnonymisationCommittingDuringARevalidation_keepsItsRedaction:183 [redacted take-on rows after the re-validation (HTTP 200)] 
+expected: 1L
+ but was: 0L
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.5.4:test (default-test) on project b2b-strawman-backend: There are test failures.
+[ERROR] 
+[ERROR] See /Users/rakheendama/Projects/2026/wt-f657c7-fr4/backend/target/surefire-reports for the individual test results.
+[ERROR] See dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

@@ -11,8 +11,10 @@ import io.b2mash.b2b.b2bstrawman.invitation.dto.InvitationDtos.PendingInvitation
 import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.orgrole.Capability;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRole;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
+import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient;
 import java.time.Duration;
 import java.time.Instant;
@@ -79,6 +81,12 @@ public class InvitationService {
         orgRoleRepository
             .findById(request.orgRoleId())
             .orElseThrow(() -> new ResourceNotFoundException("OrgRole", request.orgRoleId()));
+    // the invitee is granted this role on first sign-in: the assignment rules apply (Task C) —
+    // and, defence in depth (review round 1), the owner-only rule for a custom role
+    OrgRoleService.requireSystemRoleGrantable(orgRole);
+    OrgRoleService.requireOwnerToGrant(
+        orgRole.getCapabilities().stream().map(Capability::name).toList(),
+        "invite into a role holding an owner-only capability");
 
     Member invitedBy =
         memberRepository

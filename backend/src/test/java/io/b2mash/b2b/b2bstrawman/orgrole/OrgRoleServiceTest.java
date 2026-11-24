@@ -210,7 +210,7 @@ class OrgRoleServiceTest {
 
     var request = new UpdateOrgRoleRequest("New Name", "New desc", Set.of("PROJECT_MANAGEMENT"));
 
-    when(orgRoleRepository.findById(ROLE_ID)).thenReturn(Optional.of(role));
+    when(orgRoleRepository.findByIdForUpdate(ROLE_ID)).thenReturn(Optional.of(role));
     when(orgRoleRepository.existsByNameIgnoreCaseAndIdNot("New Name", ROLE_ID)).thenReturn(false);
     when(orgRoleRepository.save(any(OrgRole.class))).thenAnswer(inv -> inv.getArgument(0));
     when(memberRepository.findByOrgRoleEntity_Id(ROLE_ID)).thenReturn(List.of());
@@ -233,7 +233,7 @@ class OrgRoleServiceTest {
   void updateRole_systemRole_throws() {
     var role = orgRoleWithId(ROLE_ID, "Owner", "owner", true);
 
-    when(orgRoleRepository.findById(ROLE_ID)).thenReturn(Optional.of(role));
+    when(orgRoleRepository.findByIdForUpdate(ROLE_ID)).thenReturn(Optional.of(role));
 
     assertThatThrownBy(() -> service.updateRole(ROLE_ID, new UpdateOrgRoleRequest("X", null, null)))
         .isInstanceOf(InvalidStateException.class);
@@ -243,7 +243,7 @@ class OrgRoleServiceTest {
   void updateRole_duplicateName_throws() {
     var role = orgRoleWithId(ROLE_ID, "Old Name", "old-name", false);
 
-    when(orgRoleRepository.findById(ROLE_ID)).thenReturn(Optional.of(role));
+    when(orgRoleRepository.findByIdForUpdate(ROLE_ID)).thenReturn(Optional.of(role));
     when(orgRoleRepository.existsByNameIgnoreCaseAndIdNot("Taken Name", ROLE_ID)).thenReturn(true);
 
     assertThatThrownBy(
@@ -255,7 +255,7 @@ class OrgRoleServiceTest {
   void updateRole_invalidCapability_throwsInvalidState() {
     var role = orgRoleWithId(ROLE_ID, "Custom", "custom", false);
 
-    when(orgRoleRepository.findById(ROLE_ID)).thenReturn(Optional.of(role));
+    when(orgRoleRepository.findByIdForUpdate(ROLE_ID)).thenReturn(Optional.of(role));
 
     assertThatThrownBy(
             () ->
@@ -303,6 +303,32 @@ class OrgRoleServiceTest {
   private static OrgRole orgRoleWithId(UUID id, String name, String slug, boolean isSystem) {
     var role = new OrgRole(name, slug, name + " description", isSystem);
     return TestIds.withId(role, id);
+  }
+
+  // review round 3: the resolution is independent of the overrides' iteration order — every "+"
+  // first, then every "-" ("-" wins on a contradictory pair, as the frontend shows it)
+  @Test
+  void resolveCapabilities_contradictoryPair_minusWinsInEitherIterationOrder() {
+    var role = orgRoleWithId(ROLE_ID, "Bookkeeper", "bookkeeper", false);
+    role.setCapabilities(Set.of(Capability.INVOICING));
+    for (var order :
+        List.of(
+            List.of(
+                "+SIGN_OFF_TRUST_TAKE_ON", "-SIGN_OFF_TRUST_TAKE_ON", "-INVOICING", "+INVOICING"),
+            List.of(
+                "-SIGN_OFF_TRUST_TAKE_ON",
+                "+SIGN_OFF_TRUST_TAKE_ON",
+                "+INVOICING",
+                "-INVOICING"))) {
+      var member = org.mockito.Mockito.mock(Member.class);
+      when(member.getOrgRoleEntity()).thenReturn(role);
+      when(member.getCapabilityOverrides()).thenReturn(new java.util.LinkedHashSet<>(order));
+      when(memberRepository.findById(MEMBER_ID)).thenReturn(Optional.of(member));
+
+      assertThat(service.resolveCapabilities(MEMBER_ID))
+          .as("overrides iterated as %s", order)
+          .doesNotContain("SIGN_OFF_TRUST_TAKE_ON", "INVOICING");
+    }
   }
 
   private static Member memberWithRole(UUID memberId, OrgRole role, Set<String> overrides) {

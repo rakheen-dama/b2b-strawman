@@ -1,0 +1,6 @@
+
+> frontend@0.1.0 format:check /Users/rakheendama/Projects/2026/wt-f657c7-fr4/frontend
+> prettier --check .
+
+Checking formatting...
+All matched files use Prettier code style!

@@ -73,6 +73,7 @@ class InvitationServiceTest {
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .where(RequestScopes.ORG_ID, ORG_ID)
         .where(RequestScopes.MEMBER_ID, ownerMemberId)
+        .where(RequestScopes.ORG_ROLE, "owner") // the Admin role is invited by an owner (Task C)
         .run(
             () -> {
               var request = new CreateInvitationRequest("kc-test1@example.com", adminRoleId);
@@ -94,6 +95,7 @@ class InvitationServiceTest {
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .where(RequestScopes.ORG_ID, ORG_ID)
         .where(RequestScopes.MEMBER_ID, ownerMemberId)
+        .where(RequestScopes.ORG_ROLE, "owner") // the Admin role is invited by an owner (Task C)
         .run(
             () -> {
               var request = new CreateInvitationRequest("kc-test2@example.com", adminRoleId);
@@ -110,6 +112,7 @@ class InvitationServiceTest {
     // When no ORG_ID is bound, KC invite should not be called
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .where(RequestScopes.MEMBER_ID, ownerMemberId)
+        .where(RequestScopes.ORG_ROLE, "owner") // the Admin role is invited by an owner (Task C)
         .run(
             () -> {
               var request = new CreateInvitationRequest("kc-test3@example.com", adminRoleId);

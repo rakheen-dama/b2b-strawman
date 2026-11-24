@@ -35,7 +35,17 @@ vi.mock("next/link", () => ({
 }));
 
 import { InviteMemberForm } from "@/components/team/invite-member-form";
+import { CapabilityProvider } from "@/lib/capabilities";
 import type { OrgRole } from "@/lib/api/org-roles";
+
+/** As the owner: only the owner may invite into the Admin role (Task C). */
+function renderAsOwner(ui: React.ReactNode) {
+  return render(
+    <CapabilityProvider capabilities={[]} role="owner" isAdmin={false} isOwner={true}>
+      {ui}
+    </CapabilityProvider>
+  );
+}
 
 function makeCustomRole(overrides: Partial<OrgRole> = {}): OrgRole {
   return {
@@ -72,7 +82,7 @@ describe("Invite Form Role Selection", () => {
     const user = userEvent.setup();
     const bookkeeper = makeCustomRole();
 
-    render(<InviteMemberForm {...defaultProps} roles={[bookkeeper]} />);
+    renderAsOwner(<InviteMemberForm {...defaultProps} roles={[bookkeeper]} />);
 
     // Click the role dropdown trigger
     const trigger = screen.getByRole("combobox");
@@ -92,7 +102,7 @@ describe("Invite Form Role Selection", () => {
     const user = userEvent.setup();
     const bookkeeper = makeCustomRole();
 
-    render(<InviteMemberForm {...defaultProps} roles={[bookkeeper]} />);
+    renderAsOwner(<InviteMemberForm {...defaultProps} roles={[bookkeeper]} />);
 
     // Initially no pills shown (system role selected by default)
     expect(screen.queryByText("Financial Visibility")).not.toBeInTheDocument();
@@ -116,7 +126,7 @@ describe("Invite Form Role Selection", () => {
     const user = userEvent.setup();
     const bookkeeper = makeCustomRole();
 
-    render(<InviteMemberForm {...defaultProps} roles={[bookkeeper]} />);
+    renderAsOwner(<InviteMemberForm {...defaultProps} roles={[bookkeeper]} />);
 
     // Select the custom role first to show customization
     const trigger = screen.getByRole("combobox");
@@ -142,7 +152,7 @@ describe("Invite Form Role Selection", () => {
     const user = userEvent.setup();
     const bookkeeper = makeCustomRole();
 
-    render(<InviteMemberForm {...defaultProps} roles={[bookkeeper]} />);
+    renderAsOwner(<InviteMemberForm {...defaultProps} roles={[bookkeeper]} />);
 
     // Fill in email
     await user.type(screen.getByPlaceholderText("colleague@company.com"), "test@example.com");

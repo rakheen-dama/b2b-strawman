@@ -1,0 +1,774 @@
+16:14:24.343 [main] INFO com.tngtech.archunit.ArchConfiguration -- Reading ArchUnit properties from file:/Users/rakheendama/Projects/2026/wt-f657c7-fr4/backend/target/test-classes/archunit.properties
+16:14:24.452 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [io.b2mash.b2b.b2bstrawman.orgrole.OwnerOnlyCapabilityGrantIntegrationTest]: OwnerOnlyCapabilityGrantIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+16:14:24.634 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration io.b2mash.b2b.b2bstrawman.BackendApplication for test class io.b2mash.b2b.b2bstrawman.orgrole.OwnerOnlyCapabilityGrantIntegrationTest
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/Users/rakheendama/.m2/repository/net/bytebuddy/byte-buddy-agent/1.17.8/byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /internal/members/sync
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", X-API-KEY:"test-api-key", Content-Length:"159", Idempotency-Key:"5fda0d3d-cf0a-49a0-b3bb-9cf392b640a1"]
+             Body = {"clerkOrgId":"org_owner_only_grant_test","clerkUserId":"user_oog_owner","email":"oog_owner@test.com","name":"Grant Owner","avatarUrl":null,"orgRole":"owner"}
+
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.member.MemberSyncController
+           Method = io.b2mash.b2b.b2bstrawman.member.MemberSyncController#syncMember(SyncMemberRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/internal/members/814d132e-334f-4771-9e39-5805c6c86a67", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"memberId":"814d132e-334f-4771-9e39-5805c6c86a67","clerkUserId":"user_oog_owner","action":"created"}
+    Forwarded URL = null
+   Redirected URL = /internal/members/814d132e-334f-4771-9e39-5805c6c86a67
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /internal/members/sync
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", X-API-KEY:"test-api-key", Content-Length:"159", Idempotency-Key:"62d8396a-556f-4cda-82cc-5778a6e1e872"]
+             Body = {"clerkOrgId":"org_owner_only_grant_test","clerkUserId":"user_oog_admin","email":"oog_admin@test.com","name":"Grant Admin","avatarUrl":null,"orgRole":"admin"}
+
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.member.MemberSyncController
+           Method = io.b2mash.b2b.b2bstrawman.member.MemberSyncController#syncMember(SyncMemberRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/internal/members/8129fc2b-c55a-467b-85d8-316a794b712b", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"memberId":"8129fc2b-c55a-467b-85d8-316a794b712b","clerkUserId":"user_oog_admin","action":"created"}
+    Forwarded URL = null
+   Redirected URL = /internal/members/8129fc2b-c55a-467b-85d8-316a794b712b
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /internal/members/sync
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", X-API-KEY:"test-api-key", Content-Length:"186", Idempotency-Key:"afa94da1-4e90-4b39-b12c-0e93705a4030"]
+             Body = {"clerkOrgId":"org_owner_only_grant_test","clerkUserId":"user_oog_partner_r1b","email":"user_oog_partner_r1b@test.com","name":"user_oog_partner_r1b","avatarUrl":null,"orgRole":"member"}
+
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.member.MemberSyncController
+           Method = io.b2mash.b2b.b2bstrawman.member.MemberSyncController#syncMember(SyncMemberRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/internal/members/4d6eb74d-764a-4a13-88e2-6502a4108734", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"memberId":"4d6eb74d-764a-4a13-88e2-6502a4108734","clerkUserId":"user_oog_partner_r1b","action":"created"}
+    Forwarded URL = null
+   Redirected URL = /internal/members/4d6eb74d-764a-4a13-88e2-6502a4108734
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/org-roles
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"108", Idempotency-Key:"448f0c87-64bc-4fdb-a75e-edfc232c96bb"]
+             Body = {"name": "Partner R1B", "description": "Test role", "capabilities": ["SIGN_OFF_TRUST_TAKE_ON","VIEW_TRUST"]}
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleController
+           Method = io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleController#createRole(CreateOrgRoleRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/api/org-roles/171e035e-5ec9-4b7d-832b-bce0c0cef40f", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"171e035e-5ec9-4b7d-832b-bce0c0cef40f","name":"Partner R1B","slug":"partner-r1b","description":"Test role","capabilities":["SIGN_OFF_TRUST_TAKE_ON","VIEW_TRUST"],"isSystem":false,"memberCount":0,"createdAt":"2026-11-24T16:14:39.151918Z","updatedAt":"2026-11-24T16:14:39.151918Z"}
+    Forwarded URL = null
+   Redirected URL = /api/org-roles/171e035e-5ec9-4b7d-832b-bce0c0cef40f
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = PUT
+      Request URI = /api/members/4d6eb74d-764a-4a13-88e2-6502a4108734/role
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"80", Idempotency-Key:"6337776b-9582-439b-bfd9-b39ec9759f9d"]
+             Body = {"orgRoleId": "171e035e-5ec9-4b7d-832b-bce0c0cef40f", "capabilityOverrides": []}
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.member.OrgMemberController
+           Method = io.b2mash.b2b.b2bstrawman.member.OrgMemberController#assignRole(UUID, AssignRoleRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"memberId":"4d6eb74d-764a-4a13-88e2-6502a4108734","roleName":"Partner R1B","roleCapabilities":["SIGN_OFF_TRUST_TAKE_ON","VIEW_TRUST"],"overrides":[],"effectiveCapabilities":["SIGN_OFF_TRUST_TAKE_ON","VIEW_TRUST"]}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = PUT
+      Request URI = /api/members/4d6eb74d-764a-4a13-88e2-6502a4108734/role
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"105", Idempotency-Key:"aec5be15-ee44-4f8f-8827-14b7d24309e2"]
+             Body = {"orgRoleId": "171e035e-5ec9-4b7d-832b-bce0c0cef40f", "capabilityOverrides": ["-SIGN_OFF_TRUST_TAKE_ON"]}
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.member.OrgMemberController
+           Method = io.b2mash.b2b.b2bstrawman.member.OrgMemberController#assignRole(UUID, AssignRoleRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = io.b2mash.b2b.b2bstrawman.exception.ForbiddenException
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 403
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/problem+json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/problem+json
+             Body = {"detail":"Only the owner can assign a role holding an owner-only capability: SIGN_OFF_TRUST_TAKE_ON.","instance":"/api/members/4d6eb74d-764a-4a13-88e2-6502a4108734/role","status":403,"title":"Owner-only capability"}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /internal/members/sync
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", X-API-KEY:"test-api-key", Content-Length:"186", Idempotency-Key:"ea169486-654f-497c-a198-528e48d509c4"]
+             Body = {"clerkOrgId":"org_owner_only_grant_test","clerkUserId":"user_oog_partner_r1a","email":"user_oog_partner_r1a@test.com","name":"user_oog_partner_r1a","avatarUrl":null,"orgRole":"member"}
+
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.member.MemberSyncController
+           Method = io.b2mash.b2b.b2bstrawman.member.MemberSyncController#syncMember(SyncMemberRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/internal/members/e8afec15-62f3-45e7-a7ef-112d688f684b", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"memberId":"e8afec15-62f3-45e7-a7ef-112d688f684b","clerkUserId":"user_oog_partner_r1a","action":"created"}
+    Forwarded URL = null
+   Redirected URL = /internal/members/e8afec15-62f3-45e7-a7ef-112d688f684b
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/org-roles
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"108", Idempotency-Key:"9ed254f2-500f-4b35-af64-fd7847606f83"]
+             Body = {"name": "Partner R1A", "description": "Test role", "capabilities": ["SIGN_OFF_TRUST_TAKE_ON","VIEW_TRUST"]}
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleController
+           Method = io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleController#createRole(CreateOrgRoleRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/api/org-roles/63662410-20ad-49cf-a53d-25f0b12114a9", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"63662410-20ad-49cf-a53d-25f0b12114a9","name":"Partner R1A","slug":"partner-r1a","description":"Test role","capabilities":["SIGN_OFF_TRUST_TAKE_ON","VIEW_TRUST"],"isSystem":false,"memberCount":0,"createdAt":"2026-11-24T16:14:39.392073Z","updatedAt":"2026-11-24T16:14:39.392073Z"}
+    Forwarded URL = null
+   Redirected URL = /api/org-roles/63662410-20ad-49cf-a53d-25f0b12114a9
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = PUT
+      Request URI = /api/members/e8afec15-62f3-45e7-a7ef-112d688f684b/role
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"80", Idempotency-Key:"0ab14c80-0d23-4a77-8c73-ad0480e902e7"]
+             Body = {"orgRoleId": "63662410-20ad-49cf-a53d-25f0b12114a9", "capabilityOverrides": []}
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.member.OrgMemberController
+           Method = io.b2mash.b2b.b2bstrawman.member.OrgMemberController#assignRole(UUID, AssignRoleRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"memberId":"e8afec15-62f3-45e7-a7ef-112d688f684b","roleName":"Partner R1A","roleCapabilities":["SIGN_OFF_TRUST_TAKE_ON","VIEW_TRUST"],"overrides":[],"effectiveCapabilities":["SIGN_OFF_TRUST_TAKE_ON","VIEW_TRUST"]}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = PUT
+      Request URI = /api/members/e8afec15-62f3-45e7-a7ef-112d688f684b/role
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"92", Idempotency-Key:"eddff5a4-729a-4529-b57e-9b802916af0f"]
+             Body = {"orgRoleId": "63662410-20ad-49cf-a53d-25f0b12114a9", "capabilityOverrides": ["+INVOICING"]}
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.member.OrgMemberController
+           Method = io.b2mash.b2b.b2bstrawman.member.OrgMemberController#assignRole(UUID, AssignRoleRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = io.b2mash.b2b.b2bstrawman.exception.ForbiddenException
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 403
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/problem+json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/problem+json
+             Body = {"detail":"Only the owner can assign a role holding an owner-only capability: SIGN_OFF_TRUST_TAKE_ON.","instance":"/api/members/e8afec15-62f3-45e7-a7ef-112d688f684b/role","status":403,"title":"Owner-only capability"}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /internal/members/sync
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", X-API-KEY:"test-api-key", Content-Length:"186", Idempotency-Key:"8d399f9b-f557-4918-ad48-404a7b59c81e"]
+             Body = {"clerkOrgId":"org_owner_only_grant_test","clerkUserId":"user_oog_partner_r1c","email":"user_oog_partner_r1c@test.com","name":"user_oog_partner_r1c","avatarUrl":null,"orgRole":"member"}
+
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.member.MemberSyncController
+           Method = io.b2mash.b2b.b2bstrawman.member.MemberSyncController#syncMember(SyncMemberRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/internal/members/c1478296-e2cf-4df0-9378-de82ec6b7be0", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"memberId":"c1478296-e2cf-4df0-9378-de82ec6b7be0","clerkUserId":"user_oog_partner_r1c","action":"created"}
+    Forwarded URL = null
+   Redirected URL = /internal/members/c1478296-e2cf-4df0-9378-de82ec6b7be0
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/org-roles
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"108", Idempotency-Key:"5753cee7-6257-4a0d-93e5-a90e15ef0547"]
+             Body = {"name": "Partner R1C", "description": "Test role", "capabilities": ["SIGN_OFF_TRUST_TAKE_ON","VIEW_TRUST"]}
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleController
+           Method = io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleController#createRole(CreateOrgRoleRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/api/org-roles/eb6e1441-13da-48b5-8853-12ddc31fd31f", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"eb6e1441-13da-48b5-8853-12ddc31fd31f","name":"Partner R1C","slug":"partner-r1c","description":"Test role","capabilities":["SIGN_OFF_TRUST_TAKE_ON","VIEW_TRUST"],"isSystem":false,"memberCount":0,"createdAt":"2026-11-24T16:14:39.658171Z","updatedAt":"2026-11-24T16:14:39.658172Z"}
+    Forwarded URL = null
+   Redirected URL = /api/org-roles/eb6e1441-13da-48b5-8853-12ddc31fd31f
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = PUT
+      Request URI = /api/members/c1478296-e2cf-4df0-9378-de82ec6b7be0/role
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"105", Idempotency-Key:"17fe5a38-646d-40ed-ab8b-f3eebe6a48c3"]
+             Body = {"orgRoleId": "eb6e1441-13da-48b5-8853-12ddc31fd31f", "capabilityOverrides": ["-SIGN_OFF_TRUST_TAKE_ON"]}
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.member.OrgMemberController
+           Method = io.b2mash.b2b.b2bstrawman.member.OrgMemberController#assignRole(UUID, AssignRoleRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"memberId":"c1478296-e2cf-4df0-9378-de82ec6b7be0","roleName":"Partner R1C","roleCapabilities":["SIGN_OFF_TRUST_TAKE_ON","VIEW_TRUST"],"overrides":["-SIGN_OFF_TRUST_TAKE_ON"],"effectiveCapabilities":["VIEW_TRUST"]}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = PUT
+      Request URI = /api/members/c1478296-e2cf-4df0-9378-de82ec6b7be0/role
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"80", Idempotency-Key:"5581f22c-81cc-4583-8997-1205027a73d8"]
+             Body = {"orgRoleId": "eb6e1441-13da-48b5-8853-12ddc31fd31f", "capabilityOverrides": []}
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.member.OrgMemberController
+           Method = io.b2mash.b2b.b2bstrawman.member.OrgMemberController#assignRole(UUID, AssignRoleRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = io.b2mash.b2b.b2bstrawman.exception.ForbiddenException
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 403
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/problem+json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/problem+json
+             Body = {"detail":"Only the owner can assign a role holding an owner-only capability: SIGN_OFF_TRUST_TAKE_ON.","instance":"/api/members/c1478296-e2cf-4df0-9378-de82ec6b7be0/role","status":403,"title":"Owner-only capability"}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = GET
+      Request URI = /api/members/c1478296-e2cf-4df0-9378-de82ec6b7be0/capabilities
+       Parameters = {}
+          Headers = []
+             Body = null
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.member.OrgMemberController
+           Method = io.b2mash.b2b.b2bstrawman.member.OrgMemberController#getMemberCapabilities(UUID)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"memberId":"c1478296-e2cf-4df0-9378-de82ec6b7be0","roleName":"Partner R1C","roleCapabilities":["SIGN_OFF_TRUST_TAKE_ON","VIEW_TRUST"],"overrides":["-SIGN_OFF_TRUST_TAKE_ON"],"effectiveCapabilities":["VIEW_TRUST"]}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+[ERROR] Tests run: 10, Failures: 3, Errors: 0, Skipped: 0, Time elapsed: 15.30 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.orgrole.OwnerOnlyCapabilityGrantIntegrationTest
+[ERROR] io.b2mash.b2b.b2bstrawman.orgrole.OwnerOnlyCapabilityGrantIntegrationTest.anAdminCanTakeAnOwnerOnlyCapabilityAwayFromAPartnerMember -- Time elapsed: 0.509 s <<< FAILURE!
+java.lang.AssertionError: Status expected:<200> but was:<403>
+	at org.springframework.test.util.AssertionErrors.fail(AssertionErrors.java:62)
+	at org.springframework.test.util.AssertionErrors.assertEquals(AssertionErrors.java:129)
+	at org.springframework.test.web.servlet.result.StatusResultMatchers.lambda$matcher$0(StatusResultMatchers.java:600)
+	at org.springframework.test.web.servlet.MockMvc$1.andExpect(MockMvc.java:212)
+	at io.b2mash.b2b.b2bstrawman.orgrole.OwnerOnlyCapabilityGrantIntegrationTest.anAdminCanTakeAnOwnerOnlyCapabilityAwayFromAPartnerMember(OwnerOnlyCapabilityGrantIntegrationTest.java:230)
+
+[ERROR] io.b2mash.b2b.b2bstrawman.orgrole.OwnerOnlyCapabilityGrantIntegrationTest.anAdminCanEditOrdinaryOverridesOfAMemberAlreadyOnAPartnerRole -- Time elapsed: 0.040 s <<< FAILURE!
+java.lang.AssertionError: Status expected:<200> but was:<403>
+	at org.springframework.test.util.AssertionErrors.fail(AssertionErrors.java:62)
+	at org.springframework.test.util.AssertionErrors.assertEquals(AssertionErrors.java:129)
+	at org.springframework.test.web.servlet.result.StatusResultMatchers.lambda$matcher$0(StatusResultMatchers.java:600)
+	at org.springframework.test.web.servlet.MockMvc$1.andExpect(MockMvc.java:212)
+	at io.b2mash.b2b.b2bstrawman.orgrole.OwnerOnlyCapabilityGrantIntegrationTest.anAdminCanEditOrdinaryOverridesOfAMemberAlreadyOnAPartnerRole(OwnerOnlyCapabilityGrantIntegrationTest.java:218)
+
+[ERROR] io.b2mash.b2b.b2bstrawman.orgrole.OwnerOnlyCapabilityGrantIntegrationTest.anAdminCannotDropAMinusOverrideThatWouldRestoreAnOwnerOnlyCapability -- Time elapsed: 0.051 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+
+expected: "Only the owner can grant an owner-only capability: SIGN_OFF_TRUST_TAKE_ON."
+ but was: "Only the owner can assign a role holding an owner-only capability: SIGN_OFF_TRUST_TAKE_ON."
+	at io.b2mash.b2b.b2bstrawman.orgrole.OwnerOnlyCapabilityGrantIntegrationTest.assertForbidden(OwnerOnlyCapabilityGrantIntegrationTest.java:367)
+	at io.b2mash.b2b.b2bstrawman.orgrole.OwnerOnlyCapabilityGrantIntegrationTest.anAdminCannotDropAMinusOverrideThatWouldRestoreAnOwnerOnlyCapability(OwnerOnlyCapabilityGrantIntegrationTest.java:246)
+
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /internal/members/sync
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", X-API-KEY:"test-api-key", Content-Length:"162", Idempotency-Key:"81fdc24c-bd0a-4a1a-9b2a-bde6664244cc"]
+             Body = {"clerkOrgId":"org_invitation_escalation_test","clerkUserId":"user_ies_owner","email":"ies_owner@test.com","name":"Inv Owner","avatarUrl":null,"orgRole":"owner"}
+
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.member.MemberSyncController
+           Method = io.b2mash.b2b.b2bstrawman.member.MemberSyncController#syncMember(SyncMemberRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/internal/members/1ca25c71-84da-4118-8f16-6532095efa71", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"memberId":"1ca25c71-84da-4118-8f16-6532095efa71","clerkUserId":"user_ies_owner","action":"created"}
+    Forwarded URL = null
+   Redirected URL = /internal/members/1ca25c71-84da-4118-8f16-6532095efa71
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /internal/members/sync
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", X-API-KEY:"test-api-key", Content-Length:"162", Idempotency-Key:"93330422-1cc3-4cb8-a93d-99c49d8e1763"]
+             Body = {"clerkOrgId":"org_invitation_escalation_test","clerkUserId":"user_ies_admin","email":"ies_admin@test.com","name":"Inv Admin","avatarUrl":null,"orgRole":"admin"}
+
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.member.MemberSyncController
+           Method = io.b2mash.b2b.b2bstrawman.member.MemberSyncController#syncMember(SyncMemberRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/internal/members/a87b6152-3aec-4206-bb92-4335dc554b57", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"memberId":"a87b6152-3aec-4206-bb92-4335dc554b57","clerkUserId":"user_ies_admin","action":"created"}
+    Forwarded URL = null
+   Redirected URL = /internal/members/a87b6152-3aec-4206-bb92-4335dc554b57
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/org-roles
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"114", Idempotency-Key:"e58ec4ac-60a3-4b72-bd5b-0df6dbc492fd"]
+             Body = {"name": "Partner Invite A", "description": "Test role", "capabilities": ["SIGN_OFF_TRUST_TAKE_ON", "VIEW_TRUST"]}
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleController
+           Method = io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleController#createRole(CreateOrgRoleRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/api/org-roles/68f4e3d1-b14a-4d00-93cc-a1c5f2af1aac", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"68f4e3d1-b14a-4d00-93cc-a1c5f2af1aac","name":"Partner Invite A","slug":"partner-invite-a","description":"Test role","capabilities":["SIGN_OFF_TRUST_TAKE_ON","VIEW_TRUST"],"isSystem":false,"memberCount":0,"createdAt":"2026-11-24T16:14:40.480594Z","updatedAt":"2026-11-24T16:14:40.480594Z"}
+    Forwarded URL = null
+   Redirected URL = /api/org-roles/68f4e3d1-b14a-4d00-93cc-a1c5f2af1aac
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/invitations
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"90", Idempotency-Key:"95d3a974-7f7c-4a01-b9df-1f8fa86bcdf3"]
+             Body = {"email": "ies_new_partner@test.com", "orgRoleId": "68f4e3d1-b14a-4d00-93cc-a1c5f2af1aac"}
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.invitation.InvitationController
+           Method = io.b2mash.b2b.b2bstrawman.invitation.InvitationController#createInvitation(CreateInvitationRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/api/invitations/67a93001-b7c3-46ef-b1cd-1b33353df699", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"67a93001-b7c3-46ef-b1cd-1b33353df699","email":"ies_new_partner@test.com","roleName":"Partner Invite A","roleSlug":"partner-invite-a","invitedByName":"Inv Admin","status":"PENDING","expiresAt":"2026-12-01T16:14:40.503331Z","createdAt":"2026-11-24T16:14:40.503581Z","acceptedAt":null}
+    Forwarded URL = null
+   Redirected URL = /api/invitations/67a93001-b7c3-46ef-b1cd-1b33353df699
+          Cookies = []
+[ERROR] Tests run: 6, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 0.981 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.invitation.InvitationRoleEscalationIntegrationTest
+[ERROR] io.b2mash.b2b.b2bstrawman.invitation.InvitationRoleEscalationIntegrationTest.anAdminCannotInviteIntoARoleHoldingAnOwnerOnlyCapability -- Time elapsed: 0.040 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+[invitation answer {"id":"67a93001-b7c3-46ef-b1cd-1b33353df699","email":"ies_new_partner@test.com","roleName":"Partner Invite A","roleSlug":"partner-invite-a","invitedByName":"Inv Admin","status":"PENDING","expiresAt":"2026-12-01T16:14:40.503331Z","createdAt":"2026-11-24T16:14:40.503581Z","acceptedAt":null}] 
+expected: 403
+ but was: 201
+	at io.b2mash.b2b.b2bstrawman.invitation.InvitationRoleEscalationIntegrationTest.assertForbidden(InvitationRoleEscalationIntegrationTest.java:219)
+	at io.b2mash.b2b.b2bstrawman.invitation.InvitationRoleEscalationIntegrationTest.anAdminCannotInviteIntoARoleHoldingAnOwnerOnlyCapability(InvitationRoleEscalationIntegrationTest.java:110)
+
+[ERROR] Failures: 
+[ERROR]   InvitationRoleEscalationIntegrationTest.anAdminCannotInviteIntoARoleHoldingAnOwnerOnlyCapability:110->assertForbidden:219 [invitation answer {"id":"67a93001-b7c3-46ef-b1cd-1b33353df699","email":"ies_new_partner@test.com","roleName":"Partner Invite A","roleSlug":"partner-invite-a","invitedByName":"Inv Admin","status":"PENDING","expiresAt":"2026-12-01T16:14:40.503331Z","createdAt":"2026-11-24T16:14:40.503581Z","acceptedAt":null}] 
+expected: 403
+ but was: 201
+[ERROR]   OwnerOnlyCapabilityGrantIntegrationTest.anAdminCanEditOrdinaryOverridesOfAMemberAlreadyOnAPartnerRole:218 Status expected:<200> but was:<403>
+[ERROR]   OwnerOnlyCapabilityGrantIntegrationTest.anAdminCanTakeAnOwnerOnlyCapabilityAwayFromAPartnerMember:230 Status expected:<200> but was:<403>
+[ERROR]   OwnerOnlyCapabilityGrantIntegrationTest.anAdminCannotDropAMinusOverrideThatWouldRestoreAnOwnerOnlyCapability:246->assertForbidden:367 
+expected: "Only the owner can grant an owner-only capability: SIGN_OFF_TRUST_TAKE_ON."
+ but was: "Only the owner can assign a role holding an owner-only capability: SIGN_OFF_TRUST_TAKE_ON."
+[ERROR] Tests run: 16, Failures: 4, Errors: 0, Skipped: 0
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.5.4:test (default-test) on project b2b-strawman-backend: There are test failures.
+[ERROR] 
+[ERROR] See /Users/rakheendama/Projects/2026/wt-f657c7-fr4/backend/target/surefire-reports for the individual test results.
+[ERROR] See dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

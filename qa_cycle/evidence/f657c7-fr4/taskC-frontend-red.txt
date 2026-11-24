@@ -1,0 +1,294 @@
+
+ RUN  v4.1.5 /Users/rakheendama/Projects/2026/wt-f657c7-fr4/frontend
+
+ ❯ __tests__/owner-only-capability-grants.test.tsx (11 tests | 2 failed) 766ms
+     × a non-owner sees the Admin role disabled with the hint; no Owner role 72ms
+     × the owner can pick the Admin role; no hint; no Owner role 39ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  __tests__/owner-only-capability-grants.test.tsx > InviteMemberForm — owner-only capabilities > a non-owner sees the Admin role disabled with the hint; no Owner role
+TestingLibraryElementError: Unable to find an element by: [data-testid="role-option-system-admin"]
+
+Ignored nodes: comments, script, style
+[36m<body[39m
+  [33mdata-scroll-locked[39m=[32m"1"[39m
+  [33mstyle[39m=[32m"pointer-events: none;"[39m
+[36m>[39m
+  [36m<span[39m
+    [33maria-hidden[39m=[32m"true"[39m
+    [33mdata-aria-hidden[39m=[32m"true"[39m
+    [33mdata-radix-focus-guard[39m=[32m""[39m
+    [33mstyle[39m=[32m"opacity: 0; position: fixed; pointer-events: none; outline-color: none; outline-style: none; outline-width: initial;"[39m
+    [33mtabindex[39m=[32m"0"[39m
+  [36m/>[39m
+  [36m<div[39m
+    [33maria-hidden[39m=[32m"true"[39m
+    [33mdata-aria-hidden[39m=[32m"true"[39m
+  [36m>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-4"[39m
+    [36m>[39m
+      [36m<form[39m
+        [33mclass[39m=[32m"flex flex-col gap-3 sm:flex-row sm:items-end"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex-1 space-y-1.5"[39m
+          [33mdata-slot[39m=[32m"form-item"[39m
+        [36m>[39m
+          [36m<label[39m
+            [33mclass[39m=[32m"flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50"[39m
+            [33mdata-slot[39m=[32m"label"[39m
+            [33mfor[39m=[32m"_r_2o_-form-item"[39m
+          [36m>[39m
+            [0mEmail address[0m
+          [36m</label>[39m
+          [36m<input[39m
+            [33maria-describedby[39m=[32m"_r_2o_-form-item-description"[39m
+            [33maria-invalid[39m=[32m"false"[39m
+            [33mclass[39m=[32m"file:text-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 h-9 w-full min-w-0 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-base transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-slate-400 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm dark:border-slate-700 focus-visible:border-slate-400 focus-visible:ring-[3px] focus-visible:ring-slate-500/30 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive"[39m
+            [33mdata-slot[39m=[32m"form-control"[39m
+            [33mdata-testid[39m=[32m"invite-email-input"[39m
+            [33mid[39m=[32m"_r_2o_-form-item"[39m
+            [33mname[39m=[32m"emailAddress"[39m
+            [33mplaceholder[39m=[32m"colleague@company.com"[39m
+            [33mtype[39m=[32m"email"[39m
+            [33mvalue[39m=[32m""[39m
+          [36m/>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"space-y-1.5"[39m
+          [33mdata-slot[39m=[32m"form-item"[39m
+        [36m>[39m
+          [36m<label[39m
+            [33mclass[39m=[32m"flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50"[39m
+            [33mdata-slot[39m=[32m"label"[39m
+            [33mfor[39m=[32m"_r_2p_-form-item"[39m
+          [36m>[39m
+            [0mRole[0m
+          [36m</label>[39m
+          [36m<button[39m
+            [33maria-autocomplete[39m=[32m"none"[39m
+            [33maria-controls[39m=[32m"radix-_r_2q_"[39m
+            [33maria-expanded[39m=[32m"true"[39m
+            [33mclass[39m=[32m"border-input data-[placeholder]:text-muted-foreground [&_svg:not([class*='text-'])]:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 dark:hover:bg-input/50 flex items-center justify-between gap-2 rounded-md border bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 data-[size=default]:h-9 data-[size=sm]:h-8 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 h-9 w-full min-w-[140px]"[39m
+            [33mdata-size[39m=[32m"default"[39m
+            [33mdata-slot[39m=[32m"select-trigger"[39m
+            [33mdata-state[39m=[32m"open"[39m
+            [33mdata-testid[39m=[32m"role-select"[39m
+            [33mdir[39m=[32m"ltr"[39m
+            [33mrole[39m=[32m"combobox"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mdata-slot[39m=[32m"select-value"[39m
+              [33mstyle[39m=[32m"pointer-events: none;"[39m
+            [36m>[39m
+              [0mMember[0m
+            [36m</span>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-down size-4 opacity-50"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m6 9 6 6 6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</button>[39m
+          [36m<select[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mstyle[39m=[32m"position: absolute; border: 0px; width: 1px; height: 1px; padding: 0px; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; word-wrap: normal;"[39m
+            [33mtabindex[39m=[32m"-1"[39m
+          [36m>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"system:member"[39m
+            [36m>[39m
+              [0mMember[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"system:admin"[39m
+            [36m>[39m
+              [0mAdmin[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"role-bookkeeper"[39m
+            [36m>[39m
+              [0mBookkeeper[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mdisabled[39m=[32m""[39m
+              [33mvalue[39m=[32m"role-partner"[39m
+            [36m>[39m
+              [0mPartnerOnly the owner can grant this[0m
+            [36m</option>[39m
+          [36m</select>[39m
+          [36m<input...
+ ❯ Object.getElementError ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ __tests__/owner-only-capability-grants.test.tsx:279:19
+    277|
+    278|     await user.click(screen.getByRole("combobox"));
+    279|     expect(screen.getByTestId("role-option-system-admin")).toHaveAttri…
+       |                   ^
+    280|     expect(screen.getByTestId("owner-only-role-hint-system-admin")).to…
+    281|     expect(screen.getByRole("option", { name: "Member" })).not.toHaveA…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  __tests__/owner-only-capability-grants.test.tsx > InviteMemberForm — owner-only capabilities > the owner can pick the Admin role; no hint; no Owner role
+TestingLibraryElementError: Unable to find an element by: [data-testid="role-option-system-admin"]
+
+Ignored nodes: comments, script, style
+[36m<body[39m
+  [33mdata-scroll-locked[39m=[32m"1"[39m
+  [33mstyle[39m=[32m"pointer-events: none;"[39m
+[36m>[39m
+  [36m<span[39m
+    [33maria-hidden[39m=[32m"true"[39m
+    [33mdata-aria-hidden[39m=[32m"true"[39m
+    [33mdata-radix-focus-guard[39m=[32m""[39m
+    [33mstyle[39m=[32m"opacity: 0; position: fixed; pointer-events: none; outline-color: none; outline-style: none; outline-width: initial;"[39m
+    [33mtabindex[39m=[32m"0"[39m
+  [36m/>[39m
+  [36m<div[39m
+    [33maria-hidden[39m=[32m"true"[39m
+    [33mdata-aria-hidden[39m=[32m"true"[39m
+  [36m>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-4"[39m
+    [36m>[39m
+      [36m<form[39m
+        [33mclass[39m=[32m"flex flex-col gap-3 sm:flex-row sm:items-end"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex-1 space-y-1.5"[39m
+          [33mdata-slot[39m=[32m"form-item"[39m
+        [36m>[39m
+          [36m<label[39m
+            [33mclass[39m=[32m"flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50"[39m
+            [33mdata-slot[39m=[32m"label"[39m
+            [33mfor[39m=[32m"_r_37_-form-item"[39m
+          [36m>[39m
+            [0mEmail address[0m
+          [36m</label>[39m
+          [36m<input[39m
+            [33maria-describedby[39m=[32m"_r_37_-form-item-description"[39m
+            [33maria-invalid[39m=[32m"false"[39m
+            [33mclass[39m=[32m"file:text-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 h-9 w-full min-w-0 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-base transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-slate-400 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm dark:border-slate-700 focus-visible:border-slate-400 focus-visible:ring-[3px] focus-visible:ring-slate-500/30 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive"[39m
+            [33mdata-slot[39m=[32m"form-control"[39m
+            [33mdata-testid[39m=[32m"invite-email-input"[39m
+            [33mid[39m=[32m"_r_37_-form-item"[39m
+            [33mname[39m=[32m"emailAddress"[39m
+            [33mplaceholder[39m=[32m"colleague@company.com"[39m
+            [33mtype[39m=[32m"email"[39m
+            [33mvalue[39m=[32m""[39m
+          [36m/>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"space-y-1.5"[39m
+          [33mdata-slot[39m=[32m"form-item"[39m
+        [36m>[39m
+          [36m<label[39m
+            [33mclass[39m=[32m"flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50"[39m
+            [33mdata-slot[39m=[32m"label"[39m
+            [33mfor[39m=[32m"_r_38_-form-item"[39m
+          [36m>[39m
+            [0mRole[0m
+          [36m</label>[39m
+          [36m<button[39m
+            [33maria-autocomplete[39m=[32m"none"[39m
+            [33maria-controls[39m=[32m"radix-_r_39_"[39m
+            [33maria-expanded[39m=[32m"true"[39m
+            [33mclass[39m=[32m"border-input data-[placeholder]:text-muted-foreground [&_svg:not([class*='text-'])]:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 dark:hover:bg-input/50 flex items-center justify-between gap-2 rounded-md border bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 data-[size=default]:h-9 data-[size=sm]:h-8 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 h-9 w-full min-w-[140px]"[39m
+            [33mdata-size[39m=[32m"default"[39m
+            [33mdata-slot[39m=[32m"select-trigger"[39m
+            [33mdata-state[39m=[32m"open"[39m
+            [33mdata-testid[39m=[32m"role-select"[39m
+            [33mdir[39m=[32m"ltr"[39m
+            [33mrole[39m=[32m"combobox"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mdata-slot[39m=[32m"select-value"[39m
+              [33mstyle[39m=[32m"pointer-events: none;"[39m
+            [36m>[39m
+              [0mMember[0m
+            [36m</span>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-down size-4 opacity-50"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m6 9 6 6 6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</button>[39m
+          [36m<select[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mstyle[39m=[32m"position: absolute; border: 0px; width: 1px; height: 1px; padding: 0px; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; word-wrap: normal;"[39m
+            [33mtabindex[39m=[32m"-1"[39m
+          [36m>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"system:member"[39m
+            [36m>[39m
+              [0mMember[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"system:admin"[39m
+            [36m>[39m
+              [0mAdmin[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"role-bookkeeper"[39m
+            [36m>[39m
+              [0mBookkeeper[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"role-partner"[39m
+            [36m>[39m
+              [0mPartner[0m
+            [36m</option>[39m
+          [36m</select>[39m
+          [36m<input[39m
+            [33mdata-testid[39m=[32m"role-hidden"[39m
+            ...
+ ❯ Object.getElementError ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../node_modules/.pnpm/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ __tests__/owner-only-capability-grants.test.tsx:293:19
+    291|
+    292|     await user.click(screen.getByRole("combobox"));
+    293|     expect(screen.getByTestId("role-option-system-admin")).not.toHaveA…
+       |                   ^
+    294|       "aria-disabled",
+    295|       "true"
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 9 passed (11)
+   Start at  17:20:36
+   Duration  1.70s (transform 186ms, setup 104ms, import 523ms, tests 766ms, environment 195ms)
+

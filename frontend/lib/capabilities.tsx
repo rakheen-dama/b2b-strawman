@@ -107,6 +107,14 @@ export const OWNER_ONLY_CAPABILITIES: ReadonlySet<string> = new Set([
   "SIGN_OFF_TRUST_TAKE_ON",
 ]);
 
+/** Whether a role holding `capabilities` carries an owner-only capability (FR-4). */
+export function holdsOwnerOnlyCapability(capabilities: readonly string[]): boolean {
+  return capabilities.some((cap) => OWNER_ONLY_CAPABILITIES.has(cap));
+}
+
+/** The hint shown on an owner-only capability, or a role holding one, for a non-owner (FR-4). */
+export const OWNER_ONLY_GRANT_HINT = "Only the owner can grant this";
+
 // ---- Context Types ----
 
 interface CapabilityContextValue {
@@ -171,6 +179,15 @@ export function useCapabilities(): CapabilityContextValue {
     throw new Error("useCapabilities must be used within a CapabilityProvider");
   }
   return ctx;
+}
+
+/**
+ * Whether the caller may grant owner-only capabilities (FR-4: the owner only — the backend refuses
+ * anyone else with 403 "Owner-only capability"). Outside a provider it answers false, so a grant
+ * control is never wider than the backend.
+ */
+export function useCanGrantOwnerOnly(): boolean {
+  return useContext(CapabilityContext)?.isOwner ?? false;
 }
 
 // ---- RequiresCapability Wrapper ----

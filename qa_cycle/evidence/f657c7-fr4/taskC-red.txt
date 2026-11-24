@@ -1,0 +1,347 @@
+15:05:44.020 [main] INFO com.tngtech.archunit.ArchConfiguration -- Reading ArchUnit properties from file:/Users/rakheendama/Projects/2026/wt-f657c7-fr4/backend/target/test-classes/archunit.properties
+15:05:44.113 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [io.b2mash.b2b.b2bstrawman.invitation.InvitationRoleEscalationIntegrationTest]: InvitationRoleEscalationIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+15:05:44.261 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration io.b2mash.b2b.b2bstrawman.BackendApplication for test class io.b2mash.b2b.b2bstrawman.invitation.InvitationRoleEscalationIntegrationTest
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/Users/rakheendama/.m2/repository/net/bytebuddy/byte-buddy-agent/1.17.8/byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+{"@timestamp":"2026-11-24T15:05:58.100934Z","log":{"level":"ERROR","logger":"io.b2mash.b2b.b2bstrawman.exception.GlobalExceptionHandler"},"process":{"pid":8373,"thread":{"name":"main"}},"service":{"name":"backend","node":{}},"message":"Member context invariant violation: Member context not available — MEMBER_ID not bound by filter chain","tenantId":"tenant_e008918cab63","userId":"user_ies_new_partner","requestId":"01e227a8-3c50-431f-a065-d48299cf4013","ecs":{"version":"8.11"}}
+
+MockHttpServletRequest:
+      HTTP Method = GET
+      Request URI = /api/org-roles
+       Parameters = {}
+          Headers = []
+             Body = null
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleController
+           Method = io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleController#listRoles()
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = [{"id":"2afc7175-83c2-4f47-b2ef-39c159c656e5","name":"Owner","slug":"owner","description":"Full access to all capabilities","capabilities":["FINANCIAL_VISIBILITY","INVOICING","APPROVE_TRUST_PAYMENT","AI_EXECUTE","PROJECT_MANAGEMENT","GENERATE_STATEMENT_OF_ACCOUNT","APPROVE_DISBURSEMENTS","AI_REVIEW","MANAGE_DISBURSEMENTS","TEAM_OVERSIGHT","MANAGE_COMPLIANCE","OVERRIDE_MATTER_CLOSURE","AUTOMATIONS","MANAGE_LEGAL","VIEW_LEGAL","CLOSE_MATTER","MANAGE_COMPLIANCE_DESTRUCTIVE","MANAGE_TRUST","WRITE_OFF_DISBURSEMENTS","CUSTOMER_MANAGEMENT","AI_MANAGE","VIEW_TRUST"],"isSystem":true,"memberCount":1,"createdAt":"2026-11-24T15:05:56.309404Z","updatedAt":"2026-11-24T15:05:56.309404Z"},{"id":"57fa3334-a2ed-4d75-b333-3e8c50e674a2","name":"Admin","slug":"admin","description":"Administrative access to all capabilities","capabilities":["FINANCIAL_VISIBILITY","INVOICING","APPROVE_TRUST_PAYMENT","AI_EXECUTE","PROJECT_MANAGEMENT","GENERATE_STATEMENT_OF_ACCOUNT","APPROVE_DISBURSEMENTS","AI_REVIEW","MANAGE_DISBURSEMENTS","TEAM_OVERSIGHT","MANAGE_COMPLIANCE","AUTOMATIONS","MANAGE_LEGAL","VIEW_LEGAL","CLOSE_MATTER","MANAGE_TRUST","WRITE_OFF_DISBURSEMENTS","CUSTOMER_MANAGEMENT","AI_MANAGE","VIEW_TRUST"],"isSystem":true,"memberCount":2,"createdAt":"2026-11-24T15:05:56.309404Z","updatedAt":"2026-11-24T15:05:56.309404Z"},{"id":"a3d977d5-749d-446f-bae0-153c7f732353","name":"Member","slug":"member","description":"Basic member with no default capabilities","capabilities":["AI_EXECUTE","GENERATE_STATEMENT_OF_ACCOUNT","VIEW_LEGAL","MANAGE_DISBURSEMENTS","VIEW_TRUST"],"isSystem":true,"memberCount":0,"createdAt":"2026-11-24T15:05:56.309404Z","updatedAt":"2026-11-24T15:05:56.309404Z"},{"id":"a300735c-a438-447a-934b-c52aa4be8715","name":"Partner Invite A","slug":"partner-invite-a","description":"Test role","capabilities":["SIGN_OFF_TRUST_TAKE_ON","VIEW_TRUST"],"isSystem":false,"memberCount":0,"createdAt":"2026-11-24T15:05:58.031454Z","updatedAt":"2026-11-24T15:05:58.031455Z"},{"id":"a02c5e98-3349-4a46-9bcf-ebd2a72672bd","name":"Partner Invite B","slug":"partner-invite-b","description":"Test role","capabilities":["SIGN_OFF_TRUST_TAKE_ON","VIEW_TRUST"],"isSystem":false,"memberCount":0,"createdAt":"2026-11-24T15:05:58.181215Z","updatedAt":"2026-11-24T15:05:58.181215Z"}]
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/invitations
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"88", Idempotency-Key:"cbc93af2-2c25-4d96-8da4-1c0a397a893a"]
+             Body = {"email": "ies_new_owner@test.com", "orgRoleId": "2afc7175-83c2-4f47-b2ef-39c159c656e5"}
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.invitation.InvitationController
+           Method = io.b2mash.b2b.b2bstrawman.invitation.InvitationController#createInvitation(CreateInvitationRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/api/invitations/9c3a29ab-d547-4992-ace1-001054b372dd", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"9c3a29ab-d547-4992-ace1-001054b372dd","email":"ies_new_owner@test.com","roleName":"Owner","roleSlug":"owner","invitedByName":"Inv Admin","status":"PENDING","expiresAt":"2026-12-01T15:05:58.215977Z","createdAt":"2026-11-24T15:05:58.216047Z","acceptedAt":null}
+    Forwarded URL = null
+   Redirected URL = /api/invitations/9c3a29ab-d547-4992-ace1-001054b372dd
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = GET
+      Request URI = /api/me/capabilities
+       Parameters = {}
+          Headers = []
+             Body = null
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.orgrole.CapabilityController
+           Method = io.b2mash.b2b.b2bstrawman.orgrole.CapabilityController#getMyCapabilities()
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"capabilities":["FINANCIAL_RECONCILE","VIEW_LEGAL","AI_REVIEW","CUSTOMER_MANAGEMENT","APPROVE_DISBURSEMENTS","AI_MANAGE","MANAGE_DISBURSEMENTS","AUTOMATIONS","TEAM_OVERSIGHT","INTEGRATION_MANAGE","GENERATE_STATEMENT_OF_ACCOUNT","AI_EXECUTE","WRITE_OFF_DISBURSEMENTS","MANAGE_COMPLIANCE_DESTRUCTIVE","PROJECT_MANAGEMENT","MANAGE_COMPLIANCE","FINANCIAL_VISIBILITY","MCP_ACCESS","SIGN_OFF_TRUST_TAKE_ON","MANAGE_TRUST","INTEGRATION_VIEW_SYNC_STATUS","OVERRIDE_MATTER_CLOSURE","APPROVE_TRUST_PAYMENT","MCP_WRITE","VIEW_TRUST","MANAGE_LEGAL","MANAGE_TAKE_ON","CLOSE_MATTER","INVOICING"],"role":"Owner","isAdmin":false,"isOwner":true,"memberId":"3f576d68-146f-4a0c-9ae4-75584aa3411a"}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = GET
+      Request URI = /api/org-roles
+       Parameters = {}
+          Headers = []
+             Body = null
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleController
+           Method = io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleController#listRoles()
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = [{"id":"2afc7175-83c2-4f47-b2ef-39c159c656e5","name":"Owner","slug":"owner","description":"Full access to all capabilities","capabilities":["FINANCIAL_VISIBILITY","INVOICING","APPROVE_TRUST_PAYMENT","AI_EXECUTE","PROJECT_MANAGEMENT","GENERATE_STATEMENT_OF_ACCOUNT","APPROVE_DISBURSEMENTS","AI_REVIEW","MANAGE_DISBURSEMENTS","TEAM_OVERSIGHT","MANAGE_COMPLIANCE","OVERRIDE_MATTER_CLOSURE","AUTOMATIONS","MANAGE_LEGAL","VIEW_LEGAL","CLOSE_MATTER","MANAGE_COMPLIANCE_DESTRUCTIVE","MANAGE_TRUST","WRITE_OFF_DISBURSEMENTS","CUSTOMER_MANAGEMENT","AI_MANAGE","VIEW_TRUST"],"isSystem":true,"memberCount":2,"createdAt":"2026-11-24T15:05:56.309404Z","updatedAt":"2026-11-24T15:05:56.309404Z"},{"id":"57fa3334-a2ed-4d75-b333-3e8c50e674a2","name":"Admin","slug":"admin","description":"Administrative access to all capabilities","capabilities":["FINANCIAL_VISIBILITY","INVOICING","APPROVE_TRUST_PAYMENT","AI_EXECUTE","PROJECT_MANAGEMENT","GENERATE_STATEMENT_OF_ACCOUNT","APPROVE_DISBURSEMENTS","AI_REVIEW","MANAGE_DISBURSEMENTS","TEAM_OVERSIGHT","MANAGE_COMPLIANCE","AUTOMATIONS","MANAGE_LEGAL","VIEW_LEGAL","CLOSE_MATTER","MANAGE_TRUST","WRITE_OFF_DISBURSEMENTS","CUSTOMER_MANAGEMENT","AI_MANAGE","VIEW_TRUST"],"isSystem":true,"memberCount":2,"createdAt":"2026-11-24T15:05:56.309404Z","updatedAt":"2026-11-24T15:05:56.309404Z"},{"id":"a3d977d5-749d-446f-bae0-153c7f732353","name":"Member","slug":"member","description":"Basic member with no default capabilities","capabilities":["AI_EXECUTE","GENERATE_STATEMENT_OF_ACCOUNT","VIEW_LEGAL","MANAGE_DISBURSEMENTS","VIEW_TRUST"],"isSystem":true,"memberCount":0,"createdAt":"2026-11-24T15:05:56.309404Z","updatedAt":"2026-11-24T15:05:56.309404Z"},{"id":"a300735c-a438-447a-934b-c52aa4be8715","name":"Partner Invite A","slug":"partner-invite-a","description":"Test role","capabilities":["SIGN_OFF_TRUST_TAKE_ON","VIEW_TRUST"],"isSystem":false,"memberCount":0,"createdAt":"2026-11-24T15:05:58.031454Z","updatedAt":"2026-11-24T15:05:58.031455Z"},{"id":"a02c5e98-3349-4a46-9bcf-ebd2a72672bd","name":"Partner Invite B","slug":"partner-invite-b","description":"Test role","capabilities":["SIGN_OFF_TRUST_TAKE_ON","VIEW_TRUST"],"isSystem":false,"memberCount":0,"createdAt":"2026-11-24T15:05:58.181215Z","updatedAt":"2026-11-24T15:05:58.181215Z"}]
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/invitations
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"88", Idempotency-Key:"fabdfb04-2529-4afa-ab54-8908787d8849"]
+             Body = {"email": "ies_new_admin@test.com", "orgRoleId": "57fa3334-a2ed-4d75-b333-3e8c50e674a2"}
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.invitation.InvitationController
+           Method = io.b2mash.b2b.b2bstrawman.invitation.InvitationController#createInvitation(CreateInvitationRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/api/invitations/c7f62047-fa68-48c9-bcb1-e1250de0d99f", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"c7f62047-fa68-48c9-bcb1-e1250de0d99f","email":"ies_new_admin@test.com","roleName":"Admin","roleSlug":"admin","invitedByName":"Inv Admin","status":"PENDING","expiresAt":"2026-12-01T15:05:58.261777Z","createdAt":"2026-11-24T15:05:58.261880Z","acceptedAt":null}
+    Forwarded URL = null
+   Redirected URL = /api/invitations/c7f62047-fa68-48c9-bcb1-e1250de0d99f
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = GET
+      Request URI = /api/me/capabilities
+       Parameters = {}
+          Headers = []
+             Body = null
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.orgrole.CapabilityController
+           Method = io.b2mash.b2b.b2bstrawman.orgrole.CapabilityController#getMyCapabilities()
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"capabilities":["MANAGE_DISBURSEMENTS","APPROVE_DISBURSEMENTS","TEAM_OVERSIGHT","GENERATE_STATEMENT_OF_ACCOUNT","FINANCIAL_VISIBILITY","MANAGE_TRUST","MCP_WRITE","MANAGE_TAKE_ON","CUSTOMER_MANAGEMENT","AI_REVIEW","WRITE_OFF_DISBURSEMENTS","CLOSE_MATTER","VIEW_LEGAL","APPROVE_TRUST_PAYMENT","INVOICING","INTEGRATION_VIEW_SYNC_STATUS","AUTOMATIONS","AI_MANAGE","MANAGE_COMPLIANCE","AI_EXECUTE","MANAGE_LEGAL","MCP_ACCESS","PROJECT_MANAGEMENT","INTEGRATION_MANAGE","VIEW_TRUST"],"role":"Admin","isAdmin":true,"isOwner":false,"memberId":"5a66fa83-9259-463c-a7bb-6be209bc29d3"}
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = GET
+      Request URI = /api/org-roles
+       Parameters = {}
+          Headers = []
+             Body = null
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleController
+           Method = io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleController#listRoles()
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = [{"id":"2afc7175-83c2-4f47-b2ef-39c159c656e5","name":"Owner","slug":"owner","description":"Full access to all capabilities","capabilities":["FINANCIAL_VISIBILITY","INVOICING","APPROVE_TRUST_PAYMENT","AI_EXECUTE","PROJECT_MANAGEMENT","GENERATE_STATEMENT_OF_ACCOUNT","APPROVE_DISBURSEMENTS","AI_REVIEW","MANAGE_DISBURSEMENTS","TEAM_OVERSIGHT","MANAGE_COMPLIANCE","OVERRIDE_MATTER_CLOSURE","AUTOMATIONS","MANAGE_LEGAL","VIEW_LEGAL","CLOSE_MATTER","MANAGE_COMPLIANCE_DESTRUCTIVE","MANAGE_TRUST","WRITE_OFF_DISBURSEMENTS","CUSTOMER_MANAGEMENT","AI_MANAGE","VIEW_TRUST"],"isSystem":true,"memberCount":2,"createdAt":"2026-11-24T15:05:56.309404Z","updatedAt":"2026-11-24T15:05:56.309404Z"},{"id":"57fa3334-a2ed-4d75-b333-3e8c50e674a2","name":"Admin","slug":"admin","description":"Administrative access to all capabilities","capabilities":["FINANCIAL_VISIBILITY","INVOICING","APPROVE_TRUST_PAYMENT","AI_EXECUTE","PROJECT_MANAGEMENT","GENERATE_STATEMENT_OF_ACCOUNT","APPROVE_DISBURSEMENTS","AI_REVIEW","MANAGE_DISBURSEMENTS","TEAM_OVERSIGHT","MANAGE_COMPLIANCE","AUTOMATIONS","MANAGE_LEGAL","VIEW_LEGAL","CLOSE_MATTER","MANAGE_TRUST","WRITE_OFF_DISBURSEMENTS","CUSTOMER_MANAGEMENT","AI_MANAGE","VIEW_TRUST"],"isSystem":true,"memberCount":3,"createdAt":"2026-11-24T15:05:56.309404Z","updatedAt":"2026-11-24T15:05:56.309404Z"},{"id":"a3d977d5-749d-446f-bae0-153c7f732353","name":"Member","slug":"member","description":"Basic member with no default capabilities","capabilities":["AI_EXECUTE","GENERATE_STATEMENT_OF_ACCOUNT","VIEW_LEGAL","MANAGE_DISBURSEMENTS","VIEW_TRUST"],"isSystem":true,"memberCount":0,"createdAt":"2026-11-24T15:05:56.309404Z","updatedAt":"2026-11-24T15:05:56.309404Z"},{"id":"a300735c-a438-447a-934b-c52aa4be8715","name":"Partner Invite A","slug":"partner-invite-a","description":"Test role","capabilities":["SIGN_OFF_TRUST_TAKE_ON","VIEW_TRUST"],"isSystem":false,"memberCount":0,"createdAt":"2026-11-24T15:05:58.031454Z","updatedAt":"2026-11-24T15:05:58.031455Z"},{"id":"a02c5e98-3349-4a46-9bcf-ebd2a72672bd","name":"Partner Invite B","slug":"partner-invite-b","description":"Test role","capabilities":["SIGN_OFF_TRUST_TAKE_ON","VIEW_TRUST"],"isSystem":false,"memberCount":0,"createdAt":"2026-11-24T15:05:58.181215Z","updatedAt":"2026-11-24T15:05:58.181215Z"},{"id":"cca5e847-a691-4f84-a2b7-44035b2e49ee","name":"Bookkeeper Invite","slug":"bookkeeper-invite","description":"Test role","capabilities":["INVOICING"],"isSystem":false,"memberCount":0,"createdAt":"2026-11-24T15:05:58.301263Z","updatedAt":"2026-11-24T15:05:58.301263Z"}]
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+
+MockHttpServletRequest:
+      HTTP Method = POST
+      Request URI = /api/invitations
+       Parameters = {}
+          Headers = [Content-Type:"application/json;charset=UTF-8", Content-Length:"89", Idempotency-Key:"8ad34410-07ed-4fa9-8cb4-fca7893b6204"]
+             Body = {"email": "ies_new_owner2@test.com", "orgRoleId": "2afc7175-83c2-4f47-b2ef-39c159c656e5"}
+    Session Attrs = {}
+
+Handler:
+             Type = io.b2mash.b2b.b2bstrawman.invitation.InvitationController
+           Method = io.b2mash.b2b.b2bstrawman.invitation.InvitationController#createInvitation(CreateInvitationRequest)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = null
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 201
+    Error message = null
+          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Location:"/api/invitations/f096692a-f0c0-47d6-9953-b2c3a16d216f", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = application/json
+             Body = {"id":"f096692a-f0c0-47d6-9953-b2c3a16d216f","email":"ies_new_owner2@test.com","roleName":"Owner","roleSlug":"owner","invitedByName":"Inv Owner","status":"PENDING","expiresAt":"2026-12-01T15:05:58.329160Z","createdAt":"2026-11-24T15:05:58.329242Z","acceptedAt":null}
+    Forwarded URL = null
+   Redirected URL = /api/invitations/f096692a-f0c0-47d6-9953-b2c3a16d216f
+          Cookies = []
+[ERROR] Tests run: 6, Failures: 3, Errors: 0, Skipped: 0, Time elapsed: 14.28 s <<< FAILURE! -- in io.b2mash.b2b.b2bstrawman.invitation.InvitationRoleEscalationIntegrationTest
+[ERROR] io.b2mash.b2b.b2bstrawman.invitation.InvitationRoleEscalationIntegrationTest.anAdminCannotInviteIntoTheOwnerRole -- Time elapsed: 0.045 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+[invitee is an owner: {"capabilities":["FINANCIAL_RECONCILE","VIEW_LEGAL","AI_REVIEW","CUSTOMER_MANAGEMENT","APPROVE_DISBURSEMENTS","AI_MANAGE","MANAGE_DISBURSEMENTS","AUTOMATIONS","TEAM_OVERSIGHT","INTEGRATION_MANAGE","GENERATE_STATEMENT_OF_ACCOUNT","AI_EXECUTE","WRITE_OFF_DISBURSEMENTS","MANAGE_COMPLIANCE_DESTRUCTIVE","PROJECT_MANAGEMENT","MANAGE_COMPLIANCE","FINANCIAL_VISIBILITY","MCP_ACCESS","SIGN_OFF_TRUST_TAKE_ON","MANAGE_TRUST","INTEGRATION_VIEW_SYNC_STATUS","OVERRIDE_MATTER_CLOSURE","APPROVE_TRUST_PAYMENT","MCP_WRITE","VIEW_TRUST","MANAGE_LEGAL","MANAGE_TAKE_ON","CLOSE_MATTER","INVOICING"],"role":"Owner","isAdmin":false,"isOwner":true,"memberId":"3f576d68-146f-4a0c-9ae4-75584aa3411a"}] 
+Expecting value to be false but was true
+	at io.b2mash.b2b.b2bstrawman.invitation.InvitationRoleEscalationIntegrationTest.anAdminCannotInviteIntoTheOwnerRole(InvitationRoleEscalationIntegrationTest.java:70)
+
+[ERROR] io.b2mash.b2b.b2bstrawman.invitation.InvitationRoleEscalationIntegrationTest.anAdminCannotInviteIntoTheAdminRole -- Time elapsed: 0.035 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+[invitee is an admin: {"capabilities":["MANAGE_DISBURSEMENTS","APPROVE_DISBURSEMENTS","TEAM_OVERSIGHT","GENERATE_STATEMENT_OF_ACCOUNT","FINANCIAL_VISIBILITY","MANAGE_TRUST","MCP_WRITE","MANAGE_TAKE_ON","CUSTOMER_MANAGEMENT","AI_REVIEW","WRITE_OFF_DISBURSEMENTS","CLOSE_MATTER","VIEW_LEGAL","APPROVE_TRUST_PAYMENT","INVOICING","INTEGRATION_VIEW_SYNC_STATUS","AUTOMATIONS","AI_MANAGE","MANAGE_COMPLIANCE","AI_EXECUTE","MANAGE_LEGAL","MCP_ACCESS","PROJECT_MANAGEMENT","INTEGRATION_MANAGE","VIEW_TRUST"],"role":"Admin","isAdmin":true,"isOwner":false,"memberId":"5a66fa83-9259-463c-a7bb-6be209bc29d3"}] 
+Expecting value to be false but was true
+	at io.b2mash.b2b.b2bstrawman.invitation.InvitationRoleEscalationIntegrationTest.anAdminCannotInviteIntoTheAdminRole(InvitationRoleEscalationIntegrationTest.java:94)
+
+[ERROR] io.b2mash.b2b.b2bstrawman.invitation.InvitationRoleEscalationIntegrationTest.evenTheOwnerCannotInviteIntoTheOwnerRole -- Time elapsed: 0.022 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+[invitation answer {"id":"f096692a-f0c0-47d6-9953-b2c3a16d216f","email":"ies_new_owner2@test.com","roleName":"Owner","roleSlug":"owner","invitedByName":"Inv Owner","status":"PENDING","expiresAt":"2026-12-01T15:05:58.329160Z","createdAt":"2026-11-24T15:05:58.329242Z","acceptedAt":null}] 
+expected: 403
+ but was: 201
+	at io.b2mash.b2b.b2bstrawman.invitation.InvitationRoleEscalationIntegrationTest.assertForbidden(InvitationRoleEscalationIntegrationTest.java:234)
+	at io.b2mash.b2b.b2bstrawman.invitation.InvitationRoleEscalationIntegrationTest.evenTheOwnerCannotInviteIntoTheOwnerRole(InvitationRoleEscalationIntegrationTest.java:79)
+
+[ERROR] Failures: 
+[ERROR]   InvitationRoleEscalationIntegrationTest.anAdminCannotInviteIntoTheAdminRole:94 [invitee is an admin: {"capabilities":["MANAGE_DISBURSEMENTS","APPROVE_DISBURSEMENTS","TEAM_OVERSIGHT","GENERATE_STATEMENT_OF_ACCOUNT","FINANCIAL_VISIBILITY","MANAGE_TRUST","MCP_WRITE","MANAGE_TAKE_ON","CUSTOMER_MANAGEMENT","AI_REVIEW","WRITE_OFF_DISBURSEMENTS","CLOSE_MATTER","VIEW_LEGAL","APPROVE_TRUST_PAYMENT","INVOICING","INTEGRATION_VIEW_SYNC_STATUS","AUTOMATIONS","AI_MANAGE","MANAGE_COMPLIANCE","AI_EXECUTE","MANAGE_LEGAL","MCP_ACCESS","PROJECT_MANAGEMENT","INTEGRATION_MANAGE","VIEW_TRUST"],"role":"Admin","isAdmin":true,"isOwner":false,"memberId":"5a66fa83-9259-463c-a7bb-6be209bc29d3"}] 
+Expecting value to be false but was true
+[ERROR]   InvitationRoleEscalationIntegrationTest.anAdminCannotInviteIntoTheOwnerRole:70 [invitee is an owner: {"capabilities":["FINANCIAL_RECONCILE","VIEW_LEGAL","AI_REVIEW","CUSTOMER_MANAGEMENT","APPROVE_DISBURSEMENTS","AI_MANAGE","MANAGE_DISBURSEMENTS","AUTOMATIONS","TEAM_OVERSIGHT","INTEGRATION_MANAGE","GENERATE_STATEMENT_OF_ACCOUNT","AI_EXECUTE","WRITE_OFF_DISBURSEMENTS","MANAGE_COMPLIANCE_DESTRUCTIVE","PROJECT_MANAGEMENT","MANAGE_COMPLIANCE","FINANCIAL_VISIBILITY","MCP_ACCESS","SIGN_OFF_TRUST_TAKE_ON","MANAGE_TRUST","INTEGRATION_VIEW_SYNC_STATUS","OVERRIDE_MATTER_CLOSURE","APPROVE_TRUST_PAYMENT","MCP_WRITE","VIEW_TRUST","MANAGE_LEGAL","MANAGE_TAKE_ON","CLOSE_MATTER","INVOICING"],"role":"Owner","isAdmin":false,"isOwner":true,"memberId":"3f576d68-146f-4a0c-9ae4-75584aa3411a"}] 
+Expecting value to be false but was true
+[ERROR]   InvitationRoleEscalationIntegrationTest.evenTheOwnerCannotInviteIntoTheOwnerRole:79->assertForbidden:234 [invitation answer {"id":"f096692a-f0c0-47d6-9953-b2c3a16d216f","email":"ies_new_owner2@test.com","roleName":"Owner","roleSlug":"owner","invitedByName":"Inv Owner","status":"PENDING","expiresAt":"2026-12-01T15:05:58.329160Z","createdAt":"2026-11-24T15:05:58.329242Z","acceptedAt":null}] 
+expected: 403
+ but was: 201
+[ERROR] Tests run: 6, Failures: 3, Errors: 0, Skipped: 0
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.5.4:test (default-test) on project b2b-strawman-backend: There are test failures.
+[ERROR] 
+[ERROR] See /Users/rakheendama/Projects/2026/wt-f657c7-fr4/backend/target/surefire-reports for the individual test results.
+[ERROR] See dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

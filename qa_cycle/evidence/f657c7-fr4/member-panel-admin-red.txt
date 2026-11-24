@@ -1,0 +1,4 @@
+     × a non-owner cannot pick the system Admin role, and sees the hint 63ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  __tests__/owner-only-capability-grants.test.tsx > MemberDetailPanel — the system Admin role > a non-owner cannot pick the system Admin role, and sees the hint
+      Tests  1 failed | 12 passed (13)

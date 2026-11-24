@@ -17,3 +17,7 @@
 | F-13 | 653A OBS | `take_on_sources.file_name` survives cancel / purge; a file name can carry a client name (e.g. `Dlamini debtors.xlsx`). X4 purges row values, not the file name. | `TakeOnSource.purge()`; `take_on_sources.file_name` | Deferred — X4 retention of the file name to be ruled (blank it on purge, or keep as evidence). |
 | F-14 | 653A OBS | `take_on_rows.numeric_cells` (header names of numeric cells, D-46) survives purge. Headers only, no values — low risk. | `TakeOnRowRepository.purgeValues` | Deferred (low). |
 | F-15 | 653A architecture delta review @9bddc3f40 (Medium) | A dataset handler that delegates to `GenericTakeOnDatasetHandler` can't add fields or lookups without copying `loadContext`. | `backend/src/main/java/io/b2mash/b2b/b2bstrawman/takeon/dataset/GenericTakeOnDatasetHandler.java:81`, `ValidationContext.java:45-54` | Deferred to the first commit of 655A: pick one extension model, add a `ValidationContext` copy constructor; also fix the stale javadoc on `TakeOnBatch.requireValidatable()`. |
+
+**Founder rulings 2026-11-24:**
+- **F-2 (FR-3):** 3 MB limit; a follow-up PR is due after the phase.
+- **F-1 (FR-4):** pending re-confirmation. The code suggests any admin (`TEAM_OVERSIGHT`) can create a custom role holding owner-only capabilities and assign it, possibly to themselves. This is not yet reproduced.

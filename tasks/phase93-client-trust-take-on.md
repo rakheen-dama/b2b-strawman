@@ -63,6 +63,15 @@ Merged since the architecture's SHA, not gates but context a builder must read a
 
 **How to read the Status column.** `RULED` and `DEFAULT-ACCEPTED` rows never stop anything. `OPEN — blocks <slice>` stops that slice from **starting** until the founder rules. **`… blocks release of <slices>`** (the legal rows) **never stops a build, a merge or the runner** — it stops only enabling the named slices for a real firm until the [Release gate](#release-gate--legal-sign-offs-before-a-real-firm) row is signed off. The orchestrator must not halt `/phase_v2` on a release-gated row.
 
+### Founder rulings on slice findings (2026-11-24)
+
+| # | Finding | Ruling | Effect |
+|---|---|---|---|
+| FR-1 | F-657C-8: every firm trust screen binds to the primary banking account; a second taken-on account cannot be viewed or posted to | A firm can have more than one trust account; this likely needs a dedicated phase | Not fixed in Phase 93. It is a gate on releasing trust take-on to a multi-account firm. Carried to the phase closure as a next-phase candidate (account switcher across the trust screens). |
+| FR-2 | F-655A-3: an email a client was taken on with stays reserved for take-on after the client moves off it; the row fails with a generic message | Keep the rule; give the specific reason | Small follow-up PR after the phase. The row's failure reason names the cause. Duplicate handling is unchanged. |
+| FR-3 | 653A F-2: the shared Next server-action body limit was raised to 11 MB (it also lifts bank-statement uploads) | 3 MB limit | Small follow-up PR after the phase: `bodySizeLimit` 3 MB, and the take-on upload limit aligned to it (UI copy and backend check). |
+| FR-4 | 653A F-1: who may put owner-only capabilities into a custom role | Founder said "default fine for now" on a narrower description. **Pending re-confirmation:** the code suggests any admin can grant owner-only capabilities to a custom role and assign it, possibly to themselves (not yet reproduced) | Not recorded as ruled until the founder re-confirms on the fuller description. |
+
 ### Founder decisions FD-1..FD-37 (§17.10)
 
 | # | Question | Default (architecture recommendation) | Kind | Slices (this file) | Status |

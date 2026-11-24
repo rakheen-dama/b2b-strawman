@@ -34,6 +34,8 @@ a product/data decision, not a 655A change.
 - **Not fixed in 655A:** it is outside M-1. Changing the key or the constraint changes the dedup contract that 656A, 657C and 658A rely on.
 - **Next:** product ruling. Option 1: keep the rule and give the row a specific failure reason. Option 2: re-key the created row when the client's email changes. Needs its own spec.
 
+- **Founder ruling 2026-11-24 (FR-2):** keep the rule and show the specific reason. A follow-up PR is due after the phase.
+
 ## F-655A-4..6 — CodeRabbit later round (review of `529740894`), deferred under the one-round rule
 
 All three are non-critical: no security, tenant, data-corruption or money finding. Each is listed in the PR #1850 comment (issuecomment-7117211160) and none was fixed in 655A.

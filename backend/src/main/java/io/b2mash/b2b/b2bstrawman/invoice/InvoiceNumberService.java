@@ -15,7 +15,9 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * <ul>
  *   <li>Counter is lazily initialized (first call creates the row)
- *   <li>Numbers are gap-free (transactional -- rollback reverts the counter)
+ *   <li>Numbers Kazi assigns are gap-free (transactional -- rollback reverts the counter); a
+ *       brought-forward fee note numbered {@code INV-<n>} moves the counter on past n (Phase 93
+ *       658A, D-253), so the firm's numbering continues after its previous system's
  *   <li>Format: "INV-" + zero-padded 4-digit number
  *   <li>Voided invoices retain their number permanently
  * </ul>
@@ -27,6 +29,13 @@ public class InvoiceNumberService {
    * A number in the firm's own format, {@code INV-<digits>} (any case, leading zeros allowed). At
    * most 18 digits, so the value always fits a {@code long}.
    */
+  /**
+   * The largest sequence value a brought-forward number may move the counter to. Far below the
+   * {@code integer} column's limit, so a later {@link #assignNumber} can never overflow it; a
+   * larger source number cannot collide in practice and leaves the counter alone.
+   */
+  static final long MAX_SEQUENCE_VALUE = 999_999_999L;
+
   private static final Pattern FIRM_FORMAT =
       Pattern.compile("INV-(\\d{1,18})", Pattern.CASE_INSENSITIVE);
 
@@ -61,8 +70,8 @@ public class InvoiceNumberService {
 
   /**
    * The sequence value of a number in the firm's own format ({@code "INV-0005"} → 5), or empty for
-   * any other number, for zero, and for a value the {@code integer} counter can never reach (it
-   * cannot collide with a number {@link #assignNumber} hands out).
+   * any other number, for zero, and for a value above {@link #MAX_SEQUENCE_VALUE} (the counter
+   * never reaches it, so it cannot collide with a number {@link #assignNumber} hands out).
    */
   public static OptionalLong sequenceValueOf(String invoiceNumber) {
     if (invoiceNumber == null) {
@@ -73,7 +82,9 @@ public class InvoiceNumberService {
       return OptionalLong.empty();
     }
     long value = Long.parseLong(matcher.group(1));
-    return value >= 1 && value < Integer.MAX_VALUE ? OptionalLong.of(value) : OptionalLong.empty();
+    return value >= 1 && value <= MAX_SEQUENCE_VALUE
+        ? OptionalLong.of(value)
+        : OptionalLong.empty();
   }
 
   /**
@@ -84,11 +95,14 @@ public class InvoiceNumberService {
    * the same row lock (a concurrent approval waits, then numbers after it), in the caller's
    * transaction ({@code MANDATORY}): a rolled-back take-on row leaves the counter as it was.
    *
+   * <p>Package-private: the only caller is {@code BroughtForwardFeeNoteService} (ADR-390 — no
+   * second way to move the firm's sequence).
+   *
    * @param number a value from {@link #sequenceValueOf}
    */
   @Transactional(propagation = Propagation.MANDATORY)
-  public void advancePast(long number) {
-    if (number < 1 || number >= Integer.MAX_VALUE) {
+  void advancePast(long number) {
+    if (number < 1 || number > MAX_SEQUENCE_VALUE) {
       throw new IllegalArgumentException("Not a value of the firm's sequence: " + number);
     }
     entityManager

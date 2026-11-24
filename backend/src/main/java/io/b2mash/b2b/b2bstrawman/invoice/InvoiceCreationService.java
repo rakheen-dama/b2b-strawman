@@ -803,7 +803,7 @@ public class InvoiceCreationService {
   }
 
   /** The refusal text of a client whose legacy status is not ACTIVE. */
-  public static final String CLIENT_NOT_ACTIVE_DETAIL =
+  private static final String CLIENT_NOT_ACTIVE_DETAIL =
       "Client must be in ACTIVE status to create a fee note";
 
   /**

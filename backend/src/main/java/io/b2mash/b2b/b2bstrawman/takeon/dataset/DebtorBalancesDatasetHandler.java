@@ -9,7 +9,6 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.invoice.BroughtForwardFeeNoteService;
 import io.b2mash.b2b.b2bstrawman.invoice.BroughtForwardFeeNoteService.BroughtForwardFeeNote;
 import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
-import io.b2mash.b2b.b2bstrawman.invoice.InvoiceCreationService;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceNumberService;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceStatus;
@@ -88,12 +87,6 @@ public class DebtorBalancesDatasetHandler
   public static final String DUE_DATE_DEFAULTED = "DUE_DATE_DEFAULTED";
   public static final String CLIENT_DETAILS_MISSING = "CLIENT_DETAILS_MISSING";
   public static final String NUMBER_CONTINUES_SEQUENCE = "NUMBER_CONTINUES_SEQUENCE";
-
-  /**
-   * {@code validateInvoicePrerequisites}' own text for a client whose legacy status is not ACTIVE.
-   */
-  public static final String CLIENT_NOT_ACTIVE_MESSAGE =
-      InvoiceCreationService.CLIENT_NOT_ACTIVE_DETAIL;
 
   /** FD-21: the address / email warning (copy, RG). */
   public static final String CLIENT_DETAILS_MISSING_MESSAGE =

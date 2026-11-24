@@ -27,7 +27,14 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { CAPABILITY_META } from "@/lib/capabilities";
+import {
+  CAPABILITY_META,
+  OWNER_ONLY_CAPABILITIES,
+  holdsOwnerOnlyCapability,
+  useCanGrantOwnerOnly,
+} from "@/lib/capabilities";
+import { OwnerOnlyHint } from "@/components/roles/owner-only-hint";
+import { RoleOption } from "@/components/roles/role-option";
 import { inviteMember, listInvitations } from "@/app/(app)/org/[slug]/team/invitation-actions";
 import type { OrgRole } from "@/lib/api/org-roles";
 import { inviteMemberSchema, type InviteMemberFormData } from "@/lib/schemas/invite-member";
@@ -131,6 +138,10 @@ function InviteFormUI({
   const [success, setSuccess] = useState<string | null>(null);
 
   const roleSelectValue = form.watch("roleSelectValue");
+  // FR-4: a non-owner can neither invite into a role holding an owner-only capability nor add one
+  const canGrantOwnerOnly = useCanGrantOwnerOnly();
+  const isLockedCapability = (cap: string) =>
+    !canGrantOwnerOnly && OWNER_ONLY_CAPABILITIES.has(cap);
   const suppressRoleChangeClearRef = useRef(false);
 
   // Reset overrides + status messages when role selection changes.
@@ -180,6 +191,7 @@ function InviteFormUI({
   }
 
   function toggleCapability(cap: string) {
+    if (isLockedCapability(cap)) return;
     const inRole = roleCapabilities.has(cap);
     const hasPlus = overrides.includes(`+${cap}`);
     const hasMinus = overrides.includes(`-${cap}`);
@@ -276,9 +288,13 @@ function InviteFormUI({
                         <SelectGroup>
                           <SelectLabel>Custom</SelectLabel>
                           {customRoles.map((r) => (
-                            <SelectItem key={r.id} value={r.id}>
-                              {r.name}
-                            </SelectItem>
+                            <RoleOption
+                              key={r.id}
+                              role={r}
+                              locked={
+                                !canGrantOwnerOnly && holdsOwnerOnlyCapability(r.capabilities)
+                              }
+                            />
                           ))}
                         </SelectGroup>
                       )}
@@ -331,13 +347,19 @@ function InviteFormUI({
               {CAPABILITY_META.map((cap) => {
                 const enabled = isEffectivelyEnabled(cap.value);
                 const status = getOverrideStatus(cap.value);
+                const locked = isLockedCapability(cap.value);
 
                 return (
-                  <label key={cap.value} className="flex cursor-pointer items-start gap-3">
+                  <label
+                    key={cap.value}
+                    className={`flex items-start gap-3 ${locked ? "cursor-not-allowed" : "cursor-pointer"}`}
+                  >
                     <Checkbox
                       checked={enabled}
                       onCheckedChange={() => toggleCapability(cap.value)}
+                      disabled={locked}
                       aria-label={cap.label}
+                      data-testid={`invite-capability-${cap.value}`}
                     />
                     <div className="flex-1 space-y-0.5">
                       <div className="flex items-center gap-1.5">
@@ -352,6 +374,7 @@ function InviteFormUI({
                       <p className="text-xs text-slate-500 dark:text-slate-400">
                         {cap.description}
                       </p>
+                      {locked && <OwnerOnlyHint testId={`owner-only-hint-${cap.value}`} />}
                     </div>
                   </label>
                 );

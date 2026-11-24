@@ -118,9 +118,10 @@ export async function assignMemberRole(
   } catch (err: unknown) {
     if (err instanceof ApiError) {
       if (err.status === 403) {
+        // the backend's reason when it gives one (FR-4: "Only the owner can …")
         return {
           success: false,
-          error: "You do not have permission to change this member's role.",
+          error: err.detail?.detail ?? "You do not have permission to change this member's role.",
         };
       }
       if (err.status === 422) {

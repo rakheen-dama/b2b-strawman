@@ -18,7 +18,8 @@ import {
   createRoleAction,
   updateRoleAction,
 } from "@/app/(app)/org/[slug]/settings/firm/_tabs/roles-actions";
-import { CAPABILITY_META } from "@/lib/capabilities";
+import { CAPABILITY_META, OWNER_ONLY_CAPABILITIES, useCanGrantOwnerOnly } from "@/lib/capabilities";
+import { OwnerOnlyHint } from "@/components/roles/owner-only-hint";
 import type { OrgRole } from "@/lib/api/org-roles";
 
 interface RoleDialogProps {
@@ -36,6 +37,9 @@ export function RoleDialog({ slug, role, open, onOpenChange }: RoleDialogProps) 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [capabilities, setCapabilities] = useState<Set<string>>(new Set());
+  // FR-4: a non-owner sees an owner-only capability locked in its current state
+  const canGrantOwnerOnly = useCanGrantOwnerOnly();
+  const isLocked = (cap: string) => !canGrantOwnerOnly && OWNER_ONLY_CAPABILITIES.has(cap);
 
   // Reset form when dialog opens
   useEffect(() => {
@@ -50,6 +54,7 @@ export function RoleDialog({ slug, role, open, onOpenChange }: RoleDialogProps) 
   }, [open, role]);
 
   function toggleCapability(cap: string) {
+    if (isLocked(cap)) return;
     setCapabilities((prev) => {
       const next = new Set(prev);
       if (next.has(cap)) {
@@ -140,21 +145,30 @@ export function RoleDialog({ slug, role, open, onOpenChange }: RoleDialogProps) 
             <div className="space-y-3">
               <Label>Capabilities</Label>
               <div className="space-y-3">
-                {CAPABILITY_META.map((cap) => (
-                  <label key={cap.value} className="flex cursor-pointer items-start gap-3">
-                    <Checkbox
-                      checked={capabilities.has(cap.value)}
-                      onCheckedChange={() => toggleCapability(cap.value)}
-                      aria-label={cap.label}
-                    />
-                    <div className="space-y-0.5">
-                      <span className="text-sm leading-none font-medium">{cap.label}</span>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">
-                        {cap.description}
-                      </p>
-                    </div>
-                  </label>
-                ))}
+                {CAPABILITY_META.map((cap) => {
+                  const locked = isLocked(cap.value);
+                  return (
+                    <label
+                      key={cap.value}
+                      className={`flex items-start gap-3 ${locked ? "cursor-not-allowed" : "cursor-pointer"}`}
+                    >
+                      <Checkbox
+                        checked={capabilities.has(cap.value)}
+                        onCheckedChange={() => toggleCapability(cap.value)}
+                        disabled={locked}
+                        aria-label={cap.label}
+                        data-testid={`role-capability-${cap.value}`}
+                      />
+                      <div className="space-y-0.5">
+                        <span className="text-sm leading-none font-medium">{cap.label}</span>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                          {cap.description}
+                        </p>
+                        {locked && <OwnerOnlyHint testId={`owner-only-hint-${cap.value}`} />}
+                      </div>
+                    </label>
+                  );
+                })}
               </div>
             </div>
 

@@ -100,7 +100,9 @@ export function ResultsStep({ batch, onBatchChange }: ResultsStepProps) {
   }
 
   const counts = batch.counts;
-  const skippedLabel = batch.dataset === "CLIENTS" ? "Duplicate — skipped" : "Skipped";
+  // Clients and matters skip only duplicates; the balance datasets also skip nil balances.
+  const skippedLabel =
+    batch.dataset === "CLIENTS" || batch.dataset === "MATTERS" ? "Duplicate — skipped" : "Skipped";
 
   async function download() {
     setDownloadError(null);

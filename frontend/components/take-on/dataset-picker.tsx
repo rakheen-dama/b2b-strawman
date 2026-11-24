@@ -64,7 +64,8 @@ export function DatasetPicker({ slug, datasets }: DatasetPickerProps) {
       <p className="text-sm text-slate-700 dark:text-slate-300" data-testid="take-on-guidance">
         Take on clients first, then matters, then the trust position, then debtors.
       </p>
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      {/* Two columns at most: from xl the go-live checklist sits beside the picker (656A). */}
+      <div className="grid gap-4 md:grid-cols-2">
         {ordered.map((catalogue) => {
           const kebab = takeOnKebab(catalogue.dataset);
           const multiSection = catalogue.sections.length > 1;

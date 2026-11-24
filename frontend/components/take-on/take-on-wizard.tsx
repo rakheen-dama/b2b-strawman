@@ -24,6 +24,7 @@ import {
   type TakeOnSource,
 } from "@/lib/types";
 import { AttestationStep, liveAttestation } from "./attestation-step";
+import { CommitTakeOnDialog } from "./commit-dialog";
 import { MappingStep } from "./mapping-step";
 import { ResultsStep, useTakeOnCommitProgress } from "./results-step";
 import { SheetPicker } from "./sheet-picker";
@@ -40,14 +41,25 @@ const FILE_STEPS: { id: TakeOnStep; label: string }[] = [
   { id: "validation", label: "Validation" },
 ];
 
-/** Clients commit in 655A (attest, then commit); the other datasets gain theirs in later slices. */
-const COMMIT_STEPS: { id: TakeOnStep; label: string }[] = [
+const RESULTS_STEP: { id: TakeOnStep; label: string } = { id: "results", label: "Results" };
+
+/** Clients attest, then commit (655A). */
+const ATTESTED_COMMIT_STEPS: { id: TakeOnStep; label: string }[] = [
   { id: "attestation", label: "Attestation" },
-  { id: "results", label: "Results" },
+  RESULTS_STEP,
 ];
 
-const stepsFor = (batch: TakeOnBatch) =>
-  batch.dataset === "CLIENTS" ? [...FILE_STEPS, ...COMMIT_STEPS] : FILE_STEPS;
+/**
+ * Matters need no sign-off: the commit sits under Validation, then Results (656A, D-169). The
+ * trust position and debtors gain their commit steps in later slices.
+ */
+const commitsFromValidation = (batch: TakeOnBatch) => batch.dataset === "MATTERS";
+
+const stepsFor = (batch: TakeOnBatch) => {
+  if (batch.dataset === "CLIENTS") return [...FILE_STEPS, ...ATTESTED_COMMIT_STEPS];
+  if (commitsFromValidation(batch)) return [...FILE_STEPS, RESULTS_STEP];
+  return FILE_STEPS;
+};
 
 const isCommitted = (batch: TakeOnBatch) =>
   batch.status === "COMMITTING" || batch.status === "COMPLETED";
@@ -82,9 +94,10 @@ interface TakeOnWizardProps {
 
 /**
  * The take-on wizard inside Settings → Matters → Take-on (`?tab=take-on&batch={id}`, Phase 93
- * 653A/655A): Upload → Sheet → Mapping → Validation, and for clients → Attestation → Results
- * (attest, commit, progress, outcome). While the batch is COMMITTING the wizard re-reads it until
- * the status changes. Every control follows the batch's allowedActions.
+ * 653A/655A/656A): Upload → Sheet → Mapping → Validation, then for clients → Attestation → Results
+ * (attest, commit, progress, outcome) and for matters → Results (committed from Validation). While
+ * the batch is COMMITTING the wizard re-reads it until the status changes. Every control follows
+ * the batch's allowedActions.
  */
 export function TakeOnWizard({ batch: initialBatch, dataset }: TakeOnWizardProps) {
   const [batch, setBatch] = useState(initialBatch);
@@ -112,8 +125,11 @@ export function TakeOnWizard({ batch: initialBatch, dataset }: TakeOnWizardProps
 
   useTakeOnCommitProgress(batch, (next) => {
     changeBatch(next);
-    // A commit that could not run returns the batch to VALIDATED with lastError (D-91).
-    if (next.status === "VALIDATED") setStep("attestation");
+    // A commit that could not run returns the batch to VALIDATED with lastError (D-91): back to
+    // the step that holds the commit.
+    if (next.status === "VALIDATED") {
+      setStep(next.dataset === "CLIENTS" ? "attestation" : "validation");
+    }
   });
 
   function goToSourceWork(next: TakeOnBatch) {
@@ -290,6 +306,12 @@ export function TakeOnWizard({ batch: initialBatch, dataset }: TakeOnWizardProps
                 >
                   Continue to the FICA attestation
                 </Button>
+              )}
+              {commitsFromValidation(batch) && batch.status === "VALIDATED" && batch.lastError && (
+                <TakeOnError message={batch.lastError} testId="take-on-last-error" />
+              )}
+              {commitsFromValidation(batch) && batch.allowedActions.includes("COMMIT") && (
+                <CommitTakeOnDialog batch={batch} onCommitted={committed} />
               )}
             </div>
           )}

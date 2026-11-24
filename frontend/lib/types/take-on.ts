@@ -300,6 +300,35 @@ export interface TakeOnPortalContactsResult {
   skippedCount: number;
 }
 
+// ---- Go-live checklist (Phase 93 656A, §17.3.14) — records nested in backend
+// takeon/TakeOnGoLiveService.java, keys in declaration order (pinned like the records above) ----
+
+/** GoLiveItem — the four go-live acknowledgements, in X3 order. */
+export type TakeOnGoLiveItemKey =
+  | "TRUST_RECORDS_RETAINED"
+  | "FICA_RECORDS_RETAINED"
+  | "ARCHIVE_HOSTING_CONSIDERED"
+  | "AUDITOR_INFORMED";
+
+/**
+ * TakeOnGoLiveItemResponse — `text` is the X3 statement verbatim (legal copy, the one source is
+ * the backend enum); the acknowledgement fields are null when the item is not acknowledged.
+ */
+export interface TakeOnGoLiveItem {
+  itemKey: TakeOnGoLiveItemKey;
+  text: string;
+  acknowledged: boolean;
+  acknowledgedBy: string | null;
+  acknowledgedByName: string | null;
+  acknowledgedAt: string | null;
+  note: string | null;
+}
+
+/** TakeOnGoLiveAcknowledgeRequest — the optional note (trimmed by the backend, at most 1 000). */
+export interface TakeOnGoLiveAcknowledgeRequest {
+  note: string | null;
+}
+
 /** Spring Data VIA_DTO page. */
 export interface TakeOnPage<T> {
   content: T[];
@@ -397,7 +426,7 @@ export const TAKE_ON_DATE_FORMATS: readonly { value: string; label: string }[] =
   { value: "d MMM yyyy", label: "31 Dec 2025 (d mmm yyyy)" },
 ];
 
-/** Kebab-case of a dataset or section for testids ("TRUST_POSITION" → "trust-position"). */
-export function takeOnKebab(value: TakeOnDataset | TakeOnSection): string {
+/** Kebab-case of a dataset, section or go-live item for testids ("TRUST_POSITION" → "trust-position"). */
+export function takeOnKebab(value: TakeOnDataset | TakeOnSection | TakeOnGoLiveItemKey): string {
   return value.toLowerCase().replace(/_/g, "-");
 }

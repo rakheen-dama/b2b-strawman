@@ -8,6 +8,9 @@ import type {
   TakeOnCommitRequest,
   TakeOnCustomFieldEntityType,
   TakeOnDataset,
+  TakeOnGoLiveAcknowledgeRequest,
+  TakeOnGoLiveItem,
+  TakeOnGoLiveItemKey,
   TakeOnMappingRequest,
   TakeOnPage,
   TakeOnPortalContactsResult,
@@ -214,6 +217,28 @@ export async function createPortalContacts(
   batchId: string
 ): Promise<TakeOnActionResult<TakeOnPortalContactsResult>> {
   return run(() => api.post<TakeOnPortalContactsResult>(`${batchPath(batchId)}/portal-contacts`));
+}
+
+const goLivePath = (itemKey: TakeOnGoLiveItemKey) =>
+  `/api/take-on/go-live-checklist/${encodeURIComponent(itemKey)}`;
+
+/**
+ * PUT /api/take-on/go-live-checklist/{itemKey} — acknowledges the item as the current member,
+ * with an optional note (656A). Returns the whole checklist.
+ */
+export async function acknowledgeGoLiveItem(
+  itemKey: TakeOnGoLiveItemKey,
+  note: string | null
+): Promise<TakeOnActionResult<TakeOnGoLiveItem[]>> {
+  const request: TakeOnGoLiveAcknowledgeRequest = { note };
+  return run(() => api.put<TakeOnGoLiveItem[]>(goLivePath(itemKey), request));
+}
+
+/** DELETE /api/take-on/go-live-checklist/{itemKey} — withdraws it. Returns the whole checklist. */
+export async function withdrawGoLiveItem(
+  itemKey: TakeOnGoLiveItemKey
+): Promise<TakeOnActionResult<TakeOnGoLiveItem[]>> {
+  return run(() => api.delete<TakeOnGoLiveItem[]>(goLivePath(itemKey)));
 }
 
 /** GET …/result.csv — one line per row with its outcome. */

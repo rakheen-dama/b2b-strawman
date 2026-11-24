@@ -272,6 +272,9 @@ export function MemberDetailPanel({
                         onCheckedChange={() => toggleCapability(cap.value)}
                         disabled={locked}
                         aria-label={cap.label}
+                        aria-describedby={
+                          locked ? `member-panel-owner-only-hint-${cap.value}` : undefined
+                        }
                         data-testid={`member-capability-${cap.value}`}
                       />
                       <div className="flex-1 space-y-0.5">
@@ -287,7 +290,12 @@ export function MemberDetailPanel({
                         <p className="text-xs text-slate-500 dark:text-slate-400">
                           {cap.description}
                         </p>
-                        {locked && <OwnerOnlyHint testId={`owner-only-hint-${cap.value}`} />}
+                        {locked && (
+                          <OwnerOnlyHint
+                            id={`member-panel-owner-only-hint-${cap.value}`}
+                            testId={`owner-only-hint-${cap.value}`}
+                          />
+                        )}
                       </div>
                     </label>
                   );

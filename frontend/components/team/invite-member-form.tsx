@@ -287,14 +287,16 @@ function InviteFormUI({
                           value={SYSTEM_ADMIN_VALUE}
                           disabled={!canGrantOwnerOnly}
                           data-testid="role-option-system-admin"
+                          hint={
+                            canGrantOwnerOnly ? undefined : (
+                              <OwnerOnlyHint
+                                testId="owner-only-role-hint-system-admin"
+                                className="inline"
+                              />
+                            )
+                          }
                         >
                           Admin
-                          {!canGrantOwnerOnly && (
-                            <OwnerOnlyHint
-                              testId="owner-only-role-hint-system-admin"
-                              className="inline"
-                            />
-                          )}
                         </SelectItem>
                       </SelectGroup>
                       {customRoles.length > 0 && (
@@ -372,6 +374,7 @@ function InviteFormUI({
                       onCheckedChange={() => toggleCapability(cap.value)}
                       disabled={locked}
                       aria-label={cap.label}
+                      aria-describedby={locked ? `invite-owner-only-hint-${cap.value}` : undefined}
                       data-testid={`invite-capability-${cap.value}`}
                     />
                     <div className="flex-1 space-y-0.5">
@@ -387,7 +390,12 @@ function InviteFormUI({
                       <p className="text-xs text-slate-500 dark:text-slate-400">
                         {cap.description}
                       </p>
-                      {locked && <OwnerOnlyHint testId={`owner-only-hint-${cap.value}`} />}
+                      {locked && (
+                        <OwnerOnlyHint
+                          id={`invite-owner-only-hint-${cap.value}`}
+                          testId={`owner-only-hint-${cap.value}`}
+                        />
+                      )}
                     </div>
                   </label>
                 );

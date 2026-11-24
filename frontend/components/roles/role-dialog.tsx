@@ -157,6 +157,9 @@ export function RoleDialog({ slug, role, open, onOpenChange }: RoleDialogProps) 
                         onCheckedChange={() => toggleCapability(cap.value)}
                         disabled={locked}
                         aria-label={cap.label}
+                        aria-describedby={
+                          locked ? `role-dialog-owner-only-hint-${cap.value}` : undefined
+                        }
                         data-testid={`role-capability-${cap.value}`}
                       />
                       <div className="space-y-0.5">
@@ -164,7 +167,12 @@ export function RoleDialog({ slug, role, open, onOpenChange }: RoleDialogProps) 
                         <p className="text-xs text-slate-500 dark:text-slate-400">
                           {cap.description}
                         </p>
-                        {locked && <OwnerOnlyHint testId={`owner-only-hint-${cap.value}`} />}
+                        {locked && (
+                          <OwnerOnlyHint
+                            id={`role-dialog-owner-only-hint-${cap.value}`}
+                            testId={`owner-only-hint-${cap.value}`}
+                          />
+                        )}
                       </div>
                     </label>
                   );

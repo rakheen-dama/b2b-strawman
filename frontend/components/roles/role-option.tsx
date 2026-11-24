@@ -10,9 +10,17 @@ import type { OrgRole } from "@/lib/api/org-roles";
  */
 export function RoleOption({ role, locked }: { role: OrgRole; locked: boolean }) {
   return (
-    <SelectItem value={role.id} disabled={locked} data-testid={`role-option-${role.id}`}>
+    <SelectItem
+      value={role.id}
+      disabled={locked}
+      data-testid={`role-option-${role.id}`}
+      hint={
+        locked ? (
+          <OwnerOnlyHint testId={`owner-only-role-hint-${role.id}`} className="inline" />
+        ) : undefined
+      }
+    >
       {role.name}
-      {locked && <OwnerOnlyHint testId={`owner-only-role-hint-${role.id}`} className="inline" />}
     </SelectItem>
   );
 }

@@ -91,11 +91,16 @@ function SelectLabel({ className, ...props }: React.ComponentProps<typeof Select
   );
 }
 
+/**
+ * `hint` renders after the item's text, outside `ItemText`, so it shows in the list but is never
+ * copied into the trigger when the item is selected (Radix mirrors only `ItemText` there).
+ */
 function SelectItem({
   className,
   children,
+  hint,
   ...props
-}: React.ComponentProps<typeof SelectPrimitive.Item>) {
+}: React.ComponentProps<typeof SelectPrimitive.Item> & { hint?: React.ReactNode }) {
   return (
     <SelectPrimitive.Item
       data-slot="select-item"
@@ -114,6 +119,7 @@ function SelectItem({
         </SelectPrimitive.ItemIndicator>
       </span>
       <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
+      {hint}
     </SelectPrimitive.Item>
   );
 }

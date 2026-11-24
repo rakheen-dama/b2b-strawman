@@ -1,7 +1,7 @@
 {
-  "commit": "ecb20079d",
-  "command": "cd frontend && rm -rf .next && pnpm install && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test && pnpm build",
+  "commit": "2f66fc2b8",
+  "command": "cd frontend && pnpm run lint && pnpm run format:check && pnpm run build && pnpm test (wt-f657c7-fr4, PR #1856, round 3)",
   "exit": 0,
-  "ts": "2026-11-24T14:21:29Z",
-  "summary": "lint 0 / typecheck 0 / format:check 0 / vitest 502 files, 4920 passed, 2 skipped / build 0 (node v20.11.1); PR #1855 head ecb20079d"
+  "ts": "2026-11-24T17:00:00Z",
+  "summary": "PR #1856 @2f66fc2b8 \u2014 lint 0 errors (77 pre-existing warnings), format clean, build ok, vitest 503 files / 4929 passed / 2 skipped"
 }

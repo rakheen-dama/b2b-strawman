@@ -1,7 +1,7 @@
 {
-  "commit": "ecb20079d",
-  "command": "cd backend && ./mvnw spotless:check -q && ./mvnw clean -q && bash scripts/verify.sh -q",
+  "commit": "2f66fc2b8",
+  "command": "cd backend && bash scripts/verify.sh -q (wt-f657c7-fr4, PR #1856)",
   "exit": 0,
-  "ts": "2026-11-24T14:53:30Z",
-  "summary": "8106 tests / 0 failures / 0 errors / 55 skipped (counted from 919 fresh surefire <testcase> reports) — ~31 min (14:22Z→14:53Z); PR #1855 head ecb20079d"
+  "ts": "2026-11-24T17:30:00Z",
+  "summary": "PR #1856 @2f66fc2b8 \u2014 8111 <testcase> / 0 failures / 0 errors (surefire XML)"
 }

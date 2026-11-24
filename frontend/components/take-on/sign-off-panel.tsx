@@ -89,7 +89,9 @@ interface SignOffPanelProps {
  */
 export function SignOffPanel({ batchId, onChange }: SignOffPanelProps) {
   const [page, setPage] = useState(0);
-  const [accepted, setAccepted] = useState(false);
+  // The declaration is accepted for the validation hash the signer reviewed: a re-validation that
+  // changes the hash clears the acceptance, so only the accepted hash can be signed.
+  const [acceptedHash, setAcceptedHash] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { mutate } = useSWRConfig();
@@ -129,6 +131,7 @@ export function SignOffPanel({ batchId, onChange }: SignOffPanelProps) {
   const declaration = data.declaration;
   const summary = data.summary;
   const totalPages = data.rows.page.totalPages;
+  const accepted = acceptedHash !== null && acceptedHash === data.validationHash;
 
   async function submit(call: () => ReturnType<typeof signOff>, fallback: string) {
     setError(null);
@@ -139,7 +142,7 @@ export function SignOffPanel({ batchId, onChange }: SignOffPanelProps) {
         setError(result.error ?? fallback);
         return;
       }
-      setAccepted(false);
+      setAcceptedHash(null);
       // The answer is page 0 of the review: seed it so the panel re-renders from one shape.
       await mutate(reviewKey(batchId, 0), result.data, { revalidate: false });
       setPage(0);
@@ -150,9 +153,9 @@ export function SignOffPanel({ batchId, onChange }: SignOffPanelProps) {
   }
 
   function signNow() {
-    if (!declaration || !data.validationHash || !accepted) return;
+    if (!declaration || !accepted || acceptedHash === null) return;
     const request = {
-      validationHash: data.validationHash,
+      validationHash: acceptedHash,
       statementVersion: declaration.version,
       declarationAccepted: true,
     };
@@ -282,7 +285,9 @@ export function SignOffPanel({ batchId, onChange }: SignOffPanelProps) {
           <label className="flex items-start gap-2 text-sm text-slate-800 dark:text-slate-200">
             <Checkbox
               checked={accepted}
-              onCheckedChange={(c) => setAccepted(c === true)}
+              onCheckedChange={(c) =>
+                setAcceptedHash(c === true ? (data.validationHash ?? null) : null)
+              }
               disabled={busy}
               className="mt-0.5"
               data-testid="takeon-signoff-accept"

@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
+import { act, cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { SWRConfig } from "swr";
-import type { ReactNode } from "react";
+import { SWRConfig, useSWRConfig } from "swr";
+import { useEffect, type ReactNode } from "react";
 
 vi.mock("server-only", () => ({}));
 
@@ -43,8 +43,25 @@ const withSWR = (ui: ReactNode) => (
   </SWRConfig>
 );
 
+/** Exposes the panel's SWR cache so a test can revalidate the review (as a re-validation would). */
+let revalidate: (key: string) => Promise<unknown> = async () => undefined;
+function Revalidator() {
+  const { mutate } = useSWRConfig();
+  useEffect(() => {
+    revalidate = (key) => mutate(key);
+  }, [mutate]);
+  return null;
+}
+
 function renderPanel(onChange = vi.fn()) {
-  render(withSWR(<SignOffPanel batchId="batch-657b" onChange={onChange} />));
+  render(
+    withSWR(
+      <>
+        <Revalidator />
+        <SignOffPanel batchId="batch-657b" onChange={onChange} />
+      </>
+    )
+  );
   return onChange;
 }
 
@@ -111,6 +128,36 @@ describe("SignOffPanel (657C)", () => {
     for (const name of MANAGE_TAKE_ON_ACTIONS) {
       expect(actions[name]).not.toHaveBeenCalled();
     }
+  });
+
+  it("clears the acceptance when the review comes back on a new validation hash, and signs only the hash accepted", async () => {
+    const user = userEvent.setup();
+    actions.getSignOffReview.mockResolvedValue({ success: true, data: signOffReview() });
+    actions.signOff.mockResolvedValue({ success: true, data: signedReview() });
+    renderPanel();
+
+    await user.click(await screen.findByTestId("takeon-signoff-accept"));
+    expect(screen.getByTestId("takeon-signoff-submit")).toBeEnabled();
+
+    // The preparer re-validates: the review now carries a different hash.
+    actions.getSignOffReview.mockResolvedValue({
+      success: true,
+      data: signOffReview({ validationHash: "hash-trust-v2" }),
+    });
+    await act(() => revalidate("take-on-sign-off-review-batch-657b-0"));
+
+    await waitFor(() => expect(screen.getByTestId("takeon-signoff-submit")).toBeDisabled());
+    expect(screen.getByTestId("takeon-signoff-accept")).not.toBeChecked();
+    expect(actions.signOff).not.toHaveBeenCalled();
+
+    await user.click(screen.getByTestId("takeon-signoff-accept"));
+    await user.click(screen.getByTestId("takeon-signoff-submit"));
+    expect(actions.signOff).toHaveBeenCalledTimes(1);
+    expect(actions.signOff).toHaveBeenCalledWith("batch-657b", {
+      validationHash: "hash-trust-v2",
+      statementVersion: "TAKEON-SIGNOFF-v1",
+      declarationAccepted: true,
+    });
   });
 
   it.each([

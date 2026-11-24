@@ -292,20 +292,7 @@ public class OrgRoleService {
             .findById(request.orgRoleId())
             .orElseThrow(() -> new ResourceNotFoundException("OrgRole", request.orgRoleId()));
 
-    // Cannot assign the OWNER system role to anyone
-    if (role.isSystem() && "owner".equals(role.getSlug())) {
-      throw new ForbiddenException(
-          "Owner role assignment forbidden", "Cannot assign the Owner system role to a member");
-    }
-
-    // ADMIN system role can only be assigned by owners
-    if (role.isSystem() && "admin".equals(role.getSlug())) {
-      String callerRole = RequestScopes.getOrgRole();
-      if (!"owner".equals(callerRole)) {
-        throw new ForbiddenException(
-            "Admin role assignment restricted", "Only owners can assign the Admin system role");
-      }
-    }
+    requireSystemRoleGrantable(role);
 
     // FR-4: a role holding an owner-only capability is assigned by an owner only
     requireOwnerToGrant(
@@ -415,6 +402,23 @@ public class OrgRoleService {
       case "member" -> "Member";
       default -> clerkRole;
     };
+  }
+
+  /**
+   * The system-role rules for granting {@code role} to a member — by assignment or by invitation
+   * (Task C): the Owner system role is never granted; the Admin system role only by an owner.
+   */
+  public static void requireSystemRoleGrantable(OrgRole role) {
+    if (role.isSystem() && "owner".equals(role.getSlug())) {
+      throw new ForbiddenException(
+          "Owner role assignment forbidden", "Cannot assign the Owner system role to a member");
+    }
+    if (role.isSystem()
+        && "admin".equals(role.getSlug())
+        && !Roles.ORG_OWNER.equals(RequestScopes.getOrgRole())) {
+      throw new ForbiddenException(
+          "Admin role assignment restricted", "Only owners can assign the Admin system role");
+    }
   }
 
   /**

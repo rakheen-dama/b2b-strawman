@@ -45,7 +45,7 @@ class InvitationControllerTest {
   private String ownerMemberId;
   private String adminMemberId;
   private String memberMemberId;
-  private String adminRoleId;
+  private String memberRoleId;
 
   @BeforeAll
   void setup() throws Exception {
@@ -64,11 +64,11 @@ class InvitationControllerTest {
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
 
-    // Get the admin role ID for creating invitations
-    adminRoleId =
+    // The Member system role: an admin may invite into it (the Admin role is owner-only, Task C)
+    memberRoleId =
         ScopedValue.where(
                 io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes.TENANT_ID, tenantSchema)
-            .call(() -> orgRoleRepository.findBySlug("admin").orElseThrow().getId().toString());
+            .call(() -> orgRoleRepository.findBySlug("member").orElseThrow().getId().toString());
   }
 
   @Test
@@ -85,7 +85,7 @@ class InvitationControllerTest {
                       "orgRoleId": "%s"
                     }
                     """
-                        .formatted(adminRoleId)))
+                        .formatted(memberRoleId)))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.id").exists())
         .andExpect(jsonPath("$.email").value("newuser@example.com"))
@@ -108,7 +108,7 @@ class InvitationControllerTest {
                       "orgRoleId": "%s"
                     }
                     """
-                        .formatted(adminRoleId)))
+                        .formatted(memberRoleId)))
         .andExpect(status().isForbidden());
   }
 
@@ -126,7 +126,7 @@ class InvitationControllerTest {
                     """
                     {"email": "%s", "orgRoleId": "%s"}
                     """
-                        .formatted(email, adminRoleId)))
+                        .formatted(email, memberRoleId)))
         .andExpect(status().isCreated());
 
     // Second invitation for same email should fail with 409
@@ -139,7 +139,7 @@ class InvitationControllerTest {
                     """
                     {"email": "%s", "orgRoleId": "%s"}
                     """
-                        .formatted(email, adminRoleId)));
+                        .formatted(email, memberRoleId)));
     ProblemDetailAssertions.assertProblem(result, HttpStatus.CONFLICT, "Pending invitation exists");
   }
 
@@ -155,7 +155,7 @@ class InvitationControllerTest {
                     """
                     {"email": "inv_owner@test.com", "orgRoleId": "%s"}
                     """
-                        .formatted(adminRoleId)))
+                        .formatted(memberRoleId)))
         .andExpect(status().isConflict());
   }
 
@@ -173,7 +173,7 @@ class InvitationControllerTest {
                     """
                     {"email": "%s", "orgRoleId": "%s"}
                     """
-                        .formatted(email, adminRoleId)))
+                        .formatted(email, memberRoleId)))
         .andExpect(status().isCreated());
 
     // List invitations
@@ -218,7 +218,7 @@ class InvitationControllerTest {
                         """
                         {"email": "%s", "orgRoleId": "%s"}
                         """
-                            .formatted(email, adminRoleId)))
+                            .formatted(email, memberRoleId)))
             .andExpect(status().isCreated())
             .andReturn();
 
@@ -245,7 +245,7 @@ class InvitationControllerTest {
                         """
                         {"email": "%s", "orgRoleId": "%s"}
                         """
-                            .formatted(email, adminRoleId)))
+                            .formatted(email, memberRoleId)))
             .andExpect(status().isCreated())
             .andReturn();
 

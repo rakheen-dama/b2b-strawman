@@ -13,6 +13,7 @@ import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRole;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
+import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient;
 import java.time.Duration;
 import java.time.Instant;
@@ -79,6 +80,8 @@ public class InvitationService {
         orgRoleRepository
             .findById(request.orgRoleId())
             .orElseThrow(() -> new ResourceNotFoundException("OrgRole", request.orgRoleId()));
+    // the invitee is granted this role on first sign-in: the assignment rules apply (Task C)
+    OrgRoleService.requireSystemRoleGrantable(orgRole);
 
     Member invitedBy =
         memberRepository

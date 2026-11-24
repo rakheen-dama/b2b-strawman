@@ -212,3 +212,18 @@ Caused by: org.hibernate.LazyInitializationException: …
 The first build attempt printed its complete output, including the route table, and then sat idle in `next build` teardown for about 10 minutes (0% CPU, a turbopack postcss pool worker still alive). It was killed (`taskC-gate-build-hung-attempt1.txt`). The rerun exited 0.
 
 **Not covered:** route (3) above. Custom-role invitations never complete on the JIT sign-in path, which is a separate defect (`MemberFilter.java:183-190`). The Keycloak-side path, where `InvitationService` sends the role slug to Keycloak and `MemberSyncService.resolveOrgRole` resolves any slug including custom ones, was not exercised. If that path grants a custom role, route (3) becomes a real escalation and needs the FR-4 owner-only check on invitations. In the member detail panel, the system **Admin** option is still selectable by a non-owner; the backend refuses it with a 403 whose detail is now shown.
+
+## D. Member panel: the system Admin role is locked for non-owners (orchestrator, follow-through of C)
+
+- **Gap:** after C, the backend refuses a non-owner assigning the system Admin role (`requireSystemRoleGrantable`), but the member detail panel still offered it as selectable. The Admin role holds no owner-only capability, so FR-4's lock did not cover it.
+- **Fix:** `member-detail-panel.tsx` `isLockedRole` also locks the system `admin` and `owner` roles for a non-owner, with the same hint.
+- **Tests:** two new tests in `owner-only-capability-grants.test.tsx`.
+  - Red on the C head: 1 failed / 12 passed (`member-panel-admin-red.txt`; the owner-positive test already passed).
+  - Green: 17/17 (`member-panel-admin-green.txt`).
+  - With `team/member-role-management.test.tsx`: 18/18.
+
+## Not fixed here (logged for their own reproduce-first items)
+
+- **Inviting into a custom role:** the invitation is accepted (201), but at sign-in no system role matches the custom slug, the invitee is never created, and the invitee gets a 500 (mock-auth path; see C).
+  - This is a functional defect, not an escalation.
+  - The Keycloak sign-in path needs checking too: if it resolves custom slugs, an owner-only custom role invited by an admin would become a real escalation. C does not block that route.

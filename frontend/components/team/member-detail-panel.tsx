@@ -66,8 +66,12 @@ export function MemberDetailPanel({
   const [overrides, setOverrides] = useState<string[]>([]);
   // FR-4: a non-owner can neither assign a role holding an owner-only capability nor toggle one
   const canGrantOwnerOnly = useCanGrantOwnerOnly();
+  // Locked for a non-owner: a role holding an owner-only capability (FR-4), and the system Admin
+  // and Owner roles, which only the owner may assign (OrgRoleService.requireSystemRoleGrantable).
   const isLockedRole = (role: OrgRole) =>
-    !canGrantOwnerOnly && holdsOwnerOnlyCapability(role.capabilities);
+    !canGrantOwnerOnly &&
+    (holdsOwnerOnlyCapability(role.capabilities) ||
+      (role.isSystem && (role.slug === "admin" || role.slug === "owner")));
   const isLockedCapability = (cap: string) =>
     !canGrantOwnerOnly && OWNER_ONLY_CAPABILITIES.has(cap);
 

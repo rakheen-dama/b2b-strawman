@@ -158,7 +158,7 @@ describe("RoleDialog — owner-only capabilities", () => {
 
 // --- the member detail panel (role assignment + overrides) ---
 
-function openPanel(kind: "owner" | "admin", currentRole: string) {
+function openPanel(kind: "owner" | "admin", currentRole: string, roles = [bookkeeper, partner]) {
   mockFetchMemberCapabilities.mockResolvedValue({
     memberId: "m1",
     roleName: currentRole,
@@ -172,11 +172,49 @@ function openPanel(kind: "owner" | "admin", currentRole: string) {
       open={true}
       onOpenChange={vi.fn()}
       member={{ id: "m1", name: "Thandi", email: "thandi@test.com", role: "org:member" }}
-      roles={[bookkeeper, partner]}
+      roles={roles}
       slug="acme"
     />
   );
 }
+
+// Task C follow-through: the system Admin role holds no owner-only capability, but only the owner
+// may assign it (OrgRoleService.requireSystemRoleGrantable), so it is locked for a non-owner too.
+const systemAdmin = {
+  ...bookkeeper,
+  id: "role-system-admin",
+  name: "Admin",
+  slug: "admin",
+  isSystem: true,
+  capabilities: ["TEAM_OVERSIGHT"],
+};
+
+describe("MemberDetailPanel — the system Admin role", () => {
+  it("a non-owner cannot pick the system Admin role, and sees the hint", async () => {
+    const user = userEvent.setup();
+    openPanel("admin", "Bookkeeper", [systemAdmin, bookkeeper]);
+    await waitFor(() => expect(screen.getByRole("combobox")).toHaveTextContent("Bookkeeper"));
+
+    await user.click(screen.getByRole("combobox"));
+    expect(screen.getByTestId("role-option-role-system-admin")).toHaveAttribute(
+      "aria-disabled",
+      "true"
+    );
+    expect(screen.getByTestId("owner-only-role-hint-role-system-admin")).toHaveTextContent(HINT);
+  });
+
+  it("the owner can pick the system Admin role", async () => {
+    const user = userEvent.setup();
+    openPanel("owner", "Bookkeeper", [systemAdmin, bookkeeper]);
+    await waitFor(() => expect(screen.getByRole("combobox")).toHaveTextContent("Bookkeeper"));
+
+    await user.click(screen.getByRole("combobox"));
+    expect(screen.getByTestId("role-option-role-system-admin")).not.toHaveAttribute(
+      "aria-disabled",
+      "true"
+    );
+  });
+});
 
 describe("MemberDetailPanel — owner-only capabilities", () => {
   it("a non-owner cannot pick a role holding an owner-only capability, and sees the hint", async () => {

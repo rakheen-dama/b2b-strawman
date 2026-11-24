@@ -86,9 +86,17 @@ public class AccountingSyncService {
    *
    * <p>Before creating a PENDING entry, evaluates the trust boundary guard to prevent trust-related
    * invoices from being synced, and validates currency matches the org's default currency.
+   *
+   * <p>A fee note brought forward at take-on (Phase 93 658A, FD-28) is never enqueued, whatever the
+   * trigger (approve, send, void, payment, force-resync): the accounting system never received it
+   * from Kazi. The guard runs first, so it holds with or without a Xero connection.
    */
   @Transactional
   public void enqueueInvoicePush(UUID invoiceId, SyncTrigger trigger) {
+    if (invoiceRepository.existsByIdAndTakeOnBatchIdIsNotNull(invoiceId)) {
+      log.debug("Fee note {}: brought-forward fee note — not synced", invoiceId);
+      return;
+    }
     if (!hasConnectedXeroConnection()) {
       log.debug("No connected Xero connection; skipping invoice push for {}", invoiceId);
       return;

@@ -54,14 +54,14 @@ const FILE_STEPS = (["upload", "sheet", "mapping", "validation"] as const).map(s
 const traitsOf = (batch: TakeOnBatch) => TAKE_ON_COMMIT_TRAITS[batch.dataset];
 
 /**
- * Matters need no sign-off: the commit sits under Validation, then Results (656A, D-169). The
- * trust position is signed off, then committed (657C); debtors gain their commit step in 658A.
+ * Matters and debtor opening balances need no sign-off: the commit sits under Validation, then
+ * Results (656A D-169, 658A). The trust position is signed off, then committed (657C).
  */
 const commitsFromValidation = (batch: TakeOnBatch) => traitsOf(batch).commitsFromValidation;
 
 /**
- * Clients attest, then commit (655A); matters commit from Validation (656A); the trust position is
- * signed off, then committed (657C).
+ * Clients attest, then commit (655A); matters (656A) and debtor opening balances (658A) commit from
+ * Validation; the trust position is signed off, then committed (657C).
  */
 const stepsFor = (batch: TakeOnBatch) => {
   const { signOffStep } = traitsOf(batch);

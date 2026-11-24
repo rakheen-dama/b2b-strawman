@@ -144,6 +144,14 @@ public class Invoice {
   @Column(name = "billing_period_end")
   private LocalDate billingPeriodEnd;
 
+  /**
+   * The take-on batch that brought this fee note forward from the previous system (Phase 93 658A,
+   * ADR-390); {@code null} for every fee note Kazi generated. Set only by {@link
+   * #issueBroughtForward}; never pushed to the accounting system (FD-28).
+   */
+  @Column(name = "take_on_batch_id")
+  private UUID takeOnBatchId;
+
   protected Invoice() {}
 
   public Invoice(
@@ -265,6 +273,40 @@ public class Invoice {
     if (changed) {
       this.updatedAt = Instant.now();
     }
+  }
+
+  /**
+   * DRAFT → SENT for a brought-forward fee note (Phase 93 658A, ADR-390): a debt the previous
+   * system generated, numbered and sent. Keeps the source number and dates, stamps the committing
+   * member as approver and records the take-on batch — all in one update, so {@code
+   * chk_invoice_brought_forward_status} holds at every flush. {@link #approve} and {@link
+   * #markSent} are unchanged. Package-private: the one caller is {@code
+   * BroughtForwardFeeNoteService.issue} (ADR-390 — no second entry path), whose own callers
+   * ArchUnit {@code TakeOnEntryPointsArchTest} confines to {@code ..takeon..}.
+   */
+  void issueBroughtForward(
+      String invoiceNumber,
+      LocalDate issueDate,
+      LocalDate dueDate,
+      UUID takeOnBatchId,
+      UUID approvedBy) {
+    if (this.status != InvoiceStatus.DRAFT) {
+      throw new IllegalStateException("Only a draft can be issued as a brought-forward fee note");
+    }
+    if (takeOnBatchId == null) {
+      throw new IllegalStateException("A brought-forward fee note needs its take-on batch");
+    }
+    if (invoiceNumber == null || issueDate == null || dueDate == null || approvedBy == null) {
+      throw new IllegalStateException(
+          "A brought-forward fee note needs its number, issue date, due date and approver");
+    }
+    this.status = InvoiceStatus.SENT;
+    this.invoiceNumber = invoiceNumber;
+    this.issueDate = issueDate;
+    this.dueDate = dueDate;
+    this.approvedBy = approvedBy;
+    this.takeOnBatchId = takeOnBatchId;
+    this.updatedAt = Instant.now();
   }
 
   public void markSent() {
@@ -398,6 +440,10 @@ public class Invoice {
 
   public InvoiceStatus getStatus() {
     return status;
+  }
+
+  public UUID getTakeOnBatchId() {
+    return takeOnBatchId;
   }
 
   public String getCurrency() {

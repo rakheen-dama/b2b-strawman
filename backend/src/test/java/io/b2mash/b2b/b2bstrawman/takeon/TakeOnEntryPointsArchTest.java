@@ -25,8 +25,9 @@ import org.junit.jupiter.api.Test;
  * creates it — 655A {@code TakenOnCustomerService}, 657A {@code TrustPostingService.recordOpening}
  * (and {@code OpeningAuthority.forBatch}: only {@code ..takeon..} builds the authority opening
  * entries post under), 657C {@code TrustOpeningPositionService}, 658A {@code
- * BroughtForwardFeeNoteService}. {@link #thePredicatesMatchTheNamesTheyGuard} proves the predicates
- * bite before any class exists; {@link #theGuardedTakeOnMethodsExist} that a rename of the guarded
+ * BroughtForwardFeeNoteService} (now exists: its {@code issue} is called only by the debtor
+ * opening-balances commit). {@link #thePredicatesMatchTheNamesTheyGuard} proves the predicates bite
+ * before any class exists; {@link #theGuardedTakeOnMethodsExist} that a rename of the guarded
  * methods cannot make the rule pass silently.
  */
 @AnalyzeClasses(
@@ -97,7 +98,9 @@ class TakeOnEntryPointsArchTest {
     assertThat(TAKE_ON_ONLY_CLASSES).allMatch(n -> n.startsWith("io.b2mash.b2b.b2bstrawman."));
   }
 
-  /** 657A, 655A, 657C: the guarded methods exist, so the rule above is not vacuous for them. */
+  /**
+   * 657A, 655A, 657C, 658A: the guarded methods exist, so the rule above is not vacuous for them.
+   */
   @Test
   void theGuardedTakeOnMethodsExist() throws Exception {
     assertThat(Class.forName(TAKE_ON_ONLY_CLASSES.getFirst()).getMethods())
@@ -106,6 +109,9 @@ class TakeOnEntryPointsArchTest {
     assertThat(Class.forName(TAKE_ON_ONLY_CLASSES.get(1)).getMethods())
         .as("657C: TrustOpeningPositionService.commit")
         .anyMatch(m -> m.getName().equals("commit"));
+    assertThat(Class.forName(TAKE_ON_ONLY_CLASSES.get(2)).getMethods())
+        .as("658A: BroughtForwardFeeNoteService.issue")
+        .anyMatch(m -> m.getName().equals("issue"));
     assertThat(Class.forName(TRUST_POSTING_SERVICE).getMethods())
         .anyMatch(m -> m.getName().equals("recordOpening"));
     assertThat(Class.forName(OPENING_AUTHORITY).getMethods())

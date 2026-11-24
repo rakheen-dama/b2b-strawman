@@ -1,0 +1,7 @@
+Previous system ID,Client name,Email,Phone,ID number,Registration number,Client type,Address line 1,City,Postal code,Country,CDD completed date,Last review date,Risk rating,Beneficial ownership,Screening,Screening date,Source of funds,CDD records location
+D-001,Thandiwe Mokoena,thandiwe.mokoena@example.test,+27 82 555 0401,8401015800083,,NATURAL_PERSON,5 Protea Avenue,Pretoria,0181,ZA,2025-06-10,,LOW,NOT_APPLICABLE,SCREENED_CLEAR,2025-06-10,DONE,Archive room H box 1
+D-002,Johan Pretorius,johan.pretorius@example.test,+27 82 555 0402,7502025800084,,NATURAL_PERSON,14 Dorp Street,Stellenbosch,7600,ZA,2025-07-01,,LOW,NOT_APPLICABLE,SCREENED_CLEAR,2025-07-01,DONE,Archive room H box 2
+D-003,Karoo Freight (Pty) Ltd,accounts@karoofreight.example.test,+27 11 555 0403,,2015/223344/07,COMPANY,77 Voortrekker Road,Bellville,7530,ZA,2025-08-15,,MEDIUM,DONE,SCREENED_CLEAR,2025-08-15,DONE,Archive room H box 3
+D-004,Ayesha Patel,ayesha.patel@example.test,+27 83 555 0404,8803035800085,,NATURAL_PERSON,9 Grey Street,Durban,4001,ZA,2025-09-01,,LOW,NOT_APPLICABLE,SCREENED_CLEAR,2025-09-01,DONE,Archive room H box 4
+D-005,Lerato Mahlangu,lerato.mahlangu@example.test,+27 84 555 0405,9004045800086,,NATURAL_PERSON,30 Jan Smuts Avenue,Johannesburg,2196,ZA,2025-04-20,,LOW,NOT_APPLICABLE,SCREENED_CLEAR,2025-04-20,DONE,Archive room H box 5
+D-006,Bongani Zulu,bongani.zulu@example.test,+27 72 555 0406,8205055800087,,NATURAL_PERSON,,,,,2025-03-12,,LOW,NOT_APPLICABLE,SCREENED_CLEAR,2025-03-12,DONE,Archive room J box 1

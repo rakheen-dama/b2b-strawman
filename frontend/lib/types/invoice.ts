@@ -114,6 +114,11 @@ export interface InvoiceResponse {
    * `tax_number_missing`). Empty for reads and subsequent mutations. See GAP-L-62.
    */
   warnings?: string[];
+  /**
+   * The take-on batch that brought this fee note forward from the previous system (Phase 93 658A,
+   * §17.4.3); `null` for a fee note Kazi generated. Drives the "Brought forward — take-on" badge.
+   */
+  takeOnBatchId?: string | null;
 }
 
 export type PaymentEventStatus =

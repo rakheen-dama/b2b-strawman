@@ -223,6 +223,7 @@ class TakeOnValidationIntegrationTest {
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   void anAmbiguousAmountUnderPointIsAnErrorAndNotAGuess() throws Exception {
     UUID[] ids =
         create(
@@ -248,9 +249,14 @@ class TakeOnValidationIntegrationTest {
     validate(mockMvc, owner(), ids[0]).andExpect(jsonPath("$.status").value("VALIDATED"));
     var byRow = rowsByNumber(ids[0]);
     assertError(byRow.get(2), "AMOUNT_AMBIGUOUS", "outstandingAmount", null);
-    assertThat(byRow.get(3).get("status")).isEqualTo("VALIDATED");
+    // the reader takes "(1 234.56)" as -1234.56 (no reader error); since 658A the debtors dataset
+    // also refuses the unknown client "C-2" and a balance that is not above nil — its own rules
     assertThat(((Map<?, ?>) byRow.get(3).get("values")).get("outstandingAmount"))
         .isEqualTo("-1234.56");
+    assertThat((List<Map<String, Object>>) byRow.get(3).get("errors"))
+        .extracting(e -> e.get("code"))
+        .doesNotContain("AMOUNT_AMBIGUOUS", "AMOUNT_INVALID")
+        .containsOnly("CLIENT_UNRESOLVED", "AMOUNT_NOT_POSITIVE");
   }
 
   @Test

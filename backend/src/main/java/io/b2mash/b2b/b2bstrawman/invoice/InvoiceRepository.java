@@ -57,4 +57,17 @@ public interface InvoiceRepository extends JpaRepository<Invoice, UUID> {
    * JpaRepository.findAllById which uses EntityManager.find directly.
    */
   List<Invoice> findByBillingRunIdAndStatus(UUID billingRunId, InvoiceStatus status);
+
+  /**
+   * Fee notes whose number equals {@code invoiceNumber} ignoring case (Phase 93 658A): the debtor
+   * take-on's collision / duplicate check, which keys on {@code lower(number)} (FD-20).
+   */
+  @Query("SELECT i FROM Invoice i WHERE lower(i.invoiceNumber) = lower(:invoiceNumber)")
+  List<Invoice> findByInvoiceNumberIgnoreCase(@Param("invoiceNumber") String invoiceNumber);
+
+  /**
+   * True when the fee note was brought forward at take-on (Phase 93 658A, FD-28) — such a fee note
+   * is never pushed to the accounting system.
+   */
+  boolean existsByIdAndTakeOnBatchIdIsNotNull(UUID id);
 }

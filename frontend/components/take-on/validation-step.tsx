@@ -46,6 +46,12 @@ import {
   clientValueText,
 } from "./clients-step";
 import {
+  DEBTOR_COLUMN_KEYS,
+  DebtorColumnCells,
+  DebtorColumnHeads,
+  debtorValueText,
+} from "./debtor-balances-step";
+import {
   MATTER_COLUMN_KEYS,
   MatterColumnCells,
   MatterColumnHeads,
@@ -155,7 +161,9 @@ interface ValidationStepProps {
  * filter, so the Duplicates card, the filter and the table agree (OBS-655A-1). After a commit the
  * same table shows each row's outcome (Created, Duplicate — skipped, Failed). Clients commit from
  * the Attestation step (655A); matters, which need no attestation, from under this step (656A,
- * D-169). Matters rows show the client the dry run matched and the responsible attorney.
+ * D-169). Matters rows show the client the dry run matched and the responsible attorney. Debtor
+ * opening balances (658A) also commit from under this step; their rows show the fee note brought
+ * forward, its client, dates and outstanding amount.
  */
 export function ValidationStep({
   batch,
@@ -170,6 +178,7 @@ export function ValidationStep({
   const isTrust = dataset.requiresTrustAccount;
   const isClients = dataset.dataset === "CLIENTS";
   const isMatters = dataset.dataset === "MATTERS";
+  const isDebtors = dataset.dataset === "DEBTOR_BALANCES";
 
   const [status, setStatus] = useState<string>(ALL);
   const [section, setSection] = useState<string>(ALL);
@@ -401,6 +410,7 @@ export function ValidationStep({
           isTrust={isTrust}
           isClients={isClients}
           isMatters={isMatters}
+          isDebtors={isDebtors}
         />
       )}
       {rows.data && totalPages > 1 && (
@@ -515,12 +525,14 @@ function RowTable({
   isTrust,
   isClients,
   isMatters,
+  isDebtors,
 }: {
   rows: TakeOnRow[];
   labels: Map<string, string>;
   isTrust: boolean;
   isClients: boolean;
   isMatters: boolean;
+  isDebtors: boolean;
 }) {
   if (rows.length === 0) {
     return (
@@ -539,8 +551,9 @@ function RowTable({
             <TableHead>Previous system ID</TableHead>
             {isClients && <ClientColumnHeads />}
             {isMatters && <MatterColumnHeads />}
+            {isDebtors && <DebtorColumnHeads />}
             <TableHead>Status</TableHead>
-            <TableHead>{isClients || isMatters ? "Other values" : "Values"}</TableHead>
+            <TableHead>{isClients || isMatters || isDebtors ? "Other values" : "Values"}</TableHead>
             <TableHead>Messages</TableHead>
           </TableRow>
         </TableHeader>
@@ -559,6 +572,7 @@ function RowTable({
               <TableCell className="text-xs">{row.sourceRef ?? "—"}</TableCell>
               {isClients && <ClientColumnCells rowNumber={row.rowNumber} values={row.values} />}
               {isMatters && <MatterColumnCells row={row} />}
+              {isDebtors && <DebtorColumnCells row={row} />}
               <TableCell>
                 <Badge
                   variant={isPendingDuplicate(row) ? "warning" : STATUS_VARIANT[row.status]}
@@ -583,12 +597,20 @@ function RowTable({
                       ? CLIENT_COLUMN_KEYS
                       : isMatters
                         ? MATTER_COLUMN_KEYS
-                        : isTrust
-                          ? TRUST_HIDDEN_KEYS
-                          : undefined
+                        : isDebtors
+                          ? DEBTOR_COLUMN_KEYS
+                          : isTrust
+                            ? TRUST_HIDDEN_KEYS
+                            : undefined
                   }
                   valueText={
-                    isMatters ? matterValueText : isTrust ? trustValueText : clientValueText
+                    isMatters
+                      ? matterValueText
+                      : isDebtors
+                        ? debtorValueText
+                        : isTrust
+                          ? trustValueText
+                          : clientValueText
                   }
                 />
               </TableCell>
@@ -601,7 +623,9 @@ function RowTable({
                     >
                       {isClients
                         ? "Matches a client already in Kazi"
-                        : "Matches a record already in Kazi"}
+                        : isDebtors
+                          ? "Matches a brought-forward fee note already in Kazi"
+                          : "Matches a record already in Kazi"}
                     </li>
                   )}
                   {row.failureReason && (

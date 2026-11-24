@@ -2,6 +2,7 @@
 
 import { Button } from "@b2mash/ui/button";
 import { StatusBadge } from "@/components/invoices/status-badge";
+import { BroughtForwardBadge } from "@/components/invoices/brought-forward-badge";
 import { Eye } from "lucide-react";
 import { HelpTip } from "@/components/help-tip";
 import { formatDate } from "@/lib/format";
@@ -49,6 +50,7 @@ export function InvoiceHeaderActions({
             <HelpTip code="invoices.numbering" />
           </h1>
           <StatusBadge status={invoice.status} />
+          <BroughtForwardBadge takeOnBatchId={invoice.takeOnBatchId} />
         </div>
         <div className="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-sm text-slate-600 dark:text-slate-400">
           <span>Client: {invoice.clientName}</span>

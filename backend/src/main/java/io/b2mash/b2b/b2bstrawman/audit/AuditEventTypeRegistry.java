@@ -481,6 +481,13 @@ public class AuditEventTypeRegistry {
                 "Fee note receipt generated",
                 AuditSeverity.INFO,
                 AuditEventGroup.FINANCIAL),
+            // Phase 93 658A (ADR-390): additive ADR-342 key — BroughtForwardFeeNoteService (the
+            // quiet issue of a fee note brought forward at take-on).
+            new AuditEventTypeMetadata(
+                "invoice.brought_forward_issued",
+                "Fee note brought forward at take-on",
+                AuditSeverity.INFO,
+                AuditEventGroup.FINANCIAL),
             new AuditEventTypeMetadata(
                 "invoice.*", "Fee note", AuditSeverity.INFO, AuditEventGroup.FINANCIAL),
             // AI SKILL FAILURE — Phase 72 skill pipeline (AiExecutionPersistenceService) still

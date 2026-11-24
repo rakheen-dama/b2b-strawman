@@ -1,0 +1,32 @@
+20:06:59 INFO DefaultJobEnqueuer | fanOutToAllTenants: type=accounting_sync_drain, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+20:07:29 INFO DefaultJobEnqueuer | fanOutToAllTenants: type=automation_poll_triggers, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+20:07:29 INFO DefaultJobEnqueuer | fanOutToAllTenants: type=accounting_sync_drain, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+20:07:59 INFO DefaultJobEnqueuer | fanOutToAllTenants: type=accounting_sync_drain, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+20:08:29 INFO DefaultJobEnqueuer | fanOutToAllTenants: type=automation_poll_triggers, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+20:08:29 INFO DefaultJobEnqueuer | fanOutToAllTenants: type=accounting_sync_drain, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+20:09:00 INFO DefaultJobEnqueuer | fanOutToAllTenants: type=accounting_sync_drain, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+20:09:04 INFO TakeOnRowRunner | Take-on batch 924d9c57-c9a0-41d2-9a40-9f9b2f752c53 committed: created=6, skipped=0, failed=0
+20:09:07 INFO PortalContactService | Created portal contact 2987df90-2f16-4970-b164-bd642175c9e8 for customer b9bdefa6-a7c5-4428-96a3-a95553ce7984 in org e2e-test-org
+20:09:07 INFO PortalContactService | Created portal contact 6229f166-c5d8-4b5d-9a5d-5dc35eebf120 for customer aef91e14-eaa9-4a1e-b8be-a91a4b3ba3e4 in org e2e-test-org
+20:09:07 INFO PortalContactService | Created portal contact 2539ee69-ba1d-45e7-9c52-e1324057c275 for customer a0290c21-8846-4049-801a-2c51a8844e37 in org e2e-test-org
+20:09:07 INFO PortalContactService | Created portal contact 3f794040-18f9-414d-8218-1ce1f2fe25af for customer 1ef15b57-9466-40cb-8887-2974dafdc39c in org e2e-test-org
+20:09:07 INFO PortalContactService | Created portal contact 82bc8120-11f7-4f6f-affc-212711be3598 for customer 263e8d08-81f7-44a7-b505-e6bdf79559d4 in org e2e-test-org
+20:09:07 INFO PortalContactService | Created portal contact 03542bf4-8228-4da1-866c-9c30c2a4dec0 for customer 98dfef95-c2ec-48b2-93ae-abba28b20e79 in org e2e-test-org
+20:09:24 INFO ProjectService | Created project dd73d5a5-a6c7-435d-adf9-e2efc85a0384 with lead member e5b77bdf-d1ca-4bdd-b443-2bdcf983669a
+20:09:24 INFO ProjectService | Created project 9896a5cf-0ca0-4838-b4d6-5251449e56bf with lead member e5b77bdf-d1ca-4bdd-b443-2bdcf983669a
+20:09:24 INFO TakeOnRowRunner | Take-on batch b70b9b21-3ea6-4d3b-9a19-640956e84a1b committed: created=2, skipped=0, failed=0
+20:09:29 INFO DefaultJobEnqueuer | fanOutToAllTenants: type=automation_poll_triggers, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+20:09:30 INFO DefaultJobEnqueuer | fanOutToAllTenants: type=accounting_sync_drain, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+20:10:00 INFO DefaultJobEnqueuer | fanOutToAllTenants: type=accounting_sync_drain, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+20:10:04 INFO TakeOnRowRunner | Take-on batch d04746a3-657d-49e7-84dd-a2e318efa512 committed: created=6, skipped=0, failed=0
+20:10:29 INFO DefaultJobEnqueuer | fanOutToAllTenants: type=automation_poll_triggers, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+20:10:30 INFO DefaultJobEnqueuer | fanOutToAllTenants: type=accounting_sync_drain, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+20:11:00 INFO DefaultJobEnqueuer | fanOutToAllTenants: type=accounting_sync_drain, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+20:11:18 INFO InvoiceTransitionService | Approved invoice 2e8b7912-d14c-41b2-8239-fbea137f9c12 with number INV-0008
+20:11:29 INFO DefaultJobEnqueuer | fanOutToAllTenants: type=automation_poll_triggers, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+20:11:30 INFO DefaultJobEnqueuer | fanOutToAllTenants: type=accounting_sync_drain, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+20:12:00 INFO DefaultJobEnqueuer | fanOutToAllTenants: type=accounting_sync_drain, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+20:12:08 INFO InvoiceTransitionService | Voided invoice bc6b241d-91be-4c03-ae8e-ce22a50ec3ae
+20:12:29 INFO DefaultJobEnqueuer | fanOutToAllTenants: type=automation_poll_triggers, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+20:12:30 INFO DefaultJobEnqueuer | fanOutToAllTenants: type=accounting_sync_drain, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0
+20:13:00 INFO DefaultJobEnqueuer | fanOutToAllTenants: type=accounting_sync_drain, tenants=1, enqueued=1, skippedByPreFilter=0, skippedByDedup=0

@@ -63,7 +63,13 @@ public record InvoiceResponse(
      * subsequent reads — the frontend uses this to show an inline banner on the just-created draft
      * without a separate API call. See GAP-L-62.
      */
-    List<String> warnings) {
+    List<String> warnings,
+    /**
+     * The take-on batch that brought this fee note forward from the previous system (Phase 93 658A,
+     * §17.4.3); {@code null} for a fee note Kazi generated. Drives the "Brought forward — take-on"
+     * badge.
+     */
+    UUID takeOnBatchId) {
 
   /** One posted payment (§13.4.3 {@code payments[]}). */
   public record PaymentLine(
@@ -169,6 +175,7 @@ public record InvoiceResponse(
         invoice.getAmountPaid(),
         invoice.getBalanceDue(),
         payments != null ? payments.stream().map(PaymentLine::from).toList() : List.of(),
-        warnings != null ? warnings : List.of());
+        warnings != null ? warnings : List.of(),
+        invoice.getTakeOnBatchId());
   }
 }

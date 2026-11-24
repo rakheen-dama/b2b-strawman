@@ -1,0 +1,15 @@
+# Read-only replica of CashDigestService TOTALS_SQL + BILLED_COLLECTED_SQL (@0d08e820f, CashDigestService.java:95-125), today=2026-11-24, billedSince=today-7. NOT the digest itself (the digest could not be triggered on this stack).
+2026-11-24T20:11:58Z
+ outstanding_total | bucket_current | bucket_d30 | bucket_d60 | bucket_d90plus | of_which_brought_forward 
+-------------------+----------------+------------+------------+----------------+--------------------------
+          40250.50 |       16675.00 |    3450.00 |   15525.50 |        4600.00 |                 31625.50
+(1 row)
+
+ billed_trailing_7d | billed_numbers | brought_forward_in_billed 
+--------------------+----------------+---------------------------
+            8625.00 | INV-0001       |                         0
+(1 row)
+
+30:  static final int CURRENT_UPPER_DAYS = 0;
+31:  static final int DAYS_30 = 30;
+32:  static final int DAYS_60 = 60;

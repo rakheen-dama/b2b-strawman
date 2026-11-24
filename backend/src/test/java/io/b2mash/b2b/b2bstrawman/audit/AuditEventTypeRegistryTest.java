@@ -159,6 +159,7 @@ class AuditEventTypeRegistryTest {
           "invoice.payment_partially_reversed",
           "invoice.voided",
           "invoice.receipt_generated",
+          "invoice.brought_forward_issued",
           "security.access_denied",
           "security.document_accessed",
           "ai.gate.created",
@@ -289,10 +290,11 @@ class AuditEventTypeRegistryTest {
     // + 2 takeon.go_live.acknowledged/.withdrawn (Phase 93 656A) = 98.
     // + 2 takeon.batch.signed_off, takeon.report.generated (Phase 93 657C) = 100.
     // + 1 takeon.report.downloaded (Phase 93 657D) = 101.
+    // + 1 invoice.brought_forward_issued (Phase 93 658A) = 102.
     // Default fallback is synthesised inside resolve() and must NOT appear in entries().
     // (Phase 86 slice 2 / Epic 596B removed the 5 deal.* SALES entries; Phase 86 slice 3 / Epic
     // 597B removed proposal.*; Phase 86 slice 7 / Epic 601 removed six ai.specialist.* entries.)
-    assertThat(registry.entries()).hasSize(101);
+    assertThat(registry.entries()).hasSize(102);
     assertThat(registry.entries())
         .extracting(AuditEventTypeMetadata::eventType)
         .doesNotContain("(default fallback)")
@@ -311,6 +313,7 @@ class AuditEventTypeRegistryTest {
             "disbursement.restored",
             "invoice.partially_paid",
             "invoice.payment_excess",
+            "invoice.brought_forward_issued",
             "acceptance.declined",
             "unidentified_deposit.allocation_requested",
             "unidentified_deposit.allocated",
@@ -413,8 +416,8 @@ class AuditEventTypeRegistryTest {
 
   @Test
   void entriesMatchingWithEmptyOrNullReturnsAll() {
-    assertThat(registry.entriesMatching(Set.of())).hasSize(101);
-    assertThat(registry.entriesMatching(null)).hasSize(101);
+    assertThat(registry.entriesMatching(Set.of())).hasSize(102);
+    assertThat(registry.entriesMatching(null)).hasSize(102);
   }
 
   @Test

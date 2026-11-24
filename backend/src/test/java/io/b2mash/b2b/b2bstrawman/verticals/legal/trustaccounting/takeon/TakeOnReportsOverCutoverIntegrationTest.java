@@ -15,6 +15,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.books.TrustMont
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService.ClientLedgerCardResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report.TrustInterestChargesScheduleQuery;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report.TrustReceiptsPaymentsQuery;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -56,6 +57,7 @@ class TakeOnReportsOverCutoverIntegrationTest {
   @Autowired private ClientLedgerService clientLedgerService;
   @Autowired private TrustInterestChargesScheduleQuery scheduleQuery;
   @Autowired private TrustMonthlyListService monthlyListService;
+  @Autowired private TrustReceiptsPaymentsQuery receiptsPaymentsQuery;
 
   private TrustBooksFixture.Tenant books;
   private UUID ownerId;
@@ -245,6 +247,45 @@ class TakeOnReportsOverCutoverIntegrationTest {
     var empty = card(books.newClient("TOE").id(), g);
     assertThat(empty.id()).isNull();
     assertThat(empty.investedBalance()).isEqualByComparingTo("0");
+  }
+
+  /**
+   * 657D (657.27 red first, §17.3.15): Receipts &amp; Payments over the month containing C lists
+   * the take-on as one brought-forward line dated C (credit CB = R403 500,00), never as receipts
+   * and payments; the totals exclude it and {@code summary.broughtForward} carries it.
+   */
+  @Test
+  void receiptsAndPayments_theMonthOfTheCutoverShowsOneBroughtForwardLine_notTheTakeOnRows() {
+    var takeOn = books.takeOnSection17313(cutover());
+    var c = takeOn.cutover();
+
+    var result = receiptsPayments(takeOn.g(), c.withDayOfMonth(1), c);
+
+    assertThat(money(result.summary(), "totalReceipts")).isEqualByComparingTo("0");
+    assertThat(money(result.summary(), "totalPayments")).isEqualByComparingTo("0");
+    assertThat(result.rows()).hasSize(1);
+    var bf = result.rows().getFirst();
+    assertThat(bf.get("broughtForward")).isEqualTo(true);
+    assertThat(bf.get("date")).isEqualTo(c.toString());
+    assertThat(bf.get("type")).isEqualTo("Balance brought forward — take-on");
+    assertThat(money(bf, "credit")).isEqualByComparingTo("403500.00");
+    assertThat(money(bf, "balance")).isEqualByComparingTo("403500.00");
+    assertThat(money(result.summary(), "broughtForward")).isEqualByComparingTo("403500.00");
+    assertThat(result.summary().get("transactionCount")).isEqualTo(0);
+  }
+
+  private ReportResult receiptsPayments(UUID account, LocalDate from, LocalDate to) {
+    return books.read(
+        () ->
+            receiptsPaymentsQuery.executeAll(
+                new HashMap<>(
+                    Map.of(
+                        "trust_account_id",
+                        account.toString(),
+                        "dateFrom",
+                        from.toString(),
+                        "dateTo",
+                        to.toString()))));
   }
 
   private ReportResult schedule(UUID account, LocalDate from, LocalDate to) {

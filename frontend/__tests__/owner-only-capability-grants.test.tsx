@@ -116,22 +116,35 @@ describe("RoleDialog — owner-only capabilities", () => {
     expect(screen.getByRole("checkbox", { name: "Billing" })).toBeEnabled();
   });
 
-  it("a non-owner editing an owner-made role keeps the owner-only capability unchanged", async () => {
+  // review round 2: additions are locked, removals are not (the backend allows taking one away)
+  it("a non-owner may uncheck an owner-only capability the role holds, but not check it again", async () => {
     const user = userEvent.setup();
     mockUpdateRoleAction.mockResolvedValue({ success: true });
     asCaller("admin", <RoleDialog slug="acme" role={partner} open={true} onOpenChange={vi.fn()} />);
 
     const signOff = screen.getByRole("checkbox", { name: SIGN_OFF_LABEL });
-    expect(signOff).toBeDisabled();
+    expect(signOff).toBeEnabled();
     expect(signOff).toHaveAttribute("data-state", "checked");
     await user.click(signOff);
-    expect(signOff).toHaveAttribute("data-state", "checked");
+    expect(signOff).toHaveAttribute("data-state", "unchecked");
+    expect(signOff).toBeDisabled(); // unchecked: re-checking would grant it
 
     await user.click(screen.getByRole("button", { name: "Save" }));
     await waitFor(() => expect(mockUpdateRoleAction).toHaveBeenCalled());
-    expect(mockUpdateRoleAction.mock.calls[0][2].capabilities).toEqual(
-      expect.arrayContaining([SIGN_OFF, "VIEW_TRUST"])
+    expect(mockUpdateRoleAction.mock.calls[0][2].capabilities).toEqual(["VIEW_TRUST"]);
+  });
+
+  it("a non-owner cannot check an unchecked owner-only capability", async () => {
+    const user = userEvent.setup();
+    asCaller(
+      "admin",
+      <RoleDialog slug="acme" role={bookkeeper} open={true} onOpenChange={vi.fn()} />
     );
+
+    const signOff = screen.getByRole("checkbox", { name: SIGN_OFF_LABEL });
+    expect(signOff).toBeDisabled();
+    await user.click(signOff);
+    expect(signOff).toHaveAttribute("data-state", "unchecked");
   });
 
   it("the owner can grant the owner-only capability; no hint", async () => {
@@ -388,5 +401,82 @@ describe("Owner-only hint — tied to its disabled checkbox", () => {
     expect(screen.getByRole("checkbox", { name: "Billing" })).not.toHaveAttribute(
       "aria-describedby"
     );
+  });
+});
+
+// review round 2: the member panel follows the backend's effective-capabilities rule — a
+// non-owner may remove an owner-only capability (drop a "+X", add a "-X" for an inherited X) but
+// not grant one (add a "+X", drop an existing "-X")
+function openPanelWith(currentRole: string, overrides: string[]) {
+  mockFetchMemberCapabilities.mockResolvedValue({
+    memberId: "m1",
+    roleName: currentRole,
+    roleCapabilities: [],
+    overrides,
+    effectiveCapabilities: [],
+  });
+  mockAssignMemberRole.mockResolvedValue({ success: true });
+  return asCaller(
+    "admin",
+    <MemberDetailPanel
+      open={true}
+      onOpenChange={vi.fn()}
+      member={{ id: "m1", name: "Thandi", email: "thandi@test.com", role: "org:member" }}
+      roles={[bookkeeper, partner]}
+      slug="acme"
+    />
+  );
+}
+
+describe("MemberDetailPanel — a non-owner removes owner-only capabilities, never grants them", () => {
+  it("adds a -X for an inherited owner-only capability", async () => {
+    const user = userEvent.setup();
+    openPanelWith("Partner", []);
+    await waitFor(() => expect(screen.getByRole("combobox")).toHaveTextContent("Partner"));
+
+    const signOff = screen.getByRole("checkbox", { name: SIGN_OFF_LABEL });
+    expect(signOff).toBeEnabled();
+    await user.click(signOff);
+    expect(signOff).toHaveAttribute("data-state", "unchecked");
+    expect(signOff).toBeDisabled();
+
+    await user.click(screen.getByRole("button", { name: "Save" }));
+    await waitFor(() =>
+      expect(mockAssignMemberRole).toHaveBeenCalledWith("acme", "m1", "role-partner", [
+        `-${SIGN_OFF}`,
+      ])
+    );
+  });
+
+  it("drops a +X override", async () => {
+    const user = userEvent.setup();
+    openPanelWith("Bookkeeper", [`+${SIGN_OFF}`]);
+    await waitFor(() => expect(screen.getByRole("combobox")).toHaveTextContent("Bookkeeper"));
+
+    const signOff = screen.getByRole("checkbox", { name: SIGN_OFF_LABEL });
+    expect(signOff).toHaveAttribute("data-state", "checked");
+    expect(signOff).toBeEnabled();
+    await user.click(signOff);
+
+    await user.click(screen.getByRole("button", { name: "Save" }));
+    await waitFor(() =>
+      expect(mockAssignMemberRole).toHaveBeenCalledWith("acme", "m1", "role-bookkeeper", [])
+    );
+  });
+
+  it("cannot add a +X", async () => {
+    openPanelWith("Bookkeeper", []);
+    await waitFor(() => expect(screen.getByRole("combobox")).toHaveTextContent("Bookkeeper"));
+    const signOff = screen.getByRole("checkbox", { name: SIGN_OFF_LABEL });
+    expect(signOff).toHaveAttribute("data-state", "unchecked");
+    expect(signOff).toBeDisabled();
+  });
+
+  it("cannot drop an existing -X", async () => {
+    openPanelWith("Partner", [`-${SIGN_OFF}`]);
+    await waitFor(() => expect(screen.getByRole("combobox")).toHaveTextContent("Partner"));
+    const signOff = screen.getByRole("checkbox", { name: SIGN_OFF_LABEL });
+    expect(signOff).toHaveAttribute("data-state", "unchecked");
+    expect(signOff).toBeDisabled();
   });
 });

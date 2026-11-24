@@ -41,7 +41,8 @@ class TakeOnWireContractTest {
    * records it introduces. 655A also appended {@code TakeOnBatchResponse.summary} (review B-H2: the
    * stored validation summary, so the attestation step never pages rows into the browser). 655B
    * adds the FICA wire records the review queue reads (C-10): the FICA status, the attestation
-   * read, the client-list row and the compliance-settings request = 27.
+   * read, the client-list row and the compliance-settings request = 27. 656A adds the go-live
+   * checklist item and its acknowledge request = 29.
    */
   static final List<Class<?>> PINNED =
       List.of(
@@ -73,7 +74,10 @@ class TakeOnWireContractTest {
           InformationRequestDtos.FicaStatusResponse.class,
           ClientFicaAttestationService.ClientFicaAttestationResponse.class,
           ClientListRow.class,
-          UpdateComplianceSettingsRequest.class);
+          UpdateComplianceSettingsRequest.class,
+          // 656A
+          TakeOnGoLiveService.TakeOnGoLiveItemResponse.class,
+          TakeOnGoLiveService.TakeOnGoLiveAcknowledgeRequest.class);
 
   private static final String UPDATE_FLAG = "takeon.contract.update";
   private static final Path SNAPSHOT = Path.of("src/test/resources/wire/take-on-contract.json");

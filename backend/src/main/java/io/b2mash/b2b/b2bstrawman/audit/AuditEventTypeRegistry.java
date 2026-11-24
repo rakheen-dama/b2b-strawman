@@ -355,6 +355,18 @@ public class AuditEventTypeRegistry {
                 "FICA verified in prior system (attested)",
                 AuditSeverity.INFO,
                 AuditEventGroup.DATA),
+            // DATA — the firm's go-live checklist (Phase 93 656A, §17.6.4). Additive keys (pin 96
+            // → 98). Details are {item_key} only.
+            new AuditEventTypeMetadata(
+                "takeon.go_live.acknowledged",
+                "Take-on go-live item acknowledged",
+                AuditSeverity.INFO,
+                AuditEventGroup.DATA),
+            new AuditEventTypeMetadata(
+                "takeon.go_live.withdrawn",
+                "Take-on go-live item withdrawn",
+                AuditSeverity.INFO,
+                AuditEventGroup.DATA),
             // DATA — data protection
             new AuditEventTypeMetadata(
                 "dataprotection.dsar.*",

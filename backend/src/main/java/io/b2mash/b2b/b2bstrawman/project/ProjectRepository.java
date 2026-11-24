@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.project;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -54,6 +55,50 @@ public interface ProjectRepository extends JpaRepository<Project, UUID> {
   /** Finds all projects linked to a specific customer. */
   @Query("SELECT p FROM Project p WHERE p.customerId = :customerId ORDER BY p.createdAt DESC")
   List<Project> findByCustomerId(@Param("customerId") UUID customerId);
+
+  // --- Take-on dedup (Phase 93 656A, §17.3.6) ---
+
+  /** Native projection of the fields the matters take-on dedup compares. */
+  interface MatterDedupCandidate {
+    UUID getId();
+
+    UUID getCustomerId();
+
+    String getName();
+
+    String getReferenceNumber();
+  }
+
+  /** Every matter the matters take-on dry run could match: loaded once per validation (X2). */
+  @Query(
+      nativeQuery = true,
+      value =
+          "SELECT id, customer_id AS \"customerId\", name, reference_number AS \"referenceNumber\""
+              + " FROM projects")
+  List<MatterDedupCandidate> findTakeOnDedupCandidates();
+
+  /**
+   * A matter with this reference number — the matters take-on commit re-check, compared trimmed and
+   * case-insensitively exactly as the dry run does.
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          "SELECT id FROM projects WHERE lower(btrim(reference_number)) = lower(btrim(:ref))"
+              + " ORDER BY created_at LIMIT 1")
+  Optional<UUID> findIdByReferenceNumber(@Param("ref") String referenceNumber);
+
+  /**
+   * A matter of this client with this name — the matters take-on commit re-check, compared trimmed
+   * and case-insensitively exactly as the dry run does (D-127).
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          "SELECT id FROM projects WHERE customer_id = :customerId"
+              + " AND lower(btrim(name)) = lower(btrim(:name)) ORDER BY created_at LIMIT 1")
+  Optional<UUID> findIdByCustomerIdAndName(
+      @Param("customerId") UUID customerId, @Param("name") String name);
 
   /** Counts projects linked to a specific customer. */
   @Query("SELECT COUNT(p) FROM Project p WHERE p.customerId = :customerId")

@@ -8,15 +8,16 @@ import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 /**
- * The {@code takeon.*} audit events (§17.6.4: six from 653A, six from 655A), each with exactly its
- * documented params, built through {@link SafeAuditDetails} — ids, enums and counts only, never a
- * name, file name, header or value. Logged in the caller's transaction.
+ * The {@code takeon.*} audit events (§17.6.4: six from 653A, six from 655A, two from 656A), each
+ * with exactly its documented params, built through {@link SafeAuditDetails} — ids, enums and
+ * counts only, never a name, file name, header or value. Logged in the caller's transaction.
  */
 @Component
 public class TakeOnAudit {
 
   static final String BATCH = "take_on_batch";
   static final String SOURCE = "take_on_source";
+  static final String GO_LIVE_ITEM = "take_on_go_live_item";
 
   private final AuditService auditService;
 
@@ -186,6 +187,25 @@ public class TakeOnAudit {
             .put("created_count", created)
             .put("skipped_count", skipped)
             .build());
+  }
+
+  // --- 656A: the go-live checklist (§17.6.4) ---
+
+  /** {@code item_key} only; the entity id is the item's stable id (C-12). */
+  public void goLiveAcknowledged(GoLiveItem item) {
+    log(
+        "takeon.go_live.acknowledged",
+        GO_LIVE_ITEM,
+        item.auditEntityId(),
+        SafeAuditDetails.builder().put("item_key", item).build());
+  }
+
+  public void goLiveWithdrawn(GoLiveItem item) {
+    log(
+        "takeon.go_live.withdrawn",
+        GO_LIVE_ITEM,
+        item.auditEntityId(),
+        SafeAuditDetails.builder().put("item_key", item).build());
   }
 
   private void log(String eventType, String entityType, UUID entityId, Map<String, Object> d) {

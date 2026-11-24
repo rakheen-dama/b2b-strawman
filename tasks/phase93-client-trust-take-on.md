@@ -72,6 +72,9 @@ Merged since the architecture's SHA, not gates but context a builder must read a
 | FR-3 | 653A F-2: the shared Next server-action body limit was raised to 11 MB (it also lifts bank-statement uploads) | 3 MB limit | Small follow-up PR after the phase: `bodySizeLimit` 3 MB, and the take-on upload limit aligned to it (UI copy and backend check). |
 | FR-4 | 653A F-1: who may put owner-only capabilities into a custom role | **RULED 2026-11-24:** reproduce as a security bug, fixed in the same PR as F-657C-7 | Confirmed escalation; fixed in PR #1856 (`ba3958143`). Admins could grant owner-only capabilities (create, update or assign a role, `+CAP`) and could invite straight into Owner or Admin. Now only an owner can grant them; Owner can never be granted by role assignment or invitation. |
 | FR-5 | An admin adds a `+X` override for an owner-only capability the member already holds through their role (it persists if the owner later removes X from the role) | **RULED 2026-11-24: allow it** | No change. The override is visible in the member panel. |
+| FR-6 | Owner/Admin invitations an admin sent before the PR #1856 security fix | **RULED 2026-11-24:** none that matter; no action | No clean-up. |
+| FR-7 | Invite form "Customize for this user": the capability tweaks are silently discarded | **RULED 2026-11-24:** hide it; customisation is not available at invite time | Built in the invitation-fix PR, after the phase. Capabilities can be changed on the Team page after the person joins. |
+| FR-8 | Revoking an invitation in Kazi leaves the Keycloak invite link live, so the person can still join as Member | **RULED 2026-11-24:** fix it | Built in the invitation-fix PR, together with the custom-role invite fix (`tasks/custom-role-invite-fix-plan.md`, option A: apply the invitation's stored role id at first sign-in). |
 
 ### Founder decisions FD-1..FD-37 (§17.10)
 

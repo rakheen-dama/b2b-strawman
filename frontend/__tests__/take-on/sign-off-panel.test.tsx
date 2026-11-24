@@ -161,13 +161,31 @@ describe("SignOffPanel (657C)", () => {
     expect(screen.queryByTestId("takeon-signoff-accept")).not.toBeInTheDocument();
   });
 
+  it.each([
+    ["COMMITTING", "This trust take-on is being committed."],
+    ["COMPLETED", "This trust take-on has been committed."],
+  ] as const)(
+    "says where a %s batch is instead of why it cannot be signed",
+    async (status, text) => {
+      actions.getSignOffReview.mockResolvedValue({
+        success: true,
+        data: signOffReview({ status, allowedActions: [] }),
+      });
+      renderPanel();
+      expect((await screen.findByTestId("takeon-signoff-unavailable")).textContent).toBe(text);
+      expect(screen.queryByTestId("takeon-signoff-submit")).not.toBeInTheDocument();
+    }
+  );
+
   it("offers no sign-off when the review allows none, and shows a failed read verbatim", async () => {
     actions.getSignOffReview.mockResolvedValueOnce({
       success: true,
       data: signOffReview({ allowedActions: [] }),
     });
     renderPanel();
-    expect(await screen.findByTestId("takeon-signoff-unavailable")).toBeInTheDocument();
+    expect((await screen.findByTestId("takeon-signoff-unavailable")).textContent).toMatch(
+      /^This trust take-on cannot be signed off now\./
+    );
     expect(screen.queryByTestId("takeon-signoff-submit")).not.toBeInTheDocument();
     cleanup();
 

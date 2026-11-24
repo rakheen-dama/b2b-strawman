@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.takeon;
 import static io.b2mash.b2b.b2bstrawman.takeon.TakeOnTrustWorld.C;
 import static io.b2mash.b2b.b2bstrawman.takeon.TakeOnTrustWorld.json;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -23,7 +24,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -56,6 +56,7 @@ class TakeOnReportIntegrationTest {
   private static final String ORG_ID = "org_takeon_report_test";
   private static final String OWNER = "user_tor_owner";
   private static final String TAKE_ON_ONLY = "user_tor_takeon_only";
+  private static final String TRUST_READER = "user_tor_trust_reader";
   private static final LocalDate CUTOVER = LocalDate.parse(C);
   private static final JsonMapper JSON = JsonMapper.builder().build();
 
@@ -90,6 +91,11 @@ class TakeOnReportIntegrationTest {
         new TakeOnTrustWorld(
             mockMvc, jdbc, commitService, drain, ORG_ID, OWNER, schema, ownerId, "tor");
     assignRole(takeOnOnly, createRole("Take-on without trust", "MANAGE_TAKE_ON"));
+    UUID trustReader =
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, TRUST_READER, "tor_reader@test.com", "Trust Reader", "member"));
+    assignRole(trustReader, createRole("Trust reader", "VIEW_TRUST"));
     world.takeOnClientsAndMatters(List.of("A", "B", "C", "Z"));
   }
 
@@ -204,18 +210,27 @@ class TakeOnReportIntegrationTest {
     UUID id = reportId(batch);
     String sha = storedSha(id);
 
-    var refused = new AtomicReference<Throwable>();
-    try {
-      books.read(
-          () ->
-              entityManager
-                  .createQuery("update TakeOnReport r set r.snapshotSha256 = 'x' where r.id = :id")
-                  .setParameter("id", id)
-                  .executeUpdate());
-    } catch (RuntimeException e) {
-      refused.set(e);
-    }
-    assertThat(refused.get()).as("an update query on the @Immutable report is refused").isNotNull();
+    // Hibernate's own refusal of an update query on an @Immutable entity — nothing else
+    assertThatThrownBy(
+            () ->
+                books.read(
+                    () ->
+                        entityManager
+                            .createQuery(
+                                "update TakeOnReport r set r.snapshotSha256 = 'x' where r.id = :id")
+                            .setParameter("id", id)
+                            .executeUpdate()))
+        .satisfies(
+            e ->
+                assertThat(causeChain(e))
+                    .as("an update query on the @Immutable report is refused")
+                    .anySatisfy(
+                        c ->
+                            assertThat(c)
+                                .isInstanceOf(org.hibernate.HibernateException.class)
+                                .hasMessageContaining(
+                                    "The query attempts to update an immutable entity")
+                                .hasMessageContaining(TakeOnReport.class.getSimpleName())));
     assertThat(storedSha(id)).isEqualTo(sha);
     assertThat(Arrays.stream(TakeOnReport.class.getMethods()).map(m -> m.getName()))
         .noneMatch(n -> n.startsWith("set"));
@@ -234,7 +249,8 @@ class TakeOnReportIntegrationTest {
   // 3
   @Test
   void theReportsNeedViewTrust_andAnUnknownReportIsNotFound() throws Exception {
-    Validated batch = world.committed(world.freshAccounts());
+    Accounts acc = world.freshAccounts();
+    Validated batch = world.committed(acc);
     UUID id = reportId(batch);
     TakeOnTestApi.reports(mockMvc, takeOnOnly(), null)
         .andExpect(status().isForbidden())
@@ -244,6 +260,13 @@ class TakeOnReportIntegrationTest {
         .andExpect(jsonPath("$.title").value("Access denied"));
     TakeOnTestApi.report(mockMvc, world.owner(), UUID.randomUUID())
         .andExpect(status().isNotFound());
+    // VIEW_TRUST alone reads both (no MANAGE_TAKE_ON, no FINANCIAL_VISIBILITY)
+    TakeOnTestApi.reports(mockMvc, trustReader(), acc.g())
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[0].id").value(id.toString()));
+    TakeOnTestApi.report(mockMvc, trustReader(), id)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id").value(id.toString()));
   }
 
   // 4
@@ -396,7 +419,20 @@ class TakeOnReportIntegrationTest {
         .andExpect(status().isOk());
   }
 
+  private RequestPostProcessor trustReader() {
+    return TestJwtFactory.customRoleJwt(ORG_ID, TRUST_READER);
+  }
+
   private RequestPostProcessor takeOnOnly() {
     return TestJwtFactory.customRoleJwt(ORG_ID, TAKE_ON_ONLY);
+  }
+
+  /** {@code e} and its causes, outermost first. */
+  private static List<Throwable> causeChain(Throwable e) {
+    var chain = new java.util.ArrayList<Throwable>();
+    for (Throwable c = e; c != null && !chain.contains(c); c = c.getCause()) {
+      chain.add(c);
+    }
+    return chain;
   }
 }

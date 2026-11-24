@@ -41,16 +41,31 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * The trust take-on commit (Phase 93 657C, §17.3.9, ADR-386, ADR-387, ADR-391): one transaction,
  * all or nothing, under the Phase 92 global lock order ({@code TrustPostingService} class Javadoc)
- * — the path's own row (the batch, {@code FOR UPDATE SKIP LOCKED}), then the client lock anchors,
- * then the trust accounts {@code FOR UPDATE} (the banking account, then the investment accounts in
- * UUID order). Under those locks it re-checks the live trust sign-off on the batch's hash, the
- * redacted rows (D-194), every reference (the planner) and the §17.3.9 account checks (D-191);
- * opens the held unidentified deposits and the investments; posts every opening row through {@code
- * recordOpening} ({@code APPROVED} by the signer at the sign-off time, {@code cleared_at_cutover}
- * from the registry); marks every account taken on; and proves the books tie to the cent ({@link
+ * — the path's own rows (the batch, {@code FOR UPDATE SKIP LOCKED}; then the batch's clients'
+ * {@code customers} rows {@code FOR KEY SHARE}, ascending; then every take-on row of the batch
+ * {@code FOR NO KEY UPDATE}, in id order), then the client lock anchors, then the trust accounts
+ * {@code FOR UPDATE} (the banking account, then the investment accounts in UUID order). Under those
+ * locks it re-checks the live trust sign-off on the batch's hash, the redacted rows (D-194), every
+ * reference (the planner) and the §17.3.9 account checks (D-191); opens the held unidentified
+ * deposits and the investments; posts every opening row through {@code recordOpening} ({@code
+ * APPROVED} by the signer at the sign-off time, {@code cleared_at_cutover} from the registry);
+ * marks every account taken on; and proves the books tie to the cent ({@link
  * TrustOpeningSelfCheck}) before the take-on report is snapshotted and the batch completes. A
  * refusal ({@link TakeOnCommitRefusal}) or any other exception rolls everything back; {@link
  * TrustTakeOnRunner} then returns the batch to {@code VALIDATED} in a separate transaction.
+ *
+ * <p><b>Why the take-on rows are locked (D-194):</b> a client's anonymisation ({@code
+ * DataAnonymizationService}) redacts the client's take-on rows with a bulk update and never takes
+ * the batch lock. Unlocked, a redaction committing mid-commit would be overwritten when the commit
+ * marks its rows (a full-row update from the values it read) — personal data back after the
+ * anonymisation. Held, the redaction waits for this commit (and then redacts the committed rows),
+ * or committed first and the redacted check below refuses. The anonymisation locks its client's
+ * {@code customers} row, then (changing the email, a unique key) takes that row's key lock, then
+ * the take-on rows in id order; every opening row and lock anchor naming the client needs a {@code
+ * FOR KEY SHARE} on that row (its foreign key). Taking the clients' share locks before the take-on
+ * rows gives both paths the same order — client row, then take-on rows, each in id order — so they
+ * never deadlock: the commit waits for an anonymisation before it holds a take-on row, and an
+ * anonymisation waits for the commit before its key lock.
  *
  * <p>Nothing here publishes {@code TrustTransactionRecordedEvent} (no portal email can fire): the
  * commit publishes one {@link TrustDomainEvent.TakeOnPositionCommitted}, whose AFTER_COMMIT
@@ -142,6 +157,10 @@ public class TrustOpeningPositionService {
             .findByBatchIdAndKindAndRevokedAtIsNull(batchId, TakeOnSignOffKind.TRUST_SIGN_OFF)
             .filter(s -> s.getValidationHash().equals(batch.getValidationHash()))
             .orElseThrow(TakeOnCommitRefusal::signOffMissing);
+    // The batch's clients (KEY SHARE), then its rows: an anonymisation cannot redact a row from
+    // here to the commit's end; one that committed first is seen below (D-194, class Javadoc).
+    rows.lockClientsOf(batchId);
+    rows.lockByBatchId(batchId);
     if (rows.anyRedacted(batchId)) {
       throw TakeOnCommitRefusal.rowRedacted(); // D-194, R-3
     }

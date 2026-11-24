@@ -2,8 +2,6 @@ package io.b2mash.b2b.b2bstrawman.takeon;
 
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
-import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.Organization;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.takeon.TakeOnReportSnapshot.AccountHeader;
 import io.b2mash.b2b.b2bstrawman.takeon.TakeOnReportSnapshot.FirmHeader;
@@ -181,7 +179,7 @@ public class TakeOnReportService {
 
     var snapshot =
         new TakeOnReportSnapshot(
-            new FirmHeader(firmName()),
+            new FirmHeader(TakeOnBatchViews.firmName(organizations).orElse(null)),
             new AccountHeader(
                 g.getId(),
                 g.getAccountName(),
@@ -333,12 +331,5 @@ public class TakeOnReportService {
     return trustAccounts
         .findById(id)
         .orElseThrow(() -> new IllegalStateException("Trust account " + id + " is gone"));
-  }
-
-  private String firmName() {
-    String orgId = RequestScopes.getOrgIdOrNull();
-    return orgId == null
-        ? null
-        : organizations.findByExternalOrgId(orgId).map(Organization::getName).orElse(null);
   }
 }

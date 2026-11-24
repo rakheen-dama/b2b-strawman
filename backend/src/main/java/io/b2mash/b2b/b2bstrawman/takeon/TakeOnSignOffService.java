@@ -15,7 +15,6 @@ import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService.TakeOnRowResponse;
 import io.b2mash.b2b.b2bstrawman.takeon.TakeOnBatchService.TakeOnSignOffResponse;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -24,6 +23,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Supplier;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -188,29 +188,14 @@ public class TakeOnSignOffService {
         views
             .firmName()
             .orElseThrow(() -> new IllegalStateException("The firm has no organisation record."));
-    UUID memberId = RequestScopes.requireMemberId();
-    var member =
-        members
-            .findById(memberId)
-            .orElseThrow(() -> new ResourceNotFoundException("Member", memberId));
-    String roleName =
-        member.getOrgRoleEntity() == null ? "Member" : member.getOrgRoleEntity().getName();
     var signOff =
-        new TakeOnSignOff(
-            batchId,
+        record(
+            batch,
             TakeOnSignOffKind.FICA_ATTESTATION,
-            memberId,
-            member.getName(),
-            roleName,
             TakeOnStatements.FICA_ATTEST_V1,
             TakeOnStatements.ficaAttestation(firm),
-            batch.getValidationHash(),
-            defaults.isEmpty() ? null : new LinkedHashMap<>(defaults));
-    try {
-      signOffs.saveAndFlush(signOff);
-    } catch (DataIntegrityViolationException e) {
-      throw TakeOnProblems.alreadyAttested(); // uq_take_on_sign_offs_live
-    }
+            defaults.isEmpty() ? null : new LinkedHashMap<>(defaults),
+            TakeOnProblems::alreadyAttested);
     audit.batchAttested(batch, signOff, rowCount);
     return views.batch(batch);
   }
@@ -354,29 +339,14 @@ public class TakeOnSignOffService {
         declaration(batch)
             .map(TakeOnSignOffDeclarationResponse::text)
             .orElseThrow(() -> new IllegalStateException("The firm has no organisation record."));
-    UUID memberId = RequestScopes.requireMemberId();
-    var member =
-        members
-            .findById(memberId)
-            .orElseThrow(() -> new ResourceNotFoundException("Member", memberId));
-    String roleName =
-        member.getOrgRoleEntity() == null ? "Member" : member.getOrgRoleEntity().getName();
     var signOff =
-        new TakeOnSignOff(
-            batchId,
+        record(
+            batch,
             TakeOnSignOffKind.TRUST_SIGN_OFF,
-            memberId,
-            member.getName(),
-            roleName,
             TakeOnStatements.TAKEON_SIGNOFF_V1,
             statement,
-            batch.getValidationHash(),
-            null);
-    try {
-      signOffs.saveAndFlush(signOff);
-    } catch (DataIntegrityViolationException e) {
-      throw TakeOnProblems.alreadySignedOff(); // uq_take_on_sign_offs_live
-    }
+            null,
+            TakeOnProblems::alreadySignedOff);
     audit.batchSignedOff(batch, signOff);
     return review(batch, Pageable.unpaged());
   }
@@ -408,6 +378,44 @@ public class TakeOnSignOffService {
     return review(batch, Pageable.unpaged());
   }
 
+  /**
+   * Records the caller's live sign-off of {@code kind} on the batch's current hash, with their name
+   * and role as they are now. A concurrent second live one trips {@code uq_take_on_sign_offs_live}
+   * and becomes {@code conflict} (409).
+   */
+  private TakeOnSignOff record(
+      TakeOnBatch batch,
+      TakeOnSignOffKind kind,
+      String statementVersion,
+      String statement,
+      Map<String, Object> defaults,
+      Supplier<? extends RuntimeException> conflict) {
+    UUID memberId = RequestScopes.requireMemberId();
+    var member =
+        members
+            .findById(memberId)
+            .orElseThrow(() -> new ResourceNotFoundException("Member", memberId));
+    String roleName =
+        member.getOrgRoleEntity() == null ? "Member" : member.getOrgRoleEntity().getName();
+    var signOff =
+        new TakeOnSignOff(
+            batch.getId(),
+            kind,
+            memberId,
+            member.getName(),
+            roleName,
+            statementVersion,
+            statement,
+            batch.getValidationHash(),
+            defaults);
+    try {
+      signOffs.saveAndFlush(signOff);
+    } catch (DataIntegrityViolationException e) {
+      throw conflict.get();
+    }
+    return signOff;
+  }
+
   private static void requireTrust(TakeOnBatch batch) {
     if (batch.getDataset() != TakeOnDataset.TRUST_POSITION) {
       throw TakeOnProblems.wrongState("Only a trust take-on is signed off.");
@@ -420,17 +428,7 @@ public class TakeOnSignOffService {
             batch.getId(), TakeOnSignOffKind.TRUST_SIGN_OFF);
     UUID caller = RequestScopes.MEMBER_ID.isBound() ? RequestScopes.MEMBER_ID.get() : null;
     boolean signedByCaller = live.isPresent() && live.get().getMemberId().equals(caller);
-    boolean maySign =
-        RequestScopes.hasCapability(TakeOnBatchViews.SIGN_OFF_CAPABILITY)
-            && RequestScopes.hasCapability(VIEW_TRUST);
-    var actions = new ArrayList<String>();
-    if (batch.getStatus() == TakeOnBatchStatus.VALIDATED && maySign) {
-      if (live.isEmpty() && !batch.blocksCommit() && !rows.anyRedacted(batch.getId())) {
-        actions.add(TakeOnBatchViews.Action.SIGN_OFF.name());
-      } else if (signedByCaller) {
-        actions.add(TakeOnBatchViews.Action.WITHDRAW_SIGN_OFF.name());
-      }
-    }
+    var actions = views.signerActions(batch).stream().map(Enum::name).toList();
     int number = pageable.isPaged() ? pageable.getPageNumber() : 0;
     int size =
         pageable.isPaged() ? Math.max(1, Math.min(MAX_PAGE_SIZE, pageable.getPageSize())) : 50;
@@ -461,7 +459,7 @@ public class TakeOnSignOffService {
         declaration(batch).orElse(null),
         live.map(TakeOnBatchViews::signOff).orElse(null),
         signedByCaller,
-        List.copyOf(actions),
+        actions,
         new PagedModel<>(page));
   }
 

@@ -196,7 +196,8 @@ public class TrustLedgerPortalSyncService {
    * A committed trust take-on (657C): every matter with a posted row on any of the accounts is
    * recomputed once — the brought-forward balance ({@code TAKEON_CLIENT}, the one visible take-on
    * row) and the invested balance; offsets, items and non-client rows stay hidden by the projection
-   * rules. One failure per account is logged and does not stop the others.
+   * rules. A matter's failure is logged and does not stop the account's other matters; a failure
+   * reading an account is logged and does not stop the other accounts.
    */
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onTakeOnPositionCommitted(TrustDomainEvent.TakeOnPositionCommitted event) {
@@ -241,7 +242,8 @@ public class TrustLedgerPortalSyncService {
 
   /**
    * Recomputes the portal read-model for every matter that has at least one posted trust
-   * transaction in the given account. Used by the reconciliation-completed fan-out handler.
+   * transaction in the given account, each matter isolated: a failure is logged (matter and account
+   * ids only) and the others go on. Used by the reconciliation-completed fan-out handler.
    */
   private void syncForTrustAccount(UUID trustAccountId) {
     syncForTrustAccount(trustAccountId, new HashSet<>());
@@ -256,9 +258,19 @@ public class TrustLedgerPortalSyncService {
           continue;
         }
         if (!seenMatters.add(txn.getProjectId())) {
-          continue; // Only recompute each matter once per fan-out.
+          continue; // Only recompute each matter once per fan-out (a failed one is not retried).
         }
-        recomputeMatter(txn.getProjectId());
+        try {
+          recomputeMatter(txn.getProjectId());
+        } catch (Exception e) {
+          // One matter's failure never stops the account's others (each replay is its own portal
+          // transaction, rolled back alone); the backfill repairs the drift.
+          log.error(
+              "Portal trust sync failed for matter={} account={}",
+              txn.getProjectId(),
+              trustAccountId,
+              e);
+        }
       }
     }
   }

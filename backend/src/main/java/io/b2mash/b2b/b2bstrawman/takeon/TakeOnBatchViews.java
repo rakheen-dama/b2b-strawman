@@ -18,9 +18,11 @@ import io.b2mash.b2b.b2bstrawman.takeon.reader.TakeOnParseOptions;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccount;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -63,6 +65,10 @@ public class TakeOnBatchViews {
   static final String SIGN_OFF_CAPABILITY = "SIGN_OFF_TRUST_TAKE_ON";
 
   static final String VIEW_TRUST_CAPABILITY = "VIEW_TRUST";
+
+  /** The trust signer's own actions — what the sign-off review offers (657C). */
+  private static final Set<Action> SIGNER_ACTIONS =
+      EnumSet.of(Action.SIGN_OFF, Action.WITHDRAW_SIGN_OFF);
 
   /** Who is asking: what they may do beyond the batch's write access. */
   record Caller(boolean mayAttest, boolean maySignOff, UUID memberId) {
@@ -119,12 +125,7 @@ public class TakeOnBatchViews {
     var batchSources = sources.findByBatchIdOrderBySectionAsc(batch.getId());
     var live = signOffs.findByBatchIdAndRevokedAtIsNull(batch.getId());
     boolean trust = batch.getDataset() == TakeOnDataset.TRUST_POSITION;
-    // D-194: a validated trust batch with a row redacted since is offered neither sign-off nor
-    // commit (the claim and the sign-off refuse it under the lock)
-    boolean redacted =
-        trust
-            && batch.getStatus() == TakeOnBatchStatus.VALIDATED
-            && rows.anyRedacted(batch.getId());
+    boolean redacted = redacted(batch);
     return new TakeOnBatchResponse(
         batch.getId(),
         batch.getDataset(),
@@ -252,8 +253,44 @@ public class TakeOnBatchViews {
         .orElse(null);
   }
 
+  /**
+   * D-194: a validated trust batch with a row redacted since is offered neither sign-off nor commit
+   * (the claim and the sign-off refuse it under the lock).
+   */
+  private boolean redacted(TakeOnBatch batch) {
+    return batch.getDataset() == TakeOnDataset.TRUST_POSITION
+        && batch.getStatus() == TakeOnBatchStatus.VALIDATED
+        && rows.anyRedacted(batch.getId());
+  }
+
+  /**
+   * The caller's {@code SIGN_OFF} / {@code WITHDRAW_SIGN_OFF} on this batch, exactly as {@link
+   * #allowedActions} decides them for the batch view — the sign-off review (the wizard's step and
+   * the Home sheet) reads them here, so the two cannot diverge.
+   */
+  List<Action> signerActions(TakeOnBatch batch) {
+    return allowedActions(
+            batch,
+            sources.findByBatchIdOrderBySectionAsc(batch.getId()),
+            signOffs.findByBatchIdAndRevokedAtIsNull(batch.getId()),
+            commitPath(batch.getDataset()),
+            Caller.current(),
+            redacted(batch))
+        .stream()
+        .filter(SIGNER_ACTIONS::contains)
+        .toList();
+  }
+
   /** The firm's name (the organisation of the caller's org). */
   Optional<String> firmName() {
+    return firmName(organizations);
+  }
+
+  /**
+   * The firm's name, for a caller that cannot inject this component: {@link TakeOnReportService}
+   * sits below it (this component → the batch committers → the trust commit → the report).
+   */
+  static Optional<String> firmName(OrganizationRepository organizations) {
     String orgId = RequestScopes.getOrgIdOrNull();
     return orgId == null
         ? Optional.empty()

@@ -113,7 +113,7 @@ class TrustPositionTakeOnIntegrationTest {
     world =
         new TakeOnTrustWorld(
             mockMvc, jdbc, commitService, drain, ORG_ID, OWNER, schema, ownerId, "tpt");
-    world.takeOnClientsAndMatters(List.of("A", "B", "C", "D", "X", "Y", "PA", "PB", "PC"));
+    world.takeOnClientsAndMatters(List.of("A", "B", "C", "D", "X", "Y", "Z", "PA", "PB", "PC"));
   }
 
   @AfterAll
@@ -771,6 +771,168 @@ class TrustPositionTakeOnIntegrationTest {
     assertNothingPosted(claimed.batchId(), claimedAcc);
   }
 
+  // 14a (D-194, CR-2): only the redaction's JSON boolean marks a row redacted
+  @Test
+  void aCellReadingTrueUnderARedactedHeader_isNotARedaction() throws Exception {
+    Validated batch = world.validated(world.freshAccounts());
+    var rows = context.getBean(TakeOnRowRepository.class);
+    String table = "\"%s\".take_on_rows".formatted(schema);
+    UUID rowId =
+        jdbc.queryForObject(
+            "SELECT id FROM " + table + " WHERE batch_id = ? ORDER BY id LIMIT 1",
+            UUID.class,
+            batch.batchId());
+    // a source column headed "redacted" whose cell reads "true": a JSON string, in both columns
+    jdbc.update(
+        "UPDATE "
+            + table
+            + " SET raw_values = raw_values || '{\"redacted\": \"true\"}'::jsonb,"
+            + " mapped_values = mapped_values || '{\"redacted\": \"true\"}'::jsonb WHERE id = ?",
+        rowId);
+    assertThat(books.read(() -> rows.anyRedacted(batch.batchId()))).isFalse();
+    assertThat((List<String>) JsonPath.read(world.batchJson(batch.batchId()), "$.allowedActions"))
+        .contains("SIGN_OFF");
+
+    jdbc.update(
+        "UPDATE " + table + " SET raw_values = '{\"redacted\": true}'::jsonb WHERE id = ?", rowId);
+    assertThat(books.read(() -> rows.anyRedacted(batch.batchId()))).isTrue();
+  }
+
+  // 14b (D-194, review HIGH-A1): an anonymisation racing the commit keeps its redaction
+  @Test
+  void anAnonymisationRacingTheCommit_waitsForIt_andItsRedactionSurvives() throws Exception {
+    Accounts acc = world.freshAccounts();
+    var batch = world.validated(acc.g(), withClient(world.files(acc), "Z"), position());
+    world.signOff(batch);
+    world.claim(batch);
+    UUID z = world.client("Z");
+    var posting =
+        context.getBean(
+            io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction
+                .TrustPostingService.class);
+    // Z's lock anchor exists (committed), so holding it takes no lock on Z's customers row
+    books.read(
+        () -> {
+          posting.lockClient(acc.g(), z);
+          return null;
+        });
+
+    var held = new CountDownLatch(1);
+    var release = new CountDownLatch(1);
+    var failure = new AtomicReference<Throwable>();
+    // another trust path holding Z's anchor: the commit stops there, after its batch, clients and
+    // rows locks — the point where, unlocked, a redaction could land under it
+    var holder =
+        Thread.ofVirtual()
+            .start(
+                () -> {
+                  try {
+                    books.read(
+                        () -> {
+                          posting.lockClient(acc.g(), z);
+                          held.countDown();
+                          await(release);
+                          return null;
+                        });
+                  } catch (Throwable t) {
+                    failure.set(t);
+                    held.countDown();
+                  }
+                });
+    assertThat(held.await(30, TimeUnit.SECONDS)).isTrue();
+    Thread drained;
+    Thread anonymised;
+    var anonymiseFailure = new AtomicReference<Throwable>();
+    try {
+      drained = Thread.ofVirtual().start(world::drain);
+      awaitLockWaiters(1); // the commit, on Z's anchor
+      anonymised =
+          Thread.ofVirtual()
+              .start(
+                  () -> {
+                    try {
+                      anonymise("Z");
+                    } catch (Throwable t) {
+                      anonymiseFailure.set(t);
+                    }
+                  });
+      awaitLockWaiters(2); // the anonymisation, on Z's row (the commit's share lock)
+      assertThat(anonymised.isAlive()).as("the anonymisation waits for the commit").isTrue();
+      assertThat(
+              portalJdbc
+                  .sql("SELECT status FROM \"%s\".take_on_batches WHERE id = ?".formatted(schema))
+                  .param(batch.batchId())
+                  .query(String.class)
+                  .single())
+          .isEqualTo("COMMITTING");
+    } finally {
+      release.countDown();
+      holder.join(30_000);
+    }
+    drained.join(60_000);
+    anonymised.join(60_000);
+    assertThat(failure.get()).isNull();
+    assertThat(anonymiseFailure.get()).isNull();
+    assertThat(drained.isAlive()).isFalse();
+    assertThat(anonymised.isAlive()).isFalse();
+
+    assertThat(batchStatus(batch.batchId())).isEqualTo("COMPLETED");
+    assertThat(takeOnRowCount(batch.batchId())).isEqualTo(13);
+    // Z's row was redacted after the commit marked it — and stays redacted
+    assertThat(
+            jdbc.queryForObject(
+                ("SELECT count(*) FROM \"%s\".take_on_rows WHERE batch_id = ?"
+                        + " AND mapped_values ->> 'clientId' = ?")
+                    .formatted(schema),
+                Long.class,
+                batch.batchId(),
+                z.toString()))
+        .isZero();
+    assertThat(
+            jdbc.queryForList(
+                ("SELECT status FROM \"%s\".take_on_rows WHERE batch_id = ?"
+                        + " AND raw_values = '{\"redacted\": true}'::jsonb"
+                        + " AND mapped_values = '{\"redacted\": true}'::jsonb")
+                    .formatted(schema),
+                String.class,
+                batch.batchId()))
+        .containsExactly("CREATED");
+  }
+
+  /**
+   * Waits until {@code n} backends of this database wait on a lock (30 s at most). Polls through
+   * the portal pool: the holder, the commit and the anonymisation take the app pool's three
+   * connections between them, so a poll through it would wait for one of them to finish.
+   */
+  private void awaitLockWaiters(int n) throws InterruptedException {
+    long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(30);
+    while (System.nanoTime() < deadline) {
+      long waiting =
+          portalJdbc
+              .sql(
+                  "SELECT count(*) FROM pg_stat_activity WHERE datname = current_database()"
+                      + " AND wait_event_type = 'Lock'")
+              .query(Long.class)
+              .single();
+      if (waiting >= n) {
+        return;
+      }
+      Thread.sleep(50);
+    }
+    throw new AssertionError(
+        "expected "
+            + n
+            + " lock waiter(s); active backends: "
+            + portalJdbc
+                .sql(
+                    "SELECT state, wait_event_type, wait_event, pg_blocking_pids(pid)::text AS"
+                        + " blockers, left(query, 160) AS query FROM pg_stat_activity"
+                        + " WHERE datname = current_database() AND state <> 'idle'"
+                        + " AND pid <> pg_backend_pid()")
+                .query()
+                .listOfRows());
+  }
+
   // 15 (D-187)
   @Test
   void anInvestmentAccountSharedWithAnotherBankingAccountAtTheSameDate_commitsAndTies()
@@ -939,13 +1101,16 @@ class TrustPositionTakeOnIntegrationTest {
           .as(table)
           .isZero();
     }
-    assertThat(
-            jdbc.queryForObject(
-                "SELECT take_on_cutover_date FROM \"%s\".trust_accounts WHERE id = ?"
-                    .formatted(schema),
-                java.sql.Date.class,
-                acc.g()))
-        .isNull();
+    for (UUID account : List.of(acc.g(), acc.i3(), acc.i4())) { // every account the commit marks
+      assertThat(
+              jdbc.queryForObject(
+                  "SELECT take_on_cutover_date FROM \"%s\".trust_accounts WHERE id = ?"
+                      .formatted(schema),
+                  java.sql.Date.class,
+                  account))
+          .as("take_on_cutover_date of %s", account)
+          .isNull();
+    }
     assertThat(
             jdbc.queryForObject(
                 ("SELECT count(*) FROM \"%s\".take_on_rows WHERE batch_id = ?"

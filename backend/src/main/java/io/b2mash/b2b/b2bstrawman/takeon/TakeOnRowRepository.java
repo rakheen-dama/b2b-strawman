@@ -199,16 +199,50 @@ public interface TakeOnRowRepository extends JpaRepository<TakeOnRow, UUID> {
   /**
    * D-194 (657C, R-3): whether any row of the batch was redacted by a client's anonymisation
    * ({@link #redactForClient} writes {@code {"redacted": true}} to both value columns). A trust
-   * batch holding one is neither signed off nor committed until it is validated again.
+   * batch holding one is neither signed off nor committed until it is validated again. Compared as
+   * the JSON boolean the redaction writes: a source column headed {@code redacted} whose cell reads
+   * "true" is a JSON string and does not match.
    */
   @Query(
       nativeQuery = true,
       value =
           """
           SELECT EXISTS (SELECT 1 FROM take_on_rows WHERE batch_id = :batchId
-                           AND (raw_values ->> 'redacted' = 'true'
-                                OR mapped_values ->> 'redacted' = 'true'))""")
+                           AND ((raw_values -> 'redacted') = 'true'::jsonb
+                                OR (mapped_values -> 'redacted') = 'true'::jsonb))""")
   boolean anyRedacted(@Param("batchId") UUID batchId);
+
+  /**
+   * The trust take-on commit's share lock on the clients its batch names (657C): each client's
+   * {@code customers} row (a row's mapped {@code clientId}, {@code
+   * TrustPositionDatasetHandler.CLIENT_ID}) {@code FOR KEY SHARE}, ascending — the lock every
+   * opening row's and lock anchor's foreign key takes anyway, taken before the batch's rows so the
+   * commit and a client's anonymisation (its client's row, then that client's take-on rows) take
+   * the two in the same order. An anonymisation already changing the client's email is waited for
+   * here, before the commit holds any take-on row. Returns the ids locked.
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          SELECT c.id FROM customers c
+           WHERE c.id IN (SELECT CAST(r.mapped_values ->> 'clientId' AS uuid) FROM take_on_rows r
+                           WHERE r.batch_id = :batchId
+                             AND r.mapped_values ->> 'clientId' IS NOT NULL)
+           ORDER BY c.id FOR KEY SHARE OF c""")
+  List<UUID> lockClientsOf(@Param("batchId") UUID batchId);
+
+  /**
+   * The trust take-on commit's lock on its own rows (657C): every row of the batch, {@code FOR NO
+   * KEY UPDATE}, in {@code id} order — the order {@link #redactForClient} locks in — taken after
+   * {@link #lockClientsOf} and before the client lock anchors. While it is held a client's
+   * anonymisation cannot redact a row the commit is about to rewrite (the commit's full-row update
+   * would put the values back); one that committed first is seen by the {@link #anyRedacted} that
+   * follows.
+   */
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @Query("select r from TakeOnRow r where r.batchId = :batchId order by r.id")
+  List<TakeOnRow> lockByBatchId(@Param("batchId") UUID batchId);
 
   /**
    * POPIA (§17.6.5, FD-19, C-23): when a client is anonymised, every take-on row that produced it
@@ -227,13 +261,24 @@ public interface TakeOnRowRepository extends JpaRepository<TakeOnRow, UUID> {
    * {@code TrustPositionDatasetHandler.CLIENT_ID}: client and matter balances, section 86(4)
    * investments, items outstanding) is redacted the same way, in every status (D-192). The row
    * shell (number, status, result link) stays; the archived file is not rewritten while a legal
-   * retention period runs. Pass at least one key.
+   * retention period runs. Pass at least one key. The rows are locked first in {@code id} order
+   * ({@code locked}), the order the trust take-on commit locks its batch's rows in ({@link
+   * #lockByBatchId}), so the two never wait on each other's rows in a cycle.
    */
   @Modifying(flushAutomatically = true, clearAutomatically = true)
   @Query(
       nativeQuery = true,
       value =
           """
+          WITH locked AS (
+            SELECT id FROM take_on_rows
+             WHERE result_entity_id = :clientId OR duplicate_of_id = :clientId
+                OR (dataset IN ('MATTERS', 'TRUST_POSITION')
+                    AND mapped_values ->> 'clientId' = CAST(:clientId AS varchar))
+                OR (dedup_key IN (:dedupKeys)
+                    AND (result_entity_id IS NULL OR result_entity_id = :clientId)
+                    AND (duplicate_of_id IS NULL OR duplicate_of_id = :clientId))
+             ORDER BY id FOR NO KEY UPDATE)
           UPDATE take_on_rows SET raw_values = '{"redacted": true}'::jsonb,
                  mapped_values = '{"redacted": true}'::jsonb,
                  source_ref = NULL, dedup_key = NULL,
@@ -244,12 +289,7 @@ public interface TakeOnRowRepository extends JpaRepository<TakeOnRow, UUID> {
                                         'code', w -> 'code', 'field', w -> 'field'))
                                         FROM jsonb_array_elements(warnings) w), '[]'::jsonb),
                  updated_at = now()
-           WHERE result_entity_id = :clientId OR duplicate_of_id = :clientId
-              OR (dataset IN ('MATTERS', 'TRUST_POSITION')
-                  AND mapped_values ->> 'clientId' = CAST(:clientId AS varchar))
-              OR (dedup_key IN (:dedupKeys)
-                  AND (result_entity_id IS NULL OR result_entity_id = :clientId)
-                  AND (duplicate_of_id IS NULL OR duplicate_of_id = :clientId))""")
+           WHERE id IN (SELECT id FROM locked)""")
   int redactForClient(
       @Param("clientId") UUID clientId, @Param("dedupKeys") Collection<String> dedupKeys);
 }

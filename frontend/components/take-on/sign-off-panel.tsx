@@ -49,6 +49,12 @@ const POSITION_LABEL: ReadonlyArray<readonly [keyof TakeOnPosition, string]> = [
 const NOT_SIGNABLE =
   "This trust take-on cannot be signed off now. It must be validated, with no errors or blocks, and not signed off already.";
 
+/** Product copy (657C, RG-10, D-202): a batch past sign-off says where it is instead. */
+const PAST_SIGN_OFF: Partial<Record<TakeOnSignOffReview["status"], string>> = {
+  COMMITTING: "This trust take-on is being committed.",
+  COMPLETED: "This trust take-on has been committed.",
+};
+
 /** The row's reference in the previous system: client and matter, the bank reference or the account. */
 function rowReference(row: TakeOnRow): string {
   const v = row.values ?? {};
@@ -298,7 +304,7 @@ export function SignOffPanel({ batchId, onChange }: SignOffPanelProps) {
           className="text-sm text-slate-700 dark:text-slate-300"
           data-testid="takeon-signoff-unavailable"
         >
-          {NOT_SIGNABLE}
+          {PAST_SIGN_OFF[data.status] ?? NOT_SIGNABLE}
         </p>
       )}
 

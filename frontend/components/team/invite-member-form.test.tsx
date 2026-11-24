@@ -124,12 +124,7 @@ describe("InviteMemberForm", () => {
     await user.click(screen.getByRole("button", { name: "Send Invite" }));
 
     await waitFor(() => {
-      expect(mockInviteMember).toHaveBeenCalledWith(
-        "test@example.com",
-        "org:member",
-        undefined,
-        undefined
-      );
+      expect(mockInviteMember).toHaveBeenCalledWith("test@example.com", "org:member", undefined);
     });
     expect(await screen.findByText(/Invitation sent to test@example.com/)).toBeInTheDocument();
   });

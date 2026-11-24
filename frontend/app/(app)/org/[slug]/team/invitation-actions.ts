@@ -76,8 +76,7 @@ async function resolveOrgRoleId(
 async function inviteMemberBff(
   email: string,
   role: "org:member" | "org:admin",
-  orgRoleId?: string,
-  _capabilityOverrides?: string[]
+  orgRoleId?: string
 ): Promise<ActionResult> {
   try {
     const resolvedRoleId = await resolveOrgRoleId(role, orgRoleId);
@@ -146,11 +145,11 @@ async function revokeInvitationBff(id: string): Promise<ActionResult> {
 
 // --- Dispatch wrappers ---
 
+/** An invitation carries only the role; capabilities are not customised at invite time (FR-7). */
 export async function inviteMember(
   emailAddress: string,
   role: "org:member" | "org:admin",
-  orgRoleId?: string,
-  capabilityOverrides?: string[]
+  orgRoleId?: string
 ): Promise<ActionResult> {
   const caps = await fetchMyCapabilities();
 
@@ -165,7 +164,7 @@ export async function inviteMember(
     return { success: true };
   }
 
-  return inviteMemberBff(emailAddress, role, orgRoleId, capabilityOverrides);
+  return inviteMemberBff(emailAddress, role, orgRoleId);
 }
 
 export async function listInvitations(): Promise<MappedInvitation[]> {
